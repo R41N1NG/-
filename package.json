@@ -1,6 +1,6 @@
 {
   "name": "tavern-branch-story-engine",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "description": "酒馆助手分支剧本、条件事件与辅助 API 插件",
   "scripts": {

@@ -78,3 +78,20 @@ test('异步世界书编辑期间切换聊天，不把旧会话进度写进新�
   root.chat = 'chat2'; e.bindChat(); gate.resolve(); await assert.rejects(edit, /保存期间聊天或配置已变化/);
   assert.equal(e.state.current_node_id, 'N001'); assert.equal(storage.chats.chat2?.branch_story_engine, undefined);
 });
+test('快捷分支只列出当前可用及已解锁选项，暂停时隐藏', async () => {
+  const {e, storage} = await setup(); assert.deepEqual(e.quickRoutes().map(r => r.target), ['N002', 'N003']);
+  assert(e.quickRoutes().every(r => r.status === '可用'));
+  e.enter('N002'); e.complete(); e.enter('N001'); assert(e.quickRoutes().some(r => r.target === 'D' && r.status === '已解锁')); assert(!e.quickRoutes().some(r => r.target === 'C'));
+  e.enter('N003'); e.complete(); e.enter('N001'); assert(e.quickRoutes().some(r => r.target === 'C')); assert(!e.quickRoutes().some(r => ['D', 'E'].includes(r.target)));
+  e.pause(); assert.deepEqual(e.quickRoutes(), []);
+  await e.updateSettings({quick_options: true, profile: {detect_prompt: '自定义提示词'}}); assert.equal(storage.script.branch_story_settings.quick_options, true); assert.equal(storage.script.branch_story_settings.profile.detect_prompt, '自定义提示词');
+});
+test('分析草稿不自动替换剧本，刷新恢复；过期分析结果不污染当前聊天', async () => {
+  const client = mockClient(), draftProject = C.demoProject(); draftProject.id = 'analysis_story';
+  client.analyze = async () => ({project: draftProject, warnings: [], request_count: 1});
+  const {e, host, root} = await setup(client); await e.analyze('原文'); assert.equal(e.project.id, 'hotel_demo');
+  const restored = new Engine(host, mockClient()); await restored.init(); assert.equal(restored.analysisDraft.project.id, 'analysis_story');
+  const gate = deferred(), ready = deferred(); client.analyze = async () => { ready.resolve(); return gate.promise; };
+  const run = e.analyze('新原文'); await ready.promise; root.chat = 'chat2'; e.bindChat(); gate.resolve({project: {...draftProject, id: 'late'}, warnings: []});
+  await assert.rejects(run, /配置已变化/); assert.equal(e.analysisDraft.project.id, 'analysis_story'); assert.equal(e.busy, 0);
+});

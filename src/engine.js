@@ -4,8 +4,8 @@
   if (node) module.exports = value; else root.BSEEngine = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API) {
   'use strict';
-  const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
-    profile: {base_url: '', model: '', key: '', timeout_sec: 45, max_input_chars: 16000, max_output: 1024, segment_output: 4096, json_mode: true, no_thinking: false},
+  const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, quick_options: false, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
+    profile: {base_url: '', model: '', key: '', timeout_sec: 45, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
   async function fingerprint(value) {
     const text = JSON.stringify(value);
@@ -18,7 +18,7 @@
     constructor(host, client) {
       this.host = host; this.client = client || new API.Client(); this.settings = defaults();
       this.project = C.demoProject(); this.state = C.createProgress(this.project); this.listeners = new Set();
-      this.epoch = 0; this.chat = ''; this.draft = null; this.segmentDraft = null; this.jobs = Promise.resolve(); this.busy = 0; this.error = ''; this.inFlight = new Set();
+      this.epoch = 0; this.chat = ''; this.draft = null; this.segmentDraft = null; this.analysisDraft = null; this.analysisProgress = null; this.jobs = Promise.resolve(); this.busy = 0; this.error = ''; this.inFlight = new Set();
     }
     onChange(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
     notify() { for (const fn of this.listeners) { try { fn(); } catch (e) { console.error('[BSE] UI 更新失败', e); } } }
@@ -35,6 +35,7 @@
         catch (e) { this.settings.enabled = false; this.error = e.message; if (saved.draft_project) this.project = C.normalizeProject(saved.draft_project); }
       } else if (saved.drafts?.[saved.project_id] || saved.draft_project) this.project = C.normalizeProject(saved.drafts?.[saved.project_id] || saved.draft_project);
       this.segmentDraft = saved.segment_draft || null;
+      this.analysisDraft = saved.analysis_draft || null;
       const bootError = this.error;
       this.bindChat(); this.error = bootError; this.bindEvents(); this.captureDraft(); this.inject(); this.notify();
     }
@@ -97,7 +98,7 @@
       const p = C.normalizeProject(input); const state = this.host.progress(p);
       this.settings.drafts ||= {};
       if (!this.settings.worldbook) this.settings.drafts[this.project.id] = C.clone(this.project);
-      this.invalidate(); this.project = p; this.state = state; this.segmentDraft = null; this.draft = null;
+      this.invalidate(); this.project = p; this.state = state; this.segmentDraft = null; this.analysisDraft = null; this.draft = null;
       if (detached) this.settings.worldbook = '';
       this.persistProject(); this.save(); this.captureDraft();
     }
@@ -123,6 +124,13 @@
     mutate(fn) { this.invalidate(); this.error = ''; const changed = fn(); if (changed !== false) this.save(); return changed; }
     complete() { return this.mutate(() => C.completeNode(this.state, this.project)); }
     enter(target) { return this.mutate(() => C.enterNode(this.state, this.project, target)); }
+    quickRoutes() {
+      if (!this.settings.enabled || this.state.paused) return [];
+      const refs = C.indexProject(this.project); const node = refs.nodes.get(this.state.current_node_id);
+      return node.routes.filter(r => C.condition(r.condition, this.state)).map(r => ({target: r.target, label: r.label || refs.nodes.get(r.target).title,
+        status: r.condition == null || r.condition === true ? '可用' : '已解锁'}));
+    }
+    defaultPrompts() { return C.clone(API.PROMPTS); }
     pause() { return this.mutate(() => { this.state.paused = !this.state.paused; this.state.revision++; }); }
     undo() { return this.mutate(() => C.undo(this.state)); }
     async manualEvent(eventId, operationId, source) {
@@ -249,6 +257,16 @@
       } finally { this.busy--; this.notify(); }
     }
     async applySegment() { C.assert(this.segmentDraft, '没有可应用的拆分草稿'); const p = this.segmentDraft.project; await this.setProject(p); delete this.settings.segment_draft; this.saveSettings(); }
+    async analyze(text, wish, mode = 'faithful') {
+      C.assert(!this.busy, '请等待当前辅助任务完成');
+      const epoch = this.epoch; this.busy++; this.error = ''; this.analysisProgress = {phase: '准备', done: 0, total: 0}; this.notify();
+      try {
+        const profile = {...this.settings.profile, model: this.settings.segment_model || this.settings.profile.model};
+        const result = await this.client.analyze(profile, text, wish, {mode, onProgress: progress => { if (epoch === this.epoch) { this.analysisProgress = progress; this.notify(); } }});
+        C.assert(epoch === this.epoch, '聊天或配置已变化，分析结果未应用');
+        this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
+      } finally { this.analysisProgress = null; this.busy--; this.notify(); }
+    }
     exportProject() { return C.clone({type: 'bse_project', version: 1, project: this.project}); }
     exportProgress() { return C.clone({type: 'bse_progress', version: 1, project_id: this.project.id, progress: this.state}); }
     importProgress(data) {

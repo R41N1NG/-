@@ -98,6 +98,8 @@
     p.nodes.forEach(n => {
       assert(typeof n.title === 'string' && n.title.trim(), '节点名称为空：' + n.id);
       n.detail ||= ''; n.guidance ||= ''; n.boundary ||= ''; n.effects ||= []; n.routes ||= []; n.context_variables ||= [];
+      n.kind ||= 'scene'; n.suggested = n.suggested === true;
+      assert(['scene', 'choice', 'ending'].includes(n.kind), '节点类型必须是 scene、choice 或 ending');
       assert([n.detail, n.guidance, n.boundary].every(v => typeof v === 'string'), '节点正文必须为文本');
       validateEffects(n.effects, refs);
       assert(Array.isArray(n.context_variables) && n.context_variables.every(v => refs.variables.has(v)), '节点相关变量引用无效');
@@ -122,6 +124,22 @@
       if (e.scope.kind === 'nodes') assert(Array.isArray(e.scope.node_ids) && e.scope.node_ids.every(v => refs.nodes.has(v)), '事件适用节点不存在');
       validateCondition(e.condition, refs); validateEffects(e.effects, refs);
     });
+    if (p.analysis !== undefined) {
+      assert(object(p.analysis), '分析报告必须为对象');
+      p.analysis.synopsis ||= ''; p.analysis.branches ||= []; p.analysis.endings ||= []; p.analysis.foreshadowing ||= []; p.analysis.uncertainties ||= [];
+      assert(typeof p.analysis.synopsis === 'string', '剧情梗概必须为文本');
+      assert(Array.isArray(p.analysis.uncertainties) && p.analysis.uncertainties.every(v => typeof v === 'string'), '待核对事项必须是文本数组');
+      for (const key of ['branches', 'endings', 'foreshadowing']) {
+        assert(Array.isArray(p.analysis[key]), key + ' 必须为数组');
+        for (const item of p.analysis[key]) {
+          assert(object(item), '分析条目必须为对象');
+          for (const field of ['title', 'summary', 'hint', 'payoff']) if (item[field] !== undefined) assert(typeof item[field] === 'string', '分析内容必须为文本');
+          for (const field of ['node_ids', 'plant_node_ids', 'payoff_node_ids']) if (item[field] !== undefined) assert(Array.isArray(item[field]) && item[field].every(k => refs.nodes.has(k)), '分析引用不存在的节点');
+          if (item.node_id !== undefined) assert(refs.nodes.has(item.node_id), '结局引用不存在的节点');
+          item.suggested = item.suggested === true;
+        }
+      }
+    }
     return p;
   }
   function createProgress(p) {

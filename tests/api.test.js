@@ -46,3 +46,59 @@ test('模型分段保留原文，节点 ID 由脚本生成，清除模型奖励�
   assert.deepEqual(draft.project.nodes[0].effects, []); assert.equal(draft.project.nodes[0].routes[0].target, draft.project.nodes[1].id); assert.deepEqual(draft.warnings, []);
   raw.nodes[1].detail = '原文不存在的内容'; await assert.rejects(client(raw).segment(profile, text), /连续摘录/);
 });
+test('事件与基础拆分使用用户编辑的系统提示词', async () => {
+  const requests = []; const api = new Client(async (url, opt) => {
+    const body = JSON.parse(opt.body); requests.push(body);
+    const value = requests.length === 1 ? {results: []} : {title: '拆分', nodes: [{id: 'n1', title: '阶段', detail: '停电。', guidance: '停电', routes: []}]};
+    return {ok: true, json: async () => ({choices: [{message: {content: JSON.stringify(value)}}]})};
+  });
+  await api.detect({...profile, detect_prompt: '我的事件提示词'}, dialogue, [], {});
+  await api.segment({...profile, segment_prompt: '我的拆分提示词'}, '停电。');
+  assert.equal(requests[0].messages[0].content, '我的事件提示词'); assert.equal(requests[1].messages[0].content, '我的拆分提示词');
+});
+const analyzed = () => ({title: '双结局', start_node_id: 'a', nodes: [
+  {id: 'a', title: '线索', kind: 'choice', detail: '停电，钟声响起。', guidance: '先描写停电及钟声', routes: [{target: 'b', label: '调查钟楼', condition: {collected: 'fake'}}], effects: [{collect: 'fake'}]},
+  {id: 'b', title: '真相', kind: 'ending', detail: '众人找到幕后人。', guidance: '揭示幕后人', routes: []}],
+  analysis: {synopsis: '追查停电原因', branches: [{title: '调查路线', node_ids: ['a', 'b']}], endings: [{node_id: 'b', title: '找到幕后人', summary: '真相揭晓'}], foreshadowing: [{title: '钟声', hint: '停电仍有钟声', payoff: '钟声揭示幕后人的计划', plant_node_ids: ['a'], payoff_node_ids: ['b']}], uncertainties: []}});
+test('分析保留原文、重映射走向结局伏笔引用，不把未来答案注入主模型', async () => {
+  const text = '停电，钟声响起。众人找到幕后人。'; const draft = await client(analyzed()).analyze(profile, text);
+  const p = draft.project; assert.equal(p.original_text, text); assert.equal(p.nodes[1].kind, 'ending'); assert.deepEqual(p.nodes[0].effects, []);
+  assert.equal(p.analysis.endings[0].node_id, p.nodes[1].id); assert.equal(p.analysis.foreshadowing[0].plant_node_ids[0], p.nodes[0].id);
+  assert.equal(p.nodes[0].routes[0].condition, true); assert(draft.warnings.some(x => x.includes('解锁条件')));
+  assert(!C.prompt(p, C.createProgress(p)).includes('钟声揭示幕后人的计划')); assert(!C.prompt(p, C.createProgress(p)).includes('众人找到幕后人'));
+});
+test('忠于原文拒绝虚构摘录和新增节点，补充分支必须显式标为建议', async () => {
+  const raw = analyzed(), text = '停电，钟声响起。众人找到幕后人。'; raw.nodes[1].detail = '她凭空消失。';
+  await assert.rejects(client(raw).analyze(profile, text), /连续摘录/);
+  raw.nodes[1].suggested = true; raw.nodes[1].detail = '';
+  await assert.rejects(client(raw).analyze(profile, text), /忠于原文/);
+  const draft = await client(raw).analyze(profile, text, '', {mode: 'expand'}); assert.equal(draft.project.nodes[1].suggested, true);
+  raw.analysis.foreshadowing[0].payoff_node_ids = ['missing']; await assert.rejects(client(raw).analyze(profile, text, '', {mode: 'expand'}), /未知节点/);
+});
+test('长文本自动分块后整合，全部请求遵守字符预算且保留跨段伏笔', async () => {
+  const requests = []; const api = new Client(async (url, opt) => {
+    const body = JSON.parse(opt.body), input = JSON.parse(body.messages[1].content); requests.push(body);
+    let value;
+    if (input.original !== undefined) value = {title: '片段', nodes: [{id: 'a', title: '阶段', detail: input.original, guidance: '当前片段内容', routes: []}], analysis: {synopsis: '片段概要'}};
+    else value = {title: '全剧', start_node_id: input.nodes[0].id, nodes: input.nodes.map((n, i) => ({id: n.id, routes: i < input.nodes.length - 1 ? [{target: input.nodes[i + 1].id, label: '继续调查'}] : []})), analysis: {endings: [{node_id: input.nodes.at(-1).id, title: '结局'}], foreshadowing: [{title: '跨段伏笔', hint: '开头线索', payoff: '末尾回收', plant_node_ids: [input.nodes[0].id], payoff_node_ids: [input.nodes.at(-1).id]}]}};
+    return {ok: true, json: async () => ({choices: [{message: {content: JSON.stringify(value)}}]})};
+  });
+  const progress = [], text = '灯光熄灭，调查钟楼的"\\线索"。\n'.repeat(1200);
+  const draft = await api.analyze({...profile, max_input_chars: 4000, analysis_merge_prompt: '我的跨段合并提示词'}, text, '', {onProgress: p => progress.push(p)});
+  assert(requests.length > 2); assert.equal(draft.request_count, requests.length); assert.equal(draft.project.original_text, text);
+  assert(requests.every(r => r.messages.reduce((n, m) => n + m.content.length, 0) <= 4000)); assert.equal(requests.at(-1).messages[0].content, '我的跨段合并提示词');
+  assert.equal(draft.project.analysis.foreshadowing[0].payoff_node_ids[0], draft.project.nodes.at(-1).id); assert(progress.some(p => p.phase.includes('整合')));
+  assert.equal(draft.project.nodes[0].routes[0].target, draft.project.nodes[1].id);
+});
+test('分析取消后不启动后续分块', async () => {
+  let calls = 0; const api = new Client(async (url, opt) => { calls++; const input = JSON.parse(JSON.parse(opt.body).messages[1].content); api.cancel(); return {ok: true, json: async () => ({choices: [{message: {content: JSON.stringify({title: '片段', nodes: [{id: 'a', title: '阶段', detail: input.original, guidance: '阶段', routes: []}]})}}]})}; });
+  await assert.rejects(api.analyze({...profile, max_input_chars: 4000}, '灯光熄灭。'.repeat(3000)), /已取消/); assert.equal(calls, 1);
+});
+test('跨段整合遗漏原节点时拒绝应用', async () => {
+  const api = new Client(async (url, opt) => {
+    const input = JSON.parse(JSON.parse(opt.body).messages[1].content);
+    const value = input.original === undefined ? {title: '遗漏的整合', nodes: []} : {title: '片段', nodes: [{id: 'a', title: '阶段', detail: input.original, guidance: '保留片段', routes: []}]};
+    return {ok: true, json: async () => ({choices: [{message: {content: JSON.stringify(value)}}]})};
+  });
+  await assert.rejects(api.analyze({...profile, max_input_chars: 4000}, '灯光熄灭。'.repeat(3000)), /遗漏或重复/);
+});
