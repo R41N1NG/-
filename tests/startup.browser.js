@@ -56,11 +56,10 @@ async function main() {
         } else if (mode === 'no-api') {
           await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_loader_status__?.status === 'error');
           await page.locator('#bse-loader-status').click();
-          await page.locator('[data-action="unlock-ask"]').click(); await page.locator('[data-action="unlock-confirm"]').click();
           assert((await page.locator('.warn.error').textContent()).includes('getVariables')); console.log('✓ 缺少酒馆助手接口时显示启动错误');
         } else {
           await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_startup__?.status === 'ready');
-          await page.locator('[aria-label="打开剧情面板"]').click(); await page.locator('[data-action="unlock-ask"]').click(); await page.locator('[data-action="unlock-confirm"]').click(); await page.locator('[data-action="toggle-enabled"]').click();
+          await page.locator('[aria-label="打开剧情面板"]').click(); await page.locator('[data-action="toggle-enabled"]').click();
           assert(await page.evaluate(() => testHost.root.injection[0].content.includes('停电发生')));
           if (mode === 'fallback' || mode === 'old-fallback') {
             assert.equal(await page.evaluate(() => document.querySelector('iframe').contentWindow.__branch_story_loader_status__.attempts.length), 2);

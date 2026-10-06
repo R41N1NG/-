@@ -16,17 +16,10 @@
     } catch (e) {
       engine.settings.enabled = false; engine.error = e.message; panel.render(); throw e;
     }
-    const name = '分支剧本面板';
     try {
       const update = host.api('updateScriptButtonsWith');
-      if (update) update(buttons => {
-        const button = buttons.find(b => b.name === name);
-        if (button) button.visible = true; else buttons.push({name, visible: true});
-        return buttons;
-      });
-      else host.api('appendInexistentScriptButtons')?.([{name, visible: true}]);
-      const buttonEvent = host.api('getButtonEvent')?.(name); if (buttonEvent) host.on(buttonEvent, buttonEvent, () => panel.toggle());
-    } catch (e) { console.warn('[BSE] 面板快捷按钮注册失败', e.message); }
+      if (update) update(buttons => buttons.filter(b => b.name !== '分支剧本面板'));
+    } catch (e) { console.warn('[BSE] 清理旧面板按钮失败', e.message); }
     const parser = host.owners().find(o => o.SlashCommandParser)?.SlashCommandParser;
     const command = host.owners().find(o => o.SlashCommand)?.SlashCommand;
     if (parser?.addCommandObject && command?.fromProps) {

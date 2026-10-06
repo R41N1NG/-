@@ -7,6 +7,8 @@ function fixture() {
   const listeners = new Map();
   const root = {
     chat: 'chat1', messages: [{message_id: 0, role: 'user', name: '玩家', message: '我与她一起调查。'}, {message_id: 1, role: 'assistant', name: '同行者', message: '她握住你的手，一起走入黑暗的走廊。'}], injection: [],
+    scriptButtons: [{name: '分支剧本面板', visible: true}, {name: '其他按钮', visible: true}],
+    updateScriptButtonsWith(fn) { this.scriptButtons = fn(C.clone(this.scriptButtons)); return this.scriptButtons; },
     getCurrentChatId() { return this.chat; },
     getVariables({type}) { return C.clone(type === 'script' ? storage.script : storage.chats[this.chat] || {}); },
     updateVariablesWith(fn, {type}) { if (type === 'script') storage.script = fn(this.getVariables({type})); else storage.chats[this.chat] = fn(this.getVariables({type})); },
