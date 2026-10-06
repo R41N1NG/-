@@ -1,6 +1,6 @@
 (function (root, factory) {
   const value = factory(root.BSECore);
-  if (typeof module === 'object' && module.exports) module.exports = value; else root.BSEUI = value;
+  if (typeof window === 'undefined' && typeof module === 'object' && module.exports) module.exports = value; else root.BSEUI = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C) {
   'use strict';
   const escape = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));

@@ -1,5 +1,5 @@
 (function (root, factory) {
-  const node = typeof module === 'object' && module.exports;
+  const node = typeof window === 'undefined' && typeof module === 'object' && module.exports;
   const value = factory(node ? require('./core.js') : root.BSECore, node ? require('./api.js') : root.BSEApi);
   if (node) module.exports = value; else root.BSEEngine = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API) {

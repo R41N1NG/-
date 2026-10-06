@@ -1,6 +1,6 @@
 (function (root, factory) {
   const value = factory();
-  if (typeof module === 'object' && module.exports) module.exports = value;
+  if (typeof window === 'undefined' && typeof module === 'object' && module.exports) module.exports = value;
   else root.BSECore = value;
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   'use strict';

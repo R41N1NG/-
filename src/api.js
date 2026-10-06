@@ -1,6 +1,6 @@
 (function (root, factory) {
-  const value = factory(typeof module === 'object' && module.exports ? require('./core.js') : root.BSECore);
-  if (typeof module === 'object' && module.exports) module.exports = value; else root.BSEApi = value;
+  const value = factory(typeof window === 'undefined' && typeof module === 'object' && module.exports ? require('./core.js') : root.BSECore);
+  if (typeof window === 'undefined' && typeof module === 'object' && module.exports) module.exports = value; else root.BSEApi = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C) {
   'use strict';
   const STATUSES = ['completed', 'proposed', 'rejected', 'not_occurred', 'uncertain'];

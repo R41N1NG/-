@@ -1,6 +1,6 @@
 (function (root, factory) {
-  const value = factory(typeof module === 'object' && module.exports ? require('./core.js') : root.BSECore);
-  if (typeof module === 'object' && module.exports) module.exports = value; else root.BSEHost = value;
+  const value = factory(typeof window === 'undefined' && typeof module === 'object' && module.exports ? require('./core.js') : root.BSECore);
+  if (typeof window === 'undefined' && typeof module === 'object' && module.exports) module.exports = value; else root.BSEHost = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C) {
   'use strict';
   const STATE_KEY = 'branch_story_engine';
@@ -13,7 +13,14 @@
       try { if (r.parent && r.parent !== r) list.push(r.parent, r.parent.TavernHelper); } catch {}
       return list.filter(Boolean);
     }
-    api(name) { for (const owner of this.owners()) if (typeof owner[name] === 'function') return owner[name].bind(owner); return null; }
+    api(name) {
+      for (const owner of this.owners()) {
+        const bound = owner._bind?.['_' + name];
+        if (typeof bound === 'function') return bound.bind(this.root);
+        if (typeof owner[name] === 'function') return owner[name].bind(owner);
+      }
+      return null;
+    }
     context() { for (const owner of this.owners()) if (owner.SillyTavern?.getContext) return owner.SillyTavern.getContext(); return null; }
     chatId() { const api = this.api('getCurrentChatId'); try { return String(api?.() || this.context()?.chatId || 'current'); } catch { return 'current'; } }
     doc() { try { if (this.root.parent?.document?.body) return this.root.parent.document; } catch {} return this.root.document; }

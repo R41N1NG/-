@@ -23,3 +23,13 @@ test('聊天变量按会话隔离，写入保留其他插件变量', () => {
 test('注入禁止世界书扫描，清理仅删除自己的注入', () => {
   const {host, root} = fixture(); host.inject('指引', 2); assert.equal(root.injection[0].should_scan, false); assert.equal(root.injection[0].depth, 2); host.destroy(); assert.deepEqual(root.injection, []);
 });
+test('适配 TavernHelper._bind，接口绑定脚本窗口而非宿主窗口', () => {
+  const {Host} = require('../src/host.js');
+  const root = {name: 'TH-script--测试--abc', parent: {TavernHelper: {_bind: {
+    _getVariables(options) { return {script: this.name, type: options.type}; },
+    _eventOn(name, listener) { return {name, script: this.name, stop() {}}; },
+  }}}};
+  const host = new Host(root);
+  assert.deepEqual(host.variables('script'), {script: root.name, type: 'script'});
+  assert.equal(host.api('eventOn')('custom', () => {}).script, root.name);
+});
