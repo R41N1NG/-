@@ -1,0 +1,13 @@
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const root = path.resolve(__dirname, '..');
+const names = ['core', 'api', 'host', 'engine', 'ui', 'bootstrap'];
+const content = '/* Branch Story Engine v1.0.0 — 自定义剧本与事件；源文件见 src/。 */\n' + names.map(name => fs.readFileSync(path.join(root, 'src', name + '.js'), 'utf8')).join('\n;\n');
+new vm.Script(content);
+const exported = {type: 'script', enabled: true, name: '分支剧本与事件引擎', id: 'branch-story-engine-v1', content,
+  info: 'v1.0.0：世界书剧本、条件分支、收集记录、关系变量、独立辅助 API、可选全文整理和移动端剧情面板。首次导入默认关闭注入，请在面板中配置。Alt+B 或 /bse 打开。',
+  button: {enabled: false, buttons: [{name: '分支剧本面板', visible: false}]}, data: {}, export_with: {data: false, button: true}};
+fs.writeFileSync(path.join(root, 'branch_story_tavern_helper_import.json'), JSON.stringify(exported, null, 2) + '\n');
+console.log('导入包已生成：branch_story_tavern_helper_import.json (' + Buffer.byteLength(content) + ' bytes)');
