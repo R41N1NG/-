@@ -6,7 +6,7 @@
   "zip_source_equal": true,
   "tse_unchanged_sha256": "a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065",
   "bundle_sha256": "2c36167eeba99fb20391157123bd300a740bd2fa73e55c6362a5351bd361586a",
-  "zip_sha256": "5ef42b16a2fd46a465490ce85ab376903edf42141fcf680760684f7c4816d0a6",
+  "zip_sha256": "92be2b9b2385222b3444da07a867c41c7da187d8187d5e1300c58575a6d40b7e",
   "files": {
     ".gitignore": "c3007e8cfe9e6668bf6eaf8e62f44d583c9b86893520d1e4e599db431558b705",
     "README.md": "7617807f8c86c1ff2b6cd16ba25412e510b5c432a2d0ef281c986728162d9df2",
@@ -29,7 +29,7 @@
     "tests/host.test.js": "0ee9e9989c0a65c6f20cbe0cbfee40ca7eee9b98e5ea47e8f91a0ad889772d64",
     "tests/startup.browser.js": "8c9599d85c73f2082c6db0e7b68f75879cff5a279b50ce3405f804cec2d5f76e",
     "docs/branch_story_plugin_design.md": "cd58e3f2d687db3e8ac75028cc9d00d27cbe4aa9cd4f4c75ba07a334a0acdf5f",
-    "交接gpt.md": "1a86b21736c3b0eda548ae5847d5b8f7340147d16565a9144f7d55409c908cdc",
+    "交接gpt.md": "ba14be836f8a54bcfea4bbb3ad5dbb9413320b057e6233c05d18c0751b001756",
     "tests/workflow.test.js": "4629f328460c99e6c06da68f46dbebfd8b287027006bd9ee4d895534e338b41d",
     "tests/workflow.browser.js": "eb21a80c327867e9c6102ef65d04d9923d03dc2afac3ae9ec28303272211ef5e"
   },

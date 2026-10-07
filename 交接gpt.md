@@ -161,7 +161,7 @@ GitHub 下载页面：
 
 ## 8. 开发环境、验证与重要实现经验
 
-本次云环境实际目录为 `/workspace/-`，Git 分支 `work`，本轮基于 v1.1.3 的 `2262485` 开展 v1.2.0 更新，并 fast-forward 合并 `27ff767` 的 AI交接资料。源码和安装文件均为已跟踪文件，开始前工作区干净。没有创建 worktree，也没有使用 `/tmp/branch-story-publish`；该路径属于上次环境，不应假定存在。
+本次云环境实际目录为 `/workspace/-`，Git 分支 `work`，本轮基于 v1.1.3 的 `2262485` 开展 v1.2.0 更新，先 fast-forward 合并 `27ff767` 的 AI交接资料，再普通合并 `688ef39` 的协作规则。源码和安装文件均为已跟踪文件，开始前工作区干净。没有创建 worktree，也没有使用 `/tmp/branch-story-publish`；该路径属于上次环境，不应假定存在。
 
 本次使用 Node 24.19、Python 3.12、lockfile 锁定的 Playwright 1.63.0 和 `/usr/bin/chromium`（Chromium 151）。项目要求 Node >=22。npm 默认缓存目录不可创建，使用 `/workspace/.cache/bse-npm`；环境配置已保存安装脚本和启动/验证说明。依赖与测试截图分别在忽略的 `node_modules/`、`artifacts/`。没有适用的 AGENTS.md，也没有启动子代理。
 
