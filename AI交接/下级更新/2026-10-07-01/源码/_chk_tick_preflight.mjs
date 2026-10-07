@@ -70,12 +70,22 @@ const deps = {
 };
 let stopCalls = 0;
 let tickBusinessCalls = 0;
-let readbackOn = true;
+/* 回读模式：'full' 三件套齐 ⇒ 成功；'partial' 缺日历 ⇒ 部分写入；'none' ⇒ 回读不到 */
+let readbackMode = 'full';
+const rbOf = (n) => {
+  if (readbackMode === 'none') return undefined;   /* 连 stat_data 都没有 ⇒ 触发「回读不到」分支 */
+  const base = { 最后处理楼号: n, 身份: '赵无忧', 段位: 1, 仙盟历文: '仙盟历 1578 年 · 三月初三' };
+  if (readbackMode === 'partial') { delete base.仙盟历文; }
+  return base;
+};
 const makeApi = (withStop) => {
   let factory;
   const API = { getChatMessages: undefined };
   if (withStop) API.stopGeneration = () => { stopCalls++; return true; };
-  const getVariables = () => ({ stat_data: readbackOn ? { 最后处理楼号: 8, 身份: '赵无忧' } : {} });
+  const getVariables = (opt) => {
+    const id = opt && Number.isFinite(Number(opt.message_id)) ? Number(opt.message_id) : 8;
+    return { stat_data: rbOf(id) };
+  };
   const env = {
     ...deps,
     API,
@@ -109,21 +119,27 @@ const makeApi = (withStop) => {
   check('claimOnce 不残留占位', b.pendingSize() === 0 && b.seenSize() === 1);
 }
 
-/* ② xsdStateTick：并发共用 Promise／回读判定／抛错不吞 */
+/* ② xsdStateTick：并发共用 Promise／回读判定（含部分写入）／抛错不吞 */
 {
   const b = makeApi(false)();
   tickBusinessCalls = 0;
-  readbackOn = true;
+  readbackMode = 'full';
   const p1 = b.xsdStateTick(8, 'x', 'test');
   const p2 = b.xsdStateTick(8, 'x', 'test');
   const [r1, r2] = await Promise.all([p1, p2]);
   check('tick 同楼并发共用同一个 Promise（业务只跑一次）', tickBusinessCalls === 1, '实际 ' + tickBusinessCalls);
-  check('tick 回读通过才算 ok:true', r1.ok === true && r2.ok === true);
+  check('tick 回读三件套齐 ⇒ ok:true', r1.ok === true && r2.ok === true, JSON.stringify(r1));
 
   const b2 = makeApi(false)();
-  readbackOn = false;
+  readbackMode = 'none';
   const r3 = await b2.xsdStateTick(9, 'x', 'test');
-  check('tick 回读不到 ⇒ ok:false（不再恒 ok:true）', r3.ok === false && /未写入|读回/.test(String(r3.why)), String(r3.why));
+  check('tick 回读不到 ⇒ ok:false（不再恒 ok:true）', r3.ok === false && /回读不到|未写入/.test(String(r3.why)), String(r3.why));
+
+  /* ⑦ 部分写入：楼号写了、日历没写 ⇒ 必须 ok:false 且标 partial（可重试），不当作成功 */
+  const b4 = makeApi(false)();
+  readbackMode = 'partial';
+  const r5 = await b4.xsdStateTick(8, 'x', 'test');
+  check('tick 部分写入（缺日历）⇒ ok:false 且 partial:true', r5.ok === false && r5.partial === true && /部分写入/.test(String(r5.why)), JSON.stringify(r5));
 
   const env = {
     ...deps,
