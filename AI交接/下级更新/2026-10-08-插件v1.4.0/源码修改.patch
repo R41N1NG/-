@@ -1,0 +1,1222 @@
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+index 3972e85..28aff49 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+@@ -1,12 +1,12 @@
+ {
+   "name": "tavern-branch-story-engine",
+-  "version": "1.3.1",
++  "version": "1.4.0",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+       "name": "tavern-branch-story-engine",
+-      "version": "1.3.1",
++      "version": "1.4.0",
+       "devDependencies": {
+         "playwright": "^1.56.0"
+       },
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+index 4e8ebaf..693b434 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+@@ -1,12 +1,12 @@
+ {
+   "name": "tavern-branch-story-engine",
+-  "version": "1.3.1",
++  "version": "1.4.0",
+   "private": true,
+   "description": "酒馆助手分支剧本、条件事件与辅助 API 插件",
+   "scripts": {
+     "build": "node scripts/build.js",
+     "test": "node --test tests/*.test.js",
+-    "test:browser": "node tests/browser.js && node tests/workflow.browser.js && node tests/packages.browser.js && node tests/startup.browser.js",
++    "test:browser": "node tests/browser.js && node tests/workflow.browser.js && node tests/packages.browser.js && node tests/player.browser.js && node tests/startup.browser.js",
+     "check": "npm test && npm run build"
+   },
+   "engines": {
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+index 735f83c..722c5a7 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+@@ -8,7 +8,7 @@ const names = ['core', 'flow', 'api', 'host', 'engine', 'graph', 'ui', 'bootstra
+ const content = '/* Branch Story Engine v' + version + ' — 自定义剧本与事件；源文件见 src/。 */\n' + names.map(name => fs.readFileSync(path.join(root, 'src', name + '.js'), 'utf8')).join('\n;\n');
+ new vm.Script(content);
+ const exported = {type: 'script', enabled: true, name: '分支剧本与事件引擎', id: 'branch-story-engine-v1', content,
+-  info: 'v' + version + '：分析完成后顶部可直接转化为剧本、事件与分支；有明确标准的阶段登记完成事件，节点与事件共用一次奖励、记录及回退。保存/恢复的草稿无需再次请求API，转化后打开剧本页并先关闭注入。保留条件事件包、交叉依赖与箭头关系图、独立🔒+模糊+确认、原始分析回复修复恢复、快捷填入与自由输入识别。600秒长文本等待、45秒快速识别；拖动铅笔、Alt+B或/bse打开。原文没有完成标准的阶段需手动编辑。',
++  info: 'v' + version + '：输入栏折叠小面板显示当前阶段和行动；⚙️收纳确认/核验/暂停，🎒查看实际取得的结果说明与来源，后台完成关系同步。数值载体支持归属、当前值和变化记录；可重复行为奖励、每轮去重和单行为上限。分析页可编辑提示词并查看实际请求。新节点/事件/包用短编号，旧ID保留；图中删除结果有引用预览与确认。保留分析本地转化、事件包、交叉依赖、回退、防剧透与600秒分析等待。',
+   button: {enabled: false, buttons: []}, data: {}, export_with: {data: false, button: true}};
+ fs.writeFileSync(path.join(root, 'branch_story_tavern_helper_import.json'), JSON.stringify(exported, null, 2) + '\n');
+ console.log('导入包已生成：branch_story_tavern_helper_import.json (' + Buffer.byteLength(content) + ' bytes)');
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+index 3be9991..f40ea05 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+@@ -23,6 +23,9 @@
+   const schemaInstructions = '字段类型严格遵守：completion_criteria为字符串，completion_exclusions为字符串数组（无排除项用[]）；result_ids为字符串数组。collections可有requires（取得结果的前提）和requires_evidence（连续原文依据）；节点可有entry_condition和entry_condition_evidence。仅当原文明确多个独立剧情事件时返回packages=[{"id":"case_a","title":"事件包","node_ids":["临时节点ID"],"start_node_id":"临时节点ID","completion_node_ids":["终点ID"],"condition":true,"condition_evidence":"触发条件的原文依据","priority":0,"role":"main"}]，包内出口只指向本包节点，跨包用结果条件，条件满足只解锁、不等于完成。原文明示数值变量时可返回variables=[{"id":"trust","title":"信任","type":"number","default":0,"evidence":"包括初始值的原文依据"}]；缺少初始值依据不创造变量。variable条件仅引用已定义变量，使用{id,op,value}。单个结果ID只代表固定含义，a4可要求b2和c1，d1可要求a4，不能自动推导或领奖。';
+   for (const key of ['segment', 'analysis']) PROMPTS[key] += schemaInstructions;
+   PROMPTS.merge += '保留输入packages与原有节点entry_condition、结果requires；未明确的跨包安排记录待核对，不把多个事件包强制串成一条路线。';
++  const LAST_PROMPTS = {...PROMPTS};
++  for (const key of ['analysis', 'segment']) PROMPTS[key] += 'collections可有description作为取得后的公开说明；description只能是原文中可公开的连续摘录，不写后续剧情或隐藏用途；没有合适摘录时留空。';
++  PROMPTS.detect += 'completed必须包含本轮assistant回复的实际发生证据，只有玩家提出行为或重复引用旧事不能算完成。';
+   const request = (system, payload) => [{role: 'system', content: system}, {role: 'user', content: JSON.stringify(payload)}];
+   const size = messages => messages.reduce((n, m) => n + m.content.length, 0);
+   function quotes(evidence, messages) {
+@@ -40,7 +43,8 @@
+       C.assert(typeof item.evidence === 'string' && item.evidence.trim() && (options.evidenceSource || original).includes(item.evidence) && typeof item.title === 'string' && item.title.trim(), '结果标记缺少原文定义：' + item.id);
+       const previous = collections.find(x => x.id === item.id);
+       C.assert(!previous || previous.title === item.title, '结果标记含义冲突：' + item.id);
+-      if (!previous) collections.push({id: item.id, title: item.title, evidence: item.evidence});
++      if (item.description) C.assert(typeof item.description === 'string' && (options.evidenceSource || original).includes(item.description), '结果说明必须来自原文连续摘录：' + item.id);
++      if (!previous) collections.push({id: item.id, title: item.title, evidence: item.evidence, description: item.description || ''});
+     }
+     const codes = new Set(collections.map(x => x.id));
+     const remap = c => {
+@@ -111,7 +115,7 @@
+   }
+   function analysisDraft(raw, original, mode, options = {}) {
+     C.assert(Array.isArray(raw.nodes) && raw.nodes.length && raw.nodes.length <= 256, '分析需返回 1～256 个节点');
+-    const map = new Map(); raw.nodes.forEach(n => { C.assert(C.object(n), '分析节点无效'); C.safeId(n.id); C.assert(!map.has(n.id), '分析节点 ID 重复'); map.set(n.id, C.id('N')); });
++    const map = new Map(); raw.nodes.forEach((n, i) => { C.assert(C.object(n), '分析节点无效'); C.safeId(n.id); C.assert(!map.has(n.id), '分析节点 ID 重复'); map.set(n.id, 'N' + (i + 1)); });
+     const warnings = []; const nodes = raw.nodes.map(n => {
+       const suggested = n.suggested === true;
+       C.assert(!suggested || mode === 'expand', '忠于原文模式不能加入补写节点');
+@@ -190,6 +194,7 @@
+       if (options.body) headers['Content-Type'] = 'application/json';
+       if (profile.key) headers.Authorization = 'Bearer ' + profile.key;
+       try {
++        control.onRequest?.();
+         const r = await this.fetch(url, {...options, headers, signal: controller.signal});
+         if (controller.signal.aborted) throw controller.signal.reason;
+         phase = '读取完整回复';
+@@ -243,7 +248,7 @@
+         C.assert(STATUSES.includes(r.status), '模型返回未知事件状态');
+         const e = expected.get(r.event_id);
+         const evidence = Array.isArray(r.evidence) ? r.evidence.map(x => ({message_id: String(x.message_id), quote: String(x.quote || '')})) : [];
+-        const quotesValid = evidence.length > 0 && evidence.every(x => x.quote.trim() && messages.some(m => String(m.message_id) === x.message_id && m.text.includes(x.quote)));
++        const quotesValid = evidence.some(x => messages.some(m => m.role === 'assistant' && String(m.message_id) === x.message_id && m.text.includes(x.quote))) && evidence.every(x => x.quote.trim() && messages.some(m => String(m.message_id) === x.message_id && m.text.includes(x.quote)));
+         const actorsValid = (!e.actor_id || r.actor_id === e.actor_id) && (!e.recipient_id || r.recipient_id === e.recipient_id);
+         return {event_id: r.event_id, status: r.status === 'completed' && (!quotesValid || !actorsValid) ? 'uncertain' : r.status,
+           actor_id: r.actor_id || '', recipient_id: r.recipient_id || '', evidence, note: r.status === 'completed' && (!quotesValid || !actorsValid) ? '完成依据或主体校验未通过，请人工确认' : ''};
+@@ -283,9 +288,9 @@
+       const system = profile.segment_prompt?.trim() || PROMPTS.segment;
+       const messages = request(system, {original: text, preferences: wish});
+       C.assert(size(messages) <= (profile.max_input_chars || 16000), '原文和提示词合计超过字符预算，请减少文本或提高预算');
+-      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本整理', long: true, onResponse: value => options.onResponse?.({...value, kind: 'full', original: text, mode: 'faithful'})});
++      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本整理', long: true, onRequest: () => options.onRequest?.({messages: C.clone(messages), kind: 'segment'}), onResponse: value => options.onResponse?.({...value, kind: 'full', original: text, mode: 'faithful'})});
+       C.assert(Array.isArray(result.nodes) && result.nodes.length, '模型没有返回节点草稿');
+-      const map = new Map(); result.nodes.forEach(n => { C.safeId(n.id, '临时节点 ID'); C.assert(!map.has(n.id), '临时节点 ID 重复'); map.set(n.id, C.id('N')); });
++      const map = new Map(); result.nodes.forEach((n, i) => { C.safeId(n.id, '临时节点 ID'); C.assert(!map.has(n.id), '临时节点 ID 重复'); map.set(n.id, 'N' + (i + 1)); });
+       const p = {id: C.id('story'), title: result.title || '整理后的剧本', premise: result.premise || '', original_text: text, revision: C.id('rev'), variables: [], events: [], collections: [], start_node_id: map.get(result.start_node_id || result.nodes[0].id), nodes: []};
+       C.assert(p.start_node_id, '模型起点引用不存在');
+       const warnings = [];
+@@ -324,7 +329,7 @@
+       const budget = profile.max_input_chars || 16000; const generation = this.generation;
+       const payload = original => ({original, preferences: wish, mode, max_nodes: 128});
+       const alive = () => C.assert(generation === this.generation, '分析已取消，未应用任何剧本');
+-      const invoke = async (prompt, value, context = {kind: 'full'}) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true, onResponse: response => { alive(); return options.onResponse?.({...response, original: value.original || text, mode, part: value.part || 0, parts: value.parts || 1, ...context}); }}); alive(); return result; };
++      const invoke = async (prompt, value, context = {kind: 'full'}) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true, onRequest: () => options.onRequest?.({messages: C.clone(messages), kind: context.kind, part: value.part, parts: value.parts}), onResponse: response => { alive(); return options.onResponse?.({...response, original: value.original || text, mode, part: value.part || 0, parts: value.parts || 1, ...context}); }}); alive(); return result; };
+       if (size(request(system, payload(text))) <= budget) {
+         options.onProgress?.({phase: '分析全文', done: 0, total: 1});
+         const result = analysisDraft(await invoke(system, payload(text)), text, mode); result.request_count = 1; return result;
+@@ -382,5 +387,5 @@
+     const joined = merged.nodes.map(n => { C.assert(known.has(n.id), '整合结果包含未知节点'); const original = known.get(n.id); return {...original, routes: (n.routes || []).map(r => { const old = original.routes.find(x => x.target === r.target); return old ? {...r, ...old, label: r.label || old.label} : r; })}; });
+     return {...merged, collections, packages, variables, nodes: joined};
+   }
+-  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS};
++  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS, LAST_PROMPTS};
+ });
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js"
+index ef6d39e..f644b4a 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js"
+@@ -10,6 +10,23 @@
+   const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+   const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+   function id(prefix = 'ID') { return prefix + '_' + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2)); }
++  function shortId(p, prefix) {
++    assert(['N', 'E', 'P', 'V', 'b'].includes(prefix), '短编号类型无效');
++    const used = new Set(['nodes', 'events', 'packages', 'variables', 'collections'].flatMap(k => (p[k] || []).map(x => x.id)));
++    p.short_id_counters ||= {};
++    let count = Math.max(p.short_id_counters[prefix] || 0, ...[...used].filter(k => new RegExp('^' + prefix + '\\d+$').test(k)).map(k => Number(k.slice(prefix.length))), 0);
++    do { count++; } while (used.has(prefix + count));
++    p.short_id_counters[prefix] = count; return prefix + count;
++  }
++  function displayId(p, kind, key) {
++    if (key.length <= 12) return key;
++    const fields = {node: ['nodes', 'N'], event: ['events', 'E'], package: ['packages', 'P']}, field = fields[kind];
++    if (!field) return key;
++    const list = p[field[0]], used = new Set(list.filter(x => x.id.length <= 12).map(x => x.id));
++    let count = 0;
++    for (const x of list.filter(x => x.id.length > 12)) { do { count++; } while (used.has(field[1] + count)); if (x.id === key) return field[1] + count; }
++    return key;
++  }
+   function assert(test, message) { if (!test) throw new Error(message); }
+   function safeId(value, name = 'ID') {
+     assert(typeof value === 'string' && /^[A-Za-z0-9_-]{1,100}$/.test(value) && !forbidden.has(value), name + ' 只能包含字母、数字、下划线和短横线（1～100 字符）');
+@@ -66,6 +83,8 @@
+         assert(typeof value.value === def.type, '效果值类型不匹配：' + value.variable);
+         if (def.type === 'number') assert(Number.isFinite(value.value), '数值效果必须为有限数字');
+         if (op === 'add') assert(def.type === 'number', '只有数值变量可以累加');
++        for (const bound of ['min', 'max']) if (value[bound] != null) assert(def.type === 'number' && Number.isFinite(value[bound]), '单次奖励的数值限制无效');
++        assert(value.min == null || value.max == null || value.min <= value.max, '奖励下限大于上限');
+       } else throw new Error('未知效果操作：' + op);
+     }
+   }
+@@ -78,12 +97,14 @@
+     p.schema_version = VERSION; p.revision = p.revision || id('rev');
+     p.events ||= []; p.variables ||= []; p.collections ||= []; p.packages ||= []; p.premise ||= ''; p.original_text ||= '';
+     for (const key of ['events', 'variables', 'collections', 'packages']) assert(Array.isArray(p[key]), key + ' 必须为数组');
++    if (p.short_id_counters) assert(object(p.short_id_counters) && Object.entries(p.short_id_counters).every(([k, v]) => ['N', 'E', 'P', 'V', 'b'].includes(k) && Number.isSafeInteger(v) && v >= 0), '短编号计数格式无效');
+     assert(p.packages.length <= 128, '每个剧本最多128个事件包');
+     for (const [list, label] of [[p.nodes, '节点'], [p.events, '事件'], [p.variables, '变量'], [p.collections, '收集项'], [p.packages, '事件包']]) {
+       const used = new Set();
+       for (const entry of list) { assert(object(entry), label + ' 必须为对象'); safeId(entry.id, label + ' ID'); assert(!used.has(entry.id), label + ' ID 重复：' + entry.id); used.add(entry.id); }
+     }
+     p.variables.forEach(v => {
++      v.title ||= v.id; v.owner ||= ''; assert(typeof v.title === 'string' && typeof v.owner === 'string', '数值名称与归属必须为文本');
+       v.type ||= typeof v.default;
+       assert(['number', 'boolean', 'string'].includes(v.type) && typeof v.default === v.type, '变量类型或默认值无效：' + v.id);
+       if (v.type === 'number') {
+@@ -140,6 +161,7 @@
+     });
+     p.collections.forEach(c => {
+       c.title ||= c.id; assert(typeof c.title === 'string', '结果名称必须为文本：' + c.id);
++      c.description ||= ''; assert(typeof c.description === 'string', '结果说明必须为文本：' + c.id);
+       validateCondition(c.requires, refs);
+       c.exclusive_with ||= []; assert(Array.isArray(c.exclusive_with) && c.exclusive_with.every(k => k !== c.id && refs.collections.has(k)), '互斥结果引用无效：' + c.id);
+     });
+@@ -219,7 +241,10 @@
+     const conditions = nodeId ? [def.entry_condition, linked?.condition, pack?.continue_condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : eventId ? [def.condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : [];
+     const effects = def ? clone(def.effects) : Object.keys(next.variables).filter(k => next.variables[k] !== before.variables[k]).map(variable => ({set: {variable, value: next.variables[variable]}}));
+     const deps = [...new Set([...conditions.flatMap(c => dependencies(c, before)), ...(nodeId ? ctx?.entry_dependencies || [] : []), ...(nodeId ? ctx?.activation_dependencies || [] : [])])];
+-    next.settlements.entries[receipt] = {node_id: nodeId, event_id: eventId, package_id: pack?.id || '', effects, dependencies: deps, source: source || null, at: Date.now()};
++    // The local rule determines the reward; keep the actual change for player records.
++    const changes = Object.keys(next.variables).filter(k => next.variables[k] !== before.variables[k]).map(variable => ({variable, before: before.variables[variable], after: next.variables[variable]}));
++    for (const e of effects) if ((e.add || e.set)?.min != null || (e.add || e.set)?.max != null) deps.push(...(before.variable_sources?.[(e.add || e.set).variable] || []).map(k => 'receipt:' + k));
++    next.settlements.entries[receipt] = {node_id: nodeId, event_id: eventId, package_id: pack?.id || '', effects, changes, completion_criteria: def?.completion_criteria || '', dependencies: [...new Set(deps)], source: source || null, at: Date.now()};
+     next.settlements.order.push(receipt);
+     for (const e of effects) if (e.add || e.set) { const k = (e.add || e.set).variable; next.variable_sources[k] = [...new Set([...(next.variable_sources[k] || []), receipt])]; }
+   }
+@@ -287,12 +312,25 @@
+       if (effect.collect) { assert(resultReady(effect.collect, p, s), '结果前提未满足或结果互斥：' + effect.collect); if (!s.collected_ids.includes(effect.collect)) s.collected_ids.push(effect.collect); }
+       else {
+         const op = effect.add || effect.set; const def = refs.variables.get(op.variable);
+-        let value = effect.add ? s.variables[op.variable] + op.value : op.value;
+-        if (typeof value === 'number') { if (def.min != null) value = Math.max(def.min, value); if (def.max != null) value = Math.min(def.max, value); }
+-        s.variables[op.variable] = value;
++        s.variables[op.variable] = effectValue(effect, def, s.variables[op.variable]);
+       }
+     }
+   }
++  function effectValue(effect, def, current) {
++    const op = effect.add || effect.set;
++    let value = effect.add ? current + op.value : op.value;
++    if (typeof value === 'number') {
++      if (op.max != null && value > current) value = Math.max(current, Math.min(op.max, value));
++      if (op.min != null && value < current) value = Math.min(current, Math.max(op.min, value));
++      if (def.min != null) value = Math.max(def.min, value); if (def.max != null) value = Math.min(def.max, value);
++    }
++    return value;
++  }
++  function rewardAvailable(e, p, s) {
++    if (!e.effects.length || e.repeat_policy === 'once' || e.completion_node_id) return true;
++    const refs = indexProject(p);
++    return e.effects.some(x => x.collect ? !s.collected_ids.includes(x.collect) && resultReady(x.collect, p, s) : effectValue(x, refs.variables.get((x.add || x.set).variable), s.variables[(x.add || x.set).variable]) !== s.variables[(x.add || x.set).variable]);
++  }
+   function completeNode(s, p, source = null, nodeId = s.current_node_id) {
+     if (s.receipts['node:' + nodeId]) return false;
+     const node = indexProject(p).nodes.get(nodeId); assert(node && nodeReady(node, p, s), '节点前置条件或结果前提未满足：' + nodeId);
+@@ -333,9 +371,14 @@
+       return completeNode(s, p, source, event.completion_node_id);
+     }
+     assert(event.effects.every(e => !e.collect || resultReady(e.collect, p, s)), '事件的结果前提未满足或与已取得结果互斥');
+-    const key = 'event:' + eventId + ':' + (event.repeat_policy === 'once' ? 'once' : sourceKey);
+     assert(typeof sourceKey === 'string' && sourceKey, '缺少事件来源标识');
+-    return transact(s, p, '事件：' + event.title, next => { applyEffects(next, p, event.effects); next.event_counts[eventId] = (next.event_counts[eventId] || 0) + 1; }, key, source);
++    const turn = Number.isInteger(source?.assistant_id) ? 'turn_' + source.assistant_id : sourceKey;
++    if (event.repeat_policy !== 'once' && (own(s.receipts, 'event:' + eventId + ':' + sourceKey) || Object.values(s.settlements?.entries || {}).some(x => x.event_id === eventId && x.source_key === sourceKey))) return false;
++    if (event.repeat_policy !== 'once' && Number.isInteger(source?.assistant_id) && Object.values(s.settlements?.entries || {}).some(x => x.event_id === eventId && x.source?.assistant_id === source.assistant_id)) return false;
++    const key = 'event:' + eventId + ':' + (event.repeat_policy === 'once' ? 'once' : turn);
++    const changed = transact(s, p, '事件：' + event.title, next => { applyEffects(next, p, event.effects); next.event_counts[eventId] = (next.event_counts[eventId] || 0) + 1; }, key, source);
++    if (changed && s.settlements?.entries[key]) s.settlements.entries[key].source_key = sourceKey;
++    return changed;
+   }
+   function undo(s) {
+     const tx = s.history.pop(); assert(tx, '没有可回退的近期操作');
+@@ -355,7 +398,7 @@
+     return p.events.filter(e => {
+       if (!e.enabled || e.detection !== 'api' || !condition(e.condition, s) ||
+         e.scope.kind === 'nodes' && !e.scope.node_ids.includes(scopeNode) || e.repeat_policy === 'once' && s.event_counts[e.id]) return false;
+-      if (!e.completion_node_id) return true;
++      if (!e.completion_node_id) return rewardAvailable(e, p, s);
+       const node = indexProject(p).nodes.get(e.completion_node_id), pack = p.packages?.find(b => b.node_ids.includes(node.id));
+       return !!node.completion_criteria.trim() && !s.receipts['node:' + node.id] && nodeReady(node, p, s) && (pack ? pack.enabled && s.package_progress?.[pack.id]?.current_node_id === node.id && ['ready', 'running'].includes(s.package_progress?.[pack.id]?.status) && condition(pack.continue_condition, s) : s.current_node_id === node.id);
+     });
+@@ -419,10 +462,61 @@
+   function convertAnalysisProject(input) {
+     const p = normalizeProject(input);
+     for (const node of p.nodes) if (!node.suggested && node.completion_criteria.trim() && !p.events.some(e => e.completion_node_id === node.id)) {
+-      let eventId; do { eventId = id('E'); } while (p.events.some(e => e.id === eventId));
++      const eventId = shortId(p, 'E');
+       p.events.push({id: eventId, title: node.title + ' · 完成', description: node.completion_criteria, completion_node_id: node.id, scope: {kind: 'nodes', node_ids: [node.id]}, repeat_policy: 'once', effects: [], condition: true, detection: 'api', auto_settle: false});
+     }
+     return normalizeProject(p);
+   }
+-  return {VERSION, clone, object, own, id, assert, safeId, parseJSON, normalizeProject, normalizeCompletion, convertAnalysisProject, indexProject, createProgress, condition, conditionText, validateCondition, nodeReady, resultReady, dependencies, initLedger, applyEffects, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject};
++  function hasResult(c, code) {
++    if (!object(c)) return false;
++    return c.collected === code || (c.all || c.any || []).some(x => hasResult(x, code)) || hasResult(c.not, code);
++  }
++  function resultReferences(p, code) {
++    const refs = [], add = (kind, item, field, label) => refs.push({kind, id: item.id, field, label});
++    for (const n of p.nodes) {
++      if (hasResult(n.entry_condition, code)) add('node', n, 'entry_condition', n.title + '：进入条件');
++      n.routes.forEach((r, i) => { if (hasResult(r.condition, code)) add('node', n, 'routes.' + i, n.title + ' → ' + (r.label || r.target) + '：出口条件'); });
++      if (n.effects.some(e => e.collect === code)) add('node', n, 'effects', n.title + '：完成后取得');
++    }
++    for (const e of p.events) { if (hasResult(e.condition, code)) add('event', e, 'condition', e.title + '：前置条件'); if (e.effects.some(x => x.collect === code)) add('event', e, 'effects', e.title + '：发生后取得'); }
++    for (const b of p.packages) for (const field of ['condition', 'continue_condition']) if (hasResult(b[field], code)) add('package', b, field, b.title + (field === 'condition' ? '：触发条件' : '：持续条件'));
++    for (const c of p.collections) if (c.id !== code) { if (hasResult(c.requires, code)) add('result', c, 'requires', c.title + '：取得前提'); if (c.exclusive_with.includes(code)) add('result', c, 'exclusive_with', c.title + '：互斥结果'); }
++    return refs;
++  }
++  function removeResultDefinition(input, code, mode = 'block', replacement = '') {
++    const p = clone(input); assert(p.collections.some(x => x.id === code), '结果定义不存在');
++    assert(['block', 'remove', 'replace'].includes(mode), '请选择关联条件的处理方式');
++    if (mode === 'replace') assert(replacement !== code && p.collections.some(x => x.id === replacement), '请选择另一个已定义结果');
++    const rewrite = c => {
++      if (!hasResult(c, code)) return c;
++      if (mode === 'block') return false;
++      const prune = value => {
++        if (!object(value)) return value;
++        if (value.collected === code) return mode === 'replace' ? {collected: replacement} : null;
++        if (value.not) { const child = prune(value.not); return child == null ? null : {not: child}; }
++        if (value.all || value.any) { const op = value.all ? 'all' : 'any', parts = value[op].map(prune).filter(x => x != null); return parts.length ? {[op]: parts} : null; }
++        return value;
++      };
++      return prune(c) ?? true;
++    };
++    for (const n of p.nodes) { n.entry_condition = rewrite(n.entry_condition); n.routes.forEach(r => { r.condition = rewrite(r.condition); }); n.effects = n.effects.filter(e => e.collect !== code); if (n.result_ids) n.result_ids = n.result_ids.filter(k => k !== code); }
++    for (const e of p.events) { e.condition = rewrite(e.condition); e.effects = e.effects.filter(x => x.collect !== code); }
++    for (const b of p.packages) { b.condition = rewrite(b.condition); b.continue_condition = rewrite(b.continue_condition); }
++    p.collections = p.collections.filter(c => c.id !== code);
++    for (const c of p.collections) { c.requires = rewrite(c.requires); c.exclusive_with = c.exclusive_with.filter(k => k !== code); }
++    return normalizeProject(p);
++  }
++  function resultInProgress(s, code) {
++    return s.collected_ids.includes(code) || s.settlements?.baseline.collected_ids.includes(code) || Object.values(s.settlements?.entries || {}).some(x => x.effects.some(e => e.collect === code) || x.dependencies.includes('result:' + code));
++  }
++  function obtainedResults(p, s) {
++    return s.collected_ids.map(code => {
++      const def = p.collections.find(c => c.id === code) || {id: code, title: code, description: ''};
++      const receipt = (s.settlements?.order || []).find(k => s.settlements.entries[k]?.effects.some(e => e.collect === code));
++      const entry = s.settlements?.entries[receipt];
++      const from = entry?.node_id ? p.nodes.find(n => n.id === entry.node_id) : entry?.event_id ? p.events.find(e => e.id === entry.event_id) : null;
++      return {id: code, title: def.title, description: def.description || '', source: from?.title || (def.external ? '外部记录' : '旧进度或导入记录'), at: entry?.at || null, receipt: receipt || ''};
++    });
++  }
++  return {VERSION, clone, object, own, id, shortId, displayId, assert, safeId, parseJSON, normalizeProject, normalizeCompletion, convertAnalysisProject, indexProject, createProgress, condition, conditionText, validateCondition, nodeReady, resultReady, dependencies, initLedger, effectValue, rewardAvailable, applyEffects, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject, hasResult, resultReferences, removeResultDefinition, resultInProgress, obtainedResults};
+ });
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+index 590614f..32ee09e 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+@@ -4,7 +4,7 @@
+   if (node) module.exports = value; else root.BSEEngine = value;
+ })(typeof window !== 'undefined' ? window : globalThis, function (C, API, F) {
+   'use strict';
+-  const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, quick_options: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
++  const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, auto_events: true, quick_options: false, quick_collapsed: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
+     profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
+     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
+   async function fingerprint(value) {
+@@ -31,8 +31,8 @@
+     }
+     async init() {
+       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
+-      for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt']]) {
+-        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key]].includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
++      for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt'], ['detect', 'detect_prompt']]) {
++        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+       }
+       this.client.usage = {...defaults().usage, ...saved.usage};
+       if (this.settings.worldbook) {
+@@ -56,7 +56,12 @@
+     bindEvents() {
+       const safe = task => { Promise.resolve().then(task).catch(e => this.report(e)); };
+       this.host.on('MESSAGE_RECEIVED', 'message_received', (messageId, type) => { if (type !== 'quiet' && type !== 'extension') safe(() => this.captureDraft(messageId)); });
+-      this.host.on('GENERATION_ENDED', 'generation_ended', () => safe(async () => { await this.captureDraft(); if (this.settings.auto_stage) await this.checkStage(); }));
++      this.host.on('GENERATION_ENDED', 'generation_ended', () => safe(async () => {
++        await this.captureDraft(); const pair = this.draft, scopeNode = this.state.current_node_id, epoch = this.epoch;
++        const candidates = C.eligibleEvents(this.project, this.state, scopeNode).filter(e => !e.completion_node_id).map(e => e.id);
++        if (this.settings.auto_stage) await this.checkStage();
++        if (epoch === this.epoch && this.settings.enabled && !this.state.paused && this.settings.auto_events && pair && candidates.length && this.settings.profile.base_url && this.settings.profile.model) await this.acceptPair(pair, true, {scopeNode, ids: candidates});
++      }));
+       this.host.on('MESSAGE_SWIPED', 'message_swiped', messageId => safe(() => {
+         if (Number(messageId) <= Math.max(this.state.last_settled_message_id ?? -1, this.state.last_stage_message_id ?? -1)) { this.invalidate(); this.state.paused = true; F.clearWork(this.state); this.error = '已确认阶段或结算回复被切换，已暂停；请回退相关操作或恢复备份后继续'; this.save(); }
+         this.captureDraft(messageId);
+@@ -130,6 +135,7 @@
+       if (this.settings.worldbook) await this.host.saveBook(this.settings.worldbook, normalized);
+       C.assert(epoch === this.epoch && chat === this.host.chatId(), '保存期间聊天或配置已变化，请重新读取剧本后核对');
+       this.invalidate(); this.project = normalized; this.state = state; F.initialize(normalized, state); this.persistProject();
++      this.error = '';
+       if (this.settings.enabled && this.diagnostics().some(x => x.severity === 'error')) { this.settings.enabled = false; this.error = '依赖检查发现问题，已关闭注入，请核对后重新启用'; this.saveSettings(); }
+       this.save();
+     }
+@@ -145,7 +151,30 @@
+       delete this.settings.draft_project; delete this.settings.drafts?.[this.project.id]; this.saveSettings(); this.notify();
+     }
+     mutate(fn) { this.invalidate(); this.error = ''; const changed = fn(); if (changed !== false) this.save(); return changed; }
+-    complete() { return this.mutate(() => C.completeNode(this.state, this.project)); }
++    complete() {
++      const q = this.state.stage_progress;
++      const source = q && ['completed', 'uncertain'].includes(q.status) ? {assistant_id: q.assistant_id, evidence: q.evidence || [], messages: this.host.pair(q.assistant_id)?.messages.map(m => m.message_id) || []} : null;
++      return this.mutate(() => C.completeNode(this.state, this.project, source));
++    }
++    resultDeletionPreview(code) {
++      const def = this.project.collections.find(c => c.id === code); C.assert(def, '结果定义不存在');
++      return {definition: C.clone(def), references: C.resultReferences(this.project, code), in_progress: !!C.resultInProgress(this.state, code)};
++    }
++    async deleteResult(code, mode, replacement) {
++      C.assert(!C.resultInProgress(this.state, code), '此结果已有取得或结算依赖记录，请先备份并回退相关结果，再删除定义');
++      const next = C.removeResultDefinition(this.project, code, mode, replacement);
++      await this.editProject(p => { Object.assign(p, next); });
++    }
++    eventDeletionPreview(code) {
++      const event = this.project.events.find(e => e.id === code); C.assert(event, '事件不存在');
++      const after = C.clone(this.project); after.events = after.events.filter(e => e.id !== code);
++      const cleanup = [...new Set(event.effects.filter(e => e.collect).map(e => e.collect))].filter(k => after.collections.some(c => c.id === k && !c.external) && !C.resultReferences(after, k).length && !C.resultInProgress(this.state, k));
++      return {cleanup, in_progress: !!this.state.event_counts[code] || Object.values(this.state.settlements?.entries || {}).some(x => x.event_id === code)};
++    }
++    async deleteEvent(code) {
++      const plan = this.eventDeletionPreview(code); C.assert(!plan.in_progress, '此事件已有结算记录，请先备份并回退相关结算后删除');
++      await this.editProject(p => { p.events = p.events.filter(e => e.id !== code); p.collections = p.collections.filter(c => !plan.cleanup.includes(c.id)); });
++    }
+     diagnostics() { if (this.diagnosticProject !== this.project) { this.diagnosticProject = this.project; this.diagnosticIssues = F.diagnose(this.project); } return this.diagnosticIssues; }
+     switchPackage(id) { return this.mutate(() => F.focusPackage(this.project, this.state, id)); }
+     rollbackPreview(id) { return F.rollbackPlan(this.project, this.state, id); }
+@@ -262,7 +291,7 @@
+           scope().stage_progress = {node_id: node.id, status: result.status, summary: result.summary || previous?.summary || '', facts: facts.slice(-8), missing: result.missing, evidence: result.evidence, source_key: key, assistant_id: pair.assistant_id};
+           this.state.last_stage_message_id = Math.max(this.state.last_stage_message_id, pair.assistant_id);
+           if (result.status === 'completed' && node.auto_complete) {
+-            C.completeNode(this.state, project, {assistant_id: pair.assistant_id, messages: pair.messages.map(m => m.message_id)}, node.id);
++            C.completeNode(this.state, project, {assistant_id: pair.assistant_id, messages: pair.messages.map(m => m.message_id), evidence: result.evidence}, node.id);
+             this.flowNotice = '阶段已完成，结果标记已结算';
+           } else {
+             this.state.revision++;
+@@ -323,16 +352,24 @@
+       const latest = this.host.latest(); const pair = this.draft || (latest?.role === 'assistant' ? this.host.pair(latest.message_id) : null);
+       C.assert(pair, '当前没有可确认的 AI 回复'); return this.acceptPair(pair, true);
+     }
+-    async acceptPair(pair, force) {
++    async checkRound() {
++      C.assert(this.settings.enabled && !this.state.paused, '请先启用剧本并解除暂停');
++      await this.captureDraft(); const pair = this.draft, scopeNode = this.state.current_node_id, epoch = this.epoch;
++      C.assert(pair, '当前没有可核验的 AI 回复');
++      const candidates = C.eligibleEvents(this.project, this.state, scopeNode).filter(e => !e.completion_node_id).map(e => e.id);
++      await this.checkStage(undefined, true);
++      if (epoch === this.epoch && candidates.length) await this.acceptPair(pair, true, {scopeNode, ids: candidates});
++    }
++    async acceptPair(pair, force, context = {}) {
+       C.assert(pair && pair.messages.length, '没有可检查的对话');
+       if (!force && !this.settings.auto_detect) return;
+-      const epoch = this.epoch; const chat = this.chat; const project = this.project; const scopeNode = this.state.current_node_id;
++      const epoch = this.epoch; const chat = this.chat; const project = this.project; const scopeNode = context.scopeNode || this.state.current_node_id;
+       const key = await fingerprint(pair.messages);
+       if (epoch !== this.epoch || chat !== this.chat) return;
+       if (this.state.accepted_turns[key] || this.inFlight.has(key)) return;
+       const existing = this.state.pending_checks.find(c => c.key === key);
+       if (existing && !['error', 'stale'].includes(existing.status)) return;
+-      const candidates = C.eligibleEvents(project, this.state, scopeNode);
++      const candidates = C.eligibleEvents(project, this.state, scopeNode).filter(e => !context.ids || context.ids.includes(e.id));
+       if (!candidates.length) { this.error = '当前没有符合范围和前置条件的 API 事件'; this.notify(); return; }
+       let check = existing || {key, assistant_id: pair.assistant_id, messages: pair.messages.map(m => m.message_id), node_id: scopeNode, project_revision: project.revision, results: [], checked_ids: [], at: Date.now()};
+       check.status = 'queued'; check.error = ''; if (!existing) this.state.pending_checks.push(check);
+@@ -349,7 +386,8 @@
+             if (!batch.length) continue;
+             if (epoch !== this.epoch || this.host.chatId() !== chat || !sameSource()) throw new Error('来源对话或剧本已变化，本次判断未结算');
+             const node = C.indexProject(project).nodes.get(scopeNode);
+-            const facts = {node: node.title, known_variables: Object.fromEntries(node.context_variables.map(k => [k, this.state.variables[k]]))};
++            const relevant = [...new Set([...node.context_variables, ...batch.flatMap(e => e.effects.filter(x => x.add || x.set).map(x => (x.add || x.set).variable))])];
++            const facts = {node: node.title, known_variables: Object.fromEntries(relevant.map(k => [k, this.state.variables[k]]))};
+             const results = await this.client.detect(this.settings.profile, pair.messages, batch, facts);
+             if (epoch !== this.epoch || this.host.chatId() !== chat || !sameSource()) throw new Error('返回结果已过期，未结算');
+             for (const result of results) {
+@@ -363,6 +401,7 @@
+             const record = check.results.find(r => r.event_id === eventId);
+             const event = C.indexProject(project).events.get(record.event_id);
+             if (!record.handled && record.status === 'completed' && event.auto_settle) {
++              if (!C.condition(event.condition, this.state)) { record.handled = true; record.resolution = 'condition_changed'; record.note = '结算时前提已变化，未应用奖励'; continue; }
+               C.settleEvent(this.state, project, event.id, key, record.source, scopeNode);
+               check = this.state.pending_checks.find(c => c.key === key);
+               check.results.find(r => r.event_id === eventId).handled = true;
+@@ -403,10 +442,10 @@
+       });
+     }
+     beginRaw(kind, original, wish, mode) {
+-      const run = this.rawAnalysis = {id: C.id('analysis'), kind, original, wish, mode, chat_id: this.chat, replies: [], error: '', at: Date.now()};
++      const run = this.rawAnalysis = {id: C.id('analysis'), kind, original, wish, mode, chat_id: this.chat, replies: [], requests: [], error: '', at: Date.now()};
+       this.settings.raw_analysis = run; this.saveSettings();
+       const epoch = this.epoch, key = this.settings.profile.key;
+-      return value => {
++      const onResponse = value => {
+         if (epoch !== this.epoch || this.rawAnalysis !== run) return;
+         const retained = run.replies.reduce((n, x) => n + x.text.length, 0), capacity = Math.max(0, 2000000 - retained);
+         const raw = typeof value.text === 'string' ? value.text : JSON.stringify(value.text), text = key ? raw.split(key).join('[已隐藏密钥]') : raw;
+@@ -414,12 +453,21 @@
+         if (JSON.stringify(reply).length > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
+         run.replies.push(reply); this.settings.raw_analysis = C.clone(run); this.saveSettings(); this.notify();
+       };
++      onResponse.onRequest = value => {
++        if (epoch !== this.epoch || this.rawAnalysis !== run) return;
++        const text = JSON.stringify(value.messages), safe = key ? text.split(key).join('[已隐藏密钥]') : text;
++        const retained = run.requests.reduce((n, x) => n + x.text.length, 0), capacity = Math.max(0, 2000000 - retained);
++        run.requests.push({kind: value.kind || kind, part: value.part || 0, parts: value.parts || 1, at: Date.now(), text: safe.slice(0, capacity), storage_truncated: safe.length > capacity});
++        this.settings.raw_analysis = C.clone(run); this.saveSettings(); this.notify();
++      };
++      return onResponse;
+     }
+     async segment(text, wish) {
+       const epoch = this.epoch; this.busy++; this.notify();
+       try {
+         const profile = {...this.settings.profile, model: this.settings.segment_model || this.settings.profile.model};
+-        const result = await this.client.segment(profile, text, wish, {onResponse: this.beginRaw('segment', text, wish, 'faithful')});
++        const onResponse = this.beginRaw('segment', text, wish, 'faithful');
++        const result = await this.client.segment(profile, text, wish, {onResponse, onRequest: onResponse.onRequest});
+         C.assert(epoch === this.epoch, '配置已变化，整理结果未应用');
+         this.segmentDraft = result; this.settings.segment_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
+       } catch (e) { if (epoch === this.epoch && this.rawAnalysis) { this.rawAnalysis.error = e.message; this.settings.raw_analysis = C.clone(this.rawAnalysis); this.saveSettings(); } throw e; }
+@@ -439,7 +487,8 @@
+       const epoch = this.epoch; this.busy++; this.error = ''; this.analysisProgress = {phase: '准备', done: 0, total: 0}; this.notify();
+       try {
+         const profile = {...this.settings.profile, model: this.settings.segment_model || this.settings.profile.model};
+-        const result = await this.client.analyze(profile, text, wish, {mode, onResponse: this.beginRaw('analysis', text, wish, mode), onProgress: progress => { if (epoch === this.epoch) { this.analysisProgress = progress; this.notify(); } }});
++        const onResponse = this.beginRaw('analysis', text, wish, mode);
++        const result = await this.client.analyze(profile, text, wish, {mode, onResponse, onRequest: onResponse.onRequest, onProgress: progress => { if (epoch === this.epoch) { this.analysisProgress = progress; this.notify(); } }});
+         C.assert(epoch === this.epoch, '聊天或配置已变化，分析结果未应用');
+         this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
+       } catch (e) { if (epoch === this.epoch && this.rawAnalysis) { this.rawAnalysis.error = e.message; this.settings.raw_analysis = C.clone(this.rawAnalysis); this.saveSettings(); } throw e; }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js"
+index e2642ff..0d47453 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js"
+@@ -13,8 +13,8 @@
+       const b = F.owner(p, n.id);
+       return C.nodeReady(n, p, s) && (b ? ['ready', 'running'].includes(s.package_progress?.[b.id]?.status) && s.package_progress[b.id].current_node_id === n.id : n.id === s.current_node_id || F.availableRoutes(p, s, s.current_node_id).some(r => r.target === n.id));
+     };
+-    for (const n of p.nodes) add('node:' + n.id, n.id, n.title, s.completed_node_ids.includes(n.id) ? 'done' : active.some(x => x.node_id === n.id) ? 'running' : nodeAvailable(n) ? 'available' : 'locked', 'node');
+-    for (const e of p.events) add('event:' + e.id, e.id, e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) && (!e.completion_node_id || nodeAvailable(refs.nodes.get(e.completion_node_id))) ? 'available' : 'locked', 'event');
++    for (const n of p.nodes) add('node:' + n.id, C.displayId(p, 'node', n.id), n.title, s.completed_node_ids.includes(n.id) ? 'done' : active.some(x => x.node_id === n.id) ? 'running' : nodeAvailable(n) ? 'available' : 'locked', 'node');
++    for (const e of p.events) add('event:' + e.id, C.displayId(p, 'event', e.id), e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) && (!e.completion_node_id || nodeAvailable(refs.nodes.get(e.completion_node_id))) ? 'available' : 'locked', 'event');
+     for (const c of p.collections) {
+       const ready = p.nodes.some(n => n.effects.some(e => e.collect === c.id) && nodeAvailable(n)) || p.events.some(e => e.enabled && C.condition(e.condition, s) && e.effects.some(x => x.collect === c.id));
+       add('result:' + c.id, c.id, c.title, s.collected_ids.includes(c.id) ? 'done' : ready && C.resultReady(c.id, p, s) ? 'available' : 'locked', 'result');
+@@ -35,7 +35,7 @@
+     };
+     for (const b of p.packages) {
+       const status = s.package_progress?.[b.id]?.status;
+-      const id = add('package:' + b.id, b.id, b.title, status === 'done' ? 'done' : status === 'running' ? 'running' : status === 'ready' ? 'available' : 'locked', 'package');
++      const id = add('package:' + b.id, C.displayId(p, 'package', b.id), b.title, status === 'done' ? 'done' : status === 'running' ? 'running' : status === 'ready' ? 'available' : 'locked', 'package');
+       condition(b.condition, id); condition(b.continue_condition, id); edge(id, 'node:' + b.start_node_id, ['running', 'done'].includes(status), '启动');
+     }
+     for (const c of p.collections) condition(c.requires, 'result:' + c.id);
+@@ -49,7 +49,7 @@
+     for (const b of p.packages) nodes.get('package:' + b.id).detail = '触发：' + C.conditionText(b.condition, p) + '；持续：' + C.conditionText(b.continue_condition, p) + '；优先级：' + b.priority;
+     for (const c of p.collections) {
+       const witnesses = (s.settlements?.order || []).map(k => s.settlements.entries[k]).filter(x => x.effects.some(e => e.collect === c.id)).flatMap(x => x.dependencies);
+-      nodes.get('result:' + c.id).detail = '取得前提：' + C.conditionText(c.requires, p) + (c.exclusive_with.length ? '；互斥：' + c.exclusive_with.join('、') : '') + (witnesses.length ? '；本次使用的前提：' + [...new Set(witnesses)].join('、') : '');
++      nodes.get('result:' + c.id).detail = (c.description ? c.description + '；' : '') + '取得前提：' + C.conditionText(c.requires, p) + (c.exclusive_with.length ? '；互斥：' + c.exclusive_with.join('、') : '') + (witnesses.length ? '；本次使用的前提：' + [...new Set(witnesses)].join('、') : '');
+     }
+     if (filter && refs.packages.has(filter)) {
+       const b = refs.packages.get(filter), keep = new Set(['package:' + b.id, ...b.node_ids.map(k => 'node:' + k)]);
+@@ -71,7 +71,7 @@
+     for (const n of graph.nodes) { const column = level.get(n.id), row = rows.get(column) || 0; rows.set(column, row + 1); n.x = 20 + column * 240; n.y = 24 + row * 116; width = Math.max(width, n.x + 220); height = Math.max(height, n.y + 106); }
+     const palette = {done: '#4c9e82', running: '#c8a45c', available: '#608dbc', locked: '#526079'};
+     const paths = graph.edges.map(e => { const a = byId.get(e.from), b = byId.get(e.to), x = a.x + 200, y = a.y + 44, bx = b.x, by = b.y + 44; return `<path d="M${x},${y} C${x + 35},${y} ${bx - 35},${by} ${bx},${by}" fill="none" stroke="${e.satisfied ? '#9ce4cf' : '#68748a'}" stroke-width="2" ${e.satisfied ? '' : 'stroke-dasharray="5 4"'} marker-end="url(#bse-arrow)"><title>${escape(e.label)}</title></path>`; }).join('');
+-    const boxes = graph.nodes.map(n => `<g class="graph-node" data-action="graph-node" data-id="${escape(n.id)}" tabindex="0" role="button" aria-label="${escape(n.label + ' ' + n.name + ' ' + STATUS[n.status])}"><title>${escape(n.name)}</title><rect x="${n.x}" y="${n.y}" width="200" height="88" rx="12" fill="#172235" stroke="${palette[n.status]}" stroke-width="2"/><text x="${n.x + 12}" y="${n.y + 24}" fill="#e7ecf6" font-size="14">${escape(n.label.slice(0, 24))}</text><text x="${n.x + 12}" y="${n.y + 46}" fill="#b9c5dc" font-size="12">${escape(n.name.slice(0, 14))}${n.name.length > 14 ? '…' : ''}</text><text x="${n.x + 12}" y="${n.y + 69}" fill="${palette[n.status]}" font-size="12">${escape(STATUS[n.status])}</text></g>`).join('');
++    const boxes = graph.nodes.map(n => `<g class="graph-node" data-action="graph-node" data-id="${escape(n.id)}" tabindex="0" role="button" aria-label="${escape(n.label + ' ' + n.name + ' ' + STATUS[n.status])}"><title>${escape(n.name)}</title><rect x="${n.x}" y="${n.y}" width="200" height="88" rx="12" fill="#172235" stroke="${palette[n.status]}" stroke-width="2"/><text x="${n.x + 12}" y="${n.y + 24}" fill="#e7ecf6" font-size="14">${escape(n.name.slice(0, 14))}${n.name.length > 14 ? '…' : ''}</text><text x="${n.x + 12}" y="${n.y + 46}" fill="#b9c5dc" font-size="12">${escape(n.label.slice(0, 24))}</text><text x="${n.x + 12}" y="${n.y + 69}" fill="${palette[n.status]}" font-size="12">${escape(STATUS[n.status])}</text></g>`).join('');
+     return `<svg xmlns="http://www.w3.org/2000/svg" role="group" aria-label="完成与解锁关系图" width="${Math.round(width * zoom)}" height="${Math.round(height * zoom)}" viewBox="0 0 ${width} ${height}"><defs><marker id="bse-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#9aaac1"/></marker></defs>${paths}${boxes}</svg>`;
+   }
+   return {build, svg, STATUS};
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+index 252881d..f9da276 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+@@ -27,12 +27,14 @@
+     .spoiler-box{max-height:100%;overflow-y:auto;overscroll-behavior:contain}
+     .launcher{width:48px;height:48px;padding:12px;border-radius:50%;touch-action:none;user-select:none;display:grid;place-items:center;cursor:grab}.launcher.dragging{cursor:grabbing}.launcher svg{pointer-events:none}.panel{position:relative}.panel-body{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}.spoiler-region{position:relative;min-width:0}.spoiler-region.locked{height:clamp(240px,calc(var(--bse-height,100dvh) - 330px),560px);overflow:hidden}.spoiler-content.locked{filter:blur(10px);pointer-events:none;user-select:none}.spoiler-layer{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;padding:16px;background:#10182780}.spoiler-box{width:min(430px,100%);padding:20px;border:1px solid var(--line);background:#141c2cf5;border-radius:16px;text-align:center;box-shadow:0 10px 36px #0008}.spoiler-box h2{margin:8px 0}.lock-icon{font-size:38px;display:block}.spoiler-box .row{justify-content:center}.header-actions{display:flex;gap:8px}.analysis-report li{overflow-wrap:anywhere}.analysis-report ul{padding-left:20px}.event-guide ol{padding-left:22px}.event-guide li{margin:6px 0}
+   `;
+-  const QUICK_STYLE = `:host{display:block;color:#e7ecf6;font:14px/1.5 system-ui,-apple-system,sans-serif;color-scheme:dark}:host([hidden]){display:none!important}*{box-sizing:border-box}.quick{padding:8px 10px;background:#141c2cf5;border:1px solid #40516a;border-radius:12px;box-shadow:0 3px 16px #0005}.quick-head{font-size:12px;color:#b8c5da;margin-bottom:6px}.quick-list{display:flex;gap:8px;overflow-x:auto;overscroll-behavior:contain;scrollbar-width:thin}button{font:inherit;min-width:44px;min-height:44px;padding:8px 12px;color:#e7ecf6;background:#263c34;border:1px solid #588b79;border-radius:10px;cursor:pointer}.bse-choice{font:inherit;flex:0 0 auto;max-width:min(280px,90%);min-width:44px;min-height:44px;padding:8px 12px;border:1px solid #588b79;border-radius:10px;background:#263c34;color:#e7ecf6;cursor:pointer;touch-action:manipulation;text-align:left;overflow-wrap:anywhere}.bse-choice:focus-visible{outline:2px solid #9ce4cf;outline-offset:2px}.bse-choice small{color:#9ce4cf;margin-right:6px}.empty{color:#a8b3ca;font-size:13px}`;
++  const QUICK_STYLE = `:host{display:block;color:#e7ecf6;font:14px/1.5 system-ui,-apple-system,sans-serif;color-scheme:dark}:host([hidden]){display:none!important}*{box-sizing:border-box}[hidden]{display:none!important}.quick{padding:5px 8px;background:#141c2cf5;border:1px solid #40516a;border-radius:12px;max-height:42dvh;overflow:auto;scrollbar-width:thin}.quick-header{display:flex;align-items:center;gap:5px}.quick-title{flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quick-title small{display:block;color:#b8c5da}.quick-list{display:flex;flex-wrap:wrap;gap:8px;max-height:160px;overflow:auto;padding:7px 0 2px;overscroll-behavior:contain;scrollbar-width:thin}button{font:inherit;min-width:44px;min-height:44px;padding:8px 10px;color:#e7ecf6;background:#26344b;border:1px solid #588b79;border-radius:10px;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.5;cursor:default}.quick-icon{flex:none;font-size:18px;padding:6px;position:relative}.quick-dot{position:absolute;right:4px;top:4px;width:7px;height:7px;background:#f0bf69;border-radius:50%}.bse-choice{flex:0 1 auto;max-width:100%;background:#263c34;text-align:left;overflow-wrap:anywhere}.bse-choice:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #9ce4cf;outline-offset:2px}.quick-menu{border-top:1px solid #40516a;margin-top:5px;padding-top:7px;max-height:200px;overflow:auto;overscroll-behavior:contain}.quick-tools{display:flex;gap:7px;flex-wrap:wrap}.quick-note,.empty{color:#a8b3ca;font-size:12px;margin:5px 0}.quick-pending{padding:7px;border:1px solid #40516a;border-radius:8px;margin:6px 0}.quick-pending p{margin:4px 0;overflow-wrap:anywhere}.acquired{border-bottom:1px solid #40516a;padding:4px 0}.acquired summary{cursor:pointer;min-height:44px;display:flex;align-items:center;overflow-wrap:anywhere}.acquired p{margin:5px 0;white-space:pre-wrap;overflow-wrap:anywhere}.quick-warn{color:#f0bf69}`;
+   class Panel {
+-    constructor(engine) { this.e = engine; this.doc = engine.host.doc(); this.win = this.doc.defaultView; this.tab = 'run'; this.nodeTab = 'nodes'; this.recordsTab = 'progress'; this.opened = false; this.unlocked = false; this.runUnlocked = false; this.recordUnlocked = false; this.spoilerPrompt = false; this.privacyProject = ''; this.forms = {}; this.details = {}; this.search = {}; this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.graphSelected = ''; this.listPage = 0; this.bookProjects = []; this.unsub = null; }
++    constructor(engine) { this.e = engine; this.doc = engine.host.doc(); this.win = this.doc.defaultView; this.tab = 'run'; this.nodeTab = 'nodes'; this.recordsTab = 'progress'; this.opened = false; this.unlocked = false; this.runUnlocked = false; this.recordUnlocked = false; this.spoilerPrompt = false; this.privacyProject = ''; this.forms = {}; this.details = {}; this.search = {}; this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.graphSelected = ''; this.variableId = ''; this.resultId = ''; this.quickMenu = ''; this.listPage = 0; this.bookProjects = []; this.unsub = null; }
+     mount() {
++      this.doc.getElementById('bse-panel-host')?.__bsePanelOwner?.destroy();
+       this.doc.getElementById('bse-panel-host')?.remove();
+       this.element = this.doc.createElement('div'); this.element.id = 'bse-panel-host'; this.element.style.cssText = 'position:relative;z-index:2147482000';
++      this.element.__bsePanelOwner = this;
+       this.shadow = this.element.attachShadow({mode: 'open'});
+       this.shadow.innerHTML = `<style>${STYLE}${EXTRA_STYLE}</style><button class="launcher" type="button" aria-label="打开剧情面板" title="剧本 · 拖动可移动">${PENCIL}</button><div class="overlay" hidden><section class="panel" role="dialog" aria-modal="true" aria-label="分支剧本管理"><header><div><h1>分支剧本</h1><small>剧情、事件与进度</small></div><button type="button" data-action="close" aria-label="关闭剧情面板">关闭</button></header><div class="panel-body"><nav aria-label="剧情面板页面"></nav><main></main><footer>完整素材留在酒馆，当前剧情按需注入。</footer></div><div class="toast" role="status" hidden></div></section></div><input class="file" type="file" accept=".json,application/json">`;
+       this.doc.body.appendChild(this.element);
+@@ -54,7 +56,7 @@
+         }
+       });
+       this.shadow.querySelector('.file').onchange = async ev => { const field = ev.target, file = field.files[0]; if (file) await this.run(async () => { const data = C.parseJSON(await file.text(), '导入文件'); C.assert(data.type !== 'script', '这是插件安装文件，请在酒馆助手脚本管理中导入；此处导入的是剧本内容'); if (data.type === 'bse_progress') this.e.importProgress(data); else await this.e.setProject(data.project || data); this.forms = {}; this.nodeId = ''; this.eventId = ''; this.render(false); this.toast('导入完成'); }); field.value = ''; };
+-      this.keyHandler = ev => { if (ev.altKey && ev.key.toLowerCase() === 'b') { ev.preventDefault(); this.toggle(); } else if (ev.key === 'Escape' && this.opened) { if (this.spoilerPrompt) this.cancelUnlock(); else this.close(); } };
++      this.keyHandler = ev => { if (ev.altKey && ev.key.toLowerCase() === 'b') { ev.preventDefault(); this.toggle(); } else if (ev.key === 'Escape' && !this.opened && this.quickMenu) { this.quickMenu = ''; this.renderQuick(); this.quickShadow.querySelector('[data-action="quick-gear"]')?.focus(); } else if (ev.key === 'Escape' && this.opened) { if (this.spoilerPrompt) this.cancelUnlock(); else this.close(); } };
+       this.doc.addEventListener('keydown', this.keyHandler);
+       this.shadow.addEventListener('keydown', ev => {
+         if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.closest?.('[data-action="graph-node"]')) { ev.preventDefault(); this.run(() => this.action('graph-node', ev.target.closest('[data-action="graph-node"]'))); return; }
+@@ -105,20 +107,23 @@
+         if (this.ignoreLauncherClick && ev.detail !== 0) { this.ignoreLauncherClick = false; return; } this.toggle();
+       };
+     }
+-    launcherBounds() { const v = this.win.visualViewport; const left = (v?.offsetLeft || 0) + 8, top = (v?.offsetTop || 0) + 8; return {left, top, right: Math.max(left, left + (v?.width || this.win.innerWidth) - 64), bottom: Math.max(top, top + (v?.height || this.win.innerHeight) - 64)}; }
++    launcherBounds() { const v = this.win.visualViewport; const left = (v?.offsetLeft || 0) + 8, top = (v?.offsetTop || 0) + 8, dockTop = !this.quickElement?.hidden && this.quickDock?.element.getBoundingClientRect().top; return {left, top, right: Math.max(left, left + (v?.width || this.win.innerWidth) - 64), bottom: Math.max(top, Math.min(top + (v?.height || this.win.innerHeight) - 64, dockTop ? dockTop - 64 : Infinity))}; }
+     applyLauncherPosition() {
+       const launcher = this.shadow?.querySelector('.launcher'); if (!launcher) return;
+       const p = this.e.settings.launcher_position;
+-      if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) { launcher.style.removeProperty('left'); launcher.style.removeProperty('top'); launcher.style.removeProperty('right'); launcher.style.removeProperty('bottom'); return; }
++      if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) {
++        launcher.style.removeProperty('left'); launcher.style.removeProperty('top'); launcher.style.removeProperty('right');
++        if (!this.quickElement?.hidden && this.quickDock) launcher.style.bottom = 'calc(' + Math.max(84, this.win.innerHeight - this.quickDock.element.getBoundingClientRect().top + 8) + 'px + env(safe-area-inset-bottom,0px))'; else launcher.style.removeProperty('bottom'); return;
++      }
+       const b = this.launcherBounds(); launcher.style.left = (b.left + Math.max(0, Math.min(1, p.x)) * (b.right - b.left)) + 'px'; launcher.style.top = (b.top + Math.max(0, Math.min(1, p.y)) * (b.bottom - b.top)) + 'px'; launcher.style.right = 'auto'; launcher.style.bottom = 'auto';
+     }
+     mountQuick() {
+       this.doc.getElementById('bse-quick-host')?.remove();
+       this.quickElement = this.doc.createElement('div'); this.quickElement.id = 'bse-quick-host'; this.quickElement.hidden = true;
+-      this.quickElement.style.cssText = 'position:fixed;z-index:2147481900;max-width:100%;';
++      this.quickElement.style.cssText = 'position:absolute;left:0;right:0;top:0;z-index:10;max-width:100%;';
+       this.quickShadow = this.quickElement.attachShadow({mode: 'open'}); this.doc.body.appendChild(this.quickElement);
+-      this.quickShadow.addEventListener('click', ev => { const b = ev.target.closest?.('[data-action="quick-enter"], [data-action="quick-cancel"]'); if (b) this.run(() => this.action(b.dataset.action, b)); });
+-      if (this.win.ResizeObserver) this.composerResize = new this.win.ResizeObserver(() => this.refreshComposer());
++      this.quickShadow.addEventListener('click', ev => { const b = ev.target.closest?.('[data-action]'); if (b && !b.disabled) this.run(() => this.action(b.dataset.action, b)); });
++      if (this.win.ResizeObserver) { this.composerResize = new this.win.ResizeObserver(() => this.refreshComposer()); this.quickResize = new this.win.ResizeObserver(() => this.positionQuick()); this.quickResize.observe(this.quickElement); }
+       this.composerObserver = new this.win.MutationObserver(records => {
+         if (!records.some(r => r.target !== this.quickElement && r.target !== this.element) || this.quickFrame) return;
+         this.quickFrame = this.win.requestAnimationFrame(() => { this.quickFrame = null; this.refreshComposer(); });
+@@ -132,22 +137,78 @@
+     }
+     findInput() { return [...this.doc.querySelectorAll('#send_textarea, #chatinput, textarea[name="send_textarea"]')].find(el => el.getClientRects().length && this.win.getComputedStyle(el).visibility !== 'hidden') || null; }
+     refreshComposer() { if (this.findComposer() !== this.composer) this.renderQuick(); else this.positionQuick(); }
++    releaseQuickDock() {
++      const d = this.quickDock; if (!d) return;
++      if (d.chat && d.chat.style.getPropertyValue('max-height') === d.appliedChatHeight) {
++        if (d.chatHeight.value) d.chat.style.setProperty('max-height', d.chatHeight.value, d.chatHeight.priority); else d.chat.style.removeProperty('max-height');
++      }
++      for (const [name, original, applied] of [['padding-top', d.padding, d.appliedPadding], ['position', d.position, d.appliedPosition]]) if (applied && d.element.style.getPropertyValue(name) === applied) {
++        if (original.value) d.element.style.setProperty(name, original.value, original.priority); else d.element.style.removeProperty(name);
++      }
++      this.quickDock = null;
++    }
++    dockQuick(composer) {
++      const container = composer?.matches('form, #send_form') ? composer : composer?.closest('form') || composer?.parentElement;
++      if (!container || container === this.doc.body) return null;
++      if (this.quickDock?.element === container) return container;
++      const clones = [...container.querySelectorAll('#bse-quick-host')].filter(x => x !== this.quickElement);
++      if (clones.length && this.quickDock) {
++        const d = this.quickDock;
++        for (const [name, original, applied] of [['padding-top', d.padding, d.appliedPadding], ['position', d.position, d.appliedPosition]]) if (applied && container.style.getPropertyValue(name) === applied) {
++          if (original.value) container.style.setProperty(name, original.value, original.priority); else container.style.removeProperty(name);
++        }
++      }
++      clones.forEach(x => x.remove());
++      this.releaseQuickDock();
++      const saved = name => ({value: container.style.getPropertyValue(name), priority: container.style.getPropertyPriority(name)});
++      const d = this.quickDock = {element: container, padding: saved('padding-top'), position: saved('position'), basePadding: parseFloat(this.win.getComputedStyle(container).paddingTop) || 0};
++      if (this.win.getComputedStyle(container).position === 'static') { d.appliedPosition = 'relative'; container.style.setProperty('position', d.appliedPosition); }
++      container.prepend(this.quickElement); return container;
++    }
+     renderQuick() {
+       if (!this.quickElement) return;
+       const composer = this.findComposer();
+       if (composer !== this.composer) { this.composerResize?.disconnect(); this.composer = composer; if (composer) this.composerResize?.observe(composer); }
+-      const routes = this.e.quickRoutes(); const signature = json(routes) + this.e.settings.enabled + this.e.settings.story_flow + this.e.state.paused + json(this.e.pendingChoice) + this.e.flowNotice;
++      const e = this.e, p = e.project, s = e.state, node = p.nodes.find(n => n.id === s.current_node_id), routes = e.quickRoutes();
++      const pending = s.pending_checks.flatMap(c => c.results.filter(r => !r.handled && ['completed', 'uncertain'].includes(r.status)).map(r => ({...r, key: c.key})));
++      const stagePending = !s.completed_node_ids.includes(node?.id) && ['completed', 'uncertain'].includes(s.stage_progress?.status);
++      const obtained = C.obtainedResults(p, s), blocked = e.diagnostics().some(x => x.severity === 'error');
++      const signature = json({routes, enabled: e.settings.enabled, paused: s.paused, collapsed: e.settings.quick_collapsed, menu: this.quickMenu, choice: e.pendingChoice, node: node?.id, done: s.completed_node_ids.includes(node?.id), pending, stagePending, obtained, busy: e.busy, blocked});
+       this.availableQuickRoutes = routes;
+-      if (signature !== this.quickSignature) { this.quickSignature = signature; this.quickShadow.innerHTML = `<style>${QUICK_STYLE}</style><div class="quick" role="region" aria-label="可选择剧情分支"><div class="quick-head" role="status">${escape(this.e.flowNotice || '选择行动后填入输入框，发送才记录')}${this.e.pendingChoice ? button('撤销待发送选择', 'quick-cancel') : ''}</div><div class="quick-list">${routes.map(r => `<button type="button" class="bse-choice" data-action="quick-enter" data-id="${escape(r.target)}" data-status="${escape(r.status)}" title="${escape(r.status)} · 选择此分支">${escape(r.label)}</button>`).join('')}</div></div>`; }
++      if (signature !== this.quickSignature) {
++        this.quickSignature = signature;
++        const ready = e.settings.enabled && !s.paused && !e.busy;
++        const state = e.busy ? '辅助核验中…' : !e.settings.enabled ? blocked ? '未启用：存在依赖问题' : '未启用' : s.paused ? '已暂停' : s.completed_node_ids.includes(node?.id) ? '阶段已完成' : routes.length + ' 个可选行动';
++        const gear = this.quickMenu === 'gear' ? `<div class="quick-menu" aria-label="剧情操作"><div class="quick-tools">${button(s.completed_node_ids.includes(node?.id) ? '阶段已完成' : '确认阶段完成', 'quick-complete', !ready || s.completed_node_ids.includes(node?.id) ? 'disabled' : '')}${button(e.busy ? '正在核验…' : '核验本轮', 'quick-check', ready ? '' : 'disabled')}${button(s.paused ? '继续' : '暂停', 'quick-pause', e.settings.enabled && !e.busy ? '' : 'disabled')}${button('查看后台面板', 'quick-panel')}</div>${stagePending ? '<p class="quick-note quick-warn">本阶段核验待玩家确认，可点击“确认阶段完成”。</p>' : ''}${pending.map(r => `<div class="quick-pending"><strong>${escape(p.events.find(x => x.id === r.event_id)?.title || r.event_id)}</strong><p>${r.status === 'uncertain' ? '判断不确定，请结合正文确认' : '已判定发生，等待确认结算'}</p>${r.evidence.map(x => `<p class="quick-note">“${escape(x.quote)}”</p>`).join('')}<div class="quick-tools">${button('确认发生', 'quick-accept', `data-key="${escape(r.key)}" data-id="${escape(r.event_id)}" ${ready ? '' : 'disabled'}`)}${button('忽略', 'quick-dismiss', `data-key="${escape(r.key)}" data-id="${escape(r.event_id)}" ${e.busy ? 'disabled' : ''}`)}</div></div>`).join('')}<p class="quick-note">确认完成会按配置结算本阶段；核验读取本轮玩家输入与选中回复。</p></div>` : '';
++        const bag = this.quickMenu === 'bag' ? `<div class="quick-menu" aria-label="已获得内容">${this.obtainedMarkup(obtained)}<p class="quick-note">与后台完成记录同步，点击条目查看说明。</p></div>` : '';
++        this.quickShadow.innerHTML = `<style>${QUICK_STYLE}</style><div class="quick" role="region" aria-label="剧情选项与当前阶段"><div class="quick-header"><div class="quick-title" title="${escape(node?.title || '')}">当前阶段：${escape(node?.title || '暂无')}<small class="${blocked ? 'quick-warn' : ''}">${escape(state)}</small></div>${button('🎒', 'quick-bag', `class="quick-icon" aria-label="查看已获得内容，共${obtained.length}项" aria-expanded="${this.quickMenu === 'bag'}"`)}<button type="button" class="quick-icon" data-action="quick-gear" aria-label="剧情操作${stagePending || pending.length ? '，有待确认事项' : ''}" aria-expanded="${this.quickMenu === 'gear'}">⚙️${stagePending || pending.length ? '<span class="quick-dot" aria-hidden="true"></span>' : ''}</button>${button(e.settings.quick_collapsed ? '▾' : '▴', 'quick-collapse', `class="quick-icon" aria-label="${e.settings.quick_collapsed ? '展开' : '收起'}剧情选项" aria-expanded="${!e.settings.quick_collapsed}"`)}</div><div class="quick-list" ${e.settings.quick_collapsed ? 'hidden' : ''}>${routes.map(r => `<button type="button" class="bse-choice" data-action="quick-enter" data-id="${escape(r.target)}" data-status="${escape(r.status)}" title="${escape(r.status)} · 选择此分支">${escape(r.label)}</button>`).join('')}${!routes.length ? `<span class="empty">${e.settings.enabled && !s.paused ? '暂无可选行动，可在 ⚙️ 中确认阶段或核验本轮。' : '可在 ⚙️ 中查看或恢复运行。'}</span>` : ''}${e.pendingChoice ? button('撤销待发送选择', 'quick-cancel') : ''}</div>${gear}${bag}</div>`;
++      }
+       this.positionQuick();
+     }
++    obtainedMarkup(items) {
++      return items.map(x => `<details class="acquired"><summary>${escape(x.title)}（${escape(x.id)}）</summary><p>${escape(x.description || '尚未填写说明，可在后台结果定义中补充。')}</p><p class="muted quick-note">来源：${escape(x.source)}${x.at ? ' · ' + escape(new Date(x.at).toLocaleString()) : ''}</p></details>`).join('') || '<p class="empty">尚未获得内容</p>';
++    }
+     positionQuick() {
+-      if (!this.quickElement) return;
+-      const r = this.composer?.isConnected ? this.composer.getBoundingClientRect() : null, v = this.win.visualViewport;
+-      this.quickElement.hidden = this.opened || !this.e.settings.quick_options || !this.e.settings.story_flow || !this.availableQuickRoutes?.length || !r?.width || !r?.height || this.win.getComputedStyle(this.composer).visibility === 'hidden';
+-      if (this.quickElement.hidden) return;
+-      const left = Math.max((v?.offsetLeft || 0) + 4, r.left), width = Math.min(r.width, (v?.width || this.win.innerWidth) - 8);
+-      this.quickElement.style.left = left + 'px'; this.quickElement.style.width = width + 'px'; this.quickElement.style.top = Math.max((v?.offsetTop || 0) + 4, r.top - this.quickElement.getBoundingClientRect().height - 6) + 'px';
++      if (!this.quickElement || this.destroyed) return;
++      if (!this.element?.isConnected) { this.destroy(); return; }
++      const composer = this.composer, r = composer?.isConnected ? composer.getBoundingClientRect() : null;
++      const hidden = this.opened || !this.e.settings.quick_options || !r?.width || !r?.height || this.win.getComputedStyle(composer).visibility === 'hidden';
++      if (this.quickElement.hidden !== hidden) this.quickElement.hidden = hidden;
++      if (hidden) { this.releaseQuickDock(); this.applyLauncherPosition(); return; }
++      const dock = this.dockQuick(composer); if (!dock) { this.quickElement.hidden = true; this.releaseQuickDock(); return; }
++      const d = this.quickDock, padding = (d.basePadding + this.quickElement.getBoundingClientRect().height + 6) + 'px';
++      if (dock.style.getPropertyValue('padding-top') !== padding) { d.appliedPadding = padding; dock.style.setProperty('padding-top', padding); }
++      const chat = this.doc.getElementById('chat');
++      if (chat && !chat.contains(dock)) {
++        const cr = chat.getBoundingClientRect(), top = dock.getBoundingClientRect().top;
++        if (d.chat || cr.bottom > top + 1) {
++          if (!d.chat) { d.chat = chat; d.chatHeight = {value: chat.style.getPropertyValue('max-height'), priority: chat.style.getPropertyPriority('max-height')}; }
++          const style = this.win.getComputedStyle(chat), inset = style.boxSizing === 'border-box' ? 0 : ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'].reduce((sum, k) => sum + (parseFloat(style[k]) || 0), 0);
++          const height = Math.max(0, top - cr.top - 6 - inset) + 'px';
++          if (chat.style.getPropertyValue('max-height') !== height) { d.appliedChatHeight = height; chat.style.setProperty('max-height', height); }
++        }
++      }
++      this.applyLauncherPosition();
+     }
+     privacyUnlocked() { return this.tab === 'run' ? this.runUnlocked : this.tab === 'records' ? this.recordUnlocked : this.unlocked; }
+     updatePrivacy() {
+@@ -204,7 +265,7 @@
+       const e = this.e; const p = e.project; const s = e.state; const refs = C.indexProject(p); const node = refs.nodes.get(s.current_node_id);
+       return `<div class="card"><div class="row spread"><div><h2>${escape(p.title)}</h2><span class="badge">${e.settings.enabled ? s.paused ? '已暂停' : '运行中' : '未启用'}</span> <span class="muted">${e.settings.worldbook ? '世界书：' + escape(e.settings.worldbook) : '草稿暂存在脚本变量，建议写入世界书'}</span></div>${button(e.settings.enabled ? '关闭注入' : '启用剧本', 'toggle-enabled', 'class="primary"')}</div></div>
+       <div class="card"><h2>${escape(node.title)}</h2><p style="white-space:pre-wrap">${escape(e.settings.detail ? node.detail || node.guidance : node.guidance || node.detail)}</p>${node.boundary ? `<p class="muted">${escape(node.boundary)}</p>` : ''}<div class="row">${button(s.completed_node_ids.includes(node.id) ? '本节点已完成' : '确认完成本节点', 'complete', s.completed_node_ids.includes(node.id) ? 'disabled' : 'class="primary"')}${button(s.paused ? '继续' : '暂停', 'pause')}${button('回退上次操作', 'undo', s.history.length ? '' : 'disabled')}${button('确认此回复并识别事件', 'check', e.busy ? 'disabled' : '')}${node.completion_criteria ? button('重新核验阶段进展', 'stage-check', e.busy ? 'disabled' : '') : ''}</div><p class="muted">${escape(e.flowNotice || (node.completion_criteria ? '选择行动后发送，辅助 API 核验实际完成后才结算。' : '当前节点未配置完成标准，可在剧本页配置或手动确认完成。'))}</p><p class="muted">完成节点会执行配置的收集和变量效果；进入出口不会自动完成当前节点。</p></div>
+-      <div class="card"><div class="row spread"><h3>输入栏行动选项：${e.settings.quick_options ? '已开启' : '已关闭'}</h3>${button(e.settings.quick_options ? '关闭输入栏选项' : '显示输入栏选项', 'quick-toggle')}</div><p class="muted">关闭此面板后，输入框上方显示当前可用的行动；暂停、关闭注入或没有可选分支时隐藏。</p></div>
++      <div class="card"><div class="row spread"><h3>输入栏行动选项：${e.settings.quick_options ? '已开启' : '已关闭'}</h3>${button(e.settings.quick_options ? '关闭输入栏选项' : '显示输入栏选项', 'quick-toggle')}</div><p class="muted">关闭此面板后，输入栏小面板显示当前阶段和可用行动；⚙️收纳确认、核验与暂停，🎒查看已获得内容，收起后保留入口。</p></div>
+       <div class="row">${button('🔒 隐藏分支与状态', 'spoiler-lock')}</div><div class="run-spoiler spoiler-region"><div class="run-spoiler-content spoiler-content"><div class="card"><h2>接下来的分支</h2>${node.routes.length ? node.routes.map(r => `<div class="card route"><div><strong>${escape(r.label || refs.nodes.get(r.target).title)}</strong><div class="muted">${escape(conditionSummary(r.condition, p))}</div></div>${button(C.condition(r.condition, s) ? '进入分支' : '尚未解锁', 'enter', `data-id="${escape(r.target)}" ${C.condition(r.condition, s) ? '' : 'disabled'}`)}</div>`).join('') : '<p class="empty">此节点没有出口，可以在剧本页添加。</p>'}</div>
+       <div class="grid"><div class="card"><h3>已收集</h3>${s.collected_ids.length ? s.collected_ids.map(k => `<span class="badge">${escape(refs.collections.get(k) || k)}</span> `).join('') : '<p class="empty">暂无收集项</p>'}</div><div class="card"><h3>关系与状态</h3>${p.variables.map(v => `<div class="kv"><span>${escape(v.title || v.id)}</span><strong>${escape(s.variables[v.id])}</strong></div>`).join('') || '<p class="empty">可在数据页定义好感度等变量。</p>'}</div></div></div><div class="spoiler-layer"></div></div>`;
+     }
+@@ -215,7 +276,8 @@
+       return `<div class="card"><h3>${label} <span class="muted">${items.length}</span></h3>${input('搜索名称或编号', key + '_search', q)}<div class="stack">${filtered.slice(this.listPage * 20, this.listPage * 20 + 20).map(n => button(n.title, key + '-select', `class="${n.id === selected ? 'selected' : ''}" data-id="${escape(n.id)}"`)).join('')}</div><div class="row pagination">${button('上一页', 'list-prev', this.listPage ? '' : 'disabled')}<span class="muted">${this.listPage + 1}/${pages}</span>${button('下一页', 'list-next', this.listPage < pages - 1 ? '' : 'disabled')}</div></div>`;
+     }
+     conditionHelper(prefix) {
+-      return `<details><summary>用收集项生成条件</summary><div class="grid">${input('必须拥有（ID，逗号分隔）', prefix + '_all', '')}${input('必须没有（ID，逗号分隔）', prefix + '_not', '')}</div>${button('生成条件 JSON', 'make-condition', `data-prefix="${prefix}"`)}<p class="muted">复杂条件支持 all、any、not、completed、visited、event_completed 和 variable。生成后可继续编辑。</p></details>`;
++      const numbers = prefix === 'event' ? `<details><summary>生成数值前置条件</summary>${select('数值载体', 'event_variable', this.e.project.variables.filter(x => x.type === 'number').map(x => [x.id, (x.owner ? x.owner + ' · ' : '') + x.title]), '')}${select('比较', 'event_op', [['gte', '大于等于'], ['gt', '大于'], ['lte', '小于等于'], ['lt', '小于'], ['eq', '等于']], 'lt')}${input('数值', 'event_value', 70, 'number')}${button('加入事件前置条件', 'event-number-condition')}</details>` : '';
++      return numbers + `<details><summary>用收集项生成条件</summary><div class="grid">${input('必须拥有（ID，逗号分隔）', prefix + '_all', '')}${input('必须没有（ID，逗号分隔）', prefix + '_not', '')}</div>${button('生成条件 JSON', 'make-condition', `data-prefix="${prefix}"`)}<p class="muted">复杂条件支持 all、any、not、completed、visited、event_completed 和 variable。生成后可继续编辑。</p></details>`;
+     }
+     nodesPage() {
+       const subnav = `<div class="subnav">${button('剧情节点', 'node-tab', `data-tab="nodes" class="${this.nodeTab === 'nodes' ? 'active' : ''}"`)}${button('剧情事件包', 'node-tab', `data-tab="packages" class="${this.nodeTab === 'packages' ? 'active' : ''}"`)}</div>`;
+@@ -245,11 +307,11 @@
+       const p = this.e.project, s = this.e.state, values = this.forms.records || {}, filter = values.graph_filter || '', zoom = this.graphZoom || 1;
+       const graph = G.build(p, s, filter), item = graph.nodes.find(x => x.id === this.graphSelected);
+       const diagnostics = this.e.diagnostics();
+-      return `<form data-form="records"><div class="row spread"><h2>完成与解锁关系</h2>${button('🔒 重新隐藏', 'spoiler-lock')}</div><div class="spoiler-region"><div class="spoiler-content"><div class="card">${select('查看范围', 'graph_filter', [['', '全部事件包'], ...p.packages.map(x => [x.id, x.title])], filter)}<div class="row">${button('缩小', 'graph-zoom', 'data-delta="-0.25"')}${button('放大', 'graph-zoom', 'data-delta="0.25"')}<span>${Math.round(zoom * 100)}%</span></div><p class="muted">拖动滚动条查看；点击节点查看状态。箭头表示前提、行动或完成后取得的结果；AND 全部满足，OR 满足任一，NOT 要求不满足。解锁与完成分别显示。</p><div class="graph-viewport">${G.svg(graph, zoom)}</div></div>${item ? `<div class="card graph-detail"><h3>${escape(item.label)} · ${escape(item.name)}</h3><p><code>${escape(item.id)}</code> · ${escape(G.STATUS[item.status] || item.status)}</p>${item.detail ? `<p>${escape(item.detail)}</p>` : ''}${item.id.startsWith('result:') && s.collected_ids.includes(item.id.slice(7)) ? button('预览并回退此结果及其后续', 'result-rollback', `data-id="${escape(item.id.slice(7))}" class="danger"`) : ''}</div>` : ''}<div class="card"><h3>依赖检查</h3>${diagnostics.map(x => `<p class="${x.severity === 'error' ? 'warn error' : 'muted'}">${escape(x.message)}</p>`).join('') || '<p>未发现结构或简单条件冲突。</p>'}</div></div><div class="spoiler-layer"></div></div></form>`;
++      return `<form data-form="records"><div class="row spread"><h2>完成与解锁关系</h2>${button('🔒 重新隐藏', 'spoiler-lock')}</div><div class="spoiler-region"><div class="spoiler-content"><div class="card">${select('查看范围', 'graph_filter', [['', '全部事件包'], ...p.packages.map(x => [x.id, x.title])], filter)}<div class="row">${button('缩小', 'graph-zoom', 'data-delta="-0.25"')}${button('放大', 'graph-zoom', 'data-delta="0.25"')}<span>${Math.round(zoom * 100)}%</span></div><p class="muted">拖动滚动条查看；点击节点查看状态。箭头表示前提、行动或完成后取得的结果；AND 全部满足，OR 满足任一，NOT 要求不满足。解锁与完成分别显示。</p><div class="graph-viewport">${G.svg(graph, zoom)}</div></div>${this.completionRecords()}${item ? `<div class="card graph-detail"><h3>${escape(item.label)} · ${escape(item.name)}</h3><p><code>${escape(item.id)}</code> · ${escape(G.STATUS[item.status] || item.status)}</p>${item.detail ? `<p>${escape(item.detail)}</p>` : ''}${item.id.startsWith('result:') ? button('编辑结果说明', 'result-definition-edit', `data-id="${escape(item.id.slice(7))}"`) + button('删除结果', 'result-delete-ask', `data-id="${escape(item.id.slice(7))}" class="danger"`) + this.resultDeleteEditor(item.id.slice(7)) : ''}${item.id.startsWith('result:') && s.collected_ids.includes(item.id.slice(7)) ? button('预览并回退此结果及其后续', 'result-rollback', `data-id="${escape(item.id.slice(7))}" class="danger"`) : ''}</div>` : ''}<div class="card"><h3>依赖检查</h3>${diagnostics.map(x => `<p class="${x.severity === 'error' ? 'warn error' : 'muted'}">${escape(x.message)}</p>`).join('') || '<p>未发现结构或简单条件冲突。</p>'}</div></div><div class="spoiler-layer"></div></div></form>`;
+     }
+     eventsPage() {
+       const p = this.e.project;
+-      const guide = `<div class="card event-guide"><h2>事件规则：发生什么 → 更新什么</h2><p>这里配置对话中的行为和结果，以及发生后要记录的变化。例如：对方接受送花 → 好感度 +1，并记录“已送花”；得到房卡 → 记录收集项 A，用于解锁后续分支。</p><p class="muted">剧本节点负责当前剧情与下一步走向。事件规则负责从聊天正文中确认行为，更新变量或收集记录；条件是否解锁仍由本地脚本计算。不需要这类记录时，可以不配置事件。</p><ol><li>写清“什么情况下算已经发生”，排除提议、计划和拒绝。</li><li>设置发生后的变化，如好感度增加或记录收集项。</li><li>保存规则，在“运行”页识别当前回复，再到“记录”页确认；也可手动确认发生。勾选自动结算后，证据通过的结果会直接应用。</li></ol><div class="row">${button('用送花示例创建规则', 'event-example')}${button('查看待确认事件', 'event-records')}</div><p class="muted">送花示例会添加好感度变量与“已送花”收集项，规则和变化都可以继续修改。</p></div>`;
++      const guide = `<div class="card event-guide"><h2>事件规则：发生什么 → 更新什么</h2><p>这里配置对话中的行为和结果，以及发生后要记录的变化。例如：对方接受送花 → 好感度 +1，并记录“已送花”；得到房卡 → 记录收集项 A，用于解锁后续分支。</p><p class="muted">剧本节点负责当前剧情与下一步走向。事件规则负责从聊天正文中确认行为，更新变量或收集记录；条件是否解锁仍由本地脚本计算。不需要这类记录时，可以不配置事件。</p><ol><li>写清“什么情况下算已经发生”，排除提议、计划和拒绝。</li><li>设置发生后的变化，如好感度增加或记录收集项。</li><li>保存规则，在“运行”页识别当前回复，再到“记录”页确认；也可手动确认发生。勾选自动结算后，证据通过的结果会直接应用。</li></ol><div class="row">${button('用可重复送礼示例创建规则', 'event-example')}${button('查看待确认事件', 'event-records')}</div><p class="muted">送花示例会添加好感度变量与“已送花”收集项，规则和变化都可以继续修改。</p></div>`;
+       if (!p.events.length) return guide + `<div class="card"><h2>还没有事件规则</h2><p>可以从送花示例开始，也可以新建自己的识别规则。</p>${button('新建事件规则', 'event-new', 'class="primary"')}${button('导入剧本与事件规则', 'import')}</div>`;
+       this.eventId ||= p.events[0].id; const ev = p.events.find(v => v.id === this.eventId) || p.events[0]; this.eventId = ev.id;
+       if (ev.completion_node_id) {
+@@ -262,9 +324,9 @@
+         if (effect.collect) return '记录收集项：' + (p.collections.find(c => c.id === effect.collect)?.title || effect.collect);
+         const value = effect.add || effect.set; if (!value) return '请检查效果 JSON';
+         const name = p.variables.find(v => v.id === value.variable)?.title || value.variable;
+-        return name + (effect.add ? ' ' + (value.value >= 0 ? '+' : '') + value.value : ' 设置为 ' + value.value);
++        return name + (effect.add ? ' ' + (value.value >= 0 ? '+' : '') + value.value : ' 设置为 ' + value.value) + (value.max != null ? '（此行为最多加到 ' + value.max + '）' : '') + (value.min != null ? '（此行为最低减到 ' + value.min + '）' : '');
+       }).join('；') : '变化草稿尚未通过校验';
+-      return guide + `<form data-form="event:${escape(ev.id)}"><div class="card row">${button('新建事件规则', 'event-new')}${button(ev.repeat_policy === 'once' && this.e.state.event_counts[ev.id] ? '本规则已确认发生' : '手动确认发生并应用变化', 'event-manual', ev.repeat_policy === 'once' && this.e.state.event_counts[ev.id] ? 'disabled' : '')}${button('删除规则', 'event-delete', 'class="danger"')}<span class="muted">手动确认直接执行本条规则，不调用模型。</span></div><div class="split">${this.list(p.events, 'event', ev.id, '事件规则')}<div class="card"><h2>编辑事件规则</h2>${input('规则名称', 'title', ev.title)}${area('需要识别的行为或结果', 'description', ev.description, 4)}${area('什么情况下算已经发生', 'completion_criteria', ev.completion_criteria, 4)}${area('不算发生的情况（每行一条）', 'exclusions', ev.exclusions.join('\n'), 3)}<div class="grid">${select('如何确认发生', 'detection', [['api', '辅助 API 分析正文'], ['manual', '仅手动确认']], ev.detection)}${select('同一规则可以执行几次', 'repeat_policy', [['once', '整个剧本一次'], ['once_per_accepted_turn', '每条确认回复一次']], ev.repeat_policy)}</div>${checkbox('启用此规则', 'enabled', ev.enabled)}${checkbox('辅助 API 完成判断且证据通过后自动应用变化', 'auto_settle', ev.auto_settle)}<h3>发生后的变化</h3><p class="event-effects-summary">${escape(changes || '尚未配置变化，请从下面添加。')}</p><div class="grid">${input('要记录的收集项编号（可空）', 'collect_id', '')}${select('要增加的变量', 'effect_variable', [['', '不选择'], ...p.variables.filter(v => v.type === 'number').map(v => [v.id, v.title || v.id])], '')}${input('增加量（减分可填负数）', 'effect_delta', 1, 'number')}</div>${button('加入发生后的变化', 'append-effect')}<p class="muted">先填写并加入变化，再保存规则。好感度等变量可在“数据”页创建；收集记录可作为分支的解锁条件。</p><details><summary>高级：效果 JSON</summary>${area('完成效果 JSON', 'effects', json(ev.effects), 5)}</details><details><summary>高级：适用范围、前置条件与身份</summary>${input('主体 ID（可空；玩家可写 player）', 'actor_id', ev.actor_id || '')}${input('对象 ID（可空）', 'recipient_id', ev.recipient_id || '')}${input('适用节点 ID（逗号分隔；留空表示整个剧本）', 'scope_nodes', ev.scope.kind === 'nodes' ? ev.scope.node_ids.join(',') : '')}${this.conditionHelper('event')}${area('事件前置条件 JSON', 'condition', json(ev.condition ?? true), 4)}<p>稳定事件 ID：<code>${escape(ev.id)}</code></p></details><div class="actions">${button('保存事件规则', 'event-save', 'class="primary"')}${button('查看识别记录', 'event-records')}</div></div></div></form>`;
++      return guide + `<form data-form="event:${escape(ev.id)}"><div class="card row">${button('新建事件规则', 'event-new')}${button(ev.repeat_policy === 'once' && this.e.state.event_counts[ev.id] ? '本规则已确认发生' : '手动确认发生并应用变化', 'event-manual', ev.repeat_policy === 'once' && this.e.state.event_counts[ev.id] ? 'disabled' : '')}${button('删除规则', 'event-delete', 'class="danger"')}<span class="muted">手动确认直接执行本条规则，不调用模型。</span></div><div class="split">${this.list(p.events, 'event', ev.id, '事件规则')}<div class="card"><h2>编辑事件规则</h2>${input('规则名称', 'title', ev.title)}${area('需要识别的行为或结果', 'description', ev.description, 4)}${area('什么情况下算已经发生', 'completion_criteria', ev.completion_criteria, 4)}${area('不算发生的情况（每行一条）', 'exclusions', ev.exclusions.join('\n'), 3)}<div class="grid">${select('如何确认发生', 'detection', [['api', '辅助 API 分析正文'], ['manual', '仅手动确认']], ev.detection)}${select('同一规则可以执行几次', 'repeat_policy', [['once', '整个剧本一次'], ['once_per_accepted_turn', '每轮实际发生可重复，同一回复一次']], ev.repeat_policy)}</div>${checkbox('启用此规则', 'enabled', ev.enabled)}${checkbox('辅助 API 完成判断且证据通过后自动应用变化', 'auto_settle', ev.auto_settle)}<h3>发生后的变化</h3><p class="event-effects-summary">${escape(changes || '尚未配置变化，请从下面添加。')}</p><div class="grid">${input('要记录的收集项编号（可空）', 'collect_id', '')}${select('要增加的变量', 'effect_variable', [['', '不选择'], ...p.variables.filter(v => v.type === 'number').map(v => [v.id, v.title || v.id])], '')}${input('变化量（减分可填负数）', 'effect_delta', 1, 'number')}${select('变化方式', 'effect_operation', [['add', '增加 / 减少'], ['set', '设置为指定值']], 'add')}${input('此行为最多加到（可空）', 'reward_max', '', 'number')}${input('此行为最低减到（可空）', 'reward_min', '', 'number')}</div>${button('加入发生后的变化', 'append-effect')}<p class="muted">先填写并加入变化，再保存规则。数值可在“数据 → 数值载体”创建、查看归属和当前值；此行为的限制独立于载体总上限。收集记录可作为分支的解锁条件。</p><details><summary>高级：效果 JSON</summary>${area('完成效果 JSON', 'effects', json(ev.effects), 5)}</details><details><summary>高级：适用范围、前置条件与身份</summary>${input('主体 ID（可空；玩家可写 player）', 'actor_id', ev.actor_id || '')}${input('对象 ID（可空）', 'recipient_id', ev.recipient_id || '')}${input('适用节点 ID（逗号分隔；留空表示整个剧本）', 'scope_nodes', ev.scope.kind === 'nodes' ? ev.scope.node_ids.join(',') : '')}${this.conditionHelper('event')}${area('事件前置条件 JSON', 'condition', json(ev.condition ?? true), 4)}<p>稳定事件 ID：<code>${escape(ev.id)}</code></p></details><div class="actions">${button('保存事件规则', 'event-save', 'class="primary"')}${button('查看识别记录', 'event-records')}</div></div></div></form>`;
+     }
+     recordsPage() {
+       const subnav = `<div class="subnav">${button('进度记录', 'records-tab', `data-tab="progress" class="${this.recordsTab === 'progress' ? 'active' : ''}"`)}${button('完成与解锁关系', 'records-tab', `data-tab="graph" class="${this.recordsTab === 'graph' ? 'active' : ''}"`)}</div>`;
+@@ -272,7 +334,7 @@
+       const e = this.e; const p = e.project; const s = e.state; const refs = C.indexProject(p);
+       const statuses = {completed: '已发生，待结算', uncertain: '不确定', proposed: '仅提议', rejected: '被拒绝', not_occurred: '未发生'};
+       return subnav + `<div class="card"><h2>当前阶段进展</h2><p>${escape(e.flowNotice || '等待行动与回复')}</p>${s.turn_context?.label ? `<p>已选择：${escape(s.turn_context.label)} · 玩家消息 ${Number(s.turn_context.user_id) + 1}</p>` : ''}${s.stage_progress ? `<p>${escape(s.stage_progress.summary || '暂无可确认的新事实')}</p><p class="muted">${escape(s.stage_progress.missing.join('；'))}</p>` : '<p class="muted">阶段完成后仅保留结果标记，工作摘要不继续累计。</p>'}<p>已确认结果：${s.collected_ids.map(x => `<code>${escape(x)}</code>`).join('、') || '暂无'}</p></div>${p.packages.some(b => s.package_progress?.[b.id]?.started) ? `<div class="card"><h2>事件包进度</h2>${p.packages.filter(b => s.package_progress?.[b.id]?.started).map(b => { const q = s.package_progress[b.id]; return `<div class="kv"><span>${escape(b.title)} · ${escape(refs.nodes.get(q.current_node_id)?.title || q.current_node_id)}<br><small>${escape(q.stage_progress?.summary || '暂无工作摘要')}</small></span><strong>${escape(({running: '进行中', done: '已完成', waiting: '等待条件', disabled: '已关闭'})[q.status] || q.status)}</strong></div>`; }).join('')}</div>` : ''}<div class="card"><h2>进度记录</h2><div class="grid"><div><h3>已完成节点</h3>${s.completed_node_ids.map(k => `<p>${escape(refs.nodes.get(k)?.title || k)}</p>`).join('') || '<p class="empty">暂无</p>'}</div><div><h3>事件累计</h3>${Object.entries(s.event_counts).map(([k, v]) => `<div class="kv"><span>${escape(refs.events.get(k)?.title || k)}</span><strong>${v}</strong></div>`).join('') || '<p class="empty">暂无</p>'}</div></div></div>
+-      <div class="card"><h2>待确认与失败检查</h2>${e.busy ? '<span class="badge">辅助任务运行中</span>' : ''}${s.pending_checks.map(check => `<div class="card"><h3>回复楼层 ${Number(check.assistant_id) + 1} · ${escape(check.status)}</h3>${check.error ? `<p class="warn">${escape(check.error)}</p>` : ''}${['error', 'stale', 'partial'].includes(check.status) ? button(check.status === 'partial' ? '继续检查未查候选' : '重新检查', 'retry', `data-key="${escape(check.key)}"`) : ''}${check.results.filter(r => !r.handled).map(r => `<div class="card"><strong>${escape(refs.events.get(r.event_id)?.title || r.event_id)}</strong> <span class="badge">${escape(statuses[r.status])}</span>${r.evidence.map(x => `<p class="muted">“${escape(x.quote)}”</p>`).join('')}${r.note ? `<p class="warn">${escape(r.note)}</p>` : ''}${['completed', 'uncertain'].includes(r.status) ? `<div class="row">${button('确认发生并结算', 'result-accept', `data-key="${escape(check.key)}" data-id="${escape(r.event_id)}"`)}${button('忽略', 'result-dismiss', `data-key="${escape(check.key)}" data-id="${escape(r.event_id)}"`)}</div>` : ''}</div>`).join('')}</div>`).join('') || '<p class="empty">没有待处理的检查</p>'}</div>
++      ${this.completionRecords()}<div class="card"><h2>待确认与失败检查</h2>${e.busy ? '<span class="badge">辅助任务运行中</span>' : ''}${s.pending_checks.map(check => `<div class="card"><h3>回复楼层 ${Number(check.assistant_id) + 1} · ${escape(check.status)}</h3>${check.error ? `<p class="warn">${escape(check.error)}</p>` : ''}${['error', 'stale', 'partial'].includes(check.status) ? button(check.status === 'partial' ? '继续检查未查候选' : '重新检查', 'retry', `data-key="${escape(check.key)}"`) : ''}${check.results.filter(r => !r.handled).map(r => `<div class="card"><strong>${escape(refs.events.get(r.event_id)?.title || r.event_id)}</strong> <span class="badge">${escape(statuses[r.status])}</span>${r.evidence.map(x => `<p class="muted">“${escape(x.quote)}”</p>`).join('')}${r.note ? `<p class="warn">${escape(r.note)}</p>` : ''}${['completed', 'uncertain'].includes(r.status) ? `<div class="row">${button('确认发生并结算', 'result-accept', `data-key="${escape(check.key)}" data-id="${escape(r.event_id)}"`)}${button('忽略', 'result-dismiss', `data-key="${escape(check.key)}" data-id="${escape(r.event_id)}"`)}</div>` : ''}</div>`).join('')}</div>`).join('') || '<p class="empty">没有待处理的检查</p>'}</div>
+       <div class="card"><h2>近期操作（最多 25 条）</h2>${s.history.slice().reverse().map(tx => `<p>${escape(tx.label)} <span class="muted">${new Date(tx.at).toLocaleString()}</span></p>`).join('') || '<p class="empty">暂无操作</p>'}${button('回退最近一次', 'undo', s.history.length ? '' : 'disabled')}</div>`;
+     }
+     apiSource(profile) { return this.e.apiEndpoints(profile.base_url).models + '\n' + (profile.key || '').trim(); }
+@@ -288,7 +350,7 @@
+       try { if (this.apiModels?.source === this.apiSource(a)) models = this.apiModels.ids; } catch {}
+       const pick = (label, name, value) => models.length ? select(label, name, [['', '请选择（保留手动输入）'], ...models.map(id => [id, id])], models.includes(value) ? value : '') : '';
+       return `<form data-form="api"><div class="card"><h2>辅助 API</h2><p class="muted">独立于主聊天 API。支持可从浏览器调用的 OpenAI 兼容 Chat Completions 服务。</p>${input('API 基础地址（域名、带 /v1 的地址或完整聊天接口）', 'base_url', a.base_url, 'url')}<p class="muted">只填域名时自动使用 /v1；自定义路径按原样保留。请使用服务提供的 OpenAI 兼容地址。</p>${input('API 密钥', 'key', a.key, 'password', 'autocomplete="off"')}${checkbox('记住密钥（保存在酒馆脚本变量）', 'remember_key', s.remember_key)}<div class="row">${button(this.modelLoading ? '正在获取模型…' : '获取模型列表', 'api-models', this.modelLoading || this.e.busy ? 'disabled' : '')}</div><p class="muted">获取列表不生成回复。选择后填入完整模型 ID；也可手动输入。列表可用后，仍需测试聊天接口。</p>${urls}${input('事件识别模型（完整 ID）', 'model', a.model)}${pick('从模型列表选择事件识别模型', 'model_choice', a.model)}${input('剧本整理模型（留空沿用事件模型）', 'segment_model', this.forms.api?.segment_model ?? s.segment_model)}${pick('从模型列表选择剧本整理模型', 'segment_model_choice', this.forms.api?.segment_model ?? s.segment_model)}<div class="row">${button('保存 API 设置', 'api-save', 'class="primary"')}${button('测试连接', 'api-test', this.e.busy || this.modelLoading ? 'disabled' : '')}</div></div>
+-      <div class="card"><h2>判断与预算</h2>${checkbox('用户接话后自动检查上一条选中的回复', 'auto_detect', s.auto_detect)}${checkbox('请求 JSON 输出（服务不支持时可关闭）', 'json_mode', a.json_mode)}${checkbox('发送 enable_thinking=false（仅兼容服务开启）', 'no_thinking', a.no_thinking)}<div class="grid">${input('每批候选事件数', 'batch_size', s.batch_size, 'number', 'min="1" max="32"')}${input('每次最多请求批数', 'max_batches', s.max_batches, 'number', 'min="1" max="64"')}${input('快速识别/模型列表超时（秒）', 'timeout_sec', a.timeout_sec, 'number', 'min="5" max="300"')}${input('整理/分析超时（秒）', 'analysis_timeout_sec', a.analysis_timeout_sec, 'number', 'min="5" max="1800"')}${input('最大输入字符数（不是 Token）', 'max_input_chars', a.max_input_chars, 'number', 'min="1000" max="200000"')}${input('识别最大输出 Token', 'max_output', a.max_output, 'number', 'min="128" max="16000"')}${input('整理最大输出 Token', 'segment_output', a.segment_output, 'number', 'min="512" max="32000"')}${input('生成前最多等待判断（毫秒，0 为异步）', 'wait_ms', s.wait_ms, 'number', 'min="0" max="15000"')}</div><p class="muted">候选过多按批检查，达到本轮批数上限后会显示未检查数量，由你决定继续。输入超限会明确报错，不把截断文本当作全面检查结果。自动检查需启用剧本。</p></div>
++      <div class="card"><h2>判断与预算</h2>${checkbox('生成结束后自动核验独立行为事件', 'auto_events', s.auto_events)}${checkbox('用户接话后自动检查上一条选中的回复', 'auto_detect', s.auto_detect)}${checkbox('请求 JSON 输出（服务不支持时可关闭）', 'json_mode', a.json_mode)}${checkbox('发送 enable_thinking=false（仅兼容服务开启）', 'no_thinking', a.no_thinking)}<div class="grid">${input('每批候选事件数', 'batch_size', s.batch_size, 'number', 'min="1" max="32"')}${input('每次最多请求批数', 'max_batches', s.max_batches, 'number', 'min="1" max="64"')}${input('快速识别/模型列表超时（秒）', 'timeout_sec', a.timeout_sec, 'number', 'min="5" max="300"')}${input('整理/分析超时（秒）', 'analysis_timeout_sec', a.analysis_timeout_sec, 'number', 'min="5" max="1800"')}${input('最大输入字符数（不是 Token）', 'max_input_chars', a.max_input_chars, 'number', 'min="1000" max="200000"')}${input('识别最大输出 Token', 'max_output', a.max_output, 'number', 'min="128" max="16000"')}${input('整理最大输出 Token', 'segment_output', a.segment_output, 'number', 'min="512" max="32000"')}${input('生成前最多等待判断（毫秒，0 为异步）', 'wait_ms', s.wait_ms, 'number', 'min="0" max="15000"')}</div><p class="muted">候选过多按批检查，达到本轮批数上限后会显示未检查数量，由你决定继续。输入超限会明确报错，不把截断文本当作全面检查结果。自动检查需启用剧本。</p></div>
+       <div class="card"><h2>实际发送给辅助 API 的系统提示词</h2><p class="muted">下面的文本作为对应请求的 system 消息发送，可直接编辑，点击“保存 API 设置”生效。留空使用默认值。JSON 字段和证据格式仍需保持兼容。</p>${area('玩家行动选择识别提示词', 'choice_prompt', a.choice_prompt || prompts.choice, 8)}${area('阶段进展与完成核验提示词', 'stage_prompt', a.stage_prompt || prompts.stage, 10)}${area('事件核验系统提示词', 'detect_prompt', a.detect_prompt || prompts.detect, 8)}${area('基础文本拆分系统提示词', 'segment_prompt', a.segment_prompt || prompts.segment, 8)}${area('剧本分析系统提示词', 'analysis_prompt', a.analysis_prompt || prompts.analysis, 12)}${area('跨段合并系统提示词', 'analysis_merge_prompt', a.analysis_merge_prompt || prompts.merge, 10)}${input('分析最大输出 Token', 'analysis_output', a.analysis_output, 'number', 'min="512" max="32000"')}${button('恢复默认提示词（仍需保存）', 'prompts-reset')}<details><summary>每次请求附带什么数据？</summary><p>行动选择：本次玩家输入和当前可选分支；阶段核验：一轮输入与回复、上一份短摘要、至多8条关键事实和相关结果标记。事件核验：当前对话 dialogue、已确认状态 facts、候选事件 candidates。基础拆分：原文 original 与要求 preferences。剧本分析：原文 original、要求 preferences、模式 mode；长文本增加分块编号 part / parts。跨段合并：节点摘要 nodes 与各块报告 parts。</p><p>这些数据放在 user 消息中，每次自动填写。连接测试另发固定 user 消息：只输出 JSON：{&quot;ok&quot;:true}。</p></details><div class="row">${button('保存 API 设置', 'api-save', 'class="primary"')}</div></div>
+       <div class="card"><h2>本机已记录用量</h2><div class="row"><span>成功响应 ${u.calls} 次</span><span>输入 ${u.input} Token</span><span>输出 ${u.output} Token</span></div>${u.unknown ? `<p class="muted">${u.unknown} 次响应没有返回 usage，未计入 Token 总数。</p>` : ''}</div></form>`;
+     }
+@@ -297,18 +359,45 @@
+       const names = ids => (ids || []).map(k => refs.nodes.get(k)?.title || k).join(' → ');
+       const proposed = item => item.suggested ? '<span class="badge">补充构想</span>' : '';
+       const count = draft ? {nodes: p.nodes.length, routes: p.nodes.reduce((n, x) => n + x.routes.length, 0), packages: p.packages.length, events: p.events.length + p.nodes.filter(n => !n.suggested && n.completion_criteria.trim() && !p.events.some(x => x.completion_node_id === n.id)).length} : null;
++      const prompts = e.defaultPrompts();
++      const promptEditor = `<details class="analysis-prompts"><summary>查看与修改分析提示词</summary><p class="muted">这里与 API 页共用已保存的系统提示词。修改后点击保存，再发起分析；保留 JSON 字段与证据约定。</p>${area('分析系统提示词（system）', 'analysis_prompt', e.settings.profile.analysis_prompt || prompts.analysis, 12)}${area('跨段合并系统提示词（system）', 'analysis_merge_prompt', e.settings.profile.analysis_merge_prompt || prompts.merge, 10)}<div class="row">${button('保存分析提示词', 'analysis-prompts-save', e.busy ? 'disabled' : '')}${button('恢复默认分析提示词', 'analysis-prompts-reset', e.busy ? 'disabled' : '')}${button('预览当前输入与已保存提示词', 'analysis-preview')}</div>${this.analysisPreview ? `<p class="muted">发送前预览：使用已保存的提示词和当前原文、要求。超预算时将分块；各次实际请求见下方记录。</p><pre class="prompt-preview">${escape(json(this.analysisPreview))}</pre>` : ''}<h3>最近一次整理 / 分析的已发请求</h3>${(e.rawAnalysis?.requests || []).map((r, i) => `<details><summary>请求 ${i + 1} · ${escape(r.kind)}${r.part ? ' · ' + r.part + '/' + r.parts : ''}</summary>${r.storage_truncated ? '<p class="warn">本地保留预算已满，此展示不完整。</p>' : ''}<pre class="sent-prompt">${escape(r.text)}</pre></details>`).join('') || '<p class="empty">尚无已发送请求记录</p>'}</details>`;
+       const conversion = draft ? `<div class="card analysis-conversion"><h2>分析完成，转化为可用内容</h2><p>${count.nodes} 个剧情阶段 · ${count.events} 条事件规则 · ${count.routes} 个分支出口 · ${count.packages} 个剧情事件包</p><p>转化后，阶段和分支在“剧本”页，完成规则在“事件”页，条件关系在“记录”页。有完成标准的阶段会登记对应事件，共用一次结算；未明确的标准留待编辑。</p>${draft.is_partial ? '<p class="warn">这只是单个分块，尚未完成全篇整合。</p>' : ''}<div class="row">${button('转化为剧本、事件与分支', 'analysis-convert', e.busy ? 'disabled' : 'class="primary"')}${button('备份当前进度', 'export-progress')}${button('导出分析草稿', 'analysis-export')}</div><p class="muted">转化无需再次调用 API。当前剧本保留在草稿或世界书，转换后的剧本先关闭注入，核对后启用。</p></div>` : '';
+-      return `<form data-form="analysis">${conversion}<div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。超过单次输入预算时自动分块并额外调用一次 API 整合；单次最多 20 万字符、32 块。</p>${area('需要分析的长文本', 'analysis_text', p.original_text || '', 12)}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>
++      return `<form data-form="analysis">${conversion}<div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。超过单次输入预算时自动分块并额外调用一次 API 整合；单次最多 20 万字符、32 块。</p>${area('需要分析的长文本', 'analysis_text', p.original_text || '', 12)}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}${promptEditor}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>
+       ${a ? `<div class="card analysis-report"><h2>${draft ? '分析草稿报告' : '当前剧本分析报告'}</h2><p style="white-space:pre-wrap">${escape(a.synopsis)}</p><h3>不同走向</h3>${a.branches.map(x => `<div class="card"><strong>${escape(x.title)}</strong> ${proposed(x)}<p>${escape(x.summary)}</p><p class="muted">${escape(names(x.node_ids))}</p></div>`).join('') || '<p class="empty">未确认不同走向</p>'}<h3>结局</h3>${a.endings.map(x => `<div class="card"><strong>${escape(x.title)}</strong> ${proposed(x)}<p>${escape(x.summary)}</p><p class="muted">${escape(refs.nodes.get(x.node_id)?.title || '')}</p></div>`).join('') || '<p class="empty">原文未明确结局</p>'}<h3>伏笔与回收</h3>${a.foreshadowing.map(x => `<div class="card"><strong>${escape(x.title)}</strong> ${proposed(x)}<p>埋设：${escape(x.hint)}</p><p class="muted">${escape(names(x.plant_node_ids))}</p><p>回收：${escape(x.payoff)}</p><p class="muted">${escape(names(x.payoff_node_ids))}</p></div>`).join('') || '<p class="empty">未确认伏笔</p>'}${a.uncertainties.length ? `<h3>待核对事项</h3><ul>${a.uncertainties.map(x => `<li>${escape(x)}</li>`).join('')}</ul>` : ''}</div>` : ''}
+       ${draft ? `<div class="card"><h2>编辑并应用分析草稿</h2><p class="warn">${draft.warnings.map(escape).join('<br>') || '请核对原文、走向、结局与伏笔。'}<br>${draft.recovered ? '本次从已有后台结果恢复，未再次请求 API。' : '本次分析使用 ' + (Number(draft.request_count) || 1) + ' 次请求。'}原文明确的完成标准、结果标记和条件会保留为可编辑规则，请核对后再应用。</p>${area('完整剧本草稿 JSON（可编辑）', 'analysis_draft', json(draft.project), 18)}<div class="row">${button('转化并打开剧本', 'analysis-apply', 'class="primary"')}${button('导出分析草稿', 'analysis-export')}</div></div>` : ''}</form>`;
+     }
++    valuesPage() {
++      const p = this.e.project, state = this.e.state, list = p.variables.filter(v => v.type === 'number');
++      const v = list.find(x => x.id === this.variableId) || list[0]; this.variableId = v?.id || '';
++      const changes = (state.settlements?.order || []).slice().reverse().flatMap(k => {
++        const entry = state.settlements.entries[k], source = p.events.find(x => x.id === entry.event_id)?.title || p.nodes.find(x => x.id === entry.node_id)?.title || '状态同步';
++        return (entry.changes || []).filter(x => x.variable === v?.id).map(x => ({...x, source, at: entry.at}));
++      }).slice(0, 12);
++      return `<div class="card values-card"><h2>数值载体</h2><p class="muted">为角色、玩家、组织或全局保存数值。事件奖励写入当前聊天进度，分支与事件包用同一数值判断条件。</p><div class="stack">${list.map(x => button((x.owner ? x.owner + ' · ' : '') + x.title + '（' + x.id + '）：' + state.variables[x.id], 'variable-select', `data-id="${escape(x.id)}" class="${x.id === v?.id ? 'selected' : ''}"`)).join('') || '<p class="empty">暂无数值，可在下面创建。</p>'}</div><h3>${v ? '编辑数值定义' : '创建数值'}</h3>${input('名称', 'value_title', v?.title || '')}${input('归属 / 对象（如玩家、某角色、某组织；可空）', 'value_owner', v?.owner || '')}<div class="grid">${input('初始值（修改定义不会覆盖现有进度）', 'value_default', v?.default ?? 0, 'number')}${input('总下限（可空）', 'value_min', v?.min ?? '', 'number')}${input('总上限（可空）', 'value_max', v?.max ?? '', 'number')}</div>${v ? `<p>当前值：<strong>${escape(state.variables[v.id])}</strong> · 编号 <code>${escape(v.id)}</code>${v.binding ? ' · 从外部聊天变量只读同步' : ''}</p>` : ''}<div class="row">${button('保存数值定义', 'variable-save')}${button('创建为新数值', 'variable-new')}</div><p class="muted">一个行为的奖励上限在事件页单独设置；到达该上限后，其他符合条件的行为仍可增加数值。</p>${v ? `<h3>最近实际变化</h3>${changes.map(x => `<div class="kv"><span>${escape(x.source)}<br><small>${escape(new Date(x.at).toLocaleString())}</small></span><strong>${escape(x.before)} → ${escape(x.after)}</strong></div>`).join('') || '<p class="empty">暂无可追溯的数值变化</p>'}` : ''}</div>`;
++    }
++    resultDefinitionsPage() {
++      const p = this.e.project, c = p.collections.find(x => x.id === this.resultId) || p.collections[0]; this.resultId = c?.id || '';
++      return `<div class="card results-card"><h2>结果与🎒说明</h2><div class="stack">${p.collections.map(x => button(x.title + '（' + x.id + '）', 'definition-select', `data-id="${escape(x.id)}" class="${x.id === c?.id ? 'selected' : ''}"`)).join('') || '<p class="empty">暂无结果定义</p>'}</div>${input('结果名称', 'result_title', c?.title || '')}${input('新建结果编号（留空自动分配，如 a、b1、ab）', 'new_result_code', '')}${area('取得后显示的说明文字', 'result_description', c?.description || '', 3)}<div class="row">${button('保存结果说明', 'definition-save', c ? '' : 'disabled')}${button('创建新结果', 'definition-new')}</div><p class="muted">🎒只显示真正取得的结果和这段说明。新结果还需在节点或事件中配置获取来源。</p></div>`;
++    }
++    completionRecords() {
++      const p = this.e.project, s = this.e.state;
++      return `<div class="card completion-records"><h3>完成记录</h3><div class="grid"><div><h3>已完成阶段</h3>${s.completed_node_ids.map(k => {
++        const n = p.nodes.find(x => x.id === k), entry = s.settlements?.entries['node:' + k];
++        return `<details class="acquired"><summary>${escape(n?.title || k)}（${escape(C.displayId(p, 'node', k))}）</summary><p>${entry ? escape(new Date(entry.at).toLocaleString()) : '旧进度或导入记录'}${entry?.source?.assistant_id != null ? ' · 回复楼层 ' + (Number(entry.source.assistant_id) + 1) : ' · 人工确认或旧记录'}</p>${entry?.completion_criteria || n?.completion_criteria ? `<p>完成标准：${escape(entry?.completion_criteria || n.completion_criteria)}</p>` : ''}${entry?.source?.evidence?.map(x => `<p>依据：“${escape(x.quote)}”</p>`).join('') || ''}</details>`;
++      }).join('') || '<p class="empty">暂无已完成阶段</p>'}</div><div><h3>已获得内容</h3>${this.obtainedMarkup(C.obtainedResults(p, s))}</div></div></div>`;
++    }
++    resultDeleteEditor(code) {
++      if (this.deletingResult !== code) return '';
++      const plan = this.e.resultDeletionPreview(code);
++      return `<div class="card result-delete-editor"><h3>删除结果及处理引用</h3><p>${escape(plan.definition.title)}（${escape(code)}）</p>${plan.references.length ? `<p>以下内容引用此结果：</p><ul>${plan.references.map(r => `<li>${escape(r.label)} ${button('编辑', 'result-reference-edit', `data-kind="${escape(r.kind)}" data-id="${escape(r.id)}"`)}</li>`).join('')}</ul>` : '<p>没有其他定义引用此结果。</p>'}${plan.in_progress ? '<p class="warn">已有取得或结算依赖记录。请先备份并回退相关结果，再删除定义。</p>' : ''}${select('关联条件如何处理', 'delete_result_mode', [['block', '禁止所列关联入口，保留内容供编辑'], ['replace', '用另一个结果替换条件'], ['remove', '移除相关条件项（可能提前解锁）']], 'block')}${select('替代结果（选择替换时使用）', 'delete_result_replacement', [['', '请选择'], ...this.e.project.collections.filter(x => x.id !== code).map(x => [x.id, x.title + '（' + x.id + '）'])], '')}<p class="muted">取得此结果的效果和互斥引用会清理，数值奖励、阶段正文与其他结果保留。只影响结果定义；其他聊天使用同一剧本时也需核对。</p><div class="row">${button('取消删除', 'result-delete-cancel')}${button('修改关联内容', 'result-edit-references', `data-id="${escape(code)}"`)}${button('确认删除结果及所列引用', 'result-delete-confirm', `data-id="${escape(code)}" class="danger" ${plan.in_progress ? 'disabled' : ''}`)}${button('备份当前进度', 'export-progress')}</div></div>`;
++    }
+     dataPage() {
+       const e = this.e; const p = e.project;
+       let books = []; try { books = e.host.books(); } catch {}
+       const draft = e.segmentDraft;
+       return `<form data-form="data"><div class="card"><h2>剧本与世界书</h2>${input('剧本名称', 'project_title', p.title)}${area('必要背景（会进入主模型提示词）', 'premise', p.premise, 3)}<div class="grid">${select('读取已有世界书', 'book_load', [['', '请选择'], ...books.map(b => [b, b])], e.settings.worldbook)}${input('写入世界书名称', 'book_save', e.settings.worldbook || '分支剧本素材')}</div>${this.bookProjects.length > 1 ? select('世界书中的剧本', 'book_project', this.bookProjects.map(v => [v.id, v.title]), p.id) : ''}<div class="row">${button('读取世界书', 'book-load')}${button('写入世界书', 'book-save', 'class="primary"')}${button('保存名称与背景', 'project-meta')}${button('新建空白剧本', 'project-new')}</div><p class="muted">每个节点和事件独立保存为关闭自动激活的条目；只更新本插件当前剧本，保留其他条目。</p></div>
+       <div class="card"><h2>整理大段文本（可选模型功能）</h2>${area('剧本原文', 'original_text', p.original_text || '', 10)}${input('整理要求（如按场景分段，保留已有分支）', 'segment_wish', '')}<div class="row">${button('调用辅助 API 整理为草稿', 'segment', e.busy ? 'disabled' : '')}${button('不调用模型，保存原文', 'original-save')}</div><p class="muted">整理产生额外调用。不会直接替换当前剧本，完成后可编辑草稿再应用。</p>${draft ? `<div class="warn">${draft.warnings.map(escape).join('<br>') || '整理完成，请核对节点和原文后应用。'}</div>${area('可编辑的剧本草稿 JSON', 'segment_draft', json(draft.project), 14)}${button('应用此草稿为新剧本', 'segment-apply', 'class="primary"')}` : ''}</div>
+-      <div class="card"><h2>变量与收集项</h2><p class="muted">变量支持 number / boolean / string。数值变量可设置 min、max；收集项提供易读名称。</p>${area('变量定义 JSON', 'variables', json(p.variables), 7)}${area('收集项名称 JSON', 'collections', json(p.collections), 5)}${button('保存变量和收集项定义', 'definitions-save')}<p class="muted">结果可设 requires（取得前提）、exclusive_with（互斥结果 ID 数组）；external:true 用于已确认外部提供的结果。历史事实用结果 ID，当前持有量用变量。ID 必须完整相等。</p><details><summary>从聊天变量读取数值</summary>${select('本插件变量', 'binding_id', p.variables.map(x => [x.id, x.title || x.id]), p.variables[0]?.id || '')}${input('聊天变量路径（用点分隔，留空解除映射）', 'binding_path', '')}${button('保存外部变量映射', 'binding-save')}<p class="muted">例如 stat_data.信任。发送玩家消息前只读取已配置路径，不写回外部变量。缺失或类型不匹配时会停止该轮推进并提示。</p>${p.variables.filter(x => x.binding).map(x => `<p>${escape(x.title || x.id)} ← <code>${escape(x.binding.path.join('.'))}</code></p>`).join('')}</details></div>
++      ${this.valuesPage()}${this.resultDefinitionsPage()}<div class="card"><h2>高级：变量与收集项 JSON</h2><p class="muted">变量支持 number / boolean / string。数值变量可设置 min、max；收集项提供易读名称。</p>${area('变量定义 JSON', 'variables', json(p.variables), 7)}${area('收集项名称 JSON', 'collections', json(p.collections), 5)}${button('保存变量和收集项定义', 'definitions-save')}<p class="muted">结果可设 requires（取得前提）、exclusive_with（互斥结果 ID 数组）；external:true 用于已确认外部提供的结果。历史事实用结果 ID，当前持有量用变量。ID 必须完整相等。</p><details><summary>从聊天变量读取数值</summary>${select('本插件变量', 'binding_id', p.variables.map(x => [x.id, x.title || x.id]), p.variables[0]?.id || '')}${input('聊天变量路径（用点分隔，留空解除映射）', 'binding_path', '')}${button('保存外部变量映射', 'binding-save')}<p class="muted">例如 stat_data.信任。发送玩家消息前只读取已配置路径，不写回外部变量。缺失或类型不匹配时会停止该轮推进并提示。</p>${p.variables.filter(x => x.binding).map(x => `<p>${escape(x.title || x.id)} ← <code>${escape(x.binding.path.join('.'))}</code></p>`).join('')}</details></div>
+       <div class="card"><h2>选项与界面</h2>${checkbox('在酒馆输入框上方直接显示可选择的分支', 'quick_options', e.settings.quick_options)}${checkbox('发送时识别快捷选择或自主输入并推进分支', 'story_flow', e.settings.story_flow)}${checkbox('AI 回复生成结束后自动更新阶段摘要、判断完成', 'auto_stage', e.settings.auto_stage)}<p class="muted">直接列出“查看走廊”等当前可用、已解锁的选项，点击后把行动文字加入输入草稿，发送后才记录选择、切换节点和注入剧情，不自动发送消息。自主输入也可由辅助 API 识别。启用剧本时自动开启输入栏行动选项，之后可在运行页或这里关闭。运行页的分支、收集和状态区与剧本页的节点区分别确认解锁；刷新或切换新剧本后重新隐藏。</p><div class="row">${button('保存选项设置', 'options-save')}${button('恢复铅笔图标默认位置', 'launcher-reset')}</div></div>
+       <div class="card"><h2>注入方式</h2>${input('注入深度', 'depth', e.settings.depth, 'number', 'min="0" max="100"')}${checkbox('注入详细剧情（默认使用短指引）', 'detail', e.settings.detail)}${button('保存注入设置', 'injection-save')}</div>
+       <div class="card"><h2>导入、备份与草稿</h2><div class="row">${button('导入剧本或进度 JSON', 'import')}${button('导出当前剧本', 'export-project')}${button('备份当前进度', 'export-progress')}${button('重置当前聊天进度', 'reset', 'class="danger"')}</div><p class="muted">剧本分享包和进度备份均不包含 API 密钥。</p>${Object.values(e.settings.drafts || {}).map(v => button('打开草稿：' + v.title, 'draft-load', `data-id="${escape(v.id)}"`)).join(' ')}</div>
+@@ -327,6 +416,18 @@
+       if (action === 'unlock-cancel') return this.cancelUnlock();
+       if (action === 'unlock-confirm') { if (this.tab === 'run') this.runUnlocked = true; else if (this.tab === 'records') this.recordUnlocked = true; else this.unlocked = true; this.spoilerPrompt = false; this.updatePrivacy(); this.shadow.querySelector('[data-action="spoiler-lock"]')?.focus(); return; }
+       if (action === 'spoiler-lock') { if (this.tab === 'run') this.runUnlocked = false; else if (this.tab === 'records') this.recordUnlocked = false; else this.unlocked = false; this.spoilerPrompt = false; this.updatePrivacy(); this.shadow.querySelector('[data-action="unlock-ask"]').focus(); return; }
++      if (action === 'quick-gear' || action === 'quick-bag') { const menu = action === 'quick-gear' ? 'gear' : 'bag'; this.quickMenu = this.quickMenu === menu ? '' : menu; this.renderQuick(); return; }
++      if (action === 'quick-collapse') { this.e.settings.quick_collapsed = !this.e.settings.quick_collapsed; this.e.saveSettings(); this.renderQuick(); return; }
++      if (action === 'quick-panel') { this.tab = this.e.diagnostics().some(x => x.severity === 'error') ? 'records' : 'run'; if (this.tab === 'records') this.recordsTab = 'graph'; this.toggle(); return; }
++      if (['quick-complete', 'quick-check', 'quick-pause', 'quick-accept', 'quick-dismiss'].includes(action)) {
++        C.assert(this.e.settings.enabled && !this.e.busy, '剧本未启用或辅助任务正在运行');
++        if (action !== 'quick-pause') C.assert(!this.e.state.paused, '请先继续运行剧本');
++        if (action === 'quick-complete') this.e.complete();
++        else if (action === 'quick-check') await this.e.checkRound();
++        else if (action === 'quick-pause') this.e.pause();
++        else await this.e.confirmResult(b.dataset.key, b.dataset.id, action === 'quick-accept');
++        this.renderQuick(); return;
++      }
+       if (action === 'quick-enter') {
+         C.assert(this.e.settings.quick_options && this.e.settings.enabled && !this.e.state.paused, '快捷分支当前未启用');
+         const field = this.findInput(); C.assert(field, '未找到可见的酒馆输入框');
+@@ -342,7 +443,7 @@
+       const protectedAction = ['node-select', 'node-save', 'node-delete', 'set-start', 'route-save', 'route-delete', 'package-select', 'package-save', 'package-delete', 'package-number-condition', 'package-new', 'package-demo'].includes(action) || this.tab === 'nodes' && ['make-condition', 'append-effect', 'list-prev', 'list-next'].includes(action);
+       if (protectedAction) C.assert(this.unlocked, '请先确认剧透风险并解锁剧本节点');
+       if (action === 'enter') C.assert(this.runUnlocked, '请先确认剧透风险并解锁分支与状态');
+-      if (['graph-node', 'graph-zoom', 'result-rollback'].includes(action)) C.assert(this.recordUnlocked, '请先确认剧透风险并解锁完成与解锁关系');
++      if (['graph-node', 'graph-zoom', 'result-rollback', 'result-delete-ask', 'result-delete-confirm', 'result-edit-references', 'result-reference-edit', 'result-definition-edit'].includes(action)) C.assert(this.recordUnlocked, '请先确认剧透风险并解锁完成与解锁关系');
+       const e = this.e; const v = this.getForm(); const ids = raw => String(raw || '').split(/[,，\n]/).map(x => x.trim()).filter(Boolean);
+       const n = () => C.indexProject(e.project).nodes.get(this.nodeId);
+       const event = () => C.indexProject(e.project).events.get(this.eventId);
+@@ -356,6 +457,39 @@
+         if (!this.win.confirm('回退结果 ' + b.dataset.id + '？\n将撤销结果：' + plan.removed_results.join('、') + '\n将撤销节点：' + plan.removed_nodes.join('、') + '\n其他独立结算保留；回退后暂停，请核对再继续。建议先备份进度。')) return;
+         e.rollbackResult(b.dataset.id); this.toast('已撤销对应结算及依赖它的后续，剧本已暂停'); return;
+       }
++      if (action === 'result-delete-ask') { this.deletingResult = b.dataset.id; this.render(); return; }
++      if (action === 'result-delete-cancel') { this.deletingResult = ''; this.render(); return; }
++      if (action === 'result-delete-confirm') {
++        const plan = e.resultDeletionPreview(b.dataset.id), mode = v.delete_result_mode || 'block';
++        C.assert(!plan.in_progress, '请先回退此结果的相关结算，再删除定义');
++        const warning = mode === 'remove' ? '移除相关条件项，可能提前解锁内容' : mode === 'replace' ? '条件改为引用 ' + v.delete_result_replacement : '所列关联入口禁止进入，保留内容等待编辑';
++        if (!this.win.confirm('删除“' + plan.definition.title + '（' + b.dataset.id + '）”？\n' + plan.references.map(x => x.label).join('\n') + '\n处理：' + warning + '\n取得效果与互斥引用将清理。正文、数值载体和其他奖励保留。')) return;
++        await e.deleteResult(b.dataset.id, mode, v.delete_result_replacement); this.deletingResult = ''; this.graphSelected = ''; delete this.forms.records; delete this.forms.data; this.render(false); this.toast('结果及引用已处理，关系图和依赖检查已更新'); return;
++      }
++      if (action === 'result-definition-edit') { this.tab = 'data'; this.resultId = b.dataset.id; delete this.forms.data; this.render(false); this.shadow.querySelector('.results-card')?.scrollIntoView({block: 'start'}); return; }
++      if (action === 'result-edit-references' || action === 'result-reference-edit') {
++        const ref = action === 'result-edit-references' ? e.resultDeletionPreview(b.dataset.id).references[0] : {kind: b.dataset.kind, id: b.dataset.id};
++        C.assert(ref, '没有关联内容需要修改'); this.deletingResult = '';
++        if (ref.kind === 'package') { this.tab = 'nodes'; this.nodeTab = 'packages'; this.packageId = ref.id; }
++        else if (ref.kind === 'node') { this.tab = 'nodes'; this.nodeTab = 'nodes'; this.nodeId = ref.id; }
++        else if (ref.kind === 'event') { this.tab = 'events'; this.eventId = ref.id; }
++        else { this.tab = 'data'; this.resultId = ref.id; }
++        this.spoilerPrompt = false; this.render(); return;
++      }
++      if (action === 'variable-select' || action === 'definition-select') { if (action === 'variable-select') this.variableId = b.dataset.id; else this.resultId = b.dataset.id; delete this.forms.data; this.render(false); this.shadow.querySelector(action === 'variable-select' ? '.values-card' : '.results-card')?.scrollIntoView({block: 'start'}); return; }
++      if (action === 'variable-save' || action === 'variable-new') {
++        C.assert(v.value_title?.trim(), '请填写数值名称');
++        const optional = key => { if (v[key] == null || String(v[key]).trim() === '') return undefined; const value = Number(v[key]); C.assert(Number.isFinite(value), '数值限制无效'); return value; };
++        await e.editProject(p => { const definition = {title: v.value_title.trim(), owner: v.value_owner.trim(), type: 'number', default: Number(v.value_default), min: optional('value_min'), max: optional('value_max')};
++          if (action === 'variable-save' && this.variableId) Object.assign(p.variables.find(x => x.id === this.variableId), definition);
++          else { const id = C.shortId(p, 'V'); p.variables.push({id, ...definition}); this.variableId = id; }
++        }); delete this.forms.data; this.render(false); this.toast('已保存数值载体；已有当前值保留'); return;
++      }
++      if (action === 'definition-save' || action === 'definition-new') {
++        C.assert(v.result_title?.trim(), '请填写结果名称');
++        await e.editProject(p => { if (action === 'definition-save') Object.assign(p.collections.find(x => x.id === this.resultId), {title: v.result_title.trim(), description: v.result_description}); else { const id = v.new_result_code?.trim() ? C.safeId(v.new_result_code.trim(), '结果编号') : C.shortId(p, 'b'); C.assert(!p.collections.some(x => x.id === id), '结果编号已存在'); p.collections.push({id, title: v.result_title.trim(), description: v.result_description}); this.resultId = id; } });
++        delete this.forms.data; this.render(false); this.toast('已保存结果说明；取得后同步显示在🎒'); return;
++      }
+       if (action === 'package-select') { this.capture(); this.packageId = b.dataset.id; this.render(false); return; }
+       if (action === 'list-prev' || action === 'list-next') { this.listPage += action === 'list-prev' ? -1 : 1; this.render(); return; }
+       if (action === 'node-select' || action === 'event-select') { this.capture(); if (action === 'node-select') this.nodeId = b.dataset.id; else this.eventId = b.dataset.id; this.render(false); return; }
+@@ -373,8 +507,8 @@
+         if (!this.win.confirm('打开 b2+c1 → a4 → d1 交叉依赖示例？当前剧本保留在世界书或草稿中。')) return;
+         await e.setProject(F.demoProject()); this.forms = {}; this.packageId = '';
+       } else if (action === 'package-new') {
+-        const nodeId = C.id('N'), id = C.id('pack');
+-        await e.editProject(p => { p.nodes.push({id: nodeId, title: '新事件阶段', routes: [], effects: []}); p.packages.push({id, title: '新事件包', node_ids: [nodeId], enabled: false, condition: true}); }); this.packageId = id;
++        let nodeId, id;
++        await e.editProject(p => { nodeId = C.shortId(p, 'N'); id = C.shortId(p, 'P'); p.nodes.push({id: nodeId, title: '新事件阶段', routes: [], effects: []}); p.packages.push({id, title: '新事件包', node_ids: [nodeId], enabled: false, condition: true}); }); this.packageId = id;
+       } else if (action === 'package-save') {
+         await e.editProject(p => Object.assign(p.packages.find(x => x.id === this.packageId), {title: v.title, priority: Number(v.priority), role: v.role, enabled: v.enabled, auto_start: v.auto_start, interrupt: v.interrupt, node_ids: p.nodes.filter(x => v['pack_node_' + x.id]).map(x => x.id), start_node_id: v.start_node_id, completion_node_ids: ids(v.completion_node_ids), condition: C.parseJSON(v.condition, '事件包触发条件'), continue_condition: C.parseJSON(v.continue_condition, '持续条件')})); delete this.forms['package:' + this.packageId];
+       } else if (action === 'package-delete') {
+@@ -383,10 +517,14 @@
+       } else if (action === 'package-number-condition') {
+         C.assert(v.pack_variable && Number.isFinite(Number(v.pack_value)), '请选择数值变量并填写数值');
+         const old = C.parseJSON(v.condition, '触发条件'), term = {variable: {id: v.pack_variable, op: v.pack_op, value: Number(v.pack_value)}};
+-        this.forms['package:' + this.packageId].condition = json(old === true || old === false ? term : {all: [...(old.all || [old]), term]}); this.render(false); this.toast('已加入条件草稿，请保存事件包'); return;
++        this.forms['package:' + this.packageId].condition = json(old === true ? term : {all: [...(old.all || [old]), term]}); this.render(false); this.toast('已加入条件草稿，请保存事件包'); return;
++      } else if (action === 'event-number-condition') {
++        C.assert(v.event_variable && Number.isFinite(Number(v.event_value)), '请选择数值载体并填写数值');
++        const old = C.parseJSON(v.condition, '事件前置条件'), term = {variable: {id: v.event_variable, op: v.event_op, value: Number(v.event_value)}};
++        this.forms['event:' + this.eventId].condition = json(old === true ? term : {all: [...(old?.all || [old]), term]}); this.render(false); this.toast('已加入前置条件草稿，请保存规则'); return;
+       } else if (action === 'node-new') {
+-        const node = {id: C.id('N'), title: '新剧情节点', guidance: '', detail: '', boundary: '', effects: [], routes: [], context_variables: []};
+-        await e.editProject(p => p.nodes.push(node)); this.nodeId = node.id;
++        const node = {id: '', title: '新剧情节点', guidance: '', detail: '', boundary: '', effects: [], routes: [], context_variables: []};
++        await e.editProject(p => { node.id = C.shortId(p, 'N'); p.nodes.push(node); }); this.nodeId = node.id;
+       } else if (action === 'node-delete') {
+         C.assert(this.win.confirm('删除当前编辑节点？已有进度或引用会阻止删除。'), '已取消删除');
+         await e.editProject(p => { p.nodes = p.nodes.filter(x => x.id !== this.nodeId); }); this.nodeId = '';
+@@ -406,25 +544,24 @@
+         const form = this.shadow.querySelector('form'); this.forms[form.dataset.form][prefix === 'route' ? 'route_condition' : 'condition'] = json(terms.length ? {all: terms} : true); this.render(false); return;
+       } else if (action === 'append-effect') {
+         const effects = C.parseJSON(v.effects, '效果'); if (v.collect_id?.trim()) effects.push({collect: C.safeId(v.collect_id.trim())});
+-        if (v.effect_variable) { C.assert(Number.isFinite(Number(v.effect_delta)), '请输入有效增加量'); effects.push({add: {variable: v.effect_variable, value: Number(v.effect_delta)}}); }
++        if (v.effect_variable) { C.assert(Number.isFinite(Number(v.effect_delta)), '请输入有效增加量'); const value = {variable: v.effect_variable, value: Number(v.effect_delta)}; for (const field of ['min', 'max']) { const raw = v['reward_' + field]; if (raw != null && String(raw).trim() !== '') { C.assert(Number.isFinite(Number(raw)), '奖励数值限制无效'); value[field] = Number(raw); } } effects.push({[v.effect_operation || 'add']: value}); }
+         const form = this.shadow.querySelector('form'); this.forms[form.dataset.form].effects = json(effects); this.render(false); return;
+       } else if (action === 'event-records') { this.tab = 'records'; this.spoilerPrompt = false; this.render(); this.shadow.querySelector('main').scrollTop = 0; return; }
+       else if (action === 'event-node-edit') { this.nodeId = b.dataset.id; this.nodeTab = 'nodes'; this.tab = 'nodes'; this.spoilerPrompt = false; this.render(); this.shadow.querySelector('main').scrollTop = 0; return; }
+       else if (action === 'event-example') {
+-        const ev = {id: C.id('E'), title: '送花并被接受', description: '玩家把花交给对方或为对方佩戴，对方接受。', completion_criteria: '实际交付或佩戴动作已经完成，对方明确接受。', exclusions: ['只是提出送花', '尚未行动的计划', '对方拒绝', '假设或回忆'], effects: [], detection: 'api', repeat_policy: 'once', auto_settle: false, actor_id: 'player'};
++        const ev = {id: '', title: '送礼并被接受（可重复示例）', description: '玩家实际赠送礼物，对方接受。', completion_criteria: '实际交付动作已经完成，对方明确接受。', exclusions: ['只是提出送礼', '尚未行动的计划', '对方拒绝', '假设或回忆'], effects: [], detection: 'api', repeat_policy: 'once_per_accepted_turn', auto_settle: true, actor_id: 'player'};
+         await e.editProject(p => {
+           let variable = p.variables.find(x => x.id === 'affection' && x.type === 'number');
+-          if (!variable) { variable = {id: p.variables.some(x => x.id === 'affection') ? C.id('affection') : 'affection', title: '好感度', type: 'number', default: 0, min: 0, max: 100}; p.variables.push(variable); }
+-          if (!p.collections.some(x => x.id === 'FLOWER_ACCEPTED')) p.collections.push({id: 'FLOWER_ACCEPTED', title: '已送花并被接受'});
+-          ev.effects = [{add: {variable: variable.id, value: 1}}, {collect: 'FLOWER_ACCEPTED'}]; p.events.push(ev);
++          if (!variable) { variable = {id: C.shortId(p, 'V'), title: '关系值（示例，可改名）', owner: '当前互动对象（请修改）', type: 'number', default: 0, min: 0, max: 100}; p.variables.push(variable); }
++          ev.id = C.shortId(p, 'E'); ev.effects = [{add: {variable: variable.id, value: 4, max: 70}}]; p.events.push(ev);
+         }); this.eventId = ev.id;
+       } else if (action === 'event-new') {
+-        const ev = {id: C.id('E'), title: '新事件', description: '描述需要识别的事件', completion_criteria: '写明事件实际完成的标准', exclusions: ['只是提议', '引用旧事', '被拒绝'], effects: [], detection: 'api', repeat_policy: 'once', auto_settle: false};
+-        await e.editProject(p => p.events.push(ev)); this.eventId = ev.id;
++        const ev = {id: '', title: '新事件', description: '描述需要识别的事件', completion_criteria: '写明事件实际完成的标准', exclusions: ['只是提议', '引用旧事', '被拒绝'], effects: [], detection: 'api', repeat_policy: 'once', auto_settle: false};
++        await e.editProject(p => { ev.id = C.shortId(p, 'E'); p.events.push(ev); }); this.eventId = ev.id;
+       } else if (action === 'event-delete') {
+-        const linked = event()?.completion_node_id;
+-        if (!this.win.confirm(linked ? '移除这条阶段事件？对应剧情阶段、完成标准与奖励仍保留；已有进度或条件引用可能阻止移除。' : '删除此事件？')) return;
+-        await e.editProject(p => { p.events = p.events.filter(x => x.id !== this.eventId); }); this.eventId = '';
++        const linked = event()?.completion_node_id, plan = e.eventDeletionPreview(this.eventId);
++        if (!this.win.confirm((linked ? '移除这条阶段事件？对应阶段、完成标准与奖励保留。' : '删除此事件？') + (plan.cleanup.length ? '\n同时清理未取得且无其他引用的结果：' + plan.cleanup.join('、') : '') + '\n已有结算或条件引用会阻止删除；数值载体保留。')) return;
++        await e.deleteEvent(this.eventId); this.eventId = ''; delete this.forms.data;
+       } else if (action === 'event-manual') await e.manualEvent(this.eventId);
+       else if (action === 'event-save') {
+         const current = event(); const nodeIds = ids(v.scope_nodes);
+@@ -447,10 +584,10 @@
+         const profile = {base_url: v.base_url.trim(), model: v.model.trim(), key: v.key.trim(), timeout_sec: number('timeout_sec', 5, 300), analysis_timeout_sec: number('analysis_timeout_sec', 5, 1800), max_input_chars: number('max_input_chars', 1000, 200000),
+           max_output: Math.floor(number('max_output', 128, 16000)), segment_output: Math.floor(number('segment_output', 512, 32000)), analysis_output: Math.floor(number('analysis_output', 512, 32000)),
+           choice_prompt: v.choice_prompt.trim(), stage_prompt: v.stage_prompt.trim(), detect_prompt: v.detect_prompt.trim(), segment_prompt: v.segment_prompt.trim(), analysis_prompt: v.analysis_prompt.trim(), analysis_merge_prompt: v.analysis_merge_prompt.trim(), json_mode: v.json_mode, no_thinking: v.no_thinking};
+-        await e.updateSettings({profile, remember_key: v.remember_key, segment_model: v.segment_model.trim(), auto_detect: v.auto_detect,
++        await e.updateSettings({profile, remember_key: v.remember_key, segment_model: v.segment_model.trim(), auto_detect: v.auto_detect, auto_events: v.auto_events,
+           wait_ms: number('wait_ms', 0, 15000), batch_size: Math.floor(number('batch_size', 1, 32)), max_batches: Math.floor(number('max_batches', 1, 64))});
+         if (action === 'api-test') { const result = await e.client.call(profile, [{role: 'user', content: '只输出 JSON：{"ok":true}'}], {max_tokens: 128}); C.assert(result.ok === true, '服务响应未通过 JSON 测试'); e.error = ''; e.saveSettings(); this.toast('聊天接口测试通过'); }
+-        delete this.forms.api;
++        delete this.forms.api; if (this.forms.analysis) { delete this.forms.analysis.analysis_prompt; delete this.forms.analysis.analysis_merge_prompt; } this.analysisPreview = null;
+       } else if (action === 'prompts-reset') { const p = e.defaultPrompts(); Object.assign(this.forms.api, {choice_prompt: p.choice, stage_prompt: p.stage, detect_prompt: p.detect, segment_prompt: p.segment, analysis_prompt: p.analysis, analysis_merge_prompt: p.merge}); this.render(false); this.toast('默认提示词已填入，请保存 API 设置'); return; }
+       else if (action === 'options-save') await e.updateSettings({quick_options: v.quick_options, story_flow: v.story_flow, auto_stage: v.auto_stage});
+       else if (action === 'launcher-reset') { e.settings.launcher_position = null; e.saveSettings(); this.applyLauncherPosition(); }
+@@ -458,9 +595,16 @@
+       else if (action === 'book-load') { C.assert(v.book_load, '请选择世界书'); const data = await e.loadBook(v.book_load, v.book_project || undefined); this.bookProjects = data.projects; this.nodeId = ''; this.eventId = ''; this.forms = {}; }
+       else if (action === 'project-meta') await e.editProject(p => { p.title = v.project_title; p.premise = v.premise; });
+       else if (action === 'project-new') {
+-        const nodeId = C.id('N'); await e.setProject({id: C.id('story'), title: '新剧本', start_node_id: nodeId, nodes: [{id: nodeId, title: '开场', guidance: '', routes: [], effects: []}], events: [], variables: [], collections: []}); this.nodeId = ''; this.eventId = ''; this.forms = {};
++        const nodeId = 'N1'; await e.setProject({id: C.id('story'), title: '新剧本', start_node_id: nodeId, nodes: [{id: nodeId, title: '开场', guidance: '', routes: [], effects: []}], events: [], variables: [], collections: []}); this.nodeId = ''; this.eventId = ''; this.forms = {};
+       } else if (action === 'open-segment') { this.tab = 'data'; this.render(); this.shadow.querySelector('[name="original_text"]').focus(); return; }
+       else if (action === 'open-analysis') { this.tab = 'analysis'; this.render(); this.shadow.querySelector('[name="analysis_text"]').focus(); return; }
++      else if (action === 'analysis-prompts-save') {
++        await e.updateSettings({profile: {analysis_prompt: v.analysis_prompt.trim(), analysis_merge_prompt: v.analysis_merge_prompt.trim()}});
++        if (this.forms.api) { delete this.forms.api.analysis_prompt; delete this.forms.api.analysis_merge_prompt; }
++        delete this.forms.analysis.analysis_prompt; delete this.forms.analysis.analysis_merge_prompt; this.analysisPreview = null; this.render(false); this.toast('已保存分析提示词，API 页同步使用'); return;
++      }
++      else if (action === 'analysis-prompts-reset') { const prompts = e.defaultPrompts(); Object.assign(this.forms.analysis, {analysis_prompt: prompts.analysis, analysis_merge_prompt: prompts.merge}); this.render(false); this.toast('已填入默认值，请点击保存'); return; }
++      else if (action === 'analysis-preview') { this.analysisPreview = [{role: 'system', content: e.settings.profile.analysis_prompt?.trim() || e.defaultPrompts().analysis}, {role: 'user', content: JSON.stringify({original: v.analysis_text, preferences: v.analysis_wish, mode: v.analysis_mode, max_nodes: 128})}]; this.render(false); return; }
+       else if (action === 'analysis-run') { try { const draft = await e.analyze(v.analysis_text, v.analysis_wish, v.analysis_mode); this.forms.analysis.analysis_draft = json(draft.project); this.showConversion(); return; } finally { if (e.rawAnalysis?.error && e.rawAnalysis.replies.length) this.loadRaw(); } }
+       else if (action === 'analysis-raw-load') { this.loadRaw(v.analysis_saved_id); }
+       else if (action === 'analysis-raw-export') { C.assert(e.rawAnalysis, '暂无原始回复记录'); this.download(e.rawAnalysis, 'analysis-raw.json'); return; }
+@@ -493,8 +637,9 @@
+       const url = this.win.URL.createObjectURL(new this.win.Blob([json(data)], {type: 'application/json'})); const link = this.doc.createElement('a'); link.href = url; link.download = filename; this.doc.body.appendChild(link); link.click(); link.remove(); this.win.setTimeout(() => this.win.URL.revokeObjectURL(url), 1000);
+     }
+     destroy() {
++      if (this.destroyed) return; this.destroyed = true;
+       this.unsub?.(); clearTimeout(this.toastTimer); this.doc.removeEventListener('keydown', this.keyHandler);
+-      this.win.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('scroll', this.viewportHandler); this.win.removeEventListener('scroll', this.quickScroll, true); this.composerObserver?.disconnect(); this.composerResize?.disconnect(); if (this.quickFrame) this.win.cancelAnimationFrame(this.quickFrame); this.quickElement?.remove(); this.element?.remove();
++      this.releaseQuickDock(); this.quickResize?.disconnect(); this.win.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('scroll', this.viewportHandler); this.win.removeEventListener('scroll', this.quickScroll, true); this.composerObserver?.disconnect(); this.composerResize?.disconnect(); if (this.quickFrame) this.win.cancelAnimationFrame(this.quickFrame); this.quickElement?.remove(); this.element?.remove();
+     }
+   }
+   return {Panel};
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
+index 5a0c4e0..41757f9 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
+@@ -99,11 +99,11 @@ async function run() {
+     assert.equal(await state(page, () => document.querySelector('#bse-panel-host').shadowRoot.activeElement.dataset.action), 'unlock-cancel');
+     await page.locator('[data-action="unlock-cancel"]').click(); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), '');
+     await tab(page, 'events'); assert((await page.locator('.event-guide').textContent()).includes('发生什么 → 更新什么'));
+-    await page.locator('[data-action="event-example"]').click(); assert((await page.locator('.event-effects-summary').textContent()).includes('好感度 +1'));
++    await page.locator('[data-action="event-example"]').click(); assert((await page.locator('.event-effects-summary').textContent()).includes('+4'));
+     assert((await page.locator('[name="completion_criteria"]').inputValue()).includes('实际交付'));
+-    await page.locator('[data-action="event-manual"]').click(); await wait(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.variables.affection === 1);
+-    assert(await page.locator('[data-action="event-manual"]').isDisabled());
+-    assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.collected_ids.includes('FLOWER_ACCEPTED')), true);
++    await page.locator('[data-action="event-manual"]').click(); await wait(page, () => Object.values(document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.variables).includes(4));
++    assert(await page.locator('[data-action="event-manual"]').isEnabled()); await page.locator('[data-action="event-manual"]').click(); assert.equal(await state(page, () => Object.values(document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.variables).includes(8)), false);
++    assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.collected_ids.includes('FLOWER_ACCEPTED')), false);
+     await page.locator('[data-action="event-records"]').first().click(); assert.equal(await page.locator('[data-tab="records"]').getAttribute('aria-current'), 'page');
+     await tab(page, 'nodes'); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), '');
+     await unlock(page); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), null);
+@@ -186,13 +186,13 @@ async function run() {
+     await page.locator('#bse-quick-host').waitFor({state: 'visible'});
+     assert.equal(await page.locator('[data-action="quick-enter"][data-id="C"]').count(), 1); assert.equal(await page.locator('[data-action="quick-enter"][data-id="D"]').count(), 0);
+     assert.equal(await page.locator('[data-action="quick-enter"][data-id="C"]').getAttribute('data-status'), '已解锁');
+-    const quick = await page.locator('#bse-quick-host').boundingBox(), composer = await page.locator('#send_form').boundingBox(); assert(quick.y + quick.height <= composer.y - 4);
++    const quick = await page.locator('#bse-quick-host').boundingBox(), composer = await page.locator('#chatinput').boundingBox(); assert(quick.y + quick.height <= composer.y - 4);
+     await page.locator('#chatinput').fill('保留玩家未发送的草稿'); await page.locator('[data-action="quick-enter"][data-id="C"]').click();
+     assert.equal(await page.locator('#chatinput').inputValue(), '保留玩家未发送的草稿证据齐全，追查真相'); assert.equal(await state(page, () => testHost.root.messages.length), 4);
+     assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N001');
+     await state(page, () => testSendInput());
+     assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'C');
+-    assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
++    assert.equal(await page.locator('#bse-quick-host').isVisible(), true); assert.equal(await page.locator('[data-action="quick-enter"]').count(), 0);
+     await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.undo());
+     const launch = page.getByRole('button', {name: '打开剧情面板'}), beforeDrag = await launch.boundingBox();
+     await page.mouse.move(beforeDrag.x + 24, beforeDrag.y + 24); await page.mouse.down(); await page.mouse.move(beforeDrag.x - 180, beforeDrag.y - 100, {steps: 8}); await page.mouse.up();
+@@ -224,7 +224,7 @@ async function run() {
+     assert.equal(await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N002');
+     await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.undo());
+     await pencil.tap(); assert.equal(await phone.locator('.run-spoiler-content').getAttribute('inert'), '');
+-    await phone.locator('[data-action="pause"]').tap(); await phone.locator('[data-action="close"]').tap(); assert.equal(await phone.locator('#bse-quick-host').isVisible(), false);
++    await phone.locator('[data-action="pause"]').tap(); await phone.locator('[data-action="close"]').tap(); assert.equal(await phone.locator('#bse-quick-host').isVisible(), true); assert.equal(await phone.locator('[data-action="quick-enter"]').count(), 0);
+     await pencil.tap(); await phone.locator('[data-action="pause"]').tap(); await phone.locator('[data-action="close"]').tap(); await phone.locator('#bse-quick-host').waitFor({state: 'visible'});
+     await pencil.tap();
+     for (const name of ['run', 'nodes', 'events', 'records', 'api', 'analysis', 'data']) { await tab(phone, name); await layout(phone, '390px ' + name); }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.browser.js"
+new file mode 100644
+index 0000000..712b956
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.browser.js"
+@@ -0,0 +1,74 @@
++'use strict';
++const http = require('node:http'), fs = require('node:fs'), path = require('node:path'), assert = require('node:assert/strict');
++const {chromium} = require('playwright'), {fixture} = require('./helpers');
++const root = path.resolve(__dirname, '..'), bundle = JSON.parse(fs.readFileSync(path.join(root, 'branch_story_tavern_helper_import.json'))).content;
++const requests = [], errors = [], fixtureText = fixture.toString().replace('host: new Host(root)', 'host: null');
++const project = {id: 'player_ui', title: '输入栏与记录测试', start_node_id: 'N1', variables: [{id: 'rapport', title: '关系值', owner: '同行者', type: 'number', default: 69, min: 0, max: 100}], collections: [{id: 'b1', title: '房卡', description: '在储物间找到的房卡，上面写着301。'}, {id: 'secret', title: '隐藏真相', description: '未获得的最终答案'}], nodes: [{id: 'N1', title: '大厅', routes: [{target: 'N2', label: '调查储物间', action_text: '调查储物间'}]}, {id: 'N2', title: '调查储物间', effects: [{collect: 'b1'}], routes: []}, {id: 'N3', title: '后续调查', effects: [{collect: 'secret'}], routes: []}], events: [{id: 'E1', title: '赠礼被接受', description: '玩家赠礼且对方收下', completion_criteria: '实际交付并被接受', actor_id: 'player', effects: [{add: {variable: 'rapport', value: 4, max: 70}}], repeat_policy: 'once_per_accepted_turn', auto_settle: true}], packages: [{id: 'P1', title: '关系满足后的事件包', node_ids: ['N3'], condition: {variable: {id: 'rapport', op: 'gte', value: 70}}}]};
++const server = http.createServer(async (req, res) => {
++  if (req.url === '/plugin.js') { res.setHeader('Content-Type', 'text/javascript'); return res.end(bundle); }
++  if (req.url === '/frame') return res.end('<!doctype html><html><body><script src="/plugin.js"></script></body></html>');
++  if (req.url === '/v1/chat/completions') {
++    let text = ''; for await (const chunk of req) text += chunk; const body = JSON.parse(text); requests.push(body); const input = JSON.parse(body.messages[1].content); let value;
++    if (input.original) value = {title: '编辑提示词后的分析', nodes: [{id: 'unnecessarily_long_node_id', title: '找到房卡', detail: input.original, guidance: '调查当前房卡', routes: []}]};
++    else if (input.candidates?.[0]?.description) { const source = input.dialogue.at(-1); value = {results: input.candidates.map(e => ({event_id: e.id, status: e.completion_criteria.includes('人工确认') ? 'uncertain' : source.text.includes('收下') ? 'completed' : 'not_occurred', actor_id: e.actor_id, recipient_id: e.recipient_id, evidence: [{message_id: source.message_id, quote: source.text}]}))}; }
++    else if (input.candidates) { const candidate = input.candidates.find(r => input.dialogue[0].text.includes(r.action_text || r.label)); value = candidate ? {status: 'selected', target: candidate.target, evidence: [{message_id: input.dialogue[0].message_id, quote: input.dialogue[0].text}]} : {status: 'none'}; }
++    else value = {status: 'in_progress', summary: '等待实际行动', facts: [], missing: [], evidence: []};
++    res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(value)}}], usage: {prompt_tokens: 50, completion_tokens: 20}}));
++  }
++  const fixed = req.url.includes('fixed'); res.setHeader('Content-Type', 'text/html; charset=utf-8');
++  res.end(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#ddd;font:16px system-ui}#sheld{height:100dvh;display:flex;flex-direction:column}#chat{flex:1;min-height:0;overflow:auto;padding:12px;background:#eee}#send_form{flex:none;display:flex;align-items:center;gap:8px;margin:8px;padding:3px 7px}textarea{width:100%;height:44px;box-sizing:border-box}iframe{display:none}${fixed ? '#chat{position:absolute;left:0;right:0;top:0;bottom:70px}#send_form{position:fixed;bottom:0;left:0;right:0}' : ''}</style></head><body><div id="sheld"><div id="chat">${Array.from({length: 18}, (_, i) => '<p>正文段落' + i + '：夜色笼罩着大厅，玩家仍可自由行动。</p>').join('')}</div><form id="send_form"><textarea id="send_textarea"></textarea></form></div><script>const C={clone:v=>JSON.parse(JSON.stringify(v))};const fixture=${fixtureText};window.testHost=fixture();window.TavernHelper=testHost.root;testHost.storage.script.branch_story_settings={project_id:'player_ui',drafts:{player_ui:${JSON.stringify(project)}}};window.sendRound=async(input,response)=>{const h=testHost.root,id=h.messages.length;document.querySelector('textarea').value='';h.messages.push({message_id:id,role:'user',message:input});await h.eventEmit('message_sent',id);await h.eventEmit('generate_before_combine_prompts','normal');const aid=h.messages.length;h.messages.push({message_id:aid,role:'assistant',message:response});await h.eventEmit('message_received',aid);await h.eventEmit('generation_ended');};window.reloadPlugin=()=>{document.querySelector('iframe')?.remove();const f=document.createElement('iframe');f.src='/frame';document.body.appendChild(f);};reloadPlugin();</script></body></html>`);
++});
++const evaluate = (page, fn, arg) => page.evaluate(({source, arg}) => new Function('e', 'panel', 'arg', 'return (' + source + ')(e,panel,arg)')(document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine, document.querySelector('iframe').contentWindow.__branch_story_plugin__.panel, arg), {source: fn.toString(), arg});
++const tab = (page, name) => page.locator(`nav [data-tab="${name}"]`).click();
++async function ready(page) { await page.waitForFunction(() => document.querySelector('iframe')?.contentWindow?.__branch_story_startup__?.status === 'ready'); }
++async function idle(page) { await evaluate(page, async e => { await e.stageJobs; await e.jobs; }); await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.busy === 0); }
++async function layout(page) {
++  await page.waitForFunction(() => { const q = document.querySelector('#bse-quick-host'), c = document.querySelector('#chat'), input = document.querySelector('textarea'); if (!q || q.hidden) return false; return c.getBoundingClientRect().bottom <= q.getBoundingClientRect().top + 1 && q.getBoundingClientRect().bottom <= input.getBoundingClientRect().top - 3; });
++  const metrics = await page.evaluate(() => { const h = document.querySelector('#bse-quick-host'), q = h.shadowRoot.querySelector('.quick'), buttons = [...h.shadowRoot.querySelectorAll('button')].filter(x => x.getClientRects().length); return {overflow: q.scrollWidth - q.clientWidth, bodyOverflow: document.documentElement.scrollWidth - innerWidth, touch: buttons.every(x => x.getBoundingClientRect().width >= 44 && x.getBoundingClientRect().height >= 44)}; });
++  assert.equal(metrics.overflow, 0); assert(metrics.bodyOverflow <= 1); assert(metrics.touch);
++}
++async function run() {
++  await new Promise(r => server.listen(0, '127.0.0.1', r)); const base = 'http://127.0.0.1:' + server.address().port, browser = await chromium.launch({headless: true, executablePath: process.env.BSE_CHROMIUM || '/usr/bin/chromium', args: ['--no-sandbox']});
++  try {
++    for (const width of [1366, 390, 320]) {
++      const context = await browser.newContext({viewport: {width, height: width > 700 ? 900 : 844}, isMobile: width < 700, hasTouch: width < 700}), page = await context.newPage(); let accept = true;
++      page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => accept ? d.accept() : d.dismiss()); await page.goto(base + (width === 320 ? '/fixed' : '/')); await ready(page);
++      await page.locator('.launcher').click(); await tab(page, 'api'); await page.locator('[name="base_url"]').fill(base); await page.locator('[name="model"]').fill('mock'); await page.locator('[data-action="api-save"]').first().click();
++      await tab(page, 'run'); await page.locator('[data-action="toggle-enabled"]').click(); await page.locator('[data-action="close"]').click(); await page.locator('#bse-quick-host').waitFor({state: 'visible'}); await layout(page);
++      assert((await page.locator('.quick-title').innerText()).includes('大厅')); assert.equal(await page.locator('[data-action="quick-complete"]').count(), 0); assert.equal(await page.locator('[data-action="quick-enter"]').count(), 1);
++      await page.locator('[data-action="quick-enter"]').click(); const draft = await page.locator('textarea').inputValue(); assert.equal(draft, '调查储物间'); assert.equal(await evaluate(page, e => e.state.current_node_id), 'N1');
++      const expanded = (await page.locator('#bse-quick-host').boundingBox()).height; await page.locator('[data-action="quick-collapse"]').click(); assert(await page.locator('[data-action="quick-enter"]').isHidden()); assert((await page.locator('#bse-quick-host').boundingBox()).height < expanded); assert.equal(await page.locator('textarea').inputValue(), draft); assert.equal(await evaluate(page, e => !!e.pendingChoice), true); await layout(page);
++      await page.locator('[data-action="quick-collapse"]').click(); await page.evaluate(() => sendRound('调查储物间', '你来到储物间，发现桌上的房卡。')); await idle(page); assert.equal(await evaluate(page, e => e.state.current_node_id), 'N2'); assert.equal(await page.locator('[data-action="quick-enter"]').count(), 0); assert(await page.locator('#bse-quick-host').isVisible());
++      await page.locator('[data-action="quick-bag"]').click(); assert((await page.locator('.quick-menu').innerText()).includes('尚未获得')); assert(!(await page.locator('.quick-menu').innerText()).includes('隐藏真相'));
++      await page.evaluate(() => sendRound('我拾起房卡。', '你将写着301的房卡收入衣袋。')); await idle(page); await page.locator('[data-action="quick-gear"]').click(); await page.locator('[data-action="quick-complete"]').click(); assert.deepEqual(await evaluate(page, e => e.state.collected_ids), ['b1']); assert(await page.locator('[data-action="quick-complete"]').isDisabled());
++      await page.locator('[data-action="quick-bag"]').click(); await page.locator('.quick-menu .acquired summary').click(); assert((await page.locator('.quick-menu').innerText()).includes('在储物间找到的房卡，上面写着301。')); assert((await page.locator('.quick-menu').innerText()).includes('来源：调查储物间')); assert(!(await page.locator('.quick-menu').innerText()).includes('最终答案')); await layout(page); await page.screenshot({path: path.join(root, 'artifacts', 'player-bag-' + width + '.png')});
++      await page.locator('[data-action="quick-gear"]').click(); await page.locator('[data-action="quick-pause"]').click(); assert.equal(await evaluate(page, e => e.state.paused), true); assert((await page.locator('[data-action="quick-pause"]').innerText()).includes('继续')); await page.locator('[data-action="quick-pause"]').click(); assert.equal(await evaluate(page, e => e.state.paused), false);
++      await page.evaluate(() => sendRound('我把礼物交给你。', '对方收下了你递来的礼物。')); await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.variables.rapport === 70); await idle(page); assert.equal(await evaluate(page, e => e.state.event_counts.E1), 1); assert.equal(await evaluate(page, e => e.state.focus_package_id), 'P1');
++      await page.locator('[data-action="quick-check"]').click(); await idle(page); assert.equal(await evaluate(page, e => e.state.variables.rapport), 70); assert.equal(await evaluate(page, e => e.state.event_counts.E1), 1);
++      await page.locator('[data-action="quick-panel"]').click(); await tab(page, 'data'); assert((await page.locator('.values-card').innerText()).includes('69 → 70'));
++      await page.locator('[name="value_title"]').fill('警戒值'); await page.locator('[name="value_owner"]').fill('全局'); await page.locator('[name="value_default"]').fill('2'); await page.locator('[name="value_max"]').fill('10'); await page.locator('[data-action="variable-new"]').click(); assert.equal(await evaluate(page, e => e.project.variables.find(x => x.title === '警戒值').id), 'V1'); assert.equal(await evaluate(page, e => e.state.variables.V1), 2); assert.equal(await evaluate(page, e => e.state.variables.rapport), 70);
++      await page.locator('[data-action="variable-select"][data-id="rapport"]').click(); await page.locator('[name="value_default"]').fill('8'); await page.locator('[data-action="variable-save"]').click(); assert.equal(await evaluate(page, e => e.state.variables.rapport), 70);
++      await tab(page, 'events'); await page.locator('[data-action="event-new"]').click(); await page.locator('[name="title"]').fill('需要确认的行为'); await page.locator('[name="completion_criteria"]').fill('需要人工确认实际完成'); await page.locator('[name="effect_variable"]').selectOption('V1'); await page.locator('[name="effect_delta"]').fill('2'); await page.locator('[data-action="append-effect"]').click(); await page.locator('[data-action="event-save"]').click(); assert.equal(await evaluate(page, e => e.project.events.at(-1).id), 'E2');
++      await page.locator('[data-action="close"]').click(); await page.evaluate(() => sendRound('我尝试执行这项行动。', '行动的结果还不明确。')); await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.pending_checks.some(c => c.results.some(r => r.event_id === 'E2' && r.status === 'uncertain'))); await idle(page);
++      if (await page.locator('[data-action="quick-gear"]').getAttribute('aria-expanded') === 'false') await page.locator('[data-action="quick-gear"]').click(); assert(await page.locator('.quick-dot').isVisible()); assert.equal(await evaluate(page, e => e.state.variables.V1), 2); await page.locator('[data-action="quick-accept"]').click(); assert.equal(await evaluate(page, e => e.state.variables.V1), 4); assert.equal(await page.locator('.quick-dot').count(), 0); await page.locator('[data-action="quick-panel"]').click(); await tab(page, 'data');
++      await page.locator('[data-action="definition-select"][data-id="b1"]').click(); await page.locator('[name="result_description"]').fill('在储物间取得的301房卡。'); await page.locator('[data-action="definition-save"]').click();
++      await tab(page, 'records'); await page.locator('[data-action="records-tab"][data-tab="graph"]').click(); assert.equal(await page.locator('.spoiler-content').getAttribute('inert'), '');
++      await page.locator('[data-action="unlock-ask"]').click(); await page.locator('[data-action="unlock-cancel"]').click(); assert.equal(await page.locator('.spoiler-content').getAttribute('inert'), ''); await page.locator('[data-action="unlock-ask"]').click(); await page.locator('[data-action="unlock-confirm"]').click();
++      assert((await page.locator('.completion-records').innerText()).includes('房卡（b1）')); await page.locator('.completion-records .acquired').filter({hasText: '房卡（b1）'}).locator('summary').click(); assert((await page.locator('.completion-records').innerText()).includes('在储物间取得的301房卡。'));
++      await page.locator('[data-action="graph-node"][data-id="result:b1"]').click(); await page.locator('[data-action="result-delete-ask"]').click(); assert(await page.locator('[data-action="result-delete-confirm"]').isDisabled()); await page.locator('[data-action="result-delete-cancel"]').click();
++      await evaluate(page, async e => e.editProject(p => { p.collections.push({id: 'FLOWER_ACCEPTED', title: '旧送花结果'}); p.nodes.push({id: 'N4', title: '关联支线', entry_condition: {collected: 'FLOWER_ACCEPTED'}, routes: []}); p.packages.push({id: 'P2', title: '关联事件包', node_ids: ['N4'], condition: {collected: 'FLOWER_ACCEPTED'}, enabled: false}); })); assert.equal(await evaluate(page, e => e.settings.enabled), false);
++      await page.locator('[data-action="graph-node"][data-id="result:FLOWER_ACCEPTED"]').click(); await page.locator('[data-action="result-delete-ask"]').click(); assert((await page.locator('.result-delete-editor').innerText()).includes('关联事件包')); assert((await page.locator('.result-delete-editor').innerText()).includes('关联支线'));
++      accept = false; await page.locator('[data-action="result-delete-confirm"]').click(); assert.equal(await evaluate(page, e => e.project.collections.some(x => x.id === 'FLOWER_ACCEPTED')), true);
++      accept = true; await page.locator('[data-action="result-delete-confirm"]').click(); assert.equal(await evaluate(page, e => e.project.collections.some(x => x.id === 'FLOWER_ACCEPTED')), false); assert.equal(await page.locator('[data-action="graph-node"][data-id="result:FLOWER_ACCEPTED"]').count(), 0); assert.equal(await evaluate(page, e => e.project.packages.find(x => x.id === 'P2').condition), false); assert.equal(await evaluate(page, e => e.diagnostics().filter(x => x.severity === 'error').length), 0); assert.equal(await evaluate(page, e => e.error), '');
++      await tab(page, 'run'); await page.locator('[data-action="toggle-enabled"]').click(); assert.equal(await evaluate(page, e => e.settings.enabled), true);
++      await tab(page, 'analysis'); await page.locator('.analysis-prompts > summary').click(); await page.locator('[name="analysis_prompt"]').fill('自定义分析系统提示词，请返回兼容JSON。'); await page.locator('[name="analysis_merge_prompt"]').fill('自定义合并系统提示词。'); await page.locator('[data-action="analysis-prompts-save"]').click();
++      await tab(page, 'api'); assert.equal(await page.locator('[name="analysis_prompt"]').inputValue(), '自定义分析系统提示词，请返回兼容JSON。'); await tab(page, 'analysis'); await page.locator('[name="analysis_text"]').fill('在储物间找到301房卡。'); await page.locator('[name="analysis_wish"]').fill('只整理已明确的内容'); await page.locator('[data-action="analysis-preview"]').click(); assert((await page.locator('.prompt-preview').innerText()).includes('自定义分析系统提示词'));
++      const before = requests.length; await page.locator('[data-action="analysis-run"]').click(); await page.waitForFunction(() => !!document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.analysisDraft); assert.equal(requests.length, before + 1); assert.equal(requests.at(-1).messages[0].content, '自定义分析系统提示词，请返回兼容JSON。'); assert.equal(await evaluate(page, e => e.analysisDraft.project.nodes[0].id), 'N1'); assert.deepEqual(await evaluate(page, e => JSON.parse(e.rawAnalysis.requests[0].text)), requests.at(-1).messages);
++      await page.locator('[data-action="close"]').click(); await page.locator('[data-action="quick-collapse"]').click(); await page.evaluate(() => reloadPlugin()); await ready(page); assert.equal(await evaluate(page, e => e.settings.quick_collapsed), true); assert.equal(await page.locator('#bse-quick-host').count(), 1); await page.locator('[data-action="quick-bag"]').click(); await page.locator('.quick-menu summary').click(); assert((await page.locator('.quick-menu').innerText()).includes('在储物间取得的301房卡。')); await layout(page);
++      await evaluate(page, (e, panel) => { panel.destroy(); }); assert.equal(await page.locator('#bse-quick-host').count(), 0); assert.equal(await page.locator('#send_form').evaluate(el => el.style.paddingTop), ''); assert.equal(await page.locator('#chat').evaluate(el => el.style.maxHeight), '');
++      console.log(width + 'px：当前阶段/折叠/⚙️/🎒/正文空间/数值奖励/结果删除/提示词保存与实发/刷新/卸载通过'); await context.close();
++    }
++    assert.deepEqual(errors, []); console.log('玩家小面板新增浏览器错误0；模拟API。');
++  } finally { await browser.close(); await new Promise(r => server.close(r)); }
++}
++run().catch(e => { console.error(e); process.exitCode = 1; });
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js"
+new file mode 100644
+index 0000000..0a45491
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js"
+@@ -0,0 +1,106 @@
++'use strict';
++const test = require('node:test'), assert = require('node:assert/strict');
++const C = require('../src/core'), F = require('../src/flow'), G = require('../src/graph');
++const {Engine} = require('../src/engine'), {Client, PROMPTS, LAST_PROMPTS} = require('../src/api');
++const {fixture, mockClient, tick} = require('./helpers');
++const project = () => C.normalizeProject({id: 'player_test', title: '阶段与行为', variables: [{id: 'rapport', title: '关系', owner: '同行者', type: 'number', default: 69, min: 0, max: 100}], collections: [{id: 'b1', title: '房卡', description: '在储物间找到的房卡，上面写着301。'}], nodes: [{id: 'N1', title: '调查储物间', effects: [{collect: 'b1'}], routes: []}], events: [{id: 'E1', title: '赠礼被接受', description: '实际赠礼且对方接受', completion_criteria: '实际交付并接受', effects: [{add: {variable: 'rapport', value: 4, max: 70}}], repeat_policy: 'once_per_accepted_turn', auto_settle: true}]});
++async function engine(p = project(), client = mockClient()) { const f = fixture(), e = new Engine(f.host, client); await e.init(); await e.setProject(p); await e.updateSettings({enabled: true, profile: {base_url: 'https://mock.example', model: 'mock'}}); return {...f, e}; }
++
++test('行为上限与载体总上限独立：69加4只到70，其他行为仍可到100；减少可设独立下限', () => {
++  const p = project(), s = C.createProgress(p); assert.equal(C.eligibleEvents(p, s).length, 1);
++  C.settleEvent(s, p, 'E1', 'first', {assistant_id: 1}); assert.equal(s.variables.rapport, 70); assert.equal(C.eligibleEvents(p, s).length, 0);
++  assert.deepEqual(s.settlements.entries['event:E1:turn_1'].changes, [{variable: 'rapport', before: 69, after: 70}]);
++  s.variables.rapport = 80; C.settleEvent(s, p, 'E1', 'second', {assistant_id: 2}); assert.equal(s.variables.rapport, 80);
++  C.applyEffects(s, p, [{add: {variable: 'rapport', value: 8}}]); assert.equal(s.variables.rapport, 88);
++  C.applyEffects(s, p, [{add: {variable: 'rapport', value: -20, min: 75}}]); assert.equal(s.variables.rapport, 75);
++  C.applyEffects(s, p, [{add: {variable: 'rapport', value: 40}}]); assert.equal(s.variables.rapport, 100);
++  assert.throws(() => C.normalizeProject({...p, events: [{...p.events[0], effects: [{add: {variable: 'rapport', value: 1, min: 80, max: 70}}]}]}), /下限大于上限/);
++});
++test('重复行为按回复编号去重：重试、改写指纹、手动和自动共用回执；新回复可再结算，撤销可重做', () => {
++  const p = project(), s = C.createProgress(p); s.variables.rapport = 0;
++  assert(C.settleEvent(s, p, 'E1', 'fingerprint-A', {assistant_id: 1}));
++  assert.equal(C.settleEvent(s, p, 'E1', 'fingerprint-B', {assistant_id: 1}), false);
++  assert.equal(C.settleEvent(s, p, 'E1', 'fingerprint-A'), false);
++  assert(C.settleEvent(s, p, 'E1', 'fingerprint-C', {assistant_id: 3})); assert.equal(s.variables.rapport, 8); assert.equal(s.event_counts.E1, 2);
++  C.undo(s); assert.equal(s.variables.rapport, 4); assert(C.settleEvent(s, p, 'E1', 'fingerprint-C', {assistant_id: 3})); assert.equal(s.variables.rapport, 8);
++});
++test('多事件同批结算重新核对数值条件，不越过行为上限，也不重复奖励', async () => {
++  const p = project(); p.events[0].condition = {variable: {id: 'rapport', op: 'lt', value: 70}};
++  p.events.push({...C.clone(p.events[0]), id: 'E2', title: '另一种普通行为'});
++  const {e} = await engine(p); await e.checkLatest(); assert.equal(e.state.variables.rapport, 70); assert.equal(e.state.event_counts.E1, 1); assert.equal(e.state.event_counts.E2 || 0, 0);
++  await e.checkLatest(); assert.equal(e.state.variables.rapport, 70);
++});
++test('生成结束后即核验独立行为，流式接收不奖励；关闭自动核验后不调用', async () => {
++  let calls = 0; const client = mockClient(async (p, messages, events) => { calls++; return events.map(e => ({event_id: e.id, status: 'completed', evidence: [{message_id: '1', quote: '一起走入黑暗的走廊'}]})); });
++  const {e, root} = await engine(project(), client);
++  await root.eventEmit('message_received', 1); await tick(); assert.equal(calls, 0);
++  await root.eventEmit('generation_ended'); await tick(); await e.jobs; assert.equal(calls, 1); assert.equal(e.state.variables.rapport, 70);
++  await root.eventEmit('generation_ended'); await tick(); await e.jobs; assert.equal(calls, 1);
++  await e.updateSettings({auto_events: false}); e.state.variables.rapport = 0;
++  root.messages.push({message_id: 2, role: 'user', message: '再次赠礼'}, {message_id: 3, role: 'assistant', message: '对方接受了礼物。'});
++  await root.eventEmit('generation_ended'); await tick(); assert.equal(calls, 1);
++});
++test('同轮阶段完成不会让新解锁的事件读取旧正文，原阶段行为仍按原范围结算', async () => {
++  const p = F.demoProject(), client = mockClient(); const seen = [];
++  p.events = [{id: 'old', title: '原阶段行为', description: '原阶段行为', effects: [], repeat_policy: 'once', scope: {kind: 'nodes', node_ids: ['B_2']}, auto_settle: true}, {id: 'new', title: '后续行为', description: '后续行为', condition: {collected: 'b2'}, effects: [], repeat_policy: 'once', auto_settle: true}];
++  client.evaluateStage = async () => ({status: 'completed', summary: '', facts: [], missing: [], evidence: [{message_id: '1', quote: '一起走入黑暗的走廊'}]});
++  client.detect = async (profile, messages, events) => { seen.push(...events.map(e => e.id)); return events.map(e => ({event_id: e.id, status: 'completed', evidence: []})); };
++  const {e, root} = await engine(p, client); e.enter('B_2'); e.state.turn_context = {user_id: 0, node_id: 'B_2', injection_nodes: F.activeNodes(e.project, e.state)};
++  await root.eventEmit('generation_ended'); await tick(); await e.stageJobs; await e.jobs;
++  assert.deepEqual(seen, ['old']); assert.equal(e.state.event_counts.old, 1); assert.equal(e.state.event_counts.new || 0, 0);
++});
++test('已获得视图读取正式记录，只列实际结果、公开说明、取得来源；回退同步撤下', () => {
++  const p = project(), s = C.createProgress(p); assert.deepEqual(C.obtainedResults(p, s), []);
++  C.completeNode(s, p); const item = C.obtainedResults(p, s)[0]; assert.equal(item.id, 'b1'); assert.equal(item.description, '在储物间找到的房卡，上面写着301。'); assert.equal(item.source, '调查储物间');
++  assert.deepEqual(C.obtainedResults(p, C.migrateProgress(C.clone(s), p)), [item]); C.undo(s); assert.deepEqual(C.obtainedResults(p, s), []);
++});
++test('新短编号不与已有ID碰撞、不复用已预留ID；旧ID不变，图只使用展示别名', () => {
++  const p = project(); p.nodes.push({id: 'N2', title: '已有短号', routes: [], effects: []}, {id: 'N_aaaaaaaa-bbbb-cccc-dddd', title: '旧节点', routes: [], effects: []});
++  const fresh = C.shortId(p, 'N'); assert.equal(fresh, 'N3'); assert.equal(C.shortId(C.normalizeProject(p), 'N'), 'N4');
++  const s = C.createProgress(C.normalizeProject(p)), graph = G.build(C.normalizeProject(p), s), old = graph.nodes.find(x => x.name === '旧节点');
++  assert.equal(old.id, 'node:N_aaaaaaaa-bbbb-cccc-dddd'); assert.equal(old.label, 'N3'); assert(p.nodes.some(n => n.id === 'N_aaaaaaaa-bbbb-cccc-dddd'));
++});
++test('结果删除预览覆盖节点、出口、行为、事件包和结果前提；禁止或明确移除不会留下悬空引用', () => {
++  const p = project(); p.nodes.push({id: 'N2', title: '后续', entry_condition: {all: [{collected: 'b1'}, {not: {collected: 'b1'}}]}, effects: [], routes: []}); p.nodes[0].routes.push({target: 'N2', condition: {collected: 'b1'}});
++  p.events[0].condition = {collected: 'b1'}; p.packages.push({id: 'P1', title: '后续包', node_ids: ['N2'], condition: {collected: 'b1'}}); p.collections.push({id: 'b2', title: '后续结果', requires: {collected: 'b1'}, exclusive_with: ['b1'], external: true});
++  const normalized = C.normalizeProject(p); assert.equal(C.resultReferences(normalized, 'b1').length, 7);
++  const blocked = C.removeResultDefinition(normalized, 'b1', 'block'); assert.equal(blocked.nodes[1].entry_condition, false); assert.equal(blocked.packages[0].condition, false); assert.equal(C.resultReferences(blocked, 'b1').length, 0);
++  const removed = C.removeResultDefinition(normalized, 'b1', 'remove'); assert.equal(removed.nodes[0].routes[0].condition, true); assert.equal(removed.events[0].condition, true); assert.equal(removed.collections[0].requires, true);
++  const replaced = C.removeResultDefinition(normalized, 'b1', 'replace', 'b2'); assert.deepEqual(replaced.nodes[0].routes[0].condition, {collected: 'b2'}); assert(!normalized.collections.find(c => c.id === 'b1').external);
++});
++test('删除事件清理无引用且未取得的输出结果，保留数值；已有来源或被引用的结果保留', async () => {
++  const p = project(); p.nodes[0].effects = []; p.events[0].effects.push({collect: 'b1'});
++  const {e} = await engine(p); assert.deepEqual(e.eventDeletionPreview('E1').cleanup, ['b1']); await e.deleteEvent('E1'); assert.equal(e.project.collections.length, 0); assert.equal(e.project.variables[0].id, 'rapport'); assert(!e.diagnostics().some(x => x.severity === 'error'));
++  const next = project(); next.nodes[0].entry_condition = {collected: 'b1'}; next.nodes[0].effects = []; next.events[0].effects.push({collect: 'b1'}); await e.setProject(next); assert.deepEqual(e.eventDeletionPreview('E1').cleanup, []); await e.deleteEvent('E1'); assert(e.project.collections.some(x => x.id === 'b1')); assert(e.diagnostics().some(x => x.message.includes('缺少获取来源')));
++});
++test('已有结算的结果和事件不能直接删；先回退后可删，解除旧依赖错误后提示同步清除', async () => {
++  const {e} = await engine(); e.complete(); await assert.rejects(e.deleteResult('b1', 'remove'), /回退/); assert.equal(e.project.collections.length, 1);
++  e.undo(); await e.deleteResult('b1', 'remove'); assert.equal(e.project.collections.length, 0);
++  await e.manualEvent('E1'); await assert.rejects(e.deleteEvent('E1'), /结算记录/);
++  const p = project(); p.collections.push({id: 'orphan', title: '遗留无来源结果'}); await e.setProject(p); e.report(Error('旧依赖错误'));
++  await e.deleteResult('orphan', 'block'); assert.equal(e.error, ''); await e.updateSettings({enabled: true}); assert.equal(e.settings.enabled, true);
++});
++test('分析已发请求与模型实际收到的messages一致，失败前也保留，不含鉴权密钥；自定义提示词持久化', async () => {
++  const seen = [], api = new Client(async (url, init) => { seen.push(JSON.parse(init.body)); return {ok: true, json: async () => ({choices: [{message: {content: JSON.stringify({title: '房卡阶段', nodes: [{id: 'long_original_node', title: '找到房卡', detail: '找到301房卡。', guidance: '调查房卡', routes: []}], collections: [{id: 'b1', title: '房卡', evidence: '找到301房卡。', description: '301房卡'}]})}}]})}; });
++  const {e, storage, host} = await engine(project(), api); await e.updateSettings({profile: {key: 'REQUEST_TEST_SECRET', analysis_prompt: '自定义分析system', analysis_merge_prompt: '自定义合并system'}});
++  await e.analyze('找到301房卡。', '只整理原文', 'faithful'); assert.equal(seen.length, 1); assert.deepEqual(JSON.parse(e.rawAnalysis.requests[0].text), seen[0].messages); assert.equal(seen[0].messages[0].content, '自定义分析system'); assert.equal(e.analysisDraft.project.nodes[0].id, 'N1'); assert.equal(e.analysisDraft.project.collections[0].description, '301房卡'); assert(!JSON.stringify(e.rawAnalysis).includes('REQUEST_TEST_SECRET'));
++  const fresh = new Engine(host, api); await fresh.init(); assert.equal(fresh.settings.profile.analysis_prompt, '自定义分析system'); assert.equal(fresh.rawAnalysis.requests.length, 1); assert.equal(storage.script.branch_story_settings.profile.key, '');
++});
++test('仅玩家意图证据不能自动领取行为奖励；原文之外的结果说明拒绝', async () => {
++  const api = new Client(async () => ({ok: true, json: async () => ({choices: [{message: {content: JSON.stringify({results: [{event_id: 'E1', status: 'completed', evidence: [{message_id: '0', quote: '送礼'}]}]})}}]})}));
++  const result = await api.detect({base_url: 'https://mock.example', model: 'mock'}, [{message_id: 0, role: 'user', text: '送礼'}, {message_id: 1, role: 'assistant', text: '对方尚未回应'}], project().events, {}); assert.equal(result[0].status, 'uncertain');
++  const failing = new Client(async () => ({ok: true, json: async () => ({choices: [{message: {content: JSON.stringify({nodes: [{id: 'N', title: '阶段', detail: '找到房卡。', guidance: '调查', routes: []}], collections: [{id: 'b1', title: '房卡', evidence: '找到房卡。', description: '通往隐藏结局'}]})}}]})}));
++  await assert.rejects(failing.analyze({base_url: 'https://mock.example', model: 'mock'}, '找到房卡。'), /结果说明/);
++  assert.notEqual(PROMPTS.analysis, LAST_PROMPTS.analysis);
++});
++test('请求失败也保留实际发送提示词；配置无效而未发送时不伪造已发记录', async () => {
++  let sent = 0; const api = new Client(async () => { sent++; return {ok: true, json: async () => ({choices: [{message: {content: 'The service rejected this request.'}}]})}; });
++  const {e} = await engine(project(), api); await assert.rejects(e.analyze('找到房卡。'), /JSON/); assert.equal(sent, 1); assert.equal(e.rawAnalysis.requests.length, 1); assert.equal(e.rawAnalysis.replies[0].text, 'The service rejected this request.');
++  await e.updateSettings({profile: {base_url: '', model: ''}}); await assert.rejects(e.analyze('找到房卡。'), /模型名称/); assert.equal(sent, 1); assert.equal(e.rawAnalysis.requests.length, 0);
++});
++test('有限奖励记录实际数值来源，选择性回退其来源时也撤销受该限值影响的奖励', () => {
++  const p = project(); p.variables[0].default = 60; p.nodes[0].effects.push({add: {variable: 'rapport', value: 9}}); const s = C.createProgress(p);
++  C.completeNode(s, p); C.settleEvent(s, p, 'E1', 'reply', {assistant_id: 1}); assert.equal(s.variables.rapport, 70);
++  assert(s.settlements.entries['event:E1:turn_1'].dependencies.includes('receipt:node:N1'));
++  F.rollback(p, s, 'b1'); assert.equal(s.variables.rapport, 60); assert.equal(s.event_counts.E1 || 0, 0); assert.deepEqual(C.obtainedResults(p, s), []);
++});
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
+index cc48427..c7f3b38 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
+@@ -112,7 +112,7 @@ async function run() {
+       await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="run"]').click(); await page.locator('[data-action="stage-check"]').click();
+       await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.collected_ids.includes('ab')); await page.locator('[data-action="close"]').click();
+       await action(page, ids.前厅, '返回前厅。'); assert.equal(await page.locator(`[data-action="quick-enter"][data-id="${ids.证物袋}"]`).count(), 1); await action(page, ids.证物袋, '你取出证物袋并交给接应人员。');
+-      assert((await get(page)).state.completed_node_ids.includes(ids.证物袋)); assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
++      assert((await get(page)).state.completed_node_ids.includes(ids.证物袋)); assert.equal(await page.locator('#bse-quick-host').isVisible(), true); assert.equal(await page.locator('[data-action="quick-enter"]').count(), 0);
+       assert.equal((await get(page)).state.collected_ids.filter(x => x === 'ab').length, 1);
+       fs.mkdirSync(path.join(root, 'artifacts'), {recursive: true}); await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="records"]').click(); await page.screenshot({path: path.join(root, 'artifacts', mobile ? 'workflow-mobile.png' : 'workflow-desktop.png')});
+       const finished = await get(page); assert(finished.project.events.every(e => finished.state.event_counts[e.id] === 1));

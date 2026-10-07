@@ -99,11 +99,11 @@ async function run() {
     assert.equal(await state(page, () => document.querySelector('#bse-panel-host').shadowRoot.activeElement.dataset.action), 'unlock-cancel');
     await page.locator('[data-action="unlock-cancel"]').click(); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), '');
     await tab(page, 'events'); assert((await page.locator('.event-guide').textContent()).includes('发生什么 → 更新什么'));
-    await page.locator('[data-action="event-example"]').click(); assert((await page.locator('.event-effects-summary').textContent()).includes('好感度 +1'));
+    await page.locator('[data-action="event-example"]').click(); assert((await page.locator('.event-effects-summary').textContent()).includes('+4'));
     assert((await page.locator('[name="completion_criteria"]').inputValue()).includes('实际交付'));
-    await page.locator('[data-action="event-manual"]').click(); await wait(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.variables.affection === 1);
-    assert(await page.locator('[data-action="event-manual"]').isDisabled());
-    assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.collected_ids.includes('FLOWER_ACCEPTED')), true);
+    await page.locator('[data-action="event-manual"]').click(); await wait(page, () => Object.values(document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.variables).includes(4));
+    assert(await page.locator('[data-action="event-manual"]').isEnabled()); await page.locator('[data-action="event-manual"]').click(); assert.equal(await state(page, () => Object.values(document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.variables).includes(8)), false);
+    assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.collected_ids.includes('FLOWER_ACCEPTED')), false);
     await page.locator('[data-action="event-records"]').first().click(); assert.equal(await page.locator('[data-tab="records"]').getAttribute('aria-current'), 'page');
     await tab(page, 'nodes'); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), '');
     await unlock(page); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), null);
@@ -186,13 +186,13 @@ async function run() {
     await page.locator('#bse-quick-host').waitFor({state: 'visible'});
     assert.equal(await page.locator('[data-action="quick-enter"][data-id="C"]').count(), 1); assert.equal(await page.locator('[data-action="quick-enter"][data-id="D"]').count(), 0);
     assert.equal(await page.locator('[data-action="quick-enter"][data-id="C"]').getAttribute('data-status'), '已解锁');
-    const quick = await page.locator('#bse-quick-host').boundingBox(), composer = await page.locator('#send_form').boundingBox(); assert(quick.y + quick.height <= composer.y - 4);
+    const quick = await page.locator('#bse-quick-host').boundingBox(), composer = await page.locator('#chatinput').boundingBox(); assert(quick.y + quick.height <= composer.y - 4);
     await page.locator('#chatinput').fill('保留玩家未发送的草稿'); await page.locator('[data-action="quick-enter"][data-id="C"]').click();
     assert.equal(await page.locator('#chatinput').inputValue(), '保留玩家未发送的草稿证据齐全，追查真相'); assert.equal(await state(page, () => testHost.root.messages.length), 4);
     assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N001');
     await state(page, () => testSendInput());
     assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'C');
-    assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
+    assert.equal(await page.locator('#bse-quick-host').isVisible(), true); assert.equal(await page.locator('[data-action="quick-enter"]').count(), 0);
     await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.undo());
     const launch = page.getByRole('button', {name: '打开剧情面板'}), beforeDrag = await launch.boundingBox();
     await page.mouse.move(beforeDrag.x + 24, beforeDrag.y + 24); await page.mouse.down(); await page.mouse.move(beforeDrag.x - 180, beforeDrag.y - 100, {steps: 8}); await page.mouse.up();
@@ -224,7 +224,7 @@ async function run() {
     assert.equal(await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N002');
     await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.undo());
     await pencil.tap(); assert.equal(await phone.locator('.run-spoiler-content').getAttribute('inert'), '');
-    await phone.locator('[data-action="pause"]').tap(); await phone.locator('[data-action="close"]').tap(); assert.equal(await phone.locator('#bse-quick-host').isVisible(), false);
+    await phone.locator('[data-action="pause"]').tap(); await phone.locator('[data-action="close"]').tap(); assert.equal(await phone.locator('#bse-quick-host').isVisible(), true); assert.equal(await phone.locator('[data-action="quick-enter"]').count(), 0);
     await pencil.tap(); await phone.locator('[data-action="pause"]').tap(); await phone.locator('[data-action="close"]').tap(); await phone.locator('#bse-quick-host').waitFor({state: 'visible'});
     await pencil.tap();
     for (const name of ['run', 'nodes', 'events', 'records', 'api', 'analysis', 'data']) { await tab(phone, name); await layout(phone, '390px ' + name); }

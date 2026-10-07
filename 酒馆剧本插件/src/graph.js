@@ -13,8 +13,8 @@
       const b = F.owner(p, n.id);
       return C.nodeReady(n, p, s) && (b ? ['ready', 'running'].includes(s.package_progress?.[b.id]?.status) && s.package_progress[b.id].current_node_id === n.id : n.id === s.current_node_id || F.availableRoutes(p, s, s.current_node_id).some(r => r.target === n.id));
     };
-    for (const n of p.nodes) add('node:' + n.id, n.id, n.title, s.completed_node_ids.includes(n.id) ? 'done' : active.some(x => x.node_id === n.id) ? 'running' : nodeAvailable(n) ? 'available' : 'locked', 'node');
-    for (const e of p.events) add('event:' + e.id, e.id, e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) && (!e.completion_node_id || nodeAvailable(refs.nodes.get(e.completion_node_id))) ? 'available' : 'locked', 'event');
+    for (const n of p.nodes) add('node:' + n.id, C.displayId(p, 'node', n.id), n.title, s.completed_node_ids.includes(n.id) ? 'done' : active.some(x => x.node_id === n.id) ? 'running' : nodeAvailable(n) ? 'available' : 'locked', 'node');
+    for (const e of p.events) add('event:' + e.id, C.displayId(p, 'event', e.id), e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) && (!e.completion_node_id || nodeAvailable(refs.nodes.get(e.completion_node_id))) ? 'available' : 'locked', 'event');
     for (const c of p.collections) {
       const ready = p.nodes.some(n => n.effects.some(e => e.collect === c.id) && nodeAvailable(n)) || p.events.some(e => e.enabled && C.condition(e.condition, s) && e.effects.some(x => x.collect === c.id));
       add('result:' + c.id, c.id, c.title, s.collected_ids.includes(c.id) ? 'done' : ready && C.resultReady(c.id, p, s) ? 'available' : 'locked', 'result');
@@ -35,7 +35,7 @@
     };
     for (const b of p.packages) {
       const status = s.package_progress?.[b.id]?.status;
-      const id = add('package:' + b.id, b.id, b.title, status === 'done' ? 'done' : status === 'running' ? 'running' : status === 'ready' ? 'available' : 'locked', 'package');
+      const id = add('package:' + b.id, C.displayId(p, 'package', b.id), b.title, status === 'done' ? 'done' : status === 'running' ? 'running' : status === 'ready' ? 'available' : 'locked', 'package');
       condition(b.condition, id); condition(b.continue_condition, id); edge(id, 'node:' + b.start_node_id, ['running', 'done'].includes(status), '启动');
     }
     for (const c of p.collections) condition(c.requires, 'result:' + c.id);
@@ -49,7 +49,7 @@
     for (const b of p.packages) nodes.get('package:' + b.id).detail = '触发：' + C.conditionText(b.condition, p) + '；持续：' + C.conditionText(b.continue_condition, p) + '；优先级：' + b.priority;
     for (const c of p.collections) {
       const witnesses = (s.settlements?.order || []).map(k => s.settlements.entries[k]).filter(x => x.effects.some(e => e.collect === c.id)).flatMap(x => x.dependencies);
-      nodes.get('result:' + c.id).detail = '取得前提：' + C.conditionText(c.requires, p) + (c.exclusive_with.length ? '；互斥：' + c.exclusive_with.join('、') : '') + (witnesses.length ? '；本次使用的前提：' + [...new Set(witnesses)].join('、') : '');
+      nodes.get('result:' + c.id).detail = (c.description ? c.description + '；' : '') + '取得前提：' + C.conditionText(c.requires, p) + (c.exclusive_with.length ? '；互斥：' + c.exclusive_with.join('、') : '') + (witnesses.length ? '；本次使用的前提：' + [...new Set(witnesses)].join('、') : '');
     }
     if (filter && refs.packages.has(filter)) {
       const b = refs.packages.get(filter), keep = new Set(['package:' + b.id, ...b.node_ids.map(k => 'node:' + k)]);
@@ -71,7 +71,7 @@
     for (const n of graph.nodes) { const column = level.get(n.id), row = rows.get(column) || 0; rows.set(column, row + 1); n.x = 20 + column * 240; n.y = 24 + row * 116; width = Math.max(width, n.x + 220); height = Math.max(height, n.y + 106); }
     const palette = {done: '#4c9e82', running: '#c8a45c', available: '#608dbc', locked: '#526079'};
     const paths = graph.edges.map(e => { const a = byId.get(e.from), b = byId.get(e.to), x = a.x + 200, y = a.y + 44, bx = b.x, by = b.y + 44; return `<path d="M${x},${y} C${x + 35},${y} ${bx - 35},${by} ${bx},${by}" fill="none" stroke="${e.satisfied ? '#9ce4cf' : '#68748a'}" stroke-width="2" ${e.satisfied ? '' : 'stroke-dasharray="5 4"'} marker-end="url(#bse-arrow)"><title>${escape(e.label)}</title></path>`; }).join('');
-    const boxes = graph.nodes.map(n => `<g class="graph-node" data-action="graph-node" data-id="${escape(n.id)}" tabindex="0" role="button" aria-label="${escape(n.label + ' ' + n.name + ' ' + STATUS[n.status])}"><title>${escape(n.name)}</title><rect x="${n.x}" y="${n.y}" width="200" height="88" rx="12" fill="#172235" stroke="${palette[n.status]}" stroke-width="2"/><text x="${n.x + 12}" y="${n.y + 24}" fill="#e7ecf6" font-size="14">${escape(n.label.slice(0, 24))}</text><text x="${n.x + 12}" y="${n.y + 46}" fill="#b9c5dc" font-size="12">${escape(n.name.slice(0, 14))}${n.name.length > 14 ? '…' : ''}</text><text x="${n.x + 12}" y="${n.y + 69}" fill="${palette[n.status]}" font-size="12">${escape(STATUS[n.status])}</text></g>`).join('');
+    const boxes = graph.nodes.map(n => `<g class="graph-node" data-action="graph-node" data-id="${escape(n.id)}" tabindex="0" role="button" aria-label="${escape(n.label + ' ' + n.name + ' ' + STATUS[n.status])}"><title>${escape(n.name)}</title><rect x="${n.x}" y="${n.y}" width="200" height="88" rx="12" fill="#172235" stroke="${palette[n.status]}" stroke-width="2"/><text x="${n.x + 12}" y="${n.y + 24}" fill="#e7ecf6" font-size="14">${escape(n.name.slice(0, 14))}${n.name.length > 14 ? '…' : ''}</text><text x="${n.x + 12}" y="${n.y + 46}" fill="#b9c5dc" font-size="12">${escape(n.label.slice(0, 24))}</text><text x="${n.x + 12}" y="${n.y + 69}" fill="${palette[n.status]}" font-size="12">${escape(STATUS[n.status])}</text></g>`).join('');
     return `<svg xmlns="http://www.w3.org/2000/svg" role="group" aria-label="完成与解锁关系图" width="${Math.round(width * zoom)}" height="${Math.round(height * zoom)}" viewBox="0 0 ${width} ${height}"><defs><marker id="bse-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#9aaac1"/></marker></defs>${paths}${boxes}</svg>`;
   }
   return {build, svg, STATUS};

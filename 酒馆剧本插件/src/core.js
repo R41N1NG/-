@@ -10,6 +10,23 @@
   const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
   const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
   function id(prefix = 'ID') { return prefix + '_' + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2)); }
+  function shortId(p, prefix) {
+    assert(['N', 'E', 'P', 'V', 'b'].includes(prefix), '短编号类型无效');
+    const used = new Set(['nodes', 'events', 'packages', 'variables', 'collections'].flatMap(k => (p[k] || []).map(x => x.id)));
+    p.short_id_counters ||= {};
+    let count = Math.max(p.short_id_counters[prefix] || 0, ...[...used].filter(k => new RegExp('^' + prefix + '\\d+$').test(k)).map(k => Number(k.slice(prefix.length))), 0);
+    do { count++; } while (used.has(prefix + count));
+    p.short_id_counters[prefix] = count; return prefix + count;
+  }
+  function displayId(p, kind, key) {
+    if (key.length <= 12) return key;
+    const fields = {node: ['nodes', 'N'], event: ['events', 'E'], package: ['packages', 'P']}, field = fields[kind];
+    if (!field) return key;
+    const list = p[field[0]], used = new Set(list.filter(x => x.id.length <= 12).map(x => x.id));
+    let count = 0;
+    for (const x of list.filter(x => x.id.length > 12)) { do { count++; } while (used.has(field[1] + count)); if (x.id === key) return field[1] + count; }
+    return key;
+  }
   function assert(test, message) { if (!test) throw new Error(message); }
   function safeId(value, name = 'ID') {
     assert(typeof value === 'string' && /^[A-Za-z0-9_-]{1,100}$/.test(value) && !forbidden.has(value), name + ' 只能包含字母、数字、下划线和短横线（1～100 字符）');
@@ -66,6 +83,8 @@
         assert(typeof value.value === def.type, '效果值类型不匹配：' + value.variable);
         if (def.type === 'number') assert(Number.isFinite(value.value), '数值效果必须为有限数字');
         if (op === 'add') assert(def.type === 'number', '只有数值变量可以累加');
+        for (const bound of ['min', 'max']) if (value[bound] != null) assert(def.type === 'number' && Number.isFinite(value[bound]), '单次奖励的数值限制无效');
+        assert(value.min == null || value.max == null || value.min <= value.max, '奖励下限大于上限');
       } else throw new Error('未知效果操作：' + op);
     }
   }
@@ -78,12 +97,14 @@
     p.schema_version = VERSION; p.revision = p.revision || id('rev');
     p.events ||= []; p.variables ||= []; p.collections ||= []; p.packages ||= []; p.premise ||= ''; p.original_text ||= '';
     for (const key of ['events', 'variables', 'collections', 'packages']) assert(Array.isArray(p[key]), key + ' 必须为数组');
+    if (p.short_id_counters) assert(object(p.short_id_counters) && Object.entries(p.short_id_counters).every(([k, v]) => ['N', 'E', 'P', 'V', 'b'].includes(k) && Number.isSafeInteger(v) && v >= 0), '短编号计数格式无效');
     assert(p.packages.length <= 128, '每个剧本最多128个事件包');
     for (const [list, label] of [[p.nodes, '节点'], [p.events, '事件'], [p.variables, '变量'], [p.collections, '收集项'], [p.packages, '事件包']]) {
       const used = new Set();
       for (const entry of list) { assert(object(entry), label + ' 必须为对象'); safeId(entry.id, label + ' ID'); assert(!used.has(entry.id), label + ' ID 重复：' + entry.id); used.add(entry.id); }
     }
     p.variables.forEach(v => {
+      v.title ||= v.id; v.owner ||= ''; assert(typeof v.title === 'string' && typeof v.owner === 'string', '数值名称与归属必须为文本');
       v.type ||= typeof v.default;
       assert(['number', 'boolean', 'string'].includes(v.type) && typeof v.default === v.type, '变量类型或默认值无效：' + v.id);
       if (v.type === 'number') {
@@ -140,6 +161,7 @@
     });
     p.collections.forEach(c => {
       c.title ||= c.id; assert(typeof c.title === 'string', '结果名称必须为文本：' + c.id);
+      c.description ||= ''; assert(typeof c.description === 'string', '结果说明必须为文本：' + c.id);
       validateCondition(c.requires, refs);
       c.exclusive_with ||= []; assert(Array.isArray(c.exclusive_with) && c.exclusive_with.every(k => k !== c.id && refs.collections.has(k)), '互斥结果引用无效：' + c.id);
     });
@@ -219,7 +241,10 @@
     const conditions = nodeId ? [def.entry_condition, linked?.condition, pack?.continue_condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : eventId ? [def.condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : [];
     const effects = def ? clone(def.effects) : Object.keys(next.variables).filter(k => next.variables[k] !== before.variables[k]).map(variable => ({set: {variable, value: next.variables[variable]}}));
     const deps = [...new Set([...conditions.flatMap(c => dependencies(c, before)), ...(nodeId ? ctx?.entry_dependencies || [] : []), ...(nodeId ? ctx?.activation_dependencies || [] : [])])];
-    next.settlements.entries[receipt] = {node_id: nodeId, event_id: eventId, package_id: pack?.id || '', effects, dependencies: deps, source: source || null, at: Date.now()};
+    // The local rule determines the reward; keep the actual change for player records.
+    const changes = Object.keys(next.variables).filter(k => next.variables[k] !== before.variables[k]).map(variable => ({variable, before: before.variables[variable], after: next.variables[variable]}));
+    for (const e of effects) if ((e.add || e.set)?.min != null || (e.add || e.set)?.max != null) deps.push(...(before.variable_sources?.[(e.add || e.set).variable] || []).map(k => 'receipt:' + k));
+    next.settlements.entries[receipt] = {node_id: nodeId, event_id: eventId, package_id: pack?.id || '', effects, changes, completion_criteria: def?.completion_criteria || '', dependencies: [...new Set(deps)], source: source || null, at: Date.now()};
     next.settlements.order.push(receipt);
     for (const e of effects) if (e.add || e.set) { const k = (e.add || e.set).variable; next.variable_sources[k] = [...new Set([...(next.variable_sources[k] || []), receipt])]; }
   }
@@ -287,11 +312,24 @@
       if (effect.collect) { assert(resultReady(effect.collect, p, s), '结果前提未满足或结果互斥：' + effect.collect); if (!s.collected_ids.includes(effect.collect)) s.collected_ids.push(effect.collect); }
       else {
         const op = effect.add || effect.set; const def = refs.variables.get(op.variable);
-        let value = effect.add ? s.variables[op.variable] + op.value : op.value;
-        if (typeof value === 'number') { if (def.min != null) value = Math.max(def.min, value); if (def.max != null) value = Math.min(def.max, value); }
-        s.variables[op.variable] = value;
+        s.variables[op.variable] = effectValue(effect, def, s.variables[op.variable]);
       }
     }
+  }
+  function effectValue(effect, def, current) {
+    const op = effect.add || effect.set;
+    let value = effect.add ? current + op.value : op.value;
+    if (typeof value === 'number') {
+      if (op.max != null && value > current) value = Math.max(current, Math.min(op.max, value));
+      if (op.min != null && value < current) value = Math.min(current, Math.max(op.min, value));
+      if (def.min != null) value = Math.max(def.min, value); if (def.max != null) value = Math.min(def.max, value);
+    }
+    return value;
+  }
+  function rewardAvailable(e, p, s) {
+    if (!e.effects.length || e.repeat_policy === 'once' || e.completion_node_id) return true;
+    const refs = indexProject(p);
+    return e.effects.some(x => x.collect ? !s.collected_ids.includes(x.collect) && resultReady(x.collect, p, s) : effectValue(x, refs.variables.get((x.add || x.set).variable), s.variables[(x.add || x.set).variable]) !== s.variables[(x.add || x.set).variable]);
   }
   function completeNode(s, p, source = null, nodeId = s.current_node_id) {
     if (s.receipts['node:' + nodeId]) return false;
@@ -333,9 +371,14 @@
       return completeNode(s, p, source, event.completion_node_id);
     }
     assert(event.effects.every(e => !e.collect || resultReady(e.collect, p, s)), '事件的结果前提未满足或与已取得结果互斥');
-    const key = 'event:' + eventId + ':' + (event.repeat_policy === 'once' ? 'once' : sourceKey);
     assert(typeof sourceKey === 'string' && sourceKey, '缺少事件来源标识');
-    return transact(s, p, '事件：' + event.title, next => { applyEffects(next, p, event.effects); next.event_counts[eventId] = (next.event_counts[eventId] || 0) + 1; }, key, source);
+    const turn = Number.isInteger(source?.assistant_id) ? 'turn_' + source.assistant_id : sourceKey;
+    if (event.repeat_policy !== 'once' && (own(s.receipts, 'event:' + eventId + ':' + sourceKey) || Object.values(s.settlements?.entries || {}).some(x => x.event_id === eventId && x.source_key === sourceKey))) return false;
+    if (event.repeat_policy !== 'once' && Number.isInteger(source?.assistant_id) && Object.values(s.settlements?.entries || {}).some(x => x.event_id === eventId && x.source?.assistant_id === source.assistant_id)) return false;
+    const key = 'event:' + eventId + ':' + (event.repeat_policy === 'once' ? 'once' : turn);
+    const changed = transact(s, p, '事件：' + event.title, next => { applyEffects(next, p, event.effects); next.event_counts[eventId] = (next.event_counts[eventId] || 0) + 1; }, key, source);
+    if (changed && s.settlements?.entries[key]) s.settlements.entries[key].source_key = sourceKey;
+    return changed;
   }
   function undo(s) {
     const tx = s.history.pop(); assert(tx, '没有可回退的近期操作');
@@ -355,7 +398,7 @@
     return p.events.filter(e => {
       if (!e.enabled || e.detection !== 'api' || !condition(e.condition, s) ||
         e.scope.kind === 'nodes' && !e.scope.node_ids.includes(scopeNode) || e.repeat_policy === 'once' && s.event_counts[e.id]) return false;
-      if (!e.completion_node_id) return true;
+      if (!e.completion_node_id) return rewardAvailable(e, p, s);
       const node = indexProject(p).nodes.get(e.completion_node_id), pack = p.packages?.find(b => b.node_ids.includes(node.id));
       return !!node.completion_criteria.trim() && !s.receipts['node:' + node.id] && nodeReady(node, p, s) && (pack ? pack.enabled && s.package_progress?.[pack.id]?.current_node_id === node.id && ['ready', 'running'].includes(s.package_progress?.[pack.id]?.status) && condition(pack.continue_condition, s) : s.current_node_id === node.id);
     });
@@ -419,10 +462,61 @@
   function convertAnalysisProject(input) {
     const p = normalizeProject(input);
     for (const node of p.nodes) if (!node.suggested && node.completion_criteria.trim() && !p.events.some(e => e.completion_node_id === node.id)) {
-      let eventId; do { eventId = id('E'); } while (p.events.some(e => e.id === eventId));
+      const eventId = shortId(p, 'E');
       p.events.push({id: eventId, title: node.title + ' · 完成', description: node.completion_criteria, completion_node_id: node.id, scope: {kind: 'nodes', node_ids: [node.id]}, repeat_policy: 'once', effects: [], condition: true, detection: 'api', auto_settle: false});
     }
     return normalizeProject(p);
   }
-  return {VERSION, clone, object, own, id, assert, safeId, parseJSON, normalizeProject, normalizeCompletion, convertAnalysisProject, indexProject, createProgress, condition, conditionText, validateCondition, nodeReady, resultReady, dependencies, initLedger, applyEffects, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject};
+  function hasResult(c, code) {
+    if (!object(c)) return false;
+    return c.collected === code || (c.all || c.any || []).some(x => hasResult(x, code)) || hasResult(c.not, code);
+  }
+  function resultReferences(p, code) {
+    const refs = [], add = (kind, item, field, label) => refs.push({kind, id: item.id, field, label});
+    for (const n of p.nodes) {
+      if (hasResult(n.entry_condition, code)) add('node', n, 'entry_condition', n.title + '：进入条件');
+      n.routes.forEach((r, i) => { if (hasResult(r.condition, code)) add('node', n, 'routes.' + i, n.title + ' → ' + (r.label || r.target) + '：出口条件'); });
+      if (n.effects.some(e => e.collect === code)) add('node', n, 'effects', n.title + '：完成后取得');
+    }
+    for (const e of p.events) { if (hasResult(e.condition, code)) add('event', e, 'condition', e.title + '：前置条件'); if (e.effects.some(x => x.collect === code)) add('event', e, 'effects', e.title + '：发生后取得'); }
+    for (const b of p.packages) for (const field of ['condition', 'continue_condition']) if (hasResult(b[field], code)) add('package', b, field, b.title + (field === 'condition' ? '：触发条件' : '：持续条件'));
+    for (const c of p.collections) if (c.id !== code) { if (hasResult(c.requires, code)) add('result', c, 'requires', c.title + '：取得前提'); if (c.exclusive_with.includes(code)) add('result', c, 'exclusive_with', c.title + '：互斥结果'); }
+    return refs;
+  }
+  function removeResultDefinition(input, code, mode = 'block', replacement = '') {
+    const p = clone(input); assert(p.collections.some(x => x.id === code), '结果定义不存在');
+    assert(['block', 'remove', 'replace'].includes(mode), '请选择关联条件的处理方式');
+    if (mode === 'replace') assert(replacement !== code && p.collections.some(x => x.id === replacement), '请选择另一个已定义结果');
+    const rewrite = c => {
+      if (!hasResult(c, code)) return c;
+      if (mode === 'block') return false;
+      const prune = value => {
+        if (!object(value)) return value;
+        if (value.collected === code) return mode === 'replace' ? {collected: replacement} : null;
+        if (value.not) { const child = prune(value.not); return child == null ? null : {not: child}; }
+        if (value.all || value.any) { const op = value.all ? 'all' : 'any', parts = value[op].map(prune).filter(x => x != null); return parts.length ? {[op]: parts} : null; }
+        return value;
+      };
+      return prune(c) ?? true;
+    };
+    for (const n of p.nodes) { n.entry_condition = rewrite(n.entry_condition); n.routes.forEach(r => { r.condition = rewrite(r.condition); }); n.effects = n.effects.filter(e => e.collect !== code); if (n.result_ids) n.result_ids = n.result_ids.filter(k => k !== code); }
+    for (const e of p.events) { e.condition = rewrite(e.condition); e.effects = e.effects.filter(x => x.collect !== code); }
+    for (const b of p.packages) { b.condition = rewrite(b.condition); b.continue_condition = rewrite(b.continue_condition); }
+    p.collections = p.collections.filter(c => c.id !== code);
+    for (const c of p.collections) { c.requires = rewrite(c.requires); c.exclusive_with = c.exclusive_with.filter(k => k !== code); }
+    return normalizeProject(p);
+  }
+  function resultInProgress(s, code) {
+    return s.collected_ids.includes(code) || s.settlements?.baseline.collected_ids.includes(code) || Object.values(s.settlements?.entries || {}).some(x => x.effects.some(e => e.collect === code) || x.dependencies.includes('result:' + code));
+  }
+  function obtainedResults(p, s) {
+    return s.collected_ids.map(code => {
+      const def = p.collections.find(c => c.id === code) || {id: code, title: code, description: ''};
+      const receipt = (s.settlements?.order || []).find(k => s.settlements.entries[k]?.effects.some(e => e.collect === code));
+      const entry = s.settlements?.entries[receipt];
+      const from = entry?.node_id ? p.nodes.find(n => n.id === entry.node_id) : entry?.event_id ? p.events.find(e => e.id === entry.event_id) : null;
+      return {id: code, title: def.title, description: def.description || '', source: from?.title || (def.external ? '外部记录' : '旧进度或导入记录'), at: entry?.at || null, receipt: receipt || ''};
+    });
+  }
+  return {VERSION, clone, object, own, id, shortId, displayId, assert, safeId, parseJSON, normalizeProject, normalizeCompletion, convertAnalysisProject, indexProject, createProgress, condition, conditionText, validateCondition, nodeReady, resultReady, dependencies, initLedger, effectValue, rewardAvailable, applyEffects, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject, hasResult, resultReferences, removeResultDefinition, resultInProgress, obtainedResults};
 });

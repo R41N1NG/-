@@ -4,7 +4,7 @@
   if (node) module.exports = value; else root.BSEEngine = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API, F) {
   'use strict';
-  const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, quick_options: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
+  const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, auto_events: true, quick_options: false, quick_collapsed: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
     profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
   async function fingerprint(value) {
@@ -31,8 +31,8 @@
     }
     async init() {
       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
-      for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt']]) {
-        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key]].includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+      for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt'], ['detect', 'detect_prompt']]) {
+        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
       }
       this.client.usage = {...defaults().usage, ...saved.usage};
       if (this.settings.worldbook) {
@@ -56,7 +56,12 @@
     bindEvents() {
       const safe = task => { Promise.resolve().then(task).catch(e => this.report(e)); };
       this.host.on('MESSAGE_RECEIVED', 'message_received', (messageId, type) => { if (type !== 'quiet' && type !== 'extension') safe(() => this.captureDraft(messageId)); });
-      this.host.on('GENERATION_ENDED', 'generation_ended', () => safe(async () => { await this.captureDraft(); if (this.settings.auto_stage) await this.checkStage(); }));
+      this.host.on('GENERATION_ENDED', 'generation_ended', () => safe(async () => {
+        await this.captureDraft(); const pair = this.draft, scopeNode = this.state.current_node_id, epoch = this.epoch;
+        const candidates = C.eligibleEvents(this.project, this.state, scopeNode).filter(e => !e.completion_node_id).map(e => e.id);
+        if (this.settings.auto_stage) await this.checkStage();
+        if (epoch === this.epoch && this.settings.enabled && !this.state.paused && this.settings.auto_events && pair && candidates.length && this.settings.profile.base_url && this.settings.profile.model) await this.acceptPair(pair, true, {scopeNode, ids: candidates});
+      }));
       this.host.on('MESSAGE_SWIPED', 'message_swiped', messageId => safe(() => {
         if (Number(messageId) <= Math.max(this.state.last_settled_message_id ?? -1, this.state.last_stage_message_id ?? -1)) { this.invalidate(); this.state.paused = true; F.clearWork(this.state); this.error = '已确认阶段或结算回复被切换，已暂停；请回退相关操作或恢复备份后继续'; this.save(); }
         this.captureDraft(messageId);
@@ -130,6 +135,7 @@
       if (this.settings.worldbook) await this.host.saveBook(this.settings.worldbook, normalized);
       C.assert(epoch === this.epoch && chat === this.host.chatId(), '保存期间聊天或配置已变化，请重新读取剧本后核对');
       this.invalidate(); this.project = normalized; this.state = state; F.initialize(normalized, state); this.persistProject();
+      this.error = '';
       if (this.settings.enabled && this.diagnostics().some(x => x.severity === 'error')) { this.settings.enabled = false; this.error = '依赖检查发现问题，已关闭注入，请核对后重新启用'; this.saveSettings(); }
       this.save();
     }
@@ -145,7 +151,30 @@
       delete this.settings.draft_project; delete this.settings.drafts?.[this.project.id]; this.saveSettings(); this.notify();
     }
     mutate(fn) { this.invalidate(); this.error = ''; const changed = fn(); if (changed !== false) this.save(); return changed; }
-    complete() { return this.mutate(() => C.completeNode(this.state, this.project)); }
+    complete() {
+      const q = this.state.stage_progress;
+      const source = q && ['completed', 'uncertain'].includes(q.status) ? {assistant_id: q.assistant_id, evidence: q.evidence || [], messages: this.host.pair(q.assistant_id)?.messages.map(m => m.message_id) || []} : null;
+      return this.mutate(() => C.completeNode(this.state, this.project, source));
+    }
+    resultDeletionPreview(code) {
+      const def = this.project.collections.find(c => c.id === code); C.assert(def, '结果定义不存在');
+      return {definition: C.clone(def), references: C.resultReferences(this.project, code), in_progress: !!C.resultInProgress(this.state, code)};
+    }
+    async deleteResult(code, mode, replacement) {
+      C.assert(!C.resultInProgress(this.state, code), '此结果已有取得或结算依赖记录，请先备份并回退相关结果，再删除定义');
+      const next = C.removeResultDefinition(this.project, code, mode, replacement);
+      await this.editProject(p => { Object.assign(p, next); });
+    }
+    eventDeletionPreview(code) {
+      const event = this.project.events.find(e => e.id === code); C.assert(event, '事件不存在');
+      const after = C.clone(this.project); after.events = after.events.filter(e => e.id !== code);
+      const cleanup = [...new Set(event.effects.filter(e => e.collect).map(e => e.collect))].filter(k => after.collections.some(c => c.id === k && !c.external) && !C.resultReferences(after, k).length && !C.resultInProgress(this.state, k));
+      return {cleanup, in_progress: !!this.state.event_counts[code] || Object.values(this.state.settlements?.entries || {}).some(x => x.event_id === code)};
+    }
+    async deleteEvent(code) {
+      const plan = this.eventDeletionPreview(code); C.assert(!plan.in_progress, '此事件已有结算记录，请先备份并回退相关结算后删除');
+      await this.editProject(p => { p.events = p.events.filter(e => e.id !== code); p.collections = p.collections.filter(c => !plan.cleanup.includes(c.id)); });
+    }
     diagnostics() { if (this.diagnosticProject !== this.project) { this.diagnosticProject = this.project; this.diagnosticIssues = F.diagnose(this.project); } return this.diagnosticIssues; }
     switchPackage(id) { return this.mutate(() => F.focusPackage(this.project, this.state, id)); }
     rollbackPreview(id) { return F.rollbackPlan(this.project, this.state, id); }
@@ -262,7 +291,7 @@
           scope().stage_progress = {node_id: node.id, status: result.status, summary: result.summary || previous?.summary || '', facts: facts.slice(-8), missing: result.missing, evidence: result.evidence, source_key: key, assistant_id: pair.assistant_id};
           this.state.last_stage_message_id = Math.max(this.state.last_stage_message_id, pair.assistant_id);
           if (result.status === 'completed' && node.auto_complete) {
-            C.completeNode(this.state, project, {assistant_id: pair.assistant_id, messages: pair.messages.map(m => m.message_id)}, node.id);
+            C.completeNode(this.state, project, {assistant_id: pair.assistant_id, messages: pair.messages.map(m => m.message_id), evidence: result.evidence}, node.id);
             this.flowNotice = '阶段已完成，结果标记已结算';
           } else {
             this.state.revision++;
@@ -323,16 +352,24 @@
       const latest = this.host.latest(); const pair = this.draft || (latest?.role === 'assistant' ? this.host.pair(latest.message_id) : null);
       C.assert(pair, '当前没有可确认的 AI 回复'); return this.acceptPair(pair, true);
     }
-    async acceptPair(pair, force) {
+    async checkRound() {
+      C.assert(this.settings.enabled && !this.state.paused, '请先启用剧本并解除暂停');
+      await this.captureDraft(); const pair = this.draft, scopeNode = this.state.current_node_id, epoch = this.epoch;
+      C.assert(pair, '当前没有可核验的 AI 回复');
+      const candidates = C.eligibleEvents(this.project, this.state, scopeNode).filter(e => !e.completion_node_id).map(e => e.id);
+      await this.checkStage(undefined, true);
+      if (epoch === this.epoch && candidates.length) await this.acceptPair(pair, true, {scopeNode, ids: candidates});
+    }
+    async acceptPair(pair, force, context = {}) {
       C.assert(pair && pair.messages.length, '没有可检查的对话');
       if (!force && !this.settings.auto_detect) return;
-      const epoch = this.epoch; const chat = this.chat; const project = this.project; const scopeNode = this.state.current_node_id;
+      const epoch = this.epoch; const chat = this.chat; const project = this.project; const scopeNode = context.scopeNode || this.state.current_node_id;
       const key = await fingerprint(pair.messages);
       if (epoch !== this.epoch || chat !== this.chat) return;
       if (this.state.accepted_turns[key] || this.inFlight.has(key)) return;
       const existing = this.state.pending_checks.find(c => c.key === key);
       if (existing && !['error', 'stale'].includes(existing.status)) return;
-      const candidates = C.eligibleEvents(project, this.state, scopeNode);
+      const candidates = C.eligibleEvents(project, this.state, scopeNode).filter(e => !context.ids || context.ids.includes(e.id));
       if (!candidates.length) { this.error = '当前没有符合范围和前置条件的 API 事件'; this.notify(); return; }
       let check = existing || {key, assistant_id: pair.assistant_id, messages: pair.messages.map(m => m.message_id), node_id: scopeNode, project_revision: project.revision, results: [], checked_ids: [], at: Date.now()};
       check.status = 'queued'; check.error = ''; if (!existing) this.state.pending_checks.push(check);
@@ -349,7 +386,8 @@
             if (!batch.length) continue;
             if (epoch !== this.epoch || this.host.chatId() !== chat || !sameSource()) throw new Error('来源对话或剧本已变化，本次判断未结算');
             const node = C.indexProject(project).nodes.get(scopeNode);
-            const facts = {node: node.title, known_variables: Object.fromEntries(node.context_variables.map(k => [k, this.state.variables[k]]))};
+            const relevant = [...new Set([...node.context_variables, ...batch.flatMap(e => e.effects.filter(x => x.add || x.set).map(x => (x.add || x.set).variable))])];
+            const facts = {node: node.title, known_variables: Object.fromEntries(relevant.map(k => [k, this.state.variables[k]]))};
             const results = await this.client.detect(this.settings.profile, pair.messages, batch, facts);
             if (epoch !== this.epoch || this.host.chatId() !== chat || !sameSource()) throw new Error('返回结果已过期，未结算');
             for (const result of results) {
@@ -363,6 +401,7 @@
             const record = check.results.find(r => r.event_id === eventId);
             const event = C.indexProject(project).events.get(record.event_id);
             if (!record.handled && record.status === 'completed' && event.auto_settle) {
+              if (!C.condition(event.condition, this.state)) { record.handled = true; record.resolution = 'condition_changed'; record.note = '结算时前提已变化，未应用奖励'; continue; }
               C.settleEvent(this.state, project, event.id, key, record.source, scopeNode);
               check = this.state.pending_checks.find(c => c.key === key);
               check.results.find(r => r.event_id === eventId).handled = true;
@@ -403,10 +442,10 @@
       });
     }
     beginRaw(kind, original, wish, mode) {
-      const run = this.rawAnalysis = {id: C.id('analysis'), kind, original, wish, mode, chat_id: this.chat, replies: [], error: '', at: Date.now()};
+      const run = this.rawAnalysis = {id: C.id('analysis'), kind, original, wish, mode, chat_id: this.chat, replies: [], requests: [], error: '', at: Date.now()};
       this.settings.raw_analysis = run; this.saveSettings();
       const epoch = this.epoch, key = this.settings.profile.key;
-      return value => {
+      const onResponse = value => {
         if (epoch !== this.epoch || this.rawAnalysis !== run) return;
         const retained = run.replies.reduce((n, x) => n + x.text.length, 0), capacity = Math.max(0, 2000000 - retained);
         const raw = typeof value.text === 'string' ? value.text : JSON.stringify(value.text), text = key ? raw.split(key).join('[已隐藏密钥]') : raw;
@@ -414,12 +453,21 @@
         if (JSON.stringify(reply).length > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
         run.replies.push(reply); this.settings.raw_analysis = C.clone(run); this.saveSettings(); this.notify();
       };
+      onResponse.onRequest = value => {
+        if (epoch !== this.epoch || this.rawAnalysis !== run) return;
+        const text = JSON.stringify(value.messages), safe = key ? text.split(key).join('[已隐藏密钥]') : text;
+        const retained = run.requests.reduce((n, x) => n + x.text.length, 0), capacity = Math.max(0, 2000000 - retained);
+        run.requests.push({kind: value.kind || kind, part: value.part || 0, parts: value.parts || 1, at: Date.now(), text: safe.slice(0, capacity), storage_truncated: safe.length > capacity});
+        this.settings.raw_analysis = C.clone(run); this.saveSettings(); this.notify();
+      };
+      return onResponse;
     }
     async segment(text, wish) {
       const epoch = this.epoch; this.busy++; this.notify();
       try {
         const profile = {...this.settings.profile, model: this.settings.segment_model || this.settings.profile.model};
-        const result = await this.client.segment(profile, text, wish, {onResponse: this.beginRaw('segment', text, wish, 'faithful')});
+        const onResponse = this.beginRaw('segment', text, wish, 'faithful');
+        const result = await this.client.segment(profile, text, wish, {onResponse, onRequest: onResponse.onRequest});
         C.assert(epoch === this.epoch, '配置已变化，整理结果未应用');
         this.segmentDraft = result; this.settings.segment_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
       } catch (e) { if (epoch === this.epoch && this.rawAnalysis) { this.rawAnalysis.error = e.message; this.settings.raw_analysis = C.clone(this.rawAnalysis); this.saveSettings(); } throw e; }
@@ -439,7 +487,8 @@
       const epoch = this.epoch; this.busy++; this.error = ''; this.analysisProgress = {phase: '准备', done: 0, total: 0}; this.notify();
       try {
         const profile = {...this.settings.profile, model: this.settings.segment_model || this.settings.profile.model};
-        const result = await this.client.analyze(profile, text, wish, {mode, onResponse: this.beginRaw('analysis', text, wish, mode), onProgress: progress => { if (epoch === this.epoch) { this.analysisProgress = progress; this.notify(); } }});
+        const onResponse = this.beginRaw('analysis', text, wish, mode);
+        const result = await this.client.analyze(profile, text, wish, {mode, onResponse, onRequest: onResponse.onRequest, onProgress: progress => { if (epoch === this.epoch) { this.analysisProgress = progress; this.notify(); } }});
         C.assert(epoch === this.epoch, '聊天或配置已变化，分析结果未应用');
         this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
       } catch (e) { if (epoch === this.epoch && this.rawAnalysis) { this.rawAnalysis.error = e.message; this.settings.raw_analysis = C.clone(this.rawAnalysis); this.saveSettings(); } throw e; }

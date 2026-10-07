@@ -23,6 +23,9 @@
   const schemaInstructions = '字段类型严格遵守：completion_criteria为字符串，completion_exclusions为字符串数组（无排除项用[]）；result_ids为字符串数组。collections可有requires（取得结果的前提）和requires_evidence（连续原文依据）；节点可有entry_condition和entry_condition_evidence。仅当原文明确多个独立剧情事件时返回packages=[{"id":"case_a","title":"事件包","node_ids":["临时节点ID"],"start_node_id":"临时节点ID","completion_node_ids":["终点ID"],"condition":true,"condition_evidence":"触发条件的原文依据","priority":0,"role":"main"}]，包内出口只指向本包节点，跨包用结果条件，条件满足只解锁、不等于完成。原文明示数值变量时可返回variables=[{"id":"trust","title":"信任","type":"number","default":0,"evidence":"包括初始值的原文依据"}]；缺少初始值依据不创造变量。variable条件仅引用已定义变量，使用{id,op,value}。单个结果ID只代表固定含义，a4可要求b2和c1，d1可要求a4，不能自动推导或领奖。';
   for (const key of ['segment', 'analysis']) PROMPTS[key] += schemaInstructions;
   PROMPTS.merge += '保留输入packages与原有节点entry_condition、结果requires；未明确的跨包安排记录待核对，不把多个事件包强制串成一条路线。';
+  const LAST_PROMPTS = {...PROMPTS};
+  for (const key of ['analysis', 'segment']) PROMPTS[key] += 'collections可有description作为取得后的公开说明；description只能是原文中可公开的连续摘录，不写后续剧情或隐藏用途；没有合适摘录时留空。';
+  PROMPTS.detect += 'completed必须包含本轮assistant回复的实际发生证据，只有玩家提出行为或重复引用旧事不能算完成。';
   const request = (system, payload) => [{role: 'system', content: system}, {role: 'user', content: JSON.stringify(payload)}];
   const size = messages => messages.reduce((n, m) => n + m.content.length, 0);
   function quotes(evidence, messages) {
@@ -40,7 +43,8 @@
       C.assert(typeof item.evidence === 'string' && item.evidence.trim() && (options.evidenceSource || original).includes(item.evidence) && typeof item.title === 'string' && item.title.trim(), '结果标记缺少原文定义：' + item.id);
       const previous = collections.find(x => x.id === item.id);
       C.assert(!previous || previous.title === item.title, '结果标记含义冲突：' + item.id);
-      if (!previous) collections.push({id: item.id, title: item.title, evidence: item.evidence});
+      if (item.description) C.assert(typeof item.description === 'string' && (options.evidenceSource || original).includes(item.description), '结果说明必须来自原文连续摘录：' + item.id);
+      if (!previous) collections.push({id: item.id, title: item.title, evidence: item.evidence, description: item.description || ''});
     }
     const codes = new Set(collections.map(x => x.id));
     const remap = c => {
@@ -111,7 +115,7 @@
   }
   function analysisDraft(raw, original, mode, options = {}) {
     C.assert(Array.isArray(raw.nodes) && raw.nodes.length && raw.nodes.length <= 256, '分析需返回 1～256 个节点');
-    const map = new Map(); raw.nodes.forEach(n => { C.assert(C.object(n), '分析节点无效'); C.safeId(n.id); C.assert(!map.has(n.id), '分析节点 ID 重复'); map.set(n.id, C.id('N')); });
+    const map = new Map(); raw.nodes.forEach((n, i) => { C.assert(C.object(n), '分析节点无效'); C.safeId(n.id); C.assert(!map.has(n.id), '分析节点 ID 重复'); map.set(n.id, 'N' + (i + 1)); });
     const warnings = []; const nodes = raw.nodes.map(n => {
       const suggested = n.suggested === true;
       C.assert(!suggested || mode === 'expand', '忠于原文模式不能加入补写节点');
@@ -190,6 +194,7 @@
       if (options.body) headers['Content-Type'] = 'application/json';
       if (profile.key) headers.Authorization = 'Bearer ' + profile.key;
       try {
+        control.onRequest?.();
         const r = await this.fetch(url, {...options, headers, signal: controller.signal});
         if (controller.signal.aborted) throw controller.signal.reason;
         phase = '读取完整回复';
@@ -243,7 +248,7 @@
         C.assert(STATUSES.includes(r.status), '模型返回未知事件状态');
         const e = expected.get(r.event_id);
         const evidence = Array.isArray(r.evidence) ? r.evidence.map(x => ({message_id: String(x.message_id), quote: String(x.quote || '')})) : [];
-        const quotesValid = evidence.length > 0 && evidence.every(x => x.quote.trim() && messages.some(m => String(m.message_id) === x.message_id && m.text.includes(x.quote)));
+        const quotesValid = evidence.some(x => messages.some(m => m.role === 'assistant' && String(m.message_id) === x.message_id && m.text.includes(x.quote))) && evidence.every(x => x.quote.trim() && messages.some(m => String(m.message_id) === x.message_id && m.text.includes(x.quote)));
         const actorsValid = (!e.actor_id || r.actor_id === e.actor_id) && (!e.recipient_id || r.recipient_id === e.recipient_id);
         return {event_id: r.event_id, status: r.status === 'completed' && (!quotesValid || !actorsValid) ? 'uncertain' : r.status,
           actor_id: r.actor_id || '', recipient_id: r.recipient_id || '', evidence, note: r.status === 'completed' && (!quotesValid || !actorsValid) ? '完成依据或主体校验未通过，请人工确认' : ''};
@@ -283,9 +288,9 @@
       const system = profile.segment_prompt?.trim() || PROMPTS.segment;
       const messages = request(system, {original: text, preferences: wish});
       C.assert(size(messages) <= (profile.max_input_chars || 16000), '原文和提示词合计超过字符预算，请减少文本或提高预算');
-      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本整理', long: true, onResponse: value => options.onResponse?.({...value, kind: 'full', original: text, mode: 'faithful'})});
+      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本整理', long: true, onRequest: () => options.onRequest?.({messages: C.clone(messages), kind: 'segment'}), onResponse: value => options.onResponse?.({...value, kind: 'full', original: text, mode: 'faithful'})});
       C.assert(Array.isArray(result.nodes) && result.nodes.length, '模型没有返回节点草稿');
-      const map = new Map(); result.nodes.forEach(n => { C.safeId(n.id, '临时节点 ID'); C.assert(!map.has(n.id), '临时节点 ID 重复'); map.set(n.id, C.id('N')); });
+      const map = new Map(); result.nodes.forEach((n, i) => { C.safeId(n.id, '临时节点 ID'); C.assert(!map.has(n.id), '临时节点 ID 重复'); map.set(n.id, 'N' + (i + 1)); });
       const p = {id: C.id('story'), title: result.title || '整理后的剧本', premise: result.premise || '', original_text: text, revision: C.id('rev'), variables: [], events: [], collections: [], start_node_id: map.get(result.start_node_id || result.nodes[0].id), nodes: []};
       C.assert(p.start_node_id, '模型起点引用不存在');
       const warnings = [];
@@ -324,7 +329,7 @@
       const budget = profile.max_input_chars || 16000; const generation = this.generation;
       const payload = original => ({original, preferences: wish, mode, max_nodes: 128});
       const alive = () => C.assert(generation === this.generation, '分析已取消，未应用任何剧本');
-      const invoke = async (prompt, value, context = {kind: 'full'}) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true, onResponse: response => { alive(); return options.onResponse?.({...response, original: value.original || text, mode, part: value.part || 0, parts: value.parts || 1, ...context}); }}); alive(); return result; };
+      const invoke = async (prompt, value, context = {kind: 'full'}) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true, onRequest: () => options.onRequest?.({messages: C.clone(messages), kind: context.kind, part: value.part, parts: value.parts}), onResponse: response => { alive(); return options.onResponse?.({...response, original: value.original || text, mode, part: value.part || 0, parts: value.parts || 1, ...context}); }}); alive(); return result; };
       if (size(request(system, payload(text))) <= budget) {
         options.onProgress?.({phase: '分析全文', done: 0, total: 1});
         const result = analysisDraft(await invoke(system, payload(text)), text, mode); result.request_count = 1; return result;
@@ -382,5 +387,5 @@
     const joined = merged.nodes.map(n => { C.assert(known.has(n.id), '整合结果包含未知节点'); const original = known.get(n.id); return {...original, routes: (n.routes || []).map(r => { const old = original.routes.find(x => x.target === r.target); return old ? {...r, ...old, label: r.label || old.label} : r; })}; });
     return {...merged, collections, packages, variables, nodes: joined};
   }
-  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS};
+  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS, LAST_PROMPTS};
 });

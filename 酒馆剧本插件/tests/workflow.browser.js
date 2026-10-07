@@ -112,7 +112,7 @@ async function run() {
       await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="run"]').click(); await page.locator('[data-action="stage-check"]').click();
       await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.collected_ids.includes('ab')); await page.locator('[data-action="close"]').click();
       await action(page, ids.前厅, '返回前厅。'); assert.equal(await page.locator(`[data-action="quick-enter"][data-id="${ids.证物袋}"]`).count(), 1); await action(page, ids.证物袋, '你取出证物袋并交给接应人员。');
-      assert((await get(page)).state.completed_node_ids.includes(ids.证物袋)); assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
+      assert((await get(page)).state.completed_node_ids.includes(ids.证物袋)); assert.equal(await page.locator('#bse-quick-host').isVisible(), true); assert.equal(await page.locator('[data-action="quick-enter"]').count(), 0);
       assert.equal((await get(page)).state.collected_ids.filter(x => x === 'ab').length, 1);
       fs.mkdirSync(path.join(root, 'artifacts'), {recursive: true}); await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="records"]').click(); await page.screenshot({path: path.join(root, 'artifacts', mobile ? 'workflow-mobile.png' : 'workflow-desktop.png')});
       const finished = await get(page); assert(finished.project.events.every(e => finished.state.event_counts[e.id] === 1));

@@ -1,12 +1,12 @@
 {
   "name": "tavern-branch-story-engine",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "private": true,
   "description": "酒馆助手分支剧本、条件事件与辅助 API 插件",
   "scripts": {
     "build": "node scripts/build.js",
     "test": "node --test tests/*.test.js",
-    "test:browser": "node tests/browser.js && node tests/workflow.browser.js && node tests/packages.browser.js && node tests/startup.browser.js",
+    "test:browser": "node tests/browser.js && node tests/workflow.browser.js && node tests/packages.browser.js && node tests/player.browser.js && node tests/startup.browser.js",
     "check": "npm test && npm run build"
   },
   "engines": {
