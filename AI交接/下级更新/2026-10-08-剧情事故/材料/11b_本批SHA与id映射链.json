@@ -1,0 +1,199 @@
+{
+ "文件": [
+  {
+   "文件": "卡片脚本/状态机.js",
+   "改后字节": 262552,
+   "改后SHA": "4ee84a52ed2562b4116676488ed36820fde6188d265b092e8ede5e599e0fa14b",
+   "改前SHA": "6954a921d4d1d3f13221ff93dd3eabb99a1b6bada48b7de13a68ec1d3f98015e",
+   "改前取自": "卡片脚本/状态机.js.bak-before-4defects"
+  },
+  {
+   "文件": "src/text_data/_card_core.txt",
+   "改后字节": 4856,
+   "改后SHA": "2dbf8e8af0cf9e3b2fb21e57bb1840ba0dffec03fd9b3635ef1dbb89cb4e5f09",
+   "改前SHA": "1c21765c5e9797ec5bfdb32b04a636761ce4570a420dc5483df79bb60ef1be36",
+   "改前取自": "src/text_data/_card_core.txt.bak-before-leakfix"
+  },
+  {
+   "文件": "src/text_data/_card_mes.txt",
+   "改后字节": 3775,
+   "改后SHA": "80317e55dcd636d2b78b5e21ab95e3e941ddbfadb0d56cbe371d0263e18f6dec",
+   "改前SHA": "4e3d2fc11e8d712d4631af19b0f3e29fd2c91a4bfeb28faab5a63380ac0d2644",
+   "改前取自": "src/text_data/_card_mes.txt.bak-before-leakfix"
+  },
+  {
+   "文件": "src/text_data/_stage_drive.txt",
+   "改后字节": 14290,
+   "改后SHA": "6923b28c21e5c8266dc25a67035312391c952fb6ab6a2bcbc10b80a23aaaf44f",
+   "改前SHA": "271d519db4f01982e997f8047eaf087f05c93ce701cd6f61c92fe0719887ce2c",
+   "改前取自": "src/text_data/_stage_drive.txt.bak-before-leakfix"
+  },
+  {
+   "文件": "_build_card.js",
+   "改后字节": 149602,
+   "改后SHA": "3adee22077ca60c24cf9b44acbc2c9f6fdcd812ead0c6ec8ed1062c15badfc5e",
+   "改前SHA": "c7f4151cf3391fb339905c4e634526e442a1b92843eb7c4edc96652588099504",
+   "改前取自": "_build_card.js.bak-before-optdel"
+  },
+  {
+   "文件": "src/card_build/_build_card.js",
+   "改后字节": 287156,
+   "改后SHA": "b789514c6b538674f86251b8235b8c0fcbb9cc35329d30cc34ce465d30e5f3d2",
+   "改前SHA": "cc86e9b3c81b993540674d4d43e248a312f9dbd4626e2b51880a0ebe9cae29b2",
+   "改前取自": "src/card_build/_build_card.js.bak-before-optdel"
+  },
+  {
+   "文件": "references/仙姝墮-世界书.json",
+   "改后字节": 466136,
+   "改后SHA": "9ca2ab1dc4c2b0f57b805494377a018ccbe84f82bff66e64cff6287675cd00e5",
+   "改前SHA": "41bf7a5e6dace46fe3680312faf1f947c6386e0586f4fa3ad441b320226ad30d",
+   "改前取自": "references/仙姝墮-世界书.json.bak-before-leakfix"
+  },
+  {
+   "文件": "tools/checks/_chk_clock_acc.mjs",
+   "改后字节": 8095,
+   "改后SHA": "dd4bc4fd833c4dc0144a20183376553e32e693595c571445f554fc2ed29cc792",
+   "改前SHA": null,
+   "改前取自": null
+  },
+  {
+   "文件": "tools/checks/_chk_defect_four.mjs",
+   "改后字节": 7613,
+   "改后SHA": "d27a096c773fac2409e806272bb8ab34b51d423891b93b3bf10fb38be0cca8a7",
+   "改前SHA": null,
+   "改前取自": null
+  },
+  {
+   "文件": "tools/checks/_chk_anchor_gate.mjs",
+   "改后字节": 3933,
+   "改后SHA": "f6da48eab78c42e7b58f156f61b7c3ba7807f77e55454cb55c8d8d20993ee903",
+   "改前SHA": null,
+   "改前取自": null
+  },
+  {
+   "文件": "tools/checks/_chk_form_gate.mjs",
+   "改后字节": 36444,
+   "改后SHA": "3225e415479973a17bddd60ce4472085b0f97db753af1324c0dc6d828b66b72e",
+   "改前SHA": null,
+   "改前取自": null
+  },
+  {
+   "文件": "tools/checks/_chk_ejs_stage.mjs",
+   "改后字节": 22956,
+   "改后SHA": "350a8e68ee7657178f8afb8c1d91911fcd029a364f6891996b1fa6b20add9a27",
+   "改前SHA": null,
+   "改前取自": null
+  },
+  {
+   "文件": "tools/checks/_chk_all.mjs",
+   "改后字节": 8717,
+   "改后SHA": "a9afa8ecfd99ab7c7df1c9af361690515a20d063aadc0ed9595599e9ce87c86e",
+   "改前SHA": null,
+   "改前取自": null
+  },
+  {
+   "文件": "ship.js",
+   "改后字节": 4584,
+   "改后SHA": "15350761bcca50055838f911ef73beb084cf972483f0a752c2d17907c71cb4df",
+   "改前SHA": null,
+   "改前取自": null
+  }
+ ],
+ "id映射链": [
+  {
+   "源uid": 29,
+   "comment": "【剧情】一 · 墨山道",
+   "卡内id": 46,
+   "酒馆uid": 46
+  },
+  {
+   "源uid": 30,
+   "comment": "【剧情】二 · 邪修洞府解毒 · 起获极乐引",
+   "卡内id": 48,
+   "酒馆uid": 48
+  },
+  {
+   "源uid": 31,
+   "comment": "【剧情】三 · 幽寂谷秘境",
+   "卡内id": 52,
+   "酒馆uid": 52
+  },
+  {
+   "源uid": 32,
+   "comment": "【剧情】四 · 南域大劫 · 天姝会成立（神诅与四殿）",
+   "卡内id": 53,
+   "酒馆uid": 53
+  },
+  {
+   "源uid": 33,
+   "comment": "【剧情】五 · 孤剑崖送别 · 孤月赠冰心泪",
+   "卡内id": 56,
+   "酒馆uid": 56
+  },
+  {
+   "源uid": 34,
+   "comment": "【剧情】六 · 初入天溪 · 听雪双姝登场",
+   "卡内id": 57,
+   "酒馆uid": 57
+  },
+  {
+   "源uid": 35,
+   "comment": "【剧情】七 · 兽潮血战 · 玄机子装伤脱身",
+   "卡内id": 58,
+   "酒馆uid": 58
+  },
+  {
+   "源uid": 36,
+   "comment": "【剧情】八 · 灵犀同心、日月同辉",
+   "卡内id": 61,
+   "酒馆uid": 61
+  },
+  {
+   "源uid": 37,
+   "comment": "【剧情】九 · 血染天溪 · 叶红缨夜间失控与赵无忧的越界",
+   "卡内id": 62,
+   "酒馆uid": 62
+  },
+  {
+   "源uid": 38,
+   "comment": "【剧情】十 · 双姝回归，魅骨生香",
+   "卡内id": 63,
+   "酒馆uid": 63
+  },
+  {
+   "源uid": 39,
+   "comment": "【剧情】十一 · 天溪城破",
+   "卡内id": 64,
+   "酒馆uid": 64
+  },
+  {
+   "源uid": 40,
+   "comment": "【剧情】十二 · 朱樱逢劫 · 叶红缨被擒与封元镇灵环暴露",
+   "卡内id": 65,
+   "酒馆uid": 65
+  },
+  {
+   "源uid": 41,
+   "comment": "【剧情】十三 · 赤羽堕凡尘 · 灼酒流炎穴成形与孕炎乳",
+   "卡内id": 68,
+   "酒馆uid": 68
+  },
+  {
+   "源uid": 42,
+   "comment": "【剧情】十四 · 洞府调教 · 种下相思豆与赤羽沉沦",
+   "卡内id": 69,
+   "酒馆uid": 69
+  },
+  {
+   "源uid": 43,
+   "comment": "【剧情】十五 · 雀奴 · 灼酒流炎穴二阶段觉醒与身心彻底臣服",
+   "卡内id": 70,
+   "酒馆uid": 70
+  }
+ ],
+ "成品": {
+  "路径": "最新角色卡/仙姝堕.json",
+  "字节": 6778025,
+  "sha256": "62a22886d6c431564c4b17b6d4fdb072b4f6d41773b8ac01c9e3145ab2e117d7"
+ }
+}
