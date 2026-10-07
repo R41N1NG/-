@@ -1,0 +1,301 @@
+{
+  "identity": "gpt",
+  "baseline_commit": "0d48b38",
+  "input_sha256": "539288988b8166ef784c5d12fb74c7cd103e131a12524898fdc068ecbfe8bb56",
+  "extension_manifest": {
+    "display_name": "Prompt Template/提示词模板",
+    "loading_order": 1,
+    "requires": [],
+    "optional": [],
+    "js": "dist/index.js",
+    "css": "",
+    "author": "zonde306",
+    "version": "1.17.9",
+    "homePage": "https://github.com/zonde306/ST-Prompt-Template",
+    "auto_update": true,
+    "i18n": {
+      "zh-cn": "locales/zh-cn.json",
+      "zh-tw": "locales/zh-tw.json"
+    }
+  },
+  "upstream_commit": "d6f520d149aba146305b0b781ddd691d449c28d2",
+  "worldinfo_ts_sha256": "7681354d011b16c5bfaab01bba212651dfd42edcf1fd85b3aea089d03f8ea02f",
+  "ejs_sha256": "66b3c84f33adbf154950e18cb55704062e3fa5e2f4e69001f6df296d11548d54",
+  "method_body_sha256": "7f47646aba07b916bd1fbd57f7371708552a52b4f4ceb57a11abbc617a6cc5e2",
+  "entries": 29,
+  "original_not_filtered": 29,
+  "inner_calendar_gates": 13,
+  "missing_uid": 29,
+  "repaired_at_early_date_filtered": 26,
+  "additional_checks": {
+    "corrected_neutral_beast_opens_at_1579_01": true,
+    "corrected_missing_date_filtered": true,
+    "caught_exception_filtered": true,
+    "corrected_main_beast_still_opens_at_1578_03_with_stage_7": true,
+    "handler_error_null_is_not_filtered": true
+  },
+  "rows": [
+    {
+      "comment": "【中立】一 · 暗流微澜 · 极乐密藏天机泄",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】一 · 墨山道",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": true,
+      "repaired_filtered": false,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【中立】二 · 承平假象 · 幽寂秘境风闻动",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": true,
+      "repaired_filtered": false,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】二 · 邪修洞府解毒 · 起获极乐引",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": true,
+      "repaired_filtered": false,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】起获《极乐引》（自设专轨）",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】南域风云 · 散修大势与秘境暗涌（自设专轨）",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】鼎炉争锋 · 仙姝名器之机缘大势（自设专轨）",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】三 · 幽寂谷秘境",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】四 · 南域大劫 · 天姝会成立（神诅与四殿）",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【中立】三 · 南域大劫 · 天地神诅与四殿分疆",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】一 · 天姝初立 · 极乐大诏与四殿分疆（殿主专轨）",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】五 · 孤剑崖送别 · 孤月赠冰心泪",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】六 · 初入天溪 · 听雪双姝登场",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】七 · 兽潮血战 · 玄机子装伤脱身",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【中立】四 · 天溪兽潮 · 要塞围城与九龙焚天",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】二 · 暗度天溪 · 趁乱布网与围城之谋（殿主专轨）",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】八 · 灵犀同心、日月同辉",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】九 · 血染天溪 · 叶红缨夜间失控与赵无忧的越界",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】十 · 双姝回归，魅骨生香",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】十一 · 天溪城破",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】十二 · 朱樱逢劫 · 叶红缨被擒与封元镇灵环暴露",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【中立】五 · 天溪城破 · 阵毁城陷与四方溃散",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】三 · 要塞陷落 · 趁乱截击与收网良机（殿主专轨）",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】十三 · 赤羽堕凡尘 · 灼酒流炎穴成形与孕炎乳",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】十四 · 洞府调教 · 种下相思豆与赤羽沉沦",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】十五 · 雀奴 · 灼酒流炎穴二阶段觉醒与身心彻底臣服",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": false,
+      "has_uid": false
+    },
+    {
+      "comment": "【中立】六 · 乱世割据 · 鼎炉猎场与名器大争",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【剧情】四 · 极乐分疆 · 四殿割据与鼎炉大争（殿主专轨）",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    },
+    {
+      "comment": "【中立】七 · 极乐定局 · 魔道鼎立与北上暗涌",
+      "original_type": "function",
+      "original_filtered": false,
+      "repaired_value": false,
+      "repaired_filtered": true,
+      "inner_has_calendar": true,
+      "has_uid": false
+    }
+  ],
+  "limits": "真实上游条件方法体与真实附带EJS；evalTemplateHandler只替换为EJS执行适配，settings与env为替身。未执行上游完整宿主集成、用户安装版、扫描/预算/请求；通过表示复现错误和参考修补行为，不表示已部署或已清理所有入口。"
+}
