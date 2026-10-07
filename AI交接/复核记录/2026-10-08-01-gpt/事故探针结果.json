@@ -1,0 +1,67 @@
+{
+  "identity": "gpt",
+  "baseline_commit": "4824b1d",
+  "input": "卡片脚本·状态机（2026-10-08·含撤销命令与整件退回）.js",
+  "source_sha256": "b46ba8cddcf61465517ebb8ba2b50315405f00b22e5fe6082654582b4b473d3a",
+  "source_chars": 187911,
+  "injected_sha256": "a94552a7914a9ccf2074c76231552167e8436b85402cd15129c6394c5b6ed097",
+  "count": 5,
+  "observations": [
+    {
+      "name": "被锚点证据闸门拒绝的原始申报仍触发跳段",
+      "stage": 7,
+      "beast_anchor": false,
+      "rejection": [
+        {
+          "level": "warn",
+          "text": "[仙姝堕·状态机] ⛔ [锚点闸门] 第 8 楼丢弃「天溪城兽潮」：正文里没有「天溪城兽潮」的实证（这条是准入／跳段锚点，凭一句空话不能算它发生。确实发生了就发「/解锁 天溪城兽潮」手工补）"
+        }
+      ]
+    },
+    {
+      "name": "否定未来事件的普通首楼文字误触自动继承并写真",
+      "input": "本次开局不继承旧档，我还没遇到兽潮血战，也没有经历天溪城破。",
+      "detected": {
+        "isInherited": true,
+        "targetStage": 11,
+        "summaryText": "本次开局不继承旧档，我还没遇到兽潮血战，也没有经历天溪城破。"
+      },
+      "stage": 11,
+      "known": {
+        "兽潮血战": true,
+        "天溪城破": true,
+        "受征召南下": true,
+        "天溪城兽潮": true,
+        "已抵达天溪": true
+      },
+      "calendar": "1579 年 · 三月"
+    },
+    {
+      "name": "证据正则不识别否定/主体，空正文放行；旁证函数自身不写盘",
+      "weak": {
+        "ok": true,
+        "why": ""
+      },
+      "empty": {
+        "ok": true,
+        "why": "（读不到正文，按放行处理，别误杀）"
+      },
+      "suggestion_hits": [
+        "兽潮血战",
+        "受征召南下",
+        "天溪城兽潮"
+      ],
+      "suggestion_writes": 0
+    },
+    {
+      "name": "缺状态栏仍按段位回写日期",
+      "before": "1579 年 · 六月初七",
+      "after": "1578 年 · 三月"
+    },
+    {
+      "name": "日历算术没有在1580.01截止",
+      "after_three_months": 1580.04
+    }
+  ],
+  "limits": "执行上传快照的实际函数；API、聊天、双层变量、事件和定时器为替身。未执行真实世界书引擎、ST-Prompt-Template、实际请求或用户旧档。通过表示问题被复现，不表示已修复。"
+}
