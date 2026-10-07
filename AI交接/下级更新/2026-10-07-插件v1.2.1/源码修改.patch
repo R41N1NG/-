@@ -1,0 +1,299 @@
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+index 956a78e..c4cb174 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+@@ -151,20 +151,31 @@
+   }
+   class Client {
+     constructor(fetchFn) { this.fetch = fetchFn || globalThis.fetch.bind(globalThis); this.controllers = new Set(); this.generation = 0; this.usage = {calls: 0, input: 0, output: 0, unknown: 0}; }
+-    cancel() { this.generation++; for (const c of this.controllers) c.abort(); this.controllers.clear(); }
+-    async send(profile, resource, options = {}) {
++    cancel(reason = '用户取消或聊天、配置已变化') { this.generation++; for (const c of this.controllers) c.abort({code: 'cancelled', message: reason}); this.controllers.clear(); }
++    async send(profile, resource, options = {}, control = {}) {
+       const url = endpoint(profile.base_url, resource);
+       const controller = new AbortController(); this.controllers.add(controller);
+-      const timer = setTimeout(() => controller.abort(), Math.max(5, profile.timeout_sec || 45) * 1000);
++      const timeout = Math.min(1800, Math.max(5, Number(control.timeout_sec ?? profile.timeout_sec) || 45));
++      const timer = setTimeout(() => controller.abort({code: 'timeout'}), timeout * 1000);
++      let phase = '等待服务响应';
+       const headers = {Accept: 'application/json'};
+       if (options.body) headers['Content-Type'] = 'application/json';
+       if (profile.key) headers.Authorization = 'Bearer ' + profile.key;
+       try {
+         const r = await this.fetch(url, {...options, headers, signal: controller.signal});
++        if (controller.signal.aborted) throw controller.signal.reason;
++        phase = '读取完整回复';
+         if (!r.ok) throw await httpError(r, url, profile, resource);
+-        try { return await r.json(); } catch { throw new Error('辅助 API 未返回有效 JSON；请核对接口地址及 OpenAI 兼容协议'); }
++        try { const data = await r.json(); if (controller.signal.aborted) throw controller.signal.reason; return data; }
++        catch (e) { if (controller.signal.aborted || e?.name === 'AbortError') throw e; throw new Error('辅助 API 未返回有效 JSON；请核对接口地址及 OpenAI 兼容协议'); }
+       } catch (e) {
+-        if (e.name === 'AbortError') throw new Error('辅助 API 请求已取消或超时');
++        if (controller.signal.aborted || e?.name === 'AbortError') {
++          const timedOut = controller.signal.reason?.code === 'timeout';
++          const hint = control.long ? '请在 API 页调整整理/分析超时；已有后台 JSON 可在分析页校验导入。' : '请核对服务响应速度，或在 API 页调整快速请求超时。';
++          const error = new Error(timedOut ? '辅助 API ' + (control.label || '请求') + '超时（' + timeout + ' 秒，' + phase + '）。服务端可能仍在生成或尚未返回完整响应。' + hint
++            : '辅助 API 请求已取消：' + safeDetail(controller.signal.reason?.message || '请求被中止', profile));
++          error.code = timedOut ? 'BSE_API_TIMEOUT' : 'BSE_API_CANCELLED'; throw error;
++        }
+         if (e instanceof TypeError) throw new Error('无法连接辅助 API；请检查网络、服务地址及浏览器跨域（CORS）支持。酒馆主连接可能通过服务器转发，插件从浏览器直接请求。');
+         throw e;
+       } finally { clearTimeout(timer); this.controllers.delete(controller); }
+@@ -181,7 +192,7 @@
+       const body = {model: profile.model, messages, stream: false, temperature: 0, max_tokens: options.max_tokens || profile.max_output || 512};
+       if (profile.json_mode !== false) body.response_format = {type: 'json_object'};
+       if (profile.no_thinking) body.chat_template_kwargs = {enable_thinking: false};
+-      const data = await this.send(profile, 'chat/completions', {method: 'POST', body: JSON.stringify(body)});
++      const data = await this.send(profile, 'chat/completions', {method: 'POST', body: JSON.stringify(body)}, options);
+       this.usage.calls++;
+       if (data.usage && Number.isFinite(data.usage.prompt_tokens) && Number.isFinite(data.usage.completion_tokens)) {
+         this.usage.input += data.usage.prompt_tokens; this.usage.output += data.usage.completion_tokens;
+@@ -243,7 +254,7 @@
+       const system = profile.segment_prompt?.trim() || PROMPTS.segment;
+       const messages = request(system, {original: text, preferences: wish});
+       C.assert(size(messages) <= (profile.max_input_chars || 16000), '原文和提示词合计超过字符预算，请减少文本或提高预算');
+-      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096});
++      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本整理', long: true});
+       C.assert(Array.isArray(result.nodes) && result.nodes.length, '模型没有返回节点草稿');
+       const map = new Map(); result.nodes.forEach(n => { C.safeId(n.id, '临时节点 ID'); C.assert(!map.has(n.id), '临时节点 ID 重复'); map.set(n.id, C.id('N')); });
+       const p = {id: C.id('story'), title: result.title || '整理后的剧本', premise: result.premise || '', original_text: text, revision: C.id('rev'), variables: [], events: [], collections: [], start_node_id: map.get(result.start_node_id || result.nodes[0].id), nodes: []};
+@@ -263,6 +274,17 @@
+       p.collections = runtimeDraft(result, p.nodes, map, text, warnings);
+       return {project: C.normalizeProject(p), warnings, source_chars: total};
+     }
++    restoreAnalysis(text, raw, mode = 'faithful') {
++      C.assert(typeof text === 'string' && text.trim(), '请保留本次分析的剧本原文，用于校验后台结果');
++      C.assert(text.length <= 200000 && ['faithful', 'expand'].includes(mode), '原文长度或分析模式无效');
++      let data = typeof raw === 'string' ? responseJSON(raw) : C.clone(raw);
++      C.assert(C.object(data), '后台分析结果应为 JSON 对象');
++      if (data.choices) {
++        C.assert(data.choices[0]?.finish_reason !== 'length', '后台分析输出已截断，不能当作完整草稿导入');
++        data = responseJSON(data.choices[0]?.message?.content);
++      }
++      return {...analysisDraft(data, text, mode), request_count: 0, recovered: true};
++    }
+     async analyze(profile, text, wish = '', options = {}) {
+       C.assert(typeof text === 'string' && text.trim(), '请先输入需要分析的长文本');
+       C.assert(text.length <= 200000, '单次分析最多 20 万字符，请分篇整理');
+@@ -271,7 +293,7 @@
+       const budget = profile.max_input_chars || 16000; const generation = this.generation;
+       const payload = original => ({original, preferences: wish, mode, max_nodes: 128});
+       const alive = () => C.assert(generation === this.generation, '分析已取消，未应用任何剧本');
+-      const invoke = async (prompt, value) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192}); alive(); return result; };
++      const invoke = async (prompt, value) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true}); alive(); return result; };
+       if (size(request(system, payload(text))) <= budget) {
+         options.onProgress?.({phase: '分析全文', done: 0, total: 1});
+         const result = analysisDraft(await invoke(system, payload(text)), text, mode); result.request_count = 1; return result;
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+index 150fc1e..6fc9cd7 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+@@ -5,7 +5,7 @@
+ })(typeof window !== 'undefined' ? window : globalThis, function (C, API) {
+   'use strict';
+   const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, quick_options: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
+-    profile: {base_url: '', model: '', key: '', timeout_sec: 45, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
++    profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
+     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
+   async function fingerprint(value) {
+     const text = JSON.stringify(value);
+@@ -23,8 +23,8 @@
+     onChange(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
+     notify() { for (const fn of this.listeners) { try { fn(); } catch (e) { console.error('[BSE] UI 更新失败', e); } } }
+     report(e) { this.error = e.message || String(e); this.notify(); }
+-    invalidate() {
+-      this.epoch++; this.client.cancel(); this.inFlight.clear();
++    invalidate(reason = '配置或进度已变化') {
++      this.epoch++; this.client.cancel(reason); this.inFlight.clear();
+       this.pendingChoice = null; this.preparing = null;
+       this.stageInFlight.clear(); this.flowNotice = '';
+       for (const check of this.state.pending_checks) if (['queued', 'checking'].includes(check.status)) { check.status = 'error'; check.error = '配置或进度已变化，请重新检查'; }
+@@ -45,7 +45,7 @@
+       this.bindChat(); this.error = bootError; this.bindEvents(); this.captureDraft(); this.inject(); this.notify();
+     }
+     bindChat() {
+-      this.invalidate(); this.chat = this.host.chatId(); this.draft = null; this.error = '';
++      this.invalidate('聊天已切换或重新载入'); this.chat = this.host.chatId(); this.draft = null; this.error = '';
+       try { this.state = this.host.progress(this.project); }
+       catch (e) { this.settings.enabled = false; throw e; }
+       for (const check of this.state.pending_checks) if (check.status === 'checking' || check.status === 'queued') { check.status = 'error'; check.error = '任务被中断，可重新检查'; }
+@@ -394,6 +394,11 @@
+         this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
+       } finally { this.analysisProgress = null; this.busy--; this.notify(); }
+     }
++    restoreAnalysis(text, raw, mode = 'faithful') {
++      C.assert(!this.busy, '请先取消或等待当前辅助任务结束');
++      const result = this.client.restoreAnalysis(text, raw, mode);
++      this.error = ''; this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
++    }
+     exportProject() { return C.clone({type: 'bse_project', version: 1, project: this.project}); }
+     exportProgress() { return C.clone({type: 'bse_progress', version: 1, project_id: this.project.id, progress: this.state}); }
+     importProgress(data) {
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+index 1b90003..2bd36ab 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+@@ -263,7 +263,7 @@
+       try { if (this.apiModels?.source === this.apiSource(a)) models = this.apiModels.ids; } catch {}
+       const pick = (label, name, value) => models.length ? select(label, name, [['', '请选择（保留手动输入）'], ...models.map(id => [id, id])], models.includes(value) ? value : '') : '';
+       return `<form data-form="api"><div class="card"><h2>辅助 API</h2><p class="muted">独立于主聊天 API。支持可从浏览器调用的 OpenAI 兼容 Chat Completions 服务。</p>${input('API 基础地址（域名、带 /v1 的地址或完整聊天接口）', 'base_url', a.base_url, 'url')}<p class="muted">只填域名时自动使用 /v1；自定义路径按原样保留。请使用服务提供的 OpenAI 兼容地址。</p>${input('API 密钥', 'key', a.key, 'password', 'autocomplete="off"')}${checkbox('记住密钥（保存在酒馆脚本变量）', 'remember_key', s.remember_key)}<div class="row">${button(this.modelLoading ? '正在获取模型…' : '获取模型列表', 'api-models', this.modelLoading || this.e.busy ? 'disabled' : '')}</div><p class="muted">获取列表不生成回复。选择后填入完整模型 ID；也可手动输入。列表可用后，仍需测试聊天接口。</p>${urls}${input('事件识别模型（完整 ID）', 'model', a.model)}${pick('从模型列表选择事件识别模型', 'model_choice', a.model)}${input('剧本整理模型（留空沿用事件模型）', 'segment_model', this.forms.api?.segment_model ?? s.segment_model)}${pick('从模型列表选择剧本整理模型', 'segment_model_choice', this.forms.api?.segment_model ?? s.segment_model)}<div class="row">${button('保存 API 设置', 'api-save', 'class="primary"')}${button('测试连接', 'api-test', this.e.busy || this.modelLoading ? 'disabled' : '')}</div></div>
+-      <div class="card"><h2>判断与预算</h2>${checkbox('用户接话后自动检查上一条选中的回复', 'auto_detect', s.auto_detect)}${checkbox('请求 JSON 输出（服务不支持时可关闭）', 'json_mode', a.json_mode)}${checkbox('发送 enable_thinking=false（仅兼容服务开启）', 'no_thinking', a.no_thinking)}<div class="grid">${input('每批候选事件数', 'batch_size', s.batch_size, 'number', 'min="1" max="32"')}${input('每次最多请求批数', 'max_batches', s.max_batches, 'number', 'min="1" max="64"')}${input('请求超时（秒）', 'timeout_sec', a.timeout_sec, 'number', 'min="5" max="300"')}${input('最大输入字符数（不是 Token）', 'max_input_chars', a.max_input_chars, 'number', 'min="1000" max="200000"')}${input('识别最大输出 Token', 'max_output', a.max_output, 'number', 'min="128" max="16000"')}${input('整理最大输出 Token', 'segment_output', a.segment_output, 'number', 'min="512" max="32000"')}${input('生成前最多等待判断（毫秒，0 为异步）', 'wait_ms', s.wait_ms, 'number', 'min="0" max="15000"')}</div><p class="muted">候选过多按批检查，达到本轮批数上限后会显示未检查数量，由你决定继续。输入超限会明确报错，不把截断文本当作全面检查结果。自动检查需启用剧本。</p></div>
++      <div class="card"><h2>判断与预算</h2>${checkbox('用户接话后自动检查上一条选中的回复', 'auto_detect', s.auto_detect)}${checkbox('请求 JSON 输出（服务不支持时可关闭）', 'json_mode', a.json_mode)}${checkbox('发送 enable_thinking=false（仅兼容服务开启）', 'no_thinking', a.no_thinking)}<div class="grid">${input('每批候选事件数', 'batch_size', s.batch_size, 'number', 'min="1" max="32"')}${input('每次最多请求批数', 'max_batches', s.max_batches, 'number', 'min="1" max="64"')}${input('快速识别/模型列表超时（秒）', 'timeout_sec', a.timeout_sec, 'number', 'min="5" max="300"')}${input('整理/分析超时（秒）', 'analysis_timeout_sec', a.analysis_timeout_sec, 'number', 'min="5" max="1800"')}${input('最大输入字符数（不是 Token）', 'max_input_chars', a.max_input_chars, 'number', 'min="1000" max="200000"')}${input('识别最大输出 Token', 'max_output', a.max_output, 'number', 'min="128" max="16000"')}${input('整理最大输出 Token', 'segment_output', a.segment_output, 'number', 'min="512" max="32000"')}${input('生成前最多等待判断（毫秒，0 为异步）', 'wait_ms', s.wait_ms, 'number', 'min="0" max="15000"')}</div><p class="muted">候选过多按批检查，达到本轮批数上限后会显示未检查数量，由你决定继续。输入超限会明确报错，不把截断文本当作全面检查结果。自动检查需启用剧本。</p></div>
+       <div class="card"><h2>实际发送给辅助 API 的系统提示词</h2><p class="muted">下面的文本作为对应请求的 system 消息发送，可直接编辑，点击“保存 API 设置”生效。留空使用默认值。JSON 字段和证据格式仍需保持兼容。</p>${area('玩家行动选择识别提示词', 'choice_prompt', a.choice_prompt || prompts.choice, 8)}${area('阶段进展与完成核验提示词', 'stage_prompt', a.stage_prompt || prompts.stage, 10)}${area('事件核验系统提示词', 'detect_prompt', a.detect_prompt || prompts.detect, 8)}${area('基础文本拆分系统提示词', 'segment_prompt', a.segment_prompt || prompts.segment, 8)}${area('剧本分析系统提示词', 'analysis_prompt', a.analysis_prompt || prompts.analysis, 12)}${area('跨段合并系统提示词', 'analysis_merge_prompt', a.analysis_merge_prompt || prompts.merge, 10)}${input('分析最大输出 Token', 'analysis_output', a.analysis_output, 'number', 'min="512" max="32000"')}${button('恢复默认提示词（仍需保存）', 'prompts-reset')}<details><summary>每次请求附带什么数据？</summary><p>行动选择：本次玩家输入和当前可选分支；阶段核验：一轮输入与回复、上一份短摘要、至多8条关键事实和相关结果标记。事件核验：当前对话 dialogue、已确认状态 facts、候选事件 candidates。基础拆分：原文 original 与要求 preferences。剧本分析：原文 original、要求 preferences、模式 mode；长文本增加分块编号 part / parts。跨段合并：节点摘要 nodes 与各块报告 parts。</p><p>这些数据放在 user 消息中，每次自动填写。连接测试另发固定 user 消息：只输出 JSON：{&quot;ok&quot;:true}。</p></details><div class="row">${button('保存 API 设置', 'api-save', 'class="primary"')}</div></div>
+       <div class="card"><h2>本机已记录用量</h2><div class="row"><span>成功响应 ${u.calls} 次</span><span>输入 ${u.input} Token</span><span>输出 ${u.output} Token</span></div>${u.unknown ? `<p class="muted">${u.unknown} 次响应没有返回 usage，未计入 Token 总数。</p>` : ''}</div></form>`;
+     }
+@@ -271,9 +271,9 @@
+       const e = this.e, draft = e.analysisDraft, p = draft?.project || e.project, a = p.analysis, refs = C.indexProject(p), progress = e.analysisProgress;
+       const names = ids => (ids || []).map(k => refs.nodes.get(k)?.title || k).join(' → ');
+       const proposed = item => item.suggested ? '<span class="badge">补充构想</span>' : '';
+-      return `<form data-form="analysis"><div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。超过单次输入预算时自动分块并额外调用一次 API 整合；单次最多 20 万字符、32 块。</p>${area('需要分析的长文本', 'analysis_text', e.project.original_text || '', 12)}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词。结果先保存为草稿，确认应用后才切换当前剧本。</p></div>
++      return `<form data-form="analysis"><div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。超过单次输入预算时自动分块并额外调用一次 API 整合；单次最多 20 万字符、32 块。</p>${area('需要分析的长文本', 'analysis_text', e.project.original_text || '', 12)}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>
+       ${a ? `<div class="card analysis-report"><h2>${draft ? '分析草稿报告' : '当前剧本分析报告'}</h2><p style="white-space:pre-wrap">${escape(a.synopsis)}</p><h3>不同走向</h3>${a.branches.map(x => `<div class="card"><strong>${escape(x.title)}</strong> ${proposed(x)}<p>${escape(x.summary)}</p><p class="muted">${escape(names(x.node_ids))}</p></div>`).join('') || '<p class="empty">未确认不同走向</p>'}<h3>结局</h3>${a.endings.map(x => `<div class="card"><strong>${escape(x.title)}</strong> ${proposed(x)}<p>${escape(x.summary)}</p><p class="muted">${escape(refs.nodes.get(x.node_id)?.title || '')}</p></div>`).join('') || '<p class="empty">原文未明确结局</p>'}<h3>伏笔与回收</h3>${a.foreshadowing.map(x => `<div class="card"><strong>${escape(x.title)}</strong> ${proposed(x)}<p>埋设：${escape(x.hint)}</p><p class="muted">${escape(names(x.plant_node_ids))}</p><p>回收：${escape(x.payoff)}</p><p class="muted">${escape(names(x.payoff_node_ids))}</p></div>`).join('') || '<p class="empty">未确认伏笔</p>'}${a.uncertainties.length ? `<h3>待核对事项</h3><ul>${a.uncertainties.map(x => `<li>${escape(x)}</li>`).join('')}</ul>` : ''}</div>` : ''}
+-      ${draft ? `<div class="card"><h2>编辑并应用分析草稿</h2><p class="warn">${draft.warnings.map(escape).join('<br>') || '请核对原文、走向、结局与伏笔。'}<br>本次分析使用 ${Number(draft.request_count) || 1} 次请求。原文明确的完成标准、结果标记和条件会保留为可编辑规则，请核对后再应用。</p>${area('完整剧本草稿 JSON（可编辑）', 'analysis_draft', json(draft.project), 18)}<div class="row">${button('应用分析草稿为新剧本', 'analysis-apply', 'class="primary"')}${button('导出分析草稿', 'analysis-export')}</div></div>` : ''}</form>`;
++      ${draft ? `<div class="card"><h2>编辑并应用分析草稿</h2><p class="warn">${draft.warnings.map(escape).join('<br>') || '请核对原文、走向、结局与伏笔。'}<br>${draft.recovered ? '本次从已有后台结果恢复，未再次请求 API。' : '本次分析使用 ' + (Number(draft.request_count) || 1) + ' 次请求。'}原文明确的完成标准、结果标记和条件会保留为可编辑规则，请核对后再应用。</p>${area('完整剧本草稿 JSON（可编辑）', 'analysis_draft', json(draft.project), 18)}<div class="row">${button('应用分析草稿为新剧本', 'analysis-apply', 'class="primary"')}${button('导出分析草稿', 'analysis-export')}</div></div>` : ''}</form>`;
+     }
+     dataPage() {
+       const e = this.e; const p = e.project;
+@@ -383,7 +383,7 @@
+         } finally { this.modelLoading = false; this.render(); }
+         return;
+       } else if (action === 'api-save' || action === 'api-test') {
+-        const profile = {base_url: v.base_url.trim(), model: v.model.trim(), key: v.key.trim(), timeout_sec: number('timeout_sec', 5, 300), max_input_chars: number('max_input_chars', 1000, 200000),
++        const profile = {base_url: v.base_url.trim(), model: v.model.trim(), key: v.key.trim(), timeout_sec: number('timeout_sec', 5, 300), analysis_timeout_sec: number('analysis_timeout_sec', 5, 1800), max_input_chars: number('max_input_chars', 1000, 200000),
+           max_output: Math.floor(number('max_output', 128, 16000)), segment_output: Math.floor(number('segment_output', 512, 32000)), analysis_output: Math.floor(number('analysis_output', 512, 32000)),
+           choice_prompt: v.choice_prompt.trim(), stage_prompt: v.stage_prompt.trim(), detect_prompt: v.detect_prompt.trim(), segment_prompt: v.segment_prompt.trim(), analysis_prompt: v.analysis_prompt.trim(), analysis_merge_prompt: v.analysis_merge_prompt.trim(), json_mode: v.json_mode, no_thinking: v.no_thinking};
+         await e.updateSettings({profile, remember_key: v.remember_key, segment_model: v.segment_model.trim(), auto_detect: v.auto_detect,
+@@ -401,7 +401,8 @@
+       } else if (action === 'open-segment') { this.tab = 'data'; this.render(); this.shadow.querySelector('[name="original_text"]').focus(); return; }
+       else if (action === 'open-analysis') { this.tab = 'analysis'; this.render(); this.shadow.querySelector('[name="analysis_text"]').focus(); return; }
+       else if (action === 'analysis-run') { const draft = await e.analyze(v.analysis_text, v.analysis_wish, v.analysis_mode); this.forms.analysis.analysis_draft = json(draft.project); }
+-      else if (action === 'analysis-cancel') { e.client.cancel(); return; }
++      else if (action === 'analysis-restore') { const draft = e.restoreAnalysis(v.analysis_text, v.analysis_response, v.analysis_mode); this.forms.analysis.analysis_draft = json(draft.project); this.toast('后台结果已校验并保存为分析草稿'); }
++      else if (action === 'analysis-cancel') { e.client.cancel('用户取消了分析'); return; }
+       else if (action === 'analysis-export') { this.download({type: 'bse_project', version: 1, project: C.normalizeProject(C.parseJSON(v.analysis_draft, '分析草稿'))}, 'analysis-draft.json'); return; }
+       else if (action === 'analysis-apply') { if (!this.win.confirm('把分析草稿作为新剧本打开？原剧本会保留在世界书或草稿中。')) return; await e.setProject(C.parseJSON(v.analysis_draft, '分析草稿')); delete e.settings.analysis_draft; e.saveSettings(); this.forms = {}; this.nodeId = ''; this.eventId = ''; }
+       else if (action === 'segment') { const draft = await e.segment(v.original_text, v.segment_wish); this.forms.data.segment_draft = json(draft.project); }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/api.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/api.test.js"
+index a34cfee..8e9a2c3 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/api.test.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/api.test.js"
+@@ -42,7 +42,7 @@ test('404 显示服务错误与实际接口，隐藏密钥和 URL 查询参数
+ test('模型列表可取消，非 JSON 响应明确报告协议问题', async () => {
+   let start; const ready = new Promise(resolve => start = resolve);
+   const api = new Client((url, options) => new Promise((resolve, reject) => { start(); options.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))); }));
+-  const pending = api.models(profile); await ready; api.cancel(); await assert.rejects(pending, /取消或超时/); assert.equal(api.controllers.size, 0);
++  const pending = api.models(profile); await ready; api.cancel(); await assert.rejects(pending, /已取消/); assert.equal(api.controllers.size, 0);
+   await assert.rejects(new Client(async () => ({ok: true, json: async () => { throw new SyntaxError('unexpected HTML'); }})).models(profile), /有效 JSON/);
+ });
+ test('自然语言事件证据需原文引用与正确主体，遗漏候选保留不确定', async () => {
+@@ -65,7 +65,7 @@ test('输入超限明确拒绝且未请求 API，不截断后当作全面分析'
+ test('取消传到 fetch AbortSignal，失败不泄漏返回正文中的凭据', async () => {
+   let started; const ready = new Promise(r => started = r);
+   const api = new Client((url, options) => new Promise((resolve, reject) => { options.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))); started(); }));
+-  const running = api.call(profile, []); await ready; api.cancel(); await assert.rejects(running, /取消或超时/); assert.equal(api.controllers.size, 0);
++  const running = api.call(profile, []); await ready; api.cancel(); await assert.rejects(running, /已取消/); assert.equal(api.controllers.size, 0);
+   await assert.rejects(new Client(async () => ({ok: false, status: 401, text: async () => 'SECRET'})).call(profile, []), e => e.message.includes('401') && !e.message.includes('SECRET'));
+ });
+ test('可选 JSON 模式及非思考参数，只发送局部对话和候选', async () => {
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
+index 63708e6..b19dcfd 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
+@@ -50,10 +50,26 @@ async function run() {
+       page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => d.accept()); await page.goto(base);
+       await page.waitForFunction(() => document.querySelector('iframe')?.contentWindow.__branch_story_startup__?.status === 'ready');
+       await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="api"]').click();
+-      await page.locator('[name="base_url"]').fill(base); await page.locator('[name="model"]').fill('mock'); await page.locator('[data-action="api-save"]').first().click();
++      await page.locator('[name="base_url"]').fill(base); await page.locator('[name="model"]').fill('mock');
++      assert.equal(await page.locator('[name="analysis_timeout_sec"]').inputValue(), '600');
++      await page.locator('[name="analysis_timeout_sec"]').fill('900'); await page.locator('[data-action="api-save"]').first().click();
++      assert.equal(await page.evaluate(() => testHost.storage.script.branch_story_settings.profile.analysis_timeout_sec), 900);
+       assert(await page.locator('[name="choice_prompt"]').inputValue()); assert(await page.locator('[name="stage_prompt"]').inputValue());
+-      await page.locator('[data-tab="analysis"]').click(); await page.locator('[name="analysis_text"]').fill(story); await page.locator('[data-action="analysis-run"]').click(); await page.locator('[name="analysis_draft"]').waitFor();
++      let releaseAnalysis, analysisStarted;
++      const held = new Promise(resolve => releaseAnalysis = resolve), started = new Promise(resolve => analysisStarted = resolve);
++      await page.route(base + '/v1/chat/completions', async route => { if (route.request().postDataJSON().messages[0].content.includes('剧本分析')) { analysisStarted(); await held; } await route.continue(); });
++      await page.clock.install();
++      await page.locator('[data-tab="analysis"]').click(); await page.locator('[name="analysis_text"]').fill(story); await page.locator('[data-action="analysis-run"]').click(); await started;
++      await page.clock.fastForward(46000);
++      assert.equal((await get(page)).error, ''); assert.equal(await page.locator('[data-action="analysis-cancel"]').isVisible(), true);
++      releaseAnalysis(); await page.locator('[name="analysis_draft"]').waitFor();
+       const extracted = JSON.parse(await page.locator('[name="analysis_draft"]').inputValue()); assert.deepEqual(extracted.collections.map(x => x.id), ['a', 'b', 'a1', 'ab']);
++      const count = calls.length, activeProject = (await get(page)).project.id;
++      await page.getByText('从后台 JSON 恢复分析草稿', {exact: true}).click(); await page.locator('[name="analysis_response"]').fill('{broken'); await page.locator('[data-action="analysis-restore"]').click();
++      await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.error.includes('JSON'));
++      await page.locator('[name="analysis_response"]').fill(JSON.stringify({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(draft)}}]})); await page.locator('[data-action="analysis-restore"]').click();
++      await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.analysisDraft.recovered);
++      assert.equal(calls.length, count); assert.equal((await get(page)).error, ''); assert.equal((await get(page)).project.id, activeProject);
+       await page.locator('[data-action="analysis-apply"]').click(); await page.locator('[data-tab="run"]').click(); await page.locator('[data-action="toggle-enabled"]').click(); await page.locator('[data-action="close"]').click();
+       const ids = Object.fromEntries((await get(page)).project.nodes.map(n => [n.title, n.id]));
+       await page.locator('textarea').fill('我看一眼'); await page.locator(`[data-action="quick-enter"][data-id="${ids.房卡}"]`).click();
+@@ -77,7 +93,7 @@ async function run() {
+       assert((await get(page)).state.completed_node_ids.includes(ids.证物袋)); assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
+       assert.equal((await get(page)).state.collected_ids.filter(x => x === 'ab').length, 1);
+       fs.mkdirSync(path.join(root, 'artifacts'), {recursive: true}); await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="records"]').click(); await page.screenshot({path: path.join(root, 'artifacts', mobile ? 'workflow-mobile.png' : 'workflow-desktop.png')});
+-      console.log('✓ ' + (mobile ? '手机' : '桌面') + '：原文分析→快捷填入/撤销→自由输入→同轮注入→跨轮摘要→a/b/a1/ab条件→失败重试→终点完成'); await context.close();
++      console.log('✓ ' + (mobile ? '手机' : '桌面') + '：分析超过45秒仍接收，后台JSON恢复不重复请求；原文分析→快捷填入/撤销→自由输入→同轮注入→跨轮摘要→a/b/a1/ab条件→失败重试→终点完成'); await context.close();
+     }
+     assert.deepEqual(errors, []); console.log('✓ 完整行动流程浏览器错误：0；全部使用模拟辅助 API');
+   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/response.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/response.test.js"
+new file mode 100644
+index 0000000..39f8615
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/response.test.js"
+@@ -0,0 +1,54 @@
++'use strict';
++const test = require('node:test'), assert = require('node:assert/strict');
++const {Client} = require('../src/api.js'), {Engine} = require('../src/engine.js');
++const {deferred, fixture} = require('./helpers.js');
++const profile = {base_url: 'https://example.com/v1', model: 'mock', timeout_sec: 45, max_input_chars: 16000};
++const source = '大厅灯灭了。', raw = {title: '夜间调查', nodes: [{id: 'hall', title: '大厅', detail: source, guidance: '描写灯光熄灭', routes: []}]};
++const response = value => ({ok: true, json: async () => ({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(value)}}]})});
++test('大分析回复超过快速请求45秒仍能接收，整理和整合使用独立超时', async t => {
++  t.mock.timers.enable({apis: ['setTimeout']}); let signal;
++  const api = new Client((url, options) => new Promise(resolve => { signal = options.signal; setTimeout(() => resolve(response(raw)), 50000); }));
++  const pending = api.analyze(profile, source); t.mock.timers.tick(45001); assert.equal(signal.aborted, false);
++  t.mock.timers.tick(4999); assert.equal((await pending).project.title, '夜间调查'); assert.equal(api.controllers.size, 0);
++  const requests = []; api.call = async (p, messages, options) => { requests.push(options); const input = JSON.parse(messages[1].content); return input.original ? {...raw, nodes: [{...raw.nodes[0], detail: input.original}]} : {title: '整合', nodes: input.nodes.map(n => ({id: n.id, routes: []}))}; };
++  await api.segment({...profile, analysis_timeout_sec: 720}, source); assert.equal(requests.at(-1).timeout_sec, 720);
++  await api.analyze({...profile, analysis_timeout_sec: 900, max_input_chars: 2500, analysis_prompt: '分析', analysis_merge_prompt: '合并'}, source.repeat(800));
++  assert(requests.length > 3); assert(requests.slice(1).every(r => r.timeout_sec === 900));
++});
++test('真实截止触发超时分类，明确等待阶段且不自动重试', async t => {
++  t.mock.timers.enable({apis: ['setTimeout']}); let calls = 0;
++  const api = new Client((url, opt) => new Promise((resolve, reject) => { calls++; opt.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))); }));
++  const pending = assert.rejects(api.call({...profile, timeout_sec: 5}, []), error => error.code === 'BSE_API_TIMEOUT' && error.message.includes('5 秒') && error.message.includes('等待服务响应') && !error.message.includes('已取消'));
++  t.mock.timers.tick(5000); await pending; assert.equal(calls, 1); assert.equal(api.controllers.size, 0);
++});
++test('读取正文时超时不冒充JSON错误；主动取消有独立原因且隐藏密钥', async t => {
++  t.mock.timers.enable({apis: ['setTimeout']});
++  for (const cancel of [false, true]) {
++    const started = deferred(); const api = new Client(async (url, opt) => ({ok: true, json: () => new Promise((resolve, reject) => { started.resolve(); opt.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))); })}));
++    const pending = assert.rejects(api.call({...profile, timeout_sec: 5, key: 'TEST_PRIVATE_KEY'}, []), error => cancel ? error.code === 'BSE_API_CANCELLED' && error.message.includes('用户取消了分析') && !error.message.includes('TEST_PRIVATE_KEY') : error.code === 'BSE_API_TIMEOUT' && error.message.includes('读取完整回复') && !error.message.includes('无效 JSON'));
++    await started.promise; if (cancel) api.cancel('用户取消了分析 TEST_PRIVATE_KEY'); else t.mock.timers.tick(5000); await pending;
++  }
++});
++test('取消后晚到的模型列表不能当作正常响应返回', async () => {
++  const gate = deferred(), api = new Client(() => gate.promise); const pending = api.models(profile);
++  api.cancel('聊天已切换'); gate.resolve({ok: true, json: async () => ({data: [{id: 'stale'}]})});
++  await assert.rejects(pending, error => error.code === 'BSE_API_CANCELLED' && error.message.includes('聊天已切换'));
++});
++test('导入后台原始或完整响应只生成校验后的草稿，不重复调用API', () => {
++  const api = new Client(() => { throw new Error('禁止网络请求'); });
++  for (const input of [JSON.stringify(raw), '```json\n' + JSON.stringify(raw) + '\n```', JSON.stringify({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(raw)}}]})]) {
++    const result = api.restoreAnalysis(source, input); assert.equal(result.project.title, raw.title); assert.equal(result.request_count, 0); assert.equal(result.recovered, true);
++  }
++  assert.equal(api.usage.calls, 0);
++  assert.throws(() => api.restoreAnalysis(source, JSON.stringify({choices: [{finish_reason: 'length', message: {content: JSON.stringify(raw)}}]})), /截断/);
++  assert.throws(() => api.restoreAnalysis('别的原文', JSON.stringify(raw)), /连续摘录/);
++  assert.throws(() => api.restoreAnalysis(source, '{broken'), /JSON/);
++});
++test('后台恢复草稿不会替换当前项目，刷新后可继续检查和应用', async () => {
++  const f = fixture(), api = new Client(() => { throw new Error('禁止网络请求'); }), e = new Engine(f.host, api); await e.init();
++  const current = e.project.id; e.error = '旧超时'; e.restoreAnalysis(source, JSON.stringify(raw));
++  assert.equal(e.project.id, current); assert.equal(e.error, ''); assert.equal(f.storage.script.branch_story_settings.analysis_draft.recovered, true);
++  const restored = new Engine(f.host, api); await restored.init(); assert.equal(restored.analysisDraft.project.title, raw.title);
++  assert.equal(restored.settings.profile.analysis_timeout_sec, 600); assert.equal(restored.settings.profile.timeout_sec, 45);
++  restored.busy = 1; assert.throws(() => restored.restoreAnalysis(source, JSON.stringify(raw)), /当前辅助任务/);
++});

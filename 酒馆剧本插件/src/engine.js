@@ -5,7 +5,7 @@
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API) {
   'use strict';
   const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, quick_options: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
-    profile: {base_url: '', model: '', key: '', timeout_sec: 45, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
+    profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
   async function fingerprint(value) {
     const text = JSON.stringify(value);
@@ -23,8 +23,8 @@
     onChange(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
     notify() { for (const fn of this.listeners) { try { fn(); } catch (e) { console.error('[BSE] UI 更新失败', e); } } }
     report(e) { this.error = e.message || String(e); this.notify(); }
-    invalidate() {
-      this.epoch++; this.client.cancel(); this.inFlight.clear();
+    invalidate(reason = '配置或进度已变化') {
+      this.epoch++; this.client.cancel(reason); this.inFlight.clear();
       this.pendingChoice = null; this.preparing = null;
       this.stageInFlight.clear(); this.flowNotice = '';
       for (const check of this.state.pending_checks) if (['queued', 'checking'].includes(check.status)) { check.status = 'error'; check.error = '配置或进度已变化，请重新检查'; }
@@ -45,7 +45,7 @@
       this.bindChat(); this.error = bootError; this.bindEvents(); this.captureDraft(); this.inject(); this.notify();
     }
     bindChat() {
-      this.invalidate(); this.chat = this.host.chatId(); this.draft = null; this.error = '';
+      this.invalidate('聊天已切换或重新载入'); this.chat = this.host.chatId(); this.draft = null; this.error = '';
       try { this.state = this.host.progress(this.project); }
       catch (e) { this.settings.enabled = false; throw e; }
       for (const check of this.state.pending_checks) if (check.status === 'checking' || check.status === 'queued') { check.status = 'error'; check.error = '任务被中断，可重新检查'; }
@@ -393,6 +393,11 @@
         C.assert(epoch === this.epoch, '聊天或配置已变化，分析结果未应用');
         this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
       } finally { this.analysisProgress = null; this.busy--; this.notify(); }
+    }
+    restoreAnalysis(text, raw, mode = 'faithful') {
+      C.assert(!this.busy, '请先取消或等待当前辅助任务结束');
+      const result = this.client.restoreAnalysis(text, raw, mode);
+      this.error = ''; this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
     }
     exportProject() { return C.clone({type: 'bse_project', version: 1, project: this.project}); }
     exportProgress() { return C.clone({type: 'bse_progress', version: 1, project_id: this.project.id, progress: this.state}); }

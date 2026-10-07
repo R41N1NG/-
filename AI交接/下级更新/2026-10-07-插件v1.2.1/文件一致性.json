@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-07 UTC",
+  "version": "1.2.1",
+  "baseline_commit": "7d6119f77bc6a4e2f7ac1c89973ce7fe3c44a3b2",
+  "scope": "模拟酒馆助手宿主/API；未调用用户付费服务或真实酒馆。测试通过后仅更新版本、构建info与文档再重建。",
+  "unit_tests": {
+    "command": "npm test",
+    "exit_code": 0,
+    "passed": 62,
+    "failed": 0,
+    "skipped": 0,
+    "timers": "50秒模拟分析，独立长/短超时及正文读取中止"
+  },
+  "browser_tests": {
+    "command": "npm run test:browser",
+    "exit_code": 0,
+    "scenarios": [
+      "桌面/390px/320px原有布局与API/内容操作",
+      "桌面/手机46秒虚拟等待后正常接收",
+      "后台完整JSON恢复零API请求且当前项目不替换",
+      "a/b/a1/ab完整流程及模拟503重试",
+      "7类启动场景"
+    ],
+    "runtime_errors": 0
+  },
+  "final_build": {
+    "command": "npm run build",
+    "exit_code": 0,
+    "content_bytes": 183591,
+    "source_byte_equal": true,
+    "script_id": "branch-story-engine-v1"
+  },
+  "zip": {
+    "path": "酒馆剧本插件/branch_story_plugin_v1.2.1.zip",
+    "entries": 25,
+    "crc_ok": true,
+    "source_byte_equal": true,
+    "sha256": "03bc94a557e53a90cafa1f5f01feeb8d492591564095791a49e7f54dc154ac37"
+  },
+  "original_tse": {
+    "path": "酒馆剧本插件/tse_engine_tavern_helper_import.json",
+    "sha256": "a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065",
+    "unchanged": true
+  },
+  "relative_repo_file_sha256": {
+    "酒馆剧本插件/.gitignore": "c3007e8cfe9e6668bf6eaf8e62f44d583c9b86893520d1e4e599db431558b705",
+    "酒馆剧本插件/README.md": "00f51a2b72e25d5de2e89a094f1843735086bed3ae48ade499f3c006e99ef785",
+    "酒馆剧本插件/package.json": "3ee70467ab166eb815bfe28effb5038bad87aee240d34f52943caa5686acd385",
+    "酒馆剧本插件/package-lock.json": "5b9754a040ae9b50771adfb23aa572129614e94ed887d914c17644098d276d99",
+    "酒馆剧本插件/branch_story_tavern_helper_import.json": "7f8cbd0afb63779ef5d91bab02471d2eee1f06011048a0ee5704af725aae014c",
+    "酒馆剧本插件/src/api.js": "85b5a88a868e8dc7d2e2e49bf6c35fa9d40c581577424e3009bbd4e9a2d8561f",
+    "酒馆剧本插件/src/bootstrap.js": "fc52f4d6d236633979eb149873b030638cb70baa73ef8050406091ab08077dc8",
+    "酒馆剧本插件/src/core.js": "7b5444f85290ffaa0c9cd65a8f7d1e7faa30e74e7a82f3fb20ab70be32d6ae26",
+    "酒馆剧本插件/src/engine.js": "9190d762d73082c6b68826c2b10dba43c7c5c90c895f83f1337c829e628ef821",
+    "酒馆剧本插件/src/host.js": "6a6a2ca4386ab2aa895e63aa7e0b77e5ff1105fb87b9231df86600a4cfa8cde5",
+    "酒馆剧本插件/src/loader.js": "5787fc089cf0ce265618fa3b73ae54f635a134257573d971f6c76f6921a70708",
+    "酒馆剧本插件/src/ui.js": "bbebf5c83c9705bb35039c54009cb7ebd91b4fc6229b23aa7abae2b9a10024e3",
+    "酒馆剧本插件/scripts/build.js": "ff71f5af523ea8976c441193ae21573987216de99a02a43b44bf979326e86657",
+    "酒馆剧本插件/tests/api.test.js": "62943d10fef2a34031f2ed441f5095a94597bfeef5b585954e251f42927ae44d",
+    "酒馆剧本插件/tests/browser.js": "6d566f98e38be0b9b6bd121b5373ea8371a95a3762d18d85bff8dbcd4439170b",
+    "酒馆剧本插件/tests/core.test.js": "60a521127c33093759cb53cc4d9341ab169d89af4985be077f1e83817d9853e2",
+    "酒馆剧本插件/tests/engine.test.js": "b428857f8de262b4d7d88762214626096f2d5fe62d94fa58b08011436ad5956a",
+    "酒馆剧本插件/tests/helpers.js": "6f117c1dffb8503282a00ab8670f7b468d730ef22e94589a1d074513620ca5dd",
+    "酒馆剧本插件/tests/host.test.js": "0ee9e9989c0a65c6f20cbe0cbfee40ca7eee9b98e5ea47e8f91a0ad889772d64",
+    "酒馆剧本插件/tests/startup.browser.js": "8c9599d85c73f2082c6db0e7b68f75879cff5a279b50ce3405f804cec2d5f76e",
+    "酒馆剧本插件/docs/branch_story_plugin_design.md": "cd58e3f2d687db3e8ac75028cc9d00d27cbe4aa9cd4f4c75ba07a334a0acdf5f",
+    "酒馆剧本插件/交接gpt.md": "c2265d6de9426926745a1ddcd2667d179238c86d9b8ad210400d3c030b6ba1c9",
+    "酒馆剧本插件/tests/workflow.test.js": "4629f328460c99e6c06da68f46dbebfd8b287027006bd9ee4d895534e338b41d",
+    "酒馆剧本插件/tests/workflow.browser.js": "a41a965cd765b1c0f6193452befbd207e2f30000d7ac587571b7c877a10be99e",
+    "酒馆剧本插件/tests/response.test.js": "3787469c6956a9aea27ab334f34e3738a6730ff367c3ee1d8a4b2663522d17ff"
+  },
+  "source_patch_sha256": "02085434042c0eb9fd80b622775cbb8059fcf58c9cf2cd08c5e37df1f2aa4efc",
+  "logs": "单元/浏览器终端输出归档为报告摘要，未另存完整原始日志。"
+}

@@ -50,10 +50,26 @@ async function run() {
       page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => d.accept()); await page.goto(base);
       await page.waitForFunction(() => document.querySelector('iframe')?.contentWindow.__branch_story_startup__?.status === 'ready');
       await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="api"]').click();
-      await page.locator('[name="base_url"]').fill(base); await page.locator('[name="model"]').fill('mock'); await page.locator('[data-action="api-save"]').first().click();
+      await page.locator('[name="base_url"]').fill(base); await page.locator('[name="model"]').fill('mock');
+      assert.equal(await page.locator('[name="analysis_timeout_sec"]').inputValue(), '600');
+      await page.locator('[name="analysis_timeout_sec"]').fill('900'); await page.locator('[data-action="api-save"]').first().click();
+      assert.equal(await page.evaluate(() => testHost.storage.script.branch_story_settings.profile.analysis_timeout_sec), 900);
       assert(await page.locator('[name="choice_prompt"]').inputValue()); assert(await page.locator('[name="stage_prompt"]').inputValue());
-      await page.locator('[data-tab="analysis"]').click(); await page.locator('[name="analysis_text"]').fill(story); await page.locator('[data-action="analysis-run"]').click(); await page.locator('[name="analysis_draft"]').waitFor();
+      let releaseAnalysis, analysisStarted;
+      const held = new Promise(resolve => releaseAnalysis = resolve), started = new Promise(resolve => analysisStarted = resolve);
+      await page.route(base + '/v1/chat/completions', async route => { if (route.request().postDataJSON().messages[0].content.includes('剧本分析')) { analysisStarted(); await held; } await route.continue(); });
+      await page.clock.install();
+      await page.locator('[data-tab="analysis"]').click(); await page.locator('[name="analysis_text"]').fill(story); await page.locator('[data-action="analysis-run"]').click(); await started;
+      await page.clock.fastForward(46000);
+      assert.equal((await get(page)).error, ''); assert.equal(await page.locator('[data-action="analysis-cancel"]').isVisible(), true);
+      releaseAnalysis(); await page.locator('[name="analysis_draft"]').waitFor();
       const extracted = JSON.parse(await page.locator('[name="analysis_draft"]').inputValue()); assert.deepEqual(extracted.collections.map(x => x.id), ['a', 'b', 'a1', 'ab']);
+      const count = calls.length, activeProject = (await get(page)).project.id;
+      await page.getByText('从后台 JSON 恢复分析草稿', {exact: true}).click(); await page.locator('[name="analysis_response"]').fill('{broken'); await page.locator('[data-action="analysis-restore"]').click();
+      await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.error.includes('JSON'));
+      await page.locator('[name="analysis_response"]').fill(JSON.stringify({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(draft)}}]})); await page.locator('[data-action="analysis-restore"]').click();
+      await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.analysisDraft.recovered);
+      assert.equal(calls.length, count); assert.equal((await get(page)).error, ''); assert.equal((await get(page)).project.id, activeProject);
       await page.locator('[data-action="analysis-apply"]').click(); await page.locator('[data-tab="run"]').click(); await page.locator('[data-action="toggle-enabled"]').click(); await page.locator('[data-action="close"]').click();
       const ids = Object.fromEntries((await get(page)).project.nodes.map(n => [n.title, n.id]));
       await page.locator('textarea').fill('我看一眼'); await page.locator(`[data-action="quick-enter"][data-id="${ids.房卡}"]`).click();
@@ -77,7 +93,7 @@ async function run() {
       assert((await get(page)).state.completed_node_ids.includes(ids.证物袋)); assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
       assert.equal((await get(page)).state.collected_ids.filter(x => x === 'ab').length, 1);
       fs.mkdirSync(path.join(root, 'artifacts'), {recursive: true}); await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="records"]').click(); await page.screenshot({path: path.join(root, 'artifacts', mobile ? 'workflow-mobile.png' : 'workflow-desktop.png')});
-      console.log('✓ ' + (mobile ? '手机' : '桌面') + '：原文分析→快捷填入/撤销→自由输入→同轮注入→跨轮摘要→a/b/a1/ab条件→失败重试→终点完成'); await context.close();
+      console.log('✓ ' + (mobile ? '手机' : '桌面') + '：分析超过45秒仍接收，后台JSON恢复不重复请求；原文分析→快捷填入/撤销→自由输入→同轮注入→跨轮摘要→a/b/a1/ab条件→失败重试→终点完成'); await context.close();
     }
     assert.deepEqual(errors, []); console.log('✓ 完整行动流程浏览器错误：0；全部使用模拟辅助 API');
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

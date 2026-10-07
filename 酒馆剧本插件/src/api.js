@@ -151,20 +151,31 @@
   }
   class Client {
     constructor(fetchFn) { this.fetch = fetchFn || globalThis.fetch.bind(globalThis); this.controllers = new Set(); this.generation = 0; this.usage = {calls: 0, input: 0, output: 0, unknown: 0}; }
-    cancel() { this.generation++; for (const c of this.controllers) c.abort(); this.controllers.clear(); }
-    async send(profile, resource, options = {}) {
+    cancel(reason = '用户取消或聊天、配置已变化') { this.generation++; for (const c of this.controllers) c.abort({code: 'cancelled', message: reason}); this.controllers.clear(); }
+    async send(profile, resource, options = {}, control = {}) {
       const url = endpoint(profile.base_url, resource);
       const controller = new AbortController(); this.controllers.add(controller);
-      const timer = setTimeout(() => controller.abort(), Math.max(5, profile.timeout_sec || 45) * 1000);
+      const timeout = Math.min(1800, Math.max(5, Number(control.timeout_sec ?? profile.timeout_sec) || 45));
+      const timer = setTimeout(() => controller.abort({code: 'timeout'}), timeout * 1000);
+      let phase = '等待服务响应';
       const headers = {Accept: 'application/json'};
       if (options.body) headers['Content-Type'] = 'application/json';
       if (profile.key) headers.Authorization = 'Bearer ' + profile.key;
       try {
         const r = await this.fetch(url, {...options, headers, signal: controller.signal});
+        if (controller.signal.aborted) throw controller.signal.reason;
+        phase = '读取完整回复';
         if (!r.ok) throw await httpError(r, url, profile, resource);
-        try { return await r.json(); } catch { throw new Error('辅助 API 未返回有效 JSON；请核对接口地址及 OpenAI 兼容协议'); }
+        try { const data = await r.json(); if (controller.signal.aborted) throw controller.signal.reason; return data; }
+        catch (e) { if (controller.signal.aborted || e?.name === 'AbortError') throw e; throw new Error('辅助 API 未返回有效 JSON；请核对接口地址及 OpenAI 兼容协议'); }
       } catch (e) {
-        if (e.name === 'AbortError') throw new Error('辅助 API 请求已取消或超时');
+        if (controller.signal.aborted || e?.name === 'AbortError') {
+          const timedOut = controller.signal.reason?.code === 'timeout';
+          const hint = control.long ? '请在 API 页调整整理/分析超时；已有后台 JSON 可在分析页校验导入。' : '请核对服务响应速度，或在 API 页调整快速请求超时。';
+          const error = new Error(timedOut ? '辅助 API ' + (control.label || '请求') + '超时（' + timeout + ' 秒，' + phase + '）。服务端可能仍在生成或尚未返回完整响应。' + hint
+            : '辅助 API 请求已取消：' + safeDetail(controller.signal.reason?.message || '请求被中止', profile));
+          error.code = timedOut ? 'BSE_API_TIMEOUT' : 'BSE_API_CANCELLED'; throw error;
+        }
         if (e instanceof TypeError) throw new Error('无法连接辅助 API；请检查网络、服务地址及浏览器跨域（CORS）支持。酒馆主连接可能通过服务器转发，插件从浏览器直接请求。');
         throw e;
       } finally { clearTimeout(timer); this.controllers.delete(controller); }
@@ -181,7 +192,7 @@
       const body = {model: profile.model, messages, stream: false, temperature: 0, max_tokens: options.max_tokens || profile.max_output || 512};
       if (profile.json_mode !== false) body.response_format = {type: 'json_object'};
       if (profile.no_thinking) body.chat_template_kwargs = {enable_thinking: false};
-      const data = await this.send(profile, 'chat/completions', {method: 'POST', body: JSON.stringify(body)});
+      const data = await this.send(profile, 'chat/completions', {method: 'POST', body: JSON.stringify(body)}, options);
       this.usage.calls++;
       if (data.usage && Number.isFinite(data.usage.prompt_tokens) && Number.isFinite(data.usage.completion_tokens)) {
         this.usage.input += data.usage.prompt_tokens; this.usage.output += data.usage.completion_tokens;
@@ -243,7 +254,7 @@
       const system = profile.segment_prompt?.trim() || PROMPTS.segment;
       const messages = request(system, {original: text, preferences: wish});
       C.assert(size(messages) <= (profile.max_input_chars || 16000), '原文和提示词合计超过字符预算，请减少文本或提高预算');
-      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096});
+      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本整理', long: true});
       C.assert(Array.isArray(result.nodes) && result.nodes.length, '模型没有返回节点草稿');
       const map = new Map(); result.nodes.forEach(n => { C.safeId(n.id, '临时节点 ID'); C.assert(!map.has(n.id), '临时节点 ID 重复'); map.set(n.id, C.id('N')); });
       const p = {id: C.id('story'), title: result.title || '整理后的剧本', premise: result.premise || '', original_text: text, revision: C.id('rev'), variables: [], events: [], collections: [], start_node_id: map.get(result.start_node_id || result.nodes[0].id), nodes: []};
@@ -263,6 +274,17 @@
       p.collections = runtimeDraft(result, p.nodes, map, text, warnings);
       return {project: C.normalizeProject(p), warnings, source_chars: total};
     }
+    restoreAnalysis(text, raw, mode = 'faithful') {
+      C.assert(typeof text === 'string' && text.trim(), '请保留本次分析的剧本原文，用于校验后台结果');
+      C.assert(text.length <= 200000 && ['faithful', 'expand'].includes(mode), '原文长度或分析模式无效');
+      let data = typeof raw === 'string' ? responseJSON(raw) : C.clone(raw);
+      C.assert(C.object(data), '后台分析结果应为 JSON 对象');
+      if (data.choices) {
+        C.assert(data.choices[0]?.finish_reason !== 'length', '后台分析输出已截断，不能当作完整草稿导入');
+        data = responseJSON(data.choices[0]?.message?.content);
+      }
+      return {...analysisDraft(data, text, mode), request_count: 0, recovered: true};
+    }
     async analyze(profile, text, wish = '', options = {}) {
       C.assert(typeof text === 'string' && text.trim(), '请先输入需要分析的长文本');
       C.assert(text.length <= 200000, '单次分析最多 20 万字符，请分篇整理');
@@ -271,7 +293,7 @@
       const budget = profile.max_input_chars || 16000; const generation = this.generation;
       const payload = original => ({original, preferences: wish, mode, max_nodes: 128});
       const alive = () => C.assert(generation === this.generation, '分析已取消，未应用任何剧本');
-      const invoke = async (prompt, value) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192}); alive(); return result; };
+      const invoke = async (prompt, value) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true}); alive(); return result; };
       if (size(request(system, payload(text))) <= budget) {
         options.onProgress?.({phase: '分析全文', done: 0, total: 1});
         const result = analysisDraft(await invoke(system, payload(text)), text, mode); result.request_count = 1; return result;

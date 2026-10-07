@@ -42,7 +42,7 @@ test('404 显示服务错误与实际接口，隐藏密钥和 URL 查询参数�
 test('模型列表可取消，非 JSON 响应明确报告协议问题', async () => {
   let start; const ready = new Promise(resolve => start = resolve);
   const api = new Client((url, options) => new Promise((resolve, reject) => { start(); options.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))); }));
-  const pending = api.models(profile); await ready; api.cancel(); await assert.rejects(pending, /取消或超时/); assert.equal(api.controllers.size, 0);
+  const pending = api.models(profile); await ready; api.cancel(); await assert.rejects(pending, /已取消/); assert.equal(api.controllers.size, 0);
   await assert.rejects(new Client(async () => ({ok: true, json: async () => { throw new SyntaxError('unexpected HTML'); }})).models(profile), /有效 JSON/);
 });
 test('自然语言事件证据需原文引用与正确主体，遗漏候选保留不确定', async () => {
@@ -65,7 +65,7 @@ test('输入超限明确拒绝且未请求 API，不截断后当作全面分析'
 test('取消传到 fetch AbortSignal，失败不泄漏返回正文中的凭据', async () => {
   let started; const ready = new Promise(r => started = r);
   const api = new Client((url, options) => new Promise((resolve, reject) => { options.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))); started(); }));
-  const running = api.call(profile, []); await ready; api.cancel(); await assert.rejects(running, /取消或超时/); assert.equal(api.controllers.size, 0);
+  const running = api.call(profile, []); await ready; api.cancel(); await assert.rejects(running, /已取消/); assert.equal(api.controllers.size, 0);
   await assert.rejects(new Client(async () => ({ok: false, status: 401, text: async () => 'SECRET'})).call(profile, []), e => e.message.includes('401') && !e.message.includes('SECRET'));
 });
 test('可选 JSON 模式及非思考参数，只发送局部对话和候选', async () => {
