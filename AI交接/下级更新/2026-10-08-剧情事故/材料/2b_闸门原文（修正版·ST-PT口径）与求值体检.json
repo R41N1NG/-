@@ -1,0 +1,4056 @@
+{
+ "口径说明": "@@if 的参数＝内容第一行里 @@if 之后的全部文本（trim 后），求值 !!（ST-Prompt-Template isConditionFiltedEntry 的 <%- !!(arg) %> 口径）",
+ "汇总": [
+  {
+   "环境": "A_1578.03_段2_known空",
+   "全部条数": 160,
+   "全部被过滤": 152,
+   "剧情类条数": 29,
+   "剧情类被过滤": 26,
+   "非布尔返回": 0,
+   "不剔除的剧情类": [
+    "【剧情】一 · 墨山道",
+    "【中立】二 · 承平假象 · 幽寂秘境风闻动",
+    "【剧情】二 · 邪修洞府解毒 · 起获极乐引"
+   ]
+  },
+  {
+   "环境": "B_1579.01_段7_known含兽潮",
+   "全部条数": 160,
+   "全部被过滤": 147,
+   "剧情类条数": 29,
+   "剧情类被过滤": 21,
+   "非布尔返回": 0,
+   "不剔除的剧情类": [
+    "【剧情】一 · 墨山道",
+    "【剧情】二 · 邪修洞府解毒 · 起获极乐引",
+    "【剧情】三 · 幽寂谷秘境",
+    "【剧情】四 · 南域大劫 · 天姝会成立（神诅与四殿）",
+    "【剧情】五 · 孤剑崖送别 · 孤月赠冰心泪",
+    "【中立】四 · 天溪兽潮 · 要塞围城与九龙焚天",
+    "【剧情】八 · 灵犀同心、日月同辉",
+    "【剧情】九 · 血染天溪 · 叶红缨夜间失控与赵无忧的越界"
+   ]
+  },
+  {
+   "环境": "C_1578.03_段7_known空",
+   "全部条数": 160,
+   "全部被过滤": 147,
+   "剧情类条数": 29,
+   "剧情类被过滤": 21,
+   "非布尔返回": 0,
+   "不剔除的剧情类": [
+    "【剧情】一 · 墨山道",
+    "【中立】二 · 承平假象 · 幽寂秘境风闻动",
+    "【剧情】二 · 邪修洞府解毒 · 起获极乐引",
+    "【剧情】三 · 幽寂谷秘境",
+    "【剧情】四 · 南域大劫 · 天姝会成立（神诅与四殿）",
+    "【剧情】五 · 孤剑崖送别 · 孤月赠冰心泪",
+    "【剧情】六 · 初入天溪 · 听雪双姝登场",
+    "【剧情】七 · 兽潮血战 · 玄机子装伤脱身"
+   ]
+  }
+ ],
+ "逐条": [
+  {
+   "comment": "【身份】赵无忧",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '赵无忧')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【身份】自设",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '自设')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【身份】焚欲殿主",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '焚欲殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【身份】欢喜殿主",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '欢喜殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【身份】浊龙殿主",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '浊龙殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【身份】魂欢殿主",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '魂欢殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】天姝榜",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['天姝榜建立'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】天姝令与奴种",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '焚欲殿主' || variables.stat_data?.身份 === '欢喜殿主' || variables.stat_data?.身份 === '浊龙殿主' || variables.stat_data?.身份 === '魂欢殿主'))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】虎啸震岳阵与玉虎镇渊阵",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['玉虎噙香乳三阶段'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】天龙皇朝龙气体系",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '浊龙殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】诸元婴与法相",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['极乐引入手'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】名器觉醒的烙印机制",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['极乐引入手'] === true) && (variables.stat_data?.known?.['获得任意名器'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】名器体系",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['极乐引入手'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】神诅与南域大劫",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['南域大劫'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】《极乐引》总纲",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['极乐引入手'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】《极乐引》名器谱",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['极乐引入手'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】《极乐引》手法",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['极乐引入手'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】阵丹与仙魔阵婴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['赵无忧坠渊'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】《燎原蛊火诀》与残阳蛊火",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '焚欲殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】肉山佛的邪异佛法",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '欢喜殿主'))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【设定】九幽玄阴脉",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['九幽玄阴穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【中立】一 · 暗流微澜 · 极乐密藏天机泄",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((Number(variables.stat_data?.仙盟历) >= 1577.12) && (Number(variables.stat_data?.仙盟历) < 1578.03))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】一 · 墨山道",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((true) && !(variables.stat_data?.known?.['极乐引入手'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【中立】二 · 承平假象 · 幽寂秘境风闻动",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((Number(variables.stat_data?.仙盟历) >= 1578.03) && (Number(variables.stat_data?.仙盟历) < 1578.08))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】二 · 邪修洞府解毒 · 起获极乐引",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((true) && !(variables.stat_data?.known?.['极乐引入手'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】起获《极乐引》（自设专轨）",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '自设') && (!variables.stat_data?.known?.['极乐引入手'] === true) && (true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】南域风云 · 散修大势与秘境暗涌（自设专轨）",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '自设') && (Number(variables.stat_data?.仙盟历) >= 1578.03))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】鼎炉争锋 · 仙姝名器之机缘大势（自设专轨）",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '自设') && (variables.stat_data?.known?.['极乐引入手'] === true) && ((Number(variables.stat_data?.仙盟历) >= 1578.08)))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】三 · 幽寂谷秘境",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['极乐引入手'] === true || Number(variables.stat_data?.段位 ?? 1) >= 3) && !(variables.stat_data?.known?.['玄机子胁迫过叶红缨'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】四 · 南域大劫 · 天姝会成立（神诅与四殿）",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['进入幽寂谷'] === true || variables.stat_data?.known?.['玄机子胁迫过叶红缨'] === true || Number(variables.stat_data?.段位 ?? 1) >= 4) && !(variables.stat_data?.known?.['南域大劫'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【中立】三 · 南域大劫 · 天地神诅与四殿分疆",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((Number(variables.stat_data?.仙盟历) >= 1578.08) && (Number(variables.stat_data?.仙盟历) < 1579.01))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】一 · 天姝初立 · 极乐大诏与四殿分疆（殿主专轨）",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((['焚欲殿主','浊龙殿主','欢喜殿主','魂欢殿主'].includes(variables.stat_data?.身份)) && ((Number(variables.stat_data?.仙盟历) >= 1578.08) && (Number(variables.stat_data?.仙盟历) < 1579.01)))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】五 · 孤剑崖送别 · 孤月赠冰心泪",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['南域大劫'] === true || Number(variables.stat_data?.段位 ?? 1) >= 5) && !(variables.stat_data?.known?.['赠送冰心泪'] === true || variables.stat_data?.known?.['孤月定情'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】六 · 初入天溪 · 听雪双姝登场",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['赠送冰心泪'] === true || variables.stat_data?.known?.['孤月定情'] === true || Number(variables.stat_data?.段位 ?? 1) >= 6) && !(variables.stat_data?.known?.['已抵达天溪'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】七 · 兽潮血战 · 玄机子装伤脱身",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['已抵达天溪'] === true || Number(variables.stat_data?.段位 ?? 1) >= 7) && !(variables.stat_data?.known?.['天溪城兽潮'] === true || variables.stat_data?.known?.['兽潮血战'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【中立】四 · 天溪兽潮 · 要塞围城与九龙焚天",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((Number(variables.stat_data?.仙盟历) >= 1579.01) && (Number(variables.stat_data?.仙盟历) < 1579.03))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】二 · 暗度天溪 · 趁乱布网与围城之谋（殿主专轨）",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((['焚欲殿主','浊龙殿主','欢喜殿主','魂欢殿主'].includes(variables.stat_data?.身份)) && ((Number(variables.stat_data?.仙盟历) >= 1579.01) && (Number(variables.stat_data?.仙盟历) < 1579.03)))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】八 · 灵犀同心、日月同辉",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['天溪城兽潮'] === true || variables.stat_data?.known?.['兽潮血战'] === true || Number(variables.stat_data?.段位 ?? 1) >= 8) && !(variables.stat_data?.known?.['灵犀同心成形'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】九 · 血染天溪 · 叶红缨夜间失控与赵无忧的越界",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['兽潮血战'] === true || variables.stat_data?.known?.['天溪城兽潮'] === true || Number(variables.stat_data?.段位 ?? 1) >= 9) && !(variables.stat_data?.known?.['血染天溪'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】十 · 双姝回归，魅骨生香",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['血染天溪'] === true || variables.stat_data?.known?.['灵犀同心成形'] === true || Number(variables.stat_data?.段位 ?? 1) >= 10) && !(variables.stat_data?.known?.['双姝回归'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】十一 · 天溪城破",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['双姝回归'] === true || Number(variables.stat_data?.段位 ?? 1) >= 11) && !(variables.stat_data?.known?.['天溪城破'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】十二 · 朱樱逢劫 · 叶红缨被擒与封元镇灵环暴露",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['天溪城破'] === true || Number(variables.stat_data?.段位 ?? 1) >= 12) && !(variables.stat_data?.known?.['赵无忧坠渊'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【中立】五 · 天溪城破 · 阵毁城陷与四方溃散",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((Number(variables.stat_data?.仙盟历) >= 1579.03) && (Number(variables.stat_data?.仙盟历) < 1579.06))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】三 · 要塞陷落 · 趁乱截击与收网良机（殿主专轨）",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((['焚欲殿主','浊龙殿主','欢喜殿主','魂欢殿主'].includes(variables.stat_data?.身份)) && ((Number(variables.stat_data?.仙盟历) >= 1579.03) && (Number(variables.stat_data?.仙盟历) < 1579.06)))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】十三 · 赤羽堕凡尘 · 灼酒流炎穴成形与孕炎乳",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['赵无忧坠渊'] === true || variables.stat_data?.known?.['封元镇灵环'] === true || Number(variables.stat_data?.段位 ?? 1) >= 13) && !(variables.stat_data?.known?.['灼酒流炎穴成形'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】十四 · 洞府调教 · 种下相思豆与赤羽沉沦",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['灼酒流炎穴成形'] === true || Number(variables.stat_data?.段位 ?? 1) >= 14) && !(variables.stat_data?.known?.['残阳老怪洞府调教叶红缨'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】十五 · 雀奴 · 灼酒流炎穴二阶段觉醒与身心彻底臣服",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['残阳老怪洞府调教叶红缨'] === true || Number(variables.stat_data?.段位 ?? 1) >= 15) && !(variables.stat_data?.known?.['叶红缨认残阳老怪为主'] === true || variables.stat_data?.known?.['灼酒流炎穴二阶段'] === true))))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【中立】六 · 乱世割据 · 鼎炉猎场与名器大争",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((Number(variables.stat_data?.仙盟历) >= 1579.06) && (Number(variables.stat_data?.仙盟历) < 1580.01))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【剧情】四 · 极乐分疆 · 四殿割据与鼎炉大争（殿主专轨）",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((['焚欲殿主','浊龙殿主','欢喜殿主','魂欢殿主'].includes(variables.stat_data?.身份)) && ((Number(variables.stat_data?.仙盟历) >= 1579.06)))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【中立】七 · 极乐定局 · 魔道鼎立与北上暗涌",
+   "isPlot": true,
+   "gateArg": "(function(){try{return ((Number(variables.stat_data?.仙盟历) >= 1580.01))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【势力】魂欢殿",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【势力】花家与花仙城",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【势力】陨仙原三大聚集点（花仙城／逍遥谷）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【势力】幽鬼坊市（地煞宗）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【势力】血荒与陆十三洞府（陨仙原边缘）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【势力】神女殿与天魔神像",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['百丈天魔神像显形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【势力】天姝会",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['南域大劫'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】炼欲魔君",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['阎雷子夺舍'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】柳含烟",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['阎雷子脱困'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "柳含烟 (心智姿态)",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['阎雷子脱困'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】雨霏柔",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['进入葬魔渊'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "雨霏柔 (心智姿态)",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['进入葬魔渊'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】云织梦",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['进入葬魔渊'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "云织梦 (心智姿态)",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['进入葬魔渊'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "残阳老怪 (心智姿态)",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 !== undefined && variables.stat_data?.身份 !== '焚欲殿主'))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "肉山佛 (心智姿态)",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 !== undefined && variables.stat_data?.身份 !== '欢喜殿主'))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "九皇子 (心智姿态)",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 !== undefined && variables.stat_data?.身份 !== '浊龙殿主'))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】九皇子（2）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['受封殿主'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "病相思 (心智姿态)",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.身份 !== undefined && variables.stat_data?.身份 !== '魂欢殿主'))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": true,
+     "filtered": "不剔除",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】鬼医病相思（2）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['受封殿主'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】陆十三",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】陆烬颜",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】花芷凝",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "花芷凝 (心智姿态)",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】厉锋（九皇子座下）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '浊龙殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】石岩（九皇子座下）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '浊龙殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【人物】柳玉（九皇子座下）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '浊龙殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】何为道纹",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['极乐引入手'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】九幽玄阴穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['九幽玄阴穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】九幽玄阴穴、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['九幽玄阴穴成形'] === true) && (variables.stat_data?.known?.['九幽玄阴穴一阶段'] === true) && (!variables.stat_data?.known?.['九幽玄阴穴二阶段']) && (!variables.stat_data?.known?.['九幽玄阴穴三阶段']) && (!variables.stat_data?.known?.['九幽玄阴穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】九幽玄阴穴、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['九幽玄阴穴成形'] === true) && (variables.stat_data?.known?.['九幽玄阴穴二阶段'] === true) && (!variables.stat_data?.known?.['九幽玄阴穴三阶段']) && (!variables.stat_data?.known?.['九幽玄阴穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】九幽玄阴穴、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['九幽玄阴穴成形'] === true) && (variables.stat_data?.known?.['九幽玄阴穴三阶段'] === true) && (!variables.stat_data?.known?.['九幽玄阴穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】九幽玄阴穴、四阶段（极乐）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['九幽玄阴穴成形'] === true) && (variables.stat_data?.known?.['九幽玄阴穴四阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】灼酒流炎穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['灼酒流炎穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】灼酒流炎穴、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['灼酒流炎穴成形'] === true) && (variables.stat_data?.known?.['灼酒流炎穴一阶段'] === true) && (!variables.stat_data?.known?.['灼酒流炎穴二阶段']) && (!variables.stat_data?.known?.['灼酒流炎穴三阶段']) && (!variables.stat_data?.known?.['灼酒流炎穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】灼酒流炎穴、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['灼酒流炎穴成形'] === true) && (variables.stat_data?.known?.['灼酒流炎穴二阶段'] === true) && (!variables.stat_data?.known?.['灼酒流炎穴三阶段']) && (!variables.stat_data?.known?.['灼酒流炎穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】灼酒流炎穴、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['灼酒流炎穴成形'] === true) && (variables.stat_data?.known?.['灼酒流炎穴三阶段'] === true) && (!variables.stat_data?.known?.['灼酒流炎穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】灼酒流炎穴、四阶段（极乐）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['灼酒流炎穴成形'] === true) && (variables.stat_data?.known?.['灼酒流炎穴四阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】心魔茶璎乳",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['心魔茶璎乳成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】心魔茶璎乳、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['心魔茶璎乳成形'] === true) && (variables.stat_data?.known?.['心魔茶璎乳一阶段'] === true) && (!variables.stat_data?.known?.['心魔茶璎乳二阶段']) && (!variables.stat_data?.known?.['心魔茶璎乳三阶段']) && (!variables.stat_data?.known?.['心魔茶璎乳四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】心魔茶璎乳、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['心魔茶璎乳成形'] === true) && (variables.stat_data?.known?.['心魔茶璎乳二阶段'] === true) && (!variables.stat_data?.known?.['心魔茶璎乳三阶段']) && (!variables.stat_data?.known?.['心魔茶璎乳四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】心魔茶璎乳、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['心魔茶璎乳成形'] === true) && (variables.stat_data?.known?.['心魔茶璎乳三阶段'] === true) && (!variables.stat_data?.known?.['心魔茶璎乳四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】心魔茶璎乳、四阶段（极乐）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['心魔茶璎乳成形'] === true) && (variables.stat_data?.known?.['心魔茶璎乳四阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】般若菩提菊",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['般若菩提菊成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】般若菩提菊、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['般若菩提菊成形'] === true) && (variables.stat_data?.known?.['般若菩提菊一阶段'] === true) && (!variables.stat_data?.known?.['般若菩提菊二阶段']) && (!variables.stat_data?.known?.['般若菩提菊三阶段']) && (!variables.stat_data?.known?.['般若菩提菊四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】般若菩提菊、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['般若菩提菊成形'] === true) && (variables.stat_data?.known?.['般若菩提菊二阶段'] === true) && (!variables.stat_data?.known?.['般若菩提菊三阶段']) && (!variables.stat_data?.known?.['般若菩提菊四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】般若菩提菊、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['般若菩提菊成形'] === true) && (variables.stat_data?.known?.['般若菩提菊三阶段'] === true) && (!variables.stat_data?.known?.['般若菩提菊四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】般若菩提菊、四阶段（极乐）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['般若菩提菊成形'] === true) && (variables.stat_data?.known?.['般若菩提菊四阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】北冥潮生穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['北冥潮生穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】北冥潮生穴、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['北冥潮生穴成形'] === true) && (variables.stat_data?.known?.['北冥潮生穴一阶段'] === true) && (!variables.stat_data?.known?.['北冥潮生穴二阶段']) && (!variables.stat_data?.known?.['北冥潮生穴三阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】北冥潮生穴、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['北冥潮生穴成形'] === true) && (variables.stat_data?.known?.['北冥潮生穴二阶段'] === true) && (!variables.stat_data?.known?.['北冥潮生穴三阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】北冥潮生穴、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['北冥潮生穴成形'] === true) && (variables.stat_data?.known?.['北冥潮生穴三阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】灵犀同心穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['灵犀同心成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】灵犀同心穴、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['灵犀同心成形'] === true) && (variables.stat_data?.known?.['灵犀同心穴一阶段'] === true) && (!variables.stat_data?.known?.['灵犀同心穴二阶段']) && (!variables.stat_data?.known?.['灵犀同心穴三阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】灵犀同心穴、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['灵犀同心成形'] === true) && (variables.stat_data?.known?.['灵犀同心穴二阶段'] === true) && (!variables.stat_data?.known?.['灵犀同心穴三阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】灵犀同心穴、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['灵犀同心成形'] === true) && (variables.stat_data?.known?.['灵犀同心穴三阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】玉虎噙香乳",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['玉虎噙香乳成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】玉虎噙香乳、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['玉虎噙香乳成形'] === true) && (variables.stat_data?.known?.['玉虎噙香乳一阶段'] === true) && (!variables.stat_data?.known?.['玉虎噙香乳二阶段']) && (!variables.stat_data?.known?.['玉虎噙香乳三阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】玉虎噙香乳、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['玉虎噙香乳成形'] === true) && (variables.stat_data?.known?.['玉虎噙香乳二阶段'] === true) && (!variables.stat_data?.known?.['玉虎噙香乳三阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】玉虎噙香乳、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['玉虎噙香乳成形'] === true) && (variables.stat_data?.known?.['玉虎噙香乳三阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】烟霞灵乳",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['阎雷子脱困'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】烟霞灵乳、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['阎雷子脱困'] === true) && (variables.stat_data?.known?.['烟霞灵乳一阶段'] === true) && (!variables.stat_data?.known?.['烟霞灵乳二阶段']) && (!variables.stat_data?.known?.['烟霞灵乳三阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】烟霞灵乳、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['阎雷子脱困'] === true) && (variables.stat_data?.known?.['烟霞灵乳二阶段'] === true) && (!variables.stat_data?.known?.['烟霞灵乳三阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】烟霞灵乳、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['阎雷子脱困'] === true) && (variables.stat_data?.known?.['烟霞灵乳三阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】梅蕊穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['梅蕊穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】梅蕊穴、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['梅蕊穴成形'] === true) && (variables.stat_data?.known?.['梅蕊穴一阶段'] === true) && (!variables.stat_data?.known?.['梅蕊穴二阶段']) && (!variables.stat_data?.known?.['梅蕊穴三阶段']) && (!variables.stat_data?.known?.['梅蕊穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】梅蕊穴、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['梅蕊穴成形'] === true) && (variables.stat_data?.known?.['梅蕊穴二阶段'] === true) && (!variables.stat_data?.known?.['梅蕊穴三阶段']) && (!variables.stat_data?.known?.['梅蕊穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】梅蕊穴、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['梅蕊穴成形'] === true) && (variables.stat_data?.known?.['梅蕊穴三阶段'] === true) && (!variables.stat_data?.known?.['梅蕊穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】梅蕊穴、四阶段（极乐）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['梅蕊穴成形'] === true) && (variables.stat_data?.known?.['梅蕊穴四阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】冰魄剑心穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['冰魄剑心穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】冰魄剑心穴、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['冰魄剑心穴成形'] === true) && (variables.stat_data?.known?.['冰魄剑心穴一阶段'] === true) && (!variables.stat_data?.known?.['冰魄剑心穴二阶段']) && (!variables.stat_data?.known?.['冰魄剑心穴三阶段']) && (!variables.stat_data?.known?.['冰魄剑心穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】冰魄剑心穴、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['冰魄剑心穴成形'] === true) && (variables.stat_data?.known?.['冰魄剑心穴二阶段'] === true) && (!variables.stat_data?.known?.['冰魄剑心穴三阶段']) && (!variables.stat_data?.known?.['冰魄剑心穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】冰魄剑心穴、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['冰魄剑心穴成形'] === true) && (variables.stat_data?.known?.['冰魄剑心穴三阶段'] === true) && (!variables.stat_data?.known?.['冰魄剑心穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】冰魄剑心穴、四阶段（极乐）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['冰魄剑心穴成形'] === true) && (variables.stat_data?.known?.['冰魄剑心穴四阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】清歌弦鸣穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['清歌弦鸣穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】清歌弦鸣穴、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['清歌弦鸣穴成形'] === true) && (variables.stat_data?.known?.['清歌弦鸣穴一阶段'] === true) && (!variables.stat_data?.known?.['清歌弦鸣穴二阶段']) && (!variables.stat_data?.known?.['清歌弦鸣穴三阶段']) && (!variables.stat_data?.known?.['清歌弦鸣穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】清歌弦鸣穴、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['清歌弦鸣穴成形'] === true) && (variables.stat_data?.known?.['清歌弦鸣穴二阶段'] === true) && (!variables.stat_data?.known?.['清歌弦鸣穴三阶段']) && (!variables.stat_data?.known?.['清歌弦鸣穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】清歌弦鸣穴、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['清歌弦鸣穴成形'] === true) && (variables.stat_data?.known?.['清歌弦鸣穴三阶段'] === true) && (!variables.stat_data?.known?.['清歌弦鸣穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】清歌弦鸣穴、四阶段（极乐）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['清歌弦鸣穴成形'] === true) && (variables.stat_data?.known?.['清歌弦鸣穴四阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】流焰叠薪穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['流焰叠薪穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】流焰叠薪穴、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['流焰叠薪穴成形'] === true) && (variables.stat_data?.known?.['流焰叠薪穴一阶段'] === true) && (!variables.stat_data?.known?.['流焰叠薪穴二阶段']) && (!variables.stat_data?.known?.['流焰叠薪穴三阶段']) && (!variables.stat_data?.known?.['流焰叠薪穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】流焰叠薪穴、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['流焰叠薪穴成形'] === true) && (variables.stat_data?.known?.['流焰叠薪穴二阶段'] === true) && (!variables.stat_data?.known?.['流焰叠薪穴三阶段']) && (!variables.stat_data?.known?.['流焰叠薪穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】流焰叠薪穴、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['流焰叠薪穴成形'] === true) && (variables.stat_data?.known?.['流焰叠薪穴三阶段'] === true) && (!variables.stat_data?.known?.['流焰叠薪穴四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】流焰叠薪穴、四阶段（极乐）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['流焰叠薪穴成形'] === true) && (variables.stat_data?.known?.['流焰叠薪穴四阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·简介】凤凰羽花",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['凤凰羽花成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】凤凰羽花、一阶段（落红）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['凤凰羽花成形'] === true) && (variables.stat_data?.known?.['凤凰羽花一阶段'] === true) && (!variables.stat_data?.known?.['凤凰羽花二阶段']) && (!variables.stat_data?.known?.['凤凰羽花三阶段']) && (!variables.stat_data?.known?.['凤凰羽花四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】凤凰羽花、二阶段（情动）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['凤凰羽花成形'] === true) && (variables.stat_data?.known?.['凤凰羽花二阶段'] === true) && (!variables.stat_data?.known?.['凤凰羽花三阶段']) && (!variables.stat_data?.known?.['凤凰羽花四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】凤凰羽花、三阶段（沉沦）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['凤凰羽花成形'] === true) && (variables.stat_data?.known?.['凤凰羽花三阶段'] === true) && (!variables.stat_data?.known?.['凤凰羽花四阶段']))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器·阶段】凤凰羽花、四阶段（极乐）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return ((variables.stat_data?.known?.['凤凰羽花成形'] === true) && (variables.stat_data?.known?.['凤凰羽花四阶段'] === true))}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】九幽玄阴穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['九幽玄阴穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】北冥潮生穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['北冥潮生穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】玉虎噙香乳（月下蜜桃）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['玉虎噙香乳成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】烟霞灵乳（昨日欢）",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['阎雷子脱困'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】凤凰羽花",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['凤凰羽花成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】梅蕊穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['梅蕊穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】冰魄剑心穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['冰魄剑心穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】清歌弦鸣穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['清歌弦鸣穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】流焰叠薪穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['流焰叠薪穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】灼酒流炎穴",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['灼酒流炎穴成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】心魔茶璎乳",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['心魔茶璎乳成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】般若菩提菊",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['般若菩提菊成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【名器】灵犀同心",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['灵犀同心成形'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【物品】封元镇灵环",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['赵无忧看见乳环'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【物品】冰心泪",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['赠送冰心泪'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【物品】太上守郡符",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['邪修洞府解毒'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【物品】蚀心焚魂丹",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '焚欲殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【物品】蝶恋双生环",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '焚欲殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【物品】七霓裳",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【物品】鎏金缠情丝",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '魂欢殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  },
+  {
+   "comment": "【物品】锁灵环",
+   "isPlot": false,
+   "gateArg": "(function(){try{return (variables.stat_data?.身份 === '焚欲殿主')}catch(e){return false}})()",
+   "eval": {
+    "A_1578.03_段2_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "B_1579.01_段7_known含兽潮": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    },
+    "C_1578.03_段7_known空": {
+     "type": "boolean",
+     "truthy": false,
+     "filtered": "被过滤",
+     "err": null
+    }
+   }
+  }
+ ]
+}
