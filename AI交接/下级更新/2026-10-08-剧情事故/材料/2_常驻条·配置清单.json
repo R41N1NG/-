@@ -1,0 +1,255 @@
+[
+ {
+  "comment": "卡、运行规则",
+  "contentChars": 2674,
+  "keys": [],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": true
+ },
+ {
+  "comment": "状态栏模板",
+  "contentChars": 4705,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 0,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "状态字段表（脚本读取）",
+  "contentChars": 2135,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 0,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "收尾契约（每回合必读）",
+  "contentChars": 125,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 0,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "文风",
+  "contentChars": 936,
+  "keys": [],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "当前章节信息闸门",
+  "contentChars": 352,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 0,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "【阶段驱动】当前阶段压力与调度",
+  "contentChars": 6581,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 0,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "【演绎引擎】FNE 女性言行指导（脱水版·保留重点）",
+  "contentChars": 5266,
+  "keys": [],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "【身份】赵无忧",
+  "contentChars": 480,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 1,
+  "prevent_recursion": true,
+  "hasGate": true
+ },
+ {
+  "comment": "【身份】自设",
+  "contentChars": 427,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 1,
+  "prevent_recursion": true,
+  "hasGate": true
+ },
+ {
+  "comment": "【身份】焚欲殿主",
+  "contentChars": 412,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 1,
+  "prevent_recursion": true,
+  "hasGate": true
+ },
+ {
+  "comment": "【身份】欢喜殿主",
+  "contentChars": 420,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 1,
+  "prevent_recursion": true,
+  "hasGate": true
+ },
+ {
+  "comment": "【身份】浊龙殿主",
+  "contentChars": 418,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 1,
+  "prevent_recursion": true,
+  "hasGate": true
+ },
+ {
+  "comment": "【身份】魂欢殿主",
+  "contentChars": 505,
+  "keys": [],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 1,
+  "prevent_recursion": true,
+  "hasGate": true
+ },
+ {
+  "comment": "【设定】业火与《红尘诀》",
+  "contentChars": 234,
+  "keys": [
+   "业火与红尘诀",
+   "业火",
+   "红尘诀"
+  ],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "【剧情】起获《极乐引》（自设专轨）",
+  "contentChars": 2022,
+  "keys": [
+   "极乐引",
+   "机缘",
+   "奇遇",
+   "古卷",
+   "残篇",
+   "双修",
+   "秘籍"
+  ],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": true
+ },
+ {
+  "comment": "【势力】积云古寺",
+  "contentChars": 534,
+  "keys": [
+   "积云古寺"
+  ],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "【势力】天姝会",
+  "contentChars": 574,
+  "keys": [
+   "天姝会"
+  ],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": true
+ },
+ {
+  "comment": "【势力】墨山道",
+  "contentChars": 456,
+  "keys": [
+   "墨山道"
+  ],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "【势力】天溪城",
+  "contentChars": 270,
+  "keys": [
+   "天溪城"
+  ],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "【人物】赵无忧",
+  "contentChars": 391,
+  "keys": [
+   "赵无忧",
+   "无忧",
+   "无忧师弟",
+   "六师弟",
+   "无忧阵主",
+   "墨山道"
+  ],
+  "scan_depth": null,
+  "position": "at_depth",
+  "depth": 3,
+  "prevent_recursion": true,
+  "hasGate": false
+ },
+ {
+  "comment": "【名器】何为道纹",
+  "contentChars": 555,
+  "keys": [
+   "极乐引",
+   "本命道纹",
+   "道纹",
+   "名器第二境",
+   "情动"
+  ],
+  "scan_depth": null,
+  "position": "before_char",
+  "depth": 4,
+  "prevent_recursion": true,
+  "hasGate": true
+ }
+]
