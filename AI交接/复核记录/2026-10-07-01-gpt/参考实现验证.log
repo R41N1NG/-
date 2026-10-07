@@ -1,0 +1,14 @@
+PASS Before JS initialization: old chips visible, enhancer hidden
+PASS Startup enhances before any HUD exists and never fills/commits an empty field
+PASS Every preset writes its exact value once; input followed by change is deduplicated
+PASS Manual June 7 remains June 7; a parked thumb has an explicit apply button
+PASS Out-of-range/invalid custom text remains untouched and visibly marked
+PASS Dynamically rendered second menu initializes and changes only its own field
+PASS Reinstallation/re-rendering leaves one effective handler; existing custom text survives
+PASS Replacing inner output controls reinitializes their bindings
+PASS Native ArrowRight keyboard changes exactly one preset
+PASS Iframe-owned listener uses the chat host document and cleans up on owner pagehide
+PASS Old menus without enhancer remain unchanged
+PASS Malformed enhancer retains the existing chips
+PASS A setter failure degrades enhancement and preserves a working old entry
+17 checks passed; see verification.json

@@ -69,7 +69,7 @@ function xdsTimepointModule() {
   }
 
   // This parser reads one submitted field, never a whole menu/message. It does
-  // basic fictional-calendar validation; it does not assume Gregorian/leap rules.
+  // 30-day fictional calendar, confirmed by the production clock's /30 math.
   function parseDate(value) {
     const text = String(value ?? '').trim();
     if (!text || text.length > 64 || /[\r\n<>]/.test(text)) return null;
@@ -91,7 +91,7 @@ function xdsTimepointModule() {
     } else {
       day = numeral(token);
     }
-    if (!(year >= 1 && month >= 1 && month <= 12 && day >= 1 && day <= 31)) return null;
+    if (!(year >= 1 && month >= 1 && month <= 12 && day >= 1 && day <= 30)) return null;
     return Object.freeze({ year, month, day, order: year * 10000 + month * 100 + day });
   }
 
