@@ -1,0 +1,30 @@
+{
+  "identity": "gpt",
+  "date": "2026-10-08",
+  "baseline": "56a534c",
+  "input_sha256": {
+    "13b_编号基准.json": "c6dc0f855087771f4a00d961ec04dcdd5a9167d941ddba8f717198d6b3830fe4",
+    "11b_本批SHA与id映射链.json": "aed7d5bf1c4334b0866900d48e0b41626a70eb8ed623db4559c16bf15b3ae0d5",
+    "9_15行时点分类表与最小转场时钟方案.md": "4ba6c57add502eb21695ebcef78265d4d36f17cc33dce2993032ac05c7263472",
+    "14_最近改动汇总·疑虑·上报.md": "4398c5fe2747060d521d252f4504f67176fed523750773b8d071add53f8e3434"
+  },
+  "table_rows": 241,
+  "unique_card_ids": 241,
+  "unique_host_uids": 241,
+  "table_equal_id_uid_rows": 241,
+  "old_source_uids_in_table": 165,
+  "generated_or_unmapped_rows": 76,
+  "mainline_mapping_agrees_between_11b_and_13b": 15,
+  "stale_unmatched_card_ids_in_material_9": 15,
+  "prior_artifact_report": {
+    "路径": "最新角色卡/仙姝堕.json",
+    "字节": 6778025,
+    "sha256": "62a22886d6c431564c4b17b6d4fdb072b4f6d41773b8ac01c9e3145ab2e117d7"
+  },
+  "latest_artifact_report": {
+    "bytes": 6777258,
+    "sha256_prefix_24": "1120a8d9b314f01a834077cc"
+  },
+  "prior_artifact_hash_must_not_certify_latest": true,
+  "limits": "只证明上传JSON表和版本报告彼此一致/差异；未取得实际新卡、安装世界书、PNG载荷、新版生产源码或原始门禁日志。165/241本身不证明源内容过时。"
+}
