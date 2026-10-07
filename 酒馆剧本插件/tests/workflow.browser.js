@@ -38,7 +38,7 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{background:#222}iframe{display:none}#send_form{position:fixed;bottom:8px;left:10px;right:10px}textarea{box-sizing:border-box;width:100%;height:55px}</style><form id="send_form"><textarea id="send_textarea"></textarea></form><script>const C={clone:x=>JSON.parse(JSON.stringify(x))};const fixture=${fixture.toString().replace('host: new Host(root)', 'host: null')};window.testHost=fixture();window.TavernHelper=testHost.root;window.sendRound=async(text)=>{const h=testHost.root;await h.eventEmit('GENERATION_AFTER_COMMANDS','normal',{},false);const f=document.querySelector('textarea'),input=f.value;f.value='';f.dispatchEvent(new Event('input',{bubbles:true}));const id=h.messages.length;h.messages.push({message_id:id,role:'user',message:input});await h.eventEmit('message_sent',id);await h.eventEmit('generate_before_combine_prompts','normal');const injected=C.clone(h.injection);const aid=h.messages.length;h.messages.push({message_id:aid,role:'assistant',message:text});await h.eventEmit('message_received',aid);await h.eventEmit('generation_ended',aid);const e=document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine;await new Promise(r=>setTimeout(r,10));await e.stageJobs;return injected;};const f=document.createElement('iframe');f.src='/frame';document.body.appendChild(f);</script>`);
 });
-const get = page => page.evaluate(() => { const e = document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine; return {project: e.project, state: e.state, error: e.error}; });
+const get = page => page.evaluate(() => { const e = document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine; return {project: e.project, state: e.state, error: e.error, enabled: e.settings.enabled, hasDraft: Boolean(e.analysisDraft)}; });
 async function send(page, response) { return page.evaluate(response => sendRound(response), response); }
 async function action(page, target, response) { await page.locator(`[data-action="quick-enter"][data-id="${target}"]`).click(); return send(page, response); }
 async function run() {
@@ -47,7 +47,8 @@ async function run() {
   try {
     for (const mobile of [false, true]) {
       const context = await browser.newContext({viewport: mobile ? {width: 390, height: 844} : {width: 1366, height: 900}, isMobile: mobile, hasTouch: mobile}), page = await context.newPage();
-      page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => d.accept()); await page.goto(base);
+      let cancelConversion = false;
+      page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => cancelConversion && d.message().includes('转化为剧本') ? d.dismiss() : d.accept()); await page.goto(base);
       await page.waitForFunction(() => document.querySelector('iframe')?.contentWindow.__branch_story_startup__?.status === 'ready');
       await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="api"]').click();
       await page.locator('[name="base_url"]').fill(base); await page.locator('[name="model"]').fill('mock');
@@ -64,13 +65,32 @@ async function run() {
       assert.equal((await get(page)).error, ''); assert.equal(await page.locator('[data-action="analysis-cancel"]').isVisible(), true);
       releaseAnalysis(); await page.locator('[name="analysis_draft"]').waitFor();
       const extracted = JSON.parse(await page.locator('[name="analysis_draft"]').inputValue()); assert.deepEqual(extracted.collections.map(x => x.id), ['a', 'b', 'a1', 'ab']);
+      await page.locator('[data-action="analysis-convert"]:enabled').waitFor();
+      const conversion = page.locator('.analysis-conversion'); assert((await conversion.innerText()).includes('6 个剧情阶段 · 5 条事件规则 · 9 个分支出口'));
+      const box = await page.locator('[data-action="analysis-convert"]').boundingBox(); assert(box.y >= 0 && box.y + box.height <= page.viewportSize().height, '分析完成后转化按钮应在可见区域');
+      fs.mkdirSync(path.join(root, 'artifacts'), {recursive: true}); await page.screenshot({path: path.join(root, 'artifacts', mobile ? 'conversion-mobile.png' : 'conversion-desktop.png')});
       const count = calls.length, activeProject = (await get(page)).project.id;
+      const unchanged = await get(page); cancelConversion = true; await page.locator('[data-action="analysis-convert"]').click(); cancelConversion = false;
+      assert.deepEqual(await get(page), unchanged); assert.equal(calls.length, count);
+      await page.evaluate(() => { document.querySelector('iframe').remove(); const frame = document.createElement('iframe'); frame.src = '/frame'; document.body.appendChild(frame); });
+      await page.waitForFunction(() => document.querySelector('iframe')?.contentWindow.__branch_story_startup__?.status === 'ready');
+      await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="analysis"]').click();
+      assert.equal(await page.locator('[data-action="analysis-convert"]').isVisible(), true); assert.equal(calls.length, count); assert.equal((await get(page)).hasDraft, true);
       await page.getByText('从后台 JSON 恢复分析草稿', {exact: true}).click(); await page.locator('[name="analysis_response"]').fill('{broken'); await page.locator('[data-action="analysis-restore"]').click();
       await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.error.includes('JSON'));
       await page.locator('[name="analysis_response"]').fill(JSON.stringify({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(draft)}}]})); await page.locator('[data-action="analysis-restore"]').click();
       await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.analysisDraft.recovered);
       assert.equal(calls.length, count); assert.equal((await get(page)).error, ''); assert.equal((await get(page)).project.id, activeProject);
-      await page.locator('[data-action="analysis-apply"]').click(); await page.locator('[data-tab="run"]').click(); await page.locator('[data-action="toggle-enabled"]').click(); await page.locator('[data-action="close"]').click();
+      const editedDraft = JSON.parse(await page.locator('[name="analysis_draft"]').inputValue()); editedDraft.title += ' · 编辑后'; await page.locator('[name="analysis_draft"]').fill(JSON.stringify(editedDraft));
+      await page.locator('[data-action="analysis-convert"]').click();
+      assert.equal((await get(page)).project.title, editedDraft.title);
+      assert.equal((await get(page)).enabled, false); assert.equal((await get(page)).hasDraft, false); assert.equal(calls.length, count); assert.equal((await get(page)).project.events.length, 5);
+      assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), ''); assert.equal(await page.locator('[data-action="node-tab"][data-tab="nodes"]').getAttribute('class'), 'active');
+      const firstEvent = (await get(page)).project.events[0]; await page.locator('[data-tab="events"]').click();
+      assert((await page.locator(`form[data-form="event:${firstEvent.id}"]`).innerText()).includes('共用完成标准和奖励'));
+      await page.locator('[data-action="event-node-edit"]').click(); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), '');
+      assert.equal(await page.locator('[name="completion_criteria"]').inputValue(), '实际取得并收好房卡');
+      await page.locator('[data-tab="run"]').click(); await page.locator('[data-action="toggle-enabled"]').click(); await page.locator('[data-action="close"]').click();
       const ids = Object.fromEntries((await get(page)).project.nodes.map(n => [n.title, n.id]));
       await page.locator('textarea').fill('我看一眼'); await page.locator(`[data-action="quick-enter"][data-id="${ids.房卡}"]`).click();
       assert.equal(await page.locator('textarea').inputValue(), '我看一眼\n找房卡'); assert.equal((await get(page)).state.current_node_id, ids.前厅);
@@ -79,6 +99,8 @@ async function run() {
       assert(injected[0].content.includes('抽屉')); assert(!injected[0].content.includes('4716')); assert.deepEqual((await get(page)).state.collected_ids, []);
       const summary = (await get(page)).state.stage_progress.summary; assert(summary.includes('还没有拿起'));
       await page.locator('textarea').fill('我把卡拿出来，收进口袋。'); await send(page, '你已收好房卡，确认它在口袋里。'); assert.deepEqual((await get(page)).state.collected_ids, ['a']);
+      assert.equal((await get(page)).state.event_counts[firstEvent.id], 1);
+      await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="events"]').click(); assert.equal(await page.locator('[data-action="event-manual"]').isDisabled(), true); await page.locator('[data-action="close"]').click();
       assert.equal((await get(page)).state.stage_progress, null); const cardCalls = calls.filter(x => x.input.node?.title === '房卡'); assert(cardCalls.at(-1).input.previous.summary.includes('还没有拿起')); assert.equal(cardCalls.at(-1).input.dialogue.length, 2);
       await action(page, ids.前厅, '你回到前厅。'); assert.equal(await page.locator(`[data-action="quick-enter"][data-id="${ids.验卡}"]`).count(), 1); assert.equal(await page.locator(`[data-action="quick-enter"][data-id="${ids.复位}"]`).count(), 0);
       await page.locator('textarea').fill('我去翻前台交班簿，找复位码。'); const codeInjection = await send(page, '你已记下4716，准备继续调查。'); assert(codeInjection[0].content.includes('交班簿')); assert.deepEqual((await get(page)).state.collected_ids, ['a', 'b']);
@@ -93,7 +115,8 @@ async function run() {
       assert((await get(page)).state.completed_node_ids.includes(ids.证物袋)); assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
       assert.equal((await get(page)).state.collected_ids.filter(x => x === 'ab').length, 1);
       fs.mkdirSync(path.join(root, 'artifacts'), {recursive: true}); await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="records"]').click(); await page.screenshot({path: path.join(root, 'artifacts', mobile ? 'workflow-mobile.png' : 'workflow-desktop.png')});
-      console.log('✓ ' + (mobile ? '手机' : '桌面') + '：分析超过45秒仍接收，后台JSON恢复不重复请求；原文分析→快捷填入/撤销→自由输入→同轮注入→跨轮摘要→a/b/a1/ab条件→失败重试→终点完成'); await context.close();
+      const finished = await get(page); assert(finished.project.events.every(e => finished.state.event_counts[e.id] === 1));
+      console.log('✓ ' + (mobile ? '手机' : '桌面') + '：分析超45秒→顶部转化按钮→取消与刷新保留草稿→后台JSON恢复→零额外请求转化剧本/5事件/分支→快捷或自由输入→同轮注入→短摘要→a/b/a1/ab→失败重试→节点与事件共用一次结算'); await context.close();
     }
     assert.deepEqual(errors, []); console.log('✓ 完整行动流程浏览器错误：0；全部使用模拟辅助 API');
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

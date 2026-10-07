@@ -1,0 +1,299 @@
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+index 9224d98..3972e85 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+@@ -3 +3 @@
+-  "version": "1.3.0",
++  "version": "1.3.1",
+@@ -9 +9 @@
+-      "version": "1.3.0",
++      "version": "1.3.1",
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+index 227a954..4e8ebaf 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+@@ -3 +3 @@
+-  "version": "1.3.0",
++  "version": "1.3.1",
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+index afce154..735f83c 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+@@ -11 +11 @@ const exported = {type: 'script', enabled: true, name: '分支剧本与事件引
+-  info: 'v' + version + '：条件事件包独立进度与短摘要，数值/结果触发，按优先级交叉推进；b2+c1→a4→d1只解锁不自动领奖，实际依赖结算支持连带回退。记录子栏提供可缩放箭头关系图，独立🔒+模糊+确认。分析原始回复校验前保留，可修改并恢复草稿，字段报错标明节点，截断拒绝完整应用。快捷按钮填入草稿，发送后记录，自由输入也可识别；600秒长文本等待与45秒快速请求保留。拖动铅笔、Alt+B或/bse打开；旧剧本需自行补齐完成标准与事件包。',
++  info: 'v' + version + '：分析完成后顶部可直接转化为剧本、事件与分支；有明确标准的阶段登记完成事件，节点与事件共用一次奖励、记录及回退。保存/恢复的草稿无需再次请求API，转化后打开剧本页并先关闭注入。保留条件事件包、交叉依赖与箭头关系图、独立🔒+模糊+确认、原始分析回复修复恢复、快捷填入与自由输入识别。600秒长文本等待、45秒快速识别；拖动铅笔、Alt+B或/bse打开。原文没有完成标准的阶段需手动编辑。',
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js"
+index 22b7125..ef6d39e 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js"
+@@ -131,0 +132,7 @@
++      if (e.completion_node_id != null) {
++        safeId(e.completion_node_id); const node = refs.nodes.get(e.completion_node_id);
++        assert(node && !node.suggested, '阶段事件引用的节点不存在或属于补充构想：' + e.title);
++        assert(e.repeat_policy === 'once' && e.scope.kind === 'nodes' && e.scope.node_ids.length === 1 && e.scope.node_ids[0] === node.id && !e.effects.length && !e.actor_id && !e.recipient_id, '阶段事件必须绑定单一节点，共用节点奖励和完成标准：' + e.title);
++        assert(p.events.filter(x => x.completion_node_id === node.id).length === 1, '同一阶段不能重复登记完成事件：' + node.id);
++        e.completion_criteria = node.completion_criteria || '手动确认本阶段完成'; e.exclusions = clone(node.completion_exclusions);
++      }
+@@ -206 +213,3 @@
+-    const nodeId = receipt.startsWith('node:') ? receipt.slice(5) : null, eventId = receipt.startsWith('event:') ? receipt.split(':')[1] : null;
++    const nodeId = receipt.startsWith('node:') ? receipt.slice(5) : null;
++    const linked = nodeId ? p.events.find(e => e.enabled && e.completion_node_id === nodeId) : null;
++    const eventId = receipt.startsWith('event:') ? receipt.split(':')[1] : linked?.id || null;
+@@ -210 +219 @@
+-    const conditions = nodeId ? [def.entry_condition, pack?.continue_condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : eventId ? [def.condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : [];
++    const conditions = nodeId ? [def.entry_condition, linked?.condition, pack?.continue_condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : eventId ? [def.condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : [];
+@@ -291,0 +301,2 @@
++    const linked = p.events.find(e => e.enabled && e.completion_node_id === nodeId);
++    assert(!linked || condition(linked.condition, s), '阶段完成事件的前置条件未满足：' + linked?.title);
+@@ -294,0 +306 @@
++      if (linked) next.event_counts[linked.id] = 1;
+@@ -316,0 +329,6 @@
++    if (event.completion_node_id) {
++      if (s.receipts['node:' + event.completion_node_id]) return false;
++      const pack = p.packages?.find(b => b.node_ids.includes(event.completion_node_id));
++      assert(pack ? s.package_progress?.[pack.id]?.current_node_id === event.completion_node_id : s.current_node_id === event.completion_node_id, '请先进入此事件对应的剧情阶段');
++      return completeNode(s, p, source, event.completion_node_id);
++    }
+@@ -337,2 +355,7 @@
+-    return p.events.filter(e => e.enabled && e.detection === 'api' && condition(e.condition, s) &&
+-      (e.scope.kind !== 'nodes' || e.scope.node_ids.includes(scopeNode)) && !(e.repeat_policy === 'once' && s.event_counts[e.id]));
++    return p.events.filter(e => {
++      if (!e.enabled || e.detection !== 'api' || !condition(e.condition, s) ||
++        e.scope.kind === 'nodes' && !e.scope.node_ids.includes(scopeNode) || e.repeat_policy === 'once' && s.event_counts[e.id]) return false;
++      if (!e.completion_node_id) return true;
++      const node = indexProject(p).nodes.get(e.completion_node_id), pack = p.packages?.find(b => b.node_ids.includes(node.id));
++      return !!node.completion_criteria.trim() && !s.receipts['node:' + node.id] && nodeReady(node, p, s) && (pack ? pack.enabled && s.package_progress?.[pack.id]?.current_node_id === node.id && ['ready', 'running'].includes(s.package_progress?.[pack.id]?.status) && condition(pack.continue_condition, s) : s.current_node_id === node.id);
++    });
+@@ -396 +419,9 @@
+-  return {VERSION, clone, object, own, id, assert, safeId, parseJSON, normalizeProject, normalizeCompletion, indexProject, createProgress, condition, conditionText, validateCondition, nodeReady, resultReady, dependencies, initLedger, applyEffects, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject};
++  function convertAnalysisProject(input) {
++    const p = normalizeProject(input);
++    for (const node of p.nodes) if (!node.suggested && node.completion_criteria.trim() && !p.events.some(e => e.completion_node_id === node.id)) {
++      let eventId; do { eventId = id('E'); } while (p.events.some(e => e.id === eventId));
++      p.events.push({id: eventId, title: node.title + ' · 完成', description: node.completion_criteria, completion_node_id: node.id, scope: {kind: 'nodes', node_ids: [node.id]}, repeat_policy: 'once', effects: [], condition: true, detection: 'api', auto_settle: false});
++    }
++    return normalizeProject(p);
++  }
++  return {VERSION, clone, object, own, id, assert, safeId, parseJSON, normalizeProject, normalizeCompletion, convertAnalysisProject, indexProject, createProgress, condition, conditionText, validateCondition, nodeReady, resultReady, dependencies, initLedger, applyEffects, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject};
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+index b971e76..590614f 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+@@ -303 +303 @@
+-      return this.mutate(() => C.settleEvent(this.state, this.project, eventId, key, source));
++      return this.mutate(() => C.settleEvent(this.state, this.project, eventId, key, source, event.completion_node_id || this.state.current_node_id));
+@@ -428,0 +429,8 @@
++    async applyAnalysis(input = this.analysisDraft?.project) {
++      C.assert(!this.busy, '请等待当前辅助任务完成'); C.assert(this.analysisDraft && input, '请先完成分析或恢复分析草稿');
++      const project = C.convertAnalysisProject(input), before = {project: this.project, state: C.clone(this.state), settings: C.clone(this.settings), analysisDraft: this.analysisDraft};
++      this.host.saveProgress(this.project, this.state);
++      try {
++        this.settings.enabled = false; await this.setProject(project); delete this.settings.analysis_draft; this.saveSettings(); this.notify(); return this.project;
++      } catch (error) { Object.assign(this, before); this.inject(); throw error; }
++    }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js"
+index 67d6083..e2642ff 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js"
+@@ -17 +17 @@
+-    for (const e of p.events) add('event:' + e.id, e.id, e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) ? 'available' : 'locked', 'event');
++    for (const e of p.events) add('event:' + e.id, e.id, e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) && (!e.completion_node_id || nodeAvailable(refs.nodes.get(e.completion_node_id))) ? 'available' : 'locked', 'event');
+@@ -47 +47 @@
+-    for (const e of p.events) { condition(e.condition, 'event:' + e.id); for (const x of e.effects) if (x.collect) edge('event:' + e.id, 'result:' + x.collect, Boolean(s.event_counts[e.id]), '确认后取得'); }
++    for (const e of p.events) { condition(e.condition, 'event:' + e.id); if (e.completion_node_id) edge('node:' + e.completion_node_id, 'event:' + e.id, Boolean(s.event_counts[e.id]), '阶段完成'); for (const x of e.effects) if (x.collect) edge('event:' + e.id, 'result:' + x.collect, Boolean(s.event_counts[e.id]), '确认后取得'); }
+@@ -56,0 +57 @@
++      p.events.filter(e => b.node_ids.includes(e.completion_node_id)).forEach(e => keep.add('event:' + e.id));
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+index 03d6002..252881d 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+@@ -254,0 +255,4 @@
++      if (ev.completion_node_id) {
++        const node = C.indexProject(p).nodes.get(ev.completion_node_id), done = this.e.state.completed_node_ids.includes(node.id);
++        return guide + `<form data-form="event:${escape(ev.id)}"><div class="card row">${button('新建事件规则', 'event-new')}${button('移除阶段事件', 'event-delete', 'class="danger"')}</div><div class="split">${this.list(p.events, 'event', ev.id, '事件规则')}<div class="card"><h2>${escape(ev.title)}</h2><p class="badge">${done ? '已完成' : '待完成'}</p><p>此事件与“${escape(node.title)}”阶段共用完成标准和奖励。完成阶段会同时记入事件记录；从这里确认也会完成对应阶段，只结算一次。</p><h3>完成标准</h3><pre>${escape(node.completion_criteria || '手动确认本阶段完成')}</pre><h3>不算完成的情况</h3><pre>${escape(node.completion_exclusions.join('\n') || '未设置')}</pre><h3>完成后的变化</h3><pre>${escape(node.effects.length ? json(node.effects) : '只记录阶段与事件完成，无额外奖励')}</pre><div class="row">${button('编辑对应剧情阶段', 'event-node-edit', `data-id="${escape(node.id)}"`)}${button(done ? '本阶段已完成' : '手动确认本阶段完成', 'event-manual', done ? 'disabled' : '')}${button('查看完成记录', 'event-records')}</div><p class="muted">完整剧本和分支出口在剧本页编辑；输入栏行动仍由玩家发送后推进。</p></div></div></form>`;
++      }
+@@ -295 +299,3 @@
+-      return `<form data-form="analysis"><div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。超过单次输入预算时自动分块并额外调用一次 API 整合；单次最多 20 万字符、32 块。</p>${area('需要分析的长文本', 'analysis_text', e.project.original_text || '', 12)}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>
++      const count = draft ? {nodes: p.nodes.length, routes: p.nodes.reduce((n, x) => n + x.routes.length, 0), packages: p.packages.length, events: p.events.length + p.nodes.filter(n => !n.suggested && n.completion_criteria.trim() && !p.events.some(x => x.completion_node_id === n.id)).length} : null;
++      const conversion = draft ? `<div class="card analysis-conversion"><h2>分析完成，转化为可用内容</h2><p>${count.nodes} 个剧情阶段 · ${count.events} 条事件规则 · ${count.routes} 个分支出口 · ${count.packages} 个剧情事件包</p><p>转化后，阶段和分支在“剧本”页，完成规则在“事件”页，条件关系在“记录”页。有完成标准的阶段会登记对应事件，共用一次结算；未明确的标准留待编辑。</p>${draft.is_partial ? '<p class="warn">这只是单个分块，尚未完成全篇整合。</p>' : ''}<div class="row">${button('转化为剧本、事件与分支', 'analysis-convert', e.busy ? 'disabled' : 'class="primary"')}${button('备份当前进度', 'export-progress')}${button('导出分析草稿', 'analysis-export')}</div><p class="muted">转化无需再次调用 API。当前剧本保留在草稿或世界书，转换后的剧本先关闭注入，核对后启用。</p></div>` : '';
++      return `<form data-form="analysis">${conversion}<div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。超过单次输入预算时自动分块并额外调用一次 API 整合；单次最多 20 万字符、32 块。</p>${area('需要分析的长文本', 'analysis_text', p.original_text || '', 12)}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>
+@@ -297 +303 @@
+-      ${draft ? `<div class="card"><h2>编辑并应用分析草稿</h2><p class="warn">${draft.warnings.map(escape).join('<br>') || '请核对原文、走向、结局与伏笔。'}<br>${draft.recovered ? '本次从已有后台结果恢复，未再次请求 API。' : '本次分析使用 ' + (Number(draft.request_count) || 1) + ' 次请求。'}原文明确的完成标准、结果标记和条件会保留为可编辑规则，请核对后再应用。</p>${area('完整剧本草稿 JSON（可编辑）', 'analysis_draft', json(draft.project), 18)}<div class="row">${button('应用分析草稿为新剧本', 'analysis-apply', 'class="primary"')}${button('导出分析草稿', 'analysis-export')}</div></div>` : ''}</form>`;
++      ${draft ? `<div class="card"><h2>编辑并应用分析草稿</h2><p class="warn">${draft.warnings.map(escape).join('<br>') || '请核对原文、走向、结局与伏笔。'}<br>${draft.recovered ? '本次从已有后台结果恢复，未再次请求 API。' : '本次分析使用 ' + (Number(draft.request_count) || 1) + ' 次请求。'}原文明确的完成标准、结果标记和条件会保留为可编辑规则，请核对后再应用。</p>${area('完整剧本草稿 JSON（可编辑）', 'analysis_draft', json(draft.project), 18)}<div class="row">${button('转化并打开剧本', 'analysis-apply', 'class="primary"')}${button('导出分析草稿', 'analysis-export')}</div></div>` : ''}</form>`;
+@@ -311,0 +318 @@
++    showConversion() { this.render(false); this.shadow.querySelector('.analysis-conversion')?.scrollIntoView({block: 'start'}); this.toast('分析草稿已准备，点击“转化为剧本、事件与分支”继续'); }
+@@ -404,0 +412 @@
++      else if (action === 'event-node-edit') { this.nodeId = b.dataset.id; this.nodeTab = 'nodes'; this.tab = 'nodes'; this.spoilerPrompt = false; this.render(); this.shadow.querySelector('main').scrollTop = 0; return; }
+@@ -417 +425,3 @@
+-        C.assert(this.win.confirm('删除此事件？'), '已取消删除'); await e.editProject(p => { p.events = p.events.filter(x => x.id !== this.eventId); }); this.eventId = '';
++        const linked = event()?.completion_node_id;
++        if (!this.win.confirm(linked ? '移除这条阶段事件？对应剧情阶段、完成标准与奖励仍保留；已有进度或条件引用可能阻止移除。' : '删除此事件？')) return;
++        await e.editProject(p => { p.events = p.events.filter(x => x.id !== this.eventId); }); this.eventId = '';
+@@ -454 +464 @@
+-      else if (action === 'analysis-run') { try { const draft = await e.analyze(v.analysis_text, v.analysis_wish, v.analysis_mode); this.forms.analysis.analysis_draft = json(draft.project); } finally { if (e.rawAnalysis?.error && e.rawAnalysis.replies.length) this.loadRaw(); } }
++      else if (action === 'analysis-run') { try { const draft = await e.analyze(v.analysis_text, v.analysis_wish, v.analysis_mode); this.forms.analysis.analysis_draft = json(draft.project); this.showConversion(); return; } finally { if (e.rawAnalysis?.error && e.rawAnalysis.replies.length) this.loadRaw(); } }
+@@ -457 +467 @@
+-      else if (action === 'analysis-restore') { const draft = e.restoreAnalysis(v.analysis_text, v.analysis_response, v.analysis_mode, v.analysis_saved_id); this.forms.analysis.analysis_draft = json(draft.project); this.toast('后台结果已校验并保存为分析草稿'); }
++      else if (action === 'analysis-restore') { const draft = e.restoreAnalysis(v.analysis_text, v.analysis_response, v.analysis_mode, v.analysis_saved_id); this.forms.analysis.analysis_draft = json(draft.project); this.showConversion(); return; }
+@@ -460 +470,5 @@
+-      else if (action === 'analysis-apply') { if (!this.win.confirm((e.analysisDraft?.is_partial ? '这只是单个分块草稿，未完成全篇整合。' : '') + '把分析草稿作为新剧本打开？原剧本会保留在世界书或草稿中。')) return; await e.setProject(C.parseJSON(v.analysis_draft, '分析草稿')); delete e.settings.analysis_draft; e.saveSettings(); this.forms = {}; this.nodeId = ''; this.eventId = ''; }
++      else if (action === 'analysis-apply' || action === 'analysis-convert') {
++        C.assert(e.analysisDraft, '请先完成分析或恢复分析草稿'); const project = C.parseJSON(v.analysis_draft, '分析草稿');
++        if (!this.win.confirm((e.analysisDraft.is_partial ? '这只是单个分块草稿，未完成全篇整合。\n' : '') + '转化为剧本、事件和分支并打开？当前剧本和进度保留；新剧本关闭注入，核对后启用。')) return;
++        await e.applyAnalysis(project); this.forms = {}; this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.nodeTab = 'nodes'; this.tab = 'nodes'; this.spoilerPrompt = false; this.render(false); this.shadow.querySelector('main').scrollTop = 0; this.toast('转化完成；剧情与分支在剧本页，完成规则在事件页'); return;
++      }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
+index 8bbd739..5a0c4e0 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
+@@ -267 +267,2 @@ async function run() {
+-    await phone.locator('[data-action="analysis-apply"]').tap(); await wait(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title === '多走向分析剧本'); await unlock(phone);
++    assert.equal(await phone.locator('[data-action="analysis-convert"]').isVisible(), true); await layout(phone, '320px 分析转化入口');
++    await phone.locator('[data-action="analysis-convert"]').tap(); await wait(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title === '多走向分析剧本');
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/conversion.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/conversion.test.js"
+new file mode 100644
+index 0000000..2262618
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/conversion.test.js"
+@@ -0,0 +1,99 @@
++'use strict';
++const test = require('node:test'), assert = require('node:assert/strict');
++const C = require('../src/core'), F = require('../src/flow'), G = require('../src/graph'), API = require('../src/api'), {Engine} = require('../src/engine');
++const {fixture, mockClient} = require('./helpers');
++function project() {
++  return C.normalizeProject({id: 'conversion', title: '转化测试', original_text: '到前厅后可以拿房卡，实际收好才取得a。', start_node_id: 'hall',
++    variables: [{id: 'trust', title: '信任', type: 'number', default: 0}], collections: [{id: 'a', title: '房卡'}],
++    nodes: [{id: 'hall', title: '前厅', routes: [{target: 'card', label: '拿房卡', action_text: '我去拿房卡', condition: true}]},
++      {id: 'card', title: '房卡', completion_criteria: '实际收好房卡', completion_exclusions: ['只是看见'], completion_evidence: '实际收好才取得a', effects: [{collect: 'a'}, {add: {variable: 'trust', value: 3}}], routes: [{target: 'hall', label: '返回前厅', condition: {collected: 'a'}}]},
++      {id: 'idea', title: '建议结局', suggested: true, completion_criteria: '找到宝藏'}],
++    events: [{id: 'manual', title: '手动规则', description: '玩家打招呼', detection: 'manual', effects: []}]});
++}
++const linked = (p, nodeId) => p.events.find(e => e.completion_node_id === nodeId);
++function state(p) { const s = C.createProgress(p); F.initialize(p, s); F.sync(p, s); return s; }
++test('转化保留原文、分支、条件、证据及旧事件，仅为明确阶段登记完成事件，可重复转化且不改原草稿', () => {
++  const input = project(), before = C.clone(input), p = C.convertAnalysisProject(input);
++  for (const field of ['id', 'original_text', 'nodes', 'collections', 'variables', 'packages']) assert.deepEqual(p[field], before[field]);
++  assert.deepEqual(input, before); assert.deepEqual(p.events[0], input.events[0]); assert.equal(p.events.length, 2);
++  const event = linked(p, 'card'); assert(event); assert.deepEqual(event.scope, {kind: 'nodes', node_ids: ['card']}); assert.deepEqual(event.effects, []);
++  assert.equal(event.completion_criteria, '实际收好房卡'); assert.deepEqual(event.exclusions, ['只是看见']); assert(!linked(p, 'hall')); assert(!linked(p, 'idea'));
++  assert.deepEqual(C.convertAnalysisProject(p), p);
++});
++test('阶段事件随节点标准同步；拒绝多次结算、额外奖励、错误引用和重复绑定', () => {
++  const p = C.convertAnalysisProject(project()); p.nodes[1].completion_criteria = '已拿到且刷卡成功'; p.nodes[1].completion_exclusions = ['仅拿到'];
++  const edited = C.normalizeProject(p); assert.equal(linked(edited, 'card').completion_criteria, '已拿到且刷卡成功'); assert.deepEqual(linked(edited, 'card').exclusions, ['仅拿到']);
++  for (const mutate of [e => { e.repeat_policy = 'once_per_accepted_turn'; }, e => { e.effects = [{collect: 'a'}]; }, e => { e.scope = {kind: 'project'}; }, e => { e.completion_node_id = 'missing'; }, e => { e.completion_node_id = 'idea'; }]) {
++    const bad = C.clone(edited); mutate(linked(bad, 'card')); assert.throws(() => C.normalizeProject(bad), /阶段事件/);
++  }
++  const duplicate = C.clone(edited); duplicate.events.push({...linked(duplicate, 'card'), id: 'duplicate'}); assert.throws(() => C.normalizeProject(duplicate), /重复登记/);
++  const manual = C.clone(edited); manual.nodes[1].completion_criteria = ''; const onlyManual = C.normalizeProject(manual), progress = state(onlyManual);
++  C.enterNode(progress, onlyManual, 'card'); assert.deepEqual(C.eligibleEvents(onlyManual, progress), []); assert.equal(C.settleEvent(progress, onlyManual, linked(onlyManual, 'card').id, 'manual'), true);
++});
++test('节点与完成事件共用一笔结算，重复确认不加奖励；普通撤销同时恢复两边', () => {
++  for (const eventFirst of [false, true]) {
++    const p = C.convertAnalysisProject(project()), s = state(p), event = linked(p, 'card'); C.enterNode(s, p, 'card');
++    const source = {assistant_id: 3, messages: [2, 3]};
++    assert.equal(eventFirst ? C.settleEvent(s, p, event.id, 'turn', source) : C.completeNode(s, p, source), true);
++    assert.deepEqual(s.collected_ids, ['a']); assert.equal(s.variables.trust, 3); assert.equal(s.event_counts[event.id], 1); assert(s.completed_node_ids.includes('card'));
++    assert.equal(C.completeNode(s, p), false); assert.equal(C.settleEvent(s, p, event.id, 'again'), false); assert.equal(s.settlements.order.length, 1);
++    assert.deepEqual(s.settlements.entries['node:card'].source, source); assert.equal(s.settlements.entries['node:card'].event_id, event.id); assert(!s.receipts['event:' + event.id + ':once']);
++    C.undo(s); assert.deepEqual(s.collected_ids, []); assert.equal(s.variables.trust, 0); assert.equal(s.event_counts[event.id], 0); assert(!s.completed_node_ids.includes('card')); assert(!s.receipts['node:card']);
++  }
++});
++test('未进入、前提未满足和事件包锁定时不能核验或结算；结果满足后才开放完成规则', () => {
++  const p = C.convertAnalysisProject(project()), s = state(p), event = linked(p, 'card');
++  assert.deepEqual(C.eligibleEvents(p, s, 'card'), []); assert.throws(() => C.settleEvent(s, p, event.id, 'x', null, 'card'), /请先进入/);
++  C.enterNode(s, p, 'card'); event.condition = {variable: {id: 'trust', op: 'gte', value: 2}};
++  assert.deepEqual(C.eligibleEvents(p, s), []); assert.throws(() => C.completeNode(s, p), /前置条件/); assert.deepEqual(s.collected_ids, []);
++  s.variables.trust = 2; assert.equal(C.eligibleEvents(p, s)[0].id, event.id);
++  const packages = C.convertAnalysisProject(F.demoProject()), progress = state(packages), locked = linked(packages, 'A_1');
++  assert.deepEqual(C.eligibleEvents(packages, progress, 'A_1'), []); assert.throws(() => C.settleEvent(progress, packages, locked.id, 'x', null, 'A_1'), /不能完成|前置/);
++});
++test('依赖回退同时撤销节点和完成事件，保留独立包；关系图保留包内阶段完成箭头', () => {
++  const p = C.convertAnalysisProject(F.demoProject()), s = state(p);
++  for (const id of ['B_1', 'B_2', 'C_1', 'A_1', 'D_1']) { if (id === 'B_2') C.enterNode(s, p, id); C.completeNode(s, p, null, id); F.sync(p, s); }
++  const event = linked(p, 'A_1'), graph = G.build(p, s, 'A'); assert(graph.edges.some(e => e.from === 'node:A_1' && e.to === 'event:' + event.id && e.satisfied));
++  F.rollback(p, s, 'b2'); assert.deepEqual(s.collected_ids, ['c1']);
++  for (const id of ['B_2', 'A_1', 'D_1']) { assert(!s.completed_node_ids.includes(id)); assert.equal(s.event_counts[linked(p, id).id] || 0, 0); }
++  assert.equal(s.event_counts[linked(p, 'C_1').id], 1); assert.equal(G.build(p, s).nodes.find(e => e.id === 'event:' + event.id).status, 'locked');
++});
++const original = '雨夜前厅可以拿房卡。实际收好房卡记为a；只是看见不算。取得a后可以返回前厅。';
++const raw = {title: '分析转化测试', collections: [{id: 'a', title: '房卡', evidence: '实际收好房卡记为a'}], nodes: [
++  {id: 'hall', title: '前厅', guidance: '可以前往抽屉拿房卡', detail: original, routes: [{target: 'card', label: '拿房卡', action_text: '我去拿房卡'}]},
++  {id: 'card', title: '房卡', guidance: '尝试拿起并收好房卡', detail: original, completion_criteria: '实际收好房卡', completion_exclusions: ['只是看见'], completion_evidence: '实际收好房卡记为a；只是看见不算。', result_ids: ['a'], routes: [{target: 'hall', label: '返回前厅', condition: {collected: 'a'}, condition_evidence: '取得a后可以返回前厅。'}]}
++]};
++test('分析后刷新仍可转化编辑草稿，无额外API；旧进度保留，新剧本关闭注入，完成规则持久化', async () => {
++  const f = fixture(); let requests = 0;
++  const client = new API.Client(async () => { requests++; return {ok: true, json: async () => ({choices: [{message: {content: JSON.stringify(raw)}}]})}; });
++  const e = new Engine(f.host, client); await e.init(); await e.updateSettings({enabled: true, profile: {base_url: 'https://mock.test/v1', model: 'mock'}});
++  C.completeNode(e.state, e.project); e.save(); const oldProject = C.clone(e.project), oldProgress = C.clone(e.state); await e.analyze(original);
++  assert.equal(e.project.id, oldProject.id); assert.equal(e.settings.enabled, true);
++  const fresh = new Engine(f.host, client); await fresh.init(); const edited = C.clone(fresh.analysisDraft.project); edited.title = '用户编辑的标题';
++  const p = await fresh.applyAnalysis(edited); assert.equal(requests, 1); assert.equal(p.title, edited.title); assert.equal(p.events.length, 1); assert.equal(p.nodes.length, 2);
++  assert.equal(fresh.settings.enabled, false); assert.deepEqual(f.root.injection, []); assert.deepEqual(fresh.state.collected_ids, []); assert.deepEqual(f.host.progress(oldProject), oldProgress);
++  assert.deepEqual(fresh.settings.drafts[oldProject.id], oldProject); assert.equal(fresh.analysisDraft, null); assert.equal(f.storage.script.branch_story_settings.analysis_draft, undefined);
++  const restored = new Engine(f.host, client); await restored.init(); assert.deepEqual(restored.project, p); assert.equal(restored.settings.enabled, false);
++});
++test('恢复已有分析结果也可本地转化，坏草稿和忙碌状态保持当前剧本、进度与分析草稿', async () => {
++  const f = fixture(), client = new API.Client(async () => { throw Error('不应调用API'); }), e = new Engine(f.host, client); await e.init(); await e.updateSettings({enabled: true});
++  e.restoreAnalysis(original, JSON.stringify(raw)); const before = {project: C.clone(e.project), state: C.clone(e.state), draft: C.clone(e.analysisDraft)};
++  const bad = C.clone(e.analysisDraft.project); bad.nodes[0].routes[0].target = 'missing'; await assert.rejects(e.applyAnalysis(bad), /不存在/);
++  assert.deepEqual(e.project, before.project); assert.deepEqual(e.state, before.state); assert.deepEqual(e.analysisDraft, before.draft); assert.equal(e.settings.enabled, true);
++  e.busy = 1; await assert.rejects(e.applyAnalysis(), /等待/); e.busy = 0; await e.applyAnalysis(); assert.equal(e.project.events.length, 1); assert.equal(e.settings.enabled, false);
++});
++test('辅助API阶段完成与事件人工确认使用同一回执，重复核验不会再次结算', async () => {
++  const f = fixture(), client = mockClient(); let calls = 0;
++  client.evaluateStage = async () => { calls++; return {status: 'completed', summary: '已取得房卡', facts: [], missing: [], evidence: []}; };
++  const e = new Engine(f.host, client); await e.init(); e.analysisDraft = {project: project()}; await e.applyAnalysis(); await e.updateSettings({enabled: true, profile: {base_url: 'https://mock.test/v1', model: 'mock'}});
++  e.enter('card'); e.state.turn_context = {user_id: 0, node_id: 'card', injection_nodes: [{node_id: 'card', package_id: ''}]};
++  const event = linked(e.project, 'card'); await e.checkStage(); await e.checkStage(); await e.manualEvent(event.id);
++  assert.equal(calls, 1); assert.equal(e.state.variables.trust, 3); assert.equal(e.state.event_counts[event.id], 1); assert.equal(e.state.settlements.order.length, 1); assert.deepEqual(e.state.collected_ids, ['a']);
++});
++test('人工确认支线阶段事件按绑定包结算，主包游标和奖励不受影响', async () => {
++  const f = fixture(), e = new Engine(f.host, mockClient()), input = F.demoProject();
++  input.nodes.push({id: 'S1', title: '记录门牌', completion_criteria: '实际记下门牌', effects: [{collect: 's1'}], routes: []}); input.collections.push({id: 's1', title: '门牌记录'});
++  input.packages.push({id: 'S', title: '门牌旁支', node_ids: ['S1'], role: 'side', priority: 1});
++  await e.init(); e.analysisDraft = {project: input}; await e.applyAnalysis(); await e.updateSettings({enabled: true}); const main = e.state.current_node_id;
++  const event = linked(e.project, 'S1'); await e.manualEvent(event.id); assert.equal(e.state.current_node_id, main); assert.deepEqual(e.state.collected_ids, ['s1']); assert.equal(e.state.event_counts[event.id], 1); assert.equal(e.state.package_progress.S.status, 'done');
++});
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
+index b19dcfd..cc48427 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
+@@ -41 +41 @@ const server = http.createServer(async (req, res) => {
+-const get = page => page.evaluate(() => { const e = document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine; return {project: e.project, state: e.state, error: e.error}; });
++const get = page => page.evaluate(() => { const e = document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine; return {project: e.project, state: e.state, error: e.error, enabled: e.settings.enabled, hasDraft: Boolean(e.analysisDraft)}; });
+@@ -50 +50,2 @@ async function run() {
+-      page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => d.accept()); await page.goto(base);
++      let cancelConversion = false;
++      page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => cancelConversion && d.message().includes('转化为剧本') ? d.dismiss() : d.accept()); await page.goto(base);
+@@ -66,0 +68,4 @@ async function run() {
++      await page.locator('[data-action="analysis-convert"]:enabled').waitFor();
++      const conversion = page.locator('.analysis-conversion'); assert((await conversion.innerText()).includes('6 个剧情阶段 · 5 条事件规则 · 9 个分支出口'));
++      const box = await page.locator('[data-action="analysis-convert"]').boundingBox(); assert(box.y >= 0 && box.y + box.height <= page.viewportSize().height, '分析完成后转化按钮应在可见区域');
++      fs.mkdirSync(path.join(root, 'artifacts'), {recursive: true}); await page.screenshot({path: path.join(root, 'artifacts', mobile ? 'conversion-mobile.png' : 'conversion-desktop.png')});
+@@ -67,0 +73,6 @@ async function run() {
++      const unchanged = await get(page); cancelConversion = true; await page.locator('[data-action="analysis-convert"]').click(); cancelConversion = false;
++      assert.deepEqual(await get(page), unchanged); assert.equal(calls.length, count);
++      await page.evaluate(() => { document.querySelector('iframe').remove(); const frame = document.createElement('iframe'); frame.src = '/frame'; document.body.appendChild(frame); });
++      await page.waitForFunction(() => document.querySelector('iframe')?.contentWindow.__branch_story_startup__?.status === 'ready');
++      await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="analysis"]').click();
++      assert.equal(await page.locator('[data-action="analysis-convert"]').isVisible(), true); assert.equal(calls.length, count); assert.equal((await get(page)).hasDraft, true);
+@@ -73 +84,10 @@ async function run() {
+-      await page.locator('[data-action="analysis-apply"]').click(); await page.locator('[data-tab="run"]').click(); await page.locator('[data-action="toggle-enabled"]').click(); await page.locator('[data-action="close"]').click();
++      const editedDraft = JSON.parse(await page.locator('[name="analysis_draft"]').inputValue()); editedDraft.title += ' · 编辑后'; await page.locator('[name="analysis_draft"]').fill(JSON.stringify(editedDraft));
++      await page.locator('[data-action="analysis-convert"]').click();
++      assert.equal((await get(page)).project.title, editedDraft.title);
++      assert.equal((await get(page)).enabled, false); assert.equal((await get(page)).hasDraft, false); assert.equal(calls.length, count); assert.equal((await get(page)).project.events.length, 5);
++      assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), ''); assert.equal(await page.locator('[data-action="node-tab"][data-tab="nodes"]').getAttribute('class'), 'active');
++      const firstEvent = (await get(page)).project.events[0]; await page.locator('[data-tab="events"]').click();
++      assert((await page.locator(`form[data-form="event:${firstEvent.id}"]`).innerText()).includes('共用完成标准和奖励'));
++      await page.locator('[data-action="event-node-edit"]').click(); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), '');
++      assert.equal(await page.locator('[name="completion_criteria"]').inputValue(), '实际取得并收好房卡');
++      await page.locator('[data-tab="run"]').click(); await page.locator('[data-action="toggle-enabled"]').click(); await page.locator('[data-action="close"]').click();
+@@ -81,0 +102,2 @@ async function run() {
++      assert.equal((await get(page)).state.event_counts[firstEvent.id], 1);
++      await page.getByRole('button', {name: '打开剧情面板'}).click(); await page.locator('[data-tab="events"]').click(); assert.equal(await page.locator('[data-action="event-manual"]').isDisabled(), true); await page.locator('[data-action="close"]').click();
+@@ -96 +118,2 @@ async function run() {
+-      console.log('✓ ' + (mobile ? '手机' : '桌面') + '：分析超过45秒仍接收，后台JSON恢复不重复请求；原文分析→快捷填入/撤销→自由输入→同轮注入→跨轮摘要→a/b/a1/ab条件→失败重试→终点完成'); await context.close();
++      const finished = await get(page); assert(finished.project.events.every(e => finished.state.event_counts[e.id] === 1));
++      console.log('✓ ' + (mobile ? '手机' : '桌面') + '：分析超45秒→顶部转化按钮→取消与刷新保留草稿→后台JSON恢复→零额外请求转化剧本/5事件/分支→快捷或自由输入→同轮注入→短摘要→a/b/a1/ab→失败重试→节点与事件共用一次结算'); await context.close();

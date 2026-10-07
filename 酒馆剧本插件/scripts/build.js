@@ -8,7 +8,7 @@ const names = ['core', 'flow', 'api', 'host', 'engine', 'graph', 'ui', 'bootstra
 const content = '/* Branch Story Engine v' + version + ' — 自定义剧本与事件；源文件见 src/。 */\n' + names.map(name => fs.readFileSync(path.join(root, 'src', name + '.js'), 'utf8')).join('\n;\n');
 new vm.Script(content);
 const exported = {type: 'script', enabled: true, name: '分支剧本与事件引擎', id: 'branch-story-engine-v1', content,
-  info: 'v' + version + '：条件事件包独立进度与短摘要，数值/结果触发，按优先级交叉推进；b2+c1→a4→d1只解锁不自动领奖，实际依赖结算支持连带回退。记录子栏提供可缩放箭头关系图，独立🔒+模糊+确认。分析原始回复校验前保留，可修改并恢复草稿，字段报错标明节点，截断拒绝完整应用。快捷按钮填入草稿，发送后记录，自由输入也可识别；600秒长文本等待与45秒快速请求保留。拖动铅笔、Alt+B或/bse打开；旧剧本需自行补齐完成标准与事件包。',
+  info: 'v' + version + '：分析完成后顶部可直接转化为剧本、事件与分支；有明确标准的阶段登记完成事件，节点与事件共用一次奖励、记录及回退。保存/恢复的草稿无需再次请求API，转化后打开剧本页并先关闭注入。保留条件事件包、交叉依赖与箭头关系图、独立🔒+模糊+确认、原始分析回复修复恢复、快捷填入与自由输入识别。600秒长文本等待、45秒快速识别；拖动铅笔、Alt+B或/bse打开。原文没有完成标准的阶段需手动编辑。',
   button: {enabled: false, buttons: []}, data: {}, export_with: {data: false, button: true}};
 fs.writeFileSync(path.join(root, 'branch_story_tavern_helper_import.json'), JSON.stringify(exported, null, 2) + '\n');
 console.log('导入包已生成：branch_story_tavern_helper_import.json (' + Buffer.byteLength(content) + ' bytes)');

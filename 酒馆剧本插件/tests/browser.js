@@ -264,7 +264,8 @@ async function run() {
     await phone.locator('[data-action="analysis-run"]').tap(); await phone.locator('[name="analysis_draft"]').waitFor();
     const analysis = JSON.parse(await phone.locator('[name="analysis_draft"]').inputValue()); assert.equal(analysis.analysis.endings.length, 2); assert.equal(analysis.analysis.foreshadowing.length, 1);
     assert.equal(await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title), '模型整理草稿');
-    await phone.locator('[data-action="analysis-apply"]').tap(); await wait(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title === '多走向分析剧本'); await unlock(phone);
+    assert.equal(await phone.locator('[data-action="analysis-convert"]').isVisible(), true); await layout(phone, '320px 分析转化入口');
+    await phone.locator('[data-action="analysis-convert"]').tap(); await wait(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title === '多走向分析剧本');
     await tab(phone, 'nodes'); assert.equal(await phone.locator('.node-spoiler-content').getAttribute('inert'), ''); assert.equal(await phone.locator('[data-action="import"]').count(), 1);
     const exportPromise = phone.waitForEvent('download'); await phone.locator('[data-action="export-project"]').tap(); const saved = await exportPromise;
     const shared = JSON.parse(fs.readFileSync(await saved.path(), 'utf8')); assert.equal(shared.project.analysis.endings.length, 2);

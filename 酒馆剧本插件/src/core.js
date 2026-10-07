@@ -129,6 +129,13 @@
       assert(Array.isArray(e.exclusions) && e.exclusions.every(v => typeof v === 'string'), '排除情况必须是文本数组');
       assert(object(e.scope) && ['project', 'nodes'].includes(e.scope.kind), '事件作用范围无效');
       if (e.scope.kind === 'nodes') assert(Array.isArray(e.scope.node_ids) && e.scope.node_ids.every(v => refs.nodes.has(v)), '事件适用节点不存在');
+      if (e.completion_node_id != null) {
+        safeId(e.completion_node_id); const node = refs.nodes.get(e.completion_node_id);
+        assert(node && !node.suggested, '阶段事件引用的节点不存在或属于补充构想：' + e.title);
+        assert(e.repeat_policy === 'once' && e.scope.kind === 'nodes' && e.scope.node_ids.length === 1 && e.scope.node_ids[0] === node.id && !e.effects.length && !e.actor_id && !e.recipient_id, '阶段事件必须绑定单一节点，共用节点奖励和完成标准：' + e.title);
+        assert(p.events.filter(x => x.completion_node_id === node.id).length === 1, '同一阶段不能重复登记完成事件：' + node.id);
+        e.completion_criteria = node.completion_criteria || '手动确认本阶段完成'; e.exclusions = clone(node.completion_exclusions);
+      }
       validateCondition(e.condition, refs); validateEffects(e.effects, refs);
     });
     p.collections.forEach(c => {
@@ -203,11 +210,13 @@
     if (!receipt || !/^(node:|event:|variable:)/.test(receipt)) return;
     initLedger(next);
     if (!next.settlements.order.length) next.settlements.baseline = {variables: clone(before.variables), collected_ids: [...before.collected_ids], completed_node_ids: [...before.completed_node_ids], event_counts: clone(before.event_counts)};
-    const nodeId = receipt.startsWith('node:') ? receipt.slice(5) : null, eventId = receipt.startsWith('event:') ? receipt.split(':')[1] : null;
+    const nodeId = receipt.startsWith('node:') ? receipt.slice(5) : null;
+    const linked = nodeId ? p.events.find(e => e.enabled && e.completion_node_id === nodeId) : null;
+    const eventId = receipt.startsWith('event:') ? receipt.split(':')[1] : linked?.id || null;
     const def = nodeId ? indexProject(p).nodes.get(nodeId) : eventId ? indexProject(p).events.get(eventId) : null;
     const pack = nodeId ? p.packages?.find(b => b.node_ids.includes(nodeId)) : null;
     const ctx = pack ? before.package_progress?.[pack.id] : before;
-    const conditions = nodeId ? [def.entry_condition, pack?.continue_condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : eventId ? [def.condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : [];
+    const conditions = nodeId ? [def.entry_condition, linked?.condition, pack?.continue_condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : eventId ? [def.condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : [];
     const effects = def ? clone(def.effects) : Object.keys(next.variables).filter(k => next.variables[k] !== before.variables[k]).map(variable => ({set: {variable, value: next.variables[variable]}}));
     const deps = [...new Set([...conditions.flatMap(c => dependencies(c, before)), ...(nodeId ? ctx?.entry_dependencies || [] : []), ...(nodeId ? ctx?.activation_dependencies || [] : [])])];
     next.settlements.entries[receipt] = {node_id: nodeId, event_id: eventId, package_id: pack?.id || '', effects, dependencies: deps, source: source || null, at: Date.now()};
@@ -289,9 +298,12 @@
     const node = indexProject(p).nodes.get(nodeId); assert(node && nodeReady(node, p, s), '节点前置条件或结果前提未满足：' + nodeId);
     const pack = p.packages?.find(b => b.node_ids.includes(nodeId));
     if (pack) assert(pack.enabled && s.package_progress?.[pack.id]?.current_node_id === nodeId && ['running', 'ready'].includes(s.package_progress?.[pack.id]?.status) && condition(pack.continue_condition, s), '事件包当前不能完成：' + pack.title);
+    const linked = p.events.find(e => e.enabled && e.completion_node_id === nodeId);
+    assert(!linked || condition(linked.condition, s), '阶段完成事件的前置条件未满足：' + linked?.title);
     return transact(s, p, '完成：' + node.title, next => {
       if (!next.completed_node_ids.includes(node.id)) next.completed_node_ids.push(node.id);
       applyEffects(next, p, node.effects);
+      if (linked) next.event_counts[linked.id] = 1;
       if (nodeId === next.current_node_id) next.stage_progress = null;
       if (pack && next.package_progress?.[pack.id]) next.package_progress[pack.id].stage_progress = null;
     }, 'node:' + node.id, source);
@@ -314,6 +326,12 @@
     const event = indexProject(p).events.get(eventId);
     assert(event && event.enabled && condition(event.condition, s), '事件不存在、未启用或前置条件未满足');
     assert(event.scope.kind !== 'nodes' || event.scope.node_ids.includes(scopeNode), '事件不适用于该节点');
+    if (event.completion_node_id) {
+      if (s.receipts['node:' + event.completion_node_id]) return false;
+      const pack = p.packages?.find(b => b.node_ids.includes(event.completion_node_id));
+      assert(pack ? s.package_progress?.[pack.id]?.current_node_id === event.completion_node_id : s.current_node_id === event.completion_node_id, '请先进入此事件对应的剧情阶段');
+      return completeNode(s, p, source, event.completion_node_id);
+    }
     assert(event.effects.every(e => !e.collect || resultReady(e.collect, p, s)), '事件的结果前提未满足或与已取得结果互斥');
     const key = 'event:' + eventId + ':' + (event.repeat_policy === 'once' ? 'once' : sourceKey);
     assert(typeof sourceKey === 'string' && sourceKey, '缺少事件来源标识');
@@ -334,8 +352,13 @@
     s.revision++; return tx;
   }
   function eligibleEvents(p, s, scopeNode = s.current_node_id) {
-    return p.events.filter(e => e.enabled && e.detection === 'api' && condition(e.condition, s) &&
-      (e.scope.kind !== 'nodes' || e.scope.node_ids.includes(scopeNode)) && !(e.repeat_policy === 'once' && s.event_counts[e.id]));
+    return p.events.filter(e => {
+      if (!e.enabled || e.detection !== 'api' || !condition(e.condition, s) ||
+        e.scope.kind === 'nodes' && !e.scope.node_ids.includes(scopeNode) || e.repeat_policy === 'once' && s.event_counts[e.id]) return false;
+      if (!e.completion_node_id) return true;
+      const node = indexProject(p).nodes.get(e.completion_node_id), pack = p.packages?.find(b => b.node_ids.includes(node.id));
+      return !!node.completion_criteria.trim() && !s.receipts['node:' + node.id] && nodeReady(node, p, s) && (pack ? pack.enabled && s.package_progress?.[pack.id]?.current_node_id === node.id && ['ready', 'running'].includes(s.package_progress?.[pack.id]?.status) && condition(pack.continue_condition, s) : s.current_node_id === node.id);
+    });
   }
   function prompt(p, s, options = {}) {
     if (s.paused) return '';
@@ -393,5 +416,13 @@
       events: [{id: 'E_TRUST', title: '共同承担风险', description: '玩家与同行角色实际协作承担调查风险。', completion_criteria: '双方已进行具体协作，不只是提出邀请或讨论计划。', exclusions: ['提出计划', '对方拒绝', '引用旧事'], effects: [{add: {variable: 'trust', value: 5}}], repeat_policy: 'once_per_accepted_turn', detection: 'api', auto_settle: false}],
     });
   }
-  return {VERSION, clone, object, own, id, assert, safeId, parseJSON, normalizeProject, normalizeCompletion, indexProject, createProgress, condition, conditionText, validateCondition, nodeReady, resultReady, dependencies, initLedger, applyEffects, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject};
+  function convertAnalysisProject(input) {
+    const p = normalizeProject(input);
+    for (const node of p.nodes) if (!node.suggested && node.completion_criteria.trim() && !p.events.some(e => e.completion_node_id === node.id)) {
+      let eventId; do { eventId = id('E'); } while (p.events.some(e => e.id === eventId));
+      p.events.push({id: eventId, title: node.title + ' · 完成', description: node.completion_criteria, completion_node_id: node.id, scope: {kind: 'nodes', node_ids: [node.id]}, repeat_policy: 'once', effects: [], condition: true, detection: 'api', auto_settle: false});
+    }
+    return normalizeProject(p);
+  }
+  return {VERSION, clone, object, own, id, assert, safeId, parseJSON, normalizeProject, normalizeCompletion, convertAnalysisProject, indexProject, createProgress, condition, conditionText, validateCondition, nodeReady, resultReady, dependencies, initLedger, applyEffects, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject};
 });

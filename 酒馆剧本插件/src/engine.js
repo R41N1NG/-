@@ -300,7 +300,7 @@
         C.assert(epoch === this.epoch, '聊天或配置已变化');
         source ||= {assistant_id: m.message_id, messages: pair.messages.map(m => m.message_id)};
       }
-      return this.mutate(() => C.settleEvent(this.state, this.project, eventId, key, source));
+      return this.mutate(() => C.settleEvent(this.state, this.project, eventId, key, source, event.completion_node_id || this.state.current_node_id));
     }
     async captureDraft(messageId) {
       const latest = this.host.latest(); const msg = messageId == null ? latest : this.host.message(messageId);
@@ -426,6 +426,14 @@
       finally { this.busy--; this.notify(); }
     }
     async applySegment() { C.assert(this.segmentDraft, '没有可应用的拆分草稿'); const p = this.segmentDraft.project; await this.setProject(p); delete this.settings.segment_draft; this.saveSettings(); }
+    async applyAnalysis(input = this.analysisDraft?.project) {
+      C.assert(!this.busy, '请等待当前辅助任务完成'); C.assert(this.analysisDraft && input, '请先完成分析或恢复分析草稿');
+      const project = C.convertAnalysisProject(input), before = {project: this.project, state: C.clone(this.state), settings: C.clone(this.settings), analysisDraft: this.analysisDraft};
+      this.host.saveProgress(this.project, this.state);
+      try {
+        this.settings.enabled = false; await this.setProject(project); delete this.settings.analysis_draft; this.saveSettings(); this.notify(); return this.project;
+      } catch (error) { Object.assign(this, before); this.inject(); throw error; }
+    }
     async analyze(text, wish, mode = 'faithful') {
       C.assert(!this.busy, '请等待当前辅助任务完成');
       const epoch = this.epoch; this.busy++; this.error = ''; this.analysisProgress = {phase: '准备', done: 0, total: 0}; this.notify();

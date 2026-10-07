@@ -14,7 +14,7 @@
       return C.nodeReady(n, p, s) && (b ? ['ready', 'running'].includes(s.package_progress?.[b.id]?.status) && s.package_progress[b.id].current_node_id === n.id : n.id === s.current_node_id || F.availableRoutes(p, s, s.current_node_id).some(r => r.target === n.id));
     };
     for (const n of p.nodes) add('node:' + n.id, n.id, n.title, s.completed_node_ids.includes(n.id) ? 'done' : active.some(x => x.node_id === n.id) ? 'running' : nodeAvailable(n) ? 'available' : 'locked', 'node');
-    for (const e of p.events) add('event:' + e.id, e.id, e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) ? 'available' : 'locked', 'event');
+    for (const e of p.events) add('event:' + e.id, e.id, e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) && (!e.completion_node_id || nodeAvailable(refs.nodes.get(e.completion_node_id))) ? 'available' : 'locked', 'event');
     for (const c of p.collections) {
       const ready = p.nodes.some(n => n.effects.some(e => e.collect === c.id) && nodeAvailable(n)) || p.events.some(e => e.enabled && C.condition(e.condition, s) && e.effects.some(x => x.collect === c.id));
       add('result:' + c.id, c.id, c.title, s.collected_ids.includes(c.id) ? 'done' : ready && C.resultReady(c.id, p, s) ? 'available' : 'locked', 'result');
@@ -44,7 +44,7 @@
       for (const e of n.effects) if (e.collect) edge(id, add('result:' + e.collect, e.collect, refs.collections.get(e.collect) || '未定义结果', s.collected_ids.includes(e.collect) ? 'done' : 'locked', 'result'), s.completed_node_ids.includes(n.id), '完成后取得');
       for (const r of n.routes) { edge(id, 'node:' + r.target, s.current_node_id === n.id && C.condition(r.condition, s), '行动'); condition(r.condition, 'node:' + r.target); }
     }
-    for (const e of p.events) { condition(e.condition, 'event:' + e.id); for (const x of e.effects) if (x.collect) edge('event:' + e.id, 'result:' + x.collect, Boolean(s.event_counts[e.id]), '确认后取得'); }
+    for (const e of p.events) { condition(e.condition, 'event:' + e.id); if (e.completion_node_id) edge('node:' + e.completion_node_id, 'event:' + e.id, Boolean(s.event_counts[e.id]), '阶段完成'); for (const x of e.effects) if (x.collect) edge('event:' + e.id, 'result:' + x.collect, Boolean(s.event_counts[e.id]), '确认后取得'); }
     for (const n of p.nodes) nodes.get('node:' + n.id).detail = '进入条件：' + C.conditionText(n.entry_condition, p) + '；完成标准：' + (n.completion_criteria || '仅手动确认');
     for (const b of p.packages) nodes.get('package:' + b.id).detail = '触发：' + C.conditionText(b.condition, p) + '；持续：' + C.conditionText(b.continue_condition, p) + '；优先级：' + b.priority;
     for (const c of p.collections) {
@@ -54,6 +54,7 @@
     if (filter && refs.packages.has(filter)) {
       const b = refs.packages.get(filter), keep = new Set(['package:' + b.id, ...b.node_ids.map(k => 'node:' + k)]);
       b.node_ids.forEach(k => refs.nodes.get(k).effects.filter(e => e.collect).forEach(e => keep.add('result:' + e.collect)));
+      p.events.filter(e => b.node_ids.includes(e.completion_node_id)).forEach(e => keep.add('event:' + e.id));
       let changed = true; while (changed) { const count = keep.size; for (const e of edges) if (keep.has(e.to)) keep.add(e.from); changed = keep.size !== count; }
       for (const k of nodes.keys()) if (!keep.has(k)) nodes.delete(k);
     }
