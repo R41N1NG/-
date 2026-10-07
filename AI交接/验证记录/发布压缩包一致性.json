@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-10-07T05:12:36.348590+00:00",
+  "archive": "branch_story_plugin_v1.1.3.zip",
+  "crc_passed": true,
+  "all_members_match_worktree": true,
+  "member_count": 22,
+  "members": [
+    ".gitignore",
+    "README.md",
+    "package.json",
+    "package-lock.json",
+    "branch_story_tavern_helper_import.json",
+    "src/api.js",
+    "src/bootstrap.js",
+    "src/core.js",
+    "src/engine.js",
+    "src/host.js",
+    "src/loader.js",
+    "src/ui.js",
+    "scripts/build.js",
+    "tests/api.test.js",
+    "tests/browser.js",
+    "tests/core.test.js",
+    "tests/engine.test.js",
+    "tests/helpers.js",
+    "tests/host.test.js",
+    "tests/startup.browser.js",
+    "docs/branch_story_plugin_design.md",
+    "交接gpt.md"
+  ]
+}

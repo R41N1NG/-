@@ -1,0 +1,74 @@
+{
+  "browser": "151.0.7922.173",
+  "scope": "Chromium harness; roster/CSS/old fill handler are fixtures. No live SillyTavern, production submit or card build tested.",
+  "results": [
+    {
+      "name": "Eight exact preset dates and one March 3 default",
+      "passed": true
+    },
+    {
+      "name": "Opening restoration ignores earlier background dates and rejects ambiguous/missing fields",
+      "passed": true
+    },
+    {
+      "name": "Custom dates remain exact; invalid/multiple dates never silently default",
+      "passed": true
+    },
+    {
+      "name": "Generated HTML has no script/inline handlers; range has no submit name",
+      "passed": true
+    },
+    {
+      "name": "Before JS initialization: old chips visible, enhancer hidden",
+      "passed": true
+    },
+    {
+      "name": "Startup enhances before any HUD exists and never fills/commits an empty field",
+      "passed": true
+    },
+    {
+      "name": "Every preset writes its exact value once; input followed by change is deduplicated",
+      "passed": true
+    },
+    {
+      "name": "Manual June 7 remains June 7; a parked thumb has an explicit apply button",
+      "passed": true
+    },
+    {
+      "name": "Out-of-range/invalid custom text remains untouched and visibly marked",
+      "passed": true
+    },
+    {
+      "name": "Dynamically rendered second menu initializes and changes only its own field",
+      "passed": true
+    },
+    {
+      "name": "Reinstallation/re-rendering leaves one effective handler; existing custom text survives",
+      "passed": true
+    },
+    {
+      "name": "Replacing inner output controls reinitializes their bindings",
+      "passed": true
+    },
+    {
+      "name": "Native ArrowRight keyboard changes exactly one preset",
+      "passed": true
+    },
+    {
+      "name": "Iframe-owned listener uses the chat host document and cleans up on owner pagehide",
+      "passed": true
+    },
+    {
+      "name": "Old menus without enhancer remain unchanged",
+      "passed": true
+    },
+    {
+      "name": "Malformed enhancer retains the existing chips",
+      "passed": true
+    },
+    {
+      "name": "A setter failure degrades enhancement and preserves a working old entry",
+      "passed": true
+    }
+  ]
+}

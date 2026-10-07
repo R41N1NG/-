@@ -1,0 +1,21 @@
+--- a/src/first_floor_rebuild/menu-builder.cjs
++++ b/src/first_floor_rebuild/menu-builder.cjs
+@@ -2,7 +2,8 @@
+ const fs = require('node:fs');
+ const path = require('node:path');
+ const { FLOWER_ROSTER } = require('./flower-roster.cjs');
+-const MENU_CSS = fs.readFileSync(path.join(__dirname, 'menu.css'), 'utf8');
++const { TIMEPOINT_CSS, renderTimepoint } = require('./timepoint-slider.cjs');
++const MENU_CSS = fs.readFileSync(path.join(__dirname, 'menu.css'), 'utf8') + TIMEPOINT_CSS;
+ const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+ const isImage = value => typeof value === 'string' && (/^data:image\/(?:png|webp|jpeg|gif|avif);base64,/i.test(value) || /^https?:\/\//i.test(value));
+ 
+@@ -52,7 +53,7 @@
+         ${field('custom_age', '寿数年岁', '如：弱冠之年（20）', 32, 'autocomplete="off"')}
+         <div data-xds-field-box><label data-xds-field-label for="${instanceId}-custom_cultivation">境界修为</label><input type="text" class="xds-input" id="${instanceId}-custom_cultivation" name="custom_cultivation" data-xds-field="custom_cultivation" placeholder="如：练气圆满、筑基初期" maxlength="96">${chips('custom_cultivation', ['练气圆满', '筑基初期', '筑基大圆满', '金丹大修'])}</div>
+         <div data-xds-field-box="wide"><label data-xds-field-label for="${instanceId}-custom_sect">入世身份</label><input type="text" class="xds-input" id="${instanceId}-custom_sect" name="custom_sect" data-xds-field="custom_sect" placeholder="宗门、行当或来历，随心填写" maxlength="128">${chips('custom_sect', ['大荒散修', '天枢剑宗弃徒', '墨山道外门散人', '天音阁弄琴客', '欢喜魔门谍客'])}</div>
+-        <div data-xds-field-box="wide"><label data-xds-field-label for="${instanceId}-custom_timepoint">当前时点</label><input type="text" class="xds-input" id="${instanceId}-custom_timepoint" name="custom_timepoint" data-xds-field="custom_timepoint" placeholder="留空默认第一章（墨山探幽 · 仙盟历 1578 年 · 三月初三），可自定年月日，如「仙盟历 1579 年 · 六月初七」" maxlength="64">${chips('custom_timepoint', ['正章之前 · 仙盟历 1577 年 · 七月初一', '暗流微澜 · 仙盟历 1577 年 · 十二月初一', '第一章（墨山探幽）· 仙盟历 1578 年 · 三月初三', '南域大劫 · 仙盟历 1578 年 · 八月初一', '天溪兽潮 · 仙盟历 1579 年 · 一月初一', '天溪城破 · 仙盟历 1579 年 · 三月初一', '乱世割据 · 仙盟历 1579 年 · 六月初一', '极乐定局 · 仙盟历 1580 年 · 一月初一'])}</div>
++        ${renderTimepoint(instanceId)}
+         <div data-xds-field-box="wide"><label data-xds-field-label for="${instanceId}-custom_origin">获取《极乐引》的机缘方式</label><textarea class="xds-textarea" data-xds-field="custom_origin" id="${instanceId}-custom_origin" name="custom_origin" rows="4" maxlength="1800" placeholder="捡得、窃取、夺来、师门密传……写下独属于你的机缘。"></textarea><p data-xds-help>留空采用默认来历；提交会先切换为自设，再将设定发送至当前会话。</p></div>
+       </div><button type="button" class="xds-submit-seal" data-xds-action="submit-custom">提笔落款 · 启卷入世</button><p data-xds-status role="status" aria-live="polite"></p>
+     </div></div>
