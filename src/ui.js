@@ -38,7 +38,19 @@
       this.mountLauncher(); this.mountQuick();
       this.shadow.addEventListener('click', ev => { const b = ev.target.closest?.('[data-action]'); if (b && !b.disabled) this.run(() => this.action(b.dataset.action, b)); });
       this.shadow.addEventListener('submit', ev => ev.preventDefault());
-      this.shadow.addEventListener('change', ev => { if (ev.target.name === 'node_search' || ev.target.name === 'event_search') { this.capture(); this.search[ev.target.name] = ev.target.value; this.listPage = 0; this.render(); } });
+      this.shadow.addEventListener('change', ev => {
+        const name = ev.target.name;
+        if (name === 'node_search' || name === 'event_search') { this.capture(); this.search[name] = ev.target.value; this.listPage = 0; this.render(); }
+        else if (name === 'model_choice' || name === 'segment_model_choice') {
+          this.capture(); if (ev.target.value) this.forms.api[name === 'model_choice' ? 'model' : 'segment_model'] = ev.target.value;
+          this.render(false);
+        } else if (name === 'base_url' || name === 'key') {
+          this.capture(); const profile = this.forms.api;
+          this.shadow.querySelector('.api-endpoints').innerHTML = this.apiPreview(profile);
+          let source = ''; try { source = this.apiSource(profile); } catch {}
+          if (this.apiModels?.source !== source) for (const name of ['model_choice', 'segment_model_choice']) this.shadow.querySelector(`[name="${name}"]`)?.closest('label').remove();
+        }
+      });
       this.shadow.querySelector('.file').onchange = async ev => { const field = ev.target, file = field.files[0]; if (file) await this.run(async () => { const data = C.parseJSON(await file.text(), '导入文件'); C.assert(data.type !== 'script', '这是插件安装文件，请在酒馆助手脚本管理中导入；此处导入的是剧本内容'); if (data.type === 'bse_progress') this.e.importProgress(data); else await this.e.setProject(data.project || data); this.forms = {}; this.nodeId = ''; this.eventId = ''; this.render(false); this.toast('导入完成'); }); field.value = ''; };
       this.keyHandler = ev => { if (ev.altKey && ev.key.toLowerCase() === 'b') { ev.preventDefault(); this.toggle(); } else if (ev.key === 'Escape' && this.opened) { if (this.spoilerPrompt) this.cancelUnlock(); else this.close(); } };
       this.doc.addEventListener('keydown', this.keyHandler);
@@ -154,7 +166,7 @@
       const tabs = [['run', '运行'], ['nodes', '剧本'], ['events', '事件'], ['records', '记录'], ['api', 'API'], ['analysis', '分析'], ['data', '数据']];
       this.shadow.querySelector('nav').innerHTML = tabs.map(([key, title]) => button(title, 'tab', `data-tab="${key}" class="${this.tab === key ? 'active' : ''}" aria-current="${this.tab === key ? 'page' : 'false'}"`)).join('');
       const body = ({run: () => this.runPage(), nodes: () => this.nodesPage(), events: () => this.eventsPage(), records: () => this.recordsPage(), api: () => this.apiPage(), analysis: () => this.analysisPage(), data: () => this.dataPage()}[this.tab])();
-      this.shadow.querySelector('main').innerHTML = (this.e.error ? `<div class="warn error" role="alert">${escape(this.e.error)}</div>` : '') + body;
+      this.shadow.querySelector('main').innerHTML = (this.e.error ? `<div class="warn error" role="alert" style="white-space:pre-wrap">${escape(this.e.error)}</div>` : '') + body;
       const form = this.shadow.querySelector('form'); if (form) this.restore(form);
       if (form) for (const d of form.querySelectorAll('details')) d.open = (this.details[form.dataset.form] || []).includes(d.querySelector('summary')?.textContent);
       this.shadow.querySelector('main').scrollTop = scroll;
@@ -224,9 +236,19 @@
       <div class="card"><h2>待确认与失败检查</h2>${e.busy ? '<span class="badge">辅助任务运行中</span>' : ''}${s.pending_checks.map(check => `<div class="card"><h3>回复楼层 ${Number(check.assistant_id) + 1} · ${escape(check.status)}</h3>${check.error ? `<p class="warn">${escape(check.error)}</p>` : ''}${['error', 'stale', 'partial'].includes(check.status) ? button(check.status === 'partial' ? '继续检查未查候选' : '重新检查', 'retry', `data-key="${escape(check.key)}"`) : ''}${check.results.filter(r => !r.handled).map(r => `<div class="card"><strong>${escape(refs.events.get(r.event_id)?.title || r.event_id)}</strong> <span class="badge">${escape(statuses[r.status])}</span>${r.evidence.map(x => `<p class="muted">“${escape(x.quote)}”</p>`).join('')}${r.note ? `<p class="warn">${escape(r.note)}</p>` : ''}${['completed', 'uncertain'].includes(r.status) ? `<div class="row">${button('确认发生并结算', 'result-accept', `data-key="${escape(check.key)}" data-id="${escape(r.event_id)}"`)}${button('忽略', 'result-dismiss', `data-key="${escape(check.key)}" data-id="${escape(r.event_id)}"`)}</div>` : ''}</div>`).join('')}</div>`).join('') || '<p class="empty">没有待处理的检查</p>'}</div>
       <div class="card"><h2>近期操作（最多 25 条）</h2>${s.history.slice().reverse().map(tx => `<p>${escape(tx.label)} <span class="muted">${new Date(tx.at).toLocaleString()}</span></p>`).join('') || '<p class="empty">暂无操作</p>'}${button('回退最近一次', 'undo', s.history.length ? '' : 'disabled')}</div>`;
     }
+    apiSource(profile) { return this.e.apiEndpoints(profile.base_url).models + '\n' + (profile.key || '').trim(); }
+    apiPreview(profile) {
+      try {
+        const endpoints = this.e.apiEndpoints(profile.base_url); const visible = value => { const url = new URL(value); return url.origin + url.pathname; };
+        return `<p>模型列表：<code>${escape(visible(endpoints.models))}</code></p><p>聊天接口：<code>${escape(visible(endpoints.chat))}</code></p>`;
+      } catch { return ''; }
+    }
     apiPage() {
-      const s = this.e.settings; const a = s.profile; const u = this.e.client.usage; const prompts = this.e.defaultPrompts();
-      return `<form data-form="api"><div class="card"><h2>辅助 API</h2><p class="muted">独立于主聊天 API。支持可从浏览器调用的 OpenAI 兼容 Chat Completions 服务。</p>${input('API 基础地址（如 https://服务域名/v1）', 'base_url', a.base_url, 'url')}${input('事件识别模型', 'model', a.model)}${input('API 密钥', 'key', a.key, 'password', 'autocomplete="off"')}${checkbox('记住密钥（保存在酒馆脚本变量）', 'remember_key', s.remember_key)}${input('剧本整理模型（留空沿用事件模型）', 'segment_model', s.segment_model)}<div class="row">${button('保存 API 设置', 'api-save', 'class="primary"')}${button('测试连接', 'api-test', this.e.busy ? 'disabled' : '')}</div></div>
+      const s = this.e.settings; const a = {...s.profile, ...this.forms.api}; const u = this.e.client.usage; const prompts = this.e.defaultPrompts();
+      const urls = `<div class="api-endpoints muted">${this.apiPreview(a)}</div>`; let models = [];
+      try { if (this.apiModels?.source === this.apiSource(a)) models = this.apiModels.ids; } catch {}
+      const pick = (label, name, value) => models.length ? select(label, name, [['', '请选择（保留手动输入）'], ...models.map(id => [id, id])], models.includes(value) ? value : '') : '';
+      return `<form data-form="api"><div class="card"><h2>辅助 API</h2><p class="muted">独立于主聊天 API。支持可从浏览器调用的 OpenAI 兼容 Chat Completions 服务。</p>${input('API 基础地址（域名、带 /v1 的地址或完整聊天接口）', 'base_url', a.base_url, 'url')}<p class="muted">只填域名时自动使用 /v1；自定义路径按原样保留。请使用服务提供的 OpenAI 兼容地址。</p>${input('API 密钥', 'key', a.key, 'password', 'autocomplete="off"')}${checkbox('记住密钥（保存在酒馆脚本变量）', 'remember_key', s.remember_key)}<div class="row">${button(this.modelLoading ? '正在获取模型…' : '获取模型列表', 'api-models', this.modelLoading || this.e.busy ? 'disabled' : '')}</div><p class="muted">获取列表不生成回复。选择后填入完整模型 ID；也可手动输入。列表可用后，仍需测试聊天接口。</p>${urls}${input('事件识别模型（完整 ID）', 'model', a.model)}${pick('从模型列表选择事件识别模型', 'model_choice', a.model)}${input('剧本整理模型（留空沿用事件模型）', 'segment_model', this.forms.api?.segment_model ?? s.segment_model)}${pick('从模型列表选择剧本整理模型', 'segment_model_choice', this.forms.api?.segment_model ?? s.segment_model)}<div class="row">${button('保存 API 设置', 'api-save', 'class="primary"')}${button('测试连接', 'api-test', this.e.busy || this.modelLoading ? 'disabled' : '')}</div></div>
       <div class="card"><h2>判断与预算</h2>${checkbox('用户接话后自动检查上一条选中的回复', 'auto_detect', s.auto_detect)}${checkbox('请求 JSON 输出（服务不支持时可关闭）', 'json_mode', a.json_mode)}${checkbox('发送 enable_thinking=false（仅兼容服务开启）', 'no_thinking', a.no_thinking)}<div class="grid">${input('每批候选事件数', 'batch_size', s.batch_size, 'number', 'min="1" max="32"')}${input('每次最多请求批数', 'max_batches', s.max_batches, 'number', 'min="1" max="64"')}${input('请求超时（秒）', 'timeout_sec', a.timeout_sec, 'number', 'min="5" max="300"')}${input('最大输入字符数（不是 Token）', 'max_input_chars', a.max_input_chars, 'number', 'min="1000" max="200000"')}${input('识别最大输出 Token', 'max_output', a.max_output, 'number', 'min="128" max="16000"')}${input('整理最大输出 Token', 'segment_output', a.segment_output, 'number', 'min="512" max="32000"')}${input('生成前最多等待判断（毫秒，0 为异步）', 'wait_ms', s.wait_ms, 'number', 'min="0" max="15000"')}</div><p class="muted">候选过多按批检查，达到本轮批数上限后会显示未检查数量，由你决定继续。输入超限会明确报错，不把截断文本当作全面检查结果。自动检查需启用剧本。</p></div>
       <div class="card"><h2>实际发送给辅助 API 的系统提示词</h2><p class="muted">下面的文本作为对应请求的 system 消息发送，可直接编辑，点击“保存 API 设置”生效。留空使用默认值。JSON 字段和证据格式仍需保持兼容。</p>${area('事件核验系统提示词', 'detect_prompt', a.detect_prompt || prompts.detect, 8)}${area('基础文本拆分系统提示词', 'segment_prompt', a.segment_prompt || prompts.segment, 8)}${area('剧本分析系统提示词', 'analysis_prompt', a.analysis_prompt || prompts.analysis, 12)}${area('跨段合并系统提示词', 'analysis_merge_prompt', a.analysis_merge_prompt || prompts.merge, 10)}${input('分析最大输出 Token', 'analysis_output', a.analysis_output, 'number', 'min="512" max="32000"')}${button('恢复默认提示词（仍需保存）', 'prompts-reset')}<details><summary>每次请求附带什么数据？</summary><p>事件核验：当前对话 dialogue、已确认状态 facts、候选事件 candidates。基础拆分：原文 original 与要求 preferences。剧本分析：原文 original、要求 preferences、模式 mode；长文本增加分块编号 part / parts。跨段合并：节点摘要 nodes 与各块报告 parts。</p><p>这些数据放在 user 消息中，每次自动填写。连接测试另发固定 user 消息：只输出 JSON：{&quot;ok&quot;:true}。</p></details><div class="row">${button('保存 API 设置', 'api-save', 'class="primary"')}</div></div>
       <div class="card"><h2>本机已记录用量</h2><div class="row"><span>成功响应 ${u.calls} 次</span><span>输入 ${u.input} Token</span><span>输出 ${u.output} Token</span></div>${u.unknown ? `<p class="muted">${u.unknown} 次响应没有返回 usage，未计入 Token 总数。</p>` : ''}</div></form>`;
@@ -321,13 +343,24 @@
           exclusions: String(v.exclusions).split('\n').map(x => x.trim()).filter(Boolean), actor_id: v.actor_id.trim(), recipient_id: v.recipient_id.trim(),
           scope: nodeIds.length ? {kind: 'nodes', node_ids: nodeIds} : {kind: 'project'}, detection: v.detection, repeat_policy: v.repeat_policy,
           enabled: v.enabled, auto_settle: v.auto_settle, condition: C.parseJSON(v.condition, '事件条件'), effects: C.parseJSON(v.effects, '事件效果')})); delete this.forms['event:' + current.id];
+      } else if (action === 'api-models') {
+        if (this.modelLoading) return;
+        const profile = {base_url: v.base_url.trim(), key: v.key.trim(), timeout_sec: number('timeout_sec', 5, 300)};
+        const source = this.apiSource(profile); this.modelLoading = true; this.apiModels = null; this.render();
+        try {
+          const ids = await e.client.models(profile); this.capture();
+          let currentSource = ''; try { currentSource = this.apiSource(this.forms.api); } catch {}
+          if (currentSource !== source) { this.toast('地址或密钥已变化，已丢弃旧模型列表，请重新获取'); return; }
+          this.apiModels = {source, ids}; e.error = ''; this.toast('已获取 ' + ids.length + ' 个模型，请选择完整 ID 后测试连接');
+        } finally { this.modelLoading = false; this.render(); }
+        return;
       } else if (action === 'api-save' || action === 'api-test') {
         const profile = {base_url: v.base_url.trim(), model: v.model.trim(), key: v.key.trim(), timeout_sec: number('timeout_sec', 5, 300), max_input_chars: number('max_input_chars', 1000, 200000),
           max_output: Math.floor(number('max_output', 128, 16000)), segment_output: Math.floor(number('segment_output', 512, 32000)), analysis_output: Math.floor(number('analysis_output', 512, 32000)),
           detect_prompt: v.detect_prompt.trim(), segment_prompt: v.segment_prompt.trim(), analysis_prompt: v.analysis_prompt.trim(), analysis_merge_prompt: v.analysis_merge_prompt.trim(), json_mode: v.json_mode, no_thinking: v.no_thinking};
         await e.updateSettings({profile, remember_key: v.remember_key, segment_model: v.segment_model.trim(), auto_detect: v.auto_detect,
           wait_ms: number('wait_ms', 0, 15000), batch_size: Math.floor(number('batch_size', 1, 32)), max_batches: Math.floor(number('max_batches', 1, 64))});
-        if (action === 'api-test') { const result = await e.client.call(profile, [{role: 'user', content: '只输出 JSON：{"ok":true}'}], {max_tokens: 128}); C.assert(result.ok === true, '服务响应未通过 JSON 测试'); e.saveSettings(); }
+        if (action === 'api-test') { const result = await e.client.call(profile, [{role: 'user', content: '只输出 JSON：{"ok":true}'}], {max_tokens: 128}); C.assert(result.ok === true, '服务响应未通过 JSON 测试'); e.error = ''; e.saveSettings(); this.toast('聊天接口测试通过'); }
         delete this.forms.api;
       } else if (action === 'prompts-reset') { const p = e.defaultPrompts(); Object.assign(this.forms.api, {detect_prompt: p.detect, segment_prompt: p.segment, analysis_prompt: p.analysis, analysis_merge_prompt: p.merge}); this.render(false); this.toast('默认提示词已填入，请保存 API 设置'); return; }
       else if (action === 'options-save') await e.updateSettings({quick_options: v.quick_options});

@@ -131,6 +131,7 @@
         status: r.condition == null || r.condition === true ? '可用' : '已解锁'}));
     }
     defaultPrompts() { return C.clone(API.PROMPTS); }
+    apiEndpoints(base) { return {chat: API.endpoint(base), models: API.modelsEndpoint(base)}; }
     pause() { return this.mutate(() => { this.state.paused = !this.state.paused; this.state.revision++; }); }
     undo() { return this.mutate(() => C.undo(this.state)); }
     async manualEvent(eventId, operationId, source) {

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const C = require('../src/core.js'), {Client, endpoint} = require('../src/api.js');
+const C = require('../src/core.js'), {Client, endpoint, modelsEndpoint} = require('../src/api.js');
 const profile = {base_url: 'https://example.com/v1', model: 'light', max_input_chars: 16000};
 const dialogue = [{message_id: '0', role: 'user', text: '请允许我为你插上这朵花。'}, {message_id: '1', role: 'assistant', text: '她欣然应允，你把花轻轻插在她的发间。'}];
 function client(result, options = {}) { return new Client(async () => ({ok: true, json: async () => ({choices: [{finish_reason: options.finish || 'stop', message: {content: typeof result === 'string' ? result : JSON.stringify(result)}}], usage: {prompt_tokens: 100, completion_tokens: 50}})})); }
@@ -8,7 +8,42 @@ const event = () => ({id: 'flower', description: '玩家送花并被接受', com
 test('连接地址兼容基础地址与完整 completions 地址', () => {
   assert.equal(endpoint(profile.base_url), 'https://example.com/v1/chat/completions');
   assert.equal(endpoint('https://example.com/v1/chat/completions/'), 'https://example.com/v1/chat/completions');
+  assert.equal(endpoint('https://example.com'), 'https://example.com/v1/chat/completions');
+  assert.equal(endpoint('https://example.com/'), 'https://example.com/v1/chat/completions');
+  assert.equal(endpoint('https://example.com/proxy/openai/'), 'https://example.com/proxy/openai/chat/completions');
+  assert.equal(endpoint('https://example.com/chat/completions'), 'https://example.com/chat/completions');
+  assert.equal(modelsEndpoint('https://example.com/v1/chat/completions/'), 'https://example.com/v1/models');
+  assert.equal(endpoint('https://example.com/v1/models'), 'https://example.com/v1/chat/completions');
+  assert.equal(modelsEndpoint('https://example.com/chat/completions'), 'https://example.com/models');
   assert.throws(() => endpoint('https://key:pass@example.com/v1'), /凭据/);
+});
+test('模型列表使用同一地址及密钥，保留完整 ID 而非显示别名，不调用生成接口', async () => {
+  const requests = []; const api = new Client(async (url, options) => {
+    requests.push({url, options}); return {ok: true, json: async () => ({data: [{id: 'model/full-ID', name: '3.8f'}, {id: 'model/full-ID'}, {id: 'another'}, {name: 'missing-id'}]})};
+  });
+  assert.deepEqual(await api.models({...profile, base_url: 'https://example.com/proxy/v1/chat/completions', key: 'MODELS_SECRET'}), ['another', 'model/full-ID']);
+  assert.equal(requests.length, 1); assert.equal(requests[0].url, 'https://example.com/proxy/v1/models');
+  assert.equal(requests[0].options.method, 'GET'); assert.equal(requests[0].options.headers.Authorization, 'Bearer MODELS_SECRET');
+  assert.equal(requests[0].options.body, undefined); assert.equal(api.usage.calls, 0); assert.equal(api.controllers.size, 0);
+  await assert.rejects(new Client(async () => ({ok: true, json: async () => ({models: [{name: 'models/gemini'}]})})).models(profile), /OpenAI 兼容/);
+  await assert.rejects(new Client(async () => ({ok: true, json: async () => ({data: []})})).models(profile), /列表为空/);
+});
+test('404 显示服务错误与实际接口，隐藏密钥和 URL 查询参数，不盲目重试', async () => {
+  let calls = 0; const key = 'MY_PRIVATE_KEY';
+  const api = new Client(async () => { calls++; return {ok: false, status: 404, text: async () => JSON.stringify({error: {message: 'Unknown model full-ID; key ' + key + '; Bearer another-secret; sk-other-private-token', code: 'model_not_found'}})}; });
+  await assert.rejects(api.call({...profile, key, base_url: 'https://example.com/proxy/v1?api_key=' + key}, []), error => {
+    assert(error.message.includes('model_not_found')); assert(error.message.includes('https://example.com/proxy/v1/chat/completions'));
+    assert(error.message.includes('模型：light')); assert(!error.message.includes(key)); assert(!error.message.includes('another-secret'));
+    assert(!error.message.includes('sk-other-private-token')); assert(!error.message.includes('?api_key=')); return true;
+  });
+  assert.equal(calls, 1);
+  await assert.rejects(new Client(async () => ({ok: false, status: 404, text: async () => '<!doctype html><html>PRIVATE_ERROR_BODY</html>'})).models(profile), error => error.message.includes('HTML') && error.message.includes('获取模型列表') && !error.message.includes('PRIVATE_ERROR_BODY'));
+});
+test('模型列表可取消，非 JSON 响应明确报告协议问题', async () => {
+  let start; const ready = new Promise(resolve => start = resolve);
+  const api = new Client((url, options) => new Promise((resolve, reject) => { start(); options.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))); }));
+  const pending = api.models(profile); await ready; api.cancel(); await assert.rejects(pending, /取消或超时/); assert.equal(api.controllers.size, 0);
+  await assert.rejects(new Client(async () => ({ok: true, json: async () => { throw new SyntaxError('unexpected HTML'); }})).models(profile), /有效 JSON/);
 });
 test('自然语言事件证据需原文引用与正确主体，遗漏候选保留不确定', async () => {
   const response = {results: [{event_id: 'flower', status: 'completed', actor_id: 'player', recipient_id: 'woman', evidence: [{message_id: '1', quote: '你把花轻轻插在她的发间'}]}]};

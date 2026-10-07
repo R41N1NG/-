@@ -8,10 +8,19 @@ const {fixture} = require('./helpers.js');
 const root = path.resolve(__dirname, '..');
 const bundle = JSON.parse(fs.readFileSync(path.join(root, 'branch_story_tavern_helper_import.json'))).content;
 const requests = [];
+const modelRequests = [];
 const browserFixture = fixture.toString().replace('host: new Host(root)', 'host: null');
 const server = http.createServer(async (req, res) => {
   if (req.url === '/plugin.js') { res.setHeader('Content-Type', 'text/javascript'); return res.end(bundle); }
   if (req.url === '/frame') return res.end('<!doctype html><html><body><script src="/plugin.js"></script></body></html>');
+  if (req.url === '/v1/models') {
+    modelRequests.push(req.url); res.setHeader('Content-Type', 'application/json');
+    return res.end(JSON.stringify({data: [{id: 'mock-light', name: '3.8f'}, {id: 'mock/story-with-a-long-complete-model-ID-for-mobile'}, {id: 'mock-light'}]}));
+  }
+  if (req.url === '/bad/v1/chat/completions') {
+    res.writeHead(404, {'Content-Type': 'application/json'});
+    return res.end(JSON.stringify({error: {message: 'The model 3.8f was not found. BROWSER_SECRET', code: 'model_not_found'}}));
+  }
   if (req.url === '/v1/chat/completions') {
     let body = ''; for await (const chunk of req) body += chunk;
     const data = JSON.parse(body); requests.push(data);
@@ -104,10 +113,31 @@ async function run() {
     assert.equal(await page.locator('[data-action="enter"][data-id="C"]').isEnabled(), true);
     assert.equal(await page.locator('[data-action="enter"][data-id="D"]').isEnabled(), false);
     await layout(page, '桌面运行页');
-    await tab(page, 'api'); await page.locator('[name="base_url"]').fill(base + '/v1'); await page.locator('[name="model"]').fill('mock-light'); await page.locator('[name="key"]').fill('BROWSER_SECRET');
+    await tab(page, 'api'); await page.locator('[name="base_url"]').fill(base); await page.locator('[name="model"]').fill('3.8f'); await page.locator('[name="key"]').fill('BROWSER_SECRET');
+    await page.locator('[data-action="api-models"]').click(); await page.locator('[name="model_choice"]').waitFor();
+    assert((await page.locator('.api-endpoints').textContent()).includes(base + '/v1/chat/completions'));
+    assert.equal(await page.locator('[name="model_choice"] option').count(), 3);
+    await page.locator('[name="model_choice"]').selectOption('mock-light'); assert.equal(await page.locator('[name="model"]').inputValue(), 'mock-light');
+    await page.locator('[name="segment_model_choice"]').selectOption('mock/story-with-a-long-complete-model-ID-for-mobile');
+    assert.equal(await page.locator('[name="segment_model"]').inputValue(), 'mock/story-with-a-long-complete-model-ID-for-mobile');
+    assert.equal(requests.length, 0); assert.equal(await state(page, () => testHost.storage.script.branch_story_settings?.profile.key || ''), '');
+    await page.locator('[name="base_url"]').fill(base + '/bad/v1'); await page.locator('[name="model"]').fill('3.8f'); await page.locator('[data-action="api-test"]').click();
+    await wait(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.error.includes('model_not_found'));
+    const apiError = await page.getByRole('alert').textContent(); assert(apiError.includes(base + '/bad/v1/chat/completions')); assert(!apiError.includes('BROWSER_SECRET'));
+    assert.equal(await page.locator('[name="model_choice"]').count(), 0); await layout(page, '桌面 API 错误诊断');
+    await page.locator('[name="base_url"]').fill(base + '/v1'); await page.locator('[name="model"]').fill('mock-light');
     const customPrompt = '用户自定义：优先核对证据。\n' + await page.locator('[name="detect_prompt"]').inputValue(); await page.locator('[name="detect_prompt"]').fill(customPrompt);
     await page.locator('[data-action="api-test"]').click(); await wait(page, () => testHost.storage.script.branch_story_settings?.profile.model === 'mock-light');
+    await wait(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.error === '');
     assert.equal(await state(page, () => testHost.storage.script.branch_story_settings.profile.key), '');
+    let releaseModels, receivedModels;
+    const heldModels = new Promise(resolve => releaseModels = resolve), startedModels = new Promise(resolve => receivedModels = resolve);
+    await page.route(base + '/slow/v1/models', async route => { receivedModels(); await heldModels; await route.fulfill({json: {data: [{id: 'stale-model'}]}}); });
+    await page.locator('[name="base_url"]').fill(base + '/slow/v1'); await page.locator('[data-action="api-models"]').click(); await startedModels;
+    await page.locator('[name="base_url"]').fill(base + '/v1'); await tab(page, 'run'); releaseModels();
+    await wait(page, () => !document.querySelector('iframe').contentWindow.__branch_story_plugin__.panel.modelLoading);
+    await tab(page, 'api'); assert.equal(await page.locator('[name="model_choice"]').count(), 0);
+    assert.equal(await page.locator('[name="base_url"]').inputValue(), base + '/v1'); assert.equal(await page.locator('[name="model"]').inputValue(), 'mock-light');
     await tab(page, 'run'); await page.locator('[data-action="check"]').click(); await wait(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.pending_checks[0]?.status === 'done');
     await tab(page, 'records'); await page.locator('[data-action="result-accept"]').click(); await wait(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.variables.trust === 5);
     assert(requests.some(r => r.messages[0].content === customPrompt));
@@ -133,7 +163,7 @@ async function run() {
     await launch.click();
     assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
     await tab(page, 'run'); await page.screenshot({path: path.join(root, 'artifacts/desktop-panel.png')});
-    console.log('✓ 桌面：仅节点区模糊、工具栏/API/事件可用、送花示例与结算、清理旧按钮、直接分支选择及原有进度功能');
+    console.log('✓ 桌面：模型列表真实 ID、域名自动补 /v1、404 诊断与密钥隐藏；节点区防剧透、事件规则、分支和进度功能');
     await desktop.close();
 
     const mobile = await browser.newContext({viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true, deviceScaleFactor: 1}), phone = await mobile.newPage();
@@ -165,7 +195,12 @@ async function run() {
     await unlock(phone); assert.equal(await phone.locator('.node-spoiler-content').getAttribute('inert'), null);
     await tab(phone, 'events'); await phone.locator('[data-action="event-new"]').tap(); await phone.locator('[name="title"]').fill('手机送花事件'); await phone.locator('[name="description"]').fill('玩家实际送花且对方接受。'); await phone.locator('[data-action="event-save"]').tap();
     await wait(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.events.some(e => e.title === '手机送花事件'));
-    await tab(phone, 'api'); await phone.locator('[name="base_url"]').fill(base + '/v1'); await phone.locator('[name="model"]').fill('mock-light'); await phone.locator('[data-action="api-save"]').first().tap();
+    await tab(phone, 'api'); await phone.locator('[name="base_url"]').fill(base + '/v1');
+    await phone.locator('[data-action="api-models"]').tap(); await phone.locator('[name="model_choice"]').waitFor();
+    await phone.locator('[name="model_choice"]').selectOption('mock-light');
+    await phone.locator('[name="segment_model_choice"]').selectOption('mock/story-with-a-long-complete-model-ID-for-mobile');
+    await layout(phone, '320px 完整模型 ID 下拉框');
+    await phone.locator('[data-action="api-save"]').first().tap();
     await tab(phone, 'data'); await phone.locator('[name="original_text"]').fill('酒店骤然停电。\n走廊传来声响。'); await phone.locator('[data-action="segment"]').tap();
     await phone.locator('[name="segment_draft"]').waitFor();
     assert.equal(await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.id), 'hotel_demo');
@@ -196,7 +231,7 @@ async function run() {
     await phone.keyboard.press('Escape'); assert.equal(await phone.locator('.overlay').isVisible(), false);
     assert.deepEqual(errors, []); assert(requests.length >= 3);
     console.log('✓ 手机：触控拖动与位置恢复，390px/320px 七页布局、分析走向/结局/伏笔、内容导入导出、刷新与新剧本重新锁定');
-    console.log('✓ 浏览器运行错误：0；模拟 API 请求：' + requests.length);
+    console.log('✓ 浏览器运行错误：0；模拟生成请求：' + requests.length + '；模型列表请求：' + modelRequests.length);
     await mobile.close();
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 }

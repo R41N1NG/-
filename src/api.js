@@ -51,12 +51,40 @@
     C.assert(map.has(raw.start_node_id || raw.nodes[0].id), '分析起点引用未知节点');
     return {project, warnings: [...new Set(warnings)], source_chars: original.length};
   }
-  function endpoint(base) {
+  function endpoint(base, resource = 'chat/completions') {
     let u; try { u = new URL(base); } catch { throw new Error('请填写完整的 API 地址'); }
     C.assert(['https:', 'http:'].includes(u.protocol) && !u.username && !u.password, 'API 地址需使用 HTTP/HTTPS，凭据请填写在密钥字段');
-    u.pathname = u.pathname.replace(/\/+$/, '');
-    if (!u.pathname.endsWith('/chat/completions')) u.pathname += '/chat/completions';
+    let path = u.pathname.replace(/\/+$/, '').replace(/\/(?:chat\/completions|models)$/, '');
+    if (!path && !/\/(?:chat\/completions|models)\/?$/.test(u.pathname)) path = '/v1';
+    u.pathname = path + '/' + resource;
+    u.hash = '';
     return u.toString();
+  }
+  const modelsEndpoint = base => endpoint(base, 'models');
+  function safeDetail(value, profile) {
+    if (!['string', 'number'].includes(typeof value)) return '';
+    let text = String(value);
+    if (profile.key) for (const secret of [profile.key, encodeURIComponent(profile.key)]) text = text.split(secret).join('[已隐藏密钥]');
+    return text.replace(/\bBearer\s+[^\s"'<>]+/gi, 'Bearer [已隐藏密钥]')
+      .replace(/\bsk-[\w-]{6,}/gi, '[已隐藏密钥]')
+      .replace(/((?:api[_-]?key|access[_-]?token|authorization)\s*[=:]\s*["']?)[^\s"'&<>]+/gi, '$1[已隐藏密钥]')
+      .replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, 600);
+  }
+  async function httpError(response, url, profile, resource) {
+    const request = new URL(url); const target = request.origin + request.pathname;
+    let detail = '';
+    try {
+      const text = typeof response.text === 'function' ? await response.text() : '';
+      if (/^\s*(?:<!doctype\s+html|<html)/i.test(text)) detail = '服务返回 HTML 错误页面，请核对接口路径或网关配置。';
+      else {
+        const raw = JSON.parse(text), error = C.object(raw.error) ? raw.error : raw;
+        detail = [safeDetail(error.message || (typeof raw.error === 'string' ? raw.error : ''), profile), safeDetail(error.code, profile), safeDetail(error.type, profile)].filter(Boolean).join('；');
+      }
+    } catch {}
+    const hints = {400: '请核对模型和请求参数；服务不支持 response_format 时可关闭 JSON 输出。', 401: '密钥缺失或无效。', 403: '服务拒绝访问，请核对密钥权限。', 404: '可能是接口路径不存在或模型未找到；可先获取模型列表核对完整 ID。', 429: '请求限流或额度不足，请查看服务端说明。'};
+    return new Error('辅助 API 返回 HTTP ' + response.status + '\n请求：' + safeDetail(target, profile)
+      + (resource === 'chat/completions' ? '\n模型：' + safeDetail(profile.model, profile) : '\n操作：获取模型列表')
+      + '\n' + (detail ? '服务说明：' + detail : hints[response.status] || '服务请求失败，请核对服务状态。'));
   }
   function responseJSON(raw) {
     C.assert(typeof raw === 'string' && raw.trim(), 'API 未返回文本内容');
@@ -65,30 +93,42 @@
   class Client {
     constructor(fetchFn) { this.fetch = fetchFn || globalThis.fetch.bind(globalThis); this.controllers = new Set(); this.generation = 0; this.usage = {calls: 0, input: 0, output: 0, unknown: 0}; }
     cancel() { this.generation++; for (const c of this.controllers) c.abort(); this.controllers.clear(); }
-    async call(profile, messages, options = {}) {
-      C.assert(profile.model?.trim(), '请填写辅助模型名称');
+    async send(profile, resource, options = {}) {
+      const url = endpoint(profile.base_url, resource);
       const controller = new AbortController(); this.controllers.add(controller);
       const timer = setTimeout(() => controller.abort(), Math.max(5, profile.timeout_sec || 45) * 1000);
+      const headers = {Accept: 'application/json'};
+      if (options.body) headers['Content-Type'] = 'application/json';
+      if (profile.key) headers.Authorization = 'Bearer ' + profile.key;
+      try {
+        const r = await this.fetch(url, {...options, headers, signal: controller.signal});
+        if (!r.ok) throw await httpError(r, url, profile, resource);
+        try { return await r.json(); } catch { throw new Error('辅助 API 未返回有效 JSON；请核对接口地址及 OpenAI 兼容协议'); }
+      } catch (e) {
+        if (e.name === 'AbortError') throw new Error('辅助 API 请求已取消或超时');
+        if (e instanceof TypeError) throw new Error('无法连接辅助 API；请检查网络、服务地址及浏览器跨域（CORS）支持。酒馆主连接可能通过服务器转发，插件从浏览器直接请求。');
+        throw e;
+      } finally { clearTimeout(timer); this.controllers.delete(controller); }
+    }
+    async models(profile) {
+      const raw = await this.send(profile, 'models', {method: 'GET'});
+      C.assert(Array.isArray(raw?.data), '服务没有返回 OpenAI 兼容的模型列表（data 数组）；请核对酒馆的连接类型和服务接口协议');
+      const ids = [...new Set(raw.data.filter(x => C.object(x) && typeof x.id === 'string' && x.id.trim()).map(x => x.id))].sort((a, b) => a.localeCompare(b));
+      C.assert(ids.length, '服务返回的模型列表为空，仍可手动填写服务提供的完整模型 ID');
+      return ids;
+    }
+    async call(profile, messages, options = {}) {
+      C.assert(profile.model?.trim(), '请填写辅助模型名称');
       const body = {model: profile.model, messages, stream: false, temperature: 0, max_tokens: options.max_tokens || profile.max_output || 512};
       if (profile.json_mode !== false) body.response_format = {type: 'json_object'};
       if (profile.no_thinking) body.chat_template_kwargs = {enable_thinking: false};
-      const headers = {'Content-Type': 'application/json'};
-      if (profile.key) headers.Authorization = 'Bearer ' + profile.key;
-      try {
-        const r = await this.fetch(endpoint(profile.base_url), {method: 'POST', headers, body: JSON.stringify(body), signal: controller.signal});
-        if (!r.ok) throw new Error('辅助 API 返回 HTTP ' + r.status + '；请检查地址、模型、权限与额度');
-        const data = await r.json();
-        this.usage.calls++;
-        if (data.usage && Number.isFinite(data.usage.prompt_tokens) && Number.isFinite(data.usage.completion_tokens)) {
-          this.usage.input += data.usage.prompt_tokens; this.usage.output += data.usage.completion_tokens;
-        } else this.usage.unknown++;
-        if (data.choices?.[0]?.finish_reason === 'length') throw new Error('辅助输出被截断，请提高输出预算或减少每批候选');
-        return responseJSON(data.choices?.[0]?.message?.content);
-      } catch (e) {
-        if (e.name === 'AbortError') throw new Error('辅助请求已取消或超时，事件尚未结算');
-        if (e instanceof TypeError) throw new Error('无法连接辅助 API；请检查网络、服务地址及浏览器跨域（CORS）支持');
-        throw e;
-      } finally { clearTimeout(timer); this.controllers.delete(controller); }
+      const data = await this.send(profile, 'chat/completions', {method: 'POST', body: JSON.stringify(body)});
+      this.usage.calls++;
+      if (data.usage && Number.isFinite(data.usage.prompt_tokens) && Number.isFinite(data.usage.completion_tokens)) {
+        this.usage.input += data.usage.prompt_tokens; this.usage.output += data.usage.completion_tokens;
+      } else this.usage.unknown++;
+      if (data.choices?.[0]?.finish_reason === 'length') throw new Error('辅助输出被截断，请提高输出预算或减少每批候选');
+      return responseJSON(data.choices?.[0]?.message?.content);
     }
     async detect(profile, messages, events, facts) {
       const system = profile.detect_prompt?.trim() || PROMPTS.detect;
@@ -196,5 +236,5 @@
       result.warnings = [...new Set([...warnings, ...result.warnings, '全文采用分块分析后整合，请核对跨段连接；条件与奖励需在编辑器中配置。'])]; result.request_count = chunks.length + 1; return result;
     }
   }
-  return {Client, endpoint, responseJSON, STATUSES, PROMPTS};
+  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS};
 });
