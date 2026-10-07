@@ -205,3 +205,24 @@ A（共享模块＋采用随附生成器）、B（**构建期注入** `xdsTimepo
 
 【身份：deepseek｜日期：2026-10-07｜类型：问题小总结｜问题：当前时点滑块接入】
 问题：菜单时点字段、滑块接入与日历基准三处不齐；我在同一个文件上反复改错插入位置（五次）。最终结论：方案可行——共享模块＋**构建期注入**＋运行时 `install`＋`resolveTimepoint` 取值段已全部落地，卡内四项验证为真；失败根因是"把 `const` 插进多行字符串拼接链"。处理：A/B/C 按你《复核与接入说明》第 4 节实施；P1（解析器／唯一时点行／历时累计拆分／guard）已完成；五次失败均被门禁与自动回滚拦下，**未产生坏卡**。验证：`node --check` exit 0、`build.js` 世界书 144 条、`ship.js` **12 项全绿 5.00 秒**、卡内四项标记为真；**真实酒馆未验证**。遗留事项：B 的首次生成前时序；P3 真机 9 项验收；真机未验前不得视为已交付。
+
+【身份：deepseek｜日期：2026-10-07｜类型：汇报｜批次：2026-10-07-01｜任务：P2 完成 ＋ 真机确认 ＋ 外观重做】
+
+**一、P2 落地（A／B／C 全部完成，卡内四标记为真）**
+- A：共享模块 `src/first_floor_rebuild/timepoint-slider.cjs`；生成器采用你随附的 `menu-builder.cjs`（含 `TIMEPOINT_CSS`／`renderTimepoint`，菜单里 `data-xds-timepoint-box`＋`<div data-xds-timepoint-enhancer hidden>` 已核实存在）。
+- B：**构建期注入** `function xdsTimepointModule`（新文件 `src/first_floor_rebuild/inject-timepoint.cjs`，失败即终止构建）；卡内 `const xdsTimepoint` ✅、`xdsTimepoint.install(` ✅（位于 `runtime.scan(surface)` 之后，disposer 入原 `runtime.cleanups`）。
+- C：`xdsMenuIntro` 内在 `return` **之前**插入 `const startTime = xdsTimepoint.resolveTimepoint(values.custom_timepoint);`，日期行**恰好一行** `'• 当前时点：' + startTime.value + '\n' +` ✅。
+- 门禁：`node --check` exit 0；`build.js` 世界书 144 条；`ship.js` **12 项全绿**。
+
+**二、真机状态（主人实测）**：Ctrl+F5 后 **滑块已出现** ⇒ `install()` 在真实酒馆里成功执行。**但九项逐条验收尚未做完**（六月初七是否原样保留、非预设是否被吸附改写、重渲染是否只填一次、两菜单不串值、增强失败旧按钮是否仍可用……一律**未验证**）。
+
+**三、外观重做（主人反馈"有滑块了但好丑"）**：只改 `TIMEPOINT_CSS` 的**属性值**，**选择器一个未动**（`install` 挂载与 ready 判定依赖它们）：暖纸渐变底＋褐边框圆角、鎏金到朱红渐变的轨道、径向渐变把手、当前时间点做成朱红胶囊、摘要 12px 褐灰、采用参考点按钮胶囊化、`focus-visible` 朱红外描边、`pointer:coarse` 下 44px 命中区。CSS 871 → 2656 字符。
+
+**四、前五次失败的根因（已复现，供后续避坑）**：那条日期行位于**多行字符串拼接链**中，把 `const` 插在它旁边必然语法错；正解是插到 `return` 之前＋只替换片段 `(values.custom_timepoint || '…')` → `startTime.value`。五次失败**全部被语法门禁与自动回滚拦下，未产生坏卡**。
+
+**五、疑问（请复核）**
+1. 外观是否还有需要调整的（我只动这一个 CSS 块，可按句改）；
+2. **B 的时序**（首次生成前落地、提交期间切会话中止）如何接最稳——按你原有 `guard`／`xdsMenuChatKey` 的用法是否就够；
+3. P3 的九项真机验收由谁跑、以什么形式记录（我这边只有门禁与卡内静态证据）。
+
+【身份：deepseek｜日期：2026-10-07｜类型：问题小总结｜问题：当前时点滑块接入】问题：菜单时点字段、滑块接入与日历基准三处不齐，且我反复改错插入位置。最终结论：方案可行——共享模块＋**构建期注入**＋运行时 `install`＋`resolveTimepoint` 取值段已全部落地，主人真机确认**滑块已出现**；失败根因是"把 `const` 插进多行字符串拼接链"。处理：A/B/C 全部实施；外观按菜单风格重做（选择器不变）。验证：`node --check` exit 0、`build.js` 144 条、`ship.js` 12 项全绿、卡内四标记为真、真机滑块出现；**九项逐条验收未做**。遗留事项：B 的首次生成前时序；P3 九项真机验收；未验前不得视为全部交付。
