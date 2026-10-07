@@ -59,7 +59,7 @@ check('Custom dates remain exact; invalid/multiple dates never silently default'
   assert.equal(slider.resolveTimepoint(value).value, value);
   assert.equal(slider.resolveTimepoint(value).day, 7);
   assert.equal(slider.describe(value).index, 6);
-  for (const invalid of ['仙盟历 1579 年 · 十三月初七', '仙盟历 1579 年 · 六月初零', '仙盟历 1579 年 · 六月三十二', '仙盟历 1579 年 · 六月初二十', '胡乱填写', '仙盟历 1578 年三月初三 / 仙盟历 1579 年六月初七']) {
+  for (const invalid of ['仙盟历 1579 年 · 十三月初七', '仙盟历 1579 年 · 六月初零', '仙盟历 1579 年 · 六月三十二', '仙盟历 1579 年 · 六月31日', '仙盟历 1579 年 · 六月卅一', '仙盟历 1579 年 · 六月初二十', '胡乱填写', '仙盟历 1578 年三月初三 / 仙盟历 1579 年六月初七']) {
     assert.equal(slider.parseDate(invalid), null);
     assert.throws(() => slider.resolveTimepoint(invalid));
   }

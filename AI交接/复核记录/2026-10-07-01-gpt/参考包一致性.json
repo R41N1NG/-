@@ -1,0 +1,53 @@
+{
+  "identity": "gpt",
+  "date": "2026-10-07",
+  "scope": "参考代码包内容核对；不代表角色卡生产接入或真实酒馆验收",
+  "archive": "AI交接/参考实现/时间点滑块参考实现.zip",
+  "archive_sha256": "89d7ccac08c52d6e7f5d65f8263ae1e438b9cf27a914889d7a44cef176f11bab",
+  "crc_ok": true,
+  "all_7_files_match": true,
+  "entries": [
+    {
+      "file": "timepoint-slider.cjs",
+      "bytes": 15945,
+      "sha256": "220b2ba1d7d7f0bd1ab45c79eddeb66de28828450b0a6fe33006409816609939",
+      "archive_matches": true
+    },
+    {
+      "file": "menu-builder.cjs",
+      "bytes": 8319,
+      "sha256": "d5d6e9b967e05f59f8d5a9797d731e88ae5dfde9da51c3ef4f200d378d79db41",
+      "archive_matches": true
+    },
+    {
+      "file": "menu-builder.original.cjs",
+      "bytes": 9101,
+      "sha256": "f036100899700d8af35688452b242d213a2e15b156b8b23eca67d495a9c852a1",
+      "archive_matches": true
+    },
+    {
+      "file": "menu-builder.patch",
+      "bytes": 3455,
+      "sha256": "ad3ccd55ce67589c9d647d66a7a98c510e6205fd5adcdb02c396739edf03f7d6",
+      "archive_matches": true
+    },
+    {
+      "file": "verify.cjs",
+      "bytes": 16486,
+      "sha256": "f068e2324fcfba0791ed92099466d0ff4d9f6a0029ffa89f0f369cad49a87d4b",
+      "archive_matches": true
+    },
+    {
+      "file": "verification.json",
+      "bytes": 2227,
+      "sha256": "59545e55706a1d9450dfb96699cc89f8aa8986c65ed0e82d3c4d7795a0666cdb",
+      "archive_matches": true
+    },
+    {
+      "file": "复核与接入说明.md",
+      "bytes": 16619,
+      "sha256": "104af1a299b72490791260daeafc650bb8a69ea37c3c71278da3faeabdc7011f",
+      "archive_matches": true
+    }
+  ]
+}

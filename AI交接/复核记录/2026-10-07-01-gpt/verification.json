@@ -1,0 +1,132 @@
+{
+  "reviewer": "gpt",
+  "reviewed_at": "2026-10-07T06:05:03.617Z",
+  "input_file": "AI交接/下级更新/2026-10-07-01/源码/卡片脚本·状态机（生效源·待复核·全文）.js",
+  "input_sha256": "1f86cb3ea69a6667b4a10461922a9c7002fa7ab55f6e08b395749d6d4897a56a",
+  "scope": "隔离运行上传原函数/原片段。依赖为测试替身；不执行整份状态机启动，不连接真实酒馆或API。known defects 被断言为当前观察结果，不表示生产修复已通过。",
+  "results": [
+    {
+      "name": "上传全文语法",
+      "status": "confirmed",
+      "observation": "整份状态机能通过 V8 语法检查；未执行启动代码。"
+    },
+    {
+      "name": "生产字段清单已包含 custom_timepoint",
+      "status": "confirmed",
+      "observation": "实际 xdsMenuIntro 保留六月初七，并已有一行当前时点；不要重复追加字段。"
+    },
+    {
+      "name": "非空无效日期未在提交前拒绝",
+      "status": "needs_fix",
+      "observation": "当前 xdsMenuIntro 接受“还没有想好”，只检查长度。"
+    },
+    {
+      "name": "原日期解析器的错误日数",
+      "status": "needs_fix",
+      "observation": [
+        {
+          "input": "仙盟历 1579 年 · 六月十五",
+          "actual": {
+            "ym": 1579.06,
+            "day": 1
+          }
+        },
+        {
+          "input": "仙盟历 1579 年 · 六月廿一",
+          "actual": {
+            "ym": 1579.06,
+            "day": 1
+          }
+        },
+        {
+          "input": "仙盟历 1579 年 · 六月二十",
+          "actual": {
+            "ym": 1579.06,
+            "day": 1
+          }
+        },
+        {
+          "input": "仙盟历 1579 年 · 六月31日",
+          "actual": {
+            "ym": 1579.06,
+            "day": 30
+          }
+        },
+        {
+          "input": "仙盟历 1579 年 · 六月初七",
+          "actual": {
+            "ym": 1579.06,
+            "day": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "任意正文首日期抢占字段",
+      "status": "needs_fix",
+      "observation": {
+        "input": "背景：仙盟历 1577 年 · 七月初一\n• 当前时点：仙盟历 1579 年 · 六月初七",
+        "actual": {
+          "ym": 1577.07,
+          "day": 1
+        },
+        "expectedSelected": {
+          "ym": 1579.06,
+          "day": 7
+        }
+      }
+    },
+    {
+      "name": "现有基准分支优先采用 AI 正文日期",
+      "status": "needs_fix",
+      "observation": {
+        "actualMonths": 18938.066666666666,
+        "expectedSelectedMonths": 18953.2
+      }
+    },
+    {
+      "name": "原解析失败基准为初一",
+      "status": "needs_fix",
+      "observation": {
+        "actualMonths": 18938,
+        "expectedDefaultMonths": 18938.066666666666
+      }
+    },
+    {
+      "name": "缺状态栏分支覆写选定日期",
+      "status": "needs_fix",
+      "observation": {
+        "selected": "仙盟历 1579 年 · 六月初七",
+        "actualPatch": {
+          "段位": 1,
+          "仙盟历": 1578.03,
+          "仙盟历文": "1578 年 · 三月"
+        }
+      }
+    },
+    {
+      "name": "换段清空累计历时",
+      "status": "needs_fix",
+      "observation": {
+        "beforeElapsedMonths": 0.4,
+        "after": {
+          "acc": 0,
+          "patch": {
+            "时点加速": 0
+          }
+        },
+        "lostDaysAt30DaysPerMonth": 12
+      }
+    },
+    {
+      "name": "writeIdentity 未接收菜单传入的 guard",
+      "status": "needs_review",
+      "observation": {
+        "guardCalls": 0,
+        "identityWritesInFixture": 1,
+        "worldbookCallsInFixture": 1,
+        "limit": "这证明参数未执行；不是已复现真实跨会话写入。writeStat 另有初始 chatId 检查。"
+      }
+    }
+  ]
+}
