@@ -4,8 +4,8 @@
   if (node) module.exports = value; else root.BSEEngine = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API) {
   'use strict';
-  const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, quick_options: false, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
-    profile: {base_url: '', model: '', key: '', timeout_sec: 45, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
+  const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, quick_options: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
+    profile: {base_url: '', model: '', key: '', timeout_sec: 45, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
   async function fingerprint(value) {
     const text = JSON.stringify(value);
@@ -18,17 +18,22 @@
     constructor(host, client) {
       this.host = host; this.client = client || new API.Client(); this.settings = defaults();
       this.project = C.demoProject(); this.state = C.createProgress(this.project); this.listeners = new Set();
-      this.epoch = 0; this.chat = ''; this.draft = null; this.segmentDraft = null; this.analysisDraft = null; this.analysisProgress = null; this.jobs = Promise.resolve(); this.busy = 0; this.error = ''; this.inFlight = new Set();
+      this.epoch = 0; this.chat = ''; this.draft = null; this.segmentDraft = null; this.analysisDraft = null; this.analysisProgress = null; this.jobs = Promise.resolve(); this.stageJobs = Promise.resolve(); this.busy = 0; this.error = ''; this.flowNotice = ''; this.pendingChoice = null; this.preparing = null; this.stageInFlight = new Map(); this.inFlight = new Set();
     }
     onChange(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
     notify() { for (const fn of this.listeners) { try { fn(); } catch (e) { console.error('[BSE] UI 更新失败', e); } } }
     report(e) { this.error = e.message || String(e); this.notify(); }
     invalidate() {
       this.epoch++; this.client.cancel(); this.inFlight.clear();
+      this.pendingChoice = null; this.preparing = null;
+      this.stageInFlight.clear(); this.flowNotice = '';
       for (const check of this.state.pending_checks) if (['queued', 'checking'].includes(check.status)) { check.status = 'error'; check.error = '配置或进度已变化，请重新检查'; }
     }
     async init() {
       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
+      for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt']]) {
+        if (this.settings.profile[field] === API.LEGACY_PROMPTS[key]) this.settings.profile[field] = API.PROMPTS[key];
+      }
       this.client.usage = {...defaults().usage, ...saved.usage};
       if (this.settings.worldbook) {
         try { this.project = (await this.host.loadBook(this.settings.worldbook, this.settings.project_id)).project; }
@@ -49,24 +54,36 @@
     bindEvents() {
       const safe = task => { Promise.resolve().then(task).catch(e => this.report(e)); };
       this.host.on('MESSAGE_RECEIVED', 'message_received', (messageId, type) => { if (type !== 'quiet' && type !== 'extension') safe(() => this.captureDraft(messageId)); });
+      this.host.on('GENERATION_ENDED', 'generation_ended', () => safe(async () => { await this.captureDraft(); if (this.settings.auto_stage) await this.checkStage(); }));
       this.host.on('MESSAGE_SWIPED', 'message_swiped', messageId => safe(() => {
-        if (Number(messageId) <= (this.state.last_settled_message_id ?? -1)) { this.invalidate(); this.state.paused = true; this.error = '已结算回复被切换，已暂停；请回退相关奖励或恢复备份后继续'; this.save(); }
+        if (Number(messageId) <= Math.max(this.state.last_settled_message_id ?? -1, this.state.last_stage_message_id ?? -1)) { this.invalidate(); this.state.paused = true; this.state.stage_progress = null; this.error = '已确认阶段或结算回复被切换，已暂停；请回退相关操作或恢复备份后继续'; this.save(); }
         this.captureDraft(messageId);
       }));
-      this.host.on('MESSAGE_SENT', 'message_sent', messageId => safe(() => this.acceptPrevious(messageId)));
+      this.host.on('MESSAGE_SENT', 'message_sent', async messageId => {
+        try { await this.acceptPrevious(messageId); await this.prepareTurn(messageId); }
+        catch (e) { this.report(e); throw e; }
+      });
       this.host.on('CHAT_CHANGED', 'chat_id_changed', () => safe(() => { this.bindChat(); this.captureDraft(); this.inject(); this.notify(); }));
       this.host.on('CHAT_CREATED', 'chat_created', () => safe(() => { this.bindChat(); this.captureDraft(); this.inject(); this.notify(); }));
-      const before = async () => {
+      const before = async (type, options, dryRun) => {
+        if (dryRun === true || type === 'quiet') return;
+        // Native GENERATION_AFTER_COMMANDS runs before the new user message is appended.
+        // MESSAGE_SENT is awaited by the host; the later combine hook is a second barrier.
+        const pendingInput = this.host.doc()?.querySelector('#send_textarea, #chatinput')?.value;
+        if (!(typeof type === 'string' && !['regenerate', 'swipe', 'continue'].includes(type) && pendingInput?.trim())) {
+          try { await this.prepareTurn(); } catch (e) { this.report(e); throw e; }
+        } else await this.stageJobs;
         if (this.settings.wait_ms > 0) await Promise.race([this.jobs, new Promise(resolve => setTimeout(resolve, this.settings.wait_ms))]);
         this.inject();
       };
       this.host.on('GENERATION_AFTER_COMMANDS', 'GENERATION_AFTER_COMMANDS', before);
-      this.host.on('GENERATE_BEFORE_COMBINE_PROMPTS', 'generate_before_combine_prompts', () => this.inject());
+      this.host.on('GENERATE_BEFORE_COMBINE_PROMPTS', 'generate_before_combine_prompts', before);
       for (const [name, fallback] of [['MESSAGE_EDITED', 'message_edited'], ['MESSAGE_DELETED', 'message_deleted'], ['MESSAGE_UPDATED', 'message_updated']]) {
         this.host.on(name, fallback, messageId => safe(() => {
           const affected = this.state.pending_checks.filter(c => c.messages?.some(m => Number(m) >= Number(messageId)));
           const settled = Number(messageId) <= (this.state.last_settled_message_id ?? -1) || this.state.history.some(tx => tx.source?.messages?.some(m => Number(m) >= Number(messageId)));
-          if (settled) { this.invalidate(); this.state.paused = true; this.error = '已结算的历史消息发生变化，已暂停剧本；请回退相关操作或恢复进度备份后继续'; this.save(); }
+          const stageChanged = Number(messageId) <= (this.state.last_stage_message_id ?? -1);
+          if (settled || stageChanged) { this.invalidate(); this.state.paused = true; this.state.stage_progress = null; this.error = '已确认的选择、阶段进度或结算来源发生变化，已暂停剧本；请回退相关操作或恢复备份后继续'; this.save(); }
           for (const c of affected) { c.status = 'stale'; c.error = '来源消息已编辑或删除'; }
           this.captureDraft(); this.inject(); this.notify();
         }));
@@ -123,11 +140,120 @@
     }
     mutate(fn) { this.invalidate(); this.error = ''; const changed = fn(); if (changed !== false) this.save(); return changed; }
     complete() { return this.mutate(() => C.completeNode(this.state, this.project)); }
-    enter(target) { return this.mutate(() => C.enterNode(this.state, this.project, target)); }
+    enter(target) { return this.mutate(() => { const changed = C.enterNode(this.state, this.project, target); this.state.turn_context = {node_id: target, user_id: -1, manual: true}; return changed; }); }
+    stageChoice(target, draft = '') {
+      C.assert(this.settings.story_flow && this.settings.enabled && !this.state.paused, '请启用行动选择流程');
+      const route = this.quickRoutes().find(r => r.target === target); C.assert(route, '此行动目前不可选择');
+      const base = this.pendingChoice && draft === this.pendingChoice.text ? this.pendingChoice.base_text : draft;
+      const action = route.action_text || route.label;
+      const text = base.trim() ? base + '\n' + action : action;
+      this.pendingChoice = {project_id: this.project.id, node_id: this.state.current_node_id, target, label: route.label, action_text: action, base_text: base, text};
+      this.flowNotice = '已选择：' + route.label + '，等待发送'; this.notify(); return text;
+    }
+    cancelChoice() { const pending = this.pendingChoice; this.pendingChoice = null; this.flowNotice = ''; this.notify(); return pending; }
+    async prepareTurn(messageId) {
+      if (!this.settings.enabled || this.state.paused || !this.settings.story_flow) return;
+      const latest = messageId == null ? this.host.latest() : this.host.message(messageId);
+      const message = latest?.role === 'user' ? latest : latest?.role === 'assistant' ? this.host.pair(latest.message_id)?.messages.find(m => m.role === 'user') : null;
+      if (!message) return;
+      const userId = Number(message.message_id), text = message.text ?? message.message ?? message.mes ?? '';
+      const taskKey = this.chat + '/' + userId + '/' + text;
+      if (this.preparing?.key === taskKey) return this.preparing.promise;
+      const epoch = this.epoch, chat = this.chat, project = this.project;
+      const job = async () => {
+        await this.stageJobs;
+        const signature = await fingerprint([{message_id: userId, text}]);
+        if (epoch !== this.epoch || this.host.chatId() !== chat || !this.settings.enabled || this.state.paused) return;
+        if (this.state.turn_context?.user_id === userId && this.state.turn_context.fingerprint === signature) return;
+        const scopeNode = this.state.current_node_id, revision = this.state.revision;
+        const alive = () => epoch === this.epoch && this.host.chatId() === chat && this.state.revision === revision
+          && this.state.current_node_id === scopeNode && (this.host.message(userId)?.message ?? this.host.message(userId)?.mes ?? '') === text;
+        const candidates = this.quickRoutes(); let target = '';
+        const pending = this.pendingChoice;
+        if (pending?.node_id === scopeNode && pending.project_id === project.id && text === pending.text && !pending.base_text.trim()) target = pending.target;
+        if (!target) {
+          const exact = candidates.filter(r => [r.action_text, r.label].some(x => x && x.trim() === text.trim()));
+          if (exact.length === 1) target = exact[0].target;
+        }
+        if (!target && candidates.length && this.settings.profile.base_url && this.settings.profile.model) {
+          this.busy++; this.flowNotice = '正在识别本次行动…'; this.notify();
+          try {
+            const result = await this.client.choose(this.settings.profile, {message_id: String(userId), role: 'user', text}, candidates.map(r => ({target: r.target, label: r.label, action_text: r.action_text, intent: r.intent})));
+            if (!alive()) return;
+            if (result.status === 'selected') target = result.target;
+            else this.flowNotice = result.status === 'ambiguous' ? '本次行动无法明确归入某个分支，保持当前阶段' : '自由对话：保持当前阶段';
+          } catch (e) {
+            if (alive()) { this.flowNotice = '行动识别失败，请重试；尚未推进剧情'; throw e; }
+            return;
+          } finally { this.busy--; this.notify(); }
+        } else if (!target) this.flowNotice = candidates.length ? '自由输入识别需要配置辅助 API；本次保持当前阶段' : '继续当前阶段';
+        if (!alive()) return;
+        const context = {user_id: userId, fingerprint: signature, node_id: scopeNode, project_revision: project.revision};
+        if (target) {
+          C.enterNode(this.state, project, target, context);
+          this.flowNotice = '已记录选择：' + this.state.turn_context.label;
+        } else this.state.turn_context = context;
+        this.pendingChoice = null; this.save(); this.saveSettings();
+      };
+      const promise = job(); this.preparing = {key: taskKey, promise};
+      try { return await promise; } finally { if (this.preparing?.promise === promise) this.preparing = null; }
+    }
+    async checkStage(pair, force = false) {
+      if (!this.settings.enabled || this.state.paused || !this.settings.story_flow) return;
+      const node = C.indexProject(this.project).nodes.get(this.state.current_node_id);
+      if (!node.completion_criteria || this.state.completed_node_ids.includes(node.id)) return;
+      pair ||= this.draft || (this.host.latest()?.role === 'assistant' ? this.host.pair(this.host.latest().message_id) : null);
+      if (!pair) return;
+      const user = pair.messages.find(m => m.role === 'user');
+      // A newly entered stage must never consume a reply generated for another stage.
+      if (this.state.turn_context && (this.state.turn_context.user_id !== Number(user?.message_id) || this.state.turn_context.node_id !== node.id)) return;
+      if (!this.settings.profile.base_url || !this.settings.profile.model) { this.flowNotice = '阶段自动核验需要配置辅助 API'; this.notify(); return; }
+      const epoch = this.epoch, chat = this.chat, project = this.project;
+      const key = node.id + '/' + await fingerprint(pair.messages);
+      if (this.stageInFlight.has(key)) return this.stageInFlight.get(key);
+      if (!force && this.state.stage_progress?.source_key === key) return;
+      const job = async () => {
+        if (epoch !== this.epoch || this.host.chatId() !== chat || this.state.current_node_id !== node.id || this.state.completed_node_ids.includes(node.id)) return;
+        const revision = this.state.revision;
+        const alive = () => epoch === this.epoch && this.host.chatId() === chat && this.state.current_node_id === node.id && this.state.revision === revision
+          && JSON.stringify(this.host.pair(pair.assistant_id)?.messages) === JSON.stringify(pair.messages);
+        this.busy++; this.flowNotice = '正在核验阶段进展…'; this.notify();
+        try {
+          const stored = this.state.stage_progress?.node_id === node.id ? this.state.stage_progress : null;
+          const priorPair = stored && this.host.pair(stored.assistant_id);
+          const factsValid = stored?.facts.every(f => f.evidence.every(ref => (this.host.message(ref.message_id)?.message ?? this.host.message(ref.message_id)?.mes ?? '').includes(ref.quote)));
+          const previous = priorPair && factsValid && stored.source_key === node.id + '/' + await fingerprint(priorPair.messages) ? stored : null;
+          if (!alive()) return;
+          const relevant = new Set(node.effects.flatMap(e => e.collect ? [e.collect] : []));
+          const visit = c => { if (!C.object(c)) return; const [op, v] = Object.entries(c)[0]; if (op === 'collected') relevant.add(v); else if (op === 'all' || op === 'any') v.forEach(visit); else if (op === 'not') visit(v); };
+          node.routes.forEach(r => visit(r.condition));
+          project.nodes.forEach(n => n.routes.filter(r => r.target === node.id).forEach(r => visit(r.condition)));
+          const known = project.collections.filter(c => relevant.has(c.id)).map(c => ({id: c.id, title: c.title, confirmed: this.state.collected_ids.includes(c.id)}));
+          const variables = Object.fromEntries(node.context_variables.map(k => [k, this.state.variables[k]]));
+          const result = await this.client.evaluateStage(this.settings.profile, pair.messages, node, previous, known, variables);
+          if (!alive()) return;
+          const facts = [...(previous?.facts || [])];
+          for (const fact of result.facts) { const at = facts.findIndex(f => f.text === fact.text); if (at >= 0) facts.splice(at, 1); facts.push(fact); }
+          this.state.stage_progress = {node_id: node.id, status: result.status, summary: result.summary || previous?.summary || '', facts: facts.slice(-8), missing: result.missing, evidence: result.evidence, source_key: key, assistant_id: pair.assistant_id};
+          this.state.last_stage_message_id = Math.max(this.state.last_stage_message_id, pair.assistant_id);
+          if (result.status === 'completed' && node.auto_complete) {
+            C.completeNode(this.state, project, {assistant_id: pair.assistant_id, messages: pair.messages.map(m => m.message_id)});
+            this.flowNotice = '阶段已完成，结果标记已结算';
+          } else {
+            this.state.revision++;
+            this.flowNotice = result.status === 'completed' ? '阶段已判定完成，请确认完成本节点' : result.status === 'uncertain' ? '阶段判断不确定，尚未结算' : '阶段进行中，已更新短摘要';
+          }
+          this.error = ''; this.save(); this.saveSettings();
+        } catch (e) { if (alive()) { this.error = '阶段核验失败：' + e.message; this.flowNotice = '尚未结算，可在运行页重试阶段核验'; this.saveSettings(); this.notify(); } }
+        finally { this.busy--; this.notify(); }
+      };
+      const promise = this.stageJobs.catch(() => {}).then(job).finally(() => { if (this.stageInFlight.get(key) === promise) this.stageInFlight.delete(key); });
+      this.stageJobs = promise; this.stageInFlight.set(key, promise); return promise;
+    }
     quickRoutes() {
       if (!this.settings.enabled || this.state.paused) return [];
       const refs = C.indexProject(this.project); const node = refs.nodes.get(this.state.current_node_id);
-      return node.routes.filter(r => C.condition(r.condition, this.state)).map(r => ({target: r.target, label: r.label || refs.nodes.get(r.target).title,
+      return node.routes.filter(r => C.condition(r.condition, this.state)).map(r => ({target: r.target, label: r.label || refs.nodes.get(r.target).title, action_text: r.action_text || r.label || refs.nodes.get(r.target).title, intent: r.intent || r.label || '',
         status: r.condition == null || r.condition === true ? '可用' : '已解锁'}));
     }
     defaultPrompts() { return C.clone(API.PROMPTS); }

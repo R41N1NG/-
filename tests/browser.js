@@ -32,6 +32,10 @@ const server = http.createServer(async (req, res) => {
       const text = JSON.parse(data.messages[1].content).original;
       const parts = text.split('\n').filter(Boolean);
       value = {title: '模型整理草稿', start_node_id: 's1', nodes: parts.map((detail, i) => ({id: 's' + (i + 1), title: '阶段 ' + (i + 1), detail, guidance: '演绎：' + detail, boundary: '', routes: i < parts.length - 1 ? [{target: 's' + (i + 2), label: '继续'}] : []}))};
+    } else if (data.messages[0].content.includes('玩家行动分支识别器')) {
+      const input = JSON.parse(data.messages[1].content), message = input.dialogue[0];
+      const candidate = input.candidates.find(r => message.text.includes(r.action_text || r.label));
+      value = candidate ? {status: 'selected', target: candidate.target, evidence: [{message_id: message.message_id, quote: message.text}]} : {status: 'none'};
     } else if (data.messages[0].content.includes('事件核验器')) {
       const input = JSON.parse(data.messages[1].content), source = input.dialogue.at(-1);
       value = {results: input.candidates.map(e => ({event_id: e.id, status: 'completed', actor_id: e.actor_id, recipient_id: e.recipient_id, evidence: [{message_id: source.message_id, quote: source.text}]}))};
@@ -40,7 +44,7 @@ const server = http.createServer(async (req, res) => {
     return res.end(JSON.stringify({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(value)}}], usage: {prompt_tokens: 120, completion_tokens: 60}}));
   }
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.end(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#eef1f4;font:16px system-ui}main{padding:24px}iframe{display:none}#send_form{position:fixed;bottom:8px;left:12px;right:12px}#chatinput{width:100%;height:44px;box-sizing:border-box}</style></head><body><main><h1>酒馆助手接口测试宿主</h1><p>模拟当前聊天，用于验证脚本 iframe 与手机界面。</p></main><form id="send_form"><input id="chatinput" placeholder="聊天输入"></form><script>const C={clone:v=>JSON.parse(JSON.stringify(v))};const fixture=${browserFixture};window.testHost=fixture();window.TavernHelper=testHost.root;window.reloadPlugin=()=>{document.querySelector('iframe')?.remove();const f=document.createElement('iframe');f.src='/frame';document.body.appendChild(f);};window.reloadPlugin();</script></body></html>`);
+  res.end(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#eef1f4;font:16px system-ui}main{padding:24px}iframe{display:none}#send_form{position:fixed;bottom:8px;left:12px;right:12px}#chatinput{width:100%;height:44px;box-sizing:border-box}</style></head><body><main><h1>酒馆助手接口测试宿主</h1><p>模拟当前聊天，用于验证脚本 iframe 与手机界面。</p></main><form id="send_form"><input id="chatinput" placeholder="聊天输入"></form><script>const C={clone:v=>JSON.parse(JSON.stringify(v))};const fixture=${browserFixture};window.testHost=fixture();window.TavernHelper=testHost.root;window.testSendInput=async(response)=>{const h=testHost.root;await h.eventEmit('GENERATION_AFTER_COMMANDS','normal',{},false);const field=document.querySelector('#chatinput'),text=field.value;field.value='';field.dispatchEvent(new Event('input',{bubbles:true}));const id=h.messages.length;h.messages.push({message_id:id,role:'user',message:text});await h.eventEmit('message_sent',id);await h.eventEmit('generate_before_combine_prompts','normal');if(response){const aid=h.messages.length;h.messages.push({message_id:aid,role:'assistant',message:response});await h.eventEmit('message_received',aid);await h.eventEmit('generation_ended');}return h.injection;};window.reloadPlugin=()=>{document.querySelector('iframe')?.remove();const f=document.createElement('iframe');f.src='/frame';document.body.appendChild(f);};window.reloadPlugin();</script></body></html>`);
 });
 async function state(page, fn) { return page.evaluate(fn); }
 async function ready(page) { await page.waitForSelector('#bse-panel-host', {state: 'attached'}); await page.waitForFunction(() => document.querySelector('iframe')?.contentWindow?.__branch_story_startup__?.status === 'ready'); }
@@ -127,7 +131,9 @@ async function run() {
     await page.locator('#bse-quick-host').waitFor({state: 'visible'});
     assert.equal(await page.getByRole('button', {name: '分支剧本面板', exact: true}).count(), 0);
     await page.screenshot({path: path.join(root, 'artifacts/quick-branches.png')});
-    await page.getByRole('button', {name: '查看走廊', exact: true}).click(); assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N002');
+    await page.getByRole('button', {name: '查看走廊', exact: true}).click(); assert.equal(await page.locator('#chatinput').inputValue(), '查看走廊');
+    assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N001');
+    await state(page, () => testSendInput('她握住你的手，一起走入黑暗的走廊。')); assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N002');
     await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.undo());
     await page.getByRole('button', {name: '打开剧情面板'}).click(); await tab(page, 'run');
     await page.locator('[data-action="quick-toggle"]').click(); await page.locator('[data-action="close"]').click(); assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
@@ -182,7 +188,9 @@ async function run() {
     assert.equal(await page.locator('[data-action="quick-enter"][data-id="C"]').getAttribute('data-status'), '已解锁');
     const quick = await page.locator('#bse-quick-host').boundingBox(), composer = await page.locator('#send_form').boundingBox(); assert(quick.y + quick.height <= composer.y - 4);
     await page.locator('#chatinput').fill('保留玩家未发送的草稿'); await page.locator('[data-action="quick-enter"][data-id="C"]').click();
-    assert.equal(await page.locator('#chatinput').inputValue(), '保留玩家未发送的草稿'); assert.equal(await state(page, () => testHost.root.messages.length), 2);
+    assert.equal(await page.locator('#chatinput').inputValue(), '保留玩家未发送的草稿证据齐全，追查真相'); assert.equal(await state(page, () => testHost.root.messages.length), 4);
+    assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N001');
+    await state(page, () => testSendInput());
     assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'C');
     assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
     await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.undo());
@@ -209,7 +217,11 @@ async function run() {
     await phone.locator('[data-action="close"]').tap(); await phone.locator('#bse-quick-host').waitFor({state: 'visible'});
     assert.deepEqual(await phone.locator('[data-action="quick-enter"]').allTextContents(), ['查看走廊', '寻找前台']);
     await phone.locator('#chatinput').fill('手机输入草稿'); await phone.locator('[data-action="quick-enter"][data-id="N002"]').tap();
-    assert.equal(await phone.locator('#chatinput').inputValue(), '手机输入草稿');
+    assert.equal(await phone.locator('#chatinput').inputValue(), '手机输入草稿查看走廊');
+    assert.equal(await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N001');
+    await phone.locator('[data-action="quick-cancel"]').tap(); assert.equal(await phone.locator('#chatinput').inputValue(), '手机输入草稿');
+    await phone.locator('#chatinput').fill(''); await phone.locator('[data-action="quick-enter"][data-id="N002"]').tap(); await state(phone, () => testSendInput());
+    assert.equal(await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N002');
     await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.undo());
     await pencil.tap(); assert.equal(await phone.locator('.run-spoiler-content').getAttribute('inert'), '');
     await phone.locator('[data-action="pause"]').tap(); await phone.locator('[data-action="close"]').tap(); assert.equal(await phone.locator('#bse-quick-host').isVisible(), false);

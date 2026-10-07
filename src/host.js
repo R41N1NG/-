@@ -59,7 +59,7 @@
     uninject() { this.api('uninjectPrompts')?.([INJECT_ID]); }
     on(name, fallback, listener) {
       const r = this.root; const events = r.tavern_events || this.owners().find(o => o.tavern_events)?.tavern_events || {};
-      const result = this.api('eventOn')?.(events[name] || fallback, listener);
+      const result = this.api('eventOn')?.(events[name] || this.context()?.eventTypes?.[name] || fallback, listener);
       if (result?.stop) this.stops.push(result.stop);
     }
     emit(name, data) { return this.api('eventEmit')?.(name, data); }

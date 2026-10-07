@@ -98,6 +98,9 @@
     p.nodes.forEach(n => {
       assert(typeof n.title === 'string' && n.title.trim(), '节点名称为空：' + n.id);
       n.detail ||= ''; n.guidance ||= ''; n.boundary ||= ''; n.effects ||= []; n.routes ||= []; n.context_variables ||= [];
+      n.completion_criteria ||= ''; n.completion_exclusions ||= [];
+      n.auto_complete = n.auto_complete !== false;
+      assert(typeof n.completion_criteria === 'string' && Array.isArray(n.completion_exclusions) && n.completion_exclusions.every(x => typeof x === 'string'), '节点完成标准或排除情况无效');
       n.kind ||= 'scene'; n.suggested = n.suggested === true;
       assert(['scene', 'choice', 'ending'].includes(n.kind), '节点类型必须是 scene、choice 或 ending');
       assert([n.detail, n.guidance, n.boundary].every(v => typeof v === 'string'), '节点正文必须为文本');
@@ -107,6 +110,7 @@
       const targets = new Set();
       n.routes.forEach(r => {
         assert(object(r) && refs.nodes.has(r.target), '分支指向不存在的节点：' + r?.target);
+        for (const field of ['label', 'action_text', 'intent']) assert(r[field] == null || typeof r[field] === 'string', '分支行动文字必须为文本');
         assert(!targets.has(r.target), '同一节点的分支目标重复：' + r.target); targets.add(r.target);
         validateCondition(r.condition, refs);
       });
@@ -148,6 +152,7 @@
       current_node_id: p.start_node_id, visited_node_ids: [p.start_node_id], completed_node_ids: [], collected_ids: [],
       variables: Object.fromEntries(p.variables.map(v => [v.id, clone(v.default)])),
       event_counts: {}, receipts: {}, accepted_turns: {}, pending_checks: [], history: [], paused: false,
+      stage_progress: null, turn_context: null, last_stage_message_id: -1,
     };
   }
   function condition(c, s, depth = 0) {
@@ -184,7 +189,7 @@
   }
   function transact(s, p, label, operation, receipt, source = null) {
     if (receipt && own(s.receipts, receipt)) return false;
-    const next = clone(s); const before = {variables: {}, collected_ids: [], completed_node_ids: [], visited_node_ids: [], event_counts: {}, current_node_id: s.current_node_id, paused: s.paused, last_settled_message_id: s.last_settled_message_id ?? -1};
+    const next = clone(s); const before = {variables: {}, collected_ids: [], completed_node_ids: [], visited_node_ids: [], event_counts: {}, current_node_id: s.current_node_id, paused: s.paused, last_settled_message_id: s.last_settled_message_id ?? -1, stage_progress: clone(s.stage_progress || null), turn_context: clone(s.turn_context || null), last_stage_message_id: s.last_stage_message_id ?? -1};
     operation(next);
     if (Number.isInteger(source?.assistant_id)) next.last_settled_message_id = Math.max(next.last_settled_message_id ?? -1, source.assistant_id);
     for (const k of Object.keys(next.variables)) if (next.variables[k] !== s.variables[k]) before.variables[k] = s.variables[k];
@@ -208,20 +213,23 @@
       }
     }
   }
-  function completeNode(s, p) {
+  function completeNode(s, p, source = null) {
     const node = indexProject(p).nodes.get(s.current_node_id);
     return transact(s, p, '完成：' + node.title, next => {
       if (!next.completed_node_ids.includes(node.id)) next.completed_node_ids.push(node.id);
       applyEffects(next, p, node.effects);
-    }, 'node:' + node.id);
+      next.stage_progress = null;
+    }, 'node:' + node.id, source);
   }
-  function enterNode(s, p, target) {
+  function enterNode(s, p, target, choice = null) {
     const node = indexProject(p).nodes.get(s.current_node_id);
     const route = node.routes.find(r => r.target === target);
     assert(route && condition(route.condition, s), '分支未解锁或不是当前节点的出口');
-    return transact(s, p, '进入：' + indexProject(p).nodes.get(target).title, next => {
+    return transact(s, p, choice ? '选择：' + (route.label || indexProject(p).nodes.get(target).title) : '进入：' + indexProject(p).nodes.get(target).title, next => {
       next.current_node_id = target; if (!next.visited_node_ids.includes(target)) next.visited_node_ids.push(target);
-    });
+      next.stage_progress = null;
+      if (choice) next.turn_context = {...choice, node_id: target, from_node_id: node.id, target, label: route.label || indexProject(p).nodes.get(target).title};
+    }, undefined, choice ? {messages: [choice.user_id]} : null);
   }
   function settleEvent(s, p, eventId, sourceKey, source = null, scopeNode = s.current_node_id) {
     const event = indexProject(p).events.get(eventId);
@@ -237,6 +245,7 @@
     for (const key of ['collected_ids', 'completed_node_ids', 'visited_node_ids']) s[key] = s[key].filter(v => !tx.before[key].includes(v));
     Object.assign(s.event_counts, tx.before.event_counts);
     s.current_node_id = tx.before.current_node_id; s.paused = tx.before.paused;
+    s.stage_progress = tx.before.stage_progress || null; s.turn_context = tx.before.turn_context || null; s.last_stage_message_id = tx.before.last_stage_message_id ?? -1;
     if (tx.before.last_settled_message_id !== undefined) s.last_settled_message_id = tx.before.last_settled_message_id;
     if (tx.receipt) delete s.receipts[tx.receipt];
     s.revision++; return tx;
@@ -267,7 +276,13 @@
       assert(typeof s.variables[v.id] === v.type, '已有变量类型冲突：' + v.id);
       if (v.type === 'number') assert(Number.isFinite(s.variables[v.id]) && (v.min == null || s.variables[v.id] >= v.min) && (v.max == null || s.variables[v.id] <= v.max), '已有变量超出新定义范围：' + v.id);
     }
-    if (s.project_revision !== p.revision) { s.pending_checks = []; s.history = []; s.project_revision = p.revision; }
+    if (s.project_revision !== p.revision) { s.pending_checks = []; s.history = []; s.stage_progress = null; s.turn_context = null; s.project_revision = p.revision; }
+    s.stage_progress ||= null; s.turn_context ||= null; s.last_stage_message_id ??= -1;
+    if (s.stage_progress) {
+      assert(object(s.stage_progress) && s.stage_progress.node_id === s.current_node_id, '阶段进度不属于当前节点');
+      s.stage_progress.summary = String(s.stage_progress.summary || '').slice(0, 400);
+      s.stage_progress.facts = (Array.isArray(s.stage_progress.facts) ? s.stage_progress.facts : []).slice(-8);
+    }
     return s;
   }
   function demoProject() {
@@ -281,8 +296,8 @@
           {target: 'D', label: '用房卡调查房间', condition: {all: [{collected: 'A'}, {not: {collected: 'B'}}]}},
           {target: 'E', label: '追查假身份', condition: {all: [{collected: 'B'}, {not: {collected: 'A'}}]}},
         ]},
-        {id: 'N002', title: '走廊里的房卡', guidance: '在走廊引入可疑维修员遗落房卡的线索，让玩家自行决定是否拾取和调查。', effects: [{collect: 'A'}], routes: [{target: 'N001', label: '返回大厅'}]},
-        {id: 'N003', title: '前台登记册', guidance: '前台无人值守，登记册中维修员身份与工牌信息不符。通过可观察线索呈现，不代替玩家调查。', effects: [{collect: 'B'}], routes: [{target: 'N001', label: '返回大厅'}]},
+        {id: 'N002', title: '走廊里的房卡', guidance: '在走廊引入可疑维修员遗落房卡的线索，让玩家自行决定是否拾取和调查。', completion_criteria: '玩家实际拾取维修员遗落的房卡并已持有。仅看到房卡或打算拾取不算完成。', completion_exclusions: ['仅进入走廊', '只提出拾取', '拾取失败'], effects: [{collect: 'A'}], routes: [{target: 'N001', label: '返回大厅'}]},
+        {id: 'N003', title: '前台登记册', guidance: '前台无人值守，登记册中维修员身份与工牌信息不符。通过可观察线索呈现，不代替玩家调查。', completion_criteria: '玩家实际查阅登记册，并确认维修员登记身份与工牌信息不符。', completion_exclusions: ['仅到达前台', '仅打算查册', '尚未确认身份不符'], effects: [{collect: 'B'}], routes: [{target: 'N001', label: '返回大厅'}]},
         {id: 'C', title: '两条线索拼合', guidance: '房卡编号与假身份线索共同指向顶层的一间房。让玩家决定是否继续追查，逐步揭露有人借停电隐瞒行动。', effects: []},
         {id: 'D', title: '只有房卡', guidance: '房卡提供了房间方向，但身份信息仍缺失，保留疑点和继续调查的空间。', effects: [], routes: [{target: 'N001', label: '继续搜集线索'}]},
         {id: 'E', title: '只有身份线索', guidance: '确认维修员身份可疑，尚无法定位其房间，通过前台和在场人物的反应推动调查。', effects: [], routes: [{target: 'N001', label: '继续搜集线索'}]},

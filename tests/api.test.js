@@ -99,7 +99,7 @@ test('分析保留原文、重映射走向结局伏笔引用，不把未来答�
   const text = '停电，钟声响起。众人找到幕后人。'; const draft = await client(analyzed()).analyze(profile, text);
   const p = draft.project; assert.equal(p.original_text, text); assert.equal(p.nodes[1].kind, 'ending'); assert.deepEqual(p.nodes[0].effects, []);
   assert.equal(p.analysis.endings[0].node_id, p.nodes[1].id); assert.equal(p.analysis.foreshadowing[0].plant_node_ids[0], p.nodes[0].id);
-  assert.equal(p.nodes[0].routes[0].condition, true); assert(draft.warnings.some(x => x.includes('解锁条件')));
+  assert.equal(p.nodes[0].routes[0].condition, false); assert(draft.warnings.some(x => x.includes('解锁条件')));
   assert(!C.prompt(p, C.createProgress(p)).includes('钟声揭示幕后人的计划')); assert(!C.prompt(p, C.createProgress(p)).includes('众人找到幕后人'));
 });
 test('忠于原文拒绝虚构摘录和新增节点，补充分支必须显式标为建议', async () => {

@@ -15,7 +15,7 @@ function fixture() {
     getChatMessages(id) { const m = id === -1 ? this.messages.at(-1) : this.messages.find(m => m.message_id === Number(id)); return m ? [C.clone(m)] : []; },
     injectPrompts(items) { this.injection = items; }, uninjectPrompts() { this.injection = []; },
     eventOn(name, fn) { const set = listeners.get(name) || new Set(); set.add(fn); listeners.set(name, set); return {stop: () => set.delete(fn)}; },
-    async eventEmit(name, value) { await Promise.all([...(listeners.get(name) || [])].map(fn => fn(value))); },
+    async eventEmit(name, ...values) { await Promise.all([...(listeners.get(name) || [])].map(fn => fn(...values))); },
     getWorldbookNames() { return [...books.keys()]; },
     async getWorldbook(name) { if (!books.has(name)) throw Error('世界书不存在'); return C.clone(books.get(name)); },
     async createWorldbook(name) { if (books.has(name)) return false; books.set(name, []); return true; },
