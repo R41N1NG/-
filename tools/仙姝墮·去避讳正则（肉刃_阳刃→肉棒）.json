@@ -1,0 +1,15 @@
+{
+  "id": "e1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+  "scriptName": "仙姝墮·性器官去避讳（肉刃/阳刃→肉棒）",
+  "findRegex": "/(?:肉刃|阳刃)/g",
+  "replaceString": "肉棒",
+  "trimStrings": [],
+  "placement": [2],
+  "disabled": false,
+  "markdownOnly": false,
+  "promptOnly": false,
+  "runOnEdit": true,
+  "substituteRegex": 0,
+  "minDepth": null,
+  "maxDepth": null
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>#P#</title></head><body>
+<div id="chat">
+  <div class="mes" mesid="2"><div class="mes_text">上一楼</div></div>
+  <div class="mes" mesid="3"><div class="mes_text">
+    <div class="saying">他佝偻着背，把玉简收进袖中。</div>
+    <div class="xsd-root"><div id="content"><div class="loading">正在推演仙姝墮态势…</div></div></div>
+  </div></div>
+</div>
+<script>
+/* 宿主 API 桩：真机上由酒馆助手提供 */
+window.__RAW = "正文一段。\n\n<Status_block>\n<地点>北域 · 毒瘴沼泽</地点>\n<修为>元婴中期</修为>\n<身份>魂欢殿主 · 鬼医病相思</身份>\n<目标>摘花芷凝</目标>\n</Status_block>";
+window.getChatMessages = function (id) {
+  return [{ message: window.__RAW, mesid: (id === undefined ? 3 : id), is_user: false }];
+};
+window.__probe = {};
+</script>
+<script>
+__PANEL_SCRIPT__
+</script>
+<script>
+(function () {
+  var out = {};
+  var hud = window.XsdHUD;
+  out['XsdHUD 已挂载'] = !!hud;
+  out['加载后诊断'] = window.__after || null;
+  if (!hud) { document.title = '#P#' + JSON.stringify(out) + '#P#'; return; }
+  var host = document.querySelector('.mes[mesid="3"] .xsd-root');
+  var el = document.getElementById('content');
+  /* 真实时序：容器此刻**还没被宿主插入**（bootstrap 先 load）—— 这正是真机报"取不到原文"的场景 */
+  var detached = el;
+  var raw1 = hud.getMessageData(detached);
+  out['① 容器未插入时取到原文'] = !!(raw1 && raw1.length > 0);
+  /* 现在按宿主行为插入，再正式 mount */
+  host.innerHTML = '';
+  host.appendChild(el);
+  var res = hud.mount(el, raw1 || window.__RAW, hud.detectCurrentMessageId(el));
+  out['② mount 返回'] = !!res;
+  var q = function (k) { var n = el.querySelector('[data-xds="' + k + '"]'); return n ? (n.textContent || '').trim() : null; };
+  out['③ 地点'] = q('loc');
+  out['④ 修为'] = q('realm');
+  out['⑤ 身份'] = q('id');
+  out['⑥ 目标'] = q('goal');
+  out['⑦ 槽位总数'] = el.querySelectorAll('[data-xds]').length;
+  out['⑧ 已填格数'] = [].slice.call(el.querySelectorAll('[data-xds]')).filter(function (n) { return (n.textContent || '').trim(); }).length;
+  var sampleHit = null;
+  [].slice.call(el.querySelectorAll('*')).forEach(function (n) {
+    if (!sampleHit && n.children.length === 0 && /元婴初期|九皇子/.test(n.textContent || '')) {
+      sampleHit = n.getAttribute('data-xds') || n.className || n.tagName;
+    }
+  });
+  out['⑨ 样例值残留位置（null=没有）'] = sampleHit;
+  out['⑨b 骨架是否真的空（顶部样式里那串 base64 不算）'] = sampleHit === null;
+  out['⑩ 在场要角已渲染'] = /xds-cc|闻观语|柳玉|黑袍属下|病相思|残阳老怪/.test(el.innerHTML);
+  out['⑪ 样式已注入（父文档 head）'] = !!document.getElementById('xsd-hud-injected-style');
+  out['⑫ 样式中含字体 data URI'] = (function () { var s = document.getElementById('xsd-hud-injected-style'); return !!(s && s.textContent.indexOf('url(data:font/woff2;base64,') >= 0); })();
+  out['⑬ 骨架真的进了容器（无 .xh 则是没渲染）'] = !!el.querySelector('.xh');
+  document.title = '·' + JSON.stringify(out) + '·';
+})();
+</script></body></html>

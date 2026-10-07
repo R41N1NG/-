@@ -1,0 +1,28 @@
+# 临时与运行日志
+*.tmp
+*.tmp.json
+*.bak
+*.bak-*
+scratch/
+
+# 系统生成
+.DS_Store
+Thumbs.db
+# ── 2026-10-07 接入 Git 仓库时补：派生/重复产物不入库（真源都在 src/ · 卡片脚本/ · references/ · docs/ · tools/）
+# 构建归档与旧版备份
+dist/
+archive/
+*旧
+*.旧
+*.png.旧
+*.json.旧
+# 依赖与外部参考卡
+node_modules/
+_外部卡dump/
+references/历史世界书备份/
+# 根目录那几份卡副本（与 最新角色卡/ 重复的大文件）
+/仙姝堕.png
+/仙姝堕.json
+/仙姝墮-角色卡（全书群像）.png
+/仙姝墮-角色卡（全书群像）.json
+# ── 2026-10-07（主人令）：完整角色卡与世界书内容**不入库**

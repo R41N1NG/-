@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>中转段 · 实渲染 v4</title>
+<style>
+  :root{ --gold:#d8b46a; --gold2:#f0d69a; --dim:#8a7a5c; --bg:#0b0a09; --panel:#131110; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:#e8e2d6;font-family:"Noto Serif SC","Songti SC",serif;
+       padding:22px;width:680px;overflow:hidden}
+  .chat{background:var(--panel);border:1px solid #2a231c;border-radius:12px;padding:24px 26px 22px}
+  /* 玩家看到的那一楼：保留三道弧，弧里不再写「天道」 */
+  .screen{text-align:center;padding:16px 0 4px}
+  .ring{width:118px;height:118px;margin:0 auto 14px;position:relative}
+  .ring i{position:absolute;inset:0;border-radius:50%;border:1px solid transparent;
+          border-top-color:rgba(216,180,106,.9);border-right-color:rgba(216,180,106,.14)}
+  .ring i:nth-child(2){inset:14px;border-top-color:rgba(216,180,106,.5);border-left-color:rgba(216,180,106,.12)}
+  .ring i:nth-child(3){inset:29px;border-top-color:rgba(216,180,106,.28)}
+  .title{font-size:22px;letter-spacing:.5em;color:var(--gold2);margin:0 0 12px;text-indent:.5em}
+  .sub{font-size:11.5px;color:var(--dim);letter-spacing:.24em;margin:0 0 20px;text-indent:.24em}
+  .bar{width:62%;height:3px;background:#241d17;border-radius:2px;margin:0 auto 8px;overflow:hidden}
+  .bar span{display:block;height:100%;width:94%;background:linear-gradient(90deg,#5b4820,var(--gold2))}
+  .meta{font-size:10.5px;color:var(--dim);letter-spacing:.14em}
+  .quote{margin:20px auto 0;font-size:12.5px;color:#a2957f;letter-spacing:.15em}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,#3a2f24,transparent);margin:20px 0 15px}
+  .hidtitle{font-size:11px;color:#7d6a4a;letter-spacing:.3em;margin:0 0 12px}
+  .kv{font-size:12px;line-height:1.95;color:#cfc6b6}
+  .kv b{color:var(--gold);font-weight:400}
+  .fill{color:#e08a6a}
+  .hide{color:#8a7a5c;font-size:11.5px}
+  .box{margin:8px 0 4px;padding:9px 12px;background:#100e0c;border-left:2px solid #3a2f24;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="chat">
+  <div class="screen">
+    <div class="ring"><i></i><i></i><i></i></div>
+    <p class="title">世界运转中</p>
+    <p class="sub">上 一 段 已 结 算</p>
+    <div class="bar"><span></span></div>
+    <p class="meta">仙盟历 1579 年 · 六月　｜　第十六段 · 雀奴　⟶　第十七段 · 离山之后</p>
+    <p class="quote">「世界不会等你走完它。」</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <p class="hidtitle">后 台 结 算 块（不写进正文 · 面板不显示 · 本楼不出状态栏）</p>
+  <div class="kv">
+    <b>① 玩家行为</b>：<span class="fill">【模型填】上一段他实际做了什么 —— 逐条，只写真做过的</span>
+
+    <div class="box"><b>② 上一段结果</b>：<span class="fill">【模型填】他那样做，直接导致了什么</span></div>
+
+    <div class="box"><b>③ 默认走向</b>（<b>只写"没被玩家影响时会发生什么"，不枚举</b>）：<br>
+      孤月为救赵无忧，独赴天龙皇朝求取进入葬魔渊之法 ⇒ 以自身为代价，遭九皇子破身，九幽玄阴穴觉醒。
+      <br><span class="hide">※ 我们写死。出处：【设定】主线时间轴与走向 —「陷落：第二十二—二十九章…」</span>
+    </div>
+
+    <div class="box"><b>④ 结合（总结）</b>：把 ①②③ 合成<b>一段话</b> —— 上一段<b>实际</b>变成了什么样：<br>
+      <span class="fill">【模型填】他改动的部分以 ①② 为准；他没碰到的部分照 ③。</span>
+      <br><span class="hide">※ 整块的核心产物：一份可被后面引用的既成事实。</span>
+    </div>
+
+    <div class="box"><b>⑤ 接洽下一段</b> —— <b>下一段的开头如何进行</b>：<br>
+      <span class="hide">我们写死起算点：</span>自「孤月已在皇朝、赵无忧仍在葬魔渊渊底、双方互不知情」起算；渊底时间以年计，三处现场互不通音信。<br>
+      <span class="fill">【模型填】下一段第一楼从哪里起手：地点、在场者、正在发生的第一件事。</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

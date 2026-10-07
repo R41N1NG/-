@@ -1,0 +1,394 @@
+/* 卷中录 · 墨云金纹（2026-09-28 定稿）
+   预览：_preview_H.html ｜ 字体：_fonts/wenkai-subset.woff2（OFL 1.1，随卡嵌入）
+   ⚠️ 类名一律 .xh* 前缀；定位只认 data-xds 属性（酒馆会改 class 名）。严禁触碰宿主 html, body！ */
+
+  /* ═══ 嵌入字体：霞鹜文楷（OFL 1.1，可随卡分发）——只含状态栏用到的 485 个字形，98.8 KB woff2 ═══
+     构建方式：py -3 _subset_font.py --font LXGWWenKai-Medium.ttf --out wenkai-subset.woff2
+     预览时用 file:// 引用本地文件；进卡时改成 data: URI（base64，约 132 KB）。 */
+  .xh{max-width:620px;margin:0 auto;position:relative;border-radius:5px;overflow:hidden;
+    background:
+      radial-gradient(70% 45% at 12% 8%,rgba(58,62,64,.60),transparent 62%),
+      radial-gradient(60% 40% at 88% 18%,rgba(44,48,50,.55),transparent 60%),
+      radial-gradient(80% 50% at 50% 104%,rgba(30,34,36,.75),transparent 62%),
+      linear-gradient(170deg,#1b1d1e 0%,#141617 55%,#0e1011 100%);
+    border:1px solid #4a463c;
+    box-shadow:0 14px 38px rgba(0,0,0,.72), inset 0 0 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(200,180,120,.10)}
+  /* 墨云颗粒（内联 SVG feTurbulence，不用外链图）
+     ⚠️ 2026-09-28 第三十六轮：原来是 `opacity:.85` ＋ `slope='0.16'`，**screen 混合只提亮不提暗**，
+        把"深墨底"抬到 `#24262a~#2f3031` ⇒ 底下那几行灰字全糊在底纹里（主人：「下面字太黑看不清」）。
+        降成 `.5` ＋ `slope=0.12`：纹理照样看得见，但不再吃掉对比度（底色回到 `#17~#25` 一带）。 */
+  .xh::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.12'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E")}
+  /* 墨云：三层柔团（第二层纹理，避免只靠噪点显平） */
+  .xh::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.9;
+    background:
+      radial-gradient(42% 26% at 20% 12%,rgba(74,78,80,.55),transparent 70%),
+      radial-gradient(38% 22% at 78% 30%,rgba(52,56,58,.5),transparent 72%),
+      radial-gradient(52% 30% at 42% 88%,rgba(40,44,46,.6),transparent 74%),
+      radial-gradient(30% 18% at 92% 82%,rgba(66,70,72,.42),transparent 72%)}
+  /* 描金细框（内缩一圈，像参考图） */
+  .xh-frame{position:absolute;left:9px;right:9px;top:9px;bottom:9px;pointer-events:none;
+    border:1px solid rgba(170,140,74,.42);border-radius:2px}
+  .xh-frame::before{content:"";position:absolute;left:3px;right:3px;top:3px;bottom:3px;
+    border:1px solid rgba(170,140,74,.18)}
+  /* 左右竖向描金符纹（参考图两侧那两道） */
+  .xh-glyph{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:150px;pointer-events:none;opacity:.42;z-index:0}
+  .xh-glyph.l{left:10px}.xh-glyph.r{right:10px}
+  .xh-body{position:relative;z-index:1;padding:22px 52px 20px}
+
+  /* 抬头 */
+  .xh-top{display:flex;gap:14px;align-items:flex-start}
+  .xh-id{flex:1;min-width:0}
+  /* 题字／小标题／标签：楷体系（本机有 KaiTi；再挂 Noto Serif SC 兜底；传统字也在 KaiTi 里） */
+  .xh-title{font-family:"XSD Kai","KaiTi","STKaiti","Noto Serif SC","SimSun",serif;
+    font-size:24px;letter-spacing:11px;color:#f7f3e8;text-shadow:0 0 18px rgba(210,180,110,.22)}
+  .xh-title .sub{font-family:"Microsoft YaHei",sans-serif;font-size:9px;letter-spacing:3px;color:#b0aa99;
+    margin-left:8px;vertical-align:3px}
+  .xh-sub{font-family:"Microsoft YaHei",sans-serif;font-size:9px;letter-spacing:3px;color:#b0aa99;margin-left:8px;vertical-align:3px}
+  .xh-rule{height:10px;margin:6px 0 8px}
+  .xh-rule svg{display:block;width:100%;height:10px}
+  /* 玉牌名号 */
+  .xh-jade{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;letter-spacing:2px;
+    color:#eaf6ec;background:linear-gradient(180deg,rgba(122,176,144,.30),rgba(70,120,92,.20));
+    border:1px solid rgba(150,200,170,.42);border-radius:3px;padding:3px 11px;
+    box-shadow:0 0 12px rgba(110,190,150,.18), inset 0 1px 0 rgba(220,255,235,.18)}
+  .xh-jade .seal{width:15px;height:15px;border-radius:2px;flex:0 0 15px;
+    background:linear-gradient(160deg,#7ab090,#4f7f63);box-shadow:inset 0 0 4px rgba(255,255,255,.35)}
+  /* 四格速览：标签＋金色数值（2x2 网格：修为+在场 / 地点+时间） */
+  .xh-quick{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+  .xh-q{position:relative;padding:4px 9px 4px 26px;border-radius:2px;
+    background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+    border:1px solid rgba(120,116,100,.28)}
+  .xh-q .ic{position:absolute;left:7px;top:6px;width:13px;height:13px;border-radius:2px;
+    background:linear-gradient(160deg,#7ab090,#4f7f63);opacity:.9;
+    box-shadow:inset 0 0 4px rgba(255,255,255,.30)}
+  .xh-q .k{font-size:10px;letter-spacing:2px;color:#b2ac9b;font-family:"STKaiti","KaiTi",serif}
+  .xh-q .v{font-size:13px;color:#efe9dc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:"Microsoft YaHei","Noto Sans SC",sans-serif}
+  .xh-q .v.num{color:#e8c98a;font-weight:700;letter-spacing:.5px}
+  .xh-q.here{border-color:rgba(140,190,160,.42);background:linear-gradient(180deg,rgba(120,190,155,.10),rgba(120,190,155,.02))}
+  /* 立绘：细金框 */
+  .xh-face{flex:0 0 78px;height:102px;border-radius:3px;overflow:hidden;position:relative;
+    border:1px solid rgba(170,140,74,.55);background:linear-gradient(160deg,#22262a,#14181b);
+    box-shadow:0 4px 14px rgba(0,0,0,.6), inset 0 0 0 1px rgba(200,175,110,.18)}
+  .xh-face .sil{position:absolute;inset:0;background:
+    radial-gradient(60% 34% at 50% 26%,#5a6360 0 58%,transparent 60%),
+    radial-gradient(78% 52% at 50% 88%,#4a524f 0 62%,transparent 64%)}
+  .xh-face .nm{position:absolute;left:0;right:0;bottom:0;background:rgba(8,10,10,.78);
+    color:#e6dfd0;font-size:10px;text-align:center;letter-spacing:1px;padding:1.5px 0;
+    font-family:"STKaiti","KaiTi",serif;z-index:2}
+  /* ★ 身份头像位（2026-10-01 主人令）：按当前身份把对应角色的立绘画进右上角。
+     可点开灯箱（`a.xh-face-link` 带 `data-xsd-open`，与在场微卡同一套）。
+     缺图时脚本会把整个 a 撤掉，露出下面的 `.sil` CSS 剪影 —— 永不落碎图占位。 */
+  .xh-face a.xh-face-link{position:absolute;inset:0;display:block;z-index:1;cursor:pointer}
+  .xh-face img.xh-face-img{width:100%;height:100%;
+    object-fit:cover;object-position:50% 8%;display:block}
+  /* 三条重信息带 */
+  .xh-band{display:flex;gap:11px;padding:8px 0;align-items:baseline;
+    border-top:1px solid rgba(170,140,74,.20)}
+  .xh-band .k{flex:0 0 50px;font-size:12px;letter-spacing:3px;color:#b0aa99;
+    font-family:"STKaiti","KaiTi",serif;border-right:1px solid rgba(170,140,74,.24);padding-right:10px}
+  .xh-band .v{flex:1;min-width:0;font-size:13px;font-family:"Microsoft YaHei","Noto Sans SC",sans-serif}
+  .xh-band.goal .v{color:#f0ead9}
+  .xh-band.goal .v b{color:#e8c98a}
+  .xh-band.crisis{background:linear-gradient(90deg,rgba(150,44,30,.26),rgba(150,44,30,0) 72%)}
+  .xh-band.crisis .k{color:#d98a72;border-right-color:rgba(217,138,114,.32)}
+  .xh-band.crisis .v{color:#ffac93;font-weight:700}
+  .xh-band.rel .k{color:#a99cc9}
+  .xh-band.rel .v{color:#d6cbe6}
+  .xh-band.state{background:linear-gradient(90deg,rgba(70,120,95,.20),rgba(70,120,95,0) 72%)}
+  .xh-band.state .k{color:#9ec2a8;border-right-color:rgba(158,194,168,.30)}
+  .xh-band.state .v{color:#e2f0e5}
+  /* 折叠：细金线 ＋ 楷体题 */
+  .xh-fold{border-top:1px solid rgba(170,140,74,.20);margin:0 -52px;padding:0 52px}
+  .xh-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;
+    padding:7.5px 0;font-family:"STKaiti","KaiTi",serif;font-size:13.5px;letter-spacing:4px;color:#cfc7b0}
+  .xh-fold>summary::-webkit-details-marker{display:none}
+  .xh-fold>summary .arw{flex:0 0 14px;color:#c9a24a;font-size:11px}
+  .xh-fold[open]>summary .arw::before{content:"▾"}
+  .xh-fold:not([open])>summary .arw::before{content:"▸"}
+  .xh-fold>summary .peek{margin-left:auto;font-family:"Microsoft YaHei","Noto Sans SC",sans-serif;font-size:11px;
+    letter-spacing:0;color:#b2ac9c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58%}
+  .xh-fold[open]>summary{color:#f2ecd9}
+  .xh-body2{padding:2px 0 10px}
+  .xh-r{display:flex;gap:12px;padding:2px 0}
+  .xh-k{flex:0 0 54px;font-size:12px;letter-spacing:2px;color:#b2ac9b;font-family:"STKaiti","KaiTi",serif}
+  .xh-v{flex:1;min-width:0;color:#e6e0d2;font-family:"Microsoft YaHei","Noto Sans SC","DengXian",sans-serif}
+  .xh-v.dim{color:#bcb6a6}
+  /* 纳戒物品栏 */
+  .xh-inv-box{display:flex;flex-direction:column;gap:5px;padding:2px 0}
+  .xh-inv-item{display:flex;align-items:baseline;gap:8px;font-size:12.5px;line-height:1.6}
+  .xh-inv-name{background:none;border:none;padding:0;color:#e8c98a;cursor:pointer;font-family:"STKaiti","KaiTi",serif;font-size:13px;font-weight:700;letter-spacing:1px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(232,201,138,.4);white-space:nowrap;transition:color .15s ease,text-decoration-color .15s ease}
+  .xh-inv-name:hover{color:#ffd700;text-decoration-color:#ffd700}
+  .xh-inv-desc{color:#d1c7b7;font-family:"Microsoft YaHei","Noto Sans SC",sans-serif;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+  .xh-inv-empty{color:#9d978d;font-size:12px;font-family:"STKaiti","KaiTi",serif;padding:4px 0}
+  /* 在场要角 */
+  .xh-cast{border-top:1px solid rgba(170,140,74,.20);padding-top:11px;margin-top:2px}
+  .xh-cast .hd{font-family:"STKaiti","KaiTi",serif;font-size:13px;letter-spacing:6px;color:#cfc7b0;margin-bottom:7px}
+  .xh-cc{display:flex;gap:11px;padding:7px 11px;border-radius:3px;
+    background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));
+    border:1px solid rgba(120,116,100,.28)}
+  .xh-cc .av{flex:0 0 42px;height:54px;border-radius:2px;overflow:hidden;position:relative;
+    border:1px solid rgba(170,140,74,.45);background:linear-gradient(160deg,#212529,#14181a)}
+  .xh-cc .av .sil{position:absolute;inset:0;background:
+    radial-gradient(62% 36% at 50% 28%,#565f5c 0 58%,transparent 60%),
+    radial-gradient(80% 54% at 50% 90%,#474f4c 0 62%,transparent 64%)}
+  .xh-cc .info{flex:1;min-width:0}
+  .xh-cc .nm{display:flex;align-items:baseline;gap:9px}
+  .xh-cc .nm b{font-family:"STKaiti","KaiTi",serif;font-size:15px;letter-spacing:2px;color:#f4efe2}
+  .xh-cc .nm i{font-style:normal;font-size:11px;color:#c9a24a}
+  .xh-cc .rows{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;margin-top:3px}
+  .xh-cc .rows span{font-size:11.5px;color:#b3ad9d;font-family:"Microsoft YaHei","Noto Sans SC",sans-serif}
+  .xh-cc .rows em{font-style:normal;color:#e2dbcb}
+  /* ═══ 在场要角 · **运行时**那一套（脚本 renderCast 产出的是 `.xds-*`，不是上面的 `.xh-*`）═══
+     2026-09-28 第三十六轮实测（无头浏览器 `getComputedStyle` ＋ 数 stylesheet 里的规则）：
+       · 文档里 **`.xds-` 规则数 = 0**；
+       · `.xds-cc` / `.xds-cc-h` / `.xds-ck` / `.xds-cv` 的 computed color **全是宿主继承色**、字号 **16px**；
+       · 而设计稿那套 `.xh-cc` 的元素**在真机 DOM 里根本不存在**（"(无此元素)"）。
+     ⇒ 主人看到的"下面又黑又看不清"就是这个：整块**从来没被样式化过**，四行属性用 16px 默认字号堆成一坨。
+     下面这组是补上的运行时样式（配色沿用 .xh-cc，值已过 `_chk_contrast.mjs` 对比度体检）。 */
+  .xds-cc{display:flex;gap:10px;padding:8px 11px;border-radius:3px;margin-top:6px;
+    background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.014));
+    border:1px solid rgba(120,116,100,.30)}
+  .xds-cc .xds-cc-body{flex:1;min-width:0}
+  .xds-cc .xds-cc-h{font-family:"STKaiti","KaiTi",serif;font-size:15px;letter-spacing:2px;color:#f4efe2;margin-bottom:3px}
+  .xds-cc .xds-cc-r{display:flex;gap:8px;padding:1px 0}
+  .xds-cc .xds-ck{flex:0 0 32px;font-size:11.5px;line-height:1.7;color:#b3ad9d;font-family:"Microsoft YaHei","Noto Sans SC",sans-serif}
+  .xds-cc .xds-cv{flex:1;min-width:0;font-size:12.5px;line-height:1.7;color:#e6e0d2;
+    font-family:"Microsoft YaHei","Noto Sans SC","DengXian",sans-serif;white-space:normal}
+  /* 页脚墨云 */
+  .xh-foot{position:relative;height:38px;margin:6px -52px -20px}
+  .xh-foot svg{display:block;width:100%;height:38px}
+
+  /* ═══ 名器纹章栏（两翼 · 2026-10-01 主人令：96px，绑 known 闸门）═══
+     面板本体宽度不动（.xh 620）；两翼由脚本在挂载时包一层 .xh-wrap 再插进来。
+     窄屏折叠：≤900px 时两翼并成一行铺到面板下方（手机上不挤爆）。 */
+  .xh-wrap{display:flex;justify-content:center;align-items:flex-start;gap:14px;max-width:100%;margin:0 auto}
+  .xh-rail{display:flex;flex-direction:column;gap:10px;flex:0 0 96px;width:96px}
+  .xh-rail-l{align-items:flex-end}
+  .xh-rail-r{align-items:flex-start}
+  .xh-relic{width:96px;height:96px;position:relative;flex:0 0 96px}
+  .xh-relic svg{width:100%;height:100%;display:block}
+  /* 底图：HTML 层的 CSS 背景（**不用 SVG <image>** —— 它 404 时会画碎图占位）。
+     缺图时什么都不显示，只剩墨底＋外框＋阶段弧。 */
+  .xh-relic .xh-relic-img{position:absolute;inset:0;background-color:#0b0f14;
+    background-size:cover;background-position:center;background-repeat:no-repeat}
+  @media (max-width:900px){
+    .xh-wrap{flex-wrap:wrap;gap:10px}
+    .xh-rail{flex:0 0 100%;width:100%;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px}
+    .xh-rail-l{align-items:center}
+    .xh-relic{width:72px;height:72px;flex:0 0 72px}
+  }
+
+  /* ═══ 方案 A: 悬停浮层气泡 (Hover Popover) ═══ */
+  .xh-relic{cursor:pointer;transition:transform .15s ease}
+  .xh-relic:hover{transform:scale(1.04)}
+  .xh-relic-popover{position:absolute;width:340px;background:linear-gradient(165deg,rgba(26,29,38,.98),rgba(16,18,24,.99));
+    border:1px solid #d4af37;border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.85),0 0 20px rgba(212,175,55,.25);
+    padding:14px 16px;z-index:99999;pointer-events:auto;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+  .xh-relic-popover .pop-header{display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(212,175,55,.2);padding-bottom:8px;margin-bottom:10px}
+  .xh-relic-popover .pop-avatar{width:40px;height:40px;border-radius:50%;border:1px solid #ffd700;box-shadow:0 0 8px rgba(255,215,0,.3);background-size:cover;flex:0 0 40px}
+  .xh-relic-popover .pop-titles{flex:1;min-width:0}
+  .xh-relic-popover .pop-name{font-size:14px;font-weight:700;color:#ffd700;display:flex;justify-content:space-between;align-items:center}
+  .xh-relic-popover .pop-badge{font-size:10px;padding:2px 5px;border-radius:3px;background:rgba(212,175,55,.15);color:#e5c158;border:1px solid rgba(212,175,55,.3)}
+  .xh-relic-popover .pop-owner{font-size:11.5px;color:#4ade80;margin-top:2px}
+  .xh-relic-popover .pop-owner.other{color:#f87171}
+  .xh-relic-popover .pop-owner.none{color:#9ca3af}
+  .xh-relic-popover .pop-stages{display:flex;gap:4px;margin-bottom:10px}
+  .xh-relic-popover .stage-bar{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.1)}
+  .xh-relic-popover .stage-bar.reached{background:linear-gradient(90deg,#d4af37,#ffd700);box-shadow:0 0 6px rgba(255,215,0,.5)}
+  .xh-relic-popover .current-stage-card{background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.3);border-radius:5px;padding:8px 10px;margin-bottom:8px}
+  .xh-relic-popover .csc-title{font-size:12px;font-weight:700;color:#ffd700;display:flex;justify-content:space-between;margin-bottom:3px}
+  .xh-relic-popover .csc-text{font-size:11px;color:#d1c7b7;line-height:1.5}
+  .xh-relic-popover .locked-stages{display:flex;flex-direction:column;gap:3px;border-top:1px dashed rgba(255,255,255,.1);padding-top:6px}
+  .xh-relic-popover .locked-item{font-size:10.5px;color:#9197a3;display:flex;justify-content:space-between}
+  .xh-relic-popover .pop-footer{margin-top:8px;font-size:10.5px;color:#9e9689;text-align:right}
+
+  /* ═══ 方案 B: 点击弹窗全景图鉴 (Click Modal Album · 名器玄鉴) ═══ */
+  #xsd-relic-modal{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:999999;display:flex;justify-content:center;align-items:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 10px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+  #xsd-relic-modal .modal-wrap{width:1040px;max-width:96vw;margin:auto;background:radial-gradient(circle at 50% 25%,rgba(28,32,44,.98),rgba(12,13,18,.99));border:1px solid rgba(212,175,55,.45);border-radius:12px;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,.9),0 0 35px rgba(212,175,55,.2);position:relative;box-sizing:border-box}
+  #xsd-relic-modal .modal-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(212,175,55,.25);padding-bottom:14px;margin-bottom:18px;position:sticky;top:-24px;z-index:10;background:rgba(16,19,26,.97);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);margin:-24px -28px 18px -28px;padding:18px 28px 14px 28px;border-top-left-radius:12px;border-top-right-radius:12px}
+  #xsd-relic-modal .header-left{display:flex;align-items:center;gap:14px;min-width:0}
+  #xsd-relic-modal .relic-emblem{width:56px;height:56px;border-radius:50%;border:2px solid #ffd700;box-shadow:0 0 14px rgba(255,215,0,.4);background-size:cover;background-position:center;flex:0 0 56px}
+  #xsd-relic-modal .title-group h1{font-size:18px;color:#ffd700;letter-spacing:1px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  #xsd-relic-modal .title-sub{font-size:12px;color:#a29683}
+  #xsd-relic-modal .header-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+  #xsd-relic-modal .owner-badge{padding:4px 12px;border-radius:16px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.4);color:#4ade80;font-size:12px;font-weight:600}
+  #xsd-relic-modal .owner-badge.other{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4);color:#f87171}
+  #xsd-relic-modal .owner-badge.none{background:rgba(156,163,175,.12);border-color:rgba(156,163,175,.4);color:#9ca3af}
+  #xsd-relic-modal .close-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#d1c7b7;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;font-weight:700;touch-action:manipulation;transition:all .15s ease}
+  #xsd-relic-modal .close-btn:hover,#xsd-relic-modal .close-btn:active{background:rgba(212,175,55,.25);border-color:#d4af37;color:#ffd700;transform:scale(1.08)}
+  #xsd-relic-modal .relic-tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #xsd-relic-modal .relic-tab{padding:5px 12px;border-radius:5px;font-size:12px;color:#9e9689;background:rgba(0,0,0,.3);border:1px solid transparent;cursor:pointer;white-space:nowrap;touch-action:manipulation;transition:all .15s ease}
+  #xsd-relic-modal .relic-tab.active{color:#ffd700;background:rgba(212,175,55,.15);border-color:rgba(212,175,55,.4);font-weight:700}
+  #xsd-relic-modal .relic-tab.other{color:#f87171;border-color:rgba(248,113,113,.3)}
+  #xsd-relic-modal .stages-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  #xsd-relic-modal .stage-card{background:rgba(18,21,28,.7);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:14px;display:flex;flex-direction:column;position:relative}
+  #xsd-relic-modal .stage-card.unlocked{background:linear-gradient(170deg,rgba(38,34,22,.85),rgba(20,23,30,.95));border:1px solid #d4af37;box-shadow:0 4px 16px rgba(212,175,55,.15)}
+  #xsd-relic-modal .stage-card.locked{opacity:.68;border-style:dashed}
+  #xsd-relic-modal .sc-badge{font-size:10px;color:#d4af37;letter-spacing:1px;margin-bottom:2px;display:block}
+  #xsd-relic-modal .sc-title{font-size:13.5px;font-weight:700;color:#fff;margin-bottom:8px}
+  #xsd-relic-modal .stage-card.unlocked .sc-title{color:#ffd700}
+  #xsd-relic-modal .sc-status-pill{position:absolute;top:10px;right:10px;font-size:10px;padding:1px 5px;border-radius:3px}
+  #xsd-relic-modal .stage-card.unlocked .sc-status-pill{background:rgba(212,175,55,.2);color:#ffd700;border:1px solid rgba(212,175,55,.3)}
+  #xsd-relic-modal .stage-card.locked .sc-status-pill{background:rgba(0,0,0,.4);color:#9197a3}
+  #xsd-relic-modal .sc-field-title{font-size:10.5px;color:#a89f91;font-weight:700;margin-top:6px;margin-bottom:2px}
+  #xsd-relic-modal .sc-field-text{font-size:11.5px;color:#c4baa7;line-height:1.55;flex:1}
+  #xsd-relic-modal .sc-lock-hint{margin-top:8px;padding:6px 8px;border-radius:4px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);font-size:10.5px;color:#9f9689}
+  #xsd-relic-modal .modal-footer{border-top:1px solid rgba(212,175,55,.15);padding-top:14px;font-size:11px;color:#9e9689;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  #xsd-relic-modal .modal-footer-hint{display:flex;flex-direction:column;gap:3px}
+  #xsd-relic-modal .modal-close-action{padding:7px 18px;border-radius:6px;background:linear-gradient(135deg,rgba(212,175,55,.22),rgba(160,120,40,.18));border:1px solid rgba(212,175,55,.5);color:#ffd700;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;touch-action:manipulation;transition:all .15s ease}
+  #xsd-relic-modal .modal-close-action:hover,#xsd-relic-modal .modal-close-action:active{background:linear-gradient(135deg,rgba(212,175,55,.38),rgba(160,120,40,.3));border-color:#ffd700;color:#fff;box-shadow:0 0 10px rgba(212,175,55,.3)}
+
+  @media(max-width:900px){
+    #xsd-relic-modal .stages-grid{grid-template-columns:1fr 1fr}
+  }
+
+  @media(max-width:600px){
+    /* ═══ 移动端状态栏排版贴边与自适应优化（解决内边距过大靠中、在场时间截断超框、字段不全） ═══ */
+    /* 1. 左右内边距由 52px 缩减贴边至 14px，瞬间为手机释放 76px 横向显示空间 */
+    .xh-body{padding:14px 14px 16px!important}
+    /* 2. 隐藏两侧固定描金符纹（小屏下避免挤压和重叠） */
+    .xh-glyph{display:none!important}
+    /* 3. 细金框自适应贴边 */
+    .xh-frame{left:4px!important;right:4px!important;top:4px!important;bottom:4px!important}
+    /* 4. 折叠分割线贴边对齐 */
+    .xh-fold{margin:0 -14px!important;padding:0 14px!important}
+
+    /* 5. 顶栏排版微调 */
+    .xh-top{gap:8px}
+    .xh-title{font-size:21px;letter-spacing:6px}
+    .xh-jade{font-size:12px;padding:2px 8px;gap:5px}
+    .xh-face{flex:0 0 68px;height:90px}
+
+    /* 6. 四格速览【在场】【时间】超框与截断根治：放宽内距、字号自适应、允许两行舒展显示 */
+    .xh-quick{margin-top:8px;gap:5px 6px!important}
+    .xh-q{padding:3px 6px 3px 22px!important}
+    .xh-q .ic{left:5px!important;top:5px!important;width:11px!important;height:11px!important}
+    .xh-q .k{font-size:9.5px!important;letter-spacing:1px}
+    .xh-q .v{font-size:11.5px!important;white-space:normal!important;line-height:1.25!important;word-break:break-all!important;max-height:2.6em!important;overflow:hidden!important}
+
+    /* 7. 状态字段、折叠预览放宽 */
+    .xh-band{gap:8px;padding:6px 0}
+    .xh-band .k{flex:0 0 42px!important;font-size:11.5px!important;letter-spacing:1.5px!important;padding-right:6px!important}
+    .xh-band .v{font-size:12px!important;line-height:1.45}
+    .xh-fold>summary{font-size:12.5px!important;letter-spacing:2px!important;padding:6.5px 0}
+    .xh-fold>summary .peek{max-width:70%!important;font-size:10.5px!important}
+    .xh-body2{padding:2px 0 8px}
+    .xh-inv-item{flex-wrap:wrap;gap:2px 6px}
+    .xh-inv-desc{white-space:normal;flex:1 1 100%}
+
+    /* 8. 模态窗移动端规则 */
+    #xsd-relic-modal{padding:8px 6px!important;align-items:flex-start!important}
+    #xsd-relic-modal .modal-wrap{width:100%!important;max-width:100%!important;margin:4px auto!important;padding:14px 12px!important;border-radius:8px!important}
+    #xsd-relic-modal .modal-header{margin:-14px -12px 12px -12px;padding:12px 14px 10px 14px;border-top-left-radius:8px;border-top-right-radius:8px;flex-wrap:wrap;gap:8px}
+    #xsd-relic-modal .header-left{gap:10px;flex:1;min-width:0}
+    #xsd-relic-modal .relic-emblem{width:42px;height:42px;flex:0 0 42px}
+    #xsd-relic-modal .title-group h1{font-size:14.5px;gap:6px}
+    #xsd-relic-modal .title-sub{font-size:11px}
+    #xsd-relic-modal .header-right{gap:6px}
+    #xsd-relic-modal .owner-badge{padding:2px 7px;font-size:10px}
+    #xsd-relic-modal .close-btn{width:32px;height:32px;font-size:16px}
+    #xsd-relic-modal .relic-tabs{gap:6px;margin-bottom:12px;padding-bottom:8px}
+    #xsd-relic-modal .relic-tab{padding:4px 9px;font-size:11px}
+    #xsd-relic-modal .stages-grid{grid-template-columns:1fr!important;gap:10px;margin-bottom:14px}
+    #xsd-relic-modal .stage-card{padding:10px 12px}
+    #xsd-relic-modal .modal-footer{flex-direction:column;gap:10px;align-items:stretch;text-align:center}
+    #xsd-relic-modal .modal-footer-esc{display:none}
+    #xsd-relic-modal .modal-close-action{width:100%;padding:10px;font-size:13.5px}
+  }
+
+  @media(max-width:380px){
+    .xh-body{padding:12px 10px 14px!important}
+    .xh-fold{margin:0 -10px!important;padding:0 10px!important}
+    .xh-face{flex:0 0 60px;height:80px}
+    .xh-quick{grid-template-columns:1fr 1fr;gap:4px 4px!important}
+    .xh-q{padding:3px 4px 3px 18px!important}
+    .xh-q .ic{left:4px!important;top:5px!important;width:10px!important;height:10px!important}
+    .xh-q .v{font-size:10.5px!important}
+  }
+
+/* 移动端适配：按消息容器的实际宽度排版；桌面规则保留。 */
+.xh-relic-label{display:none}
+.xh-relic,#xsd-relic-modal button{-webkit-tap-highlight-color:transparent}
+.xh-relic:focus-visible{outline:2px solid #e8c98a;outline-offset:4px}
+.xh-wrap[data-xds-layout="compact"],.xh-wrap[data-xds-layout="mobile"]{
+  display:grid;grid-template-columns:repeat(var(--xsd-relic-columns,5),minmax(0,1fr));
+  column-gap:8px;row-gap:30px;width:100%;min-width:0;padding-bottom:22px;box-sizing:border-box}
+.xh-wrap[data-xds-layout]>.xh{grid-column:1/-1;grid-row:1;justify-self:center;min-width:0}
+.xh-wrap[data-xds-layout="compact"]>.xh,.xh-wrap[data-xds-layout="mobile"]>.xh{width:100%;box-sizing:border-box}
+.xh-wrap[data-xds-layout="compact"]>.xh-rail,.xh-wrap[data-xds-layout="mobile"]>.xh-rail{display:contents}
+.xh-wrap[data-xds-layout="compact"] .xh-relic,.xh-wrap[data-xds-layout="mobile"] .xh-relic{
+  width:100%;max-width:72px;height:auto;aspect-ratio:1;flex:none;justify-self:center;min-width:0;touch-action:manipulation}
+.xh-wrap[data-xds-layout="compact"] .xh-relic-label,.xh-wrap[data-xds-layout="mobile"] .xh-relic-label{
+  display:block;position:absolute;top:100%;left:0;right:0;margin-top:4px;color:#bcb6a6;
+  font:10px/1.3 "Microsoft YaHei","PingFang SC",sans-serif;text-align:center;overflow-wrap:anywhere;pointer-events:none}
+.xh-wrap[data-xds-layout="mobile"] .xh-body{padding:14px 14px 16px!important}
+.xh-wrap[data-xds-layout="mobile"] .xh-glyph{display:none!important}
+.xh-wrap[data-xds-layout="mobile"] .xh-frame{left:4px!important;right:4px!important;top:4px!important;bottom:4px!important}
+.xh-wrap[data-xds-layout="mobile"] .xh-fold{margin:0 -14px!important;padding:0 14px!important}
+.xh-wrap[data-xds-layout="mobile"] .xh-top{display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:6px 10px;align-items:start}
+.xh-wrap[data-xds-layout="mobile"] .xh-id{display:contents}
+.xh-wrap[data-xds-layout="mobile"] .xh-title{grid-column:1;grid-row:1;font-size:21px;letter-spacing:4px;overflow-wrap:anywhere}
+.xh-wrap[data-xds-layout="mobile"] .xh-title .sub,.xh-wrap[data-xds-layout="mobile"] .xh-sub{font-size:9px;letter-spacing:1px;margin-left:0;display:block}
+.xh-wrap[data-xds-layout="mobile"] .xh-id>div:nth-child(3){grid-column:1;grid-row:3;min-width:0}
+.xh-wrap[data-xds-layout="mobile"] .xh-rule{grid-column:1;grid-row:2;margin:0;height:10px}
+.xh-wrap[data-xds-layout="mobile"] .xh-jade{grid-column:1;grid-row:3;justify-self:start;max-width:100%;box-sizing:border-box;flex-wrap:wrap;font-size:12px;padding:3px 8px;letter-spacing:1px}
+.xh-wrap[data-xds-layout="mobile"] .xh-face{grid-column:2;grid-row:1/4;width:62px;height:84px;min-width:0}
+.xh-wrap[data-xds-layout="mobile"] .xh-quick{grid-column:1/-1;grid-row:4;margin-top:6px;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px!important}
+.xh-wrap[data-xds-layout="mobile"] .xh-q{min-width:0;padding:5px 7px 5px 23px!important;box-sizing:border-box}
+.xh-wrap[data-xds-layout="mobile"] .xh-q .k{font-size:10px!important;letter-spacing:1px}
+.xh-wrap[data-xds-layout="mobile"] .xh-q .ic{left:6px!important;top:7px!important;width:11px!important;height:11px!important}
+.xh-wrap[data-xds-layout="mobile"] .xh-q .v{font-size:12px!important;line-height:1.5!important;white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere;max-height:none!important;overflow:visible!important}
+.xh-wrap[data-xds-layout="mobile"] .xh-band{gap:8px;padding:8px 0;align-items:flex-start}
+.xh-wrap[data-xds-layout="mobile"] .xh-band .k{flex:0 0 42px!important;font-size:12px!important;letter-spacing:1px!important;padding-right:6px!important}
+.xh-wrap[data-xds-layout="mobile"] .xh-band .v{font-size:13px!important;line-height:1.65;overflow-wrap:anywhere}
+.xh-wrap[data-xds-layout="mobile"] .xh-fold>summary{min-height:44px;box-sizing:border-box;font-size:13px!important;letter-spacing:2px!important;padding:10px 0}
+.xh-wrap[data-xds-layout="mobile"] .xh-fold>summary .peek{min-width:0;max-width:50%!important;font-size:11px!important}
+.xh-wrap[data-xds-layout="mobile"] .xh-v,.xh-wrap[data-xds-layout="mobile"] .xds-cv{overflow-wrap:anywhere;line-height:1.65}
+.xh-wrap[data-xds-layout="mobile"] .xh-inv-item{flex-wrap:wrap;gap:2px 6px}
+.xh-wrap[data-xds-layout="mobile"] .xh-inv-desc{white-space:normal;flex:1 1 100%}
+.xh-wrap[data-xds-layout="mobile"] .xh-foot{margin:6px -14px -16px}
+.xh-wrap[data-xds-layout="mobile"] [data-xds-selfcheck]{display:none!important}
+.xh-wrap[data-xds-tiny="1"] .xh-title{font-size:19px;letter-spacing:3px}
+.xh-wrap[data-xds-tiny="1"] .xh-jade{font-size:11px;padding:3px 6px}
+/* 对当前帧可悬停、实际由鼠标触发的操作才显示预览。 */
+@media(hover:none){.xh-relic:hover{transform:none}}
+.xh-relic-popover{max-width:calc(100vw - 20px);box-sizing:border-box;max-height:calc(100dvh - 20px);overflow-y:auto;overscroll-behavior:contain}
+.xh-relic-popover .pop-name{flex-wrap:wrap;gap:4px}
+/* 弹窗挂到可访问的宿主页；手机保留顶栏和关闭区，只滚动阶段内容。 */
+#xsd-relic-modal .modal-wrap,#xsd-relic-modal .title-group{min-width:0}
+#xsd-relic-modal .close-btn,#xsd-relic-modal .relic-tab{font-family:inherit;line-height:inherit}
+#xsd-relic-modal .close-btn{padding:0;flex-shrink:0;box-sizing:content-box}
+#xsd-relic-modal .relic-tab{flex-shrink:0}
+#xsd-relic-modal .stage-card{min-width:0;overflow-wrap:anywhere}
+#xsd-relic-modal[data-xds-mobile-modal="1"]{
+  --xsd-modal-padding:max(8px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));
+  --xsd-modal-overflow:hidden;overscroll-behavior:contain}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .modal-wrap{
+  width:100%!important;max-width:100%!important;height:100%;min-height:0;margin:0!important;padding:0!important;
+  display:flex;flex-direction:column;overflow:hidden;border-radius:10px!important}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .modal-header{
+  display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:8px;margin:0!important;padding:12px!important;
+  position:static;top:auto;flex:0 0 auto;border-radius:10px 10px 0 0}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .header-left{grid-column:1;grid-row:1;gap:9px;min-width:0}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .header-right{display:contents}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .relic-emblem{width:42px;height:42px;flex:0 0 42px;box-sizing:border-box}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .title-group h1{font-size:15px;line-height:1.4;flex-wrap:wrap;gap:4px;margin:0 0 4px;overflow-wrap:anywhere}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .title-sub{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .owner-badge{grid-column:1;grid-row:2;justify-self:start;max-width:100%;font-size:11px;line-height:1.5;padding:3px 8px;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .close-btn{grid-column:2;grid-row:1/3;align-self:start;width:44px;height:44px;box-sizing:border-box}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .relic-tabs{flex:0 0 auto;margin:0;padding:9px 12px;gap:6px;min-width:0;overscroll-behavior-x:contain}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .relic-tab{min-height:44px;padding:8px 10px;font-size:12px;line-height:1.4;box-sizing:border-box}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .stages-grid{
+  grid-template-columns:minmax(0,1fr)!important;align-content:start;flex:1 1 auto;min-height:0;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;margin:0;padding:12px;gap:10px}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .stage-card{padding:12px;opacity:1}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .stage-card.locked{background:rgba(18,21,28,.55)}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .sc-status-pill{position:static;align-self:flex-start;margin:0 0 6px;max-width:100%}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .sc-field-title{font-size:11px}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .sc-field-text{font-size:13px;line-height:1.65}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .sc-lock-hint{font-size:12px!important;line-height:1.6!important}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .modal-footer{flex:0 0 auto;margin:0;padding:8px 12px;gap:0;background:rgba(16,19,26,.98)}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .modal-footer-hint{display:none}
+#xsd-relic-modal[data-xds-mobile-modal="1"] .modal-close-action{width:100%;min-height:44px;padding:10px;box-sizing:border-box;font-size:13px;font-family:inherit}
+@media(prefers-reduced-motion:reduce){.xh-relic{transition:none}}

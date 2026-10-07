@@ -1,0 +1,50 @@
+```
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>仙姝墮 · 态势HUD</title></head><body><div id="content"><div class="loading">正在推演仙姝墮态势…</div></div>
+<script>
+/* 仙姝墮 · 态势 HUD 引导件（照《制卡规范 v2.0》§C 卷）
+ * ⚠️ 上面那行**必须保持一整行**：酒馆助手判断"要不要把代码块变成 iframe"的函数是
+ *    ['html>','<head>','<body'].some(t => text.includes(t)) —— 折行就会三个都不命中，
+ *    助手不建 iframe ⇒ 本脚本永不执行（真机症状：面板空着、点不开、控制台一行都没有）。
+ * ⚠️ 本块内**不许出现反引号与反斜杠**（它们会咬断外层的 markdown 围栏与模板字面量）。
+ */
+(function () {
+  'use strict';
+  function getXsdHUD() {
+    try {
+      if (typeof window !== 'undefined') {
+        if (window.XsdHUD) return window.XsdHUD;
+        if (window.parent && window.parent.XsdHUD) return window.parent.XsdHUD;
+        if (window.top && window.top.XsdHUD) return window.top.XsdHUD;
+      }
+    } catch (e) { /* 跨源 */ }
+    return null;
+  }
+  var tries = 0;
+  function init() {
+    var hud = getXsdHUD();
+    if (!hud) {
+      if (tries++ < 40) { setTimeout(init, 50); return; }
+      var c0 = document.getElementById('content');
+      if (c0) c0.innerHTML = '<div class="loading">等待酒馆助手核心载入…</div>';
+      return;
+    }
+    var el = document.getElementById('content');
+    var fe = null;
+    try { if (typeof window !== 'undefined' && window.frameElement) fe = window.frameElement; } catch (e) { }
+    var target = fe || el;
+    var raw = null, msgId = null;
+    try { raw = hud.getMessageData ? hud.getMessageData(target) : null; } catch (e) { }
+    try { msgId = hud.detectCurrentMessageId ? hud.detectCurrentMessageId(target) : null; } catch (e) { }
+    if (!raw) {
+      if (tries++ < 40) { setTimeout(init, 50); return; }
+      if (el) el.innerHTML = '<div class="loading">取不到原文（状态栏未渲染）</div>';
+      return;
+    }
+    if (el && hud.mount) hud.mount(el, raw, msgId);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body></html>
+```

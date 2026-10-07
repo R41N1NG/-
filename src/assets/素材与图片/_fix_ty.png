@@ -1,0 +1,105 @@
+// 修复 太元圣女.png：character_book.entries[*].keys / secondary_keys 必须是数组
+const fs = require('fs');
+const path = require('path');
+
+const SRC = 'E:\\tavern\\SillyTavern\\data\\default-user\\characters\\太元圣女.png';
+const BAK = 'E:\\火狐下载\\_酒馆备份_20260922\\太元圣女.png.bak';
+
+fs.mkdirSync(path.dirname(BAK), { recursive: true });
+if (!fs.existsSync(BAK)) { fs.copyFileSync(SRC, BAK); console.log('已备份 → ' + BAK); }
+else console.log('备份已存在 → ' + BAK);
+
+const buf = fs.readFileSync(SRC);
+
+// 定位 chara 的 tEXt 块
+let off = 8, target = null;
+while (off + 8 <= buf.length) {
+  const len = buf.readUInt32BE(off);
+  const type = buf.subarray(off + 4, off + 8).toString('ascii');
+  const data = buf.subarray(off + 8, off + 8 + len);
+  if (type === 'tEXt') {
+    const z = data.indexOf(0);
+    const kw = data.subarray(0, z).toString('latin1');
+    if (kw === 'chara' || kw === 'ccv3') {
+      if (!target) target = { kw, dataStart: off + 8, dataEnd: off + 8 + len, totalLen: 12 + len, chunkStart: off };
+    }
+  }
+  off += 12 + len;
+  if (type === 'IEND') break;
+}
+
+if (!target) { console.log('❌ 没找到 chara 块'); process.exit(1); }
+
+const raw = Buffer.from(buf.subarray(target.dataStart, target.dataEnd).toString('latin1'), 'base64').toString('utf8');
+let card;
+try { card = JSON.parse(raw.replace(/^\uFEFF/, '')); } catch (e) { console.log('❌ 解析失败: ' + e.message); process.exit(1); }
+
+const d = card.data || card;
+const cb = d.character_book;
+console.log('\n=== 修复前 ===');
+console.log('  卡名: ' + (d.name || '(空)'));
+console.log('  character_book.entries 数: ' + (cb?.entries?.length ?? 0));
+let fixed = 0;
+for (const [i, en] of (cb?.entries || []).entries()) {
+  for (const f of ['keys', 'secondary_keys']) {
+    if (!Array.isArray(en[f])) {
+      const before = JSON.stringify(en[f]);
+      en[f] = en[f] === undefined || en[f] === null || en[f] === '' ? [] : [String(en[f])];
+      console.log(`  entries[${i}].${f}: ${before}  →  ${JSON.stringify(en[f])}`);
+      fixed++;
+    }
+  }
+}
+if (!fixed) { console.log('  （无需修复）'); process.exit(0); }
+
+const newJson = JSON.stringify(d === card ? card : { ...card, data: d });
+const newB64 = Buffer.from(newJson, 'utf8').toString('base64');
+const newChunkData = Buffer.concat([Buffer.from(target.kw, 'latin1'), Buffer.from([0]), Buffer.from(newB64, 'latin1')]);
+
+// 重写 PNG：splice 掉旧 tEXt 块，插入新块
+const out = Buffer.concat([
+  buf.subarray(0, target.chunkStart),
+  (() => {
+    const len = Buffer.alloc(4); len.writeUInt32BE(newChunkData.length, 0);
+    const t = Buffer.concat([Buffer.from('tEXt', 'ascii'), newChunkData]);
+    const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(t) >>> 0, 0);
+    return Buffer.concat([len, t, crc]);
+  })(),
+  buf.subarray(target.dataEnd + 4)   // 旧块 CRC 之后
+]);
+
+let TABLE = null;
+function crc32(b) {
+  if (!TABLE) {
+    TABLE = new Int32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; TABLE[n] = c; }
+  }
+  let c = 0xffffffff;
+  for (let i = 0; i < b.length; i++) c = TABLE[(c ^ b[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+fs.writeFileSync(SRC, out);
+console.log('\n✔ 已写回 ' + SRC + '  修复字段 ' + fixed + ' 处');
+console.log('  文件大小 ' + buf.length + ' → ' + out.length);
+
+// 回读验证
+const v = fs.readFileSync(SRC);
+let voff = 8, vc = null;
+while (voff + 8 <= v.length) {
+  const len = v.readUInt32BE(voff);
+  const type = v.subarray(voff + 4, voff + 8).toString('ascii');
+  if (type === 'tEXt') {
+    const data = v.subarray(voff + 8, voff + 8 + len);
+    const z = data.indexOf(0);
+    if (data.subarray(0, z).toString('latin1') === 'chara') vc = data.subarray(z + 1).toString('latin1');
+  }
+  voff += 12 + len;
+  if (type === 'IEND') break;
+}
+const vcard = JSON.parse(Buffer.from(vc, 'base64').toString('utf8'));
+const vcb = (vcard.data || vcard).character_book;
+console.log('\n=== 修复后回读 ===');
+console.log('  keys 全是数组: ' + vcb.entries.every(e => Array.isArray(e.keys) && Array.isArray(e.secondary_keys)));
+console.log('  卡名: ' + (vcard.data || vcard).name);
+console.log('  entries 数: ' + vcb.entries.length);

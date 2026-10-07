@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="九幽玄阴穴"><defs>
+    <linearGradient id="bga" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d1620"/><stop offset="100%" stop-color="#123447"/>
+    </linearGradient>
+    <linearGradient id="aua" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff1b8"/><stop offset="50%" stop-color="#d4af37"/><stop offset="100%" stop-color="#8c6d1f"/>
+    </linearGradient>
+    <radialGradient id="hia" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="30%" stop-color="#eafaff"/>
+      <stop offset="62%" stop-color="#5fb6d9" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#1b6f96" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+<g>
+  <rect x="4" y="4" width="232" height="232" rx="18" fill="url(#bga)" stroke="url(#aua)" stroke-width="2.4" opacity="1"/>
+  <rect x="12" y="12" width="216" height="216" rx="13" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.3"/>
+  <path d="M134.6 17.6 A104 104 0 0 1 222.4 105.4" fill="none" stroke="url(#aua)" stroke-width="4.6" stroke-linecap="round" opacity="1"/>
+  <path d="M222.4 134.6 A104 104 0 0 1 134.6 222.4" fill="none" stroke="url(#aua)" stroke-width="2.4" stroke-linecap="round" opacity="0.12"/>
+  <path d="M105.4 222.4 A104 104 0 0 1 17.6 134.6" fill="none" stroke="url(#aua)" stroke-width="2.4" stroke-linecap="round" opacity="0.12"/>
+  <path d="M17.6 105.4 A104 104 0 0 1 105.4 17.6" fill="none" stroke="url(#aua)" stroke-width="2.4" stroke-linecap="round" opacity="0.12"/>
+  <path d="M56 140 A64 64 0 0 1 184 140" fill="none" stroke="#9fe3f7" stroke-width="7" stroke-linecap="round" opacity="1"/>
+  <path d="M184 140 A64 64 0 0 1 56 140" fill="none" stroke="#d4af37" stroke-width="7" stroke-linecap="round" opacity="1"/>
+  <path d="M0 -5 L0 -17 L7 -4 Z" fill="#9fe3f7" opacity="0.9" transform="translate(120 78) rotate(0)"/>
+  <path d="M0 -5 L0 -17 L7 -4 Z" fill="#9fe3f7" opacity="0.9" transform="translate(82 100) rotate(-42)"/>
+  <path d="M0 -5 L0 -17 L7 -4 Z" fill="#9fe3f7" opacity="0.9" transform="translate(158 100) rotate(42)"/>
+  <path d="M0 -5 L0 -17 L7 -4 Z" fill="#d4af37" opacity="0.9" transform="translate(82 180) rotate(42)"/>
+  <path d="M0 -5 L0 -17 L7 -4 Z" fill="#d4af37" opacity="0.9" transform="translate(158 180) rotate(-42)"/>
+  <path d="M0 -5 L0 -17 L7 -4 Z" fill="#d4af37" opacity="0.9" transform="translate(120 202) rotate(180)"/>
+  <g transform="translate(56 140) rotate(-90)" opacity="1">
+    <path d="M0 0 L-20 -13 L-11 0 L-20 13 Z" fill="#9fe3f7"/>
+  </g>
+  <g transform="translate(184 140) rotate(90)" opacity="1">
+    <path d="M-4 -9 L14 -8 L28 -2 L14 3 L-4 8 Z" fill="#9fe3f7"/>
+    <path d="M2 5 L18 3 L8 12 Z" fill="#2b6f8f"/>
+    <path d="M-3 -9 L-20 -22 L-2 -12 Z" fill="#9fe3f7"/>
+    <path d="M2 -9 L-6 -26 L8 -12 Z" fill="#2b6f8f"/>
+    <path d="M-6 -7 L-26 -12 L-8 -1 Z" fill="#2b6f8f"/>
+    <path d="M-6 4 L-24 12 L-8 -1 Z" fill="#2b6f8f"/>
+    <path d="M28 -2 C40 4 38 -10 30 -11" fill="none" stroke="#9fe3f7" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="-3" r="2.6" fill="#08111a"/>
+  </g>
+  <g transform="translate(184 140) rotate(90)" opacity="1">
+    <path d="M0 0 L-20 -13 L-11 0 L-20 13 Z" fill="#d4af37"/>
+  </g>
+  <g transform="translate(56 140) rotate(-90)" opacity="1">
+    <path d="M-4 -9 L14 -8 L28 -2 L14 3 L-4 8 Z" fill="#d4af37"/>
+    <path d="M2 5 L18 3 L8 12 Z" fill="#8c6d1f"/>
+    <path d="M-3 -9 L-20 -22 L-2 -12 Z" fill="#d4af37"/>
+    <path d="M2 -9 L-6 -26 L8 -12 Z" fill="#8c6d1f"/>
+    <path d="M-6 -7 L-26 -12 L-8 -1 Z" fill="#8c6d1f"/>
+    <path d="M-6 4 L-24 12 L-8 -1 Z" fill="#8c6d1f"/>
+    <path d="M28 -2 C40 4 38 -10 30 -11" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="-3" r="2.6" fill="#08111a"/>
+  </g>
+  <g transform="translate(120 172) rotate(-58)" opacity="1">
+    <g fill="#1a4a60" stroke="#eafaff" stroke-width="1.4" stroke-opacity="0.55" stroke-linejoin="round" transform="scale(0.811)"><path d="M0 0 C-26 -25.2 -16.1 -57.7 0 -74 C16.1 -57.7 26 -25.2 0 0 Z"/></g>
+  </g>
+  <g transform="translate(120 172) rotate(58)" opacity="1">
+    <g fill="#1a4a60" stroke="#eafaff" stroke-width="1.4" stroke-opacity="0.55" stroke-linejoin="round" transform="scale(0.811)"><path d="M0 0 C-26 -25.2 -16.1 -57.7 0 -74 C16.1 -57.7 26 -25.2 0 0 Z"/></g>
+  </g>
+  <g transform="translate(120 172) rotate(-40)" opacity="1">
+    <g fill="#2b6f8f" stroke="#eafaff" stroke-width="1.4" stroke-opacity="0.55" stroke-linejoin="round" transform="scale(0.919)"><path d="M0 0 C-26 -25.2 -16.1 -57.7 0 -74 C16.1 -57.7 26 -25.2 0 0 Z"/></g>
+  </g>
+  <g transform="translate(120 172) rotate(40)" opacity="1">
+    <g fill="#2b6f8f" stroke="#eafaff" stroke-width="1.4" stroke-opacity="0.55" stroke-linejoin="round" transform="scale(0.919)"><path d="M0 0 C-26 -25.2 -16.1 -57.7 0 -74 C16.1 -57.7 26 -25.2 0 0 Z"/></g>
+  </g>
+  <g transform="translate(120 172) rotate(-20)" opacity="1">
+    <g fill="#5fb6d9" stroke="#eafaff" stroke-width="1.4" stroke-opacity="0.55" stroke-linejoin="round" transform="scale(1.000)"><path d="M0 0 C-26 -25.2 -16.1 -57.7 0 -74 C16.1 -57.7 26 -25.2 0 0 Z"/></g>
+  </g>
+  <g transform="translate(120 172) rotate(20)" opacity="1">
+    <g fill="#5fb6d9" stroke="#eafaff" stroke-width="1.4" stroke-opacity="0.55" stroke-linejoin="round" transform="scale(1.000)"><path d="M0 0 C-26 -25.2 -16.1 -57.7 0 -74 C16.1 -57.7 26 -25.2 0 0 Z"/></g>
+  </g>
+  <g transform="translate(120 172) rotate(0)" opacity="1">
+    <g fill="#9fe3f7" stroke="#eafaff" stroke-width="1.8" stroke-opacity="0.55" stroke-linejoin="round" transform="scale(1.054)"><path d="M0 0 C-26 -25.2 -16.1 -57.7 0 -74 C16.1 -57.7 26 -25.2 0 0 Z"/></g>
+  </g>
+  <path d="M88 174 Q120 200 152 174 Q120 182 88 174 Z" fill="#1a4a60" stroke="#5fb6d9" stroke-width="1.4" opacity="0.95"/>
+  <path d="M120 176 Q92 186 98 196 Q106 188 120 176 Z" fill="#1a4a60" opacity="0.85"/>
+  <path d="M120 176 Q148 186 142 196 Q134 188 120 176 Z" fill="#1a4a60" opacity="0.85"/>
+  <circle cx="120" cy="150" r="22" fill="url(#hia)"/>
+  <circle cx="120" cy="150" r="5.2" fill="#ffffff" opacity="0.98"/>
+  <circle cx="120" cy="150" r="1.8" fill="#ffffff"/>
+
+</g>
+</svg>
