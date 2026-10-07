@@ -1,0 +1,142 @@
+{
+  "identity": "gpt",
+  "baseline_commit": "2410bec",
+  "source_sha256": "b46ba8cddcf61465517ebb8ba2b50315405f00b22e5fe6082654582b4b473d3a",
+  "observations": [
+    {
+      "duration": "一日",
+      "parsed_months": 0.033,
+      "recognized_as_transit": false,
+      "actual_nextAcc": {
+        "acc": 0.02,
+        "adv": 0.02,
+        "sameFloor": false
+      }
+    },
+    {
+      "duration": "一个月",
+      "parsed_months": 1,
+      "recognized_as_transit": false,
+      "actual_nextAcc": {
+        "acc": 0.02,
+        "adv": 0.02,
+        "sameFloor": false
+      }
+    },
+    {
+      "duration": "半年",
+      "parsed_months": 6,
+      "recognized_as_transit": true,
+      "actual_nextAcc": {
+        "acc": 3,
+        "adv": 3,
+        "sameFloor": false
+      }
+    },
+    {
+      "duration": "距启程3日",
+      "parsed_months": 0.099,
+      "recognized_as_transit": false,
+      "actual_nextAcc": {
+        "acc": 0.02,
+        "adv": 0.02,
+        "sameFloor": false
+      }
+    }
+  ],
+  "thirty_accepted_one_day_labels": {
+    "actual_months": 0.6,
+    "actual_days_by_30_day_calendar": 18,
+    "nominal_days_in_labels": 30
+  },
+  "rate_extrapolation": {
+    "rate_months_per_message_index": 0.0021363636363636363,
+    "table": [
+      {
+        "chapter": "二",
+        "target_month": 1578.04,
+        "gap_months": 0.933333,
+        "hypothetical_floors_if_same_rate": 437
+      },
+      {
+        "chapter": "三",
+        "target_month": 1578.06,
+        "gap_months": 2.933333,
+        "hypothetical_floors_if_same_rate": 1374
+      },
+      {
+        "chapter": "四",
+        "target_month": 1578.08,
+        "gap_months": 4.933333,
+        "hypothetical_floors_if_same_rate": 2310
+      },
+      {
+        "chapter": "五",
+        "target_month": 1578.11,
+        "gap_months": 7.933333,
+        "hypothetical_floors_if_same_rate": 3714
+      },
+      {
+        "chapter": "六",
+        "target_month": 1578.11,
+        "gap_months": 7.933333,
+        "hypothetical_floors_if_same_rate": 3714
+      },
+      {
+        "chapter": "七",
+        "target_month": 1579.01,
+        "gap_months": 9.933333,
+        "hypothetical_floors_if_same_rate": 4650
+      },
+      {
+        "chapter": "八",
+        "target_month": 1578.12,
+        "gap_months": 8.933333,
+        "hypothetical_floors_if_same_rate": 4182
+      },
+      {
+        "chapter": "九",
+        "target_month": 1579.01,
+        "gap_months": 9.933333,
+        "hypothetical_floors_if_same_rate": 4650
+      },
+      {
+        "chapter": "十",
+        "target_month": 1579.02,
+        "gap_months": 10.933333,
+        "hypothetical_floors_if_same_rate": 5118
+      },
+      {
+        "chapter": "十一",
+        "target_month": 1579.03,
+        "gap_months": 11.933333,
+        "hypothetical_floors_if_same_rate": 5586
+      },
+      {
+        "chapter": "十二",
+        "target_month": 1579.04,
+        "gap_months": 12.933333,
+        "hypothetical_floors_if_same_rate": 6054
+      },
+      {
+        "chapter": "十三",
+        "target_month": 1579.04,
+        "gap_months": 12.933333,
+        "hypothetical_floors_if_same_rate": 6054
+      },
+      {
+        "chapter": "十四",
+        "target_month": 1579.05,
+        "gap_months": 13.933333,
+        "hypothetical_floors_if_same_rate": 6522
+      },
+      {
+        "chapter": "十五",
+        "target_month": 1579.06,
+        "gap_months": 14.933333,
+        "hypothetical_floors_if_same_rate": 6991
+      }
+    ]
+  },
+  "limits": "函数来自既有上传源，未取得01:43部署的最新全文。证明这些解析/截断行为及线性外推算术；外推假设小样本平均永久不变，不是实际必需楼数，更不是采用该时间节奏的建议。未运行新调度、宿主、构建或玩家旧局。"
+}
