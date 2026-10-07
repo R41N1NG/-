@@ -1,6 +1,3 @@
-/* 启动自检：这一行只打一次日志，用来判断脚本到底有没有被加载 */
-try { console.log('[XDS 状态机] 启动自检：脚本已加载', new Date().toLocaleTimeString()); } catch (e) {}
-
 /* ══════════════════════════════════════════════════════════════════════
  * 《仙姝墮》· 状态机（纯酒馆助手版）   v1.0   2026-09-27
  * ----------------------------------------------------------------------
@@ -63,6 +60,8 @@ try { console.log('[XDS 状态机] 启动自检：脚本已加载', new Date().t
 
 const TAG = '[仙姝堕·状态机]';
 const VERSION = 'v1.5';
+
+try { console.log('[XDS 状态机] 启动自检：脚本已加载 v' + (typeof VERSION !== 'undefined' ? VERSION : '?'), new Date().toLocaleTimeString()); } catch (e) {}
 
 /* ═══════════════════════════════════════════════════════════
  * 一 · 台账
@@ -142,17 +141,17 @@ const FIELD_TABLE = [
    *  ⚠️ `kws` 是「正文里出现这些词就打一行旁证日志」的触发词（不写账本）；一律用锚点名或该事件的长词/专名。
    *  ⚠️ `烟霞灵乳成形` 与早先「她出场即二境、没有成形这一步」相冲 —— 按最新指示建，已在报告里标出。 */
   { kind: 'ai', name: '天姝榜建立', desc: '神女殿中颁下《天姝榜》（极乐太子亲手颁）', kws: ["天姝榜"] },
-  { kind: 'ai', name: '', name: '启程邪修洞府', desc: '第一章 · 玩家**接到去西北荒漠邪修洞府的命令并出发**（主人定：不再靠模型判断「这一章演完没有」）', kws: ['邪修洞府'] },
-  { kind: 'ai', name: '', name: '回墨山复命', desc: '第二章 · **孤月与赵无忧回墨山复命**（主人定）', kws: ['复命'] },
-  { kind: 'ai', name: '', name: '离开幽寂谷', desc: '第四—五章 · **一行人从幽寂谷秘境离开**（主人定）', kws: ['幽寂谷'] },
-  { kind: 'ai', name: '', name: '受征召南下', desc: '**墨山道受仙盟征召、遣弟子南下驰援天溪城——即将出发**（主人定；临行前的送别由此触发）', kws: ['驰援天溪', '天溪城'] },
-  { kind: 'ai', name: '', name: '孤剑崖送别已毕', desc: '剧情五（孤剑崖送别 · 孤月赠冰心泪）已经演完', kws: ['冰心泪', '送别'] },
-  { kind: 'ai', name: '', name: '听雪双姝登场', desc: '**苏瑶、苏玲登场**（天音阁听雪双姝）', kws: ['听雪双姝'] },
-  { kind: 'ai', name: '', name: '玄机子离去', desc: '**玄机子已离去**（主人定）', kws: ['下落不明'] },
-  { kind: 'ai', name: '', name: '双姝派回天溪', desc: '双姝线收束：**苏瑶、苏玲被种下奴种，以「黑日」「霜月」之身被派回天溪城**（第十—十二章末）', kws: ['黑日', '霜月'] },
-    { kind: 'ai', name: '', name: '三人同寝', desc: '**三人同寝**（主人定）', kws: ['姐妹回归'] },
-    { kind: 'ai', name: '', name: '最后防线被冲垮', desc: '**最后那道防线被残阳老怪冲垮**（主人定）', kws: [] },
-    { kind: 'ai', name: '', name: '葬魔渊一役已毕', desc: '葬魔渊那一场演完（赵无忧坠渊、雨霏柔授阵丹之道）', kws: [] },
+  { kind: 'ai', name: '启程邪修洞府', desc: '第一章 · 玩家**接到去西北荒漠邪修洞府的命令并出发**（主人定：不再靠模型判断「这一章演完没有」）', kws: ['邪修洞府'] },
+  { kind: 'ai', name: '回墨山复命', desc: '第二章 · **孤月与赵无忧回墨山复命**（主人定）', kws: ['复命'] },
+  { kind: 'ai', name: '离开幽寂谷', desc: '第四—五章 · **一行人从幽寂谷秘境离开**（主人定）', kws: ['幽寂谷'] },
+  { kind: 'ai', name: '受征召南下', desc: '**墨山道受仙盟征召、遣弟子南下驰援天溪城——即将出发**（主人定；临行前的送别由此触发）', kws: ['驰援天溪', '天溪城'] },
+  { kind: 'ai', name: '孤剑崖送别已毕', desc: '剧情五（孤剑崖送别 · 孤月赠冰心泪）已经演完', kws: ['冰心泪', '送别'] },
+  { kind: 'ai', name: '听雪双姝登场', desc: '**苏瑶、苏玲登场**（天音阁听雪双姝）', kws: ['听雪双姝'] },
+  { kind: 'ai', name: '玄机子离去', desc: '**玄机子已离去**（主人定）', kws: ['下落不明'] },
+  { kind: 'ai', name: '双姝派回天溪', desc: '双姝线收束：**苏瑶、苏玲被种下奴种，以「黑日」「霜月」之身被派回天溪城**（第十—十二章末）', kws: ['黑日', '霜月'] },
+    { kind: 'ai', name: '三人同寝', desc: '**三人同寝**（主人定）', kws: ['姐妹回归'] },
+    { kind: 'ai', name: '最后防线被冲垮', desc: '**最后那道防线被残阳老怪冲垮**（主人定）', kws: [] },
+    { kind: 'ai', name: '葬魔渊一役已毕', desc: '葬魔渊那一场演完（赵无忧坠渊、雨霏柔授阵丹之道）', kws: [] },
   { kind: 'ai', name: '获得任意名器', desc: '玩家这条线上第一次真的接触到／得到一件名器', kws: ["获得任意名器"] },
   { kind: 'ai', name: '南域大劫', desc: '第六—七章 · 南域大劫爆发：神诅降下、粉黑天穹、四殿册封', kws: ["南域大劫","神诅"] },
   { kind: 'ai', name: '天溪城兽潮', desc: '第十一章 · 第六波大规模兽潮压到天溪城下', kws: ["兽潮"] },
@@ -423,6 +422,8 @@ const CN_DAY = ['', '初一', '初二', '初三', '初四', '初五', '初六', 
   '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
 
 function cnNum(t) {
+  /* gpt P1-8 兜底：允许直接传「初X」 */
+  { const raw = String(t ?? '').trim(); if (raw.startsWith('初') && raw.length > 1) t = raw.slice(1); }
   
   const D = '〇一二三四五六七八九';
   const x = String(t || '').trim();
@@ -433,7 +434,7 @@ function cnNum(t) {
   if (x === '冬') return 11;     // 冬月
   if (x === '腊') return 12;     // 腊月
   if (x[0] === '廿') return 20 + Math.max(0, D.indexOf(x[1]));
-  if (x[0] === '卅') return 30;
+  if (x[0] === '卅') return 30 + Math.max(0, D.indexOf(x[1]));   /* gpt P1-8：卅一=31（原来一律返回 30，把非法日当成 30 收下）*/
   const m = /^([一二三四五六七八九])?十([一二三四五六七八九])?$/.exec(x);
   if (m) return (m[1] ? D.indexOf(m[1]) : 1) * 10 + (m[2] ? D.indexOf(m[2]) : 0);
   if (x.length === 1) { const n = D.indexOf(x); if (n >= 0) return n; }
@@ -448,7 +449,7 @@ function pickTimepointLine(t) {
 }
 
 function parseXianmengFromText(t) {
-  const m = /仙盟历\s*(\d{3,4})\s*年\s*[·\.、]?\s*([一二三四五六七八九十廿卅正冬腊]{1,3}|\d{1,2})\s*月\s*(?:[·\.、]?\s*(初[一二三四五六七八九十]|[一二三四五六七八九十廿卅]{1,3}|\d{1,2})\s*日?)?/.exec(String(t || ''));
+  const m = /仙盟历\s*(\d{3,4})\s*年\s*[·\.、]?\s*([一二三四五六七八九十廿卅正冬腊]{1,3}|\d{1,2})\s*月\s*(?:[·\.、]?\s*(初[一二三四五六七八九十]{1,2}|[一二三四五六七八九十廿卅]{1,3}|\d{1,2})\s*日?)?/.exec(String(t || ''));
   if (!m) return null;
   const y = Number(m[1]);
   const mo = cnNum(m[2]);
@@ -502,7 +503,7 @@ function parseLishi(s) {
   if (!best) {
     for (const [w, m] of LISHI_WORDS) if (txt.includes(w) && m > best) best = m;
   }
-  return Math.min(best, LISHI_CAP);
+  return best;   /* gpt P1-7：内层不再提前截断 —— 过渡历时会被 0.02 吃掉；截断统一交外层 capM */
 }
 function fmtXianmeng(v) {
   const y = Math.floor(v + 1e-9);
@@ -2088,18 +2089,23 @@ async function applyStatusToVars(text, messageId) {
         console.warn(TAG, `⚠️ [章节等待] 第 ${messageId} 楼：本场戏已连续 ${messageId - lockStart} 楼被判定为"进行中" ⇒ 达最长驻留（6 楼），照常推进段位，避免永久卡段`);
       }
       want = Math.min(want, cur + 1);
-
-      let wf = Number(sdNow.窗口起点) || 0;
-      if (wf && (wf < 1 || wf > messageId)) {
-        console.warn(TAG, `[窗口] 第 ${messageId} 楼窗口起点异常（${sdNow.窗口起点}）⇒ 复位`);
-        wf = 0;
-      }
-      if (want > cur) {
-        if (!wf) { wf = messageId; }
-        else if (messageId - wf >= 3) { cur += 1; wf = (cur < want) ? messageId : 0; }
-      } else { wf = 0; }
-
-      patch.窗口起点 = wf;
+  /* gpt P1-6：**本段楼数**这只计数器以前只读不维护 ⇒ 改成每楼真的加、同楼重绘不重复加、
+     满 3 楼升一段并归零；窗口起点与计数器一起落盘。 */
+  let wf = Number(sdNow.窗口起点) || 0;
+  if (wf && (wf < 1 || wf > messageId)) {
+    console.warn(TAG, '[窗口] 第 ' + messageId + ' 楼窗口起点异常（' + sdNow.窗口起点 + '）⇒ 复位');
+    wf = 0;
+  }
+  const sameFloor = Number(sdNow.最后处理楼号) === Number(messageId);
+  let segFloors = Number(sdNow.本段楼数);
+  if (!isFinite(segFloors) || segFloors < 0) segFloors = 0;
+  if (want > cur) {
+    if (!wf) { wf = messageId; segFloors = 0; }
+    else if (!sameFloor) { segFloors += 1; }
+    if (segFloors >= 3) { cur += 1; wf = (cur < want) ? messageId : 0; segFloors = 0; }
+  } else { wf = 0; segFloors = 0; }
+  patch.本段楼数 = segFloors;
+  patch.窗口起点 = wf;
       patch.段位 = cur;
       if (cur !== stg) { console.log(TAG, `[窗口] 第 ${messageId} 楼：本段收尾窗口（起点 ${wf || '已闭'}）⇒ 段位 ${stg} → ${cur}`); }
 
@@ -2128,23 +2134,38 @@ async function applyStatusToVars(text, messageId) {
           basis = ymToMonths(fixed.ym) + (fixed.day - 1) / 30;
         } else {
           
-          const uni = pickTimepointLine(text);
-          const pick = uni ? parseXianmengFromText(uni) : null;
-          basis = pick ? (ymToMonths(pick.ym) + (pick.day - 1) / 30) : (ymToMonths(1578.03) + 2 / 30);
-          console.log(TAG, `[时间基准] 第 ${messageId} 楼：${idNow || '（未登记身份）'} ⇒ 基准 ${pick ? fmtXianmeng(pick.ym) + CN_DAY[pick.day] : '1578 年 · 初三（共享默认）'}${uni ? '' : '｜未找到唯一「• 当前时点：」行'}`);
-        }
-        patch.历基准 = basis;
+          /* gpt P1-3：基准不再从「当前 AI 正文」取 —— 只认账上记过的开场时点；
+       账上没有（老局）时，仅允许从**首楼文本**补记一次，之后一律走账。 */
+    let storedM = Number(sdNow.初始时点);
+    if (!(isFinite(storedM) && storedM > 0)) {
+      try {
+        const introTxt = String(messageText(1) || '');
+        const introLine = pickTimepointLine(introTxt);
+        const introPick = introLine ? parseXianmengFromText(introLine) : null;
+        if (introPick) { storedM = ymToMonths(introPick.ym) + (introPick.day - 1) / 30; patch.初始时点 = storedM; }
+      } catch (eIntro) { /* 首楼读不到 ⇒ 走共享默认 */ }
+    }
+    const basisOk = isFinite(storedM) && storedM > 0;
+    basis = basisOk ? storedM : (ymToMonths(1578.03) + 2 / 30);
+    console.log(TAG, '[时间基准] 第 ' + messageId + ' 楼：' + (idNow || '（未登记身份）') + ' ⇒ 基准 ' + (basisOk ? fmtXianmeng(monthsToYm(storedM)) : '1578 年 · 初三') + '（来源：账上开场时点，不读正文）');
+  }
+
+patch.历基准 = basis;
       }
       const curBaseM = basis;
       
 
       // 若同楼发生重绘/修改，基于本楼原始基准重新累计，防止重复叠加
       
-      let acc = (Number(sdNow.历时累计) || Number(sdNow.时点加速) || 0);
+      /* gpt P1-4：合法的 0 不能被 || 跳过 —— 只有 null/undefined/NaN 才回退 */
+  const xsdNum = (v) => (v === null || v === undefined || v === '' ? NaN : Number(v));
+  const nAcc = xsdNum(sdNow.历时累计);
+  const nPush = xsdNum(sdNow.时点加速);
+  let acc = isFinite(nAcc) ? nAcc : (isFinite(nPush) ? nPush : 0);
       if (Number(sdNow.最后处理楼号) === Number(messageId)) {
         acc = Math.max(0, acc - (Number(sdNow.本楼历时加速) || 0));
       }
-      if (isStageChanged || !isFinite(acc) || acc < 0) acc = 0;
+      if (!isFinite(acc) || acc < 0) acc = 0;   /* gpt P1-2：去掉换段清零（历时累计全程累计、换段不清零；只挡 NaN/负值） */
       
 
       const stepM = parseLishi(patch.历时);
@@ -2160,13 +2181,14 @@ async function applyStatusToVars(text, messageId) {
         patch.本楼历时加速 = adv;
       } else {
         patch.最后处理楼号 = Number(messageId);
-        patch.本楼历时加速 = 0;
+      patch.本楼历时加速 = 0;
+      patch.历时累计 = acc;   /* gpt P1-5：同楼撤销后的累计值也要落盘 */
       }
       patch.仙盟历 = monthsToYm(curBaseM + acc);
       
       const dayOfMonth = 1 + Math.floor((((curBaseM + acc) % 1) + 1) % 1 * 30 + 1e-9);
       patch.仙盟历文 = fmtXianmengDay(patch.仙盟历, dayOfMonth);
-      console.log(TAG, `[段位] 第 ${messageId} 楼 ⇒ 第 ${patch.段位 || stg} 段（楼下限 ${stg}）${pin ? `（时间轴已平移 ${pin.shift} 楼）` : ''}｜历时「${patch.历时 || '—'}」⇒ +${adv}月（累计 ${acc}月／本段跨度 ${monthSpan}月）｜仙盟历 ${patch.仙盟历文}（${patch.仙盟历}）`);
+      console.log(TAG, `[段位] 第 ${messageId} 楼 ⇒ 第 ${patch.段位 || stg} 段（楼下限 ${stg}）${pin ? `（时间轴已平移 ${pin.shift} 楼）` : ''}｜历时「${patch.历时 || '—'}」⇒ +${adv}月（累计 ${acc}月）｜仙盟历 ${patch.仙盟历文}（${patch.仙盟历}）`);
     } else {
       console.warn(TAG, `[段位] 第 ${messageId} 楼算不出段位（楼层号异常），本轮不写 —— 渲染侧会按第 1 段兜底`);
     }

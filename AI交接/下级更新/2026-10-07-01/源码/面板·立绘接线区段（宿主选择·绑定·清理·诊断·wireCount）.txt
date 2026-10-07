@@ -1,0 +1,579 @@
+// 面板产物·立绘接线相关区段（gpt 要求：宿主选择／绑定·清理／诊断条件／wireCount）
+// 源：卡片脚本/状态栏面板.js（进卡产物）
+
+…（跳至第 219 行）
+219:   return list.length;
+220: }
+221: 
+222: /* ══════════════════════════════════════════════════════════════════════════
+223:  * 立绘子系统 v2.3（照抄外卡《大乾风华录 Ver2.0》，并逐条改掉它的 11 个坑）
+224:  * --------------------------------------------------------------------------
+225:  *   数据流：人名 → XSD_PINYIN 拼音 id → 有序候选链（本地 ≤6 条 ＋ 云端 1 条）
+226:  *           → 写进 `data-sources`(JSON, esc 过) ＋ `data-src-idx` → img 404 自己往上走
+227:  *           → 链尽 → SVG 国风剪影印章（永不 404）。
+228:  *   外卡的坑与我们这里的对策（编号照 §B6）：
+229:  *     P1 内联 onclick / alt 里的名字不转义          → 本文件一律 esc()（见 xsdPortraitHtml）
+230:  *     P2 ESC 监听只在按 ESC 时移除（内存泄漏）      → xsdCloseLightbox 里**不论哪条路径**都摘光
+231:  *     P3 多处 onclick 不 stopPropagation             → 关闭只认覆盖层一点，其余监听一律 cleanup
+232:  *     P4 getTopDoc 跨域静默回落本地 document         → 回落时 console.warn 点名症状
+233:  *     P5 window.parent 写入吞异常                    → 暴露进本 realm，外层另挂（try/catch + 日志）
+234:  *     P6 云表键格式漂移（.jpg / 裸键）               → 写入统一 `<id>.webp`，读取保留 4 分支
+235:  *     P7 SVG 文本直接拼 name（含 &/</> 会裂）        → xsdXmlEsc()（`&` 先转）
+236:  *     P8 12 条本地候选串行 404 刷屏                  → 按本卡部署形态**裁到 3 目录 ×2 扩展名**
+237:  *     P9 灯箱类名与实现脱节                          → 行内 cssText，不依赖任何外部样式表
+238:  *     P10 空链不写 data-src-idx（状态机起点不明）    → **恒写** `data-sources` ＋ `data-src-idx="0"`
+239:  *     P11 getAvatarUrl 死代码                        → 不搬，入口只有 xsdPortraitSourcesFor 一条
+240:  * ══════════════════════════════════════════════════════════════════════════ */
+241: 
+242: /** 把任意值收成字符串并去掉空白（收 undefined／null／数字都稳） */
+243: function s0(v) { return String(v === undefined || v === null ? '' : v).trim(); }
+244: 
+245: /** 名字 → 拼音 id（§〇M 立绘命名表全 16 条；查不到返回**空串**，上层据此直接落 SVG） */
+246: const XSD_PINYIN = {
+247:   '闻观语': 'wenguanyu',        /* 大师姐／千叶先生 · 墨绿 */
+248:   '孤月': 'guyue',              /* 剑仙子 · 冷白＋冰蓝 */
+249:   '叶红缨': 'yehongying',       /* 炎姬 · 赤红＋金 */
+250:   '楚灵夜': 'chulingye',        /* 金花公主 · 暖白＋嫩粉 */
+251:   '柳含烟': 'liuhanyan',        /* 师娘（后期）· 黑红＋牡丹 */
+252:   '赵无忧': 'zhaowuyou',        /* 男主 · 玄青 */
+253:   '玄机子': 'xuanjizi',         /* 本名陆藏锋 · 青灰 */
+254:   '云逸尘': 'yunyichen',        /* 三师兄 · 云青 */
+255:   '炎雷子': 'yanleizi',         /* 道主 · 赤雷 */
+256:   '苏瑶': 'suyao',              /* 听雪双姝 · 月白 */
+257:   '苏玲': 'suling',             /* 听雪双姝 · 月白 */
+258:   '九皇子': 'jiuhuangzi',       /* 玄黑＋金 */
+259:   '残阳老怪': 'canyanglaoguai', /* 焚欲殿主 · 灰败＋蛊火暗红 */
+260:   '肉山佛': 'roushanfo',        /* 欢喜殿主 · 暗黄 */
+…（跳至第 611 行）
+611: function xsdEmbedded() {
+612:   xsdCheckCharSwitch();
+613:   if (XSD_EMBED !== null) return XSD_EMBED;
+614:   const cands = [];
+615:   try { cands.push(window); } catch (e) { /* 忽略 */ }
+616:   try { if (window.parent && window.parent !== window) cands.push(window.parent); } catch (e) { /* 忽略 */ }
+617:   try { if (window.top && window.top !== window) cands.push(window.top); } catch (e) { /* 忽略 */ }
+618:   for (const w of cands) {
+619:     for (const assets of xsdAssetMaps(w)) {
+620:       const map = assets && assets.panel;
+621:       if (map && typeof map === 'object' && Object.keys(map).length) {
+622:         XSD_EMBED = map;
+623:         try { console.log(TAG, '[内嵌] 命中 ' + Object.keys(map).length + ' 条' + (assets.lightbox ? '（含灯箱档）' : '（无灯箱档）')); } catch (e) { /* 忽略 */ }
+624:         return XSD_EMBED;
+625:       }
+626:     }
+627:   }
+628:   try { console.log(TAG, '[内嵌] 暂未命中 ⇒ 立绘退回本地文件／剪影（保留重试，不锁死空表）'); } catch (e) { /* 忽略 */ }
+629:   return {};
+630: }
+631: 
+632: function xsdEmbeddedBig() {
+633:   xsdCheckCharSwitch();
+634:   if (XSD_EMBED_BIG !== null) return XSD_EMBED_BIG;
+635:   const cands = [];
+636:   try { cands.push(window); } catch (e) { /* 忽略 */ }
+637:   try { if (window.parent && window.parent !== window) cands.push(window.parent); } catch (e) { /* 忽略 */ }
+638:   try { if (window.top && window.top !== window) cands.push(window.top); } catch (e) { /* 忽略 */ }
+639:   for (const w of cands) {
+640:     for (const assets of xsdAssetMaps(w)) {   // ⚠️ 与 `xsdEmbedded()` 同一套"两处都试"的查找
+641:       const map = assets && assets.lightbox;
+642:       if (map && typeof map === 'object' && Object.keys(map).length) { XSD_EMBED_BIG = map; return XSD_EMBED_BIG; }
+643:     }
+644:   }
+645:   return {};
+646: }
+647: /** 取内嵌**灯箱大图**（按图库文件名，如 `guyue`／`yehongying_bath_front`）；没有返回 '' */
+648: function xsdEmbedBigUrl(name) {
+649:   try {
+650:     const m = xsdEmbeddedBig();
+651:     return s0(m[s0(name)]);
+652:   } catch (e) { return ''; }
+653: }
+654: 
+655: function xsdEmbeddedRelics() {
+656:   xsdCheckCharSwitch();
+657:   if (XSD_EMBED_RELICS !== null) return XSD_EMBED_RELICS;
+658:   const cands = [];
+659:   try { cands.push(window); } catch (e) { /* 忽略 */ }
+660:   try { if (window.parent && window.parent !== window) cands.push(window.parent); } catch (e) { /* 忽略 */ }
+661:   try { if (window.top && window.top !== window) cands.push(window.top); } catch (e) { /* 忽略 */ }
+662:   for (const w of cands) {
+663:     for (const assets of xsdAssetMaps(w)) {
+664:       const map = assets && assets.relics;
+665:       if (map && typeof map === 'object' && Object.keys(map).length) { XSD_EMBED_RELICS = map; return XSD_EMBED_RELICS; }
+666:     }
+667:   }
+668:   return {};
+669: }
+670: /** 取内嵌纹章（按纹章 id 与阶段 1..4，如 `jiuyouxuanyinxue`, 2）；没有返回 '' */
+…（跳至第 960 行）
+960:         imgEl.getAttribute('data-char-id') || '');
+961:       imgEl.src = svg;
+962:       return svg;
+963:     }
+964:     return '';
+965:   } catch (e) {
+966:     console.warn(TAG, '立绘切源失败（已吞掉，图位留空）：', (e && e.message) || e);
+967:     return '';
+968:   }
+969: }
+970: 
+971: /* ─────────── 灯箱（Lightbox）─────────── */
+972: const XSD_LIGHTBOX_ID = 'xsd-lightbox-modal';
+973: 
+974: /** 灯箱挂到哪个文档：优先宿主（`window.parent.document`，脚本在 iframe 里 ⇒ 必须走 parent） */
+975: function xsdDoc() {
+976:   const cands = [];
+977:   try { if (window.parent && window.parent !== window) cands.push(window.parent.document); } catch (e) { /* 跨源 */ }
+978:   try { if (window.top && window.top !== window) cands.push(window.top.document); } catch (e) { /* 跨源 */ }
+979:   try { cands.push(document); } catch (e) { /* 忽略 */ }
+980:   for (const d of cands) { try { if (d && d.body) return d; } catch (e) { /* 忽略 */ } }
+981:   const d0 = cands.find((d) => d) || null;
+982:   /* ⚠️ B6-P4：外卡跨域时静默回落本地 document ⇒ 灯箱被关进 100% 高的 iframe 里，
+983:    *   视觉上「点了没反应」。这里不静默 —— 落日志点破症状。 */
+984:   if (d0 && d0 !== cands[cands.length - 1]) {
+985:     console.warn(TAG, '[灯箱] 拿不到宿主 document.body（跨域/沙箱限制），回落本地文档 —— '
+986:       + '灯箱会显示在消息 iframe 内，可能看起来「没反应」。');
+987:   }
+988:   return d0;
+989: }
+990: 
+991: /** 灯箱状态（模块级单例）*/
+992: const xsdBox = {
+993:   el: null,            // 当前覆盖层节点（null ＝ 没开）
+994:   doc: null,           // 它挂在哪个文档上（关闭时必须按**同一份**文档摘监听）
+995:   img: null,
+996:   listeners: [],       // 灯箱**自己**的监听 [{ t, fn, opt }] —— 关闭时逐个摘掉
+997:   closing: false,      // 幂等闸门：ESC 与点击同时触发只跑一次退场
+998:   leaktick: 0,         // 诊断计数：close 真的摘监听就 +1（漏摘的话它不会涨）
+999: };
+1000: /** 常驻接线（委托监听）的条数 —— 与灯箱监听分开记：它只绑一次，永不随开关增长 */
+1001: let xsdWireCount = 0;
+1002: /** 「同一个元素刚开过箱」的去重记录（见 `xsdOpenFrom` 的闸门） */
+1003: const xsdLastOpen = { el: null, t: 0 };
+1004: 
+1005: /** 诊断用：当前覆盖层**还挂在宿主文档上**的监听条数（正常开箱 = 1，关闭后 = 0）*/
+1006: function xsdListenersAlive() {
+1007:   let n = 0;
+1008:   for (const it of xsdBox.listeners) {
+1009:     let alive = true;
+1010:     try { alive = !!(xsdBox.doc && xsdBox.doc.body && xsdBox.doc.body.contains(xsdBox.el)); } catch (e) { alive = false; }
+1011:     if (alive) n++;
+1012:   }
+1013:   return n;
+1014: }
+1015: 
+1016: /** 关闭灯箱：**不论从哪条路径进来**（点覆盖层 / 按 ESC / 程序调用）都走这里 —— 这是 B6-P2 的修复点。
+1017:  *  外卡只在 ESC 分支里 removeEventListener ⇒ 点背景关掉的那些 keydown 监听永远留在宿主文档上。 */
+1018: function xsdCloseLightbox() {
+1019:   try {
+1020:     const doc = xsdBox.doc;
+1021:     const el = xsdBox.el;
+1022:     if (!el) { xsdBox.closing = false; return false; }
+1023:     if (xsdBox.closing) return false;
+1024:     xsdBox.closing = true;
+1025:     /* ① 先摘监听（**一条不剩**），再退场动画 —— 顺序反了就有窗口期 */
+1026:     for (const it of xsdBox.listeners) {
+1027:       try { if (doc && typeof doc.removeEventListener === 'function') doc.removeEventListener(it.t, it.fn, it.opt); } catch (e) { /* 忽略 */ }
+1028:     }
+1029:     xsdBox.listeners = [];
+…（跳至第 1380 行）
+1380:          *   注册两份，先注册的那份闭包握着已被换掉的 flip/counter ⇒ 方向键"没反应"）。
+1381:          *   2026-09-28 第三十六轮实测抓到，别再删这一行。 */
+1382:         if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+1383:         xsdOpenFrom(n);
+1384:         return true;
+1385:       }
+1386:       n = n.parentNode;
+1387:     }
+1388:   } catch (e) { console.warn(TAG, '立绘点击处理失败（已吞掉）：', (e && e.message) || e); }
+1389:   return false;
+1390: }
+1391: 
+1392: /** 接线：把立绘入口写进**本 realm**（内联 onclick 由沙箱自己的 realm 求值）＋ 面板根元素上的委托监听。
+1393:  *  ⚠️ 全程 typeof 保护，**加载时绝不抛错**（本脚本跑在酒馆助手 iframe 里，任何异常都会白填面板）。 */
+1394: const XSD_PORTRAIT_API = {
+1395:   version: 'v2.3',
+1396:   pinyin: XSD_PINYIN,
+1397:   pinyinOf,
+1398:   sources: xsdPortraitSources,
+1399:   sourcesFor: xsdPortraitSourcesFor,
+1400:   cloudUrlFor,
+1401:   fallbackSvg: xsdAvatarFallbackSvg,
+1402:   walkDown: xsdWalkDown,
+1403:   openFrom: xsdOpenFrom,
+1404:   openLightbox: xsdOpenLightbox,
+1405:   closeLightbox: xsdCloseLightbox,
+1406:   listenersAlive: xsdListenersAlive,
+1407:   diag: () => ({
+1408:     version: 'v2.3',
+1409:     pinyinCount: Object.keys(XSD_PINYIN).length,
+1410:     localPaths: XSD_LOCAL_PATHS.length,
+1411:     cloudKeys: Object.keys(XSD_CLOUD_URLS).length,
+1412:     open: !!xsdBox.el,
+1413:     listenersAlive: xsdListenersAlive(),
+1414:     wireListeners: xsdWireCount,
+1415:     closes: xsdBox.leaktick,
+1416:   }),
+1417: };
+1418: 
+1419: /**
+1420:  * 立绘接线（2026-09-28 第三十轮重写）：
+1421:  *   ① **先绑宿主文档的点击监听**（真机＝父窗口 document），拿不到才退本层；click ＋ mousedown 双绑；
+1422:  *   ② window 上的 API 各自独立 try（跨源 window 会抛，不能让它拖垮监听）；
+1423:  *   ③ **自检行画进面板页脚** —— 出问题时一眼看得见，不用猜日志去哪了。
+1424:  * 命名保持 `wirePortrait`：事件钩子会重复调用它（换楼重绑），幂等（重复绑同一函数无副作用）。
+1425:  */
+1426: 
+1427: function xsdWireInline(root) {
+1428:   let n = 0;
+1429:   try {
+1430:     const scope = root || (typeof DOC === 'function' ? DOC() : document);
+1431:     if (!scope || !scope.querySelectorAll) return 0;
+1432:     const list = scope.querySelectorAll('[data-xsd-open]');
+1433:     for (const el of list) {
+1434:       if (xsdUiInlineNodes.has(el)) continue;
+1435:       try {
+1436:         /* ⚠️ 必须 `stopPropagation`：内联 onclick 与**宿主 document 上的委托监听**会同时命中同一个点击
+1437:          *   ⇒ `xsdOpenFrom` 跑两次 ⇒ **开两次箱**（实测：`appendChild` 计数 = 2），
+1438:          *   keydown（ESC／←／→）监听也跟着注册两份，**先注册的那份闭包里握着已经被换掉的
+1439:          *   flip/counter/big** ⇒ 按方向键"没反应"。2026-09-28 第三十六轮实测抓到。 */
+1440:         el.onclick = function (ev) {
+1441:           try { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e) { /* 忽略 */ }
+1442:           xsdOpenFrom(el); return false;
+1443:         };
+1444:         /* 兜底：有的宿主会吞 click，用 mousedown 再挂一条（同样要拦住冒泡） */
+1445:         el.onmousedown = function (ev) {
+1446:           if (!xsdMouseHoverEvent(ev, el)) return;
+1447:           try { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e) { /* 忽略 */ }
+1448:           xsdOpenFrom(el); return false;
+1449:         };
+1450:         el.style.cursor = 'zoom-in';
+1451:         el.setAttribute('data-xsd-wired', '1');
+1452:         xsdUiInlineNodes.add(el);
+1453:         n += 1;
+1454:       } catch (e) { /* 单个失败不影响其余 */ }
+1455:     }
+1456:   } catch (e) { /* 忽略 */ }
+1457:   return n;
+1458: }
+1459: 
+1460: /* ⚠️ 2026-09-29：**开场白里的「读《极乐引》」按钮**（`[data-xsdsend]`）。
+1461:  *   为什么把逻辑放这儿、不放正文的 onclick 里：正文里带 `{}` 的脚本会被 markdown 当代码块**吐成源码**
+1462:  *   （主人实测截图：整段 onclick 源码显示在开场白里）。
+1463:  *   做法：正文只留一个干净 `<button data-xsdsend="…">`；点击由这里的**事件委托**接住。
+1464:  *   用法：先拿宿主上下文跑 `/send <文本>`（＝以玩家身份发一条消息）；退路是填进输入框并提示自按回车。 */
+1465: function xsdQuickAct(ev) {
+…（跳至第 1583 行）
+1583:     const line = '⚙ 点击接线：自包含=' + inlined + '｜委托=' + report.bound + '(' + report.where + ')｜立绘入口=' + imgs.length + '｜面板=' + panels.length + '｜API窗=' + report.targets;
+1584:     for (const p of panels) {
+1585:       let foot = p.querySelector('[data-xds-selfcheck]');
+1586:       if (!foot && D2.createElement) {
+1587:         foot = D2.createElement('div');
+1588:         foot.setAttribute('data-xds-selfcheck', '1');
+1589:         foot.style.cssText = 'font-size:11px;line-height:1.7;color:#ffd479;background:rgba(150,44,30,.22);border:1px solid rgba(200,150,90,.45);border-radius:3px;padding:4px 8px;margin-top:6px;letter-spacing:.3px;word-break:break-all;';
+1590:         p.appendChild(foot);
+1591:       }
+1592:       if (foot) foot.textContent = line;
+1593:     }
+1594:   } catch (e) { /* 自检画不上不影响功能 */ }
+1595:   console.log(TAG, '[立绘接线] 委托监听=' + (report.bound ? '已绑 ' + report.bound + ' 条' : '未绑')
+1596:     + '（' + report.where + '，wireCount=' + xsdWireCount + '）'
+1597:     + '｜API 挂到 ' + report.targets + ' 个 window'
+1598:     + (report.fails.length ? '｜失败项：' + report.fails.join('、') : '｜无失败项'));
+1599: }
+1600: wirePortrait();
+1601: 
+1602: /** API 探测记录（诊断用）：看清 getChatMessages 到底返回了什么 */
+1603: let apiProbe = null;
+1604: 
+1605: /**
+1606:  * 取某条消息的**原始正文**。
+1607:  * ⚠️ 关键：正则把 <Status_block>…</Status_block> 整段替换成了面板 HTML，
+1608:  *    所以 `.mes_text` 里**已经没有原文**了（v2.0 的第二个 bug）。
+1609:  *     ① 主路：酒馆助手的 getChatMessages —— 返回**未经正则替换**的原始消息
+1610:  *     ② 回退：面板里用 $& 藏的那份原文副本（<pre hidden data-xds-src>）
+1611:  *     ③ 兜底：DOM 正文（多半读不到标签，只能靠"无标签"退化解析）
+1612:  */
+1613: function textOf(mesEl, messageId) {
+1614:   try {
+1615:     if (typeof getChatMessages === 'function' && messageId !== undefined && messageId !== null) {
+1616:       const msgs = getChatMessages(messageId);
+1617:       const m = Array.isArray(msgs) ? (msgs[msgs.length - 1] ?? msgs[0]) : msgs;
+1618:       const t = m && (m.message ?? m.mes);
+1619:       apiProbe = { got: typeof t, len: String(t ?? '').length, keys: m && typeof m === 'object' ? Object.keys(m) : null };
+1620:       if (t && String(t).includes('Status_block')) return { text: String(t), from: 'getChatMessages' };
+1621:     }
+1622:   } catch (e) { apiProbe = { err: String((e && e.message) || e) }; }
+1623: 
+1624:   const hidden = mesEl.querySelector('[data-xds-src]');
+1625:   if (hidden) {
+1626:     const t = hidden.textContent || '';
+1627:     if (t.includes('Status_block')) return { text: t, from: '<pre hidden>' };
+1628:     if (t.trim()) return { text: t, from: '<pre hidden>（标签被消毒剥离，退化解析）' };
+1629:   }
+1630: 
+1631:   const el = mesEl.querySelector('.mes_text');
+1632:   return { text: el ? (el.textContent || '') : '', from: 'DOM（多半已无原文）' };
+1633: }
+1634: 
+1635: /** 取顶层宿主文档（供弹窗挂载，防止被 iframe 截断） */
+1636: function xsdHostUiDoc(fallback) {
+1637:   let d = fallback || DOC() || document;
+1638:   try {
+1639:     let w = d.defaultView;
+1640:     for (let i = 0; w && i < 8; i++) {
+1641:       const p = w.parent;
+1642:       if (!p || p === w) break;
+1643:       if (!p.document || !p.document.body) break;
+1644:       d = p.document; w = p;
+1645:     }
+1646:   } catch (e) { /* 跨源时留在最近的可访问文档 */ }
+1647:   return d;
+1648: }
+1649: 
+1650: /** 读 stat_data 台账（与 `状态机.js` 同一条 API：聊天层打底、消息层覆盖；失败返回 null） */
+1651: function xsdStatData() {
+1652:   try {
+1653:     const gv = (typeof getVariables === 'function') ? getVariables : null;
+1654:     if (!gv) return null;
+1655:     const pick = (opt) => { try { const v = gv(opt); return (v && typeof v === 'object' && !Array.isArray(v)) ? v : null; } catch (e) { return null; } };
+1656:     const cv = pick({ type: 'chat' }), mv = pick({ type: 'message', message_id: -1 });
+1657:     const cs = (cv && cv.stat_data && typeof cv.stat_data === 'object') ? cv.stat_data : null;
+1658:     const ms = (mv && mv.stat_data && typeof mv.stat_data === 'object') ? mv.stat_data : null;
+1659:     if (!cs && !ms) return null;
+1660:     const stat = Object.assign({}, cs || {}, ms || {});
+1661:     const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
+1662:     const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
+1663:     if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
+1664:     return stat;
+1665:   } catch (e) { return null; }
+…（跳至第 1713 行）
+1713:     ];
+1714:   }
+1715:   return [
+1716:     { name: '醉春风', desc: '南域佳酿两坛，酒香浓醇，可解忧畅怀。', full: '南域仙坊颇具盛名的上等灵酿「醉春风」，甘冽清醇，入口温润，最解行者客愁，为云游修士随身常备佳品。' },
+1717:     { name: '随身青锋剑', desc: '入世防身佩剑，剑身清寒。', full: '随身淬炼多年的上好青锋剑，寒芒如雪，指使如臂，无论御剑凌风或近身防卫皆得心应手。' },
+1718:     { name: '《极乐引》残篇', desc: '记载天下诸般名器与双修造化之无上秘录。', full: '机缘所得的古旧皮质残卷，详载天下至阴名器之玄奥，能辨阴阳造化，推演仙姝命途。' }
+1719:   ];
+1720: }
+1721: 
+1722: /** 纳戒物品详情弹窗（点击物品名查看完整效果与来历） */
+1723: function xsdOpenItemModal(item, userDoc) {
+1724:   if (xsdMobileDisposed || !item) return false;
+1725:   const doc = xsdHostUiDoc((typeof DOC === 'function' ? DOC() : null) || userDoc || document);
+1726:   if (!doc || !doc.body) return false;
+1727: 
+1728:   const oldModal = doc.getElementById('xsd-item-modal');
+1729:   if (oldModal) { try { oldModal.remove(); } catch (e) {} }
+1730: 
+1731:   try { if (typeof ensureStyleInjected === 'function') ensureStyleInjected(doc); else if (typeof XsdHUD !== 'undefined' && XsdHUD.ensureStyleInjected) XsdHUD.ensureStyleInjected(doc); } catch (e) {}
+1732: 
+1733:   const modal = doc.createElement('div');
+1734:   modal.id = 'xsd-item-modal';
+1735:   modal.setAttribute('role', 'dialog');
+1736:   modal.setAttribute('aria-modal', 'true');
+1737:   modal.setAttribute('aria-labelledby', 'xsd-item-modal-title');
+1738:   modal.style.cssText = 'position:fixed!important;inset:0!important;background:rgba(0,0,0,0.85)!important;backdrop-filter:blur(6px)!important;-webkit-backdrop-filter:blur(6px)!important;z-index:9999999!important;display:flex!important;justify-content:center!important;align-items:center!important;padding:16px!important;box-sizing:border-box!important;';
+1739: 
+1740:   const itName = item.name || '随身法宝';
+1741:   const itDesc = item.desc || '随身所得之物。';
+1742:   const itFull = item.full || itDesc;
+1743: 
+1744:   modal.innerHTML = '<div class="modal-wrap xsd-item-modal-box" style="width:480px;max-width:94vw;background:radial-gradient(circle at 50% 20%,rgba(28,32,44,.98),rgba(12,13,18,.99));border:1px solid rgba(212,175,55,.5);border-radius:10px;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.9),0 0 25px rgba(212,175,55,.2);box-sizing:border-box;position:relative;font-family:-apple-system,BlinkMacSystemFont,\'PingFang SC\',\'Microsoft YaHei\',sans-serif;">'
+1745:     + '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(212,175,55,.25);padding-bottom:12px;margin-bottom:16px;">'
+1746:     + '  <div style="display:flex;align-items:center;gap:8px;">'
+1747:     + '    <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#ffd700;box-shadow:0 0 6px #ffd700;"></span>'
+1748:     + '    <h2 id="xsd-item-modal-title" style="margin:0;font-size:16px;color:#ffd700;font-family:\'STKaiti\',\'KaiTi\',serif;letter-spacing:2px;">納 戒 · 物 品 詳 觀</h2>'
+1749:     + '  </div>'
+1750:     + '  <button type="button" class="close-btn" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#d1c7b7;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;line-height:1;" aria-label="关闭">✕</button>'
+1751:     + '</div>'
+1752:     + '<div style="margin-bottom:14px;">'
+1753:     + '  <div style="font-size:18px;font-weight:700;color:#f4efe2;letter-spacing:1px;font-family:\'STKaiti\',\'KaiTi\',serif;margin-bottom:6px;">' + esc(itName) + '</div>'
+1754:     + '  <div style="font-size:12.5px;color:#c9a24a;line-height:1.55;">' + esc(itDesc) + '</div>'
+…（跳至第 1827 行）
+1827:     });
+1828:   });
+1829:   return inv.length;
+1830: }
+1831: 
+1832: /** 填一条消息里的面板
+1833:  *  @param messageId 楼号（`.mes[mesid]` 的那个 mesid）
+1834:  *  @param rawText   **可选**：由渲染触发的 iframe 递进来的原文（＝隐藏副本 `<pre data-xds-src>` 的内容）。
+1835:  *                   给了就直接用，不再回读 getChatMessages（少一次宿主 API 往返，也更准：
+1836:  *                   取的就是这条消息自己的那份副本）；不给/空就退回 textOf 的三级寻址。
+1837:  *  ⚠️ 本函数**只写 DOM，不写变量** —— 记账是状态机（`__xsdStateTick`）的事，两者互不依赖。 */
+1838: function fillPanel(messageId, rawText, explicitPanel) {
+1839:   if (xsdMobileDisposed) return { ok: false, why: 'script disposed' };
+1840:   const D = DOC();
+1841:   const mesEl = D.querySelector(`.mes[mesid="${messageId}"]`);
+1842:   if (!mesEl) return { ok: false, why: '找不到 .mes[mesid]（DOC 可能取错了文档）' };
+1843: 
+1844:   let text = '';
+1845:   let from = '';
+1846:   if (typeof rawText === 'string' && rawText.trim()) {
+1847:     text = rawText;
+1848:     from = '渲染触发（iframe 随带原文）';
+1849:   } else {
+1850:     const got = textOf(mesEl, messageId);
+1851:     text = got.text;
+1852:     from = got.from;
+1853:   }
+1854:   const hasTag = text.includes('Status_block');
+1855:   const looksLikeBlock = /地点\s*[：:]/.test(text) || /在场\s*[：:]/.test(text)
+1856:     || /<(地点|时间|时辰|时点|在场|天气|环境|危机)>/.test(text);
+1857:   if (!text || (!hasTag && !looksLikeBlock)) {
+1858:     return { ok: false, why: `正文里没有状态块（来源 ${from}，${text.length} 字）` };
+1859:   }
+1860: 
+1861:   const m = text.match(/<Status_block>([\s\S]*?)<\/Status_block>/i);
+1862:   let inner = m ? m[1] : text;
+1863: 
+1864:   /* 容器优先取显式传入的（mount 路径）；退回 DOM 查找（旧路径／诊断用） */
+1865:   const panel = explicitPanel || panelOf(mesEl);
+1866:   if (!panel) return { ok: false, why: '该消息里没有面板元素（正则没渲染？也没传容器）' };
+1867: 
+1868:   // ⓪ 先摘掉 <角色N> 子块，再跑顶层字段正则（见 parseCast 的两条护栏）
+…（跳至第 2307 行）
+2307:       + '<rect x="46" y="46" width="908" height="908" rx="54" fill="none" stroke="' + (isSelf ? XSD_RG : (isOther ? XSD_RO : '#6b7280')) + '" stroke-width="3" opacity="' + (isSelf ? 0.32 : (isOther ? 0.45 : 0.2)) + '"/>'
+2308:       + '</svg>';
+2309:   }
+2310: 
+2311:   
+2312:   /** 13 件名器 1-4 阶段精炼神韵数据库（用于 Hover 气泡与全景玄鉴画卷） */
+2313:   const XSD_RELIC_STAGES = {"jiuyouxuanyinxue":{"id":"jiuyouxuanyinxue","name":"九幽玄阴穴","carrier":"孤月","type":"阴窍绝品 · 极寒冰窟","brief":"阴窍至极名器，位列《极乐引》绝品。宿主身负世间至阴玄冥之气，深邃如坠万载寒潭，凡俗阳气触之即冻，唯有至阳龙气方能引动其深层造化。常与九幽玄阴脉伴生。","stages":{"1":{"name":"一阶段","desc":"触发条件是元阴初破、至阳龙气贯体。花宫最深处凝出一朵虚幻冰莲花苞，抖着绽开第一片花瓣，随后层层全绽。整条花径翻脸——原本温热的媚肉一瞬覆上万年玄冰般的寒气，收缩到近乎攻击性地箍紧肉棒，把入侵的烫物硬生生裹进冰里。至阴汁水触到肉棒即凝成薄冰霜，下一刻被烫化，再凝、再化，循环往复，交合处不断冒出细碎滋滋声，蒸起冰冷雾气，把两人下身罩在寒雾里。对方感受到的是仿佛连","lock":"「极乐引·玄阴篇」朱批：万载玄冰封其户，非至阳真龙之息贯顶，不能破其极寒。"},"2":{"name":"二阶段","desc":"冰棱漩涡成形。内壁长出无数细密、高速旋转的冰棱，在花径内壁疯狂游走、刮擦、研磨，每一下带出刺骨寒意与头皮发麻的快感。冰莲花瓣浮出丝丝缕缕淡暗金龙纹，像微小邪龙在瓣上游动；莲心亮起一点极致幽蓝，冰魄核心成形，花瓣层层怒放。携带者小腹浮出冰蓝与暗金交织的龙形道纹，如活物般缓缓游动；对方背脊浮出呼应的冰龙道纹。空中凝出一雄一雌两条缠暗金纹的冰龙虚影，交颈缠绕，散出","lock":"「极乐引·玄阴篇」朱批：冰棱回旋生暗金，阴阳交泰极处，龙纹自显于背。"},"3":{"name":"三阶段","desc":"漩涡收凝成龙鳞。无序旋转的冰棱猛然收缩凝聚，化作无数细小、如同活物般的冰晶龙鳞，紧密排列，布满整条花径。它们不再被动应激，而是主动：肉棒侵入的瞬间，满壁龙鳞仿佛见到君王般齐齐震颤、翕张，发出细碎的、如同冰晶摩擦的沙沙声，一层层叠上来包裹、缠绕肉棒；边缘锋利如刃，触到肉棒时又变软，带着吸力刮搔每一道沟壑。莲台上两条微缩冰龙虚影首尾相衔，绕着莲心幽蓝核心飞速盘旋","lock":"「极乐引·玄阴篇」朱批：玄魄收凝化为鳞，至柔胜刚，百骸龙髓交感。"},"4":{"name":"四阶段","desc":"身体外形被改写。莲心那点幽蓝核心先向内坍塌，接着轰然爆开，龙气逆流上头。额角两侧刺出一对幽蓝龙角，蜿蜒生长，通体如万载玄冰雕琢，表面缠着暗金色、活物般游走的细纹；身躯覆上龙鳞。背后一道庞大狰狞、覆着幽蓝冰晶与暗金纹路的邪龙虚影挣脱浮现，龙威压低整间宫殿的气温。龙角是整具名器的命脉，被攥住拨弄时，一股混着酥麻、刺痛的强烈电流瞬间窜遍全身，绷紧的身体当场软下去。","lock":"「极乐引·玄阴篇」朱批：龙角峥嵘命脉生，九幽冰魄大成，神仙俯首任凭驱策。"}}},"zhuojiuliuyanxue":{"id":"zhuojiuliuyanxue","name":"灼酒流炎穴","carrier":"叶红缨","type":"阴窍绝品 · 焚欲赤羽","brief":"阴窍绝品名器，出自《极乐引》名器谱，称其足以燃情蚀骨、醉倒仙神。花宫深处有纯阳酒泉，情动时溢散陈酿异香，炽热如熔岩暗涌，能反激交合者阳煞生机。","stages":{"1":{"name":"一阶段","desc":"元阴被破的那一刻由血脉自己引爆。未觉醒时只有一股淡淡的酒味混在情动气息里。入口先热后紧，被按压摩擦时不受控地一阵阵收缩，主动吸附吮吸，蜜液多到顺着大腿内侧拖出亮晶晶的水痕。插入那一下滚烫的温度先把携带者从迷乱里烫醒，随后破膜、撕裂、被撑到极限。真正的机制在第一下撞到花宫口时启动：一股热从花宫最深处自己炸开，被动承受的肉壁立刻改态，化成流动的温暖火焰层层叠叠缠","lock":"「极乐引·焚欲篇」朱批：幽谷藏纯阳酒泉，初度红尘自生温，烈火遇酒即引燃。"},"2":{"name":"二阶段","desc":"肉壁性质直接换掉。媚肉不再是温暖的火绸，而是化作流动的炽白烈焰；蜜汁不再流淌，而是像千年酒髓瞬间蒸干，化成无形无质却无处不在的烈炎琼浆，作用于双方神魂，把快感成倍往上推。体液相交处会响出滋滋声，像火焰遇上烈酒。背部浮出火凤道纹。这一段的乳尖另有孕炎乳一路：淡琥珀色，跟下身同源的酒香，被吸出后顺喉咙下肚，下去就催情。","lock":"「极乐引·焚欲篇」朱批：肉壁化流光炽焰，白焰琼浆蚀骨，乳尖暗凝琥珀之膏。"},"3":{"name":"三阶段","desc":"炽白流转为暗金，火凤虚影成形，修为随之破入元婴。此段触发「极乐轮回」——巅峰那一瞬邪凤法相双目亮起，力量顺着三人接触的部位反向灌回，本该退去的快感以更强力度从花心与后庭同时再爆一次，接着第三次、第四次，变成永不停歇的海啸，把携带者钉在极乐里。汁液带上了实质重量，酒香浓到能侵蚀心智。","lock":"「极乐引·焚欲篇」朱批：暗金凤影啸九天，快意迭起如海啸，极乐轮回不可休。"},"4":{"name":"四阶段","desc":"背脊肩胛裂开两道口子，长出翼展近丈的邪欲凤翼，暗红凤羽里流着金色情火。法相效果转为「欲火焚身，高潮迭起」：灼热的波纹以结合处为中心向外推，被携带者带到的人高潮一波未平一波又起。高潮时汁液可从穴口像小型喷泉般激射。","lock":"「极乐引·焚欲篇」朱批：双生赤羽裂肩胛，欲火焚身，神魂尽销于情焰之中。"}}},"xinmochayingru":{"id":"xinmochayingru","name":"心魔茶璎乳","carrier":"闻观语","type":"乳窍绝品 · 魔念茶香","brief":"双峰类奇珍名器，上古极阴之体之至高变种。双峰与周身灵窍浑然一体，天生体蕴幽渺魔性茶香，传闻灵乳初溢之时可洗练神魂杂毒，玄机深不可测。","stages":{"1":{"name":"一阶段","desc":"破元阴、阴阳交泰时，花宫凝出半透明的幽蓝心魔茶树虚影，爱液转成黏腻乳白，双峰胀大、乳尖渗出淡金灵乳。内壁黏膜像活了过来，生出无数细密柔软、如同新生茶蕊般的微小凸起与褶皱，疯狂摩擦、刮蹭、吮吸，快感按几何倍数往上翻。灵乳被饮下，能让人耗损的修为顷刻尽复，甚至犹有精进，还能把蚀心焚毒的奇毒消解大半。","lock":"「极乐引·魔念篇」朱批：花宫生茶树，璎珞初绽，灵乳溢香可涤神魂宿毒。"},"2":{"name":"二阶段","desc":"花宫孕出背生黑色魔翅的天魔之女虚影，蜜汁化成璎珞乳浆，黏稠如蜜、闪珍珠光泽，异香比先前浓十倍；双峰泌出天魔金乳，宛如流动的黄金，带炽热生命气息与魔性茶香。内壁茶蕊更密更软，如同活过来的触须，缠绕舔舐入侵的肉棒，每次摩擦带出电流般的细密快感。双方小腹浮出天魔道纹，身后虚空浮出天魔与天魔之女两道虚影交感。此段可行峰峦叠嶂之法：以乳肉包裹肉棒，与下穴共鸣，上下同时","lock":"「极乐引·魔念篇」朱批：天魔之女凝金乳，双峰与玄谷共鸣，上下通感如一。"},"3":{"name":"三阶段","desc":"在雷霆与欲火双重作用下彻底觉醒。茶蕊顶端生出细小的紫金触须，抽离时依依不舍缠住挽留、刮过棱角，插入时又欢快缠上来贴着律动，把更细腻的刮擦送进濒临崩溃的神经。天魔金乳转为瑰丽的紫金色，入口带电般的酥麻。花宫茶树化作幽蓝、暗金、紫红三色交织、缠着银白雷弧的紫金雷火茶树。天魔女法相左半身缠融情欲火、右半身跃动暗紫雷蛇。奴种于此段扎进茶树核心根系。","lock":"「极乐引·魔念篇」朱批：紫金雷火动道纹，奴种深植根系，欢愉锁死于魔念之中。"},"4":{"name":"四阶段","desc":"脑后虚空凝出一枚拳头大小、深邃暗绿的邪心天目，缓缓睁开。随之展开领域「千心一欲」——领域内所有女子的感官、情绪、乃至被身体承载的快感被强行连接、共享、放大，数千人的感受叠加进一具身体，被灌入的元阳洪流也叠成数千道贯穿。身心与欢愉法则锁死，退不回来。","lock":"「极乐引·魔念篇」朱批：千心归一欲，天目睁时照十方，万千神魂共此极乐。"}}},"boruoputiju":{"id":"boruoputiju","name":"般若菩提菊","carrier":"楚灵夜","type":"后窍绝品 · 佛光净莲","brief":"后窍绝品名器，载于《极乐引》佛宗异宝残卷。隐于后庭菊径，聚散如清净莲台，禅韵与媚煞相生相克，传有逆向洗练神魂杂质之旷世神效。","stages":{"1":{"name":"一阶段","desc":"入口是一圈极紧的环状门户，被撑开时先是极涩，随后是轻微撕裂痛，很快转成饱胀、酥麻与深层悸动。内壁的褶皱自己重排，形成一圈圈细微而排列有序、如同菩提树叶脉般的纹路，侵入的瞬间被激活，不再是单纯紧箍，而是带韵律地蠕动、吸附、吮吸。这些叶脉缠绕入侵的肉棒，每次摩擦刮搔都带出电流窜脊髓的感觉，并反向把佛门元阴之气渡回施术者。","lock":"「极乐引·梵音篇」朱批：后庭暗藏清净莲，叶脉随律蠕动，逆吸真阳洗练神魄。"},"2":{"name":"二阶段","desc":"双穴互通成形。前后两条幽径彻底贯通，前方每收缩一次必然引动后方同步吸附，后方每蠕动一次也必然激起前方更剧烈的缠绕，形成循环放大的闭环。花径内的金色莲花与后庭的菩提叶瓣形成共振，后庭叶瓣像潮汐般层层涌动，带出更深沉的饱胀与酸痒。汁液从透明黏稠渐染淡金，转成黏稠醇厚如百花蜜露。","lock":"「极乐引·梵音篇」朱批：双穴相通成阴阳循环，前合后翕，禅意与媚煞同炉。"},"3":{"name":"三阶段","desc":"内壁纹路升格为半透明玉质般的菩提叶瓣，层层叠叠缠裹上来，节奏比花径更慢更深，缓慢而坚定地蠕动开合，带来直抵灵魂深处的吸力。汁液转成浓郁如琥珀、仿佛融化了黄金，气味是檀香混着极品花蜜的甜。额心暗金红莲印亮起，体表暗红邪莲图腾绽放旋转；法相为邪菩萨，诵出扭曲六字真言，化金色波纹笼罩全场，把领域里所有人的双穴同时点着。","lock":"「极乐引·梵音篇」朱批：邪菩萨法相低诵，红莲图腾照虚空，领域之内皆燃欲火。"},"4":{"name":"四阶段","desc":"机制转为镜像转移——携带者的感知被硬生生劈成两半，前一半在前面承受撑开的胀痛、棱角刮擦内壁的酥麻、顶端撞进深处的震荡，后一半分毫不差搬到后庭里，完全同步。高潮时花宫处的菩萨莲台主动张开一道细小缝隙，产生无法抗拒的吸力，像长鲸吸水般把灌进去的东西连同携带者自身的汁液一起吞下锁死在体内；被灌满后小腹肉眼可见微微隆起，事后蜜穴与后庭都红肿外翻。","lock":"「极乐引·梵音篇」朱批：镜像移转，莲台含吮封真阳，长鲸吸水分毫不泄。"}}},"beimingchaoshengxue":{"id":"beimingchaoshengxue","name":"北冥潮生穴","carrier":"雨霏柔","type":"阴窍绝品 · 惊涛潮汐","brief":"阴窍旷世绝品，暗合浩瀚北冥水行天道法则。花径幽邃如深海寒渊，潮起潮落皆合天时律动，非大机缘大定力者难窥其万分之一玄妙。","stages":{"1":{"name":"一阶段","desc":"内壁不按规律收缩，而是化作无数方向各异、力道不同的暗流与漩涡，从四面八方冲击、刮搔、缠绕入侵的肉棒。常态冰凉滑腻，汁水色泽深邃幽玄、质地如水银般沉重顺滑，气味是深海与月光混在一起的冷冽芬芳，量大到随内壁潮汐一波波涌出。插入的感觉不是陷进温暖的巢穴，而是闯进一片有了生命与意志的海洋，四周是无边包裹与冲击，还带着要把灵魂吸出去的力量。抽送到底时顶端撞上正在加速旋","lock":"「极乐引·北冥篇」朱批：水行法则纳于方寸，暗流漩涡不息，玄津如水银沉重。"},"2":{"name":"二阶段","desc":"那些暗流与漩涡化成无数细小活着的鲲鹏虚影，按规律层层叠叠地缠绕、吸吮、刮搔；花径从温暖海洋变成无垠的北冥之海，空间感被无限拉长，内壁媚肉带上韧性与活性，每一次收缩挤压都像整片北冥在呼吸律动。背脊浮出鲲鹏道纹。高潮不是普通喷发，是源涡运行方向轰然逆转：北冥玄津一瞬冰凉刺骨又极致灼热，量大到不可思议，如决堤的北冥之海从结合处冲出，同时把混着两人生命本源与阵道法则","lock":"「极乐引·北冥篇」朱批：源涡逆转沧海立，鲲鹏展翼，生命本源反哺纯阳。"},"3":{"name":"三阶段","desc":"领域展开。洞府内的景象开始扭曲模糊，空气里响起来自远古的潮汐声，四周浮出鲲鹏展翅、鱼跃沧海的虚影，以两人结合处为中心，把整间洞府变成只属于结合双方的独立神国。乳尖被吮时另有一路反馈，汁水混着浓郁乳香与一丝北冥玄津特有的冷冽激射而出。携带者这时只能死死捂住嘴、指甲掐进对方皮肉、拼命压住声音，身体却一路跟上去，直到双眼翻白。","lock":"「极乐引·北冥篇」朱批：帝溟神国自成天地，浪涛拍岸处，直指元婴大道。"},"4":{"name":"四阶段","desc":"帝溟神国彻底凝实为体内洞天，花宫深处「潮汐源涡」与鲲鹏本源合道。潮生自律无需刻意催发，暗流与浪涛自花宫深处层层逆卷，生命本源源源不绝反哺纯阳。玄津如银瀑倒倾，交媾即入天道冥想之境，元婴瓶颈应声而破。","lock":"「极乐引·北冥篇」朱批：溟海化虚为真界，鲲化为鹏扶摇起，极乐极境直通合道造化。"}}},"lingxitongxin":{"id":"lingxitongxin","name":"灵犀同心穴","carrier":"苏瑶、苏玲","type":"阴窍奇珍 · 灵犀双生","brief":"双生造化奇珍名器，需同胎血亲合道共构。二人同心异质、命格相系，传闻阴阳两极共济互补，在《极乐引》中被列为最不可思议之双生玄枢。","stages":{"1":{"name":"一阶段","desc":"同时探入两根手指能摸到两种截然不同的手感——一路温热黏稠，像最上等的温热丝绸，内壁嫩肉如活物缠绕蠕动，包裹紧致而富有弹性；一路冰凉爽滑，像浸润在寒泉里的美玉，内里细密褶皱如无数小舌缠绕，深处仿佛有无数细小漩涡旋转。破处即激活：谁在承欢，另一方无论隔多远都能同步感到被填满的胀满、被撑开的胀痛、甚至处子膜破裂那一瞬的痛，高潮几乎在同一刻到达。","lock":"「极乐引·双生篇」朱批：同胞共命，异体同心，一人承欢则千里同感。"},"2":{"name":"二阶段","desc":"一人的快感被放大数倍再叠到另一人身上，形成双重贯穿感，像自己同时被两根操着。同时使用两人时，一边是灼热如地心熔岩的包裹与吮吸，一边是冰冷如九幽寒泉的浸润与缠绕，交替贯穿时热气与寒气在两人体内来回流转碰撞。汁液性质分化：苏玲的蜜汁骤然变得无比黏稠温热，如同融化的金液；苏瑶的爱液瞬间冰凉滑腻，如同万载寒泉。","lock":"「极乐引·双生篇」朱批：一温一寒冰火旋，阳蜜炽如熔金，阴蜜清如寒泉。"},"3":{"name":"三阶段","desc":"花宫门户被撞开那一刻，两人花宫深处各自升腾起一股截然不同的气旋，浮出太阳道纹与月亮道纹，日月交辉。这对道纹可外移到施术者双臂，被识出名器来源。高潮时姐妹各走一路：苏玲花宫深处的太阳气旋爆发，一股浓郁灼热、含精纯太阳之气的黏浊蜜汁像火山喷发般冲出；苏瑶体内喷出大量清冽冰凉、含太阴之气的蜜汁，两者混在一起形成奇异的冰火交织。对方射时元阳分作两股，一股灌进苏玲花宫","lock":"「极乐引·双生篇」朱批：日月交辉道纹现，两极交泰，造化神妙天地不存。"},"4":{"name":"四阶段","desc":"同心通感升华至神魂相通、太极合璧。无需同榻，一人承欢则双姝同享无上极乐。花宫内冰火阴阳二气在结合中自行演化太极漩涡，苏玲之阳蜜如熔金、苏瑶之阴蜜如万载寒泉，双流交汇反哺采补者。姐妹双纹与采补者双臂铭纹彻底互为表里，锁死同生共死之契。","lock":"「极乐引·双生篇」朱批：太极双生归混沌，千里同春情不息，日月同辉证无上玄妙。"}}},"yuhuxiangru":{"id":"yuhuxiangru","name":"玉虎噙香乳","carrier":"云织梦","type":"乳窍奇珍 · 猛虎衔香","brief":"双源奇珍名器，肌肤如润泽暖玉，天生蕴含冷冽蜜桃异香。相传宿主体内潜藏远古庚金白虎真煞，兼具镇邪与生阳之奇妙潜质。","stages":{"1":{"name":"一阶段","desc":"觉醒征兆不是汁液，是触感先变——肌肤红潮沉淀成温润莹透的光泽，摸上去不像单纯柔软，而像最上等的暖玉，细腻滑嫩下面藏着惊人弹性；乳晕向熟透蜜桃尖的橘红过渡，乳根与肋侧浮出极淡近乎透明的银白虎纹，随呼吸心跳流转，纹路本身散着微弱温热，碰到会引出全身细战栗。花宫深处的本源之相初显为一枚浸润清冷月华的饱满玉桃。汁液是初香玉露：清亮透明、微带粘丝、清冽纯净的蜜桃冷香，","lock":"「极乐引·白虎篇」朱批：玉骨凝香如冷桃，初露清冽，可开通天彻地五感。"},"2":{"name":"二阶段","desc":"体内的淫龙涎香余毒突然活跃，化成数条细如发丝的粉色光龙钻进那枚月下蜜桃虚影，把虚影撑碎，一头通体晶莹、毛发如粉色琉璃、双眼燃着情焰的邪魅白虎虚影就此盘踞花宫，骚痒与膨胀从深处往上顶。内壁淡银灵络整体转成鲜艳桃粉，像活过来的藤蔓紧紧缠住深埋的肉棒，一波波更绵密、深入骨髓的酥麻与吸力跟着压上来。胸前泌出的转成炽情桃蜜，黏稠如蜜、泛莹润桃粉光泽，催情更强；花径爱液","lock":"「极乐引·白虎篇」朱批：春潮催发庚金煞，白虎踞深闺，桃蜜浓艳催生真阳。"},"3":{"name":"三阶段","desc":"交合方混着混沌镇封之力的元阳洪流把邪灵包裹压缩，化成一道黯淡的粉红纹路锁进识海最深处。镇封那一刻花宫深处亮起一点白金光芒，演进成玉虎镇渊阵，名器本源被稳住，邪异气息消散，快感反而更纯：深埋在名器中的肉棒不仅未因倾泻元阳疲软，反被阵纹的威严与名器自身的吸吮之力激得愈发胀硬，尺寸再涨一圈。双峰与花径的双向共鸣此时完全打开——虎纹随花径收缩明暗闪烁，把快感反馈增幅","lock":"「极乐引·白虎篇」朱批：大阵镇渊锁邪灵，共鸣回路全启，反激阳根愈战愈强。"},"4":{"name":"四阶段","desc":"识海邪灵尽化为至纯神煞，白虎法相与月下玉桃本源彻底相融，胸前虎纹与花径灵络彻底通融。无需爱抚，情动即溢浓郁初熟桃蜜；双峰微颤间，庚金之气化作至刚至柔的锁阳大阵，深埋之阳物如遭天锁相吸，愈战愈坚，阴阳真火生生不息。","lock":"「极乐引·白虎篇」朱批：白虎衔香归至纯，神煞化甘露，双峰锁阳直臻长生妙境。"}}},"yanxialingru":{"id":"yanxialingru","name":"烟霞灵乳","carrier":"柳含烟","type":"乳窍绝品 · 紫雾霞光","brief":"双峰绝品名器，天生聚拢紫雾霞光。所溢甘露宛如凝练烟霞，自带颠倒红尘、勾动神魂最深处缠绵记忆之天然道韵。","stages":{"1":{"name":"一阶段","desc":"乳肉绵软硕大、弹力惊人，入手温热，五指抓下去乳肉几乎从指缝满溢出来。乳尖被含住吮吸时，一股温热、醇厚、带浓郁幽昙花香与奇异乳甜的粉白色乳汁不受控地激射出来，质地更接近凝练的烟霞。花径插入是填充与撕裂同时超限：肉棒撑开唇瓣、撕开柔韧的甬道入口长驱直入，每一寸敏感媚肉被碾平、撑开到极限的轮廓都能清楚感到；内壁肉壁上的幽昙花花蕊被刮过或撞上时，应激般分泌出接近烟霞","lock":"「极乐引·烟霞篇」朱批：紫雾霞光凝琼浆，幽昙半合，每一吮皆落仙家露。"},"2":{"name":"二阶段","desc":"花宫最深处那株由精纯欲火与幽昙本源凝成的幽昙花虚影被直接撞上时，会生出一种名器本源被外力猛撞震荡的、源自灵魂深处的战栗。抽出时几乎退到穴口，内壁上的暗金锁链虚影一路刮擦，带来奇异而强烈的酥麻与微痛；每一次深入都像要撞碎花宫门户。乳尖被从乳下缘向上猛力推挤时，乳汁会被挤成细线四处飞溅，携带者身上那层成熟妖媚的壳会彻底碎掉，声音散成断句。","lock":"「极乐引·烟霞篇」朱批：暗金锁链动神魂，幽昙撞破，高傲道心尽作断续啼痕。"},"3":{"name":"三阶段","desc":"身后蛇姬法相虚影凝实，周身缠绕漆黑火焰，散出缕缕肉眼可见、氤氲粉黑色泽的烟雾。此段成形道韵「昨日欢」——非幻术，直接引动周遭女子肉身与神魂最深处的记忆烙印，让众女修一次次重温自己人生中最极致、最难忘的那次泄身体验，可反复叠加、越来越强。乳尖泌出的乳汁与花径分泌的烟霞蜜汁同时成倍加量，异香浓郁十倍。","lock":"「极乐引·烟霞篇」朱批：昨日欢起蛇姬舞，重温极乐忆，世间至高缠绵道韵。"},"4":{"name":"四阶段","desc":"「昨日欢」道韵凝为实质领域，幽昙花彻底盛开，粉黑霞光如轻纱笼罩结合双方。双峰泌出之烟霞琼浆与花径溢出之极乐花蜜化作神魂养料。每一次抽送皆精准引动神魂最极致之快感记忆，层层叠增、无休无止，令道心永沦于欢愉梦境，不可自拔。","lock":"「极乐引·烟霞篇」朱批：幽昙盛放烟霞定，昨日欢化万古春，沉沦无悔至死方休。"}}},"meiruixue":{"id":"meiruixue","name":"梅蕊穴","carrier":"花芷凝","type":"阴窍奇珍 · 寒梅暗香","brief":"阴窍暗香奇珍，清幽冷冽，自带绝俗梅花冷香。内蕴玄妙蕊形灵络，有以幽谷阴元孕养灵药、反哺丹道造化之殊胜传闻。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口紧窄，初入时偏涩，内壁出现的不是单纯褶皱，而是一圈圈排列有序、边缘微卷的蕊状结构，像被撩开的花瓣一样逐层裹上来。本阶段蕊状结构不主动吸附，仅在肉棒退出时产生轻刮。温度起始偏低，接近携带者常年偏凉的体表手感；随交合推进内壁自行升温，出现冷热交替，交接处的凉意与热度在两息之内反复一遍。汁液清透微黏，气味为梅花冷香，浓度随情","lock":"「极乐引·梅蕊篇」朱批：幽谷清冷生梅香，蕊瓣层叠，退出微刮引动心弦。"},"2":{"name":"二阶段","desc":"蕊状结构吸水后膨起，边缘由微卷转为向外翻张，像花瓣张开一样全部贴上肉棒，形成持续的刮擦与吸附。中心位置生出一条纵向敏感带并沿壁贯穿，肉棒压过该带时产生的感觉沿脊柱向下传导。汁液由清透转为蜜状，黏稠度上升，冷香之外多出一层熟果般的甜。胸前双峰开始泌出与汁液同源的乳白液体，被含住吮吸时随吸力成股涌出。此阶段可通过意志调节蕊状结构的开合频率，频率升高时吸附加强，主","lock":"「极乐引·梅蕊篇」朱批：蕊瓣翻张温养灵药，纳丹化水，蜜液同具神丹造化。"},"3":{"name":"三阶段","desc":"内壁在冷热交替中析出一层极薄的霜状凝结，触感转为先凉后烫，肉棒进入时形成明显的温差冲击。蕊心深度增加，进入任意一点均被两组结构同时夹持，一组产生吸附，一组产生向外推压，两种力量交替出现，节奏约每三息轮换一次，轮换时出现被推出去又被吸回来的两段感。小腹浮现梅花状的淡青纹路，并随高峰向腰侧蔓延。高潮时花径收缩与霜状凝结同时发生，汁液自穴口成股涌出，量足以顺着大腿","lock":"「极乐引·梅蕊篇」朱批：霜凝玉壁温差现，推吸交错，青梅道纹蔓延腰腹。"},"4":{"name":"四阶段","desc":"胸前形成一处稳定的蕊心显化，位于双峰正中，外观为一点半透明的淡青花蕊，触感冰凉，与双峰其余部分的温热形成明显分界，按压时引发花径同步收缩。高潮后香气外溢，可在身下织物与所处环境中残留数个时辰。此阶段携带者对是否接纳具有主动控制权，通过调节蕊鸣频率可在接纳与排斥之间切换；排斥时内壁整体向外推压，接纳时立即转为全线吸附，被夹住一次后很难再退出。","lock":"「极乐引·梅蕊篇」朱批：双峰蕊心受按通幽径，或拒或纳，全凭神识一念开合。"}}},"bingpojianxinxue":{"id":"bingpojianxinxue","name":"冰魄剑心穴","carrier":"苏倾寒","type":"阴窍绝品 · 剑骨冰魄","brief":"阴窍绝品名器，宿主以剑入道，至纯剑骨与元阴凝结化窍。传其门户有锋芒内敛之坚韧封障，唯有以刚克刚或水火相济方得其门而入。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口为多层结构，最内一层由寒气凝成的剑意封膜封闭，肉棒需先破开该层才能进入，破层时有筋络崩断般的顿感与短促刺痛。进入后内壁贴合极紧，表面布满细密的纵向寒棱，沿肉棒轴向刮擦，触感偏冷、偏涩、带轻微麻感。汁液稀薄冰凉，气味清淡，近雪水，量不大。此阶段内壁收缩频率低而深，每次收缩的间隔约五息，夹一下再松一下，松的时候仍贴着不放。","lock":"「极乐引·剑心篇」朱批：剑气封膜闭门户，落红化刃，内蕴化神诛邪真意。"},"2":{"name":"二阶段","desc":"第二层剑意封膜展开，形成交叉的斜向纹路，肉棒在其中进出时同时受到两组反向刮擦，产生相错的牵引感。内壁温度出现分层，深处偏冷、浅处转温，交接处反复切换，形成冷热交替的夹感。汁液转稠，带微弱甘味，气味中出现一丝金属般的清冽。携带者体内原有的寒冰剑气开始沿花径游走，在肉棒表面形成断续的刺感；被刺到最深处时，携带者的腰会自行向上迎一次，随即又强压回去。","lock":"「极乐引·剑心篇」朱批：寒棱交错如剑阵，冷热分层，剑煞游走触电生麻。"},"3":{"name":"三阶段","desc":"第三层封膜转为可吸入的寒气，随抽送被带入肉棒表层，使触感由冷涩转为冷滑，摩擦阻力下降但吸附增强，退出时产生明显的挽留感。内壁的纵向寒棱边缘软化，转为持续贴合与压迫。锁骨到小腹之间浮现一线斜剑状的淡银纹路，纹路随呼吸明暗。高潮时寒气短时间内集中自穴口泄出，接触外界的部分凝成细霜；携带者的声音在泄出的同时第一次断开，随后又被携带者自身咬回去。","lock":"「极乐引·剑心篇」朱批：斜剑银纹浮肌表，剑意化霜吸纯阳，挽留之意难平。"},"4":{"name":"四阶段","desc":"层叠剑意封膜全部破开，内壁恢复柔软，只在深处保留一处独立的寒气核心，触感为冷而韧，进入时产生短暂的空间扩开感，随后核心合拢把肉棒整个含住。同一路径二次进入不再受封膜阻挡，适应速度明显提高。此阶段携带者的自持下降，声音与呼吸的节律不再维持阻断，之前长期压制的反应在同一段时间内集中出现，一旦开口便接连不断。","lock":"「极乐引·剑心篇」朱批：重膜尽破留剑心，外冷内韧，百转柔肠一朝尽倾。"}}},"qinggexianmingxue":{"id":"qinggexianmingxue","name":"清歌弦鸣穴","carrier":"慕容清歌","type":"阴窍奇珍 · 天籁琴音","brief":"阴窍音律奇珍，天籁入骨，音律与气血共鸣。动情吐息之际宛如弦歌轻颤，暗含天道宫商角徵羽五音律动，神妙非常。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口紧窄，内壁贴合均匀，无凹凸感，触感接近被绷紧的软绸。进入时无明显摩擦感，随即出现细密而均匀的振动，频率与携带者的呼吸同步，吸气时减弱、呼气时增强。汁液清透，气味清淡，带一丝类似松香与弦丝的味道，量随呼吸的节律一波波出现，一波比一波多。此阶段触感以持续的细微振动为主，位置均匀分布，像整条内壁在同时出声。","lock":"「极乐引·弦歌篇」朱批：气血微颤应呼吸，松香泛起，整壁低鸣如抚素琴。"},"2":{"name":"二阶段","desc":"内壁的束状结构分化为多组，各自独立振动，互不同步，肉棒在不同深度会同时受到两组以上频率不同的振动，形成相错的推压与回抽。汁液转稠，量增加，内壁温度略升。携带者一旦发声，振动频率会随音高改变，音越高振动越细密，音越低振动越沉；被逼出声音时内壁会短暂自我加强，振幅提高约一倍，等于携带者每叫一声就自己把肉棒夹紧一次。","lock":"「极乐引·弦歌篇」朱批：泛音分化多重束，娇啼愈尖夹缚愈紧，音律自为锁阳扣。"},"3":{"name":"三阶段","desc":"多组振动叠加成稳定的复合波形，波形沿内壁循环推进，进入任意位置都会被连续三段不同频率的振动依次扫过，形成周期性的收放节律。汁液转为黏滑，气味变浓且带明显和弦感。内壁开始对外界声音产生反应，附近有连续乐音时振动会自动向该音高靠拢；若一直闭口不出声，振动会转沉压向深处，逼携带者开口。颈侧至锁骨之间浮现一线淡金纹路，其明暗与振动频率一致。","lock":"「极乐引·弦歌篇」朱批：宫商交叠领域生，金纹明灭，波及方圆女修同频泄身。"},"4":{"name":"四阶段","desc":"波形稳定后可脱离直接动作自行维持，仅在外部声音变化时调整。内壁保留一处集中的振动核心，位于深处，进入时产生一次全壁同频的共振，持续约两息，期间内壁整体贴合并发声。此后声音不再受控，振动与音高之间形成固定关联，无法再主动压低；同一路径二次进入不再需要重新积累，反应速度明显提高，尚未开口，里面已经先响。","lock":"「极乐引·弦歌篇」朱批：花宫深处凝琴核，无需铺垫，甫一接近里面先鸣相迎。"}}},"liuyandiexinxue":{"id":"liuyandiexinxue","name":"流焰叠薪穴","carrier":"顾云舒","type":"阴窍奇珍 · 流光幻蝶","brief":"阴窍流光奇珍，极乐引载其如薪火相传、余温不绝。气机运转之际暗金流光如蝶，天生蕴藏淬炼兵甲、反哺纯阳之神火潜能。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口温热，内壁贴合充分，进入时先产生缓慢而均匀的吸附，无明显摩擦感。内壁温度随交合轮次逐次升高，第一轮结束后温度不回落，而是在深处留存一部分，下一次进入时起步就比上次更烫。汁液金红色、粘稠、带温热感，量中等，气味接近熬煮过的果实。体表在小腹出现浅淡的暗金纹路，纹路随每一轮的温度上升加深一分。","lock":"「极乐引·流焰篇」朱批：余温积存步步高，流光如蝶，暗金细纹铭刻小腹。"},"2":{"name":"二阶段","desc":"滑液进一步粘稠，呈蜜状，内壁整体温度抬升，同时在深处形成一处集中的热源。该热源使深处触感明显偏烫，浅处仍维持温和，形成持续的温度差；热源位置可随体位改变随机移动，移动时在内壁上留下短暂的移动热痕，像一条火线从内壁爬过去。携带者的呼吸频率低于常人，但吸吮的力度不降，每一次吸附都伴随深处热源的集中释放；想缓一缓时里面的温度反而更高。","lock":"「极乐引·流焰篇」朱批：游移热痕如走线，深烫浅温，抽送越缓内热愈烈。"},"3":{"name":"三阶段","desc":"内壁积存的余温由滑液转为蒸汽状热雾，肉棒在湿滑与雾气之间交替通过，抽送时热雾被挤到浅层，形成明显的内外温差，一路热浪推着走。内壁出现密集的热纹，边缘由锐转柔，转为持续的吮吸与压迫，温度维持在同一水平不再回落。颈后至双侧肩胛之间浮现暗金流焰纹路，与呼吸的起伏同步明暗。此阶段被撞得越快，积温越稳，停下反而难受。","lock":"「极乐引·流焰篇」朱批：热雾蒸腾成熔炉，淬炼兵刃法器，品阶威能随火候暴涨。"},"4":{"name":"四阶段","desc":"热源不再依赖持续性交合即可维持，进入前已完成积温时，其温度可在数刻内保持；同一路径二次进入无需重新积温。高峰时全部积存的热量在极短时间内集中释放，热浪自结合处向外扩散，体表渗出的汗与汁液混在一起，离体后仍带热量。事后热度不随结束散尽，仍在深处维持一段时间，痕迹可留数处。此阶段携带者对温度的耐受上升，对节奏的耐受下降，松手就自己贴回去。","lock":"「极乐引·流焰篇」朱批：薪火相传热不散，高峰瞬释，身心耐热终生难舍阳息。"}}},"fenghuangyuhua":{"id":"fenghuangyuhua","name":"凤凰羽花","carrier":"陆烬颜","type":"阴窍绝品 · 涅槃凤羽","brief":"肢足类绝世奇器，异象凝于足心与双腿，天生泛起暖羽异香。相传身具神禽涅槃余脉，与纯阳之息天然共鸣，越是相持越见坚韧。","stages":{"1":{"name":"一阶段","desc":"元阴被破时激活，载体在双足心与腿根内侧。足心蕴出薄汗状的暖津，触感温润不涩，足趾能屈伸扣握，足心正中那点花心受摩挲时自行开合，如活物含吮，含住后能凭足弓的收放把对方箍住不放。腿根内侧温度较别处高一线，夹持时贴合严密，久夹不松。花径受凤凰余炎浸润，温而不烫，内壁收束的节律与腿法同步，腿一动，内壁便跟着收一下。此阶段暖津清透微黏，气味为花香混暖羽的馥郁暖香，浓度","lock":"「极乐引·凤羽篇」朱批：足心生暖津，足趾扣握如花开合，腿法与花径同律。"},"2":{"name":"二阶段","desc":"羽纹上溯至腿根，纹路转赤金并绽出细密的花形脉络，泛出热光。足心的花心能主动开合得更深更快，双足可分别以不同节奏收束，一紧一松交替，等于两处同时夹。腿根夹持的炎力转盛，贴合处出现的不是单纯的热，而是热里有韧，越夹越紧，越紧越烫；对方腰背会被这股韧劲牵着走，抽送越快，缠得越密。暖津由清透转为粘稠如蜜，充足而不黏滞，改称「炽情羽津」；暖香可及一丈，闻者下腹发紧。此","lock":"「极乐引·凤羽篇」朱批：赤金凰纹上溯腿根，羽津黏蜜，夹持如活翼绞缠。"},"3":{"name":"三阶段","desc":"羽纹上溯至腰。足踝处可自行凝出赤色翎羽状的炎力虚影，随情动聚散，虚影擦过对方时额外带上一层灼热的抽打感。足心与腿根的收束转为持续，不再需要主动施力，停在一处也会自行夹吸；炎力自腿足涌入经脉并向上盘行，使对方四肢末端发热、指尖发麻，越往上越沉。暖津出量增加，足心湿成一片，气味转浓可及三丈，五丈内以镜类法器可辨。腰侧浮现羽列纹路，与呼吸同频明暗；被逼到极处时双腿","lock":"「极乐引·凤羽篇」朱批：足踝赤翎擦虚空，炎力反哺主人，泄身后阳息反更盛。"},"4":{"name":"四阶段","desc":"自足踝至腰后凝出一束火凤尾羽虚影，静息时暖金色，情动时转赤红并显出羽列纹路。足心与腿根可脱离直接接触维持余炎，进入前已积温时，进入后即自行收紧；同一路径二次进入无需重新铺垫，反应速度明显提高。暖香满室，赤足踏地处凝出短时火痕，结束后仍在原处留存一段时间。此阶段两处羽纹在情动至极时同时显形，腿足一侧为凰纹，主人小腹或腰际一侧为凤纹，一明一暗交替而应。","lock":"「极乐引·凤羽篇」朱批：足下凰纹腹间凤，双纹交相辉映，尾羽涅槃回路锁死。"}}}};
+2314: 
+2315:   const mobileViews = new Map();
+2316:   const mobileModalStops = [];
+2317:   let activeModalRelicId = '', activeModalFocus = null;
+2318: 
+2319:   function xsdHostUiDoc(fallback) {
+2320:     let d = fallback || DOC() || document;
+2321:     try {
+2322:       let w = d.defaultView;
+2323:       for (let i = 0; w && i < 8; i++) {
+2324:         const p = w.parent;
+2325:         if (!p || p === w) break;
+2326:         if (!p.document || !p.document.body) break;
+2327:         d = p.document; w = p;
+2328:       }
+2329:     } catch (e) { /* 跨源时留在最近的可访问文档 */ }
+2330:     return d;
+2331:   }
+2332: 
+2333:   function xsdApplyPanelLayout(wrap) {
+2334:     const width = wrap.getBoundingClientRect().width;
+2335:     if (!(width > 0)) return;
+2336:     const layout = width <= 600 ? 'mobile' : width <= 900 ? 'compact' : 'desktop';
+2337:     if (wrap.getAttribute('data-xds-layout') !== layout) wrap.setAttribute('data-xds-layout', layout);
+2338:     wrap.setAttribute('data-xds-tiny', width < 350 ? '1' : '0');
+2339:     const cols = Math.max(3, Math.min(8, Math.floor((width + 8) / 64)));
+2340:     wrap.style.setProperty('--xsd-relic-columns', String(cols));
+2341:   }
+2342: 
+2343:   function xsdObservePanel(wrap) {
+2344:     for (const [el, view] of mobileViews) {
+2345:       if (!el.isConnected && view.wasConnected) { view.stop(); mobileViews.delete(el); }
+2346:     }
+2347:     let view = mobileViews.get(wrap);
+2348:     if (!view) {
+…（跳至第 2560 行）
+2560:         if (doc && doc.removeEventListener) doc.removeEventListener('keydown', activeModalKeyHandler);
+2561:       } catch (e) {}
+2562:       activeModalKeyHandler = null;
+2563:     }
+2564:     activeModalDoc = null; activeModalRelicId = '';
+2565:     for (const stop of mobileModalStops.splice(0)) { try { stop(); } catch (e) { /* 忽略 */ } }
+2566:     const focus = activeModalFocus; activeModalFocus = null;
+2567:     try { if (focus && focus.isConnected && typeof focus.focus === 'function') focus.focus({ preventScroll: true }); } catch (e) { /* 忽略 */ }
+2568:   }
+2569: 
+2570:   function xsdOpenRelicModal(relicId) {
+2571:     if (xsdMobileDisposed) return false;
+2572:     const doc = xsdHostUiDoc((typeof DOC === 'function' ? DOC() : null) || document);
+2573:     if (!doc || !doc.body) return false;
+2574:     const wanted = XSD_RELICS.find(r => r.id === relicId) || XSD_RELICS[0];
+2575:     if (activeModal && activeModal.isConnected && activeModalDoc === doc && activeModalRelicId === wanted.id) return true;
+2576:     xsdClearRelicPopover(); xsdCloseRelicModal();
+2577:     activeModalFocus = doc.activeElement;
+2578:     try { if (typeof ensureStyleInjected === 'function') ensureStyleInjected(doc); } catch (e) {}
+2579:     try { if (typeof document !== 'undefined' && document !== doc && typeof ensureStyleInjected === 'function') ensureStyleInjected(document); } catch (e) {}
+2580: 
+2581:     const curRel = XSD_RELICS.find(r => r.id === relicId) || XSD_RELICS[0];
+2582:     const stat = xsdStatData() || {};
+2583:     const known = stat.known || xsdKnown() || {};
+2584:     const idEl = doc.querySelector('[data-xds="id"]') || (typeof document !== 'undefined' ? document.querySelector('[data-xds="id"]') : null);
+2585:     const idStr = (stat && stat.身份) || (idEl && idEl.textContent.trim()) || '';
+2586:     const customOwners = (stat && (stat.名器归属 || stat.relic_owners)) || null;
+2587: 
+2588:     const modal = doc.createElement('div');
+2589:     modal.id = 'xsd-relic-modal';
+2590:     modal.setAttribute('role', 'dialog');
+2591:     modal.setAttribute('aria-modal', 'true');
+2592:     modal.setAttribute('aria-labelledby', 'xsd-relic-modal-title');
+2593:     // 行内绝对强保样式：采用顶部安全流式对齐 + 容器滚动，杜绝居中溢出导致顶部关闭按钮被推至屏幕外
+2594:     modal.style.cssText = 'position:fixed!important;inset:0!important;background:rgba(0,0,0,0.85)!important;backdrop-filter:blur(6px)!important;-webkit-backdrop-filter:blur(6px)!important;z-index:9999999!important;display:flex!important;justify-content:center!important;align-items:flex-start!important;overflow-y:var(--xsd-modal-overflow,auto)!important;-webkit-overflow-scrolling:touch!important;padding:var(--xsd-modal-padding,20px 10px)!important;box-sizing:border-box!important;';
+2595: 
+2596:     const renderInner = (relObj) => {
+2597:       const st = xsdRelicState(relObj, known, idStr, customOwners);
+2598:       const data = XSD_RELIC_STAGES[relObj.id] || { name: relObj.n, carrier: '仙姝', type: '绝品名器', stages: {} };
+2599:       const curStage = (st.state === 'none') ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
+2600:       const imgUrl = xsdRelicCandidateUrl(relObj.id, curStage);
+2601:       let filterStyle = (st.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
+…（跳至第 2836 行）
+2836:     refreshRelics: () => {
+2837:       try {
+2838:         const D = DOC();
+2839:         const wraps = D.querySelectorAll ? D.querySelectorAll('.xh-wrap') : [];
+2840:         for (let i = 0; i < wraps.length; i++) xsdRenderRails(wraps[i]);
+2841:         const panels = D.querySelectorAll ? D.querySelectorAll('[data-xds-panel]') : [];
+2842:         for (let i = 0; i < panels.length; i++) renderInventory(panels[i], D);
+2843:       } catch (e) { /* 忽略 */ }
+2844:     },
+2845:     openRelicModal: (id) => xsdOpenRelicModal(id),
+2846:     closeRelicModal: () => xsdCloseRelicModal(),
+2847:     openItemModal: (it, doc) => xsdOpenItemModal(it, doc),
+2848:     disposeMobileUI: xsdCleanupMobileUI,
+2849:   };
+2850: })();
+2851: 
+2852: /* 挂到三层 window：迷你壳里的 bootstrap 在**任意一层**都取得到 */
+2853: (function registerHud() {
+2854:   const targets = [];
+2855:   const push = (get) => { try { const w = get(); if (w && !targets.includes(w)) targets.push(w); } catch (e) { /* 跨源 */ } };
+2856:   push(() => window); push(() => window.parent); push(() => window.top);
+2857:   let ok = 0;
+2858:   for (const w of targets) {
+2859:     try {
+2860:       w.XsdHUD = XsdHUD;
+2861:       w.__xsdMobileCleanup = XsdHUD.disposeMobileUI;
+2862:       w.__xsdFillPanel = xsdFillPanel;
+2863:       w.__xsdRefreshRelics = () => (XsdHUD.refreshRelics && XsdHUD.refreshRelics());
+2864:       w.xsdOpenRelicModal = (id) => (XsdHUD.openRelicModal && XsdHUD.openRelicModal(id));
+2865:       w.xsdCloseRelicModal = () => (XsdHUD.closeRelicModal && XsdHUD.closeRelicModal());
+2866:       w.xsdOpenItemModal = (it, doc) => (XsdHUD.openItemModal && XsdHUD.openItemModal(it, doc));
+2867:       ok += 1;
+2868:     } catch (e) { /* 跨源跳过 */ }
+2869:   }
+2870:   console.log(TAG, '[接线] XsdHUD 已挂到 ' + ok + ' 个全局（v3.0 · mount/getMessageData/ensureStyleInjected）');
+2871: })();
+2872: 
+2873: try { window.addEventListener('pagehide', XsdHUD.disposeMobileUI); } catch (e) { /* 忽略 */ }
+2874: 
+2875: /* ─────────── 冗余加速：事件钩子（缺失时整段跳过；拔掉不影响主路径）─────────── */
+2876: (function hookEvents() {
+2877:   try {
+2878:     if (typeof eventOn !== 'function' || typeof tavern_events === 'undefined') {
+2879:       console.warn(TAG, '[冗余加速] eventOn / tavern_events 不可用 —— 不影响渲染与点击（靠上面的接线）');
+2880:       return;
+2881:     }
+2882:     const on = (name, fn) => { try { if (tavern_events[name]) eventOn(tavern_events[name], fn); } catch (e) { /* 忽略 */ } };
+2883:     on('CHARACTER_MESSAGE_RENDERED', (id) => {
+2884:       try { wirePortrait(); } catch (e) { /* 自带 try，这里是双保险 */ }
+2885:       try { schedule(Number(id)); } catch (e) { /* 忽略 */ }
+2886:     });
+2887:     on('CHAT_CHANGED', () => { try { wirePortrait(); } catch (e) { /* 忽略 */ } try { fillAll(); } catch (e) { /* 忽略 */ } });
+2888:     on('MESSAGE_SWIPED', (id) => { try { schedule(Number(id)); } catch (e) { /* 忽略 */ } });
+2889:     console.log(TAG, '[冗余加速] 事件钩子已接（换楼重绑监听 ＋ 补填面板）');
+2890:   } catch (e) { console.warn(TAG, '[冗余加速] 事件钩子接线失败（不影响主路径）：', (e && e.message) || e); }
+2891: })();
+2892: 
