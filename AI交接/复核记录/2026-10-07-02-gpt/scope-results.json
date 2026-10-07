@@ -1,0 +1,283 @@
+{
+  "identity": "gpt",
+  "date": "2026-10-07",
+  "timezone": "Asia/Shanghai",
+  "runtime_snapshot": "AI交接/下级更新/2026-10-07-01/源码/卡片脚本·状态机（2026-10-07晚·含 rawText 修复·全文）.js",
+  "runtime_sha256": "13f5c1cb42b1f61bf743f694c73245668117bc7d0e4ca9073c6485331250d093",
+  "shared_sha256": "c5b15bc6bf98658e7b382ebb27a2efc57a806ea52e340c3caed00b332a6c139a",
+  "injector_sha256": "362fa822a8fdb96fb04a4ff296cff8668555a7bdaeedef1e713bb1702df485bf",
+  "tools": {
+    "eslint": "9.39.5",
+    "globals": "16.5.0",
+    "espree": "10.4.0"
+  },
+  "allowed_host_globals": [
+    "getVariables",
+    "replaceVariables",
+    "insertOrAssignVariables",
+    "deleteVariable",
+    "getChatMessages",
+    "setChatMessages",
+    "getCharacter",
+    "getCharWorldbookNames",
+    "getWorldbookNames",
+    "getWorldbook",
+    "replaceWorldbook",
+    "loadWorldInfo",
+    "saveWorldInfo",
+    "updateWorldInfoList",
+    "getContext",
+    "eventOn",
+    "injectPrompts",
+    "getLastMessageId",
+    "tavern_events",
+    "SillyTavern",
+    "toastr"
+  ],
+  "scope": "全部上传源及当前注入器拼接结果的静态作用域检查；宿主 API 被显式声明，不保证真实宿主接口存在或异步行为正确。",
+  "warning_review": {
+    "rolledBack": "闭包在 const rolledBack 初始化后才被调用，当前调用顺序没有 TDZ。",
+    "xdsTimepoint": "xdsMenuIntro 是延后调用的函数；模块实例初始化先于无条件绑定和点击，当前顺序没有 TDZ。",
+    "duplicate_name_keys": "11 处 name 空值与后续真名重复；JS 后项覆盖前项，不是本次中断原因，仍应清理。"
+  },
+  "cases": [
+    {
+      "name": "current_injected_runtime",
+      "sha256": "c2bb86fae9ec7a4cb28d380ae9a1b615f1ba4f37f5fc359b88f97aedf702e761",
+      "messages": [
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 465,
+          "column": 27,
+          "runtime_snapshot_line": 145
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 466,
+          "column": 27,
+          "runtime_snapshot_line": 146
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 467,
+          "column": 27,
+          "runtime_snapshot_line": 147
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 468,
+          "column": 27,
+          "runtime_snapshot_line": 148
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 469,
+          "column": 27,
+          "runtime_snapshot_line": 149
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 470,
+          "column": 27,
+          "runtime_snapshot_line": 150
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 471,
+          "column": 27,
+          "runtime_snapshot_line": 151
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 472,
+          "column": 27,
+          "runtime_snapshot_line": 152
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 473,
+          "column": 29,
+          "runtime_snapshot_line": 153
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 474,
+          "column": 29,
+          "runtime_snapshot_line": 154
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 475,
+          "column": 29,
+          "runtime_snapshot_line": 155
+        },
+        {
+          "rule": "no-use-before-define",
+          "severity": 1,
+          "message": "'rolledBack' was used before it was defined.",
+          "line": 2022,
+          "column": 49,
+          "runtime_snapshot_line": 1702
+        },
+        {
+          "rule": "no-undef",
+          "severity": 2,
+          "message": "'monthSpan' is not defined.",
+          "line": 2489,
+          "column": 174,
+          "runtime_snapshot_line": 2169
+        },
+        {
+          "rule": "no-use-before-define",
+          "severity": 1,
+          "message": "'xdsTimepoint' was used before it was defined.",
+          "line": 3329,
+          "column": 21,
+          "runtime_snapshot_line": 3009
+        }
+      ]
+    },
+    {
+      "name": "shared_module",
+      "sha256": "c5b15bc6bf98658e7b382ebb27a2efc57a806ea52e340c3caed00b332a6c139a",
+      "messages": []
+    },
+    {
+      "name": "current_injector",
+      "sha256": "362fa822a8fdb96fb04a4ff296cff8668555a7bdaeedef1e713bb1702df485bf",
+      "messages": []
+    },
+    {
+      "name": "minimal_hotfix_injected_runtime",
+      "sha256": "c3487e7d5d652baeb894f34a962fd8c2053386d95c4d1facd2d940fff3b7abdb",
+      "messages": [
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 465,
+          "column": 27,
+          "runtime_snapshot_line": 145
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 466,
+          "column": 27,
+          "runtime_snapshot_line": 146
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 467,
+          "column": 27,
+          "runtime_snapshot_line": 147
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 468,
+          "column": 27,
+          "runtime_snapshot_line": 148
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 469,
+          "column": 27,
+          "runtime_snapshot_line": 149
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 470,
+          "column": 27,
+          "runtime_snapshot_line": 150
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 471,
+          "column": 27,
+          "runtime_snapshot_line": 151
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 472,
+          "column": 27,
+          "runtime_snapshot_line": 152
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 473,
+          "column": 29,
+          "runtime_snapshot_line": 153
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 474,
+          "column": 29,
+          "runtime_snapshot_line": 154
+        },
+        {
+          "rule": "no-dupe-keys",
+          "severity": 1,
+          "message": "Duplicate key 'name'.",
+          "line": 475,
+          "column": 29,
+          "runtime_snapshot_line": 155
+        },
+        {
+          "rule": "no-use-before-define",
+          "severity": 1,
+          "message": "'rolledBack' was used before it was defined.",
+          "line": 2022,
+          "column": 49,
+          "runtime_snapshot_line": 1702
+        },
+        {
+          "rule": "no-use-before-define",
+          "severity": 1,
+          "message": "'xdsTimepoint' was used before it was defined.",
+          "line": 3329,
+          "column": 21,
+          "runtime_snapshot_line": 3009
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+--- a/卡片脚本/状态机.js
++++ b/卡片脚本/状态机.js
+@@ -2168,3 +2168,3 @@
+       patch.仙盟历文 = fmtXianmengDay(patch.仙盟历, dayOfMonth);
+-      console.log(TAG, `[段位] 第 ${messageId} 楼 ⇒ 第 ${patch.段位 || stg} 段（楼下限 ${stg}）${pin ? `（时间轴已平移 ${pin.shift} 楼）` : ''}｜历时「${patch.历时 || '—'}」⇒ +${adv}月（累计 ${acc}月／本段跨度 ${monthSpan}月）｜仙盟历 ${patch.仙盟历文}（${patch.仙盟历}）`);
++      console.log(TAG, `[段位] 第 ${messageId} 楼 ⇒ 第 ${patch.段位 || stg} 段（楼下限 ${stg}）${pin ? `（时间轴已平移 ${pin.shift} 楼）` : ''}｜历时「${patch.历时 || '—'}」⇒ +${adv}月（全程累计 ${acc}月）｜仙盟历 ${patch.仙盟历文}（${patch.仙盟历}）`);
+     } else {

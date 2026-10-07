@@ -1,0 +1,190 @@
+{
+  "identity": "gpt",
+  "date": "2026-10-07",
+  "timezone": "Asia/Shanghai",
+  "input_sha256": "13f5c1cb42b1f61bf743f694c73245668117bc7d0e4ca9073c6485331250d093",
+  "minimal_hotfix_sha256": "f62b28a8633e4081eae76805a57156ce22e9e818d6c49285c0d6c537236dcb51",
+  "scope": "实际注入后的完整状态机在 vm 内运行，变量 API、事件、定时器、世界书为替身；不访问真实存档/API/UI，不执行定时器。部分时钟场景替换段位函数以固定分支。断言验证现有缺陷，不等于生产修复通过。",
+  "observations": [
+    {
+      "name": "上传原文及当前注入产物语法",
+      "status": "confirmed",
+      "observation": "均可编译；静态 no-undef 仍报 monthSpan。"
+    },
+    {
+      "name": "rawText 修正后仍在 monthSpan 中断",
+      "status": "needs_fix",
+      "observation": {
+        "error": "monthSpan is not defined",
+        "milestone_calls": 0,
+        "stage_after": null,
+        "initialized_known_fields_before_error": 122,
+        "implication": "有工作的变量 API 时，ensureInit 在异常前已写默认 known。因此不能把整份 stat_data 全空唯一归因于这一行。"
+      }
+    },
+    {
+      "name": "最小日志修补恢复状态与真实里程碑函数调用",
+      "status": "confirmed",
+      "observation": {
+        "change": "仅去掉本段跨度 ${monthSpan} 的旧日志片段，未恢复段位→日历推导",
+        "milestone_calls": 1,
+        "neutral_anchor_written": true,
+        "stage": 2,
+        "limit": "实际函数运行，API 与两层存储为内存替身；不代表真实酒馆写入验收。"
+      }
+    },
+    {
+      "name": "失败提前进入去重集合，第二次相同消息不重试",
+      "status": "needs_fix",
+      "observation": {
+        "error_logs_after_two_calls": 1,
+        "completed_milestone_calls": 0,
+        "seen_keys": 1
+      }
+    },
+    {
+      "name": "tick 在内部失败后仍报 ok true",
+      "status": "needs_fix",
+      "observation": {
+        "ok": true,
+        "mesid": 8,
+        "source": "gpt隔离探针"
+      }
+    },
+    {
+      "name": "旧楼渲染被最新楼闸门挡住",
+      "status": "confirmed",
+      "observation": "当前最新楼 8，显式触发楼 2 仍只重绘不记账；不能靠翻旧楼或盲扫 tick 恢复整局。"
+    },
+    {
+      "name": "startTime 和 xdsTimepoint 当前作用域与调用顺序",
+      "status": "confirmed",
+      "observation": "构建注入后的完整脚本可初始化，Intro 延后调用保留初七，空值初三、非空无效值阻止；未发现该处 TDZ。"
+    },
+    {
+      "name": "日数常规修复已生效，但异常词仍被部分接受",
+      "status": "needs_fix",
+      "observation": [
+        {
+          "day": "十五",
+          "actual": {
+            "ym": 1579.06,
+            "day": 15
+          }
+        },
+        {
+          "day": "廿一",
+          "actual": {
+            "ym": 1579.06,
+            "day": 21
+          }
+        },
+        {
+          "day": "二十",
+          "actual": {
+            "ym": 1579.06,
+            "day": 20
+          }
+        },
+        {
+          "day": "31日",
+          "actual": null
+        },
+        {
+          "day": "卅一",
+          "actual": {
+            "ym": 1579.06,
+            "day": 30
+          }
+        },
+        {
+          "day": "初十一",
+          "actual": {
+            "ym": 1579.06,
+            "day": 10
+          }
+        }
+      ]
+    },
+    {
+      "name": "所选开局日期仍未进入基准",
+      "status": "needs_fix",
+      "observation": {
+        "selected": "仙盟历 1579 年 · 六月初七",
+        "actual_basis": 18938.066666666666,
+        "expected_basis": 18953.2,
+        "cause": "仍传当前 AI text 给 pickTimepointLine，普通 AI 回复没有该行就降为共享默认。"
+      }
+    },
+    {
+      "name": "缺状态栏仍按段位覆写时间",
+      "status": "needs_fix",
+      "observation": {
+        "selected": "仙盟历 1579 年 · 六月初七",
+        "after": "1578 年 · 三月"
+      }
+    },
+    {
+      "name": "换段清零条件仍在",
+      "status": "needs_fix",
+      "observation": {
+        "before_acc_months": 0.4,
+        "after_acc_months": 0.02,
+        "after_calendar": "仙盟历 1579 年 · 六月初七",
+        "lost_prior_days": 12
+      }
+    },
+    {
+      "name": "合法累计 0 被 || 当作缺失",
+      "status": "needs_fix",
+      "observation": {
+        "new_counter": 0,
+        "old_stage_counter": 0.4,
+        "calendar": "仙盟历 1579 年 · 六月十九"
+      }
+    },
+    {
+      "name": "同楼撤销历时只改显示，累计未持久化",
+      "status": "needs_fix",
+      "observation": {
+        "after_edit": {
+          "elapsed": 0.4,
+          "calendar": "仙盟历 1579 年 · 六月十八"
+        },
+        "after_again": {
+          "elapsed": 0.4,
+          "calendar": "仙盟历 1579 年 · 六月十九"
+        }
+      }
+    },
+    {
+      "name": "过渡词的大步长在内层已被截断",
+      "status": "needs_fix",
+      "observation": {
+        "input": "三月",
+        "parseLishi": 0.02,
+        "outer_transit_cap": 3,
+        "cause": "parseLishi 无条件 Math.min(best, LISHI_CAP)，外层较大 cap 无法恢复原步长。"
+      }
+    },
+    {
+      "name": "guard 入场修复有效，异步后仍未重查",
+      "status": "needs_review",
+      "observation": {
+        "initial_false_blocks_writes": true,
+        "guard_calls_during_change": 1,
+        "entry_sync_after_guard_became_false": 1,
+        "limit": "测试替身主动改变 guard；不是已复现真实跨会话写入。"
+      }
+    },
+    {
+      "name": "当前抽取内容正确，但注释会误触发跳过注入",
+      "status": "needs_hardening",
+      "observation": {
+        "current_function_matches_shared_ast": true,
+        "decoy_comment_skips_real_definition": true,
+        "current_batch_not_observed_to_fail_injection": true
+      }
+    }
+  ]
+}

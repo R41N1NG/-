@@ -1,0 +1,47 @@
+{
+  "identity": "gpt",
+  "date": "2026-10-07",
+  "timezone": "Asia/Shanghai",
+  "version": "SillyTavern 1.14.0",
+  "sources": [
+    {
+      "url": "https://github.com/SillyTavern/SillyTavern/blob/1.14.0/public/script.js",
+      "sha256": "6e657c178b5b57020e7dccab57c2379a910d1b642a32b9e0d2578eaa270f9958"
+    },
+    {
+      "url": "https://github.com/SillyTavern/SillyTavern/blob/1.14.0/public/lib/eventemitter.js",
+      "sha256": "a43e0c8b85efe8defd0c70d5f5ef4464b152d427233022393cfbfce562fcfc1e"
+    },
+    {
+      "url": "https://github.com/SillyTavern/SillyTavern/blob/1.14.0/public/scripts/st-context.js",
+      "sha256": "61ba8875cbe289734d432121e33c12b4da39d0e2a04026139964fc1e8a4d3a81"
+    }
+  ],
+  "positions": {
+    "generation_after_commands": 3935,
+    "send_user_message": 4066,
+    "world_info_scan": 4244,
+    "before_combine_prompts": 4845,
+    "accepted_message_event": 5526
+  },
+  "tests": [
+    {
+      "name": "native emit awaits listener Promise",
+      "passed": true,
+      "order": [
+        "listener_start",
+        "listener_ready",
+        "later_listener",
+        "emit_done"
+      ]
+    },
+    {
+      "name": "listener throwing alone does not cancel emit",
+      "passed": true,
+      "order": [
+        "continued_after_listener_error"
+      ]
+    }
+  ],
+  "scope": "官方源码静态顺序与原生事件发射器隔离运行；未验证目标酒馆助手 eventOn 桥接、世界书模板求值顺序、实际变量写盘或生成取消。"
+}

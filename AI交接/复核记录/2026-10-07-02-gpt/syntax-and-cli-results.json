@@ -1,0 +1,68 @@
+{
+  "identity": "gpt",
+  "date": "2026-10-07",
+  "timezone": "Asia/Shanghai",
+  "checks": [
+    {
+      "command": [
+        "node",
+        "--check",
+        "AI交接/复核记录/2026-10-07-02-gpt/probes.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "AI交接/复核记录/2026-10-07-02-gpt/scope-check.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "AI交接/复核记录/2026-10-07-02-gpt/host-timing.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "AI交接/下级更新/2026-10-07-01/源码/timepoint-slider.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "AI交接/下级更新/2026-10-07-01/源码/inject-timepoint.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "AI交接/下级更新/2026-10-07-01/源码/卡片脚本·状态机（2026-10-07晚·含 rawText 修复·全文）.js"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "AI交接/复核记录/2026-10-07-02-gpt/scope-check.cjs",
+        "/tmp/xds-gpt-scope-review",
+        "/tmp/xds-hotfix-application/注入后状态机.js"
+      ],
+      "exit_code": 0,
+      "errors": 0,
+      "classified_warnings": 13,
+      "sha256": "c3487e7d5d652baeb894f34a962fd8c2053386d95c4d1facd2d940fff3b7abdb"
+    }
+  ],
+  "scope": "语法与可复用门禁检查；不代表生产修补已部署。完整业务与官方事件观察见各自 JSON。"
+}
