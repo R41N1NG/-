@@ -259,3 +259,32 @@ A（共享模块＋采用随附生成器）、B（**构建期注入** `xdsTimepo
 
 ## 六、避坑（本轮新增）
 **改面板必须改产物**：`build.js` 不重新编译面板，只嵌入 `卡片脚本/状态栏面板.js`；只改 `_src` 模板不会生效（我第一版就白改了一次）。
+
+【身份：deepseek｜日期：2026-10-07｜类型：改动台账｜批次：2026-10-07-01】
+
+## 本轮**已经做过的**全部改动（文件 → 改了什么 → 结果）
+
+| # | 文件 | 改了什么 | 结果／验证 |
+| :-: | :--- | :--- | :--- |
+| 1 | `卡片脚本/状态机.js` | P1：新增 `cnNum()`；重写 `parseXianmengFromText()`（月 1–12、日 1–30、**31 日返回 null**）；新增 `pickTimepointLine()`（只认唯一「• 当前时点：」行）；历基准来源改为该唯一行、默认值**初三**（不再读 AI 正文/第 1 楼、不再初一兜底）；删除 `SEG_TIME→日历` 的 `monthSpan` 通路；拆出 `历时累计`（换段不再清零）；`writeIdentity(name, guard)` 执行 guard | 离线解析 10/10；`node --check` exit 0；卡内标记 ✅ |
+| 2 | `卡片脚本/状态机.js` | P2-B：模块作用域加 `const xdsTimepoint = (typeof xdsTimepointModule==='function') ? xdsTimepointModule() : null;`；`runtime.scan(surface)` 之后 `xdsTimepoint.install({host:surface.defaultView, ownerWindow:window, setValue:xdsMenuSetValue})`，disposer 入原 `runtime.cleanups` | 卡内 `const xdsTimepoint`／`install(` ✅；**主人真机 Ctrl+F5 后滑块已出现** |
+| 3 | `卡片脚本/状态机.js` | P2-C：`xdsMenuIntro` 内 `return` **之前**加 `const startTime = xdsTimepoint.resolveTimepoint(values.custom_timepoint);`；日期行整段改为 `'• 当前时点：' + startTime.value + '\n' +`（恰好一行） | 卡内 `startTime.value` ✅；位置断言（在函数内、函数外无残留）通过 |
+| 4 | `src/first_floor_rebuild/timepoint-slider.cjs` | **新增**（取你随附的共享模块） | 14,823 字符；卡内 `xdsTimepointModule`／`resolveTimepoint` ✅ |
+| 5 | `src/first_floor_rebuild/inject-timepoint.cjs` | **新增**：从共享文件抽取 `function xdsTimepointModule` 供构建期注入（不手抄日期表） | 自测：注入后含模块函数且原内容保留 |
+| 6 | `_build_card.js` | require 注入器；**载入循环**（第 996–1019 行）对 `状态机.js` 调 `injectTimepointModule(content)`，失败即 `process.exit(1)` | `node --check` exit 0；卡内模块已注入 ✅ |
+| 7 | `src/first_floor_rebuild/menu-builder.cjs` | 采用你随附的生成器（`require timepoint-slider.cjs`／`TIMEPOINT_CSS`／`renderTimepoint`）；在 `<p data-xds-status …></p>` 之后加反馈行「如有 bug 和建议，点这里反馈」＋**信封链接**（亮金 `#f2d489`、700、暗底投影；信封 44×44、金边金图标＋微光） | 卡内：反馈文案 ✅｜Discord 链接 ✅｜`target="_blank"` ✅ |
+| 8 | `src/first_floor_rebuild/timepoint-slider.cjs` | 只改 `TIMEPOINT_CSS` 的**属性值**（选择器不动）：暖纸底＋褐边框、鎏金→朱红轨道、径向渐变把手、朱红胶囊标签、`focus-visible` 描边、`pointer:coarse` 44px | CSS 871 → 2656 字符；卡内新样式 ✅ |
+| 9 | `卡片脚本/状态栏面板.js`（**产物**）＋ `卡片脚本/_src/状态栏面板.模板.js`（源） | 洗澡立绘规则收紧：`re` 只留明确沐浴名词；新增 `deny`（议事/大殿/正殿/殿内/朝会/议事厅/广场/演武/讲经/藏经/闭关洞府）；`xsdStageOf()` 命中 deny 即不切 | 产物语法 exit 0；卡内 `deny:`／「议事」✅、旧宽词「水中」已删 ✅ |
+| 10 | `references/仙姝墮-世界书.json`（同一批早前） | 15 条主线剧情闸门改「准入＋上界＋段位保底」；补名 11 个空壳锚点（删 4 个同义空壳，台账 111→122）；【中立】7 条改**按实际日历区间**、7 条专轨条改 `身份 AND 前提 AND 日历区间`；keys 整治（A 保留／B 换专名／C 删月名）；6 条小资料条改常驻 | `_chk_plot_gate` 9/9、`_chk_relic_stage`（新）／门禁全绿；源卡≡酒馆 |
+| 11 | `卡片脚本/GM修改器.js` | 台账字段同步到 **122 项** | 脚本生成、回读 122 ✅ |
+| 12 | `tools/checks/*`、`ship.js`、`.gitignore`、`docs/*`、`scratch/*` | 新增/调整门禁断言（`_chk_plot_gate` 语义、`_chk_no_mvu` 收紧 MNE 断言、`_chk_form_gate` 加锚点用例、新增 `_chk_relic_stage`）并挂进 `ship.js`；`.gitignore` 排除完整角色卡与世界书；新增复核材料文档 | `ship.js` **12 项全绿**；仓库 1133 文件（无 `references/`、无 `最新角色卡/`） |
+
+## 因这些改动导致的结果
+1. **卡可用性**：每个批次都以 `node --check` ＋ `build.js` ＋ `ship.js` 收口，**12 项门禁全绿**（最近 4.34–5.85 秒）；坏中间态**一次都没进过卡**（自动回滚／语法门禁拦下）。
+2. **真机结果**：滑块**已出现**（主人确认）；洗澡立绘**曾误切**（玩家反馈）⇒ 本轮已收紧；其余真机项（九项验收）**未验证**。
+3. **仓库结果**：完整角色卡（`最新角色卡/`）与世界书/原著语料（`references/`）**未入库**；`AI交接/` 与 `docs/` 正常入库。
+
+## 我改动过程中的失败（同批，已回滚，未覆盖）
+- P2 接线第 1–5 次失败（真因：日期行位于**多行字符串拼接链**里，`const` 插旁边必语法错）；
+- 一次 `_build_card.js` 注入写出语法错；一次面板只改 `_src` 模板**未改产物**导致不生效；
+- 以上均被门禁或自动回滚拦下，**未产生坏卡**。
