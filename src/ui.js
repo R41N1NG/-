@@ -24,11 +24,11 @@
   `;
   const EXTRA_STYLE = `
     .spoiler-box{max-height:100%;overflow-y:auto;overscroll-behavior:contain}
-    .launcher{width:48px;height:48px;padding:12px;border-radius:50%;touch-action:none;user-select:none;display:grid;place-items:center;cursor:grab}.launcher.dragging{cursor:grabbing}.launcher svg{pointer-events:none}.panel{position:relative}.panel-body{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}.node-spoiler{position:relative;min-width:0}.node-spoiler.locked{height:clamp(240px,calc(var(--bse-height,100dvh) - 330px),560px);overflow:hidden}.node-spoiler-content.locked{filter:blur(10px);pointer-events:none;user-select:none}.spoiler-layer{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;padding:16px;background:#10182780}.spoiler-box{width:min(430px,100%);padding:20px;border:1px solid var(--line);background:#141c2cf5;border-radius:16px;text-align:center;box-shadow:0 10px 36px #0008}.spoiler-box h2{margin:8px 0}.lock-icon{font-size:38px;display:block}.spoiler-box .row{justify-content:center}.header-actions{display:flex;gap:8px}.analysis-report li{overflow-wrap:anywhere}.analysis-report ul{padding-left:20px}.event-guide ol{padding-left:22px}.event-guide li{margin:6px 0}
+    .launcher{width:48px;height:48px;padding:12px;border-radius:50%;touch-action:none;user-select:none;display:grid;place-items:center;cursor:grab}.launcher.dragging{cursor:grabbing}.launcher svg{pointer-events:none}.panel{position:relative}.panel-body{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}.spoiler-region{position:relative;min-width:0}.spoiler-region.locked{height:clamp(240px,calc(var(--bse-height,100dvh) - 330px),560px);overflow:hidden}.spoiler-content.locked{filter:blur(10px);pointer-events:none;user-select:none}.spoiler-layer{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;padding:16px;background:#10182780}.spoiler-box{width:min(430px,100%);padding:20px;border:1px solid var(--line);background:#141c2cf5;border-radius:16px;text-align:center;box-shadow:0 10px 36px #0008}.spoiler-box h2{margin:8px 0}.lock-icon{font-size:38px;display:block}.spoiler-box .row{justify-content:center}.header-actions{display:flex;gap:8px}.analysis-report li{overflow-wrap:anywhere}.analysis-report ul{padding-left:20px}.event-guide ol{padding-left:22px}.event-guide li{margin:6px 0}
   `;
   const QUICK_STYLE = `:host{display:block;color:#e7ecf6;font:14px/1.5 system-ui,-apple-system,sans-serif;color-scheme:dark}:host([hidden]){display:none!important}*{box-sizing:border-box}.quick{padding:8px 10px;background:#141c2cf5;border:1px solid #40516a;border-radius:12px;box-shadow:0 3px 16px #0005}.quick-head{font-size:12px;color:#b8c5da;margin-bottom:6px}.quick-list{display:flex;gap:8px;overflow-x:auto;overscroll-behavior:contain;scrollbar-width:thin}.bse-choice{font:inherit;flex:0 0 auto;max-width:min(280px,90%);min-width:44px;min-height:44px;padding:8px 12px;border:1px solid #588b79;border-radius:10px;background:#263c34;color:#e7ecf6;cursor:pointer;touch-action:manipulation;text-align:left;overflow-wrap:anywhere}.bse-choice:focus-visible{outline:2px solid #9ce4cf;outline-offset:2px}.bse-choice small{color:#9ce4cf;margin-right:6px}.empty{color:#a8b3ca;font-size:13px}`;
   class Panel {
-    constructor(engine) { this.e = engine; this.doc = engine.host.doc(); this.win = this.doc.defaultView; this.tab = 'run'; this.opened = false; this.unlocked = false; this.spoilerPrompt = false; this.privacyProject = ''; this.forms = {}; this.details = {}; this.search = {}; this.nodeId = ''; this.eventId = ''; this.listPage = 0; this.bookProjects = []; this.unsub = null; }
+    constructor(engine) { this.e = engine; this.doc = engine.host.doc(); this.win = this.doc.defaultView; this.tab = 'run'; this.opened = false; this.unlocked = false; this.runUnlocked = false; this.spoilerPrompt = false; this.privacyProject = ''; this.forms = {}; this.details = {}; this.search = {}; this.nodeId = ''; this.eventId = ''; this.listPage = 0; this.bookProjects = []; this.unsub = null; }
     mount() {
       this.doc.getElementById('bse-panel-host')?.remove();
       this.element = this.doc.createElement('div'); this.element.id = 'bse-panel-host'; this.element.style.cssText = 'position:relative;z-index:2147482000';
@@ -115,35 +115,47 @@
       this.quickElement.style.cssText = 'position:fixed;z-index:2147481900;max-width:100%;';
       this.quickShadow = this.quickElement.attachShadow({mode: 'open'}); this.doc.body.appendChild(this.quickElement);
       this.quickShadow.addEventListener('click', ev => { const b = ev.target.closest?.('[data-action="quick-enter"]'); if (b) this.run(() => this.action('quick-enter', b)); });
-      if (this.win.ResizeObserver) this.composerResize = new this.win.ResizeObserver(() => this.positionQuick());
-      this.composerObserver = new this.win.MutationObserver(() => { if (this.findComposer() !== this.composer) this.renderQuick(); }); this.composerObserver.observe(this.doc.body, {childList: true, subtree: true});
+      if (this.win.ResizeObserver) this.composerResize = new this.win.ResizeObserver(() => this.refreshComposer());
+      this.composerObserver = new this.win.MutationObserver(records => {
+        if (!records.some(r => r.target !== this.quickElement && r.target !== this.element) || this.quickFrame) return;
+        this.quickFrame = this.win.requestAnimationFrame(() => { this.quickFrame = null; this.refreshComposer(); });
+      });
+      this.composerObserver.observe(this.doc.body, {childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden']});
       this.quickScroll = () => this.positionQuick(); this.win.addEventListener('scroll', this.quickScroll, true);
     }
-    findComposer() { return this.doc.querySelector('#send_form') || this.doc.querySelector('#send_textarea, #chatinput, textarea[name="send_textarea"]'); }
+    findComposer() {
+      const candidates = [...this.doc.querySelectorAll('#send_form, #send_textarea, #chatinput, textarea[name="send_textarea"]')];
+      return candidates.find(el => { const r = el.getBoundingClientRect(); return r.width && r.height && this.win.getComputedStyle(el).visibility !== 'hidden'; }) || candidates[0] || null;
+    }
+    refreshComposer() { if (this.findComposer() !== this.composer) this.renderQuick(); else this.positionQuick(); }
     renderQuick() {
       if (!this.quickElement) return;
       const composer = this.findComposer();
       if (composer !== this.composer) { this.composerResize?.disconnect(); this.composer = composer; if (composer) this.composerResize?.observe(composer); }
-      this.quickElement.hidden = this.opened || !this.e.settings.quick_options || !composer;
       const routes = this.e.quickRoutes(); const signature = json(routes) + this.e.settings.enabled + this.e.state.paused;
-      if (!routes.length) this.quickElement.hidden = true;
+      this.availableQuickRoutes = routes;
       if (signature !== this.quickSignature) { this.quickSignature = signature; this.quickShadow.innerHTML = `<style>${QUICK_STYLE}</style><div class="quick" role="region" aria-label="可选择剧情分支"><div class="quick-list">${routes.map(r => `<button type="button" class="bse-choice" data-action="quick-enter" data-id="${escape(r.target)}" data-status="${escape(r.status)}" title="${escape(r.status)} · 选择此分支">${escape(r.label)}</button>`).join('')}</div></div>`; }
       this.positionQuick();
     }
     positionQuick() {
-      if (!this.quickElement || this.quickElement.hidden || !this.composer?.isConnected) return;
-      const r = this.composer.getBoundingClientRect(), v = this.win.visualViewport; if (!r.width || !r.height) { this.quickElement.hidden = true; return; }
+      if (!this.quickElement) return;
+      const r = this.composer?.isConnected ? this.composer.getBoundingClientRect() : null, v = this.win.visualViewport;
+      this.quickElement.hidden = this.opened || !this.e.settings.quick_options || !this.availableQuickRoutes?.length || !r?.width || !r?.height || this.win.getComputedStyle(this.composer).visibility === 'hidden';
+      if (this.quickElement.hidden) return;
       const left = Math.max((v?.offsetLeft || 0) + 4, r.left), width = Math.min(r.width, (v?.width || this.win.innerWidth) - 8);
       this.quickElement.style.left = left + 'px'; this.quickElement.style.width = width + 'px'; this.quickElement.style.top = Math.max((v?.offsetTop || 0) + 4, r.top - this.quickElement.getBoundingClientRect().height - 6) + 'px';
     }
+    privacyUnlocked() { return this.tab === 'run' ? this.runUnlocked : this.unlocked; }
     updatePrivacy() {
-      const body = this.shadow.querySelector('.node-spoiler-content'), layer = this.shadow.querySelector('.spoiler-layer');
+      const body = this.shadow.querySelector('.spoiler-content'), layer = this.shadow.querySelector('.spoiler-layer');
       if (!body || !layer) return;
-      this.shadow.querySelector('.node-spoiler').classList.toggle('locked', !this.unlocked);
-      body.classList.toggle('locked', !this.unlocked); body.inert = !this.unlocked; body.setAttribute('aria-hidden', String(!this.unlocked));
-      this.shadow.querySelector('[data-action="spoiler-lock"]').hidden = !this.unlocked; layer.hidden = this.unlocked;
-      this.shadow.querySelector('[data-action="node-delete"]').disabled = !this.unlocked;
-      layer.innerHTML = this.spoilerPrompt ? `<div class="spoiler-box" role="alertdialog" aria-labelledby="bse-spoiler-title" aria-describedby="bse-spoiler-warning"><span class="lock-icon">🔒</span><h2 id="bse-spoiler-title">确认查看剧本节点？</h2><p id="bse-spoiler-warning">节点列表与编辑区包含未来剧情、不同走向和结局，解锁后可能影响游玩体验。</p><div class="row">${button('取消，继续隐藏', 'unlock-cancel')}${button('确认解锁', 'unlock-confirm', 'class="primary"')}</div></div>` : `<div class="spoiler-box"><button type="button" data-action="unlock-ask" aria-label="解锁剧本内容"><span class="lock-icon">🔒</span>节点内容已隐藏</button><p class="muted">点击锁图标查看剧透提醒，其他页面可照常使用。</p></div>`;
+      const unlocked = this.privacyUnlocked(), isRun = this.tab === 'run', label = isRun ? '分支与状态' : '剧本节点';
+      this.shadow.querySelector('.spoiler-region').classList.toggle('locked', !unlocked);
+      body.classList.toggle('locked', !unlocked); body.inert = !unlocked; body.setAttribute('aria-hidden', String(!unlocked));
+      this.shadow.querySelector('[data-action="spoiler-lock"]').hidden = !unlocked; layer.hidden = unlocked;
+      const deleteButton = this.shadow.querySelector('[data-action="node-delete"]'); if (deleteButton) deleteButton.disabled = !unlocked;
+      const warning = isRun ? '此区域包含尚未解锁的分支、解锁条件、收集记录和关系数值，查看后可能影响游玩体验。输入栏仍可显示当前可选的行动。' : '节点列表与编辑区包含未来剧情、不同走向和结局，解锁后可能影响游玩体验。';
+      layer.innerHTML = this.spoilerPrompt ? `<div class="spoiler-box" role="alertdialog" aria-labelledby="bse-spoiler-title" aria-describedby="bse-spoiler-warning"><span class="lock-icon">🔒</span><h2 id="bse-spoiler-title">确认查看${label}？</h2><p id="bse-spoiler-warning">${warning}</p><div class="row">${button('取消，继续隐藏', 'unlock-cancel')}${button('确认解锁', 'unlock-confirm', 'class="primary"')}</div></div>` : `<div class="spoiler-box"><button type="button" data-action="unlock-ask" aria-label="解锁${label}"><span class="lock-icon">🔒</span>${label}已隐藏</button><p class="muted">点击锁图标查看剧透提醒，其他区域可照常使用。</p></div>`;
     }
     cancelUnlock() { this.spoilerPrompt = false; this.updatePrivacy(); this.shadow.querySelector('[data-action="unlock-ask"]')?.focus(); }
     capture() {
@@ -158,7 +170,7 @@
     }
     render(capture = true) {
       if (!this.shadow) return; if (capture) this.capture();
-      if (this.privacyProject !== this.e.project.id) { this.privacyProject = this.e.project.id; this.unlocked = false; this.spoilerPrompt = false; }
+      if (this.privacyProject !== this.e.project.id) { this.privacyProject = this.e.project.id; this.unlocked = false; this.runUnlocked = false; this.spoilerPrompt = false; }
       const oldForm = this.shadow.querySelector('form');
       if (oldForm) this.details[oldForm.dataset.form] = [...oldForm.querySelectorAll('details[open]')].map(d => d.querySelector('summary')?.textContent);
       const active = this.shadow.activeElement; const focusName = active?.name; const focusAction = active?.dataset?.action; const selection = active?.selectionStart;
@@ -171,7 +183,7 @@
       if (form) for (const d of form.querySelectorAll('details')) d.open = (this.details[form.dataset.form] || []).includes(d.querySelector('summary')?.textContent);
       this.shadow.querySelector('main').scrollTop = scroll;
       this.updatePrivacy(); this.applyLauncherPosition(); this.renderQuick();
-      if (this.opened && !this.unlocked && focusAction?.startsWith('unlock-')) this.shadow.querySelector(`[data-action="${this.spoilerPrompt ? (focusAction === 'unlock-confirm' ? 'unlock-confirm' : 'unlock-cancel') : 'unlock-ask'}"]`)?.focus();
+      if (this.opened && !this.privacyUnlocked() && focusAction?.startsWith('unlock-')) this.shadow.querySelector(`[data-action="${this.spoilerPrompt ? (focusAction === 'unlock-confirm' ? 'unlock-confirm' : 'unlock-cancel') : 'unlock-ask'}"]`)?.focus();
       if ((this.tab !== 'nodes' || this.unlocked) && focusName && form) {
         const el = Array.from(form.elements).find(x => x.name === focusName);
         if (el) { el.focus({preventScroll: true}); if (typeof selection === 'number' && el.setSelectionRange) try { el.setSelectionRange(selection, selection); } catch {} }
@@ -179,14 +191,15 @@
     }
     async run(fn) { try { await fn(); } catch (e) { this.e.report(e); this.toast(e.message, true); } }
     toast(text, error = false) { const el = this.shadow.querySelector('.toast'); el.textContent = text; el.hidden = false; el.style.background = error ? '#592a31' : '#21473b'; clearTimeout(this.toastTimer); this.toastTimer = setTimeout(() => { el.hidden = true; }, 4000); }
-    toggle() { if (this.opened) return this.close(); this.opened = true; this.oldFocus = this.doc.activeElement; this.shadow.querySelector('.overlay').hidden = false; this.render(); this.shadow.querySelector(this.tab === 'nodes' && !this.unlocked ? '[data-action="unlock-ask"]' : '[data-action="close"]').focus(); }
+    toggle() { if (this.opened) return this.close(); this.opened = true; this.oldFocus = this.doc.activeElement; this.shadow.querySelector('.overlay').hidden = false; this.render(); this.shadow.querySelector(['nodes', 'run'].includes(this.tab) && !this.privacyUnlocked() ? '[data-action="unlock-ask"]' : '[data-action="close"]').focus(); }
     close() { this.capture(); this.opened = false; this.spoilerPrompt = false; this.shadow.querySelector('.overlay').hidden = true; this.renderQuick(); this.oldFocus?.focus?.(); }
     runPage() {
       const e = this.e; const p = e.project; const s = e.state; const refs = C.indexProject(p); const node = refs.nodes.get(s.current_node_id);
       return `<div class="card"><div class="row spread"><div><h2>${escape(p.title)}</h2><span class="badge">${e.settings.enabled ? s.paused ? '已暂停' : '运行中' : '未启用'}</span> <span class="muted">${e.settings.worldbook ? '世界书：' + escape(e.settings.worldbook) : '草稿暂存在脚本变量，建议写入世界书'}</span></div>${button(e.settings.enabled ? '关闭注入' : '启用剧本', 'toggle-enabled', 'class="primary"')}</div></div>
       <div class="card"><h2>${escape(node.title)}</h2><p style="white-space:pre-wrap">${escape(e.settings.detail ? node.detail || node.guidance : node.guidance || node.detail)}</p>${node.boundary ? `<p class="muted">${escape(node.boundary)}</p>` : ''}<div class="row">${button(s.completed_node_ids.includes(node.id) ? '本节点已完成' : '确认完成本节点', 'complete', s.completed_node_ids.includes(node.id) ? 'disabled' : 'class="primary"')}${button(s.paused ? '继续' : '暂停', 'pause')}${button('回退上次操作', 'undo', s.history.length ? '' : 'disabled')}${button('确认此回复并识别事件', 'check', e.busy ? 'disabled' : '')}</div><p class="muted">完成节点会执行配置的收集和变量效果；进入出口不会自动完成当前节点。</p></div>
-      <div class="card"><h2>接下来的分支</h2>${node.routes.length ? node.routes.map(r => `<div class="card route"><div><strong>${escape(r.label || refs.nodes.get(r.target).title)}</strong><div class="muted">${escape(conditionSummary(r.condition, p))}</div></div>${button(C.condition(r.condition, s) ? '进入分支' : '尚未解锁', 'enter', `data-id="${escape(r.target)}" ${C.condition(r.condition, s) ? '' : 'disabled'}`)}</div>`).join('') : '<p class="empty">此节点没有出口，可以在剧本页添加。</p>'}</div>
-      <div class="grid"><div class="card"><h3>已收集</h3>${s.collected_ids.length ? s.collected_ids.map(k => `<span class="badge">${escape(refs.collections.get(k) || k)}</span> `).join('') : '<p class="empty">暂无收集项</p>'}</div><div class="card"><h3>关系与状态</h3>${p.variables.map(v => `<div class="kv"><span>${escape(v.title || v.id)}</span><strong>${escape(s.variables[v.id])}</strong></div>`).join('') || '<p class="empty">可在数据页定义好感度等变量。</p>'}</div></div>`;
+      <div class="card"><div class="row spread"><h3>输入栏行动选项：${e.settings.quick_options ? '已开启' : '已关闭'}</h3>${button(e.settings.quick_options ? '关闭输入栏选项' : '显示输入栏选项', 'quick-toggle')}</div><p class="muted">关闭此面板后，输入框上方显示当前可用的行动；暂停、关闭注入或没有可选分支时隐藏。</p></div>
+      <div class="row">${button('🔒 隐藏分支与状态', 'spoiler-lock')}</div><div class="run-spoiler spoiler-region"><div class="run-spoiler-content spoiler-content"><div class="card"><h2>接下来的分支</h2>${node.routes.length ? node.routes.map(r => `<div class="card route"><div><strong>${escape(r.label || refs.nodes.get(r.target).title)}</strong><div class="muted">${escape(conditionSummary(r.condition, p))}</div></div>${button(C.condition(r.condition, s) ? '进入分支' : '尚未解锁', 'enter', `data-id="${escape(r.target)}" ${C.condition(r.condition, s) ? '' : 'disabled'}`)}</div>`).join('') : '<p class="empty">此节点没有出口，可以在剧本页添加。</p>'}</div>
+      <div class="grid"><div class="card"><h3>已收集</h3>${s.collected_ids.length ? s.collected_ids.map(k => `<span class="badge">${escape(refs.collections.get(k) || k)}</span> `).join('') : '<p class="empty">暂无收集项</p>'}</div><div class="card"><h3>关系与状态</h3>${p.variables.map(v => `<div class="kv"><span>${escape(v.title || v.id)}</span><strong>${escape(s.variables[v.id])}</strong></div>`).join('') || '<p class="empty">可在数据页定义好感度等变量。</p>'}</div></div></div><div class="spoiler-layer"></div></div>`;
     }
     list(items, key, selected, label) {
       const q = (this.search[key + '_search'] || '').toLowerCase();
@@ -207,7 +220,7 @@
           if (Array.isArray(draftRoutes) && draftRoutes.every(r => C.object(r) && p.nodes.some(x => x.id === r.target))) routes = draftRoutes;
         }
       } catch {}
-      return `<form data-form="node:${escape(n.id)}"><div class="card row node-toolbar">${button('新建节点', 'node-new')}${button('导入剧本', 'import')}${button('导出剧本', 'export-project')}${button('分析长文本', 'open-analysis')}${button('整理长文本', 'open-segment')}${button('删除节点', 'node-delete', 'class="danger" title="解锁节点后可删除"')}${button('🔒 隐藏节点', 'spoiler-lock')}<span class="muted">修改后保持内部编号。</span></div><div class="node-spoiler"><div class="node-spoiler-content"><div class="split">${this.list(p.nodes, 'node', n.id, '剧情节点')}<div class="card"><h2>编辑节点</h2>${input('名称', 'title', n.title)}${select('节点类型', 'kind', [['scene', '剧情阶段'], ['choice', '分歧选择'], ['ending', '结局']], n.kind)}${checkbox('此节点属于补充构想（非原文）', 'suggested', n.suggested)}${area('短演绎指引（默认注入）', 'guidance', n.guidance)}${area('详细剧情原文', 'detail', n.detail, 8)}${area('演绎边界与保留线索', 'boundary', n.boundary, 3)}${input('相关变量 ID（逗号分隔，仅这些状态进入提示词）', 'context_variables', n.context_variables.join(','))}
+      return `<form data-form="node:${escape(n.id)}"><div class="card row node-toolbar">${button('新建节点', 'node-new')}${button('导入剧本', 'import')}${button('导出剧本', 'export-project')}${button('分析长文本', 'open-analysis')}${button('整理长文本', 'open-segment')}${button('删除节点', 'node-delete', 'class="danger" title="解锁节点后可删除"')}${button('🔒 隐藏节点', 'spoiler-lock')}<span class="muted">修改后保持内部编号。</span></div><div class="node-spoiler spoiler-region"><div class="node-spoiler-content spoiler-content"><div class="split">${this.list(p.nodes, 'node', n.id, '剧情节点')}<div class="card"><h2>编辑节点</h2>${input('名称', 'title', n.title)}${select('节点类型', 'kind', [['scene', '剧情阶段'], ['choice', '分歧选择'], ['ending', '结局']], n.kind)}${checkbox('此节点属于补充构想（非原文）', 'suggested', n.suggested)}${area('短演绎指引（默认注入）', 'guidance', n.guidance)}${area('详细剧情原文', 'detail', n.detail, 8)}${area('演绎边界与保留线索', 'boundary', n.boundary, 3)}${input('相关变量 ID（逗号分隔，仅这些状态进入提示词）', 'context_variables', n.context_variables.join(','))}
       <details><summary>完成节点时的效果</summary>${area('效果 JSON', 'effects', json(n.effects), 5)}<div class="grid">${input('收集项 ID', 'collect_id', '')}${select('增加数值变量', 'effect_variable', [['', '不选择'], ...p.variables.filter(v => v.type === 'number').map(v => [v.id, v.title || v.id])], '')}${input('增加量', 'effect_delta', 1, 'number')}</div>${button('追加效果', 'append-effect')}</details>
       <h3>分支出口</h3>${routes.map((r, i) => `<div class="card"><strong>${escape(r.label || p.nodes.find(v => v.id === r.target).title)}</strong><p class="muted">${escape(conditionSummary(r.condition, p))}</p>${button('移除此出口', 'route-delete', `data-index="${i}"`)}</div>`).join('')}
       <details><summary>添加或修改出口</summary>${select('目标节点', 'route_target', options, p.nodes.find(v => v.id !== n.id)?.id || n.id)}${input('按钮显示文字', 'route_label', '')}${this.conditionHelper('route')}${area('出口条件 JSON', 'route_condition', 'true', 5)}${button('保存这个出口', 'route-save')}</details>
@@ -268,7 +281,7 @@
       return `<form data-form="data"><div class="card"><h2>剧本与世界书</h2>${input('剧本名称', 'project_title', p.title)}${area('必要背景（会进入主模型提示词）', 'premise', p.premise, 3)}<div class="grid">${select('读取已有世界书', 'book_load', [['', '请选择'], ...books.map(b => [b, b])], e.settings.worldbook)}${input('写入世界书名称', 'book_save', e.settings.worldbook || '分支剧本素材')}</div>${this.bookProjects.length > 1 ? select('世界书中的剧本', 'book_project', this.bookProjects.map(v => [v.id, v.title]), p.id) : ''}<div class="row">${button('读取世界书', 'book-load')}${button('写入世界书', 'book-save', 'class="primary"')}${button('保存名称与背景', 'project-meta')}${button('新建空白剧本', 'project-new')}</div><p class="muted">每个节点和事件独立保存为关闭自动激活的条目；只更新本插件当前剧本，保留其他条目。</p></div>
       <div class="card"><h2>整理大段文本（可选模型功能）</h2>${area('剧本原文', 'original_text', p.original_text || '', 10)}${input('整理要求（如按场景分段，保留已有分支）', 'segment_wish', '')}<div class="row">${button('调用辅助 API 整理为草稿', 'segment', e.busy ? 'disabled' : '')}${button('不调用模型，保存原文', 'original-save')}</div><p class="muted">整理产生额外调用。不会直接替换当前剧本，完成后可编辑草稿再应用。</p>${draft ? `<div class="warn">${draft.warnings.map(escape).join('<br>') || '整理完成，请核对节点和原文后应用。'}</div>${area('可编辑的剧本草稿 JSON', 'segment_draft', json(draft.project), 14)}${button('应用此草稿为新剧本', 'segment-apply', 'class="primary"')}` : ''}</div>
       <div class="card"><h2>变量与收集项</h2><p class="muted">变量支持 number / boolean / string。数值变量可设置 min、max；收集项提供易读名称。</p>${area('变量定义 JSON', 'variables', json(p.variables), 7)}${area('收集项名称 JSON', 'collections', json(p.collections), 5)}${button('保存变量和收集项定义', 'definitions-save')}</div>
-      <div class="card"><h2>选项与界面</h2>${checkbox('在酒馆输入框上方直接显示可选择的分支', 'quick_options', e.settings.quick_options)}<p class="muted">直接列出“查看走廊”等当前可用、已解锁的选项，点击后切换当前节点，不自动发送消息或覆盖输入框草稿。防剧透只隐藏“剧本”页的节点列表和编辑区，其他页面和顶部工具栏照常使用；刷新或切换新剧本后重新隐藏节点。</p><div class="row">${button('保存选项设置', 'options-save')}${button('恢复铅笔图标默认位置', 'launcher-reset')}</div></div>
+      <div class="card"><h2>选项与界面</h2>${checkbox('在酒馆输入框上方直接显示可选择的分支', 'quick_options', e.settings.quick_options)}<p class="muted">直接列出“查看走廊”等当前可用、已解锁的选项，点击后切换当前节点，不自动发送消息或覆盖输入框草稿。启用剧本时自动开启输入栏行动选项，之后可在运行页或这里关闭。运行页的分支、收集和状态区与剧本页的节点区分别确认解锁；刷新或切换新剧本后重新隐藏。</p><div class="row">${button('保存选项设置', 'options-save')}${button('恢复铅笔图标默认位置', 'launcher-reset')}</div></div>
       <div class="card"><h2>注入方式</h2>${input('注入深度', 'depth', e.settings.depth, 'number', 'min="0" max="100"')}${checkbox('注入详细剧情（默认使用短指引）', 'detail', e.settings.detail)}${button('保存注入设置', 'injection-save')}</div>
       <div class="card"><h2>导入、备份与草稿</h2><div class="row">${button('导入剧本或进度 JSON', 'import')}${button('导出当前剧本', 'export-project')}${button('备份当前进度', 'export-progress')}${button('重置当前聊天进度', 'reset', 'class="danger"')}</div><p class="muted">剧本分享包和进度备份均不包含 API 密钥。</p>${Object.values(e.settings.drafts || {}).map(v => button('打开草稿：' + v.title, 'draft-load', `data-id="${escape(v.id)}"`)).join(' ')}</div>
       <details><summary>高级：完整剧本 JSON 编辑</summary>${area('当前剧本数据', 'project_json', json(p), 16)}${button('校验并应用 JSON', 'project-json-save')}</details></form>`;
@@ -278,11 +291,12 @@
       if (action === 'close') return this.close();
       if (action === 'unlock-ask') { this.spoilerPrompt = true; this.updatePrivacy(); this.shadow.querySelector('[data-action="unlock-cancel"]').focus(); return; }
       if (action === 'unlock-cancel') return this.cancelUnlock();
-      if (action === 'unlock-confirm') { this.unlocked = true; this.spoilerPrompt = false; this.updatePrivacy(); this.shadow.querySelector('[data-action="spoiler-lock"]')?.focus(); return; }
-      if (action === 'spoiler-lock') { this.unlocked = false; this.spoilerPrompt = false; this.updatePrivacy(); this.shadow.querySelector('[data-action="unlock-ask"]').focus(); return; }
+      if (action === 'unlock-confirm') { if (this.tab === 'run') this.runUnlocked = true; else this.unlocked = true; this.spoilerPrompt = false; this.updatePrivacy(); this.shadow.querySelector('[data-action="spoiler-lock"]')?.focus(); return; }
+      if (action === 'spoiler-lock') { if (this.tab === 'run') this.runUnlocked = false; else this.unlocked = false; this.spoilerPrompt = false; this.updatePrivacy(); this.shadow.querySelector('[data-action="unlock-ask"]').focus(); return; }
       if (action === 'quick-enter') { C.assert(this.e.settings.quick_options && this.e.settings.enabled && !this.e.state.paused, '快捷分支当前未启用'); this.e.enter(b.dataset.id); this.doc.querySelector('#send_textarea, #chatinput')?.focus({preventScroll: true}); return; }
       const protectedAction = ['node-select', 'node-save', 'node-delete', 'set-start', 'route-save', 'route-delete'].includes(action) || this.tab === 'nodes' && ['make-condition', 'append-effect', 'list-prev', 'list-next'].includes(action);
       if (protectedAction) C.assert(this.unlocked, '请先确认剧透风险并解锁剧本节点');
+      if (action === 'enter') C.assert(this.runUnlocked, '请先确认剧透风险并解锁分支与状态');
       const e = this.e; const v = this.getForm(); const ids = raw => String(raw || '').split(/[,，\n]/).map(x => x.trim()).filter(Boolean);
       const n = () => C.indexProject(e.project).nodes.get(this.nodeId);
       const event = () => C.indexProject(e.project).events.get(this.eventId);
@@ -290,7 +304,8 @@
       if (action === 'tab') { this.capture(); this.tab = b.dataset.tab; this.spoilerPrompt = false; this.listPage = 0; this.render(); this.shadow.querySelector('main').scrollTop = 0; return; }
       if (action === 'list-prev' || action === 'list-next') { this.listPage += action === 'list-prev' ? -1 : 1; this.render(); return; }
       if (action === 'node-select' || action === 'event-select') { this.capture(); if (action === 'node-select') this.nodeId = b.dataset.id; else this.eventId = b.dataset.id; this.render(false); return; }
-      if (action === 'toggle-enabled') await e.updateSettings({enabled: !e.settings.enabled});
+      if (action === 'toggle-enabled') await e.updateSettings(e.settings.enabled ? {enabled: false} : {enabled: true, quick_options: true});
+      else if (action === 'quick-toggle') await e.updateSettings({quick_options: !e.settings.quick_options});
       else if (action === 'complete') e.complete();
       else if (action === 'enter') e.enter(b.dataset.id);
       else if (action === 'pause') e.pause();
@@ -394,7 +409,7 @@
     }
     destroy() {
       this.unsub?.(); clearTimeout(this.toastTimer); this.doc.removeEventListener('keydown', this.keyHandler);
-      this.win.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('scroll', this.viewportHandler); this.win.removeEventListener('scroll', this.quickScroll, true); this.composerObserver?.disconnect(); this.composerResize?.disconnect(); this.quickElement?.remove(); this.element?.remove();
+      this.win.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('scroll', this.viewportHandler); this.win.removeEventListener('scroll', this.quickScroll, true); this.composerObserver?.disconnect(); this.composerResize?.disconnect(); if (this.quickFrame) this.win.cancelAnimationFrame(this.quickFrame); this.quickElement?.remove(); this.element?.remove();
     }
   }
   return {Panel};

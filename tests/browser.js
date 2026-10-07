@@ -72,7 +72,14 @@ async function run() {
     const desktop = await browser.newContext({viewport: {width: 1366, height: 900}}), page = await desktop.newPage();
     page.on('pageerror', e => errors.push(e.message)); page.on('dialog', d => d.accept());
     await page.goto(base); await ready(page); await page.getByRole('button', {name: '打开剧情面板'}).click();
-    assert.equal(await page.locator('.spoiler-layer').count(), 0); assert(await page.locator('[data-action="toggle-enabled"]').isEnabled());
+    assert.equal(await page.locator('.run-spoiler-content').getAttribute('inert'), '');
+    assert.equal(await page.locator('.run-spoiler-content').getAttribute('aria-hidden'), 'true');
+    assert.equal(await page.getByRole('button', {name: '进入分支', exact: true}).count(), 0);
+    assert.equal(await state(page, () => getComputedStyle(document.querySelector('#bse-panel-host').shadowRoot.querySelector('.run-spoiler-content')).filter), 'blur(10px)');
+    assert(await page.locator('[data-action="toggle-enabled"]').isEnabled()); assert(await page.locator('[data-action="complete"]').isEnabled());
+    await page.locator('[data-action="unlock-ask"]').click(); assert((await page.locator('#bse-spoiler-warning').textContent()).includes('尚未解锁的分支'));
+    await page.keyboard.press('Escape'); assert.equal(await page.locator('.run-spoiler-content').getAttribute('inert'), ''); assert(await page.locator('.overlay').isVisible());
+    await page.screenshot({path: path.join(root, 'artifacts/run-spoiler-locked.png')});
     assert.deepEqual(await state(page, () => testHost.root.scriptButtons.map(b => b.name)), ['其他按钮']);
     await tab(page, 'api'); assert(await page.locator('[name="base_url"]').isEditable());
     await page.locator('[name="base_url"]').fill(base + '/v1'); await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.notify());
@@ -97,14 +104,37 @@ async function run() {
     await tab(page, 'nodes'); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), '');
     await unlock(page); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), null);
     await tab(page, 'run');
+    assert.equal(await page.locator('.run-spoiler-content').getAttribute('inert'), '');
+    await page.locator('[data-action="unlock-ask"]').click(); await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.notify());
+    assert.equal(await state(page, () => document.querySelector('#bse-panel-host').shadowRoot.activeElement.dataset.action), 'unlock-cancel');
+    await page.locator('[data-action="unlock-cancel"]').click(); assert.equal(await page.locator('.run-spoiler-content').getAttribute('inert'), '');
+    await unlock(page); assert.equal(await page.locator('.run-spoiler-content').getAttribute('aria-hidden'), 'false');
+    await page.locator('[data-action="spoiler-lock"]').click(); await tab(page, 'nodes'); assert.equal(await page.locator('.node-spoiler-content').getAttribute('inert'), null);
+    await tab(page, 'run'); await unlock(page);
     await page.locator('[data-action="toggle-enabled"]').click();
-    await tab(page, 'data'); await page.locator('[name="quick_options"]').check(); await page.locator('[data-action="options-save"]').click(); await page.locator('[data-action="close"]').click();
+    assert.equal(await state(page, () => testHost.storage.script.branch_story_settings.quick_options), true);
+    await page.locator('[data-action="close"]').click(); await page.locator('#bse-quick-host').waitFor({state: 'visible'});
     assert.deepEqual(await page.locator('[data-action="quick-enter"]').allTextContents(), ['查看走廊', '寻找前台']);
+    for (const property of ['display', 'visibility']) {
+      await state(page, () => { document.querySelector('#send_form').style.display = 'none'; });
+      await page.locator('#bse-quick-host').waitFor({state: 'hidden'});
+      await page.evaluate(property => { const form = document.querySelector('#send_form'); form.style.display = ''; form.style[property] = property === 'display' ? 'none' : 'hidden'; }, property);
+      await page.locator('#bse-quick-host').waitFor({state: 'hidden'});
+      await page.evaluate(property => { document.querySelector('#send_form').style[property] = ''; }, property);
+      await page.locator('#bse-quick-host').waitFor({state: 'visible'});
+    }
+    await state(page, () => { const form = document.querySelector('#send_form'); form.replaceWith(form.cloneNode(true)); });
+    await page.locator('#bse-quick-host').waitFor({state: 'visible'});
     assert.equal(await page.getByRole('button', {name: '分支剧本面板', exact: true}).count(), 0);
     await page.screenshot({path: path.join(root, 'artifacts/quick-branches.png')});
     await page.getByRole('button', {name: '查看走廊', exact: true}).click(); assert.equal(await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.current_node_id), 'N002');
     await state(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.undo());
     await page.getByRole('button', {name: '打开剧情面板'}).click(); await tab(page, 'run');
+    await page.locator('[data-action="quick-toggle"]').click(); await page.locator('[data-action="close"]').click(); assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
+    await state(page, () => reloadPlugin()); await ready(page);
+    assert.equal(await page.locator('#bse-quick-host').isVisible(), false); assert.equal(await state(page, () => testHost.storage.script.branch_story_settings.quick_options), false);
+    await page.getByRole('button', {name: '打开剧情面板'}).click(); assert.equal(await page.locator('.run-spoiler-content').getAttribute('inert'), '');
+    await unlock(page); await page.locator('[data-action="quick-toggle"]').click();
     await page.locator('[data-action="enter"][data-id="N002"]').click(); await page.locator('[data-action="complete"]').click();
     await page.locator('[data-action="enter"][data-id="N001"]').click();
     assert.equal(await page.locator('[data-action="enter"][data-id="D"]').isEnabled(), true);
@@ -163,7 +193,7 @@ async function run() {
     await launch.click();
     assert.equal(await page.locator('#bse-quick-host').isVisible(), false);
     await tab(page, 'run'); await page.screenshot({path: path.join(root, 'artifacts/desktop-panel.png')});
-    console.log('✓ 桌面：模型列表真实 ID、域名自动补 /v1、404 诊断与密钥隐藏；节点区防剧透、事件规则、分支和进度功能');
+    console.log('✓ 桌面：运行区与节点区独立防剧透、确认/取消/重新隐藏；启用后自动显示输入栏选项，输入栏隐藏/恢复/替换与刷新保留关闭设置；API、事件、分支和进度功能');
     await desktop.close();
 
     const mobile = await browser.newContext({viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true, deviceScaleFactor: 1}), phone = await mobile.newPage();
@@ -173,7 +203,18 @@ async function run() {
     await cdp.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [{x: firstBox.x + 24, y: firstBox.y + 24}]});
     await cdp.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [{x: 80, y: 380}]}); await cdp.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []});
     assert.equal(await phone.locator('.overlay').isVisible(), false); assert((await pencil.boundingBox()).x < 120);
-    await pencil.tap(); await unlock(phone);
+    await pencil.tap(); assert.equal(await phone.locator('.run-spoiler-content').getAttribute('inert'), '');
+    await unlock(phone); assert.equal(await phone.locator('.run-spoiler-content').getAttribute('inert'), null);
+    await phone.locator('[data-action="spoiler-lock"]').tap(); await phone.locator('[data-action="toggle-enabled"]').tap();
+    await phone.locator('[data-action="close"]').tap(); await phone.locator('#bse-quick-host').waitFor({state: 'visible'});
+    assert.deepEqual(await phone.locator('[data-action="quick-enter"]').allTextContents(), ['查看走廊', '寻找前台']);
+    await phone.locator('#chatinput').fill('手机输入草稿'); await phone.locator('[data-action="quick-enter"][data-id="N002"]').tap();
+    assert.equal(await phone.locator('#chatinput').inputValue(), '手机输入草稿');
+    await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.undo());
+    await pencil.tap(); assert.equal(await phone.locator('.run-spoiler-content').getAttribute('inert'), '');
+    await phone.locator('[data-action="pause"]').tap(); await phone.locator('[data-action="close"]').tap(); assert.equal(await phone.locator('#bse-quick-host').isVisible(), false);
+    await pencil.tap(); await phone.locator('[data-action="pause"]').tap(); await phone.locator('[data-action="close"]').tap(); await phone.locator('#bse-quick-host').waitFor({state: 'visible'});
+    await pencil.tap();
     for (const name of ['run', 'nodes', 'events', 'records', 'api', 'analysis', 'data']) { await tab(phone, name); await layout(phone, '390px ' + name); }
     await tab(phone, 'nodes'); assert.equal(await phone.locator('.node-spoiler-content').getAttribute('inert'), ''); await unlock(phone);
     await phone.locator('[name="title"]').fill('手机编辑 · 停电开场'); await phone.locator('[name="guidance"]').fill('灯光骤灭，保持对玩家行动的开放空间。'); await phone.locator('[data-action="node-save"]').tap();
@@ -206,7 +247,7 @@ async function run() {
     assert.equal(await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.id), 'hotel_demo');
     assert.equal(JSON.parse(await phone.locator('[name="segment_draft"]').inputValue()).nodes.length, 2);
     await phone.locator('[data-action="segment-apply"]').tap(); await wait(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title === '模型整理草稿');
-    assert.equal(await phone.locator('.spoiler-layer').count(), 0); await tab(phone, 'nodes'); assert.equal(await phone.locator('.node-spoiler-content').getAttribute('inert'), '');
+    await tab(phone, 'run'); assert.equal(await phone.locator('.run-spoiler-content').getAttribute('inert'), ''); await tab(phone, 'nodes'); assert.equal(await phone.locator('.node-spoiler-content').getAttribute('inert'), '');
     await tab(phone, 'analysis'); await phone.locator('[name="analysis_text"]').fill('灯光熄灭，钟声响起。\n走向一：调查钟楼，找到幕后人。\n走向二：离开酒店，躲过危险。');
     await phone.locator('[data-action="analysis-run"]').tap(); await phone.locator('[name="analysis_draft"]').waitFor();
     const analysis = JSON.parse(await phone.locator('[name="analysis_draft"]').inputValue()); assert.equal(analysis.analysis.endings.length, 2); assert.equal(analysis.analysis.foreshadowing.length, 1);
@@ -219,18 +260,18 @@ async function run() {
     await wait(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.id === 'roundtrip_story'); await unlock(phone);
     await phone.setViewportSize({width: 390, height: 844}); await tab(phone, 'run'); await phone.screenshot({path: path.join(root, 'artifacts/mobile-panel.png')});
     await state(phone, () => reloadPlugin()); await ready(phone); await phone.getByRole('button', {name: '打开剧情面板'}).tap();
-    assert.equal(await phone.locator('.spoiler-layer').count(), 0); await tab(phone, 'nodes'); assert.equal(await phone.locator('.node-spoiler-content').getAttribute('inert'), '');
+    assert.equal(await phone.locator('.run-spoiler-content').getAttribute('inert'), ''); await tab(phone, 'nodes'); assert.equal(await phone.locator('.node-spoiler-content').getAttribute('inert'), '');
     await tab(phone, 'run');
     assert.equal(await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title), '多走向分析剧本');
     const restoredBox = await phone.getByRole('button', {name: '打开剧情面板'}).boundingBox(); assert(restoredBox.x < 150);
     assert.equal(await phone.locator('#bse-panel-host').count(), 1);
     // Keyboard focus cycles inside the dialog. Physical browser keyboard resize is approximated by viewport resize above.
     await phone.locator('[data-action="close"]').focus(); await phone.keyboard.press('Shift+Tab');
-    assert.equal(await state(phone, () => document.querySelector('#bse-panel-host').shadowRoot.activeElement?.getAttribute('data-action')), 'enter');
+    assert.equal(await state(phone, () => document.querySelector('#bse-panel-host').shadowRoot.activeElement?.getAttribute('data-action')), 'unlock-ask');
     await phone.keyboard.press('Tab'); assert.equal(await state(phone, () => document.querySelector('#bse-panel-host').shadowRoot.activeElement?.getAttribute('data-action')), 'close');
     await phone.keyboard.press('Escape'); assert.equal(await phone.locator('.overlay').isVisible(), false);
     assert.deepEqual(errors, []); assert(requests.length >= 3);
-    console.log('✓ 手机：触控拖动与位置恢复，390px/320px 七页布局、分析走向/结局/伏笔、内容导入导出、刷新与新剧本重新锁定');
+    console.log('✓ 手机：启用后直接选择行动且保留输入草稿，暂停/继续隐藏和恢复选项；运行区防剧透、触控拖动、390px/320px 七页布局、分析与导入导出、刷新和新剧本重新锁定');
     console.log('✓ 浏览器运行错误：0；模拟生成请求：' + requests.length + '；模型列表请求：' + modelRequests.length);
     await mobile.close();
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
