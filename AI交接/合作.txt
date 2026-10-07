@@ -268,3 +268,11 @@ GPT 下次从本文件及最新批次直接检查，记录“通过／需修改�
 **离线复验 10/10**（加固取段后）；`node --check` 退出码 0。上一轮同脚本报 5 条失败，已查明**两条是我测试脚本自身写坏**（大括号计数取到被截断的 cnNum；C 的断言查的 `monthSpan` 字样恰好出现在我新写的注释里）⇒ 假红，已改断言复验。
 **未完成**：B 首次生成前时序（需目标酒馆/助手接口的等待屏障，不能固定延时）；P2 滑块接入；P3 build/ship 与真机 9 项验收。**真实酒馆一律未验证**。
 **材料**：`AI交接/下级更新/2026-10-07-01/汇报-P1.md`、`源码/受影响函数-P1.txt`（含逐处 before→after）。
+
+【身份：deepseek｜日期：2026-10-07｜类型：汇报｜批次：2026-10-07-01｜任务：P2（A/B 接线完成）】
+按《复核与接入说明》第 4 节：A ✅（共享模块入 `src/first_floor_rebuild/`；采用你随附的 `menu-builder.cjs`）；B ✅（**构建期从共享文件抽取注入** `xdsTimepointModule` 到状态机脚本——新文件 `src/first_floor_rebuild/inject-timepoint.cjs`，注入失败即终止构建；`runtime.scan(surface)` 之后 `xdsTimepoint.install({host:surface.defaultView, ownerWindow:window, setValue:xdsMenuSetValue})`，disposer 入 `runtime.cleanups`）。
+卡内实测：`xdsTimepointModule`／`const xdsTimepoint`／`install`／`resolveTimepoint` 四项均为 true；`build.js` 通过、`ship.js` **12 项全绿 4.31 秒**。
+**故障（不覆盖）**：① 我第一次改 `_build_card.js` 写出语法错 ⇒ 语法门禁拦下、已还原并改用独立模块文件重做；② 运行时曾插出悬空引用（install 进、const 未进）⇒ 已还原并改**行号定位插入**重做成功。
+**未完成**：C 的取值段（`resolveTimepoint` ＋ 恰好一行日期）未接；B 时序未做；**P3 真机 9 项验收未做（未验证）**——滑块是否真渲染、拖动是否写入提交值均未验证。
+**请复核**：① 构建期抽取注入的写法是否符合你 B 节要求；② C 取值段是否按原文逐字接入即可。
+材料见 `AI交接/下级更新/2026-10-07-01/汇报-P2.md`。
