@@ -43,6 +43,8 @@ const pieces = [
   grab(/async function xsdStateTick\(/, 'xsdStateTick'),
   lineOf(/let preflightDone = false;/, 'preflightDone'),
   grab(/async function preflightFirstGeneration\(/, 'preflightFirstGeneration'),
+  grab(/function nativeEventSource\(/, 'nativeEventSource'),
+  grab(/function onNative\(/, 'onNative'),
 ];
 
 const harness = `
@@ -50,6 +52,7 @@ ${pieces.join('\n')}
 return {
   claimOnce, firstTime,
   xsdStateTick, preflightFirstGeneration,
+  nativeEventSource, onNative,
   pendingSize: () => pendingKeys.size,
   seenSize: () => seenMessages.size,
   tickSize: () => tickPromises.size,
@@ -64,9 +67,10 @@ const check = (name, cond, note = '') => { results.push([name, !!cond, note]); }
 /* ── 替身环境 ── */
 const deps = {
   TAG: '[test]',
-  runtime: { epoch: 1, disposed: false },
+  runtime: { epoch: 1, disposed: false, cleanups: [] },
   msgOf: (e) => String((e && e.message) || e),
   xdsMenuChatKey: () => 'chat-A',
+  getGlobalOrParent: () => null,
 };
 let stopCalls = 0;
 let tickBusinessCalls = 0;
@@ -206,6 +210,36 @@ const makeApi = (withStop) => {
   const ro = await bo.preflightFirstGeneration(1);
   check('preflight 正常 ⇒ ok:true 且回读为真', ro.ok === true && ro.readback === true, JSON.stringify(ro));
   check('preflight 完成后置位（不重复跑）', bo.preflightDone() === true);
+}
+
+/* ④ 原生 eventSource 兜底（gpt ⑧：桥接不交回 Promise 时改用宿主原生入口，并登记清理） */
+{
+  const events = [];
+  const es = {
+    on: (n) => { events.push(['on', n]); },
+    removeListener: (n) => { events.push(['off', n]); },
+  };
+  const runtime2 = { epoch: 1, disposed: false, cleanups: [] };
+  const envN = {
+    runtime: runtime2,
+    TAG: '[test]',
+    msgOf: (e) => String((e && e.message) || e),
+    getGlobalOrParent: (n) => (n === 'SillyTavern' ? { getContext: () => ({ eventSource: es }) } : null),
+    window: undefined,
+    console: { log: () => {}, warn: () => {}, error: () => {} },
+  };
+  const namesNative = Object.keys(envN);
+  const bn2 = new Function(...namesNative, harness)(...namesNative.map((n) => envN[n]));
+  const okNative = bn2.onNative('MESSAGE_SENT', () => {}, '测试监听');
+  check('⑧ 取到宿主原生 eventSource ⇒ 挂原生并返回 true', okNative === true && events.some(([k, n]) => k === 'on' && n === 'MESSAGE_SENT'), 'okNative=' + okNative);
+  check('⑧ 原生监听已登记进 runtime.cleanups', runtime2.cleanups.length === 1, 'cleanups=' + runtime2.cleanups.length);
+  for (const f of runtime2.cleanups) { try { f(); } catch (e) { /* 忽略 */ } }
+  check('⑧ 清理时真的摘掉了监听', events.some(([k, n]) => k === 'off' && n === 'MESSAGE_SENT'));
+
+  const envN2 = { ...envN, getGlobalOrParent: () => null, window: undefined };
+  const namesN2 = Object.keys(envN2);
+  const bn3 = new Function(...namesN2, harness)(...namesN2.map((n) => envN2[n]));
+  check('⑧ 取不到原生 ⇒ 返回 false（退回助手桥接，不静默失效）', bn3.onNative('MESSAGE_SENT', () => {}, 't') === false);
 }
 
 /* ── 输出 ── */
