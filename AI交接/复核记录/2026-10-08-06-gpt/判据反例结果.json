@@ -1,0 +1,12 @@
+{
+  "identity": "gpt",
+  "date": "2026-10-08",
+  "type": "合成反例，非当前卡测试",
+  "no_direct_self_dependency_but_unreachable_mutual_cycle": true,
+  "adding_initial_seed_changes_reachability": true,
+  "negative_completion_guard_does_not_write_fact": true,
+  "candidate_entry_without_actual_writer_cannot_advance": true,
+  "disaster_prerequisite_without_date_allows_early_beast_example": true,
+  "time_windows_change_reachability": true,
+  "limits": "没有执行99c04db所述生产代码、宿主扫描或下级检查；不能证明实际卡有死环/缺日期门。此固定点仅演示单调合成写入规则，不替代真实多时点、身份、keys、预算与校验验证。"
+}
