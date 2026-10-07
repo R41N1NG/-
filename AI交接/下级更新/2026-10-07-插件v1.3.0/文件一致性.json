@@ -1,0 +1,330 @@
+{
+  "identity": "gpt",
+  "date": "2026-10-07",
+  "version": "1.3.0",
+  "plugin_baseline": "66dead6c5c825ad093d22f30a3a1f12e5bc5f7ca",
+  "merged_main": "3f6fdf36176a0583ec110fb0b547fd7999781aa0",
+  "scope": "模拟宿主/API，未调用用户付费服务",
+  "unit_tests": {
+    "command": "npm test",
+    "exit_code": 0,
+    "passed": 81,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browser_tests": {
+    "command": "npm run test:browser",
+    "exit_code": 0,
+    "errors": 0,
+    "widths": [
+      1366,
+      390,
+      320
+    ],
+    "startup_scenarios": 7
+  },
+  "installer": {
+    "id": "branch-story-engine-v1",
+    "sources": [
+      "core",
+      "flow",
+      "api",
+      "host",
+      "engine",
+      "graph",
+      "ui",
+      "bootstrap"
+    ],
+    "exact_source_match": true,
+    "syntax_build_passed": true
+  },
+  "zip": {
+    "path": "酒馆剧本插件/branch_story_plugin_v1.3.0.zip",
+    "entry_count": 31,
+    "crc_and_source_bytes_passed": true,
+    "entries": [
+      {
+        "path": "酒馆剧本插件/.gitignore",
+        "bytes": 25,
+        "sha256": "c3007e8cfe9e6668bf6eaf8e62f44d583c9b86893520d1e4e599db431558b705"
+      },
+      {
+        "path": "酒馆剧本插件/README.md",
+        "bytes": 26650,
+        "sha256": "d0b23194c0a9d16ad35a249687430c88c68e09a9b30f1c27688e7307420bb2d2"
+      },
+      {
+        "path": "酒馆剧本插件/branch_story_tavern_helper_import.json",
+        "bytes": 257128,
+        "sha256": "ca75a2e90175dedb0b7c64ee86ea07e822e20a44610ec321c6a60512db61d98e"
+      },
+      {
+        "path": "酒馆剧本插件/docs/branch_story_plugin_design.md",
+        "bytes": 20342,
+        "sha256": "dbd1306dab3b3a0a4a130f3260b06b934114c52a477046931b4622cb1a602ee1"
+      },
+      {
+        "path": "酒馆剧本插件/docs/事件包与依赖.md",
+        "bytes": 8641,
+        "sha256": "5ea000ba12c5b4bca6509c6e8adbe4a0a21b10a17e402e0fcf933ee93b780820"
+      },
+      {
+        "path": "酒馆剧本插件/package-lock.json",
+        "bytes": 1269,
+        "sha256": "6db48600d51238e8af39948bf70fa71ec3e0133fd23d76e2abe062ecdfde934a"
+      },
+      {
+        "path": "酒馆剧本插件/package.json",
+        "bytes": 547,
+        "sha256": "6428dc0fc1052c5d0948a4f2df12e76fd087786fa09a9beb4c89bf94b7935b43"
+      },
+      {
+        "path": "酒馆剧本插件/scripts/build.js",
+        "bytes": 1621,
+        "sha256": "4a531d7a9663cd379fe57e913c6e4033210ee87452f4d0f179df463ace9be75e"
+      },
+      {
+        "path": "酒馆剧本插件/src/api.js",
+        "bytes": 45263,
+        "sha256": "c356583b841d476f57fe8318015200f117d2bb461962e21c0d8af5ec61e521a9"
+      },
+      {
+        "path": "酒馆剧本插件/src/bootstrap.js",
+        "bytes": 2366,
+        "sha256": "fc52f4d6d236633979eb149873b030638cb70baa73ef8050406091ab08077dc8"
+      },
+      {
+        "path": "酒馆剧本插件/src/core.js",
+        "bytes": 33945,
+        "sha256": "0d3b85436e2fdbab989969e20816e2fa6aac2cfa7860c514915591f8d95808c6"
+      },
+      {
+        "path": "酒馆剧本插件/src/engine.js",
+        "bytes": 40780,
+        "sha256": "0b1ac8eee46a7296c92eb9f0fd28e85ec1a970e5ea7697a7b9ce6ee3650f4e37"
+      },
+      {
+        "path": "酒馆剧本插件/src/flow.js",
+        "bytes": 20562,
+        "sha256": "f047165d534b0698536371010f0cd0f196dec57bc8e5c10851a7c16840f332e7"
+      },
+      {
+        "path": "酒馆剧本插件/src/graph.js",
+        "bytes": 9136,
+        "sha256": "a4a1c305704cb2179a39b0a167804909f81a870a2f284a52b7d3b180ce6be5f1"
+      },
+      {
+        "path": "酒馆剧本插件/src/host.js",
+        "bytes": 8013,
+        "sha256": "5c4e9ddbc743c05da79d8ea0f83bec02d88efdcd75c0dfd22f471874822f560f"
+      },
+      {
+        "path": "酒馆剧本插件/src/loader.js",
+        "bytes": 5119,
+        "sha256": "5787fc089cf0ce265618fa3b73ae54f635a134257573d971f6c76f6921a70708"
+      },
+      {
+        "path": "酒馆剧本插件/src/ui.js",
+        "bytes": 92660,
+        "sha256": "54d0f956a85dd410bcc5945aa0832aa22774d47a6fdf60c9e477589ac84ea466"
+      },
+      {
+        "path": "酒馆剧本插件/tests/api.test.js",
+        "bytes": 15451,
+        "sha256": "62943d10fef2a34031f2ed441f5095a94597bfeef5b585954e251f42927ae44d"
+      },
+      {
+        "path": "酒馆剧本插件/tests/browser.js",
+        "bytes": 35951,
+        "sha256": "6d566f98e38be0b9b6bd121b5373ea8371a95a3762d18d85bff8dbcd4439170b"
+      },
+      {
+        "path": "酒馆剧本插件/tests/core.test.js",
+        "bytes": 4533,
+        "sha256": "60a521127c33093759cb53cc4d9341ab169d89af4985be077f1e83817d9853e2"
+      },
+      {
+        "path": "酒馆剧本插件/tests/engine.test.js",
+        "bytes": 9272,
+        "sha256": "b428857f8de262b4d7d88762214626096f2d5fe62d94fa58b08011436ad5956a"
+      },
+      {
+        "path": "酒馆剧本插件/tests/helpers.js",
+        "bytes": 2858,
+        "sha256": "6f117c1dffb8503282a00ab8670f7b468d730ef22e94589a1d074513620ca5dd"
+      },
+      {
+        "path": "酒馆剧本插件/tests/host.test.js",
+        "bytes": 2658,
+        "sha256": "0ee9e9989c0a65c6f20cbe0cbfee40ca7eee9b98e5ea47e8f91a0ad889772d64"
+      },
+      {
+        "path": "酒馆剧本插件/tests/packages.browser.js",
+        "bytes": 11158,
+        "sha256": "b324dd48da463620765a5b0c635775d34cb0cc0d44a16c963d2d787767871fab"
+      },
+      {
+        "path": "酒馆剧本插件/tests/packages.test.js",
+        "bytes": 13175,
+        "sha256": "9f5a47064d0121d1eaff24e82e7714a22feaa5a93bc79a8a40af873d39a6027d"
+      },
+      {
+        "path": "酒馆剧本插件/tests/recovery.test.js",
+        "bytes": 10406,
+        "sha256": "e21877c11fee941c92aae3c40e68849ccfc3abc9237bb710d13b3ef13c66e590"
+      },
+      {
+        "path": "酒馆剧本插件/tests/response.test.js",
+        "bytes": 5748,
+        "sha256": "3787469c6956a9aea27ab334f34e3738a6730ff367c3ee1d8a4b2663522d17ff"
+      },
+      {
+        "path": "酒馆剧本插件/tests/startup.browser.js",
+        "bytes": 6837,
+        "sha256": "8c9599d85c73f2082c6db0e7b68f75879cff5a279b50ce3405f804cec2d5f76e"
+      },
+      {
+        "path": "酒馆剧本插件/tests/workflow.browser.js",
+        "bytes": 15318,
+        "sha256": "a41a965cd765b1c0f6193452befbd207e2f30000d7ac587571b7c877a10be99e"
+      },
+      {
+        "path": "酒馆剧本插件/tests/workflow.test.js",
+        "bytes": 14672,
+        "sha256": "4629f328460c99e6c06da68f46dbebfd8b287027006bd9ee4d895534e338b41d"
+      },
+      {
+        "path": "酒馆剧本插件/交接gpt.md",
+        "bytes": 34032,
+        "sha256": "63c9661e892223dce226181cfafc0e9725ee61eeee12ff7183ab9d8c95fdab40"
+      }
+    ]
+  },
+  "original_tse_sha256": "a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065",
+  "diff_check": "passed",
+  "modified_files": [
+    {
+      "path": "AI交接/历史记录/2026-10-07-66dead6-合作.txt",
+      "bytes": 34058,
+      "sha256": "0e2437677490e516f6780455eac98cba9fc266544a427500194ac5309b76485c"
+    },
+    {
+      "path": "AI交接/合作.txt",
+      "bytes": 38624,
+      "sha256": "286b48c403a738d8a87fb542279e13a6cf1af5457cc4feadf4b03e3c1b326795"
+    },
+    {
+      "path": "README.md",
+      "bytes": 731,
+      "sha256": "3d7a997314ce50edb3bc713a20547e849e252ca4f79915d19653ef0f8d683fa6"
+    },
+    {
+      "path": "交接gpt.md",
+      "bytes": 770,
+      "sha256": "32f156aaca40bd96551affe5f717f92831748c1a647721528bf77f8f4d01b9cc"
+    },
+    {
+      "path": "酒馆剧本插件/README.md",
+      "bytes": 26650,
+      "sha256": "d0b23194c0a9d16ad35a249687430c88c68e09a9b30f1c27688e7307420bb2d2"
+    },
+    {
+      "path": "酒馆剧本插件/branch_story_plugin_v1.3.0.zip",
+      "bytes": 245604,
+      "sha256": "84cce666cf4809dc22a090e2613c9876ef75cabeb001eef4a98f6301fa6bd1ae"
+    },
+    {
+      "path": "酒馆剧本插件/branch_story_tavern_helper_import.json",
+      "bytes": 257128,
+      "sha256": "ca75a2e90175dedb0b7c64ee86ea07e822e20a44610ec321c6a60512db61d98e"
+    },
+    {
+      "path": "酒馆剧本插件/docs/branch_story_plugin_design.md",
+      "bytes": 20342,
+      "sha256": "dbd1306dab3b3a0a4a130f3260b06b934114c52a477046931b4622cb1a602ee1"
+    },
+    {
+      "path": "酒馆剧本插件/docs/事件包与依赖.md",
+      "bytes": 8641,
+      "sha256": "5ea000ba12c5b4bca6509c6e8adbe4a0a21b10a17e402e0fcf933ee93b780820"
+    },
+    {
+      "path": "酒馆剧本插件/package-lock.json",
+      "bytes": 1269,
+      "sha256": "6db48600d51238e8af39948bf70fa71ec3e0133fd23d76e2abe062ecdfde934a"
+    },
+    {
+      "path": "酒馆剧本插件/package.json",
+      "bytes": 547,
+      "sha256": "6428dc0fc1052c5d0948a4f2df12e76fd087786fa09a9beb4c89bf94b7935b43"
+    },
+    {
+      "path": "酒馆剧本插件/scripts/build.js",
+      "bytes": 1621,
+      "sha256": "4a531d7a9663cd379fe57e913c6e4033210ee87452f4d0f179df463ace9be75e"
+    },
+    {
+      "path": "酒馆剧本插件/src/api.js",
+      "bytes": 45263,
+      "sha256": "c356583b841d476f57fe8318015200f117d2bb461962e21c0d8af5ec61e521a9"
+    },
+    {
+      "path": "酒馆剧本插件/src/core.js",
+      "bytes": 33945,
+      "sha256": "0d3b85436e2fdbab989969e20816e2fa6aac2cfa7860c514915591f8d95808c6"
+    },
+    {
+      "path": "酒馆剧本插件/src/engine.js",
+      "bytes": 40780,
+      "sha256": "0b1ac8eee46a7296c92eb9f0fd28e85ec1a970e5ea7697a7b9ce6ee3650f4e37"
+    },
+    {
+      "path": "酒馆剧本插件/src/flow.js",
+      "bytes": 20562,
+      "sha256": "f047165d534b0698536371010f0cd0f196dec57bc8e5c10851a7c16840f332e7"
+    },
+    {
+      "path": "酒馆剧本插件/src/graph.js",
+      "bytes": 9136,
+      "sha256": "a4a1c305704cb2179a39b0a167804909f81a870a2f284a52b7d3b180ce6be5f1"
+    },
+    {
+      "path": "酒馆剧本插件/src/host.js",
+      "bytes": 8013,
+      "sha256": "5c4e9ddbc743c05da79d8ea0f83bec02d88efdcd75c0dfd22f471874822f560f"
+    },
+    {
+      "path": "酒馆剧本插件/src/ui.js",
+      "bytes": 92660,
+      "sha256": "54d0f956a85dd410bcc5945aa0832aa22774d47a6fdf60c9e477589ac84ea466"
+    },
+    {
+      "path": "酒馆剧本插件/tests/packages.browser.js",
+      "bytes": 11158,
+      "sha256": "b324dd48da463620765a5b0c635775d34cb0cc0d44a16c963d2d787767871fab"
+    },
+    {
+      "path": "酒馆剧本插件/tests/packages.test.js",
+      "bytes": 13175,
+      "sha256": "9f5a47064d0121d1eaff24e82e7714a22feaa5a93bc79a8a40af873d39a6027d"
+    },
+    {
+      "path": "酒馆剧本插件/tests/recovery.test.js",
+      "bytes": 10406,
+      "sha256": "e21877c11fee941c92aae3c40e68849ccfc3abc9237bb710d13b3ef13c66e590"
+    },
+    {
+      "path": "酒馆剧本插件/交接gpt.md",
+      "bytes": 34032,
+      "sha256": "63c9661e892223dce226181cfafc0e9725ee61eeee12ff7183ab9d8c95fdab40"
+    }
+  ],
+  "deleted_files": [
+    "酒馆剧本插件/branch_story_plugin_v1.2.1.zip"
+  ],
+  "restored_cooperation_history": {
+    "path": "AI交接/历史记录/2026-10-07-66dead6-合作.txt",
+    "identical_to_commit": "66dead6",
+    "sha256": "0e2437677490e516f6780455eac98cba9fc266544a427500194ac5309b76485c"
+  }
+}

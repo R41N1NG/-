@@ -19,6 +19,10 @@
     .replace('不要输出奖励、变量、代码或臆造解锁条件，条件由用户稍后配置。', '不要臆造奖励、变量、代码或解锁条件。') + runtimeInstructions;
   PROMPTS.analysis += '分块时可引用输入 known_results 中已有的结果ID及含义，不得重新定义成别的含义。';
   PROMPTS.merge += '输入已有的 collections、completion_criteria、result_ids 和出口condition必须保留，不创造新结果或奖励。出口条件必须保留condition_evidence；可引用全部输入节点ID。';
+  const PREVIOUS_PROMPTS = {...PROMPTS};
+  const schemaInstructions = '字段类型严格遵守：completion_criteria为字符串，completion_exclusions为字符串数组（无排除项用[]）；result_ids为字符串数组。collections可有requires（取得结果的前提）和requires_evidence（连续原文依据）；节点可有entry_condition和entry_condition_evidence。仅当原文明确多个独立剧情事件时返回packages=[{"id":"case_a","title":"事件包","node_ids":["临时节点ID"],"start_node_id":"临时节点ID","completion_node_ids":["终点ID"],"condition":true,"condition_evidence":"触发条件的原文依据","priority":0,"role":"main"}]，包内出口只指向本包节点，跨包用结果条件，条件满足只解锁、不等于完成。原文明示数值变量时可返回variables=[{"id":"trust","title":"信任","type":"number","default":0,"evidence":"包括初始值的原文依据"}]；缺少初始值依据不创造变量。variable条件仅引用已定义变量，使用{id,op,value}。单个结果ID只代表固定含义，a4可要求b2和c1，d1可要求a4，不能自动推导或领奖。';
+  for (const key of ['segment', 'analysis']) PROMPTS[key] += schemaInstructions;
+  PROMPTS.merge += '保留输入packages与原有节点entry_condition、结果requires；未明确的跨包安排记录待核对，不把多个事件包强制串成一条路线。';
   const request = (system, payload) => [{role: 'system', content: system}, {role: 'user', content: JSON.stringify(payload)}];
   const size = messages => messages.reduce((n, m) => n + m.content.length, 0);
   function quotes(evidence, messages) {
@@ -28,6 +32,7 @@
   }
   function runtimeDraft(raw, nodes, map, original, warnings, options = {}) {
     const supported = text => typeof text === 'string' && text.trim() && original.includes(text);
+    const supportedGlobal = text => typeof text === 'string' && text.trim() && (options.evidenceSource || original).includes(text);
     const collections = C.clone(options.knownCollections || []);
     C.assert(raw.collections == null || Array.isArray(raw.collections), '结果标记定义必须为数组');
     for (const item of raw.collections || []) {
@@ -45,15 +50,24 @@
       if (op === 'all' || op === 'any') { C.assert(Array.isArray(value), '条件组合必须为数组'); return {[op]: value.map(remap)}; }
       if (op === 'not') return {not: remap(value)};
       if (op === 'collected') { C.assert(codes.has(value), '条件引用未定义结果：' + value); return {collected: value}; }
+      if (op === 'variable') { C.assert(C.object(value) && options.variables?.some(v => v.id === value.id), '模型条件引用未定义变量：' + value?.id); return {variable: C.clone(value)}; }
       C.assert(['completed', 'visited'].includes(op) && map.has(value), '模型条件引用无效节点或操作');
       return {[op]: map.get(value)};
     };
+    for (const item of raw.collections || []) if (item.requires != null && item.requires !== true) {
+      C.assert(supportedGlobal(item.requires_evidence), '结果前提缺少原文依据：' + item.id);
+      const def = collections.find(c => c.id === item.id), rule = remap(item.requires);
+      C.assert(def.requires == null || JSON.stringify(def.requires) === JSON.stringify(rule), '结果前提定义冲突：' + item.id);
+      Object.assign(def, {requires: rule, requires_evidence: item.requires_evidence});
+    }
     raw.nodes.forEach((n, i) => {
       const out = nodes[i];
       if (n.completion_criteria) {
         C.assert(!n.suggested && supported(n.completion_evidence), '节点完成标准缺少原文依据：' + n.title);
-        out.completion_criteria = n.completion_criteria; out.completion_exclusions = n.completion_exclusions || []; out.completion_evidence = n.completion_evidence; out.auto_complete = n.auto_complete !== false;
+        const completion = C.normalizeCompletion(n); Object.assign(out, completion); out.completion_evidence = n.completion_evidence; out.auto_complete = n.auto_complete !== false;
+        if (Array.isArray(n.completion_criteria) || typeof n.completion_exclusions === 'string') warnings.push('已统一完成字段格式：' + n.title + ' (' + n.id + ')，请核对语义。');
       }
+      if (n.entry_condition != null && n.entry_condition !== true) { C.assert(!n.suggested && supported(n.entry_condition_evidence), '节点进入条件缺少原文依据：' + n.title); out.entry_condition = remap(n.entry_condition); out.entry_condition_evidence = n.entry_condition_evidence; }
       if (n.result_ids?.length) {
         C.assert(out.completion_criteria && Array.isArray(n.result_ids) && n.result_ids.every(x => codes.has(x)), '节点结果标记未定义或缺少完成标准');
         out.effects = [...new Set(n.result_ids)].map(collect => ({collect}));
@@ -67,8 +81,19 @@
         }
       });
     });
+    C.assert(raw.packages == null || Array.isArray(raw.packages), '事件包定义必须为数组');
+    options.packages = (raw.packages || []).map(b => {
+      C.assert(C.object(b) && Array.isArray(b.node_ids), '事件包节点列表无效');
+      const ids = b.node_ids.map(k => { C.assert(map.has(k), '事件包引用未知节点：' + b.title + '/' + k); return map.get(k); });
+      if (b.condition != null && b.condition !== true) C.assert(supportedGlobal(b.condition_evidence), '事件包触发条件缺少原文依据：' + b.title);
+      return {id: b.id, title: b.title, node_ids: ids, start_node_id: map.get(b.start_node_id || b.node_ids[0]), completion_node_ids: b.completion_node_ids?.map(k => { C.assert(map.has(k), '事件包终点引用未知节点'); return map.get(k); }), condition: remap(b.condition), condition_evidence: b.condition_evidence, priority: b.priority || 0, role: b.role || 'main', auto_start: true};
+    });
     if (nodes.some(n => n.completion_criteria)) warnings.push('已提取完成标准、结果标记和本地条件；请核对后再应用，应用后可自动核验。');
     return collections;
+  }
+  function draftVariables(raw, original) {
+    C.assert(raw.variables == null || Array.isArray(raw.variables), '分析变量定义必须为数组');
+    return (raw.variables || []).map(v => { C.assert(C.object(v) && typeof v.evidence === 'string' && v.evidence.trim() && original.includes(v.evidence) && ['number', 'boolean', 'string'].includes(v.type) && typeof v.default === v.type, '分析变量缺少包括初始值的原文依据：' + v?.id); return {id: v.id, title: v.title || v.id, type: v.type, default: v.default, evidence: v.evidence}; });
   }
   function report(raw, map) {
     C.assert(raw == null || C.object(raw), '分析报告格式无效'); raw ||= {};
@@ -105,8 +130,11 @@
     const total = original.replace(/\s/g, '').length;
     const count = original.split('').reduce((v, char, i) => v + (!/\s/.test(char) && covered[i] ? 1 : 0), 0);
     if (count / Math.max(1, total) < .95) warnings.push('节点摘录覆盖约 ' + Math.round(count / Math.max(1, total) * 100) + '%；完整原文已保留，请核对遗漏。');
+    const variables = C.clone(options.knownVariables || []);
+    for (const v of draftVariables(raw, options.evidenceSource || original)) { const old = variables.find(x => x.id === v.id); C.assert(!old || old.type === v.type && old.default === v.default, '跨块变量定义冲突：' + v.id); if (!old) variables.push(v); }
+    options = {...options, variables};
     const collections = runtimeDraft(raw, nodes, map, original, warnings, options);
-    const project = C.normalizeProject({id: C.id('story'), title: raw.title || '分析后的剧本', premise: raw.premise || '', original_text: original, start_node_id: map.get(raw.start_node_id || raw.nodes[0].id), nodes, analysis, collections});
+    const project = C.normalizeProject({id: C.id('story'), title: raw.title || '分析后的剧本', premise: raw.premise || '', original_text: original, start_node_id: map.get(raw.start_node_id || raw.nodes[0].id), nodes, analysis, collections, variables, packages: options.packages});
     C.assert(map.has(raw.start_node_id || raw.nodes[0].id), '分析起点引用未知节点');
     return {project, warnings: [...new Set(warnings)], source_chars: original.length};
   }
@@ -197,7 +225,8 @@
       if (data.usage && Number.isFinite(data.usage.prompt_tokens) && Number.isFinite(data.usage.completion_tokens)) {
         this.usage.input += data.usage.prompt_tokens; this.usage.output += data.usage.completion_tokens;
       } else this.usage.unknown++;
-      if (data.choices?.[0]?.finish_reason === 'length') throw new Error('辅助输出被截断，请提高输出预算或减少每批候选');
+      await options.onResponse?.({text: data.choices?.[0]?.message?.content || '', finish_reason: data.choices?.[0]?.finish_reason || '', at: Date.now()});
+      if (data.choices?.[0]?.finish_reason === 'length') throw new Error(options.long ? '辅助' + (options.label || '分析') + '输出被截断，请在API页提高' + (options.label === '剧本整理' ? '整理' : '分析') + '最大输出Token，或减少单次原文；已收到的原始输出可保留排查，不能当作完整草稿。' : '辅助识别输出被截断，请提高识别最大输出Token或减少每批候选');
       return responseJSON(data.choices?.[0]?.message?.content);
     }
     async detect(profile, messages, events, facts) {
@@ -248,13 +277,13 @@
       return {status: raw.status === 'completed' && (!actualReply || raw.missing?.length) ? 'uncertain' : raw.status, summary: evidence || facts.length ? String(raw.summary || '').slice(0, 400) : '',
         facts, missing: (Array.isArray(raw.missing) ? raw.missing : []).slice(0, 8).map(x => String(x).slice(0, 160)), evidence: evidence || []};
     }
-    async segment(profile, text, wish = '') {
+    async segment(profile, text, wish = '', options = {}) {
       C.assert(text.trim(), '请先输入剧本原文');
       C.assert(text.length <= (profile.max_input_chars || 16000), '全文超过当前输入预算；请分段整理，或提高预算');
       const system = profile.segment_prompt?.trim() || PROMPTS.segment;
       const messages = request(system, {original: text, preferences: wish});
       C.assert(size(messages) <= (profile.max_input_chars || 16000), '原文和提示词合计超过字符预算，请减少文本或提高预算');
-      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本整理', long: true});
+      const result = await this.call(profile, messages, {max_tokens: profile.segment_output || 4096, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本整理', long: true, onResponse: value => options.onResponse?.({...value, kind: 'full', original: text, mode: 'faithful'})});
       C.assert(Array.isArray(result.nodes) && result.nodes.length, '模型没有返回节点草稿');
       const map = new Map(); result.nodes.forEach(n => { C.safeId(n.id, '临时节点 ID'); C.assert(!map.has(n.id), '临时节点 ID 重复'); map.set(n.id, C.id('N')); });
       const p = {id: C.id('story'), title: result.title || '整理后的剧本', premise: result.premise || '', original_text: text, revision: C.id('rev'), variables: [], events: [], collections: [], start_node_id: map.get(result.start_node_id || result.nodes[0].id), nodes: []};
@@ -271,19 +300,21 @@
       const nonSpace = text.split('').reduce((n, char, i) => n + (!/\s/.test(char) && covered[i] ? 1 : 0), 0);
       const ratio = nonSpace / Math.max(1, text.replace(/\s/g, '').length);
       if (ratio < 0.95) warnings.push('原文摘录覆盖约 ' + Math.round(ratio * 100) + '%，请对照保留的原文检查遗漏；拆分草稿尚未应用。');
-      p.collections = runtimeDraft(result, p.nodes, map, text, warnings);
+      p.variables = draftVariables(result, text); const runtimeOptions = {variables: p.variables}; p.collections = runtimeDraft(result, p.nodes, map, text, warnings, runtimeOptions); p.packages = runtimeOptions.packages;
       return {project: C.normalizeProject(p), warnings, source_chars: total};
     }
-    restoreAnalysis(text, raw, mode = 'faithful') {
+    restoreAnalysis(text, raw, mode = 'faithful', context = null) {
       C.assert(typeof text === 'string' && text.trim(), '请保留本次分析的剧本原文，用于校验后台结果');
       C.assert(text.length <= 200000 && ['faithful', 'expand'].includes(mode), '原文长度或分析模式无效');
+      C.assert(typeof raw !== 'string' || raw.trim(), '请先粘贴后台 JSON 或选择已保留的原始回复');
       let data = typeof raw === 'string' ? responseJSON(raw) : C.clone(raw);
       C.assert(C.object(data), '后台分析结果应为 JSON 对象');
       if (data.choices) {
         C.assert(data.choices[0]?.finish_reason !== 'length', '后台分析输出已截断，不能当作完整草稿导入');
         data = responseJSON(data.choices[0]?.message?.content);
       }
-      return {...analysisDraft(data, text, mode), request_count: 0, recovered: true};
+      if (context?.kind === 'merge') data = joinMerge(data, context.nodes, context.collections, context.packages, context.variables);
+      return {...analysisDraft(data, text, mode, context?.kind === 'chunk' ? {knownCollections: context.knownCollections, knownVariables: context.knownVariables, evidenceSource: context.evidenceSource} : {}), request_count: 0, recovered: true};
     }
     async analyze(profile, text, wish = '', options = {}) {
       C.assert(typeof text === 'string' && text.trim(), '请先输入需要分析的长文本');
@@ -293,7 +324,7 @@
       const budget = profile.max_input_chars || 16000; const generation = this.generation;
       const payload = original => ({original, preferences: wish, mode, max_nodes: 128});
       const alive = () => C.assert(generation === this.generation, '分析已取消，未应用任何剧本');
-      const invoke = async (prompt, value) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true}); alive(); return result; };
+      const invoke = async (prompt, value, context = {kind: 'full'}) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true, onResponse: response => { alive(); return options.onResponse?.({...response, original: value.original || text, mode, part: value.part || 0, parts: value.parts || 1, ...context}); }}); alive(); return result; };
       if (size(request(system, payload(text))) <= budget) {
         options.onProgress?.({phase: '分析全文', done: 0, total: 1});
         const result = analysisDraft(await invoke(system, payload(text)), text, mode); result.request_count = 1; return result;
@@ -317,15 +348,17 @@
         C.assert(chunks.length < 32 || offset === text.length, '分块数量超过 32，请提高 API 输入字符预算或分篇分析');
       }
       C.assert(chunks.length <= 32, '分块数量超过 32，请提高 API 输入字符预算或分篇分析');
-      const nodes = [], parts = [], warnings = [], collections = [];
+      const nodes = [], parts = [], warnings = [], collections = [], packages = [], variables = [];
       for (let i = 0; i < chunks.length; i++) {
         options.onProgress?.({phase: '分块分析', done: i, total: chunks.length + 1});
-        const raw = await invoke(system, {...payload(chunks[i]), known_results: collections.map(({id, title}) => ({id, title})), max_nodes: 4, part: i + 1, parts: chunks.length});
-        const draft = analysisDraft(raw, chunks[i], mode, {knownCollections: collections, evidenceSource: text}); warnings.push(...draft.warnings);
+        const raw = await invoke(system, {...payload(chunks[i]), known_results: collections.map(({id, title}) => ({id, title})), known_variables: variables, max_nodes: 4, part: i + 1, parts: chunks.length}, {kind: 'chunk', knownCollections: C.clone(collections), knownVariables: C.clone(variables), evidenceSource: text});
+        const draft = analysisDraft(raw, chunks[i], mode, {knownCollections: collections, knownVariables: variables, evidenceSource: text}); warnings.push(...draft.warnings);
         const map = new Map(draft.project.nodes.map((n, k) => [n.id, 'b' + (i + 1) + 'n' + (k + 1)]));
         collections.splice(0, collections.length, ...draft.project.collections);
         const remapCondition = c => { if (c == null || typeof c === 'boolean') return c; const [op, v] = Object.entries(c)[0]; return {[op]: ['completed', 'visited'].includes(op) ? map.get(v) : op === 'all' || op === 'any' ? v.map(remapCondition) : op === 'not' ? remapCondition(v) : v}; };
-        nodes.push(...draft.project.nodes.map(n => ({...n, result_ids: n.effects.filter(x => x.collect).map(x => x.collect), id: map.get(n.id), routes: n.routes.map(r => ({...r, target: map.get(r.target), condition: remapCondition(r.condition)}))})));
+        nodes.push(...draft.project.nodes.map(n => ({...n, entry_condition: remapCondition(n.entry_condition), result_ids: n.effects.filter(x => x.collect).map(x => x.collect), id: map.get(n.id), routes: n.routes.map(r => ({...r, target: map.get(r.target), condition: remapCondition(r.condition)}))})));
+        for (const v of draft.project.variables) { const old = variables.find(x => x.id === v.id); C.assert(!old || JSON.stringify(old) === JSON.stringify(v), '跨块变量定义冲突：' + v.id); if (!old) variables.push(v); }
+        for (const b of draft.project.packages) { const mapped = {...b, node_ids: b.node_ids.map(k => map.get(k)), start_node_id: map.get(b.start_node_id), completion_node_ids: b.completion_node_ids.map(k => map.get(k)), condition: remapCondition(b.condition)}; const old = packages.find(x => x.id === b.id); C.assert(!old || old.title === b.title && JSON.stringify(old.condition) === JSON.stringify(mapped.condition), '跨块事件包定义冲突：' + b.id); if (old) { old.node_ids.push(...mapped.node_ids); old.completion_node_ids.push(...mapped.completion_node_ids); } else packages.push(mapped); }
         parts.push({...report(draft.project.analysis, map), title: draft.project.title});
         C.assert(nodes.length <= 256, '节点超过 256，请减少每块的细分程度');
       }
@@ -333,18 +366,21 @@
       let summary;
       for (const limit of [160, 80, 32, 0]) {
         const trim = value => String(value || '').slice(0, limit);
-        summary = {mode, preferences: wish, collections, nodes: nodes.map(n => ({id: n.id, title: n.title.slice(0, 40), kind: n.kind, suggested: n.suggested, guidance: trim(n.guidance), completion_criteria: n.completion_criteria, result_ids: n.result_ids, routes: n.routes})),
+        summary = {mode, preferences: wish, collections, packages, variables, nodes: nodes.map(n => ({id: n.id, title: n.title.slice(0, 40), kind: n.kind, suggested: n.suggested, guidance: trim(n.guidance), completion_criteria: n.completion_criteria, entry_condition: n.entry_condition, result_ids: n.result_ids, routes: n.routes})),
           parts: parts.map(p => ({title: p.title.slice(0, 40), synopsis: trim(p.synopsis), foreshadowing: p.foreshadowing.map(f => ({...f, hint: trim(f.hint), payoff: trim(f.payoff)})), endings: p.endings.map(e => ({...e, summary: trim(e.summary)}))}))};
         if (size(request(merge, summary)) <= budget) break;
       }
       options.onProgress?.({phase: '整合走向、结局与伏笔', done: chunks.length, total: chunks.length + 1});
-      const merged = await invoke(merge, summary);
-      C.assert(Array.isArray(merged.nodes) && merged.nodes.length === nodes.length && new Set(merged.nodes.map(n => n.id)).size === nodes.length, '整合结果遗漏或重复了原节点，请重新分析');
-      const known = new Map(nodes.map(n => [n.id, n]));
-      const joined = merged.nodes.map(n => { C.assert(known.has(n.id), '整合结果包含未知节点'); const original = known.get(n.id); return {...original, routes: (n.routes || []).map(r => { const old = original.routes.find(x => x.target === r.target); return old ? {...r, ...old, label: r.label || old.label} : r; })}; });
-      const result = analysisDraft({...merged, collections, nodes: joined}, text, mode);
+      const merged = await invoke(merge, summary, {kind: 'merge', nodes: C.clone(nodes), collections: C.clone(collections), packages: C.clone(packages), variables: C.clone(variables)});
+      const result = analysisDraft(joinMerge(merged, nodes, collections, packages, variables), text, mode);
       result.warnings = [...new Set([...warnings, ...result.warnings, '全文采用分块分析后整合，请核对跨段连接和自动核验规则。'])]; result.request_count = chunks.length + 1; return result;
     }
   }
-  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS};
+  function joinMerge(merged, nodes, collections, packages = [], variables = []) {
+    C.assert(Array.isArray(merged.nodes) && merged.nodes.length === nodes.length && new Set(merged.nodes.map(n => n.id)).size === nodes.length, '整合结果遗漏或重复了原节点，请核对保留的分块结果');
+    const known = new Map(nodes.map(n => [n.id, n]));
+    const joined = merged.nodes.map(n => { C.assert(known.has(n.id), '整合结果包含未知节点'); const original = known.get(n.id); return {...original, routes: (n.routes || []).map(r => { const old = original.routes.find(x => x.target === r.target); return old ? {...r, ...old, label: r.label || old.label} : r; })}; });
+    return {...merged, collections, packages, variables, nodes: joined};
+  }
+  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS};
 });

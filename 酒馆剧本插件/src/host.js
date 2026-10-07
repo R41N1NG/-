@@ -30,6 +30,15 @@
       update(v => { v[key] = C.clone(value); return v; }, {type});
     }
     readSettings() { return this.variables('script')[SETTINGS_KEY] || {}; }
+    boundVariables(definitions) {
+      const raw = this.variables('chat'), out = {};
+      for (const def of definitions) if (def.binding) {
+        let value = raw; for (const part of def.binding.path) value = value && typeof value === 'object' && C.own(value, part) ? value[part] : undefined;
+        C.assert(typeof value === def.type && (def.type !== 'number' || Number.isFinite(value) && (def.min == null || value >= def.min) && (def.max == null || value <= def.max)), '外部聊天变量不存在、类型不符或超出范围：' + def.id + ' (' + def.binding.path.join('.') + ')');
+        out[def.id] = value;
+      }
+      return out;
+    }
     saveSettings(settings) { this.write('script', SETTINGS_KEY, settings); }
     progress(project) {
       const state = this.variables('chat')[STATE_KEY]?.projects?.[project.id];

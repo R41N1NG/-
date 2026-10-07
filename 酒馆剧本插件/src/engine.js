@@ -1,8 +1,8 @@
 (function (root, factory) {
   const node = typeof window === 'undefined' && typeof module === 'object' && module.exports;
-  const value = factory(node ? require('./core.js') : root.BSECore, node ? require('./api.js') : root.BSEApi);
+  const value = factory(node ? require('./core.js') : root.BSECore, node ? require('./api.js') : root.BSEApi, node ? require('./flow.js') : root.BSEFlow);
   if (node) module.exports = value; else root.BSEEngine = value;
-})(typeof window !== 'undefined' ? window : globalThis, function (C, API) {
+})(typeof window !== 'undefined' ? window : globalThis, function (C, API, F) {
   'use strict';
   const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, quick_options: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
     profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
@@ -18,7 +18,7 @@
     constructor(host, client) {
       this.host = host; this.client = client || new API.Client(); this.settings = defaults();
       this.project = C.demoProject(); this.state = C.createProgress(this.project); this.listeners = new Set();
-      this.epoch = 0; this.chat = ''; this.draft = null; this.segmentDraft = null; this.analysisDraft = null; this.analysisProgress = null; this.jobs = Promise.resolve(); this.stageJobs = Promise.resolve(); this.busy = 0; this.error = ''; this.flowNotice = ''; this.pendingChoice = null; this.preparing = null; this.stageInFlight = new Map(); this.inFlight = new Set();
+      this.epoch = 0; this.chat = ''; this.draft = null; this.segmentDraft = null; this.analysisDraft = null; this.rawAnalysis = null; this.analysisProgress = null; this.jobs = Promise.resolve(); this.stageJobs = Promise.resolve(); this.busy = 0; this.error = ''; this.flowNotice = ''; this.pendingChoice = null; this.preparing = null; this.stageInFlight = new Map(); this.inFlight = new Set();
     }
     onChange(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
     notify() { for (const fn of this.listeners) { try { fn(); } catch (e) { console.error('[BSE] UI 更新失败', e); } } }
@@ -32,7 +32,7 @@
     async init() {
       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
       for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt']]) {
-        if (this.settings.profile[field] === API.LEGACY_PROMPTS[key]) this.settings.profile[field] = API.PROMPTS[key];
+        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key]].includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
       }
       this.client.usage = {...defaults().usage, ...saved.usage};
       if (this.settings.worldbook) {
@@ -41,14 +41,16 @@
       } else if (saved.drafts?.[saved.project_id] || saved.draft_project) this.project = C.normalizeProject(saved.drafts?.[saved.project_id] || saved.draft_project);
       this.segmentDraft = saved.segment_draft || null;
       this.analysisDraft = saved.analysis_draft || null;
+      this.rawAnalysis = saved.raw_analysis || null;
       const bootError = this.error;
-      this.bindChat(); this.error = bootError; this.bindEvents(); this.captureDraft(); this.inject(); this.notify();
+      this.bindChat(); this.error = bootError || this.error; this.bindEvents(); this.captureDraft(); this.inject(); this.notify();
     }
     bindChat() {
       this.invalidate('聊天已切换或重新载入'); this.chat = this.host.chatId(); this.draft = null; this.error = '';
-      try { this.state = this.host.progress(this.project); }
-      catch (e) { this.settings.enabled = false; throw e; }
+      try { const state = this.host.progress(this.project); F.initialize(this.project, state); this.state = state; }
+      catch (e) { this.settings.enabled = false; this.host.inject('', this.settings.depth); throw e; }
       for (const check of this.state.pending_checks) if (check.status === 'checking' || check.status === 'queued') { check.status = 'error'; check.error = '任务被中断，可重新检查'; }
+      F.initialize(this.project, this.state); if (this.settings.enabled && this.diagnostics().some(x => x.severity === 'error')) { this.settings.enabled = false; this.error = '依赖检查未通过，请核对记录页的关系图'; this.saveSettings(); } F.sync(this.project, this.state, this.settings.enabled);
       this.publish();
     }
     bindEvents() {
@@ -56,7 +58,7 @@
       this.host.on('MESSAGE_RECEIVED', 'message_received', (messageId, type) => { if (type !== 'quiet' && type !== 'extension') safe(() => this.captureDraft(messageId)); });
       this.host.on('GENERATION_ENDED', 'generation_ended', () => safe(async () => { await this.captureDraft(); if (this.settings.auto_stage) await this.checkStage(); }));
       this.host.on('MESSAGE_SWIPED', 'message_swiped', messageId => safe(() => {
-        if (Number(messageId) <= Math.max(this.state.last_settled_message_id ?? -1, this.state.last_stage_message_id ?? -1)) { this.invalidate(); this.state.paused = true; this.state.stage_progress = null; this.error = '已确认阶段或结算回复被切换，已暂停；请回退相关操作或恢复备份后继续'; this.save(); }
+        if (Number(messageId) <= Math.max(this.state.last_settled_message_id ?? -1, this.state.last_stage_message_id ?? -1)) { this.invalidate(); this.state.paused = true; F.clearWork(this.state); this.error = '已确认阶段或结算回复被切换，已暂停；请回退相关操作或恢复备份后继续'; this.save(); }
         this.captureDraft(messageId);
       }));
       this.host.on('MESSAGE_SENT', 'message_sent', async messageId => {
@@ -83,7 +85,7 @@
           const affected = this.state.pending_checks.filter(c => c.messages?.some(m => Number(m) >= Number(messageId)));
           const settled = Number(messageId) <= (this.state.last_settled_message_id ?? -1) || this.state.history.some(tx => tx.source?.messages?.some(m => Number(m) >= Number(messageId)));
           const stageChanged = Number(messageId) <= (this.state.last_stage_message_id ?? -1);
-          if (settled || stageChanged) { this.invalidate(); this.state.paused = true; this.state.stage_progress = null; this.error = '已确认的选择、阶段进度或结算来源发生变化，已暂停剧本；请回退相关操作或恢复备份后继续'; this.save(); }
+          if (settled || stageChanged) { this.invalidate(); this.state.paused = true; F.clearWork(this.state); this.error = '已确认的选择、阶段进度或结算来源发生变化，已暂停剧本；请回退相关操作或恢复备份后继续'; this.save(); }
           for (const c of affected) { c.status = 'stale'; c.error = '来源消息已编辑或删除'; }
           this.captureDraft(); this.inject(); this.notify();
         }));
@@ -94,17 +96,18 @@
       Promise.resolve(this.host.emit('BSE_STATE_CHANGED', this.snapshot())).catch(e => console.warn('[BSE] 状态监听器出错', e));
       try { this.host.doc()?.dispatchEvent(new this.host.root.CustomEvent('bse:state-changed', {detail: this.snapshot()})); } catch {}
     }
-    snapshot() { return C.clone({project_id: this.project.id, current_node_id: this.state.current_node_id, variables: this.state.variables, collected_ids: this.state.collected_ids, completed_node_ids: this.state.completed_node_ids, paused: this.state.paused}); }
-    save() { C.assert(this.host.chatId() === this.chat, '聊天已切换，当前操作未保存'); this.host.saveProgress(this.project, this.state); this.publish(); this.inject(); this.notify(); }
+    snapshot() { return C.clone({project_id: this.project.id, current_node_id: this.state.current_node_id, focus_package_id: this.state.focus_package_id || '', packages: Object.fromEntries(Object.entries(this.state.package_progress || {}).map(([id, v]) => [id, {current_node_id: v.current_node_id, status: v.status}])), variables: this.state.variables, collected_ids: this.state.collected_ids, completed_node_ids: this.state.completed_node_ids, paused: this.state.paused}); }
+    save() { C.assert(this.host.chatId() === this.chat, '聊天已切换，当前操作未保存'); F.sync(this.project, this.state, this.settings.enabled); this.host.saveProgress(this.project, this.state); this.publish(); this.inject(); this.notify(); }
     saveSettings() {
       this.settings.usage = C.clone(this.client.usage);
       const stored = C.clone(this.settings); if (!stored.remember_key) stored.profile.key = '';
       this.host.saveSettings(stored);
     }
-    inject() { this.host.inject(this.settings.enabled ? C.prompt(this.project, this.state, {detail: this.settings.detail}) : '', this.settings.depth); }
+    inject() { this.host.inject(this.settings.enabled ? F.prompt(this.project, this.state, {detail: this.settings.detail}) : '', this.settings.depth); }
     async updateSettings(values) {
+      if (values.enabled === true) F.assertRunnable(this.project);
       this.invalidate(); this.settings = {...this.settings, ...values, profile: {...this.settings.profile, ...values.profile}};
-      this.saveSettings(); this.inject(); this.notify();
+      this.saveSettings(); this.save();
     }
     persistProject() {
       this.settings.drafts ||= {};
@@ -112,20 +115,23 @@
       this.settings.project_id = this.project.id; this.saveSettings();
     }
     async setProject(input, detached = true) {
-      const p = C.normalizeProject(input); const state = this.host.progress(p);
+      const p = C.normalizeProject(input); const state = this.host.progress(p); F.initialize(p, state);
       this.settings.drafts ||= {};
       if (!this.settings.worldbook) this.settings.drafts[this.project.id] = C.clone(this.project);
       this.invalidate(); this.project = p; this.state = state; this.segmentDraft = null; this.analysisDraft = null; this.draft = null;
+      F.initialize(p, state); if (this.settings.enabled && F.diagnose(p).some(x => x.severity === 'error')) { this.settings.enabled = false; this.error = '新剧本有依赖问题，请在记录页核对后启用'; }
       if (detached) this.settings.worldbook = '';
       this.persistProject(); this.save(); this.captureDraft();
     }
     async editProject(mutator) {
       const p = C.clone(this.project); mutator(p); p.revision = C.id('rev');
-      const normalized = C.normalizeProject(p); const state = C.migrateProgress(C.clone(this.state), normalized);
+      const normalized = C.normalizeProject(p); const state = C.migrateProgress(C.clone(this.state), normalized); F.initialize(normalized, state);
       this.invalidate(); const epoch = this.epoch; const chat = this.chat;
       if (this.settings.worldbook) await this.host.saveBook(this.settings.worldbook, normalized);
       C.assert(epoch === this.epoch && chat === this.host.chatId(), '保存期间聊天或配置已变化，请重新读取剧本后核对');
-      this.invalidate(); this.project = normalized; this.state = state; this.persistProject(); this.save();
+      this.invalidate(); this.project = normalized; this.state = state; F.initialize(normalized, state); this.persistProject();
+      if (this.settings.enabled && this.diagnostics().some(x => x.severity === 'error')) { this.settings.enabled = false; this.error = '依赖检查发现问题，已关闭注入，请核对后重新启用'; this.saveSettings(); }
+      this.save();
     }
     async loadBook(name, projectId) {
       const epoch = this.epoch; const data = await this.host.loadBook(name, projectId);
@@ -140,6 +146,15 @@
     }
     mutate(fn) { this.invalidate(); this.error = ''; const changed = fn(); if (changed !== false) this.save(); return changed; }
     complete() { return this.mutate(() => C.completeNode(this.state, this.project)); }
+    diagnostics() { if (this.diagnosticProject !== this.project) { this.diagnosticProject = this.project; this.diagnosticIssues = F.diagnose(this.project); } return this.diagnosticIssues; }
+    switchPackage(id) { return this.mutate(() => F.focusPackage(this.project, this.state, id)); }
+    rollbackPreview(id) { return F.rollbackPlan(this.project, this.state, id); }
+    rollbackResult(id) { return this.mutate(() => F.rollback(this.project, this.state, id)); }
+    syncBindings() {
+      const values = this.host.boundVariables?.(this.project.variables) || {}, changed = Object.entries(values).filter(([id, value]) => this.state.variables[id] !== value);
+      if (changed.length) C.transact(this.state, this.project, '同步外部聊天变量', next => { for (const [id, value] of changed) next.variables[id] = value; }, 'variable:' + C.id('sync'));
+      F.sync(this.project, this.state, this.settings.enabled);
+    }
     enter(target) { return this.mutate(() => { const changed = C.enterNode(this.state, this.project, target); this.state.turn_context = {node_id: target, user_id: -1, manual: true}; return changed; }); }
     stageChoice(target, draft = '') {
       C.assert(this.settings.story_flow && this.settings.enabled && !this.state.paused, '请启用行动选择流程');
@@ -162,6 +177,8 @@
       const epoch = this.epoch, chat = this.chat, project = this.project;
       const job = async () => {
         await this.stageJobs;
+        if (epoch !== this.epoch || this.host.chatId() !== chat) return;
+        this.syncBindings();
         const signature = await fingerprint([{message_id: userId, text}]);
         if (epoch !== this.epoch || this.host.chatId() !== chat || !this.settings.enabled || this.state.paused) return;
         if (this.state.turn_context?.user_id === userId && this.state.turn_context.fingerprint === signature) return;
@@ -190,9 +207,11 @@
         if (!alive()) return;
         const context = {user_id: userId, fingerprint: signature, node_id: scopeNode, project_revision: project.revision};
         if (target) {
-          C.enterNode(this.state, project, target, context);
+          if (target.startsWith('package:')) { C.assert(candidates.some(r => r.target === target), '事件包未解锁'); F.focusPackage(project, this.state, target.slice(8), context); }
+          else C.enterNode(this.state, project, target, context);
           this.flowNotice = '已记录选择：' + this.state.turn_context.label;
         } else this.state.turn_context = context;
+        this.state.turn_context.injection_nodes = F.activeNodes(project, this.state);
         this.pendingChoice = null; this.save(); this.saveSettings();
       };
       const promise = job(); this.preparing = {key: taskKey, promise};
@@ -200,26 +219,31 @@
     }
     async checkStage(pair, force = false) {
       if (!this.settings.enabled || this.state.paused || !this.settings.story_flow) return;
-      const node = C.indexProject(this.project).nodes.get(this.state.current_node_id);
-      if (!node.completion_criteria || this.state.completed_node_ids.includes(node.id)) return;
+      const targets = this.state.turn_context?.injection_nodes || F.activeNodes(this.project, this.state);
+      for (const target of targets) await this.checkStageNode(target, pair, force);
+    }
+    async checkStageNode(target, pair, force = false) {
+      if (!this.settings.enabled || this.state.paused || !this.settings.story_flow) return;
+      const node = C.indexProject(this.project).nodes.get(target.node_id), scope = () => F.stage(this.project, this.state, target.package_id);
+      if (!node || !node.completion_criteria || this.state.completed_node_ids.includes(node.id) || !C.nodeReady(node, this.project, this.state)) return;
       pair ||= this.draft || (this.host.latest()?.role === 'assistant' ? this.host.pair(this.host.latest().message_id) : null);
       if (!pair) return;
       const user = pair.messages.find(m => m.role === 'user');
       // A newly entered stage must never consume a reply generated for another stage.
-      if (this.state.turn_context && (this.state.turn_context.user_id !== Number(user?.message_id) || this.state.turn_context.node_id !== node.id)) return;
+      if (this.state.turn_context && (this.state.turn_context.user_id !== Number(user?.message_id) || (this.state.turn_context.injection_nodes ? !this.state.turn_context.injection_nodes.some(x => x.node_id === node.id) : this.state.turn_context.node_id !== node.id))) return;
       if (!this.settings.profile.base_url || !this.settings.profile.model) { this.flowNotice = '阶段自动核验需要配置辅助 API'; this.notify(); return; }
       const epoch = this.epoch, chat = this.chat, project = this.project;
       const key = node.id + '/' + await fingerprint(pair.messages);
       if (this.stageInFlight.has(key)) return this.stageInFlight.get(key);
-      if (!force && this.state.stage_progress?.source_key === key) return;
+      if (!force && scope().stage_progress?.source_key === key) return;
       const job = async () => {
-        if (epoch !== this.epoch || this.host.chatId() !== chat || this.state.current_node_id !== node.id || this.state.completed_node_ids.includes(node.id)) return;
+        if (epoch !== this.epoch || this.host.chatId() !== chat || scope().current_node_id !== node.id || this.state.completed_node_ids.includes(node.id)) return;
         const revision = this.state.revision;
-        const alive = () => epoch === this.epoch && this.host.chatId() === chat && this.state.current_node_id === node.id && this.state.revision === revision
+        const alive = () => epoch === this.epoch && this.host.chatId() === chat && scope().current_node_id === node.id && this.state.revision === revision
           && JSON.stringify(this.host.pair(pair.assistant_id)?.messages) === JSON.stringify(pair.messages);
         this.busy++; this.flowNotice = '正在核验阶段进展…'; this.notify();
         try {
-          const stored = this.state.stage_progress?.node_id === node.id ? this.state.stage_progress : null;
+          const stored = scope().stage_progress?.node_id === node.id ? scope().stage_progress : null;
           const priorPair = stored && this.host.pair(stored.assistant_id);
           const factsValid = stored?.facts.every(f => f.evidence.every(ref => (this.host.message(ref.message_id)?.message ?? this.host.message(ref.message_id)?.mes ?? '').includes(ref.quote)));
           const previous = priorPair && factsValid && stored.source_key === node.id + '/' + await fingerprint(priorPair.messages) ? stored : null;
@@ -227,6 +251,7 @@
           const relevant = new Set(node.effects.flatMap(e => e.collect ? [e.collect] : []));
           const visit = c => { if (!C.object(c)) return; const [op, v] = Object.entries(c)[0]; if (op === 'collected') relevant.add(v); else if (op === 'all' || op === 'any') v.forEach(visit); else if (op === 'not') visit(v); };
           node.routes.forEach(r => visit(r.condition));
+          visit(node.entry_condition); node.effects.filter(e => e.collect).forEach(e => visit(project.collections.find(c => c.id === e.collect)?.requires)); visit(F.owner(project, node.id)?.condition);
           project.nodes.forEach(n => n.routes.filter(r => r.target === node.id).forEach(r => visit(r.condition)));
           const known = project.collections.filter(c => relevant.has(c.id)).map(c => ({id: c.id, title: c.title, confirmed: this.state.collected_ids.includes(c.id)}));
           const variables = Object.fromEntries(node.context_variables.map(k => [k, this.state.variables[k]]));
@@ -234,10 +259,10 @@
           if (!alive()) return;
           const facts = [...(previous?.facts || [])];
           for (const fact of result.facts) { const at = facts.findIndex(f => f.text === fact.text); if (at >= 0) facts.splice(at, 1); facts.push(fact); }
-          this.state.stage_progress = {node_id: node.id, status: result.status, summary: result.summary || previous?.summary || '', facts: facts.slice(-8), missing: result.missing, evidence: result.evidence, source_key: key, assistant_id: pair.assistant_id};
+          scope().stage_progress = {node_id: node.id, status: result.status, summary: result.summary || previous?.summary || '', facts: facts.slice(-8), missing: result.missing, evidence: result.evidence, source_key: key, assistant_id: pair.assistant_id};
           this.state.last_stage_message_id = Math.max(this.state.last_stage_message_id, pair.assistant_id);
           if (result.status === 'completed' && node.auto_complete) {
-            C.completeNode(this.state, project, {assistant_id: pair.assistant_id, messages: pair.messages.map(m => m.message_id)});
+            C.completeNode(this.state, project, {assistant_id: pair.assistant_id, messages: pair.messages.map(m => m.message_id)}, node.id);
             this.flowNotice = '阶段已完成，结果标记已结算';
           } else {
             this.state.revision++;
@@ -253,8 +278,11 @@
     quickRoutes() {
       if (!this.settings.enabled || this.state.paused) return [];
       const refs = C.indexProject(this.project); const node = refs.nodes.get(this.state.current_node_id);
-      return node.routes.filter(r => C.condition(r.condition, this.state)).map(r => ({target: r.target, label: r.label || refs.nodes.get(r.target).title, action_text: r.action_text || r.label || refs.nodes.get(r.target).title, intent: r.intent || r.label || '',
-        status: r.condition == null || r.condition === true ? '可用' : '已解锁'}));
+      const primary = F.activeNodes(this.project, this.state).some(x => x.node_id === node.id && x.role === 'main');
+      const routes = primary ? F.availableRoutes(this.project, this.state, node.id).map(r => ({target: r.target, label: r.label || refs.nodes.get(r.target).title, action_text: r.action_text || r.label || refs.nodes.get(r.target).title, intent: r.intent || r.label || '', status: r.condition == null || r.condition === true ? '可用' : '已解锁'})) : [];
+      for (const b of this.project.packages) if (b.id !== this.state.focus_package_id && ['ready', 'running'].includes(this.state.package_progress?.[b.id]?.status)) routes.push({target: 'package:' + b.id, label: '继续' + b.title, action_text: '继续' + b.title, intent: '切换到' + b.title + '，继续其中的行动', status: '可用'});
+      if (this.project.packages.length && this.state.focus_package_id && this.state.base_progress) routes.push({target: 'package:', label: '返回主线', action_text: '返回主线', intent: '恢复原有主线剧情', status: '可用'});
+      return routes;
     }
     defaultPrompts() { return C.clone(API.PROMPTS); }
     apiEndpoints(base) { return {chat: API.endpoint(base), models: API.modelsEndpoint(base)}; }
@@ -374,14 +402,28 @@
         if (check.results.every(x => x.handled || !['completed', 'uncertain'].includes(x.status))) this.state.pending_checks = this.state.pending_checks.filter(c => c !== check);
       });
     }
+    beginRaw(kind, original, wish, mode) {
+      const run = this.rawAnalysis = {id: C.id('analysis'), kind, original, wish, mode, chat_id: this.chat, replies: [], error: '', at: Date.now()};
+      this.settings.raw_analysis = run; this.saveSettings();
+      const epoch = this.epoch, key = this.settings.profile.key;
+      return value => {
+        if (epoch !== this.epoch || this.rawAnalysis !== run) return;
+        const retained = run.replies.reduce((n, x) => n + x.text.length, 0), capacity = Math.max(0, 2000000 - retained);
+        const raw = typeof value.text === 'string' ? value.text : JSON.stringify(value.text), text = key ? raw.split(key).join('[已隐藏密钥]') : raw;
+        const reply = {...C.clone(value), id: C.id('reply'), text: text.slice(0, capacity), storage_truncated: text.length > capacity};
+        if (JSON.stringify(reply).length > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
+        run.replies.push(reply); this.settings.raw_analysis = C.clone(run); this.saveSettings(); this.notify();
+      };
+    }
     async segment(text, wish) {
       const epoch = this.epoch; this.busy++; this.notify();
       try {
         const profile = {...this.settings.profile, model: this.settings.segment_model || this.settings.profile.model};
-        const result = await this.client.segment(profile, text, wish);
+        const result = await this.client.segment(profile, text, wish, {onResponse: this.beginRaw('segment', text, wish, 'faithful')});
         C.assert(epoch === this.epoch, '配置已变化，整理结果未应用');
         this.segmentDraft = result; this.settings.segment_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
-      } finally { this.busy--; this.notify(); }
+      } catch (e) { if (epoch === this.epoch && this.rawAnalysis) { this.rawAnalysis.error = e.message; this.settings.raw_analysis = C.clone(this.rawAnalysis); this.saveSettings(); } throw e; }
+      finally { this.busy--; this.notify(); }
     }
     async applySegment() { C.assert(this.segmentDraft, '没有可应用的拆分草稿'); const p = this.segmentDraft.project; await this.setProject(p); delete this.settings.segment_draft; this.saveSettings(); }
     async analyze(text, wish, mode = 'faithful') {
@@ -389,14 +431,23 @@
       const epoch = this.epoch; this.busy++; this.error = ''; this.analysisProgress = {phase: '准备', done: 0, total: 0}; this.notify();
       try {
         const profile = {...this.settings.profile, model: this.settings.segment_model || this.settings.profile.model};
-        const result = await this.client.analyze(profile, text, wish, {mode, onProgress: progress => { if (epoch === this.epoch) { this.analysisProgress = progress; this.notify(); } }});
+        const result = await this.client.analyze(profile, text, wish, {mode, onResponse: this.beginRaw('analysis', text, wish, mode), onProgress: progress => { if (epoch === this.epoch) { this.analysisProgress = progress; this.notify(); } }});
         C.assert(epoch === this.epoch, '聊天或配置已变化，分析结果未应用');
         this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
-      } finally { this.analysisProgress = null; this.busy--; this.notify(); }
+      } catch (e) { if (epoch === this.epoch && this.rawAnalysis) { this.rawAnalysis.error = e.message; this.settings.raw_analysis = C.clone(this.rawAnalysis); this.saveSettings(); } throw e; }
+      finally { this.analysisProgress = null; this.busy--; this.notify(); }
     }
-    restoreAnalysis(text, raw, mode = 'faithful') {
+    restoreAnalysis(text, raw, mode = 'faithful', replyId = '') {
       C.assert(!this.busy, '请先取消或等待当前辅助任务结束');
-      const result = this.client.restoreAnalysis(text, raw, mode);
+      const reply = replyId ? this.rawAnalysis?.replies.find(x => x.id === replyId) : null;
+      C.assert(!replyId || reply, '保留的回复不存在，请重新选择');
+      if (reply) {
+        C.assert(!reply.storage_truncated && reply.finish_reason !== 'length', '这份原始输出已截断，只能排查，不能当作完整草稿应用');
+        C.assert(!reply.context_unavailable, '原始回复过大，缺少整合上下文；请导出记录后分篇恢复');
+        C.assert(text === reply.original && mode === reply.mode, '恢复时原文和处理方式必须与这份原始回复一致');
+      }
+      const result = this.client.restoreAnalysis(text, raw, mode, reply);
+      if (reply?.kind === 'chunk') { result.is_partial = true; result.warnings.push('仅恢复第' + reply.part + '/' + reply.parts + '块，不是全篇合并结果；应用前请核对跨块结果定义及连接。'); }
       this.error = ''; this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
     }
     exportProject() { return C.clone({type: 'bse_project', version: 1, project: this.project}); }
@@ -404,6 +455,7 @@
     importProgress(data) {
       C.assert(data.type === 'bse_progress' && data.project_id === this.project.id, '进度备份不属于当前剧本');
       const state = C.migrateProgress(C.clone(data.progress), this.project);
+      F.initialize(this.project, state);
       this.invalidate(); this.state = state; this.save();
     }
     destroy() { this.invalidate(); this.host.destroy(); this.listeners.clear(); }

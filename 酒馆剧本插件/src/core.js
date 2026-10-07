@@ -29,6 +29,7 @@
       events: new Map(project.events.map(e => [e.id, e])),
       variables: new Map(project.variables.map(v => [v.id, v])),
       collections: new Map((project.collections || []).map(c => [c.id, c.title])),
+      packages: new Map((project.packages || []).map(c => [c.id, c])),
     };
   }
   function validateCondition(c, refs, depth = 0) {
@@ -75,9 +76,10 @@
     assert(typeof p.title === 'string' && p.title.trim(), '请填写剧本名称');
     assert(Array.isArray(p.nodes) && p.nodes.length > 0, '剧本至少需要一个节点');
     p.schema_version = VERSION; p.revision = p.revision || id('rev');
-    p.events ||= []; p.variables ||= []; p.collections ||= []; p.premise ||= ''; p.original_text ||= '';
-    for (const key of ['events', 'variables', 'collections']) assert(Array.isArray(p[key]), key + ' 必须为数组');
-    for (const [list, label] of [[p.nodes, '节点'], [p.events, '事件'], [p.variables, '变量'], [p.collections, '收集项']]) {
+    p.events ||= []; p.variables ||= []; p.collections ||= []; p.packages ||= []; p.premise ||= ''; p.original_text ||= '';
+    for (const key of ['events', 'variables', 'collections', 'packages']) assert(Array.isArray(p[key]), key + ' 必须为数组');
+    assert(p.packages.length <= 128, '每个剧本最多128个事件包');
+    for (const [list, label] of [[p.nodes, '节点'], [p.events, '事件'], [p.variables, '变量'], [p.collections, '收集项'], [p.packages, '事件包']]) {
       const used = new Set();
       for (const entry of list) { assert(object(entry), label + ' 必须为对象'); safeId(entry.id, label + ' ID'); assert(!used.has(entry.id), label + ' ID 重复：' + entry.id); used.add(entry.id); }
     }
@@ -91,6 +93,7 @@
         assert(v.min == null || v.max == null || v.min <= v.max, '变量下限大于上限');
         assert((v.min == null || v.default >= v.min) && (v.max == null || v.default <= v.max), '变量默认值超出范围');
       }
+      if (v.binding) assert(object(v.binding) && v.binding.type === 'chat' && Array.isArray(v.binding.path) && v.binding.path.length > 0 && v.binding.path.length <= 16 && v.binding.path.every(x => typeof x === 'string' && x && !forbidden.has(x)) && v.binding.path[0] !== 'branch_story_engine', '外部变量映射只支持聊天变量路径：' + v.id);
     });
     const refs = indexProject(p);
     p.start_node_id ||= p.nodes[0].id;
@@ -98,9 +101,9 @@
     p.nodes.forEach(n => {
       assert(typeof n.title === 'string' && n.title.trim(), '节点名称为空：' + n.id);
       n.detail ||= ''; n.guidance ||= ''; n.boundary ||= ''; n.effects ||= []; n.routes ||= []; n.context_variables ||= [];
-      n.completion_criteria ||= ''; n.completion_exclusions ||= [];
+      Object.assign(n, normalizeCompletion(n));
       n.auto_complete = n.auto_complete !== false;
-      assert(typeof n.completion_criteria === 'string' && Array.isArray(n.completion_exclusions) && n.completion_exclusions.every(x => typeof x === 'string'), '节点完成标准或排除情况无效');
+      validateCondition(n.entry_condition, refs);
       n.kind ||= 'scene'; n.suggested = n.suggested === true;
       assert(['scene', 'choice', 'ending'].includes(n.kind), '节点类型必须是 scene、choice 或 ending');
       assert([n.detail, n.guidance, n.boundary].every(v => typeof v === 'string'), '节点正文必须为文本');
@@ -128,6 +131,26 @@
       if (e.scope.kind === 'nodes') assert(Array.isArray(e.scope.node_ids) && e.scope.node_ids.every(v => refs.nodes.has(v)), '事件适用节点不存在');
       validateCondition(e.condition, refs); validateEffects(e.effects, refs);
     });
+    p.collections.forEach(c => {
+      c.title ||= c.id; assert(typeof c.title === 'string', '结果名称必须为文本：' + c.id);
+      validateCondition(c.requires, refs);
+      c.exclusive_with ||= []; assert(Array.isArray(c.exclusive_with) && c.exclusive_with.every(k => k !== c.id && refs.collections.has(k)), '互斥结果引用无效：' + c.id);
+    });
+    const owners = new Set();
+    p.packages.forEach(b => {
+      assert(typeof b.title === 'string' && b.title.trim(), '事件包名称不能为空：' + b.id);
+      assert(Array.isArray(b.node_ids) && b.node_ids.length && b.node_ids.every(k => refs.nodes.has(k)), '事件包必须引用已有节点：' + b.id);
+      assert(new Set(b.node_ids).size === b.node_ids.length && !b.node_ids.some(k => owners.has(k)), '节点不能重复归属多个事件包：' + b.id); b.node_ids.forEach(k => owners.add(k));
+      b.start_node_id ||= b.node_ids[0]; assert(b.node_ids.includes(b.start_node_id), '事件包起点不在包内：' + b.id);
+      b.completion_node_ids ||= b.node_ids.filter(k => refs.nodes.get(k).kind === 'ending' || !refs.nodes.get(k).routes.length);
+      assert(Array.isArray(b.completion_node_ids) && b.completion_node_ids.every(k => b.node_ids.includes(k)), '事件包终点不在包内：' + b.id);
+      b.priority ??= 0; assert(Number.isFinite(b.priority), '事件包优先级必须为数字：' + b.id);
+      b.role ||= 'main'; assert(['main', 'side'].includes(b.role), '事件包类型必须为main或side');
+      b.enabled = b.enabled !== false; b.auto_start = b.auto_start !== false; b.interrupt = b.interrupt === true;
+      b.condition ??= true; b.continue_condition ??= true;
+      validateCondition(b.condition, refs); validateCondition(b.continue_condition, refs);
+      for (const k of b.node_ids) assert(refs.nodes.get(k).routes.every(r => b.node_ids.includes(r.target)), '事件包内出口必须指向本包节点；跨包请使用触发条件：' + b.id + '/' + k);
+    });
     if (p.analysis !== undefined) {
       assert(object(p.analysis), '分析报告必须为对象');
       p.analysis.synopsis ||= ''; p.analysis.branches ||= []; p.analysis.endings ||= []; p.analysis.foreshadowing ||= []; p.analysis.uncertainties ||= [];
@@ -145,6 +168,51 @@
       }
     }
     return p;
+  }
+  function normalizeCompletion(n) {
+    const label = '节点“' + (n.title || n.id || '未命名') + '”(' + (n.id || '?') + ')';
+    let criteria = n.completion_criteria ?? '', exclusions = n.completion_exclusions ?? [];
+    if (Array.isArray(criteria) && criteria.every(x => typeof x === 'string')) criteria = criteria.join('\n');
+    if (typeof exclusions === 'string') exclusions = exclusions.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+    assert(typeof criteria === 'string', label + '.completion_criteria 必须为文字或文字列表');
+    assert(Array.isArray(exclusions) && exclusions.every(x => typeof x === 'string'), label + '.completion_exclusions 必须为文字列表');
+    return {completion_criteria: criteria, completion_exclusions: exclusions};
+  }
+  function nodeReady(n, p, s) {
+    return condition(n.entry_condition, s) && (n.effects || []).every(e => !e.collect || resultReady(e.collect, p, s));
+  }
+  function resultReady(code, p, s) {
+    const def = p.collections.find(x => x.id === code);
+    return condition(def?.requires, s) && !p.collections.some(x => s.collected_ids.includes(x.id) && (x.exclusive_with?.includes(code) || def?.exclusive_with?.includes(x.id)));
+  }
+  function dependencies(c, s) {
+    if (!object(c)) return [];
+    const [op, v] = Object.entries(c)[0];
+    if (op === 'all') return [...new Set(v.flatMap(x => dependencies(x, s)))];
+    if (op === 'any') return dependencies(v.find(x => condition(x, s)), s);
+    if (op === 'collected') return ['result:' + v];
+    if (op === 'completed' || op === 'event_completed') return [(op === 'completed' ? 'node:' : 'event:') + v];
+    if (op === 'variable') return (s.variable_sources?.[v.id] || []).map(k => 'receipt:' + k);
+    return [];
+  }
+  function initLedger(s) {
+    s.settlements ||= {baseline: {variables: clone(s.variables), collected_ids: [...s.collected_ids], completed_node_ids: [...s.completed_node_ids], event_counts: clone(s.event_counts)}, order: [], entries: {}};
+    s.variable_sources ||= {};
+  }
+  function recordSettlement(next, before, p, receipt, source) {
+    if (!receipt || !/^(node:|event:|variable:)/.test(receipt)) return;
+    initLedger(next);
+    if (!next.settlements.order.length) next.settlements.baseline = {variables: clone(before.variables), collected_ids: [...before.collected_ids], completed_node_ids: [...before.completed_node_ids], event_counts: clone(before.event_counts)};
+    const nodeId = receipt.startsWith('node:') ? receipt.slice(5) : null, eventId = receipt.startsWith('event:') ? receipt.split(':')[1] : null;
+    const def = nodeId ? indexProject(p).nodes.get(nodeId) : eventId ? indexProject(p).events.get(eventId) : null;
+    const pack = nodeId ? p.packages?.find(b => b.node_ids.includes(nodeId)) : null;
+    const ctx = pack ? before.package_progress?.[pack.id] : before;
+    const conditions = nodeId ? [def.entry_condition, pack?.continue_condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : eventId ? [def.condition, ...(def.effects || []).filter(e => e.collect).map(e => p.collections.find(x => x.id === e.collect)?.requires)] : [];
+    const effects = def ? clone(def.effects) : Object.keys(next.variables).filter(k => next.variables[k] !== before.variables[k]).map(variable => ({set: {variable, value: next.variables[variable]}}));
+    const deps = [...new Set([...conditions.flatMap(c => dependencies(c, before)), ...(nodeId ? ctx?.entry_dependencies || [] : []), ...(nodeId ? ctx?.activation_dependencies || [] : [])])];
+    next.settlements.entries[receipt] = {node_id: nodeId, event_id: eventId, package_id: pack?.id || '', effects, dependencies: deps, source: source || null, at: Date.now()};
+    next.settlements.order.push(receipt);
+    for (const e of effects) if (e.add || e.set) { const k = (e.add || e.set).variable; next.variable_sources[k] = [...new Set([...(next.variable_sources[k] || []), receipt])]; }
   }
   function createProgress(p) {
     return {
@@ -190,7 +258,10 @@
   function transact(s, p, label, operation, receipt, source = null) {
     if (receipt && own(s.receipts, receipt)) return false;
     const next = clone(s); const before = {variables: {}, collected_ids: [], completed_node_ids: [], visited_node_ids: [], event_counts: {}, current_node_id: s.current_node_id, paused: s.paused, last_settled_message_id: s.last_settled_message_id ?? -1, stage_progress: clone(s.stage_progress || null), turn_context: clone(s.turn_context || null), last_stage_message_id: s.last_stage_message_id ?? -1};
+    if (p.packages?.length) Object.assign(before, {package_progress: clone(s.package_progress || {}), focus_package_id: s.focus_package_id || '', base_progress: clone(s.base_progress || null), manual_base_focus: !!s.manual_base_focus});
+    if (s.entry_dependencies) before.entry_dependencies = [...s.entry_dependencies];
     operation(next);
+    recordSettlement(next, s, p, receipt, source);
     if (Number.isInteger(source?.assistant_id)) next.last_settled_message_id = Math.max(next.last_settled_message_id ?? -1, source.assistant_id);
     for (const k of Object.keys(next.variables)) if (next.variables[k] !== s.variables[k]) before.variables[k] = s.variables[k];
     for (const key of ['collected_ids', 'completed_node_ids', 'visited_node_ids']) before[key] = next[key].filter(v => !s[key].includes(v));
@@ -204,7 +275,7 @@
   function applyEffects(s, p, effects) {
     const refs = indexProject(p); validateEffects(effects, refs);
     for (const effect of effects) {
-      if (effect.collect) { if (!s.collected_ids.includes(effect.collect)) s.collected_ids.push(effect.collect); }
+      if (effect.collect) { assert(resultReady(effect.collect, p, s), '结果前提未满足或结果互斥：' + effect.collect); if (!s.collected_ids.includes(effect.collect)) s.collected_ids.push(effect.collect); }
       else {
         const op = effect.add || effect.set; const def = refs.variables.get(op.variable);
         let value = effect.add ? s.variables[op.variable] + op.value : op.value;
@@ -213,21 +284,29 @@
       }
     }
   }
-  function completeNode(s, p, source = null) {
-    const node = indexProject(p).nodes.get(s.current_node_id);
+  function completeNode(s, p, source = null, nodeId = s.current_node_id) {
+    if (s.receipts['node:' + nodeId]) return false;
+    const node = indexProject(p).nodes.get(nodeId); assert(node && nodeReady(node, p, s), '节点前置条件或结果前提未满足：' + nodeId);
+    const pack = p.packages?.find(b => b.node_ids.includes(nodeId));
+    if (pack) assert(pack.enabled && s.package_progress?.[pack.id]?.current_node_id === nodeId && ['running', 'ready'].includes(s.package_progress?.[pack.id]?.status) && condition(pack.continue_condition, s), '事件包当前不能完成：' + pack.title);
     return transact(s, p, '完成：' + node.title, next => {
       if (!next.completed_node_ids.includes(node.id)) next.completed_node_ids.push(node.id);
       applyEffects(next, p, node.effects);
-      next.stage_progress = null;
+      if (nodeId === next.current_node_id) next.stage_progress = null;
+      if (pack && next.package_progress?.[pack.id]) next.package_progress[pack.id].stage_progress = null;
     }, 'node:' + node.id, source);
   }
   function enterNode(s, p, target, choice = null) {
     const node = indexProject(p).nodes.get(s.current_node_id);
     const route = node.routes.find(r => r.target === target);
-    assert(route && condition(route.condition, s), '分支未解锁或不是当前节点的出口');
+    assert(route && condition(route.condition, s) && nodeReady(indexProject(p).nodes.get(target), p, s), '分支未解锁或不是当前节点的出口');
     return transact(s, p, choice ? '选择：' + (route.label || indexProject(p).nodes.get(target).title) : '进入：' + indexProject(p).nodes.get(target).title, next => {
       next.current_node_id = target; if (!next.visited_node_ids.includes(target)) next.visited_node_ids.push(target);
       next.stage_progress = null;
+      const pack = p.packages?.find(b => b.node_ids.includes(target));
+      const deps = [...new Set([...dependencies(route.condition, s), ...dependencies(indexProject(p).nodes.get(target).entry_condition, s)])];
+      if (pack && next.package_progress?.[pack.id]) { next.package_progress[pack.id].current_node_id = target; next.package_progress[pack.id].stage_progress = null; next.package_progress[pack.id].entry_dependencies = deps; }
+      next.entry_dependencies = deps;
       if (choice) next.turn_context = {...choice, node_id: target, from_node_id: node.id, target, label: route.label || indexProject(p).nodes.get(target).title};
     }, undefined, choice ? {messages: [choice.user_id]} : null);
   }
@@ -235,6 +314,7 @@
     const event = indexProject(p).events.get(eventId);
     assert(event && event.enabled && condition(event.condition, s), '事件不存在、未启用或前置条件未满足');
     assert(event.scope.kind !== 'nodes' || event.scope.node_ids.includes(scopeNode), '事件不适用于该节点');
+    assert(event.effects.every(e => !e.collect || resultReady(e.collect, p, s)), '事件的结果前提未满足或与已取得结果互斥');
     const key = 'event:' + eventId + ':' + (event.repeat_policy === 'once' ? 'once' : sourceKey);
     assert(typeof sourceKey === 'string' && sourceKey, '缺少事件来源标识');
     return transact(s, p, '事件：' + event.title, next => { applyEffects(next, p, event.effects); next.event_counts[eventId] = (next.event_counts[eventId] || 0) + 1; }, key, source);
@@ -245,9 +325,12 @@
     for (const key of ['collected_ids', 'completed_node_ids', 'visited_node_ids']) s[key] = s[key].filter(v => !tx.before[key].includes(v));
     Object.assign(s.event_counts, tx.before.event_counts);
     s.current_node_id = tx.before.current_node_id; s.paused = tx.before.paused;
+    if (tx.before.package_progress) { s.package_progress = tx.before.package_progress; s.focus_package_id = tx.before.focus_package_id; s.base_progress = tx.before.base_progress; s.manual_base_focus = tx.before.manual_base_focus; }
+    s.entry_dependencies = tx.before.entry_dependencies || [];
     s.stage_progress = tx.before.stage_progress || null; s.turn_context = tx.before.turn_context || null; s.last_stage_message_id = tx.before.last_stage_message_id ?? -1;
     if (tx.before.last_settled_message_id !== undefined) s.last_settled_message_id = tx.before.last_settled_message_id;
     if (tx.receipt) delete s.receipts[tx.receipt];
+    if (s.settlements?.entries[tx.receipt]) { delete s.settlements.entries[tx.receipt]; s.settlements.order = s.settlements.order.filter(k => k !== tx.receipt); for (const k of Object.keys(s.variable_sources || {})) s.variable_sources[k] = s.variable_sources[k].filter(x => x !== tx.receipt); }
     s.revision++; return tx;
   }
   function eligibleEvents(p, s, scopeNode = s.current_node_id) {
@@ -278,6 +361,11 @@
     }
     if (s.project_revision !== p.revision) { s.pending_checks = []; s.history = []; s.stage_progress = null; s.turn_context = null; s.project_revision = p.revision; }
     s.stage_progress ||= null; s.turn_context ||= null; s.last_stage_message_id ??= -1;
+    if (s.settlements) {
+      const l = s.settlements;
+      assert(object(l.entries) && Array.isArray(l.order) && new Set(l.order).size === l.order.length && object(l.baseline) && object(l.baseline.variables) && object(l.baseline.event_counts) && Array.isArray(l.baseline.collected_ids) && Array.isArray(l.baseline.completed_node_ids), '结算来源记录格式无效');
+      assert(l.order.every(k => typeof k === 'string' && object(l.entries[k]) && Array.isArray(l.entries[k].effects) && Array.isArray(l.entries[k].dependencies) && l.entries[k].dependencies.every(x => typeof x === 'string' && /^(result|node|event|receipt):/.test(x))), '结算依赖记录格式无效');
+    }
     if (s.stage_progress) {
       assert(object(s.stage_progress) && s.stage_progress.node_id === s.current_node_id, '阶段进度不属于当前节点');
       s.stage_progress.summary = String(s.stage_progress.summary || '').slice(0, 400);
@@ -305,5 +393,5 @@
       events: [{id: 'E_TRUST', title: '共同承担风险', description: '玩家与同行角色实际协作承担调查风险。', completion_criteria: '双方已进行具体协作，不只是提出邀请或讨论计划。', exclusions: ['提出计划', '对方拒绝', '引用旧事'], effects: [{add: {variable: 'trust', value: 5}}], repeat_policy: 'once_per_accepted_turn', detection: 'api', auto_settle: false}],
     });
   }
-  return {VERSION, clone, object, own, id, assert, safeId, parseJSON, normalizeProject, indexProject, createProgress, condition, conditionText, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject};
+  return {VERSION, clone, object, own, id, assert, safeId, parseJSON, normalizeProject, normalizeCompletion, indexProject, createProgress, condition, conditionText, validateCondition, nodeReady, resultReady, dependencies, initLedger, applyEffects, transact, completeNode, enterNode, settleEvent, undo, eligibleEvents, prompt, migrateProgress, demoProject};
 });
