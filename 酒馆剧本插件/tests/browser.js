@@ -162,7 +162,7 @@ async function run() {
     const apiError = await page.getByRole('alert').textContent(); assert(apiError.includes(base + '/bad/v1/chat/completions')); assert(!apiError.includes('BROWSER_SECRET'));
     assert.equal(await page.locator('[name="model_choice"]').count(), 0); await layout(page, '桌面 API 错误诊断');
     await page.locator('[name="base_url"]').fill(base + '/v1'); await page.locator('[name="model"]').fill('mock-light');
-    const customPrompt = '用户自定义：优先核对证据。\n' + await page.locator('[name="detect_prompt"]').inputValue(); await page.locator('[name="detect_prompt"]').fill(customPrompt);
+    const customPrompt = '用户自定义：优先核对证据。\n' + await page.locator('[name="detect_prompt"]').inputValue(); await page.locator('[data-prompt="detect_prompt"] > summary').click(); await page.locator('[name="detect_prompt"]').fill(customPrompt);
     await page.locator('[data-action="api-test"]').click(); await wait(page, () => testHost.storage.script.branch_story_settings?.profile.model === 'mock-light');
     await wait(page, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.error === '');
     assert.equal(await state(page, () => testHost.storage.script.branch_story_settings.profile.key), '');
@@ -254,7 +254,7 @@ async function run() {
     await phone.locator('[name="segment_model_choice"]').selectOption('mock/story-with-a-long-complete-model-ID-for-mobile');
     await layout(phone, '320px 完整模型 ID 下拉框');
     await phone.locator('[data-action="api-save"]').first().tap();
-    await tab(phone, 'data'); await phone.locator('[name="original_text"]').fill('酒店骤然停电。\n走廊传来声响。'); await phone.locator('[data-action="segment"]').tap();
+    await tab(phone, 'data'); await phone.locator('.basic-segment > summary').tap(); await phone.locator('[name="original_text"]').fill('酒店骤然停电。\n走廊传来声响。'); await phone.locator('[data-action="segment"]').tap();
     await phone.locator('[name="segment_draft"]').waitFor();
     assert.equal(await state(phone, () => document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.id), 'hotel_demo');
     assert.equal(JSON.parse(await phone.locator('[name="segment_draft"]').inputValue()).nodes.length, 2);

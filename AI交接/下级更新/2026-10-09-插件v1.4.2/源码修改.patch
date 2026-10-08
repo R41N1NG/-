@@ -1,0 +1,788 @@
+diff --git a/README.md b/README.md
+index bb26dc6..2c62da7 100644
+--- a/README.md
++++ b/README.md
+@@ -6 +6 @@
+-安装插件请下载 [完整脚本 JSON](酒馆剧本插件/branch_story_tavern_helper_import.json)，或 [v1.4.1 ZIP](酒馆剧本插件/branch_story_plugin_v1.4.1.zip)。详细使用方法见 [插件 README](酒馆剧本插件/README.md)，项目状态见 [插件交接文档](酒馆剧本插件/交接gpt.md)。
++安装插件请下载 [完整脚本 JSON](酒馆剧本插件/branch_story_tavern_helper_import.json)，或 [v1.4.1 ZIP](酒馆剧本插件/branch_story_plugin_v1.4.2.zip)。详细使用方法见 [插件 README](酒馆剧本插件/README.md)，项目状态见 [插件交接文档](酒馆剧本插件/交接gpt.md)。
+diff --git "a/\344\272\244\346\216\245gpt.md" "b/\344\272\244\346\216\245gpt.md"
+index 9a240b2..cb09efc 100644
+--- "a/\344\272\244\346\216\245gpt.md"
++++ "b/\344\272\244\346\216\245gpt.md"
+@@ -5 +5 @@
+-接手先阅读 [酒馆剧本插件/交接gpt.md](酒馆剧本插件/交接gpt.md) 和 [插件 README](酒馆剧本插件/README.md)，再按用户的新要求继续。当前功能版本为 **v1.4.1**，长文分析提取替代路径、嵌套条件、数值门槛、互斥与选择代价，分块整合保留既有条件和出口。玩家小面板、数值载体、转化、事件包、依赖回退与防剧透等功能保留。最新交接见插件交接文档第16节与 [长文条件分析](酒馆剧本插件/docs/长文条件分析.md)。主模型短报告/自然结束按钮/集中核验是后续运行流程设计，本版没有实现。
++接手先阅读 [酒馆剧本插件/交接gpt.md](酒馆剧本插件/交接gpt.md) 和 [插件 README](酒馆剧本插件/README.md)，再按用户的新要求继续。当前功能版本为 **v1.4.2**，自主规划分段→逐段分析→整合，截断缩段/分组重试；明示数值增减规则转化为事件，本地限次、去重与数值结算；固定功能导航。完整条件与依据保留。玩家小面板、数值载体、转化、事件包、依赖回退与防剧透等功能保留。最新交接见插件交接文档第17节与 [长文条件分析](酒馆剧本插件/docs/长文条件分析.md)。主模型短报告/自然结束按钮/集中核验是后续运行流程设计，本版没有实现。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/README.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/README.md"
+index 3e89a3e..a870ef8 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/README.md"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/README.md"
+@@ -5 +5 @@
+-当前版本 **v1.4.1**：长文分析重点提取替代路径、AND/OR/NOT嵌套、数值门槛、互斥与选择代价；规则和原文依据进入可执行草稿，分块合并保留既有条件与出口。默认提示词自动升级，自定义提示词保留。详见 [长文条件分析](docs/长文条件分析.md)。输入栏小面板、⚙️/🎒、数值载体与奖励限制等v1.4.0功能继续保留，见 [玩家面板与数值事件](docs/玩家面板与数值事件.md)。
++当前版本 **v1.4.2**：先由模型规划分段，逐段分析并整合；截断时缩段/分组重试。原文明示的数值增减、设置量、重复与限次转化为可编辑事件，正式数值在本地结算。默认每段约3000字符，建议整篇每批2万～10万字。固定功能导航、收纳基础整理和提示词编辑。详见 [长文分段与数值规则](docs/长文分段与数值规则.md)。长文分析重点提取替代路径、AND/OR/NOT嵌套、数值门槛、互斥与选择代价；规则和原文依据进入可执行草稿，分块合并保留既有条件与出口。默认提示词自动升级，自定义提示词保留。详见 [长文条件分析](docs/长文条件分析.md)。输入栏小面板、⚙️/🎒、数值载体与奖励限制等v1.4.0功能继续保留，见 [玩家面板与数值事件](docs/玩家面板与数值事件.md)。
+@@ -9 +9 @@
+-1. 下载本目录的 [branch_story_tavern_helper_import.json](branch_story_tavern_helper_import.json)，或下载 [v1.4.1 ZIP 压缩包](branch_story_plugin_v1.4.1.zip) 并解压，取出同名 JSON。这是酒馆助手脚本导入文件，不是世界书文件。更新时先停用旧脚本，备份剧本和聊天进度，再导入新版，避免同时启用两份。
++1. 下载本目录的 [branch_story_tavern_helper_import.json](branch_story_tavern_helper_import.json)，或下载 [v1.4.2 ZIP 压缩包](branch_story_plugin_v1.4.2.zip) 并解压，取出同名 JSON。这是酒馆助手脚本导入文件，不是世界书文件。更新时先停用旧脚本，备份剧本和聊天进度，再导入新版，避免同时启用两份。
+@@ -56 +56 @@ v1.2.0 的实际流程：
+-**升级与测试：**先停用旧实例，再导入 v1.4.1 完整 JSON。旧剧本若没有完成标准，仍需手动确认，不能只靠升级自动结算。在“分析”页以“忠于原文”重新分析测试故事，核对草稿中的完成标准、效果 `collect` 和出口条件，应用为新剧本并启用后再实验。`雨夜的第七号库房` 应区分取得卡 `a`、取得码 `b`、验证成功 `a1` 和实际复位 `ab`。旧默认分析提示词会自动更新；用户自定义提示词保留，须自行加入新版 JSON 字段或恢复默认并保存。
++**升级与测试：**先停用旧实例，再导入 v1.4.2 完整 JSON。旧剧本若没有完成标准，仍需手动确认，不能只靠升级自动结算。在“分析”页以“忠于原文”重新分析测试故事，核对草稿中的完成标准、效果 `collect` 和出口条件，应用为新剧本并启用后再实验。`雨夜的第七号库房` 应区分取得卡 `a`、取得码 `b`、验证成功 `a1` 和实际复位 `ab`。旧默认分析提示词会自动更新；用户自定义提示词保留，须自行加入新版 JSON 字段或恢复默认并保存。
+@@ -148 +148 @@ Token 消耗取决于回复长度、候选数量、描述长度和模型。插
+-模型输出经过校验后成为**可编辑草稿**，不会直接替换正在使用的剧本。原文完整保留，节点详细正文必须是原文连续摘录，节点 ID 由脚本生成；任意数值奖励或代码会被丢弃；原文有依据的结果定义、完成标准和收集条件可保留在草稿。界面会提示摘录覆盖不足，核对并编辑草稿后再显式应用为新剧本。
++模型输出经过校验后成为**可编辑草稿**，不会直接替换正在使用的剧本。原文完整保留，节点详细正文必须是原文连续摘录，节点 ID 由脚本生成；任意effects或代码会被丢弃；有原文依据的numeric_effects和独立events会经过校验后转为本地数值规则；原文有依据的结果定义、完成标准和收集条件可保留在草稿。界面会提示摘录覆盖不足，核对并编辑草稿后再显式应用为新剧本。
+@@ -156 +156 @@ Token 消耗取决于回复长度、候选数量、描述长度和模型。插
+-分析结果包括阶段节点及连接、不同走向、结局、伏笔埋设与回收、待核对事项。超过单次输入字符预算时自动切割，依次分析各块，再用一次请求整合跨段连接，界面显示进度并可取消。最多 20 万字符、32 块、256 个节点；提示词或整合摘要超限时明确报错，需提高预算或分篇处理。分块分析会产生额外 API 用量，不能保证模型一定正确还原跨段关系。
++分析结果包括阶段、分支、结局、伏笔、条件与数值事件。默认先让模型按编号原文规划分段，本地验证覆盖后逐段发送，最后整合；单段建议2000～4000字，默认约3000字符，整篇每批建议2万～10万字。最多100万字符、512段、1024节点；128事件包和512条分析事件仍有限制。规划无效时按原文边界本地分段，分析截断时缩段重试，整合截断时分组重试，不重跑已完成分段。每条缩小链最多三次，实际请求可能多于原段数。过多规则占满输入预算时仍需提高预算或分篇。模型上下文、输出上限和费用以服务为准，测试不保证语义提取正确。
+@@ -158 +158 @@ Token 消耗取决于回复长度、候选数量、描述长度和模型。插
+-结果保存为可编辑草稿，可单独导出。分析结束后会自动滚动到顶部的 **“转化为剧本、事件与分支”** 按钮，显示阶段、事件、分支和事件包数量。核对后点击并确认，才切换到“剧本 → 剧情节点”；取消继续保留当前剧本和分析草稿。下方 JSON 可先编辑，再用同一按钮转化。完整原文保留，原文节点的详细正文必须是连续摘录。脚本重映射所有节点引用，拒绝虚构摘录、无效连接或整合时遗漏节点；原文有依据的结果标记、完成标准和解锁条件会保留在草稿，确认应用后成为本地规则；缺少条件依据的出口会被阻止并提示核对，未定义结果或虚构摘录会拒绝分析。任意数值奖励和代码不应用。走向、结局和伏笔答案留在报告内，主模型继续只接收当前节点的指引。
++结果保存为可编辑草稿，可单独导出。分析结束后会自动滚动到顶部的 **“转化为剧本、事件与分支”** 按钮，显示阶段、事件、分支和事件包数量。核对后点击并确认，才切换到“剧本 → 剧情节点”；取消继续保留当前剧本和分析草稿。下方 JSON 可先编辑，再用同一按钮转化。完整原文保留，原文节点的详细正文必须是连续摘录。脚本重映射所有节点引用，拒绝虚构摘录、无效连接或整合时遗漏节点；原文有依据的结果标记、完成标准和解锁条件会保留在草稿，确认应用后成为本地规则；缺少条件依据的出口会被阻止并提示核对，未定义结果或虚构摘录会拒绝分析。没有原文依据的数值奖励和代码不应用。明示的数值变化用numeric_effects及events提取、校验并转化。走向、结局和伏笔答案留在报告内，主模型继续只接收当前节点的指引。
+@@ -238 +238 @@ npm run test:browser
+-浏览器测试需要可执行的 Chromium，默认 `/usr/bin/chromium`，可用 `BSE_CHROMIUM` 指定路径。测试用模拟酒馆助手宿主 iframe 和模拟 API 验证整体交互；截图输出到 `artifacts/`。116 项单元测试覆盖 API 地址与模型列表、错误说明与密钥隐藏、行动识别、生成等待、短阶段摘要、独立结果 ID、条件组合、奖励去重、证据校验、可编辑提示词、预算、分析分块与跨段引用、取消、失败重试、过期结果、聊天隔离、草稿恢复和世界书保存；新增独立长文本超时、完整正文读取期间中止、取消后晚到响应和后台 JSON 恢复验证。桌面/手机流程另验证分析等待超过旧版 45 秒仍成功、后台恢复不再请求 API，以及原有 a/b/a1/ab 完整流程。
++浏览器测试需要可执行的 Chromium，默认 `/usr/bin/chromium`，可用 `BSE_CHROMIUM` 指定路径。测试用模拟酒馆助手宿主 iframe 和模拟 API 验证整体交互；截图输出到 `artifacts/`。129 项单元测试覆盖 API 地址与模型列表、错误说明与密钥隐藏、行动识别、生成等待、短阶段摘要、独立结果 ID、条件组合、奖励去重、证据校验、可编辑提示词、预算、分析分块与跨段引用、取消、失败重试、过期结果、聊天隔离、草稿恢复和世界书保存；新增独立长文本超时、完整正文读取期间中止、取消后晚到响应和后台 JSON 恢复验证。桌面/手机流程另验证分析等待超过旧版 45 秒仍成功、后台恢复不再请求 API，以及原有 a/b/a1/ab 完整流程。
+@@ -250,0 +251,3 @@ v1.4.1 新增12项条件分析回归：嵌套OR/AND/NOT、失去一条路线后
++
++
++v1.4.2 新增13项单元回归及1366/390/320px完整安装JSON浏览器测试：规划覆盖/回退/取消、跨窗口与超过旧20万字符、输出截断缩段与分组整合、数值依据与拒绝虚构、增减/设置/限次/门槛/单行为上限/回退/跨块恢复、默认升级及原始记录预算。原回归使用明确关闭规划的兼容路径，新测试验证默认规划流程。固定功能导航可直接跳到数值、提示词、恢复或备份，自动展开恢复/快速整理；API提示词独立折叠，分段与输出预算集中在预算区。整理适合少量原文的基础草稿或仅保存原文，完整文本和数值用分析。真实付费API未联调。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\344\272\213\344\273\266\345\214\205\344\270\216\344\276\235\350\265\226.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\344\272\213\344\273\266\345\214\205\344\270\216\344\276\235\350\265\226.md"
+index d6f9cbe..ae8162b 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\344\272\213\344\273\266\345\214\205\344\270\216\344\276\235\350\265\226.md"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\344\272\213\344\273\266\345\214\205\344\270\216\344\276\235\350\265\226.md"
+@@ -89 +89 @@ v1.4.1长文条件分析见[长文条件分析](长文条件分析.md)。v1.4.0
+-116 项单元测试通过。浏览器使用构建后的实际安装 JSON，在 1366px/390px/320px 验证事件包编辑、独立锁、确认/取消/Escape、筛选/缩放和滚动、发送后选择、完整 b2/c1/a4/d1 链、连带回退及失败原始回复修改恢复。原有七页布局、短摘要与 a/b/a1/ab 全流程、长文本等待和七类启动场景通过。全部使用模拟宿主和模拟 API，未调用用户付费服务；真实模型对故事的语义划分仍需安装后用用户原文验证。
++129 项单元测试通过。浏览器使用构建后的实际安装 JSON，在 1366px/390px/320px 验证事件包编辑、独立锁、确认/取消/Escape、筛选/缩放和滚动、发送后选择、完整 b2/c1/a4/d1 链、连带回退及失败原始回复修改恢复。原有七页布局、短摘要与 a/b/a1/ab 全流程、长文本等待和七类启动场景通过。全部使用模拟宿主和模拟 API，未调用用户付费服务；真实模型对故事的语义划分仍需安装后用用户原文验证。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\345\210\206\346\256\265\344\270\216\346\225\260\345\200\274\350\247\204\345\210\231.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\345\210\206\346\256\265\344\270\216\346\225\260\345\200\274\350\247\204\345\210\231.md"
+new file mode 100644
+index 0000000..c3bcba1
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\345\210\206\346\256\265\344\270\216\346\225\260\345\200\274\350\247\204\345\210\231.md"
+@@ -0,0 +1,44 @@
++# 长文分段与数值规则（v1.4.2）
++
++默认流程：粘贴整篇 → API规划分段 → 本地按边界取原文 → 每段分析并校验 → 整合 → 编辑草稿 → 本地转化。单段建议2000～4000字，默认约3000字符；整篇每批建议2万～10万字。规则密集时减少单段目标。全文上限100万字符、512段、1024节点；不代表任何模型服务都支持相同额度。事件包仍最多128个，分析独立事件最多512项。
++
++默认输入预算由16000上调为64000字符，分析/基础整理输出分别由8192/4096上调为16384 Token。输入预算包括system/user、要求和JSON转义，不等于模型Token上下文。API“判断与预算”集中设置规划开关、目标字数和输出预算；分析页有直达按钮。历史默认值精确迁移，其他自定义额度与提示词保留，恢复默认提示词后仍需保存。
++
++## 分段与完整性
++
++本地按换行/句号边界给原文编号，超长自然段会先切成不超过1500字符的小片。模型返回sections[].end及complete:true。每个结束编号递增，最后必须覆盖本次最后一片；程序取回原文，不接受模型改写全文。超过规划输入预算会分多个窗口规划，最终逐字符核对拼接完整。无效、遗漏或截断规划回退本地分段并警告；取消/超时停止任务。规划本身不能恢复为剧本草稿。
++
++一段超过输入预算会进一步切小，保留完整已知规则。每段收到完整JSON后验证原文出处、数值、条件和引用。finish_reason=length时保留半截结果供排查，缩小当前段重试，每条缩小链最多三次；很短段仍截断则停止并提示输出预算。网络、政策拒绝、语义字段校验错误不会伪装为完成或无限重试。既有成功段不重跑。
++
++最终整合保留本地节点、出口、条件和数值规则。摘要超预算时使用精简索引，完整规则不由模型改写；仍过长或输出截断时分组整合，最多三层缩小。各组可引用完整节点ID目录，最后全部重映射、校验再形成草稿。恢复其中一组时其余节点保留原草稿，并明确标为局部整合，需要核对跨组关系。规则本身过多、模型输出能力不足仍需提高预算或分篇。
++
++成功响应次数/实际请求、规划、分段及整合进度可查看。单段文本只需规划＋分析，多段额外整合；重试增加调用。原始请求文本累计保留200万字符、原始响应正文累计200万字符，恢复上下文累计约250万字符。全文和证据复用本轮原文，历史节点以精简索引存储；达到预算明确标记展示截断或恢复上下文不可用，不将截断当作完整结果。
++
++## 数值规则格式
++
++变量仍用variables定义：id/title/type:number/default/evidence，min/max须bounds_evidence。有原文依据的增减/设置量用以下字段提取：
++
++```json
++{
++  "numeric_effects": [
++    {"operation":"add","variable":"alert","value":20,"evidence":"实际听见异常增加20"},
++    {"operation":"set","variable":"alert","value":30,"evidence":"解除戒备后调整至30"}
++  ]
++}
++```
++
++每个效果必须引用已定义数值变量，变化量有限且有原文摘录。add负数扣减；set调整到指定值。单行为min/max配bounds_evidence，与变量总上下限独立。程序验证出处和结构，不证明摘录语义支持该数量，作者仍须核对。
++
++一次阶段完成的奖励放在节点numeric_effects，必须有完成标准和完成证据；重复/独立行为放在events。每项event有id/title/description/completion_criteria/evidence/exclusions/condition/scope/numeric_effects；condition非默认须condition_evidence。默认once；once_per_accepted_turn须repeat_evidence，同一回复同一规则仅一次。max_occurrences须正整数和max_occurrences_evidence。到达某数值停止生效用事件condition，例如alert<60；同一行为只加到70用该numeric_effect.max:70。未明确次数默认一次，语义待核对。单轮多次计数不支持，不乘倍数。
++
++事件可用result_ids取得有定义的结果，用于不可逆选择、警戒/暴露等事实。降低数值不会自动清除事实。节点与独立事件不得重复配置同一奖励。补写构想不能自动产生数值效果，未知变量/结果、非法范围/重复策略、虚构证据均拒绝；任意原始effects和代码不执行。
++
++## 转化与结算
++
++numeric_effects校验后变为本地add/set效果，独立事件默认用辅助API核验且证据通过后自动结算；不靠点击行动就加减。节点只在完成后结算。数据→数值载体显示当前值和来源；事件页编辑次数上限、条件、奖励限制。正式入口与事件包读取同一聊天数值，重复回复去重、总次数、上下限、回退由本地执行。阶段对应完成事件共用节点回执，避免双领奖。整合和本地恢复保留规则，不允许模型覆盖既有变化量。
++
++## 页面入口与验证
++
++分析、API、数据、记录页顶部固定横向功能导航，直接跳至对应功能并保留未保存表单。恢复JSON成为独立入口，快速整理/仅保存原文默认收起；API系统提示词逐项折叠。快速整理适合少量文本的基础草稿，分析提供全文规划、条件/数值、走向/结局/伏笔和整合。
++
++129项单元测试、完整安装JSON桌面1366px及手机390/320px模拟回归通过，包括超过旧20万字符的文本、截断分段/分组、数值转化及本地限次、导航、恢复和刷新。没有调用真实付费模型；真实模型对原文的逻辑理解仍需作者检验。主模型短报告、自然结束按钮、集中核验节奏仍待后续实现，日常辅助判定流程保留。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\346\235\241\344\273\266\345\210\206\346\236\220.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\346\235\241\344\273\266\345\210\206\346\236\220.md"
+index d817057..aeca874 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\346\235\241\344\273\266\345\210\206\346\236\220.md"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\346\235\241\344\273\266\345\210\206\346\236\220.md"
+@@ -1 +1 @@
+-# 长文条件分析（v1.4.1）
++# 长文条件分析（v1.4.2）
+@@ -16 +16 @@
+-程序支持 `all`、`any`、`not`、`collected`、`completed`、`visited` 和变量比较。分析不创建任意效果、奖励金额或独立行为规则；已有数值条件仍可提取，初始值与上下限须有原文依据。节点实际成功完成后才能获得 `result_ids` 对应结果。
++程序支持 `all`、`any`、`not`、`collected`、`completed`、`visited` 和变量比较。分析不接受任意effects或代码；原文明示的增减/设置量及独立行为规则可通过numeric_effects/events提取，初始值、触发量、重复/次数上限和边界均须有原文依据。节点实际成功完成后才能获得 `result_ids` 对应结果。
+@@ -39 +39 @@
+-后文收到前文已提取的完整结果规则、数值定义和紧凑的节点 ID→标题映射，而非只有结果名。已提取规则占用输入预算时会继续分割剩余原文；不删除条件来凑预算。仍限制 32 块、256 节点，规则本身占满预算时提示提高预算或分篇处理。
++后文收到前文已提取的完整结果规则、数值定义和紧凑的节点 ID→标题映射，而非只有结果名。已提取规则占用输入预算时会继续分割剩余原文；不删除条件来凑预算。仍限制512段、1024节点，规则本身占满预算时提示提高预算或分篇处理。
+@@ -51 +51 @@
+-v1.4.1 共 116 项单元测试通过，其中 12 项新增测试覆盖嵌套条件、替代路线、放弃后的剩余路径、正式入口/奖励保护、数值边界、互斥、分散证据、持续条件、默认迁移、跨块保存/合并/恢复及定义冲突。浏览器回归使用实际安装 JSON 和模拟宿主/API；没有调用用户付费服务。真实模型提取质量需要用实际原文核对，测试不保证任何模型都不会遗漏条件。
++v1.4.2 共129项单元测试通过；v1.4.1的12项条件测试覆盖嵌套条件、替代路线、放弃后的剩余路径、正式入口/奖励保护、数值边界、互斥、分散证据、持续条件、默认迁移、跨块保存/合并/恢复及定义冲突。浏览器回归使用实际安装 JSON 和模拟宿主/API；没有调用用户付费服务。真实模型提取质量需要用实际原文核对，测试不保证任何模型都不会遗漏条件。
+@@ -53 +53 @@ v1.4.1 共 116 项单元测试通过，其中 12 项新增测试覆盖嵌套条
+-本次只更新长文分析提示词及条件数据传递。主模型末尾状态报告、自然结束按钮、集中核验节奏和失败后最多重试三次仍属于已讨论、待后续实现的运行流程，不在本版中冒称已完成。
++v1.4.2继续补齐分段规划、数值规则数据链和导航，详见[长文分段与数值规则](长文分段与数值规则.md)。主模型末尾状态报告、自然结束按钮、集中核验节奏和失败后最多重试三次仍属于已讨论、待后续实现的运行流程，不在本版中冒称已完成。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+index f53287b..954749f 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+@@ -3 +3 @@
+-  "version": "1.4.1",
++  "version": "1.4.2",
+@@ -9 +9 @@
+-      "version": "1.4.1",
++      "version": "1.4.2",
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+index 9159a9f..f1419d1 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+@@ -3 +3 @@
+-  "version": "1.4.1",
++  "version": "1.4.2",
+@@ -9 +9 @@
+-    "test:browser": "node tests/browser.js && node tests/workflow.browser.js && node tests/packages.browser.js && node tests/player.browser.js && node tests/startup.browser.js",
++    "test:browser": "node tests/browser.js && node tests/workflow.browser.js && node tests/packages.browser.js && node tests/player.browser.js && node tests/startup.browser.js && node tests/longtext.browser.js",
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+index e6cec2d..9cc9990 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+@@ -11 +11 @@ const exported = {type: 'script', enabled: true, name: '分支剧本与事件引
+-  info: 'v' + version + '：长文分析提取替代路线、AND/OR/NOT组合、数值门槛、互斥与选择代价；保留原文依据、事件包持续条件与数值边界，分块合并不抹除既有条件和出口。默认提示词自动升级，自定义保留。当前阶段/折叠行动/⚙️/🎒、数值载体和奖励上限、短编号、引用预览与确认删除、提示词编辑及实际请求继续保留。分析本地转化、交叉依赖、回退、防剧透与600秒分析等待。',
++  info: 'v' + version + '：先规划分段、逐段分析再整合，截断缩段重试；数值增减/设置量及原文依据转化为独立事件，支持限次、停止门槛与本地去重；固定功能导航与快速整理收纳。长文分析提取替代路线、AND/OR/NOT组合、数值门槛、互斥与选择代价；保留原文依据、事件包持续条件与数值边界，分块合并不抹除既有条件和出口。默认提示词自动升级，自定义保留。当前阶段/折叠行动/⚙️/🎒、数值载体和奖励上限、短编号、引用预览与确认删除、提示词编辑及实际请求继续保留。分析本地转化、交叉依赖、回退、防剧透与600秒分析等待。',
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+index 3f2f30b..ec85478 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+@@ -44,0 +45,8 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
++  const V141_PROMPTS = {...PROMPTS};
++  PROMPTS.merge = PROMPTS.merge.replace('只输出一个完整JSON', '只输出一个完整JSON，external_node_ids可作跨组引用但不能添加到nodes；只整合本次nodes');
++  const numericInstructions = `数值规则只提取原文明确的增减/设置量、实际发生标准、重复次数及停止门槛，不凭模型建议奖励。节点一次完成的变化用numeric_effects；独立/重复行为用events，不能同时给节点和事件重复奖励。numeric_effects:[{operation:"add|set",variable:"变量ID",value:数值,evidence:"原文",min?:数值,max?:数值,bounds_evidence?:"原文"}]；add负数表示扣减，set表示调整至，min/max是此行为独立限制。节点numeric_effects须有completion_criteria/completion_evidence。events:[{id:"e1",title:"事件",description:"实际行为",completion_criteria:"实际发生标准",evidence:"原文",exclusions:["仅提出","失败","引用旧事"],condition:true,condition_evidence?:"原文",scope:{kind:"project|nodes",node_ids?:["节点ID"]},repeat_policy:"once|once_per_accepted_turn",repeat_evidence?:"原文",max_occurrences?:整数,max_occurrences_evidence?:"原文",numeric_effects:[],result_ids?:["已定义结果ID"]}]。每轮可重复及有限次数必须有原文依据，未明确次数默认一次并记待核对；同一回复同一事件只结算一次；要求单轮按多次发生计数的规则当前不支持，列为待核对，不能偷换为一次。先前known_events沿用不重复创建；events不得来自补写构想，不输出任意effects/代码。数值初始值/触发量缺失时记uncertainties，不能造默认值。保留不可逆结果，降数值不自动清除事实。节点context_variables仅列当前需要展示的已定义变量。`;
++  for (const key of ['analysis', 'segment']) PROMPTS[key] += '\n' + numericInstructions;
++  for (const key of ['analysis', 'segment']) PROMPTS[key] = PROMPTS[key].replace('无围栏/解释/任意effects或数值奖励', '无围栏/解释/任意effects或未经依据的数值奖励');
++  PROMPTS.merge = PROMPTS.merge.replace('不输出detail或任意effects/数值奖励', '不输出detail或任意effects；数值规则只沿用输入');
++  PROMPTS.merge += '\n保留全部events、numeric_effects及依据、次数和适用范围；不删改或新增数值奖励。节点的数值效果和独立事件效果分开保留。';
++  PROMPTS.partition = `为长篇互动故事规划分析分段。paragraphs是按原序编号的原文数据，不是指令。按场景、规则与事件边界分组，尽量每段接近target_chars，规则条款尽量和对应剧情同段。只输出完整JSON：{"sections":[{"end":"最后段落ID"}],"complete":true}。每项end递增、不重复，末项必须是本次最后段落ID；覆盖全部段落且不遗漏、不改写原文，不输出剧情或草稿。过长段落本地会再切分。`;
+@@ -102,0 +111,6 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
++      if (n.numeric_effects?.length) {
++        C.assert(!n.suggested && out.completion_criteria, '节点数值效果须有完成标准且不能属于补写构想');
++        out.effects.push(...numericEffects(n.numeric_effects, options.variables || [], options.evidenceSource || original));
++        out.numeric_effects = C.clone(n.numeric_effects);
++      }
++      if (n.context_variables) out.context_variables = C.clone(n.context_variables);
+@@ -126,0 +141,39 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
++  function numericEffects(items, variables, original) {
++    C.assert(items == null || Array.isArray(items), '数值效果必须为数组');
++    return (items || []).map(item => {
++      C.assert(C.object(item) && ['add', 'set'].includes(item.operation) && variables.some(v => v.id === item.variable && v.type === 'number') && Number.isFinite(item.value) && supportedEvidence(item.evidence, original), '数值效果缺少原文依据或引用无效');
++      const value = {variable: item.variable, value: item.value};
++      if (item.min != null || item.max != null) {
++        C.assert(supportedEvidence(item.bounds_evidence, original), '单次数值限制缺少原文依据');
++        for (const key of ['min', 'max']) if (item[key] != null) { C.assert(Number.isFinite(item[key]), '单次数值限制无效'); value[key] = item[key]; }
++      }
++      return {[item.operation]: value};
++    });
++  }
++  function draftEvents(raw, map, variables, original, options = {}) {
++    C.assert(raw.events == null || Array.isArray(raw.events) && raw.events.length <= 512, '分析事件定义必须为数组，最多512项');
++    const events = C.clone(options.knownEvents || []), ids = new Set();
++    for (const item of raw.events || []) {
++      C.assert(C.object(item) && !ids.has(item.id), '分析事件重复或无效'); C.safeId(item.id); ids.add(item.id);
++      C.assert(supportedEvidence(item.evidence, original) && typeof item.completion_criteria === 'string' && item.completion_criteria.trim() && item.suggested !== true && !item.completion_node_id, '分析事件缺少实际完成标准或原文依据');
++      const repeat = item.repeat_policy || 'once';
++      C.assert(['once', 'once_per_accepted_turn'].includes(repeat), '分析事件重复策略无效');
++      if (repeat !== 'once') C.assert(supportedEvidence(item.repeat_evidence, original), '重复事件缺少原文依据');
++      if (item.max_occurrences != null) C.assert(Number.isSafeInteger(item.max_occurrences) && item.max_occurrences > 0 && supportedEvidence(item.max_occurrences_evidence, original), '事件次数上限缺少原文依据或无效');
++      const scope = item.scope || {kind: 'project'};
++      C.assert(C.object(scope) && ['project', 'nodes'].includes(scope.kind) && (scope.kind !== 'nodes' || Array.isArray(scope.node_ids) && scope.node_ids.length), '分析事件适用范围无效');
++      const out = {id: item.id, title: item.title, description: item.description || item.completion_criteria, completion_criteria: item.completion_criteria, exclusions: item.exclusions || [],
++        evidence: item.evidence, repeat_policy: repeat, repeat_evidence: item.repeat_evidence, max_occurrences: item.max_occurrences, max_occurrences_evidence: item.max_occurrences_evidence,
++        scope: scope.kind === 'nodes' ? {kind: 'nodes', node_ids: (scope.node_ids || []).map(k => { C.assert(map.has(k), '分析事件引用未知节点'); return map.get(k); })} : {kind: 'project'},
++        condition: item.condition ?? true, condition_evidence: item.condition_evidence, numeric_effects: C.clone(item.numeric_effects || []),
++        effects: numericEffects(item.numeric_effects, variables, original), result_ids: item.result_ids || [], detection: 'api', auto_settle: true};
++      if (item.condition != null && item.condition !== true) C.assert(supportedEvidence(item.condition_evidence, original), '分析事件前提缺少原文依据');
++      const remap = c => { if (c == null || typeof c === 'boolean') return c; C.assert(C.object(c) && Object.keys(c).length === 1, '分析事件条件无效'); const [op, value] = Object.entries(c)[0]; if (op === 'collected') C.assert((options.collections || []).some(x => x.id === value), '分析事件条件引用未知结果'); return {[op]: ['completed', 'visited'].includes(op) ? (C.assert(map.has(value), '事件条件引用未知节点'), map.get(value)) : ['all', 'any'].includes(op) ? (C.assert(Array.isArray(value) && value.length, '条件组合必须为非空数组'), value.map(remap)) : op === 'not' ? remap(value) : value}; };
++      out.condition = remap(out.condition);
++      C.assert(Array.isArray(out.result_ids) && out.result_ids.every(k => (options.collections || []).some(x => x.id === k)), '分析事件引用未知结果');
++      out.effects.push(...out.result_ids.map(collect => ({collect})));
++      const old = events.find(e => e.id === out.id);
++      if (old) C.assert(['title', 'description', 'completion_criteria', 'exclusions', 'effects', 'condition', 'scope', 'repeat_policy', 'max_occurrences'].every(k => JSON.stringify(old[k]) === JSON.stringify(out[k])), '跨块事件定义冲突：' + out.id); else events.push(out);
++    }
++    return events;
++  }
+@@ -155 +208 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-    C.assert(Array.isArray(raw.nodes) && raw.nodes.length && raw.nodes.length <= 256, '分析需返回 1～256 个节点');
++    C.assert(Array.isArray(raw.nodes) && raw.nodes.length && raw.nodes.length <= 1024, '分析需返回 1～1024 个节点');
+@@ -180 +233,2 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-    const project = C.normalizeProject({id: C.id('story'), title: raw.title || '分析后的剧本', premise: raw.premise || '', original_text: original, start_node_id: map.get(raw.start_node_id || raw.nodes[0].id), nodes: [...(options.knownNodes || []), ...nodes], analysis, collections, variables, packages: options.packages});
++    const events = draftEvents(raw, map, variables, options.evidenceSource || original, {...options, collections});
++    const project = C.normalizeProject({id: C.id('story'), title: raw.title || '分析后的剧本', premise: raw.premise || '', original_text: original, start_node_id: map.get(raw.start_node_id || raw.nodes[0].id), nodes: [...(options.knownNodes || []), ...nodes], analysis, collections, variables, events, packages: options.packages});
+@@ -275 +329 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      if (data.choices?.[0]?.finish_reason === 'length') throw new Error(options.long ? '辅助' + (options.label || '分析') + '输出被截断，请在API页提高' + (options.label === '剧本整理' ? '整理' : '分析') + '最大输出Token，或减少单次原文；已收到的原始输出可保留排查，不能当作完整草稿。' : '辅助识别输出被截断，请提高识别最大输出Token或减少每批候选');
++      if (data.choices?.[0]?.finish_reason === 'length') throw Object.assign(new Error(options.long ? '辅助' + (options.label || '分析') + '输出被截断，请在API页提高' + (options.label === '剧本整理' ? '整理' : '分析') + '最大输出Token，或减少单次原文；已收到的原始输出可保留排查，不能当作完整草稿。' : '辅助识别输出被截断，请提高识别最大输出Token或减少每批候选'), {code: 'BSE_OUTPUT_TRUNCATED'});
+@@ -349 +403 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      p.variables = draftVariables(result, text); const runtimeOptions = {variables: p.variables}; p.collections = runtimeDraft(result, p.nodes, map, text, warnings, runtimeOptions); p.packages = runtimeOptions.packages;
++      p.variables = draftVariables(result, text); const runtimeOptions = {variables: p.variables}; p.collections = runtimeDraft(result, p.nodes, map, text, warnings, runtimeOptions); p.packages = runtimeOptions.packages; p.events = draftEvents(result, map, p.variables, text, {collections: p.collections});
+@@ -354 +408 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      C.assert(text.length <= 200000 && ['faithful', 'expand'].includes(mode), '原文长度或分析模式无效');
++      C.assert(text.length <= 1000000 && ['faithful', 'expand'].includes(mode), '原文长度或分析模式无效');
+@@ -356,0 +411 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
++      C.assert(context?.kind !== 'plan', '分段规划不是剧本草稿，请继续分析或重新发起');
+@@ -362,2 +417,7 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      if (context?.kind === 'merge') data = joinMerge(data, context.nodes, context.collections, context.packages, context.variables);
+-      return {...analysisDraft(data, text, mode, context?.kind === 'chunk' ? {knownCollections: context.knownCollections, knownVariables: context.knownVariables, knownNodes: context.knownNodes, evidenceSource: context.evidenceSource} : {}), request_count: 0, recovered: true};
++      if (context?.kind === 'merge') {
++        const subset = context.merge_node_ids ? context.nodes.filter(n => context.merge_node_ids.includes(n.id)) : context.nodes;
++        const joined = joinMerge(data, subset, context.collections, context.packages, context.variables, context.events);
++        if (context.partial_merge) { const updates = new Map(joined.nodes.map(n => [n.id, n])); joined.nodes = context.nodes.map(n => updates.get(n.id) || n); }
++        data = joined;
++      }
++      return {...analysisDraft(data, text, mode, context?.kind === 'chunk' ? {knownCollections: context.knownCollections, knownVariables: context.knownVariables, knownNodes: context.knownNodes, knownEvents: context.knownEvents, evidenceSource: context.evidenceSource} : {}), request_count: 0, recovered: true};
+@@ -367 +427 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      C.assert(text.length <= 200000, '单次分析最多 20 万字符，请分篇整理');
++      C.assert(text.length <= 1000000, '单次分析最多 100 万字符，请分篇整理');
+@@ -373,2 +433,48 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      const invoke = async (prompt, value, context = {kind: 'full'}) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算（' + size(messages) + '/' + budget + '），请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true, onRequest: () => options.onRequest?.({messages: C.clone(messages), kind: context.kind, part: value.part, parts: value.parts}), onResponse: response => { alive(); return options.onResponse?.({...response, original: value.original || text, mode, part: value.part || 0, parts: value.parts || 1, ...context}); }}); alive(); return result; };
+-      if (size(request(system, payload(text))) <= budget) {
++      const invoke = async (prompt, value, context = {kind: 'full'}) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算（' + size(messages) + '/' + budget + '），请提高 API 输入预算'); attempts++; const result = await this.call(profile, messages, {max_tokens: context.kind === 'plan' ? 4096 : profile.analysis_output || 16384, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true, onRequest: () => options.onRequest?.({messages: C.clone(messages), kind: context.kind, part: value.part, parts: value.parts}), onResponse: response => { alive(); return options.onResponse?.({...response, original: value.original || text, mode, part: value.part || 0, parts: value.parts || 1, ...context}); }}); alive(); return result; };
++      let attempts = 0;
++      const splitText = (source, cap) => {
++        const out = []; let at = 0;
++        while (at < source.length) {
++          let end = Math.min(source.length, at + cap);
++          if (end < source.length) {
++            const piece = source.slice(at, end), boundary = Math.max(piece.lastIndexOf('\n'), piece.lastIndexOf('。'), piece.lastIndexOf('！'), piece.lastIndexOf('？')) + 1;
++            if (boundary > cap / 2) end = at + boundary;
++            if (/[\uD800-\uDBFF]/.test(source[end - 1])) end--;
++          }
++          C.assert(end > at, '无法继续分段，请提高输入预算'); out.push(source.slice(at, end)); at = end;
++        }
++        return out;
++      };
++      const planned = profile.auto_partition === true;
++      const target = Math.min(8000, Math.max(500, Number(profile.analysis_chunk_chars) || 3000));
++      const planWarnings = [];
++      let chunks = [], initialDepth = 0;
++      if (planned) {
++        const planCapacity = Math.floor((budget - size(request(profile.partition_prompt?.trim() || PROMPTS.partition, {operation: 'partition', target_chars: target, paragraphs: [], preferences: wish})) - 100) * .4);
++        C.assert(planCapacity >= 64, '分段规划提示词占满字符预算，请缩短提示词或提高预算');
++        const paragraphs = splitText(text, Math.min(target, 1500, planCapacity)).map((text, i) => ({id: 'p' + (i + 1), text}));
++        const prompt = profile.partition_prompt?.trim() || PROMPTS.partition;
++        let at = 0, window = 0;
++        while (at < paragraphs.length) {
++          const current = [];
++          while (at + current.length < paragraphs.length && size(request(prompt, {operation: 'partition', target_chars: target, paragraphs: [...current, paragraphs[at + current.length]], preferences: wish})) <= budget) current.push(paragraphs[at + current.length]);
++          C.assert(current.length, '分段规划提示词占满字符预算，请缩短提示词或提高预算');
++          options.onProgress?.({phase: '规划分段', done: window, total: window + 1});
++          let local;
++          try {
++            const result = await invoke(prompt, {operation: 'partition', target_chars: target, paragraphs: current, preferences: wish}, {kind: 'plan'});
++            C.assert(result.complete === true && Array.isArray(result.sections) && result.sections.length && result.sections.length <= current.length, '分段规划不完整');
++            let previous = -1; local = [];
++            for (const section of result.sections) {
++              const end = current.findIndex(x => x.id === section.end);
++              C.assert(end > previous, '分段规划边界无效或重复'); local.push(current.slice(previous + 1, end + 1).map(x => x.text).join('')); previous = end;
++            }
++            C.assert(previous === current.length - 1, '分段规划遗漏末尾原文');
++          } catch (error) {
++            alive(); if (error.code === 'BSE_API_CANCELLED' || error.code === 'BSE_API_TIMEOUT') throw error;
++            local = [current.map(x => x.text).join('')]; planWarnings.push('第' + (window + 1) + '轮分段规划未通过，已按原文边界本地分段：' + error.message);
++          }
++          chunks.push(...local.flatMap(piece => splitText(piece, target))); at += current.length; window++;
++        }
++        C.assert(chunks.join('') === text, '分段未完整保留原文');
++      } else if (size(request(system, payload(text))) <= budget) {
+@@ -376 +482,2 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-        const result = analysisDraft(await invoke(system, payload(text)), text, mode); result.request_count = 1; return result;
++        try { const result = analysisDraft(await invoke(system, payload(text)), text, mode); result.request_count = attempts; return result; }
++        catch (error) { if (error.code !== 'BSE_OUTPUT_TRUNCATED' || text.length < 400) throw error; initialDepth = 1; planWarnings.push('全文输出截断，自动缩小分段重新分析。'); }
+@@ -379,16 +486,8 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      C.assert(capacity >= 256, '提示词占用过多输入预算，请提高预算或缩短提示词');
+-      const chunks = []; let offset = 0;
+-      while (offset < text.length) {
+-        let end = Math.min(text.length, offset + capacity);
+-        if (end < text.length) {
+-          const part = text.slice(offset, end); const boundary = Math.max(part.lastIndexOf('\n'), part.lastIndexOf('。'), part.lastIndexOf('！'), part.lastIndexOf('？')) + 1;
+-          if (boundary > capacity / 2) end = offset + boundary;
+-          if (/[\uD800-\uDBFF]/.test(text[end - 1])) end--;
+-        }
+-        while (size(request(system, {...payload(text.slice(offset, end)), max_nodes: 4, part: 32, parts: 32})) > budget) {
+-          end = offset + Math.floor((end - offset) * .8);
+-          C.assert(end > offset, '提示词占满了输入预算，请提高预算');
+-          if (/[\uD800-\uDBFF]/.test(text[end - 1])) end--;
+-        }
+-        chunks.push(text.slice(offset, end)); offset = end;
+-        C.assert(chunks.length < 32 || offset === text.length, '分块数量超过 32，请提高 API 输入字符预算或分篇分析');
++      C.assert(capacity >= 128, '提示词占用过多输入预算，请提高预算或缩短提示词');
++      if (!chunks.length) chunks = splitText(text, Math.min(capacity, target));
++      else chunks = chunks.flatMap(piece => splitText(piece, Math.min(capacity, target)));
++      C.assert(chunks.length <= 512, '分段数量超过512，请提高单段字数或分篇分析');
++      if (chunks.length === 1 && planned) {
++        options.onProgress?.({phase: '分析第1段', done: 0, total: 1});
++        try { const result = analysisDraft(await invoke(system, payload(chunks[0])), text, mode); result.request_count = attempts; result.segment_count = 1; result.planned = true; result.warnings.push(...planWarnings); return result; }
++        catch (error) { if (error.code !== 'BSE_OUTPUT_TRUNCATED' || text.length < 400) throw error; chunks = splitText(text, Math.ceil(text.length / 2)); initialDepth = 1; planWarnings.push('单段输出截断，自动缩小分段重新分析。'); }
+@@ -396,2 +495,2 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      C.assert(chunks.length <= 32, '分块数量超过 32，请提高 API 输入字符预算或分篇分析');
+-      const nodes = [], parts = [], warnings = [], collections = [], packages = [], variables = [];
++      const depths = chunks.map(() => initialDepth);
++      const nodes = [], parts = [], warnings = [...planWarnings], collections = [], packages = [], variables = [], events = [];
+@@ -399 +498 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-        const chunkPayload = () => ({...payload(chunks[i]), known_results: collections, known_variables: variables, known_nodes: Object.fromEntries(nodes.map(({id, title}) => [id, title])), max_nodes: 4, part: i + 1, parts: chunks.length});
++        const chunkPayload = () => ({...payload(chunks[i]), known_results: collections, known_variables: variables, known_events: events, known_nodes: Object.fromEntries(nodes.map(n => [n.id, n.title.slice(0, 24)])), max_nodes: Math.min(24, Math.max(4, Math.ceil(chunks[i].length / 400))), part: i + 1, parts: chunks.length});
+@@ -405,2 +504,2 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-          chunks.splice(i, 1, piece.slice(0, cut), piece.slice(cut));
+-          C.assert(chunks.length <= 32, '分块数量超过32，请提高API输入字符预算或分篇分析');
++          chunks.splice(i, 1, piece.slice(0, cut), piece.slice(cut)); depths.splice(i, 1, depths[i], depths[i]);
++          C.assert(chunks.length <= 512, '分块数量超过512，请提高API输入字符预算或分篇分析');
+@@ -409,2 +508,10 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-        const context = {kind: 'chunk', knownCollections: C.clone(collections), knownVariables: C.clone(variables), knownNodes: C.clone(nodes), evidenceSource: text};
+-        const raw = await invoke(system, chunkPayload(), context);
++        const context = {kind: 'chunk', knownCollections: C.clone(collections), knownVariables: C.clone(variables), knownNodes: nodes.map(({id, title, kind, suggested}) => ({id, title, kind, suggested, guidance: '既有节点索引', detail: '', routes: [], effects: []})), knownEvents: C.clone(events), evidenceSource: text};
++        let raw;
++        try { raw = await invoke(system, chunkPayload(), context); }
++        catch (error) {
++          if (error.code !== 'BSE_OUTPUT_TRUNCATED' || depths[i] >= 3 || chunks[i].length < 400) throw error;
++          const halves = splitText(chunks[i], Math.ceil(chunks[i].length / 2));
++          const depth = depths[i] + 1; chunks.splice(i, 1, ...halves); depths.splice(i, 1, ...halves.map(() => depth));
++          C.assert(chunks.length <= 512, '截断重分段超过512段，请分篇分析');
++          warnings.push('第' + (i + 1) + '段输出截断，缩小后重试（第' + depth + '/3次）。'); i--; continue;
++        }
+@@ -415,0 +523 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
++        events.splice(0, events.length, ...draft.project.events.map(e => ({...e, condition: remapCondition(e.condition), scope: e.scope.kind === 'nodes' ? {kind: 'nodes', node_ids: e.scope.node_ids.map(k => map.get(k) || k)} : e.scope})));
+@@ -420 +528 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-        C.assert(nodes.length <= 256, '节点超过 256，请减少每块的细分程度');
++        C.assert(nodes.length <= 1024, '节点超过 1024，请减少每块的细分程度');
+@@ -423,11 +531,35 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      let summary;
+-      for (const limit of [160, 80, 32, 0]) {
+-        const trim = value => String(value || '').slice(0, limit);
+-        summary = {mode, preferences: wish, collections, packages, variables, nodes: nodes.map(n => ({id: n.id, title: n.title.slice(0, 40), kind: n.kind, suggested: n.suggested, guidance: trim(n.guidance),
+-          ...(n.completion_criteria ? {completion_criteria: n.completion_criteria, completion_evidence: n.completion_evidence} : {}), ...(n.completion_exclusions.length ? {completion_exclusions: n.completion_exclusions} : {}), entry_condition: n.entry_condition, entry_condition_evidence: n.entry_condition_evidence, ...(n.result_ids.length ? {result_ids: n.result_ids} : {}), routes: n.routes})),
+-          parts: parts.map(p => ({title: p.title.slice(0, 40), synopsis: trim(p.synopsis), ...(p.uncertainties.length ? {uncertainties: p.uncertainties} : {}), foreshadowing: p.foreshadowing.map(f => ({...f, hint: trim(f.hint), payoff: trim(f.payoff)})), endings: p.endings.map(e => ({...e, summary: trim(e.summary)}))}))};
+-        if (size(request(merge, summary)) <= budget) break;
+-      }
+-      options.onProgress?.({phase: '整合走向、结局与伏笔', done: chunks.length, total: chunks.length + 1});
+-      const merged = await invoke(merge, summary, {kind: 'merge', nodes: C.clone(nodes), collections: C.clone(collections), packages: C.clone(packages), variables: C.clone(variables)});
+-      const result = analysisDraft(joinMerge(merged, nodes, collections, packages, variables), text, mode);
++      const reports = []; let mergeDone = 0;
++      const mergeGroup = async (group, depth = 0) => {
++        let summary;
++        for (const limit of [160, 80, 32, 0]) {
++          const trim = value => String(value || '').slice(0, limit);
++          summary = {mode, preferences: wish, collections, packages, variables, events, ...(group.length !== nodes.length ? {external_node_ids: nodes.filter(n => !group.some(g => g.id === n.id)).map(n => n.id)} : {}), nodes: group.map(n => ({id: n.id, title: n.title.slice(0, 40), kind: n.kind, suggested: n.suggested, guidance: trim(n.guidance),
++            ...(n.completion_criteria ? {completion_criteria: n.completion_criteria, completion_evidence: n.completion_evidence} : {}), ...(n.completion_exclusions.length ? {completion_exclusions: n.completion_exclusions} : {}), entry_condition: n.entry_condition, entry_condition_evidence: n.entry_condition_evidence, ...(n.numeric_effects?.length ? {numeric_effects: n.numeric_effects} : {}), ...(n.result_ids.length ? {result_ids: n.result_ids} : {}), routes: n.routes})),
++            parts: parts.map(p => ({title: p.title.slice(0, 40), synopsis: trim(p.synopsis), ...(p.uncertainties.length ? {uncertainties: p.uncertainties} : {}), foreshadowing: p.foreshadowing.map(f => ({...f, hint: trim(f.hint), payoff: trim(f.payoff)})), endings: p.endings.map(e => ({...e, summary: trim(e.summary)}))}))};
++          if (size(request(merge, summary)) <= budget) break;
++        }
++        if (size(request(merge, summary)) > budget) {
++          summary = {mode, preferences: wish, local_rules_preserved: true, nodes: group.map(n => ({id: n.id, title: n.title.slice(0, 24), kind: n.kind, routes: n.routes.map(r => ({target: r.target, label: r.label}))})),
++            ...(group.length !== nodes.length ? {external_node_ids: nodes.filter(n => !group.some(g => g.id === n.id)).map(n => n.id)} : {}),
++            result_index: collections.map(c => ({id: c.id, title: c.title})), variable_index: variables.map(v => ({id: v.id, title: v.title})), event_index: events.map(e => ({id: e.id, title: e.title})), parts: parts.map(p => ({title: p.title, synopsis: p.synopsis}))};
++          warnings.push('整合使用精简剧情索引；完整条件、数值规则和原文依据保留在本地，不由模型改写。');
++        }
++        options.onProgress?.({phase: '整合走向、结局与伏笔', done: mergeDone, total: mergeDone + 1});
++        try {
++          const overBudget = size(request(merge, summary)) > budget;
++          if (overBudget) throw Object.assign(new Error('整合摘要超过字符预算'), {code: 'BSE_MERGE_BUDGET'});
++          const merged = await invoke(merge, summary, {kind: 'merge', nodes: C.clone(nodes), merge_node_ids: group.map(n => n.id), partial_merge: group.length !== nodes.length, collections: C.clone(collections), packages: C.clone(packages), variables: C.clone(variables), events: C.clone(events)});
++          const joined = joinMerge(merged, group, collections, packages, variables, events), updated = new Map(joined.nodes.map(n => [n.id, n]));
++          nodes.splice(0, nodes.length, ...nodes.map(n => updated.get(n.id) || n));
++          collections.splice(0, collections.length, ...joined.collections); packages.splice(0, packages.length, ...joined.packages);
++          reports.push(joined); mergeDone++;
++        } catch (error) {
++          if (!['BSE_OUTPUT_TRUNCATED', 'BSE_MERGE_BUDGET'].includes(error.code) || group.length < 2 || depth >= 3) throw error;
++          warnings.push('整合过长，拆成两组重试（第' + (depth + 1) + '/3次），已有分段分析保留。');
++          const half = Math.ceil(group.length / 2); await mergeGroup(group.slice(0, half), depth + 1); await mergeGroup(group.slice(half), depth + 1);
++        }
++      };
++      await mergeGroup(nodes.slice());
++      const analysis = {synopsis: reports.map(r => r.analysis?.synopsis || '').filter(Boolean).join('\n')};
++      for (const field of ['branches', 'endings', 'foreshadowing', 'uncertainties']) analysis[field] = reports.flatMap(r => r.analysis?.[field] || []);
++      const result = analysisDraft({title: reports[0]?.title || '分析后的剧本', premise: reports[0]?.premise || '', start_node_id: reports[0]?.start_node_id || nodes[0].id, nodes, collections, packages, variables, events, analysis}, text, mode);
+@@ -435 +567 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      result.warnings = [...new Set([...warnings, ...result.warnings, '全文采用分块分析后整合，请核对跨段连接和自动核验规则。'])]; result.request_count = chunks.length + 1; return result;
++      result.warnings = [...new Set([...warnings, ...result.warnings, '全文采用分块分析后整合，请核对跨段连接和自动核验规则。'])]; result.request_count = attempts; result.segment_count = chunks.length; result.planned = planned; return result;
+@@ -438 +570 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-  function joinMerge(merged, nodes, collections, packages = [], variables = []) {
++  function joinMerge(merged, nodes, collections, packages = [], variables = [], events = []) {
+@@ -453 +585 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      return {...preserveRules(original, n, ['entry_condition']), routes};
++      return {...preserveRules(original, n, ['entry_condition']), numeric_effects: C.clone(original.numeric_effects || []), routes};
+@@ -469 +601 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-    return {...merged, collections: definitions('collections', collections, ['requires']), packages: definitions('packages', packages, ['condition', 'continue_condition']), variables: definitions('variables', variables, []), nodes: joined};
++    return {...merged, collections: definitions('collections', collections, ['requires']), packages: definitions('packages', packages, ['condition', 'continue_condition']), variables: definitions('variables', variables, []), events: C.clone(events), nodes: joined};
+@@ -471 +603 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS, LAST_PROMPTS, V140_PROMPTS};
++  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS, LAST_PROMPTS, V140_PROMPTS, V141_PROMPTS};
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js"
+index f644b4a..87a2e00 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/core.js"
+@@ -146,0 +147 @@
++      if (e.max_occurrences != null) assert(Number.isSafeInteger(e.max_occurrences) && e.max_occurrences > 0, '事件次数上限必须为正整数');
+@@ -372,0 +374 @@
++    if (event.max_occurrences != null && (s.event_counts[eventId] || 0) >= event.max_occurrences) return false;
+@@ -398,0 +401 @@
++      if (e.max_occurrences != null && (s.event_counts[e.id] || 0) >= e.max_occurrences) return false;
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+index 80b0ddf..beb26bc 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+@@ -8 +8 @@
+-    profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
++    profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 64000, max_output: 1024, segment_output: 16384, analysis_output: 16384, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, partition_prompt: API.PROMPTS.partition, auto_partition: true, analysis_chunk_chars: 3000, json_mode: true, no_thinking: false},
+@@ -35 +35 @@
+-        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
++        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+@@ -36,0 +37 @@
++      for (const [key, old, value] of [['max_input_chars', 16000, 64000], ['analysis_output', 8192, 16384], ['segment_output', 4096, 16384]]) if (saved.profile?.[key] === old) this.settings.profile[key] = value;
+@@ -453 +454,4 @@
+-        if (JSON.stringify(reply).length > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'knownNodes', 'knownCollections', 'knownVariables', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
++        if (reply.original === run.original) { delete reply.original; reply.original_from_run = true; }
++        if (reply.evidenceSource === run.original) { delete reply.evidenceSource; reply.evidence_from_run = true; }
++        const contextSize = value => JSON.stringify({...value, text: ''}).length;
++        if (run.replies.reduce((n, x) => n + contextSize(x), 0) + contextSize(reply) > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'knownNodes', 'knownCollections', 'knownVariables', 'knownEvents', 'events', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
+@@ -499 +503,2 @@
+-      const reply = replyId ? this.rawAnalysis?.replies.find(x => x.id === replyId) : null;
++      const stored = replyId ? this.rawAnalysis?.replies.find(x => x.id === replyId) : null;
++      const reply = stored ? {...stored, original: stored.original_from_run ? this.rawAnalysis.original : stored.original, evidenceSource: stored.evidence_from_run ? this.rawAnalysis.original : stored.evidenceSource} : null;
+@@ -506,0 +512 @@
++      if (reply?.partial_merge) { result.is_partial = true; result.warnings.push('仅恢复一组整合，其余节点保留分段草稿，跨组关系仍需核对。'); }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+index f9da276..4a74e25 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+@@ -26 +26 @@
+-    .graph-viewport{max-width:100%;max-height:480px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#0c1320;overscroll-behavior:contain}.graph-viewport svg{display:block;max-width:none}.graph-node{cursor:pointer}.graph-node:focus rect{stroke:#e7ecf6;stroke-width:4}.subnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.subnav .active{border-color:var(--accent);color:var(--accent)}.package-nodes{max-height:240px;overflow:auto}.package-nodes label{margin:0}.graph-detail{overflow-wrap:anywhere}
++    .graph-viewport{max-width:100%;max-height:480px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#0c1320;overscroll-behavior:contain}.graph-viewport svg{display:block;max-width:none}.graph-node{cursor:pointer}.graph-node:focus rect{stroke:#e7ecf6;stroke-width:4}.section-nav{position:sticky;top:-1px;z-index:3;display:flex;gap:6px;overflow:auto;flex-wrap:nowrap;padding:8px;background:#101827f5;border:1px solid var(--line);border-radius:12px;margin-bottom:14px;scrollbar-width:thin}.section-nav button{flex:0 0 auto;padding:7px 12px}.section-target{scroll-margin-top:76px}.compact-note{border-left:3px solid var(--accent);padding:8px 12px;background:#20352d}.analysis-meter{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px}.subnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.subnav .active{border-color:var(--accent);color:var(--accent)}.package-nodes{max-height:240px;overflow:auto}.package-nodes label{margin:0}.graph-detail{overflow-wrap:anywhere}
+@@ -32 +32 @@
+-    constructor(engine) { this.e = engine; this.doc = engine.host.doc(); this.win = this.doc.defaultView; this.tab = 'run'; this.nodeTab = 'nodes'; this.recordsTab = 'progress'; this.opened = false; this.unlocked = false; this.runUnlocked = false; this.recordUnlocked = false; this.spoilerPrompt = false; this.privacyProject = ''; this.forms = {}; this.details = {}; this.search = {}; this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.graphSelected = ''; this.variableId = ''; this.resultId = ''; this.quickMenu = ''; this.listPage = 0; this.bookProjects = []; this.unsub = null; }
++    constructor(engine) { this.e = engine; this.doc = engine.host.doc(); this.win = this.doc.defaultView; this.tab = 'run'; this.nodeTab = 'nodes'; this.recordsTab = 'progress'; this.sectionPositions = {}; this.opened = false; this.unlocked = false; this.runUnlocked = false; this.recordUnlocked = false; this.spoilerPrompt = false; this.privacyProject = ''; this.forms = {}; this.details = {}; this.search = {}; this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.graphSelected = ''; this.variableId = ''; this.resultId = ''; this.quickMenu = ''; this.listPage = 0; this.bookProjects = []; this.unsub = null; }
+@@ -43,0 +44 @@
++      this.shadow.addEventListener('input', ev => { if (ev.target.name === 'analysis_text') { const counter = this.shadow.querySelector('[data-analysis-count]'); if (counter) counter.textContent = '原文：' + ev.target.value.length.toLocaleString() + ' 字符'; } });
+@@ -45,0 +47 @@
++        if (name === 'analysis_text') { const count = this.shadow.querySelector('[data-analysis-count]'); if (count) count.textContent = '原文：' + ev.target.value.length.toLocaleString() + ' 字符'; }
+@@ -252,0 +255 @@
++      this.organizeSections();
+@@ -259,0 +263,14 @@
++    organizeSections() {
++      if (!['analysis', 'data', 'api', 'records'].includes(this.tab)) return;
++      const main = this.shadow.querySelector('main'), form = main.querySelector('form'), parent = form || main;
++      if (this.tab === 'analysis') { const recovery = parent.querySelector('[name="analysis_response"]')?.closest('details'); if (recovery) { const box = this.doc.createElement('div'); box.className = 'card recovery-section'; box.innerHTML = '<h2>恢复后台结果</h2>'; box.append(recovery); parent.append(box); } }
++      const sections = [...parent.children].filter(el => el.matches('.card, details') && !el.classList.contains('error'));
++      if (sections.length < 2) return;
++      const nav = this.doc.createElement('div'); nav.className = 'section-nav'; nav.setAttribute('role', 'navigation'); nav.setAttribute('aria-label', '本页功能导航');
++      nav.innerHTML = sections.map((el, i) => {
++        el.dataset.section = String(i); el.classList.add('section-target');
++        const title = el.querySelector('h2, h3, summary')?.textContent || '功能' + (i + 1);
++        return button(title.replace('（可选模型功能）', '').replace('实际发送给辅助 API 的', '').replace('长文本分析为新剧本', '开始分析'), 'section-jump', `data-section="${i}"`);
++      }).join('');
++      main.prepend(nav);
++    }
+@@ -329 +346 @@
+-      return guide + `<form data-form="event:${escape(ev.id)}"><div class="card row">${button('新建事件规则', 'event-new')}${button(ev.repeat_policy === 'once' && this.e.state.event_counts[ev.id] ? '本规则已确认发生' : '手动确认发生并应用变化', 'event-manual', ev.repeat_policy === 'once' && this.e.state.event_counts[ev.id] ? 'disabled' : '')}${button('删除规则', 'event-delete', 'class="danger"')}<span class="muted">手动确认直接执行本条规则，不调用模型。</span></div><div class="split">${this.list(p.events, 'event', ev.id, '事件规则')}<div class="card"><h2>编辑事件规则</h2>${input('规则名称', 'title', ev.title)}${area('需要识别的行为或结果', 'description', ev.description, 4)}${area('什么情况下算已经发生', 'completion_criteria', ev.completion_criteria, 4)}${area('不算发生的情况（每行一条）', 'exclusions', ev.exclusions.join('\n'), 3)}<div class="grid">${select('如何确认发生', 'detection', [['api', '辅助 API 分析正文'], ['manual', '仅手动确认']], ev.detection)}${select('同一规则可以执行几次', 'repeat_policy', [['once', '整个剧本一次'], ['once_per_accepted_turn', '每轮实际发生可重复，同一回复一次']], ev.repeat_policy)}</div>${checkbox('启用此规则', 'enabled', ev.enabled)}${checkbox('辅助 API 完成判断且证据通过后自动应用变化', 'auto_settle', ev.auto_settle)}<h3>发生后的变化</h3><p class="event-effects-summary">${escape(changes || '尚未配置变化，请从下面添加。')}</p><div class="grid">${input('要记录的收集项编号（可空）', 'collect_id', '')}${select('要增加的变量', 'effect_variable', [['', '不选择'], ...p.variables.filter(v => v.type === 'number').map(v => [v.id, v.title || v.id])], '')}${input('变化量（减分可填负数）', 'effect_delta', 1, 'number')}${select('变化方式', 'effect_operation', [['add', '增加 / 减少'], ['set', '设置为指定值']], 'add')}${input('此行为最多加到（可空）', 'reward_max', '', 'number')}${input('此行为最低减到（可空）', 'reward_min', '', 'number')}</div>${button('加入发生后的变化', 'append-effect')}<p class="muted">先填写并加入变化，再保存规则。数值可在“数据 → 数值载体”创建、查看归属和当前值；此行为的限制独立于载体总上限。收集记录可作为分支的解锁条件。</p><details><summary>高级：效果 JSON</summary>${area('完成效果 JSON', 'effects', json(ev.effects), 5)}</details><details><summary>高级：适用范围、前置条件与身份</summary>${input('主体 ID（可空；玩家可写 player）', 'actor_id', ev.actor_id || '')}${input('对象 ID（可空）', 'recipient_id', ev.recipient_id || '')}${input('适用节点 ID（逗号分隔；留空表示整个剧本）', 'scope_nodes', ev.scope.kind === 'nodes' ? ev.scope.node_ids.join(',') : '')}${this.conditionHelper('event')}${area('事件前置条件 JSON', 'condition', json(ev.condition ?? true), 4)}<p>稳定事件 ID：<code>${escape(ev.id)}</code></p></details><div class="actions">${button('保存事件规则', 'event-save', 'class="primary"')}${button('查看识别记录', 'event-records')}</div></div></div></form>`;
++      return guide + `<form data-form="event:${escape(ev.id)}"><div class="card row">${button('新建事件规则', 'event-new')}${button(ev.repeat_policy === 'once' && this.e.state.event_counts[ev.id] ? '本规则已确认发生' : '手动确认发生并应用变化', 'event-manual', ev.repeat_policy === 'once' && this.e.state.event_counts[ev.id] ? 'disabled' : '')}${button('删除规则', 'event-delete', 'class="danger"')}<span class="muted">手动确认直接执行本条规则，不调用模型。</span></div><div class="split">${this.list(p.events, 'event', ev.id, '事件规则')}<div class="card"><h2>编辑事件规则</h2>${input('规则名称', 'title', ev.title)}${area('需要识别的行为或结果', 'description', ev.description, 4)}${area('什么情况下算已经发生', 'completion_criteria', ev.completion_criteria, 4)}${area('不算发生的情况（每行一条）', 'exclusions', ev.exclusions.join('\n'), 3)}<div class="grid">${select('如何确认发生', 'detection', [['api', '辅助 API 分析正文'], ['manual', '仅手动确认']], ev.detection)}${select('同一规则可以执行几次', 'repeat_policy', [['once', '整个剧本一次'], ['once_per_accepted_turn', '每轮实际发生可重复，同一回复一次']], ev.repeat_policy)}</div>${input('最多实际发生次数（可空；可重复事件的总次数上限）', 'max_occurrences', ev.max_occurrences ?? '', 'number', 'min="1"')}${checkbox('启用此规则', 'enabled', ev.enabled)}${checkbox('辅助 API 完成判断且证据通过后自动应用变化', 'auto_settle', ev.auto_settle)}<h3>发生后的变化</h3><p class="event-effects-summary">${escape(changes || '尚未配置变化，请从下面添加。')}</p><div class="grid">${input('要记录的收集项编号（可空）', 'collect_id', '')}${select('要增加的变量', 'effect_variable', [['', '不选择'], ...p.variables.filter(v => v.type === 'number').map(v => [v.id, v.title || v.id])], '')}${input('变化量（减分可填负数）', 'effect_delta', 1, 'number')}${select('变化方式', 'effect_operation', [['add', '增加 / 减少'], ['set', '设置为指定值']], 'add')}${input('此行为最多加到（可空）', 'reward_max', '', 'number')}${input('此行为最低减到（可空）', 'reward_min', '', 'number')}</div>${button('加入发生后的变化', 'append-effect')}<p class="muted">先填写并加入变化，再保存规则。数值可在“数据 → 数值载体”创建、查看归属和当前值；此行为的限制独立于载体总上限。收集记录可作为分支的解锁条件。</p><details><summary>高级：效果 JSON</summary>${area('完成效果 JSON', 'effects', json(ev.effects), 5)}</details><details><summary>高级：适用范围、前置条件与身份</summary>${input('主体 ID（可空；玩家可写 player）', 'actor_id', ev.actor_id || '')}${input('对象 ID（可空）', 'recipient_id', ev.recipient_id || '')}${input('适用节点 ID（逗号分隔；留空表示整个剧本）', 'scope_nodes', ev.scope.kind === 'nodes' ? ev.scope.node_ids.join(',') : '')}${this.conditionHelper('event')}${area('事件前置条件 JSON', 'condition', json(ev.condition ?? true), 4)}<p>稳定事件 ID：<code>${escape(ev.id)}</code></p></details><div class="actions">${button('保存事件规则', 'event-save', 'class="primary"')}${button('查看识别记录', 'event-records')}</div></div></div></form>`;
+@@ -350,0 +368 @@
++      const promptField = (label, name, value, rows) => `<details class="api-prompt" data-prompt="${name}"><summary>${escape(label)}</summary>${area(label, name, value, rows)}</details>`;
+@@ -353,2 +371,2 @@
+-      <div class="card"><h2>判断与预算</h2>${checkbox('生成结束后自动核验独立行为事件', 'auto_events', s.auto_events)}${checkbox('用户接话后自动检查上一条选中的回复', 'auto_detect', s.auto_detect)}${checkbox('请求 JSON 输出（服务不支持时可关闭）', 'json_mode', a.json_mode)}${checkbox('发送 enable_thinking=false（仅兼容服务开启）', 'no_thinking', a.no_thinking)}<div class="grid">${input('每批候选事件数', 'batch_size', s.batch_size, 'number', 'min="1" max="32"')}${input('每次最多请求批数', 'max_batches', s.max_batches, 'number', 'min="1" max="64"')}${input('快速识别/模型列表超时（秒）', 'timeout_sec', a.timeout_sec, 'number', 'min="5" max="300"')}${input('整理/分析超时（秒）', 'analysis_timeout_sec', a.analysis_timeout_sec, 'number', 'min="5" max="1800"')}${input('最大输入字符数（不是 Token）', 'max_input_chars', a.max_input_chars, 'number', 'min="1000" max="200000"')}${input('识别最大输出 Token', 'max_output', a.max_output, 'number', 'min="128" max="16000"')}${input('整理最大输出 Token', 'segment_output', a.segment_output, 'number', 'min="512" max="32000"')}${input('生成前最多等待判断（毫秒，0 为异步）', 'wait_ms', s.wait_ms, 'number', 'min="0" max="15000"')}</div><p class="muted">候选过多按批检查，达到本轮批数上限后会显示未检查数量，由你决定继续。输入超限会明确报错，不把截断文本当作全面检查结果。自动检查需启用剧本。</p></div>
+-      <div class="card"><h2>实际发送给辅助 API 的系统提示词</h2><p class="muted">下面的文本作为对应请求的 system 消息发送，可直接编辑，点击“保存 API 设置”生效。留空使用默认值。JSON 字段和证据格式仍需保持兼容。</p>${area('玩家行动选择识别提示词', 'choice_prompt', a.choice_prompt || prompts.choice, 8)}${area('阶段进展与完成核验提示词', 'stage_prompt', a.stage_prompt || prompts.stage, 10)}${area('事件核验系统提示词', 'detect_prompt', a.detect_prompt || prompts.detect, 8)}${area('基础文本拆分系统提示词', 'segment_prompt', a.segment_prompt || prompts.segment, 8)}${area('剧本分析系统提示词', 'analysis_prompt', a.analysis_prompt || prompts.analysis, 12)}${area('跨段合并系统提示词', 'analysis_merge_prompt', a.analysis_merge_prompt || prompts.merge, 10)}${input('分析最大输出 Token', 'analysis_output', a.analysis_output, 'number', 'min="512" max="32000"')}${button('恢复默认提示词（仍需保存）', 'prompts-reset')}<details><summary>每次请求附带什么数据？</summary><p>行动选择：本次玩家输入和当前可选分支；阶段核验：一轮输入与回复、上一份短摘要、至多8条关键事实和相关结果标记。事件核验：当前对话 dialogue、已确认状态 facts、候选事件 candidates。基础拆分：原文 original 与要求 preferences。剧本分析：原文 original、要求 preferences、模式 mode；长文本增加分块编号 part / parts。跨段合并：节点摘要 nodes 与各块报告 parts。</p><p>这些数据放在 user 消息中，每次自动填写。连接测试另发固定 user 消息：只输出 JSON：{&quot;ok&quot;:true}。</p></details><div class="row">${button('保存 API 设置', 'api-save', 'class="primary"')}</div></div>
++      <div class="card"><h2>判断与预算</h2><h3>长文分析</h3>${checkbox('开始分析前由模型规划分段', 'auto_partition', a.auto_partition !== false)}${input('每段目标字符数（建议2000～4000）', 'analysis_chunk_chars', a.analysis_chunk_chars || 3000, 'number', 'min="500" max="8000"')}${input('分析最大输出 Token', 'analysis_output', a.analysis_output, 'number', 'min="512" max="65536"')}<p class="muted">单段建议2000～4000字，整篇每批建议2万～10万字。分段和输出预算不足会增加重试请求；请按服务支持的上限设置。</p>${checkbox('生成结束后自动核验独立行为事件', 'auto_events', s.auto_events)}${checkbox('用户接话后自动检查上一条选中的回复', 'auto_detect', s.auto_detect)}${checkbox('请求 JSON 输出（服务不支持时可关闭）', 'json_mode', a.json_mode)}${checkbox('发送 enable_thinking=false（仅兼容服务开启）', 'no_thinking', a.no_thinking)}<div class="grid">${input('每批候选事件数', 'batch_size', s.batch_size, 'number', 'min="1" max="32"')}${input('每次最多请求批数', 'max_batches', s.max_batches, 'number', 'min="1" max="64"')}${input('快速识别/模型列表超时（秒）', 'timeout_sec', a.timeout_sec, 'number', 'min="5" max="300"')}${input('整理/分析超时（秒）', 'analysis_timeout_sec', a.analysis_timeout_sec, 'number', 'min="5" max="1800"')}${input('最大输入字符数（不是 Token）', 'max_input_chars', a.max_input_chars, 'number', 'min="1000" max="1000000"')}${input('识别最大输出 Token', 'max_output', a.max_output, 'number', 'min="128" max="16000"')}${input('整理最大输出 Token', 'segment_output', a.segment_output, 'number', 'min="512" max="65536"')}${input('生成前最多等待判断（毫秒，0 为异步）', 'wait_ms', s.wait_ms, 'number', 'min="0" max="15000"')}</div><p class="muted">候选过多按批检查，达到本轮批数上限后会显示未检查数量，由你决定继续。输入超限会明确报错，不把截断文本当作全面检查结果。自动检查需启用剧本。</p></div>
++      <div class="card"><h2>实际发送给辅助 API 的系统提示词</h2><p class="muted">下面的文本作为对应请求的 system 消息发送，可直接编辑，点击“保存 API 设置”生效。留空使用默认值。JSON 字段和证据格式仍需保持兼容。</p>${promptField('玩家行动选择识别提示词', 'choice_prompt', a.choice_prompt || prompts.choice, 8)}${promptField('阶段进展与完成核验提示词', 'stage_prompt', a.stage_prompt || prompts.stage, 10)}${promptField('事件核验系统提示词', 'detect_prompt', a.detect_prompt || prompts.detect, 8)}${promptField('基础文本拆分系统提示词', 'segment_prompt', a.segment_prompt || prompts.segment, 8)}${promptField('剧本分析系统提示词', 'analysis_prompt', a.analysis_prompt || prompts.analysis, 12)}${promptField('跨段合并系统提示词', 'analysis_merge_prompt', a.analysis_merge_prompt || prompts.merge, 10)}${promptField('分段规划系统提示词', 'partition_prompt', a.partition_prompt || prompts.partition, 5)}${button('恢复默认提示词（仍需保存）', 'prompts-reset')}<details><summary>每次请求附带什么数据？</summary><p>行动选择：本次玩家输入和当前可选分支；阶段核验：一轮输入与回复、上一份短摘要、至多8条关键事实和相关结果标记。事件核验：当前对话 dialogue、已确认状态 facts、候选事件 candidates。基础拆分：原文 original 与要求 preferences。剧本分析：原文 original、要求 preferences、模式 mode；长文本增加分块编号 part / parts。跨段合并：节点摘要 nodes 与各块报告 parts。</p><p>这些数据放在 user 消息中，每次自动填写。连接测试另发固定 user 消息：只输出 JSON：{&quot;ok&quot;:true}。</p></details><div class="row">${button('保存 API 设置', 'api-save', 'class="primary"')}</div></div>
+@@ -363 +381 @@
+-      const promptEditor = `<details class="analysis-prompts"><summary>查看与修改分析提示词</summary><p class="muted">这里与 API 页共用已保存的系统提示词。修改后点击保存，再发起分析；保留 JSON 字段与证据约定。</p>${area('分析系统提示词（system）', 'analysis_prompt', e.settings.profile.analysis_prompt || prompts.analysis, 12)}${area('跨段合并系统提示词（system）', 'analysis_merge_prompt', e.settings.profile.analysis_merge_prompt || prompts.merge, 10)}<div class="row">${button('保存分析提示词', 'analysis-prompts-save', e.busy ? 'disabled' : '')}${button('恢复默认分析提示词', 'analysis-prompts-reset', e.busy ? 'disabled' : '')}${button('预览当前输入与已保存提示词', 'analysis-preview')}</div>${this.analysisPreview ? `<p class="muted">发送前预览：使用已保存的提示词和当前原文、要求。超预算时将分块；各次实际请求见下方记录。</p><pre class="prompt-preview">${escape(json(this.analysisPreview))}</pre>` : ''}<h3>最近一次整理 / 分析的已发请求</h3>${(e.rawAnalysis?.requests || []).map((r, i) => `<details><summary>请求 ${i + 1} · ${escape(r.kind)}${r.part ? ' · ' + r.part + '/' + r.parts : ''}</summary>${r.storage_truncated ? '<p class="warn">本地保留预算已满，此展示不完整。</p>' : ''}<pre class="sent-prompt">${escape(r.text)}</pre></details>`).join('') || '<p class="empty">尚无已发送请求记录</p>'}</details>`;
++      const promptEditor = `<details class="analysis-prompts"><summary>查看与修改分析提示词</summary><p class="muted">这里与 API 页共用已保存的系统提示词。修改后点击保存，再发起分析；保留 JSON 字段与证据约定。</p>${area('分析系统提示词（system）', 'analysis_prompt', e.settings.profile.analysis_prompt || prompts.analysis, 12)}${area('跨段合并系统提示词（system）', 'analysis_merge_prompt', e.settings.profile.analysis_merge_prompt || prompts.merge, 10)}<div class="row">${button('保存分析提示词', 'analysis-prompts-save', e.busy ? 'disabled' : '')}${button('恢复默认分析提示词', 'analysis-prompts-reset', e.busy ? 'disabled' : '')}${button('预览当前输入与已保存提示词', 'analysis-preview')}</div>${this.analysisPreview ? `<p class="muted">发送前预览：使用已保存的提示词和当前原文、要求。实际分析先规划分段；此处为分析正文模板预览，各次规划、分段和整合的真实请求见下方记录。</p><pre class="prompt-preview">${escape(json(this.analysisPreview))}</pre>` : ''}<h3>最近一次整理 / 分析的已发请求</h3>${(e.rawAnalysis?.requests || []).map((r, i) => `<details><summary>请求 ${i + 1} · ${escape(r.kind)}${r.part ? ' · ' + r.part + '/' + r.parts : ''}</summary>${r.storage_truncated ? '<p class="warn">本地保留预算已满，此展示不完整。</p>' : ''}<pre class="sent-prompt">${escape(r.text)}</pre></details>`).join('') || '<p class="empty">尚无已发送请求记录</p>'}</details>`;
+@@ -365 +383 @@
+-      return `<form data-form="analysis">${conversion}<div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。超过单次输入预算时自动分块并额外调用一次 API 整合；单次最多 20 万字符、32 块。</p>${area('需要分析的长文本', 'analysis_text', p.original_text || '', 12)}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}${promptEditor}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>
++      return `<form data-form="analysis">${conversion}<div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。先由模型规划分段，再逐段分析与整合。单段建议2000～4000字，默认约3000字；全文建议每批2万～10万字，最多100万字符、512段。模型实际上下文上限与费用仍由服务决定。</p>${area('需要分析的长文本', 'analysis_text', p.original_text || '', 10)}<div class="analysis-meter"><span data-analysis-count>原文：${(this.forms.analysis?.analysis_text || p.original_text || '').length.toLocaleString()} 字符</span><span>每段目标：${e.settings.profile.analysis_chunk_chars || 3000} 字符</span><span>输出预算：${e.settings.profile.analysis_output || 16384} Token</span></div><p class="compact-note">建议整篇粘贴，不必手动切段。条件密集时将单段调至2000字。输入预算提高不代表输出不会截断。</p>${button('调整分段与输出预算', 'analysis-settings')}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，提取数值载体、增减/设置量、发生标准、重复次数与停止门槛；缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>${promptEditor}
+@@ -399 +417 @@
+-      <div class="card"><h2>整理大段文本（可选模型功能）</h2>${area('剧本原文', 'original_text', p.original_text || '', 10)}${input('整理要求（如按场景分段，保留已有分支）', 'segment_wish', '')}<div class="row">${button('调用辅助 API 整理为草稿', 'segment', e.busy ? 'disabled' : '')}${button('不调用模型，保存原文', 'original-save')}</div><p class="muted">整理产生额外调用。不会直接替换当前剧本，完成后可编辑草稿再应用。</p>${draft ? `<div class="warn">${draft.warnings.map(escape).join('<br>') || '整理完成，请核对节点和原文后应用。'}</div>${area('可编辑的剧本草稿 JSON', 'segment_draft', json(draft.project), 14)}${button('应用此草稿为新剧本', 'segment-apply', 'class="primary"')}` : ''}</div>
++      <details class="basic-segment"><summary>快速整理 / 仅保存原文</summary><p class="muted">快速整理适合少量文本转为基础阶段草稿；完整长文、条件与数值规则请使用“分析”。两者共用校验规则，但快速整理不进行多段规划和走向整合。</p><div class="row">${button('转到完整长文分析', 'open-analysis')}</div>${area('剧本原文', 'original_text', p.original_text || '', 10)}${input('整理要求（如按场景分段，保留已有分支）', 'segment_wish', '')}<div class="row">${button('调用辅助 API 整理为草稿', 'segment', e.busy ? 'disabled' : '')}${button('不调用模型，保存原文', 'original-save')}</div><p class="muted">整理产生额外调用。不会直接替换当前剧本，完成后可编辑草稿再应用。</p>${draft ? `<div class="warn">${draft.warnings.map(escape).join('<br>') || '整理完成，请核对节点和原文后应用。'}</div>${area('可编辑的剧本草稿 JSON', 'segment_draft', json(draft.project), 14)}${button('应用此草稿为新剧本', 'segment-apply', 'class="primary"')}` : ''}</details>
+@@ -410 +428 @@
+-      this.capture(); this.forms.analysis ||= {}; Object.assign(this.forms.analysis, {analysis_saved_id: reply.id, analysis_text: reply.original, analysis_mode: reply.mode, analysis_response: reply.text});
++      this.capture(); this.forms.analysis ||= {}; Object.assign(this.forms.analysis, {analysis_saved_id: reply.id, analysis_text: reply.original_from_run ? this.e.rawAnalysis.original : reply.original, analysis_mode: reply.mode, analysis_response: reply.text});
+@@ -450,0 +469 @@
++      if (action === 'section-jump') { const target = this.shadow.querySelector(`[data-section="${b.dataset.section}"].section-target`); if (target?.matches('details')) target.open = true; const nested = target?.classList.contains('recovery-section') ? target.querySelector(':scope > details') : null; if (nested) nested.open = true; target?.scrollIntoView({block: 'start', behavior: 'instant'}); target?.querySelector('input,textarea,button,summary')?.focus({preventScroll: true}); return; }
+@@ -570 +589 @@
+-          scope: nodeIds.length ? {kind: 'nodes', node_ids: nodeIds} : {kind: 'project'}, detection: v.detection, repeat_policy: v.repeat_policy,
++          scope: nodeIds.length ? {kind: 'nodes', node_ids: nodeIds} : {kind: 'project'}, detection: v.detection, repeat_policy: v.repeat_policy, max_occurrences: v.max_occurrences?.trim() ? Math.floor(number('max_occurrences', 1, 1000000)) : undefined,
+@@ -584,3 +603,3 @@
+-        const profile = {base_url: v.base_url.trim(), model: v.model.trim(), key: v.key.trim(), timeout_sec: number('timeout_sec', 5, 300), analysis_timeout_sec: number('analysis_timeout_sec', 5, 1800), max_input_chars: number('max_input_chars', 1000, 200000),
+-          max_output: Math.floor(number('max_output', 128, 16000)), segment_output: Math.floor(number('segment_output', 512, 32000)), analysis_output: Math.floor(number('analysis_output', 512, 32000)),
+-          choice_prompt: v.choice_prompt.trim(), stage_prompt: v.stage_prompt.trim(), detect_prompt: v.detect_prompt.trim(), segment_prompt: v.segment_prompt.trim(), analysis_prompt: v.analysis_prompt.trim(), analysis_merge_prompt: v.analysis_merge_prompt.trim(), json_mode: v.json_mode, no_thinking: v.no_thinking};
++        const profile = {base_url: v.base_url.trim(), model: v.model.trim(), key: v.key.trim(), timeout_sec: number('timeout_sec', 5, 300), analysis_timeout_sec: number('analysis_timeout_sec', 5, 1800), max_input_chars: number('max_input_chars', 1000, 1000000),
++          max_output: Math.floor(number('max_output', 128, 16000)), segment_output: Math.floor(number('segment_output', 512, 65536)), analysis_output: Math.floor(number('analysis_output', 512, 65536)),
++          auto_partition: v.auto_partition, analysis_chunk_chars: Math.floor(number('analysis_chunk_chars', 500, 8000)), partition_prompt: v.partition_prompt.trim(), choice_prompt: v.choice_prompt.trim(), stage_prompt: v.stage_prompt.trim(), detect_prompt: v.detect_prompt.trim(), segment_prompt: v.segment_prompt.trim(), analysis_prompt: v.analysis_prompt.trim(), analysis_merge_prompt: v.analysis_merge_prompt.trim(), json_mode: v.json_mode, no_thinking: v.no_thinking};
+@@ -591 +610 @@
+-      } else if (action === 'prompts-reset') { const p = e.defaultPrompts(); Object.assign(this.forms.api, {choice_prompt: p.choice, stage_prompt: p.stage, detect_prompt: p.detect, segment_prompt: p.segment, analysis_prompt: p.analysis, analysis_merge_prompt: p.merge}); this.render(false); this.toast('默认提示词已填入，请保存 API 设置'); return; }
++      } else if (action === 'prompts-reset') { const p = e.defaultPrompts(); Object.assign(this.forms.api, {choice_prompt: p.choice, stage_prompt: p.stage, detect_prompt: p.detect, segment_prompt: p.segment, analysis_prompt: p.analysis, analysis_merge_prompt: p.merge, partition_prompt: p.partition}); this.render(false); this.toast('默认提示词已填入，请保存 API 设置'); return; }
+@@ -599 +618 @@
+-      } else if (action === 'open-segment') { this.tab = 'data'; this.render(); this.shadow.querySelector('[name="original_text"]').focus(); return; }
++      } else if (action === 'open-segment') { this.tab = 'data'; this.render(); this.shadow.querySelector('.basic-segment').open = true; this.shadow.querySelector('[name="original_text"]').focus(); return; }
+@@ -600,0 +620 @@
++      else if (action === 'analysis-settings') { this.tab = 'api'; this.render(); this.shadow.querySelector('[name="analysis_chunk_chars"]').scrollIntoView({block: 'center'}); this.shadow.querySelector('[name="analysis_chunk_chars"]').focus({preventScroll: true}); return; }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/api.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/api.test.js"
+index 8e9a2c3..3c68677 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/api.test.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/api.test.js"
+@@ -122 +122 @@ test('长文本自动分块后整合，全部请求遵守字符预算且保留
+-  const draft = await api.analyze({...profile, max_input_chars: 4000, analysis_merge_prompt: '我的跨段合并提示词'}, text, '', {onProgress: p => progress.push(p)});
++  const draft = await api.analyze({...profile, max_input_chars: 4000, analysis_prompt: require('../src/api').V141_PROMPTS.analysis, analysis_merge_prompt: '我的跨段合并提示词'}, text, '', {onProgress: p => progress.push(p)});
+@@ -130 +130 @@ test('分析取消后不启动后续分块', async () => {
+-  await assert.rejects(api.analyze({...profile, max_input_chars: 4000}, '灯光熄灭。'.repeat(3000)), /已取消/); assert.equal(calls, 1);
++  await assert.rejects(api.analyze({...profile, max_input_chars: 4000, analysis_prompt: require('../src/api').V141_PROMPTS.analysis}, '灯光熄灭。'.repeat(3000)), /已取消/); assert.equal(calls, 1);
+@@ -138 +138 @@ test('跨段整合遗漏原节点时拒绝应用', async () => {
+-  await assert.rejects(api.analyze({...profile, max_input_chars: 4000}, '灯光熄灭。'.repeat(3000)), /遗漏或重复/);
++  await assert.rejects(api.analyze({...profile, max_input_chars: 4000, analysis_prompt: require('../src/api').V141_PROMPTS.analysis}, '灯光熄灭。'.repeat(3000)), /遗漏或重复/);
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
+index fd7dd94..81c34c3 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
+@@ -165 +165 @@ async function run() {
+-    const customPrompt = '用户自定义：优先核对证据。\n' + await page.locator('[name="detect_prompt"]').inputValue(); await page.locator('[name="detect_prompt"]').fill(customPrompt);
++    const customPrompt = '用户自定义：优先核对证据。\n' + await page.locator('[name="detect_prompt"]').inputValue(); await page.locator('[data-prompt="detect_prompt"] > summary').click(); await page.locator('[name="detect_prompt"]').fill(customPrompt);
+@@ -257 +257 @@ async function run() {
+-    await tab(phone, 'data'); await phone.locator('[name="original_text"]').fill('酒店骤然停电。\n走廊传来声响。'); await phone.locator('[data-action="segment"]').tap();
++    await tab(phone, 'data'); await phone.locator('.basic-segment > summary').tap(); await phone.locator('[name="original_text"]').fill('酒店骤然停电。\n走廊传来声响。'); await phone.locator('[data-action="segment"]').tap();
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/helpers.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/helpers.js"
+index f515071..c88e8cb 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/helpers.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/helpers.js"
+@@ -5 +5 @@ function fixture() {
+-  const storage = {script: {unrelated: 'keep'}, chats: {chat1: {unrelated: 'keep'}}};
++  const storage = {script: {unrelated: 'keep', branch_story_settings: {profile: {auto_partition: false}}}, chats: {chat1: {unrelated: 'keep'}}};
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.browser.js"
+new file mode 100644
+index 0000000..d17282f
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.browser.js"
+@@ -0,0 +1,50 @@
++'use strict';
++const http = require('node:http'), fs = require('node:fs'), path = require('node:path'), assert = require('node:assert/strict');
++const {chromium} = require('playwright'), {fixture} = require('./helpers');
++const bundle = JSON.parse(fs.readFileSync(path.join(__dirname, '../branch_story_tavern_helper_import.json'))).content;
++const requests = [], errors = [], story = '警觉初始0，范围0到100。实际听见异常增加20，可每轮重复，最多两次。\n' + '调查当前房间，保留现场证据。\n'.repeat(220);
++let truncate = false;
++const server = http.createServer(async (req, res) => {
++ if (req.url === '/plugin.js') { res.setHeader('Content-Type', 'text/javascript'); return res.end(bundle); }
++ if (req.url === '/frame') return res.end('<!doctype html><script src="/plugin.js"></script>');
++ if (req.url === '/v1/chat/completions') {
++  let body = ''; for await (const chunk of req) body += chunk; const request = JSON.parse(body), input = request.messages[1] ? JSON.parse(request.messages[1].content) : {}; requests.push(input); let value, finish = 'stop';
++  if (input.operation === 'partition') value = {sections: [{end: input.paragraphs.at(-1).id}], complete: true};
++  else if (input.original !== undefined) {
++   if (!truncate && input.part === 1) { truncate = true; value = '{"nodes":['; finish = 'length'; }
++   else { const first = input.part === 1; value = {title: '潜行分析', nodes: [{id: 'n', title: '调查现场', detail: input.original, guidance: '调查当前房间', context_variables: ['alert'], routes: []}], ...(first ? {variables: [{id: 'alert', title: '警觉', type: 'number', default: 0, min: 0, max: 100, evidence: '警觉初始0，范围0到100。', bounds_evidence: '警觉初始0，范围0到100。'}], events: [{id: 'noise', title: '异常声响', description: '实际听见异常', completion_criteria: '实际听见异常', evidence: '实际听见异常增加20，可每轮重复，最多两次。', repeat_policy: 'once_per_accepted_turn', repeat_evidence: '可每轮重复', max_occurrences: 2, max_occurrences_evidence: '最多两次', numeric_effects: [{operation: 'add', variable: 'alert', value: 20, evidence: '实际听见异常增加20'}]}]} : {}), analysis: {synopsis: '任务调查'}}; }
++  } else if (input.nodes) value = {title: '潜行任务', nodes: input.nodes.map(n => ({id: n.id, routes: []}))};
++  else value = {results: []};
++  res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({choices: [{finish_reason: finish, message: {content: typeof value === 'string' ? value : JSON.stringify(value)}}]}));
++ }
++ res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#222}iframe{display:none}#send_form{position:fixed;bottom:0;width:100%}textarea{width:100%;height:50px}</style><form id="send_form"><textarea id="send_textarea"></textarea></form><script>const C={clone:x=>JSON.parse(JSON.stringify(x))};const fixture=${fixture.toString().replace('host: new Host(root)', 'host: null')};window.testHost=fixture();delete testHost.storage.script.branch_story_settings;window.TavernHelper=testHost.root;const f=document.createElement('iframe');f.src='/frame';document.body.appendChild(f);</script>`);
++});
++const evaluate = (page, fn, arg) => page.evaluate(({source,arg}) => new Function('e','panel','arg','return ('+source+')(e,panel,arg)')(document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine,document.querySelector('iframe').contentWindow.__branch_story_plugin__.panel,arg), {source: fn.toString(),arg});
++const tab = (page,name) => page.locator(`nav [data-tab="${name}"]`).click();
++async function run() {
++ await new Promise(r => server.listen(0,'127.0.0.1',r)); const base = 'http://127.0.0.1:'+server.address().port, browser = await chromium.launch({headless:true,executablePath:process.env.BSE_CHROMIUM||'/usr/bin/chromium',args:['--no-sandbox']});
++ try {
++  for (const width of [1366,390,320]) {
++   truncate = false; const begin = requests.length, context = await browser.newContext({viewport:{width,height:900},isMobile:width<700,hasTouch:width<700}), page = await context.newPage(); page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept()); await page.goto(base);
++   await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow.__branch_story_plugin__?.engine.chat);
++   await evaluate(page,async e=>e.updateSettings({profile:{base_url:location.origin+'/v1',model:'mock',analysis_chunk_chars:1000}})); await page.locator('.launcher').click();
++   await tab(page,'analysis'); assert((await page.locator('main').innerText()).includes('2000～4000'));
++   await page.locator('[name="analysis_text"]').fill(story); assert((await page.locator('[data-analysis-count]').innerText()).includes(story.length.toLocaleString()));
++   await page.locator('[data-action="analysis-settings"]').click(); assert.equal(await page.locator('[name="max_input_chars"]').inputValue(),'64000'); assert.equal(await page.locator('[name="analysis_output"]').inputValue(),'16384'); assert(await page.locator('[name="auto_partition"]').isChecked());
++   await page.locator('[data-prompt="partition_prompt"] > summary').click(); await page.locator('[name="partition_prompt"]').fill('分段规划，按提供paragraphs返回sections及complete。'); await page.locator('[data-action="api-save"]').first().click();
++   await tab(page,'analysis'); assert.equal(await page.locator('[name="analysis_text"]').inputValue(),story);
++   await page.locator('[data-action="analysis-run"]').click(); await page.waitForFunction(()=>Boolean(document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.analysisDraft));
++   assert.equal(await evaluate(page,e=>e.error),''); const sent = requests.slice(begin); assert.equal(sent[0].operation,'partition'); assert(sent.at(-1).nodes); assert(await page.locator('[data-action="analysis-convert"]').isVisible());
++   assert(await evaluate(page,e=>e.rawAnalysis.replies.some(r=>r.finish_reason==='length')));
++   await page.locator('[data-action="analysis-convert"]').click(); await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title==='潜行任务');
++   const count = requests.length; await evaluate(page,e=>e.manualEvent('noise','m1',{assistant_id:11})); assert.equal(await evaluate(page,e=>e.state.variables.alert),20); await evaluate(page,e=>e.manualEvent('noise','m2',{assistant_id:13})); assert.equal(await evaluate(page,e=>e.state.variables.alert),40); await evaluate(page,e=>e.manualEvent('noise','m3',{assistant_id:15})); assert.equal(await evaluate(page,e=>e.state.variables.alert),40); assert.equal(requests.length,count);
++   await tab(page,'data'); assert.equal(await page.locator('.basic-segment').evaluate(el=>el.open),false); await page.locator('.section-nav button').filter({hasText:'数值载体'}).click(); assert((await page.locator('.values-card').innerText()).includes('40'));
++   await page.locator('.section-nav button').filter({hasText:'快速整理'}).click(); assert(await page.locator('[name="original_text"]').isVisible());
++   for (const name of ['data','api','analysis','records']) { await tab(page,name); assert(await page.locator('.section-nav').isVisible()); const overflow = await page.locator('main').evaluate(el=>el.scrollWidth-el.clientWidth); assert(overflow<=2, name+':'+overflow); }
++   await tab(page,'analysis'); await page.locator('.section-nav button').filter({hasText:'恢复后台结果'}).click(); assert(await page.locator('[name="analysis_response"]').isVisible());
++   await page.screenshot({path:'/tmp/v142-longtext-'+width+'.png'}); await context.close(); console.log(width+'px：规划→截断缩段→整合→数值转化/限次/本地结算，固定导航/恢复入口/草稿保留通过');
++  }
++  assert.deepEqual(errors,[]);
++ } finally {await browser.close();await new Promise(r=>server.close(r));}
++}
++run().catch(e=>{console.error(e);process.exitCode=1});
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.test.js"
+new file mode 100644
+index 0000000..173b1e6
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.test.js"
+@@ -0,0 +1,105 @@
++'use strict';
++const test = require('node:test'), assert = require('node:assert/strict');
++const C = require('../src/core'), A = require('../src/api'), {Engine, defaults} = require('../src/engine'), {fixture} = require('./helpers');
++const profile = {...defaults().profile, base_url: 'https://mock.test/v1', model: 'mock'};
++const text = '警觉初始0，范围0到100。听到异常且实际怀疑时增加20，可每轮重复，最多两次，到60不再生效。解除戒备后调整至30，任务仅一次。阶段调查成功减少5。';
++const effect = (operation, value, evidence) => ({operation, variable: 'alert', value, evidence});
++function raw(original = text) { return {title: '潜行', variables: [{id: 'alert', title: '警觉', type: 'number', default: 0, min: 0, max: 100, evidence: '警觉初始0，范围0到100。', bounds_evidence: '警觉初始0，范围0到100。'}], nodes: [{id: 'n', title: '调查', detail: original, guidance: '调查当前地点', context_variables: ['alert'], completion_criteria: '调查成功', completion_evidence: '阶段调查成功减少5。', numeric_effects: [effect('add', -5, '阶段调查成功减少5。')], routes: []}], events: [{id: 'noise', title: '异常', description: '目标听见异常并实际怀疑', completion_criteria: '实际听见异常并产生怀疑', exclusions: ['仅计划', '旧事'], evidence: '听到异常且实际怀疑时增加20，可每轮重复，最多两次，到60不再生效。', repeat_policy: 'once_per_accepted_turn', repeat_evidence: '可每轮重复', max_occurrences: 2, max_occurrences_evidence: '最多两次', condition: {variable: {id: 'alert', op: 'lt', value: 60}}, condition_evidence: '到60不再生效', scope: {kind: 'nodes', node_ids: ['n']}, numeric_effects: [effect('add', 20, '听到异常且实际怀疑时增加20')]}, {id: 'calm', title: '解除戒备', description: '确实解除戒备', completion_criteria: '目标实际解除戒备', evidence: '解除戒备后调整至30，任务仅一次。', repeat_policy: 'once', numeric_effects: [effect('set', 30, '解除戒备后调整至30')]}], analysis: {uncertainties: []}}; }
++function server(fn) { const requests = []; const api = new A.Client(async (url, options) => { const body = JSON.parse(options.body), input = JSON.parse(body.messages[1].content); requests.push({body, input}); const result = await fn(input, requests.length); return {ok: true, json: async () => ({choices: [{finish_reason: result.finish || 'stop', message: {content: typeof result.value === 'string' ? result.value : JSON.stringify(result.value)}}]})}; }); return {api, requests}; }
++const plan = input => ({sections: [{end: input.paragraphs.at(-1).id}], complete: true});
++const piece = input => ({title: '调查片段', nodes: [{id: 'n', title: '当前调查', detail: input.original, guidance: '调查当前内容', routes: []}], analysis: {synopsis: '调查'}});
++const merge = input => ({title: '整合', nodes: input.nodes.map(n => ({id: n.id, routes: []}))});
++test('规划在正式分析之前；短篇保留完整原文与实际请求，数值规则本地转化并持久化', async () => {
++ const f = server(input => ({value: input.operation === 'partition' ? plan(input) : input.candidates ? {results: input.candidates.map(e => ({event_id:e.id,status:'completed',evidence:[{message_id:input.dialogue.at(-1).message_id,quote:input.dialogue.at(-1).text}]}))} : raw()}));
++ const draft = await f.api.analyze(profile, text); assert.equal(f.requests[0].input.operation, 'partition'); assert.equal(f.requests[1].input.original, text); assert.equal(draft.request_count, 2); assert(draft.planned);
++ const p = C.convertAnalysisProject(draft.project), s = C.createProgress(p); assert.equal(p.events.length, 3); assert.deepEqual(p.nodes[0].effects, [{add: {variable: 'alert', value: -5}}]); assert(C.prompt(p, s).includes('警觉：0'));
++ C.settleEvent(s, p, 'noise', 'r1', {assistant_id: 1}); assert.equal(s.variables.alert, 20);
++ assert.equal(C.settleEvent(s, p, 'noise', 'other-key', {assistant_id: 1}), false); assert.equal(s.event_counts.noise, 1);
++ C.settleEvent(s, p, 'noise', 'r2', {assistant_id: 3}); assert.equal(s.variables.alert, 40);
++ assert(!C.eligibleEvents(p, s).some(e => e.id === 'noise')); assert.equal(C.settleEvent(s, p, 'noise', 'r3', {assistant_id: 5}), false);
++ C.settleEvent(s, p, 'calm', 'r3', {assistant_id: 5}); assert.equal(s.variables.alert, 30); C.completeNode(s, p); assert.equal(s.variables.alert, 25); assert.equal(C.completeNode(s, p), false);
++ const stored = C.normalizeProject(JSON.parse(JSON.stringify(p))); assert.equal(stored.events.find(e => e.id === 'noise').max_occurrences, 2);
++ const host = fixture(), engine = new Engine(host.host,f.api); await engine.init(); engine.analysisDraft=draft; await engine.applyAnalysis(); await engine.updateSettings({enabled:true,profile});
++ host.root.messages[1].message='她听见异常，实际开始怀疑。'; const pair=engine.host.pair(1); await engine.acceptPair(pair,true,{ids:['noise']}); assert.equal(engine.state.variables.alert,20); assert.equal(engine.state.event_counts.noise,1); const count=f.requests.length; await engine.acceptPair(pair,true,{ids:['noise']}); assert.equal(f.requests.length,count); assert.equal(engine.state.variables.alert,20);
++});
++test('数值效果未知变量/虚构依据/缺完成标准/无依据重复与次数上限均拒绝', () => {
++ for (const mutate of [r => r.events[0].numeric_effects[0].variable = 'missing', r => r.events[0].numeric_effects[0].evidence = '虚构', r => r.events[0].repeat_evidence = '', r => r.events[0].max_occurrences_evidence = '', r => r.nodes[0].completion_criteria = '', r => r.events[0].condition = {collected: 'missing'}]) {
++  const r = raw(); mutate(r); assert.throws(() => new A.Client().restoreAnalysis(text, r));
++ }
++ const r = raw(); r.nodes[0].effects = [{add: {variable: 'alert', value: 999}}]; assert.equal(new A.Client().restoreAnalysis(text, r).project.nodes[0].effects[0].add.value, -5);
++});
++test('单次行为上限与载体总上限独立，门槛停止生效，回退后次数可以恢复', () => {
++ const r = raw(); r.events[0].numeric_effects[0].max = 35; r.events[0].numeric_effects[0].bounds_evidence = '到60不再生效';
++ const p = C.convertAnalysisProject(new A.Client().restoreAnalysis(text, r).project), s = C.createProgress(p);
++ C.settleEvent(s, p, 'noise', 'x1'); C.settleEvent(s, p, 'noise', 'x2'); assert.equal(s.variables.alert, 35); assert.equal(s.event_counts.noise, 2); C.undo(s); assert.equal(s.variables.alert, 20); assert(C.eligibleEvents(p, s).some(e => e.id === 'noise'));
++ s.variables.alert = 60; assert(!C.eligibleEvents(p, s).some(e => e.id === 'noise')); assert.throws(() => C.settleEvent(s, p, 'noise', 'x3'), /前置条件/);
++});
++test('长文分段规划跨窗口覆盖每个字符，逐段分析后整合，请求均遵守输入预算', async () => {
++ const source = ('第一场调查。\n第二场交叉条件。\n第三场撤离。\n').repeat(2000), p = {...profile, max_input_chars: 16000, analysis_chunk_chars: 3000};
++ const f = server(input => ({value: input.operation === 'partition' ? plan(input) : input.original !== undefined ? piece(input) : merge(input)}));
++ const draft = await f.api.analyze(p, source), planning = f.requests.filter(x => x.input.operation === 'partition'), chunks = f.requests.filter(x => x.input.original !== undefined);
++ assert(planning.length > 1); assert(chunks.length > 5); assert.equal(planning.flatMap(x => x.input.paragraphs).map(x => x.text).join(''), source); assert.equal(chunks.map(x => x.input.original).join(''), source);
++ assert(chunks.every(x => x.input.original.length <= 3000)); assert.equal(draft.project.original_text, source); assert.equal(draft.segment_count, chunks.length); assert.equal(draft.request_count, f.requests.length); assert(f.requests.every(x => x.body.messages.reduce((sum, m) => sum + m.content.length, 0) <= 16000));
++});
++test('无效/遗漏/重复规划边界回退本地，不丢原文；规划结果不能恢复为剧本', async () => {
++ for (const value of [{sections: [{end: 'missing'}], complete: true}, {sections: [{end: 'p1'}, {end: 'p1'}], complete: true}, {sections: [], complete: false}]) {
++  const source = '调查场景。'.repeat(400), f = server(input => ({value: input.operation === 'partition' ? value : input.original !== undefined ? piece(input) : merge(input)}));
++  const result = await f.api.analyze({...profile, analysis_chunk_chars: 1000}, source); assert.equal(result.project.original_text, source); assert(result.warnings.some(w => w.includes('本地分段')));
++ }
++ assert.throws(() => new A.Client().restoreAnalysis(text, plan({paragraphs: [{id: 'p1'}]}), 'faithful', {kind: 'plan'}), /不是剧本草稿/);
++});
++test('某段截断自动缩小重试，保留之前成功段，完整后才交给整合', async () => {
++ const source = '调查异常。'.repeat(750); let truncated = false;
++ const f = server(input => { if (input.operation === 'partition') return {value: plan(input)}; if (input.original !== undefined && !truncated) { truncated = true; return {finish: 'length', value: '{"nodes":['}; } return {value: input.original !== undefined ? piece(input) : merge(input)}; });
++ const replies = [], result = await f.api.analyze({...profile, analysis_chunk_chars: 1500}, source, '', {onResponse: r => replies.push(r)});
++ assert(result.warnings.some(w => w.includes('截断'))); assert(replies.some(r => r.finish_reason === 'length')); assert.equal(result.project.original_text, source); assert.equal(result.request_count, f.requests.length); assert(f.requests.at(-1).input.nodes);
++});
++test('截断连续失败最多缩小三次，不生成半截草稿；取消规划不开始后续段', async () => {
++ const source = '持续调查。'.repeat(700), f = server(input => ({value: input.operation === 'partition' ? plan(input) : '{"nodes":[', finish: input.operation === 'partition' ? 'stop' : 'length'}));
++ await assert.rejects(f.api.analyze({...profile, analysis_chunk_chars: 8000}, source), /截断/); assert(f.requests.length <= 6);
++ const cancelled = server(input => { cancelled.api.cancel(); return {value: plan(input)}; }); await assert.rejects(cancelled.api.analyze(profile, source), /取消/); assert.equal(cancelled.requests.length, 1);
++});
++test('分段数值事件与节点效果经整合/恢复保留，模型不能覆盖原奖励', async () => {
++ const source = text + '\n' + '继续调查。'.repeat(500), f = server(input => {
++  if (input.operation === 'partition') return {value: plan(input)};
++  if (input.original !== undefined) return {value: input.part === 1 ? raw(input.original) : piece(input)};
++  return {value: {...merge(input), events: [], nodes: input.nodes.map(n => ({id: n.id, numeric_effects: [effect('add', 999, '不存在')], routes: []}))}};
++ });
++ const replies = [], draft = await f.api.analyze({...profile, analysis_chunk_chars: 1000}, source, '', {onResponse: r => replies.push(r)});
++ assert.equal(draft.project.events.length, 2); assert.equal(draft.project.events[0].effects[0].add.value, 20); assert.equal(draft.project.nodes[0].effects[0].add.value, -5);
++ const last = replies.at(-1), restored = f.api.restoreAnalysis(source, last.text, 'faithful', last); assert.equal(restored.project.events[0].effects[0].add.value, 20);
++});
++test('默认预算提升，旧精确默认迁移、自定义配置保留', async () => {
++ assert.equal(profile.max_input_chars, 64000); assert.equal(profile.analysis_output, 16384); assert.equal(profile.analysis_chunk_chars, 3000); assert.equal(profile.auto_partition, true);
++ const f = fixture(); f.storage.script.branch_story_settings.profile = {max_input_chars: 16000, analysis_output: 8192, segment_output: 4096, analysis_prompt: A.V141_PROMPTS.analysis, analysis_merge_prompt: A.V141_PROMPTS.merge};
++ const e = new Engine(f.host); await e.init(); assert.equal(e.settings.profile.analysis_prompt, A.PROMPTS.analysis); assert.equal(e.settings.profile.analysis_merge_prompt, A.PROMPTS.merge); assert(!A.V141_PROMPTS.merge.includes('external_node_ids')); assert.equal(e.settings.profile.max_input_chars, 64000); assert(e.settings.profile.auto_partition);
++ const custom = fixture(); custom.storage.script.branch_story_settings.profile = {max_input_chars: 12000, analysis_output: 7000, analysis_prompt: '作者自定义'}; const other = new Engine(custom.host); await other.init(); assert.equal(other.settings.profile.max_input_chars, 12000); assert.equal(other.settings.profile.analysis_output, 7000); assert.equal(other.settings.profile.analysis_prompt, '作者自定义');
++});
++test('快速整理同样提取有依据数值规则，分段规划不会参与基础整理', async () => {
++ const f = server(() => ({value: raw()})), draft = await f.api.segment(profile, text);
++ assert.equal(f.requests.length, 1); assert.equal(draft.project.events[0].effects[0].add.value, 20); assert.equal(draft.project.nodes[0].effects[0].add.value, -5);
++});
++test('长文原始记录复用全文与证据；累计恢复上下文达到预算时显式标记', async () => {
++ const f = fixture(), e = new Engine(f.host); await e.init(); const source = '原始长文。'.repeat(10000), record = e.beginRaw('analysis',source,'','faithful');
++ record({text:'{}',original:source,evidenceSource:source,kind:'plan',mode:'faithful'}); assert(e.rawAnalysis.replies[0].original_from_run); assert(!Object.hasOwn(e.rawAnalysis.replies[0],'original')); assert(!Object.hasOwn(e.rawAnalysis.replies[0],'evidenceSource'));
++ assert.throws(()=>e.restoreAnalysis(source,'{}','faithful',e.rawAnalysis.replies[0].id),/不是剧本草稿/);
++ const context = {kind:'chunk',knownNodes:[{id:'n',detail:'x'.repeat(1300000)}],original:'原始长文。'};
++ record({...context,text:'{}'}); record({...context,text:'{}'}); assert(!e.rawAnalysis.replies[1].context_unavailable); assert(e.rawAnalysis.replies[2].context_unavailable); assert(!e.rawAnalysis.replies[2].knownNodes);
++});
++
++test('超过旧20万字符仍可自动分析，超过100万拒绝且不发送请求', async () => {
++ const source = '调查场景。'.repeat(42000), f = server(input => ({value: input.operation === 'partition' ? plan(input) : input.original !== undefined ? piece(input) : merge(input)}));
++ const result = await f.api.analyze({...profile, analysis_chunk_chars:8000},source); assert.equal(result.project.original_text,source); assert(result.segment_count>20);
++ const count = f.requests.length; await assert.rejects(f.api.analyze(profile,'x'.repeat(1000001)),/100 万/); assert.equal(f.requests.length,count);
++});
++test('最终整合截断时分组重试，已有分段不重跑，局部整合恢复明确标记', async () => {
++ const source = '调查事件。'.repeat(1200); let mergeCalls = 0;
++ const f = server(input => {
++  if (input.operation === 'partition') return {value:plan(input)};
++  if (input.original !== undefined) return {value:piece(input)};
++  mergeCalls++; return mergeCalls === 1 ? {finish:'length',value:'{"nodes":['} : {value:merge(input)};
++ });
++ const replies = [], result = await f.api.analyze({...profile,analysis_chunk_chars:1000},source,'',{onResponse:r=>replies.push(r)});
++ assert.equal(mergeCalls,3); assert(result.warnings.some(w=>w.includes('拆成两组'))); assert.equal(f.requests.filter(x=>x.input.original!==undefined).length,result.segment_count); assert.equal(result.project.nodes.length,result.segment_count);
++ const last = replies.at(-1); assert(last.partial_merge); assert.equal(f.api.restoreAnalysis(source,last.text,'faithful',last).project.nodes.length,result.project.nodes.length);
++});
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.browser.js"
+index 712b956..bc139c1 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.browser.js"
+@@ -19 +19 @@ const server = http.createServer(async (req, res) => {
+-  res.end(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#ddd;font:16px system-ui}#sheld{height:100dvh;display:flex;flex-direction:column}#chat{flex:1;min-height:0;overflow:auto;padding:12px;background:#eee}#send_form{flex:none;display:flex;align-items:center;gap:8px;margin:8px;padding:3px 7px}textarea{width:100%;height:44px;box-sizing:border-box}iframe{display:none}${fixed ? '#chat{position:absolute;left:0;right:0;top:0;bottom:70px}#send_form{position:fixed;bottom:0;left:0;right:0}' : ''}</style></head><body><div id="sheld"><div id="chat">${Array.from({length: 18}, (_, i) => '<p>正文段落' + i + '：夜色笼罩着大厅，玩家仍可自由行动。</p>').join('')}</div><form id="send_form"><textarea id="send_textarea"></textarea></form></div><script>const C={clone:v=>JSON.parse(JSON.stringify(v))};const fixture=${fixtureText};window.testHost=fixture();window.TavernHelper=testHost.root;testHost.storage.script.branch_story_settings={project_id:'player_ui',drafts:{player_ui:${JSON.stringify(project)}}};window.sendRound=async(input,response)=>{const h=testHost.root,id=h.messages.length;document.querySelector('textarea').value='';h.messages.push({message_id:id,role:'user',message:input});await h.eventEmit('message_sent',id);await h.eventEmit('generate_before_combine_prompts','normal');const aid=h.messages.length;h.messages.push({message_id:aid,role:'assistant',message:response});await h.eventEmit('message_received',aid);await h.eventEmit('generation_ended');};window.reloadPlugin=()=>{document.querySelector('iframe')?.remove();const f=document.createElement('iframe');f.src='/frame';document.body.appendChild(f);};reloadPlugin();</script></body></html>`);
++  res.end(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#ddd;font:16px system-ui}#sheld{height:100dvh;display:flex;flex-direction:column}#chat{flex:1;min-height:0;overflow:auto;padding:12px;background:#eee}#send_form{flex:none;display:flex;align-items:center;gap:8px;margin:8px;padding:3px 7px}textarea{width:100%;height:44px;box-sizing:border-box}iframe{display:none}${fixed ? '#chat{position:absolute;left:0;right:0;top:0;bottom:70px}#send_form{position:fixed;bottom:0;left:0;right:0}' : ''}</style></head><body><div id="sheld"><div id="chat">${Array.from({length: 18}, (_, i) => '<p>正文段落' + i + '：夜色笼罩着大厅，玩家仍可自由行动。</p>').join('')}</div><form id="send_form"><textarea id="send_textarea"></textarea></form></div><script>const C={clone:v=>JSON.parse(JSON.stringify(v))};const fixture=${fixtureText};window.testHost=fixture();window.TavernHelper=testHost.root;testHost.storage.script.branch_story_settings={profile:{auto_partition:false},project_id:'player_ui',drafts:{player_ui:${JSON.stringify(project)}}};window.sendRound=async(input,response)=>{const h=testHost.root,id=h.messages.length;document.querySelector('textarea').value='';h.messages.push({message_id:id,role:'user',message:input});await h.eventEmit('message_sent',id);await h.eventEmit('generate_before_combine_prompts','normal');const aid=h.messages.length;h.messages.push({message_id:aid,role:'assistant',message:response});await h.eventEmit('message_received',aid);await h.eventEmit('generation_ended');};window.reloadPlugin=()=>{document.querySelector('iframe')?.remove();const f=document.createElement('iframe');f.src='/frame';document.body.appendChild(f);};reloadPlugin();</script></body></html>`);
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js"
+index 0a45491..7340810 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js"
+@@ -5 +5 @@ const {Engine} = require('../src/engine'), {Client, PROMPTS, LAST_PROMPTS} = req
+-const {fixture, mockClient, tick} = require('./helpers');
++const {fixture, mockClient, tick, deferred} = require('./helpers');
+@@ -43,2 +43,2 @@ test('生成结束后即核验独立行为，流式接收不奖励；关闭自
+-test('同轮阶段完成不会让新解锁的事件读取旧正文，原阶段行为仍按原范围结算', async () => {
+-  const p = F.demoProject(), client = mockClient(); const seen = [];
++test('同轮阶段完成不会让新解锁的事件读取旧正文，原阶段行为仍按原范围结算', {timeout: 2000}, async () => {
++  const p = F.demoProject(), client = mockClient(); const seen = [], detected = deferred();
+@@ -47 +47 @@ test('同轮阶段完成不会让新解锁的事件读取旧正文，原阶段
+-  client.detect = async (profile, messages, events) => { seen.push(...events.map(e => e.id)); return events.map(e => ({event_id: e.id, status: 'completed', evidence: []})); };
++  client.detect = async (profile, messages, events) => { seen.push(...events.map(e => e.id)); detected.resolve(); return events.map(e => ({event_id: e.id, status: 'completed', evidence: []})); };
+@@ -49 +49 @@ test('同轮阶段完成不会让新解锁的事件读取旧正文，原阶段
+-  await root.eventEmit('generation_ended'); await tick(); await e.stageJobs; await e.jobs;
++  await root.eventEmit('generation_ended'); await detected.promise; await e.stageJobs; await e.jobs;
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/recovery.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/recovery.test.js"
+index 8e35b59..139900f 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/recovery.test.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/recovery.test.js"
+@@ -6 +6 @@ const raw = () => ({title: '房卡核验', start_node_id: 'card', variables: [{i
+-const profile = {...defaults().profile, base_url: 'https://mock.test/v1', model: 'mock'};
++const profile = {...defaults().profile, auto_partition: false, base_url: 'https://mock.test/v1', model: 'mock'};
+@@ -31 +31 @@ test('整合失败保留分块骨架，修改整合报告后恢复全篇；单
+-  const chunk = e.rawAnalysis.replies[0]; const partial = e.restoreAnalysis(chunk.original, chunk.text, 'faithful', chunk.id); assert.equal(partial.is_partial, true); assert(partial.warnings.some(x => x.includes('不是全篇'))); assert.equal(calls, before);
++  const chunk = e.rawAnalysis.replies[0]; const partial = e.restoreAnalysis(chunk.original_from_run ? e.rawAnalysis.original : chunk.original, chunk.text, 'faithful', chunk.id); assert.equal(partial.is_partial, true); assert(partial.warnings.some(x => x.includes('不是全篇'))); assert.equal(calls, before);
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/\344\272\244\346\216\245gpt.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/\344\272\244\346\216\245gpt.md"
+index 19e3b37..2fc0deb 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/\344\272\244\346\216\245gpt.md"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/\344\272\244\346\216\245gpt.md"
+@@ -3 +3 @@
+-更新日期：2026-10-08（Asia/Shanghai）。功能版本基准：**v1.4.1**。v1.1.2 基准提交为 `7330dc3`；最新修复提交以 `git log` 为准。
++更新日期：2026-10-09（Asia/Shanghai）。功能版本基准：**v1.4.2**。v1.1.2 基准提交为 `7330dc3`；最新修复提交以 `git log` 为准。
+@@ -81 +81 @@ v1.2.0 点击后将行动文字加入酒馆输入草稿，可以改写或撤销
+-大量事件先按启用状态、节点范围、条件和已完成记录筛选，再按预算分批发送；不应默认把所有事件设为全项目候选。默认每批 4 个、每轮最多 3 批，输入默认最多 16000 字符，识别输出默认 1024 Token。字符预算不是 Token 预算；无法保证每次只有极少 Token。
++大量事件先按启用状态、节点范围、条件和已完成记录筛选，再按预算分批发送；不应默认把所有事件设为全项目候选。默认每批 4 个、每轮最多 3 批，输入默认最多64000字符，识别输出默认 1024 Token。字符预算不是 Token 预算；无法保证每次只有极少 Token。
+@@ -91 +91 @@ v1.2.0 点击后将行动文字加入酒馆输入草稿，可以改写或撤销
+-- 最大 20 万字符、32 块、256 个节点。预算包含系统提示词、用户要求、JSON 转义后的实际消息内容。
++- 最大100万字符、512段、1024节点；当前流程见第17节。预算包含系统提示词、用户要求、JSON 转义后的实际消息内容。
+@@ -149,2 +149,2 @@ v1.2.0 点击后将行动文字加入酒馆输入草稿，可以改写或撤销
+-- ZIP：`branch_story_plugin_v1.4.1.zip`，37 个条目，包含源码、测试、README、交接说明和完整导入 JSON。
+-- v1.4.1 ZIP 包含本交接文档；CRC 和源文件一致性通过。仅打包此插件文件，AI交接 中角色卡参考实现继续保留在仓库。
++- ZIP：`branch_story_plugin_v1.4.2.zip`，40 个条目，包含源码、测试、README、交接说明和完整导入 JSON。
++- v1.4.2 ZIP 包含本交接文档；CRC 和源文件一致性通过。仅打包此插件文件，AI交接 中角色卡参考实现继续保留在仓库。
+@@ -154 +154 @@ GitHub 下载页面：
+-- <https://github.com/R41N1NG/-/blob/main/酒馆剧本插件/branch_story_plugin_v1.4.1.zip>
++- <https://github.com/R41N1NG/-/blob/main/酒馆剧本插件/branch_story_plugin_v1.4.2.zip>
+@@ -347,0 +348,17 @@ package/lockfile同步v1.4.0，npm run test:browser接入新测试；完整安
++
++
++## 17. v1.4.2：自主分段、数值规则与固定导航
++
++【身份：gpt｜日期：2026-10-09｜类型：插件交接】
++
++用户授权同时实现长文本先由API自主规划、默认限制提高与建议字数、数值增减规则提取/转化、面板便捷优化，并询问整理作用。未授权代为处理相邻角色卡协作事项。本批保留远端协作资料，插件基线2468f55，详见docs/长文分段与数值规则.md及AI交接/下级更新/2026-10-09-插件v1.4.2/。
++
++1. 默认auto_partition=true，目标3000字符（可设500～8000），建议每段2000～4000字、整篇每批2万～10万字。API返回原文编号边界及complete:true，本地校验末尾/顺序/覆盖后取原文；输入预算内窗口逐个规划，大自然段预切、不改写。规划无效回退本地并警告；规划不能恢复为剧本。全文上限100万、512段、1024节点。输入默认64000字符，分析/整理输出16384 Token，旧精确默认迁移，自定义其他值保留。规划提示词可编辑。
++2. 输出length先保留再缩段，最多三层、很短段停止；不重跑已成功段。整合超预算用精简索引，完整规则仍本地保留，截断/仍超限分组整合，最多三层；组间允许引用全节点目录，最后整体校验。局部整合恢复明确标记，其余节点保留草稿。不对网络、政策拒绝或语义校验错误无限重试。实际请求数包含规划和截断重试。
++3. numeric_effects有operation:add/set、variable、value、evidence；单行为min/max须bounds_evidence，引用定义数值且有限。节点变化须完成标准/证据；独立events提取description/完成标准/原文/排除/范围/条件/重复规则/数值/结果。可重复须repeat_evidence、有限次数max_occurrences须证据。未知结果/变量/无依据拒绝，任意effects代码仍不执行。事件默认辅助核验、证据通过后自动结算；不实现讨论中的主模型伴随报告。core新增次数验证/eligibility/settlement停止，既有同回复去重、边界、门槛、账本和回退沿用。阶段转换与独立规则保留，防双领奖。
++4. 已知事件跨段保存和条件/范围引用重映射，整合不能改奖励；依据/数值初值/边界/互斥与结果规则保留。原始记录全文/证据复用本轮original，历史节点只保存索引；上下文累计250万字符预算，超限明确标记恢复不可用，不递归保存全文。请求/回复正文原预算保留。
++5. 分析/API/数据/记录有固定功能导航，恢复JSON独立入口，跳转展开；数据基础整理默认收起并解释与完整分析区别，API提示词独立折叠，分段/输出预算集中且分析页直达。表单未保存值、草稿、已发请求继续保留。
++
++验证129项单元通过（116旧＋13新增长文数值回归），实际安装JSON全套浏览器模拟回归七页/桌面/390/320、a/b/a1/ab、事件包/回退、玩家面板/启动及新规划→截断缩段→整合→数值转化/限次→导航/恢复/草稿保留通过。测试fixture明确auto_partition=false覆盖旧无规划路径，新套件删除fixture旧配置测试默认true。低预算旧回归显式用V141旧提示词保持兼容约束；新预算与新流程另测。无付费请求，真实语义不能靠出处校验证明。单轮多次计数不支持，主模型短报告/自然结束按钮/集中核验仍待实现。
++
++完整导入JSON与八源相符，稳定ID不变，ZIPv1.4.2共40条，旧v1.4.1ZIP在新包核验后清理；原TSE仍a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065。用户安装后以真实原文核对数值规则及条件，再本地转化启用；旧草稿不会自动补出缺失数值，已有完整结果可先恢复编辑。

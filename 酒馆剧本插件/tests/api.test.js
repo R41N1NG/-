@@ -119,7 +119,7 @@ test('长文本自动分块后整合，全部请求遵守字符预算且保留�
     return {ok: true, json: async () => ({choices: [{message: {content: JSON.stringify(value)}}]})};
   });
   const progress = [], text = '灯光熄灭，调查钟楼的"\\线索"。\n'.repeat(1200);
-  const draft = await api.analyze({...profile, max_input_chars: 4000, analysis_merge_prompt: '我的跨段合并提示词'}, text, '', {onProgress: p => progress.push(p)});
+  const draft = await api.analyze({...profile, max_input_chars: 4000, analysis_prompt: require('../src/api').V141_PROMPTS.analysis, analysis_merge_prompt: '我的跨段合并提示词'}, text, '', {onProgress: p => progress.push(p)});
   assert(requests.length > 2); assert.equal(draft.request_count, requests.length); assert.equal(draft.project.original_text, text);
   assert(requests.every(r => r.messages.reduce((n, m) => n + m.content.length, 0) <= 4000)); assert.equal(requests.at(-1).messages[0].content, '我的跨段合并提示词');
   assert.equal(draft.project.analysis.foreshadowing[0].payoff_node_ids[0], draft.project.nodes.at(-1).id); assert(progress.some(p => p.phase.includes('整合')));
@@ -127,7 +127,7 @@ test('长文本自动分块后整合，全部请求遵守字符预算且保留�
 });
 test('分析取消后不启动后续分块', async () => {
   let calls = 0; const api = new Client(async (url, opt) => { calls++; const input = JSON.parse(JSON.parse(opt.body).messages[1].content); api.cancel(); return {ok: true, json: async () => ({choices: [{message: {content: JSON.stringify({title: '片段', nodes: [{id: 'a', title: '阶段', detail: input.original, guidance: '阶段', routes: []}]})}}]})}; });
-  await assert.rejects(api.analyze({...profile, max_input_chars: 4000}, '灯光熄灭。'.repeat(3000)), /已取消/); assert.equal(calls, 1);
+  await assert.rejects(api.analyze({...profile, max_input_chars: 4000, analysis_prompt: require('../src/api').V141_PROMPTS.analysis}, '灯光熄灭。'.repeat(3000)), /已取消/); assert.equal(calls, 1);
 });
 test('跨段整合遗漏原节点时拒绝应用', async () => {
   const api = new Client(async (url, opt) => {
@@ -135,5 +135,5 @@ test('跨段整合遗漏原节点时拒绝应用', async () => {
     const value = input.original === undefined ? {title: '遗漏的整合', nodes: []} : {title: '片段', nodes: [{id: 'a', title: '阶段', detail: input.original, guidance: '保留片段', routes: []}]};
     return {ok: true, json: async () => ({choices: [{message: {content: JSON.stringify(value)}}]})};
   });
-  await assert.rejects(api.analyze({...profile, max_input_chars: 4000}, '灯光熄灭。'.repeat(3000)), /遗漏或重复/);
+  await assert.rejects(api.analyze({...profile, max_input_chars: 4000, analysis_prompt: require('../src/api').V141_PROMPTS.analysis}, '灯光熄灭。'.repeat(3000)), /遗漏或重复/);
 });

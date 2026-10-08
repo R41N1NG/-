@@ -5,7 +5,7 @@
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API, F) {
   'use strict';
   const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, auto_events: true, quick_options: false, quick_collapsed: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
-    profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 16000, max_output: 1024, segment_output: 4096, analysis_output: 8192, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, json_mode: true, no_thinking: false},
+    profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 64000, max_output: 1024, segment_output: 16384, analysis_output: 16384, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, partition_prompt: API.PROMPTS.partition, auto_partition: true, analysis_chunk_chars: 3000, json_mode: true, no_thinking: false},
     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
   async function fingerprint(value) {
     const text = JSON.stringify(value);
@@ -32,8 +32,9 @@
     async init() {
       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
       for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt'], ['detect', 'detect_prompt']]) {
-        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
       }
+      for (const [key, old, value] of [['max_input_chars', 16000, 64000], ['analysis_output', 8192, 16384], ['segment_output', 4096, 16384]]) if (saved.profile?.[key] === old) this.settings.profile[key] = value;
       this.client.usage = {...defaults().usage, ...saved.usage};
       if (this.settings.worldbook) {
         try { this.project = (await this.host.loadBook(this.settings.worldbook, this.settings.project_id)).project; }
@@ -450,7 +451,10 @@
         const retained = run.replies.reduce((n, x) => n + x.text.length, 0), capacity = Math.max(0, 2000000 - retained);
         const raw = typeof value.text === 'string' ? value.text : JSON.stringify(value.text), text = key ? raw.split(key).join('[已隐藏密钥]') : raw;
         const reply = {...C.clone(value), id: C.id('reply'), text: text.slice(0, capacity), storage_truncated: text.length > capacity};
-        if (JSON.stringify(reply).length > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'knownNodes', 'knownCollections', 'knownVariables', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
+        if (reply.original === run.original) { delete reply.original; reply.original_from_run = true; }
+        if (reply.evidenceSource === run.original) { delete reply.evidenceSource; reply.evidence_from_run = true; }
+        const contextSize = value => JSON.stringify({...value, text: ''}).length;
+        if (run.replies.reduce((n, x) => n + contextSize(x), 0) + contextSize(reply) > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'knownNodes', 'knownCollections', 'knownVariables', 'knownEvents', 'events', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
         run.replies.push(reply); this.settings.raw_analysis = C.clone(run); this.saveSettings(); this.notify();
       };
       onResponse.onRequest = value => {
@@ -496,7 +500,8 @@
     }
     restoreAnalysis(text, raw, mode = 'faithful', replyId = '') {
       C.assert(!this.busy, '请先取消或等待当前辅助任务结束');
-      const reply = replyId ? this.rawAnalysis?.replies.find(x => x.id === replyId) : null;
+      const stored = replyId ? this.rawAnalysis?.replies.find(x => x.id === replyId) : null;
+      const reply = stored ? {...stored, original: stored.original_from_run ? this.rawAnalysis.original : stored.original, evidenceSource: stored.evidence_from_run ? this.rawAnalysis.original : stored.evidenceSource} : null;
       C.assert(!replyId || reply, '保留的回复不存在，请重新选择');
       if (reply) {
         C.assert(!reply.storage_truncated && reply.finish_reason !== 'length', '这份原始输出已截断，只能排查，不能当作完整草稿应用');
@@ -504,6 +509,7 @@
         C.assert(text === reply.original && mode === reply.mode, '恢复时原文和处理方式必须与这份原始回复一致');
       }
       const result = this.client.restoreAnalysis(text, raw, mode, reply);
+      if (reply?.partial_merge) { result.is_partial = true; result.warnings.push('仅恢复一组整合，其余节点保留分段草稿，跨组关系仍需核对。'); }
       if (reply?.kind === 'chunk') { result.is_partial = true; result.warnings.push('仅恢复第' + reply.part + '/' + reply.parts + '块，不是全篇合并结果；应用前请核对跨块结果定义及连接。'); }
       this.error = ''; this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
     }

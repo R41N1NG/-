@@ -2,7 +2,7 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const C = require('../src/core'), F = require('../src/flow'), G = require('../src/graph');
 const {Engine} = require('../src/engine'), {Client, PROMPTS, LAST_PROMPTS} = require('../src/api');
-const {fixture, mockClient, tick} = require('./helpers');
+const {fixture, mockClient, tick, deferred} = require('./helpers');
 const project = () => C.normalizeProject({id: 'player_test', title: '阶段与行为', variables: [{id: 'rapport', title: '关系', owner: '同行者', type: 'number', default: 69, min: 0, max: 100}], collections: [{id: 'b1', title: '房卡', description: '在储物间找到的房卡，上面写着301。'}], nodes: [{id: 'N1', title: '调查储物间', effects: [{collect: 'b1'}], routes: []}], events: [{id: 'E1', title: '赠礼被接受', description: '实际赠礼且对方接受', completion_criteria: '实际交付并接受', effects: [{add: {variable: 'rapport', value: 4, max: 70}}], repeat_policy: 'once_per_accepted_turn', auto_settle: true}]});
 async function engine(p = project(), client = mockClient()) { const f = fixture(), e = new Engine(f.host, client); await e.init(); await e.setProject(p); await e.updateSettings({enabled: true, profile: {base_url: 'https://mock.example', model: 'mock'}}); return {...f, e}; }
 
@@ -40,13 +40,13 @@ test('生成结束后即核验独立行为，流式接收不奖励；关闭自�
   root.messages.push({message_id: 2, role: 'user', message: '再次赠礼'}, {message_id: 3, role: 'assistant', message: '对方接受了礼物。'});
   await root.eventEmit('generation_ended'); await tick(); assert.equal(calls, 1);
 });
-test('同轮阶段完成不会让新解锁的事件读取旧正文，原阶段行为仍按原范围结算', async () => {
-  const p = F.demoProject(), client = mockClient(); const seen = [];
+test('同轮阶段完成不会让新解锁的事件读取旧正文，原阶段行为仍按原范围结算', {timeout: 2000}, async () => {
+  const p = F.demoProject(), client = mockClient(); const seen = [], detected = deferred();
   p.events = [{id: 'old', title: '原阶段行为', description: '原阶段行为', effects: [], repeat_policy: 'once', scope: {kind: 'nodes', node_ids: ['B_2']}, auto_settle: true}, {id: 'new', title: '后续行为', description: '后续行为', condition: {collected: 'b2'}, effects: [], repeat_policy: 'once', auto_settle: true}];
   client.evaluateStage = async () => ({status: 'completed', summary: '', facts: [], missing: [], evidence: [{message_id: '1', quote: '一起走入黑暗的走廊'}]});
-  client.detect = async (profile, messages, events) => { seen.push(...events.map(e => e.id)); return events.map(e => ({event_id: e.id, status: 'completed', evidence: []})); };
+  client.detect = async (profile, messages, events) => { seen.push(...events.map(e => e.id)); detected.resolve(); return events.map(e => ({event_id: e.id, status: 'completed', evidence: []})); };
   const {e, root} = await engine(p, client); e.enter('B_2'); e.state.turn_context = {user_id: 0, node_id: 'B_2', injection_nodes: F.activeNodes(e.project, e.state)};
-  await root.eventEmit('generation_ended'); await tick(); await e.stageJobs; await e.jobs;
+  await root.eventEmit('generation_ended'); await detected.promise; await e.stageJobs; await e.jobs;
   assert.deepEqual(seen, ['old']); assert.equal(e.state.event_counts.old, 1); assert.equal(e.state.event_counts.new || 0, 0);
 });
 test('已获得视图读取正式记录，只列实际结果、公开说明、取得来源；回退同步撤下', () => {

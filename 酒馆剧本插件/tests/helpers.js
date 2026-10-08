@@ -2,7 +2,7 @@
 const C = require('../src/core.js');
 const {Host} = require('../src/host.js');
 function fixture() {
-  const storage = {script: {unrelated: 'keep'}, chats: {chat1: {unrelated: 'keep'}}};
+  const storage = {script: {unrelated: 'keep', branch_story_settings: {profile: {auto_partition: false}}}, chats: {chat1: {unrelated: 'keep'}}};
   const books = new Map([['既有世界书', [{uid: 7, name: '其他素材', enabled: true, content: '原有内容'}]]]);
   const listeners = new Map();
   const root = {

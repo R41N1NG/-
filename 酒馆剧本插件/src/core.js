@@ -144,6 +144,7 @@
       assert(typeof e.description === 'string' && e.description.trim(), '事件描述不能为空：' + e.id);
       e.completion_criteria ||= e.description; e.exclusions ||= []; e.effects ||= [];
       e.scope ||= {kind: 'project'}; e.repeat_policy ||= 'once';
+      if (e.max_occurrences != null) assert(Number.isSafeInteger(e.max_occurrences) && e.max_occurrences > 0, '事件次数上限必须为正整数');
       e.enabled = e.enabled !== false; e.auto_settle = e.auto_settle === true; e.detection ||= 'api';
       assert(['api', 'manual'].includes(e.detection), '事件识别模式无效');
       assert(['once', 'once_per_accepted_turn'].includes(e.repeat_policy), '事件重复策略无效');
@@ -370,6 +371,7 @@
       assert(pack ? s.package_progress?.[pack.id]?.current_node_id === event.completion_node_id : s.current_node_id === event.completion_node_id, '请先进入此事件对应的剧情阶段');
       return completeNode(s, p, source, event.completion_node_id);
     }
+    if (event.max_occurrences != null && (s.event_counts[eventId] || 0) >= event.max_occurrences) return false;
     assert(event.effects.every(e => !e.collect || resultReady(e.collect, p, s)), '事件的结果前提未满足或与已取得结果互斥');
     assert(typeof sourceKey === 'string' && sourceKey, '缺少事件来源标识');
     const turn = Number.isInteger(source?.assistant_id) ? 'turn_' + source.assistant_id : sourceKey;
@@ -396,6 +398,7 @@
   }
   function eligibleEvents(p, s, scopeNode = s.current_node_id) {
     return p.events.filter(e => {
+      if (e.max_occurrences != null && (s.event_counts[e.id] || 0) >= e.max_occurrences) return false;
       if (!e.enabled || e.detection !== 'api' || !condition(e.condition, s) ||
         e.scope.kind === 'nodes' && !e.scope.node_ids.includes(scopeNode) || e.repeat_policy === 'once' && s.event_counts[e.id]) return false;
       if (!e.completion_node_id) return rewardAvailable(e, p, s);
