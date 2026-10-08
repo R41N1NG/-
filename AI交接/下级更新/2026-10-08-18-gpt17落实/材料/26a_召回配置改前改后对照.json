@@ -1,0 +1,240 @@
+{
+  "改前": {
+    "A": {
+      "uid": 151,
+      "comment": "【名器】交欢反应律 · 男修呻吟与因器而赞",
+      "constant": false,
+      "enabled": true,
+      "disable": false,
+      "key": [
+        "名器",
+        "交欢",
+        "双修",
+        "破身",
+        "采补",
+        "抽送",
+        "合欢",
+        "纯阳",
+        "九幽玄阴",
+        "灼酒流炎",
+        "心魔茶璎",
+        "般若菩提",
+        "北冥潮生",
+        "清歌弦鸣",
+        "灵犀同心",
+        "玉虎噙香",
+        "烟霞灵乳",
+        "凤凰羽花",
+        "梅蕊",
+        "冰魄剑心",
+        "流焰叠薪"
+      ],
+      "secondaryKeys": [],
+      "selective": false,
+      "selectiveLogic": 0,
+      "order": 2676,
+      "position": 0,
+      "depth": 4,
+      "preventRecursion": true,
+      "excludeRecursion": false,
+      "正文字符数": 2793,
+      "有if门": false
+    },
+    "B": {
+      "uid": 121,
+      "comment": "【名器】何为道纹",
+      "constant": true,
+      "enabled": true,
+      "disable": false,
+      "key": [
+        "极乐引",
+        "本命道纹",
+        "道纹",
+        "名器第二境",
+        "情动"
+      ],
+      "secondaryKeys": [],
+      "selective": false,
+      "selectiveLogic": 0,
+      "order": 2675,
+      "position": 0,
+      "depth": 4,
+      "preventRecursion": true,
+      "excludeRecursion": false,
+      "正文字符数": 503,
+      "有if门": true
+    }
+  },
+  "改后": {
+    "A": {
+      "uid": 151,
+      "comment": "【名器】交欢反应律 · 男修呻吟与因器而赞",
+      "constant": false,
+      "enabled": true,
+      "disable": false,
+      "key": [
+        "九幽玄阴",
+        "灼酒流炎",
+        "心魔茶璎",
+        "般若菩提",
+        "北冥潮生",
+        "清歌弦鸣",
+        "灵犀同心",
+        "玉虎噙香",
+        "烟霞灵乳",
+        "凤凰羽花",
+        "梅蕊",
+        "冰魄剑心",
+        "流焰叠薪"
+      ],
+      "secondaryKeys": [],
+      "selective": false,
+      "selectiveLogic": 0,
+      "order": 2676,
+      "position": 0,
+      "depth": 4,
+      "preventRecursion": true,
+      "excludeRecursion": false,
+      "正文字符数": 2793,
+      "有if门": false
+    },
+    "B": {
+      "uid": 121,
+      "comment": "【名器】何为道纹",
+      "constant": false,
+      "enabled": true,
+      "disable": false,
+      "key": [
+        "极乐引",
+        "本命道纹",
+        "名器第二境"
+      ],
+      "secondaryKeys": [],
+      "selective": false,
+      "selectiveLogic": 0,
+      "order": 2675,
+      "position": 0,
+      "depth": 4,
+      "preventRecursion": true,
+      "excludeRecursion": false,
+      "正文字符数": 503,
+      "有if门": true
+    }
+  },
+  "核查": {
+    "递归": {
+      "源里 preventRecursion 未开的条目": [],
+      "源条目总数": 165
+    },
+    "二级匹配": {
+      "selective": false,
+      "keysecondary": []
+    },
+    "A是否有闸门": false,
+    "正文依赖扫描": {
+      "面板提到交欢反应律": false,
+      "面板提到何为道纹": false,
+      "状态机提到交欢反应律": false,
+      "状态机提到何为道纹": false
+    }
+  },
+  "JSON合法": true,
+  "写回后核对": {
+    "A": {
+      "uid": 151,
+      "comment": "【名器】交欢反应律 · 男修呻吟与因器而赞",
+      "constant": false,
+      "enabled": true,
+      "disable": false,
+      "key": [
+        "九幽玄阴",
+        "灼酒流炎",
+        "心魔茶璎",
+        "般若菩提",
+        "北冥潮生",
+        "清歌弦鸣",
+        "灵犀同心",
+        "玉虎噙香",
+        "烟霞灵乳",
+        "凤凰羽花",
+        "梅蕊",
+        "冰魄剑心",
+        "流焰叠薪"
+      ],
+      "secondaryKeys": [],
+      "selective": false,
+      "selectiveLogic": 0,
+      "order": 2676,
+      "position": 0,
+      "depth": 4,
+      "preventRecursion": true,
+      "excludeRecursion": false,
+      "正文字符数": 2793,
+      "有if门": false
+    },
+    "B": {
+      "uid": 121,
+      "comment": "【名器】何为道纹",
+      "constant": false,
+      "enabled": true,
+      "disable": false,
+      "key": [
+        "极乐引",
+        "本命道纹",
+        "名器第二境"
+      ],
+      "secondaryKeys": [],
+      "selective": false,
+      "selectiveLogic": 0,
+      "order": 2675,
+      "position": 0,
+      "depth": 4,
+      "preventRecursion": true,
+      "excludeRecursion": false,
+      "正文字符数": 503,
+      "有if门": true
+    }
+  },
+  "卡内改后": {
+    "id213": {
+      "id": 213,
+      "comment": "【名器】交欢反应律 · 男修呻吟与因器而赞",
+      "constant": false,
+      "enabled": true,
+      "keys": [
+        "九幽玄阴",
+        "灼酒流炎",
+        "心魔茶璎",
+        "般若菩提",
+        "北冥潮生",
+        "清歌弦鸣",
+        "灵犀同心",
+        "玉虎噙香",
+        "烟霞灵乳",
+        "凤凰羽花",
+        "梅蕊",
+        "冰魄剑心",
+        "流焰叠薪"
+      ],
+      "preventRecursion": false,
+      "正文字符数": 2793,
+      "首行门": "<relic>"
+    },
+    "id151": {
+      "id": 151,
+      "comment": "【名器】何为道纹",
+      "constant": false,
+      "enabled": true,
+      "keys": [
+        "极乐引",
+        "本命道纹",
+        "名器第二境"
+      ],
+      "preventRecursion": false,
+      "正文字符数": 555,
+      "首行门": "@@if (function(){try{return (variables.stat_data?.known?.['极乐引入手'] === true)}catch(e){return false}})()"
+    },
+    "全卡常驻条目数": 21,
+    "卡SHA256": "c9e27d0999fd2e1c356d625654904d94ab7d18a839dab7a134dbff0be94429c8"
+  }
+}
