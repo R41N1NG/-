@@ -1,0 +1,357 @@
+﻿diff --git "a/\345\215\241\347\211\207\350\204\232\346\234\254\\\347\212\266\346\200\201\346\234\272.js.bak-before-gpt17" "b/\345\215\241\347\211\207\350\204\232\346\234\254\\\347\212\266\346\200\201\346\234\272.js"
+index d07a1b9..f0a9643 100644
+--- "a/\345\215\241\347\211\207\350\204\232\346\234\254\\\347\212\266\346\200\201\346\234\272.js.bak-before-gpt17"
++++ "b/\345\215\241\347\211\207\350\204\232\346\234\254\\\347\212\266\346\200\201\346\234\272.js"
+@@ -110,3 +110,3 @@ const FIELD_TABLE = [
+   
+-  { kind: 'ai', name: '九幽玄阴穴成形', desc: '孤月 · 九幽玄阴脉的伴生异穴，元阴初破、龙气贯体时成形（依据：【名器】九幽玄阴穴／【人物】孤月 秘密所在）', kws: ['九幽玄阴穴', '九幽玄阴脉'] },
++  { kind: 'ai', name: '九幽玄阴穴成形', desc: '孤月 · 九幽玄阴脉的伴生异穴，元阴初破时成形（依据：【名器】九幽玄阴穴／【人物】孤月 秘密所在）', kws: ['九幽玄阴穴', '九幽玄阴脉'] },
+   { kind: 'ai', name: '心魔茶璎乳成形', desc: '闻观语 · 蜜汁化乳、双峰泌灵乳三者齐现即彻底觉醒（依据：【设定】剧情发展简表「闻观语『心魔茶璎乳』显」）', kws: ['心魔茶璎乳', '璎珞茶蕊'] },
+@@ -122,3 +122,3 @@ const FIELD_TABLE = [
+   
+-  { kind: 'ai', name: '孤月处女丧失', desc: '孤月 · 九幽玄阴穴的持有者被破身（元阴初破、龙气贯体的那一刻）', kws: ['孤月处女丧失'] },
++  { kind: 'ai', name: '孤月处女丧失', desc: '孤月 · 九幽玄阴穴的持有者被破身（元阴初破的那一刻）', kws: ['孤月处女丧失'] },
+   { kind: 'ai', name: '叶红缨处女丧失', desc: '叶红缨 · 灼酒流炎穴的持有者被破身', kws: ['叶红缨处女丧失'] },
+@@ -436,2 +436,3 @@ function nextAcc(sdNow, messageId, stepM, hasTransit) {
+   let clipped = false;
++  let rejected = false;
+   if (Number(stepM) > 0) {
+@@ -439,10 +440,16 @@ function nextAcc(sdNow, messageId, stepM, hasTransit) {
+     clipped = raw > capM;
+-    adv = Math.min(raw, capM);
+-    acc = acc + adv;   /* 2026-10-08（gpt 04 号①）：不再逐步舍入到 4 位小数——否则 30 次「一日」（1/30）只累到 0.999，与「30 日＝1 月」不符 */
+-    /* 2026-10-08（gpt 04 号⑤）：超限不再静默截断——记下被截掉的量并落诊断。
+-       gpt 要求：异常大跳应诊断／待确认或拒绝，不得暗截后仍叙述「半年后」。
+-       下一批把它接到「待确认／拒绝」流程。 */
+-    if (clipped) console.warn('[历时·诊断] 本楼申报 ' + raw + ' 月 超过上限 ' + capM + ' 月，按 ' + adv + ' 月计入，被截 ' + (Math.round((raw - adv) * 10000) / 10000) + ' 月');
+-  }
+-  return { acc, adv, sameFloor, clipped, capM };
++    if (clipped) {
++      /* 2026-10-08（gpt 05 §4 L98 ↔ 17 号 §5-4）：超限**整笔不计**（拒绝），不再"按上限截一半计入"。
++         理由：截了却照写"五个月后"，玩家看到的日历与正文对不上；宁可这一笔记 0 并挂 [历时待确认]，
++         由玩家 /设置 或明写的合法转场来推进。 */
++      adv = 0;
++      rejected = true;
++      console.warn('[历时·拒绝] 本楼申报 ' + raw + ' 月 超过单笔上限 ' + capM + ' 月 ⇒ **整笔不计入**（累计保持 ' +
++        acc + ' 月）。要推这么多，请走合法转场（明写时间流逝）或由 GM 面板确认；后台已记 [历时待确认]。');
++    } else {
++      adv = raw;
++      acc = acc + adv;   /* 2026-10-08（gpt 04 号①）：不再逐步舍入到 4 位小数——否则 30 次「一日」（1/30）只累到 0.999，与「30 日＝1 月」不符 */
++    }
++  }
++  return { acc, adv, sameFloor, clipped, rejected, capM, raw: Number(stepM) || 0 };
+ }
+@@ -511,4 +518,8 @@ function parseLishi(s) {
+   if (!txt || /^[—\-－无]+$/.test(txt)) return 0;
+-  /* 2026-10-08（gpt 04 号④）：倒计时／计划不计增量。『距启程 3 日』『还有两日』一律 0。 */
+-  if (/倒计时|距[^，。；]{0,12}?[日天]|还有[^，。；]{0,6}?[日天]|将于|预定于/.test(txt)) return 0;
++  /* 2026-10-08（gpt 04 号④ ＋ 17 号 §5-4）：倒计时／**未来计划**不计增量。
++     『距启程 3 日』『还有两日』『师尊说三日后启程』『定于/拟于/约于 X』一律 0；
++     只有明写"已过／已经过／历经"的转场才算（例：『三日已过，我们启程』⇒ 计 3 日）。 */
++  const XSD_PASSED = /已过|已经过|过了|历经|这一过/.test(txt);
++  if (!XSD_PASSED && /倒计时|距[^，。；]{0,12}?[日天]|还有[^，。；]{0,6}?[日天]|将于|预定于|定于|拟于|约于/.test(txt)) return 0;
++  if (!XSD_PASSED && /((说|约定|打算|计划|准备|拟)[^，。；]{0,10}([日天月]|个月)(后|之后))|(([日天月]|个月)后[^，。；]{0,6}(启程|出发|动身|前往|赴))/.test(txt)) return 0;
+   let best = 0;
+@@ -1788,3 +1799,4 @@ async function applyMilestones(p, messageId, text) {
+   const _v = Array.isArray(p?.本轮已验证锚点) ? { good: p.本轮已验证锚点, bad: [], dropped: [] } : validateAnchors(list || [], proseForAnchor, messageId, known, bookIn);
+-  const good = _v.good, bad = _v.bad, dropped = _v.dropped, news = [];
++  const good = _v.good, bad = _v.bad, dropped = _v.dropped;
++  let news = [];
+   for (const f of good) if (known[f] !== true && !news.includes(f)) news.push(f);
+@@ -1890,22 +1902,19 @@ async function applyMilestones(p, messageId, text) {
+   }
+-  /* 2026-10-08（主人当面指定）：**柳含烟出场即判二阶段** —— 烟霞灵乳是反色名器、占据者阎雷子；
+-     她登场时（其人物条目正由 known['阎雷子脱困'] 注入 ⇒ 该锚点为真 ⟺ 她已出场）自动判定二阶段。 */
+-  if (known['阎雷子脱困'] === true || news.includes('阎雷子脱困')) {
+-    if (known['烟霞灵乳二阶段'] !== true && !news.includes('烟霞灵乳二阶段')) {
+-      news.push('烟霞灵乳二阶段');
+-      console.log(TAG, '↳ 派生：柳含烟出场（阎雷子脱困）⇒ 自动判定「烟霞灵乳二阶段」（反色）');
+-    }
+-  }
+-  /* 2026-10-08（主人当面指定）：**前置齐备即自动派发** —— 楚灵夜两项硬前置齐备时自动成形「般若菩提菊」，
+-     不再等模型自己来报（真机记录里两项齐备了却始终没报成形）。 */
+-  if (known['楚灵夜处女丧失'] === true && known['楚灵夜后窍开发'] === true
+-    && known['般若菩提菊成形'] !== true && !news.includes('般若菩提菊成形')) {
+-    news.push('般若菩提菊成形');
+-    console.log(TAG, '↳ 派生：楚灵夜两项前置齐备 ⇒ 自动成形「般若菩提菊」');
+-  }
+-  if ((known['烟霞灵乳二阶段'] === true || news.includes('烟霞灵乳二阶段'))
+-    && known['烟霞灵乳一阶段'] !== true && !news.includes('烟霞灵乳一阶段')) {
+-    news.push('烟霞灵乳一阶段');
+-    console.log(TAG, '↳ 派生：烟霞灵乳出场即第二境 ⇒ 补记「烟霞灵乳一阶段」');
+-  }
++  /* 2026-10-08（gpt 17 号 §2 ⑤⑦⑧）：两条"自动派发"改为**带来源账本的事务派生** ——
++     触发看正文实际出场实证（不再沿用 known['阎雷子脱困'] 当资格）；派发时补写明确 NPC 归属与来源；
++     依赖重算：账本里来源清零的才撤（人工来源不撤）。全过程在纯函数 `deriveRelicClosure` 里可离线测。 */
++  const 出场实证 = { 柳含烟: 出场实证名('柳含烟', proseOuter) };
++  const 派生账本旧 = (sd0.派生账本 && typeof sd0.派生账本 === 'object') ? sd0.派生账本 : {};
++  const 归属来源旧 = (sd0.名器归属来源 && typeof sd0.名器归属来源 === 'object') ? sd0.名器归属来源 : {};
++  const 闭包 = deriveRelicClosure({
++    known, news, ledger: 派生账本旧, 名器归属: sd0.名器归属 || {}, 归属来源: 归属来源旧,
++    messageId, 指纹: anchorFinger, 出场实证,
++  });
++  news = 闭包.news;
++  for (const l of 闭包.日志) console.log(TAG, '↳ 派生：' + l);
++  const 派生撤销 = 闭包.撤销 || [];
++  const 归属补写 = 闭包.归属补写 || {};
++  const 归属来源补写 = 闭包.归属来源补写 || {};
++  const 派生账本新 = 闭包.ledger || {};
++  const 派生账本变 = JSON.stringify(派生账本新) !== JSON.stringify(派生账本旧);
+ 
+@@ -1942,2 +1951,6 @@ async function applyMilestones(p, messageId, text) {
+   }
++  /* ⑦ 派生事务里写下的明确 NPC 归属（只在没有更强来源时；不覆盖玩家/GM 的写入） */
++  const 名器归属来源新 = Object.assign({}, 归属来源旧, 归属来源补写);
++  for (const k of Object.keys(归属补写)) relicOwners[k] = 归属补写[k];
++  const 归属来源变 = JSON.stringify(名器归属来源新) !== JSON.stringify(归属来源旧);
+   const ownersChanged = JSON.stringify(sd0.名器归属 || {}) !== JSON.stringify(relicOwners);
+@@ -2060,3 +2073,4 @@ async function applyMilestones(p, messageId, text) {
+   const needOwnerWrite = ownersChanged && Object.keys(relicOwners).length > 0;
+-  if (!news.length && !bookChanged && !needOwnerWrite && !invChanged && !dispatchChanged) {
++  const needDeriveWrite = 派生账本变 || 归属来源变 || 派生撤销.length > 0;
++  if (!news.length && !bookChanged && !needOwnerWrite && !needDeriveWrite && !invChanged && !dispatchChanged) {
+     console.log(TAG, `[实际发生] 第 ${messageId} 楼：${good.join('、') || '（无）'} —— 都已在账本里，无需写盘`);
+@@ -2070,2 +2084,10 @@ async function applyMilestones(p, messageId, text) {
+   }
++  /* ⑧ 派生账本与归属来源落盘；被撤销的派生写 false（墓碑在账本里是 null） */
++  if (派生账本变) patch.派生账本 = 派生账本新;
++  if (归属来源变) { patch.名器归属来源 = 名器归属来源新; patch.名器归属 = relicOwners; }
++  if (派生撤销.length) {
++    patch.known = patch.known || {};
++    for (const f of 派生撤销) patch.known[f] = false;
++    console.warn(TAG, `↩️ [派生回退] 第 ${messageId} 楼来源清零 ⇒ 撤销派生：${派生撤销.join('、')}`);
++  }
+   /* 记录本楼新置真的锚点（供回退用）；指纹一致时跳过（幂等） */
+@@ -2093,2 +2115,167 @@ async function applyMilestones(p, messageId, text) {
+ 
++/**
++ * 自由字段的一致性闸（2026-10-08 · gpt 17 号 §3 点名的那条"回喂通道"）
++ * ─────────────────────────────────────────────────────────────────────
++ * gpt 原话要点：「固定世界事件对这些状态的写入和再次渲染都做日期／前置一致性检查；
++ *   记录被拒值、来源与诊断，保留最后可信值，不把『传闻／计划』提升为已发生事实；
++ *   普通变化保留，按事件语义判断，**不以『有兽潮二字』一律拒绝**。」
++ *
++ * 判据（只拦"把未到的固定世界事件写成正在发生"这一类）：
++ *   · 仅看 局势／近闻／远闻／危机／目标／阶段总结 六个自由文本字段；
++ *   · 文本先过一遍**豁免表**（传闻／据说／将要／尚未／计划／若是…）—— 这些不算"已发生"，放行；
++ *   · 命中事件宣言句式后，用**可信数值日期**与事件起点比：日期不可信或未到起点 ⇒ 拒绝写入，
++ *     保留上一轮的可信值，并落 `自由字段闸` 诊断（后台，不进正文）；
++ *   · 日期已到 ⇒ 放行（正文可以演，事实由 `<实际发生>` 建立 —— 与阶段驱动的世界轴同一口径）。
++ */
++const FREE_FIELD_WHITELIST = ['局势', '近闻', '远闻', '危机', '目标', '阶段总结'];
++const FREE_WORLD_EVENTS = [
++  { 名: '南域大劫', 起点: 1578.08, 宣言: /(神诅|大劫)[^，。；！？]{0,10}(已|已经|正在|正|降下|降临|爆发|压在|笼罩)/ },
++  { 名: '正式兽潮', 起点: 1579.01, 宣言: /(兽潮|妖兽潮|围城)[^，。；！？]{0,12}(已|已经|正在|正|一波接一波|数日|兵临城下|破关|破门|压城|围了|杀到)/ },
++  { 名: '天溪城破', 起点: 1579.03, 宣言: /(城破|城陷|陷落|城门失守|城墙崩|大阵告破)/ },
++];
++const FREE_NEGATED_OR_PLAN = /传闻|据说|听说|谣传|或将|将要|即将|可能|恐怕|尚未|还没|未至|未到|计划|打算|预定|约期|若是|万一|倘若|假如|是否/;
++
++/** 返回 {ok:true} 或 {ok:false, 事件, 因由}（纯函数，可离线测）
++ *  ⚠️ 豁免是**按分句**判的：只有"含该事件宣言的那个分句"里出现传闻/计划/否定词才豁免。
++ *     否则「兽潮已破两处防区，援军未至」会因为末尾一句"未至"被整段放过（实测踩过）。 */
++function freeFieldGate(field, val, sd) {
++  if (FREE_FIELD_WHITELIST.indexOf(field) === -1) return { ok: true };
++  if (!val || typeof val !== 'string' || val === '—' || val === '无') return { ok: true };
++  const 分句 = String(val).split(/[，。；！？\n]/);
++  const 命中 = [];
++  for (const e of FREE_WORLD_EVENTS) {
++    for (const c of 分句) {
++      if (!e.宣言.test(c)) continue;
++      if (FREE_NEGATED_OR_PLAN.test(c)) continue;      /* 该分句是传闻/计划/否定 ⇒ 不算已发生 */
++      命中.push(e);
++      break;
++    }
++  }
++  if (!命中.length) return { ok: true };
++  const dnum = Number(sd && sd.仙盟历);
++  for (const e of 命中) {
++    if (!isFinite(dnum) || dnum < e.起点) {
++      return {
++        ok: false, 事件: e.名,
++        因由: !isFinite(dnum) ? '当前没有可信时点，无法证明「' + e.名 + '」已到' : ('当前 ' + dnum + ' 未到「' + e.名 + '」起点 ' + e.起点),
++      };
++    }
++  }
++  return { ok: true };
++}
++
++/* ══════════════════════════════════════════════════════════════════════════
++ * 派生：来源账本 ＋ 事务撤销（2026-10-08 · gpt 17 号 §2 ⑤⑦⑧ 同批修）
++ * ──────────────────────────────────────────────────────────────────────────
++ * gpt 原话要点：
++ *   ⑤ 「选**实际出场事件**的正文证据触发柳含烟派生，在场/暗处仅辅助；不沿用脱困资格；
++ *      名字提及、传闻、回忆、计划不算当前参与；缺证据不补真。」
++ *   ⑦ 「该项真实出场派生事务中，若归属尚未有更强的既成来源，写明确 NPC 归属与来源；
++ *      已有合法转移／玩家修改不得被每轮默认值覆盖；未出场不因 lord 有值就亮。」
++ *   ⑧ 「来源记录＋统一依赖重算／事务撤销；撤一个来源只去掉它的贡献，另有合法来源则保留；
++ *      阶段2撤销不能误删独立来源的阶段1；人工来源不静默消失；出场是历史事件，离场不撤二阶段。」
++ * ══════════════════════════════════════════════════════════════════════════ */
++
++/** 出场实证：本楼正文里**真的参与了当前场景**才算（提及／传闻／回忆／计划都不算）。
++ *  fail-closed：读不到正文一律不算。 */
++const APPEAR_VERBS = /(说|道|问|答|笑|叹|看|望|瞧|走|来|去|坐|立|站|行|伸手|抬手|握住|拦住|挡|递|接|点头|摇头|皱眉|转身|出声|开口|走进|出场|露面|现身|化作|扫过|俯|跪下|跪|抱|牵|扶|推|踢|挥|落座|饮|喝|吃)/;
++/* gpt ⑤：**传闻／回忆／计划都不算当前参与** —— 窗口里出现这些词就不认定（点名同理）。 */
++const APPEAR_EXCLUDE = /传闻|据说|听说|谣传|曾经|当年|昔年|记得|回忆|想起|梦见|将要|即将|打算|计划|预定|若是|万一|倘若|假如|是否|尚未|还没|未至|未到|提到|提起|之名|的名字|画像|名录/;
++function 出场实证名(name, prose) {
++  const t = String(prose || '');
++  const nm = String(name || '');
++  if (!nm) return { ok: false, why: '角色名为空' };
++  if (!t) return { ok: false, why: '本楼读不到正文 ⇒ 不予认定（fail-closed）' };
++  const esc = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
++  const re = new RegExp('(.{0,24})' + esc + '(.{0,32})', 'g');
++  let m, 试 = 0;
++  while ((m = re.exec(t)) && 试 < 40) {
++    试++;
++    const 窗 = m[1] + nm + m[2];
++    if (APPEAR_EXCLUDE.test(窗)) continue;                 /* 传闻／回忆／计划／点名 ⇒ 不算出场 */
++    if (negatedAround(t, new RegExp(esc))) continue;       /* 同一句里是否定／未发生 ⇒ 不算 */
++    if (APPEAR_VERBS.test(窗)) return { ok: true, 证据: 窗.replace(/\s+/g, ' ').slice(0, 70) };
++    if (re.lastIndex <= m.index) re.lastIndex = m.index + 1;
++  }
++  return { ok: false, why: '正文里没有「' + nm + '」参与当前场景的实证（点名／传闻／回忆／计划不算）' };
++}
++
++/** 纯函数：算本轮派生闭包（不写盘）。可离线测。
++ *  @param inp { known, news, ledger, 名器归属, 归属来源, messageId, 指纹, 出场实证 }
++ *  @returns { news, ledger, 归属补写, 归属来源补写, 撤销, 日志 } */
++function deriveRelicClosure(inp) {
++  const known = inp.known || {};
++  const news = (inp.news || []).slice();
++  const ledger = JSON.parse(JSON.stringify(inp.ledger || {}));
++  const 归属来源 = Object.assign({}, inp.归属来源 || {});
++  const messageId = inp.messageId;
++  const 指纹 = String(inp.指纹 || '');
++  const 出场实证 = inp.出场实证 || {};
++  const 撤销 = [], 日志 = [], 归属补写 = {}, 归属来源补写 = {};
++  let ledgerChanged = false;
++  const has = (f) => known[f] === true || news.includes(f);
++  const 来源表 = (f) => (ledger[f] && Array.isArray(ledger[f].来源)) ? ledger[f].来源 : null;
++  const 记来源 = (f, 类型, 键, 证据) => {
++    if (!ledger[f] || !Array.isArray(ledger[f].来源)) { ledger[f] = { 来源: [] }; ledgerChanged = true; }
++    if (!ledger[f].来源.some((s) => s.键 === 键)) {
++      ledger[f].来源.push({ 键, 类型, 楼: Number(messageId) || null, 指纹, 证据: String(证据 || '').slice(0, 70) });
++      ledgerChanged = true;
++    }
++  };
++  const 有类型 = (f, 类型) => (来源表(f) || []).some((s) => s.类型 === 类型);
++
++  /* ⑤① 柳含烟**实际出场** ⇒ 烟霞灵乳二阶段（不再沿用 known['阎雷子脱困'] 当资格） */
++  const 场 = 出场实证['柳含烟'];
++  if (场 && 场.ok) 记来源('烟霞灵乳二阶段', '出场实证', '柳含烟出场', 场.证据);
++  if (场 && 场.ok && !has('烟霞灵乳二阶段')) {
++    news.push('烟霞灵乳二阶段');
++    日志.push('柳含烟实际出场（正文实证：' + (场.证据 || '') + '）⇒ 烟霞灵乳二阶段');
++  }
++  /* ⑦ 归属：只在"出场实证"这条来源在场时补写，且不覆盖既有的更强来源 */
++  if (has('烟霞灵乳二阶段') && 有类型('烟霞灵乳二阶段', '出场实证')) {
++    const 现 = (inp.名器归属 || {})['烟霞灵乳'] || null;
++    const 旧来源 = 归属来源['烟霞灵乳'] || null;
++    if (!现) {
++      归属补写['烟霞灵乳'] = '阎雷子';
++      归属来源补写['烟霞灵乳'] = { 归属者: '阎雷子', 来源: '柳含烟实际出场（正文实证）', 由脚本写: true, 楼: Number(messageId) || null };
++    } else if (旧来源 && 旧来源.由脚本写 === true) {
++      if (现 !== '阎雷子') { 归属补写['烟霞灵乳'] = '阎雷子'; 归属来源补写['烟霞灵乳'] = { 归属者: '阎雷子', 来源: '柳含烟实际出场（正文实证）', 由脚本写: true, 楼: Number(messageId) || null }; }
++    } else {
++      日志.push('归属保持既有来源「' + 现 + '」—— 脚本不覆盖玩家/GM 的写入');
++    }
++  }
++  /* ⑥ 楚灵夜两项硬前置齐备 ⇒ 般若菩提菊成形（来源＝前置齐备） */
++  const 前置齐 = known['楚灵夜处女丧失'] === true && known['楚灵夜后窍开发'] === true;
++  if (前置齐) 记来源('般若菩提菊成形', '前置齐备', '楚灵夜双前置', '处女丧失＋后窍开发');
++  if (前置齐 && !has('般若菩提菊成形')) {
++    news.push('般若菩提菊成形');
++    日志.push('楚灵夜两项前置齐备 ⇒ 般若菩提菊成形');
++  }
++  /* ④ 出场即二境：一阶段随二阶段（依赖来源），但**保留**它自己的独立来源 */
++  if (has('烟霞灵乳二阶段')) 记来源('烟霞灵乳一阶段', '依赖', '烟霞灵乳二阶段成立', '出场即二境');
++  if (has('烟霞灵乳二阶段') && !has('烟霞灵乳一阶段')) {
++    news.push('烟霞灵乳一阶段');
++    日志.push('烟霞灵乳出场即第二境 ⇒ 补记一阶段');
++  }
++
++  /* ⑧ 依赖重算：账本里"来源清零"的字段才撤 —— 人工来源永不自动撤；别的合法来源在场则保留 */
++  for (const f of Object.keys(ledger)) {
++    if (!ledger[f]) continue;
++    const 剩 = ledger[f].来源 || [];
++    const 人工 = 剩.some((s) => s.类型 === '人工');
++    if (剩.length === 0 && !人工) {
++      const i = news.indexOf(f);
++      if (i >= 0) news.splice(i, 1);
++      else if (known[f] === true) 撤销.push(f);
++      ledger[f] = null;                                    /* 墓碑（深合并不认 delete） */
++      ledgerChanged = true;
++      日志.push('来源清零 ⇒ 撤销派生「' + f + '」（写 null 墓碑）');
++    } else if (人工 && has(f) === false && known[f] !== true) {
++      /* 有人工来源但字段是 false ⇒ 说明被手工撤过；不自动补回 */
++      日志.push('「' + f + '」有人工来源但当前为假 ⇒ 不自动补回');
++    }
++  }
++  return { news, ledger, ledgerChanged, 归属补写, 归属来源补写, 撤销, 日志 };
++}
++
+ /**
+@@ -2130,3 +2317,9 @@ async function applyStatusToVars(text, messageId) {
+       if (capturedSummary) {
+-        patch.阶段总结 = capturedSummary;
++        const gS = freeFieldGate('阶段总结', capturedSummary, sdNow);
++        if (gS.ok) {
++          patch.阶段总结 = capturedSummary;
++        } else {
++          console.warn(TAG, `⛔ [自由字段闸] 第 ${messageId} 楼「阶段总结」被拒（保留旧值）：${gS.因由}`);
++          patch.自由字段闸 = { 楼: Number(messageId), 项: [{ 字段: '阶段总结', 被拒值: String(capturedSummary).slice(0, 60), 事件: gS.事件, 因由: gS.因由 }] };
++        }
+         patch.结算待办 = 0;
+@@ -2154,2 +2347,7 @@ async function applyStatusToVars(text, messageId) {
+   const blanks = [];
++  /* 2026-10-08（gpt 17 号 §3）：自由文本字段过一致性闸 —— 未到的固定世界事件不许被写成"正在发生"，
++     被拒的值不写盘（保留上一轮的可信值），只落后台诊断。 */
++  const sdGate = readStatData() || {};
++  const 自由字段闸 = [];
++  let 自由字段闸有拒 = false;
+   for (const k of DISPLAY_FIELDS) {
+@@ -2157,4 +2355,17 @@ async function applyStatusToVars(text, messageId) {
+     if (p.fields[k] === '') { blanks.push(k); continue; }
++    const g = freeFieldGate(k, p.fields[k], sdGate);
++    if (!g.ok) {
++      自由字段闸有拒 = true;
++      自由字段闸.push({ 字段: k, 被拒值: String(p.fields[k]).slice(0, 60), 事件: g.事件, 因由: g.因由 });
++      console.warn(TAG, `⛔ [自由字段闸] 第 ${messageId} 楼「${k}」被拒（保留旧值）：${g.因由}｜原值「${String(p.fields[k]).slice(0, 40)}」`);
++      continue;
++    }
+     patch[k] = p.fields[k];
+   }
++  if (自由字段闸.length) {
++    patch.自由字段闸 = { 楼: Number(messageId), 项: 自由字段闸 };
++    try { toast('warning', '本楼有 ' + 自由字段闸.length + ' 个自由字段写了"尚未到时的世界事件"，已按未发生处理（保留上一轮值）：' + 自由字段闸.map((x) => x.字段).join('、'), 12000); } catch (e) { /* 忽略 */ }
++  } else {
++    patch.自由字段闸 = null;
++  }
+   if (blanks.length) console.log(TAG, `[状态条] 第 ${messageId} 楼这些字段是空值，保留旧值：${blanks.join('、')}`);
+@@ -2165,6 +2376,14 @@ async function applyStatusToVars(text, messageId) {
+     if (capturedSummary) {
+-      patch.阶段总结 = capturedSummary;
++      const gS2 = freeFieldGate('阶段总结', capturedSummary, sdNow);
++      if (gS2.ok) {
++        patch.阶段总结 = capturedSummary;
++        console.log(TAG, `[阶段总结] 第 ${messageId} 楼成功捕获阶段纪事存档（${capturedSummary.length} 字），已持久化进账本并清除待办`);
++      } else {
++        console.warn(TAG, `⛔ [自由字段闸] 第 ${messageId} 楼「阶段总结」被拒（保留上一份可信总结）：${gS2.因由}`);
++        patch.自由字段闸 = Object.assign({ 楼: Number(messageId) }, patch.自由字段闸 || {}, {
++          项: ((patch.自由字段闸 && patch.自由字段闸.项) || []).concat([{ 字段: '阶段总结', 被拒值: String(capturedSummary).slice(0, 60), 事件: gS2.事件, 因由: gS2.因由 }]),
++        });
++      }
+       patch.结算待办 = 0;
+       patch.总结待办 = 0;
+-      console.log(TAG, `[阶段总结] 第 ${messageId} 楼成功捕获阶段纪事存档（${capturedSummary.length} 字），已持久化进账本并清除待办`);
+     }
+@@ -2308,2 +2527,10 @@ patch.历基准 = basis;
+       patch.本楼历时加速 = adv;
++      /* 2026-10-08（gpt 17 号 §5-4）：超限整笔拒绝时，留下一笔"待确认"账 —— 后台可查、玩家可改，
++         下一轮不会因为"本轮记 0"就把申报的那段时间当成没发生过。 */
++      if (accR.rejected) {
++        patch.历时待确认 = { 楼: Number(messageId), 申报月: accR.raw, 上限月: accR.capM, 原因: '单笔超过上限，整笔未计入（走合法转场或 GM 确认）' };
++        try { toast('warning', '本楼申报的历时（' + accR.raw + ' 月）超过单笔上限（' + accR.capM + ' 月），已整笔未计入；要推进请用明写的时间流逝或 GM 面板确认。', 12000); } catch (e) { /* 忽略 */ }
++      } else {
++        patch.历时待确认 = null;     /* 墓碑：本轮没有待确认项就清掉上一笔 */
++      }
+       patch.仙盟历 = monthsToYm(curBaseM + acc);

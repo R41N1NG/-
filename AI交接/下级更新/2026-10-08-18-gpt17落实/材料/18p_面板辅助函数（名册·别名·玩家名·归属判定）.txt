@@ -1,0 +1,195 @@
+# 面板辅助函数（名册 · 别名 · 玩家名 · 归属判定）—— 供 gpt 复验（2026-10-08 · 第 18 批）
+
+源文件：E:/角色卡制作/仙姝堕/卡片脚本/状态栏面板.js
+源 SHA256：ffcc11e13ad445b16ac2a676cc4d2a8a05012729fb4f52c36fa928a64b1e1722　字符数：338908　行数：2972
+（`xsdRelicState` 的全文已在第 17 批 `17h_派发与面板_代码原文（带行号）.txt` 里给过，这里再附一次以保持本批自足。）
+
+## 1) 卡片自带名册 XSD_PINYIN（立绘命名表 = 判定"是不是剧中人"的唯一名册来源）
+键（26 个）：闻观语、孤月、叶红缨、楚灵夜、柳含烟、赵无忧、玄机子、云逸尘、炎雷子、苏瑶、苏玲、九皇子、残阳老怪、肉山佛、病相思、花芷凝、陆十三、陆烬颜、雨霏柔、云织梦、极乐太子、炼欲魔君、花间二鬼、厉锋、石岩、柳玉
+
+```js
+行 246–273：
+  246 | const XSD_PINYIN = {
+  247 |   '闻观语': 'wenguanyu',        /* 大师姐／千叶先生 · 墨绿 */
+  248 |   '孤月': 'guyue',              /* 剑仙子 · 冷白＋冰蓝 */
+  249 |   '叶红缨': 'yehongying',       /* 炎姬 · 赤红＋金 */
+  250 |   '楚灵夜': 'chulingye',        /* 金花公主 · 暖白＋嫩粉 */
+  251 |   '柳含烟': 'liuhanyan',        /* 师娘（后期）· 黑红＋牡丹 */
+  252 |   '赵无忧': 'zhaowuyou',        /* 男主 · 玄青 */
+  253 |   '玄机子': 'xuanjizi',         /* 本名陆藏锋 · 青灰 */
+  254 |   '云逸尘': 'yunyichen',        /* 三师兄 · 云青 */
+  255 |   '炎雷子': 'yanleizi',         /* 道主 · 赤雷 */
+  256 |   '苏瑶': 'suyao',              /* 听雪双姝 · 月白 */
+  257 |   '苏玲': 'suling',             /* 听雪双姝 · 月白 */
+  258 |   '九皇子': 'jiuhuangzi',       /* 玄黑＋金 */
+  259 |   '残阳老怪': 'canyanglaoguai', /* 焚欲殿主 · 灰败＋蛊火暗红 */
+  260 |   '肉山佛': 'roushanfo',        /* 欢喜殿主 · 暗黄 */
+  261 |   '病相思': 'bingxiangsi',      /* 魂欢殿主 · 惨绿 */
+  262 |   '花芷凝': 'huazhining',       /* 花仙城主 · 桃粉 */
+  263 |   '陆十三': 'lushisan',         /* 土黄 */
+  264 |   '陆烬颜': 'lujinyan',         /* 淡紫 */
+  265 |   '雨霏柔': 'yufeirou',         /* 阵道大能 · 深蓝 */
+  266 |   '云织梦': 'yunzhimeng',       /* 师尊之徒 · 墨黑＋金＋玫瑰 */
+  267 |   '极乐太子': 'jiletaizi',      /* 天姝会主宰 · 血紫＋暗金 */
+  268 |   '炼欲魔君': 'lianyumojun',    /* 欲火峰峰主 · 深红近黑＋古铜 */
+  269 |   '花间二鬼': 'huajianergui',   /* 荒漠邪修兄弟 · 土褐＋青黑 */
+  270 |   '厉锋': 'lifeng',             /* 九皇子爪牙 · 褐黑＋口罩 */
+  271 |   '石岩': 'shiyan',             /* 九皇子爪牙 · 铁灰＋铁护面 */
+  272 |   '柳玉': 'liuyu',              /* 九皇子爪牙 · 炭蓝＋兜帽阴影 */
+  273 | };
+```
+
+## 2) XSD_IDENT_GROUPS（同一人物的不同写法／称号：殿主称号 ↔ 本名）
+```js
+行 2203–2209：
+ 2203 | const XSD_IDENT_GROUPS = [
+ 2204 |   ['魂欢殿主', '病相思', '鬼医病相思', '鬼醫病相思'],
+ 2205 |   ['焚欲殿主', '残阳老怪', '焚欲殿'],
+ 2206 |   ['欢喜殿主', '肉山佛', '欢喜殿'],
+ 2207 |   ['浊龙殿主', '九皇子', '浊龙殿'],
+ 2208 |   ['赵无忧'],
+ 2209 | ];
+```
+
+## 3) xsdPlayerNames —— 玩家名从宿主上下文取（不枚举名单）
+```js
+行 2213–2227：
+ 2213 | function xsdPlayerNames() {
+ 2214 |   const out = [];
+ 2215 |   const push = (v) => { const s = s0(v); if (s && out.indexOf(s) === -1) out.push(s); };
+ 2216 |   const getS = (w) => { try { return w && w.SillyTavern; } catch (e) { return null; } };
+ 2217 |   let wins = [];
+ 2218 |   try { wins.push(window); } catch (e) { /* 忽略 */ }
+ 2219 |   try { wins.push(window.parent); } catch (e) { /* 忽略 */ }
+ 2220 |   try { wins.push(window.top); } catch (e) { /* 忽略 */ }
+ 2221 |   for (const w of wins) {
+ 2222 |     const S = getS(w);
+ 2223 |     if (!S || typeof S.getContext !== "function") continue;
+ 2224 |     try { const c = S.getContext(); push(c && c.name1); push(c && c.name2); } catch (e) { /* 跨源 */ }
+ 2225 |   }
+ 2226 |   return out;
+ 2227 | }
+```
+
+## 4) xsdIsCast —— 是否剧中人（只看上面那张名册 + 别名组）
+```js
+行 2230–2239：
+ 2230 | function xsdIsCast(nm) {
+ 2231 |   const y = s0(nm);
+ 2232 |   if (!y) return false;
+ 2233 |   try {
+ 2234 |     const table = (typeof XSD_PINYIN === "object" && XSD_PINYIN) ? Object.keys(XSD_PINYIN) : [];
+ 2235 |     for (const n of table) { const k = s0(n); if (k && (y.indexOf(k) !== -1 || k.indexOf(y) !== -1)) return true; }
+ 2236 |   } catch (e) { /* 表不可用 */ }
+ 2237 |   for (const g of XSD_IDENT_GROUPS) { for (const n of g) { if (y.indexOf(n) !== -1) return true; } }
+ 2238 |   return false;
+ 2239 | }
+```
+
+## 5) xsdSamePerson —— 别名／口径统一的相等判定
+```js
+行 2240–2250：
+ 2240 | function xsdSamePerson(a, b) {
+ 2241 |   const x = s0(a); const y = s0(b);
+ 2242 |   if (!x || !y) return false;
+ 2243 |   if (x === y || x.indexOf(y) !== -1 || y.indexOf(x) !== -1) return true;
+ 2244 |   for (const g of XSD_IDENT_GROUPS) {
+ 2245 |     let hx = false, hy = false;
+ 2246 |     for (const n of g) { if (x.indexOf(n) !== -1) hx = true; if (y.indexOf(n) !== -1) hy = true; }
+ 2247 |     if (hx && hy) return true;
+ 2248 |   }
+ 2249 |   return false;
+ 2250 | }
+```
+
+## 6) xsdRelicState —— 解锁／归属／other 判定的真身
+```js
+行 2251–2337：
+ 2251 | 
+ 2252 | function xsdRelicState(rel, known, identity, customOwners) {
+ 2253 |     const K = known || {};
+ 2254 |     let formed = false;
+ 2255 |     if (rel.c && K[rel.c] === true) formed = true;
+ 2256 |     for (let n = 1; n <= rel.a; n++) { if (K[rel.s + XSD_RELIC_CN[n] + '阶段'] === true) { formed = true; break; } }
+ 2257 |     if (!formed) return { state: 'none', owner: '', arcs: 0, owned: false };
+ 2258 | 
+ 2259 |     let hi = 0;
+ 2260 |     for (let n = 1; n <= rel.a; n++) { if (K[rel.s + XSD_RELIC_CN[n] + '阶段'] === true) hi = n; }
+ 2261 |     const arcs = Math.max(1, hi);
+ 2262 | 
+ 2263 |     const idText = s0(identity);
+ 2264 |     const isLord = (lord, hall) => {
+ 2265 |       if (hall && idText.indexOf(hall) !== -1) return true;
+ 2266 |       if (lord && idText.indexOf(lord) !== -1) return true;
+ 2267 |       return false;
+ 2268 |     };
+ 2269 |     const isCustomExplicit = idText.indexOf('自设') !== -1 || idText.indexOf('玩家') !== -1 || idText.indexOf('{{user}}') !== -1;
+ 2270 |     const isZhao = !isCustomExplicit && (idText.indexOf('赵无忧') !== -1);
+ 2271 |     const isLordAny = isLord('残阳老怪', '焚欲殿主') || isLord('肉山佛', '欢喜殿主') || isLord('九皇子', '浊龙殿主') || isLord('病相思', '魂欢殿主');
+ 2272 |     const isCustom = isCustomExplicit || (!isZhao && !isLordAny);
+ 2273 | 
+ 2274 |     // 1. 显式自定义归属表 (stat_data.名器归属)
+ 2275 |     let owner = '';
+ 2276 |     if (customOwners && typeof customOwners === 'object') {
+ 2277 |       const specified = customOwners[rel.n] || customOwners[rel.id];
+ 2278 |       if (specified) owner = String(specified).trim();
+ 2279 |     }
+ 2280 | 
+ 2281 |     // 2. 依据剧情事实与当前局势判定归属者
+ 2282 |     if (!owner) {
+ 2283 | 
+ 2284 |       if (isCustom) {
+ 2285 | 
+ 2286 |         owner = idText || '自设';
+ 2287 |       } else if (isZhao) {
+ 2288 |         owner = '赵无忧';
+ 2289 |       } else if (rel.lord && isLord(rel.lord, rel.hall)) {
+ 2290 |         owner = rel.lord;                       // 殿主本人：该殿名下的名器归他
+ 2291 |       } else if (rel.hall && isLord(rel.lord, rel.hall)) {
+ 2292 |         owner = rel.hall;
+ 2293 |       } else {
+ 2294 |         owner = idText || '自设';
+ 2295 |       }
+ 2296 |     }
+ 2297 | 
+ 2298 |     // 3. 校验：当前身份是否等于归属者
+ 2299 |     const _playerNames = xsdPlayerNames();
+ 2300 |     const mine = (nm) => {
+ 2301 |       if (xsdSamePerson(nm, idText)) return true;
+ 2302 |       for (const p of _playerNames) { if (xsdSamePerson(nm, p)) return true; }
+ 2303 |       return false;
+ 2304 |     };
+ 2305 |     const isMe = (function() {
+ 2306 |       if (!owner) return false;
+ 2307 |       if (owner === '玩家' || owner === '{{user}}') return true;
+ 2308 |       if (isZhao && (owner === '赵无忧' || owner.includes('赵无忧'))) return true;
+ 2309 |       if (isCustom) {
+ 2310 |         /* 自设：**结构性判定**，不枚举玩家名（主人 2026-10-07 指正）。
+ 2311 |            ① 归属者＝玩家本人（宿主 persona 名，或本人身份文本）⇒ 自己；
+ 2312 |            ② 归属者命中卡片自带名册（立绘命名表 18 名）或别名组（四殿主称号↔本名）⇒ 剧中人 ⇒ 他人；
+ 2313 |            ③ 其余（任何玩家自取的名字）⇒ 算自己。 */
+ 2314 |         if (mine(owner)) return true;
+ 2315 |         if (xsdIsCast(owner)) return false;
+ 2316 |         return true;
+ 2317 |       }
+ 2318 |       if (rel.lord && owner === rel.lord && isLord(rel.lord, rel.hall)) return true;
+ 2319 |       if (rel.hall && owner === rel.hall && isLord(rel.lord, rel.hall)) return true;
+ 2320 |       if (xsdSamePerson(owner, idText)) return true;   /* 别名／口径统一：殿主称号 ↔ 本名 */
+ 2321 |       return false;
+ 2322 |     })();
+ 2323 |     if (!isMe) {
+ 2324 |       try {
+ 2325 |         console.log(TAG, '[名器归属·诊断] ' + rel.n + '：身份=「' + idText + '」｜归属=「' + owner + '」'
+ 2326 |           + '｜身份判定：自设=' + isCustom + '／赵无忧=' + isZhao + '／任一殿主=' + isLordAny
+ 2327 |           + '｜名器表 lord=「' + String(rel.lord || '') + '」hall=「' + String(rel.hall || '') + '」'
+ 2328 |           + '（判为他人 ⇒ 纹章会反色）');
+ 2329 |       } catch (e) { /* 诊断失败不影响功能 */ }
+ 2330 |     }
+ 2331 | 
+ 2332 |     if (isMe) {
+ 2333 |       return { state: 'self', owner, arcs, owned: true };
+ 2334 |     } else {
+ 2335 |       return { state: 'other', owner, arcs, owned: false };
+ 2336 |     }
+ 2337 |   }
+```

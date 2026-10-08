@@ -1,0 +1,9 @@
+﻿diff --git "a/tools\\_update_clean_briefs.js.bak-before-nodragon" "b/tools\\_update_clean_briefs.js"
+index 4083b5b..da81591 100644
+--- "a/tools\\_update_clean_briefs.js.bak-before-nodragon"
++++ "b/tools\\_update_clean_briefs.js"
+@@ -6,3 +6,3 @@ const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+ const briefs = {
+-  jiuyouxuanyinxue: '阴窍至极名器，位列《极乐引》绝品。宿主身负世间至阴玄冥之气，深邃如坠万载寒潭，凡俗阳气触之即冻，唯有至阳龙气方能引动其深层造化。常与九幽玄阴脉伴生。',
++  jiuyouxuanyinxue: '阴窍至极名器，位列《极乐引》绝品。宿主身负世间至阴玄冥之气，深邃如坠万载寒潭，凡俗阳气触之即冻，常与九幽玄阴脉伴生。',
+   zhuojiuliuyanxue: '阴窍绝品名器，出自《极乐引》名器谱，称其足以燃情蚀骨、醉倒仙神。花宫深处有纯阳酒泉，情动时溢散陈酿异香，炽热如熔岩暗涌，能反激交合者阳煞生机。',

@@ -1,0 +1,139 @@
+{
+  "门来源": "_staging_2026-10-08-18\\仙姝堕.json",
+  "门首行": {
+    "大劫": "@@if (function(){try{return (((variables.stat_data?.身份 === '赵无忧' && (Number(variables.stat_data?.仙盟历) >= 1578.08) && (variables.stat_data?.known?.['进入幽寂谷'] === true || variables.stat_data?.known?.['玄机子胁迫过叶红缨'] === true || Number(variables.stat_data?.段位 ?? 1) >= 4)) && !(variables.stat_data?.known?.['南域大劫'] === true)))}catch(e){return false}})()",
+    "兽潮": "@@if (function(){try{return (((variables.stat_data?.身份 === '赵无忧' && (Number(variables.stat_data?.仙盟历) >= 1579.01) && (variables.stat_data?.known?.['已抵达天溪'] === true || variables.stat_data?.known?.['受征召南下'] === true) && !(variables.stat_data?.known?.['天溪城兽潮'] === true || variables.stat_data?.known?.['兽潮血战'] === true)) && (variables.stat_data?.known?.['南域大劫'] === true)))}catch(e){return false}})()",
+    "城破": "@@if (function(){try{return (((variables.stat_data?.身份 === '赵无忧' && (Number(variables.stat_data?.仙盟历) >= 1579.03) && (variables.stat_data?.known?.['双姝回归'] === true || variables.stat_data?.known?.['已抵达天溪'] === true) && !(variables.stat_data?.known?.['天溪城破'] === true)) && (variables.stat_data?.known?.['南域大劫'] === true) && (variables.stat_data?.known?.['天溪城兽潮'] === true || variables.stat_data?.known?.['兽潮血战'] === true)))}catch(e){return false}})()"
+  },
+  "用例数": 18,
+  "通过": 18,
+  "失败": 0,
+  "明细": [
+    {
+      "用例": "大劫 · ①日期未到＋高段位＋个人前置真＋未完成",
+      "门": "大劫",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "大劫 · ②日期到＋前置真＋未完成",
+      "门": "大劫",
+      "期望": true,
+      "实测": true,
+      "通过": true
+    },
+    {
+      "用例": "大劫 · ③日期到但个人前置全缺",
+      "门": "大劫",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "大劫 · ④已完成（上界真）",
+      "门": "大劫",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "大劫 · ⑤身份不符（自设）",
+      "门": "大劫",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "大劫 · ⑥缺日期",
+      "门": "大劫",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "兽潮 · ①日期未到＋段位16＋已抵达真＋大劫真",
+      "门": "兽潮",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "兽潮 · ②日期到＋场景前置真＋大劫真＋兽潮未立",
+      "门": "兽潮",
+      "期望": true,
+      "实测": true,
+      "通过": true
+    },
+    {
+      "用例": "兽潮 · ③日期到但场景前置假（只有段位16）",
+      "门": "兽潮",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "兽潮 · ④已完成（兽潮或血战已真）",
+      "门": "兽潮",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "兽潮 · ⑤身份不符（自设）",
+      "门": "兽潮",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "兽潮 · ⑥缺日期",
+      "门": "兽潮",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "城破 · ①日期未到＋双姝真＋大劫真＋兽潮真＋段位16",
+      "门": "城破",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "城破 · ②日期到＋场景真＋大劫真＋兽潮真",
+      "门": "城破",
+      "期望": true,
+      "实测": true,
+      "通过": true
+    },
+    {
+      "用例": "城破 · ③日期到但兽潮前置缺",
+      "门": "城破",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "城破 · ④已完成（城破已真）",
+      "门": "城破",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "城破 · ⑤身份不符（自设）",
+      "门": "城破",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    },
+    {
+      "用例": "城破 · ⑥缺日期",
+      "门": "城破",
+      "期望": false,
+      "实测": false,
+      "通过": true
+    }
+  ]
+}

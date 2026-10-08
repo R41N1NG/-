@@ -1,0 +1,32 @@
+{
+  "世界书": "E:/角色卡制作/仙姝堕/references/仙姝墮-世界书.json",
+  "改前SHA": "555b58a1d9750aefc5db9092e68802750eb88a597e749eda0316ed30b3dd6fa7",
+  "条目改动": [
+    {
+      "uid": 32,
+      "名字": "【剧情】四 · 南域大劫 · 天姝会成立（神诅与四殿）",
+      "结果": "已替换首行",
+      "说明": "硬日期 ≥1578.08 包住整个 OR；段位 4 的支路仍在 OR 里，但已无法越过日期；上界仍是 ¬南域大劫（启动入口不要求自身完成）",
+      "旧门": "@@if (variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['进入幽寂谷'] === true || variables.stat_data?.known?.['玄机子胁迫过叶红缨'] === true || Number(variables.stat_data?.段位 ?? 1) >= 4) && !(variables.stat_data?.known?.['南域大劫'] === true)))",
+      "新门": "@@if ((variables.stat_data?.身份 === '赵无忧' && (Number(variables.stat_data?.仙盟历) >= 1578.08) && (variables.stat_data?.known?.['进入幽寂谷'] === true || variables.stat_data?.known?.['玄机子胁迫过叶红缨'] === true || Number(variables.stat_data?.段位 ?? 1) >= 4)) && !(variables.stat_data?.known?.['南域大劫'] === true))"
+    },
+    {
+      "uid": 35,
+      "名字": "【剧情】七 · 兽潮血战 · 玄机子装伤脱身",
+      "结果": "已替换首行",
+      "说明": "硬日期 ≥1579.01；场景前置改为「已抵达天溪 ∨ 受征召南下」（去掉段位兜底）；大劫事实保留；上界仍是兽潮未立",
+      "旧门": "@@if ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['已抵达天溪'] === true || Number(variables.stat_data?.段位 ?? 1) >= 7) && !(variables.stat_data?.known?.['天溪城兽潮'] === true || variables.stat_data?.known?.['兽潮血战'] === true))) && (variables.stat_data?.known?.['南域大劫'] === true))",
+      "新门": "@@if ((variables.stat_data?.身份 === '赵无忧' && (Number(variables.stat_data?.仙盟历) >= 1579.01) && (variables.stat_data?.known?.['已抵达天溪'] === true || variables.stat_data?.known?.['受征召南下'] === true) && !(variables.stat_data?.known?.['天溪城兽潮'] === true || variables.stat_data?.known?.['兽潮血战'] === true)) && (variables.stat_data?.known?.['南域大劫'] === true))"
+    },
+    {
+      "uid": 39,
+      "名字": "【剧情】十一 · 天溪城破",
+      "结果": "已替换首行",
+      "说明": "硬日期 ≥1579.03；兽潮前置（天溪城兽潮 ∨ 兽潮血战）；场景前置用双姝回归 ∨ 已抵达天溪（去掉段位兜底）",
+      "旧门": "@@if ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['双姝回归'] === true || Number(variables.stat_data?.段位 ?? 1) >= 11) && !(variables.stat_data?.known?.['天溪城破'] === true))) && (variables.stat_data?.known?.['南域大劫'] === true))",
+      "新门": "@@if ((variables.stat_data?.身份 === '赵无忧' && (Number(variables.stat_data?.仙盟历) >= 1579.03) && (variables.stat_data?.known?.['双姝回归'] === true || variables.stat_data?.known?.['已抵达天溪'] === true) && !(variables.stat_data?.known?.['天溪城破'] === true)) && (variables.stat_data?.known?.['南域大劫'] === true) && (variables.stat_data?.known?.['天溪城兽潮'] === true || variables.stat_data?.known?.['兽潮血战'] === true))"
+    }
+  ],
+  "改后SHA": "7614dca436d4608d8728cdbad4f358901e8ecc6345be11f5f0c953071b37de50",
+  "改动条数": 3
+}
