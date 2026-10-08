@@ -10,6 +10,7 @@ const browserFixture = fixture.toString().replace('host: new Host(root)', 'host:
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://localhost');
   if (u.pathname === '/data') { res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify(imported)); }
+  if (u.pathname === '/old-ready') {res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({...imported,content:imported.content.replace('Branch Story Engine v1.4.4','Branch Story Engine v1.4.3')}));}
   if (u.pathname === '/old') { res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({type: 'script', content: '/* old version */'})); }
   if (u.pathname === '/plugin.js') { res.setHeader('Content-Type', 'text/javascript'); return res.end(imported.content); }
   if (u.pathname === '/missing' || u.pathname === '/invalid') {
@@ -21,7 +22,7 @@ const server = http.createServer((req, res) => {
     if (mode === 'csp') res.setHeader('Content-Security-Policy', "script-src 'self' 'unsafe-inline'; connect-src 'self'");
     const proxy = `const docProxy = new Proxy(parent.document, {get(target, key) {const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value;}}); const parentProxy=new Proxy(parent,{get(target,key){if(key==='document')return docProxy;const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value;}});Object.defineProperty(window,'parent',{get:()=>parentProxy});`;
     const before = `window.module={exports:{}};window.require=()=>{throw Error('不应进入 CommonJS 分支')};` + proxy;
-    const code = mode === 'bind' || mode === 'pending' ? `import '/plugin.js';` : `window.__BSE_LOADER_URLS__=${JSON.stringify(mode === 'failed' ? ['/missing', '/invalid'] : mode === 'fallback' ? ['/missing', '/data'] : mode === 'old-fallback' ? ['/old', '/data'] : ['/data'])};${loader}`;
+    const code = mode === 'bind' || mode === 'pending' ? `import '/plugin.js';` : `window.__BSE_LOADER_URLS__=${JSON.stringify(mode === 'failed' ? ['/missing', '/invalid'] : mode === 'fallback' ? ['/missing', '/data'] : mode === 'cached-fallback' ? ['/old-ready','/data'] : mode === 'old-fallback' ? ['/old', '/data'] : ['/data'])};${loader}`;
     // Module imports run before module bodies; put host compatibility setup in a preceding classic script.
     return res.end('<html><body><script>' + before + '</script><script type="module">' + code + '</script></body></html>');
   }
@@ -39,7 +40,7 @@ async function main() {
   const base = 'http://127.0.0.1:' + server.address().port;
   const browser = await chromium.launch({headless: true, executablePath: process.env.BSE_CHROMIUM || '/usr/bin/chromium', args: ['--no-sandbox']});
   try {
-    for (const mode of ['bind', 'fallback', 'old-fallback', 'failed', 'no-api', 'pending', 'csp']) {
+    for (const mode of ['bind', 'fallback', 'old-fallback', 'cached-fallback', 'failed', 'no-api', 'pending', 'csp']) {
       const page = await browser.newPage({viewport: {width: 390, height: 844}}); const errors = []; page.on('pageerror', e => errors.push(e.message));
       await page.goto(base + '/?mode=' + mode);
       if (mode === 'failed' || mode === 'csp') {
@@ -61,7 +62,7 @@ async function main() {
           await page.waitForFunction(() => document.querySelector('iframe').contentWindow.__branch_story_startup__?.status === 'ready');
           await page.locator('[aria-label="打开剧情面板"]').click(); await page.locator('[data-action="toggle-enabled"]').click();
           assert(await page.evaluate(() => testHost.root.injection[0].content.includes('停电发生')));
-          if (mode === 'fallback' || mode === 'old-fallback') {
+          if (mode === 'fallback' || mode === 'old-fallback' || mode === 'cached-fallback') {
             assert.equal(await page.evaluate(() => document.querySelector('iframe').contentWindow.__branch_story_loader_status__.attempts.length), 2);
             assert.equal(await page.locator('#bse-loader-status').count(), 0); console.log('✓ 主线路失败或旧缓存后通过备用线路加载');
           } else console.log('✓ namespace _bind、隐藏 iframe、父页面代理和 browser module 全局兼容');

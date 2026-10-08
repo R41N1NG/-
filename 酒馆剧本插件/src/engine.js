@@ -4,6 +4,7 @@
   if (node) module.exports = value; else root.BSEEngine = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API, F) {
   'use strict';
+  const VERSION = '1.4.4';
   const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, auto_events: true, quick_options: false, quick_collapsed: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
     profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 64000, max_output: 1024, segment_output: 16384, analysis_output: 16384, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, partition_prompt: API.PROMPTS.partition, auto_partition: true, analysis_chunk_chars: 3000, json_mode: true, no_thinking: false},
     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
@@ -16,7 +17,7 @@
   }
   class Engine {
     constructor(host, client) {
-      this.host = host; this.client = client || new API.Client(); this.settings = defaults();
+      this.host = host; this.client = client || new API.Client(); this.settings = defaults(); this.version = VERSION;
       this.project = C.demoProject(); this.state = C.createProgress(this.project); this.listeners = new Set();
       this.epoch = 0; this.chat = ''; this.draft = null; this.segmentDraft = null; this.analysisDraft = null; this.rawAnalysis = null; this.analysisProgress = null; this.jobs = Promise.resolve(); this.stageJobs = Promise.resolve(); this.busy = 0; this.error = ''; this.flowNotice = ''; this.pendingChoice = null; this.preparing = null; this.stageInFlight = new Map(); this.inFlight = new Set();
     }
@@ -43,6 +44,10 @@
       this.segmentDraft = saved.segment_draft || null;
       this.analysisDraft = saved.analysis_draft || null;
       this.rawAnalysis = saved.raw_analysis || null;
+      if (this.destroyed) return;
+      this.settings.project_library ||= {};
+      for (const p of Object.values(saved.drafts || {})) if (p?.id) this.settings.project_library[p.id] ||= {title:p.title, worldbook:'', updated_at:0};
+      this.persistProject();
       const bootError = this.error;
       this.bindChat(); this.error = bootError || this.error; this.bindEvents(); this.captureDraft(); this.inject(); this.notify();
     }
@@ -117,16 +122,72 @@
     }
     persistProject() {
       this.settings.drafts ||= {};
-      if (!this.settings.worldbook) this.settings.drafts[this.project.id] = C.clone(this.project);
+      this.settings.drafts[this.project.id] = C.clone(this.project);
+      this.settings.project_library ||= {};
+      this.settings.project_library[this.project.id] = {title:this.project.title,worldbook:this.settings.worldbook || '',updated_at:Date.now()};
       this.settings.project_id = this.project.id; this.saveSettings();
     }
-    async setProject(input, detached = true) {
+    projectList() {
+      return Object.entries(this.settings.project_library || {}).map(([id, item]) => ({id, ...C.clone(item), current: id === this.project.id, nodes: this.settings.drafts?.[id]?.nodes?.length || 0}));
+    }
+    parkWorkspace() {
+      this.settings.project_workspaces ||= {};
+      this.settings.project_workspaces[this.project.id] = C.clone({analysis_draft:this.analysisDraft, segment_draft:this.segmentDraft, raw_analysis:this.rawAnalysis});
+    }
+    restoreWorkspace(id) {
+      const workspace = this.settings.project_workspaces?.[id] || {};
+      for (const [field, property] of [['analysis_draft','analysisDraft'], ['segment_draft','segmentDraft'], ['raw_analysis','rawAnalysis']]) {
+        this[property] = workspace[field] || null;
+        if (this[property]) this.settings[field] = C.clone(this[property]); else delete this.settings[field];
+      }
+      delete this.settings.project_workspaces?.[id];
+    }
+    async switchProject(id) {
+      C.assert(!this.busy, '请先等待或取消当前辅助任务，再切换剧本');
+      const item = this.settings.project_library?.[id]; C.assert(item, '剧本不在库中'); const epoch = this.epoch;
+      if (id === this.project.id && (item.worldbook || '') === this.settings.worldbook) return;
+      const p = item.worldbook ? (await this.host.loadBook(item.worldbook,id)).project : this.settings.drafts?.[id];
+      C.assert(epoch === this.epoch, '读取期间配置已变化，请重试'); C.assert(p, '剧本内容不可用，请重新导入');
+      await this.setProject(p,true,{worldbook:item.worldbook || '',disable:true});
+    }
+    async createProject(title = '新剧本') {
+      C.assert(!this.busy, '请先等待或取消当前辅助任务，再新建剧本');
+      return this.setProject({id:C.id('story'), title:title.trim() || '新剧本', nodes:[{id:'N1',title:'开场',guidance:'在这里填写当前阶段的故事指引。',detail:'',routes:[],effects:[]}], events:[], variables:[], collections:[], start_node_id:'N1'},true,{disable:true});
+    }
+    async copyProject(id) {
+      C.assert(!this.busy, '请先等待或取消当前辅助任务');
+      const item = this.settings.project_library?.[id]; C.assert(item, '剧本不在库中'); const epoch = this.epoch;
+      const input = id === this.project.id ? this.project : item.worldbook ? (await this.host.loadBook(item.worldbook,id)).project : this.settings.drafts?.[id];
+      C.assert(epoch === this.epoch && input, '剧本内容已变化或不可用');
+      const copy = C.clone(input); copy.id = C.id('story'); copy.revision = C.id('rev'); copy.title += '（副本）';
+      await this.setProject(copy,true,{disable:true});
+    }
+    removeProject(id) {
+      C.assert(!this.busy, '请先等待或取消当前辅助任务'); C.assert(id !== this.project.id, '请切换到其他剧本，再移出当前剧本'); C.assert(this.settings.project_library?.[id], '剧本不在库中');
+      for (const field of ['project_library','drafts','project_workspaces','project_editors']) delete this.settings[field]?.[id];
+      this.saveSettings(); this.notify();
+    }
+    async discoverBook(name) {
+      C.assert(!this.busy, '请先等待或取消当前辅助任务'); const epoch = this.epoch;
+      const items = await this.host.listBookProjects(name); C.assert(epoch === this.epoch, '读取期间配置已变化，请重试');
+      this.settings.project_library ||= {};
+      for (const p of items) {
+        const previous = this.settings.project_library[p.id];
+        if (!previous || !previous.worldbook || previous.worldbook === name) this.settings.project_library[p.id] = {title:p.title,worldbook:name,updated_at:previous?.updated_at || 0};
+      }
+      this.saveSettings(); this.notify(); return items.length;
+    }
+    async setProject(input, detached = true, options = {}) {
       const p = C.normalizeProject(input); const state = this.host.progress(p); F.initialize(p, state);
-      this.settings.drafts ||= {};
-      if (!this.settings.worldbook) this.settings.drafts[this.project.id] = C.clone(this.project);
-      this.invalidate(); this.project = p; this.state = state; this.segmentDraft = null; this.analysisDraft = null; this.draft = null;
+      const changed = p.id !== this.project.id;
+      this.persistProject(); if (changed) this.parkWorkspace();
+      this.host.saveProgress(this.project,this.state);
+      this.invalidate(); this.project = p; this.state = state; this.draft = null; this.error = '';
+      if (changed) this.restoreWorkspace(p.id);
+      if (options.disable) this.settings.enabled = false;
       F.initialize(p, state); if (this.settings.enabled && F.diagnose(p).some(x => x.severity === 'error')) { this.settings.enabled = false; this.error = '新剧本有依赖问题，请在记录页核对后启用'; }
-      if (detached) this.settings.worldbook = '';
+      if (options.worldbook !== undefined) this.settings.worldbook = options.worldbook;
+      else if (detached) this.settings.worldbook = '';
       this.persistProject(); this.save(); this.captureDraft();
     }
     async editProject(mutator) {
@@ -142,14 +203,14 @@
     }
     async loadBook(name, projectId) {
       const epoch = this.epoch; const data = await this.host.loadBook(name, projectId);
-      C.assert(epoch === this.epoch, '读取期间聊天或配置已变化，请重试'); await this.setProject(data.project, true);
-      this.settings.worldbook = name; delete this.settings.draft_project; delete this.settings.drafts?.[this.project.id]; this.saveSettings(); this.notify(); return data;
+      C.assert(epoch === this.epoch, '读取期间聊天或配置已变化，请重试'); await this.setProject(data.project, true, {worldbook:name,disable:true});
+      delete this.settings.draft_project; this.saveSettings(); this.notify(); return data;
     }
     async saveBook(name) {
       const epoch = this.epoch; await this.host.saveBook(name, this.project);
       C.assert(epoch === this.epoch, '保存期间聊天或配置已变化，请重新读取该世界书核对');
       this.settings.worldbook = name; this.settings.project_id = this.project.id;
-      delete this.settings.draft_project; delete this.settings.drafts?.[this.project.id]; this.saveSettings(); this.notify();
+      delete this.settings.draft_project; this.persistProject(); this.notify();
     }
     mutate(fn) { this.invalidate(); this.error = ''; const changed = fn(); if (changed !== false) this.save(); return changed; }
     complete() {
@@ -442,8 +503,8 @@
         if (check.results.every(x => x.handled || !['completed', 'uncertain'].includes(x.status))) this.state.pending_checks = this.state.pending_checks.filter(c => c !== check);
       });
     }
-    beginRaw(kind, original, wish, mode) {
-      const run = this.rawAnalysis = {id: C.id('analysis'), kind, original, wish, mode, chat_id: this.chat, replies: [], requests: [], error: '', at: Date.now()};
+    beginRaw(kind, original, wish, mode, previous = null) {
+      const run = this.rawAnalysis = {id: C.id('analysis'), kind, original:previous?.original || original, wish, mode, chat_id:this.chat, replies:C.clone(previous?.replies || []), requests:C.clone(previous?.requests || []), error:'', at:Date.now()};
       this.settings.raw_analysis = run; this.saveSettings();
       const epoch = this.epoch, key = this.settings.profile.key;
       const onResponse = value => {
@@ -454,7 +515,7 @@
         if (reply.original === run.original) { delete reply.original; reply.original_from_run = true; }
         if (reply.evidenceSource === run.original) { delete reply.evidenceSource; reply.evidence_from_run = true; }
         const contextSize = value => JSON.stringify({...value, text: ''}).length;
-        if (run.replies.reduce((n, x) => n + contextSize(x), 0) + contextSize(reply) > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'knownNodes', 'knownCollections', 'knownVariables', 'knownEvents', 'events', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
+        if (run.replies.reduce((n, x) => n + contextSize(x), 0) + contextSize(reply) > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'knownNodes', 'knownCollections', 'knownVariables', 'knownEvents', 'events', 'evidenceSource', 'sourceResult']) delete reply[field]; reply.context_unavailable = true; }
         run.replies.push(reply); this.settings.raw_analysis = C.clone(run); this.saveSettings(); this.notify();
       };
       onResponse.onRequest = value => {
@@ -498,7 +559,7 @@
       } catch (e) { if (epoch === this.epoch && this.rawAnalysis) { this.rawAnalysis.error = e.message; this.settings.raw_analysis = C.clone(this.rawAnalysis); this.saveSettings(); } throw e; }
       finally { this.analysisProgress = null; this.busy--; this.notify(); }
     }
-    restoreAnalysis(text, raw, mode = 'faithful', replyId = '') {
+    analysisReply(text, mode, replyId) {
       C.assert(!this.busy, '请先取消或等待当前辅助任务结束');
       const stored = replyId ? this.rawAnalysis?.replies.find(x => x.id === replyId) : null;
       const reply = stored ? {...stored, original: stored.original_from_run ? this.rawAnalysis.original : stored.original, evidenceSource: stored.evidence_from_run ? this.rawAnalysis.original : stored.evidenceSource} : null;
@@ -508,10 +569,27 @@
         C.assert(!reply.context_unavailable, '原始回复过大，缺少整合上下文；请导出记录后分篇恢复');
         C.assert(text === reply.original && mode === reply.mode, '恢复时原文和处理方式必须与这份原始回复一致');
       }
+      return reply;
+    }
+    restoreAnalysis(text, raw, mode = 'faithful', replyId = '') {
+      const reply = this.analysisReply(text,mode,replyId);
       const result = this.client.restoreAnalysis(text, raw, mode, reply);
       if (reply?.partial_merge) { result.is_partial = true; result.warnings.push('仅恢复一组整合，其余节点保留分段草稿，跨组关系仍需核对。'); }
-      if (reply?.kind === 'chunk') { result.is_partial = true; result.warnings.push('仅恢复第' + reply.part + '/' + reply.parts + '块，不是全篇合并结果；应用前请核对跨块结果定义及连接。'); }
-      this.error = ''; this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
+      if (reply?.kind === 'chunk' || reply?.source_from_kind === 'chunk') { result.is_partial = true; result.warnings.push('仅恢复第' + reply.part + '/' + reply.parts + '块，不是全篇合并结果；应用前请核对跨块结果定义及连接。'); }
+      this.error = ''; if (this.rawAnalysis) { this.rawAnalysis.error = ''; this.settings.raw_analysis = C.clone(this.rawAnalysis); }
+      this.analysisDraft = result; this.settings.analysis_draft = C.clone(result); this.saveSettings(); this.notify(); return result;
+    }
+    async repairAnalysis(text, raw, mode = 'faithful', replyId = '') {
+      const reply = this.analysisReply(text,mode,replyId), epoch=this.epoch, previous=this.rawAnalysis;
+      this.busy++;this.error='';this.notify();
+      try {
+        const onResponse=this.beginRaw('analysis',text,'仅补修原文来源',mode,previous);
+        const result=await this.client.repairAnalysis({...this.settings.profile,model:this.settings.segment_model || this.settings.profile.model},text,raw,mode,reply,{onResponse,onRequest:onResponse.onRequest});
+        C.assert(epoch===this.epoch,'配置已变化，来源补修未应用');
+        if (reply?.kind==='chunk' || reply?.source_from_kind==='chunk') {result.is_partial=true;result.warnings.push('仅恢复当前分块，应用前需核对全篇关系。');}
+        this.analysisDraft=result;this.settings.analysis_draft=C.clone(result);this.saveSettings();this.notify();return result;
+      } catch(error) {if(epoch===this.epoch && this.rawAnalysis){this.rawAnalysis.error=error.message;this.settings.raw_analysis=C.clone(this.rawAnalysis);this.saveSettings();}throw error;}
+      finally{this.busy--;this.notify();}
     }
     exportProject() { return C.clone({type: 'bse_project', version: 1, project: this.project}); }
     exportProgress() { return C.clone({type: 'bse_progress', version: 1, project_id: this.project.id, progress: this.state}); }
@@ -521,7 +599,7 @@
       F.initialize(this.project, state);
       this.invalidate(); this.state = state; this.save();
     }
-    destroy() { this.invalidate(); this.host.destroy(); this.listeners.clear(); }
+    destroy() { if (this.destroyed) return; this.destroyed = true; this.invalidate(); this.host.destroy(); this.listeners.clear(); }
   }
-  return {Engine, defaults, fingerprint};
+  return {Engine, defaults, fingerprint, VERSION};
 });

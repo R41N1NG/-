@@ -90,6 +90,15 @@
       delete p.node_ids; delete p.event_ids;
       return {project: C.normalizeProject(p), projects: manifests.map(m => ({id: m.project_id, title: m.data.title}))};
     }
+    async listBookProjects(name) {
+      const entries = await this.api('getWorldbook')?.(name); C.assert(Array.isArray(entries), '世界书不可读取');
+      const items = [];
+      for (const entry of entries) {
+        let value; try { value = C.parseJSON(entry.content); } catch { continue; }
+        if (value?.bse_schema === 1 && value.kind === 'manifest') { C.safeId(value.project_id); items.push({id:value.project_id,title:String(value.data.title || value.project_id)}); }
+      }
+      return items;
+    }
     async saveBook(name, input) {
       const p = C.normalizeProject(input); const names = this.books();
       C.assert(name.trim(), '请填写世界书名称');

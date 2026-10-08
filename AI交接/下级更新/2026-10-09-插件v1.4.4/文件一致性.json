@@ -1,0 +1,185 @@
+{
+  ".gitignore": {
+    "bytes": 25,
+    "sha256": "c3007e8cfe9e6668bf6eaf8e62f44d583c9b86893520d1e4e599db431558b705"
+  },
+  "README.md": {
+    "bytes": 33260,
+    "sha256": "c9ae58512a78932cad0deb01890da222479c6055be4f0b7b690f1ffb1a6d7c48"
+  },
+  "branch_story_tavern_helper_import.json": {
+    "bytes": 368424,
+    "sha256": "242805ed549ad44960dcf8305f30c0c207ddc5a20df448fd9acd6e51bd96cbe1"
+  },
+  "docs/branch_story_plugin_design.md": {
+    "bytes": 20342,
+    "sha256": "6262c9e0fd74d237c200a45d89a69de203a9e6e46d7add46be3d6d17728c8f83"
+  },
+  "docs/事件包与依赖.md": {
+    "bytes": 10052,
+    "sha256": "a3f101da239686fed074a2c63a391a3b5d00f3bad0d266b331229f1ff03e9a2a"
+  },
+  "docs/剧本库与分析恢复.md": {
+    "bytes": 3056,
+    "sha256": "e8f991f6ded20540c8ffe0d6de04b9701282a3bba1868c95a5573878ab7fe80f"
+  },
+  "docs/玩家面板与数值事件.md": {
+    "bytes": 8677,
+    "sha256": "a54d80315548eb424faf8d07bf2f4db5ebc769d0267d879c7abacdac2405fffa"
+  },
+  "docs/长文分段与数值规则.md": {
+    "bytes": 7760,
+    "sha256": "40403dfd5fbed26e22390ed24058e49c03a54ef8a7d96b4f781e897c088d9f8d"
+  },
+  "docs/长文条件分析.md": {
+    "bytes": 5111,
+    "sha256": "cda30441b662fd31b80a0262afbeb56175a06fcedb3ee92432df5d6e7dd3429b"
+  },
+  "package-lock.json": {
+    "bytes": 1269,
+    "sha256": "6aaf411d28253c9831c4fb334ab56f54c0a41b9f4bc5151feb565e1029d5994c"
+  },
+  "package.json": {
+    "bytes": 646,
+    "sha256": "1a680fe85b7ee73191ac9f890fff3daa76ed5d85129d0a68a9a7c13b2a36566b"
+  },
+  "scripts/build.js": {
+    "bytes": 2143,
+    "sha256": "f9bc373d20f6c114d52dbfbab19ace9ddf4dc877fdd22c48b917def3d9871252"
+  },
+  "src/api.js": {
+    "bytes": 87059,
+    "sha256": "5331dcecea6ac64d09be26095e597cf2b25c6cc99d7100c527c56df1e48a6968"
+  },
+  "src/bootstrap.js": {
+    "bytes": 2514,
+    "sha256": "c41557307f05e8ec9580e62e5ac6a797be3540de8e6553e11f0b91086596b9c1"
+  },
+  "src/core.js": {
+    "bytes": 45471,
+    "sha256": "e5790e229215d24b38ec42ba5cc3003f4ed3e338861414e41a11b90b1e47821f"
+  },
+  "src/engine.js": {
+    "bytes": 53194,
+    "sha256": "1169bb7c26b22c21779c504b0242daf68f6cd4191e2e591e323e2f617cf27eb2"
+  },
+  "src/flow.js": {
+    "bytes": 20562,
+    "sha256": "f047165d534b0698536371010f0cd0f196dec57bc8e5c10851a7c16840f332e7"
+  },
+  "src/graph.js": {
+    "bytes": 9580,
+    "sha256": "ae7b88dfdb8e41d6f4a15303a0f6c3ed8dda203777ce1740ccd55ac13470433e"
+  },
+  "src/host.js": {
+    "bytes": 8531,
+    "sha256": "ab7d53e9258fbb203147a6fe12e345acc288f8e3685a25b005abcc17a95a58f3"
+  },
+  "src/loader.js": {
+    "bytes": 5358,
+    "sha256": "784cbe7500bcc2be98129165956f7679afb933c96079a8ec1470656b6a1c10d1"
+  },
+  "src/ui.js": {
+    "bytes": 135233,
+    "sha256": "cd5b905d95b229bdc49e1e912154a92b94a732cb8e2fdda4c94c982b8c1f8a16"
+  },
+  "tests/api.test.js": {
+    "bytes": 15637,
+    "sha256": "a9fe60f55cf5d5bdf51c1bea2ee7a4e06c1db7d49da05bfb5fc49fdbf3b8e8e2"
+  },
+  "tests/browser.js": {
+    "bytes": 36563,
+    "sha256": "137cb45462f73e1b9e6704b6575ec6f0c6737b27a191fa2835a7bdfc7e1f7baf"
+  },
+  "tests/conditions.test.js": {
+    "bytes": 15155,
+    "sha256": "a7a1ec5dff8e9124dd08237dfc158bf090b9f0160ec2516b767ff3b7db8237aa"
+  },
+  "tests/conversion.test.js": {
+    "bytes": 12147,
+    "sha256": "c84819bc839bd2faba2b40ac3c15b30b803d5cfac02d1edc9304548dbcb511c3"
+  },
+  "tests/core.test.js": {
+    "bytes": 4533,
+    "sha256": "60a521127c33093759cb53cc4d9341ab169d89af4985be077f1e83817d9853e2"
+  },
+  "tests/engine.test.js": {
+    "bytes": 9272,
+    "sha256": "b428857f8de262b4d7d88762214626096f2d5fe62d94fa58b08011436ad5956a"
+  },
+  "tests/helpers.js": {
+    "bytes": 2917,
+    "sha256": "5b31adf4251e4a1bc088d05b72d489f2338701ac9f0a7f53fe1037be7c20560c"
+  },
+  "tests/host.test.js": {
+    "bytes": 2658,
+    "sha256": "0ee9e9989c0a65c6f20cbe0cbfee40ca7eee9b98e5ea47e8f91a0ad889772d64"
+  },
+  "tests/library.browser.js": {
+    "bytes": 10658,
+    "sha256": "595742c6c26e9a8cf8e2815224f7e3c16e5e92615f8bea1582e25bc235596b6d"
+  },
+  "tests/library.test.js": {
+    "bytes": 5267,
+    "sha256": "e698f0d0207a75395f760c91b87681e93027ace2117104f38c5e0b05a5dda4f0"
+  },
+  "tests/longtext.browser.js": {
+    "bytes": 8361,
+    "sha256": "3951509dce7b32e2d4721cb72dce3a1e748cae6701f13c733554d4545082d14e"
+  },
+  "tests/longtext.test.js": {
+    "bytes": 15531,
+    "sha256": "cfd9efc1d043b2095551a7d85fedbb35f52298351548e32e87b5d34ef748bd58"
+  },
+  "tests/packages.browser.js": {
+    "bytes": 11158,
+    "sha256": "b324dd48da463620765a5b0c635775d34cb0cc0d44a16c963d2d787767871fab"
+  },
+  "tests/packages.test.js": {
+    "bytes": 13175,
+    "sha256": "9f5a47064d0121d1eaff24e82e7714a22feaa5a93bc79a8a40af873d39a6027d"
+  },
+  "tests/player.browser.js": {
+    "bytes": 20086,
+    "sha256": "de94b619248bd42746d994e3f2f26fc44d096baf1d15bfc5d9bca861d87c036f"
+  },
+  "tests/player.test.js": {
+    "bytes": 14532,
+    "sha256": "0f7e6ab883a34fc3ada2be330347085555f8f09213966cedb52cec1ded7c9186"
+  },
+  "tests/recovery.test.js": {
+    "bytes": 10480,
+    "sha256": "d90904d6ea12e78c6d8a8938e878d7222d98f6a92db101419d8b1f88f8df0360"
+  },
+  "tests/response.test.js": {
+    "bytes": 5748,
+    "sha256": "3787469c6956a9aea27ab334f34e3738a6730ff367c3ee1d8a4b2663522d17ff"
+  },
+  "tests/source.test.js": {
+    "bytes": 14318,
+    "sha256": "384f323b7c37543964eccd43272a2f4fe4b20575c138dfcd4bd3a2df9e038ae7"
+  },
+  "tests/startup.browser.js": {
+    "bytes": 7165,
+    "sha256": "c2e43914192064e399f6ff97682cd5b0c08b0c1ce02925e23ab64a9bc0ad3709"
+  },
+  "tests/workflow.browser.js": {
+    "bytes": 18897,
+    "sha256": "e60eec3efa82211b565ccbf6bd3e9e589c01fc5a8073190e48bf0e93b64719a0"
+  },
+  "tests/workflow.test.js": {
+    "bytes": 14672,
+    "sha256": "4629f328460c99e6c06da68f46dbebfd8b287027006bd9ee4d895534e338b41d"
+  },
+  "交接gpt.md": {
+    "bytes": 56480,
+    "sha256": "f997a57e206d88c558d521fe4e47589a44bddb2e30dd24a60c642797e34b121b"
+  },
+  "ZIP": {
+    "name": "branch_story_plugin_v1.4.4.zip",
+    "entries": 44,
+    "bytes": 369809,
+    "sha256": "2bb9190b89e6abb01969a61c004439cf2a77332938bb1ed403981eb836d3d426"
+  },
+  "reference_TSE_sha256": "a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065"
+}

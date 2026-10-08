@@ -6,13 +6,15 @@
   const start = async () => {
     root.__branch_story_plugin__?.destroy?.();
     const engine = new root.BSEEngine.Engine(host); const panel = new root.BSEUI.Panel(engine);
-    const plugin = {engine, panel, open: () => panel.toggle(), getState: () => engine.snapshot(), submitEvent: (...args) => engine.manualEvent(...args), destroy: () => { panel.destroy(); engine.destroy(); }};
+    let destroyed = false;
+    const plugin = {version:engine.version, engine, panel, open: () => panel.toggle(), getState: () => engine.snapshot(), submitEvent: (...args) => engine.manualEvent(...args), destroy: () => { if (destroyed) return; destroyed = true; panel.destroy(); engine.destroy(); }};
     root.__branch_story_plugin__ = plugin;
     root.addEventListener('pagehide', plugin.destroy, {once: true});
     panel.mount();
     try {
       if (!host.api('getVariables')) throw new Error('未找到酒馆助手 getVariables 接口，请确认酒馆助手已启用且脚本运行在酒馆助手中');
       await engine.init();
+      if (destroyed || engine.destroyed) return plugin;
     } catch (e) {
       engine.settings.enabled = false; engine.error = e.message; panel.render(); throw e;
     }

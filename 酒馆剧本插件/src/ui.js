@@ -27,21 +27,29 @@
     .spoiler-box{max-height:100%;overflow-y:auto;overscroll-behavior:contain}
     .launcher{width:48px;height:48px;padding:12px;border-radius:50%;touch-action:none;user-select:none;display:grid;place-items:center;cursor:grab}.launcher.dragging{cursor:grabbing}.launcher svg{pointer-events:none}.panel{position:relative}.panel-body{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}.spoiler-region{position:relative;min-width:0}.spoiler-region.locked{height:clamp(240px,calc(var(--bse-height,100dvh) - 330px),560px);overflow:hidden}.spoiler-content.locked{filter:blur(10px);pointer-events:none;user-select:none}.spoiler-layer{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;padding:16px;background:#10182780}.spoiler-box{width:min(430px,100%);padding:20px;border:1px solid var(--line);background:#141c2cf5;border-radius:16px;text-align:center;box-shadow:0 10px 36px #0008}.spoiler-box h2{margin:8px 0}.lock-icon{font-size:38px;display:block}.spoiler-box .row{justify-content:center}.header-actions{display:flex;gap:8px}.analysis-report li{overflow-wrap:anywhere}.analysis-report ul{padding-left:20px}.event-guide ol{padding-left:22px}.event-guide li{margin:6px 0}
   `;
+  const LIBRARY_STYLE = `.project-switcher{display:flex;gap:8px;align-items:center;padding:8px 16px;border-bottom:1px solid #33415b;flex:none}.project-switcher label{display:flex;gap:8px;align-items:center;min-width:0;flex:1;font-size:13px;color:#a8b3ca}.project-switcher select{flex:1;min-width:0;max-width:100%;margin:0}.project-switcher button{flex:none}.library-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:12px}.library-item h3{overflow-wrap:anywhere}.library-item .row{flex-wrap:wrap}@media(max-width:480px){.project-switcher{padding:6px 10px}.project-switcher label{gap:5px;font-size:12px}.project-switcher button{padding:8px}}`;
   const QUICK_STYLE = `:host{display:block;color:#e7ecf6;font:14px/1.5 system-ui,-apple-system,sans-serif;color-scheme:dark}:host([hidden]){display:none!important}*{box-sizing:border-box}[hidden]{display:none!important}.quick{padding:5px 8px;background:#141c2cf5;border:1px solid #40516a;border-radius:12px;max-height:42dvh;overflow:auto;scrollbar-width:thin}.quick-header{display:flex;align-items:center;gap:5px}.quick-title{flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quick-title small{display:block;color:#b8c5da}.quick-list{display:flex;flex-wrap:wrap;gap:8px;max-height:160px;overflow:auto;padding:7px 0 2px;overscroll-behavior:contain;scrollbar-width:thin}button{font:inherit;min-width:44px;min-height:44px;padding:8px 10px;color:#e7ecf6;background:#26344b;border:1px solid #588b79;border-radius:10px;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.5;cursor:default}.quick-icon{flex:none;font-size:18px;padding:6px;position:relative}.quick-dot{position:absolute;right:4px;top:4px;width:7px;height:7px;background:#f0bf69;border-radius:50%}.bse-choice{flex:0 1 auto;max-width:100%;background:#263c34;text-align:left;overflow-wrap:anywhere}.bse-choice:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #9ce4cf;outline-offset:2px}.quick-menu{border-top:1px solid #40516a;margin-top:5px;padding-top:7px;max-height:200px;overflow:auto;overscroll-behavior:contain}.quick-tools{display:flex;gap:7px;flex-wrap:wrap}.quick-note,.empty{color:#a8b3ca;font-size:12px;margin:5px 0}.quick-pending{padding:7px;border:1px solid #40516a;border-radius:8px;margin:6px 0}.quick-pending p{margin:4px 0;overflow-wrap:anywhere}.acquired{border-bottom:1px solid #40516a;padding:4px 0}.acquired summary{cursor:pointer;min-height:44px;display:flex;align-items:center;overflow-wrap:anywhere}.acquired p{margin:5px 0;white-space:pre-wrap;overflow-wrap:anywhere}.quick-warn{color:#f0bf69}`;
   class Panel {
     constructor(engine) { this.e = engine; this.doc = engine.host.doc(); this.win = this.doc.defaultView; this.tab = 'run'; this.nodeTab = 'nodes'; this.recordsTab = 'progress'; this.sectionPositions = {}; this.opened = false; this.unlocked = false; this.runUnlocked = false; this.recordUnlocked = false; this.spoilerPrompt = false; this.privacyProject = ''; this.forms = {}; this.details = {}; this.search = {}; this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.graphSelected = ''; this.variableId = ''; this.resultId = ''; this.quickMenu = ''; this.listPage = 0; this.bookProjects = []; this.unsub = null; }
     mount() {
-      this.doc.getElementById('bse-panel-host')?.__bsePanelOwner?.destroy();
+      const previous = this.doc.getElementById('bse-panel-host')?.__bsePanelOwner;
+      if (previous?.e) { const stop = previous.e.destroy.bind(previous.e); let stopped = false; previous.e.destroy = ()=>{if (stopped) return;stopped=true;stop();}; }
+      previous?.destroy(); previous?.e?.destroy();
       this.doc.getElementById('bse-panel-host')?.remove();
       this.element = this.doc.createElement('div'); this.element.id = 'bse-panel-host'; this.element.style.cssText = 'position:relative;z-index:2147482000';
       this.element.__bsePanelOwner = this;
       this.shadow = this.element.attachShadow({mode: 'open'});
-      this.shadow.innerHTML = `<style>${STYLE}${EXTRA_STYLE}</style><button class="launcher" type="button" aria-label="打开剧情面板" title="剧本 · 拖动可移动">${PENCIL}</button><div class="overlay" hidden><section class="panel" role="dialog" aria-modal="true" aria-label="分支剧本管理"><header><div><h1>分支剧本</h1><small>剧情、事件与进度</small></div><button type="button" data-action="close" aria-label="关闭剧情面板">关闭</button></header><div class="panel-body"><nav aria-label="剧情面板页面"></nav><main></main><footer>完整素材留在酒馆，当前剧情按需注入。</footer></div><div class="toast" role="status" hidden></div></section></div><input class="file" type="file" accept=".json,application/json">`;
+      this.shadow.innerHTML = `<style>${STYLE}${EXTRA_STYLE}${LIBRARY_STYLE}</style><button class="launcher" type="button" aria-label="打开剧情面板" title="剧本 · 拖动可移动">${PENCIL}</button><div class="overlay" hidden><section class="panel" role="dialog" aria-modal="true" aria-label="分支剧本管理"><header><div><h1>分支剧本</h1><small>剧情、事件与进度 · v${this.e.version}</small></div><button type="button" data-action="close" aria-label="关闭剧情面板">关闭</button></header><div class="panel-body"><nav aria-label="剧情面板页面"></nav><div class="project-switcher"></div><main></main><footer>完整素材留在酒馆，当前剧情按需注入。</footer></div><div class="toast" role="status" hidden></div></section></div><input class="file" type="file" accept=".json,application/json">`;
       this.doc.body.appendChild(this.element);
       this.mountLauncher(); this.mountQuick();
+      this.shadow.addEventListener('change', ev => {
+        if (this.rendering) return;
+        if (ev.target.name === 'project_switch') this.run(async ()=>{this.capture();this.saveEditors();await this.e.switchProject(ev.target.value);});
+        else if (ev.target.closest('form')?.dataset.form !== 'api' && ev.target.name) {this.capture();this.saveEditors();}
+      });
       this.shadow.addEventListener('click', ev => { const b = ev.target.closest?.('[data-action]'); if (b && !b.disabled) this.run(() => this.action(b.dataset.action, b)); });
       this.shadow.addEventListener('submit', ev => ev.preventDefault());
-      this.shadow.addEventListener('input', ev => { if (ev.target.name === 'analysis_text') { const counter = this.shadow.querySelector('[data-analysis-count]'); if (counter) counter.textContent = '原文：' + ev.target.value.length.toLocaleString() + ' 字符'; } });
+      this.shadow.addEventListener('input', ev => { if (ev.target.name === 'library_search') {this.capture();this.render(false);} if (ev.target.name === 'analysis_text') { const counter = this.shadow.querySelector('[data-analysis-count]'); if (counter) counter.textContent = '原文：' + ev.target.value.length.toLocaleString() + ' 字符'; } });
       this.shadow.addEventListener('change', ev => {
         const name = ev.target.name;
         if (name === 'analysis_text') { const count = this.shadow.querySelector('[data-analysis-count]'); if (count) count.textContent = '原文：' + ev.target.value.length.toLocaleString() + ' 字符'; }
@@ -57,7 +65,7 @@
           if (this.apiModels?.source !== source) for (const name of ['model_choice', 'segment_model_choice']) this.shadow.querySelector(`[name="${name}"]`)?.closest('label').remove();
         }
       });
-      this.shadow.querySelector('.file').onchange = async ev => { const field = ev.target, file = field.files[0]; if (file) await this.run(async () => { const data = C.parseJSON(await file.text(), '导入文件'); C.assert(data.type !== 'script', '这是插件安装文件，请在酒馆助手脚本管理中导入；此处导入的是剧本内容'); if (data.type === 'bse_progress') this.e.importProgress(data); else await this.e.setProject(data.project || data); this.forms = {}; this.nodeId = ''; this.eventId = ''; this.render(false); this.toast('导入完成'); }); field.value = ''; };
+      this.shadow.querySelector('.file').onchange = async ev => { const field = ev.target, file = field.files[0]; if (file) await this.run(async () => { const data = C.parseJSON(await file.text(), '导入文件'); C.assert(data.type !== 'script', '这是插件安装文件，请在酒馆助手脚本管理中导入；此处导入的是剧本内容'); if (data.type === 'bse_progress') this.e.importProgress(data); else await this.e.setProject(data.project || data); this.nodeId = ''; this.eventId = ''; this.render(false); this.toast('导入完成'); }); field.value = ''; };
       this.keyHandler = ev => { if (ev.altKey && ev.key.toLowerCase() === 'b') { ev.preventDefault(); this.toggle(); } else if (ev.key === 'Escape' && !this.opened && this.quickMenu) { this.quickMenu = ''; this.renderQuick(); this.quickShadow.querySelector('[data-action="quick-gear"]')?.focus(); } else if (ev.key === 'Escape' && this.opened) { if (this.spoilerPrompt) this.cancelUnlock(); else this.close(); } };
       this.doc.addEventListener('keydown', this.keyHandler);
       this.shadow.addEventListener('keydown', ev => {
@@ -230,13 +238,26 @@
       const fields = {}; for (const el of form.elements) if (el.name) fields[el.name] = el.type === 'checkbox' ? el.checked : el.value;
       this.forms[form.dataset.form] = fields;
     }
+    saveEditors() {
+      if (!this.formProject || !this.e.settings.project_id) return;
+      const forms = Object.fromEntries(Object.entries(this.forms).filter(([key])=>key !== 'api'));
+      this.e.settings.project_editors ||= {};
+      this.e.settings.project_editors[this.formProject] = C.clone({forms,details:this.details});
+      this.e.saveSettings();
+    }
     values(key) { this.capture(); return this.forms[key] || {}; }
     restore(form) {
       const data = this.forms[form.dataset.form]; if (!data) return;
       for (const el of form.elements) if (el.name && Object.prototype.hasOwnProperty.call(data, el.name)) { if (el.type === 'checkbox') el.checked = data[el.name]; else el.value = data[el.name]; }
     }
     render(capture = true) {
-      if (!this.shadow) return; if (capture) this.capture();
+      if (!this.shadow || this.rendering) return; if (capture) this.capture();
+      this.rendering = true; try {
+      if (this.formProject !== this.e.project.id) {
+        this.saveEditors(); const api = this.forms.api, editor = this.e.settings.project_editors?.[this.e.project.id];
+        this.forms = {...C.clone(editor?.forms || {}), ...(api ? {api} : {})}; this.details = C.clone(editor?.details || {});
+        this.formProject = this.e.project.id; this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.listPage = 0;
+      }
       const privacyKey = this.e.project.id + '/' + this.e.chat;
       if (this.privacyProject !== privacyKey) { this.privacyProject = privacyKey; this.unlocked = false; this.runUnlocked = false; this.recordUnlocked = false; this.spoilerPrompt = false; this.graphSelected = ''; }
       const oldForm = this.shadow.querySelector('form');
@@ -246,6 +267,7 @@
       const graphScroll = this.shadow.querySelector('.graph-viewport'); const graphPosition = graphScroll ? [graphScroll.scrollLeft, graphScroll.scrollTop] : [0, 0];
       const tabs = [['run', '运行'], ['nodes', '剧本'], ['events', '事件'], ['records', '记录'], ['api', 'API'], ['analysis', '分析'], ['data', '数据']];
       this.shadow.querySelector('nav').innerHTML = tabs.map(([key, title]) => button(title, 'tab', `data-tab="${key}" class="${this.tab === key ? 'active' : ''}" aria-current="${this.tab === key ? 'page' : 'false'}"`)).join('');
+      this.shadow.querySelector('.project-switcher').innerHTML = `<label>当前剧本<select name="project_switch" aria-label="切换当前剧本" ${this.e.busy ? 'disabled' : ''}>${this.e.projectList().map(p=>`<option value="${escape(p.id)}" ${p.current ? 'selected' : ''}>${escape(p.title)}</option>`).join('')}</select></label>${button('剧本库','library-open')}`;
       const body = ({run: () => this.runPage(), nodes: () => this.nodesPage(), events: () => this.eventsPage(), records: () => this.recordsPage(), api: () => this.apiPage(), analysis: () => this.analysisPage(), data: () => this.dataPage()}[this.tab])();
       this.shadow.querySelector('main').innerHTML = (this.e.error ? `<div class="warn error" role="alert" style="white-space:pre-wrap">${escape(this.e.error)}</div>` : '') + body;
       const form = this.shadow.querySelector('form'); if (form) this.restore(form);
@@ -259,6 +281,7 @@
         const el = Array.from(form.elements).find(x => x.name === focusName);
         if (el) { el.focus({preventScroll: true}); if (typeof selection === 'number' && el.setSelectionRange) try { el.setSelectionRange(selection, selection); } catch {} }
       }
+      } finally {this.rendering = false;}
     }
     organizeSections() {
       if (!['analysis', 'data', 'api', 'records'].includes(this.tab)) return;
@@ -277,7 +300,7 @@
     async run(fn) { try { await fn(); } catch (e) { this.e.report(e); this.toast(e.message, true); } }
     toast(text, error = false) { const el = this.shadow.querySelector('.toast'); el.textContent = text; el.hidden = false; el.style.background = error ? '#592a31' : '#21473b'; clearTimeout(this.toastTimer); this.toastTimer = setTimeout(() => { el.hidden = true; }, 4000); }
     toggle() { if (this.opened) return this.close(); this.opened = true; this.oldFocus = this.doc.activeElement; this.shadow.querySelector('.overlay').hidden = false; this.render(); this.shadow.querySelector(['nodes', 'run'].includes(this.tab) && !this.privacyUnlocked() ? '[data-action="unlock-ask"]' : '[data-action="close"]').focus(); }
-    close() { this.capture(); this.opened = false; this.spoilerPrompt = false; this.shadow.querySelector('.overlay').hidden = true; this.renderQuick(); this.oldFocus?.focus?.(); }
+    close() { this.capture(); this.saveEditors(); this.opened = false; this.spoilerPrompt = false; this.shadow.querySelector('.overlay').hidden = true; this.renderQuick(); this.oldFocus?.focus?.(); }
     runPage() {
       const e = this.e; const p = e.project; const s = e.state; const refs = C.indexProject(p); const node = refs.nodes.get(s.current_node_id);
       return `<div class="card"><div class="row spread"><div><h2>${escape(p.title)}</h2><span class="badge">${e.settings.enabled ? s.paused ? '已暂停' : '运行中' : '未启用'}</span> <span class="muted">${e.settings.worldbook ? '世界书：' + escape(e.settings.worldbook) : '草稿暂存在脚本变量，建议写入世界书'}</span></div>${button(e.settings.enabled ? '关闭注入' : '启用剧本', 'toggle-enabled', 'class="primary"')}</div></div>
@@ -297,7 +320,8 @@
       return numbers + `<details><summary>用收集项生成条件</summary><div class="grid">${input('必须拥有（ID，逗号分隔）', prefix + '_all', '')}${input('必须没有（ID，逗号分隔）', prefix + '_not', '')}</div>${button('生成条件 JSON', 'make-condition', `data-prefix="${prefix}"`)}<p class="muted">复杂条件支持 all、any、not、completed、visited、event_completed 和 variable。生成后可继续编辑。</p></details>`;
     }
     nodesPage() {
-      const subnav = `<div class="subnav">${button('剧情节点', 'node-tab', `data-tab="nodes" class="${this.nodeTab === 'nodes' ? 'active' : ''}"`)}${button('剧情事件包', 'node-tab', `data-tab="packages" class="${this.nodeTab === 'packages' ? 'active' : ''}"`)}</div>`;
+      const subnav = `<div class="subnav">${button('剧本库', 'node-tab', `data-tab="library" class="${this.nodeTab === 'library' ? 'active' : ''}"`)}${button('剧情节点', 'node-tab', `data-tab="nodes" class="${this.nodeTab === 'nodes' ? 'active' : ''}"`)}${button('剧情事件包', 'node-tab', `data-tab="packages" class="${this.nodeTab === 'packages' ? 'active' : ''}"`)}</div>`;
+      if (this.nodeTab === 'library') return subnav + this.libraryPage();
       if (this.nodeTab === 'packages') return subnav + this.packagesPage();
       const p = this.e.project; this.nodeId ||= p.nodes[0].id; const n = p.nodes.find(v => v.id === this.nodeId) || p.nodes[0]; this.nodeId = n.id;
       const options = p.nodes.map(v => [v.id, v.title]);
@@ -314,6 +338,11 @@
       <details><summary>添加或修改出口</summary>${select('目标节点', 'route_target', options, p.nodes.find(v => v.id !== n.id)?.id || n.id)}${input('按钮显示文字', 'route_label', '')}${input('填入输入框的行动文字（留空使用按钮文字）', 'route_action_text', '')}${area('自主输入的行动识别标准', 'route_intent', '', 3)}${this.conditionHelper('route')}${area('出口条件 JSON', 'route_condition', 'true', 5)}${button('保存这个出口', 'route-save')}</details>
       <details><summary>高级信息</summary>${input('稳定节点 ID', 'id', n.id, 'text', 'readonly')}${area('所有出口 JSON（保存节点时应用）', 'routes', json(n.routes), 6)}</details>
       <div class="actions">${button('保存节点', 'node-save', 'class="primary"')}${button('设为新对话起点', 'set-start')}</div></div></div></div><div class="spoiler-layer"></div></div></form>`;
+    }
+    libraryPage() {
+      const query = String(this.forms.library?.library_search || '').trim().toLowerCase(), projects = this.e.projectList();
+      const items = projects.filter(p=>p.title.toLowerCase().includes(query));
+      return `<form data-form="library"><div class="card"><h2>剧本库 · ${projects.length}</h2><p class="muted">当前聊天使用选中的剧本。切换保留各剧本的进度、分析草稿和编辑内容，并关闭剧情注入；准备好后在运行页启用。</p>${input('搜索剧本名称','library_search',query)}<div class="row">${input('新剧本名称','project_title','新剧本')}${button('新建剧本','project-new',this.e.busy ? 'disabled' : 'class="primary"')}${button('导入剧本','import')}</div></div><div class="library-grid">${items.map(p=>`<article class="card library-item"><h3>${escape(p.title)} ${p.current ? '<span class="badge">当前</span>' : ''}</h3><p class="muted">${p.worldbook ? '世界书：'+escape(p.worldbook) : '本地保存'}${p.nodes ? ' · '+p.nodes+'个节点' : ''}</p><div class="row">${button(p.current ? '编辑当前剧本' : '切换并编辑','project-switch',`data-id="${escape(p.id)}" ${this.e.busy ? 'disabled' : ''}`)}${button('复制','project-copy',`data-id="${escape(p.id)}" ${this.e.busy ? 'disabled' : ''}`)}${button('移出剧本库','project-remove',`data-id="${escape(p.id)}" ${p.current || this.e.busy ? 'disabled' : 'class="danger"'}`)}</div></article>`).join('') || '<p class="empty">没有匹配的剧本</p>'}</div><div class="card"><h2>加入世界书中的剧本</h2>${select('世界书','library_book',this.e.host.books().map(name=>[name,name]),this.e.settings.worldbook)}${button('读取并加入剧本库','library-discover',this.e.busy ? 'disabled' : '')}</div></form>`;
     }
     packagesPage() {
       const p = this.e.project, selected = p.packages.find(x => x.id === this.packageId) || p.packages[0]; this.packageId = selected?.id || '';
@@ -380,7 +409,7 @@
       const prompts = e.defaultPrompts();
       const promptEditor = `<details class="analysis-prompts"><summary>查看与修改分析提示词</summary><p class="muted">这里与 API 页共用已保存的系统提示词。修改后点击保存，再发起分析；保留 JSON 字段与证据约定。</p>${area('分析系统提示词（system）', 'analysis_prompt', e.settings.profile.analysis_prompt || prompts.analysis, 12)}${area('跨段合并系统提示词（system）', 'analysis_merge_prompt', e.settings.profile.analysis_merge_prompt || prompts.merge, 10)}<div class="row">${button('保存分析提示词', 'analysis-prompts-save', e.busy ? 'disabled' : '')}${button('恢复默认分析提示词', 'analysis-prompts-reset', e.busy ? 'disabled' : '')}${button('预览当前输入与已保存提示词', 'analysis-preview')}</div>${this.analysisPreview ? `<p class="muted">发送前预览：使用已保存的提示词和当前原文、要求。实际分析先规划分段；此处为分析正文模板预览，各次规划、分段和整合的真实请求见下方记录。</p><pre class="prompt-preview">${escape(json(this.analysisPreview))}</pre>` : ''}<h3>最近一次整理 / 分析的已发请求</h3>${(e.rawAnalysis?.requests || []).map((r, i) => `<details><summary>请求 ${i + 1} · ${escape(r.kind)}${r.part ? ' · ' + r.part + '/' + r.parts : ''}</summary>${r.storage_truncated ? '<p class="warn">本地保留预算已满，此展示不完整。</p>' : ''}<pre class="sent-prompt">${escape(r.text)}</pre></details>`).join('') || '<p class="empty">尚无已发送请求记录</p>'}</details>`;
       const conversion = draft ? `<div class="card analysis-conversion"><h2>分析完成，转化为可用内容</h2><p>${count.nodes} 个剧情阶段 · ${count.events} 条事件规则 · ${count.routes} 个分支出口 · ${count.packages} 个剧情事件包</p><p>转化后，阶段和分支在“剧本”页，完成规则在“事件”页，条件关系在“记录”页。有完成标准的阶段会登记对应事件，共用一次结算；未明确的标准留待编辑。</p>${draft.is_partial ? '<p class="warn">这只是单个分块，尚未完成全篇整合。</p>' : ''}<div class="row">${button('转化为剧本、事件与分支', 'analysis-convert', e.busy ? 'disabled' : 'class="primary"')}${button('备份当前进度', 'export-progress')}${button('导出分析草稿', 'analysis-export')}</div><p class="muted">转化无需再次调用 API。当前剧本保留在草稿或世界书，转换后的剧本先关闭注入，核对后启用。</p></div>` : '';
-      return `<form data-form="analysis">${conversion}<div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。先由模型规划分段，再逐段分析与整合。单段建议2000～4000字，默认约3000字；全文建议每批2万～10万字，最多100万字符、512段。模型实际上下文上限与费用仍由服务决定。</p>${area('需要分析的长文本', 'analysis_text', p.original_text || '', 10)}<div class="analysis-meter"><span data-analysis-count>原文：${(this.forms.analysis?.analysis_text || p.original_text || '').length.toLocaleString()} 字符</span><span>每段目标：${e.settings.profile.analysis_chunk_chars || 3000} 字符</span><span>输出预算：${e.settings.profile.analysis_output || 16384} Token</span></div><p class="compact-note">建议整篇粘贴，不必手动切段。节点正文按来源编号由本地还原，减少模型复写造成的删改。条件密集时将单段调至2000字。输入预算提高不代表输出不会截断。</p>${button('调整分段与输出预算', 'analysis-settings')}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，提取数值载体、增减/设置量、发生标准、重复次数与停止门槛；缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。旧 detail 仅换行/空格不同且唯一匹配时，本地恢复原文；实际删改会指出出错节点，不能强制当作原文。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>${promptEditor}
+      return `<form data-form="analysis">${conversion}<div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。先由模型规划分段，再逐段分析与整合。单段建议2000～4000字，默认约3000字；全文建议每批2万～10万字，最多100万字符、512段。模型实际上下文上限与费用仍由服务决定。</p>${area('需要分析的长文本', 'analysis_text', p.original_text || '', 10)}<div class="analysis-meter"><span data-analysis-count>原文：${(this.forms.analysis?.analysis_text || p.original_text || '').length.toLocaleString()} 字符</span><span>每段目标：${e.settings.profile.analysis_chunk_chars || 3000} 字符</span><span>输出预算：${e.settings.profile.analysis_output || 16384} Token</span></div><p class="compact-note">建议整篇粘贴，不必手动切段。节点正文按来源编号由本地还原，减少模型复写造成的删改。条件密集时将单段调至2000字。输入预算提高不代表输出不会截断。</p>${button('调整分段与输出预算', 'analysis-settings')}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，提取数值载体、增减/设置量、发生标准、重复次数与停止门槛；缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。旧 detail 仅换行/空格不同且唯一匹配时，本地恢复原文；实际删改会指出出错节点，不能强制当作原文。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}${button('补修来源并恢复（必要时调用 API）', 'analysis-repair', e.busy ? 'disabled' : '')}<p class="muted">本地校验失败时，仅请求模型补修来源编号，最多两次；不重做分析，不修改原规则和奖励。</p></details></div>${promptEditor}
       ${a ? `<div class="card analysis-report"><h2>${draft ? '分析草稿报告' : '当前剧本分析报告'}</h2><p style="white-space:pre-wrap">${escape(a.synopsis)}</p><h3>不同走向</h3>${a.branches.map(x => `<div class="card"><strong>${escape(x.title)}</strong> ${proposed(x)}<p>${escape(x.summary)}</p><p class="muted">${escape(names(x.node_ids))}</p></div>`).join('') || '<p class="empty">未确认不同走向</p>'}<h3>结局</h3>${a.endings.map(x => `<div class="card"><strong>${escape(x.title)}</strong> ${proposed(x)}<p>${escape(x.summary)}</p><p class="muted">${escape(refs.nodes.get(x.node_id)?.title || '')}</p></div>`).join('') || '<p class="empty">原文未明确结局</p>'}<h3>伏笔与回收</h3>${a.foreshadowing.map(x => `<div class="card"><strong>${escape(x.title)}</strong> ${proposed(x)}<p>埋设：${escape(x.hint)}</p><p class="muted">${escape(names(x.plant_node_ids))}</p><p>回收：${escape(x.payoff)}</p><p class="muted">${escape(names(x.payoff_node_ids))}</p></div>`).join('') || '<p class="empty">未确认伏笔</p>'}${a.uncertainties.length ? `<h3>待核对事项</h3><ul>${a.uncertainties.map(x => `<li>${escape(x)}</li>`).join('')}</ul>` : ''}</div>` : ''}
       ${draft ? `<div class="card"><h2>编辑并应用分析草稿</h2><p class="warn">${draft.warnings.map(escape).join('<br>') || '请核对原文、走向、结局与伏笔。'}<br>${draft.recovered ? '本次从已有后台结果恢复，未再次请求 API。' : '本次分析使用 ' + (Number(draft.request_count) || 1) + ' 次请求。'}原文明确的完成标准、结果标记和条件会保留为可编辑规则，请核对后再应用。</p>${area('完整剧本草稿 JSON（可编辑）', 'analysis_draft', json(draft.project), 18)}<div class="row">${button('转化并打开剧本', 'analysis-apply', 'class="primary"')}${button('导出分析草稿', 'analysis-export')}</div></div>` : ''}</form>`;
     }
@@ -468,6 +497,17 @@
       const number = (key, min, max) => { const value = Number(v[key]); C.assert(Number.isFinite(value) && value >= min && value <= max, key + ' 数值超出范围'); return value; };
       if (action === 'section-jump') { const target = this.shadow.querySelector(`[data-section="${b.dataset.section}"].section-target`); if (target?.matches('details')) target.open = true; const nested = target?.classList.contains('recovery-section') ? target.querySelector(':scope > details') : null; if (nested) nested.open = true; target?.scrollIntoView({block: 'start', behavior: 'instant'}); target?.querySelector('input,textarea,button,summary')?.focus({preventScroll: true}); return; }
       if (action === 'tab') { this.capture(); this.tab = b.dataset.tab; this.spoilerPrompt = false; this.listPage = 0; this.render(); this.shadow.querySelector('main').scrollTop = 0; return; }
+      if (action === 'library-open') {this.capture();this.saveEditors();this.tab='nodes';this.nodeTab='library';this.render(false);this.shadow.querySelector('main').scrollTop=0;return;}
+      if (['project-new','project-switch','project-copy','project-remove','library-discover'].includes(action)) {
+        this.capture();this.saveEditors(); const values=this.forms.library || {};
+        if (action==='project-new') await this.e.createProject(values.project_title);
+        else if (action==='project-switch') await this.e.switchProject(b.dataset.id);
+        else if (action==='project-copy') await this.e.copyProject(b.dataset.id);
+        else if (action==='project-remove') {const item=this.e.projectList().find(p=>p.id===b.dataset.id); if(!this.win.confirm('将“'+item.title+'”移出剧本库？本地剧本与工作草稿会移除，世界书原件和聊天进度保留。')) return;this.e.removeProject(item.id);}
+        else {const count=await this.e.discoverBook(values.library_book);this.toast('已读取 '+count+' 份剧本');}
+        if (['project-new','project-switch','project-copy'].includes(action)) {this.tab='nodes';this.nodeTab='nodes';}
+        this.render(false);this.shadow.querySelector('main').scrollTop=0;return;
+      }
       if (action === 'node-tab' || action === 'records-tab') { this.capture(); if (action === 'node-tab') this.nodeTab = b.dataset.tab; else this.recordsTab = b.dataset.tab; this.spoilerPrompt = false; this.render(false); return; }
       if (action === 'graph-node') { this.graphSelected = b.dataset.id; this.render(); return; }
       if (action === 'graph-zoom') { this.graphZoom = Math.max(.5, Math.min(2, (this.graphZoom || 1) + Number(b.dataset.delta))); this.render(); return; }
@@ -524,7 +564,7 @@
       else if (action === 'result-accept' || action === 'result-dismiss') await e.confirmResult(b.dataset.key, b.dataset.id, action === 'result-accept');
       else if (action === 'package-demo') {
         if (!this.win.confirm('打开 b2+c1 → a4 → d1 交叉依赖示例？当前剧本保留在世界书或草稿中。')) return;
-        await e.setProject(F.demoProject()); this.forms = {}; this.packageId = '';
+        await e.setProject(F.demoProject()); this.packageId = '';
       } else if (action === 'package-new') {
         let nodeId, id;
         await e.editProject(p => { nodeId = C.shortId(p, 'N'); id = C.shortId(p, 'P'); p.nodes.push({id: nodeId, title: '新事件阶段', routes: [], effects: []}); p.packages.push({id, title: '新事件包', node_ids: [nodeId], enabled: false, condition: true}); }); this.packageId = id;
@@ -628,16 +668,17 @@
       else if (action === 'analysis-run') { try { const draft = await e.analyze(v.analysis_text, v.analysis_wish, v.analysis_mode); this.forms.analysis.analysis_draft = json(draft.project); this.showConversion(); return; } finally { if (e.rawAnalysis?.error && e.rawAnalysis.replies.length) this.loadRaw(); } }
       else if (action === 'analysis-raw-load') { this.loadRaw(v.analysis_saved_id); }
       else if (action === 'analysis-raw-export') { C.assert(e.rawAnalysis, '暂无原始回复记录'); this.download(e.rawAnalysis, 'analysis-raw.json'); return; }
+      else if (action === 'analysis-repair') { const draft = await e.repairAnalysis(v.analysis_text,v.analysis_response,v.analysis_mode,v.analysis_saved_id);this.forms.analysis.analysis_draft=json(draft.project);this.showConversion();return;}
       else if (action === 'analysis-restore') { const draft = e.restoreAnalysis(v.analysis_text, v.analysis_response, v.analysis_mode, v.analysis_saved_id); this.forms.analysis.analysis_draft = json(draft.project); this.showConversion(); return; }
       else if (action === 'analysis-cancel') { e.client.cancel('用户取消了分析'); return; }
       else if (action === 'analysis-export') { this.download({type: 'bse_project', version: 1, project: C.normalizeProject(C.parseJSON(v.analysis_draft, '分析草稿'))}, 'analysis-draft.json'); return; }
       else if (action === 'analysis-apply' || action === 'analysis-convert') {
         C.assert(e.analysisDraft, '请先完成分析或恢复分析草稿'); const project = C.parseJSON(v.analysis_draft, '分析草稿');
         if (!this.win.confirm((e.analysisDraft.is_partial ? '这只是单个分块草稿，未完成全篇整合。\n' : '') + '转化为剧本、事件和分支并打开？当前剧本和进度保留；新剧本关闭注入，核对后启用。')) return;
-        await e.applyAnalysis(project); this.forms = {}; this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.nodeTab = 'nodes'; this.tab = 'nodes'; this.spoilerPrompt = false; this.render(false); this.shadow.querySelector('main').scrollTop = 0; this.toast('转化完成；剧情与分支在剧本页，完成规则在事件页'); return;
+        await e.applyAnalysis(project); this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.nodeTab = 'nodes'; this.tab = 'nodes'; this.spoilerPrompt = false; this.render(false); this.shadow.querySelector('main').scrollTop = 0; this.toast('转化完成；剧情与分支在剧本页，完成规则在事件页'); return;
       }
       else if (action === 'segment') { const draft = await e.segment(v.original_text, v.segment_wish); this.forms.data.segment_draft = json(draft.project); }
-      else if (action === 'segment-apply') { C.assert(this.win.confirm('把整理草稿作为新剧本打开？当前剧本会保留在原世界书或草稿中。'), '已取消应用'); await e.setProject(C.parseJSON(v.segment_draft, '拆分草稿')); delete e.settings.segment_draft; e.saveSettings(); this.forms = {}; this.nodeId = ''; this.eventId = ''; }
+      else if (action === 'segment-apply') { C.assert(this.win.confirm('把整理草稿作为新剧本打开？当前剧本会保留在原世界书或草稿中。'), '已取消应用'); await e.setProject(C.parseJSON(v.segment_draft, '拆分草稿')); delete e.settings.segment_draft; e.saveSettings(); this.nodeId = ''; this.eventId = ''; }
       else if (action === 'original-save') await e.editProject(p => { p.original_text = v.original_text; });
       else if (action === 'definitions-save') await e.editProject(p => { p.variables = C.parseJSON(v.variables, '变量'); p.collections = C.parseJSON(v.collections, '收集项'); });
       else if (action === 'binding-save') {
@@ -645,8 +686,8 @@
         delete this.forms.data; this.toast('已保存聊天变量映射；发送下一条玩家消息时读取');
       }
       else if (action === 'injection-save') await e.updateSettings({depth: Math.floor(number('depth', 0, 100)), detail: v.detail});
-      else if (action === 'project-json-save') { await e.setProject(C.parseJSON(v.project_json, '剧本')); this.forms = {}; this.nodeId = ''; this.eventId = ''; }
-      else if (action === 'draft-load') { await e.setProject(e.settings.drafts[b.dataset.id]); this.forms = {}; this.nodeId = ''; this.eventId = ''; }
+      else if (action === 'project-json-save') { await e.setProject(C.parseJSON(v.project_json, '剧本')); this.nodeId = ''; this.eventId = ''; }
+      else if (action === 'draft-load') { await e.setProject(e.settings.drafts[b.dataset.id]); this.nodeId = ''; this.eventId = ''; }
       else if (action === 'export-project') this.download(e.exportProject(), e.project.id + '.json');
       else if (action === 'export-progress') this.download(e.exportProgress(), e.project.id + '-progress.json');
       else if (action === 'import') { this.shadow.querySelector('.file').click(); return; }
@@ -658,6 +699,7 @@
     }
     destroy() {
       if (this.destroyed) return; this.destroyed = true;
+      try {this.capture();this.saveEditors();} catch {}
       this.unsub?.(); clearTimeout(this.toastTimer); this.doc.removeEventListener('keydown', this.keyHandler);
       this.releaseQuickDock(); this.quickResize?.disconnect(); this.win.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('resize', this.viewportHandler); this.win.visualViewport?.removeEventListener('scroll', this.viewportHandler); this.win.removeEventListener('scroll', this.quickScroll, true); this.composerObserver?.disconnect(); this.composerResize?.disconnect(); if (this.quickFrame) this.win.cancelAnimationFrame(this.quickFrame); this.quickElement?.remove(); this.element?.remove();
     }

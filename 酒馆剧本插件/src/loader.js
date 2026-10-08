@@ -3,9 +3,9 @@
   if (!root.document) return;
   root.__branch_story_loader_cleanup__?.();
   const urls = root.__BSE_LOADER_URLS__ || [
-    'https://raw.githubusercontent.com/R41N1NG/-/main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.0.1',
-    'https://testingcf.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.0.1',
-    'https://cdn.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.0.1',
+    'https://raw.githubusercontent.com/R41N1NG/-/main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.4',
+    'https://testingcf.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.4',
+    'https://cdn.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.4',
   ];
   let doc; try { doc = root.parent.document; } catch { doc = root.document; }
   doc ||= root.document;
@@ -45,7 +45,9 @@
         if (!response.ok) throw new Error('HTTP ' + response.status);
         const parsed = await response.json();
         if (parsed.type !== 'script' || typeof parsed.content !== 'string' || !parsed.content.trim()) throw new Error('链接没有返回有效的酒馆助手脚本');
-        if (!parsed.content.includes('__branch_story_ready__')) throw new Error('线路返回旧版插件缓存，继续尝试备用线路');
+        const version = parsed.content.match(/Branch Story Engine v(\d+)\.(\d+)\.(\d+)/);
+        const current = version && (+version[1] > 1 || +version[1] === 1 && (+version[2] > 4 || +version[2] === 4 && +version[3] >= 4));
+        if (!current || !parsed.content.includes('__branch_story_ready__')) throw new Error('线路返回旧版插件缓存，继续尝试备用线路');
         data = parsed; status.attempts.push({line: i + 1, ok: true}); break;
       } catch (e) { status.attempts.push({line: i + 1, ok: false, error: e.name === 'AbortError' ? '连接超时或已取消' : e.message}); }
       finally { clearTimeout(timer); controllers.delete(controller); }
