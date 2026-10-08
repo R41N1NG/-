@@ -24,12 +24,12 @@ const server = http.createServer(async (req, res) => {
   if (req.url === '/v1/chat/completions') {
     let body = ''; for await (const chunk of req) body += chunk;
     const data = JSON.parse(body); requests.push(data);
-    let value;
-    if (data.messages[0].content.includes('剧本分析')) {
-      const input = JSON.parse(data.messages[1].content), parts = input.original.split('\n').filter(Boolean);
+    const input = data.messages[1] ? JSON.parse(data.messages[1].content) : {}; let value;
+    if (typeof input.original === 'string' && input.mode) {
+      const parts = input.original.split('\n').filter(Boolean);
       value = {title: '多走向分析剧本', start_node_id: 'a', nodes: parts.map((detail, i) => ({id: ['a', 'b', 'c'][i], title: ['停电线索', '调查结局', '离开结局'][i], kind: i ? 'ending' : 'choice', detail, guidance: i ? '演绎当前走向的结果' : '描写灯光和钟声，先不揭示答案', routes: i ? [] : [{target: 'b', label: '调查钟楼'}, {target: 'c', label: '离开酒店'}]})), analysis: {synopsis: '停电后选择调查或离开', branches: [{title: '调查', node_ids: ['a', 'b']}, {title: '离开', node_ids: ['a', 'c']}], endings: [{node_id: 'b', title: '真相', summary: '找到幕后人'}, {node_id: 'c', title: '脱险', summary: '安全离开'}], foreshadowing: [{title: '钟声', hint: '断电仍有钟声', payoff: '幕后人藏在钟楼', plant_node_ids: ['a'], payoff_node_ids: ['b']}], uncertainties: []}};
-    } else if (data.messages[0].content.includes('剧本整理')) {
-      const text = JSON.parse(data.messages[1].content).original;
+    } else if (typeof input.original === 'string') {
+      const text = input.original;
       const parts = text.split('\n').filter(Boolean);
       value = {title: '模型整理草稿', start_node_id: 's1', nodes: parts.map((detail, i) => ({id: 's' + (i + 1), title: '阶段 ' + (i + 1), detail, guidance: '演绎：' + detail, boundary: '', routes: i < parts.length - 1 ? [{target: 's' + (i + 2), label: '继续'}] : []}))};
     } else if (data.messages[0].content.includes('玩家行动分支识别器')) {

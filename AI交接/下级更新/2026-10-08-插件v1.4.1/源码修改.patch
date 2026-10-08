@@ -1,0 +1,501 @@
+diff --git a/README.md b/README.md
+index 67eaf91..bb26dc6 100644
+--- a/README.md
++++ b/README.md
+@@ -6 +6 @@
+-安装插件请下载 [完整脚本 JSON](酒馆剧本插件/branch_story_tavern_helper_import.json)，或 [v1.3.1 ZIP](酒馆剧本插件/branch_story_plugin_v1.3.1.zip)。详细使用方法见 [插件 README](酒馆剧本插件/README.md)，项目状态见 [插件交接文档](酒馆剧本插件/交接gpt.md)。
++安装插件请下载 [完整脚本 JSON](酒馆剧本插件/branch_story_tavern_helper_import.json)，或 [v1.4.1 ZIP](酒馆剧本插件/branch_story_plugin_v1.4.1.zip)。详细使用方法见 [插件 README](酒馆剧本插件/README.md)，项目状态见 [插件交接文档](酒馆剧本插件/交接gpt.md)。
+diff --git "a/\344\272\244\346\216\245gpt.md" "b/\344\272\244\346\216\245gpt.md"
+index 5becf71..9a240b2 100644
+--- "a/\344\272\244\346\216\245gpt.md"
++++ "b/\344\272\244\346\216\245gpt.md"
+@@ -5 +5 @@
+-接手先阅读 [酒馆剧本插件/交接gpt.md](酒馆剧本插件/交接gpt.md) 和 [插件 README](酒馆剧本插件/README.md)，再按用户的新要求继续。当前功能版本为 **v1.4.0**，输入栏小面板加入当前阶段、⚙️操作和🎒已获得内容；数值载体、可重复行为与奖励上限、分析提示词编辑、短编号及带引用预览/确认的结果删除已实现。保留分析转化、条件事件包、交叉推进与回退、防剧透关系图及本地恢复。最新交接见插件交接文档第15节与 [玩家面板与数值事件](酒馆剧本插件/docs/玩家面板与数值事件.md)。
++接手先阅读 [酒馆剧本插件/交接gpt.md](酒馆剧本插件/交接gpt.md) 和 [插件 README](酒馆剧本插件/README.md)，再按用户的新要求继续。当前功能版本为 **v1.4.1**，长文分析提取替代路径、嵌套条件、数值门槛、互斥与选择代价，分块整合保留既有条件和出口。玩家小面板、数值载体、转化、事件包、依赖回退与防剧透等功能保留。最新交接见插件交接文档第16节与 [长文条件分析](酒馆剧本插件/docs/长文条件分析.md)。主模型短报告/自然结束按钮/集中核验是后续运行流程设计，本版没有实现。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/README.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/README.md"
+index 16d4287..3e89a3e 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/README.md"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/README.md"
+@@ -5 +5 @@
+-当前版本 **v1.4.0**：输入栏折叠小面板显示当前阶段与行动，⚙️收纳确认/核验/暂停，🎒查看已获得内容；数值载体、可重复行为奖励与单行为上限、短编号、结果删除确认和分析提示词编辑已加入。后台完成记录同步，旧ID和进度保留。详见 [玩家面板与数值事件](docs/玩家面板与数值事件.md)；原事件包、交叉依赖和转化说明见 [事件包与依赖](docs/事件包与依赖.md)。
++当前版本 **v1.4.1**：长文分析重点提取替代路径、AND/OR/NOT嵌套、数值门槛、互斥与选择代价；规则和原文依据进入可执行草稿，分块合并保留既有条件与出口。默认提示词自动升级，自定义提示词保留。详见 [长文条件分析](docs/长文条件分析.md)。输入栏小面板、⚙️/🎒、数值载体与奖励限制等v1.4.0功能继续保留，见 [玩家面板与数值事件](docs/玩家面板与数值事件.md)。
+@@ -9 +9 @@
+-1. 下载本目录的 [branch_story_tavern_helper_import.json](branch_story_tavern_helper_import.json)，或下载 [v1.4.0 ZIP 压缩包](branch_story_plugin_v1.4.0.zip) 并解压，取出同名 JSON。这是酒馆助手脚本导入文件，不是世界书文件。更新时先停用旧脚本，备份剧本和聊天进度，再导入新版，避免同时启用两份。
++1. 下载本目录的 [branch_story_tavern_helper_import.json](branch_story_tavern_helper_import.json)，或下载 [v1.4.1 ZIP 压缩包](branch_story_plugin_v1.4.1.zip) 并解压，取出同名 JSON。这是酒馆助手脚本导入文件，不是世界书文件。更新时先停用旧脚本，备份剧本和聊天进度，再导入新版，避免同时启用两份。
+@@ -56 +56 @@ v1.2.0 的实际流程：
+-**升级与测试：**先停用旧实例，再导入 v1.4.0 完整 JSON。旧剧本若没有完成标准，仍需手动确认，不能只靠升级自动结算。在“分析”页以“忠于原文”重新分析测试故事，核对草稿中的完成标准、效果 `collect` 和出口条件，应用为新剧本并启用后再实验。`雨夜的第七号库房` 应区分取得卡 `a`、取得码 `b`、验证成功 `a1` 和实际复位 `ab`。旧默认分析提示词会自动更新；用户自定义提示词保留，须自行加入新版 JSON 字段或恢复默认并保存。
++**升级与测试：**先停用旧实例，再导入 v1.4.1 完整 JSON。旧剧本若没有完成标准，仍需手动确认，不能只靠升级自动结算。在“分析”页以“忠于原文”重新分析测试故事，核对草稿中的完成标准、效果 `collect` 和出口条件，应用为新剧本并启用后再实验。`雨夜的第七号库房` 应区分取得卡 `a`、取得码 `b`、验证成功 `a1` 和实际复位 `ab`。旧默认分析提示词会自动更新；用户自定义提示词保留，须自行加入新版 JSON 字段或恢复默认并保存。
+@@ -238 +238 @@ npm run test:browser
+-浏览器测试需要可执行的 Chromium，默认 `/usr/bin/chromium`，可用 `BSE_CHROMIUM` 指定路径。测试用模拟酒馆助手宿主 iframe 和模拟 API 验证整体交互；截图输出到 `artifacts/`。104 项单元测试覆盖 API 地址与模型列表、错误说明与密钥隐藏、行动识别、生成等待、短阶段摘要、独立结果 ID、条件组合、奖励去重、证据校验、可编辑提示词、预算、分析分块与跨段引用、取消、失败重试、过期结果、聊天隔离、草稿恢复和世界书保存；新增独立长文本超时、完整正文读取期间中止、取消后晚到响应和后台 JSON 恢复验证。桌面/手机流程另验证分析等待超过旧版 45 秒仍成功、后台恢复不再请求 API，以及原有 a/b/a1/ab 完整流程。
++浏览器测试需要可执行的 Chromium，默认 `/usr/bin/chromium`，可用 `BSE_CHROMIUM` 指定路径。测试用模拟酒馆助手宿主 iframe 和模拟 API 验证整体交互；截图输出到 `artifacts/`。116 项单元测试覆盖 API 地址与模型列表、错误说明与密钥隐藏、行动识别、生成等待、短阶段摘要、独立结果 ID、条件组合、奖励去重、证据校验、可编辑提示词、预算、分析分块与跨段引用、取消、失败重试、过期结果、聊天隔离、草稿恢复和世界书保存；新增独立长文本超时、完整正文读取期间中止、取消后晚到响应和后台 JSON 恢复验证。桌面/手机流程另验证分析等待超过旧版 45 秒仍成功、后台恢复不再请求 API，以及原有 a/b/a1/ab 完整流程。
+@@ -247,0 +248,3 @@ v1.4.0 新增14项核心测试及1366/390/320px玩家面板回归：当前阶段
++
++
++v1.4.1 新增12项条件分析回归：嵌套OR/AND/NOT、失去一条路线后仍可走替代路线、实际入口与领奖保护、数值门槛与边界、互斥、分散证据、持续条件、默认提示词迁移、分块规则继承/合并/本地恢复及定义冲突。原有浏览器流程继续回归。主模型伴随报告、自然结束按钮与集中核验节奏仍待后续实现，本版只更新分析提示词和条件数据链。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/branch_story_plugin_design.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/branch_story_plugin_design.md"
+index cda2669..12943b1 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/branch_story_plugin_design.md"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/branch_story_plugin_design.md"
+@@ -3 +3 @@
+-版本：原始设计草案 0.1，保留作需求和设计记录。插件现已实现至 v1.4.0；实际安装、功能边界与验证状态以仓库 README 为准，本文中的“尚未实现”描述原始设计阶段。
++版本：原始设计草案 0.1，保留作需求和设计记录。插件现已实现至 v1.4.1；实际安装、功能边界与验证状态以仓库 README 为准，本文中的“尚未实现”描述原始设计阶段。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\344\272\213\344\273\266\345\214\205\344\270\216\344\276\235\350\265\226.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\344\272\213\344\273\266\345\214\205\344\270\216\344\276\235\350\265\226.md"
+index b67088c..d6f9cbe 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\344\272\213\344\273\266\345\214\205\344\270\216\344\276\235\350\265\226.md"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\344\272\213\344\273\266\345\214\205\344\270\216\344\276\235\350\265\226.md"
+@@ -1 +1 @@
+-# 条件事件包、交叉推进与完成关系（更新至v1.4.0）
++# 条件事件包、交叉推进与完成关系（更新至v1.4.1）
+@@ -7 +7 @@
+-v1.4.0玩家面板、🎒完成记录、数值载体、行为奖励边界及确认删除见[玩家面板与数值事件](玩家面板与数值事件.md)。
++v1.4.1长文条件分析见[长文条件分析](长文条件分析.md)。v1.4.0玩家面板、🎒完成记录、数值载体、行为奖励边界及确认删除见[玩家面板与数值事件](玩家面板与数值事件.md)。
+@@ -89 +89 @@ v1.4.0玩家面板、🎒完成记录、数值载体、行为奖励边界及确
+-104 项单元测试通过。浏览器使用构建后的实际安装 JSON，在 1366px/390px/320px 验证事件包编辑、独立锁、确认/取消/Escape、筛选/缩放和滚动、发送后选择、完整 b2/c1/a4/d1 链、连带回退及失败原始回复修改恢复。原有七页布局、短摘要与 a/b/a1/ab 全流程、长文本等待和七类启动场景通过。全部使用模拟宿主和模拟 API，未调用用户付费服务；真实模型对故事的语义划分仍需安装后用用户原文验证。
++116 项单元测试通过。浏览器使用构建后的实际安装 JSON，在 1366px/390px/320px 验证事件包编辑、独立锁、确认/取消/Escape、筛选/缩放和滚动、发送后选择、完整 b2/c1/a4/d1 链、连带回退及失败原始回复修改恢复。原有七页布局、短摘要与 a/b/a1/ab 全流程、长文本等待和七类启动场景通过。全部使用模拟宿主和模拟 API，未调用用户付费服务；真实模型对故事的语义划分仍需安装后用用户原文验证。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\346\235\241\344\273\266\345\210\206\346\236\220.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\346\235\241\344\273\266\345\210\206\346\236\220.md"
+new file mode 100644
+index 0000000..d817057
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/docs/\351\225\277\346\226\207\346\235\241\344\273\266\345\210\206\346\236\220.md"
+@@ -0,0 +1,53 @@
++# 长文条件分析（v1.4.1）
++
++目标是自然、有选择且有后果的故事。分析阶段提取作者已经写明的规则，不把叙述顺序机械地改成必经任务链，不为玩家编造通行方式或补偿失去的机会。分析结果先生成可编辑草稿，核对后再转化、启用。
++
++## 提取什么
++
++默认的全文分析、基础整理和跨段整合提示词检查以下内容：
++
++- 可替代路径：A 或 B 满足任意一个即可；失去 A 不等于失去所有入口。
++- 共同前提与括号层级：例如 `(A 或 B) 且 D 且没有 E`。
++- 明确例外、排除、失效、放弃和互斥；互不相同不等于互斥。
++- 原文明示的数值门槛及特殊许可替代方式。
++- 进入条件、实际完成标准、取得结果的前提，三者分开。
++- 选择代价和永久失去机会。仅全部合法路径均明确不可恢复时才分析为永久关闭。
++
++程序支持 `all`、`any`、`not`、`collected`、`completed`、`visited` 和变量比较。分析不创建任意效果、奖励金额或独立行为规则；已有数值条件仍可提取，初始值与上下限须有原文依据。节点实际成功完成后才能获得 `result_ids` 对应结果。
++
++## 可执行字段与原文依据
++
++| 规则 | 字段 | 依据字段 |
++| --- | --- | --- |
++| 分支通行 | `routes[].condition` | `condition_evidence` |
++| 节点进入 | `entry_condition` | `entry_condition_evidence` |
++| 结果取得前提 | `collections[].requires` | `requires_evidence` |
++| 明确互斥 | `collections[].exclusive_with` | `exclusive_with_evidence` |
++| 事件包触发 | `packages[].condition` | `condition_evidence` |
++| 事件包持续 | `packages[].continue_condition` | `continue_condition_evidence` |
++| 数值初始值 | `variables[].default` | `evidence` |
++| 数值上下限 | `variables[].min/max` | `bounds_evidence` |
++
++依据兼容一个连续原文字符串，或 1～8 条连续原文字符串组成的数组。数组内每条都必须存在，不能用其中一条真实摘录掩盖其他虚构条款。结果公开说明 `description` 仍只接受一个连续原文字符串，不能泄露隐藏用途。
++
++未知 ID、非法互斥、空 AND/OR 组合、未经原文支持的进入/取得/持续条件和数值边界会拒绝。出口已有非默认条件却缺少依据时，保留原来的安全处理：改为 `false` 并警告，不能当作无条件通行。
++
++原文不明确或当前表达式无法完整表达的规则列入 `analysis.uncertainties`，相关明确入口建议暂阻、交由作者核对；程序不能识别所有自然语言遗漏。连续摘录校验能验证出处，不能证明模型理解了逻辑。尤其应检查“除非”“只有”“任一”“同时”“之后失效”等条款。
++
++## 分块与整合
++
++后文收到前文已提取的完整结果规则、数值定义和紧凑的节点 ID→标题映射，而非只有结果名。已提取规则占用输入预算时会继续分割剩余原文；不删除条件来凑预算。仍限制 32 块、256 节点，规则本身占满预算时提示提高预算或分篇处理。
++
++整合保留所有原节点、既有出口、完成标准、排除项、前提、互斥和持续条件。模型遗漏出口或返回 `true` 不会抹除原先的限制。原先没有限制的字段可以补充有原文依据的跨段条件；已有明确限制仍保留，不能借合并放宽。未知或重复的结果/变量/事件包定义拒绝。
++
++跨块 `completed/visited` 引用以及结果取得前提中的节点引用按实际节点重映射。全部条件最终重新通过完整项目校验。后文分块恢复携带原来节点上下文，仅代表局部草稿；完整整合恢复才代表全篇。
++
++各块待核对事项在全篇结果中保留。即使整合报告省略它们，也不会自动视为已解决；作者核对后可编辑清理。暂阻的 `false` 不会被整合自动放宽。
++
++## 提示词升级与验证边界
++
++新版默认提示词只替换与历史默认值完全一致的设置，作者自定义提示词保留。在分析页或 API 页恢复默认并保存后才能使用新默认；只打开编辑器并不等于已保存。实际请求仍可查看，失败后的原始响应与本地恢复保留。
++
++v1.4.1 共 116 项单元测试通过，其中 12 项新增测试覆盖嵌套条件、替代路线、放弃后的剩余路径、正式入口/奖励保护、数值边界、互斥、分散证据、持续条件、默认迁移、跨块保存/合并/恢复及定义冲突。浏览器回归使用实际安装 JSON 和模拟宿主/API；没有调用用户付费服务。真实模型提取质量需要用实际原文核对，测试不保证任何模型都不会遗漏条件。
++
++本次只更新长文分析提示词及条件数据传递。主模型末尾状态报告、自然结束按钮、集中核验节奏和失败后最多重试三次仍属于已讨论、待后续实现的运行流程，不在本版中冒称已完成。
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+index 28aff49..f53287b 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+@@ -3 +3 @@
+-  "version": "1.4.0",
++  "version": "1.4.1",
+@@ -9 +9 @@
+-      "version": "1.4.0",
++      "version": "1.4.1",
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+index 693b434..9159a9f 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+@@ -3 +3 @@
+-  "version": "1.4.0",
++  "version": "1.4.1",
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+index 722c5a7..e6cec2d 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+@@ -11 +11 @@ const exported = {type: 'script', enabled: true, name: '分支剧本与事件引
+-  info: 'v' + version + '：输入栏折叠小面板显示当前阶段和行动；⚙️收纳确认/核验/暂停，🎒查看实际取得的结果说明与来源，后台完成关系同步。数值载体支持归属、当前值和变化记录；可重复行为奖励、每轮去重和单行为上限。分析页可编辑提示词并查看实际请求。新节点/事件/包用短编号，旧ID保留；图中删除结果有引用预览与确认。保留分析本地转化、事件包、交叉依赖、回退、防剧透与600秒分析等待。',
++  info: 'v' + version + '：长文分析提取替代路线、AND/OR/NOT组合、数值门槛、互斥与选择代价；保留原文依据、事件包持续条件与数值边界，分块合并不抹除既有条件和出口。默认提示词自动升级，自定义保留。当前阶段/折叠行动/⚙️/🎒、数值载体和奖励上限、短编号、引用预览与确认删除、提示词编辑及实际请求继续保留。分析本地转化、交叉依赖、回退、防剧透与600秒分析等待。',
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+index f40ea05..3f2f30b 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+@@ -28,0 +29,16 @@
++  const V140_PROMPTS = {...PROMPTS};
++  const conditionInstructions = `目标是自然、可选择且有后果的故事，不把叙述顺序强制变成必经任务链。逐项检查：可替代路径、共同前提、例外与排除、数值门槛、选择代价及机会失去；只提取原文明示规则，不为玩家补救或编造通行方式。
++条件树仅用 true/false、{"all":[条件]}（AND全部）、{"any":[条件]}（OR任一）、{"not":条件}、{"collected":"结果ID"}、{"completed":"节点ID"}、{"visited":"节点ID"}、{"variable":{"id":"变量ID","op":"eq/ne/gt/gte/lt/lte","value":比较值}}。all/any不得为空，保留括号层级，不把OR改成AND。“A或B进入C”用any；“(A或B)且D且没有E”用all内嵌any及not。“达到70或有许可”用any内嵌variable与collected。例中A/B等只是占位，不创建这些结果，不按字母前缀推导。
++进入、尝试、看到、计划不等于成功完成或取得；进入条件、完成标准、结果取得前提分别记录。失去A不代表C永久关闭，B可达仍可走B；仅原文明示所有合法路径不可恢复才记录永久失去。明确放弃/拒绝/失效可定义独立结果，用not禁止相应路径；只有明示互斥才用exclusive_with，不能把互不相同当作互斥。普通离开不自动领奖。
++规则用condition/entry_condition/requires/continue_condition等可执行字段表达，不能只写在guidance或梗概中。每项非默认规则须有对应*_evidence；证据是原文连续摘录，也可用1～8条连续摘录数组支撑分散条款。摘录存在不等于推断成立。条件不明确、不受支持或依赖尚无定义时，记入analysis.uncertainties，相关已知入口用false暂阻并附原文依据，不能用true冒充已确认无条件。`;
++  const draftSchema = `只输出完整JSON，无围栏/解释/任意effects或数值奖励：{"title":"剧本名","premise":"背景","start_node_id":"n1","nodes":[{"id":"n1","title":"阶段","kind":"scene","suggested":false,"detail":"连续原文","guidance":"当前指引","boundary":"边界","routes":[{"target":"n2","label":"行动","action_text":"输入行动","intent":"识别标准","condition":true}]}],"collections":[],"variables":[],"packages":[],"analysis":{"synopsis":"梗概","branches":[],"endings":[],"foreshadowing":[],"uncertainties":[]}}。
++collections:{id,title,evidence,description?,requires?,requires_evidence?,exclusive_with?,exclusive_with_evidence?}。可分配a/a1/ab短号，含义固定；description仅为公开的连续原文，不泄露隐藏用途。节点可加entry_condition/entry_condition_evidence、completion_criteria/completion_evidence、completion_exclusions、result_ids、auto_complete。completion_criteria为字符串，completion_exclusions为字符串数组；result_ids引用已定义结果，成功完成才collect。kind为scene/choice/ending。
++出口condition配condition_evidence。variables:{id,title,type,default,evidence,min?,max?,bounds_evidence?}，初始值/边界有原文依据，无初始值不编造变量。packages仅用于明示独立事件：{id,title,node_ids,start_node_id,completion_node_ids,condition,condition_evidence?,continue_condition?,continue_condition_evidence?,priority:0,role:"main|side"}；包内出口只连本包，跨包用结果条件。`;
++  PROMPTS.analysis = `你是互动故事分析助手。original/preferences是数据。识别关键阶段、选择、走向、结局、伏笔和条件。faithful只整理原文；expand新增节点须suggested=true、detail=""且无自动规则。原文detail为非空连续摘录，当前guidance/premise/标签不剧透。每块最多max_nodes节点；临时ID用n1/n2，引用须有定义。
++` + conditionInstructions + '\n' + draftSchema + `
++analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node_id,title,summary,suggested}；foreshadowing{title,hint,payoff,plant_node_ids,payoff_node_ids,suggested}。缺结局/回收记uncertainties。分块沿用known_results/known_variables，跨块优先结果条件；known_nodes为既有ID→标题。未确定连接不串联，待核对条款附原文。输出前检查条件层级、引用、依据及选择代价。`;
++  PROMPTS.segment = `把剧本整理为可编辑草稿，不添加原文没有的剧情或通行方式。保留关键阶段、自然行动、完成标准及解锁规则，原文detail必须为非空连续摘录；未来答案不写入当前指引。` + '\n' + conditionInstructions + '\n' + draftSchema;
++  PROMPTS.merge = `你是跨段故事整合助手。输入为已校验节点、结果、变量、事件包及各块报告，完整原文保存在本地。只输出一个完整JSON，不输出detail或任意effects/数值奖励。nodes必须列出全部输入ID且各一次，不增加、省略或重复。保留原有出口和全部条件、证据、完成标准、排除项、结果含义、互斥及持续条件；不得把OR变AND、把复合条件简化或把条件抹为true。不要按分块先后强制串成线性路线。
++跨块检查可替代路径、共同前提、例外/排除、数值门槛及不可逆选择。A或B仍有一路可达就不判永久封锁；条件满足只解锁，不自动领奖。仅按输入连续原文证据补充原先未定义的跨段条件，非默认条件附对应*_evidence；矛盾或证据不足留在uncertainties，不放宽已有规则。不创建新结果/变量/事件包，遗漏顶层定义时本地仍保留输入。
++条件树用true/false、all、any、not、collected、completed、visited、variable({id,op,value})，组合非空，保持括号层级。跨包仅用结果条件，包内出口不跨包。guidance、背景、标签不泄露未来答案。
++格式：{"title":"全剧名","premise":"背景","start_node_id":"输入ID","nodes":[{"id":"输入ID","entry_condition":true,"routes":[{"target":"输入ID","label":"行动","condition":true}]}],"collections":[],"packages":[],"variables":[],"analysis":{"synopsis":"梗概","branches":[{"title":"走向","summary":"概述","node_ids":["输入ID"],"suggested":false}],"endings":[{"node_id":"输入ID","title":"结局","summary":"概述","suggested":false}],"foreshadowing":[{"title":"伏笔","hint":"埋设","payoff":"回收","plant_node_ids":["输入ID"],"payoff_node_ids":["输入ID"],"suggested":false}],"uncertainties":[]}}。definitions可省略未改条目；已有规则不能覆盖或删除。保留各块uncertainties，已能从输入定义和证据解决的条款可明确补全，否则继续待核对。`;
+@@ -37,2 +53,2 @@
+-    const supported = text => typeof text === 'string' && text.trim() && original.includes(text);
+-    const supportedGlobal = text => typeof text === 'string' && text.trim() && (options.evidenceSource || original).includes(text);
++    const supported = text => supportedEvidence(text, original);
++    const supportedGlobal = text => supportedEvidence(text, options.evidenceSource || original);
+@@ -43 +59 @@
+-      C.assert(typeof item.evidence === 'string' && item.evidence.trim() && (options.evidenceSource || original).includes(item.evidence) && typeof item.title === 'string' && item.title.trim(), '结果标记缺少原文定义：' + item.id);
++      C.assert(supportedGlobal(item.evidence) && typeof item.title === 'string' && item.title.trim(), '结果标记缺少原文定义：' + item.id);
+@@ -54 +70 @@
+-      if (op === 'all' || op === 'any') { C.assert(Array.isArray(value), '条件组合必须为数组'); return {[op]: value.map(remap)}; }
++      if (op === 'all' || op === 'any') { C.assert(Array.isArray(value) && value.length, '条件组合必须为非空数组'); return {[op]: value.map(remap)}; }
+@@ -66,0 +83,8 @@
++    for (const item of raw.collections || []) if (item.exclusive_with != null) {
++      C.assert(Array.isArray(item.exclusive_with) && item.exclusive_with.every(k => k !== item.id && codes.has(k)), '互斥结果引用无效：' + item.id);
++      if (item.exclusive_with.length) {
++        C.assert(supportedGlobal(item.exclusive_with_evidence), '结果互斥缺少原文依据：' + item.id);
++        const def = collections.find(c => c.id === item.id);
++        def.exclusive_with = [...new Set([...(def.exclusive_with || []), ...item.exclusive_with])]; def.exclusive_with_evidence = item.exclusive_with_evidence;
++      }
++    }
+@@ -74 +98 @@
+-      if (n.entry_condition != null && n.entry_condition !== true) { C.assert(!n.suggested && supported(n.entry_condition_evidence), '节点进入条件缺少原文依据：' + n.title); out.entry_condition = remap(n.entry_condition); out.entry_condition_evidence = n.entry_condition_evidence; }
++      if (n.entry_condition != null && n.entry_condition !== true) { C.assert(!n.suggested && supportedGlobal(n.entry_condition_evidence), '节点进入条件缺少原文依据：' + n.title); out.entry_condition = remap(n.entry_condition); out.entry_condition_evidence = n.entry_condition_evidence; }
+@@ -83 +107 @@
+-          if (!supported(r.condition_evidence)) { route.condition = false; warnings.push('缺少原文依据的解锁条件已阻止，请核对并配置：' + (r.label || r.target)); }
++          if (!supportedGlobal(r.condition_evidence)) { route.condition = false; warnings.push('缺少原文依据的解锁条件已阻止，请核对并配置：' + (r.label || r.target)); }
+@@ -93 +117,2 @@
+-      return {id: b.id, title: b.title, node_ids: ids, start_node_id: map.get(b.start_node_id || b.node_ids[0]), completion_node_ids: b.completion_node_ids?.map(k => { C.assert(map.has(k), '事件包终点引用未知节点'); return map.get(k); }), condition: remap(b.condition), condition_evidence: b.condition_evidence, priority: b.priority || 0, role: b.role || 'main', auto_start: true};
++      if (b.continue_condition != null && b.continue_condition !== true) C.assert(supportedGlobal(b.continue_condition_evidence), '事件包持续条件缺少原文依据：' + b.title);
++      return {id: b.id, title: b.title, node_ids: ids, start_node_id: map.get(b.start_node_id || b.node_ids[0]), completion_node_ids: b.completion_node_ids?.map(k => { C.assert(map.has(k), '事件包终点引用未知节点'); return map.get(k); }), condition: remap(b.condition), condition_evidence: b.condition_evidence, continue_condition: remap(b.continue_condition), continue_condition_evidence: b.continue_condition_evidence, priority: b.priority || 0, role: b.role || 'main', auto_start: true};
+@@ -97,0 +123,4 @@
++  function supportedEvidence(value, original) {
++    const values = Array.isArray(value) ? value : [value];
++    return values.length > 0 && values.length <= 8 && values.every(x => typeof x === 'string' && x.trim() && original.includes(x));
++  }
+@@ -100 +129,10 @@
+-    return (raw.variables || []).map(v => { C.assert(C.object(v) && typeof v.evidence === 'string' && v.evidence.trim() && original.includes(v.evidence) && ['number', 'boolean', 'string'].includes(v.type) && typeof v.default === v.type, '分析变量缺少包括初始值的原文依据：' + v?.id); return {id: v.id, title: v.title || v.id, type: v.type, default: v.default, evidence: v.evidence}; });
++    return (raw.variables || []).map(v => {
++      C.assert(C.object(v) && supportedEvidence(v.evidence, original) && ['number', 'boolean', 'string'].includes(v.type) && typeof v.default === v.type, '分析变量缺少包括初始值的原文依据：' + v?.id);
++      const out = {id: v.id, title: v.title || v.id, type: v.type, default: v.default, evidence: v.evidence};
++      if (v.min != null || v.max != null) {
++        C.assert(v.type === 'number' && supportedEvidence(v.bounds_evidence, original), '分析变量边界缺少原文依据：' + v.id);
++        for (const key of ['min', 'max']) if (v[key] != null) { C.assert(Number.isFinite(v[key]), '分析变量边界无效：' + v.id); out[key] = v[key]; }
++        out.bounds_evidence = v.bounds_evidence;
++      }
++      return out;
++    });
+@@ -118,0 +157 @@
++    for (const n of options.knownNodes || []) { C.assert(!map.has(n.id), '分块节点编号与既有节点冲突'); map.set(n.id, n.id); }
+@@ -138 +177 @@
+-    for (const v of draftVariables(raw, options.evidenceSource || original)) { const old = variables.find(x => x.id === v.id); C.assert(!old || old.type === v.type && old.default === v.default, '跨块变量定义冲突：' + v.id); if (!old) variables.push(v); }
++    for (const v of draftVariables(raw, options.evidenceSource || original)) { const old = variables.find(x => x.id === v.id); C.assert(!old || old.type === v.type && old.default === v.default && old.min === v.min && old.max === v.max, '跨块变量定义冲突：' + v.id); if (!old) variables.push(v); }
+@@ -141,2 +180,4 @@
+-    const project = C.normalizeProject({id: C.id('story'), title: raw.title || '分析后的剧本', premise: raw.premise || '', original_text: original, start_node_id: map.get(raw.start_node_id || raw.nodes[0].id), nodes, analysis, collections, variables, packages: options.packages});
+-    C.assert(map.has(raw.start_node_id || raw.nodes[0].id), '分析起点引用未知节点');
++    const project = C.normalizeProject({id: C.id('story'), title: raw.title || '分析后的剧本', premise: raw.premise || '', original_text: original, start_node_id: map.get(raw.start_node_id || raw.nodes[0].id), nodes: [...(options.knownNodes || []), ...nodes], analysis, collections, variables, packages: options.packages});
++    // Chunk drafts are scoped to their supplied known-node context. The final merge validates the full project.
++    if (options.knownNodes?.length) project.nodes = project.nodes.slice(options.knownNodes.length);
++    C.assert(raw.nodes.some(n => n.id === (raw.start_node_id || raw.nodes[0].id)), '分析起点必须引用本次节点');
+@@ -322 +363 @@
+-      return {...analysisDraft(data, text, mode, context?.kind === 'chunk' ? {knownCollections: context.knownCollections, knownVariables: context.knownVariables, evidenceSource: context.evidenceSource} : {}), request_count: 0, recovered: true};
++      return {...analysisDraft(data, text, mode, context?.kind === 'chunk' ? {knownCollections: context.knownCollections, knownVariables: context.knownVariables, knownNodes: context.knownNodes, evidenceSource: context.evidenceSource} : {}), request_count: 0, recovered: true};
+@@ -332 +373 @@
+-      const invoke = async (prompt, value, context = {kind: 'full'}) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算，请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true, onRequest: () => options.onRequest?.({messages: C.clone(messages), kind: context.kind, part: value.part, parts: value.parts}), onResponse: response => { alive(); return options.onResponse?.({...response, original: value.original || text, mode, part: value.part || 0, parts: value.parts || 1, ...context}); }}); alive(); return result; };
++      const invoke = async (prompt, value, context = {kind: 'full'}) => { alive(); const messages = request(prompt, value); C.assert(size(messages) <= budget, '分析提示词或合并摘要超过字符预算（' + size(messages) + '/' + budget + '），请提高 API 输入预算'); const result = await this.call(profile, messages, {max_tokens: profile.analysis_output || 8192, timeout_sec: profile.analysis_timeout_sec || 600, label: '剧本分析', long: true, onRequest: () => options.onRequest?.({messages: C.clone(messages), kind: context.kind, part: value.part, parts: value.parts}), onResponse: response => { alive(); return options.onResponse?.({...response, original: value.original || text, mode, part: value.part || 0, parts: value.parts || 1, ...context}); }}); alive(); return result; };
+@@ -357,0 +399,9 @@
++        const chunkPayload = () => ({...payload(chunks[i]), known_results: collections, known_variables: variables, known_nodes: Object.fromEntries(nodes.map(({id, title}) => [id, title])), max_nodes: 4, part: i + 1, parts: chunks.length});
++        // Previously extracted conditions consume budget too; split the remaining text rather than drop rules.
++        while (size(request(system, chunkPayload())) > budget) {
++          const piece = chunks[i], end = Math.floor(piece.length * .7);
++          C.assert(end >= 128, '已提取规则占用过多分块预算，请提高API输入字符预算');
++          let cut = end; if (/[\uD800-\uDBFF]/.test(piece[cut - 1])) cut--;
++          chunks.splice(i, 1, piece.slice(0, cut), piece.slice(cut));
++          C.assert(chunks.length <= 32, '分块数量超过32，请提高API输入字符预算或分篇分析');
++        }
+@@ -359,2 +409,3 @@
+-        const raw = await invoke(system, {...payload(chunks[i]), known_results: collections.map(({id, title}) => ({id, title})), known_variables: variables, max_nodes: 4, part: i + 1, parts: chunks.length}, {kind: 'chunk', knownCollections: C.clone(collections), knownVariables: C.clone(variables), evidenceSource: text});
+-        const draft = analysisDraft(raw, chunks[i], mode, {knownCollections: collections, knownVariables: variables, evidenceSource: text}); warnings.push(...draft.warnings);
++        const context = {kind: 'chunk', knownCollections: C.clone(collections), knownVariables: C.clone(variables), knownNodes: C.clone(nodes), evidenceSource: text};
++        const raw = await invoke(system, chunkPayload(), context);
++        const draft = analysisDraft(raw, chunks[i], mode, context); warnings.push(...draft.warnings);
+@@ -362,2 +413,3 @@
+-        collections.splice(0, collections.length, ...draft.project.collections);
+-        const remapCondition = c => { if (c == null || typeof c === 'boolean') return c; const [op, v] = Object.entries(c)[0]; return {[op]: ['completed', 'visited'].includes(op) ? map.get(v) : op === 'all' || op === 'any' ? v.map(remapCondition) : op === 'not' ? remapCondition(v) : v}; };
++        for (const n of nodes) map.set(n.id, n.id);
++        const remapCondition = c => { if (c == null || typeof c === 'boolean') return c; const [op, v] = Object.entries(c)[0]; return {[op]: ['completed', 'visited'].includes(op) ? map.get(v) || v : op === 'all' || op === 'any' ? v.map(remapCondition) : op === 'not' ? remapCondition(v) : v}; };
++        collections.splice(0, collections.length, ...draft.project.collections.map(c => ({...c, requires: remapCondition(c.requires)})));
+@@ -366 +418 @@
+-        for (const b of draft.project.packages) { const mapped = {...b, node_ids: b.node_ids.map(k => map.get(k)), start_node_id: map.get(b.start_node_id), completion_node_ids: b.completion_node_ids.map(k => map.get(k)), condition: remapCondition(b.condition)}; const old = packages.find(x => x.id === b.id); C.assert(!old || old.title === b.title && JSON.stringify(old.condition) === JSON.stringify(mapped.condition), '跨块事件包定义冲突：' + b.id); if (old) { old.node_ids.push(...mapped.node_ids); old.completion_node_ids.push(...mapped.completion_node_ids); } else packages.push(mapped); }
++        for (const b of draft.project.packages) { const mapped = {...b, node_ids: b.node_ids.map(k => map.get(k)), start_node_id: map.get(b.start_node_id), completion_node_ids: b.completion_node_ids.map(k => map.get(k)), condition: remapCondition(b.condition), continue_condition: remapCondition(b.continue_condition)}; const old = packages.find(x => x.id === b.id); C.assert(!old || old.title === b.title && JSON.stringify(old.condition) === JSON.stringify(mapped.condition) && JSON.stringify(old.continue_condition) === JSON.stringify(mapped.continue_condition), '跨块事件包定义冲突：' + b.id); if (old) { old.node_ids.push(...mapped.node_ids); old.completion_node_ids.push(...mapped.completion_node_ids); } else packages.push(mapped); }
+@@ -374,2 +426,3 @@
+-        summary = {mode, preferences: wish, collections, packages, variables, nodes: nodes.map(n => ({id: n.id, title: n.title.slice(0, 40), kind: n.kind, suggested: n.suggested, guidance: trim(n.guidance), completion_criteria: n.completion_criteria, entry_condition: n.entry_condition, result_ids: n.result_ids, routes: n.routes})),
+-          parts: parts.map(p => ({title: p.title.slice(0, 40), synopsis: trim(p.synopsis), foreshadowing: p.foreshadowing.map(f => ({...f, hint: trim(f.hint), payoff: trim(f.payoff)})), endings: p.endings.map(e => ({...e, summary: trim(e.summary)}))}))};
++        summary = {mode, preferences: wish, collections, packages, variables, nodes: nodes.map(n => ({id: n.id, title: n.title.slice(0, 40), kind: n.kind, suggested: n.suggested, guidance: trim(n.guidance),
++          ...(n.completion_criteria ? {completion_criteria: n.completion_criteria, completion_evidence: n.completion_evidence} : {}), ...(n.completion_exclusions.length ? {completion_exclusions: n.completion_exclusions} : {}), entry_condition: n.entry_condition, entry_condition_evidence: n.entry_condition_evidence, ...(n.result_ids.length ? {result_ids: n.result_ids} : {}), routes: n.routes})),
++          parts: parts.map(p => ({title: p.title.slice(0, 40), synopsis: trim(p.synopsis), ...(p.uncertainties.length ? {uncertainties: p.uncertainties} : {}), foreshadowing: p.foreshadowing.map(f => ({...f, hint: trim(f.hint), payoff: trim(f.payoff)})), endings: p.endings.map(e => ({...e, summary: trim(e.summary)}))}))};
+@@ -380,0 +434 @@
++      result.project.analysis.uncertainties = [...new Set([...parts.flatMap(p => p.uncertainties), ...result.project.analysis.uncertainties])];
+@@ -387,2 +441,29 @@
+-    const joined = merged.nodes.map(n => { C.assert(known.has(n.id), '整合结果包含未知节点'); const original = known.get(n.id); return {...original, routes: (n.routes || []).map(r => { const old = original.routes.find(x => x.target === r.target); return old ? {...r, ...old, label: r.label || old.label} : r; })}; });
+-    return {...merged, collections, packages, variables, nodes: joined};
++    const preserveRules = (original, update, fields) => {
++      const out = {...update, ...original};
++      for (const field of fields) if ((original[field] == null || original[field] === true) && update[field] != null && update[field] !== true) {
++        out[field] = update[field]; out[field + '_evidence'] = update[field + '_evidence'];
++      }
++      return out;
++    };
++    const joined = merged.nodes.map(n => {
++      C.assert(known.has(n.id), '整合结果包含未知节点'); const original = known.get(n.id);
++      C.assert(n.routes == null || Array.isArray(n.routes), '整合出口必须为数组');
++      const routes = (n.routes || []).map(r => { const old = original.routes.find(x => x.target === r.target); return old ? {...preserveRules(old, r, ['condition']), label: r.label || old.label} : r; });
++      for (const r of original.routes) if (!routes.some(x => x.target === r.target)) routes.push(C.clone(r));
++      return {...preserveRules(original, n, ['entry_condition']), routes};
++    });
++    const definitions = (field, originals, rules) => {
++      C.assert(merged[field] == null || Array.isArray(merged[field]), '整合' + field + '必须为数组');
++      const updates = new Map(); for (const item of merged[field] || []) { C.assert(C.object(item) && originals.some(x => x.id === item.id) && !updates.has(item.id), '整合结果包含未知或重复' + field + '定义'); updates.set(item.id, item); }
++      return originals.map(original => {
++        const update = updates.get(original.id); if (!update) return original;
++        const out = preserveRules(original, update, rules);
++        if (field === 'collections' && update.exclusive_with?.length) {
++          C.assert(Array.isArray(update.exclusive_with), '互斥结果必须为数组');
++          out.exclusive_with = [...new Set([...(original.exclusive_with || []), ...update.exclusive_with])];
++          out.exclusive_with_evidence = update.exclusive_with_evidence;
++        }
++        return out;
++      });
++    };
++    return {...merged, collections: definitions('collections', collections, ['requires']), packages: definitions('packages', packages, ['condition', 'continue_condition']), variables: definitions('variables', variables, []), nodes: joined};
+@@ -390 +471 @@
+-  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS, LAST_PROMPTS};
++  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS, LAST_PROMPTS, V140_PROMPTS};
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+index 32ee09e..80b0ddf 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+@@ -35 +35 @@
+-        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
++        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+@@ -453 +453 @@
+-        if (JSON.stringify(reply).length > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
++        if (JSON.stringify(reply).length > 2500000) { for (const field of ['nodes', 'collections', 'packages', 'variables', 'knownNodes', 'knownCollections', 'knownVariables', 'evidenceSource']) delete reply[field]; reply.context_unavailable = true; }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
+index 41757f9..fd7dd94 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/browser.js"
+@@ -27,3 +27,3 @@ const server = http.createServer(async (req, res) => {
+-    let value;
+-    if (data.messages[0].content.includes('剧本分析')) {
+-      const input = JSON.parse(data.messages[1].content), parts = input.original.split('\n').filter(Boolean);
++    const input = data.messages[1] ? JSON.parse(data.messages[1].content) : {}; let value;
++    if (typeof input.original === 'string' && input.mode) {
++      const parts = input.original.split('\n').filter(Boolean);
+@@ -31,2 +31,2 @@ const server = http.createServer(async (req, res) => {
+-    } else if (data.messages[0].content.includes('剧本整理')) {
+-      const text = JSON.parse(data.messages[1].content).original;
++    } else if (typeof input.original === 'string') {
++      const text = input.original;
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/conditions.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/conditions.test.js"
+new file mode 100644
+index 0000000..a9dd556
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/conditions.test.js"
+@@ -0,0 +1,135 @@
++'use strict';
++const test = require('node:test'), assert = require('node:assert/strict');
++const C = require('../src/core'), F = require('../src/flow'), A = require('../src/api'), {Engine} = require('../src/engine');
++const {fixture, mockClient} = require('./helpers');
++const profile = {base_url: 'https://mock.test/v1', model: 'mock', max_input_chars: 16000};
++const lines = ['信任初始为20，范围0到100。', '领取通行证记为a。', '取得密钥记为b。', '记录巡查时间记为d。', '违约失去资格记为e。',
++  '主动放弃通行证记为lost_a，此后不能再走通行证路线。', '取证成功记为c。', '进入密室需要有效通行证a或密钥b。', '同时必须已有巡查时间d且未违约e。',
++  '取证成功也需要相同进入条件。', '通行证路线与密钥路线互斥。', '事件只能在未违约时继续。', '信任达到70或持有密钥b可以获准入内。'];
++const original = lines.join('\n');
++const gate = () => ({all: [{any: [{all: [{collected: 'a'}, {not: {collected: 'lost_a'}}]}, {collected: 'b'}]}, {collected: 'd'}, {not: {collected: 'e'}}]});
++function raw() {
++  const codes = ['a', 'b', 'd', 'e', 'lost_a', 'c'];
++  const collections = codes.map((id, i) => ({id, title: ['通行证', '密钥', '巡查时间', '违约', '放弃通行证', '取证完成'][i], evidence: lines[i + 1]}));
++  collections[0].requires = {not: {collected: 'lost_a'}}; collections[0].requires_evidence = lines[5];
++  collections[5].requires = gate(); collections[5].requires_evidence = lines.slice(7, 10);
++  const nodes = [{id: 'hub', title: '调查大厅', detail: original, guidance: '让玩家自由选择调查方向', routes: codes.map(id => ({target: 'get_' + id, label: id === 'c' ? '探查密室' : '调查' + id,
++    ...(id === 'c' ? {condition: gate(), condition_evidence: lines.slice(7, 9)} : {})}))}];
++  codes.forEach((id, i) => nodes.push({id: 'get_' + id, title: collections[i].title, detail: lines[i + 1], guidance: '演绎当前行动', completion_criteria: lines[i + 1], completion_evidence: lines[i + 1], completion_exclusions: ['只有意图或假设'], result_ids: [id], routes: [],
++    ...(id === 'c' ? {entry_condition: gate(), entry_condition_evidence: lines.slice(7, 9)} : {})}));
++  return {title: '替代路线与选择代价', start_node_id: 'hub', variables: [{id: 'trust', title: '信任', type: 'number', default: 20, min: 0, max: 100, evidence: lines[0], bounds_evidence: lines[0]}], collections, nodes,
++    analysis: {uncertainties: ['后续隐藏用途需作者核对']}};
++}
++const client = data => new A.Client(async () => ({ok: true, json: async () => ({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(data)}}]})}));
++const restore = data => new A.Client().restoreAnalysis(original, data).project;
++
++test('分析得到嵌套OR/AND/NOT与永久失去路径，转化后的真实入口和领奖仍按完整条件执行', () => {
++  const p = C.convertAnalysisProject(restore(raw())); F.assertRunnable(p); const target = p.nodes.at(-1).id;
++  const cases = [[[], false], [['a', 'd'], true], [['b', 'd'], true], [['a', 'd', 'lost_a'], false], [['a', 'b', 'd', 'lost_a'], true], [['b'], false], [['b', 'd', 'e'], false]];
++  for (const [codes, allowed] of cases) {
++    const s = C.createProgress(p); s.collected_ids = [...codes];
++    assert.equal(C.condition(p.nodes[0].routes.at(-1).condition, s), allowed);
++    if (allowed) { C.enterNode(s, p, target); C.completeNode(s, p); assert(s.collected_ids.includes('c')); }
++    else { assert.throws(() => C.enterNode(s, p, target), /未解锁/); assert.throws(() => C.completeNode(s, p, null, target), /前置/); assert.equal(s.current_node_id, p.start_node_id); assert(!s.collected_ids.includes('c')); }
++  }
++  const s = C.createProgress(p); s.collected_ids = ['lost_a']; assert.throws(() => C.completeNode(s, p, null, p.nodes[1].id), /前置/);
++});
++test('数值门槛与特殊许可为OR，分析保存原文数值边界而非编造默认值', () => {
++  const data = raw(), condition = {any: [{variable: {id: 'trust', op: 'gte', value: 70}}, {collected: 'b'}]};
++  data.nodes[0].routes.at(-1).condition = condition; data.nodes[0].routes.at(-1).condition_evidence = lines[12]; const p = restore(data), s = C.createProgress(p);
++  assert.equal(p.variables[0].min, 0); assert.equal(p.variables[0].max, 100); assert.equal(C.condition(p.nodes[0].routes.at(-1).condition, s), false);
++  s.variables.trust = 70; assert.equal(C.condition(p.nodes[0].routes.at(-1).condition, s), true); s.variables.trust = 20; s.collected_ids = ['b']; assert.equal(C.condition(p.nodes[0].routes.at(-1).condition, s), true);
++  data.variables[0].bounds_evidence = '编造上限'; assert.throws(() => restore(data), /边界缺少/);
++});
++test('有原文依据的互斥保留为运行规则；未知、自身互斥和虚构证据拒绝', () => {
++  const data = raw(); data.collections[0].exclusive_with = ['b']; data.collections[0].exclusive_with_evidence = lines[10]; const p = restore(data), s = C.createProgress(p);
++  assert.deepEqual(p.collections[0].exclusive_with, ['b']); s.collected_ids = ['b']; assert.equal(C.resultReady('a', p, s), false);
++  for (const bad of [['a'], ['missing']]) { data.collections[0].exclusive_with = bad; assert.throws(() => restore(data), /互斥结果引用/); }
++  data.collections[0].exclusive_with = ['b']; data.collections[0].exclusive_with_evidence = '互斥不存在'; assert.throws(() => restore(data), /互斥缺少/);
++});
++test('分散证据逐条检查，空组合和部分虚构不能形成条件', () => {
++  const data = raw(); data.nodes[0].routes.at(-1).condition_evidence = [lines[7], '不存在的条款']; const p = restore(data);
++  assert.equal(p.nodes[0].routes.at(-1).condition, false);
++  data.nodes.at(-1).entry_condition_evidence = [lines[7], '不存在的条款']; assert.throws(() => restore(data), /进入条件缺少/);
++  data.nodes.at(-1).entry_condition_evidence = lines.slice(7, 9); data.nodes[0].routes.at(-1).condition_evidence = lines.slice(7, 9);
++  for (const op of ['all', 'any']) { data.nodes[0].routes.at(-1).condition = {[op]: []}; assert.throws(() => restore(data), /非空数组/); }
++});
++test('分析与基础整理共用条件校验，入口、前提、代价和数字边界不会只落入报告', async () => {
++  const p = (await client(raw()).segment(profile, original)).project;
++  assert.deepEqual(p.nodes.at(-1).entry_condition, gate()); assert.deepEqual(p.collections.at(-1).requires, gate()); assert.equal(p.variables[0].max, 100);
++  assert.deepEqual(p.nodes[0].routes.at(-1).condition, gate()); assert(!C.prompt(p, C.createProgress(p)).includes('取证成功记为c'));
++});
++test('事件包触发与持续条件独立保存；持续条件没有依据不能默认为true', () => {
++  const data = raw(); data.nodes[0].routes.pop(); data.packages = [{id: 'P1', title: '密室事件', node_ids: ['get_c'], condition: gate(), condition_evidence: lines.slice(7, 9), continue_condition: {not: {collected: 'e'}}, continue_condition_evidence: lines[11]}];
++  const p = restore(data); assert.deepEqual(p.packages[0].condition, gate()); assert.deepEqual(p.packages[0].continue_condition, {not: {collected: 'e'}});
++  data.packages[0].continue_condition_evidence = ''; assert.throws(() => restore(data), /持续条件缺少/);
++});
++test('仅迁移v1.4.0默认提示词；自定义分析和合并提示词完整保留', async () => {
++  const f = fixture(); f.storage.script.branch_story_settings = {profile: {analysis_prompt: A.V140_PROMPTS.analysis, segment_prompt: A.V140_PROMPTS.segment, analysis_merge_prompt: '作者自己打磨的合并规则'}};
++  const e = new Engine(f.host, mockClient()); await e.init(); assert.equal(e.settings.profile.analysis_prompt, A.PROMPTS.analysis); assert.equal(e.settings.profile.segment_prompt, A.PROMPTS.segment); assert.equal(e.settings.profile.analysis_merge_prompt, '作者自己打磨的合并规则');
++});
++function chunkClient(responder) {
++  const requests = [], replies = []; const api = new A.Client(async (url, options) => {
++    const request = JSON.parse(options.body), input = JSON.parse(request.messages[1].content); requests.push(request);
++    const data = responder(input, requests); return {ok: true, json: async () => ({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(data)}}]})};
++  }); return {api, requests, replies, options: {onResponse: reply => replies.push(reply)}};
++}
++const chunkProfile = {...profile, analysis_prompt: '分析原文', analysis_merge_prompt: '整合条件', max_input_chars: 7000};
++const longSource = original + '\n' + '雨声逐渐变小，调查继续。\n'.repeat(1300);
++test('长文携带已提取的完整规则及待核对事项，整合遗漏出口或返回true不能擦掉既有条件', async () => {
++  let chunks = 0, merge;
++  const f = chunkClient(input => {
++    if (input.original !== undefined) {
++      chunks++; if (chunks === 1) { const data = raw(); data.nodes[0].detail = input.original; return data; }
++      assert.deepEqual(input.known_results.find(x => x.id === 'c').requires, gate());
++      return {title: '后文', nodes: [{id: 'tail', title: '继续调查', detail: input.original, guidance: '本段调查', routes: []}], analysis: {uncertainties: ['后文尚有未明确连接']}};
++    }
++    merge = input; return {title: '整合', nodes: input.nodes.map(n => ({id: n.id, entry_condition: true, routes: []})), collections: [{id: 'c', requires: true}], analysis: {uncertainties: []}};
++  });
++  const draft = await f.api.analyze(chunkProfile, longSource, '', f.options); assert(chunks > 1);
++  const p = draft.project; assert.deepEqual(p.nodes[0].routes.at(-1).condition, gate()); assert.deepEqual(p.collections.find(x => x.id === 'c').requires, gate()); assert.deepEqual(p.nodes.find(n => n.title === '取证完成').entry_condition, gate());
++  assert(merge.nodes.some(n => n.completion_exclusions?.includes('只有意图或假设'))); assert(merge.parts.some(p => p.uncertainties?.length)); assert(p.analysis.uncertainties.includes('后文尚有未明确连接'));
++  assert(f.requests.every(r => r.messages.reduce((n, m) => n + m.content.length, 0) <= chunkProfile.max_input_chars));
++});
++test('整合可补充有依据的跨段条件，但未知结果定义和无依据条件不能放行', async () => {
++  for (const invalid of ['', 'entry', 'result', 'package', 'new']) {
++    const f = chunkClient(input => {
++      if (input.original !== undefined) return {title: '分块', collections: input.original.includes(lines[1]) ? [{id: 'a', title: '通行证', evidence: lines[1]}] : [], nodes: [{id: 'x', title: '调查', detail: input.original, guidance: '调查', routes: []}], packages: [{id: 'P' + input.part, title: '调查包' + input.part, node_ids: ['x']}]};
++      const nodes = input.nodes.map(n => ({id: n.id, routes: []})); nodes.at(-1).entry_condition = {collected: 'a'}; nodes.at(-1).entry_condition_evidence = invalid === 'entry' ? '虚构规则' : lines[7];
++      return {nodes, collections: [{id: invalid === 'new' ? 'unknown' : 'a', requires: {not: {collected: 'a'}}, requires_evidence: invalid === 'result' ? '' : lines[5]}], packages: [{id: input.packages.at(-1).id, continue_condition: {collected: 'a'}, continue_condition_evidence: invalid === 'package' ? '' : lines[7]}]};
++    });
++    if (invalid) await assert.rejects(f.api.analyze(chunkProfile, longSource), /缺少原文依据|未知或重复/);
++    else { const p = (await f.api.analyze(chunkProfile, longSource)).project; assert.deepEqual(p.nodes.at(-1).entry_condition, {collected: 'a'}); assert.deepEqual(p.collections[0].requires, {not: {collected: 'a'}}); assert.deepEqual(p.packages.at(-1).continue_condition, {collected: 'a'}); }
++  }
++});
++test('整合补充已有无条件出口的规则，保留条件明确出口及原有结果互斥', async () => {
++  const f = chunkClient(input => {
++    if (input.original !== undefined) return {title: '分块', collections: input.original.includes(lines[1]) ? [{id: 'a', title: '通行证', evidence: lines[1]}, {id: 'b', title: '密钥', evidence: lines[2]}] : [], nodes: [{id: 'x', title: '入口', detail: input.original, guidance: '调查', routes: [{target: 'x', label: '继续'}]}]};
++    return {nodes: input.nodes.map(n => ({id: n.id, routes: n.routes.map(r => ({...r, condition: {any: [{collected: 'a'}, {collected: 'b'}]}, condition_evidence: lines[7]}))})), collections: [{id: 'a', exclusive_with: ['b'], exclusive_with_evidence: lines[10]}]};
++  });
++  const p = (await f.api.analyze(chunkProfile, longSource)).project; assert(p.nodes.every(n => n.routes[0].condition.any.length === 2)); assert.deepEqual(p.collections[0].exclusive_with, ['b']);
++});
++test('跨块completed/visited前提按实际节点重映射，分块恢复与全文恢复均保留关系', async () => {
++  let count = 0; const text = lines[1] + '\n' + '沿走廊观察。\n'.repeat(1200);
++  const f = chunkClient(input => {
++    if (input.original !== undefined) {
++      count++; if (count === 1) return {title: '第一段', collections: [{id: 'a', title: '通行证', evidence: lines[1], requires: {visited: 'x'}, requires_evidence: lines[1]}], nodes: [{id: 'x', title: '取证', detail: input.original, guidance: '调查', routes: []}]};
++      const id = Object.keys(input.known_nodes)[0]; return {title: '后文', nodes: [{id: 'x', title: '后续', detail: input.original, guidance: '后续行动', entry_condition: {visited: id}, entry_condition_evidence: lines[1], routes: []}]};
++    }
++    return {nodes: input.nodes.map(n => ({id: n.id, routes: []}))};
++  });
++  const draft = await f.api.analyze({...chunkProfile, max_input_chars: 3000}, text, '', f.options); assert(count > 1);
++  assert.deepEqual(draft.project.collections[0].requires, {visited: 'N1'}); assert(draft.project.nodes.slice(1).every(n => n.entry_condition.visited === 'N1'));
++  const chunk = f.replies.find(x => x.part === 2), recovered = f.api.restoreAnalysis(chunk.original, chunk.text, 'faithful', chunk);
++  assert.deepEqual(recovered.project.nodes[0].entry_condition, {visited: 'b1n1'});
++  const merge = f.replies.at(-1); const full = f.api.restoreAnalysis(text, merge.text, 'faithful', merge); assert.deepEqual(full.project.collections[0].requires, {visited: 'N1'});
++});
++test('跨块重定义变量边界或事件包持续条件产生冲突时拒绝，不悄悄覆盖', async () => {
++  for (const field of ['variable', 'package']) {
++    let count = 0; const f = chunkClient(input => {
++      count++; return {title: '分块', variables: field === 'variable' ? [{id: 'trust', title: '信任', type: 'number', default: 20, evidence: lines[0], min: 0, max: count === 1 ? 100 : 90, bounds_evidence: lines[0]}] : [],
++        nodes: [{id: 'x', title: '调查', detail: input.original, guidance: '调查', routes: []}], packages: field === 'package' ? [{id: 'P1', title: '调查包', node_ids: ['x'], continue_condition: count === 1 ? true : {collected: 'a'}, continue_condition_evidence: lines[7]}] : [],
++        collections: field === 'package' && count === 1 ? [{id: 'a', title: '通行证', evidence: lines[1]}] : []};
++    }); await assert.rejects(f.api.analyze(chunkProfile, longSource), /定义冲突/);
++  }
++});
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
+index c7f3b38..63b6d8a 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/workflow.browser.js"
+@@ -26 +26 @@ const server = http.createServer(async (req, res) => {
+-    if (system.includes('剧本分析')) value = draft;
++    if (typeof input.original === 'string' && input.mode) value = draft;
+@@ -61 +61 @@ async function run() {
+-      await page.route(base + '/v1/chat/completions', async route => { if (route.request().postDataJSON().messages[0].content.includes('剧本分析')) { analysisStarted(); await held; } await route.continue(); });
++      await page.route(base + '/v1/chat/completions', async route => { const payload = JSON.parse(route.request().postDataJSON().messages[1].content); if (typeof payload.original === 'string' && payload.mode) { analysisStarted(); await held; } await route.continue(); });
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/\344\272\244\346\216\245gpt.md" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/\344\272\244\346\216\245gpt.md"
+index 73e88e4..19e3b37 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/\344\272\244\346\216\245gpt.md"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/\344\272\244\346\216\245gpt.md"
+@@ -3 +3 @@
+-更新日期：2026-10-08（Asia/Shanghai）。功能版本基准：**v1.4.0**。v1.1.2 基准提交为 `7330dc3`；最新修复提交以 `git log` 为准。
++更新日期：2026-10-08（Asia/Shanghai）。功能版本基准：**v1.4.1**。v1.1.2 基准提交为 `7330dc3`；最新修复提交以 `git log` 为准。
+@@ -149,2 +149,2 @@ v1.2.0 点击后将行动文字加入酒馆输入草稿，可以改写或撤销
+-- ZIP：`branch_story_plugin_v1.4.0.zip`，35 个条目，包含源码、测试、README、交接说明和完整导入 JSON。
+-- v1.4.0 ZIP 包含本交接文档；CRC 和源文件一致性通过。仅打包此插件文件，AI交接 中角色卡参考实现继续保留在仓库。
++- ZIP：`branch_story_plugin_v1.4.1.zip`，37 个条目，包含源码、测试、README、交接说明和完整导入 JSON。
++- v1.4.1 ZIP 包含本交接文档；CRC 和源文件一致性通过。仅打包此插件文件，AI交接 中角色卡参考实现继续保留在仓库。
+@@ -154 +154 @@ GitHub 下载页面：
+-- <https://github.com/R41N1NG/-/blob/main/酒馆剧本插件/branch_story_plugin_v1.4.0.zip>
++- <https://github.com/R41N1NG/-/blob/main/酒馆剧本插件/branch_story_plugin_v1.4.1.zip>
+@@ -330,0 +331,17 @@ package/lockfile同步v1.4.0，npm run test:browser接入新测试；完整安
++
++
++## 16. v1.4.1：长文条件分析与合并保留
++
++【身份：gpt｜日期：2026-10-08｜类型：交接】
++
++用户本轮强调沉浸感优先，玩家有行动自由但须承担选择与失去，条件可能是A或B或复杂组合；明确要求长文分析也提取这些规则并打磨提示词。本批只实现分析提示词及其必要的数据链，不把讨论中的主模型伴随报告、自然结束按钮、集中核验/失败最多重试三次冒充已实现。日常自由输入/阶段/行为核验仍沿用v1.4.0。角色卡生产与复核工作仍独立，不修改或代为部署。
++
++1. 重写默认analysis/segment/merge：替代路线、AND/OR/NOT层级、数值/许可替代、进入/完成/取得分开、失效与放弃、明确互斥及机会永久失去。只有原文明确才提取，不按章节顺序强制串链、不编造补救和奖励。当前指引不泄露未来内容。保留V140_PROMPTS快照，只迁移完全匹配旧默认的设置，自定义保留。
++2. 原文依据兼容字符串或1～8条连续摘录数组，逐项校验；公开description仍单一连续原文。新增互斥及exclusive_with_evidence、事件包continue_condition及依据、数值min/max及bounds_evidence的提取保留。未知/非法/空组合拒绝，缺依据出口继续false+警告；摘录真实不证明语义正确。
++3. 后文收到完整known_results/known_variables和紧凑known_nodes映射，规则占预算时再切剩余文本而不删规则。上限仍32块/256节点。跨块completed/visited及结果requires里的节点ID正确重映射，局部分块恢复携带knownNodes验证上下文。超预算显示实际/配置字符数。
++4. 合并摘要保留条件依据、完成排除项和各块uncertainties；不裁剪实际规则，仅缩短非运行说明和省略空字段。合并遗漏出口或用true覆盖时保留原规则；原无条件字段允许加有证据的跨段条件。原有定义、互斥、持续条件保留，未知/重复定义拒绝。暂阻false不自动放宽。分块待核对事项继续保留在最终报告，由作者核对清理。
++5. 测试共116项（104原有+tests/conditions.test.js12项新增），模拟完整安装JSON浏览器回归仍覆盖七页/390/320、防剧透、a/b/a1/ab、事件包及依赖回退、玩家面板和7类启动。无付费调用；真实模型提取率未在云环境验证。具体规则和限制见docs/长文条件分析.md。
++
++版本/package-lock/完整安装JSON同步v1.4.1，稳定脚本IDbranch-story-engine-v1，八源构建顺序不变。ZIPbranch_story_plugin_v1.4.1.zip共37条，旧v1.4.0ZIP核验新包后清理。原TSE哈希仍a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065。报告/源码差异/测试日志/一致性见AI交接/下级更新/2026-10-08-插件v1.4.1/。本批正常合并并保留d1538cc协作资料，不把相邻角色卡需求混入插件。
++
++下一步用户安装新版，以原文或已有后台JSON生成/恢复草稿，核对替代路径、排除项与选择代价后转化；旧草稿缺失的规则不会因升级凭空补全。用户自定义提示词须自行更新或恢复默认并保存。后续若明确要求运行流程改造，再按本节首段列出的讨论执行，不能回到每轮多次API是最终设计的假设。

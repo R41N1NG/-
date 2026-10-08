@@ -23,7 +23,7 @@ const server = http.createServer(async (req, res) => {
     let body = ''; for await (const chunk of req) body += chunk;
     const request = JSON.parse(body), input = JSON.parse(request.messages[1].content), system = request.messages[0].content; calls.push({system, input});
     let value;
-    if (system.includes('剧本分析')) value = draft;
+    if (typeof input.original === 'string' && input.mode) value = draft;
     else if (system.includes('玩家行动分支识别器')) {
       const m = input.dialogue[0];
       const candidate = !m.text.includes('如果') && !m.text.includes('不去') && input.candidates.find(r => m.text.includes(r.label) || r.label === '翻交班簿' && m.text.includes('交班簿'));
@@ -58,7 +58,7 @@ async function run() {
       assert(await page.locator('[name="choice_prompt"]').inputValue()); assert(await page.locator('[name="stage_prompt"]').inputValue());
       let releaseAnalysis, analysisStarted;
       const held = new Promise(resolve => releaseAnalysis = resolve), started = new Promise(resolve => analysisStarted = resolve);
-      await page.route(base + '/v1/chat/completions', async route => { if (route.request().postDataJSON().messages[0].content.includes('剧本分析')) { analysisStarted(); await held; } await route.continue(); });
+      await page.route(base + '/v1/chat/completions', async route => { const payload = JSON.parse(route.request().postDataJSON().messages[1].content); if (typeof payload.original === 'string' && payload.mode) { analysisStarted(); await held; } await route.continue(); });
       await page.clock.install();
       await page.locator('[data-tab="analysis"]').click(); await page.locator('[name="analysis_text"]').fill(story); await page.locator('[data-action="analysis-run"]').click(); await started;
       await page.clock.fastForward(46000);
