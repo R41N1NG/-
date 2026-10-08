@@ -32,7 +32,7 @@
     async init() {
       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
       for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt'], ['detect', 'detect_prompt']]) {
-        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key], API.V142_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
       }
       for (const [key, old, value] of [['max_input_chars', 16000, 64000], ['analysis_output', 8192, 16384], ['segment_output', 4096, 16384]]) if (saved.profile?.[key] === old) this.settings.profile[key] = value;
       this.client.usage = {...defaults().usage, ...saved.usage};

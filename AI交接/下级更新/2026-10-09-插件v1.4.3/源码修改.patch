@@ -1,0 +1,228 @@
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+index 9cc9990..328c746 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+@@ -11 +11 @@ const exported = {type: 'script', enabled: true, name: '分支剧本与事件引
+-  info: 'v' + version + '：先规划分段、逐段分析再整合，截断缩段重试；数值增减/设置量及原文依据转化为独立事件，支持限次、停止门槛与本地去重；固定功能导航与快速整理收纳。长文分析提取替代路线、AND/OR/NOT组合、数值门槛、互斥与选择代价；保留原文依据、事件包持续条件与数值边界，分块合并不抹除既有条件和出口。默认提示词自动升级，自定义保留。当前阶段/折叠行动/⚙️/🎒、数值载体和奖励上限、短编号、引用预览与确认删除、提示词编辑及实际请求继续保留。分析本地转化、交叉依赖、回退、防剧透与600秒分析等待。',
++  info: 'v' + version + '：来源编号及短首尾定位由本地还原原文，旧回复仅空白差异可本地恢复，错误指出节点；先规划分段、逐段分析再整合，截断缩段重试；数值增减/设置量及原文依据转化为独立事件，支持限次、停止门槛与本地去重；固定功能导航与快速整理收纳。长文分析提取替代路线、AND/OR/NOT组合、数值门槛、互斥与选择代价；保留原文依据、事件包持续条件与数值边界，分块合并不抹除既有条件和出口。默认提示词自动升级，自定义保留。当前阶段/折叠行动/⚙️/🎒、数值载体和奖励上限、短编号、引用预览与确认删除、提示词编辑及实际请求继续保留。分析本地转化、交叉依赖、回退、防剧透与600秒分析等待。',
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+index ec85478..44be55a 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+@@ -52,0 +53,71 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
++  const V142_PROMPTS = {...PROMPTS};
++  for (const key of ['analysis', 'segment']) {
++    PROMPTS[key] = PROMPTS[key].replace('原文detail为非空连续摘录', '原文节点用source_span选择来源编号，由本地还原detail')
++      .replace('原文detail必须为非空连续摘录', '原文节点用source_span选择来源编号，由本地还原detail')
++      .replace('"detail":"连续原文"', '"source_span":{"from":"s1","to":"s1"}');
++    PROMPTS[key] += '\nsource_index按顺序标记original的连续片段，start/end为本地字符位置（end不含），head/tail帮助定位；片段可能包含多段文字。原文节点只返回source_span:{from:"起始片段ID",to:"结束片段ID"}，两端包含、按原序连续，单片段from=to；如果节点只覆盖片段的一部分，可加start_quote/end_quote作为首尾的短原文定位句，必须分别在首/尾片段中唯一出现，包含定位句及中间全部原文。不要再抄写或改写detail，不拼接不连续片段。编号仅本次输入有效，不引用其他块编号；补写节点suggested=true、detail=""且不带source_span。来源编号只用于节点正文；所有规则*_evidence仍须精确引用对应条款，不能拿编号当证据。';
++  }
++  // Deterministic, compact source labels avoid making the model copy long passages.
++  function sourceIndex(original) {
++    const out = []; let start = 0;
++    while (start < original.length) {
++      let end = Math.min(start + 800, original.length);
++      if (end < original.length) {
++        const piece = original.slice(start, end);
++        const newline = piece.indexOf('\n', 100);
++        const boundary = newline >= 0 ? newline + 1 : Math.max(piece.lastIndexOf('。'), piece.lastIndexOf('！'), piece.lastIndexOf('？')) + 1;
++        if (boundary > 100) end = start + boundary;
++        if (/[\uD800-\uDBFF]/.test(original[end - 1])) end--;
++      }
++      const text = original.slice(start, end);
++      out.push({id: 's' + (out.length + 1), start, end, head: text.slice(0, 40), tail: text.length > 40 ? text.slice(-20) : ''});
++      start = end;
++    }
++    return out;
++  }
++  function sourcePayload(original, system) {
++    return system.includes('source_span') ? {original, source_index: sourceIndex(original)} : {original};
++  }
++  function sourceResolver(original, warnings) {
++    let index, compact, positions;
++    return n => {
++      const label = '节点“' + String(n.title || n.id) + '”（' + n.id + '）';
++      if (n.suggested === true) {
++        C.assert(!n.detail && n.source_span == null, label + '：补写节点须留空 detail 且不能指定原文来源');
++        return '';
++      }
++      if (n.source_span != null) {
++        const span = n.source_span;
++        C.assert(C.object(span) && typeof span.from === 'string' && typeof span.to === 'string', label + '：source_span 须包含 from/to 来源编号');
++        index ||= sourceIndex(original);
++        const from = index.find(x => x.id === span.from), to = index.find(x => x.id === span.to);
++        C.assert(from && to && from.start <= to.start, label + '：来源编号不存在或顺序颠倒，请使用本次输入的 source_index');
++        let start = from.start, end = to.end;
++        for (const key of ['start_quote', 'end_quote']) if (span[key] !== undefined) {
++          const quote = span[key], block = key === 'start_quote' ? from : to, text = original.slice(block.start, block.end);
++          C.assert(typeof quote === 'string' && quote.trim(), label + '：' + key + ' 须为非空短原文');
++          const at = text.indexOf(quote);
++          C.assert(at >= 0 && text.indexOf(quote, at + 1) < 0, label + '：' + key + ' 在对应来源片段中不存在或不唯一');
++          if (key === 'start_quote') start = block.start + at; else end = block.start + at + quote.length;
++        }
++        C.assert(start < end, label + '：原文首尾定位顺序颠倒');
++        const detail = original.slice(start, end);
++        C.assert(detail.trim(), label + '：来源片段只有空白');
++        if (n.detail && n.detail !== detail) warnings.push(label + '：已按来源编号还原原文，忽略模型改写的 detail。');
++        return detail;
++      }
++      C.assert(typeof n.detail === 'string' && n.detail.trim(), label + '：缺少原文来源，请填写 source_span 或连续原文 detail');
++      if (original.includes(n.detail)) return n.detail;
++      // Legacy replies may flatten line breaks. Recover only a unique, contiguous match,
++      // with every non-whitespace character unchanged; never fuzzy-match rewritten prose.
++      if (compact === undefined) {
++        compact = ''; positions = [];
++        for (let i = 0; i < original.length; i++) if (!/\s/.test(original[i])) { compact += original[i]; positions.push(i); }
++      }
++      const quote = n.detail.replace(/\s/g, ''), at = compact.indexOf(quote);
++      C.assert(quote && at >= 0, label + '：detail 不是原文中的连续摘录；可能删改文字或拼接了不连续内容。请在保留的 JSON 中改为连续原文，或使用来源编号重新分析');
++      C.assert(compact.indexOf(quote, at + 1) < 0, label + '：忽略空白后存在多个匹配，无法确定来源；请填写精确摘录或 source_span');
++      warnings.push(label + '：仅修复换行/空格差异，已恢复为原文连续摘录。');
++      return original.slice(positions[at], positions[at + quote.length - 1] + 1);
++    };
++  }
+@@ -211 +282 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-    const warnings = []; const nodes = raw.nodes.map(n => {
++    const warnings = [], resolveSource = sourceResolver(original, warnings); const nodes = raw.nodes.map(n => {
+@@ -214 +285 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      C.assert(suggested ? !n.detail : typeof n.detail === 'string' && n.detail.trim() && original.includes(n.detail), '分析节点详细原文必须为输入中的连续摘录；补写节点须标注 suggested 并留空 detail');
++      const detail = resolveSource(n);
+@@ -217 +288 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      return {id: map.get(n.id), title: n.title, kind: n.kind || 'scene', suggested, detail: n.detail || '', guidance: n.guidance, boundary: n.boundary || '', effects: [],
++      return {id: map.get(n.id), title: n.title, kind: n.kind || 'scene', suggested, detail, guidance: n.guidance, boundary: n.boundary || '', effects: [],
+@@ -384 +455 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      const messages = request(system, {original: text, preferences: wish});
++      const messages = request(system, {...sourcePayload(text, system), preferences: wish});
+@@ -391 +462 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      const warnings = [];
++      const warnings = [], resolveSource = sourceResolver(text, warnings);
+@@ -393 +464,2 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-        C.assert(typeof n.detail === 'string' && n.detail.trim() && text.includes(n.detail), '节点“' + n.title + '”的详细原文不是输入中的连续摘录，请重新整理或手动编辑');
++        C.assert(n.suggested !== true, '基础整理不能加入补写节点');
++        const detail = resolveSource(n);
+@@ -395 +467 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-        p.nodes.push({id: map.get(n.id), title: n.title, detail: n.detail, guidance: n.guidance || '', boundary: n.boundary || '', effects: [], routes: (n.routes || []).map(r => { C.assert(map.has(r.target), '模型分支目标不存在：' + r.target); return {target: map.get(r.target), label: r.label || '继续', condition: true}; })});
++        p.nodes.push({id: map.get(n.id), title: n.title, detail, guidance: n.guidance || '', boundary: n.boundary || '', effects: [], routes: (n.routes || []).map(r => { C.assert(map.has(r.target), '模型分支目标不存在：' + r.target); return {target: map.get(r.target), label: r.label || '继续', condition: true}; })});
+@@ -431 +503 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      const payload = original => ({original, preferences: wish, mode, max_nodes: 128});
++      const payload = original => ({...sourcePayload(original, system), preferences: wish, mode, max_nodes: 128});
+@@ -603 +675 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS, LAST_PROMPTS, V140_PROMPTS, V141_PROMPTS};
++  return {Client, endpoint, modelsEndpoint, responseJSON, STATUSES, PROMPTS, LEGACY_PROMPTS, PREVIOUS_PROMPTS, LAST_PROMPTS, V140_PROMPTS, V141_PROMPTS, V142_PROMPTS, sourceIndex};
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+index beb26bc..cade932 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+@@ -35 +35 @@
+-        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
++        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key], API.V142_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+index 4a74e25..1b458b2 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+@@ -383 +383 @@
+-      return `<form data-form="analysis">${conversion}<div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。先由模型规划分段，再逐段分析与整合。单段建议2000～4000字，默认约3000字；全文建议每批2万～10万字，最多100万字符、512段。模型实际上下文上限与费用仍由服务决定。</p>${area('需要分析的长文本', 'analysis_text', p.original_text || '', 10)}<div class="analysis-meter"><span data-analysis-count>原文：${(this.forms.analysis?.analysis_text || p.original_text || '').length.toLocaleString()} 字符</span><span>每段目标：${e.settings.profile.analysis_chunk_chars || 3000} 字符</span><span>输出预算：${e.settings.profile.analysis_output || 16384} Token</span></div><p class="compact-note">建议整篇粘贴，不必手动切段。条件密集时将单段调至2000字。输入预算提高不代表输出不会截断。</p>${button('调整分段与输出预算', 'analysis-settings')}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，提取数值载体、增减/设置量、发生标准、重复次数与停止门槛；缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>${promptEditor}
++      return `<form data-form="analysis">${conversion}<div class="card"><h2>长文本分析为新剧本</h2><p class="muted">分割剧情阶段，归纳不同走向、结局与伏笔。先由模型规划分段，再逐段分析与整合。单段建议2000～4000字，默认约3000字；全文建议每批2万～10万字，最多100万字符、512段。模型实际上下文上限与费用仍由服务决定。</p>${area('需要分析的长文本', 'analysis_text', p.original_text || '', 10)}<div class="analysis-meter"><span data-analysis-count>原文：${(this.forms.analysis?.analysis_text || p.original_text || '').length.toLocaleString()} 字符</span><span>每段目标：${e.settings.profile.analysis_chunk_chars || 3000} 字符</span><span>输出预算：${e.settings.profile.analysis_output || 16384} Token</span></div><p class="compact-note">建议整篇粘贴，不必手动切段。节点正文按来源编号由本地还原，减少模型复写造成的删改。条件密集时将单段调至2000字。输入预算提高不代表输出不会截断。</p>${button('调整分段与输出预算', 'analysis-settings')}${area('分析要求', 'analysis_wish', '提取关键阶段、不同走向与结局、伏笔。保留原文明确的完成标准、结果ID及解锁条件；为出口填写行动文字和识别标准，提取数值载体、增减/设置量、发生标准、重复次数与停止门槛；缺少依据的规则列为待核对事项。', 3)}${select('处理方式', 'analysis_mode', [['faithful', '忠于原文，只整理已明确内容'], ['expand', '允许补充分支和结局，标为建议']], 'faithful')}<div class="row">${button('调用辅助 API 分析', 'analysis-run', e.busy ? 'disabled' : 'class="primary"')}${progress ? button('取消分析', 'analysis-cancel') : ''}</div>${progress ? `<p class="warn" role="status">${escape(progress.phase)} · 已完成 ${progress.done}/${progress.total || '准备中'} 次请求</p>` : ''}<p class="muted">使用 API 页的剧本整理模型和分析提示词；每次整理/分析请求最多等待 ${escape(e.settings.profile.analysis_timeout_sec || 600)} 秒。完整回复返回后才生成草稿，确认应用后才切换剧本。</p><details><summary>从后台 JSON 恢复分析草稿</summary><p class="muted">保留上面的原文，粘贴后台模型输出的 JSON 正文或完整 Chat Completions 响应；校验原文、规则和引用后保存为草稿。</p>${select('保留的原始回复', 'analysis_saved_id', [['', '手动粘贴完整结果'], ...(e.rawAnalysis?.replies || []).map((x, i) => [x.id, (i + 1) + ' · ' + x.kind + (x.part ? ' ' + x.part + '/' + x.parts : '') + (x.finish_reason === 'length' || x.storage_truncated ? ' · 已截断' : '')])], '')}<div class="row">${button('读取这份原始回复', 'analysis-raw-load', e.rawAnalysis?.replies.length ? '' : 'disabled')}${button('导出原始分析记录', 'analysis-raw-export', e.rawAnalysis ? '' : 'disabled')}</div>${e.rawAnalysis?.error ? `<p class="warn">${escape(e.rawAnalysis.error)}</p>` : ''}<p class="muted">收到的文本在校验前保留；可修改字段后重新校验，不会再次请求 API。旧 detail 仅换行/空格不同且唯一匹配时，本地恢复原文；实际删改会指出出错节点，不能强制当作原文。分块回复仅恢复本块；截断输出只供排查。</p>${area('后台分析结果 JSON', 'analysis_response', '', 8)}${button('校验后台结果并生成草稿', 'analysis-restore', e.busy ? 'disabled' : '')}</details></div>${promptEditor}
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.browser.js"
+index d17282f..d88f3f2 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/longtext.browser.js"
+@@ -15 +15 @@ const server = http.createServer(async (req, res) => {
+-   else { const first = input.part === 1; value = {title: '潜行分析', nodes: [{id: 'n', title: '调查现场', detail: input.original, guidance: '调查当前房间', context_variables: ['alert'], routes: []}], ...(first ? {variables: [{id: 'alert', title: '警觉', type: 'number', default: 0, min: 0, max: 100, evidence: '警觉初始0，范围0到100。', bounds_evidence: '警觉初始0，范围0到100。'}], events: [{id: 'noise', title: '异常声响', description: '实际听见异常', completion_criteria: '实际听见异常', evidence: '实际听见异常增加20，可每轮重复，最多两次。', repeat_policy: 'once_per_accepted_turn', repeat_evidence: '可每轮重复', max_occurrences: 2, max_occurrences_evidence: '最多两次', numeric_effects: [{operation: 'add', variable: 'alert', value: 20, evidence: '实际听见异常增加20'}]}]} : {}), analysis: {synopsis: '任务调查'}}; }
++   else { const first = input.part === 1; value = {title: '潜行分析', nodes: [{id: 'n', title: '调查现场', source_span: {from: input.source_index[0].id, to: input.source_index.at(-1).id}, guidance: '调查当前房间', context_variables: ['alert'], routes: []}], ...(first ? {variables: [{id: 'alert', title: '警觉', type: 'number', default: 0, min: 0, max: 100, evidence: '警觉初始0，范围0到100。', bounds_evidence: '警觉初始0，范围0到100。'}], events: [{id: 'noise', title: '异常声响', description: '实际听见异常', completion_criteria: '实际听见异常', evidence: '实际听见异常增加20，可每轮重复，最多两次。', repeat_policy: 'once_per_accepted_turn', repeat_evidence: '可每轮重复', max_occurrences: 2, max_occurrences_evidence: '最多两次', numeric_effects: [{operation: 'add', variable: 'alert', value: 20, evidence: '实际听见异常增加20'}]}]} : {}), analysis: {synopsis: '任务调查'}}; }
+@@ -37 +37 @@ async function run() {
+-   assert.equal(await evaluate(page,e=>e.error),''); const sent = requests.slice(begin); assert.equal(sent[0].operation,'partition'); assert(sent.at(-1).nodes); assert(await page.locator('[data-action="analysis-convert"]').isVisible());
++   assert.equal(await evaluate(page,e=>e.error),''); const sent = requests.slice(begin); assert.equal(sent[0].operation,'partition'); assert(sent.at(-1).nodes); assert(sent.filter(x=>x.original!==undefined).every(x=>x.source_index?.length)); assert(await evaluate(page,e=>e.analysisDraft.project.nodes.every(n=>e.analysisDraft.project.original_text.includes(n.detail)))); assert(await page.locator('[data-action="analysis-convert"]').isVisible());
+@@ -45 +45 @@ async function run() {
+-   await page.screenshot({path:'/tmp/v142-longtext-'+width+'.png'}); await context.close(); console.log(width+'px：规划→截断缩段→整合→数值转化/限次/本地结算，固定导航/恢复入口/草稿保留通过');
++   await page.screenshot({path:'/tmp/v143-longtext-'+width+'.png'}); await context.close(); console.log(width+'px：规划→截断缩段→来源编号还原→整合→数值转化/限次/本地结算，固定导航/恢复入口/草稿保留通过');
+diff --git a/tests/source.test.js b/tests/source.test.js
+new file mode 100644
+index 0000000..2763262
+--- /dev/null
++++ b/tests/source.test.js
+@@ -0,0 +1,84 @@
++'use strict';
++const test = require('node:test'), assert = require('node:assert/strict');
++const A = require('../src/api'), {Engine, defaults} = require('../src/engine'), {fixture} = require('./helpers');
++const profile = {...defaults().profile, base_url: 'https://mock.test/v1', model: 'mock'};
++const raw = node => ({title: '测试', nodes: [{id: 'n1', title: '调查现场', guidance: '观察现场', routes: [], ...node}]});
++const source = '# 场景\r\n\r\n' + '雨滴打在屋檐，观察当前街道。'.repeat(12) + '\r\n\r\n' + '【下一场】\n' + '街角传来脚步声。'.repeat(110) + '🔒';
++function mock(fn) {
++ const sent = [], api = new A.Client(async (url, options) => {
++  const input = JSON.parse(JSON.parse(options.body).messages[1].content); sent.push(input);
++  return {ok: true, json: async () => ({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(fn(input))}}]})};
++ }); return {sent, api};
++}
++test('来源索引覆盖全文且位置精确，保留换行、标记及代理对', () => {
++ const text = source + '字'.repeat(798) + '🔒尾部', index = A.sourceIndex(text);
++ assert.equal(index.map(x=>text.slice(x.start,x.end)).join(''), text);
++ assert(index.every((x,i)=>x.id==='s'+(i+1) && x.start===(i ? index[i-1].end : 0) && !/[\uD800-\uDBFF]$/.test(text.slice(x.start,x.end))));
++ assert(index.length > 1); assert.deepEqual(A.sourceIndex(text), index);
++});
++test('编号选取单段或连续多段，由程序还原原文而非信任转述', () => {
++ const index = A.sourceIndex(source), span = {from:index[0].id,to:index[1].id};
++ const result = new A.Client().restoreAnalysis(source,raw({source_span:span, detail:'模型改写的故事'}));
++ assert.equal(result.project.nodes[0].detail,source.slice(0,index[1].end)); assert(result.warnings.some(x=>x.includes('忽略模型改写')));
++ assert(!Object.hasOwn(result.project.nodes[0],'source_span'));
++ assert.equal(new A.Client().restoreAnalysis(source,raw({source_span:{from:'s2',to:'s2'}})).project.nodes[0].detail,source.slice(index[1].start,index[1].end));
++});
++test('未知/逆序/缺字段/非对象来源拒绝并指出节点；不能用旧detail绕过坏编号', () => {
++ for (const span of [{from:'s99',to:'s99'},{from:'s2',to:'s1'},{from:'s1'},'s1']) {
++  assert.throws(()=>new A.Client().restoreAnalysis(source,raw({source_span:span,detail:source})),e=>e.message.includes('调查现场') && e.message.includes('n1'));
++ }
++ assert.throws(()=>new A.Client().restoreAnalysis('   ',raw({source_span:{from:'s1',to:'s1'}})),/原文|空白/);
++});
++test('同一来源片段内用短首尾定位精确选取，不能省略中间句或伪造定位', () => {
++ const text = '序言。\n进入房间。\n观察桌面。\n取得房卡。\n离开房间。';
++ const span = {from:'s1',to:'s1',start_quote:'进入房间。',end_quote:'取得房卡。'};
++ assert.equal(new A.Client().restoreAnalysis(text,raw({source_span:span})).project.nodes[0].detail,'进入房间。\n观察桌面。\n取得房卡。');
++ for (const bad of [{...span,start_quote:'进入大厅。'},{...span,end_quote:1},{...span,start_quote:'离开房间。'}]) assert.throws(()=>new A.Client().restoreAnalysis(text,raw({source_span:bad})),/定位|start_quote|end_quote/);
++ assert.throws(()=>new A.Client().restoreAnalysis(text+'进入房间。',raw({source_span:span})),/不唯一/);
++});
++test('补写不能冒充原文，也不能依靠来源编号取得自动规则', () => {
++ const api = new A.Client();
++ assert.throws(()=>api.restoreAnalysis(source,raw({suggested:true,source_span:{from:'s1',to:'s1'},detail:''}),'expand'),/补写节点/);
++ assert.throws(()=>api.restoreAnalysis(source,raw({suggested:true,detail:source}),'expand'),/补写节点/);
++ assert.equal(api.restoreAnalysis(source,raw({suggested:true,detail:''}),'expand').project.nodes[0].detail,'');
++});
++test('旧回复只改变空白时本地恢复唯一连续原文，不请求API', () => {
++ const original = '【开场】\n雨落下来。\r\n\r\n你拿起房卡。\n【下一场】';
++ const result = new A.Client().restoreAnalysis(original,raw({detail:'雨落下来。 你拿起房卡。'}));
++ assert.equal(result.project.nodes[0].detail,'雨落下来。\r\n\r\n你拿起房卡。'); assert(result.warnings.some(x=>x.includes('仅修复换行/空格'))); assert.equal(result.request_count,0);
++ const exact = new A.Client().restoreAnalysis(original,raw({detail:'雨落下来。'})); assert(!exact.warnings.some(x=>x.includes('仅修复')));
++});
++test('旧回复改字/删句/换标点/倒序/分散摘录拒绝；空白归一存在歧义也拒绝', () => {
++ const api = new A.Client(), text = '雨落下来。\n守卫经过。\n你拿起房卡。';
++ for (const detail of ['雨落上来。','雨落下来！','雨落下来。你拿起房卡。','你拿起房卡。雨落下来。']) assert.throws(()=>api.restoreAnalysis(text,raw({detail})),/调查现场.*n1.*连续摘录/);
++ assert.throws(()=>api.restoreAnalysis('雨落下来。\n你拿起房卡。\n雨落下来。\r\n你拿起房卡。',raw({detail:'雨落下来。 你拿起房卡。'})),/多个匹配/);
++});
++test('主分析和快速整理发送相同来源索引，模型不抄正文也生成可编辑草稿', async () => {
++ for (const method of ['analyze','segment']) {
++  const f = mock(input => input.operation==='partition' ? {sections:[{end:input.paragraphs.at(-1).id}],complete:true} : raw({source_span:{from:input.source_index[0].id,to:input.source_index.at(-1).id}}));
++  const draft = await f.api[method](profile,source); assert.equal(draft.project.nodes[0].detail,source);
++  assert.deepEqual(f.sent.at(-1).source_index,A.sourceIndex(source));
++ }
++});
++test('分块来源编号只用于本块，整合与恢复保留本地原文和跨块索引', async () => {
++ const text = source.repeat(3), replies=[];
++ const f = mock(input=>input.operation==='partition' ? {sections:[{end:input.paragraphs.at(-1).id}],complete:true} : input.original!==undefined ? raw({source_span:{from:input.source_index[0].id,to:input.source_index.at(-1).id}}) : {nodes:input.nodes.map(n=>({id:n.id,routes:[]}))});
++ const draft=await f.api.analyze({...profile,analysis_chunk_chars:1000},text,'',{onResponse:r=>replies.push(r)});
++ assert(draft.segment_count>1); assert.equal(draft.project.nodes.map(n=>n.detail).join(''),text);
++ const chunk=replies.find(r=>r.kind==='chunk'), restored=f.api.restoreAnalysis(chunk.original,chunk.text,'faithful',chunk);
++ assert.equal(restored.project.nodes[0].detail,chunk.original);
++ const last=replies.at(-1), merged=f.api.restoreAnalysis(text,last.text,'faithful',last);
++ assert.equal(merged.project.nodes.map(n=>n.detail).join(''),text); assert(!last.nodes.some(n=>n.source_span));
++});
++test('来源编号不代替数值/完成规则的精确证据，虚构依据仍拒绝', () => {
++ const text='警觉初始0。\n调查完成增加2。', base=raw({source_span:{from:'s1',to:'s1'},completion_criteria:'调查完成',completion_evidence:'调查完成增加2。',numeric_effects:[{operation:'add',variable:'alert',value:2,evidence:'调查完成增加2。'}]});
++ base.variables=[{id:'alert',title:'警觉',type:'number',default:0,evidence:'警觉初始0。'}];
++ assert.equal(new A.Client().restoreAnalysis(text,base).project.nodes[0].effects[0].add.value,2);
++ for (const evidence of ['s1','调查完成 增加2。','虚构条款']) {base.nodes[0].numeric_effects[0].evidence=evidence;assert.throws(()=>new A.Client().restoreAnalysis(text,base),/依据/);}
++});
++test('v1.4.2默认自动升级到来源编号格式，作者自定义提示词保持原样', async () => {
++ const f=fixture();f.storage.script.branch_story_settings.profile={analysis_prompt:A.V142_PROMPTS.analysis,segment_prompt:A.V142_PROMPTS.segment};
++ const e=new Engine(f.host);await e.init();assert.equal(e.settings.profile.analysis_prompt,A.PROMPTS.analysis);assert.equal(e.settings.profile.segment_prompt,A.PROMPTS.segment);assert(!A.V142_PROMPTS.analysis.includes('source_span'));
++ const custom=fixture();custom.storage.script.branch_story_settings.profile={analysis_prompt:'自定义摘录格式'};const other=new Engine(custom.host);await other.init();assert.equal(other.settings.profile.analysis_prompt,'自定义摘录格式');
++ const legacy=mock(input=>raw({detail:input.original})); await legacy.api.analyze({...profile,auto_partition:false,analysis_prompt:'自定义摘录格式'},source);assert(!legacy.sent[0].source_index);
++});

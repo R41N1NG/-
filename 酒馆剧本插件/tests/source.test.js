@@ -1,0 +1,84 @@
+'use strict';
+const test = require('node:test'), assert = require('node:assert/strict');
+const A = require('../src/api'), {Engine, defaults} = require('../src/engine'), {fixture} = require('./helpers');
+const profile = {...defaults().profile, base_url: 'https://mock.test/v1', model: 'mock'};
+const raw = node => ({title: '测试', nodes: [{id: 'n1', title: '调查现场', guidance: '观察现场', routes: [], ...node}]});
+const source = '# 场景\r\n\r\n' + '雨滴打在屋檐，观察当前街道。'.repeat(12) + '\r\n\r\n' + '【下一场】\n' + '街角传来脚步声。'.repeat(110) + '🔒';
+function mock(fn) {
+ const sent = [], api = new A.Client(async (url, options) => {
+  const input = JSON.parse(JSON.parse(options.body).messages[1].content); sent.push(input);
+  return {ok: true, json: async () => ({choices: [{finish_reason: 'stop', message: {content: JSON.stringify(fn(input))}}]})};
+ }); return {sent, api};
+}
+test('来源索引覆盖全文且位置精确，保留换行、标记及代理对', () => {
+ const text = source + '字'.repeat(798) + '🔒尾部', index = A.sourceIndex(text);
+ assert.equal(index.map(x=>text.slice(x.start,x.end)).join(''), text);
+ assert(index.every((x,i)=>x.id==='s'+(i+1) && x.start===(i ? index[i-1].end : 0) && !/[\uD800-\uDBFF]$/.test(text.slice(x.start,x.end))));
+ assert(index.length > 1); assert.deepEqual(A.sourceIndex(text), index);
+});
+test('编号选取单段或连续多段，由程序还原原文而非信任转述', () => {
+ const index = A.sourceIndex(source), span = {from:index[0].id,to:index[1].id};
+ const result = new A.Client().restoreAnalysis(source,raw({source_span:span, detail:'模型改写的故事'}));
+ assert.equal(result.project.nodes[0].detail,source.slice(0,index[1].end)); assert(result.warnings.some(x=>x.includes('忽略模型改写')));
+ assert(!Object.hasOwn(result.project.nodes[0],'source_span'));
+ assert.equal(new A.Client().restoreAnalysis(source,raw({source_span:{from:'s2',to:'s2'}})).project.nodes[0].detail,source.slice(index[1].start,index[1].end));
+});
+test('未知/逆序/缺字段/非对象来源拒绝并指出节点；不能用旧detail绕过坏编号', () => {
+ for (const span of [{from:'s99',to:'s99'},{from:'s2',to:'s1'},{from:'s1'},'s1']) {
+  assert.throws(()=>new A.Client().restoreAnalysis(source,raw({source_span:span,detail:source})),e=>e.message.includes('调查现场') && e.message.includes('n1'));
+ }
+ assert.throws(()=>new A.Client().restoreAnalysis('   ',raw({source_span:{from:'s1',to:'s1'}})),/原文|空白/);
+});
+test('同一来源片段内用短首尾定位精确选取，不能省略中间句或伪造定位', () => {
+ const text = '序言。\n进入房间。\n观察桌面。\n取得房卡。\n离开房间。';
+ const span = {from:'s1',to:'s1',start_quote:'进入房间。',end_quote:'取得房卡。'};
+ assert.equal(new A.Client().restoreAnalysis(text,raw({source_span:span})).project.nodes[0].detail,'进入房间。\n观察桌面。\n取得房卡。');
+ for (const bad of [{...span,start_quote:'进入大厅。'},{...span,end_quote:1},{...span,start_quote:'离开房间。'}]) assert.throws(()=>new A.Client().restoreAnalysis(text,raw({source_span:bad})),/定位|start_quote|end_quote/);
+ assert.throws(()=>new A.Client().restoreAnalysis(text+'进入房间。',raw({source_span:span})),/不唯一/);
+});
+test('补写不能冒充原文，也不能依靠来源编号取得自动规则', () => {
+ const api = new A.Client();
+ assert.throws(()=>api.restoreAnalysis(source,raw({suggested:true,source_span:{from:'s1',to:'s1'},detail:''}),'expand'),/补写节点/);
+ assert.throws(()=>api.restoreAnalysis(source,raw({suggested:true,detail:source}),'expand'),/补写节点/);
+ assert.equal(api.restoreAnalysis(source,raw({suggested:true,detail:''}),'expand').project.nodes[0].detail,'');
+});
+test('旧回复只改变空白时本地恢复唯一连续原文，不请求API', () => {
+ const original = '【开场】\n雨落下来。\r\n\r\n你拿起房卡。\n【下一场】';
+ const result = new A.Client().restoreAnalysis(original,raw({detail:'雨落下来。 你拿起房卡。'}));
+ assert.equal(result.project.nodes[0].detail,'雨落下来。\r\n\r\n你拿起房卡。'); assert(result.warnings.some(x=>x.includes('仅修复换行/空格'))); assert.equal(result.request_count,0);
+ const exact = new A.Client().restoreAnalysis(original,raw({detail:'雨落下来。'})); assert(!exact.warnings.some(x=>x.includes('仅修复')));
+});
+test('旧回复改字/删句/换标点/倒序/分散摘录拒绝；空白归一存在歧义也拒绝', () => {
+ const api = new A.Client(), text = '雨落下来。\n守卫经过。\n你拿起房卡。';
+ for (const detail of ['雨落上来。','雨落下来！','雨落下来。你拿起房卡。','你拿起房卡。雨落下来。']) assert.throws(()=>api.restoreAnalysis(text,raw({detail})),/调查现场.*n1.*连续摘录/);
+ assert.throws(()=>api.restoreAnalysis('雨落下来。\n你拿起房卡。\n雨落下来。\r\n你拿起房卡。',raw({detail:'雨落下来。 你拿起房卡。'})),/多个匹配/);
+});
+test('主分析和快速整理发送相同来源索引，模型不抄正文也生成可编辑草稿', async () => {
+ for (const method of ['analyze','segment']) {
+  const f = mock(input => input.operation==='partition' ? {sections:[{end:input.paragraphs.at(-1).id}],complete:true} : raw({source_span:{from:input.source_index[0].id,to:input.source_index.at(-1).id}}));
+  const draft = await f.api[method](profile,source); assert.equal(draft.project.nodes[0].detail,source);
+  assert.deepEqual(f.sent.at(-1).source_index,A.sourceIndex(source));
+ }
+});
+test('分块来源编号只用于本块，整合与恢复保留本地原文和跨块索引', async () => {
+ const text = source.repeat(3), replies=[];
+ const f = mock(input=>input.operation==='partition' ? {sections:[{end:input.paragraphs.at(-1).id}],complete:true} : input.original!==undefined ? raw({source_span:{from:input.source_index[0].id,to:input.source_index.at(-1).id}}) : {nodes:input.nodes.map(n=>({id:n.id,routes:[]}))});
+ const draft=await f.api.analyze({...profile,analysis_chunk_chars:1000},text,'',{onResponse:r=>replies.push(r)});
+ assert(draft.segment_count>1); assert.equal(draft.project.nodes.map(n=>n.detail).join(''),text);
+ const chunk=replies.find(r=>r.kind==='chunk'), restored=f.api.restoreAnalysis(chunk.original,chunk.text,'faithful',chunk);
+ assert.equal(restored.project.nodes[0].detail,chunk.original);
+ const last=replies.at(-1), merged=f.api.restoreAnalysis(text,last.text,'faithful',last);
+ assert.equal(merged.project.nodes.map(n=>n.detail).join(''),text); assert(!last.nodes.some(n=>n.source_span));
+});
+test('来源编号不代替数值/完成规则的精确证据，虚构依据仍拒绝', () => {
+ const text='警觉初始0。\n调查完成增加2。', base=raw({source_span:{from:'s1',to:'s1'},completion_criteria:'调查完成',completion_evidence:'调查完成增加2。',numeric_effects:[{operation:'add',variable:'alert',value:2,evidence:'调查完成增加2。'}]});
+ base.variables=[{id:'alert',title:'警觉',type:'number',default:0,evidence:'警觉初始0。'}];
+ assert.equal(new A.Client().restoreAnalysis(text,base).project.nodes[0].effects[0].add.value,2);
+ for (const evidence of ['s1','调查完成 增加2。','虚构条款']) {base.nodes[0].numeric_effects[0].evidence=evidence;assert.throws(()=>new A.Client().restoreAnalysis(text,base),/依据/);}
+});
+test('v1.4.2默认自动升级到来源编号格式，作者自定义提示词保持原样', async () => {
+ const f=fixture();f.storage.script.branch_story_settings.profile={analysis_prompt:A.V142_PROMPTS.analysis,segment_prompt:A.V142_PROMPTS.segment};
+ const e=new Engine(f.host);await e.init();assert.equal(e.settings.profile.analysis_prompt,A.PROMPTS.analysis);assert.equal(e.settings.profile.segment_prompt,A.PROMPTS.segment);assert(!A.V142_PROMPTS.analysis.includes('source_span'));
+ const custom=fixture();custom.storage.script.branch_story_settings.profile={analysis_prompt:'自定义摘录格式'};const other=new Engine(custom.host);await other.init();assert.equal(other.settings.profile.analysis_prompt,'自定义摘录格式');
+ const legacy=mock(input=>raw({detail:input.original})); await legacy.api.analyze({...profile,auto_partition:false,analysis_prompt:'自定义摘录格式'},source);assert(!legacy.sent[0].source_index);
+});
