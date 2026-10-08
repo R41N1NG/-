@@ -1,0 +1,275 @@
+{
+  "identity": "gpt",
+  "baseline": "caac440",
+  "input_sha256": {
+    "材料/17a_id7原样正文.txt": "88caa54054895d251dea68c446804010fa4e59a690aa66fed28fb73f81b462d6",
+    "材料/P01_chat.json": "dc29e436149f8d12dc8ae142df4ba85c27b78ff84dbae3234afa56f430996f15",
+    "材料/17e_渲染矩阵与全卡入口扫描.json": "68cc7207307d2f3d82bd5f8720c9926723ec6a74340b4497b5b915819c2c8bed",
+    "源码/P03_render.mjs": "b344c56a2ffe8609c08326a8537bf8ef0fb44682c1cfeee1004fcb526b1c5f76",
+    "材料/17l_全卡闸门首行.json": "d041bbc72aa7abfe944aa90fb3208f7231ae95d3478235a27ef4399cf8003e26",
+    "材料/17h_派发与面板_代码原文（带行号）.txt": "965df11f08eaab1dfbf766000f6f5a51a489d6f9d25e106a7ef7c27d2401cc06",
+    "材料/17n_卡内id与酒馆uid映射.json": "c4037ccd98d5c856a97659c644eb54db9a56ef2053dcebbf93d687ca1a39745a"
+  },
+  "reported_card_sha256": "3b5bcef43948bf0967292d7030d26c8ec8ebb55842af70af667e140221dc07cd",
+  "upstream_commit": "d6f520d149aba146305b0b781ddd691d449c28d2",
+  "native_ejs_stage_checks": 14,
+  "stage_results": [
+    {
+      "name": "A0 ★该局实测快照：1577.07／段位2／known 仅极乐引入手／身份自设",
+      "stages": [
+        "一·启程前 · 墨山道"
+      ],
+      "war_fragments": 0,
+      "reported_pattern_hits": 0,
+      "output_sha256": "e26226f21df41b4f5995c4bd9f7ced89cb8bb4512cd245fe994ae81965c1b591"
+    },
+    {
+      "name": "A1 1577.07／段位8（映射到阶段二）／known空",
+      "stages": [
+        "二·南域大劫与天溪战事"
+      ],
+      "war_fragments": 2,
+      "reported_pattern_hits": 3,
+      "output_sha256": "371b65f51e84988202abd028f729af635fadfa135bfb247d9b3b7386d6252dd3"
+    },
+    {
+      "name": "A2 1577.07／段位13（映射到阶段三）／known空",
+      "stages": [
+        "三·离山之后 · 中洲线"
+      ],
+      "war_fragments": 2,
+      "reported_pattern_hits": 2,
+      "output_sha256": "76ab647eaf6dab83b05145c41eec2206ed172de1ea17a2e6dc96b2381a709f6d"
+    },
+    {
+      "name": "A3 1577.07／段位16（映射到阶段四）／known空",
+      "stages": [
+        "四·暗流与天姝会线"
+      ],
+      "war_fragments": 0,
+      "reported_pattern_hits": 0,
+      "output_sha256": "d130dffd913c8ccd72d932afeba84ccd96801b2f12be7b9b46eb9f8b573b09a8"
+    },
+    {
+      "name": "A4 1578.03／段位8／known空",
+      "stages": [
+        "二·南域大劫与天溪战事"
+      ],
+      "war_fragments": 2,
+      "reported_pattern_hits": 3,
+      "output_sha256": "4281d91496cd5dea2ccb7632a29893c07df9862c4a5979f6f4cf2e26417317f9"
+    },
+    {
+      "name": "A5 1579.01／段位8／known[南域大劫]=false",
+      "stages": [
+        "二·南域大劫与天溪战事"
+      ],
+      "war_fragments": 2,
+      "reported_pattern_hits": 3,
+      "output_sha256": "170ebcbc540c70bd4548e58f5825ad878af34267c79e58806609122d3484d8a1"
+    },
+    {
+      "name": "A6 1579.01／段位8／known[南域大劫]=true",
+      "stages": [
+        "二·南域大劫与天溪战事"
+      ],
+      "war_fragments": 2,
+      "reported_pattern_hits": 3,
+      "output_sha256": "170ebcbc540c70bd4548e58f5825ad878af34267c79e58806609122d3484d8a1"
+    },
+    {
+      "name": "A7 1579.03／段位8／known[天溪城兽潮]=false（大劫真）",
+      "stages": [
+        "二·南域大劫与天溪战事"
+      ],
+      "war_fragments": 2,
+      "reported_pattern_hits": 3,
+      "output_sha256": "afba62ce122e46e6803f5aa43587a8e5d53ab57d1c7a395f46833361aa04f848"
+    },
+    {
+      "name": "A8 1579.03／段位8／known[天溪城兽潮]=true",
+      "stages": [
+        "二·南域大劫与天溪战事"
+      ],
+      "war_fragments": 2,
+      "reported_pattern_hits": 3,
+      "output_sha256": "afba62ce122e46e6803f5aa43587a8e5d53ab57d1c7a395f46833361aa04f848"
+    },
+    {
+      "name": "A9 1577.07／段位2／known污染未来（已抵达天溪+兽潮血战+天溪城破+赵无忧坠渊）",
+      "stages": [
+        "一·启程前 · 墨山道"
+      ],
+      "war_fragments": 0,
+      "reported_pattern_hits": 0,
+      "output_sha256": "e26226f21df41b4f5995c4bd9f7ced89cb8bb4512cd245fe994ae81965c1b591"
+    },
+    {
+      "name": "A10 1577.07／段位8／known污染未来（同上）",
+      "stages": [
+        "二·南域大劫与天溪战事"
+      ],
+      "war_fragments": 2,
+      "reported_pattern_hits": 3,
+      "output_sha256": "371b65f51e84988202abd028f729af635fadfa135bfb247d9b3b7386d6252dd3"
+    },
+    {
+      "name": "A11 1579.06／段位2（晚日期低段位）／known[天溪城破]=true",
+      "stages": [
+        "一·启程前 · 墨山道"
+      ],
+      "war_fragments": 0,
+      "reported_pattern_hits": 0,
+      "output_sha256": "64f9721e8eff50d6715ab3775685e47b8efec4063b165cd8216f184e09809d32"
+    },
+    {
+      "name": "A12 缺日期／段位8",
+      "stages": [
+        "二·南域大劫与天溪战事"
+      ],
+      "war_fragments": 2,
+      "reported_pattern_hits": 3,
+      "output_sha256": "bf64944b8ccc891c1297d36d03ac5dba8e981356e061d6ab51c51c3dd7403f4d"
+    },
+    {
+      "name": "A13 身份=焚欲殿主／1577.07／段位2（殿主下限压到第四段）",
+      "stages": [
+        "四·暗流与天姝会线"
+      ],
+      "war_fragments": 0,
+      "reported_pattern_hits": 0,
+      "output_sha256": "779e1b2ed48d4d1e368fcf2bad1f398d9960f0a4f6e96805ce8f36ad22deda9e"
+    }
+  ],
+  "complete_gate_condition_checks": 800,
+  "gate_results": [
+    {
+      "name": "实际快照",
+      "checked": 160,
+      "selected_values": {
+        "49": false,
+        "53": false,
+        "56": false,
+        "57": false,
+        "58": false,
+        "59": false,
+        "63": false,
+        "64": false,
+        "66": false
+      }
+    },
+    {
+      "name": "三月高段位_大劫真",
+      "checked": 160,
+      "selected_values": {
+        "49": false,
+        "53": false,
+        "56": true,
+        "57": false,
+        "58": true,
+        "59": false,
+        "63": true,
+        "64": true,
+        "66": false
+      }
+    },
+    {
+      "name": "八月高段位_大劫真",
+      "checked": 160,
+      "selected_values": {
+        "49": false,
+        "53": false,
+        "56": true,
+        "57": false,
+        "58": true,
+        "59": false,
+        "63": true,
+        "64": true,
+        "66": false
+      }
+    },
+    {
+      "name": "三月段4_大劫未发生",
+      "checked": 160,
+      "selected_values": {
+        "49": false,
+        "53": true,
+        "56": false,
+        "57": false,
+        "58": false,
+        "59": false,
+        "63": false,
+        "64": false,
+        "66": false
+      }
+    },
+    {
+      "name": "一月阶段7_大劫真",
+      "checked": 160,
+      "selected_values": {
+        "49": false,
+        "53": false,
+        "56": true,
+        "57": true,
+        "58": true,
+        "59": true,
+        "63": false,
+        "64": false,
+        "66": false
+      }
+    }
+  ],
+  "exact_panel_function_checks": [
+    {
+      "name": "空c_二阶段真_默认赵无忧",
+      "result": {
+        "state": "self",
+        "owner": "赵无忧",
+        "arcs": 2,
+        "owned": true
+      }
+    },
+    {
+      "name": "补c_lord_默认赵无忧",
+      "result": {
+        "state": "self",
+        "owner": "赵无忧",
+        "arcs": 2,
+        "owned": true
+      }
+    },
+    {
+      "name": "显式NPC归属_赵无忧",
+      "result": {
+        "state": "other",
+        "owner": "阎雷子",
+        "arcs": 2,
+        "owned": false
+      }
+    },
+    {
+      "name": "显式NPC归属_自设_NPC辅助名册认可",
+      "result": {
+        "state": "other",
+        "owner": "阎雷子",
+        "arcs": 2,
+        "owned": false
+      }
+    },
+    {
+      "name": "未成形_显式NPC归属",
+      "result": {
+        "state": "none",
+        "owner": "",
+        "arcs": 0,
+        "owned": false
+      }
+    }
+  ],
+  "mapping_table_audit": {
+    "same_id_uid": 241,
+    "enabled_differences": 37,
+    "all_15_mainline_host_disabled_in_reported_snapshot": true
+  },
+  "limits": "输入为最新上传技术件，未取得原卡/PNG文件或生成时完整请求。上游原生EJS和条件方法真实，env/settings/handler适配；面板函数体真实但s0/身份同一性/玩家名/NPC名册为标注替身。未重演实际世界书扫描、预算、消息写入与撤销、真机反色。"
+}
