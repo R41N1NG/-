@@ -1,0 +1,106 @@
+{
+  "scope": "24b旧基线条件子集；18i上传生产函数单测",
+  "subsetSHA256": "dda33d104dadfb54442d0c255c424dff03c757cbb552b55e9487381cba2d6138",
+  "cardReportedSHA256": "21a0f921fabe21b11cdcda29dc71a046557e139295f8577301e284dadc776da9",
+  "cases": 416,
+  "byName": [
+    {
+      "name": "九幽玄阴穴",
+      "stages": 4,
+      "structuralFailures": 0,
+      "semanticFailures": 0,
+      "overlap": 0
+    },
+    {
+      "name": "灼酒流炎穴",
+      "stages": 4,
+      "structuralFailures": 0,
+      "semanticFailures": 0,
+      "overlap": 0
+    },
+    {
+      "name": "心魔茶璎乳",
+      "stages": 4,
+      "structuralFailures": 0,
+      "semanticFailures": 0,
+      "overlap": 0
+    },
+    {
+      "name": "般若菩提菊",
+      "stages": 4,
+      "structuralFailures": 0,
+      "semanticFailures": 0,
+      "overlap": 0
+    },
+    {
+      "name": "北冥潮生穴",
+      "stages": 3,
+      "structuralFailures": 32,
+      "semanticFailures": 8,
+      "overlap": 0
+    },
+    {
+      "name": "灵犀同心穴",
+      "stages": 3,
+      "structuralFailures": 32,
+      "semanticFailures": 15,
+      "overlap": 0
+    },
+    {
+      "name": "玉虎噙香乳",
+      "stages": 3,
+      "structuralFailures": 32,
+      "semanticFailures": 8,
+      "overlap": 0
+    },
+    {
+      "name": "烟霞灵乳",
+      "stages": 3,
+      "structuralFailures": 32,
+      "semanticFailures": 15,
+      "overlap": 0
+    },
+    {
+      "name": "梅蕊穴",
+      "stages": 4,
+      "structuralFailures": 0,
+      "semanticFailures": 0,
+      "overlap": 0
+    },
+    {
+      "name": "冰魄剑心穴",
+      "stages": 4,
+      "structuralFailures": 0,
+      "semanticFailures": 0,
+      "overlap": 0
+    },
+    {
+      "name": "清歌弦鸣穴",
+      "stages": 4,
+      "structuralFailures": 0,
+      "semanticFailures": 0,
+      "overlap": 0
+    },
+    {
+      "name": "流焰叠薪穴",
+      "stages": 4,
+      "structuralFailures": 0,
+      "semanticFailures": 0,
+      "overlap": 0
+    },
+    {
+      "name": "凤凰羽花",
+      "stages": 4,
+      "structuralFailures": 0,
+      "semanticFailures": 0,
+      "overlap": 0
+    }
+  ],
+  "deriveSourceSHA256": "33dc2c817bc68e7a8728fc702e0489ee7d2cd878e7c0d07dcb5c738ed0042572",
+  "manualFalseProbe": {
+    "autoReasserted": true,
+    "news": [
+      "般若菩提菊成形"
+    ]
+  }
+}
