@@ -1,4 +1,4 @@
-// gpt：只读；node 本文件 卡.json 扩展原生ejs.js；不输出正文。
+﻿// gpt：只读；node 本文件 卡.json 扩展原生ejs.js；不输出正文。
 // 这是条件求值复算，不能替代宿主扫描、错误处理和最终请求验证。
 const fs = require('node:fs');
 const path = require('node:path');
