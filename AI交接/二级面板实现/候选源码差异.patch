@@ -1,0 +1,724 @@
+--- a/_build_card.js
++++ b/_build_card.js
+@@ -1028,6 +1028,12 @@
+       process.exit(1);
+     }
+     let content = fs.readFileSync(scriptPath, 'utf8');
++    if (['GM修改器.js', '状态机.js', '状态栏面板.js'].includes(fn)) {
++      const correctionPath = path.join(__dirname, 'src/correction-runtime.js');
++      if (!fs.existsSync(correctionPath)) throw new Error('缺少二级纠错共享运行时');
++      content = fs.readFileSync(correctionPath, 'utf8') + '\n' + content;
++      new (require('vm').Script)(content, { filename: fn });
++    }
+     /* ★ P2（gpt 接入说明 B）：状态机脚本在**构建期**注入共享滑块模块（同一文件来源，不手抄日期表）
+      *  注入失败＝构建终止（fail-closed），不生成半成品卡。 */
+     if (fn === '状态机.js') {
+--- /dev/null
++++ b/src/correction-runtime.js
+@@ -0,0 +1,285 @@
++/* gpt · 二级纠错共用运行时；由构建器前置注入三个卡内脚本。无外链，无资源更改。 */
++(function (host, factory) {
++  if (typeof module === 'object' && module.exports) { module.exports = factory; return; }
++  var root = host;
++  try { if (host.parent && host.parent.document) root = host.parent; } catch (_) {}
++  if (!root.__xsdCorrection || root.__xsdCorrection.version !== '1.0.0') root.__xsdCorrection = factory(root);
++  host.__xsdCorrection = root.__xsdCorrection;
++})(typeof window === 'undefined' ? globalThis : window, function (root) {
++  'use strict';
++  const clone = v => v === undefined ? undefined : JSON.parse(JSON.stringify(v));
++  const own = (o, k) => !!o && Object.prototype.hasOwnProperty.call(o, k);
++  const bad = new Set(['__proto__', 'constructor', 'prototype']);
++  function safe(o) {
++    if (!o || typeof o !== 'object') return;
++    for (const k of Object.keys(o)) { if (bad.has(k)) throw Error('非法键'); safe(o[k]); }
++  }
++  function merge(a, b) {
++    safe(b);
++    const out = a && typeof a === 'object' && !Array.isArray(a) ? clone(a) : {};
++    for (const k of Object.keys(b || {})) out[k] = b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) ? merge(out[k], b[k]) : clone(b[k]);
++    return out;
++  }
++  function at(o, p) { return p.reduce((v, k) => v == null ? undefined : v[k], o); }
++  function put(o, p, v) {
++    if (p.some(k => bad.has(k))) throw Error('非法路径');
++    let t = o; for (const k of p.slice(0, -1)) { if (!t[k] || typeof t[k] !== 'object') t[k] = {}; t = t[k]; }
++    t[p[p.length - 1]] = clone(v);
++  }
++  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
++  function leaves(o, prefix = []) {
++    return Object.keys(o || {}).flatMap(k => o[k] && typeof o[k] === 'object' && !Array.isArray(o[k]) && Object.keys(o[k]).length && !(prefix.length===2 && prefix[0]==='人工纠错' && ['覆盖','纹章显示'].includes(prefix[1])) && !(prefix.length===1 && ['派生账本','名器归属来源','人工校历'].includes(prefix[0])) ? leaves(o[k], prefix.concat(k)) : [{ path: prefix.concat(k), value: clone(o[k]) }]);
++  }
++  const cn = ['一', '二', '三', '四'];
++  // 显示名、成形键、阶段前缀分别登记，不用显示名猜生产字段。
++  const relics = [
++    ['jiuyouxuanyinxue','九幽玄阴穴','九幽玄阴穴成形','九幽玄阴穴',4],
++    ['zhuojiuliuyanxue','灼酒流炎穴','灼酒流炎穴成形','灼酒流炎穴',4],
++    ['xinmochayingru','心魔茶璎乳','心魔茶璎乳成形','心魔茶璎乳',4],
++    ['boruoputiju','般若菩提菊','般若菩提菊成形','般若菩提菊',4],
++    ['meiruixue','梅蕊穴','梅蕊穴成形','梅蕊穴',4],
++    ['bingpojianxinxue','冰魄剑心穴','冰魄剑心穴成形','冰魄剑心穴',4],
++    ['qinggexianmingxue','清歌弦鸣穴','清歌弦鸣穴成形','清歌弦鸣穴',4],
++    ['liuyandiexinxue','流焰叠薪穴','流焰叠薪穴成形','流焰叠薪穴',4],
++    ['fenghuangyuhua','凤凰羽花','凤凰羽花成形','凤凰羽花',4],
++    ['beimingchaoshengxue','北冥潮生穴','北冥潮生穴成形','北冥潮生穴',3],
++    ['yuhuxiangru','玉虎噙香乳','玉虎噙香乳成形','玉虎噙香乳',3],
++    ['lingxitongxin','灵犀同心','灵犀同心成形','灵犀同心穴',3],
++    ['yanxialingru','烟霞灵乳',null,'烟霞灵乳',3],
++  ].map(([id,name,form,prefix,max]) => ({ id,name,form,prefix,max,stages:cn.map(n => prefix+n+'阶段') }));
++  const plotFields = ['极乐引入手','进入幽寂谷','离开幽寂谷','南域大劫','天姝会存在','已抵达天溪','受征召南下','天溪城兽潮','兽潮血战','双姝回归','天溪城破','血染天溪'];
++  const dateFacts = { 南域大劫:1578.08, 天姝会存在:1578.08, 天溪城兽潮:1579.01, 兽潮血战:1579.01, 天溪城破:1579.03, 血染天溪:1579.03 };
++  let epoch = 0, serial = 0;
++  const prerequisites = {};
++  const queues = new Map();
++  function context(api) {
++    if (typeof api.context === 'function') return api.context();
++    for (const w of [root, root.parent, root.top]) {
++      try { if (w && w.SillyTavern && w.SillyTavern.getContext) return w.SillyTavern.getContext(); } catch (_) {}
++    }
++    throw Error('无法定位当前聊天');
++  }
++  function capture(api) {
++    const c = context(api), id = c.chatId ?? c.chat_id;
++    if (id === undefined || id === null || id === '' || !Array.isArray(c.chat) || !c.chat.length) throw Error('请先打开有消息的聊天');
++    return { chatId:String(id), messageId:c.chat.length-1, epoch };
++  }
++  function guard(api, token) { const n=capture(api); if (!eq(n, token)) throw Error('聊天或最新楼已变化，请重新预览'); }
++  function enqueue(api, token, task) {
++    const key=token.chatId, prev=queues.get(key)||Promise.resolve();
++    const next=prev.catch(()=>{}).then(()=>{guard(api,token);return task();});
++    queues.set(key,next);
++    next.finally(()=>{if(queues.get(key)===next)queues.delete(key);}).catch(()=>{});
++    return next;
++  }
++  function checked(v) { if (v === false) throw Error('宿主接口返回失败'); return v; }
++  async function layer(api,opt) {
++    const v=await api.getVariables(opt); if (v === null || v === undefined) return {}; if (typeof v !== 'object' || Array.isArray(v)) throw Error('变量读取失败'); return clone(v);
++  }
++  function options(token) { return [{type:'chat'}, {type:'message',message_id:token.messageId}]; }
++  async function snapshot(api,token) {
++    guard(api,token);
++    const [c,m]=await Promise.all(options(token).map(o=>layer(api,o)));
++    guard(api,token);
++    const sd=merge(c.stat_data||{},m.stat_data||{});
++    // 人工覆盖以聊天层为准，消息层旧副本不允许复活已解除的覆盖。
++    sd.人工纠错 = c.stat_data?.人工纠错?.chatId===token.chatId ? clone(c.stat_data.人工纠错) : null;
++    return {sd,layers:[c,m]};
++  }
++  function controls(sd, chatId) {
++    const m=sd && sd.人工纠错;
++    return m && (!chatId || m.chatId===chatId) ? (m.覆盖||{}) : {};
++  }
++  function protect(sd,patch,chatId) {
++    const out=clone(patch||{});
++    delete out.人工纠错; // 只有人工事务修改覆盖表。
++    for (const record of Object.values(controls(sd,chatId))) if (record && record.path && own(record,'value')) {
++      put(out,record.path,record.value);
++      if (record.path[0]==='名器归属') put(out,['名器归属来源',record.path[1]],{来源:'人工（二级面板）',由脚本写:false});
++    }
++    return out;
++  }
++  function effective(sd) { return merge(sd,protect(sd,{},sd?.人工纠错?.chatId)); }
++  function visual(sd,id,state) {
++    const mode=sd?.人工纠错?.纹章显示?.[id]?.颜色;
++    return state==='none' ? state : mode==='original' ? 'self' : mode==='inverted' ? 'other' : state;
++  }
++  async function setLayer(api,opt,payload,token) {
++    guard(api,token);
++    if (typeof api.insertOrAssignVariables !== 'function') throw Error('需要深合并写入接口；不使用整层replace覆盖其他更新');
++    checked(await api.insertOrAssignVariables(payload,opt)); guard(api,token);
++  }
++  // 两层都回读才成功；失败只补偿这笔仍等于写后值的键，不覆盖之后的改动。
++  async function commit(api,token,patch,base) {
++    safe(patch);
++    const changes=leaves(patch), done=[];
++    try {
++      for (const [i,opt] of options(token).entries()) {
++        done.push(i); // 接口可能部分落盘后抛错，亦纳入补偿。
++        await setLayer(api,opt,{stat_data:patch},token);
++        const after=await layer(api,opt); guard(api,token);
++        if(changes.some(c=>!eq(at(after.stat_data||{},c.path),c.value)))throw Error('双层回读不一致');
++      }
++    } catch(error) {
++      let restored=true;
++      for(const i of done.reverse()) {
++        try {
++          guard(api,token);
++          const opt=options(token)[i],now=await layer(api,opt),rollback={};
++          for(const c of changes)if(eq(at(now.stat_data||{},c.path),c.value))put(rollback,c.path,at(base.layers[i].stat_data||{},c.path)??null);
++          if(Object.keys(rollback).length)await setLayer(api,opt,{stat_data:rollback},token);
++          const verify=await layer(api,opt);
++          if(leaves(rollback).some(c=>!eq(at(verify.stat_data||{},c.path),c.value)))restored=false;
++        }catch(_){restored=false;}
++      }
++      throw Error(error.message+(restored?'；本笔已补偿':'；部分写入未能补偿，请回读当前局'));
++    }
++    if(typeof api.refresh==='function')api.refresh();
++  }
++  function violations(sd) {
++    const date=Number(sd.仙盟历),k=sd.known||{};
++    return Object.entries(dateFacts).filter(([f,min])=>k[f]===true&&(!Number.isFinite(date)||date<min)).map(([f])=>f);
++  }
++  function checkFacts(sd, previous = {}) {
++    const old=violations(previous),bad=violations(sd);
++    const newlyBad=bad.find(f=>!old.includes(f));
++    if(newlyBad || (bad.length && Number(sd.仙盟历)<Number(previous.仙盟历)))throw Error((newlyBad||bad[0])+'与当前日期矛盾，请先纠正事实');
++    return bad;
++  }
++  function datePatch(sd,date,token,tx) {
++    const m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(date||'');
++    if(!m)throw Error('日期用年-月-日填写');
++    const y=+m[1],mo=+m[2],d=+m[3]; if(y<1000||mo<1||mo>12||d<1||d>30)throw Error('日期范围错误（每月30日）');
++    const acc=Number(sd.历时累计??0);if(!Number.isFinite(acc)||acc<0)throw Error('累计台账异常，请先核对原局');
++    const absolute=y*12+mo-1+(d-1)/30;
++    // 保留历史累计，平移基准；同楼重绘由nextAcc校历守卫阻止重新累计。
++    return {仙盟历:Math.round((y+mo/100+(d-1)/30*0.005)*10000)/10000,仙盟历文:y+'年'+mo+'月'+d+'日',
++      历基准:absolute-acc,历时累计:acc,本楼历时加速:0,历时待确认:null,人工校历:{楼:token.messageId,事务id:tx}};
++  }
++  function plan(sd,intent,token) {
++    safe(intent);
++    if (!Object.keys(intent).some(k=>k!=='relic')) throw Error('请选择一项纠错');
++    const tx='gpt-correction-'+Date.now()+'-'+(++serial),patch={}, released=[];
++    const meta=clone(sd.人工纠错)||{chatId:token.chatId,覆盖:{},纹章显示:{}};
++    meta.chatId=token.chatId;meta.覆盖=meta.覆盖||{};meta.纹章显示=meta.纹章显示||{};
++    function change(p,value) {
++      const key=JSON.stringify(p); put(patch,p,value);
++      meta.覆盖[key]={path:p,value:clone(value),事务id:tx};
++      if(p[0]==='known') {
++        const prior=sd.派生账本?.[p[1]]?.来源||[];
++        put(patch,['派生账本',p[1]],{来源:prior.filter(s=>s.类型!=='人工').concat({类型:'人工',键:'纠错:'+p[1],事务id:tx,楼:token.messageId})});
++      }
++    }
++    function release(p) {
++      const key=JSON.stringify(p),old=meta.覆盖[key];
++      if(old) { meta.覆盖[key]=null; released.push(p); }
++    }
++    if(intent.relic) {
++      const r=relics.find(r=>r.id===intent.relic);if(!r)throw Error('未知纹章');
++      if(own(intent,'lit')) {
++        // 烟霞没有成形键：使用全部阶段的人工否定实现熄灭，不新增虚假的成形字段。
++        if(intent.lit==='auto'){if(r.form)release(['known',r.form]);else r.stages.forEach(f=>release(['known',f]));}
++        else if(typeof intent.lit==='boolean') {
++          if(r.form)change(['known',r.form],intent.lit);
++          else if(!intent.lit)r.stages.forEach(f=>change(['known',f],false));
++          else throw Error('烟霞请通过已有阶段点亮');
++        }else throw Error('亮灭值无效');
++      }
++      if(own(intent,'stage')) {
++        if(intent.stage==='auto')r.stages.forEach(f=>release(['known',f]));
++        else { const n=intent.stage;if(!Number.isInteger(n)||n<0||n>r.max)throw Error('该阶段未提供内容');r.stages.forEach((f,i)=>change(['known',f],i<n)); }
++      }
++      if(own(intent,'owner')) {
++        if(intent.owner==='__auto__')release(['名器归属',r.name]);
++        else {
++          const owner=intent.owner===null?null:String(intent.owner).trim();
++          if(owner!==null&&(!owner||owner.length>40||/[<>\n\r]/.test(owner)))throw Error('归属名称无效');
++          change(['名器归属',r.name],owner);
++          put(patch,['名器归属来源',r.name],{归属者:owner,来源:'人工（二级面板）',由脚本写:false,楼:token.messageId});
++        }
++      }
++      if(own(intent,'color')) {
++        if(!['auto','original','inverted'].includes(intent.color))throw Error('显示模式无效');
++        meta.纹章显示[r.id]=intent.color==='auto'?null:{颜色:intent.color};
++      }
++    }
++    if(own(intent,'personalStage')) {
++      if(intent.personalStage==='auto')release(['段位']);
++      else {if(!Number.isInteger(intent.personalStage)||intent.personalStage<1||intent.personalStage>16)throw Error('个人段位为1–16');change(['段位'],intent.personalStage);}
++    }
++    for(const [f,value]of Object.entries(intent.plot||{})) {
++      if(!plotFields.includes(f))throw Error('主线事实不在白名单');
++      if(value==='auto')release(['known',f]);else if(typeof value==='boolean')change(['known',f],value);else throw Error('主线事实值无效');
++    }
++    if(intent.date)Object.assign(patch,datePatch(sd,intent.date,token,tx));
++    // 交还自动必须解除旧人工贡献，不将旧人工true当独立事实永久保留。
++    for(const p of released) {
++      if(p[0]==='known') {
++        const autoSources=(sd.派生账本?.[p[1]]?.来源||[]).filter(s=>s.类型!=='人工');
++        const test=merge(sd,patch),k=test.known||{};
++        const sources=autoSources.filter(source=>source.类型==='出场实证' ||
++          (source.类型==='前置齐备' && (prerequisites[p[1]]||[]).length>0 && prerequisites[p[1]].every(f=>k[f]===true)) ||
++          (source.类型==='依赖' && source.键==='烟霞灵乳二阶段成立' && k['烟霞灵乳二阶段']===true));
++        const prerequisiteMatch=(prerequisites[p[1]]||[]).length>0 && prerequisites[p[1]].every(f=>k[f]===true);
++        if(prerequisiteMatch && !sources.length)sources.push({类型:'前置齐备',键:'交还自动前置核验',事务id:tx});
++        put(patch,p,sources.length>0);
++        put(patch,['派生账本',p[1]],sources.length?{来源:sources}:null);
++      } else if(p[0]==='名器归属') {put(patch,p,null);put(patch,['名器归属来源',p[1]],null);}
++    }
++    patch.人工纠错=meta;
++    const warnings=checkFacts(merge(sd,patch),sd);
++    return {patch,tx,released,warnings};
++  }
++  async function preview(api,intent) {
++    const token=capture(api),base=await snapshot(api,token),p=plan(base.sd,intent,token);
++    const changes=leaves(p.patch).filter(c=>!eq(at(base.sd,c.path),c.value)).map(c=>({path:c.path,before:clone(at(base.sd,c.path)),after:c.value}));
++    return {...p,token,base,changes};
++  }
++  function watched(sd) {return {身份:sd.身份,仙盟历:sd.仙盟历,历基准:sd.历基准,历时累计:sd.历时累计,known:sd.known,名器归属:sd.名器归属,人工纠错:sd.人工纠错,派生账本:sd.派生账本};}
++  async function save(api,p) {
++    return enqueue(api,p.token,async()=>{
++      const now=await snapshot(api,p.token);
++      if(!eq(watched(now.sd),watched(p.base.sd)))throw Error('状态已改变，请重新预览');
++      await commit(api,p.token,p.patch,now);
++      const transaction={id:p.tx,token:p.token,changes:p.changes,time:Date.now()};
++      const log=now.layers[0].xsd_correction_meta?.chatId===p.token.chatId?now.layers[0].xsd_correction_meta.log||[]:[];
++      try {await setLayer(api,{type:'chat'},{xsd_correction_meta:{chatId:p.token.chatId,log:log.concat(transaction).slice(-20)}},p.token);}
++      catch(e){throw Error('事实已生效，但操作日志未保存；请回读，暂不能撤销：'+e.message);}
++      return {ok:true,id:p.tx};
++    });
++  }
++  async function undo(api) {
++    const token=capture(api);
++    return enqueue(api,token,async()=>{
++      const now=await snapshot(api,token),meta=now.layers[0].xsd_correction_meta;
++      if(meta?.chatId!==token.chatId||!meta.log?.length)throw Error('当前局没有可撤销操作');
++      const last=meta.log[meta.log.length-1];
++      if(last.token.messageId!==token.messageId)throw Error('最新楼已改变，不能盲回滚');
++      if(last.changes.some(c=>!eq(at(now.sd,c.path),c.after)))throw Error('相关键已有后续修改，请重新纠错');
++      const patch={};for(const c of last.changes)put(patch,c.path,c.before??null);
++      await commit(api,token,patch,now);
++      await setLayer(api,{type:'chat'},{xsd_correction_meta:{chatId:token.chatId,log:meta.log.slice(0,-1)}},token);
++      return {ok:true};
++    });
++  }
++  async function write(api,patch,manual) {
++    const token=capture(api);
++    return enqueue(api,token,async()=>{
++      const base=await snapshot(api,token);let next;
++      if(manual) {
++        next=clone(patch||{});safe(next);
++        const meta=clone(base.sd.人工纠错)||{chatId:token.chatId,覆盖:{},纹章显示:{}};
++        meta.chatId=token.chatId;meta.覆盖=meta.覆盖||{};
++        const fields=new Set(relics.flatMap(r=>(r.form?[r.form]:[]).concat(r.stages)).concat(plotFields));
++        for(const c of leaves(next))if(!eq(at(base.sd,c.path),c.value)&&((c.path[0]==='known'&&fields.has(c.path[1]))||c.path[0]==='名器归属'||c.path[0]==='段位'))meta.覆盖[JSON.stringify(c.path)]={path:c.path,value:c.value,事务id:'legacy-'+(++serial)};
++        next.人工纠错=meta;checkFacts(merge(base.sd,next),base.sd);
++      }else next=protect(base.sd,patch,token.chatId);
++      await commit(api,token,next,base);
++      return {ok:true,via:'统一队列·双层回读'};
++    }).catch(e=>({ok:false,why:e.message,via:e.message}));
++  }
++  return {version:'1.0.0',relics,plotFields,prerequisites,merge,clone,at,put,effective,protect,visual,controls,capture,snapshot,preview,save,undo,write,
++    onChatChanged(){epoch++; if(root.document)root.document.getElementById('xsd-correction-dialog')?.remove();},
++    // 由GM注册实际入口；同一宿主只存在一份运行时和队列。
++    root};
++});
+--- a/tools/checks/_chk_status_missing.mjs
++++ b/tools/checks/_chk_status_missing.mjs
+@@ -73,7 +73,7 @@
+ sandbox.window.top = sandbox;
+ sandbox.window.TavernHelper = Object.assign({}, 桩);
+ Object.assign(sandbox, 桩);
+-sandbox.SillyTavern = { getContext: () => ({ chatId: 'chk-status-missing', name1: '玩家', name2: '赵无忧' }) };
++sandbox.SillyTavern = { getContext: () => ({ chatId: 'chk-status-missing', chat: Array.from({length: 15}, () => ({})), name1: '玩家', name2: '赵无忧' }) };
+ sandbox.window.SillyTavern = sandbox.SillyTavern;
+ 
+ let loadErr = null;
+--- a/卡片脚本/GM修改器.js
++++ b/卡片脚本/GM修改器.js
+@@ -964,6 +964,18 @@
+    * @returns {Promise<{ok:boolean, via:string}>}
+    */
+   function writeStat(patch, why) {
++    invalidateCache();
++    var service = window.__xsdCorrection;
++    if (!service) return Promise.resolve({ ok: false, via: '缺少二级纠错运行时，请重新构建' });
++    return service.write(API, patch, true).then(function (r) {
++      invalidateCache();
++      if (!r.ok) err(why + '：' + r.why);
++      return r;
++    });
++  }
++
++  /* 旧实现留档，生产入口不再调用。 */
++  function writeStatLegacy(patch, why) {
+     var keys = Object.keys(patch || {});
+     if (!keys.length) return Promise.resolve({ ok: false, via: '空写入' });
+     invalidateCache();                       // 「改动前」快照要读真值，不吃缓存
+@@ -1215,6 +1227,7 @@
+       '<div class="xshd-gm-header" id="' + q('header') + '">',
+       '  <div class="xshd-gm-title">🎛️ 仙姝堕 · 后台 GM 修改器<small>' + esc(VERSION) + '</small></div>',
+       '  <div class="xshd-gm-header-btns">',
++      '    <button type="button" id="xsd-correction-open" style="min-height:36px">纹章纠错</button>',
+       '    <button type="button" class="xshd-gm-x" id="' + q('reload') + '" title="读回当前值">⟳</button>',
+       '    <button type="button" class="xshd-gm-x" id="' + q('close') + '" title="关闭面板">&times;</button>',
+       '  </div>',
+@@ -1531,6 +1544,73 @@
+   }
+ 
+   /** 挂载（幂等：已在则不再建第二份） */
++  /* gpt：二级面板。所有DOM文本安全赋值；重开删除旧节点，不重复绑宿主监听器。 */
++  function openCorrection() {
++    var service=window.__xsdCorrection,doc=getDoc();
++    if(!service||!doc){err('二级纠错运行时不可用');return;}
++    var previous=doc.getElementById('xsd-correction-dialog');if(previous)previous.remove();
++    var dialog=doc.createElement('div');dialog.id='xsd-correction-dialog';dialog.setAttribute('role','dialog');
++    dialog.setAttribute('aria-label','纹章与剧情纠错');dialog.setAttribute('aria-modal','true');
++    dialog.style.cssText='position:fixed;inset:0;z-index:2147483100;background:#000b;display:flex;justify-content:center;align-items:flex-start;padding:5vh 10px;overflow:auto';
++    var box=doc.createElement('section');box.style.cssText='width:620px;max-width:100%;background:#18141e;color:#eee;padding:16px;border:1px solid #b8933f;border-radius:10px;box-sizing:border-box;font:14px/1.6 system-ui';dialog.appendChild(box);
++    var title=doc.createElement('h3');title.textContent='纹章与剧情纠错';box.appendChild(title);
++    var hint=doc.createElement('p');hint.textContent='人工纠错优先自动派发。归属与显示颜色独立；历史正文不会随状态修正删除。';box.appendChild(hint);
++    var status=doc.createElement('p');status.setAttribute('role','status');box.appendChild(status);
++    function row(label,element){element.setAttribute('aria-label',label);var wrap=doc.createElement('label');wrap.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0';var name=doc.createElement('span');name.textContent=label;name.style.minWidth='110px';wrap.append(name,element);box.appendChild(wrap);return element;}
++    function select(items){var el=doc.createElement('select');el.style.cssText='min-height:36px;max-width:100%;background:#272030;color:#fff';items.forEach(function(it){var option=doc.createElement('option');option.value=String(it[0]);option.textContent=it[1];el.appendChild(option);});return el;}
++    var relic=row('纹章',select(service.relics.map(function(r){return[r.id,r.name];})));
++    var lit=row('亮灭',select([['keep','保持'],['true','亮（人工）'],['false','灭（人工）'],['auto','交还自动']]));
++    var stage=row('阶段',select([['keep','保持'],[0,'未达阶段'],[1,'一阶段'],[2,'二阶段'],[3,'三阶段'],[4,'四阶段'],['auto','交还自动']]));
++    var ownerMode=row('归属',select([['keep','保持'],['name','指定角色'],['none','无归属（人工）'],['auto','交还自动']]));
++    var owner=doc.createElement('input');owner.maxLength=40;owner.placeholder='角色名或当前身份';row('归属角色',owner);
++    var color=row('反色显示',select([['keep','保持'],['auto','按真实归属'],['original','强制原色'],['inverted','强制反色']]));
++    var personal=row('个人段位',select([['keep','保持']].concat(Array.from({length:16},function(_,i){return[i+1,'第'+(i+1)+'段'];}),[['auto','交还自动']])));
++    var date=doc.createElement('input');date.placeholder='例如1579-6-7；留空保持';date.inputMode='numeric';row('可信日期',date);
++    var facts=service.plotFields.filter(function(f){return ALL_FIELDS.indexOf(f)!==-1;});
++    var plotField=row('主线事实',select([['','不修改']].concat(facts.map(function(f){return[f,f];}))));
++    var plotValue=row('事实纠正',select([['true','已成立（人工）'],['false','未成立（人工）'],['auto','交还自动']]));
++    var stateLine=doc.createElement('p');box.appendChild(stateLine);
++    var output=doc.createElement('pre');output.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;max-height:28vh;overflow:auto;background:#0e0c12;padding:10px';box.appendChild(output);
++    var controls=doc.createElement('div');controls.style.cssText='display:flex;gap:8px;flex-wrap:wrap';box.appendChild(controls);
++    function button(text,fn){var b=doc.createElement('button');b.type='button';b.textContent=text;b.style.cssText='min-height:36px;padding:6px 10px';b.onclick=fn;controls.appendChild(b);return b;}
++    var plan=null,busy=false,token=null;
++    var api=Object.assign({},API,{refresh:function(){invalidateCache();try{var fn=service.root.__xsdRefreshRelics;if(typeof fn==='function')fn();}catch(_){} }});
++    function fail(error){status.textContent=error.message||String(error);plan=null;confirm.disabled=true;}
++    function checkContext(){if(!token)return;var now=service.capture(api);if(JSON.stringify(now)!==JSON.stringify(token))throw Error('聊天或最新楼已变化，请重开面板');}
++    async function showState(){
++      try{
++        var captured=service.capture(api);if(token&&JSON.stringify(token)!==JSON.stringify(captured))throw Error('聊天或最新楼已变化，请重开面板');token=captured;
++        var snap=await service.snapshot(api,token),r=service.relics.find(function(r){return r.id===relic.value;});
++        var current=0;r.stages.forEach(function(f,i){if(snap.sd.known&&snap.sd.known[f]===true)current=i+1;});
++        var meta=snap.sd.人工纠错,display=meta&&meta.纹章显示&&meta.纹章显示[r.id];
++        stateLine.textContent='当前：'+r.name+'／阶段'+current+'／归属：'+((snap.sd.名器归属||{})[r.name]||'未明确登记')+'／显示：'+(display&&display.颜色||'自动')+'／个人段位：'+(snap.sd.段位||'未设')+'／世界日期：'+(snap.sd.仙盟历文||snap.sd.仙盟历||'未设');
++        Array.from(stage.options).forEach(function(o){o.disabled=o.value==='4'&&r.max<4;o.textContent=o.value==='4'?(r.max<4?'四阶段（待Gemini内容）':'四阶段'):o.textContent;});
++        if(stage.value==='4'&&r.max<4)stage.value='keep';
++        lit.options[1].disabled=!r.form;
++      }catch(e){fail(e);}
++    }
++    function collect(){
++      var intent={relic:relic.value};
++      if(lit.value!=='keep')intent.lit=lit.value==='auto'?'auto':lit.value==='true';
++      if(stage.value!=='keep')intent.stage=stage.value==='auto'?'auto':Number(stage.value);
++      if(ownerMode.value!=='keep')intent.owner=ownerMode.value==='auto'?'__auto__':ownerMode.value==='none'?null:owner.value;
++      if(color.value!=='keep')intent.color=color.value;
++      if(personal.value!=='keep')intent.personalStage=personal.value==='auto'?'auto':Number(personal.value);
++      if(date.value.trim())intent.date=date.value.trim();
++      if(plotField.value)intent.plot={[plotField.value]:plotValue.value==='auto'?'auto':plotValue.value==='true'};
++      return intent;
++    }
++    var preview=button('预览改动',async function(){if(busy)return;try{checkContext();plan=await service.preview(api,collect());if(!plan.changes.length)throw Error('没有改动');output.textContent=plan.changes.map(function(c){return c.path.join(' / ')+'：'+JSON.stringify(c.before??null)+' → '+JSON.stringify(c.after);}).join('\n');status.textContent='请检查预览后确认。'+(plan.warnings.length?'已有日期矛盾仍待纠正：'+plan.warnings.join('、'):'');confirm.disabled=false;}catch(e){fail(e);}});
++    var confirm=button('确认应用',async function(){if(busy||!plan)return;busy=true;confirm.disabled=true;try{checkContext();await service.save(api,plan);status.textContent='双层回读通过，已生效。';plan=null;await showState();}catch(e){fail(e);}finally{busy=false;}});confirm.disabled=true;
++    button('撤销最近一次',async function(){if(busy)return;busy=true;try{checkContext();await service.undo(api);status.textContent='最近一次操作已撤销。';plan=null;confirm.disabled=true;await showState();}catch(e){fail(e);}finally{busy=false;}});
++    button('关闭',function(){dialog.remove();});
++    box.addEventListener('change',function(){plan=null;confirm.disabled=true;showState();});
++    box.addEventListener('input',function(){plan=null;confirm.disabled=true;});
++    dialog.addEventListener('keydown',function(e){if(e.key==='Escape')dialog.remove();e.stopPropagation();});
++    dialog.addEventListener('click',function(e){if(e.target===dialog)dialog.remove();e.stopPropagation();});
++    doc.body.appendChild(dialog);showState();relic.focus();
++  }
++
+   function mount() {
+     if (UI.mounted && UI.mask && UI.mask.parentNode) return true;
+     var doc = getDoc();
+@@ -1543,6 +1623,9 @@
+     var mask = buildShell(doc);
+     doc.body.appendChild(mask);
+     bindEvents(doc, mask);
++    mask.addEventListener('click', function (ev) {
++      if (ev.target && ev.target.closest && ev.target.closest('#xsd-correction-open')) openCorrection();
++    }, true); // 原GM在mask捕获阶段stopPropagation，入口必须在同层捕获处理
+     UI.mask = mask;
+     UI.mounted = true;
+     renderBody();
+@@ -1629,6 +1712,8 @@
+   }
+ 
+   publish(function () { return toggle(); });
++  window.__xsdCorrectionOpen = openCorrection;
++  try { window.parent.__xsdCorrectionOpen = openCorrection; } catch (_) {}
+ 
+   /* ═══════════════════════════════════════════════════════════
+    * 七 · 启动（绝不抛错）
+--- a/卡片脚本/_src/状态栏面板.模板.js
++++ b/卡片脚本/_src/状态栏面板.模板.js
+@@ -1591,6 +1591,12 @@
+     const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
+     const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
+     if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
++      const service = window.__xsdCorrection;
++      if (service) {
++        let id = ''; try { id = service.capture({}).chatId; } catch (_) {}
++        stat.人工纠错 = cs && cs.人工纠错 && cs.人工纠错.chatId === id ? cs.人工纠错 : null;
++        return service.effective(stat);
++      }
+     return stat;
+   } catch (e) { return null; }
+ }
+@@ -2099,6 +2105,12 @@
+       const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
+       const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
+       if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
++      const service = window.__xsdCorrection;
++      if (service) {
++        let id = ''; try { id = service.capture({}).chatId; } catch (_) {}
++        stat.人工纠错 = cs && cs.人工纠错 && cs.人工纠错.chatId === id ? cs.人工纠错 : null;
++        return service.effective(stat);
++      }
+       return stat;
+     } catch (e) { return null; }
+   }
+@@ -2174,6 +2186,15 @@
+ }
+ 
+ function xsdRelicState(rel, known, identity, customOwners) {
++    const service = window.__xsdCorrection;
++    const correction = (xsdStatData() || {}).人工纠错;
++    const records = correction && correction.覆盖 || {};
++    if (rel.c && records[JSON.stringify(['known', rel.c])]?.value === false) {
++      return { state: 'none', owner: '', arcs: 0, owned: false };
++    }
++    if (records[JSON.stringify(['名器归属', rel.n])] && records[JSON.stringify(['名器归属', rel.n])].value === null) {
++      return { state: 'none', owner: '', arcs: 0, owned: false };
++    }
+     const K = known || {};
+     let formed = false;
+     if (rel.c && K[rel.c] === true) formed = true;
+@@ -2261,7 +2282,13 @@
+   }
+ 
+   /** 一枚纹章的 SVG（底图 ＋ 墨底压边 ＋ 双层金框 ＋ 阶段弧 ＋ 四阶金晕；未获取＝灰罩，被夺＝反色/异化暗红框） */
++  function xsdRelicDisplayState(rel, st) {
++    const service = window.__xsdCorrection;
++    return service ? Object.assign({}, st, { state: service.visual(xsdStatData() || {}, rel.id, st.state) }) : st;
++  }
++
+   function xsdRelicSvg(rel, st) {
++    st = xsdRelicDisplayState(rel, st);
+     const id = rel.id, N = rel.a, R = 436;
+     const isSelf = st.state === 'self';
+     const isOther = st.state === 'other';
+@@ -2519,7 +2546,8 @@
+ 
+     const curStageNum = (st.state === 'none') ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
+     const imgUrl = xsdRelicCandidateUrl(rel.id, curStageNum);
+-    let filterStyle = (st.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
++    const displayState = xsdRelicDisplayState(relObj, st);
++      let filterStyle = (displayState.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
+ 
+     pop.innerHTML = '<div class="pop-header">'
+       + '<div class="pop-avatar" style="background-image:url(\'' + imgUrl + '\');' + filterStyle + '"></div>'
+@@ -2601,7 +2629,8 @@
+       const data = XSD_RELIC_STAGES[relObj.id] || { name: relObj.n, carrier: '仙姝', type: '绝品名器', stages: {} };
+       const curStage = (st.state === 'none') ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
+       const imgUrl = xsdRelicCandidateUrl(relObj.id, curStage);
+-      let filterStyle = (st.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
++      const displayState = xsdRelicDisplayState(relObj, st);
++      let filterStyle = (displayState.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
+ 
+       let tabsHtml = '';
+       XSD_RELICS.forEach(r => {
+@@ -2788,12 +2817,13 @@
+         const st = xsdRelicState(rel, known, idStr, customOwners); row.st = st;
+         const stage = st.state === 'none' ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
+         const url = xsdRelicCandidateUrl(rel.id, stage);
+-        const signature = JSON.stringify([st.state,st.owner,st.arcs,url]);
++        const signature = JSON.stringify([st.state,st.owner,st.arcs,url,xsdRelicDisplayState(rel, st).state]);
+         if (row.signature === signature) continue;
+-        row.signature = signature; box.className = 'xh-relic xh-relic-' + st.state;
++        row.signature = signature; box.className = 'xh-relic xh-relic-' + xsdRelicDisplayState(rel, st).state;
+         const tip = rel.n + (st.state === 'none' ? '（未出世 · 无人获得）' : '（第' + XSD_RELIC_CN[st.arcs] + '阶段' + (st.state === 'other' ? ' · 已被占据' : '') + '）\n目前归属者：' + (st.owner || '你'));
+         box.title = tip; box.setAttribute('aria-label', tip);
+-        const filter = st.state === 'other' ? 'filter:invert(1) contrast(1.15);' : st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '';
++        const displayState = xsdRelicDisplayState(rel, st);
++        const filter = displayState.state === 'other' ? 'filter:invert(1) contrast(1.15);' : st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '';
+         img.setAttribute('style', 'background-image:url("' + url + '");' + filter);
+         holder.innerHTML = xsdRelicSvg(rel, st);
+       }
+--- a/卡片脚本/状态机.js
++++ b/卡片脚本/状态机.js
+@@ -424,6 +424,9 @@
+  *  @returns {{acc:number, adv:number, sameFloor:boolean}} */
+ function nextAcc(sdNow, messageId, stepM, hasTransit) {
+   const o = sdNow || {};
++  if (o.人工校历 && Number(o.人工校历.楼) === Number(messageId)) {
++    return { acc: Number(o.历时累计) || 0, adv: 0, clipped: false, rejected: false, raw: 0, capM: LISHI_CAP };
++  }
+   const xsdNum = (v) => (v === null || v === undefined || v === '' ? NaN : Number(v));
+   const nAcc = xsdNum(o.历时累计);
+   const nPush = xsdNum(o.时点加速);
+@@ -690,6 +693,7 @@
+ 
+ /** 获取当前活跃聊天会话 ID（用于隔离多聊天状态，防止跨聊天污染） */
+ function currentChatId() {
++  try { if (window.__xsdCorrection) return window.__xsdCorrection.capture(API).chatId; } catch (_) {}
+   try {
+     const ctx = (typeof SillyTavern !== 'undefined' && SillyTavern.getContext)
+       ? SillyTavern.getContext()
+@@ -796,6 +800,11 @@
+   const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
+   const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
+   if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
++  const service = window.__xsdCorrection;
++  if (service) {
++    stat.人工纠错 = cs && cs.人工纠错 && cs.人工纠错.chatId === currentChatId() ? cs.人工纠错 : null;
++    return service.effective(stat);
++  }
+   return stat;
+ }
+ 
+@@ -872,7 +881,16 @@
+  * @param {object} patch 形如 `{ 身份: '…', known: { 封元镇灵环: true } }`（顶层键会深合并）
+  * @param {string} why   写这条的原因（日志用）
+  */
+-async function writeStat(patch, why) {
++async function writeStat(patch, why, manual = false) {
++  const service = window.__xsdCorrection;
++  if (!service) return { ok: false, why: '缺少二级纠错运行时，请重新构建卡片' };
++  const result = await service.write(API, patch, manual);
++  if (!result.ok) console.warn(TAG, '[统一写入] ' + why + '：' + result.why);
++  return result;
++}
++
++/* 保留旧写入实现用于审查；生产入口已改统一队列，不调用此函数。 */
++async function writeStatLegacy(patch, why) {
+   
+   patch = patch || {};
+   try {
+@@ -945,7 +963,7 @@
+   if (!ALL_FIELDS.includes(field)) {
+     return { ok: false, why: `未知字段「${field}」（可发「锚点」查看清单）` };
+   }
+-  return writeStat({ known: { [field]: !!value } }, `${field} = ${!!value}`);
++  return writeStat({ known: { [field]: !!value } }, `${field} = ${!!value}`, true);
+ }
+ 
+ /** 写身份（连阵营一起写），写完顺带把世界书那 6 条【身份】条目拨到选中那条 */
+@@ -1727,6 +1745,8 @@
+   流焰叠薪穴成形: ['顾云舒处女丧失'],
+   凤凰羽花成形: ['陆烬颜处女丧失'],
+ };
++if (window.__xsdCorrection) Object.assign(window.__xsdCorrection.prerequisites, MINGQI_PREREQ);
++
+ 
+ function validateAnchors(listRaw, prose, messageId, knownNow, deflowerNow) {
+   const list = Array.isArray(listRaw) ? listRaw : [];
+@@ -1799,7 +1819,9 @@
+   const _v = Array.isArray(p?.本轮已验证锚点) ? { good: p.本轮已验证锚点, bad: [], dropped: [] } : validateAnchors(list || [], proseForAnchor, messageId, known, bookIn);
+   const good = _v.good, bad = _v.bad, dropped = _v.dropped;
+   let news = [];
+-  for (const f of good) if (known[f] !== true && !news.includes(f)) news.push(f);
++  const correctionRecords = (readStatData() || {}).人工纠错?.覆盖 || {};
++  const correctionAllows = f => correctionRecords[JSON.stringify(['known', f])]?.value !== false;
++  for (const f of good) if (correctionAllows(f) && known[f] !== true && !news.includes(f)) news.push(f);
+   if (list && !list.length) console.log(TAG, `[实际发生] 第 ${messageId} 楼：写了「无」`);
+   if (!list) console.log(TAG, `[实际发生] 第 ${messageId} 楼没有这一栏，本轮只处理 <破处>`);
+   if (bad.length) {
+@@ -1903,12 +1925,13 @@
+   /* 2026-10-08（gpt 17 号 §2 ⑤⑦⑧）：两条"自动派发"改为**带来源账本的事务派生** ——
+      触发看正文实际出场实证（不再沿用 known['阎雷子脱困'] 当资格）；派发时补写明确 NPC 归属与来源；
+      依赖重算：账本里来源清零的才撤（人工来源不撤）。全过程在纯函数 `deriveRelicClosure` 里可离线测。 */
++  news = news.filter(correctionAllows);
+   const 出场实证 = { 柳含烟: 出场实证名('柳含烟', proseOuter) };
+   const 派生账本旧 = (sd0.派生账本 && typeof sd0.派生账本 === 'object') ? sd0.派生账本 : {};
+   const 归属来源旧 = (sd0.名器归属来源 && typeof sd0.名器归属来源 === 'object') ? sd0.名器归属来源 : {};
+   const 闭包 = deriveRelicClosure({
+     known, news, ledger: 派生账本旧, 名器归属: sd0.名器归属 || {}, 归属来源: 归属来源旧,
+-    messageId, 指纹: anchorFinger, 出场实证,
++    messageId, 指纹: anchorFinger, 出场实证, 人工纠错: sd0.人工纠错,
+   });
+   news = 闭包.news;
+   for (const l of 闭包.日志) console.log(TAG, '↳ 派生：' + l);
+@@ -2229,7 +2252,11 @@
+  *  @returns { news, ledger, 归属补写, 归属来源补写, 撤销, 日志 } */
+ function deriveRelicClosure(inp) {
+   const known = inp.known || {};
+-  const news = (inp.news || []).slice();
++  const service = typeof window !== 'undefined' ? window.__xsdCorrection : null;
++  const records = inp.人工纠错 && inp.人工纠错.覆盖 || {};
++  const manual = f => records[JSON.stringify(['known', f])];
++  const allowed = f => !(manual(f) && manual(f).value === false);
++  const news = (inp.news || []).filter(allowed);
+   const ledger = JSON.parse(JSON.stringify(inp.ledger || {}));
+   const 归属来源 = Object.assign({}, inp.归属来源 || {});
+   const messageId = inp.messageId;
+@@ -2237,7 +2264,7 @@
+   const 出场实证 = inp.出场实证 || {};
+   const 撤销 = [], 日志 = [], 归属补写 = {}, 归属来源补写 = {};
+   let ledgerChanged = false;
+-  const has = (f) => known[f] === true || news.includes(f);
++  const has = (f) => manual(f) ? manual(f).value === true : known[f] === true || news.includes(f);
+   const 来源表 = (f) => (ledger[f] && Array.isArray(ledger[f].来源)) ? ledger[f].来源 : null;
+   const 记来源 = (f, 类型, 键, 证据) => {
+     if (!ledger[f] || !Array.isArray(ledger[f].来源)) { ledger[f] = { 来源: [] }; ledgerChanged = true; }
+@@ -2247,11 +2274,15 @@
+     }
+   };
+   const 有类型 = (f, 类型) => (来源表(f) || []).some((s) => s.类型 === 类型);
++  if (!has('烟霞灵乳二阶段') && ledger['烟霞灵乳一阶段']) {
++    ledger['烟霞灵乳一阶段'].来源 = (ledger['烟霞灵乳一阶段'].来源 || []).filter(s => s.键 !== '烟霞灵乳二阶段成立');
++    ledgerChanged = true;
++  }
+ 
+   /* ⑤① 柳含烟**实际出场** ⇒ 烟霞灵乳二阶段（不再沿用 known['阎雷子脱困'] 当资格） */
+   const 场 = 出场实证['柳含烟'];
+   if (场 && 场.ok) 记来源('烟霞灵乳二阶段', '出场实证', '柳含烟出场', 场.证据);
+-  if (场 && 场.ok && !has('烟霞灵乳二阶段')) {
++  if (场 && 场.ok && allowed('烟霞灵乳二阶段') && !has('烟霞灵乳二阶段')) {
+     news.push('烟霞灵乳二阶段');
+     日志.push('柳含烟实际出场（正文实证：' + (场.证据 || '') + '）⇒ 烟霞灵乳二阶段');
+   }
+@@ -2271,13 +2302,13 @@
+   /* ⑥ 楚灵夜两项硬前置齐备 ⇒ 般若菩提菊成形（来源＝前置齐备） */
+   const 前置齐 = known['楚灵夜处女丧失'] === true && known['楚灵夜后窍开发'] === true;
+   if (前置齐) 记来源('般若菩提菊成形', '前置齐备', '楚灵夜双前置', '处女丧失＋后窍开发');
+-  if (前置齐 && !has('般若菩提菊成形')) {
++  if (前置齐 && allowed('般若菩提菊成形') && !has('般若菩提菊成形')) {
+     news.push('般若菩提菊成形');
+     日志.push('楚灵夜两项前置齐备 ⇒ 般若菩提菊成形');
+   }
+   /* ④ 出场即二境：一阶段随二阶段（依赖来源），但**保留**它自己的独立来源 */
+   if (has('烟霞灵乳二阶段')) 记来源('烟霞灵乳一阶段', '依赖', '烟霞灵乳二阶段成立', '出场即二境');
+-  if (has('烟霞灵乳二阶段') && !has('烟霞灵乳一阶段')) {
++  if (has('烟霞灵乳二阶段') && allowed('烟霞灵乳一阶段') && !has('烟霞灵乳一阶段')) {
+     news.push('烟霞灵乳一阶段');
+     日志.push('烟霞灵乳出场即第二境 ⇒ 补记一阶段');
+   }
+@@ -2287,6 +2318,7 @@
+     if (!ledger[f]) continue;
+     const 剩 = ledger[f].来源 || [];
+     const 人工 = 剩.some((s) => s.类型 === '人工');
++    if (manual(f)) continue; // 人工true和false都不由来源清零改回
+     if (剩.length === 0 && !人工) {
+       const i = news.indexOf(f);
+       if (i >= 0) news.splice(i, 1);
+@@ -3795,7 +3827,7 @@
+     runtime.listen(window, 'pagehide', runtime.dispose);
+     try {
+       if (API.eventOn && EVENTS && EVENTS.CHAT_CHANGED) {
+-        const listener = API.eventOn(EVENTS.CHAT_CHANGED, () => { runtime.epoch++; });
++        const listener = API.eventOn(EVENTS.CHAT_CHANGED, () => { runtime.epoch++; if (window.__xsdCorrection) window.__xsdCorrection.onChatChanged(); });
+         if (listener && typeof listener.stop === 'function') runtime.cleanups.push(() => listener.stop());
+       }
+     } catch (error) { /* 无事件 API 时仍由 chatKey 阻止跨会话发送 */ }
+@@ -4114,7 +4146,7 @@
+       return true;
+     }
+     const shift = STAGE_BASE[n - 1] - messageId;
+-    const r = await writeStat({ [FLOOR_PIN]: { floor: messageId, shift }, 段位: n, 窗口起点: 0, 时点加速: 0, 结算待办: 0 }, `设段 ${n}`);
++    const r = await writeStat({ [FLOOR_PIN]: { floor: messageId, shift }, 段位: n, 窗口起点: 0, 时点加速: 0, 结算待办: 0 }, `设段 ${n}`, true);
+     console.log(TAG, `✅ 段位已拨到第 ${n} 段（第 ${messageId} 楼 ⇒ 时间轴平移 ${shift} 楼）via ${(r && r.via) || '?'}`);
+     toast('info', `段位 → 第 ${n} 段`, 6000);
+     return true;
+@@ -4162,7 +4194,7 @@
+         for (const cn of ['一', '二', '三', '四']) { const fx = baseRelic + cn + '阶段'; if (ALL_FIELDS.includes(fx)) targets.push(fx); }
+         const patchKnown = {};
+         for (const fx of targets) patchKnown[fx] = false;
+-        const rr = await writeStat({ known: patchKnown }, `整件退回 ${baseRelic}`);
++        const rr = await writeStat({ known: patchKnown }, `整件退回 ${baseRelic}`, true);
+         if (rr && rr.ok) {
+           console.log(TAG, `↩ ${baseRelic} 整件已退回（${targets.length} 条）：${targets.join('、')} —— 下一回合生效`);
+           toast('info', `${baseRelic} 整件已退回`, 8000);
+@@ -4686,7 +4718,7 @@
+   }
+   on('MESSAGE_RECEIVED', (id) => onAiMessageReceived(id, { source: '事件·冗余加速' }), '状态条解析的**冗余加速**（主路径是渲染触发）');
+   on('CHARACTER_MESSAGE_RENDERED', (id) => onAiMessageReceived(id, { source: '事件·冗余加速' }), '同一楼重渲染的**冗余加速**（已去重；闸门仍生效）');
+-  on('CHAT_CHANGED', () => setTimeout(() => boot('换聊天'), 400), '换聊天时重新判定身份（事件驱动，不可拔）');
++  on('CHAT_CHANGED', () => { if (window.__xsdCorrection) window.__xsdCorrection.onChatChanged(); setTimeout(() => boot('换聊天'), 400); }, '换聊天时重新判定身份（事件驱动，不可拔）');
+   on('CHAT_CREATED', () => setTimeout(() => boot('新聊天'), 400), '新聊天初始化（事件驱动，不可拔）');
+   on('MESSAGE_SWIPED', () => setTimeout(() => { ensureInit('滑开场白'); syncIdentityFromFirstMes('滑开场白'); }, 400), '滑开场白时重新判定身份（事件驱动，不可拔）');
+   console.log(TAG, `${VERSION} 已接线：命令 / 换聊天 / 开场白（事件）＋ 冗余加速（收到／渲染）；主路径＝渲染触发 ${'__xsdStateTick'}`);
