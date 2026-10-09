@@ -1,0 +1,152 @@
+{
+  "identity": "gpt",
+  "scope": "RFC001伪代码的确定性行为；extractAction为测试替身，无实际MVU插件/酒馆/正文事实验证/新架构实现",
+  "checks": 15,
+  "records": [
+    {
+      "label": "旧局缺relic_progress命名空间就抛错，缺初始化与本项隔离",
+      "actual": true
+    },
+    {
+      "label": "未存回新建cur，空存档五次处理仍无进度",
+      "actual": {
+        "relic_progress": {},
+        "known": {}
+      }
+    },
+    {
+      "label": "同一内容重复tick五次就满额，未实现N-1快照/持久去重",
+      "actual": {
+        "relic_progress": {
+          "zhuojiu": {
+            "stage": 2,
+            "infusion": 0,
+            "target": 5
+          }
+        },
+        "known": {
+          "灼酒流炎穴二阶段": true
+        }
+      }
+    },
+    {
+      "label": "未成形与一阶false也能升二，缺资格检查",
+      "actual": {
+        "relic_progress": {
+          "zhuojiu": {
+            "stage": 2,
+            "infusion": 0,
+            "target": 5
+          }
+        },
+        "known": {
+          "灼酒流炎穴成形": false,
+          "灼酒流炎穴一阶段": false,
+          "灼酒流炎穴二阶段": true
+        }
+      }
+    },
+    {
+      "label": "直接赋known绕人工false覆盖；走统一protect才可能挡，伪代码没有接入",
+      "actual": {
+        "灼酒流炎穴二阶段": true
+      }
+    },
+    {
+      "label": "progress.stage=2与known四阶段true并存，双真源冲突",
+      "actual": {
+        "relic_progress": {
+          "zhuojiu": {
+            "stage": 2,
+            "infusion": 0,
+            "target": 5
+          }
+        },
+        "known": {
+          "灼酒流炎穴三阶段": true,
+          "灼酒流炎穴四阶段": true,
+          "灼酒流炎穴二阶段": true
+        }
+      }
+    },
+    {
+      "label": "字符串1 + 1变11，一次从1点升满，没有类型校验",
+      "actual": {
+        "relic_progress": {
+          "zhuojiu": {
+            "stage": 2,
+            "infusion": 0,
+            "target": 5
+          }
+        },
+        "known": {
+          "灼酒流炎穴二阶段": true
+        }
+      }
+    },
+    {
+      "label": "Math.min不是Clamp0~5，负数保留",
+      "actual": {
+        "stage": 1,
+        "infusion": -8,
+        "target": 5
+      }
+    },
+    {
+      "label": "未验证target，0阈值一次自动升阶",
+      "actual": {
+        "relic_progress": {
+          "zhuojiu": {
+            "stage": 2,
+            "infusion": 0,
+            "target": 0
+          }
+        },
+        "known": {
+          "灼酒流炎穴二阶段": true
+        }
+      }
+    },
+    {
+      "label": "GM回到一阶但缓存stage=3，计数停止且未同步",
+      "actual": {
+        "relic_progress": {
+          "zhuojiu": {
+            "stage": 3,
+            "infusion": 0,
+            "target": 5
+          }
+        },
+        "known": {
+          "灼酒流炎穴一阶段": true,
+          "灼酒流炎穴二阶段": false,
+          "灼酒流炎穴三阶段": false
+        }
+      }
+    },
+    {
+      "label": "伪代码只有内存修改，没有持久化双层写入/校验/事务",
+      "actual": {
+        "beforeInfusion": 4,
+        "afterInfusion": 0,
+        "writeAPICalls": 0
+      }
+    },
+    {
+      "label": "漏闭合兜底跨进下一XML字段，解析边界不闭合",
+      "actual": "灼酒流炎穴: 内射+1<地点>庭院</地点>"
+    },
+    {
+      "label": "多条互动只读第一条，未定义重复/冲突/多名器规则",
+      "actual": "灼酒流炎穴: 内射+1"
+    },
+    {
+      "label": "正则能匹配例子/引文；extractAction及实际发生校验仍未提供",
+      "actual": "灼酒流炎穴: 内射+1"
+    },
+    {
+      "label": "缺标签返回null，主流程可跳过这项",
+      "actual": null
+    }
+  ]
+}
