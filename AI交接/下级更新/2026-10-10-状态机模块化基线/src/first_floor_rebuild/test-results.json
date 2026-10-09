@@ -1,0 +1,28 @@
+{
+  "testedAt": "2026-10-06T02:32:55.271Z",
+  "engine": "Chromium 153",
+  "cases": [
+    "layout 320",
+    "layout 390",
+    "layout 560",
+    "layout 1280",
+    "pure CSS transitions without helper",
+    "await identity + worldbook before reactive send, one click",
+    "empty name uses Persona",
+    "existing draft remains intact",
+    "variable failure keeps form usable and never sends",
+    "generation in progress blocks without writing identity",
+    "chat change during identity write aborts remaining steps",
+    "no send confirmation allows checking, never auto repeats",
+    "message iframe + script iframe writes top composer",
+    "normal identity + four lords keeps original swipe flow",
+    "template clones radio groups isolated",
+    "hot reload replaces old menu listener and disconnects on pagehide",
+    "late embedded portrait + exact stage 4, no local fetch"
+  ],
+  "notes": [
+    "Tests use local host/helper stubs; not a live SillyTavern session.",
+    "Official release sanitizer hooks and selector rewriting used.",
+    "Real iOS Safari and actual card asset roster still require integration validation."
+  ]
+}
