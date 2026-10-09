@@ -4,7 +4,7 @@
   if (node) module.exports = value; else root.BSEEngine = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API, F) {
   'use strict';
-  const VERSION = '1.4.4';
+  const VERSION = '1.4.5';
   const defaults = () => ({enabled: false, depth: 0, detail: false, auto_detect: false, auto_events: true, quick_options: false, quick_collapsed: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
     profile: {base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 64000, max_output: 1024, segment_output: 16384, analysis_output: 16384, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, partition_prompt: API.PROMPTS.partition, auto_partition: true, analysis_chunk_chars: 3000, json_mode: true, no_thinking: false},
     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
@@ -33,7 +33,7 @@
     async init() {
       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
       for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt'], ['detect', 'detect_prompt']]) {
-        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key], API.V142_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key], API.V142_PROMPTS[key], API.V144_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
       }
       for (const [key, old, value] of [['max_input_chars', 16000, 64000], ['analysis_output', 8192, 16384], ['segment_output', 4096, 16384]]) if (saved.profile?.[key] === old) this.settings.profile[key] = value;
       this.client.usage = {...defaults().usage, ...saved.usage};
@@ -583,7 +583,7 @@
       const reply = this.analysisReply(text,mode,replyId), epoch=this.epoch, previous=this.rawAnalysis;
       this.busy++;this.error='';this.notify();
       try {
-        const onResponse=this.beginRaw('analysis',text,'仅补修原文来源',mode,previous);
+        const onResponse=this.beginRaw('analysis',text,'定向补修原文来源或变量依据',mode,previous);
         const result=await this.client.repairAnalysis({...this.settings.profile,model:this.settings.segment_model || this.settings.profile.model},text,raw,mode,reply,{onResponse,onRequest:onResponse.onRequest});
         C.assert(epoch===this.epoch,'配置已变化，来源补修未应用');
         if (reply?.kind==='chunk' || reply?.source_from_kind==='chunk') {result.is_partial=true;result.warnings.push('仅恢复当前分块，应用前需核对全篇关系。');}

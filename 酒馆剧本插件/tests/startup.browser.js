@@ -10,7 +10,7 @@ const browserFixture = fixture.toString().replace('host: new Host(root)', 'host:
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://localhost');
   if (u.pathname === '/data') { res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify(imported)); }
-  if (u.pathname === '/old-ready') {res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({...imported,content:imported.content.replace('Branch Story Engine v1.4.4','Branch Story Engine v1.4.3')}));}
+  if (u.pathname === '/old-ready') {res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({...imported,content:imported.content.replace(/Branch Story Engine v\d+\.\d+\.\d+/, 'Branch Story Engine v1.4.4')}));}
   if (u.pathname === '/old') { res.setHeader('Content-Type', 'application/json'); return res.end(JSON.stringify({type: 'script', content: '/* old version */'})); }
   if (u.pathname === '/plugin.js') { res.setHeader('Content-Type', 'text/javascript'); return res.end(imported.content); }
   if (u.pathname === '/missing' || u.pathname === '/invalid') {
