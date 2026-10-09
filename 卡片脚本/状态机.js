@@ -2114,7 +2114,15 @@ async function applyMilestones(p, messageId, text) {
   const mergedBook = Object.assign({}, prevBook);
   let bookChanged = false;
   for (const it of bookIn) {
-    const h = it.持有者, w = it.破处者;
+    const h = it.持有者;
+    let w = it.破处者;
+
+    // 防冒名守卫：当前玩家身份若非赵无忧，但模型在破处簿中误将破处者报为「赵无忧」或留空
+    // 强制纠偏为当前真实玩家身份，确保战果与名器归属不被赵无忧冒名抢夺
+    if (!isZhao && (w === '赵无忧' || !w)) {
+      console.warn(TAG, `⛔ [破处守卫] 第 ${messageId} 楼当前玩家身份为「${curPlayerId}」，模型误将破处者报为「${w}」⇒ 强制纠偏为当前玩家身份「${curPlayerId}」`);
+      w = curPlayerId;
+    }
     
     if (proseOuter && !proseOuter.includes(h)) {
       console.warn(TAG, `⛔ [破处闸门] 第 ${messageId} 楼丢弃「${h}、${w}」：本楼正文里根本没有「${h}」（八成是照抄写法示例）。`

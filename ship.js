@@ -67,6 +67,7 @@ if (IS_FULL) {
   run('tools/checks/_chk_defect_four.mjs', [], '四条状态缺陷行为负例（校验后置／隐式继承只建议／证据收紧＋否定闸／缺状态栏不覆写日期）');
   run('tools/checks/_chk_mingqi_prereq.mjs', [], '名器成形硬前置（持有者须先破身；同轮破身算数；楚灵夜需后窍；灵犀同心需双姝两人）');
   run('tools/checks/_chk_relic_progress.mjs', [], '名器数值变量 (RFC-002) 15项反例防御验证（Swipe隔离/单真源/资格/类型安全/事务）');
+  run('tools/checks/_chk_deflower_impersonation.mjs', [], '破身归属防冒名守卫与HUD身份台账覆写');
   console.log('');
 }
 

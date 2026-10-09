@@ -1894,6 +1894,13 @@ function fillPanel(messageId, rawText, explicitPanel) {
     const tLedger = (stat && typeof stat['仙盟历文'] === 'string') ? String(stat['仙盟历文']).trim() : '';
     if (tEl && tLedger) { tEl.textContent = tLedger; writtenFields.add('time'); }
   } catch (eLedger) { /* 台账不可读 ⇒ 保持模型文本 */ }
+  /* 身份一栏按脚本台账覆写：以 stat_data.身份 为唯一真源，防冒名污染 HUD 展示；
+     若台账为殿主或自设，绝不采信模型输出的「墨山道六弟子、赵无忧」等幻觉文本 */
+  try {
+    const idEl = fieldNodeMap.get('id');
+    const idLedger = (stat && typeof stat['身份'] === 'string') ? String(stat['身份']).trim() : '';
+    if (idEl && idLedger) { idEl.textContent = idLedger; writtenFields.add('id'); }
+  } catch (eIdLedger) { /* 台账不可读 ⇒ 保持模型文本 */ }
 // ③ 在场角色子块 → 「人」区的小卡片
   /* 阶段判定（2026-09-28）：拿「地点＋环境＋状态」的原文去判该用哪一组立绘
    *   （例如出现「沐浴/浴池/汤池」⇒ bath 组）。判不出来一律 baseline —— 与主题（主立绘）一致。 */
