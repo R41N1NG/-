@@ -45,12 +45,11 @@ test('有原文依据的互斥保留为运行规则；未知、自身互斥和�
   const data = raw(); data.collections[0].exclusive_with = ['b']; data.collections[0].exclusive_with_evidence = lines[10]; const p = restore(data), s = C.createProgress(p);
   assert.deepEqual(p.collections[0].exclusive_with, ['b']); s.collected_ids = ['b']; assert.equal(C.resultReady('a', p, s), false);
   for (const bad of [['a'], ['missing']]) { data.collections[0].exclusive_with = bad; assert.throws(() => restore(data), /互斥结果引用/); }
-  data.collections[0].exclusive_with = ['b']; data.collections[0].exclusive_with_evidence = '互斥不存在'; assert.throws(() => restore(data), /互斥缺少/);
+  data.collections[0].exclusive_with = ['b']; data.collections[0].exclusive_with_evidence = '互斥不存在'; assert.throws(() => restore(data), /exclusive_with_evidence/);
 });
 test('分散证据逐条检查，空组合和部分虚构不能形成条件', () => {
-  const data = raw(); data.nodes[0].routes.at(-1).condition_evidence = [lines[7], '不存在的条款']; const p = restore(data);
-  assert.equal(p.nodes[0].routes.at(-1).condition, false);
-  data.nodes.at(-1).entry_condition_evidence = [lines[7], '不存在的条款']; assert.throws(() => restore(data), /进入条件缺少/);
+  const data = raw(); data.nodes[0].routes.at(-1).condition_evidence = [lines[7], '不存在的条款']; assert.throws(()=>restore(data),error=>error.code==='BSE_EVIDENCE_INVALID' && error.evidence_issues.some(x=>x.path.at(-1)==='condition_evidence'));
+  data.nodes.at(-1).entry_condition_evidence = [lines[7], '不存在的条款']; assert.throws(() => restore(data), /entry_condition_evidence/);
   data.nodes.at(-1).entry_condition_evidence = lines.slice(7, 9); data.nodes[0].routes.at(-1).condition_evidence = lines.slice(7, 9);
   for (const op of ['all', 'any']) { data.nodes[0].routes.at(-1).condition = {[op]: []}; assert.throws(() => restore(data), /非空数组/); }
 });
@@ -62,7 +61,7 @@ test('分析与基础整理共用条件校验，入口、前提、代价和数�
 test('事件包触发与持续条件独立保存；持续条件没有依据不能默认为true', () => {
   const data = raw(); data.nodes[0].routes.pop(); data.packages = [{id: 'P1', title: '密室事件', node_ids: ['get_c'], condition: gate(), condition_evidence: lines.slice(7, 9), continue_condition: {not: {collected: 'e'}}, continue_condition_evidence: lines[11]}];
   const p = restore(data); assert.deepEqual(p.packages[0].condition, gate()); assert.deepEqual(p.packages[0].continue_condition, {not: {collected: 'e'}});
-  data.packages[0].continue_condition_evidence = ''; assert.throws(() => restore(data), /持续条件缺少/);
+  data.packages[0].continue_condition_evidence = ''; assert.throws(() => restore(data), /continue_condition_evidence/);
 });
 test('仅迁移v1.4.0默认提示词；自定义分析和合并提示词完整保留', async () => {
   const f = fixture(); f.storage.script.branch_story_settings = {profile: {analysis_prompt: A.V140_PROMPTS.analysis, segment_prompt: A.V140_PROMPTS.segment, analysis_merge_prompt: '作者自己打磨的合并规则'}};
@@ -98,7 +97,7 @@ test('整合可补充有依据的跨段条件，但未知结果定义和无依�
       const nodes = input.nodes.map(n => ({id: n.id, routes: []})); nodes.at(-1).entry_condition = {collected: 'a'}; nodes.at(-1).entry_condition_evidence = invalid === 'entry' ? '虚构规则' : lines[7];
       return {nodes, collections: [{id: invalid === 'new' ? 'unknown' : 'a', requires: {not: {collected: 'a'}}, requires_evidence: invalid === 'result' ? '' : lines[5]}], packages: [{id: input.packages.at(-1).id, continue_condition: {collected: 'a'}, continue_condition_evidence: invalid === 'package' ? '' : lines[7]}]};
     });
-    if (invalid) await assert.rejects(f.api.analyze(chunkProfile, longSource), /缺少原文依据|未知或重复/);
+    if (invalid) await assert.rejects(f.api.analyze(chunkProfile, longSource), /原文依据|未知或重复/);
     else { const p = (await f.api.analyze(chunkProfile, longSource)).project; assert.deepEqual(p.nodes.at(-1).entry_condition, {collected: 'a'}); assert.deepEqual(p.collections[0].requires, {not: {collected: 'a'}}); assert.deepEqual(p.packages.at(-1).continue_condition, {collected: 'a'}); }
   }
 });

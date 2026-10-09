@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
 const A = require('../src/api'), {Engine, defaults} = require('../src/engine'), {fixture} = require('./helpers');
-const profile = {...defaults().profile, base_url: 'https://mock.test/v1', model: 'mock'};
+const profile = {...defaults().profile,author_review:false, base_url: 'https://mock.test/v1', model: 'mock'};
 const raw = node => ({title: '测试', nodes: [{id: 'n1', title: '调查现场', guidance: '观察现场', routes: [], ...node}]});
 const source = '# 场景\r\n\r\n' + '雨滴打在屋檐，观察当前街道。'.repeat(12) + '\r\n\r\n' + '【下一场】\n' + '街角传来脚步声。'.repeat(110) + '🔒';
 function mock(fn) {
@@ -103,8 +103,8 @@ test('来源补修失败最多两次，停止生成草稿且保留原节点诊�
  await assert.rejects(f.api.analyze({...profile,auto_partition:false},'调查原文。'),/调查现场/);assert.equal(f.sent.length,3);assert.equal(f.sent.filter(x=>x.operation==='repair_source').length,2);
  const bad=mock(input=>input.operation==='repair_source'?{complete:false,node_sources:[]}:raw({detail:'改写文本。'}));await assert.rejects(bad.api.analyze({...profile,auto_partition:false},'调查原文。'),/连续摘录/);assert.equal(bad.sent.length,3);
 });
-test('来源补修只能修原文；规则证据失败不重试，取消补修不接受晚到结果',async()=>{
- const f=mock(input=>raw({source_span:{from:'s1',to:'s1'},completion_criteria:'完成',completion_evidence:'虚构完成'}));await assert.rejects(f.api.analyze({...profile,auto_partition:false},'调查原文。'),/依据/);assert.equal(f.sent.length,1);
+test('来源补修只能修原文；规则证据失败仅补修证据，取消补修不接受晚到结果',async()=>{
+ const f=mock(input=>raw({source_span:{from:'s1',to:'s1'},completion_criteria:'完成',completion_evidence:'虚构完成'}));await assert.rejects(f.api.analyze({...profile,auto_partition:false},'调查原文。'),/依据/);assert.equal(f.sent.length,3);assert.equal(f.sent.filter(x=>x.operation==='repair_evidence').length,2);
  const cancelled=mock(input=>{if(input.operation==='repair_source'){cancelled.api.cancel();return {complete:true,node_sources:[{id:'n1',source_span:{from:'s1',to:'s1'}}]};}return raw({detail:'改写原文。'});});await assert.rejects(cancelled.api.analyze({...profile,auto_partition:false},'调查原文。'),/取消/);assert.equal(cancelled.sent.length,2);
 });
 

@@ -22,6 +22,14 @@
       return null;
     }
     context() { for (const owner of this.owners()) if (owner.SillyTavern?.getContext) return owner.SillyTavern.getContext(); return null; }
+    card() {
+      const c=this.context();
+      if(c?.groupId!=null && c.groupId!=='')return {id:'group:'+String(c.groupId),name:c.groups?.find(g=>String(g.id)===String(c.groupId))?.name || '群聊',kind:'group'};
+      const character=c?.characters?.[c.characterId ?? c.this_chid] || c?.character;
+      const key=character?.data?.extensions?.bse_card_id || character?.avatar;
+      return key ? {id:'card:'+String(key),name:character.name || character.data?.name || '未命名角色卡',kind:'character'} : {id:'unbound',name:'未识别角色卡',kind:'unknown'};
+    }
+    activeProject(cardId) {return this.variables('chat')[STATE_KEY]?.active_projects?.[cardId] || '';}
     chatId() { const api = this.api('getCurrentChatId'); try { return String(api?.() || this.context()?.chatId || 'current'); } catch { return 'current'; } }
     doc() { try { if (this.root.parent?.document?.body) return this.root.parent.document; } catch {} return this.root.document; }
     variables(type) { return this.api('getVariables')?.({type}) || {}; }
@@ -41,7 +49,8 @@
     }
     saveSettings(settings) { this.write('script', SETTINGS_KEY, settings); }
     progress(project) {
-      const state = this.variables('chat')[STATE_KEY]?.projects?.[project.id];
+      const stored=this.variables('chat')[STATE_KEY], cardId=this.card().id;
+      const state=stored?.cards?.[cardId]?.projects?.[project.id] || (cardId==='unbound' || !stored?.legacy_card_id || stored.legacy_card_id===cardId ? stored?.projects?.[project.id] : null);
       return state ? C.migrateProgress(C.clone(state), project) : C.createProgress(project);
     }
     saveProgress(project, state) {
@@ -49,7 +58,9 @@
       update(v => {
         v[STATE_KEY] ||= {schema_version: 1, projects: {}};
         v[STATE_KEY].projects ||= {};
-        v[STATE_KEY].projects[project.id] = C.clone(state);
+        const key=this.card().id;v[STATE_KEY].legacy_card_id ||= key;v[STATE_KEY].cards ||= {};v[STATE_KEY].cards[key] ||= {projects:{}};v[STATE_KEY].cards[key].projects[project.id]=C.clone(state);
+        v[STATE_KEY].active_projects ||= {};v[STATE_KEY].active_projects[key]=project.id;
+        if(key==='unbound')v[STATE_KEY].projects[project.id] = C.clone(state);
         return v;
       }, {type: 'chat'});
     }
@@ -119,6 +130,19 @@
           content: JSON.stringify({bse_schema: 1, project_id: p.id, kind: part.kind, data: part.data}, null, 2),
         })));
       });
+    }
+    renderState(snapshot, snapshots = {}) {
+      const doc=this.doc();if(!doc)return;
+      for(const element of doc.querySelectorAll('[data-bse-variable]')) {
+        if(element.closest('#bse-host, #bse-quick-host'))continue;
+        const message=element.closest('.mes[mesid], [data-message-id]');
+        const id=message?.getAttribute('mesid') ?? message?.getAttribute('data-message-id');
+        const historic=id!=null?snapshots[id]:snapshot;
+        const matches=historic && (!element.dataset.bseProject || element.dataset.bseProject===historic.project_id) && (!element.dataset.bseCard || element.dataset.bseCard===historic.card_id);
+        const value=matches?historic.variables?.[element.dataset.bseVariable]:undefined;
+        const rendered=value==null?'—':String(value);if(element.textContent!==rendered)element.textContent=rendered;
+      }
+      for(const report of doc.querySelectorAll('bse-report')){report.hidden=true;report.setAttribute('aria-hidden','true');}
     }
     destroy() { this.stops.forEach(stop => { try { stop(); } catch {} }); this.stops = []; this.uninject(); }
   }

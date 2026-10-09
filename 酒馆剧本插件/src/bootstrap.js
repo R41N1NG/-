@@ -7,10 +7,13 @@
     root.__branch_story_plugin__?.destroy?.();
     const engine = new root.BSEEngine.Engine(host); const panel = new root.BSEUI.Panel(engine);
     let destroyed = false;
-    const plugin = {version:engine.version, engine, panel, open: () => panel.toggle(), getState: () => engine.snapshot(), submitEvent: (...args) => engine.manualEvent(...args), destroy: () => { if (destroyed) return; destroyed = true; panel.destroy(); engine.destroy(); }};
+    const plugin = {version:engine.version, engine, panel, open: () => panel.toggle(), getState: () => engine.snapshot(), getValue: id => engine.snapshot().variables[id], getMessageState:id=>root.BSECore.clone(root.BSECompanion.init(engine.state).message_snapshots[id] || null), submitEvent: (...args) => engine.manualEvent(...args), destroy: () => { if (destroyed) return; destroyed = true; panel.destroy(); engine.destroy(); }};
     root.__branch_story_plugin__ = plugin;
     root.addEventListener('pagehide', plugin.destroy, {once: true});
     panel.mount();
+    const doc=host.doc();const render=()=>host.renderState(engine.snapshot(),root.BSECompanion.init(engine.state).message_snapshots);
+    const observer=doc && new root.MutationObserver(()=>{if(!destroyed)render();});observer?.observe(doc.body,{childList:true,subtree:true});
+    const priorDestroy=plugin.destroy;plugin.destroy=()=>{observer?.disconnect();priorDestroy();};
     try {
       if (!host.api('getVariables')) throw new Error('未找到酒馆助手 getVariables 接口，请确认酒馆助手已启用且脚本运行在酒馆助手中');
       await engine.init();

@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const A=require('../src/api'),C=require('../src/core'),{Engine,defaults}=require('../src/engine'),{fixture}=require('./helpers');
-const profile={...defaults().profile,base_url:'https://mock.test/v1',model:'mock',auto_partition:false};
+const profile={...defaults().profile,author_review:false,base_url:'https://mock.test/v1',model:'mock',auto_partition:false};
 const text='任务开始时，警觉为 **0**，范围 0 至 100。\n调查完成增加2。达到60时封锁入口。';
 const definition={id:'alertness',title:'警觉',type:'number',default:0,min:0,max:100,evidence:'任务开始时，警觉为 **0**，范围 0 至 100。',bounds_evidence:'范围 0 至 100'};
 const raw=variable=>({title:'潜行任务',variables:[variable],nodes:[{id:'n1',title:'调查',source_span:{from:'s1',to:'s1'},guidance:'调查当前现场',completion_criteria:'调查完成',completion_evidence:'调查完成增加2。',numeric_effects:[{operation:'add',variable:'alertness',value:2,evidence:'调查完成增加2。'}],routes:[{target:'n1',label:'继续调查',condition:{variable:{id:'alertness',op:'lt',value:60}},condition_evidence:'达到60时封锁入口。'}]}]});
@@ -31,7 +31,7 @@ test('辅助模型integer写法仅在初始值和边界为安全整数时本地�
 test('可选背包说明改写只留空警告；原文定义、取得前提、完成及数值效果仍校验',()=>{
  const base=raw(definition);base.collections=[{id:'a',title:'现场线索',evidence:'调查完成增加2。',description:'调查现场找到的有用线索。',requires:{variable:{id:'alertness',op:'lt',value:60}},requires_evidence:'达到60时封锁入口。'}];base.nodes[0].result_ids=['a'];
  const d=new A.Client().restoreAnalysis(text,base);assert.equal(d.project.collections[0].description,'');assert.equal(d.project.collections[0].requires.variable.value,60);assert.deepEqual(d.project.nodes[0].effects,[{collect:'a'},{add:{variable:'alertness',value:2}}]);assert(d.warnings.some(x=>x.includes('可选说明')));assert.equal(base.collections[0].description,'调查现场找到的有用线索。');
- base.collections[0].evidence='虚构原文';assert.throws(()=>new A.Client().restoreAnalysis(text,base),/原文定义/);
+ base.collections[0].evidence='虚构原文';assert.throws(()=>new A.Client().restoreAnalysis(text,base),/原文依据|原文定义/);
 });
 test('可选说明仅排版差异恢复为原文，既有分块结果说明与取得条件不被覆盖',()=>{
  const base=raw(definition);base.collections=[{id:'a',title:'现场线索',evidence:'调查完成增加2。',description:'警觉为0，范围0至100。'}];

@@ -3,9 +3,9 @@
   if (!root.document) return;
   root.__branch_story_loader_cleanup__?.();
   const urls = root.__BSE_LOADER_URLS__ || [
-    'https://raw.githubusercontent.com/R41N1NG/-/main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.6',
-    'https://testingcf.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.6',
-    'https://cdn.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.6',
+    'https://raw.githubusercontent.com/R41N1NG/-/main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.5.0',
+    'https://testingcf.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.5.0',
+    'https://cdn.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.5.0',
   ];
   let doc; try { doc = root.parent.document; } catch { doc = root.document; }
   doc ||= root.document;

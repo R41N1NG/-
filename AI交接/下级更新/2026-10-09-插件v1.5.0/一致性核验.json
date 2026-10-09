@@ -1,0 +1,30 @@
+{
+  "version": "1.5.0",
+  "source_count": 9,
+  "script_id": "branch-story-engine-v1",
+  "code_bytes": 427915,
+  "zip_entries": 53,
+  "zip_bytes": 442407,
+  "zip_crc_and_each_byte": "PASS",
+  "source_installer_consistency": "PASS",
+  "unit_tests": 193,
+  "browser_groups": 9,
+  "viewports": [
+    1366,
+    390,
+    320
+  ],
+  "paid_api_calls": 0,
+  "real_tavern_tested": false,
+  "user_upload_recovery": {
+    "sha256": "d3edc98a2f302fae182e3173b045805da8734e4bac46418e2b2eba5781fac0e1",
+    "nodes": 7,
+    "repaired_evidence": 3,
+    "api_calls": 0
+  },
+  "sha256": {
+    "branch_story_plugin_v1.5.0.zip": "1e58e2188edc3d214c78af4063c506fae887fa7de616e205e0c85ab3fd48a456",
+    "branch_story_tavern_helper_import.json": "d49a278712abd02531e706b438c18928020de4f9c4a8b4839c306c41b088e91e",
+    "tse_engine_tavern_helper_import.json": "a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065"
+  }
+}

@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict');
 const C = require('../src/core'), A = require('../src/api'), {Engine, defaults} = require('../src/engine'), {fixture} = require('./helpers');
-const profile = {...defaults().profile, base_url: 'https://mock.test/v1', model: 'mock'};
+const profile = {...defaults().profile,author_review:false, base_url: 'https://mock.test/v1', model: 'mock'};
 const text = '警觉初始0，范围0到100。听到异常且实际怀疑时增加20，可每轮重复，最多两次，到60不再生效。解除戒备后调整至30，任务仅一次。阶段调查成功减少5。';
 const effect = (operation, value, evidence) => ({operation, variable: 'alert', value, evidence});
 function raw(original = text) { return {title: '潜行', variables: [{id: 'alert', title: '警觉', type: 'number', default: 0, min: 0, max: 100, evidence: '警觉初始0，范围0到100。', bounds_evidence: '警觉初始0，范围0到100。'}], nodes: [{id: 'n', title: '调查', detail: original, guidance: '调查当前地点', context_variables: ['alert'], completion_criteria: '调查成功', completion_evidence: '阶段调查成功减少5。', numeric_effects: [effect('add', -5, '阶段调查成功减少5。')], routes: []}], events: [{id: 'noise', title: '异常', description: '目标听见异常并实际怀疑', completion_criteria: '实际听见异常并产生怀疑', exclusions: ['仅计划', '旧事'], evidence: '听到异常且实际怀疑时增加20，可每轮重复，最多两次，到60不再生效。', repeat_policy: 'once_per_accepted_turn', repeat_evidence: '可每轮重复', max_occurrences: 2, max_occurrences_evidence: '最多两次', condition: {variable: {id: 'alert', op: 'lt', value: 60}}, condition_evidence: '到60不再生效', scope: {kind: 'nodes', node_ids: ['n']}, numeric_effects: [effect('add', 20, '听到异常且实际怀疑时增加20')]}, {id: 'calm', title: '解除戒备', description: '确实解除戒备', completion_criteria: '目标实际解除戒备', evidence: '解除戒备后调整至30，任务仅一次。', repeat_policy: 'once', numeric_effects: [effect('set', 30, '解除戒备后调整至30')]}], analysis: {uncertainties: []}}; }

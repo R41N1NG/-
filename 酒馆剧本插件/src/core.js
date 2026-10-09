@@ -103,6 +103,8 @@
       const used = new Set();
       for (const entry of list) { assert(object(entry), label + ' 必须为对象'); safeId(entry.id, label + ' ID'); assert(!used.has(entry.id), label + ' ID 重复：' + entry.id); used.add(entry.id); }
     }
+    if(p.continuity_policy!=null)assert(['hold','preserve_current'].includes(p.continuity_policy),'故事修补政策无效');
+    p.actors ||= [];assert(Array.isArray(p.actors) && p.actors.length<=128 && p.actors.every(a=>object(a) && typeof a.id==='string' && !forbidden.has(a.id) && a.id.trim() && typeof a.name==='string' && (!a.aliases || Array.isArray(a.aliases) && a.aliases.every(x=>typeof x==='string'))),'在场角色定义无效');assert(new Set(p.actors.map(a=>a.id)).size===p.actors.length,'在场角色编号重复');
     p.variables.forEach(v => {
       v.title ||= v.id; v.owner ||= ''; assert(typeof v.title === 'string' && typeof v.owner === 'string', '数值名称与归属必须为文本');
       v.type ||= typeof v.default;
@@ -124,7 +126,11 @@
       n.detail ||= ''; n.guidance ||= ''; n.boundary ||= ''; n.effects ||= []; n.routes ||= []; n.context_variables ||= [];
       Object.assign(n, normalizeCompletion(n));
       n.auto_complete = n.auto_complete !== false;
+      if(n.completion_action!=null)assert(object(n.completion_action) && ['label','action_text','intent'].every(k=>n.completion_action[k]==null || typeof n.completion_action[k]==='string') && n.completion_action.label?.trim(),'阶段完成行动格式无效：'+n.id);
+      if(n.checkpoint!=null)assert(typeof n.checkpoint==='boolean','检查点须为布尔值');
+      if(n.verification!=null)assert(['ordinary','critical'].includes(n.verification),'核验级别无效');
       validateCondition(n.entry_condition, refs);
+      n.context_actors ||= [];assert(Array.isArray(n.context_actors) && n.context_actors.every(k=>p.actors.some(a=>a.id===k)),'节点角色引用不存在：'+n.id);
       n.kind ||= 'scene'; n.suggested = n.suggested === true;
       assert(['scene', 'choice', 'ending'].includes(n.kind), '节点类型必须是 scene、choice 或 ending');
       assert([n.detail, n.guidance, n.boundary].every(v => typeof v === 'string'), '节点正文必须为文本');
@@ -145,6 +151,7 @@
       e.completion_criteria ||= e.description; e.exclusions ||= []; e.effects ||= [];
       e.scope ||= {kind: 'project'}; e.repeat_policy ||= 'once';
       if (e.max_occurrences != null) assert(Number.isSafeInteger(e.max_occurrences) && e.max_occurrences > 0, '事件次数上限必须为正整数');
+      if(e.verification!=null)assert(['ordinary','critical'].includes(e.verification),'事件核验级别无效');
       e.enabled = e.enabled !== false; e.auto_settle = e.auto_settle === true; e.detection ||= 'api';
       assert(['api', 'manual'].includes(e.detection), '事件识别模式无效');
       assert(['once', 'once_per_accepted_turn'].includes(e.repeat_policy), '事件重复策略无效');
