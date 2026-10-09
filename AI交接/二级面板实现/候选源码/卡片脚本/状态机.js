@@ -664,6 +664,7 @@ const API = {
   getVariables: grab('getVariables', () => (typeof getVariables === 'function' ? getVariables : null), true),
   replaceVariables: grab('replaceVariables', () => (typeof replaceVariables === 'function' ? replaceVariables : null), true),
   insertOrAssignVariables: grab('insertOrAssignVariables', () => (typeof insertOrAssignVariables === 'function' ? insertOrAssignVariables : null), true),
+  updateVariablesWith: grab('updateVariablesWith', () => (typeof updateVariablesWith === 'function' ? updateVariablesWith : null)),
   deleteVariable: grab('deleteVariable', () => (typeof deleteVariable === 'function' ? deleteVariable : null)),          // 登记备用，本版未调用
   // ── 聊天消息（读正文、切开场白）──
   getChatMessages: grab('getChatMessages', () => (typeof getChatMessages === 'function' ? getChatMessages : null), true),

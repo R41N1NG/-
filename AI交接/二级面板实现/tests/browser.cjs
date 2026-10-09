@@ -12,7 +12,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   window.ctx={chatId:'browser',chat:[{},{}],name1:'玩家'};
   function merge(t,p){for(const [k,v]of Object.entries(p)){if(v&&typeof v==='object'&&!Array.isArray(v)){if(!t[k]||typeof t[k]!=='object')t[k]={};merge(t[k],v);}else t[k]=v;}return t;}
   window.SillyTavern={getContext:()=>window.ctx};
-  window.TavernHelper={getVariables:o=>structuredClone(stores[o.type]),insertOrAssignVariables:(p,o)=>{merge(stores[o.type],p);return true;},getChatMessages:()=>[],setChatMessages:()=>true};
+  window.TavernHelper={updateVariablesWith:(fn,o)=>{stores[o.type]=fn(structuredClone(stores[o.type]));return structuredClone(stores[o.type]);},getVariables:o=>structuredClone(stores[o.type]),insertOrAssignVariables:(p,o)=>{merge(stores[o.type],p);return true;},getChatMessages:()=>[],setChatMessages:()=>true};
  });
  const frame=page.frames()[1];
  await frame.evaluate(code=>{(0,eval)(code);},fs.readFileSync(path.join(root,'src/correction-runtime.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'卡片脚本/GM修改器.js'),'utf8'));

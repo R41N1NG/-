@@ -36,7 +36,16 @@
  *    只认 stat_data 这一个变量命名空间 —— 变量表里其它键一律不碰。
  * ══════════════════════════════════════════════════════════════════════ */
 
-(function (root) {
+(function(host,init) {
+  if(typeof window==='undefined')return;
+  var root=host.__xsdCorrection?.root||host;
+  if(root.__xsdGMLoaded!=='v1.1') {
+    // 原面板及回调一起由宿主创建；升级时清掉旧 iframe 留在宿主的壳。
+    root.document?.getElementById('xshd-gm-mask')?.remove();
+    root.Function('root','return ('+init.toString()+')(root);')(root);
+  }
+  host.__xsdGM=root.__xsdGM;host.xsdGM=root.xsdGM;
+})(typeof window==='undefined'?globalThis:window, function (root) {
   'use strict';
 
   if (typeof window === 'undefined') return;
@@ -48,7 +57,7 @@
    * ═══════════════════════════════════════════════════════════ */
 
   var TAG = '[仙姝堕·GM]';
-  var VERSION = 'v1.0';
+  var VERSION = 'v1.1';
 
   /** 脚本标识（防止同一 iframe 里重复注入第二份面板） */
   var SCRIPT_ID = 'xshd-gm-editor';
@@ -786,6 +795,7 @@
     getVariables: getTH('getVariables', true),
     replaceVariables: getTH('replaceVariables', true),
     insertOrAssignVariables: getTH('insertOrAssignVariables', true),
+    updateVariablesWith: getTH('updateVariablesWith', false),
     getChatMessages: getTH('getChatMessages'),
     setChatMessages: getTH('setChatMessages'),
   };
@@ -1154,7 +1164,7 @@
    * 五 · 面板：结构 / 渲染 / 事件
    * ═══════════════════════════════════════════════════════════ */
 
-  var UI = { mounted: false, mask: null, doc: null, open: false, idSeq: 0 };
+  var UI = { mounted: false, mask: null, doc: null, open: false, idSeq: 0, token: null };
 
   function esc(s) {
     return String(s === undefined || s === null ? '' : s)
@@ -1409,6 +1419,10 @@
 
   /** 保存：一次写全（双写两层）＋ 回读校验 ＋ 重渲染 */
   function save() {
+    try {
+      var current=window.__xsdCorrection.capture(API);
+      if(!UI.token||!window.__xsdCorrection.eq(current,UI.token))throw Error('聊天或最新楼已变化，请先读取当前值再保存');
+    }catch(e){warn(msgOf(e));toast('warning',msgOf(e),6000);return Promise.resolve(false);}
     var patch = collect();
     if (!patch) return Promise.resolve(false);
     log('保存：' + ALL_FIELDS.length + ' 个 known ＋ 身份／阵营 ＋ ' + DISPLAY_FIELDS.length + ' 个展示字段 → 双写两层');
@@ -1469,6 +1483,8 @@
 
   /** 只读刷新 */
   function reload(why) {
+    invalidateCache(); // 手动读取与宿主刷新必须读真值，不吃300ms旧缓存。
+    try { UI.token=window.__xsdCorrection.capture(API); } catch (_) { UI.token=null; }
     renderBody();
     log('读回当前值' + (why ? '（' + why + '）' : '') + '：' + (readStatData() ? 'stat_data 可用' : '读不到 stat_data'));
     return readForm();
@@ -1498,7 +1514,7 @@
         mask.style.top = Math.max(0, oy + (ev.clientY - sy)) + 'px';
       } catch (e) { /* 无 */ }
     });
-    doc.addEventListener('mouseup', function () { dragging = false; });
+    doc.addEventListener('mouseup', function () { dragging = false; }, true);
   }
 
   /** 事件接线：所有点击用委托，重渲染不会掉线 */
@@ -1536,79 +1552,19 @@
       }
     });
     bindDrag(doc, mask);
-    // 面板自己不许把点击冒泡给主界面（否则会触发酒馆的消息菜单）
-    mask.addEventListener('mousedown', function (ev) { ev.stopPropagation(); }, true);
-    mask.addEventListener('mouseup', function (ev) { ev.stopPropagation(); }, true);
-    mask.addEventListener('click', function (ev) { ev.stopPropagation(); }, true);
+    // 子按钮/标题拖拽处理后再隔离冒泡；捕获阶段stopPropagation会挡住自己的处理器。
+    mask.addEventListener('mousedown', function (ev) { ev.stopPropagation(); });
+    mask.addEventListener('mouseup', function (ev) { ev.stopPropagation(); });
+    mask.addEventListener('click', function (ev) { ev.stopPropagation(); });
     mask.addEventListener('keydown', function (ev) { ev.stopPropagation(); });
   }
 
   /** 挂载（幂等：已在则不再建第二份） */
   /* gpt：二级面板。所有DOM文本安全赋值；重开删除旧节点，不重复绑宿主监听器。 */
   function openCorrection() {
-    var service=window.__xsdCorrection,doc=getDoc();
-    if(!service||!doc){err('二级纠错运行时不可用');return;}
-    var previous=doc.getElementById('xsd-correction-dialog');if(previous)previous.remove();
-    var dialog=doc.createElement('div');dialog.id='xsd-correction-dialog';dialog.setAttribute('role','dialog');
-    dialog.setAttribute('aria-label','纹章与剧情纠错');dialog.setAttribute('aria-modal','true');
-    dialog.style.cssText='position:fixed;inset:0;z-index:2147483100;background:#000b;display:flex;justify-content:center;align-items:flex-start;padding:5vh 10px;overflow:auto';
-    var box=doc.createElement('section');box.style.cssText='width:620px;max-width:100%;background:#18141e;color:#eee;padding:16px;border:1px solid #b8933f;border-radius:10px;box-sizing:border-box;font:14px/1.6 system-ui';dialog.appendChild(box);
-    var title=doc.createElement('h3');title.textContent='纹章与剧情纠错';box.appendChild(title);
-    var hint=doc.createElement('p');hint.textContent='人工纠错优先自动派发。归属与显示颜色独立；历史正文不会随状态修正删除。';box.appendChild(hint);
-    var status=doc.createElement('p');status.setAttribute('role','status');box.appendChild(status);
-    function row(label,element){element.setAttribute('aria-label',label);var wrap=doc.createElement('label');wrap.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0';var name=doc.createElement('span');name.textContent=label;name.style.minWidth='110px';wrap.append(name,element);box.appendChild(wrap);return element;}
-    function select(items){var el=doc.createElement('select');el.style.cssText='min-height:36px;max-width:100%;background:#272030;color:#fff';items.forEach(function(it){var option=doc.createElement('option');option.value=String(it[0]);option.textContent=it[1];el.appendChild(option);});return el;}
-    var relic=row('纹章',select(service.relics.map(function(r){return[r.id,r.name];})));
-    var lit=row('亮灭',select([['keep','保持'],['true','亮（人工）'],['false','灭（人工）'],['auto','交还自动']]));
-    var stage=row('阶段',select([['keep','保持'],[0,'未达阶段'],[1,'一阶段'],[2,'二阶段'],[3,'三阶段'],[4,'四阶段'],['auto','交还自动']]));
-    var ownerMode=row('归属',select([['keep','保持'],['name','指定角色'],['none','无归属（人工）'],['auto','交还自动']]));
-    var owner=doc.createElement('input');owner.maxLength=40;owner.placeholder='角色名或当前身份';row('归属角色',owner);
-    var color=row('反色显示',select([['keep','保持'],['auto','按真实归属'],['original','强制原色'],['inverted','强制反色']]));
-    var personal=row('个人段位',select([['keep','保持']].concat(Array.from({length:16},function(_,i){return[i+1,'第'+(i+1)+'段'];}),[['auto','交还自动']])));
-    var date=doc.createElement('input');date.placeholder='例如1579-6-7；留空保持';date.inputMode='numeric';row('可信日期',date);
-    var facts=service.plotFields.filter(function(f){return ALL_FIELDS.indexOf(f)!==-1;});
-    var plotField=row('主线事实',select([['','不修改']].concat(facts.map(function(f){return[f,f];}))));
-    var plotValue=row('事实纠正',select([['true','已成立（人工）'],['false','未成立（人工）'],['auto','交还自动']]));
-    var stateLine=doc.createElement('p');box.appendChild(stateLine);
-    var output=doc.createElement('pre');output.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;max-height:28vh;overflow:auto;background:#0e0c12;padding:10px';box.appendChild(output);
-    var controls=doc.createElement('div');controls.style.cssText='display:flex;gap:8px;flex-wrap:wrap';box.appendChild(controls);
-    function button(text,fn){var b=doc.createElement('button');b.type='button';b.textContent=text;b.style.cssText='min-height:36px;padding:6px 10px';b.onclick=fn;controls.appendChild(b);return b;}
-    var plan=null,busy=false,token=null;
-    var api=Object.assign({},API,{refresh:function(){invalidateCache();try{var fn=service.root.__xsdRefreshRelics;if(typeof fn==='function')fn();}catch(_){} }});
-    function fail(error){status.textContent=error.message||String(error);plan=null;confirm.disabled=true;}
-    function checkContext(){if(!token)return;var now=service.capture(api);if(JSON.stringify(now)!==JSON.stringify(token))throw Error('聊天或最新楼已变化，请重开面板');}
-    async function showState(){
-      try{
-        var captured=service.capture(api);if(token&&JSON.stringify(token)!==JSON.stringify(captured))throw Error('聊天或最新楼已变化，请重开面板');token=captured;
-        var snap=await service.snapshot(api,token),r=service.relics.find(function(r){return r.id===relic.value;});
-        var current=0;r.stages.forEach(function(f,i){if(snap.sd.known&&snap.sd.known[f]===true)current=i+1;});
-        var meta=snap.sd.人工纠错,display=meta&&meta.纹章显示&&meta.纹章显示[r.id];
-        stateLine.textContent='当前：'+r.name+'／阶段'+current+'／归属：'+((snap.sd.名器归属||{})[r.name]||'未明确登记')+'／显示：'+(display&&display.颜色||'自动')+'／个人段位：'+(snap.sd.段位||'未设')+'／世界日期：'+(snap.sd.仙盟历文||snap.sd.仙盟历||'未设');
-        Array.from(stage.options).forEach(function(o){o.disabled=o.value==='4'&&r.max<4;o.textContent=o.value==='4'?(r.max<4?'四阶段（待Gemini内容）':'四阶段'):o.textContent;});
-        if(stage.value==='4'&&r.max<4)stage.value='keep';
-        lit.options[1].disabled=!r.form;
-      }catch(e){fail(e);}
-    }
-    function collect(){
-      var intent={relic:relic.value};
-      if(lit.value!=='keep')intent.lit=lit.value==='auto'?'auto':lit.value==='true';
-      if(stage.value!=='keep')intent.stage=stage.value==='auto'?'auto':Number(stage.value);
-      if(ownerMode.value!=='keep')intent.owner=ownerMode.value==='auto'?'__auto__':ownerMode.value==='none'?null:owner.value;
-      if(color.value!=='keep')intent.color=color.value;
-      if(personal.value!=='keep')intent.personalStage=personal.value==='auto'?'auto':Number(personal.value);
-      if(date.value.trim())intent.date=date.value.trim();
-      if(plotField.value)intent.plot={[plotField.value]:plotValue.value==='auto'?'auto':plotValue.value==='true'};
-      return intent;
-    }
-    var preview=button('预览改动',async function(){if(busy)return;try{checkContext();plan=await service.preview(api,collect());if(!plan.changes.length)throw Error('没有改动');output.textContent=plan.changes.map(function(c){return c.path.join(' / ')+'：'+JSON.stringify(c.before??null)+' → '+JSON.stringify(c.after);}).join('\n');status.textContent='请检查预览后确认。'+(plan.warnings.length?'已有日期矛盾仍待纠正：'+plan.warnings.join('、'):'');confirm.disabled=false;}catch(e){fail(e);}});
-    var confirm=button('确认应用',async function(){if(busy||!plan)return;busy=true;confirm.disabled=true;try{checkContext();await service.save(api,plan);status.textContent='双层回读通过，已生效。';plan=null;await showState();}catch(e){fail(e);}finally{busy=false;}});confirm.disabled=true;
-    button('撤销最近一次',async function(){if(busy)return;busy=true;try{checkContext();await service.undo(api);status.textContent='最近一次操作已撤销。';plan=null;confirm.disabled=true;await showState();}catch(e){fail(e);}finally{busy=false;}});
-    button('关闭',function(){dialog.remove();});
-    box.addEventListener('change',function(){plan=null;confirm.disabled=true;showState();});
-    box.addEventListener('input',function(){plan=null;confirm.disabled=true;});
-    dialog.addEventListener('keydown',function(e){if(e.key==='Escape')dialog.remove();e.stopPropagation();});
-    dialog.addEventListener('click',function(e){if(e.target===dialog)dialog.remove();e.stopPropagation();});
-    doc.body.appendChild(dialog);showState();relic.focus();
+    var service=window.__xsdCorrection;
+    if(!service||!service.open) { err('二级纠错运行时不可用'); return; }
+    return service.open();
   }
 
   function mount() {
@@ -1625,7 +1581,7 @@
     bindEvents(doc, mask);
     mask.addEventListener('click', function (ev) {
       if (ev.target && ev.target.closest && ev.target.closest('#xsd-correction-open')) openCorrection();
-    }, true); // 原GM在mask捕获阶段stopPropagation，入口必须在同层捕获处理
+    }); // 与GM按钮同层委托；冒泡隔离只阻止传给酒馆，不阻止同层监听器
     UI.mask = mask;
     UI.mounted = true;
     renderBody();
@@ -1640,6 +1596,13 @@
       return false;
     }
     UI.mask.style.display = 'flex';
+    // 桌面拖过的位置不能让窄屏再次打开时落在视口外；清内联位置恢复原响应式CSS。
+    try {
+      var view=UI.doc.defaultView,rect=UI.mask.getBoundingClientRect();
+      if(view&&(rect.left<0||rect.right>view.innerWidth||rect.top<0||rect.top>view.innerHeight-40)) {
+        ['left','right','top','bottom'].forEach(function(key){UI.mask.style[key]='';});
+      }
+    }catch(_){}
     UI.open = true;
     reload('打开');
     return true;
@@ -1713,7 +1676,7 @@
 
   publish(function () { return toggle(); });
   window.__xsdCorrectionOpen = openCorrection;
-  try { window.parent.__xsdCorrectionOpen = openCorrection; } catch (_) {}
+  try { if(window.__xsdCorrection) window.parent.__xsdCorrectionOpen = window.__xsdCorrection.open; } catch (_) {}
 
   /* ═══════════════════════════════════════════════════════════
    * 七 · 启动（绝不抛错）
@@ -1727,7 +1690,7 @@
     if (root) root.__xsdGMLoaded = VERSION;
   } catch (e) { /* 无 */ }
 
-  log(VERSION + ' 已加载。入口：控制台输入 __xsdGM()（或 window.xsdGM.打开()）；'
+  log(VERSION + ' 已加载。入口：状态栏 ⚙️ 或 __xsdGM()；'
     + '可用接口：' + Object.keys(API).map(function (k) { return k + (API[k] ? '✔' : '✘'); }).join(' '));
 
   /** 稍等一拍再挂面板（有些环境里 parent.document.body 还没就绪） */
@@ -1735,11 +1698,11 @@
     setTimeout(function () {
       try {
         mount();
-        hide();                                   // 挂好但默认收着，等玩家叫
+        if (!UI.open) hide();                     // 不关闭玩家已经打开的GM
         var snap = snapshot();
         console.log(TAG, '启动自检：' + (snap ? 'stat_data 已就绪，known 已解锁 ' + snap.已解锁.length + '/' + ALL_FIELDS.length : '还读不到 stat_data（等状态机初始化）'), snap);
       } catch (e) { warn('启动自检出错（已吞掉，不影响卡）：' + msgOf(e)); }
     }, 1600);
   } catch (e) { warn('setTimeout 不可用？' + msgOf(e)); }
 
-})(typeof window !== 'undefined' ? window : this);
+});

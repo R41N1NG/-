@@ -3,7 +3,12 @@
   if (typeof module === 'object' && module.exports) { module.exports = factory; return; }
   var root = host;
   try { if (host.parent && host.parent.document) root = host.parent; } catch (_) {}
-  if (!root.__xsdCorrection || root.__xsdCorrection.version !== '1.0.0') root.__xsdCorrection = factory(root);
+  if (!root.__xsdCorrection || root.__xsdCorrection.version !== '1.1.0') {
+    // 只传源码，不把 iframe 的函数/闭包挂到宿主。队列、DOM回调均由宿主 realm 创建。
+    root.document?.getElementById('xsd-correction-dialog')?.remove();
+    root.__xsdCorrection = root.Function('root', 'return (' + factory.toString() + ')(root);')(root);
+  }
+  root.__xsdCorrectionOpen = root.__xsdCorrection.open;
   host.__xsdCorrection = root.__xsdCorrection;
 })(typeof window === 'undefined' ? globalThis : window, function (root) {
   'use strict';
@@ -26,7 +31,42 @@
     let t = o; for (const k of p.slice(0, -1)) { if (!t[k] || typeof t[k] !== 'object') t[k] = {}; t = t[k]; }
     t[p[p.length - 1]] = clone(v);
   }
-  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  // JSON对象键顺序不属于变量值；数组顺序仍须相同。
+  function eq(a,b) {
+    if(a===b)return true;
+    if(!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b))return false;
+    const ak=Object.keys(a),bk=Object.keys(b);
+    return ak.length===bk.length&&ak.every(k=>own(b,k)&&eq(a[k],b[k]));
+  }
+  function hostApi() {
+    function invoke(name,args) {
+      const provider=typeof root.TavernHelper?.[name]==='function'?root.TavernHelper:root;
+      if(typeof provider[name]!=='function')throw Error('宿主接口不可用：'+name+'；请启用酒馆助手并刷新');
+      return provider[name].apply(provider,args);
+    }
+    const api={
+      getVariables:o=>invoke('getVariables',[o]),
+      insertOrAssignVariables:(p,o)=>invoke('insertOrAssignVariables',[p,o]),
+      refresh(){try{root.xsdGM?.refresh?.();root.__xsdRefreshRelics?.();}catch(_){} }
+    };
+    if(typeof root.TavernHelper?.updateVariablesWith==='function'||typeof root.updateVariablesWith==='function')api.updateVariablesWith=(f,o)=>invoke('updateVariablesWith',[f,o]);
+    return api;
+  }
+  function bindStatusEntry(container) {
+    if(!container?.querySelector)return false;
+    const panel=container.matches?.('[data-xds-panel]')?container:container.querySelector('[data-xds-panel]');
+    if(!panel)return false;
+    let gear=panel.querySelector('[data-xsd-settings]');
+    if(!gear){
+      gear=panel.ownerDocument.createElement('button');gear.type='button';
+      gear.textContent='⚙️';gear.setAttribute('data-xsd-settings','1');
+      gear.setAttribute('aria-label','GM控制面板');gear.title='GM控制面板 · 纹章与剧情纠错';
+      gear.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;margin-left:8px;padding:3px;border:1px solid #b8933f;border-radius:6px;background:#18141e;color:#eee;font:20px system-ui;cursor:pointer;vertical-align:middle;flex-shrink:0';
+      (panel.querySelector('.xh-title')||panel).appendChild(gear);
+    }
+    gear.onclick=function(e){e.preventDefault();e.stopPropagation();root.__xsdCorrection.open();};
+    return true;
+  }
   function leaves(o, prefix = []) {
     return Object.keys(o || {}).flatMap(k => o[k] && typeof o[k] === 'object' && !Array.isArray(o[k]) && Object.keys(o[k]).length && !(prefix.length===2 && prefix[0]==='人工纠错' && ['覆盖','纹章显示'].includes(prefix[1])) && !(prefix.length===1 && ['派生账本','名器归属来源','人工校历'].includes(prefix[0])) ? leaves(o[k], prefix.concat(k)) : [{ path: prefix.concat(k), value: clone(o[k]) }]);
   }
@@ -106,8 +146,25 @@
   }
   async function setLayer(api,opt,payload,token) {
     guard(api,token);
-    if (typeof api.insertOrAssignVariables !== 'function') throw Error('需要深合并写入接口；不使用整层replace覆盖其他更新');
-    checked(await api.insertOrAssignVariables(payload,opt)); guard(api,token);
+    // 4.11.3 提供同步 updater：从当前层读起，只赋本笔叶路径；整条来源记录原子替换。
+    // 与先读全层再 replace 的旧回退不同，保留调用瞬间其他键的更新。
+    if(typeof api.updateVariablesWith==='function') {
+      checked(await api.updateVariablesWith(current=>{
+        guard(api,token);
+        const next=clone(current||{});
+        for(const [key,value]of Object.entries(payload)) {
+          if(key==='stat_data') {
+            if(!next.stat_data||typeof next.stat_data!=='object')next.stat_data={};
+            for(const c of leaves(value))put(next.stat_data,c.path,c.value);
+          }else {safe(value);next[key]=clone(value);}
+        }
+        return next;
+      },opt));
+    }else {
+      if(typeof api.insertOrAssignVariables!=='function')throw Error('变量更新接口不可用');
+      checked(await api.insertOrAssignVariables(payload,opt));
+    }
+    guard(api,token);
   }
   // 两层都回读才成功；失败只补偿这笔仍等于写后值的键，不覆盖之后的改动。
   async function commit(api,token,patch,base) {
@@ -118,7 +175,8 @@
         done.push(i); // 接口可能部分落盘后抛错，亦纳入补偿。
         await setLayer(api,opt,{stat_data:patch},token);
         const after=await layer(api,opt); guard(api,token);
-        if(changes.some(c=>!eq(at(after.stat_data||{},c.path),c.value)))throw Error('双层回读不一致');
+        const mismatch=changes.find(c=>!eq(at(after.stat_data||{},c.path),c.value));
+        if(mismatch)throw Error('双层回读不一致（'+opt.type+' / 楼'+token.messageId+' / '+mismatch.path.join(' → ')+'）');
       }
     } catch(error) {
       let restored=true;
@@ -278,8 +336,76 @@
       return {ok:true,via:'统一队列·双层回读'};
     }).catch(e=>({ok:false,why:e.message,via:e.message}));
   }
-  return {version:'1.0.0',relics,plotFields,prerequisites,merge,clone,at,put,effective,protect,visual,controls,capture,snapshot,preview,save,undo,write,
-    onChatChanged(){epoch++; if(root.document)root.document.getElementById('xsd-correction-dialog')?.remove();},
+  function openCorrection() {
+    var service=root.__xsdCorrection,doc=root.document;
+    if(!service||!doc)throw Error('二级纠错运行时不可用');
+    var previous=doc.getElementById('xsd-correction-dialog');if(previous)previous.remove();
+    var dialog=doc.createElement('div');dialog.id='xsd-correction-dialog';dialog.setAttribute('role','dialog');
+    dialog.setAttribute('aria-label','纹章与剧情纠错');dialog.setAttribute('aria-modal','true');
+    dialog.style.cssText='position:fixed;inset:0;z-index:2147483100;background:#000b;display:flex;justify-content:center;align-items:flex-start;padding:5vh 10px;overflow:auto';
+    var box=doc.createElement('section');box.style.cssText='width:620px;max-width:100%;background:#18141e;color:#eee;padding:16px;border:1px solid #b8933f;border-radius:10px;box-sizing:border-box;font:14px/1.6 system-ui';dialog.appendChild(box);
+    var title=doc.createElement('h3');title.textContent='纹章与剧情纠错';box.appendChild(title);
+    var hint=doc.createElement('p');hint.textContent='人工纠错优先自动派发。归属与显示颜色独立；历史正文不会随状态修正删除。';box.appendChild(hint);
+    var status=doc.createElement('p');status.setAttribute('role','status');box.appendChild(status);
+    function row(label,element){element.setAttribute('aria-label',label);var wrap=doc.createElement('label');wrap.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0';var name=doc.createElement('span');name.textContent=label;name.style.minWidth='110px';wrap.append(name,element);box.appendChild(wrap);return element;}
+    function select(items){var el=doc.createElement('select');el.style.cssText='min-height:36px;max-width:100%;background:#272030;color:#fff';items.forEach(function(it){var option=doc.createElement('option');option.value=String(it[0]);option.textContent=it[1];el.appendChild(option);});return el;}
+    var relic=row('纹章',select(service.relics.map(function(r){return[r.id,r.name];})));
+    var lit=row('亮灭',select([['keep','保持'],['true','亮（人工）'],['false','灭（人工）'],['auto','交还自动']]));
+    var stage=row('阶段',select([['keep','保持'],[0,'未达阶段'],[1,'一阶段'],[2,'二阶段'],[3,'三阶段'],[4,'四阶段'],['auto','交还自动']]));
+    var ownerMode=row('归属',select([['keep','保持'],['name','指定角色'],['none','无归属（人工）'],['auto','交还自动']]));
+    var owner=doc.createElement('input');owner.maxLength=40;owner.placeholder='角色名或当前身份';row('归属角色',owner);
+    var color=row('反色显示',select([['keep','保持'],['auto','按真实归属'],['original','强制原色'],['inverted','强制反色']]));
+    var personal=row('个人段位',select([['keep','保持']].concat(Array.from({length:16},function(_,i){return[i+1,'第'+(i+1)+'段'];}),[['auto','交还自动']])));
+    var date=doc.createElement('input');date.placeholder='例如1579-6-7；留空保持';date.inputMode='numeric';row('可信日期',date);
+    var facts=service.plotFields;
+    var plotField=row('主线事实',select([['','不修改']].concat(facts.map(function(f){return[f,f];}))));
+    var plotValue=row('事实纠正',select([['true','已成立（人工）'],['false','未成立（人工）'],['auto','交还自动']]));
+    var stateLine=doc.createElement('p');box.appendChild(stateLine);
+    var output=doc.createElement('pre');output.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;max-height:28vh;overflow:auto;background:#0e0c12;padding:10px';box.appendChild(output);
+    var controls=doc.createElement('div');controls.style.cssText='display:flex;gap:8px;flex-wrap:wrap';box.appendChild(controls);
+    function button(text,fn){var b=doc.createElement('button');b.type='button';b.textContent=text;b.style.cssText='min-height:36px;padding:6px 10px';b.onclick=fn;controls.appendChild(b);return b;}
+    var plan=null,busy=false,token=null;
+    var api=hostApi();
+    function fail(error){status.textContent=error.message||String(error);plan=null;confirm.disabled=true;}
+    function checkContext(){if(!token)return;var now=service.capture(api);if(JSON.stringify(now)!==JSON.stringify(token))throw Error('聊天或最新楼已变化，请重开面板');}
+    async function showState(){
+      try{
+        var captured=service.capture(api);if(token&&JSON.stringify(token)!==JSON.stringify(captured))throw Error('聊天或最新楼已变化，请重开面板');token=captured;
+        var snap=await service.snapshot(api,token),r=service.relics.find(function(r){return r.id===relic.value;});
+        var current=0;r.stages.forEach(function(f,i){if(snap.sd.known&&snap.sd.known[f]===true)current=i+1;});
+        var meta=snap.sd.人工纠错,display=meta&&meta.纹章显示&&meta.纹章显示[r.id];
+        stateLine.textContent='当前：'+r.name+'／阶段'+current+'／归属：'+((snap.sd.名器归属||{})[r.name]||'未明确登记')+'／显示：'+(display&&display.颜色||'自动')+'／个人段位：'+(snap.sd.段位||'未设')+'／世界日期：'+(snap.sd.仙盟历文||snap.sd.仙盟历||'未设');
+        Array.from(stage.options).forEach(function(o){o.disabled=o.value==='4'&&r.max<4;o.textContent=o.value==='4'?(r.max<4?'四阶段（待Gemini内容）':'四阶段'):o.textContent;});
+        if(stage.value==='4'&&r.max<4)stage.value='keep';
+        lit.options[1].disabled=!r.form;
+      }catch(e){fail(e);}
+    }
+    function collect(){
+      var intent={relic:relic.value};
+      if(lit.value!=='keep')intent.lit=lit.value==='auto'?'auto':lit.value==='true';
+      if(stage.value!=='keep')intent.stage=stage.value==='auto'?'auto':Number(stage.value);
+      if(ownerMode.value!=='keep')intent.owner=ownerMode.value==='auto'?'__auto__':ownerMode.value==='none'?null:owner.value;
+      if(color.value!=='keep')intent.color=color.value;
+      if(personal.value!=='keep')intent.personalStage=personal.value==='auto'?'auto':Number(personal.value);
+      if(date.value.trim())intent.date=date.value.trim();
+      if(plotField.value)intent.plot={[plotField.value]:plotValue.value==='auto'?'auto':plotValue.value==='true'};
+      return intent;
+    }
+    var preview=button('预览改动',async function(){if(busy)return;try{checkContext();plan=await service.preview(api,collect());if(!plan.changes.length)throw Error('没有改动');output.textContent=plan.changes.map(function(c){return c.path.join(' / ')+'：'+JSON.stringify(c.before??null)+' → '+JSON.stringify(c.after);}).join('\n');status.textContent='请检查预览后确认。'+(plan.warnings.length?'已有日期矛盾仍待纠正：'+plan.warnings.join('、'):'');confirm.disabled=false;}catch(e){fail(e);}});
+    var confirm=button('确认应用',async function(){if(busy||!plan)return;busy=true;confirm.disabled=true;try{checkContext();await service.save(api,plan);status.textContent='双层回读通过，已生效。';plan=null;await showState();}catch(e){fail(e);}finally{busy=false;}});confirm.disabled=true;
+    button('撤销最近一次',async function(){if(busy)return;busy=true;try{checkContext();await service.undo(api);status.textContent='最近一次操作已撤销。';plan=null;confirm.disabled=true;await showState();}catch(e){fail(e);}finally{busy=false;}});
+    button('重新读取',function(){if(busy)return;plan=null;confirm.disabled=true;showState();});
+    button('完整GM设置',function(){if(typeof root.xsdGM?.open==='function'){root.xsdGM.open();dialog.remove();}else status.textContent='GM脚本尚未加载，请稍后再试';});
+    button('关闭',function(){dialog.remove();});
+    box.addEventListener('change',function(){plan=null;confirm.disabled=true;showState();});
+    box.addEventListener('input',function(){plan=null;confirm.disabled=true;});
+    dialog.addEventListener('keydown',function(e){if(e.key==='Escape')dialog.remove();e.stopPropagation();});
+    dialog.addEventListener('click',function(e){if(e.target===dialog)dialog.remove();e.stopPropagation();});
+    doc.body.appendChild(dialog);showState();relic.focus();
+  }
+
+  return {version:'1.1.0',relics,plotFields,prerequisites,merge,clone,at,put,eq,open:openCorrection,bindStatusEntry,effective,protect,visual,controls,capture,snapshot,preview,save,undo,write,
+    onChatChanged(){epoch++; if(root.document)root.document.getElementById('xsd-correction-dialog')?.remove();try{root.xsdGM?.close?.();}catch(_){} },
     // 由GM注册实际入口；同一宿主只存在一份运行时和队列。
     root};
 });

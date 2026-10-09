@@ -13,15 +13,20 @@
      /* ★ P2（gpt 接入说明 B）：状态机脚本在**构建期**注入共享滑块模块（同一文件来源，不手抄日期表）
       *  注入失败＝构建终止（fail-closed），不生成半成品卡。 */
      if (fn === '状态机.js') {
---- /dev/null
+--- a/src/correction-runtime.js
 +++ b/src/correction-runtime.js
-@@ -0,0 +1,285 @@
+@@ -0,0 +1,411 @@
 +/* gpt · 二级纠错共用运行时；由构建器前置注入三个卡内脚本。无外链，无资源更改。 */
 +(function (host, factory) {
 +  if (typeof module === 'object' && module.exports) { module.exports = factory; return; }
 +  var root = host;
 +  try { if (host.parent && host.parent.document) root = host.parent; } catch (_) {}
-+  if (!root.__xsdCorrection || root.__xsdCorrection.version !== '1.0.0') root.__xsdCorrection = factory(root);
++  if (!root.__xsdCorrection || root.__xsdCorrection.version !== '1.1.0') {
++    // 只传源码，不把 iframe 的函数/闭包挂到宿主。队列、DOM回调均由宿主 realm 创建。
++    root.document?.getElementById('xsd-correction-dialog')?.remove();
++    root.__xsdCorrection = root.Function('root', 'return (' + factory.toString() + ')(root);')(root);
++  }
++  root.__xsdCorrectionOpen = root.__xsdCorrection.open;
 +  host.__xsdCorrection = root.__xsdCorrection;
 +})(typeof window === 'undefined' ? globalThis : window, function (root) {
 +  'use strict';
@@ -44,7 +49,42 @@
 +    let t = o; for (const k of p.slice(0, -1)) { if (!t[k] || typeof t[k] !== 'object') t[k] = {}; t = t[k]; }
 +    t[p[p.length - 1]] = clone(v);
 +  }
-+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
++  // JSON对象键顺序不属于变量值；数组顺序仍须相同。
++  function eq(a,b) {
++    if(a===b)return true;
++    if(!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b))return false;
++    const ak=Object.keys(a),bk=Object.keys(b);
++    return ak.length===bk.length&&ak.every(k=>own(b,k)&&eq(a[k],b[k]));
++  }
++  function hostApi() {
++    function invoke(name,args) {
++      const provider=typeof root.TavernHelper?.[name]==='function'?root.TavernHelper:root;
++      if(typeof provider[name]!=='function')throw Error('宿主接口不可用：'+name+'；请启用酒馆助手并刷新');
++      return provider[name].apply(provider,args);
++    }
++    const api={
++      getVariables:o=>invoke('getVariables',[o]),
++      insertOrAssignVariables:(p,o)=>invoke('insertOrAssignVariables',[p,o]),
++      refresh(){try{root.xsdGM?.refresh?.();root.__xsdRefreshRelics?.();}catch(_){} }
++    };
++    if(typeof root.TavernHelper?.updateVariablesWith==='function'||typeof root.updateVariablesWith==='function')api.updateVariablesWith=(f,o)=>invoke('updateVariablesWith',[f,o]);
++    return api;
++  }
++  function bindStatusEntry(container) {
++    if(!container?.querySelector)return false;
++    const panel=container.matches?.('[data-xds-panel]')?container:container.querySelector('[data-xds-panel]');
++    if(!panel)return false;
++    let gear=panel.querySelector('[data-xsd-settings]');
++    if(!gear){
++      gear=panel.ownerDocument.createElement('button');gear.type='button';
++      gear.textContent='⚙️';gear.setAttribute('data-xsd-settings','1');
++      gear.setAttribute('aria-label','GM控制面板');gear.title='GM控制面板 · 纹章与剧情纠错';
++      gear.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;margin-left:8px;padding:3px;border:1px solid #b8933f;border-radius:6px;background:#18141e;color:#eee;font:20px system-ui;cursor:pointer;vertical-align:middle;flex-shrink:0';
++      (panel.querySelector('.xh-title')||panel).appendChild(gear);
++    }
++    gear.onclick=function(e){e.preventDefault();e.stopPropagation();root.__xsdCorrection.open();};
++    return true;
++  }
 +  function leaves(o, prefix = []) {
 +    return Object.keys(o || {}).flatMap(k => o[k] && typeof o[k] === 'object' && !Array.isArray(o[k]) && Object.keys(o[k]).length && !(prefix.length===2 && prefix[0]==='人工纠错' && ['覆盖','纹章显示'].includes(prefix[1])) && !(prefix.length===1 && ['派生账本','名器归属来源','人工校历'].includes(prefix[0])) ? leaves(o[k], prefix.concat(k)) : [{ path: prefix.concat(k), value: clone(o[k]) }]);
 +  }
@@ -124,8 +164,25 @@
 +  }
 +  async function setLayer(api,opt,payload,token) {
 +    guard(api,token);
-+    if (typeof api.insertOrAssignVariables !== 'function') throw Error('需要深合并写入接口；不使用整层replace覆盖其他更新');
-+    checked(await api.insertOrAssignVariables(payload,opt)); guard(api,token);
++    // 4.11.3 提供同步 updater：从当前层读起，只赋本笔叶路径；整条来源记录原子替换。
++    // 与先读全层再 replace 的旧回退不同，保留调用瞬间其他键的更新。
++    if(typeof api.updateVariablesWith==='function') {
++      checked(await api.updateVariablesWith(current=>{
++        guard(api,token);
++        const next=clone(current||{});
++        for(const [key,value]of Object.entries(payload)) {
++          if(key==='stat_data') {
++            if(!next.stat_data||typeof next.stat_data!=='object')next.stat_data={};
++            for(const c of leaves(value))put(next.stat_data,c.path,c.value);
++          }else {safe(value);next[key]=clone(value);}
++        }
++        return next;
++      },opt));
++    }else {
++      if(typeof api.insertOrAssignVariables!=='function')throw Error('变量更新接口不可用');
++      checked(await api.insertOrAssignVariables(payload,opt));
++    }
++    guard(api,token);
 +  }
 +  // 两层都回读才成功；失败只补偿这笔仍等于写后值的键，不覆盖之后的改动。
 +  async function commit(api,token,patch,base) {
@@ -136,7 +193,8 @@
 +        done.push(i); // 接口可能部分落盘后抛错，亦纳入补偿。
 +        await setLayer(api,opt,{stat_data:patch},token);
 +        const after=await layer(api,opt); guard(api,token);
-+        if(changes.some(c=>!eq(at(after.stat_data||{},c.path),c.value)))throw Error('双层回读不一致');
++        const mismatch=changes.find(c=>!eq(at(after.stat_data||{},c.path),c.value));
++        if(mismatch)throw Error('双层回读不一致（'+opt.type+' / 楼'+token.messageId+' / '+mismatch.path.join(' → ')+'）');
 +      }
 +    } catch(error) {
 +      let restored=true;
@@ -296,59 +354,9 @@
 +      return {ok:true,via:'统一队列·双层回读'};
 +    }).catch(e=>({ok:false,why:e.message,via:e.message}));
 +  }
-+  return {version:'1.0.0',relics,plotFields,prerequisites,merge,clone,at,put,effective,protect,visual,controls,capture,snapshot,preview,save,undo,write,
-+    onChatChanged(){epoch++; if(root.document)root.document.getElementById('xsd-correction-dialog')?.remove();},
-+    // 由GM注册实际入口；同一宿主只存在一份运行时和队列。
-+    root};
-+});
---- a/tools/checks/_chk_status_missing.mjs
-+++ b/tools/checks/_chk_status_missing.mjs
-@@ -73,7 +73,7 @@
- sandbox.window.top = sandbox;
- sandbox.window.TavernHelper = Object.assign({}, 桩);
- Object.assign(sandbox, 桩);
--sandbox.SillyTavern = { getContext: () => ({ chatId: 'chk-status-missing', name1: '玩家', name2: '赵无忧' }) };
-+sandbox.SillyTavern = { getContext: () => ({ chatId: 'chk-status-missing', chat: Array.from({length: 15}, () => ({})), name1: '玩家', name2: '赵无忧' }) };
- sandbox.window.SillyTavern = sandbox.SillyTavern;
- 
- let loadErr = null;
---- a/卡片脚本/GM修改器.js
-+++ b/卡片脚本/GM修改器.js
-@@ -964,6 +964,18 @@
-    * @returns {Promise<{ok:boolean, via:string}>}
-    */
-   function writeStat(patch, why) {
-+    invalidateCache();
-+    var service = window.__xsdCorrection;
-+    if (!service) return Promise.resolve({ ok: false, via: '缺少二级纠错运行时，请重新构建' });
-+    return service.write(API, patch, true).then(function (r) {
-+      invalidateCache();
-+      if (!r.ok) err(why + '：' + r.why);
-+      return r;
-+    });
-+  }
-+
-+  /* 旧实现留档，生产入口不再调用。 */
-+  function writeStatLegacy(patch, why) {
-     var keys = Object.keys(patch || {});
-     if (!keys.length) return Promise.resolve({ ok: false, via: '空写入' });
-     invalidateCache();                       // 「改动前」快照要读真值，不吃缓存
-@@ -1215,6 +1227,7 @@
-       '<div class="xshd-gm-header" id="' + q('header') + '">',
-       '  <div class="xshd-gm-title">🎛️ 仙姝堕 · 后台 GM 修改器<small>' + esc(VERSION) + '</small></div>',
-       '  <div class="xshd-gm-header-btns">',
-+      '    <button type="button" id="xsd-correction-open" style="min-height:36px">纹章纠错</button>',
-       '    <button type="button" class="xshd-gm-x" id="' + q('reload') + '" title="读回当前值">⟳</button>',
-       '    <button type="button" class="xshd-gm-x" id="' + q('close') + '" title="关闭面板">&times;</button>',
-       '  </div>',
-@@ -1531,6 +1544,73 @@
-   }
- 
-   /** 挂载（幂等：已在则不再建第二份） */
-+  /* gpt：二级面板。所有DOM文本安全赋值；重开删除旧节点，不重复绑宿主监听器。 */
 +  function openCorrection() {
-+    var service=window.__xsdCorrection,doc=getDoc();
-+    if(!service||!doc){err('二级纠错运行时不可用');return;}
++    var service=root.__xsdCorrection,doc=root.document;
++    if(!service||!doc)throw Error('二级纠错运行时不可用');
 +    var previous=doc.getElementById('xsd-correction-dialog');if(previous)previous.remove();
 +    var dialog=doc.createElement('div');dialog.id='xsd-correction-dialog';dialog.setAttribute('role','dialog');
 +    dialog.setAttribute('aria-label','纹章与剧情纠错');dialog.setAttribute('aria-modal','true');
@@ -367,7 +375,7 @@
 +    var color=row('反色显示',select([['keep','保持'],['auto','按真实归属'],['original','强制原色'],['inverted','强制反色']]));
 +    var personal=row('个人段位',select([['keep','保持']].concat(Array.from({length:16},function(_,i){return[i+1,'第'+(i+1)+'段'];}),[['auto','交还自动']])));
 +    var date=doc.createElement('input');date.placeholder='例如1579-6-7；留空保持';date.inputMode='numeric';row('可信日期',date);
-+    var facts=service.plotFields.filter(function(f){return ALL_FIELDS.indexOf(f)!==-1;});
++    var facts=service.plotFields;
 +    var plotField=row('主线事实',select([['','不修改']].concat(facts.map(function(f){return[f,f];}))));
 +    var plotValue=row('事实纠正',select([['true','已成立（人工）'],['false','未成立（人工）'],['auto','交还自动']]));
 +    var stateLine=doc.createElement('p');box.appendChild(stateLine);
@@ -375,7 +383,7 @@
 +    var controls=doc.createElement('div');controls.style.cssText='display:flex;gap:8px;flex-wrap:wrap';box.appendChild(controls);
 +    function button(text,fn){var b=doc.createElement('button');b.type='button';b.textContent=text;b.style.cssText='min-height:36px;padding:6px 10px';b.onclick=fn;controls.appendChild(b);return b;}
 +    var plan=null,busy=false,token=null;
-+    var api=Object.assign({},API,{refresh:function(){invalidateCache();try{var fn=service.root.__xsdRefreshRelics;if(typeof fn==='function')fn();}catch(_){} }});
++    var api=hostApi();
 +    function fail(error){status.textContent=error.message||String(error);plan=null;confirm.disabled=true;}
 +    function checkContext(){if(!token)return;var now=service.capture(api);if(JSON.stringify(now)!==JSON.stringify(token))throw Error('聊天或最新楼已变化，请重开面板');}
 +    async function showState(){
@@ -404,6 +412,8 @@
 +    var preview=button('预览改动',async function(){if(busy)return;try{checkContext();plan=await service.preview(api,collect());if(!plan.changes.length)throw Error('没有改动');output.textContent=plan.changes.map(function(c){return c.path.join(' / ')+'：'+JSON.stringify(c.before??null)+' → '+JSON.stringify(c.after);}).join('\n');status.textContent='请检查预览后确认。'+(plan.warnings.length?'已有日期矛盾仍待纠正：'+plan.warnings.join('、'):'');confirm.disabled=false;}catch(e){fail(e);}});
 +    var confirm=button('确认应用',async function(){if(busy||!plan)return;busy=true;confirm.disabled=true;try{checkContext();await service.save(api,plan);status.textContent='双层回读通过，已生效。';plan=null;await showState();}catch(e){fail(e);}finally{busy=false;}});confirm.disabled=true;
 +    button('撤销最近一次',async function(){if(busy)return;busy=true;try{checkContext();await service.undo(api);status.textContent='最近一次操作已撤销。';plan=null;confirm.disabled=true;await showState();}catch(e){fail(e);}finally{busy=false;}});
++    button('重新读取',function(){if(busy)return;plan=null;confirm.disabled=true;showState();});
++    button('完整GM设置',function(){if(typeof root.xsdGM?.open==='function'){root.xsdGM.open();dialog.remove();}else status.textContent='GM脚本尚未加载，请稍后再试';});
 +    button('关闭',function(){dialog.remove();});
 +    box.addEventListener('change',function(){plan=null;confirm.disabled=true;showState();});
 +    box.addEventListener('input',function(){plan=null;confirm.disabled=true;});
@@ -412,28 +422,206 @@
 +    doc.body.appendChild(dialog);showState();relic.focus();
 +  }
 +
++  return {version:'1.1.0',relics,plotFields,prerequisites,merge,clone,at,put,eq,open:openCorrection,bindStatusEntry,effective,protect,visual,controls,capture,snapshot,preview,save,undo,write,
++    onChatChanged(){epoch++; if(root.document)root.document.getElementById('xsd-correction-dialog')?.remove();try{root.xsdGM?.close?.();}catch(_){} },
++    // 由GM注册实际入口；同一宿主只存在一份运行时和队列。
++    root};
++});
+--- a/tools/checks/_chk_status_missing.mjs
++++ b/tools/checks/_chk_status_missing.mjs
+@@ -73,7 +73,7 @@
+ sandbox.window.top = sandbox;
+ sandbox.window.TavernHelper = Object.assign({}, 桩);
+ Object.assign(sandbox, 桩);
+-sandbox.SillyTavern = { getContext: () => ({ chatId: 'chk-status-missing', name1: '玩家', name2: '赵无忧' }) };
++sandbox.SillyTavern = { getContext: () => ({ chatId: 'chk-status-missing', chat: Array.from({length: 15}, () => ({})), name1: '玩家', name2: '赵无忧' }) };
+ sandbox.window.SillyTavern = sandbox.SillyTavern;
+ 
+ let loadErr = null;
+--- a/卡片脚本/GM修改器.js
++++ b/卡片脚本/GM修改器.js
+@@ -36,7 +36,16 @@
+  *    只认 stat_data 这一个变量命名空间 —— 变量表里其它键一律不碰。
+  * ══════════════════════════════════════════════════════════════════════ */
+ 
+-(function (root) {
++(function(host,init) {
++  if(typeof window==='undefined')return;
++  var root=host.__xsdCorrection?.root||host;
++  if(root.__xsdGMLoaded!=='v1.1') {
++    // 原面板及回调一起由宿主创建；升级时清掉旧 iframe 留在宿主的壳。
++    root.document?.getElementById('xshd-gm-mask')?.remove();
++    root.Function('root','return ('+init.toString()+')(root);')(root);
++  }
++  host.__xsdGM=root.__xsdGM;host.xsdGM=root.xsdGM;
++})(typeof window==='undefined'?globalThis:window, function (root) {
+   'use strict';
+ 
+   if (typeof window === 'undefined') return;
+@@ -48,7 +57,7 @@
+    * ═══════════════════════════════════════════════════════════ */
+ 
+   var TAG = '[仙姝堕·GM]';
+-  var VERSION = 'v1.0';
++  var VERSION = 'v1.1';
+ 
+   /** 脚本标识（防止同一 iframe 里重复注入第二份面板） */
+   var SCRIPT_ID = 'xshd-gm-editor';
+@@ -786,6 +795,7 @@
+     getVariables: getTH('getVariables', true),
+     replaceVariables: getTH('replaceVariables', true),
+     insertOrAssignVariables: getTH('insertOrAssignVariables', true),
++    updateVariablesWith: getTH('updateVariablesWith', false),
+     getChatMessages: getTH('getChatMessages'),
+     setChatMessages: getTH('setChatMessages'),
+   };
+@@ -964,6 +974,18 @@
+    * @returns {Promise<{ok:boolean, via:string}>}
+    */
+   function writeStat(patch, why) {
++    invalidateCache();
++    var service = window.__xsdCorrection;
++    if (!service) return Promise.resolve({ ok: false, via: '缺少二级纠错运行时，请重新构建' });
++    return service.write(API, patch, true).then(function (r) {
++      invalidateCache();
++      if (!r.ok) err(why + '：' + r.why);
++      return r;
++    });
++  }
++
++  /* 旧实现留档，生产入口不再调用。 */
++  function writeStatLegacy(patch, why) {
+     var keys = Object.keys(patch || {});
+     if (!keys.length) return Promise.resolve({ ok: false, via: '空写入' });
+     invalidateCache();                       // 「改动前」快照要读真值，不吃缓存
+@@ -1142,7 +1164,7 @@
+    * 五 · 面板：结构 / 渲染 / 事件
+    * ═══════════════════════════════════════════════════════════ */
+ 
+-  var UI = { mounted: false, mask: null, doc: null, open: false, idSeq: 0 };
++  var UI = { mounted: false, mask: null, doc: null, open: false, idSeq: 0, token: null };
+ 
+   function esc(s) {
+     return String(s === undefined || s === null ? '' : s)
+@@ -1215,6 +1237,7 @@
+       '<div class="xshd-gm-header" id="' + q('header') + '">',
+       '  <div class="xshd-gm-title">🎛️ 仙姝堕 · 后台 GM 修改器<small>' + esc(VERSION) + '</small></div>',
+       '  <div class="xshd-gm-header-btns">',
++      '    <button type="button" id="xsd-correction-open" style="min-height:36px">纹章纠错</button>',
+       '    <button type="button" class="xshd-gm-x" id="' + q('reload') + '" title="读回当前值">⟳</button>',
+       '    <button type="button" class="xshd-gm-x" id="' + q('close') + '" title="关闭面板">&times;</button>',
+       '  </div>',
+@@ -1396,6 +1419,10 @@
+ 
+   /** 保存：一次写全（双写两层）＋ 回读校验 ＋ 重渲染 */
+   function save() {
++    try {
++      var current=window.__xsdCorrection.capture(API);
++      if(!UI.token||!window.__xsdCorrection.eq(current,UI.token))throw Error('聊天或最新楼已变化，请先读取当前值再保存');
++    }catch(e){warn(msgOf(e));toast('warning',msgOf(e),6000);return Promise.resolve(false);}
+     var patch = collect();
+     if (!patch) return Promise.resolve(false);
+     log('保存：' + ALL_FIELDS.length + ' 个 known ＋ 身份／阵营 ＋ ' + DISPLAY_FIELDS.length + ' 个展示字段 → 双写两层');
+@@ -1456,6 +1483,8 @@
+ 
+   /** 只读刷新 */
+   function reload(why) {
++    invalidateCache(); // 手动读取与宿主刷新必须读真值，不吃300ms旧缓存。
++    try { UI.token=window.__xsdCorrection.capture(API); } catch (_) { UI.token=null; }
+     renderBody();
+     log('读回当前值' + (why ? '（' + why + '）' : '') + '：' + (readStatData() ? 'stat_data 可用' : '读不到 stat_data'));
+     return readForm();
+@@ -1485,7 +1514,7 @@
+         mask.style.top = Math.max(0, oy + (ev.clientY - sy)) + 'px';
+       } catch (e) { /* 无 */ }
+     });
+-    doc.addEventListener('mouseup', function () { dragging = false; });
++    doc.addEventListener('mouseup', function () { dragging = false; }, true);
+   }
+ 
+   /** 事件接线：所有点击用委托，重渲染不会掉线 */
+@@ -1523,14 +1552,21 @@
+       }
+     });
+     bindDrag(doc, mask);
+-    // 面板自己不许把点击冒泡给主界面（否则会触发酒馆的消息菜单）
+-    mask.addEventListener('mousedown', function (ev) { ev.stopPropagation(); }, true);
+-    mask.addEventListener('mouseup', function (ev) { ev.stopPropagation(); }, true);
+-    mask.addEventListener('click', function (ev) { ev.stopPropagation(); }, true);
++    // 子按钮/标题拖拽处理后再隔离冒泡；捕获阶段stopPropagation会挡住自己的处理器。
++    mask.addEventListener('mousedown', function (ev) { ev.stopPropagation(); });
++    mask.addEventListener('mouseup', function (ev) { ev.stopPropagation(); });
++    mask.addEventListener('click', function (ev) { ev.stopPropagation(); });
+     mask.addEventListener('keydown', function (ev) { ev.stopPropagation(); });
+   }
+ 
+   /** 挂载（幂等：已在则不再建第二份） */
++  /* gpt：二级面板。所有DOM文本安全赋值；重开删除旧节点，不重复绑宿主监听器。 */
++  function openCorrection() {
++    var service=window.__xsdCorrection;
++    if(!service||!service.open) { err('二级纠错运行时不可用'); return; }
++    return service.open();
++  }
++
    function mount() {
      if (UI.mounted && UI.mask && UI.mask.parentNode) return true;
      var doc = getDoc();
-@@ -1543,6 +1623,9 @@
+@@ -1543,6 +1579,9 @@
      var mask = buildShell(doc);
      doc.body.appendChild(mask);
      bindEvents(doc, mask);
 +    mask.addEventListener('click', function (ev) {
 +      if (ev.target && ev.target.closest && ev.target.closest('#xsd-correction-open')) openCorrection();
-+    }, true); // 原GM在mask捕获阶段stopPropagation，入口必须在同层捕获处理
++    }); // 与GM按钮同层委托；冒泡隔离只阻止传给酒馆，不阻止同层监听器
      UI.mask = mask;
      UI.mounted = true;
      renderBody();
-@@ -1629,6 +1712,8 @@
+@@ -1557,6 +1596,13 @@
+       return false;
+     }
+     UI.mask.style.display = 'flex';
++    // 桌面拖过的位置不能让窄屏再次打开时落在视口外；清内联位置恢复原响应式CSS。
++    try {
++      var view=UI.doc.defaultView,rect=UI.mask.getBoundingClientRect();
++      if(view&&(rect.left<0||rect.right>view.innerWidth||rect.top<0||rect.top>view.innerHeight-40)) {
++        ['left','right','top','bottom'].forEach(function(key){UI.mask.style[key]='';});
++      }
++    }catch(_){}
+     UI.open = true;
+     reload('打开');
+     return true;
+@@ -1629,6 +1675,8 @@
    }
  
    publish(function () { return toggle(); });
 +  window.__xsdCorrectionOpen = openCorrection;
-+  try { window.parent.__xsdCorrectionOpen = openCorrection; } catch (_) {}
++  try { if(window.__xsdCorrection) window.parent.__xsdCorrectionOpen = window.__xsdCorrection.open; } catch (_) {}
  
    /* ═══════════════════════════════════════════════════════════
     * 七 · 启动（绝不抛错）
+@@ -1642,7 +1690,7 @@
+     if (root) root.__xsdGMLoaded = VERSION;
+   } catch (e) { /* 无 */ }
+ 
+-  log(VERSION + ' 已加载。入口：控制台输入 __xsdGM()（或 window.xsdGM.打开()）；'
++  log(VERSION + ' 已加载。入口：状态栏 ⚙️ 或 __xsdGM()；'
+     + '可用接口：' + Object.keys(API).map(function (k) { return k + (API[k] ? '✔' : '✘'); }).join(' '));
+ 
+   /** 稍等一拍再挂面板（有些环境里 parent.document.body 还没就绪） */
+@@ -1650,11 +1698,11 @@
+     setTimeout(function () {
+       try {
+         mount();
+-        hide();                                   // 挂好但默认收着，等玩家叫
++        if (!UI.open) hide();                     // 不关闭玩家已经打开的GM
+         var snap = snapshot();
+         console.log(TAG, '启动自检：' + (snap ? 'stat_data 已就绪，known 已解锁 ' + snap.已解锁.length + '/' + ALL_FIELDS.length : '还读不到 stat_data（等状态机初始化）'), snap);
+       } catch (e) { warn('启动自检出错（已吞掉，不影响卡）：' + msgOf(e)); }
+     }, 1600);
+   } catch (e) { warn('setTimeout 不可用？' + msgOf(e)); }
+ 
+-})(typeof window !== 'undefined' ? window : this);
++});
 --- a/卡片脚本/_src/状态栏面板.模板.js
 +++ b/卡片脚本/_src/状态栏面板.模板.js
 @@ -1591,6 +1591,12 @@
@@ -449,7 +637,23 @@
      return stat;
    } catch (e) { return null; }
  }
-@@ -2099,6 +2105,12 @@
+@@ -1794,6 +1800,7 @@
+   /* 容器优先取显式传入的（mount 路径）；退回 DOM 查找（旧路径／诊断用） */
+   const panel = explicitPanel || panelOf(mesEl);
+   if (!panel) return { ok: false, why: '该消息里没有面板元素（正则没渲染？也没传容器）' };
++  window.__xsdCorrection?.bindStatusEntry(panel);
+ 
+   // ⓪ 先摘掉 <角色N> 子块，再跑顶层字段正则（见 parseCast 的两条护栏）
+   const cast = parseCast(inner);
+@@ -1913,6 +1920,7 @@
+       console.warn(TAG, '[渲染触发] 楼号无效（' + mesid + '）⇒ 已按容器/最新楼推断为 #' + n);
+     }
+     const r = fillPanel(n, rawText, explicitPanel);
++    try { window.__xsdCorrection?.bindStatusEntry(explicitPanel || panelOf(DOC().querySelector('.mes[mesid="'+n+'"]'))); } catch (e) { /* 骨架仍可阅读 */ }
+     log(`[渲染触发] #${n}`, r);
+     return r;
+   } catch (e) {
+@@ -2099,6 +2107,12 @@
        const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
        const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
        if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
@@ -462,7 +666,7 @@
        return stat;
      } catch (e) { return null; }
    }
-@@ -2174,6 +2186,15 @@
+@@ -2174,6 +2188,15 @@
  }
  
  function xsdRelicState(rel, known, identity, customOwners) {
@@ -478,7 +682,7 @@
      const K = known || {};
      let formed = false;
      if (rel.c && K[rel.c] === true) formed = true;
-@@ -2261,7 +2282,13 @@
+@@ -2261,7 +2284,13 @@
    }
  
    /** 一枚纹章的 SVG（底图 ＋ 墨底压边 ＋ 双层金框 ＋ 阶段弧 ＋ 四阶金晕；未获取＝灰罩，被夺＝反色/异化暗红框） */
@@ -492,17 +696,17 @@
      const id = rel.id, N = rel.a, R = 436;
      const isSelf = st.state === 'self';
      const isOther = st.state === 'other';
-@@ -2519,7 +2546,8 @@
+@@ -2519,7 +2548,8 @@
  
      const curStageNum = (st.state === 'none') ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
      const imgUrl = xsdRelicCandidateUrl(rel.id, curStageNum);
 -    let filterStyle = (st.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
-+    const displayState = xsdRelicDisplayState(relObj, st);
++    const displayState = xsdRelicDisplayState(rel, st);
 +      let filterStyle = (displayState.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
  
      pop.innerHTML = '<div class="pop-header">'
        + '<div class="pop-avatar" style="background-image:url(\'' + imgUrl + '\');' + filterStyle + '"></div>'
-@@ -2601,7 +2629,8 @@
+@@ -2601,7 +2631,8 @@
        const data = XSD_RELIC_STAGES[relObj.id] || { name: relObj.n, carrier: '仙姝', type: '绝品名器', stages: {} };
        const curStage = (st.state === 'none') ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
        const imgUrl = xsdRelicCandidateUrl(relObj.id, curStage);
@@ -512,7 +716,7 @@
  
        let tabsHtml = '';
        XSD_RELICS.forEach(r => {
-@@ -2788,12 +2817,13 @@
+@@ -2788,12 +2819,13 @@
          const st = xsdRelicState(rel, known, idStr, customOwners); row.st = st;
          const stage = st.state === 'none' ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
          const url = xsdRelicCandidateUrl(rel.id, stage);
@@ -529,6 +733,14 @@
          img.setAttribute('style', 'background-image:url("' + url + '");' + filter);
          holder.innerHTML = xsdRelicSvg(rel, st);
        }
+@@ -2808,6 +2840,7 @@
+       ensureStyleInjected(container.ownerDocument || DOC());
+       const skel = skeleton();
+       if (skel) container.innerHTML = skel;
++      window.__xsdCorrection?.bindStatusEntry(container);
+       let r = null;
+       try { r = xsdFillPanel(msgId, rawMsg, container); }
+       catch (e) { console.warn(TAG, 'mount 填值失败（骨架已显示，不影响阅读）：', (e && e.message) || e); }
 --- a/卡片脚本/状态机.js
 +++ b/卡片脚本/状态机.js
 @@ -424,6 +424,9 @@
@@ -541,7 +753,15 @@
    const xsdNum = (v) => (v === null || v === undefined || v === '' ? NaN : Number(v));
    const nAcc = xsdNum(o.历时累计);
    const nPush = xsdNum(o.时点加速);
-@@ -690,6 +693,7 @@
+@@ -661,6 +664,7 @@
+   getVariables: grab('getVariables', () => (typeof getVariables === 'function' ? getVariables : null), true),
+   replaceVariables: grab('replaceVariables', () => (typeof replaceVariables === 'function' ? replaceVariables : null), true),
+   insertOrAssignVariables: grab('insertOrAssignVariables', () => (typeof insertOrAssignVariables === 'function' ? insertOrAssignVariables : null), true),
++  updateVariablesWith: grab('updateVariablesWith', () => (typeof updateVariablesWith === 'function' ? updateVariablesWith : null)),
+   deleteVariable: grab('deleteVariable', () => (typeof deleteVariable === 'function' ? deleteVariable : null)),          // 登记备用，本版未调用
+   // ── 聊天消息（读正文、切开场白）──
+   getChatMessages: grab('getChatMessages', () => (typeof getChatMessages === 'function' ? getChatMessages : null), true),
+@@ -690,6 +694,7 @@
  
  /** 获取当前活跃聊天会话 ID（用于隔离多聊天状态，防止跨聊天污染） */
  function currentChatId() {
@@ -549,7 +769,7 @@
    try {
      const ctx = (typeof SillyTavern !== 'undefined' && SillyTavern.getContext)
        ? SillyTavern.getContext()
-@@ -796,6 +800,11 @@
+@@ -796,6 +801,11 @@
    const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
    const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
    if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
@@ -561,7 +781,7 @@
    return stat;
  }
  
-@@ -872,7 +881,16 @@
+@@ -872,7 +882,16 @@
   * @param {object} patch 形如 `{ 身份: '…', known: { 封元镇灵环: true } }`（顶层键会深合并）
   * @param {string} why   写这条的原因（日志用）
   */
@@ -579,7 +799,7 @@
    
    patch = patch || {};
    try {
-@@ -945,7 +963,7 @@
+@@ -945,7 +964,7 @@
    if (!ALL_FIELDS.includes(field)) {
      return { ok: false, why: `未知字段「${field}」（可发「锚点」查看清单）` };
    }
@@ -588,7 +808,7 @@
  }
  
  /** 写身份（连阵营一起写），写完顺带把世界书那 6 条【身份】条目拨到选中那条 */
-@@ -1727,6 +1745,8 @@
+@@ -1727,6 +1746,8 @@
    流焰叠薪穴成形: ['顾云舒处女丧失'],
    凤凰羽花成形: ['陆烬颜处女丧失'],
  };
@@ -597,7 +817,7 @@
  
  function validateAnchors(listRaw, prose, messageId, knownNow, deflowerNow) {
    const list = Array.isArray(listRaw) ? listRaw : [];
-@@ -1799,7 +1819,9 @@
+@@ -1799,7 +1820,9 @@
    const _v = Array.isArray(p?.本轮已验证锚点) ? { good: p.本轮已验证锚点, bad: [], dropped: [] } : validateAnchors(list || [], proseForAnchor, messageId, known, bookIn);
    const good = _v.good, bad = _v.bad, dropped = _v.dropped;
    let news = [];
@@ -608,7 +828,7 @@
    if (list && !list.length) console.log(TAG, `[实际发生] 第 ${messageId} 楼：写了「无」`);
    if (!list) console.log(TAG, `[实际发生] 第 ${messageId} 楼没有这一栏，本轮只处理 <破处>`);
    if (bad.length) {
-@@ -1903,12 +1925,13 @@
+@@ -1903,12 +1926,13 @@
    /* 2026-10-08（gpt 17 号 §2 ⑤⑦⑧）：两条"自动派发"改为**带来源账本的事务派生** ——
       触发看正文实际出场实证（不再沿用 known['阎雷子脱困'] 当资格）；派发时补写明确 NPC 归属与来源；
       依赖重算：账本里来源清零的才撤（人工来源不撤）。全过程在纯函数 `deriveRelicClosure` 里可离线测。 */
@@ -623,7 +843,7 @@
    });
    news = 闭包.news;
    for (const l of 闭包.日志) console.log(TAG, '↳ 派生：' + l);
-@@ -2229,7 +2252,11 @@
+@@ -2229,7 +2253,11 @@
   *  @returns { news, ledger, 归属补写, 归属来源补写, 撤销, 日志 } */
  function deriveRelicClosure(inp) {
    const known = inp.known || {};
@@ -636,7 +856,7 @@
    const ledger = JSON.parse(JSON.stringify(inp.ledger || {}));
    const 归属来源 = Object.assign({}, inp.归属来源 || {});
    const messageId = inp.messageId;
-@@ -2237,7 +2264,7 @@
+@@ -2237,7 +2265,7 @@
    const 出场实证 = inp.出场实证 || {};
    const 撤销 = [], 日志 = [], 归属补写 = {}, 归属来源补写 = {};
    let ledgerChanged = false;
@@ -645,7 +865,7 @@
    const 来源表 = (f) => (ledger[f] && Array.isArray(ledger[f].来源)) ? ledger[f].来源 : null;
    const 记来源 = (f, 类型, 键, 证据) => {
      if (!ledger[f] || !Array.isArray(ledger[f].来源)) { ledger[f] = { 来源: [] }; ledgerChanged = true; }
-@@ -2247,11 +2274,15 @@
+@@ -2247,11 +2275,15 @@
      }
    };
    const 有类型 = (f, 类型) => (来源表(f) || []).some((s) => s.类型 === 类型);
@@ -662,7 +882,7 @@
      news.push('烟霞灵乳二阶段');
      日志.push('柳含烟实际出场（正文实证：' + (场.证据 || '') + '）⇒ 烟霞灵乳二阶段');
    }
-@@ -2271,13 +2302,13 @@
+@@ -2271,13 +2303,13 @@
    /* ⑥ 楚灵夜两项硬前置齐备 ⇒ 般若菩提菊成形（来源＝前置齐备） */
    const 前置齐 = known['楚灵夜处女丧失'] === true && known['楚灵夜后窍开发'] === true;
    if (前置齐) 记来源('般若菩提菊成形', '前置齐备', '楚灵夜双前置', '处女丧失＋后窍开发');
@@ -678,7 +898,7 @@
      news.push('烟霞灵乳一阶段');
      日志.push('烟霞灵乳出场即第二境 ⇒ 补记一阶段');
    }
-@@ -2287,6 +2318,7 @@
+@@ -2287,6 +2319,7 @@
      if (!ledger[f]) continue;
      const 剩 = ledger[f].来源 || [];
      const 人工 = 剩.some((s) => s.类型 === '人工');
@@ -686,7 +906,7 @@
      if (剩.length === 0 && !人工) {
        const i = news.indexOf(f);
        if (i >= 0) news.splice(i, 1);
-@@ -3795,7 +3827,7 @@
+@@ -3795,7 +3828,7 @@
      runtime.listen(window, 'pagehide', runtime.dispose);
      try {
        if (API.eventOn && EVENTS && EVENTS.CHAT_CHANGED) {
@@ -695,7 +915,7 @@
          if (listener && typeof listener.stop === 'function') runtime.cleanups.push(() => listener.stop());
        }
      } catch (error) { /* 无事件 API 时仍由 chatKey 阻止跨会话发送 */ }
-@@ -4114,7 +4146,7 @@
+@@ -4114,7 +4147,7 @@
        return true;
      }
      const shift = STAGE_BASE[n - 1] - messageId;
@@ -704,7 +924,7 @@
      console.log(TAG, `✅ 段位已拨到第 ${n} 段（第 ${messageId} 楼 ⇒ 时间轴平移 ${shift} 楼）via ${(r && r.via) || '?'}`);
      toast('info', `段位 → 第 ${n} 段`, 6000);
      return true;
-@@ -4162,7 +4194,7 @@
+@@ -4162,7 +4195,7 @@
          for (const cn of ['一', '二', '三', '四']) { const fx = baseRelic + cn + '阶段'; if (ALL_FIELDS.includes(fx)) targets.push(fx); }
          const patchKnown = {};
          for (const fx of targets) patchKnown[fx] = false;
@@ -713,7 +933,7 @@
          if (rr && rr.ok) {
            console.log(TAG, `↩ ${baseRelic} 整件已退回（${targets.length} 条）：${targets.join('、')} —— 下一回合生效`);
            toast('info', `${baseRelic} 整件已退回`, 8000);
-@@ -4686,7 +4718,7 @@
+@@ -4686,7 +4719,7 @@
    }
    on('MESSAGE_RECEIVED', (id) => onAiMessageReceived(id, { source: '事件·冗余加速' }), '状态条解析的**冗余加速**（主路径是渲染触发）');
    on('CHARACTER_MESSAGE_RENDERED', (id) => onAiMessageReceived(id, { source: '事件·冗余加速' }), '同一楼重渲染的**冗余加速**（已去重；闸门仍生效）');

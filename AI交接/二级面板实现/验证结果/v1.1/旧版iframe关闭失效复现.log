@@ -1,0 +1,13 @@
+scope=实际旧候选GM＋最小宿主；预期暴露旧版缺陷，退出非零
+AssertionError [ERR_ASSERTION]: 创建窗口的 iframe 销毁后关闭仍应有效
+
+1 !== 0
+
+    at /tmp/xsd-v1-orphan-confirm.cjs:29:9 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}

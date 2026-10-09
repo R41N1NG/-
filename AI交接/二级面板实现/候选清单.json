@@ -1,43 +1,69 @@
 {
   "identity": "gpt",
-  "baselineCommit": "de732ac",
-  "reportedCardSHA256": "c9e27d0999fd2e1c356d625654904d94ab7d18a839dab7a134dbff0be94429c8",
+  "baselineCommit": "b87e887",
+  "reportedCardSHA256": "a4a3242bd03fc78d020193e7f6c89dd7fca558a3dc5d00c8003c4a9cec4a87ad",
   "files": [
     {
       "path": "_build_card.js",
       "originalSHA256": "8285675e939fdaf0dc2ecfc318755b18aad15dc2c18d51acdf1f2a5240318ec3",
       "candidateSHA256": "57a7eee48c79004aaaa8a58d954502cb863d70e8752cbdb101b55976241aa66d",
-      "bytes": 152765
+      "bytes": 152765,
+      "acceptedBaselineSHA256": [
+        "8285675e939fdaf0dc2ecfc318755b18aad15dc2c18d51acdf1f2a5240318ec3",
+        "57a7eee48c79004aaaa8a58d954502cb863d70e8752cbdb101b55976241aa66d"
+      ]
     },
     {
       "path": "src/correction-runtime.js",
       "originalSHA256": null,
-      "candidateSHA256": "7b076a7d02dbc2be95cb8aef6d44e669385e35612468dfce4c573da84c8d94fe",
-      "bytes": 17878
+      "candidateSHA256": "3cc0fdeabafc80213abc8adb548b6d7c5b14b04bceae7703a580ef257459bd5e",
+      "bytes": 29248,
+      "acceptedBaselineSHA256": [
+        "7b076a7d02dbc2be95cb8aef6d44e669385e35612468dfce4c573da84c8d94fe"
+      ]
     },
     {
       "path": "tools/checks/_chk_status_missing.mjs",
       "originalSHA256": "04403279e6d13ff8f31a267348c8a51c9dd24b120395fd1b058a20c18a980239",
       "candidateSHA256": "0d3112ca622bc3db6f21004c569e1180318f205e156fb643cecdff0df8eb1236",
-      "bytes": 10055
+      "bytes": 10055,
+      "acceptedBaselineSHA256": [
+        "04403279e6d13ff8f31a267348c8a51c9dd24b120395fd1b058a20c18a980239",
+        "0d3112ca622bc3db6f21004c569e1180318f205e156fb643cecdff0df8eb1236"
+      ]
     },
     {
       "path": "卡片脚本/GM修改器.js",
       "originalSHA256": "88858e2826425d9815babca5c8d14fe45239b7f49571de98715d0ed41ea7a4de",
-      "candidateSHA256": "841af8c1017510681ef8ca2bd013ec7dcaaa0e9c5a4c5e60ea76bc5ba7933138",
-      "bytes": 86350
+      "candidateSHA256": "15a857a83b303a47aa1cbff4989c7dd885ea0798fa085151610383b9fa2f4c33",
+      "bytes": 79988,
+      "acceptedBaselineSHA256": [
+        "88858e2826425d9815babca5c8d14fe45239b7f49571de98715d0ed41ea7a4de",
+        "841af8c1017510681ef8ca2bd013ec7dcaaa0e9c5a4c5e60ea76bc5ba7933138"
+      ]
     },
     {
       "path": "卡片脚本/_src/状态栏面板.模板.js",
       "originalSHA256": "ba0c1b58ea76ebf4be136ae2c0e52e8a99016d65a19ef55e60fd4b5b435d291b",
-      "candidateSHA256": "6cd25fe3b6238d9a7da910f24a84225f97e30bbdd08e3c82c328168086eddfcb",
-      "bytes": 195973
+      "candidateSHA256": "42c988ae61c69fd0d8c147fb7f8de5149590d92932f42060215c733f62a9d418",
+      "bytes": 196240,
+      "acceptedBaselineSHA256": [
+        "ba0c1b58ea76ebf4be136ae2c0e52e8a99016d65a19ef55e60fd4b5b435d291b",
+        "6cd25fe3b6238d9a7da910f24a84225f97e30bbdd08e3c82c328168086eddfcb"
+      ]
     },
     {
       "path": "卡片脚本/状态机.js",
       "originalSHA256": "e7a9110d6940aa455d7d77b21e63afd22a7d843f315dd2ce7e319c1fc9608fbd",
-      "candidateSHA256": "0ab0c325ac024d616440f3422b5ccaabd866f51936340570d5b4c94725fdb013",
-      "bytes": 288921
+      "candidateSHA256": "336e019d93c528d07997c9ef0045184252908e250a68fc697f7ff8cc5f2b0b8d",
+      "bytes": 289053,
+      "acceptedBaselineSHA256": [
+        "e7a9110d6940aa455d7d77b21e63afd22a7d843f315dd2ce7e319c1fc9608fbd",
+        "0ab0c325ac024d616440f3422b5ccaabd866f51936340570d5b4c94725fdb013"
+      ]
     }
-  ]
+  ],
+  "previousCandidateCommit": "4814b7a",
+  "version": "1.1.0",
+  "baselineNote": "本机生产源码仍旧快照，已部署卡来自_accept_panel候选；接受原始快照或4814b7a候选源码，拒绝其他更新。"
 }

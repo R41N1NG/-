@@ -1800,6 +1800,7 @@ function fillPanel(messageId, rawText, explicitPanel) {
   /* 容器优先取显式传入的（mount 路径）；退回 DOM 查找（旧路径／诊断用） */
   const panel = explicitPanel || panelOf(mesEl);
   if (!panel) return { ok: false, why: '该消息里没有面板元素（正则没渲染？也没传容器）' };
+  window.__xsdCorrection?.bindStatusEntry(panel);
 
   // ⓪ 先摘掉 <角色N> 子块，再跑顶层字段正则（见 parseCast 的两条护栏）
   const cast = parseCast(inner);
@@ -1919,6 +1920,7 @@ function xsdFillPanel(mesid, rawText, explicitPanel) {
       console.warn(TAG, '[渲染触发] 楼号无效（' + mesid + '）⇒ 已按容器/最新楼推断为 #' + n);
     }
     const r = fillPanel(n, rawText, explicitPanel);
+    try { window.__xsdCorrection?.bindStatusEntry(explicitPanel || panelOf(DOC().querySelector('.mes[mesid="'+n+'"]'))); } catch (e) { /* 骨架仍可阅读 */ }
     log(`[渲染触发] #${n}`, r);
     return r;
   } catch (e) {
@@ -2546,7 +2548,7 @@ function xsdRelicState(rel, known, identity, customOwners) {
 
     const curStageNum = (st.state === 'none') ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
     const imgUrl = xsdRelicCandidateUrl(rel.id, curStageNum);
-    const displayState = xsdRelicDisplayState(relObj, st);
+    const displayState = xsdRelicDisplayState(rel, st);
       let filterStyle = (displayState.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
 
     pop.innerHTML = '<div class="pop-header">'
@@ -2838,6 +2840,7 @@ function xsdRelicState(rel, known, identity, customOwners) {
       ensureStyleInjected(container.ownerDocument || DOC());
       const skel = skeleton();
       if (skel) container.innerHTML = skel;
+      window.__xsdCorrection?.bindStatusEntry(container);
       let r = null;
       try { r = xsdFillPanel(msgId, rawMsg, container); }
       catch (e) { console.warn(TAG, 'mount 填值失败（骨架已显示，不影响阅读）：', (e && e.message) || e); }

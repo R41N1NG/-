@@ -8,7 +8,7 @@ for(const f of manifest.files){
  const candidate=path.join(here,'候选源码',f.path),dest=path.join(target,f.path);
  if(digest(candidate)!==f.candidateSHA256)throw Error('候选文件SHA变化：'+f.path);
  if(fs.existsSync(dest)) {
-  const sha=digest(dest);if(sha!==f.originalSHA256&&sha!==f.candidateSHA256)throw Error('目标已更新，停止覆盖：'+f.path);
+  const sha=digest(dest);if(![...(f.acceptedBaselineSHA256||[f.originalSHA256]),f.candidateSHA256].includes(sha))throw Error('目标已更新，停止覆盖：'+f.path);
  }else if(f.originalSHA256)throw Error('目标缺少原文件：'+f.path);
  const text=fs.readFileSync(candidate,'utf8').replace(/\/\*__XSD_(?:CSS|SKEL|FONT)_B64__\*\//g,"''");
  if(f.path.endsWith('.mjs')) require('node:child_process').execFileSync(process.execPath,['--check',candidate],{stdio:'pipe'});

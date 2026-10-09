@@ -1,0 +1,19 @@
+{
+  "scope": "临时副本实际安装；不构建/部署",
+  "原快照": {
+    "precheck": "通过",
+    "applied": 6,
+    "backup": "存在",
+    "candidateHashes": "6/6",
+    "reapply": "通过",
+    "rejectLaterChange": "拒绝且6文件未改变"
+  },
+  "旧候选": {
+    "precheck": "通过",
+    "applied": 6,
+    "backup": "存在",
+    "candidateHashes": "6/6",
+    "reapply": "通过",
+    "rejectLaterChange": "拒绝且6文件未改变"
+  }
+}
