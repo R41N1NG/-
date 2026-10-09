@@ -1,0 +1,12 @@
+AssertionError [ERR_ASSERTION]: 打开子菜单仍应看到可用选项
+
+0 !== 2
+
+    at run (/workspace/-/酒馆剧本插件/tests/composer.browser.js:10:178) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 2,
+  operator: 'strictEqual',
+  diff: 'simple'
+}

@@ -1,0 +1,134 @@
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+index 155895c..77f4049 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+@@ -3 +3 @@
+-  "version": "1.5.0",
++  "version": "1.5.1",
+@@ -9 +9 @@
+-    "test:browser": "node tests/browser.js && node tests/workflow.browser.js && node tests/packages.browser.js && node tests/player.browser.js && node tests/startup.browser.js && node tests/longtext.browser.js && node tests/library.browser.js && node tests/variables.browser.js && node tests/companion.browser.js",
++    "test:browser": "node tests/browser.js && node tests/workflow.browser.js && node tests/packages.browser.js && node tests/player.browser.js && node tests/startup.browser.js && node tests/longtext.browser.js && node tests/library.browser.js && node tests/variables.browser.js && node tests/companion.browser.js && node tests/composer.browser.js",
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+index eb92189..ab4f5cd 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+@@ -12 +12 @@ const exported = {type: 'script', enabled: true, name: '分支剧本与事件引
+-  info: 'v' + version + '：角色卡专用剧本库与聊天进度隔离；主模型末尾简短事实回报，普通事件本地结算，关键结果在阶段结束及固定间隔集中核验（失败最多重试三次）；自然阶段结束行动与自由输入识别；本地数值状态栏和历史快照；异常保留故事、关闭相关后续入口。作者流程分段提取与独立复核、整合及转化后复核，显示预计/实际/额外调用，阶段提示词分别编辑。分散证据按连续摘录数组严格校验，省略号拼接精确本地恢复，必要时仅定向补修证据，保留条件、数值和原始回复。兼容旧流程与自定义提示词；数值事件、交叉依赖、背包、防剧透及确认删除保留。',
++  info: 'v' + version + '：修复输入栏反复开关高度累积；选项栏在输入表单外独立占位，固定输入栏单独定位；子菜单独立滚动，不挤走当前阶段和行动选项，折叠时打开菜单临时显示行动。角色卡专用剧本库与聊天进度隔离；主模型末尾简短事实回报，普通事件本地结算，关键结果在阶段结束及固定间隔集中核验（失败最多重试三次）；自然阶段结束行动与自由输入识别；本地数值状态栏和历史快照；异常保留故事、关闭相关后续入口。作者流程分段提取与独立复核、整合及转化后复核，显示预计/实际/额外调用，阶段提示词分别编辑。分散证据按连续摘录数组严格校验，省略号拼接精确本地恢复，必要时仅定向补修证据，保留条件、数值和原始回复。兼容旧流程与自定义提示词；数值事件、交叉依赖、背包、防剧透及确认删除保留。',
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+index ecc7523..c183456 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+@@ -7 +7 @@
+-  const VERSION = '1.5.0';
++  const VERSION = '1.5.1';
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/loader.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/loader.js"
+index a8be927..062e9a1 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/loader.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/loader.js"
+@@ -6,3 +6,3 @@
+-    'https://raw.githubusercontent.com/R41N1NG/-/main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.5.0',
+-    'https://testingcf.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.5.0',
+-    'https://cdn.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.5.0',
++    'https://raw.githubusercontent.com/R41N1NG/-/main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.5.1',
++    'https://testingcf.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.5.1',
++    'https://cdn.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.5.1',
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+index 0ca3b9d..ba8ab30 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+@@ -31 +31 @@
+-  const QUICK_STYLE = `:host{display:block;color:#e7ecf6;font:14px/1.5 system-ui,-apple-system,sans-serif;color-scheme:dark}:host([hidden]){display:none!important}*{box-sizing:border-box}[hidden]{display:none!important}.quick{padding:5px 8px;background:#141c2cf5;border:1px solid #40516a;border-radius:12px;max-height:42dvh;overflow:auto;scrollbar-width:thin}.quick-header{display:flex;align-items:center;gap:5px}.quick-title{flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quick-title small{display:block;color:#b8c5da}.quick-list{display:flex;flex-wrap:wrap;gap:8px;max-height:160px;overflow:auto;padding:7px 0 2px;overscroll-behavior:contain;scrollbar-width:thin}button{font:inherit;min-width:44px;min-height:44px;padding:8px 10px;color:#e7ecf6;background:#26344b;border:1px solid #588b79;border-radius:10px;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.5;cursor:default}.quick-icon{flex:none;font-size:18px;padding:6px;position:relative}.quick-dot{position:absolute;right:4px;top:4px;width:7px;height:7px;background:#f0bf69;border-radius:50%}.bse-choice{flex:0 1 auto;max-width:100%;background:#263c34;text-align:left;overflow-wrap:anywhere}.bse-choice:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #9ce4cf;outline-offset:2px}.quick-menu{border-top:1px solid #40516a;margin-top:5px;padding-top:7px;max-height:200px;overflow:auto;overscroll-behavior:contain}.quick-tools{display:flex;gap:7px;flex-wrap:wrap}.quick-note,.empty{color:#a8b3ca;font-size:12px;margin:5px 0}.quick-pending{padding:7px;border:1px solid #40516a;border-radius:8px;margin:6px 0}.quick-pending p{margin:4px 0;overflow-wrap:anywhere}.acquired{border-bottom:1px solid #40516a;padding:4px 0}.acquired summary{cursor:pointer;min-height:44px;display:flex;align-items:center;overflow-wrap:anywhere}.acquired p{margin:5px 0;white-space:pre-wrap;overflow-wrap:anywhere}.quick-warn{color:#f0bf69}`;
++  const QUICK_STYLE = `:host{display:block;color:#e7ecf6;font:14px/1.5 system-ui,-apple-system,sans-serif;color-scheme:dark;white-space:normal}:host([hidden]){display:none!important}*{box-sizing:border-box}[hidden]{display:none!important}.quick{display:flex;flex-direction:column;padding:5px 8px;background:#141c2cf5;border:1px solid #40516a;border-radius:12px;max-height:42dvh;overflow:hidden;scrollbar-width:thin}.quick-header{flex:none;display:flex;align-items:center;gap:5px}.quick-title{flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quick-title small{display:block;color:#b8c5da}.quick-list{flex:none;display:flex;flex-wrap:wrap;gap:8px;max-height:min(160px,18dvh);overflow:auto;padding:7px 0 2px;overscroll-behavior:contain;scrollbar-width:thin}button{font:inherit;min-width:44px;min-height:44px;padding:8px 10px;color:#e7ecf6;background:#26344b;border:1px solid #588b79;border-radius:10px;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.5;cursor:default}.quick-icon{flex:none;font-size:18px;padding:6px;position:relative}.quick-dot{position:absolute;right:4px;top:4px;width:7px;height:7px;background:#f0bf69;border-radius:50%}.bse-choice{flex:0 1 auto;max-width:100%;background:#263c34;text-align:left;overflow-wrap:anywhere}.bse-choice:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #9ce4cf;outline-offset:2px}.quick-menu{flex:0 1 auto;min-height:0;border-top:1px solid #40516a;margin-top:5px;padding-top:7px;max-height:200px;overflow:auto;overscroll-behavior:contain}.quick-tools{display:flex;gap:7px;flex-wrap:wrap}.quick-note,.empty{color:#a8b3ca;font-size:12px;margin:5px 0}.quick-pending{padding:7px;border:1px solid #40516a;border-radius:8px;margin:6px 0}.quick-pending p{margin:4px 0;overflow-wrap:anywhere}.acquired{border-bottom:1px solid #40516a;padding:4px 0}.acquired summary{cursor:pointer;min-height:44px;display:flex;align-items:center;overflow-wrap:anywhere}.acquired p{margin:5px 0;white-space:pre-wrap;overflow-wrap:anywhere}.quick-warn{color:#f0bf69}`;
+@@ -120 +120 @@
+-    launcherBounds() { const v = this.win.visualViewport; const left = (v?.offsetLeft || 0) + 8, top = (v?.offsetTop || 0) + 8, dockTop = !this.quickElement?.hidden && this.quickDock?.element.getBoundingClientRect().top; return {left, top, right: Math.max(left, left + (v?.width || this.win.innerWidth) - 64), bottom: Math.max(top, Math.min(top + (v?.height || this.win.innerHeight) - 64, dockTop ? dockTop - 64 : Infinity))}; }
++    launcherBounds() { const v = this.win.visualViewport; const left = (v?.offsetLeft || 0) + 8, top = (v?.offsetTop || 0) + 8, dockTop = !this.quickElement?.hidden && this.quickDock && this.quickElement.getBoundingClientRect().top; return {left, top, right: Math.max(left, left + (v?.width || this.win.innerWidth) - 64), bottom: Math.max(top, Math.min(top + (v?.height || this.win.innerHeight) - 64, dockTop ? dockTop - 64 : Infinity))}; }
+@@ -126 +126 @@
+-        if (!this.quickElement?.hidden && this.quickDock) launcher.style.bottom = 'calc(' + Math.max(84, this.win.innerHeight - this.quickDock.element.getBoundingClientRect().top + 8) + 'px + env(safe-area-inset-bottom,0px))'; else launcher.style.removeProperty('bottom'); return;
++        if (!this.quickElement?.hidden && this.quickDock) launcher.style.bottom = 'calc(' + Math.max(84, this.win.innerHeight - this.quickElement.getBoundingClientRect().top + 8) + 'px + env(safe-area-inset-bottom,0px))'; else launcher.style.removeProperty('bottom'); return;
+@@ -133 +133 @@
+-      this.quickElement.style.cssText = 'position:absolute;left:0;right:0;top:0;z-index:10;max-width:100%;';
++      this.quickElement.style.cssText = 'position:relative;z-index:10;width:100%;max-width:100%;min-width:0;flex:none;margin-bottom:6px;';
+@@ -155,3 +154,0 @@
+-      for (const [name, original, applied] of [['padding-top', d.padding, d.appliedPadding], ['position', d.position, d.appliedPosition]]) if (applied && d.element.style.getPropertyValue(name) === applied) {
+-        if (original.value) d.element.style.setProperty(name, original.value, original.priority); else d.element.style.removeProperty(name);
+-      }
+@@ -161,9 +158,8 @@
+-      const container = composer?.matches('form, #send_form') ? composer : composer?.closest('form') || composer?.parentElement;
+-      if (!container || container === this.doc.body) return null;
+-      if (this.quickDock?.element === container) return container;
+-      const clones = [...container.querySelectorAll('#bse-quick-host')].filter(x => x !== this.quickElement);
+-      if (clones.length && this.quickDock) {
+-        const d = this.quickDock;
+-        for (const [name, original, applied] of [['padding-top', d.padding, d.appliedPadding], ['position', d.position, d.appliedPosition]]) if (applied && container.style.getPropertyValue(name) === applied) {
+-          if (original.value) container.style.setProperty(name, original.value, original.priority); else container.style.removeProperty(name);
+-        }
++      const anchor = composer?.matches('form, #send_form') ? composer : composer?.closest('form') || composer?.parentElement;
++      if (!anchor?.parentElement || anchor === this.doc.body) return null;
++      const chat = this.doc.getElementById('chat');
++      let floating = false;
++      // A fixed input row needs a viewport overlay. Normal rows reserve their own
++      // space through a sibling, without modifying host padding or chat height.
++      for (let el = anchor; el && (!chat || !el.contains(chat)); el = el.parentElement) {
++        if (['fixed', 'absolute'].includes(this.win.getComputedStyle(el).position)) { floating = true; break; }
+@@ -171 +167,3 @@
+-      clones.forEach(x => x.remove());
++      if (this.quickDock?.element === anchor && this.quickDock.floating === floating &&
++          (floating ? this.quickElement.parentElement === this.doc.body : this.quickElement.nextElementSibling === anchor)) return anchor;
++      [...this.doc.querySelectorAll('#bse-quick-host')].filter(x => x !== this.quickElement).forEach(x => x.remove());
+@@ -173,4 +171,5 @@
+-      const saved = name => ({value: container.style.getPropertyValue(name), priority: container.style.getPropertyPriority(name)});
+-      const d = this.quickDock = {element: container, padding: saved('padding-top'), position: saved('position'), basePadding: parseFloat(this.win.getComputedStyle(container).paddingTop) || 0};
+-      if (this.win.getComputedStyle(container).position === 'static') { d.appliedPosition = 'relative'; container.style.setProperty('position', d.appliedPosition); }
+-      container.prepend(this.quickElement); return container;
++      this.quickDock = {element: anchor, floating};
++      this.quickElement.style.position = floating ? 'fixed' : 'relative';
++      for (const name of ['left', 'right', 'top', 'width']) this.quickElement.style.removeProperty(name);
++      if (floating) this.doc.body.appendChild(this.quickElement); else anchor.before(this.quickElement);
++      return anchor;
+@@ -190,0 +190 @@
++        const choicesHidden=e.settings.quick_collapsed && !this.quickMenu;
+@@ -195 +195 @@
+-        this.quickShadow.innerHTML = `<style>${QUICK_STYLE}</style><div class="quick" role="region" aria-label="剧情选项与当前阶段"><div class="quick-header"><div class="quick-title" title="${escape(node?.title || '')}">当前阶段：${escape(node?.title || '暂无')}<small class="${blocked ? 'quick-warn' : ''}">${escape(state)}</small></div>${button('🎒', 'quick-bag', `class="quick-icon" aria-label="查看已获得内容，共${obtained.length}项" aria-expanded="${this.quickMenu === 'bag'}"`)}<button type="button" class="quick-icon" data-action="quick-gear" aria-label="剧情操作${stagePending || pending.length ? '，有待确认事项' : ''}" aria-expanded="${this.quickMenu === 'gear'}">⚙️${stagePending || pending.length ? '<span class="quick-dot" aria-hidden="true"></span>' : ''}</button>${button(e.settings.quick_collapsed ? '▾' : '▴', 'quick-collapse', `class="quick-icon" aria-label="${e.settings.quick_collapsed ? '展开' : '收起'}剧情选项" aria-expanded="${!e.settings.quick_collapsed}"`)}</div><div class="quick-list" ${e.settings.quick_collapsed ? 'hidden' : ''}>${routes.map(r => `<button type="button" class="bse-choice" data-action="quick-enter" data-id="${escape(r.target)}" data-status="${escape(r.status)}" title="${escape(r.status)} · 选择此分支">${escape(r.label)}</button>`).join('')}${!routes.length ? `<span class="empty">${e.settings.enabled && !s.paused ? '暂无可选行动，可继续互动或在 ⚙️ 中核验阶段。' : '可在 ⚙️ 中查看或恢复运行。'}</span>` : ''}${e.pendingChoice ? button('撤销待发送选择', 'quick-cancel') : ''}</div>${gear}${bag}</div>`;
++        this.quickShadow.innerHTML = `<style>${QUICK_STYLE}</style><div class="quick" role="region" aria-label="剧情选项与当前阶段"><div class="quick-header"><div class="quick-title" title="${escape(node?.title || '')}">当前阶段：${escape(node?.title || '暂无')}<small class="${blocked ? 'quick-warn' : ''}">${escape(state)}</small></div>${button('🎒', 'quick-bag', `class="quick-icon" aria-label="查看已获得内容，共${obtained.length}项" aria-expanded="${this.quickMenu === 'bag'}"`)}<button type="button" class="quick-icon" data-action="quick-gear" aria-label="剧情操作${stagePending || pending.length ? '，有待确认事项' : ''}" aria-expanded="${this.quickMenu === 'gear'}">⚙️${stagePending || pending.length ? '<span class="quick-dot" aria-hidden="true"></span>' : ''}</button>${button(choicesHidden ? '▾' : '▴', 'quick-collapse', `class="quick-icon" aria-label="${choicesHidden ? '展开' : '收起'}剧情选项" aria-expanded="${!choicesHidden}"`)}</div><div class="quick-list" ${choicesHidden ? 'hidden' : ''}>${routes.map(r => `<button type="button" class="bse-choice" data-action="quick-enter" data-id="${escape(r.target)}" data-status="${escape(r.status)}" title="${escape(r.status)} · 选择此分支">${escape(r.label)}</button>`).join('')}${!routes.length ? `<span class="empty">${e.settings.enabled && !s.paused ? '暂无可选行动，可继续互动或在 ⚙️ 中核验阶段。' : '可在 ⚙️ 中查看或恢复运行。'}</span>` : ''}${e.pendingChoice ? button('撤销待发送选择', 'quick-cancel') : ''}</div>${gear}${bag}</div>`;
+@@ -210,2 +210,7 @@
+-      const d = this.quickDock, padding = (d.basePadding + this.quickElement.getBoundingClientRect().height + 6) + 'px';
+-      if (dock.style.getPropertyValue('padding-top') !== padding) { d.appliedPadding = padding; dock.style.setProperty('padding-top', padding); }
++      const d = this.quickDock;
++      if (d.floating) {
++        const rect = dock.getBoundingClientRect();
++        this.quickElement.style.left = rect.left + 'px';
++        this.quickElement.style.width = rect.width + 'px';
++        this.quickElement.style.top = (rect.top - this.quickElement.getBoundingClientRect().height - 6) + 'px';
++      }
+@@ -213,2 +218,2 @@
+-      if (chat && !chat.contains(dock)) {
+-        const cr = chat.getBoundingClientRect(), top = dock.getBoundingClientRect().top;
++      if (d.floating && chat && !chat.contains(dock)) {
++        const cr = chat.getBoundingClientRect(), top = this.quickElement.getBoundingClientRect().top;
+@@ -218,2 +223,2 @@
+-          const height = Math.max(0, top - cr.top - 6 - inset) + 'px';
+-          if (chat.style.getPropertyValue('max-height') !== height) { d.appliedChatHeight = height; chat.style.setProperty('max-height', height); }
++          const height = (Math.round(Math.max(0, top - cr.top - 6 - inset) * 100) / 100) + 'px';
++          if (chat.style.getPropertyValue('max-height') !== height) { chat.style.setProperty('max-height', height); d.appliedChatHeight = chat.style.getPropertyValue('max-height'); }
+@@ -480 +485 @@
+-      if (action === 'quick-collapse') { this.e.settings.quick_collapsed = !this.e.settings.quick_collapsed; this.e.saveSettings(); this.renderQuick(); return; }
++      if (action === 'quick-collapse') { this.e.settings.quick_collapsed = !(this.e.settings.quick_collapsed && !this.quickMenu); this.quickMenu = ''; this.e.saveSettings(); this.renderQuick(); return; }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/composer.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/composer.browser.js"
+new file mode 100644
+index 0000000..c8587d8
+--- /dev/null
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/composer.browser.js"
+@@ -0,0 +1,12 @@
++'use strict';
++const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{chromium}=require('playwright'),{fixture}=require('./helpers');
++const root=path.resolve(__dirname,'..'),bundle=JSON.parse(fs.readFileSync(path.join(root,'branch_story_tavern_helper_import.json'))).content,fixtureText=fixture.toString().replace('host: new Host(root)','host: null');
++const server=http.createServer((req,res)=>{if(req.url==='/plugin.js'){res.setHeader('Content-Type','text/javascript');return res.end(bundle);}if(req.url==='/frame')return res.end('<script src="/plugin.js"></script>');const fixed=req.url.includes('fixed');res.setHeader('Content-Type','text/html;charset=utf-8');res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0;font:16px system-ui}#sheld{height:100dvh;display:flex;flex-direction:column}#chat{flex:1;min-height:0;overflow:auto;background:#ddd}#form_sheld{width:100%;white-space:nowrap}#send_form{display:flex;flex-wrap:wrap;align-items:center;border:1px solid #999;padding-top:0.333333px;min-height:48px}#nonQRFormItems{display:flex;width:100%;order:25;gap:5px}#send_textarea{flex:1;order:3;min-width:0;height:46px;resize:vertical}iframe{display:none}${fixed?'#form_sheld{position:fixed;left:0;right:0;bottom:0}#chat{position:absolute;left:0;right:0;top:0;bottom:48px}':''}</style><div id="sheld"><div id="chat"><h1>聊天正文</h1><p>反复开关后正文空间应保持稳定。</p></div><div id="form_sheld"><form id="send_form"><div id="nonQRFormItems"><button type="button">☰</button><textarea id="send_textarea"></textarea><button type="button">发送</button></div></form></div></div><script>const C={clone:v=>JSON.parse(JSON.stringify(v))};window.testHost=(${fixtureText})();window.TavernHelper=testHost.root;window.reloadPlugin=()=>{document.querySelector('iframe')?.remove();const f=document.createElement('iframe');f.src='/frame';document.body.append(f);};reloadPlugin();</script>`);});
++const engine=(page,fn)=>page.evaluate(src=>new Function('e','panel','return ('+src+')(e,panel)')(document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine,document.querySelector('iframe').contentWindow.__branch_story_plugin__.panel),fn.toString());
++const settled=page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
++const metrics=page=>page.evaluate(()=>{const q=document.querySelector('#bse-quick-host'),s=q.shadowRoot,f=document.querySelector('#send_form'),c=document.querySelector('#chat'),input=document.querySelector('#send_textarea');return {padding:f.style.paddingTop,height:f.getBoundingClientRect().height,chatHeight:c.getBoundingClientRect().height,chatBottom:c.getBoundingClientRect().bottom,quickTop:q.getBoundingClientRect().top,quickBottom:q.getBoundingClientRect().bottom,inputTop:input.getBoundingClientRect().top,visibleChoices:[...s.querySelectorAll('.bse-choice')].filter(x=>x.getClientRects().length).length,headerVisible:s.querySelector('.quick-header').getBoundingClientRect().top>=q.getBoundingClientRect().top-1};});
++async function run(){await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({headless:true,executablePath:process.env.BSE_CHROMIUM || '/usr/bin/chromium',args:['--no-sandbox']});const errors=[];try{for(const width of [1366,390,320])for(const fixed of [false,true]){const context=await browser.newContext({viewport:{width,height:800}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:'+server.address().port+'/'+(fixed?'fixed':'flow'));await page.waitForFunction(()=>document.querySelector('iframe')?.contentWindow?.__branch_story_startup__?.status==='ready');await engine(page,async(e)=>{await e.setProject({id:'layout',title:'布局测试',collections:Array.from({length:16},(_,i)=>({id:'item'+i,title:'已获得物品'+i,external:true,description:'物品说明。'.repeat(30)})),nodes:[{id:'a',title:'大厅',routes:[{target:'b',label:'进入阳台'},{target:'c',label:'探查密室'}]},{id:'b',title:'阳台',routes:[]},{id:'c',title:'密室',routes:[]}]});e.state.collected_ids=e.project.collections.map(x=>x.id);await e.updateSettings({enabled:true,runtime_mode:'companion',quick_options:true,quick_collapsed:false});e.save();});await settled(page);const before=await metrics(page);for(let i=0;i<20;i++){await engine(page,async(e,panel)=>{panel.toggle();await e.updateSettings({quick_options:false});await e.updateSettings({quick_options:true});panel.close();});await settled(page);}const after=await metrics(page);assert(Math.abs(after.height-before.height)<1,`高度累积 ${width}/${fixed}: ${before.height} -> ${after.height}`);assert(Math.abs(after.chatHeight-before.chatHeight)<1,`正文高度累积变化 ${width}/${fixed}`);assert.equal(after.padding,before.padding);assert(after.chatBottom<=after.quickTop+1);assert(after.quickBottom<=after.inputTop-3);
++for(let i=0;i<4;i++)for(const action of ['quick-bag','quick-gear']){await page.locator('[data-action="'+action+'"]').click();await settled(page);let m=await metrics(page);assert.equal(m.visibleChoices,2,'打开子菜单不能隐藏选项');if(i===0 && action==='quick-bag'){fs.mkdirSync(path.join(root,'artifacts'),{recursive:true});await page.screenshot({path:path.join(root,'artifacts',`composer-${width}-${fixed?'fixed':'flow'}.png`)});}assert(m.headerVisible,'子菜单不能滚掉当前阶段/选项');assert(await page.locator('.bse-choice').first().evaluate(el=>{const r=el.getBoundingClientRect(),b=el.closest('.quick').getBoundingClientRect();return r.top>=b.top && r.bottom<=b.bottom;}),'菜单打开后行动按钮仍须在可见范围');await page.locator('.quick-menu').evaluate(el=>{el.scrollTop=el.scrollHeight;});m=await metrics(page);assert.equal(m.visibleChoices,2);assert(m.headerVisible);}
++await page.locator('[data-action="quick-collapse"]').click();assert.equal((await metrics(page)).visibleChoices,0);await page.locator('[data-action="quick-bag"]').click();assert.equal((await metrics(page)).visibleChoices,2,'打开子菜单仍应看到可用选项');await page.locator('[data-action="quick-bag"]').click();assert.equal((await metrics(page)).visibleChoices,0,'关闭菜单恢复主动折叠状态');await page.locator('[data-action="quick-collapse"]').click();await settled(page);
++await page.locator('[data-action="quick-gear"]').click();await page.locator('.bse-choice').first().click();assert((await page.locator('#send_textarea').inputValue()).includes('进入阳台'));await page.setViewportSize({width,height:500});await settled(page);assert.equal((await metrics(page)).visibleChoices,2);await page.setViewportSize({width,height:800});await settled(page);await page.evaluate(()=>{const old=document.querySelector('#send_form');const next=old.cloneNode(true);old.replaceWith(next);});await settled(page);assert.equal(await page.locator('#bse-quick-host').count(),1);assert.equal((await metrics(page)).visibleChoices,2);await engine(page,async(e,panel)=>{panel.destroy();});assert.equal(await page.locator('#send_form').evaluate(el=>el.style.paddingTop),'');assert.equal(await page.locator('#chat').evaluate(el=>el.style.maxHeight),'');console.log(`${width}px/${fixed?'固定输入栏':'酒馆嵌套流式输入栏'}：20次开关、菜单/折叠切换、正文空间、宿主样式恢复通过`);await context.close();}assert.deepEqual(errors,[]);}finally{await browser.close();await new Promise(r=>server.close(r));}}
++run().catch(e=>{console.error(e);process.exitCode=1;});

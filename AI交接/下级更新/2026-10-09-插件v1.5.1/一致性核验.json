@@ -1,0 +1,34 @@
+{
+  "version": "1.5.1",
+  "source_count": 9,
+  "zip_entries": 54,
+  "zip_bytes": 447942,
+  "code_bytes": 427882,
+  "crc_and_each_file_byte": "PASS",
+  "installer_source_consistency": "PASS",
+  "unit_tests": 193,
+  "browser_groups": 10,
+  "new_layout_viewports": [
+    1366,
+    390,
+    320
+  ],
+  "layouts": [
+    "SillyTavern 1.14 nested flow",
+    "fixed composer"
+  ],
+  "cycles_each": 20,
+  "old_reproduction": {
+    "input_height_before": 163.328125,
+    "after_20_cycles": 278.328125,
+    "collapsed_menu_visible_choices": 0,
+    "expected_choices": 2
+  },
+  "paid_api_calls": 0,
+  "real_user_theme_tested": false,
+  "sha256": {
+    "branch_story_plugin_v1.5.1.zip": "35613312eb94347e6c00473eadd239ec4e4cea6104805ce1444139d1a559fd1a",
+    "branch_story_tavern_helper_import.json": "27fc2e6d839e35927f3d3402b85ff323b886306c692947df6b992a6b75aabc00",
+    "tse_engine_tavern_helper_import.json": "a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065"
+  }
+}

@@ -1,0 +1,9 @@
+AssertionError [ERR_ASSERTION]: 高度累积 1366/false: 163.328125 -> 278.328125
+    at run (/workspace/-/酒馆剧本插件/tests/composer.browser.js:8:1461) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}

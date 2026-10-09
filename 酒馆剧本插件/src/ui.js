@@ -28,7 +28,7 @@
     .launcher{width:48px;height:48px;padding:12px;border-radius:50%;touch-action:none;user-select:none;display:grid;place-items:center;cursor:grab}.launcher.dragging{cursor:grabbing}.launcher svg{pointer-events:none}.panel{position:relative}.panel-body{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0}.spoiler-region{position:relative;min-width:0}.spoiler-region.locked{height:clamp(240px,calc(var(--bse-height,100dvh) - 330px),560px);overflow:hidden}.spoiler-content.locked{filter:blur(10px);pointer-events:none;user-select:none}.spoiler-layer{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;padding:16px;background:#10182780}.spoiler-box{width:min(430px,100%);padding:20px;border:1px solid var(--line);background:#141c2cf5;border-radius:16px;text-align:center;box-shadow:0 10px 36px #0008}.spoiler-box h2{margin:8px 0}.lock-icon{font-size:38px;display:block}.spoiler-box .row{justify-content:center}.header-actions{display:flex;gap:8px}.analysis-report li{overflow-wrap:anywhere}.analysis-report ul{padding-left:20px}.event-guide ol{padding-left:22px}.event-guide li{margin:6px 0}
   `;
   const LIBRARY_STYLE = `.project-switcher{display:flex;gap:8px;align-items:center;padding:8px 16px;border-bottom:1px solid #33415b;flex:none}.project-switcher label{display:flex;gap:8px;align-items:center;min-width:0;flex:1;font-size:13px;color:#a8b3ca}.project-switcher select{flex:1;min-width:0;max-width:100%;margin:0}.project-switcher button{flex:none}.library-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:12px}.library-item h3{overflow-wrap:anywhere}.library-item .row{flex-wrap:wrap}@media(max-width:480px){.project-switcher{padding:6px 10px}.project-switcher label{gap:5px;font-size:12px}.project-switcher button{padding:8px}}`;
-  const QUICK_STYLE = `:host{display:block;color:#e7ecf6;font:14px/1.5 system-ui,-apple-system,sans-serif;color-scheme:dark}:host([hidden]){display:none!important}*{box-sizing:border-box}[hidden]{display:none!important}.quick{padding:5px 8px;background:#141c2cf5;border:1px solid #40516a;border-radius:12px;max-height:42dvh;overflow:auto;scrollbar-width:thin}.quick-header{display:flex;align-items:center;gap:5px}.quick-title{flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quick-title small{display:block;color:#b8c5da}.quick-list{display:flex;flex-wrap:wrap;gap:8px;max-height:160px;overflow:auto;padding:7px 0 2px;overscroll-behavior:contain;scrollbar-width:thin}button{font:inherit;min-width:44px;min-height:44px;padding:8px 10px;color:#e7ecf6;background:#26344b;border:1px solid #588b79;border-radius:10px;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.5;cursor:default}.quick-icon{flex:none;font-size:18px;padding:6px;position:relative}.quick-dot{position:absolute;right:4px;top:4px;width:7px;height:7px;background:#f0bf69;border-radius:50%}.bse-choice{flex:0 1 auto;max-width:100%;background:#263c34;text-align:left;overflow-wrap:anywhere}.bse-choice:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #9ce4cf;outline-offset:2px}.quick-menu{border-top:1px solid #40516a;margin-top:5px;padding-top:7px;max-height:200px;overflow:auto;overscroll-behavior:contain}.quick-tools{display:flex;gap:7px;flex-wrap:wrap}.quick-note,.empty{color:#a8b3ca;font-size:12px;margin:5px 0}.quick-pending{padding:7px;border:1px solid #40516a;border-radius:8px;margin:6px 0}.quick-pending p{margin:4px 0;overflow-wrap:anywhere}.acquired{border-bottom:1px solid #40516a;padding:4px 0}.acquired summary{cursor:pointer;min-height:44px;display:flex;align-items:center;overflow-wrap:anywhere}.acquired p{margin:5px 0;white-space:pre-wrap;overflow-wrap:anywhere}.quick-warn{color:#f0bf69}`;
+  const QUICK_STYLE = `:host{display:block;color:#e7ecf6;font:14px/1.5 system-ui,-apple-system,sans-serif;color-scheme:dark;white-space:normal}:host([hidden]){display:none!important}*{box-sizing:border-box}[hidden]{display:none!important}.quick{display:flex;flex-direction:column;padding:5px 8px;background:#141c2cf5;border:1px solid #40516a;border-radius:12px;max-height:42dvh;overflow:hidden;scrollbar-width:thin}.quick-header{flex:none;display:flex;align-items:center;gap:5px}.quick-title{flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.quick-title small{display:block;color:#b8c5da}.quick-list{flex:none;display:flex;flex-wrap:wrap;gap:8px;max-height:min(160px,18dvh);overflow:auto;padding:7px 0 2px;overscroll-behavior:contain;scrollbar-width:thin}button{font:inherit;min-width:44px;min-height:44px;padding:8px 10px;color:#e7ecf6;background:#26344b;border:1px solid #588b79;border-radius:10px;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.5;cursor:default}.quick-icon{flex:none;font-size:18px;padding:6px;position:relative}.quick-dot{position:absolute;right:4px;top:4px;width:7px;height:7px;background:#f0bf69;border-radius:50%}.bse-choice{flex:0 1 auto;max-width:100%;background:#263c34;text-align:left;overflow-wrap:anywhere}.bse-choice:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #9ce4cf;outline-offset:2px}.quick-menu{flex:0 1 auto;min-height:0;border-top:1px solid #40516a;margin-top:5px;padding-top:7px;max-height:200px;overflow:auto;overscroll-behavior:contain}.quick-tools{display:flex;gap:7px;flex-wrap:wrap}.quick-note,.empty{color:#a8b3ca;font-size:12px;margin:5px 0}.quick-pending{padding:7px;border:1px solid #40516a;border-radius:8px;margin:6px 0}.quick-pending p{margin:4px 0;overflow-wrap:anywhere}.acquired{border-bottom:1px solid #40516a;padding:4px 0}.acquired summary{cursor:pointer;min-height:44px;display:flex;align-items:center;overflow-wrap:anywhere}.acquired p{margin:5px 0;white-space:pre-wrap;overflow-wrap:anywhere}.quick-warn{color:#f0bf69}`;
   class Panel {
     constructor(engine) { this.e = engine; this.doc = engine.host.doc(); this.win = this.doc.defaultView; this.tab = 'run'; this.nodeTab = 'nodes'; this.recordsTab = 'progress'; this.sectionPositions = {}; this.opened = false; this.unlocked = false; this.runUnlocked = false; this.recordUnlocked = false; this.spoilerPrompt = false; this.privacyProject = ''; this.forms = {}; this.details = {}; this.search = {}; this.nodeId = ''; this.eventId = ''; this.packageId = ''; this.graphSelected = ''; this.variableId = ''; this.resultId = ''; this.quickMenu = ''; this.listPage = 0; this.bookProjects = []; this.unsub = null; }
     mount() {
@@ -117,20 +117,20 @@
         if (this.ignoreLauncherClick && ev.detail !== 0) { this.ignoreLauncherClick = false; return; } this.toggle();
       };
     }
-    launcherBounds() { const v = this.win.visualViewport; const left = (v?.offsetLeft || 0) + 8, top = (v?.offsetTop || 0) + 8, dockTop = !this.quickElement?.hidden && this.quickDock?.element.getBoundingClientRect().top; return {left, top, right: Math.max(left, left + (v?.width || this.win.innerWidth) - 64), bottom: Math.max(top, Math.min(top + (v?.height || this.win.innerHeight) - 64, dockTop ? dockTop - 64 : Infinity))}; }
+    launcherBounds() { const v = this.win.visualViewport; const left = (v?.offsetLeft || 0) + 8, top = (v?.offsetTop || 0) + 8, dockTop = !this.quickElement?.hidden && this.quickDock && this.quickElement.getBoundingClientRect().top; return {left, top, right: Math.max(left, left + (v?.width || this.win.innerWidth) - 64), bottom: Math.max(top, Math.min(top + (v?.height || this.win.innerHeight) - 64, dockTop ? dockTop - 64 : Infinity))}; }
     applyLauncherPosition() {
       const launcher = this.shadow?.querySelector('.launcher'); if (!launcher) return;
       const p = this.e.settings.launcher_position;
       if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) {
         launcher.style.removeProperty('left'); launcher.style.removeProperty('top'); launcher.style.removeProperty('right');
-        if (!this.quickElement?.hidden && this.quickDock) launcher.style.bottom = 'calc(' + Math.max(84, this.win.innerHeight - this.quickDock.element.getBoundingClientRect().top + 8) + 'px + env(safe-area-inset-bottom,0px))'; else launcher.style.removeProperty('bottom'); return;
+        if (!this.quickElement?.hidden && this.quickDock) launcher.style.bottom = 'calc(' + Math.max(84, this.win.innerHeight - this.quickElement.getBoundingClientRect().top + 8) + 'px + env(safe-area-inset-bottom,0px))'; else launcher.style.removeProperty('bottom'); return;
       }
       const b = this.launcherBounds(); launcher.style.left = (b.left + Math.max(0, Math.min(1, p.x)) * (b.right - b.left)) + 'px'; launcher.style.top = (b.top + Math.max(0, Math.min(1, p.y)) * (b.bottom - b.top)) + 'px'; launcher.style.right = 'auto'; launcher.style.bottom = 'auto';
     }
     mountQuick() {
       this.doc.getElementById('bse-quick-host')?.remove();
       this.quickElement = this.doc.createElement('div'); this.quickElement.id = 'bse-quick-host'; this.quickElement.hidden = true;
-      this.quickElement.style.cssText = 'position:absolute;left:0;right:0;top:0;z-index:10;max-width:100%;';
+      this.quickElement.style.cssText = 'position:relative;z-index:10;width:100%;max-width:100%;min-width:0;flex:none;margin-bottom:6px;';
       this.quickShadow = this.quickElement.attachShadow({mode: 'open'}); this.doc.body.appendChild(this.quickElement);
       this.quickShadow.addEventListener('click', ev => { const b = ev.target.closest?.('[data-action]'); if (b && !b.disabled) this.run(() => this.action(b.dataset.action, b)); });
       if (this.win.ResizeObserver) { this.composerResize = new this.win.ResizeObserver(() => this.refreshComposer()); this.quickResize = new this.win.ResizeObserver(() => this.positionQuick()); this.quickResize.observe(this.quickElement); }
@@ -152,28 +152,27 @@
       if (d.chat && d.chat.style.getPropertyValue('max-height') === d.appliedChatHeight) {
         if (d.chatHeight.value) d.chat.style.setProperty('max-height', d.chatHeight.value, d.chatHeight.priority); else d.chat.style.removeProperty('max-height');
       }
-      for (const [name, original, applied] of [['padding-top', d.padding, d.appliedPadding], ['position', d.position, d.appliedPosition]]) if (applied && d.element.style.getPropertyValue(name) === applied) {
-        if (original.value) d.element.style.setProperty(name, original.value, original.priority); else d.element.style.removeProperty(name);
-      }
       this.quickDock = null;
     }
     dockQuick(composer) {
-      const container = composer?.matches('form, #send_form') ? composer : composer?.closest('form') || composer?.parentElement;
-      if (!container || container === this.doc.body) return null;
-      if (this.quickDock?.element === container) return container;
-      const clones = [...container.querySelectorAll('#bse-quick-host')].filter(x => x !== this.quickElement);
-      if (clones.length && this.quickDock) {
-        const d = this.quickDock;
-        for (const [name, original, applied] of [['padding-top', d.padding, d.appliedPadding], ['position', d.position, d.appliedPosition]]) if (applied && container.style.getPropertyValue(name) === applied) {
-          if (original.value) container.style.setProperty(name, original.value, original.priority); else container.style.removeProperty(name);
-        }
+      const anchor = composer?.matches('form, #send_form') ? composer : composer?.closest('form') || composer?.parentElement;
+      if (!anchor?.parentElement || anchor === this.doc.body) return null;
+      const chat = this.doc.getElementById('chat');
+      let floating = false;
+      // A fixed input row needs a viewport overlay. Normal rows reserve their own
+      // space through a sibling, without modifying host padding or chat height.
+      for (let el = anchor; el && (!chat || !el.contains(chat)); el = el.parentElement) {
+        if (['fixed', 'absolute'].includes(this.win.getComputedStyle(el).position)) { floating = true; break; }
       }
-      clones.forEach(x => x.remove());
+      if (this.quickDock?.element === anchor && this.quickDock.floating === floating &&
+          (floating ? this.quickElement.parentElement === this.doc.body : this.quickElement.nextElementSibling === anchor)) return anchor;
+      [...this.doc.querySelectorAll('#bse-quick-host')].filter(x => x !== this.quickElement).forEach(x => x.remove());
       this.releaseQuickDock();
-      const saved = name => ({value: container.style.getPropertyValue(name), priority: container.style.getPropertyPriority(name)});
-      const d = this.quickDock = {element: container, padding: saved('padding-top'), position: saved('position'), basePadding: parseFloat(this.win.getComputedStyle(container).paddingTop) || 0};
-      if (this.win.getComputedStyle(container).position === 'static') { d.appliedPosition = 'relative'; container.style.setProperty('position', d.appliedPosition); }
-      container.prepend(this.quickElement); return container;
+      this.quickDock = {element: anchor, floating};
+      this.quickElement.style.position = floating ? 'fixed' : 'relative';
+      for (const name of ['left', 'right', 'top', 'width']) this.quickElement.style.removeProperty(name);
+      if (floating) this.doc.body.appendChild(this.quickElement); else anchor.before(this.quickElement);
+      return anchor;
     }
     renderQuick() {
       if (!this.quickElement) return;
@@ -188,11 +187,12 @@
       this.availableQuickRoutes = routes;
       if (signature !== this.quickSignature) {
         this.quickSignature = signature;
+        const choicesHidden=e.settings.quick_collapsed && !this.quickMenu;
         const ready = e.settings.enabled && !s.paused && (!e.busy || e.settings.runtime_mode==='companion' && e.checkpointJob);
         const state = e.busy ? '辅助核验中…' : !e.settings.enabled ? blocked ? '未启用：存在依赖问题' : '未启用' : s.paused ? '已暂停' : s.completed_node_ids.includes(node?.id) ? '阶段已完成' : s.companion?.continuity_hold ? '当前场景保留，后续待处理' : companionPending ? companionPending+' 项结果待核验' : routes.length + ' 个可选行动';
         const gear = this.quickMenu === 'gear' ? `<div class="quick-menu" aria-label="剧情操作"><div class="quick-tools">${e.settings.runtime_mode==='legacy' ? button(s.completed_node_ids.includes(node?.id) ? '阶段已完成' : '确认阶段完成', 'quick-complete', !ready || s.completed_node_ids.includes(node?.id) ? 'disabled' : '') : ''}${button(e.busy ? '正在核验…' : '核验本轮', 'quick-check', ready && !e.busy ? '' : 'disabled')}${button(s.paused ? '继续' : '暂停', 'quick-pause', e.settings.enabled && !e.busy ? '' : 'disabled')}${button('查看后台面板', 'quick-panel')}</div>${stagePending && e.settings.runtime_mode==='legacy' ? '<p class="quick-note quick-warn">本阶段核验待玩家确认，可点击“确认阶段完成”。</p>' : ''}${pending.map(r => `<div class="quick-pending"><strong>${escape(p.events.find(x => x.id === r.event_id)?.title || r.event_id)}</strong><p>${r.status === 'uncertain' ? '判断不确定，请结合正文确认' : '已判定发生，等待确认结算'}</p>${r.evidence.map(x => `<p class="quick-note">“${escape(x.quote)}”</p>`).join('')}<div class="quick-tools">${button('确认发生', 'quick-accept', `data-key="${escape(r.key)}" data-id="${escape(r.event_id)}" ${ready ? '' : 'disabled'}`)}${button('忽略', 'quick-dismiss', `data-key="${escape(r.key)}" data-id="${escape(r.event_id)}" ${e.busy ? 'disabled' : ''}`)}</div></div>`).join('')}<p class="quick-note">${e.settings.runtime_mode==='companion' ? '使用行动选项或自由输入完成阶段。核验包含待定事件及最近阶段正文。' : '确认完成会按配置结算本阶段；核验读取本轮玩家输入与选中回复。'}</p></div>` : '';
         const bag = this.quickMenu === 'bag' ? `<div class="quick-menu" aria-label="已获得内容">${this.obtainedMarkup(obtained)}<p class="quick-note">与后台完成记录同步，点击条目查看说明。</p></div>` : '';
-        this.quickShadow.innerHTML = `<style>${QUICK_STYLE}</style><div class="quick" role="region" aria-label="剧情选项与当前阶段"><div class="quick-header"><div class="quick-title" title="${escape(node?.title || '')}">当前阶段：${escape(node?.title || '暂无')}<small class="${blocked ? 'quick-warn' : ''}">${escape(state)}</small></div>${button('🎒', 'quick-bag', `class="quick-icon" aria-label="查看已获得内容，共${obtained.length}项" aria-expanded="${this.quickMenu === 'bag'}"`)}<button type="button" class="quick-icon" data-action="quick-gear" aria-label="剧情操作${stagePending || pending.length ? '，有待确认事项' : ''}" aria-expanded="${this.quickMenu === 'gear'}">⚙️${stagePending || pending.length ? '<span class="quick-dot" aria-hidden="true"></span>' : ''}</button>${button(e.settings.quick_collapsed ? '▾' : '▴', 'quick-collapse', `class="quick-icon" aria-label="${e.settings.quick_collapsed ? '展开' : '收起'}剧情选项" aria-expanded="${!e.settings.quick_collapsed}"`)}</div><div class="quick-list" ${e.settings.quick_collapsed ? 'hidden' : ''}>${routes.map(r => `<button type="button" class="bse-choice" data-action="quick-enter" data-id="${escape(r.target)}" data-status="${escape(r.status)}" title="${escape(r.status)} · 选择此分支">${escape(r.label)}</button>`).join('')}${!routes.length ? `<span class="empty">${e.settings.enabled && !s.paused ? '暂无可选行动，可继续互动或在 ⚙️ 中核验阶段。' : '可在 ⚙️ 中查看或恢复运行。'}</span>` : ''}${e.pendingChoice ? button('撤销待发送选择', 'quick-cancel') : ''}</div>${gear}${bag}</div>`;
+        this.quickShadow.innerHTML = `<style>${QUICK_STYLE}</style><div class="quick" role="region" aria-label="剧情选项与当前阶段"><div class="quick-header"><div class="quick-title" title="${escape(node?.title || '')}">当前阶段：${escape(node?.title || '暂无')}<small class="${blocked ? 'quick-warn' : ''}">${escape(state)}</small></div>${button('🎒', 'quick-bag', `class="quick-icon" aria-label="查看已获得内容，共${obtained.length}项" aria-expanded="${this.quickMenu === 'bag'}"`)}<button type="button" class="quick-icon" data-action="quick-gear" aria-label="剧情操作${stagePending || pending.length ? '，有待确认事项' : ''}" aria-expanded="${this.quickMenu === 'gear'}">⚙️${stagePending || pending.length ? '<span class="quick-dot" aria-hidden="true"></span>' : ''}</button>${button(choicesHidden ? '▾' : '▴', 'quick-collapse', `class="quick-icon" aria-label="${choicesHidden ? '展开' : '收起'}剧情选项" aria-expanded="${!choicesHidden}"`)}</div><div class="quick-list" ${choicesHidden ? 'hidden' : ''}>${routes.map(r => `<button type="button" class="bse-choice" data-action="quick-enter" data-id="${escape(r.target)}" data-status="${escape(r.status)}" title="${escape(r.status)} · 选择此分支">${escape(r.label)}</button>`).join('')}${!routes.length ? `<span class="empty">${e.settings.enabled && !s.paused ? '暂无可选行动，可继续互动或在 ⚙️ 中核验阶段。' : '可在 ⚙️ 中查看或恢复运行。'}</span>` : ''}${e.pendingChoice ? button('撤销待发送选择', 'quick-cancel') : ''}</div>${gear}${bag}</div>`;
       }
       this.positionQuick();
     }
@@ -207,16 +207,21 @@
       if (this.quickElement.hidden !== hidden) this.quickElement.hidden = hidden;
       if (hidden) { this.releaseQuickDock(); this.applyLauncherPosition(); return; }
       const dock = this.dockQuick(composer); if (!dock) { this.quickElement.hidden = true; this.releaseQuickDock(); return; }
-      const d = this.quickDock, padding = (d.basePadding + this.quickElement.getBoundingClientRect().height + 6) + 'px';
-      if (dock.style.getPropertyValue('padding-top') !== padding) { d.appliedPadding = padding; dock.style.setProperty('padding-top', padding); }
+      const d = this.quickDock;
+      if (d.floating) {
+        const rect = dock.getBoundingClientRect();
+        this.quickElement.style.left = rect.left + 'px';
+        this.quickElement.style.width = rect.width + 'px';
+        this.quickElement.style.top = (rect.top - this.quickElement.getBoundingClientRect().height - 6) + 'px';
+      }
       const chat = this.doc.getElementById('chat');
-      if (chat && !chat.contains(dock)) {
-        const cr = chat.getBoundingClientRect(), top = dock.getBoundingClientRect().top;
+      if (d.floating && chat && !chat.contains(dock)) {
+        const cr = chat.getBoundingClientRect(), top = this.quickElement.getBoundingClientRect().top;
         if (d.chat || cr.bottom > top + 1) {
           if (!d.chat) { d.chat = chat; d.chatHeight = {value: chat.style.getPropertyValue('max-height'), priority: chat.style.getPropertyPriority('max-height')}; }
           const style = this.win.getComputedStyle(chat), inset = style.boxSizing === 'border-box' ? 0 : ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'].reduce((sum, k) => sum + (parseFloat(style[k]) || 0), 0);
-          const height = Math.max(0, top - cr.top - 6 - inset) + 'px';
-          if (chat.style.getPropertyValue('max-height') !== height) { d.appliedChatHeight = height; chat.style.setProperty('max-height', height); }
+          const height = (Math.round(Math.max(0, top - cr.top - 6 - inset) * 100) / 100) + 'px';
+          if (chat.style.getPropertyValue('max-height') !== height) { chat.style.setProperty('max-height', height); d.appliedChatHeight = chat.style.getPropertyValue('max-height'); }
         }
       }
       this.applyLauncherPosition();
@@ -477,7 +482,7 @@
       if (action === 'unlock-confirm') { if (this.tab === 'run') this.runUnlocked = true; else if (this.tab === 'records') this.recordUnlocked = true; else this.unlocked = true; this.spoilerPrompt = false; this.updatePrivacy(); this.shadow.querySelector('[data-action="spoiler-lock"]')?.focus(); return; }
       if (action === 'spoiler-lock') { if (this.tab === 'run') this.runUnlocked = false; else if (this.tab === 'records') this.recordUnlocked = false; else this.unlocked = false; this.spoilerPrompt = false; this.updatePrivacy(); this.shadow.querySelector('[data-action="unlock-ask"]').focus(); return; }
       if (action === 'quick-gear' || action === 'quick-bag') { const menu = action === 'quick-gear' ? 'gear' : 'bag'; this.quickMenu = this.quickMenu === menu ? '' : menu; this.renderQuick(); return; }
-      if (action === 'quick-collapse') { this.e.settings.quick_collapsed = !this.e.settings.quick_collapsed; this.e.saveSettings(); this.renderQuick(); return; }
+      if (action === 'quick-collapse') { this.e.settings.quick_collapsed = !(this.e.settings.quick_collapsed && !this.quickMenu); this.quickMenu = ''; this.e.saveSettings(); this.renderQuick(); return; }
       if(action==='companion-settle'){if(this.win.confirm('确认该结果实际成立并结算？这将执行既定奖励和解锁，请先核对正文。'))this.e.confirmCandidate(b.dataset.key);return;}
       if(action==='companion-retry'){await this.e.verifyCheckpoint(true);return;}
       if (action === 'quick-panel') { this.tab = this.e.diagnostics().some(x => x.severity === 'error') ? 'records' : 'run'; if (this.tab === 'records') this.recordsTab = 'graph'; this.toggle(); return; }
