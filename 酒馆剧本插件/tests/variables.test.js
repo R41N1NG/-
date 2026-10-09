@@ -17,10 +17,26 @@ test('改写、改数值、漏句、来源编号和排版匹配歧义不能作�
  const repeated=text+'\n任务开始时，警觉为 **0**，范围 0 至 100。';assert.throws(()=>new A.Client().restoreAnalysis(repeated,raw({...definition,evidence:'任务开始时，警觉为0，范围0至100。'})),/连续摘录/);
 });
 test('类型错误单独说明，不再被冒充为缺少初始值依据',()=>{
- for(const value of [{...definition,type:'integer'},{...definition,default:'不是数字'},{...definition,default:true}])assert.throws(()=>new A.Client().restoreAnalysis(text,raw(value)),/类型无效/);
+ for(const value of [{...definition,type:'floatish'},{...definition,default:'不是数字'},{...definition,default:true}])assert.throws(()=>new A.Client().restoreAnalysis(text,raw(value)),/类型无效/);
  assert.throws(()=>new A.Client().restoreAnalysis(text,raw({...definition,default:null})),/缺少type或default/);
  const inferred={...definition};delete inferred.type;assert.equal(new A.Client().restoreAnalysis(text,raw(inferred)).project.variables[0].type,'number');
  assert.throws(()=>new A.Client().restoreAnalysis(text,raw({...definition,default:'9007199254740993'})),/类型无效/);
+});
+test('辅助模型integer写法仅在初始值和边界为安全整数时本地兼容，不改数值或额外调用API',async()=>{
+ const base=raw({...definition,type:'integer'}),f=mock(()=>base);const result=await f.api.analyze(profile,text);
+ assert.equal(f.sent.length,1);assert.equal(result.project.variables[0].type,'number');assert.equal(result.project.variables[0].default,0);assert.equal(result.project.variables[0].max,100);assert(result.warnings.some(x=>x.includes('integer')));
+ assert.equal(base.variables[0].type,'integer');
+ for(const variable of [{...definition,type:'integer',default:1.5},{...definition,type:'integer',max:99.5},{...definition,type:'integer',default:Number.MAX_SAFE_INTEGER+1}])assert.throws(()=>f.api.restoreAnalysis(text,raw(variable)),/类型无效/);
+});
+test('可选背包说明改写只留空警告；原文定义、取得前提、完成及数值效果仍校验',()=>{
+ const base=raw(definition);base.collections=[{id:'a',title:'现场线索',evidence:'调查完成增加2。',description:'调查现场找到的有用线索。',requires:{variable:{id:'alertness',op:'lt',value:60}},requires_evidence:'达到60时封锁入口。'}];base.nodes[0].result_ids=['a'];
+ const d=new A.Client().restoreAnalysis(text,base);assert.equal(d.project.collections[0].description,'');assert.equal(d.project.collections[0].requires.variable.value,60);assert.deepEqual(d.project.nodes[0].effects,[{collect:'a'},{add:{variable:'alertness',value:2}}]);assert(d.warnings.some(x=>x.includes('可选说明')));assert.equal(base.collections[0].description,'调查现场找到的有用线索。');
+ base.collections[0].evidence='虚构原文';assert.throws(()=>new A.Client().restoreAnalysis(text,base),/原文定义/);
+});
+test('可选说明仅排版差异恢复为原文，既有分块结果说明与取得条件不被覆盖',()=>{
+ const base=raw(definition);base.collections=[{id:'a',title:'现场线索',evidence:'调查完成增加2。',description:'警觉为0，范围0至100。'}];
+ const d=new A.Client().restoreAnalysis(text,base);assert(text.includes(d.project.collections[0].description));assert(d.project.collections[0].description.includes('**0**'));
+ const known={...d.project.collections[0],description:'原文中已校验的说明'};base.collections[0].description='新的转述';const restored=new A.Client().restoreAnalysis(text,base,'faithful',{kind:'chunk',knownCollections:[known],evidenceSource:text});assert.equal(restored.project.collections[0].description,known.description);
 });
 test('缺少变量依据时自动定向补修，忽略模型的默认值、边界和奖励修改',async()=>{
  const replies=[],base=raw({...definition,evidence:undefined}),f=mock(input=>input.operation==='repair_variables'?{complete:true,variable_evidence:[{...definition,default:99,min:-100,max:999}],nodes:[{numeric_effects:[{value:999}]}]}:base);

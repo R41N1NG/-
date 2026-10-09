@@ -202,14 +202,19 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
     const supported = text => supportedEvidence(text, original);
     const supportedGlobal = text => supportedEvidence(text, options.evidenceSource || original);
     const collections = C.clone(options.knownCollections || []);
+    const descriptionSource = sourceResolver(options.evidenceSource || original, warnings);
     C.assert(raw.collections == null || Array.isArray(raw.collections), '结果标记定义必须为数组');
     for (const item of raw.collections || []) {
       C.assert(C.object(item), '结果标记定义无效'); C.safeId(item.id, '结果标记ID');
       C.assert(supportedGlobal(item.evidence) && typeof item.title === 'string' && item.title.trim(), '结果标记缺少原文定义：' + item.id);
       const previous = collections.find(x => x.id === item.id);
       C.assert(!previous || previous.title === item.title, '结果标记含义冲突：' + item.id);
-      if (item.description) C.assert(typeof item.description === 'string' && (options.evidenceSource || original).includes(item.description), '结果说明必须来自原文连续摘录：' + item.id);
-      if (!previous) collections.push({id: item.id, title: item.title, evidence: item.evidence, description: item.description || ''});
+      let description = '';
+      if (item.description) {
+        try { description = descriptionSource({id:item.id,title:'结果说明：'+item.title,detail:item.description}); }
+        catch { warnings.push('结果“'+item.title+'”（'+item.id+'）的可选说明不是连续原文，暂留空；原始说明保留在分析回复中，取得条件及效果不变。'); }
+      }
+      if (!previous) collections.push({id: item.id, title: item.title, evidence: item.evidence, description});
     }
     const codes = new Set(collections.map(x => x.id));
     const remap = c => {
@@ -333,6 +338,7 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
       C.assert(C.object(v), '分析变量定义必须为对象'); C.safeId(v.id,'变量ID');
       const fail=message=>{const error=new Error('变量“'+(v.title || v.id)+'”（'+v.id+'）：'+message);error.code='BSE_VARIABLE_INVALID';error.variable_id=v.id;throw error;};
       const previous=known.find(x=>x.id===v.id), value=C.clone(v);
+      if (value.type==='integer' && Number.isSafeInteger(value.default) && ['min','max'].every(key=>value[key]==null || Number.isSafeInteger(value[key]))) { value.type='number';warnings.push(v.id+'：将辅助模型integer类型映射为插件数值number，初始值与上下限未改变；请核对整数规则。'); }
       if (value.type==null && value.default!=null && ['number','boolean','string'].includes(typeof value.default)) {value.type=typeof value.default;warnings.push(v.id+'：按已有初始值的JSON类型补齐type。');}
       if (value.type==='number' && typeof value.default==='string' && /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value.default.trim()) && Number.isFinite(Number(value.default)) && (!Number.isInteger(Number(value.default)) || Number.isSafeInteger(Number(value.default)))) {value.default=Number(value.default);warnings.push(v.id+'：将误写为字符串的数值初始值恢复为数字，数值未改变。');}
       if (previous) {

@@ -86,11 +86,11 @@ test('分析已发请求与模型实际收到的messages一致，失败前也保
   await e.analyze('找到301房卡。', '只整理原文', 'faithful'); assert.equal(seen.length, 1); assert.deepEqual(JSON.parse(e.rawAnalysis.requests[0].text), seen[0].messages); assert.equal(seen[0].messages[0].content, '自定义分析system'); assert.equal(e.analysisDraft.project.nodes[0].id, 'N1'); assert.equal(e.analysisDraft.project.collections[0].description, '301房卡'); assert(!JSON.stringify(e.rawAnalysis).includes('REQUEST_TEST_SECRET'));
   const fresh = new Engine(host, api); await fresh.init(); assert.equal(fresh.settings.profile.analysis_prompt, '自定义分析system'); assert.equal(fresh.rawAnalysis.requests.length, 1); assert.equal(storage.script.branch_story_settings.profile.key, '');
 });
-test('仅玩家意图证据不能自动领取行为奖励；原文之外的结果说明拒绝', async () => {
+test('仅玩家意图证据不能自动领取行为奖励；原文之外的可选结果说明不进入玩家背包', async () => {
   const api = new Client(async () => ({ok: true, json: async () => ({choices: [{message: {content: JSON.stringify({results: [{event_id: 'E1', status: 'completed', evidence: [{message_id: '0', quote: '送礼'}]}]})}}]})}));
   const result = await api.detect({base_url: 'https://mock.example', model: 'mock'}, [{message_id: 0, role: 'user', text: '送礼'}, {message_id: 1, role: 'assistant', text: '对方尚未回应'}], project().events, {}); assert.equal(result[0].status, 'uncertain');
   const failing = new Client(async () => ({ok: true, json: async () => ({choices: [{message: {content: JSON.stringify({nodes: [{id: 'N', title: '阶段', detail: '找到房卡。', guidance: '调查', routes: []}], collections: [{id: 'b1', title: '房卡', evidence: '找到房卡。', description: '通往隐藏结局'}]})}}]})}));
-  await assert.rejects(failing.analyze({base_url: 'https://mock.example', model: 'mock'}, '找到房卡。'), /结果说明/);
+  const draft = await failing.analyze({base_url: 'https://mock.example', model: 'mock'}, '找到房卡。'); assert.equal(draft.project.collections[0].description, ''); assert(draft.warnings.some(x => x.includes('可选说明'))); assert(!JSON.stringify(draft.project).includes('通往隐藏结局'));
   assert.notEqual(PROMPTS.analysis, LAST_PROMPTS.analysis);
 });
 test('请求失败也保留实际发送提示词；配置无效而未发送时不伪造已发记录', async () => {

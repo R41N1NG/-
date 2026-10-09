@@ -1,0 +1,117 @@
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+index 8d8f76f..c446c7a 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package-lock.json"
+@@ -3 +3 @@
+-  "version": "1.4.5",
++  "version": "1.4.6",
+@@ -9 +9 @@
+-      "version": "1.4.5",
++      "version": "1.4.6",
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+index f40127b..646dc8c 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/package.json"
+@@ -3 +3 @@
+-  "version": "1.4.5",
++  "version": "1.4.6",
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+index d7af137..188d7fd 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+@@ -12 +12 @@ const exported = {type: 'script', enabled: true, name: '分支剧本与事件引
+-  info: 'v' + version + '：变量初值/类型/证据分别诊断，变量依据排版本地恢复，缺依据定向补修，节点与变量共用两次预算；剧本库与各剧本独立编辑/分析工作区，切换保留聊天进度；版本显示与旧实例清理；节点来源失败最多两次补修，仅修来源不改规则；来源编号及短首尾定位由本地还原原文，旧回复仅空白差异可本地恢复，错误指出节点；先规划分段、逐段分析再整合，截断缩段重试；数值增减/设置量及原文依据转化为独立事件，支持限次、停止门槛与本地去重；固定功能导航与快速整理收纳。长文分析提取替代路线、AND/OR/NOT组合、数值门槛、互斥与选择代价；保留原文依据、事件包持续条件与数值边界，分块合并不抹除既有条件和出口。默认提示词自动升级，自定义保留。当前阶段/折叠行动/⚙️/🎒、数值载体和奖励上限、短编号、引用预览与确认删除、提示词编辑及实际请求继续保留。分析本地转化、交叉依赖、回退、防剧透与600秒分析等待。',
++  info: 'v' + version + '：兼容辅助模型integer类型，初值与边界不变；可选结果说明改写不阻塞主分析；变量初值/类型/证据分别诊断，变量依据排版本地恢复，缺依据定向补修，节点与变量共用两次预算；剧本库与各剧本独立编辑/分析工作区，切换保留聊天进度；版本显示与旧实例清理；节点来源失败最多两次补修，仅修来源不改规则；来源编号及短首尾定位由本地还原原文，旧回复仅空白差异可本地恢复，错误指出节点；先规划分段、逐段分析再整合，截断缩段重试；数值增减/设置量及原文依据转化为独立事件，支持限次、停止门槛与本地去重；固定功能导航与快速整理收纳。长文分析提取替代路线、AND/OR/NOT组合、数值门槛、互斥与选择代价；保留原文依据、事件包持续条件与数值边界，分块合并不抹除既有条件和出口。默认提示词自动升级，自定义保留。当前阶段/折叠行动/⚙️/🎒、数值载体和奖励上限、短编号、引用预览与确认删除、提示词编辑及实际请求继续保留。分析本地转化、交叉依赖、回退、防剧透与600秒分析等待。',
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+index 10d8f17..21a4b66 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+@@ -204,0 +205 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
++    const descriptionSource = sourceResolver(options.evidenceSource || original, warnings);
+@@ -211,2 +212,6 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+-      if (item.description) C.assert(typeof item.description === 'string' && (options.evidenceSource || original).includes(item.description), '结果说明必须来自原文连续摘录：' + item.id);
+-      if (!previous) collections.push({id: item.id, title: item.title, evidence: item.evidence, description: item.description || ''});
++      let description = '';
++      if (item.description) {
++        try { description = descriptionSource({id:item.id,title:'结果说明：'+item.title,detail:item.description}); }
++        catch { warnings.push('结果“'+item.title+'”（'+item.id+'）的可选说明不是连续原文，暂留空；原始说明保留在分析回复中，取得条件及效果不变。'); }
++      }
++      if (!previous) collections.push({id: item.id, title: item.title, evidence: item.evidence, description});
+@@ -335,0 +341 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
++      if (value.type==='integer' && Number.isSafeInteger(value.default) && ['min','max'].every(key=>value[key]==null || Number.isSafeInteger(value[key]))) { value.type='number';warnings.push(v.id+'：将辅助模型integer类型映射为插件数值number，初始值与上下限未改变；请核对整数规则。'); }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+index 359fee0..597a14d 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+@@ -7 +7 @@
+-  const VERSION = '1.4.5';
++  const VERSION = '1.4.6';
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/loader.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/loader.js"
+index fe0e1a0..fa44a60 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/loader.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/loader.js"
+@@ -6,3 +6,3 @@
+-    'https://raw.githubusercontent.com/R41N1NG/-/main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.5',
+-    'https://testingcf.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.5',
+-    'https://cdn.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.5',
++    'https://raw.githubusercontent.com/R41N1NG/-/main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.6',
++    'https://testingcf.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.6',
++    'https://cdn.jsdelivr.net/gh/R41N1NG/-@main/酒馆剧本插件/branch_story_tavern_helper_import.json?bse=1.4.6',
+@@ -49 +49 @@
+-        const current = version && (+version[1] > 1 || +version[1] === 1 && (+version[2] > 4 || +version[2] === 4 && +version[3] >= 5));
++        const current = version && (+version[1] > 1 || +version[1] === 1 && (+version[2] > 4 || +version[2] === 4 && +version[3] >= 6));
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js"
+index 7340810..afb3752 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/player.test.js"
+@@ -89 +89 @@ test('分析已发请求与模型实际收到的messages一致，失败前也保
+-test('仅玩家意图证据不能自动领取行为奖励；原文之外的结果说明拒绝', async () => {
++test('仅玩家意图证据不能自动领取行为奖励；原文之外的可选结果说明不进入玩家背包', async () => {
+@@ -93 +93 @@ test('仅玩家意图证据不能自动领取行为奖励；原文之外的结
+-  await assert.rejects(failing.analyze({base_url: 'https://mock.example', model: 'mock'}, '找到房卡。'), /结果说明/);
++  const draft = await failing.analyze({base_url: 'https://mock.example', model: 'mock'}, '找到房卡。'); assert.equal(draft.project.collections[0].description, ''); assert(draft.warnings.some(x => x.includes('可选说明'))); assert(!JSON.stringify(draft.project).includes('通往隐藏结局'));
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/startup.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/startup.browser.js"
+index 56e435d..889b731 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/startup.browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/startup.browser.js"
+@@ -13 +13 @@ const server = http.createServer((req, res) => {
+-  if (u.pathname === '/old-ready') {res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({...imported,content:imported.content.replace(/Branch Story Engine v\d+\.\d+\.\d+/, 'Branch Story Engine v1.4.4')}));}
++  if (u.pathname === '/old-ready') {res.setHeader('Content-Type','application/json');return res.end(JSON.stringify({...imported,content:imported.content.replace(/Branch Story Engine v\d+\.\d+\.\d+/, 'Branch Story Engine v1.4.5')}));}
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/variables.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/variables.browser.js"
+index 3496575..4b607a9 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/variables.browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/variables.browser.js"
+@@ -5,2 +5,2 @@ const original='任务开始时，警觉为 **0**，范围 0 至 100。\n调查
+-const variable={id:'alertness',title:'警觉',type:'number',default:0,min:0,max:100,evidence:'任务开始时，警觉为 **0**，范围 0 至 100。',bounds_evidence:'范围 0 至 100'};
+-const raw={title:'警觉度测试',variables:[{...variable,evidence:undefined}],nodes:[{id:'n1',title:'调查现场',source_span:{from:'s1',to:'s1'},guidance:'观察当前现场',completion_criteria:'调查完成',completion_evidence:'调查完成增加2。',numeric_effects:[{operation:'add',variable:'alertness',value:2,evidence:'调查完成增加2。'}],routes:[{target:'n1',label:'继续调查',condition:{variable:{id:'alertness',op:'lt',value:60}},condition_evidence:'达到60时封锁入口。'}]}]};
++const variable={id:'alertness',title:'警觉',type:'integer',default:0,min:0,max:100,evidence:'任务开始时，警觉为 **0**，范围 0 至 100。',bounds_evidence:'范围 0 至 100'};
++const raw={title:'警觉度测试',collections:[{id:'a',title:'现场线索',evidence:'调查完成增加2。',description:'在调查中找到的线索。'}],variables:[{...variable,evidence:undefined}],nodes:[{id:'n1',title:'调查现场',source_span:{from:'s1',to:'s1'},guidance:'观察当前现场',result_ids:['a'],completion_criteria:'调查完成',completion_evidence:'调查完成增加2。',numeric_effects:[{operation:'add',variable:'alertness',value:2,evidence:'调查完成增加2。'}],routes:[{target:'n1',label:'继续调查',condition:{variable:{id:'alertness',op:'lt',value:60}},condition_evidence:'达到60时封锁入口。'}]}]};
+@@ -32,2 +32,2 @@ async function run(){
+-  await page.locator('[data-action="analysis-convert"]').click();await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title==='警觉度测试');const converted=requests.length;assert.equal(await evaluate(page,e=>e.state.variables.alertness),0);await evaluate(page,e=>e.complete());assert.equal(await evaluate(page,e=>e.state.variables.alertness),2);assert.equal(requests.length,converted);
+-  await page.screenshot({path:'/tmp/v145-variables-'+width+'.png'});assert(await page.locator('main').evaluate(el=>el.scrollWidth-el.clientWidth)<=2);await context.close();console.log(width+'px：变量缺依据→定向补修→原失败回复本地报错/单独修复→转化→本地数值结算，门槛/奖励保留通过');
++  await page.locator('[data-action="analysis-convert"]').click();await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title==='警觉度测试');const converted=requests.length;assert.equal(await evaluate(page,e=>e.state.variables.alertness),0);await evaluate(page,e=>e.complete());assert.equal(await evaluate(page,e=>e.state.variables.alertness),2);assert.deepEqual(await evaluate(page,e=>e.state.collected_ids),['a']);assert.equal(await evaluate(page,e=>e.project.collections[0].description),'');assert.equal(requests.length,converted);
++  await page.screenshot({path:'/tmp/v145-variables-'+width+'.png'});assert(await page.locator('main').evaluate(el=>el.scrollWidth-el.clientWidth)<=2);await context.close();console.log(width+'px：integer本地兼容/可选说明留空→变量缺依据定向补修→原失败回复本地报错/单独修复→转化→本地数值结算，门槛/奖励保留通过');
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/variables.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/variables.test.js"
+index b380ecd..5cd8fe6 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/variables.test.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/variables.test.js"
+@@ -20 +20 @@ test('类型错误单独说明，不再被冒充为缺少初始值依据',()=>{
+- for(const value of [{...definition,type:'integer'},{...definition,default:'不是数字'},{...definition,default:true}])assert.throws(()=>new A.Client().restoreAnalysis(text,raw(value)),/类型无效/);
++ for(const value of [{...definition,type:'floatish'},{...definition,default:'不是数字'},{...definition,default:true}])assert.throws(()=>new A.Client().restoreAnalysis(text,raw(value)),/类型无效/);
+@@ -24,0 +25,16 @@ test('类型错误单独说明，不再被冒充为缺少初始值依据',()=>{
++test('辅助模型integer写法仅在初始值和边界为安全整数时本地兼容，不改数值或额外调用API',async()=>{
++ const base=raw({...definition,type:'integer'}),f=mock(()=>base);const result=await f.api.analyze(profile,text);
++ assert.equal(f.sent.length,1);assert.equal(result.project.variables[0].type,'number');assert.equal(result.project.variables[0].default,0);assert.equal(result.project.variables[0].max,100);assert(result.warnings.some(x=>x.includes('integer')));
++ assert.equal(base.variables[0].type,'integer');
++ for(const variable of [{...definition,type:'integer',default:1.5},{...definition,type:'integer',max:99.5},{...definition,type:'integer',default:Number.MAX_SAFE_INTEGER+1}])assert.throws(()=>f.api.restoreAnalysis(text,raw(variable)),/类型无效/);
++});
++test('可选背包说明改写只留空警告；原文定义、取得前提、完成及数值效果仍校验',()=>{
++ const base=raw(definition);base.collections=[{id:'a',title:'现场线索',evidence:'调查完成增加2。',description:'调查现场找到的有用线索。',requires:{variable:{id:'alertness',op:'lt',value:60}},requires_evidence:'达到60时封锁入口。'}];base.nodes[0].result_ids=['a'];
++ const d=new A.Client().restoreAnalysis(text,base);assert.equal(d.project.collections[0].description,'');assert.equal(d.project.collections[0].requires.variable.value,60);assert.deepEqual(d.project.nodes[0].effects,[{collect:'a'},{add:{variable:'alertness',value:2}}]);assert(d.warnings.some(x=>x.includes('可选说明')));assert.equal(base.collections[0].description,'调查现场找到的有用线索。');
++ base.collections[0].evidence='虚构原文';assert.throws(()=>new A.Client().restoreAnalysis(text,base),/原文定义/);
++});
++test('可选说明仅排版差异恢复为原文，既有分块结果说明与取得条件不被覆盖',()=>{
++ const base=raw(definition);base.collections=[{id:'a',title:'现场线索',evidence:'调查完成增加2。',description:'警觉为0，范围0至100。'}];
++ const d=new A.Client().restoreAnalysis(text,base);assert(text.includes(d.project.collections[0].description));assert(d.project.collections[0].description.includes('**0**'));
++ const known={...d.project.collections[0],description:'原文中已校验的说明'};base.collections[0].description='新的转述';const restored=new A.Client().restoreAnalysis(text,base,'faithful',{kind:'chunk',knownCollections:[known],evidenceSource:text});assert.equal(restored.project.collections[0].description,known.description);
++});

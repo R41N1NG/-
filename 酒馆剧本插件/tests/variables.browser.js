@@ -2,8 +2,8 @@
 const http=require('node:http'),fs=require('node:fs'),assert=require('node:assert/strict'),{chromium}=require('playwright'),{fixture}=require('./helpers');
 const content=JSON.parse(fs.readFileSync('branch_story_tavern_helper_import.json')).content,requests=[],errors=[];
 const original='任务开始时，警觉为 **0**，范围 0 至 100。\n调查完成增加2。达到60时封锁入口。';
-const variable={id:'alertness',title:'警觉',type:'number',default:0,min:0,max:100,evidence:'任务开始时，警觉为 **0**，范围 0 至 100。',bounds_evidence:'范围 0 至 100'};
-const raw={title:'警觉度测试',variables:[{...variable,evidence:undefined}],nodes:[{id:'n1',title:'调查现场',source_span:{from:'s1',to:'s1'},guidance:'观察当前现场',completion_criteria:'调查完成',completion_evidence:'调查完成增加2。',numeric_effects:[{operation:'add',variable:'alertness',value:2,evidence:'调查完成增加2。'}],routes:[{target:'n1',label:'继续调查',condition:{variable:{id:'alertness',op:'lt',value:60}},condition_evidence:'达到60时封锁入口。'}]}]};
+const variable={id:'alertness',title:'警觉',type:'integer',default:0,min:0,max:100,evidence:'任务开始时，警觉为 **0**，范围 0 至 100。',bounds_evidence:'范围 0 至 100'};
+const raw={title:'警觉度测试',collections:[{id:'a',title:'现场线索',evidence:'调查完成增加2。',description:'在调查中找到的线索。'}],variables:[{...variable,evidence:undefined}],nodes:[{id:'n1',title:'调查现场',source_span:{from:'s1',to:'s1'},guidance:'观察当前现场',result_ids:['a'],completion_criteria:'调查完成',completion_evidence:'调查完成增加2。',numeric_effects:[{operation:'add',variable:'alertness',value:2,evidence:'调查完成增加2。'}],routes:[{target:'n1',label:'继续调查',condition:{variable:{id:'alertness',op:'lt',value:60}},condition_evidence:'达到60时封锁入口。'}]}]};
 const server=http.createServer(async(req,res)=>{
  if(req.url==='/plugin.js'){res.setHeader('Content-Type','text/javascript; charset=utf-8');return res.end(content);}
  if(req.url==='/frame')return res.end('<!doctype html><script src="/plugin.js"></script>');
@@ -29,8 +29,8 @@ async function run(){
   await page.locator('[data-action="analysis-restore"]').click();await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.error.includes('evidence'));assert.equal(requests.length,before);
   await page.locator('[data-action="analysis-repair"]').click();await page.waitForFunction(()=>!document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.busy && !document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.error);
   assert.equal(requests.length,before+1);assert.equal(requests.at(-1).operation,'repair_variables');assert.equal(await evaluate(page,e=>e.rawAnalysis.replies.length),3);assert(await page.locator('[data-action="analysis-convert"]').isVisible());
-  await page.locator('[data-action="analysis-convert"]').click();await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title==='警觉度测试');const converted=requests.length;assert.equal(await evaluate(page,e=>e.state.variables.alertness),0);await evaluate(page,e=>e.complete());assert.equal(await evaluate(page,e=>e.state.variables.alertness),2);assert.equal(requests.length,converted);
-  await page.screenshot({path:'/tmp/v145-variables-'+width+'.png'});assert(await page.locator('main').evaluate(el=>el.scrollWidth-el.clientWidth)<=2);await context.close();console.log(width+'px：变量缺依据→定向补修→原失败回复本地报错/单独修复→转化→本地数值结算，门槛/奖励保留通过');
+  await page.locator('[data-action="analysis-convert"]').click();await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title==='警觉度测试');const converted=requests.length;assert.equal(await evaluate(page,e=>e.state.variables.alertness),0);await evaluate(page,e=>e.complete());assert.equal(await evaluate(page,e=>e.state.variables.alertness),2);assert.deepEqual(await evaluate(page,e=>e.state.collected_ids),['a']);assert.equal(await evaluate(page,e=>e.project.collections[0].description),'');assert.equal(requests.length,converted);
+  await page.screenshot({path:'/tmp/v145-variables-'+width+'.png'});assert(await page.locator('main').evaluate(el=>el.scrollWidth-el.clientWidth)<=2);await context.close();console.log(width+'px：integer本地兼容/可选说明留空→变量缺依据定向补修→原失败回复本地报错/单独修复→转化→本地数值结算，门槛/奖励保留通过');
  }assert.deepEqual(errors,[]);}finally{await browser.close();await new Promise(r=>server.close(r));}
 }
 run().catch(e=>{console.error(e);process.exitCode=1});
