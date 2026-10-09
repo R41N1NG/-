@@ -1,7 +1,7 @@
 {
   "identity": "gpt",
   "baselineCommit": "b87e887",
-  "reportedCardSHA256": "a4a3242bd03fc78d020193e7f6c89dd7fca558a3dc5d00c8003c4a9cec4a87ad",
+  "reportedCardSHA256": "f50c6420d61a140109068dc58fe4b65b11fae6fdfcb16db4374f33c5ac8f7a5f",
   "files": [
     {
       "path": "_build_card.js",
@@ -16,10 +16,11 @@
     {
       "path": "src/correction-runtime.js",
       "originalSHA256": null,
-      "candidateSHA256": "3cc0fdeabafc80213abc8adb548b6d7c5b14b04bceae7703a580ef257459bd5e",
-      "bytes": 29248,
+      "candidateSHA256": "090e6dfe2fcf1d75b8b6fde4e9ac2197ceecbff68ce050cdcf8b09f909a272a7",
+      "bytes": 32326,
       "acceptedBaselineSHA256": [
-        "7b076a7d02dbc2be95cb8aef6d44e669385e35612468dfce4c573da84c8d94fe"
+        "7b076a7d02dbc2be95cb8aef6d44e669385e35612468dfce4c573da84c8d94fe",
+        "3cc0fdeabafc80213abc8adb548b6d7c5b14b04bceae7703a580ef257459bd5e"
       ]
     },
     {
@@ -35,21 +36,23 @@
     {
       "path": "卡片脚本/GM修改器.js",
       "originalSHA256": "88858e2826425d9815babca5c8d14fe45239b7f49571de98715d0ed41ea7a4de",
-      "candidateSHA256": "15a857a83b303a47aa1cbff4989c7dd885ea0798fa085151610383b9fa2f4c33",
-      "bytes": 79988,
+      "candidateSHA256": "6be9473d50fef628b8aecfccddbc2b8514d1022297adf6ab844ba43017817c33",
+      "bytes": 81707,
       "acceptedBaselineSHA256": [
         "88858e2826425d9815babca5c8d14fe45239b7f49571de98715d0ed41ea7a4de",
-        "841af8c1017510681ef8ca2bd013ec7dcaaa0e9c5a4c5e60ea76bc5ba7933138"
+        "841af8c1017510681ef8ca2bd013ec7dcaaa0e9c5a4c5e60ea76bc5ba7933138",
+        "15a857a83b303a47aa1cbff4989c7dd885ea0798fa085151610383b9fa2f4c33"
       ]
     },
     {
       "path": "卡片脚本/_src/状态栏面板.模板.js",
       "originalSHA256": "ba0c1b58ea76ebf4be136ae2c0e52e8a99016d65a19ef55e60fd4b5b435d291b",
-      "candidateSHA256": "42c988ae61c69fd0d8c147fb7f8de5149590d92932f42060215c733f62a9d418",
-      "bytes": 196240,
+      "candidateSHA256": "ace9c1fe89e0aff27d57b8a1d307669cd9863807b3a3dea274bf18dddd934ef8",
+      "bytes": 196437,
       "acceptedBaselineSHA256": [
         "ba0c1b58ea76ebf4be136ae2c0e52e8a99016d65a19ef55e60fd4b5b435d291b",
-        "6cd25fe3b6238d9a7da910f24a84225f97e30bbdd08e3c82c328168086eddfcb"
+        "6cd25fe3b6238d9a7da910f24a84225f97e30bbdd08e3c82c328168086eddfcb",
+        "42c988ae61c69fd0d8c147fb7f8de5149590d92932f42060215c733f62a9d418"
       ]
     },
     {
@@ -59,11 +62,13 @@
       "bytes": 289053,
       "acceptedBaselineSHA256": [
         "e7a9110d6940aa455d7d77b21e63afd22a7d843f315dd2ce7e319c1fc9608fbd",
-        "0ab0c325ac024d616440f3422b5ccaabd866f51936340570d5b4c94725fdb013"
+        "0ab0c325ac024d616440f3422b5ccaabd866f51936340570d5b4c94725fdb013",
+        "336e019d93c528d07997c9ef0045184252908e250a68fc697f7ff8cc5f2b0b8d"
       ]
     }
   ],
-  "previousCandidateCommit": "4814b7a",
-  "version": "1.1.0",
-  "baselineNote": "本机生产源码仍旧快照，已部署卡来自_accept_panel候选；接受原始快照或4814b7a候选源码，拒绝其他更新。"
+  "previousCandidateCommit": "5c9b2cb",
+  "version": "1.2.0",
+  "baselineNote": "接受原始上传快照、v1.0、v1.1或本版源码；仅CRLF归一LF后核SHA，其他变化拒绝。最新生产源v1.1为肥鱼报告，非云端直接采集。",
+  "latestReportCommit": "9986705"
 }

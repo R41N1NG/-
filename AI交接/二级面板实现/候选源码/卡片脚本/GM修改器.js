@@ -39,9 +39,10 @@
 (function(host,init) {
   if(typeof window==='undefined')return;
   var root=host.__xsdCorrection?.root||host;
-  if(root.__xsdGMLoaded!=='v1.1') {
+  if(root.__xsdGMLoaded!=='v1.2') {
     // 原面板及回调一起由宿主创建；升级时清掉旧 iframe 留在宿主的壳。
     root.document?.getElementById('xshd-gm-mask')?.remove();
+    root.document?.getElementById('xshd-gm-style')?.remove();
     root.Function('root','return ('+init.toString()+')(root);')(root);
   }
   host.__xsdGM=root.__xsdGM;host.xsdGM=root.xsdGM;
@@ -57,7 +58,7 @@
    * ═══════════════════════════════════════════════════════════ */
 
   var TAG = '[仙姝堕·GM]';
-  var VERSION = 'v1.1';
+  var VERSION = 'v1.2';
 
   /** 脚本标识（防止同一 iframe 里重复注入第二份面板） */
   var SCRIPT_ID = 'xshd-gm-editor';
@@ -1143,6 +1144,16 @@
     '.xshd-gm-log .err{color:#f08a7a}',
     '.xshd-gm-log .time{color:#5d574c;margin-right:5px}',
     '@media (max-width:620px){#xshd-gm-mask{right:8px;left:8px;top:56px;width:auto}.xshd-gm-grid{grid-template-columns:1fr}}',
+    '#xshd-gm-mask [hidden]{display:none!important}',
+    '#xshd-gm-mask button{min-height:36px;background:#30233d!important;color:#fff!important;border:1px solid #b89b67!important;border-radius:6px;padding:6px 10px!important;letter-spacing:normal!important;text-indent:0!important;opacity:1!important}',
+    '#xshd-gm-mask button:hover:not(:disabled):not(.primary):not([aria-selected="true"]){background:#513460!important}',
+    '#xshd-gm-mask button:disabled{background:#29252f!important;color:#c8c2cf!important;border-color:#62586c!important;cursor:not-allowed}',
+    '#xshd-gm-mask .primary:not(:disabled),#xshd-gm-mask button[aria-selected="true"]{background:#efd28c!important;color:#17101f!important;font-weight:700}',
+    '#xshd-gm-mask button:focus-visible{outline:2px solid #ffe6a7;outline-offset:2px}',
+    '#xshd-gm-mask .xshd-gm-header-btns button{display:inline-flex;align-items:center;justify-content:center;width:36px;padding:0!important;line-height:1}',
+    '#xshd-gm-mask input:not([type="checkbox"]),#xshd-gm-mask textarea,#xshd-gm-mask select{min-height:36px;background:#21172a!important;color:#fff!important;border:1px solid #a88b57!important;max-width:100%}',
+    '#xshd-gm-mask .xshd-gm-tabs{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid #665233}',
+    '#xshd-gm-mask .xshd-gm-st,#xshd-gm-mask .xshd-gm-hint{color:#d7cdbd}',
   ].join('\n');
 
   function injectStyle(doc) {
@@ -1164,7 +1175,7 @@
    * 五 · 面板：结构 / 渲染 / 事件
    * ═══════════════════════════════════════════════════════════ */
 
-  var UI = { mounted: false, mask: null, doc: null, open: false, idSeq: 0, token: null };
+  var UI = { mounted: false, mask: null, doc: null, open: false, idSeq: 0, token: null, tab: 'correction', correction: null };
 
   function esc(s) {
     return String(s === undefined || s === null ? '' : s)
@@ -1237,16 +1248,20 @@
       '<div class="xshd-gm-header" id="' + q('header') + '">',
       '  <div class="xshd-gm-title">🎛️ 仙姝堕 · 后台 GM 修改器<small>' + esc(VERSION) + '</small></div>',
       '  <div class="xshd-gm-header-btns">',
-      '    <button type="button" id="xsd-correction-open" style="min-height:36px">纹章纠错</button>',
-      '    <button type="button" class="xshd-gm-x" id="' + q('reload') + '" title="读回当前值">⟳</button>',
+            '    <button type="button" class="xshd-gm-x" id="' + q('reload') + '" title="读回当前值">⟳</button>',
       '    <button type="button" class="xshd-gm-x" id="' + q('close') + '" title="关闭面板">&times;</button>',
       '  </div>',
       '</div>',
-      '<div class="xshd-gm-body" id="' + q('body') + '"></div>',
+      '<div class="xshd-gm-tabs" role="tablist" aria-label="GM功能">',
+      '<button type="button" role="tab" id="xsd-correction-open" data-xsd-gm-tab="correction" aria-controls="xsd-gm-correction" aria-selected="true">纹章与剧情</button>',
+      '<button type="button" role="tab" id="' + q('general-tab') + '" data-xsd-gm-tab="general" aria-controls="' + q('body') + '" aria-selected="false">身份与状态</button>',
+      '</div>',
+      '<div id="xsd-gm-correction" role="tabpanel" aria-labelledby="xsd-correction-open" class="xshd-gm-body"></div>',
+      '<div class="xshd-gm-body" role="tabpanel" aria-labelledby="' + q('general-tab') + '" id="' + q('body') + '"></div>',
       '<div class="xshd-gm-footer" id="' + q('footer') + '">',
       '  <button type="button" class="xshd-gm-btn primary" id="' + q('save') + '">💾 保存并生效</button>',
-      '  <button type="button" class="xshd-gm-btn" id="' + q('allon') + '">全部解锁</button>',
-      '  <button type="button" class="xshd-gm-btn" id="' + q('alloff') + '">全部回锁</button>',
+      '  <button type="button" class="xshd-gm-btn" id="' + q('allon') + '">本页全部勾选</button>',
+      '  <button type="button" class="xshd-gm-btn" id="' + q('alloff') + '">本页全部取消</button>',
       '  <button type="button" class="xshd-gm-btn" id="' + q('dump') + '">打印快照</button>',
       '</div>',
       '<div class="xshd-gm-help" id="' + q('helpbar') + '">',
@@ -1289,36 +1304,22 @@
         + '先确认卡内脚本「状态机.js」在跑，再按 ⟳ 读回；保存会尝试双写两层。</div></div>');
     } else {
       var onCount = ALL_FIELDS.filter(function (f) { return form.known[f]; }).length;
-      html.push('<div class="xshd-gm-sec"><div class="xshd-gm-sec-title"><span>📋 当前账本</span>'
-        + '<span class="xshd-gm-hint">known ' + onCount + '/' + ALL_FIELDS.length + ' 已解锁</span></div>'
+      html.push('<div class="xshd-gm-sec"><div class="xshd-gm-sec-title"><span>📋 当前聊天</span>'
+        + '<span class="xshd-gm-hint">已记录标记 ' + onCount + '/' + ALL_FIELDS.length + ' 已解锁</span></div>'
         + '<div class="xshd-gm-st">身份 <b>' + esc(form.身份) + '</b>　阵营 <b>' + esc(form.阵营) + '</b>　'
         + '写回 <b>双写</b>（消息层 #-1 ＋ 聊天层）</div></div>');
     }
 
-    // ── ② 剧情与事件锚点 ──
+    // ── ② 其余事件 ──
+    var visibleStoryFields=STORY_FIELDS.concat(OPEN_FIELDS).filter(function(f){return window.__xsdCorrection.plotFields.indexOf(f)<0;});
     html.push('<div class="xshd-gm-sec">',
-      '<div class="xshd-gm-sec-title"><span>📖 剧情与事件锚点（' + (STORY_FIELDS.length + OPEN_FIELDS.length) + '）</span>',
+      '<div class="xshd-gm-sec-title"><span>📖 其余事件与公开标记（' + visibleStoryFields.length + '）</span>',
       '<span><button type="button" class="xshd-gm-mini" data-group="story" data-val="1">全开</button> ',
       '<button type="button" class="xshd-gm-mini" data-group="story" data-val="0">全关</button></span></div>',
-      '<div class="xshd-gm-grid">' + checksHTML(STORY_FIELDS.concat(OPEN_FIELDS), form) + '</div>',
-      '<div class="xshd-gm-st">主线剧情进展、关键事件与身份起手公开锚点。</div></div>');
+      '<div class="xshd-gm-grid">' + checksHTML(visibleStoryFields, form) + '</div>',
+      '<div class="xshd-gm-st">其余事件与身份公开标记；主线日期/事实请到“纹章与剧情”页调整。</div></div>');
 
-    // ── ③ 名器成形锚点 ──
-    html.push('<div class="xshd-gm-sec">',
-      '<div class="xshd-gm-sec-title"><span>🌸 名器成形锚点（' + MQ_FORM_FIELDS.length + '）</span>',
-      '<span><button type="button" class="xshd-gm-mini" data-group="mq_form" data-val="1">全开</button> ',
-      '<button type="button" class="xshd-gm-mini" data-group="mq_form" data-val="0">全关</button></span></div>',
-      '<div class="xshd-gm-grid">' + checksHTML(MQ_FORM_FIELDS, form) + '</div>',
-      '<div class="xshd-gm-st">名器本体觉醒与成形标记（正向真值闸门前置）。</div></div>');
-
-    // ── ④ 名器阶段锚点 ──
-    html.push('<div class="xshd-gm-sec">',
-      '<div class="xshd-gm-sec-title"><span>⚡ 名器阶段锚点（' + MQ_STAGE_FIELDS.length + '）</span>',
-      '<span><button type="button" class="xshd-gm-mini" data-group="mq_stage" data-val="1">全开</button> ',
-      '<button type="button" class="xshd-gm-mini" data-group="mq_stage" data-val="0">全关</button></span></div>',
-      '<div class="xshd-gm-grid">' + checksHTML(MQ_STAGE_FIELDS, form) + '</div>',
-      '<div class="xshd-gm-st">名器各阶段（落红／情动／沉沦／极乐）达成标记。</div></div>');
-
+    // 名器成形/阶段与主线字段统一在“纹章与剧情”页编辑；不再重复多选阶段。
     // ── ④ 身份 ＋ 阵营 ──
     var idDesc = '';
     for (var i = 0; i < IDENTITIES.length; i++) {
@@ -1396,12 +1397,8 @@
       var cb = checkboxAll[i];
       known[cb.getAttribute('data-known')] = !!cb.checked;
     }
-    // 面板上没有的 known 字段（不该发生）用当前真值兜住，避免「没显示＝被写成 false」
+    // 本页不展示的阶段/成形/主线字段不写，避免保存身份时给历史资格加人工false。
     var cur = readForm();
-    for (var j = 0; j < ALL_FIELDS.length; j++) {
-      var f = ALL_FIELDS[j];
-      if (known[f] === undefined) known[f] = cur.known[f];
-    }
     var sel = mask.querySelector('#' + q('identity'));
     var fac = mask.querySelector('#' + q('faction'));
     var patch = {
@@ -1425,18 +1422,19 @@
     }catch(e){warn(msgOf(e));toast('warning',msgOf(e),6000);return Promise.resolve(false);}
     var patch = collect();
     if (!patch) return Promise.resolve(false);
-    log('保存：' + ALL_FIELDS.length + ' 个 known ＋ 身份／阵营 ＋ ' + DISPLAY_FIELDS.length + ' 个展示字段 → 双写两层');
+    log('保存：' + Object.keys(patch.known).length + ' 个 known ＋ 身份／阵营 ＋ ' + DISPLAY_FIELDS.length + ' 个展示字段 → 双写两层');
     return applyPatch(patch, '面板保存', function (f) {
       if (f.身份 !== patch.身份) return false;
-      for (var i = 0; i < ALL_FIELDS.length; i++) {
-        if (f.known[ALL_FIELDS[i]] !== patch.known[ALL_FIELDS[i]]) return false;
+      var keys=Object.keys(patch.known);
+      for (var i = 0; i < keys.length; i++) {
+        if (f.known[keys[i]] !== patch.known[keys[i]]) return false;
       }
       return true;
     }).then(function (r) {
       renderBody();
       if (r.ok) {
         var onCount = ALL_FIELDS.filter(function (x) { return r.form.known[x]; }).length;
-        toast('success', 'GM 已生效：' + patch.身份 + '／' + patch.阵营 + '，known ' + onCount + '/' + ALL_FIELDS.length + '（双写两层）', 7000);
+        toast('success', 'GM 已生效：' + patch.身份 + '／' + patch.阵营 + '，已记录标记 ' + onCount + '/' + ALL_FIELDS.length + '（双写两层）', 7000);
         log('✅ 已写回并刷新面板（' + r.via + '）');
       } else {
         toast('warning', 'GM 写入未通过回读校验，请按 ⟳ 看当前真值（详情见控制台）', 9000);
@@ -1486,6 +1484,7 @@
     invalidateCache(); // 手动读取与宿主刷新必须读真值，不吃300ms旧缓存。
     try { UI.token=window.__xsdCorrection.capture(API); } catch (_) { UI.token=null; }
     renderBody();
+    if(UI.correction){if(why==='手动')UI.correction.reset();else UI.correction.refresh();}
     log('读回当前值' + (why ? '（' + why + '）' : '') + '：' + (readStatData() ? 'stat_data 可用' : '读不到 stat_data'));
     return readForm();
   }
@@ -1522,6 +1521,7 @@
     mask.addEventListener('click', function (ev) {
       var t = ev.target;
       if (!t) return;
+      var tab=t.closest&&t.closest('[data-xsd-gm-tab]');if(tab){selectTab(tab.getAttribute('data-xsd-gm-tab'));return;}
       if (t.id === q('close')) { hide(); return; }
       if (t.id === q('reload')) { reload('手动'); return; }
       if (t.id === q('save')) { save(); return; }
@@ -1556,16 +1556,23 @@
     mask.addEventListener('mousedown', function (ev) { ev.stopPropagation(); });
     mask.addEventListener('mouseup', function (ev) { ev.stopPropagation(); });
     mask.addEventListener('click', function (ev) { ev.stopPropagation(); });
-    mask.addEventListener('keydown', function (ev) { ev.stopPropagation(); });
+    mask.addEventListener('keydown', function (ev) { if(ev.key==='Escape')hide();ev.stopPropagation(); });
   }
 
   /** 挂载（幂等：已在则不再建第二份） */
   /* gpt：二级面板。所有DOM文本安全赋值；重开删除旧节点，不重复绑宿主监听器。 */
-  function openCorrection() {
-    var service=window.__xsdCorrection;
-    if(!service||!service.open) { err('二级纠错运行时不可用'); return; }
-    return service.open();
+  function ensureCorrection() {
+    var pane=UI.mask&&UI.mask.querySelector('#xsd-gm-correction');
+    if(pane&&!pane.querySelector('#xsd-correction-dialog'))UI.correction=window.__xsdCorrection.open(pane);
   }
+  function selectTab(tab) {
+    UI.tab=tab==='general'?'general':'correction';ensureCorrection();
+    var correction=UI.mask.querySelector('#xsd-gm-correction'),general=UI.mask.querySelector('#'+q('body'));
+    correction.hidden=UI.tab!=='correction';general.hidden=UI.tab!=='general';
+    for(var name of ['footer','helpbar','cmdbar','log']){var el=UI.mask.querySelector('#'+q(name));if(el)el.hidden=UI.tab!=='general';}
+    UI.mask.querySelectorAll('[data-xsd-gm-tab]').forEach(function(b){b.setAttribute('aria-selected',String(b.getAttribute('data-xsd-gm-tab')===UI.tab));});
+  }
+  function openCorrection() { return show('correction'); }
 
   function mount() {
     if (UI.mounted && UI.mask && UI.mask.parentNode) return true;
@@ -1579,22 +1586,22 @@
     var mask = buildShell(doc);
     doc.body.appendChild(mask);
     bindEvents(doc, mask);
-    mask.addEventListener('click', function (ev) {
-      if (ev.target && ev.target.closest && ev.target.closest('#xsd-correction-open')) openCorrection();
-    }); // 与GM按钮同层委托；冒泡隔离只阻止传给酒馆，不阻止同层监听器
     UI.mask = mask;
     UI.mounted = true;
+    ensureCorrection();
+    selectTab(UI.tab);
     renderBody();
     renderLog();
     log('面板已挂载到 ' + (doc === document ? '本 iframe 的 document' : '宿主 window.parent 的 document'));
     return true;
   }
 
-  function show() {
+  function show(tab) {
     if (!mount()) {
       toast('warning', 'GM 面板挂不上（取不到宿主 document），请看控制台 ' + TAG, 9000);
       return false;
     }
+    var starting=!UI.open;
     UI.mask.style.display = 'flex';
     // 桌面拖过的位置不能让窄屏再次打开时落在视口外；清内联位置恢复原响应式CSS。
     try {
@@ -1604,6 +1611,8 @@
       }
     }catch(_){}
     UI.open = true;
+    selectTab(tab||UI.tab);
+    if(starting&&UI.correction)UI.correction.reset();
     reload('打开');
     return true;
   }

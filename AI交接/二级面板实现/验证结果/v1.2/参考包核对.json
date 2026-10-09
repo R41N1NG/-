@@ -1,0 +1,10 @@
+{
+  "identity": "gpt",
+  "version": "1.2.0",
+  "entries": 32,
+  "CRCAndAllFileBytesMatch": true,
+  "candidateSHA256Matches": 6,
+  "zipBytes": 491874,
+  "zipSHA256": "110a7a99cb17b66d20e9bca68030f7d97609d5eb8f3ccd5e9921df57a2a4ca92",
+  "note": "此核对文件在包外，避免包摘要自引用；验证为云端，非Windows完整构建/部署。"
+}

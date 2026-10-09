@@ -2878,6 +2878,10 @@ function xsdRelicState(rel, known, identity, customOwners) {
         for (let i = 0; i < panels.length; i++) renderInventory(panels[i], D);
       } catch (e) { /* 忽略 */ }
     },
+    getRelicState: (id) => {
+      const rel=XSD_RELICS.find(r=>r.id===id),sd=xsdStatData()||{};
+      return rel ? xsdRelicState(rel,sd.known||{},sd.身份||'',sd.名器归属||{}) : null;
+    },
     openRelicModal: (id) => xsdOpenRelicModal(id),
     closeRelicModal: () => xsdCloseRelicModal(),
     openItemModal: (it, doc) => xsdOpenItemModal(it, doc),

@@ -49,10 +49,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   assert.equal(await page.evaluate(()=>newApiUsed),true);
   await dialog.getByRole('button',{name:'撤销最近一次',exact:true}).click();
   await page.waitForFunction(()=>stores.chat.xsd_correction_meta.log.length===0);
-  await dialog.getByRole('button',{name:'关闭',exact:true}).click();assert.equal(await dialog.count(),0);
+  await page.getByTitle('关闭面板',{exact:true}).click();assert.equal(await dialog.isVisible(),false);
   // 状态栏节点留下，而两个脚本iframe均已销毁：齿轮与完整GM仍能操作。
   await page.getByRole('button',{name:'GM控制面板',exact:true}).click();
-  await dialog.getByRole('button',{name:'完整GM设置',exact:true}).click();
+  await page.getByRole('tab',{name:'身份与状态',exact:true}).click();
   assert.equal(await page.locator('#xshd-gm-mask').isVisible(),true);
   const mask=page.locator('#xshd-gm-mask');
   await mask.locator('[data-field="地点"]').fill('手工修复地点');
@@ -61,8 +61,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   await page.evaluate(()=>{stores.chat.stat_data.地点='外部更新地点';stores.message.stat_data.地点='外部更新地点';});
   await mask.getByTitle('读回当前值',{exact:true}).click();
   assert.equal(await mask.locator('[data-field="地点"]').inputValue(),'外部更新地点');
-  await page.getByRole('button',{name:'纹章纠错',exact:true}).click();
-  await dialog.getByRole('button',{name:'关闭',exact:true}).click();
+  await page.getByRole('tab',{name:'纹章与剧情',exact:true}).click();
+  await page.getByRole('tab',{name:'身份与状态',exact:true}).click();
   const beforeDrag=await mask.boundingBox(),titleRect=await mask.locator('.xshd-gm-title').boundingBox();
   await page.mouse.move(titleRect.x+30,titleRect.y+10);await page.mouse.down();
   await page.mouse.move(titleRect.x+80,titleRect.y+40);await page.mouse.up();
@@ -82,6 +82,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   const size=await page.locator('[data-xsd-settings]').boundingBox();assert(size.width>=36&&size.height>=36);
+  await page.getByRole('tab',{name:'纹章与剧情',exact:true}).click();
   await dialog.getByLabel('主线事实',{exact:true}).selectOption('已抵达天溪');
   await dialog.getByRole('button',{name:'预览改动',exact:true}).click();
   const count=await page.evaluate(()=>calls);
@@ -89,7 +90,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   await dialog.getByRole('button',{name:'确认应用',exact:true}).click();
   assert.equal(await page.evaluate(()=>calls),count,'切聊天后旧预览不得写入');
   await page.evaluate(()=>__xsdCorrection.onChatChanged());assert.equal(await dialog.count(),0);
-  await page.evaluate(()=>xsdGM.open());
+  await page.evaluate(()=>xsdGM.open('general'));
   await mask.locator('[data-field="地点"]').fill('旧表单不能覆盖新楼');
   const beforeOldForm=await page.evaluate(()=>calls);
   await page.evaluate(()=>ctx.chat.push({}));

@@ -21,9 +21,9 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  assert.equal(await second.evaluate(()=>window.__xsdCorrection===window.parent.__xsdCorrection),true);
  assert.equal(await frame.evaluate(()=>window.__xsdCorrection===window.parent.__xsdCorrection),true);
  await page.evaluate(()=>window.__xsdGM());
- await page.getByRole('button',{name:'纹章纠错',exact:true}).click();
+ await page.getByRole('tab',{name:'纹章与剧情',exact:true}).click();
  const dialog=page.locator('#xsd-correction-dialog');
- assert.equal(await dialog.count(),1,'实际GM点击应打开二级面板');
+ assert.equal(await dialog.count(),1,'GM内嵌调整区仅一份');assert.equal(await page.locator('[aria-modal="true"]').count(),0);
  await dialog.getByLabel('纹章',{exact:true}).selectOption('boruoputiju');
  await dialog.getByLabel('亮灭',{exact:true}).selectOption('false');
  await dialog.getByRole('button',{name:'预览改动',exact:true}).click();
@@ -34,9 +34,9 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  await dialog.getByRole('button',{name:'撤销最近一次',exact:true}).click();
  await page.waitForFunction(()=>window.stores.chat.xsd_correction_meta.log.length===0);
  await dialog.getByLabel('纹章',{exact:true}).selectOption('lingxitongxin');
- await page.waitForFunction(()=>document.querySelector('#xsd-correction-dialog select[aria-label="阶段"] option[value="4"]').disabled);
- assert.equal(await dialog.getByLabel('阶段',{exact:true}).locator('option[value="4"]').evaluate(el=>el.disabled),true);
- await dialog.getByRole('button',{name:'关闭',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('#xsd-correction-dialog select[aria-label="当前阶段"] option[value="4"]').disabled);
+ assert.equal(await dialog.getByLabel('当前阶段',{exact:true}).locator('option[value="4"]').evaluate(el=>el.disabled),true);
+ await page.getByTitle('关闭面板',{exact:true}).click();
  await page.evaluate(()=>window.__xsdCorrectionOpen());await page.evaluate(()=>window.__xsdCorrectionOpen());
  assert.equal(await page.locator('#xsd-correction-dialog').count(),1);
  await page.setViewportSize({width:390,height:844});
@@ -44,6 +44,6 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  await page.evaluate(()=>{window.ctx.chatId='different';window.__xsdCorrection.onChatChanged();});
  assert.equal(await page.locator('#xsd-correction-dialog').count(),0);
  assert.deepEqual(errors,[]);
- console.log(JSON.stringify({scope:'实际GM iframe＋最小宿主Chromium',passed:['两个iframe共享同一运行时','GM二级入口','预览/双层写入','单笔撤销','缺四阶段禁选','重开单节点','390px无横向溢出','切聊天关闭'],pageErrors:errors},null,2));
+ console.log(JSON.stringify({scope:'实际GM iframe＋最小宿主Chromium',passed:['两个iframe共享同一运行时','GM内嵌调整页入口','预览/双层写入','单笔撤销','缺四阶段禁选','重开单节点','390px无横向溢出','切聊天关闭'],pageErrors:errors},null,2));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

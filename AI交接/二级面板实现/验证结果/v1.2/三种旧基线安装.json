@@ -1,0 +1,21 @@
+{
+  "identity": "gpt",
+  "simulation": "临时源码目录，不构建/部署卡",
+  "results": [
+    {
+      "baseline": "原上传快照",
+      "installedFiles": 6,
+      "allSHA256Match": true
+    },
+    {
+      "baseline": "v1.0",
+      "installedFiles": 6,
+      "allSHA256Match": true
+    },
+    {
+      "baseline": "v1.1",
+      "installedFiles": 6,
+      "allSHA256Match": true
+    }
+  ]
+}
