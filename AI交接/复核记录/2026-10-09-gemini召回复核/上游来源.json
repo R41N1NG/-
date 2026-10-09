@@ -1,0 +1,8 @@
+{
+  "identity": "gpt",
+  "url": "https://raw.githubusercontent.com/SillyTavern/SillyTavern/1.14.0/public/scripts/world-info.js",
+  "tag": "1.14.0",
+  "originalBytes": 248485,
+  "originalSHA256": "d374eeec6990b2c0ae1c507fb01eb7420d9f2651fef3f94d3693dfa89d4b41c5",
+  "extractNote": "原生WorldInfoBuffer、关键词分支、excludeRecursion分支、递归源过滤、convertCharacterBook；测试上下文替身不运行完整宿主。"
+}

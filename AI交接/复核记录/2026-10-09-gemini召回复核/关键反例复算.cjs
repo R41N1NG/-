@@ -1,0 +1,41 @@
+/* gpt：复用ST1.14.0原生缓冲区/关键词分支/卡导入摘录；不模拟完整预算、EJS、真实消息处理。 */
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {WorldInfoBuffer,keywordCandidate,convertCharacterBook,recursiveSources,scan_state}=require('./SillyTavern-1.14.0扫描摘录.cjs');
+const {MINGQI_DB}=require('../../下级更新/二级面板接入源码/src/mingqi-db.js');
+const primary=['名器','名穴','名乳','纹章','灼酒流炎','北冥潮生','灵犀同心','玉虎噙香','烟霞灵乳','极阳转阴','紫府玄牝','幽露生香','缠藤蚀骨','寒髓凝香','守宫灵砂','啼血金莲','冰魄玉壶'];
+const secondary=['晋升','升阶','进阶','突破','二阶','三阶','四阶','极乐','阶段','觉醒','炼化','覆写'];
+const proposal={key:primary,keysecondary:secondary,selective:true,selectiveLogic:0,scanDepth:4,matchWholeWords:false,preventRecursion:true,excludeRecursion:true};
+const records=[];
+function check(name,messages,entry,expected,{state=scan_state.INITIAL,recurse='',inject='',global={}}={}){
+ const buffer=new WorldInfoBuffer(messages,global);if(recurse)buffer.addRecurse(recurse);if(inject)buffer.addInject(inject);
+ const actual=keywordCandidate(buffer,entry,state);assert.equal(actual,expected,name);records.push({name,messages,result:actual,expected});
+}
+check('明确专名＋晋升可候选',['你的灼酒流炎穴如何才能晋升？'],proposal,true);
+check('仅有专名且selective=true不候选',['灼酒流炎穴的纹章是什么颜色？'],proposal,false);
+check('漏填selective即二级键失效',['灼酒流炎穴的纹章是什么颜色？'],{...proposal,selective:undefined},true);
+check('跨消息拼接主副键，换话题仍可误候选',['我想晋升元婴，需要什么功法？','上一轮我们讨论灼酒流炎穴的颜色。'],proposal,true);
+check('四条消息仍含旧专名，动作词可拼接',['如何晋升元婴？','第三条','第二条','灼酒流炎穴的颜色'],proposal,true);
+check('第五条旧专名不在scanDepth4范围',['如何晋升元婴？','第四条','第三条','第二条','灼酒流炎穴的颜色'],proposal,false);
+check('场景A冷问不自动拉名器总纲',['我问叶红缨：你如何才能晋升到第二阶？'],proposal,false);
+check('场景A有前文名器主题则能候选',['我问叶红缨：你如何才能晋升到第二阶？','刚才正在讨论你的灼酒流炎穴。'],proposal,true);
+check('仅有世界书递归文字，excludeRecursion阻止该轮候选',['她如何升阶？'],proposal,false,{state:scan_state.RECURSION,recurse:'灼酒流炎穴'});
+check('未exclude时世界书正文可以补主键',['她如何升阶？'],{...proposal,excludeRecursion:false},true,{state:scan_state.RECURSION,recurse:'灼酒流炎穴'});
+check('注入缓冲仍参与初始扫描，两个递归开关不等于仅玩家对话',['今天天气如何？'],proposal,true,{inject:'灼酒流炎穴晋升'});
+check('泛词名器＋阶段，非晋升问答也可候选',['名器的阶段界面按钮太淡了。'],proposal,true);
+check('只问名字不够证明零漏召回，收益/烙印未列副键',['灼酒流炎穴的归属和收益怎么判断？'],proposal,false);
+const curse={...proposal,key:['神诅','突破限制','破境','金丹后期','元婴','破处','天道神诅','境界突破'],keysecondary:['名器','破除','解除','规则','炉鼎','双修','条件']};
+check('神诅词层未读日期，元婴＋双修早期也可候选',['我想晋升元婴，双修有哪些好处？'],curse,true);
+check('明确神诅问题不含副键仍漏候选',['南域神诅是什么？'],curse,false);
+check('神诅改用同名问题也没有自动副键',['元婴该怎么突破？'],curse,false);
+const base={id:1,keys:['灼酒流炎'],secondary_keys:['晋升'],selective:true,enabled:true,extensions:{}};
+let imported=convertCharacterBook({entries:[{...base,preventRecursion:true,excludeRecursion:true,scanDepth:4}]}).entries[1];
+assert.equal(imported.preventRecursion,false);assert.equal(imported.excludeRecursion,false);assert.equal(imported.scanDepth,null);
+records.push({name:'卡条目仅写顶层camelCase递归/扫描字段，ST1.14导入不取这些值',result:{preventRecursion:imported.preventRecursion,excludeRecursion:imported.excludeRecursion,scanDepth:imported.scanDepth}});
+imported=convertCharacterBook({entries:[{...base,extensions:{prevent_recursion:true,exclude_recursion:true,scan_depth:4,selectiveLogic:0}}]}).entries[1];
+assert.equal(imported.preventRecursion,true);assert.equal(imported.excludeRecursion,true);assert.equal(imported.scanDepth,4);
+records.push({name:'卡extensions映射导入正确',result:{preventRecursion:imported.preventRecursion,excludeRecursion:imported.excludeRecursion,scanDepth:imported.scanDepth}});
+assert.deepEqual(recursiveSources([{uid:1,preventRecursion:true},{uid:2,preventRecursion:false}]).map(x=>x.uid),[2]);records.push({name:'preventRecursion仅过滤被标记条目的递归源，其他条目不受保护',result:true});
+const names=Object.values(MINGQI_DB).map(x=>x.name),missing=names.filter(n=>!primary.some(k=>n.includes(k)));
+assert.equal(missing.length,8);
+const output={identity:'gpt',scope:'ST1.14.0原生扫描片段＋合成消息；不证明当前245条卡的实际注入/预算/剧情知识',passed:records.length,records,nameComparison:{source:'已上传旧快照 src/mingqi-db.js；不是Gemini未上传的最新245条卡',names,missingFromProposal:missing,unverifiedProposedNames:primary.slice(4).filter(k=>!names.some(n=>n.includes(k)))} };
+fs.writeFileSync(path.join(__dirname,'关键反例结果.json'),JSON.stringify(output,null,2)+'\n');console.log(JSON.stringify({passed:output.passed,missingFromProposal:missing,scope:output.scope},null,2));
