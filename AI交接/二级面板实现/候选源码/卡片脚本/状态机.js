@@ -706,6 +706,16 @@ function currentChatId() {
   return 'default';
 }
 
+/** 内容哈希指纹（用于精确消息去重，比正文长度判定更可靠） */
+function hashText(str) {
+  const s = String(str || '');
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) + h) + s.charCodeAt(i);
+    h |= 0;
+  }
+  return (h >>> 0).toString(36) + '_' + s.length;
+}
 
 /** toastr（多层回退：先主窗口，再 iframe 自己的） */
 function toast(kind, message, timeOut) {
@@ -1255,9 +1265,6 @@ async function ensureInit(where) {
     patch.known = {};
     for (const f of missingKnown) patch.known[f] = false;
   }
-  if (!s || typeof s.relic_progress !== 'object' || s.relic_progress === null) {
-    patch.relic_progress = {};
-  }
   if (!s || typeof s.身份 !== 'string' || !s.身份) patch.身份 = IDENTITY_DEFAULT;
   if (!s || typeof s.阵营 !== 'string' || !s.阵营) patch.阵营 = FACTION_DEFAULT;
   const identityNow = (patch.身份 !== undefined) ? patch.身份 : (s?.身份 || IDENTITY_DEFAULT);
@@ -1620,7 +1627,7 @@ function parseCastBlocks(inner) {
  *   · `未识别` 是没归进面板的标签（排障用）
  */
 function parseStatusBlock(text) {
-  const out = { found: false, raw: '', fields: {}, 进度: null, 里程碑: null, 破处: null, 纳戒: null, 名器互动: null, 未识别: [], YAML行数: 0, XML标签数: 0, 在场角色: [] };
+  const out = { found: false, raw: '', fields: {}, 进度: null, 里程碑: null, 破处: null, 纳戒: null, 未识别: [], YAML行数: 0, XML标签数: 0, 在场角色: [] };
   const t = String(text ?? '');
   const m = t.match(STATUS_PAIR_RE);
   let inner = null;
@@ -1672,13 +1679,6 @@ function parseStatusBlock(text) {
       out.XML标签数++;
       continue;
     }
-    if (isRelicActionLabel(label)) {
-      if (out.名器互动 === null) out.名器互动 = [];
-      const act = parseRelicAction(value);
-      if (act) out.名器互动.push(act);
-      out.XML标签数++;
-      continue;
-    }
     const key = matchField(label);
     if (!key) { if (!out.未识别.includes(label)) out.未识别.push(label); continue; }
     if (out.fields[key] === undefined) out.fields[key] = value;
@@ -1712,25 +1712,9 @@ function parseStatusBlock(text) {
       out.YAML行数++;
       continue;
     }
-    if (isRelicActionLabel(label)) {
-      if (out.名器互动 === null) out.名器互动 = [];
-      const act = parseRelicAction(value);
-      if (act) out.名器互动.push(act);
-      out.YAML行数++;
-      continue;
-    }
     const key = matchField(label);
     if (key) { if (out.fields[key] === undefined) out.fields[key] = value; out.YAML行数++; }   // XML 已写过就不覆盖
     else out.未识别.push(label);
-  }
-
-  // ③ 漏闭合或截断回退：行内单标签防护（防越界吞噬下一 XML 字段）
-  if (out.名器互动 === null) {
-    const unclosedM = inner.match(/<名器互动>([^<>\r\n]+)(?:<\/名器互动>|(?=<)|$)/i);
-    if (unclosedM) {
-      const act = parseRelicAction(unclosedM[1]);
-      if (act) out.名器互动 = [act];
-    }
   }
 
   return out;
@@ -1762,18 +1746,8 @@ const MINGQI_PREREQ = {
   流焰叠薪穴成形: ['顾云舒处女丧失'],
   凤凰羽花成形: ['陆烬颜处女丧失'],
 };
-if (typeof window !== 'undefined' && window.__xsdCorrection) Object.assign(window.__xsdCorrection.prerequisites, MINGQI_PREREQ);
+if (window.__xsdCorrection) Object.assign(window.__xsdCorrection.prerequisites, MINGQI_PREREQ);
 
-/** 内容哈希指纹（用于精确消息去重，比正文长度判定更可靠） */
-function hashText(str) {
-  const s = String(str || '');
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) + h) + s.charCodeAt(i);
-    h |= 0;
-  }
-  return (h >>> 0).toString(36) + '_' + s.length;
-}
 
 function validateAnchors(listRaw, prose, messageId, knownNow, deflowerNow) {
   const list = Array.isArray(listRaw) ? listRaw : [];
@@ -1832,231 +1806,12 @@ function validateAnchors(listRaw, prose, messageId, knownNow, deflowerNow) {
   return { good, bad, dropped };
 }
 
-/** ═════════════════════════════════════════════════════════════════════
- * 名器动作申报、严格事实核验与浸润累进（MVU 状态机数值扩展 · 首期试点）
- * ─────────────────────────────────────────────────────────────────────
- * 遵循 GPT RFC-001 审核与 RFC-002 规范：
- *   1. 封闭动作枚举，模型严禁输出数字或 +1；
- *   2. 严格正文事实核验（持有者在场 + 内射硬词 + 否定句拦截 + 成形硬前置）；
- *   3. 接入统一 writeStat 队列，消息层历史快照与 Swipe 隔离（替换本楼贡献，绝不跨 Swipe 累加）；
- *   4. 首期不自动晋阶（恪守 GEMINI.md 铁律 36：达成 5 次仅标记 ready，真正晋阶须剧情生理自发迎合质变或 GM 解锁）；
- *   5. GM 人工回锁绝对优先。
- * ═════════════════════════════════════════════════════════════════════ */
-const RELIC_PILOT_CONFIG = {
-  zhuojiu: {
-    id: 'zhuojiu',
-    names: ['灼酒流炎穴', '灼酒流炎', '灼酒', 'zhuojiu'],
-    owner: '叶红缨',
-    ownerAliases: ['叶红缨', '红绡', '红缨'],
-    formKey: '灼酒流炎穴成形',
-    stage1Key: '灼酒流炎穴一阶段',
-    stage2Key: '灼酒流炎穴二阶段',
-    target: 5,
-    validActions: ['内射', '深度交合内射', '精液灌注', '破身'],
-    evidenceRegex: /(内射|阳精|精液|白浊|尽数灌入|射入|注入|深处射|尽数射|全数灌)/,
-  }
-};
-
-function isRelicActionLabel(label) {
-  const n = normalizeLabel(label);
-  return n.includes('名器互动') || n.includes('名器动作') || n === '名器' || n === 'relic_action';
-}
-
-/** `<名器互动>` 的值 → `{ relicId, relicName, actor, action, raw }`
- *  封闭事实枚举：例如「灼酒流炎穴|赵无忧|内射」或「zhuojiu|player|内射」
- *  严格去除模型自造的 +1、数字或 delta，只取名器、行为者、动作事实。 */
-function parseRelicAction(value) {
-  const v = String(value ?? '').trim().replace(/[（(]\s*无\s*[）)]/g, '无');
-  if (!v || v === '无' || v === '-' || v === '—' || /^none$/i.test(v)) return null;
-  // 防跨标签越界（如果带了 < 标签残余，截断到第一个 < 之前）
-  const cleanV = v.split('<')[0].trim();
-  if (!cleanV) return null;
-
-  const segs = cleanV.split(/[；;\n]+/);
-  for (const seg of segs) {
-    const rawSeg = seg.trim();
-    if (!rawSeg) continue;
-    const parts = rawSeg.split(/[|｜、:：]+/).map((x) => x.trim()).filter(Boolean);
-    if (!parts.length) continue;
-
-    // 清理模型自加的 +1、数字等
-    const cleanedParts = parts.map((p) => p.replace(/\s*\+?\d+.*$/, '').trim()).filter(Boolean);
-    if (!cleanedParts.length) continue;
-
-    for (const [id, cfg] of Object.entries(RELIC_PILOT_CONFIG)) {
-      const matchRelic = cleanedParts.some((p) => cfg.names.includes(p) || cfg.ownerAliases.includes(p) || p.toLowerCase() === id.toLowerCase());
-      if (!matchRelic) continue;
-
-      let matchedAction = '';
-      for (const p of cleanedParts) {
-        if (cfg.validActions.includes(p)) {
-          matchedAction = p;
-          break;
-        }
-      }
-      if (!matchedAction) {
-        if (cleanedParts.some((p) => p.includes('内射') || p.includes('灌注'))) matchedAction = '内射';
-        else if (cleanedParts.some((p) => p.includes('破身') || p.includes('初破'))) matchedAction = '破身';
-      }
-
-      if (matchedAction) {
-        const actorPart = cleanedParts.find((p) => !cfg.names.includes(p) && !cfg.ownerAliases.includes(p) && p !== matchedAction && p.toLowerCase() !== id.toLowerCase());
-        const actor = actorPart || '赵无忧';
-        return {
-          relicId: id,
-          relicName: cfg.names[0],
-          actor,
-          action: matchedAction,
-          raw: rawSeg
-        };
-      }
-    }
-  }
-  return null;
-}
-
-/** 核验名器互动申报（纯函数） */
-function validateRelicAction(act, prose, known, currentIdentity) {
-  if (!act || !act.relicId) return { ok: false, why: '无效或未知的动作申报' };
-  const cfg = RELIC_PILOT_CONFIG[act.relicId];
-  if (!cfg) return { ok: false, why: '非试点名器（首期仅支持灼酒流炎穴试点）' };
-
-  // 1. 成形检查（前置硬闸门）
-  const K = known || {};
-  if (K[cfg.formKey] !== true) {
-    return { ok: false, why: `名器「${cfg.names[0]}」尚未成形，不可累积互动或晋阶` };
-  }
-
-  // 2. 阶段检查（二阶段是否已达成）
-  if (K[cfg.stage2Key] === true) {
-    return { ok: false, why: `名器「${cfg.names[0]}」已达第二境（情动），一升二浸润计数已闭合` };
-  }
-
-  // 3. 动作枚举检查
-  if (!cfg.validActions.includes(act.action)) {
-    return { ok: false, why: `动作「${act.action}」不在合法枚举表内（支持：${cfg.validActions.join('、')}）` };
-  }
-
-  // 动作是破身：属于一阶成形动作，不增加入二阶浸润
-  if (act.action === '破身') {
-    return { ok: true, delta: 0, why: '破身属于一阶成形动作，不计入二阶浸润' };
-  }
-
-  // 4. 正文事实校验（Strict Evidence Check）
-  const pText = String(prose || '');
-  if (!pText) {
-    return { ok: false, why: '本楼读不到正文文本，无法核验动作事实实证（fail-closed）' };
-  }
-
-  // 4a. 持有者在场实证
-  const ownerPresent = cfg.ownerAliases.some((alias) => pText.includes(alias));
-  if (!ownerPresent) {
-    return { ok: false, why: `正文中未见持有者「${cfg.owner}」在场参与互动` };
-  }
-
-  // 4b. 动作证据词实证
-  if (!cfg.evidenceRegex.test(pText)) {
-    return { ok: false, why: `正文中未见「${act.action}」事实实证（须出现内射/精液灌注等硬词）` };
-  }
-
-  // 4c. 否定句拦截
-  if (typeof negatedAround === 'function' && negatedAround(pText, cfg.evidenceRegex)) {
-    return { ok: false, why: `正文中「${act.action}」实证落在否定或未发生分句中` };
-  }
-
-  return { ok: true, delta: 1, why: `正文事实核验通过（${cfg.owner}在场且有明确${act.action}实证）` };
-}
-
-/** 累进/回溯名器浸润进度（纯函数） */
-function calcRelicProgress(allProgress, validAction, floor, swipeId, textHash) {
-  const next = Object.assign({}, allProgress || {});
-  if (!validAction || !validAction.relicId) return next;
-  const id = validAction.relicId;
-  const cfg = RELIC_PILOT_CONFIG[id];
-  if (!cfg) return next;
-
-  const cur = Object.assign({
-    id,
-    name: cfg.names[0],
-    owner: cfg.owner,
-    count: 0,
-    target: cfg.target,
-    ready: false,
-    last_floor: 0,
-    history: []
-  }, next[id] || {});
-
-  // 目标阈值由代码策略决定，严格正整数
-  const target = Math.max(1, Math.floor(Number(cfg.target) || 5));
-  cur.target = target;
-  let count = Math.max(0, Math.min(target, Math.floor(Number(cur.count) || 0)));
-
-  const fNum = Number(floor) || 0;
-  const sNum = Number(swipeId) || 0;
-  const hash = String(textHash || '');
-  const delta = (validAction.ok && Number(validAction.delta)) ? Math.floor(Number(validAction.delta)) : 0;
-
-  let history = Array.isArray(cur.history) ? [...cur.history] : [];
-  const existingIdx = history.findIndex((h) => Number(h.floor) === fNum);
-
-  if (existingIdx >= 0) {
-    const prev = history[existingIdx];
-    // 同楼同分支同正文：幂等，不重复增减
-    if (Number(prev.swipeId) === sNum && prev.hash === hash) {
-      cur.count = count;
-      cur.ready = count >= target;
-      next[id] = cur;
-      return next;
-    }
-    // 同楼换分支(Swipe)或编辑：撤销旧贡献，加上新贡献
-    const prevDelta = Math.floor(Number(prev.delta) || 0);
-    count = Math.max(0, Math.min(target, count - prevDelta + delta));
-    history[existingIdx] = {
-      floor: fNum,
-      swipeId: sNum,
-      hash,
-      actor: validAction.actor || 'player',
-      action: validAction.action || '',
-      delta,
-      timestamp: Date.now()
-    };
-  } else {
-    // 新楼记录
-    count = Math.max(0, Math.min(target, count + delta));
-    history.push({
-      floor: fNum,
-      swipeId: sNum,
-      hash,
-      actor: validAction.actor || 'player',
-      action: validAction.action || '',
-      delta,
-      timestamp: Date.now()
-    });
-  }
-
-  // 约束审计账本大小，保留最近 20 笔
-  if (history.length > 20) history = history.slice(-20);
-
-  cur.count = count;
-  cur.ready = count >= target;
-  cur.last_floor = fNum;
-  cur.history = history;
-  next[id] = cur;
-  return next;
-}
-
 async function applyMilestones(p, messageId, text) {
   const list = Array.isArray(p?.里程碑) ? p.里程碑 : null;
   const bookIn = Array.isArray(p?.破处) ? p.破处 : [];
   const nadeIn = (p?.纳戒 && typeof p.纳戒 === 'object') ? p.纳戒 : null;
   const nadeHas = Boolean(nadeIn && ((nadeIn.获得 || []).length || (nadeIn.消耗 || []).length));
-  const relicActs = Array.isArray(p?.名器互动) ? p.名器互动 : [];
-
-  const sd0 = readStatData() || {};
-  const prevRelicProgress = (sd0.relic_progress && typeof sd0.relic_progress === 'object') ? sd0.relic_progress : {};
-  const hasRelicWork = relicActs.length > 0 || Object.values(prevRelicProgress).some((rp) => (rp.history || []).some((h) => Number(h.floor) === Number(messageId)));
-
-  if (!list && !bookIn.length && !nadeHas && !hasRelicWork) return [];      // 四栏都没有且无名器回溯 ⇒ 什么都不做
+  if (!list && !bookIn.length && !nadeHas) return [];      // 三栏都没有 ⇒ 什么都不做
   const known = readKnown() || {};
   
   const proseForAnchor = stripStatusBlock(text);
@@ -2089,6 +1844,7 @@ async function applyMilestones(p, messageId, text) {
   
 
   // ① 破处簿：与历史累积合并（先记的为准，不许模型来回改口）
+  const sd0 = readStatData() || {};
   const proseOuter = stripStatusBlock(text);           // 本楼正文（去掉状态栏），破处依据只看它
   
   const anchorLog = (sd0.锚点账本 && typeof sd0.锚点账本 === 'object') ? { ...sd0.锚点账本 } : {};
@@ -2338,42 +2094,9 @@ async function applyMilestones(p, messageId, text) {
   inv = normalizeInventory(inv);
   if (ledgerChanged) invChanged = true;
 
-  // ── 名器动作申报核验与浸润累进（首期：灼酒流炎穴试点）──
-  let relicProgressChanged = false;
-  let allRelicProgress = (typeof structuredClone === 'function')
-    ? structuredClone(prevRelicProgress)
-    : JSON.parse(JSON.stringify(prevRelicProgress));
-  const swipeId = p?.swipeId ?? 0;
-  const textHash = hashText(text);
-
-  for (const pilotId of Object.keys(RELIC_PILOT_CONFIG)) {
-    const act = relicActs.find((a) => a.relicId === pilotId) || null;
-    const existingHistory = allRelicProgress[pilotId]?.history || [];
-    const hadFloor = existingHistory.some((h) => Number(h.floor) === Number(messageId));
-
-    if (act) {
-      const vRes = validateRelicAction(act, proseOuter, known, curPlayerId);
-      if (vRes.ok) {
-        allRelicProgress = calcRelicProgress(allRelicProgress, { ...act, delta: vRes.delta }, messageId, swipeId, textHash);
-        relicProgressChanged = true;
-        console.log(TAG, `[名器互动] 第 ${messageId} 楼「${act.relicName}」动作「${act.action}」核验通过 ⇒ 浸润计数：${allRelicProgress[pilotId]?.count}/${allRelicProgress[pilotId]?.target}`);
-      } else {
-        console.warn(TAG, `⛔ [名器互动] 第 ${messageId} 楼丢弃动作「${act.raw}」：${vRes.why}`);
-        if (hadFloor) {
-          allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '无' }, messageId, swipeId, textHash);
-          relicProgressChanged = true;
-        }
-      }
-    } else if (hadFloor) {
-      allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '无' }, messageId, swipeId, textHash);
-      relicProgressChanged = true;
-      console.log(TAG, `[名器互动] 第 ${messageId} 楼新分支无互动 ⇒ 撤销本楼旧分支贡献，当前计数：${allRelicProgress[pilotId]?.count}/${allRelicProgress[pilotId]?.target}`);
-    }
-  }
-
   const needOwnerWrite = ownersChanged && Object.keys(relicOwners).length > 0;
   const needDeriveWrite = 派生账本变 || 归属来源变 || 派生撤销.length > 0;
-  if (!news.length && !bookChanged && !needOwnerWrite && !needDeriveWrite && !invChanged && !dispatchChanged && !relicProgressChanged) {
+  if (!news.length && !bookChanged && !needOwnerWrite && !needDeriveWrite && !invChanged && !dispatchChanged) {
     console.log(TAG, `[实际发生] 第 ${messageId} 楼：${good.join('、') || '（无）'} —— 都已在账本里，无需写盘`);
     return [];
   }
@@ -2383,7 +2106,6 @@ async function applyMilestones(p, messageId, text) {
     patch.破处者 = mergedBook;
     patch.名器归属 = relicOwners;
   }
-  if (relicProgressChanged) patch.relic_progress = allRelicProgress;
   /* ⑧ 派生账本与归属来源落盘；被撤销的派生写 false（墓碑在账本里是 null） */
   if (派生账本变) patch.派生账本 = 派生账本新;
   if (归属来源变) { patch.名器归属来源 = 名器归属来源新; patch.名器归属 = relicOwners; }
@@ -2403,12 +2125,11 @@ async function applyMilestones(p, messageId, text) {
   if (ledgerChanged) patch.纳戒账本 = nadeLog;
   if (anchorLogChanged) patch.锚点账本 = anchorLog;
   if (rolledBack.length) { patch.known = patch.known || {}; for (const f of rolledBack) patch.known[f] = false; }
-  const r = await writeStat(patch, `第 ${messageId} 楼 <实际发生>/<破处>/<名器互动> 自动记账${invChanged ? '（含纳戒更新）' : ''}`);
+  const r = await writeStat(patch, `第 ${messageId} 楼 <实际发生>/<破处> 自动记账${invChanged ? '（含纳戒更新）' : ''}`);
   if (r && r.ok) {
     console.log(TAG, `✅ [实际发生] 第 ${messageId} 楼自动解锁 ${news.length} 个锚点：${news.join('、') || '（无）'}（via ${r.via}）`
       + (bookChanged ? ` 破处簿 +${bookIn.length} 条` : '')
       + (needOwnerWrite ? ` 名器归属 = ${JSON.stringify(relicOwners)}` : '')
-      + (relicProgressChanged ? ' 名器浸润进度已更新' : '')
       + (invChanged ? ' 纳戒物品已更新' : ''));
     return news;
   }
@@ -2623,7 +2344,7 @@ function deriveRelicClosure(inp) {
  *   · `进度` 只做一致性校验，**不写变量**
  * ⚠️ 只在 `MESSAGE_RECEIVED`（message_id > 0）时调用。
  */
-async function applyStatusToVars(text, messageId, opt) {
+async function applyStatusToVars(text, messageId) {
   // ⓪ 独立提取阶段总结与结算（即使没有状态栏，只要有结算/总结就必须存下来）
   const sumMatch = /<(?:阶段总结|结算)>([\s\S]*?)<\/(?:阶段总结|结算)>/.exec(text);
   const capturedSummary = (sumMatch && sumMatch[1].trim()) ? sumMatch[1].trim() : null;
@@ -2632,7 +2353,6 @@ async function applyStatusToVars(text, messageId, opt) {
   }
 
   const p = parseStatusBlock(text);
-  p.swipeId = (opt && opt.swipeId) ?? 0;
   
   try { await reconcileNadeLedger(`第 ${messageId} 楼前`); } catch (e) { console.warn(TAG, '[纳戒对账] 失败（已吞掉）：', msgOf(e)); }
   if (!p.found) {
@@ -4836,7 +4556,7 @@ async function onAiMessageReceived(messageId, opt) {
       }
       proposeAnchors(text, n);
       checkOutputContract(text, n);
-      await applyStatusToVars(text, n, { swipeId });
+      await applyStatusToVars(text, n);
       /* 重查：await 期间若切了聊天或又来了新楼，本次结果不算数（释放 ⇒ 可重试） */
       const after = latestMessageId();
       if (after !== null && Number(after) !== Number(n)) {
