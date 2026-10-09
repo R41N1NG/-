@@ -1,0 +1,301 @@
+已逐字校验V152默认提示词快照。
+{
+  "version": "v1.5.2",
+  "trace": [
+    {
+      "floor": 2,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 4,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "invalid",
+      "issues": 0
+    },
+    {
+      "floor": 6,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "invalid",
+      "issues": 0
+    },
+    {
+      "floor": 8,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "invalid",
+      "issues": 0
+    },
+    {
+      "floor": 10,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "invalid",
+      "issues": 0
+    },
+    {
+      "floor": 12,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 14,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 16,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 18,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "invalid",
+      "issues": 0
+    },
+    {
+      "floor": 20,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "invalid",
+      "issues": 0
+    },
+    {
+      "floor": 22,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 24,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 26,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "accepted",
+      "issues": 0
+    }
+  ],
+  "paid_api_calls": 0,
+  "nonce_note": "正常UUID仅在模拟宿主中对齐生成nonce；两处自造turn不对齐，保持拒绝；不是回填真实聊天进度"
+}
+{
+  "version": "v1.6.0",
+  "trace": [
+    {
+      "floor": 2,
+      "current": "N1",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 4,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 0,
+      "report": "accepted",
+      "issues": 1
+    },
+    {
+      "floor": 6,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "accepted",
+      "issues": 1
+    },
+    {
+      "floor": 8,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "accepted",
+      "issues": 1
+    },
+    {
+      "floor": 10,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "accepted",
+      "issues": 2
+    },
+    {
+      "floor": 12,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 14,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 16,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 18,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "invalid",
+      "issues": 0
+    },
+    {
+      "floor": 20,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "invalid",
+      "issues": 0
+    },
+    {
+      "floor": 22,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 24,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "accepted",
+      "issues": 0
+    },
+    {
+      "floor": 26,
+      "current": "N2",
+      "completed": [
+        "N1"
+      ],
+      "results": [],
+      "pending": 1,
+      "report": "accepted",
+      "issues": 0
+    }
+  ],
+  "paid_api_calls": 0,
+  "nonce_note": "正常UUID仅在模拟宿主中对齐生成nonce；两处自造turn不对齐，保持拒绝；不是回填真实聊天进度"
+}

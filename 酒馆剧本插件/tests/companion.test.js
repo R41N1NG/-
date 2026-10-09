@@ -73,3 +73,24 @@ test('格式失败重读后恢复进行中，移除同来源的占位候选，�
   assert.equal(f.e.state.companion.queue.length,1);assert.equal(f.e.state.companion.latest_report.status,'invalid');await f.e.checkRound();assert.equal(f.e.state.companion.queue.length,0);assert.equal(f.e.state.companion.latest_report.status,'accepted');assert.equal(f.e.state.companion.round,1);
   f.root.messages.find(m=>m.message_id===a).message+='后来走入密室。';await f.e.captureDraft(a);await f.e.processCompanion(false);assert.equal(f.e.state.companion.latest_report.status,'invalid');assert.match(f.e.state.companion.latest_report.message,/含正文/);assert.equal(f.e.state.collected_ids.length,0);f.e.destroy();
 });
+test('自由跟踪合法进入下一阶段，越界完成项不吞选择、不发新阶段结果、零辅助API',async()=>{
+  const p=project();p.nodes[0].effects=[];p.nodes[0].routes[0].condition=true;p.nodes[1].completion_criteria='老人收走账册';p.nodes[1].effects=[{collect:'key'}];
+  const f=await setup(mockClient(),p);await round(f,'你离开了阳台。',{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]});
+  await round(f,'目标停在报刊亭前。',{stages:[{id:'b',status:'completed',quote:'目标停在报刊亭前。'}],choice:{target:'b',source:'user',quote:'继续跟上'}},true,'继续跟上');
+  assert.equal(f.e.state.current_node_id,'b');assert.deepEqual(f.e.state.completed_node_ids,['a']);assert.deepEqual(f.e.state.collected_ids,[]);assert.equal(f.e.state.companion.queue.length,0);assert.match(f.e.state.companion.latest_report.warnings[0],/越界/);assert.equal(f.e.quickRoutes()[0].target,'complete:b');f.e.destroy();
+});
+test('重复/坏阶段项和错误事件项独立忽略，普通有效事件仍结算；重复同ID不择一放行',()=>{
+  const expected={turn:'t',stages:[{id:'a'}],events:[{id:'gift',actor_id:'player',recipient_id:'wang'}],routes:[]},raw={turn:'t',complete:true,stages:[{id:'a',status:'completed',quote:'小王接过了花。'},{id:'a',status:'uncertain'},null],events:[{id:'fake',status:'completed'},accepted]};
+  const r=R.parse('小王接过了花。<!--BSE_REPORT '+JSON.stringify(raw)+' -->',expected);assert.equal(r.stages.length,0);assert.equal(r.events.length,1);assert.equal(r.events[0].status,'completed');assert.equal(r.warnings.length,4);
+});
+test('玩家输入只证明入口选择，不能成为完成/领奖依据；未知入口与错误turn不放行',()=>{
+  const expected={turn:'t',player_input:'我进入密室',stages:[{id:'a'}],events:[],routes:[{target:'b'}]},raw={turn:'t',complete:true,stages:[{id:'a',status:'completed',quote:'我进入密室'}],choice:{target:'b',source:'user',quote:'我进入密室'}};
+  const encode=x=>'正文只有风声。<!--BSE_REPORT '+JSON.stringify(x)+' -->';let r=R.parse(encode(raw),expected);assert.equal(r.stages[0].status,'uncertain');assert.equal(r.choice.target,'b');r=R.parse(encode({...raw,choice:{...raw.choice,target:'c'}}),expected);assert.equal(r.choice,null);assert.throws(()=>R.parse(encode({...raw,turn:'造的turn'}),expected),/标识/);
+});
+test('进入选择仍遵守本地结果门槛，报告部分出错不把锁住路线当合法',async()=>{
+  const f=await setup();await round(f,'小王站在阳台。',{stages:[{id:'b',status:'completed',quote:'小王站在阳台。'}],choice:{target:'b',source:'user',quote:'进入密室'}},true,'进入密室');assert.equal(f.e.state.current_node_id,'a');assert.deepEqual(f.e.state.collected_ids,[]);assert.deepEqual(f.e.state.completed_node_ids,[]);f.e.destroy();
+});
+test('输入被编辑后不能用注入时的旧选择证据推进',async()=>{
+  const p=project();p.nodes[0].effects=[];p.nodes[0].routes[0].condition=true;p.collections=[];const f=await setup(mockClient(),p);await round(f,'你离开了阳台。',{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]});
+  const u=f.root.messages.length;f.root.messages.push({message_id:u,role:'user',message:'我要去看看那间密室'});await f.e.prepareTurn(u);const turn=f.e.state.companion.turn.id;f.root.messages.find(m=>m.message_id===u).message='我留在原地';const a=f.root.messages.length;f.root.messages.push({message_id:a,role:'assistant',message:'风声。<!--BSE_REPORT '+JSON.stringify({turn,complete:true,stages:[],events:[],choice:{target:'b',source:'user',quote:'我要去看看那间密室'}})+' -->'});await f.e.captureDraft(a);await f.e.processCompanion();assert.equal(f.e.state.current_node_id,'a');assert.equal(f.e.state.companion.logs.at(-1).kind,'stale');f.e.destroy();
+});

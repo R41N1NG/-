@@ -1,0 +1,19 @@
+{
+  "version": "1.6.0",
+  "source_count": 9,
+  "installer_id": "branch-story-engine-v1",
+  "content_bytes": 442427,
+  "zip_entries": 56,
+  "zip_crc": "passed",
+  "source_installer_byte_match": true,
+  "zip_workspace_byte_match": true,
+  "cooperation_append_only": true,
+  "coordination_unchanged": true,
+  "tse_sha256": "a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065",
+  "installer_sha256": "c1e5e53478359737eeac0b2651d3db07746fe97b5c6433c4e61f4e8727e521ec",
+  "zip_sha256": "a9c3933a71e633e87ffb362344d13d4ce3639c968704e4e253feaaf3681dbf85",
+  "unit_tests": 212,
+  "browser_groups": 10,
+  "paid_api_calls": 0,
+  "real_host_verified": false
+}

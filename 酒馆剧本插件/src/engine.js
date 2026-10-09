@@ -4,9 +4,9 @@
   if (node) module.exports = value; else root.BSEEngine = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API, F, R) {
   'use strict';
-  const VERSION = '1.5.2';
+  const VERSION = '1.6.0';
   const defaults = () => ({enabled: false, runtime_mode:'companion', checkpoint_every:3, companion_prompt:R.PROMPT, depth: 0, detail: false, auto_detect: false, auto_events: true, quick_options: false, quick_collapsed: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
-    profile: {checkpoint_prompt:API.PROMPTS.checkpoint,author_review:true, review_model:'', review_prompt:API.PROMPTS.review, review_script_prompt:API.PROMPTS.review_script, repair_source_prompt:API.PROMPTS.repair_source, repair_variables_prompt:API.PROMPTS.repair_variables, repair_evidence_prompt:API.PROMPTS.repair_evidence, base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 64000, max_output: 1024, segment_output: 16384, analysis_output: 16384, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, partition_prompt: API.PROMPTS.partition, auto_partition: true, analysis_chunk_chars: 3000, json_mode: true, no_thinking: false},
+    profile: {checkpoint_prompt:API.PROMPTS.checkpoint,author_review:true, playability_prompt:API.PROMPTS.playability,review_model:'', review_prompt:API.PROMPTS.review, review_script_prompt:API.PROMPTS.review_script, repair_source_prompt:API.PROMPTS.repair_source, repair_variables_prompt:API.PROMPTS.repair_variables, repair_evidence_prompt:API.PROMPTS.repair_evidence, base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 64000, max_output: 1024, segment_output: 16384, analysis_output: 16384, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, partition_prompt: API.PROMPTS.partition, auto_partition: true, analysis_chunk_chars: 3000, json_mode: true, no_thinking: false},
     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
   async function fingerprint(value) {
     const text = JSON.stringify(value);
@@ -32,10 +32,10 @@
     }
     async init() {
       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
-      if(this.settings.companion_prompt===R.PREVIOUS_PROMPT)this.settings.companion_prompt=R.PROMPT;
+      if([R.PREVIOUS_PROMPT,R.V152_PROMPT].includes(this.settings.companion_prompt))this.settings.companion_prompt=R.PROMPT;
       if(saved.runtime_mode==='legacy' && saved.profile?.author_review==null)this.settings.profile.author_review=false;
-      for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt'], ['detect', 'detect_prompt']]) {
-        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key], API.V142_PROMPTS[key], API.V144_PROMPTS[key], API.V146_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+      for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt'], ['detect', 'detect_prompt'],['review','review_prompt'],['review_script','review_script_prompt']]) {
+        if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key], API.V142_PROMPTS[key], API.V144_PROMPTS[key], API.V146_PROMPTS[key],API.V152_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
       }
       for (const [key, old, value] of [['max_input_chars', 16000, 64000], ['analysis_output', 8192, 16384], ['segment_output', 4096, 16384]]) if (saved.profile?.[key] === old) this.settings.profile[key] = value;
       this.client.usage = {...defaults().usage, ...saved.usage};
@@ -341,7 +341,7 @@
           this.flowNotice = target.startsWith('complete:') ? '继续当前阶段' : '已记录选择：' + this.state.turn_context.label;
         } else this.state.turn_context = context;
         this.state.turn_context.injection_nodes = F.activeNodes(project, this.state);
-        if(this.settings.runtime_mode==='companion'){const q=R.init(this.state), nonce=C.id('turn');q.turn={id:nonce,user_id:userId,spec:{...R.spec(project,this.state,nonce),routes:C.clone(this.quickRoutes())},routes:C.clone(this.quickRoutes()),project_revision:project.revision};}
+        if(this.settings.runtime_mode==='companion'){const q=R.init(this.state), nonce=C.id('turn');q.turn={id:nonce,user_id:userId,spec:{...R.spec(project,this.state,nonce),player_input:text,routes:C.clone(this.quickRoutes())},routes:C.clone(this.quickRoutes()),project_revision:project.revision};}
         this.pendingChoice = null; this.save(); this.saveSettings();
       };
       const promise = job(); this.preparing = {key: taskKey, promise};
@@ -586,7 +586,7 @@
     async applyAnalysis(input = this.analysisDraft?.project) {
       C.assert(!this.busy, '请等待当前辅助任务完成'); C.assert(this.analysisDraft && input, '请先完成分析或恢复分析草稿');
       const project = C.convertAnalysisProject(input);
-      if(this.settings.profile.author_review && (!this.analysisDraft.author_review || this.analysisDraft.author_review.project_signature!==JSON.stringify(C.normalizeProject(input)))){await this.reviewAnalysis(input,project);}
+      if(this.settings.profile.author_review && (this.analysisDraft.author_review?.protocol!=='playability-v1' || this.analysisDraft.author_review.project_signature!==JSON.stringify(C.normalizeProject(input)))){await this.reviewAnalysis(input,project);}
       C.assert(!this.analysisDraft.review_blocked,'转化复核有待处理错误，请修改草稿后重新复核；当前剧本未替换');
       const before = {project: this.project, state: C.clone(this.state), settings: C.clone(this.settings), analysisDraft: this.analysisDraft};
       this.host.saveProgress(this.project, this.state);
@@ -654,8 +654,13 @@
       C.assert(!this.busy && input,'请等待任务结束并准备分析草稿');const epoch=this.epoch;
       this.busy++;this.notify();const onResponse=this.beginRaw('analysis',input.original_text || '', '转化后复核','faithful',this.rawAnalysis);
       try{
-        const result=await this.client.reviewScript({...this.settings.profile,model:this.settings.segment_model || this.settings.profile.model},input.original_text || '',input,converted,{onResponse,onRequest:onResponse.onRequest});
+        const profile={...this.settings.profile,model:this.settings.segment_model || this.settings.profile.model};
+        const playable=await this.client.reviewScript(profile,input.original_text || '',input,converted,{playability:true,onResponse,onRequest:onResponse.onRequest});
+        C.assert(epoch===this.epoch,'配置变化，可游玩性复核未应用');
+        const result=await this.client.reviewScript(profile,input.original_text || '',input,converted,{onResponse,onRequest:onResponse.onRequest});
+        result.issues=[...new Map([...playable.issues,...result.issues].map(x=>[JSON.stringify([x.path,x.message,x.severity]),x])).values()];result.request_count+=playable.request_count;result.protocol='playability-v1';
         C.assert(epoch===this.epoch,'配置变化，复核未应用');
+        this.analysisDraft.warnings=this.analysisDraft.warnings.filter(w=>!w.startsWith('当前草稿复核：')).concat(result.issues.map(x=>'当前草稿复核：'+x.message));
         this.analysisDraft.author_review={...result,project_signature:JSON.stringify(C.normalizeProject(input)),at:Date.now()};this.analysisDraft.review_blocked=result.issues.some(x=>x.severity==='error');this.settings.analysis_draft=C.clone(this.analysisDraft);this.saveSettings();return result;
       }finally{this.busy--;this.notify();}
     }
@@ -663,6 +668,7 @@
       if(!this.settings.enabled || this.state.paused || this.settings.runtime_mode!=='companion' || R.init(this.state).continuity_hold)return;
       const epoch=this.epoch,chat=this.chat;const pair=this.draft;if(!pair)return;let q=R.init(this.state);const turn=q.turn;
       if(!turn || turn.project_revision!==this.project.revision || turn.user_id!==Number(pair.messages.find(m=>m.role==='user')?.message_id))return;
+      if(turn.spec.player_input!=null && turn.spec.player_input!==pair.messages.find(m=>m.role==='user')?.text){R.log(this.state,'stale','本轮玩家输入已变化，旧报告未处理',{assistant_id:pair.assistant_id});this.save();return;}
       const signature=await fingerprint(pair.messages);if(epoch!==this.epoch || chat!==this.host.chatId() || JSON.stringify(this.host.pair(pair.assistant_id)?.messages)!==JSON.stringify(pair.messages))return;
       const previous=q.reports[signature],legacyInvalid=previous===true && q.logs.filter(x=>x.assistant_id===pair.assistant_id || x.source?.assistant_id===pair.assistant_id).at(-1)?.kind==='report_invalid';
       if(previous && !(retryInvalid && (previous==='invalid' || legacyInvalid)))return;
@@ -671,7 +677,8 @@
       try{
         report=R.parse(pair.messages.find(m=>m.role==='assistant').text,turn.spec);q.reports[signature]='accepted';
         if(previous==='invalid' || legacyInvalid)q.queue=q.queue.filter(x=>!(x.kind==='stage' && x.source_key===signature));
-        q.latest_report={assistant_id:pair.assistant_id,status:'accepted',message:report.repair || '已读取本轮事实报告',stages:C.clone(report.stages),at:Date.now()};
+        q.latest_report={assistant_id:pair.assistant_id,status:'accepted',message:(report.repair || '已读取本轮事实报告')+(report.warnings.length?'；分项未通过 '+report.warnings.length+' 项，其他合法项独立处理':''),warnings:report.warnings,stages:C.clone(report.stages),at:Date.now()};
+        for(const warning of report.warnings)R.log(this.state,'report_item_rejected',warning,{assistant_id:pair.assistant_id});
         R.log(this.state,report.repair?'report_repaired':'report_accepted',q.latest_report.message,{assistant_id:pair.assistant_id});
       }
       catch(error){q.reports[signature]='invalid';q.latest_report={assistant_id:pair.assistant_id,status:'invalid',message:error.message,at:Date.now()};R.log(this.state,'report_invalid',error.message,{assistant_id:pair.assistant_id});report={stages:turn.spec.stages.map(x=>({id:x.id,status:'uncertain',quote:''})),events:[],present:q.present};}

@@ -9,7 +9,7 @@ const names = ['core', 'flow', 'companion', 'api', 'host', 'engine', 'graph', 'u
 const content = '/* Branch Story Engine v' + version + ' — 自定义剧本与事件；源文件见 src/。 */\n' + names.map(name => fs.readFileSync(path.join(root, 'src', name + '.js'), 'utf8')).join('\n;\n');
 new vm.Script(content);
 const exported = {type: 'script', enabled: true, name: '分支剧本与事件引擎', id: 'branch-story-engine-v1', content,
-  info: 'v' + version + '：兼容主模型简短注释及TSE尾部元数据，完整JSON缺旧结束标签时仅恢复格式；解析/核验原因直接显示，当前轮失败报告可安全重读，关系图与阶段入口一致；修复输入栏反复开关高度累积；选项栏在输入表单外独立占位，固定输入栏单独定位；子菜单独立滚动，不挤走当前阶段和行动选项，折叠时打开菜单临时显示行动。角色卡专用剧本库与聊天进度隔离；主模型末尾简短事实回报，普通事件本地结算，关键结果在阶段结束及固定间隔集中核验（失败最多重试三次）；自然阶段结束行动与自由输入识别；本地数值状态栏和历史快照；异常保留故事、关闭相关后续入口。作者流程分段提取与独立复核、整合及转化后复核，显示预计/实际/额外调用，阶段提示词分别编辑。分散证据按连续摘录数组严格校验，省略号拼接精确本地恢复，必要时仅定向补修证据，保留条件、数值和原始回复。兼容旧流程与自定义提示词；数值事件、交叉依赖、背包、防剧透及确认删除保留。',
+  info: 'v' + version + '：分项校验进入/完成/事件，越界项不丢合法选择；玩家自由输入可作为入口选择证据，不能完成领奖；新增独立可游玩性复核/问题定向重提取，强化场景、事件、结果、替代路径和自然结束行动；兼容主模型简短注释及TSE尾部元数据，完整JSON缺旧结束标签时仅恢复格式；解析/核验原因直接显示，当前轮失败报告可安全重读，关系图与阶段入口一致；修复输入栏反复开关高度累积；选项栏在输入表单外独立占位，固定输入栏单独定位；子菜单独立滚动，不挤走当前阶段和行动选项，折叠时打开菜单临时显示行动。角色卡专用剧本库与聊天进度隔离；主模型末尾简短事实回报，普通事件本地结算，关键结果在阶段结束及固定间隔集中核验（失败最多重试三次）；自然阶段结束行动与自由输入识别；本地数值状态栏和历史快照；异常保留故事、关闭相关后续入口。作者流程分段提取与独立复核、整合及转化后复核，显示预计/实际/额外调用，阶段提示词分别编辑。分散证据按连续摘录数组严格校验，省略号拼接精确本地恢复，必要时仅定向补修证据，保留条件、数值和原始回复。兼容旧流程与自定义提示词；数值事件、交叉依赖、背包、防剧透及确认删除保留。',
   button: {enabled: false, buttons: []}, data: {}, export_with: {data: false, button: true}};
 fs.writeFileSync(path.join(root, 'branch_story_tavern_helper_import.json'), JSON.stringify(exported, null, 2) + '\n');
 console.log('导入包已生成：branch_story_tavern_helper_import.json (' + Buffer.byteLength(content) + ' bytes)');

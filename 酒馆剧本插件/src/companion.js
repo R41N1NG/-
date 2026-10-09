@@ -2,7 +2,8 @@
   'use strict';
   const TAG='bse-report';
   const PREVIOUS_PROMPT='正文结束后附一个HTML注释：<!--<bse-report>JSON</bse-report>-->。只报告本轮正文实际发生的事实；玩家命令、意图、回忆、假设不等于成功。只用候选编号，遗漏或不确定填uncertain。每项quote摘录本轮正文连续原句，至多160字。不算数值、不发奖励、不解锁未提供剧情。格式：{"turn":"输入turn","complete":true,"stages":[{"id":"阶段ID","status":"in_progress|completed|uncertain","quote":"正文原句"}],"events":[{"id":"事件ID","status":"completed|rejected|uncertain","quote":"正文原句","actor_id":"候选主体","recipient_id":"候选对象","attempt":"待定尝试编号，可省略"}],"choice":{"target":"本轮可选target或空","quote":"正文实际采取行动的原句"},"present":["已定义在场角色ID"]}。没发生的事件省略。关闭标签与注释结束符不可遗漏，不在正文显示技术编号。阶段完成须同时满足criteria与exit_criteria；离开必须正文实际离开，进入不代表完成。';
-  const PROMPT=PREVIOUS_PROMPT.replace('<!--<bse-report>JSON</bse-report>-->','<!--BSE_REPORT JSON -->').replace('关闭标签与注释结束符不可遗漏','JSON须完整，HTML注释以-->结束；不再套bse-report标签。TSE等其他状态元数据可以放在该注释前后，但不算正文证据');
+  const V152_PROMPT=PREVIOUS_PROMPT.replace('<!--<bse-report>JSON</bse-report>-->','<!--BSE_REPORT JSON -->').replace('关闭标签与注释结束符不可遗漏','JSON须完整，HTML注释以-->结束；不再套bse-report标签。TSE等其他状态元数据可以放在该注释前后，但不算正文证据');
+  const PROMPT=V152_PROMPT+'进入选择choice和阶段完成stages彼此独立：stages只用输入stages里的ID，空列表时输出[]；routes里的目标是可进入节点，不能报告它已完成。每轮最多选择一个入口，不跨跳。choice可用source:"user"、quote摘录输入player_input中明确采取行动的原句；讨论、否定、假设不选。或source:"assistant"引用正文中玩家实际采取行动，不以NPC移动代替玩家选择。不确定choice=null。取得物品与阶段离开分别判断，不把到达当完成。turn逐字复制，禁止自造。';
   const tse=()=>/<tse_meta\b[^>]*>[\s\S]*?<\/tse_meta\s*>/g;
   function stripMetadata(text){return text.replace(tse(),'\n').replace(/<!--\s*(?:BSE_REPORT\b|<bse-report>)[\s\S]*?-->/g,'\n').replace(/<bse-report>[\s\S]*?<\/bse-report>/g,'\n').replace(/(?:<!--\s*(?:BSE_REPORT\b|<bse-report>)|<bse-report>)[\s\S]*$/,'\n');}
   const refsIn=c=>{if(!C.object(c))return [];const [op,v]=Object.entries(c)[0];return ['all','any'].includes(op)?v.flatMap(refsIn):op==='not'?refsIn(v):['collected','completed','event_completed','variable'].includes(op)?[op+':'+(op==='variable'?v.id:v)]:[];};
@@ -37,14 +38,25 @@
     let raw;try{raw=JSON.parse(json);}catch{throw new Error('剧情回报JSON格式错误');}
     C.assert(C.object(raw) && raw.turn===expected.turn && raw.complete===true,'剧情回报标识不匹配或不完整');
     const originalBody=text.slice(0,match.index),body=stripMetadata(originalBody);const evidence=quote=>typeof quote==='string' && quote.trim() && quote.length<=160 && body.includes(quote) && originalBody.includes(quote);
+    const warnings=[];
     const items=(list,candidates,statuses,kind)=>{
-      C.assert(Array.isArray(list) && list.length<=32,kind+'回报格式无效');const seen=new Set();
-      return list.map(x=>{C.assert(C.object(x) && candidates.some(c=>c.id===x.id) && !seen.has(x.id) && statuses.includes(x.status),'剧情回报包含未知、重复编号或状态');seen.add(x.id);return {...x,status:x.status==='completed' && !evidence(x.quote)?'uncertain':x.status,quote:evidence(x.quote)?x.quote:''};});
+      if(!Array.isArray(list) || list.length>32){warnings.push(kind+'列表格式无效，已单独忽略');return [];}
+      const counts=new Map();for(const x of list)if(C.object(x))counts.set(x.id,(counts.get(x.id) || 0)+1);
+      return list.flatMap(x=>{
+        if(!C.object(x) || !candidates.some(c=>c.id===x.id) || counts.get(x.id)!==1 || !statuses.includes(x.status)){warnings.push(kind+'项 '+String(x?.id || '?').slice(0,80)+' 越界、重复或状态无效，未结算');return [];}
+        return [{...x,status:x.status==='completed' && !evidence(x.quote)?'uncertain':x.status,quote:evidence(x.quote)?x.quote:''}];
+      });
     };
     const stages=items(raw.stages || [],expected.stages,['in_progress','completed','uncertain'],'阶段'),events=items(raw.events || [],expected.events,['completed','rejected','uncertain'],'事件');
     for(const event of events){const def=expected.events.find(e=>e.id===event.id);if(event.status==='completed' && (def.actor_id && event.actor_id!==def.actor_id || def.recipient_id && event.recipient_id!==def.recipient_id))event.status='uncertain';}
-    return {body,repair,stages,events,choice:raw.choice && evidence(raw.choice.quote)?raw.choice:null,present:Array.isArray(raw.present)?raw.present.filter(x=>typeof x==='string').slice(0,16):[]};
+    let choice=null;
+    if(raw.choice?.target){
+      const x=raw.choice,fromUser=x.source==='user',validQuote=fromUser ? typeof x.quote==='string' && x.quote.trim() && x.quote.length<=160 && typeof expected.player_input==='string' && expected.player_input.includes(x.quote) : (x.source==null || x.source==='assistant') && evidence(x.quote);
+      if((!expected.routes || expected.routes.some(r=>r.target===x.target)) && validQuote)choice=x;
+      else warnings.push('进入选择不属于本轮入口或缺少对应来源依据，未推进');
+    }
+    return {body,repair,warnings,stages,events,choice,present:Array.isArray(raw.present)?raw.present.filter(x=>typeof x==='string').slice(0,16):[]};
   }
   function blocked(p,s){return init(s).queue.some(x=>x.kind==='stage' && x.id===s.current_node_id && !['dismissed','settled'].includes(x.status));}
-  return {TAG,PROMPT,PREVIOUS_PROMPT,stripMetadata,refsIn,init,log,critical,spec,parse,blocked};
+  return {TAG,PROMPT,PREVIOUS_PROMPT,V152_PROMPT,stripMetadata,refsIn,init,log,critical,spec,parse,blocked};
 });
