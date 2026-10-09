@@ -4,7 +4,7 @@
   if (node) module.exports = value; else root.BSEEngine = value;
 })(typeof window !== 'undefined' ? window : globalThis, function (C, API, F, R) {
   'use strict';
-  const VERSION = '1.5.1';
+  const VERSION = '1.5.2';
   const defaults = () => ({enabled: false, runtime_mode:'companion', checkpoint_every:3, companion_prompt:R.PROMPT, depth: 0, detail: false, auto_detect: false, auto_events: true, quick_options: false, quick_collapsed: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
     profile: {checkpoint_prompt:API.PROMPTS.checkpoint,author_review:true, review_model:'', review_prompt:API.PROMPTS.review, review_script_prompt:API.PROMPTS.review_script, repair_source_prompt:API.PROMPTS.repair_source, repair_variables_prompt:API.PROMPTS.repair_variables, repair_evidence_prompt:API.PROMPTS.repair_evidence, base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 64000, max_output: 1024, segment_output: 16384, analysis_output: 16384, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, partition_prompt: API.PROMPTS.partition, auto_partition: true, analysis_chunk_chars: 3000, json_mode: true, no_thinking: false},
     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
@@ -32,6 +32,7 @@
     }
     async init() {
       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
+      if(this.settings.companion_prompt===R.PREVIOUS_PROMPT)this.settings.companion_prompt=R.PROMPT;
       if(saved.runtime_mode==='legacy' && saved.profile?.author_review==null)this.settings.profile.author_review=false;
       for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt'], ['detect', 'detect_prompt']]) {
         if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key], API.V142_PROMPTS[key], API.V144_PROMPTS[key], API.V146_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
@@ -457,7 +458,7 @@
       C.assert(pair, '当前没有可确认的 AI 回复'); return this.acceptPair(pair, true);
     }
     async checkRound() {
-      if(this.settings.runtime_mode==='companion'){await this.captureDraft();await this.processCompanion(false);return this.verifyCheckpoint(true);}
+      if(this.settings.runtime_mode==='companion'){await this.captureDraft();await this.processCompanion(false,true);return this.verifyCheckpoint(true);}
       C.assert(this.settings.enabled && !this.state.paused, '请先启用剧本并解除暂停');
       await this.captureDraft(); const pair = this.draft, scopeNode = this.state.current_node_id, epoch = this.epoch;
       C.assert(pair, '当前没有可核验的 AI 回复');
@@ -658,15 +659,22 @@
         this.analysisDraft.author_review={...result,project_signature:JSON.stringify(C.normalizeProject(input)),at:Date.now()};this.analysisDraft.review_blocked=result.issues.some(x=>x.severity==='error');this.settings.analysis_draft=C.clone(this.analysisDraft);this.saveSettings();return result;
       }finally{this.busy--;this.notify();}
     }
-    async processCompanion(auto=true) {
+    async processCompanion(auto=true,retryInvalid=false) {
       if(!this.settings.enabled || this.state.paused || this.settings.runtime_mode!=='companion' || R.init(this.state).continuity_hold)return;
       const epoch=this.epoch,chat=this.chat;const pair=this.draft;if(!pair)return;let q=R.init(this.state);const turn=q.turn;
       if(!turn || turn.project_revision!==this.project.revision || turn.user_id!==Number(pair.messages.find(m=>m.role==='user')?.message_id))return;
-      const signature=await fingerprint(pair.messages);if(epoch!==this.epoch || chat!==this.host.chatId() || JSON.stringify(this.host.pair(pair.assistant_id)?.messages)!==JSON.stringify(pair.messages))return;if(q.reports[signature])return;
-      q.reports[signature]=true;q.round++;if(Object.keys(q.reports).length>200)delete q.reports[Object.keys(q.reports)[0]];
+      const signature=await fingerprint(pair.messages);if(epoch!==this.epoch || chat!==this.host.chatId() || JSON.stringify(this.host.pair(pair.assistant_id)?.messages)!==JSON.stringify(pair.messages))return;
+      const previous=q.reports[signature],legacyInvalid=previous===true && q.logs.filter(x=>x.assistant_id===pair.assistant_id || x.source?.assistant_id===pair.assistant_id).at(-1)?.kind==='report_invalid';
+      if(previous && !(retryInvalid && (previous==='invalid' || legacyInvalid)))return;
+      if(!previous)q.round++;if(Object.keys(q.reports).length>200)delete q.reports[Object.keys(q.reports)[0]];
       let report;
-      try{report=R.parse(pair.messages.find(m=>m.role==='assistant').text,turn.spec);}
-      catch(error){R.log(this.state,'report_invalid',error.message,{assistant_id:pair.assistant_id});report={stages:turn.spec.stages.map(x=>({id:x.id,status:'uncertain',quote:''})),events:[],present:[]};}
+      try{
+        report=R.parse(pair.messages.find(m=>m.role==='assistant').text,turn.spec);q.reports[signature]='accepted';
+        if(previous==='invalid' || legacyInvalid)q.queue=q.queue.filter(x=>!(x.kind==='stage' && x.source_key===signature));
+        q.latest_report={assistant_id:pair.assistant_id,status:'accepted',message:report.repair || '已读取本轮事实报告',stages:C.clone(report.stages),at:Date.now()};
+        R.log(this.state,report.repair?'report_repaired':'report_accepted',q.latest_report.message,{assistant_id:pair.assistant_id});
+      }
+      catch(error){q.reports[signature]='invalid';q.latest_report={assistant_id:pair.assistant_id,status:'invalid',message:error.message,at:Date.now()};R.log(this.state,'report_invalid',error.message,{assistant_id:pair.assistant_id});report={stages:turn.spec.stages.map(x=>({id:x.id,status:'uncertain',quote:''})),events:[],present:q.present};}
       for(const target of turn.spec.active){const past=q.stage_dialogues[target.node_id] ||= [];if(!past.some(p=>p.assistant_id===pair.assistant_id))past.push(C.clone(pair));q.stage_dialogues[target.node_id]=past.slice(-8);}
       q.present=report.present.filter(id=>turn.spec.actors.some(a=>a.id===id));
       const source={assistant_id:pair.assistant_id,messages:pair.messages.map(m=>m.message_id)};
@@ -719,11 +727,11 @@
     }
     async verifyCheckpoint(force=false){
       let q=R.init(this.state);if(!q.queue.length || this.checkpointJob)return this.checkpointJob;
-      if(!this.settings.profile.base_url || !this.settings.profile.model){R.log(this.state,'checkpoint_wait','关键结果待核验，需配置辅助API');this.save();return;}
+      if(!this.settings.profile.base_url || !this.settings.profile.model){q.checkpoint_status={status:'waiting',message:'辅助 API 未配置：待核验结果尚未结算，请在 API 页配置后重新核验'};R.log(this.state,'checkpoint_wait',q.checkpoint_status.message);this.save();return;}
       const epoch=this.epoch,chat=this.chat, project=this.project;
       const alive=()=>epoch===this.epoch && chat===this.host.chatId() && project===this.project && this.settings.enabled && !this.state.paused;
       const job=async()=>{
-        this.busy++;this.notify();
+        q.checkpoint_status={status:'checking',message:'正在集中核验'};this.busy++;this.notify();
         try{
           const candidates=C.clone(q.queue);
           const definitions=candidates.map(x=>({key:x.key,kind:x.kind,id:x.id,node_id:x.node_id,criteria:(x.kind==='stage'?project.nodes:project.events).find(d=>d.id===x.id)?.completion_criteria + (x.kind==='stage' && project.nodes.find(d=>d.id===x.id)?.completion_action ? '；同时正文实际执行阶段结束行动：'+(project.nodes.find(d=>d.id===x.id).completion_action.intent || project.nodes.find(d=>d.id===x.id).completion_action.action_text || project.nodes.find(d=>d.id===x.id).completion_action.label) : ''),exclusions:(x.kind==='stage'?project.nodes:project.events).find(d=>d.id===x.id)?.completion_exclusions || project.events.find(d=>d.id===x.id)?.exclusions || [],actor_id:project.events.find(d=>d.id===x.id)?.actor_id || '',recipient_id:project.events.find(d=>d.id===x.id)?.recipient_id || ''}));
@@ -753,9 +761,10 @@
           }
           // Refresh the snapshot for the reply where settlement actually occurred.
           for(const x of candidates)q.message_snapshots[x.source.assistant_id]=this.valueSnapshot();
+          q.checkpoint_status={status:q.queue.length?'pending':'done',message:q.queue.length?'本次核验完成，仍有 '+q.queue.length+' 项待定或待作者结算':'本次核验已完成并更新记录'};
           this.error='';this.save();this.saveSettings();
-        }catch(error){if(alive()){R.log(this.state,'checkpoint_error',error.message);this.error='阶段核验暂未完成，相关入口保持关闭';this.save();}}
-        finally{this.busy--;this.notify();}
+        }catch(error){if(alive()){q=R.init(this.state);q.checkpoint_status={status:'error',message:error.message};R.log(this.state,'checkpoint_error',error.message);this.error='阶段核验暂未完成：'+error.message;this.save();}}
+        finally{if(alive() && R.init(this.state).checkpoint_status?.status==='checking')R.init(this.state).checkpoint_status={status:'waiting',message:'核验已取消，待核验结果保留'};this.busy--;this.notify();}
       };
       const promise=job().finally(()=>{if(this.checkpointJob===promise)this.checkpointJob=null;});this.checkpointJob=promise;this.stageJobs=promise;return promise;
     }

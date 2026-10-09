@@ -1,0 +1,26 @@
+{
+  "version": "1.5.2",
+  "commit_base": "4bbf4c8797242f96d12d881e82dd5b4da4d2bc48",
+  "unit_passed": 201,
+  "browser_groups_passed": 10,
+  "zip_entries": 54,
+  "zip_crc_and_source_bytes": "passed",
+  "installer_source_order": [
+    "core",
+    "flow",
+    "companion",
+    "api",
+    "host",
+    "engine",
+    "graph",
+    "ui",
+    "bootstrap"
+  ],
+  "installer_stable_id": "branch-story-engine-v1",
+  "zip_sha256": "a0f7b4f363a56bab5068f382d8e753b24df0092842f3c41deca623f0a5548f51",
+  "installer_sha256": "f1084b52bba93f3e525d9ccf57743b9a07a3c67a606d8bb5c966eb21b026daf8",
+  "tse_sha256": "a37e398995864e7bb1f95f71f0af9bc13eb06cb891343407d62738e105172065",
+  "unchanged_tse": true,
+  "paid_api_called": false,
+  "real_host_verified": false
+}

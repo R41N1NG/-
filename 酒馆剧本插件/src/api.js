@@ -1,7 +1,8 @@
 (function (root, factory) {
-  const value = factory(typeof window === 'undefined' && typeof module === 'object' && module.exports ? require('./core.js') : root.BSECore);
+  const node=typeof window === 'undefined' && typeof module === 'object' && module.exports;
+  const value = factory(node ? require('./core.js') : root.BSECore,node ? require('./companion.js') : root.BSECompanion);
   if (typeof window === 'undefined' && typeof module === 'object' && module.exports) module.exports = value; else root.BSEApi = value;
-})(typeof window !== 'undefined' ? window : globalThis, function (C) {
+})(typeof window !== 'undefined' ? window : globalThis, function (C,R) {
   'use strict';
   const STATUSES = ['completed', 'proposed', 'rejected', 'not_occurred', 'uncertain'];
   const PROMPTS = {
@@ -688,7 +689,7 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
       throw new Error('分析补修两次仍未通过：'+issue.message);
     }
     async checkpoint(profile,candidates,definitions,facts) {
-      const checkId=C.id('check'),dialogues=[...new Map(candidates.flatMap(c=>(c.context_dialogues || [c.dialogue]).map(d=>[d.find(m=>m.role==='assistant')?.message_id,d.map(m=>({...m,text:m.role==='assistant'?m.text.replace(/(?:<!--\s*)?<bse-report>[\s\S]*$/,''):m.text}))]))).values()];
+      const checkId=C.id('check'),dialogues=[...new Map(candidates.flatMap(c=>(c.context_dialogues || [c.dialogue]).map(d=>[d.find(m=>m.role==='assistant')?.message_id,d.map(m=>({...m,text:m.role==='assistant'?R.stripMetadata(m.text):m.text}))]))).values()];
       const messages=request(profile.checkpoint_prompt?.trim() || PROMPTS.checkpoint,{check_id:checkId,dialogues,candidates:definitions,facts});
       if(size(messages)>(profile.max_input_chars || 64000))throw Object.assign(new Error('集中核验输入超过预算；不截断正文，相关结果保留待核验'),{code:'BSE_CHECKPOINT_BUDGET'});
       const raw=await this.call(profile,messages,{max_tokens:Math.max(2048,candidates.length*256,profile.max_output || 1024)});
@@ -697,7 +698,8 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
         const spec=definitions.find(c=>c.key===r.key);C.assert(spec && !seen.has(r.key) && ['completed','rejected','uncertain'].includes(r.status),'集中核验返回未知或重复候选');seen.add(r.key);
         const candidate=candidates.find(c=>c.key===r.key),allowed=new Set((candidate.context_dialogues || [candidate.dialogue]).flatMap(d=>d.map(m=>String(m.message_id))));const all=dialogues.flat().filter(m=>allowed.has(String(m.message_id))), evidence=quotes(r.evidence,all),actual=evidence?.some(x=>all.some(m=>m.role==='assistant' && String(m.message_id)===x.message_id));
         const actors=(!spec.actor_id || r.actor_id===spec.actor_id) && (!spec.recipient_id || r.recipient_id===spec.recipient_id);
-        return {key:r.key,status:r.status==='completed' && (!actual || !actors)?'uncertain':r.status,evidence:evidence || []};
+        const original=(candidate.context_dialogues || [candidate.dialogue]).flat(),continuous=evidence?.every(x=>original.some(m=>String(m.message_id)===x.message_id && m.text.includes(x.quote)));
+        return {key:r.key,status:r.status==='completed' && (!actual || !actors || !continuous)?'uncertain':r.status,evidence:continuous?evidence:[]};
       });
     }
     async reviewScript(profile, original, draft, converted, options = {}) {

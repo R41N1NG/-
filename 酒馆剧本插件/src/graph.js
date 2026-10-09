@@ -11,7 +11,8 @@
     const edge = (from, to, satisfied = false, label = '') => edges.push({from, to, satisfied, label});
     const nodeAvailable = n => {
       const b = F.owner(p, n.id);
-      return C.nodeReady(n, p, s) && (b ? ['ready', 'running'].includes(s.package_progress?.[b.id]?.status) && s.package_progress[b.id].current_node_id === n.id : n.id === s.current_node_id || F.availableRoutes(p, s, s.current_node_id).some(r => r.target === n.id));
+      const current=refs.nodes.get(s.current_node_id),stagePending=s.companion?.turn && (current?.completion_criteria && !s.completed_node_ids.includes(current.id) || s.companion.queue.some(x=>x.kind==='stage' && x.id===s.current_node_id));
+      return C.nodeReady(n, p, s) && (b ? ['ready', 'running'].includes(s.package_progress?.[b.id]?.status) && s.package_progress[b.id].current_node_id === n.id : n.id === s.current_node_id || !stagePending && F.availableRoutes(p, s, s.current_node_id).some(r => r.target === n.id));
     };
     for (const n of p.nodes) add('node:' + n.id, C.displayId(p, 'node', n.id), n.title, s.completed_node_ids.includes(n.id) ? 'done' : active.some(x => x.node_id === n.id) ? 'running' : nodeAvailable(n) ? 'available' : 'locked', 'node');
     for (const e of p.events) add('event:' + e.id, C.displayId(p, 'event', e.id), e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) && (!e.completion_node_id || nodeAvailable(refs.nodes.get(e.completion_node_id))) ? 'available' : 'locked', 'event');

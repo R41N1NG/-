@@ -1,0 +1,318 @@
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+index ab4f5cd..9b974f1 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/scripts/build.js"
+@@ -9,7 +9,7 @@ const names = ['core', 'flow', 'companion', 'api', 'host', 'engine', 'graph', 'u
+ const content = '/* Branch Story Engine v' + version + ' — 自定义剧本与事件；源文件见 src/。 */\n' + names.map(name => fs.readFileSync(path.join(root, 'src', name + '.js'), 'utf8')).join('\n;\n');
+ new vm.Script(content);
+ const exported = {type: 'script', enabled: true, name: '分支剧本与事件引擎', id: 'branch-story-engine-v1', content,
+-  info: 'v' + version + '：修复输入栏反复开关高度累积；选项栏在输入表单外独立占位，固定输入栏单独定位；子菜单独立滚动，不挤走当前阶段和行动选项，折叠时打开菜单临时显示行动。角色卡专用剧本库与聊天进度隔离；主模型末尾简短事实回报，普通事件本地结算，关键结果在阶段结束及固定间隔集中核验（失败最多重试三次）；自然阶段结束行动与自由输入识别；本地数值状态栏和历史快照；异常保留故事、关闭相关后续入口。作者流程分段提取与独立复核、整合及转化后复核，显示预计/实际/额外调用，阶段提示词分别编辑。分散证据按连续摘录数组严格校验，省略号拼接精确本地恢复，必要时仅定向补修证据，保留条件、数值和原始回复。兼容旧流程与自定义提示词；数值事件、交叉依赖、背包、防剧透及确认删除保留。',
++  info: 'v' + version + '：兼容主模型简短注释及TSE尾部元数据，完整JSON缺旧结束标签时仅恢复格式；解析/核验原因直接显示，当前轮失败报告可安全重读，关系图与阶段入口一致；修复输入栏反复开关高度累积；选项栏在输入表单外独立占位，固定输入栏单独定位；子菜单独立滚动，不挤走当前阶段和行动选项，折叠时打开菜单临时显示行动。角色卡专用剧本库与聊天进度隔离；主模型末尾简短事实回报，普通事件本地结算，关键结果在阶段结束及固定间隔集中核验（失败最多重试三次）；自然阶段结束行动与自由输入识别；本地数值状态栏和历史快照；异常保留故事、关闭相关后续入口。作者流程分段提取与独立复核、整合及转化后复核，显示预计/实际/额外调用，阶段提示词分别编辑。分散证据按连续摘录数组严格校验，省略号拼接精确本地恢复，必要时仅定向补修证据，保留条件、数值和原始回复。兼容旧流程与自定义提示词；数值事件、交叉依赖、背包、防剧透及确认删除保留。',
+   button: {enabled: false, buttons: []}, data: {}, export_with: {data: false, button: true}};
+ fs.writeFileSync(path.join(root, 'branch_story_tavern_helper_import.json'), JSON.stringify(exported, null, 2) + '\n');
+ console.log('导入包已生成：branch_story_tavern_helper_import.json (' + Buffer.byteLength(content) + ' bytes)');
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+index 249ec94..040f6c0 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/api.js"
+@@ -1,7 +1,8 @@
+ (function (root, factory) {
+-  const value = factory(typeof window === 'undefined' && typeof module === 'object' && module.exports ? require('./core.js') : root.BSECore);
++  const node=typeof window === 'undefined' && typeof module === 'object' && module.exports;
++  const value = factory(node ? require('./core.js') : root.BSECore,node ? require('./companion.js') : root.BSECompanion);
+   if (typeof window === 'undefined' && typeof module === 'object' && module.exports) module.exports = value; else root.BSEApi = value;
+-})(typeof window !== 'undefined' ? window : globalThis, function (C) {
++})(typeof window !== 'undefined' ? window : globalThis, function (C,R) {
+   'use strict';
+   const STATUSES = ['completed', 'proposed', 'rejected', 'not_occurred', 'uncertain'];
+   const PROMPTS = {
+@@ -688,7 +689,7 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+       throw new Error('分析补修两次仍未通过：'+issue.message);
+     }
+     async checkpoint(profile,candidates,definitions,facts) {
+-      const checkId=C.id('check'),dialogues=[...new Map(candidates.flatMap(c=>(c.context_dialogues || [c.dialogue]).map(d=>[d.find(m=>m.role==='assistant')?.message_id,d.map(m=>({...m,text:m.role==='assistant'?m.text.replace(/(?:<!--\s*)?<bse-report>[\s\S]*$/,''):m.text}))]))).values()];
++      const checkId=C.id('check'),dialogues=[...new Map(candidates.flatMap(c=>(c.context_dialogues || [c.dialogue]).map(d=>[d.find(m=>m.role==='assistant')?.message_id,d.map(m=>({...m,text:m.role==='assistant'?R.stripMetadata(m.text):m.text}))]))).values()];
+       const messages=request(profile.checkpoint_prompt?.trim() || PROMPTS.checkpoint,{check_id:checkId,dialogues,candidates:definitions,facts});
+       if(size(messages)>(profile.max_input_chars || 64000))throw Object.assign(new Error('集中核验输入超过预算；不截断正文，相关结果保留待核验'),{code:'BSE_CHECKPOINT_BUDGET'});
+       const raw=await this.call(profile,messages,{max_tokens:Math.max(2048,candidates.length*256,profile.max_output || 1024)});
+@@ -697,7 +698,8 @@ analysis条目字段：branches{title,summary,node_ids,suggested}；endings{node
+         const spec=definitions.find(c=>c.key===r.key);C.assert(spec && !seen.has(r.key) && ['completed','rejected','uncertain'].includes(r.status),'集中核验返回未知或重复候选');seen.add(r.key);
+         const candidate=candidates.find(c=>c.key===r.key),allowed=new Set((candidate.context_dialogues || [candidate.dialogue]).flatMap(d=>d.map(m=>String(m.message_id))));const all=dialogues.flat().filter(m=>allowed.has(String(m.message_id))), evidence=quotes(r.evidence,all),actual=evidence?.some(x=>all.some(m=>m.role==='assistant' && String(m.message_id)===x.message_id));
+         const actors=(!spec.actor_id || r.actor_id===spec.actor_id) && (!spec.recipient_id || r.recipient_id===spec.recipient_id);
+-        return {key:r.key,status:r.status==='completed' && (!actual || !actors)?'uncertain':r.status,evidence:evidence || []};
++        const original=(candidate.context_dialogues || [candidate.dialogue]).flat(),continuous=evidence?.every(x=>original.some(m=>String(m.message_id)===x.message_id && m.text.includes(x.quote)));
++        return {key:r.key,status:r.status==='completed' && (!actual || !actors || !continuous)?'uncertain':r.status,evidence:continuous?evidence:[]};
+       });
+     }
+     async reviewScript(profile, original, draft, converted, options = {}) {
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/companion.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/companion.js"
+index e26c0f5..65b7bad 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/companion.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/companion.js"
+@@ -1,7 +1,10 @@
+ (function(root,factory){const node=typeof window==='undefined' && typeof module==='object' && module.exports;const value=factory(node?require('./core'):root.BSECore,node?require('./flow'):root.BSEFlow);if(node)module.exports=value;else root.BSECompanion=value;})(typeof window!=='undefined'?window:globalThis,function(C,F){
+   'use strict';
+   const TAG='bse-report';
+-  const PROMPT='正文结束后附一个HTML注释：<!--<bse-report>JSON</bse-report>-->。只报告本轮正文实际发生的事实；玩家命令、意图、回忆、假设不等于成功。只用候选编号，遗漏或不确定填uncertain。每项quote摘录本轮正文连续原句，至多160字。不算数值、不发奖励、不解锁未提供剧情。格式：{"turn":"输入turn","complete":true,"stages":[{"id":"阶段ID","status":"in_progress|completed|uncertain","quote":"正文原句"}],"events":[{"id":"事件ID","status":"completed|rejected|uncertain","quote":"正文原句","actor_id":"候选主体","recipient_id":"候选对象","attempt":"待定尝试编号，可省略"}],"choice":{"target":"本轮可选target或空","quote":"正文实际采取行动的原句"},"present":["已定义在场角色ID"]}。没发生的事件省略。关闭标签与注释结束符不可遗漏，不在正文显示技术编号。阶段完成须同时满足criteria与exit_criteria；离开必须正文实际离开，进入不代表完成。';
++  const PREVIOUS_PROMPT='正文结束后附一个HTML注释：<!--<bse-report>JSON</bse-report>-->。只报告本轮正文实际发生的事实；玩家命令、意图、回忆、假设不等于成功。只用候选编号，遗漏或不确定填uncertain。每项quote摘录本轮正文连续原句，至多160字。不算数值、不发奖励、不解锁未提供剧情。格式：{"turn":"输入turn","complete":true,"stages":[{"id":"阶段ID","status":"in_progress|completed|uncertain","quote":"正文原句"}],"events":[{"id":"事件ID","status":"completed|rejected|uncertain","quote":"正文原句","actor_id":"候选主体","recipient_id":"候选对象","attempt":"待定尝试编号，可省略"}],"choice":{"target":"本轮可选target或空","quote":"正文实际采取行动的原句"},"present":["已定义在场角色ID"]}。没发生的事件省略。关闭标签与注释结束符不可遗漏，不在正文显示技术编号。阶段完成须同时满足criteria与exit_criteria；离开必须正文实际离开，进入不代表完成。';
++  const PROMPT=PREVIOUS_PROMPT.replace('<!--<bse-report>JSON</bse-report>-->','<!--BSE_REPORT JSON -->').replace('关闭标签与注释结束符不可遗漏','JSON须完整，HTML注释以-->结束；不再套bse-report标签。TSE等其他状态元数据可以放在该注释前后，但不算正文证据');
++  const tse=()=>/<tse_meta\b[^>]*>[\s\S]*?<\/tse_meta\s*>/g;
++  function stripMetadata(text){return text.replace(tse(),'\n').replace(/<!--\s*(?:BSE_REPORT\b|<bse-report>)[\s\S]*?-->/g,'\n').replace(/<bse-report>[\s\S]*?<\/bse-report>/g,'\n').replace(/(?:<!--\s*(?:BSE_REPORT\b|<bse-report>)|<bse-report>)[\s\S]*$/,'\n');}
+   const refsIn=c=>{if(!C.object(c))return [];const [op,v]=Object.entries(c)[0];return ['all','any'].includes(op)?v.flatMap(refsIn):op==='not'?refsIn(v):['collected','completed','event_completed','variable'].includes(op)?[op+':'+(op==='variable'?v.id:v)]:[];};
+   function init(s){s.companion ||= {turn:null,queue:[],reports:{},attempts:{},round:0,logs:[],message_snapshots:{},present:[],stage_dialogues:{}};const q=s.companion;C.assert(C.object(q) && Array.isArray(q.queue) && Array.isArray(q.logs) && C.object(q.reports) && C.object(q.attempts) && C.object(q.message_snapshots),'剧情回报存档损坏，请恢复备份');q.stage_dialogues ||= {};return q;}
+   function log(s,kind,message,extra={}){const q=init(s);q.logs.push({kind,message,...extra,at:Date.now()});q.logs=q.logs.slice(-100);}
+@@ -22,21 +25,26 @@
+   }
+   function parse(text,expected){
+     C.assert(typeof text==='string' && text.length<=2000000,'正文长度无效');
+-    const matches=[...text.matchAll(/(?:<!--\s*)?<bse-report>\s*([\s\S]*?)\s*<\/bse-report>(?:\s*-->)?/g)];
+-    C.assert(matches.length===1,'剧情回报缺失、截断或重复');const match=matches[0];
+-    C.assert(!match[0].startsWith('<!--') || match[0].endsWith('-->'),'剧情回报注释未完整关闭');
+-    C.assert(!text.slice(match.index+match[0].length).trim(),'剧情回报必须位于正文末尾');C.assert(match[1].length<=12000,'剧情回报过长');
+-    let raw;try{raw=JSON.parse(match[1]);}catch{throw new Error('剧情回报JSON格式错误');}
++    const markers=[...text.matchAll(/<!--\s*BSE_REPORT\b|<bse-report>/g)];
++    C.assert(markers.length===1,'剧情回报缺失、截断或重复');
++    const matches=[...text.matchAll(/<!--\s*BSE_REPORT\s+([\s\S]*?)\s*-->|<!--\s*<bse-report>\s*([\s\S]*?)\s*-->|<bse-report>\s*([\s\S]*?)\s*<\/bse-report>/g)];
++    C.assert(matches.length===1,'剧情回报注释未完整关闭或报告截断');const match=matches[0];
++    // An unclosed comment must not be mistaken for a valid bare legacy tag.
++    C.assert(match[3]===undefined || !/<!--\s*$/.test(text.slice(0,match.index)),'剧情回报注释未完整关闭');
++    let json=match[1] ?? match[2] ?? match[3],repair='';
++    if(match[2]!==undefined){if(/<\/bse-report>\s*$/.test(json))json=json.replace(/<\/bse-report>\s*$/,'');else repair='旧报告缺少结束标签；完整JSON与注释已通过格式恢复';}
++    C.assert(!text.slice(match.index+match[0].length).replace(tse(),'').trim(),'剧情回报后含正文或不完整元数据');C.assert(json.length<=12000,'剧情回报过长');
++    let raw;try{raw=JSON.parse(json);}catch{throw new Error('剧情回报JSON格式错误');}
+     C.assert(C.object(raw) && raw.turn===expected.turn && raw.complete===true,'剧情回报标识不匹配或不完整');
+-    const body=text.slice(0,match.index);const evidence=quote=>typeof quote==='string' && quote.trim() && quote.length<=160 && body.includes(quote);
++    const originalBody=text.slice(0,match.index),body=stripMetadata(originalBody);const evidence=quote=>typeof quote==='string' && quote.trim() && quote.length<=160 && body.includes(quote) && originalBody.includes(quote);
+     const items=(list,candidates,statuses,kind)=>{
+       C.assert(Array.isArray(list) && list.length<=32,kind+'回报格式无效');const seen=new Set();
+       return list.map(x=>{C.assert(C.object(x) && candidates.some(c=>c.id===x.id) && !seen.has(x.id) && statuses.includes(x.status),'剧情回报包含未知、重复编号或状态');seen.add(x.id);return {...x,status:x.status==='completed' && !evidence(x.quote)?'uncertain':x.status,quote:evidence(x.quote)?x.quote:''};});
+     };
+     const stages=items(raw.stages || [],expected.stages,['in_progress','completed','uncertain'],'阶段'),events=items(raw.events || [],expected.events,['completed','rejected','uncertain'],'事件');
+     for(const event of events){const def=expected.events.find(e=>e.id===event.id);if(event.status==='completed' && (def.actor_id && event.actor_id!==def.actor_id || def.recipient_id && event.recipient_id!==def.recipient_id))event.status='uncertain';}
+-    return {body,stages,events,choice:raw.choice && evidence(raw.choice.quote)?raw.choice:null,present:Array.isArray(raw.present)?raw.present.filter(x=>typeof x==='string').slice(0,16):[]};
++    return {body,repair,stages,events,choice:raw.choice && evidence(raw.choice.quote)?raw.choice:null,present:Array.isArray(raw.present)?raw.present.filter(x=>typeof x==='string').slice(0,16):[]};
+   }
+   function blocked(p,s){return init(s).queue.some(x=>x.kind==='stage' && x.id===s.current_node_id && !['dismissed','settled'].includes(x.status));}
+-  return {TAG,PROMPT,refsIn,init,log,critical,spec,parse,blocked};
++  return {TAG,PROMPT,PREVIOUS_PROMPT,stripMetadata,refsIn,init,log,critical,spec,parse,blocked};
+ });
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+index c183456..0b0e5e7 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/engine.js"
+@@ -4,7 +4,7 @@
+   if (node) module.exports = value; else root.BSEEngine = value;
+ })(typeof window !== 'undefined' ? window : globalThis, function (C, API, F, R) {
+   'use strict';
+-  const VERSION = '1.5.1';
++  const VERSION = '1.5.2';
+   const defaults = () => ({enabled: false, runtime_mode:'companion', checkpoint_every:3, companion_prompt:R.PROMPT, depth: 0, detail: false, auto_detect: false, auto_events: true, quick_options: false, quick_collapsed: false, story_flow: true, auto_stage: true, launcher_position: null, wait_ms: 0, batch_size: 4, max_batches: 3, worldbook: '', project_id: '',
+     profile: {checkpoint_prompt:API.PROMPTS.checkpoint,author_review:true, review_model:'', review_prompt:API.PROMPTS.review, review_script_prompt:API.PROMPTS.review_script, repair_source_prompt:API.PROMPTS.repair_source, repair_variables_prompt:API.PROMPTS.repair_variables, repair_evidence_prompt:API.PROMPTS.repair_evidence, base_url: '', model: '', key: '', timeout_sec: 45, analysis_timeout_sec: 600, max_input_chars: 64000, max_output: 1024, segment_output: 16384, analysis_output: 16384, detect_prompt: API.PROMPTS.detect, choice_prompt: API.PROMPTS.choice, stage_prompt: API.PROMPTS.stage, segment_prompt: API.PROMPTS.segment, analysis_prompt: API.PROMPTS.analysis, analysis_merge_prompt: API.PROMPTS.merge, partition_prompt: API.PROMPTS.partition, auto_partition: true, analysis_chunk_chars: 3000, json_mode: true, no_thinking: false},
+     segment_model: '', usage: {calls: 0, input: 0, output: 0, unknown: 0}});
+@@ -32,6 +32,7 @@
+     }
+     async init() {
+       const saved = this.host.readSettings(); this.settings = {...defaults(), ...saved, profile: {...defaults().profile, ...saved.profile}};
++      if(this.settings.companion_prompt===R.PREVIOUS_PROMPT)this.settings.companion_prompt=R.PROMPT;
+       if(saved.runtime_mode==='legacy' && saved.profile?.author_review==null)this.settings.profile.author_review=false;
+       for (const [key, field] of [['segment', 'segment_prompt'], ['analysis', 'analysis_prompt'], ['merge', 'analysis_merge_prompt'], ['detect', 'detect_prompt']]) {
+         if ([API.LEGACY_PROMPTS[key], API.PREVIOUS_PROMPTS[key], API.LAST_PROMPTS[key], API.V140_PROMPTS[key], API.V141_PROMPTS[key], API.V142_PROMPTS[key], API.V144_PROMPTS[key], API.V146_PROMPTS[key]].filter(Boolean).includes(this.settings.profile[field])) this.settings.profile[field] = API.PROMPTS[key];
+@@ -457,7 +458,7 @@
+       C.assert(pair, '当前没有可确认的 AI 回复'); return this.acceptPair(pair, true);
+     }
+     async checkRound() {
+-      if(this.settings.runtime_mode==='companion'){await this.captureDraft();await this.processCompanion(false);return this.verifyCheckpoint(true);}
++      if(this.settings.runtime_mode==='companion'){await this.captureDraft();await this.processCompanion(false,true);return this.verifyCheckpoint(true);}
+       C.assert(this.settings.enabled && !this.state.paused, '请先启用剧本并解除暂停');
+       await this.captureDraft(); const pair = this.draft, scopeNode = this.state.current_node_id, epoch = this.epoch;
+       C.assert(pair, '当前没有可核验的 AI 回复');
+@@ -658,15 +659,22 @@
+         this.analysisDraft.author_review={...result,project_signature:JSON.stringify(C.normalizeProject(input)),at:Date.now()};this.analysisDraft.review_blocked=result.issues.some(x=>x.severity==='error');this.settings.analysis_draft=C.clone(this.analysisDraft);this.saveSettings();return result;
+       }finally{this.busy--;this.notify();}
+     }
+-    async processCompanion(auto=true) {
++    async processCompanion(auto=true,retryInvalid=false) {
+       if(!this.settings.enabled || this.state.paused || this.settings.runtime_mode!=='companion' || R.init(this.state).continuity_hold)return;
+       const epoch=this.epoch,chat=this.chat;const pair=this.draft;if(!pair)return;let q=R.init(this.state);const turn=q.turn;
+       if(!turn || turn.project_revision!==this.project.revision || turn.user_id!==Number(pair.messages.find(m=>m.role==='user')?.message_id))return;
+-      const signature=await fingerprint(pair.messages);if(epoch!==this.epoch || chat!==this.host.chatId() || JSON.stringify(this.host.pair(pair.assistant_id)?.messages)!==JSON.stringify(pair.messages))return;if(q.reports[signature])return;
+-      q.reports[signature]=true;q.round++;if(Object.keys(q.reports).length>200)delete q.reports[Object.keys(q.reports)[0]];
++      const signature=await fingerprint(pair.messages);if(epoch!==this.epoch || chat!==this.host.chatId() || JSON.stringify(this.host.pair(pair.assistant_id)?.messages)!==JSON.stringify(pair.messages))return;
++      const previous=q.reports[signature],legacyInvalid=previous===true && q.logs.filter(x=>x.assistant_id===pair.assistant_id || x.source?.assistant_id===pair.assistant_id).at(-1)?.kind==='report_invalid';
++      if(previous && !(retryInvalid && (previous==='invalid' || legacyInvalid)))return;
++      if(!previous)q.round++;if(Object.keys(q.reports).length>200)delete q.reports[Object.keys(q.reports)[0]];
+       let report;
+-      try{report=R.parse(pair.messages.find(m=>m.role==='assistant').text,turn.spec);}
+-      catch(error){R.log(this.state,'report_invalid',error.message,{assistant_id:pair.assistant_id});report={stages:turn.spec.stages.map(x=>({id:x.id,status:'uncertain',quote:''})),events:[],present:[]};}
++      try{
++        report=R.parse(pair.messages.find(m=>m.role==='assistant').text,turn.spec);q.reports[signature]='accepted';
++        if(previous==='invalid' || legacyInvalid)q.queue=q.queue.filter(x=>!(x.kind==='stage' && x.source_key===signature));
++        q.latest_report={assistant_id:pair.assistant_id,status:'accepted',message:report.repair || '已读取本轮事实报告',stages:C.clone(report.stages),at:Date.now()};
++        R.log(this.state,report.repair?'report_repaired':'report_accepted',q.latest_report.message,{assistant_id:pair.assistant_id});
++      }
++      catch(error){q.reports[signature]='invalid';q.latest_report={assistant_id:pair.assistant_id,status:'invalid',message:error.message,at:Date.now()};R.log(this.state,'report_invalid',error.message,{assistant_id:pair.assistant_id});report={stages:turn.spec.stages.map(x=>({id:x.id,status:'uncertain',quote:''})),events:[],present:q.present};}
+       for(const target of turn.spec.active){const past=q.stage_dialogues[target.node_id] ||= [];if(!past.some(p=>p.assistant_id===pair.assistant_id))past.push(C.clone(pair));q.stage_dialogues[target.node_id]=past.slice(-8);}
+       q.present=report.present.filter(id=>turn.spec.actors.some(a=>a.id===id));
+       const source={assistant_id:pair.assistant_id,messages:pair.messages.map(m=>m.message_id)};
+@@ -719,11 +727,11 @@
+     }
+     async verifyCheckpoint(force=false){
+       let q=R.init(this.state);if(!q.queue.length || this.checkpointJob)return this.checkpointJob;
+-      if(!this.settings.profile.base_url || !this.settings.profile.model){R.log(this.state,'checkpoint_wait','关键结果待核验，需配置辅助API');this.save();return;}
++      if(!this.settings.profile.base_url || !this.settings.profile.model){q.checkpoint_status={status:'waiting',message:'辅助 API 未配置：待核验结果尚未结算，请在 API 页配置后重新核验'};R.log(this.state,'checkpoint_wait',q.checkpoint_status.message);this.save();return;}
+       const epoch=this.epoch,chat=this.chat, project=this.project;
+       const alive=()=>epoch===this.epoch && chat===this.host.chatId() && project===this.project && this.settings.enabled && !this.state.paused;
+       const job=async()=>{
+-        this.busy++;this.notify();
++        q.checkpoint_status={status:'checking',message:'正在集中核验'};this.busy++;this.notify();
+         try{
+           const candidates=C.clone(q.queue);
+           const definitions=candidates.map(x=>({key:x.key,kind:x.kind,id:x.id,node_id:x.node_id,criteria:(x.kind==='stage'?project.nodes:project.events).find(d=>d.id===x.id)?.completion_criteria + (x.kind==='stage' && project.nodes.find(d=>d.id===x.id)?.completion_action ? '；同时正文实际执行阶段结束行动：'+(project.nodes.find(d=>d.id===x.id).completion_action.intent || project.nodes.find(d=>d.id===x.id).completion_action.action_text || project.nodes.find(d=>d.id===x.id).completion_action.label) : ''),exclusions:(x.kind==='stage'?project.nodes:project.events).find(d=>d.id===x.id)?.completion_exclusions || project.events.find(d=>d.id===x.id)?.exclusions || [],actor_id:project.events.find(d=>d.id===x.id)?.actor_id || '',recipient_id:project.events.find(d=>d.id===x.id)?.recipient_id || ''}));
+@@ -753,9 +761,10 @@
+           }
+           // Refresh the snapshot for the reply where settlement actually occurred.
+           for(const x of candidates)q.message_snapshots[x.source.assistant_id]=this.valueSnapshot();
++          q.checkpoint_status={status:q.queue.length?'pending':'done',message:q.queue.length?'本次核验完成，仍有 '+q.queue.length+' 项待定或待作者结算':'本次核验已完成并更新记录'};
+           this.error='';this.save();this.saveSettings();
+-        }catch(error){if(alive()){R.log(this.state,'checkpoint_error',error.message);this.error='阶段核验暂未完成，相关入口保持关闭';this.save();}}
+-        finally{this.busy--;this.notify();}
++        }catch(error){if(alive()){q=R.init(this.state);q.checkpoint_status={status:'error',message:error.message};R.log(this.state,'checkpoint_error',error.message);this.error='阶段核验暂未完成：'+error.message;this.save();}}
++        finally{if(alive() && R.init(this.state).checkpoint_status?.status==='checking')R.init(this.state).checkpoint_status={status:'waiting',message:'核验已取消，待核验结果保留'};this.busy--;this.notify();}
+       };
+       const promise=job().finally(()=>{if(this.checkpointJob===promise)this.checkpointJob=null;});this.checkpointJob=promise;this.stageJobs=promise;return promise;
+     }
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js"
+index 0d47453..4044738 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/graph.js"
+@@ -11,7 +11,8 @@
+     const edge = (from, to, satisfied = false, label = '') => edges.push({from, to, satisfied, label});
+     const nodeAvailable = n => {
+       const b = F.owner(p, n.id);
+-      return C.nodeReady(n, p, s) && (b ? ['ready', 'running'].includes(s.package_progress?.[b.id]?.status) && s.package_progress[b.id].current_node_id === n.id : n.id === s.current_node_id || F.availableRoutes(p, s, s.current_node_id).some(r => r.target === n.id));
++      const current=refs.nodes.get(s.current_node_id),stagePending=s.companion?.turn && (current?.completion_criteria && !s.completed_node_ids.includes(current.id) || s.companion.queue.some(x=>x.kind==='stage' && x.id===s.current_node_id));
++      return C.nodeReady(n, p, s) && (b ? ['ready', 'running'].includes(s.package_progress?.[b.id]?.status) && s.package_progress[b.id].current_node_id === n.id : n.id === s.current_node_id || !stagePending && F.availableRoutes(p, s, s.current_node_id).some(r => r.target === n.id));
+     };
+     for (const n of p.nodes) add('node:' + n.id, C.displayId(p, 'node', n.id), n.title, s.completed_node_ids.includes(n.id) ? 'done' : active.some(x => x.node_id === n.id) ? 'running' : nodeAvailable(n) ? 'available' : 'locked', 'node');
+     for (const e of p.events) add('event:' + e.id, C.displayId(p, 'event', e.id), e.title, s.event_counts[e.id] ? 'done' : e.enabled && C.condition(e.condition, s) && (!e.completion_node_id || nodeAvailable(refs.nodes.get(e.completion_node_id))) ? 'available' : 'locked', 'event');
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+index ba8ab30..998ea1d 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/src/ui.js"
+@@ -387,14 +387,16 @@
+     }
+     companionRecords() {
+       const q=this.e.state.companion;if(!q)return '';
+-      return `<div class="card"><h2>阶段核验与异常记录</h2><p>待核验 ${q.queue.length} 项；关键结果未确认时不开放依赖入口。</p>${q.queue.map(x=>`<p>${escape(x.id)} · ${escape(x.status)} · 回复 ${Number(x.source.assistant_id)+1}${x.status==='verified' ? button('作者确认结算','companion-settle',`data-key="${escape(x.key)}"`) : ''}</p>`).join('')}${button('重新集中核验','companion-retry',this.e.busy ? 'disabled' : '')}<details><summary>后台诊断（最近100条）</summary>${q.logs.slice().reverse().map(x=>`<p>${escape(x.kind)}：${escape(x.message)}</p>`).join('')}</details></div>`;
++      const statuses={completed:'主模型报告完成，待核验',uncertain:'事实待定，待核验',verified:'核验通过，待作者结算'};
++      return `<div class="card"><h2>阶段核验与异常记录</h2><p>待核验 ${q.queue.length} 项；关键结果未确认时不开放依赖入口。</p>${q.latest_report ? `<p class="${q.latest_report.status==='invalid'?'warn':'muted'}">回复 ${Number(q.latest_report.assistant_id)+1}：${escape(q.latest_report.message)}</p>` : ''}${q.queue.length && q.checkpoint_status ? `<p class="warn">${escape(q.checkpoint_status.message)}</p>` : ''}${q.queue.map(x=>`<p>${escape((x.kind==='stage'?this.e.project.nodes:this.e.project.events).find(d=>d.id===x.id)?.title || x.id)}（${escape(x.id)}） · ${escape(statuses[x.status] || x.status)} · 回复 ${Number(x.source.assistant_id)+1}${x.status==='verified' ? button('作者确认结算','companion-settle',`data-key="${escape(x.key)}"`) : ''}</p>`).join('')}${button('重读当前回复并集中核验','companion-retry',this.e.busy ? 'disabled' : '')}<p class="muted">仅重读未成功解析且属于当前轮的报告；已经处理的回复不会重复奖励。旧楼层与当前轮标识不符时不补猜，请核验已有候选或继续本阶段。</p><details><summary>后台诊断（最近100条）</summary>${q.logs.slice().reverse().map(x=>`<p>${escape(x.kind)}：${escape(x.message)}</p>`).join('')}</details></div>`;
+     }
+     recordsPage() {
+       const subnav = `<div class="subnav">${button('进度记录', 'records-tab', `data-tab="progress" class="${this.recordsTab === 'progress' ? 'active' : ''}"`)}${button('完成与解锁关系', 'records-tab', `data-tab="graph" class="${this.recordsTab === 'graph' ? 'active' : ''}"`)}</div>`;
+       if (this.recordsTab === 'graph') return subnav + this.graphPage();
+       const e = this.e; const p = e.project; const s = e.state; const refs = C.indexProject(p);
++      const q=s.companion,companionNotice=e.settings.runtime_mode==='companion' && q?.latest_report ? `${q.latest_report.message}；${q.queue.length ? '待核验 '+q.queue.length+' 项'+(q.checkpoint_status ? '：'+q.checkpoint_status.message : '') : s.completed_node_ids.includes(s.current_node_id) ? '当前阶段已完成，可选择后续行动' : '当前阶段继续演绎'}` : '';
+       const statuses = {completed: '已发生，待结算', uncertain: '不确定', proposed: '仅提议', rejected: '被拒绝', not_occurred: '未发生'};
+-      return subnav + `<div class="card"><h2>当前阶段进展</h2><p>${escape(e.flowNotice || '等待行动与回复')}</p>${s.turn_context?.label ? `<p>已选择：${escape(s.turn_context.label)} · 玩家消息 ${Number(s.turn_context.user_id) + 1}</p>` : ''}${s.stage_progress ? `<p>${escape(s.stage_progress.summary || '暂无可确认的新事实')}</p><p class="muted">${escape(s.stage_progress.missing.join('；'))}</p>` : '<p class="muted">阶段完成后仅保留结果标记，工作摘要不继续累计。</p>'}<p>已确认结果：${s.collected_ids.map(x => `<code>${escape(x)}</code>`).join('、') || '暂无'}</p></div>${p.packages.some(b => s.package_progress?.[b.id]?.started) ? `<div class="card"><h2>事件包进度</h2>${p.packages.filter(b => s.package_progress?.[b.id]?.started).map(b => { const q = s.package_progress[b.id]; return `<div class="kv"><span>${escape(b.title)} · ${escape(refs.nodes.get(q.current_node_id)?.title || q.current_node_id)}<br><small>${escape(q.stage_progress?.summary || '暂无工作摘要')}</small></span><strong>${escape(({running: '进行中', done: '已完成', waiting: '等待条件', disabled: '已关闭'})[q.status] || q.status)}</strong></div>`; }).join('')}</div>` : ''}<div class="card"><h2>进度记录</h2><div class="grid"><div><h3>已完成节点</h3>${s.completed_node_ids.map(k => `<p>${escape(refs.nodes.get(k)?.title || k)}</p>`).join('') || '<p class="empty">暂无</p>'}</div><div><h3>事件累计</h3>${Object.entries(s.event_counts).map(([k, v]) => `<div class="kv"><span>${escape(refs.events.get(k)?.title || k)}</span><strong>${v}</strong></div>`).join('') || '<p class="empty">暂无</p>'}</div></div></div>
++      return subnav + `<div class="card"><h2>当前阶段进展</h2><p>${escape(e.flowNotice || companionNotice || '等待行动与回复')}</p>${s.turn_context?.label ? `<p>已选择：${escape(s.turn_context.label)} · 玩家消息 ${Number(s.turn_context.user_id) + 1}</p>` : ''}${s.stage_progress ? `<p>${escape(s.stage_progress.summary || '暂无可确认的新事实')}</p><p class="muted">${escape(s.stage_progress.missing.join('；'))}</p>` : '<p class="muted">阶段完成后仅保留结果标记，工作摘要不继续累计。</p>'}<p>已确认结果：${s.collected_ids.map(x => `<code>${escape(x)}</code>`).join('、') || '暂无'}</p></div>${p.packages.some(b => s.package_progress?.[b.id]?.started) ? `<div class="card"><h2>事件包进度</h2>${p.packages.filter(b => s.package_progress?.[b.id]?.started).map(b => { const q = s.package_progress[b.id]; return `<div class="kv"><span>${escape(b.title)} · ${escape(refs.nodes.get(q.current_node_id)?.title || q.current_node_id)}<br><small>${escape(q.stage_progress?.summary || '暂无工作摘要')}</small></span><strong>${escape(({running: '进行中', done: '已完成', waiting: '等待条件', disabled: '已关闭'})[q.status] || q.status)}</strong></div>`; }).join('')}</div>` : ''}<div class="card"><h2>进度记录</h2><div class="grid"><div><h3>已完成节点</h3>${s.completed_node_ids.map(k => `<p>${escape(refs.nodes.get(k)?.title || k)}</p>`).join('') || '<p class="empty">暂无</p>'}</div><div><h3>事件累计</h3>${Object.entries(s.event_counts).map(([k, v]) => `<div class="kv"><span>${escape(refs.events.get(k)?.title || k)}</span><strong>${v}</strong></div>`).join('') || '<p class="empty">暂无</p>'}</div></div></div>
+       ${this.completionRecords()}${this.companionRecords()}<div class="card"><h2>待确认与失败检查</h2>${e.busy ? '<span class="badge">辅助任务运行中</span>' : ''}${s.pending_checks.map(check => `<div class="card"><h3>回复楼层 ${Number(check.assistant_id) + 1} · ${escape(check.status)}</h3>${check.error ? `<p class="warn">${escape(check.error)}</p>` : ''}${['error', 'stale', 'partial'].includes(check.status) ? button(check.status === 'partial' ? '继续检查未查候选' : '重新检查', 'retry', `data-key="${escape(check.key)}"`) : ''}${check.results.filter(r => !r.handled).map(r => `<div class="card"><strong>${escape(refs.events.get(r.event_id)?.title || r.event_id)}</strong> <span class="badge">${escape(statuses[r.status])}</span>${r.evidence.map(x => `<p class="muted">“${escape(x.quote)}”</p>`).join('')}${r.note ? `<p class="warn">${escape(r.note)}</p>` : ''}${['completed', 'uncertain'].includes(r.status) ? `<div class="row">${button('确认发生并结算', 'result-accept', `data-key="${escape(check.key)}" data-id="${escape(r.event_id)}"`)}${button('忽略', 'result-dismiss', `data-key="${escape(check.key)}" data-id="${escape(r.event_id)}"`)}</div>` : ''}</div>`).join('')}</div>`).join('') || '<p class="empty">没有待处理的检查</p>'}</div>
+       <div class="card"><h2>近期操作（最多 25 条）</h2>${s.history.slice().reverse().map(tx => `<p>${escape(tx.label)} <span class="muted">${new Date(tx.at).toLocaleString()}</span></p>`).join('') || '<p class="empty">暂无操作</p>'}${button('回退最近一次', 'undo', s.history.length ? '' : 'disabled')}</div>`;
+     }
+@@ -484,7 +486,7 @@
+       if (action === 'quick-gear' || action === 'quick-bag') { const menu = action === 'quick-gear' ? 'gear' : 'bag'; this.quickMenu = this.quickMenu === menu ? '' : menu; this.renderQuick(); return; }
+       if (action === 'quick-collapse') { this.e.settings.quick_collapsed = !(this.e.settings.quick_collapsed && !this.quickMenu); this.quickMenu = ''; this.e.saveSettings(); this.renderQuick(); return; }
+       if(action==='companion-settle'){if(this.win.confirm('确认该结果实际成立并结算？这将执行既定奖励和解锁，请先核对正文。'))this.e.confirmCandidate(b.dataset.key);return;}
+-      if(action==='companion-retry'){await this.e.verifyCheckpoint(true);return;}
++      if(action==='companion-retry'){await this.e.checkRound();return;}
+       if (action === 'quick-panel') { this.tab = this.e.diagnostics().some(x => x.severity === 'error') ? 'records' : 'run'; if (this.tab === 'records') this.recordsTab = 'graph'; this.toggle(); return; }
+       if (['quick-complete', 'quick-check', 'quick-pause', 'quick-accept', 'quick-dismiss'].includes(action)) {
+         C.assert(this.e.settings.enabled && !this.e.busy, '剧本未启用或辅助任务正在运行');
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/companion.browser.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/companion.browser.js"
+index d7954dc..513077e 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/companion.browser.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/companion.browser.js"
+@@ -15,18 +15,19 @@ const server=http.createServer(async(req,res)=>{
+   res.setHeader('Content-Type','application/json');res.end(JSON.stringify({choices:[{finish_reason:'stop',message:{content:JSON.stringify(value)}}]}));return;
+  }
+  const fixtureText=fixture.toString().replace('host: new Host(root)','host:null');
+- res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#222;color:white}iframe{display:none}#sheld{height:100dvh;display:flex;flex-direction:column}#chat{flex:1;overflow:auto}#send_form{flex:none}textarea{width:95%;height:44px}</style><div id="sheld"><div id="chat"><span id="live" data-bse-variable="aff">999</span></div><form id="send_form"><textarea id="send_textarea"></textarea></form></div><script>const C={clone:x=>JSON.parse(JSON.stringify(x))};const fixture=${fixtureText};window.testHost=fixture();let card={avatar:'a.png',name:'当前测试卡'};testHost.root.SillyTavern={getContext:()=>({characterId:0,characters:[card]})};testHost.storage.script.branch_story_settings={runtime_mode:'companion',profile:{auto_partition:false,author_review:true},project_id:'ui_new',drafts:{ui_new:${JSON.stringify(p)}}};window.TavernHelper=testHost.root;window.sendRound=async(body,items={})=>{const e=document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine,h=testHost.root,u=h.messages.length;h.messages.push({message_id:u,role:'user',message:'自主行动'});await e.prepareTurn(u);const a=h.messages.length,report={turn:e.state.companion.turn.id,complete:true,stages:[],events:[],present:['wang'],...items};h.messages.push({message_id:a,role:'assistant',message:body+'\\n<bse-report>'+JSON.stringify(report)+'</bse-report>'});const div=document.createElement('div');div.className='mes';div.dataset.messageId=a;div.textContent=body;const meta=document.createElement('bse-report');meta.textContent=JSON.stringify(report);div.append(meta);const value=document.createElement('span');value.dataset.bseVariable='aff';value.className='historic';value.textContent='999';div.append(value);document.querySelector('#chat').append(div);await e.captureDraft(a);await e.processCompanion();return a;};window.switchCard=()=>{card={avatar:'b.png',name:'第二张卡'};document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.bindChat();};const frame=document.createElement('iframe');frame.src='/frame';document.body.append(frame);</script>`);
++ res.setHeader('Content-Type','text/html; charset=utf-8');res.end(`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#222;color:white}iframe{display:none}#sheld{height:100dvh;display:flex;flex-direction:column}#chat{flex:1;overflow:auto}#send_form{flex:none}textarea{width:95%;height:44px}</style><div id="sheld"><div id="chat"><span id="live" data-bse-variable="aff">999</span></div><form id="send_form"><textarea id="send_textarea"></textarea></form></div><script>const C={clone:x=>JSON.parse(JSON.stringify(x))};const fixture=${fixtureText};window.testHost=fixture();let card={avatar:'a.png',name:'当前测试卡'};testHost.root.SillyTavern={getContext:()=>({characterId:0,characters:[card]})};testHost.storage.script.branch_story_settings={runtime_mode:'companion',profile:{auto_partition:false,author_review:true},project_id:'ui_new',drafts:{ui_new:${JSON.stringify(p)}}};window.TavernHelper=testHost.root;window.sendRound=async(body,items={},format="legacy")=>{const e=document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine,h=testHost.root,u=h.messages.length;h.messages.push({message_id:u,role:'user',message:'自主行动'});await e.prepareTurn(u);const a=h.messages.length,report={turn:e.state.companion.turn.id,complete:true,stages:[],events:[],present:['wang'],...items};h.messages.push({message_id:a,role:'assistant',message:body+'\\n'+(format==='canonical'?'<!--BSE_REPORT '+JSON.stringify(report)+' -->':'<!--<bse-report>'+JSON.stringify(report)+'-->')+'\\n<tse_meta target="wang"><player_mind>普通状态记录</player_mind></tse_meta>'});const div=document.createElement('div');div.className='mes';div.dataset.messageId=a;div.textContent=body;const meta=document.createElement('bse-report');meta.textContent=JSON.stringify(report);div.append(meta);const value=document.createElement('span');value.dataset.bseVariable='aff';value.className='historic';value.textContent='999';div.append(value);document.querySelector('#chat').append(div);await e.captureDraft(a);await e.processCompanion();return a;};window.switchCard=()=>{card={avatar:'b.png',name:'第二张卡'};document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.bindChat();};const frame=document.createElement('iframe');frame.src='/frame';document.body.append(frame);</script>`);
+ });
+ const evaluate=(page,fn)=>page.evaluate(fn);
+ async function run(){await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({headless:true,executablePath:process.env.BSE_CHROMIUM || '/usr/bin/chromium',args:['--no-sandbox']});try{for(const width of [1366,390,320]){
+  const ctx=await browser.newContext({viewport:{width,height:900},isMobile:width<700,hasTouch:width<700}),page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_startup__?.status==='ready');await page.locator('.launcher').click();assert((await page.locator('.project-switcher').innerText()).includes('当前测试卡'));
+  await evaluate(page,async()=>{const e=document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine;await e.updateSettings({enabled:true,quick_options:true,profile:{base_url:location.origin+'/v1',model:'mock'}});});await page.locator('[data-action="close"]').click();assert.equal(await page.locator('.bse-choice').innerText(),'离开阳台');await page.locator('.bse-choice').click();assert.equal(await page.locator('textarea').inputValue(),'我离开阳台');assert.equal(await evaluate(page,()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.collected_ids.length),0);
+  const before=requests.length;const first=await evaluate(page,()=>sendRound('小王接过了花。',{events:[{id:'gift',status:'completed',quote:'小王接过了花。',actor_id:'player',recipient_id:'wang'}]}));assert.equal(requests.length,before);await page.waitForFunction(()=>document.querySelector('#live').textContent==='31');assert.equal(await page.locator('.historic').first().innerText(),'31');assert.equal(await page.locator('bse-report').first().isVisible(),false);
+- await evaluate(page,()=>sendRound('小王接过了花。',{events:[{id:'gift',status:'completed',quote:'小王接过了花。',actor_id:'player',recipient_id:'wang'}]}));await page.waitForFunction(()=>document.querySelector('#live').textContent==='32');assert.equal(await page.locator('.historic').first().innerText(),'31');
+- await evaluate(page,()=>sendRound('你离开了阳台。',{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]}));await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.collected_ids.includes('key'));assert.equal(requests.length-before,1);assert.equal(await page.locator('.bse-choice').innerText(),'探查密室');assert.equal(await page.locator('.historic').first().innerText(),'31');
++ await evaluate(page,()=>sendRound('小王接过了花。',{events:[{id:'gift',status:'completed',quote:'小王接过了花。',actor_id:'player',recipient_id:'wang'}]},'canonical'));await page.waitForFunction(()=>document.querySelector('#live').textContent==='32');assert.equal(await page.locator('.historic').first().innerText(),'31');
++ await evaluate(page,async()=>{await document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.updateSettings({profile:{base_url:'',model:''}});});
++ await evaluate(page,()=>sendRound('你离开了阳台。',{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]}));assert.equal(requests.length,before);await page.locator('.launcher').click();await page.locator('[data-action="tab"][data-tab="records"]').click();assert((await page.locator('main').innerText()).includes('辅助 API 未配置'));assert(!(await page.locator('main').innerText()).includes('等待行动与回复'));assert((await page.locator('main').innerText()).includes('格式恢复'));await evaluate(page,async()=>{await document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.updateSettings({profile:{base_url:location.origin+'/v1',model:'mock'}});});await page.locator('[data-action="companion-retry"]').click();await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.state.collected_ids.includes('key'));await page.locator('[data-action="close"]').click();assert.equal(requests.length-before,1);assert.equal(await page.locator('.bse-choice').innerText(),'探查密室');assert.equal(await page.locator('.historic').first().innerText(),'31');
+  await page.locator('.launcher').click();await page.locator('[data-action="tab"][data-tab="analysis"]').click();assert((await page.locator('.analysis-cost').innerText()).includes('调用预估'));await page.locator('[name="analysis_text"]').fill(source);const authorBefore=requests.length;await page.locator('[data-action="analysis-run"]').click();await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.analysisDraft?.author_review?.complete);assert.equal(requests.length-authorBefore,3);assert.equal(await evaluate(page,()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.analysisDraft.evidence_repairs.length),1);assert((await page.locator('.analysis-conversion').innerText()).includes('转化为剧本'));
+  page.once('dialog',d=>d.accept());await page.locator('[data-action="analysis-convert"]').click();await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.title==='阳台分析');assert.equal(requests.length-authorBefore,3);assert.equal(await evaluate(page,()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.project.nodes[0].completion_action.label),'离开阳台');
+  await evaluate(page,()=>switchCard());await page.waitForFunction(()=>document.querySelector('iframe').contentWindow.__branch_story_plugin__.engine.card.name==='第二张卡');assert((await page.locator('.project-switcher').innerText()).includes('第二张卡'));assert(!(await page.locator('[name="project_switch"]').innerText()).includes('阳台分析'));const overflow=await page.locator('.panel').evaluate(el=>el.scrollWidth>el.clientWidth+1);assert(!overflow);
+- fs.mkdirSync(path.join(root,'artifacts'),{recursive:true});await page.screenshot({path:path.join(root,'artifacts','companion-'+width+'.png')});console.log(width+'px：角色卡库隔离、自然结束行动、零API赠礼、状态栏快照/回报隐藏、关键集中核验及三步作者分析复核通过');await ctx.close();
++ fs.mkdirSync(path.join(root,'artifacts'),{recursive:true});await page.screenshot({path:path.join(root,'artifacts','companion-'+width+'.png')});console.log(width+'px：角色卡库隔离、自然结束行动、零API赠礼、状态栏快照/回报隐藏、新旧报告/TSE兼容、缺API明确提示/按钮恢复、关键集中核验及三步作者分析复核通过');await ctx.close();
+ }assert.deepEqual(errors,[]);}finally{await browser.close();server.close();}}
+ run().catch(e=>{console.error(e);process.exitCode=1;});
+diff --git "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/companion.test.js" "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/companion.test.js"
+index 585e7d5..7ac9000 100644
+--- "a/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/companion.test.js"
++++ "b/\351\205\222\351\246\206\345\211\247\346\234\254\346\217\222\344\273\266/tests/companion.test.js"
+@@ -20,3 +20,56 @@ test('真实API集中核验必须返回全部候选及请求标识，回报正
+ test('隐藏回报注释必须完整关闭，未知在场角色不得跨候选注入',async()=>{const f=await setup();const expected={turn:'t',stages:[],events:[]},json=JSON.stringify({turn:'t',complete:true,stages:[],events:[]});assert.throws(()=>R.parse('正文<!--<bse-report>'+json+'</bse-report>',expected),/未完整关闭/);assert.equal(R.parse('正文<!--<bse-report>'+json+'</bse-report>-->',expected).body,'正文');await round(f,'普通交谈。',{present:['wang','future']});assert(!R.init(f.e.state).present.includes('future'));f.e.destroy();});
+ test('影响另一个事件前置数值的奖励也先核验，不能以普通级别绕过',()=>{const p=project();p.events.push({id:'next',condition:{variable:{id:'aff',op:'gte',value:50}}});assert.equal(R.critical(p,'event','gift'),true);});
+ test('关闭自动结算的已核验关键结果保留，作者确认一次后开启依赖',async()=>{const client=mockClient();client.checkpoint=async(profile,items)=>items.map(x=>({key:x.key,status:'completed',evidence:x.source.evidence}));const p=project();p.nodes.find(n=>n.id==='a').auto_complete=false;const f=await setup(client,p);await f.e.updateSettings({profile:{base_url:'https://mock.test',model:'mock'}});await round(f,'你离开了阳台。',{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]});assert.equal(R.init(f.e.state).queue[0].status,'verified');assert(!f.e.state.collected_ids.includes('key'));f.e.confirmCandidate('stage:a');assert(f.e.state.collected_ids.includes('key'));assert.equal(R.init(f.e.state).queue.length,0);assert.throws(()=>f.e.confirmCandidate('stage:a'),/尚未核验/);f.e.destroy();});
++
++const tseMeta='<tse_meta x="-0.3" target="wang"><player_mind>小王接过了花。</player_mind></tse_meta>';
++test('新简短注释及旧标签均可读取，完整JSON缺旧尾标签与TSE共存仅恢复格式',()=>{
++  const expected={turn:'t',stages:[],events:[{id:'gift',actor_id:'player',recipient_id:'wang'}]},json=JSON.stringify({turn:'t',complete:true,events:[accepted]});
++  for(const envelope of ['<!--BSE_REPORT '+json+' -->','<!--<bse-report>'+json+'</bse-report>-->','<bse-report>'+json+'</bse-report>','<!--<bse-report>'+json+'-->']){
++    const r=R.parse('小王接过了花。\n'+envelope+'\n'+tseMeta,expected);assert.equal(r.events[0].status,'completed');assert(!r.body.includes('player_mind'));assert.equal(Boolean(r.repair),envelope.endsWith(json+'-->'));
++  }
++});
++test('半截JSON、半截注释/TSE、额外正文、重复报告、错误回合均不被格式恢复放行',()=>{
++  const expected={turn:'t',stages:[],events:[]},json=JSON.stringify({turn:'t',complete:true}),valid='<!--BSE_REPORT '+json+' -->';
++  for(const text of ['<!--BSE_REPORT '+json,'<!--<bse-report>'+json,'<!--<bse-report>'+json.slice(0,-1)+'-->','<!--BSE_REPORT '+json.slice(0,-1)+' -->',valid+'<tse_meta>half',valid+'后来你离开了。',valid+valid,valid+'<bse-report>half',valid.replace('"t"','"old"')])assert.throws(()=>R.parse('正文'+text,expected));
++});
++test('TSE元数据中的文字不能冒充主模型或辅助核验证据，不合并两侧正文',async()=>{
++  const expected={turn:'t',stages:[],events:[{id:'gift'}]},json=JSON.stringify({turn:'t',complete:true,events:[accepted]});
++  const r=R.parse('他只是看着你。'+tseMeta+'<!--BSE_REPORT '+json+' -->',expected);assert.equal(r.events[0].status,'uncertain');
++  const split=R.parse('小王'+tseMeta+'接过了花。<!--BSE_REPORT '+json+' -->',expected);assert.equal(split.events[0].status,'uncertain');
++  const item={key:'event:gift:x',source:{assistant_id:1},dialogue:[{role:'assistant',message_id:'1',text:'他只是看着你。<!--<bse-report>'+json+'-->'+tseMeta}]};
++  const api=new A.Client(async(url,opt)=>{const payload=JSON.parse(JSON.parse(opt.body).messages[1].content);assert(!payload.dialogues[0][0].text.includes('小王接过了花。'));return {ok:true,json:async()=>({choices:[{finish_reason:'stop',message:{content:JSON.stringify({complete:true,check_id:payload.check_id,results:[{key:item.key,status:'completed',evidence:[{message_id:'1',quote:'小王接过了花。'}]}]})}}]})};});
++  assert.equal((await api.checkpoint({base_url:'https://mock.test',model:'mock'},[item],[{key:item.key}],{}))[0].status,'uncertain');
++});
++async function screenshotRound(f,items,body='你离开了阳台。'){
++  const u=f.root.messages.length;f.root.messages.push({message_id:u,role:'user',message:'我离开阳台'});await f.e.prepareTurn(u);
++  const json=JSON.stringify({turn:f.e.state.companion.turn.id,complete:true,stages:[],events:[],...items}),a=f.root.messages.length;
++  f.root.messages.push({message_id:a,role:'assistant',message:body+'\n<!--<bse-report>'+json+'-->\n'+tseMeta});await f.e.captureDraft(a);return a;
++}
++test('截图格式的普通阶段本地完成并更新后续、记录、图，不增加API',async()=>{
++  const p=project();p.nodes[0].effects=[];p.collections=[];p.nodes[0].routes[0].condition=true;const f=await setup(mockClient(),p);
++  await screenshotRound(f,{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]});await f.e.processCompanion();
++  assert.deepEqual(f.e.state.completed_node_ids,['a']);assert.equal(f.e.quickRoutes()[0].target,'b');assert.equal(f.e.state.companion.queue.length,0);assert.match(f.e.state.companion.latest_report.message,/格式恢复/);
++  assert.equal(require('../src/graph').build(f.e.project,f.e.state).nodes.find(n=>n.id==='node:a').status,'done');f.e.destroy();
++});
++test('旧版拒绝的同轮报告可手动重读，奖励只结算一次，不增加回合数',async()=>{
++  const f=await setup();await screenshotRound(f,{events:[accepted]},'小王接过了花。');await f.e.processCompanion();
++  const q=f.e.state.companion,key=Object.keys(q.reports)[0];assert.equal(f.e.state.variables.aff,31);
++  q.reports[key]=true;q.logs=q.logs.filter(x=>x.kind!=='settled' && !x.kind.startsWith('report_'));q.logs.push({kind:'report_invalid',assistant_id:f.e.draft.assistant_id,message:'旧格式失败'});delete q.latest_report;
++  await f.e.checkRound();await f.e.checkRound();assert.equal(f.e.state.variables.aff,31);assert.equal(f.e.state.event_counts.gift,1);assert.equal(f.e.state.companion.round,1);assert.equal(f.e.state.companion.reports[key],'accepted');f.e.destroy();
++});
++test('关键阶段缺API显示明确原因，图与行动均保持入口关闭，配置后核验恢复',async()=>{
++  const f=await setup();await screenshotRound(f,{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]});await f.e.processCompanion();
++  assert.match(f.e.state.companion.checkpoint_status.message,/未配置/);assert.equal(f.e.state.collected_ids.length,0);assert.equal(f.e.state.completed_node_ids.length,0);
++  assert.equal(require('../src/graph').build(f.e.project,f.e.state).nodes.find(n=>n.id==='node:b').status,'locked');
++  f.client.checkpoint=async(p,c)=>c.map(x=>({key:x.key,status:'completed',evidence:x.source.evidence}));await f.e.updateSettings({profile:{base_url:'https://mock.test',model:'mock'}});await f.e.checkRound();
++  assert.deepEqual(f.e.state.collected_ids,['key']);assert.equal(f.e.quickRoutes()[0].target,'b');assert.equal(f.e.state.companion.checkpoint_status.status,'done');f.e.destroy();
++});
++test('旧默认短报告提示词精确迁移，自定义提示词保留',async()=>{
++  for(const old of [R.PREVIOUS_PROMPT,'作者自定义报告格式']){const f=fixture();f.storage.script.branch_story_settings.companion_prompt=old;const e=new Engine(f.host,mockClient());await e.init();assert.equal(e.settings.companion_prompt,old===R.PREVIOUS_PROMPT?R.PROMPT:old);e.destroy();}
++});
++test('格式失败重读后恢复进行中，移除同来源的占位候选，格式仍错保持原因',async()=>{
++  const f=await setup();const a=await screenshotRound(f,{stages:[{id:'a',status:'in_progress',quote:'你仍在阳台上。'}]},'你仍在阳台上。');
++  const parse=R.parse;R.parse=()=>{throw Error('旧版解析错误');};try{await f.e.processCompanion(false);}finally{R.parse=parse;}
++  assert.equal(f.e.state.companion.queue.length,1);assert.equal(f.e.state.companion.latest_report.status,'invalid');await f.e.checkRound();assert.equal(f.e.state.companion.queue.length,0);assert.equal(f.e.state.companion.latest_report.status,'accepted');assert.equal(f.e.state.companion.round,1);
++  f.root.messages.find(m=>m.message_id===a).message+='后来走入密室。';await f.e.captureDraft(a);await f.e.processCompanion(false);assert.equal(f.e.state.companion.latest_report.status,'invalid');assert.match(f.e.state.companion.latest_report.message,/含正文/);assert.equal(f.e.state.collected_ids.length,0);f.e.destroy();
++});

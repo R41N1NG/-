@@ -20,3 +20,56 @@ test('真实API集中核验必须返回全部候选及请求标识，回报正�
 test('隐藏回报注释必须完整关闭，未知在场角色不得跨候选注入',async()=>{const f=await setup();const expected={turn:'t',stages:[],events:[]},json=JSON.stringify({turn:'t',complete:true,stages:[],events:[]});assert.throws(()=>R.parse('正文<!--<bse-report>'+json+'</bse-report>',expected),/未完整关闭/);assert.equal(R.parse('正文<!--<bse-report>'+json+'</bse-report>-->',expected).body,'正文');await round(f,'普通交谈。',{present:['wang','future']});assert(!R.init(f.e.state).present.includes('future'));f.e.destroy();});
 test('影响另一个事件前置数值的奖励也先核验，不能以普通级别绕过',()=>{const p=project();p.events.push({id:'next',condition:{variable:{id:'aff',op:'gte',value:50}}});assert.equal(R.critical(p,'event','gift'),true);});
 test('关闭自动结算的已核验关键结果保留，作者确认一次后开启依赖',async()=>{const client=mockClient();client.checkpoint=async(profile,items)=>items.map(x=>({key:x.key,status:'completed',evidence:x.source.evidence}));const p=project();p.nodes.find(n=>n.id==='a').auto_complete=false;const f=await setup(client,p);await f.e.updateSettings({profile:{base_url:'https://mock.test',model:'mock'}});await round(f,'你离开了阳台。',{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]});assert.equal(R.init(f.e.state).queue[0].status,'verified');assert(!f.e.state.collected_ids.includes('key'));f.e.confirmCandidate('stage:a');assert(f.e.state.collected_ids.includes('key'));assert.equal(R.init(f.e.state).queue.length,0);assert.throws(()=>f.e.confirmCandidate('stage:a'),/尚未核验/);f.e.destroy();});
+
+const tseMeta='<tse_meta x="-0.3" target="wang"><player_mind>小王接过了花。</player_mind></tse_meta>';
+test('新简短注释及旧标签均可读取，完整JSON缺旧尾标签与TSE共存仅恢复格式',()=>{
+  const expected={turn:'t',stages:[],events:[{id:'gift',actor_id:'player',recipient_id:'wang'}]},json=JSON.stringify({turn:'t',complete:true,events:[accepted]});
+  for(const envelope of ['<!--BSE_REPORT '+json+' -->','<!--<bse-report>'+json+'</bse-report>-->','<bse-report>'+json+'</bse-report>','<!--<bse-report>'+json+'-->']){
+    const r=R.parse('小王接过了花。\n'+envelope+'\n'+tseMeta,expected);assert.equal(r.events[0].status,'completed');assert(!r.body.includes('player_mind'));assert.equal(Boolean(r.repair),envelope.endsWith(json+'-->'));
+  }
+});
+test('半截JSON、半截注释/TSE、额外正文、重复报告、错误回合均不被格式恢复放行',()=>{
+  const expected={turn:'t',stages:[],events:[]},json=JSON.stringify({turn:'t',complete:true}),valid='<!--BSE_REPORT '+json+' -->';
+  for(const text of ['<!--BSE_REPORT '+json,'<!--<bse-report>'+json,'<!--<bse-report>'+json.slice(0,-1)+'-->','<!--BSE_REPORT '+json.slice(0,-1)+' -->',valid+'<tse_meta>half',valid+'后来你离开了。',valid+valid,valid+'<bse-report>half',valid.replace('"t"','"old"')])assert.throws(()=>R.parse('正文'+text,expected));
+});
+test('TSE元数据中的文字不能冒充主模型或辅助核验证据，不合并两侧正文',async()=>{
+  const expected={turn:'t',stages:[],events:[{id:'gift'}]},json=JSON.stringify({turn:'t',complete:true,events:[accepted]});
+  const r=R.parse('他只是看着你。'+tseMeta+'<!--BSE_REPORT '+json+' -->',expected);assert.equal(r.events[0].status,'uncertain');
+  const split=R.parse('小王'+tseMeta+'接过了花。<!--BSE_REPORT '+json+' -->',expected);assert.equal(split.events[0].status,'uncertain');
+  const item={key:'event:gift:x',source:{assistant_id:1},dialogue:[{role:'assistant',message_id:'1',text:'他只是看着你。<!--<bse-report>'+json+'-->'+tseMeta}]};
+  const api=new A.Client(async(url,opt)=>{const payload=JSON.parse(JSON.parse(opt.body).messages[1].content);assert(!payload.dialogues[0][0].text.includes('小王接过了花。'));return {ok:true,json:async()=>({choices:[{finish_reason:'stop',message:{content:JSON.stringify({complete:true,check_id:payload.check_id,results:[{key:item.key,status:'completed',evidence:[{message_id:'1',quote:'小王接过了花。'}]}]})}}]})};});
+  assert.equal((await api.checkpoint({base_url:'https://mock.test',model:'mock'},[item],[{key:item.key}],{}))[0].status,'uncertain');
+});
+async function screenshotRound(f,items,body='你离开了阳台。'){
+  const u=f.root.messages.length;f.root.messages.push({message_id:u,role:'user',message:'我离开阳台'});await f.e.prepareTurn(u);
+  const json=JSON.stringify({turn:f.e.state.companion.turn.id,complete:true,stages:[],events:[],...items}),a=f.root.messages.length;
+  f.root.messages.push({message_id:a,role:'assistant',message:body+'\n<!--<bse-report>'+json+'-->\n'+tseMeta});await f.e.captureDraft(a);return a;
+}
+test('截图格式的普通阶段本地完成并更新后续、记录、图，不增加API',async()=>{
+  const p=project();p.nodes[0].effects=[];p.collections=[];p.nodes[0].routes[0].condition=true;const f=await setup(mockClient(),p);
+  await screenshotRound(f,{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]});await f.e.processCompanion();
+  assert.deepEqual(f.e.state.completed_node_ids,['a']);assert.equal(f.e.quickRoutes()[0].target,'b');assert.equal(f.e.state.companion.queue.length,0);assert.match(f.e.state.companion.latest_report.message,/格式恢复/);
+  assert.equal(require('../src/graph').build(f.e.project,f.e.state).nodes.find(n=>n.id==='node:a').status,'done');f.e.destroy();
+});
+test('旧版拒绝的同轮报告可手动重读，奖励只结算一次，不增加回合数',async()=>{
+  const f=await setup();await screenshotRound(f,{events:[accepted]},'小王接过了花。');await f.e.processCompanion();
+  const q=f.e.state.companion,key=Object.keys(q.reports)[0];assert.equal(f.e.state.variables.aff,31);
+  q.reports[key]=true;q.logs=q.logs.filter(x=>x.kind!=='settled' && !x.kind.startsWith('report_'));q.logs.push({kind:'report_invalid',assistant_id:f.e.draft.assistant_id,message:'旧格式失败'});delete q.latest_report;
+  await f.e.checkRound();await f.e.checkRound();assert.equal(f.e.state.variables.aff,31);assert.equal(f.e.state.event_counts.gift,1);assert.equal(f.e.state.companion.round,1);assert.equal(f.e.state.companion.reports[key],'accepted');f.e.destroy();
+});
+test('关键阶段缺API显示明确原因，图与行动均保持入口关闭，配置后核验恢复',async()=>{
+  const f=await setup();await screenshotRound(f,{stages:[{id:'a',status:'completed',quote:'你离开了阳台。'}]});await f.e.processCompanion();
+  assert.match(f.e.state.companion.checkpoint_status.message,/未配置/);assert.equal(f.e.state.collected_ids.length,0);assert.equal(f.e.state.completed_node_ids.length,0);
+  assert.equal(require('../src/graph').build(f.e.project,f.e.state).nodes.find(n=>n.id==='node:b').status,'locked');
+  f.client.checkpoint=async(p,c)=>c.map(x=>({key:x.key,status:'completed',evidence:x.source.evidence}));await f.e.updateSettings({profile:{base_url:'https://mock.test',model:'mock'}});await f.e.checkRound();
+  assert.deepEqual(f.e.state.collected_ids,['key']);assert.equal(f.e.quickRoutes()[0].target,'b');assert.equal(f.e.state.companion.checkpoint_status.status,'done');f.e.destroy();
+});
+test('旧默认短报告提示词精确迁移，自定义提示词保留',async()=>{
+  for(const old of [R.PREVIOUS_PROMPT,'作者自定义报告格式']){const f=fixture();f.storage.script.branch_story_settings.companion_prompt=old;const e=new Engine(f.host,mockClient());await e.init();assert.equal(e.settings.companion_prompt,old===R.PREVIOUS_PROMPT?R.PROMPT:old);e.destroy();}
+});
+test('格式失败重读后恢复进行中，移除同来源的占位候选，格式仍错保持原因',async()=>{
+  const f=await setup();const a=await screenshotRound(f,{stages:[{id:'a',status:'in_progress',quote:'你仍在阳台上。'}]},'你仍在阳台上。');
+  const parse=R.parse;R.parse=()=>{throw Error('旧版解析错误');};try{await f.e.processCompanion(false);}finally{R.parse=parse;}
+  assert.equal(f.e.state.companion.queue.length,1);assert.equal(f.e.state.companion.latest_report.status,'invalid');await f.e.checkRound();assert.equal(f.e.state.companion.queue.length,0);assert.equal(f.e.state.companion.latest_report.status,'accepted');assert.equal(f.e.state.companion.round,1);
+  f.root.messages.find(m=>m.message_id===a).message+='后来走入密室。';await f.e.captureDraft(a);await f.e.processCompanion(false);assert.equal(f.e.state.companion.latest_report.status,'invalid');assert.match(f.e.state.companion.latest_report.message,/含正文/);assert.equal(f.e.state.collected_ids.length,0);f.e.destroy();
+});
