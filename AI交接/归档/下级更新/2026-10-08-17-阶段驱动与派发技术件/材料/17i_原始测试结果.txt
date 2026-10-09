@@ -1,0 +1,311 @@
+仙姝堕 · 只读门禁原始输出（2026-10-08 · 第 17 批）
+运行器：PowerShell 直调 node，**工作目录 = E:\角色卡制作\仙姝堕**（与 ship.js 一致）
+未跑：ship.js / build.js / deploy_to_tavern.cjs / _chk_all.mjs --full（会重写交付产物）
+==============================================================================
+
+### tools/checks/_chk_syntax.mjs　—　卡内与构建脚本语法门禁
+exit code: 1
+--- 首 4 行 ---
+node.exe : (node:230004) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+node.exe : (node:230004) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:230004) [...ge at any time.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+❌ [语法错误] 卡片脚本\GM修改器.js:
+❌ [语法错误] 卡片脚本\状态机.js:
+❌ [语法错误] 卡片脚本\状态栏面板.js:
+❌ [语法错误] _build_card.js:
+❌ [语法错误] deploy_to_tavern.cjs:
+
+❌ 共有 5 个脚本未能通过语法检查！构建已拦截！
+
+
+### tools/checks/_chk_form_gate.mjs　—　名器成形闸门（含自动派发/归属断言）
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:70220) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+  ✔ 正文写了城破 ⇒ 「天溪城破」照常入账
+  ✔ 正文没提暴露 ⇒ 报的「封元镇灵环」被丢弃（不会打开第 13 章）
+  ✔ 正文写了回归 ⇒ 「双姝回归」照常入账
+  ✔ 先报一次：城破锚点入账
+  ✔ 同一楼改口（改成没有锚点）⇒ 锚点被回滚
+  ✔ 只破身、没走后门 ⇒ 般若菩提菊不成形
+  ✔ 破身 ＋ 后窍开发都真 ⇒ 般若菩提菊成形
+  ✔ 只走后门、没破身 ⇒ 仍不成形
+  ✔ 第 10 楼：只破身 ⇒ 尚不成形
+  ✔ 第 30 楼：后窍那句在正文里没依据 ⇒ 丢弃，仍不成形
+  ✔ 第 32 楼：正文有实证 ⇒ 两条齐备，般若菩提菊成形
+  ✔ 般若菩提菊成形 ⇒ 自动派发「般若菩提菊一阶段」
+  ✔ 灵犀同心成形 ⇒ 派发的是「灵犀同心穴一阶段」（带穴字）
+
+--------------------------------------------------------
+【名器成形闸门自测】78 项通过，0 项失败
+✅ 全通过（误报拦得住、真破身放得行、双姝用且、归属按破处者）
+
+
+### tools/checks/_chk_relic_stage.mjs　—　名器阶段条
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:226416) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+node.exe : (node:226416) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:226416) [...ge at any time.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+卡：E:\角色卡制作\仙姝堕\最新角色卡\仙姝堕.json｜词库名器 13 个
+✔ 应当是 13 件名器（实为 13）
+✔ 每件名器的阶段条数 == 词库定义的阶段数（9 件 4 段／4 件 3 段）
+✔ 阶段条 keys 不含持有者名（只留名器正名与别名）
+✔ 任意阶段下**恰好一条**阶段条通过闸门（旧阶段自动关闭）
+✔ 所有阶段条闸门 fail-closed（求值坏掉 ⇒ false）
+
+✅ 全部通过（名器阶段条：触发词收紧 ＋ 阶段互斥 ＋ fail-closed）
+
+
+### tools/checks/_chk_mingqi_prereq.mjs　—　名器成形硬前置
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:5888) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ ① 慕容清歌未破身时，报「清歌弦鸣穴成形」⇒ 拒绝（真机事故）｜["清歌弦鸣穴成形（前置未满足：慕容清歌处女丧失）"]
+✔ ① 慕容清歌已破身 ⇒ 放行
+✔ ② 楚灵夜只破身、后窍未开发 ⇒ 拒绝般若菩提菊｜["般若菩提菊成形（前置未满足：楚灵夜后窍开发）"]
+✔ ② 楚灵夜两者齐备 ⇒ 放行
+✔ ③ 只有苏瑶破身 ⇒ 拒绝灵犀同心｜["灵犀同心成形（前置未满足：苏玲处女丧失）"]
+✔ ③ 两人都破身 ⇒ 放行
+✔ ④ 叶红缨未破身 ⇒ 拒绝灼酒流炎穴成形｜["灼酒流炎穴成形（前置未满足：叶红缨处女丧失）"]
+✔ ④ 叶红缨已破身 ⇒ 放行
+✔ ④b 同轮 <破处> 簿里有慕容清歌 ⇒ 放行（同一场戏破身＋成形）
+✔ ④b 同轮正文硬词兜底：正文写了孤月被破身 ⇒ 放行
+✔ ⑤ 烟霞灵乳不在前置表（例外：出场即二境、占据者阎雷子）
+✔ ⑥ 全部「X成形」字段都已覆盖（12/12）｜未覆盖：（无）
+✔ ⑦ 前置字段名全部真实存在于字段表
+
+门禁：名器成形硬前置  13 通过 / 0 失败
+
+
+### tools/checks/_chk_ejs_stage.mjs　—　【阶段驱动】EJS 门控
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:103668) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+   源文件总长 6626 字 ≈ 7487 tok ＝ 总纲前言 717 字 ＋ 静默计算层 2357 字 ＋ 四段合计 3552 字
+   每回合真实注入 1428–1428 字 ≈ 1614–1614 tok（静默计算层与另外三段留在模板里，不进上下文）
+   现有卡常驻基线：16 条 / 26228 字（卡内已有【阶段驱动】= true；未重跑构建 ⇒ 应为 false）
+   加入本条目后：常驻 17 条 / 27656 字 ⇒ **常驻增量 ≈ +1428 字 ≈ +1614 tok／回合（+5.4%）**
+   对照：若把 _stage_drive.txt 原文整条塞进常驻（无 EJS），增量会是 +6626 字 —— 门控把它压到 +1428 字（省 78%）
+
+── ⑥ 禁用词 / 剧透词（对齐 _final_check_card.js 的两张表） ─────────────────
+✔ 禁用词 0 命中 ｜ 无
+✔ 剧透词 0 命中（本条目没有 `@@if`，会被那张表按「无条件注入」扫描） ｜ 无
+
+── ⑦ 13 个锚点字段名 vs 卡片脚本\状态机.js ────────────────────────────────
+✔ 判段只读 `stat_data.段位`（卡内脚本按楼层算出来的纯函数）
+✔ 判段**不再读** `地点`（那是模型填的，填错就会切错段）
+✔ 判段**不再用锚点数组**（`anyOf(` 已全部移除）
+✔ 段位取不到 ⇒ **默认第 1 段**（不卡死）；判据抛错 ⇒ 0（安全占位）
+
+✅ 全部通过（共 36 项断言）
+
+
+### tools/checks/_chk_plot_gate.mjs　—　主线剧情闸门
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:228312) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+    + CategoryInfo          : NotSpecified: ((node:228312) [...ge at any time.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+卡：E:\角色卡制作\仙姝堕\最新角色卡\仙姝堕.json
+主线剧情 15 条｜专轨 7 条｜台账 122 个字段
+✔ 主线剧情应当是 15 条（实为 15）
+✔ 闸门形状：**准入（前章完成的事实）＋ 上界（本章完成即退出）＋ 段位保底**
+✔ 准入／上界锚点全部在 FIELD_TABLE 台账里（**没有死名** —— 死名等于又把保底当门）
+✔ 求值语义：未到不放／准入放行／**完成即退出**／保底放行／别的身份不放／身份缺失不放／环境坏掉也 fail-closed
+✔ 全卡 160 条闸门都包了 fail-closed（求值报错 ⇒ 剔除条目）
+✔ 身份条件不再用 `?? '赵无忧'` 兜底（身份缺失不得被当成赵无忧）
+✔ GPT §3 点名的三处已分家：可提前发现的信息不当准入／本段完成事件当上界／结果当上界
+✔ 专轨 7 条仍只认自己的身份，没被主线那套闸门覆盖
+✔ 专轨应当是 7 条（自设 3 ＋ 殿主 4，实为 7）
+
+✅ 全部通过（主线剧情闸门：正门＝里程碑，兜底＝段位）
+
+
+### tools/checks/_chk_identity_sync.mjs　—　身份/专轨/大势离线仿真
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:231256) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:231256) [...ge at any time.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+========================================================
+   《仙姝堕》多身份与剧情条目全联动离线质检
+========================================================
+
+[测试 1: 赵无忧默认路径] => 激活身份: [【身份】赵无忧], 激活剧情: 15 条 (预期 15) -> ✔ PASS
+[测试 2: 自设身份路径] => 激活身份: [【身份】自设], 激活剧情: 3 条 (预期 3 自设专轨) -> ✔ PASS
+[测试 3: 欢喜殿主路径] => 激活身份: [【身份】欢喜殿主], 激活剧情: 4 条 (预期 4 殿主专轨) -> ✔ PASS
+[测试 4: 重新切回赵无忧] => 激活身份: [【身份】赵无忧], 激活剧情: 15 条 (预期 15) -> ✔ PASS
+
+--------------------------------------------------------
+🎉 全部 4 组身份切换用例 100% 验证通过！互斥开合完全正常！
+
+
+### tools/checks/_chk_clock_acc.mjs　—　历时推进
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:231412) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+✔ 过渡历时 5 月计足（5 → 5，原被截成 3）｜adv=5
+✔ ①「一日」解析 ＝ 1/30（不再只等于 0.033）｜v=0.03333333333333333
+✔ ①「一日」> 旧上限 0.02（旧规则会被截成 0.6 日）｜v=0.03333333333333333
+✔ ① 30 次「一日」记足 30 日（＝1 月，旧规则只记 18 日）｜acc=0.9999999999999999
+✔ ② 转场正则认出「一个月」（旧式 false）｜hit=true
+✔ ② 转场正则认出「数个月」｜hit=true
+✔ ②「一个月」解析 ＝ 1｜v=1
+✔ ②「一个月」按过渡计足 1 月（旧规则只记 0.02）｜adv=1
+✔ ③「半年」解析 ＝ 6｜v=6
+✔ ③「半年」计足 6 月（旧被截成 3）｜adv=6
+✔ ④ 倒计时「距启程 3 日」不计增量｜v=0
+✔ ④ 倒计时「还有两日」不计增量｜v=0
+✔ ④ 倒计时「倒计时：三日后」不计增量｜v=0
+✔ ④b 已过历时仍照常计入（「三日后启程」不得被守卫误杀）｜v=0.1
+✔ ⑤「三日」计足 0.1 月｜v=0.1
+
+门禁：历时推进（nextAcc ＋ parseLishi）  27 通过 / 0 失败
+
+
+### tools/checks/_chk_defect_four.mjs　—　四条状态缺陷负例
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:8036) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+✔ ③ 「天溪城恶战难免」不再是兽潮实证（旧式 /兽潮/ 才不会中，此项验新式仍不误放）｜正文里没有「兽潮血战」的实证
+✔ ③ 否定句「我还没遇到兽潮血战」判 false｜正文里「兽潮血战」的实证落在否定／未发生的那一句里
+✔ ③ 否定句「也没有经历天溪城破」判 false｜正文里「天溪城破」的实证落在否定／未发生的那一句里
+✔ ③ 真城破「城墙塌下，天溪城破了」判 true
+✔ ③ 「坠入葬魔渊」判 true
+✔ ③ 仅提「葬魔渊」地名判 false（旧式会中）｜正文里没有「赵无忧坠渊」的实证
+✔ ① 无依据申报不进已校验集合（旧行为会进 knownAhead 顶段位）｜["天溪城兽潮（正文里没有「天溪城兽潮」的实证）"]
+✔ ① 有依据申报进已校验集合｜["已抵达天溪"]
+✔ ② 普通首楼否定句不再被判成继承（旧行为：继承第 11 段并写真 5 项 known）｜null
+✔ ② 显式命令「/继承 11」仍成立｜11
+✔ ② 显式标识「【大总结】…第 11 段」仍成立｜11
+✔ ④ 缺状态栏分支已不含日期写入（SEG_TIME[segIdx] 与 baseT 均已删）
+✔ ②-b 已删「按段位补 已抵达天溪」
+✔ ①-c 段位推进已改用已校验集合并落 patch
+✔ ②-b 继承锚点恢复已过 anchorEvidenceIn
+
+门禁：四条状态缺陷行为负例  19 通过 / 0 失败
+
+
+### tools/checks/_chk_panel_artifact.mjs　—　HUD 面板终产物规范断言
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:230720) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+  ✔ 有流式半截隐藏条（maxDepth=3）
+  ✔ 卡内有「状态栏面板」脚本
+  ✔ 该脚本体量 ≥ 100 KB（含 CSS ＋ 骨架 ＋ 字体）
+  ✔ 脚本里有 XSD_CSS 常量
+  ✔ 脚本里有骨架常量
+  ✔ 脚本里有 ensureStyleInjected（规范 §C 卷）
+  ✔ 脚本里有 mount 纯入口（规范 §3.1）
+  ✔ 脚本里有 getMessageData（反查原文）
+  ✔ CSS 解出成功（>3 KB）
+  ✔ 根容器带 container-type（容器查询就绪）
+  ✔ 根容器带 container-name
+  ✔ 样式含内联字体 data URI（零外链）
+  ✔ 样式表里无 http(s) 外链
+  ✔ 无旧版「场/我/人/局」分区
+  ✔ 无旧版标题「局中录」
+
+✅ 全部通过（33 项）—— 架构＝范例卡同构，样式内联零外链
+
+
+### tools/checks/_chk_anchor_gate.mjs　—　锚点提议闸门
+exit code: 0
+--- 首 4 行 ---
+node.exe : (node:211728) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+--- 末 18 行 ---
+node.exe : (node:211728) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+At line:22 char:10
++   $raw = & $node $g[0] 2>&1 | Out-String
++          ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:211728) [...ge at any time.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✔ 真机原文（只出现「幽寂谷」这个地名） → []
+  ✔ 事件真的发生（地名 ＋ 事件动词） → ["玄机子胁迫过叶红缨"]
+  ✔ 只提地名「葬魔渊」 → []
+  ✔ 「坠渊」＋「葬魔渊」都出现 → ["赵无忧坠渊"]
+  ✔ 非地点类关键词（封元镇灵环）照旧直接命中 → ["封元镇灵环"]
+
+【锚点闸门自测】5/5 通过
+✅ 全通过（地点词不再误报；真事件仍能命中）
+
+
+==============================================================================
+汇总（✔/✘ 计数取自各脚本自身标记）
+tools/checks/_chk_syntax.mjs  exit=1  ✔0  ✘0
+tools/checks/_chk_form_gate.mjs  exit=0  ✔78  ✘0
+tools/checks/_chk_relic_stage.mjs  exit=0  ✔5  ✘0
+tools/checks/_chk_mingqi_prereq.mjs  exit=0  ✔13  ✘0
+tools/checks/_chk_ejs_stage.mjs  exit=0  ✔54  ✘0
+tools/checks/_chk_plot_gate.mjs  exit=0  ✔9  ✘0
+tools/checks/_chk_identity_sync.mjs  exit=0  ✔4  ✘0
+tools/checks/_chk_clock_acc.mjs  exit=0  ✔27  ✘0
+tools/checks/_chk_defect_four.mjs  exit=0  ✔19  ✘0
+tools/checks/_chk_panel_artifact.mjs  exit=0  ✔33  ✘0
+tools/checks/_chk_anchor_gate.mjs  exit=0  ✔5  ✘0

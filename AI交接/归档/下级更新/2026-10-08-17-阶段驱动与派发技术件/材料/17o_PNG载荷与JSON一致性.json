@@ -1,0 +1,77 @@
+{
+  "PNG": {
+    "路径": "E:/角色卡制作/仙姝堕/最新角色卡/仙姝堕.png",
+    "字节": 18650930,
+    "sha256": "9993a94bb2d9d3f9ea597074f56223782a68ad8a0c91b94b6598bf931e1314b7",
+    "chunk类型统计": {
+      "IHDR": 1,
+      "tEXt": 2,
+      "IDAT": 1,
+      "IEND": 1
+    },
+    "文本chunk键": [
+      "chara",
+      "ccv3"
+    ]
+  },
+  "JSON": {
+    "路径": "E:/角色卡制作/仙姝堕/最新角色卡/仙姝堕.json",
+    "字节": 6782431,
+    "sha256": "3b5bcef43948bf0967292d7030d26c8ec8ebb55842af70af667e140221dc07cd"
+  },
+  "载荷": {
+    "来源chunk": "chara",
+    "格式": "chara_card_v3",
+    "顶层键": [
+      "name",
+      "description",
+      "personality",
+      "scenario",
+      "first_mes",
+      "mes_example",
+      "creatorcomment",
+      "avatar",
+      "talkativeness",
+      "fav",
+      "tags",
+      "spec",
+      "spec_version",
+      "data",
+      "create_date"
+    ],
+    "name": "仙姝堕",
+    "spec": "chara_card_v3",
+    "spec_version": "3.0"
+  },
+  "世界书": {
+    "载荷条目数": 241,
+    "JSON条目数": 241,
+    "条目数一致": true,
+    "有配置或内容不一致的条目数": 0,
+    "其中content不一致条数": 0,
+    "不一致明细": []
+  },
+  "顶层字段差异": [],
+  "卡内脚本": {
+    "载荷脚本数": 3,
+    "JSON脚本数": 3,
+    "逐条一致": true,
+    "载荷脚本名": [
+      "GM修改器",
+      "状态机",
+      "状态栏面板"
+    ],
+    "JSON脚本名": [
+      "GM修改器",
+      "状态机",
+      "状态栏面板"
+    ]
+  },
+  "depth_prompt": {
+    "一致": true,
+    "载荷字符数": 4759,
+    "JSON字符数": 4759,
+    "载荷含Status_block": true,
+    "JSON含Status_block": true
+  }
+}
