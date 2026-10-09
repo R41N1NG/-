@@ -2165,6 +2165,36 @@ const XsdHUD = (function () {
       const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
       const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
       if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
+      // ── 账本与事务来源自愈保底 ──
+      stat.known = stat.known || {};
+      if (stat.锚点账本 && typeof stat.锚点账本 === 'object') {
+        for (const k of Object.keys(stat.锚点账本)) {
+          const item = stat.锚点账本[k];
+          if (item && Array.isArray(item.新置真)) {
+            for (const f of item.新置真) stat.known[f] = true;
+          }
+        }
+      }
+      if (stat.破处者 && typeof stat.破处者 === 'object') {
+        for (const h of Object.keys(stat.破处者)) {
+          if (stat.破处者[h]) {
+            stat.known[h + '处女丧失'] = true;
+            if (h === '叶红缨') { stat.known['灼酒流炎穴成形'] = true; stat.known['灼酒流炎穴一阶段'] = true; stat.known['获得任意名器'] = true; }
+            if (h === '闻观语') { stat.known['心魔茶璎乳成形'] = true; stat.known['心魔茶璎乳一阶段'] = true; stat.known['获得任意名器'] = true; }
+            if (h === '孤月') { stat.known['九幽玄阴穴成形'] = true; stat.known['九幽玄阴穴一阶段'] = true; stat.known['获得任意名器'] = true; }
+          }
+        }
+      }
+      if (stat.名器归属 && typeof stat.名器归属 === 'object') {
+        for (const r of Object.keys(stat.名器归属)) {
+          if (stat.名器归属[r]) {
+            stat.known[r + '成形'] = true;
+            const pfx = (r === '灵犀同心' ? '灵犀同心穴' : r);
+            stat.known[pfx + '一阶段'] = true;
+            stat.known['获得任意名器'] = true;
+          }
+        }
+      }
       const service = window.__xsdCorrection;
       if (service) {
         let id = ''; try { id = service.capture({}).chatId; } catch (_) {}
@@ -2260,6 +2290,13 @@ function xsdRelicState(rel, known, identity, customOwners) {
     let formed = false;
     if (rel.c && K[rel.c] === true) formed = true;
     for (let n = 1; n <= rel.a; n++) { if (K[rel.s + XSD_RELIC_CN[n] + '阶段'] === true) { formed = true; break; } }
+    // 账本与归属保底：名器归属表或破处者记录已有此名器，实证必然成形
+    if (!formed) {
+      if (customOwners && (customOwners[rel.n] || customOwners[rel.id])) formed = true;
+      if (statData && statData.名器归属 && (statData.名器归属[rel.n] || statData.名器归属[rel.id])) formed = true;
+      const rStages = typeof XSD_RELIC_STAGES !== 'undefined' ? XSD_RELIC_STAGES[rel.id] : null;
+      if (statData && statData.破处者 && rStages && rStages.carrier && statData.破处者[rStages.carrier]) formed = true;
+    }
     if (!formed) return { state: 'none', owner: '', arcs: 0, owned: false };
 
     let hi = 0;
@@ -2718,13 +2755,44 @@ function xsdRelicState(rel, known, identity, customOwners) {
         const stageImg = xsdRelicCandidateUrl(relObj.id, i);
         const stageImgFilter = isReached ? (st.state === 'other' ? 'filter:invert(1) contrast(1.15);' : '') : 'filter:grayscale(1) brightness(.45);opacity:.5;';
         let progHint = '';
-        const rp = (stat && stat.relic_progress && stat.relic_progress[relObj.id]) || null;
-        if (rp && !isReached && i === 2 && st.state !== 'none') {
-          progHint = '<div style="margin-top:6px;font-size:11px;color:#d4af37;background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.25);border-radius:4px;padding:4px 8px;line-height:1.4;">'
-            + '✦ 浸润记录：' + (rp.count || 0) + ' / ' + (rp.target || 5) + ' 次'
-            + (rp.ready ? '（已达基准 · 待剧情迎合质变）' : '（蓄水中）')
+        const rp = (stat && stat.relic_progress && (
+          stat.relic_progress[relObj.id] ||
+          stat.relic_progress[relObj.n] ||
+          stat.relic_progress['zhuojiu'] ||
+          stat.relic_progress['zhuojiuliuyanxue']
+        )) || null;
+
+        if (!isReached && i === 2 && st.state !== 'none') {
+          const curCount = rp ? Math.min(rp.target || 5, Math.max(0, Number(rp.count) || 0)) : 0;
+          const target = rp ? Math.max(1, Number(rp.target) || 5) : 5;
+          const pct = Math.round((curCount / target) * 100);
+          const isReady = curCount >= target;
+
+          progHint = '<div class="sc-progress-card" style="margin-top:8px;padding:8px 10px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:6px;font-size:11px;line-height:1.5;">'
+            + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-weight:600;color:#f1c40f;">'
+            + '<span>✦ 阶位浸润度 (RFC-002)</span>'
+            + '<span>' + curCount + ' / ' + target + ' 次 (' + pct + '%)</span>'
+            + '</div>'
+            + '<div style="width:100%;height:6px;background:rgba(255,255,255,0.12);border-radius:3px;overflow:hidden;margin-bottom:6px;">'
+            + '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg, #d4af37, #f39c12);transition:width 0.3s;"></div>'
+            + '</div>'
+            + '<div style="color:' + (isReady ? '#2ecc71' : '#e0e0e0') + ';font-size:10.5px;margin-bottom:4px;">'
+            + (isReady ? '🔥 精元浸润已饱满！待剧情出现女方生理自发迎合（道纹浮现/主动吸吮）即可质变晋阶' : '💧 蓄力灌注中：每次有效内射推进 1 次浸润')
+            + '</div>'
+            + '<div style="color:rgba(212,175,55,0.9);font-size:10px;border-top:1px dashed rgba(212,175,55,0.25);padding-top:4px;margin-top:4px;">'
+            + '💡 互动申报：行房并在状态栏生成 <code>&lt;名器互动&gt;' + esc(relObj.n) + '｜' + esc(data.carrier) + '｜内射&lt;/名器互动&gt;</code>'
+            + '</div>'
+            + '</div>';
+        } else if (!isReached && i === 3) {
+          progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
+            + '✦ 晋阶准则：心理深层依附动情，或被植入专属奴种（心智沉沦/神魂同调）'
+            + '</div>';
+        } else if (!isReached && i === 4) {
+          progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
+            + '✦ 晋阶准则：专属严苛天地机缘 ＋ 肉身不可逆异化外相（生角/展翼/道韵化形）'
             + '</div>';
         }
+
         gridHtml += '<div class="stage-card ' + (isReached ? 'unlocked' : 'locked') + '">'
           + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
           + '<div style="width:34px;height:34px;border-radius:50%;background-image:url(\'' + stageImg + '\');background-size:cover;background-position:center;border:1px solid ' + (isReached ? (st.state === 'other' ? '#ff7675' : '#d4af37') : '#444') + ';flex-shrink:0;' + stageImgFilter + '"></div>'

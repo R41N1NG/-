@@ -61,8 +61,6 @@
 const TAG = '[仙姝堕·状态机]';
 const VERSION = 'v1.5';
 
-try { console.log('[XDS 状态机] 启动自检：脚本已加载 v' + (typeof VERSION !== 'undefined' ? VERSION : '?'), new Date().toLocaleTimeString()); } catch (e) {}
-
 /* ═══════════════════════════════════════════════════════════
  * 一 · 台账
  * ⚠️ 下面所有字段名／身份名都必须与世界书闸门、`_card_greetings.txt`
@@ -94,21 +92,18 @@ const FIELD_TABLE = [
   { kind: 'ai', name: '极乐引入手', desc: '第二章 · 邪修洞府：**两支都置 true** —— ①替孤月中毒（含口交解毒那一场）②与孤月合力消灭邪修／探完洞府；两支的共同结果是拿到《极乐引》', kws: ['极乐引', '口含阴津'] },
   { kind: 'ai', name: '邪修洞府替孤月中毒', desc: '第二章 · 邪修洞府：**替孤月中毒那一支**（孤月以口含阴津度入营救那场）。⚠️ 只是"发生过的标记"（配立绘／分支用），**不单独作为《剧情》条的闸门**；正常路线不置它', kws: ['口含阴津', '孤月中毒', '替她解毒'] },
   { kind: 'ai', name: '已抵达天溪', desc: '第九—十章 · 一行抵达天溪城', kws: ['抵达天溪', '天溪城下', '入天溪城'] },
-  
-  { kind: 'ai', name: '进入幽寂谷', desc: '第三章 · 幽寂谷秘境：一行**进入幽寂谷**（第 3 段的正门锚点之一）', kws: ['幽寂谷'] },
-  { kind: 'ai', name: '玄机子胁迫过叶红缨', desc: '第三章 · 幽寂谷内：玄机子捏着她乳环的把柄胁迫过她（**秘密线**；进账本只表示「发生过」，旁白不得点破）', kws: ['胁迫', '把柄'] },
-  { kind: 'ai', name: '兽潮血战', desc: '第七—十一章 · 天溪城头的兽潮血战（与「天溪城兽潮」同段，任一为真即跳第 7 段）', kws: ['兽潮', '血战'] },
-  { kind: 'ai', name: '玄机子装伤', desc: '第十一章 · 玄机子装伤脱身（第 8 段底牌：只记「他受伤退走」这个事实，严禁旁白写出「假的」）', kws: ['装伤', '请返宗门'] },
-  { kind: 'ai', name: '双姝回归', desc: '第十二末 · 听雪双姝伪装脱险、潜回据点（第 10 段的正门锚点）', kws: ['双姝回归', '潜回'] },
-  { kind: 'ai', name: '血染天溪', desc: '第九章 · 叶红缨夜间失控与赵无忧越界那一段演完（该章的**完成**锚点；与「可提前发现的看见乳环」不是一回事）', kws: ['血染天溪', '夜间失控'] },
-  { kind: 'ai', name: '天溪城破', desc: '第十三章 · 兽潮总攻、西南城破（第 11 段的正门锚点）', kws: ['城破', '城陷'] },
   { kind: 'ai', name: '孤月定情', desc: '第九章 · **墨山道孤剑崖、出发天溪之前的送别**：她主动封吻、把「冰心泪」亲手戴在他颈上，说「你……一定要平安回来。」（原文无「定情」二字，是卡片给的名）', kws: ['孤月定情', '互诉心意', '彼此说破'] },
-  { kind: 'ai', name: '赵无忧坠渊', desc: '第十七—十九章 · 天溪城陷落、赵无忧遭重创坠落（原著后期两处沦陷节点的硬前置）', kws: ['葬魔渊', '坠渊', '坠入深渊', '金丹被击碎'] },
+  { kind: 'ai', name: '赵无忧坠渊', desc: '第十七—十九章 · 天溪城陷落、赵无忧遭重创坠落（雀奴／孤月失守的硬前置）', kws: ['葬魔渊', '坠渊', '坠入深渊', '金丹被击碎'] },
   { kind: 'ai', name: '封元镇灵环', desc: '第十四章 · 朱樱逢劫：**乳环当众暴露**那一次（残阳老怪扯开衣襟的那一刻）', kws: ['封元镇灵环'] },
   { kind: 'ai', name: '赵无忧看见乳环', desc: '赵无忧**亲眼看见**她乳尖上那对封元镇灵环——**不论何时、何种途径**（剧情八之前玩家操控时提前发现也算）', kws: ['乳环'] },
   { kind: 'ai', name: '灼酒流炎穴成形', desc: '第十五—十六章 · 赤羽堕凡尘', kws: ['灼酒流炎穴', '赤羽堕凡尘'] },
-  
-  { kind: 'ai', name: '九幽玄阴穴成形', desc: '孤月 · 九幽玄阴脉的伴生异穴，元阴初破时成形（依据：【名器】九幽玄阴穴／【人物】孤月 秘密所在）', kws: ['九幽玄阴穴', '九幽玄阴脉'] },
+  /* ── 名器「成形」锚点（2026-09-30 主人过：名器类闸门**逐件补齐**，与 `灼酒流炎穴成形` 同一范式）
+   *  ⚠️ 依据：`_audit_gates.mjs` 复查发现「名器本体条 ↔ 生成条」的闸门只做了灼酒流炎穴一件，
+   *    其余几件启用却没闸门 ⇒ **正文一提到名器名就注入**，与「条目命中才算揭晓」的纪律打架。
+   *  ⚠️ 每一条的持有者与 desc 都写明了册内出处；**册内没有章数可依的一律不编章数**（停用条那批已删），
+   *    只写持有者＋那件事。逐条出处见 `二2-锚点扩充提案.md`。
+   *  ⚠️ `烟霞灵乳` **故意不在这一批**：主人令「柳含烟出场即第二境」⇒ 没有「成形」这一步。 */
+  { kind: 'ai', name: '九幽玄阴穴成形', desc: '孤月 · 九幽玄阴脉的伴生异穴，元阴初破、龙气贯体时成形（依据：【名器】九幽玄阴穴／【人物】孤月 秘密所在）', kws: ['九幽玄阴穴', '九幽玄阴脉'] },
   { kind: 'ai', name: '心魔茶璎乳成形', desc: '闻观语 · 蜜汁化乳、双峰泌灵乳三者齐现即彻底觉醒（依据：【设定】剧情发展简表「闻观语『心魔茶璎乳』显」）', kws: ['心魔茶璎乳', '璎珞茶蕊'] },
   { kind: 'ai', name: '般若菩提菊成形', desc: '楚灵夜 · 于积云古寺显现（依据：【剧情】十三）', kws: ['般若菩提菊'] },
   { kind: 'ai', name: '灵犀同心成形', desc: '苏瑶／苏玲 · 姐妹共构的同心异体（依据：【剧情】五 听雪双姝登场）', kws: ['灵犀同心', '灵犀同心穴', '同心异体'] },
@@ -119,41 +114,33 @@ const FIELD_TABLE = [
   { kind: 'ai', name: '清歌弦鸣穴成形', desc: '慕容清歌 · 所怀名器（依据：【人物】慕容清歌）', kws: ['清歌弦鸣穴'] },
   { kind: 'ai', name: '流焰叠薪穴成形', desc: '顾云舒 · 所怀名器（归属由主人 2026-09-30 当面指定；册内尚无其它出处）', kws: ['流焰叠薪穴'] },
   { kind: 'ai', name: '凤凰羽花成形', desc: '陆烬颜 · 名器持有者（依据：【人物】陆烬颜）', kws: ['凤凰羽花'] },
-  
-  { kind: 'ai', name: '孤月处女丧失', desc: '孤月 · 九幽玄阴穴的持有者被破身（元阴初破的那一刻）', kws: ['孤月处女丧失'] },
-  { kind: 'ai', name: '叶红缨处女丧失', desc: '叶红缨 · 灼酒流炎穴的持有者被破身', kws: ['叶红缨处女丧失'] },
-  { kind: 'ai', name: '闻观语处女丧失', desc: '闻观语 · 心魔茶璎乳的持有者被破身', kws: ['闻观语处女丧失'] },
-  { kind: 'ai', name: '楚灵夜处女丧失', desc: '楚灵夜 · 般若菩提菊的持有者被破身', kws: ['楚灵夜处女丧失'] },
-  
-  { kind: 'ai', name: '楚灵夜后窍开发', desc: '楚灵夜 · **后窍（谷道）被开发过**（被肛交／走后门）。与「楚灵夜处女丧失」**同时为真**，般若菩提菊才成形', kws: ['后窍', '谷道', '后门', '肛'] },
-  { kind: 'ai', name: '雨霏柔处女丧失', desc: '雨霏柔 · 北冥潮生穴的持有者被破身', kws: ['雨霏柔处女丧失'] },
-  { kind: 'ai', name: '苏瑶处女丧失', desc: '苏瑶 · 灵犀同心（姐姐那一侧）被破身；与苏玲两个都丧失，灵犀同心才成形', kws: ['苏瑶处女丧失'] },
-  { kind: 'ai', name: '苏玲处女丧失', desc: '苏玲 · 灵犀同心（妹妹那一侧）被破身；与苏瑶两个都丧失，灵犀同心才成形', kws: ['苏玲处女丧失'] },
-  { kind: 'ai', name: '云织梦处女丧失', desc: '云织梦 · 玉虎噙香乳的持有者被破身', kws: ['云织梦处女丧失'] },
-  { kind: 'ai', name: '花芷凝处女丧失', desc: '花芷凝 · 梅蕊穴的持有者被破身', kws: ['花芷凝处女丧失'] },
-  { kind: 'ai', name: '苏倾寒处女丧失', desc: '苏倾寒 · 冰魄剑心穴的持有者被破身', kws: ['苏倾寒处女丧失'] },
-  { kind: 'ai', name: '慕容清歌处女丧失', desc: '慕容清歌 · 清歌弦鸣穴的持有者被破身', kws: ['慕容清歌处女丧失'] },
-  { kind: 'ai', name: '顾云舒处女丧失', desc: '顾云舒 · 流焰叠薪穴的持有者被破身', kws: ['顾云舒处女丧失'] },
-  { kind: 'ai', name: '陆烬颜处女丧失', desc: '陆烬颜 · 凤凰羽花的持有者被破身', kws: ['陆烬颜处女丧失'] },
-  
+  /* ── 名器**阶段**锚点（2026-09-30 主人令：阶段条要「成形 且 该阶段达成」才放行） ──
+   *  ⚠️ 命名＝`<名器><中文数字>阶段`，与 `_build_card.js` 的 `MQ_STAGE_ANCHOR()` **同源**（改一处必须改两处）。
+   *  ⚠️ 只写「该名器第几阶段已达成」这一件事，不写剧情细节；阶段名（落红／情动／沉沦／极乐）见「名器三境与第四境」条。 */
   { kind: 'ai', name: '已抵达陨仙原', desc: '北域陨仙原一线：一行人或玩家这条线真的走到了陨仙原（魂欢殿主名下那批资料的统一闸门）', kws: ['陨仙原'] },
   /* ── 主人 2026-09-30 逐条指定的锚点（19 个）──
    *  ⚠️ `kws` 是「正文里出现这些词就打一行旁证日志」的触发词（不写账本）；一律用锚点名或该事件的长词/专名。
    *  ⚠️ `烟霞灵乳成形` 与早先「她出场即二境、没有成形这一步」相冲 —— 按最新指示建，已在报告里标出。 */
   { kind: 'ai', name: '天姝榜建立', desc: '神女殿中颁下《天姝榜》（极乐太子亲手颁）', kws: ["天姝榜"] },
-  { kind: 'ai', name: '启程邪修洞府', desc: '第一章 · 玩家**接到去西北荒漠邪修洞府的命令并出发**（主人定：不再靠模型判断「这一章演完没有」）', kws: ['邪修洞府'] },
-  { kind: 'ai', name: '回墨山复命', desc: '第二章 · **孤月与赵无忧回墨山复命**（主人定）', kws: ['复命'] },
-  { kind: 'ai', name: '离开幽寂谷', desc: '第四—五章 · **一行人从幽寂谷秘境离开**（主人定）', kws: ['幽寂谷'] },
-  { kind: 'ai', name: '受征召南下', desc: '**墨山道受仙盟征召、遣弟子南下驰援天溪城——即将出发**（主人定；临行前的送别由此触发）', kws: ['驰援天溪', '天溪城'] },
-  { kind: 'ai', name: '孤剑崖送别已毕', desc: '剧情五（孤剑崖送别 · 孤月赠冰心泪）已经演完', kws: ['冰心泪', '送别'] },
-  { kind: 'ai', name: '听雪双姝登场', desc: '**苏瑶、苏玲登场**（天音阁听雪双姝）', kws: ['听雪双姝'] },
-  { kind: 'ai', name: '玄机子离去', desc: '**玄机子已离去**（主人定）', kws: ['下落不明'] },
-  { kind: 'ai', name: '双姝派回天溪', desc: '双姝线收束：**苏瑶、苏玲被种下奴种，以「黑日」「霜月」之身被派回天溪城**（第十—十二章末）', kws: ['黑日', '霜月'] },
-    { kind: 'ai', name: '三人同寝', desc: '**三人同寝**（主人定）', kws: ['姐妹回归'] },
-    { kind: 'ai', name: '最后防线被冲垮', desc: '**最后那道防线被残阳老怪冲垮**（主人定）', kws: [] },
-    { kind: 'ai', name: '葬魔渊一役已毕', desc: '葬魔渊那一场演完（赵无忧坠渊、雨霏柔授阵丹之道）', kws: [] },
+  { kind: 'ai', name: '', desc: '第一章 · 玩家**接到去西北荒漠邪修洞府的命令并出发**（主人定：不再靠模型判断「这一章演完没有」）', kws: ['邪修洞府'] },
+  { kind: 'ai', name: '', desc: '第二章 · **孤月与赵无忧回墨山复命**（主人定）', kws: ['复命'] },
+  { kind: 'ai', name: '', desc: '第四—五章 · **一行人从幽寂谷秘境离开**（主人定）', kws: ['幽寂谷'] },
+  { kind: 'ai', name: '', desc: '**墨山道受仙盟征召、遣弟子南下驰援天溪城——即将出发**（主人定；临行前的送别由此触发）', kws: ['驰援天溪', '天溪城'] },
+  { kind: 'ai', name: '', desc: '剧情五（孤剑崖送别 · 孤月赠冰心泪）已经演完', kws: ['冰心泪', '送别'] },
+  { kind: 'ai', name: '', desc: '**苏瑶、苏玲登场**（天音阁听雪双姝）', kws: ['听雪双姝'] },
+  { kind: 'ai', name: '', desc: '**玄机子已离去**（主人定）', kws: ['下落不明'] },
+  { kind: 'ai', name: '', desc: '双姝线收束：**苏瑶、苏玲被种下奴种，以「黑日」「霜月」之身被派回天溪城**（第十—十二章末）', kws: ['黑日', '霜月'] },
+  { kind: 'ai', name: '', desc: '**叶红缨夜间失控、赵无忧越界**（第十三章；血染天溪那一场演完）', kws: ['浴血杀敌'] },
+  { kind: 'ai', name: '', desc: '**三人同寝**（主人定）', kws: ['姐妹回归'] },
+  { kind: 'ai', name: '', desc: '**天溪城破**（主人定）', kws: ['西南门破', '金丹破碎'] },
+  { kind: 'ai', name: '', desc: '**最后那道防线被残阳老怪冲垮**（主人定）', kws: [] },
+  { kind: 'ai', name: '', desc: '**灼酒流炎穴觉醒**（主人定）', kws: [] },
+  { kind: 'ai', name: '', desc: '洞府调教那一场演完（第十五章；她被枷锁与业火困在洞府里）', kws: ['洞府调教'] },
+{ kind: 'ai', name: '', desc: '葬魔渊那一场演完（赵无忧坠渊、雨霏柔授阵丹之道）', kws: [] },
   { kind: 'ai', name: '获得任意名器', desc: '玩家这条线上第一次真的接触到／得到一件名器', kws: ["获得任意名器"] },
   { kind: 'ai', name: '南域大劫', desc: '第六—七章 · 南域大劫爆发：神诅降下、粉黑天穹、四殿册封', kws: ["南域大劫","神诅"] },
+  { kind: 'ai', name: '残阳老怪得到叶红缨', desc: '残阳老怪（无论玩家还是 NPC）得到叶红缨', kws: ["残阳老怪得到叶红缨"] },
+  { kind: 'ai', name: '肉山佛得到楚灵夜', desc: '肉山佛（无论玩家还是 NPC）得到楚灵夜', kws: ["肉山佛得到楚灵夜"] },
   { kind: 'ai', name: '天溪城兽潮', desc: '第十一章 · 第六波大规模兽潮压到天溪城下', kws: ["兽潮"] },
   { kind: 'ai', name: '阎雷子脱困', desc: '阎雷子（夺舍炎雷子的那一位）脱困／破关而出', kws: ["阎雷子脱困"] },
   { kind: 'ai', name: '进入葬魔渊', desc: '玩家这条线真的进到葬魔渊（含赵无忧坠渊那一支）', kws: ["葬魔渊"] },
@@ -166,9 +153,6 @@ const FIELD_TABLE = [
   { kind: 'ai', name: '炎雷子谈及往事', desc: '炎雷子谈及当年欲火峰那一战的旧事', kws: ["炎雷子谈及往事"] },
   { kind: 'ai', name: '赠送冰心泪', desc: '孤月把冰心泪赠予赵无忧', kws: ["冰心泪"] },
   { kind: 'ai', name: '邪修洞府解毒', desc: '第二章 · 邪修洞府解毒那一场（与 `邪修洞府替孤月中毒` 是两支）', kws: ["邪修洞府"] },
-  
-  { kind: 'ai', name: '残阳老怪洞府调教叶红缨', desc: '第十五章 · 残阳老怪深山密窟调教那一场演完（段 14 跳段用）', kws: ['洞府调教'] },
-  { kind: 'ai', name: '叶红缨认残阳老怪为主', desc: '第十六章 · 叶红缨认残阳老怪为主（段 15 跳段用）', kws: ['认主'] },
   { kind: 'ai', name: '九幽玄阴穴一阶段', desc: '九幽玄阴穴 · 第一阶段「落红」已达成', kws: ['九幽玄阴穴一阶段'] },
   { kind: 'ai', name: '九幽玄阴穴二阶段', desc: '九幽玄阴穴 · 第二阶段「情动」已达成', kws: ['九幽玄阴穴二阶段'] },
   { kind: 'ai', name: '九幽玄阴穴三阶段', desc: '九幽玄阴穴 · 第三阶段「沉沦」已达成', kws: ['九幽玄阴穴三阶段'] },
@@ -221,6 +205,9 @@ const FIELD_TABLE = [
   { kind: 'ai', name: '凤凰羽花二阶段', desc: '凤凰羽花 · 第二阶段「情动」已达成', kws: ['凤凰羽花二阶段'] },
   { kind: 'ai', name: '凤凰羽花三阶段', desc: '凤凰羽花 · 第三阶段「沉沦」已达成', kws: ['凤凰羽花三阶段'] },
   { kind: 'ai', name: '凤凰羽花四阶段', desc: '凤凰羽花 · 第四阶段「极乐」已达成', kws: ['凤凰羽花四阶段'] },
+  { kind: 'ai', name: '雀奴身份成立', desc: '第二十章 · 肉山佛（硬前置：赵无忧坠渊）', kws: ['雀奴'] },
+  { kind: 'ai', name: '孤月失守', desc: '第二十一—二十六章 · 孤月赴中洲（硬前置：赵无忧坠渊）', kws: ['孤月失守', '玄冰初融'] },
+  { kind: 'ai', name: '双线并置', desc: '第二十六—二十八章 · 叶红缨名器觉醒 ↔ 孤月失守', kws: ['双线并置'] },
   /* ── 起手公开 ── */
   { kind: 'open', name: '天姝会存在', desc: '起手公开，无需解锁（四殿主身份由脚本自动置 true）', kws: [] },
 ];
@@ -229,51 +216,6 @@ const AI_FIELDS = FIELD_TABLE.filter((f) => f.kind === 'ai' && Boolean(f.name)).
 const OPEN_FIELDS = FIELD_TABLE.filter((f) => f.kind === 'open' && Boolean(f.name)).map((f) => f.name);
 /** 全部锚点字段（读顺序＝表顺序：剧情推进 ＋ 起手公开） */
 const ALL_FIELDS = FIELD_TABLE.filter((f) => Boolean(f.name)).map((f) => f.name);
-
-/** 名器成形 ⇔ 持有者。`holders` 里**全组人**都丧失才算成形，目前只有双姝那一件是两个人 */
-const FORM_OF_HOLDERS = [
-  { form: '九幽玄阴穴成形', holders: ['孤月'] },
-  { form: '灼酒流炎穴成形', holders: ['叶红缨'] },
-  { form: '心魔茶璎乳成形', holders: ['闻观语'] },
-  { form: '般若菩提菊成形', holders: ['楚灵夜'] },
-  { form: '北冥潮生穴成形', holders: ['雨霏柔'] },
-  { form: '灵犀同心成形', holders: ['苏瑶', '苏玲'] },
-  { form: '玉虎噙香乳成形', holders: ['云织梦'] },
-  { form: '梅蕊穴成形', holders: ['花芷凝'] },
-  { form: '冰魄剑心穴成形', holders: ['苏倾寒'] },
-  { form: '清歌弦鸣穴成形', holders: ['慕容清歌'] },
-  { form: '流焰叠薪穴成形', holders: ['顾云舒'] },
-  { form: '凤凰羽花成形', holders: ['陆烬颜'] },
-];
-/** 持有者 → 名器名。键一律照 `状态栏面板.js` 的 `XSD_RELICS[].n`（`灵犀同心` **不带「穴」**） */
-const HOLDER_TO_RELIC = {
-  孤月: '九幽玄阴穴', 叶红缨: '灼酒流炎穴', 闻观语: '心魔茶璎乳', 楚灵夜: '般若菩提菊',
-  雨霏柔: '北冥潮生穴', 苏瑶: '灵犀同心', 苏玲: '灵犀同心', 云织梦: '玉虎噙香乳',
-  花芷凝: '梅蕊穴', 苏倾寒: '冰魄剑心穴', 慕容清歌: '清歌弦鸣穴', 顾云舒: '流焰叠薪穴',
-  陆烬颜: '凤凰羽花',
-};
-/** 13 个「〇〇处女丧失」锚点（＝上面 holders 展平） */
-const DEFLOWER_FIELDS = FORM_OF_HOLDERS.flatMap((g) => g.holders.map((h) => h + '处女丧失'));
-
-const DEFLOWER_SYN = ['处女丧失', '破处', '元阴被夺', '元阴失守', '元阴初破', '初夜'];
-/** 正文硬词兜底（防「真破身被漏标误杀」）：报成形却没带破处簿与锚点时，正文里出现这些词
- *  **且同时出现该持有者的名字**，才认作实锤挽救。单有硬词不算，免得把体质描述当现场。
- *  ⚠️ 用正则而不是死词 —— 真机里写的是「**破了**身」「破了她的身」这种说法，
- *     死词表拿「破身」去 `includes` 是**匹配不到**的（2026-10-06 自测当场抓到）。 */
-const DEFLOWER_HARD_RES = [
-  [/破(?:了|去|过|掉)?(?:她|他|其)?(?:的)?身/, '破身'],
-  [/破(?:了|去|过|掉)?(?:她|他|其)?(?:的)?处/, '破处'],
-  [/破瓜/, '破瓜'],
-  [/初破/, '初破'],
-  [/落红/, '落红'],
-  [/处子/, '处子'],
-  [/元阴(?:失守|被夺|初破)/, '元阴失守'],
-  [/初夜/, '初夜'],
-  
-  [/(?:失了身|失身)/, '失身'],
-];
-/** 上面那批词的标签（人类可读，日志与文档用；判定走 `DEFLOWER_HARD_RES`） */
-const DEFLOWER_HARD_WORDS = ['破身', '破处', '破瓜', '初破', '落红', '处子', '元阴失守', '元阴被夺', '初夜', '失身'];
 
 /**
  * ⚠️ v1.5（2026-09-28）：**`天姝会存在` 是按身份决定的起手值**，不是全局常量。
@@ -315,7 +257,7 @@ const FIELD_DESC = Object.fromEntries(FIELD_TABLE.map((f) => [f.name, f.desc]));
 /** 身份台账（穿书模式）—— 6 个身份，名字逐字对齐开场白段落名与闸门条件 */
 const IDENTITY_DEFAULT = '赵无忧';
 const IDENTITIES = [
-  { name: '赵无忧', desc: '墨山道六弟子（原著主角）· 默认时点＝第一章 · 仙盟历 1578 年 三月' },
+  { name: '赵无忧', desc: '墨山道六弟子（原著主角）· 默认时点＝启程天溪之前' },
   { name: '自设', desc: '玩家 Persona 自定义身份（穿书者）· 时点同刻，来历与位置由 Persona 决定' },
   { name: '焚欲殿主', desc: '天姝会焚欲殿主 · 残阳老怪 · 蛊火与惑妖迷情瘴' },
   { name: '欢喜殿主', desc: '天姝会欢喜殿主 · 肉山佛 · 佛门皮相、淫邪内核' },
@@ -379,8 +321,8 @@ const STAGE_FAST_FORWARD = [
   ['天溪城破'],                                              // 段 11: 天溪城破
   ['封元镇灵环', '赵无忧坠渊'],                               // 段 12: 朱樱逢劫
   ['灼酒流炎穴成形'],                                         // 段 13: 赤羽堕凡尘
-  ['残阳老怪洞府调教叶红缨'],                                 // 段 14: 洞府调教
-  ['叶红缨认残阳老怪为主', '灼酒流炎穴二阶段']                 // 段 15: 雀奴
+  ['残阳老怪得到叶红缨'],                                     // 段 14: 洞府调教
+  ['雀奴身份成立', '灼酒流炎穴二阶段']                         // 段 15: 雀奴
 ];
 
 /** 检查当前是否处于交合温存/沉浸私密场景中（章节等待玩家） */
@@ -413,118 +355,22 @@ function checkFastForwardStage(known, curStage) {
   return curStage;
 }
 
-const LISHI_CAP = 0.1;            /* 2026-10-08（gpt 04 号①）：＝3 日。原 0.02＝0.6 日会把「一日」截成 0.6 日、30 次「一日」只记 18 日 */
-const LISHI_CAP_TRANSIT = 12;      /* 2026-10-08（gpt 04 号③）：原 3 会把「半年」(6) 截成 3 */
-
-/** gpt P1-2/P1-4/P1-5/P1-7：历时推进的**纯函数**（可离线测）
- *   · 合法的 0 不能被 || 跳过（只有 null/undefined/空串算缺失）；
- *   · 同楼重绘/修改：先撤掉本楼上一轮加的量，再加本次的（撤销后的值由调用方落盘）；
- *   · 换段**不清零**（全程累计）；只有非数值/负值才归零；
- *   · 截断在这里：过渡历时用 LISHI_CAP_TRANSIT（3），常规用 LISHI_CAP（0.02）。
- *  @returns {{acc:number, adv:number, sameFloor:boolean}} */
-function nextAcc(sdNow, messageId, stepM, hasTransit) {
-  const o = sdNow || {};
-  if (o.人工校历 && Number(o.人工校历.楼) === Number(messageId)) {
-    return { acc: Number(o.历时累计) || 0, adv: 0, clipped: false, rejected: false, raw: 0, capM: LISHI_CAP };
-  }
-  const xsdNum = (v) => (v === null || v === undefined || v === '' ? NaN : Number(v));
-  const nAcc = xsdNum(o.历时累计);
-  const nPush = xsdNum(o.时点加速);
-  const sameFloor = Number(o.最后处理楼号) === Number(messageId);
-  let acc = isFinite(nAcc) ? nAcc : (isFinite(nPush) ? nPush : 0);
-  if (sameFloor) acc = Math.max(0, acc - (Number(o.本楼历时加速) || 0));
-  if (!isFinite(acc) || acc < 0) acc = 0;
-  const capM = hasTransit ? LISHI_CAP_TRANSIT : LISHI_CAP;
-  let adv = 0;
-  let clipped = false;
-  let rejected = false;
-  if (Number(stepM) > 0) {
-    const raw = Number(stepM);
-    clipped = raw > capM;
-    if (clipped) {
-      /* 2026-10-08（gpt 05 §4 L98 ↔ 17 号 §5-4）：超限**整笔不计**（拒绝），不再"按上限截一半计入"。
-         理由：截了却照写"五个月后"，玩家看到的日历与正文对不上；宁可这一笔记 0 并挂 [历时待确认]，
-         由玩家 /设置 或明写的合法转场来推进。 */
-      adv = 0;
-      rejected = true;
-      console.warn('[历时·拒绝] 本楼申报 ' + raw + ' 月 超过单笔上限 ' + capM + ' 月 ⇒ **整笔不计入**（累计保持 ' +
-        acc + ' 月）。要推这么多，请走合法转场（明写时间流逝）或由 GM 面板确认；后台已记 [历时待确认]。');
-    } else {
-      adv = raw;
-      acc = acc + adv;   /* 2026-10-08（gpt 04 号①）：不再逐步舍入到 4 位小数——否则 30 次「一日」（1/30）只累到 0.999，与「30 日＝1 月」不符 */
-    }
-  }
-  return { acc, adv, sameFloor, clipped, rejected, capM, raw: Number(stepM) || 0 };
-}
-
-const LISHI_TRANSIT_RE = /((闭关|数月|数日|数载|隔日|翌日|次日|翌月|次月|开春|入秋|半月|一月|两月|三月|半年|一年|旅程|远行|渡舟|赶路|回宗|返程|数周|一旬|旬日|半月后|数日后|一月后)|([一二三四五六七八九十两半\d]\s*个月|数个月|几个月|数旬|一季|两季))/;   /* 2026-10-08（gpt 04 号②）：原式只认「一月」不认「一个月」⇒ 解析成 1 月却按常规 0.02 截掉 */
-
-const CN_DAY = ['', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
-  '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
-  '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
-
-function cnNum(t) {
-  /* gpt P1-8 兜底：允许直接传「初X」 */
-  { const raw = String(t ?? '').trim(); if (raw.startsWith('初') && raw.length > 1) t = raw.slice(1); }
-  
-  const D = '〇一二三四五六七八九';
-  const x = String(t || '').trim();
-  if (!x) return 0;
-  if (/^\d+$/.test(x)) return Number(x);
-  if (x === '十') return 10;
-  if (x === '正') return 1;      // 正月
-  if (x === '冬') return 11;     // 冬月
-  if (x === '腊') return 12;     // 腊月
-  if (x[0] === '廿') return 20 + Math.max(0, D.indexOf(x[1]));
-  if (x[0] === '卅') return 30 + Math.max(0, D.indexOf(x[1]));   /* gpt P1-8：卅一=31（原来一律返回 30，把非法日当成 30 收下）*/
-  const m = /^([一二三四五六七八九])?十([一二三四五六七八九])?$/.exec(x);
-  if (m) return (m[1] ? D.indexOf(m[1]) : 1) * 10 + (m[2] ? D.indexOf(m[2]) : 0);
-  if (x.length === 1) { const n = D.indexOf(x); if (n >= 0) return n; }
-  return 0;
-}
-
-function pickTimepointLine(t) {
-  const hits = String(t || '').split('\n').filter((l) => /当前时点/.test(l));
-  if (hits.length !== 1) return '';
-  const m = /当前时点[：:]\s*(.+)$/.exec(hits[0].trim());
-  return m ? m[1].trim() : '';
-}
-
-function parseXianmengFromText(t) {
-  const m = /仙盟历\s*(\d{3,4})\s*年\s*[·\.、]?\s*([一二三四五六七八九十廿卅正冬腊]{1,3}|\d{1,2})\s*月\s*(?:[·\.、]?\s*(初[一二三四五六七八九十]{1,2}|[一二三四五六七八九十廿卅]{1,3}|\d{1,2})\s*日?)?/.exec(String(t || ''));
-  if (!m) return null;
-  const y = Number(m[1]);
-  const mo = cnNum(m[2]);
-  if (!y || mo < 1 || mo > 12) return null;
-  let dayNum = 1;
-  const ds = String(m[3] || '');
-  if (ds) {
-    if (ds.startsWith('初')) dayNum = cnNum(ds.slice(1));
-    else dayNum = cnNum(ds);
-  }
-  if (!(dayNum >= 1 && dayNum <= 30)) return null;      // 31 日及越界一律判无效（不静默改成初一）
-  return { ym: y + mo / 100, day: dayNum };
-}
-
-/** 带日的完整写法：`仙盟历 1578 年 · 三月初三` */
-function fmtXianmengDay(v, day) {
-  const d = Math.max(1, Math.min(30, Math.round(Number(day) || 1)));
-  return '仙盟历 ' + fmtXianmeng(v) + CN_DAY[d];
-}
+/* ══════════ ①d 时点加速（2026-10-01 主人令）══════════
+ * 楼下限 ＋ 模型 <历时> 加速；**只加不减**（模型乱填 ⇒ 时点不动，退回楼下限 ⇒ 不致命）。
+ * 单轮上限＝**半个月（0.5 月）**；总封顶＝**本段终点**。
+ * 折算 8 档：一个时辰 0.003｜一夜 0.03｜一日 0.033｜三日 0.1｜半月 0.5｜一月 1｜三月 3｜一年 12（月）
+ *   ⚠️ 词表保留「一月／三月／一年」，但**单轮最多认到半月**（超出即钳到 0.5）。
+ * 内部单位：仙盟历值 = 年 ＋ 月/100（三月 ⇒ 1578.03）⇒ **1 个月 = 0.01**。
+ * ══════════════════════════════════════════════ */
+const LISHI_CAP = 0.5;
 const LISHI_WORDS = [
   ['一个时辰', 0.003], ['半个时辰', 0.003], ['一炷香', 0.01], ['半炷香', 0.01],
-  ['一夜', 1 / 30], ['一日', 1 / 30], ['三天', 0.1], ['三日', 0.1],
+  ['一夜', 0.03], ['一日', 0.033], ['三天', 0.1], ['三日', 0.1],
   ['半月', 0.5], ['一月', 1], ['三月', 3], ['一年', 12],
 ];
 function parseLishi(s) {
   const txt = String(s || '').trim();
   if (!txt || /^[—\-－无]+$/.test(txt)) return 0;
-  /* 2026-10-08（gpt 04 号④ ＋ 17 号 §5-4）：倒计时／**未来计划**不计增量。
-     『距启程 3 日』『还有两日』『师尊说三日后启程』『定于/拟于/约于 X』一律 0；
-     只有明写"已过／已经过／历经"的转场才算（例：『三日已过，我们启程』⇒ 计 3 日）。 */
-  const XSD_PASSED = /已过|已经过|过了|历经|这一过/.test(txt);
-  if (!XSD_PASSED && /倒计时|距[^，。；]{0,12}?[日天]|还有[^，。；]{0,6}?[日天]|将于|预定于|定于|拟于|约于/.test(txt)) return 0;
-  if (!XSD_PASSED && /((说|约定|打算|计划|准备|拟)[^，。；]{0,10}([日天月]|个月)(后|之后))|(([日天月]|个月)后[^，。；]{0,6}(启程|出发|动身|前往|赴))/.test(txt)) return 0;
   let best = 0;
   // ① 优先解析带数量词的常规表达（支持复合中文数字与阿拉伯数字，如：十一日、十五天、2日），避免被「一日」「三日」等短词子串截胡
   const parseCnNum = (str) => {
@@ -543,7 +389,7 @@ function parseLishi(s) {
   const n = /([一二三四五六七八九十两半\d]+)\s*(个?时辰|日|天|个?月|年)/.exec(txt);
   if (n) {
     const v = parseCnNum(n[1]);
-    const uMap = { 时辰: 0.003, 个时辰: 0.003, 日: 1 / 30, 天: 1 / 30, 月: 1, 个月: 1, 年: 12 };   /* 2026-10-08（gpt 04 号①）：统一 30 日/月精确单位，一日 ＝ 1/30 ＝ 0.03333 */
+    const uMap = { 时辰: 0.003, 个时辰: 0.003, 日: 0.033, 天: 0.033, 月: 1, 个月: 1, 年: 12 };
     const u = uMap[n[2]] || 0;
     if (isFinite(v) && v > 0) best = v * u;
   }
@@ -551,7 +397,7 @@ function parseLishi(s) {
   if (!best) {
     for (const [w, m] of LISHI_WORDS) if (txt.includes(w) && m > best) best = m;
   }
-  return best;   /* gpt P1-7：内层不再提前截断 —— 过渡历时会被 0.02 吃掉；截断统一交外层 capM */
+  return Math.min(best, LISHI_CAP);
 }
 function fmtXianmeng(v) {
   const y = Math.floor(v + 1e-9);
@@ -620,13 +466,10 @@ const ANCHOR_KEYWORDS = Object.fromEntries(FIELD_TABLE.map((f) => [f.name, f.kws
  *   则还必须同时命中 `ANCHOR_SECOND_SIGNALS` 里的任一「事件动词」才算数。
  *   ⇒ 只提地名不再误报；真发生事件时（如「在幽寂谷胁迫她屈从」）照样能命中。
  */
-/* 2026-10-08（gpt 03 号：anchor 3 红必须修，旧版原样红不是理由）：补入裸地名「天溪城」
- *   ——「受征召南下」的 kws 里带「天溪城」，于是一句「此去天溪城恶战难免」就误报它。 */
-const ANCHOR_LOCATION_ONLY = ['幽寂谷', '葬魔渊', '赤羽堕凡尘', '天溪城'];
+const ANCHOR_LOCATION_ONLY = ['幽寂谷', '葬魔渊', '赤羽堕凡尘'];
 /** 事件动词（任一命中即可放行） */
-/* ⚠️ 2026-10-08（gpt 03 号）：本表**已退役**——它当年作为「地点名 + 事件动词 ⇒ 提议」的旁路，
- *   正是 3 红的来源。保留声明只为追溯，判定里已不再引用。 */
 const ANCHOR_SECOND_SIGNALS = ['胁迫', '屈从', '得手', '失守', '被擒', '沦', '坠', '碎', '碎丹', '封元', '镇灵', '奴'];
+
 
 /* ═══════════════════════════════════════════════════════════
  * 二 · 酒馆助手接口探测（全部 typeof 保护，取不到就降级）
@@ -664,7 +507,6 @@ const API = {
   getVariables: grab('getVariables', () => (typeof getVariables === 'function' ? getVariables : null), true),
   replaceVariables: grab('replaceVariables', () => (typeof replaceVariables === 'function' ? replaceVariables : null), true),
   insertOrAssignVariables: grab('insertOrAssignVariables', () => (typeof insertOrAssignVariables === 'function' ? insertOrAssignVariables : null), true),
-  updateVariablesWith: grab('updateVariablesWith', () => (typeof updateVariablesWith === 'function' ? updateVariablesWith : null)),
   deleteVariable: grab('deleteVariable', () => (typeof deleteVariable === 'function' ? deleteVariable : null)),          // 登记备用，本版未调用
   // ── 聊天消息（读正文、切开场白）──
   getChatMessages: grab('getChatMessages', () => (typeof getChatMessages === 'function' ? getChatMessages : null), true),
@@ -675,7 +517,8 @@ const API = {
   getWorldbookNames: grab('getWorldbookNames', () => (typeof getWorldbookNames === 'function' ? getWorldbookNames : null)),
   getWorldbook: grab('getWorldbook', () => (typeof getWorldbook === 'function' ? getWorldbook : null)),
   replaceWorldbook: grab('replaceWorldbook', () => (typeof replaceWorldbook === 'function' ? replaceWorldbook : null)),
-  
+  /* ★ 2026-09-29：**没有世界书文件时自动导出一份**用得上这四个（直接从酒馆脚本 import，
+   *   与「酒馆助手」那套 API 并存互补：那套管"改"，这四个管"建"）。 */
   loadWorldInfo: grab('loadWorldInfo', () => (typeof loadWorldInfo === 'function' ? loadWorldInfo : null)),
   saveWorldInfo: grab('saveWorldInfo', () => (typeof saveWorldInfo === 'function' ? saveWorldInfo : null)),
   updateWorldInfoList: grab('updateWorldInfoList', () => (typeof updateWorldInfoList === 'function' ? updateWorldInfoList : null)),
@@ -694,7 +537,6 @@ const EVENTS = (() => {
 
 /** 获取当前活跃聊天会话 ID（用于隔离多聊天状态，防止跨聊天污染） */
 function currentChatId() {
-  try { if (window.__xsdCorrection) return window.__xsdCorrection.capture(API).chatId; } catch (_) {}
   try {
     const ctx = (typeof SillyTavern !== 'undefined' && SillyTavern.getContext)
       ? SillyTavern.getContext()
@@ -706,6 +548,16 @@ function currentChatId() {
   return 'default';
 }
 
+/** 内容哈希指纹（用于精确消息去重，比正文长度判定更可靠） */
+function hashText(str) {
+  const s = String(str || '');
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) + h) + s.charCodeAt(i);
+    h |= 0;
+  }
+  return (h >>> 0).toString(36) + '_' + s.length;
+}
 
 /** toastr（多层回退：先主窗口，再 iframe 自己的） */
 function toast(kind, message, timeOut) {
@@ -791,45 +643,6 @@ function readStatData() {
   const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
   const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
   if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
-  // ── 账本与事务来源自愈保底（防止因单层空读或初始化时差误置 false）──
-  stat.known = stat.known || {};
-  if (stat.锚点账本 && typeof stat.锚点账本 === 'object') {
-    for (const k of Object.keys(stat.锚点账本)) {
-      const entry = stat.锚点账本[k];
-      if (entry && Array.isArray(entry.新置真)) {
-        for (const f of entry.新置真) stat.known[f] = true;
-      }
-    }
-  }
-  if (stat.破处者 && typeof stat.破处者 === 'object') {
-    for (const h of Object.keys(stat.破处者)) {
-      if (stat.破处者[h]) {
-        stat.known[h + '处女丧失'] = true;
-        const r = HOLDER_TO_RELIC[h];
-        if (r) {
-          stat.known[r + '成形'] = true;
-          const pfx = (r === '灵犀同心' ? '灵犀同心穴' : r);
-          stat.known[pfx + '一阶段'] = true;
-          stat.known['获得任意名器'] = true;
-        }
-      }
-    }
-  }
-  if (stat.名器归属 && typeof stat.名器归属 === 'object') {
-    for (const r of Object.keys(stat.名器归属)) {
-      if (stat.名器归属[r]) {
-        stat.known[r + '成形'] = true;
-        const pfx = (r === '灵犀同心' ? '灵犀同心穴' : r);
-        stat.known[pfx + '一阶段'] = true;
-        stat.known['获得任意名器'] = true;
-      }
-    }
-  }
-  const service = window.__xsdCorrection;
-  if (service) {
-    stat.人工纠错 = cs && cs.人工纠错 && cs.人工纠错.chatId === currentChatId() ? cs.人工纠错 : null;
-    return service.effective(stat);
-  }
   return stat;
 }
 
@@ -906,24 +719,7 @@ function settle(ret, name) {
  * @param {object} patch 形如 `{ 身份: '…', known: { 封元镇灵环: true } }`（顶层键会深合并）
  * @param {string} why   写这条的原因（日志用）
  */
-async function writeStat(patch, why, manual = false) {
-  const service = window.__xsdCorrection;
-  if (!service) return { ok: false, why: '缺少二级纠错运行时，请重新构建卡片' };
-  const result = await service.write(API, patch, manual);
-  if (!result.ok) console.warn(TAG, '[统一写入] ' + why + '：' + result.why);
-  return result;
-}
-
-/* 保留旧写入实现用于审查；生产入口已改统一队列，不调用此函数。 */
-async function writeStatLegacy(patch, why) {
-  
-  patch = patch || {};
-  try {
-    const curId = readIdentity();
-    const curFaction = readFaction();
-    if (curId && patch.身份 === undefined) patch.身份 = curId;
-    if (curFaction && patch.阵营 === undefined) patch.阵营 = curFaction;
-  } catch (e) { /* 读不到就不带，别因为保险反而写坏 */ }
+async function writeStat(patch, why) {
   const keys = Object.keys(patch || {});
   if (!keys.length) return { ok: false, why: '空写入' };
   dumpStat(`${why} · 改动前`);
@@ -970,6 +766,7 @@ async function writeStatLegacy(patch, why) {
   if (!okAny) console.error(TAG, `❌ 写入失败：${why} —— 变量接口都用不了，闸门这一轮不会更新`);
   dumpStat(`${why} · 改动后`);
 
+  // ★ 写入成功后联动通知面板刷新名器纹章与状态
   if (okAny) {
     try {
       const refresh = (typeof window !== 'undefined' && typeof window.__xsdRefreshRelics === 'function')
@@ -988,41 +785,16 @@ async function writeKnownField(field, value) {
   if (!ALL_FIELDS.includes(field)) {
     return { ok: false, why: `未知字段「${field}」（可发「锚点」查看清单）` };
   }
-  return writeStat({ known: { [field]: !!value } }, `${field} = ${!!value}`, true);
+  return writeStat({ known: { [field]: !!value } }, `${field} = ${!!value}`);
 }
 
 /** 写身份（连阵营一起写），写完顺带把世界书那 6 条【身份】条目拨到选中那条 */
-async function writeIdentity(name, guard) {
-  
-  if (typeof guard === 'function') {
-    let pass = true;
-    try { pass = !!guard(); } catch (e) { pass = false; }
-    if (!pass) { console.warn(TAG, '[身份] guard 未通过 ⇒ 终止写入（会话或状态已变）'); return { ok: false, why: 'guard 未通过，已中止' }; }
-  }
+async function writeIdentity(name) {
   if (!IDENTITY_NAMES.includes(name)) {
     return { ok: false, why: `未知身份「${name}」（可用：${IDENTITY_NAMES.join(' / ')}）` };
   }
   const faction = IDENTITY_FACTION[name] ?? FACTION_DEFAULT;
-  const statPatch = { 身份: name, 阵营: faction };
-  // ⚠️ 关键：新聊天（首楼选身份）或切换身份时，自动同步对应身份的专属起手行囊
-  const s = readStatData();
-  const curInv = Array.isArray(s?.inventory) ? s.inventory : [];
-  const STARTER_ITEM_NAMES = new Set([
-    '醉春风', '墨山道佩剑', '随身青锋剑', '随身佩剑', '回春散两盅',
-    '天姝令（焚欲）', '《燎原蛊火诀》',
-    '天姝令（欢喜）', '《旖旎梵音心经》', '积云檀木念珠',
-    '天姝令（浊龙）', '《极乐龙体诀》', '真龙暗卫密符',
-    '天姝令（魂欢）', '《情丝化灵录》', '百毒百草囊',
-    '《极乐引》', '《极乐引》残篇'
-  ]);
-  const isStartersOnly = curInv.length === 0 || curInv.every(it => STARTER_ITEM_NAMES.has(it.name));
-  if (isNewChat() || isStartersOnly) {
-    statPatch.inventory = defaultInventoryFor(name);
-  } else {
-    const acquiredItems = curInv.filter(it => !STARTER_ITEM_NAMES.has(it.name));
-    statPatch.inventory = [...defaultInventoryFor(name), ...acquiredItems];
-  }
-  const r = await writeStat(statPatch, `身份 → ${name}／阵营 ${faction}`);
+  const r = await writeStat({ 身份: name, 阵营: faction }, `身份 → ${name}／阵营 ${faction}`);
   if (!r.ok) return { ok: false, why: '变量接口不可用，身份没写进去' };
   /* ⚠️ v1.5：换身份后同步「天姝会存在」的起手值（殿主 ⇒ true；赵无忧／自设 ⇒ 保持不动）。
    *   只升不降 —— 切回赵无忧不会把它打回 false（那会抹掉玩家已经知道的事实）。 */
@@ -1032,242 +804,6 @@ async function writeIdentity(name, guard) {
   }
   const entries = await syncIdentityEntries(name);
   return { ok: true, faction, via: r.via, entries };
-}
-
-/** 物品名归一：去空白与括号注释、去掉开头的「数词＋量词」⇒ 词干（用来判「是不是同一件东西」） */
-function normItemName(s) {
-  let t = String(s ?? '').trim();
-  if (!t) return '';
-  t = t.replace(/[（(][^）)]*[）)]/g, '');                 // 括号里的简述不参与判名
-  t = t.replace(/[\s·・,，。.、'"「」『』]/g, '');
-  const NUM = '[一二三四五六七八九十两双半几数]|\\d+';
-  const UNIT = '壶|坛|瓶|罐|颗|枚|粒|丸|件|把|柄|张|袋|个|支|条|缕|滴|块|串|卷|册|本|面|幅|座|只|套|份|盒|匣|枚';
-  t = t.replace(new RegExp(`^(?:${NUM})?(?:${UNIT})`, 'g'), '');   // 两壶灵酒 → 灵酒
-  t = t.replace(new RegExp(`(?:${NUM})(?:${UNIT})$`, 'g'), '');    // 灵酒两壶 → 灵酒
-  return t.trim();
-}
-/** 稳定 id：同一件东西在任何楼层都得同一个 id */
-function itemIdOf(name) { return normItemName(name) || String(name ?? '').trim(); }
-
-/** 老数据补 `id`／`count`，并把 count 规范成 ≥1 的整数 */
-function normalizeInventory(inv) {
-  const src = Array.isArray(inv) ? inv : [];
-  return src.filter((it) => it && it.name).map((it) => {
-    let n = parseInt(it.count, 10);
-    if (!Number.isFinite(n) || n < 1) n = 1;
-    return { ...it, id: it.id || itemIdOf(it.name), name: String(it.name), count: n };
-  });
-}
-
-const ANCHOR_EVIDENCE = {
-  天溪城破: /(城破|城陷|城池陷|城墙.{0,6}(?:塌|倒)|西南城破)/,   /* 2026-10-08（gpt 04 号③）：删去裸的「陷落」，它太泛（别处城池陷落也命中） */
-  封元镇灵环: /(暴露|当众|看见|扯开|撕开|剥开|夺走|摘下|坦露|映入眼帘)/,
-  双姝回归: /(回归|潜回|现身|回来了|回到)/,
-  血染天溪: /(失控|越界|温存|血染|缠绵)/,
-  /* 2026-10-08（gpt 04 号③）：原式 /(兽潮|血战|围城|攻城)/ 只要出现「兽潮」二字即放行——
-     而「兽潮围城」是全书开篇就摆在那儿的既有局势，前六章满篇都是「兽潮」⇒ 等于没闸。
-     现在要求**兽潮与围/攻/压/临城同句共现**，或「血战」明确落在城头/城下。 */
-  兽潮血战: /((?:兽潮|妖潮)[^。；]{0,8}(?:围城|攻城|压城|临城|破城|血战)|血战[^。；]{0,8}(?:兽潮|妖潮|城头|城下|城前)|(?:围城|攻城)[^。；]{0,8}(?:兽潮|妖潮))/,
-  天溪城兽潮: /((?:兽潮|妖潮)[^。；]{0,8}(?:围城|攻城|压城|临城|破城|血战)|血战[^。；]{0,8}(?:兽潮|妖潮|城头|城下|城前)|(?:围城|攻城)[^。；]{0,8}(?:兽潮|妖潮))/,
-  玄机子装伤: /(装伤|诈伤|受伤.{0,8}(?:退|走|撤|离)|请返宗门)/,
-  进入幽寂谷: /幽寂谷/,
-  玄机子胁迫过叶红缨: /(胁迫|要挟|逼.{0,6}(?:她|叶红缨)|把柄|威胁)/,
-  赵无忧坠渊: /(坠渊|坠入[^。；]{0,6}渊|跌入[^。；]{0,6}渊|坠落[^。；]{0,8}(?:渊|深渊)|金丹[^。；]{0,6}(?:击碎|碎|废))/,   /* 2026-10-08（gpt 04 号③）：删去裸的「葬魔渊」——那是地名，一到那儿就命中 */
-  南域大劫: /(神诅|大劫|封印|再无元婴|天穹)/,
-  已抵达天溪: /((?:抵达|到达|来到|抵临|进了?城|入城|踏上|上了)[^。；]{0,8}天溪|天溪[^。；]{0,8}(?:已?抵达|城墙下|城门|城中|城内|城头))/,
-  赠送冰心泪: /冰心泪/,
-  孤月定情: /(定情|说破|封吻|平安回来|心意)/,
-  极乐引入手: /(极乐引|残卷|残篇)/,
-  灵犀同心成形: /(灵犀同心|同心异体|日月同辉)/,
-  灼酒流炎穴成形: /(灼酒流炎穴|名器.{0,6}(?:觉醒|成形)|初醒)/,
-  残阳老怪洞府调教叶红缨: /(调教|洞府|囚|犬|锁链)/,
-  叶红缨认残阳老怪为主: /(认主|为主|臣服|跪|主人)/,
-  灼酒流炎穴二阶段: /(二阶段|二境|觉醒)/,
-  
-  楚灵夜后窍开发: /(后窍|谷道|后门|后庭|菊径|肛|撑开|开发)/,
-};
-/** 2026-10-08（gpt 04 号③）：否定／未发生语境的**窄闸** —— 只在同一个句子里判，不跨句。
- *  为什么需要：玩家写「本次开局不继承旧档，我还没遇到兽潮血战，也没有经历天溪城破」，
- *  旧闸门只看到词就放行。gpt 明确警告过「不要承诺靠追加否定词正则就完全解决」——
- *  所以这里只当**一道窄闸**，不宣称覆盖传闻／假设／反事实语境。 */
-const NEG_RE = /(没|没有|未|未曾|不曾|尚未|别|勿|无需|并未|从未|不是|非|并不|谈不上|还没|不打算|不愿)/;
-function negatedAround(text, re) {
-  const t = String(text || '');
-  const m = re.exec(t);
-  if (!m) return false;
-  const cut = (i) => i >= 0 && i < m.index;
-  const cands = [t.lastIndexOf('。', m.index), t.lastIndexOf('；', m.index), t.lastIndexOf('！', m.index), t.lastIndexOf('？', m.index), t.lastIndexOf('\n', m.index)].filter(cut);
-  const start = cands.length ? Math.max(...cands) + 1 : 0;
-  const ends = [t.indexOf('。', m.index + m[0].length), t.indexOf('；', m.index + m[0].length), t.indexOf('！', m.index + m[0].length), t.indexOf('？', m.index + m[0].length), t.indexOf('\n', m.index + m[0].length)].filter((i) => i >= 0);
-  const end = ends.length ? Math.min(...ends) : t.length;
-  return NEG_RE.test(t.slice(start, end));
-}
-/** 本楼正文里有没有这个锚点的实证（不在表里的锚点一律放行）
- *  2026-10-08（gpt 04 号③）：空正文由「放行」改为 **fail-closed**（读不到正文就不予认定）。 */
-function anchorEvidenceIn(prose, field) {
-  const re = ANCHOR_EVIDENCE[field];
-  if (!re) return { ok: true, why: '（该锚点无实证要求）' };
-  if (!prose) return { ok: false, why: '（本楼读不到正文 ⇒ 不予认定；确实发生了就发「/解锁 …」手工补）' };
-  if (!re.test(prose)) return { ok: false, why: `正文里没有「${field}」的实证` };
-  if (negatedAround(prose, re)) return { ok: false, why: `正文里「${field}」的实证落在否定／未发生的那一句里` };
-  return { ok: true, why: '' };
-}
-
-/** 去掉状态栏那一段，只留正文 —— 纳戒的「依据」只看正文，不看状态栏自己怎么写 */function stripStatusBlock(text) {
-  return String(text || '')
-    .replace(/<Status_block>[\s\S]*?<\/Status_block>/gi, ' ')
-    .replace(/<StatusBlock>[\s\S]*?<\/StatusBlock>/gi, ' ')
-    .replace(/<status>[\s\S]*?<\/status>/gi, ' ');
-}
-
-/**
- * 正文里有没有这一笔物品进出的依据。
- * 为什么需要：主人 2026-10-07 报「正文完全没提酒，可 `<纳戒>` 每楼都写消耗：醉春风×1」——
- *   根因是提示词的**写法示例里带了真实物品名**，模型照抄示例 ⇒ 两坛酒被抄光。
- * 认法（宽松但有底线，宁可漏认也不误扣）：
- *   ① 名称原样；② 归一化名（去数词量词与括号）；③ 名字 ≥4 字时另认**尾二字**（「墨山道佩剑」→「佩剑」）；
- *   ④ 去掉书名号等包裹符的裸名（「《极乐引》残篇」→「极乐引」）。
- */
-function itemEvidenceIn(prose, name) {
-  const p = String(prose || '');
-  const full = String(name || '').trim();
-  if (!p || !full) return false;
-  const norm = normItemName(full) || full;
-  const cands = [full, norm];
-  if (norm.length >= 4) cands.push(norm.slice(-2));
-  const bare = full.replace(/[《》〈〉「」『』【】（）()]/g, '');
-  if (bare !== full) cands.push(bare);
-  return cands.some((c) => c && c.length >= 2 && p.includes(c));
-}
-
-/** 在纳戒里找某件东西：①归一后全等 ②互为包含（词干长度 ≥2）⇒ 返回下标，找不到 -1 */function findItemIndex(inv, key) {
-  const k = normItemName(key);
-  if (!k) return -1;
-  const norm = (it) => normItemName(it.name);
-  let loose = -1;
-  for (let i = 0; i < inv.length; i += 1) {
-    const n = norm(inv[i]);
-    if (n === k) return i;
-    if (loose < 0 && k.length >= 2 && n.length >= 2 && (n.includes(k) || k.includes(n))) loose = i;
-  }
-  return loose;
-}
-
-/**
- * 施加一次变动（**纯函数**，返回新数组与执行报告）
- * @param {object[]} inv
- * @param {{kind:'gain'|'loss', name:string, count?:number, desc?:string, full?:string}} chg
- * @returns {{inv:object[], ok:boolean, name:string, asked:number, applied:number, note:string}}
- */
-function applyItemChange(inv, chg) {
-  const list = normalizeInventory(inv);
-  const name = String(chg.name ?? '').trim();
-  const asked = Math.max(1, parseInt(chg.count, 10) || 1);
-  if (!name) return { inv: list, ok: false, name: '', asked, applied: 0, note: '名字为空' };
-  const at = findItemIndex(list, name);
-  if (chg.kind === 'gain') {
-    if (at >= 0) list[at] = { ...list[at], count: list[at].count + asked };
-    else list.push({ id: itemIdOf(name), name, desc: chg.desc || '随身所得之物。', full: chg.full || chg.desc || '随身所得之物。', count: asked });
-    return { inv: list, ok: true, name: at >= 0 ? list[at].name : name, asked, applied: asked, note: '入账' };
-  }
-  if (at < 0) return { inv: list, ok: false, name, asked, applied: 0, note: '纳戒里没有这一件' };
-  const real = Math.min(list[at].count, asked);          // ⚠️ 不许扣成负数：最多扣到 0
-  const left = list[at].count - real;
-  const hitName = list[at].name;
-  if (left > 0) list[at] = { ...list[at], count: left };
-  else list.splice(at, 1);                               // 扣到 0 才移除
-  return { inv: list, ok: true, name: hitName, asked, applied: real, note: left > 0 ? `剩 ${left}` : '已用尽，移出纳戒' };
-}
-
-/**
- * 纳戒账本对账：**把已经不存在的那几楼的账回滚掉**（覆盖「删楼」这一种情形）。
- *   · 判据：`messageText(楼层)` 读不到内容 ⇒ 那一楼已被删；
- *   · 读消息本身抛错（接口没就绪）时**当作还在**，宁可留账也不误回滚；
- *   · 回滚 = 把该楼消耗过的加回去、该楼获得过的扣回去（与施加同一套，天然对称）。
- * 调用点：`applyStatusToVars`（每楼开始前）与 `boot`（开聊天/换聊天）。命令改纳戒**不进账本**（手动即最终）。
- */
-async function reconcileNadeLedger(where) {
-  const s = readStatData() || {};
-  const log = (s.纳戒账本 && typeof s.纳戒账本 === 'object') ? { ...s.纳戒账本 } : null;
-  if (!log) return false;
-  const keys = Object.keys(log).filter((k) => /^\d+$/.test(k) && log[k] && typeof log[k] === 'object');
-  if (!keys.length) return false;
-  let inv = normalizeInventory(s.inventory);
-  const gone = [];
-  for (const k of keys) {
-    let txt = null;
-    try { txt = messageText(Number(k)); } catch (e) { txt = '（读不到，按还在算）'; }
-    if (txt === null || txt === undefined) txt = '（读不到，按还在算）';
-    if (String(txt).trim()) continue;                       // 这一楼还在 ⇒ 不动它
-    const e = log[k];
-    for (const x of (e.消耗 || [])) inv = applyItemChange(inv, { kind: 'gain', name: x.name, count: x.count }).inv;
-    for (const x of (e.获得 || [])) inv = applyItemChange(inv, { kind: 'loss', name: x.name, count: x.count }).inv;
-    delete log[k];   
-    log[k] = null;
-    gone.push(k);
-  }
-  if (!gone.length) return false;
-  const r = await writeStat({ inventory: inv, 纳戒账本: log }, `${where}·纳戒对账`);
-  console.log(TAG, `🧹 [纳戒对账]${where}：第 ${gone.join('、')} 楼已不存在 ⇒ 回滚它们的纳戒账`
-    + `（${r && r.ok ? '已写盘 via ' + r.via : '⚠️ 写盘失败：' + ((r && r.why) || '接口不可用')}）`);
-  return true;
-}
-
-/** 身份专属初始随身物品 */
-function defaultInventoryRaw(identity) {
-  const id = String(identity || '').trim();
-  if (id === '赵无忧') {
-    return [
-      { name: '醉春风', desc: '墨山道佳酿两坛，酒香浓醇，可解忧畅怀。', full: '墨山道坊市所出的上等灵酿「醉春风」，甘冽清醇，入口温润，为赵无忧探望红缨师姐特备。' },
-      { name: '墨山道佩剑', desc: '墨山道内门弟子制式青锋剑，温润坚韧。', full: '墨山道制式飞剑，通体以青灵寒铁锻打，刻有墨山宗纹，注入金丹灵力可御剑行空。' }
-    ];
-  }
-  if (id === '焚欲殿主') {
-    return [
-      { name: '天姝令（焚欲）', desc: '天姝会焚欲殿殿主信物，正面刻曼妙天女，背面显墨山道。', full: '非金非木，触手冰凉。受极乐太子敕封之信物，可御使会中蛊火与死士，内蕴天姝秘力。' },
-      { name: '《燎原蛊火诀》', desc: '极乐太子赐下的暴虐火道真法，以蛊引火。', full: '直指元婴大道的双修采补火诀，能以本源蛊火种入炉鼎，焚其神智、助其情动。' },
-      { name: '《极乐引》', desc: '会中通传的名器总录，详载四域仙姝名器体质。', full: '软皮所制，记载落红、情动、沉沦三境之妙，标有墨山道叶红缨等绝品名器之线索。' }
-    ];
-  }
-  if (id === '欢喜殿主') {
-    return [
-      { name: '天姝令（欢喜）', desc: '天姝会欢喜殿殿主信物，正面刻欢喜天女，背面显墨山道。', full: '极乐太子敕封信物，可号令欢喜殿魔僧与暗桩，调运南域寺院香火暗网。' },
-      { name: '《旖旎梵音心经》', desc: '极乐太子赐下的淫靡佛门密经，梵音惑心。', full: '披着慈悲佛光的采补邪功，诵经如闻仙乐，最擅攻破女修心防，化其元阴为佛门甘露。' },
-      { name: '《极乐引》', desc: '会中通传的名器总录，详载四域仙姝名器体质。', full: '软皮所制，记载落红、情动、沉沦三境之妙，标有楚灵夜「般若菩提菊」等妙相。' },
-      { name: '积云檀木念珠', desc: '积云古寺方丈随身念珠，温润带香。', full: '百年雷击檀木打磨而成，常年受香火熏染，可遮蔽一身魔气、伪作慈悲高僧。' }
-    ];
-  }
-  if (id === '浊龙殿主') {
-    return [
-      { name: '天姝令（浊龙）', desc: '天姝会浊龙殿殿主信物，正面刻九龙盘桓，背面显墨山道。', full: '极乐太子敕封信物，可调动皇朝暗卫与浊龙殿死士，威慑朝野。' },
-      { name: '《极乐龙体诀》', desc: '以皇朝至尊龙气御万欲的霸道体修功法。', full: '龙气灌体、固本培元，能以至阳皇龙霸气彻底征服纯阴至寒体质，专克九幽玄阴脉。' },
-      { name: '《极乐引》', desc: '会中通传的名器总录，详载四域仙姝名器体质。', full: '软皮所制，记载落红、情动、沉沦三境之妙，点明墨山道孤月「九幽玄阴穴」一阶未开。' },
-      { name: '真龙暗卫密符', desc: '天龙皇朝九皇子私印密符，可调度死士南下。', full: '纯金镂空盘龙符节，持有者可秘密调度皇都死士暗线，执行渗透与截杀。' }
-    ];
-  }
-  if (id === '魂欢殿主') {
-    return [
-      { name: '天姝令（魂欢）', desc: '天姝会魂欢殿殿主信物，正面刻粉色水滴邪徽。', full: '极乐太子敕封信物，执掌天姝会辨识名器之秘法与北域幽鬼坊市暗线。' },
-      { name: '《情丝化灵录》', desc: '鬼医病相思主修的魔道密法，情丝寄魂。', full: '能化无形情愫为万千细密情丝，深入经脉骨髓，潜移默化篡改道心，最擅操控仙子心智。' },
-      { name: '《极乐引》', desc: '会中通传的名器总录，详载四域仙姝名器体质。', full: '软皮所制，记载落红、情动、沉沦三境之妙，记有北域花芷凝「梅蕊穴」之秘。' },
-      { name: '百毒百草囊', desc: '鬼医随身药囊，内藏无数奇诡灵蛊与迷情秘药。', full: '纳戒级灵丝皮囊，盛装幽冥蚀骨散、软筋融魂液及各类独门毒蛊，伤人于无形。' }
-    ];
-  }
-  return [
-    { name: '醉春风', desc: '南域佳酿两坛，酒香浓醇，可解忧畅怀。', full: '南域仙坊颇具盛名的上等灵酿「醉春风」，甘冽清醇，入口温润，最解行者客愁，为云游修士随身常备佳品。', count: 2 },
-    { name: '随身青锋剑', desc: '入世防身佩剑，剑身清寒。', full: '随身淬炼多年的上好青锋剑，寒芒如雪，指使如臂，无论御剑凌风或近身防卫皆得心应手。' },
-    { name: '《极乐引》残篇', desc: '记载天下诸般名器与双修造化之无上秘录。', full: '机缘所得的古旧皮质残卷，详载天下至阴名器之玄奥，能辨阴阳造化，推演仙姝命途。' }
-  ];
-}
-
-/** 对外入口：起手行囊一律补上 `id` 与 `count`（⚠️ 赵无忧那份的「醉春风」是**两坛** ⇒ count 2） */
-function defaultInventoryFor(identity) {
-  const raw = defaultInventoryRaw(identity);
-  if (identity === '赵无忧') {
-    const i = raw.findIndex((x) => x.name === '醉春风');
-    if (i >= 0) raw[i] = { ...raw[i], count: 2 };
-  }
-  return normalizeInventory(raw);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1287,54 +823,15 @@ async function ensureInit(where) {
   const missingKnown = ALL_FIELDS.filter((f) => typeof known[f] !== 'boolean');
   if (missingKnown.length) {
     patch.known = {};
-    for (const f of missingKnown) {
-      if (known[f] === true) continue;
-      patch.known[f] = false;
-    }
-  }
-  if (!s || typeof s.relic_progress !== 'object' || s.relic_progress === null) {
-    patch.relic_progress = {};
+    for (const f of missingKnown) patch.known[f] = false;
   }
   if (!s || typeof s.身份 !== 'string' || !s.身份) patch.身份 = IDENTITY_DEFAULT;
   if (!s || typeof s.阵营 !== 'string' || !s.阵营) patch.阵营 = FACTION_DEFAULT;
-  const identityNow = (patch.身份 !== undefined) ? patch.身份 : (s?.身份 || IDENTITY_DEFAULT);
-  if (!s || !Array.isArray(s.inventory) || !s.inventory.length) {
-    patch.inventory = defaultInventoryFor(identityNow);
-  } else if (identityNow === '自设') {
-    // ⚠️ 自设行囊自动净化：防止历史旧聊或初始赵无忧身份残留的物品污染
-    let invDirty = false;
-    const cleaned = s.inventory.map(it => {
-      if (!it || !it.name) return it;
-      if (it.name === '墨山道佩剑') {
-        invDirty = true;
-        return { name: '随身青锋剑', desc: '入世防身佩剑，剑身清寒。', full: '随身淬炼多年的上好青锋剑，寒芒如雪，指使如臂，无论御剑凌风或近身防卫皆得心应手。' };
-      }
-      if (it.name === '醉春风' && it.full && (it.full.includes('赵无忧') || it.full.includes('红缨师姐'))) {
-        invDirty = true;
-        return { name: '醉春风', desc: '南域佳酿两坛，酒香浓醇，可解忧畅怀。', full: '南域仙坊颇具盛名的上等灵酿「醉春风」，甘冽清醇，入口温润，最解行者客愁，为云游修士随身常备佳品。' };
-      }
-      return it;
-    });
-    if (invDirty) patch.inventory = cleaned;
-  }
-
-  
-  {
-    const invBase = Array.isArray(patch.inventory) ? patch.inventory
-      : (Array.isArray(s && s.inventory) ? s.inventory : null);
-    const LEGACY_COUNT = { 醉春风: 2 };
-    if (invBase && invBase.some((it) => it && it.name && it.count === undefined)) {
-      patch.inventory = normalizeInventory(invBase.map((it) => (
-        it && it.name && it.count === undefined && LEGACY_COUNT[it.name]
-          ? { ...it, count: LEGACY_COUNT[it.name] } : it
-      )));
-      console.log(TAG, `[初始化·${where}] 纳戒老数据迁移：补 id 与数量（醉春风按设计的「两坛」记 2）`);
-    }
-  }
 
   /* ⚠️ v1.5：按身份校正「天姝会存在」这一格（见 OPEN_FIELD_FOR_OWNER 注释）。
    *   只在**该为 true 却还是 false** 时补 —— 账本是只升不降的：
    *   玩家用 `/解锁` 翻开的、或从殿主身份切走后留下的 true，一律不回退。 */
+  const identityNow = (patch.身份 !== undefined) ? patch.身份 : s?.身份;
   for (const f of openFieldsFor(identityNow)) {
     const cur = known[f];
     if (cur === true) continue;
@@ -1345,13 +842,12 @@ async function ensureInit(where) {
   }
 
   if (!Object.keys(patch).length) {
-    console.log(TAG, `[初始化·${where}] 字段齐全（known ${ALL_FIELDS.length} 个 + 身份 + 阵营 + 纳戒），无需补`);
+    console.log(TAG, `[初始化·${where}] 字段齐全（known ${ALL_FIELDS.length} 个 + 身份 + 阵营），无需补`);
     return false;
   }
   console.log(TAG, `[初始化·${where}] 补 ${Object.keys(patch).length} 组：`
     + (patch.known ? `known ${missingKnown.length} 个（${missingKnown.join('、')}）` : 'known 齐全')
     + (patch.身份 ? ` ＋ 身份=${IDENTITY_DEFAULT}` : '')
-    + (patch.inventory ? ` ＋ 纳戒物品 ${patch.inventory.length} 件` : '')
     + (patch.阵营 ? ` ＋ 阵营=${FACTION_DEFAULT}` : ''));
   const r = await writeStat(patch, `初始化·${where}`);
   /* ⚠️ v1.5：写没写进去必须**明说**。v1.4 时这里不检查返回值，
@@ -1399,7 +895,7 @@ function normalizeLabel(raw) {
  *  ⚠️ 这里只管「读得到」，写进 stat_data 的**永远是规范键**。 */
 const FIELD_ALIAS = {
   时间: ['时间', '时辰', '时刻'],
-  历时: ['历时', '经过时长', '所历'],   /* 2026-10-08（gpt 04 号④）：删「倒计时」——『距启程 3 日』是计划/倒计时，不是已过历时 */
+  历时: ['历时', '经过时长', '所历', '倒计时'],
   地点: ['地点', '位置', '所在', '地址'],
   天气: ['天气', '天候'],
   环境: ['环境', '氛围', '周遭', '周遭环境'],
@@ -1450,7 +946,10 @@ function matchField(label) {
 function isProgressLabel(label) {
   return normalizeLabel(label).includes('进度');
 }
-
+/** ★ 2026-09-29（主人选 B：「由玩家点头很蠢而且很出戏」）：
+ *  状态栏里那个**玩家看不见的 `<实际发生>`** 栏 —— 模型把"本回合剧情上确实发生了"的锚点字段名列在这儿，
+ *  脚本读它**自动写进账本**（不弹提示、不问玩家）。
+ *  ⚠️ 只认 `FIELD_TABLE` 里的字段名（逐字），别的串一律丢弃并打日志。 */
 function isMilestoneLabel(label) {
   const n = normalizeLabel(label);
   return n.includes('实际发生') || n.includes('里程碑');
@@ -1468,105 +967,6 @@ function parseProgress(value) {
   return v.split(/[、,，/｜|；;\n]/)
     .map((x) => x.trim().replace(/(?:已达成|已完成|已触发|已解锁|已激活|达成|完成|[（(][^）)]*[）)]|\[[^\]]*\])$/g, '').trim())
     .filter(Boolean);
-}
-
-function normalizeAnchorName(f) {
-  const s = String(f ?? '').trim();
-  if (!s) return s;
-  if (ALL_FIELDS.includes(s)) return s;
-  for (const syn of DEFLOWER_SYN) {
-    if (syn === '处女丧失' || !s.endsWith(syn)) continue;
-    const cand = s.slice(0, s.length - syn.length) + '处女丧失';
-    if (ALL_FIELDS.includes(cand)) return cand;
-  }
-  return s;
-}
-
-/** `<破处>` 破处簿那个栏（玩家看不见，与 `<实际发生>`／`<进度>` 同款待遇：不进面板、不渲染） */
-function isDeflowerLabel(label) {
-  const n = normalizeLabel(label);
-  return n.includes('破处') || n.includes('破身簿');
-}
-
-function isNadeLabel(label) {
-  const n = normalizeLabel(label);
-  return n.includes('纳戒') || n.includes('行囊') || n.includes('物品栏');
-}
-/** `<纳戒>` 的值 → `{ 获得: [{name,desc,full,count}], 消耗: [{name,count}] }`
- *  体例：「获得：A×2、B（简述）｜消耗：C×1」（顿号分件，竖线分两类，没有就写「无」）。
- *  ⚠️ 数量写法认 `×n`／`xn`／`*n`／末尾空格数字；**不写数量按 1 计**（喝一壶就写 ×1，别写「两壶」当名字）。 */
-function parseNade(value) {
-  const v = String(value ?? '').trim().replace(/[（(]\s*无\s*[）)]/g, '无');
-  const out = { 获得: [], 消耗: [] };
-  if (!v || v === '无' || v === '-' || v === '—' || /^none$/i.test(v)) return out;
-  /* 件内的数量后缀：`醉春风×2` / `醉春风x2` / `醉春风*2` / `醉春风 2` */
-  const takeCount = (s) => {
-    const m = String(s).match(/(?:[×xX*]\s*(\d+))\s*$/) || String(s).match(/\s+(\d+)\s*$/);
-    return m ? Math.max(1, parseInt(m[1], 10)) : 1;
-  };
-  for (const seg of v.split(/[｜|；;\n]+/)) {
-    const m = seg.match(/^\s*(获得|拿到|收入|消耗|用掉|喝掉|吃掉|丢掉|失去|使用)\s*[:：]\s*(.*)$/);
-    if (!m) continue;
-    const isGain = ['获得', '拿到', '收入'].includes(m[1]);
-    for (const one of String(m[2]).split(/[、,，]+/)) {
-      const raw = one.trim();
-      if (!raw) continue;
-      const cnt = takeCount(raw);
-      const t = raw.replace(/[×xX*]\s*\d+\s*$/, '').replace(/\s+\d+\s*$/, '').trim();
-      if (!t) continue;
-      if (!isGain) {
-        const nm = t.replace(/[（(].*$/, '').trim();
-        if (nm) out.消耗.push({ name: nm, count: cnt });
-        continue;
-      }
-      const mm = t.match(/^(.+?)[（(](.+?)[）)]$/);          // 「青锋剑（入世防身）」
-      out.获得.push(mm
-        ? { name: mm[1].trim(), desc: mm[2].trim(), full: mm[2].trim(), count: cnt }
-        : { name: t, desc: '随身所得之物。', full: '随身所得之物。', count: cnt });
-    }
-  }
-  return out;
-}
-/** `<破处>` 的值 → `[{ 持有者, 破处者 }]`
- *  体例照「关系刻度」：条目之间用「｜」，条目内部用「、」。
- *  ⚠️ 认不出的持有者一律丢弃（不许拿正文外的名字记账）；写不成两个人的条目也丢。 */
-function parseDeflowerBook(value) {
-  const v = String(value ?? '').trim().replace(/[（(]\s*无\s*[）)]/g, '无');
-  if (!v || v === '无' || v === '-' || v === '—' || /^none$/i.test(v)) return [];
-  const out = [];
-  for (const one of v.split(/[｜|；;\n]+/)) {
-    const parts = one.split(/[、,，]+/).map((x) => x.trim()).filter(Boolean);
-    if (parts.length < 2) continue;
-    const holder = parts[0], who = parts[1];
-    if (!HOLDER_TO_RELIC[holder]) continue;
-    out.push({ 持有者: holder, 破处者: who });
-  }
-  return out;
-}
-
-function nearDeflowerWord(text, name) {
-  const t = String(text ?? '');
-  if (!t || !name) return '';
-  const others = Object.keys(HOLDER_TO_RELIC).filter((h) => h !== name);
-  /** 某个名字在正文里离命中点最近的一次距离 */
-  const dist = (h, at) => {
-    let d = Infinity, i = t.indexOf(h);
-    while (i !== -1) { d = Math.min(d, Math.abs(i - at)); i = t.indexOf(h, i + h.length); }
-    return d;
-  };
-  for (const [re, label] of DEFLOWER_HARD_RES) {
-    const g = new RegExp(re.source, 'g');
-    let m;
-    while ((m = g.exec(t))) {
-      const at = m.index;
-      const dName = dist(name, at);
-      /* ⚠️ 命中点离**别的持有者**更近 ⇒ 这不是这个人的现场。
-       *    例：「叶红缨那一夜破了身，孤月在门外守着」—— 不许拿它替孤月开成形。 */
-      if (dName <= 80 && !others.some((h) => dist(h, at) < dName)) return label;
-      if (m.index === g.lastIndex) g.lastIndex += 1;      // 防零宽匹配死循环
-    }
-  }
-  return '';
 }
 
 /* ── 状态条外壳：三种写法都认 ──
@@ -1657,7 +1057,7 @@ function parseCastBlocks(inner) {
  *   · `未识别` 是没归进面板的标签（排障用）
  */
 function parseStatusBlock(text) {
-  const out = { found: false, raw: '', fields: {}, 进度: null, 里程碑: null, 破处: null, 纳戒: null, 名器互动: null, 未识别: [], YAML行数: 0, XML标签数: 0, 在场角色: [] };
+  const out = { found: false, raw: '', fields: {}, 进度: null, 里程碑: null, 未识别: [], YAML行数: 0, XML标签数: 0, 在场角色: [] };
   const t = String(text ?? '');
   const m = t.match(STATUS_PAIR_RE);
   let inner = null;
@@ -1699,23 +1099,6 @@ function parseStatusBlock(text) {
       out.XML标签数++;
       continue;
     }
-    if (isDeflowerLabel(label)) {
-      if (out.破处 === null) out.破处 = parseDeflowerBook(value);
-      out.XML标签数++;
-      continue;
-    }
-    if (isNadeLabel(label)) {
-      if (out.纳戒 === null) out.纳戒 = parseNade(value);
-      out.XML标签数++;
-      continue;
-    }
-    if (isRelicActionLabel(label)) {
-      if (out.名器互动 === null) out.名器互动 = [];
-      const act = parseRelicAction(value);
-      if (act) out.名器互动.push(act);
-      out.XML标签数++;
-      continue;
-    }
     const key = matchField(label);
     if (!key) { if (!out.未识别.includes(label)) out.未识别.push(label); continue; }
     if (out.fields[key] === undefined) out.fields[key] = value;
@@ -1739,387 +1122,44 @@ function parseStatusBlock(text) {
       out.YAML行数++;
       continue;
     }
-    if (isDeflowerLabel(label)) {
-      if (out.破处 === null) out.破处 = parseDeflowerBook(value);
-      out.YAML行数++;
-      continue;
-    }
-    if (isNadeLabel(label)) {
-      if (out.纳戒 === null) out.纳戒 = parseNade(value);
-      out.YAML行数++;
-      continue;
-    }
-    if (isRelicActionLabel(label)) {
-      if (out.名器互动 === null) out.名器互动 = [];
-      const act = parseRelicAction(value);
-      if (act) out.名器互动.push(act);
-      out.YAML行数++;
-      continue;
-    }
     const key = matchField(label);
     if (key) { if (out.fields[key] === undefined) out.fields[key] = value; out.YAML行数++; }   // XML 已写过就不覆盖
     else out.未识别.push(label);
   }
 
-  // ③ 漏闭合或截断回退：行内单标签防护（防越界吞噬下一 XML 字段）
-  if (out.名器互动 === null) {
-    const unclosedM = inner.match(/<名器互动>([^<>\r\n]+)(?:<\/名器互动>|(?=<)|$)/i);
-    if (unclosedM) {
-      const act = parseRelicAction(unclosedM[1]);
-      if (act) out.名器互动 = [act];
-    }
-  }
-
   return out;
 }
 
-/** 2026-10-08（gpt 04 号①）：把「<实际发生> 申报 → 已校验锚点」这一段抽成**纯函数**。
- *  记账（applyMilestones）与推进（checkFastForwardStage 用到的 knownAhead）**共用同一份结果**，
- *  不再各自解读原始申报。纯函数、无副作用，可离线抠出单测。 */
-/** 2026-10-08（主人当面指定）：**名器成形的前置** —— 持有者必须先被破身，否则不成形。
- *  依据：字段表里每条 `X处女丧失` 的 desc 原文，例：
- *    · 「叶红缨处女丧失 · 灼酒流炎穴的持有者被破身」
- *    · 「楚灵夜后窍开发 …与『楚灵夜处女丧失』同时为真，般若菩提菊才成形」
- *    · 「苏瑶处女丧失 · …与苏玲两个都丧失，灵犀同心才成形」
- *  ⇒ 写入侧（记账）此前没有这条校验，所以模型在 <实际发生> 里写一句「X成形」就能解锁
- *    （2026-10-08 真机事故：与苏瑶的戏里解锁了**慕容清歌**的「清歌弦鸣穴」）。
- *  **例外**：烟霞灵乳（昨日欢）没有「成形」这一步（持有者出场即二境、反色、占据者阎雷子），
- *    其条目由 `known['阎雷子脱困']` 注入 ⇒ 本表不收它。 */
-const MINGQI_PREREQ = {
-  灼酒流炎穴成形: ['叶红缨处女丧失'],
-  九幽玄阴穴成形: ['孤月处女丧失'],
-  心魔茶璎乳成形: ['闻观语处女丧失'],
-  般若菩提菊成形: ['楚灵夜处女丧失', '楚灵夜后窍开发'],
-  灵犀同心成形: ['苏瑶处女丧失', '苏玲处女丧失'],
-  北冥潮生穴成形: ['雨霏柔处女丧失'],
-  玉虎噙香乳成形: ['云织梦处女丧失'],
-  梅蕊穴成形: ['花芷凝处女丧失'],
-  冰魄剑心穴成形: ['苏倾寒处女丧失'],
-  清歌弦鸣穴成形: ['慕容清歌处女丧失'],
-  流焰叠薪穴成形: ['顾云舒处女丧失'],
-  凤凰羽花成形: ['陆烬颜处女丧失'],
-};
-if (typeof window !== 'undefined' && window.__xsdCorrection) Object.assign(window.__xsdCorrection.prerequisites, MINGQI_PREREQ);
-
-/** 内容哈希指纹（用于精确消息去重，比正文长度判定更可靠） */
-function hashText(str) {
-  const s = String(str || '');
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) + h) + s.charCodeAt(i);
-    h |= 0;
-  }
-  return (h >>> 0).toString(36) + '_' + s.length;
-}
-
-function validateAnchors(listRaw, prose, messageId, knownNow, deflowerNow) {
-  const list = Array.isArray(listRaw) ? listRaw : [];
-  const knownPre = (knownNow && typeof knownNow === 'object') ? knownNow : {};
-  /* 2026-10-08（主人确认「肯定算」）：**破身与成形常在同一场戏**（第十五—十六章：破处 → 灼酒流炎穴成形）。
-     所以前置不只认已记账的 `X处女丧失`，还认**本轮**的两条证据：
-       · 本轮 <破处> 簿里出现该持有者（结构化）；
-       · 本轮正文里出现该持有者名 **且** 命中 DEFLOWER_HARD_RES 硬词（沿用既有「防真破身被漏标误杀」兜底）。 */
-  const holdersNow = Array.isArray(deflowerNow)
-    ? deflowerNow.map((x) => String((x && x.持有者) || x || '').trim()).filter(Boolean)
-    : [];
-  const 前置满足 = (k) => {
-    if (knownPre[k] === true) return true;
-    if (!k.endsWith('处女丧失')) return false;
-    const holder = k.slice(0, -'处女丧失'.length);
-    if (!holder) return false;
-    if (holdersNow.includes(holder)) return true;
-    if (prose && prose.includes(holder) && DEFLOWER_HARD_RES.some(([re]) => re.test(prose))) return true;
-    return false;
-  };
-  const good = [], bad = [], dropped = [];
-  for (const raw of list) {
-    const f = normalizeAnchorName(String(raw).trim());
-    if (!f) continue;
-    if (!ALL_FIELDS.includes(f)) { bad.push(String(raw).trim()); continue; }
-    /* 2026-10-08（主人当面指定）：名器成形要先过**前置**（持有者已破身；同轮破身也算）。 */
-    const need = MINGQI_PREREQ[f];
-    if (need) {
-      const missing = need.filter((k) => !前置满足(k));
-      if (missing.length) {
-        dropped.push(`${f}（前置未满足：${missing.join('、')}）`);
-        console.warn(TAG, `⛔ [名器前置] 第 ${messageId} 楼丢弃「${f}」：还差 ${missing.join('、')}（本轮的 <破处> 簿与正文硬词都没给出依据）`
-          + `（名器成形的硬前置：持有者必须先破身。确实发生了请先补发「/解锁 ${missing[0]}」）`);
-        continue;
-      }
-    }
-    const lm = /^(.+?)处女丧失$/.exec(f);
-    if (lm && prose) {
-      const holder = lm[1];
-      const hasName = prose.includes(holder);
-      const hasHard = DEFLOWER_HARD_RES.some(([re]) => re.test(prose));
-      if (!hasName || !hasHard) {
-        dropped.push(`${f}（正文里${hasName ? '没有破身实证' : `根本没有「${holder}」`}）`);
-        console.warn(TAG, `⛔ [破处闸门] 第 ${messageId} 楼丢弃直报的「${f}」：` + (hasName ? '本楼正文里没有破身实证' : `本楼正文里根本没有「${holder}」`) + ' ⇒ 不成形（要手工补发「/解锁 ' + f + '」）');
-        continue;
-      }
-    }
-    const ev = anchorEvidenceIn(prose, f);
-    if (!ev.ok) {
-      dropped.push(`${f}（${ev.why}）`);
-      console.warn(TAG, `⛔ [锚点闸门] 第 ${messageId} 楼丢弃「${f}」：${ev.why}` + `（这条是准入／跳段锚点，凭一句空话不能算它发生。确实发生了就发「/解锁 ${f}」手工补）`);
-      continue;
-    }
-    good.push(f);
-  }
-  return { good, bad, dropped };
-}
-
-/** ═════════════════════════════════════════════════════════════════════
- * 名器动作申报、严格事实核验与浸润累进（MVU 状态机数值扩展 · 首期试点）
- * ─────────────────────────────────────────────────────────────────────
- * 遵循 GPT RFC-001 审核与 RFC-002 规范：
- *   1. 封闭动作枚举，模型严禁输出数字或 +1；
- *   2. 严格正文事实核验（持有者在场 + 内射硬词 + 否定句拦截 + 成形硬前置）；
- *   3. 接入统一 writeStat 队列，消息层历史快照与 Swipe 隔离（替换本楼贡献，绝不跨 Swipe 累加）；
- *   4. 首期不自动晋阶（恪守 GEMINI.md 铁律 36：达成 5 次仅标记 ready，真正晋阶须剧情生理自发迎合质变或 GM 解锁）；
- *   5. GM 人工回锁绝对优先。
- * ═════════════════════════════════════════════════════════════════════ */
-const RELIC_PILOT_CONFIG = {
-  zhuojiu: {
-    id: 'zhuojiu',
-    names: ['灼酒流炎穴', '灼酒流炎', '灼酒', 'zhuojiu'],
-    owner: '叶红缨',
-    ownerAliases: ['叶红缨', '红绡', '红缨'],
-    formKey: '灼酒流炎穴成形',
-    stage1Key: '灼酒流炎穴一阶段',
-    stage2Key: '灼酒流炎穴二阶段',
-    target: 5,
-    validActions: ['内射', '深度交合内射', '精液灌注', '破身'],
-    evidenceRegex: /(内射|阳精|精液|白浊|尽数灌入|射入|注入|深处射|尽数射|全数灌)/,
-  }
-};
-
-function isRelicActionLabel(label) {
-  const n = normalizeLabel(label);
-  return n.includes('名器互动') || n.includes('名器动作') || n === '名器' || n === 'relic_action';
-}
-
-/** `<名器互动>` 的值 → `{ relicId, relicName, actor, action, raw }`
- *  封闭事实枚举：例如「灼酒流炎穴|赵无忧|内射」或「zhuojiu|player|内射」
- *  严格去除模型自造的 +1、数字或 delta，只取名器、行为者、动作事实。 */
-function parseRelicAction(value) {
-  const v = String(value ?? '').trim().replace(/[（(]\s*无\s*[）)]/g, '无');
-  if (!v || v === '无' || v === '-' || v === '—' || /^none$/i.test(v)) return null;
-  // 防跨标签越界（如果带了 < 标签残余，截断到第一个 < 之前）
-  const cleanV = v.split('<')[0].trim();
-  if (!cleanV) return null;
-
-  const segs = cleanV.split(/[；;\n]+/);
-  for (const seg of segs) {
-    const rawSeg = seg.trim();
-    if (!rawSeg) continue;
-    const parts = rawSeg.split(/[|｜、:：]+/).map((x) => x.trim()).filter(Boolean);
-    if (!parts.length) continue;
-
-    // 清理模型自加的 +1、数字等
-    const cleanedParts = parts.map((p) => p.replace(/\s*\+?\d+.*$/, '').trim()).filter(Boolean);
-    if (!cleanedParts.length) continue;
-
-    for (const [id, cfg] of Object.entries(RELIC_PILOT_CONFIG)) {
-      const matchRelic = cleanedParts.some((p) => cfg.names.includes(p) || cfg.ownerAliases.includes(p) || p.toLowerCase() === id.toLowerCase());
-      if (!matchRelic) continue;
-
-      let matchedAction = '';
-      for (const p of cleanedParts) {
-        if (cfg.validActions.includes(p)) {
-          matchedAction = p;
-          break;
-        }
-      }
-      if (!matchedAction) {
-        if (cleanedParts.some((p) => p.includes('内射') || p.includes('灌注'))) matchedAction = '内射';
-        else if (cleanedParts.some((p) => p.includes('破身') || p.includes('初破'))) matchedAction = '破身';
-      }
-
-      if (matchedAction) {
-        const actorPart = cleanedParts.find((p) => !cfg.names.includes(p) && !cfg.ownerAliases.includes(p) && p !== matchedAction && p.toLowerCase() !== id.toLowerCase());
-        const curId = (typeof readIdentity === 'function' ? readIdentity() : null) || '赵无忧';
-        const actor = actorPart || curId;
-        return {
-          relicId: id,
-          relicName: cfg.names[0],
-          actor,
-          action: matchedAction,
-          raw: rawSeg
-        };
-      }
-    }
-  }
-  return null;
-}
-
-/** 核验名器互动申报（纯函数） */
-function validateRelicAction(act, prose, known, currentIdentity) {
-  if (!act || !act.relicId) return { ok: false, why: '无效或未知的动作申报' };
-  const cfg = RELIC_PILOT_CONFIG[act.relicId];
-  if (!cfg) return { ok: false, why: '非试点名器（首期仅支持灼酒流炎穴试点）' };
-
-  // 1. 成形检查（前置硬闸门：known 状态 ＋ 账本归属实证兜底）
-  const K = known || {};
-  let isFormed = K[cfg.formKey] === true;
-  if (!isFormed) {
-    const sd = typeof readStatData === 'function' ? readStatData() : null;
-    if (sd && (sd.名器归属?.[cfg.names[0]] || sd.名器归属?.[act.relicId] || sd.破处者?.[cfg.owner])) {
-      isFormed = true;
-    }
-  }
-  if (!isFormed) {
-    return { ok: false, why: `名器「${cfg.names[0]}」尚未成形，不可累积互动或晋阶` };
-  }
-
-  // 2. 阶段检查（二阶段是否已达成）
-  if (K[cfg.stage2Key] === true) {
-    return { ok: false, why: `名器「${cfg.names[0]}」已达第二境（情动），一升二浸润计数已闭合` };
-  }
-
-  // 3. 动作枚举检查
-  if (!cfg.validActions.includes(act.action)) {
-    return { ok: false, why: `动作「${act.action}」不在合法枚举表内（支持：${cfg.validActions.join('、')}）` };
-  }
-
-  // 动作是破身：属于一阶成形动作，不增加入二阶浸润
-  if (act.action === '破身') {
-    return { ok: true, delta: 0, why: '破身属于一阶成形动作，不计入二阶浸润' };
-  }
-
-  // 4. 正文事实校验（Strict Evidence Check）
-  const pText = String(prose || '');
-  if (!pText) {
-    return { ok: false, why: '本楼读不到正文文本，无法核验动作事实实证（fail-closed）' };
-  }
-
-  // 4a. 持有者在场实证
-  const ownerPresent = cfg.ownerAliases.some((alias) => pText.includes(alias));
-  if (!ownerPresent) {
-    return { ok: false, why: `正文中未见持有者「${cfg.owner}」在场参与互动` };
-  }
-
-  // 4b. 动作证据词实证
-  if (!cfg.evidenceRegex.test(pText)) {
-    return { ok: false, why: `正文中未见「${act.action}」事实实证（须出现内射/精液灌注等硬词）` };
-  }
-
-  // 4c. 否定句拦截
-  if (typeof negatedAround === 'function' && negatedAround(pText, cfg.evidenceRegex)) {
-    return { ok: false, why: `正文中「${act.action}」实证落在否定或未发生分句中` };
-  }
-
-  return { ok: true, delta: 1, why: `正文事实核验通过（${cfg.owner}在场且有明确${act.action}实证）` };
-}
-
-/** 累进/回溯名器浸润进度（纯函数） */
-function calcRelicProgress(allProgress, validAction, floor, swipeId, textHash) {
-  const next = Object.assign({}, allProgress || {});
-  if (!validAction || !validAction.relicId) return next;
-  const id = validAction.relicId;
-  const cfg = RELIC_PILOT_CONFIG[id];
-  if (!cfg) return next;
-
-  const cur = Object.assign({
-    id,
-    name: cfg.names[0],
-    owner: cfg.owner,
-    count: 0,
-    target: cfg.target,
-    ready: false,
-    last_floor: 0,
-    history: []
-  }, next[id] || {});
-
-  // 目标阈值由代码策略决定，严格正整数
-  const target = Math.max(1, Math.floor(Number(cfg.target) || 5));
-  cur.target = target;
-  let count = Math.max(0, Math.min(target, Math.floor(Number(cur.count) || 0)));
-
-  const fNum = Number(floor) || 0;
-  const sNum = Number(swipeId) || 0;
-  const hash = String(textHash || '');
-  const delta = (validAction.ok !== false && Number.isFinite(Number(validAction.delta))) ? Math.floor(Number(validAction.delta)) : 0;
-
-  let history = Array.isArray(cur.history) ? [...cur.history] : [];
-  const existingIdx = history.findIndex((h) => Number(h.floor) === fNum);
-
-  if (existingIdx >= 0) {
-    const prev = history[existingIdx];
-    // 同楼同分支同正文：幂等，不重复增减
-    if (Number(prev.swipeId) === sNum && prev.hash === hash) {
-      cur.count = count;
-      cur.ready = count >= target;
-      next[id] = cur;
-      return next;
-    }
-    // 同楼换分支(Swipe)或编辑：撤销旧贡献，加上新贡献
-    const prevDelta = Math.floor(Number(prev.delta) || 0);
-    count = Math.max(0, Math.min(target, count - prevDelta + delta));
-    history[existingIdx] = {
-      floor: fNum,
-      swipeId: sNum,
-      hash,
-      actor: validAction.actor || 'player',
-      action: validAction.action || '',
-      delta,
-      timestamp: Date.now()
-    };
-  } else {
-    // 新楼记录
-    count = Math.max(0, Math.min(target, count + delta));
-    history.push({
-      floor: fNum,
-      swipeId: sNum,
-      hash,
-      actor: validAction.actor || 'player',
-      action: validAction.action || '',
-      delta,
-      timestamp: Date.now()
-    });
-  }
-
-  // 约束审计账本大小，保留最近 20 笔
-  if (history.length > 20) history = history.slice(-20);
-
-  cur.count = count;
-  cur.ready = count >= target;
-  cur.last_floor = fNum;
-  cur.history = history;
-  next[id] = cur;
-  return next;
-}
-
-async function applyMilestones(p, messageId, text) {
+/**
+ * ★ 2026-09-29（主人选 B）：把状态栏 `<实际发生>` 栏里的锚点**自动写进账本**。
+ *   · **不弹提示、不问玩家**（主人原话：「由玩家点头很蠢而且很出戏，不需要这种了」）
+ *   · 只认 `FIELD_TABLE` 里的字段名（逐字）；别的串一律**丢弃并打日志**（防模型自己造词）
+ *   · **只升不降**：写了 a 就置 a=true，从不置 false（回锁请手工发 `/回锁 <字段>`）
+ *   · 幂等：已经是 true 的跳过，不重复写
+ * @returns {Promise<string[]>} 本回合**新置真**的字段名
+ */
+async function applyMilestones(p, messageId) {
   const list = Array.isArray(p?.里程碑) ? p.里程碑 : null;
-  const bookIn = Array.isArray(p?.破处) ? p.破处 : [];
-  const nadeIn = (p?.纳戒 && typeof p.纳戒 === 'object') ? p.纳戒 : null;
-  const nadeHas = Boolean(nadeIn && ((nadeIn.获得 || []).length || (nadeIn.消耗 || []).length));
-  const relicActs = Array.isArray(p?.名器互动) ? p.名器互动 : [];
-
-  const sd0 = readStatData() || {};
-  const prevRelicProgress = (sd0.relic_progress && typeof sd0.relic_progress === 'object') ? sd0.relic_progress : {};
-  const hasRelicWork = relicActs.length > 0 || Object.values(prevRelicProgress).some((rp) => (rp.history || []).some((h) => Number(h.floor) === Number(messageId)));
-
-  if (!list && !bookIn.length && !nadeHas && !hasRelicWork) return [];      // 四栏都没有且无名器回溯 ⇒ 什么都不做
+  if (!list) return [];                       // 没有这一栏 ⇒ 什么都不做
+  if (!list.length) { console.log(TAG, `[实际发生] 第 ${messageId} 楼：写了「无」`); return []; }
   const known = readKnown() || {};
-  
-  const proseForAnchor = stripStatusBlock(text);
-  /* 2026-10-08（gpt 04 号①）：与段位推进共用同一份已校验集合（本轮在段位那一步已算过一次，
-     写在 p.本轮已验证锚点 上；没有就现算）。不再让「原始申报」和「校验结果」两套并行。 */
-  const _v = Array.isArray(p?.本轮已验证锚点) ? { good: p.本轮已验证锚点, bad: [], dropped: [] } : validateAnchors(list || [], proseForAnchor, messageId, known, bookIn);
-  const good = _v.good, bad = _v.bad, dropped = _v.dropped;
-  let news = [];
-  const correctionRecords = (readStatData() || {}).人工纠错?.覆盖 || {};
-  const correctionAllows = f => correctionRecords[JSON.stringify(['known', f])]?.value !== false;
-  for (const f of good) if (correctionAllows(f) && known[f] !== true && !news.includes(f)) news.push(f);
-  if (list && !list.length) console.log(TAG, `[实际发生] 第 ${messageId} 楼：写了「无」`);
-  if (!list) console.log(TAG, `[实际发生] 第 ${messageId} 楼没有这一栏，本轮只处理 <破处>`);
+  const good = [], bad = [], news = [];
+  for (const raw of list) {
+    const f = String(raw).trim();
+    if (!f) continue;
+    if (!ALL_FIELDS.includes(f)) { bad.push(f); continue; }
+    good.push(f);
+    if (known[f] !== true) news.push(f);
+  }
   if (bad.length) {
     console.warn(TAG, `⚠️ [实际发生] 第 ${messageId} 楼有 ${bad.length} 个**不属于字段台账**的名字，已丢弃：${bad.join('、')}`
       + '（只能用状态字段表里那一串；自造词不会被记账）');
   }
-  
+  /* ★ 派生（2026-10-04 主人令优化）：
+   *   「获得任意名器」＝玩家这条线上第一次真的得到/双修名器。
+   *   ⚠️ 若NPC夺得名器（如残阳老怪夺得叶红缨、肉山佛夺得楚灵夜、九皇子夺得孤月），
+   *      这属于原著剧情/NTR事件，绝不可替玩家（如赵无忧）派生「获得任意名器」。
+   *   ⇒ 仅当名器成形且真正归属玩家当前身份时，才自动补记「获得任意名器」。 */
   const MINGQI_CHENG = ALL_FIELDS.filter((f) => /成形$/.test(f));
   const willTrue = (f) => news.includes(f) || known[f] === true;
   const curPlayerId = readIdentity() || '赵无忧';
@@ -2131,150 +1171,45 @@ async function applyMilestones(p, messageId, text) {
   const isHunhuan = curPlayerId.includes('魂欢殿') || curPlayerId.includes('病相思');
   const isCustom = isCustomExplicit || (!isZhao && !isFenyu && !isHuanxi && !isZhuolong && !isHunhuan);
 
-  
+  // ★ 自设身份专属冲突压制与净化：
+  // 当自设玩家亲自攻略仙姝（触发名器成形或任一阶段）时，
+  // 若模型由于原著联想错误带出了 NPC 抢占/失守锚点（如「孤月失守」、「肉山佛得到楚灵夜」等），
+  // 必须将其拦截剔除；若历史 known 中已被污染，予以净化修正（置为 false）。
+  const cleanupConflict = [];
+  if (isCustom) {
+    const suppress = (relicPrefix, conflictFields) => {
+      const active = willTrue(relicPrefix + '成形') || news.some(f => f.startsWith(relicPrefix)) || ALL_FIELDS.filter(f => f.startsWith(relicPrefix)).some(f => known[f] === true);
+      if (active) {
+        for (const cf of conflictFields) {
+          const idx = news.indexOf(cf);
+          if (idx !== -1) {
+            news.splice(idx, 1);
+            console.log(TAG, `🛡️ 自设玩家已攻略相应仙姝，拦截抵消模型误输出的「${cf}」`);
+          }
+          if (known[cf] === true && !cleanupConflict.includes(cf)) {
+            cleanupConflict.push(cf);
+          }
+        }
+      }
+    };
 
-  // ① 破处簿：与历史累积合并（先记的为准，不许模型来回改口）
-  const proseOuter = stripStatusBlock(text);           // 本楼正文（去掉状态栏），破处依据只看它
-  
-  const anchorLog = (sd0.锚点账本 && typeof sd0.锚点账本 === 'object') ? { ...sd0.锚点账本 } : {};
-  const anchorFinger = JSON.stringify((list || []).map((x) => normalizeAnchorName(String(x).trim())).filter(Boolean));
-  const prevAnchor = anchorLog[String(messageId)] || null;
-  const sameAnchorFinger = Boolean(prevAnchor && prevAnchor.指纹 === anchorFinger);
-  let anchorLogChanged = false;
-  const rollbackAnchors = (floorKey, entry) => {
-    for (const f of (entry.新置真 || [])) {
-      const elsewhere = Object.keys(anchorLog).some((k) => k !== floorKey && anchorLog[k] && (anchorLog[k].新置真 || []).includes(f));
-      if (elsewhere) continue;                       // 别的楼也记过它 ⇒ 不该回滚
-      if (known[f] === true) { delete known[f]; rolledBack.push(f); }   // 就地改，后续判定看到的就是回滚后的状态
-    }
-  };
-  const rolledBack = [];
-  if (prevAnchor && !sameAnchorFinger) {
-    rollbackAnchors(String(messageId), prevAnchor);
-    anchorLog[String(messageId)] = null;             // null 墓碑（深合并不认 delete）
-    anchorLogChanged = true;
-    if (rolledBack.length) console.log(TAG, `[锚点回退] 第 ${messageId} 楼内容变了 ⇒ 回滚这一楼置真的锚点：${rolledBack.join('、')}`);
+    // 1. 孤月（九幽玄阴穴）：压制「孤月失守」、「雀奴身份成立」
+    suppress('九幽玄阴穴', ['孤月失守', '雀奴身份成立']);
+    // 2. 楚灵夜（般若菩提菊）：压制「肉山佛得到楚灵夜」
+    suppress('般若菩提菊', ['肉山佛得到楚灵夜']);
+    // 3. 叶红缨（灼酒流炎穴）：压制「残阳老怪得到叶红缨」、「雀奴身份成立」
+    suppress('灼酒流炎穴', ['残阳老怪得到叶红缨', '雀奴身份成立']);
+    // 4. 闻观语（心魔茶璎乳）：压制「肉山佛得到闻观语」
+    suppress('心魔茶璎乳', ['肉山佛得到闻观语']);
+    // 5. 听雪双姝（灵犀同心）：压制「残阳老怪得到双姝」、「黑日霜月」
+    suppress('灵犀同心', ['残阳老怪得到双姝', '黑日霜月']);
+    // 6. 花芷凝（梅蕊穴）：压制「病相思得到花芷凝」
+    suppress('梅蕊穴', ['病相思得到花芷凝']);
+    // 7. 陆烬颜（凤凰羽花）：压制「病相思得到陆烬颜」
+    suppress('凤凰羽花', ['病相思得到陆烬颜']);
+    // 8. 云织梦（玉虎噙香乳）：压制「九皇子得到云织梦」
+    suppress('玉虎噙香乳', ['九皇子得到云织梦']);
   }
-  const prevBook = (sd0.破处者 && typeof sd0.破处者 === 'object') ? sd0.破处者 : {};
-  const mergedBook = Object.assign({}, prevBook);
-  let bookChanged = false;
-  for (const it of bookIn) {
-    const h = it.持有者;
-    let w = it.破处者;
-
-    // 防冒名守卫：当前玩家身份若非赵无忧，但模型在破处簿中误将破处者报为「赵无忧」或留空
-    // 强制纠偏为当前真实玩家身份，确保战果与名器归属不被赵无忧冒名抢夺
-    if (!isZhao && (w === '赵无忧' || !w)) {
-      console.warn(TAG, `⛔ [破处守卫] 第 ${messageId} 楼当前玩家身份为「${curPlayerId}」，模型误将破处者报为「${w}」⇒ 强制纠偏为当前玩家身份「${curPlayerId}」`);
-      w = curPlayerId;
-    }
-    
-    if (proseOuter && !proseOuter.includes(h)) {
-      console.warn(TAG, `⛔ [破处闸门] 第 ${messageId} 楼丢弃「${h}、${w}」：本楼正文里根本没有「${h}」（八成是照抄写法示例）。`
-        + `真要手工补，发「/解锁 ${h}处女丧失」。`);
-      continue;
-    }
-    const hard = proseOuter ? DEFLOWER_HARD_RES.find(([re]) => re.test(proseOuter)) : null;
-    if (proseOuter && !hard) {
-      console.warn(TAG, `⛔ [破处闸门] 第 ${messageId} 楼丢弃「${h}、${w}」：本楼正文里没有破身实证（破身／落红／初夜这类字样一个都没有）。`
-        + `若确实是含蓄写法，发「/解锁 ${h}处女丧失」手工补。`);
-      continue;
-    }
-    if (!mergedBook[h]) { mergedBook[h] = w; bookChanged = true; }
-    else if (mergedBook[h] !== w) {
-      console.warn(TAG, `[破处簿] 第 ${messageId} 楼「${h}」已记作「${mergedBook[h]}」，本次的「${w}」不覆盖（先记的为准）`);
-    }
-  }
-  const lost = (holder) => Boolean(mergedBook[holder])
-    || known[holder + '处女丧失'] === true || news.includes(holder + '处女丧失');
-
-  
-  /* ⚠️ 键用**持有者**（FORM_OF_HOLDERS 里的 form 带「成形」后缀，用名器名当键会取不到）。 */
-  const FORM_EXTRA = {
-    楚灵夜: ['楚灵夜后窍开发'],
-  };
-  const extraOk = (g) => g.holders.every((h) => (FORM_EXTRA[h] || []).every((f) => willTrue(f)));
-  const extraWhy = (g) => g.holders.flatMap((h) => FORM_EXTRA[h] || []).join('／');
-
-  // ② 两条通道 → 补成形（跨回合累加：双姝要两个人都丧失才算，先后在不同回合也算）
-  for (const g of FORM_OF_HOLDERS) {
-    if (!g.holders.every(lost)) continue;
-    if (!extraOk(g)) {
-      console.log(TAG, `[成形闸门] 「${g.form}」的持有者已丧失，但额外条件未满足（还差：${extraWhy(g)}）⇒ 暂不成形`);
-      continue;
-    }
-    if (willTrue(g.form)) continue;
-    news.push(g.form);
-    console.log(TAG, `↳ 派生：${g.holders.map((h) => h + '处女丧失').join(' ＋ ')}${extraWhy(g) ? ' ＋ ' + extraWhy(g) : ''} ⇒ 「${g.form}」`);
-  }
-
-  
-  const STAGE_PREFIX_FIX = { 灵犀同心: '灵犀同心穴' };
-  for (const g of FORM_OF_HOLDERS) {
-    if (!willTrue(g.form)) continue;
-    const base = g.form.replace(/成形$/, '');
-    const prefix = STAGE_PREFIX_FIX[base] || base;
-    const firstAnchor = prefix + '一阶段';
-    if (!ALL_FIELDS.includes(firstAnchor)) continue;
-    if (known[firstAnchor] === true || news.includes(firstAnchor)) continue;
-    news.push(firstAnchor);
-    console.log(TAG, `↳ 派生：${g.form} ⇒ 「${firstAnchor}」（落红／初度就是第一阶段，成形当刻一并记上，阶段条才进得了正文）`);
-  }
-  /* 2026-10-08（gpt 17 号 §2 ⑤⑦⑧）：两条"自动派发"改为**带来源账本的事务派生** ——
-     触发看正文实际出场实证（不再沿用 known['阎雷子脱困'] 当资格）；派发时补写明确 NPC 归属与来源；
-     依赖重算：账本里来源清零的才撤（人工来源不撤）。全过程在纯函数 `deriveRelicClosure` 里可离线测。 */
-  news = news.filter(correctionAllows);
-  const 出场实证 = { 柳含烟: 出场实证名('柳含烟', proseOuter) };
-  const 派生账本旧 = (sd0.派生账本 && typeof sd0.派生账本 === 'object') ? sd0.派生账本 : {};
-  const 归属来源旧 = (sd0.名器归属来源 && typeof sd0.名器归属来源 === 'object') ? sd0.名器归属来源 : {};
-  const 闭包 = deriveRelicClosure({
-    known, news, ledger: 派生账本旧, 名器归属: sd0.名器归属 || {}, 归属来源: 归属来源旧,
-    messageId, 指纹: anchorFinger, 出场实证, 人工纠错: sd0.人工纠错,
-  });
-  news = 闭包.news;
-  for (const l of 闭包.日志) console.log(TAG, '↳ 派生：' + l);
-  const 派生撤销 = 闭包.撤销 || [];
-  const 归属补写 = 闭包.归属补写 || {};
-  const 归属来源补写 = 闭包.归属来源补写 || {};
-  const 派生账本新 = 闭包.ledger || {};
-  const 派生账本变 = JSON.stringify(派生账本新) !== JSON.stringify(派生账本旧);
-
-  // ③ 冲突消解：只报成形而两条通道都没坐实的，先查正文，再决定挽救还是丢弃
-  const rawText = String(text ?? '');
-  for (const g of FORM_OF_HOLDERS) {
-    const at = news.indexOf(g.form);
-    if (at === -1) continue;
-    
-    if (!extraOk(g)) {
-      news.splice(at, 1);
-      console.warn(TAG, `⛔ [成形闸门] 第 ${messageId} 楼丢弃「${g.form}」：额外条件未满足（还差：${extraWhy(g)}）。`
-        + `要手工补，先「/解锁 ${(g.holders.flatMap((h) => FORM_EXTRA[h] || [])[0])}」再「/解锁 ${g.form}」。`);
-      continue;
-    }
-    if (g.holders.every((h) => Boolean(mergedBook[h]))) continue;                     // 通道①：破处簿
-    if (g.holders.every((h) => known[h + '处女丧失'] === true || news.includes(h + '处女丧失'))) continue;  // 通道②：锚点
-    const hits = g.holders.map((h) => nearDeflowerWord(rawText, h));
-    if (rawText && hits.every(Boolean)) {
-      console.log(TAG, `⚠️ [成形闸门] 第 ${messageId} 楼漏标挽救：「${g.form}」没带破处簿与处女丧失锚点，`
-        + `但正文里 ${g.holders.map((h, i) => `「${h}」附近出现「${hits[i]}」`).join('、')} ⇒ 按正文实锤放行（归属按身份兜底）`);
-      continue;
-    }
-    news.splice(at, 1);
-    console.warn(TAG, `⛔ [成形闸门] 第 ${messageId} 楼丢弃「${g.form}」：破处簿与「${g.holders.join('／')}处女丧失」都没记，`
-      + `本回合正文里也查不到落在这几人身上的破身实证。要手工补，发「/解锁 ${g.form}」。`);
-  }
-
-  // ④ 破处者簿 → 名器归属表（面板第一优先读 `stat_data.名器归属`）
-  const relicOwners = {};
-  for (const h of Object.keys(mergedBook)) {
-    const r = HOLDER_TO_RELIC[h];
-    if (r && !relicOwners[r]) relicOwners[r] = mergedBook[h];
-  }
-  /* ⑦ 派生事务里写下的明确 NPC 归属（只在没有更强来源时；不覆盖玩家/GM 的写入） */
-  const 名器归属来源新 = Object.assign({}, 归属来源旧, 归属来源补写);
-  for (const k of Object.keys(归属补写)) relicOwners[k] = 归属补写[k];
-  const 归属来源变 = JSON.stringify(名器归属来源新) !== JSON.stringify(归属来源旧);
-  const ownersChanged = JSON.stringify(sd0.名器归属 || {}) !== JSON.stringify(relicOwners);
 
   const playerRelicFormed = (function () {
     if (isFenyu) return willTrue('灼酒流炎穴成形') || willTrue('灵犀同心成形');
@@ -2282,9 +1217,15 @@ async function applyMilestones(p, messageId, text) {
     if (isZhuolong) return willTrue('九幽玄阴穴成形') || willTrue('玉虎噙香乳成形');
     if (isHunhuan) return willTrue('梅蕊穴成形') || willTrue('凤凰羽花成形');
     if (isZhao) {
-      
       if (willTrue('北冥潮生穴成形')) return true;
-      if (FORM_OF_HOLDERS.some((g) => willTrue(g.form))) return true;
+      if (willTrue('九幽玄阴穴成形') && !(willTrue('赵无忧坠渊') && (willTrue('孤月失守') || willTrue('九皇子得到孤月')))) return true;
+      if ((willTrue('灼酒流炎穴成形') || willTrue('灼酒流炎穴一阶段')) && !willTrue('残阳老怪得到叶红缨') && !(willTrue('赵无忧坠渊') && willTrue('雀奴身份成立'))) return true;
+      if (willTrue('般若菩提菊成形') && !willTrue('肉山佛得到楚灵夜')) return true;
+      if (willTrue('心魔茶璎乳成形') && !willTrue('肉山佛得到闻观语')) return true;
+      if (willTrue('灵犀同心成形') && !willTrue('残阳老怪得到双姝')) return true;
+      if (willTrue('梅蕊穴成形') && !willTrue('病相思得到花芷凝')) return true;
+      if (willTrue('凤凰羽花成形') && !willTrue('病相思得到陆烬颜')) return true;
+      if (willTrue('玉虎噙香乳成形') && !willTrue('九皇子得到云织梦')) return true;
       return false;
     }
     // 自设身份：自设玩家攻略任意名器均有效
@@ -2295,394 +1236,23 @@ async function applyMilestones(p, messageId, text) {
     news.push('获得任意名器');
     console.log(TAG, `↳ 派生：玩家身份（${curPlayerId}）已有名器成形 ⇒ 记下「获得任意名器」`);
   }
-  // 检查随剧情锚点推进获得的物品
-  const sd = readStatData() || {};
-  let inv = Array.isArray(sd.inventory) ? sd.inventory.slice() : defaultInventoryFor(curPlayerId);
-  let invChanged = false;
-  if (curPlayerId === '自设') {
-    inv = inv.map(it => {
-      if (!it || !it.name) return it;
-      if (it.name === '墨山道佩剑') {
-        invChanged = true;
-        return { name: '随身青锋剑', desc: '入世防身佩剑，剑身清寒。', full: '随身淬炼多年的上好青锋剑，寒芒如雪，指使如臂，无论御剑凌风或近身防卫皆得心应手。' };
-      }
-      if (it.name === '醉春风' && it.full && (it.full.includes('赵无忧') || it.full.includes('红缨师姐'))) {
-        invChanged = true;
-        return { name: '醉春风', desc: '南域佳酿两坛，酒香浓醇，可解忧畅怀。', full: '南域仙坊颇具盛名的上等灵酿「醉春风」，甘冽清醇，入口温润，最解行者客愁，为云游修士随身常备佳品。' };
-      }
-      return it;
-    });
-  }
-  const hasItem = (nm) => inv.some((it) => it && (it.name === nm || (it.name && it.name.includes(nm))));
-  
-  const dispatched = (sd.派发记录 && typeof sd.派发记录 === 'object') ? { ...sd.派发记录 } : {};
-  let dispatchChanged = false;
-  if (willTrue('极乐引入手') && !hasItem('极乐引') && !dispatched['极乐引残篇']) {
-    inv.push({ name: '《极乐引》残篇', desc: '记载天下诸般名器与双修造化之无上秘录。', full: '极乐楼不传之秘，封面柔韧若人皮，载有世间至阴至纯名器录与落红、情动、沉沦之境。能辨诸姝体质，演极乐造化。' });
-    invChanged = true;
-    dispatched['极乐引残篇'] = messageId;
-    dispatchChanged = true;
-  }
-  if ((willTrue('赠送冰心泪') || willTrue('孤月定情')) && !hasItem('冰心泪') && !dispatched['冰心泪']) {
-    inv.push({ name: '冰心泪', desc: '孤月亲炼相赠的护神法器项链，清凉温润。', full: '墨山道四弟子孤月以本源寒气与灵髓精炼之成对法器，戴于颈间可清心宁神、抵御诸邪侵袭与心魔扰动。' });
-    invChanged = true;
-    dispatched['冰心泪'] = messageId;
-    dispatchChanged = true;
-  }
-  
-  const nadeLog = (sd0.纳戒账本 && typeof sd0.纳戒账本 === 'object') ? { ...sd0.纳戒账本 } : {};
-  const nadeFinger = nadeIn ? JSON.stringify([(nadeIn.消耗 || []).map((x) => [x.name, x.count]), (nadeIn.获得 || []).map((x) => [x.name, x.count])]) : '';
-  const prevEntry = nadeLog[String(messageId)] || null;
-  const sameFinger = Boolean(prevEntry && prevEntry.指纹 === nadeFinger);
-  let ledgerChanged = false;
-  if (prevEntry && !sameFinger) {
-    /* ① 这一楼的内容变了（重生成／切换回复／编辑，或这一栏被撤掉）⇒ **先回滚旧账** */
-    for (const x of (prevEntry.消耗 || [])) {
-      inv = applyItemChange(inv, { kind: 'gain', name: x.name, count: x.count }).inv;   // 消耗过的加回来
-    }
-    for (const x of (prevEntry.获得 || [])) {
-      inv = applyItemChange(inv, { kind: 'loss', name: x.name, count: x.count }).inv;   // 获得过的扣回去
-    }
-    
-    nadeLog[String(messageId)] = null;
-    invChanged = true;
-    ledgerChanged = true;
-    console.log(TAG, `[纳戒] 第 ${messageId} 楼内容变了 ⇒ 先回滚旧账（消耗 ${(prevEntry.消耗 || []).length} 项／获得 ${(prevEntry.获得 || []).length} 项）再重算`);
-  } else if (sameFinger) {
-    console.log(TAG, `[纳戒] 第 ${messageId} 楼这一栏与上次一致 ⇒ 不重复入账（幂等）`);
-  }
-  if (nadeIn && !sameFinger) {
-    const done消耗 = [], done获得 = [];
-    
-    const prose = stripStatusBlock(text);
-    for (const x of (nadeIn.消耗 || [])) {
-      if (!itemEvidenceIn(prose, x.name)) {
-        console.warn(TAG, `[纳戒] 第 ${messageId} 楼报的「消耗：${x.name}」在正文里找不到依据 ⇒ **丢弃**（八成是照抄写法示例；真要扣，发 /消耗物品 ${x.name}）`);
-        continue;
-      }
-      const r = applyItemChange(inv, { kind: 'loss', name: x.name, count: x.count });
-      inv = r.inv;
-      if (r.ok) {
-        invChanged = true;
-        done消耗.push({ name: r.name, count: r.applied });
-        console.log(TAG, `[纳戒] 第 ${messageId} 楼消耗「${r.name}」×${r.applied}（${r.note}）`);
-      } else {
-        console.warn(TAG, `[纳戒] 第 ${messageId} 楼要消耗「${x.name}」，纳戒里没有这一件（已忽略）`);
-      }
-    }
-    for (const it of (nadeIn.获得 || [])) {
-      if (!itemEvidenceIn(prose, it.name)) {
-        console.warn(TAG, `[纳戒] 第 ${messageId} 楼报的「获得：${it.name}」在正文里找不到依据 ⇒ **丢弃**（真要加，发 /获得物品 ${it.name}）`);
-        continue;
-      }
-      const r = applyItemChange(inv, { kind: 'gain', name: it.name, count: it.count || 1, desc: it.desc, full: it.full });
-      inv = r.inv;
-      if (r.ok) {
-        invChanged = true;
-        done获得.push({ name: r.name, count: r.applied });
-        console.log(TAG, `[纳戒] 第 ${messageId} 楼收入「${r.name}」×${r.applied}`);
-      }
-    }
-    if (done消耗.length || done获得.length) {
-      nadeLog[String(messageId)] = { 指纹: nadeFinger, 消耗: done消耗, 获得: done获得 };
-      ledgerChanged = true;
-    }
-  }
-  inv = normalizeInventory(inv);
-  if (ledgerChanged) invChanged = true;
-
-  // ── 名器动作申报核验与浸润累进（首期：灼酒流炎穴试点）──
-  let relicProgressChanged = false;
-  let allRelicProgress = (typeof structuredClone === 'function')
-    ? structuredClone(prevRelicProgress)
-    : JSON.parse(JSON.stringify(prevRelicProgress));
-  const swipeId = p?.swipeId ?? 0;
-  const textHash = hashText(text);
-
-  // 聚合本轮新成形与历史成形，防止当轮刚成形的名器被判为「尚未成形」
-  const knownNow = Object.assign({}, known);
-  for (const f of news) knownNow[f] = true;
-
-  for (const pilotId of Object.keys(RELIC_PILOT_CONFIG)) {
-    const act = relicActs.find((a) => a.relicId === pilotId) || null;
-    const existingHistory = allRelicProgress[pilotId]?.history || [];
-    const hadFloor = existingHistory.some((h) => Number(h.floor) === Number(messageId));
-
-    if (act) {
-      const vRes = validateRelicAction(act, proseOuter, knownNow, curPlayerId);
-      if (vRes.ok) {
-        allRelicProgress = calcRelicProgress(allRelicProgress, { ...act, ok: true, delta: vRes.delta }, messageId, swipeId, textHash);
-        relicProgressChanged = true;
-        console.log(TAG, `[名器互动] 第 ${messageId} 楼「${act.relicName}」动作「${act.action}」核验通过 ⇒ 浸润计数：${allRelicProgress[pilotId]?.count}/${allRelicProgress[pilotId]?.target}`);
-      } else {
-        console.warn(TAG, `⛔ [名器互动] 第 ${messageId} 楼丢弃动作「${act.raw}」：${vRes.why}`);
-        if (hadFloor) {
-          allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '无' }, messageId, swipeId, textHash);
-          relicProgressChanged = true;
-        }
-      }
-    } else if (hadFloor) {
-      allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '无' }, messageId, swipeId, textHash);
-      relicProgressChanged = true;
-      console.log(TAG, `[名器互动] 第 ${messageId} 楼新分支无互动 ⇒ 撤销本楼旧分支贡献，当前计数：${allRelicProgress[pilotId]?.count}/${allRelicProgress[pilotId]?.target}`);
-    } else if (willTrue(RELIC_PILOT_CONFIG[pilotId]?.formKey) && !allRelicProgress[pilotId]) {
-      // 破身成形当轮保底建档，确保初始进度 0/5 落地
-      allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '成形建档' }, messageId, swipeId, textHash);
-      relicProgressChanged = true;
-      console.log(TAG, `[名器互动] 第 ${messageId} 楼「${RELIC_PILOT_CONFIG[pilotId]?.names[0]}」破身成形 ⇒ 建立初始浸润档案 (0/${allRelicProgress[pilotId]?.target})`);
-    }
-  }
-
-  // 双向兼容：同时在 zhuojiuliuyanxue / zhuojiu / 灼酒流炎穴 下维护镜像，确保前端取值 100% 命中
-  for (const pid of Object.keys(RELIC_PILOT_CONFIG)) {
-    const curP = allRelicProgress[pid];
-    if (curP) {
-      allRelicProgress['zhuojiuliuyanxue'] = curP;
-      allRelicProgress[curP.name] = curP;
-    }
-  }
-
-  const needOwnerWrite = ownersChanged && Object.keys(relicOwners).length > 0;
-  const needDeriveWrite = 派生账本变 || 归属来源变 || 派生撤销.length > 0;
-  if (!news.length && !bookChanged && !needOwnerWrite && !needDeriveWrite && !invChanged && !dispatchChanged && !relicProgressChanged) {
+  if (!news.length && !cleanupConflict.length) {
     console.log(TAG, `[实际发生] 第 ${messageId} 楼：${good.join('、') || '（无）'} —— 都已在账本里，无需写盘`);
     return [];
   }
   const patch = { known: {} };
   for (const f of news) patch.known[f] = true;
-  if (bookChanged || needOwnerWrite) {
-    patch.破处者 = mergedBook;
-    patch.名器归属 = relicOwners;
+  for (const f of cleanupConflict) {
+    patch.known[f] = false;
+    console.log(TAG, `🧹 净化历史冲突标记：${f} ⇒ false`);
   }
-  if (relicProgressChanged) patch.relic_progress = allRelicProgress;
-  /* ⑧ 派生账本与归属来源落盘；被撤销的派生写 false（墓碑在账本里是 null） */
-  if (派生账本变) patch.派生账本 = 派生账本新;
-  if (归属来源变) { patch.名器归属来源 = 名器归属来源新; patch.名器归属 = relicOwners; }
-  if (派生撤销.length) {
-    patch.known = patch.known || {};
-    for (const f of 派生撤销) patch.known[f] = false;
-    console.warn(TAG, `↩️ [派生回退] 第 ${messageId} 楼来源清零 ⇒ 撤销派生：${派生撤销.join('、')}`);
-  }
-  /* 记录本楼新置真的锚点（供回退用）；指纹一致时跳过（幂等） */
-  if (!sameAnchorFinger && news.length) {
-    anchorLog[String(messageId)] = { 指纹: anchorFinger, 新置真: news.slice() };
-    anchorLogChanged = true;
-    patch.锚点账本 = anchorLog;
-  }
-  if (invChanged) patch.inventory = inv;
-  if (dispatchChanged) patch.派发记录 = dispatched;
-  if (ledgerChanged) patch.纳戒账本 = nadeLog;
-  if (anchorLogChanged) patch.锚点账本 = anchorLog;
-  if (rolledBack.length) { patch.known = patch.known || {}; for (const f of rolledBack) patch.known[f] = false; }
-  const r = await writeStat(patch, `第 ${messageId} 楼 <实际发生>/<破处>/<名器互动> 自动记账${invChanged ? '（含纳戒更新）' : ''}`);
+  const r = await writeStat(patch, `第 ${messageId} 楼 <实际发生> 自动解锁与净化`);
   if (r && r.ok) {
-    console.log(TAG, `✅ [实际发生] 第 ${messageId} 楼自动解锁 ${news.length} 个锚点：${news.join('、') || '（无）'}（via ${r.via}）`
-      + (bookChanged ? ` 破处簿 +${bookIn.length} 条` : '')
-      + (needOwnerWrite ? ` 名器归属 = ${JSON.stringify(relicOwners)}` : '')
-      + (relicProgressChanged ? ' 名器浸润进度已更新' : '')
-      + (invChanged ? ' 纳戒物品已更新' : ''));
+    console.log(TAG, `✅ [实际发生] 第 ${messageId} 楼自动解锁 ${news.length} 个锚点：${news.join('、')}（via ${r.via}）`);
     return news;
   }
   console.warn(TAG, `❌ [实际发生] 第 ${messageId} 楼自动解锁失败（${news.join('、')}）：${(r && r.why) || '变量接口不可用'}`);
   return [];
-}
-
-/**
- * 自由字段的一致性闸（2026-10-08 · gpt 17 号 §3 点名的那条"回喂通道"）
- * ─────────────────────────────────────────────────────────────────────
- * gpt 原话要点：「固定世界事件对这些状态的写入和再次渲染都做日期／前置一致性检查；
- *   记录被拒值、来源与诊断，保留最后可信值，不把『传闻／计划』提升为已发生事实；
- *   普通变化保留，按事件语义判断，**不以『有兽潮二字』一律拒绝**。」
- *
- * 判据（只拦"把未到的固定世界事件写成正在发生"这一类）：
- *   · 仅看 局势／近闻／远闻／危机／目标／阶段总结 六个自由文本字段；
- *   · 文本先过一遍**豁免表**（传闻／据说／将要／尚未／计划／若是…）—— 这些不算"已发生"，放行；
- *   · 命中事件宣言句式后，用**可信数值日期**与事件起点比：日期不可信或未到起点 ⇒ 拒绝写入，
- *     保留上一轮的可信值，并落 `自由字段闸` 诊断（后台，不进正文）；
- *   · 日期已到 ⇒ 放行（正文可以演，事实由 `<实际发生>` 建立 —— 与阶段驱动的世界轴同一口径）。
- */
-const FREE_FIELD_WHITELIST = ['局势', '近闻', '远闻', '危机', '目标', '阶段总结'];
-const FREE_WORLD_EVENTS = [
-  { 名: '南域大劫', 起点: 1578.08, 宣言: /(神诅|大劫|粉黑天穹|再无元婴)[^，。；！？]{0,10}(已|已经|正在|正|降下|降临|爆发|压在|笼罩)/ },
-  { 名: '正式兽潮', 起点: 1579.01, 宣言: /(兽潮|妖兽潮|围城|城防|防线)[^，。；！？]{0,12}(已|已经|正在|正|一波接一波|数日|兵临城下|破关|破门|压城|围了|杀到|冲破|溃缩|溃退|崩溃|失守|告急|溃败)/ },
-  { 名: '天溪城破', 起点: 1579.03, 宣言: /(城破|城陷|陷落|城门失守|城墙崩|大阵告破|化为焦土|沦为焦土)/ },
-];
-const FREE_NEGATED_OR_PLAN = /传闻|据说|听说|谣传|或将|将要|即将|可能|恐怕|尚未|还没|未至|未到|计划|打算|预定|约期|若是|万一|倘若|假如|是否/;
-
-/* 2026-10-08（主人令·选 C）：**泛指战事**不拦，只记账待核 —— gpt 原话「歧义不自动写真，待核」。
- *   六个自由字段里若出现「战火／战事／兵灾／战乱／兵锋／战报／血战」这类**没点名的战争话**，
- *   而当时的可信时点又早于世界事件最早的起点（大劫 1578.08），就记进 `stat_data.自由字段待核`：
- *   **照写、不拒**，只在后台留痕（日志 ＋ 待核台账），由主人/GM 决定要不要清。
- *   传闻／计划／否定／疑问／回忆（当年、昔日…）一律不标。 */
-const FREE_VAGUE_WAR = /(战火|战事|兵灾|战乱|兵锋|兵戈|战报|军情|血战|恶战|厮杀|烽烟|烽火)/;
-const FREE_SUSPECT_EXEMPT = /传闻|据说|听说|谣传|曾经|当年|昔日|从前|彼时|将要|即将|打算|计划|预定|若是|万一|倘若|假如|是否|尚未|还没|未至|未到/;
-const FREE_SUSPECT_FLOOR = 1578.08;   /* 世界事件最早起点（大劫）：过了它，泛指战事属正常，不再标待核 */
-
-/** 返回 {suspect:false} 或 {suspect:true, 事件, 因由, 分句}（纯函数，可离线测） */
-function freeFieldSuspect(field, val, sd) {
-  if (FREE_FIELD_WHITELIST.indexOf(field) === -1) return { suspect: false };
-  if (!val || typeof val !== 'string' || val === '—' || val === '无') return { suspect: false };
-  const dnum = Number(sd && sd.仙盟历);
-  if (isFinite(dnum) && dnum >= FREE_SUSPECT_FLOOR) return { suspect: false };
-  const 命中 = String(val).split(/[，。；！？\n]/).filter((c) => FREE_VAGUE_WAR.test(c) && !FREE_SUSPECT_EXEMPT.test(c));
-  if (!命中.length) return { suspect: false };
-  return {
-    suspect: true, 事件: '战事（泛指）',
-    因由: (!isFinite(dnum) ? '时点不可信' : ('当前 ' + dnum + ' 早于大劫起点 ' + FREE_SUSPECT_FLOOR)) + '，而这一格在说战事 ⇒ 标待核（**不拦，只记账**）',
-    分句: 命中[0].slice(0, 40),
-  };
-}
-
-/** 返回 {ok:true} 或 {ok:false, 事件, 因由}（纯函数，可离线测）
- *  ⚠️ 豁免是**按分句**判的：只有"含该事件宣言的那个分句"里出现传闻/计划/否定词才豁免。
- *     否则「兽潮已破两处防区，援军未至」会因为末尾一句"未至"被整段放过（实测踩过）。 */
-function freeFieldGate(field, val, sd) {
-  if (FREE_FIELD_WHITELIST.indexOf(field) === -1) return { ok: true };
-  if (!val || typeof val !== 'string' || val === '—' || val === '无') return { ok: true };
-  const 分句 = String(val).split(/[，。；！？\n]/);
-  const 命中 = [];
-  for (const e of FREE_WORLD_EVENTS) {
-    for (const c of 分句) {
-      if (!e.宣言.test(c)) continue;
-      if (FREE_NEGATED_OR_PLAN.test(c)) continue;      /* 该分句是传闻/计划/否定 ⇒ 不算已发生 */
-      命中.push(e);
-      break;
-    }
-  }
-  if (!命中.length) return { ok: true };
-  const dnum = Number(sd && sd.仙盟历);
-  for (const e of 命中) {
-    if (!isFinite(dnum) || dnum < e.起点) {
-      return {
-        ok: false, 事件: e.名,
-        因由: !isFinite(dnum) ? '当前没有可信时点，无法证明「' + e.名 + '」已到' : ('当前 ' + dnum + ' 未到「' + e.名 + '」起点 ' + e.起点),
-      };
-    }
-  }
-  return { ok: true };
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
- * 派生：来源账本 ＋ 事务撤销（2026-10-08 · gpt 17 号 §2 ⑤⑦⑧ 同批修）
- * ──────────────────────────────────────────────────────────────────────────
- * gpt 原话要点：
- *   ⑤ 「选**实际出场事件**的正文证据触发柳含烟派生，在场/暗处仅辅助；不沿用脱困资格；
- *      名字提及、传闻、回忆、计划不算当前参与；缺证据不补真。」
- *   ⑦ 「该项真实出场派生事务中，若归属尚未有更强的既成来源，写明确 NPC 归属与来源；
- *      已有合法转移／玩家修改不得被每轮默认值覆盖；未出场不因 lord 有值就亮。」
- *   ⑧ 「来源记录＋统一依赖重算／事务撤销；撤一个来源只去掉它的贡献，另有合法来源则保留；
- *      阶段2撤销不能误删独立来源的阶段1；人工来源不静默消失；出场是历史事件，离场不撤二阶段。」
- * ══════════════════════════════════════════════════════════════════════════ */
-
-/** 出场实证：本楼正文里**真的参与了当前场景**才算（提及／传闻／回忆／计划都不算）。
- *  fail-closed：读不到正文一律不算。 */
-const APPEAR_VERBS = /(说|道|问|答|笑|叹|看|望|瞧|走|来|去|坐|立|站|行|伸手|抬手|握住|拦住|挡|递|接|点头|摇头|皱眉|转身|出声|开口|走进|出场|露面|现身|化作|扫过|俯|跪下|跪|抱|牵|扶|推|踢|挥|落座|饮|喝|吃)/;
-/* gpt ⑤：**传闻／回忆／计划都不算当前参与** —— 窗口里出现这些词就不认定（点名同理）。 */
-const APPEAR_EXCLUDE = /传闻|据说|听说|谣传|曾经|当年|昔年|记得|回忆|想起|梦见|将要|即将|打算|计划|预定|若是|万一|倘若|假如|是否|尚未|还没|未至|未到|提到|提起|之名|的名字|画像|名录/;
-function 出场实证名(name, prose) {
-  const t = String(prose || '');
-  const nm = String(name || '');
-  if (!nm) return { ok: false, why: '角色名为空' };
-  if (!t) return { ok: false, why: '本楼读不到正文 ⇒ 不予认定（fail-closed）' };
-  const esc = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp('(.{0,24})' + esc + '(.{0,32})', 'g');
-  let m, 试 = 0;
-  while ((m = re.exec(t)) && 试 < 40) {
-    试++;
-    const 窗 = m[1] + nm + m[2];
-    if (APPEAR_EXCLUDE.test(窗)) continue;                 /* 传闻／回忆／计划／点名 ⇒ 不算出场 */
-    if (negatedAround(t, new RegExp(esc))) continue;       /* 同一句里是否定／未发生 ⇒ 不算 */
-    if (APPEAR_VERBS.test(窗)) return { ok: true, 证据: 窗.replace(/\s+/g, ' ').slice(0, 70) };
-    if (re.lastIndex <= m.index) re.lastIndex = m.index + 1;
-  }
-  return { ok: false, why: '正文里没有「' + nm + '」参与当前场景的实证（点名／传闻／回忆／计划不算）' };
-}
-
-/** 纯函数：算本轮派生闭包（不写盘）。可离线测。
- *  @param inp { known, news, ledger, 名器归属, 归属来源, messageId, 指纹, 出场实证 }
- *  @returns { news, ledger, 归属补写, 归属来源补写, 撤销, 日志 } */
-function deriveRelicClosure(inp) {
-  const known = inp.known || {};
-  const service = typeof window !== 'undefined' ? window.__xsdCorrection : null;
-  const records = inp.人工纠错 && inp.人工纠错.覆盖 || {};
-  const manual = f => records[JSON.stringify(['known', f])];
-  const allowed = f => !(manual(f) && manual(f).value === false);
-  const news = (inp.news || []).filter(allowed);
-  const ledger = JSON.parse(JSON.stringify(inp.ledger || {}));
-  const 归属来源 = Object.assign({}, inp.归属来源 || {});
-  const messageId = inp.messageId;
-  const 指纹 = String(inp.指纹 || '');
-  const 出场实证 = inp.出场实证 || {};
-  const 撤销 = [], 日志 = [], 归属补写 = {}, 归属来源补写 = {};
-  let ledgerChanged = false;
-  const has = (f) => manual(f) ? manual(f).value === true : known[f] === true || news.includes(f);
-  const 来源表 = (f) => (ledger[f] && Array.isArray(ledger[f].来源)) ? ledger[f].来源 : null;
-  const 记来源 = (f, 类型, 键, 证据) => {
-    if (!ledger[f] || !Array.isArray(ledger[f].来源)) { ledger[f] = { 来源: [] }; ledgerChanged = true; }
-    if (!ledger[f].来源.some((s) => s.键 === 键)) {
-      ledger[f].来源.push({ 键, 类型, 楼: Number(messageId) || null, 指纹, 证据: String(证据 || '').slice(0, 70) });
-      ledgerChanged = true;
-    }
-  };
-  const 有类型 = (f, 类型) => (来源表(f) || []).some((s) => s.类型 === 类型);
-  if (!has('烟霞灵乳二阶段') && ledger['烟霞灵乳一阶段']) {
-    ledger['烟霞灵乳一阶段'].来源 = (ledger['烟霞灵乳一阶段'].来源 || []).filter(s => s.键 !== '烟霞灵乳二阶段成立');
-    ledgerChanged = true;
-  }
-
-  /* ⑤① 柳含烟**实际出场** ⇒ 烟霞灵乳二阶段（不再沿用 known['阎雷子脱困'] 当资格） */
-  const 场 = 出场实证['柳含烟'];
-  if (场 && 场.ok) 记来源('烟霞灵乳二阶段', '出场实证', '柳含烟出场', 场.证据);
-  if (场 && 场.ok && allowed('烟霞灵乳二阶段') && !has('烟霞灵乳二阶段')) {
-    news.push('烟霞灵乳二阶段');
-    日志.push('柳含烟实际出场（正文实证：' + (场.证据 || '') + '）⇒ 烟霞灵乳二阶段');
-  }
-  /* ⑦ 归属：只在"出场实证"这条来源在场时补写，且不覆盖既有的更强来源 */
-  if (has('烟霞灵乳二阶段') && 有类型('烟霞灵乳二阶段', '出场实证')) {
-    const 现 = (inp.名器归属 || {})['烟霞灵乳'] || null;
-    const 旧来源 = 归属来源['烟霞灵乳'] || null;
-    if (!现) {
-      归属补写['烟霞灵乳'] = '阎雷子';
-      归属来源补写['烟霞灵乳'] = { 归属者: '阎雷子', 来源: '柳含烟实际出场（正文实证）', 由脚本写: true, 楼: Number(messageId) || null };
-    } else if (旧来源 && 旧来源.由脚本写 === true) {
-      if (现 !== '阎雷子') { 归属补写['烟霞灵乳'] = '阎雷子'; 归属来源补写['烟霞灵乳'] = { 归属者: '阎雷子', 来源: '柳含烟实际出场（正文实证）', 由脚本写: true, 楼: Number(messageId) || null }; }
-    } else {
-      日志.push('归属保持既有来源「' + 现 + '」—— 脚本不覆盖玩家/GM 的写入');
-    }
-  }
-  /* ⑥ 楚灵夜两项硬前置齐备 ⇒ 般若菩提菊成形（来源＝前置齐备） */
-  const 前置齐 = known['楚灵夜处女丧失'] === true && known['楚灵夜后窍开发'] === true;
-  if (前置齐) 记来源('般若菩提菊成形', '前置齐备', '楚灵夜双前置', '处女丧失＋后窍开发');
-  if (前置齐 && allowed('般若菩提菊成形') && !has('般若菩提菊成形')) {
-    news.push('般若菩提菊成形');
-    日志.push('楚灵夜两项前置齐备 ⇒ 般若菩提菊成形');
-  }
-  /* ④ 出场即二境：一阶段随二阶段（依赖来源），但**保留**它自己的独立来源 */
-  if (has('烟霞灵乳二阶段')) 记来源('烟霞灵乳一阶段', '依赖', '烟霞灵乳二阶段成立', '出场即二境');
-  if (has('烟霞灵乳二阶段') && allowed('烟霞灵乳一阶段') && !has('烟霞灵乳一阶段')) {
-    news.push('烟霞灵乳一阶段');
-    日志.push('烟霞灵乳出场即第二境 ⇒ 补记一阶段');
-  }
-
-  /* ⑧ 依赖重算：账本里"来源清零"的字段才撤 —— 人工来源永不自动撤；别的合法来源在场则保留 */
-  for (const f of Object.keys(ledger)) {
-    if (!ledger[f]) continue;
-    const 剩 = ledger[f].来源 || [];
-    const 人工 = 剩.some((s) => s.类型 === '人工');
-    if (manual(f)) continue; // 人工true和false都不由来源清零改回
-    if (剩.length === 0 && !人工) {
-      const i = news.indexOf(f);
-      if (i >= 0) news.splice(i, 1);
-      else if (known[f] === true) 撤销.push(f);
-      ledger[f] = null;                                    /* 墓碑（深合并不认 delete） */
-      ledgerChanged = true;
-      日志.push('来源清零 ⇒ 撤销派生「' + f + '」（写 null 墓碑）');
-    } else if (人工 && has(f) === false && known[f] !== true) {
-      /* 有人工来源但字段是 false ⇒ 说明被手工撤过；不自动补回 */
-      日志.push('「' + f + '」有人工来源但当前为假 ⇒ 不自动补回');
-    }
-  }
-  return { news, ledger, ledgerChanged, 归属补写, 归属来源补写, 撤销, 日志 };
 }
 
 /**
@@ -2694,7 +1264,7 @@ function deriveRelicClosure(inp) {
  *   · `进度` 只做一致性校验，**不写变量**
  * ⚠️ 只在 `MESSAGE_RECEIVED`（message_id > 0）时调用。
  */
-async function applyStatusToVars(text, messageId, opt) {
+async function applyStatusToVars(text, messageId) {
   // ⓪ 独立提取阶段总结与结算（即使没有状态栏，只要有结算/总结就必须存下来）
   const sumMatch = /<(?:阶段总结|结算)>([\s\S]*?)<\/(?:阶段总结|结算)>/.exec(text);
   const capturedSummary = (sumMatch && sumMatch[1].trim()) ? sumMatch[1].trim() : null;
@@ -2703,9 +1273,6 @@ async function applyStatusToVars(text, messageId, opt) {
   }
 
   const p = parseStatusBlock(text);
-  p.swipeId = (opt && opt.swipeId) ?? 0;
-  
-  try { await reconcileNadeLedger(`第 ${messageId} 楼前`); } catch (e) { console.warn(TAG, '[纳戒对账] 失败（已吞掉）：', msgOf(e)); }
   if (!p.found) {
     console.log(TAG, `[状态条] 第 ${messageId} 楼没有状态条（<Status_block>／<status>／<StatusBlock> 都没找到），启动容错保底时钟推进`);
     try { await ensureInit(`第 ${messageId} 楼前·容错`); } catch (e) {}
@@ -2713,29 +1280,17 @@ async function applyStatusToVars(text, messageId, opt) {
       const sdNow = readStatData() || {};
       const pin = (sdNow[FLOOR_PIN] && typeof sdNow[FLOOR_PIN] === 'object') ? sdNow[FLOOR_PIN] : null;
       const floorStg = stageOfFloor(messageId, pin ? pin.shift : 0);
-
+      // ★ 关键：保持已有高段位，绝不倒退！
       const curStage = Math.max(1, Number(sdNow.段位) || floorStg);
-      /* 2026-10-08（gpt 04 号④）：这一支**不再回写日期**。
-         旧写法 patch.仙盟历 = SEG_TIME[curStage-1] —— 段位变就把日历顶到该段的章节时点，
-         等于「楼数／段位决定当前日期」，正是 gpt C6 禁止的。日期由「历基准 ＋ 全程累计」导出，
-         本支只落段位与阶段总结 ⇒ **缺状态栏时日期保留不动**（gpt 的验收项之一）。 */
+      const segIdx = Math.max(0, Math.min(SEG_TIME.length - 1, curStage - 1));
+      const baseT = SEG_TIME[segIdx];
       const patch = {
-        段位: curStage
+        段位: curStage,
+        仙盟历: baseT,
+        仙盟历文: fmtXianmeng(baseT)
       };
       if (capturedSummary) {
-        const gS = freeFieldGate('阶段总结', capturedSummary, sdNow);
-        if (gS.ok) {
-          patch.阶段总结 = capturedSummary;
-          const sS = freeFieldSuspect('阶段总结', capturedSummary, sdNow);
-          if (sS.suspect) {
-            const 旧项 = ((patch.自由字段待核 || {}).项) || [];
-            patch.自由字段待核 = { 楼: Number(messageId), 项: 旧项.concat([{ 字段: '阶段总结', 值摘: String(capturedSummary).slice(0, 60), 因由: sS.因由, 分句: sS.分句 }]) };
-            console.warn(TAG, `⚠️ [自由字段·待核] 第 ${messageId} 楼「阶段总结」提到战事、时点尚早 —— 记待核（**不拦**）`);
-          }
-        } else {
-          console.warn(TAG, `⛔ [自由字段闸] 第 ${messageId} 楼「阶段总结」被拒（保留旧值）：${gS.因由}`);
-          patch.自由字段闸 = { 楼: Number(messageId), 项: [{ 字段: '阶段总结', 被拒值: String(capturedSummary).slice(0, 60), 事件: gS.事件, 因由: gS.因由 }] };
-        }
+        patch.阶段总结 = capturedSummary;
         patch.结算待办 = 0;
         patch.总结待办 = 0;
       }
@@ -2759,64 +1314,22 @@ async function applyStatusToVars(text, messageId, opt) {
   // ① 展示型字段（解析器把空值记成空串；**空串不写**，免得一行「—」把账本擦掉）
   const patch = {};
   const blanks = [];
-  /* 2026-10-08（gpt 17 号 §3）：自由文本字段过一致性闸 —— 未到的固定世界事件不许被写成"正在发生"，
-     被拒的值不写盘（保留上一轮的可信值），只落后台诊断。 */
-  const sdGate = readStatData() || {};
-  const 自由字段闸 = [];
-  const 自由字段待核 = [];
-  let 自由字段闸有拒 = false;
   for (const k of DISPLAY_FIELDS) {
     if (p.fields[k] === undefined) continue;
     if (p.fields[k] === '') { blanks.push(k); continue; }
-    const g = freeFieldGate(k, p.fields[k], sdGate);
-    if (!g.ok) {
-      自由字段闸有拒 = true;
-      自由字段闸.push({ 字段: k, 被拒值: String(p.fields[k]).slice(0, 60), 事件: g.事件, 因由: g.因由 });
-      console.warn(TAG, `⛔ [自由字段闸] 第 ${messageId} 楼「${k}」被拒（保留旧值）：${g.因由}｜原值「${String(p.fields[k]).slice(0, 40)}」`);
-      continue;
-    }
-    /* 主人令·选 C：明确宣告才拦；**泛指战事不拦，只记账待核** */
-    const s = freeFieldSuspect(k, p.fields[k], sdGate);
-    if (s.suspect) 自由字段待核.push({ 字段: k, 值摘: String(p.fields[k]).slice(0, 60), 因由: s.因由, 分句: s.分句 });
     patch[k] = p.fields[k];
-  }
-  if (自由字段闸.length) {
-    patch.自由字段闸 = { 楼: Number(messageId), 项: 自由字段闸 };
-    try { toast('warning', '本楼有 ' + 自由字段闸.length + ' 个自由字段写了"尚未到时的世界事件"，已按未发生处理（保留上一轮值）：' + 自由字段闸.map((x) => x.字段).join('、'), 12000); } catch (e) { /* 忽略 */ }
-  } else {
-    patch.自由字段闸 = null;
-  }
-  if (自由字段待核.length) {
-    patch.自由字段待核 = { 楼: Number(messageId), 项: 自由字段待核 };
-    console.warn(TAG, `⚠️ [自由字段·待核] 第 ${messageId} 楼有 ${自由字段待核.length} 项泛指战事（**不拦，只记账**）：` + 自由字段待核.map((x) => x.字段).join('、'));
-    try { toast('info', '本楼有 ' + 自由字段待核.length + ' 个自由字段提到战事、但时点尚早 —— 已记入「待核」台账（未拒写）：' + 自由字段待核.map((x) => x.字段).join('、'), 10000); } catch (e) { /* 忽略 */ }
-  } else {
-    patch.自由字段待核 = null;
   }
   if (blanks.length) console.log(TAG, `[状态条] 第 ${messageId} 楼这些字段是空值，保留旧值：${blanks.join('、')}`);
   /* ①c 段位：以楼层为保底下限，支持事件提前推进，沉浸场景自动驻留等待，每 15 楼/换段触发总结存档 */
   {
     const sdNow = readStatData() || {};
 
+    // ★ 捕获阶段总结与存档：成功捕获后清除待办，未捕获时不主动清零
     if (capturedSummary) {
-      const gS2 = freeFieldGate('阶段总结', capturedSummary, sdNow);
-      if (gS2.ok) {
-        patch.阶段总结 = capturedSummary;
-        const sS2 = freeFieldSuspect('阶段总结', capturedSummary, sdNow);
-        if (sS2.suspect) {
-          const 旧项2 = ((patch.自由字段待核 || {}).项) || [];
-          patch.自由字段待核 = { 楼: Number(messageId), 项: 旧项2.concat([{ 字段: '阶段总结', 值摘: String(capturedSummary).slice(0, 60), 因由: sS2.因由, 分句: sS2.分句 }]) };
-          console.warn(TAG, `⚠️ [自由字段·待核] 第 ${messageId} 楼「阶段总结」提到战事、时点尚早 —— 记待核（**不拦**）`);
-        }
-        console.log(TAG, `[阶段总结] 第 ${messageId} 楼成功捕获阶段纪事存档（${capturedSummary.length} 字），已持久化进账本并清除待办`);
-      } else {
-        console.warn(TAG, `⛔ [自由字段闸] 第 ${messageId} 楼「阶段总结」被拒（保留上一份可信总结）：${gS2.因由}`);
-        patch.自由字段闸 = Object.assign({ 楼: Number(messageId) }, patch.自由字段闸 || {}, {
-          项: ((patch.自由字段闸 && patch.自由字段闸.项) || []).concat([{ 字段: '阶段总结', 被拒值: String(capturedSummary).slice(0, 60), 事件: gS2.事件, 因由: gS2.因由 }]),
-        });
-      }
+      patch.阶段总结 = capturedSummary;
       patch.结算待办 = 0;
       patch.总结待办 = 0;
+      console.log(TAG, `[阶段总结] 第 ${messageId} 楼成功捕获阶段纪事存档（${capturedSummary.length} 字），已持久化进账本并清除待办`);
     }
 
     let pin = (sdNow[FLOOR_PIN] && typeof sdNow[FLOOR_PIN] === 'object') ? sdNow[FLOOR_PIN] : null;
@@ -2834,27 +1347,11 @@ async function applyStatusToVars(text, messageId, opt) {
       }
     }
     const floorStg = stageOfFloor(messageId, pin ? pin.shift : 0);
-    
-    /* 2026-10-08（gpt 04 号①）：**先校验、再参与推进**。
-       旧写法把 <实际发生> 的原始申报直接并进 knownAhead 再交给 checkFastForwardStage，
-       于是「本楼正文根本没有依据」的申报也能把段位顶上去（gpt 复现：正文只写「庭院平静」、
-       状态栏乱报「天溪城兽潮」，闸门丢弃了申报、known 仍 false，段位却 6→7）。
-       现在只有**通过同一把尺子（validateAnchors）**的锚点才参与跳段，且结果落在 patch 上供记账复用。 */
-    const 本轮校验 = validateAnchors(Array.isArray(p && p.里程碑) ? p.里程碑 : [], stripStatusBlock(text), messageId, sdNow.known || {}, Array.isArray(p && p.破处) ? p.破处 : []);
-    patch.本轮已验证锚点 = 本轮校验.good;
-    const knownAhead = Object.assign({}, sdNow.known || {});
-    for (const f of 本轮校验.good) knownAhead[f] = true;
-    const ffStg = checkFastForwardStage(knownAhead, floorStg);
+    const ffStg = checkFastForwardStage(sdNow.known, floorStg);
     const stg = Math.max(floorStg, ffStg);
 
     if (stg >= 1) {
-      
-      const curRaw = Number(sdNow.段位);
-      const curValid = Number.isFinite(curRaw) && curRaw >= 1;
-      if (!curValid) {
-        console.warn(TAG, `[段位] 第 ${messageId} 楼旧段位无效（${String(sdNow.段位)}）⇒ 按保底重新起步（不超过第 2 段），逐段推进`);
-      }
-      let cur = curValid ? Math.min(16, Math.max(1, Math.round(curRaw))) : Math.min(stg, 2);
+      let cur = Math.max(1, Number(sdNow.段位) || stg);
       let want = stg;
 
       // 使用连续绝对月数判断段位跃升（跨年无缝衔接）
@@ -2865,37 +1362,21 @@ async function applyStatusToVars(text, messageId, opt) {
         if (curTotalM >= ymToMonths(SEG_TIME[i]) - 1e-6) want = Math.max(want, i + 1);
       }
 
-      
+      /* 核心机制：章节等待玩家（场景驻留锁）。交合/私密温存进行中，段位暂缓推进，等待戏份收尾 */
       const locked = isSceneLocked(text, p.fields);
-      let lockStart = Number(sdNow.锁起点) || 0;
-      if (locked) {
-        if (!lockStart || lockStart < 1 || lockStart > messageId) { lockStart = messageId; patch.锁起点 = lockStart; }
-      } else if (lockStart) { patch.锁起点 = 0; lockStart = 0; }
-      const lockTooLong = locked && lockStart > 0 && (messageId - lockStart >= 6);
-      if (locked && want > cur && !lockTooLong) {
+      if (locked && want > cur) {
         console.log(TAG, `[章节等待] 第 ${messageId} 楼检测到私密交合/沉浸互动进行中，段位暂缓推进（保持第 ${cur} 段），等待玩家本场戏份完成`);
         want = cur;
-      } else if (lockTooLong && want > cur) {
-        console.warn(TAG, `⚠️ [章节等待] 第 ${messageId} 楼：本场戏已连续 ${messageId - lockStart} 楼被判定为"进行中" ⇒ 达最长驻留（6 楼），照常推进段位，避免永久卡段`);
       }
-      want = Math.min(want, cur + 1);
-  /* gpt P1-6：**本段楼数**这只计数器以前只读不维护 ⇒ 改成每楼真的加、同楼重绘不重复加、
-     满 3 楼升一段并归零；窗口起点与计数器一起落盘。 */
-  let wf = Number(sdNow.窗口起点) || 0;
-  if (wf && (wf < 1 || wf > messageId)) {
-    console.warn(TAG, '[窗口] 第 ' + messageId + ' 楼窗口起点异常（' + sdNow.窗口起点 + '）⇒ 复位');
-    wf = 0;
-  }
-  const sameFloor = Number(sdNow.最后处理楼号) === Number(messageId);
-  let segFloors = Number(sdNow.本段楼数);
-  if (!isFinite(segFloors) || segFloors < 0) segFloors = 0;
-  if (want > cur) {
-    if (!wf) { wf = messageId; segFloors = 0; }
-    else if (!sameFloor) { segFloors += 1; }
-    if (segFloors >= 3) { cur += 1; wf = (cur < want) ? messageId : 0; segFloors = 0; }
-  } else { wf = 0; segFloors = 0; }
-  patch.本段楼数 = segFloors;
-  patch.窗口起点 = wf;
+      want = Math.min(want, cur + 1);   // ★ 限制前瞻：一次只前瞻并前进一段
+
+      let wf = Number(sdNow.窗口起点) || 0;
+      if (want > cur) {
+        if (!wf) { wf = messageId; }
+        else if (messageId - wf >= 3) { cur += 1; wf = (cur < want) ? messageId : 0; }
+      } else { wf = 0; }
+
+      patch.窗口起点 = wf;
       patch.段位 = cur;
       if (cur !== stg) { console.log(TAG, `[窗口] 第 ${messageId} 楼：本段收尾窗口（起点 ${wf || '已闭'}）⇒ 段位 ${stg} → ${cur}`); }
 
@@ -2909,66 +1390,34 @@ async function applyStatusToVars(text, messageId, opt) {
 
       /* ①d 时点 ＝ 绝对连续月数 ＋ 累计历时加速（按月/天高精度累计，杜绝跨年与小步长舍入归零） */
       const segIdx = Math.max(0, Math.min(SEG_TIME.length - 1, (patch.段位 || stg) - 1));
-      
-      
-      const CAL_START_BY_ID = {
-        赵无忧: { ym: 1578.03, day: 3 },
-        焚欲殿主: { ym: 1578.08, day: 1 }, 浊龙殿主: { ym: 1578.08, day: 1 },
-        欢喜殿主: { ym: 1578.08, day: 1 }, 魂欢殿主: { ym: 1578.08, day: 1 },
-      };
-      const idNow = String(sdNow.身份 || '');
-      let basis = Number(sdNow.历基准) || 0;      // 存「年.月」＋日的合成月数
-      if (!basis) {
-        const fixed = CAL_START_BY_ID[idNow];
-        if (fixed) {
-          basis = ymToMonths(fixed.ym) + (fixed.day - 1) / 30;
-        } else {
-          
-          /* gpt P1-3：基准不再从「当前 AI 正文」取 —— 只认账上记过的开场时点；
-       账上没有（老局）时，仅允许从**首楼文本**补记一次，之后一律走账。 */
-    let storedM = Number(sdNow.初始时点);
-    if (!(isFinite(storedM) && storedM > 0)) {
-      try {
-        const introTxt = String(messageText(1) || '');
-        const introLine = pickTimepointLine(introTxt);
-        const introPick = introLine ? parseXianmengFromText(introLine) : null;
-        if (introPick) { storedM = ymToMonths(introPick.ym) + (introPick.day - 1) / 30; patch.初始时点 = storedM; }
-      } catch (eIntro) { /* 首楼读不到 ⇒ 走共享默认 */ }
-    }
-    const basisOk = isFinite(storedM) && storedM > 0;
-    basis = basisOk ? storedM : (ymToMonths(1578.03) + 2 / 30);
-    console.log(TAG, '[时间基准] 第 ' + messageId + ' 楼：' + (idNow || '（未登记身份）') + ' ⇒ 基准 ' + (basisOk ? fmtXianmeng(monthsToYm(storedM)) : '1578 年 · 初三') + '（来源：账上开场时点，不读正文）');
-  }
-
-patch.历基准 = basis;
-      }
-      const curBaseM = basis;
-      
+      const curBaseM = ymToMonths(SEG_TIME[segIdx]);
+      const nextBaseM = (segIdx + 1 < SEG_TIME.length) ? ymToMonths(SEG_TIME[segIdx + 1]) : curBaseM + 1;
+      let monthSpan = nextBaseM - curBaseM;
+      if (monthSpan <= 0) monthSpan = 0.5; // 同月相邻段预留半月加速空间
 
       // 若同楼发生重绘/修改，基于本楼原始基准重新累计，防止重复叠加
-      
-      /* gpt P1-2/P1-4/P1-5/P1-7：推进逻辑抽成纯函数 nextAcc（见文件上方），此处只落盘 */
+      let acc = (Number(sdNow.时点加速) || 0);
+      if (Number(sdNow.最后处理楼号) === Number(messageId)) {
+        acc = Math.max(0, acc - (Number(sdNow.本楼历时加速) || 0));
+      }
+      if (isStageChanged || !isFinite(acc) || acc < 0) acc = 0;
+      if (isStageChanged) patch.时点加速 = 0;
+
       const stepM = parseLishi(patch.历时);
-      const hasTransit = LISHI_TRANSIT_RE.test(String(patch.历时 || '') + ' ' + String(text || '').slice(0, 400));
-      const accR = nextAcc(sdNow, messageId, stepM, hasTransit);
-      const acc = accR.acc;
-      const adv = accR.adv;
-      patch.历时累计 = acc;          /* P1-5：同楼撤销后的值也落盘 */
-      patch.最后处理楼号 = Number(messageId);
-      patch.本楼历时加速 = adv;
-      /* 2026-10-08（gpt 17 号 §5-4）：超限整笔拒绝时，留下一笔"待确认"账 —— 后台可查、玩家可改，
-         下一轮不会因为"本轮记 0"就把申报的那段时间当成没发生过。 */
-      if (accR.rejected) {
-        patch.历时待确认 = { 楼: Number(messageId), 申报月: accR.raw, 上限月: accR.capM, 原因: '单笔超过上限，整笔未计入（走合法转场或 GM 确认）' };
-        try { toast('warning', '本楼申报的历时（' + accR.raw + ' 月）超过单笔上限（' + accR.capM + ' 月），已整笔未计入；要推进请用明写的时间流逝或 GM 面板确认。', 12000); } catch (e) { /* 忽略 */ }
+      let adv = 0;
+      if (stepM > 0) {
+        adv = Math.min(stepM, Math.max(0, monthSpan - acc));
+        acc = Math.round((acc + adv) * 10000) / 10000;
+        patch.时点加速 = acc;
+        patch.最后处理楼号 = Number(messageId);
+        patch.本楼历时加速 = adv;
       } else {
-        patch.历时待确认 = null;     /* 墓碑：本轮没有待确认项就清掉上一笔 */
+        patch.最后处理楼号 = Number(messageId);
+        patch.本楼历时加速 = 0;
       }
       patch.仙盟历 = monthsToYm(curBaseM + acc);
-      
-      const dayOfMonth = 1 + Math.floor((((curBaseM + acc) % 1) + 1) % 1 * 30 + 1e-9);
-      patch.仙盟历文 = fmtXianmengDay(patch.仙盟历, dayOfMonth);
-      console.log(TAG, `[段位] 第 ${messageId} 楼 ⇒ 第 ${patch.段位 || stg} 段（楼下限 ${stg}）${pin ? `（时间轴已平移 ${pin.shift} 楼）` : ''}｜历时「${patch.历时 || '—'}」⇒ +${adv}月（累计 ${acc}月）｜仙盟历 ${patch.仙盟历文}（${patch.仙盟历}）`);
+      patch.仙盟历文 = fmtXianmeng(patch.仙盟历);
+      console.log(TAG, `[段位] 第 ${messageId} 楼 ⇒ 第 ${patch.段位 || stg} 段（楼下限 ${stg}）${pin ? `（时间轴已平移 ${pin.shift} 楼）` : ''}｜历时「${patch.历时 || '—'}」⇒ +${adv}月（累计 ${acc}月／本段跨度 ${monthSpan}月）｜仙盟历 ${patch.仙盟历文}（${patch.仙盟历}）`);
     } else {
       console.warn(TAG, `[段位] 第 ${messageId} 楼算不出段位（楼层号异常），本轮不写 —— 渲染侧会按第 1 段兜底`);
     }
@@ -2993,8 +1442,8 @@ patch.历基准 = basis;
   // ③ 进度一致性校验（只告警，不写变量）
   checkProgressConsistency(p, messageId);
 
-  //      所以要把正文一起传进去 —— 报成形却漏标时，靠正文硬词兜底挽救。
-  try { await applyMilestones(p, messageId, text); }
+  // ④ ★ 2026-09-29（主人选 B）：`<实际发生>` → **自动写账本**（不弹提示、不问玩家）
+  try { await applyMilestones(p, messageId); }
   catch (e) { console.warn(TAG, `[实际发生] 第 ${messageId} 楼自动记账失败（已吞掉）：`, msgOf(e)); }
 
   // ⑤ 广播通知面板刷新
@@ -3092,7 +1541,7 @@ function checkProgressConsistency(p, messageId) {
  */
 function checkOutputContract(text, messageId) {
   const t = String(text ?? '');
-  
+  /* ⚠️ 开场楼（0 楼）、身份楼、以及换段结算楼（主人令：换段楼不输出状态栏只输出 <结算>）免检 */
   if (Number(messageId) === 0 || /<IdentityPick/.test(t) || /<结算/.test(t)) return;
   if (hasStatusBlock(t)) return;
   const tail = t.trim().slice(-24);
@@ -3110,7 +1559,19 @@ function checkOutputContract(text, messageId) {
  *    玩家看面板会以为没生效。这里真的翻转 `enabled` 位，做到面板上也「开其一、关其余」。
  * ⚠️ 找不到带「【身份】」条目的世界书时**不报错退出** —— `@@if` 闸门仍然生效，功能不塌。
  */
-
+/**
+ * ★ 2026-09-29（修 `[身份] 没找到带「【身份】」条目的世界书`）：
+ *   **把卡里内嵌的那本书导出成一份真正的世界书文件**。
+ *
+ * 为什么需要它：本卡的世界书是**内嵌**在角色卡里的（ST 会注入，无需世界书文件）；
+ *   但「按身份只开一条【身份】」这个开关，靠的是**酒馆助手那套 API 去改世界书文件** ——
+ *   没有文件，就没有可改的东西，于是每次切身份都只留一行「没找到」。
+ *   以前那份独立世界书是**旧版 239 条**、会和卡里那份打架（早先还赖在 `extensions.world` 里），
+ *   所以当时**故意删掉**了。现在改成「**按需自动生成**」：没有就建、建完就同步，全程不用玩家动手。
+ *
+ * 幂等：已存在同名的世界书文件就直接返回，不覆盖（玩家改过的东西不许被擦）。
+ * @returns {Promise<string|null>} 可用的世界书名（失败返回 null）
+ */
 /** 获取当前角色绑定的目标世界书名称列表（严格限定当前角色，避免遍历修改其他角色世界书） */
 async function getTargetWorldbookNames() {
   const targets = new Set();
@@ -3575,6 +2036,7 @@ async function syncIdentityEntries(name) {
       }
     }
 
+    // 复核：读完立刻回读一次，确认「只开一条身份」与「对应剧情条目」真的落地了
     let verify = '';
     try {
       let again = null;
@@ -3627,7 +2089,7 @@ function isNewChat() {
     if (API.getChatMessages) {
       const last = API.getChatMessages(-1);
       const m = Array.isArray(last) ? (last[last.length - 1] ?? last[0]) : last;
-      if (m && (m.message_id !== undefined || m.mesid !== undefined)) return Number(m.message_id ?? m.mesid) <= 0;
+      if (m && m.message_id !== undefined) return Number(m.message_id) <= 0;
     }
   } catch (e) { /* 取不到就按「不是新聊天」处理，宁可不覆盖 */ }
   return false;
@@ -3795,8 +2257,8 @@ function xdsMenuCanSend(composer, allowEmpty = false) {
 }
 
 function xdsMenuIntro(form) {
-  const names = ['custom_name', 'custom_gender', 'custom_age', 'custom_cultivation', 'custom_sect', 'custom_timepoint', 'custom_origin'];
-  const limits = [64, 16, 32, 96, 128, 64, 1800];
+  const names = ['custom_name', 'custom_gender', 'custom_age', 'custom_cultivation', 'custom_sect', 'custom_origin'];
+  const limits = [64, 16, 32, 96, 128, 1800];
   const values = {};
   names.forEach((name, i) => {
     const input = form.querySelector('[data-xds-field="' + name + '"]');
@@ -3807,13 +2269,10 @@ function xdsMenuIntro(form) {
   const ctx = xdsMenuContext();
   const persona = ctx && typeof ctx.name1 === 'string' ? ctx.name1.trim() : '';
   const name = values.custom_name || persona || '无名散修';
-  
-  const startTime = xdsTimepoint.resolveTimepoint(values.custom_timepoint);
   return '【启卷入世 · 自设命途】\n' +
     '• 道号名讳：' + name + '（' + (values.custom_gender || '男') + '，' + (values.custom_age || '成年') + '）\n' +
     '• 境界修为：' + (values.custom_cultivation || '练气圆满') + '\n' +
     '• 入世身份：' + (values.custom_sect || '大荒散修') + '\n' +
-    '• 当前时点：' + startTime.value + '\n' +
     '• 极乐机缘：' + (values.custom_origin || '偶得《极乐引》残篇，机缘入道') + '\n\n' +
     '（以此身入太微红尘，且看百花谁主沉浮。）';
 }
@@ -4019,9 +2478,6 @@ async function xdsMenuSubmit(form, button, runtime) {
 let xdsMenuRuntime = null;
 
 /** 用 data 属性委托，兼容酒馆净化后的类名；重复启动更新监听，不保留旧 iframe 闭包。 */
-
-const xdsTimepoint = (typeof xdsTimepointModule === 'function') ? xdsTimepointModule() : null;
-
 function bindIdentityMenu() {
   try {
     const host = xdsMenuHost();
@@ -4076,19 +2532,6 @@ function bindIdentityMenu() {
         observer.observe(surface.documentElement, { childList: true, subtree: true });
         runtime.cleanups.push(() => observer.disconnect());
         runtime.scan(surface);
-    
-    try {
-      if (xdsTimepoint && typeof xdsTimepoint.install === 'function') {
-        const timepointHandle = xdsTimepoint.install({
-          host: surface.defaultView,
-          ownerWindow: window,
-          setValue: xdsMenuSetValue,
-        });
-        runtime.cleanups.push(() => timepointHandle.dispose());
-      }
-    } catch (error) {
-      console.warn('[XDS timepoint] 初始化失败，保留原日期入口', error);
-    }
       },
       keyboardSpace() {
         const viewport = host.visualViewport;
@@ -4119,7 +2562,7 @@ function bindIdentityMenu() {
         stop(ev);
         const form = chip.closest('[data-xds-custom-form]');
         const key = chip.getAttribute('data-xds-fill');
-        if (!form || !['custom_cultivation', 'custom_sect', 'custom_timepoint'].includes(key)) return;
+        if (!form || !['custom_cultivation', 'custom_sect'].includes(key)) return;
         const input = form.querySelector('[data-xds-field="' + key + '"]');
         if (input) xdsMenuSetValue(input, chip.getAttribute('data-xds-value') || chip.textContent.trim());
         return;
@@ -4179,7 +2622,7 @@ function bindIdentityMenu() {
     runtime.listen(window, 'pagehide', runtime.dispose);
     try {
       if (API.eventOn && EVENTS && EVENTS.CHAT_CHANGED) {
-        const listener = API.eventOn(EVENTS.CHAT_CHANGED, () => { runtime.epoch++; if (window.__xsdCorrection) window.__xsdCorrection.onChatChanged(); });
+        const listener = API.eventOn(EVENTS.CHAT_CHANGED, () => { runtime.epoch++; });
         if (listener && typeof listener.stop === 'function') runtime.cleanups.push(() => listener.stop());
       }
     } catch (error) { /* 无事件 API 时仍由 chatKey 阻止跨会话发送 */ }
@@ -4200,6 +2643,7 @@ function ensureMenuBound() {
   }, 1000);
   window.addEventListener('pagehide', () => clearInterval(timer), { once: true });
 }
+
 
 /**
  * 把第 0 楼的开场白按**当前角色卡**重刷一遍。
@@ -4238,21 +2682,10 @@ const HELP = [
   '解锁 <字段>   —— 手工翻开一个锚点（平时用不到：剧情走到时模型会自己在状态栏里记）',
   '回锁 <字段>   —— 撤销解锁',
   '身份          —— 列出身份清单；身份 <名字> 热切换（穿书模式）',
-  '物品          —— 打印纳戒清单（行囊／纳戒同义）',
-  '获得物品 <物品名> [简述] [详述] —— 手工把一件东西收进纳戒',
-  '消耗物品 <物品名> —— 喝掉／用掉／丢掉一件东西，从纳戒里移除（面板里那条提示指的就是它）',
-  '验收          —— 现场体检：物品数量、后台时点与状态栏时间、成形锚点有无破身证据（体检／自检同义）',
   '刷新开场白    —— 把第 0 楼的开场白按当前角色卡重刷（旧聊天看到的是开聊天时烧下的旧文案）',
 ].join('\n');
 
-/* ⚠️ 2026-10-06：`/物品`／`/获得物品`／`/消耗物品` 三组处理器早就写在 `handleUserCommand` 里，
- *   可这份名单一直没收录它们 ⇒ `parseCommand` 在最后一步 `return null`，玩家照着面板提示
- *   发「消耗物品 醉春风」**一点反应都没有**（面板 line 1803 就是这么教玩家的）。
- *   名单补齐即通；不带斜杠时仍受「只能一个参数」那条从严规则约束。 */
-const CMD_NAMES = [
-  '撤销','已知', '锚点', '帮助', 'help', '解锁', '回锁', '身份', '设段', '继承', '读档', '刷新开场白', '刷新',
-  '物品', '行囊', '纳戒', '获得物品', '添加物品', '消耗物品', '移除物品', '丢弃物品',
-  '验收', '体检', '自检'];
+const CMD_NAMES = ['已知', '锚点', '帮助', 'help', '解锁', '回锁', '身份', '设段', '继承', '读档', '刷新开场白', '刷新'];
 
 /**
  * 剧情里程碑与特征词映射表（按段位从高到低排列，用于大总结智能识别）
@@ -4331,18 +2764,9 @@ function detectInheritance(text, messageId) {
   // 4. 防冲突判定：
   // 必须是：显式标识 或 (低楼层 <= 3 且 (有显式段位号 或 命中至少2个中后期里程碑且段位>=3))
   const isEarlyFloor = (Number(messageId) <= 3);
-  /* 2026-10-08（gpt 04 号②）：**隐式检测一律不写盘**。
-     旧写法把「低楼层（≤3）＋ 命中 2 个中后期里程碑」判成继承，玩家一句
-     「本次开局不继承旧档，我还没遇到兽潮血战，也没有经历天溪城破」就命中 2 个 ⇒ 被判成继承第 11 段，
-     写进 5 项 known 并把日期写到 1579 三月。特征检测不识别事实语义，不能据它改档。
-     ⇒ 隐式分支降级为**只给建议**（打日志、不动盘）；只有**显式标识／显式命令**才算请求。 */
-  const 隐式嫌疑 = !hasExplicitTag && (isEarlyFloor && (explicitStage > 1 || (hitMilestoneCount >= 2 && inferredStage >= 3)));
-  if (隐式嫌疑) {
-    console.warn(TAG, `⛔ [继承·只建议] 第 ${messageId} 楼疑似继承文案（命中 ${hitMilestoneCount} 个里程碑／显式段位号 ${explicitStage}），` +
-      '但**没有显式继承标识** ⇒ 不改档、不写 known、不改日期。要真的继承请发「/继承 <段位>」或加【承接】／【大总结】一类标识。');
-  }
+  const isQualified = hasExplicitTag || (isEarlyFloor && (explicitStage > 1 || (hitMilestoneCount >= 2 && inferredStage >= 3)));
 
-  if (!hasExplicitTag) return null;
+  if (!isQualified) return null;
 
   const finalStage = Math.max(1, Math.min(STAGE_STEPS.length, explicitStage || inferredStage || 1));
   return {
@@ -4364,20 +2788,17 @@ async function applyInheritedArchive(text, messageId) {
   const shift = STAGE_BASE[targetStage - 1] - messageId;
 
   // 自动从总结文本中推导并恢复已解锁的历史锚点
-  /* 2026-10-08（gpt 04 号②）：锚点恢复要过**事实语义 + 实证**两道，不能「关键词包含即置真」，
-     更不能「按段位补」（旧写法 targetStage>=6 无条件补「已抵达天溪」）。
-     ⇒ 关键词命中后仍过 anchorEvidenceIn（含否定窄闸）；落空的一律不写盘并记日志。 */
   const patchKnown = {};
   for (const f of ALL_FIELDS) {
     const kws = ANCHOR_KEYWORDS[f] || [];
-    if (!kws.some(k => summaryText.includes(k))) continue;
-    const ev = anchorEvidenceIn(summaryText, f);
-    if (!ev.ok) {
-      console.warn(TAG, `⛔ [继承·锚点] 第 ${messageId} 楼不恢复「${f}」：${ev.why}`);
-      continue;
+    if (kws.some(k => summaryText.includes(k))) {
+      patchKnown[f] = true;
     }
-    patchKnown[f] = true;
   }
+
+  // 基础前序锚点补齐（若到达高段位，自动推导基础事件）
+  if (targetStage >= 2 && summaryText.includes('极乐引')) patchKnown['极乐引入手'] = true;
+  if (targetStage >= 6) patchKnown['已抵达天溪'] = true;
 
   const patch = {
     [FLOOR_PIN]: { floor: messageId, shift },
@@ -4498,7 +2919,7 @@ async function handleUserCommand(text, messageId) {
       return true;
     }
     const shift = STAGE_BASE[n - 1] - messageId;
-    const r = await writeStat({ [FLOOR_PIN]: { floor: messageId, shift }, 段位: n, 窗口起点: 0, 时点加速: 0, 结算待办: 0 }, `设段 ${n}`, true);
+    const r = await writeStat({ [FLOOR_PIN]: { floor: messageId, shift }, 段位: n, 窗口起点: 0, 时点加速: 0, 结算待办: 0 }, `设段 ${n}`);
     console.log(TAG, `✅ 段位已拨到第 ${n} 段（第 ${messageId} 楼 ⇒ 时间轴平移 ${shift} 楼）via ${(r && r.via) || '?'}`);
     toast('info', `段位 → 第 ${n} 段`, 6000);
     return true;
@@ -4536,34 +2957,9 @@ async function handleUserCommand(text, messageId) {
       toast('warning', '阵营随身份自动写，请发「身份 <名字>」', 8000);
       return true;
     }
-    /* /回锁 <名器名>（不带后缀）＝**整件退回**：把「<名器>成形」与四个阶段条一起退回。
-       为什么要它：只退「成形」时面板仍会亮纹章 —— 判据里「任一阶段条为真」也算成形，
-       而脚本在成形时会自动派发一阶段条（玩家反馈「这个关不了好像」就是这个）。 */
-    if (p.cmd === '/回锁') {
-      const baseRelic = String(p.arg).replace(/[「」\s]/g, '');
-      if (baseRelic && ALL_FIELDS.includes(baseRelic + '成形')) {
-        const targets = [baseRelic + '成形'];
-        for (const cn of ['一', '二', '三', '四']) { const fx = baseRelic + cn + '阶段'; if (ALL_FIELDS.includes(fx)) targets.push(fx); }
-        const patchKnown = {};
-        for (const fx of targets) patchKnown[fx] = false;
-        const rr = await writeStat({ known: patchKnown }, `整件退回 ${baseRelic}`, true);
-        if (rr && rr.ok) {
-          console.log(TAG, `↩ ${baseRelic} 整件已退回（${targets.length} 条）：${targets.join('、')} —— 下一回合生效`);
-          toast('info', `${baseRelic} 整件已退回`, 8000);
-        } else {
-          console.warn(TAG, `整件退回失败：${(rr && rr.why) || '写入接口不可用'}`);
-          toast('warning', `整件退回失败：${(rr && rr.why) || '写入接口不可用'}`, 8000);
-        }
-        setTimeout(() => dumpKnown('整件退回后'), 200);
-        return true;
-      }
-    }
-
     const val = p.cmd === '/解锁';
     const r = await writeKnownField(p.arg, val);
     if (r.ok) {
-      /* 记一笔「最近解锁」——供 /撤销 一键回退（玩家打错字时不必背字段名） */
-      if (val) { try { await writeStat({ 最近解锁: p.arg }, '记录最近解锁'); } catch (e) { /* 记账失败不影响解锁 */ } }
       console.log(TAG, `✅ ${p.arg} = ${val}（via ${r.via}）—— 下一回合生效`);
       toast('info', `${p.arg} = ${val}`, 6000);
       setTimeout(() => dumpKnown('写入后'), 200);
@@ -4571,130 +2967,6 @@ async function handleUserCommand(text, messageId) {
       console.warn(TAG, `❌ 写入失败：${r.why}`);
       toast('warning', `写入失败：${r.why}`, 8000);
     }
-    return true;
-  }
-
-  if (p.cmd === '/撤销') {
-    const sdU = readStatData() || {};
-    const lastU = String(sdU.最近解锁 || '').trim();
-    if (!lastU || !ALL_FIELDS.includes(lastU)) {
-      console.log(TAG, '没有可撤销的解锁（「最近解锁」是空的）—— 先用 /已知 看已经翻了哪些，再 /回锁 <字段>');
-      toast('warning', '没有可撤销的解锁（可用 /已知 查看）', 7000);
-      return true;
-    }
-    const rU = await writeKnownField(lastU, false);
-    if (rU.ok) {
-      try { await writeStat({ 最近解锁: '' }, '清空最近解锁'); } catch (e) { /* 忽略 */ }
-      console.log(TAG, '↩ 已撤销：' + lastU + ' 退回未解锁（下一回合生效）');
-      toast('info', '已撤销：' + lastU, 8000);
-      setTimeout(() => dumpKnown('撤销后'), 200);
-    } else {
-      console.warn(TAG, '撤销失败：' + rU.why);
-      toast('warning', '撤销失败：' + rU.why, 8000);
-    }
-    return true;
-  }
-  if (p.cmd === '/物品' || p.cmd === '/行囊' || p.cmd === '/纳戒') {
-    const sd = readStatData() || {};
-    const inv = normalizeInventory(Array.isArray(sd.inventory) ? sd.inventory : defaultInventoryFor(sd.身份));
-    console.log(TAG, `【纳戒物品清单】共 ${inv.length} 种：`);
-    inv.forEach((it, i) => console.log(`  [${i + 1}] ${it.name} ×${it.count} —— ${it.desc || '无描述'}\n      详述：${it.full || it.desc || '无'}`));
-    toast('info', `纳戒中共有 ${inv.length} 种随身物品（F12控制台可查详情）`, 6000);
-    return true;
-  }
-
-  
-  if (p.cmd === '/验收' || p.cmd === '/体检' || p.cmd === '/自检') {
-    const sd = readStatData() || {};
-    const out = [];
-    let bad = 0;
-    const put = (ok, msg) => { out.push(`${ok ? '✔' : '✘'} ${msg}`); if (!ok) bad += 1; };
-
-    /* ① 物品：数量与账本自洽 */
-    const inv = normalizeInventory(sd.inventory);
-    const badCount = inv.filter((it) => !(it.count >= 1) || !Number.isInteger(it.count));
-    put(badCount.length === 0, `物品数量都是 ≥1 的整数（共 ${inv.length} 种：${inv.map((x) => x.name + '×' + x.count).join('、') || '空'}）`);
-    const log = (sd.纳戒账本 && typeof sd.纳戒账本 === 'object') ? sd.纳戒账本 : {};
-    const floors = Object.keys(log).filter((k) => /^\d+$/.test(k));
-    out.push(`  纳戒账本记了 ${floors.length} 笔${floors.length ? '（第 ' + floors.slice(-5).join('、') + ' 楼）' : ''}`);
-
-    /* ② 后台时点 vs 最近一楼状态栏里的 <时间> */
-    const behind = String(sd.仙盟历文 || sd.仙盟历 || '').trim();
-    let lastAi = '';
-    for (let i = Math.max(0, messageId - 1); i >= 0 && i > messageId - 6; i -= 1) {
-      let t = '';
-      try { t = String(messageText(i) || ''); } catch (e) { t = ''; }
-      if (t && !t.includes('/验收')) { lastAi = t; break; }
-    }
-    const wroteTime = (lastAi.match(/<时间>([\s\S]*?)<\/时间>/) || [])[1] || '';
-    const same = !behind || !wroteTime
-      || ((behind.match(/(\d{3,4})\s*年/) || [])[1] === (wroteTime.match(/(\d{3,4})\s*年/) || [])[1]
-        && (behind.match(/(正月|冬月|腊月|闰?[一二三四五六七八九十]{1,2}月)/) || [])[1] === (wroteTime.match(/(正月|冬月|腊月|闰?[一二三四五六七八九十]{1,2}月)/) || [])[1]);
-    put(same, `时点照抄：后台「${behind || '（没有）'}」／状态栏「${String(wroteTime).trim() || '（没读到）'}」`);
-
-    /* ③ 成形锚点：翻真的必须带破身证据 */
-    const kn = (sd.known && typeof sd.known === 'object') ? sd.known : {};
-    const book = (sd.破处者 && typeof sd.破处者 === 'object') ? sd.破处者 : {};
-    for (const fo of FORM_OF_HOLDERS) {
-      const anchor = fo.form;
-      if (kn[anchor] !== true) continue;
-      const ok = fo.holders.some((h) => Boolean(book[h]) || kn[h + '处女丧失'] === true);
-      put(ok, `${anchor} 已成形，${ok ? '有' : '**没有**'}破身证据（${fo.holders.join('／')}）`);
-    }
-    out.push(`  段位：${sd.段位 === undefined ? '（没设）' : sd.段位}｜身份：${sd.身份 || '（没设）'}`);
-
-    const title = bad === 0 ? `✅ 体检通过（${out.filter((x) => /^[✔✘]/.test(x)).length} 项）` : `❌ 体检有 ${bad} 项不过`;
-    const text = `【仙姝堕·现场体检】${title}\n` + out.join('\n') + `\n（时间：${new Date().toLocaleString()}）`;
-    console.log(TAG, text);
-    try {
-      for (const line of out.slice(0, 6)) console.log('  ' + line);
-    } catch (e) { /* 忽略 */ }
-    toast(bad === 0 ? 'info' : 'warning', title.replace(/[（(].*$/, '') + '｜详情见变量「验收报告」', 10000);
-    const r = await writeStat({ 验收报告: text }, '现场体检');
-    if (r && r.ok) console.log(TAG, `✅ 体检报告已写进变量，可在下一条聊天记录里读出（via ${r.via}）`);
-    else console.warn(TAG, `⚠️ 体检报告写盘失败：${(r && r.why) || '接口不可用'}（控制台里仍有全量）`);
-    return true;
-  }
-
-  if (p.cmd === '/获得物品' || p.cmd === '/添加物品') {
-    if (!p.arg) {
-      toast('warning', '用法：/获得物品 <物品名> [数量] [简述] [详述]', 6000);
-      return true;
-    }
-    const parts = p.arg.split(/\s+/);
-    const itName = parts[0];
-    const maybeN = /^\d+$/.test(parts[1] || '') ? Math.max(1, parseInt(parts[1], 10)) : 1;
-    const rest = /^\d+$/.test(parts[1] || '') ? parts.slice(2) : parts.slice(1);
-    const itDesc = rest[0] || '随身所得之物。';
-    const itFull = rest.slice(1).join(' ') || itDesc;
-    const sd = readStatData() || {};
-    let inv = normalizeInventory(Array.isArray(sd.inventory) ? sd.inventory : defaultInventoryFor(sd.身份));
-    const r = applyItemChange(inv, { kind: 'gain', name: itName, count: maybeN, desc: itDesc, full: itFull });
-    inv = r.inv;
-    await writeStat({ inventory: inv }, `获得物品「${itName}」×${r.applied}`);
-    toast('info', `已将「${r.name}」×${r.applied} 收入纳戒`, 5000);
-    return true;
-  }
-
-  if (p.cmd === '/消耗物品' || p.cmd === '/移除物品' || p.cmd === '/丢弃物品') {
-    if (!p.arg) {
-      toast('warning', '用法：/消耗物品 <物品名> [数量]（不写数量按 1 计）', 6000);
-      return true;
-    }
-    const parts = p.arg.trim().split(/\s+/);
-    const itName = parts[0];
-    const n = /^\d+$/.test(parts[1] || '') ? Math.max(1, parseInt(parts[1], 10)) : 1;
-    const sd = readStatData() || {};
-    const inv0 = normalizeInventory(Array.isArray(sd.inventory) ? sd.inventory : defaultInventoryFor(sd.身份));
-    const r = applyItemChange(inv0, { kind: 'loss', name: itName, count: n });
-    if (!r.ok) {
-      toast('warning', `纳戒中未找到「${itName}」`, 5000);
-      return true;
-    }
-    await writeStat({ inventory: r.inv }, `消耗物品「${r.name}」×${r.applied}`);
-    const left = r.inv.find((x) => x.name === r.name);
-    toast('info', `已消耗「${r.name}」×${r.applied}${left ? `，还剩 ${left.count}` : '，已用尽并移出纳戒'}`, 6000);
-    console.log(TAG, `[命令] 消耗「${r.name}」×${r.applied}（${r.note}）`);
     return true;
   }
   return false;
@@ -4773,16 +3045,10 @@ function proposeAnchors(text, messageId) {
     if (!kws.length) continue;
     const hitWords = kws.filter((k) => t.includes(k));
     if (!hitWords.length) continue;
-    /* 2026-10-08（gpt 03 号：anchor 3 红）：**取消 second-signal 旁路**。
-       旧写法是「命中词全是地点名 且 正文里有事件动词」就照提议 —— 于是
-         · 「在幽寂谷里胁迫叶红缨屈从」把「进入幽寂谷／离开幽寂谷」一起提了出来；
-         · 「在葬魔渊边失足坠渊」把「进入葬魔渊」也提了出来；
-       地点名 + 任意事件动词，并不证明**这个地点类锚点**本身发生。
-       现在：命中词全是地点名 ⇒ 一律不提议；复合词（「进入幽寂谷」「驰援天溪」）不是裸地点名，
-       自己能命中就照旧提议。 */
+    /* ⚠️ v1.5：只提到「地点名」不算发生事件 —— 必须再配上事件动词（见 ANCHOR_LOCATION_ONLY 注释） */
     const onlyLocation = hitWords.every((k) => ANCHOR_LOCATION_ONLY.includes(k));
-    if (onlyLocation) {
-      skips.push(`${f}（命中词全是地点名 ${hitWords.join('、')} ⇒ 不提议：地点名不等于该事件发生）`);
+    if (onlyLocation && !ANCHOR_SECOND_SIGNALS.some((k) => t.includes(k))) {
+      skips.push(`${f}（只出现地点词 ${hitWords.join('、')}，未见事件动词 ⇒ 不提议）`);
       continue;
     }
     hits.add(f);
@@ -4794,7 +3060,10 @@ function proposeAnchors(text, messageId) {
     console.log(TAG, `[旁证·关键词] ${f}${ok ? '' : '（⚠️ 不在字段台账里）'} —— 若认可，发送 /解锁 ${f}`
       );
     if (!ok) continue;
-    
+    /* ⚠️ 2026-09-29（主人令）：「**弹提示让玩家点头很蠢、而且很出戏**」⇒
+     *   这里**不再 toast**，只往 console 打一行（排障用）。
+     *   "本回合到底发生了什么"改由模型写在状态栏那个玩家看不见的 `<实际发生>` 栏里，
+     *   由 `applyMilestones()` **自动记账**；关键词命中只作**旁证**（可对照排查漏记）。 */
     console.log(TAG, `[旁证·关键词] ${f} 的触发词在正文里出现了 —— 若模型没在 <实际发生> 里记它，`
       + `说明漏记了（可手工 /解锁 ${f}）。`);
   }
@@ -4806,26 +3075,12 @@ function proposeAnchors(text, messageId) {
  * ═══════════════════════════════════════════════════════════ */
 
 /** 同一条消息可能被两个事件（收到／渲染完）各叫一次，去个重 */
-const seenMessages = new Set();      /* 已确认处理成功的键 */
+const seenMessages = new Set();
 function firstTime(key) {
   if (seenMessages.has(key)) return false;
   seenMessages.add(key);
   if (seenMessages.size > 300) seenMessages.clear();
   return true;
-}
-
-/* gpt ④⑦：两段式去重 —— 先占位；业务**成功**才确认；失败立即释放，允许受控重试。
-   原来 firstTime 在业务之前就写进集合 ⇒ 第一次失败后，第二次被当成「已处理」直接跳过。 */
-const pendingKeys = new Set();
-const tickPromises = new Map();   /* gpt ⑦：同楼并发触发共用同一个 Promise */
-function claimOnce(key) {
-  if (seenMessages.has(key) || pendingKeys.has(key)) return { ok: false, reason: seenMessages.has(key) ? "已处理" : "处理中" };
-  pendingKeys.add(key);
-  return {
-    ok: true,
-    commit() { pendingKeys.delete(key); seenMessages.add(key); if (seenMessages.size > 300) seenMessages.clear(); },
-    release() { pendingKeys.delete(key); },
-  };
 }
 
 /** 启动 / 换聊天时的整体判定 */
@@ -4834,7 +3089,6 @@ async function boot(reason) {
   try {
     await ensureInit(reason);
     await syncIdentityFromFirstMes(reason);
-    try { await reconcileNadeLedger(`启动·${reason}`); } catch (e) { /* 对账失败不影响启动 */ }
     ensureMenuBound();
     console.log(TAG, `[启动·${reason}] 完成`);
   } catch (e) {
@@ -4891,33 +3145,24 @@ async function onAiMessageReceived(messageId, opt) {
       }
     } catch (e) { /* 忽略 */ }
     const dedupeKey = `recv:${cid}:${n}:${swipeId}:${hashText(text)}`;
-    /* gpt ④：两段式去重 + 异步后重查 —— 业务前只占位，成功才确认；失败/中止立即释放，允许受控重试。 */
-    const claim = claimOnce(dedupeKey);
-    if (!claim.ok) { console.log(TAG, `[消息·${srcTag}] #${n} ${claim.reason}，跳过`); return; }
-    let committed = false;
-    try {
-      if (!(n > 0)) {                                 // 第 0 楼是开场楼，没有状态可记
-        console.log(TAG, `[消息·${srcTag}] #${n} 是开场楼，跳过状态解析与收尾自检`);
-        claim.commit(); committed = true; return;
-      }
-      const latest = latestMessageId();
-      if (latest !== null && n !== latest) {
-        console.log(TAG, `[消息·${srcTag}] #${n} 不是最新一楼（当前 #${latest}），只重绘不记账`);
-        claim.commit(); committed = true; return;
-      }
-      proposeAnchors(text, n);
-      checkOutputContract(text, n);
-      await applyStatusToVars(text, n, { swipeId });
-      /* 重查：await 期间若切了聊天或又来了新楼，本次结果不算数（释放 ⇒ 可重试） */
-      const after = latestMessageId();
-      if (after !== null && Number(after) !== Number(n)) {
-        console.log(TAG, `[消息·${srcTag}] #${n} 处理期间已不是最新一楼（当前 #${after}）⇒ 释放去重键，可重试`);
-        claim.release(); return;
-      }
-      claim.commit(); committed = true;
-    } finally {
-      if (!committed) claim.release();
+    if (!firstTime(dedupeKey)) return;
+    if (!(n > 0)) {                                   // 第 0 楼是开场楼，没有状态可记
+      console.log(TAG, `[消息·${srcTag}] #${n} 是开场楼，跳过状态解析与收尾自检`);
+      return;
     }
+    // ⚠️ v1.1：CHARACTER_MESSAGE_RENDERED 在**翻历史／重绘任意一楼**时也会触发。
+    //   不挡住的话，玩家往回滚两屏，旧楼的状态栏就会被当成「当前状态」写回账本
+    //   （而且是消息层＋聊天层双写，污染面很大）。
+    //   v1.4 的渲染触发（iframe → __xsdStateTick）走的是**同一个**闸门 —— 翻历史时
+    //   正则照样会给旧楼重建 iframe、iframe 照样会回调，所以这块挡板比以前更要紧。
+    const latest = latestMessageId();
+    if (latest !== null && n !== latest) {
+      console.log(TAG, `[消息·${srcTag}] #${n} 不是最新一楼（当前 #${latest}），只重绘不记账`);
+      return;
+    }
+    proposeAnchors(text, n);
+    checkOutputContract(text, n);
+    await applyStatusToVars(text, n);
   } catch (e) { console.warn(TAG, `[消息·${srcTag}] 处理第 ${messageId} 楼失败：`, msgOf(e)); }
 }
 
@@ -4937,15 +3182,7 @@ async function xsdStateTick(mesid, rawText, source) {
     return { ok: false, why: 'bad mesid' };
   }
   console.log(TAG, `[tick·${src}] #${n} 收到渲染触发${rawText ? `（随带原文 ${String(rawText).length} 字）` : '（无原文，回读消息）'}`);
-  /* gpt ⑦：同楼并发触发共用同一个 Promise；内部异常被吞也不能假报成功 */
-  const tickKey = "tick:" + n;
-  if (tickPromises.has(tickKey)) return tickPromises.get(tickKey);
-  const run = (async () => {
-  try { await onAiMessageReceived(n, { rawText, source: src }); }
-  catch (eTick) {
-    console.warn(TAG, "[tick·" + src + "] #" + n + " 处理抛错：" + ((eTick && eTick.message) || eTick));
-    return { ok: false, why: String((eTick && eTick.message) || eTick), mesid: n, source: src };
-  }
+  await onAiMessageReceived(n, { rawText, source: src });
   // 顺带把面板也重绘一次（面板脚本在场时才有；不在场就跳过，互不依赖）
   try {
     const fill = (typeof window !== 'undefined' && typeof window.__xsdFillPanel === 'function')
@@ -4954,29 +3191,7 @@ async function xsdStateTick(mesid, rawText, source) {
         ? window.parent.__xsdFillPanel : null);
     if (fill) fill(n, rawText);
   } catch (e) { /* 面板脚本不在场属正常，静默 */ }
-  /* gpt ⑦：写入＋回读都确实生效才算成功；**部分写入**要单独识别并按可重试处理。 */
-  let rb = null;
-  try {
-    const gvRb = (typeof getVariables === "function") ? getVariables : null;
-    const mvRb = gvRb ? gvRb({ type: "message", message_id: n }) : null;
-    rb = mvRb && mvRb.stat_data ? mvRb.stat_data : null;
-  } catch (eRb) { rb = null; }
-  if (!rb) {
-    console.warn(TAG, "[tick] #" + n + " 回读不到 stat_data ⇒ ok:false（可重试）");
-    return { ok: false, why: "回读不到 stat_data", mesid: n, source: src };
-  }
-  const inv = { 楼号: Number(rb.最后处理楼号) === n };
-  if (n > 0) { inv["段位"] = Number.isFinite(Number(rb.段位)) && Number(rb.段位) >= 1; inv["日历"] = (typeof rb.仙盟历文 === "string" && rb.仙盟历文.length > 0); }
-  const missing = Object.keys(inv).filter((k) => !inv[k]);
-  if (missing.length) {
-    console.warn(TAG, "[tick] #" + n + " **部分写入**：缺 " + missing.join("、") + " ⇒ ok:false（可重试，不当作成功）");
-    return { ok: false, why: "部分写入（缺 " + missing.join("、") + "）", partial: true, mesid: n, source: src };
-  }
   return { ok: true, mesid: n, source: src };
-  })();
-  tickPromises.set(tickKey, run);
-  try { run.then(() => setTimeout(() => tickPromises.delete(tickKey), 800)); } catch (eFin) { /* 忽略 */ }
-  return run;
 }
 
 /* 把入口挂到 window / window.parent / window.top 三处（哪一层都抠得到就认） */
@@ -5003,74 +3218,12 @@ if (API.eventOn && EVENTS) {
     catch (e) { console.warn(TAG, `⚠️ 监听 ${name} 失败：`, msgOf(e)); }
   };
 
-/* ═══ gpt ⑧：首次生成 B —— 在 MESSAGE_SENT（入楼后、世界书扫描前）把初始化落地并回读；
-   失败时**显式取消**生成；找不到取消入口就如实记录（不能只 throw 就假定已取消）。 ═══ */
-let preflightDone = false;
-async function preflightFirstGeneration(mesid) {
-  if (preflightDone) return { ok: true, why: "已初始化" };
-  const chatKey0 = (typeof xdsMenuChatKey === "function") ? xdsMenuChatKey() : "";
-  const epoch0 = runtime.epoch;
-  try {
-    await ensureInit("首次生成前置");
-    if (runtime.disposed || runtime.epoch !== epoch0 || ((typeof xdsMenuChatKey === "function") && xdsMenuChatKey() !== chatKey0)) {
-      console.log(TAG, "[首次生成 B] 初始化期间会话/状态已变 ⇒ 放弃本次前置（不取消生成）");
-      return { ok: false, why: "会话已变", cancelled: false };
-    }
-    try { await syncIdentityFromFirstMes("首次生成前置"); } catch (eId) { console.warn(TAG, "[首次生成 B] 身份同步失败（继续）：" + msgOf(eId)); }
-    let rb = null;
-    try { const gv = (typeof getVariables === "function") ? getVariables : null; rb = gv ? gv({ type: "chat" }) : null; } catch (eRb) { rb = null; }
-    const sd = rb && rb.stat_data ? rb.stat_data : null;
-    preflightDone = true;
-    console.log(TAG, "[首次生成 B] 前置完成并回读：" + (sd ? ("身份=" + (sd.身份 || "—") + "／known " + (sd.known ? Object.keys(sd.known).length : 0) + " 项") : "回读为空"));
-    return { ok: true, readback: !!sd };
-  } catch (e) {
-    console.warn(TAG, "[首次生成 B] 前置失败：" + msgOf(e) + " ⇒ 显式取消本次生成");
-    let cancelled = false;
-    const tries = [
-      () => ((typeof API !== "undefined") && API && (typeof API.stopGeneration === "function")) ? API.stopGeneration() : null,
-      () => { const w = (typeof window !== "undefined") ? window : null; const S = w && (w.SillyTavern || (w.parent && w.parent.SillyTavern)); if (S && typeof S.stopGeneration === "function") { S.stopGeneration(); return true; } return null; },
-      () => { const S = (typeof window !== "undefined") && window.top && window.top.SillyTavern; if (S && typeof S.stopGeneration === "function") { S.stopGeneration(); return true; } return null; },
-    ];
-    for (const t of tries) { try { if (t()) { cancelled = true; break; } } catch (eC) { /* 试下一条 */ } }
-    if (!cancelled) console.warn(TAG, "[首次生成 B] 未找到可用的取消入口 ⇒ 如实记录，不假定生成已取消");
-    return { ok: false, why: msgOf(e), cancelled };
-  }
-}
-async function preflightThenCommand(id) {
-  try { await preflightFirstGeneration(id); } catch (ePf) { console.warn(TAG, "[首次生成 B] 前置异常：" + msgOf(ePf)); }
-  return onUserMessageSent(id);
-}
-
   // ⚠️ 主路径 ＝ 渲染触发（见上方 xsdStateTick）。下面这两条**只是冗余加速**：
   //    能拿到就早一拍、少一次回读；拿不到（eventOn 缺失／事件改名）也必须一切正常。
-/* gpt ⑧：助手桥接若不交回 Promise，就改挂**宿主原生 eventSource**（它的 emit 可 await），
-   并把监听登记进 runtime.cleanups，换聊天/卸载时能摘掉。取不到原生就退回助手桥接。 */
-function nativeEventSource() {
-  const ctxs = [];
-  try { if (typeof getGlobalOrParent === "function") { const S = getGlobalOrParent("SillyTavern"); if (S && typeof S.getContext === "function") ctxs.push(S.getContext()); } } catch (e) { /* 忽略 */ }
-  try { const w = (typeof window !== "undefined") ? window : null; if (w && w.SillyTavern && typeof w.SillyTavern.getContext === "function") ctxs.push(w.SillyTavern.getContext()); } catch (e) { /* 忽略 */ }
-  try { const w = (typeof window !== "undefined") ? window : null; if (w && w.parent && w.parent.SillyTavern && typeof w.parent.SillyTavern.getContext === "function") ctxs.push(w.parent.SillyTavern.getContext()); } catch (e) { /* 忽略 */ }
-  try { const w = (typeof window !== "undefined") ? window : null; if (w && w.top && w.top.SillyTavern && typeof w.top.SillyTavern.getContext === "function") ctxs.push(w.top.SillyTavern.getContext()); } catch (e) { /* 忽略 */ }
-  for (const c of ctxs) { try { if (c && c.eventSource && typeof c.eventSource.on === "function") return c.eventSource; } catch (e) { /* 试下一个 */ } }
-  return null;
-}
-function onNative(evName, fn, label) {
-  const es = nativeEventSource();
-  if (!es) return false;
-  try {
-    es.on(evName, fn);
-    try { runtime.cleanups.push(() => { try { if (typeof es.removeListener === "function") es.removeListener(evName, fn); else if (typeof es.off === "function") es.off(evName, fn); } catch (e) { /* 忽略 */ } }); } catch (e) { /* 入不了清理表不影响功能 */ }
-    console.log(TAG, "[接线] " + label + " 改挂**原生 eventSource**（可 await，已登记清理）");
-    return true;
-  } catch (e) { console.warn(TAG, "[接线] " + label + " 挂原生 eventSource 失败：" + msgOf(e)); return false; }
-}
-
-  if (!onNative('MESSAGE_SENT', (id) => preflightThenCommand(id), '首次生成前置＋玩家命令')) {
-    on('MESSAGE_SENT', (id) => preflightThenCommand(id), '首次生成前置 ＋ 玩家命令（事件驱动，不可拔）');
-  }
+  on('MESSAGE_SENT', (id) => onUserMessageSent(id), '玩家命令（事件驱动，不可拔）');
   on('MESSAGE_RECEIVED', (id) => onAiMessageReceived(id, { source: '事件·冗余加速' }), '状态条解析的**冗余加速**（主路径是渲染触发）');
   on('CHARACTER_MESSAGE_RENDERED', (id) => onAiMessageReceived(id, { source: '事件·冗余加速' }), '同一楼重渲染的**冗余加速**（已去重；闸门仍生效）');
-  on('CHAT_CHANGED', () => { if (window.__xsdCorrection) window.__xsdCorrection.onChatChanged(); setTimeout(() => boot('换聊天'), 400); }, '换聊天时重新判定身份（事件驱动，不可拔）');
+  on('CHAT_CHANGED', () => setTimeout(() => boot('换聊天'), 400), '换聊天时重新判定身份（事件驱动，不可拔）');
   on('CHAT_CREATED', () => setTimeout(() => boot('新聊天'), 400), '新聊天初始化（事件驱动，不可拔）');
   on('MESSAGE_SWIPED', () => setTimeout(() => { ensureInit('滑开场白'); syncIdentityFromFirstMes('滑开场白'); }, 400), '滑开场白时重新判定身份（事件驱动，不可拔）');
   console.log(TAG, `${VERSION} 已接线：命令 / 换聊天 / 开场白（事件）＋ 冗余加速（收到／渲染）；主路径＝渲染触发 ${'__xsdStateTick'}`);

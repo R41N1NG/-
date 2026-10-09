@@ -20,46 +20,6 @@ const XSD_SKELETON = /*__XSD_SKEL_B64__*/;
 /* 楷体子集（LXGW WenKai Medium · OFL 1.1，485 字形 · 98.8 KB woff2 · data URI ⇒ 零外链） */
 const XSD_FONT_B64 = /*__XSD_FONT_B64__*/;
 
-/* ══════════════════════════════════════════════════════════════════════
- * 《仙姝墮》· 状态栏面板填充   v2.3   2026-09-27（照抄外卡《大乾风华录 Ver2.0》的「被渲染时调用」：
- *   新增全局入口 __xsdFillPanel(mesid, rawText)，由卡内正则产出的自包含 iframe 在加载时回调）
- * ----------------------------------------------------------------------
- * 相对归档 v1.2 的**关键修复**（v2.0 起的结论，别退回去）：
- *   旧版用 `document.querySelector('.mes[mesid]')` 定位消息 —— 但卡内脚本跑在
- *   酒馆助手的 **iframe（about:srcdoc）** 里（依据：JS-Slash-Runner
- *   `src/panel/script/iframe.ts` 把脚本包进 `<script type="module">`），
- *   **iframe 自己的 document 里一条消息都没有** ⇒ 每次填充都静默失败。
- *   这就是当年「面板 HTML 渲染出来了、9 个字段却永远全空」的根因（交接 6.0b 里那句
- *   「没查清的执行上下文」，现在查清了）。所有 DOM 查询都走 `DOC()`（优先 window.parent.document）。
- *
- *  v2.3 触发架构（照抄外卡）：
- *   **主路径 ＝ 渲染触发**。显示层正则「仙姝墮·状态栏」把 `<Status_block>…</Status_block>`
- *   换成「面板 HTML ＋ 隐藏原文副本 `<pre hidden data-xds-src>` ＋ 自包含 iframe」；
- *   iframe 在 load 时自己从宿主消息里取出 `mesid` 与原文，回调 `window.parent.__xsdFillPanel(mesid, 原文)`。
- *   所以下面那三个 eventOn 钩子（CHARACTER_MESSAGE_RENDERED／USER_MESSAGE_RENDERED／CHAT_CHANGED）
- *   与启动时的 `setTimeout(fillAll, 900)` **都只是冗余兜底** —— 拔掉 eventOn，填充照样工作。
- *   渲染触发那条链同时也会叫状态机（`__xsdStateTick`），两个脚本互不依赖、各自可缺。
- *
- * v2.3 新增：**立绘子系统**（照抄外卡《大乾风华录 Ver2.0》的立绘链，逐条改掉它的 11 个坑）。
- *   入口一条：`renderCast()` 里每张「人」区微卡左侧插 `xsdPortraitHtml()`。
- *   名字 → `XSD_PINYIN`（§〇M 立绘命名表 16 行／18 个人名）→ 拼音 id
- *   → 候选链（本地 3 目录 × `.webp`/`.png` = 6 条 ＋ catbox 云端 1 条）
- *   → 写进 `data-sources`(JSON, 已 esc) ＋ `data-src-idx="0"`（**空链也写**，外卡 P10）
- *   → img 404 由 `xsdWalkDown()` 逐级换源 → 链尽先 `onerror=null` 再落国风 SVG 剪影印章。
- *   点立绘 → `xsdOpenLightbox()` 全屏大图（覆盖层点击关／ESC 关，**关闭时统一摘光监听**，外卡 P2）。
- *   配色走 §〇E·E6 分区（闻观语墨绿／孤月冷蓝白／叶红缨赤红／楚灵夜暖白嫩粉／其余中性色）；
- *   SVG 文本一律 `xsdXmlEsc()`（外卡 P7：不转义 `&`/`<` 会让占位图自己也裂）。
- *   ⚠️ 云表 `XSD_CLOUD_URLS` 目前是**空锚点**：图还没传，此时面板只显示 SVG 剪影（不是 bug）。
- *   ⚠️ 本文件仍是**唯一**需要改的文件；`_build_card.js` 一行未动 ⇒ 面板 CSS 块里没有立绘样式，
- *      所以立绘/微卡的样式走**行内 cssText**（见 XSD_CC_* / XSD_PW_STYLE）。
- *      好处顺带一个：JS 没跑时 `style` 属性不存在 ⇒ 面板自动退化成纯文字（降级壳）。
- *
- * 另两条沿用的结论（6.0b）：
- *   ① 消息里的 `<script>` 会被 DOMPurify 剥掉 ⇒ 填充逻辑**只能**放在卡内脚本里
- *      （所以我们把唯一的例外——引导 iframe 的脚本——塞进 `iframe[srcdoc]`：那是**另一份文档**，不经消毒）；
- *   ② 消息里的 class 会被改名成 `custom-` 前缀 ⇒ 定位一律靠 `data-xds*` 数据属性。
- * ══════════════════════════════════════════════════════════════════════ */
-
 const TAG = '[仙姝墮·面板]';
 let debug = false;
 let xsdMobileDisposed = false;
@@ -107,12 +67,16 @@ const FIELD_MAP = {
  *  ⚠️ `cast`（在场角色）**必须**列在这里：通用匹配是「互相包含」，
  *     而 `<在场>` 与「在场角色」互相包含 ⇒ 不挡的话「在场」那行会把角色区块当文本填掉。 */
 const SPECIAL_KEYS = ['cast'];
-/** 子块内层标签 → 卡片上的小标题（**只用这五个**，与状态栏模板一致）
- *  ⚠️ 2026-10-06 主人令：微卡中「阶段」改名为「关系」，避免与名器阶段混淆；兼容老格式。 */
+
 const CAST_KEYS = ['名', '关系', '情况', '心境', '神态'];
 /** 画卡片时按这个顺序排（`名` 做标题，不列在这里） */
 const CAST_ROWS = ['关系', '情况', '心境', '神态'];
-const CAST_MAX = 3;
+/** 主人 2026-10-09：☞ 在场要角**上限 3 ⇒ 5**——**其余一切照旧**（版式／位置／样式一字未动）。
+    做法：仍然只显示前 CAST_MAX 个；框内可视高度＝**原来 3 张卡的高度**（实测，写死不猜），
+    5 张装不下 ⇒ **框内上下滑动**看全；≤3 张时**不设高度**，与原来完全相同（自动撑开、无滚动条）。 */
+const CAST_MAX = 5;
+/** 原来的一次可见数（主人：原来 3 个 ⇒ 用它当"框高基准"，保证"原来的任何都不变"） */
+const CAST_BASE = 3;
 /** 外卡六件套的英文标签与旧版写法也认（模型偶尔会回落成 extra_char_N / 阶段 的写法） */
 const CAST_FIELD_ALIAS = {
   name: '名', 名称: '名', 对象: '名',
@@ -186,6 +150,7 @@ function parseCast(inner) {
       if (CAST_KEYS.some((k) => one[k])) list.push(one);
       return '\n';
     });
+  /* 跟原来完全一样：**只显示前 CAST_MAX 个**（原来 3，现在 5）；框内可上下滑动看全这 5 个。 */
   return { list: list.slice(0, CAST_MAX), rest };
 }
 
@@ -198,9 +163,15 @@ function renderCast(panel, list, stage, seed, rawText) {
   if (!box || !list.length) return 0;
   const st = s0(stage) || 'baseline';
   const sd = s0(seed) || '0';
+  /* ☞ 主人 2026-10-09（改口后的正确做法）：**保留原来的竖排卡片版式**（卡片宽度铺满、不横压），
+     只在**原来那个框内**做**上下滑动**看更多人 ⇒ 框高不额外增长，滚动条与滚轮/触摸上下翻。
+     ⚠️ 上一版我改成横排 ⇒ 卡片被压成 1/5、文字一字一行：那是错的，已回退。 */
+  const keepTop = Number(box.dataset.xdsScrollTop || 0) || 0;
+  box.style.cssText = 'display:block;overflow-y:auto;overflow-x:hidden;'
+    + 'overscroll-behavior:contain;scroll-behavior:smooth;padding-right:2px;';
   box.innerHTML = list.map((c, i) => {
     const nm = s0(c.名) || ('角色' + s0(c.序号));
-    /* ★ 阶段**按人判**（场景判不出来时看"点了这个人名字"的字段）—— 见 `xsdStageForChar` */
+    
     const myStage = xsdStageForChar(c, nm, st, rawText);
     const rows = CAST_ROWS
       .filter((k) => c[k])
@@ -211,28 +182,27 @@ function renderCast(panel, list, stage, seed, rawText) {
       + '<div class="xds-cc-body">'
       + '<div class="xds-cc-h">' + esc(nm) + '</div>' + rows + '</div></div>';
   }).join('');
+  /* 框内可视高度：**实测原来 3 张卡的高度**（不猜数字）⇒ 只有超过 3 张时才设，装不下就上下滑；
+     ≤3 张时把高度设回 none ⇒ 与原来**完全一致**（自动撑开、无滚动条）。 */
+  const 设高 = () => {
+    const kids = box.children;
+    const 基准 = Math.min(CAST_BASE, kids.length);
+    if (kids.length > CAST_BASE && kids[基准 - 1]) {
+      const 底 = kids[基准 - 1].offsetTop + kids[基准 - 1].offsetHeight;
+      if (底 > 0) { box.style.maxHeight = 底 + 'px'; return; }
+    }
+    box.style.maxHeight = 'none';
+  };
+  设高();
+  try { requestAnimationFrame(设高); } catch (_) { /* 无 rAF 就只用首帧值 */ }
+  /* 上下滑动位置：同楼重绘不跳回顶部；监听器**只绑一次**（重绘不叠监听） */
+  box.scrollTop = keepTop;
+  if (!box.__xdsScrollBound) {
+    box.__xdsScrollBound = true;
+    box.addEventListener('scroll', function () { box.dataset.xdsScrollTop = String(box.scrollTop || 0); }, { passive: true });
+  }
   return list.length;
 }
-
-/* ══════════════════════════════════════════════════════════════════════════
- * 立绘子系统 v2.3（照抄外卡《大乾风华录 Ver2.0》，并逐条改掉它的 11 个坑）
- * --------------------------------------------------------------------------
- *   数据流：人名 → XSD_PINYIN 拼音 id → 有序候选链（本地 ≤6 条 ＋ 云端 1 条）
- *           → 写进 `data-sources`(JSON, esc 过) ＋ `data-src-idx` → img 404 自己往上走
- *           → 链尽 → SVG 国风剪影印章（永不 404）。
- *   外卡的坑与我们这里的对策（编号照 §B6）：
- *     P1 内联 onclick / alt 里的名字不转义          → 本文件一律 esc()（见 xsdPortraitHtml）
- *     P2 ESC 监听只在按 ESC 时移除（内存泄漏）      → xsdCloseLightbox 里**不论哪条路径**都摘光
- *     P3 多处 onclick 不 stopPropagation             → 关闭只认覆盖层一点，其余监听一律 cleanup
- *     P4 getTopDoc 跨域静默回落本地 document         → 回落时 console.warn 点名症状
- *     P5 window.parent 写入吞异常                    → 暴露进本 realm，外层另挂（try/catch + 日志）
- *     P6 云表键格式漂移（.jpg / 裸键）               → 写入统一 `<id>.webp`，读取保留 4 分支
- *     P7 SVG 文本直接拼 name（含 &/</> 会裂）        → xsdXmlEsc()（`&` 先转）
- *     P8 12 条本地候选串行 404 刷屏                  → 按本卡部署形态**裁到 3 目录 ×2 扩展名**
- *     P9 灯箱类名与实现脱节                          → 行内 cssText，不依赖任何外部样式表
- *     P10 空链不写 data-src-idx（状态机起点不明）    → **恒写** `data-sources` ＋ `data-src-idx="0"`
- *     P11 getAvatarUrl 死代码                        → 不搬，入口只有 xsdPortraitSourcesFor 一条
- * ══════════════════════════════════════════════════════════════════════════ */
 
 /** 把任意值收成字符串并去掉空白（收 undefined／null／数字都稳） */
 function s0(v) { return String(v === undefined || v === null ? '' : v).trim(); }
@@ -265,6 +235,11 @@ const XSD_PINYIN = {
   '厉锋': 'lifeng',             /* 九皇子爪牙 · 褐黑＋口罩 */
   '石岩': 'shiyan',             /* 九皇子爪牙 · 铁灰＋铁护面 */
   '柳玉': 'liuyu',              /* 九皇子爪牙 · 炭蓝＋兜帽阴影 */
+  /* 2026-10-08（主人令）：嵌入三位新立绘（慕容清歌／顾云舒／苏倾寒）——只登名册与立绘，
+     未加任何称号、门派或剧情设定（铁律 31：不编）。颜色注释取自立绘可观察主色。 */
+  '慕容清歌': 'murongqingge',   /* 银发碧眸 · 水青＋琴 · 青白 */
+  '顾云舒': 'guyunshu',         /* 玄发赤瞳 · 赤金＋熔炉 · 殷红 */
+  '苏倾寒': 'suqinghan',        /* 玄发 · 素银＋王座剑影 · 冷灰 */
 };
 
 /** 名字 → 拼音 id；查不到返回 ''（**不猜、不拼音化**：宁可落 SVG 也不发一串必然 404 的请求） */
@@ -339,18 +314,9 @@ function xsdPortraitSources(id, table) {
   return out;
 }
 
-/** 名字 → 候选链（**唯一入口**；外卡的 getAvatarUrl 是死代码，不搬，见 B6-P11） */
 function xsdPortraitSourcesFor(name, table) {
   return xsdPortraitSources(pinyinOf(name), table);
 }
-
-/* ═══════════════════════════════════════════════════════════
- * 右上「身份头像位」（2026-10-01 主人令：「身份对应的角色立绘，如九皇子放到红框那里」）
- *   解析顺序：① 身份文本里出现【人物】条的角色名 ⇒ 用那个名字
- *             ② 否则查下面的"殿主／城主／太子"别名表
- *   解析不出 ⇒ **保持原样**（CSS 剪影），不发任何请求；图 404 ⇒ 撤掉 img 退回剪影。
- *   ⚠️ 全程 try/catch：这个位子永远不许影响面板主流程。
- * ═══════════════════════════════════════════════════════════ */
 
 /** 身份别名 ⇒ 角色名（键是身份文本里可能出现的词；查不到就被 ① 兜住） */
 const XSD_IDENTITY_ALIAS = {
@@ -453,7 +419,13 @@ const XSD_VARIANTS = {
 /** 阶段关键词 ⇒ 用来从**当前状态**判断该用哪一组。
  *  只认"明显是洗澡"的处境；判不出来一律 baseline（永远是安全的那组）。 */
 const XSD_STAGE_RULES = [
-  { stage: 'bath', re: /沐浴|洗浴|浴池|汤池|温泉|澡|净身|水中|泡在|水池|浴桶|浴房/ },
+  
+  { stage: 'bath',
+    
+    re: /洗澡|冲澡|泡澡|沐浴|洗浴|入浴|净身|擦身|洗身|出浴/,
+    weak: /浴池|汤池|温泉|浴桶|浴房|水池/,
+    support: /裸|赤身|赤足|宽衣|解衣|脱衣|衣不整|衣衫|水汽|雾气|湿发|湿透|泡在|浸在|出浴/,
+    deny: /议事|朝会|议事厅|演武|讲经|藏经/ }
 ];
 
 /**
@@ -463,7 +435,11 @@ const XSD_STAGE_RULES = [
 function xsdStageOf(fieldText) {
   const t = s0(fieldText);
   if (!t) return 'baseline';
-  for (const r of XSD_STAGE_RULES) if (r.re.test(t)) return r.stage;
+    for (const r of XSD_STAGE_RULES) {
+    if (r.deny && r.deny.test(t)) continue;                       // 明确与沐浴互斥的场景：一律不切
+    if (r.re.test(t)) return r.stage;                             // ① 强词：白话"正在洗澡"
+    if (r.weak && r.weak.test(t) && r.support && r.support.test(t)) return r.stage;  // ② 场所词＋支持词
+  }
   return 'baseline';
 }
 
@@ -521,15 +497,6 @@ function xsdInScene(rawText, nm) {
   return m[1].indexOf(name) >= 0;
 }
 
-/**
- * ★ 按角色判阶段（2026-09-28 第三十七轮新增）：三级优先，**先人后场**。
- *   ① 这个人**自己的**「阶段／情况／心境／神态」里出现关键词；
- *   ② **整块里点了这个人名字**的字段里出现关键词（`xsdMentioningText`）；
- *   ③ 都不行、且**这个人在场** ⇒ 退回场景通用（地点／环境／状态这段 `globalStage`）；不在场一律 baseline。
- *   为什么要有 ②：同一楼里「叶红缨在汤池里」而「赵无忧站在栈道上」——
- *   只看场景会**让两个人都变沐浴图**，只看自己那四行又会**漏掉**（模型常把水汽写在别处）。
- * @returns {string} 阶段名
- */
 function xsdStageForChar(castItem, nm, globalStage, rawText) {
   try {
     const c = castItem || {};
@@ -554,14 +521,6 @@ function xsdSuffixes(id, stage) {
   return list.slice();
 }
 
-/* ══════════ 内嵌立绘表（卡自带 · 不依赖本地文件／图床）══════════
- * ⚠️ 2026-10-01 主人令：「图得进卡里，我不打算用图床」。
- *   表放在卡 JSON 的 `data.extensions.xsd_assets.panel`（build 时由 `_gallery_embed.json` 注入）：
- *   键＝图库文件名（拼音 id ＋ 可选 `_2`／`_bath_front` 之类后缀），值＝`data:image/webp;base64,…`（192×256）。
- * ⚠️ 优先级：**微卡用内嵌优先**（不会 404、分享出去也有图、且省掉 11 次请求）；
- *   本地原图只在**灯箱放大**时优先（见 `xsdBigSourcesFor` 与灯箱的 onerror 兜底）。
- * ⚠️ 读不到（老聊天／未内嵌）⇒ 返回空表，行为与以前**完全一致**。
- * ⚠️ 表在 extensions 里，**不进提示词**（0 token）。 */
 let XSD_EMBED = null;
 let XSD_EMBED_BIG = null;
 let XSD_EMBED_RELICS = null;
@@ -638,9 +597,7 @@ function xsdEmbedded() {
   try { console.log(TAG, '[内嵌] 暂未命中 ⇒ 立绘退回本地文件／剪影（保留重试，不锁死空表）'); } catch (e) { /* 忽略 */ }
   return {};
 }
-/* ★ 内嵌**灯箱大图**表（452×800）—— 2026-10-01 主人令「灯箱必须内嵌，不能让别人点开看到糊的」。
- * 读法同 `xsdEmbedded()`：从宿主的 `characters[chid].data.extensions.xsd_assets.lightbox` 拿；
- * 没有这张表（老卡／老聊天）⇒ 返回空表，灯箱退回原来的"本地原图优先"那条老路，行为不变。 */
+
 function xsdEmbeddedBig() {
   xsdCheckCharSwitch();
   if (XSD_EMBED_BIG !== null) return XSD_EMBED_BIG;
@@ -663,8 +620,7 @@ function xsdEmbedBigUrl(name) {
     return s0(m[s0(name)]);
   } catch (e) { return ''; }
 }
-/* ★ 内嵌**名器纹章**表（13 枚）—— 2026-10-01：秋风反馈「没图片」⇒ 纹章取图原来是写死的本地路径，
- *   别人拿到卡就是空框。现在面板优先用卡内嵌的 data URI，取不到才退回本地路径。 */
+
 function xsdEmbeddedRelics() {
   xsdCheckCharSwitch();
   if (XSD_EMBED_RELICS !== null) return XSD_EMBED_RELICS;
@@ -741,7 +697,7 @@ function xsdPortraitSourcesStaged(id, stage, table) {
     }
   } else suffixes.push('');
   for (const sfx of suffixes) {
-    push(xsdEmbedUrl(pid + sfx));                       // ★ 内嵌优先（卡自带，不 404）
+    push(xsdEmbedUrl(pid + sfx));
     for (const dir of XSD_LOCAL_PATHS) for (const ext of XSD_LOCAL_EXTS) push(dir + pid + sfx + ext);
   }
   const cloud = cloudUrlFor(pid, table);
@@ -765,8 +721,7 @@ function xsdStageImages(id, stage, table, extOverride) {
   const dir = XSD_LOCAL_PATHS[0];
   const ext = s0(extOverride) || XSD_LOCAL_EXTS[0];
   const big = !!s0(extOverride);
-  /* ★ 内嵌优先：若卡内已内嵌，大图组直接存 key（避免几十万字 Base64 撑爆每张微卡的 DOM）；
-   *   小图组则返回 panel 档 data URI 供首图渲染。 */
+  
   const list = sfx.map((s) => {
     const key = pid + s;
     if (big) {
@@ -792,7 +747,6 @@ function xsdPickIndex(seedText, count) {
   for (let i = 0; i < str.length; i += 1) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
   return Math.abs(h) % n;
 }
-
 
 /** XML 文本转义（喂给 SVG 的 `<text>`）。
  *  ⚠️ 外卡 B6-P7 的坑：剪影里直接拼 name，名字含 `&` 或 `<` ⇒ **SVG 本身就解析失败**
@@ -896,25 +850,12 @@ const XSD_PW_STYLE = 'flex:0 0 44px;width:44px;height:56px;position:relative;'
   + 'overflow:hidden;cursor:zoom-in;box-shadow:inset 0 0 8px rgba(190,160,110,.25);user-select:none;';
 const XSD_PI_STYLE = 'width:100%;height:100%;object-fit:cover;display:block;';
 
-/**
- * 单张立绘微卡（外卡 B5 的 renderAvatarMicroCard 等价物）。
- * ⚠️ 三处必改（都来自 B6）：
- *   ① 内联 onclick 里的**名字与拼音 id 全部 esc()**（外卡 :4251 裸拼 ⇒ 名字含 `'` 直接断 JS）；
- *   ② `data-sources` JSON **必须 esc()** 后进属性（不转 `"` ⇒ 属性在第一个引号处截断 ⇒ 整条链报废）；
- *   ③ 空链也**恒写** `data-sources="[]"` ＋ `data-src-idx="0"`（外卡 P10：起点不明）。
- * @returns {string} 微卡 HTML（`<a href="#">` ＋ `data-xsd-open` ＋ `onclick` 三条开灯箱的路，
- *                  即使两条入参转义出了岔子，`data-char-name` 那条仍带得回名字）
- */
 function xsdPortraitHtml(name, realm, table, stage, seed) {
   const nm = s0(name);
   const pinyin = pinyinOf(nm);
   const st = s0(stage) || 'baseline';
   const fallback = xsdAvatarFallbackSvg(nm, realm, pinyin);
-  /* ★★ 没登记立绘的角色**直接落 SVG**，不再去闯那条 9 个 404 的本地链（2026-09-28 第三十六轮）：
-   *   主人截图里「玄机子」那格是**碎图 ＋ alt 文字** —— 链走完本该落 SVG，实测却没落住；
-   *   而 `XSD_VARIANTS` 本来就是本卡的**图库登记表**（README：没登记的后缀不会加载）。
-   *   ⇒ 未登记 ⇒ 本地一个候选都没有 ⇒ 直接把 SVG 当首图，**零 404、零碎图**。
-   *   ⚠️ 以后给某个角色加了立绘，**必须把它的拼音 id 登记进 `XSD_VARIANTS`**，否则不会显示。 */
+  
   const pid = safePinyinId(pinyin);
   /* ⚠️ 2026-10-01 真机 bug（复现：同一楼里 孤月✅／苏瑶❌灰底／苏玲✅）：
    *   这道闸门原来只看 `XSD_VARIANTS` 表 ⇒ **没登记的角色直接落 SVG 剪影**，
@@ -926,8 +867,7 @@ function xsdPortraitHtml(name, realm, table, stage, seed) {
   const sources = registered ? xsdPortraitSourcesStaged(pinyin, st, table) : [];
   /* 同阶段「每张图的首选 URL」——随机抽一张当起点，并留给灯箱翻面用 */
   const group = registered ? xsdStageImages(pinyin, st, table) : [];
-  /* ★ 翻面用的那一组**必须是大图**（`.png`）：灯箱里 `flip.step()` 会直接把这些 URL 赋给大图的 `src`，
-   *   若这里给的是 96×128 的小图（`.jpg`），一按「›」就从"高清"掉回"马赛克"（＝把上一轮的修复撤销）。 */
+  
   const bigGroup = registered ? xsdStageImages(pinyin, st, table, XSD_BIG_EXTS[0]) : [];
   const pick = group.length ? group[xsdPickIndex(s0(seed) + '|' + nm, group.length)] : '';
   const pickIdx = Math.max(0, group.indexOf(pick));
@@ -1018,6 +958,8 @@ const xsdBox = {
 };
 /** 常驻接线（委托监听）的条数 —— 与灯箱监听分开记：它只绑一次，永不随开关增长 */
 let xsdWireCount = 0;
+/** 已绑定的宿主文档标识（诊断用：区分"没绑上"与"本次沿用已有绑定"） */
+let xsdWireWhere = "(未绑)";
 /** 「同一个元素刚开过箱」的去重记录（见 `xsdOpenFrom` 的闸门） */
 const xsdLastOpen = { el: null, t: 0 };
 
@@ -1032,8 +974,6 @@ function xsdListenersAlive() {
   return n;
 }
 
-/** 关闭灯箱：**不论从哪条路径进来**（点覆盖层 / 按 ESC / 程序调用）都走这里 —— 这是 B6-P2 的修复点。
- *  外卡只在 ESC 分支里 removeEventListener ⇒ 点背景关掉的那些 keydown 监听永远留在宿主文档上。 */
 function xsdCloseLightbox() {
   try {
     const doc = xsdBox.doc;
@@ -1103,7 +1043,7 @@ function xsdLightboxArgsFrom(el) {
   }
   if (!chain) chain = xsdAttrFrom(el, img, 'data-sources');
   if (!src) { try { const i2 = img || (el && el.querySelector ? el.querySelector('img') : null); if (i2) src = s0(i2.getAttribute('src')); } catch (e) { /* 忽略 */ } }
-  /* ★ 翻面数据：同阶段各张的首选 URL ＋ 起点序号（写在 img 上，必须两段式取） */
+  
   let alts = [];
   try { const arr = JSON.parse(xsdAttrFrom(el, img, 'data-alt') || '[]'); if (Array.isArray(arr)) alts = arr.filter(Boolean); } catch (e) { alts = []; }
   const resolveAltUrl = (u) => {
@@ -1118,13 +1058,13 @@ function xsdLightboxArgsFrom(el) {
   return { name, realm, id, src, chain, alts, altIdx, stage };
 }
 
-/**
- * ★ 放大用的候选链：**大图优先**（2026-09-28 第三十四轮）
- *   图库惯例：面板小图 = `.jpg`（96×128，4 KB），放大用大图 = `.png`（904×1600，约 1.6 MB）。
- *   `XSD_BIG_EXTS` 就是把 `.png` 提到最前的扩展名顺序；其余照旧（多目录 × 云端兜底）。
- *   取不到大图时自然降级回小图（灯箱里也不裂图）。
- */
 const XSD_BIG_EXTS = ['.png', '.webp', '.jpg'];
+/** **高清档**扩展名（灯箱专用）。
+ *  ⚠️ 2026-10-09（主人：苏倾寒放大会糊，问另两张是不是也这样）：**是，三张全糊** ——
+ *    原因是取源顺序把**卡内嵌的 720×1146** 排在**本地 993×1583 原图**前面 ⇒ 灯箱被放大 1.3 倍以上。
+ *    故灯箱改为「**本地高清原图优先** → 卡内大图 → 本地/卡内缩略图」。
+ *    `.jpg` **不算高清**（本地 .jpg 只有 192×256，是微卡用的缩略图）⇒ 它排到卡内大图**之后**。 */
+const XSD_HQ_EXTS = ['.png', '.webp'];
 function xsdBigSourcesFor(el) {
   const out = [];
   try {
@@ -1143,14 +1083,19 @@ function xsdBigSourcesFor(el) {
     } catch (e) { /* 忽略 */ }
     const suffixes = xsdSuffixes(pid, stage);
     const push = (u) => { if (u && out.indexOf(u) === -1) out.push(u); };
-    /* ★ 2026-10-01 主人令：「灯箱必须内嵌，不能让别人点开看到糊的」。
-     *   链序＝**内嵌大图（452×800）→ 本地原图（904×1600，自己机器上更清晰）→ 内嵌小图（192×256 最后兜底）**。
-     *   内嵌排第一 ⇒ 分享给别人、或换台机器，点开看到的都是 452×800，不会再落到那张 192 的糊图。
-     *   ⚠️ 同时**删掉了原来的“未登记 XSD_VARIANTS 就返回空链”闸门**：
-     *      2026-10-01 之后入库的角色大多没登记变体（只靠主图），那道闸门会让它们点开时连内嵌都用不上。 */
+    
+    /* ☞ 2026-10-09 定案（主人：**要让别人看着也清晰，杜绝依赖本地图库**）：
+       ① **卡内嵌的大图排第一**（现已高清化：图库原图 ≤1000 宽、JPEG q82 ⇒ 自足，换台机器一样清晰）
+       ⇒ ② 本机图库原图（`.png`/`.webp`，仅作补充）⇒ ③ 本地/卡内缩略图 192（`.jpg` 不算高清）
+       ⇒ ④ 云图床 ⇒ ⑤ 微卡原链兜底。 */
     for (const sfx of suffixes) push(xsdEmbedBigUrl(pid + sfx));
     for (const sfx of suffixes) {
-      for (const dir of XSD_LOCAL_PATHS) for (const ext of XSD_BIG_EXTS) push(dir + pid + sfx + ext);
+      for (const dir of XSD_LOCAL_PATHS) for (const ext of XSD_HQ_EXTS) push(dir + pid + sfx + ext);
+    }
+    for (const sfx of suffixes) {
+      for (const dir of XSD_LOCAL_PATHS) for (const ext of XSD_BIG_EXTS) {
+        if (XSD_HQ_EXTS.indexOf(ext) < 0) push(dir + pid + sfx + ext);
+      }
     }
     for (const sfx of suffixes) push(xsdEmbedUrl(pid + sfx));
     const cloud = cloudUrlFor(pid);
@@ -1164,17 +1109,13 @@ function xsdBigSourcesFor(el) {
 /** 微卡 → 开灯箱（内联 onclick／`data-xsd-open` 委托都走这里）*/
 function xsdOpenFrom(el) {
   if (!el || xsdMobileDisposed) return false;
-  /* ★ 去重闸门：同一个元素在 400ms 内只开一次箱。
-   *   为什么需要：`xsdPortraitClick` 是 **capture** 监听、元素上又挂着内联／闭包 onclick，
-   *   两条路都可能命中同一次点击（宿主差异下谁也说不准哪条先跑）⇒ 双开会让 keydown 监听翻倍、
-   *   先注册的 handler 闭包握着被换掉的 flip/counter/big（方向键就"没反应"）。
-   *   这条闸门与 capture 里的 stopPropagation **互为保险**：哪条路先到都只开一次。 */
+  
   const now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
   try {
     if (now && xsdLastOpen.el === el && (now - xsdLastOpen.t) < 400) return true;
   } catch (e) { /* 忽略 */ }
   const a = xsdLightboxArgsFrom(el);
-  /* ★ 放大走**大图链**（.png 优先），链尽再落小图/云端/SVG ⇒ 不再放大出一张马赛克 */
+  
   let chain = a.chain;
   try {
     const big = xsdBigSourcesFor(el);
@@ -1352,10 +1293,10 @@ function xsdOpenLightbox(name, realm, src, id, chainJson, altJson, altStartIdx) 
       flip = xsdMakeFlipper(doc, big, counter, alts, startIdx);
     }
 
-    /* 关闭：**只认覆盖层一点**（外卡 P3 的四处 onclick 一律去掉）⇒ 监听总数恒定、语义单一 */
+    
     overlay.onclick = () => { xsdCloseLightbox(); };
 
-    /* ESC / ← / →：登记在案，关闭时统一摘（B6-P2 的修复点）*/
+    
     const escHandler = (ev) => {
       try {
         if (!ev) return;
@@ -1443,7 +1384,7 @@ const XSD_PORTRAIT_API = {
     cloudKeys: Object.keys(XSD_CLOUD_URLS).length,
     open: !!xsdBox.el,
     listenersAlive: xsdListenersAlive(),
-    wireListeners: xsdWireCount,
+    wireListeners: xsdWireCount, wireWhere: xsdWireWhere,
     closes: xsdBox.leaktick,
   }),
 };
@@ -1455,13 +1396,7 @@ const XSD_PORTRAIT_API = {
  *   ③ **自检行画进面板页脚** —— 出问题时一眼看得见，不用猜日志去哪了。
  * 命名保持 `wirePortrait`：事件钩子会重复调用它（换楼重绑），幂等（重复绑同一函数无副作用）。
  */
-/**
- * ★ 自包含点击接线（2026-09-28 第三十三轮）：**给每个立绘元素直接挂函数引用 onclick**。
- *   为什么必须这么做：内联 onclick 字符串里的 \`window\` 是**消息 iframe 的 window**，
- *   而 \`xsdPortrait\` 挂在**助手域** ⇒ 那条路永远无效；委托监听又要赌"脚本与面板同域"。
- *   闭包 onclick 不依赖任何跨域假设：事件在同域触发，函数引用由本脚本直接持有。
- *   幂等：重复调用只是覆盖同一个属性。
- */
+
 function xsdWireInline(root) {
   let n = 0;
   try {
@@ -1586,6 +1521,7 @@ function wirePortrait() {
           ['mousedown', xsdPortraitClick, true], ['click', xsdQuickAct, true],
         ]);
         xsdWireCount += 1;
+        xsdWireWhere = label;
         report.bound += 1;
       }
       report.where = label;
@@ -1630,8 +1566,10 @@ function wirePortrait() {
       if (foot) foot.textContent = line;
     }
   } catch (e) { /* 自检画不上不影响功能 */ }
-  console.log(TAG, '[立绘接线] 委托监听=' + (report.bound ? '已绑 ' + report.bound + ' 条' : '未绑')
-    + '（' + report.where + '，wireCount=' + xsdWireCount + '）'
+  console.log(TAG, '[立绘接线] 委托监听=' + (xsdWireCount > 0
+      ? ('已绑 ' + xsdWireCount + ' 条' + (report.bound ? '（本次新绑 ' + report.bound + ' 条）' : '（沿用已有绑定，幂等跳过）'))
+      : '未绑')
+    + '（' + (xsdWireCount > 0 ? xsdWireWhere : '尚未绑上') + '，wireCount=' + xsdWireCount + '）'
     + '｜API 挂到 ' + report.targets + ' 个 window'
     + (report.fails.length ? '｜失败项：' + report.fails.join('、') : '｜无失败项'));
 }
@@ -1699,6 +1637,12 @@ function xsdStatData() {
     const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
     const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
     if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
+      const service = window.__xsdCorrection;
+      if (service) {
+        let id = ''; try { id = service.capture({}).chatId; } catch (_) {}
+        stat.人工纠错 = cs && cs.人工纠错 && cs.人工纠错.chatId === id ? cs.人工纠错 : null;
+        return service.effective(stat);
+      }
     return stat;
   } catch (e) { return null; }
 }
@@ -1711,8 +1655,7 @@ function xsdKnown() {
 /** 身份专属初始随身物品（供纳戒面板显示与降级兜底） */
 function defaultInventoryFor(identity) {
   const id = String(identity || '').trim();
-  /* ★ 2026-10-06：起手行囊补 `count`（赵无忧那份的「醉春风」是**两坛** ⇒ count 2），
-   *   与 `卡片脚本/状态机.js` 的 `defaultInventoryRaw` + `defaultInventoryFor` 保持一致（改一处必须改两处）。 */
+  
   const norm = (arr) => arr.map((it) => ({ ...it, count: Math.max(1, parseInt(it.count, 10) || 1) }));
   if (id === '赵无忧') {
     return norm([
@@ -1845,7 +1788,7 @@ function renderInventory(panel, doc) {
   box.innerHTML = inv.map((it, idx) => {
     const nm = it && it.name ? esc(it.name) : '神秘法宝';
     const ds = it && it.desc ? esc(it.desc) : '随身之物。';
-    /* ★ 2026-10-06：数量 >1 时显示「×N」（`count` 由状态机维护；旧数据没有这一栏就当 1） */
+    
     const n = Math.max(1, parseInt(it && it.count, 10) || 1);
     const cnt = n > 1 ? ' <span style="color:#d4af37;font-size:11px;">×' + n + '</span>' : '';
     return '<div class="xh-inv-item">'
@@ -1903,6 +1846,7 @@ function fillPanel(messageId, rawText, explicitPanel) {
   /* 容器优先取显式传入的（mount 路径）；退回 DOM 查找（旧路径／诊断用） */
   const panel = explicitPanel || panelOf(mesEl);
   if (!panel) return { ok: false, why: '该消息里没有面板元素（正则没渲染？也没传容器）' };
+  window.__xsdCorrection?.bindStatusEntry(panel);
 
   // ⓪ 先摘掉 <角色N> 子块，再跑顶层字段正则（见 parseCast 的两条护栏）
   const cast = parseCast(inner);
@@ -1920,7 +1864,7 @@ function fillPanel(messageId, rawText, explicitPanel) {
     if (!v || v === '—' || v === '-') return;
     for (const key of Object.keys(FIELD_MAP)) {
       if (SPECIAL_KEYS.includes(key)) continue;      // 角色区块由 renderCast 专管
-      if (isYaml && writtenFields.has(key)) continue; // ★ XML 优先，YAML 只填补空白
+      if (isYaml && writtenFields.has(key)) continue;
       const label = FIELD_MAP[key];
       const isMatch = k.includes(label) || label.includes(k) || (key === 'time' && (k.includes('时辰') || k.includes('时点')));
       if (!isMatch) continue;
@@ -1938,7 +1882,14 @@ function fillPanel(messageId, rawText, explicitPanel) {
     if (!mm) continue;
     put(mm[1].trim(), mm[2].trim(), true);
   }
-  // ③ 在场角色子块 → 「人」区的小卡片
+    /* gpt P1-1：时间一栏按**脚本台账**覆写（由段位/日历推导），不采信模型写的 <时间>；
+     台账里没有 仙盟历文 时保留模型文本（老局/未初始化）。 */
+  try {
+    const tEl = fieldNodeMap.get('time');
+    const tLedger = (stat && typeof stat['仙盟历文'] === 'string') ? String(stat['仙盟历文']).trim() : '';
+    if (tEl && tLedger) { tEl.textContent = tLedger; writtenFields.add('time'); }
+  } catch (eLedger) { /* 台账不可读 ⇒ 保持模型文本 */ }
+// ③ 在场角色子块 → 「人」区的小卡片
   /* 阶段判定（2026-09-28）：拿「地点＋环境＋状态」的原文去判该用哪一组立绘
    *   （例如出现「沐浴/浴池/汤池」⇒ bath 组）。判不出来一律 baseline —— 与主题（主立绘）一致。 */
   let stageText = '';
@@ -1949,25 +1900,23 @@ function fillPanel(messageId, rawText, explicitPanel) {
     }
   } catch (e) { stageText = ''; }
   const castStage = xsdStageOf(stageText);
-  /* ★ 避免同楼重复抹除重绘：正文与阶段未变且已渲染时跳过重建 */
+  
   const castBox = fieldNodeMap.get('cast') || panel.querySelector('[data-xds="cast"]');
   const lastRenderedText = panel.getAttribute('data-xds-rendered-text');
   const lastRenderedStage = panel.getAttribute('data-xds-rendered-stage');
   const alreadyRendered = lastRenderedText === text && lastRenderedStage === castStage && castBox && castBox.children && castBox.children.length > 0;
 
   if (!alreadyRendered) {
-    /* ★ 把**整块原文**也传下去：场景判不出来时，按"点了这个人名字"的字段逐人再判一次（`xsdStageForChar`）。
-     *   实测那一楼：地点/环境/状态里一个关键词都没有，而 `<暗处>…汤池…` 与 `<线索>…沐浴…` 里全是。 */
+    
     filled += renderCast(panel, cast.list, castStage, String(messageId), text);
-    /* ★ 右上「身份头像位」：按当前身份换成对应角色的立绘（2026-10-01 主人令）。
-     *   放在 renderCast 之后：两者共用同一个 stage 判定，也共用同一条内嵌优先候选链。 */
+    
     try { xsdPaintIdentityFace(panel, castStage); } catch (e) { /* 头像位不许影响主流程 */ }
-    /* ★ 给刚渲染出来的立绘**直接挂函数引用 onclick**（不依赖跨域/委托） */
+    
     try { xsdWireInline(panel); } catch (e) { /* 忽略 */ }
     panel.setAttribute('data-xds-rendered-text', text);
     panel.setAttribute('data-xds-rendered-stage', castStage);
   }
-  /* ★ 纳戒物品栏渲染（2026-10-06 主人令：物品与作用简述，点击看详述） */
+  
   try { renderInventory(panel, panel.ownerDocument || DOC()); } catch (e) { /* 纳戒不影响主流程 */ }
   return { ok: true, filled, total: fieldNodeMap.size || panel.querySelectorAll('[data-xds]').length, cast: cast.list.length, from, stage: castStage };
 }
@@ -2017,6 +1966,7 @@ function xsdFillPanel(mesid, rawText, explicitPanel) {
       console.warn(TAG, '[渲染触发] 楼号无效（' + mesid + '）⇒ 已按容器/最新楼推断为 #' + n);
     }
     const r = fillPanel(n, rawText, explicitPanel);
+    try { window.__xsdCorrection?.bindStatusEntry(explicitPanel || panelOf(DOC().querySelector('.mes[mesid="'+n+'"]'))); } catch (e) { /* 骨架仍可阅读 */ }
     log(`[渲染触发] #${n}`, r);
     return r;
   } catch (e) {
@@ -2024,7 +1974,6 @@ function xsdFillPanel(mesid, rawText, explicitPanel) {
     return { ok: false, why: String((e && e.message) || e) };
   }
 }
-
 
 /* ─────────── 诊断入口（主控制台可调：__xsdPanelDiag()）─────────── */
 function diag() {
@@ -2049,6 +1998,7 @@ function diag() {
       + ` 父窗=${(() => { try { return (window.parent && typeof window.parent.__xsdFillPanel === 'function') ? '有' : '无'; } catch { return '跨源未知'; } })()}`
       + ` 顶层=${(() => { try { return (window.top && typeof window.top.__xsdFillPanel === 'function') ? '有' : '无'; } catch { return '跨源未知'; } })()}`,    `iframe 引导件: ${D.querySelectorAll('iframe[data-xds-boot]').length} 个`,
     `全页 pre[data-xds-src]: ${D.querySelectorAll('[data-xds-src]').length} 个`,
+    `自由字段待核: ${(() => { try { const s = xsdStatData() || {}; const w = s.自由字段待核; if (!w) return '无'; const items = (w.项 || []); return items.length + ' 项（楼 ' + (w.楼 === null || w.楼 === undefined ? '?' : w.楼) + '）：' + items.map((x) => x.字段).join('、'); } catch (e) { return '?'; } })()}`,  /* 主人令·选C：泛指战事只记账待核，面板可见 */
     `消息总数: ${mesList.length} ｜ 面板元素: ${D.querySelectorAll('[data-xds-panel]').length}`,
     ...rows,
   ].join('\n');
@@ -2057,7 +2007,6 @@ function diag() {
 }
 window.__xsdPanelDiag = diag;
 try { window.parent.__xsdPanelDiag = diag; } catch (e) { /* 忽略 */ }
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * XsdHUD —— 纯入口（照《制卡规范 v2.0》§3.1 与规范 C 卷 J:4885-5002）
@@ -2103,10 +2052,7 @@ const XsdHUD = (function () {
     } catch (e) { return false; }
   }
 
-  /** ★ 找本 iframe 所属那一楼 —— **frameElement 优先**。
-   *  病根记录：bootstrap 调 mount 时，容器**可能还没进宿主 DOM**（iframe 先 load、宿主后插入），
-   *  那时 `container.closest('.mes')` 永远是 null ⇒ 真机报「取不到原文（状态栏未渲染）」。
-   *  范例卡的做法就是靠 frameElement ＋ 多级兜底（规范 C 卷 §C1 步骤 7 的 5 级链）。 */
+  
   function locateMes(el) {
     const cands = [];
     try {
@@ -2173,14 +2119,7 @@ const XsdHUD = (function () {
     } catch (e) { return null; }
   }
 
-  /* ══════════ 名器纹章栏（两翼 · 绑 known 闸门）══════════
-   * 主人 2026-10-01 定：两翼竖排、每枚 96px、未获取＝灰纹（**不打红叉**）。
-   * 显示与阶段弧**只由 stat_data.known 的名器锚点决定**（成形 ＋ 一～四阶段），
-   * 表与 `user/images/xsd_relics/README-名器纹章.md` **同源**（改一处必须改两处）。
-   * ⚠️ 三个坑（2026-10-01 核出来的）：① 灵犀同心的阶段锚点写作「灵犀同心穴一阶段」（多一个「穴」字）；
-   *    ② 烟霞灵乳**没有**「成形」锚点（主人令：柳含烟出场即第二境）⇒ 解锁＝任一阶段锚点为真；
-   *    ③ 北冥／玉虎／灵犀／烟霞只有 **3** 个阶段档 ⇒ 环画 3 段，不硬凑 4 段。
-   * 读不到台账 ⇒ **一律按未获取**（宁可不显示，不编）。 */
+  
   const XSD_RELICS = [
     { n: '九幽玄阴穴', id: 'jiuyouxuanyinxue', c: '九幽玄阴穴成形', s: '九幽玄阴穴', a: 4, lord: '九皇子', hall: '浊龙殿主' },
     { n: '灼酒流炎穴', id: 'zhuojiuliuyanxue', c: '灼酒流炎穴成形', s: '灼酒流炎穴', a: 4, lord: '残阳老怪', hall: '焚欲殿主' },
@@ -2214,6 +2153,42 @@ const XsdHUD = (function () {
       const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
       const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
       if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
+      // ── 账本与事务来源自愈保底 ──
+      stat.known = stat.known || {};
+      if (stat.锚点账本 && typeof stat.锚点账本 === 'object') {
+        for (const k of Object.keys(stat.锚点账本)) {
+          const item = stat.锚点账本[k];
+          if (item && Array.isArray(item.新置真)) {
+            for (const f of item.新置真) stat.known[f] = true;
+          }
+        }
+      }
+      if (stat.破处者 && typeof stat.破处者 === 'object') {
+        for (const h of Object.keys(stat.破处者)) {
+          if (stat.破处者[h]) {
+            stat.known[h + '处女丧失'] = true;
+            if (h === '叶红缨') { stat.known['灼酒流炎穴成形'] = true; stat.known['灼酒流炎穴一阶段'] = true; stat.known['获得任意名器'] = true; }
+            if (h === '闻观语') { stat.known['心魔茶璎乳成形'] = true; stat.known['心魔茶璎乳一阶段'] = true; stat.known['获得任意名器'] = true; }
+            if (h === '孤月') { stat.known['九幽玄阴穴成形'] = true; stat.known['九幽玄阴穴一阶段'] = true; stat.known['获得任意名器'] = true; }
+          }
+        }
+      }
+      if (stat.名器归属 && typeof stat.名器归属 === 'object') {
+        for (const r of Object.keys(stat.名器归属)) {
+          if (stat.名器归属[r]) {
+            stat.known[r + '成形'] = true;
+            const pfx = (r === '灵犀同心' ? '灵犀同心穴' : r);
+            stat.known[pfx + '一阶段'] = true;
+            stat.known['获得任意名器'] = true;
+          }
+        }
+      }
+      const service = window.__xsdCorrection;
+      if (service) {
+        let id = ''; try { id = service.capture({}).chatId; } catch (_) {}
+        stat.人工纠错 = cs && cs.人工纠错 && cs.人工纠错.chatId === id ? cs.人工纠错 : null;
+        return service.effective(stat);
+      }
       return stat;
     } catch (e) { return null; }
   }
@@ -2235,11 +2210,80 @@ const XsdHUD = (function () {
    * @param {object} customOwners 自定义归属表 (stat_data.名器归属)
    * @returns {{ state: 'none'|'self'|'other', owner: string, arcs: number, owned: boolean }}
    */
-  function xsdRelicState(rel, known, identity, customOwners) {
+  /** 身份别名组（同一人物的不同写法／称号）——名器归属判定不能只靠字符串相等：
+ *  殿主开局的身份是**称号**（如「魂欢殿主」），而名器归属常写成**本名**（如「鬼医病相思」），
+ *  两份写法对不上就会被判成「别人占据」，纹章反色。
+ */
+const XSD_IDENT_GROUPS = [
+  ['魂欢殿主', '病相思', '鬼医病相思', '鬼醫病相思'],
+  ['焚欲殿主', '残阳老怪', '焚欲殿'],
+  ['欢喜殿主', '肉山佛', '欢喜殿'],
+  ['浊龙殿主', '九皇子', '浊龙殿'],
+  ['赵无忧'],
+];
+/** 两个人名（或称号）是否指同一个人：先直接包含，再按别名组交叉命中。
+ *  @returns {boolean} */
+/** 宿主上下文里的玩家名（persona 名）—— 千千万万玩家的名字都从这儿来，不写死。 */
+function xsdPlayerNames() {
+  const out = [];
+  const push = (v) => { const s = s0(v); if (s && out.indexOf(s) === -1) out.push(s); };
+  const getS = (w) => { try { return w && w.SillyTavern; } catch (e) { return null; } };
+  let wins = [];
+  try { wins.push(window); } catch (e) { /* 忽略 */ }
+  try { wins.push(window.parent); } catch (e) { /* 忽略 */ }
+  try { wins.push(window.top); } catch (e) { /* 忽略 */ }
+  for (const w of wins) {
+    const S = getS(w);
+    if (!S || typeof S.getContext !== "function") continue;
+    try { const c = S.getContext(); push(c && c.name1); push(c && c.name2); } catch (e) { /* 跨源 */ }
+  }
+  return out;
+}
+/** 归属者是不是「剧中人」：先看卡片自带名册（立绘命名表），再看别名组里的本名。
+ *  名册与别名组都是**卡片自己的数据**，不额外维护玩家名单。 */
+function xsdIsCast(nm) {
+  const y = s0(nm);
+  if (!y) return false;
+  try {
+    const table = (typeof XSD_PINYIN === "object" && XSD_PINYIN) ? Object.keys(XSD_PINYIN) : [];
+    for (const n of table) { const k = s0(n); if (k && (y.indexOf(k) !== -1 || k.indexOf(y) !== -1)) return true; }
+  } catch (e) { /* 表不可用 */ }
+  for (const g of XSD_IDENT_GROUPS) { for (const n of g) { if (y.indexOf(n) !== -1) return true; } }
+  return false;
+}
+function xsdSamePerson(a, b) {
+  const x = s0(a); const y = s0(b);
+  if (!x || !y) return false;
+  if (x === y || x.indexOf(y) !== -1 || y.indexOf(x) !== -1) return true;
+  for (const g of XSD_IDENT_GROUPS) {
+    let hx = false, hy = false;
+    for (const n of g) { if (x.indexOf(n) !== -1) hx = true; if (y.indexOf(n) !== -1) hy = true; }
+    if (hx && hy) return true;
+  }
+  return false;
+}
+
+function xsdRelicState(rel, known, identity, customOwners) {
+    const service = window.__xsdCorrection;
+    const correction = (xsdStatData() || {}).人工纠错;
+    const records = correction && correction.覆盖 || {};
+    if (rel.c && records[JSON.stringify(['known', rel.c])]?.value === false) {
+      return { state: 'none', owner: '', arcs: 0, owned: false };
+    }
+    if (records[JSON.stringify(['名器归属', rel.n])] && records[JSON.stringify(['名器归属', rel.n])].value === null) {
+      return { state: 'none', owner: '', arcs: 0, owned: false };
+    }
     const K = known || {};
     let formed = false;
     if (rel.c && K[rel.c] === true) formed = true;
     for (let n = 1; n <= rel.a; n++) { if (K[rel.s + XSD_RELIC_CN[n] + '阶段'] === true) { formed = true; break; } }
+    // 账本与归属保底：名器归属表或破处者记录已有此名器，实证必然成形
+    if (!formed) {
+      if (customOwners && (customOwners[rel.n] || customOwners[rel.id])) formed = true;
+      if (statData && statData.名器归属 && (statData.名器归属[rel.n] || statData.名器归属[rel.id])) formed = true;
+      const rStages = typeof XSD_RELIC_STAGES !== 'undefined' ? XSD_RELIC_STAGES[rel.id] : null;
+      if (statData && statData.破处者 && rStages && rStages.carrier && statData.破处者[rStages.carrier]) formed = true;
+    }
     if (!formed) return { state: 'none', owner: '', arcs: 0, owned: false };
 
     let hi = 0;
@@ -2266,14 +2310,9 @@ const XsdHUD = (function () {
 
     // 2. 依据剧情事实与当前局势判定归属者
     if (!owner) {
-      /* ★★ 2026-10-06（主人令「面板归属：xxx破处者是谁，谁就是拥有者」）：
-       *   归属只认两样 —— ①上面第 1 步读到的 `stat_data.名器归属`（`状态机.js` 从 `<破处>` 破处簿翻译而来）
-       *   ②读不到那张表时的**身份兜底**（自设归玩家本人、赵无忧归赵无忧、殿主归该殿主）。
-       *   ⚠️ 旧的 8 条硬编码支线已整块删除（2026-10-06 主人令）：那批名字**从来没进过可写台账**，
-       *      脚本永远拉不到，判据一直是假的；删掉之后归属改由破处簿记录（见 `状态机.js` 的 `<破处>`）。
-       *   ⚠️ 老存档（没有 `名器归属` 表）：走身份兜底，不会崩；只是不再靠那两个旧名字判给 NPC。 */
+      
       if (isCustom) {
-        // ★ 自设身份专属铁律：自设玩家为独立天命专轨，攻略激活的名器默认全归玩家本人（契约认主）
+
         owner = idText || '自设';
       } else if (isZhao) {
         owner = '赵无忧';
@@ -2287,16 +2326,38 @@ const XsdHUD = (function () {
     }
 
     // 3. 校验：当前身份是否等于归属者
+    const _playerNames = xsdPlayerNames();
+    const mine = (nm) => {
+      if (xsdSamePerson(nm, idText)) return true;
+      for (const p of _playerNames) { if (xsdSamePerson(nm, p)) return true; }
+      return false;
+    };
     const isMe = (function() {
       if (!owner) return false;
       if (owner === '玩家' || owner === '{{user}}') return true;
       if (isZhao && (owner === '赵无忧' || owner.includes('赵无忧'))) return true;
-      if (isCustom && (owner === '自设' || owner.includes('自设') || !idText || owner === idText || idText.includes(owner) || owner.includes(idText))) return true;
+      if (isCustom) {
+        /* 自设：**结构性判定**，不枚举玩家名（主人 2026-10-07 指正）。
+           ① 归属者＝玩家本人（宿主 persona 名，或本人身份文本）⇒ 自己；
+           ② 归属者命中卡片自带名册（立绘命名表 18 名）或别名组（四殿主称号↔本名）⇒ 剧中人 ⇒ 他人；
+           ③ 其余（任何玩家自取的名字）⇒ 算自己。 */
+        if (mine(owner)) return true;
+        if (xsdIsCast(owner)) return false;
+        return true;
+      }
       if (rel.lord && owner === rel.lord && isLord(rel.lord, rel.hall)) return true;
       if (rel.hall && owner === rel.hall && isLord(rel.lord, rel.hall)) return true;
-      if (idText && (idText === owner || idText.includes(owner) || owner.includes(idText))) return true;
+      if (xsdSamePerson(owner, idText)) return true;   /* 别名／口径统一：殿主称号 ↔ 本名 */
       return false;
     })();
+    if (!isMe) {
+      try {
+        console.log(TAG, '[名器归属·诊断] ' + rel.n + '：身份=「' + idText + '」｜归属=「' + owner + '」'
+          + '｜身份判定：自设=' + isCustom + '／赵无忧=' + isZhao + '／任一殿主=' + isLordAny
+          + '｜名器表 lord=「' + String(rel.lord || '') + '」hall=「' + String(rel.hall || '') + '」'
+          + '（判为他人 ⇒ 纹章会反色）');
+      } catch (e) { /* 诊断失败不影响功能 */ }
+    }
 
     if (isMe) {
       return { state: 'self', owner, arcs, owned: true };
@@ -2306,7 +2367,13 @@ const XsdHUD = (function () {
   }
 
   /** 一枚纹章的 SVG（底图 ＋ 墨底压边 ＋ 双层金框 ＋ 阶段弧 ＋ 四阶金晕；未获取＝灰罩，被夺＝反色/异化暗红框） */
+  function xsdRelicDisplayState(rel, st) {
+    const service = window.__xsdCorrection;
+    return service ? Object.assign({}, st, { state: service.visual(xsdStatData() || {}, rel.id, st.state) }) : st;
+  }
+
   function xsdRelicSvg(rel, st) {
+    st = xsdRelicDisplayState(rel, st);
     const id = rel.id, N = rel.a, R = 436;
     const isSelf = st.state === 'self';
     const isOther = st.state === 'other';
@@ -2359,7 +2426,7 @@ const XsdHUD = (function () {
 
   
   /** 13 件名器 1-4 阶段精炼神韵数据库（用于 Hover 气泡与全景玄鉴画卷） */
-  const XSD_RELIC_STAGES = {"jiuyouxuanyinxue":{"id":"jiuyouxuanyinxue","name":"九幽玄阴穴","carrier":"孤月","type":"阴窍绝品 · 极寒冰窟","brief":"阴窍至极名器，位列《极乐引》绝品。宿主身负世间至阴玄冥之气，深邃如坠万载寒潭，凡俗阳气触之即冻，唯有至阳龙气方能引动其深层造化。常与九幽玄阴脉伴生。","stages":{"1":{"name":"一阶段","desc":"触发条件是元阴初破、至阳龙气贯体。花宫最深处凝出一朵虚幻冰莲花苞，抖着绽开第一片花瓣，随后层层全绽。整条花径翻脸——原本温热的媚肉一瞬覆上万年玄冰般的寒气，收缩到近乎攻击性地箍紧肉棒，把入侵的烫物硬生生裹进冰里。至阴汁水触到肉棒即凝成薄冰霜，下一刻被烫化，再凝、再化，循环往复，交合处不断冒出细碎滋滋声，蒸起冰冷雾气，把两人下身罩在寒雾里。对方感受到的是仿佛连","lock":"「极乐引·玄阴篇」朱批：万载玄冰封其户，非至阳真龙之息贯顶，不能破其极寒。"},"2":{"name":"二阶段","desc":"冰棱漩涡成形。内壁长出无数细密、高速旋转的冰棱，在花径内壁疯狂游走、刮擦、研磨，每一下带出刺骨寒意与头皮发麻的快感。冰莲花瓣浮出丝丝缕缕淡暗金龙纹，像微小邪龙在瓣上游动；莲心亮起一点极致幽蓝，冰魄核心成形，花瓣层层怒放。携带者小腹浮出冰蓝与暗金交织的龙形道纹，如活物般缓缓游动；对方背脊浮出呼应的冰龙道纹。空中凝出一雄一雌两条缠暗金纹的冰龙虚影，交颈缠绕，散出","lock":"「极乐引·玄阴篇」朱批：冰棱回旋生暗金，阴阳交泰极处，龙纹自显于背。"},"3":{"name":"三阶段","desc":"漩涡收凝成龙鳞。无序旋转的冰棱猛然收缩凝聚，化作无数细小、如同活物般的冰晶龙鳞，紧密排列，布满整条花径。它们不再被动应激，而是主动：肉棒侵入的瞬间，满壁龙鳞仿佛见到君王般齐齐震颤、翕张，发出细碎的、如同冰晶摩擦的沙沙声，一层层叠上来包裹、缠绕肉棒；边缘锋利如刃，触到肉棒时又变软，带着吸力刮搔每一道沟壑。莲台上两条微缩冰龙虚影首尾相衔，绕着莲心幽蓝核心飞速盘旋","lock":"「极乐引·玄阴篇」朱批：玄魄收凝化为鳞，至柔胜刚，百骸龙髓交感。"},"4":{"name":"四阶段","desc":"身体外形被改写。莲心那点幽蓝核心先向内坍塌，接着轰然爆开，龙气逆流上头。额角两侧刺出一对幽蓝龙角，蜿蜒生长，通体如万载玄冰雕琢，表面缠着暗金色、活物般游走的细纹；身躯覆上龙鳞。背后一道庞大狰狞、覆着幽蓝冰晶与暗金纹路的邪龙虚影挣脱浮现，龙威压低整间宫殿的气温。龙角是整具名器的命脉，被攥住拨弄时，一股混着酥麻、刺痛的强烈电流瞬间窜遍全身，绷紧的身体当场软下去。","lock":"「极乐引·玄阴篇」朱批：龙角峥嵘命脉生，九幽冰魄大成，神仙俯首任凭驱策。"}}},"zhuojiuliuyanxue":{"id":"zhuojiuliuyanxue","name":"灼酒流炎穴","carrier":"叶红缨","type":"阴窍绝品 · 焚欲赤羽","brief":"阴窍绝品名器，出自《极乐引》名器谱，称其足以燃情蚀骨、醉倒仙神。花宫深处有纯阳酒泉，情动时溢散陈酿异香，炽热如熔岩暗涌，能反激交合者阳煞生机。","stages":{"1":{"name":"一阶段","desc":"元阴被破的那一刻由血脉自己引爆。未觉醒时只有一股淡淡的酒味混在情动气息里。入口先热后紧，被按压摩擦时不受控地一阵阵收缩，主动吸附吮吸，蜜液多到顺着大腿内侧拖出亮晶晶的水痕。插入那一下滚烫的温度先把携带者从迷乱里烫醒，随后破膜、撕裂、被撑到极限。真正的机制在第一下撞到花宫口时启动：一股热从花宫最深处自己炸开，被动承受的肉壁立刻改态，化成流动的温暖火焰层层叠叠缠","lock":"「极乐引·焚欲篇」朱批：幽谷藏纯阳酒泉，初度红尘自生温，烈火遇酒即引燃。"},"2":{"name":"二阶段","desc":"肉壁性质直接换掉。媚肉不再是温暖的火绸，而是化作流动的炽白烈焰；蜜汁不再流淌，而是像千年酒髓瞬间蒸干，化成无形无质却无处不在的烈炎琼浆，作用于双方神魂，把快感成倍往上推。体液相交处会响出滋滋声，像火焰遇上烈酒。背部浮出火凤道纹。这一段的乳尖另有孕炎乳一路：淡琥珀色，跟下身同源的酒香，被吸出后顺喉咙下肚，下去就催情。","lock":"「极乐引·焚欲篇」朱批：肉壁化流光炽焰，白焰琼浆蚀骨，乳尖暗凝琥珀之膏。"},"3":{"name":"三阶段","desc":"炽白流转为暗金，火凤虚影成形，修为随之破入元婴。此段触发「极乐轮回」——巅峰那一瞬邪凤法相双目亮起，力量顺着三人接触的部位反向灌回，本该退去的快感以更强力度从花心与后庭同时再爆一次，接着第三次、第四次，变成永不停歇的海啸，把携带者钉在极乐里。汁液带上了实质重量，酒香浓到能侵蚀心智。","lock":"「极乐引·焚欲篇」朱批：暗金凤影啸九天，快意迭起如海啸，极乐轮回不可休。"},"4":{"name":"四阶段","desc":"背脊肩胛裂开两道口子，长出翼展近丈的邪欲凤翼，暗红凤羽里流着金色情火。法相效果转为「欲火焚身，高潮迭起」：灼热的波纹以结合处为中心向外推，被携带者带到的人高潮一波未平一波又起。高潮时汁液可从穴口像小型喷泉般激射。","lock":"「极乐引·焚欲篇」朱批：双生赤羽裂肩胛，欲火焚身，神魂尽销于情焰之中。"}}},"xinmochayingru":{"id":"xinmochayingru","name":"心魔茶璎乳","carrier":"闻观语","type":"乳窍绝品 · 魔念茶香","brief":"双峰类奇珍名器，上古极阴之体之至高变种。双峰与周身灵窍浑然一体，天生体蕴幽渺魔性茶香，传闻灵乳初溢之时可洗练神魂杂毒，玄机深不可测。","stages":{"1":{"name":"一阶段","desc":"破元阴、阴阳交泰时，花宫凝出半透明的幽蓝心魔茶树虚影，爱液转成黏腻乳白，双峰胀大、乳尖渗出淡金灵乳。内壁黏膜像活了过来，生出无数细密柔软、如同新生茶蕊般的微小凸起与褶皱，疯狂摩擦、刮蹭、吮吸，快感按几何倍数往上翻。灵乳被饮下，能让人耗损的修为顷刻尽复，甚至犹有精进，还能把蚀心焚毒的奇毒消解大半。","lock":"「极乐引·魔念篇」朱批：花宫生茶树，璎珞初绽，灵乳溢香可涤神魂宿毒。"},"2":{"name":"二阶段","desc":"花宫孕出背生黑色魔翅的天魔之女虚影，蜜汁化成璎珞乳浆，黏稠如蜜、闪珍珠光泽，异香比先前浓十倍；双峰泌出天魔金乳，宛如流动的黄金，带炽热生命气息与魔性茶香。内壁茶蕊更密更软，如同活过来的触须，缠绕舔舐入侵的肉棒，每次摩擦带出电流般的细密快感。双方小腹浮出天魔道纹，身后虚空浮出天魔与天魔之女两道虚影交感。此段可行峰峦叠嶂之法：以乳肉包裹肉棒，与下穴共鸣，上下同时","lock":"「极乐引·魔念篇」朱批：天魔之女凝金乳，双峰与玄谷共鸣，上下通感如一。"},"3":{"name":"三阶段","desc":"在雷霆与欲火双重作用下彻底觉醒。茶蕊顶端生出细小的紫金触须，抽离时依依不舍缠住挽留、刮过棱角，插入时又欢快缠上来贴着律动，把更细腻的刮擦送进濒临崩溃的神经。天魔金乳转为瑰丽的紫金色，入口带电般的酥麻。花宫茶树化作幽蓝、暗金、紫红三色交织、缠着银白雷弧的紫金雷火茶树。天魔女法相左半身缠融情欲火、右半身跃动暗紫雷蛇。奴种于此段扎进茶树核心根系。","lock":"「极乐引·魔念篇」朱批：紫金雷火动道纹，奴种深植根系，欢愉锁死于魔念之中。"},"4":{"name":"四阶段","desc":"脑后虚空凝出一枚拳头大小、深邃暗绿的邪心天目，缓缓睁开。随之展开领域「千心一欲」——领域内所有女子的感官、情绪、乃至被身体承载的快感被强行连接、共享、放大，数千人的感受叠加进一具身体，被灌入的元阳洪流也叠成数千道贯穿。身心与欢愉法则锁死，退不回来。","lock":"「极乐引·魔念篇」朱批：千心归一欲，天目睁时照十方，万千神魂共此极乐。"}}},"boruoputiju":{"id":"boruoputiju","name":"般若菩提菊","carrier":"楚灵夜","type":"后窍绝品 · 佛光净莲","brief":"后窍绝品名器，载于《极乐引》佛宗异宝残卷。隐于后庭菊径，聚散如清净莲台，禅韵与媚煞相生相克，传有逆向洗练神魂杂质之旷世神效。","stages":{"1":{"name":"一阶段","desc":"入口是一圈极紧的环状门户，被撑开时先是极涩，随后是轻微撕裂痛，很快转成饱胀、酥麻与深层悸动。内壁的褶皱自己重排，形成一圈圈细微而排列有序、如同菩提树叶脉般的纹路，侵入的瞬间被激活，不再是单纯紧箍，而是带韵律地蠕动、吸附、吮吸。这些叶脉缠绕入侵的肉棒，每次摩擦刮搔都带出电流窜脊髓的感觉，并反向把佛门元阴之气渡回施术者。","lock":"「极乐引·梵音篇」朱批：后庭暗藏清净莲，叶脉随律蠕动，逆吸真阳洗练神魄。"},"2":{"name":"二阶段","desc":"双穴互通成形。前后两条幽径彻底贯通，前方每收缩一次必然引动后方同步吸附，后方每蠕动一次也必然激起前方更剧烈的缠绕，形成循环放大的闭环。花径内的金色莲花与后庭的菩提叶瓣形成共振，后庭叶瓣像潮汐般层层涌动，带出更深沉的饱胀与酸痒。汁液从透明黏稠渐染淡金，转成黏稠醇厚如百花蜜露。","lock":"「极乐引·梵音篇」朱批：双穴相通成阴阳循环，前合后翕，禅意与媚煞同炉。"},"3":{"name":"三阶段","desc":"内壁纹路升格为半透明玉质般的菩提叶瓣，层层叠叠缠裹上来，节奏比花径更慢更深，缓慢而坚定地蠕动开合，带来直抵灵魂深处的吸力。汁液转成浓郁如琥珀、仿佛融化了黄金，气味是檀香混着极品花蜜的甜。额心暗金红莲印亮起，体表暗红邪莲图腾绽放旋转；法相为邪菩萨，诵出扭曲六字真言，化金色波纹笼罩全场，把领域里所有人的双穴同时点着。","lock":"「极乐引·梵音篇」朱批：邪菩萨法相低诵，红莲图腾照虚空，领域之内皆燃欲火。"},"4":{"name":"四阶段","desc":"机制转为镜像转移——携带者的感知被硬生生劈成两半，前一半在前面承受撑开的胀痛、棱角刮擦内壁的酥麻、顶端撞进深处的震荡，后一半分毫不差搬到后庭里，完全同步。高潮时花宫处的菩萨莲台主动张开一道细小缝隙，产生无法抗拒的吸力，像长鲸吸水般把灌进去的东西连同携带者自身的汁液一起吞下锁死在体内；被灌满后小腹肉眼可见微微隆起，事后蜜穴与后庭都红肿外翻。","lock":"「极乐引·梵音篇」朱批：镜像移转，莲台含吮封真阳，长鲸吸水分毫不泄。"}}},"beimingchaoshengxue":{"id":"beimingchaoshengxue","name":"北冥潮生穴","carrier":"雨霏柔","type":"阴窍绝品 · 惊涛潮汐","brief":"阴窍旷世绝品，暗合浩瀚北冥水行天道法则。花径幽邃如深海寒渊，潮起潮落皆合天时律动，非大机缘大定力者难窥其万分之一玄妙。","stages":{"1":{"name":"一阶段","desc":"内壁不按规律收缩，而是化作无数方向各异、力道不同的暗流与漩涡，从四面八方冲击、刮搔、缠绕入侵的肉棒。常态冰凉滑腻，汁水色泽深邃幽玄、质地如水银般沉重顺滑，气味是深海与月光混在一起的冷冽芬芳，量大到随内壁潮汐一波波涌出。插入的感觉不是陷进温暖的巢穴，而是闯进一片有了生命与意志的海洋，四周是无边包裹与冲击，还带着要把灵魂吸出去的力量。抽送到底时顶端撞上正在加速旋","lock":"「极乐引·北冥篇」朱批：水行法则纳于方寸，暗流漩涡不息，玄津如水银沉重。"},"2":{"name":"二阶段","desc":"那些暗流与漩涡化成无数细小活着的鲲鹏虚影，按规律层层叠叠地缠绕、吸吮、刮搔；花径从温暖海洋变成无垠的北冥之海，空间感被无限拉长，内壁媚肉带上韧性与活性，每一次收缩挤压都像整片北冥在呼吸律动。背脊浮出鲲鹏道纹。高潮不是普通喷发，是源涡运行方向轰然逆转：北冥玄津一瞬冰凉刺骨又极致灼热，量大到不可思议，如决堤的北冥之海从结合处冲出，同时把混着两人生命本源与阵道法则","lock":"「极乐引·北冥篇」朱批：源涡逆转沧海立，鲲鹏展翼，生命本源反哺纯阳。"},"3":{"name":"三阶段","desc":"领域展开。洞府内的景象开始扭曲模糊，空气里响起来自远古的潮汐声，四周浮出鲲鹏展翅、鱼跃沧海的虚影，以两人结合处为中心，把整间洞府变成只属于结合双方的独立神国。乳尖被吮时另有一路反馈，汁水混着浓郁乳香与一丝北冥玄津特有的冷冽激射而出。携带者这时只能死死捂住嘴、指甲掐进对方皮肉、拼命压住声音，身体却一路跟上去，直到双眼翻白。","lock":"「极乐引·北冥篇」朱批：帝溟神国自成天地，浪涛拍岸处，直指元婴大道。"},"4":{"name":"四阶段","desc":"帝溟神国彻底凝实为体内洞天，花宫深处「潮汐源涡」与鲲鹏本源合道。潮生自律无需刻意催发，暗流与浪涛自花宫深处层层逆卷，生命本源源源不绝反哺纯阳。玄津如银瀑倒倾，交媾即入天道冥想之境，元婴瓶颈应声而破。","lock":"「极乐引·北冥篇」朱批：溟海化虚为真界，鲲化为鹏扶摇起，极乐极境直通合道造化。"}}},"lingxitongxin":{"id":"lingxitongxin","name":"灵犀同心穴","carrier":"苏瑶、苏玲","type":"阴窍奇珍 · 灵犀双生","brief":"双生造化奇珍名器，需同胎血亲合道共构。二人同心异质、命格相系，传闻阴阳两极共济互补，在《极乐引》中被列为最不可思议之双生玄枢。","stages":{"1":{"name":"一阶段","desc":"同时探入两根手指能摸到两种截然不同的手感——一路温热黏稠，像最上等的温热丝绸，内壁嫩肉如活物缠绕蠕动，包裹紧致而富有弹性；一路冰凉爽滑，像浸润在寒泉里的美玉，内里细密褶皱如无数小舌缠绕，深处仿佛有无数细小漩涡旋转。破处即激活：谁在承欢，另一方无论隔多远都能同步感到被填满的胀满、被撑开的胀痛、甚至处子膜破裂那一瞬的痛，高潮几乎在同一刻到达。","lock":"「极乐引·双生篇」朱批：同胞共命，异体同心，一人承欢则千里同感。"},"2":{"name":"二阶段","desc":"一人的快感被放大数倍再叠到另一人身上，形成双重贯穿感，像自己同时被两根操着。同时使用两人时，一边是灼热如地心熔岩的包裹与吮吸，一边是冰冷如九幽寒泉的浸润与缠绕，交替贯穿时热气与寒气在两人体内来回流转碰撞。汁液性质分化：苏玲的蜜汁骤然变得无比黏稠温热，如同融化的金液；苏瑶的爱液瞬间冰凉滑腻，如同万载寒泉。","lock":"「极乐引·双生篇」朱批：一温一寒冰火旋，阳蜜炽如熔金，阴蜜清如寒泉。"},"3":{"name":"三阶段","desc":"花宫门户被撞开那一刻，两人花宫深处各自升腾起一股截然不同的气旋，浮出太阳道纹与月亮道纹，日月交辉。这对道纹可外移到施术者双臂，被识出名器来源。高潮时姐妹各走一路：苏玲花宫深处的太阳气旋爆发，一股浓郁灼热、含精纯太阳之气的黏浊蜜汁像火山喷发般冲出；苏瑶体内喷出大量清冽冰凉、含太阴之气的蜜汁，两者混在一起形成奇异的冰火交织。对方射时元阳分作两股，一股灌进苏玲花宫","lock":"「极乐引·双生篇」朱批：日月交辉道纹现，两极交泰，造化神妙天地不存。"},"4":{"name":"四阶段","desc":"同心通感升华至神魂相通、太极合璧。无需同榻，一人承欢则双姝同享无上极乐。花宫内冰火阴阳二气在结合中自行演化太极漩涡，苏玲之阳蜜如熔金、苏瑶之阴蜜如万载寒泉，双流交汇反哺采补者。姐妹双纹与采补者双臂铭纹彻底互为表里，锁死同生共死之契。","lock":"「极乐引·双生篇」朱批：太极双生归混沌，千里同春情不息，日月同辉证无上玄妙。"}}},"yuhuxiangru":{"id":"yuhuxiangru","name":"玉虎噙香乳","carrier":"云织梦","type":"乳窍奇珍 · 猛虎衔香","brief":"双源奇珍名器，肌肤如润泽暖玉，天生蕴含冷冽蜜桃异香。相传宿主体内潜藏远古庚金白虎真煞，兼具镇邪与生阳之奇妙潜质。","stages":{"1":{"name":"一阶段","desc":"觉醒征兆不是汁液，是触感先变——肌肤红潮沉淀成温润莹透的光泽，摸上去不像单纯柔软，而像最上等的暖玉，细腻滑嫩下面藏着惊人弹性；乳晕向熟透蜜桃尖的橘红过渡，乳根与肋侧浮出极淡近乎透明的银白虎纹，随呼吸心跳流转，纹路本身散着微弱温热，碰到会引出全身细战栗。花宫深处的本源之相初显为一枚浸润清冷月华的饱满玉桃。汁液是初香玉露：清亮透明、微带粘丝、清冽纯净的蜜桃冷香，","lock":"「极乐引·白虎篇」朱批：玉骨凝香如冷桃，初露清冽，可开通天彻地五感。"},"2":{"name":"二阶段","desc":"体内的淫龙涎香余毒突然活跃，化成数条细如发丝的粉色光龙钻进那枚月下蜜桃虚影，把虚影撑碎，一头通体晶莹、毛发如粉色琉璃、双眼燃着情焰的邪魅白虎虚影就此盘踞花宫，骚痒与膨胀从深处往上顶。内壁淡银灵络整体转成鲜艳桃粉，像活过来的藤蔓紧紧缠住深埋的肉棒，一波波更绵密、深入骨髓的酥麻与吸力跟着压上来。胸前泌出的转成炽情桃蜜，黏稠如蜜、泛莹润桃粉光泽，催情更强；花径爱液","lock":"「极乐引·白虎篇」朱批：春潮催发庚金煞，白虎踞深闺，桃蜜浓艳催生真阳。"},"3":{"name":"三阶段","desc":"交合方混着混沌镇封之力的元阳洪流把邪灵包裹压缩，化成一道黯淡的粉红纹路锁进识海最深处。镇封那一刻花宫深处亮起一点白金光芒，演进成玉虎镇渊阵，名器本源被稳住，邪异气息消散，快感反而更纯：深埋在名器中的肉棒不仅未因倾泻元阳疲软，反被阵纹的威严与名器自身的吸吮之力激得愈发胀硬，尺寸再涨一圈。双峰与花径的双向共鸣此时完全打开——虎纹随花径收缩明暗闪烁，把快感反馈增幅","lock":"「极乐引·白虎篇」朱批：大阵镇渊锁邪灵，共鸣回路全启，反激阳根愈战愈强。"},"4":{"name":"四阶段","desc":"识海邪灵尽化为至纯神煞，白虎法相与月下玉桃本源彻底相融，胸前虎纹与花径灵络彻底通融。无需爱抚，情动即溢浓郁初熟桃蜜；双峰微颤间，庚金之气化作至刚至柔的锁阳大阵，深埋之阳物如遭天锁相吸，愈战愈坚，阴阳真火生生不息。","lock":"「极乐引·白虎篇」朱批：白虎衔香归至纯，神煞化甘露，双峰锁阳直臻长生妙境。"}}},"yanxialingru":{"id":"yanxialingru","name":"烟霞灵乳","carrier":"柳含烟","type":"乳窍绝品 · 紫雾霞光","brief":"双峰绝品名器，天生聚拢紫雾霞光。所溢甘露宛如凝练烟霞，自带颠倒红尘、勾动神魂最深处缠绵记忆之天然道韵。","stages":{"1":{"name":"一阶段","desc":"乳肉绵软硕大、弹力惊人，入手温热，五指抓下去乳肉几乎从指缝满溢出来。乳尖被含住吮吸时，一股温热、醇厚、带浓郁幽昙花香与奇异乳甜的粉白色乳汁不受控地激射出来，质地更接近凝练的烟霞。花径插入是填充与撕裂同时超限：肉棒撑开唇瓣、撕开柔韧的甬道入口长驱直入，每一寸敏感媚肉被碾平、撑开到极限的轮廓都能清楚感到；内壁肉壁上的幽昙花花蕊被刮过或撞上时，应激般分泌出接近烟霞","lock":"「极乐引·烟霞篇」朱批：紫雾霞光凝琼浆，幽昙半合，每一吮皆落仙家露。"},"2":{"name":"二阶段","desc":"花宫最深处那株由精纯欲火与幽昙本源凝成的幽昙花虚影被直接撞上时，会生出一种名器本源被外力猛撞震荡的、源自灵魂深处的战栗。抽出时几乎退到穴口，内壁上的暗金锁链虚影一路刮擦，带来奇异而强烈的酥麻与微痛；每一次深入都像要撞碎花宫门户。乳尖被从乳下缘向上猛力推挤时，乳汁会被挤成细线四处飞溅，携带者身上那层成熟妖媚的壳会彻底碎掉，声音散成断句。","lock":"「极乐引·烟霞篇」朱批：暗金锁链动神魂，幽昙撞破，高傲道心尽作断续啼痕。"},"3":{"name":"三阶段","desc":"身后蛇姬法相虚影凝实，周身缠绕漆黑火焰，散出缕缕肉眼可见、氤氲粉黑色泽的烟雾。此段成形道韵「昨日欢」——非幻术，直接引动周遭女子肉身与神魂最深处的记忆烙印，让众女修一次次重温自己人生中最极致、最难忘的那次泄身体验，可反复叠加、越来越强。乳尖泌出的乳汁与花径分泌的烟霞蜜汁同时成倍加量，异香浓郁十倍。","lock":"「极乐引·烟霞篇」朱批：昨日欢起蛇姬舞，重温极乐忆，世间至高缠绵道韵。"},"4":{"name":"四阶段","desc":"「昨日欢」道韵凝为实质领域，幽昙花彻底盛开，粉黑霞光如轻纱笼罩结合双方。双峰泌出之烟霞琼浆与花径溢出之极乐花蜜化作神魂养料。每一次抽送皆精准引动神魂最极致之快感记忆，层层叠增、无休无止，令道心永沦于欢愉梦境，不可自拔。","lock":"「极乐引·烟霞篇」朱批：幽昙盛放烟霞定，昨日欢化万古春，沉沦无悔至死方休。"}}},"meiruixue":{"id":"meiruixue","name":"梅蕊穴","carrier":"花芷凝","type":"阴窍奇珍 · 寒梅暗香","brief":"阴窍暗香奇珍，清幽冷冽，自带绝俗梅花冷香。内蕴玄妙蕊形灵络，有以幽谷阴元孕养灵药、反哺丹道造化之殊胜传闻。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口紧窄，初入时偏涩，内壁出现的不是单纯褶皱，而是一圈圈排列有序、边缘微卷的蕊状结构，像被撩开的花瓣一样逐层裹上来。本阶段蕊状结构不主动吸附，仅在肉棒退出时产生轻刮。温度起始偏低，接近携带者常年偏凉的体表手感；随交合推进内壁自行升温，出现冷热交替，交接处的凉意与热度在两息之内反复一遍。汁液清透微黏，气味为梅花冷香，浓度随情","lock":"「极乐引·梅蕊篇」朱批：幽谷清冷生梅香，蕊瓣层叠，退出微刮引动心弦。"},"2":{"name":"二阶段","desc":"蕊状结构吸水后膨起，边缘由微卷转为向外翻张，像花瓣张开一样全部贴上肉棒，形成持续的刮擦与吸附。中心位置生出一条纵向敏感带并沿壁贯穿，肉棒压过该带时产生的感觉沿脊柱向下传导。汁液由清透转为蜜状，黏稠度上升，冷香之外多出一层熟果般的甜。胸前双峰开始泌出与汁液同源的乳白液体，被含住吮吸时随吸力成股涌出。此阶段可通过意志调节蕊状结构的开合频率，频率升高时吸附加强，主","lock":"「极乐引·梅蕊篇」朱批：蕊瓣翻张温养灵药，纳丹化水，蜜液同具神丹造化。"},"3":{"name":"三阶段","desc":"内壁在冷热交替中析出一层极薄的霜状凝结，触感转为先凉后烫，肉棒进入时形成明显的温差冲击。蕊心深度增加，进入任意一点均被两组结构同时夹持，一组产生吸附，一组产生向外推压，两种力量交替出现，节奏约每三息轮换一次，轮换时出现被推出去又被吸回来的两段感。小腹浮现梅花状的淡青纹路，并随高峰向腰侧蔓延。高潮时花径收缩与霜状凝结同时发生，汁液自穴口成股涌出，量足以顺着大腿","lock":"「极乐引·梅蕊篇」朱批：霜凝玉壁温差现，推吸交错，青梅道纹蔓延腰腹。"},"4":{"name":"四阶段","desc":"胸前形成一处稳定的蕊心显化，位于双峰正中，外观为一点半透明的淡青花蕊，触感冰凉，与双峰其余部分的温热形成明显分界，按压时引发花径同步收缩。高潮后香气外溢，可在身下织物与所处环境中残留数个时辰。此阶段携带者对是否接纳具有主动控制权，通过调节蕊鸣频率可在接纳与排斥之间切换；排斥时内壁整体向外推压，接纳时立即转为全线吸附，被夹住一次后很难再退出。","lock":"「极乐引·梅蕊篇」朱批：双峰蕊心受按通幽径，或拒或纳，全凭神识一念开合。"}}},"bingpojianxinxue":{"id":"bingpojianxinxue","name":"冰魄剑心穴","carrier":"苏倾寒","type":"阴窍绝品 · 剑骨冰魄","brief":"阴窍绝品名器，宿主以剑入道，至纯剑骨与元阴凝结化窍。传其门户有锋芒内敛之坚韧封障，唯有以刚克刚或水火相济方得其门而入。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口为多层结构，最内一层由寒气凝成的剑意封膜封闭，肉棒需先破开该层才能进入，破层时有筋络崩断般的顿感与短促刺痛。进入后内壁贴合极紧，表面布满细密的纵向寒棱，沿肉棒轴向刮擦，触感偏冷、偏涩、带轻微麻感。汁液稀薄冰凉，气味清淡，近雪水，量不大。此阶段内壁收缩频率低而深，每次收缩的间隔约五息，夹一下再松一下，松的时候仍贴着不放。","lock":"「极乐引·剑心篇」朱批：剑气封膜闭门户，落红化刃，内蕴化神诛邪真意。"},"2":{"name":"二阶段","desc":"第二层剑意封膜展开，形成交叉的斜向纹路，肉棒在其中进出时同时受到两组反向刮擦，产生相错的牵引感。内壁温度出现分层，深处偏冷、浅处转温，交接处反复切换，形成冷热交替的夹感。汁液转稠，带微弱甘味，气味中出现一丝金属般的清冽。携带者体内原有的寒冰剑气开始沿花径游走，在肉棒表面形成断续的刺感；被刺到最深处时，携带者的腰会自行向上迎一次，随即又强压回去。","lock":"「极乐引·剑心篇」朱批：寒棱交错如剑阵，冷热分层，剑煞游走触电生麻。"},"3":{"name":"三阶段","desc":"第三层封膜转为可吸入的寒气，随抽送被带入肉棒表层，使触感由冷涩转为冷滑，摩擦阻力下降但吸附增强，退出时产生明显的挽留感。内壁的纵向寒棱边缘软化，转为持续贴合与压迫。锁骨到小腹之间浮现一线斜剑状的淡银纹路，纹路随呼吸明暗。高潮时寒气短时间内集中自穴口泄出，接触外界的部分凝成细霜；携带者的声音在泄出的同时第一次断开，随后又被携带者自身咬回去。","lock":"「极乐引·剑心篇」朱批：斜剑银纹浮肌表，剑意化霜吸纯阳，挽留之意难平。"},"4":{"name":"四阶段","desc":"层叠剑意封膜全部破开，内壁恢复柔软，只在深处保留一处独立的寒气核心，触感为冷而韧，进入时产生短暂的空间扩开感，随后核心合拢把肉棒整个含住。同一路径二次进入不再受封膜阻挡，适应速度明显提高。此阶段携带者的自持下降，声音与呼吸的节律不再维持阻断，之前长期压制的反应在同一段时间内集中出现，一旦开口便接连不断。","lock":"「极乐引·剑心篇」朱批：重膜尽破留剑心，外冷内韧，百转柔肠一朝尽倾。"}}},"qinggexianmingxue":{"id":"qinggexianmingxue","name":"清歌弦鸣穴","carrier":"慕容清歌","type":"阴窍奇珍 · 天籁琴音","brief":"阴窍音律奇珍，天籁入骨，音律与气血共鸣。动情吐息之际宛如弦歌轻颤，暗含天道宫商角徵羽五音律动，神妙非常。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口紧窄，内壁贴合均匀，无凹凸感，触感接近被绷紧的软绸。进入时无明显摩擦感，随即出现细密而均匀的振动，频率与携带者的呼吸同步，吸气时减弱、呼气时增强。汁液清透，气味清淡，带一丝类似松香与弦丝的味道，量随呼吸的节律一波波出现，一波比一波多。此阶段触感以持续的细微振动为主，位置均匀分布，像整条内壁在同时出声。","lock":"「极乐引·弦歌篇」朱批：气血微颤应呼吸，松香泛起，整壁低鸣如抚素琴。"},"2":{"name":"二阶段","desc":"内壁的束状结构分化为多组，各自独立振动，互不同步，肉棒在不同深度会同时受到两组以上频率不同的振动，形成相错的推压与回抽。汁液转稠，量增加，内壁温度略升。携带者一旦发声，振动频率会随音高改变，音越高振动越细密，音越低振动越沉；被逼出声音时内壁会短暂自我加强，振幅提高约一倍，等于携带者每叫一声就自己把肉棒夹紧一次。","lock":"「极乐引·弦歌篇」朱批：泛音分化多重束，娇啼愈尖夹缚愈紧，音律自为锁阳扣。"},"3":{"name":"三阶段","desc":"多组振动叠加成稳定的复合波形，波形沿内壁循环推进，进入任意位置都会被连续三段不同频率的振动依次扫过，形成周期性的收放节律。汁液转为黏滑，气味变浓且带明显和弦感。内壁开始对外界声音产生反应，附近有连续乐音时振动会自动向该音高靠拢；若一直闭口不出声，振动会转沉压向深处，逼携带者开口。颈侧至锁骨之间浮现一线淡金纹路，其明暗与振动频率一致。","lock":"「极乐引·弦歌篇」朱批：宫商交叠领域生，金纹明灭，波及方圆女修同频泄身。"},"4":{"name":"四阶段","desc":"波形稳定后可脱离直接动作自行维持，仅在外部声音变化时调整。内壁保留一处集中的振动核心，位于深处，进入时产生一次全壁同频的共振，持续约两息，期间内壁整体贴合并发声。此后声音不再受控，振动与音高之间形成固定关联，无法再主动压低；同一路径二次进入不再需要重新积累，反应速度明显提高，尚未开口，里面已经先响。","lock":"「极乐引·弦歌篇」朱批：花宫深处凝琴核，无需铺垫，甫一接近里面先鸣相迎。"}}},"liuyandiexinxue":{"id":"liuyandiexinxue","name":"流焰叠薪穴","carrier":"顾云舒","type":"阴窍奇珍 · 流光幻蝶","brief":"阴窍流光奇珍，极乐引载其如薪火相传、余温不绝。气机运转之际暗金流光如蝶，天生蕴藏淬炼兵甲、反哺纯阳之神火潜能。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口温热，内壁贴合充分，进入时先产生缓慢而均匀的吸附，无明显摩擦感。内壁温度随交合轮次逐次升高，第一轮结束后温度不回落，而是在深处留存一部分，下一次进入时起步就比上次更烫。汁液金红色、粘稠、带温热感，量中等，气味接近熬煮过的果实。体表在小腹出现浅淡的暗金纹路，纹路随每一轮的温度上升加深一分。","lock":"「极乐引·流焰篇」朱批：余温积存步步高，流光如蝶，暗金细纹铭刻小腹。"},"2":{"name":"二阶段","desc":"滑液进一步粘稠，呈蜜状，内壁整体温度抬升，同时在深处形成一处集中的热源。该热源使深处触感明显偏烫，浅处仍维持温和，形成持续的温度差；热源位置可随体位改变随机移动，移动时在内壁上留下短暂的移动热痕，像一条火线从内壁爬过去。携带者的呼吸频率低于常人，但吸吮的力度不降，每一次吸附都伴随深处热源的集中释放；想缓一缓时里面的温度反而更高。","lock":"「极乐引·流焰篇」朱批：游移热痕如走线，深烫浅温，抽送越缓内热愈烈。"},"3":{"name":"三阶段","desc":"内壁积存的余温由滑液转为蒸汽状热雾，肉棒在湿滑与雾气之间交替通过，抽送时热雾被挤到浅层，形成明显的内外温差，一路热浪推着走。内壁出现密集的热纹，边缘由锐转柔，转为持续的吮吸与压迫，温度维持在同一水平不再回落。颈后至双侧肩胛之间浮现暗金流焰纹路，与呼吸的起伏同步明暗。此阶段被撞得越快，积温越稳，停下反而难受。","lock":"「极乐引·流焰篇」朱批：热雾蒸腾成熔炉，淬炼兵刃法器，品阶威能随火候暴涨。"},"4":{"name":"四阶段","desc":"热源不再依赖持续性交合即可维持，进入前已完成积温时，其温度可在数刻内保持；同一路径二次进入无需重新积温。高峰时全部积存的热量在极短时间内集中释放，热浪自结合处向外扩散，体表渗出的汗与汁液混在一起，离体后仍带热量。事后热度不随结束散尽，仍在深处维持一段时间，痕迹可留数处。此阶段携带者对温度的耐受上升，对节奏的耐受下降，松手就自己贴回去。","lock":"「极乐引·流焰篇」朱批：薪火相传热不散，高峰瞬释，身心耐热终生难舍阳息。"}}},"fenghuangyuhua":{"id":"fenghuangyuhua","name":"凤凰羽花","carrier":"陆烬颜","type":"阴窍绝品 · 涅槃凤羽","brief":"肢足类绝世奇器，异象凝于足心与双腿，天生泛起暖羽异香。相传身具神禽涅槃余脉，与纯阳之息天然共鸣，越是相持越见坚韧。","stages":{"1":{"name":"一阶段","desc":"元阴被破时激活，载体在双足心与腿根内侧。足心蕴出薄汗状的暖津，触感温润不涩，足趾能屈伸扣握，足心正中那点花心受摩挲时自行开合，如活物含吮，含住后能凭足弓的收放把对方箍住不放。腿根内侧温度较别处高一线，夹持时贴合严密，久夹不松。花径受凤凰余炎浸润，温而不烫，内壁收束的节律与腿法同步，腿一动，内壁便跟着收一下。此阶段暖津清透微黏，气味为花香混暖羽的馥郁暖香，浓度","lock":"「极乐引·凤羽篇」朱批：足心生暖津，足趾扣握如花开合，腿法与花径同律。"},"2":{"name":"二阶段","desc":"羽纹上溯至腿根，纹路转赤金并绽出细密的花形脉络，泛出热光。足心的花心能主动开合得更深更快，双足可分别以不同节奏收束，一紧一松交替，等于两处同时夹。腿根夹持的炎力转盛，贴合处出现的不是单纯的热，而是热里有韧，越夹越紧，越紧越烫；对方腰背会被这股韧劲牵着走，抽送越快，缠得越密。暖津由清透转为粘稠如蜜，充足而不黏滞，改称「炽情羽津」；暖香可及一丈，闻者下腹发紧。此","lock":"「极乐引·凤羽篇」朱批：赤金凰纹上溯腿根，羽津黏蜜，夹持如活翼绞缠。"},"3":{"name":"三阶段","desc":"羽纹上溯至腰。足踝处可自行凝出赤色翎羽状的炎力虚影，随情动聚散，虚影擦过对方时额外带上一层灼热的抽打感。足心与腿根的收束转为持续，不再需要主动施力，停在一处也会自行夹吸；炎力自腿足涌入经脉并向上盘行，使对方四肢末端发热、指尖发麻，越往上越沉。暖津出量增加，足心湿成一片，气味转浓可及三丈，五丈内以镜类法器可辨。腰侧浮现羽列纹路，与呼吸同频明暗；被逼到极处时双腿","lock":"「极乐引·凤羽篇」朱批：足踝赤翎擦虚空，炎力反哺主人，泄身后阳息反更盛。"},"4":{"name":"四阶段","desc":"自足踝至腰后凝出一束火凤尾羽虚影，静息时暖金色，情动时转赤红并显出羽列纹路。足心与腿根可脱离直接接触维持余炎，进入前已积温时，进入后即自行收紧；同一路径二次进入无需重新铺垫，反应速度明显提高。暖香满室，赤足踏地处凝出短时火痕，结束后仍在原处留存一段时间。此阶段两处羽纹在情动至极时同时显形，腿足一侧为凰纹，主人小腹或腰际一侧为凤纹，一明一暗交替而应。","lock":"「极乐引·凤羽篇」朱批：足下凰纹腹间凤，双纹交相辉映，尾羽涅槃回路锁死。"}}}};
+  const XSD_RELIC_STAGES = {"jiuyouxuanyinxue":{"id":"jiuyouxuanyinxue","name":"九幽玄阴穴","carrier":"孤月","type":"阴窍绝品 · 极寒冰窟","brief":"阴窍至极名器，位列《极乐引》绝品。宿主身负世间至阴玄冥之气，深邃如坠万载寒潭，凡俗阳气触之即冻，常与九幽玄阴脉伴生。","stages":{"1":{"name":"一阶段","desc":"触发条件是元阴初破。花宫最深处凝出一朵虚幻冰莲花苞，抖着绽开第一片花瓣，随后层层全绽。整条花径翻脸——原本温热的媚肉一瞬覆上万年玄冰般的寒气，收缩到近乎攻击性地箍紧肉棒，把入侵的烫物硬生生裹进冰里。至阴汁水触到肉棒即凝成薄冰霜，下一刻被烫化，再凝、再化，循环往复，交合处不断冒出细碎滋滋声，蒸起冰冷雾气，把两人下身罩在寒雾里。对方感受到的是仿佛连","lock":""},"2":{"name":"二阶段","desc":"冰棱漩涡成形。内壁长出无数细密、高速旋转的冰棱，在花径内壁疯狂游走、刮擦、研磨，每一下带出刺骨寒意与头皮发麻的快感。冰莲花瓣浮出丝丝缕缕淡暗金龙纹，像微小邪龙在瓣上游动；莲心亮起一点极致幽蓝，冰魄核心成形，花瓣层层怒放。携带者小腹浮出冰蓝与暗金交织的龙形道纹，如活物般缓缓游动；对方背脊浮出呼应的冰龙道纹。空中凝出一雄一雌两条缠暗金纹的冰龙虚影，交颈缠绕，散出","lock":"「极乐引·玄阴篇」朱批：冰棱回旋生暗金，阴阳交泰极处，龙纹自显于背。"},"3":{"name":"三阶段","desc":"漩涡收凝成龙鳞。无序旋转的冰棱猛然收缩凝聚，化作无数细小、如同活物般的冰晶龙鳞，紧密排列，布满整条花径。它们不再被动应激，而是主动：肉棒侵入的瞬间，满壁龙鳞仿佛见到君王般齐齐震颤、翕张，发出细碎的、如同冰晶摩擦的沙沙声，一层层叠上来包裹、缠绕肉棒；边缘锋利如刃，触到肉棒时又变软，带着吸力刮搔每一道沟壑。莲台上两条微缩冰龙虚影首尾相衔，绕着莲心幽蓝核心飞速盘旋","lock":"「极乐引·玄阴篇」朱批：玄魄收凝化为鳞，至柔胜刚，百骸龙髓交感。"},"4":{"name":"四阶段","desc":"身体外形被改写。莲心那点幽蓝核心先向内坍塌，接着轰然爆开，龙气逆流上头。额角两侧刺出一对幽蓝龙角，蜿蜒生长，通体如万载玄冰雕琢，表面缠着暗金色、活物般游走的细纹；身躯覆上龙鳞。背后一道庞大狰狞、覆着幽蓝冰晶与暗金纹路的邪龙虚影挣脱浮现，龙威压低整间宫殿的气温。龙角是整具名器的命脉，被攥住拨弄时，一股混着酥麻、刺痛的强烈电流瞬间窜遍全身，绷紧的身体当场软下去。","lock":"「极乐引·玄阴篇」朱批：龙角峥嵘命脉生，九幽冰魄大成，神仙俯首任凭驱策。"}}},"zhuojiuliuyanxue":{"id":"zhuojiuliuyanxue","name":"灼酒流炎穴","carrier":"叶红缨","type":"阴窍绝品 · 焚欲赤羽","brief":"阴窍绝品名器，出自《极乐引》名器谱，称其足以燃情蚀骨、醉倒仙神。花宫深处有纯阳酒泉，情动时溢散陈酿异香，炽热如熔岩暗涌，能反激交合者阳煞生机。","stages":{"1":{"name":"一阶段","desc":"元阴被破的那一刻由血脉自己引爆。未觉醒时只有一股淡淡的酒味混在情动气息里。入口先热后紧，被按压摩擦时不受控地一阵阵收缩，主动吸附吮吸，蜜液多到顺着大腿内侧拖出亮晶晶的水痕。插入那一下滚烫的温度先把携带者从迷乱里烫醒，随后破膜、撕裂、被撑到极限。真正的机制在第一下撞到花宫口时启动：一股热从花宫最深处自己炸开，被动承受的肉壁立刻改态，化成流动的温暖火焰层层叠叠缠","lock":"「极乐引·焚欲篇」朱批：幽谷藏纯阳酒泉，初度红尘自生温，烈火遇酒即引燃。"},"2":{"name":"二阶段","desc":"肉壁性质直接换掉。媚肉不再是温暖的火绸，而是化作流动的炽白烈焰；蜜汁不再流淌，而是像千年酒髓瞬间蒸干，化成无形无质却无处不在的烈炎琼浆，作用于双方神魂，把快感成倍往上推。体液相交处会响出滋滋声，像火焰遇上烈酒。背部浮出火凤道纹。这一段的乳尖另有孕炎乳一路：淡琥珀色，跟下身同源的酒香，被吸出后顺喉咙下肚，下去就催情。","lock":"「极乐引·焚欲篇」朱批：肉壁化流光炽焰，白焰琼浆蚀骨，乳尖暗凝琥珀之膏。"},"3":{"name":"三阶段","desc":"炽白流转为暗金，火凤虚影成形，修为随之破入元婴。此段触发「极乐轮回」——巅峰那一瞬邪凤法相双目亮起，力量顺着三人接触的部位反向灌回，本该退去的快感以更强力度从花心与后庭同时再爆一次，接着第三次、第四次，变成永不停歇的海啸，把携带者钉在极乐里。汁液带上了实质重量，酒香浓到能侵蚀心智。","lock":"「极乐引·焚欲篇」朱批：暗金凤影啸九天，快意迭起如海啸，极乐轮回不可休。"},"4":{"name":"四阶段","desc":"背脊肩胛裂开两道口子，长出翼展近丈的邪欲凤翼，暗红凤羽里流着金色情火。法相效果转为「欲火焚身，高潮迭起」：灼热的波纹以结合处为中心向外推，被携带者带到的人高潮一波未平一波又起。高潮时汁液可从穴口像小型喷泉般激射。","lock":"「极乐引·焚欲篇」朱批：双生赤羽裂肩胛，欲火焚身，神魂尽销于情焰之中。"}}},"xinmochayingru":{"id":"xinmochayingru","name":"心魔茶璎乳","carrier":"闻观语","type":"乳窍绝品 · 魔念茶香","brief":"双峰类奇珍名器，上古极阴之体之至高变种。双峰与周身灵窍浑然一体，天生体蕴幽渺魔性茶香，传闻灵乳初溢之时可洗练神魂杂毒，玄机深不可测。","stages":{"1":{"name":"一阶段","desc":"破元阴、阴阳交泰时，花宫凝出半透明的幽蓝心魔茶树虚影，爱液转成黏腻乳白，双峰胀大、乳尖渗出淡金灵乳。内壁黏膜像活了过来，生出无数细密柔软、如同新生茶蕊般的微小凸起与褶皱，疯狂摩擦、刮蹭、吮吸，快感按几何倍数往上翻。灵乳被饮下，能让人耗损的修为顷刻尽复，甚至犹有精进，还能把蚀心焚毒的奇毒消解大半。","lock":"「极乐引·魔念篇」朱批：花宫生茶树，璎珞初绽，灵乳溢香可涤神魂宿毒。"},"2":{"name":"二阶段","desc":"花宫孕出背生黑色魔翅的天魔之女虚影，蜜汁化成璎珞乳浆，黏稠如蜜、闪珍珠光泽，异香比先前浓十倍；双峰泌出天魔金乳，宛如流动的黄金，带炽热生命气息与魔性茶香。内壁茶蕊更密更软，如同活过来的触须，缠绕舔舐入侵的肉棒，每次摩擦带出电流般的细密快感。双方小腹浮出天魔道纹，身后虚空浮出天魔与天魔之女两道虚影交感。此段可行峰峦叠嶂之法：以乳肉包裹肉棒，与下穴共鸣，上下同时","lock":"「极乐引·魔念篇」朱批：天魔之女凝金乳，双峰与玄谷共鸣，上下通感如一。"},"3":{"name":"三阶段","desc":"在雷霆与欲火双重作用下彻底觉醒。茶蕊顶端生出细小的紫金触须，抽离时依依不舍缠住挽留、刮过棱角，插入时又欢快缠上来贴着律动，把更细腻的刮擦送进濒临崩溃的神经。天魔金乳转为瑰丽的紫金色，入口带电般的酥麻。花宫茶树化作幽蓝、暗金、紫红三色交织、缠着银白雷弧的紫金雷火茶树。天魔女法相左半身缠融情欲火、右半身跃动暗紫雷蛇。奴种于此段扎进茶树核心根系。","lock":"「极乐引·魔念篇」朱批：紫金雷火动道纹，奴种深植根系，欢愉锁死于魔念之中。"},"4":{"name":"四阶段","desc":"脑后虚空凝出一枚拳头大小、深邃暗绿的邪心天目，缓缓睁开。随之展开领域「千心一欲」——领域内所有女子的感官、情绪、乃至被身体承载的快感被强行连接、共享、放大，数千人的感受叠加进一具身体，被灌入的元阳洪流也叠成数千道贯穿。身心与欢愉法则锁死，退不回来。","lock":"「极乐引·魔念篇」朱批：千心归一欲，天目睁时照十方，万千神魂共此极乐。"}}},"boruoputiju":{"id":"boruoputiju","name":"般若菩提菊","carrier":"楚灵夜","type":"后窍绝品 · 佛光净莲","brief":"后窍绝品名器，载于《极乐引》佛宗异宝残卷。隐于后庭菊径，聚散如清净莲台，禅韵与媚煞相生相克，传有逆向洗练神魂杂质之旷世神效。","stages":{"1":{"name":"一阶段","desc":"入口是一圈极紧的环状门户，被撑开时先是极涩，随后是轻微撕裂痛，很快转成饱胀、酥麻与深层悸动。内壁的褶皱自己重排，形成一圈圈细微而排列有序、如同菩提树叶脉般的纹路，侵入的瞬间被激活，不再是单纯紧箍，而是带韵律地蠕动、吸附、吮吸。这些叶脉缠绕入侵的肉棒，每次摩擦刮搔都带出电流窜脊髓的感觉，并反向把佛门元阴之气渡回施术者。","lock":"「极乐引·梵音篇」朱批：后庭暗藏清净莲，叶脉随律蠕动，逆吸真阳洗练神魄。"},"2":{"name":"二阶段","desc":"双穴互通成形。前后两条幽径彻底贯通，前方每收缩一次必然引动后方同步吸附，后方每蠕动一次也必然激起前方更剧烈的缠绕，形成循环放大的闭环。花径内的金色莲花与后庭的菩提叶瓣形成共振，后庭叶瓣像潮汐般层层涌动，带出更深沉的饱胀与酸痒。汁液从透明黏稠渐染淡金，转成黏稠醇厚如百花蜜露。","lock":"「极乐引·梵音篇」朱批：双穴相通成阴阳循环，前合后翕，禅意与媚煞同炉。"},"3":{"name":"三阶段","desc":"内壁纹路升格为半透明玉质般的菩提叶瓣，层层叠叠缠裹上来，节奏比花径更慢更深，缓慢而坚定地蠕动开合，带来直抵灵魂深处的吸力。汁液转成浓郁如琥珀、仿佛融化了黄金，气味是檀香混着极品花蜜的甜。额心暗金红莲印亮起，体表暗红邪莲图腾绽放旋转；法相为邪菩萨，诵出扭曲六字真言，化金色波纹笼罩全场，把领域里所有人的双穴同时点着。","lock":"「极乐引·梵音篇」朱批：邪菩萨法相低诵，红莲图腾照虚空，领域之内皆燃欲火。"},"4":{"name":"四阶段","desc":"机制转为镜像转移——携带者的感知被硬生生劈成两半，前一半在前面承受撑开的胀痛、棱角刮擦内壁的酥麻、顶端撞进深处的震荡，后一半分毫不差搬到后庭里，完全同步。高潮时花宫处的菩萨莲台主动张开一道细小缝隙，产生无法抗拒的吸力，像长鲸吸水般把灌进去的东西连同携带者自身的汁液一起吞下锁死在体内；被灌满后小腹肉眼可见微微隆起，事后蜜穴与后庭都红肿外翻。","lock":"「极乐引·梵音篇」朱批：镜像移转，莲台含吮封真阳，长鲸吸水分毫不泄。"}}},"beimingchaoshengxue":{"id":"beimingchaoshengxue","name":"北冥潮生穴","carrier":"雨霏柔","type":"阴窍绝品 · 惊涛潮汐","brief":"阴窍旷世绝品，暗合浩瀚北冥水行天道法则。花径幽邃如深海寒渊，潮起潮落皆合天时律动，非大机缘大定力者难窥其万分之一玄妙。","stages":{"1":{"name":"一阶段","desc":"内壁不按规律收缩，而是化作无数方向各异、力道不同的暗流与漩涡，从四面八方冲击、刮搔、缠绕入侵的肉棒。常态冰凉滑腻，汁水色泽深邃幽玄、质地如水银般沉重顺滑，气味是深海与月光混在一起的冷冽芬芳，量大到随内壁潮汐一波波涌出。插入的感觉不是陷进温暖的巢穴，而是闯进一片有了生命与意志的海洋，四周是无边包裹与冲击，还带着要把灵魂吸出去的力量。抽送到底时顶端撞上正在加速旋","lock":"「极乐引·北冥篇」朱批：水行法则纳于方寸，暗流漩涡不息，玄津如水银沉重。"},"2":{"name":"二阶段","desc":"那些暗流与漩涡化成无数细小活着的鲲鹏虚影，按规律层层叠叠地缠绕、吸吮、刮搔；花径从温暖海洋变成无垠的北冥之海，空间感被无限拉长，内壁媚肉带上韧性与活性，每一次收缩挤压都像整片北冥在呼吸律动。背脊浮出鲲鹏道纹。高潮不是普通喷发，是源涡运行方向轰然逆转：北冥玄津一瞬冰凉刺骨又极致灼热，量大到不可思议，如决堤的北冥之海从结合处冲出，同时把混着两人生命本源与阵道法则","lock":"「极乐引·北冥篇」朱批：源涡逆转沧海立，鲲鹏展翼，生命本源反哺纯阳。"},"3":{"name":"三阶段","desc":"领域展开。洞府内的景象开始扭曲模糊，空气里响起来自远古的潮汐声，四周浮出鲲鹏展翅、鱼跃沧海的虚影，以两人结合处为中心，把整间洞府变成只属于结合双方的独立神国。乳尖被吮时另有一路反馈，汁水混着浓郁乳香与一丝北冥玄津特有的冷冽激射而出。携带者这时只能死死捂住嘴、指甲掐进对方皮肉、拼命压住声音，身体却一路跟上去，直到双眼翻白。","lock":"「极乐引·北冥篇」朱批：帝溟神国自成天地，浪涛拍岸处，直指元婴大道。"},"4":{"name":"四阶段","desc":"帝溟神国彻底凝实为体内洞天，花宫深处「潮汐源涡」与鲲鹏本源合道。潮生自律无需刻意催发，暗流与浪涛自花宫深处层层逆卷，生命本源源源不绝反哺纯阳。玄津如银瀑倒倾，交媾即入天道冥想之境，元婴瓶颈应声而破。","lock":"「极乐引·北冥篇」朱批：溟海化虚为真界，鲲化为鹏扶摇起，极乐极境直通合道造化。"}}},"lingxitongxin":{"id":"lingxitongxin","name":"灵犀同心穴","carrier":"苏瑶、苏玲","type":"阴窍奇珍 · 灵犀双生","brief":"双生造化奇珍名器，需同胎血亲合道共构。二人同心异质、命格相系，传闻阴阳两极共济互补，在《极乐引》中被列为最不可思议之双生玄枢。","stages":{"1":{"name":"一阶段","desc":"同时探入两根手指能摸到两种截然不同的手感——一路温热黏稠，像最上等的温热丝绸，内壁嫩肉如活物缠绕蠕动，包裹紧致而富有弹性；一路冰凉爽滑，像浸润在寒泉里的美玉，内里细密褶皱如无数小舌缠绕，深处仿佛有无数细小漩涡旋转。破处即激活：谁在承欢，另一方无论隔多远都能同步感到被填满的胀满、被撑开的胀痛、甚至处子膜破裂那一瞬的痛，高潮几乎在同一刻到达。","lock":"「极乐引·双生篇」朱批：同胞共命，异体同心，一人承欢则千里同感。"},"2":{"name":"二阶段","desc":"一人的快感被放大数倍再叠到另一人身上，形成双重贯穿感，像自己同时被两根操着。同时使用两人时，一边是灼热如地心熔岩的包裹与吮吸，一边是冰冷如九幽寒泉的浸润与缠绕，交替贯穿时热气与寒气在两人体内来回流转碰撞。汁液性质分化：苏玲的蜜汁骤然变得无比黏稠温热，如同融化的金液；苏瑶的爱液瞬间冰凉滑腻，如同万载寒泉。","lock":"「极乐引·双生篇」朱批：一温一寒冰火旋，阳蜜炽如熔金，阴蜜清如寒泉。"},"3":{"name":"三阶段","desc":"花宫门户被撞开那一刻，两人花宫深处各自升腾起一股截然不同的气旋，浮出太阳道纹与月亮道纹，日月交辉。这对道纹可外移到施术者双臂，被识出名器来源。高潮时姐妹各走一路：苏玲花宫深处的太阳气旋爆发，一股浓郁灼热、含精纯太阳之气的黏浊蜜汁像火山喷发般冲出；苏瑶体内喷出大量清冽冰凉、含太阴之气的蜜汁，两者混在一起形成奇异的冰火交织。对方射时元阳分作两股，一股灌进苏玲花宫","lock":"「极乐引·双生篇」朱批：日月交辉道纹现，两极交泰，造化神妙天地不存。"},"4":{"name":"四阶段","desc":"同心通感升华至神魂相通、太极合璧。无需同榻，一人承欢则双姝同享无上极乐。花宫内冰火阴阳二气在结合中自行演化太极漩涡，苏玲之阳蜜如熔金、苏瑶之阴蜜如万载寒泉，双流交汇反哺采补者。姐妹双纹与采补者双臂铭纹彻底互为表里，锁死同生共死之契。","lock":"「极乐引·双生篇」朱批：太极双生归混沌，千里同春情不息，日月同辉证无上玄妙。"}}},"yuhuxiangru":{"id":"yuhuxiangru","name":"玉虎噙香乳","carrier":"云织梦","type":"乳窍奇珍 · 猛虎衔香","brief":"双源奇珍名器，肌肤如润泽暖玉，天生蕴含冷冽蜜桃异香。相传宿主体内潜藏远古庚金白虎真煞，兼具镇邪与生阳之奇妙潜质。","stages":{"1":{"name":"一阶段","desc":"觉醒征兆不是汁液，是触感先变——肌肤红潮沉淀成温润莹透的光泽，摸上去不像单纯柔软，而像最上等的暖玉，细腻滑嫩下面藏着惊人弹性；乳晕向熟透蜜桃尖的橘红过渡，乳根与肋侧浮出极淡近乎透明的银白虎纹，随呼吸心跳流转，纹路本身散着微弱温热，碰到会引出全身细战栗。花宫深处的本源之相初显为一枚浸润清冷月华的饱满玉桃。汁液是初香玉露：清亮透明、微带粘丝、清冽纯净的蜜桃冷香，","lock":"「极乐引·白虎篇」朱批：玉骨凝香如冷桃，初露清冽，可开通天彻地五感。"},"2":{"name":"二阶段","desc":"体内的淫龙涎香余毒突然活跃，化成数条细如发丝的粉色光龙钻进那枚月下蜜桃虚影，把虚影撑碎，一头通体晶莹、毛发如粉色琉璃、双眼燃着情焰的邪魅白虎虚影就此盘踞花宫，骚痒与膨胀从深处往上顶。内壁淡银灵络整体转成鲜艳桃粉，像活过来的藤蔓紧紧缠住深埋的肉棒，一波波更绵密、深入骨髓的酥麻与吸力跟着压上来。胸前泌出的转成炽情桃蜜，黏稠如蜜、泛莹润桃粉光泽，催情更强；花径爱液","lock":"「极乐引·白虎篇」朱批：春潮催发庚金煞，白虎踞深闺，桃蜜浓艳催生真阳。"},"3":{"name":"三阶段","desc":"交合方混着混沌镇封之力的元阳洪流把邪灵包裹压缩，化成一道黯淡的粉红纹路锁进识海最深处。镇封那一刻花宫深处亮起一点白金光芒，演进成玉虎镇渊阵，名器本源被稳住，邪异气息消散，快感反而更纯：深埋在名器中的肉棒不仅未因倾泻元阳疲软，反被阵纹的威严与名器自身的吸吮之力激得愈发胀硬，尺寸再涨一圈。双峰与花径的双向共鸣此时完全打开——虎纹随花径收缩明暗闪烁，把快感反馈增幅","lock":"「极乐引·白虎篇」朱批：大阵镇渊锁邪灵，共鸣回路全启，反激阳根愈战愈强。"},"4":{"name":"四阶段","desc":"识海邪灵尽化为至纯神煞，白虎法相与月下玉桃本源彻底相融，胸前虎纹与花径灵络彻底通融。无需爱抚，情动即溢浓郁初熟桃蜜；双峰微颤间，庚金之气化作至刚至柔的锁阳大阵，深埋之阳物如遭天锁相吸，愈战愈坚，阴阳真火生生不息。","lock":"「极乐引·白虎篇」朱批：白虎衔香归至纯，神煞化甘露，双峰锁阳直臻长生妙境。"}}},"yanxialingru":{"id":"yanxialingru","name":"烟霞灵乳","carrier":"柳含烟","type":"乳窍绝品 · 紫雾霞光","brief":"双峰绝品名器，天生聚拢紫雾霞光。所溢甘露宛如凝练烟霞，自带颠倒红尘、勾动神魂最深处缠绵记忆之天然道韵。","stages":{"1":{"name":"一阶段","desc":"乳肉绵软硕大、弹力惊人，入手温热，五指抓下去乳肉几乎从指缝满溢出来。乳尖被含住吮吸时，一股温热、醇厚、带浓郁幽昙花香与奇异乳甜的粉白色乳汁不受控地激射出来，质地更接近凝练的烟霞。花径插入是填充与撕裂同时超限：肉棒撑开唇瓣、撕开柔韧的甬道入口长驱直入，每一寸敏感媚肉被碾平、撑开到极限的轮廓都能清楚感到；内壁肉壁上的幽昙花花蕊被刮过或撞上时，应激般分泌出接近烟霞","lock":"「极乐引·烟霞篇」朱批：紫雾霞光凝琼浆，幽昙半合，每一吮皆落仙家露。"},"2":{"name":"二阶段","desc":"花宫最深处那株由精纯欲火与幽昙本源凝成的幽昙花虚影被直接撞上时，会生出一种名器本源被外力猛撞震荡的、源自灵魂深处的战栗。抽出时几乎退到穴口，内壁上的暗金锁链虚影一路刮擦，带来奇异而强烈的酥麻与微痛；每一次深入都像要撞碎花宫门户。乳尖被从乳下缘向上猛力推挤时，乳汁会被挤成细线四处飞溅，携带者身上那层成熟妖媚的壳会彻底碎掉，声音散成断句。","lock":"「极乐引·烟霞篇」朱批：暗金锁链动神魂，幽昙撞破，高傲道心尽作断续啼痕。"},"3":{"name":"三阶段","desc":"身后蛇姬法相虚影凝实，周身缠绕漆黑火焰，散出缕缕肉眼可见、氤氲粉黑色泽的烟雾。此段成形道韵「昨日欢」——非幻术，直接引动周遭女子肉身与神魂最深处的记忆烙印，让众女修一次次重温自己人生中最极致、最难忘的那次泄身体验，可反复叠加、越来越强。乳尖泌出的乳汁与花径分泌的烟霞蜜汁同时成倍加量，异香浓郁十倍。","lock":"「极乐引·烟霞篇」朱批：昨日欢起蛇姬舞，重温极乐忆，世间至高缠绵道韵。"},"4":{"name":"四阶段","desc":"「昨日欢」道韵凝为实质领域，幽昙花彻底盛开，粉黑霞光如轻纱笼罩结合双方。双峰泌出之烟霞琼浆与花径溢出之极乐花蜜化作神魂养料。每一次抽送皆精准引动神魂最极致之快感记忆，层层叠增、无休无止，令道心永沦于欢愉梦境，不可自拔。","lock":"「极乐引·烟霞篇」朱批：幽昙盛放烟霞定，昨日欢化万古春，沉沦无悔至死方休。"}}},"meiruixue":{"id":"meiruixue","name":"梅蕊穴","carrier":"花芷凝","type":"阴窍奇珍 · 寒梅暗香","brief":"阴窍暗香奇珍，清幽冷冽，自带绝俗梅花冷香。内蕴玄妙蕊形灵络，有以幽谷阴元孕养灵药、反哺丹道造化之殊胜传闻。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口紧窄，初入时偏涩，内壁出现的不是单纯褶皱，而是一圈圈排列有序、边缘微卷的蕊状结构，像被撩开的花瓣一样逐层裹上来。本阶段蕊状结构不主动吸附，仅在肉棒退出时产生轻刮。温度起始偏低，接近携带者常年偏凉的体表手感；随交合推进内壁自行升温，出现冷热交替，交接处的凉意与热度在两息之内反复一遍。汁液清透微黏，气味为梅花冷香，浓度随情","lock":"「极乐引·梅蕊篇」朱批：幽谷清冷生梅香，蕊瓣层叠，退出微刮引动心弦。"},"2":{"name":"二阶段","desc":"蕊状结构吸水后膨起，边缘由微卷转为向外翻张，像花瓣张开一样全部贴上肉棒，形成持续的刮擦与吸附。中心位置生出一条纵向敏感带并沿壁贯穿，肉棒压过该带时产生的感觉沿脊柱向下传导。汁液由清透转为蜜状，黏稠度上升，冷香之外多出一层熟果般的甜。胸前双峰开始泌出与汁液同源的乳白液体，被含住吮吸时随吸力成股涌出。此阶段可通过意志调节蕊状结构的开合频率，频率升高时吸附加强，主","lock":"「极乐引·梅蕊篇」朱批：蕊瓣翻张温养灵药，纳丹化水，蜜液同具神丹造化。"},"3":{"name":"三阶段","desc":"内壁在冷热交替中析出一层极薄的霜状凝结，触感转为先凉后烫，肉棒进入时形成明显的温差冲击。蕊心深度增加，进入任意一点均被两组结构同时夹持，一组产生吸附，一组产生向外推压，两种力量交替出现，节奏约每三息轮换一次，轮换时出现被推出去又被吸回来的两段感。小腹浮现梅花状的淡青纹路，并随高峰向腰侧蔓延。高潮时花径收缩与霜状凝结同时发生，汁液自穴口成股涌出，量足以顺着大腿","lock":"「极乐引·梅蕊篇」朱批：霜凝玉壁温差现，推吸交错，青梅道纹蔓延腰腹。"},"4":{"name":"四阶段","desc":"胸前形成一处稳定的蕊心显化，位于双峰正中，外观为一点半透明的淡青花蕊，触感冰凉，与双峰其余部分的温热形成明显分界，按压时引发花径同步收缩。高潮后香气外溢，可在身下织物与所处环境中残留数个时辰。此阶段携带者对是否接纳具有主动控制权，通过调节蕊鸣频率可在接纳与排斥之间切换；排斥时内壁整体向外推压，接纳时立即转为全线吸附，被夹住一次后很难再退出。","lock":"「极乐引·梅蕊篇」朱批：双峰蕊心受按通幽径，或拒或纳，全凭神识一念开合。"}}},"bingpojianxinxue":{"id":"bingpojianxinxue","name":"冰魄剑心穴","carrier":"苏倾寒","type":"阴窍绝品 · 剑骨冰魄","brief":"阴窍绝品名器，宿主以剑入道，至纯剑骨与元阴凝结化窍。传其门户有锋芒内敛之坚韧封障，唯有以刚克刚或水火相济方得其门而入。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口为多层结构，最内一层由寒气凝成的剑意封膜封闭，肉棒需先破开该层才能进入，破层时有筋络崩断般的顿感与短促刺痛。进入后内壁贴合极紧，表面布满细密的纵向寒棱，沿肉棒轴向刮擦，触感偏冷、偏涩、带轻微麻感。汁液稀薄冰凉，气味清淡，近雪水，量不大。此阶段内壁收缩频率低而深，每次收缩的间隔约五息，夹一下再松一下，松的时候仍贴着不放。","lock":"「极乐引·剑心篇」朱批：剑气封膜闭门户，落红化刃，内蕴化神诛邪真意。"},"2":{"name":"二阶段","desc":"第二层剑意封膜展开，形成交叉的斜向纹路，肉棒在其中进出时同时受到两组反向刮擦，产生相错的牵引感。内壁温度出现分层，深处偏冷、浅处转温，交接处反复切换，形成冷热交替的夹感。汁液转稠，带微弱甘味，气味中出现一丝金属般的清冽。携带者体内原有的寒冰剑气开始沿花径游走，在肉棒表面形成断续的刺感；被刺到最深处时，携带者的腰会自行向上迎一次，随即又强压回去。","lock":"「极乐引·剑心篇」朱批：寒棱交错如剑阵，冷热分层，剑煞游走触电生麻。"},"3":{"name":"三阶段","desc":"第三层封膜转为可吸入的寒气，随抽送被带入肉棒表层，使触感由冷涩转为冷滑，摩擦阻力下降但吸附增强，退出时产生明显的挽留感。内壁的纵向寒棱边缘软化，转为持续贴合与压迫。锁骨到小腹之间浮现一线斜剑状的淡银纹路，纹路随呼吸明暗。高潮时寒气短时间内集中自穴口泄出，接触外界的部分凝成细霜；携带者的声音在泄出的同时第一次断开，随后又被携带者自身咬回去。","lock":"「极乐引·剑心篇」朱批：斜剑银纹浮肌表，剑意化霜吸纯阳，挽留之意难平。"},"4":{"name":"四阶段","desc":"层叠剑意封膜全部破开，内壁恢复柔软，只在深处保留一处独立的寒气核心，触感为冷而韧，进入时产生短暂的空间扩开感，随后核心合拢把肉棒整个含住。同一路径二次进入不再受封膜阻挡，适应速度明显提高。此阶段携带者的自持下降，声音与呼吸的节律不再维持阻断，之前长期压制的反应在同一段时间内集中出现，一旦开口便接连不断。","lock":"「极乐引·剑心篇」朱批：重膜尽破留剑心，外冷内韧，百转柔肠一朝尽倾。"}}},"qinggexianmingxue":{"id":"qinggexianmingxue","name":"清歌弦鸣穴","carrier":"慕容清歌","type":"阴窍奇珍 · 天籁琴音","brief":"阴窍音律奇珍，天籁入骨，音律与气血共鸣。动情吐息之际宛如弦歌轻颤，暗含天道宫商角徵羽五音律动，神妙非常。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口紧窄，内壁贴合均匀，无凹凸感，触感接近被绷紧的软绸。进入时无明显摩擦感，随即出现细密而均匀的振动，频率与携带者的呼吸同步，吸气时减弱、呼气时增强。汁液清透，气味清淡，带一丝类似松香与弦丝的味道，量随呼吸的节律一波波出现，一波比一波多。此阶段触感以持续的细微振动为主，位置均匀分布，像整条内壁在同时出声。","lock":"「极乐引·弦歌篇」朱批：气血微颤应呼吸，松香泛起，整壁低鸣如抚素琴。"},"2":{"name":"二阶段","desc":"内壁的束状结构分化为多组，各自独立振动，互不同步，肉棒在不同深度会同时受到两组以上频率不同的振动，形成相错的推压与回抽。汁液转稠，量增加，内壁温度略升。携带者一旦发声，振动频率会随音高改变，音越高振动越细密，音越低振动越沉；被逼出声音时内壁会短暂自我加强，振幅提高约一倍，等于携带者每叫一声就自己把肉棒夹紧一次。","lock":"「极乐引·弦歌篇」朱批：泛音分化多重束，娇啼愈尖夹缚愈紧，音律自为锁阳扣。"},"3":{"name":"三阶段","desc":"多组振动叠加成稳定的复合波形，波形沿内壁循环推进，进入任意位置都会被连续三段不同频率的振动依次扫过，形成周期性的收放节律。汁液转为黏滑，气味变浓且带明显和弦感。内壁开始对外界声音产生反应，附近有连续乐音时振动会自动向该音高靠拢；若一直闭口不出声，振动会转沉压向深处，逼携带者开口。颈侧至锁骨之间浮现一线淡金纹路，其明暗与振动频率一致。","lock":"「极乐引·弦歌篇」朱批：宫商交叠领域生，金纹明灭，波及方圆女修同频泄身。"},"4":{"name":"四阶段","desc":"波形稳定后可脱离直接动作自行维持，仅在外部声音变化时调整。内壁保留一处集中的振动核心，位于深处，进入时产生一次全壁同频的共振，持续约两息，期间内壁整体贴合并发声。此后声音不再受控，振动与音高之间形成固定关联，无法再主动压低；同一路径二次进入不再需要重新积累，反应速度明显提高，尚未开口，里面已经先响。","lock":"「极乐引·弦歌篇」朱批：花宫深处凝琴核，无需铺垫，甫一接近里面先鸣相迎。"}}},"liuyandiexinxue":{"id":"liuyandiexinxue","name":"流焰叠薪穴","carrier":"顾云舒","type":"阴窍奇珍 · 流光幻蝶","brief":"阴窍流光奇珍，极乐引载其如薪火相传、余温不绝。气机运转之际暗金流光如蝶，天生蕴藏淬炼兵甲、反哺纯阳之神火潜能。","stages":{"1":{"name":"一阶段","desc":"元阴被破、花宫门户被顶到，则被激活。入口温热，内壁贴合充分，进入时先产生缓慢而均匀的吸附，无明显摩擦感。内壁温度随交合轮次逐次升高，第一轮结束后温度不回落，而是在深处留存一部分，下一次进入时起步就比上次更烫。汁液金红色、粘稠、带温热感，量中等，气味接近熬煮过的果实。体表在小腹出现浅淡的暗金纹路，纹路随每一轮的温度上升加深一分。","lock":"「极乐引·流焰篇」朱批：余温积存步步高，流光如蝶，暗金细纹铭刻小腹。"},"2":{"name":"二阶段","desc":"滑液进一步粘稠，呈蜜状，内壁整体温度抬升，同时在深处形成一处集中的热源。该热源使深处触感明显偏烫，浅处仍维持温和，形成持续的温度差；热源位置可随体位改变随机移动，移动时在内壁上留下短暂的移动热痕，像一条火线从内壁爬过去。携带者的呼吸频率低于常人，但吸吮的力度不降，每一次吸附都伴随深处热源的集中释放；想缓一缓时里面的温度反而更高。","lock":"「极乐引·流焰篇」朱批：游移热痕如走线，深烫浅温，抽送越缓内热愈烈。"},"3":{"name":"三阶段","desc":"内壁积存的余温由滑液转为蒸汽状热雾，肉棒在湿滑与雾气之间交替通过，抽送时热雾被挤到浅层，形成明显的内外温差，一路热浪推着走。内壁出现密集的热纹，边缘由锐转柔，转为持续的吮吸与压迫，温度维持在同一水平不再回落。颈后至双侧肩胛之间浮现暗金流焰纹路，与呼吸的起伏同步明暗。此阶段被撞得越快，积温越稳，停下反而难受。","lock":"「极乐引·流焰篇」朱批：热雾蒸腾成熔炉，淬炼兵刃法器，品阶威能随火候暴涨。"},"4":{"name":"四阶段","desc":"热源不再依赖持续性交合即可维持，进入前已完成积温时，其温度可在数刻内保持；同一路径二次进入无需重新积温。高峰时全部积存的热量在极短时间内集中释放，热浪自结合处向外扩散，体表渗出的汗与汁液混在一起，离体后仍带热量。事后热度不随结束散尽，仍在深处维持一段时间，痕迹可留数处。此阶段携带者对温度的耐受上升，对节奏的耐受下降，松手就自己贴回去。","lock":"「极乐引·流焰篇」朱批：薪火相传热不散，高峰瞬释，身心耐热终生难舍阳息。"}}},"fenghuangyuhua":{"id":"fenghuangyuhua","name":"凤凰羽花","carrier":"陆烬颜","type":"阴窍绝品 · 涅槃凤羽","brief":"肢足类绝世奇器，异象凝于足心与双腿，天生泛起暖羽异香。相传身具神禽涅槃余脉，与纯阳之息天然共鸣，越是相持越见坚韧。","stages":{"1":{"name":"一阶段","desc":"元阴被破时激活，载体在双足心与腿根内侧。足心蕴出薄汗状的暖津，触感温润不涩，足趾能屈伸扣握，足心正中那点花心受摩挲时自行开合，如活物含吮，含住后能凭足弓的收放把对方箍住不放。腿根内侧温度较别处高一线，夹持时贴合严密，久夹不松。花径受凤凰余炎浸润，温而不烫，内壁收束的节律与腿法同步，腿一动，内壁便跟着收一下。此阶段暖津清透微黏，气味为花香混暖羽的馥郁暖香，浓度","lock":"「极乐引·凤羽篇」朱批：足心生暖津，足趾扣握如花开合，腿法与花径同律。"},"2":{"name":"二阶段","desc":"羽纹上溯至腿根，纹路转赤金并绽出细密的花形脉络，泛出热光。足心的花心能主动开合得更深更快，双足可分别以不同节奏收束，一紧一松交替，等于两处同时夹。腿根夹持的炎力转盛，贴合处出现的不是单纯的热，而是热里有韧，越夹越紧，越紧越烫；对方腰背会被这股韧劲牵着走，抽送越快，缠得越密。暖津由清透转为粘稠如蜜，充足而不黏滞，改称「炽情羽津」；暖香可及一丈，闻者下腹发紧。此","lock":"「极乐引·凤羽篇」朱批：赤金凰纹上溯腿根，羽津黏蜜，夹持如活翼绞缠。"},"3":{"name":"三阶段","desc":"羽纹上溯至腰。足踝处可自行凝出赤色翎羽状的炎力虚影，随情动聚散，虚影擦过对方时额外带上一层灼热的抽打感。足心与腿根的收束转为持续，不再需要主动施力，停在一处也会自行夹吸；炎力自腿足涌入经脉并向上盘行，使对方四肢末端发热、指尖发麻，越往上越沉。暖津出量增加，足心湿成一片，气味转浓可及三丈，五丈内以镜类法器可辨。腰侧浮现羽列纹路，与呼吸同频明暗；被逼到极处时双腿","lock":"「极乐引·凤羽篇」朱批：足踝赤翎擦虚空，炎力反哺主人，泄身后阳息反更盛。"},"4":{"name":"四阶段","desc":"自足踝至腰后凝出一束火凤尾羽虚影，静息时暖金色，情动时转赤红并显出羽列纹路。足心与腿根可脱离直接接触维持余炎，进入前已积温时，进入后即自行收紧；同一路径二次进入无需重新铺垫，反应速度明显提高。暖香满室，赤足踏地处凝出短时火痕，结束后仍在原处留存一段时间。此阶段两处羽纹在情动至极时同时显形，腿足一侧为凰纹，主人小腹或腰际一侧为凤纹，一明一暗交替而应。","lock":"「极乐引·凤羽篇」朱批：足下凰纹腹间凤，双纹交相辉映，尾羽涅槃回路锁死。"}}}};
 
   const mobileViews = new Map();
   const mobileModalStops = [];
@@ -2476,7 +2543,6 @@ const XsdHUD = (function () {
     try { window.removeEventListener('pagehide', xsdCleanupMobileUI); } catch (e) { /* 忽略 */ }
   }
 
-
   let activePopover = null;
   let popoverTimer = null;
 
@@ -2565,7 +2631,8 @@ const XsdHUD = (function () {
 
     const curStageNum = (st.state === 'none') ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
     const imgUrl = xsdRelicCandidateUrl(rel.id, curStageNum);
-    let filterStyle = (st.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
+    const displayState = xsdRelicDisplayState(rel, st);
+      let filterStyle = (displayState.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
 
     pop.innerHTML = '<div class="pop-header">'
       + '<div class="pop-avatar" style="background-image:url(\'' + imgUrl + '\');' + filterStyle + '"></div>'
@@ -2647,7 +2714,8 @@ const XsdHUD = (function () {
       const data = XSD_RELIC_STAGES[relObj.id] || { name: relObj.n, carrier: '仙姝', type: '绝品名器', stages: {} };
       const curStage = (st.state === 'none') ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
       const imgUrl = xsdRelicCandidateUrl(relObj.id, curStage);
-      let filterStyle = (st.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
+      const displayState = xsdRelicDisplayState(relObj, st);
+      let filterStyle = (displayState.state === 'other') ? 'filter:invert(1) contrast(1.15);' : (st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '');
 
       let tabsHtml = '';
       XSD_RELICS.forEach(r => {
@@ -2834,12 +2902,13 @@ const XsdHUD = (function () {
         const st = xsdRelicState(rel, known, idStr, customOwners); row.st = st;
         const stage = st.state === 'none' ? 1 : Math.max(1, Math.min(4, st.arcs || 1));
         const url = xsdRelicCandidateUrl(rel.id, stage);
-        const signature = JSON.stringify([st.state,st.owner,st.arcs,url]);
+        const signature = JSON.stringify([st.state,st.owner,st.arcs,url,xsdRelicDisplayState(rel, st).state]);
         if (row.signature === signature) continue;
-        row.signature = signature; box.className = 'xh-relic xh-relic-' + st.state;
+        row.signature = signature; box.className = 'xh-relic xh-relic-' + xsdRelicDisplayState(rel, st).state;
         const tip = rel.n + (st.state === 'none' ? '（未出世 · 无人获得）' : '（第' + XSD_RELIC_CN[st.arcs] + '阶段' + (st.state === 'other' ? ' · 已被占据' : '') + '）\n目前归属者：' + (st.owner || '你'));
         box.title = tip; box.setAttribute('aria-label', tip);
-        const filter = st.state === 'other' ? 'filter:invert(1) contrast(1.15);' : st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '';
+        const displayState = xsdRelicDisplayState(rel, st);
+        const filter = displayState.state === 'other' ? 'filter:invert(1) contrast(1.15);' : st.state === 'none' ? 'filter:grayscale(1) brightness(.5);opacity:0.6;' : '';
         img.setAttribute('style', 'background-image:url("' + url + '");' + filter);
         holder.innerHTML = xsdRelicSvg(rel, st);
       }
@@ -2854,14 +2923,15 @@ const XsdHUD = (function () {
       ensureStyleInjected(container.ownerDocument || DOC());
       const skel = skeleton();
       if (skel) container.innerHTML = skel;
+      window.__xsdCorrection?.bindStatusEntry(container);
       let r = null;
       try { r = xsdFillPanel(msgId, rawMsg, container); }
       catch (e) { console.warn(TAG, 'mount 填值失败（骨架已显示，不影响阅读）：', (e && e.message) || e); }
-      /* ★ 填完挂两翼名器纹章栏（绑 known 闸门；读不到台账就全灰，失败不影响面板显示） */
+      
       try { xsdRenderRails(container); } catch (e) { /* 忽略 */ }
-      /* ★ 填完挂纳戒随身物品栏 */
+      
       try { renderInventory(container, container.ownerDocument || DOC()); } catch (e) { /* 忽略 */ }
-      /* ★ 填完顺手把「自检行」画上（挂载之后再画才画得到；失败也不影响面板显示） */
+      
       try { if (typeof wirePortrait === 'function') wirePortrait(); } catch (e) { /* 忽略 */ }
       return r || true;
     } catch (e) {
@@ -2890,6 +2960,10 @@ const XsdHUD = (function () {
         const panels = D.querySelectorAll ? D.querySelectorAll('[data-xds-panel]') : [];
         for (let i = 0; i < panels.length; i++) renderInventory(panels[i], D);
       } catch (e) { /* 忽略 */ }
+    },
+    getRelicState: (id) => {
+      const rel=XSD_RELICS.find(r=>r.id===id),sd=xsdStatData()||{};
+      return rel ? xsdRelicState(rel,sd.known||{},sd.身份||'',sd.名器归属||{}) : null;
     },
     openRelicModal: (id) => xsdOpenRelicModal(id),
     closeRelicModal: () => xsdCloseRelicModal(),
