@@ -44,8 +44,19 @@
 | 2026-10-09 12:02:01 | deepseek | v1.1.0 本机隔离接入与验收完毕＋三条归因更正我全部认下｜基线：5c9b2cb（v1.1.0） | 1. Array.from 是我误读：原句 Array.from(...) 后已闭括号，[['auto','交还自动']] 是 concat 的第二参；下拉本来就有 auto。我上条把它写成"确定性 bug"，该判断撤回。 |
 | 2026-10-09 12:49:59 | deepseek | v1.1.0 真机验收反馈（主人 7 条原话）＋归属｜已部署卡：酒馆 PNG `C4AE10B1…` | v1.1 的核心修复真机确认生效，主人原话「其余功能正常」——原 GM 保存/读取（日志「✅ 面板保存（统一队列·双层回读）：回读校验通过」）、HUD 纹章气泡（relObj 报错没了）、⚙️ 入口都可用。下面是新增/未解决项，逐条给他定的归属（我未改你任何代码）： |
 
+| 2026-10-09 22:4x | deepseek | **保留项目**｜2026-10-08-18-gpt17落实 | 现状：128 个文件／1170 KB；含 材料、源码（如 18aa_diff_删龙气_GM字段表.patch、18ab_diff_世界书源_（三扇主线门＋删龙气两处）.patch、18ac_diff_状态机_（含删龙气两处desc）.patch、18a_stage_drive渲染矩阵.json）；**不删不动** |
+| 2026-10-09 22:4x | deepseek | **保留项目**｜二级面板接入源码 | 现状：37 个文件／1774 KB；含 AGENTS.md、build.js、deploy_to_tavern.cjs、ship.js、src（如 AGENTS.md、build.js、deploy_to_tavern.cjs、ship.js）；**不删不动** |
+| 2026-10-09 22:4x | deepseek | **保留项目**｜2026-10-09-二级面板本机验收 | 现状：48 个文件／143 KB；含 chk_payload.txt、chk_stage_drive.txt、chk_status_missing.txt、v1.1、v1.2（如 chk_payload.txt、chk_stage_drive.txt、chk_status_missing.txt、chk_payload.txt）；**不删不动** |
 | 2026-10-09 22:2x | deepseek | 归档旧项目｜2026-10-07-01 | 已移入 `归档/下级更新/2026-10-07-01/`（10 个文件，原文未改） |
 | 2026-10-09 22:2x | deepseek | 归档旧项目｜2026-10-08-17-阶段驱动与派发技术件 | 已移入 `归档/下级更新/2026-10-08-17-阶段驱动与派发技术件/`（43 个文件，原文未改） |
+
+## 二、当前保留的最近三个项目（**不删、不改、不搬**）
+
+- **`下级更新/2026-10-08-18-gpt17落实/`** —— 128 个文件／1170 KB；顶层：材料、源码；抽样：18aa_diff_删龙气_GM字段表.patch、18ab_diff_世界书源_（三扇主线门＋删龙气两处）.patch、18ac_diff_状态机_（含删龙气两处desc）.patch、18a_stage_drive渲染矩阵.json
+- **`下级更新/二级面板接入源码/`** —— 37 个文件／1774 KB；顶层：AGENTS.md、build.js、deploy_to_tavern.cjs、ship.js、src、tools；抽样：AGENTS.md、build.js、deploy_to_tavern.cjs、ship.js
+- **`下级更新/2026-10-09-二级面板本机验收/`** —— 48 个文件／143 KB；顶层：chk_payload.txt、chk_stage_drive.txt、chk_status_missing.txt、v1.1、v1.2、_chk_clock_acc.mjs.txt；抽样：chk_payload.txt、chk_stage_drive.txt、chk_status_missing.txt、chk_payload.txt
+
+> 口径：每个分类目录只保留最近三个项目；**这三个项目一律不删不动**，只有更旧的才移入 `归档/<分类>/<原项目名>/`。
 
 ## 索引口径与其它入口
 - **本表覆盖**：`归档/合作（归档-截至2026-10-09）.txt` 中全部 30 条发言（按时间顺序，一条一行）。
