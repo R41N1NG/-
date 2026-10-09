@@ -2755,34 +2755,40 @@ function xsdRelicState(rel, known, identity, customOwners) {
         const stageImg = xsdRelicCandidateUrl(relObj.id, i);
         const stageImgFilter = isReached ? (st.state === 'other' ? 'filter:invert(1) contrast(1.15);' : '') : 'filter:grayscale(1) brightness(.45);opacity:.5;';
         let progHint = '';
+        const isZhuojiu = (relObj.id === 'zhuojiu' || relObj.n === '灼酒流炎穴');
         const rp = (stat && stat.relic_progress && (
           stat.relic_progress[relObj.id] ||
           stat.relic_progress[relObj.n] ||
-          stat.relic_progress['zhuojiu'] ||
-          stat.relic_progress['zhuojiuliuyanxue']
+          (isZhuojiu ? (stat.relic_progress['zhuojiu'] || stat.relic_progress['zhuojiuliuyanxue']) : null)
         )) || null;
 
         if (!isReached && i === 2 && st.state !== 'none') {
-          const curCount = rp ? Math.min(rp.target || 5, Math.max(0, Number(rp.count) || 0)) : 0;
-          const target = rp ? Math.max(1, Number(rp.target) || 5) : 5;
-          const pct = Math.round((curCount / target) * 100);
-          const isReady = curCount >= target;
+          if (isZhuojiu && rp) {
+            const curCount = Math.min(rp.target || 5, Math.max(0, Number(rp.count) || 0));
+            const target = Math.max(1, Number(rp.target) || 5);
+            const pct = Math.round((curCount / target) * 100);
+            const isReady = curCount >= target;
 
-          progHint = '<div class="sc-progress-card" style="margin-top:8px;padding:8px 10px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:6px;font-size:11px;line-height:1.5;">'
-            + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-weight:600;color:#f1c40f;">'
-            + '<span>✦ 阶位浸润度 (RFC-002)</span>'
-            + '<span>' + curCount + ' / ' + target + ' 次 (' + pct + '%)</span>'
-            + '</div>'
-            + '<div style="width:100%;height:6px;background:rgba(255,255,255,0.12);border-radius:3px;overflow:hidden;margin-bottom:6px;">'
-            + '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg, #d4af37, #f39c12);transition:width 0.3s;"></div>'
-            + '</div>'
-            + '<div style="color:' + (isReady ? '#2ecc71' : '#e0e0e0') + ';font-size:10.5px;margin-bottom:4px;">'
-            + (isReady ? '🔥 精元浸润已饱满！待剧情出现女方生理自发迎合（道纹浮现/主动吸吮）即可质变晋阶' : '💧 蓄力灌注中：每次有效内射推进 1 次浸润')
-            + '</div>'
-            + '<div style="color:rgba(212,175,55,0.9);font-size:10px;border-top:1px dashed rgba(212,175,55,0.25);padding-top:4px;margin-top:4px;">'
-            + '💡 互动申报：行房并在状态栏生成 <code>&lt;名器互动&gt;' + esc(relObj.n) + '｜' + esc(data.carrier) + '｜内射&lt;/名器互动&gt;</code>'
-            + '</div>'
-            + '</div>';
+            progHint = '<div class="sc-progress-card" style="margin-top:8px;padding:8px 10px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:6px;font-size:11px;line-height:1.5;">'
+              + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-weight:600;color:#f1c40f;">'
+              + '<span>✦ 阶位浸润度 (RFC-002)</span>'
+              + '<span>' + curCount + ' / ' + target + ' 次 (' + pct + '%)</span>'
+              + '</div>'
+              + '<div style="width:100%;height:6px;background:rgba(255,255,255,0.12);border-radius:3px;overflow:hidden;margin-bottom:6px;">'
+              + '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg, #d4af37, #f39c12);transition:width 0.3s;"></div>'
+              + '</div>'
+              + '<div style="color:' + (isReady ? '#2ecc71' : '#e0e0e0') + ';font-size:10.5px;margin-bottom:4px;">'
+              + (isReady ? '🔥 精元浸润已饱满！待剧情出现女方生理自发迎合（道纹浮现/主动吸吮）即可质变晋阶' : '💧 蓄力灌注中：每次有效内射推进 1 次浸润')
+              + '</div>'
+              + '<div style="color:rgba(212,175,55,0.9);font-size:10px;border-top:1px dashed rgba(212,175,55,0.25);padding-top:4px;margin-top:4px;">'
+              + '💡 互动申报：行房并在状态栏生成 <code>&lt;名器互动&gt;' + esc(relObj.n) + '｜' + esc(data.carrier) + '｜内射&lt;/名器互动&gt;</code>'
+              + '</div>'
+              + '</div>';
+          } else {
+            progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
+              + '✦ 晋阶准则：需携带者生理自发迎合或深度情动，待二阶段机缘开启（数值试点扩展中）'
+              + '</div>';
+          }
         } else if (!isReached && i === 3) {
           progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
             + '✦ 晋阶准则：心理深层依附动情，或被植入专属奴种（心智沉沦/神魂同调）'
