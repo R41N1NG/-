@@ -1,0 +1,49 @@
+{
+  "identity": "gpt",
+  "base": "8fc897d962dda5ab689fb6ebd14528df34dc9a24",
+  "modules": 47,
+  "files": [
+    {
+      "path": "src/state-machine/rules/inventory-core.js",
+      "bytes": 17892,
+      "sha256": "d43ebaf67e2f0a892c5357a71edbb21d223f05851e68f625c78679beb20c9d23",
+      "beforeSHA256": "665b26f147871f07059457ac0e8824f08ba3119bf15960b2305f564edcfb2e80",
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/rules/inventory.js",
+      "bytes": 1674,
+      "sha256": "9bb5dbb73428fcda8e68e2e9a088534febce9b74491abfb86399bb514cdd22e2",
+      "beforeSHA256": "c4cfbec7354222d422c9d355bfbd71fd007e6acd8dd60a9d15af9d7fb327218b",
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/rules/milestones-core.js",
+      "bytes": 29616,
+      "sha256": "8daaed2e7fb51c17f3d5d56299d56b7eeffcef82a89c89fa835a96a063c5ee44",
+      "beforeSHA256": "fb17ab7ffa92ad43b4df88815c1b0caf818794b117bf061f25d8d168b04b2afd",
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/rules/relic-progress.js",
+      "bytes": 11210,
+      "sha256": "e6b4c31f91c462b3c93a963c08afce59e31a5728d82e59be364759132634e02e",
+      "beforeSHA256": "57e0458b4bc574296fab44fa6854be6effdf611f246eaf25bbea7060c3dd07fa",
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/build-state.json",
+      "bytes": 105,
+      "sha256": "bd6e3cdc460dfe530a84d7ab11ec98dd52476f852e3e2f82ac734a002fa1cdcc",
+      "beforeSHA256": "07343a435713d021a5c34969c8b06a22f14bcdaa0e86ad4299bbdc9761bd3009",
+      "changed": true
+    },
+    {
+      "path": "卡片脚本/状态机.js",
+      "bytes": 344798,
+      "sha256": "7d300f310b86c2b6b9cc66dfe6cca500c6e51256d66de2f60a0180ee9a229f5f",
+      "beforeSHA256": "898f1b8115008b3544298467710805c0d90d66126d269ec2bbf15180e4c53213",
+      "changed": true
+    }
+  ]
+}

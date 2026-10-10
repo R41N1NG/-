@@ -1,0 +1,96 @@
+--- before/src/state-machine/rules/inventory-core.js
++++ after/src/state-machine/rules/inventory-core.js
+@@ -1,7 +1,7 @@
+ /* XSD_INVENTORY_RULES_CORE_BEGIN */
+ /** 机械迁移应用核：业务与宿主依赖由适配层显式提供。 */
+ function createXsdInventoryRules(deps) {
+-  const { readStatData, messageText, writeStat, console, TAG } = deps;
++  const { readStatData, messageText, writeStat, console, TAG, hasRelicPhysiologicalResponse } = deps;
+ function normItemName(s) {
+   let t = String(s ?? '').trim();
+   if (!t) return '';
+@@ -72,6 +72,7 @@
+ /** 本楼正文里有没有这个锚点的实证（不在表里的锚点一律放行）
+  *  2026-10-08（gpt 04 号③）：空正文由「放行」改为 **fail-closed**（读不到正文就不予认定）。 */
+ function anchorEvidenceIn(prose, field) {
++  if (field === '灼酒流炎穴二阶段') return { ok: typeof hasRelicPhysiologicalResponse === 'function' && hasRelicPhysiologicalResponse('zhuojiu', prose), why: '正文须有明确落在叶红缨上的已发生生理响应' };
+   const re = ANCHOR_EVIDENCE[field];
+   if (!re) return { ok: true, why: '（该锚点无实证要求）' };
+   if (!prose) return { ok: false, why: '（本楼读不到正文 ⇒ 不予认定；确实发生了就发「/解锁 …」手工补）' };
+--- before/src/state-machine/rules/inventory.js
++++ after/src/state-machine/rules/inventory.js
+@@ -1,5 +1,6 @@
+ /** 原共享作用域名称的兼容适配；函数依赖延迟解析，避免后置模块初始化时序变化。 */
+ const XSD_INVENTORY_DEPS = {
++  hasRelicPhysiologicalResponse: (...args) => hasRelicPhysiologicalResponse(...args),
+   readStatData: (...args) => readStatData(...args),
+   messageText: (...args) => messageText(...args),
+   writeStat: (...args) => writeStat(...args),
+--- before/src/state-machine/rules/milestones-core.js
++++ after/src/state-machine/rules/milestones-core.js
+@@ -13,7 +13,9 @@
+   const prevRelicProgress = (sd0.relic_progress && typeof sd0.relic_progress === 'object') ? sd0.relic_progress : {};
+   const hasRelicWork = relicActs.length > 0 || Object.values(prevRelicProgress).some((rp) => (rp.history || []).some((h) => Number(h.floor) === Number(messageId)));
+ 
+-  if (!list && !bookIn.length && !nadeHas && !hasRelicWork) return [];      // 四栏都没有且无名器回溯 ⇒ 什么都不做
++  const hasReadyRelic = Object.values(prevRelicProgress).some(rp => rp && rp.ready === true);
++  const hasFloorAnchors = Boolean(sd0.锚点账本 && sd0.锚点账本[String(messageId)]);
++  if (!list && !bookIn.length && !nadeHas && !hasRelicWork && !hasReadyRelic && !hasFloorAnchors) return [];      // 四栏都没有且无名器回溯 ⇒ 什么都不做
+   const known = readKnown() || {};
+   
+   const proseForAnchor = stripStatusBlock(text);
+@@ -397,7 +399,12 @@
+     const curP = allRelicProgress[pilotId];
+     if (!cfg || !curP) continue;
+     const s2Key = cfg.stage2Key;
+-    if (curP.ready === true && known[s2Key] !== true && !news.includes(s2Key) && correctionAllows(s2Key)) {
++    const count = Number(curP.count), target = Number(curP.target);
++    const eligible = curP.ready === true && Number.isFinite(count) && Number.isInteger(count)
++      && count === cfg.target && target === cfg.target
++      && known[cfg.formKey] === true && known[cfg.stage1Key] === true
++      && correctionAllows(cfg.formKey) && correctionAllows(cfg.stage1Key);
++    if (eligible && known[s2Key] !== true && !news.includes(s2Key) && correctionAllows(s2Key)) {
+       if (typeof hasRelicPhysiologicalResponse === 'function' && hasRelicPhysiologicalResponse(pilotId, proseOuter)) {
+         news.push(s2Key);
+         console.log(TAG, `↳ [名器质变] 「${cfg.names[0]}」浸润饱满(${curP.count}/${curP.target}) 且正文出现女方生理自发迎合实证 ⇒ 自动晋阶「${s2Key}」`);
+--- before/src/state-machine/rules/relic-progress.js
++++ after/src/state-machine/rules/relic-progress.js
+@@ -221,16 +221,27 @@
+   return next;
+ }
+ 
+-/** 核验女方生理自发迎合实证（用于已达成浸润阈值后的质变自动晋阶） */
++/** 身份：gpt。仅接受同一分句中落在持有者上的已发生生理响应。 */
+ function hasRelicPhysiologicalResponse(relicId, prose) {
+   const cfg = RELIC_PILOT_CONFIG[relicId];
+-  if (!cfg || !cfg.responseRegex) return false;
+-  const pText = String(prose || '');
+-  if (!pText) return false;
+-  const ownerPresent = cfg.ownerAliases.some((alias) => pText.includes(alias));
+-  if (!ownerPresent) return false;
+-  if (!cfg.responseRegex.test(pText)) return false;
+-  if (typeof negatedAround === 'function' && negatedAround(pText, cfg.responseRegex)) return false;
+-  return true;
+-}
+-
++  if (!cfg) return false;
++  const nonFact = /据说|听说|传闻|谣传|计划|打算|准备|想要|希望|将要|即将|可能|或将|若是|假如|倘若|万一|是否|未|没有|没能|不曾|并不|不是|不会|不愿|讨论|提及|解释|说明/;
++  // 阶段名称、情动或一般抽搐本身不是名器自主响应。
++  const response = /自发迎合|生理自发|本能迎合|自发蠕动|紧紧缠裹|主动缠裹|(?:内壁|花房|媚肉|穴肉|甬道|名器|阴道|小穴).{0,12}(?:痉挛|蠕动|抽搐|吮吸|缠裹|吸附|收缩)|(?:本能|自主|自发|不由自主).{0,12}(?:迎合|蠕动|缠裹|吸附|收缩)/g;
++  const subjects = Object.keys(HOLDER_TO_RELIC).concat(IDENTITY_NAMES, cfg.ownerAliases);
++  for (const clause of String(prose || '').split(/[，。；！？\n]/)) {
++    if (nonFact.test(clause) || !/(名器|内壁|花房|媚肉|穴肉|甬道|阴道|小穴|蜜穴|玉穴|肉壁|肉穴|花穴|穴口|子宫)/.test(clause)) continue;
++    response.lastIndex = 0;
++    let match;
++    while ((match = response.exec(clause))) {
++      const before = clause.slice(0, match.index);
++      const mentions = subjects.flatMap(name => {
++        const at = before.lastIndexOf(name);
++        return at >= 0 ? [{ name, at, end: at + name.length }] : [];
++      }).sort((a, b) => a.at - b.at || b.name.length - a.name.length);
++      const last = mentions[mentions.length - 1];
++      if (last && cfg.ownerAliases.includes(last.name) && match.index - last.end <= 80) return true;
++    }
++  }
++  return false;
++}

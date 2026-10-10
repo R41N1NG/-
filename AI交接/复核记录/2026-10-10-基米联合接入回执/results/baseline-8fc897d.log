@@ -1,0 +1,15 @@
+PASS 1 qualified actual response advances
+FAIL 2 bystander name and other holder response rejected
+FAIL 3 rumour response rejected
+FAIL 4 planned response rejected
+FAIL 5 stage label mention alone rejected
+FAIL 6 forged ready with count below threshold rejected
+FAIL 7 forged ready with mismatched target rejected
+FAIL 8 missing form rejected
+FAIL 9 missing first stage rejected
+PASS 10 manual false stage2 wins
+FAIL 11 manual false form wins
+PASS 12 same floor withdraw response explicit empty milestones rolls back
+FAIL 13 same floor missing milestone column still rolls back
+PASS 14 ready false never advances
+4/14 passed

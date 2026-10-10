@@ -1,0 +1,243 @@
+{
+  "identity": "gpt 下级独立复核",
+  "source": "gpt-fix",
+  "sourceSHA256": {
+    "data/registry.js": "45b14a6f4be2207553a2895ec9a026b94478135e085340d1b0afe5df33b46815",
+    "rules/plot-policy-core.js": "1e66a06c2d05b644c2f613acbd0d47105de12a8bb6b6a425f0c12a280626a268",
+    "rules/subject-evidence-core.js": "c5ecb32320b22c66e242d58dbe424b772c087d9d202a44ea61a6cac0c7c9c408",
+    "state/ledger-core.js": "c989f550f3016ab4e966361c3df91b6427a4ab0ea59dedce6448b87db2f421fa",
+    "rules/inventory-core.js": "d43ebaf67e2f0a892c5357a71edbb21d223f05851e68f625c78679beb20c9d23",
+    "rules/anchor-validation-core.js": "2388e90b7183351cd892c816cf9f9eb0c232faa5a8bd5ccfc05df32ff61b6270",
+    "rules/milestones-core.js": "8daaed2e7fb51c17f3d5d56299d56b7eeffcef82a89c89fa835a96a063c5ee44",
+    "rules/relic.js": "62313adae7c375fabd30e7c2c69445e4b8860356c049d82a2d49c78fb995e8b9",
+    "rules/relic-progress.js": "e6b4c31f91c462b3c93a963c08afce59e31a5728d82e59be364759132634e02e",
+    "src/correction-runtime.js": "1d07f7aab5f5b90b3744adc9b5d4a84cbd2e6d8e4a58231cb1b0a471b525b245"
+  },
+  "pass": 17,
+  "fail": 0,
+  "results": [
+    {
+      "id": 1,
+      "name": "qualified actual response advances",
+      "pass": true,
+      "evidence": {
+        "stage2": true,
+        "patches": [
+          {
+            "known": {
+              "灼酒流炎穴二阶段": true
+            },
+            "锚点账本": {
+              "20": {
+                "指纹": "{\"anchors\":[],\"prose\":\"19f8qqt_22\",\"swipe\":0}",
+                "新置真": [
+                  "灼酒流炎穴二阶段"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "bystander name and other holder response rejected",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    },
+    {
+      "id": 3,
+      "name": "rumour response rejected",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    },
+    {
+      "id": 4,
+      "name": "planned response rejected",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    },
+    {
+      "id": 5,
+      "name": "stage label mention alone rejected",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    },
+    {
+      "id": 6,
+      "name": "forged ready with count below threshold rejected",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    },
+    {
+      "id": 7,
+      "name": "forged ready with mismatched target rejected",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    },
+    {
+      "id": 8,
+      "name": "missing form rejected",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    },
+    {
+      "id": 9,
+      "name": "missing first stage rejected",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": [
+          {
+            "known": {
+              "灼酒流炎穴一阶段": true
+            },
+            "锚点账本": {
+              "20": {
+                "指纹": "{\"anchors\":[],\"prose\":\"19f8qqt_22\",\"swipe\":0}",
+                "新置真": [
+                  "灼酒流炎穴一阶段"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "name": "manual false stage2 wins",
+      "pass": true,
+      "evidence": {
+        "stage2": false,
+        "patches": []
+      }
+    },
+    {
+      "id": 11,
+      "name": "manual false form wins",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    },
+    {
+      "id": 12,
+      "name": "same floor withdraw response explicit empty milestones rolls back",
+      "pass": true,
+      "evidence": {
+        "stage2": false,
+        "patches": [
+          {
+            "known": {
+              "灼酒流炎穴二阶段": true
+            },
+            "锚点账本": {
+              "20": {
+                "指纹": "{\"anchors\":[],\"prose\":\"19f8qqt_22\",\"swipe\":0}",
+                "新置真": [
+                  "灼酒流炎穴二阶段"
+                ]
+              }
+            }
+          },
+          {
+            "known": {
+              "灼酒流炎穴二阶段": false
+            },
+            "锚点账本": {
+              "20": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "name": "same floor missing milestone column still rolls back",
+      "pass": true,
+      "evidence": {
+        "stage2": false,
+        "patches": [
+          {
+            "known": {
+              "灼酒流炎穴二阶段": true
+            },
+            "锚点账本": {
+              "20": {
+                "指纹": "{\"anchors\":[],\"prose\":\"19f8qqt_22\",\"swipe\":0}",
+                "新置真": [
+                  "灼酒流炎穴二阶段"
+                ]
+              }
+            }
+          },
+          {
+            "known": {
+              "灼酒流炎穴二阶段": false
+            },
+            "锚点账本": {
+              "20": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "name": "ready false never advances",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    },
+    {
+      "id": 15,
+      "name": "explicit stage2 declaration cannot borrow bystander response",
+      "pass": true,
+      "evidence": {
+        "stage2": null
+      }
+    },
+    {
+      "id": 16,
+      "name": "explicit planned stage2 declaration rejected",
+      "pass": true,
+      "evidence": {
+        "stage2": null
+      }
+    },
+    {
+      "id": 17,
+      "name": "full progress without response does not auto advance",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    }
+  ]
+}
