@@ -48,7 +48,11 @@ const nadeCode = (() => {
   return src.slice(a, b);
 })();
 const fnCode = (() => {
-  const a = src.indexOf('async function applyMilestones');
+  /* 2026-10-08：applyMilestones 现在调用纯函数 validateAnchors（gpt 04 号①：记账与推进共用同一份
+     已校验集合），所以切片起点往前挪到 validateAnchors，否则沙箱里 ReferenceError。 */
+  /* 2026-10-08：validateAnchors 现在依赖它上方的 MINGQI_PREREQ（名器成形硬前置），
+     切片起点再前移到该表，否则沙箱里 ReferenceError。断言未改。 */
+  const a = src.indexOf('const MINGQI_PREREQ');
   const b = src.lastIndexOf('/**', src.indexOf('把解析结果并入'));
   if (a < 0 || b < 0) throw new Error('状态机.js 里找不到 applyMilestones');
   return src.slice(a, b);
@@ -218,9 +222,15 @@ console.log('========================================================\n');
   if (end < 0) throw new Error('xsdRelicState 括号不配对');
   const box = { console };
   vm.createContext(box);
+  /* 身份别名组（xsdRelicState 现在用 xsdSamePerson 判归属 ⇒ 桩里也要有，否则 ReferenceError） */
+  const aliasA = panelSrc.indexOf('const XSD_IDENT_GROUPS');
+  const aliasB = panelSrc.indexOf('function xsdRelicState(');
+  const aliasSrc = (aliasA >= 0 && aliasB > aliasA) ? panelSrc.slice(aliasA, aliasB) : '';
   vm.runInContext([
     "function s0(v) { return String(v === undefined || v === null ? '' : v).trim(); }",
     "const XSD_RELIC_CN = ['', '一', '二', '三', '四'];",
+    "const XSD_PINYIN = { '孤月': 'guyue', '叶红缨': 'yehongying', '病相思': 'bingsiangsi', '赵无忧': 'zhaowuyou', '花芷凝': 'huazhining' };",
+    aliasSrc,
     panelSrc.slice(i, end),
     'globalThis.__f = xsdRelicState;',
   ].join('\n'), box);
@@ -241,6 +251,46 @@ console.log('========================================================\n');
   ck('老存档（没有归属表）⇒ 身份兜底，不崩', a5.state === 'self' && a5.owner === '赵无忧', JSON.stringify(a5));
   const a6 = xsdRelicState(rel, {}, '赵无忧', null);
   ck('没成形 ⇒ 未出世', a6.state === 'none' && a6.arcs === 0, JSON.stringify(a6));
+
+  /* ⑥b 殿主称号 ↔ 本名（2026-10-07 真机：病相思开局解锁梅蕊穴，纹章被判「已被占据」而反色） */
+  const relM = { n: '梅蕊穴', id: 'meiruixue', c: '梅蕊穴成形', s: '梅蕊穴', a: 4, lord: '病相思', hall: '魂欢殿主' };
+  const formedM = { 梅蕊穴成形: true };
+  const m1 = xsdRelicState(relM, formedM, '魂欢殿主 · 鬼医病相思', null);
+  ck('殿主身份（称号＋本名）⇒ 归自己', m1.state === 'self', JSON.stringify(m1));
+  const m2 = xsdRelicState(relM, formedM, '魂欢殿主', { 梅蕊穴: '鬼医病相思' });
+  ck('身份只写称号、归属写全名 ⇒ 仍判自己（别名组）', m2.state === 'self', JSON.stringify(m2));
+  const m3 = xsdRelicState(relM, formedM, '鬼医病相思', { 梅蕊穴: '魂欢殿主' });
+  ck('反问：身份写全名、归属写称号 ⇒ 也判自己', m3.state === 'self', JSON.stringify(m3));
+  const m4 = xsdRelicState(relM, formedM, '赵无忧', { 梅蕊穴: '鬼医病相思' });
+  ck('赵无忧看同一件 ⇒ 仍「已被占据」（别名组不误放行）', m4.state === 'other', JSON.stringify(m4));
+
+  /* ⑥c 自设的 persona 名（2026-10-07 真机：自设游玩、归属表记「刘政宏」，却被判「已被占据」而反色） */
+  const relJ = { n: '灼酒流炎穴', id: 'zhuojiuliuyanxue', c: '灼酒流炎穴成形', s: '灼酒流炎穴', a: 4, lord: '残阳老怪', hall: '焚欲殿主' };
+  const formedJ = { 灼酒流炎穴成形: true };
+  const j1 = xsdRelicState(relJ, formedJ, '自设', { 灼酒流炎穴: '刘政宏' });
+  ck('自设（身份只写「自设」）＋归属表写 persona 名 ⇒ 归自己，不反色', j1.state === 'self' && j1.owner === '刘政宏', JSON.stringify(j1));
+  const j2 = xsdRelicState(relJ, formedJ, '自设 · 刘政宏', { 灼酒流炎穴: '刘政宏' });
+  ck('自设 · 刘政宏 ＋归属表同名 ⇒ 归自己', j2.state === 'self', JSON.stringify(j2));
+  const j3 = xsdRelicState(relJ, formedJ, '自设', { 灼酒流炎穴: '赵无忧' });
+  ck('自设 ＋归属表写赵无忧 ⇒ 仍「已被占据」（NPC 白名单）', j3.state === 'other', JSON.stringify(j3));
+  const j4 = xsdRelicState(relJ, formedJ, '自设', { 灼酒流炎穴: '病相思' });
+  ck('自设 ＋归属表写殿主本名 ⇒ 仍「已被占据」', j4.state === 'other', JSON.stringify(j4));
+  const j5 = xsdRelicState(relJ, formedJ, '赵无忧', { 灼酒流炎穴: '刘政宏' });
+  ck('赵无忧 ＋归属表写别人的 persona 名 ⇒ 判「已被占据」', j5.state === 'other', JSON.stringify(j5));
+  const j6 = xsdRelicState(relJ, formedJ, '焚欲殿主 · 残阳老怪', { 灼酒流炎穴: '残阳老怪' });
+  ck('焚欲殿主 ＋归属表写本名 ⇒ 归自己', j6.state === 'self', JSON.stringify(j6));
+
+  /* ⑥d 结构性判定（主人 2026-10-07 指正：玩家名不能枚举）
+   *     规则＝「玩家名从宿主取」＋「剧中人只认卡片自带名册（立绘命名表）与别名组」，
+   *     其余任何玩家自取的名字一律算自己。 */
+  const j7 = xsdRelicState(relJ, formedJ, '自设', { 灼酒流炎穴: '张三丰' });
+  ck('自设 ＋归属表写【陌生玩家名】⇒ 算自己（不再需要枚举玩家）', j7.state === 'self', JSON.stringify(j7));
+  const j8 = xsdRelicState(relJ, formedJ, '自设', { 灼酒流炎穴: '孤月' });
+  ck('自设 ＋归属表写【卡片名册里的人】（孤月）⇒ 判他人', j8.state === 'other', JSON.stringify(j8));
+  const j9 = xsdRelicState(relJ, formedJ, '自设', { 灼酒流炎穴: '叶红缨' });
+  ck('自设 ＋归属表写【卡片名册里的人】（叶红缨）⇒ 判他人', j9.state === 'other', JSON.stringify(j9));
+  const j10 = xsdRelicState(relJ, formedJ, '自设 · 刘政宏', { 灼酒流炎穴: '刘政宏' });
+  ck('自设 · 刘政宏（身份带名）⇒ 自己', j10.state === 'self', JSON.stringify(j10));
   console.log('');
 }
 

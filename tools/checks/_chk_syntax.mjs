@@ -26,19 +26,30 @@ try {
 files.push('_build_card.js');
 files.push('deploy_to_tavern.cjs');
 
-let errors = 0;
+let errors = 0, execFails = 0;
 for (const file of files) {
   try {
     execFileSync(NODE, ['-c', file], { stdio: 'pipe' });
   } catch (err) {
-    console.error(`❌ [语法错误] ${file}:`);
-    if (err.stderr) console.error(err.stderr.toString().trim());
-    errors++;
+    /* 2026-10-08（gpt 17 号 §4 点名）：原版只打「[语法错误] <文件>」＋（通常为空的）stderr，
+     * 执行环境拦下子进程时会被误读成语法错。现在分开报，并补 status／signal／error.code／stderr。 */
+    const 执行失败 = !!(err.code || err.signal || err.status === null || err.status === undefined);
+    if (执行失败) {
+      execFails++;
+      console.error(`⚠️ [检查执行失败·原因待定位] ${file}`);
+    } else {
+      errors++;
+      console.error(`❌ [语法错误] ${file}`);
+    }
+    console.error(`   status=${String(err.status)} ｜ signal=${String(err.signal)} ｜ error.code=${String(err.code)} ｜ message=${String(err.message)}`);
+    if (err.stderr && String(err.stderr).trim()) console.error('   stderr:\n' + String(err.stderr).trim());
+    if (err.stdout && String(err.stdout).trim()) console.error('   stdout:\n' + String(err.stdout).trim());
+    console.error(`   直连复验（同版本同文件）：node --check "${file}"`);
   }
 }
 
-if (errors > 0) {
-  console.error(`\n❌ 共有 ${errors} 个脚本未能通过语法检查！构建已拦截！`);
+if (errors > 0 || execFails > 0) {
+  console.error(`\n❌ 语法门禁未通过：确为语法错误 ${errors} 个；检查执行失败 ${execFails} 个（失败不等于脚本有错，需按上面的 error.code 定位）。`);
   process.exit(1);
 }
 

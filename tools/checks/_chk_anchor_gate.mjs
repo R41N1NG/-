@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * _chk_anchor_gate.mjs —— 锚点提议的「地点词不算事件」闸门自测（v1.5）
  *
@@ -38,8 +38,9 @@ function propose(text) {
     if (!kws.length) continue;
     const hitWords = kws.filter((k) => text.includes(k));
     if (!hitWords.length) continue;
+    /* 2026-10-08：与 proposeAnchors 同步 —— 命中词全是地点名 ⇒ 不提议（取消 second-signal 旁路） */
     const onlyLocation = hitWords.every((k) => ANCHOR_LOCATION_ONLY.includes(k));
-    if (onlyLocation && !ANCHOR_SECOND_SIGNALS.some((k) => text.includes(k))) continue;
+    if (onlyLocation) continue;
     hits.push(f);
   }
   return hits;

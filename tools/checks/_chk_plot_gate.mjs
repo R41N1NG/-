@@ -82,36 +82,112 @@ for (const e of main) {
   const n = CN[(cm.match(/^【剧情】([一二三四五六七八九十]+) ·/) || [])[1]];
   const first = String(e.content).split('\n')[0];
   if (!first.startsWith('@@if')) { shapeBad.push(`${cm.slice(0, 20)}：首行不是 @@if`); continue; }
-  /* 闸门形状：身份 ＋ ((准入… || 保底) && !(完成…)) */
-  const m = /身份 === '赵无忧' && \(\((.*?)\) && !\((.*?)\)\)/.exec(first);
-  if (!m) { shapeBad.push(`${cm.slice(0, 20)}：不是「准入 ＋ 上界」形状`); continue; }
-  const enterAnchors = [...m[1].matchAll(/known\?\.\['([^']+)'\]/g)].map((x) => x[1]);
-  const doneAnchors = [...m[2].matchAll(/known\?\.\['([^']+)'\]/g)].map((x) => x[1]);
-  const hasFloor = /段位 \?\? 1\) >= (\d+)/.test(m[1]) || /\(true/.test(m[1]) || m[1].trim() === 'true';
+  /* 闸门形状（2026-10-08 按 gpt §3 外层结构更新）：
+     允许三种形态之一 ——
+       ① 身份 ＋ ((准入… || 段位保底) && !(完成…))        ← 原形态
+       ② 身份 ＋ (日期门) ＋ ((准入… || 段位保底) && !(完成…))
+       ③ 身份 ＋ (日期门) ＋ (!(完成…))                    ← 无正门锚点，靠可信日期推进（主人给「前往天溪」定的形态）
+     「没到时间一定不能出现」由下方 semBad 的日期硬断言守。 */
+  const hasDate = /Number\(variables\.stat_data\?\.仙盟历\)\s*>=/.test(first);
+  /* 用**配对计数**把 !(…) 上界块整块摘出来（正则的 [^)]* 吃不下 Number(…) 里的括号）；
+     剩下的部分就是准入（含身份与日期条件）—— 对三种形态都成立。 */
+  const splitGate = (g) => {
+    let adm = '', negs = [];
+    for (let i = 0; i < g.length; i++) {
+      if (g[i] === '!' && g[i + 1] === '(') {
+        let d = 0, j = i + 1, s0 = i;
+        for (; j < g.length; j++) { if (g[j] === '(') d++; else if (g[j] === ')') { d--; if (!d) { j++; break; } } }
+        negs.push(g.slice(s0, j)); i = j - 1; continue;
+      }
+      adm += g[i];
+    }
+    return { adm, negs };
+  };
+  const sp = splitGate(first);
+  const enterRaw = sp.adm;
+  const doneRaw = sp.negs.join(' && ');
+  if (!sp.negs.length) { shapeBad.push(`${cm.slice(0, 20)}：没有上界（旧章会一直能被叫回来）`); continue; }
+  /* 2026-10-08：必需世界前置（南域大劫）不算「正门锚点」—— 它由 worldOk 单独供给，
+     不参与「只给一个锚点就应放行」的用例。 */
+  const WORLD_ANCHORS = ['南域大劫', '天溪城兽潮'];
+  const allEnter = [...enterRaw.matchAll(/known\?\.\['([^']+)'\]/g)].map((x) => x[1]);
+  const enterAnchors = allEnter.filter((a) => !WORLD_ANCHORS.includes(a));
+  const doneAnchors = [...doneRaw.matchAll(/known\?\.\['([^']+)'\]/g)].map((x) => x[1]);
+  const hasFloor = /段位 \?\? 1\) >= (\d+)/.test(enterRaw) || /\(true/.test(enterRaw) || enterRaw.trim() === 'true' || hasDate;
   [...enterAnchors, ...doneAnchors].forEach((a) => { if (!LEDGER.has(a)) deadNames.push(`${cm.slice(0, 20)} → ${a}`); });
 
-  if (!hasFloor) shapeBad.push(`${cm.slice(0, 20)}：准入里既没有段位保底、也不是起手恒开`);
+  if (!hasFloor) shapeBad.push(`${cm.slice(0, 20)}：准入里既没有段位保底、也不是起手恒开、也没有日期门`);
   if (!doneAnchors.length) shapeBad.push(`${cm.slice(0, 20)}：没有上界（旧章会一直能被叫回来）`);
-  const floorNum = Number((m[1].match(/段位 \?\? 1\) >= (\d+)/) || [])[1]);
-  if (enterAnchors.length && floorNum !== n) shapeBad.push(`${cm.slice(0, 20)}：段位保底 ${floorNum} ≠ 章号 ${n}`);
+  const floorNum = Number((enterRaw.match(/段位 \?\? 1\) >= (\d+)/) || [])[1]);
+  /* 2026-10-08（gpt 05 §3 表 ＋ 06 §2；主人令）：主线门形态现在有**两种**——
+   *   ① 段位门：段位兜底数字必须 ＝ 章号；
+   *   ② **场景门**（固定世界事件，如兽潮血战／天溪城破）：**没有段位兜底**，但必须同时具备
+   *      **硬日期门** 与 **场景前置锚点**（已抵达天溪／受征召南下／双姝回归…）—— 这才是"日期＋事实"。
+   *   ⚠️ 早前的写法无条件要求 `floorNum === n`，加了场景门之后对 7／11 章报 NaN ⇒ 那是**预期表过时**，
+   *      不是闸门坏了。这里按两种形态分别校验，**没有放宽**：场景门反而多要求了日期与场景两条。 */
+  if (Number.isFinite(floorNum)) {
+    if (enterAnchors.length && floorNum !== n) shapeBad.push(`${cm.slice(0, 20)}：段位保底 ${floorNum} ≠ 章号 ${n}`);
+  } else if (!(/\(true/.test(enterRaw) || enterRaw.trim() === 'true')) {
+    /* 形态③：**日期门-only 的过渡章**（如 id57【剧情】六 · 前往天溪：身份 ＋ 仙盟历>=1578.11 ＋ 上界 !已抵达天溪）
+     *   ⇒ 允许"没有场景锚点"，但**硬日期门必须在**；
+     *   反之，**有场景锚点就属于形态②**，那时必须同时有硬日期门与必需世界前置（原样保留，没有放宽）。 */
+    const 有日期 = /[>=]\s*(1[5-9][0-9]{2}\.[0-9]{2})/.test(enterRaw);
+    const 有世界前置 = /known\?\.\['(南域大劫|天溪城兽潮|兽潮血战|天溪城破)'\]/.test(enterRaw);
+    if (!有日期) shapeBad.push(`${cm.slice(0, 20)}：既无段位保底、也无**硬日期门**（过渡章至少要有日期）`);
+    if (enterAnchors.length && !有世界前置) shapeBad.push(`${cm.slice(0, 20)}：带场景锚点却缺**必需世界前置**（如南域大劫／天溪城兽潮）`);
+  }
 
-  const runCase = (known, 段位, 身份) => {
+  const runCase = (known, 段位, 身份, 历) => {
     const expr = first.replace(/^@@if\s*/, '');
     try {
-      const vars = (身份 === undefined) ? { stat_data: { 段位, known } } : { stat_data: { 身份, 段位, known } };
-      return new Function('variables', 'return (' + expr + ');')(vars);
+      const sd = { 段位, known };
+      if (身份 !== undefined) sd.身份 = 身份;   /* 身份缺失用例须**不带**身份，别兜底 */
+      if (历 !== undefined) sd.仙盟历 = 历;
+      return new Function('variables', 'return (' + expr + ');')({ stat_data: sd });
     } catch (err) { return 'ERR'; }
   };
-  const idle = runCase({}, 1, '赵无忧');
-  const expectIdle = enterAnchors.length ? false : true;          // 最早两章起手即可读
+  /* 2026-10-08（主人指令）：天溪城兽潮相关条目必须额外满足**必需世界前置** known['南域大劫']。
+     故「放行」用例要一起带上它；「未到不放」（idle）与「完成即退出」用例保持原样。 */
+  /* 剥掉 !(…) 否定块（＝上界）后的部分才算「准入」；只看整行会把剧情四（上界＝¬南域大劫）误判成"要求"它 */
+  const stripNeg = (g) => { let out = ''; for (let i = 0; i < g.length; i++) { if (g[i] === '!' && g[i + 1] === '(') { let d = 0, j = i + 1; for (; j < g.length; j++) { if (g[j] === '(') d++; else if (g[j] === ')') { d--; if (!d) { j++; break; } } } i = j - 1; continue; } out += g[i]; } return out; };
+  const admWhole = stripNeg(first);
+  const needsWorld = ['南域大劫'].filter((w) => admWhole.includes("known?.['" + w + "'] === true"));
+  const worldOk = (known) => { const k = { ...known }; for (const w of needsWorld) k[w] = true; return k; };
+  /* 2026-10-08（gpt §3 外层结构 ＋ 主人要求）：主线闸门允许带**可信日期**；带日期时下面所有用例都补到窗口内。
+     另：**日期未到必须不放** 单独断言。日期字面量沿用项目既有写法 15xx.xx（十一月＝1578.11）。 */
+  const DL = (/>=\s*(1[5-9][0-9]{2}\.[0-9]{2})/.exec(admWhole) || [])[1];
+  const dl = DL ? Number(DL) : undefined;
+  const idle = runCase({}, 1, '赵无忧', dl);
+  /* 「未到不放」按**未经过滤**的准入锚点判定：只要准入里有任何锚点，事实未到就不该放行 */
+  const expectIdle = allEnter.length ? false : true;
   if (idle !== expectIdle) semBad.push(`${cm.slice(0, 20)}：未到时应当 ${expectIdle}（实为 ${idle}）`);
-  for (const a of enterAnchors) {
-    if (runCase({ [a]: true }, 1, '赵无忧') !== true) semBad.push(`${cm.slice(0, 20)}：只给准入锚点「${a}」应当放行`);
+  /* 2026-10-08：准入锚点的期望分两种形态 ——
+   *   · **段位门／恒开门**：逐个锚点单独给一次就应放行（原语义）。
+   *   · **场景门**（兽潮血战／天溪城破这类固定世界事件）：准入是 **AND 组合**（世界前置 ∧ 场景锚点），
+   *     所以"只给一个锚点就放行"本来就不成立 —— 改为断言 **给齐全部锚点 ⇒ 放行** 与
+   *     **只给其中一个 ⇒ 不放行**（比原来更严，不是放宽）。 */
+  const 恒开 = /\(true/.test(enterRaw) || enterRaw.trim() === 'true';
+  const 是场景门 = !Number.isFinite(floorNum) && !恒开;
+  if (是场景门) {
+    const 全给 = Object.fromEntries(allEnter.map((a) => [a, true]));
+    if (runCase(全给, 1, '赵无忧', dl) !== true) semBad.push(`${cm.slice(0, 20)}：场景门给齐全部锚点「${allEnter.join('／')}」应当放行`);
+    if (allEnter.length > 1 && runCase({ [allEnter[0]]: true }, 1, '赵无忧', dl) !== false) {
+      semBad.push(`${cm.slice(0, 20)}：场景门**只给一个锚点**「${allEnter[0]}」不应放行（世界前置／场景事实要齐）`);
+    }
+  } else {
+    for (const a of enterAnchors) {
+      if (runCase(worldOk({ [a]: true }), 1, '赵无忧', dl) !== true) semBad.push(`${cm.slice(0, 20)}：只给准入锚点「${a}」＋必需世界前置应当放行`);
+    }
   }
   for (const a of doneAnchors) {
-    if (runCase({ [a]: true }, n, '赵无忧') !== false) semBad.push(`${cm.slice(0, 20)}：**完成**锚点「${a}」为真时本章应当退出注入**`);
+    if (runCase({ [a]: true }, n, '赵无忧', dl) !== false) semBad.push(`${cm.slice(0, 20)}：**完成**锚点「${a}」为真时本章应当退出注入**`);
   }
-  if (runCase({}, n, '赵无忧') !== true) semBad.push(`${cm.slice(0, 20)}：只给段位 ${n}（保底）应当放行`);
+  /* 段位兜底：仅在闸门里**确实写了**段位时才要求；gpt §3 已明确段位不可代替日期与事实 */
+  if (/段位/.test(admWhole) && runCase(worldOk({}), n, '赵无忧', dl) !== true) semBad.push(`${cm.slice(0, 20)}：写了段位兜底 ⇒ 只给段位 ${n} ＋必需世界前置应当放行`);
+  /* ★ 主人 2026-10-08：**没到时间点一定不能出现** —— 有日期下界时，早一点点都必须不放 */
+  if (dl !== undefined && runCase(worldOk({}), n, '赵无忧', dl - 0.01) !== false) {
+    semBad.push(`${cm.slice(0, 20)}：**日期未到（${(dl - 0.01).toFixed(2)}）必须不放**`);
+  }
   if (runCase({}, 99, '焚欲殿主') !== false) semBad.push(`${cm.slice(0, 20)}：别的身份不应放行`);
   if (runCase({}, 99, undefined) !== false) semBad.push(`${cm.slice(0, 20)}：**身份缺失不应放行**`);
   /* 环境坏掉（variables 未声明）⇒ 必须 fail-closed */
@@ -121,7 +197,7 @@ for (const e of main) {
   } catch (err) { semBad.push(`${cm.slice(0, 20)}：求值环境坏掉时抛异常（说明没包 fail-closed）`); }
 }
 
-ck(shapeBad.length === 0, '闸门形状：**准入（前章完成的事实）＋ 上界（本章完成即退出）＋ 段位保底**', shapeBad.slice(0, 4).join('；'));
+ck(shapeBad.length === 0, '闸门形状：**三种形态任一**（① 段位兜底＝章号｜② 场景门＝硬日期＋必需世界前置＋场景锚点｜③ 日期门过渡章）＋ 上界（本章完成即退出）', shapeBad.slice(0, 4).join('；'));
 ck(deadNames.length === 0, '准入／上界锚点全部在 FIELD_TABLE 台账里（**没有死名** —— 死名等于又把保底当门）', deadNames.slice(0, 6).join('；'));
 ck(semBad.length === 0, '求值语义：未到不放／准入放行／**完成即退出**／保底放行／别的身份不放／身份缺失不放／环境坏掉也 fail-closed', semBad.slice(0, 4).join('；'));
 

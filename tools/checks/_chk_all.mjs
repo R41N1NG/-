@@ -12,9 +12,13 @@
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import path from 'node:path';
 
 const NODE = 'C:\\Program Files\\nodejs\\node.exe';
 const PUSH = process.argv.includes('--push');
+/* --build：显式构建**候选**（只写隔离暂存目录，绝不碰 最新角色卡/ 与 dist/）。 */
+const BUILD = process.argv.includes('--build');
+const STAGE_DIR = path.join(process.cwd(), '_staging_chk');
 const FULL = process.argv.includes('--full') || process.argv.includes('--allow-heavy') || process.argv.includes('--full-ci-release-only');
 
 if (!FULL) {
@@ -31,9 +35,11 @@ if (!FULL) {
   process.exit(1);
 }
 
-/** [脚本, 参数[], 说明, 期望退出码] */
+/** [脚本, 参数[], 说明, 期望退出码] —— **全部只读**。
+ *  2026-10-08（gpt 17 号 §5-3「只读检查、候选构建、载荷验证、发布各自独立」）：
+ *  原先第一项是 `_build_card.js` ⇒ **跑一次门禁就重写角色卡 JSON 与交付目录**。现已摘出：
+ *  构建只在显式加 `--build` 时跑，而且**只写隔离暂存**（`--stage`），不碰交付目录。 */
 const STEPS = [
-  ['_build_card.js', [], '构建卡 JSON（读 _mind_engine_entries.json / 两册 / 词库 / 卡内脚本）', 0],
   ['_final_check_card.js', [], '终检（禁用词／剧透词／停用标记／重复条目／{{user}} 引用）', 0],
   ['_chk_greetings.mjs', [], '★ 开场楼结构：19 个状态字段齐／角色块配对／IdentityPick 在位', 0],
   ['_chk_prose.mjs', [], '★ 文风硬关卡（词表相对原文 ＋ 句号/逗号比 vs 原文最散的一章；新增问题即红）', 0],
@@ -44,6 +50,12 @@ const STEPS = [
   ['_chk_shell_syntax.mjs', [], '★ 壳的 bootstrap 语法／结构体检（编译＋桩环境试跑＋重试路径）', 0],
   ['_ef_true_sequence.mjs', [], '★ 复现真机时序：壳先跑→脚本后到→面板须被填上（含日志两行）', 0],
   ['_chk_panel_artifact.mjs', [], '面板产物终点断言（33 项：替换串瘦身/围栏壳/双轨制/样式内联/容器查询）', 0],
+  ['_chk_stage_drive.mjs', [], '★【阶段驱动】结构＋独立政策表 12 例＋fail-closed＋源模板与卡内 content 对照（取代旧 _chk_ejs_stage）', 0],
+  ['_chk_freefield_gate.mjs', [], '★ 自由字段一致性闸：未到的世界事件不许写成正在发生／传闻计划放行／日期不可信拒（行为 22 项）', 0],
+  ['_chk_derive_ledger.mjs', [], '★ 派生来源账本＋事务撤销：出场才触发／写明确归属／来源清零才撤／人工来源不撤（行为 25 项）', 0],
+  ['_chk_status_missing.mjs', [], '★ 缺状态栏分支·**真跑**（卡内脚本进 vm）：已知有效日期/累计不被改写、<时间> 不覆盖台账、正常路径仍推进', 0],
+  ['_chk_ejs_native.mjs', [], '★ 原生 EJS（卡实际运行的 ST-Prompt-Template 自带那份）渲染卡内 id7 content 的 12 例，并与最小 EJS 逐字节对照', 0],
+  ['_chk_payload.mjs', [], '★ 交付物载荷一致性：PNG 的 chara 与 ccv3 两份载荷逐项比 JSON（顶层/data/条目全字段/id 顺序/脚本/depth_prompt）', 0],
   ['_chk_panel_regex_cases.mjs', [], '状态栏正则边界用例（13 项：截断命中/不吞正文/双轨制同一条）', 0],
   ['_ef_panel_fill.mjs', [], '★ 浏览器里跑真脚本：取原文→mount→读真实 DOM（13 项，含"骨架无样例值"）', 0],
   ['_ef_lightbox_click.mjs', [], '★ 浏览器里真点立绘（跨源 window 恶劣环境：委托监听仍须绑上、灯箱须打开）', 0],
@@ -56,11 +68,10 @@ const STEPS = [
   ['_chk_no_mvu.mjs', [], '拆 MVU 基线：39 项（含条目数 239、FNE 全文、MNE 未进卡）', 0],
   ['_chk_layering.mjs', [], '★ 分层关卡（秋风 22:25）：演绎／导演指引不落 D1／D0；状态栏三块连成一组；心智姿态在 CHAR 级', 0],
   ['_chk_dp_adult.mjs', [], 'depth_prompt 第九节「成人场景白描规范」：23 项', 0],
-  ['_chk_mind_engine_card.mjs', ['src/assets_data/_mind_engine_entries.json', '--card', '仙姝墮-角色卡（全书群像）.json'], '心智姿态 16 条：源 + 进卡后逐条复核', 0],
   ['_chk_anchor_gate.mjs', [], '锚点闸门：地点词不误报、真事件仍命中（5 例）', 0],
-  ['_chk_mind_engine_leak.mjs', ['src/assets_data/_mind_engine_entries.json'], '心智姿态 16 条的信息边界体检（揭晓词／阶段词／人批锚点／时点词）', 0],
+  ['_chk_defect_four.mjs', [], '四条状态缺陷行为负例（校验后置／隐式继承只建议／证据收紧＋否定闸／缺状态栏不覆写日期）', 0],
+  ['_chk_mingqi_prereq.mjs', [], '名器成形硬前置（持有者须先破身；同轮破身算数；楚灵夜需后窍；灵犀同心需双姝两人）', 0],
   ['_chk_portrait_thumbs.mjs', [], '立绘小图落地核对（读面板真实配置：路径表＋扩展名顺序，逐个 id 验小图）', 0],
-  ['_chk_portrait_flip.mjs', [], '立绘阶段分组／随机／翻面（baseline 与 bath 零交集、稳定伪随机、链序兜底）', 0],
   ['_chk_prompt_offline.mjs', [], '离线提示词复核：52 条 @@if 求值 + 净化正则 depth 行为', 0],
   ['_chk_budget.mjs', [], '每回合固定注入预算（常驻 + depth_prompt + 卡字段）', 0],
   ['_verify_tavern_readback.mjs', ['--wait', '8'], '★ 铁律 38：读回酒馆**卡内字段**（depth_prompt／条目数／翻面·大图链），8 秒后复查未被回写', 0],
@@ -92,7 +103,19 @@ for (const [file, args, desc, expect] of STEPS) {
   results.push({ file, desc, status: code === expect ? 'PASS' : 'FAIL', code, ms: Date.now() - started, tail });
 }
 
-console.log('【全量验收】' + new Date().toLocaleString('zh-CN'));
+console.log('【全量验收·只读】' + new Date().toLocaleString('zh-CN') + (BUILD ? '（含显式候选构建到隔离暂存）' : '（未构建：加 --build 才会构建，且只写隔离暂存）'));
+
+/* 显式候选构建：--build 时先构建到隔离暂存，**不碰交付目录** */
+if (BUILD) {
+  console.log('\n【显式候选构建】_build_card.js --stage ' + STAGE_DIR + ' （只写隔离暂存，不发布）');
+  try {
+    const o = execFileSync(NODE, ['_build_card.js', '--stage', STAGE_DIR], { encoding: 'utf8', timeout: 600000, maxBuffer: 64 * 1024 * 1024 });
+    console.log('  ✔ ' + (o.trim().split('\n').filter(Boolean).slice(-1)[0] || '构建完成'));
+  } catch (e) {
+    console.log('  ✘ 候选构建失败：' + String(e.stdout || e.message).slice(-300));
+    process.exit(1);
+  }
+}
 for (const r of results) {
   const icon = r.status === 'PASS' ? '✔' : r.status === 'MISSING' ? '？' : '✘';
   console.log(`  ${icon} ${r.file}${r.status === 'PASS' ? '' : `（exit ${r.code ?? '-'}）`} — ${r.desc}`);
