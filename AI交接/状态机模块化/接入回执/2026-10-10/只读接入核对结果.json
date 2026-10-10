@@ -1,0 +1,70 @@
+{
+  "identity": "gpt 下级复核",
+  "ref": "8b7aa5924d03c97038d4a2b517a451c15846b407",
+  "previous": "21a5723",
+  "scope": "fixed-commit source readback and extracted actual HUD snippet VM; no full tests, build or deploy",
+  "checks": [
+    {
+      "name": "旧/新生成HUD完整脚本均可编译",
+      "passed": true
+    },
+    {
+      "name": "上个远程版本已有局部progHint声明，本次不是新增声明",
+      "passed": true
+    },
+    {
+      "name": "非试点心魔读取灼酒数值串台：旧版可复现，新版显示不串台",
+      "passed": true
+    },
+    {
+      "name": "灼酒完整ID通过名称识别试点并读取短ID3/5",
+      "passed": true
+    },
+    {
+      "name": "灼酒完整ID自己的记录优先且显示2/5",
+      "passed": true
+    },
+    {
+      "name": "非试点即使有自己的数值也不展示试点数字卡",
+      "passed": true
+    },
+    {
+      "name": "试点缺记录不伪造0/5；已达阶段不显示待推进卡",
+      "passed": true
+    },
+    {
+      "name": "远程模板未同步数值提示逻辑，且与上一提交相同",
+      "passed": true
+    },
+    {
+      "name": "远程构建器仍是未接入模块的原基线",
+      "passed": true
+    },
+    {
+      "name": "远程只有候选包模块，工程根src/state-machine无文件",
+      "passed": true
+    },
+    {
+      "name": "远程打包器从未同步模板重新生成HUD，不能固化手改产物",
+      "passed": true
+    },
+    {
+      "name": "阶段卡区域与模板同源，可精确接回45行进度块和一个输出拼接",
+      "passed": true
+    },
+    {
+      "name": "反向生成模板仅抽出三资源，回注入逐字节还原当前HUD且保留身份保护",
+      "passed": true
+    }
+  ],
+  "hashes": {
+    "stateMachine": "7cd5d1cb318d8b7a1f2795b98e20f9f53dad7cb7c9cf085a080f8a6395515830",
+    "cardBuilder": "313de6672f33e0a982e3bc8b734416e44b88b5d41594dc662e337defb9c492ef",
+    "generatedHUD": "d0e10de10ae90afd714702af9a5d3cc28589a32d5dd1311ddbf26dd7f2933d3b",
+    "HUDTemplate": "0d6640e0620e00ce90c5ced4cdf088c4743c49482cc105605f8971d91f8cd1e0"
+  },
+  "remoteRootModulesPresent": false,
+  "remoteBuildHookPresent": false,
+  "templateProgressLogicPresent": false,
+  "locallyReportedInstallAndDeployIndependentlyVerified": false
+}

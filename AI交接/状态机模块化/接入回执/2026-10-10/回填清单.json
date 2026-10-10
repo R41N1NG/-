@@ -1,0 +1,19 @@
+{
+  "identity": "gpt",
+  "sourceBranch": "card-project",
+  "sourceCommit": "8b7aa5924d03c97038d4a2b517a451c15846b407",
+  "templatePath": "卡片脚本/_src/状态栏面板.模板.js",
+  "oldTemplateSHA256": "0d6640e0620e00ce90c5ced4cdf088c4743c49482cc105605f8971d91f8cd1e0",
+  "candidateTemplateSHA256": "761ec3858394da40482669081fc401b7952cf46fb1c44897adf295ae9c5bb503",
+  "generatedHUDPath": "卡片脚本/状态栏面板.js",
+  "generatedHUDSHA256": "d0e10de10ae90afd714702af9a5d3cc28589a32d5dd1311ddbf26dd7f2933d3b",
+  "unchangedResourceNames": [
+    "CSS",
+    "SKEL",
+    "FONT"
+  ],
+  "generatedBytes": 396806,
+  "candidateBytes": 206271,
+  "generatedBannerLines": 5,
+  "bannerIncludedInTemplate": false
+}

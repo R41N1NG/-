@@ -1,0 +1,19 @@
+{
+  "identity": "gpt 下级复核",
+  "sourceCommit": "8b7aa5924d03c97038d4a2b517a451c15846b407",
+  "actualCandidateSHA256": "761ec3858394da40482669081fc401b7952cf46fb1c44897adf295ae9c5bb503",
+  "actualCandidateBytes": 206271,
+  "originalPackerExecuted": true,
+  "exitCode": 0,
+  "outputBodyByteEqualToCurrentHUD": true,
+  "templateSyntax": "PASS",
+  "generatedSyntax": "PASS",
+  "uniqueResourcePlaceholders": 3,
+  "identityGuardRetained": true,
+  "hostApiProbeRetained": true,
+  "pilotProgressGuardRetained": true,
+  "resourceExpressionsUnchanged": true,
+  "candidateFileUnchanged": true,
+  "scope": "only /tmp text fixtures reconstructed from current HUD; no resources edited, full card built or tavern deployed",
+  "packerLog": "CSS 来源：_card_panel_v4.css（与 _card_panel_v4.replace.html 已同步 ✅）\n{\n  \"模板\": \"卡片脚本/_src/状态栏面板.模板.js\",\n  \"输出\": \"卡片脚本/状态栏面板.js\",\n  \"CSS字符\": 33804,\n  \"骨架字符\": 5081,\n  \"字体base64\": 134924,\n  \"脚本字节\": 396807\n}"
+}

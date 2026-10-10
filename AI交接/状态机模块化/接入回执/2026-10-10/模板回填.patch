@@ -1,0 +1,88 @@
+--- a/卡片脚本/_src/状态栏面板.模板.js
++++ b/卡片脚本/_src/状态栏面板.模板.js
+@@ -1889,6 +1889,13 @@
+     const tLedger = (stat && typeof stat['仙盟历文'] === 'string') ? String(stat['仙盟历文']).trim() : '';
+     if (tEl && tLedger) { tEl.textContent = tLedger; writtenFields.add('time'); }
+   } catch (eLedger) { /* 台账不可读 ⇒ 保持模型文本 */ }
++  /* 身份一栏按脚本台账覆写：以 stat_data.身份 为唯一真源，防冒名污染 HUD 展示；
++     若台账为殿主或自设，绝不采信模型输出的「墨山道六弟子、赵无忧」等幻觉文本 */
++  try {
++    const idEl = fieldNodeMap.get('id');
++    const idLedger = (stat && typeof stat['身份'] === 'string') ? String(stat['身份']).trim() : '';
++    if (idEl && idLedger) { idEl.textContent = idLedger; writtenFields.add('id'); }
++  } catch (eIdLedger) { /* 台账不可读 ⇒ 保持模型文本 */ }
+ // ③ 在场角色子块 → 「人」区的小卡片
+   /* 阶段判定（2026-09-28）：拿「地点＋环境＋状态」的原文去判该用哪一组立绘
+    *   （例如出现「沐浴/浴池/汤池」⇒ bath 组）。判不出来一律 baseline —— 与主题（主立绘）一致。 */
+@@ -2264,8 +2271,9 @@
+ }
+ 
+ function xsdRelicState(rel, known, identity, customOwners) {
+-    const service = window.__xsdCorrection;
+-    const correction = (xsdStatData() || {}).人工纠错;
++    const service = typeof window !== 'undefined' ? window.__xsdCorrection : null;
++    const statData = typeof xsdStatData === 'function' ? xsdStatData() : null;
++    const correction = statData && statData.人工纠错;
+     const records = correction && correction.覆盖 || {};
+     if (rel.c && records[JSON.stringify(['known', rel.c])]?.value === false) {
+       return { state: 'none', owner: '', arcs: 0, owned: false };
+@@ -2741,6 +2749,51 @@
+         const sObj = (data.stages && data.stages[i]) || { name: '第' + XSD_RELIC_CN[i] + '境界', desc: '', lock: '' };
+         const stageImg = xsdRelicCandidateUrl(relObj.id, i);
+         const stageImgFilter = isReached ? (st.state === 'other' ? 'filter:invert(1) contrast(1.15);' : '') : 'filter:grayscale(1) brightness(.45);opacity:.5;';
++        let progHint = '';
++        const isZhuojiu = (relObj.id === 'zhuojiu' || relObj.n === '灼酒流炎穴');
++        const rp = (stat && stat.relic_progress && (
++          stat.relic_progress[relObj.id] ||
++          stat.relic_progress[relObj.n] ||
++          (isZhuojiu ? (stat.relic_progress['zhuojiu'] || stat.relic_progress['zhuojiuliuyanxue']) : null)
++        )) || null;
++
++        if (!isReached && i === 2 && st.state !== 'none') {
++          if (isZhuojiu && rp) {
++            const curCount = Math.min(rp.target || 5, Math.max(0, Number(rp.count) || 0));
++            const target = Math.max(1, Number(rp.target) || 5);
++            const pct = Math.round((curCount / target) * 100);
++            const isReady = curCount >= target;
++
++            progHint = '<div class="sc-progress-card" style="margin-top:8px;padding:8px 10px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:6px;font-size:11px;line-height:1.5;">'
++              + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-weight:600;color:#f1c40f;">'
++              + '<span>✦ 阶位浸润度 (RFC-002)</span>'
++              + '<span>' + curCount + ' / ' + target + ' 次 (' + pct + '%)</span>'
++              + '</div>'
++              + '<div style="width:100%;height:6px;background:rgba(255,255,255,0.12);border-radius:3px;overflow:hidden;margin-bottom:6px;">'
++              + '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg, #d4af37, #f39c12);transition:width 0.3s;"></div>'
++              + '</div>'
++              + '<div style="color:' + (isReady ? '#2ecc71' : '#e0e0e0') + ';font-size:10.5px;margin-bottom:4px;">'
++              + (isReady ? '🔥 精元浸润已饱满！待剧情出现女方生理自发迎合（道纹浮现/主动吸吮）即可质变晋阶' : '💧 蓄力灌注中：每次有效内射推进 1 次浸润')
++              + '</div>'
++              + '<div style="color:rgba(212,175,55,0.9);font-size:10px;border-top:1px dashed rgba(212,175,55,0.25);padding-top:4px;margin-top:4px;">'
++              + '💡 互动申报：行房并在状态栏生成 <code>&lt;名器互动&gt;' + esc(relObj.n) + '｜' + esc(data.carrier) + '｜内射&lt;/名器互动&gt;</code>'
++              + '</div>'
++              + '</div>';
++          } else {
++            progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
++              + '✦ 晋阶准则：需携带者生理自发迎合或深度情动，待二阶段机缘开启（数值试点扩展中）'
++              + '</div>';
++          }
++        } else if (!isReached && i === 3) {
++          progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
++            + '✦ 晋阶准则：心理深层依附动情，或被植入专属奴种（心智沉沦/神魂同调）'
++            + '</div>';
++        } else if (!isReached && i === 4) {
++          progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
++            + '✦ 晋阶准则：专属严苛天地机缘 ＋ 肉身不可逆异化外相（生角/展翼/道韵化形）'
++            + '</div>';
++        }
++
+         gridHtml += '<div class="stage-card ' + (isReached ? 'unlocked' : 'locked') + '">'
+           + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
+           + '<div style="width:34px;height:34px;border-radius:50%;background-image:url(\'' + stageImg + '\');background-size:cover;background-position:center;border:1px solid ' + (isReached ? (st.state === 'other' ? '#ff7675' : '#d4af37') : '#444') + ';flex-shrink:0;' + stageImgFilter + '"></div>'
+@@ -2753,6 +2806,7 @@
+           + '<div class="sc-field-title">【玄妙体征】</div>'
+           + '<div class="sc-field-text">' + esc(isReached ? (sObj.desc || data.brief) : '【天机未启】玄妙道机隐于混沌阴阳之间，待双修火候与天道机缘突破方可显化。') + '</div>'
+           + (isReached ? '' : ('<div class="sc-lock-hint" style="color:#d4af37;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);padding:6px 10px;border-radius:4px;font-size:11px;line-height:1.5;">' + esc(sObj.lock || '「极乐引」残篇朱批：玄妙道机隐于混沌，待红尘机缘方显真章。') + '</div>'))
++          + progHint
+           + '</div>';
+       }
+ 
