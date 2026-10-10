@@ -73,8 +73,8 @@ check('③ 「天溪城恶战难免」不再是兽潮实证（旧式 /兽潮/ �
 check('③ 否定句「我还没遇到兽潮血战」判 false', anchorEvidenceIn('本次开局不继承旧档，我还没遇到兽潮血战，也没有经历天溪城破。', '兽潮血战').ok === false, anchorEvidenceIn('本次开局不继承旧档，我还没遇到兽潮血战，也没有经历天溪城破。', '兽潮血战').why);
 check('③ 否定句「也没有经历天溪城破」判 false', anchorEvidenceIn('本次开局不继承旧档，我还没遇到兽潮血战，也没有经历天溪城破。', '天溪城破').ok === false, anchorEvidenceIn('本次开局不继承旧档，我还没遇到兽潮血战，也没有经历天溪城破。', '天溪城破').why);
 check('③ 真城破「城墙塌下，天溪城破了」判 true', anchorEvidenceIn('西南城墙轰然塌下，天溪城破了。', '天溪城破').ok === true, anchorEvidenceIn('西南城墙轰然塌下，天溪城破了。', '天溪城破').why);
-check('③ 「坠入葬魔渊」判 true', anchorEvidenceIn('他被一掌拍落，坠入葬魔渊。', '赵无忧坠渊').ok === true, anchorEvidenceIn('他被一掌拍落，坠入葬魔渊。', '赵无忧坠渊').why);
-check('③ 仅提「葬魔渊」地名判 false（旧式会中）', anchorEvidenceIn('葬魔渊之外一片迷雾。', '赵无忧坠渊').ok === false, anchorEvidenceIn('葬魔渊之外一片迷雾。', '赵无忧坠渊').why);
+check('③ 「坠入葬魔渊」判 true', anchorEvidenceIn('他被一掌拍落，坠入葬魔渊。', '进入葬魔渊').ok === true, anchorEvidenceIn('他被一掌拍落，坠入葬魔渊。', '进入葬魔渊').why);
+check('③ 仅提「葬魔渊」地名判 false（旧式会中）', anchorEvidenceIn('葬魔渊之外一片迷雾。', '进入葬魔渊').ok === false, anchorEvidenceIn('葬魔渊之外一片迷雾。', '进入葬魔渊').why);
 
 /* ① 校验后置 */
 {
