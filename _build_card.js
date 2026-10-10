@@ -1018,6 +1018,8 @@ console.log(`[卡片] 世界书条目 ${bookCount} 条（其中停用 ${bookDisa
 
 // ---- 卡内脚本（酒馆助手）：从 卡片脚本\ 目录读入，塞进 data.extensions.tavern_helper ----
 // 结构照 JSR 的 Script schema：{ type, enabled, name, id, content, info, button, data, export_with }
+// gpt：源模块先按原顺序编译；其后共享运行时与时间点注入流程保持原样。
+require('./src/state-machine/build.cjs').buildStateMachine();
 const SCRIPT_DIR = path.join(DIR, '卡片脚本');
 const { injectTimepointModule } = require('./src/first_floor_rebuild/inject-timepoint.cjs');  // ★ P2 共享模块注入器
 const CARD_SCRIPTS = [];
