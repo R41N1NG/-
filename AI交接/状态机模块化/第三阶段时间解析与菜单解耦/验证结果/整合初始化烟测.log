@@ -1,0 +1,11 @@
+✔ 最终生成物与源片段完全相同并可整体编译 (30.564907ms)
+✔ 酒馆 API 全缺时，完整脚本仍加载并暴露原入口 (18.274318ms)
+✔ 真实 adapter 初始化依赖齐全；解析和已存时间基准读取不写盘 (3.684857ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 120.31006

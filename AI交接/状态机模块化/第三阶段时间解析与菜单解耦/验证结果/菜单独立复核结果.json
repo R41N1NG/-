@@ -1,0 +1,34 @@
+{
+  "identity": "gpt下级（calendar_interface_audit）",
+  "baseline": "064d67bc3bd8376f722bf050ca92a96d1aabef14",
+  "runner": "Node test + Playwright + /usr/bin/chromium",
+  "browser": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+  "tests": 16,
+  "passed": 16,
+  "failed": 0,
+  "legacyBrowserComparisons": 4,
+  "screenshots": 0,
+  "productionWrites": 0,
+  "candidateModifiedByReviewer": false,
+  "files": {
+    "候选源码/src/state-machine/ui/identity-menu-controller.js": {
+      "bytes": 22639,
+      "sha256": "950c7b2a99df707c9018417df3c95f9ddc3015a0b4ae014935bbf9af4b82eead"
+    },
+    "候选源码/src/state-machine/ui/identity-menu.js": {
+      "bytes": 3599,
+      "sha256": "5f07581f217ba9954d7083ee729caa2a782c8f1489a9069b007e5919f0b84fc9"
+    },
+    "tests/menu-controller.test.cjs": {
+      "bytes": 17275,
+      "sha256": "9bb74149747ff769ffcb1863dba8dcbb004d5e4f447170f617337a9ff4cca34b"
+    }
+  },
+  "log": "菜单浏览器复核.log",
+  "limits": [
+    "最小原生DOM宿主fixture与真实Chromium，不连接真实SillyTavern或TavernHelper",
+    "选取固定旧源码作菜单核心成功/读回拒绝/跨聊天拒绝/发送未确认四路径实跑对照",
+    "未运行日期22、第一阶段40、制卡ship或图片视觉任务",
+    "iframe不同源边界仅保留旧try/catch逻辑，实测覆盖同源attach与退出清理"
+  ]
+}

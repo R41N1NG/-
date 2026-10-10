@@ -1,0 +1,11 @@
+{
+  "identity": "gpt 下级复核",
+  "tests": 5,
+  "passed": 5,
+  "failed": 0,
+  "legacyDifferentialCalls": 4657,
+  "exit": 0,
+  "anchorSyntax": 0,
+  "anchorGate": 0,
+  "noShipDeploy": true
+}

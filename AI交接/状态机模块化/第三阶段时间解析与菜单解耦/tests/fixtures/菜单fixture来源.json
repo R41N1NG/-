@@ -1,0 +1,19 @@
+{
+  "identity": "gpt下级",
+  "files": [
+    {
+      "file": "identity-menu.064d67b.js",
+      "sourcePath": "src/state-machine/ui/identity-menu.js",
+      "commit": "064d67bc3bd8376f722bf050ca92a96d1aabef14",
+      "bytes": 23340,
+      "sha256": "373255b2e7885a92f502ed3998c0305381bed60acb43adb5ec08589ad1c226e8"
+    },
+    {
+      "file": "timepoint-slider.064d67b.js",
+      "sourcePath": "src/first_floor_rebuild/timepoint-slider.cjs",
+      "commit": "064d67bc3bd8376f722bf050ca92a96d1aabef14",
+      "bytes": 17622,
+      "sha256": "c5b15bc6bf98658e7b382ebb27a2efc57a806ea52e340c3caed00b332a6c139a"
+    }
+  ]
+}
