@@ -1,0 +1,83 @@
+TAP version 13
+# Legacy function differential calls: 2835 (plus pure-core/helper assertions)
+# Subtest: 九个既有调用函数保持旧输出/异常和警告（数值输入矩阵）
+ok 1 - 九个既有调用函数保持旧输出/异常和警告（数值输入矩阵）
+  ---
+  duration_ms: 18.265981
+  type: 'test'
+  ...
+# Subtest: 中文日/月、日期缺失与非法边界保持，不擅自改旧解析规则
+ok 2 - 中文日/月、日期缺失与非法边界保持，不擅自改旧解析规则
+  ---
+  duration_ms: 2.156926
+  type: 'test'
+  ...
+# Subtest: 历时计划/倒计时/已过转场以及常规词汇差分
+ok 3 - 历时计划/倒计时/已过转场以及常规词汇差分
+  ---
+  duration_ms: 1.466557
+  type: 'test'
+  ...
+# Subtest: nextAcc累计/回退/撤销/月份转换值矩阵：输出形状及警告原文一致
+ok 4 - nextAcc累计/回退/撤销/月份转换值矩阵：输出形状及警告原文一致
+  ---
+  duration_ms: 46.906965
+  type: 'test'
+  ...
+# Subtest: 人工校历同楼返回形状、NaN/Infinity/负累计保留旧语义
+ok 5 - 人工校历同楼返回形状、NaN/Infinity/负累计保留旧语义
+  ---
+  duration_ms: 19.18679
+  type: 'test'
+  ...
+# Subtest: 纯核显式参数对应兼容层，输入不修改，无日志副作用
+ok 6 - 纯核显式参数对应兼容层，输入不修改，无日志副作用
+  ---
+  duration_ms: 5.697213
+  type: 'test'
+  ...
+# Subtest: 30日累计和同楼多次重算撤销保持旧精度
+ok 7 - 30日累计和同楼多次重算撤销保持旧精度
+  ---
+  duration_ms: 1.219306
+  type: 'test'
+  ...
+# Subtest: 新hasTransit helper与旧完整表达式一致，400字边界保持
+ok 8 - 新hasTransit helper与旧完整表达式一致，400字边界保持
+  ---
+  duration_ms: 2.449401
+  type: 'test'
+  ...
+# Subtest: dayOfMonth helper与原模运算表达式一致，跨年/初七换算差分
+ok 9 - dayOfMonth helper与原模运算表达式一致，跨年/初七换算差分
+  ---
+  duration_ms: 0.813067
+  type: 'test'
+  ...
+# Subtest: 纯核可无宿主加载，console/API/DOM访问陷阱未触发，接口冻结
+ok 10 - 纯核可无宿主加载，console/API/DOM访问陷阱未触发，接口冻结
+  ---
+  duration_ms: 2.003129
+  type: 'test'
+  ...
+# Subtest: Node离线入口加载同一纯核，core→adapter顺序且离线入口不入卡
+ok 11 - Node离线入口加载同一纯核，core→adapter顺序且离线入口不入卡
+  ---
+  duration_ms: 0.453717
+  type: 'test'
+  ...
+# Subtest: 原时钟门禁从const results开始逐字节保留，仅加载段变化
+ok 12 - 原时钟门禁从const results开始逐字节保留，仅加载段变化
+  ---
+  duration_ms: 0.395849
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 180.560369

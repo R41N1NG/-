@@ -1,0 +1,143 @@
+TAP version 13
+# Legacy function differential calls: 2835 (plus pure-core/helper assertions)
+# Subtest: 九个既有调用函数保持旧输出/异常和警告（数值输入矩阵）
+ok 1 - 九个既有调用函数保持旧输出/异常和警告（数值输入矩阵）
+  ---
+  duration_ms: 15.974487
+  type: 'test'
+  ...
+# Subtest: 中文日/月、日期缺失与非法边界保持，不擅自改旧解析规则
+ok 2 - 中文日/月、日期缺失与非法边界保持，不擅自改旧解析规则
+  ---
+  duration_ms: 2.135044
+  type: 'test'
+  ...
+# Subtest: 历时计划/倒计时/已过转场以及常规词汇差分
+ok 3 - 历时计划/倒计时/已过转场以及常规词汇差分
+  ---
+  duration_ms: 1.426171
+  type: 'test'
+  ...
+# Subtest: nextAcc累计/回退/撤销/月份转换值矩阵：输出形状及警告原文一致
+ok 4 - nextAcc累计/回退/撤销/月份转换值矩阵：输出形状及警告原文一致
+  ---
+  duration_ms: 43.636032
+  type: 'test'
+  ...
+# Subtest: 人工校历同楼返回形状、NaN/Infinity/负累计保留旧语义
+ok 5 - 人工校历同楼返回形状、NaN/Infinity/负累计保留旧语义
+  ---
+  duration_ms: 17.90031
+  type: 'test'
+  ...
+# Subtest: 纯核显式参数对应兼容层，输入不修改，无日志副作用
+ok 6 - 纯核显式参数对应兼容层，输入不修改，无日志副作用
+  ---
+  duration_ms: 5.38017
+  type: 'test'
+  ...
+# Subtest: 30日累计和同楼多次重算撤销保持旧精度
+ok 7 - 30日累计和同楼多次重算撤销保持旧精度
+  ---
+  duration_ms: 1.223122
+  type: 'test'
+  ...
+# Subtest: 新hasTransit helper与旧完整表达式一致，400字边界保持
+ok 8 - 新hasTransit helper与旧完整表达式一致，400字边界保持
+  ---
+  duration_ms: 2.343684
+  type: 'test'
+  ...
+# Subtest: dayOfMonth helper与原模运算表达式一致，跨年/初七换算差分
+ok 9 - dayOfMonth helper与原模运算表达式一致，跨年/初七换算差分
+  ---
+  duration_ms: 0.671553
+  type: 'test'
+  ...
+# Subtest: 纯核可无宿主加载，console/API/DOM访问陷阱未触发，接口冻结
+ok 10 - 纯核可无宿主加载，console/API/DOM访问陷阱未触发，接口冻结
+  ---
+  duration_ms: 1.821449
+  type: 'test'
+  ...
+# Subtest: Node离线入口加载同一纯核，core→adapter顺序且离线入口不入卡
+ok 11 - Node离线入口加载同一纯核，core→adapter顺序且离线入口不入卡
+  ---
+  duration_ms: 0.420605
+  type: 'test'
+  ...
+# Subtest: 原时钟门禁从const results开始逐字节保留，仅加载段变化
+ok 12 - 原时钟门禁从const results开始逐字节保留，仅加载段变化
+  ---
+  duration_ms: 0.408092
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_deflower_impersonation.mjs
+ok 13 - 新生成物执行相关原定向门禁：_chk_deflower_impersonation.mjs
+  ---
+  duration_ms: 50.801622
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_relic_progress.mjs
+ok 14 - 新生成物执行相关原定向门禁：_chk_relic_progress.mjs
+  ---
+  duration_ms: 72.542218
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_derive_ledger.mjs
+ok 15 - 新生成物执行相关原定向门禁：_chk_derive_ledger.mjs
+  ---
+  duration_ms: 54.869632
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_tick_preflight.mjs
+ok 16 - 新生成物执行相关原定向门禁：_chk_tick_preflight.mjs
+  ---
+  duration_ms: 54.222496
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_clock_acc.mjs
+ok 17 - 新生成物执行相关原定向门禁：_chk_clock_acc.mjs
+  ---
+  duration_ms: 52.118481
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_defect_four.mjs
+ok 18 - 新生成物执行相关原定向门禁：_chk_defect_four.mjs
+  ---
+  duration_ms: 54.666126
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_anchor_gate.mjs
+ok 19 - 新生成物执行相关原定向门禁：_chk_anchor_gate.mjs
+  ---
+  duration_ms: 48.959165
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_freefield_gate.mjs
+ok 20 - 新生成物执行相关原定向门禁：_chk_freefield_gate.mjs
+  ---
+  duration_ms: 55.27907
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_mingqi_prereq.mjs
+ok 21 - 新生成物执行相关原定向门禁：_chk_mingqi_prereq.mjs
+  ---
+  duration_ms: 56.166155
+  type: 'test'
+  ...
+# Subtest: 新生成物执行相关原定向门禁：_chk_form_gate.mjs
+ok 22 - 新生成物执行相关原定向门禁：_chk_form_gate.mjs
+  ---
+  duration_ms: 114.912161
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 794.523003

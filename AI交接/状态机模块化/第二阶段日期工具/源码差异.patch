@@ -1,0 +1,566 @@
+--- a/src/state-machine/build-state.json
++++ b/src/state-machine/build-state.json
+@@ -1,4 +1,4 @@
+ {
+   "version": 1,
+-  "outputSHA256": "7cd5d1cb318d8b7a1f2795b98e20f9f53dad7cb7c9cf085a080f8a6395515830"
++  "outputSHA256": "6703d93b816a8766677f3a40133e019a3c8c61c5bc9956337fe310b73e782aaa"
+ }
+--- a/src/state-machine/modules.json
++++ b/src/state-machine/modules.json
+@@ -40,6 +40,10 @@
+       "baselineSHA256": "099371415164aa1c50d298d981dabced68289d7989158a1db7187d88a9316f62"
+     },
+     {
++      "path": "utils/calendar-core.js",
++      "purpose": "第二阶段独立日期纯核（非初始基线模块）"
++    },
++    {
+       "path": "utils/calendar.js",
+       "purpose": "历时与仙盟历工具",
+       "baselineLines": [
+@@ -255,5 +259,10 @@
+       ],
+       "baselineSHA256": "4261f3e8ee32d24b51298bce92aaffb180ba9ec40a5f3e4ace22d30b81d91216"
+     }
+-  ]
++  ],
++  "development": {
++    "phase": 2,
++    "basedOn": "f6655f859092fe7ff60204574b3117bec09155ef",
++    "note": "baseline仍指第一阶段历史原件；--baseline会拒绝本次已审结构变更，现版用--check。"
++  }
+ }
+--- a/src/state-machine/rules/apply-status.js
++++ b/src/state-machine/rules/apply-status.js
+@@ -253,7 +253,7 @@
+       
+       /* gpt P1-2/P1-4/P1-5/P1-7：推进逻辑抽成纯函数 nextAcc（见文件上方），此处只落盘 */
+       const stepM = parseLishi(patch.历时);
+-      const hasTransit = LISHI_TRANSIT_RE.test(String(patch.历时 || '') + ' ' + String(text || '').slice(0, 400));
++      const hasTransit = XSD_CALENDAR.hasTransit(patch.历时, text);
+       const accR = nextAcc(sdNow, messageId, stepM, hasTransit);
+       const acc = accR.acc;
+       const adv = accR.adv;
+@@ -270,7 +270,7 @@
+       }
+       patch.仙盟历 = monthsToYm(curBaseM + acc);
+       
+-      const dayOfMonth = 1 + Math.floor((((curBaseM + acc) % 1) + 1) % 1 * 30 + 1e-9);
++      const dayOfMonth = XSD_CALENDAR.dayOfMonth(curBaseM + acc);
+       patch.仙盟历文 = fmtXianmengDay(patch.仙盟历, dayOfMonth);
+       console.log(TAG, `[段位] 第 ${messageId} 楼 ⇒ 第 ${patch.段位 || stg} 段（楼下限 ${stg}）${pin ? `（时间轴已平移 ${pin.shift} 楼）` : ''}｜历时「${patch.历时 || '—'}」⇒ +${adv}月（累计 ${acc}月）｜仙盟历 ${patch.仙盟历文}（${patch.仙盟历}）`);
+     } else {
+--- /dev/null
++++ b/src/state-machine/utils/calendar-core.js
+@@ -0,0 +1,174 @@
++/* XSD_CALENDAR_CORE_BEGIN */
++/* 身份：gpt。日期计算独立作用域：无宿主API、DOM、日志、存取或启动副作用。
++ * 声明工厂供卡内拼接与Node离线加载共用同一真源，不向window挂载接口。 */
++function createXsdCalendar() {
++  'use strict';
++const LISHI_CAP = 0.1;            // 常规单笔最多三日，超限整笔拒绝。
++const LISHI_CAP_TRANSIT = 12;     // 合法转场单笔最多一年。
++
++/** 显式输入，不读取宿主、完整stat_data或共享变量，不产生日志/写入。
++ * @returns {{acc:number, adv:number, sameFloor?:boolean, clipped:boolean, rejected:boolean, capM:number, raw:number}}
++ * 人工同楼分支保留旧返回形状（没有sameFloor）；兼容旧数值转换与缺失回退。
++ */
++function calculateAdvance({ accumulated, fallbackOffset, previousFloor, previousAdvance,
++  manualLocked, manualFloor, floor, months, transit }) {
++  if (manualLocked && Number(manualFloor) === Number(floor)) {
++    return { acc: Number(accumulated) || 0, adv: 0, clipped: false, rejected: false, raw: 0, capM: LISHI_CAP };
++  }
++  const xsdNum = (v) => (v === null || v === undefined || v === '' ? NaN : Number(v));
++  const nAcc = xsdNum(accumulated);
++  const nPush = xsdNum(fallbackOffset);
++  const sameFloor = Number(previousFloor) === Number(floor);
++  let acc = isFinite(nAcc) ? nAcc : (isFinite(nPush) ? nPush : 0);
++  if (sameFloor) acc = Math.max(0, acc - (Number(previousAdvance) || 0));
++  if (!isFinite(acc) || acc < 0) acc = 0;
++  const capM = transit ? LISHI_CAP_TRANSIT : LISHI_CAP;
++  let adv = 0;
++  let clipped = false;
++  let rejected = false;
++  if (Number(months) > 0) {
++    const raw = Number(months);
++    clipped = raw > capM;
++    if (clipped) {
++      adv = 0;
++      rejected = true;
++    } else {
++      adv = raw;
++      acc = acc + adv;
++    }
++  }
++  return { acc, adv, sameFloor, clipped, rejected, capM, raw: Number(months) || 0 };
++}
++
++const LISHI_TRANSIT_RE = /((闭关|数月|数日|数载|隔日|翌日|次日|翌月|次月|开春|入秋|半月|一月|两月|三月|半年|一年|旅程|远行|渡舟|赶路|回宗|返程|数周|一旬|旬日|半月后|数日后|一月后)|([一二三四五六七八九十两半\d]\s*个月|数个月|几个月|数旬|一季|两季))/;   /* 2026-10-08（gpt 04 号②）：原式只认「一月」不认「一个月」⇒ 解析成 1 月却按常规 0.02 截掉 */
++
++const CN_DAY = ['', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
++  '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
++  '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
++
++function cnNum(t) {
++  /* gpt P1-8 兜底：允许直接传「初X」 */
++  { const raw = String(t ?? '').trim(); if (raw.startsWith('初') && raw.length > 1) t = raw.slice(1); }
++  
++  const D = '〇一二三四五六七八九';
++  const x = String(t || '').trim();
++  if (!x) return 0;
++  if (/^\d+$/.test(x)) return Number(x);
++  if (x === '十') return 10;
++  if (x === '正') return 1;      // 正月
++  if (x === '冬') return 11;     // 冬月
++  if (x === '腊') return 12;     // 腊月
++  if (x[0] === '廿') return 20 + Math.max(0, D.indexOf(x[1]));
++  if (x[0] === '卅') return 30 + Math.max(0, D.indexOf(x[1]));   /* gpt P1-8：卅一=31（原来一律返回 30，把非法日当成 30 收下）*/
++  const m = /^([一二三四五六七八九])?十([一二三四五六七八九])?$/.exec(x);
++  if (m) return (m[1] ? D.indexOf(m[1]) : 1) * 10 + (m[2] ? D.indexOf(m[2]) : 0);
++  if (x.length === 1) { const n = D.indexOf(x); if (n >= 0) return n; }
++  return 0;
++}
++
++function pickTimepointLine(t) {
++  const hits = String(t || '').split('\n').filter((l) => /当前时点/.test(l));
++  if (hits.length !== 1) return '';
++  const m = /当前时点[：:]\s*(.+)$/.exec(hits[0].trim());
++  return m ? m[1].trim() : '';
++}
++
++function parseXianmengFromText(t) {
++  const m = /仙盟历\s*(\d{3,4})\s*年\s*[·\.、]?\s*([一二三四五六七八九十廿卅正冬腊]{1,3}|\d{1,2})\s*月\s*(?:[·\.、]?\s*(初[一二三四五六七八九十]{1,2}|[一二三四五六七八九十廿卅]{1,3}|\d{1,2})\s*日?)?/.exec(String(t || ''));
++  if (!m) return null;
++  const y = Number(m[1]);
++  const mo = cnNum(m[2]);
++  if (!y || mo < 1 || mo > 12) return null;
++  let dayNum = 1;
++  const ds = String(m[3] || '');
++  if (ds) {
++    if (ds.startsWith('初')) dayNum = cnNum(ds.slice(1));
++    else dayNum = cnNum(ds);
++  }
++  if (!(dayNum >= 1 && dayNum <= 30)) return null;      // 31 日及越界一律判无效（不静默改成初一）
++  return { ym: y + mo / 100, day: dayNum };
++}
++
++/** 带日的完整写法：`仙盟历 1578 年 · 三月初三` */
++function fmtXianmengDay(v, day) {
++  const d = Math.max(1, Math.min(30, Math.round(Number(day) || 1)));
++  return '仙盟历 ' + fmtXianmeng(v) + CN_DAY[d];
++}
++const LISHI_WORDS = [
++  ['一个时辰', 0.003], ['半个时辰', 0.003], ['一炷香', 0.01], ['半炷香', 0.01],
++  ['一夜', 1 / 30], ['一日', 1 / 30], ['三天', 0.1], ['三日', 0.1],
++  ['半月', 0.5], ['一月', 1], ['三月', 3], ['一年', 12],
++];
++function parseLishi(s) {
++  const txt = String(s || '').trim();
++  if (!txt || /^[—\-－无]+$/.test(txt)) return 0;
++  /* 2026-10-08（gpt 04 号④ ＋ 17 号 §5-4）：倒计时／**未来计划**不计增量。
++     『距启程 3 日』『还有两日』『师尊说三日后启程』『定于/拟于/约于 X』一律 0；
++     只有明写"已过／已经过／历经"的转场才算（例：『三日已过，我们启程』⇒ 计 3 日）。 */
++  const XSD_PASSED = /已过|已经过|过了|历经|这一过/.test(txt);
++  if (!XSD_PASSED && /倒计时|距[^，。；]{0,12}?[日天]|还有[^，。；]{0,6}?[日天]|将于|预定于|定于|拟于|约于/.test(txt)) return 0;
++  if (!XSD_PASSED && /((说|约定|打算|计划|准备|拟)[^，。；]{0,10}([日天月]|个月)(后|之后))|(([日天月]|个月)后[^，。；]{0,6}(启程|出发|动身|前往|赴))/.test(txt)) return 0;
++  let best = 0;
++  // ① 优先解析带数量词的常规表达（支持复合中文数字与阿拉伯数字，如：十一日、十五天、2日），避免被「一日」「三日」等短词子串截胡
++  const parseCnNum = (str) => {
++    if (/^\d+$/.test(str)) return Number(str);
++    if (str === '半') return 0.5;
++    if (str === '两') return 2;
++    const CN = { 零: 0, 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
++    if (CN[str] !== undefined) return CN[str];
++    if (str.startsWith('十')) return 10 + (CN[str.slice(1)] || 0);
++    if (str.includes('十')) {
++      const parts = str.split('十');
++      return ((CN[parts[0]] || 1) * 10) + (CN[parts[1]] || 0);
++    }
++    return NaN;
++  };
++  const n = /([一二三四五六七八九十两半\d]+)\s*(个?时辰|日|天|个?月|年)/.exec(txt);
++  if (n) {
++    const v = parseCnNum(n[1]);
++    const uMap = { 时辰: 0.003, 个时辰: 0.003, 日: 1 / 30, 天: 1 / 30, 月: 1, 个月: 1, 年: 12 };   /* 2026-10-08（gpt 04 号①）：统一 30 日/月精确单位，一日 ＝ 1/30 ＝ 0.03333 */
++    const u = uMap[n[2]] || 0;
++    if (isFinite(v) && v > 0) best = v * u;
++  }
++  // ② 专有或特定词表兜底（如 一夜、一炷香、半个时辰等）
++  if (!best) {
++    for (const [w, m] of LISHI_WORDS) if (txt.includes(w) && m > best) best = m;
++  }
++  return best;   /* gpt P1-7：内层不再提前截断 —— 过渡历时会被 0.02 吃掉；截断统一交外层 capM */
++}
++function fmtXianmeng(v) {
++  const y = Math.floor(v + 1e-9);
++  const m = Math.max(1, Math.min(12, Math.round((v - y) * 100)));
++  return y + ' 年 · ' + ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'][m] + '月';
++}
++
++/** 年.月（如 1578.12）转为绝对连续月数标量，彻底杜绝跨年相减 0.89 偏差 */
++function ymToMonths(ym) {
++  const v = Number(ym) || 0;
++  const y = Math.floor(v + 1e-9);
++  const m = Math.max(1, Math.min(12, Math.round((v - y) * 100)));
++  return y * 12 + (m - 1);
++}
++
++/** 连续绝对月数转回 年.月 兼容浮点，格式化为标准仙盟历 */
++function monthsToYm(totalMonths) {
++  const tm = Number(totalMonths) || 0;
++  const y = Math.floor(tm / 12);
++  const m = Math.floor(tm % 12) + 1;
++  const frac = tm - Math.floor(tm);
++  return Math.round((y + (m / 100) + (frac * 0.005)) * 10000) / 10000;
++}
++
++function hasTransit(elapsedText, bodyText) {
++  return LISHI_TRANSIT_RE.test(String(elapsedText || '') + ' ' + String(bodyText || '').slice(0, 400));
++}
++function dayOfMonth(totalMonths) {
++  return 1 + Math.floor((((totalMonths % 1) + 1) % 1) * 30 + 1e-9);
++}
++return Object.freeze({
++  caps: Object.freeze({ regular: LISHI_CAP, transit: LISHI_CAP_TRANSIT }),
++  calculateAdvance, cnNum, pickTimepointLine, parseXianmengFromText, fmtXianmengDay,
++  parseLishi, fmtXianmeng, ymToMonths, monthsToYm, hasTransit, dayOfMonth,
++});
++}
++/* XSD_CALENDAR_CORE_END */
+--- /dev/null
++++ b/src/state-machine/utils/calendar.cjs
+@@ -0,0 +1,8 @@
++/* 身份：gpt。Node离线入口，直接加载卡内使用的纯核真源，不抄算法。 */
++'use strict';
++const fs = require('node:fs');
++const path = require('node:path');
++const vm = require('node:vm');
++const source = fs.readFileSync(path.join(__dirname, 'calendar-core.js'), 'utf8');
++module.exports = new vm.Script(source + '\ncreateXsdCalendar();', { filename: 'calendar-core.js' })
++  .runInNewContext(Object.create(null), { timeout: 1000 });
+--- a/src/state-machine/utils/calendar.js
++++ b/src/state-machine/utils/calendar.js
+@@ -1,165 +1,31 @@
+-const LISHI_CAP = 0.1;            /* 2026-10-08（gpt 04 号①）：＝3 日。原 0.02＝0.6 日会把「一日」截成 0.6 日、30 次「一日」只记 18 日 */
+-const LISHI_CAP_TRANSIT = 12;      /* 2026-10-08（gpt 04 号③）：原 3 会把「半年」(6) 截成 3 */
++/* XSD_CALENDAR_ADAPTER_BEGIN */
++/* 身份：gpt。旧调用名兼容层：仅这里读取账本字段、输出拒绝日志。
++ * 其它模块继续使用原函数签名，纯核只接受明确的日期/历时输入。 */
++const XSD_CALENDAR = createXsdCalendar();
+ 
+-/** gpt P1-2/P1-4/P1-5/P1-7：历时推进的**纯函数**（可离线测）
+- *   · 合法的 0 不能被 || 跳过（只有 null/undefined/空串算缺失）；
+- *   · 同楼重绘/修改：先撤掉本楼上一轮加的量，再加本次的（撤销后的值由调用方落盘）；
+- *   · 换段**不清零**（全程累计）；只有非数值/负值才归零；
+- *   · 截断在这里：过渡历时用 LISHI_CAP_TRANSIT（3），常规用 LISHI_CAP（0.02）。
+- *  @returns {{acc:number, adv:number, sameFloor:boolean}} */
+ function nextAcc(sdNow, messageId, stepM, hasTransit) {
+   const o = sdNow || {};
+-  if (o.人工校历 && Number(o.人工校历.楼) === Number(messageId)) {
+-    return { acc: Number(o.历时累计) || 0, adv: 0, clipped: false, rejected: false, raw: 0, capM: LISHI_CAP };
++  const result = XSD_CALENDAR.calculateAdvance({
++    accumulated: o.历时累计, fallbackOffset: o.时点加速,
++    previousFloor: o.最后处理楼号, previousAdvance: o.本楼历时加速,
++    manualLocked: !!o.人工校历, manualFloor: o.人工校历 && o.人工校历.楼,
++    floor: messageId, months: stepM, transit: hasTransit,
++  });
++  if (result.rejected) {
++    console.warn('[历时·拒绝] 本楼申报 ' + result.raw + ' 月 超过单笔上限 ' + result.capM + ' 月 ⇒ **整笔不计入**（累计保持 ' +
++      result.acc + ' 月）。要推这么多，请走合法转场（明写时间流逝）或由 GM 面板确认；后台已记 [历时待确认]。');
+   }
+-  const xsdNum = (v) => (v === null || v === undefined || v === '' ? NaN : Number(v));
+-  const nAcc = xsdNum(o.历时累计);
+-  const nPush = xsdNum(o.时点加速);
+-  const sameFloor = Number(o.最后处理楼号) === Number(messageId);
+-  let acc = isFinite(nAcc) ? nAcc : (isFinite(nPush) ? nPush : 0);
+-  if (sameFloor) acc = Math.max(0, acc - (Number(o.本楼历时加速) || 0));
+-  if (!isFinite(acc) || acc < 0) acc = 0;
+-  const capM = hasTransit ? LISHI_CAP_TRANSIT : LISHI_CAP;
+-  let adv = 0;
+-  let clipped = false;
+-  let rejected = false;
+-  if (Number(stepM) > 0) {
+-    const raw = Number(stepM);
+-    clipped = raw > capM;
+-    if (clipped) {
+-      /* 2026-10-08（gpt 05 §4 L98 ↔ 17 号 §5-4）：超限**整笔不计**（拒绝），不再"按上限截一半计入"。
+-         理由：截了却照写"五个月后"，玩家看到的日历与正文对不上；宁可这一笔记 0 并挂 [历时待确认]，
+-         由玩家 /设置 或明写的合法转场来推进。 */
+-      adv = 0;
+-      rejected = true;
+-      console.warn('[历时·拒绝] 本楼申报 ' + raw + ' 月 超过单笔上限 ' + capM + ' 月 ⇒ **整笔不计入**（累计保持 ' +
+-        acc + ' 月）。要推这么多，请走合法转场（明写时间流逝）或由 GM 面板确认；后台已记 [历时待确认]。');
+-    } else {
+-      adv = raw;
+-      acc = acc + adv;   /* 2026-10-08（gpt 04 号①）：不再逐步舍入到 4 位小数——否则 30 次「一日」（1/30）只累到 0.999，与「30 日＝1 月」不符 */
+-    }
+-  }
+-  return { acc, adv, sameFloor, clipped, rejected, capM, raw: Number(stepM) || 0 };
++  return result;
+ }
+-
+-const LISHI_TRANSIT_RE = /((闭关|数月|数日|数载|隔日|翌日|次日|翌月|次月|开春|入秋|半月|一月|两月|三月|半年|一年|旅程|远行|渡舟|赶路|回宗|返程|数周|一旬|旬日|半月后|数日后|一月后)|([一二三四五六七八九十两半\d]\s*个月|数个月|几个月|数旬|一季|两季))/;   /* 2026-10-08（gpt 04 号②）：原式只认「一月」不认「一个月」⇒ 解析成 1 月却按常规 0.02 截掉 */
+-
+-const CN_DAY = ['', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
+-  '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+-  '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+-
+-function cnNum(t) {
+-  /* gpt P1-8 兜底：允许直接传「初X」 */
+-  { const raw = String(t ?? '').trim(); if (raw.startsWith('初') && raw.length > 1) t = raw.slice(1); }
+-  
+-  const D = '〇一二三四五六七八九';
+-  const x = String(t || '').trim();
+-  if (!x) return 0;
+-  if (/^\d+$/.test(x)) return Number(x);
+-  if (x === '十') return 10;
+-  if (x === '正') return 1;      // 正月
+-  if (x === '冬') return 11;     // 冬月
+-  if (x === '腊') return 12;     // 腊月
+-  if (x[0] === '廿') return 20 + Math.max(0, D.indexOf(x[1]));
+-  if (x[0] === '卅') return 30 + Math.max(0, D.indexOf(x[1]));   /* gpt P1-8：卅一=31（原来一律返回 30，把非法日当成 30 收下）*/
+-  const m = /^([一二三四五六七八九])?十([一二三四五六七八九])?$/.exec(x);
+-  if (m) return (m[1] ? D.indexOf(m[1]) : 1) * 10 + (m[2] ? D.indexOf(m[2]) : 0);
+-  if (x.length === 1) { const n = D.indexOf(x); if (n >= 0) return n; }
+-  return 0;
+-}
+-
+-function pickTimepointLine(t) {
+-  const hits = String(t || '').split('\n').filter((l) => /当前时点/.test(l));
+-  if (hits.length !== 1) return '';
+-  const m = /当前时点[：:]\s*(.+)$/.exec(hits[0].trim());
+-  return m ? m[1].trim() : '';
+-}
+-
+-function parseXianmengFromText(t) {
+-  const m = /仙盟历\s*(\d{3,4})\s*年\s*[·\.、]?\s*([一二三四五六七八九十廿卅正冬腊]{1,3}|\d{1,2})\s*月\s*(?:[·\.、]?\s*(初[一二三四五六七八九十]{1,2}|[一二三四五六七八九十廿卅]{1,3}|\d{1,2})\s*日?)?/.exec(String(t || ''));
+-  if (!m) return null;
+-  const y = Number(m[1]);
+-  const mo = cnNum(m[2]);
+-  if (!y || mo < 1 || mo > 12) return null;
+-  let dayNum = 1;
+-  const ds = String(m[3] || '');
+-  if (ds) {
+-    if (ds.startsWith('初')) dayNum = cnNum(ds.slice(1));
+-    else dayNum = cnNum(ds);
+-  }
+-  if (!(dayNum >= 1 && dayNum <= 30)) return null;      // 31 日及越界一律判无效（不静默改成初一）
+-  return { ym: y + mo / 100, day: dayNum };
+-}
+-
+-/** 带日的完整写法：`仙盟历 1578 年 · 三月初三` */
+-function fmtXianmengDay(v, day) {
+-  const d = Math.max(1, Math.min(30, Math.round(Number(day) || 1)));
+-  return '仙盟历 ' + fmtXianmeng(v) + CN_DAY[d];
+-}
+-const LISHI_WORDS = [
+-  ['一个时辰', 0.003], ['半个时辰', 0.003], ['一炷香', 0.01], ['半炷香', 0.01],
+-  ['一夜', 1 / 30], ['一日', 1 / 30], ['三天', 0.1], ['三日', 0.1],
+-  ['半月', 0.5], ['一月', 1], ['三月', 3], ['一年', 12],
+-];
+-function parseLishi(s) {
+-  const txt = String(s || '').trim();
+-  if (!txt || /^[—\-－无]+$/.test(txt)) return 0;
+-  /* 2026-10-08（gpt 04 号④ ＋ 17 号 §5-4）：倒计时／**未来计划**不计增量。
+-     『距启程 3 日』『还有两日』『师尊说三日后启程』『定于/拟于/约于 X』一律 0；
+-     只有明写"已过／已经过／历经"的转场才算（例：『三日已过，我们启程』⇒ 计 3 日）。 */
+-  const XSD_PASSED = /已过|已经过|过了|历经|这一过/.test(txt);
+-  if (!XSD_PASSED && /倒计时|距[^，。；]{0,12}?[日天]|还有[^，。；]{0,6}?[日天]|将于|预定于|定于|拟于|约于/.test(txt)) return 0;
+-  if (!XSD_PASSED && /((说|约定|打算|计划|准备|拟)[^，。；]{0,10}([日天月]|个月)(后|之后))|(([日天月]|个月)后[^，。；]{0,6}(启程|出发|动身|前往|赴))/.test(txt)) return 0;
+-  let best = 0;
+-  // ① 优先解析带数量词的常规表达（支持复合中文数字与阿拉伯数字，如：十一日、十五天、2日），避免被「一日」「三日」等短词子串截胡
+-  const parseCnNum = (str) => {
+-    if (/^\d+$/.test(str)) return Number(str);
+-    if (str === '半') return 0.5;
+-    if (str === '两') return 2;
+-    const CN = { 零: 0, 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
+-    if (CN[str] !== undefined) return CN[str];
+-    if (str.startsWith('十')) return 10 + (CN[str.slice(1)] || 0);
+-    if (str.includes('十')) {
+-      const parts = str.split('十');
+-      return ((CN[parts[0]] || 1) * 10) + (CN[parts[1]] || 0);
+-    }
+-    return NaN;
+-  };
+-  const n = /([一二三四五六七八九十两半\d]+)\s*(个?时辰|日|天|个?月|年)/.exec(txt);
+-  if (n) {
+-    const v = parseCnNum(n[1]);
+-    const uMap = { 时辰: 0.003, 个时辰: 0.003, 日: 1 / 30, 天: 1 / 30, 月: 1, 个月: 1, 年: 12 };   /* 2026-10-08（gpt 04 号①）：统一 30 日/月精确单位，一日 ＝ 1/30 ＝ 0.03333 */
+-    const u = uMap[n[2]] || 0;
+-    if (isFinite(v) && v > 0) best = v * u;
+-  }
+-  // ② 专有或特定词表兜底（如 一夜、一炷香、半个时辰等）
+-  if (!best) {
+-    for (const [w, m] of LISHI_WORDS) if (txt.includes(w) && m > best) best = m;
+-  }
+-  return best;   /* gpt P1-7：内层不再提前截断 —— 过渡历时会被 0.02 吃掉；截断统一交外层 capM */
+-}
+-function fmtXianmeng(v) {
+-  const y = Math.floor(v + 1e-9);
+-  const m = Math.max(1, Math.min(12, Math.round((v - y) * 100)));
+-  return y + ' 年 · ' + ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'][m] + '月';
+-}
+-
+-/** 年.月（如 1578.12）转为绝对连续月数标量，彻底杜绝跨年相减 0.89 偏差 */
+-function ymToMonths(ym) {
+-  const v = Number(ym) || 0;
+-  const y = Math.floor(v + 1e-9);
+-  const m = Math.max(1, Math.min(12, Math.round((v - y) * 100)));
+-  return y * 12 + (m - 1);
+-}
+-
+-/** 连续绝对月数转回 年.月 兼容浮点，格式化为标准仙盟历 */
+-function monthsToYm(totalMonths) {
+-  const tm = Number(totalMonths) || 0;
+-  const y = Math.floor(tm / 12);
+-  const m = Math.floor(tm % 12) + 1;
+-  const frac = tm - Math.floor(tm);
+-  return Math.round((y + (m / 100) + (frac * 0.005)) * 10000) / 10000;
+-}
++function cnNum(t) { return XSD_CALENDAR.cnNum(t); }
++function pickTimepointLine(t) { return XSD_CALENDAR.pickTimepointLine(t); }
++function parseXianmengFromText(t) { return XSD_CALENDAR.parseXianmengFromText(t); }
++function fmtXianmengDay(v, day) { return XSD_CALENDAR.fmtXianmengDay(v, day); }
++function parseLishi(s) { return XSD_CALENDAR.parseLishi(s); }
++function fmtXianmeng(v) { return XSD_CALENDAR.fmtXianmeng(v); }
++function ymToMonths(ym) { return XSD_CALENDAR.ymToMonths(ym); }
++function monthsToYm(totalMonths) { return XSD_CALENDAR.monthsToYm(totalMonths); }
++/* XSD_CALENDAR_ADAPTER_END */
+ /** 标签 → 变量键（**与 `状态栏面板.js` 的 FIELD_MAP 同源**，改一处必须改两处）
+  *  ⚠️ `身份` 在这里只用于「认得出这一行」，**不写进变量**：变量里的 `身份` 是机器字段
+  *     （只能是 6 个身份名之一，闸门靠它判真假），写进「墨山道六弟子 · 赵无忧」会把闸门搞坏。
+--- /dev/null
++++ b/tools/checks/_chk_clock_acc.mjs
+@@ -0,0 +1,131 @@
++/* 门禁：历时推进（nextAcc 纯函数 ＋ parseLishi 解析）离线路测
++ *
++ * ⚠️ 2026-10-08 规格变更（gpt 04 号《日期门与可玩性裁定》的「时钟计量」四项）：
++ *   · ① 一日计足一日（1/30 ＝ 0.03333）；原常规上限 0.02（＝0.6 日）会把「一日」截成 0.6 日，
++ *        30 次「一日」只记 18 日 —— 这是 gpt 复现的缺陷，不是规格。
++ *   · ② 转场正则必须认出「一个月」（原式只认「一月」）。
++ *   · ③ 半年计足半年（原过渡上限 3 会把 6 截成 3）。
++ *   · ④ 倒计时不计增量（『距启程 3 日』原会被当已过历时累计）。
++ *   因此本文件里两条「上限」断言按新规格更新（常规 0.02→0.1／过渡 3→12），
++ *   行为断言（合法 0 不被跳过／同楼撤销／换段不清零／无历时不动累计）**一字未改**，
++ *   并**新增**上面四项的反例断言。证据来源：gpt 04 号《日期门与可玩性裁定》＋ 时钟复核.cjs。
++ */
++import fs from 'node:fs';
++import path from 'node:path';
++import { fileURLToPath } from 'node:url';
++
++const here = path.dirname(fileURLToPath(import.meta.url));
++const SRC = path.resolve(here, '..', '..', '卡片脚本', '状态机.js');
++const code = fs.readFileSync(SRC, 'utf8');
++
++// 第二阶段：从实际生成物加载纯核+兼容层，保留下面全部行为断言。
++function calendarSpan(begin, end) {
++  const first = code.indexOf(begin), last = code.indexOf(end);
++  if (first < 0 || last <= first || code.indexOf(begin, first + begin.length) >= 0 ||
++      code.indexOf(end, last + end.length) >= 0) throw new Error('日期模块标记缺失或重复');
++  return code.slice(first, last + end.length);
++}
++const src = calendarSpan('/* XSD_CALENDAR_CORE_BEGIN */', '/* XSD_CALENDAR_CORE_END */') + '\n' +
++  calendarSpan('/* XSD_CALENDAR_ADAPTER_BEGIN */', '/* XSD_CALENDAR_ADAPTER_END */');
++const M = new Function(src + `\nreturn { nextAcc, parseLishi,
++  LISHI_TRANSIT_RE: { test: (text) => XSD_CALENDAR.hasTransit(text, '') },
++  LISHI_CAP: XSD_CALENDAR.caps.regular, LISHI_CAP_TRANSIT: XSD_CALENDAR.caps.transit };`)();
++const nextAcc = M.nextAcc, parseLishi = M.parseLishi;
++
++const results = [];
++const check = (name, cond, note = '') => results.push([name, !!cond, note]);
++const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
++
++/* ───────── 行为断言（一字未改） ───────── */
++{
++  const r = nextAcc({ 历时累计: 0, 时点加速: 0.05 }, 5, 0.02, false);
++  check('P1-4 合法 0 不被跳过（0 + 0.02 = 0.02，而非 0.07）', near(r.acc, 0.02), 'acc=' + r.acc);
++}
++{
++  const r = nextAcc({ 历时累计: null, 时点加速: 0.05 }, 5, 0.02, false);
++  check('P1-4 真缺失（null）才回退到时点加速（0.05 + 0.02 = 0.07）', near(r.acc, 0.07), 'acc=' + r.acc);
++}
++{
++  const r = nextAcc({ 历时累计: 1.02, 最后处理楼号: 8, 本楼历时加速: 0.02 }, 8, 0.02, false);
++  check('P1-5 同楼撤销不重复叠加（1.02 → 1.02）', near(r.acc, 1.02) && r.sameFloor === true, 'acc=' + r.acc);
++}
++{
++  const r = nextAcc({ 历时累计: 1.02, 最后处理楼号: 7, 本楼历时加速: 0.02 }, 8, 0.02, false);
++  check('P1-5 换楼正常累加（1.02 + 0.02 = 1.04）', near(r.acc, 1.04) && r.sameFloor === false, 'acc=' + r.acc);
++}
++{
++  const r = nextAcc({ 历时累计: 3.5 }, 9, 0.02, false);
++  check('P1-2 换段不清零（3.5 + 0.02 = 3.52）', near(r.acc, 3.52), 'acc=' + r.acc);
++}
++{
++  const r = nextAcc({ 历时累计: -5 }, 9, 0.02, false);
++  check('P1-2 非法（负值）才归零（0 + 0.02 = 0.02）', near(r.acc, 0.02), 'acc=' + r.acc);
++}
++{
++  const r = nextAcc({ 历时累计: 2 }, 9, 0, false);
++  check('无历时（stepM=0）⇒ adv=0、累计不动（2）', near(r.adv, 0) && near(r.acc, 2), 'acc=' + r.acc + ' adv=' + r.adv);
++}
++{
++  let sd = {};
++  for (let i = 1; i <= 10; i++) { const r = nextAcc(sd, i, 0.02, false); sd = { 历时累计: r.acc, 最后处理楼号: i, 本楼历时加速: r.adv }; }
++  check('十楼小步长累计无浮点垃圾（0.2）', near(sd.历时累计, 0.2), 'acc=' + sd.历时累计);
++}
++
++/* ───────── 上限断言（按 2026-10-08 gpt 04 号新规格更新） ───────── */
++check('规格·常规上限 ＝ 0.1 月（3 日）', near(M.LISHI_CAP, 0.1), 'LISHI_CAP=' + M.LISHI_CAP);
++check('规格·过渡上限 ＝ 12 月（一年）', near(M.LISHI_CAP_TRANSIT, 12), 'LISHI_CAP_TRANSIT=' + M.LISHI_CAP_TRANSIT);
++{
++  const r = nextAcc({ 历时累计: 0 }, 9, 5, false);
++  /* 2026-10-08（gpt 17 号 §5-4 ↔ 05 §4 L98）：超限从「按上限截半截计入」改为「**整笔拒绝**」
++     —— 截了却照写"五个月后"，玩家看到的日历与正文对不上。新预期：adv=0、累计不变、rejected=true。 */
++  check('常规历时超限 ⇒ 整笔不计（5 月申报，adv=0）', near(r.adv, 0) && near(r.acc, 0), 'adv=' + r.adv + ' acc=' + r.acc);
++  check('超限带 clipped 与 rejected 标记（原来只是静默/诊断）', r.clipped === true && r.rejected === true, 'clipped=' + r.clipped + ' rejected=' + r.rejected);
++  check('超限时把申报值原样带回（供落 [历时待确认]）', near(r.raw, 5) && near(r.capM, 0.1), 'raw=' + r.raw + ' capM=' + r.capM);
++}
++{
++  const r = nextAcc({ 历时累计: 3.14 }, 9, 5, false);
++  check('超限拒绝时不改动已有累计（3.14 个月保持）', near(r.acc, 3.14), 'acc=' + r.acc);
++}
++{
++  const r = nextAcc({ 历时累计: 0 }, 9, 5, true);
++  check('过渡历时 5 月计足（5 → 5，原被截成 3）', near(r.adv, 5) && r.clipped === false, 'adv=' + r.adv);
++}
++
++/* ───────── gpt 04 号四项的反例断言（新增） ───────── */
++check('①「一日」解析 ＝ 1/30（不再只等于 0.033）', near(parseLishi('一日'), 1 / 30, 1e-9), 'v=' + parseLishi('一日'));
++check('①「一日」> 旧上限 0.02（旧规则会被截成 0.6 日）', parseLishi('一日') > 0.02, 'v=' + parseLishi('一日'));
++{
++  let sd = {};
++  for (let i = 1; i <= 30; i++) { const r = nextAcc(sd, i, parseLishi('一日'), false); sd = { 历时累计: r.acc, 最后处理楼号: i, 本楼历时加速: r.adv }; }
++  check('① 30 次「一日」记足 30 日（＝1 月，旧规则只记 18 日）', near(sd.历时累计, 1, 1e-6), 'acc=' + sd.历时累计);
++}
++check('② 转场正则认出「一个月」（旧式 false）', M.LISHI_TRANSIT_RE.test('一个月'), 'hit=' + M.LISHI_TRANSIT_RE.test('一个月'));
++check('② 转场正则认出「数个月」', M.LISHI_TRANSIT_RE.test('数个月后'), 'hit=' + M.LISHI_TRANSIT_RE.test('数个月后'));
++check('②「一个月」解析 ＝ 1', near(parseLishi('一个月'), 1), 'v=' + parseLishi('一个月'));
++{
++  const step = parseLishi('一个月');
++  const r = nextAcc({ 历时累计: 0 }, 9, step, M.LISHI_TRANSIT_RE.test('一个月'));
++  check('②「一个月」按过渡计足 1 月（旧规则只记 0.02）', near(r.adv, 1), 'adv=' + r.adv);
++}
++check('③「半年」解析 ＝ 6', near(parseLishi('半年'), 6), 'v=' + parseLishi('半年'));
++{
++  const step = parseLishi('半年');
++  const r = nextAcc({ 历时累计: 0 }, 9, step, M.LISHI_TRANSIT_RE.test('半年'));
++  check('③「半年」计足 6 月（旧被截成 3）', near(r.adv, 6), 'adv=' + r.adv);
++}
++check('④ 倒计时「距启程 3 日」不计增量', near(parseLishi('距启程 3 日'), 0), 'v=' + parseLishi('距启程 3 日'));
++check('④ 倒计时「还有两日」不计增量', near(parseLishi('还有两日'), 0), 'v=' + parseLishi('还有两日'));
++check('④ 倒计时「倒计时：三日后」不计增量', near(parseLishi('倒计时：三日后'), 0), 'v=' + parseLishi('倒计时：三日后'));
++/* 2026-10-08（gpt 17 号 §5-4 ↔ 05 §4 L100）：**未来计划不算已过**。原断言写的是
++   `parseLishi('三日后启程') > 0`（把计划当已过）—— 与 gpt 的裁定相反，现改为 0；
++   同时补一条"明写已过"的正例，避免只是削弱判据。 */
++check('④b 未来计划不计（「三日后启程」＝0，不因有"日"字就算已过）', parseLishi('三日后启程') === 0, 'v=' + parseLishi('三日后启程'));
++check('④b-2 师尊说的计划也不计（「师尊说三日后启程」＝0）', parseLishi('师尊说三日后启程') === 0, 'v=' + parseLishi('师尊说三日后启程'));
++check('④b-3 明写已过的转场照计（「三日已过，我们启程」＝3 日＝0.1 月）', near(parseLishi('三日已过，我们启程'), 0.1), 'v=' + parseLishi('三日已过，我们启程'));
++check('④b-4 定于/拟于 一律 0', parseLishi('定于三日后启程') === 0, 'v=' + parseLishi('定于三日后启程'));
++check('⑤「三日」计足 0.1 月', near(parseLishi('三日'), 0.1), 'v=' + parseLishi('三日'));
++
++const bad = results.filter(([, ok]) => !ok);
++for (const [n, ok, note] of results) console.log((ok ? '✔' : '✘') + ' ' + n + (note ? '｜' + note : ''));
++console.log('\n门禁：历时推进（nextAcc ＋ parseLishi）  ' + (results.length - bad.length) + ' 通过 / ' + bad.length + ' 失败');
++process.exit(bad.length ? 1 : 0);

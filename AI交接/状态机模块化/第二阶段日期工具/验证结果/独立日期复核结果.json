@@ -1,0 +1,27 @@
+{
+  "identity": "gpt 下级复核",
+  "baseCommit": "f6655f859092fe7ff60204574b3117bec09155ef",
+  "testExitCode": 0,
+  "tests": 22,
+  "pass": 22,
+  "legacyFunctionDifferentialCalls": 2835,
+  "pureCoreAndHelperComparisonsAdditional": true,
+  "candidateSHA256": "6703d93b816a8766677f3a40133e019a3c8c61c5bc9956337fe310b73e782aaa",
+  "candidateBytes": 306105,
+  "modules": 28,
+  "deliveryFiles": 34,
+  "deliverySHAMismatch": 0,
+  "readOnlyBuildCheckExitCode": 0,
+  "fullCardBuilt": false,
+  "shipExecuted": false,
+  "tavernDeployed": false,
+  "sourceGates": "archived 2026-10-10 baseline gates, updated clock loader; current fixed-commit HUD/runtime copied to tmp",
+  "oldOracle": "bundled raw calendar and clock fixtures with f665 source SHA metadata",
+  "standaloneDateFixtureRun": {
+    "exitCode": 0,
+    "pass": 12,
+    "hostGatesExcluded": 10,
+    "gitOrArchiveRequired": false,
+    "namePattern": "^(九个|中文|历时|nextAcc|人工|纯核|30日|新hasTransit|dayOfMonth|Node|原时钟)"
+  }
+}

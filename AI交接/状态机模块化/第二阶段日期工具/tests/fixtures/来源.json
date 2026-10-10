@@ -1,0 +1,20 @@
+{
+  "identity": "gpt 下级复核",
+  "purpose": "original byte-preserving legacy date fixture and clock assertion oracle; no rewritten algorithm",
+  "files": [
+    {
+      "file": "calendar-legacy.f6655f8.js",
+      "sourcePath": "src/state-machine/utils/calendar.js",
+      "sourceCommit": "f6655f859092fe7ff60204574b3117bec09155ef",
+      "bytes": 9796,
+      "sha256": "e5bb1356ef05f44a7c954e044cbe7dd825de07b2cc2f618a6cf439c23d1243f4"
+    },
+    {
+      "file": "clock-gate-legacy.f6655f8.mjs",
+      "sourcePath": "AI交接/下级更新/2026-10-10-状态机模块化基线/tools/checks/_chk_clock_acc.mjs",
+      "sourceCommit": "f6655f859092fe7ff60204574b3117bec09155ef",
+      "bytes": 9589,
+      "sha256": "08104734955cd7315e868db5ef3939be0254598851798fd816955e24f53cb710"
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "checked": true,
+  "sha256": "6703d93b816a8766677f3a40133e019a3c8c61c5bc9956337fe310b73e782aaa",
+  "modules": [
+    {
+      "path": "bootstrap/header.js",
+      "startLine": 1,
+      "endLine": 65,
+      "sha256": "e426b60a14caaf02761c68d35937e528643589ad52f9ba5b9c27e280fca1d39f"
+    },
+    {
+      "path": "data/registry.js",
+      "startLine": 66,
+      "endLine": 351,
+      "sha256": "45b14a6f4be2207553a2895ec9a026b94478135e085340d1b0afe5df33b46815"
+    },
+    {
+      "path": "rules/stage.js",
+      "startLine": 352,
+      "endLine": 415,
+      "sha256": "099371415164aa1c50d298d981dabced68289d7989158a1db7187d88a9316f62"
+    },
+    {
+      "path": "utils/calendar-core.js",
+      "startLine": 416,
+      "endLine": 589,
+      "sha256": "5ad56b2c64254bb0e95bedb945bd4813c01f4ec34e1472f19855701ca9861528"
+    },
+    {
+      "path": "utils/calendar.js",
+      "startLine": 590,
+      "endLine": 622,
+      "sha256": "be4ce172e7b79f08290e5c1cdf13e3d9a040bb3c16a57078e12fcdf1b5320f6d"
+    },
+    {
+      "path": "data/status-fields.js",
+      "startLine": 623,
+      "endLine": 670,
+      "sha256": "9971e5e6fced5fc78d55a6a9c1da03354752eb536a9eab86b14d9ccc50dc0c00"
+    },
+    {
+      "path": "host/api.js",
+      "startLine": 671,
+      "endLine": 763,
+      "sha256": "4d5a7ce774f5bffa7b45bcae612f19cb7a88385f2e77166e03979b1045f06456"
+    },
+    {
+      "path": "state/paths.js",
+      "startLine": 764,
+      "endLine": 804,
+      "sha256": "bffd067a88f734af9da98198d6388c5afc16e46fe7a588f3b1ea26175198c7da"
+    },
+    {
+      "path": "state/read.js",
+      "startLine": 805,
+      "endLine": 904,
+      "sha256": "1a30faf1906578d3838d50be3d23d83b82d941dd8b5d70fb42b260b10792889d"
+    },
+    {
+      "path": "state/write.js",
+      "startLine": 905,
+      "endLine": 1077,
+      "sha256": "13ccacd0388edf3d80b0f9287c94b917e8e36c889403abcaffdbaaf50fbe0e45"
+    },
+    {
+      "path": "rules/inventory.js",
+      "startLine": 1078,
+      "endLine": 1312,
+      "sha256": "5cf40c606593b0682f923c2aac18242fbf42890f7909f3433482ed3515ebf547"
+    },
+    {
+      "path": "state/init.js",
+      "startLine": 1313,
+      "endLine": 1409,
+      "sha256": "122d60aafe3acc2937242d70913bc5e22288a789be5adfda3412c1a6d0064897"
+    },
+    {
+      "path": "parsers/status.js",
+      "startLine": 1410,
+      "endLine": 1827,
+      "sha256": "955821a2429f4978f822bc60725f57a9d4ab3a870133cfe3055db4004ec8d6e4"
+    },
+    {
+      "path": "rules/anchor-validation.js",
+      "startLine": 1828,
+      "endLine": 1910,
+      "sha256": "6b387533456244168bd38c0fa448b5e2c679c9de8c5cf9ca51547c6ad5a5e32a"
+    },
+    {
+      "path": "rules/relic-progress.js",
+      "startLine": 1911,
+      "endLine": 2132,
+      "sha256": "c9d5baad0cef7a3c59d63627b7866d4a2a2e7133b66e30f7108a44469ded52e5"
+    },
+    {
+      "path": "rules/milestones.js",
+      "startLine": 2133,
+      "endLine": 2543,
+      "sha256": "f68854ad7db5f702a9a297dc856415743ed98c4d7648f06761cd50075285eb29"
+    },
+    {
+      "path": "rules/plot-gates.js",
+      "startLine": 2544,
+      "endLine": 2604,
+      "sha256": "032ee8ce7901a9eee178f3b813cbd38f41c0b4645cb1688e0889e8fcf0ed92e8"
+    },
+    {
+      "path": "rules/relic.js",
+      "startLine": 2605,
+      "endLine": 2736,
+      "sha256": "62313adae7c375fabd30e7c2c69445e4b8860356c049d82a2d49c78fb995e8b9"
+    },
+    {
+      "path": "rules/apply-status.js",
+      "startLine": 2737,
+      "endLine": 3122,
+      "sha256": "48d0875df29b27344091dbaa4dd1593c292b78d463aa2d74d58a0bfef17ae5c9"
+    },
+    {
+      "path": "parsers/output-contract.js",
+      "startLine": 3123,
+      "endLine": 3142,
+      "sha256": "67fbdf8b0e03bebbff4aa89527125b48823dfcde789a453f075fe2920d959d2f"
+    },
+    {
+      "path": "host/worldbook.js",
+      "startLine": 3143,
+      "endLine": 3641,
+      "sha256": "fef02ca888b10a6ab85c8d5949fefa4b889548c4c34c12b421c0c3612b23ec29"
+    },
+    {
+      "path": "host/messages.js",
+      "startLine": 3642,
+      "endLine": 3775,
+      "sha256": "32b11516e7f96da41296d5560d7490246249aaa070f28368e020811f606370f3"
+    },
+    {
+      "path": "ui/identity-menu.js",
+      "startLine": 3776,
+      "endLine": 4270,
+      "sha256": "373255b2e7885a92f502ed3998c0305381bed60acb43adb5ec08589ad1c226e8"
+    },
+    {
+      "path": "commands/player.js",
+      "startLine": 4271,
+      "endLine": 4792,
+      "sha256": "413c6fc5a513cc12f22c4870287d41fa539f2794b39407bbe478eda897016ca7"
+    },
+    {
+      "path": "diagnostics/anchors.js",
+      "startLine": 4793,
+      "endLine": 4843,
+      "sha256": "6c5d9fe78485d174cd2516449c9e4c60ac4ad13647addb94c183db5d33cf8efd"
+    },
+    {
+      "path": "main.js",
+      "startLine": 4844,
+      "endLine": 5124,
+      "sha256": "8ba82609c92f9d7635c8b9b8549908095b34df98a7fa53940cca40790fd1f54b"
+    },
+    {
+      "path": "diagnostics/console.js",
+      "startLine": 5125,
+      "endLine": 5202,
+      "sha256": "53d51fe2fce13a342a391c2938dc00aacbd925375002a0fe3706206b97ebd2e8"
+    },
+    {
+      "path": "bootstrap/start.js",
+      "startLine": 5203,
+      "endLine": 5217,
+      "sha256": "4261f3e8ee32d24b51298bce92aaffb180ba9ec40a5f3e4ace22d30b81d91216"
+    }
+  ],
+  "bytes": 306105
+}
