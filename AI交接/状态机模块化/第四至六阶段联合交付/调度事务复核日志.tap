@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: 同部署 correction runtime 原样存证，使用真实持久化服务
+ok 1 - 同部署 correction runtime 原样存证，使用真实持久化服务
+  ---
+  duration_ms: 1.770551
+  type: 'test'
+  ...
+# Subtest: 加载真实生产片段只创建模块，不写变量
+ok 2 - 加载真实生产片段只创建模块，不写变量
+  ---
+  duration_ms: 27.818835
+  type: 'test'
+  ...
+# Subtest: 真实合并读恢复聊天层人工覆盖；消息层旧覆盖不复活
+ok 3 - 真实合并读恢复聊天层人工覆盖；消息层旧覆盖不复活
+  ---
+  duration_ms: 6.674421
+  type: 'test'
+  ...
+# Subtest: 真实状态应用多次草稿写只提交一笔，双层地点与日期一致
+ok 4 - 真实状态应用多次草稿写只提交一笔，双层地点与日期一致
+  ---
+  duration_ms: 25.279983
+  type: 'test'
+  ...
+# Subtest: 无状态栏真实 fallback 一笔提交并标楼号，日期保持
+ok 5 - 无状态栏真实 fallback 一笔提交并标楼号，日期保持
+  ---
+  duration_ms: 11.681003
+  type: 'test'
+  ...
+# Subtest: 消息层返回 false 时真实服务补偿 chat，operation 不报成功
+ok 6 - 消息层返回 false 时真实服务补偿 chat，operation 不报成功
+  ---
+  duration_ms: 10.717799
+  type: 'test'
+  ...
+# Subtest: 消息层假成功但不落盘时真实 readback 拒绝，允许再次运行
+ok 7 - 消息层假成功但不落盘时真实 readback 拒绝，允许再次运行
+  ---
+  duration_ms: 12.705273
+  type: 'test'
+  ...
+# Subtest: 人工日期/段位覆盖被真实服务保护，不误报完整回读失败
+ok 8 - 人工日期/段位覆盖被真实服务保护，不误报完整回读失败
+  ---
+  duration_ms: 11.44854
+  type: 'test'
+  ...
+# Subtest: 规划开始前 chat 改变、最新楼变化、epoch 往返变化均不调用持久化
+ok 9 - 规划开始前 chat 改变、最新楼变化、epoch 往返变化均不调用持久化
+  ---
+  duration_ms: 16.230734
+  type: 'test'
+  ...
+# Subtest: await 规划期间换 chat/latest/epoch，原任务在真实提交前终止
+ok 10 - await 规划期间换 chat/latest/epoch，原任务在真实提交前终止
+  ---
+  duration_ms: 17.985605
+  type: 'test'
+  ...
+# Subtest: 统一服务提交后的外部层变化不确认；重试恢复且历时不双加
+ok 11 - 统一服务提交后的外部层变化不确认；重试恢复且历时不双加
+  ---
+  duration_ms: 9.919319
+  type: 'test'
+  ...
+# Subtest: 真实 service 第一层 await 中换聊天，不后续写消息层或新聊天补偿
+ok 12 - 真实 service 第一层 await 中换聊天，不后续写消息层或新聊天补偿
+  ---
+  duration_ms: 6.736697
+  type: 'test'
+  ...
+# Subtest: 事件与 tick 同签名并发共用同一 Promise，只规划/提交一次
+ok 13 - 事件与 tick 同签名并发共用同一 Promise，只规划/提交一次
+  ---
+  duration_ms: 25.661032
+  type: 'test'
+  ...
+# Subtest: 事务 false/readback 不一致不确认去重，第二次触发真实重试成功
+ok 14 - 事务 false/readback 不一致不确认去重，第二次触发真实重试成功
+  ---
+  duration_ms: 24.242148
+  type: 'test'
+  ...
+# Subtest: 同楼新正文排队有序；旧任务等待期间正文变更不落盘
+ok 15 - 同楼新正文排队有序；旧任务等待期间正文变更不落盘
+  ---
+  duration_ms: 10.965861
+  type: 'test'
+  ...
+# Subtest: 同楼 swipe 更新排队，旧任务释放；新 swipe 独立提交
+ok 16 - 同楼 swipe 更新排队，旧任务释放；新 swipe 独立提交
+  ---
+  duration_ms: 9.024191
+  type: 'test'
+  ...
+# Subtest: 跨 chat、最新楼、epoch 变旧的排队任务不调用真实 writeStat
+ok 17 - 跨 chat、最新楼、epoch 变旧的排队任务不调用真实 writeStat
+  ---
+  duration_ms: 20.378857
+  type: 'test'
+  ...
+# Subtest: 非最新楼、开场楼、无效楼只跳过/返回失败，不提交状态
+ok 18 - 非最新楼、开场楼、无效楼只跳过/返回失败，不提交状态
+  ---
+  duration_ms: 5.95495
+  type: 'test'
+  ...
+# Subtest: 实例创建无监听；start 幂等；dispose 清本实例事件/全局/计时器
+ok 19 - 实例创建无监听；start 幂等；dispose 清本实例事件/全局/计时器
+  ---
+  duration_ms: 8.016933
+  type: 'test'
+  ...
+# Subtest: 真实 main 装配路径事件与 iframe tick 共用提交，已知旧正文拒绝
+ok 20 - 真实 main 装配路径事件与 iframe tick 共用提交，已知旧正文拒绝
+  ---
+  duration_ms: 21.120308
+  type: 'test'
+  ...
+# Subtest: 真实 main 第一层写 await 中换 swipe，guard 阻止第二层写
+ok 21 - 真实 main 第一层写 await 中换 swipe，guard 阻止第二层写
+  ---
+  duration_ms: 6.706832
+  type: 'test'
+  ...
+# Subtest: 已知分支签名读取后丢失，旧任务不降级放行
+ok 22 - 已知分支签名读取后丢失，旧任务不降级放行
+  ---
+  duration_ms: 8.192722
+  type: 'test'
+  ...
+# Subtest: 真实首次生成 schema 双层读回一致才成功；chat_changed 后重新前置
+ok 23 - 真实首次生成 schema 双层读回一致才成功；chat_changed 后重新前置
+  ---
+  duration_ms: 7.85953
+  type: 'test'
+  ...
+# Subtest: 真实首次生成双层 known 不一致明确请求取消，修复后可重试
+ok 24 - 真实首次生成双层 known 不一致明确请求取消，修复后可重试
+  ---
+  duration_ms: 9.688991
+  type: 'test'
+  ...
+# Subtest: 真实首次生成回读缺失/初始化失败不缓存成功；恢复后可重试
+ok 25 - 真实首次生成回读缺失/初始化失败不缓存成功；恢复后可重试
+  ---
+  duration_ms: 6.308128
+  type: 'test'
+  ...
+# Subtest: 真实 main 仅 parent.TavernHelper.getVariables 可用，首次前置与状态提交仍支持
+ok 26 - 真实 main 仅 parent.TavernHelper.getVariables 可用，首次前置与状态提交仍支持
+  ---
+  duration_ms: 10.408041
+  type: 'test'
+  ...
+# Subtest: 真实首次前置单层缺 known 可由完整层恢复，保留已确认事实
+ok 27 - 真实首次前置单层缺 known 可由完整层恢复，保留已确认事实
+  ---
+  duration_ms: 8.16498
+  type: 'test'
+  ...
+# Subtest: 两层完整 schema 却身份冲突，不靠初始化覆盖；取消请求后可人工修复重试
+ok 28 - 两层完整 schema 却身份冲突，不靠初始化覆盖；取消请求后可人工修复重试
+  ---
+  duration_ms: 9.419287
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 424.961024
