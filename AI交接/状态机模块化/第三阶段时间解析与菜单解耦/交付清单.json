@@ -1,0 +1,294 @@
+{
+  "identity": "gpt",
+  "base": "064d67bc3bd8376f722bf050ca92a96d1aabef14",
+  "modules": 32,
+  "files": [
+    {
+      "path": "src/state-machine/bootstrap/header.js",
+      "bytes": 6538,
+      "sha256": "e426b60a14caaf02761c68d35937e528643589ad52f9ba5b9c27e280fca1d39f",
+      "beforeSHA256": "e426b60a14caaf02761c68d35937e528643589ad52f9ba5b9c27e280fca1d39f",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/bootstrap/start.js",
+      "bytes": 1151,
+      "sha256": "4261f3e8ee32d24b51298bce92aaffb180ba9ec40a5f3e4ace22d30b81d91216",
+      "beforeSHA256": "4261f3e8ee32d24b51298bce92aaffb180ba9ec40a5f3e4ace22d30b81d91216",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/build-state.json",
+      "bytes": 105,
+      "sha256": "b0b6d3bdc379eb7c5ad714eac0d906da168fdee85e14eec9449b9e289cce1ad1",
+      "beforeSHA256": "dde5ecb0b1e27de1e5f85e9dbca3d93e231ec2c89474061f04159e26e2c00627",
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/build.cjs",
+      "bytes": 7919,
+      "sha256": "3263e60403d5b31d9187451facc27d24574de952f16d264a71dd1b0fbbedf48b",
+      "beforeSHA256": "3263e60403d5b31d9187451facc27d24574de952f16d264a71dd1b0fbbedf48b",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/commands/player.js",
+      "bytes": 28496,
+      "sha256": "413c6fc5a513cc12f22c4870287d41fa539f2794b39407bbe478eda897016ca7",
+      "beforeSHA256": "413c6fc5a513cc12f22c4870287d41fa539f2794b39407bbe478eda897016ca7",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/data/registry.js",
+      "bytes": 30649,
+      "sha256": "45b14a6f4be2207553a2895ec9a026b94478135e085340d1b0afe5df33b46815",
+      "beforeSHA256": "45b14a6f4be2207553a2895ec9a026b94478135e085340d1b0afe5df33b46815",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/data/status-fields.js",
+      "bytes": 2714,
+      "sha256": "9971e5e6fced5fc78d55a6a9c1da03354752eb536a9eab86b14d9ccc50dc0c00",
+      "beforeSHA256": "9971e5e6fced5fc78d55a6a9c1da03354752eb536a9eab86b14d9ccc50dc0c00",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/diagnostics/anchors.js",
+      "bytes": 2895,
+      "sha256": "6c5d9fe78485d174cd2516449c9e4c60ac4ad13647addb94c183db5d33cf8efd",
+      "beforeSHA256": "6c5d9fe78485d174cd2516449c9e4c60ac4ad13647addb94c183db5d33cf8efd",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/diagnostics/console.js",
+      "bytes": 4232,
+      "sha256": "53d51fe2fce13a342a391c2938dc00aacbd925375002a0fe3706206b97ebd2e8",
+      "beforeSHA256": "53d51fe2fce13a342a391c2938dc00aacbd925375002a0fe3706206b97ebd2e8",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/host/api.js",
+      "bytes": 6681,
+      "sha256": "4d5a7ce774f5bffa7b45bcae612f19cb7a88385f2e77166e03979b1045f06456",
+      "beforeSHA256": "4d5a7ce774f5bffa7b45bcae612f19cb7a88385f2e77166e03979b1045f06456",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/host/messages.js",
+      "bytes": 6689,
+      "sha256": "32b11516e7f96da41296d5560d7490246249aaa070f28368e020811f606370f3",
+      "beforeSHA256": "32b11516e7f96da41296d5560d7490246249aaa070f28368e020811f606370f3",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/host/worldbook.js",
+      "bytes": 23723,
+      "sha256": "fef02ca888b10a6ab85c8d5949fefa4b889548c4c34c12b421c0c3612b23ec29",
+      "beforeSHA256": "fef02ca888b10a6ab85c8d5949fefa4b889548c4c34c12b421c0c3612b23ec29",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/main.js",
+      "bytes": 17805,
+      "sha256": "8ba82609c92f9d7635c8b9b8549908095b34df98a7fa53940cca40790fd1f54b",
+      "beforeSHA256": "8ba82609c92f9d7635c8b9b8549908095b34df98a7fa53940cca40790fd1f54b",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/modules.json",
+      "bytes": 8283,
+      "sha256": "98ce0f585303ce3d6b07f30103a8f22d171a0b8e323de20bcdecef806613f2dc",
+      "beforeSHA256": "ca0c5c1a3e069d4be4e2043ca41f4739a4a250166e5dbaa74459bb32ddda0ac7",
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/parsers/output-contract.js",
+      "bytes": 1376,
+      "sha256": "67fbdf8b0e03bebbff4aa89527125b48823dfcde789a453f075fe2920d959d2f",
+      "beforeSHA256": "67fbdf8b0e03bebbff4aa89527125b48823dfcde789a453f075fe2920d959d2f",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/parsers/status-core.js",
+      "bytes": 20885,
+      "sha256": "2eb8aa144da661e5c29e7b28666ab051afa7b10063322a8cecaf382369b803db",
+      "beforeSHA256": null,
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/parsers/status.cjs",
+      "bytes": 445,
+      "sha256": "5b8a9291a79d868ca57772fcc38cbee27a6ad587fab26a87cc03505f42e4f61b",
+      "beforeSHA256": null,
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/parsers/status.js",
+      "bytes": 3735,
+      "sha256": "f172cc0be3c7e888642cbd3af0bceb098e440d2014e995fec3382e835c045c90",
+      "beforeSHA256": "955821a2429f4978f822bc60725f57a9d4ab3a870133cfe3055db4004ec8d6e4",
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/rules/anchor-validation.js",
+      "bytes": 4302,
+      "sha256": "6b387533456244168bd38c0fa448b5e2c679c9de8c5cf9ca51547c6ad5a5e32a",
+      "beforeSHA256": "6b387533456244168bd38c0fa448b5e2c679c9de8c5cf9ca51547c6ad5a5e32a",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/rules/apply-status.js",
+      "bytes": 23018,
+      "sha256": "f0f06a274d9150779822a3b7b52e5b80e6787f4e5f1497e1dc1098593357a1c5",
+      "beforeSHA256": "48d0875df29b27344091dbaa4dd1593c292b78d463aa2d74d58a0bfef17ae5c9",
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/rules/inventory.js",
+      "bytes": 16687,
+      "sha256": "5cf40c606593b0682f923c2aac18242fbf42890f7909f3433482ed3515ebf547",
+      "beforeSHA256": "5cf40c606593b0682f923c2aac18242fbf42890f7909f3433482ed3515ebf547",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/rules/milestones.js",
+      "bytes": 25370,
+      "sha256": "f68854ad7db5f702a9a297dc856415743ed98c4d7648f06761cd50075285eb29",
+      "beforeSHA256": "f68854ad7db5f702a9a297dc856415743ed98c4d7648f06761cd50075285eb29",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/rules/plot-gates.js",
+      "bytes": 4185,
+      "sha256": "032ee8ce7901a9eee178f3b813cbd38f41c0b4645cb1688e0889e8fcf0ed92e8",
+      "beforeSHA256": "032ee8ce7901a9eee178f3b813cbd38f41c0b4645cb1688e0889e8fcf0ed92e8",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/rules/relic-progress.js",
+      "bytes": 9226,
+      "sha256": "c9d5baad0cef7a3c59d63627b7866d4a2a2e7133b66e30f7108a44469ded52e5",
+      "beforeSHA256": "c9d5baad0cef7a3c59d63627b7866d4a2a2e7133b66e30f7108a44469ded52e5",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/rules/relic.js",
+      "bytes": 9479,
+      "sha256": "62313adae7c375fabd30e7c2c69445e4b8860356c049d82a2d49c78fb995e8b9",
+      "beforeSHA256": "62313adae7c375fabd30e7c2c69445e4b8860356c049d82a2d49c78fb995e8b9",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/rules/stage.js",
+      "bytes": 4533,
+      "sha256": "099371415164aa1c50d298d981dabced68289d7989158a1db7187d88a9316f62",
+      "beforeSHA256": "099371415164aa1c50d298d981dabced68289d7989158a1db7187d88a9316f62",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/state/init.js",
+      "bytes": 5284,
+      "sha256": "122d60aafe3acc2937242d70913bc5e22288a789be5adfda3412c1a6d0064897",
+      "beforeSHA256": "122d60aafe3acc2937242d70913bc5e22288a789be5adfda3412c1a6d0064897",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/state/paths.js",
+      "bytes": 1677,
+      "sha256": "bffd067a88f734af9da98198d6388c5afc16e46fe7a588f3b1ea26175198c7da",
+      "beforeSHA256": "bffd067a88f734af9da98198d6388c5afc16e46fe7a588f3b1ea26175198c7da",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/state/read.js",
+      "bytes": 3985,
+      "sha256": "1a30faf1906578d3838d50be3d23d83b82d941dd8b5d70fb42b260b10792889d",
+      "beforeSHA256": "1a30faf1906578d3838d50be3d23d83b82d941dd8b5d70fb42b260b10792889d",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/state/write.js",
+      "bytes": 8340,
+      "sha256": "13ccacd0388edf3d80b0f9287c94b917e8e36c889403abcaffdbaaf50fbe0e45",
+      "beforeSHA256": "13ccacd0388edf3d80b0f9287c94b917e8e36c889403abcaffdbaaf50fbe0e45",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/ui/identity-menu-controller.js",
+      "bytes": 22639,
+      "sha256": "950c7b2a99df707c9018417df3c95f9ddc3015a0b4ae014935bbf9af4b82eead",
+      "beforeSHA256": null,
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/ui/identity-menu.js",
+      "bytes": 3599,
+      "sha256": "5f07581f217ba9954d7083ee729caa2a782c8f1489a9069b007e5919f0b84fc9",
+      "beforeSHA256": "373255b2e7885a92f502ed3998c0305381bed60acb43adb5ec08589ad1c226e8",
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/utils/calendar-core.js",
+      "bytes": 8952,
+      "sha256": "5ad56b2c64254bb0e95bedb945bd4813c01f4ec34e1472f19855701ca9861528",
+      "beforeSHA256": "5ad56b2c64254bb0e95bedb945bd4813c01f4ec34e1472f19855701ca9861528",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/utils/calendar.cjs",
+      "bytes": 451,
+      "sha256": "25928db1529d4ff44d996aca641233b123c9eb20f2f7ec60e7a205b643888f05",
+      "beforeSHA256": "25928db1529d4ff44d996aca641233b123c9eb20f2f7ec60e7a205b643888f05",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/utils/calendar.js",
+      "bytes": 2226,
+      "sha256": "be4ce172e7b79f08290e5c1cdf13e3d9a040bb3c16a57078e12fcdf1b5320f6d",
+      "beforeSHA256": "be4ce172e7b79f08290e5c1cdf13e3d9a040bb3c16a57078e12fcdf1b5320f6d",
+      "changed": false
+    },
+    {
+      "path": "src/state-machine/utils/time-basis-core.js",
+      "bytes": 1933,
+      "sha256": "f9a3057110c15d9c5a4179e2509ed38ca30f0b812e1187a2b6f7e4794ca03a5d",
+      "beforeSHA256": null,
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/utils/time-basis.cjs",
+      "bytes": 450,
+      "sha256": "0778e3eb85947759e01bc87774f4abf9c9b9fd80620fca1aa35d92cbab8de52c",
+      "beforeSHA256": null,
+      "changed": true
+    },
+    {
+      "path": "src/state-machine/utils/time-basis.js",
+      "bytes": 616,
+      "sha256": "ff12fe7170f050c31a35e40b7d318fd5e0f52e1c3256f30f85414c0908916e25",
+      "beforeSHA256": null,
+      "changed": true
+    },
+    {
+      "path": "tools/checks/_chk_anchor_gate.mjs",
+      "bytes": 3930,
+      "sha256": "c84905412b69bcf93c31e919389a3fd4855037e5819e1d1d55d5e5ba58e9e134",
+      "beforeSHA256": "f6da48eab78c42e7b58f156f61b7c3ba7807f77e55454cb55c8d8d20993ee903",
+      "changed": true
+    },
+    {
+      "path": "tools/checks/_chk_relic_progress.mjs",
+      "bytes": 10767,
+      "sha256": "f0e6a0b32d4846a71d972a891eb0a1aaed5cd58575fb79e377d7b9e105df59c1",
+      "beforeSHA256": "0803bbacb7812166d71c7445ea9074651801d55265b505b1c2fd23ed6d8a0448",
+      "changed": true
+    },
+    {
+      "path": "卡片脚本/状态机.js",
+      "bytes": 313620,
+      "sha256": "efa644f286b615bd3913905ce79db695f5f9290114cefa60badfbc2cdc622a03",
+      "beforeSHA256": "6703d93b816a8766677f3a40133e019a3c8c61c5bc9956337fe310b73e782aaa",
+      "changed": true
+    }
+  ]
+}

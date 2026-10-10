@@ -1,0 +1,3 @@
+身份：gpt 下级独立复核
+命令：node tests/status-parser.test.cjs
+PASS 907 status-parser checks (887 legacy comparisons)

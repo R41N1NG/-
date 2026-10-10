@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "projectFixture": "card-project@064d67bc3bd8376f722bf050ca92a96d1aabef14 tracked 工程覆盖本批候选",
+  "assembledSourceBytes": 313620,
+  "sourceSHA256": "efa644f286b615bd3913905ce79db695f5f9290114cefa60badfbc2cdc622a03",
+  "payloadBytes": 363193,
+  "payloadSHA256": "10ef37e7092dec68aa476bc66d50087c8aa6b76ba64b72549de589e57bac56fc",
+  "checked": [
+    "完整 payload vm.Script",
+    "含真实 correction-runtime 与 timepoint 注入的完整脚本最小宿主初始化",
+    "__xsdStateTick 已暴露",
+    "correction runtime 1.2.0 已初始化",
+    "真实解析 adapter 可调用"
+  ],
+  "limits": "timers 不执行启动/重试回调；未验证客户端 UI、实时 API、最新卡世界书或部署"
+}

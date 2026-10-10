@@ -1,0 +1,14 @@
+Time basis differential calls: 4657; all use bundled fixed-commit oracle
+✔ 历基准/五身份/自设/空未知/初始时点数值矩阵：结果、patch、日志和首楼读取一致 (111.540814ms)
+✔ 首楼唯一当前时点行、合法初七/跨年、缺失/31日/多行边界保持旧行为 (33.680586ms)
+✔ 不必要时不读首楼；宿主抛错按共享默认；楼号与先前patch保持 (94.418698ms)
+✔ 当前AI正文的未来日期与菜单多日期均不参与时间基准 (1.036274ms)
+✔ 纯核和Node入口无宿主独立加载；选择返回不修改输入，接口冻结 (17.467959ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 342.265533

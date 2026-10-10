@@ -1,0 +1,29 @@
+{
+  "identity": "gpt 下级复核",
+  "files": [
+    {
+      "file": "time-basis-block.064d67.js",
+      "sourceCommit": "064d67bc3bd8376f722bf050ca92a96d1aabef14",
+      "sourcePath": "src/state-machine/rules/apply-status.js",
+      "bytes": 1711,
+      "sha256": "e940ee432ab5c7eb84eaa710295275d13ea9f82a900d98f135ae702435755403",
+      "slice": "CAL_START_BY_ID through curBaseM inclusive"
+    },
+    {
+      "file": "calendar-core.064d67.js",
+      "sourceCommit": "064d67bc3bd8376f722bf050ca92a96d1aabef14",
+      "sourcePath": "src/state-machine/utils/calendar-core.js",
+      "bytes": 8952,
+      "sha256": "5ad56b2c64254bb0e95bedb945bd4813c01f4ec34e1472f19855701ca9861528",
+      "slice": "complete"
+    },
+    {
+      "file": "calendar-adapter.064d67.js",
+      "sourceCommit": "064d67bc3bd8376f722bf050ca92a96d1aabef14",
+      "sourcePath": "src/state-machine/utils/calendar.js",
+      "bytes": 2226,
+      "sha256": "be4ce172e7b79f08290e5c1cdf13e3d9a040bb3c16a57078e12fcdf1b5320f6d",
+      "slice": "complete"
+    }
+  ]
+}

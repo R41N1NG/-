@@ -1,0 +1,111 @@
+{
+  "commit": "064d67bc3bd8376f722bf050ca92a96d1aabef14",
+  "node": "v24.19.0",
+  "runtime": {
+    "bytes": 32326,
+    "utf16Length": 27975,
+    "sha256": "1d07f7aab5f5b90b3744adc9b5d4a84cbd2e6d8e4a58231cb1b0a471b525b245"
+  },
+  "scripts": [
+    {
+      "id": "xsd-script-0",
+      "name": "GM修改器.js",
+      "raw": {
+        "bytes": 73707,
+        "utf16Length": 56841,
+        "sha256": "d2124f9d2750c5dd24318a8de041d3974b856305821bb8c941a29695cbc2de94"
+      },
+      "content": {
+        "bytes": 106034,
+        "utf16Length": 84817,
+        "sha256": "25f37bcd1922d579c46d42f33c561b7499088d9b50ad6e8e95836aed30901b12"
+      }
+    },
+    {
+      "id": "xsd-script-1",
+      "name": "状态机.js",
+      "raw": {
+        "bytes": 306105,
+        "utf16Length": 224277,
+        "sha256": "6703d93b816a8766677f3a40133e019a3c8c61c5bc9956337fe310b73e782aaa"
+      },
+      "content": {
+        "bytes": 355678,
+        "utf16Length": 268377,
+        "sha256": "8d3e6fe47153f30f238e6a6374165c854b811b917c44ad333ae212b23f5b29fd"
+      }
+    },
+    {
+      "id": "xsd-script-2",
+      "name": "状态栏面板.js",
+      "raw": {
+        "bytes": 396806,
+        "utf16Length": 345923,
+        "sha256": "d0e10de10ae90afd714702af9a5d3cc28589a32d5dd1311ddbf26dd7f2933d3b"
+      },
+      "content": {
+        "bytes": 429133,
+        "utf16Length": 373899,
+        "sha256": "4244279ca08063f7dd4feb36b94f46b02e62aff84d5a94af6dca64ac8f9202c5"
+      }
+    }
+  ],
+  "syntax": [
+    {
+      "file": "_chk_all.mjs",
+      "exit": 0,
+      "stderr": "",
+      "sha256": "162c4b1f9a622566dce7b01fa96e5164b9093495850d8e66e478ace608679087"
+    },
+    {
+      "file": "_chk_anchor_gate.mjs",
+      "exit": 1,
+      "stderr": "/tmp/xsd-receipt-ygazbnaw/_chk_anchor_gate.mjs:1\n﻿#!/usr/bin/env node\n ^\n\nSyntaxError: Invalid or unexpected token\n    at checkSyntax (node:internal/main/check_syntax:72:5)\n\nNode.js v24.19.0\n",
+      "sha256": "f6da48eab78c42e7b58f156f61b7c3ba7807f77e55454cb55c8d8d20993ee903"
+    },
+    {
+      "file": "_chk_ejs_stage.mjs",
+      "exit": 0,
+      "stderr": "",
+      "sha256": "057bf180b8fc5f6a17bc74504423cd2a8a334ce30dc9aa548afcf7bee9dec520"
+    },
+    {
+      "file": "_chk_form_gate.mjs",
+      "exit": 0,
+      "stderr": "",
+      "sha256": "54bfe1b623e490fa9bd06c875adb477bfe18cb72f734ae11ee296c8037824ba4"
+    },
+    {
+      "file": "_chk_plot_gate.mjs",
+      "exit": 0,
+      "stderr": "",
+      "sha256": "20c2838f447fffd9330a4274d7be91fb7a43494ea9bf3eb68dcbf6540779bd79"
+    },
+    {
+      "file": "_chk_syntax.mjs",
+      "exit": 0,
+      "stderr": "",
+      "sha256": "6354a9f770ac17ae49d959ddb30cef38ee74d9759c33e7c04ea0ee7ebeacdddd"
+    }
+  ],
+  "lineEndingReproduction": [
+    {
+      "script": "GM修改器",
+      "conversion": "GM原脚本 LF→CRLF；runtime保持LF",
+      "bytes": 107646,
+      "sha256": "6306cd7205218b961b70bb197670b7f4f716d3d0cb0f84c4fdae8cd4deb4c8d8"
+    },
+    {
+      "script": "状态机",
+      "conversion": "仅slider源 LF→CRLF；状态机与runtime保持LF",
+      "bytes": 355996,
+      "sha256": "4693b5d4b6b446121ba91b213df8d0a5fa8bdcdca7cc3ea690540e645630d3bd"
+    },
+    {
+      "script": "状态栏面板",
+      "conversion": "HUD原脚本 LF→CRLF；runtime保持LF",
+      "bytes": 432206,
+      "sha256": "7cad8a27a3d33da287406bc543f43fa8eb71a4fe7ca1827ffc135a24978d1d9e"
+    }
+  ]
+}

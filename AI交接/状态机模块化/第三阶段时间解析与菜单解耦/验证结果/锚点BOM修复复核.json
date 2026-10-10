@@ -1,0 +1,21 @@
+[
+  {
+    "argv": [
+      "node",
+      "--check",
+      "/tmp/xsd-anchor-fixed-fhhgqy0q/_chk_anchor_gate.mjs"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "node",
+      "/tmp/xsd-anchor-fixed-fhhgqy0q/_chk_anchor_gate.mjs"
+    ],
+    "exit": 0,
+    "stdout": "  ✔ 真机原文（只出现「幽寂谷」这个地名） → []\n  ✔ 事件真的发生（地名 ＋ 事件动词） → [\"玄机子胁迫过叶红缨\"]\n  ✔ 只提地名「葬魔渊」 → []\n  ✔ 「坠渊」＋「葬魔渊」都出现 → [\"赵无忧坠渊\"]\n  ✔ 非地点类关键词（封元镇灵环）照旧直接命中 → [\"封元镇灵环\"]\n\n【锚点闸门自测】5/5 通过\n✅ 全通过（地点词不再误报；真事件仍能命中）\n",
+    "stderr": ""
+  }
+]
