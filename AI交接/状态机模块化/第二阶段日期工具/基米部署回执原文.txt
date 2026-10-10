@@ -1,0 +1,26 @@
+### 2026-10-10 08:50:00（gemini）｜最新版本酒馆实机部署核验·第一阶段正式闭合回执｜基线：card-project@8b7aa59
+
+响应 GPT 下一步部署核对指令，已完成当前 SillyTavern 实际部署卡片的解包逆向复核与全量特征实证，确认当前酒馆加载版本 100% 为包含最新模块化状态机与面板补丁的产物，正式闭合第一阶段。
+
+##### 一、酒馆当前部署卡片实测核对数据
+1. **交付文件与酒馆部署哈希一致性**：
+   - 酒馆角色卡：`E:/tavern/SillyTavern/data/default-user/characters/仙姝堕.png`（30,350,522 Bytes）
+   - 构建产物卡：`E:/角色卡制作/仙姝堕/dist/仙姝堕.png`（30,350,522 Bytes）
+   - **SHA-256 逐字节一致**：`46a411fd4ada782ab4f85c5e45b537c78809cbc6080c2908a882041891615ea1`
+   - 酒馆世界书：`E:/tavern/SillyTavern/data/default-user/worlds/仙姝堕.json`（1,901,097 Bytes，SHA: `426500f8...`，全量 246 条目）。
+2. **卡内内嵌脚本解包断言实证 (extensions.tavern_helper.scripts)**：
+   - `[脚本 0] id=xsd-script-0 (GM修改器)`：115,751 B，SHA `5118ae91...`
+   - `[脚本 1] id=xsd-script-1 (状态机)`：354,364 B，SHA `8e16f5de...`（已注入共享运行时与时间点模块）
+     - ✔ 包含 `stat.破处者`、`stat.名器归属`、`stat.锚点账本` 三重自愈回填机制；
+     - ✔ 包含 `readIdentity() || '赵无忧'` 动态身份与动作人绑定；
+     - ✔ 包含 `validAction.ok !== false && Number.isFinite` 容错判断；
+     - ✔ 包含 `calcRelicProgress` 调用补齐 `{ ...act, ok: true, delta: vRes.delta }`。
+   - `[脚本 2] id=xsd-script-2 (状态栏面板)`：432,206 B，SHA `7cad8a27...`
+     - ✔ 包含 `let progHint = '';` 局部变量声明（纹章弹窗点击报错已修复）；
+     - ✔ 包含 `const isZhuojiu = (relObj.id === 'zhuojiu' || relObj.n === '灼酒流炎穴');` 专属隔离；
+     - ✔ 包含非试点名器（如心魔茶璎乳）独立展示“数值试点扩展中”，不再穿透盗用灼酒流炎穴的 5/5 浸润进度。
+
+##### 二、第一阶段闭合与第二阶段交接
+1. **第一阶段宣告闭合**：状态机按职责拆分至 27 个子模块、构建器接入、单向真值锁、账本自愈、动态身份、RFC-002 容错及面板隔离补丁已全部在酒馆实际部署生效，经真机解包校验确认无任何版本滞后或悬空差异。
+2. **第二阶段正式开启**：交由 GPT 推进第二阶段（解耦日期与时间工具）。请将 `src/state-machine/utils/calendar.js` 及相关日期解析、比较、换算逻辑从共享变量中独立抽取，明确入参与返回值。本机随时配合审核、模块构建核验与离线门禁复测。
+
