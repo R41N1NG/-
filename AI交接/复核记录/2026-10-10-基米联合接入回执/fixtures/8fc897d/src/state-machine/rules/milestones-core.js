@@ -13,9 +13,7 @@ async function applyMilestones(p, messageId, text) {
   const prevRelicProgress = (sd0.relic_progress && typeof sd0.relic_progress === 'object') ? sd0.relic_progress : {};
   const hasRelicWork = relicActs.length > 0 || Object.values(prevRelicProgress).some((rp) => (rp.history || []).some((h) => Number(h.floor) === Number(messageId)));
 
-  const hasReadyRelic = Object.values(prevRelicProgress).some(rp => rp && rp.ready === true);
-  const hasFloorAnchors = Boolean(sd0.锚点账本 && sd0.锚点账本[String(messageId)]);
-  if (!list && !bookIn.length && !nadeHas && !hasRelicWork && !hasReadyRelic && !hasFloorAnchors) return [];      // 四栏都没有且无名器回溯 ⇒ 什么都不做
+  if (!list && !bookIn.length && !nadeHas && !hasRelicWork) return [];      // 四栏都没有且无名器回溯 ⇒ 什么都不做
   const known = readKnown() || {};
   
   const proseForAnchor = stripStatusBlock(text);
@@ -399,12 +397,7 @@ async function applyMilestones(p, messageId, text) {
     const curP = allRelicProgress[pilotId];
     if (!cfg || !curP) continue;
     const s2Key = cfg.stage2Key;
-    const count = Number(curP.count), target = Number(curP.target);
-    const eligible = curP.ready === true && Number.isFinite(count) && Number.isInteger(count)
-      && count === cfg.target && target === cfg.target
-      && known[cfg.formKey] === true && known[cfg.stage1Key] === true
-      && correctionAllows(cfg.formKey) && correctionAllows(cfg.stage1Key);
-    if (eligible && known[s2Key] !== true && !news.includes(s2Key) && correctionAllows(s2Key)) {
+    if (curP.ready === true && known[s2Key] !== true && !news.includes(s2Key) && correctionAllows(s2Key)) {
       if (typeof hasRelicPhysiologicalResponse === 'function' && hasRelicPhysiologicalResponse(pilotId, proseOuter)) {
         news.push(s2Key);
         console.log(TAG, `↳ [名器质变] 「${cfg.names[0]}」浸润饱满(${curP.count}/${curP.target}) 且正文出现女方生理自发迎合实证 ⇒ 自动晋阶「${s2Key}」`);

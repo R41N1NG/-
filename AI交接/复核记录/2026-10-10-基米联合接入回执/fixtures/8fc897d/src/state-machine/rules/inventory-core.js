@@ -1,7 +1,7 @@
 /* XSD_INVENTORY_RULES_CORE_BEGIN */
 /** 机械迁移应用核：业务与宿主依赖由适配层显式提供。 */
 function createXsdInventoryRules(deps) {
-  const { readStatData, messageText, writeStat, console, TAG, hasRelicPhysiologicalResponse } = deps;
+  const { readStatData, messageText, writeStat, console, TAG } = deps;
 function normItemName(s) {
   let t = String(s ?? '').trim();
   if (!t) return '';
@@ -72,7 +72,6 @@ function negatedAround(text, re) {
 /** 本楼正文里有没有这个锚点的实证（不在表里的锚点一律放行）
  *  2026-10-08（gpt 04 号③）：空正文由「放行」改为 **fail-closed**（读不到正文就不予认定）。 */
 function anchorEvidenceIn(prose, field) {
-  if (field === '灼酒流炎穴二阶段') return { ok: typeof hasRelicPhysiologicalResponse === 'function' && hasRelicPhysiologicalResponse('zhuojiu', prose), why: '正文须有明确落在叶红缨上的已发生生理响应' };
   const re = ANCHOR_EVIDENCE[field];
   if (!re) return { ok: true, why: '（该锚点无实证要求）' };
   if (!prose) return { ok: false, why: '（本楼读不到正文 ⇒ 不予认定；确实发生了就发「/解锁 …」手工补）' };

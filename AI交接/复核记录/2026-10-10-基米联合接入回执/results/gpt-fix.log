@@ -1,0 +1,18 @@
+PASS 1 qualified actual response advances
+PASS 2 bystander name and other holder response rejected
+PASS 3 rumour response rejected
+PASS 4 planned response rejected
+PASS 5 stage label mention alone rejected
+PASS 6 forged ready with count below threshold rejected
+PASS 7 forged ready with mismatched target rejected
+PASS 8 missing form rejected
+PASS 9 missing first stage rejected
+PASS 10 manual false stage2 wins
+PASS 11 manual false form wins
+PASS 12 same floor withdraw response explicit empty milestones rolls back
+PASS 13 same floor missing milestone column still rolls back
+PASS 14 ready false never advances
+PASS 15 explicit stage2 declaration cannot borrow bystander response
+PASS 16 explicit planned stage2 declaration rejected
+PASS 17 full progress without response does not auto advance
+17/17 passed

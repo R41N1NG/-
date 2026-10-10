@@ -1,0 +1,9 @@
+✔ 真实 runtime 与完整脚本共同初始化，native 监听使用实际事件常量并可退出清理 (29.615375ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 118.308461

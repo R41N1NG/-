@@ -221,27 +221,16 @@ function calcRelicProgress(allProgress, validAction, floor, swipeId, textHash) {
   return next;
 }
 
-/** 身份：gpt。仅接受同一分句中落在持有者上的已发生生理响应。 */
+/** 核验女方生理自发迎合实证（用于已达成浸润阈值后的质变自动晋阶） */
 function hasRelicPhysiologicalResponse(relicId, prose) {
   const cfg = RELIC_PILOT_CONFIG[relicId];
-  if (!cfg) return false;
-  const nonFact = /据说|听说|传闻|谣传|计划|打算|准备|想要|希望|将要|即将|可能|或将|若是|假如|倘若|万一|是否|未|没有|没能|不曾|并不|不是|不会|不愿|讨论|提及|解释|说明/;
-  // 阶段名称、情动或一般抽搐本身不是名器自主响应。
-  const response = /自发迎合|生理自发|本能迎合|自发蠕动|紧紧缠裹|主动缠裹|(?:内壁|花房|媚肉|穴肉|甬道|名器|阴道|小穴).{0,12}(?:痉挛|蠕动|抽搐|吮吸|缠裹|吸附|收缩)|(?:本能|自主|自发|不由自主).{0,12}(?:迎合|蠕动|缠裹|吸附|收缩)/g;
-  const subjects = Object.keys(HOLDER_TO_RELIC).concat(IDENTITY_NAMES, cfg.ownerAliases);
-  for (const clause of String(prose || '').split(/[，。；！？\n]/)) {
-    if (nonFact.test(clause) || !/(名器|内壁|花房|媚肉|穴肉|甬道|阴道|小穴|蜜穴|玉穴|肉壁|肉穴|花穴|穴口|子宫)/.test(clause)) continue;
-    response.lastIndex = 0;
-    let match;
-    while ((match = response.exec(clause))) {
-      const before = clause.slice(0, match.index);
-      const mentions = subjects.flatMap(name => {
-        const at = before.lastIndexOf(name);
-        return at >= 0 ? [{ name, at, end: at + name.length }] : [];
-      }).sort((a, b) => a.at - b.at || b.name.length - a.name.length);
-      const last = mentions[mentions.length - 1];
-      if (last && cfg.ownerAliases.includes(last.name) && match.index - last.end <= 80) return true;
-    }
-  }
-  return false;
+  if (!cfg || !cfg.responseRegex) return false;
+  const pText = String(prose || '');
+  if (!pText) return false;
+  const ownerPresent = cfg.ownerAliases.some((alias) => pText.includes(alias));
+  if (!ownerPresent) return false;
+  if (!cfg.responseRegex.test(pText)) return false;
+  if (typeof negatedAround === 'function' && negatedAround(pText, cfg.responseRegex)) return false;
+  return true;
 }
+

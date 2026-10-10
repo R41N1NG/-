@@ -1,0 +1,43 @@
+{
+  "identity": "gpt 下级修补有限装配核对",
+  "source": "/tmp/xsd-gemini-8fc897d-fix",
+  "buildCheck": {
+    "exitCode": 0,
+    "modules": 47,
+    "bytes": 344798,
+    "sha256": "7d300f310b86c2b6b9cc66dfe6cca500c6e51256d66de2f60a0180ee9a229f5f"
+  },
+  "progressGate": {
+    "exitCode": 0,
+    "assertionsPassed": 29,
+    "assertionsFailed": 0,
+    "reportedGroupCount": 16,
+    "actualAssertCountNote": "日志29条，不以预期30条伪报"
+  },
+  "runtimeAndFullGeneratedVM": {
+    "exitCode": 0,
+    "testsPassed": 1,
+    "runtimeVersion": "1.2.0",
+    "productionWholeGen": true,
+    "nativeEventConstantAndDisposeVerified": true,
+    "initializationWrites": 0,
+    "loadedRegistry": "实际data/registry.js，HOLDER_TO_RELIC/IDENTITY_NAMES非手抄替代"
+  },
+  "notRun": [
+    "E2E假卡路径",
+    "缺master/latestCard门禁",
+    "原整套9例或旧全部测试"
+  ],
+  "sourceSHA256": {
+    "src/state-machine/rules/inventory-core.js": "d43ebaf67e2f0a892c5357a71edbb21d223f05851e68f625c78679beb20c9d23",
+    "src/state-machine/rules/inventory.js": "9bb5dbb73428fcda8e68e2e9a088534febce9b74491abfb86399bb514cdd22e2",
+    "src/state-machine/rules/milestones-core.js": "8daaed2e7fb51c17f3d5d56299d56b7eeffcef82a89c89fa835a96a063c5ee44",
+    "src/state-machine/rules/relic-progress.js": "e6b4c31f91c462b3c93a963c08afce59e31a5728d82e59be364759132634e02e",
+    "src/state-machine/rules/milestones.js": "89793c0dfc340d71831e068c32b4fe69767ffc4a0249f99ef0d689eff0e5439d",
+    "src/state-machine/data/registry.js": "45b14a6f4be2207553a2895ec9a026b94478135e085340d1b0afe5df33b46815",
+    "src/state-machine/build-state.json": "bd6e3cdc460dfe530a84d7ab11ec98dd52476f852e3e2f82ac734a002fa1cdcc",
+    "卡片脚本/状态机.js": "7d300f310b86c2b6b9cc66dfe6cca500c6e51256d66de2f60a0180ee9a229f5f",
+    "src/correction-runtime.js": "1d07f7aab5f5b90b3744adc9b5d4a84cbd2e6d8e4a58231cb1b0a471b525b245",
+    "tools/checks/_chk_relic_progress.mjs": "562167d9441c0a9ef2d3b39c5c0f6b45bc54992c7654e8b7b0abbbc170716b33"
+  }
+}

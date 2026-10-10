@@ -1,0 +1,172 @@
+{
+  "identity": "gpt 下级独立复核",
+  "source": "baseline-8fc897d",
+  "sourceSHA256": {
+    "data/registry.js": "45b14a6f4be2207553a2895ec9a026b94478135e085340d1b0afe5df33b46815",
+    "rules/plot-policy-core.js": "1e66a06c2d05b644c2f613acbd0d47105de12a8bb6b6a425f0c12a280626a268",
+    "rules/subject-evidence-core.js": "c5ecb32320b22c66e242d58dbe424b772c087d9d202a44ea61a6cac0c7c9c408",
+    "state/ledger-core.js": "c989f550f3016ab4e966361c3df91b6427a4ab0ea59dedce6448b87db2f421fa",
+    "rules/inventory-core.js": "665b26f147871f07059457ac0e8824f08ba3119bf15960b2305f564edcfb2e80",
+    "rules/anchor-validation-core.js": "2388e90b7183351cd892c816cf9f9eb0c232faa5a8bd5ccfc05df32ff61b6270",
+    "rules/milestones-core.js": "fb17ab7ffa92ad43b4df88815c1b0caf818794b117bf061f25d8d168b04b2afd",
+    "rules/relic.js": "62313adae7c375fabd30e7c2c69445e4b8860356c049d82a2d49c78fb995e8b9",
+    "rules/relic-progress.js": "57e0458b4bc574296fab44fa6854be6effdf611f246eaf25bbea7060c3dd07fa",
+    "src/correction-runtime.js": "1d07f7aab5f5b90b3744adc9b5d4a84cbd2e6d8e4a58231cb1b0a471b525b245"
+  },
+  "pass": 4,
+  "fail": 10,
+  "results": [
+    {
+      "id": 1,
+      "name": "qualified actual response advances",
+      "pass": true,
+      "evidence": {
+        "stage2": true,
+        "patches": [
+          {
+            "known": {
+              "灼酒流炎穴二阶段": true
+            },
+            "锚点账本": {
+              "20": {
+                "指纹": "{\"anchors\":[],\"prose\":\"19f8qqt_22\",\"swipe\":0}",
+                "新置真": [
+                  "灼酒流炎穴二阶段"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "bystander name and other holder response rejected",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "actual": true,
+      "expected": false
+    },
+    {
+      "id": 3,
+      "name": "rumour response rejected",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "actual": true,
+      "expected": false
+    },
+    {
+      "id": 4,
+      "name": "planned response rejected",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "actual": true,
+      "expected": false
+    },
+    {
+      "id": 5,
+      "name": "stage label mention alone rejected",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "actual": true,
+      "expected": false
+    },
+    {
+      "id": 6,
+      "name": "forged ready with count below threshold rejected",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "actual": true,
+      "expected": false
+    },
+    {
+      "id": 7,
+      "name": "forged ready with mismatched target rejected",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "actual": true,
+      "expected": false
+    },
+    {
+      "id": 8,
+      "name": "missing form rejected",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "actual": true,
+      "expected": false
+    },
+    {
+      "id": 9,
+      "name": "missing first stage rejected",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "actual": true,
+      "expected": false
+    },
+    {
+      "id": 10,
+      "name": "manual false stage2 wins",
+      "pass": true,
+      "evidence": {
+        "stage2": false,
+        "patches": []
+      }
+    },
+    {
+      "id": 11,
+      "name": "manual false form wins",
+      "pass": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n",
+      "actual": true,
+      "expected": false
+    },
+    {
+      "id": 12,
+      "name": "same floor withdraw response explicit empty milestones rolls back",
+      "pass": true,
+      "evidence": {
+        "stage2": false,
+        "patches": [
+          {
+            "known": {
+              "灼酒流炎穴二阶段": true
+            },
+            "锚点账本": {
+              "20": {
+                "指纹": "{\"anchors\":[],\"prose\":\"19f8qqt_22\",\"swipe\":0}",
+                "新置真": [
+                  "灼酒流炎穴二阶段"
+                ]
+              }
+            }
+          },
+          {
+            "known": {
+              "灼酒流炎穴二阶段": false
+            },
+            "锚点账本": {
+              "20": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "name": "same floor missing milestone column still rolls back",
+      "pass": false,
+      "error": "Expected \"actual\" to be strictly unequal to: true",
+      "actual": true,
+      "expected": true
+    },
+    {
+      "id": 14,
+      "name": "ready false never advances",
+      "pass": true,
+      "evidence": {
+        "stage2": null,
+        "patches": []
+      }
+    }
+  ]
+}
