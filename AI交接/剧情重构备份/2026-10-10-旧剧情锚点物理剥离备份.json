@@ -1,0 +1,18 @@
+{
+  "backup_time": "2026-10-10T21:36:00+08:00",
+  "reason": "严格恪守主人指令：除了中立大势剧情，其余非中立、绑定特定角色的旧主线剧情锚点全部备份并从活动代码中物理剥离",
+  "stripped_anchors": [
+    {
+      "name": "残阳老怪洞府调教叶红缨",
+      "origin": "FIELD_TABLE / STAGE_FAST_FORWARD / ANCHOR_EVIDENCE",
+      "desc": "第十五章 · 残阳老怪深山密窟调教那一场演完（旧段 14 跳段用）",
+      "regex": "/(调教|洞府|囚|犬|锁链)/"
+    },
+    {
+      "name": "叶红缨认残阳老怪为主",
+      "origin": "FIELD_TABLE / STAGE_FAST_FORWARD / ANCHOR_EVIDENCE",
+      "desc": "第十六章 · 叶红缨认残阳老怪为主（旧段 15 跳段用）",
+      "regex": "/(认主|为主|臣服|跪|主人)/"
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+﻿diff --git a/_build_card.js.bak-before-gpt17 b/_build_card.js
+index 2442c76..0ab6bff 100644
+--- a/_build_card.js.bak-before-gpt17
++++ b/_build_card.js
+@@ -3,6 +3,20 @@ const fs = require('fs');
+ const path = require('path');
+ 
+ const DIR = __dirname;
++
++/* 2026-10-08（gpt 17 号 §5-3「只读检查、候选构建、载荷验证、发布各自独立」）：
++ *   `node _build_card.js --stage <目录>` ⇒ **候选构建**：全部产物只写进该隔离目录，
++ *   不碰 `最新角色卡/`、`dist/` 与根目录成品；不带 `--stage` 时行为与从前一致（发布路径）。
++ *   ⇒ 这样「跑门禁/跑构建」不再顺手重写交付物。 */
++const STAGE = (() => {
++  const i = process.argv.indexOf('--stage');
++  if (i >= 0 && process.argv[i + 1]) {
++    const p = path.resolve(process.argv[i + 1]);
++    try { fs.mkdirSync(p, { recursive: true }); } catch (e) { /* 忽略 */ }
++    return p;
++  }
++  return null;
++})();
+ function resolveFile(name) {
+   if (path.isAbsolute(name) && fs.existsSync(name)) return name;
+   const candidates = [
+@@ -405,7 +419,7 @@ const RULES = [
+       '',
+       '## 示例',
+       '<Status_block>',
+-      '<时间>夜·南域大劫之夜</时间>',
++      '<时间>（照抄【阶段驱动】「后台当前时点」那一行的仙盟历年月日，可再加昼夜）</时间>',
+       '<历时>距启程天溪 7 日</历时>',
+       '<地点>墨山道·赤焰居内室</地点>',
+       '<天气>秋雨初歇，檐水未停</天气>',
+@@ -416,11 +430,11 @@ const RULES = [
+       '<修为>金丹中期</修为>',
+       '<状态>灵力七成｜左肩被业火烫出的新伤｜心境：又惊又愧</状态>',
+       '<目标>护住红缨师姐，探清那对环的来历</目标>',
+-      '<局势>天溪城兽潮已破两处防区，援军未至</局势>',
++      '<局势>（按当前已验证世界状态填写：写此刻真在逼近的压力；没有世界事件就写当下的具体处境，不得预告未到的事件）</局势>',
+       '<线索>断旗杆上深钉铜钱大的黑铁蜂形暗记</线索>',
+-      '<近闻>客栈早早落锁，茶客议论北面商道封禁</近闻>',
+-      '<远闻>邻县驿馆进驻大批披甲</远闻>',
+-      '<危机>兽潮三日内必至，宗门无援</危机>',
++      '<近闻>（近处听得到的风声，填当下真能接触到的；没有写「—」）</近闻>',
++      '<远闻>（远处传来的消息，同上；没有写「—」）</远闻>',
++      '<危机>（写当下最紧迫的一桩，与【阶段驱动】世界轴那一步相符；世界事件没走到就不得提前公告）</危机>',
+       '<关系刻度>叶红缨、依赖挂怀｜孤月、清冷相敬</关系刻度>',
+       '<进度>无</进度>',
+       '<角色1><名>叶红缨</名><关系>依赖挂怀</关系><情况>疲惫隐忍</情况><心境>怕被看穿那对环</心境><神态>指尖扣着袖口，目光躲开半寸</神态></角色1>',
+@@ -1002,8 +1016,15 @@ if (fs.existsSync(SCRIPT_DIR)) {
+     try {
+       execFileSync(process.execPath, ['-c', scriptPath], { stdio: 'pipe' });
+     } catch (e) {
+-      console.error(`\n❌ [致命错误] 卡内脚本 ${fn} 存在语法错误 (SyntaxError)，构建已终止！`);
+-      if (e.stderr) console.error(e.stderr.toString());
++      /* 2026-10-08（gpt 17 号 §4 点名）：这条门禁原先只报「语法错误」、不打印底层错误 —— 一旦
++       * 执行环境本身拦下子进程（例如受限沙箱禁止管道 stdio ⇒ EPERM），就会被误读成"脚本有语法错"。
++       * 现在把 status／signal／error.code／stderr 全部打出来，并把两种情形分开写。 */
++      const 执行失败 = !!(e && (e.code || e.signal || e.status === null || e.status === undefined));
++      console.error(`\n❌ [致命错误] 卡内脚本 ${fn} 的语法检查未通过 —— ` + (执行失败 ? '**检查执行失败（原因待定位）**' : '**确为语法错误**'));
++      console.error('   status=' + String(e && e.status) + ' ｜ signal=' + String(e && e.signal) + ' ｜ error.code=' + String(e && e.code) + ' ｜ message=' + String(e && e.message));
++      if (e && e.stderr && String(e.stderr).trim()) console.error('   stderr:\n' + String(e.stderr).trim());
++      if (e && e.stdout && String(e.stdout).trim()) console.error('   stdout:\n' + String(e.stdout).trim());
++      console.error('   直连复验（同版本同文件）：node --check "' + scriptPath + '"');
+       process.exit(1);
+     }
+     let content = fs.readFileSync(scriptPath, 'utf8');
+@@ -2006,7 +2027,9 @@ const card = {
+   create_date: '2026-9-22 @01h 30m 00s 000ms'
+ };
+ 
+-const outJson = path.join(DIR, '仙姝墮-角色卡（全书群像）.json');
++const outJson = STAGE
++  ? path.join(STAGE, '仙姝墮-角色卡（全书群像）.json')
++  : path.join(DIR, '仙姝墮-角色卡（全书群像）.json');
+ 
+ /* ══════════════════════════════════════════════════════════════════════
+  * ★★ 文风硬关卡（2026-09-28 第四十七轮，"卡片质检规范"的第一道关）
+@@ -2031,6 +2054,11 @@ const outJson = path.join(DIR, '仙姝墮-角色卡（全书群像）.json');
+ }
+ 
+ fs.writeFileSync(outJson, JSON.stringify(card, null, 2), 'utf8');
++if (STAGE) {
++  try { fs.writeFileSync(path.join(STAGE, '仙姝堕.json'), JSON.stringify(card, null, 2), 'utf8'); } catch (e) { /* 忽略 */ }
++  console.log('[候选构建] 隔离暂存：' + STAGE);
++  console.log('  （未触碰 最新角色卡/ 、dist/ 与根目录成品 —— 发布需显式运行 build.js / deploy_to_tavern.cjs）');
++} else {
+ const distJson = path.join(DIR, 'dist', '仙姝墮-角色卡（全书群像）.json');
+ try { fs.writeFileSync(distJson, JSON.stringify(card, null, 2), 'utf8'); } catch (e) {}
+ try { fs.writeFileSync(path.join(DIR, '仙姝堕.json'), JSON.stringify(card, null, 2), 'utf8'); } catch (e) {}
+@@ -2040,6 +2068,7 @@ try {
+   if (!fs.existsSync(latestCardDir)) fs.mkdirSync(latestCardDir, { recursive: true });
+   fs.writeFileSync(path.join(latestCardDir, '仙姝堕.json'), JSON.stringify(card, null, 2), 'utf8');
+ } catch (e) {}
++}
+ 
+ // ---- 报告 ----
+ const enabledCount = bookEntries.filter(e => e.enabled).length;

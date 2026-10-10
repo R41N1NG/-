@@ -128,10 +128,10 @@ console.log('========================================================\n');
 // 4. 人工覆盖与防自动越权改写 known
 {
   let prog = {};
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 3; i++) {
     prog = calcRelicProgress(prog, { relicId: 'zhuojiu', ok: true, delta: 1 }, i, 0, 'h' + i);
   }
-  ck(prog.zhuojiu.count === 5 && prog.zhuojiu.ready === true, '反例 4a：达到目标 5 次时置 ready = true');
+  ck(prog.zhuojiu.count === 3 && prog.zhuojiu.ready === true, '反例 4a：达到目标 3 次时置 ready = true');
   ck(sandbox.known === undefined || !sandbox.known['灼酒流炎穴二阶段'], '反例 4b：严禁自动改写 known 二阶段，必须由剧情生理迎合或 GM 触发');
 }
 
@@ -143,14 +143,14 @@ console.log('========================================================\n');
 
 // 6. 类型安全：字符串与非法输入
 {
-  const badProg = { zhuojiu: { count: '1', target: 5, ready: false, history: [] } };
+  const badProg = { zhuojiu: { count: '1', target: 3, ready: false, history: [] } };
   const fixed = calcRelicProgress(badProg, { relicId: 'zhuojiu', ok: true, delta: 1 }, 2, 0, 'h2');
   ck(fixed.zhuojiu.count === 2 && typeof fixed.zhuojiu.count === 'number', '反例 6：字符串 1 + 1 正确算为数字 2 而非 11');
 }
 
 // 7. Clamp 在 [0, target]
 {
-  const negProg = { zhuojiu: { count: -9, target: 5, ready: false, history: [] } };
+  const negProg = { zhuojiu: { count: -9, target: 3, ready: false, history: [] } };
   const fixed = calcRelicProgress(negProg, { relicId: 'zhuojiu', ok: true, delta: 1 }, 2, 0, 'h2');
   ck(fixed.zhuojiu.count === 1, '反例 7：负数被严格 Clamp 归零后再计算');
 }
@@ -159,7 +159,7 @@ console.log('========================================================\n');
 {
   const zeroTarget = { zhuojiu: { count: 0, target: 0, ready: false, history: [] } };
   const fixed = calcRelicProgress(zeroTarget, { relicId: 'zhuojiu', ok: true, delta: 1 }, 1, 0, 'h1');
-  ck(fixed.zhuojiu.target === 5, '反例 8：外部 target: 0 被强制修正为策略目标 5');
+  ck(fixed.zhuojiu.target === 3, '反例 8：外部 target: 0 被强制修正为策略目标 3');
 }
 
 // 9. GM 联动：已达第二境拒计新点数

@@ -1,0 +1,8 @@
+﻿diff --git "a/tools\\_inject_relic_annotations.js.bak-before-nodragon" "b/tools\\_inject_relic_annotations.js"
+index 73307ab..ae3263d 100644
+--- "a/tools\\_inject_relic_annotations.js.bak-before-nodragon"
++++ "b/tools\\_inject_relic_annotations.js"
+@@ -7,3 +7,2 @@ const annotations = {
+   jiuyouxuanyinxue: {
+-    1: '「极乐引·玄阴篇」朱批：万载玄冰封其户，非至阳真龙之息贯顶，不能破其极寒。',
+     2: '「极乐引·玄阴篇」朱批：冰棱回旋生暗金，阴阳交泰极处，龙纹自显于背。',

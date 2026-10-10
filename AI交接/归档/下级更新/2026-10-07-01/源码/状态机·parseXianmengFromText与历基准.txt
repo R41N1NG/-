@@ -1,0 +1,114 @@
+# P0 源码导出 · 状态机（卡片脚本/状态机.js）
+
+> 源文件共 4316 行。以下均**带原行号**导出（不截首尾、不缩水）。
+
+## 1) parseXianmengFromText 完整定义（第 463–479 行）
+
+```javascript
+function parseXianmengFromText(t) {
+  const CNM = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10, 十一: 11, 十二: 12 };
+  /* ⚠️ 「日」必须**可省**：玩家写「六月初七」「6月7日」都不该丢日子（首版要求带「日」字 ⇒ 初七被吃掉） */
+  const m = /仙盟历\s*(\d{3,4})\s*年\s*[·\.、]?\s*([一二三四五六七八九十]{1,3}|\d{1,2})\s*月\s*(?:[·\.、]?\s*(初[一二三四五六七八九十]|[一二三四五六七八九十]{1,3}|\d{1,2})\s*日?)?/.exec(String(t || ''));
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = /^\d+$/.test(m[2]) ? Number(m[2]) : (CNM[m[2]] || 0);
+  if (!y || mo < 1 || mo > 12) return null;
+  let d = 1;
+  const ds = m[3] || '';
+  if (ds) {
+    if (ds.startsWith('初')) d = CNM[ds.slice(1)] || 1;
+    else if (/^\d+$/.test(ds)) d = Number(ds);
+    else d = CNM[ds] || 1;
+  }
+  return { ym: y + mo / 100, day: Math.max(1, Math.min(30, d)) };
+}
+```
+
+## 2) parseXianmengFromText 全部出现行号（含调用点）
+
+463、2247
+
+```javascript
+  '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+
+/** ★ 2026-10-07（主人令）：从文本里解析「仙盟历 XXXX 年 · X月初X」——自设线玩家自选起点靠它锚定 */
+function parseXianmengFromText(t) {
+  const CNM = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10, 十一: 11, 十二: 12 };
+  /* ⚠️ 「日」必须**可省**：玩家写「六月初七」「6月7日」都不该丢日子（首版要求带「日」字 ⇒ 初七被吃掉） */
+  const m = /仙盟历\s*(\d{3,4})\s*年\s*[·\.、]?\s*([一二三四五六七八九十]{1,3}|\d{1,2})\s*月\s*(?:[·\.、]?\s*(初[一二三四五六七八九十]|[一二三四五六七八九十]{1,3}|\d{1,2})\s*日?)?/.exec(String(t || ''));
+        if (fixed) {
+          basis = ymToMonths(fixed.ym) + (fixed.day - 1) / 30;
+        } else {
+          const pick = parseXianmengFromText(String(text || '')) || parseXianmengFromText(String(messageText(1) || ''));
+          basis = pick ? (ymToMonths(pick.ym) + (pick.day - 1) / 30) : ymToMonths(1578.03);
+          console.log(TAG, `[时间基准] 第 ${messageId} 楼：${idNow || '（未登记身份）'} ⇒ 基准 ${pick ? fmtXianmeng(pick.ym) + CN_DAY[pick.day] : '1578 年 · 三月初一（兜底）'}`);
+        }
+```
+
+## 3) 历基准／仙盟历 写入相关行号（自设开局分支在此）
+
+2235、2241、2243、2251、2253、2254、2255、2281、2283、2284
+
+```javascript
+       *   不再取 `SEG_TIME[段位]`，所以段位跳段/追赶时日历不会再跟着跳月。 */
+      /* ★★ 2026-10-07（主人令「四点一起改」）：时钟基准**按身份**，自设线由玩家自选。
+       *   赵无忧＝1578 年三月初三（《设定》正篇起点，日取主人给的开局日期）；
+       *   四殿主＝1578 年八月初一（大劫降临，殿主线固定，主人确认没问题）；
+       *   自设／未登记身份＝**读玩家填的日期**（开场白「当前时点」那一栏／首楼 <时间>），解析不到才兜底 1578 年三月初一。 */
+      const CAL_START_BY_ID = {
+        赵无忧: { ym: 1578.03, day: 3 },
+        焚欲殿主: { ym: 1578.08, day: 1 }, 浊龙殿主: { ym: 1578.08, day: 1 },
+        欢喜殿主: { ym: 1578.08, day: 1 }, 魂欢殿主: { ym: 1578.08, day: 1 },
+      };
+      const idNow = String(sdNow.身份 || '');
+      let basis = Number(sdNow.历基准) || 0;      // 存「年.月」＋日的合成月数
+      if (!basis) {
+        const fixed = CAL_START_BY_ID[idNow];
+        if (fixed) {
+          basis = ymToMonths(fixed.ym) + (fixed.day - 1) / 30;
+        } else {
+          const pick = parseXianmengFromText(String(text || '')) || parseXianmengFromText(String(messageText(1) || ''));
+          basis = pick ? (ymToMonths(pick.ym) + (pick.day - 1) / 30) : ymToMonths(1578.03);
+          console.log(TAG, `[时间基准] 第 ${messageId} 楼：${idNow || '（未登记身份）'} ⇒ 基准 ${pick ? fmtXianmeng(pick.ym) + CN_DAY[pick.day] : '1578 年 · 三月初一（兜底）'}`);
+        }
+        patch.历基准 = basis;
+      }
+      const curBaseM = basis;
+      const nextBaseM = (segIdx + 1 < SEG_TIME.length) ? ymToMonths(SEG_TIME[segIdx + 1]) : curBaseM + 1;
+      let monthSpan = nextBaseM - curBaseM;
+      if (monthSpan <= 0) monthSpan = 0.5; // 同月相邻段预留半月加速空间
+
+      // 若同楼发生重绘/修改，基于本楼原始基准重新累计，防止重复叠加
+      let acc = (Number(sdNow.时点加速) || 0);
+      if (Number(sdNow.最后处理楼号) === Number(messageId)) {
+        acc = Math.max(0, acc - (Number(sdNow.本楼历时加速) || 0));
+      }
+      if (isStageChanged || !isFinite(acc) || acc < 0) acc = 0;
+      if (isStageChanged) patch.时点加速 = 0;
+
+      const stepM = parseLishi(patch.历时);
+      /* ★ 4a：小步（一段路／一场谈话）最多 ≈14 小时；出现明确过渡词才允许多日/多月。 */
+      const hasTransit = LISHI_TRANSIT_RE.test(String(patch.历时 || '') + ' ' + String(rawText || '').slice(0, 400));
+      const capM = hasTransit ? LISHI_CAP_TRANSIT : LISHI_CAP;
+      let adv = 0;
+      if (stepM > 0) {
+        adv = Math.min(stepM, capM);
+        acc = Math.round((acc + adv) * 10000) / 10000;
+        patch.时点加速 = acc;
+        patch.最后处理楼号 = Number(messageId);
+        patch.本楼历时加速 = adv;
+      } else {
+        patch.最后处理楼号 = Number(messageId);
+        patch.本楼历时加速 = 0;
+      }
+      patch.仙盟历 = monthsToYm(curBaseM + acc);
+      /* ★ 4a ＋ 主人令：把「日」算出来一起写进 `仙盟历文`（状态栏《时间》一栏照抄它，含年月日）。 */
+      const dayOfMonth = 1 + Math.floor((((curBaseM + acc) % 1) + 1) % 1 * 30 + 1e-9);
+      patch.仙盟历文 = fmtXianmengDay(patch.仙盟历, dayOfMonth);
+      console.log(TAG, `[段位] 第 ${messageId} 楼 ⇒ 第 ${patch.段位 || stg} 段（楼下限 ${stg}）${pin ? `（时间轴已平移 ${pin.shift} 楼）` : ''}｜历时「${patch.历时 || '—'}」⇒ +${adv}月（累计 ${acc}月／本段跨度 ${monthSpan}月）｜仙盟历 ${patch.仙盟历文}（${patch.仙盟历}）`);
+    } else {
+      console.warn(TAG, `[段位] 第 ${messageId} 楼算不出段位（楼层号异常），本轮不写 —— 渲染侧会按第 1 段兜底`);
+    }
+  }
+  // ①b 在场角色：子块聚合成的**数组**，整组覆盖写。
+```

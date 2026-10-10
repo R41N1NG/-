@@ -1,0 +1,55 @@
+﻿diff --git a/build.js b/build.js
+index f99249d..233af19 100644
+--- a/build.js
++++ b/build.js
+@@ -60,15 +60,32 @@ try {
+   if (fs.existsSync(cardPngOld)) fs.copyFileSync(cardPngOld, path.join(distDir, '仙姝墮-角色卡（全书群像）.png'));
+   if (fs.existsSync(cardJson)) fs.copyFileSync(cardJson, path.join(distDir, '仙姝堕.json'));
+   if (fs.existsSync(cardJsonOld)) fs.copyFileSync(cardJsonOld, path.join(distDir, '仙姝墮-角色卡（全书群像）.json'));
+-  if (fs.existsSync(wbTavern)) {
+-    fs.copyFileSync(wbTavern, path.join(distDir, '仙姝堕（全量世界书232条）.json'));
+-    fs.copyFileSync(wbTavern, path.join(distDir, '仙姝堕（全量世界书231条）.json'));
+-    fs.copyFileSync(wbTavern, path.join(distDir, '仙姝堕（全量世界书230条）.json'));
+-  }
+-  if (fs.existsSync(wbTavernOld)) {
+-    fs.copyFileSync(wbTavernOld, path.join(distDir, '仙姝墮 · 一张跑全书（全量世界书232条）.json'));
+-    fs.copyFileSync(wbTavernOld, path.join(distDir, '仙姝墮 · 一张跑全书（全量世界书231条）.json'));
+-    fs.copyFileSync(wbTavernOld, path.join(distDir, '仙姝墮 · 一张跑全书（全量世界书230条）.json'));
++  /* 2026-10-08（gpt 22 批裁定）：清旧档**不能先删再构建** —— 万一新件生成失败，上一份有效产物就没了。
++     顺序改为：**生成新件 → 校验成功 → 清理确属生成器管理的旧命名**；校验不过 ⇒ 一个旧档都不动。 */
++  const 数条数 = (p) => {
++    try {
++      const j = JSON.parse(fs.readFileSync(p, 'utf8'));
++      const e = j.entries;
++      return Array.isArray(e) ? e.length : (e && typeof e === 'object' ? Object.keys(e).length : null);
++    } catch (err) { return null; }
++  };
++  const wbN = fs.existsSync(wbTavern) ? 数条数(wbTavern) : (fs.existsSync(wbTavernOld) ? 数条数(wbTavernOld) : null);
++  const 后缀 = wbN ? `（全量世界书${wbN}条）` : '';
++  const 本次新件 = [];
++  if (fs.existsSync(wbTavern) && wbN) { const p = path.join(distDir, `仙姝堕${后缀}.json`); fs.copyFileSync(wbTavern, p); 本次新件.push(path.basename(p)); }
++  if (fs.existsSync(wbTavernOld) && wbN) { const p = path.join(distDir, `仙姝墮 · 一张跑全书${后缀}.json`); fs.copyFileSync(wbTavernOld, p); 本次新件.push(path.basename(p)); }
++  const 校验通过 = 本次新件.length > 0 && 本次新件.every((f) => {
++    const p = path.join(distDir, f);
++    return fs.existsSync(p) && 数条数(p) === wbN;
++  });
++  if (校验通过) {
++    let 清 = 0;
++    for (const f of fs.readdirSync(distDir)) {
++      if (/全量世界书\d+条/.test(f) && !本次新件.includes(f)) { fs.unlinkSync(path.join(distDir, f)); 清++; }
++    }
++    if (清) console.log(`🧹 新件校验通过（${wbN} 条）⇒ 清理 dist/ 旧命名世界书 ${清} 个`);
++  } else {
++    console.warn('⚠️ 本次世界书新件未通过校验（缺失或条目数不符）⇒ **保留全部旧档不清理**，请先查构建。');
+   }
+ 
+   console.log('\n========================================================');
+@@ -77,7 +94,7 @@ try {
+   const reportJson = fs.existsSync(cardJson) ? cardJson : cardJsonOld;
+   console.log('   - dist/仙姝堕.png (' + (fs.statSync(reportPng).size / 1024 / 1024).toFixed(2) + ' MB)');
+   console.log('   - dist/仙姝堕.json (' + (fs.statSync(reportJson).size / 1024 / 1024).toFixed(2) + ' MB)');
+-  if (fs.existsSync(wbTavern)) console.log('   - dist/仙姝堕（全量世界书231条）.json (' + (fs.statSync(wbTavern).size / 1024 / 1024).toFixed(2) + ' MB)');
++  if (wbN) console.log('   - dist/仙姝堕' + 后缀 + '.json (' + ((fs.existsSync(wbTavern) ? fs.statSync(wbTavern) : fs.statSync(wbTavernOld)).size / 1024 / 1024).toFixed(2) + ' MB)');
+   console.log('========================================================\n');
+ } catch (e) {
+   console.error('\n❌ 构建失败中断:', e.message);

@@ -1,0 +1,2387 @@
+{
+  "卡": {
+    "路径": "E:/角色卡制作/仙姝堕/最新角色卡/仙姝堕.json",
+    "字节": 6782431,
+    "sha256": "3b5bcef43948bf0967292d7030d26c8ec8ebb55842af70af667e140221dc07cd",
+    "顶层键": [
+      "name",
+      "description",
+      "personality",
+      "scenario",
+      "first_mes",
+      "mes_example",
+      "creatorcomment",
+      "avatar",
+      "talkativeness",
+      "fav",
+      "tags",
+      "spec",
+      "spec_version",
+      "data",
+      "create_date"
+    ],
+    "data键": [
+      "name",
+      "description",
+      "personality",
+      "scenario",
+      "first_mes",
+      "mes_example",
+      "creator_notes",
+      "system_prompt",
+      "post_history_instructions",
+      "tags",
+      "creator",
+      "character_version",
+      "alternate_greetings",
+      "extensions",
+      "group_only_greetings",
+      "character_book"
+    ],
+    "条目数": 241
+  },
+  "条目字段样本": [
+    "id",
+    "keys",
+    "secondary_keys",
+    "comment",
+    "content",
+    "constant",
+    "selective",
+    "insertion_order",
+    "enabled",
+    "position",
+    "use_regex",
+    "prevent_recursion",
+    "exclude_recursion",
+    "extensions"
+  ],
+  "extensions键": [
+    "world",
+    "xsd_assets",
+    "fav",
+    "depth_prompt",
+    "regex_scripts",
+    "tavern_helper"
+  ],
+  "条目": {
+    "id7": {
+      "id": 7,
+      "comment": "【阶段驱动】当前阶段压力与调度",
+      "keys": [],
+      "secondary_keys": [],
+      "constant": true,
+      "enabled": true,
+      "position": "at_depth",
+      "insertion_order": 8,
+      "extensions": {
+        "position": 4,
+        "exclude_recursion": false,
+        "display_index": 7,
+        "probability": 100,
+        "useProbability": true,
+        "depth": 0,
+        "selectiveLogic": 0,
+        "group": "",
+        "group_override": false,
+        "group_weight": 100,
+        "prevent_recursion": true,
+        "delay_until_recursion": false,
+        "scan_depth": null,
+        "match_whole_words": null,
+        "use_group_scoring": false,
+        "case_sensitive": null,
+        "automation_id": "",
+        "role": 0,
+        "vectorized": false,
+        "sticky": 0,
+        "cooldown": 0,
+        "delay": 0,
+        "match_persona_description": false,
+        "match_character_description": false,
+        "match_character_personality": false,
+        "match_character_depth_prompt": false,
+        "match_scenario": false,
+        "match_creator_notes": false,
+        "triggers": []
+      },
+      "content长度": 6625,
+      "contentSha256": "88caa54054895d251dea68c446804010fa4e59a690aa66fed28fb73f81b462d6",
+      "content头400": "<stage_drive>\n# 阶段驱动 · 当前阶段压力与调度\n## 总纲\n  判据来源: 本卡自有变量两样 —— `stat_data.段位`（**由卡内脚本按楼层算出来的**，不是模型填的）＋ `stat_data.身份`（开场白/命令选的）。\n  读法: 按时间轴分四段 —— 一 启程前·墨山道／二 南域大劫与天溪战事／三 离山之后·中洲线／四 暗流与天姝会线。**没渲染出来的三段你一个字都看不到，也一律不得凭设定层知识反推。**\n时点: 每次渲染出来的**第一行**给出「后台当前时点」—— 仙盟历与段位，那个值由卡内脚本按楼层算出。状态栏 `<时间>` 一栏**照抄那一行的仙盟历（含年月日）**，**严禁自行推算年月日**；后台与你上一条写的不一样，也照抄它。\n  两段并存时（本段与下一段同时在上下文里）: **以本段收尾为优先**；下一段的内容**只许作为背景与剧情方向的提醒*"
+    },
+    "id56": {
+      "id": 56,
+      "comment": "【剧情】五 · 孤剑崖送别 · 孤月赠冰心泪",
+      "keys": [
+        "孤剑崖",
+        "冰心泪",
+        "送别",
+        "定情",
+        "驰援",
+        "准备出发",
+        "南下",
+        "动身",
+        "行装"
+      ],
+      "secondary_keys": [],
+      "constant": false,
+      "enabled": true,
+      "position": "before_char",
+      "insertion_order": 1505,
+      "extensions": {
+        "position": 0,
+        "exclude_recursion": false,
+        "display_index": 56,
+        "probability": 100,
+        "useProbability": true,
+        "depth": 4,
+        "selectiveLogic": 0,
+        "group": "",
+        "group_override": false,
+        "group_weight": 100,
+        "prevent_recursion": true,
+        "delay_until_recursion": false,
+        "scan_depth": 6,
+        "match_whole_words": null,
+        "use_group_scoring": false,
+        "case_sensitive": null,
+        "automation_id": "",
+        "role": 0,
+        "vectorized": false,
+        "sticky": 0,
+        "cooldown": 0,
+        "delay": 0,
+        "match_persona_description": false,
+        "match_character_description": false,
+        "match_character_personality": false,
+        "match_character_depth_prompt": false,
+        "match_scenario": false,
+        "match_creator_notes": false,
+        "triggers": []
+      },
+      "content长度": 2917,
+      "contentSha256": "819e38520dca434c60f872304ffef76f348320a07cb8b43194a2f86437ce4b1e",
+      "content头400": "@@if (function(){try{return ((variables.stat_data?.身份 === '赵无忧' && ((variables.stat_data?.known?.['南域大劫'] === true || Number(variables.stat_data?.段位 ?? 1) >= 5) && !(variables.stat_data?.known?.['赠送冰心泪'] === true || variables.stat_data?.known?.['孤月定情'] === true))))}catch(e){return false}})()\n<plot>\n<!-- 〔质检豁免〕 原文照录 -->\n# 孤剑崖送别 · 孤月赠冰心泪（温存定情与启程南下）\n## 时点\n- 时点：第九章。出发天溪之前的墨山道孤剑崖洞府（启程前夜至清晨）。｜仙盟历时点：1578"
+    },
+    "id123": {
+      "id": 123,
+      "comment": "【人物】残阳老怪",
+      "keys": [
+        "残阳老怪",
+        "老怪残阳",
+        "焚欲殿殿主",
+        "主人"
+      ],
+      "secondary_keys": [],
+      "constant": false,
+      "enabled": true,
+      "position": "at_depth",
+      "insertion_order": 2330,
+      "extensions": {
+        "position": 4,
+        "exclude_recursion": false,
+        "display_index": 123,
+        "probability": 100,
+        "useProbability": true,
+        "depth": 3,
+        "selectiveLogic": 0,
+        "group": "",
+        "group_override": false,
+        "group_weight": 100,
+        "prevent_recursion": true,
+        "delay_until_recursion": false,
+        "scan_depth": null,
+        "match_whole_words": null,
+        "use_group_scoring": false,
+        "case_sensitive": null,
+        "automation_id": "",
+        "role": 0,
+        "vectorized": false,
+        "sticky": 0,
+        "cooldown": 0,
+        "delay": 0,
+        "match_persona_description": false,
+        "match_character_description": false,
+        "match_character_personality": false,
+        "match_character_depth_prompt": false,
+        "match_scenario": false,
+        "match_creator_notes": false,
+        "triggers": []
+      },
+      "content长度": 499,
+      "contentSha256": "b3632f0c43b1a62cc39fd2d7f1136949797efafe98f7861a0696246b1585eae6",
+      "content头400": "<npc>\n# 残阳老怪\n## 基本信息\n- 残阳老怪（老怪残阳）, 男, 元婴中期, 天姝会焚欲殿殿主\n\n残阳老怪（亦称「老怪残阳」），天姝会焚欲殿殿主，南域邪修，是令人既鄙夷又忌惮的存在。出身：千年前极乐楼里一名颇具潜力的练气期天骄种子，极乐楼覆灭后沦为失去根基的散修，一路修至元婴中期，得《燎原蛊火诀》后修为曾暂时跌落至金丹中期。外貌：身形佝偻、面容丑陋到近乎狰狞、皮肤呈不祥的灰败之色、五官歪斜挤凑，一双细小的眼闪烁淫邪贪婪的浑浊光芒，浑身散发阴寒污秽的气息，声音沙哑如夜枭啼叫。性格：心性坚韧狠戾、阴鸷贪婪残忍挑剔；对名器女修的执念极深，善用慢慢温养之法，让猎物自己走进来。经历：趁兽潮围困天溪城之机四处猎取名器女修。\n## 认知边界\n- 世人知晓: 元婴中期的南域老牌邪修，令人既鄙夷又忌惮。\n- 秘密所在: 其《燎原蛊火诀》的蛊火路数、他对名器女修那份执念；修为曾一度跌落之秘。\n- 自"
+    }
+  },
+  "id全表": [
+    {
+      "id": 0,
+      "comment": "━━━━━━━━━━ 【卡·运行规则】共 8 条 ━━━━━━━━━━",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 6
+    },
+    {
+      "id": 1,
+      "comment": "卡、运行规则",
+      "constant": true,
+      "enabled": true,
+      "keys数": 0,
+      "有闸门首行": false,
+      "content长度": 2628
+    },
+    {
+      "id": 2,
+      "comment": "状态栏模板",
+      "constant": true,
+      "enabled": true,
+      "keys数": 0,
+      "有闸门首行": false,
+      "content长度": 4705
+    },
+    {
+      "id": 3,
+      "comment": "状态字段表（脚本读取）",
+      "constant": true,
+      "enabled": true,
+      "keys数": 0,
+      "有闸门首行": false,
+      "content长度": 2135
+    },
+    {
+      "id": 4,
+      "comment": "收尾契约（每回合必读）",
+      "constant": true,
+      "enabled": true,
+      "keys数": 0,
+      "有闸门首行": false,
+      "content长度": 125
+    },
+    {
+      "id": 5,
+      "comment": "文风",
+      "constant": true,
+      "enabled": true,
+      "keys数": 0,
+      "有闸门首行": false,
+      "content长度": 936
+    },
+    {
+      "id": 6,
+      "comment": "当前章节信息闸门",
+      "constant": true,
+      "enabled": true,
+      "keys数": 0,
+      "有闸门首行": false,
+      "content长度": 352
+    },
+    {
+      "id": 7,
+      "comment": "【阶段驱动】当前阶段压力与调度",
+      "constant": true,
+      "enabled": true,
+      "keys数": 0,
+      "有闸门首行": false,
+      "content长度": 6625
+    },
+    {
+      "id": 8,
+      "comment": "【演绎引擎】FNE 女性言行指导（脱水版·保留重点）",
+      "constant": true,
+      "enabled": true,
+      "keys数": 0,
+      "有闸门首行": false,
+      "content长度": 5266
+    },
+    {
+      "id": 9,
+      "comment": "━━━━━━━━━━ 【身份】共 6 条 ━━━━━━━━━━",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 2
+    },
+    {
+      "id": 10,
+      "comment": "【身份】赵无忧",
+      "constant": true,
+      "enabled": true,
+      "keys数": 0,
+      "有闸门首行": true,
+      "content长度": 483
+    },
+    {
+      "id": 11,
+      "comment": "【身份】自设",
+      "constant": true,
+      "enabled": false,
+      "keys数": 0,
+      "有闸门首行": true,
+      "content长度": 427
+    },
+    {
+      "id": 12,
+      "comment": "【身份】焚欲殿主",
+      "constant": true,
+      "enabled": false,
+      "keys数": 0,
+      "有闸门首行": true,
+      "content长度": 412
+    },
+    {
+      "id": 13,
+      "comment": "【身份】欢喜殿主",
+      "constant": true,
+      "enabled": false,
+      "keys数": 0,
+      "有闸门首行": true,
+      "content长度": 420
+    },
+    {
+      "id": 14,
+      "comment": "【身份】浊龙殿主",
+      "constant": true,
+      "enabled": false,
+      "keys数": 0,
+      "有闸门首行": true,
+      "content长度": 418
+    },
+    {
+      "id": 15,
+      "comment": "【身份】魂欢殿主",
+      "constant": true,
+      "enabled": false,
+      "keys数": 0,
+      "有闸门首行": true,
+      "content长度": 505
+    },
+    {
+      "id": 16,
+      "comment": "━━━━━━━━━━ 【设定】共 27 条 ━━━━━━━━━━",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 2
+    },
+    {
+      "id": 17,
+      "comment": "【设定】天姝榜",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 572
+    },
+    {
+      "id": 18,
+      "comment": "【设定】天姝令与奴种",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": true,
+      "content长度": 724
+    },
+    {
+      "id": 19,
+      "comment": "【设定】陨仙原法则",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 296
+    },
+    {
+      "id": 20,
+      "comment": "【设定】虎啸震岳阵与玉虎镇渊阵",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": true,
+      "content长度": 573
+    },
+    {
+      "id": 21,
+      "comment": "【设定】天龙皇朝龙气体系",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 603
+    },
+    {
+      "id": 22,
+      "comment": "【设定】诸元婴与法相",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": true,
+      "content长度": 711
+    },
+    {
+      "id": 23,
+      "comment": "【设定】主线时间轴与走向",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": false,
+      "content长度": 811
+    },
+    {
+      "id": 24,
+      "comment": "【设定】名器觉醒的烙印机制",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 601
+    },
+    {
+      "id": 25,
+      "comment": "【设定】世界观总览",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 351
+    },
+    {
+      "id": 26,
+      "comment": "【设定】名器体系",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 957
+    },
+    {
+      "id": 27,
+      "comment": "【设定】境界体系",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 406
+    },
+    {
+      "id": 28,
+      "comment": "【设定】神诅与南域大劫",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": true,
+      "content长度": 679
+    },
+    {
+      "id": 29,
+      "comment": "【设定】《极乐引》总纲",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 780
+    },
+    {
+      "id": 30,
+      "comment": "【设定】《极乐引》名器谱",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 1182
+    },
+    {
+      "id": 31,
+      "comment": "【设定】《极乐引》手法",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 856
+    },
+    {
+      "id": 32,
+      "comment": "【设定】《天姝歸爐大法》与《仙姝堕》",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": false,
+      "content长度": 488
+    },
+    {
+      "id": 33,
+      "comment": "〔待解锁〕【设定】《阴阳焚丹结婴法》",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 482
+    },
+    {
+      "id": 34,
+      "comment": "【设定】阵丹与仙魔阵婴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": true,
+      "content长度": 563
+    },
+    {
+      "id": 35,
+      "comment": "〔待解锁〕【设定】身阵之道",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 467
+    },
+    {
+      "id": 36,
+      "comment": "〔待解锁〕【设定】帝鹏临霄阵与溟鲲吞天阵",
+      "constant": false,
+      "enabled": false,
+      "keys数": 3,
+      "有闸门首行": false,
+      "content长度": 464
+    },
+    {
+      "id": 37,
+      "comment": "〔待解锁〕【设定】《天魔抚心诀》与《锁心诀》",
+      "constant": false,
+      "enabled": false,
+      "keys数": 3,
+      "有闸门首行": false,
+      "content长度": 482
+    },
+    {
+      "id": 38,
+      "comment": "【设定】业火与《红尘诀》",
+      "constant": true,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": false,
+      "content长度": 234
+    },
+    {
+      "id": 39,
+      "comment": "【设定】《燎原蛊火诀》与残阳蛊火",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": true,
+      "content长度": 504
+    },
+    {
+      "id": 40,
+      "comment": "【设定】肉山佛的邪异佛法",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 618
+    },
+    {
+      "id": 41,
+      "comment": "【设定】墨山道阵法与秘术",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": false,
+      "content长度": 480
+    },
+    {
+      "id": 42,
+      "comment": "〔待解锁〕【设定】赵无忧的阵法谱",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 442
+    },
+    {
+      "id": 43,
+      "comment": "【设定】九幽玄阴脉",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 419
+    },
+    {
+      "id": 44,
+      "comment": "━━━━━━━━━━ 【剧情】共 29 条 ━━━━━━━━━━",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 2
+    },
+    {
+      "id": 45,
+      "comment": "【中立】一 · 暗流微澜 · 极乐密藏天机泄",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 631
+    },
+    {
+      "id": 46,
+      "comment": "【剧情】一 · 墨山道",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 1020
+    },
+    {
+      "id": 47,
+      "comment": "【中立】二 · 承平假象 · 幽寂秘境风闻动",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 594
+    },
+    {
+      "id": 48,
+      "comment": "【剧情】二 · 邪修洞府解毒 · 起获极乐引",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 3637
+    },
+    {
+      "id": 49,
+      "comment": "【剧情】起获《极乐引》（自设专轨）",
+      "constant": true,
+      "enabled": false,
+      "keys数": 7,
+      "有闸门首行": true,
+      "content长度": 2022
+    },
+    {
+      "id": 50,
+      "comment": "【剧情】南域风云 · 散修大势与秘境暗涌（自设专轨）",
+      "constant": false,
+      "enabled": false,
+      "keys数": 7,
+      "有闸门首行": true,
+      "content长度": 955
+    },
+    {
+      "id": 51,
+      "comment": "【剧情】鼎炉争锋 · 仙姝名器之机缘大势（自设专轨）",
+      "constant": false,
+      "enabled": false,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 929
+    },
+    {
+      "id": 52,
+      "comment": "【剧情】三 · 幽寂谷秘境",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": true,
+      "content长度": 4859
+    },
+    {
+      "id": 53,
+      "comment": "【剧情】四 · 南域大劫 · 天姝会成立（神诅与四殿）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 11,
+      "有闸门首行": true,
+      "content长度": 6097
+    },
+    {
+      "id": 54,
+      "comment": "【中立】三 · 南域大劫 · 天地神诅与四殿分疆",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 652
+    },
+    {
+      "id": 55,
+      "comment": "【剧情】一 · 天姝初立 · 极乐大诏与四殿分疆（殿主专轨）",
+      "constant": false,
+      "enabled": false,
+      "keys数": 8,
+      "有闸门首行": true,
+      "content长度": 776
+    },
+    {
+      "id": 56,
+      "comment": "【剧情】五 · 孤剑崖送别 · 孤月赠冰心泪",
+      "constant": false,
+      "enabled": true,
+      "keys数": 9,
+      "有闸门首行": true,
+      "content长度": 2917
+    },
+    {
+      "id": 57,
+      "comment": "【剧情】六 · 前往天溪 · 听雪双姝登场",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": true,
+      "content长度": 2876
+    },
+    {
+      "id": 58,
+      "comment": "【剧情】七 · 兽潮血战 · 玄机子装伤脱身",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": true,
+      "content长度": 3579
+    },
+    {
+      "id": 59,
+      "comment": "【中立】四 · 天溪城兽潮 · 要塞围城与九龙焚天",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 660
+    },
+    {
+      "id": 60,
+      "comment": "【剧情】二 · 暗度天溪 · 趁乱布网与围城之谋（殿主专轨）",
+      "constant": false,
+      "enabled": false,
+      "keys数": 8,
+      "有闸门首行": true,
+      "content长度": 807
+    },
+    {
+      "id": 61,
+      "comment": "【剧情】八 · 灵犀同心、日月同辉",
+      "constant": false,
+      "enabled": true,
+      "keys数": 9,
+      "有闸门首行": true,
+      "content长度": 3597
+    },
+    {
+      "id": 62,
+      "comment": "【剧情】九 · 血染天溪 · 叶红缨夜间失控与赵无忧的越界",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": true,
+      "content长度": 3057
+    },
+    {
+      "id": 63,
+      "comment": "【剧情】十 · 双姝回归，魅骨生香",
+      "constant": false,
+      "enabled": true,
+      "keys数": 9,
+      "有闸门首行": true,
+      "content长度": 3714
+    },
+    {
+      "id": 64,
+      "comment": "【剧情】十一 · 天溪城破",
+      "constant": false,
+      "enabled": true,
+      "keys数": 7,
+      "有闸门首行": true,
+      "content长度": 4314
+    },
+    {
+      "id": 65,
+      "comment": "【剧情】十二 · 朱樱逢劫 · 叶红缨被擒与封元镇灵环暴露",
+      "constant": false,
+      "enabled": true,
+      "keys数": 7,
+      "有闸门首行": true,
+      "content长度": 3782
+    },
+    {
+      "id": 66,
+      "comment": "【中立】五 · 天溪城破 · 阵毁城陷与四方溃散",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 785
+    },
+    {
+      "id": 67,
+      "comment": "【剧情】三 · 要塞陷落 · 趁乱截击与收网良机（殿主专轨）",
+      "constant": false,
+      "enabled": false,
+      "keys数": 6,
+      "有闸门首行": true,
+      "content长度": 809
+    },
+    {
+      "id": 68,
+      "comment": "【剧情】十三 · 赤羽堕凡尘 · 灼酒流炎穴成形与孕炎乳",
+      "constant": false,
+      "enabled": true,
+      "keys数": 7,
+      "有闸门首行": true,
+      "content长度": 7978
+    },
+    {
+      "id": 69,
+      "comment": "【剧情】十四 · 洞府调教 · 种下相思豆与赤羽沉沦",
+      "constant": false,
+      "enabled": true,
+      "keys数": 7,
+      "有闸门首行": true,
+      "content长度": 4158
+    },
+    {
+      "id": 70,
+      "comment": "【剧情】十五 · 雀奴 · 灼酒流炎穴二阶段觉醒与身心彻底臣服",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": true,
+      "content长度": 10406
+    },
+    {
+      "id": 71,
+      "comment": "【中立】六 · 乱世割据 · 鼎炉猎场与名器大争",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 591
+    },
+    {
+      "id": 72,
+      "comment": "【剧情】四 · 极乐分疆 · 四殿割据与鼎炉大争（殿主专轨）",
+      "constant": false,
+      "enabled": false,
+      "keys数": 6,
+      "有闸门首行": true,
+      "content长度": 681
+    },
+    {
+      "id": 73,
+      "comment": "【中立】七 · 极乐定局 · 魔道鼎立与北上暗涌",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": true,
+      "content长度": 563
+    },
+    {
+      "id": 74,
+      "comment": "━━━━━━━━━━ 【势力】共 19 条 ━━━━━━━━━━",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 2
+    },
+    {
+      "id": 75,
+      "comment": "【势力】魂欢殿",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 577
+    },
+    {
+      "id": 76,
+      "comment": "【势力】花家与花仙城",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": true,
+      "content长度": 592
+    },
+    {
+      "id": 77,
+      "comment": "【势力】陨仙原三大聚集点（花仙城／逍遥谷）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 301
+    },
+    {
+      "id": 78,
+      "comment": "【势力】幽鬼坊市（地煞宗）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 284
+    },
+    {
+      "id": 79,
+      "comment": "【势力】血荒与陆十三洞府（陨仙原边缘）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 425
+    },
+    {
+      "id": 80,
+      "comment": "〔待解锁〕【势力】血煞与血煞令",
+      "constant": false,
+      "enabled": false,
+      "keys数": 3,
+      "有闸门首行": false,
+      "content长度": 449
+    },
+    {
+      "id": 81,
+      "comment": "〔待解锁〕【势力】葬魔渊",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 469
+    },
+    {
+      "id": 82,
+      "comment": "【势力】幽寂谷秘境",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 477
+    },
+    {
+      "id": 83,
+      "comment": "【势力】神女殿与天魔神像",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": true,
+      "content长度": 604
+    },
+    {
+      "id": 84,
+      "comment": "【势力】积云古寺",
+      "constant": true,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 534
+    },
+    {
+      "id": 85,
+      "comment": "【势力】天姝会",
+      "constant": true,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 574
+    },
+    {
+      "id": 86,
+      "comment": "【势力】极乐楼",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 457
+    },
+    {
+      "id": 87,
+      "comment": "【势力】墨山道",
+      "constant": true,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 456
+    },
+    {
+      "id": 88,
+      "comment": "〔待解锁〕【势力】南域仙盟",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 311
+    },
+    {
+      "id": 89,
+      "comment": "〔待解锁〕【势力】天枢剑宗与斩仙殿",
+      "constant": false,
+      "enabled": false,
+      "keys数": 4,
+      "有闸门首行": false,
+      "content长度": 402
+    },
+    {
+      "id": 90,
+      "comment": "〔待解锁〕【势力】天音阁",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 330
+    },
+    {
+      "id": 91,
+      "comment": "〔待解锁〕【势力】流火阁",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 328
+    },
+    {
+      "id": 92,
+      "comment": "【势力】天龙皇朝",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 382
+    },
+    {
+      "id": 93,
+      "comment": "【势力】天溪城",
+      "constant": true,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 229
+    },
+    {
+      "id": 94,
+      "comment": "━━━━━━━━━━ 【人物】共 55 条 ━━━━━━━━━━",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 2
+    },
+    {
+      "id": 95,
+      "comment": "【人物】赵无忧",
+      "constant": true,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 391
+    },
+    {
+      "id": 96,
+      "comment": "赵无忧 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 443
+    },
+    {
+      "id": 97,
+      "comment": "【人物】孤月",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": false,
+      "content长度": 484
+    },
+    {
+      "id": 98,
+      "comment": "孤月 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": false,
+      "content长度": 429
+    },
+    {
+      "id": 99,
+      "comment": "【人物】玄机子",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 413
+    },
+    {
+      "id": 100,
+      "comment": "玄机子 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 524
+    },
+    {
+      "id": 101,
+      "comment": "【人物】炼欲魔君",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 545
+    },
+    {
+      "id": 102,
+      "comment": "【人物】叶红缨",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 422
+    },
+    {
+      "id": 103,
+      "comment": "叶红缨 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 323
+    },
+    {
+      "id": 104,
+      "comment": "【人物】柳含烟",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 606
+    },
+    {
+      "id": 105,
+      "comment": "柳含烟 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 442
+    },
+    {
+      "id": 106,
+      "comment": "【人物】雨霏柔",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 771
+    },
+    {
+      "id": 107,
+      "comment": "雨霏柔 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 670
+    },
+    {
+      "id": 108,
+      "comment": "【人物】云织梦",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 676
+    },
+    {
+      "id": 109,
+      "comment": "云织梦 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 629
+    },
+    {
+      "id": 110,
+      "comment": "【人物】闻观语",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 467
+    },
+    {
+      "id": 111,
+      "comment": "闻观语 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 433
+    },
+    {
+      "id": 112,
+      "comment": "【人物】楚灵夜",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 520
+    },
+    {
+      "id": 113,
+      "comment": "楚灵夜 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 6,
+      "有闸门首行": false,
+      "content长度": 672
+    },
+    {
+      "id": 114,
+      "comment": "【人物】炎雷子",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": false,
+      "content长度": 507
+    },
+    {
+      "id": 115,
+      "comment": "炎雷子 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": false,
+      "content长度": 485
+    },
+    {
+      "id": 116,
+      "comment": "【人物】苏瑶",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": false,
+      "content长度": 578
+    },
+    {
+      "id": 117,
+      "comment": "苏瑶 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": false,
+      "content长度": 389
+    },
+    {
+      "id": 118,
+      "comment": "〔待解锁〕【人物】苏倾寒",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 526
+    },
+    {
+      "id": 119,
+      "comment": "苏倾寒 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 551
+    },
+    {
+      "id": 120,
+      "comment": "【人物】苏玲",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": false,
+      "content长度": 611
+    },
+    {
+      "id": 121,
+      "comment": "苏玲 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": false,
+      "content长度": 361
+    },
+    {
+      "id": 122,
+      "comment": "〔待解锁〕【人物】慕容清歌",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 539
+    },
+    {
+      "id": 123,
+      "comment": "【人物】残阳老怪",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": false,
+      "content长度": 499
+    },
+    {
+      "id": 124,
+      "comment": "残阳老怪 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 743
+    },
+    {
+      "id": 125,
+      "comment": "【人物】肉山佛",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": false,
+      "content长度": 474
+    },
+    {
+      "id": 126,
+      "comment": "肉山佛 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 747
+    },
+    {
+      "id": 127,
+      "comment": "【人物】极乐太子",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 526
+    },
+    {
+      "id": 128,
+      "comment": "极乐太子 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 551
+    },
+    {
+      "id": 129,
+      "comment": "【人物】极乐老人",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 419
+    },
+    {
+      "id": 130,
+      "comment": "极乐老人 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 507
+    },
+    {
+      "id": 131,
+      "comment": "〔待解锁〕【人物】顾云舒",
+      "constant": false,
+      "enabled": false,
+      "keys数": 2,
+      "有闸门首行": false,
+      "content长度": 292
+    },
+    {
+      "id": 132,
+      "comment": "【人物】九皇子",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": false,
+      "content长度": 503
+    },
+    {
+      "id": 133,
+      "comment": "九皇子 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 729
+    },
+    {
+      "id": 134,
+      "comment": "【人物】九皇子（2）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 346
+    },
+    {
+      "id": 135,
+      "comment": "【人物】鬼医病相思",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": false,
+      "content长度": 356
+    },
+    {
+      "id": 136,
+      "comment": "病相思 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 598
+    },
+    {
+      "id": 137,
+      "comment": "【人物】鬼医病相思（2）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 324
+    },
+    {
+      "id": 138,
+      "comment": "【人物】云逸尘（清虚散人）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 7,
+      "有闸门首行": false,
+      "content长度": 556
+    },
+    {
+      "id": 139,
+      "comment": "云逸尘 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 7,
+      "有闸门首行": false,
+      "content长度": 446
+    },
+    {
+      "id": 140,
+      "comment": "【人物】陆十三",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 668
+    },
+    {
+      "id": 141,
+      "comment": "【人物】陆烬颜",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 636
+    },
+    {
+      "id": 142,
+      "comment": "【人物】花芷凝",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 686
+    },
+    {
+      "id": 143,
+      "comment": "花芷凝 (心智姿态)",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 545
+    },
+    {
+      "id": 144,
+      "comment": "〔待解锁〕【人物】小黑（魔猿）",
+      "constant": false,
+      "enabled": false,
+      "keys数": 2,
+      "有闸门首行": false,
+      "content长度": 214
+    },
+    {
+      "id": 145,
+      "comment": "【人物】花间二鬼",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 336
+    },
+    {
+      "id": 146,
+      "comment": "【人物】厉锋（九皇子座下）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 353
+    },
+    {
+      "id": 147,
+      "comment": "【人物】石岩（九皇子座下）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 328
+    },
+    {
+      "id": 148,
+      "comment": "【人物】柳玉（九皇子座下）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 324
+    },
+    {
+      "id": 149,
+      "comment": "〔待解锁〕【人物】柳茵",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 214
+    },
+    {
+      "id": 150,
+      "comment": "━━━━━━━━━━ 【名器】共 15 条 ━━━━━━━━━━",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 2
+    },
+    {
+      "id": 151,
+      "comment": "【名器】何为道纹",
+      "constant": true,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 555
+    },
+    {
+      "id": 152,
+      "comment": "【名器·简介】九幽玄阴穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 293
+    },
+    {
+      "id": 153,
+      "comment": "【名器·阶段】九幽玄阴穴、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 646
+    },
+    {
+      "id": 154,
+      "comment": "【名器·阶段】九幽玄阴穴、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 599
+    },
+    {
+      "id": 155,
+      "comment": "【名器·阶段】九幽玄阴穴、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 643
+    },
+    {
+      "id": 156,
+      "comment": "【名器·阶段】九幽玄阴穴、四阶段（极乐）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 485
+    },
+    {
+      "id": 157,
+      "comment": "【名器·简介】灼酒流炎穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 271
+    },
+    {
+      "id": 158,
+      "comment": "【名器·阶段】灼酒流炎穴、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 688
+    },
+    {
+      "id": 159,
+      "comment": "【名器·阶段】灼酒流炎穴、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 523
+    },
+    {
+      "id": 160,
+      "comment": "【名器·阶段】灼酒流炎穴、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 459
+    },
+    {
+      "id": 161,
+      "comment": "【名器·阶段】灼酒流炎穴、四阶段（极乐）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 377
+    },
+    {
+      "id": 162,
+      "comment": "【名器·简介】心魔茶璎乳",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 281
+    },
+    {
+      "id": 163,
+      "comment": "【名器·阶段】心魔茶璎乳、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 560
+    },
+    {
+      "id": 164,
+      "comment": "【名器·阶段】心魔茶璎乳、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 548
+    },
+    {
+      "id": 165,
+      "comment": "【名器·阶段】心魔茶璎乳、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 489
+    },
+    {
+      "id": 166,
+      "comment": "【名器·阶段】心魔茶璎乳、四阶段（极乐）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 395
+    },
+    {
+      "id": 167,
+      "comment": "【名器·简介】般若菩提菊",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 357
+    },
+    {
+      "id": 168,
+      "comment": "【名器·阶段】般若菩提菊、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 571
+    },
+    {
+      "id": 169,
+      "comment": "【名器·阶段】般若菩提菊、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 502
+    },
+    {
+      "id": 170,
+      "comment": "【名器·阶段】般若菩提菊、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 475
+    },
+    {
+      "id": 171,
+      "comment": "【名器·阶段】般若菩提菊、四阶段（极乐）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 441
+    },
+    {
+      "id": 172,
+      "comment": "【名器·简介】北冥潮生穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 272
+    },
+    {
+      "id": 173,
+      "comment": "【名器·阶段】北冥潮生穴、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 579
+    },
+    {
+      "id": 174,
+      "comment": "【名器·阶段】北冥潮生穴、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 510
+    },
+    {
+      "id": 175,
+      "comment": "【名器·阶段】北冥潮生穴、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 432
+    },
+    {
+      "id": 176,
+      "comment": "【名器·简介】灵犀同心穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 275
+    },
+    {
+      "id": 177,
+      "comment": "【名器·阶段】灵犀同心穴、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 534
+    },
+    {
+      "id": 178,
+      "comment": "【名器·阶段】灵犀同心穴、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 469
+    },
+    {
+      "id": 179,
+      "comment": "【名器·阶段】灵犀同心穴、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 469
+    },
+    {
+      "id": 180,
+      "comment": "【名器·简介】玉虎噙香乳",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 257
+    },
+    {
+      "id": 181,
+      "comment": "【名器·阶段】玉虎噙香乳、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 574
+    },
+    {
+      "id": 182,
+      "comment": "【名器·阶段】玉虎噙香乳、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 537
+    },
+    {
+      "id": 183,
+      "comment": "【名器·阶段】玉虎噙香乳、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 5,
+      "有闸门首行": true,
+      "content长度": 515
+    },
+    {
+      "id": 184,
+      "comment": "【名器·简介】烟霞灵乳",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 280
+    },
+    {
+      "id": 185,
+      "comment": "【名器·阶段】烟霞灵乳、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 570
+    },
+    {
+      "id": 186,
+      "comment": "【名器·阶段】烟霞灵乳、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 481
+    },
+    {
+      "id": 187,
+      "comment": "【名器·阶段】烟霞灵乳、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 4,
+      "有闸门首行": true,
+      "content长度": 416
+    },
+    {
+      "id": 188,
+      "comment": "【名器·简介】梅蕊穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 263
+    },
+    {
+      "id": 189,
+      "comment": "【名器·阶段】梅蕊穴、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 602
+    },
+    {
+      "id": 190,
+      "comment": "【名器·阶段】梅蕊穴、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 549
+    },
+    {
+      "id": 191,
+      "comment": "【名器·阶段】梅蕊穴、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 497
+    },
+    {
+      "id": 192,
+      "comment": "【名器·阶段】梅蕊穴、四阶段（极乐）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 436
+    },
+    {
+      "id": 193,
+      "comment": "【名器·简介】冰魄剑心穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 263
+    },
+    {
+      "id": 194,
+      "comment": "【名器·阶段】冰魄剑心穴、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 592
+    },
+    {
+      "id": 195,
+      "comment": "【名器·阶段】冰魄剑心穴、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 538
+    },
+    {
+      "id": 196,
+      "comment": "【名器·阶段】冰魄剑心穴、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 488
+    },
+    {
+      "id": 197,
+      "comment": "【名器·阶段】冰魄剑心穴、四阶段（极乐）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 423
+    },
+    {
+      "id": 198,
+      "comment": "【名器·简介】清歌弦鸣穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 265
+    },
+    {
+      "id": 199,
+      "comment": "【名器·阶段】清歌弦鸣穴、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 583
+    },
+    {
+      "id": 200,
+      "comment": "【名器·阶段】清歌弦鸣穴、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 521
+    },
+    {
+      "id": 201,
+      "comment": "【名器·阶段】清歌弦鸣穴、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 485
+    },
+    {
+      "id": 202,
+      "comment": "【名器·阶段】清歌弦鸣穴、四阶段（极乐）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 421
+    },
+    {
+      "id": 203,
+      "comment": "【名器·简介】流焰叠薪穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 263
+    },
+    {
+      "id": 204,
+      "comment": "【名器·阶段】流焰叠薪穴、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 576
+    },
+    {
+      "id": 205,
+      "comment": "【名器·阶段】流焰叠薪穴、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 530
+    },
+    {
+      "id": 206,
+      "comment": "【名器·阶段】流焰叠薪穴、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 472
+    },
+    {
+      "id": 207,
+      "comment": "【名器·阶段】流焰叠薪穴、四阶段（极乐）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 439
+    },
+    {
+      "id": 208,
+      "comment": "【名器·简介】凤凰羽花",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 259
+    },
+    {
+      "id": 209,
+      "comment": "【名器·阶段】凤凰羽花、一阶段（落红）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 628
+    },
+    {
+      "id": 210,
+      "comment": "【名器·阶段】凤凰羽花、二阶段（情动）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 581
+    },
+    {
+      "id": 211,
+      "comment": "【名器·阶段】凤凰羽花、三阶段（沉沦）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 515
+    },
+    {
+      "id": 212,
+      "comment": "【名器·阶段】凤凰羽花、四阶段（极乐）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 443
+    },
+    {
+      "id": 213,
+      "comment": "【名器】交欢反应律 · 男修呻吟与因器而赞",
+      "constant": false,
+      "enabled": true,
+      "keys数": 21,
+      "有闸门首行": false,
+      "content长度": 2793
+    },
+    {
+      "id": 214,
+      "comment": "【名器】九幽玄阴穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 2494
+    },
+    {
+      "id": 215,
+      "comment": "【名器】北冥潮生穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 616
+    },
+    {
+      "id": 216,
+      "comment": "【名器】玉虎噙香乳（月下蜜桃）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 696
+    },
+    {
+      "id": 217,
+      "comment": "【名器】烟霞灵乳（昨日欢）",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 655
+    },
+    {
+      "id": 218,
+      "comment": "【名器】凤凰羽花",
+      "constant": false,
+      "enabled": true,
+      "keys数": 2,
+      "有闸门首行": true,
+      "content长度": 1110
+    },
+    {
+      "id": 219,
+      "comment": "【名器】梅蕊穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 812
+    },
+    {
+      "id": 220,
+      "comment": "【名器】冰魄剑心穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 784
+    },
+    {
+      "id": 221,
+      "comment": "【名器】清歌弦鸣穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 802
+    },
+    {
+      "id": 222,
+      "comment": "【名器】流焰叠薪穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 798
+    },
+    {
+      "id": 223,
+      "comment": "【名器】灼酒流炎穴",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 504
+    },
+    {
+      "id": 224,
+      "comment": "【名器】心魔茶璎乳",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 632
+    },
+    {
+      "id": 225,
+      "comment": "【名器】般若菩提菊",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 663
+    },
+    {
+      "id": 226,
+      "comment": "【名器】灵犀同心",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 616
+    },
+    {
+      "id": 227,
+      "comment": "━━━━━━━━━━ 【物品】共 12 条 ━━━━━━━━━━",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 2
+    },
+    {
+      "id": 228,
+      "comment": "【物品】封元镇灵环",
+      "constant": false,
+      "enabled": true,
+      "keys数": 3,
+      "有闸门首行": true,
+      "content长度": 504
+    },
+    {
+      "id": 229,
+      "comment": "【物品】冰心泪",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 530
+    },
+    {
+      "id": 230,
+      "comment": "【物品】太上守郡符",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 549
+    },
+    {
+      "id": 231,
+      "comment": "【物品】相思豆",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 308
+    },
+    {
+      "id": 232,
+      "comment": "【物品】蚀心焚魂丹",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 435
+    },
+    {
+      "id": 233,
+      "comment": "【物品】蝶恋双生环",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 546
+    },
+    {
+      "id": 234,
+      "comment": "【物品】七霓裳",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 582
+    },
+    {
+      "id": 235,
+      "comment": "【物品】白玉金花手镯",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 406
+    },
+    {
+      "id": 236,
+      "comment": "【物品】鎏金缠情丝",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 507
+    },
+    {
+      "id": 237,
+      "comment": "【物品】锁灵环",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": true,
+      "content长度": 272
+    },
+    {
+      "id": 238,
+      "comment": "〔待解锁〕【物品】封灵手铐",
+      "constant": false,
+      "enabled": false,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 397
+    },
+    {
+      "id": 239,
+      "comment": "【物品】极乐密藏",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 403
+    },
+    {
+      "id": 240,
+      "comment": "━━━━━━━━━━ 【补遗】拆分残句收纳（1 段） ━━━━━━━━━━",
+      "constant": false,
+      "enabled": true,
+      "keys数": 1,
+      "有闸门首行": false,
+      "content长度": 2
+    }
+  ]
+}

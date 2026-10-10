@@ -1,0 +1,342 @@
+{
+  "采集时间": "2026-10-08 16:40:25 +08:00",
+  "采集机": "win32 x64 node v22.21.0",
+  "卡": {
+    "路径": "最新角色卡/仙姝堕.json",
+    "字节": 7585317,
+    "SHA256": "c9e27d0999fd2e1c356d625654904d94ab7d18a839dab7a134dbff0be94429c8"
+  },
+  "说明": "所有文件取自同一快照；是否构建输入见字段",
+  "文件": [
+    {
+      "原相对路径": "卡片脚本/GM修改器.js",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/卡片脚本/GM修改器.js",
+      "批次": "第一批",
+      "用途": "面板入口／DOM／预览／原写入与撤销／控制台接口",
+      "是否构建输入": true,
+      "字节": 77360,
+      "SHA256": "88858e2826425d9815babca5c8d14fe45239b7f49571de98715d0ed41ea7a4de"
+    },
+    {
+      "原相对路径": "卡片脚本/状态机.js",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/卡片脚本/状态机.js",
+      "批次": "第一批",
+      "用途": "自动与命令写入、派生账本、人工假保护、chat/message 双写、日期台账、聊天切换",
+      "是否构建输入": true,
+      "字节": 286660,
+      "SHA256": "e7a9110d6940aa455d7d77b21e63afd22a7d843f315dd2ce7e319c1fc9608fbd"
+    },
+    {
+      "原相对路径": "卡片脚本/_src/状态栏面板.模板.js",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/卡片脚本/_src/状态栏面板.模板.js",
+      "批次": "第一批",
+      "用途": "面板**生成源**（要改逻辑改这里）",
+      "是否构建输入": true,
+      "字节": 194341,
+      "SHA256": "ba0c1b58ea76ebf4be136ae2c0e52e8a99016d65a19ef55e60fd4b5b435d291b"
+    },
+    {
+      "原相对路径": "卡片脚本/状态栏面板.js",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/卡片脚本/状态栏面板.js",
+      "批次": "第一批",
+      "用途": "面板**生产件**（由 _pack_panel_script.mjs 从模板生成）",
+      "是否构建输入": true,
+      "字节": 391220,
+      "SHA256": "e93f16b409aa153e9ef1fbb23bc3b9c10fc17fff0bf3cd4b6e7111db223daed0"
+    },
+    {
+      "原相对路径": "tools/pipeline/_pack_panel_script.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/pipeline/_pack_panel_script.mjs",
+      "批次": "第一批",
+      "用途": "面板构建脚本（模板→生产件的唯一链路）",
+      "是否构建输入": true,
+      "字节": 5421,
+      "SHA256": "30fed65387a5c39eac6712747ea870a4a1434b245e217e9ca8c69f5f12ede795"
+    },
+    {
+      "原相对路径": "src/first_floor_rebuild/inject-timepoint.cjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/src/first_floor_rebuild/inject-timepoint.cjs",
+      "批次": "第一批",
+      "用途": "时间点模块注入源（构建期注入状态机）",
+      "是否构建输入": true,
+      "字节": 977,
+      "SHA256": "362fa822a8fdb96fb04a4ff296cff8668555a7bdaeedef1e713bb1702df485bf"
+    },
+    {
+      "原相对路径": "_build_card.js",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/_build_card.js",
+      "批次": "第二批",
+      "用途": "实际生效的制卡构建器（根目录这份）",
+      "是否构建输入": true,
+      "字节": 152367,
+      "SHA256": "8285675e939fdaf0dc2ecfc318755b18aad15dc2c18d51acdf1f2a5240318ec3"
+    },
+    {
+      "原相对路径": "build.js",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/build.js",
+      "批次": "第二批",
+      "用途": "全流程构建（卡＋PNG＋世界书＋dist 同步）",
+      "是否构建输入": true,
+      "字节": 5719,
+      "SHA256": "36f62f437c9ea011422c36139ef2f9015efe0a44ecffd72af965db131df8084a"
+    },
+    {
+      "原相对路径": "ship.js",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/ship.js",
+      "批次": "第二批",
+      "用途": "一键极速交付（单测→构建→部署）",
+      "是否构建输入": true,
+      "字节": 5423,
+      "SHA256": "81adc2cdf9b816e58108d729478554b65fc6c2c0a7377e609e25e8ad52987941"
+    },
+    {
+      "原相对路径": "deploy_to_tavern.cjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/deploy_to_tavern.cjs",
+      "批次": "第二批",
+      "用途": "酒馆部署与双向自检",
+      "是否构建输入": true,
+      "字节": 9972,
+      "SHA256": "5ccbd38a7df94e8a4845c91f98bc4d066cd4b8297ccc91d15866d9a713a9888a"
+    },
+    {
+      "原相对路径": "AGENTS.md",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/AGENTS.md",
+      "批次": "第二批",
+      "用途": "项目手册与铁律（含交付目录规范）",
+      "是否构建输入": false,
+      "字节": 12081,
+      "SHA256": "d84677685cfc40aa7ee80a47627a29bff0287f0a298dbe08f5db59376e4601f8"
+    },
+    {
+      "原相对路径": "src/mingqi-db.js",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/src/mingqi-db.js",
+      "批次": "第二批",
+      "用途": "13 件名器的 brief／formNote／阶段 desc 生成源",
+      "是否构建输入": true,
+      "字节": 38733,
+      "SHA256": "dadf61b74c5227c3a66d01032d4a8b06881a218f94f7de3384abeaa089b77832"
+    },
+    {
+      "原相对路径": "卡片脚本/_src/名器图鉴数据.json",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/卡片脚本/_src/名器图鉴数据.json",
+      "批次": "第二批",
+      "用途": "面板名器图鉴（brief／阶段 desc／锁语）真源",
+      "是否构建输入": true,
+      "字节": 40133,
+      "SHA256": "abb14f5c16089841f6b279cf61e384596e90a32a6143ba16fa0cf33c807812bc"
+    },
+    {
+      "原相对路径": "src/text_data/_stage_drive.txt",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/src/text_data/_stage_drive.txt",
+      "批次": "第二批",
+      "用途": "id7 阶段驱动条目的内容源",
+      "是否构建输入": true,
+      "字节": 24330,
+      "SHA256": "e60c618fe8427d525e21596cbae3b15498a69cce0e215c0471f5401a79b8d037"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_derive_ledger.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_derive_ledger.mjs",
+      "批次": "第二批",
+      "用途": "派生账本与事务撤销门禁",
+      "是否构建输入": false,
+      "字节": 7909,
+      "SHA256": "81dd3220b0bb13a7da7df5c174f185a81e51e0b6f2f4281933b6bffd9bc87570"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_stage_drive.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_stage_drive.mjs",
+      "批次": "第二批",
+      "用途": "阶段驱动门禁（独立政策表＋卡内 content）",
+      "是否构建输入": false,
+      "字节": 8180,
+      "SHA256": "0ff03991c782479f89025db569cae5021baec58d2b091c8a021c34de1e9d78b0"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_status_missing.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_status_missing.mjs",
+      "批次": "第二批",
+      "用途": "缺状态栏分支·真跑门禁",
+      "是否构建输入": false,
+      "字节": 10011,
+      "SHA256": "04403279e6d13ff8f31a267348c8a51c9dd24b120395fd1b058a20c18a980239"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_clock_acc.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_clock_acc.mjs",
+      "批次": "第二批",
+      "用途": "日期台账（nextAcc／parseLishi）门禁",
+      "是否构建输入": false,
+      "字节": 9589,
+      "SHA256": "08104734955cd7315e868db5ef3939be0254598851798fd816955e24f53cb710"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_panel_artifact.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_panel_artifact.mjs",
+      "批次": "第二批",
+      "用途": "面板产物门禁",
+      "是否构建输入": false,
+      "字节": 5306,
+      "SHA256": "512ce436f73bb3a328eda4fcd855ffa2e08657cdbd32807690156e490c891f0e"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_identity_sync.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_identity_sync.mjs",
+      "批次": "第二批",
+      "用途": "身份同步门禁",
+      "是否构建输入": false,
+      "字节": 5694,
+      "SHA256": "0faf7169f86f2fd09eebd5797a75dbde0406337a206a45d57fe0f9e8914dc437"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_freefield_gate.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_freefield_gate.mjs",
+      "批次": "第二批",
+      "用途": "自由字段闸＋泛指战事待核门禁",
+      "是否构建输入": false,
+      "字节": 8228,
+      "SHA256": "a1825583f1b64216ec13fd2ce4d75843256676bb9b1b60413399dab88ebbd32c"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_recursion.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_recursion.mjs",
+      "批次": "第二批",
+      "用途": "世界书防递归门禁",
+      "是否构建输入": false,
+      "字节": 3893,
+      "SHA256": "69040b6e59726c5f9a75233eece20907077008d8d2d084b2942c9877e6c2e37f"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_payload.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_payload.mjs",
+      "批次": "第二批",
+      "用途": "PNG 载荷（chara／ccv3）一致性门禁",
+      "是否构建输入": false,
+      "字节": 8168,
+      "SHA256": "48da1d7ad6f24797eb6c1117f26ce6d3c483c50845fab3076b169001503f5abb"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_relic_stage.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_relic_stage.mjs",
+      "批次": "第二批",
+      "用途": "名器阶段条门禁",
+      "是否构建输入": false,
+      "字节": 6009,
+      "SHA256": "d3b139d57d3743e9f405b011c50fabd3a580ba6a4f22eb670abdce18f387c25b"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_plot_gate.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_plot_gate.mjs",
+      "批次": "第二批",
+      "用途": "主线剧情闸门门禁（三形态预期）",
+      "是否构建输入": false,
+      "字节": 19909,
+      "SHA256": "20c2838f447fffd9330a4274d7be91fb7a43494ea9bf3eb68dcbf6540779bd79"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_form_gate.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_form_gate.mjs",
+      "批次": "第二批",
+      "用途": "名器成形闸门门禁",
+      "是否构建输入": false,
+      "字节": 36632,
+      "SHA256": "54bfe1b623e490fa9bd06c875adb477bfe18cb72f734ae11ee296c8037824ba4"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_mingqi_prereq.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_mingqi_prereq.mjs",
+      "批次": "第二批",
+      "用途": "名器成形硬前置门禁",
+      "是否构建输入": false,
+      "字节": 6631,
+      "SHA256": "4946a0ba55178ba5a313d739a9c753d0f1a41fc431a5fd80ce4e19f76f5e5188"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_defect_four.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_defect_four.mjs",
+      "批次": "第二批",
+      "用途": "四条状态缺陷行为负例",
+      "是否构建输入": false,
+      "字节": 7717,
+      "SHA256": "6ca8aa1d9cf1d8c7ea84ee9a414734c13c81f1687bab8423509b1981e322abd3"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_syntax.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_syntax.mjs",
+      "批次": "第二批",
+      "用途": "卡内脚本语法门禁（含 EPERM 口径）",
+      "是否构建输入": false,
+      "字节": 2292,
+      "SHA256": "6354a9f770ac17ae49d959ddb30cef38ee74d9759c33e7c04ea0ee7ebeacdddd"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_ejs_native.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_ejs_native.mjs",
+      "批次": "第二批",
+      "用途": "原生 EJS 渲染门禁",
+      "是否构建输入": false,
+      "字节": 7975,
+      "SHA256": "44db19e98d453c5ed713b6afba27aa3ef29b403aa7184cb7cb82651a62acbc82"
+    },
+    {
+      "原相对路径": "tools/checks/_chk_all.mjs",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/tools/checks/_chk_all.mjs",
+      "批次": "第二批",
+      "用途": "门禁总入口（只读化）",
+      "是否构建输入": false,
+      "字节": 10684,
+      "SHA256": "162c4b1f9a622566dce7b01fa96e5164b9093495850d8e66e478ace608679087"
+    },
+    {
+      "原相对路径": "卡片脚本/状态栏面板.js",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/卡片脚本/状态栏面板（去资源副本）.js",
+      "批次": "第一批",
+      "用途": "去资源等价副本（逻辑原样）",
+      "是否构建输入": false,
+      "字节": 202325,
+      "SHA256": "80694f53678f233f85110529c99e40321eaaca23d5fdf9fb7e60c247d780bffa",
+      "原文件": {
+        "字节": 391220,
+        "SHA256": "e93f16b409aa153e9ef1fbb23bc3b9c10fc17fff0bf3cd4b6e7111db223daed0"
+      }
+    },
+    {
+      "原相对路径": "—",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/去资源说明.md",
+      "批次": "第一批",
+      "用途": "去资源说明（替换位置）",
+      "是否构建输入": false,
+      "字节": 1135
+    },
+    {
+      "原相对路径": "（由当前卡导出）",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/门metadata子集.json",
+      "批次": "第二批",
+      "用途": "当前卡门 metadata＋主线政策",
+      "是否构建输入": false,
+      "字节": 170613
+    },
+    {
+      "原相对路径": "（真实局 stat_data 脱敏）",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/脱敏测试状态快照.json",
+      "批次": "第二批",
+      "用途": "脱敏测试状态快照",
+      "是否构建输入": false,
+      "字节": 8391
+    },
+    {
+      "原相对路径": "—",
+      "打包路径": "AI交接/下级更新/二级面板接入源码/接口与接入说明.md",
+      "批次": "第一批+第二批",
+      "用途": "接口与接入说明（回答 5 问）",
+      "是否构建输入": false,
+      "字节": 9706,
+      "SHA256": "2101877ba28a49036cf1f7a35e0927de256c1c9b3465ecc43a015dfc9c919cd8"
+    }
+  ],
+  "去资源替换处数": 3,
+  "缺少的文件": [],
+  "根目录 package.json": "**不存在**（本工程无 Node 包依赖，脚本全部为自带依赖的 .mjs/.js/.cjs）",
+  "根目录锁文件": [],
+  "接口说明采集时间": "2026-10-08 16:40:25 +08:00"
+}

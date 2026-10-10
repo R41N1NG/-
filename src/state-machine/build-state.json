@@ -1,4 +1,8 @@
 {
   "version": 1,
+<<<<<<< HEAD
   "outputSHA256": "7d300f310b86c2b6b9cc66dfe6cca500c6e51256d66de2f60a0180ee9a229f5f"
+=======
+  "outputSHA256": "a43adca53f8265baebb2c697e091514f8c130eb3a9616ca9c19b0f769845bde7"
+>>>>>>> 0bf9e3c (fix(relic-gates): purge legacy non-neutral anchors, update 1->2 target to 3, define clean 2->3 criteria)
 }

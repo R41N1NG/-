@@ -1,0 +1,165 @@
+{
+  "identity": "gpt",
+  "files": [
+    {
+      "path": "_build_card.js",
+      "existed": true,
+      "previousSHA256": "313de6672f33e0a982e3bc8b734416e44b88b5d41594dc662e337defb9c492ef"
+    },
+    {
+      "path": "src/state-machine/bootstrap/header.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/bootstrap/start.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/build-state.json",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/build.cjs",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/commands/player.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/data/registry.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/data/status-fields.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/diagnostics/anchors.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/diagnostics/console.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/host/api.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/host/messages.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/host/worldbook.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/main.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/modules.json",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/parsers/output-contract.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/parsers/status.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/rules/anchor-validation.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/rules/apply-status.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/rules/inventory.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/rules/milestones.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/rules/plot-gates.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/rules/relic-progress.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/rules/relic.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/rules/stage.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/state/init.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/state/paths.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/state/read.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/state/write.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/ui/identity-menu.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "src/state-machine/utils/calendar.js",
+      "existed": false,
+      "previousSHA256": null
+    },
+    {
+      "path": "卡片脚本/状态机.js",
+      "existed": true,
+      "previousSHA256": "7cd5d1cb318d8b7a1f2795b98e20f9f53dad7cb7c9cf085a080f8a6395515830"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "来源": "最新角色卡/仙姝堕.json → data.character_book.entries[id=7]",
+  "条目标题": "【阶段驱动】当前阶段压力与调度",
+  "字段": {
+    "constant": true,
+    "enabled": true,
+    "position": "at_depth",
+    "insertion_order": 8,
+    "keys": [],
+    "position深度": 0,
+    "prevent_recursion": true,
+    "scan_depth": null,
+    "probability": 100
+  },
+  "正文字符数": 6625,
+  "正文SHA256": "88caa54054895d251dea68c446804010fa4e59a690aa66fed28fb73f81b462d6",
+  "含EJS标签数": 23,
+  "EJS条件式清单": [
+    "<%_ /* ══════════════════════════════════════════════════════════════ * 静默计算层（一个字的输出都不产生） * * · 本层是本条目**唯一**的异常来源，全部圈在 try 里。 * · 判段只读**段位**一个标量：它由卡内脚本按楼层算出来（纯函数）， * 与模型填的任何字段无关 ⇒ **模型漏填/乱填都不会让阶段停住**。 * · 取不到段位 ⇒ 新档默认第一段（不卡死）；求值抛错 ⇒ XSD_STAGE = 0 ⇒ * 输出层只吐一行安全占位（**绝不把四段原文整段吐出去**）。 * · ⚠️ 旧版判据（`known` 锚点 ＋ `地点` ＋ 身份）已作废：前两样都是模型填的， * 模型写「无」就把阶段焊死在第一段（实测 8 楼里 7 楼写「无」）。 * ══════════════════════════════════════════════════════════════ */ var XSD_STAGE = 0; // 0 ＝ 判据求值抛错（安全占位）；1..4 ＝ 四个阶段 var XSD_A1_ANY = false, XSD_A1_JLY = false, XSD_A1_XJZ = false; var XSD_NEED_SETTLE = false; var XSD_TIME_TEXT = '', XSD_STAGE_NUM = 0; var XSD_HAS_SUMMARY = false, XSD_SUMMARY_TEXT = ''; try { if (typeof variables !== 'undefined' && variables && typeof variables === 'object') { var sd = variables.stat_data; if (sd && typeof sd === 'object') { var kn = (sd.known && typeof sd.known === 'object') ? sd.known : {}; var idn = (typeof sd.身份 === 'string') ? sd.身份 : '赵无忧'; var lord = (idn === '焚欲殿主' || idn === '欢喜殿主' || idn === '浊龙殿主' || idn === '魂欢殿主'); /* 段一那两条「已开的线」只用来渲染，**不参与判段** */ XSD_A1_JLY = kn['极乐引入手'] === true; XSD_A1_XJZ = kn['玄机子胁迫过叶红缨'] === true; XSD_A1_ANY = XSD_A1_JLY || XSD_A1_XJZ; /* 换段结算与定期总结标记 */ XSD_NEED_SETTLE = Number(sd.结算待办) === 1 || Number(sd.总结待办) === 1; XSD_HAS_SUMMARY = (typeof sd.阶段总结 === 'string' && sd.阶段总结.trim().length > 0); XSD_SUMMARY_TEXT = XSD_HAS_SUMMARY ? sd.阶段总结.trim() : ''; /* 判段：支持 16 细分段位映射至 4 大宏观主线阶段 */ var stg = parseInt(sd.段位, 10); var st = 1; if (!isNaN(stg) && stg >= 1) { if (stg >= 15) st = 4; else if (stg >= 12) st = 3; else if (stg >= 6) st = 2; else st = 1; } var tm = (typeof sd.仙盟历文 === 'string') ? sd.仙盟历文.trim() : ''; if (!tm && typeof sd.仙盟历 !== 'undefined' && sd.仙盟历 !== null) tm = String(sd.仙盟历); XSD_TIME_TEXT = tm; XSD_STAGE_NUM = (!isNaN(stg) && stg >= 1) ? stg : 0; /* 四殿主身份：他自己的组织、同僚与那条线就是本身份的常识范围 ⇒ 阶段下限压到第四段 */ if (lord && st < 4) st = 4; XSD_STAGE = (st >= 1 && st <= 4) ? st : 0; } } } catch (e) { XSD_STAGE = 0; /* 求值抛错 ⇒ 显式占位 */ XSD_NEED_SETTLE = false; XSD_HAS_SUMMARY = false; XSD_SUMMARY_TEXT = ''; XSD_TIME_TEXT = ''; XSD_STAGE_NUM = 0; } _%>",
+    "<% if (XSD_STAGE > 0) { %>",
+    "<%- XSD_TIME_TEXT || '（后台未给出，沿用你上一条写过的月份）' %>",
+    "<%- XSD_STAGE_NUM %>",
+    "<% } %>",
+    "<% if (XSD_HAS_SUMMARY) { %>",
+    "<%- XSD_SUMMARY_TEXT %>",
+    "<% } %>",
+    "<% if (XSD_NEED_SETTLE) { %>",
+    "<% } %>",
+    "<% if (XSD_STAGE === 1) { %>",
+    "<% if (XSD_A1_ANY) { %>",
+    "<% if (XSD_A1_JLY) { %>",
+    "<% } %>",
+    "<% if (XSD_A1_XJZ) { %>",
+    "<% } %>",
+    "<% } else { %>",
+    "<% } %>",
+    "<% } else if (XSD_STAGE === 2) { %>",
+    "<% } else if (XSD_STAGE === 3) { %>",
+    "<% } else if (XSD_STAGE === 4) { %>",
+    "<% } else { %>",
+    "<% } %>"
+  ],
+  "含_Status_block": true,
+  "含现在时围城措辞": [
+    "兽潮一波接一波",
+    "围城数日",
+    "一波接一波"
+  ]
+}
