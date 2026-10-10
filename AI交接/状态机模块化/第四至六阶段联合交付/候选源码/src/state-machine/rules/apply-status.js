@@ -1,0 +1,47 @@
+/** 原共享作用域名称的兼容适配；函数依赖延迟解析，避免后置模块初始化时序变化。 */
+const XSD_STATUS_DEPS = {
+  eligibleKnown: (...args) => eligibleKnown(...args),
+  console,
+  TAG,
+  parseStatusBlock: (...args) => parseStatusBlock(...args),
+  reconcileNadeLedger: (...args) => reconcileNadeLedger(...args),
+  msgOf: (...args) => msgOf(...args),
+  ensureInit: (...args) => ensureInit(...args),
+  readStatData: (...args) => readStatData(...args),
+  FLOOR_PIN,
+  stageOfFloor: (...args) => stageOfFloor(...args),
+  freeFieldGate: (...args) => freeFieldGate(...args),
+  freeFieldSuspect: (...args) => freeFieldSuspect(...args),
+  writeStat: (...args) => writeStat(...args),
+  DISPLAY_FIELDS,
+  toast: (...args) => toast(...args),
+  messageText: (...args) => messageText(...args),
+  detectInheritance: (...args) => detectInheritance(...args),
+  applyInheritedArchive: (...args) => applyInheritedArchive(...args),
+  validateAnchors: (...args) => validateAnchors(...args),
+  stripStatusBlock: (...args) => stripStatusBlock(...args),
+  checkFastForwardStage: (...args) => checkFastForwardStage(...args),
+  parseLishi: (...args) => parseLishi(...args),
+  ymToMonths: (...args) => ymToMonths(...args),
+  SEG_TIME,
+  isSceneLocked: (...args) => isSceneLocked(...args),
+  resolveCalendarBasis: (...args) => resolveCalendarBasis(...args),
+  fmtXianmeng: (...args) => fmtXianmeng(...args),
+  monthsToYm: (...args) => monthsToYm(...args),
+  XSD_CALENDAR,
+  nextAcc: (...args) => nextAcc(...args),
+  fmtXianmengDay: (...args) => fmtXianmengDay(...args),
+  CAST_FIELD,
+  applyMilestones: (...args) => applyMilestones(...args),
+  window: typeof window !== 'undefined' ? window : undefined,
+  readIdentity: (...args) => readIdentity(...args),
+  IDENTITY_NAMES,
+  readFaction: (...args) => readFaction(...args),
+  readKnown: (...args) => readKnown(...args),
+  ALL_FIELDS,
+};
+const XSD_STATUS_APPLICATION = createXsdStatusApplication(XSD_STATUS_DEPS);
+async function applyStatusToVars(text, messageId, opt) { return XSD_STATUS_APPLICATION.applyStatusToVars(text, messageId, opt); }
+function warnIdentityMismatch(p, messageId) { return XSD_STATUS_APPLICATION.warnIdentityMismatch(p, messageId); }
+function findDeclaredFaction(raw) { return XSD_STATUS_APPLICATION.findDeclaredFaction(raw); }
+function checkProgressConsistency(p, messageId) { return XSD_STATUS_APPLICATION.checkProgressConsistency(p, messageId); }

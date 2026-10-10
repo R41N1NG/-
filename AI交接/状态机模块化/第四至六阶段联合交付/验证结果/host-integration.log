@@ -1,0 +1,17 @@
+✔ 最终生成物与源片段完全相同并可整体编译 (27.225189ms)
+✔ 酒馆 API 全缺时，完整脚本仍加载并暴露原入口 (19.551878ms)
+✔ 真实 adapter 初始化依赖齐全；解析和已存时间基准读取不写盘 (3.614916ms)
+✔ host API 探测保持 getter、自身、helper、parent、top、全局顺序 (6.786766ms)
+✔ 跨源 parent 抛异常继续回退全局；API 对象仍允许追加接口 (1.100874ms)
+✔ 事件常量保持原对象；可选清理/取消接口支持 parent helper (0.9594ms)
+✔ 聊天标识与 toast 从 correction、SillyTavern、父宿主按原顺序读取 (0.998904ms)
+✔ 消息核支持 array/object/message/mes 与 swipe 请求；只读不写盘 (1.060579ms)
+✔ 真实 runtime 与完整脚本共同初始化，native 监听使用实际事件常量并可退出清理 (11.095968ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 176.436818

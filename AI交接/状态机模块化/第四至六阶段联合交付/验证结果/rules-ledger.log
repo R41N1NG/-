@@ -1,0 +1,124 @@
+PASS auto-world:南域大劫:before
+PASS auto-world:南域大劫:at
+PASS auto-world:南域大劫:after
+PASS auto-world:南域大劫:invalid:0
+PASS auto-world:南域大劫:invalid:1
+PASS auto-world:南域大劫:invalid:2
+PASS auto-world:南域大劫:invalid:3
+PASS auto-world:南域大劫:invalid:4
+PASS auto-world:南域大劫:invalid:5
+PASS auto-world:南域大劫:invalid:6
+PASS auto-world:南域大劫:invalid:7
+PASS auto-world:天溪城兽潮:before
+PASS auto-world:天溪城兽潮:at
+PASS auto-world:天溪城兽潮:after
+PASS auto-world:天溪城兽潮:invalid:0
+PASS auto-world:天溪城兽潮:invalid:1
+PASS auto-world:天溪城兽潮:invalid:2
+PASS auto-world:天溪城兽潮:invalid:3
+PASS auto-world:天溪城兽潮:invalid:4
+PASS auto-world:天溪城兽潮:invalid:5
+PASS auto-world:天溪城兽潮:invalid:6
+PASS auto-world:天溪城兽潮:invalid:7
+PASS auto-world:兽潮血战:before
+PASS auto-world:兽潮血战:at
+PASS auto-world:兽潮血战:after
+PASS auto-world:兽潮血战:invalid:0
+PASS auto-world:兽潮血战:invalid:1
+PASS auto-world:兽潮血战:invalid:2
+PASS auto-world:兽潮血战:invalid:3
+PASS auto-world:兽潮血战:invalid:4
+PASS auto-world:兽潮血战:invalid:5
+PASS auto-world:兽潮血战:invalid:6
+PASS auto-world:兽潮血战:invalid:7
+PASS auto-world:天溪城破:before
+PASS auto-world:天溪城破:at
+PASS auto-world:天溪城破:after
+PASS auto-world:天溪城破:invalid:0
+PASS auto-world:天溪城破:invalid:1
+PASS auto-world:天溪城破:invalid:2
+PASS auto-world:天溪城破:invalid:3
+PASS auto-world:天溪城破:invalid:4
+PASS auto-world:天溪城破:invalid:5
+PASS auto-world:天溪城破:invalid:6
+PASS auto-world:天溪城破:invalid:7
+PASS auto-world:unknown ordinary anchor
+PASS early beast clause with separate unreached reinforcement remains denied
+PASS rumour remains displayable
+PASS future plan remains displayable
+PASS unlabelled war retained pending review
+PASS stage boundary table frozen policy
+PASS floor boundary:0
+PASS floor boundary:1
+PASS floor boundary:30
+PASS floor boundary:31
+PASS floor boundary:50
+PASS floor boundary:51
+PASS floor boundary:360
+PASS floor boundary:361
+PASS floor boundary:2000
+PASS scene hold positive
+PASS scene departure unlocks hold
+PASS fast forward candidates preserve old policy
+PASS subject:direct subject
+PASS subject:bystander regression
+PASS subject:watcher
+PASS subject:watched subject
+PASS subject:negated subject
+PASS subject:plan
+PASS subject:rumour
+PASS subject:virgin noun
+PASS subject:night noun
+PASS subject:joint subject one
+PASS subject:joint subject two
+PASS subject:inverted subject
+PASS subject:passive actor must not gain victim fact
+PASS subject:cross sentence cannot borrow name
+PASS subject:missing prose
+PASS subject:unknown subject
+PASS ledger missing both
+PASS ledger message fields override chat
+PASS ledger clone source known
+PASS ledger single sister cannot form whole relic
+PASS ledger both sisters recover complete relic
+PASS ledger additional prerequisite mandatory
+PASS ledger additional prerequisite satisfied
+PASS ledger owner name alone cannot create form
+PASS ledger NPC relic cannot give player possession
+PASS ledger own formed relic grants possession
+PASS ledger source historical true preserved
+PASS ledger manual negative before prerequisite recovery
+PASS ledger manual false form remains false
+PASS ledger manual false form prevents new stage
+PASS ledger previous chat controls cannot override
+PASS ledger stale message control cannot override chat truth
+PASS anchor dates all evidence present early:南域大劫
+PASS anchor dates threshold true:南域大劫
+PASS anchor dates missing source:南域大劫
+PASS anchor dates all evidence present early:天溪城兽潮
+PASS anchor dates threshold true:天溪城兽潮
+PASS anchor dates missing source:天溪城兽潮
+PASS anchor dates all evidence present early:兽潮血战
+PASS anchor dates threshold true:兽潮血战
+PASS anchor dates missing source:兽潮血战
+PASS anchor dates all evidence present early:天溪城破
+PASS anchor dates threshold true:天溪城破
+PASS anchor dates missing source:天溪城破
+PASS anchor rejects bstander milestone
+PASS anchor same round subject and form allowed
+PASS anchor unproven book cannot supply prerequisite
+PASS anchor rumour world event not fact
+PASS anchor plan world event not fact
+PASS milestone auto-date ignores forged validation cache
+PASS milestone eligible world event persisted
+PASS milestone same valid body idempotent
+PASS milestone same claim changed prose retracts event
+PASS milestone new valid proof same floor remains true
+PASS milestone missing claimant cannot borrow subject
+PASS milestone NPC fact does not grant player relic
+PASS milestone same round valid book forms relic
+PASS milestone prose proof rescues form-only declaration
+PASS new book same floor removed proof cannot restore false fact
+PASS inventory same action changed prose rolls back old deduction
+PASS manual world false survives auto actual event
+rules-ledger 123/123

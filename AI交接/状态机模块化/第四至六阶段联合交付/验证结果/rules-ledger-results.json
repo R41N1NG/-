@@ -1,0 +1,511 @@
+{
+  "identity": "gpt 下级独立复核",
+  "sourceSHA256": {
+    "data/registry.js": "45b14a6f4be2207553a2895ec9a026b94478135e085340d1b0afe5df33b46815",
+    "rules/stage-core.js": "509bce90fd7ccfee8906936f452ef9517ba311c36e1f8575ebbf9b4938060811",
+    "rules/plot-policy-core.js": "1e66a06c2d05b644c2f613acbd0d47105de12a8bb6b6a425f0c12a280626a268",
+    "rules/subject-evidence-core.js": "c5ecb32320b22c66e242d58dbe424b772c087d9d202a44ea61a6cac0c7c9c408",
+    "state/ledger-core.js": "c989f550f3016ab4e966361c3df91b6427a4ab0ea59dedce6448b87db2f421fa",
+    "rules/inventory-core.js": "de4334dbf9042f9c113b540b952631a371b6a95c3e22fbf0f59e647301c0f028",
+    "rules/anchor-validation-core.js": "2388e90b7183351cd892c816cf9f9eb0c232faa5a8bd5ccfc05df32ff61b6270",
+    "rules/milestones-core.js": "0b6b3fad500c454c268b30ac8f7ad8c2c98cae322a9167f6040a74bd3266991f",
+    "rules/relic.js": "62313adae7c375fabd30e7c2c69445e4b8860356c049d82a2d49c78fb995e8b9",
+    "rules/relic-progress.js": "c9d5baad0cef7a3c59d63627b7866d4a2a2e7133b66e30f7108a44469ded52e5"
+  },
+  "results": [
+    {
+      "name": "auto-world:南域大劫:before",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:at",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:after",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:invalid:0",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:invalid:1",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:invalid:2",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:invalid:3",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:invalid:4",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:invalid:5",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:invalid:6",
+      "pass": true
+    },
+    {
+      "name": "auto-world:南域大劫:invalid:7",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:before",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:at",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:after",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:invalid:0",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:invalid:1",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:invalid:2",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:invalid:3",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:invalid:4",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:invalid:5",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:invalid:6",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城兽潮:invalid:7",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:before",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:at",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:after",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:invalid:0",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:invalid:1",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:invalid:2",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:invalid:3",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:invalid:4",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:invalid:5",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:invalid:6",
+      "pass": true
+    },
+    {
+      "name": "auto-world:兽潮血战:invalid:7",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:before",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:at",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:after",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:invalid:0",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:invalid:1",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:invalid:2",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:invalid:3",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:invalid:4",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:invalid:5",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:invalid:6",
+      "pass": true
+    },
+    {
+      "name": "auto-world:天溪城破:invalid:7",
+      "pass": true
+    },
+    {
+      "name": "auto-world:unknown ordinary anchor",
+      "pass": true
+    },
+    {
+      "name": "early beast clause with separate unreached reinforcement remains denied",
+      "pass": true
+    },
+    {
+      "name": "rumour remains displayable",
+      "pass": true
+    },
+    {
+      "name": "future plan remains displayable",
+      "pass": true
+    },
+    {
+      "name": "unlabelled war retained pending review",
+      "pass": true
+    },
+    {
+      "name": "stage boundary table frozen policy",
+      "pass": true
+    },
+    {
+      "name": "floor boundary:0",
+      "pass": true
+    },
+    {
+      "name": "floor boundary:1",
+      "pass": true
+    },
+    {
+      "name": "floor boundary:30",
+      "pass": true
+    },
+    {
+      "name": "floor boundary:31",
+      "pass": true
+    },
+    {
+      "name": "floor boundary:50",
+      "pass": true
+    },
+    {
+      "name": "floor boundary:51",
+      "pass": true
+    },
+    {
+      "name": "floor boundary:360",
+      "pass": true
+    },
+    {
+      "name": "floor boundary:361",
+      "pass": true
+    },
+    {
+      "name": "floor boundary:2000",
+      "pass": true
+    },
+    {
+      "name": "scene hold positive",
+      "pass": true
+    },
+    {
+      "name": "scene departure unlocks hold",
+      "pass": true
+    },
+    {
+      "name": "fast forward candidates preserve old policy",
+      "pass": true
+    },
+    {
+      "name": "subject:direct subject",
+      "pass": true
+    },
+    {
+      "name": "subject:bystander regression",
+      "pass": true
+    },
+    {
+      "name": "subject:watcher",
+      "pass": true
+    },
+    {
+      "name": "subject:watched subject",
+      "pass": true
+    },
+    {
+      "name": "subject:negated subject",
+      "pass": true
+    },
+    {
+      "name": "subject:plan",
+      "pass": true
+    },
+    {
+      "name": "subject:rumour",
+      "pass": true
+    },
+    {
+      "name": "subject:virgin noun",
+      "pass": true
+    },
+    {
+      "name": "subject:night noun",
+      "pass": true
+    },
+    {
+      "name": "subject:joint subject one",
+      "pass": true
+    },
+    {
+      "name": "subject:joint subject two",
+      "pass": true
+    },
+    {
+      "name": "subject:inverted subject",
+      "pass": true
+    },
+    {
+      "name": "subject:passive actor must not gain victim fact",
+      "pass": true
+    },
+    {
+      "name": "subject:cross sentence cannot borrow name",
+      "pass": true
+    },
+    {
+      "name": "subject:missing prose",
+      "pass": true
+    },
+    {
+      "name": "subject:unknown subject",
+      "pass": true
+    },
+    {
+      "name": "ledger missing both",
+      "pass": true
+    },
+    {
+      "name": "ledger message fields override chat",
+      "pass": true
+    },
+    {
+      "name": "ledger clone source known",
+      "pass": true
+    },
+    {
+      "name": "ledger single sister cannot form whole relic",
+      "pass": true
+    },
+    {
+      "name": "ledger both sisters recover complete relic",
+      "pass": true
+    },
+    {
+      "name": "ledger additional prerequisite mandatory",
+      "pass": true
+    },
+    {
+      "name": "ledger additional prerequisite satisfied",
+      "pass": true
+    },
+    {
+      "name": "ledger owner name alone cannot create form",
+      "pass": true
+    },
+    {
+      "name": "ledger NPC relic cannot give player possession",
+      "pass": true
+    },
+    {
+      "name": "ledger own formed relic grants possession",
+      "pass": true
+    },
+    {
+      "name": "ledger source historical true preserved",
+      "pass": true
+    },
+    {
+      "name": "ledger manual negative before prerequisite recovery",
+      "pass": true
+    },
+    {
+      "name": "ledger manual false form remains false",
+      "pass": true
+    },
+    {
+      "name": "ledger manual false form prevents new stage",
+      "pass": true
+    },
+    {
+      "name": "ledger previous chat controls cannot override",
+      "pass": true
+    },
+    {
+      "name": "ledger stale message control cannot override chat truth",
+      "pass": true
+    },
+    {
+      "name": "anchor dates all evidence present early:南域大劫",
+      "pass": true
+    },
+    {
+      "name": "anchor dates threshold true:南域大劫",
+      "pass": true
+    },
+    {
+      "name": "anchor dates missing source:南域大劫",
+      "pass": true
+    },
+    {
+      "name": "anchor dates all evidence present early:天溪城兽潮",
+      "pass": true
+    },
+    {
+      "name": "anchor dates threshold true:天溪城兽潮",
+      "pass": true
+    },
+    {
+      "name": "anchor dates missing source:天溪城兽潮",
+      "pass": true
+    },
+    {
+      "name": "anchor dates all evidence present early:兽潮血战",
+      "pass": true
+    },
+    {
+      "name": "anchor dates threshold true:兽潮血战",
+      "pass": true
+    },
+    {
+      "name": "anchor dates missing source:兽潮血战",
+      "pass": true
+    },
+    {
+      "name": "anchor dates all evidence present early:天溪城破",
+      "pass": true
+    },
+    {
+      "name": "anchor dates threshold true:天溪城破",
+      "pass": true
+    },
+    {
+      "name": "anchor dates missing source:天溪城破",
+      "pass": true
+    },
+    {
+      "name": "anchor rejects bstander milestone",
+      "pass": true
+    },
+    {
+      "name": "anchor same round subject and form allowed",
+      "pass": true
+    },
+    {
+      "name": "anchor unproven book cannot supply prerequisite",
+      "pass": true
+    },
+    {
+      "name": "anchor rumour world event not fact",
+      "pass": true
+    },
+    {
+      "name": "anchor plan world event not fact",
+      "pass": true
+    },
+    {
+      "name": "milestone auto-date ignores forged validation cache",
+      "pass": true
+    },
+    {
+      "name": "milestone eligible world event persisted",
+      "pass": true
+    },
+    {
+      "name": "milestone same valid body idempotent",
+      "pass": true
+    },
+    {
+      "name": "milestone same claim changed prose retracts event",
+      "pass": true
+    },
+    {
+      "name": "milestone new valid proof same floor remains true",
+      "pass": true
+    },
+    {
+      "name": "milestone missing claimant cannot borrow subject",
+      "pass": true
+    },
+    {
+      "name": "milestone NPC fact does not grant player relic",
+      "pass": true
+    },
+    {
+      "name": "milestone same round valid book forms relic",
+      "pass": true
+    },
+    {
+      "name": "milestone prose proof rescues form-only declaration",
+      "pass": true
+    },
+    {
+      "name": "new book same floor removed proof cannot restore false fact",
+      "pass": true
+    },
+    {
+      "name": "inventory same action changed prose rolls back old deduction",
+      "pass": true
+    },
+    {
+      "name": "manual world false survives auto actual event",
+      "pass": true
+    }
+  ],
+  "pass": 123,
+  "fail": 0
+}

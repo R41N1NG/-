@@ -1,0 +1,344 @@
+{
+  "identity": "gpt",
+  "version": 1,
+  "mode": "ordered-shared-scope",
+  "baseline": {
+    "branch": "card-project",
+    "commit": "9f7a2de384e689459029ffc31d6359040669562b",
+    "path": "AI交接/下级更新/2026-10-10-状态机模块化基线/卡片脚本/状态机.js",
+    "rawSHA256": "7cd5d1cb318d8b7a1f2795b98e20f9f53dad7cb7c9cf085a080f8a6395515830",
+    "sha256": "7cd5d1cb318d8b7a1f2795b98e20f9f53dad7cb7c9cf085a080f8a6395515830",
+    "bytes": 304791,
+    "lines": 5177
+  },
+  "modules": [
+    {
+      "path": "bootstrap/header.js",
+      "purpose": "原脚本说明、版本与加载日志",
+      "baselineLines": [
+        1,
+        65
+      ],
+      "baselineSHA256": "e426b60a14caaf02761c68d35937e528643589ad52f9ba5b9c27e280fca1d39f"
+    },
+    {
+      "path": "data/registry.js",
+      "purpose": "账本字段、持有者与身份注册表",
+      "baselineLines": [
+        66,
+        351
+      ],
+      "baselineSHA256": "45b14a6f4be2207553a2895ec9a026b94478135e085340d1b0afe5df33b46815"
+    },
+    {
+      "path": "rules/stage-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "rules/stage.js",
+      "purpose": "段位与快速推进规则",
+      "baselineLines": [
+        352,
+        415
+      ],
+      "baselineSHA256": "099371415164aa1c50d298d981dabced68289d7989158a1db7187d88a9316f62"
+    },
+    {
+      "path": "utils/calendar-core.js",
+      "purpose": "第二阶段独立日期纯核（非初始基线模块）"
+    },
+    {
+      "path": "utils/calendar.js",
+      "purpose": "历时与仙盟历工具",
+      "baselineLines": [
+        416,
+        582
+      ],
+      "baselineSHA256": "e5bb1356ef05f44a7c954e044cbe7dd825de07b2cc2f618a6cf439c23d1243f4"
+    },
+    {
+      "path": "utils/time-basis-core.js",
+      "purpose": "第三阶段时间来源选择核：保留原有基准优先级"
+    },
+    {
+      "path": "utils/time-basis.js",
+      "purpose": "第三阶段时间来源适配：仅必要时读首楼时间行"
+    },
+    {
+      "path": "rules/plot-policy-core.js",
+      "purpose": "第五阶段明确时间与人工覆盖的剧情资格规则"
+    },
+    {
+      "path": "rules/plot-gates.js",
+      "purpose": "自由字段时间与事实门禁",
+      "baselineLines": [
+        2504,
+        2564
+      ],
+      "baselineSHA256": "032ee8ce7901a9eee178f3b813cbd38f41c0b4645cb1688e0889e8fcf0ed92e8"
+    },
+    {
+      "path": "data/status-fields.js",
+      "purpose": "状态字段和锚点映射",
+      "baselineLines": [
+        583,
+        630
+      ],
+      "baselineSHA256": "9971e5e6fced5fc78d55a6a9c1da03354752eb536a9eab86b14d9ccc50dc0c00"
+    },
+    {
+      "path": "host/api-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "host/api.js",
+      "purpose": "酒馆接口探测与宿主上下文",
+      "baselineLines": [
+        631,
+        723
+      ],
+      "baselineSHA256": "4d5a7ce774f5bffa7b45bcae612f19cb7a88385f2e77166e03979b1045f06456"
+    },
+    {
+      "path": "state/paths.js",
+      "purpose": "对象路径与合并工具",
+      "baselineLines": [
+        724,
+        764
+      ],
+      "baselineSHA256": "bffd067a88f734af9da98198d6388c5afc16e46fe7a588f3b1ea26175198c7da"
+    },
+    {
+      "path": "state/ledger-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "state/read.js",
+      "purpose": "双层合并与权威账本恢复",
+      "baselineLines": [
+        765,
+        864
+      ],
+      "baselineSHA256": "1a30faf1906578d3838d50be3d23d83b82d941dd8b5d70fb42b260b10792889d"
+    },
+    {
+      "path": "state/write.js",
+      "purpose": "统一写入口与原兼容实现",
+      "baselineLines": [
+        865,
+        1037
+      ],
+      "baselineSHA256": "13ccacd0388edf3d80b0f9287c94b917e8e36c889403abcaffdbaaf50fbe0e45"
+    },
+    {
+      "path": "rules/inventory-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "rules/inventory.js",
+      "purpose": "纳戒证据、变动及初始物品",
+      "baselineLines": [
+        1038,
+        1272
+      ],
+      "baselineSHA256": "5cf40c606593b0682f923c2aac18242fbf42890f7909f3433482ed3515ebf547"
+    },
+    {
+      "path": "state/init-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "state/init.js",
+      "purpose": "幂等初始化",
+      "baselineLines": [
+        1273,
+        1369
+      ],
+      "baselineSHA256": "122d60aafe3acc2937242d70913bc5e22288a789be5adfda3412c1a6d0064897"
+    },
+    {
+      "path": "rules/subject-evidence-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "rules/subject-evidence.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "parsers/status-core.js",
+      "purpose": "第三阶段状态解析核：依赖和诊断出口显式注入"
+    },
+    {
+      "path": "parsers/status.js",
+      "purpose": "状态块、角色块和字段解析",
+      "baselineLines": [
+        1370,
+        1787
+      ],
+      "baselineSHA256": "955821a2429f4978f822bc60725f57a9d4ab3a870133cfe3055db4004ec8d6e4"
+    },
+    {
+      "path": "rules/anchor-validation-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "rules/anchor-validation.js",
+      "purpose": "锚点前置、哈希与事实核验",
+      "baselineLines": [
+        1788,
+        1870
+      ],
+      "baselineSHA256": "6b387533456244168bd38c0fa448b5e2c679c9de8c5cf9ca51547c6ad5a5e32a"
+    },
+    {
+      "path": "rules/relic-progress.js",
+      "purpose": "已有RFC002数值记录试点完整实现",
+      "baselineLines": [
+        1871,
+        2092
+      ],
+      "baselineSHA256": "c9d5baad0cef7a3c59d63627b7866d4a2a2e7133b66e30f7108a44469ded52e5"
+    },
+    {
+      "path": "rules/milestones-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "rules/milestones.js",
+      "purpose": "里程碑应用、来源账本及回退",
+      "baselineLines": [
+        2093,
+        2503
+      ],
+      "baselineSHA256": "f68854ad7db5f702a9a297dc856415743ed98c4d7648f06761cd50075285eb29"
+    },
+    {
+      "path": "rules/relic.js",
+      "purpose": "名器来源闭包与出场实证",
+      "baselineLines": [
+        2565,
+        2696
+      ],
+      "baselineSHA256": "62313adae7c375fabd30e7c2c69445e4b8860356c049d82a2d49c78fb995e8b9"
+    },
+    {
+      "path": "rules/apply-status-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "rules/apply-status.js",
+      "purpose": "状态应用协调与一致性检查",
+      "baselineLines": [
+        2697,
+        3082
+      ],
+      "baselineSHA256": "e6fb41ea3bfbe3dc953b30b4ffd94a42b811d186a7be379692d20e5bfd77b3ae"
+    },
+    {
+      "path": "parsers/output-contract.js",
+      "purpose": "输出合同检查",
+      "baselineLines": [
+        3083,
+        3102
+      ],
+      "baselineSHA256": "67fbdf8b0e03bebbff4aa89527125b48823dfcde789a453f075fe2920d959d2f"
+    },
+    {
+      "path": "host/worldbook.js",
+      "purpose": "世界书读取、恢复及身份条目联动",
+      "baselineLines": [
+        3103,
+        3601
+      ],
+      "baselineSHA256": "fef02ca888b10a6ab85c8d5949fefa4b889548c4c34c12b421c0c3612b23ec29"
+    },
+    {
+      "path": "host/messages-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "host/messages.js",
+      "purpose": "宿主消息和身份选择",
+      "baselineLines": [
+        3602,
+        3735
+      ],
+      "baselineSHA256": "32b11516e7f96da41296d5560d7490246249aaa070f28368e020811f606370f3"
+    },
+    {
+      "path": "ui/identity-menu-controller.js",
+      "purpose": "第三阶段菜单控制器：宿主依赖注入和实例生命周期"
+    },
+    {
+      "path": "ui/identity-menu.js",
+      "purpose": "身份菜单及时间点增强生命周期",
+      "baselineLines": [
+        3736,
+        4230
+      ],
+      "baselineSHA256": "373255b2e7885a92f502ed3998c0305381bed60acb43adb5ec08589ad1c226e8"
+    },
+    {
+      "path": "commands/player.js",
+      "purpose": "玩家命令、继承及命令消息处理",
+      "baselineLines": [
+        4231,
+        4752
+      ],
+      "baselineSHA256": "413c6fc5a513cc12f22c4870287d41fa539f2794b39407bbe478eda897016ca7"
+    },
+    {
+      "path": "diagnostics/anchors.js",
+      "purpose": "锚点旁证日志",
+      "baselineLines": [
+        4753,
+        4803
+      ],
+      "baselineSHA256": "6c5d9fe78485d174cd2516449c9e4c60ac4ad13647addb94c183db5d33cf8efd"
+    },
+    {
+      "path": "state/status-operation.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "runtime/message-transactions.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "runtime/dispatcher-core.js",
+      "purpose": "第四至六阶段显式依赖核"
+    },
+    {
+      "path": "main.js",
+      "purpose": "总调度：boot、消息事件、渲染tick和首次生成预检",
+      "baselineLines": [
+        4804,
+        5084
+      ],
+      "baselineSHA256": "8ba82609c92f9d7635c8b9b8549908095b34df98a7fa53940cca40790fd1f54b"
+    },
+    {
+      "path": "diagnostics/console.js",
+      "purpose": "诊断入口与控制台挂载",
+      "baselineLines": [
+        5085,
+        5162
+      ],
+      "baselineSHA256": "53d51fe2fce13a342a391c2938dc00aacbd925375002a0fe3706206b97ebd2e8"
+    },
+    {
+      "path": "bootstrap/start.js",
+      "purpose": "启动自检与延迟启动",
+      "baselineLines": [
+        5163,
+        5177
+      ],
+      "baselineSHA256": "4261f3e8ee32d24b51298bce92aaffb180ba9ec40a5f3e4ace22d30b81d91216"
+    }
+  ],
+  "development": {
+    "phase": 6,
+    "basedOn": "538532f99e44aebdacc4342f7486f5f5188a7681",
+    "note": "初始 baseline 保留历史；当前用 --check，第四至六阶段联合装配与已审业务修正。"
+  }
+}

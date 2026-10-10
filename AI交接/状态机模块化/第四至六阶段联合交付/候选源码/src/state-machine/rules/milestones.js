@@ -1,0 +1,31 @@
+/** 原共享作用域名称的兼容适配；函数依赖延迟解析，避免后置模块初始化时序变化。 */
+const XSD_MILESTONE_DEPS = {
+  deflowerEvidenceIn: (...args) => deflowerEvidenceIn(...args),
+  readStatData: (...args) => readStatData(...args),
+  readKnown: (...args) => readKnown(...args),
+  stripStatusBlock: (...args) => stripStatusBlock(...args),
+  validateAnchors: (...args) => validateAnchors(...args),
+  console,
+  TAG,
+  ALL_FIELDS,
+  readIdentity: (...args) => readIdentity(...args),
+  normalizeAnchorName: (...args) => normalizeAnchorName(...args),
+  DEFLOWER_HARD_RES,
+  FORM_OF_HOLDERS,
+  出场实证名: (...args) => 出场实证名(...args),
+  deriveRelicClosure: (...args) => deriveRelicClosure(...args),
+  nearDeflowerWord: (...args) => nearDeflowerWord(...args),
+  HOLDER_TO_RELIC,
+  defaultInventoryFor: (...args) => defaultInventoryFor(...args),
+  applyItemChange: (...args) => applyItemChange(...args),
+  itemEvidenceIn: (...args) => itemEvidenceIn(...args),
+  normalizeInventory: (...args) => normalizeInventory(...args),
+  structuredClone: typeof structuredClone !== 'undefined' ? structuredClone : undefined,
+  hashText: (...args) => hashText(...args),
+  RELIC_PILOT_CONFIG,
+  validateRelicAction: (...args) => validateRelicAction(...args),
+  calcRelicProgress: (...args) => calcRelicProgress(...args),
+  writeStat: (...args) => writeStat(...args),
+};
+const XSD_MILESTONE_APPLICATION = createXsdMilestoneApplication(XSD_MILESTONE_DEPS);
+async function applyMilestones(p, messageId, text) { return XSD_MILESTONE_APPLICATION.applyMilestones(p, messageId, text); }

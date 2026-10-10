@@ -1,0 +1,7 @@
+{
+  "identity": "gpt",
+  "branch": "card-project",
+  "commit": "538532f99e44aebdacc4342f7486f5f5188a7681",
+  "source": "src/state-machine/modules.json + 卡片脚本/状态机.js",
+  "historicalPackagesUntouched": true
+}
