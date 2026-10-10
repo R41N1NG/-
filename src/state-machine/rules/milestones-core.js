@@ -1,7 +1,7 @@
 /* XSD_MILESTONE_APPLICATION_CORE_BEGIN */
 /** 机械迁移应用核：业务与宿主依赖由适配层显式提供。 */
 function createXsdMilestoneApplication(deps) {
-  const { deflowerEvidenceIn, readStatData, readKnown, stripStatusBlock, validateAnchors, console, TAG, ALL_FIELDS, readIdentity, normalizeAnchorName, DEFLOWER_HARD_RES, FORM_OF_HOLDERS, 出场实证名, deriveRelicClosure, nearDeflowerWord, HOLDER_TO_RELIC, defaultInventoryFor, applyItemChange, itemEvidenceIn, normalizeInventory, structuredClone, hashText, RELIC_PILOT_CONFIG, validateRelicAction, calcRelicProgress, writeStat } = deps;
+  const { deflowerEvidenceIn, readStatData, readKnown, stripStatusBlock, validateAnchors, console, TAG, ALL_FIELDS, readIdentity, normalizeAnchorName, DEFLOWER_HARD_RES, FORM_OF_HOLDERS, 出场实证名, deriveRelicClosure, nearDeflowerWord, HOLDER_TO_RELIC, defaultInventoryFor, applyItemChange, itemEvidenceIn, normalizeInventory, structuredClone, hashText, RELIC_PILOT_CONFIG, validateRelicAction, calcRelicProgress, hasRelicPhysiologicalResponse, writeStat } = deps;
 async function applyMilestones(p, messageId, text) {
   const list = Array.isArray(p?.里程碑) ? p.里程碑 : null;
   const bookIn = Array.isArray(p?.破处) ? p.破处 : [];
@@ -388,6 +388,20 @@ async function applyMilestones(p, messageId, text) {
     if (curP) {
       allRelicProgress['zhuojiuliuyanxue'] = curP;
       allRelicProgress[curP.name] = curP;
+    }
+  }
+
+  // ── 名器满额质变自动晋阶派生（RFC-002 铁律 36 闭环：浸润满额 5/5 ＋ 正文出现女方生理自发迎合实证 ⇒ 自动晋阶二阶段）──
+  for (const pilotId of Object.keys(RELIC_PILOT_CONFIG)) {
+    const cfg = RELIC_PILOT_CONFIG[pilotId];
+    const curP = allRelicProgress[pilotId];
+    if (!cfg || !curP) continue;
+    const s2Key = cfg.stage2Key;
+    if (curP.ready === true && known[s2Key] !== true && !news.includes(s2Key) && correctionAllows(s2Key)) {
+      if (typeof hasRelicPhysiologicalResponse === 'function' && hasRelicPhysiologicalResponse(pilotId, proseOuter)) {
+        news.push(s2Key);
+        console.log(TAG, `↳ [名器质变] 「${cfg.names[0]}」浸润饱满(${curP.count}/${curP.target}) 且正文出现女方生理自发迎合实证 ⇒ 自动晋阶「${s2Key}」`);
+      }
     }
   }
 

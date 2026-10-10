@@ -1363,7 +1363,7 @@ const ANCHOR_EVIDENCE = {
   灼酒流炎穴成形: /(灼酒流炎穴|名器.{0,6}(?:觉醒|成形)|初醒)/,
   残阳老怪洞府调教叶红缨: /(调教|洞府|囚|犬|锁链)/,
   叶红缨认残阳老怪为主: /(认主|为主|臣服|跪|主人)/,
-  灼酒流炎穴二阶段: /(二阶段|二境|觉醒)/,
+  灼酒流炎穴二阶段: /(二阶段|二境|觉醒|唤醒|自发迎合|生理自发|迎合|动起来|咬得?好?紧|咬紧|内壁痉挛|抽搐|吮吸|紧紧缠裹|主动缠裹|名器本能|自发蠕动|火热翻涌|情动)/,
   
   楚灵夜后窍开发: /(后窍|谷道|后门|后庭|菊径|肛|撑开|开发)/,
 };
@@ -2323,6 +2323,7 @@ const RELIC_PILOT_CONFIG = {
     target: 5,
     validActions: ['内射', '深度交合内射', '精液灌注', '破身'],
     evidenceRegex: /(内射|阳精|精液|白浊|尽数灌入|射入|注入|深处射|尽数射|全数灌)/,
+    responseRegex: /(自发迎合|生理自发|本能迎合|自发蠕动|名器本能|本能.*唤醒|彻底.*唤醒|觉醒|二阶段|二境|动起来|咬得?好?紧|咬紧|抽搐|吮吸|紧紧缠裹|主动缠裹|吸附|内壁痉挛|花房痉挛|道纹浮现|质变|情动)/,
   }
 };
 
@@ -2522,10 +2523,23 @@ function calcRelicProgress(allProgress, validAction, floor, swipeId, textHash) {
   return next;
 }
 
+/** 核验女方生理自发迎合实证（用于已达成浸润阈值后的质变自动晋阶） */
+function hasRelicPhysiologicalResponse(relicId, prose) {
+  const cfg = RELIC_PILOT_CONFIG[relicId];
+  if (!cfg || !cfg.responseRegex) return false;
+  const pText = String(prose || '');
+  if (!pText) return false;
+  const ownerPresent = cfg.ownerAliases.some((alias) => pText.includes(alias));
+  if (!ownerPresent) return false;
+  if (!cfg.responseRegex.test(pText)) return false;
+  if (typeof negatedAround === 'function' && negatedAround(pText, cfg.responseRegex)) return false;
+  return true;
+}
+
 /* XSD_MILESTONE_APPLICATION_CORE_BEGIN */
 /** 机械迁移应用核：业务与宿主依赖由适配层显式提供。 */
 function createXsdMilestoneApplication(deps) {
-  const { deflowerEvidenceIn, readStatData, readKnown, stripStatusBlock, validateAnchors, console, TAG, ALL_FIELDS, readIdentity, normalizeAnchorName, DEFLOWER_HARD_RES, FORM_OF_HOLDERS, 出场实证名, deriveRelicClosure, nearDeflowerWord, HOLDER_TO_RELIC, defaultInventoryFor, applyItemChange, itemEvidenceIn, normalizeInventory, structuredClone, hashText, RELIC_PILOT_CONFIG, validateRelicAction, calcRelicProgress, writeStat } = deps;
+  const { deflowerEvidenceIn, readStatData, readKnown, stripStatusBlock, validateAnchors, console, TAG, ALL_FIELDS, readIdentity, normalizeAnchorName, DEFLOWER_HARD_RES, FORM_OF_HOLDERS, 出场实证名, deriveRelicClosure, nearDeflowerWord, HOLDER_TO_RELIC, defaultInventoryFor, applyItemChange, itemEvidenceIn, normalizeInventory, structuredClone, hashText, RELIC_PILOT_CONFIG, validateRelicAction, calcRelicProgress, hasRelicPhysiologicalResponse, writeStat } = deps;
 async function applyMilestones(p, messageId, text) {
   const list = Array.isArray(p?.里程碑) ? p.里程碑 : null;
   const bookIn = Array.isArray(p?.破处) ? p.破处 : [];
@@ -2915,6 +2929,20 @@ async function applyMilestones(p, messageId, text) {
     }
   }
 
+  // ── 名器满额质变自动晋阶派生（RFC-002 铁律 36 闭环：浸润满额 5/5 ＋ 正文出现女方生理自发迎合实证 ⇒ 自动晋阶二阶段）──
+  for (const pilotId of Object.keys(RELIC_PILOT_CONFIG)) {
+    const cfg = RELIC_PILOT_CONFIG[pilotId];
+    const curP = allRelicProgress[pilotId];
+    if (!cfg || !curP) continue;
+    const s2Key = cfg.stage2Key;
+    if (curP.ready === true && known[s2Key] !== true && !news.includes(s2Key) && correctionAllows(s2Key)) {
+      if (typeof hasRelicPhysiologicalResponse === 'function' && hasRelicPhysiologicalResponse(pilotId, proseOuter)) {
+        news.push(s2Key);
+        console.log(TAG, `↳ [名器质变] 「${cfg.names[0]}」浸润饱满(${curP.count}/${curP.target}) 且正文出现女方生理自发迎合实证 ⇒ 自动晋阶「${s2Key}」`);
+      }
+    }
+  }
+
   const needOwnerWrite = ownersChanged && Object.keys(relicOwners).length > 0;
   const needDeriveWrite = 派生账本变 || 归属来源变 || 派生撤销.length > 0;
   if (!news.length && !bookChanged && !needOwnerWrite && !needDeriveWrite && !invChanged && !dispatchChanged && !relicProgressChanged && !anchorLogChanged && !rolledBack.length) {
@@ -3006,6 +3034,7 @@ const XSD_MILESTONE_DEPS = {
   RELIC_PILOT_CONFIG,
   validateRelicAction: (...args) => validateRelicAction(...args),
   calcRelicProgress: (...args) => calcRelicProgress(...args),
+  hasRelicPhysiologicalResponse: (...args) => hasRelicPhysiologicalResponse(...args),
   writeStat: (...args) => writeStat(...args),
 };
 const XSD_MILESTONE_APPLICATION = createXsdMilestoneApplication(XSD_MILESTONE_DEPS);

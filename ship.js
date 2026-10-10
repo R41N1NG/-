@@ -55,7 +55,7 @@ if (IS_FULL) {
   run('tools/checks/_chk_ejs_native.mjs', [], '原生 EJS 渲染卡内 id7 content（12 例）');
   run('tools/checks/_chk_freefield_gate.mjs', [], '自由字段一致性闸（未到事件不许写成正在发生）');
   run('tools/checks/_chk_derive_ledger.mjs', [], '派生来源账本＋事务撤销（出场才触发／写明确归属／来源清零才撤）');
-  run('tools/checks/_chk_plot_gate.mjs', [], '主线剧情闸门（正门＝里程碑，兜底＝段位；正门锚点必须是活名）');
+  run('tools/checks/_chk_plot_gate.mjs', [], '中立大势剧情闸门（7条中立大势全身份开放＋时间窗口＋世界锚点＋fail-closed）');
   run('tools/checks/_chk_example_pollution.mjs', [], '示例污染门禁（可写栏的示例里不许出现真实专名）');
   run('tools/checks/_chk_relic_stage.mjs', [], '名器阶段条（触发词收紧／阶段互斥：旧阶段自动关闭／fail-closed）');
   run('tools/checks/_chk_identity_sync.mjs', [], '身份/专轨/大势离线仿真');

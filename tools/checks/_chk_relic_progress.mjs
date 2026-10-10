@@ -61,6 +61,7 @@ vm.runInContext(code, sandbox);
 const {
   validateRelicAction,
   calcRelicProgress,
+  hasRelicPhysiologicalResponse,
   parseStatusBlock
 } = sandbox;
 
@@ -216,6 +217,19 @@ console.log('========================================================\n');
 {
   const prog = calcRelicProgress({}, { relicId: 'zhuojiu', delta: 1 }, 1, 0, 'h1');
   ck(prog.zhuojiu && prog.zhuojiu.count === 1, '反例 15：动作对象漏传 ok: true 时防御生效，count 正确计为 1 而非 0');
+}
+
+// 16. 铁律 36 闭环：女方生理自发迎合实证核验（正例放行、无实证拦截、否定句拦截）
+{
+  ck(typeof hasRelicPhysiologicalResponse === 'function', '反例 16：暴露生理自发迎合核验纯函数');
+  const ok1 = hasRelicPhysiologicalResponse('zhuojiu', '叶红缨媚肉紧紧缠裹上来，主动抽搐吮吸，腰自己动了起来。');
+  ck(ok1 === true, '反例 16a：叶红缨在场且有生理迎合实证，核验通过放行晋阶');
+
+  const ok2 = hasRelicPhysiologicalResponse('zhuojiu', '叶红缨倚在窗边看着远山，一言不发。');
+  ck(ok2 === false, '反例 16b：叶红缨在场但无生理迎合描写，坚决拦截不晋阶');
+
+  const ok3 = hasRelicPhysiologicalResponse('zhuojiu', '叶红缨并未动起来，也没有主动迎合吮吸。');
+  ck(ok3 === false, '反例 16c：命中否定句，坚决拦截不晋阶');
 }
 
 console.log(rep.join('\n'));

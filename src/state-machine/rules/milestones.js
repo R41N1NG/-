@@ -25,6 +25,7 @@ const XSD_MILESTONE_DEPS = {
   RELIC_PILOT_CONFIG,
   validateRelicAction: (...args) => validateRelicAction(...args),
   calcRelicProgress: (...args) => calcRelicProgress(...args),
+  hasRelicPhysiologicalResponse: (...args) => hasRelicPhysiologicalResponse(...args),
   writeStat: (...args) => writeStat(...args),
 };
 const XSD_MILESTONE_APPLICATION = createXsdMilestoneApplication(XSD_MILESTONE_DEPS);

@@ -21,6 +21,7 @@ const RELIC_PILOT_CONFIG = {
     target: 5,
     validActions: ['内射', '深度交合内射', '精液灌注', '破身'],
     evidenceRegex: /(内射|阳精|精液|白浊|尽数灌入|射入|注入|深处射|尽数射|全数灌)/,
+    responseRegex: /(自发迎合|生理自发|本能迎合|自发蠕动|名器本能|本能.*唤醒|彻底.*唤醒|觉醒|二阶段|二境|动起来|咬得?好?紧|咬紧|抽搐|吮吸|紧紧缠裹|主动缠裹|吸附|内壁痉挛|花房痉挛|道纹浮现|质变|情动)/,
   }
 };
 
@@ -218,5 +219,18 @@ function calcRelicProgress(allProgress, validAction, floor, swipeId, textHash) {
   cur.history = history;
   next[id] = cur;
   return next;
+}
+
+/** 核验女方生理自发迎合实证（用于已达成浸润阈值后的质变自动晋阶） */
+function hasRelicPhysiologicalResponse(relicId, prose) {
+  const cfg = RELIC_PILOT_CONFIG[relicId];
+  if (!cfg || !cfg.responseRegex) return false;
+  const pText = String(prose || '');
+  if (!pText) return false;
+  const ownerPresent = cfg.ownerAliases.some((alias) => pText.includes(alias));
+  if (!ownerPresent) return false;
+  if (!cfg.responseRegex.test(pText)) return false;
+  if (typeof negatedAround === 'function' && negatedAround(pText, cfg.responseRegex)) return false;
+  return true;
 }
 
