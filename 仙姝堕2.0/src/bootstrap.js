@@ -141,6 +141,8 @@ function start(win) {
   host.top.XSD2 = exposed;
   win.addEventListener("pagehide", exposed.dispose, { once: true });
   win.addEventListener("unload", exposed.dispose, { once: true });
+  const youjiguMapPlugin = require("./plugins/youjigu_map/index");
+  exposed.registerPlugin(youjiguMapPlugin);
   for (const plugin of host.top.XSD2_PLUGINS || [])
     exposed.registerPlugin(plugin);
   if (active()) runtime.ready().then(mirror).then(render).catch(report);

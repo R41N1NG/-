@@ -1,354 +1,446 @@
+"use strict";
+
 /**
- * 《仙姝堕 2.0》幽寂谷地图插件入口模块
+ * 《仙姝堕 2.0》幽寂谷地图插件入口模块 (CommonJS)
  * ─────────────────────────────────────────────────────────────────────────────
- * 遵循《仙姝堕2.0/分工与接口草案.md》契约：
- * 1. 导出标准装配生命周期：mount(slotElement, runtimeApi) -> unmount()
- * 2. 挂载于 HUD 预留插槽 `data-xsd-slot="map"`
- * 3. 严格经由 runtimeApi.dispatchIntent 提交意图，严禁私自修改全局状态
- * 4. 具备完整的退出确认、TTL 状态显示与漏标防死锁恢复
+ * 严格遵循 2.0 框架与 GPT 统一调度契约：
+ * 1. 导出标准插件规范：id, version, select, settle, getPrompt, mount；
+ * 2. 挂载于 HUD 预留插槽 `data-xsd-slot="map"`；
+ * 3. 视觉：南疆大地图底图 + 绝对定位呼吸圆点 (Pin Marker) + 短地点名；
+ * 4. 交互：点击圆点派发 SELECT_NODE 意图，由统一调度器执行原生强制发送与 pending 托管；
+ * 5. 正文与标签双核验，杜绝否定/旁观，支持漏标降级防死锁。
  */
 
-import {
+const {
   EVENT_DEFS,
-  OPEN_STAMP,
-  CLOSE_STAMP,
+  PINS,
+  OPEN_DATE,
+  CLOSE_DATE,
   createInitialState,
+  checkActionBlock,
   getAvailableOptions,
   applyAction,
-  advanceToSecondStage,
-  stampToDate
-} from './event_tree.js';
+  stampToDate,
+} = require("./event_tree");
 
-import { resolveActionResult } from './evidence.js';
+const { resolveActionResult } = require("./evidence");
+const { MAP_IMAGE_DATA } = require("./map_asset");
 
-export const PLUGIN_ID = 'youjigu_map';
-export const PLUGIN_VERSION = '2.0.0';
+const PLUGIN_ID = "youjigu_map";
+const PLUGIN_VERSION = "2.0.0";
 
 /**
- * 插件装配函数
- * @param {HTMLElement} slotElement - HUD 提供的挂载宿主容器
- * @param {Object} runtimeApi - 宿主提供的统一运行时接口
- * @returns {Function} unmount - 卸载清理函数
+ * 获取当前插件状态（从快照中读取或初始化）
  */
-export function mount(slotElement, runtimeApi) {
-  if (!slotElement) {
-    console.warn('[YoujiguMap] 未找到挂载容器 slotElement，装配跳过');
-    return () => {};
+function getPluginState(snapshot) {
+  if (snapshot?.pluginState?.[PLUGIN_ID]) {
+    return structuredClone(snapshot.pluginState[PLUGIN_ID]);
+  }
+  const date = snapshot?.calendarDate || { year: 1578, month: 3, day: 1 };
+  const stamp = date.year * 360 + (date.month - 1) * 30 + (date.day - 1);
+  const identity = snapshot?.identity || "自设";
+  return createInitialState(identity, stamp);
+}
+
+/**
+ * 校验并返回受信任节点配置（同步执行）
+ */
+function select(snapshot, nodeId) {
+  if (!nodeId) return { id: "", allowed: false, reason: "未指定节点代码" };
+  const def = EVENT_DEFS[nodeId];
+  if (!def) return { id: nodeId, allowed: false, reason: "未知事件代码" };
+
+  const state = getPluginState(snapshot);
+  const storyCount = snapshot?.storyCount || 0;
+  const blockReason = checkActionBlock(state, nodeId, storyCount);
+
+  if (blockReason) {
+    return {
+      id: nodeId,
+      allowed: false,
+      reason: blockReason,
+    };
   }
 
-  // 内部轻量状态
-  let isMapExpanded = false;
-  let activePendingAction = null;
-  let pluginState = null;
-  let unsubscribeRuntime = null;
-
-  // 初始化或从快照恢复
-  function syncFromSnapshot() {
-    const snap = runtimeApi?.getSnapshot ? runtimeApi.getSnapshot() : null;
-    if (snap && snap.activeEvent && snap.activeEvent.pluginId === PLUGIN_ID) {
-      pluginState = snap.activeEvent.state;
-      activePendingAction = snap.activeEvent.pendingAction || null;
-    } else {
-      const startStamp = snap?.calendarStamp || OPEN_STAMP;
-      const identity = snap?.identity || '自设';
-      pluginState = createInitialState(identity, startStamp);
-      activePendingAction = null;
-    }
-  }
-
-  syncFromSnapshot();
-
-  // 创建 DOM 容器
-  const wrapper = document.createElement('div');
-  wrapper.className = 'xsd-map-plugin-wrapper';
-  wrapper.style.cssText = 'position:relative;display:inline-block;';
-
-  // 渲染触发按钮
-  const triggerBtn = document.createElement('button');
-  triggerBtn.type = 'button';
-  triggerBtn.className = 'xsd-map-trigger-btn';
-  triggerBtn.innerHTML = '<span>🗺️ 地图</span>';
-  triggerBtn.style.cssText = [
-    'padding:4px 10px',
-    'background:linear-gradient(180deg, #2b251f 0%, #17130f 100%)',
-    'color:#d8c39d',
-    'border:1px solid #7a6341',
-    'border-radius:3px',
-    'cursor:pointer',
-    'font-size:12px',
-    'letter-spacing:1px',
-    'transition:all 0.2s ease'
-  ].join(';');
-
-  // 地图主面板容器（默认隐藏）
-  const mapPanel = document.createElement('div');
-  mapPanel.className = 'xsd-map-modal-panel';
-  mapPanel.style.cssText = [
-    'display:none',
-    'position:absolute',
-    'top:100%',
-    'left:0',
-    'width:320px',
-    'max-width:90vw',
-    'background:#15120e',
-    'border:1px solid #8c734b',
-    'box-shadow:0 8px 24px rgba(0,0,0,0.85)',
-    'padding:12px',
-    'border-radius:4px',
-    'z-index:999',
-    'margin-top:6px',
-    'color:#c9baa2',
-    'font-size:12px',
-    'line-height:1.6'
-  ].join(';');
-
-  wrapper.appendChild(triggerBtn);
-  wrapper.appendChild(mapPanel);
-  slotElement.appendChild(wrapper);
-
-  // 渲染面板内容
-  function renderPanel() {
-    if (!isMapExpanded) {
-      mapPanel.style.display = 'none';
-      return;
-    }
-    mapPanel.style.display = 'block';
-
-    const snap = runtimeApi?.getSnapshot ? runtimeApi.getSnapshot() : {};
-    const currentFloor = snap.floor || 0;
-    const dateInfo = stampToDate(pluginState.currentStamp);
-
-    const isWindowOpen = pluginState.currentStamp >= OPEN_STAMP && pluginState.currentStamp <= CLOSE_STAMP;
-
-    let html = `
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #3d3324;padding-bottom:6px;margin-bottom:8px;">
-        <span style="font-weight:bold;color:#f0e3cc;">📍 南疆全域 · 幽寂谷</span>
-        <button type="button" class="xsd-map-close-btn" style="background:none;border:none;color:#99876e;cursor:pointer;font-size:14px;">✕</button>
-      </div>
-      <div style="font-size:11px;color:#8a7a63;margin-bottom:6px;">
-        时令：${dateInfo.text} ${isWindowOpen ? '<span style="color:#6ea87a;">(适逢谷开)</span>' : '<span style="color:#a86e6e;">(非开放期)</span>'}
-      </div>
-    `;
-
-    // 处于 pending 状态时的特殊提示
-    if (activePendingAction) {
-      html += `
-        <div style="background:#261f17;border:1px dashed #a88a4e;padding:8px;border-radius:3px;margin-bottom:8px;">
-          <div style="color:#e6c98f;font-weight:bold;">⏳ 待完成行动</div>
-          <div style="margin:4px 0;">已选择：「${activePendingAction.label}」</div>
-          <div style="font-size:11px;color:#998870;">请发送输入框中的行动文本，等待故事演绎推进。</div>
-          <button type="button" class="xsd-map-cancel-pending-btn" style="margin-top:6px;padding:2px 8px;background:#381c1c;border:1px solid #6b2d2d;color:#e89b9b;border-radius:2px;cursor:pointer;font-size:11px;">放弃本次行动</button>
-        </div>
-      `;
-    }
-
-    // 渲染可用行动列表
-    const options = getAvailableOptions(pluginState, currentFloor);
-    html += '<div style="margin-top:8px;"><div style="font-weight:bold;color:#d4c4aa;margin-bottom:4px;">可探索节点：</div>';
-
-    if (!options.length) {
-      html += '<div style="font-size:11px;color:#706352;">当前暂无可选路径或已达阶段终点。</div>';
-    } else {
-      options.forEach(opt => {
-        const isBlocked = !!opt.blocked;
-        const ttlLabel = opt.remainingTtl !== null ? ` (剩${opt.remainingTtl}轮)` : '';
-        const mutexLabel = opt.group ? ' [二选一]' : '';
-        const confirmLabel = opt.needsConfirm ? ' [退出确认]' : '';
-
-        html += `
-          <div style="margin-bottom:6px;">
-            <button type="button" class="xsd-map-act-btn" data-act-id="${opt.id}" ${isBlocked ? 'disabled' : ''} style="
-              width:100%;
-              text-align:left;
-              padding:5px 8px;
-              background:${isBlocked ? '#1e1b17' : '#29221a'};
-              color:${isBlocked ? '#594f43' : '#e0cfb6'};
-              border:1px solid ${isBlocked ? '#332d24' : '#5c4b33'};
-              border-radius:2px;
-              cursor:${isBlocked ? 'not-allowed' : 'pointer'};
-              font-size:11px;
-            ">
-              ${opt.label}${ttlLabel}${mutexLabel}${confirmLabel}
-            </button>
-            ${isBlocked ? `<div style="font-size:10px;color:#804d4d;padding-left:4px;">${opt.blocked}</div>` : ''}
-          </div>
-        `;
-      });
-    }
-
-    // 若在第一轮谷口且还有第二轮前置
-    if (pluginState.step === 'first' && !activePendingAction) {
-      html += `
-        <div style="margin-top:8px;border-top:1px dashed #3d3324;padding-top:6px;">
-          <button type="button" class="xsd-map-advance-btn" style="width:100%;padding:4px;background:#1e2920;border:1px solid #3d6344;color:#a8d4b0;cursor:pointer;border-radius:2px;font-size:11px;">
-            ➔ 确认深入谷中（转入第二轮）
-          </button>
-        </div>
-      `;
-    }
-
-    html += '</div>';
-    mapPanel.innerHTML = html;
-
-    // 绑定面板内部事件
-    bindPanelEvents();
-  }
-
-  function bindPanelEvents() {
-    const closeBtn = mapPanel.querySelector('.xsd-map-close-btn');
-    if (closeBtn) {
-      closeBtn.onclick = () => {
-        isMapExpanded = false;
-        renderPanel();
-      };
-    }
-
-    const cancelPendingBtn = mapPanel.querySelector('.xsd-map-cancel-pending-btn');
-    if (cancelPendingBtn) {
-      cancelPendingBtn.onclick = () => {
-        activePendingAction = null;
-        if (runtimeApi?.dispatchIntent) {
-          runtimeApi.dispatchIntent({
-            pluginId: PLUGIN_ID,
-            type: 'CANCEL_PENDING'
-          });
-        }
-        renderPanel();
-      };
-    }
-
-    const advanceBtn = mapPanel.querySelector('.xsd-map-advance-btn');
-    if (advanceBtn) {
-      advanceBtn.onclick = () => {
-        const adv = advanceToSecondStage(pluginState);
-        if (adv.ok) {
-          pluginState = adv.state;
-          if (runtimeApi?.dispatchIntent) {
-            runtimeApi.dispatchIntent({
-              pluginId: PLUGIN_ID,
-              type: 'STATE_UPDATE',
-              payload: { state: pluginState }
-            });
-          }
-          renderPanel();
-        }
-      };
-    }
-
-    const actBtns = mapPanel.querySelectorAll('.xsd-map-act-btn');
-    actBtns.forEach(btn => {
-      btn.onclick = () => {
-        const actId = btn.getAttribute('data-act-id');
-        const def = EVENT_DEFS[actId];
-        if (!def) return;
-
-        // 退出节点二次确认
-        if (def.needsConfirm) {
-          const ok = window.confirm(`确认要${def.label}吗？退出后将推进${def.early ? 1 : 2}日世界日期并结算本次机缘。`);
-          if (!ok) return;
-        }
-
-        executeSelection(def);
-      };
-    });
-  }
-
-  function executeSelection(def) {
-    activePendingAction = def;
-
-    // 1. 通过统一 Dispatcher 派发行动意图
-    if (runtimeApi?.dispatchIntent) {
-      runtimeApi.dispatchIntent({
-        pluginId: PLUGIN_ID,
-        type: 'SELECT_ACTION',
-        payload: {
-          actionId: def.id,
-          label: def.label,
-          actionText: def.actionText,
-          expectedReward: def.reward || null,
-          requires: def.requires || null
-        }
-      });
-    }
-
-    // 2. 将动作文本自动填入 SillyTavern 输入框，引导自然语言演绎
-    fillChatInput(def.actionText);
-
-    // 3. 关闭面板并刷新提示
-    isMapExpanded = false;
-    renderPanel();
-  }
-
-  function fillChatInput(text) {
-    try {
-      const parentDoc = (typeof window !== 'undefined' && window.parent?.document) || document;
-      const textarea = parentDoc.querySelector('#send_textarea') || parentDoc.querySelector('textarea');
-      if (textarea) {
-        textarea.value = text;
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        textarea.focus();
-      }
-    } catch (e) {
-      console.warn('[YoujiguMap] 自动填充输入框异常：', e);
-    }
-  }
-
-  // 展开/收起按钮点击
-  triggerBtn.onclick = () => {
-    isMapExpanded = !isMapExpanded;
-    renderPanel();
-  };
-
-  // 订阅宿主状态变化
-  if (runtimeApi?.subscribe) {
-    unsubscribeRuntime = runtimeApi.subscribe((event) => {
-      if (!event) return;
-
-      // 楼层推进且有待结算行动时，核验正文
-      if (event.type === 'ASSISTANT_REPLY' && activePendingAction) {
-        const proseText = event.text || '';
-        const res = resolveActionResult(proseText, activePendingAction);
-
-        if (res.success) {
-          const applied = applyAction(pluginState, activePendingAction.id, event.floor || 0);
-          if (applied.ok) {
-            pluginState = applied.state;
-            activePendingAction = null;
-            if (runtimeApi.dispatchIntent) {
-              runtimeApi.dispatchIntent({
-                pluginId: PLUGIN_ID,
-                type: 'ACTION_CONFIRMED',
-                payload: {
-                  actionId: event.actionId,
-                  reward: applied.state.inventory.slice(-1)[0] || null,
-                  receipt: applied.state.receipt,
-                  state: pluginState
-                }
-              });
-            }
-          }
-        }
-      }
-
-      // 分支切换或回退时重新同步
-      if (event.type === 'ROLLBACK' || event.type === 'BRANCH_CHANGE') {
-        syncFromSnapshot();
-      }
-
-      renderPanel();
-    });
-  }
-
-  renderPanel();
-
-  // 返回标准卸载清理函数
-  return function unmount() {
-    if (unsubscribeRuntime) {
-      unsubscribeRuntime();
-      unsubscribeRuntime = null;
-    }
-    if (wrapper && wrapper.parentNode) {
-      wrapper.parentNode.removeChild(wrapper);
-    }
+  // 构造并返回满足 2.0 框架 contracts 校验的可信节点对象
+  return {
+    id: def.id,
+    allowed: true,
+    actionText: def.actionText,
+    prompt: def.prompt || "只演绎当前行动，不提前透露后续机缘。",
+    open: def.open || undefined,
+    close: def.close || undefined,
+    requires: def.requires || undefined,
+    ttl: def.ttl || undefined,
+    openedAt:
+      state.createdStoryCount !== undefined
+        ? state.createdStoryCount
+        : storyCount,
+    rewards: def.rewards ? [...def.rewards] : undefined,
+    grantsKnown: def.grantsKnown ? [...def.grantsKnown] : undefined,
+    exitDays: def.exitDays || undefined,
+    confirmText: def.confirmText || undefined,
   };
 }
+
+/**
+ * 新助手故事楼生成完毕后的统一结果结算
+ */
+async function settle(snapshot, pending, body) {
+  if (!pending || pending.pluginId !== PLUGIN_ID) {
+    return { outcome: "failure", reason: "非本插件 pending 行动" };
+  }
+
+  const state = getPluginState(snapshot);
+  const nodeId = pending.nodeId;
+  const selection = pending.selection || EVENT_DEFS[nodeId];
+  if (!selection) {
+    return { outcome: "failure", reason: "缺少节点配置" };
+  }
+
+  // 严谨核验正文与标签
+  const proseResult = resolveActionResult(body, selection);
+
+  if (!proseResult.success) {
+    // 未达成目标，返回失败，清除 pending 允许玩家重选
+    return {
+      outcome: "failure",
+      pluginState: state,
+      activeEvent: snapshot.activeEvent || null,
+      reason: proseResult.reason || "正文核验未通过",
+    };
+  }
+
+  // 达成目标，推进状态机
+  const storyCount = snapshot.storyCount || 0;
+  const advance = applyAction(state, nodeId, storyCount);
+  if (!advance.ok) {
+    return {
+      outcome: "failure",
+      pluginState: state,
+      activeEvent: snapshot.activeEvent || null,
+      reason: advance.error,
+    };
+  }
+
+  const nextState = advance.state;
+  const rewards = [];
+  if (selection.rewards && selection.rewards.length) {
+    selection.rewards.forEach((name) => {
+      rewards.push({ name, count: 1 });
+    });
+  }
+
+  const known = selection.grantsKnown ? [...selection.grantsKnown] : [];
+  const elapsedDays = selection.exitDays || undefined;
+
+  let activeEvent = null;
+  if (nextState.step !== "done") {
+    const placeName =
+      nextState.step === "cave"
+        ? "洞府"
+        : nextState.step === "stream"
+          ? "山涧"
+          : nextState.step === "valley"
+            ? "山谷"
+            : nextState.step === "secret"
+              ? "密室"
+              : "谷中";
+
+    activeEvent = {
+      id: "youjigu",
+      pluginId: PLUGIN_ID,
+      step: nextState.step,
+      place: `幽寂谷·${placeName}`,
+    };
+  }
+
+  return {
+    outcome: "success",
+    pluginState: nextState,
+    activeEvent,
+    rewards,
+    known,
+    elapsedDays,
+    body,
+  };
+}
+
+/**
+ * 自由行动期间的当前场景约束 Prompt
+ */
+function getPrompt(snapshot) {
+  const state = getPluginState(snapshot);
+  if (!state || ["map", "done"].includes(state.step)) return "";
+  return `【幽寂谷场景约束】当前正处于幽寂谷探索（${state.step}阶段）。请恪守当前环境设定，不跳关，不提前透露未授权的后续节点或机关机缘。`;
+}
+
+/**
+ * HUD 插槽挂载接口
+ */
+function mount(slotElement, runtimeApi) {
+  if (!slotElement) return () => {};
+
+  const doc = slotElement.ownerDocument || document;
+  const win = doc.defaultView || window;
+
+  // 1. 入口按钮
+  const triggerBtn = doc.createElement("button");
+  triggerBtn.type = "button";
+  triggerBtn.className = "xsd2-map-trigger-btn";
+  triggerBtn.textContent = "🗺️ 幽寂谷地图";
+  triggerBtn.style.cssText = [
+    "padding:2px 8px",
+    "background:linear-gradient(180deg, #2a2219 0%, #15100b 100%)",
+    "color:#dfcba5",
+    "border:1px solid #785e3b",
+    "border-radius:3px",
+    "cursor:pointer",
+    "font-size:11px",
+    "letter-spacing:1px",
+    "margin-left:6px",
+    "transition:all 0.2s ease",
+    "vertical-align:middle",
+  ].join(";");
+
+  slotElement.appendChild(triggerBtn);
+
+  // 2. 地图模态浮层
+  let modalOverlay = null;
+
+  function closeMap() {
+    if (modalOverlay) {
+      modalOverlay.remove();
+      modalOverlay = null;
+    }
+  }
+
+  function renderMapModal() {
+    closeMap();
+
+    const snapshot = runtimeApi.getSnapshot ? runtimeApi.getSnapshot() : null;
+    if (!snapshot) return;
+
+    const state = getPluginState(snapshot);
+    const storyCount = snapshot.storyCount || 0;
+    const availableNodes = getAvailableOptions(state, storyCount);
+
+    modalOverlay = doc.createElement("div");
+    modalOverlay.className = "xsd2-map-modal-overlay";
+    modalOverlay.style.cssText = [
+      "position:fixed",
+      "top:0",
+      "left:0",
+      "width:100vw",
+      "height:100vh",
+      "background:rgba(0,0,0,0.75)",
+      "z-index:99999",
+      "display:flex",
+      "justify-content:center",
+      "align-items:center",
+      "padding:16px",
+      "box-sizing:border-box",
+    ].join(";");
+
+    const modalBox = doc.createElement("div");
+    modalBox.className = "xsd2-map-modal-box";
+    modalBox.style.cssText = [
+      "position:relative",
+      "max-width:880px",
+      "width:100%",
+      "background:#120e0a",
+      "border:1px solid #856a43",
+      "box-shadow:0 12px 36px rgba(0,0,0,0.9)",
+      "border-radius:6px",
+      "padding:14px",
+      "color:#d4c4a8",
+      "display:flex",
+      "flex-direction:column",
+      "gap:10px",
+    ].join(";");
+
+    // 头部栏
+    const header = doc.createElement("div");
+    header.style.cssText =
+      "display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #3d2f1d;padding-bottom:8px;";
+
+    const title = doc.createElement("div");
+    const dateText = snapshot.calendarDate
+      ? `仙盟历 ${snapshot.calendarDate.year}年 ${snapshot.calendarDate.month}月 ${snapshot.calendarDate.day}日`
+      : "";
+    title.innerHTML = `<span style="font-weight:bold;color:#f3e6cf;font-size:14px;">📍 南疆全域 · 幽寂谷秘境</span> <span style="font-size:11px;color:#9b8769;margin-left:8px;">${dateText}</span>`;
+
+    const closeBtn = doc.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.textContent = "✕";
+    closeBtn.style.cssText =
+      "background:none;border:none;color:#a8957b;font-size:16px;cursor:pointer;padding:0 4px;";
+    closeBtn.onclick = closeMap;
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+    modalBox.appendChild(header);
+
+    // 提示条
+    if (snapshot.pending) {
+      const tip = doc.createElement("div");
+      tip.style.cssText =
+        "background:#241d14;border:1px dashed #997843;color:#e8cf9c;padding:6px 10px;font-size:11px;border-radius:3px;";
+      tip.textContent = `⏳ 当前行动「${snapshot.pending.actionText}」进行中，等待助手回复推进故事...`;
+      modalBox.appendChild(tip);
+    }
+
+    // 地图与圆点容器
+    const atlas = doc.createElement("div");
+    atlas.className = "yj-atlas";
+    atlas.style.cssText = [
+      "position:relative",
+      "width:100%",
+      "border:1px solid #574127",
+      "border-radius:4px",
+      "overflow:hidden",
+      "background:#0c0a07",
+      "line-height:0",
+    ].join(";");
+
+    const img = doc.createElement("img");
+    img.src = MAP_IMAGE_DATA;
+    img.alt = "南疆全域地图";
+    img.style.cssText =
+      "width:100%;height:auto;display:block;opacity:0.92;";
+    atlas.appendChild(img);
+
+    // 渲染发光圆点 Pins
+    availableNodes.forEach((node) => {
+      const pinCoords = PINS[node.id];
+      if (!pinCoords) return;
+
+      const [shortLabel, leftPct, topPct] = pinCoords;
+      const isBlocked = !!node.blocked;
+      const isPending =
+        snapshot.pending && snapshot.pending.nodeId === node.id;
+
+      const pinBtn = doc.createElement("button");
+      pinBtn.type = "button";
+      pinBtn.className = "yj-pin";
+      pinBtn.setAttribute("data-node-id", node.id);
+      pinBtn.setAttribute(
+        "title",
+        isBlocked ? `${node.label} (${node.blocked})` : node.label,
+      );
+
+      pinBtn.style.cssText = [
+        "position:absolute",
+        `left:${leftPct}%`,
+        `top:${topPct}%`,
+        "transform:translate(-50%, -50%)",
+        "background:" +
+          (isPending ? "#e6a832" : isBlocked ? "#473d31" : "#2bd980"),
+        "color:#ffffff",
+        "border:" + (isBlocked ? "1px solid #665645" : "2px solid #ffffff"),
+        "border-radius:12px",
+        "padding:2px 7px",
+        "font-size:10px",
+        "font-weight:bold",
+        "cursor:" + (isBlocked || isPending ? "not-allowed" : "pointer"),
+        "box-shadow:0 0 8px " +
+          (isBlocked ? "rgba(0,0,0,0.5)" : "rgba(43,217,128,0.7)"),
+        "white-space:nowrap",
+        "z-index:10",
+        "line-height:1.4",
+        "transition:all 0.2s ease",
+        "user-select:none",
+      ].join(";");
+
+      pinBtn.innerHTML = `<span>${shortLabel}</span>`;
+
+      if (!isBlocked && !isPending) {
+        pinBtn.onmouseenter = () => {
+          pinBtn.style.transform = "translate(-50%, -50%) scale(1.15)";
+          pinBtn.style.boxShadow = "0 0 14px rgba(43,217,128,1)";
+        };
+        pinBtn.onmouseleave = () => {
+          pinBtn.style.transform = "translate(-50%, -50%) scale(1)";
+          pinBtn.style.boxShadow = "0 0 8px rgba(43,217,128,0.7)";
+        };
+
+        // 点击圆点：触发 SELECT_NODE 派发意图！
+        pinBtn.onclick = async () => {
+          try {
+            const currentSnap = runtimeApi.getSnapshot
+              ? runtimeApi.getSnapshot()
+              : null;
+            if (!currentSnap) return;
+
+            // 调用统一调度器派发意图
+            await runtimeApi.dispatchIntent({
+              type: "SELECT_NODE",
+              pluginId: PLUGIN_ID,
+              expected: {
+                chatId: currentSnap.chatId,
+                branchId: currentSnap.branchId,
+                floor: currentSnap.floor,
+                revision: currentSnap.revision,
+              },
+              payload: {
+                nodeId: node.id,
+              },
+            });
+
+            // 成功出动后自动关闭地图
+            closeMap();
+          } catch (err) {
+            console.error("[YoujiguMap] 派发失败:", err);
+            win.parent?.toastr?.error?.(err.message || String(err));
+          }
+        };
+      }
+
+      atlas.appendChild(pinBtn);
+    });
+
+    modalBox.appendChild(atlas);
+    modalOverlay.appendChild(modalBox);
+
+    // 点击遮罩关闭
+    modalOverlay.onclick = (e) => {
+      if (e.target === modalOverlay) closeMap();
+    };
+
+    doc.body.appendChild(modalOverlay);
+  }
+
+  triggerBtn.onclick = renderMapModal;
+
+  // ESC 键关闭
+  const onKeydown = (e) => {
+    if (e.key === "Escape") closeMap();
+  };
+  doc.addEventListener("keydown", onKeydown);
+
+  // 订阅统一运行时生命周期变动
+  const unsubscribe = runtimeApi.subscribe?.(() => {
+    if (modalOverlay) {
+      renderMapModal();
+    }
+  });
+
+  // 卸载清理函数
+  return function unmount() {
+    closeMap();
+    triggerBtn.remove();
+    doc.removeEventListener("keydown", onKeydown);
+    if (typeof unsubscribe === "function") unsubscribe();
+  };
+}
+
+const pluginInstance = {
+  id: PLUGIN_ID,
+  version: PLUGIN_VERSION,
+  select,
+  settle,
+  getPrompt,
+  mount,
+};
+
+module.exports = pluginInstance;
