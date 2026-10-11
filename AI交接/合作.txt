@@ -11,6 +11,66 @@
 
 > 更早的 27 条全文在 `归档/合作（归档-截至2026-10-09）.txt`（一条未删），索引见第二节。
 
+### 2026-10-11 21:35:00（gemini）｜实机问题诊断与全部改动清单上报·请求GPT接管开局生命周期与HUD挂载｜基线：main@b141f46
+
+主人本轮指示与批评（原话照录）：
+1. “老毛病，最新角色卡，点铅笔能看到原文，但是看不到渲染后的状态栏，你看看怎么回事”
+2. “我操，你修了个啥啊。状态栏不仅没修好，点击也不能跳转身份，0楼还在状态栏的位置”
+3. “全改错了，把你改动了什么告诉gpt，我让她改”
+4. “上报gpt，注意是git库的远端合作txt不是本地的，本地她看不到。告诉她我们在做什么，她怎么看，请求她给出指导意见。”
+
+遵照主人最高指示，叫停当前盲目修补，全面整理 Gemini 此前在 commit 2400d74 与 b141f46 中对 6 个文件所做的全部改动细节，如实上报并请 GPT 指导接管：
+
+##### 一、主人真机实测现象与缺陷实证
+1. **测试卡环境**：酒馆实机部署 `仙姝堕2.0·框架测试.png`（由当前工程 ship.js 编译部署）。
+2. **实机表现**：
+   - 处于第 0 楼自设·瑾岐橘（swipe 2）；
+   - 界面上没有渲染暗色水墨 HUD 状态栏；
+   - 0 楼正文下方渲染出了太微百花谱画卷；
+   - 点击百花谱中的大立绘卡片（孤月、叶红缨、闻观语等），没有任何身份跳转响应；
+   - 点铅笔编辑能在 textarea 看到带有 `<Status_block>` 的原始 XML/Markdown 正文，但退出编辑后界面依然没有渲染状态栏。
+
+##### 二、Gemini 在 GPT 基线（979044e / fface5f）之后改动的 6 个文件清单
+（代码已在分支 main 提交并推送，最新 commit：b141f46，供 GPT 审查、回滚或重构）
+
+1. **`src/host/tavern.js`（宿主适配层）**：
+   - **穿透增强**：`top` 由 `win.parent` 改为 `(win && win.top) || (win && win.parent) || win`，并防御性获取 `top.SillyTavern || win.SillyTavern` 与 `TavernHelper`。
+   - **角色卡对象获取**：`context().card` 原为 `c.characters?.[c.characterId ?? c.this_chid]`，增加了 `|| c.card`（兼容离线 mock）。
+   - **卡名匹配判定**：`isOurCard()` 原严格字面量相等 `(c?.name || c?.data?.name) === cardName` 放宽为：若未配置卡名返回 `true`，否则满足 `=== cardName || startsWith("仙姝堕2.0") || includes("仙姝堕")` 均放行。
+   - **`replaceStory()` 权限与传参**：
+     - 原限制 `if (i !== c.chat.length - 1) throw Error(...)`，放宽为允许修改 0 楼：`if (i !== c.chat.length - 1 && i !== 0)`；
+     - `helper.setChatMessages` 传参补充 `mes` 字段：`[{ message_id: i, mes: text, message: text }]`；
+     - 同步回写内存：`c.chat[i].mes = text`。
+
+2. **`src/bootstrap.js`（引导与生命周期层）**：
+   - **消息 DOM 定位**：由 `chat?.querySelector(".mes:last-child .mes_text")` 改为从 `querySelectorAll(".mes")` 中取最后一项，规避酒馆底部存在非 `.mes` 节点时 `:last-child` 匹配失败。
+   - **编辑生命周期监听**：增补监听 `MESSAGE_EDITED`、`USER_MESSAGE_RENDERED`、`MESSAGE_UPDATED`。
+   - **延迟调度（scheduleRender）**：引入延迟去抖调度挂载，规避酒馆触发 `MESSAGE_EDITED` 之后才异步执行 `mes_text.empty()` 导致节点被清空的竞态。
+   - **MutationObserver 保护**：在 `#chat` / `body` 挂载轻量观察器，当最新消息缺少 `[data-xsd2-root]` 且未处于编辑输入态时自动触发补挂。
+   - **初次载入重试**：新增 `ensureMounted(retries, interval)` 轮询 10 次，规避历史消息 DOM 渲染慢于卡内脚本启动的竞态。
+
+3. **`src/runtime/dispatcher.js`（状态机核心分发层）**：
+   - **自设默认日期兜底**：`defaults(identity, opening, custom)` 中，若 `identity === "自设"` 且时间解析为空，自动兜底为仙盟历默认基准日期 `{ year: 1578, month: 3, day: 3 }`。
+   - **自设姓名提取**：从标题 `【身份】自设·XXX` 自动提取尊名存入 `stat_data.自设`。
+   - **0 楼开场白启动**：`load(c)` 原逻辑在自设未解析出有效日期时直接 `current = null; return null;`，Gemini 改为当匹配到 `【身份】自设` 或 `<IdentityPick name="自设"/>` 时不再 return null，直接调用 `defaults("自设", first)` 并 `commit`。
+
+4. **`tools/opening/menu-builder.cjs`（百花谱 HTML 构建）**：
+   - **命途选择网格置顶**：将 `[data-xds-identity-grid]`（赵无忧、四大殿主、自设命途）移动到卡片画卷上方置顶。
+   - **卡片绑定命途**：每张仙姝 `<article data-xds-flower>` 添加 `data-xds-identity="赵无忧"`，并添加点击启卷提示。
+
+5. **`tools/opening/menu.css`（百花谱样式）**：
+   - 为 `[data-xds-flower]` 增加 `cursor: pointer`、hover 微上浮动效与边框高光，新增 `[data-xds-card-hint]` 徽章样式。
+
+6. **`src/ui/opening_menu.js`（开场白 UI 交互）**：
+   - `click(e)` 事件委托增加选择器 `[data-xds-identity]`，让点击卡片也能触发 `submit({ identity })`。
+
+##### 三、请求 GPT 给出指导意见并接管
+主人判定上述修复“全改错了”。请 GPT 审阅并全面指导：
+1. **0 楼与开场白生命周期架构**：在 2.0 体系中，0 楼到底应该挂什么？百花谱选人面板的触发条件、挂载宿主及生命周期是什么？当用户切换到自设 swipe 时，0 楼为什么会挂百花谱，正确的处理逻辑是什么？
+2. **HUD 状态栏为什么实机不显示**：为什么点铅笔能看到原文，但界面上看不到渲染后的暗色 HUD？2.0 原生设计中对酒馆事件流、DOM 节点、多楼层渲染的正确契约是什么？
+3. **身份跳转机制**：用户在 0 楼点击身份（如赵无忧/殿主/自设），正确的流转机制应该是什么？是调用酒馆接口切换 swipe，还是发送消息，还是通过 `replaceStory` 替换 0 楼？
+4. **后续接管**：请 GPT 全权接管上述 6 个文件及相关逻辑。Gemini 会在本地严格配合执行 `ship.js` 编译、离线门禁、真机部署及验收。
+
 ### 2026-10-11 21:20:00（gemini）｜自设身份日期兜底·百花谱身份跳转直达与开局状态机闭环｜基线：main@2400d74
 
 响应主人反馈：“状态栏不仅没修好，点击也不能跳转身份，0楼还在状态栏的位置”。
@@ -342,6 +402,9 @@ v1.1 的核心修复**真机确认生效**，主人原话「其余功能正常�
 
 ## 二、全部项目索引（含已归档项目）
 
+| 2026-10-11 21:35:00 | gemini | 实机问题诊断与全部改动清单上报·请求GPT接管开局生命周期与HUD挂载 | 整理提交2400d74与b141f46涉及的6个文件全部改动清单与真机现象证据，按主人指示叫停盲目修补，请求GPT接管开局生命周期、HUD挂载与身份跳转机制。 |
+| 2026-10-11 21:20:00 | gemini | 自设身份日期兜底·百花谱身份跳转直达与开局状态机闭环 | 修复自设开场白parseDate返回null导致状态机中断；百花谱卡片绑定点击跳转与命途网格置顶；replaceStory放宽0楼改写并补齐mes属性；43项单测全绿。 |
+| 2026-10-11 20:55:00 | gemini | 仙姝堕2.0酒馆实机HUD状态栏挂载修复·DOM生命周期与编辑响应闭环 | 适配真实酒馆沙盒穿透与characters[chid]卡片读取；放宽isOurCard卡名匹配；选择器改尾项；增加MESSAGE_EDITED去抖调度与MutationObserver防御。 |
 | 2026-10-10 20:45:00 | gemini | 状态机47模块全量接入·中立大势确立·实机E2E全绿与RFC-002质变晋阶闭环 | 47模块build --check通过(340750B)；修复_chk_identity_sync缺卡阻断；确立7条全身份中立大势(UID 154-160)；实机解包E2E 16项与读回一致性100% PASS；RFC-002满额+生理自发迎合自动晋阶二阶段落地闭环(16项反例全绿)；ship.js极速交付部署通过。 |
 | 2026-10-10 09:30:00 | gemini | 第二阶段日期工具接入·全绿验证与实机部署闭环回执 | 28模块build --check通过(306105B/6703d93b...)；时钟门禁32项全绿，ship.js 21项门禁全绿；卡片重新编译封装并部署至SillyTavern(SHA 761f55b2...)；解包断言状态机已包含createXsdCalendar与纯核计算；转入第三阶段剧情闸门整理。 |
 | 时间（Asia/Shanghai） | 参与者 | 更改项目 | 完成结果 |
@@ -1147,3 +1210,69 @@ index.js目前只有mount，无select/settle；消息是SELECT_ACTION/STATE_UPDA
 独立卡版本2.0-framework.3，229条世界书；最终脚本1,549,958字节、PNG2,797,685字节。独立JSON/PNG已由源码重建；用户交付只给PNG。未配置XSD2_TAVERN_USER_DIR，未部署到主人酒馆，未合流正式卡或世界书。用户导入新PNG后应切卡重进或Ctrl+F5，避免酒馆旧内存继续显示裸按钮。交接及框架说明同步更新。
 
 【身份：gpt｜类型：问题小总结】原版百花谱展示及必要素材已迁入2.0，冗余旧监听/解析/恢复/兼容路径已裁剪，所有写入继续走现有统一内核；43项通过，桌面手机静态布局已查看。原生酒馆体验仍由主人确认。
+
+
+【身份：gemini｜日期时间：2026-10-11 21:35:00｜时区：Asia/Shanghai｜类型：主人实机反馈全改错·全部改动清单交接与请求GPT接管开局生命周期及HUD】
+
+主人本轮指示与原话（一条不省）：
+1. “老毛病，最新角色卡，点铅笔能看到原文，但是看不到渲染后的状态栏，你看看怎么回事”
+2. “我操，你修了个啥啊。状态栏不仅没修好，点击也不能跳转身份，0楼还在状态栏的位置”
+3. “全改错了，把你改动了什么告诉gpt，我让她改”
+4. “上报gpt，注意是git库的远端合作txt不是本地的，本地她看不到。告诉她我们在做什么，她怎么看，请求她给出指导意见。”
+
+主人点名批评与定调（防重犯）：
+主人在真机实测后明确判定：Gemini 此前对问题的排查与修改“全改错了”。
+命令停止盲目修补，将此前改动的全部文件与具体逻辑逐一向 GPT 做透明交接，由 GPT 主导并决定正确的架构实现。
+
+一、主人真机实测现象与缺陷实证
+1. 测试卡环境：酒馆实机部署 `仙姝堕2.0·框架测试.png`（由当前工程 ship.js 编译部署）。
+2. 实机表现：
+   - 处于第 0 楼自设·瑾岐橘（swipe 2）；
+   - 界面上没有渲染暗色水墨 HUD 状态栏；
+   - 0 楼正文下方渲染出了太微百花谱画卷；
+   - 点击百花谱中的大立绘卡片（孤月、叶红缨、闻观语等），没有任何身份跳转响应；
+   - 点铅笔编辑能在 textarea 看到带有 `<Status_block>` 的原始 XML/Markdown 正文，但退出编辑后界面依然没有渲染状态栏。
+
+二、Gemini 在 GPT 基线（979044e / fface5f）之后改动的 6 个文件清单
+（代码已在分支 main 提交并推送，最新 commit：b141f46，供 GPT 审查、回滚或重构）
+
+1. `src/host/tavern.js`（宿主适配层）：
+   - 穿透增强：`top` 由 `win.parent` 改为 `(win && win.top) || (win && win.parent) || win`，并防御性获取 `top.SillyTavern || win.SillyTavern` 与 `TavernHelper`。
+   - 角色卡对象获取：`context().card` 原为 `c.characters?.[c.characterId ?? c.this_chid]`，增加了 `|| c.card`（兼容离线 mock）。
+   - 卡名匹配判定：`isOurCard()` 原严格字面量相等 `(c?.name || c?.data?.name) === cardName` 放宽为：若未配置卡名返回 `true`，否则满足 `=== cardName || startsWith("仙姝堕2.0") || includes("仙姝堕")` 均放行。
+   - `replaceStory()` 权限与传参：
+     - 原限制 `if (i !== c.chat.length - 1) throw Error(...)`，放宽为允许修改 0 楼：`if (i !== c.chat.length - 1 && i !== 0)`；
+     - `helper.setChatMessages` 传参补充 `mes` 字段：`[{ message_id: i, mes: text, message: text }]`；
+     - 同步回写内存：`c.chat[i].mes = text`。
+
+2. `src/bootstrap.js`（引导与生命周期层）：
+   - 消息 DOM 定位：由 `chat?.querySelector(".mes:last-child .mes_text")` 改为从 `querySelectorAll(".mes")` 中取最后一项，规避酒馆底部存在非 `.mes` 节点时 `:last-child` 匹配失败。
+   - 编辑生命周期监听：增补监听 `MESSAGE_EDITED`、`USER_MESSAGE_RENDERED`、`MESSAGE_UPDATED`。
+   - 延迟调度（scheduleRender）：引入延迟去抖调度挂载，规避酒馆触发 `MESSAGE_EDITED` 之后才异步执行 `mes_text.empty()` 导致节点被清空的竞态。
+   - MutationObserver 保护：在 `#chat` / `body` 挂载轻量观察器，当最新消息缺少 `[data-xsd2-root]` 且未处于编辑输入态时自动触发补挂。
+   - 初次载入重试：新增 `ensureMounted(retries, interval)` 轮询 10 次，规避历史消息 DOM 渲染慢于卡内脚本启动的竞态。
+
+3. `src/runtime/dispatcher.js`（状态机核心分发层）：
+   - 自设默认日期兜底：`defaults(identity, opening, custom)` 中，若 `identity === "自设"` 且时间解析为空，自动兜底为仙盟历默认基准日期 `{ year: 1578, month: 3, day: 3 }`。
+   - 自设姓名提取：从标题 `【身份】自设·XXX` 自动提取尊名存入 `stat_data.自设`。
+   - 0 楼开场白启动：`load(c)` 原逻辑在自设未解析出有效日期时直接 `current = null; return null;`，Gemini 改为当匹配到 `【身份】自设` 或 `<IdentityPick name="自设"/>` 时不再 return null，直接调用 `defaults("自设", first)` 并 `commit`。
+
+4. `tools/opening/menu-builder.cjs`（百花谱 HTML 构建）：
+   - 命途选择网格置顶：将 `[data-xds-identity-grid]`（赵无忧、四大殿主、自设命途）移动到卡片画卷上方置顶。
+   - 卡片绑定命途：每张仙姝 `<article data-xds-flower>` 添加 `data-xds-identity="赵无忧"`，并添加点击启卷提示。
+
+5. `tools/opening/menu.css`（百花谱样式）：
+   - 为 `[data-xds-flower]` 增加 `cursor: pointer`、hover 微上浮动效与边框高光，新增 `[data-xds-card-hint]` 徽章样式。
+
+6. `src/ui/opening_menu.js`（开场白 UI 交互）：
+   - `click(e)` 事件委托增加选择器 `[data-xds-identity]`，让点击卡片也能触发 `submit({ identity })`。
+
+三、请求 GPT 给出指导意见并接管
+主人判定上述修复“全改错了”。请 GPT 审阅并全面指导：
+1. **0 楼与开场白生命周期架构**：在 2.0 体系中，0 楼到底应该挂什么？百花谱选人面板的触发条件、挂载宿主及生命周期是什么？当用户切换到自设 swipe 时，0 楼为什么会挂百花谱，正确的处理逻辑是什么？
+2. **HUD 状态栏为什么实机不显示**：为什么点铅笔能看到原文，但界面上看不到渲染后的暗色 HUD？2.0 原生设计中对酒馆事件流、DOM 节点、多楼层渲染的正确契约是什么？
+3. **身份跳转机制**：用户在 0 楼点击身份（如赵无忧/殿主/自设），正确的流转机制应该是什么？是调用酒馆接口切换 swipe，还是发送消息，还是通过 `replaceStory` 替换 0 楼？
+4. **后续接管**：请 GPT 全权接管上述 6 个文件及相关逻辑。Gemini 会在本地严格配合执行 `ship.js` 编译、离线门禁、真机部署及验收。
+
+【身份：gemini｜类型：问题小总结】已向 GPT 全量呈报主人实机批评、当前现象证据，以及 Gemini 在 2400d74 和 b141f46 中对 6 个文件所做的全部具体改动。请求 GPT 指导 0 楼生命周期、HUD 挂载与身份跳转机制，并全权接管修改。
+
