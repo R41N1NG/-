@@ -67,6 +67,16 @@ function negatedAround(text, re) {
  *  2026-10-08（gpt 04 号③）：空正文由「放行」改为 **fail-closed**（读不到正文就不予认定）。 */
 function anchorEvidenceIn(prose, field) {
   if (field === '灼酒流炎穴二阶段') return { ok: typeof hasRelicPhysiologicalResponse === 'function' && hasRelicPhysiologicalResponse('zhuojiu', prose), why: '正文须有明确落在叶红缨上的已发生生理响应' };
+  if (typeof RELIC_PILOT_CONFIG === 'object' && RELIC_PILOT_CONFIG) {
+    for (const [id, cfg] of Object.entries(RELIC_PILOT_CONFIG)) {
+      if (cfg && cfg.stage2Key === field) {
+        return {
+          ok: typeof hasRelicPhysiologicalResponse === 'function' && hasRelicPhysiologicalResponse(id, prose),
+          why: `正文须有明确落在${cfg.owner}上的已发生生理响应`
+        };
+      }
+    }
+  }
   const re = ANCHOR_EVIDENCE[field];
   if (!re) return { ok: true, why: '（该锚点无实证要求）' };
   if (!prose) return { ok: false, why: '（本楼读不到正文 ⇒ 不予认定；确实发生了就发「/解锁 …」手工补）' };
@@ -214,9 +224,9 @@ function defaultInventoryRaw(identity) {
   if (id === '魂欢殿主') {
     return [
       { name: '天姝令（魂欢）', desc: '天姝会魂欢殿殿主信物，正面刻粉色水滴邪徽。', full: '极乐太子敕封信物，执掌天姝会辨识名器之秘法与北域幽鬼坊市暗线。' },
-      { name: '《情丝化灵录》', desc: '鬼医病相思主修的魔道密法，情丝寄魂。', full: '能化无形情愫为万千细密情丝，深入经脉骨髓，潜移默化篡改道心，最擅操控仙子心智。' },
+      { name: '《情丝化灵录》', desc: '病相思主修的魔道密法，情丝寄魂。', full: '能化无形情愫为万千细密情丝，深入经脉骨髓，潜移默化篡改道心，最擅操控仙子心智。' },
       { name: '《极乐引》', desc: '会中通传的名器总录，详载四域仙姝名器体质。', full: '软皮所制，记载落红、情动、沉沦三境之妙，记有北域花芷凝「梅蕊穴」之秘。' },
-      { name: '百毒百草囊', desc: '鬼医随身药囊，内藏无数奇诡灵蛊与迷情秘药。', full: '纳戒级灵丝皮囊，盛装幽冥蚀骨散、软筋融魂液及各类独门毒蛊，伤人于无形。' }
+      { name: '百毒百草囊', desc: '病相思随身药囊，内藏无数奇诡灵蛊与迷情秘药。', full: '纳戒级灵丝皮囊，盛装幽冥蚀骨散、软筋融魂液及各类独门毒蛊，伤人于无形。' }
     ];
   }
   return [

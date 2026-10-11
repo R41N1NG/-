@@ -21,7 +21,11 @@ function readLayer(opt) {
 function readStatData() {
   const chatV = readLayer(L_CHAT);
   const msgV = readLayer(L_MSG);
-  const stat = XSD_LEDGER_READER.mergeStatLayers(chatV, msgV, { chatId: currentChatId() });
+  const latestId = (API && typeof API.getLastMessageId === 'function') ? Number(API.getLastMessageId()) : null;
+  const stat = XSD_LEDGER_READER.mergeStatLayers(chatV, msgV, {
+    chatId: currentChatId(),
+    latestMessageId: Number.isFinite(latestId) ? latestId : null
+  });
   if (!stat) return null;
   const cs = chatV && chatV.stat_data;
   const service = window.__xsdCorrection;

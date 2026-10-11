@@ -26,6 +26,9 @@ const XSD_MILESTONE_DEPS = {
   validateRelicAction: (...args) => validateRelicAction(...args),
   calcRelicProgress: (...args) => calcRelicProgress(...args),
   hasRelicPhysiologicalResponse: (...args) => hasRelicPhysiologicalResponse(...args),
+  hasRelicStage3Response: (...args) => hasRelicStage3Response(...args),
+  hasRelicStage4Response: (...args) => hasRelicStage4Response(...args),
+  getRelicStage: (...args) => getRelicStage(...args),
   writeStat: (...args) => writeStat(...args),
 };
 const XSD_MILESTONE_APPLICATION = createXsdMilestoneApplication(XSD_MILESTONE_DEPS);

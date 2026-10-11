@@ -1,7 +1,8 @@
 /* ⚠️ 本文件由 _pack_panel_script.mjs 自动生成，**不要直接手改**。
  *    要改逻辑 → 改 卡片脚本/_src/状态栏面板.模板.js
  *    要改样式 → 改 _card_panel_v4.css / _card_panel_v4.skeleton.html（或 _preview_H.html 后重跑拆解）
- *    生成时间：2026/10/9 20:54:07
+ *    本次重打包：scratch/_repack_panel.mjs（三个 base64 大件沿用上一版，逻辑取新模板）
+ *    生成时间：2026/10/11 01:08:13
  *    架构照《制卡规范 v2.0》§C 卷：正则只出迷你壳 → 本脚本 getMessageData → mount(el, raw, msgId) */
 /* ═══════════════════════════════════════════════════════════════════════════
  * 仙姝墮 · 态势 HUD（卡内脚本 · **模板** · 双端适配版 · 2026-10-06）
@@ -1694,9 +1695,9 @@ function defaultInventoryFor(identity) {
   if (id === '魂欢殿主') {
     return [
       { name: '天姝令（魂欢）', desc: '天姝会魂欢殿殿主信物，正面刻粉色水滴邪徽。', full: '极乐太子敕封信物，执掌天姝会辨识名器之秘法与北域幽鬼坊市暗线。' },
-      { name: '《情丝化灵录》', desc: '鬼医病相思主修的魔道密法，情丝寄魂。', full: '能化无形情愫为万千细密情丝，深入经脉骨髓，潜移默化篡改道心，最擅操控仙子心智。' },
+      { name: '《情丝化灵录》', desc: '病相思主修的魔道密法，情丝寄魂。', full: '能化无形情愫为万千细密情丝，深入经脉骨髓，潜移默化篡改道心，最擅操控仙子心智。' },
       { name: '《极乐引》', desc: '会中通传的名器总录，详载四域仙姝名器体质。', full: '软皮所制，记载落红、情动、沉沦三境之妙，记有北域花芷凝「梅蕊穴」之秘。' },
-      { name: '百毒百草囊', desc: '鬼医随身药囊，内藏无数奇诡灵蛊与迷情秘药。', full: '纳戒级灵丝皮囊，盛装幽冥蚀骨散、软筋融魂液及各类独门毒蛊，伤人于无形。' }
+      { name: '百毒百草囊', desc: '病相思随身药囊，内藏无数奇诡灵蛊与迷情秘药。', full: '纳戒级灵丝皮囊，盛装幽冥蚀骨散、软筋融魂液及各类独门毒蛊，伤人于无形。' }
     ];
   }
   return [
@@ -1901,6 +1902,29 @@ function fillPanel(messageId, rawText, explicitPanel) {
     const idLedger = (stat && typeof stat['身份'] === 'string') ? String(stat['身份']).trim() : '';
     if (idEl && idLedger) { idEl.textContent = idLedger; writtenFields.add('id'); }
   } catch (eIdLedger) { /* 台账不可读 ⇒ 保持模型文本 */ }
+  /* 局势一栏自动附带当前【中立大势】时期徽章，让玩家一目了然所处世界线阶段 */
+  try {
+    const sitEl = fieldNodeMap.get('sit');
+    const rawYear = stat && (stat['仙盟历'] !== undefined ? stat['仙盟历'] : stat['仙盟历文']);
+    let y = 1578.03;
+    if (typeof rawYear === 'number') y = rawYear;
+    else if (typeof rawYear === 'string') {
+      const ym = rawYear.match(/15\d\d(?:\.\d+)?/);
+      if (ym) y = parseFloat(ym[0]);
+    }
+    let eraTag = '【中立·承平假象】';
+    if (y < 1578.03) eraTag = '【中立·暗流微澜】';
+    else if (y < 1578.08) eraTag = '【中立·承平假象】';
+    else if (y < 1579.01) eraTag = '【中立·南域大劫】';
+    else if (y < 1579.03) eraTag = '【中立·天溪兽潮】';
+    else if (y < 1579.06) eraTag = '【中立·天溪城破】';
+    else if (y < 1580.01) eraTag = '【中立·乱世割据】';
+    else eraTag = '【中立·极乐定局】';
+
+    if (sitEl && sitEl.textContent && !sitEl.textContent.includes('【中立')) {
+      sitEl.textContent = eraTag + ' ' + sitEl.textContent;
+    }
+  } catch (eSit) { /* 忽略 */ }
 // ③ 在场角色子块 → 「人」区的小卡片
   /* 阶段判定（2026-09-28）：拿「地点＋环境＋状态」的原文去判该用哪一组立绘
    *   （例如出现「沐浴/浴池/汤池」⇒ bath 组）。判不出来一律 baseline —— 与主题（主立绘）一致。 */
@@ -2161,10 +2185,53 @@ const XsdHUD = (function () {
       const cs = (cv && cv.stat_data && typeof cv.stat_data === 'object') ? cv.stat_data : null;
       const ms = (mv && mv.stat_data && typeof mv.stat_data === 'object') ? mv.stat_data : null;
       if (!cs && !ms) return null;
+
+      const curFloor = (ms && Number.isFinite(Number(ms.最后处理楼号))) ? Number(ms.最后处理楼号) : null;
+      const chatFloor = (cs && Number.isFinite(Number(cs.最后处理楼号))) ? Number(cs.最后处理楼号) : null;
+      const isRewind = curFloor !== null && chatFloor !== null && curFloor < chatFloor;
+
       const stat = Object.assign({}, cs || {}, ms || {});
       const ck = (cs && cs.known && typeof cs.known === 'object') ? cs.known : null;
       const mk = (ms && ms.known && typeof ms.known === 'object') ? ms.known : null;
-      if (ck || mk) stat.known = Object.assign({}, ck || {}, mk || {});
+      stat.known = Object.assign({}, ck || {}, mk || {});
+
+      if (isRewind) {
+        stat.最后处理楼号 = curFloor;
+        const futureFields = new Set();
+        const chatAnchors = (cs && cs.锚点账本 && typeof cs.锚点账本 === 'object') ? cs.锚点账本 : {};
+        const prunedAnchors = {};
+        for (const [k, entry] of Object.entries(chatAnchors)) {
+          if (Number(k) <= curFloor) {
+            prunedAnchors[k] = entry;
+          } else {
+            if (entry && Array.isArray(entry.新置真)) {
+              entry.新置真.forEach(f => futureFields.add(f));
+            }
+          }
+        }
+        stat.锚点账本 = prunedAnchors;
+
+        // 清理超前楼层置真的 known 字段（只要消息层没有显式为 true，坚决撤销）
+        for (const f of futureFields) {
+          if (!mk || mk[f] !== true) {
+            delete stat.known[f];
+          }
+        }
+
+        // 覆盖并清洗名器进度，防止超前浸润与异象残留
+        if (ms && ms.relic_progress && typeof ms.relic_progress === 'object') {
+          stat.relic_progress = JSON.parse(JSON.stringify(ms.relic_progress));
+        } else if (stat.relic_progress && typeof stat.relic_progress === 'object') {
+          const rpCleaned = JSON.parse(JSON.stringify(stat.relic_progress));
+          for (const [rId, rp] of Object.entries(rpCleaned)) {
+            if (rp && Array.isArray(rp.history)) {
+              rp.history = rp.history.filter(h => Number(h.floor) <= curFloor);
+            }
+          }
+          stat.relic_progress = rpCleaned;
+        }
+      }
+
       // ── 账本与事务来源自愈保底 ──
       stat.known = stat.known || {};
       if (stat.锚点账本 && typeof stat.锚点账本 === 'object') {
@@ -2223,7 +2290,7 @@ const XsdHUD = (function () {
    * @returns {{ state: 'none'|'self'|'other', owner: string, arcs: number, owned: boolean }}
    */
   /** 身份别名组（同一人物的不同写法／称号）——名器归属判定不能只靠字符串相等：
- *  殿主开局的身份是**称号**（如「魂欢殿主」），而名器归属常写成**本名**（如「鬼医病相思」），
+ *  殿主开局的身份是**称号**（如「魂欢殿主」），而名器归属常写成**本名**（如「病相思」），
  *  两份写法对不上就会被判成「别人占据」，纹章反色。
  */
 const XSD_IDENT_GROUPS = [
@@ -2349,6 +2416,10 @@ function xsdRelicState(rel, known, identity, customOwners) {
       if (!owner) return false;
       if (owner === '玩家' || owner === '{{user}}') return true;
       if (isZhao && (owner === '赵无忧' || owner.includes('赵无忧'))) return true;
+      if (xsdSamePerson(owner, idText)) return true;   /* 别名／口径统一：殿主称号 ↔ 本名 */
+      for (const p of _playerNames) { if (xsdSamePerson(owner, p)) return true; }
+      if (rel.lord && (owner === rel.lord || xsdSamePerson(owner, rel.lord)) && isLord(rel.lord, rel.hall)) return true;
+      if (rel.hall && (owner === rel.hall || xsdSamePerson(owner, rel.hall)) && isLord(rel.lord, rel.hall)) return true;
       if (isCustom) {
         /* 自设：**结构性判定**，不枚举玩家名（主人 2026-10-07 指正）。
            ① 归属者＝玩家本人（宿主 persona 名，或本人身份文本）⇒ 自己；
@@ -2358,9 +2429,6 @@ function xsdRelicState(rel, known, identity, customOwners) {
         if (xsdIsCast(owner)) return false;
         return true;
       }
-      if (rel.lord && owner === rel.lord && isLord(rel.lord, rel.hall)) return true;
-      if (rel.hall && owner === rel.hall && isLord(rel.lord, rel.hall)) return true;
-      if (xsdSamePerson(owner, idText)) return true;   /* 别名／口径统一：殿主称号 ↔ 本名 */
       return false;
     })();
     if (!isMe) {
@@ -2755,47 +2823,109 @@ function xsdRelicState(rel, known, identity, customOwners) {
         const stageImg = xsdRelicCandidateUrl(relObj.id, i);
         const stageImgFilter = isReached ? (st.state === 'other' ? 'filter:invert(1) contrast(1.15);' : '') : 'filter:grayscale(1) brightness(.45);opacity:.5;';
         let progHint = '';
-        const isZhuojiu = (relObj.id === 'zhuojiu' || relObj.n === '灼酒流炎穴');
+        const RELIC_SHORT_MAP = {
+          zhuojiuliuyanxue: 'zhuojiu',
+          jiuyouxuanyinxue: 'jiuyou',
+          xinmochayingru: 'xinmo',
+          boruoputiju: 'boruo',
+          beimingchaoshengxue: 'beiming',
+          lingxitongxin: 'lingxi',
+          yuhuxiangru: 'yuhu',
+          yanxialingru: 'yanxia',
+          meiruixue: 'meirui',
+          bingpojianxinxue: 'bingpo',
+          qinggexianmingxue: 'qingge',
+          liuyandiexinxue: 'liuyan',
+          fenghuangyuhua: 'fenghuang'
+        };
+        const shortRelicId = RELIC_SHORT_MAP[relObj.id] || relObj.id;
         const rp = (stat && stat.relic_progress && (
           stat.relic_progress[relObj.id] ||
+          stat.relic_progress[shortRelicId] ||
           stat.relic_progress[relObj.n] ||
-          (isZhuojiu ? (stat.relic_progress['zhuojiu'] || stat.relic_progress['zhuojiuliuyanxue']) : null)
+          stat.relic_progress[data.name] ||
+          null
         )) || null;
 
-        if (!isReached && i === 2 && st.state !== 'none') {
-          if (isZhuojiu && rp) {
-            const curCount = Math.min(rp.target || 5, Math.max(0, Number(rp.count) || 0));
-            const target = Math.max(1, Number(rp.target) || 5);
+        const currStage = st.state === 'none' ? 0 : Math.max(1, Math.min(4, st.arcs || 1));
+        const nextTargetStage = Math.min(4, currStage + 1);
+        const sampleCarrier = (data.carrier || '女方').split('、')[0].trim();
+
+        if (!isReached && i === nextTargetStage && st.state !== 'none') {
+          if (i === 2) {
+            const stage2Obj = rp && rp.stages ? rp.stages[2] : null;
+            const curCount = stage2Obj ? Math.min(stage2Obj.target || 3, Math.max(0, Number(stage2Obj.count) || 0)) : (rp && currStage === 1 ? Math.min(rp.target || 3, Math.max(0, Number(rp.count) || 0)) : 0);
+            const target = stage2Obj ? Math.max(1, Number(stage2Obj.target) || 3) : (rp && currStage === 1 ? Math.max(1, Number(rp.target) || 3) : 3);
             const pct = Math.round((curCount / target) * 100);
             const isReady = curCount >= target;
 
             progHint = '<div class="sc-progress-card" style="margin-top:8px;padding:8px 10px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:6px;font-size:11px;line-height:1.5;">'
               + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-weight:600;color:#f1c40f;">'
-              + '<span>✦ 阶位浸润度 (RFC-002)</span>'
+              + '<span>✦ 阶位浸润度 (一升二·情动)</span>'
               + '<span>' + curCount + ' / ' + target + ' 次 (' + pct + '%)</span>'
               + '</div>'
               + '<div style="width:100%;height:6px;background:rgba(255,255,255,0.12);border-radius:3px;overflow:hidden;margin-bottom:6px;">'
               + '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg, #d4af37, #f39c12);transition:width 0.3s;"></div>'
               + '</div>'
               + '<div style="color:' + (isReady ? '#2ecc71' : '#e0e0e0') + ';font-size:10.5px;margin-bottom:4px;">'
-              + (isReady ? '🔥 精元浸润已饱满！待剧情出现女方生理自发迎合（道纹浮现/主动吸吮）即可质变晋阶' : '💧 蓄力灌注中：每次有效内射推进 1 次浸润')
+              + (isReady ? '🔥 至阳浸润已饱满！待剧情出现女方生理自发迎合（软肉主动吸吮/紧裹吞咽）即可质变晋阶' : '💧 蓄力灌注中：每次有效内射/浸润推进 1 次')
               + '</div>'
               + '<div style="color:rgba(212,175,55,0.9);font-size:10px;border-top:1px dashed rgba(212,175,55,0.25);padding-top:4px;margin-top:4px;">'
-              + '💡 互动申报：行房并在状态栏生成 <code>&lt;名器互动&gt;' + esc(relObj.n) + '｜' + esc(data.carrier) + '｜内射&lt;/名器互动&gt;</code>'
+              + '💡 互动申报：行房并在状态栏生成 <code>&lt;名器互动&gt;' + esc(relObj.n) + '｜' + esc(sampleCarrier) + '｜内射&lt;/名器互动&gt;</code>'
               + '</div>'
               + '</div>';
-          } else {
-            progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
-              + '✦ 晋阶准则：需携带者生理自发迎合或深度情动，待二阶段机缘开启（数值试点扩展中）'
+          } else if (i === 3) {
+            const stage3Obj = rp && rp.stages ? rp.stages[3] : null;
+            const curCount = stage3Obj ? Math.min(stage3Obj.target || 3, Math.max(0, Number(stage3Obj.count) || 0)) : (rp && rp.target_stage === 3 ? Math.min(rp.target || 3, Math.max(0, Number(rp.count) || 0)) : 0);
+            const target = stage3Obj ? Math.max(1, Number(stage3Obj.target) || 3) : (rp && rp.target_stage === 3 ? Math.max(1, Number(rp.target) || 3) : 3);
+            const pct = Math.round((curCount / target) * 100);
+            const isReady = curCount >= target;
+
+            progHint = '<div class="sc-progress-card" style="margin-top:8px;padding:8px 10px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:6px;font-size:11px;line-height:1.5;">'
+              + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-weight:600;color:#f1c40f;">'
+              + '<span>✦ 阶位蜕变度 (二升三·沉沦)</span>'
+              + '<span>' + curCount + ' / ' + target + ' 次 (' + pct + '%)</span>'
+              + '</div>'
+              + '<div style="width:100%;height:6px;background:rgba(255,255,255,0.12);border-radius:3px;overflow:hidden;margin-bottom:6px;">'
+              + '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg, #d4af37, #f39c12);transition:width 0.3s;"></div>'
+              + '</div>'
+              + '<div style="color:' + (isReady ? '#2ecc71' : '#e0e0e0') + ';font-size:10.5px;margin-bottom:4px;">'
+              + (isReady ? '🔥 沉沦浸染已饱满！待剧情出现女方动情配合/神魂交契，或被植入深层神魂禁制/奴种侵蚀即可质变晋阶' : '💧 沉沦进阶中：每次二阶高潮/动情配合/神魂双修推进 1 次')
+              + '</div>'
+              + '<div style="color:rgba(212,175,55,0.9);font-size:10px;border-top:1px dashed rgba(212,175,55,0.25);padding-top:4px;margin-top:4px;">'
+              + '💡 互动申报：行房并在状态栏生成 <code>&lt;名器互动&gt;' + esc(relObj.n) + '｜' + esc(sampleCarrier) + '｜高潮（或 神魂交契/奴种侵蚀）&lt;/名器互动&gt;</code>'
+              + '</div>'
+              + '</div>';
+          } else if (i === 4) {
+            const stage4Obj = rp && rp.stages ? rp.stages[4] : null;
+            const curCount = stage4Obj ? Math.min(stage4Obj.target || 3, Math.max(0, Number(stage4Obj.count) || 0)) : (rp && rp.target_stage === 4 ? Math.min(rp.target || 3, Math.max(0, Number(rp.count) || 0)) : 0);
+            const target = stage4Obj ? Math.max(1, Number(stage4Obj.target) || 3) : (rp && rp.target_stage === 4 ? Math.max(1, Number(rp.target) || 3) : 3);
+            const pct = Math.round((curCount / target) * 100);
+            const isReady = curCount >= target;
+
+            progHint = '<div class="sc-progress-card" style="margin-top:8px;padding:8px 10px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:6px;font-size:11px;line-height:1.5;">'
+              + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-weight:600;color:#f1c40f;">'
+              + '<span>✦ 阶位登顶度 (三升四·极乐)</span>'
+              + '<span>' + curCount + ' / ' + target + ' 次 (' + pct + '%)</span>'
+              + '</div>'
+              + '<div style="width:100%;height:6px;background:rgba(255,255,255,0.12);border-radius:3px;overflow:hidden;margin-bottom:6px;">'
+              + '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg, #d4af37, #f39c12);transition:width 0.3s;"></div>'
+              + '</div>'
+              + '<div style="color:' + (isReady ? '#2ecc71' : '#e0e0e0') + ';font-size:10.5px;margin-bottom:4px;">'
+              + (isReady ? '🔥 极乐机缘已饱满！待剧情出现天地机缘与肉身神异质变（生角/展翼/道韵化形）即可登顶极乐' : '💧 极乐进阶中：每次极乐双修/本源共鸣/天地机缘推进 1 次')
+              + '</div>'
+              + '<div style="color:rgba(212,175,55,0.9);font-size:10px;border-top:1px dashed rgba(212,175,55,0.25);padding-top:4px;margin-top:4px;">'
+              + '💡 互动申报：行房并在状态栏生成 <code>&lt;名器互动&gt;' + esc(relObj.n) + '｜' + esc(sampleCarrier) + '｜极乐双修（或 本源共鸣）&lt;/名器互动&gt;</code>'
+              + '</div>'
               + '</div>';
           }
         } else if (!isReached && i === 3) {
           progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
-            + '✦ 晋阶准则：心理深层依附动情，或被植入专属奴种（心智沉沦/神魂同调）'
+            + '✦ 晋阶准则：二阶下 3 次高潮 ＋ 正向的情感交融（动情配合/神魂交契），或被植入深层神魂禁制/奴种侵蚀（心智沉沦/理智防线失守）'
             + '</div>';
         } else if (!isReached && i === 4) {
           progHint = '<div style="margin-top:6px;font-size:10.5px;color:#bbb;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 8px;line-height:1.4;">'
-            + '✦ 晋阶准则：专属严苛天地机缘 ＋ 肉身不可逆异化外相（生角/展翼/道韵化形）'
+            + '✦ 晋阶准则：专属严苛天地机缘 ＋ 肉身不可逆神异外貌质变（生角/展翼/道韵化形）'
             + '</div>';
         }
 

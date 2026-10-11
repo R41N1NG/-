@@ -32,7 +32,7 @@
  * ⚠️ 写回后**回读校验**并刷新面板；只有真读到自己刚写的值才算成功。
  * ⚠️ 本脚本**不改**状态机.js／状态栏面板.js／_build_card.js／_card_greetings.txt，
  *    也不依赖它们（只对齐字段名与双写约定）。
- * ⚠️ 本卡已彻底拆掉旧版「外挂变量插件」那套结构化更新块：本脚本不认任何更新块标记，
+ * ⚠️ 本卡已完全拆掉旧版「外挂变量插件」那套结构化更新块：本脚本不认任何更新块标记，
  *    只认 stat_data 这一个变量命名空间 —— 变量表里其它键一律不碰。
  * ══════════════════════════════════════════════════════════════════════ */
 
@@ -58,87 +58,42 @@
       {
           "name": "极乐引入手",
           "kind": "ai",
-          "desc": "第二章 · 邪修洞府：**两支都置 true** —— ①替孤月中毒（含口交解毒那一场）②与孤月合力消灭邪修／探完洞府；两支的共同结果是拿到《极乐引》"
-      },
-      {
-          "name": "邪修洞府替孤月中毒",
-          "kind": "ai",
-          "desc": "第二章 · 邪修洞府：**替孤月中毒那一支**（孤月以口含阴津度入营救那场）。⚠️ 只是\"发生过的标记\"（配立绘／分支用），**不单独作为《剧情》条的闸门**；正常路线不置它"
+          "desc": "邪修洞府之变：拿到《极乐引》残篇"
       },
       {
           "name": "已抵达天溪",
           "kind": "ai",
-          "desc": "第九—十章 · 一行抵达天溪城"
+          "desc": "仙盟南下驰援：一行抵达天溪城"
       },
       {
           "name": "进入幽寂谷",
           "kind": "ai",
-          "desc": "第三章 · 幽寂谷秘境：一行**进入幽寂谷**（第 3 段的正门锚点之一）"
-      },
-      {
-          "name": "玄机子胁迫过叶红缨",
-          "kind": "ai",
-          "desc": "第三章 · 幽寂谷内：玄机子捏着她乳环的把柄胁迫过她（**秘密线**；进账本只表示「发生过」，旁白不得点破）"
+          "desc": "幽寂谷秘境异动：一行进入幽寂谷"
       },
       {
           "name": "兽潮血战",
           "kind": "ai",
-          "desc": "第七—十一章 · 天溪城头的兽潮血战（与「天溪城兽潮」同段，任一为真即跳第 7 段）"
-      },
-      {
-          "name": "玄机子装伤",
-          "kind": "ai",
-          "desc": "第十一章 · 玄机子装伤脱身（第 8 段底牌：只记「他受伤退走」这个事实，严禁旁白写出「假的」）"
-      },
-      {
-          "name": "双姝回归",
-          "kind": "ai",
-          "desc": "第十二末 · 听雪双姝伪装脱险、潜回据点（第 10 段的正门锚点）"
-      },
-      {
-          "name": "血染天溪",
-          "kind": "ai",
-          "desc": "第九章 · 叶红缨夜间失控与赵无忧越界那一段演完（该章的**完成**锚点；与「可提前发现的看见乳环」不是一回事）"
+          "desc": "天溪城头的兽潮血战（与「天溪城兽潮」同段）"
       },
       {
           "name": "天溪城破",
           "kind": "ai",
-          "desc": "第十三章 · 兽潮总攻、西南城破（第 11 段的正门锚点）"
-      },
-      {
-          "name": "孤月定情",
-          "kind": "ai",
-          "desc": "第九章 · **墨山道孤剑崖、出发天溪之前的送别**：她主动封吻、把「冰心泪」亲手戴在他颈上，说「你……一定要平安回来。」（原文无「定情」二字，是卡片给的名）"
-      },
-      {
-          "name": "赵无忧坠渊",
-          "kind": "ai",
-          "desc": "第十七—十九章 · 天溪城陷落、赵无忧遭重创坠落（原著后期两处沦陷节点的硬前置）"
-      },
-      {
-          "name": "封元镇灵环",
-          "kind": "ai",
-          "desc": "第十四章 · 朱樱逢劫：**乳环当众暴露**那一次（残阳老怪扯开衣襟的那一刻）"
-      },
-      {
-          "name": "赵无忧看见乳环",
-          "kind": "ai",
-          "desc": "赵无忧**亲眼看见**她乳尖上那对封元镇灵环——**不论何时、何种途径**（剧情八之前玩家操控时提前发现也算）"
+          "desc": "天溪城破与沦陷：兽潮总攻、西南城破"
       },
       {
           "name": "灼酒流炎穴成形",
           "kind": "ai",
-          "desc": "第十五—十六章 · 赤羽堕凡尘"
+          "desc": "叶红缨 · 灼酒流炎穴成形（元阴初破）"
       },
       {
           "name": "九幽玄阴穴成形",
           "kind": "ai",
-          "desc": "孤月 · 九幽玄阴脉的伴生异穴，元阴初破、龙气贯体时成形（依据：【名器】九幽玄阴穴／【人物】孤月 秘密所在）"
+          "desc": "孤月 · 九幽玄阴脉的伴生异穴，元阴初破时成形（依据：【名器】九幽玄阴穴／【人物】孤月 秘密所在）"
       },
       {
           "name": "心魔茶璎乳成形",
           "kind": "ai",
-          "desc": "闻观语 · 蜜汁化乳、双峰泌灵乳三者齐现即彻底觉醒（依据：【设定】剧情发展简表「闻观语『心魔茶璎乳』显」）"
+          "desc": "闻观语 · 蜜汁化乳、双峰泌灵乳三者齐现即完全觉醒（依据：【设定】剧情发展简表「闻观语『心魔茶璎乳』显」）"
       },
       {
           "name": "般若菩提菊成形",
@@ -188,7 +143,7 @@
       {
           "name": "孤月处女丧失",
           "kind": "ai",
-          "desc": "孤月 · 九幽玄阴穴的持有者被破身（元阴初破、龙气贯体的那一刻）"
+          "desc": "孤月 · 九幽玄阴穴的持有者被破身（元阴初破的那一刻）"
       },
       {
           "name": "叶红缨处女丧失",
@@ -266,61 +221,6 @@
           "desc": "神女殿中颁下《天姝榜》（极乐太子亲手颁）"
       },
       {
-          "name": "启程邪修洞府",
-          "kind": "ai",
-          "desc": "第一章 · 玩家**接到去西北荒漠邪修洞府的命令并出发**（主人定：不再靠模型判断「这一章演完没有」）"
-      },
-      {
-          "name": "回墨山复命",
-          "kind": "ai",
-          "desc": "第二章 · **孤月与赵无忧回墨山复命**（主人定）"
-      },
-      {
-          "name": "离开幽寂谷",
-          "kind": "ai",
-          "desc": "第四—五章 · **一行人从幽寂谷秘境离开**（主人定）"
-      },
-      {
-          "name": "受征召南下",
-          "kind": "ai",
-          "desc": "**墨山道受仙盟征召、遣弟子南下驰援天溪城——即将出发**（主人定；临行前的送别由此触发）"
-      },
-      {
-          "name": "孤剑崖送别已毕",
-          "kind": "ai",
-          "desc": "剧情五（孤剑崖送别 · 孤月赠冰心泪）已经演完"
-      },
-      {
-          "name": "听雪双姝登场",
-          "kind": "ai",
-          "desc": "**苏瑶、苏玲登场**（天音阁听雪双姝）"
-      },
-      {
-          "name": "玄机子离去",
-          "kind": "ai",
-          "desc": "**玄机子已离去**（主人定）"
-      },
-      {
-          "name": "双姝派回天溪",
-          "kind": "ai",
-          "desc": "双姝线收束：**苏瑶、苏玲被种下奴种，以「黑日」「霜月」之身被派回天溪城**（第十—十二章末）"
-      },
-      {
-          "name": "三人同寝",
-          "kind": "ai",
-          "desc": "**三人同寝**（主人定）"
-      },
-      {
-          "name": "最后防线被冲垮",
-          "kind": "ai",
-          "desc": "**最后那道防线被残阳老怪冲垮**（主人定）"
-      },
-      {
-          "name": "葬魔渊一役已毕",
-          "kind": "ai",
-          "desc": "葬魔渊那一场演完（赵无忧坠渊、雨霏柔授阵丹之道）"
-      },
-      {
           "name": "获得任意名器",
           "kind": "ai",
           "desc": "玩家这条线上第一次真的接触到／得到一件名器"
@@ -328,22 +228,22 @@
       {
           "name": "南域大劫",
           "kind": "ai",
-          "desc": "第六—七章 · 南域大劫爆发：神诅降下、粉黑天穹、四殿册封"
+          "desc": "南域大劫爆发：神诅降下、粉黑天穹、四殿册封"
       },
       {
           "name": "天溪城兽潮",
           "kind": "ai",
-          "desc": "第十一章 · 第六波大规模兽潮压到天溪城下"
+          "desc": "大规模兽潮压到天溪城下"
       },
       {
           "name": "阎雷子脱困",
           "kind": "ai",
-          "desc": "阎雷子（夺舍炎雷子的那一位）脱困／破关而出"
+          "desc": "阎雷子脱困／破关而出"
       },
       {
           "name": "进入葬魔渊",
           "kind": "ai",
-          "desc": "玩家这条线真的进到葬魔渊（含赵无忧坠渊那一支）"
+          "desc": "玩家这条线进入葬魔渊"
       },
       {
           "name": "神女殿建成",
@@ -358,37 +258,17 @@
       {
           "name": "受封殿主",
           "kind": "ai",
-          "desc": "南域大劫后受封天姝会殿主（事件，不是身份起手值）"
-      },
-      {
-          "name": "云逸尘救人后",
-          "kind": "ai",
-          "desc": "云逸尘前往积云古寺救人之后"
+          "desc": "南域大劫后受封天姝会殿主"
       },
       {
           "name": "阎雷子夺舍",
           "kind": "ai",
-          "desc": "炼欲魔君残魂夺舍炎雷子（他自此自称宫蚀殿殿主阎雷子）"
+          "desc": "炼欲魔君残魂夺舍炎雷子"
       },
       {
           "name": "墨山道覆灭",
           "kind": "ai",
-          "desc": "墨山道覆灭（终局被炎雷子亲手摧毁）"
-      },
-      {
-          "name": "炎雷子谈及往事",
-          "kind": "ai",
-          "desc": "炎雷子谈及当年欲火峰那一战的旧事"
-      },
-      {
-          "name": "赠送冰心泪",
-          "kind": "ai",
-          "desc": "孤月把冰心泪赠予赵无忧"
-      },
-      {
-          "name": "邪修洞府解毒",
-          "kind": "ai",
-          "desc": "第二章 · 邪修洞府解毒那一场（与 `邪修洞府替孤月中毒` 是两支）"
+          "desc": "墨山道覆灭"
       },
       {
           "name": "九幽玄阴穴一阶段",
@@ -680,7 +560,7 @@
     { name: '焚欲殿主', desc: '天姝会焚欲殿主 · 残阳老怪 · 蛊火与惑妖迷情瘴' },
     { name: '欢喜殿主', desc: '天姝会欢喜殿主 · 肉山佛 · 佛门皮相、淫邪内核' },
     { name: '浊龙殿主', desc: '天姝会浊龙殿主 · 天龙皇朝第九皇子 · 龙气与龙器' },
-    { name: '魂欢殿主', desc: '天姝会魂欢殿主 · 鬼医病相思 · 情丝化灵、辨识名器' },
+    { name: '魂欢殿主', desc: '天姝会魂欢殿主 · 病相思 · 情丝化灵、辨识名器' },
   ];
   var IDENTITY_NAMES = IDENTITIES.map(function (x) { return x.name; });
   /** 身份 → 阵营（世界书 `@@if` 闸门用它做「成批收放」：天姝会／非天姝会） */
@@ -704,6 +584,27 @@
   ];
   /** 需要多行输入的字段（列表型／长文本） */
   var MULTILINE_FIELDS = ['环境', '在场', '暗处', '状态', '目标', '局势', '线索', '近闻', '远闻', '危机', '关系刻度'];
+
+  /** 7条中立大势剧情时期（全身份通用）—— 驱动世界线与各方公开态势 */
+  var NEUTRAL_ERAS = [
+    { id: 1, name: '【中立】一 · 暗流微澜', title: '极乐密藏天机泄', year: 1577.12, text: '仙盟历 1577 年 · 十二月初一', desc: '大劫前夕，风起青萍之末。极乐密藏封印出现首道裂痕，邪修暗探游弋。', anchors: [] },
+    { id: 2, name: '【中立】二 · 承平假象', title: '幽寂秘境风闻动', year: 1578.03, text: '仙盟历 1578 年 · 三月初一', desc: '南域承平表象，岁末正道安泰。幽寂秘境异动，各方势力闻风而动。', anchors: [] },
+    { id: 3, name: '【中立】三 · 南域大劫', title: '天地神诅与四殿分疆', year: 1578.08, text: '仙盟历 1578 年 · 八月初一', desc: '全书总转折点！神诅降临南域无元婴，正道大能跌境，极乐太子立四殿。', anchors: ['南域大劫'] },
+    { id: 4, name: '【中立】四 · 天溪兽潮', title: '要塞围城与九龙焚天', year: 1579.01, text: '仙盟历 1579 年 · 一月初一', desc: '千万凶兽狂潮合围天溪城，九龙焚天大阵开启，惨烈围城拉锯战。', anchors: ['南域大劫', '天溪城兽潮', '兽潮血战'] },
+    { id: 5, name: '【中立】五 · 天溪城破', title: '阵毁城陷与四方溃散', year: 1579.03, text: '仙盟历 1579 年 · 三月初一', desc: '大阵破裂城垣塌陷，天溪城失守沦陷，守军溃散，南域门户洞开。', anchors: ['南域大劫', '天溪城兽潮', '兽潮血战', '天溪城破'] },
+    { id: 6, name: '【中立】六 · 乱世割据', title: '鼎炉猎场与名器大争', year: 1579.06, text: '仙盟历 1579 年 · 六月初一', desc: '正道全面失序，魔道四殿与群雄割据，名器猎场大争白热化。', anchors: ['南域大劫', '天溪城兽潮', '兽潮血战', '天溪城破'] },
+    { id: 7, name: '【中立】七 · 极乐定局', title: '魔道鼎立与北上暗涌', year: 1580.01, text: '仙盟历 1580 年 · 一月初一', desc: '极乐魔道新秩序稳固，四殿各建魔宫总坛，野心向北域陨仙原延伸。', anchors: ['南域大劫', '天溪城兽潮', '兽潮血战', '天溪城破'] },
+  ];
+  function eraOf(year) {
+    var y = Number(year) || 1578.03;
+    if (y < 1578.03) return NEUTRAL_ERAS[0];
+    if (y < 1578.08) return NEUTRAL_ERAS[1];
+    if (y < 1579.01) return NEUTRAL_ERAS[2];
+    if (y < 1579.03) return NEUTRAL_ERAS[3];
+    if (y < 1579.06) return NEUTRAL_ERAS[4];
+    if (y < 1580.01) return NEUTRAL_ERAS[5];
+    return NEUTRAL_ERAS[6];
+  }
 
   /* ═══════════════════════════════════════════════════════════
    * 一 · 酒馆助手接口探测（多窗口多路径，全部 typeof 保护）
@@ -882,6 +783,8 @@
     var out = {
       可达: !!s,
       身份: (s && typeof s.身份 === 'string' && s.身份) ? s.身份 : IDENTITY_DEFAULT,
+      仙盟历: (s && Number.isFinite(Number(s.仙盟历))) ? Number(s.仙盟历) : 1578.03,
+      仙盟历文: (s && typeof s.仙盟历文 === 'string') ? s.仙盟历文 : '',
       阵营: (s && typeof s.阵营 === 'string' && s.阵营) ? s.阵营 : FACTION_DEFAULT,
       known: {},
       展示: {},
@@ -1097,6 +1000,16 @@
     '.xshd-gm-chip:hover{border-color:#b8933f;color:#f3d99b}',
     '.xshd-gm-st{font-size:11px;color:#8d8577;margin-top:3px;word-break:break-all}',
     '.xshd-gm-st b{color:#d9c489;font-weight:600}',
+    '.xshd-gm-era-list{display:flex;flex-direction:column;gap:6px;margin-top:6px}',
+    '.xshd-gm-era-card{padding:7px 9px;border:1px solid #332b1f;border-radius:7px;background:#120f16;display:flex;flex-direction:column;gap:4px}',
+    '.xshd-gm-era-card.active{border-color:#b8933f;background:rgba(184,147,63,.12)}',
+    '.xshd-gm-era-header{display:flex;justify-content:space-between;align-items:center;font-size:12px}',
+    '.xshd-gm-era-name{color:#f0d79a;font-weight:700}',
+    '.xshd-gm-era-year{color:#8d8577;font-size:11px}',
+    '.xshd-gm-era-desc{font-size:11px;color:#a89f8e;line-height:1.4}',
+    '.xshd-gm-era-act{display:flex;align-items:center;gap:8px;margin-top:2px}',
+    '.xshd-gm-era-req{font-size:10px;color:#c97f7f}',
+    '.xshd-gm-active-btn{background:#6b4f16!important;color:#fff4d2!important;font-weight:700}',
     '.xshd-gm-footer{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:9px 12px;border-top:1px solid #332b1f;background:#100d14;border-radius:0 0 12px 12px}',
     '.xshd-gm-btn{padding:6px 14px;font-size:12px;border:1px solid #58431c;border-radius:7px;background:#1d1712;color:#e0c98d;cursor:pointer;font-family:inherit}',
     '.xshd-gm-btn:hover{background:#3a2a12;color:#fff0c4}',
@@ -1212,9 +1125,39 @@
         + '写回 <b>双写</b>（消息层 #-1 ＋ 聊天层）</div></div>');
     }
 
-    // ── ② 剧情与事件锚点 ──
+    // ── ② 中立大势 · 剧情时期（全身份通用） ──
+    var curEra = eraOf(form.仙盟历);
+    var eraCards = NEUTRAL_ERAS.map(function (era) {
+      var isCur = (era.id === curEra.id);
+      return '<div class="xshd-gm-era-card' + (isCur ? ' active' : '') + '">'
+        + '<div class="xshd-gm-era-header">'
+        + '<span class="xshd-gm-era-name">' + esc(era.name) + ' · ' + esc(era.title) + '</span>'
+        + '<span class="xshd-gm-era-year">' + era.year + '起</span>'
+        + '</div>'
+        + '<div class="xshd-gm-era-desc">' + esc(era.desc) + '</div>'
+        + '<div class="xshd-gm-era-act">'
+        + '<button type="button" class="xshd-gm-mini' + (isCur ? ' xshd-gm-active-btn' : '') + '" data-era-id="' + era.id + '">'
+        + (isCur ? '✦ 当前时期' : '切换至该时期') + '</button>'
+        + (era.anchors.length ? '<span class="xshd-gm-era-req">关联锚点：' + era.anchors.join('、') + '</span>' : '')
+        + '</div></div>';
+    }).join('');
+
     html.push('<div class="xshd-gm-sec">',
-      '<div class="xshd-gm-sec-title"><span>📖 剧情与事件锚点（' + (STORY_FIELDS.length + OPEN_FIELDS.length) + '）</span>',
+      '<div class="xshd-gm-sec-title"><span>📜 中立大势 · 剧情时期（7条）</span>',
+      '<span class="xshd-gm-hint">当前所处：<b style="color:#e9d9ac">' + esc(curEra.name) + '</b>（' + form.仙盟历 + '）</span></div>',
+      '<div class="xshd-gm-st">面向全身份开放的世界大势主轴。由仙盟历（时间）与客观天地剧变驱动，已剥离所有旧角色专属废弃锚点。</div>',
+      '<div class="xshd-gm-grid" style="grid-template-columns:1fr 1fr;margin:8px 0;">',
+      '<div class="xshd-gm-field"><label class="xshd-gm-label">仙盟历数值（驱动闸门）</label>',
+      '<input class="xshd-gm-in" type="number" step="0.01" id="' + q('xianmengli') + '" value="' + form.仙盟历 + '" /></div>',
+      '<div class="xshd-gm-field"><label class="xshd-gm-label">仙盟历文本（展示用）</label>',
+      '<input class="xshd-gm-in" type="text" id="' + q('xianmengliwen') + '" value="' + esc(form.仙盟历文 || curEra.text) + '" /></div>',
+      '</div>',
+      '<div class="xshd-gm-era-list">' + eraCards + '</div>',
+      '</div>');
+
+    // ── ③ 剧情与事件锚点 ──
+    html.push('<div class="xshd-gm-sec">',
+      '<div class="xshd-gm-sec-title"><span>📖 世界事件与处女丧失锚点（' + (STORY_FIELDS.length + OPEN_FIELDS.length) + '）</span>',
       '<span><button type="button" class="xshd-gm-mini" data-group="story" data-val="1">全开</button> ',
       '<button type="button" class="xshd-gm-mini" data-group="story" data-val="0">全关</button></span></div>',
       '<div class="xshd-gm-grid">' + checksHTML(STORY_FIELDS.concat(OPEN_FIELDS), form) + '</div>',
@@ -1272,6 +1215,7 @@
     var sel = body.querySelector('#' + q('identity'));
     if (sel) sel.value = form.身份;
     applyCheckStyles(body);
+    bindBodyButtons(body);
     return form;
   }
 
@@ -1321,7 +1265,11 @@
     }
     var sel = mask.querySelector('#' + q('identity'));
     var fac = mask.querySelector('#' + q('faction'));
+    var xmlInput = mask.querySelector('#' + q('xianmengli'));
+    var xmlWenInput = mask.querySelector('#' + q('xianmengliwen'));
     var patch = {
+      仙盟历: (xmlInput && !isNaN(parseFloat(xmlInput.value))) ? parseFloat(xmlInput.value) : cur.仙盟历,
+      仙盟历文: xmlWenInput ? String(xmlWenInput.value).trim() : (cur.仙盟历文 || ''),
       身份: (sel && IDENTITY_NAMES.indexOf(sel.value) >= 0) ? sel.value : cur.身份,
       阵营: fac ? String(fac.value).trim() : cur.阵营,
       known: known,
@@ -1407,7 +1355,7 @@
     if (!header) return;
     var dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
     header.addEventListener('mousedown', function (ev) {
-      if (ev.target && ev.target.tagName === 'BUTTON') return;
+      if (ev.target && (ev.target.tagName === 'BUTTON' || (ev.target.closest && ev.target.closest('button')))) return;
       dragging = true;
       sx = ev.clientX; sy = ev.clientY;
       var r = mask.getBoundingClientRect();
@@ -1428,22 +1376,126 @@
     doc.addEventListener('mouseup', function () { dragging = false; });
   }
 
-  /** 事件接线：所有点击用委托，重渲染不会掉线 */
+
+  function switchEra(eid) {
+    var mask = UI.mask;
+    if (!mask) return;
+    var targetEra = NEUTRAL_ERAS.filter(function (e) { return e.id === eid; })[0];
+    if (!targetEra) return;
+    var yIn = mask.querySelector('#' + q('xianmengli'));
+    var wIn = mask.querySelector('#' + q('xianmengliwen'));
+    var tDisp = mask.querySelector('input[data-field="时间"]');
+    if (yIn) yIn.value = targetEra.year;
+    if (wIn) wIn.value = targetEra.text;
+    if (tDisp) tDisp.value = targetEra.text;
+    targetEra.anchors.forEach(function (anc) {
+      var cb = mask.querySelector('input[data-known="' + anc + '"]');
+      if (cb) cb.checked = true;
+    });
+    applyCheckStyles(mask);
+    log('已切换至' + targetEra.name + '（仙盟历 ' + targetEra.year + '），并同步前置锚点（点「保存并生效」落盘）');
+    toast('info', '已就绪：' + targetEra.name + ' —— 记得点「保存并生效」', 6000);
+    var allCards = mask.querySelectorAll('.xshd-gm-era-card');
+    for (var ci = 0; ci < allCards.length; ci++) {
+      var eb = allCards[ci].querySelector('button[data-era-id]');
+      if (eb && eb.getAttribute('data-era-id') === String(eid)) {
+        allCards[ci].classList.add('active');
+        eb.textContent = '✦ 当前时期';
+        eb.classList.add('xshd-gm-active-btn');
+      } else if (eb) {
+        allCards[ci].classList.remove('active');
+        eb.textContent = '切换至该时期';
+        eb.classList.remove('xshd-gm-active-btn');
+      }
+    }
+  }
+
+  function bindShellButtons(mask) {
+    if (!mask) return;
+    var btnClose = mask.querySelector('#' + q('close'));
+    if (btnClose) btnClose.onclick = function (e) { if (e) { try { e.stopPropagation(); } catch (err) {} } hide(); };
+    var btnReload = mask.querySelector('#' + q('reload'));
+    if (btnReload) btnReload.onclick = function (e) { if (e) { try { e.stopPropagation(); } catch (err) {} } reload('手动'); };
+    var btnSave = mask.querySelector('#' + q('save'));
+    if (btnSave) btnSave.onclick = function (e) { if (e) { try { e.stopPropagation(); } catch (err) {} } save(); };
+    var btnAllOn = mask.querySelector('#' + q('allon'));
+    if (btnAllOn) btnAllOn.onclick = function (e) { if (e) { try { e.stopPropagation(); } catch (err) {} } setGroup('all', 1); };
+    var btnAllOff = mask.querySelector('#' + q('alloff'));
+    if (btnAllOff) btnAllOff.onclick = function (e) { if (e) { try { e.stopPropagation(); } catch (err) {} } setGroup('all', 0); };
+    var btnDump = mask.querySelector('#' + q('dump'));
+    if (btnDump) btnDump.onclick = function (e) {
+      if (e) { try { e.stopPropagation(); } catch (err) {} }
+      dumpStat('面板手动');
+      toast('info', '快照已打到控制台（F12）', 5000);
+      log('快照已打到控制台');
+    };
+  }
+
+  function bindBodyButtons(body) {
+    if (!body) return;
+    var eraBtns = body.querySelectorAll('button[data-era-id]');
+    for (var i = 0; i < eraBtns.length; i++) {
+      (function (b) {
+        b.onclick = function (e) {
+          if (e) { try { e.stopPropagation(); } catch (err) {} }
+          var eid = parseInt(b.getAttribute('data-era-id'), 10);
+          switchEra(eid);
+        };
+      })(eraBtns[i]);
+    }
+    var grpBtns = body.querySelectorAll('button[data-group]');
+    for (var j = 0; j < grpBtns.length; j++) {
+      (function (b) {
+        b.onclick = function (e) {
+          if (e) { try { e.stopPropagation(); } catch (err) {} }
+          setGroup(b.getAttribute('data-group'), b.getAttribute('data-val') === '1');
+        };
+      })(grpBtns[j]);
+    }
+    var chips = body.querySelectorAll('.xshd-gm-chip');
+    for (var k = 0; k < chips.length; k++) {
+      (function (b) {
+        b.onclick = function (e) {
+          if (e) { try { e.stopPropagation(); } catch (err) {} }
+          var fc = b.getAttribute('data-faction');
+          var fac = UI.mask ? UI.mask.querySelector('#' + q('faction')) : null;
+          if (fac) { fac.value = fc; log('阵营填入：' + fc + '（点「保存并生效」才落盘）'); }
+        };
+      })(chips[k]);
+    }
+    var idfac = body.querySelector('#' + q('idfaction'));
+    if (idfac) {
+      idfac.onclick = function (e) {
+        if (e) { try { e.stopPropagation(); } catch (err) {} }
+        fillFactionByIdentity();
+      };
+    }
+  }
+
+  /** 事件接线：委托监听 ＋ 直绑兜底双保险 */
   function bindEvents(doc, mask) {
+    bindShellButtons(mask);
     mask.addEventListener('click', function (ev) {
+      try { ev.stopPropagation(); } catch (e) { /* 无 */ }
       var t = ev.target;
       if (!t) return;
-      if (t.id === q('close')) { hide(); return; }
-      if (t.id === q('reload')) { reload('手动'); return; }
-      if (t.id === q('save')) { save(); return; }
-      if (t.id === q('allon')) { setGroup('all', 1); return; }
-      if (t.id === q('alloff')) { setGroup('all', 0); return; }
-      if (t.id === q('dump')) { dumpStat('面板手动'); toast('info', '快照已打到控制台（F12）', 5000); log('快照已打到控制台'); return; }
-      if (t.id === q('idfaction')) { fillFactionByIdentity(); return; }
-      var g = t.getAttribute && t.getAttribute('data-group');
-      if (g) { setGroup(g, t.getAttribute('data-val') === '1'); return; }
-      var fc = t.getAttribute && t.getAttribute('data-faction');
-      if (fc !== null && fc !== undefined && t.className && String(t.className).indexOf('xshd-gm-chip') >= 0) {
+      var btn = (t.closest && t.closest('button, [data-era-id], [data-group], .xshd-gm-chip')) || t;
+      if (btn.id === q('close')) { hide(); return; }
+      if (btn.id === q('reload')) { reload('手动'); return; }
+      if (btn.id === q('save')) { save(); return; }
+      if (btn.id === q('allon')) { setGroup('all', 1); return; }
+      if (btn.id === q('alloff')) { setGroup('all', 0); return; }
+      if (btn.id === q('dump')) { dumpStat('面板手动'); toast('info', '快照已打到控制台（F12）', 5000); log('快照已打到控制台'); return; }
+      if (btn.id === q('idfaction')) { fillFactionByIdentity(); return; }
+      var eraId = btn.getAttribute && btn.getAttribute('data-era-id');
+      if (eraId) {
+        switchEra(parseInt(eraId, 10));
+        return;
+      }
+      var g = btn.getAttribute && btn.getAttribute('data-group');
+      if (g) { setGroup(g, btn.getAttribute('data-val') === '1'); return; }
+      var fc = btn.getAttribute && btn.getAttribute('data-faction');
+      if (fc !== null && fc !== undefined && btn.className && String(btn.className).indexOf('xshd-gm-chip') >= 0) {
         var fac = mask.querySelector('#' + q('faction'));
         if (fac) { fac.value = fc; log('阵营填入：' + fc + '（点「保存并生效」才落盘）'); }
         return;
@@ -1463,25 +1515,23 @@
       }
     });
     bindDrag(doc, mask);
-    // 面板自己不许把点击冒泡给主界面（否则会触发酒馆的消息菜单）
-    mask.addEventListener('mousedown', function (ev) { ev.stopPropagation(); }, true);
-    mask.addEventListener('mouseup', function (ev) { ev.stopPropagation(); }, true);
-    mask.addEventListener('click', function (ev) { ev.stopPropagation(); }, true);
-    mask.addEventListener('keydown', function (ev) { ev.stopPropagation(); });
+    mask.addEventListener('keydown', function (ev) { try { ev.stopPropagation(); } catch (e) { /* 无 */ } });
   }
 
-  /** 挂载（幂等：已在则不再建第二份） */
+  /** 挂载（幂等：清除旧死节点，重新绑定当前环境） */
   function mount() {
-    if (UI.mounted && UI.mask && UI.mask.parentNode) return true;
     var doc = getDoc();
     if (!doc || !doc.body) { warn('取不到宿主 document（跨源？）—— 面板挂不上'); return false; }
     UI.doc = doc;
     injectStyle(doc);
     var exist = null;
     try { exist = doc.getElementById('xshd-gm-mask'); } catch (e) { exist = null; }
-    if (exist) { UI.mask = exist; UI.mounted = true; return true; }
+    if (exist && exist.parentNode) {
+      try { exist.parentNode.removeChild(exist); } catch (e) { /* 无 */ }
+    }
     var mask = buildShell(doc);
     doc.body.appendChild(mask);
+    bindShellButtons(mask);
     bindEvents(doc, mask);
     UI.mask = mask;
     UI.mounted = true;
@@ -1490,6 +1540,7 @@
     log('面板已挂载到 ' + (doc === document ? '本 iframe 的 document' : '宿主 window.parent 的 document'));
     return true;
   }
+
 
   function show() {
     if (!mount()) {

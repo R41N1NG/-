@@ -1,7 +1,7 @@
 /* XSD_MILESTONE_APPLICATION_CORE_BEGIN */
 /** 机械迁移应用核：业务与宿主依赖由适配层显式提供。 */
 function createXsdMilestoneApplication(deps) {
-  const { deflowerEvidenceIn, readStatData, readKnown, stripStatusBlock, validateAnchors, console, TAG, ALL_FIELDS, readIdentity, normalizeAnchorName, DEFLOWER_HARD_RES, FORM_OF_HOLDERS, 出场实证名, deriveRelicClosure, nearDeflowerWord, HOLDER_TO_RELIC, defaultInventoryFor, applyItemChange, itemEvidenceIn, normalizeInventory, structuredClone, hashText, RELIC_PILOT_CONFIG, validateRelicAction, calcRelicProgress, hasRelicPhysiologicalResponse, writeStat } = deps;
+  const { deflowerEvidenceIn, readStatData, readKnown, stripStatusBlock, validateAnchors, console, TAG, ALL_FIELDS, readIdentity, normalizeAnchorName, DEFLOWER_HARD_RES, FORM_OF_HOLDERS, 出场实证名, deriveRelicClosure, nearDeflowerWord, HOLDER_TO_RELIC, defaultInventoryFor, applyItemChange, itemEvidenceIn, normalizeInventory, structuredClone, hashText, RELIC_PILOT_CONFIG, validateRelicAction, calcRelicProgress, hasRelicPhysiologicalResponse, hasRelicStage3Response, hasRelicStage4Response, getRelicStage, writeStat } = deps;
 async function applyMilestones(p, messageId, text) {
   const list = Array.isArray(p?.里程碑) ? p.里程碑 : null;
   const bookIn = Array.isArray(p?.破处) ? p.破处 : [];
@@ -362,52 +362,89 @@ async function applyMilestones(p, messageId, text) {
     if (act) {
       const vRes = validateRelicAction(act, proseOuter, knownNow, curPlayerId);
       if (vRes.ok) {
-        allRelicProgress = calcRelicProgress(allRelicProgress, { ...act, ok: true, delta: vRes.delta }, messageId, swipeId, textHash);
+        allRelicProgress = calcRelicProgress(allRelicProgress, { ...act, ok: true, delta: vRes.delta, target_stage: vRes.target_stage }, messageId, swipeId, textHash, knownNow);
         relicProgressChanged = true;
-        console.log(TAG, `[名器互动] 第 ${messageId} 楼「${act.relicName}」动作「${act.action}」核验通过 ⇒ 浸润计数：${allRelicProgress[pilotId]?.count}/${allRelicProgress[pilotId]?.target}`);
+        console.log(TAG, `[名器互动] 第 ${messageId} 楼「${act.relicName}」动作「${act.action}」核验通过 ⇒ 浸润计数：${allRelicProgress[pilotId]?.count}/${allRelicProgress[pilotId]?.target} (目标第${allRelicProgress[pilotId]?.target_stage || 2}境)`);
       } else {
         console.warn(TAG, `⛔ [名器互动] 第 ${messageId} 楼丢弃动作「${act.raw}」：${vRes.why}`);
         if (hadFloor) {
-          allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '无' }, messageId, swipeId, textHash);
+          allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '无' }, messageId, swipeId, textHash, knownNow);
           relicProgressChanged = true;
         }
       }
     } else if (hadFloor) {
-      allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '无' }, messageId, swipeId, textHash);
+      allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '无' }, messageId, swipeId, textHash, knownNow);
       relicProgressChanged = true;
       console.log(TAG, `[名器互动] 第 ${messageId} 楼新分支无互动 ⇒ 撤销本楼旧分支贡献，当前计数：${allRelicProgress[pilotId]?.count}/${allRelicProgress[pilotId]?.target}`);
     } else if (willTrue(RELIC_PILOT_CONFIG[pilotId]?.formKey) && !allRelicProgress[pilotId]) {
-      // 破身成形当轮保底建档，确保初始进度 0/5 落地
-      allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '成形建档' }, messageId, swipeId, textHash);
+      // 破身成形当轮保底建档，确保初始进度 0/3 落地
+      allRelicProgress = calcRelicProgress(allRelicProgress, { relicId: pilotId, ok: true, delta: 0, action: '成形建档' }, messageId, swipeId, textHash, knownNow);
       relicProgressChanged = true;
       console.log(TAG, `[名器互动] 第 ${messageId} 楼「${RELIC_PILOT_CONFIG[pilotId]?.names[0]}」破身成形 ⇒ 建立初始浸润档案 (0/${allRelicProgress[pilotId]?.target})`);
     }
   }
 
-  // 双向兼容：同时在 zhuojiuliuyanxue / zhuojiu / 灼酒流炎穴 下维护镜像，确保前端取值 100% 命中
+  // 双向兼容：同时在各个别名与正名下维护镜像，确保前端 HUD 取值 100% 命中
   for (const pid of Object.keys(RELIC_PILOT_CONFIG)) {
     const curP = allRelicProgress[pid];
-    if (curP) {
-      allRelicProgress['zhuojiuliuyanxue'] = curP;
+    const cfg = RELIC_PILOT_CONFIG[pid];
+    if (curP && cfg) {
+      for (const name of cfg.names) {
+        allRelicProgress[name] = curP;
+      }
       allRelicProgress[curP.name] = curP;
     }
   }
 
-  // ── 名器满额质变自动晋阶派生（RFC-002 铁律 36 闭环：浸润满额 5/5 ＋ 正文出现女方生理自发迎合实证 ⇒ 自动晋阶二阶段）──
+  // ── 名器满额质变自动晋阶派生（RFC-002 铁律 36 闭环：各阶满额 ＋ 对应质变实证 ⇒ 自动晋阶二/三/四阶段）──
   for (const pilotId of Object.keys(RELIC_PILOT_CONFIG)) {
     const cfg = RELIC_PILOT_CONFIG[pilotId];
     const curP = allRelicProgress[pilotId];
     if (!cfg || !curP) continue;
+    const curStage = (typeof getRelicStage === 'function') ? getRelicStage(pilotId, knownNow) : 1;
+
+    // ── 1. 二阶段晋阶（落红 -> 情动）──
     const s2Key = cfg.stage2Key;
-    const count = Number(curP.count), target = Number(curP.target);
-    const eligible = curP.ready === true && Number.isFinite(count) && Number.isInteger(count)
-      && count === cfg.target && target === cfg.target
-      && known[cfg.formKey] === true && known[cfg.stage1Key] === true
+    const stage2Obj = curP.stages?.[2] || curP;
+    const count2 = Number(stage2Obj.count), target2 = Number(stage2Obj.target || cfg.target || 3);
+    const eligible2 = (stage2Obj.ready === true || count2 >= target2)
+      && (knownNow[cfg.formKey] === true || willTrue(cfg.formKey))
       && correctionAllows(cfg.formKey) && correctionAllows(cfg.stage1Key);
-    if (eligible && known[s2Key] !== true && !news.includes(s2Key) && correctionAllows(s2Key)) {
+    if (eligible2 && knownNow[s2Key] !== true && !news.includes(s2Key) && correctionAllows(s2Key)) {
       if (typeof hasRelicPhysiologicalResponse === 'function' && hasRelicPhysiologicalResponse(pilotId, proseOuter)) {
         news.push(s2Key);
-        console.log(TAG, `↳ [名器质变] 「${cfg.names[0]}」浸润饱满(${curP.count}/${curP.target}) 且正文出现女方生理自发迎合实证 ⇒ 自动晋阶「${s2Key}」`);
+        knownNow[s2Key] = true;
+        console.log(TAG, `↳ [名器质变] 「${cfg.names[0]}」浸润饱满(${count2}/${target2}) 且正文出现女方生理自发迎合实证 ⇒ 自动晋阶「${s2Key}」`);
+      }
+    }
+
+    // ── 2. 三阶段晋阶（情动 -> 沉沦）──
+    const s3Key = cfg.stage3Key;
+    const stage3Obj = curP.stages?.[3] || (curStage === 2 ? curP : { count: 0, target: 3, ready: false });
+    const count3 = Number(stage3Obj.count), target3 = Number(stage3Obj.target || 3);
+    const eligible3 = (stage3Obj.ready === true || count3 >= target3)
+      && knownNow[s2Key] === true
+      && correctionAllows(s2Key);
+    if (eligible3 && knownNow[s3Key] !== true && !news.includes(s3Key) && correctionAllows(s3Key)) {
+      if (typeof hasRelicStage3Response === 'function' && hasRelicStage3Response(pilotId, proseOuter)) {
+        news.push(s3Key);
+        knownNow[s3Key] = true;
+        console.log(TAG, `↳ [名器蜕变] 「${cfg.names[0]}」沉沦饱满(${count3}/${target3}) 且正文出现心智沉沦/动情配合/神魂奴种实证 ⇒ 自动晋阶「${s3Key}」`);
+      }
+    }
+
+    // ── 3. 四阶段晋阶（沉沦 -> 极乐）──
+    const s4Key = cfg.stage4Key;
+    const stage4Obj = curP.stages?.[4] || (curStage === 3 ? curP : { count: 0, target: 3, ready: false });
+    const count4 = Number(stage4Obj.count), target4 = Number(stage4Obj.target || 3);
+    const eligible4 = (stage4Obj.ready === true || count4 >= target4)
+      && knownNow[s3Key] === true
+      && correctionAllows(s3Key);
+    if (eligible4 && knownNow[s4Key] !== true && !news.includes(s4Key) && correctionAllows(s4Key)) {
+      if (typeof hasRelicStage4Response === 'function' && hasRelicStage4Response(pilotId, proseOuter)) {
+        news.push(s4Key);
+        knownNow[s4Key] = true;
+        console.log(TAG, `↳ [名器登顶] 「${cfg.names[0]}」极乐饱满(${count4}/${target4}) 且正文出现肉身神异质变/天地机缘实证 ⇒ 自动晋阶「${s4Key}」`);
       }
     }
   }

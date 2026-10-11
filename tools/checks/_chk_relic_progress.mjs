@@ -62,7 +62,12 @@ const {
   validateRelicAction,
   calcRelicProgress,
   hasRelicPhysiologicalResponse,
-  parseStatusBlock
+  hasRelicStage3Response,
+  hasRelicStage4Response,
+  getRelicStage,
+  parseStatusBlock,
+  createXsdLedgerReader,
+  MINGQI_PREREQ
 } = sandbox;
 
 const rep = [];
@@ -232,8 +237,88 @@ console.log('========================================================\n');
   ck(ok3 === false, '反例 16c：命中否定句，坚决拦截不晋阶');
 }
 
+// 17. 铁律 36 闭环：二升三高潮/沉沦核验与进度累进
+{
+  ck(typeof hasRelicStage3Response === 'function', '反例 17：暴露二升三心智沉沦核验纯函数');
+  const act = { relicId: 'zhuojiu', action: '高潮', holder: '叶红缨' };
+  const knownStage2 = { '灼酒流炎穴成形': true, '灼酒流炎穴一阶段': true, '灼酒流炎穴二阶段': true };
+  const v = validateRelicAction(act, '叶红缨娇喘痉挛，登上了绝顶高潮，内壁疯狂收缩。', knownStage2, '赵无忧');
+  ck(v.ok === true && v.target_stage === 3, '反例 17a：二阶段下申报高潮动作核验放行，目标指向第 3 境');
+
+  let prog = { zhuojiu: { count: 3, target: 3, ready: true, last_floor: 14, history: [] } };
+  prog = calcRelicProgress(prog, { ...act, ok: true, delta: v.delta, target_stage: v.target_stage }, 15, 0, 'h15', knownStage2);
+  ck(prog.zhuojiu.count === 1 && prog.zhuojiu.stages?.[3]?.count === 1, '反例 17b：二阶段下互动正确独立累进第 3 境计数(1/3)，不污染第 2 境满额记录');
+
+  const okS3 = hasRelicStage3Response('zhuojiu', '叶红缨身心防线全面溃败，动情配合，心智沉沦。');
+  ck(okS3 === true, '反例 17c：叶红缨在场且有心智沉沦/动情配合实证，核验通过放行三阶段晋阶');
+
+  const failS3 = hasRelicStage3Response('zhuojiu', '叶红缨神色冷漠，一言不发。');
+  ck(failS3 === false, '反例 17d：叶红缨无动情沉沦描写，坚决拦截不晋阶');
+}
+
+// 18. 铁律 36 闭环：三升四极乐/神异核验与外貌质变实证
+{
+  ck(typeof hasRelicStage4Response === 'function', '反例 18：暴露三升四极乐登顶核验纯函数');
+  const act = { relicId: 'zhuojiu', action: '极乐双修', holder: '叶红缨' };
+  const knownStage3 = { '灼酒流炎穴成形': true, '灼酒流炎穴一阶段': true, '灼酒流炎穴二阶段': true, '灼酒流炎穴三阶段': true };
+  const v = validateRelicAction(act, '叶红缨与他本源共鸣，天魔极乐双修，道韵化形。', knownStage3, '赵无忧');
+  ck(v.ok === true && v.target_stage === 4, '反例 18a：三阶段下申报极乐双修核验放行，目标指向第 4 境');
+
+  const okS4 = hasRelicStage4Response('zhuojiu', '叶红缨身后展翼化形，道韵激荡，成就极乐大圆满。');
+  ck(okS4 === true, '反例 18b：叶红缨展翼化形神异质变实证，核验通过放行四阶段晋阶');
+
+  const failS4 = hasRelicStage4Response('zhuojiu', '叶红缨只是安静坐着，并无异化外相。');
+  ck(failS4 === false, '反例 18c：叶红缨无神异质变描写，坚决拦截不晋阶');
+}
+
+// 19. 删楼回退防御：mergeStatLayers 遇 curFloor < chatFloor 时自动修剪超前账本与回退状态
+{
+  ck(typeof createXsdLedgerReader === 'function', '反例 19：暴露双层账本读取器工厂函数');
+  const reader = createXsdLedgerReader({ getPrerequisites: () => MINGQI_PREREQ || {} });
+  const chatV = {
+    stat_data: {
+      最后处理楼号: 24,
+      锚点账本: {
+        '2': { 新置真: ['灼酒流炎穴成形'] },
+        '24': { 新置真: ['灼酒流炎穴二阶段'] },
+      },
+      known: { '灼酒流炎穴成形': true, '灼酒流炎穴一阶段': true, '灼酒流炎穴二阶段': true },
+      relic_progress: {
+        zhuojiu: {
+          count: 0,
+          target_stage: 3,
+          history: [{ floor: 20 }, { floor: 22 }, { floor: 24 }],
+        },
+      },
+    },
+  };
+  const msgV = {
+    stat_data: {
+      最后处理楼号: 20,
+      锚点账本: {
+        '2': { 新置真: ['灼酒流炎穴成形'] },
+      },
+      known: { '灼酒流炎穴成形': true, '灼酒流炎穴一阶段': true },
+      relic_progress: {
+        zhuojiu: {
+          count: 2,
+          target: 3,
+          ready: false,
+          history: [{ floor: 20 }],
+        },
+      },
+    },
+  };
+  const rewound = reader.mergeStatLayers(chatV, msgV);
+  ck(rewound.最后处理楼号 === 20, '反例 19a：删楼后最后处理楼号准确回退至消息层楼号 20');
+  ck(!rewound.锚点账本['24'], '反例 19b：超前第 24 楼的锚点记录被自动修剪');
+  ck(rewound.known['灼酒流炎穴二阶段'] !== true, '反例 19c：超前置真的二阶段标记被坚决撤销');
+  ck(rewound.relic_progress.zhuojiu.count === 2, '反例 19d：名器互动计数准确回退至 20 楼记录(2/3)');
+  ck(rewound.relic_progress.zhuojiu.history.length === 1, '反例 19e：名器历史记录中 20 楼之后的操作被坚决清理');
+}
+
 console.log(rep.join('\n'));
-console.log(`\n${fail === 0 ? '✅ 16项反例防御全部通过！' : '❌ 有 ' + fail + ' 项断言失败'}`);
+console.log(`\n${fail === 0 ? '✅ 19项反例防御全部通过！' : '❌ 有 ' + fail + ' 项断言失败'}`);
 
 process.exit(fail === 0 ? 0 : 1);
 

@@ -31,6 +31,18 @@ function createXsdDispatcher(deps) {
       await syncIdentityFromFirstMes(reason); guard();
       await reconcileNadeLedger('启动·' + reason); guard();
       ensureMenuBound();
+      // ── 检测删楼回退并同步修剪全局台账 ──
+      const chatLayer = readLayer(L_CHAT);
+      const msgLayer = readLayer({ type: 'message', message_id: -1 });
+      const cs = chatLayer && chatLayer.stat_data;
+      const ms = msgLayer && msgLayer.stat_data;
+      if (cs && ms && Number.isFinite(Number(ms.最后处理楼号)) && Number.isFinite(Number(cs.最后处理楼号)) && Number(ms.最后处理楼号) < Number(cs.最后处理楼号)) {
+        console.log(TAG, `[台账回剪] 检测到当前楼号(${ms.最后处理楼号})小于全局记录(${cs.最后处理楼号})，正在执行删楼回退修剪`);
+        const rewoundStat = readStatData();
+        if (rewoundStat) {
+          await writeStat(rewoundStat, `删楼回退·同步全局台账至第${ms.最后处理楼号}楼`, false, guard);
+        }
+      }
       return { ok: true };
     } catch (error) { console.warn(TAG, '[启动·' + reason + ']', error.message); return { ok: false, why: error.message }; }
   }
@@ -94,18 +106,35 @@ function createXsdDispatcher(deps) {
         await ensureInit('首次生成前置'); transactions.guard(token);
         await syncIdentityFromFirstMes('首次生成前置'); transactions.guard(token);
         let chat = await readLayer(L_CHAT); transactions.guard(token);
-        let message = await readLayer({ type: 'message', message_id: Number(id) }); transactions.guard(token);
+        const targetMesId = (function() {
+          const n = Number(id);
+          try {
+            const msgs = typeof API.getChatMessages === 'function' ? API.getChatMessages(n) : null;
+            if (msgs && msgs[0] && msgs[0].is_user) return 0;
+          } catch (_) {}
+          return n;
+        })();
+        let message = await readLayer({ type: 'message', message_id: targetMesId }); transactions.guard(token);
         if (!schema(chat) || !schema(message)) {
-          // 仅缺结构的一层可以从已完整的层恢复；两个完整层冲突交人工处理。
+          // 仅缺结构的一层可以从已完整的层恢复；若两层均缺，从当前台账或默认全量字段安全自愈建立基线。
           const valid = schema(chat) ? chat.stat_data : schema(message) ? message.stat_data : null;
-          if (!valid) throw Error('首次生成初始化没有完整可恢复层');
+          let recoveryKnown;
+          if (valid) {
+            recoveryKnown = service.clone(valid.known);
+          } else {
+            const baseK = (chat && chat.stat_data && chat.stat_data.known) || (message && message.stat_data && message.stat_data.known) || (typeof readKnown === 'function' ? readKnown() : {}) || {};
+            recoveryKnown = {};
+            for (const f of ALL_FIELDS) recoveryKnown[f] = baseK[f] === true;
+          }
+          const recoveryId = valid?.身份 || chat?.stat_data?.身份 || message?.stat_data?.身份 || (typeof readIdentity === 'function' ? readIdentity() : null) || '赵无忧';
+          const recoveryFaction = valid?.阵营 || chat?.stat_data?.阵营 || message?.stat_data?.阵营 || (typeof readFaction === 'function' ? readFaction() : null) || '墨山道';
           transactions.guard(token);
-          const repaired = await writeStat({ ...readStatData(), 身份: valid.身份, 阵营: valid.阵营, known: service.clone(valid.known) },
+          const repaired = await writeStat({ ...readStatData(), 身份: recoveryId, 阵营: recoveryFaction, known: recoveryKnown },
             '首次生成单层结构恢复', false, () => transactions.guard(token));
           transactions.guard(token);
           if (!repaired || !repaired.ok) throw Error('首次生成单层恢复提交失败');
           chat = await readLayer(L_CHAT); transactions.guard(token);
-          message = await readLayer({ type: 'message', message_id: Number(id) }); transactions.guard(token);
+          message = await readLayer({ type: 'message', message_id: targetMesId }); transactions.guard(token);
         }
         if (!schema(chat) || !schema(message) || !service.eq(chat.stat_data.known, message.stat_data.known)
           || chat.stat_data.身份 !== message.stat_data.身份 || chat.stat_data.阵营 !== message.stat_data.阵营) throw Error('首次生成初始化双层读回不完整或不一致');
