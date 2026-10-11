@@ -1,0 +1,42 @@
+✔ 入口点击只登记待行动，发出玩家消息后有效故事楼才开放下一步 (17.821752ms)
+✔ 没有新玩家楼的助手文字不能完成已选节点 (2.418122ms)
+✔ 成功标记缺失仍能在真实行动故事楼完成；明确失败不推进 (4.806638ms)
+✔ 授权暗格实际取得地图后授予known，互斥另一项不可用 (7.392112ms)
+✔ 计划/否定/旁观/铁匣不能替代奖励，失败后可再选择 (15.293655ms)
+✔ 自由对话不授未选奖励、世界时间不变、同楼不重复计轮 (4.418613ms)
+✔ 继续深入同样必须等新故事楼，不能点击直接开放山谷和密室 (1.660384ms)
+✔ 退出确认后也只登记，完成退出故事楼才唯一结算，重复回调不加时 (5.259824ms)
+✔ 删除行动回复恢复等待和旧地点，重新回复重新完成 (2.684095ms)
+✔ 导演指令限制单项行动且保留Status_block，不展开未来奖励 (0.474329ms)
+✔ 独立名称/脚本/世界书，旧时钟与正式绑定为零 (1.380054ms)
+✔ PNG两个载荷均逐字节等于独立JSON (89.852845ms)
+[幽寂谷地图] Error: 正在生成，请等本轮回复结束
+    at perform (eval at <anonymous> (evalmachine.<anonymous>:445:26), <anonymous>:31:158)
+    at choose (eval at <anonymous> (evalmachine.<anonymous>:445:26), <anonymous>:35:285)
+    at El.eval [as onclick] (eval at <anonymous> (evalmachine.<anonymous>:445:26), <anonymous>:38:386159)
+    at TestContext.<anonymous> (/workspace/map-template/AI交接/地图事件链接入测试-v0.7/tests/package.test.cjs:12:480)
+    at async Test.run (node:internal/test_runner/test:1389:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+✔ 入口点选自动填入并原生发送，原点消失，新回复前无后续点 (25.355998ms)
+✔ 洞府也需新回复，无法未推进一楼就点香炉暗格 (16.574461ms)
+✔ 完整强制发送路线：入口→洞府→地图→谷口→第二轮→密室→法宝→确认退出 (25.773922ms)
+[幽寂谷地图] Error: 酒馆发送暂不可用
+    at sendControls (eval at <anonymous> (evalmachine.<anonymous>:445:26), <anonymous>:28:254)
+    at perform (eval at <anonymous> (evalmachine.<anonymous>:445:26), <anonymous>:31:240)
+    at choose (eval at <anonymous> (evalmachine.<anonymous>:445:26), <anonymous>:35:285)
+    at El.eval [as onclick] (eval at <anonymous> (evalmachine.<anonymous>:445:26), <anonymous>:38:386159)
+    at TestContext.<anonymous> (/workspace/map-template/AI交接/地图事件链接入测试-v0.7/tests/package.test.cjs:15:152)
+    at async Test.run (node:internal/test_runner/test:1389:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
+✔ 发送按钮不可用时不登记动作、不移动、不消费入口 (7.776303ms)
+✔ 窗口/TTL/地图钥匙继续筛选，地图不保留当前位置重复点 (4.30241ms)
+✔ 保留实际HUD与Status渲染正则，挂载地图钩子，无独立悬浮入口 (5.858564ms)
+✔ 正式卡中误加载测试脚本不创建地图/不写变量 (2.462624ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 509.320762
