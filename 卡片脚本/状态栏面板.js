@@ -420,6 +420,9 @@ const XSD_VARIANTS = {
   yehongying: { baseline: ['', '_2'], bath: ['_bath_front', '_bath_side'] },
   chulingye:  { baseline: ['', '_2', '_3'] },
   suling:     { baseline: ['', '_2'] },
+  suqinghan:    { baseline: [''] },
+  murongqingge: { baseline: [''] },
+  guyunshu:     { baseline: [''] },
 };
 
 /** 阶段关键词 ⇒ 用来从**当前状态**判断该用哪一组。
@@ -869,7 +872,7 @@ function xsdPortraitHtml(name, realm, table, stage, seed) {
    *   `suyao`／`liuhanyan`／`yufeirou`… 全都没登记 ⇒ 一律剪影）。
    *   ⇒ 改成：**表里登记过 或 卡里带了图** 都算"有立绘"。
    *   （卡里没图、表里也没登记的角色 —— 例如还没画立绘的赵无忧 —— 仍然直接落 SVG，**零 404**。） */
-  const registered = Object.prototype.hasOwnProperty.call(XSD_VARIANTS, pid) || !!xsdEmbedUrl(pid) || !!xsdEmbedBigUrl(pid);
+  const registered = !!pid && (Object.prototype.hasOwnProperty.call(XSD_VARIANTS, pid) || Object.prototype.hasOwnProperty.call(XSD_PINYIN, nm) || !!xsdEmbedUrl(pid) || !!xsdEmbedBigUrl(pid));
   const sources = registered ? xsdPortraitSourcesStaged(pinyin, st, table) : [];
   /* 同阶段「每张图的首选 URL」——随机抽一张当起点，并留给灯箱翻面用 */
   const group = registered ? xsdStageImages(pinyin, st, table) : [];
