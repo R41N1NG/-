@@ -74,6 +74,26 @@ async function fixture(first = "<IdentityMenu/>") {
       await emit("CHARACTER_MESSAGE_RENDERED");
     },
   };
+  const controls = doc.createElement("div");
+  controls.id = "send-controls";
+  controls.style.display = "none";
+  controls.innerHTML = '<button id="mes_stop">停止</button>';
+  doc.body.append(controls);
+  const textarea = doc.createElement("textarea");
+  textarea.id = "send_textarea";
+  const send = doc.createElement("button");
+  send.id = "send_but";
+  const sends = [];
+  send.onclick = () => {
+    sends.push(textarea.value);
+    context.chat.push({
+      mes: textarea.value,
+      is_user: true,
+      swipe_id: 0,
+      variables: [{}],
+    });
+  };
+  doc.body.append(textarea, send);
   win.eval(script);
   await until(() => doc.querySelector("[data-xsd2-root]"));
   return {
@@ -82,6 +102,7 @@ async function fixture(first = "<IdentityMenu/>") {
     doc,
     context,
     errors,
+    sends,
     emit,
     replacements: () => replacements,
     fail: (v) => (replaceError = v),
@@ -192,5 +213,51 @@ test("自设候选日期未填：只补设定、不猜日期或开启地图；�
     assert.equal(normal.doc.querySelector("[data-xds-menu]"), null);
   } finally {
     normal.close();
+  }
+});
+
+test("打包HUD快捷行动与地图共用门禁：空闲真实发送，生成中拒绝，结束后恢复", async () => {
+  const data = require("../tools/data.cjs").load(
+    require("node:path").join(__dirname, ".."),
+  );
+  for (const action of ["观察四周", "与在场之人交谈", "自行行动", "地图"]) {
+    const h = await fixture(data.greetings.赵无忧);
+    try {
+      await until(() => h.doc.querySelector(".xsd2-hud"));
+      const runtime = h.win.XSD2.runtime;
+      const dispatch = () => {
+        if (action !== "地图")
+          return runtime.dispatchIntent({
+            type: "QUICK_ACTION",
+            payload: { text: action },
+          });
+        const s = runtime.getSnapshot();
+        return runtime.dispatchIntent({
+          type: "SELECT_NODE",
+          pluginId: "youjigu_map",
+          expected: {
+            chatId: s.chatId,
+            branchId: s.branchId,
+            floor: s.floor,
+            revision: s.revision,
+          },
+          payload: { nodeId: "g7p2" },
+        });
+      };
+      await h.emit("GENERATION_STARTED");
+      await assert.rejects(dispatch(), /请等/);
+      assert.equal(h.sends.length, 0);
+      await h.emit("GENERATION_ENDED");
+      if (action === "地图") await dispatch();
+      else {
+        h.doc.querySelector('[data-action="' + action + '"]').click();
+        await until(() => h.sends.length === 1);
+      }
+      assert.equal(h.sends.length, 1);
+      if (action === "地图")
+        assert.equal(runtime.getSnapshot().pending.nodeId, "g7p2");
+    } finally {
+      h.close();
+    }
   }
 });

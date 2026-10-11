@@ -897,6 +897,8 @@ function createDispatcher(adapter, data) {
     },
     replay: () =>
       lifecycle(async (c) => {
+        // Floor zero has no previous assistant floor; retain its opening state.
+        if (c.floor === 0) return load(c);
         const m = c.chat[c.floor];
         const base = await history(c, m?.is_user ? c.floor : c.floor - 1);
         current = base?.state || null;

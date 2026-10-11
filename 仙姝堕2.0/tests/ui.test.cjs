@@ -322,3 +322,50 @@ test("原版自设书卷：手填日期保留、滑块只填字段、失败可�
   panel.destroy();
   d.window.close();
 });
+
+test("宿主生成门禁：隐藏父容器/hidden/停止按钮无布局不误判，原生函数状态优先", () => {
+  const { createTavernHost } = require("../src/host/tavern");
+  const d = dom(),
+    win = d.window,
+    doc = win.document;
+  doc.body.innerHTML =
+    '<div style="display:none" id="controls"><button id="mes_stop">停止</button></div><textarea id="send_textarea"></textarea><button id="send_but"></button>';
+  const c = {
+    chatId: "flags",
+    chat: [],
+    characters: [{ name: "仙姝堕2.0·框架测试" }],
+    characterId: 0,
+  };
+  win.SillyTavern = { getContext: () => c };
+  win.TavernHelper = {};
+  const host = createTavernHost(win, doc, "仙姝堕2.0·框架测试");
+  assert.equal(host.isGenerating(), false);
+  const controls = doc.querySelector("#controls"),
+    stop = doc.querySelector("#mes_stop");
+  controls.style.display = "block";
+  assert.equal(host.isGenerating(), true);
+  controls.hidden = true;
+  assert.equal(host.isGenerating(), false);
+  controls.hidden = false;
+  stop.style.display = "none";
+  assert.equal(host.isGenerating(), false);
+  host.markGenerating(true);
+  assert.equal(host.isGenerating(), true);
+  c.busy = false;
+  c.isGenerating = function () {
+    return this.busy;
+  };
+  assert.equal(host.isGenerating(), false);
+  c.busy = true;
+  assert.equal(host.isGenerating(), true);
+  host.markGenerating(false);
+  delete c.isGenerating;
+  stop.style.display = "block";
+  stop.checkVisibility = () => false;
+  assert.equal(host.isGenerating(), false);
+  stop.checkVisibility = () => true;
+  assert.equal(host.isGenerating(), true);
+  c.isGenerating = false;
+  assert.equal(host.isGenerating(), false);
+  d.window.close();
+});

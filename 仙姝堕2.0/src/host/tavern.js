@@ -54,19 +54,36 @@ function createTavernHost(win, doc, cardName) {
     )
       throw Error("未找到酒馆输入栏和发送按钮");
   }
-  function isGenerating() {
-    const flag = ctx().isGenerating;
-    const stop = top.document.querySelector("#mes_stop");
-    return (
-      generating ||
-      flag === true ||
-      !!(
-        stop &&
-        top.getComputedStyle(stop).display !== "none" &&
-        top.getComputedStyle(stop).visibility !== "hidden"
+  function visible(el) {
+    if (!el?.isConnected) return false;
+    for (let node = el; node; node = node.parentElement) {
+      const style = top.getComputedStyle(node);
+      if (
+        node.hidden ||
+        style.display === "none" ||
+        ["hidden", "collapse"].includes(style.visibility)
       )
+        return false;
+    }
+    return (
+      typeof el.checkVisibility !== "function" ||
+      el.checkVisibility({
+        visibilityProperty: true,
+        contentVisibilityAuto: true,
+      })
     );
   }
+  function isGenerating() {
+    const c = ctx();
+    const flag =
+      typeof c.isGenerating === "function"
+        ? c.isGenerating.call(c)
+        : c.isGenerating;
+    // A supported native boolean is authoritative. Some hosts expose a getter.
+    if (typeof flag === "boolean") return flag;
+    return generating || visible(top.document.querySelector("#mes_stop"));
+  }
+
   const adapter = {
     context,
     report,
