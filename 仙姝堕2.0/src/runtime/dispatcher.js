@@ -1,0 +1,877 @@
+"use strict";
+const C = require("./contracts");
+function createDispatcher(adapter, data) {
+  let current = null,
+    scopeChatId = null,
+    disposed = false,
+    queue = Promise.resolve(),
+    serial = 0;
+  const subscribers = new Set(),
+    plugins = new Map();
+  const rules = (s) => data.rules(s.stat_data);
+  function context() {
+    const c = adapter.context();
+    if (!c.chatId || !Array.isArray(c.chat) || !c.chat.length)
+      throw Error("请先打开角色聊天");
+    return {
+      ...c,
+      chatId: String(c.chatId),
+      branchId: String(c.branchId || c.chatId),
+      floor: c.chat.length - 1,
+      trail: C.fingerprint(c.chat),
+    };
+  }
+  function token(c) {
+    return JSON.stringify([c.chatId, c.branchId, c.trail]);
+  }
+  function guard(c) {
+    if (disposed || token(c) !== token(context()))
+      throw Error("聊天、候选或正文已变化，请重新读取");
+  }
+  function compatible(e, c) {
+    return e?.schema === 2 && C.matches(e.trail, c.trail);
+  }
+  async function history(c, ceiling = c.floor) {
+    for (let i = ceiling; i >= 0; i--) {
+      const e = (await adapter.readMessage(i))?.stat_data?.xsd2?.[0];
+      guard(c);
+      if (compatible(e, c)) {
+        const s = C.clone(e.state);
+        return { state: s, floor: i };
+      }
+    }
+    return null;
+  }
+  function defaults(identity, opening) {
+    const stat = C.parseStatus(opening).fields;
+    const d = C.parseDate(stat.时间);
+    if (!d) throw Error("开局缺少有效日期，请在身份菜单或GM中设置");
+    const R = data.rules({});
+    if (!R.IDENTITIES.some((x) => x.name === identity)) throw Error("无效身份");
+    const known = Object.fromEntries(R.ALL_FIELDS.map((k) => [k, false]));
+    for (const k of R.openFieldsFor(identity)) known[k] = true;
+    return {
+      schema: 2,
+      identity,
+      calendarDate: d,
+      stat_data: {
+        ...stat,
+        身份: identity,
+        阵营: R.IDENTITY_FACTION[identity],
+        known,
+        inventory: [],
+        在场角色: C.parseStatus(opening).cast,
+        relic_progress: {},
+        名器归属: {},
+        破处者: {},
+        段位: 1,
+      },
+      pluginState: {},
+      activeEvent: null,
+      pending: null,
+      receipts: {},
+      manual: {},
+      processed: {},
+      storyCount: 0,
+      revision: 0,
+    };
+  }
+  function normalize(s) {
+    C.assertDate(s.calendarDate);
+    s.stat_data.身份 = s.identity;
+    s.stat_data.时间 = "仙盟历 " + C.dateText(s.calendarDate);
+    s.stat_data.仙盟历文 = C.dateText(s.calendarDate);
+    const d = s.calendarDate;
+    s.stat_data.仙盟历 =
+      Math.round(
+        (d.year + d.month / 100 + ((d.day - 1) / 30) * 0.005) * 10000,
+      ) / 10000;
+    s.stat_data.历基准 ??= C.day(d) / 30;
+    s.stat_data.历时累计 = C.day(d) / 30 - s.stat_data.历基准;
+    if (s.activeEvent?.place) s.stat_data.地点 = s.activeEvent.place;
+    return s;
+  }
+  function manual(s) {
+    for (const [k, v] of Object.entries(s.manual || {})) {
+      if (k === "identity") {
+        s.identity = v;
+        s.stat_data.阵营 = rules(s).IDENTITY_FACTION[v];
+      } else if (k === "calendarDate") s.calendarDate = C.clone(v);
+      else if (k === "inventory") s.stat_data.inventory = C.clone(v);
+      else if (k === "段位") s.stat_data.段位 = v;
+      else if (k.startsWith("known.")) s.stat_data.known[k.slice(6)] = v;
+      else if (k.startsWith("owner.")) s.stat_data.名器归属[k.slice(6)] = v;
+    }
+    const R = rules(s);
+    s.stat_data.relic_stage_override = {};
+    for (const [k, v] of Object.entries(s.manual || {}))
+      if (k.startsWith("relicStage.")) {
+        const id = k.slice(11),
+          cfg = R.RELIC_PILOT_CONFIG[id];
+        s.stat_data.relic_stage_override[id] = v;
+        s.stat_data.known[cfg.formKey] = v > 0;
+        for (let i = 1; i <= 4; i++)
+          s.stat_data.known[cfg["stage" + i + "Key"]] = v >= i;
+      }
+    return normalize(s);
+  }
+  function snapshot() {
+    if (!current) return null;
+    const c = context();
+    if (scopeChatId !== c.chatId) return null;
+    const s = C.clone(current);
+    return {
+      ...s,
+      chatId: c.chatId,
+      branchId: c.branchId,
+      floor: c.floor,
+      inventory: s.stat_data.inventory,
+      known: s.stat_data.known,
+      relics: s.stat_data.relic_progress,
+    };
+  }
+  function notify(type) {
+    for (const f of [...subscribers])
+      try {
+        f({ type, snapshot: snapshot() });
+      } catch (e) {
+        adapter.report?.(e);
+      }
+  }
+  async function commit(c, s, type) {
+    guard(c);
+    s.revision = (current?.revision || s.revision || 0) + 1;
+    manual(s);
+    const envelope = {
+      schema: 2,
+      chatId: c.chatId,
+      branchId: c.branchId,
+      trail: c.trail.slice(0, c.floor + 1),
+      state: s,
+    };
+    await adapter.persist(c, envelope);
+    guard(c);
+    current = C.clone(s);
+    scopeChatId = c.chatId;
+    updatePrompt();
+    try {
+      await adapter.syncState?.(C.clone(s));
+    } catch (e) {
+      adapter.report?.(e);
+    }
+    guard(c);
+    notify(type);
+    return snapshot();
+  }
+  function enqueue(fn) {
+    const c = context();
+    const next = queue
+      .catch(() => {})
+      .then(async () => {
+        guard(c);
+        return fn(c);
+      });
+    queue = next;
+    return next;
+  }
+  function lifecycle(fn) {
+    const id = context().chatId;
+    const next = queue
+      .catch(() => {})
+      .then(() => {
+        const c = context();
+        if (c.chatId !== id) return { skipped: true };
+        return fn(c);
+      });
+    queue = next;
+    return next;
+  }
+  async function load(c) {
+    const found = await history(c);
+    if (found) {
+      current = manual(found.state);
+      scopeChatId = c.chatId;
+      if (
+        current.pending &&
+        !c.chat
+          .slice(current.pending.floor + 1)
+          .some((m) => m.is_user && !m.is_system)
+      ) {
+        current = C.clone(current.pending.before);
+        await commit(c, current, "rollback");
+      } else notify("branch_change");
+      updatePrompt();
+      return snapshot();
+    }
+    const first = String(c.chat[0].mes || "");
+    if (first.includes("<IdentityMenu")) {
+      current = null;
+      updatePrompt();
+      notify("identity_menu");
+      return null;
+    }
+    const identity =
+      Object.keys(data.greetings).find((x) =>
+        first.includes('<IdentityPick name="' + x + '"'),
+      ) ||
+      Object.keys(data.greetings).find((x) =>
+        C.parseStatus(first).fields.身份?.includes(x),
+      );
+    if (identity === "自设" && !C.parseDate(C.parseStatus(first).fields.时间)) {
+      current = null;
+      updatePrompt();
+      notify("identity_menu");
+      return null;
+    }
+    if (identity) return commit(c, defaults(identity, first), "initialize");
+    current = null;
+    updatePrompt();
+    return null;
+  }
+  function updatePrompt() {
+    const p = current?.pending;
+    const plugin = p
+      ? plugins.get(p.pluginId)
+      : current?.activeEvent
+        ? plugins.get(current.activeEvent.pluginId)
+        : null;
+    const text = p?.prompt || plugin?.getPrompt?.(snapshot()) || "";
+    const st = current?.stat_data;
+    const baseline = current
+      ? "后台当前时点：仙盟历 " +
+        C.dateText(current.calendarDate) +
+        "。身份：" +
+        current.identity +
+        "。地点：" +
+        (st.地点 || "未定") +
+        "。已知事实：" +
+        Object.keys(st.known)
+          .filter((k) => st.known[k])
+          .join("、") +
+        "。纳戒：" +
+        JSON.stringify(st.inventory) +
+        "。日期照抄后台；历时只写本回合耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。" +
+        (current.activeEvent || p
+          ? "事件期间按节点约定停留，退出耗时由后台结算，不另外推进世界日期。"
+          : "")
+      : "";
+    adapter.setPrompt?.(baseline + "\n" + text);
+  }
+  async function select(c, intent) {
+    if (!current) throw Error("请先选择身份");
+    if (current.pending) throw Error("当前行动还未完成");
+    if (adapter.isGenerating?.()) throw Error("请等本轮回复结束");
+    if (
+      intent.expected?.chatId !== c.chatId ||
+      intent.expected.branchId !== c.branchId ||
+      intent.expected.revision !== current.revision ||
+      intent.expected.floor !== c.floor
+    )
+      throw Error("节点来自旧状态，请重新选择");
+    const plugin = plugins.get(intent.pluginId);
+    if (!plugin) throw Error("地图插件尚未注册");
+    if (current.activeEvent && current.activeEvent.pluginId !== plugin.id)
+      throw Error("另一个事件尚未结束");
+    const n = plugin.select(
+      C.clone(snapshot()),
+      String(intent.payload?.nodeId || ""),
+    );
+    if (!n || n.id !== intent.payload.nodeId || n.allowed === false)
+      throw Error(n?.reason || "当前节点不可选");
+    C.safe(n);
+    if (n.identities && !n.identities.includes(current.identity))
+      throw Error("身份不满足");
+    const stamp = C.day(current.calendarDate);
+    if (
+      (n.open && stamp < C.day(n.open)) ||
+      (n.close && stamp > C.day(n.close))
+    )
+      throw Error("不在事件开放日期");
+    if ((n.requires || []).some((k) => current.stat_data.known[k] !== true))
+      throw Error("前置条件未满足");
+    if (
+      n.ttl !== undefined &&
+      (!Number.isInteger(n.ttl) || n.ttl < 1 || !Number.isInteger(n.openedAt))
+    )
+      throw Error("节点期限配置无效");
+    if (n.ttl !== undefined && current.storyCount - n.openedAt >= n.ttl)
+      throw Error("节点已过期");
+    if (!n.actionText || typeof n.prompt !== "string")
+      throw Error("节点配置缺少行动或剧情指令");
+    if (n.exitDays !== undefined) {
+      if (!Number.isInteger(n.exitDays) || n.exitDays < 0)
+        throw Error("退出耗时配置无效");
+      if (current.manual.calendarDate)
+        throw Error("世界日期处于GM人工覆盖，请先交还自动");
+      if (!(await adapter.confirmExit(n))) return { cancelled: true };
+      guard(c);
+    }
+    adapter.preflightSend?.();
+    const before = C.clone(current),
+      next = C.clone(current);
+    const id =
+      c.chatId + ":" + c.floor + ":" + current.revision + ":" + ++serial;
+    next.pending = {
+      id,
+      pluginId: plugin.id,
+      nodeId: n.id,
+      actionText: n.actionText,
+      prompt: n.prompt,
+      floor: c.floor,
+      selection: C.clone(n),
+      before,
+    };
+    if (n.reservedState !== undefined)
+      next.pluginState[plugin.id] = C.clone(n.reservedState);
+    await commit(c, next, "pending");
+    guard(c);
+    try {
+      await adapter.send(n.actionText);
+      return snapshot();
+    } catch (e) {
+      const now = context();
+      if (now.floor === c.floor && token(now) === token(c))
+        await commit(now, before, "rollback");
+      throw e;
+    }
+  }
+  function applyResult(s, p, result) {
+    if (!result || !["success", "failure", "retry"].includes(result.outcome))
+      throw Error("插件未返回明确结果");
+    C.safe(result);
+    if (result.pluginState !== undefined)
+      s.pluginState[p.pluginId] = C.clone(result.pluginState);
+    if (result.activeEvent !== undefined) {
+      if (
+        result.activeEvent !== null &&
+        result.activeEvent.pluginId !== p.pluginId
+      )
+        throw Error("插件不能接管别人的事件");
+      s.activeEvent = C.clone(result.activeEvent);
+    }
+    if (result.outcome === "success") {
+      if (result.elapsedDays !== undefined) {
+        if (result.elapsedDays !== p.selection.exitDays)
+          throw Error("插件结算耗时不符合节点配置");
+        s.calendarDate = C.fromDay(C.day(s.calendarDate) + result.elapsedDays);
+        s.stat_data.历时 = result.elapsedDays + "日";
+      }
+      const rewards = result.rewards || [];
+      if (
+        rewards.some(
+          (x) =>
+            !(p.selection.rewards || []).includes(x.name) ||
+            !Number.isInteger(x.count || 1) ||
+            (x.count || 1) < 1,
+        )
+      )
+        throw Error("插件授予未配置奖励");
+      for (const item of rewards) {
+        const existing = s.stat_data.inventory.find(
+          (x) => x.id === item.name && x.source === p.pluginId,
+        );
+        if (existing) existing.count += item.count || 1;
+        else
+          s.stat_data.inventory.push({
+            id: item.name,
+            name: item.name,
+            count: item.count || 1,
+            source: p.pluginId,
+          });
+      }
+      for (const k of result.known || []) {
+        if (!(p.selection.grantsKnown || []).includes(k))
+          throw Error("插件提交未配置事实");
+        s.stat_data.known[k] = true;
+      }
+      s.receipts[p.id] = {
+        pluginId: p.pluginId,
+        nodeId: p.nodeId,
+        floor: context().floor,
+        rewards: C.clone(rewards),
+        elapsedDays: result.elapsedDays || 0,
+        date: C.clone(s.calendarDate),
+      };
+    }
+    s.reconciledRewards =
+      result.outcome === "success" ? rewardsNames(result) : [];
+    s.pending = null;
+    return s;
+  }
+  function rewardsNames(result) {
+    return (result.rewards || []).map((x) => x.name);
+  }
+
+  function duration(value) {
+    const m = String(value || "")
+      .trim()
+      .match(
+        /^(半|\d+|[一二三四五六七八九十廿卅]+)(?:个)?(日|天|夜|时辰|时|小时)$/,
+      );
+    if (!m) return 0;
+    const n = m[1] === "半" ? 0.5 : C.number(m[1]);
+    return (
+      n *
+      ({ 日: 1440, 天: 1440, 夜: 720, 时辰: 120, 时: 60, 小时: 60 }[m[2]] || 0)
+    );
+  }
+  function applyInventory(s, parsed) {
+    for (const part of String(parsed.fields.纳戒 || "").split(/[｜|；;]/)) {
+      const m = part
+        .trim()
+        .match(
+          /^(获得|消耗)[:：]\s*(.+?)(?:[×x*]\s*(\d+))?(?:[（(](.*)[）)])?$/,
+        );
+      if (!m) continue;
+      const name = m[2].trim(),
+        count = Number(m[3] || 1),
+        gain = m[1] === "获得";
+      if (!name || count < 1 || !Number.isSafeInteger(count)) continue;
+      const proof = parsed.prose.split(/[。！？\n]/).some(
+        (line) =>
+          line.includes(name) &&
+          !C.noFact.test(line) &&
+          (line.includes("你") ||
+            line.includes(s.identity) ||
+            /^(?:获得|取得|得到|拿到|收起|收下|服下|使用|喝掉|吃下)/.test(
+              line.trim(),
+            )) &&
+          !rules(s)
+            .FORM_OF_HOLDERS.flatMap((g) => g.holders)
+            .some(
+              (actor) =>
+                actor !== s.identity &&
+                new RegExp(
+                  actor +
+                    "(?:已|已经|亲自|独自|顺手|终于|随后|便)?(?:获得|取得|得到|拿到|收起|服下|用掉)",
+                ).test(line),
+            ) &&
+          (gain
+            ? /获得|取得|得到|拿到|收起|收下|放入|拾起|收入/
+            : /喝|用掉|使用|服下|消耗|送给|赠给|丢掉|夺走|吃下|吞下/
+          ).test(line),
+      );
+      if (!proof) {
+        adapter.report?.(Error("纳戒进出缺少正文实证：" + name));
+        continue;
+      }
+      const old = s.stat_data.inventory.find((x) => x.name === name);
+      if (gain) {
+        if (old) {
+          if (s.reconciledRewards?.includes(name)) continue;
+          old.count += count;
+        } else
+          s.stat_data.inventory.push({
+            id: name,
+            name,
+            count,
+            description: m[4] || "",
+          });
+      } else if (old) {
+        old.count = Math.max(0, old.count - count);
+        s.stat_data.inventory = s.stat_data.inventory.filter(
+          (x) => x.count > 0,
+        );
+      }
+    }
+  }
+  function applyStory(s, text, id, swipe) {
+    const parsed = C.parseStatus(text),
+      R = rules(s);
+    for (const k of C.DISPLAY_FIELDS)
+      if (parsed.fields[k] && k !== "历时") s.stat_data[k] = parsed.fields[k];
+    if (parsed.cast.length || parsed.fields.在场 === "无")
+      s.stat_data.在场角色 = parsed.cast;
+    if (parsed.fields.实际发生) s.stat_data.实际发生 = parsed.fields.实际发生;
+    if (parsed.fields.纳戒) s.stat_data.纳戒 = parsed.fields.纳戒;
+    applyInventory(s, parsed);
+    if (parsed.fields.历时) s.stat_data.历时 = parsed.fields.历时;
+    if (
+      !s.pending &&
+      !s.activeEvent &&
+      !s.manual.calendarDate &&
+      !s.suppressClock
+    ) {
+      const minutes = duration(parsed.fields.历时);
+      if (minutes) {
+        const total = (s.clockRemainder || 0) + minutes;
+        s.calendarDate = C.fromDay(
+          C.day(s.calendarDate) + Math.floor(total / 1440),
+        );
+        s.clockRemainder = total % 1440;
+      }
+    }
+    delete s.suppressClock;
+    delete s.reconciledRewards;
+    // Model time/identity and inventory dumps are display reports, never authoritative mutations.
+    const statements = parsed.actions;
+    for (const f of R.FIELD_TABLE) {
+      if (
+        /成形|[一二三四]阶段|处女丧失/.test(f.name) ||
+        !statements.includes(f.name) ||
+        !f.kws.some((k) => C.fact(parsed.prose, k))
+      )
+        continue;
+      if (
+        ["南域大劫", "天姝会存在"].includes(f.name) &&
+        C.day(s.calendarDate) < C.day({ year: 1578, month: 8, day: 1 })
+      )
+        continue;
+      s.stat_data.known[f.name] = true;
+    }
+    for (const group of R.FORM_OF_HOLDERS) {
+      for (const holder of group.holders) {
+        const proof = parsed.prose
+          .split(/[。！？\n]/)
+          .some(
+            (line) =>
+              line.includes(holder) &&
+              !C.noFact.test(line) &&
+              R.DEFLOWER_HARD_RES.some(([re]) => re.test(line)) &&
+              /(落红|破(?:了|去|过|掉)?(?:她|他|其)?的?身|破处|元阴被夺|失了身)/.test(
+                line,
+              ),
+          );
+        if (proof) {
+          s.stat_data.known[holder + "处女丧失"] = true;
+          const record = (parsed.fields.破处 || "")
+            .split("｜")
+            .find((x) => x.split("、")[0] === holder);
+          const owner = record?.split("、")[1]?.trim();
+          if (
+            (owner && C.fact(parsed.prose, owner)) ||
+            (owner === s.identity && C.fact(parsed.prose, "你"))
+          )
+            s.stat_data.破处者[holder] = owner;
+          else if (
+            C.fact(parsed.prose, "你") ||
+            C.fact(parsed.prose, s.identity)
+          )
+            s.stat_data.破处者[holder] = s.identity;
+        }
+      }
+      if (group.holders.every((h) => s.stat_data.known[h + "处女丧失"])) {
+        s.stat_data.known[group.form] = true;
+        s.stat_data.known["获得任意名器"] = true;
+        const cfg = Object.values(R.RELIC_PILOT_CONFIG).find(
+          (x) => x.formKey === group.form,
+        );
+        if (cfg) {
+          s.stat_data.known[cfg.stage1Key] = true;
+          if (s.stat_data.破处者[group.holders[0]])
+            s.stat_data.名器归属[cfg.id] = s.stat_data.破处者[group.holders[0]];
+        }
+      }
+    }
+    manual(s);
+    const rr = rules(s);
+    for (const raw of parsed.interactions || []) {
+      const a = rr.parseRelicAction(raw);
+      if (!a) continue;
+      const validated = rr.validateRelicAction(
+        a,
+        parsed.prose,
+        s.stat_data.known,
+        s.identity,
+      );
+      if (validated.ok)
+        s.stat_data.relic_progress = rr.calcRelicProgress(
+          s.stat_data.relic_progress,
+          { ...a, ...validated },
+          id,
+          swipe,
+          C.hash(text),
+          s.stat_data.known,
+        );
+    }
+    for (const [rid, cfg] of Object.entries(rr.RELIC_PILOT_CONFIG)) {
+      const stage = rr.getRelicStage(rid, s.stat_data.known),
+        progress = s.stat_data.relic_progress[rid],
+        positive = parsed.prose
+          .split(/[。！？\n]/)
+          .filter((line) => !C.noFact.test(line))
+          .join("。");
+      if (
+        stage === 1 &&
+        progress?.stages?.[2]?.ready &&
+        rr.hasRelicPhysiologicalResponse(rid, positive)
+      )
+        s.stat_data.known[cfg.stage2Key] = true;
+      if (
+        stage === 2 &&
+        progress?.stages?.[3]?.ready &&
+        rr.hasRelicStage3Response(rid, positive)
+      )
+        s.stat_data.known[cfg.stage3Key] = true;
+      if (
+        stage === 3 &&
+        progress?.stages?.[4]?.ready &&
+        rr.hasRelicStage4Response(rid, positive)
+      )
+        s.stat_data.known[cfg.stage4Key] = true;
+    }
+    s.processed[id] = C.hash(text);
+    s.storyCount++;
+    return s;
+  }
+  async function story(c) {
+    if (adapter.isGenerating?.() || adapter.isAborted?.())
+      return { deferred: true };
+    const m = c.chat[c.floor];
+    if (
+      !m ||
+      m.is_user ||
+      m.is_system ||
+      c.floor === 0 ||
+      !String(m.mes || "").trim()
+    )
+      return { skipped: true };
+    if (!current || scopeChatId !== c.chatId) await load(c);
+    if (!current) return { skipped: true };
+    if (current.processed[c.floor] === C.hash(m.mes)) return { skipped: true };
+    const previous = await history(c, c.floor - 1);
+    if (!previous) throw Error("缺少本楼的前置状态");
+    let s = previous.state;
+    // Manual edits on this candidate remain higher priority when its prose is edited.
+    const candidate = (await adapter.readMessage(c.floor))?.stat_data
+      ?.xsd2?.[0];
+    guard(c);
+    if (
+      candidate?.chatId === c.chatId &&
+      C.matches(candidate.trail?.slice(0, c.floor), c.trail)
+    )
+      s.manual = { ...s.manual, ...candidate.state.manual };
+    let body = String(m.mes);
+    const p = s.pending;
+    if (p) {
+      const user = c.chat
+        .slice(p.floor + 1, c.floor)
+        .find((x) => x.is_user && !x.is_system);
+      if (!user || String(user.mes).trim() !== p.actionText) {
+        s = C.clone(p.before);
+      } else {
+        const plugin = plugins.get(p.pluginId);
+        if (!plugin) throw Error("活动事件插件尚未加载");
+        const result = await plugin.settle(
+          C.clone({
+            ...s,
+            chatId: c.chatId,
+            branchId: c.branchId,
+            floor: c.floor,
+          }),
+          C.clone(p),
+          body,
+        );
+        guard(c);
+        if (adapter.isAborted?.() || adapter.isGenerating?.())
+          return { deferred: true };
+        s = applyResult(s, p, result);
+        s.suppressClock = true;
+        if (result.body !== undefined) body = String(result.body);
+      }
+    }
+    s = applyStory(s, body, c.floor, m.swipe_id ?? 0);
+    manual(s);
+    const fixed = C.canonicalStatus(body, s);
+    if (fixed !== m.mes) {
+      const oldId = c.chatId,
+        oldFloor = c.floor;
+      await adapter.replaceStory(c.floor, fixed);
+      c = context();
+      if (c.chatId !== oldId || c.floor !== oldFloor)
+        throw Error("正文更新期间聊天变化");
+    }
+    if (adapter.isAborted?.() || adapter.isGenerating?.())
+      return { deferred: true };
+    s.processed[c.floor] = C.hash(fixed);
+    return commit(c, s, "floor_advance");
+  }
+  async function gm(c, payload) {
+    if (!current) throw Error("请先选择身份");
+    C.safe(payload);
+    const s = C.clone(current);
+    for (const [k, v] of Object.entries(payload || {})) {
+      if (k === "identity") {
+        if (!rules(s).IDENTITIES.some((x) => x.name === v))
+          throw Error("身份无效");
+        s.manual[k] = v;
+        for (const field of rules(s).openFieldsFor(v))
+          s.stat_data.known[field] = true;
+        s.pending = null;
+        s.activeEvent = null;
+      } else if (k === "calendarDate") {
+        C.assertDate(v);
+        if (s.pending) throw Error("请先撤回待执行行动，再修改日期");
+        s.manual[k] = C.clone(v);
+      } else if (k === "inventory") {
+        if (
+          !Array.isArray(v) ||
+          v.some((x) => !x.name || !Number.isInteger(x.count) || x.count < 1)
+        )
+          throw Error("物品须有名称及正整数数量");
+        s.manual[k] = C.clone(v);
+      } else if (k === "段位") {
+        if (!Number.isInteger(v) || v < 1 || v > 16) throw Error("段位为1—16");
+        s.manual[k] = v;
+      } else if (
+        k.startsWith("relicStage.") &&
+        rules(s).RELIC_PILOT_CONFIG[k.slice(11)] &&
+        Number.isInteger(v) &&
+        v >= 0 &&
+        v <= 4
+      )
+        s.manual[k] = v;
+      else if (k.startsWith("known.") && typeof v === "boolean")
+        s.manual[k] = v;
+      else if (k.startsWith("owner.") && (typeof v === "string" || v === null))
+        s.manual[k] = v;
+      else throw Error("GM字段不在白名单");
+    }
+    return commit(c, s, "gm_override");
+  }
+  async function initialize(c, identity, custom) {
+    const profile = data.greetings[identity];
+    if (!profile) throw Error("身份无效");
+    let opening = profile;
+    if (identity === "自设") {
+      if (!custom?.date || !custom?.name || !custom?.realm)
+        throw Error("请填写自设道号、修为和日期");
+      C.assertDate(custom.date);
+      opening =
+        profile
+          .replace(
+            /<时间>[\s\S]*?<\/时间>/,
+            "<时间>仙盟历 " + C.dateText(custom.date) + "</时间>",
+          )
+          .replace(
+            /<修为>[\s\S]*?<\/修为>/,
+            "<修为>" + custom.realm + "</修为>",
+          )
+          .replace(
+            /<地点>[\s\S]*?<\/地点>/,
+            "<地点>" + (custom.place || "由玩家自定") + "</地点>",
+          ) +
+        "\n你的入世设定：" +
+        custom.name +
+        "；" +
+        (custom.origin || "");
+    }
+    const oldId = c.chatId;
+    await adapter.replaceOpening(opening);
+    c = context();
+    if (c.chatId !== oldId || c.floor !== 0)
+      throw Error("开局更新期间聊天变化");
+    const s = defaults(identity, opening);
+    if (custom) s.stat_data.自设 = C.clone(custom);
+    await commit(c, s, "identity_change");
+    await adapter.syncIdentity?.(identity);
+    return snapshot();
+  }
+  function dispatchIntent(intent) {
+    C.safe(intent);
+    return enqueue(async (c) => {
+      if (intent.type === "SELECT_IDENTITY") {
+        if (c.chat.length !== 1) throw Error("开局身份选择仅限第0楼");
+        return initialize(c, intent.payload.identity, intent.payload.custom);
+      }
+      if (!current || scopeChatId !== c.chatId) await load(c);
+      switch (intent.type) {
+        case "SELECT_NODE":
+          return select(c, intent);
+        case "GM_PATCH": {
+          const r = await gm(c, intent.payload);
+          await adapter.syncIdentity?.(current.identity);
+          return r;
+        }
+        case "GM_RELEASE": {
+          const s = C.clone(current);
+          for (const k of intent.payload.keys || []) delete s.manual[k];
+          return commit(c, s, "gm_override");
+        }
+        case "CANCEL_PENDING": {
+          if (!current?.pending) return snapshot();
+          const p = current.pending;
+          const user = c.chat.findIndex(
+            (m, i) => i > p.floor && m.is_user && !m.is_system,
+          );
+          return commit(
+            user >= 0 ? { ...c, floor: user } : c,
+            C.clone(p.before),
+            "rollback",
+          );
+        }
+        case "QUICK_ACTION": {
+          if (current?.pending || adapter.isGenerating?.())
+            throw Error("请等当前行动结束");
+          if (
+            !["观察四周", "与在场之人交谈", "自行行动"].includes(
+              intent.payload.text,
+            )
+          )
+            throw Error("未知快捷行动");
+          adapter.preflightSend?.();
+          await adapter.send(intent.payload.text);
+          return snapshot();
+        }
+        case "USE_ITEM": {
+          if (current?.pending || adapter.isGenerating?.())
+            throw Error("请等当前行动结束");
+          const item = current?.stat_data.inventory.find(
+            (x) => x.id === intent.payload.id || x.name === intent.payload.id,
+          );
+          if (!item) throw Error("物品不在纳戒");
+          adapter.preflightSend?.();
+          await adapter.send("使用" + item.name);
+          return snapshot();
+        }
+        default:
+          throw Error("未知行动类型");
+      }
+    });
+  }
+  const api = {
+    getSnapshot: snapshot,
+    subscribe(fn) {
+      subscribers.add(fn);
+      return () => subscribers.delete(fn);
+    },
+    dispatchIntent,
+    ready: () => lifecycle(load),
+    restore: () => lifecycle(load),
+    settleStory: () => lifecycle(story),
+    stop: () => dispatchIntent({ type: "CANCEL_PENDING" }),
+    registerPlugin(plugin) {
+      if (
+        !plugin?.id ||
+        typeof plugin.select !== "function" ||
+        typeof plugin.settle !== "function"
+      )
+        throw Error("插件缺少选择／结果接口");
+      if (plugins.has(plugin.id)) throw Error("插件已注册");
+      plugins.set(plugin.id, plugin);
+      updatePrompt();
+      notify("plugin_registered");
+      return () => {
+        plugins.delete(plugin.id);
+        updatePrompt();
+      };
+    },
+    replay: () =>
+      lifecycle(async (c) => {
+        const m = c.chat[c.floor];
+        const base = await history(c, m?.is_user ? c.floor : c.floor - 1);
+        current = base?.state || null;
+        scopeChatId = c.chatId;
+        updatePrompt();
+        return snapshot();
+      }),
+    dispose() {
+      disposed = true;
+      subscribers.clear();
+      plugins.clear();
+      adapter.setPrompt?.("");
+    },
+  };
+  return api;
+}
+module.exports = { createDispatcher };

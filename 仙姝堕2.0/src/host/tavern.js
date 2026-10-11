@@ -1,0 +1,180 @@
+"use strict";
+const C = require("../runtime/contracts");
+const { createWorldbookHost } = require("./worldbook");
+function createTavernHost(win, doc, cardName) {
+  const top = win.parent,
+    helper = top.TavernHelper || win.TavernHelper;
+  if (!helper || !top.SillyTavern?.getContext)
+    throw Error("需要启用酒馆助手与脚本运行功能");
+  const ctx = () => top.SillyTavern.getContext();
+  let aborted = false,
+    generating = false;
+  function context() {
+    const c = ctx();
+    return {
+      chatId: c.chatId || c.getCurrentChatId?.(),
+      branchId: c.chatId || c.getCurrentChatId?.(),
+      chat: c.chat,
+      metadata: c.chatMetadata || {},
+      card: c.characters?.[c.characterId ?? c.this_chid],
+    };
+  }
+  const book = createWorldbookHost(helper, ctx, { expectedName: cardName });
+  const report = (e) => {
+    console.error("[仙姝堕2.0]", e);
+    top.toastr?.error(String(e.message || e), "仙姝堕");
+  };
+  function guard(c) {
+    const n = context();
+    if (
+      n.chatId !== c.chatId ||
+      JSON.stringify(C.fingerprint(n.chat)) !== JSON.stringify(c.trail)
+    )
+      throw Error("聊天已变化，取消写入");
+  }
+  async function save() {
+    const c = ctx();
+    if (c.saveChat) await c.saveChat();
+    else if (c.saveChatDebounced) c.saveChatDebounced();
+    else throw Error("宿主缺少聊天保存接口");
+  }
+  function preflightSend() {
+    if (isGenerating()) throw Error("请等当前回复结束");
+    if (
+      !top.document.querySelector("#send_textarea") ||
+      !top.document.querySelector("#send_but")
+    )
+      throw Error("未找到酒馆输入栏和发送按钮");
+  }
+  function isGenerating() {
+    const flag = ctx().isGenerating;
+    const stop = top.document.querySelector("#mes_stop");
+    return (
+      generating ||
+      flag === true ||
+      !!(
+        stop &&
+        top.getComputedStyle(stop).display !== "none" &&
+        top.getComputedStyle(stop).visibility !== "hidden"
+      )
+    );
+  }
+  const adapter = {
+    context,
+    report,
+    isGenerating,
+    isAborted: () => aborted,
+    async readMessage(i) {
+      return helper.getVariables({ type: "message", message_id: i });
+    },
+    async persist(c, e) {
+      guard(c);
+      const old = await helper.getVariables({
+        type: "message",
+        message_id: c.floor,
+      });
+      guard(c);
+      await helper.replaceVariables(
+        {
+          ...old,
+          stat_data: {
+            ...(old?.stat_data || {}),
+            ...C.clone(e.state.stat_data),
+            xsd2: [C.clone(e)],
+          },
+        },
+        { type: "message", message_id: c.floor },
+      );
+      guard(c);
+      await save();
+      guard(c);
+      const back = await helper.getVariables({
+        type: "message",
+        message_id: c.floor,
+      });
+      guard(c);
+      if (back?.stat_data?.xsd2?.[0]?.state?.revision !== e.state.revision)
+        throw Error("本楼状态保存复核失败");
+    },
+    async syncState(state) {
+      const id = context().chatId;
+      const old = await helper.getVariables({ type: "chat" });
+      if (context().chatId !== id) throw Error("聊天已切换");
+      await helper.replaceVariables(
+        { ...old, stat_data: C.clone(state?.stat_data || {}) },
+        { type: "chat" },
+      );
+      await book.synchronizeState(
+        state?.stat_data || {},
+        () => context().chatId === id,
+      );
+    },
+    preflightSend,
+    async send(text) {
+      preflightSend();
+      const box = top.document.querySelector("#send_textarea");
+      box.value = text;
+      box.dispatchEvent(new top.Event("input", { bubbles: true }));
+      aborted = false;
+      top.document.querySelector("#send_but").click();
+    },
+    confirmExit: (n) =>
+      Promise.resolve(
+        top.confirm(
+          (n.confirmText || "确定离开此处？") +
+            "\n将推进" +
+            n.exitDays +
+            "日。",
+        ),
+      ),
+    async replaceStory(i, text, refresh = "none") {
+      const c = context(),
+        trail = C.fingerprint(c.chat);
+      if (i !== c.chat.length - 1) throw Error("只允许修改最新正文");
+      await helper.setChatMessages([{ message_id: i, message: text }], {
+        refresh,
+      });
+      const n = context();
+      if (
+        n.chatId !== c.chatId ||
+        !C.matches(trail.slice(0, i), C.fingerprint(n.chat))
+      )
+        throw Error("正文写入期间聊天变化");
+      await save();
+    },
+    async replaceOpening(text) {
+      await adapter.replaceStory(0, text, "affected");
+    },
+    async syncIdentity(identity) {
+      const id = context().chatId;
+      return book.synchronize(identity, () => context().chatId === id);
+    },
+    setPrompt(text) {
+      const c = ctx();
+      c.setExtensionPrompt?.("xsd2-event", text, 1, 0, false, 0);
+    },
+    markAborted(value) {
+      aborted = value;
+    },
+    markGenerating(value) {
+      generating = value;
+    },
+    helper,
+    top,
+    doc,
+    cardName,
+    isOurCard() {
+      const c = context().card;
+      return (c?.name || c?.data?.name) === cardName;
+    },
+    on(event, fn) {
+      const c = ctx(),
+        name = c.eventTypes?.[event];
+      if (!name) return () => {};
+      c.eventSource.on(name, fn);
+      return () => c.eventSource.removeListener(name, fn);
+    },
+  };
+  return adapter;
+}
+module.exports = { createTavernHost };

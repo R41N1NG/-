@@ -1,0 +1,703 @@
+"use strict";
+const { test } = require("node:test");
+const assert = require("node:assert/strict");
+const path = require("node:path");
+const fs = require("node:fs");
+const vm = require("node:vm");
+const ROOT = path.join(__dirname, ".."),
+  data = require("../tools/data.cjs").load(ROOT),
+  C = require("../src/runtime/contracts"),
+  { createDispatcher } = require("../src/runtime/dispatcher"),
+  { createWorldbookHost, evaluateGate } = require("../src/host/worldbook");
+function harness() {
+  let c = {
+      chatId: "a",
+      branchId: "a",
+      metadata: {},
+      chat: [{ mes: "<IdentityMenu/>", is_user: false, vars: {} }],
+    },
+    generating = false,
+    aborted = false,
+    fail = false,
+    confirmed = true;
+  const sent = [],
+    prompts = [];
+  const adapter = {
+    context: () => c,
+    readMessage: async (i) =>
+      C.clone(c.chat[i]?.variables?.[c.chat[i]?.swipe_id ?? 0] || {}),
+    persist: async (ctx, e) => {
+      assert.equal(ctx.chatId, c.chatId);
+      const m = c.chat[ctx.floor];
+      m.variables ??= [];
+      m.variables[m.swipe_id ?? 0] = {
+        stat_data: { ...C.clone(e.state.stat_data), xsd2: [C.clone(e)] },
+      };
+    },
+    setPrompt: (x) => prompts.push(x),
+    preflightSend: () => {
+      if (generating) throw Error("busy");
+    },
+    isGenerating: () => generating,
+    isAborted: () => aborted,
+    confirmExit: async () => confirmed,
+    send: async (text) => {
+      if (fail) throw Error("send failed");
+      sent.push(text);
+      c.chat.push({ mes: text, is_user: true });
+    },
+    replaceStory: async (i, text) => {
+      c.chat[i].mes = text;
+    },
+    replaceOpening: async (text) => {
+      c.chat[0].mes = text;
+    },
+    syncIdentity: async () => {},
+    report: () => {},
+  };
+  const r = createDispatcher(adapter, data),
+    opening = (identity) =>
+      r.dispatchIntent({ type: "SELECT_IDENTITY", payload: { identity } }),
+    reply = (text) => {
+      c.chat.push({ mes: text, is_user: false, swipe_id: 0 });
+      return r.settleStory();
+    },
+    select = (nodeId = "enter", payload = {}) => {
+      const s = r.getSnapshot();
+      return r.dispatchIntent({
+        type: "SELECT_NODE",
+        pluginId: "test",
+        expected: {
+          chatId: s.chatId,
+          branchId: s.branchId,
+          revision: s.revision,
+          floor: s.floor,
+        },
+        payload: { nodeId, ...payload },
+      });
+    };
+  return {
+    r,
+    adapter,
+    sent,
+    prompts,
+    opening,
+    reply,
+    select,
+    get c() {
+      return c;
+    },
+    set c(v) {
+      c = v;
+    },
+    generating: (v) => (generating = v),
+    aborted: (v) => (aborted = v),
+    fail: (v) => (fail = v),
+    confirm: (v) => (confirmed = v),
+  };
+}
+const status = (fields = {}, prose = "山风拂过山谷。") =>
+  prose +
+  "\n<Status_block>" +
+  Object.entries({
+    时间: "仙盟历 9999年1月1日",
+    身份: "魂欢殿主",
+    历时: "—",
+    ...fields,
+  })
+    .map(([k, v]) => "<" + k + ">" + v + "</" + k + ">")
+    .join("") +
+  "</Status_block>";
+function plugin() {
+  return {
+    id: "test",
+    select(s, id) {
+      if (id === "enter")
+        return {
+          id,
+          actionText: "进入幽寂谷",
+          prompt: "仅描写进入，不提前进入洞府。",
+          identities: ["赵无忧"],
+          open: { year: 1578, month: 3, day: 1 },
+          close: { year: 1578, month: 4, day: 30 },
+          reservedState: { step: "pending" },
+        };
+      if (id === "exit")
+        return {
+          id,
+          actionText: "离开幽寂谷",
+          prompt: "描写离开",
+          exitDays: 2,
+          rewards: ["草药"],
+          grantsKnown: ["离开幽寂谷"],
+        };
+      if (id === "ttl")
+        return {
+          id,
+          actionText: "探索山涧",
+          prompt: "描写探索",
+          ttl: 2,
+          openedAt: 0,
+        };
+      return null;
+    },
+    settle(s, p, body) {
+      if (p.nodeId === "exit")
+        return {
+          outcome: "success",
+          activeEvent: null,
+          elapsedDays: 2,
+          rewards: [{ name: "草药", count: 1 }],
+          known: ["离开幽寂谷"],
+        };
+      return {
+        outcome: "success",
+        pluginState: { step: "fork" },
+        activeEvent: {
+          id: "test",
+          pluginId: "test",
+          place: "幽寂谷·谷口",
+          step: "fork",
+        },
+      };
+    },
+  };
+}
+test("六套源开局，19字段不删，身份日期及起手门禁一致", async () => {
+  assert.equal(C.XML_FIELDS.length, 19);
+  for (const name of Object.keys(data.greetings)) {
+    if (name === "自设") continue;
+    const h = harness();
+    await h.opening(name);
+    const s = h.r.getSnapshot();
+    assert.equal(s.identity, name);
+    assert.equal(s.calendarDate.month, name === "赵无忧" ? 3 : 8);
+    assert.equal(s.calendarDate.day, name === "赵无忧" ? 3 : 1);
+    assert.equal(s.known.天姝会存在, name !== "赵无忧");
+    assert.equal(s.known.极乐引入手, name !== "赵无忧");
+    assert.deepEqual(s.inventory, []);
+    for (const k of C.XML_FIELDS)
+      assert.ok(C.parseStatus(h.c.chat[0].mes).fields[k] !== undefined, k);
+  }
+});
+test("自设要求完整入世字段，不虚构统一开局", async () => {
+  const h = harness();
+  await assert.rejects(h.opening("自设"), /填写/);
+  await h.r.dispatchIntent({
+    type: "SELECT_IDENTITY",
+    payload: {
+      identity: "自设",
+      custom: {
+        name: "测试",
+        realm: "筑基初期",
+        date: { year: 1580, month: 2, day: 30 },
+        place: "玩家自定",
+      },
+    },
+  });
+  assert.deepEqual(h.r.getSnapshot().calendarDate, {
+    year: 1580,
+    month: 2,
+    day: 30,
+  });
+  assert.equal(h.r.getSnapshot().stat_data.自设.name, "测试");
+});
+test("点击仅登记待执行并强制发送，模型完成前不进入下一节点", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  h.r.registerPlugin(plugin());
+  await h.select("enter", { actionText: "伪造", ttl: 99 });
+  assert.deepEqual(h.sent, ["进入幽寂谷"]);
+  assert.equal(h.r.getSnapshot().activeEvent, null);
+  assert.ok(h.r.getSnapshot().pending);
+  await assert.rejects(h.select("enter"), /未完成/);
+  await h.reply(status({}, "你走入幽寂谷，停在谷口。"));
+  assert.equal(h.r.getSnapshot().activeEvent.step, "fork");
+  assert.equal(h.r.getSnapshot().stat_data.地点, "幽寂谷·谷口");
+  assert.equal(h.r.getSnapshot().identity, "赵无忧");
+  assert.equal(h.r.getSnapshot().calendarDate.year, 1578);
+});
+test("旧revision、身份、日期、TTL和插件奖励越权均拒绝", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  h.r.registerPlugin(plugin());
+  const s = h.r.getSnapshot();
+  await h.r.dispatchIntent({ type: "GM_PATCH", payload: { 段位: 3 } });
+  await assert.rejects(
+    h.r.dispatchIntent({
+      type: "SELECT_NODE",
+      pluginId: "test",
+      expected: s,
+      payload: { nodeId: "enter" },
+    }),
+    /旧状态/,
+  );
+  await h.r.dispatchIntent({
+    type: "GM_PATCH",
+    payload: { identity: "浊龙殿主" },
+  });
+  await assert.rejects(h.select("enter"), /身份/);
+  await h.r.dispatchIntent({
+    type: "GM_PATCH",
+    payload: {
+      identity: "赵无忧",
+      calendarDate: { year: 1578, month: 5, day: 1 },
+    },
+  });
+  await assert.rejects(h.select("enter"), /日期/);
+});
+test("取消退出无写入，确认后一次结算2日且不重复发奖扣时", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  h.r.registerPlugin(plugin());
+  h.confirm(false);
+  const revision = h.r.getSnapshot().revision;
+  assert.deepEqual(await h.select("exit"), { cancelled: true });
+  assert.equal(h.r.getSnapshot().revision, revision);
+  h.confirm(true);
+  await h.select("exit");
+  await h.reply(
+    status(
+      { 历时: "二日", 纳戒: "获得：草药×1" },
+      "你获得草药，收起草药后离开幽寂谷。",
+    ),
+  );
+  assert.equal(h.r.getSnapshot().calendarDate.day, 5);
+  assert.equal(h.r.getSnapshot().inventory[0].count, 1);
+  await h.r.settleStory();
+  assert.equal(h.r.getSnapshot().calendarDate.day, 5);
+  assert.equal(h.r.getSnapshot().inventory[0].count, 1);
+});
+test("发送失败恢复；停止并删助手楼后节点可重选；删用户楼亦恢复", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  h.r.registerPlugin(plugin());
+  h.fail(true);
+  await assert.rejects(h.select(), /send failed/);
+  assert.equal(h.r.getSnapshot().pending, null);
+  h.fail(false);
+  await h.select();
+  h.c.chat.push({ mes: "未完成的片段", is_user: false });
+  h.aborted(true);
+  await h.r.stop();
+  h.c.chat.pop();
+  await h.r.restore();
+  assert.equal(h.r.getSnapshot().pending, null);
+  h.c.chat.pop();
+  await h.r.restore();
+  assert.equal(h.r.getSnapshot().pending, null);
+  await h.select();
+  assert.ok(h.r.getSnapshot().pending);
+});
+test("生成中及停止片段不结算", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  h.r.registerPlugin(plugin());
+  await h.select();
+  h.generating(true);
+  await h.reply(status());
+  assert.ok(h.r.getSnapshot().pending);
+  h.generating(false);
+  h.aborted(true);
+  await h.r.settleStory();
+  assert.ok(h.r.getSnapshot().pending);
+});
+test("刷新、分支复制、删楼与回复候选分别恢复各自快照", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  h.r.registerPlugin(plugin());
+  await h.select("exit");
+  await h.reply(status({}, "你离开幽寂谷。"));
+  const floor = h.c.chat.length - 1,
+    original = C.clone(h.c.chat[floor]);
+  h.c.chat[floor].swipe_id = 1;
+  h.c.chat[floor].mes = status({}, "你停在原处。");
+  await h.r.restore();
+  assert.ok(h.r.getSnapshot().pending);
+  await h.r.settleStory();
+  assert.equal(h.r.getSnapshot().inventory[0].count, 1);
+  h.c.chat[floor] = original;
+  await h.r.restore();
+  assert.equal(h.r.getSnapshot().calendarDate.day, 5);
+  h.c = { ...C.clone(h.c), chatId: "branch", branchId: "branch" };
+  await h.r.restore();
+  assert.equal(h.r.getSnapshot().calendarDate.day, 5);
+  h.c.chat.splice(1);
+  await h.r.restore();
+  assert.equal(h.r.getSnapshot().calendarDate.day, 3);
+  assert.deepEqual(h.r.getSnapshot().inventory, []);
+});
+test("正文库存实证、消耗及普通历时推进；GM保留人工优先并可释放", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  await h.reply(
+    status({ 纳戒: "获得：草药×2", 历时: "三日" }, "你取得草药，收入纳戒。"),
+  );
+  assert.equal(h.r.getSnapshot().inventory[0].count, 2);
+  assert.equal(h.r.getSnapshot().calendarDate.day, 6);
+  h.c.chat.push({ mes: "使用草药", is_user: true });
+  await h.reply(status({ 纳戒: "消耗：草药×1" }, "你服下草药。"));
+  assert.equal(h.r.getSnapshot().inventory[0].count, 1);
+  await h.r.dispatchIntent({
+    type: "GM_PATCH",
+    payload: {
+      "known.进入幽寂谷": false,
+      inventory: [{ id: "人工", name: "人工", count: 3 }],
+    },
+  });
+  h.c.chat.push({ mes: "继续", is_user: true });
+  await h.reply(
+    status(
+      { 实际发生: "进入幽寂谷", 纳戒: "获得：草药×1" },
+      "你进入幽寂谷，取得草药。",
+    ),
+  );
+  assert.equal(h.r.getSnapshot().known.进入幽寂谷, false);
+  assert.equal(h.r.getSnapshot().inventory[0].name, "人工");
+  await h.r.dispatchIntent({
+    type: "GM_RELEASE",
+    payload: { keys: ["known.进入幽寂谷", "inventory"] },
+  });
+  assert.deepEqual(h.r.getSnapshot().manual, {});
+});
+test("否定、计划与仅状态申报不构成物品及名器实证；计数不能自行晋阶", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  await h.reply(
+    status(
+      {
+        纳戒: "获得：草药×1",
+        实际发生: "九幽玄阴穴四阶段",
+        名器互动: "九幽玄阴穴｜赵无忧｜内射",
+      },
+      "你尚未得到草药。孤月没有参与此事。",
+    ),
+  );
+  assert.deepEqual(h.r.getSnapshot().inventory, []);
+  assert.equal(h.r.getSnapshot().known.九幽玄阴穴四阶段, false);
+  assert.deepEqual(h.r.getSnapshot().relics, {});
+  const R = data.rules({}),
+    a = R.parseRelicAction("九幽玄阴穴｜赵无忧｜内射");
+  assert.equal(
+    R.validateRelicAction(
+      a,
+      "孤月没有发生内射。",
+      { 九幽玄阴穴成形: true },
+      "赵无忧",
+    ).ok,
+    false,
+  );
+});
+test("快照不可反向修改内核；插件生命周期取消订阅", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  const s = h.r.getSnapshot();
+  s.inventory.push({ name: "伪造" });
+  s.calendarDate.year = 9999;
+  assert.deepEqual(h.r.getSnapshot().inventory, []);
+  assert.equal(h.r.getSnapshot().calendarDate.year, 1578);
+  let n = 0;
+  const off = h.r.subscribe(() => n++);
+  await h.r.dispatchIntent({ type: "GM_PATCH", payload: { 段位: 2 } });
+  assert.equal(n, 1);
+  off();
+  await h.r.dispatchIntent({ type: "GM_PATCH", payload: { 段位: 3 } });
+  assert.equal(n, 1);
+});
+test("世界书限当前primary，不触碰追加书、他卡及同名正式书；所有迁入闸门可判定", async () => {
+  let written;
+  const h = createWorldbookHost(
+    {
+      getCharWorldbookNames: () => ({
+        primary: "独立2.0",
+        additional: ["共享书"],
+      }),
+      getWorldbook: async (name) => {
+        assert.equal(name, "独立2.0");
+        return [
+          { name: "【身份】赵无忧", enabled: false },
+          { name: "【身份】魂欢殿主", enabled: true },
+          { name: "普通", enabled: true },
+        ];
+      },
+      replaceWorldbook: async (name, entries) => (written = { name, entries }),
+    },
+    () => ({}),
+  );
+  await h.synchronize("赵无忧");
+  assert.equal(written.name, "独立2.0");
+  assert.deepEqual(
+    written.entries.map((x) => x.enabled),
+    [true, false, true],
+  );
+  const book = JSON.parse(
+    fs.readFileSync(path.join(ROOT, "仙姝堕-世界书.json")),
+  );
+  for (const e of Object.values(book.entries)) {
+    const line = e.content.split("\n")[0];
+    if (!line.startsWith("@@if ")) continue;
+    const expr = line.slice(5);
+    for (const stat of [
+      { 身份: "赵无忧", known: {}, 仙盟历: 1578.03 },
+      {
+        身份: "魂欢殿主",
+        known: Object.fromEntries(
+          data.rules({}).ALL_FIELDS.map((k) => [k, true]),
+        ),
+        仙盟历: 1579.04,
+      },
+    ]) {
+      const expected = vm.runInNewContext(expr, {
+        variables: { stat_data: stat },
+      });
+      assert.equal(evaluateGate(e.content, stat), expected, e.comment);
+    }
+  }
+});
+test("HUD 17槽位、三面板默认收起、本地图链缺图降级及对比度", () => {
+  const { CSS, PALETTE, portrait } = require("../src/ui/status_panel"),
+    source = fs.readFileSync(path.join(ROOT, "src/ui/status_panel.js"), "utf8");
+  assert.ok(source.includes('data-xsd-slot="map"'));
+  assert.ok(source.includes('data-xsd-slot="17"'));
+  assert.equal((source.match(/<details>/g) || []).length, 3);
+  assert.ok(!source.includes("<details open"));
+  assert.ok(source.includes("img.onerror"));
+  assert.ok(
+    portrait("孤月", { stat_data: {}, known: {} }, data).small.endsWith(
+      "guyue.jpg",
+    ),
+  );
+  function lum(hex) {
+    const rgb = hex
+      .slice(1)
+      .match(/../g)
+      .map((x) => parseInt(x, 16) / 255)
+      .map((x) => (x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  }
+  for (const color of [PALETTE.foreground, PALETTE.muted, PALETTE.accent])
+    assert.ok((lum(color) + 0.05) / (lum(PALETTE.background) + 0.05) >= 4.5);
+  assert.ok(CSS.includes("focus-visible"));
+});
+test("构建可独立执行、脚本语法、PNG双向回读及世界书防递归", () => {
+  const { build, unpack } = require("../build"),
+    built = build();
+  new vm.Script(built.script);
+  assert.deepEqual(unpack(built.image), built.card);
+  assert.equal(built.card.data.name, "仙姝堕2.0·框架测试");
+  assert.equal(built.card.data.character_book.entries.length, 229);
+  assert.ok(
+    built.card.data.character_book.entries.every(
+      (e) => e.extensions.exclude_recursion && e.extensions.prevent_recursion,
+    ),
+  );
+  assert.equal(
+    built.card.data.extensions.tavern_helper.scripts[0].enabled,
+    true,
+  );
+});
+test("TTL按已完成故事轮次检查，连续用户消息不额外扣轮次", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  h.r.registerPlugin(plugin());
+  await h.reply(status());
+  h.c.chat.push({ mes: "继续", is_user: true });
+  await h.reply(status());
+  await assert.rejects(h.select("ttl"), /过期/);
+  assert.equal(h.r.getSnapshot().storyCount, 2);
+});
+test("插件不能通过结果取得未配置物品、事实及耗时", async () => {
+  for (const result of [
+    { outcome: "success", rewards: [{ name: "未配置宝物" }] },
+    { outcome: "success", known: ["未配置事实"] },
+    { outcome: "success", elapsedDays: 3 },
+  ]) {
+    const h = harness();
+    await h.opening("赵无忧");
+    h.r.registerPlugin({ ...plugin(), settle: () => result });
+    await h.select("exit");
+    await assert.rejects(h.reply(status()), /未配置|不符合/);
+    assert.ok(h.r.getSnapshot().pending);
+    assert.deepEqual(h.r.getSnapshot().inventory, []);
+  }
+});
+test("换聊天立即隐藏旧快照；新聊天不继承前一角色GM数据", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  await h.r.dispatchIntent({ type: "GM_PATCH", payload: { 段位: 16 } });
+  h.c = { chatId: "new", chat: [{ mes: "<IdentityMenu/>" }], metadata: {} };
+  assert.equal(h.r.getSnapshot(), null);
+  await h.r.ready();
+  assert.equal(h.r.getSnapshot(), null);
+  await h.opening("赵无忧");
+  assert.equal(h.r.getSnapshot().stat_data.段位, 1);
+});
+test("人工回锁到未成形压过已有归属兜底及后续自动判定", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  await h.r.dispatchIntent({
+    type: "GM_PATCH",
+    payload: { "owner.jiuyou": "赵无忧", "relicStage.jiuyou": 4 },
+  });
+  assert.equal(
+    data
+      .rules(h.r.getSnapshot().stat_data)
+      .getRelicStage("jiuyou", h.r.getSnapshot().known),
+    4,
+  );
+  await h.r.dispatchIntent({
+    type: "GM_PATCH",
+    payload: { "relicStage.jiuyou": 0 },
+  });
+  let s = h.r.getSnapshot();
+  assert.equal(data.rules(s.stat_data).getRelicStage("jiuyou", s.known), 0);
+  h.c.chat.push({ mes: "继续", is_user: true });
+  await h.reply(
+    status(
+      { 实际发生: "九幽玄阴穴四阶段", 名器互动: "九幽玄阴穴｜赵无忧｜内射" },
+      "孤月并未参加。",
+    ),
+  );
+  s = h.r.getSnapshot();
+  assert.equal(data.rules(s.stat_data).getRelicStage("jiuyou", s.known), 0);
+});
+test("名器迁入规则计数达标仅ready，缺少质变不自动升阶", () => {
+  const stat = { 身份: "赵无忧", known: { 九幽玄阴穴成形: true } },
+    R = data.rules(stat),
+    a = R.parseRelicAction("九幽玄阴穴｜赵无忧｜内射"),
+    validated = R.validateRelicAction(
+      a,
+      "孤月参与，内射事实已经发生。",
+      stat.known,
+      "赵无忧",
+    );
+  assert.equal(validated.ok, true);
+  let p = {};
+  for (let floor = 1; floor <= 3; floor++)
+    p = R.calcRelicProgress(
+      p,
+      { ...a, ...validated },
+      floor,
+      0,
+      "h" + floor,
+      stat.known,
+    );
+  assert.equal(p.jiuyou.ready, true);
+  assert.equal(R.getRelicStage("jiuyou", stat.known), 1);
+  assert.equal(
+    R.hasRelicPhysiologicalResponse("jiuyou", "孤月静静坐着。"),
+    false,
+  );
+});
+test("订阅中卸载并新增插件订阅只通知原始订阅集合", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  let calls = 0,
+    off = () => {};
+  const f = () => {
+    calls++;
+    off();
+    off = h.r.subscribe(f);
+  };
+  off = h.r.subscribe(f);
+  await h.r.dispatchIntent({ type: "GM_PATCH", payload: { 段位: 2 } });
+  assert.equal(calls, 1);
+  off();
+});
+test("退出确认期间或持久化期间切聊天不能把原行动发送到新聊天", async () => {
+  for (const phase of ["confirm", "persist"]) {
+    const h = harness();
+    await h.opening("赵无忧");
+    h.r.registerPlugin(plugin());
+    const switchChat = () => {
+      h.c = {
+        chatId: "other",
+        chat: [{ mes: "<IdentityMenu/>" }],
+        metadata: {},
+      };
+    };
+    if (phase === "confirm")
+      h.adapter.confirmExit = async () => {
+        switchChat();
+        return true;
+      };
+    else
+      h.adapter.syncState = async (s) => {
+        if (s.pending) switchChat();
+      };
+    await assert.rejects(h.select("exit"), /变化/);
+    assert.deepEqual(h.sent, []);
+    assert.equal(h.r.getSnapshot(), null);
+  }
+});
+test("插件等待异步证据期间停止，返回成功也不结算", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  h.r.registerPlugin({
+    ...plugin(),
+    settle: async () => {
+      h.aborted(true);
+      return { outcome: "success", elapsedDays: 2 };
+    },
+  });
+  await h.select("exit");
+  const result = await h.reply(status());
+  assert.deepEqual(result, { deferred: true });
+  assert.equal(h.r.getSnapshot().calendarDate.day, 3);
+  assert.ok(h.r.getSnapshot().pending);
+});
+test("普通纳戒也不把旁人取得记给玩家", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  await h.reply(status({ 纳戒: "获得：草药×1" }, "你看见孤月取得草药。"));
+  assert.deepEqual(h.r.getSnapshot().inventory, []);
+});
+test("测试卡误绑正式书会拒绝同步，不改正式世界书", async () => {
+  let written = false;
+  const h = createWorldbookHost(
+    {
+      getCharWorldbookNames: () => ({ primary: "正式世界书" }),
+      getWorldbook: async () => [],
+      replaceWorldbook: async () => (written = true),
+    },
+    () => ({}),
+    { expectedName: "仙姝堕2.0·框架测试" },
+  );
+  await assert.rejects(h.synchronize("赵无忧"), /独立同名/);
+  assert.equal(written, false);
+});
+test("部署只更新独立测试文件并备份旧成品；正式卡文件不变", () => {
+  const base = path.join(ROOT, "work");
+  fs.mkdirSync(base, { recursive: true });
+  const dir = fs.mkdtempSync(path.join(base, "deploy-"));
+  for (const folder of ["characters", "worlds"])
+    fs.mkdirSync(path.join(dir, folder));
+  const name = "仙姝堕2.0·框架测试",
+    target = path.join(dir, "characters", name + ".png"),
+    formal = path.join(dir, "characters", "仙姝堕.png");
+  fs.writeFileSync(target, "old-test-card");
+  fs.writeFileSync(formal, "formal-unchanged");
+  const old = process.env.XSD2_TAVERN_USER_DIR;
+  process.env.XSD2_TAVERN_USER_DIR = dir;
+  try {
+    require("../deploy_to_tavern.cjs").deploy();
+    assert.ok(
+      fs
+        .readFileSync(target)
+        .equals(fs.readFileSync(path.join(ROOT, "最新角色卡", name + ".png"))),
+    );
+    assert.equal(fs.readFileSync(formal, "utf8"), "formal-unchanged");
+    const stamp = fs.readdirSync(path.join(dir, "backups", "xsd2"))[0];
+    assert.equal(
+      fs.readFileSync(
+        path.join(dir, "backups", "xsd2", stamp, name + ".png"),
+        "utf8",
+      ),
+      "old-test-card",
+    );
+  } finally {
+    if (old === undefined) delete process.env.XSD2_TAVERN_USER_DIR;
+    else process.env.XSD2_TAVERN_USER_DIR = old;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

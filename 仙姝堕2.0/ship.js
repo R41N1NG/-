@@ -1,0 +1,17 @@
+"use strict";
+const { spawnSync } = require("node:child_process");
+if (process.argv.includes("--full"))
+  throw Error("本期尚无额外全量实机探针；使用默认离线交付，实机由主人验收。");
+const tests = spawnSync(
+  process.execPath,
+  [
+    "--test",
+    "tests/core.test.cjs",
+    "tests/ui.test.cjs",
+    "tests/youjigu_map.test.cjs",
+  ],
+  { cwd: __dirname, stdio: "inherit" },
+);
+if (tests.status !== 0) process.exit(tests.status || 1);
+require("./build").build();
+require("./deploy_to_tavern.cjs").deploy();
