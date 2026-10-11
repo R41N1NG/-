@@ -38,7 +38,8 @@ const CLOSE_DATE = { year: 1578, month: 4, day: 30 };
 const CONFIG = {
   completeDays: 2,
   earlyDays: 1,
-  narrativeBudget: "本次事件世界日期仅在退出结算时推进：正常离开两日，提前离开一日。",
+  narrativeBudget:
+    "本次事件世界日期仅在退出结算时推进：正常离开两日，提前离开一日。",
   status: "用户已确认通用奖励及耗时",
 };
 
@@ -114,7 +115,8 @@ const EVENT_DEFS = {
     id: "q3f7",
     label: "开启暗格",
     actionText: "细细摸索洞壁机关，开启石壁暗格",
-    prompt: "演绎摸索石壁开启暗格，取得幽寂谷地图残卷，注意同组香炉将不可再启。",
+    prompt:
+      "演绎摸索石壁开启暗格，取得幽寂谷地图残卷，注意同组香炉将不可再启。",
     from: "cave",
     group: "cave",
     reward: "幽寂谷地图",
@@ -263,6 +265,19 @@ function createInitialState(identity = "自设", currentStamp = OPEN_STAMP) {
   };
 }
 
+function effectiveStep(state, storyCount) {
+  if (state.step !== "first") return state.step;
+  const entrances = Object.values(EVENT_DEFS).filter(
+    (def) => def.from === "first",
+  );
+  const remains = entrances.some(
+    (def) =>
+      !state.used.includes(def.id) &&
+      (!def.ttl || storyCount - state.createdStoryCount < def.ttl),
+  );
+  return remains ? "first" : "second";
+}
+
 /**
  * 校验某动作是否被阻断
  */
@@ -278,7 +293,8 @@ function checkActionBlock(state, actionId, storyCount = 0) {
   }
 
   // 阶段匹配
-  if (def.from !== state.step) return "当前场景与该步骤不匹配";
+  if (def.from !== effectiveStep(state, storyCount))
+    return "当前场景与该步骤不匹配";
 
   // 已经执行过
   if (state.used.includes(actionId)) return "该项机缘已探索完毕";
@@ -322,17 +338,16 @@ function getAvailableOptions(state, storyCount = 0) {
   const results = [];
   if (!state || ["done"].includes(state.step)) return results;
 
-  // 如果处于 first 且洞府和山涧都已过期或用完，兜底允许进入 second
-  const firstOptionsRemaining = Object.entries(EVENT_DEFS).filter(
-    ([id, def]) =>
-      def.from === "first" &&
-      !state.used.includes(id) &&
-      !(def.ttl && storyCount - state.createdStoryCount >= def.ttl),
-  );
+  if (
+    state.step === "map" &&
+    (state.currentStamp < OPEN_STAMP || state.currentStamp > CLOSE_STAMP)
+  )
+    return results;
+  const step = effectiveStep(state, storyCount);
 
   for (const [id, def] of Object.entries(EVENT_DEFS)) {
     const isStepMatch =
-      def.from === state.step ||
+      def.from === step ||
       (def.from === "*" && !["map", "done"].includes(state.step));
     if (!isStepMatch) continue;
 
@@ -360,20 +375,6 @@ function getAvailableOptions(state, storyCount = 0) {
       blocked: blockReason,
       remainingTtl,
       pin: PINS[id] || null,
-    });
-  }
-
-  // 若处于 first 且全部入口均已过期或执行完毕，提供自动过渡到 second 的节点
-  if (state.step === "first" && firstOptionsRemaining.length === 0) {
-    results.push({
-      id: "u9h3",
-      label: "前往山谷",
-      actionText: "离开岔路，向幽寂谷深处山谷行进",
-      from: "first",
-      to: "valley",
-      blocked: "",
-      remainingTtl: null,
-      pin: PINS["u9h3"],
     });
   }
 

@@ -33,13 +33,19 @@ const PLUGIN_VERSION = "2.0.0";
  * 获取当前插件状态（从快照中读取或初始化）
  */
 function getPluginState(snapshot) {
-  if (snapshot?.pluginState?.[PLUGIN_ID]) {
-    return structuredClone(snapshot.pluginState[PLUGIN_ID]);
-  }
   const date = snapshot?.calendarDate || { year: 1578, month: 3, day: 1 };
-  const stamp = date.year * 360 + (date.month - 1) * 30 + (date.day - 1);
-  const identity = snapshot?.identity || "自设";
-  return createInitialState(identity, stamp);
+  const stamp = date.year * 360 + (date.month - 1) * 30 + date.day - 1;
+  const state = snapshot?.pluginState?.[PLUGIN_ID]
+    ? structuredClone(snapshot.pluginState[PLUGIN_ID])
+    : createInitialState(snapshot?.identity || "自设", stamp);
+  // Date and known are projections of the kernel, never an independent ledger.
+  state.currentStamp = stamp;
+  state.identity = snapshot?.identity || state.identity;
+  state.known = {
+    ...state.known,
+    ...(snapshot?.known || snapshot?.stat_data?.known || {}),
+  };
+  return state;
 }
 
 /**
@@ -93,13 +99,16 @@ async function settle(snapshot, pending, body) {
 
   const state = getPluginState(snapshot);
   const nodeId = pending.nodeId;
-  const selection = pending.selection || EVENT_DEFS[nodeId];
+  const selection = EVENT_DEFS[nodeId];
   if (!selection) {
     return { outcome: "failure", reason: "缺少节点配置" };
   }
 
   // 严谨核验正文与标签
-  const proseResult = resolveActionResult(body, selection);
+  const proseResult = resolveActionResult(body, {
+    ...selection,
+    playerIdentity: snapshot.identity,
+  });
 
   if (!proseResult.success) {
     // 未达成目标，返回失败，清除 pending 允许玩家重选
@@ -124,6 +133,8 @@ async function settle(snapshot, pending, body) {
   }
 
   const nextState = advance.state;
+  // Validate against the authorized pre-reply turn, then anchor entry after completion.
+  if (selection.from === "map") nextState.createdStoryCount = storyCount + 1;
   const rewards = [];
   if (selection.rewards && selection.rewards.length) {
     selection.rewards.forEach((name) => {
@@ -306,8 +317,7 @@ function mount(slotElement, runtimeApi) {
     const img = doc.createElement("img");
     img.src = MAP_IMAGE_DATA;
     img.alt = "南疆全域地图";
-    img.style.cssText =
-      "width:100%;height:auto;display:block;opacity:0.92;";
+    img.style.cssText = "width:100%;height:auto;display:block;opacity:0.92;";
     atlas.appendChild(img);
 
     // 渲染发光圆点 Pins
@@ -317,8 +327,7 @@ function mount(slotElement, runtimeApi) {
 
       const [shortLabel, leftPct, topPct] = pinCoords;
       const isBlocked = !!node.blocked;
-      const isPending =
-        snapshot.pending && snapshot.pending.nodeId === node.id;
+      const isPending = !!snapshot.pending;
 
       const pinBtn = doc.createElement("button");
       pinBtn.type = "button";
@@ -338,8 +347,10 @@ function mount(slotElement, runtimeApi) {
           (isPending ? "#e6a832" : isBlocked ? "#473d31" : "#2bd980"),
         "color:#ffffff",
         "border:" + (isBlocked ? "1px solid #665645" : "2px solid #ffffff"),
-        "border-radius:12px",
-        "padding:2px 7px",
+        "border-radius:50%",
+        "width:15px",
+        "height:15px",
+        "padding:0",
         "font-size:10px",
         "font-weight:bold",
         "cursor:" + (isBlocked || isPending ? "not-allowed" : "pointer"),
@@ -352,7 +363,13 @@ function mount(slotElement, runtimeApi) {
         "user-select:none",
       ].join(";");
 
-      pinBtn.innerHTML = `<span>${shortLabel}</span>`;
+      const label = doc.createElement("span");
+      label.textContent = shortLabel;
+      label.style.cssText =
+        "position:absolute;top:19px;left:50%;transform:translateX(-50%);color:#302a1f;background:#f2e9cbdd;padding:1px 4px;border-radius:2px;font-size:11px;line-height:1.4;";
+      pinBtn.appendChild(label);
+      pinBtn.setAttribute("aria-label", node.label);
+      pinBtn.disabled = isBlocked || isPending;
 
       if (!isBlocked && !isPending) {
         pinBtn.onmouseenter = () => {

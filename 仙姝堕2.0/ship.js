@@ -9,6 +9,7 @@ const tests = spawnSync(
     "tests/core.test.cjs",
     "tests/ui.test.cjs",
     "tests/youjigu_map.test.cjs",
+    "tests/map_integration.test.cjs",
   ],
   { cwd: __dirname, stdio: "inherit" },
 );

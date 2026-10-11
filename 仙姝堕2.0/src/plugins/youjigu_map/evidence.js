@@ -37,114 +37,111 @@ const THIRD_PARTY_REGEX =
 /**
  * 校验移动/观察类节点是否真实到达
  */
-function verifyMovementEvidence(proseText, def) {
-  const text = String(proseText || "").trim();
-  if (!text) {
-    return { ok: false, why: "正文为空，无法核验场景到达" };
-  }
-
-  // 若正文包含明确的被阻挡/未进入，拦截
-  if (MOVEMENT_BLOCKED_REGEX.test(text)) {
-    return { ok: false, why: "正文表明未能成功进入或被阻挡" };
-  }
-
-  // 必须包含场景移动正面词或包含目标场景实词
-  const placeKeywords = [];
-  if (def.to === "cave" || def.id === "k4m8")
-    placeKeywords.push("洞府", "石门", "石窟", "洞内");
-  if (def.to === "stream" || def.id === "s9a3")
-    placeKeywords.push("山涧", "溪水", "溪流", "涧");
-  if (def.to === "valley" || def.id === "u9h3")
-    placeKeywords.push("山谷", "谷中", "腹地");
-  if (def.to === "secret" || def.id === "v4t7")
-    placeKeywords.push("密室", "石隙", "暗室", "裂隙");
-  if (def.finish || def.early || def.to === "second")
-    placeKeywords.push("出谷", "离开", "谷口", "山径", "深入", "岔路");
-  if (def.id === "g7p2") placeKeywords.push("幽寂谷", "入谷", "谷口", "步入");
-  if (def.id === "r2c6") placeKeywords.push("溪水", "清流", "水波", "水流");
-  if (def.id === "a6d4") placeKeywords.push("树丛", "草丛", "灌木", "杂草");
-
-  const hasPlaceKeyword =
-    placeKeywords.length === 0 || placeKeywords.some((kw) => text.includes(kw));
-  const hasMovementAction = MOVEMENT_REGEX.test(text);
-
-  if (hasPlaceKeyword && (hasMovementAction || text.length > 15)) {
-    return { ok: true, why: "正文场景流转核验通过" };
-  }
-
-  return { ok: false, why: "正文中未见明确到达目标场景的正向事实" };
+function sentences(text) {
+  return String(text || "")
+    .replace(
+      /<(?:Status_block|StatusBlock|status)\b[^>]*>[\s\S]*?<\/(?:Status_block|StatusBlock|status)>/gi,
+      "",
+    )
+    .replace(/<Youjigu_result\b[^>]*\/?>(?:<\/Youjigu_result>)?/gi, "")
+    .split(/[。！？\n]/)
+    .map((x) => x.trim())
+    .filter(Boolean);
 }
-
-/**
- * 校验正文是否真实包含物品取得事实
- */
-function verifyProseEvidence(proseText, def) {
-  // 无奖励节点转入移动/观察核验
-  if (!def || !def.reward) {
-    return verifyMovementEvidence(proseText, def || {});
-  }
-
-  const text = String(proseText || "").trim();
-  if (!text) {
-    return { ok: false, why: "正文为空，无法核验事实" };
-  }
-
-  const targetReward = def.reward;
-  // 提取关键词（通用名称及衍生实词）
-  const keywords = [targetReward];
-  if (targetReward === "幽寂谷地图")
-    keywords.push("地图", "古卷", "残图", "卷轴");
-  if (targetReward === "丹药") keywords.push("丹", "灵丹", "古丹");
-  if (targetReward === "草药") keywords.push("灵草", "灵芝", "草药", "药草");
-  if (targetReward === "法宝") keywords.push("宝物", "古宝", "法宝", "宝环");
-  if (targetReward === "秘籍")
-    keywords.push("古卷", "残篇", "秘籍", "法诀", "道书");
-
-  // 按句拆分判定
-  const sentences = text.split(/[。！？\n]/);
-  let foundValidAcquisition = false;
-  let matchedSentence = "";
-
-  for (const sentence of sentences) {
-    const s = sentence.trim();
-    if (!s) continue;
-
-    const hasItem = keywords.some((kw) => s.includes(kw));
-    if (!hasItem) continue;
-
-    // 1. 否定句拦截：若该句含否定，直接跳过并标记否定
-    if (NEGATION_REGEX.test(s)) {
-      continue;
-    }
-
-    // 2. 旁观他人拦截：若该句包含第三方（他人、师姐、魔修等），除非明确表示“归你所有”或“你从其手中取得”，否则一律拦截
-    if (THIRD_PARTY_REGEX.test(s)) {
-      const hasPlayerSubject = /(你|自身|主角|我)/.test(s);
-      if (!hasPlayerSubject || /(抢先|夺走|取走|收走|拿走)/.test(s)) {
-        continue;
-      }
-    }
-
-    // 3. 必须包含取得动词
-    if (ACQUIRE_REGEX.test(s)) {
-      foundValidAcquisition = true;
-      matchedSentence = s;
-      break;
-    }
-  }
-
-  if (foundValidAcquisition) {
-    return {
-      ok: true,
-      matchedSentence,
-      why: `正文事实核验通过：明确取得「${targetReward}」`,
-    };
-  }
-
-  return {
-    ok: false,
-    why: `正文中未见明确取得「${targetReward}」的正面实证（须出现取得动词且无否定、非旁观）`,
+const NON_FACT =
+  /(未能|并未|未曾|不曾|无法|尚未|没能|没有|空空如也|一无所获|计划|打算|准备|将要|即将|如果|假如|据说|传闻|听说|看见|看到|看着|目送|仍在.*(?:门外|门前)|站在.*(?:门外|门前)|止步门外)/;
+function playerSentence(s, def) {
+  return (
+    /你|我|自身|自己|玩家|主角/.test(s) ||
+    (def.playerIdentity && s.includes(def.playerIdentity))
+  );
+}
+function verifyMovementEvidence(proseText, def) {
+  const places = {
+    g7p2: /幽寂谷|谷口|入谷/,
+    k4m8: /洞府|石门|石窟|洞内/,
+    s9a3: /山涧|溪水|溪流|涧/,
+    u9h3: /山谷|谷中|腹地/,
+    v4t7: /密室|石隙|暗室|裂隙/,
+    r2c6: /溪水|清流|水波|水流/,
+    a6d4: /树丛|草丛|灌木/,
   };
+  const observation = ["r2c6", "a6d4"].includes(def.id);
+  const target =
+    places[def.id] ||
+    (def.to === "second"
+      ? /洞府|山涧|谷中|腹地|岔路/
+      : def.finish || def.early
+        ? /幽寂谷|出谷|谷口|山径|出口/
+        : null);
+  const ok = sentences(proseText).some((s) => {
+    if (
+      NON_FACT.test(s) ||
+      MOVEMENT_BLOCKED_REGEX.test(s) ||
+      !playerSentence(s, def) ||
+      !target?.test(s)
+    )
+      return false;
+    if (observation) return /查看|察看|观察|拨开|细看|望向|注视|检视/.test(s);
+    if (def.to === "second")
+      return /离开|走出|退出/.test(s) && /深入|腹地|谷中/.test(s);
+    if (def.finish || def.early)
+      return /离开|走出|出谷|离去|顺径而出|折返|回返/.test(s);
+    return (
+      /步入|踏入|进入|迈入|走进|抵达|行至|来到/.test(s) &&
+      !/(?:洞府|石门|密室)(?:之前|前|外)/.test(s)
+    );
+  });
+  return {
+    ok,
+    why: ok
+      ? "正文场景流转核验通过"
+      : "正文中未见玩家实际到达或观察目标场景的事实",
+  };
+}
+function verifyProseEvidence(proseText, def) {
+  if (!def || !def.reward) return verifyMovementEvidence(proseText, def || {});
+  const words = {
+    幽寂谷地图: ["幽寂谷地图", "地图", "残图", "路线图"],
+    丹药: ["丹药", "灵丹", "古丹"],
+    草药: ["草药", "灵草", "灵芝", "药草"],
+    法宝: ["法宝", "古宝", "宝环"],
+    秘籍: ["秘籍", "残篇", "法诀", "道书"],
+  }[def.reward] || [def.reward];
+  const escaped = words
+    .map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|");
+  const actionBefore = new RegExp(
+    "(?:取出|取得|获得|得到|拿到|收集|采下|采集|收起|收下|拾起)[^，,。！？]{0,28}(?:" +
+      escaped +
+      ")",
+  );
+  const actionAfter = new RegExp(
+    "(?:" +
+      escaped +
+      ")[^，,。！？]{0,28}(?:收入|收起|纳入|采下|取走|收好|握在手中)",
+  );
+  for (const sentence of sentences(proseText)) {
+    if (
+      NON_FACT.test(sentence) ||
+      NEGATION_REGEX.test(sentence) ||
+      !playerSentence(sentence, def)
+    )
+      continue;
+    if (
+      /(?:师姐|师兄|他人|别人|她|他)(?:已经|亲自|抢先|独自|顺手|终于)?(?:取得|获得|拿到|收起|收入|取走|夺走)/.test(
+        sentence,
+      )
+    )
+      continue;
+    if (actionBefore.test(sentence) || actionAfter.test(sentence))
+      return {
+        ok: true,
+        matchedSentence: sentence,
+        why: "玩家取得目标物品的正文实证通过",
+      };
+  }
+  return { ok: false, why: "正文中未见玩家取得目标物品的事实" };
 }
 
 /**
