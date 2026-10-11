@@ -272,7 +272,7 @@ function createDispatcher(adapter, data) {
         "。身份：" +
         current.identity +
         "。地点：" +
-        (st.地点 || "未定") +
+        (p?.selection?.destination || st.地点 || "未定") +
         "。已知事实：" +
         Object.keys(st.known)
           .filter((k) => st.known[k])
@@ -426,6 +426,9 @@ function createDispatcher(adapter, data) {
       ? (result.rewards || []).map(x => ({ action: "获得", name: x.name, count: x.count || 1 })) : [];
     s.reconciledRewards =
       result.outcome === "success" ? rewardsNames(result) : [];
+    s.lastNodeResult = { nodeId:p.nodeId, floor:context().floor,
+      outcome:result.outcome, reason:result.reason || "",
+      evidenceMode:result.evidenceMode || null };
     s.pending = null;
     return s;
   }
@@ -684,6 +687,8 @@ function createDispatcher(adapter, data) {
         .find((x) => x.is_user && !x.is_system);
       if (!user || String(user.mes).trim() !== p.actionText) {
         s = C.clone(p.before);
+        s.lastNodeResult = { nodeId:p.nodeId, floor:c.floor, outcome:"failure",
+          reason:"行动后的用户消息与授权行动不匹配", evidenceMode:null };
       } else {
         const plugin = plugins.get(p.pluginId);
         if (!plugin) throw Error("活动事件插件尚未加载");
@@ -706,8 +711,12 @@ function createDispatcher(adapter, data) {
       }
     }
     s = applyStory(s, body, c.floor, m.swipe_id ?? 0);
+    const confirmedPlace = s.lastNodeResult?.floor === c.floor &&
+      s.lastNodeResult.outcome === "success" && p?.selection.settlementMode === "choice"
+      ? p.selection.destination : undefined;
+    if (confirmedPlace) s.stat_data.地点 = confirmedPlace;
     manual(s);
-    const fixed = C.canonicalStatus(body, s);
+    const fixed = C.canonicalStatus(body, s, confirmedPlace);
     if (fixed !== m.mes) {
       const oldId = c.chatId,
         oldFloor = c.floor;
@@ -866,6 +875,18 @@ function createDispatcher(adapter, data) {
   }
   const api = {
     getSnapshot: snapshot,
+    getDiagnostics() {
+      const c = context(), s = snapshot(), latest = c.chat[c.floor];
+      return { schema:1, host:adapter.getDiagnostics?.() || {},
+        floor:c.floor, latestIsUser:!!latest?.is_user,
+        identity:s?.identity || null, pending:s?.pending ? {
+          nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,
+        } : null, event:s?.activeEvent || null,
+        lastNodeResult:s?.lastNodeResult || null,
+        storyCount:s?.storyCount || 0,
+        latestProcessed:s?.processed?.[c.floor] === C.hash(latest?.mes || ""),
+      };
+    },
     async getFloorSnapshot(floor) {
       const c = context();
       if (!Number.isInteger(floor) || floor < 0 || floor > c.floor) return null;

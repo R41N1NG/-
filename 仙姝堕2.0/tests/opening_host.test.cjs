@@ -58,7 +58,8 @@ async function fixture(first = "<IdentityMenu/>") {
       removeListener: (n, f) => handlers.get(n)?.delete(f),
     },
     saveChat: async () => {},
-    setExtensionPrompt() {},
+    prompts: [],
+    setExtensionPrompt(_id, text) { context.prompts.push(text); },
   };
   win.console.error = () => {}; // Expected rejection is asserted through the host reporter.
   win.structuredClone = structuredClone;
@@ -321,16 +322,21 @@ test("原生先STARTED再用户入楼：地图pending留存，HUD不搬用户楼
     h.doc.querySelector('[data-node-id="g7p2"]').click();
     await until(() => h.context.chat.length === 2);
     assert.equal(h.win.XSD2.runtime.getSnapshot().pending?.nodeId, "g7p2");
+    assert.ok(h.context.prompts.at(-1).includes("玩家已经完成「进入幽寂谷」"));
+    assert.ok(h.context.prompts.at(-1).includes("地点：幽寂谷·谷口岔路"));
+    assert.ok(!h.context.prompts.at(-1).includes("地点：墨山道·孤剑崖外"));
     await new Promise(r => setTimeout(r, 120));
     assert.ok(h.doc.querySelector('[mesid="0"] .xsd2-hud'));
     assert.equal(h.doc.querySelector('[mesid="1"] [data-xsd2-root]'), null);
     assert.equal(h.doc.querySelector(".xsd2-map-modal-overlay"), null);
-    h.context.chat.push({mes:"赵无忧踏入幽寂谷，来到谷口岔路。",is_user:false,variables:[{}]});
+    const reported = require("node:fs").readFileSync(require("node:path").join(__dirname,"fixtures/youjigu-entry-reported.txt"),"utf8");
+    h.context.chat.push({mes:reported,is_user:false,variables:[{}]});
     h.appendDOM(2);
     await h.emit("CHARACTER_MESSAGE_RENDERED", 2);
     await h.emit("GENERATION_ENDED");
     await until(() => h.doc.querySelector('[mesid="2"] .xsd2-hud'));
     assert.equal(h.win.XSD2.runtime.getSnapshot().activeEvent?.step, "first");
+    assert.equal(h.win.XSD2.runtime.getDiagnostics().lastNodeResult.evidenceMode, "PLAYER_CHOICE_CONFIRMED");
     assert.ok(h.doc.querySelector('[mesid="0"] .xsd2-hud'));
     assert.ok([...h.doc.querySelectorAll('[mesid="0"] button')].every(b=>b.disabled));
     h.doc.querySelector('[mesid="2"] .xsd2-map-trigger-btn').click();

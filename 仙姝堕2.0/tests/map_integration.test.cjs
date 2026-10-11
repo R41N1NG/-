@@ -150,11 +150,11 @@ test("真实插件+调度器：铁匣/普通古卷/否定正文和状态栏声�
     assert.equal(plugin.select(s, "q3f7").allowed, true);
   }
 });
-test("真实插件+调度器：门外计划不推进，停止删助手楼能重选", async () => {
+test("真实插件+调度器：移动由点选确认，停止删助手楼仍回退可重选", async () => {
   const h = fixture();
   await h.ready();
   await h.act("g7p2", "你进入幽寂谷。");
-  await h.act("k4m8", "你准备进入洞府，仍站在门外观察许久。");
+  await h.reply("你准备进入洞府，仍站在门外观察许久。");
   assert.equal(h.r.getSnapshot().activeEvent.step, "first");
   await h.click("k4m8");
   h.chat.push({ mes: "未完成的片段", is_user: false });
@@ -251,4 +251,49 @@ test("真实地图DOM：圆点与短标签、时间外无点、卸载清理", ()
   assert.equal(callbacks.size, 0);
   assert.equal(doc.querySelector(".xsd2-map-modal-overlay"), null);
   d.window.close();
+});
+
+
+test("玩家授权移动不由模型裁决：实测两人入谷/异样措辞都开放子节点，无点击不推进", async () => {
+  const fs = require("node:fs");
+  const reported = fs.readFileSync(path.join(__dirname,"fixtures/youjigu-entry-reported.txt"),"utf8");
+  for (const prose of [reported, "山風沿著夾道吹來。", '你未能进入幽寂谷。<Youjigu_result id="g7p2" outcome="failure"/>']) {
+    const h = fixture();
+    await h.ready();
+    await h.reply(prose);
+    assert.equal(h.r.getSnapshot().activeEvent, null);
+    await h.click("g7p2");
+    assert.equal(h.r.getSnapshot().activeEvent, null);
+    await h.reply(prose);
+    const s = h.r.getSnapshot();
+    assert.equal(s.activeEvent.step, "first");
+    assert.equal(s.stat_data.地点, "幽寂谷·谷口岔路");
+    assert.equal(s.lastNodeResult.evidenceMode, "PLAYER_CHOICE_CONFIRMED");
+    assert.equal(plugin.select(s,"g7p2").allowed, false);
+    assert.equal(plugin.select(s,"k4m8").allowed, true);
+    assert.equal(plugin.select(s,"s9a3").allowed, true);
+    const revision = s.revision;
+    await h.r.settleStory();
+    assert.equal(h.r.getSnapshot().revision, revision);
+  }
+});
+
+
+test("确认退出同样由点选决定：模型位置申报不能覆盖退出，耗时只结算一次", async () => {
+  const h = fixture();
+  await h.ready();
+  await h.act("g7p2", "山风吹过。");
+  h.confirm(false);
+  const revision = h.r.getSnapshot().revision;
+  assert.deepEqual(await h.click("z8u5"), {cancelled:true});
+  assert.equal(h.r.getSnapshot().revision, revision);
+  h.confirm(true);
+  await h.click("z8u5");
+  await h.reply("夜色深沉。", {地点:"幽寂谷·谷口",历时:"九日"});
+  assert.equal(h.r.getSnapshot().activeEvent, null);
+  assert.equal(h.r.getSnapshot().stat_data.地点, "幽寂谷外");
+  assert.equal(C.parseStatus(h.chat.at(-1).mes).fields.地点, "幽寂谷外");
+  assert.equal(h.r.getSnapshot().calendarDate.day, 4);
+  await h.r.settleStory();
+  assert.equal(h.r.getSnapshot().calendarDate.day, 4);
 });

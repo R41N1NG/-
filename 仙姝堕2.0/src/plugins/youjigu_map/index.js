@@ -8,7 +8,7 @@
  * 2. 挂载于 HUD 预留插槽 `data-xsd-slot="map"`；
  * 3. 视觉：南疆大地图底图 + 绝对定位呼吸圆点 (Pin Marker) + 短地点名；
  * 4. 交互：点击圆点派发 SELECT_NODE 意图，由统一调度器执行原生强制发送与 pending 托管；
- * 5. 正文与标签双核验，杜绝否定/旁观，支持漏标降级防死锁。
+ * 5. 移动/查看以玩家点选为准；物品奖励按正文与标签核验，杜绝旁观与虚报。
  */
 
 const {
@@ -48,6 +48,14 @@ function getPluginState(snapshot) {
   return state;
 }
 
+function scenePlace(step) {
+  return {
+    first: "幽寂谷·谷口岔路", cave: "幽寂谷·洞府", stream: "幽寂谷·山涧",
+    second: "幽寂谷·谷中岔路", valley: "幽寂谷·山谷", secret: "幽寂谷·密室",
+    done: "幽寂谷外",
+  }[step] || "幽寂谷";
+}
+
 /**
  * 校验并返回受信任节点配置（同步执行）
  */
@@ -68,12 +76,23 @@ function select(snapshot, nodeId) {
     };
   }
 
-  // 构造并返回满足 2.0 框架 contracts 校验的可信节点对象
+  const settlementMode = def.reward ? "evidence" : "choice";
+  const destination = settlementMode === "choice"
+    ? scenePlace(def.finish || def.early ? "done" : def.to || state.step) : undefined;
+  const prompt = settlementMode === "choice"
+    ? "【玩家点选已确认】玩家已经完成「" + def.label + "」，当前位置已确定为「" + destination +
+      "」。直接从此处继续写故事，不再写成准备进入、尚未到达或移动失败；不要重复询问是否前往。" +
+      (def.prompt || "")
+    : def.prompt || "只演绎当前行动，不提前透露后续机缘。";
+  // Movement/observation is authored by a valid player choice; item awards
+  // still require prose evidence. Children remain unavailable until completion.
   return {
     id: def.id,
     allowed: true,
     actionText: def.actionText,
-    prompt: def.prompt || "只演绎当前行动，不提前透露后续机缘。",
+    prompt,
+    settlementMode,
+    destination,
     open: def.open || undefined,
     close: def.close || undefined,
     requires: def.requires || undefined,
@@ -104,11 +123,11 @@ async function settle(snapshot, pending, body) {
     return { outcome: "failure", reason: "缺少节点配置" };
   }
 
-  // 严谨核验正文与标签
-  const proseResult = resolveActionResult(body, {
-    ...selection,
-    playerIdentity: snapshot.identity,
-  });
+  // Player navigation is authoritative. Natural phrasing (or a model's
+  // movement failure tag) must not veto the player's already-authorized move.
+  const proseResult = selection.reward
+    ? resolveActionResult(body, { ...selection, playerIdentity:snapshot.identity })
+    : {success:true, mode:"PLAYER_CHOICE_CONFIRMED", reason:"玩家点选确认，本轮完整回复后推进节点"};
 
   if (!proseResult.success) {
     // 未达成目标，返回失败，清除 pending 允许玩家重选
@@ -117,6 +136,7 @@ async function settle(snapshot, pending, body) {
       pluginState: state,
       activeEvent: snapshot.activeEvent || null,
       reason: proseResult.reason || "正文核验未通过",
+      evidenceMode: proseResult.mode,
     };
   }
 
@@ -147,27 +167,19 @@ async function settle(snapshot, pending, body) {
 
   let activeEvent = null;
   if (nextState.step !== "done") {
-    const placeName =
-      nextState.step === "cave"
-        ? "洞府"
-        : nextState.step === "stream"
-          ? "山涧"
-          : nextState.step === "valley"
-            ? "山谷"
-            : nextState.step === "secret"
-              ? "密室"
-              : "谷中";
 
     activeEvent = {
       id: "youjigu",
       pluginId: PLUGIN_ID,
       step: nextState.step,
-      place: `幽寂谷·${placeName}`,
+      place: scenePlace(nextState.step),
     };
   }
 
   return {
     outcome: "success",
+    reason: proseResult.reason,
+    evidenceMode: proseResult.mode,
     pluginState: nextState,
     activeEvent,
     rewards,

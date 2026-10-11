@@ -167,7 +167,7 @@ function parseStatus(text) {
       .replace(/<Youjigu_result\b[^>]*\/>/g, ""),
   };
 }
-function canonicalStatus(text, s) {
+function canonicalStatus(text, s, confirmedPlace) {
   text = String(text)
     .replace(/<(?:StatusBlock|status)\b[^>]*>/gi, "<Status_block>")
     .replace(/<\/(?:StatusBlock|status)>/gi, "</Status_block>");
@@ -178,11 +178,11 @@ function canonicalStatus(text, s) {
       身份: s.identity,
       纳戒: s.stat_data.纳戒 || "无",
     };
-  if (s.activeEvent?.place) values.地点 = s.activeEvent.place;
+  if (s.activeEvent?.place || confirmedPlace) values.地点 = confirmedPlace || s.activeEvent.place;
   let block =
     /<Status_block>[\s\S]*?<\/Status_block>/.exec(text)?.[0] ||
     "<Status_block></Status_block>";
-  for (const k of ["时间", "身份", "纳戒", ...(s.activeEvent?.place ? ["地点"] : [])]) {
+  for (const k of ["时间", "身份", "纳戒", ...(s.activeEvent?.place || confirmedPlace ? ["地点"] : [])]) {
     const re = new RegExp("<" + k + ">[\\s\\S]*?</" + k + ">");
     block = re.test(block)
       ? block.replace(re, "<" + k + ">" + values[k] + "</" + k + ">")

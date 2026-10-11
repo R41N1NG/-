@@ -86,6 +86,13 @@ function createTavernHost(win, doc, cardName) {
 
   const adapter = {
     context,
+    getDiagnostics() {
+      const c = context();
+      return { cardVersion:c.card?.data?.character_version || c.card?.character_version || null,
+        generating:isGenerating(), lifecycleGenerating:generating, aborted,
+        stopVisible:visible(top.document.querySelector("#mes_stop")),
+      };
+    },
     report,
     isGenerating,
     isAborted: () => aborted,

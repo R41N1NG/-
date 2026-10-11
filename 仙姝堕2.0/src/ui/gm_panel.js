@@ -79,6 +79,16 @@ function openGM(doc, runtime, data, report) {
       )
       .join("") +
     "<button data-release-selected>交还选中字段</button></details>";
+  if (runtime.getDiagnostics) {
+    const details = doc.createElement("details");
+    details.innerHTML = '<summary>运行诊断（只读）</summary><textarea readonly data-diagnostics aria-label="运行诊断"></textarea><button type="button" data-refresh-diagnostics>刷新诊断</button>';
+    const refresh = () => {
+      details.querySelector("textarea").value = JSON.stringify(runtime.getDiagnostics(), null, 2);
+    };
+    details.querySelector("button").onclick = refresh;
+    body.append(details);
+    refresh();
+  }
   const form = body.querySelector("form"),
     fields = () => new FormData(form),
     feedback = body.querySelector("[role=status]");
