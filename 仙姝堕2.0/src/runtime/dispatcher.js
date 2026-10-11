@@ -239,7 +239,16 @@ function createDispatcher(adapter, data) {
       notify("identity_menu");
       return null;
     }
-    if (identity) return commit(c, defaults(identity, first), "initialize");
+    if (identity) {
+      // Reconstruct the opening at its own floor, even when a user turn already
+      // exists. Saving at the latest floor would leave story() without a base
+      // and lose the identity again when that user turn is deleted.
+      const result = await commit(
+        { ...c, floor: 0 }, defaults(identity, first), "initialize",
+      );
+      await adapter.syncIdentity?.(identity);
+      return result;
+    }
     current = null;
     updatePrompt();
     return null;
@@ -901,7 +910,10 @@ function createDispatcher(adapter, data) {
         if (c.floor === 0) return load(c);
         const m = c.chat[c.floor];
         const base = await history(c, m?.is_user ? c.floor : c.floor - 1);
-        current = base?.state || null;
+        // Native opening swipes / older chats may have valid source identity
+        // but no envelope yet. Read that source instead of erasing the identity.
+        if (!base) return load(c);
+        current = base.state;
         scopeChatId = c.chatId;
         updatePrompt();
         return snapshot();

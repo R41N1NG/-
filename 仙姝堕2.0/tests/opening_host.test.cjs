@@ -30,8 +30,8 @@ async function fixture(first = "<IdentityMenu/>") {
       "MESSAGE_SENT",
     ].map((k) => [k, k]),
   );
-  const emit = async (name) => {
-    for (const f of [...(handlers.get(name) || [])]) await f();
+  const emit = async (name, ...args) => {
+    for (const f of [...(handlers.get(name) || [])]) await f(...args);
   };
   const context = {
     chatId: "native-opening",
@@ -58,12 +58,12 @@ async function fixture(first = "<IdentityMenu/>") {
   win.TavernHelper = {
     getVariables: async ({ type, message_id }) =>
       C.clone(
-        type === "chat" ? chatVars : context.chat[message_id].variables[0],
+        type === "chat" ? chatVars : context.chat[message_id].variables[context.chat[message_id].swipe_id ?? 0],
       ),
     replaceVariables: async (v, { type, message_id }) => {
       if (type === "chat") {
         Object.assign(chatVars, C.clone(v));
-      } else context.chat[message_id].variables[0] = C.clone(v);
+      } else context.chat[message_id].variables[context.chat[message_id].swipe_id ?? 0] = C.clone(v);
     },
     getCharWorldbookNames: async () => ({ primary: null, additional: [] }),
     setChatMessages: async (rows) => {
@@ -260,4 +260,29 @@ test("打包HUD快捷行动与地图共用门禁：空闲真实发送，生成�
       h.close();
     }
   }
+});
+
+
+test("提示词预计算不会锁动作或阻止原生候选身份恢复，不要求GENERATION_ENDED", async () => {
+  const data = require("../tools/data.cjs").load(require("node:path").join(__dirname, ".."));
+  const h = await fixture();
+  try {
+    await h.emit("GENERATION_STARTED", "normal", {}, true);
+    h.context.chat[0].mes = data.greetings.赵无忧;
+    h.context.chat[0].swipe_id = 1;
+    h.context.chat[0].variables[1] = {};
+    await h.emit("MESSAGE_SWIPED");
+    assert.equal(h.win.XSD2.runtime.getSnapshot()?.identity, "赵无忧");
+    const revision = h.win.XSD2.runtime.getSnapshot().revision;
+    await h.emit("GENERATION_STARTED", "normal", {}, true);
+    assert.equal(h.win.XSD2.runtime.getSnapshot().revision, revision);
+    await h.win.XSD2.runtime.dispatchIntent({type:"QUICK_ACTION",payload:{text:"观察四周"}});
+    assert.deepEqual(h.sends, ["观察四周"]);
+    await h.emit("GENERATION_STARTED", "normal", {}, false);
+    assert.equal(h.win.XSD2.runtime.getSnapshot()?.identity, "赵无忧");
+    await assert.rejects(h.win.XSD2.runtime.dispatchIntent({type:"QUICK_ACTION",payload:{text:"自行行动"}}), /请等/);
+    await h.emit("GENERATION_ENDED");
+    await h.win.XSD2.runtime.dispatchIntent({type:"QUICK_ACTION",payload:{text:"自行行动"}});
+    assert.equal(h.sends.length, 2);
+  } finally { h.close(); }
 });

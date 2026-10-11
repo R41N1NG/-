@@ -701,3 +701,24 @@ test("部署只更新独立测试文件并备份旧成品；正式卡文件不�
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+
+test("缺少旧快照的现有聊天：生成恢复从真实开局重建身份并持久化在0楼", async () => {
+  const h = harness();
+  h.c.chat[0].mes = data.greetings.赵无忧;
+  h.c.chat.push({mes:"推进剧情",is_user:true});
+  await h.r.replay();
+  assert.equal(h.r.getSnapshot()?.identity, "赵无忧");
+  assert.equal(h.r.getSnapshot().calendarDate.month, 3);
+  assert.equal(h.c.chat[0].variables?.[0]?.stat_data.xsd2[0].state.identity, "赵无忧");
+  const result = await h.reply("山风依旧。<Status_block><实际发生>观察</实际发生></Status_block>");
+  assert.equal(result.identity, "赵无忧");
+  h.c.chat.splice(1);
+  await h.r.restore();
+  assert.equal(h.r.getSnapshot()?.identity, "赵无忧");
+  h.c.chat[0].mes = "<IdentityMenu/>";
+  h.c.chat[0].swipe_id = 1;
+  h.c.chat.push({mes:"推进剧情",is_user:true});
+  await h.r.replay();
+  assert.equal(h.r.getSnapshot(), null);
+});

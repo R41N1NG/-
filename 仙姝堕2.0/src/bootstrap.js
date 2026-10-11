@@ -87,8 +87,10 @@ function start(win) {
   // setChatMessages(refresh: affected) awaits this native event. Scheduling
   // instead of awaiting our queue avoids waiting for the intent that emitted it.
   on("CHARACTER_MESSAGE_RENDERED", () => scheduleRender(0));
-  on("GENERATION_STARTED", async () => {
-    if (!active()) return;
+  on("GENERATION_STARTED", async (_type, _options, dryRun) => {
+    // Native prompt/token previews emit STARTED with dryRun=true and no ENDED.
+    // They must neither acquire the action lock nor replay authoritative state.
+    if (dryRun === true || !active()) return;
     host.markAborted(false);
     host.markGenerating(true);
     await runtime.replay();
