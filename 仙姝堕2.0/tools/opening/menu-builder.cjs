@@ -41,11 +41,11 @@ function buildMenuHtml({
       if (!/^[a-z][a-z0-9_-]*$/i.test(person.id) || seen.has(person.id))
         throw new Error("角色 id 必须合法且唯一：" + person.id);
       seen.add(person.id);
-      return `<article data-xds-flower data-xds-roster-id="${attr(person.id)}" aria-label="${attr(person.name)}">
+      return `<article data-xds-flower data-xds-roster-id="${attr(person.id)}" data-xds-identity="${attr(person.targetIdentity || "赵无忧")}" aria-label="${attr(person.name)}" role="button" tabindex="0">
       <div data-xds-art-state><b>${attr(person.name)}</b><span>仙姿待绘入卷</span></div>
       <img data-xds-art ${imageAttrs(person.id, "portrait")} alt="${attr(person.name)}彩色立绘" loading="lazy" decoding="async">
       <div data-xds-badge title="${attr(person.relicName)} · 图鉴预览" aria-label="${attr(person.relicName)} · 图鉴预览"><span>待</span><img ${imageAttrs(person.relicKey, "relic")} alt="${attr(person.relicName)}纹章" loading="lazy" decoding="async"></div>
-      <div data-xds-card-info><div data-xds-card-name>${attr(person.name)}</div>${person.title ? `<div data-xds-card-title>${attr(person.title)}</div>` : ""}${person.sect ? `<div data-xds-card-sect>${attr(person.sect)}</div>` : ""}${person.quote ? `<p data-xds-card-quote>${attr(person.quote)}</p>` : ""}</div>
+      <div data-xds-card-info><div data-xds-card-name>${attr(person.name)}</div>${person.title ? `<div data-xds-card-title>${attr(person.title)}</div>` : ""}${person.sect ? `<div data-xds-card-sect>${attr(person.sect)}</div>` : ""}${person.quote ? `<p data-xds-card-quote>${attr(person.quote)}</p>` : ""}<div data-xds-card-hint>点击以「${attr(person.targetIdentity || "赵无忧")}」启卷</div></div>
     </article>`;
     })
     .join("");
@@ -58,14 +58,15 @@ function buildMenuHtml({
     <input type="radio" class="xds-page-radio" data-xds-page="custom" id="${instanceId}-page-custom" name="${instanceId}-page" aria-label="自设问道书卷">
     <div class="xds-view-flower" data-xds-view="flower">
       <header data-xds-heading><div data-xds-eyebrow>揽 芳 卷</div><h2>太微百花谱</h2><p>雾隐仙姿 · 纹章辨器 · 一卷定命途</p></header>
-      <div class="xds-flower-carousel" data-xds-carousel tabindex="0" role="region" aria-label="仙姝名录，左右翻阅">${cards}</div>
-      <div data-xds-carousel-nav><button type="button" data-xds-carousel-step="-1" aria-label="向左翻阅">‹</button><span>左右翻阅仙姝名录 · 四阶纹章为图鉴预览</span><button type="button" data-xds-carousel-step="1" aria-label="向右翻阅">›</button></div>
-      <div data-xds-section-title>择一命途 · 入太微红尘</div>
+      <div data-xds-section-title>择一命途 · 启卷入世</div>
       <div data-xds-identity-grid>
         <button type="button" class="xds-mbtn" data-xds-entry data-xds-identity="赵无忧"><b>赵无忧</b><small>墨山道六弟子 · 原作主角</small></button>
         <details data-xds-lords><summary data-xds-entry><b>四大殿主 <span aria-hidden="true">⌄</span></b><small>残阳 · 肉山 · 九皇子 · 病相思</small></summary><div data-xds-lord-list><button type="button" data-xds-identity="焚欲殿主">焚欲殿主 · 残阳老怪</button><button type="button" data-xds-identity="欢喜殿主">欢喜殿主 · 肉山佛</button><button type="button" data-xds-identity="浊龙殿主">浊龙殿主 · 九皇子</button><button type="button" data-xds-identity="魂欢殿主">魂欢殿主 · 病相思</button></div></details>
         <label for="${instanceId}-page-custom" class="xds-mbtn" data-xds-entry data-xds-open-custom role="button" tabindex="0"><b>自设命途</b><small>问道问心 · 提笔亲定来历与机缘</small></label>
       </div><p data-xds-status role="status" aria-live="polite"></p>
+      <div data-xds-section-title>名录画卷 · 仙姝图鉴</div>
+      <div class="xds-flower-carousel" data-xds-carousel tabindex="0" role="region" aria-label="仙姝名录，左右翻阅">${cards}</div>
+      <div data-xds-carousel-nav><button type="button" data-xds-carousel-step="-1" aria-label="向左翻阅">‹</button><span>左右翻阅仙姝名录 · 点击卡片亦可入世</span><button type="button" data-xds-carousel-step="1" aria-label="向右翻阅">›</button></div>
     </div>
     <div class="xds-view-custom" data-xds-view="custom"><div class="xds-custom-scroll" data-xds-custom-form>
       <label for="${instanceId}-page-flower" data-xds-back role="button" tabindex="0">‹ 返回百花谱</label>

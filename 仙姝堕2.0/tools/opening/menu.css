@@ -26,7 +26,8 @@
 [data-xds-menu] [data-xds-heading] h2 { font-family: 'KaiTi', 'STKaiti', serif; font-size: clamp(25px, 5vw, 34px); line-height: 1.35; letter-spacing: .18em; margin: 4px 0 8px; font-weight: 600; color: #f0e4c5; }
 [data-xds-menu] [data-xds-heading] p { color: var(--xds-muted); font-size: 13px; margin: 0; }
 [data-xds-menu] [data-xds-carousel] { display: flex; gap: 14px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; padding: 4px 2px 14px; scrollbar-width: thin; scrollbar-color: #796849 transparent; }
-[data-xds-menu] [data-xds-flower] { flex: 0 0 max(220px, calc((100% - 28px) / 3)); height: clamp(320px, 45vw, 390px); position: relative; overflow: hidden; scroll-snap-align: start; border: 1px solid #ac945d7a; border-radius: 8px; background: radial-gradient(ellipse at 50% 32%, #53685f 0, #2b3938 44%, #152126 90%); box-shadow: 0 5px 16px #0005; }
+[data-xds-menu] [data-xds-flower] { cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; flex: 0 0 max(220px, calc((100% - 28px) / 3)); height: clamp(320px, 45vw, 390px); position: relative; overflow: hidden; scroll-snap-align: start; border: 1px solid #ac945d7a; border-radius: 8px; background: radial-gradient(ellipse at 50% 32%, #53685f 0, #2b3938 44%, #152126 90%); box-shadow: 0 5px 16px #0005; }
+[data-xds-menu] [data-xds-flower]:hover { transform: translateY(-3px); box-shadow: 0 8px 24px #0008, 0 0 12px #c7a96844; border-color: #d8ba7c; }
 [data-xds-menu] [data-xds-flower]:nth-child(3n + 2) { background: radial-gradient(ellipse at 50% 32%, #946b76 0, #513844 48%, #251d2b 90%); }
 [data-xds-menu] [data-xds-flower]:nth-child(3n) { background: radial-gradient(ellipse at 50% 32%, #779377 0, #364d41 48%, #1c2e29 90%); }
 [data-xds-menu] [data-xds-art] { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; filter: blur(2.5px) brightness(.92) contrast(1.05); opacity: .88; transform: scale(1.03); }
@@ -44,6 +45,7 @@
 [data-xds-menu] [data-xds-card-title] { font-size: 13px; color: #cfb887; margin-top: 4px; }
 [data-xds-menu] [data-xds-card-sect] { color: #aeb8ae; font-size: 12px; margin-top: 3px; }
 [data-xds-menu] [data-xds-card-quote] { font-size: 12px; color: #c5c3b6; margin: 10px 0 0; border-top: 1px solid #c7a96840; padding-top: 8px; }
+[data-xds-menu] [data-xds-card-hint] { font-size: 11px; color: #dfcaa2; margin-top: 8px; padding: 2px 10px; border-radius: 3px; background: #273b34cc; border: 1px solid #756746; display: inline-block; }
 [data-xds-menu] [data-xds-carousel-nav] { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 0; }
 [data-xds-menu] [data-xds-carousel-nav] span { font-size: 12px; color: var(--xds-muted); text-align: center; }
 [data-xds-menu] [data-xds-carousel-step] { min-width: 44px; min-height: 44px; border: 1px solid #8c774d; background: #171e1d; color: #dec692; border-radius: 6px; cursor: pointer; font-size: 23px; }

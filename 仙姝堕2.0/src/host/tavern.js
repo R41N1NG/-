@@ -139,11 +139,15 @@ function createTavernHost(win, doc, cardName) {
     async replaceStory(i, text, refresh = "none") {
       const c = context(),
         trail = C.fingerprint(c.chat);
-      if (i !== c.chat.length - 1) throw Error("只允许修改最新正文");
-      await helper.setChatMessages([{ message_id: i, message: text }], {
-        refresh,
-      });
+      if (i !== c.chat.length - 1 && i !== 0)
+        throw Error("只允许修改最新正文或开场白");
+      await helper.setChatMessages(
+        [{ message_id: i, mes: text, message: text }],
+        { refresh },
+      );
+      if (c.chat?.[i]) c.chat[i].mes = text;
       const n = context();
+      if (n.chat?.[i]) n.chat[i].mes = text;
       if (
         n.chatId !== c.chatId ||
         !C.matches(trail.slice(0, i), C.fingerprint(n.chat))

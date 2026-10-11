@@ -42,30 +42,51 @@ function createDispatcher(adapter, data) {
     }
     return null;
   }
-  function defaults(identity, opening) {
+  function defaults(identity, opening, custom) {
     const stat = C.parseStatus(opening).fields;
-    const d = C.parseDate(stat.时间);
-    if (!d) throw Error("开局缺少有效日期，请在身份菜单或GM中设置");
+    let d = custom?.date || C.parseDate(stat.时间);
+    if (!d) {
+      if (identity === "自设") d = { year: 1578, month: 3, day: 3 };
+      else throw Error("开局缺少有效日期，请在身份菜单或GM中设置");
+    }
     const R = data.rules({});
     if (!R.IDENTITIES.some((x) => x.name === identity)) throw Error("无效身份");
     const known = Object.fromEntries(R.ALL_FIELDS.map((k) => [k, false]));
     for (const k of R.openFieldsFor(identity)) known[k] = true;
+    const baseStat = {
+      ...stat,
+      身份: identity,
+      阵营: R.IDENTITY_FACTION[identity],
+      known,
+      inventory: [],
+      在场角色: C.parseStatus(opening).cast,
+      relic_progress: {},
+      名器归属: {},
+      破处者: {},
+      段位: 1,
+    };
+    if (identity === "自设") {
+      const nameMatch = opening.match(/【身份】自设[·\s]+([^\r\n]+)/);
+      const customName =
+        custom?.name ||
+        nameMatch?.[1]?.trim() ||
+        stat.自设?.name ||
+        "自设道友";
+      baseStat.自设 = {
+        name: customName,
+        realm: custom?.realm || stat.修为 || "筑基初期",
+        date: d,
+        place: custom?.place || stat.地点 || "由玩家自定",
+        origin: custom?.origin || "",
+      };
+      if (baseStat.自设.realm) baseStat.修为 = baseStat.自设.realm;
+      if (baseStat.自设.place) baseStat.地点 = baseStat.自设.place;
+    }
     return {
       schema: 2,
       identity,
       calendarDate: d,
-      stat_data: {
-        ...stat,
-        身份: identity,
-        阵营: R.IDENTITY_FACTION[identity],
-        known,
-        inventory: [],
-        在场角色: C.parseStatus(opening).cast,
-        relic_progress: {},
-        名器归属: {},
-        破处者: {},
-        段位: 1,
-      },
+      stat_data: baseStat,
       pluginState: {},
       activeEvent: null,
       pending: null,
@@ -216,13 +237,8 @@ function createDispatcher(adapter, data) {
       ) ||
       Object.keys(data.greetings).find((x) =>
         C.parseStatus(first).fields.身份?.includes(x),
-      );
-    if (identity === "自设" && !C.parseDate(C.parseStatus(first).fields.时间)) {
-      current = null;
-      updatePrompt();
-      notify("identity_menu");
-      return null;
-    }
+      ) ||
+      (first.includes("【身份】自设") ? "自设" : null);
     if (identity) return commit(c, defaults(identity, first), "initialize");
     current = null;
     updatePrompt();
@@ -761,7 +777,7 @@ function createDispatcher(adapter, data) {
     c = context();
     if (c.chatId !== oldId || c.floor !== 0)
       throw Error("开局更新期间聊天变化");
-    const s = defaults(identity, opening);
+    const s = defaults(identity, opening, custom);
     if (custom) s.stat_data.自设 = C.clone(custom);
     await commit(c, s, "identity_change");
     await adapter.syncIdentity?.(identity);

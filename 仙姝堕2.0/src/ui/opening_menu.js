@@ -61,7 +61,7 @@ function mountOpening(doc, root, runtime, data, report) {
   }
   function click(e) {
     const b = e.target.closest(
-      "button,label[data-xds-open-custom],label[data-xds-back]",
+      "button,label[data-xds-open-custom],label[data-xds-back],[data-xds-identity]",
     );
     if (!b || !root.contains(b) || busy) return;
     if (b.hasAttribute("data-xds-open-custom")) {
