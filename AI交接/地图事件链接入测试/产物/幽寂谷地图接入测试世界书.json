@@ -1,0 +1,21 @@
+{
+  "name": "幽寂谷地图接入测试世界书",
+  "entries": {
+    "0": {
+      "uid": 0,
+      "key": [],
+      "keysecondary": [],
+      "comment": "地图接入测试边界",
+      "content": "这是独立的幽寂谷地图事件链接入试验。只根据脚本提供的当前步骤叙述，不自行改变世界日期，不凭自由对话授予物品或推进任务。正式奖励名称和退出耗时未定，测试值不代表正式设定。",
+      "constant": true,
+      "selective": false,
+      "order": 0,
+      "position": 0,
+      "disable": false,
+      "preventRecursion": true,
+      "excludeRecursion": true,
+      "selectiveLogic": 0,
+      "scanDepth": 1
+    }
+  }
+}
