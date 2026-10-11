@@ -5,12 +5,14 @@ const { createTavernHost } = require("./host/tavern");
 const { mountHUD } = require("./ui/status_panel");
 const CARD_NAME = "仙姝堕2.0·框架测试";
 function start(win) {
-  const host = createTavernHost(win, win.parent.document, CARD_NAME),
-    doc = host.top.document;
+  const topWin = (win && win.top) || (win && win.parent) || win;
+  const host = createTavernHost(win, topWin.document, CARD_NAME),
+    doc = host.top.document || topWin.document || win.document;
   host.top.XSD2?.dispose?.();
   const runtime = createDispatcher(host, data);
   let hud = null,
-    disposed = false;
+    disposed = false,
+    renderTimer = null;
   const unsubs = [],
     plugins = [];
   runtime.uiPlugins = plugins;
@@ -22,8 +24,12 @@ function start(win) {
   };
   async function render() {
     if (!active()) return;
-    const chat = doc.querySelector("#chat"),
-      last = chat?.querySelector(".mes:last-child .mes_text");
+    const chat = doc.querySelector("#chat");
+    const mesList = chat?.querySelectorAll(".mes");
+    const lastMes = mesList?.length
+      ? mesList[mesList.length - 1]
+      : chat?.querySelector(".last_mes");
+    const last = lastMes?.querySelector(".mes_text");
     if (!last) return;
     const prior = doc.querySelector("[data-xsd2-root]");
     if (prior?.parentElement === last) {
@@ -52,6 +58,15 @@ function start(win) {
     await mirror();
     await render();
   }
+  function scheduleRender(delay = 60) {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(() => {
+      void (async () => {
+        await settle();
+        await render();
+      })().catch(report);
+    }, delay);
+  }
   function on(name, fn) {
     unsubs.push(
       host.on(name, (...args) => Promise.resolve(fn(...args)).catch(report)),
@@ -65,7 +80,9 @@ function start(win) {
     await restore();
     await settle();
   });
-  on("MESSAGE_UPDATED", settle);
+  on("MESSAGE_UPDATED", () => scheduleRender(80));
+  on("MESSAGE_EDITED", () => scheduleRender(80));
+  on("USER_MESSAGE_RENDERED", () => scheduleRender(50));
   on("CHARACTER_MESSAGE_RENDERED", async () => {
     await settle();
     await render();
@@ -88,6 +105,7 @@ function start(win) {
   on("GENERATION_ENDED", async () => {
     host.markGenerating(false);
     await settle();
+    scheduleRender(50);
   });
   // These commands retain the migrated registry's manual unlock / identity controls.
   on("MESSAGE_SENT", async () => {
@@ -115,6 +133,33 @@ function start(win) {
       void render().catch(report);
     }),
   );
+  let mo = null;
+  const Win = doc.defaultView || win;
+  if (typeof Win.MutationObserver !== "undefined") {
+    let moDebounce = null;
+    mo = new Win.MutationObserver(() => {
+      if (!active()) return;
+      clearTimeout(moDebounce);
+      moDebounce = setTimeout(() => {
+        if (!active()) return;
+        const chat = doc.querySelector("#chat");
+        const mesList = chat?.querySelectorAll(".mes");
+        const lastMes = mesList?.length
+          ? mesList[mesList.length - 1]
+          : chat?.querySelector(".last_mes");
+        if (!lastMes) return;
+        if (lastMes.querySelector(".edit_textarea")) return;
+        const last = lastMes.querySelector(".mes_text");
+        if (last && !last.querySelector("[data-xsd2-root]")) {
+          render().catch(report);
+        }
+      }, 80);
+    });
+    const chatEl = doc.querySelector("#chat") || doc.body;
+    if (chatEl) {
+      mo.observe(chatEl, { childList: true, subtree: true });
+    }
+  }
   const exposed = {
     runtime,
     registerPlugin(plugin) {
@@ -131,6 +176,8 @@ function start(win) {
     dispose() {
       if (disposed) return;
       disposed = true;
+      mo?.disconnect();
+      clearTimeout(renderTimer);
       unsubs.forEach((f) => f());
       hud?.destroy();
       doc.querySelector("[data-xsd2-root]")?.remove();
@@ -145,7 +192,26 @@ function start(win) {
   exposed.registerPlugin(youjiguMapPlugin);
   for (const plugin of host.top.XSD2_PLUGINS || [])
     exposed.registerPlugin(plugin);
-  if (active()) runtime.ready().then(mirror).then(render).catch(report);
+  async function ensureMounted(retries = 5, interval = 120) {
+    for (let i = 0; i < retries; i++) {
+      if (!active()) break;
+      const chat = doc.querySelector("#chat");
+      const mesList = chat?.querySelectorAll(".mes");
+      if (mesList?.length && doc.querySelector("[data-xsd2-root]")) {
+        break;
+      }
+      await render();
+      await new Promise((r) => setTimeout(r, interval));
+    }
+  }
+  if (active()) {
+    runtime
+      .ready()
+      .then(mirror)
+      .then(render)
+      .then(() => ensureMounted())
+      .catch(report);
+  }
   return exposed;
 }
 if (typeof window !== "undefined")

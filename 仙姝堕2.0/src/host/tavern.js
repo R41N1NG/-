@@ -2,21 +2,30 @@
 const C = require("../runtime/contracts");
 const { createWorldbookHost } = require("./worldbook");
 function createTavernHost(win, doc, cardName) {
-  const top = win.parent,
-    helper = top.TavernHelper || win.TavernHelper;
-  if (!helper || !top.SillyTavern?.getContext)
+  const top = (win && win.top) || (win && win.parent) || win;
+  const helper =
+    top?.TavernHelper ||
+    win?.TavernHelper ||
+    (typeof TavernHelper !== "undefined" ? TavernHelper : null);
+  const st =
+    top?.SillyTavern ||
+    win?.SillyTavern ||
+    (typeof SillyTavern !== "undefined" ? SillyTavern : null);
+  if (!helper || !st?.getContext)
     throw Error("需要启用酒馆助手与脚本运行功能");
-  const ctx = () => top.SillyTavern.getContext();
+  const ctx = () => st.getContext();
   let aborted = false,
     generating = false;
   function context() {
     const c = ctx();
+    const chid = c.characterId ?? c.this_chid;
     return {
       chatId: c.chatId || c.getCurrentChatId?.(),
       branchId: c.chatId || c.getCurrentChatId?.(),
       chat: c.chat,
       metadata: c.chatMetadata || {},
-      card: c.characters?.[c.characterId ?? c.this_chid],
+      card: c.characters?.[chid] || c.card,
+      raw: c,
     };
   }
   const book = createWorldbookHost(helper, ctx, { expectedName: cardName });
@@ -164,8 +173,15 @@ function createTavernHost(win, doc, cardName) {
     doc,
     cardName,
     isOurCard() {
-      const c = context().card;
-      return (c?.name || c?.data?.name) === cardName;
+      const c = context();
+      const card = c.card;
+      const curName = card?.name || card?.data?.name || c.raw?.name2 || "";
+      if (!curName) return true;
+      return (
+        curName === cardName ||
+        curName.startsWith("仙姝堕2.0") ||
+        curName.includes("仙姝堕")
+      );
     },
     on(event, fn) {
       const c = ctx(),

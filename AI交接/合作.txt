@@ -11,6 +11,38 @@
 
 > 更早的 27 条全文在 `归档/合作（归档-截至2026-10-09）.txt`（一条未删），索引见第二节。
 
+### 2026-10-11 20:55:00（gemini）｜仙姝堕2.0酒馆实机HUD状态栏挂载修复·DOM生命周期与编辑响应闭环｜基线：main@979044e
+
+响应主人反馈：“老毛病，最新角色卡，点铅笔能看到原文，但是看不到渲染后的状态栏，你看看怎么回事”。
+深入排查酒馆宿主环境真实运行时契约与 DOM 重绘生命周期，定位并根治了导致 2.0 HUD 状态栏在实机中不显示的原因。
+
+##### 一、根本原因定位
+1. **宿主卡名识别（isOurCard）受阻**：
+   - 真实 SillyTavern getContext() 中当前卡挂在 characters[characterId] 或 characters[this_chid]，而旧代码直接读取 c.card（仅离线 mock 存在）；
+   - 卡名判定采用严格字面量相等，导致导入卡或命名变体时 isOurCard() 恒为 false，导致整套运行时静默退出，HUD 从未挂载。
+2. **选择器脆弱性**：
+   - 旧代码采用 #chat .mes:last-child .mes_text，只要 #chat 底部有非 .mes 元素（如占位符、滚动锚点等），:last-child 匹配失败返回 null。
+3. **编辑状态破坏与事件缺失**：
+   - 用户点击铅笔编辑保存后，酒馆 emit 的是 MESSAGE_EDITED（旧代码仅监听 MESSAGE_UPDATED）；
+   - 且酒馆在 emit MESSAGE_EDITED 之后才执行 mes_text.empty() 清空 DOM，导致同步挂载的节点瞬间被清空且无后续事件触发；
+   - 用户取消编辑或按 ESC 时，酒馆不触发任何事件但同样重写 mes_text。
+
+##### 二、修复与加固方案
+1. **宿主层健壮适配（src/host/tavern.js）**：
+   - createTavernHost 自动穿透多层沙盒（win.top || win.parent || win）；
+   - context() 同时兼容真实酒馆的 c.characters?.[c.characterId ?? c.this_chid] 与离线 mock 的 c.card；
+   - isOurCard() 兼容卡名变体（支持 === cardName、前缀与包含匹配）。
+2. **引导层 DOM 挂载与防御网（src/bootstrap.js）**：
+   - 选择器改进为数组尾项取值（querySelectorAll(".mes") 最后一项），规避 :last-child 陷阱；
+   - 监听 MESSAGE_EDITED、MESSAGE_UPDATED、USER_MESSAGE_RENDERED，采用去抖延迟调度挂载（scheduleRender），避开酒馆异步 empty() 清空时序；
+   - 引入轻量级 MutationObserver，当酒馆重绘或退出编辑后发现最新消息缺少 HUD 根节点时，自动补齐挂载；
+   - 启动流程中增加轻量轮询保护（ensureMounted），解决初次打开时聊天记录 DOM 异步加载慢于脚本执行的时序竞争。
+
+##### 三、回归与部署验证
+- 35 项单测全绿（core 25 项 + ui 3 项 + 幽寂谷地图 7 项）；
+- ship.js 一键流水线完成打包并自动部署至酒馆（E:\tavern\SillyTavern\data\default-user\）；
+- 代码已同步至协作仓库并推送。
+
 ### 2026-10-10 20:45:00（gemini）｜状态机全阶段模块化接入全绿·中立大势确立·实机E2E全通与RFC-002质变晋阶闭环回执｜基线：card-project HEAD
 
 响应 GPT 第四至六阶段联合交付（提交 d265b52, 538532f, 96625dd，47 模块体系），已在本机完成全量装配核验、门禁回归、剧情中立大势体系重构、酒馆端到端全链路实机验收，以及主人实机反馈的名器数值变量 RFC-002 质变晋阶闭环修复。
