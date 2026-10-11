@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="九幽玄阴穴">
+  <defs>
+    <linearGradient id="basea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#101a24"/><stop offset="100%" stop-color="#123a4d"/>
+    </linearGradient>
+    <linearGradient id="golda" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff1b8"/><stop offset="50%" stop-color="#d4af37"/><stop offset="100%" stop-color="#8c6d1f"/>
+    </linearGradient>
+    <radialGradient id="corea" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="35%" stop-color="#dff6ff"/>
+      <stop offset="70%" stop-color="#7fd8f5" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#1b6f96" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="petala" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#3f7f9c" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#dff6ff" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+<g>
+  <rect x="6" y="6" width="228" height="228" rx="16" fill="url(#basea)" stroke="url(#golda)" stroke-width="2" opacity="1"/>
+  <rect x="14" y="14" width="212" height="212" rx="12" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.3"/>
+  <path d="M128.7 20.4 A100 100 0 0 1 219.6 111.3" fill="none" stroke="url(#golda)" stroke-width="4" stroke-linecap="round" opacity="1"/>
+  <path d="M219.6 128.7 A100 100 0 0 1 128.7 219.6" fill="none" stroke="url(#golda)" stroke-width="2.2" stroke-linecap="round" opacity="0.12"/>
+  <path d="M111.3 219.6 A100 100 0 0 1 20.4 128.7" fill="none" stroke="url(#golda)" stroke-width="2.2" stroke-linecap="round" opacity="0.12"/>
+  <path d="M20.4 111.3 A100 100 0 0 1 111.3 20.4" fill="none" stroke="url(#golda)" stroke-width="2.2" stroke-linecap="round" opacity="0.12"/>
+  <path d="M46 120 A74 74 0 0 1 194 120" fill="none" stroke="#8fd8ef" stroke-width="1.4" opacity="0.26"/>
+  <path d="M194 120 A74 74 0 0 1 46 120" fill="none" stroke="#d4af37" stroke-width="1.4" opacity="0.26"/>
+  <path d="M56 140 A64 64 0 0 1 184 140" fill="none" stroke="#8fd8ef" stroke-width="3.4" stroke-linecap="round" opacity="1"/>
+  <path d="M184 140 A64 64 0 0 1 56 140" fill="none" stroke="#d4af37" stroke-width="3.4" stroke-linecap="round" opacity="1"/>
+  <g transform="translate(56 140) rotate(-90)" opacity="1">
+    <path d="M2 0 L-13 -9 L-7 0 L-13 9 Z" fill="#8fd8ef"/>
+  </g>
+  <g transform="translate(184 140) rotate(90)" opacity="1">
+    <path d="M-9 -6.5 L5 -5.5 L15 0 L5 5.5 L-9 6.5 Z" fill="#8fd8ef"/>
+    <path d="M-9 -6.5 L-17 -14 L-6 -8.5 Z" fill="#8fd8ef"/>
+    <path d="M-9 6.5 L-16 12 L-5 8 Z" fill="#8fd8ef"/>
+    <path d="M15 0 C23 4 25 -3 20 -6" fill="none" stroke="#8fd8ef" stroke-width="1.4" stroke-linecap="round"/>
+    <circle cx="1" cy="-1.6" r="1.5" fill="#0b0f14"/>
+  </g>
+  <g transform="translate(184 140) rotate(90)" opacity="1">
+    <path d="M2 0 L-13 -9 L-7 0 L-13 9 Z" fill="#d4af37"/>
+  </g>
+  <g transform="translate(56 140) rotate(-90)" opacity="1">
+    <path d="M-9 -6.5 L5 -5.5 L15 0 L5 5.5 L-9 6.5 Z" fill="#d4af37"/>
+    <path d="M-9 -6.5 L-17 -14 L-6 -8.5 Z" fill="#d4af37"/>
+    <path d="M-9 6.5 L-16 12 L-5 8 Z" fill="#d4af37"/>
+    <path d="M15 0 C23 4 25 -3 20 -6" fill="none" stroke="#d4af37" stroke-width="1.4" stroke-linecap="round"/>
+    <circle cx="1" cy="-1.6" r="1.5" fill="#0b0f14"/>
+  </g>
+  <path d="M120 82 l0 0" />
+  <g transform="translate(120 82) rotate(0)"><path d="M0 -5 L0 5" stroke="#8fd8ef" stroke-width="1.6" opacity="0.5"/></g>
+  <path d="M77 104 l0 0" />
+  <g transform="translate(77 104) rotate(-36)"><path d="M0 -5 L0 5" stroke="#8fd8ef" stroke-width="1.6" opacity="0.5"/></g>
+  <path d="M163 104 l0 0" />
+  <g transform="translate(163 104) rotate(36)"><path d="M0 -5 L0 5" stroke="#8fd8ef" stroke-width="1.6" opacity="0.5"/></g>
+  <path d="M77 176 l0 0" />
+  <g transform="translate(77 176) rotate(36)"><path d="M0 -5 L0 5" stroke="#8fd8ef" stroke-width="1.6" opacity="0.5"/></g>
+  <path d="M163 176 l0 0" />
+  <g transform="translate(163 176) rotate(-36)"><path d="M0 -5 L0 5" stroke="#8fd8ef" stroke-width="1.6" opacity="0.5"/></g>
+  <path d="M120 198 l0 0" />
+  <g transform="translate(120 198) rotate(0)"><path d="M0 -5 L0 5" stroke="#8fd8ef" stroke-width="1.6" opacity="0.5"/></g>
+  <path d="M120 106 C134 126 138 152 120 170 C102 152 106 126 120 106 Z" fill="url(#petala)" stroke="#8fd8ef" stroke-width="1.2" opacity="0.75" stroke-linejoin="round" transform="rotate(-33 120 150)"/>
+  <path d="M120 106 C134 126 138 152 120 170 C102 152 106 126 120 106 Z" fill="url(#petala)" stroke="#8fd8ef" stroke-width="1.2" opacity="0.75" stroke-linejoin="round" transform="rotate(33 120 150)"/>
+  <path d="M120 116 C128 132 130 150 120 164 C110 150 112 132 120 116 Z" fill="url(#petala)" stroke="#8fd8ef" stroke-width="1.2" opacity="0.75" stroke-linejoin="round" transform="rotate(-62 120 150)"/>
+  <path d="M120 116 C128 132 130 150 120 164 C110 150 112 132 120 116 Z" fill="url(#petala)" stroke="#8fd8ef" stroke-width="1.2" opacity="0.75" stroke-linejoin="round" transform="rotate(62 120 150)"/>
+  <path d="M120 106 C134 126 138 152 120 170 C102 152 106 126 120 106 Z" fill="url(#petala)" stroke="#8fd8ef" stroke-width="1.2" opacity="0.75" stroke-linejoin="round" transform="rotate(0 120 150)"/>
+  <path d="M88 182 Q120 200 152 182" fill="none" stroke="#8fd8ef" stroke-width="2.6" stroke-linecap="round" opacity="0.675"/>
+  <circle cx="120" cy="152" r="13" fill="url(#corea)"/>
+  <circle cx="120" cy="152" r="3.6" fill="#ffffff" opacity="0.95"/>
+  <circle cx="100" cy="128" r="1.7" fill="#fff1b8" opacity="0.8"/>
+  <circle cx="140" cy="128" r="1.7" fill="#fff1b8" opacity="0.8"/>
+  <circle cx="120" cy="172" r="1.7" fill="#fff1b8" opacity="0.8"/>
+
+</g>
+</svg>
