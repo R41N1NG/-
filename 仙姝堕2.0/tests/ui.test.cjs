@@ -172,6 +172,10 @@ test("宿主使用原生候选变量、填入后点击发送，并守住非本�
   assert.equal(saved, 1);
   c.chat[0].swipe_id = 1;
   assert.deepEqual(await host.readMessage(0), {});
+  c.characters[0].name = "仙姝堕";
+  assert.equal(host.isOurCard(), false);
+  c.characters[0].name = "";
+  assert.equal(host.isOurCard(), false);
   c.characters[0].name = "其他卡";
   assert.equal(host.isOurCard(), false);
   d.window.close();

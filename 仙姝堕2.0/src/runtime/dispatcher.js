@@ -44,11 +44,8 @@ function createDispatcher(adapter, data) {
   }
   function defaults(identity, opening, custom) {
     const stat = C.parseStatus(opening).fields;
-    let d = custom?.date || C.parseDate(stat.时间);
-    if (!d) {
-      if (identity === "自设") d = { year: 1578, month: 3, day: 3 };
-      else throw Error("开局缺少有效日期，请在身份菜单或GM中设置");
-    }
+    const d = custom?.date || C.parseDate(stat.时间);
+    if (!d) throw Error("开局缺少有效日期，请填写明确的入世日期");
     const R = data.rules({});
     if (!R.IDENTITIES.some((x) => x.name === identity)) throw Error("无效身份");
     const known = Object.fromEntries(R.ALL_FIELDS.map((k) => [k, false]));
@@ -68,10 +65,7 @@ function createDispatcher(adapter, data) {
     if (identity === "自设") {
       const nameMatch = opening.match(/【身份】自设[·\s]+([^\r\n]+)/);
       const customName =
-        custom?.name ||
-        nameMatch?.[1]?.trim() ||
-        stat.自设?.name ||
-        "自设道友";
+        custom?.name || nameMatch?.[1]?.trim() || stat.自设?.name || "自设道友";
       baseStat.自设 = {
         name: customName,
         realm: custom?.realm || stat.修为 || "筑基初期",
@@ -239,6 +233,12 @@ function createDispatcher(adapter, data) {
         C.parseStatus(first).fields.身份?.includes(x),
       ) ||
       (first.includes("【身份】自设") ? "自设" : null);
+    if (identity === "自设" && !C.parseDate(C.parseStatus(first).fields.时间)) {
+      current = null;
+      updatePrompt();
+      notify("identity_menu");
+      return null;
+    }
     if (identity) return commit(c, defaults(identity, first), "initialize");
     current = null;
     updatePrompt();
@@ -847,6 +847,29 @@ function createDispatcher(adapter, data) {
   }
   const api = {
     getSnapshot: snapshot,
+    getOpeningView() {
+      const c = context(),
+        first = String(c.chat[0]?.mes || "");
+      const key = C.hash(
+        c.chatId + "|" + first + "|" + (c.chat[0]?.swipe_id || 0),
+      );
+      if (first.includes("<IdentityMenu"))
+        return { mode: "identity_menu", key };
+      const stat = C.parseStatus(first).fields;
+      if (
+        (first.includes('<IdentityPick name="自设"') ||
+          first.includes("【身份】自设") ||
+          stat.身份?.includes("自设")) &&
+        !C.parseDate(stat.时间)
+      ) {
+        return {
+          mode: "custom_setup",
+          key,
+          name: first.match(/【身份】自设[·\s]+([^\r\n]+)/)?.[1]?.trim() || "",
+        };
+      }
+      return { mode: "unavailable", key };
+    },
     subscribe(fn) {
       subscribers.add(fn);
       return () => subscribers.delete(fn);

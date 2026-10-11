@@ -41,11 +41,11 @@ function buildMenuHtml({
       if (!/^[a-z][a-z0-9_-]*$/i.test(person.id) || seen.has(person.id))
         throw new Error("角色 id 必须合法且唯一：" + person.id);
       seen.add(person.id);
-      return `<article data-xds-flower data-xds-roster-id="${attr(person.id)}" data-xds-identity="${attr(person.targetIdentity || "赵无忧")}" aria-label="${attr(person.name)}" role="button" tabindex="0">
+      return `<article data-xds-flower data-xds-roster-id="${attr(person.id)}" aria-label="${attr(person.name)}">
       <div data-xds-art-state><b>${attr(person.name)}</b><span>仙姿待绘入卷</span></div>
       <img data-xds-art ${imageAttrs(person.id, "portrait")} alt="${attr(person.name)}彩色立绘" loading="lazy" decoding="async">
       <div data-xds-badge title="${attr(person.relicName)} · 图鉴预览" aria-label="${attr(person.relicName)} · 图鉴预览"><span>待</span><img ${imageAttrs(person.relicKey, "relic")} alt="${attr(person.relicName)}纹章" loading="lazy" decoding="async"></div>
-      <div data-xds-card-info><div data-xds-card-name>${attr(person.name)}</div>${person.title ? `<div data-xds-card-title>${attr(person.title)}</div>` : ""}${person.sect ? `<div data-xds-card-sect>${attr(person.sect)}</div>` : ""}${person.quote ? `<p data-xds-card-quote>${attr(person.quote)}</p>` : ""}<div data-xds-card-hint>点击以「${attr(person.targetIdentity || "赵无忧")}」启卷</div></div>
+      <div data-xds-card-info><div data-xds-card-name>${attr(person.name)}</div>${person.title ? `<div data-xds-card-title>${attr(person.title)}</div>` : ""}${person.sect ? `<div data-xds-card-sect>${attr(person.sect)}</div>` : ""}${person.quote ? `<p data-xds-card-quote>${attr(person.quote)}</p>` : ""}</div>
     </article>`;
     })
     .join("");
@@ -66,7 +66,7 @@ function buildMenuHtml({
       </div><p data-xds-status role="status" aria-live="polite"></p>
       <div data-xds-section-title>名录画卷 · 仙姝图鉴</div>
       <div class="xds-flower-carousel" data-xds-carousel tabindex="0" role="region" aria-label="仙姝名录，左右翻阅">${cards}</div>
-      <div data-xds-carousel-nav><button type="button" data-xds-carousel-step="-1" aria-label="向左翻阅">‹</button><span>左右翻阅仙姝名录 · 点击卡片亦可入世</span><button type="button" data-xds-carousel-step="1" aria-label="向右翻阅">›</button></div>
+      <div data-xds-carousel-nav><button type="button" data-xds-carousel-step="-1" aria-label="向左翻阅">‹</button><span>左右翻阅仙姝名录 · 四阶纹章为图鉴预览</span><button type="button" data-xds-carousel-step="1" aria-label="向右翻阅">›</button></div>
     </div>
     <div class="xds-view-custom" data-xds-view="custom"><div class="xds-custom-scroll" data-xds-custom-form>
       <label for="${instanceId}-page-flower" data-xds-back role="button" tabindex="0">‹ 返回百花谱</label>

@@ -12,7 +12,8 @@ function start(win) {
   const runtime = createDispatcher(host, data);
   let hud = null,
     disposed = false,
-    renderTimer = null;
+    renderTimer = null,
+    moDebounce = null;
   const unsubs = [],
     plugins = [];
   runtime.uiPlugins = plugins;
@@ -83,10 +84,9 @@ function start(win) {
   on("MESSAGE_UPDATED", () => scheduleRender(80));
   on("MESSAGE_EDITED", () => scheduleRender(80));
   on("USER_MESSAGE_RENDERED", () => scheduleRender(50));
-  on("CHARACTER_MESSAGE_RENDERED", async () => {
-    await settle();
-    await render();
-  });
+  // setChatMessages(refresh: affected) awaits this native event. Scheduling
+  // instead of awaiting our queue avoids waiting for the intent that emitted it.
+  on("CHARACTER_MESSAGE_RENDERED", () => scheduleRender(0));
   on("GENERATION_STARTED", async () => {
     if (!active()) return;
     host.markAborted(false);
@@ -136,7 +136,6 @@ function start(win) {
   let mo = null;
   const Win = doc.defaultView || win;
   if (typeof Win.MutationObserver !== "undefined") {
-    let moDebounce = null;
     mo = new Win.MutationObserver(() => {
       if (!active()) return;
       clearTimeout(moDebounce);
@@ -178,6 +177,7 @@ function start(win) {
       disposed = true;
       mo?.disconnect();
       clearTimeout(renderTimer);
+      clearTimeout(moDebounce);
       unsubs.forEach((f) => f());
       hud?.destroy();
       doc.querySelector("[data-xsd2-root]")?.remove();

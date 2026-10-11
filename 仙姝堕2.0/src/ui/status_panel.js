@@ -70,7 +70,22 @@ function mountHUD(doc, container, runtime, data, report) {
     const s = runtime.getSnapshot();
     if (!s) {
       root.className = "xsd2-opening-root";
-      if (!opening) opening = mountOpening(doc, root, runtime, data, report);
+      const view = runtime.getOpeningView?.() || {
+        mode: "identity_menu",
+        key: "menu",
+      };
+      if (opening?.key !== view.key) {
+        opening?.destroy();
+        opening = null;
+      }
+      if (!opening) {
+        if (view.mode === "unavailable") {
+          root.textContent = "尚未读取到有效的入世身份，请检查所选开局。";
+        } else {
+          opening = mountOpening(doc, root, runtime, data, report, view);
+          opening.key = view.key;
+        }
+      }
       return;
     }
     opening?.destroy();

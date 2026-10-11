@@ -1,6 +1,6 @@
 "use strict";
 const C = require("../runtime/contracts");
-function mountOpening(doc, root, runtime, data, report) {
+function mountOpening(doc, root, runtime, data, report, view = {}) {
   root.innerHTML = data.openingMenu;
   let busy = false,
     disposed = false;
@@ -61,7 +61,7 @@ function mountOpening(doc, root, runtime, data, report) {
   }
   function click(e) {
     const b = e.target.closest(
-      "button,label[data-xds-open-custom],label[data-xds-back],[data-xds-identity]",
+      "button,label[data-xds-open-custom],label[data-xds-back]",
     );
     if (!b || !root.contains(b) || busy) return;
     if (b.hasAttribute("data-xds-open-custom")) {
@@ -160,6 +160,14 @@ function mountOpening(doc, root, runtime, data, report) {
     };
     img.onerror = () => img.setAttribute("data-xds-missing", "");
     if (img.complete && img.naturalWidth) img.onload();
+  }
+  if (view.mode === "custom_setup") {
+    page("custom");
+    field("custom_name").value = view.name || "";
+    root.querySelector('[data-xds-view="flower"]').remove();
+    root.querySelector('[data-xds-page="flower"]').remove();
+    root.querySelector("[data-xds-back]").remove();
+    status().textContent = "请补全入世修为与日期，再落款启卷。";
   }
   preview();
   return {

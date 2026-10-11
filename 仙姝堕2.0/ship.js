@@ -8,6 +8,7 @@ const tests = spawnSync(
     "--test",
     "tests/core.test.cjs",
     "tests/ui.test.cjs",
+    "tests/opening_host.test.cjs",
     "tests/youjigu_map.test.cjs",
     "tests/map_integration.test.cjs",
   ],

@@ -11,8 +11,7 @@ function createTavernHost(win, doc, cardName) {
     top?.SillyTavern ||
     win?.SillyTavern ||
     (typeof SillyTavern !== "undefined" ? SillyTavern : null);
-  if (!helper || !st?.getContext)
-    throw Error("需要启用酒馆助手与脚本运行功能");
+  if (!helper || !st?.getContext) throw Error("需要启用酒馆助手与脚本运行功能");
   const ctx = () => st.getContext();
   let aborted = false,
     generating = false;
@@ -180,12 +179,8 @@ function createTavernHost(win, doc, cardName) {
       const c = context();
       const card = c.card;
       const curName = card?.name || card?.data?.name || c.raw?.name2 || "";
-      if (!curName) return true;
-      return (
-        curName === cardName ||
-        curName.startsWith("仙姝堕2.0") ||
-        curName.includes("仙姝堕")
-      );
+      if (!curName) return false;
+      return curName === cardName || curName.startsWith("仙姝堕2.0");
     },
     on(event, fn) {
       const c = ctx(),
