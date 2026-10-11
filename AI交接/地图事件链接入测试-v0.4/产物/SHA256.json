@@ -1,0 +1,24 @@
+{
+  "input": {
+    "path": "最新角色卡/仙姝堕.json",
+    "sha256": "463a85c4704850fe177e19f0f494c653e475587f4cbf834b2223baed2dd1af00"
+  },
+  "files": {
+    "幽寂谷地图接入测试脚本.js": {
+      "bytes": 442696,
+      "sha256": "07224c86a8609bcdd73ce6c780cfa870a3eeb4254f022d20dc7a04c2daa794fa"
+    },
+    "幽寂谷状态栏地图测试世界书.json": {
+      "bytes": 4975,
+      "sha256": "ee93997c3e0ca41ceac14787d7147166f9171e8f3c304616bb0802f56cfa578a"
+    },
+    "幽寂谷状态栏地图测试卡.json": {
+      "bytes": 18294084,
+      "sha256": "d8811e801cf10cb89e02ad4b7ae5c064dcb289190ee94cc12c28672e78971b17"
+    },
+    "幽寂谷状态栏地图测试卡.png": {
+      "bytes": 49348666,
+      "sha256": "02b40a2c86339281aa24d3e0a8fd795120f671afaf05839292b22aa9e977aafe"
+    }
+  }
+}
