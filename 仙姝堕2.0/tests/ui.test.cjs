@@ -176,3 +176,145 @@ test("宿主使用原生候选变量、填入后点击发送，并守住非本�
   assert.equal(host.isOurCard(), false);
   d.window.close();
 });
+
+test("原版百花谱迁入：内嵌六张立绘/纹章、六身份单次提交、翻页与卸载", async () => {
+  const d = dom(),
+    doc = d.window.document,
+    calls = [],
+    listeners = new Set();
+  const runtime = {
+    getSnapshot: () => null,
+    subscribe: (f) => {
+      listeners.add(f);
+      return () => listeners.delete(f);
+    },
+    dispatchIntent: async (x) => calls.push(x),
+  };
+  const panel = mountHUD(
+    doc,
+    doc.querySelector("main"),
+    runtime,
+    data,
+    () => {},
+  );
+  assert.equal(
+    doc.querySelector("[data-xds-heading] h2").textContent,
+    "太微百花谱",
+  );
+  assert.equal(doc.querySelectorAll("[data-xds-flower]").length, 6);
+  assert.equal(doc.querySelectorAll("[data-xds-image]").length, 12);
+  assert.ok(
+    [...doc.querySelectorAll("[data-xds-image]")].every((img) =>
+      /^data:image\//.test(img.src),
+    ),
+  );
+  assert.equal(doc.querySelector(".xsd2-hud"), null);
+  doc.querySelector('[data-xds-carousel-step="1"]').click();
+  assert.ok(doc.querySelector("[data-xds-carousel]").scrollLeft > 0);
+  for (const identity of [
+    "赵无忧",
+    "焚欲殿主",
+    "欢喜殿主",
+    "浊龙殿主",
+    "魂欢殿主",
+  ]) {
+    const b = doc.querySelector('[data-xds-identity="' + identity + '"]');
+    b.click();
+    b.click();
+    await new Promise((r) => setImmediate(r));
+    assert.deepEqual(calls.at(-1), {
+      type: "SELECT_IDENTITY",
+      payload: { identity },
+    });
+  }
+  assert.equal(calls.length, 5);
+  panel.destroy();
+  assert.equal(listeners.size, 0);
+  assert.equal(doc.querySelector("[data-xds-menu]"), null);
+  d.window.close();
+});
+test("原版自设书卷：手填日期保留、滑块只填字段、失败可重选与确认后换HUD", async () => {
+  const d = dom(),
+    doc = d.window.document,
+    calls = [],
+    listeners = new Set();
+  let snapshot = null;
+  const runtime = {
+    getSnapshot: () => snapshot,
+    subscribe: (f) => {
+      listeners.add(f);
+      return () => listeners.delete(f);
+    },
+    dispatchIntent: async (x) => {
+      calls.push(x);
+      if (!x.payload.custom?.date) throw Error("请填写有效日期");
+    },
+  };
+  const panel = mountHUD(
+    doc,
+    doc.querySelector("main"),
+    runtime,
+    data,
+    () => {},
+  );
+  doc.querySelector("[data-xds-open-custom]").click();
+  assert.equal(doc.querySelector('[data-xds-page="custom"]').checked, true);
+  const field = (name) => doc.querySelector('[data-xds-field="' + name + '"]');
+  field("custom_name").value = "测试道友";
+  field("custom_cultivation").value = "筑基初期";
+  field("custom_place").value = "谷口";
+  const button = doc.querySelector('[data-xds-action="submit-custom"]');
+  button.click();
+  await new Promise((r) => setImmediate(r));
+  assert.equal(button.disabled, false);
+  assert.ok(
+    doc
+      .querySelector('[data-xds-view="custom"] [data-xds-status]')
+      .textContent.includes("日期"),
+  );
+  field("custom_timepoint").value = "仙盟历 1579 年 六月初七";
+  field("custom_timepoint").dispatchEvent(
+    new d.window.Event("input", { bubbles: true }),
+  );
+  panel.render();
+  assert.equal(field("custom_timepoint").value, "仙盟历 1579 年 六月初七");
+  button.click();
+  await new Promise((r) => setImmediate(r));
+  assert.deepEqual(calls.at(-1).payload.custom.date, {
+    year: 1579,
+    month: 6,
+    day: 7,
+  });
+  assert.equal(calls.at(-1).payload.custom.place, "谷口");
+  const range = doc.querySelector("[data-xds-timepoint-range]");
+  range.value = "3";
+  range.dispatchEvent(new d.window.Event("input", { bubbles: true }));
+  assert.equal(calls.length, 2);
+  assert.ok(field("custom_timepoint").value.includes("1578"));
+  button.click();
+  await new Promise((r) => setImmediate(r));
+  assert.deepEqual(calls.at(-1).payload.custom.date, {
+    year: 1578,
+    month: 8,
+    day: 1,
+  });
+  snapshot = {
+    identity: "自设",
+    calendarDate: { year: 1578, month: 8, day: 1 },
+    stat_data: {
+      自设: { name: "测试道友" },
+      known: {},
+      名器归属: {},
+      在场角色: [],
+    },
+    known: {},
+    inventory: [],
+    manual: {},
+  };
+  panel.render();
+  assert.equal(doc.querySelector("[data-xds-menu]"), null);
+  assert.ok(doc.querySelector(".xsd2-hud"));
+  assert.equal(doc.querySelectorAll("[data-xsd-slot]").length, 18);
+  panel.destroy();
+  d.window.close();
+});

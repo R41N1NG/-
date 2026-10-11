@@ -180,14 +180,14 @@ function build() {
     first_mes: read("src/text_data/_card_first_mes.txt").trim(),
     mes_example: read("src/text_data/_card_mes.txt").trim(),
     creator_notes:
-      "独立2.0地图联调测试；内置幽寂谷地图插件。需要酒馆助手。立绘沿用本地图包，真实模型与酒馆操作由主人验收。",
+      "独立2.0测试；恢复原版百花谱开局，内置幽寂谷地图插件。需要酒馆助手。立绘沿用本地图包，真实模型与酒馆操作由主人验收。",
     system_prompt: "",
     post_history_instructions: "",
     alternate_greetings: Object.values(data.greetings),
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.2",
+    character_version: "2.0-framework.3",
     extensions: {
       world: NAME,
       tavern_helper: {

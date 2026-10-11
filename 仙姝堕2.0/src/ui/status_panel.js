@@ -1,5 +1,6 @@
 "use strict";
 const { esc, modal } = require("./dom");
+const { mountOpening } = require("./opening_menu");
 const { openGM } = require("./gm_panel");
 const { dateText } = require("../runtime/contracts");
 const PALETTE = {
@@ -54,7 +55,8 @@ function mountHUD(doc, container, runtime, data, report) {
   container.append(root);
   let plugins = [],
     dialogs = [],
-    disposed = false;
+    disposed = false,
+    opening = null;
   const invoke = (intent) =>
     runtime.dispatchIntent(intent).catch((error) => {
       root.querySelector("[role=status]").textContent = error.message;
@@ -67,58 +69,13 @@ function mountHUD(doc, container, runtime, data, report) {
     plugins = [];
     const s = runtime.getSnapshot();
     if (!s) {
-      root.innerHTML =
-        "<header><strong>选择入世身份</strong></header>" +
-        data
-          .rules({})
-          .IDENTITIES.map(
-            (x) =>
-              '<button data-identity="' +
-              esc(x.name) +
-              '" title="' +
-              esc(x.desc) +
-              '">' +
-              esc(x.name) +
-              "</button>",
-          )
-          .join("") +
-        '<p role="status"></p>';
-      for (const b of root.querySelectorAll("[data-identity]"))
-        b.onclick = () => {
-          const identity = b.dataset.identity;
-          if (identity !== "自设")
-            return invoke({ type: "SELECT_IDENTITY", payload: { identity } });
-          const el = modal(doc, "自设入世");
-          dialogs.push(() => el.remove());
-          el.querySelector(".xsd2-dialog-body").innerHTML =
-            '<form><label>道号<input name="name" required></label><label>修为<input name="realm" required></label><label>仙盟历日期<input name="date" placeholder="1578-3-3" required></label><label>起点<input name="place"></label><label>来历<textarea name="origin"></textarea></label><button>入世</button><p role="status"></p></form>';
-          const f = el.querySelector("form");
-          f.onsubmit = async (e) => {
-            e.preventDefault();
-            const v = new FormData(f),
-              a = String(v.get("date")).split("-").map(Number);
-            try {
-              await runtime.dispatchIntent({
-                type: "SELECT_IDENTITY",
-                payload: {
-                  identity,
-                  custom: {
-                    name: v.get("name"),
-                    realm: v.get("realm"),
-                    place: v.get("place"),
-                    origin: v.get("origin"),
-                    date: { year: a[0], month: a[1], day: a[2] },
-                  },
-                },
-              });
-              el.close();
-            } catch (err) {
-              el.querySelector("[role=status]").textContent = err.message;
-            }
-          };
-        };
+      root.className = "xsd2-opening-root";
+      if (!opening) opening = mountOpening(doc, root, runtime, data, report);
       return;
     }
+    opening?.destroy();
+    opening = null;
+    root.className = "xsd2-hud";
     const st = s.stat_data,
       field = (k, n) =>
         '<dt data-xsd-slot="' +
@@ -224,16 +181,14 @@ function mountHUD(doc, container, runtime, data, report) {
           (b.onclick = () =>
             invoke({ type: "USE_ITEM", payload: { id: b.dataset.item } })),
       );
-    root
-      .querySelectorAll("[data-action]")
-      .forEach(
-        (b) =>
-          (b.onclick = () =>
-            invoke({
-              type: "QUICK_ACTION",
-              payload: { text: b.dataset.action },
-            })),
-      );
+    root.querySelectorAll("[data-action]").forEach(
+      (b) =>
+        (b.onclick = () =>
+          invoke({
+            type: "QUICK_ACTION",
+            payload: { text: b.dataset.action },
+          })),
+    );
     root.querySelectorAll("[data-portrait]").forEach(
       (b) =>
         (b.onclick = () => {
@@ -272,6 +227,7 @@ function mountHUD(doc, container, runtime, data, report) {
     destroy() {
       disposed = true;
       unsubscribe();
+      opening?.destroy();
       plugins.forEach((f) => f());
       dialogs.forEach((f) => f?.());
       root.remove();
