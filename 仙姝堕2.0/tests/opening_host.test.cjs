@@ -30,6 +30,17 @@ async function fixture(first = "<IdentityMenu/>") {
       "MESSAGE_SENT",
     ].map((k) => [k, k]),
   );
+  function appendDOM(i) {
+    const el = doc.createElement("div");
+    el.className = "mes";
+    el.setAttribute("mesid", i);
+    el.setAttribute("is_user", String(!!context.chat[i].is_user));
+    const body = doc.createElement("div");
+    body.className = "mes_text";
+    body.textContent = context.chat[i].mes;
+    el.append(body);
+    doc.querySelector("#chat").append(el);
+  }
   const emit = async (name, ...args) => {
     for (const f of [...(handlers.get(name) || [])]) await f(...args);
   };
@@ -69,8 +80,11 @@ async function fixture(first = "<IdentityMenu/>") {
     setChatMessages: async (rows) => {
       if (replaceError) throw Error("宿主拒绝修改开场白");
       replacements++;
-      context.chat[0].mes = rows[0].message;
-      doc.querySelector(".mes_text").textContent = rows[0].message;
+      for (const row of rows) {
+        context.chat[row.message_id].mes = row.message;
+        const node = doc.querySelector('[mesid="' + row.message_id + '"] .mes_text') || doc.querySelector(".mes_text");
+        node.textContent = row.message;
+      }
       await emit("CHARACTER_MESSAGE_RENDERED");
     },
   };
@@ -106,6 +120,7 @@ async function fixture(first = "<IdentityMenu/>") {
     emit,
     replacements: () => replacements,
     fail: (v) => (replaceError = v),
+    appendDOM,
     close: () => {
       win.XSD2?.dispose();
       dom.window.close();
@@ -284,5 +299,67 @@ test("提示词预计算不会锁动作或阻止原生候选身份恢复，不�
     await h.emit("GENERATION_ENDED");
     await h.win.XSD2.runtime.dispatchIntent({type:"QUICK_ACTION",payload:{text:"自行行动"}});
     assert.equal(h.sends.length, 2);
+  } finally { h.close(); }
+});
+
+
+test("原生先STARTED再用户入楼：地图pending留存，HUD不搬用户楼，回复后出现洞府节点", async () => {
+  const data = require("../tools/data.cjs").load(require("node:path").join(__dirname, ".."));
+  const h = await fixture(data.greetings.赵无忧);
+  try {
+    await until(() => h.doc.querySelector(".xsd2-hud"));
+    h.doc.querySelector(".mes").setAttribute("mesid", "0");
+    h.doc.querySelector("#send_but").onclick = async () => {
+      await h.emit("GENERATION_STARTED", "normal", {}, false);
+      h.sends.push(h.doc.querySelector("#send_textarea").value);
+      h.context.chat.push({mes:h.sends.at(-1),is_user:true,variables:[{}]});
+      const floor = h.context.chat.length - 1;
+      h.appendDOM(floor);
+      await h.emit("USER_MESSAGE_RENDERED", floor);
+    };
+    h.doc.querySelector(".xsd2-map-trigger-btn").click();
+    h.doc.querySelector('[data-node-id="g7p2"]').click();
+    await until(() => h.context.chat.length === 2);
+    assert.equal(h.win.XSD2.runtime.getSnapshot().pending?.nodeId, "g7p2");
+    await new Promise(r => setTimeout(r, 120));
+    assert.ok(h.doc.querySelector('[mesid="0"] .xsd2-hud'));
+    assert.equal(h.doc.querySelector('[mesid="1"] [data-xsd2-root]'), null);
+    assert.equal(h.doc.querySelector(".xsd2-map-modal-overlay"), null);
+    h.context.chat.push({mes:"赵无忧踏入幽寂谷，来到谷口岔路。",is_user:false,variables:[{}]});
+    h.appendDOM(2);
+    await h.emit("CHARACTER_MESSAGE_RENDERED", 2);
+    await h.emit("GENERATION_ENDED");
+    await until(() => h.doc.querySelector('[mesid="2"] .xsd2-hud'));
+    assert.equal(h.win.XSD2.runtime.getSnapshot().activeEvent?.step, "first");
+    assert.ok(h.doc.querySelector('[mesid="0"] .xsd2-hud'));
+    assert.ok([...h.doc.querySelectorAll('[mesid="0"] button')].every(b=>b.disabled));
+    h.doc.querySelector('[mesid="2"] .xsd2-map-trigger-btn').click();
+    assert.equal(h.doc.querySelector('[data-node-id="g7p2"]'), null);
+    assert.ok(h.doc.querySelector('[data-node-id="k4m8"]'));
+    h.doc.querySelector('[data-node-id="k4m8"]').click();
+    await until(() => h.context.chat.length === 4);
+    assert.equal(h.win.XSD2.runtime.getSnapshot().pending?.nodeId, "k4m8");
+    h.context.chat.push({mes:"赵无忧推开石门，步入幽寂谷洞府之中。",is_user:false,variables:[{}]});
+    h.appendDOM(4);
+    await h.emit("CHARACTER_MESSAGE_RENDERED", 4);
+    await h.emit("GENERATION_ENDED");
+    await until(() => h.doc.querySelector('[mesid="4"] .xsd2-hud'));
+    assert.equal(h.win.XSD2.runtime.getSnapshot().activeEvent?.step, "cave");
+    assert.equal(h.doc.querySelector('[mesid="3"] [data-xsd2-root]'), null);
+    // Read-only historical state remains at the fork, not the latest cave.
+    assert.equal((await h.win.XSD2.runtime.getFloorSnapshot(2)).activeEvent.step, "first");
+    h.doc.querySelector('[mesid="4"] .xsd2-map-trigger-btn').click();
+    h.doc.querySelector('[data-node-id="q3f7"]').click();
+    await until(() => h.context.chat.length === 6);
+    await h.emit("GENERATION_STOPPED");
+    h.context.chat.pop();
+    h.doc.querySelector('[mesid="5"]').remove();
+    await h.emit("MESSAGE_DELETED");
+    await until(() => h.doc.querySelector('[mesid="4"] .xsd2-map-trigger-btn')?.disabled === false);
+    assert.equal(h.win.XSD2.runtime.getSnapshot().pending, null);
+    assert.equal(h.win.XSD2.runtime.getSnapshot().activeEvent.step, "cave");
+    h.doc.querySelector('[mesid="4"] .xsd2-map-trigger-btn').click();
+    assert.ok(h.doc.querySelector('[data-node-id="q3f7"]'));
+    assert.ok(h.doc.querySelector('[data-node-id="b8n2"]'));
   } finally { h.close(); }
 });

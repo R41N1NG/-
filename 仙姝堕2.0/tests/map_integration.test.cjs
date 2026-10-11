@@ -1,4 +1,5 @@
 "use strict";
+const { startingInventoryFor } = require("../src/runtime/starting_inventory");
 const { test } = require("node:test"),
   assert = require("node:assert/strict"),
   path = require("node:path");
@@ -122,7 +123,7 @@ test("真实插件+调度器：完整地图钥匙/密室/退出路线及奖励�
   assert.equal(s.calendarDate.day, 5);
   assert.equal(s.activeEvent, null);
   assert.equal(s.pluginState[plugin.id].step, "done");
-  assert.equal(s.inventory.length, 2);
+  assert.equal(s.inventory.filter(x => x.source === plugin.id).length, 2);
   await h.r.settleStory();
   assert.equal(h.r.getSnapshot().calendarDate.day, 5);
   assert.equal(h.sent.length, 7);
@@ -144,7 +145,7 @@ test("真实插件+调度器：铁匣/普通古卷/否定正文和状态栏声�
     );
     const s = h.r.getSnapshot();
     assert.notEqual(s.known.map_youjigu, true);
-    assert.deepEqual(s.inventory, []);
+    assert.deepEqual(s.inventory, startingInventoryFor("赵无忧"));
     assert.equal(s.pending, null);
     assert.equal(plugin.select(s, "q3f7").allowed, true);
   }
@@ -211,7 +212,7 @@ test("真实插件+调度器：山涧/草药/正常出口及提前退出耗时",
   await h.act("n5z8", "你采下草药，妥善收入囊中。");
   await h.act("l7q2", "你沿山径离开幽寂谷。");
   assert.equal(h.r.getSnapshot().calendarDate.day, 5);
-  assert.equal(h.r.getSnapshot().inventory[0].name, "草药");
+  assert.ok(h.r.getSnapshot().inventory.some(x => x.name === "草药"));
   const early = fixture();
   await early.ready();
   await early.act("g7p2", "你进入幽寂谷。");

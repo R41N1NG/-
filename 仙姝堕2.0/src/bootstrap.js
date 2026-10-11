@@ -10,7 +10,8 @@ function start(win) {
     doc = host.top.document || topWin.document || win.document;
   host.top.XSD2?.dispose?.();
   const runtime = createDispatcher(host, data);
-  let hud = null,
+  const huds = new Map();
+  let renderEpoch = 0,
     disposed = false,
     renderTimer = null,
     moDebounce = null;
@@ -25,24 +26,51 @@ function start(win) {
   };
   async function render() {
     if (!active()) return;
+    const epoch = ++renderEpoch, c = host.context();
     const chat = doc.querySelector("#chat");
-    const mesList = chat?.querySelectorAll(".mes");
-    const lastMes = mesList?.length
-      ? mesList[mesList.length - 1]
-      : chat?.querySelector(".last_mes");
-    const last = lastMes?.querySelector(".mes_text");
-    if (!last) return;
-    const prior = doc.querySelector("[data-xsd2-root]");
-    if (prior?.parentElement === last) {
-      hud?.render();
-      return;
+    const rows = [...(chat?.querySelectorAll(".mes") || [])];
+    const targets = [];
+    for (const [index, mes] of rows.entries()) {
+      const id = mes.getAttribute("mesid");
+      const floor = id === null ? index : Number(id), m = c.chat?.[floor];
+      const body = mes.querySelector(".mes_text");
+      if (!m || m.is_user || m.is_system || !body || mes.querySelector(".edit_textarea")) continue;
+      const latest = floor === c.chat.length - 1;
+      const s = latest && !host.isGenerating()
+        ? runtime.getSnapshot() : await runtime.getFloorSnapshot(floor);
+      if (epoch !== renderEpoch || host.context().chatId !== c.chatId || !active()) return;
+      if (!s && !(floor === 0 && latest)) continue;
+      const readOnly = !latest || host.isGenerating();
+      const key = JSON.stringify([c.chatId, m.swipe_id || 0, s, readOnly,
+        !s ? runtime.getOpeningView() : null, plugins.map(x => x.id)]);
+      targets.push({floor, body, s, readOnly, key});
     }
-    hud?.destroy();
-    prior?.remove();
-    const el = doc.createElement("div");
-    el.dataset.xsd2Root = "";
-    last.append(el);
-    hud = mountHUD(doc, el, runtime, data, report);
+    if (epoch !== renderEpoch || !active()) return;
+    for (const [floor, record] of huds) {
+      const target = targets.find(x => x.floor === floor);
+      if (!target || record.el.parentElement !== target.body || record.target.readOnly !== target.readOnly) {
+        record.hud.destroy(); record.el.remove(); huds.delete(floor);
+      } else if (record.key !== target.key) {
+        record.target.s = target.s;
+        record.key = target.key;
+        record.hud.render();
+      }
+    }
+    for (const target of targets) {
+      if (huds.has(target.floor)) continue;
+      const el = doc.createElement("div");
+      el.dataset.xsd2Root = "";
+      el.dataset.xsd2Floor = String(target.floor);
+      target.body.append(el);
+      const view = Object.create(runtime);
+      view.getSnapshot = () => target.s;
+      view.subscribe = () => () => {};
+      view.dispatchIntent = intent => target.readOnly
+        ? Promise.reject(Error("历史状态仅供查看，请在最新回复中行动"))
+        : runtime.dispatchIntent(intent);
+      const panel = mountHUD(doc, el, view, data, report, {readOnly:target.readOnly});
+      huds.set(target.floor, {el, hud:panel, key:target.key, target});
+    }
   }
   async function mirror() {
     if (active()) await host.syncState(runtime.getSnapshot());
@@ -145,9 +173,11 @@ function start(win) {
         if (!active()) return;
         const chat = doc.querySelector("#chat");
         const mesList = chat?.querySelectorAll(".mes");
-        const lastMes = mesList?.length
-          ? mesList[mesList.length - 1]
-          : chat?.querySelector(".last_mes");
+        const c = host.context();
+        const lastMes = [...(mesList || [])].reverse().find((row) => {
+          const floor = Number(row.getAttribute("mesid") ?? [...mesList].indexOf(row));
+          return c.chat[floor] && !c.chat[floor].is_user && !c.chat[floor].is_system;
+        });
         if (!lastMes) return;
         if (lastMes.querySelector(".edit_textarea")) return;
         const last = lastMes.querySelector(".mes_text");
@@ -166,12 +196,12 @@ function start(win) {
     registerPlugin(plugin) {
       const unregister = runtime.registerPlugin(plugin);
       plugins.push(plugin);
-      hud?.render();
+      void render().catch(report);
       return () => {
         unregister();
         const i = plugins.indexOf(plugin);
         if (i >= 0) plugins.splice(i, 1);
-        hud?.render();
+        void render().catch(report);
       };
     },
     dispose() {
@@ -181,8 +211,9 @@ function start(win) {
       clearTimeout(renderTimer);
       clearTimeout(moDebounce);
       unsubs.forEach((f) => f());
-      hud?.destroy();
-      doc.querySelector("[data-xsd2-root]")?.remove();
+      renderEpoch++;
+      for (const record of huds.values()) { record.hud.destroy(); record.el.remove(); }
+      huds.clear();
       runtime.dispose();
       if (host.top.XSD2 === exposed) delete host.top.XSD2;
     },

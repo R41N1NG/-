@@ -46,7 +46,7 @@ function portrait(name, s, data) {
     large: "user/images/xsd_gallery/" + id + ".png",
   };
 }
-function mountHUD(doc, container, runtime, data, report) {
+function mountHUD(doc, container, runtime, data, report, options = {}) {
   const root = doc.createElement("section");
   root.className = "xsd2-hud";
   const style = doc.createElement("style");
@@ -156,7 +156,7 @@ function mountHUD(doc, container, runtime, data, report) {
       '</div><p data-xsd-slot="11">' +
       esc(st.纳戒 || "") +
       '</p><p data-xsd-slot="12">' +
-      (s.manual.inventory ? "物品已人工设置" : "点击物品使用") +
+      (options.readOnly ? "此楼状态记录" : s.manual.inventory ? "物品已人工设置" : "点击物品使用") +
       "</p></details><details><summary>风闻与气象</summary><dl>" +
       field("近闻", 13) +
       field("远闻", 14) +
@@ -234,6 +234,10 @@ function mountHUD(doc, container, runtime, data, report) {
         );
         if (typeof unmount === "function") plugins.push(unmount);
       }
+    if (options.readOnly) {
+      root.dataset.xsd2Readonly = "";
+      root.querySelectorAll("button").forEach(b => { b.disabled = true; b.onclick = null; });
+    }
   }
   const unsubscribe = runtime.subscribe(render);
   render();

@@ -1,5 +1,6 @@
 "use strict";
 const C = require("./contracts");
+const { startingInventoryFor } = require("./starting_inventory");
 function createDispatcher(adapter, data) {
   let current = null,
     scopeChatId = null,
@@ -55,7 +56,7 @@ function createDispatcher(adapter, data) {
       身份: identity,
       阵营: R.IDENTITY_FACTION[identity],
       known,
-      inventory: [],
+      inventory: startingInventoryFor(identity),
       在场角色: C.parseStatus(opening).cast,
       relic_progress: {},
       名器归属: {},
@@ -93,6 +94,8 @@ function createDispatcher(adapter, data) {
   }
   function normalize(s) {
     C.assertDate(s.calendarDate);
+    s.stat_data.纳戒 = (s.inventoryChanges || [])
+      .map(x => x.action + "：" + x.name + "×" + x.count).join("｜") || "无";
     s.stat_data.身份 = s.identity;
     s.stat_data.时间 = "仙盟历 " + C.dateText(s.calendarDate);
     s.stat_data.仙盟历文 = C.dateText(s.calendarDate);
@@ -201,12 +204,13 @@ function createDispatcher(adapter, data) {
     queue = next;
     return next;
   }
-  async function load(c) {
+  async function load(c, rollbackUnsent = true) {
     const found = await history(c);
     if (found) {
       current = manual(found.state);
       scopeChatId = c.chatId;
       if (
+        rollbackUnsent &&
         current.pending &&
         !c.chat
           .slice(current.pending.floor + 1)
@@ -418,6 +422,8 @@ function createDispatcher(adapter, data) {
         date: C.clone(s.calendarDate),
       };
     }
+    s.reconciledInventoryChanges = result.outcome === "success"
+      ? (result.rewards || []).map(x => ({ action: "获得", name: x.name, count: x.count || 1 })) : [];
     s.reconciledRewards =
       result.outcome === "success" ? rewardsNames(result) : [];
     s.pending = null;
@@ -441,6 +447,9 @@ function createDispatcher(adapter, data) {
     );
   }
   function applyInventory(s, parsed) {
+    const changes = s.manual.inventory ? [] : (s.reconciledInventoryChanges || []);
+    delete s.reconciledInventoryChanges;
+    if (s.manual.inventory) return changes;
     for (const part of String(parsed.fields.纳戒 || "").split(/[｜|；;]/)) {
       const m = part
         .trim()
@@ -492,13 +501,15 @@ function createDispatcher(adapter, data) {
             count,
             description: m[4] || "",
           });
-      } else if (old) {
-        old.count = Math.max(0, old.count - count);
+      } else if (old && old.count >= count) {
+        old.count -= count;
         s.stat_data.inventory = s.stat_data.inventory.filter(
           (x) => x.count > 0,
         );
-      }
+      } else continue;
+      changes.push({ action: gain ? "获得" : "消耗", name, count });
     }
+    return changes;
   }
   function applyStory(s, text, id, swipe) {
     const parsed = C.parseStatus(text),
@@ -508,8 +519,7 @@ function createDispatcher(adapter, data) {
     if (parsed.cast.length || parsed.fields.在场 === "无")
       s.stat_data.在场角色 = parsed.cast;
     if (parsed.fields.实际发生) s.stat_data.实际发生 = parsed.fields.实际发生;
-    if (parsed.fields.纳戒) s.stat_data.纳戒 = parsed.fields.纳戒;
-    applyInventory(s, parsed);
+    s.inventoryChanges = applyInventory(s, parsed);
     if (parsed.fields.历时) s.stat_data.历时 = parsed.fields.历时;
     if (
       !s.pending &&
@@ -856,6 +866,16 @@ function createDispatcher(adapter, data) {
   }
   const api = {
     getSnapshot: snapshot,
+    async getFloorSnapshot(floor) {
+      const c = context();
+      if (!Number.isInteger(floor) || floor < 0 || floor > c.floor) return null;
+      const e = (await adapter.readMessage(floor))?.stat_data?.xsd2?.[0];
+      if (token(c) !== token(context()) || !compatible(e, c)) return null;
+      const s = C.clone(e.state);
+      normalize(s);
+      return { ...s, chatId:c.chatId, branchId:c.branchId, floor,
+        inventory:s.stat_data.inventory, known:s.stat_data.known, relics:s.stat_data.relic_progress };
+    },
     getOpeningView() {
       const c = context(),
         first = String(c.chat[0]?.mes || "");
@@ -907,12 +927,22 @@ function createDispatcher(adapter, data) {
     replay: () =>
       lifecycle(async (c) => {
         // Floor zero has no previous assistant floor; retain its opening state.
-        if (c.floor === 0) return load(c);
+        if (c.floor === 0) return load(c, false);
+        // Native STARTED precedes user-message insertion. The latest assistant
+        // can hold a freshly selected pending; do not rewind past that receipt.
+        const latest = (await adapter.readMessage(c.floor))?.stat_data?.xsd2?.[0];
+        guard(c);
+        if (compatible(latest, c) && latest.state?.pending?.floor === c.floor) {
+          current = C.clone(latest.state);
+          scopeChatId = c.chatId;
+          updatePrompt();
+          return snapshot();
+        }
         const m = c.chat[c.floor];
         const base = await history(c, m?.is_user ? c.floor : c.floor - 1);
         // Native opening swipes / older chats may have valid source identity
         // but no envelope yet. Read that source instead of erasing the identity.
-        if (!base) return load(c);
+        if (!base) return load(c, false);
         current = base.state;
         scopeChatId = c.chatId;
         updatePrompt();

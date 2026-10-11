@@ -176,12 +176,13 @@ function canonicalStatus(text, s) {
       ...p.fields,
       时间: "仙盟历 " + dateText(s.calendarDate),
       身份: s.identity,
+      纳戒: s.stat_data.纳戒 || "无",
     };
   if (s.activeEvent?.place) values.地点 = s.activeEvent.place;
   let block =
     /<Status_block>[\s\S]*?<\/Status_block>/.exec(text)?.[0] ||
     "<Status_block></Status_block>";
-  for (const k of ["时间", "身份", ...(s.activeEvent?.place ? ["地点"] : [])]) {
+  for (const k of ["时间", "身份", "纳戒", ...(s.activeEvent?.place ? ["地点"] : [])]) {
     const re = new RegExp("<" + k + ">[\\s\\S]*?</" + k + ">");
     block = re.test(block)
       ? block.replace(re, "<" + k + ">" + values[k] + "</" + k + ">")

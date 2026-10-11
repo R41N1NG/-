@@ -1,5 +1,6 @@
 "use strict";
 const { test } = require("node:test");
+const { startingInventoryFor } = require("../src/runtime/starting_inventory");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -175,7 +176,7 @@ test("六套源开局，19字段不删，身份日期及起手门禁一致", asy
     assert.equal(s.calendarDate.day, name === "赵无忧" ? 3 : 1);
     assert.equal(s.known.天姝会存在, name !== "赵无忧");
     assert.equal(s.known.极乐引入手, name !== "赵无忧");
-    assert.deepEqual(s.inventory, []);
+    assert.deepEqual(s.inventory, startingInventoryFor(name));
     for (const k of C.XML_FIELDS)
       assert.ok(C.parseStatus(h.c.chat[0].mes).fields[k] !== undefined, k);
   }
@@ -263,10 +264,10 @@ test("取消退出无写入，确认后一次结算2日且不重复发奖扣时"
     ),
   );
   assert.equal(h.r.getSnapshot().calendarDate.day, 5);
-  assert.equal(h.r.getSnapshot().inventory[0].count, 1);
+  assert.equal(h.r.getSnapshot().inventory.find(x => x.name === "草药").count, 1);
   await h.r.settleStory();
   assert.equal(h.r.getSnapshot().calendarDate.day, 5);
-  assert.equal(h.r.getSnapshot().inventory[0].count, 1);
+  assert.equal(h.r.getSnapshot().inventory.find(x => x.name === "草药").count, 1);
 });
 test("发送失败恢复；停止并删助手楼后节点可重选；删用户楼亦恢复", async () => {
   const h = harness();
@@ -315,7 +316,7 @@ test("刷新、分支复制、删楼与回复候选分别恢复各自快照", as
   await h.r.restore();
   assert.ok(h.r.getSnapshot().pending);
   await h.r.settleStory();
-  assert.equal(h.r.getSnapshot().inventory[0].count, 1);
+  assert.equal(h.r.getSnapshot().inventory.find(x => x.name === "草药").count, 1);
   h.c.chat[floor] = original;
   await h.r.restore();
   assert.equal(h.r.getSnapshot().calendarDate.day, 5);
@@ -325,7 +326,7 @@ test("刷新、分支复制、删楼与回复候选分别恢复各自快照", as
   h.c.chat.splice(1);
   await h.r.restore();
   assert.equal(h.r.getSnapshot().calendarDate.day, 3);
-  assert.deepEqual(h.r.getSnapshot().inventory, []);
+  assert.deepEqual(h.r.getSnapshot().inventory, startingInventoryFor("赵无忧"));
 });
 test("正文库存实证、消耗及普通历时推进；GM保留人工优先并可释放", async () => {
   const h = harness();
@@ -333,11 +334,11 @@ test("正文库存实证、消耗及普通历时推进；GM保留人工优先并
   await h.reply(
     status({ 纳戒: "获得：草药×2", 历时: "三日" }, "你取得草药，收入纳戒。"),
   );
-  assert.equal(h.r.getSnapshot().inventory[0].count, 2);
+  assert.equal(h.r.getSnapshot().inventory.find(x => x.name === "草药").count, 2);
   assert.equal(h.r.getSnapshot().calendarDate.day, 6);
   h.c.chat.push({ mes: "使用草药", is_user: true });
   await h.reply(status({ 纳戒: "消耗：草药×1" }, "你服下草药。"));
-  assert.equal(h.r.getSnapshot().inventory[0].count, 1);
+  assert.equal(h.r.getSnapshot().inventory.find(x => x.name === "草药").count, 1);
   await h.r.dispatchIntent({
     type: "GM_PATCH",
     payload: {
@@ -373,7 +374,7 @@ test("否定、计划与仅状态申报不构成物品及名器实证；计数�
       "你尚未得到草药。孤月没有参与此事。",
     ),
   );
-  assert.deepEqual(h.r.getSnapshot().inventory, []);
+  assert.deepEqual(h.r.getSnapshot().inventory, startingInventoryFor("赵无忧"));
   assert.equal(h.r.getSnapshot().known.九幽玄阴穴四阶段, false);
   assert.deepEqual(h.r.getSnapshot().relics, {});
   const R = data.rules({}),
@@ -394,7 +395,7 @@ test("快照不可反向修改内核；插件生命周期取消订阅", async ()
   const s = h.r.getSnapshot();
   s.inventory.push({ name: "伪造" });
   s.calendarDate.year = 9999;
-  assert.deepEqual(h.r.getSnapshot().inventory, []);
+  assert.deepEqual(h.r.getSnapshot().inventory, startingInventoryFor("赵无忧"));
   assert.equal(h.r.getSnapshot().calendarDate.year, 1578);
   let n = 0;
   const off = h.r.subscribe(() => n++);
@@ -518,7 +519,7 @@ test("插件不能通过结果取得未配置物品、事实及耗时", async ()
     await h.select("exit");
     await assert.rejects(h.reply(status()), /未配置|不符合/);
     assert.ok(h.r.getSnapshot().pending);
-    assert.deepEqual(h.r.getSnapshot().inventory, []);
+    assert.deepEqual(h.r.getSnapshot().inventory, startingInventoryFor("赵无忧"));
   }
 });
 test("换聊天立即隐藏旧快照；新聊天不继承前一角色GM数据", async () => {
@@ -650,7 +651,7 @@ test("普通纳戒也不把旁人取得记给玩家", async () => {
   const h = harness();
   await h.opening("赵无忧");
   await h.reply(status({ 纳戒: "获得：草药×1" }, "你看见孤月取得草药。"));
-  assert.deepEqual(h.r.getSnapshot().inventory, []);
+  assert.deepEqual(h.r.getSnapshot().inventory, startingInventoryFor("赵无忧"));
 });
 test("测试卡误绑正式书会拒绝同步，不改正式世界书", async () => {
   let written = false;
@@ -721,4 +722,39 @@ test("缺少旧快照的现有聊天：生成恢复从真实开局重建身份�
   h.c.chat.push({mes:"推进剧情",is_user:true});
   await h.r.replay();
   assert.equal(h.r.getSnapshot(), null);
+});
+
+
+test("纳戒流水只显示实际变动：虚报/缺货/过量不显示，真实扣减后下一楼清空", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  await h.reply(status({纳戒:"消耗：醉春风×1"}, "你来到谷口。"));
+  assert.ok(!h.r.getSnapshot().stat_data.纳戒?.includes("消耗"));
+  assert.equal(C.parseStatus(h.c.chat.at(-1).mes).fields.纳戒, "无");
+  await h.reply(status({纳戒:"消耗：无此物×1"}, "你使用无此物。"));
+  assert.ok(!h.r.getSnapshot().stat_data.纳戒?.includes("消耗"));
+  await h.r.dispatchIntent({type:"GM_PATCH",payload:{inventory:[{id:"酒",name:"醉春风",count:2}]}});
+  await h.r.dispatchIntent({type:"GM_RELEASE",payload:{keys:["inventory"]}});
+  await h.reply(status({纳戒:"消耗：醉春风×9"}, "你喝掉醉春风。"));
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count, 2);
+  assert.ok(!h.r.getSnapshot().stat_data.纳戒?.includes("消耗"));
+  await h.reply(status({纳戒:"消耗：醉春风×1"}, "你喝掉醉春风。"));
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count, 1);
+  assert.equal(h.r.getSnapshot().stat_data.纳戒, "消耗：醉春风×1");
+  await h.reply(status({}, "你收好行囊。"));
+  assert.ok(!h.r.getSnapshot().stat_data.纳戒?.includes("消耗"));
+});
+
+
+test("新开局起手行囊与保存余额隔离：六身份配置，重载不补领已消耗物品", async () => {
+  assert.equal(startingInventoryFor("赵无忧").find(x => x.name === "醉春风").count, 2);
+  assert.ok(startingInventoryFor("自设").some(x => x.name === "《极乐引》残篇"));
+  for (const identity of ["焚欲殿主","欢喜殿主","浊龙殿主","魂欢殿主"])
+    assert.ok(startingInventoryFor(identity).some(x => x.name === "天姝令"));
+  const h = harness();
+  await h.opening("赵无忧");
+  await h.reply(status({纳戒:"消耗：醉春风×1"}, "你喝掉醉春风。"));
+  await h.r.ready();
+  assert.equal(h.r.getSnapshot().inventory.find(x => x.name === "醉春风").count, 1);
+  assert.ok(!h.r.getSnapshot().inventory.some(x => x.name === "草药"));
 });
