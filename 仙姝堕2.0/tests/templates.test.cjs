@@ -55,3 +55,28 @@ test("结算展示只读回执：单独卡/简短卡、无额外发送或计数�
   renderSettlement(doc,container,{...s,pending:{}}); assert.equal(container.children.length,0);
   d.window.close();
 });
+
+test("PNG内嵌条目自动补旧同名主书：只补缺项、UID不冲突、保留修改、重复不增加",async()=>{
+  const catalog=require("../src/config/node_stories.json"),embedded=storyEntries(catalog);
+  let stored=[{uid:229,name:"自定义条目",content:"保留我",enabled:true},
+    {...embedded[0],uid:230,name:embedded[0].comment,content:"玩家自定义节点故事",enabled:false}];
+  let writes=0;
+  const helper={getCharWorldbookNames:async()=>({primary:"测试卡",additional:["1.0"]}),getWorldbook:async name=>{assert.equal(name,"测试卡");return structuredClone(stored);},replaceWorldbook:async(name,rows)=>{assert.equal(name,"测试卡");stored=rows;writes++;}};
+  const host=createWorldbookHost(helper,()=>({}),{expectedName:"测试卡",embeddedManagedEntries:embedded});
+  await host.synchronizeState({node_trigger:"g7p2"});
+  assert.equal(stored.length,18); assert.equal(new Set(stored.map(x=>x.uid)).size,18);
+  assert.equal(stored.find(x=>x.uid===229).content,"保留我");
+  assert.equal(stored.find(x=>x.uid===230).content,"玩家自定义节点故事");
+  assert.ok(stored.find(x=>x.name==="【节点故事】g7p2").enabled);
+  await host.synchronizeState({node_trigger:"g7p2"}); assert.equal(stored.length,18); assert.equal(writes,1);
+  const wrong=createWorldbookHost(helper,()=>({}),{expectedName:"另一卡",embeddedManagedEntries:embedded});
+  await assert.rejects(wrong.synchronizeState({}),/取消写入/);
+});
+test("内嵌补项兼容助手结构：选择性关键词、深度1、防递归，不继承旧常驻策略",()=>{
+  const {embeddedEntry}=require("../src/host/worldbook");
+  const raw=storyEntries(require("../src/config/node_stories.json"))[0];
+  const x=embeddedEntry(raw,500,{uid:1,strategy:{type:"constant",keys:["旧词"]},position:{type:"at_depth",depth:4},recursion:{},effect:{sticky:3}});
+  assert.equal(x.uid,500); assert.equal(x.strategy.type,"selective"); assert.equal(x.strategy.scan_depth,1);
+  assert.deepEqual(x.strategy.keys,["XSD2_g7p2_"]); assert.equal(x.recursion.prevent_incoming,true);
+  assert.equal(x.effect.sticky,null); assert.equal(x.position.type,"after_character_definition");
+});

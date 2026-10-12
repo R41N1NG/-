@@ -40,6 +40,16 @@ function evaluateGate(content, stat) {
     return false;
   }
 }
+// Add only missing managed entries from this PNG; never overwrite user edits.
+function embeddedEntry(raw, uid, sample) {
+  if (!sample?.strategy) return {...raw,uid,name:raw.comment,enabled:false,disable:true};
+  return {...sample,uid,name:raw.comment,content:raw.content,enabled:false,
+    strategy:{...sample.strategy,type:raw.constant ? "constant" : "selective",keys:raw.key || [],
+      keys_secondary:{logic:"and_any",keys:[]},scan_depth:raw.scanDepth ?? "same_as_global"},
+    position:{...sample.position,type:"after_character_definition",order:raw.order || 200},
+    probability:100,recursion:{...sample.recursion,prevent_incoming:true,prevent_outgoing:true,delay_until:null},
+    effect:{sticky:null,cooldown:null,delay:null}};
+}
 function createWorldbookHost(helper, getContext, scope = {}) {
   async function primary() {
     const bindings = await helper.getCharWorldbookNames("current");
@@ -83,9 +93,19 @@ function createWorldbookHost(helper, getContext, scope = {}) {
     if (!name) return;
     const entries = await helper.getWorldbook(name);
     if (expected && !expected()) throw Error("切换聊天，取消门禁同步");
+    let added = false;
+    const labels = new Set(entries.map(e=>e.name || e.comment));
+    let uid = Math.max(-1,...entries.map(e=>Number.isSafeInteger(e.uid) ? e.uid : -1))+1;
+    for (const raw of scope.embeddedManagedEntries || []) {
+      if (managedEnabled(raw.comment,stat) === null) throw Error("只允许补齐本卡管理的条目");
+      if (labels.has(raw.comment)) continue;
+      entries.push(embeddedEntry(raw,uid++,entries[0]));
+      labels.add(raw.comment);
+      added = true;
+    }
     if (stat.node_trigger && !entries.some(e=>(e.name || e.comment) === "【节点故事】"+stat.node_trigger))
       throw Error("当前世界书缺少节点故事条目，请导入新版测试卡和配套世界书");
-    let changed = false;
+    let changed = added;
     const updated = entries.map((e) => {
       const managed = managedEnabled(e.name || e.comment || "",stat);
       if (managed === null && !String(e.content).startsWith("@@if ")) return e;
@@ -101,4 +121,4 @@ function createWorldbookHost(helper, getContext, scope = {}) {
   }
   return { synchronize, synchronizeState };
 }
-module.exports = { createWorldbookHost, evaluateGate };
+module.exports = { createWorldbookHost, evaluateGate, embeddedEntry };

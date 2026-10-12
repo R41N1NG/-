@@ -1,7 +1,7 @@
 "use strict";
 const C = require("../runtime/contracts");
 const { createWorldbookHost } = require("./worldbook");
-function createTavernHost(win, doc, cardName) {
+function createTavernHost(win, doc, cardName, embeddedManagedEntries = []) {
   const top = (win && win.top) || (win && win.parent) || win;
   const helper =
     top?.TavernHelper ||
@@ -27,7 +27,7 @@ function createTavernHost(win, doc, cardName) {
       raw: c,
     };
   }
-  const book = createWorldbookHost(helper, ctx, { expectedName: cardName });
+  const book = createWorldbookHost(helper, ctx, { expectedName: cardName, embeddedManagedEntries });
   const report = (e) => {
     console.error("[仙姝堕2.0]", e);
     top.toastr?.error(String(e.message || e), "仙姝堕");

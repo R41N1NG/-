@@ -3,6 +3,7 @@ const fs = require("node:fs"),
   path = require("node:path"),
   vm = require("node:vm");
 const { buildMenuHtml } = require("./opening/menu-builder.cjs");
+const {storyEntries} = require("../src/runtime/story_entries");
 const { POINTS } = require("./opening/timepoint-slider.cjs");
 function source(root) {
   const read = (f) => fs.readFileSync(path.join(root, f), "utf8");
@@ -25,6 +26,7 @@ function source(root) {
     "module.exports=" +
     JSON.stringify({
       greetings,
+      embeddedManagedEntries:storyEntries(JSON.parse(read("src/config/node_stories.json")),JSON.parse(read("src/config/character_stages.json")).characters),
       characterProfiles: JSON.parse(read("src/config/character_stages.json")).characters,
       assets,
       openingMenu: buildMenuHtml({

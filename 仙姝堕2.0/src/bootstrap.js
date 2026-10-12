@@ -6,7 +6,7 @@ const { mountHUD } = require("./ui/status_panel");
 const CARD_NAME = "仙姝堕2.0·框架测试";
 function start(win) {
   const topWin = (win && win.top) || (win && win.parent) || win;
-  const host = createTavernHost(win, topWin.document, CARD_NAME),
+  const host = createTavernHost(win, topWin.document, CARD_NAME, data.embeddedManagedEntries),
     doc = host.top.document || topWin.document || win.document;
   host.top.XSD2?.dispose?.();
   const runtime = createDispatcher(host, data);
