@@ -63,7 +63,7 @@
         "character": "叶红缨",
         "key": "好感度",
         "op": "gte",
-        "value": 41
+        "value": 40
       }
     ],
     "entryId": "yhrZwEnter1",
@@ -87,7 +87,7 @@
         "character": "叶红缨",
         "key": "好感度",
         "op": "gte",
-        "value": 41
+        "value": 40
       }
     ],
     "entryId": "yhrRogueEnter2",
