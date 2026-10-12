@@ -12,7 +12,9 @@ function mountPromotion(slot,runtime,plugin) {
     for(const row of plugin.list(s)) {
       const el=doc.createElement("section");
       const score=s.stat_data.character_metrics?.[row.cfg.character]?.好感度 ?? 0;
-      el.innerHTML='<strong>'+esc(row.cfg.character)+'</strong><p>好感度 '+esc(score)+' · '+esc(row.phase === row.cfg.toStage ? '阶段二' : '阶段一')+'</p>';
+      const phaseMap = { stage01: "通常", stage02: "阶段一", stage03: "阶段二", stage04: "阶段三", stage05: "阶段四" };
+      const phaseLabel = phaseMap[row.phase] || (row.phase === row.cfg.toStage ? '已完成' : '未解锁');
+      el.innerHTML='<strong>'+esc(row.cfg.character)+'</strong><p>好感度 '+esc(score)+' · '+esc(phaseLabel)+'</p>';
       function button(label,id){
         const b=doc.createElement("button");b.textContent=label;b.type="button";b.dataset.promotionNode=id;
         b.disabled=!!s.pending;
@@ -30,7 +32,11 @@ function mountPromotion(slot,runtime,plugin) {
         button("完成本次拜访",row.cfg.finishId);button("结束本次拜访",row.cfg.leaveId);
         if(row.lastResult === "invalid") el.append(doc.createTextNode("尚未收到有效结算回报，可以再次点击完成。"));
       }else if(row.allowed)button(row.cfg.label,row.cfg.entryId);
-      else if(row.phase !== row.cfg.toStage)el.append(doc.createTextNode(s.activeEvent ? "当前事件结束后再查看。" : "好感度达到20后开放。"));
+      else if(row.phase !== row.cfg.toStage){
+        const reqMetric = row.cfg.conditions?.find(c => c.kind === "metric");
+        const reqScore = reqMetric?.value ?? 20;
+        el.append(doc.createTextNode(s.activeEvent ? "当前事件结束后再查看。" : "好感度达到"+reqScore+"后开放。"));
+      }
       else el.append(doc.createTextNode("本段专属剧情已完成。"));
       body.append(el);
     }

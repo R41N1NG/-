@@ -67,8 +67,41 @@ function createPromotionPlugin(definitions) {
     return "【当前专属故事】"+cfg.label+"。承接已有历史及当前实际地点，沿用"+cfg.character+"原阶段设定。入口已开启，不反复重演敲门/入场，让玩家自由行动。人物阶段尚未晋升，等待玩家点击完成。正文出现结果或节点名称不会自动结算，不自动切换其他事件，不自行跳日。";
   }
   const plugin = {id:PLUGIN_ID,version:"1.0",select,settle,getPrompt,getDisplayText,
-    list(s) { return defs.map(([id,cfg])=>({id,cfg,phase:stage(s,cfg),active:s.activeEvent?.pluginId === PLUGIN_ID && state(s).currentId === id,
-      allowed:available(s,{id,cfg,kind:"enter"}),lastResult:state(s).lastResult})); },
+    list(s) {
+      const currentIdent = s.identity || s.stat_data?.身份;
+      const filtered = defs.filter(([_, cfg]) => {
+        const identCond = cfg.conditions?.find(c => c.kind === "identity");
+        return !identCond || identCond.value === currentIdent;
+      });
+      const byChar = new Map();
+      for (const [id, cfg] of filtered) {
+        const char = cfg.character;
+        const curStage = stage(s, cfg);
+        const isActive = s.activeEvent?.pluginId === PLUGIN_ID && state(s).currentId === id;
+        const isCurrent = cfg.fromStage === curStage;
+        const isPast = cfg.toStage === curStage;
+        if (!byChar.has(char)) {
+          byChar.set(char, { id, cfg, isActive, isCurrent, isPast });
+        } else {
+          const prev = byChar.get(char);
+          if (isActive) {
+            byChar.set(char, { id, cfg, isActive, isCurrent, isPast });
+          } else if (!prev.isActive && isCurrent) {
+            byChar.set(char, { id, cfg, isActive, isCurrent, isPast });
+          } else if (!prev.isActive && !prev.isCurrent && isPast) {
+            byChar.set(char, { id, cfg, isActive, isCurrent, isPast });
+          }
+        }
+      }
+      return [...byChar.values()].map(({ id, cfg }) => ({
+        id,
+        cfg,
+        phase: stage(s, cfg),
+        active: s.activeEvent?.pluginId === PLUGIN_ID && state(s).currentId === id,
+        allowed: available(s, { id, cfg, kind: "enter" }),
+        lastResult: state(s).lastResult,
+      }));
+    },
     mount(slot,runtime) {return mountPromotion(slot,runtime,plugin);},
   };
   return plugin;

@@ -6,7 +6,7 @@ function meets(s, conditions = []) {
     if (c.kind === "metric") value = s.stat_data?.character_metrics?.[c.character]?.[c.key];
     else if (c.kind === "stage") value = s.stat_data?.character_stages?.[c.character]?.id;
     else if (c.kind === "known") value = s.known?.[c.key] ?? s.stat_data?.known?.[c.key];
-    else if (c.kind === "identity") value = s.identity;
+    else if (c.kind === "identity") value = s.identity || s.stat_data?.身份;
     else if (c.kind === "item") value = (s.inventory || s.stat_data?.inventory || []).filter(x=>x.name === c.key).reduce((n,x)=>n+x.count,0);
     else throw Error("未知条件类型");
     if (value === undefined || value === null) return false;

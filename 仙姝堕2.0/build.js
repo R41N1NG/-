@@ -238,16 +238,24 @@ function build() {
     },
   };
   const card = JSON.parse(JSON.stringify({ spec: "chara_card_v2", spec_version: "2.0", data: body }));
-  fs.mkdirSync(OUT, { recursive: true });
   fs.mkdirSync(DIST, { recursive: true });
-  fs.writeFileSync(
-    path.join(OUT, NAME + ".json"),
-    JSON.stringify(card, null, 2),
-  );
   const image = png(card);
   if (JSON.stringify(unpack(image)) !== JSON.stringify(card))
     throw Error("PNG回读不一致");
-  fs.writeFileSync(path.join(OUT, NAME + ".png"), image);
+  // 交付目录纯净规范（铁律 30）：额外交付一份到 E:\角色卡制作\仙姝堕2.0\最新角色卡，且文件夹内只保留一份最新的png和json
+  const extraOut = path.resolve("E:/角色卡制作/仙姝堕2.0/最新角色卡");
+  const targetDirs = new Set([OUT]);
+  if (fs.existsSync(path.dirname(extraOut))) targetDirs.add(extraOut);
+  for (const dir of targetDirs) {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, NAME + ".json"), JSON.stringify(card, null, 2));
+    fs.writeFileSync(path.join(dir, NAME + ".png"), image);
+    for (const file of fs.readdirSync(dir)) {
+      if (file !== NAME + ".json" && file !== NAME + ".png") {
+        try { fs.unlinkSync(path.join(dir, file)); } catch (_) {}
+      }
+    }
+  }
   fs.writeFileSync(path.join(DIST, NAME + "-v17.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),

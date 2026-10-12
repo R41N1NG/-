@@ -28,7 +28,9 @@ function resolveStages(s, profiles = {}) {
     const completed = s.stat_data.completed_character_stages?.[name] || initial;
     const stage = cfg.stages.find(x=>x.id === completed);
     if (!stage) throw Error("已完成人物阶段不在配置中");
-    resolved[name] = {id:stage.id, priority:stage.priority, story:stage.story || "", portrait:stage.portrait || null, nodes:stage.nodes || [], replaces:cfg.replaces || []};
+    const ident = s.stat_data?.身份 || s.identity;
+    const story = (stage.stories && ident ? stage.stories[ident] : null) || stage.story || "";
+    resolved[name] = {id:stage.id, priority:stage.priority, story, portrait:stage.portrait || null, nodes:stage.nodes || [], replaces:cfg.replaces || []};
   }
   s.stat_data.character_stages = resolved;
   return s;

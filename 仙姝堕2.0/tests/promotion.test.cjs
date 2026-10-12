@@ -72,19 +72,45 @@ test("回报解析限单项与本轮标识，思考/内心标签里的回报不�
   assert.equal(resultTag('<details>'+tag+'</details>',code),null);
 });
 
-test("晋升前后条目开关一致：关闭原心智，阶段一转二，基础人物资料不变",async()=>{
+test("晋升前后条目开关一致：基础心智常驻，阶段分身份互斥开启，基础资料不变",async()=>{
   const {storyEntries}=require("../src/runtime/story_entries"),{createWorldbookHost}=require("../src/host/worldbook");
+  const testData=require("../tools/data.cjs").load(require("node:path").join(__dirname,".."));
   let entries=[{uid:1,name:"【人物】叶红缨",content:"基础资料",enabled:true},{uid:2,name:"叶红缨 (心智姿态)",content:"原心智",enabled:true},
-    ...storyEntries(require("../src/config/node_stories.json"),data.characterProfiles,100).map(x=>({...x,name:x.comment,enabled:false}))];
+    ...storyEntries(require("../src/config/node_stories.json"),testData.characterProfiles,100).map(x=>({...x,name:x.comment,enabled:false}))];
   const host=createWorldbookHost({getCharWorldbookNames:async()=>({primary:"测试书"}),getWorldbook:async()=>entries,replaceWorldbook:async(_,rows)=>{entries=rows;}},()=>({}));
   const h=fixture();await h.ready();await h.click("yhrNight");
   await host.synchronizeState(h.r.getSnapshot().stat_data);
-  assert.equal(entries.find(x=>x.name==="叶红缨 (心智姿态)").enabled,false);
-  assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage01").enabled,true);
-  assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage02").enabled,false);
+  assert.equal(entries.find(x=>x.name==="叶红缨 (心智姿态)").enabled,true);
+  assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage02:赵无忧").enabled,false);
   await h.reply("夜访继续。");await h.click("yhrFinish");await h.reply(h.report("是"));
   await host.synchronizeState(h.r.getSnapshot().stat_data);
-  assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage01").enabled,false);
-  assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage02").enabled,true);
+  assert.equal(entries.find(x=>x.name==="叶红缨 (心智姿态)").enabled,true);
+  assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage02:赵无忧").enabled,true);
+  assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage02:自设").enabled,false);
   assert.equal(entries.find(x=>x.name==="【人物】叶红缨").enabled,true);
 });
+
+test("自设散修专属晋升：只显示自设节点，完成后点亮自设阶段条目",async()=>{
+  const {storyEntries}=require("../src/runtime/story_entries"),{createWorldbookHost}=require("../src/host/worldbook");
+  const testData=require("../tools/data.cjs").load(require("node:path").join(__dirname,".."));
+  let entries=[{uid:1,name:"【人物】叶红缨",content:"基础资料",enabled:true},{uid:2,name:"叶红缨 (心智姿态)",content:"原心智",enabled:true},
+    ...storyEntries(require("../src/config/node_stories.json"),testData.characterProfiles,100).map(x=>({...x,name:x.comment,enabled:false}))];
+  const host=createWorldbookHost({getCharWorldbookNames:async()=>({primary:"测试书"}),getWorldbook:async()=>entries,replaceWorldbook:async(_,rows)=>{entries=rows;}},()=>({}));
+  const h=fixture();
+  await h.r.dispatchIntent({type:"SELECT_IDENTITY",payload:{identity:"自设",custom:{date:{year:1577,month:7,day:1},name:"云游散修",realm:"化神前期"}}});
+  await h.r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"叶红缨",key:"好感度",value:20}});
+  const list = h.plugin.list(h.r.getSnapshot());
+  assert.equal(list.some(x=>x.cfg.entryId === "yhrNight"), false);
+  assert.equal(list.some(x=>x.cfg.entryId === "yhrRogueEnter1"), true);
+  await h.click("yhrRogueEnter1");
+  assert.match(h.prompts.at(-1),/金丹前期妖兽/);
+  await h.reply("妖兽袭来，叶红缨御火轰击。");
+  await h.click("yhrRogueFinish1");
+  await h.reply(h.report("是"));
+  assert.equal(h.stage(),"stage02");
+  await host.synchronizeState(h.r.getSnapshot().stat_data);
+  assert.equal(entries.find(x=>x.name==="叶红缨 (心智姿态)").enabled,true);
+  assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage02:自设").enabled,true);
+  assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage02:赵无忧").enabled,false);
+});
+

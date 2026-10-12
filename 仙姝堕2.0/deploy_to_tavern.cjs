@@ -12,17 +12,21 @@ function deploy() {
   for (const dir of ["characters", "worlds"])
     if (!fs.statSync(path.join(root, dir)).isDirectory())
       throw Error("部署目录必须是现有酒馆用户目录");
+  const charDir = path.join(root, "characters");
+  const matchingCards = fs.readdirSync(charDir)
+    .filter(f => new RegExp(`^${name}(?:\\d+)?\\.png$`).test(f));
+  if (!matchingCards.includes(name + ".png")) matchingCards.push(name + ".png");
   const files = [
-      [
-        path.join(__dirname, "最新角色卡", name + ".png"),
-        path.join(root, "characters", name + ".png"),
-      ],
-      [
-        path.join(__dirname, "dist", name + "-世界书.json"),
-        path.join(root, "worlds", name + ".json"),
-      ],
+    ...matchingCards.map(f => [
+      path.join(__dirname, "最新角色卡", name + ".png"),
+      path.join(charDir, f),
+    ]),
+    [
+      path.join(__dirname, "dist", name + "-世界书.json"),
+      path.join(root, "worlds", name + ".json"),
     ],
-    stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  ];
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   for (const [src, dst] of files) {
     if (fs.existsSync(dst)) {
       const backup = path.join(root, "backups", "xsd2", stamp);

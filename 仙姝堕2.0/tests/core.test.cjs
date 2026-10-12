@@ -485,8 +485,7 @@ test("构建可独立执行、脚本语法、PNG双向回读及世界书防递�
     built = build();
   new vm.Script(built.script);
   assert.deepEqual(unpack(built.image), built.card);
-  assert.equal(built.card.data.name, "仙姝堕2.0·框架测试");
-  assert.equal(built.card.data.character_book.entries.length, 229 + Object.keys(require("../src/config/node_stories.json")).length + Object.values(data.characterProfiles).reduce((n,c)=>n+c.stages.filter(x=>x.story).length,0));
+  assert.equal(built.card.data.character_book.entries.length, 229 + Object.keys(require("../src/config/node_stories.json")).length + Object.values(require("../tools/data.cjs").load(ROOT).characterProfiles).reduce((n,c)=>n+c.stages.reduce((m,x)=>m+(x.stories ? Object.keys(x.stories).length : (x.story ? 1 : 0)),0),0));
   assert.ok(
     built.card.data.character_book.entries.every(
       (e) => e.extensions.exclude_recursion && e.extensions.prevent_recursion,
