@@ -227,7 +227,7 @@ function mount(slotElement, runtimeApi) {
   const triggerBtn = doc.createElement("button");
   triggerBtn.type = "button";
   triggerBtn.className = "xsd2-map-trigger-btn";
-  triggerBtn.textContent = "🗺️ 幽寂谷地图";
+  triggerBtn.textContent = "🗺️ 南疆地图";
   triggerBtn.style.cssText = [
     "padding:2px 8px",
     "background:linear-gradient(180deg, #2a2219 0%, #15100b 100%)",
@@ -307,7 +307,7 @@ function mount(slotElement, runtimeApi) {
     const dateText = snapshot.calendarDate
       ? `仙盟历 ${snapshot.calendarDate.year}年 ${snapshot.calendarDate.month}月 ${snapshot.calendarDate.day}日`
       : "";
-    title.innerHTML = `<span style="font-weight:bold;color:#f3e6cf;font-size:14px;">📍 南疆全域 · 幽寂谷秘境</span> <span style="font-size:11px;color:#9b8769;margin-left:8px;">${dateText}</span>`;
+    title.innerHTML = `<span style="font-weight:bold;color:#f3e6cf;font-size:14px;">📍 南疆全域 · 地图</span> <span style="font-size:11px;color:#9b8769;margin-left:8px;">${dateText}</span>`;
 
     const closeBtn = doc.createElement("button");
     closeBtn.type = "button";

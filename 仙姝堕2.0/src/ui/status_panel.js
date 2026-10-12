@@ -3,6 +3,7 @@ const { esc, modal } = require("./dom");
 const { mountOpening } = require("./opening_menu");
 const { openGM } = require("./gm_panel");
 const { dateText } = require("../runtime/contracts");
+const { describeItem } = require("../runtime/item_catalog");
 const PALETTE = {
   background: "#171e1c",
   foreground: "#eee9d9",
@@ -146,10 +147,10 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
           (i) =>
             '<button data-item="' +
             esc(i.id || i.name) +
-            '">' +
+            '" title="' + esc(describeItem(i).description + "\n" + describeItem(i).effect) + '">' +
             esc(i.name) +
             " × " +
-            i.count +
+            i.count + " · " + (describeItem(i).consumable ? "消耗品" : "非消耗品") +
             "</button>",
         )
         .join("") || "暂无物品") +

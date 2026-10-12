@@ -1,4 +1,5 @@
 "use strict";
+const { describeItem } = require("./item_catalog");
 // Starting balances reported for migration in cooperation.txt (2026-10-11
 // 22:30). The four granted techniques are checked against the 2.0 greetings.
 // Applied once on a new opening; never backfill an existing saved inventory.
@@ -11,7 +12,7 @@ const STARTING = {
   魂欢殿主: [["天姝令", 1], ["《情丝化灵录》", 1]],
 };
 function startingInventoryFor(identity) {
-  return (STARTING[identity] || []).map(([name, count]) => ({
+  return (STARTING[identity] || []).map(([name, count]) => describeItem({
     id: name, name, count, source: "opening",
   }));
 }

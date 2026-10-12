@@ -758,3 +758,54 @@ test("新开局起手行囊与保存余额隔离：六身份配置，重载不�
   assert.equal(h.r.getSnapshot().inventory.find(x => x.name === "醉春风").count, 1);
   assert.ok(!h.r.getSnapshot().inventory.some(x => x.name === "草药"));
 });
+
+
+test("消耗品使用自动扣一，最后一份移除，模型重复扣减及重生成不叠加", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  const use = () => h.r.dispatchIntent({type:"USE_ITEM",payload:{id:"醉春风"}});
+  await use();
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count, 1);
+  assert.ok(h.prompts.at(-1).includes("物品介绍：酒"));
+  assert.ok(h.prompts.at(-1).includes("后台已经扣除1份"));
+  await h.reply(status({纳戒:"消耗：醉春风×1"}, "你喝下醉春风。"));
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count, 1);
+  h.c.chat.at(-1).swipe_id = 1;
+  h.c.chat.at(-1).mes = status({纳戒:"消耗：醉春风×1"}, "你慢慢饮用。" );
+  await h.r.replay();
+  await h.r.settleStory();
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count, 1);
+  await use();
+  assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="醉春风"));
+  await h.reply(status({}, "你收好空酒器。"));
+  await assert.rejects(use(), /物品不在/);
+});
+
+test("非消耗物品使用不扣数，说明和效果明确注入，模型消耗申报不改数量", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  await h.r.dispatchIntent({type:"GM_PATCH",payload:{inventory:[{id:"图",name:"幽寂谷地图",count:1,consumable:false,description:"谷内路线残图",effect:"只用于阅读谷内路线"}]}});
+  await h.r.dispatchIntent({type:"USE_ITEM",payload:{id:"图"}});
+  assert.ok(h.prompts.at(-1).includes("谷内路线残图"));
+  assert.ok(h.prompts.at(-1).includes("只用于阅读谷内路线"));
+  assert.ok(h.prompts.at(-1).includes("本次使用不扣数量"));
+  await h.reply(status({纳戒:"消耗：幽寂谷地图×1"}, "你使用幽寂谷地图。"));
+  assert.equal(h.r.getSnapshot().inventory[0].count, 1);
+  assert.equal(h.r.getSnapshot().stat_data.纳戒, "使用：幽寂谷地图×1");
+});
+
+test("消耗品发送失败/停止删楼一起恢复数量，旧库存补类型不补领数量", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  h.fail(true);
+  await assert.rejects(h.r.dispatchIntent({type:"USE_ITEM",payload:{id:"醉春风"}}), /send failed/);
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count, 2);
+  h.fail(false);
+  await h.r.dispatchIntent({type:"USE_ITEM",payload:{id:"醉春风"}});
+  await h.r.stop();
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count, 2);
+  h.c.chat.pop();
+  await h.r.restore();
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count, 2);
+  assert.equal(h.r.getSnapshot().pending, null);
+});

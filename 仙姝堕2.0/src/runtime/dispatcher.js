@@ -1,5 +1,6 @@
 "use strict";
 const C = require("./contracts");
+const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
 function createDispatcher(adapter, data) {
@@ -95,6 +96,7 @@ function createDispatcher(adapter, data) {
   }
   function normalize(s) {
     C.assertDate(s.calendarDate);
+    s.stat_data.inventory = (s.stat_data.inventory || []).map(describeItem);
     s.stat_data.纳戒 = (s.inventoryChanges || [])
       .map(x => x.action + "：" + x.name + "×" + x.count).join("｜") || "无";
     s.stat_data.身份 = s.identity;
@@ -260,13 +262,14 @@ function createDispatcher(adapter, data) {
   }
   function updatePrompt() {
     const p = current?.pending;
-    const plugin = p
+    const plugin = p && p.kind !== "item"
       ? plugins.get(p.pluginId)
       : current?.activeEvent
         ? plugins.get(current.activeEvent.pluginId)
         : null;
     const text = p ? (p.actionCode ? "本轮内部节点指令：" + p.actionCode +
-      "；玩家显示行动：" + p.displayText + "；含义：" + p.actionText + "。\n" : "") + p.prompt
+      "；玩家显示行动：" + p.displayText + "；含义：" + p.actionText + "。\n" : "") + p.prompt +
+      (p.kind === "item" && plugin ? "\n" + plugin.getPrompt?.(snapshot()) : "")
       : plugin?.getPrompt?.(snapshot()) || "";
     const st = current?.stat_data;
     const baseline = current
@@ -467,7 +470,7 @@ function createDispatcher(adapter, data) {
     );
   }
   function applyInventory(s, parsed) {
-    const changes = s.manual.inventory ? [] : (s.reconciledInventoryChanges || []);
+    const changes = s.manual.inventory && !(s.reconciledUse && !s.reconciledUse.consumable) ? [] : (s.reconciledInventoryChanges || []);
     delete s.reconciledInventoryChanges;
     if (s.manual.inventory) return changes;
     for (const part of String(parsed.fields.纳戒 || "").split(/[｜|；;]/)) {
@@ -487,6 +490,11 @@ function createDispatcher(adapter, data) {
         (reward === name || (s.reconciledRewardAliases?.[reward] || []).some(alias => name.includes(alias))) &&
         s.stat_data.inventory.some(item => item.name === reward));
       if (gain && granted) continue;
+      if (!gain && s.reconciledUse && (name === s.reconciledUse.name ||
+        (s.reconciledUse.aliases || []).some(alias => name.includes(alias)))) continue;
+      const existing = s.stat_data.inventory.find(x => x.name === name);
+      if (!gain && existing && !describeItem(existing).consumable &&
+        !parsed.prose.split(/[。！？\n，,；;]/).some(line => line.includes(name) && !C.noFact.test(line) && /送给|赠给|丢掉|夺走|损毁|销毁|焚毁/.test(line))) continue;
       const proof = parsed.prose.split(/[。！？\n]/).some(
         (line) =>
           line.includes(name) &&
@@ -564,6 +572,7 @@ function createDispatcher(adapter, data) {
     delete s.suppressClock;
     delete s.reconciledRewards;
     delete s.reconciledRewardAliases;
+    delete s.reconciledUse;
     // Model time/identity and inventory dumps are display reports, never authoritative mutations.
     const statements = parsed.actions;
     for (const f of R.FIELD_TABLE) {
@@ -715,6 +724,12 @@ function createDispatcher(adapter, data) {
         allowInventory = false;
         s.lastNodeResult = { nodeId:p.nodeId, floor:c.floor, outcome:"failure",
           reason:"行动后的用户消息与授权行动不匹配", evidenceMode:null };
+      } else if (p.kind === "item") {
+        s.reconciledUse = C.clone(p.item);
+        s.reconciledInventoryChanges = C.clone(s.inventoryChanges || []);
+        s.itemUseReceipts ||= {};
+        s.itemUseReceipts[p.id] = {name:p.item.name, consumable:p.item.consumable, floor:c.floor};
+        s.pending = null;
       } else {
         const plugin = plugins.get(p.pluginId);
         if (!plugin) throw Error("活动事件插件尚未加载");
@@ -890,8 +905,29 @@ function createDispatcher(adapter, data) {
             (x) => x.id === intent.payload.id || x.name === intent.payload.id,
           );
           if (!item) throw Error("物品不在纳戒");
+          const meta = describeItem(item);
+          if (!Number.isSafeInteger(meta.count) || meta.count < 1) throw Error("物品数量无效");
+          if (meta.consumable && current.manual.inventory)
+            throw Error("纳戒处于人工覆盖，请先交还自动再消耗物品");
           adapter.preflightSend?.();
-          await adapter.send("使用" + item.name);
+          const before = C.clone(current), next = C.clone(current);
+          if (meta.consumable) {
+            const target = next.stat_data.inventory.find(x => x.id === item.id && x.name === item.name);
+            target.count--;
+            next.stat_data.inventory = next.stat_data.inventory.filter(x => x.count > 0);
+          }
+          next.inventoryChanges = [{action:meta.consumable ? "消耗" : "使用", name:meta.name, count:1}];
+          next.pending = {id:c.chatId+":item:"+c.floor+":"+current.revision+":"+ ++serial,
+            kind:"item", floor:c.floor, actionText:"使用"+meta.name, item:meta, selection:{}, before,
+            prompt:itemUsePrompt(meta, meta.count - (meta.consumable ? 1 : 0))};
+          await commit(c, next, "item_use");
+          guard(c);
+          try { await adapter.send(next.pending.actionText); }
+          catch(error) {
+            const now = context();
+            if (token(now) === token(c)) await commit(now,before,"rollback");
+            throw error;
+          }
           return snapshot();
         }
         default:

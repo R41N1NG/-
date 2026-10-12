@@ -1,5 +1,6 @@
 "use strict";
 const { esc, modal } = require("./dom");
+const { describeItem } = require("../runtime/item_catalog");
 function openGM(doc, runtime, data, report) {
   const s = runtime.getSnapshot();
   if (!s) return;
@@ -24,8 +25,8 @@ function openGM(doc, runtime, data, report) {
     s.calendarDate.day +
     '"></label><label>段位<input name="rank" type="number" min="1" max="16" value="' +
     s.stat_data.段位 +
-    '"></label><label>纳戒物品（每行：名称 | 数量）<textarea name="items">' +
-    esc(s.inventory.map((x) => x.name + " | " + x.count).join("\n")) +
+    '"></label><label>纳戒物品（每行：名称 | 数量 | 消耗品或非消耗品 | 介绍 | 效果）<textarea name="items">' +
+    esc(s.inventory.map((item) => { const x = describeItem(item); return [x.name,x.count,x.consumable ? "消耗品" : "非消耗品",x.description,x.effect].join(" | "); }).join("\n")) +
     "</textarea></label><details><summary>名器阶段与归属</summary>" +
     Object.entries(R.RELIC_PILOT_CONFIG)
       .map(
@@ -109,11 +110,14 @@ function openGM(doc, runtime, data, report) {
         .split("\n")
         .filter((x) => x.trim())
         .map((line) => {
-          const [name, count = "1"] = line.split("|").map((x) => x.trim());
+          const [name, count = "1", type, description, effect] = line.split("|").map((x) => x.trim());
           const old = s.inventory.find((x) => x.name === name);
-          return { ...old, id: old?.id || name, name, count: Number(count) };
+          if (type && !["消耗品","非消耗品"].includes(type)) throw Error("物品类型须填消耗品或非消耗品");
+          return { ...old, id: old?.id || name, name, count: Number(count),
+            ...(type ? {consumable:type === "消耗品"} : {}),
+            ...(description !== undefined ? {description} : {}), ...(effect !== undefined ? {effect} : {}) };
         });
-      if (JSON.stringify(items) !== JSON.stringify(s.inventory))
+      if (JSON.stringify(items.map(describeItem)) !== JSON.stringify(s.inventory.map(describeItem)))
         patch.inventory = items;
       for (const k of R.ALL_FIELDS) {
         const v = f.has("known:" + k);
