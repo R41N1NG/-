@@ -75,7 +75,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     for (const p of plugins) p();
     plugins = [];
     const s = runtime.getSnapshot();
-    renderSettlement(doc,settlement,s);
+    renderSettlement(doc,settlement,s,options.settlementEffects);
     if (!s) {
       root.className = "xsd2-opening-root";
       const view = runtime.getOpeningView?.() || {

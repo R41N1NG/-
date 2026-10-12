@@ -397,6 +397,7 @@ test("打包人物入口：好感阈值只解锁，按钮发送代码，完成�
     h.doc.querySelector('[data-promotion-node="yhrFinish"]').click();await until(()=>h.sends.length===2);
     const code=r.getSnapshot().pending.actionCode,finishFloor=h.context.chat.length;
     h.context.chat.push({mes:'<Promotion_result id="'+code+'">是</Promotion_result>',is_user:false,swipe_id:0,variables:[{}]});h.appendDOM(finishFloor);
+    await until(()=>h.doc.querySelector('[mesid="'+finishFloor+'"] .mes_text').classList.contains("xsd2-settlement-obscured"));
     await h.emit("GENERATION_ENDED");
     assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,"stage02");
     assert.ok(!h.context.chat.at(-1).mes.includes("Promotion_result"));

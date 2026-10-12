@@ -8,6 +8,7 @@ const tests = spawnSync(
     "--test",
     "tests/core.test.cjs",
     "tests/templates.test.cjs",
+    "tests/settlement_effects.test.cjs",
     "tests/promotion.test.cjs",
     "tests/ui.test.cjs",
     "tests/opening_host.test.cjs",

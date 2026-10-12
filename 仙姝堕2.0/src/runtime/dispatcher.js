@@ -803,6 +803,15 @@ function createDispatcher(adapter, data) {
         date:C.clone(s.calendarDate), rewards:C.clone(eventReceipt?.rewards || s.receipts[p.id]?.rewards || []),
         facts:C.clone(eventReceipt?.summaryLog || []), exitType:eventReceipt?.exitType || ""};
     }
+    if (p?.selection?.completionQuery && s.lastNodeResult?.evidenceMode === "PROMOTION_RESULT") {
+      const receipt=s.pluginState[p.pluginId]?.receipt;
+      if(receipt?.id === p.id) {
+        s.settlements ||= {};
+        s.settlements[p.id]={id:p.id,floor:c.floor,title:(p.selection.character || "人物")+" · 缘事已记",mode:"separate",kind:"promotion",
+          answer:receipt.answer,stage:s.stat_data.completed_character_stages?.[p.selection.character] || p.selection.stageGrant.from,
+          action:p.displayText,elapsedDays:0,date:C.clone(s.calendarDate),rewards:[],facts:["达成条件："+p.selection.completionQuery]};
+      }
+    }
     manual(s);
     const fixed = C.canonicalStatus(body, s, confirmedPlace);
     if (fixed !== m.mes) {

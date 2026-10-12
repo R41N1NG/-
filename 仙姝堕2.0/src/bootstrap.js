@@ -2,6 +2,7 @@
 const data = require("./generated-data");
 const { createDispatcher } = require("./runtime/dispatcher");
 const { createTavernHost } = require("./host/tavern");
+const {createSettlementEffects} = require("./ui/settlement_effects");
 const { mountHUD } = require("./ui/status_panel");
 const CARD_NAME = "仙姝堕2.0·框架测试";
 function start(win) {
@@ -15,6 +16,7 @@ function start(win) {
     disposed = false,
     renderTimer = null,
     moDebounce = null;
+  const effects=createSettlementEffects(doc,()=>scheduleRender(0));
   const unsubs = [],
     plugins = [];
   runtime.uiPlugins = plugins;
@@ -27,6 +29,7 @@ function start(win) {
   async function render() {
     if (!active()) return;
     const epoch = ++renderEpoch, c = host.context();
+    effects.update(runtime.getSnapshot(),c);
     const chat = doc.querySelector("#chat");
     const rows = [...(chat?.querySelectorAll(".mes") || [])];
     const targets = [];
@@ -48,7 +51,7 @@ function start(win) {
       if (!s && !(floor === 0 && latest)) continue;
       const readOnly = !latest || host.isGenerating();
       const key = JSON.stringify([c.chatId, m.swipe_id || 0, s, readOnly,
-        !s ? runtime.getOpeningView() : null, plugins.map(x => x.id)]);
+        !s ? runtime.getOpeningView() : null, plugins.map(x => x.id), effects.revision]);
       targets.push({floor, body, s, readOnly, key});
     }
     if (epoch !== renderEpoch || !active()) return;
@@ -74,7 +77,7 @@ function start(win) {
       view.dispatchIntent = intent => target.readOnly
         ? Promise.reject(Error("历史状态仅供查看，请在最新回复中行动"))
         : runtime.dispatchIntent(intent);
-      const panel = mountHUD(doc, el, view, data, report, {readOnly:target.readOnly});
+      const panel = mountHUD(doc, el, view, data, report, {readOnly:target.readOnly,settlementEffects:effects});
       huds.set(target.floor, {el, hud:panel, key:target.key, target});
     }
   }
@@ -89,7 +92,7 @@ function start(win) {
   }
   async function settle() {
     if (!active()) return;
-    await runtime.settleStory();
+    try { await runtime.settleStory(); } catch(error) {effects.reset();throw error;}
     await mirror();
     await render();
   }
@@ -107,7 +110,7 @@ function start(win) {
       host.on(name, (...args) => Promise.resolve(fn(...args)).catch(report)),
     );
   }
-  on("CHAT_CHANGED", restore);
+  on("CHAT_CHANGED", ()=>{effects.reset();return restore();});
   on("MESSAGE_DELETED", restore);
   on("MESSAGE_SWIPED", async () => {
     host.markAborted(false);
@@ -174,6 +177,8 @@ function start(win) {
   if (typeof Win.MutationObserver !== "undefined") {
     mo = new Win.MutationObserver(() => {
       if (!active()) return;
+      // Cover a newly inserted settlement reply before the next browser paint.
+      effects.update(runtime.getSnapshot(),host.context());
       clearTimeout(moDebounce);
       moDebounce = setTimeout(() => {
         if (!active()) return;
@@ -213,6 +218,7 @@ function start(win) {
     dispose() {
       if (disposed) return;
       disposed = true;
+      effects.dispose();
       mo?.disconnect();
       clearTimeout(renderTimer);
       clearTimeout(moDebounce);
