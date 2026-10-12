@@ -12,6 +12,13 @@ function createDispatcher(adapter, data) {
     data.metricEventDefinitions,
     data.characterProfiles || {},
   );
+  const areaBackgrounds = {
+    defs: Object.values(data.areaBackgroundDefinitions || {}),
+    lookup(location) {
+      const loc = String(location || "");
+      return this.defs.find((d) => d.matchPrefix && loc.startsWith(d.matchPrefix))?.area || "";
+    },
+  };
   let current = null,
     scopeChatId = null,
     disposed = false,
@@ -177,6 +184,7 @@ function createDispatcher(adapter, data) {
     guard(c);
     s.revision = (current?.revision || s.revision || 0) + 1;
     manual(s);
+    s.stat_data.active_area = areaBackgrounds.lookup(String(s.stat_data?.地点 || ""));
     const envelope = {
       schema: 2,
       chatId: c.chatId,

@@ -4,7 +4,7 @@ const fs = require("node:fs"),
   vm = require("node:vm"),
   zlib = require("node:zlib");
 const { source, load } = require("./tools/data.cjs");
-const {storyEntries, metricEntries} = require("./src/runtime/story_entries");
+const {storyEntries, metricEntries, areaEntries} = require("./src/runtime/story_entries");
 const { evaluateGate } = require("./src/host/worldbook");
 const ROOT = __dirname,
   NAME = "仙姝堕2.0·框架测试",
@@ -141,6 +141,7 @@ function build() {
   const extra = storyEntries(JSON.parse(read("src/config/node_stories.json")),data.characterProfiles,Math.max(...entries.map(e=>e.uid))+1);
   entries.push(...extra);
   entries.push(...metricEntries(JSON.parse(read("src/config/metric_events.json")),Math.max(...entries.map(e=>e.uid))+1));
+  entries.push(...areaEntries(JSON.parse(read("src/config/area_backgrounds.json")),Math.max(...entries.map(e=>e.uid))+1));
   const script = bundle(),
     characterBook = {
       name: NAME,
@@ -192,7 +193,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.18",
+    character_version: "2.0-framework.19",
     extensions: {
       world: NAME,
       tavern_helper: {
@@ -257,7 +258,7 @@ function build() {
       }
     }
   }
-  fs.writeFileSync(path.join(DIST, NAME + "-v18.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v19.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(

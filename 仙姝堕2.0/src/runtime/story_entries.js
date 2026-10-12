@@ -64,6 +64,27 @@ function storyEntries(catalog, profiles = {}, startId = 10000) {
   }
   return entries;
 }
+function areaEntries(defs = {}, startId = 12000) {
+  const entries = [];
+  for (const cfg of Object.values(defs)) {
+    if (!cfg.area || !cfg.background || !cfg.matchPrefix) continue;
+    entries.push({
+      uid: startId++,
+      comment: "【区域背景】" + cfg.area,
+      key: [],
+      keysecondary: [],
+      content: cfg.background,
+      constant: true,
+      selective: false,
+      disable: true,
+      order: 203,
+      position: 1,
+      excludeRecursion: true,
+      preventRecursion: true,
+    });
+  }
+  return entries;
+}
 function managedEnabled(label, stat) {
   if (label.startsWith("【节点故事】")) return label === nodeEntryName(stat.node_trigger);
   if (Object.values(stat.character_stages || {}).some(x=>(x.replaces || []).includes(label))) return false;
@@ -81,6 +102,10 @@ function managedEnabled(label, stat) {
     const visible = new Set([stat.身份,stat.stage_focus,...(stat.在场角色 || []).map(x=>x.名)]);
     return visible.has(character) && !!stat.character_metrics?.[character];
   }
+  if (label.startsWith("【区域背景】")) {
+    const area = label.slice("【区域背景】".length);
+    return stat.active_area === area;
+  }
   return null;
 }
-module.exports = {storyEntries,metricEntries,metricEntryContent,managedEnabled,nodeEntryName};
+module.exports = {storyEntries,metricEntries,metricEntryContent,areaEntries,managedEnabled,nodeEntryName};
