@@ -35,7 +35,8 @@ function fixture() {
     isAborted: () => abort,
     errors: [],
     report(error) { this.errors.push(error.message); },
-    setPrompt() {},
+    prompts: [],
+    setPrompt(text) { this.prompts.push(text); },
   };
   const r = createDispatcher(adapter, data);
   r.registerPlugin(plugin);
@@ -81,6 +82,7 @@ function fixture() {
     chat,
     sent,
     errors:adapter.errors,
+    prompts:adapter.prompts,
     click,
     reply,
     act,
@@ -360,5 +362,51 @@ test("已入包固定地图重复申报先去重：残图/地图称呼不误报�
     assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="幽寂谷地图").count, 1);
     assert.equal(h.r.getSnapshot().inventory.filter(x=>x.source===plugin.id).length, 1);
     assert.equal(plugin.select(h.r.getSnapshot(), "b8n2").allowed, false);
+  }
+});
+
+
+test("统一正文范围模板：入谷提示两条真实分流，洞府关闭机关不再邀请，秘密前置与期限过滤", async () => {
+  const h = fixture();
+  await h.ready();
+  await h.click("g7p2");
+  let prompt = h.prompts.at(-1);
+  assert.ok(prompt.includes("一条小径通往洞府"));
+  assert.ok(prompt.includes("另一条沿溪深入山涧"));
+  assert.ok(prompt.includes("不能替玩家进入"));
+  assert.ok(prompt.includes("不得另造、替换或增加分流路线"));
+  assert.ok(!prompt.includes("固定节点结果已入账"));
+  await h.reply("山风吹过。");
+  await h.act("k4m8", "洞内寂静。");
+  await h.click("q3f7");
+  prompt = h.prompts.at(-1);
+  const options = prompt.split("当前可供玩家选择的行动或路线：")[1].split("。\n")[0];
+  assert.ok(options.includes("离开洞府"));
+  assert.ok(!options.includes("香炉"));
+  assert.ok(!options.includes("暗格"));
+  await h.reply("残图入手。", {纳戒:"获得：残图×1"});
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="幽寂谷地图").count, 1);
+  const blocked = {...h.r.getSnapshot(), pluginState:{[plugin.id]:{...h.r.getSnapshot().pluginState[plugin.id],step:"second",known:{}}},known:{map_youjigu:false},stat_data:{known:{map_youjigu:false}}};
+  assert.ok(!plugin.getPrompt(blocked).includes("前往密室"));
+});
+
+
+test("末段奖励完成后提前离开消失且后台拒绝旧入口，未完成仍可提前走", async () => {
+  for (const rewardId of ["n5z8","p1x6","t6v4"]) {
+    const h = fixture();
+    await h.ready();
+    await h.act("g7p2", "谷口风起。");
+    await h.act("k4m8", "洞内寂静。");
+    await h.act("q3f7", "残图入手。");
+    await h.act("h5w9", "继续深入。");
+    await h.act(rewardId === "n5z8" ? "u9h3" : "v4t7", "来到此处。");
+    assert.equal(plugin.select(h.r.getSnapshot(),"z8u5").allowed, true);
+    await h.act(rewardId, "收好物品。");
+    const s = h.r.getSnapshot();
+    assert.ok(!tree.getAvailableOptions(s.pluginState[plugin.id],s.storyCount).some(x=>x.id==="z8u5"));
+    assert.equal(plugin.select(s,"z8u5").allowed, false);
+    assert.equal(plugin.select(s,rewardId === "n5z8" ? "l7q2" : "e3j9").allowed, true);
+    assert.ok(!h.prompts.at(-1).split("当前可供玩家选择的行动或路线：")[1].split("。\n")[0].includes("提前离开"));
+    await assert.rejects(h.click("z8u5"), /探索已完成/);
   }
 });

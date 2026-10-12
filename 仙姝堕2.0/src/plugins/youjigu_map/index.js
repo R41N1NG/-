@@ -25,6 +25,7 @@ const {
 
 
 const { MAP_IMAGE_DATA } = require("./map_asset");
+const { buildNarrativeScope } = require("../../runtime/narrative_scope");
 
 const PLUGIN_ID = "youjigu_map";
 const PLUGIN_VERSION = "2.0.0";
@@ -60,6 +61,18 @@ function scenePlace(step) {
   }[step] || "幽寂谷";
 }
 
+function narrativeScope(snapshot, state, storyCount) {
+  const options = getAvailableOptions(state, storyCount).filter(x => !x.blocked);
+  const descriptions = {
+    k4m8:"一条小径通往洞府，尚未选择进入", s9a3:"另一条沿溪深入山涧，尚未选择进入",
+    h5w9:"离开洞府，继续深入谷中", j8e1:"离开山涧，继续深入谷中",
+  };
+  const cast = (snapshot.stat_data?.在场角色 || []).map(x => x.名).filter(Boolean);
+  const facts = (state.log || []).slice(-4);
+  return buildNarrativeScope({place:scenePlace(state.step), cast, facts,
+    options:options.map(x => ({label:getDisplayText(x.id), description:descriptions[x.id]}))});
+}
+
 /**
  * 校验并返回受信任节点配置（同步执行）
  */
@@ -83,6 +96,8 @@ function select(snapshot, nodeId) {
   const settlementMode = def.reward ? "fixed" : "choice";
   const destination = settlementMode === "choice"
     ? scenePlace(def.finish || def.early ? "done" : def.to || state.step) : undefined;
+  const confirmed = configuredResult(snapshot, nodeId);
+  const scope = narrativeScope(snapshot, confirmed.pluginState || state, storyCount + 1);
   const prompt = settlementMode === "choice"
     ? "【玩家点选已确认】玩家已经完成「" + def.label + "」，当前位置已确定为「" + destination +
       "」。直接从此处继续写故事，不再写成准备进入、尚未到达或移动失败；不要重复询问是否前往。" +
@@ -98,8 +113,8 @@ function select(snapshot, nodeId) {
     displayText:getDisplayText(nodeId),
     rewardAliases:def.reward === "幽寂谷地图"
       ? {幽寂谷地图:["地图", "残图", "舆图", "残卷"]} : {},
-    immediateResult:def.reward ? configuredResult(snapshot, nodeId) : undefined,
-    prompt,
+    immediateResult:def.reward ? confirmed : undefined,
+    prompt:prompt + "\n" + scope,
     settlementMode,
     destination,
     open: def.open || undefined,
@@ -196,7 +211,7 @@ function configuredResult(snapshot, nodeId, body) {
 function getPrompt(snapshot) {
   const state = getPluginState(snapshot);
   if (!state || ["map", "done"].includes(state.step)) return "";
-  return `【幽寂谷场景约束】当前正处于幽寂谷探索（${state.step}阶段）。请恪守当前环境设定，不跳关，不提前透露未授权的后续节点或机关机缘。`;
+  return narrativeScope(snapshot, state, snapshot.storyCount || 0);
 }
 
 /**

@@ -178,6 +178,7 @@ const EVENT_DEFS = {
   },
   n5z8: {
     id: "n5z8",
+    completesExploration: true,
     label: "收集草药",
     actionText: "俯身采下崖边生长的灵草",
     prompt: "演绎在山谷崖壁处寻得并采摘草药，收入囊中。",
@@ -199,6 +200,7 @@ const EVENT_DEFS = {
   },
   p1x6: {
     id: "p1x6",
+    completesExploration: true,
     label: "打开左边暗格",
     actionText: "凝神按动机关，启开密室左侧的青玉石格",
     prompt: "演绎开启密室左侧石格，取得法宝，右侧暗格随即封死。",
@@ -210,6 +212,7 @@ const EVENT_DEFS = {
   },
   t6v4: {
     id: "t6v4",
+    completesExploration: true,
     label: "打开右边暗格",
     actionText: "小心探手推开密室右侧的沉香暗格",
     prompt: "演绎开启密室右侧暗格，取得秘籍，左侧暗格随即封死。",
@@ -281,9 +284,15 @@ function effectiveStep(state, storyCount) {
 /**
  * 校验某动作是否被阻断
  */
+function explorationComplete(state) {
+  return Object.values(EVENT_DEFS).some(def => def.completesExploration &&
+    def.from === state?.step && (state.used || []).includes(def.id));
+}
 function checkActionBlock(state, actionId, storyCount = 0) {
   const def = EVENT_DEFS[actionId];
   if (!def) return "未知或非法的事件代码";
+
+  if (def.early && explorationComplete(state)) return "探索已完成，请从正常出口离开";
 
   // 通用提前离开规则
   if (def.from === "*") {
@@ -350,6 +359,7 @@ function getAvailableOptions(state, storyCount = 0) {
       def.from === step ||
       (def.from === "*" && !["map", "done"].includes(state.step));
     if (!isStepMatch) continue;
+    if (def.early && explorationComplete(state)) continue;
 
     // 已使用排除
     if (state.used.includes(id)) continue;
