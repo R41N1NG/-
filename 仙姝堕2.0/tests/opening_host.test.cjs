@@ -373,3 +373,33 @@ test("原生先STARTED再用户入楼：地图pending留存，HUD不搬用户楼
     assert.ok(h.doc.querySelector('[data-node-id="b8n2"]'));
   } finally { h.close(); }
 });
+
+test("打包人物入口：好感阈值只解锁，按钮发送代码，完成回报切阶段且隐藏标签",async()=>{
+  const data=require("../tools/data.cjs").load(require("node:path").join(__dirname,".."));
+  const h=await fixture(data.greetings.赵无忧);
+  const proto=h.win.HTMLDialogElement.prototype;
+  proto.showModal=function(){this.open=true;};proto.close=function(){this.open=false;this.dispatchEvent(new h.win.Event("close"));};
+  h.win.confirm=()=>true;
+  try{
+    const r=h.win.XSD2.runtime;
+    await r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"叶红缨",key:"好感度",value:20}});
+    await until(()=>h.doc.querySelector('[data-promotion-menu]'));
+    h.doc.querySelector('[data-promotion-menu]').click();
+    assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,"stage01");
+    h.doc.querySelector('[data-promotion-node="yhrNight"]').click();
+    await until(()=>h.sends.length===1);
+    assert.match(h.sends[0],/^XSD2_yhrNight_/);
+    const enterFloor=h.context.chat.length;
+    h.context.chat.push({mes:"你已看到她沐浴。<Status_block><在场>叶红缨</在场></Status_block>",is_user:false,swipe_id:0,variables:[{}]});h.appendDOM(enterFloor);
+    await h.emit("GENERATION_ENDED");
+    await until(()=>h.doc.querySelector('[mesid="'+enterFloor+'"] [data-promotion-menu]'));
+    h.doc.querySelector('[mesid="'+enterFloor+'"] [data-promotion-menu]').click();
+    h.doc.querySelector('[data-promotion-node="yhrFinish"]').click();await until(()=>h.sends.length===2);
+    const code=r.getSnapshot().pending.actionCode,finishFloor=h.context.chat.length;
+    h.context.chat.push({mes:'<Promotion_result id="'+code+'">是</Promotion_result>',is_user:false,swipe_id:0,variables:[{}]});h.appendDOM(finishFloor);
+    await h.emit("GENERATION_ENDED");
+    assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,"stage02");
+    assert.ok(!h.context.chat.at(-1).mes.includes("Promotion_result"));
+    assert.ok(h.errors.length===0);
+  }finally{h.close();}
+});

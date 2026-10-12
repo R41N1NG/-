@@ -1,5 +1,5 @@
 "use strict";
-const {meets} = require("./conditions");
+
 function metricSpec(profiles, character, key) {
   const spec = profiles[character]?.metrics?.[key];
   if (!spec || !Number.isFinite(spec.min) || !Number.isFinite(spec.max) || spec.min > spec.max || !Number.isFinite(spec.default) || spec.default < spec.min || spec.default > spec.max)
@@ -15,7 +15,7 @@ function writeMetric(stat, profiles, character, key, value) {
 }
 function resolveStages(s, profiles = {}) {
   s.stat_data.character_metrics ||= {};
-  const previous = s.stat_data.character_stages || {}, resolved = {};
+  const resolved = {};
   for (const [name, cfg] of Object.entries(profiles)) {
     for (const key of Object.keys(cfg.metrics || {})) {
       const spec = metricSpec(profiles,name,key);
@@ -24,13 +24,21 @@ function resolveStages(s, profiles = {}) {
     }
     if (!cfg.stages?.length || new Set(cfg.stages.map(x=>x.id)).size !== cfg.stages.length || new Set(cfg.stages.map(x=>x.priority)).size !== cfg.stages.length || cfg.stages.some(x=>!x.id || !Number.isFinite(x.priority)))
       throw Error("人物阶段ID和优先级须唯一");
-    let stage = [...cfg.stages].sort((a,b)=>b.priority-a.priority).find(x=>meets(s,x.conditions || []));
-    const old = cfg.stages.find(x=>x.id === previous[name]?.id);
-    if (cfg.allowRegression === false && old && (!stage || old.priority > stage.priority)) stage = old;
-    if (!stage) throw Error("人物须配置默认阶段");
-    resolved[name] = {id:stage.id, priority:stage.priority, story:stage.story || "", portrait:stage.portrait || null, nodes:stage.nodes || []};
+    const initial = cfg.initialStage || [...cfg.stages].sort((a,b)=>a.priority-b.priority)[0].id;
+    const completed = s.stat_data.completed_character_stages?.[name] || initial;
+    const stage = cfg.stages.find(x=>x.id === completed);
+    if (!stage) throw Error("已完成人物阶段不在配置中");
+    resolved[name] = {id:stage.id, priority:stage.priority, story:stage.story || "", portrait:stage.portrait || null, nodes:stage.nodes || [], replaces:cfg.replaces || []};
   }
   s.stat_data.character_stages = resolved;
   return s;
 }
-module.exports = {metricSpec, writeMetric, resolveStages};
+function completeStage(s, profiles, grant) {
+  const cfg = profiles[grant.character];
+  const from = cfg?.stages.find(x=>x.id === grant.from), to = cfg?.stages.find(x=>x.id === grant.to);
+  if (!from || !to || to.priority <= from.priority || s.stat_data.character_stages?.[grant.character]?.id !== grant.from)
+    throw Error("晋升阶段提交与当前阶段不符");
+  s.stat_data.completed_character_stages ||= {};
+  s.stat_data.completed_character_stages[grant.character] = grant.to;
+}
+module.exports = {metricSpec, writeMetric, resolveStages, completeStage};

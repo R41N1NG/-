@@ -123,7 +123,7 @@ function openGM(doc, runtime, data, report) {
         patch.inventory = items;
       for (const [name,cfg] of Object.entries(data.characterProfiles || {})) for (const key of Object.keys(cfg.metrics || {})) {
         const value = Number(f.get("metric:"+name+":"+key));
-        if (value !== s.stat_data.character_metrics?.[name]?.[key]) patch["metric."+name+"."+key] = value;
+        if (value !== (s.stat_data.character_metrics?.[name]?.[key] ?? cfg.metrics[key].default)) patch["metric."+name+"."+key] = value;
       }
       for (const k of R.ALL_FIELDS) {
         const v = f.has("known:" + k);

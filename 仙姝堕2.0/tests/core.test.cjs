@@ -486,7 +486,7 @@ test("构建可独立执行、脚本语法、PNG双向回读及世界书防递�
   new vm.Script(built.script);
   assert.deepEqual(unpack(built.image), built.card);
   assert.equal(built.card.data.name, "仙姝堕2.0·框架测试");
-  assert.equal(built.card.data.character_book.entries.length, 229 + Object.keys(require("../src/config/node_stories.json")).length);
+  assert.equal(built.card.data.character_book.entries.length, 229 + Object.keys(require("../src/config/node_stories.json")).length + Object.values(data.characterProfiles).reduce((n,c)=>n+c.stages.filter(x=>x.story).length,0));
   assert.ok(
     built.card.data.character_book.entries.every(
       (e) => e.extensions.exclude_recursion && e.extensions.prevent_recursion,
@@ -851,14 +851,14 @@ test("人物指标由中控保存：GM覆盖/释放、阶段重载，正文不�
   const profiles={角色甲:{metrics:{好感:{min:0,max:100,default:0}},stages:[{id:"base",priority:0,conditions:[]},{id:"high",priority:1,conditions:[{kind:"metric",character:"角色甲",key:"好感",op:"gte",value:60}]}]}};
   const h=harness({...data,characterProfiles:profiles}); await h.opening("赵无忧");
   await h.r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"角色甲",key:"好感",value:70}});
-  assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"high");
-  await h.r.restore(); assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"high");
+  assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"base");
+  await h.r.restore(); assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"base");
   await h.r.dispatchIntent({type:"GM_PATCH",payload:{"metric.角色甲.好感":20}});
   assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"base");
   await assert.rejects(h.r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"角色甲",key:"好感",value:80}}),/人工覆盖/);
   await h.r.dispatchIntent({type:"GM_RELEASE",payload:{keys:["metric.角色甲.好感"]}});
   await h.r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"角色甲",key:"好感",value:80}});
-  assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"high");
+  assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"base");
 });
 
 test("节点故事门禁同步失败不发送，固定奖励和pending一并恢复",async()=>{

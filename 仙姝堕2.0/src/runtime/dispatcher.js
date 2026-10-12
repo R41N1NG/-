@@ -1,7 +1,7 @@
 "use strict";
 const C = require("./contracts");
 const {meets} = require("./conditions");
-const {resolveStages,writeMetric,metricSpec} = require("./character_stages");
+const {resolveStages,writeMetric,metricSpec,completeStage} = require("./character_stages");
 const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode } = require("./action_wire");
@@ -114,6 +114,7 @@ function createDispatcher(adapter, data) {
     s.stat_data.历时累计 = C.day(d) / 30 - s.stat_data.历基准;
     if (s.activeEvent?.place) s.stat_data.地点 = s.activeEvent.place;
     s.stat_data.node_trigger = s.pending?.nodeId || null;
+    s.stat_data.stage_focus = s.pending?.selection?.character || s.activeEvent?.character || s.stat_data.result_focus || null;
     return resolveStages(s, data.characterProfiles || {});
   }
   function manual(s) {
@@ -358,6 +359,7 @@ function createDispatcher(adapter, data) {
       next = C.clone(current);
     const id =
       c.chatId + ":" + c.floor + ":" + current.revision + ":" + C.hash(JSON.stringify(c.trail)) + ":" + ++serial;
+    delete next.stat_data.result_focus;
     next.pending = {
       id,
       pluginId: plugin.id,
@@ -377,6 +379,8 @@ function createDispatcher(adapter, data) {
       const value = next.stat_data.character_metrics?.[x.character]?.[x.key] ?? spec.default;
       writeMetric(next.stat_data,data.characterProfiles || {},x.character,x.key,value+x.delta);
     }
+    if (n.completionQuery) next.pending.prompt += "\n本轮只结算，不继续故事。根据本段历史回答："+n.completionQuery+
+      "\n严格输出唯一一项：<Promotion_result id=\""+next.pending.actionCode+"\">是</Promotion_result> 或 <Promotion_result id=\""+next.pending.actionCode+"\">否</Promotion_result>。不得返回另一行动ID，不输出分析过程，不新增剧情来补成成功。";
     if (n.immediateResult !== undefined) {
       const pending = next.pending;
       if (n.immediateResult.outcome !== "success") throw Error("固定结果必须成功且符合节点白名单");
@@ -412,6 +416,12 @@ function createDispatcher(adapter, data) {
       )
         throw Error("插件不能接管别人的事件");
       s.activeEvent = C.clone(result.activeEvent);
+    }
+    if (result.stageGrant) {
+      if (result.outcome !== "success" || JSON.stringify(result.stageGrant) !== JSON.stringify(p.selection.stageGrant) || !p.selection.completionQuery)
+        throw Error("插件提交未授权的晋升阶段");
+      completeStage(s,data.characterProfiles || {},result.stageGrant);
+      s.stat_data.result_focus = result.stageGrant.character;
     }
     if (result.outcome === "success") {
       if (result.elapsedDays !== undefined) {
@@ -562,6 +572,7 @@ function createDispatcher(adapter, data) {
     return changes;
   }
   function applyStory(s, text, id, swipe, allowInventory = true) {
+    delete s.stat_data.result_focus;
     const parsed = C.parseStatus(text),
       R = rules(s);
     for (const k of C.DISPLAY_FIELDS)
@@ -768,7 +779,17 @@ function createDispatcher(adapter, data) {
         if (result.body !== undefined) body = String(result.body);
       }
     }
-    s = applyStory(s, body, c.floor, m.swipe_id ?? 0, allowInventory);
+    if (p?.selection?.completionQuery) {
+      // Completion callbacks are a settlement reply, not an exploration/story turn.
+      s.stat_data.历时 = "0日";
+      s.inventoryChanges = [];
+      delete s.reconciledInventoryChanges;
+      delete s.reconciledRewards;
+      delete s.reconciledRewardAliases;
+      const xml = value => String(value ?? "无").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      body += "\n<Status_block>"+C.XML_FIELDS.map(k=>"<"+k+">"+xml(s.stat_data[k])+"</"+k+">").join("")+"</Status_block>";
+      delete s.suppressClock;
+    } else s = applyStory(s, body, c.floor, m.swipe_id ?? 0, allowInventory);
     const confirmedPlace = s.lastNodeResult?.floor === c.floor &&
       s.lastNodeResult.outcome === "success" && p?.selection.settlementMode === "choice"
       ? p.selection.destination : undefined;

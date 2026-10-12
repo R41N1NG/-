@@ -19,8 +19,9 @@ function storyEntries(catalog, profiles = {}, startId = 10000) {
 }
 function managedEnabled(label, stat) {
   if (label.startsWith("【节点故事】")) return label === nodeEntryName(stat.node_trigger);
+  if (Object.values(stat.character_stages || {}).some(x=>(x.replaces || []).includes(label))) return false;
   if (label.startsWith("【人物阶段】")) {
-    const visible = new Set([stat.身份,...(stat.在场角色 || []).map(x=>x.名)]);
+    const visible = new Set([stat.身份,stat.stage_focus,...(stat.在场角色 || []).map(x=>x.名)]);
     return Object.entries(stat.character_stages || {}).some(([name,x])=>visible.has(name) && label === "【人物阶段】"+name+":"+x.id && !!x.story);
   }
   return null;

@@ -27,6 +27,7 @@ function source(root) {
     JSON.stringify({
       greetings,
       embeddedManagedEntries:storyEntries(JSON.parse(read("src/config/node_stories.json")),JSON.parse(read("src/config/character_stages.json")).characters),
+      promotionDefinitions:JSON.parse(read("src/config/promotions.json")),
       characterProfiles: JSON.parse(read("src/config/character_stages.json")).characters,
       assets,
       openingMenu: buildMenuHtml({

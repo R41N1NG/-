@@ -1,6 +1,6 @@
 "use strict";
 const {test} = require("node:test"), assert = require("node:assert/strict");
-const {resolveStages,writeMetric} = require("../src/runtime/character_stages");
+const {resolveStages,writeMetric,completeStage} = require("../src/runtime/character_stages");
 const {meets} = require("../src/runtime/conditions");
 const {storyEntries} = require("../src/runtime/story_entries");
 const {createWorldbookHost} = require("../src/host/worldbook");
@@ -9,11 +9,14 @@ const profiles = {角色甲:{metrics:{好感:{min:0,max:100,default:0}},allowReg
   {id:"base",priority:0,conditions:[],story:"基础阶段"},
   {id:"high",priority:1,conditions:[{kind:"metric",character:"角色甲",key:"好感",op:"gte",value:60}],story:"高阶段",portrait:{small:"a.jpg",large:"a.png"},nodes:["test"]},
 ]}};
-test("阶段统一计算：默认/升阶/回退/不可退阶段，数值校验与节点同源", ()=>{
+test("阶段统一读取完成记录：阈值不升阶、完成后升阶、降分不退阶，数值校验与节点同源", ()=>{
   const s = {stat_data:{}};
   resolveStages(s,profiles);
   assert.equal(s.stat_data.character_stages.角色甲.id,"base");
   writeMetric(s.stat_data,profiles,"角色甲","好感",70);
+  resolveStages(s,profiles);
+  assert.equal(s.stat_data.character_stages.角色甲.id,"base");
+  completeStage(s,profiles,{character:"角色甲",from:"base",to:"high"});
   resolveStages(s,profiles);
   assert.equal(s.stat_data.character_stages.角色甲.id,"high");
   assert.equal(s.stat_data.character_stages.角色甲.portrait.small,"a.jpg");
@@ -21,7 +24,7 @@ test("阶段统一计算：默认/升阶/回退/不可退阶段，数值校验�
   writeMetric(s.stat_data,profiles,"角色甲","好感",10);
   const locked = structuredClone(profiles); locked.角色甲.allowRegression = false;
   resolveStages(s,locked); assert.equal(s.stat_data.character_stages.角色甲.id,"high");
-  resolveStages(s,profiles); assert.equal(s.stat_data.character_stages.角色甲.id,"base");
+  resolveStages(s,profiles); assert.equal(s.stat_data.character_stages.角色甲.id,"high");
   assert.throws(()=>writeMetric(s.stat_data,profiles,"角色甲","好感",NaN),/超出/);
   assert.throws(()=>writeMetric(s.stat_data,profiles,"角色甲","不存在",10),/未注册/);
   assert.equal(meets(s,[{kind:"metric",character:"不存在",key:"好感",op:"gte",value:0}]),false);
@@ -64,11 +67,11 @@ test("PNG内嵌条目自动补旧同名主书：只补缺项、UID不冲突、�
   const helper={getCharWorldbookNames:async()=>({primary:"测试卡",additional:["1.0"]}),getWorldbook:async name=>{assert.equal(name,"测试卡");return structuredClone(stored);},replaceWorldbook:async(name,rows)=>{assert.equal(name,"测试卡");stored=rows;writes++;}};
   const host=createWorldbookHost(helper,()=>({}),{expectedName:"测试卡",embeddedManagedEntries:embedded});
   await host.synchronizeState({node_trigger:"g7p2"});
-  assert.equal(stored.length,18); assert.equal(new Set(stored.map(x=>x.uid)).size,18);
+  assert.equal(stored.length,embedded.length+1); assert.equal(new Set(stored.map(x=>x.uid)).size,embedded.length+1);
   assert.equal(stored.find(x=>x.uid===229).content,"保留我");
   assert.equal(stored.find(x=>x.uid===230).content,"玩家自定义节点故事");
   assert.ok(stored.find(x=>x.name==="【节点故事】g7p2").enabled);
-  await host.synchronizeState({node_trigger:"g7p2"}); assert.equal(stored.length,18); assert.equal(writes,1);
+  await host.synchronizeState({node_trigger:"g7p2"}); assert.equal(stored.length,embedded.length+1); assert.equal(writes,1);
   const wrong=createWorldbookHost(helper,()=>({}),{expectedName:"另一卡",embeddedManagedEntries:embedded});
   await assert.rejects(wrong.synchronizeState({}),/取消写入/);
 });
