@@ -69,10 +69,22 @@ test("HUD真实DOM：折叠、快捷发送、物品、立绘、GM提交与卸载
   assert.equal(doc.querySelector("details").open, true);
   doc.querySelector("[data-action]").click();
   doc.querySelector("[data-item]").click();
+  assert.deepEqual(calls.map(x=>x.type), ["QUICK_ACTION"]);
+  assert.match(doc.querySelector("dialog").textContent, /介绍.*效果/s);
+  assert.equal(doc.querySelector("[data-close]").textContent, "×");
+  doc.querySelector("[data-close]").click();
+  assert.equal(doc.querySelector("dialog"), null);
+  doc.querySelector("[data-item]").click();
+  doc.querySelector("[data-use]").click();
+  await Promise.resolve();
   assert.deepEqual(
     calls.map((x) => x.type),
     ["QUICK_ACTION", "USE_ITEM"],
   );
+  doc.querySelector("[data-item]").click();
+  doc.querySelector("[data-discard]").click();
+  await Promise.resolve();
+  assert.equal(calls.at(-1).type, "DISCARD_ITEM");
   doc.querySelector("[data-portrait]").click();
   assert.ok(doc.querySelector("dialog img").src.endsWith("guyue.png"));
   doc.querySelector("[data-close]").click();

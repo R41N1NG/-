@@ -1,6 +1,7 @@
 "use strict";
 const { esc, modal } = require("./dom");
 const { mountOpening } = require("./opening_menu");
+const { openItem } = require("./item_panel");
 const { openGM } = require("./gm_panel");
 const { dateText } = require("../runtime/contracts");
 const { describeItem } = require("../runtime/item_catalog");
@@ -157,7 +158,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       '</div><p data-xsd-slot="11">' +
       esc(st.纳戒 || "") +
       '</p><p data-xsd-slot="12">' +
-      (options.readOnly ? "此楼状态记录" : s.manual.inventory ? "物品已人工设置" : "点击物品使用") +
+      (options.readOnly ? "此楼状态记录" : s.manual.inventory ? "物品已人工设置" : "点击物品查看介绍与操作") +
       "</p></details><details><summary>风闻与气象</summary><dl>" +
       field("近闻", 13) +
       field("远闻", 14) +
@@ -195,7 +196,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       .forEach(
         (b) =>
           (b.onclick = () =>
-            invoke({ type: "USE_ITEM", payload: { id: b.dataset.item } })),
+            dialogs.push(openItem(doc, runtime, b.dataset.item, report))),
       );
     root.querySelectorAll("[data-action]").forEach(
       (b) =>

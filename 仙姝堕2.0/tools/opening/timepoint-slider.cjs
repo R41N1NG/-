@@ -2,26 +2,26 @@
 // Migrated presentation presets only. State/date parsing belongs to the 2.0 kernel.
 const POINTS = Object.freeze(
   [
-    ["正章之前", 1577, 7, 1, "七月初一", "正篇尚未启幕，可从此前的年月入世。"],
-    ["暗流微澜", 1577, 12, 1, "十二月初一", "暗流渐起，局势仍在酝酿。"],
-    ["第一章（墨山探幽）", 1578, 3, 3, "三月初三", "墨山探幽，正篇由此启卷。"],
+    ["正章之前", 1577, 7, 1, "7月1日", "正篇尚未启幕，可从此前的年月入世。"],
+    ["暗流微澜", 1577, 12, 1, "12月1日", "暗流渐起，局势仍在酝酿。"],
+    ["第一章（墨山探幽）", 1578, 3, 3, "3月3日", "墨山探幽，正篇由此启卷。"],
     [
       "南域大劫",
       1578,
       8,
       1,
-      "八月初一",
+      "8月1日",
       "南域局势剧变，各方势力重新划分疆域。",
     ],
-    ["天溪兽潮", 1579, 1, 1, "一月初一", "兽潮迫近天溪，城中局势渐趋紧张。"],
-    ["天溪城破", 1579, 3, 1, "三月初一", "天溪城破，南域局势再度转折。"],
-    ["乱世割据", 1579, 6, 1, "六月初一", "各方势力割据，局势仍在变动。"],
+    ["天溪兽潮", 1579, 1, 1, "1月1日", "兽潮迫近天溪，城中局势渐趋紧张。"],
+    ["天溪城破", 1579, 3, 1, "3月1日", "天溪城破，南域局势再度转折。"],
+    ["乱世割据", 1579, 6, 1, "6月1日", "各方势力割据，局势仍在变动。"],
     [
       "极乐定局",
       1580,
       1,
       1,
-      "一月初一",
+      "1月1日",
       "格局趋于定局，后续走向仍由当前故事决定。",
     ],
   ].map(([label, year, month, day, dateText, summary]) =>
@@ -65,7 +65,7 @@ function renderTimepoint(instanceId) {
   const id = `${instanceId}-custom_timepoint`;
   return `<div data-xds-field-box="wide" data-xds-timepoint-box>
       <label data-xds-field-label for="${id}">当前时点</label>
-      <input type="text" class="xds-input" id="${id}" name="custom_timepoint" data-xds-field="custom_timepoint" placeholder="填写明确时点；可手填，如仙盟历 1579 年 · 六月初七" maxlength="64">
+      <input type="text" class="xds-input" id="${id}" name="custom_timepoint" data-xds-field="custom_timepoint" placeholder="填写明确时点；可手填，如仙盟历 1579 年 · 6月7日" maxlength="64">
       <div data-xds-timepoint-enhancer>
         <input type="range" min="0" max="7" step="1" value="2" data-xds-timepoint-range aria-label="当前时点预设，共八个停靠点" aria-valuetext="${escapeHtml(DEFAULT_VALUE)}">
         <output data-xds-timepoint-out aria-live="polite" aria-atomic="true">${escapeHtml(DEFAULT_VALUE)}</output>

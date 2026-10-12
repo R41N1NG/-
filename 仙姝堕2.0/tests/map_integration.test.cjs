@@ -216,7 +216,11 @@ test("真实插件+调度器：山涧/草药/正常出口及提前退出耗时",
   await h.act("j8e1", "你退出山涧，继续深入谷中腹地。");
   await h.act("u9h3", "你来到深处山谷。");
   await h.act("n5z8", "你采下草药，妥善收入囊中。");
-  await h.act("l7q2", "你沿山径离开幽寂谷。");
+  await h.click("l7q2");
+  assert.equal(h.r.getSnapshot().calendarDate.day, 5);
+  assert.match(h.prompts.at(-1), /1578年3月5日/);
+  await h.reply("你沿山径离开幽寂谷。", {历时:"半刻钟"});
+  assert.equal(h.r.getSnapshot().stat_data.历时, "2日");
   assert.equal(h.r.getSnapshot().calendarDate.day, 5);
   assert.ok(h.r.getSnapshot().inventory.some(x => x.name === "草药"));
   const early = fixture();
@@ -295,11 +299,15 @@ test("确认退出同样由点选决定：模型位置申报不能覆盖退出�
   assert.equal(h.r.getSnapshot().revision, revision);
   h.confirm(true);
   await h.click("z8u5");
+  assert.equal(h.r.getSnapshot().calendarDate.day, 4);
+  assert.match(h.prompts.at(-1), /1578年3月4日/);
   await h.reply("夜色深沉。", {地点:"幽寂谷·谷口",历时:"九日"});
   assert.equal(h.r.getSnapshot().activeEvent, null);
   assert.equal(h.r.getSnapshot().stat_data.地点, "幽寂谷外");
   assert.equal(C.parseStatus(h.chat.at(-1).mes).fields.地点, "幽寂谷外");
   assert.equal(h.r.getSnapshot().calendarDate.day, 4);
+  assert.equal(h.r.getSnapshot().stat_data.历时, "1日");
+  assert.equal(Object.values(h.r.getSnapshot().receipts).at(-1).elapsedDays, 1);
   await h.r.settleStory();
   assert.equal(h.r.getSnapshot().calendarDate.day, 4);
 });
@@ -409,4 +417,23 @@ test("末段奖励完成后提前离开消失且后台拒绝旧入口，未完�
     assert.ok(!h.prompts.at(-1).split("当前可供玩家选择的行动或路线：")[1].split("。\n")[0].includes("提前离开"));
     await assert.rejects(h.click("z8u5"), /探索已完成/);
   }
+});
+
+
+test("退出点选后的新日期可随停止删楼恢复，重选完成不重复推进", async () => {
+  const h = fixture();
+  await h.ready();
+  await h.act("g7p2", "你进入幽寂谷。");
+  await h.click("z8u5");
+  assert.equal(h.r.getSnapshot().calendarDate.day, 4);
+  await h.r.stop();
+  assert.equal(h.r.getSnapshot().calendarDate.day, 3);
+  assert.ok(h.r.getSnapshot().activeEvent);
+  h.chat.pop();
+  await h.r.restore();
+  assert.equal(h.r.getSnapshot().calendarDate.day, 3);
+  await h.act("z8u5", "你离开幽寂谷。");
+  await h.r.restore();
+  assert.equal(h.r.getSnapshot().calendarDate.day, 4);
+  assert.equal(h.r.getSnapshot().activeEvent, null);
 });

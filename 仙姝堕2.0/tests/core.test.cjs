@@ -809,3 +809,27 @@ test("消耗品发送失败/停止删楼一起恢复数量，旧库存补类型�
   assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count, 2);
   assert.equal(h.r.getSnapshot().pending, null);
 });
+
+
+test("丢弃非消耗品也扣1：回复不重复扣、停止恢复、失败不扣库存", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  const discard = () => h.r.dispatchIntent({type:"DISCARD_ITEM",payload:{id:"墨山道佩剑"}});
+  h.fail(true);
+  await assert.rejects(discard(), /send failed/);
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="墨山道佩剑").count, 1);
+  h.fail(false);
+  await discard();
+  assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="墨山道佩剑"));
+  assert.match(h.prompts.at(-1), /本次不是使用，不触发使用效果/);
+  await h.r.stop();
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="墨山道佩剑").count, 1);
+  h.c.chat.pop();
+  await h.r.restore();
+  await discard();
+  await h.reply("你把墨山道佩剑丢弃。<Status_block><纳戒>消耗：墨山道佩剑×1</纳戒></Status_block>");
+  assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="墨山道佩剑"));
+  assert.equal(h.r.getSnapshot().pending, null);
+  await h.r.restore();
+  assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="墨山道佩剑"));
+});

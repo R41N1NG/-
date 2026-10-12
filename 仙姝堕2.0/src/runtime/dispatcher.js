@@ -436,7 +436,7 @@ function createDispatcher(adapter, data) {
         nodeId: p.nodeId,
         floor: context().floor,
         rewards: p.fixedApplied ? C.clone(s.receipts[p.id]?.rewards || []) : C.clone(rewards),
-        elapsedDays: result.elapsedDays || 0,
+        elapsedDays: p.fixedApplied ? (s.receipts[p.id]?.elapsedDays || 0) : (result.elapsedDays || 0),
         date: C.clone(s.calendarDate),
       };
     }
@@ -728,7 +728,7 @@ function createDispatcher(adapter, data) {
         s.reconciledUse = C.clone(p.item);
         s.reconciledInventoryChanges = C.clone(s.inventoryChanges || []);
         s.itemUseReceipts ||= {};
-        s.itemUseReceipts[p.id] = {name:p.item.name, consumable:p.item.consumable, floor:c.floor};
+        s.itemUseReceipts[p.id] = {name:p.item.name, consumable:p.item.consumable, operation:p.operation || "use", floor:c.floor};
         s.pending = null;
       } else {
         const plugin = plugins.get(p.pluginId);
@@ -756,6 +756,7 @@ function createDispatcher(adapter, data) {
       s.lastNodeResult.outcome === "success" && p?.selection.settlementMode === "choice"
       ? p.selection.destination : undefined;
     if (confirmedPlace) s.stat_data.地点 = confirmedPlace;
+    if (confirmedPlace && p.selection.exitDays) s.stat_data.历时 = p.selection.exitDays + "日";
     manual(s);
     const fixed = C.canonicalStatus(body, s, confirmedPlace);
     if (fixed !== m.mes) {
@@ -898,7 +899,9 @@ function createDispatcher(adapter, data) {
           await adapter.send(intent.payload.text);
           return snapshot();
         }
-        case "USE_ITEM": {
+        case "USE_ITEM":
+        case "DISCARD_ITEM": {
+          const discard = intent.type === "DISCARD_ITEM";
           if (current?.pending || adapter.isGenerating?.())
             throw Error("请等当前行动结束");
           const item = current?.stat_data.inventory.find(
@@ -907,19 +910,19 @@ function createDispatcher(adapter, data) {
           if (!item) throw Error("物品不在纳戒");
           const meta = describeItem(item);
           if (!Number.isSafeInteger(meta.count) || meta.count < 1) throw Error("物品数量无效");
-          if (meta.consumable && current.manual.inventory)
+          if ((discard || meta.consumable) && current.manual.inventory)
             throw Error("纳戒处于人工覆盖，请先交还自动再消耗物品");
           adapter.preflightSend?.();
           const before = C.clone(current), next = C.clone(current);
-          if (meta.consumable) {
+          if (discard || meta.consumable) {
             const target = next.stat_data.inventory.find(x => x.id === item.id && x.name === item.name);
             target.count--;
             next.stat_data.inventory = next.stat_data.inventory.filter(x => x.count > 0);
           }
-          next.inventoryChanges = [{action:meta.consumable ? "消耗" : "使用", name:meta.name, count:1}];
+          next.inventoryChanges = [{action:discard ? "丢弃" : meta.consumable ? "消耗" : "使用", name:meta.name, count:1}];
           next.pending = {id:c.chatId+":item:"+c.floor+":"+current.revision+":"+ ++serial,
-            kind:"item", floor:c.floor, actionText:"使用"+meta.name, item:meta, selection:{}, before,
-            prompt:itemUsePrompt(meta, meta.count - (meta.consumable ? 1 : 0))};
+            kind:"item", operation:discard ? "discard" : "use", floor:c.floor, actionText:(discard ? "丢弃" : "使用")+meta.name, item:meta, selection:{}, before,
+            prompt:discard ? "【本轮物品丢弃】玩家已经丢弃1份「"+meta.name+"」，后台已扣除，剩余"+(meta.count-1)+"份；不得重复扣减或重新获得。物品介绍："+meta.description+"。本次不是使用，不触发使用效果。只演绎丢弃及当前场景中的反应。" : itemUsePrompt(meta, meta.count - (meta.consumable ? 1 : 0))};
           await commit(c, next, "item_use");
           guard(c);
           try { await adapter.send(next.pending.actionText); }

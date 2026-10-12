@@ -104,8 +104,8 @@ function select(snapshot, nodeId) {
       (def.prompt || "")
     : "【固定节点结果已入账】玩家已经完成「" + def.label + "」，已经取得「" + def.reward +
       "」，已加入背包，同组机关已关闭。直接演绎此结果，不再判断是否取得，不重复发奖。" + (def.prompt || "");
-  // Navigation completes after the reply; configured rewards and mutex are
-  // committed on selection. Pending prevents further clicks until completion.
+  // Rewards, mutex and confirmed exit costs commit on selection.
+  // Pending prevents further clicks; cancellation restores the prior snapshot.
   return {
     id: def.id,
     allowed: true,
@@ -113,7 +113,7 @@ function select(snapshot, nodeId) {
     displayText:getDisplayText(nodeId),
     rewardAliases:def.reward === "幽寂谷地图"
       ? {幽寂谷地图:["地图", "残图", "舆图", "残卷"]} : {},
-    immediateResult:def.reward ? confirmed : undefined,
+    immediateResult:def.reward || def.exitDays ? confirmed : undefined,
     prompt:prompt + "\n" + scope,
     settlementMode,
     destination,
