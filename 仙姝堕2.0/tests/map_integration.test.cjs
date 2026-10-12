@@ -33,6 +33,8 @@ function fixture() {
     preflightSend() {},
     confirmExit: async () => confirm,
     isAborted: () => abort,
+    errors: [],
+    report(error) { this.errors.push(error.message); },
     setPrompt() {},
   };
   const r = createDispatcher(adapter, data);
@@ -78,6 +80,7 @@ function fixture() {
     r,
     chat,
     sent,
+    errors:adapter.errors,
     click,
     reply,
     act,
@@ -342,4 +345,20 @@ test("固定奖励与互斥一同撤回，非授权显示文字/代码不能领�
   h.chat.push({mes:h.sent.at(-1),is_user:true});
   await h.reply("你取得幽寂谷地图。", {纳戒:"获得：幽寂谷地图×1"});
   assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="幽寂谷地图"));
+});
+
+
+test("已入包固定地图重复申报先去重：残图/地图称呼不误报，不产生第二种物品", async () => {
+  for (const name of ["幽寂谷地图","地图","残图","地图残卷","洞府舆图","残卷"]) {
+    const h = fixture();
+    await h.ready();
+    await h.act("g7p2", "谷风吹过。");
+    await h.act("k4m8", "洞中寂静。");
+    await h.click("q3f7");
+    await h.reply("孤月说道：残卷入手，前路便不再是一片混沌。", {纳戒:"获得："+name+"×1"});
+    assert.deepEqual(h.errors, []);
+    assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="幽寂谷地图").count, 1);
+    assert.equal(h.r.getSnapshot().inventory.filter(x=>x.source===plugin.id).length, 1);
+    assert.equal(plugin.select(h.r.getSnapshot(), "b8n2").allowed, false);
+  }
 });

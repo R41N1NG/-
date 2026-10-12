@@ -187,7 +187,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.9",
+    character_version: "2.0-framework.10",
     extensions: {
       world: NAME,
       tavern_helper: {
@@ -244,7 +244,7 @@ function build() {
   if (JSON.stringify(unpack(image)) !== JSON.stringify(card))
     throw Error("PNG回读不一致");
   fs.writeFileSync(path.join(OUT, NAME + ".png"), image);
-  fs.writeFileSync(path.join(DIST, NAME + "-v9.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v10.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(

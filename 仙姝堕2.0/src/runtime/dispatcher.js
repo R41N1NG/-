@@ -442,6 +442,7 @@ function createDispatcher(adapter, data) {
       ? (result.rewards || []).map(x => ({ action: "获得", name: x.name, count: x.count || 1 })) : []);
     s.reconciledRewards =
       p.fixedApplied ? (p.selection.rewards || []) : result.outcome === "success" ? rewardsNames(result) : [];
+    s.reconciledRewardAliases = p.fixedApplied ? C.clone(p.selection.rewardAliases || {}) : {};
     s.lastNodeResult = { nodeId:p.nodeId, floor:context().floor,
       outcome:result.outcome, reason:result.reason || "",
       evidenceMode:result.evidenceMode || null };
@@ -480,6 +481,12 @@ function createDispatcher(adapter, data) {
         count = Number(m[3] || 1),
         gain = m[1] === "获得";
       if (!name || count < 1 || !Number.isSafeInteger(count)) continue;
+      // An already committed fixed reward is an informational duplicate.
+      // Ignore it before prose validation, including aliases scoped to this node.
+      const granted = (s.reconciledRewards || []).find(reward =>
+        (reward === name || (s.reconciledRewardAliases?.[reward] || []).some(alias => name.includes(alias))) &&
+        s.stat_data.inventory.some(item => item.name === reward));
+      if (gain && granted) continue;
       const proof = parsed.prose.split(/[。！？\n]/).some(
         (line) =>
           line.includes(name) &&
@@ -511,7 +518,6 @@ function createDispatcher(adapter, data) {
       const old = s.stat_data.inventory.find((x) => x.name === name);
       if (gain) {
         if (old) {
-          if (s.reconciledRewards?.includes(name)) continue;
           old.count += count;
         } else
           s.stat_data.inventory.push({
@@ -557,6 +563,7 @@ function createDispatcher(adapter, data) {
     }
     delete s.suppressClock;
     delete s.reconciledRewards;
+    delete s.reconciledRewardAliases;
     // Model time/identity and inventory dumps are display reports, never authoritative mutations.
     const statements = parsed.actions;
     for (const f of R.FIELD_TABLE) {

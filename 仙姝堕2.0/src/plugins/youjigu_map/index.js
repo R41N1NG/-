@@ -96,6 +96,8 @@ function select(snapshot, nodeId) {
     allowed: true,
     actionText: def.actionText,
     displayText:getDisplayText(nodeId),
+    rewardAliases:def.reward === "幽寂谷地图"
+      ? {幽寂谷地图:["地图", "残图", "舆图", "残卷"]} : {},
     immediateResult:def.reward ? configuredResult(snapshot, nodeId) : undefined,
     prompt,
     settlementMode,
