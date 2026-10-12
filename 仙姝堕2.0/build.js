@@ -4,7 +4,7 @@ const fs = require("node:fs"),
   vm = require("node:vm"),
   zlib = require("node:zlib");
 const { source, load } = require("./tools/data.cjs");
-const {storyEntries} = require("./src/runtime/story_entries");
+const {storyEntries, metricEntries} = require("./src/runtime/story_entries");
 const { evaluateGate } = require("./src/host/worldbook");
 const ROOT = __dirname,
   NAME = "仙姝堕2.0·框架测试",
@@ -140,6 +140,7 @@ function build() {
   }
   const extra = storyEntries(JSON.parse(read("src/config/node_stories.json")),data.characterProfiles,Math.max(...entries.map(e=>e.uid))+1);
   entries.push(...extra);
+  entries.push(...metricEntries(JSON.parse(read("src/config/metric_events.json")),Math.max(...entries.map(e=>e.uid))+1));
   const script = bundle(),
     characterBook = {
       name: NAME,
