@@ -208,7 +208,7 @@ test("点击仅登记待执行并强制发送，模型完成前不进入下一�
   await h.opening("赵无忧");
   h.r.registerPlugin(plugin());
   await h.select("enter", { actionText: "伪造", ttl: 99 });
-  assert.deepEqual(h.sent, ["进入幽寂谷"]);
+  assert.match(h.sent[0], /^XSD2_enter_[a-f0-9]{8}$/);
   assert.equal(h.r.getSnapshot().activeEvent, null);
   assert.ok(h.r.getSnapshot().pending);
   await assert.rejects(h.select("enter"), /未完成/);

@@ -1,5 +1,6 @@
 "use strict";
 const C = require("./contracts");
+const { createActionCode, readActionCode } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
 function createDispatcher(adapter, data) {
   let current = null,
@@ -264,7 +265,9 @@ function createDispatcher(adapter, data) {
       : current?.activeEvent
         ? plugins.get(current.activeEvent.pluginId)
         : null;
-    const text = p?.prompt || plugin?.getPrompt?.(snapshot()) || "";
+    const text = p ? (p.actionCode ? "本轮内部节点指令：" + p.actionCode +
+      "；玩家显示行动：" + p.displayText + "；含义：" + p.actionText + "。\n" : "") + p.prompt
+      : plugin?.getPrompt?.(snapshot()) || "";
     const st = current?.stat_data;
     const baseline = current
       ? "后台当前时点：仙盟历 " +
@@ -335,27 +338,39 @@ function createDispatcher(adapter, data) {
       if (!(await adapter.confirmExit(n))) return { cancelled: true };
       guard(c);
     }
+    if (n.immediateResult?.rewards?.length && current.manual.inventory)
+      throw Error("纳戒处于人工覆盖，请先交还自动再领取固定节点奖励");
     adapter.preflightSend?.();
     const before = C.clone(current),
       next = C.clone(current);
     const id =
-      c.chatId + ":" + c.floor + ":" + current.revision + ":" + ++serial;
+      c.chatId + ":" + c.floor + ":" + current.revision + ":" + C.hash(JSON.stringify(c.trail)) + ":" + ++serial;
     next.pending = {
       id,
       pluginId: plugin.id,
       nodeId: n.id,
       actionText: n.actionText,
+      displayText:n.displayText || n.actionText,
+      actionCode:createActionCode(n.id, id),
       prompt: n.prompt,
       floor: c.floor,
       selection: C.clone(n),
       before,
     };
+    if (n.immediateResult !== undefined) {
+      const pending = next.pending;
+      if (n.immediateResult.outcome !== "success") throw Error("固定结果必须成功且符合节点白名单");
+      applyResult(next, pending, n.immediateResult);
+      next.inventoryChanges = next.reconciledInventoryChanges || [];
+      pending.fixedApplied = true;
+      next.pending = pending;
+    }
     if (n.reservedState !== undefined)
       next.pluginState[plugin.id] = C.clone(n.reservedState);
     await commit(c, next, "pending");
     guard(c);
     try {
-      await adapter.send(n.actionText);
+      await adapter.send(next.pending.actionCode);
       return snapshot();
     } catch (e) {
       const now = context();
@@ -417,15 +432,16 @@ function createDispatcher(adapter, data) {
         pluginId: p.pluginId,
         nodeId: p.nodeId,
         floor: context().floor,
-        rewards: C.clone(rewards),
+        rewards: p.fixedApplied ? C.clone(s.receipts[p.id]?.rewards || []) : C.clone(rewards),
         elapsedDays: result.elapsedDays || 0,
         date: C.clone(s.calendarDate),
       };
     }
-    s.reconciledInventoryChanges = result.outcome === "success"
-      ? (result.rewards || []).map(x => ({ action: "获得", name: x.name, count: x.count || 1 })) : [];
+    const fixedChanges = p.fixedApplied ? (s.inventoryChanges || []) : null;
+    s.reconciledInventoryChanges = fixedChanges || (result.outcome === "success"
+      ? (result.rewards || []).map(x => ({ action: "获得", name: x.name, count: x.count || 1 })) : []);
     s.reconciledRewards =
-      result.outcome === "success" ? rewardsNames(result) : [];
+      p.fixedApplied ? (p.selection.rewards || []) : result.outcome === "success" ? rewardsNames(result) : [];
     s.lastNodeResult = { nodeId:p.nodeId, floor:context().floor,
       outcome:result.outcome, reason:result.reason || "",
       evidenceMode:result.evidenceMode || null };
@@ -514,7 +530,7 @@ function createDispatcher(adapter, data) {
     }
     return changes;
   }
-  function applyStory(s, text, id, swipe) {
+  function applyStory(s, text, id, swipe, allowInventory = true) {
     const parsed = C.parseStatus(text),
       R = rules(s);
     for (const k of C.DISPLAY_FIELDS)
@@ -522,7 +538,7 @@ function createDispatcher(adapter, data) {
     if (parsed.cast.length || parsed.fields.在场 === "无")
       s.stat_data.在场角色 = parsed.cast;
     if (parsed.fields.实际发生) s.stat_data.实际发生 = parsed.fields.实际发生;
-    s.inventoryChanges = applyInventory(s, parsed);
+    s.inventoryChanges = allowInventory ? applyInventory(s, parsed) : [];
     if (parsed.fields.历时) s.stat_data.历时 = parsed.fields.历时;
     if (
       !s.pending &&
@@ -681,12 +697,15 @@ function createDispatcher(adapter, data) {
       s.manual = { ...s.manual, ...candidate.state.manual };
     let body = String(m.mes);
     const p = s.pending;
+    const latestUser = c.chat.slice(0, c.floor).reverse().find(x => x.is_user && !x.is_system);
+    let allowInventory = !!p || !/\bXSD2_/.test(String(latestUser?.mes || ""));
     if (p) {
       const user = c.chat
         .slice(p.floor + 1, c.floor)
         .find((x) => x.is_user && !x.is_system);
-      if (!user || String(user.mes).trim() !== p.actionText) {
+      if (!user || (p.actionCode ? readActionCode(user.mes)?.code !== p.actionCode : String(user.mes).trim() !== p.actionText)) {
         s = C.clone(p.before);
+        allowInventory = false;
         s.lastNodeResult = { nodeId:p.nodeId, floor:c.floor, outcome:"failure",
           reason:"行动后的用户消息与授权行动不匹配", evidenceMode:null };
       } else {
@@ -710,7 +729,7 @@ function createDispatcher(adapter, data) {
         if (result.body !== undefined) body = String(result.body);
       }
     }
-    s = applyStory(s, body, c.floor, m.swipe_id ?? 0);
+    s = applyStory(s, body, c.floor, m.swipe_id ?? 0, allowInventory);
     const confirmedPlace = s.lastNodeResult?.floor === c.floor &&
       s.lastNodeResult.outcome === "success" && p?.selection.settlementMode === "choice"
       ? p.selection.destination : undefined;
@@ -875,6 +894,14 @@ function createDispatcher(adapter, data) {
   }
   const api = {
     getSnapshot: snapshot,
+    getActionDisplay(text) {
+      const parsed = readActionCode(text);
+      if (!parsed) return null;
+      const pending = current?.pending;
+      const label = pending?.actionCode === parsed.code ? pending.displayText
+        : [...plugins.values()].map(p => p.getDisplayText?.(parsed.nodeId)).find(Boolean);
+      return label ? String(text).replace(parsed.code, label) : null;
+    },
     getDiagnostics() {
       const c = context(), s = snapshot(), latest = c.chat[c.floor];
       return { schema:1, host:adapter.getDiagnostics?.() || {},
@@ -892,7 +919,7 @@ function createDispatcher(adapter, data) {
       if (!Number.isInteger(floor) || floor < 0 || floor > c.floor) return null;
       const e = (await adapter.readMessage(floor))?.stat_data?.xsd2?.[0];
       if (token(c) !== token(context()) || !compatible(e, c)) return null;
-      const s = C.clone(e.state);
+      const s = C.clone(e.state.pending && floor < c.floor ? e.state.pending.before : e.state);
       normalize(s);
       return { ...s, chatId:c.chatId, branchId:c.branchId, floor,
         inventory:s.stat_data.inventory, known:s.stat_data.known, relics:s.stat_data.relic_progress };

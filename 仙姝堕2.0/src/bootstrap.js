@@ -34,7 +34,13 @@ function start(win) {
       const id = mes.getAttribute("mesid");
       const floor = id === null ? index : Number(id), m = c.chat?.[floor];
       const body = mes.querySelector(".mes_text");
-      if (!m || m.is_user || m.is_system || !body || mes.querySelector(".edit_textarea")) continue;
+      if (!m || !body || mes.querySelector(".edit_textarea")) continue;
+      if (m.is_user) {
+        const shown = runtime.getActionDisplay(m.mes);
+        if (shown && body.textContent.includes("XSD2_")) body.textContent = shown;
+        continue;
+      }
+      if (m.is_system) continue;
       const latest = floor === c.chat.length - 1;
       const s = latest && !host.isGenerating()
         ? runtime.getSnapshot() : await runtime.getFloorSnapshot(floor);

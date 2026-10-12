@@ -328,6 +328,8 @@ test("原生先STARTED再用户入楼：地图pending留存，HUD不搬用户楼
     await new Promise(r => setTimeout(r, 120));
     assert.ok(h.doc.querySelector('[mesid="0"] .xsd2-hud'));
     assert.equal(h.doc.querySelector('[mesid="1"] [data-xsd2-root]'), null);
+    assert.equal(h.doc.querySelector('[mesid="1"] .mes_text').textContent, "进入幽寂谷");
+    assert.match(h.context.chat[1].mes, /^XSD2_g7p2_[a-f0-9]{8}$/);
     assert.equal(h.doc.querySelector(".xsd2-map-modal-overlay"), null);
     const reported = require("node:fs").readFileSync(require("node:path").join(__dirname,"fixtures/youjigu-entry-reported.txt"),"utf8");
     h.context.chat.push({mes:reported,is_user:false,variables:[{}]});

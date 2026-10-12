@@ -128,7 +128,7 @@ test("真实插件+调度器：完整地图钥匙/密室/退出路线及奖励�
   assert.equal(h.r.getSnapshot().calendarDate.day, 5);
   assert.equal(h.sent.length, 7);
 });
-test("真实插件+调度器：铁匣/普通古卷/否定正文和状态栏声明均不能冒充地图", async () => {
+test("固定暗格地图不依赖模型措辞：铁匣/古卷/漏报均不撤销点选奖励", async () => {
   for (const body of [
     "你取得沉重铁匣，里面没有地图，也没有取得任何地图。",
     "你从暗格取出普通古卷，封面毫无标记。",
@@ -144,10 +144,11 @@ test("真实插件+调度器：铁匣/普通古卷/否定正文和状态栏声�
       { 线索: "你已获得幽寂谷地图", 纳戒: "无" },
     );
     const s = h.r.getSnapshot();
-    assert.notEqual(s.known.map_youjigu, true);
-    assert.deepEqual(s.inventory, startingInventoryFor("赵无忧"));
+    assert.equal(s.known.map_youjigu, true);
+    assert.equal(s.inventory.find(x => x.name === "幽寂谷地图").count, 1);
     assert.equal(s.pending, null);
-    assert.equal(plugin.select(s, "q3f7").allowed, true);
+    assert.equal(plugin.select(s, "q3f7").allowed, false);
+    assert.equal(plugin.select(s, "b8n2").allowed, false);
   }
 });
 test("真实插件+调度器：移动由点选确认，停止删助手楼仍回退可重选", async () => {
@@ -296,4 +297,49 @@ test("确认退出同样由点选决定：模型位置申报不能覆盖退出�
   assert.equal(h.r.getSnapshot().calendarDate.day, 4);
   await h.r.settleStory();
   assert.equal(h.r.getSnapshot().calendarDate.day, 4);
+});
+
+
+test("内部代码与显示分离，暗格点击即入包锁互斥，完成/重载不重复发奖", async () => {
+  const h = fixture();
+  await h.ready();
+  await h.act("g7p2", "山风萧瑟。");
+  await h.act("k4m8", "洞内幽暗。");
+  await h.click("q3f7");
+  const selected = h.r.getSnapshot();
+  const code = h.sent.at(-1);
+  assert.match(code, /^XSD2_q3f7_[a-f0-9]{8}$/);
+  assert.equal(h.r.getActionDisplay(code), "开启暗格");
+  assert.equal(selected.inventory.find(x=>x.name==="幽寂谷地图").count, 1);
+  assert.equal(selected.known.map_youjigu, true);
+  assert.equal(plugin.select(selected,"b8n2").allowed, false);
+  h.chat.at(-1).mes = code + " 继续看看周围";
+  await h.reply("孤月递来残卷。", {纳戒:"获得：幽寂谷地图×1"});
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="幽寂谷地图").count, 1);
+  assert.equal(plugin.select(h.r.getSnapshot(),"q3f7").allowed, false);
+  await h.r.restore();
+  await h.r.settleStory();
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="幽寂谷地图").count, 1);
+});
+
+test("固定奖励与互斥一同撤回，非授权显示文字/代码不能领取", async () => {
+  const h = fixture();
+  await h.ready();
+  await h.act("g7p2", "谷风吹过。");
+  await h.act("k4m8", "洞中寂静。");
+  await h.click("q3f7");
+  await h.r.stop();
+  assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="幽寂谷地图"));
+  assert.ok(!h.r.getSnapshot().known.map_youjigu);
+  h.chat.pop();
+  await h.r.restore();
+  assert.equal(plugin.select(h.r.getSnapshot(),"b8n2").allowed, true);
+  await h.click("q3f7");
+  h.chat.at(-1).mes = "开启暗格";
+  await h.reply("你取得幽寂谷地图。", {纳戒:"无"});
+  assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="幽寂谷地图"));
+  assert.equal(plugin.select(h.r.getSnapshot(),"q3f7").allowed, true);
+  h.chat.push({mes:h.sent.at(-1),is_user:true});
+  await h.reply("你取得幽寂谷地图。", {纳戒:"获得：幽寂谷地图×1"});
+  assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="幽寂谷地图"));
 });
