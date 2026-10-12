@@ -1,0 +1,29 @@
+# 2.0 模板库索引
+
+更新：2026-10-12，v14 / framework.14。这里集中保存填写说明、可复制样例、实现状态和源码索引。说明与样例不是额外的运行配置；程序只读取下表指向的源码真源，勿复制出第二套配置并期待自动生效。
+
+| 模板 | 状态 | 实际填写/执行位置 |
+|---|---|---|
+| [00 中控与条件](00-中控与条件.md) | 已实现 | runtime/dispatcher.js、conditions.js |
+| [01 节点](01-节点.md) | 已实现；幽寂谷是首个插件 | plugins/youjigu_map/event_tree.js、index.js |
+| [02 节点故事条目](02-节点故事条目.md) | 17个节点已绑定；详细故事待填 | src/config/node_stories.json |
+| [03 正文范围](03-正文范围.md) | 已实现 | runtime/narrative_scope.js |
+| [04 按钮行为](04-按钮行为.md) | 当前按钮已分类 | runtime/button_actions.js、dispatcher.js |
+| [05 物品](05-物品.md) | 已实现 | runtime/item_catalog.js、ui/item_panel.js |
+| [06 重要节点结算](06-重要节点结算.md) | 已实现独立摘要卡；无额外模型轮次 | ui/settlement_panel.js、dispatcher.js |
+| [07 人物数值与阶段](07-人物数值与阶段.md) | 通用引擎已实现；正式人物配置尚未填 | src/config/character_stages.json |
+| [08 身份开局](08-身份开局.md) | 六身份已实现 | text_data/_card_greetings.txt、starting_inventory.js |
+| [09 状态栏与GM](09-状态栏与GM.md) | 已实现 | runtime/contracts.js、ui/status_panel.js、gm_panel.js |
+| [10 快照与结算回执](10-快照与回执.md) | 已实现；实机边界需复测 | dispatcher.js、host/tavern.js |
+
+相对路径均以 `仙姝堕2.0/src/` 为基准。通用引擎已接入不等于数十个人物的五阶段正文和阈值都已编写。v14无新增正式数值、人物设定或药效。
+
+## 扩展一个事件
+
+1. 按01配置节点、前置、互斥、奖励、行为与可选结算；新事件单独插件接入中控。
+2. 按02在故事配置添加同ID内容。构建生成配套世界书，勿只改运行时酒馆条目期待下次构建保留。
+3. 人物条件按07注册数值/阶段，再在节点conditions引用；立绘也从统一阶段结果读取。
+4. 按04判断是否发送；每次发送与耗时、轮次是不同概念。
+5. 默认 `node ship.js`（Windows按GEMINI.md使用node.exe），导入新的PNG及配套独立世界书，再由主人复测。
+
+v14重要节点结算是挂在完成回复楼的独立展示卡，不新增酒馆原生编号消息，避免额外楼层破坏撤回/分支。真正插入原生系统消息或调用模型润色摘要尚未接入。

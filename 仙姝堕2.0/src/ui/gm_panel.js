@@ -27,7 +27,9 @@ function openGM(doc, runtime, data, report) {
     s.stat_data.段位 +
     '"></label><label>纳戒物品（每行：名称 | 数量 | 消耗品或非消耗品 | 介绍 | 效果）<textarea name="items">' +
     esc(s.inventory.map((item) => { const x = describeItem(item); return [x.name,x.count,x.consumable ? "消耗品" : "非消耗品",x.description,x.effect].join(" | "); }).join("\n")) +
-    "</textarea></label><details><summary>名器阶段与归属</summary>" +
+    "</textarea></label>" + Object.entries(data.characterProfiles || {}).flatMap(([name,cfg])=>Object.entries(cfg.metrics || {}).map(([key,m])=>
+      '<label>'+esc(name+' · '+key)+'<input type="number" name="metric:'+esc(name)+':'+esc(key)+'" min="'+m.min+'" max="'+m.max+'" value="'+(s.stat_data.character_metrics?.[name]?.[key] ?? m.default)+'"></label>'
+    )).join("") + "<details><summary>名器阶段与归属</summary>" +
     Object.entries(R.RELIC_PILOT_CONFIG)
       .map(
         ([id, c]) =>
@@ -119,6 +121,10 @@ function openGM(doc, runtime, data, report) {
         });
       if (JSON.stringify(items.map(describeItem)) !== JSON.stringify(s.inventory.map(describeItem)))
         patch.inventory = items;
+      for (const [name,cfg] of Object.entries(data.characterProfiles || {})) for (const key of Object.keys(cfg.metrics || {})) {
+        const value = Number(f.get("metric:"+name+":"+key));
+        if (value !== s.stat_data.character_metrics?.[name]?.[key]) patch["metric."+name+"."+key] = value;
+      }
       for (const k of R.ALL_FIELDS) {
         const v = f.has("known:" + k);
         if (v !== !!s.known[k]) patch["known." + k] = v;

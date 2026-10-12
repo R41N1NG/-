@@ -25,6 +25,7 @@ function source(root) {
     "module.exports=" +
     JSON.stringify({
       greetings,
+      characterProfiles: JSON.parse(read("src/config/character_stages.json")).characters,
       assets,
       openingMenu: buildMenuHtml({
         assets: JSON.parse(read("src/assets_data/opening_assets.json")),

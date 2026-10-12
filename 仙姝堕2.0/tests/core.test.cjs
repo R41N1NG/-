@@ -10,7 +10,7 @@ const ROOT = path.join(__dirname, ".."),
   C = require("../src/runtime/contracts"),
   { createDispatcher } = require("../src/runtime/dispatcher"),
   { createWorldbookHost, evaluateGate } = require("../src/host/worldbook");
-function harness() {
+function harness(runtimeData = data) {
   let c = {
       chatId: "a",
       branchId: "a",
@@ -56,7 +56,7 @@ function harness() {
     syncIdentity: async () => {},
     report: () => {},
   };
-  const r = createDispatcher(adapter, data),
+  const r = createDispatcher(adapter, runtimeData),
     opening = (identity) =>
       r.dispatchIntent({ type: "SELECT_IDENTITY", payload: { identity } }),
     reply = (text) => {
@@ -486,7 +486,7 @@ test("构建可独立执行、脚本语法、PNG双向回读及世界书防递�
   new vm.Script(built.script);
   assert.deepEqual(unpack(built.image), built.card);
   assert.equal(built.card.data.name, "仙姝堕2.0·框架测试");
-  assert.equal(built.card.data.character_book.entries.length, 229);
+  assert.equal(built.card.data.character_book.entries.length, 229 + Object.keys(require("../src/config/node_stories.json")).length);
   assert.ok(
     built.card.data.character_book.entries.every(
       (e) => e.extensions.exclude_recursion && e.extensions.prevent_recursion,
@@ -784,7 +784,7 @@ test("消耗品使用自动扣一，最后一份移除，模型重复扣减及�
 test("非消耗物品使用不扣数，说明和效果明确注入，模型消耗申报不改数量", async () => {
   const h = harness();
   await h.opening("赵无忧");
-  await h.r.dispatchIntent({type:"GM_PATCH",payload:{inventory:[{id:"图",name:"幽寂谷地图",count:1,consumable:false,description:"谷内路线残图",effect:"只用于阅读谷内路线"}]}});
+  await h.r.dispatchIntent({type:"GM_PATCH",payload:{inventory:[{id:"图",name:"幽寂谷地图",count:1,consumable:false,description:"谷内路线残图",effect:"只用于阅读谷内路线",useMode:"send"}]}});
   await h.r.dispatchIntent({type:"USE_ITEM",payload:{id:"图"}});
   assert.ok(h.prompts.at(-1).includes("谷内路线残图"));
   assert.ok(h.prompts.at(-1).includes("只用于阅读谷内路线"));
@@ -811,25 +811,71 @@ test("消耗品发送失败/停止删楼一起恢复数量，旧库存补类型�
 });
 
 
-test("丢弃非消耗品也扣1：回复不重复扣、停止恢复、失败不扣库存", async () => {
+test("丢弃是本地操作：扣1持久化，不发送、不计轮次/时间，不产生pending", async () => {
   const h = harness();
   await h.opening("赵无忧");
-  const discard = () => h.r.dispatchIntent({type:"DISCARD_ITEM",payload:{id:"墨山道佩剑"}});
+  const before = h.r.getSnapshot(), floors = h.c.chat.length, sent = h.sent.length;
   h.fail(true);
-  await assert.rejects(discard(), /send failed/);
-  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="墨山道佩剑").count, 1);
-  h.fail(false);
-  await discard();
+  await h.r.dispatchIntent({type:"DISCARD_ITEM",payload:{id:"墨山道佩剑"}});
   assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="墨山道佩剑"));
-  assert.match(h.prompts.at(-1), /本次不是使用，不触发使用效果/);
-  await h.r.stop();
-  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="墨山道佩剑").count, 1);
-  h.c.chat.pop();
-  await h.r.restore();
-  await discard();
-  await h.reply("你把墨山道佩剑丢弃。<Status_block><纳戒>消耗：墨山道佩剑×1</纳戒></Status_block>");
-  assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="墨山道佩剑"));
-  assert.equal(h.r.getSnapshot().pending, null);
+  assert.equal(h.sent.length,sent);
+  assert.equal(h.c.chat.length,floors);
+  assert.equal(h.r.getSnapshot().pending,null);
+  assert.equal(h.r.getSnapshot().storyCount,before.storyCount);
+  assert.deepEqual(h.r.getSnapshot().calendarDate,before.calendarDate);
   await h.r.restore();
   assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==="墨山道佩剑"));
+  await h.r.dispatchIntent({type:"DISCARD_ITEM",payload:{id:"醉春风"}});
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="醉春风").count,1);
+  h.generating(true);
+  await assert.rejects(h.r.dispatchIntent({type:"DISCARD_ITEM",payload:{id:"醉春风"}}), /请等/);
+});
+
+test("查看地图不发送；交谈/自由行动填入，观察才发送", async () => {
+  const h = harness();
+  await h.opening("赵无忧");
+  await h.r.dispatchIntent({type:"GM_PATCH",payload:{inventory:[{name:"幽寂谷地图",count:1}]}});
+  const sent = h.sent.length, filled = [];
+  h.adapter.fillInput = x=>filled.push(x);
+  await h.r.dispatchIntent({type:"USE_ITEM",payload:{id:"幽寂谷地图"}});
+  assert.equal(h.r.getSnapshot().inventory[0].count,1);
+  assert.equal(h.r.getSnapshot().pending,null);
+  for (const text of ["与在场之人交谈","自行行动"]) await h.r.dispatchIntent({type:"QUICK_ACTION",payload:{text}});
+  assert.deepEqual(filled,["与在场之人交谈：","自行行动："]);
+  assert.equal(h.sent.length,sent);
+  await h.r.dispatchIntent({type:"QUICK_ACTION",payload:{text:"观察四周"}});
+  assert.equal(h.sent.at(-1),"观察四周");
+});
+
+test("人物指标由中控保存：GM覆盖/释放、阶段重载，正文不直接改数值",async()=>{
+  const profiles={角色甲:{metrics:{好感:{min:0,max:100,default:0}},stages:[{id:"base",priority:0,conditions:[]},{id:"high",priority:1,conditions:[{kind:"metric",character:"角色甲",key:"好感",op:"gte",value:60}]}]}};
+  const h=harness({...data,characterProfiles:profiles}); await h.opening("赵无忧");
+  await h.r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"角色甲",key:"好感",value:70}});
+  assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"high");
+  await h.r.restore(); assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"high");
+  await h.r.dispatchIntent({type:"GM_PATCH",payload:{"metric.角色甲.好感":20}});
+  assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"base");
+  await assert.rejects(h.r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"角色甲",key:"好感",value:80}}),/人工覆盖/);
+  await h.r.dispatchIntent({type:"GM_RELEASE",payload:{keys:["metric.角色甲.好感"]}});
+  await h.r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"角色甲",key:"好感",value:80}});
+  assert.equal(h.r.getSnapshot().stat_data.character_stages.角色甲.id,"high");
+});
+
+test("节点故事门禁同步失败不发送，固定奖励和pending一并恢复",async()=>{
+  const h=harness(); await h.opening("赵无忧"); h.r.registerPlugin(plugin());
+  h.adapter.syncState=async state=>{if(state.pending?.nodeId) throw Error("条目同步失败");};
+  const before=h.r.getSnapshot();
+  await assert.rejects(h.select(),/条目同步失败/);
+  assert.equal(h.sent.length,0); assert.equal(h.r.getSnapshot().pending,null);
+  assert.deepEqual(h.r.getSnapshot().inventory,before.inventory);
+});
+
+test("节点数值条件与确定变化：条件拒绝不发送，点选变化可随停止恢复",async()=>{
+  const profiles={角色甲:{metrics:{好感:{min:0,max:100,default:0}},stages:[{id:"base",priority:0,conditions:[]}]}};
+  const h=harness({...data,characterProfiles:profiles}); await h.opening("赵无忧");
+  const base=plugin(); let gated=true;
+  h.r.registerPlugin({...base, select(s,id){return {...base.select(s,id),conditions:gated ? [{kind:"metric",character:"角色甲",key:"好感",op:"gte",value:10}] : [],metricChanges:[{character:"角色甲",key:"好感",delta:5}]};}});
+  await assert.rejects(h.select(),/条件未满足/); assert.equal(h.sent.length,0);
+  gated=false; await h.select(); assert.equal(h.r.getSnapshot().stat_data.character_metrics.角色甲.好感,5);
+  await h.r.stop(); assert.equal(h.r.getSnapshot().stat_data.character_metrics.角色甲.好感,0);
 });

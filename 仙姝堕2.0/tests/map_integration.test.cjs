@@ -222,6 +222,15 @@ test("真实插件+调度器：山涧/草药/正常出口及提前退出耗时",
   await h.reply("你沿山径离开幽寂谷。", {历时:"半刻钟"});
   assert.equal(h.r.getSnapshot().stat_data.历时, "2日");
   assert.equal(h.r.getSnapshot().calendarDate.day, 5);
+  const settlements=Object.values(h.r.getSnapshot().settlements);
+  assert.equal(settlements.length,1);
+  assert.equal(settlements[0].mode,"separate");
+  assert.ok(settlements[0].rewards.includes("草药"));
+  const count=h.r.getSnapshot().storyCount, floors=h.chat.length;
+  await h.r.settleStory();
+  assert.equal(Object.values(h.r.getSnapshot().settlements).length,1);
+  assert.equal(h.r.getSnapshot().storyCount,count);
+  assert.equal(h.chat.length,floors);
   assert.ok(h.r.getSnapshot().inventory.some(x => x.name === "草药"));
   const early = fixture();
   await early.ready();

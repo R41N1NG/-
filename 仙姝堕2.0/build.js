@@ -4,6 +4,7 @@ const fs = require("node:fs"),
   vm = require("node:vm"),
   zlib = require("node:zlib");
 const { source, load } = require("./tools/data.cjs");
+const {storyEntries} = require("./src/runtime/story_entries");
 const { evaluateGate } = require("./src/host/worldbook");
 const ROOT = __dirname,
   NAME = "仙姝堕2.0·框架测试",
@@ -137,6 +138,8 @@ function build() {
     e.preventRecursion = true;
     e.disable = String(e.content).startsWith("@@if ") || e.disable === true;
   }
+  const extra = storyEntries(JSON.parse(read("src/config/node_stories.json")),data.characterProfiles,Math.max(...entries.map(e=>e.uid))+1);
+  entries.push(...extra);
   const script = bundle(),
     characterBook = {
       name: NAME,
@@ -159,6 +162,7 @@ function build() {
           depth: e.depth,
           role: e.role,
           vectorized: e.vectorized,
+          ...(e.scanDepth !== undefined ? {scan_depth:e.scanDepth,match_user:e.matchUser,match_character:e.matchCharacter} : {}),
           selectiveLogic: e.selectiveLogic,
         },
         enabled: !e.disable,
@@ -187,7 +191,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.13",
+    character_version: "2.0-framework.14",
     extensions: {
       world: NAME,
       tavern_helper: {
@@ -233,7 +237,7 @@ function build() {
       ],
     },
   };
-  const card = { spec: "chara_card_v2", spec_version: "2.0", data: body };
+  const card = JSON.parse(JSON.stringify({ spec: "chara_card_v2", spec_version: "2.0", data: body }));
   fs.mkdirSync(OUT, { recursive: true });
   fs.mkdirSync(DIST, { recursive: true });
   fs.writeFileSync(
@@ -244,7 +248,7 @@ function build() {
   if (JSON.stringify(unpack(image)) !== JSON.stringify(card))
     throw Error("PNG回读不一致");
   fs.writeFileSync(path.join(OUT, NAME + ".png"), image);
-  fs.writeFileSync(path.join(DIST, NAME + "-v13.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v14.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(

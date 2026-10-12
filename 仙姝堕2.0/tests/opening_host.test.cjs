@@ -267,9 +267,10 @@ test("打包HUD快捷行动与地图共用门禁：空闲真实发送，生成�
       if (action === "地图") await dispatch();
       else {
         h.doc.querySelector('[data-action="' + action + '"]').click();
-        await until(() => h.sends.length === 1);
+        const fillOnly = ["与在场之人交谈","自行行动"].includes(action);
+        await until(() => fillOnly ? h.doc.querySelector("#send_textarea").value.endsWith("：") : h.sends.length === 1);
       }
-      assert.equal(h.sends.length, 1);
+      assert.equal(h.sends.length, ["与在场之人交谈","自行行动"].includes(action) ? 0 : 1);
       if (action === "地图")
         assert.equal(runtime.getSnapshot().pending.nodeId, "g7p2");
     } finally {
@@ -299,7 +300,8 @@ test("提示词预计算不会锁动作或阻止原生候选身份恢复，不�
     await assert.rejects(h.win.XSD2.runtime.dispatchIntent({type:"QUICK_ACTION",payload:{text:"自行行动"}}), /请等/);
     await h.emit("GENERATION_ENDED");
     await h.win.XSD2.runtime.dispatchIntent({type:"QUICK_ACTION",payload:{text:"自行行动"}});
-    assert.equal(h.sends.length, 2);
+    assert.equal(h.sends.length, 1);
+    assert.equal(h.doc.querySelector("#send_textarea").value,"自行行动：");
   } finally { h.close(); }
 });
 

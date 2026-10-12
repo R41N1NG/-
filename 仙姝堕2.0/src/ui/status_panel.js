@@ -1,6 +1,7 @@
 "use strict";
 const { esc, modal } = require("./dom");
 const { mountOpening } = require("./opening_menu");
+const {renderSettlement} = require("./settlement_panel");
 const { openItem } = require("./item_panel");
 const { openGM } = require("./gm_panel");
 const { dateText } = require("../runtime/contracts");
@@ -33,6 +34,8 @@ const PORTRAITS = {
   魂欢殿主: "bingxiangsi",
 };
 function portrait(name, s, data) {
+  const stagePortrait = s.stat_data?.character_stages?.[name]?.portrait;
+  if (stagePortrait?.small && stagePortrait?.large) return stagePortrait;
   let id = PORTRAITS[name];
   if (!id) return null;
   const R = data.rules(s.stat_data),
@@ -54,7 +57,9 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   const style = doc.createElement("style");
   style.textContent = CSS;
   doc.head.append(style);
-  container.append(root);
+  const settlement = doc.createElement("div");
+  settlement.dataset.xsd2Settlements = "";
+  container.append(settlement,root);
   let plugins = [],
     dialogs = [],
     disposed = false,
@@ -70,6 +75,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     for (const p of plugins) p();
     plugins = [];
     const s = runtime.getSnapshot();
+    renderSettlement(doc,settlement,s);
     if (!s) {
       root.className = "xsd2-opening-root";
       const view = runtime.getOpeningView?.() || {
@@ -252,6 +258,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       plugins.forEach((f) => f());
       dialogs.forEach((f) => f?.());
       root.remove();
+      settlement.remove();
       style.remove();
     },
   };

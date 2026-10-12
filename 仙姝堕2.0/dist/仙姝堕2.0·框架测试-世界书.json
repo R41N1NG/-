@@ -9545,6 +9545,329 @@
       "delay": null,
       "displayIndex": 228,
       "disable": false
+    },
+    "229": {
+      "uid": 229,
+      "comment": "【节点故事】g7p2",
+      "key": [
+        "XSD2_g7p2_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：进入幽寂谷】\n\n【本轮必须发生】\n只演绎步入幽寂谷入口，山风萧瑟，不提前揭示洞府或山涧深处细节。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "230": {
+      "uid": 230,
+      "comment": "【节点故事】k4m8",
+      "key": [
+        "XSD2_k4m8_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：探索洞府】\n\n【本轮必须发生】\n只演绎来到洞府石门前并进入洞府，不提前开启香炉或暗格。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "231": {
+      "uid": 231,
+      "comment": "【节点故事】s9a3",
+      "key": [
+        "XSD2_s9a3_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：探索山涧】\n\n【本轮必须发生】\n只演绎沿溪涧行进，水声潺潺，不提前触发其他遭遇。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "232": {
+      "uid": 232,
+      "comment": "【节点故事】b8n2",
+      "key": [
+        "XSD2_b8n2_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：开启香炉】\n\n【本轮必须发生】\n演绎开启香炉并取出其中遗留的灵丹，注意同组暗格将不可再启。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「丹药」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "233": {
+      "uid": 233,
+      "comment": "【节点故事】q3f7",
+      "key": [
+        "XSD2_q3f7_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：开启暗格】\n\n【本轮必须发生】\n演绎摸索石壁开启暗格，取得幽寂谷地图残卷，注意同组香炉将不可再启。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「幽寂谷地图」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "234": {
+      "uid": 234,
+      "comment": "【节点故事】h5w9",
+      "key": [
+        "XSD2_h5w9_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：离开洞府】\n\n【本轮必须发生】\n演绎退出洞府，不再折返，径直穿过谷口岔路深入幽寂谷第二轮腹地。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "235": {
+      "uid": 235,
+      "comment": "【节点故事】r2c6",
+      "key": [
+        "XSD2_r2c6_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：查看溪水】\n\n【本轮必须发生】\n演绎细观山涧溪流清波，察看水底灵气异象。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "236": {
+      "uid": 236,
+      "comment": "【节点故事】a6d4",
+      "key": [
+        "XSD2_a6d4_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：查看树丛】\n\n【本轮必须发生】\n演绎拨开溪畔草丛，查探四周痕迹。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "237": {
+      "uid": 237,
+      "comment": "【节点故事】j8e1",
+      "key": [
+        "XSD2_j8e1_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：离开山涧】\n\n【本轮必须发生】\n演绎离开溪水山涧，不再折返，径直深入幽寂谷第二轮腹地。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "238": {
+      "uid": 238,
+      "comment": "【节点故事】u9h3",
+      "key": [
+        "XSD2_u9h3_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：前往山谷】\n\n【本轮必须发生】\n演绎穿过谷中岔路，行至生有灵草的幽静山谷。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "239": {
+      "uid": 239,
+      "comment": "【节点故事】v4t7",
+      "key": [
+        "XSD2_v4t7_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：前往密室】\n\n【本轮必须发生】\n演绎持地图辨认方位，开启隐蔽石隙步入密室。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "240": {
+      "uid": 240,
+      "comment": "【节点故事】n5z8",
+      "key": [
+        "XSD2_n5z8_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：收集草药】\n\n【本轮必须发生】\n演绎在山谷崖壁处寻得并采摘草药，收入囊中。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「草药」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "241": {
+      "uid": 241,
+      "comment": "【节点故事】l7q2",
+      "key": [
+        "XSD2_l7q2_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：从出口离开】\n\n【本轮必须发生】\n演绎完成谷中探索，顺山径整装出谷，本次历练圆满结束。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "242": {
+      "uid": 242,
+      "comment": "【节点故事】p1x6",
+      "key": [
+        "XSD2_p1x6_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：打开左边暗格】\n\n【本轮必须发生】\n演绎开启密室左侧石格，取得法宝，右侧暗格随即封死。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「法宝」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "243": {
+      "uid": 243,
+      "comment": "【节点故事】t6v4",
+      "key": [
+        "XSD2_t6v4_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：打开右边暗格】\n\n【本轮必须发生】\n演绎开启密室右侧暗格，取得秘籍，左侧暗格随即封死。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「秘籍」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "244": {
+      "uid": 244,
+      "comment": "【节点故事】e3j9",
+      "key": [
+        "XSD2_e3j9_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：离开密室】\n\n【本轮必须发生】\n演绎离开密室暗道，结束本次幽寂谷行程。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "245": {
+      "uid": 245,
+      "comment": "【节点故事】z8u5",
+      "key": [
+        "XSD2_z8u5_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：提前离开幽寂谷】\n\n【本轮必须发生】\n演绎因故决定提前折返，收拾行装离谷。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
     }
   },
   "originalData": {

@@ -142,6 +142,13 @@ function createTavernHost(win, doc, cardName) {
       );
     },
     preflightSend,
+    fillInput(text) {
+      const box = top.document.querySelector("#send_textarea");
+      if (!box) throw Error("找不到输入栏");
+      box.value = text;
+      box.dispatchEvent(new top.Event("input", {bubbles:true}));
+      box.focus();
+    },
     async send(text) {
       preflightSend();
       const box = top.document.querySelector("#send_textarea");

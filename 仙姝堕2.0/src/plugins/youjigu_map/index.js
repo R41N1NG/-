@@ -1,4 +1,5 @@
 "use strict";
+const {meets} = require("../../runtime/conditions");
 
 /**
  * 《仙姝堕 2.0》幽寂谷地图插件入口模块 (CommonJS)
@@ -61,8 +62,11 @@ function scenePlace(step) {
   }[step] || "幽寂谷";
 }
 
+function nodeAllowed(snapshot, def) {
+  return (!def.identities || def.identities.includes(snapshot.identity)) && meets(snapshot,def.conditions || []);
+}
 function narrativeScope(snapshot, state, storyCount) {
-  const options = getAvailableOptions(state, storyCount).filter(x => !x.blocked);
+  const options = getAvailableOptions(state, storyCount).filter(x => !x.blocked && nodeAllowed(snapshot,EVENT_DEFS[x.id]));
   const descriptions = {
     k4m8:"一条小径通往洞府，尚未选择进入", s9a3:"另一条沿溪深入山涧，尚未选择进入",
     h5w9:"离开洞府，继续深入谷中", j8e1:"离开山涧，继续深入谷中",
@@ -85,11 +89,11 @@ function select(snapshot, nodeId) {
   const storyCount = snapshot?.storyCount || 0;
   const blockReason = checkActionBlock(state, nodeId, storyCount);
 
-  if (blockReason) {
+  if (blockReason || !nodeAllowed(snapshot,def)) {
     return {
       id: nodeId,
       allowed: false,
-      reason: blockReason,
+      reason: blockReason || "人物数值或阶段条件未满足",
     };
   }
 
@@ -114,6 +118,10 @@ function select(snapshot, nodeId) {
     rewardAliases:def.reward === "幽寂谷地图"
       ? {幽寂谷地图:["地图", "残图", "舆图", "残卷"]} : {},
     immediateResult:def.reward || def.exitDays ? confirmed : undefined,
+    identities:def.identities || undefined,
+    conditions:def.conditions || [],
+    metricChanges:def.metricChanges || [],
+    settlement:def.settlement || {mode:"none"},
     prompt:prompt + "\n" + scope,
     settlementMode,
     destination,
@@ -262,7 +270,7 @@ function mount(slotElement, runtimeApi) {
 
     const state = getPluginState(snapshot);
     const storyCount = snapshot.storyCount || 0;
-    const availableNodes = getAvailableOptions(state, storyCount);
+    const availableNodes = getAvailableOptions(state, storyCount).filter(x=>nodeAllowed(snapshot,EVENT_DEFS[x.id]));
 
     modalOverlay = doc.createElement("div");
     modalOverlay.className = "xsd2-map-modal-overlay";

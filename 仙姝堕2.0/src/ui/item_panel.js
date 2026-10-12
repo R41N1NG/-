@@ -12,8 +12,8 @@ function openItem(doc, runtime, id, report) {
     '<p>数量：'+esc(item.count)+' · '+(item.consumable ? '消耗品' : '非消耗品')+'</p>'+
     '<p><strong>介绍</strong><br>'+esc(item.description)+'</p>'+
     '<p><strong>效果</strong><br>'+esc(item.effect)+'</p>'+
-    '<p>丢弃每次移除1件；'+(item.consumable ? '使用每次消耗1件。' : '使用保留物品。')+'</p>'+
-    '<button type="button" data-use>使用</button><button type="button" data-discard>丢弃</button>'+
+    '<p>丢弃每次移除1件，不发送、不耗时；'+(item.consumable ? '使用每次消耗1件。' : '使用保留物品。')+'</p>'+
+    '<button type="button" data-use>'+ (item.useMode === 'view' ? '查看' : '使用') +'</button><button type="button" data-discard>丢弃</button>'+
     '<p role="status" aria-live="polite"></p>';
   const buttons = [...el.querySelectorAll("[data-use],[data-discard]")];
   async function act(type) {

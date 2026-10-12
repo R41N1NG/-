@@ -1,5 +1,8 @@
 "use strict";
 const C = require("./contracts");
+const {meets} = require("./conditions");
+const {resolveStages,writeMetric,metricSpec} = require("./character_stages");
+const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
@@ -110,7 +113,8 @@ function createDispatcher(adapter, data) {
     s.stat_data.历基准 ??= C.day(d) / 30;
     s.stat_data.历时累计 = C.day(d) / 30 - s.stat_data.历基准;
     if (s.activeEvent?.place) s.stat_data.地点 = s.activeEvent.place;
-    return s;
+    s.stat_data.node_trigger = s.pending?.nodeId || null;
+    return resolveStages(s, data.characterProfiles || {});
   }
   function manual(s) {
     for (const [k, v] of Object.entries(s.manual || {})) {
@@ -120,6 +124,10 @@ function createDispatcher(adapter, data) {
       } else if (k === "calendarDate") s.calendarDate = C.clone(v);
       else if (k === "inventory") s.stat_data.inventory = C.clone(v);
       else if (k === "段位") s.stat_data.段位 = v;
+      else if (k.startsWith("metric.")) {
+        const [character,key] = k.slice(7).split(".");
+        writeMetric(s.stat_data,data.characterProfiles || {},character,key,v);
+      }
       else if (k.startsWith("known.")) s.stat_data.known[k.slice(6)] = v;
       else if (k.startsWith("owner.")) s.stat_data.名器归属[k.slice(6)] = v;
     }
@@ -179,6 +187,7 @@ function createDispatcher(adapter, data) {
       await adapter.syncState?.(C.clone(s));
     } catch (e) {
       adapter.report?.(e);
+      if (type === "pending") throw e;
     }
     guard(c);
     notify(type);
@@ -314,6 +323,7 @@ function createDispatcher(adapter, data) {
     if (!n || n.id !== intent.payload.nodeId || n.allowed === false)
       throw Error(n?.reason || "当前节点不可选");
     C.safe(n);
+    if (!meets(snapshot(), n.conditions || [])) throw Error("节点数值或阶段条件未满足");
     if (n.identities && !n.identities.includes(current.identity))
       throw Error("身份不满足");
     const stamp = C.day(current.calendarDate);
@@ -360,6 +370,13 @@ function createDispatcher(adapter, data) {
       selection: C.clone(n),
       before,
     };
+    for (const x of n.metricChanges || []) {
+      const spec = metricSpec(data.characterProfiles || {},x.character,x.key);
+      if (!Number.isFinite(x.delta)) throw Error("节点数值变化须为有限数值");
+      if (next.manual["metric."+x.character+"."+x.key] !== undefined) throw Error("人物数值处于人工覆盖，请先交还自动");
+      const value = next.stat_data.character_metrics?.[x.character]?.[x.key] ?? spec.default;
+      writeMetric(next.stat_data,data.characterProfiles || {},x.character,x.key,value+x.delta);
+    }
     if (n.immediateResult !== undefined) {
       const pending = next.pending;
       if (n.immediateResult.outcome !== "success") throw Error("固定结果必须成功且符合节点白名单");
@@ -370,9 +387,9 @@ function createDispatcher(adapter, data) {
     }
     if (n.reservedState !== undefined)
       next.pluginState[plugin.id] = C.clone(n.reservedState);
-    await commit(c, next, "pending");
-    guard(c);
     try {
+      await commit(c, next, "pending");
+      guard(c);
       await adapter.send(next.pending.actionCode);
       return snapshot();
     } catch (e) {
@@ -757,6 +774,14 @@ function createDispatcher(adapter, data) {
       ? p.selection.destination : undefined;
     if (confirmedPlace) s.stat_data.地点 = confirmedPlace;
     if (confirmedPlace && p.selection.exitDays) s.stat_data.历时 = p.selection.exitDays + "日";
+    if (s.lastNodeResult?.floor === c.floor && s.lastNodeResult.outcome === "success" && p?.selection.settlement?.mode && p.selection.settlement.mode !== "none") {
+      const eventReceipt = s.pluginState[p.pluginId]?.receipt;
+      s.settlements ||= {};
+      s.settlements[p.id] = {id:p.id, floor:c.floor, title:p.selection.settlement.title || "事件结算", mode:p.selection.settlement.mode,
+        action:p.displayText || p.actionText, elapsedDays:s.receipts[p.id]?.elapsedDays || 0,
+        date:C.clone(s.calendarDate), rewards:C.clone(eventReceipt?.rewards || s.receipts[p.id]?.rewards || []),
+        facts:C.clone(eventReceipt?.summaryLog || []), exitType:eventReceipt?.exitType || ""};
+    }
     manual(s);
     const fixed = C.canonicalStatus(body, s, confirmedPlace);
     if (fixed !== m.mes) {
@@ -798,6 +823,11 @@ function createDispatcher(adapter, data) {
         s.manual[k] = C.clone(v);
       } else if (k === "段位") {
         if (!Number.isInteger(v) || v < 1 || v > 16) throw Error("段位为1—16");
+        s.manual[k] = v;
+      } else if (k.startsWith("metric.")) {
+        if (s.pending) throw Error("请先撤回待执行行动，再修改人物数值");
+        const [character,key] = k.slice(7).split(".");
+        writeMetric(s.stat_data,data.characterProfiles || {},character,key,v);
         s.manual[k] = v;
       } else if (
         k.startsWith("relicStage.") &&
@@ -886,15 +916,23 @@ function createDispatcher(adapter, data) {
             "rollback",
           );
         }
+        case "SET_CHARACTER_METRIC": {
+          if (!current || current.pending || adapter.isGenerating?.()) throw Error("请等当前行动结束");
+          const next = C.clone(current), x = intent.payload;
+          if (next.manual["metric."+x.character+"."+x.key] !== undefined) throw Error("人物数值处于人工覆盖，请先交还自动");
+          writeMetric(next.stat_data,data.characterProfiles || {},x.character,x.key,x.value);
+          return commit(c,next,"character_metric");
+        }
         case "QUICK_ACTION": {
           if (current?.pending || adapter.isGenerating?.())
             throw Error("请等当前行动结束");
-          if (
-            !["观察四周", "与在场之人交谈", "自行行动"].includes(
-              intent.payload.text,
-            )
-          )
-            throw Error("未知快捷行动");
+          const behavior = QUICK_ACTIONS[intent.payload.text];
+          if (!behavior) throw Error("未知快捷行动");
+          if (behavior.mode === "fill") {
+            if (!adapter.fillInput) throw Error("当前宿主不支持填入输入栏");
+            adapter.fillInput(behavior.draft);
+            return snapshot();
+          }
           adapter.preflightSend?.();
           await adapter.send(intent.payload.text);
           return snapshot();
@@ -912,7 +950,10 @@ function createDispatcher(adapter, data) {
           if (!Number.isSafeInteger(meta.count) || meta.count < 1) throw Error("物品数量无效");
           if ((discard || meta.consumable) && current.manual.inventory)
             throw Error("纳戒处于人工覆盖，请先交还自动再消耗物品");
-          adapter.preflightSend?.();
+          if (!["send","view"].includes(itemAction(meta))) throw Error("未知物品使用行为");
+          const localUse = !discard && itemAction(meta) === "view";
+          if (localUse && meta.consumable) throw Error("消耗品不能配置为仅查看使用");
+          if (!discard && !localUse) adapter.preflightSend?.();
           const before = C.clone(current), next = C.clone(current);
           if (discard || meta.consumable) {
             const target = next.stat_data.inventory.find(x => x.id === item.id && x.name === item.name);
@@ -920,9 +961,13 @@ function createDispatcher(adapter, data) {
             next.stat_data.inventory = next.stat_data.inventory.filter(x => x.count > 0);
           }
           next.inventoryChanges = [{action:discard ? "丢弃" : meta.consumable ? "消耗" : "使用", name:meta.name, count:1}];
+          if (discard || localUse) {
+            await commit(c,next,discard ? "item_discard" : "item_view");
+            return snapshot();
+          }
           next.pending = {id:c.chatId+":item:"+c.floor+":"+current.revision+":"+ ++serial,
-            kind:"item", operation:discard ? "discard" : "use", floor:c.floor, actionText:(discard ? "丢弃" : "使用")+meta.name, item:meta, selection:{}, before,
-            prompt:discard ? "【本轮物品丢弃】玩家已经丢弃1份「"+meta.name+"」，后台已扣除，剩余"+(meta.count-1)+"份；不得重复扣减或重新获得。物品介绍："+meta.description+"。本次不是使用，不触发使用效果。只演绎丢弃及当前场景中的反应。" : itemUsePrompt(meta, meta.count - (meta.consumable ? 1 : 0))};
+            kind:"item", operation:discard ? "discard" : "use", floor:c.floor, actionText:"使用"+meta.name, item:meta, selection:{}, before,
+            prompt:itemUsePrompt(meta, meta.count - (meta.consumable ? 1 : 0))};
           await commit(c, next, "item_use");
           guard(c);
           try { await adapter.send(next.pending.actionText); }

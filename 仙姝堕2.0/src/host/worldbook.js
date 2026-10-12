@@ -1,4 +1,5 @@
 "use strict";
+const {managedEnabled} = require("../runtime/story_entries");
 /** Only the current card's primary worldbook; never scan names or additional books. */
 function evaluateGate(content, stat) {
   const line = String(content).split("\n")[0];
@@ -82,13 +83,16 @@ function createWorldbookHost(helper, getContext, scope = {}) {
     if (!name) return;
     const entries = await helper.getWorldbook(name);
     if (expected && !expected()) throw Error("切换聊天，取消门禁同步");
+    if (stat.node_trigger && !entries.some(e=>(e.name || e.comment) === "【节点故事】"+stat.node_trigger))
+      throw Error("当前世界书缺少节点故事条目，请导入新版测试卡和配套世界书");
     let changed = false;
     const updated = entries.map((e) => {
-      if (!String(e.content).startsWith("@@if ")) return e;
-      const enabled = evaluateGate(e.content, stat);
+      const managed = managedEnabled(e.name || e.comment || "",stat);
+      if (managed === null && !String(e.content).startsWith("@@if ")) return e;
+      const enabled = managed === null ? evaluateGate(e.content, stat) : managed;
       if (enabled !== e.enabled) {
         changed = true;
-        return { ...e, enabled };
+        return { ...e, enabled, disable:!enabled };
       }
       return e;
     });
