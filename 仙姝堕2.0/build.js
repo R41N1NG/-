@@ -129,7 +129,7 @@ function build() {
     book = JSON.parse(read("仙姝堕-世界书.json")),
     entries = Object.values(book.entries);
   if (
-    entries.length !== 229 ||
+    entries.length !== 234 ||
     entries.some((e) => String(e.comment).startsWith("【剧情】"))
   )
     throw Error("世界书底表数量或隔离检查失败");
