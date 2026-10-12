@@ -29,7 +29,7 @@ function mountPromotion(slot,runtime,plugin) {
         };el.append(b);
       }
       if(row.active){
-        button("完成本次拜访",row.cfg.finishId);button("结束本次拜访",row.cfg.leaveId);
+        button("完成本次拜访",row.cfg.finishId);
         if(row.lastResult === "invalid") el.append(doc.createTextNode("尚未收到有效结算回报，可以再次点击完成。"));
       }else if(row.allowed)button(row.cfg.label,row.cfg.entryId);
       else if(row.phase !== row.cfg.toStage){

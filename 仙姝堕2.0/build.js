@@ -256,7 +256,7 @@ function build() {
       }
     }
   }
-  fs.writeFileSync(path.join(DIST, NAME + "-v17.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v18.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(

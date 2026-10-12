@@ -56,7 +56,7 @@ test("低好感/其他事件阻止入口；发送失败/停止入口恢复；退
   h.chat.pop();await h.r.restore();await h.click("g7p2",map);await h.reply("你已入谷。");
   await assert.rejects(h.click("yhrNight"),/另一个事件/);
   const b=fixture();await b.ready();await b.click("yhrNight");await b.reply("竹林夜风。");
-  await b.click("yhrLeave");await b.reply("你离开了。");assert.equal(b.stage(),"stage01");assert.equal(b.r.getSnapshot().activeEvent,null);
+  await assert.rejects(b.click("yhrLeave"),/不满足|未注册/);assert.ok(b.r.getSnapshot().activeEvent);
 });
 test("停止完成回报、删除成功楼及重生成恢复阶段一，新的否回报不能沿用成功",async()=>{
   const h=fixture();await h.ready();await h.click("yhrNight");await h.reply("你看到她沐浴。");

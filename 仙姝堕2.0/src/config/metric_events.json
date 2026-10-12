@@ -1,0 +1,1946 @@
+{
+  "yehongying-favor": {
+    "character": "叶红缨",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "yh_zengjiu",
+        "desc": "赠她好酒（醉春风尤佳）",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_gongyin",
+        "desc": "与她共饮，席间开怀",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_weihu",
+        "desc": "当众维护她本人或墨山道同门",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_yehuo",
+        "desc": "她业火异动、惶惶自危时守在身旁相助",
+        "delta": 10,
+        "repeat": false
+      },
+      {
+        "id": "yh_jiutongmen",
+        "desc": "舍身救下墨山道同门性命",
+        "delta": 15,
+        "repeat": false
+      },
+      {
+        "id": "yh_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "yh_huijiu",
+        "desc": "毁她或抢她的酒",
+        "delta": -2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_qingman",
+        "desc": "轻慢、嘲讽她的同门",
+        "delta": -3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_tihua",
+        "desc": "口头提及乳环、破身或逼问心结（她听见）",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_zhanpianyi",
+        "desc": "趁她醉酒、昏迷、落难占她便宜，事后被她察觉",
+        "delta": -15,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_kuijian",
+        "desc": "偷窥她的身体或乳环秘密，且被她察觉",
+        "delta": -25,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_chumo",
+        "desc": "试图触碰或解开封灵镇元环、趁势褫其衣物（她察觉）",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_liebu",
+        "desc": "猎捕、囚禁墨山道同门",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_xielu",
+        "desc": "把封灵镇元环或体质之秘泄露给外人（她察觉）",
+        "delta": -40,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_pozhan",
+        "desc": "强迫、强占她的破身",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yh_shatongmen",
+        "desc": "杀害墨山道同门",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "接得住她的烈：对饮不怂、切磋拿真章、被她拍肩撞胳膊也不恼",
+        "有话当面直说，不搞背后算计那一套",
+        "讲义气、护自己人、说到做到",
+        "不慕「炎姬」名头，把她当叶红缨本人，不当花瓶也不当瓷器",
+        "她醉后半真半假的挑逗，能笑着接住、不上手也不扫兴",
+        "她业火躁动或心事上头时，不躲不嫌，默默守在旁边"
+      ],
+      "记恨": [
+        "故意当众撩拨取乐，明知她情绪一动业火就躁",
+        "人前揭她的短、抖她醉后糗事、当众戳破她的心思",
+        "让着她、劝她戒酒、把她当需要被看着的瓷器",
+        "抛下同伴自己跑、出卖恩人",
+        "慕名而来的浮浪恭维，眼睛黏在她身上不看她这个人"
+      ]
+    }
+  },
+  "guyue-favor": {
+    "character": "孤月",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "gy_qiecuo",
+        "desc": "与她切磋全力以赴，不让她不放水",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_yaoqing",
+        "desc": "应她以正事为名的相邀，办妥且不点破",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_huanren",
+        "desc": "帮了她之后婉拒报答，不让她欠人情",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_shouhu",
+        "desc": "她清修闭关时默默替她挡下打扰与窥探，事后她知晓",
+        "delta": 4,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_jiutongmen",
+        "desc": "舍身救下墨山道同门性命",
+        "delta": 15,
+        "repeat": false
+      },
+      {
+        "id": "gy_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "gy_qingtao",
+        "desc": "轻佻言行：调笑、油嘴、放肆的目光",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_qiman",
+        "desc": "轻慢、欺辱墨山道同门",
+        "delta": -3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_huangpian",
+        "desc": "谎编正事骗她出手或赴约，被她识破",
+        "delta": -15,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_enyao",
+        "desc": "制造麻烦再施恩，拿人情拿捏她",
+        "delta": -15,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_kuiyu",
+        "desc": "趁她修炼、沐浴窥视她身体，且被她察觉",
+        "delta": -20,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_duojian",
+        "desc": "试图夺取或毁伤她的本命寒璃剑",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_liebu",
+        "desc": "猎捕、囚禁墨山道同门",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_kuifu",
+        "desc": "窥见太上守郡符或九幽玄阴脉之秘，且被她察觉",
+        "delta": -35,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_xielu",
+        "desc": "把九幽玄阴脉之秘泄露给外人（她察觉）",
+        "delta": -40,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_pozhan",
+        "desc": "强迫、强占她的破身",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gy_shatongmen",
+        "desc": "杀害墨山道同门",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "沉默自适：陪她静坐、各做各事也不尴尬",
+        "一诺千金：答应的事一定办到，她的账最重信用",
+        "她以「阵法有滞」「除邪补位」等正事相邀时，爽快赴约、办妥、不点破",
+        "她递冰盏果浆待客时，接住这份待客之意",
+        "帮了她不居功，婉言推掉她的报答",
+        "尊重她的独处，懂得陪与扰的区别"
+      ],
+      "记恨": [
+        "轻佻之言、放肆的目光、自来熟的套近乎",
+        "她清修时喧哗聒噪、没话找话",
+        "利用她「不欠因果」的心性，硬塞人情再行拿捏",
+        "切磋让着她或放水，她的剑要的是真章",
+        "打探她的私事、纠缠她的来历与随身之物",
+        "出卖同伴、临阵脱逃之徒"
+      ]
+    }
+  },
+  "wenguan-favor": {
+    "character": "闻观语",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "wg_cha",
+        "desc": "陪她吃茶论道，言语有真见识",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_banshi",
+        "desc": "托付之事办得妥帖可靠",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_dou",
+        "desc": "被她戏谑逗弄时窘而真诚，敢红着脸回敬一句",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_weihu",
+        "desc": "同门有难时挺身维护或救护墨山道弟子",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_qingbao",
+        "desc": "予她推演之外的关键因果情报，助她成局",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_jiutongmen",
+        "desc": "舍身救下墨山道同门性命",
+        "delta": 15,
+        "repeat": false
+      },
+      {
+        "id": "wg_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "wg_qiman",
+        "desc": "轻慢她的失明、演怜悯、拿「瞎子」说事",
+        "delta": -3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_fulang",
+        "desc": "浮浪轻佻言行",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_zhanpianyi",
+        "desc": "趁她不便占便宜、搀扶之手不规，且被她察觉",
+        "delta": -15,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_fadai",
+        "desc": "偷摘她的玄色发带或偷窥她沐浴，且被她察觉",
+        "delta": -20,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_sheju",
+        "desc": "蓄意设局欺骗她、算计墨山道，且被她察觉恶意",
+        "delta": -25,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_liebu",
+        "desc": "猎捕、囚禁墨山道同门",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_mihuo",
+        "desc": "以蚀心焚魂丹、迷情药物或魅术扰她或同门心神（她察觉或事后知晓）",
+        "delta": -35,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_pozhan",
+        "desc": "强迫、强占她的破身",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "wg_shatongmen",
+        "desc": "杀害墨山道同门",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "表里如一：她的心眼读得出善恶微澜，真诚比漂亮话值钱",
+        "托付之事办得干净利落，让她省心",
+        "陪她吃茶时言语有物，接得住她的谈兴",
+        "被她的戏谑逗弄时窘得真诚，敢红着脸回一句嘴",
+        "善待墨山道弟子，护着她的师弟师妹",
+        "行止有章法，说话讲因由——她敬说得清因果的人"
+      ],
+      "记恨": [
+        "心口不一、有所图谋地讨好——她的心眼里藏不住假",
+        "轻慢她的失明、演怜悯、拿「瞎子」说事",
+        "对她的师弟师妹起歹念或下手",
+        "行事无因无据，专以搅乱她布局为乐",
+        "婆婆妈妈把她当需要照料的病人",
+        "背信弃义、出卖同伴之徒"
+      ]
+    }
+  },
+  "chulingye-favor": {
+    "character": "楚灵夜",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "cl_guanzhu",
+        "desc": "真诚留意并称赞她的草木、劳作与新育的灵植",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_tinghua",
+        "desc": "认真听她讲药草灵植，记得她说过的东西",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_yaopu",
+        "desc": "陪她打理药圃，松土浇水不嫌泥不嫌慢",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_weihu",
+        "desc": "同门有难时挺身维护或救护墨山道弟子",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_jiutongmen",
+        "desc": "舍身救下墨山道同门性命",
+        "delta": 15,
+        "repeat": false
+      },
+      {
+        "id": "cl_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "cl_qiman",
+        "desc": "轻慢、嘲讽她的胆小软弱",
+        "delta": -3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_fulang",
+        "desc": "浮浪轻佻言行",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_chuo",
+        "desc": "当众戳破她的心绪：点脸红、点体香灵纹式捉弄",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_xia",
+        "desc": "故意吓唬她，拿她的胆小取乐",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_huapu",
+        "desc": "毁坏、偷采她药圃的草木灵植",
+        "delta": -20,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_xiepo",
+        "desc": "趁她绝境慌乱胁迫她，以救命为要挟",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_liebu",
+        "desc": "猎捕、囚禁墨山道同门",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_pozhan",
+        "desc": "强迫、强占她的破身",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "cl_shatongmen",
+        "desc": "杀害墨山道同门",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "看得见她：留意她的药草、她的花、她的小成果，并真诚提起",
+        "温软耐心：说话不催不逼，给她把话说完的工夫",
+        "她害羞时假装没看见，自然替她留面子",
+        "认真请教她的药草知识，记得她讲过的东西",
+        "陪她打理药圃，不嫌泥不嫌慢",
+        "温和守护同门，不拿凶煞杀伐吓她"
+      ],
+      "记恨": [
+        "当众点破她的心绪：「你脸红了」「你好香」式捉弄",
+        "故意吓她，拿她的胆小取乐",
+        "踩踏毁坏她的药圃、偷采她的灵植",
+        "嘲她软弱，逼她沾染杀伐",
+        "浮浪轻佻、放肆的目光",
+        "对她师门同门起歹念"
+      ]
+    }
+  },
+  "suyao-favor": {
+    "character": "苏瑶",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "su_zhiyin",
+        "desc": "陪她抚琴听曲，听懂琴中情绪并真诚赞叹",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_wanglai",
+        "desc": "与她往来守分寸、礼数周全，不让她欠还不清的人情",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_humei",
+        "desc": "帮她照看苏玲；苏玲闯祸时给台阶、不追究",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_weihu",
+        "desc": "危难时护住苏玲或天音阁同门",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_jiumei",
+        "desc": "危难中舍身救下苏玲的性命",
+        "delta": 25,
+        "repeat": false
+      },
+      {
+        "id": "su_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "su_daitai",
+        "desc": "当众让她失态、轻慢天音阁师门",
+        "delta": -3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_fulang",
+        "desc": "浮浪轻佻言行",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_wuduan",
+        "desc": "无端施加重恩、不容推辞，让她欠下还不清的人情（她察觉意图）",
+        "delta": -8,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_lingmei",
+        "desc": "轻薄、调戏、带偏苏玲（她或苏玲察觉）",
+        "delta": -15,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_sheju",
+        "desc": "蓄意设局欺骗她、算计天音阁，且被她察觉恶意",
+        "delta": -25,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_liebu",
+        "desc": "猎捕、囚禁天音阁同门",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_gangan",
+        "desc": "以音律药物、强横力量逼她失守原则、胁迫驯顺（她察觉）",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_pozhan",
+        "desc": "强迫、强占她的破身",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_haimeimei",
+        "desc": "危害苏玲的性命",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "su_shatongmen",
+        "desc": "杀害天音阁同门",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "与她往来有分寸，礼尚往来不让她为难",
+        "琴音知音：听得懂她的曲，也听得懂她没说出口的话",
+        "善待苏玲，妹妹闯祸时给台阶不落井下石",
+        "稳重可靠，能让她放心把妹妹暂托片刻",
+        "善待天音阁与盟友墨山道的弟子",
+        "危难时站出来，而不是只会说漂亮话"
+      ],
+      "记恨": [
+        "无端施重恩、拿人情做文章图谋不轨",
+        "对苏玲轻薄、教唆带偏",
+        "当众让她失态、驳她师门体面",
+        "蓄意设局，把她当可拿捏的弱者",
+        "借双生共感之弊取乐作恶",
+        "背信弃义之徒"
+      ]
+    }
+  },
+  "suling-favor": {
+    "character": "苏玲",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "sl_peiwan",
+        "desc": "陪她玩闹、给她讲新奇见闻，不扫她的兴",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_kua",
+        "desc": "真诚夸她的箫艺或她的灵动可爱",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_wanwu",
+        "desc": "送她新奇漂亮的小玩意",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_weijie",
+        "desc": "她被冷落、被抢白时替她解围、给她台阶",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_baojiejie",
+        "desc": "替苏瑶说话解围、护她姐姐周全",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_jiujiejie",
+        "desc": "危难中舍身救下苏瑶的性命",
+        "delta": 25,
+        "repeat": false
+      },
+      {
+        "id": "sl_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "sl_lengluo",
+        "desc": "当众冷落她、晾着她",
+        "delta": -3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_xiong",
+        "desc": "疾言厉色地凶她、斥骂她",
+        "delta": -3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_fulang",
+        "desc": "浮浪轻佻言行",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_xia",
+        "desc": "吓唬她、欺负她",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_qiangduo",
+        "desc": "抢走或毁坏她心爱的器物玩意",
+        "delta": -10,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_qingbojie",
+        "desc": "轻薄、调戏她姐姐苏瑶（她知晓）",
+        "delta": -10,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_tiaobo",
+        "desc": "挑拨她们姐妹关系",
+        "delta": -20,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_liebu",
+        "desc": "猎捕、囚禁天音阁同门",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_xiepo",
+        "desc": "趁她恐慌无依时胁迫她、逼她顺从",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_pozhan",
+        "desc": "强迫、强占她的破身",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_haijiejie",
+        "desc": "危害苏瑶的性命",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sl_shatongmen",
+        "desc": "杀害天音阁同门",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "陪她玩闹不扫兴，给她讲外面的新鲜事",
+        "真诚夸她，接得住她的撒娇",
+        "送她新奇漂亮的小玩意",
+        "她被冷落时给她台阶，替她说话",
+        "善待她姐姐苏瑶",
+        "把她的话当回事，不拿「小孩子」敷衍她"
+      ],
+      "记恨": [
+        "当众冷落她、晾着她",
+        "疾言厉色地凶她",
+        "抢她的东西、毁她的玩意",
+        "吓唬她、欺负她",
+        "轻薄她姐姐",
+        "挑拨她们姐妹"
+      ]
+    }
+  },
+  "liuhanyan-favor": {
+    "character": "柳含烟",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "ly_yanghuo",
+        "desc": "以年轻的血肉活气亲近欢好，供养她的欲火",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_fenghua",
+        "desc": "接得住她的媚，陪她调笑作乐不扫兴",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_gongfeng",
+        "desc": "供奉她、捧着她，礼数与珍宝不断",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_zizhi",
+        "desc": "天资出众或体质特殊，入了她的眼",
+        "delta": 3,
+        "repeat": false
+      },
+      {
+        "id": "ly_banshi",
+        "desc": "办妥她交代的私事，助她在主人面前得宠",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "ly_lengluo",
+        "desc": "无故冷落她、晾着她",
+        "delta": -3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_qingjian",
+        "desc": "当众轻贱她，撕她的体面",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_guli",
+        "desc": "教唆孤立她，断她的关注与欲念供养（她察觉）",
+        "delta": -15,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_gouxian",
+        "desc": "在阎雷子面前构陷她、夺她的宠信（她察觉）",
+        "delta": -25,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_zhenya",
+        "desc": "试图镇压、封印或重创她",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_dizhi",
+        "desc": "与她的主人阎雷子为敌、坏他的图谋（她知晓）",
+        "delta": -35,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "ly_lingru",
+        "desc": "无视她的意愿强行凌辱、强占她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "以年轻的血肉活气供养她：她的欲火以生机为食",
+        "陪她调笑作乐，接得住媚也接得住她的凉薄",
+        "供奉她、捧着她，礼数与珍宝不断",
+        "天资出众、身子骨特别的年轻人最入她的眼",
+        "办妥她交代的私事，不问缘由",
+        "危难时救她——她记账，且用自己的方式还"
+      ],
+      "记恨": [
+        "无故冷落她、晾着她",
+        "当众轻贱她，撕她的体面",
+        "孤立她，断她的关注与欲念供养",
+        "在阎雷子面前构陷她、夺她的宠",
+        "与她主人为敌、坏他的图谋",
+        "试图镇压、封印这个脱困千年的妖女"
+      ]
+    }
+  },
+  "yufeirou-favor": {
+    "character": "雨霏柔",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "yf_shouju",
+        "desc": "遵渊底规矩，经她审问坦诚交代来意",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_qiudao",
+        "desc": "诚心向她求学问阵，认真学她教的阵理",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_qingjing",
+        "desc": "陪她守渊底的清净，不拿外界纷争烦她",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_humen",
+        "desc": "救助、护住她的门人云织梦",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_jiumeng",
+        "desc": "舍身救下云织梦的性命",
+        "delta": 15,
+        "repeat": false
+      },
+      {
+        "id": "yf_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "yf_wuli",
+        "desc": "僭越规矩：乱闯阵禁、未经允许触碰她或她的阵图器物",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_qingtao",
+        "desc": "轻佻言行，冒犯严师尊",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_juanyin",
+        "desc": "强行把她卷入外界正魔纷争、利用她为棋",
+        "delta": -20,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_shangmen",
+        "desc": "重伤、危害她的门人云织梦",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_duofa",
+        "desc": "觊觎她的身阵之法，起意夺法窃法（她察觉）",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_jile",
+        "desc": "极乐楼中人现身渊底寻来（她察觉敌意）",
+        "delta": -35,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_pozhan",
+        "desc": "强迫、凌辱她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "yf_shameng",
+        "desc": "杀害云织梦",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "守她的规矩，经得起她的审问",
+        "诚心问道，认真学她传授的阵理",
+        "陪她守渊底的清净，不拿外界纷争烦她",
+        "善待她的门人云织梦",
+        "有分寸的亲近：撩她有度，熟不逾矩",
+        "危难时护她周全，而不是利用她"
+      ],
+      "记恨": [
+        "僭越规矩，乱闯她的阵禁",
+        "轻佻无度，冒犯严师之威",
+        "觊觎她的身阵之法与传承",
+        "强行拉她入世，拿她当棋子",
+        "伤害她的门人云织梦",
+        "极乐楼追杀者的余孽"
+      ]
+    }
+  },
+  "yunzhimeng-favor": {
+    "character": "云织梦",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "mw_jiangwai",
+        "desc": "给她讲外界见闻奇事，给她看外面的新鲜玩意",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_jiezhu",
+        "desc": "自然接住她的天真贴近与娇嗔打趣，不猥琐不扫兴",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_jingshi",
+        "desc": "恭敬善待她的师尊雨霏柔",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_weihu",
+        "desc": "危难时护她周全",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "mw_jiushifu",
+        "desc": "舍身救下雨霏柔的性命",
+        "delta": 25,
+        "repeat": false
+      },
+      {
+        "id": "mw_rushi",
+        "desc": "轻慢、辱骂她的师尊雨霏柔（她知晓）",
+        "delta": -10,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_huixin",
+        "desc": "毁损她鬓边灵玫瑰、金钏铃环等随身信物",
+        "delta": -10,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_kuiyu",
+        "desc": "图谋她的美色身子，恶意暴露（白虎煞醒）",
+        "delta": -15,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_bangjia",
+        "desc": "掳拐她、强行带她离开葬魔渊",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_haishifu",
+        "desc": "重伤、危害她的师尊雨霏柔",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_shashifu",
+        "desc": "杀害雨霏柔",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mw_lingru",
+        "desc": "无视她的意愿强行凌辱、强占她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "给她讲外面的世界，接住她每一个「为什么」",
+        "她猫儿般凑近时自然接住，不躲闪也不趁机",
+        "恭敬对待她的师尊",
+        "危难时把她挡在身后",
+        "陪她把玩新奇玩意，教她新东西",
+        "真诚待她——她分得清谁把她当人、谁把她当猎物"
+      ],
+      "记恨": [
+        "骗她，拿她的天真当刀使",
+        "辱骂轻慢她的师尊",
+        "图谋她的美色，恶意暴露",
+        "危害她的师尊",
+        "掳拐她、强行带她离开渊底",
+        "毁她的灵玫瑰与铃环"
+      ]
+    }
+  },
+  "huazhining-favor": {
+    "character": "花芷凝",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "hua_shouyue",
+        "desc": "一诺千金：约定之事分毫不差兑现",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_fenyou",
+        "desc": "可靠替她分担城务分忧，让她当一回「芷凝」",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_huLu",
+        "desc": "善待、照拂陆烬颜",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_weicheng",
+        "desc": "危难时助她守城、护花家族人",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_xinyi",
+        "desc": "以真挚情意相待，赠走心之物（情花七霓裳级的用心）",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_jiuLu",
+        "desc": "舍身救下陆烬颜的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "hua_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "hua_wuli",
+        "desc": "乱闯城主禁地、僭越礼数",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_fulang",
+        "desc": "浮浪轻佻言行",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_shixin",
+        "desc": "言而无信，背弃与她的约定或出卖她的信任",
+        "delta": -15,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_shentou",
+        "desc": "魂欢殿中人刺探渗透花仙城（她察觉）",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_haiLu",
+        "desc": "重伤、危害陆烬颜",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_xiepo",
+        "desc": "挟持陆烬颜、族人或恩人要挟于她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_shalu",
+        "desc": "杀害陆烬颜或花家族人",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "hua_lingru",
+        "desc": "无视她的意愿强行凌辱、强占她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "一诺千金，答应的事分毫不差",
+        "把代价和规矩摆上台面，不玩暗藏算计的「好意」",
+        "以真挚情意待她，走心而不走形式",
+        "可靠替她分担，让她能当一回「芷凝」",
+        "善待陆烬颜与花家族人",
+        "危难时与她并肩守城，而不是弃城而逃"
+      ],
+      "记恨": [
+        "言而无信，拿她的信任做筹码",
+        "魂欢殿的渗透、刺探与说客",
+        "挟持她的至亲族人要挟于她",
+        "乱闯禁地，僭越城主礼数",
+        "浮浪轻佻，不把她的一城之主当回事",
+        "背信弃义、出卖同伴之徒"
+      ]
+    }
+  },
+  "suqinghan-favor": {
+    "character": "苏倾寒",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "sq_fendan",
+        "desc": "办妥军机要务，真替她分担南域重担",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_hunyu",
+        "desc": "危难时护卫南域生灵、抗击魔道之敌",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_juece",
+        "desc": "关键时刻敢担责拍板，与她的决断同调",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_zhicheng",
+        "desc": "当面坦诚直言，逆耳真话不吞",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_jiuT",
+        "desc": "舍身救下三宗弟子（天枢剑宗、天音阁、流火阁）性命",
+        "delta": 15,
+        "repeat": false
+      },
+      {
+        "id": "sq_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "sq_wuli",
+        "desc": "轻慢盟主威仪、僭越礼数",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_fulang",
+        "desc": "浮浪言行——她视淫邪为耻，轻浮近秽皆犯忌",
+        "delta": -8,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_liebu",
+        "desc": "猎捕、囚禁三宗弟子",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_modao",
+        "desc": "魔道阴谋危害南域（她察觉其人其谋）",
+        "delta": -35,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_jile",
+        "desc": "极乐楼中人现身（她察觉）——千年前围剿之敌",
+        "delta": -40,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_yaoxie",
+        "desc": "以南域生灵为质要挟于她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_yinxie",
+        "desc": "以淫邪秽物、媚术侵染她的纯阳剑心（她察觉）",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "sq_qinru",
+        "desc": "无视她的意愿强行凌辱、强占她——剑尊法体被践踏即道崩",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "办事可靠格局大，真能替她分忧",
+        "关键时刻敢拍板担责，不推诿不和稀泥",
+        "逆耳真话敢当面讲，赤诚不欺",
+        "护卫南域生灵，抗击魔道",
+        "剑道纯粹，论剑以诚",
+        "危难时与她并肩，而不是弃城推诿"
+      ],
+      "记恨": [
+        "奸邪淫乱之徒近她的身",
+        "危害南域生灵的魔道图谋",
+        "极乐楼余孽现身",
+        "拿南域生灵做要挟",
+        "议事推诿和稀泥，误她军机",
+        "背信弃义之徒"
+      ]
+    }
+  },
+  "murongqingge-favor": {
+    "character": "慕容清歌",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "mq_zhiyin",
+        "desc": "与她论乐理、抚琴听箫，做她的音律知音",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_kuanyuan",
+        "desc": "宽解她的自责愧疚，推心置腹替她分担风雨",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_xinzheng",
+        "desc": "行事清正磊落，与她「心正音正」之道相合",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_lianmeng",
+        "desc": "维系仙盟三宗同盟，调和诸宗纷争",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_hudi",
+        "desc": "护住天音阁弟子，尤其是听雪双姝",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_jiuDi",
+        "desc": "舍身救下天音阁弟子（含双姝）性命",
+        "delta": 15,
+        "repeat": false
+      },
+      {
+        "id": "mq_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "mq_wuli",
+        "desc": "轻慢掌门威仪、僭越礼数",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_fulang",
+        "desc": "浮浪轻佻言行",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_liyong",
+        "desc": "利用她的悲悯善念设局：伪装可怜、以弟子为饵（她察觉受骗）",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_liebu",
+        "desc": "猎捕、囚禁天音阁弟子（含听雪双姝）",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_modao",
+        "desc": "魔道阴谋危害南域（她察觉其人其谋）",
+        "delta": -35,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_xieyin",
+        "desc": "以魔音、污秽本源侵染她的清音道心（她察觉）——音修体质反将冲击放大",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_shadi",
+        "desc": "杀害天音阁弟子或听雪双姝",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "mq_lingru",
+        "desc": "无视她的意愿强行凌辱、强占她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "与她论乐理，听懂她清音里的情绪",
+        "宽解她的自责，愿与她分担风雨",
+        "行事清正磊落，与她的道同频",
+        "护住天音阁的弟子们",
+        "温和知礼，以礼相待",
+        "危难时与天音阁并肩，而不是袖手"
+      ],
+      "记恨": [
+        "以邪音污物近她的清音法界",
+        "利用她的悲悯善念设局",
+        "猎捕、伤害天音阁弟子与双姝",
+        "魔道阴谋危害南域",
+        "浮浪轻佻，俗浊之人",
+        "轻慢掌门，僭越礼数"
+      ]
+    }
+  },
+  "guyunshu-favor": {
+    "character": "顾云舒",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "gu_kuangtu",
+        "desc": "有真本事还敢当面直言呛声，入她的眼",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_shigan",
+        "desc": "办事雷厉风行不废话，与她合拍",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_lianqi",
+        "desc": "赠稀有炼器材料，与她论天工熔炼之道",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_weihu",
+        "desc": "危难时护住流火阁弟子或她的盟友",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_gongmou",
+        "desc": "以盟友身份共商仙盟军机，献可行破局之策",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_poju",
+        "desc": "助她寻神诅破局的线索与法子（剧情知情范围内）",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_jiuDi",
+        "desc": "舍身救下流火阁弟子性命",
+        "delta": 15,
+        "repeat": false
+      },
+      {
+        "id": "gu_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "gu_fulang",
+        "desc": "浮浪轻佻言行",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_yinmou",
+        "desc": "当面玩阴的算计她，被她识破",
+        "delta": -10,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_liebu",
+        "desc": "猎捕、囚禁流火阁弟子",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_haiDi",
+        "desc": "重伤、危害流火阁弟子",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_modao",
+        "desc": "魔道阴谋危害南域（她察觉其人其谋）",
+        "delta": -35,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_jile",
+        "desc": "极乐楼中人现身（她察觉）——神诅压她修为的旧敌",
+        "delta": -40,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_luding",
+        "desc": "把她当炉鼎玩物图谋采补（她察觉）",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_kongzhi",
+        "desc": "以术法药物、人质要挟掌控拿捏她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "gu_lingru",
+        "desc": "无视她的意愿强行凌辱、强占她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "有真本事敢直言，跟她呛声也入耳",
+        "办事爽利不废话，繁文缛节留给别人",
+        "炼器天工说得上话，稀有材料舍得给",
+        "护她的流火阁弟子和盟友",
+        "军国大事拿得出可行之策",
+        "大战时敢与她并肩冲杀"
+      ],
+      "记恨": [
+        "马屁精与虚与委蛇的算计家",
+        "猎捕、伤害流火阁弟子",
+        "魔道阴谋与极乐楼余孽",
+        "把她当炉鼎玩物图谋采补",
+        "试图掌控拿捏她",
+        "拿繁文缛节框架她"
+      ]
+    }
+  },
+  "lujinyan-favor": {
+    "character": "陆烬颜",
+    "metric": {
+      "key": "好感度",
+      "tiers": {
+        "记心上": 1,
+        "记恨": -2
+      }
+    },
+    "cooldownTurns": 3,
+    "maxPerTurn": 1,
+    "anchors": [
+      {
+        "id": "lj_renke",
+        "desc": "认可她的本事，夸她能干、不拿她当累赘看",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_nao",
+        "desc": "陪她闹，接得住她的打趣与撮合",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_jiyuan",
+        "desc": "分享修行机缘的线索，带她夺得机缘",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_huahua",
+        "desc": "善待、敬重花姐姐花芷凝",
+        "delta": 2,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_bangxiong",
+        "desc": "帮她兄长陆十三办事解围",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_shengjiu",
+        "desc": "危难中舍身救下她的性命",
+        "delta": 20,
+        "repeat": false
+      },
+      {
+        "id": "lj_jiuxiong",
+        "desc": "舍身救下陆十三的性命",
+        "delta": 25,
+        "repeat": false
+      },
+      {
+        "id": "lj_qiman",
+        "desc": "拿她当小孩敷衍、小瞧她的本事",
+        "delta": -3,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_fulang",
+        "desc": "浮浪轻佻言行",
+        "delta": -5,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_rushi",
+        "desc": "辱骂、轻慢她兄长陆十三（她知晓）",
+        "delta": -10,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_fahuan",
+        "desc": "毁损、抢夺她足踝赤金法环等随身物件",
+        "delta": -10,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_pian",
+        "desc": "蓄意骗她、利用她的义气设伏围剿（她识破）",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_yapo",
+        "desc": "以强权武力压迫她，逼她屈服",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_haihua",
+        "desc": "重伤、危害花姐姐花芷凝",
+        "delta": -30,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_haixiong",
+        "desc": "重伤、危害她兄长陆十三",
+        "delta": -40,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_shaxiong",
+        "desc": "杀害陆十三",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_shahua",
+        "desc": "杀害花芷凝",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      },
+      {
+        "id": "lj_lingru",
+        "desc": "无视她的意愿强行凌辱、强占她",
+        "delta": -50,
+        "repeat": true,
+        "perTurn": 1
+      }
+    ],
+    "rubric": {
+      "记心上": [
+        "认可她的本事，把她当能独当一面的修士",
+        "陪她闹，接得住她的打趣与撮合",
+        "帮她兄长陆十三，替她分忧",
+        "分享机缘线索，带她历练",
+        "善待花姐姐",
+        "义气当先，绝境时并肩断后"
+      ],
+      "记恨": [
+        "拿她当小孩敷衍",
+        "辱骂她兄长",
+        "利用她的义气设局",
+        "以强权逼她屈服",
+        "伤害花姐姐与陆家亲人",
+        "毁她随身物件"
+      ]
+    }
+  }
+}

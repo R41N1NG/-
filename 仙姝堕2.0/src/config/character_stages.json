@@ -44,6 +44,253 @@
           "portrait": null
         }
       ]
+    },
+    "孤月": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "闻观语": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "楚灵夜": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "苏瑶": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "苏玲": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "柳含烟": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "雨霏柔": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "云织梦": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "花芷凝": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "苏倾寒": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "慕容清歌": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "顾云舒": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
+    },
+    "陆烬颜": {
+      "initialStage": "stage01",
+      "metrics": {
+        "好感度": {
+          "min": 0,
+          "max": 100,
+          "default": 0
+        }
+      },
+      "replaces": [],
+      "stages": [
+        {
+          "id": "stage01",
+          "priority": 0,
+          "story": "",
+          "portrait": null
+        }
+      ]
     }
   }
 }

@@ -10,6 +10,7 @@ const tests = spawnSync(
     "tests/templates.test.cjs",
     "tests/settlement_effects.test.cjs",
     "tests/promotion.test.cjs",
+    "tests/metric_events.test.cjs",
     "tests/ui.test.cjs",
     "tests/opening_host.test.cjs",
     "tests/youjigu_map.test.cjs",

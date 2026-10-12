@@ -14,7 +14,7 @@ function resultTag(body, code) {
 function createPromotionPlugin(definitions) {
   const defs = Object.entries(definitions);
   function lookup(nodeId) {
-    for (const [id,cfg] of defs) for (const [kind,key] of [["enter","entryId"],["finish","finishId"],["leave","leaveId"]])
+    for (const [id,cfg] of defs) for (const [kind,key] of [["enter","entryId"],["finish","finishId"]])
       if (cfg[key] === nodeId) return {id,cfg,kind};
     return null;
   }
@@ -28,7 +28,7 @@ function createPromotionPlugin(definitions) {
   }
   function getDisplayText(nodeId) {
     const x = lookup(nodeId); if (!x) return null;
-    return x.kind === "enter" ? x.cfg.label : x.kind === "finish" ? "完成本次拜访" : "结束本次拜访";
+    return x.kind === "enter" ? x.cfg.label : "完成本次拜访";
   }
   function select(s,nodeId) {
     const x = lookup(nodeId);
@@ -36,7 +36,7 @@ function createPromotionPlugin(definitions) {
     const {id,cfg,kind} = x;
     return {id:nodeId,allowed:true,character:cfg.character,displayText:getDisplayText(nodeId),
       actionText:getDisplayText(nodeId),promotionId:id,promotionKind:kind,
-      prompt:kind === "enter" ? cfg.story : kind === "finish" ? "核验本次专属剧情，不凭空补写新的行动以达成条件。" : "结束本次拜访，不提交晋升成功，保留实际叙事状态。",
+      prompt:kind === "enter" ? cfg.story : "核验本次专属剧情，不凭空补写新的行动以达成条件。",
       conditions:kind === "enter" ? cfg.conditions : [], rewards:[],grantsKnown:[],
       completionQuery:kind === "finish" ? "仅判断本次拜访（起始行动 "+(state(s).entryCode || "当前拜访")+"）之后的实际剧情，不把其他历史拜访当本次结果。"+cfg.query : undefined,
       stageGrant:kind === "finish" ? {character:cfg.character,from:cfg.fromStage,to:cfg.toStage} : undefined,
@@ -51,7 +51,6 @@ function createPromotionPlugin(definitions) {
     if (!x || p.pluginId !== PLUGIN_ID || state(s).currentId !== x.id) return {outcome:"failure",reason:"晋升行动不匹配"};
     const base = {...state(s)}, active = {pluginId:PLUGIN_ID,character:x.cfg.character,promotionId:x.id};
     if (x.kind === "enter") return {outcome:"success",pluginState:{...base,entryCode:p.actionCode},activeEvent:active,body,reason:"专属故事已开启，仍为原阶段"};
-    if (x.kind === "leave") return {outcome:"success",pluginState:{...base,currentId:null,lastResult:"cancelled"},activeEvent:null,body,reason:"结束拜访，没有晋升"};
     const report = resultTag(body,p.actionCode);
     if (!report) return {outcome:"retry",pluginState:{...base,lastResult:"invalid"},activeEvent:active,
       body:"本次结算未收到有效回报，尚未改变人物阶段。可以再次点击完成。",reason:"晋升回报缺失、冲突或行动标识不符"};

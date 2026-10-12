@@ -6,7 +6,12 @@ const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
+const { createMetricEvents } = require("./metric_events");
 function createDispatcher(adapter, data) {
+  const metricEvents = createMetricEvents(
+    data.metricEventDefinitions,
+    data.characterProfiles || {},
+  );
   let current = null,
     scopeChatId = null,
     disposed = false,
@@ -707,6 +712,12 @@ function createDispatcher(adapter, data) {
         rr.hasRelicStage4Response(rid, positive)
       )
         s.stat_data.known[cfg.stage4Key] = true;
+    }
+    try {
+      const applied = metricEvents.apply(s, text, parsed.prose, s.storyCount + 1);
+      if (applied.changes.length) s.lastMetricEvents = applied.changes;
+    } catch (error) {
+      adapter.report?.(Error("数值事件申报结算失败：" + error.message));
     }
     s.processed[id] = C.hash(text);
     s.storyCount++;
