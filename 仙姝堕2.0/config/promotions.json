@@ -1,0 +1,194 @@
+{
+  "yehongying-night": {
+    "character": "叶红缨",
+    "label": "夜访叶红缨",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "赵无忧"
+      },
+      {
+        "kind": "metric",
+        "character": "叶红缨",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      }
+    ],
+    "entryId": "yhrNight",
+    "finishId": "yhrFinish",
+    "query": "根据本段实际剧情，赵无忧是否已经看到叶红缨正在沐浴？只听见水声、猜测或准备前往，不等于已经看到。",
+    "story": "本段专属故事设定在夜晚。玩家（六师弟赵无忧）前往赤焰居拜访叶红缨，发现洞府内无人回应；随后按心中推想，转到洞府后方的青幽竹林等待，偶然发现她正在林间引灵泉沐浴。自然演绎夜色竹林的水雾、月影与这一过渡场景，沿用叶红缨阶段一设定。让玩家自由参与、停留或改变行动，不强制一轮写完，不代玩家决定后续所有选择，不把每一步拆成新节点。入口不自动晋升，保留当前时点与环境，后续等待玩家点击完成。"
+  },
+  "yehongying-rogue-stage1": {
+    "character": "叶红缨",
+    "label": "荒野除害",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "自设"
+      },
+      {
+        "kind": "metric",
+        "character": "叶红缨",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      }
+    ],
+    "entryId": "yhrRogueEnter1",
+    "finishId": "yhrRogueFinish1",
+    "query": "根据本段实际剧情，玩家是否已经与叶红缨完成对妖兽事件的共同应对，并进行了当面交涉或道谢？",
+    "story": "本段专属故事设定在墨山道外围荒野山林。玩家正在山间采药或采集灵材，密林中突然窜出一只凶悍的金丹前期妖兽，咆哮扑出；恰在此时，巡视山门的叶红缨御风掠至，她性烈如火、见状未及多想，起手便是一发暴烈业火「焚炎破」迎头痛击，迅疾如电地与妖兽战在一处。自然演绎叶红缨先声夺人、风风火火的行事风格；完全不限制玩家的修为境界与应对方式（玩家可依自身 Persona 设定自由选择避其锋芒、从旁策应、或者从容出手一击制敌显圣），不代玩家做主，不强制一轮打完。妖兽受挫或击杀后，两人就地展开战后交涉。保留当前时点与环境，后续等待玩家点击完成。"
+  },
+  "yehongying-zhaowuyou-stage2": {
+    "character": "叶红缨",
+    "label": "赤焰对酌",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "赵无忧"
+      },
+      {
+        "kind": "metric",
+        "character": "叶红缨",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      }
+    ],
+    "entryId": "yhrZwEnter1",
+    "finishId": "yhrZwFinish1",
+    "leaveId": "yhrZwLeave1",
+    "query": "根据本段实际剧情，赵无忧是否已经与叶红缨完成私下对饮交流、确立了更进一步的亲昵情意？"
+  },
+  "yehongying-rogue-stage2": {
+    "character": "叶红缨",
+    "label": "青石醉春风",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "自设"
+      },
+      {
+        "kind": "metric",
+        "character": "叶红缨",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      }
+    ],
+    "entryId": "yhrRogueEnter2",
+    "finishId": "yhrRogueFinish2",
+    "leaveId": "yhrRogueLeave2",
+    "query": "根据本段实际剧情，玩家是否已经与叶红缨完成青石对饮，双方推心置腹、引为莫逆知己？"
+  },
+  "yehongying-zhaowuyou-stage3": {
+    "character": "叶红缨",
+    "label": "业火同心",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "赵无忧"
+      },
+      {
+        "kind": "metric",
+        "character": "叶红缨",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      }
+    ],
+    "entryId": "yhrZwEnter2",
+    "finishId": "yhrZwFinish2",
+    "leaveId": "yhrZwLeave2",
+    "query": "根据本段实际剧情，赵无忧是否已经成功帮助叶红缨平息业火反噬，且两人打破戒律达成了实质的解环或身心接纳？"
+  },
+  "yehongying-rogue-stage3": {
+    "character": "叶红缨",
+    "label": "残阵孤灯",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "自设"
+      },
+      {
+        "kind": "metric",
+        "character": "叶红缨",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      }
+    ],
+    "entryId": "yhrRogueEnter2b",
+    "finishId": "yhrRogueFinish2b",
+    "leaveId": "yhrRogueLeave2b",
+    "query": "根据本段实际剧情，玩家是否已经与叶红缨完成残阵内的深入独处与情感交心，双方情谊突破普通知己、确认了彼此的深层羁绊？"
+  },
+  "yehongying-zhaowuyou-stage4": {
+    "character": "叶红缨",
+    "label": "定道盟",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "赵无忧"
+      },
+      {
+        "kind": "metric",
+        "character": "叶红缨",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      }
+    ],
+    "entryId": "yhrZwEnter3",
+    "finishId": "yhrZwFinish3",
+    "leaveId": "yhrZwLeave3",
+    "query": "根据本段实际剧情，赵无忧是否已经与叶红缨完成本命心魂托付，双方正式立下生死同命的终生道侣誓约？"
+  },
+  "yehongying-rogue-stage4": {
+    "character": "叶红缨",
+    "label": "焚心露真",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "自设"
+      },
+      {
+        "kind": "metric",
+        "character": "叶红缨",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      }
+    ],
+    "entryId": "yhrRogueEnter3",
+    "finishId": "yhrRogueFinish3",
+    "leaveId": "yhrRogueLeave3",
+    "query": "根据本段实际剧情，玩家是否已经与叶红缨完成本次危局面对，双方打破戒律、达成了实质的解环接纳或定情结合？"
+  }
+}
