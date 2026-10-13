@@ -33,8 +33,28 @@ function visibleCharacters(stat) {
     ...(stat.在场角色 || []).map((x) => x.名),
   ]);
 }
-function createMetricEvents(defs, profiles) {
+function createMetricEvents(defs, profiles, promotions) {
   const table = Object.entries(defs || {});
+  // 好感上限梯：按晋升线配置取「当前阶段对应的下一节点阈值」——完成节点之前，好感不得越过该数值
+  const ladders = {};
+  for (const [, p] of Object.entries(promotions || {})) {
+    const cond = (p.conditions || []).find((c) => c.kind === "metric");
+    if (!cond) continue;
+    (ladders[p.character] ||= []).push({
+      threshold: Number(cond.value),
+      fromStage: p.fromStage, identity: p.conditions?.find(c=>c.kind === "identity")?.value,
+    });
+  }
+  function favorCap(stat, character, profilesRef) {
+    const list = ladders[character];
+    if (!list || !list.length) return null;
+    const stage =
+      stat.completed_character_stages?.[character] ||
+      profilesRef?.[character]?.initialStage;
+    const candidates = list.filter((x) => x.fromStage === stage && (!x.identity || x.identity === stat.身份));
+    if (!candidates.length) return null;
+    return Math.min(...candidates.map((x) => x.threshold));
+  }
   function lookup(character) {
     return table.find(([, cfg]) => cfg.character === character);
   }
@@ -49,7 +69,7 @@ function createMetricEvents(defs, profiles) {
     stat.metric_state ||= {};
     stat.metric_anchor_done ||= {};
     const changes = [];
-    const visible = visibleCharacters(s);
+    const visible = visibleCharacters(stat);
     const parsed = parseMetricEvent(body);
     if (!parsed.ok) {
       if (/<好感事件>/.test(String(body))) return drop(stat, storyCount, parsed.reason);
@@ -86,6 +106,13 @@ function createMetricEvents(defs, profiles) {
       if (anchor.repeat !== false && storyCount - (st.anchorTurn[anchorId] || -999) < (cfg.cooldownTurns || 0))
         return drop(stat, storyCount, "锚点 " + anchorId + " 冷却中");
     }
+    // 好感上限铁律：完成节点之前，好感不得越过该节点的数值
+    const cap = favorCap(stat, cfg.character, profiles);
+    if (delta > 0 && cap !== null) {
+      if (current >= cap)
+        return drop(stat, storyCount, cfg.character + " 好感已达当前节点上限（" + cap + "）——完成对应专属剧情后方可继续累积");
+      if (current + delta > cap) delta = cap - current;
+    }
     const value = Math.max(spec.min, Math.min(spec.max, current + delta));
     writeMetric(stat, profiles, cfg.character, cfg.metric.key, value);
     if (cfg.metric.tiers && cfg.metric.tiers[parsed.target] !== undefined) {
@@ -98,6 +125,11 @@ function createMetricEvents(defs, profiles) {
       const anchor = (cfg.anchors || []).find((a) => a.id === anchorId);
       if (anchor && anchor.repeat === false) stat.metric_anchor_done[anchorId] = true;
     }
+    stat.favor_log ||= {};
+    (stat.favor_log[cfg.character] ||= []).unshift({
+      delta, via, turn: storyCount, note: parsed.evidence.slice(0, 40),
+    });
+    if (stat.favor_log[cfg.character].length > 12) stat.favor_log[cfg.character].length = 12;
     changes.push({ character: cfg.character, key: cfg.metric.key, delta, value, via });
     return { changes };
   }

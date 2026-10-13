@@ -8,7 +8,7 @@ const profiles={叶红缨:{initialStage:"stage01",metrics:{好感度:{min:0,max:
 const defs=data.metricEventDefinitions;
 function state(present=true){
   const s={manual:{},stat_data:{character_metrics:{叶红缨:{好感度:0}}}};
-  if(present)s.在场角色=[{名:"叶红缨"}];
+  if(present)s.stat_data.在场角色=[{名:"叶红缨"}];
   return s;
 }
 function tag(text){return "<好感事件>"+text+"</好感事件>";}

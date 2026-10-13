@@ -33,6 +33,14 @@ function source(root) {
       areaBackgroundDefinitions:JSON.parse(read("src/config/area_backgrounds.json")),
       promotionDefinitions:JSON.parse(read("src/config/promotions.json")),
       characterProfiles: JSON.parse(read("src/config/character_stages.json")).characters,
+      relicDb:JSON.parse(read("src/config/relic_db.json")),
+      relicEmblems:(()=>{const dir=path.join(root,"src/assets/名器图标");const out={};
+        for(const f of fs.readdirSync(dir)){
+          const m=f.match(/^([a-z]+)(?:_([1-4]))?\.webp$/);
+          if(!m)continue;
+          (out[m[1]]??={})[m[2]||"1"]="data:image/webp;base64,"+fs.readFileSync(path.join(dir,f)).toString("base64");
+        }
+        return out;})(),
       assets,
       openingMenu: buildMenuHtml({
         assets: JSON.parse(read("src/assets_data/opening_assets.json")),

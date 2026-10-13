@@ -13,6 +13,7 @@ const tests = spawnSync(
     "tests/metric_events.test.cjs",
     "tests/area_backgrounds.test.cjs",
     "tests/ui.test.cjs",
+    "tests/v21_integration.test.cjs",
     "tests/opening_host.test.cjs",
     "tests/youjigu_map.test.cjs",
     "tests/map_integration.test.cjs",

@@ -11,6 +11,7 @@ function createDispatcher(adapter, data) {
   const metricEvents = createMetricEvents(
     data.metricEventDefinitions,
     data.characterProfiles || {},
+    data.promotionDefinitions || {},
   );
   const areaBackgrounds = {
     defs: Object.values(data.areaBackgroundDefinitions || {}),
