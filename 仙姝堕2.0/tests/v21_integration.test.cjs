@@ -2,7 +2,8 @@
 const {test}=require('node:test'), assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const data=require('../tools/data.cjs').load(path.join(__dirname,'..'));
 const {createMetricEvents}=require('../src/runtime/metric_events');
-const {mountHUD}=require('../src/ui/status_panel');const {JSDOM}=require('jsdom');
+const {mountHUD, PORTRAIT_CDN}=require('../src/ui/status_panel');const {JSDOM}=require('jsdom');
+const linkEndsWith=(p,name)=>p.endsWith(name)||p===PORTRAIT_CDN[name];
 function makeDom(html){const d=new JSDOM(html);d.window.HTMLDialogElement.prototype.showModal=function(){this.open=true};d.window.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new d.window.Event('close'))};return d;}
 function state(identity='赵无忧'){return {identity,chatId:'test',branchId:'test',floor:2,revision:3,storyCount:5,calendarDate:{year:1578,month:3,day:3},known:{},inventory:[],manual:{},stat_data:{身份:identity,关系刻度:'叶红缨、同门',名器归属:{},在场角色:[{名:'叶红缨'}],character_metrics:{叶红缨:{好感度:19}},completed_character_stages:{叶红缨:'stage01'}}};}
 const prose='叶红缨接过酒坛。',tag='<好感事件>叶红缨｜记心上｜依据：叶红缨接过酒坛</好感事件>';
@@ -39,7 +40,7 @@ test('心迹真实DOM：身份过滤四节点、点击授权中控、活动/历�
 });
 test('重新构建必须包含新面板与上限代码，PNG和latest一致',()=>{
  const {bundle,unpack}=require('../build');const script=bundle();assert.ok(script.includes('xsd2-favor'));assert.ok(script.includes('function favorCap'));assert.ok(script.includes('data-heart-node'));
- const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v42.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.42');
+ const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v43.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.43');
 });
 test('开局容器独立于两翼布局，入世后回到主卷，重新开局可再次移出',()=>{
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document;let s=null;
@@ -87,10 +88,10 @@ test('玩家头像独立于在场人物；高清缩图与夜浴场景图由事�
  const {portrait}=require('../src/ui/status_panel'),d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document,s=state();
  const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}},data,()=>{},{getPlayerAvatar:()=>'/avatars/player.png'});
  assert.ok(doc.querySelector('[data-player-avatar] img').src.endsWith('/avatars/player.png'));assert.equal(doc.querySelector('.xsd2-portrait [data-portrait]'),null);assert.equal(doc.querySelector('[data-player-avatar-file]').accept,'image/png,image/jpeg,image/webp');
- assert.ok(portrait('叶红缨',s,data).small.endsWith('yehongying.png'));
+ assert.ok(linkEndsWith(portrait('叶红缨',s,data).small,'yehongying.png'));
  s.activeEvent={pluginId:'character_promotion',promotionId:'yehongying-night',character:'叶红缨'};
- assert.match(portrait('叶红缨',s,data).small,/yehongying_bath_(side|front)\.png$/);assert.equal(portrait('叶红缨',s,data).small,portrait('叶红缨',s,data).large);assert.ok(portrait('孤月',s,data).large.endsWith('guyue.png'));
- s.activeEvent=null;assert.ok(portrait('叶红缨',s,data).large.endsWith('yehongying.png'));p.destroy();d.window.close();
+ assert.ok(linkEndsWith(portrait('叶红缨',s,data).small,'yehongying_bath_side.png')||linkEndsWith(portrait('叶红缨',s,data).small,'yehongying_bath_front.png'));assert.equal(portrait('叶红缨',s,data).small,portrait('叶红缨',s,data).large);assert.ok(linkEndsWith(portrait('孤月',s,data).large,'guyue.png'));
+ s.activeEvent=null;assert.ok(linkEndsWith(portrait('叶红缨',s,data).large,'yehongying.png'));p.destroy();d.window.close();
 });
 test('十三名器统一用后台短ID显示浸润；无记录0值、各阶晋升条件、关闭切换保持',()=>{
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document,s=state(),R=data.rules(s.stat_data);
@@ -104,26 +105,26 @@ test('十三名器统一用后台短ID显示浸润；无记录0值、各阶晋�
 });
 test('场景候选随机选择只来自对应图片池，同楼重绘稳定，普通场景不选夜浴图',()=>{
  const {portrait}=require('../src/ui/status_panel'),s=state();s.activeEvent={pluginId:'character_promotion',promotionId:'yehongying-night'};
- const previous=Math.random;const seen=new Set();try{for(let floor=0;floor<12;floor++){Math.random=()=>floor%2?.9:.1;s.floor=100+floor;const p=portrait('叶红缨',s,data);seen.add(p.large);assert.equal(p.large,portrait('叶红缨',s,data).large);assert.match(p.large,/bath_(front|side)\.png$/);}}finally{Math.random=previous;}
+ const previous=Math.random;const seen=new Set();try{for(let floor=0;floor<12;floor++){Math.random=()=>floor%2?.9:.1;s.floor=100+floor;const p=portrait('叶红缨',s,data);seen.add(p.large);assert.equal(p.large,portrait('叶红缨',s,data).large);assert.ok(linkEndsWith(p.large,'yehongying_bath_front.png')||linkEndsWith(p.large,'yehongying_bath_side.png'));}}finally{Math.random=previous;}
  assert.equal(seen.size,2);s.activeEvent=null;assert.ok(!portrait('叶红缨',s,data).large.includes('bath'));
 });
 test('心迹只展示事件名和实际分值；好感协议显示正则隐藏闭合/漏闭标签且保留状态块',()=>{
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document,s=state();s.stat_data.favor_log={叶红缨:[{label:'对饮',delta:2,via:'yh_gongyin',turn:4,note:'正文证据不应显示'}]};
  const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}},data,()=>{});doc.querySelector('[data-favor="叶红缨"]').click();const text=doc.querySelector('.xsd2-flog li').textContent;assert.equal(text,'对饮+2');assert.ok(!doc.querySelector('.xsd2-favor').textContent.includes('yh_gongyin'));assert.ok(!doc.querySelector('.xsd2-favor').textContent.includes('正文证据'));
- const card=require('../build').unpack(fs.readFileSync(path.join(__dirname,'../dist/仙姝堕2.0·框架测试-v42.png')));const x=card.data.extensions.regex_scripts.find(x=>x.id==='xsd2-hide-favor-report');const end=x.findRegex.lastIndexOf('/'),re=new RegExp(x.findRegex.slice(1,end),x.findRegex.slice(end+1));
+ const card=require('../build').unpack(fs.readFileSync(path.join(__dirname,'../dist/仙姝堕2.0·框架测试-v43.png')));const x=card.data.extensions.regex_scripts.find(x=>x.id==='xsd2-hide-favor-report');const end=x.findRegex.lastIndexOf('/'),re=new RegExp(x.findRegex.slice(1,end),x.findRegex.slice(end+1));
  for(const close of ['</好感事件>','']){const raw='故事正文。<好感事件>叶红缨｜锚点 yh_gongyin｜依据：故事正文。'+close+'<Status_block>状态</Status_block>';assert.equal(raw.replace(re,''),'故事正文。<Status_block>状态</Status_block>');}p.destroy();d.window.close();
 });
 
 test('男性立绘及括号别名从现有图库解析，未知人物保留头像位且文字不进入窄列',()=>{
  const {portrait}=require('../src/ui/status_panel'),s=state();
  for(const [name,id] of [['玄机子','xuanjizi'],['玄机子（陆藏锋）','xuanjizi'],['炎雷子','yanleizi'],['云逸尘（清虚散人）','yunyichen'],['清虚散人','yunyichen'],['极乐太子','jiletaizi'],['炼欲魔君','lianyumojun'],['花间二鬼','huajianergui'],['残阳老怪','canyanglaoguai'],['肉山佛','roushanfo'],['九皇子','jiuhuangzi']]){
-  const p=portrait(name,s,data);assert.ok(data.assets.includes(id+'.png'));assert.ok(p.large.endsWith(id+'.png'));
+  const p=portrait(name,s,data);assert.ok(data.assets.includes(id+'.png'));assert.ok(linkEndsWith(p.large,id+'.png'));
  }
  s.stat_data.在场角色=[{名:'玄机子',关系:'客气拘谨',情况:'衣冠齐整',心境:'力主分兵',神态:'折扇轻摇'}, {名:'未配图道友',关系:'初识',情况:'静候'}];
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document;
  const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}},data,()=>{});
- const cards=doc.querySelectorAll('.xsd2-npc');assert.equal(cards[0].children.length,2);assert.match(cards[0].querySelector('img').src,/xuanjizi\.png$/);assert.equal(cards[0].children[1].querySelector('h4').textContent.trim(),'玄机子');
+ const cards=doc.querySelectorAll('.xsd2-npc');assert.equal(cards[0].children.length,2);assert.ok(linkEndsWith(cards[0].querySelector('img').src,'xuanjizi.png'));assert.equal(cards[0].children[1].querySelector('h4').textContent.trim(),'玄机子');
  assert.equal(cards[1].children.length,2);assert.ok(cards[1].children[0].classList.contains('xsd2-avatar-placeholder'));assert.match(cards[1].children[1].textContent,/初识/);
- cards[0].querySelector('[data-portrait]').click();assert.match(doc.querySelector('dialog img').src,/xuanjizi\.png$/);
+ cards[0].querySelector('[data-portrait]').click();assert.ok(linkEndsWith(doc.querySelector('dialog img').src,'xuanjizi.png'));
  p.destroy();d.window.close();
 });

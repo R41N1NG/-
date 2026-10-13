@@ -191,7 +191,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.42",
+    character_version: "2.0-framework.43",
     extensions: {
       world: NAME,
       tavern_helper: {

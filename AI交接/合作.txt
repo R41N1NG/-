@@ -12,6 +12,27 @@
 
 ## 一、当前保留（**目前还在讨论／进行中的项目**，原文照录）
 
+【2026-10-13 22:35（Asia/Shanghai）｜GLM小狐狸｜立绘 84 张上 catbox 图床，链接接进卡｜v43】
+
+### 主人这一轮的诉求与原话（一条不省）
+
+“整理出本地图包，并指出玩家下载我们的角色卡后要把本地图包放在哪儿才能被以正确读取。顺便问一句，你能帮我往catbox上传图床并拿回链接吗？”
+“不是全部上传，是一个个对应上传，然后把图链放进卡里哦”
+“有什么反复解决不了的可以上报gpt”
+“目标是v42哦”
+“能行吗？”
+“换了节点了，你再试试”
+“算了，先本地图包”
+“（catbox userhash，主人提供；按要求不入库不公开）”
+
+### 实施结果与边界
+
+本地图包 zip（84 图＋命名说明＋玩家放置说明）已交付 E:/角色卡制作/仙姝堕2.0-本地图包-xsd_gallery.zip。catbox 走本机 7897 代理 CONNECT 隧道＋主人 userhash 上传成功：84/84 张零失败，链接映射存 src/assets/本地图包_xsd_gallery/catbox_urls.json。status_panel.js 新增 PORTRAIT_CDN 表并导出：portrait() 的 small/large 优先 CDN 链接，fallback 保持本地 user/images 路径——图床与本地图包双轨互备，断图床或断本地都不断图。发版 v43（348 条世界书，ship 160＋13 全过），dist 增 v43 副本，v21/ui/core 三个测试文件的立绘断言升级为 CDN-aware（linkEndsWith 助手）。边界：catbox 对部分国内直连玩家不可达，此情形走 fallback 本地图包；userhash 不写入任何入库文件。
+
+### 防重犯与踩坑
+
+Windows curl（schannel）对 catbox TLS 握手必败、node fetch 不吃系统代理 Fake-IP——最终可用姿势＝node http CONNECT 隧道过 127.0.0.1:7897＋OpenSSL 指纹＋userhash。catbox 匿名 API 被出口风控（Invalid uploader），换节点无效，带账号 userhash 即过。批量脚本响应为 chunked 编码，用正则抓 files.catbox.moe 直链而非按 bodyText.startsWith 判定。
+
 > 更早的已闭环项目原文全文已安全移入 `归档/合作（归档-2026-10-09至2026-10-12）.txt` 与 `归档/合作（归档-截至2026-10-09）.txt`（一条未删），阶段总结见第二节，完整索引见第三节。
 
 【2026-10-13 21:44（Asia/Shanghai）｜gpt｜主人指定红缨近景卡面｜v42】

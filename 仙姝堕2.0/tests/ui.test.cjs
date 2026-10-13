@@ -3,7 +3,7 @@ const { test } = require("node:test"),
   assert = require("node:assert/strict"),
   path = require("node:path");
 const { JSDOM } = require("jsdom");
-const { mountHUD } = require("../src/ui/status_panel"),
+const { mountHUD, PORTRAIT_CDN } = require("../src/ui/status_panel"),
   C = require("../src/runtime/contracts"),
   data = require("../tools/data.cjs").load(path.join(__dirname, ".."));
 function dom() {
@@ -86,7 +86,7 @@ test("HUD真实DOM：折叠、快捷发送、物品、立绘、GM提交与卸载
   await Promise.resolve();
   assert.equal(calls.at(-1).type, "DISCARD_ITEM");
   doc.querySelector("[data-portrait]").click();
-  assert.ok(doc.querySelector("dialog img").src.endsWith("guyue.png"));
+  const dialogSrc = doc.querySelector("dialog img").src;assert.ok(dialogSrc.endsWith("guyue.png") || dialogSrc === PORTRAIT_CDN["guyue.png"]);
   doc.querySelector("[data-close]").click();
   assert.equal(doc.querySelector("dialog"), null);
   doc.querySelector("[data-gm]").click();

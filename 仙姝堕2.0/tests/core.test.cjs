@@ -456,17 +456,18 @@ test("世界书限当前primary，不触碰追加书、他卡及同名正式书�
   }
 });
 test("HUD 17槽位、三面板默认收起、本地图链缺图降级及对比度", () => {
-  const { CSS, PALETTE, portrait } = require("../src/ui/status_panel"),
+  const { CSS, PALETTE, portrait, PORTRAIT_CDN } = require("../src/ui/status_panel"),
     source = fs.readFileSync(path.join(ROOT, "src/ui/status_panel.js"), "utf8");
   assert.ok(source.includes('data-xsd-slot="map"'));
   assert.ok(source.includes('data-xsd-slot="17"'));
   assert.equal((source.match(/<details(?:\s[^>]*)?>/g) || []).length, 3);
   assert.ok(!source.includes("<details open"));
   assert.ok(source.includes("img.onerror"));
+  let guyueSmall;
   assert.ok(
-    portrait("孤月", { stat_data: {}, known: {} }, data).small.endsWith(
+    (guyueSmall = portrait("孤月", { stat_data: {}, known: {} }, data).small).endsWith(
       "guyue.png",
-    ),
+    ) || guyueSmall === PORTRAIT_CDN["guyue.png"],
   );
   function lum(hex) {
     const rgb = hex
