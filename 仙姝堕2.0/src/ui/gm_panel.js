@@ -23,7 +23,7 @@ function openGM(doc, runtime, data, report) {
     s.calendarDate.month +
     "-" +
     s.calendarDate.day +
-    '"></label><label>段位<input name="rank" type="number" min="1" max="16" value="' +
+    '"></label><label>境界<input name="realm" value="'+esc(s.stat_data.修为||'')+'"></label><label>段位<input name="rank" type="number" min="1" max="16" value="' +
     s.stat_data.段位 +
     '"></label><label>纳戒物品（每行：名称 | 数量 | 消耗品或非消耗品 | 介绍 | 效果）<textarea name="items">' +
     esc(s.inventory.map((item) => { const x = describeItem(item); return [x.name,x.count,x.consumable ? "消耗品" : "非消耗品",x.description,x.effect].join(" | "); }).join("\n")) +
@@ -106,6 +106,7 @@ function openGM(doc, runtime, data, report) {
         date = { year: d[0], month: d[1], day: d[2] };
       if (JSON.stringify(date) !== JSON.stringify(s.calendarDate))
         patch.calendarDate = date;
+      if(f.has("realm") && String(f.get("realm")).trim()!==s.stat_data.修为)patch.realm=String(f.get("realm")).trim();
       const rank = +f.get("rank");
       if (rank !== s.stat_data.段位) patch.段位 = rank;
       const items = String(f.get("items"))

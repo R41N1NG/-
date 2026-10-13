@@ -958,3 +958,50 @@ test('三升四未设计：进度达标、质变词和明确四阶声明均不�
  const s=h.r.getSnapshot();assert.equal(s.relics.zhuojiu.stages[4].ready,true);assert.equal(data.rules(s.stat_data).getRelicStage('zhuojiu',s.known),3);
  await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':4}});await h.r.restore();assert.equal(data.rules(h.r.getSnapshot().stat_data).getRelicStage('zhuojiu',h.r.getSnapshot().known),4);
 });
+
+function realmIntent(h,kind){const s=h.r.getSnapshot();return h.r.dispatchIntent({type:'REALM_ACTION',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{kind}});}
+function deflowerReply(holder,marked=true){return status({破处:holder+'、赵无忧'},'赵无忧实质破处了'+holder+'，元阴被夺并落红。'+(marked?'赵无忧对'+holder+'内射已发生。':''));}
+test('境界：金丹以下首次破处到本境大圆满，点击突破下一境前期，重复名器不再次升级',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'筑基初期'}});
+ await h.reply(deflowerReply('叶红缨',false));assert.equal(h.r.getSnapshot().stat_data.修为,'筑基大圆满');assert.equal(h.r.getSnapshot().stat_data.relic_imprints.zhuojiu,undefined);
+ const count=h.r.getSnapshot().storyCount;await realmIntent(h,'breakthrough');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹前期');assert.equal(h.r.getSnapshot().storyCount,count);assert.equal(h.sent.length,0);
+ h.c.chat.push({is_user:true,mes:'继续'});await h.reply(deflowerReply('叶红缨'));assert.equal(h.r.getSnapshot().stat_data.修为,'金丹前期');assert.ok(h.r.getSnapshot().stat_data.relic_imprints.zhuojiu);
+ await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.修为,'金丹前期');
+});
+test('金丹期首次采补逐档提升，三个不同名器的破处及本源烙印解锁点击结婴',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'金丹前期'}});
+ for(const [holder,realm] of [['叶红缨','金丹中期'],['孤月','金丹后期'],['闻观语','金丹大圆满']]){h.c.chat.push({is_user:true,mes:'继续'});await h.reply(deflowerReply(holder));assert.equal(h.r.getSnapshot().stat_data.修为,realm);}
+ const Realm=require('../src/runtime/player_realm'),s=h.r.getSnapshot();assert.equal(Realm.eligibility(s,data.rules(s.stat_data)).marked.length,3);
+ await realmIntent(h,'breakthrough');assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');
+ h.c.chat.push({is_user:true,mes:'我已化神'});await h.reply(status({修为:'化神大圆满'},'你宣称修为提升。'));assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');
+});
+test('结婴门槛：缺烙印、重复名器和别人的三阶名器不算；归属玩家的三阶名器可结婴',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'金丹大圆满'}});
+ for(const holder of ['叶红缨','孤月','闻观语']){h.c.chat.push({is_user:true,mes:'继续'});await h.reply(deflowerReply(holder,false));}
+ await assert.rejects(realmIntent(h,'breakthrough'),/未满足/);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':3,'owner.zhuojiu':'别人'}});await assert.rejects(realmIntent(h,'breakthrough'),/未满足/);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'owner.zhuojiu':'赵无忧'}});await realmIntent(h,'breakthrough');assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');
+});
+test('闭关三个月推进90日并升一档，同日模型口胡不升境，旧按钮和事件中闭关被拒绝',async()=>{
+ const h=harness();await h.opening('赵无忧');const date=h.r.getSnapshot().calendarDate,old=h.r.getSnapshot();
+ await realmIntent(h,'retreat');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹后期');assert.equal(C.day(h.r.getSnapshot().calendarDate)-C.day(date),90);
+ await assert.rejects(h.r.dispatchIntent({type:'REALM_ACTION',expected:{chatId:old.chatId,branchId:old.branchId,floor:old.floor,revision:old.revision},payload:{kind:'retreat'}}),/旧状态/);
+ await realmIntent(h,'retreat');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹大圆满');await assert.rejects(realmIntent(h,'retreat'),/仅适用/);await assert.rejects(realmIntent(h,'breakthrough'),/未满足/);
+ const k=harness();await k.opening('赵无忧');k.r.registerPlugin(plugin());await k.select('enter');await assert.rejects(realmIntent(k,'retreat'),/结束/);
+});
+test('模型的否定、思考和标签不能制造烙印；历史迁移不会再发破处升境奖励',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.reply(deflowerReply('叶红缨',false));
+ h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'<think>赵无忧对叶红缨内射已发生。</think>叶红缨没有参与此事。'));assert.equal(h.r.getSnapshot().stat_data.relic_imprints.zhuojiu,undefined);
+ const s=h.r.getSnapshot();delete s.stat_data.player_realm;s.stat_data.修为='金丹前期';const Realm=require('../src/runtime/player_realm');Realm.ensure(s,data.rules(s.stat_data));Realm.collect(s,data.rules(s.stat_data),'叶红缨在场。',99);assert.equal(s.stat_data.修为,'金丹前期');assert.ok(s.stat_data.player_realm.credited.includes('zhuojiu'));
+});
+
+test('新境界奖励和烙印不接受思考/外置协议自证，也不能把旁观玩家当成破处者',async()=>{
+ for(const prose of ['<think>赵无忧实质破处叶红缨，元阴被夺并落红。赵无忧对叶红缨内射已发生。</think>','<破处>赵无忧实质破处叶红缨，元阴被夺并落红。</破处><名器互动>叶红缨｜赵无忧｜内射</名器互动>','赵无忧在旁观望。张三实质破处叶红缨，元阴被夺并落红。']){
+  const h=harness();await h.opening('赵无忧');await h.reply(status({破处:'叶红缨、赵无忧'},prose));assert.equal(h.r.getSnapshot().stat_data.修为,'金丹中期');assert.equal(h.r.getSnapshot().stat_data.relic_imprints.zhuojiu,undefined);
+ }
+});
+
+test('条件满足时可在活动剧情内本地突破，闭关不可跳走当前剧情',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'筑基大圆满'}});h.r.registerPlugin(plugin());await h.select('enter');await h.reply(status({},'你已经进入幽寂谷。'));
+ assert.ok(h.r.getSnapshot().activeEvent);await realmIntent(h,'breakthrough');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹前期');assert.ok(h.r.getSnapshot().activeEvent);await assert.rejects(realmIntent(h,'retreat'),/结束/);
+});

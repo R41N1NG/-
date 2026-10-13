@@ -6,8 +6,9 @@ const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
-const { createMetricEvents } = require("./metric_events");
+const { createMetricEvents,stripForEvidence } = require("./metric_events");
 const {inferRelicActions}=require("./relic_evidence");
+const Realm=require("./player_realm");
 function createDispatcher(adapter, data) {
   const metricEvents = createMetricEvents(
     data.metricEventDefinitions,
@@ -120,6 +121,7 @@ function createDispatcher(adapter, data) {
   }
   function normalize(s) {
     C.assertDate(s.calendarDate);
+    Realm.ensure(s,rules(s));
     s.stat_data.inventory = (s.stat_data.inventory || []).map(describeItem);
     s.stat_data.纳戒 = (s.inventoryChanges || [])
       .map(x => x.action + "：" + x.name + "×" + x.count).join("｜") || "无";
@@ -309,7 +311,7 @@ function createDispatcher(adapter, data) {
         C.dateText(current.calendarDate) +
         "。身份：" +
         current.identity +
-        "。地点：" +
+        "。后台玩家修为："+st.修为+"。玩家境界由本地记录，正文不得自行提升玩家境界。地点：" +
         (p?.selection?.destination || st.地点 || "未定") +
         "。已知事实：" +
         Object.keys(st.known)
@@ -599,7 +601,7 @@ function createDispatcher(adapter, data) {
     const parsed = C.parseStatus(text),
       R = rules(s);
     for (const k of C.DISPLAY_FIELDS)
-      if (parsed.fields[k] && k !== "历时") s.stat_data[k] = parsed.fields[k];
+      if (parsed.fields[k] && k !== "历时" && k !== "修为") s.stat_data[k] = parsed.fields[k];
     if (parsed.cast.length || parsed.fields.在场 === "无")
       s.stat_data.在场角色 = parsed.cast;
     if (parsed.fields.实际发生) s.stat_data.实际发生 = parsed.fields.实际发生;
@@ -640,11 +642,12 @@ function createDispatcher(adapter, data) {
         continue;
       s.stat_data.known[f.name] = true;
     }
+    const verifiedProse=stripForEvidence(parsed.prose).replace(/<(?:破处|名器互动|实际发生|进度)>[\s\S]*?<\/(?:破处|名器互动|实际发生|进度)>/gi,"");
     for (const group of R.FORM_OF_HOLDERS) {
       for (const holder of group.holders) {
-        const proof = parsed.prose
+        const proofLine = verifiedProse
           .split(/[。！？\n]/)
-          .some(
+          .find(
             (line) =>
               line.includes(holder) &&
               !C.noFact.test(line) &&
@@ -653,20 +656,20 @@ function createDispatcher(adapter, data) {
                 line,
               ),
           );
-        if (proof) {
+        if (proofLine) {
           s.stat_data.known[holder + "处女丧失"] = true;
           const record = (parsed.fields.破处 || "")
             .split("｜")
             .find((x) => x.split("、")[0] === holder);
           const owner = record?.split("、")[1]?.trim();
           if (
-            (owner && C.fact(parsed.prose, owner)) ||
-            (owner === s.identity && C.fact(parsed.prose, "你"))
+            (owner && C.fact(proofLine, owner)) ||
+            (owner === s.identity && C.fact(proofLine, "你"))
           )
             s.stat_data.破处者[holder] = owner;
           else if (
-            C.fact(parsed.prose, "你") ||
-            C.fact(parsed.prose, s.identity)
+            C.fact(proofLine, "你") ||
+            C.fact(proofLine, s.identity)
           )
             s.stat_data.破处者[holder] = s.identity;
         }
@@ -735,6 +738,7 @@ function createDispatcher(adapter, data) {
       )
         s.stat_data.known[cfg.stage4Key] = true;
     }
+    Realm.collect(s,rr,parsed.prose,id);
     try {
       const applied = metricEvents.apply(s, text, parsed.prose, s.storyCount + 1);
       if (applied.changes.length) s.lastMetricEvents = applied.changes;
@@ -889,6 +893,13 @@ function createDispatcher(adapter, data) {
         )
           throw Error("物品须有名称及正整数数量");
         s.manual[k] = C.clone(v);
+      } else if (k === "realm") {
+        if(s.pending||s.activeEvent)throw Error("请先结束当前剧情或行动，再设置境界");
+        if(typeof v!=="string"||!v.trim())throw Error("境界不能为空");
+        const old=Realm.ensure(s,rules(s));s.stat_data.player_realm={...old,...Realm.parse(v)};
+      } else if (k.startsWith("imprint.") && rules(s).RELIC_PILOT_CONFIG[k.slice(8)] && (typeof v==="string"||v===null)) {
+        s.stat_data.relic_imprints ||= {};
+        if(v)s.stat_data.relic_imprints[k.slice(8)]={owner:v,source:"GM"};else delete s.stat_data.relic_imprints[k.slice(8)];
       } else if (k === "段位") {
         if (!Number.isInteger(v) || v < 1 || v > 16) throw Error("段位为1—16");
         s.manual[k] = v;
@@ -962,6 +973,13 @@ function createDispatcher(adapter, data) {
       switch (intent.type) {
         case "SELECT_NODE":
           return select(c, intent);
+        case "REALM_ACTION": {
+          if(current.pending||adapter.isGenerating?.()||(intent.payload.kind==="retreat"&&current.activeEvent))throw Error("请先结束当前剧情或行动");
+          if(intent.expected?.chatId!==c.chatId||intent.expected.branchId!==c.branchId||intent.expected.floor!==c.floor||intent.expected.revision!==current.revision)throw Error("境界按钮来自旧状态，请重新选择");
+          if(intent.payload.kind==="retreat"&&current.manual.calendarDate)throw Error("日期处于人工覆盖，请先交还自动");
+          const next=C.clone(current);Realm.act(next,rules(next),intent.payload.kind,c.floor);
+          return commit(c,next,"realm_action");
+        }
         case "GM_PATCH": {
           const r = await gm(c, intent.payload);
           await adapter.syncIdentity?.(current.identity);

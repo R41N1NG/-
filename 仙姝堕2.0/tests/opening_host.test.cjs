@@ -483,3 +483,14 @@ test('打包宿主三段晋升：变量丢失刷新、格式归一化正常发�
   await h.emit('GENERATION_STARTED','normal',{},false);h.context.chat.push({mes:'请她喝酒',is_user:true,variables:[{}]});await reply('她接过酒杯。');assert.equal(r.getSnapshot().pending,null);assert.ok(h.context.chat.at(-1).mes.includes('她接过酒杯'));assert.ok(!h.context.prompts.at(-1).includes('Promotion_result'));assert.equal(h.errors.length,0);
  }finally{h.close();}
 });
+
+test('境界子面板：闭关三月本地升档不发送，单实例关闭、刷新保留境界与日期',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..'));const h=await fixture(data.greetings.赵无忧);
+ h.win.HTMLDialogElement.prototype.showModal=function(){this.open=true;};h.win.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new h.win.Event('close'));};
+ try{
+  const r=h.win.XSD2.runtime;await until(()=>r.getSnapshot());const start=C.day(r.getSnapshot().calendarDate);
+  await until(()=>h.doc.querySelector('[data-realm]'));h.doc.querySelector('[data-realm]').click();h.doc.querySelector('[data-realm]').click();assert.equal(h.doc.querySelectorAll('[data-realm-act="retreat"]').length,1);
+  h.doc.querySelector('[data-realm-act="retreat"]').click();await until(()=>r.getSnapshot().stat_data.修为==='金丹后期');assert.equal(C.day(r.getSnapshot().calendarDate)-start,90);assert.equal(h.sends.length,0);
+  await h.emit('CHAT_CHANGED');assert.equal(r.getSnapshot().stat_data.修为,'金丹后期');assert.equal(C.day(r.getSnapshot().calendarDate)-start,90);assert.ok(h.context.prompts.at(-1).includes('金丹后期'));assert.equal(h.errors.length,0);
+ }finally{h.close();}
+});

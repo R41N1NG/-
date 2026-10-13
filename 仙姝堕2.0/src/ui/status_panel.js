@@ -5,6 +5,7 @@ const { mountOpening } = require("./opening_menu");
 const { renderSettlement } = require("./settlement_panel");
 const { openItem } = require("./item_panel");
 const { openGM } = require("./gm_panel");
+const {openRealm}=require("./realm_panel");
 const {meets} = require("../runtime/conditions");
 const { dateText } = require("../runtime/contracts");
 const { describeItem } = require("../runtime/item_catalog");
@@ -189,9 +190,10 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   container.append(settlement, stagebar);
   stagebar.append(wingL, root, wingR);
   container.append(xjRoot);
-  let favorDialog=null;
+  let favorDialog=null,realmDispose=null;
+  const closeRealm=()=>{realmDispose?.();realmDispose=null;};
   const closeFavor=()=>{favorDialog?.remove();favorDialog=null;};
-  const escape = e => { if(e.key === "Escape") { closeFavor(); xjRoot.replaceChildren(); xjRoot.classList.remove("open"); } };
+  const escape = e => { if(e.key === "Escape") { closeFavor();closeRealm(); xjRoot.replaceChildren(); xjRoot.classList.remove("open"); } };
   doc.addEventListener("keydown",escape);
   let plugins = [],
     dialogs = [],
@@ -338,7 +340,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   }
   function render() {
     if (disposed) return;
-    closeFavor();
+    closeFavor();closeRealm();
     const folds = [...root.querySelectorAll("details")].map((x) => x.open);
     for (const p of plugins) p();
     plugins = [];
@@ -416,7 +418,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       '<header class="xsd2-head"><h1>卷中錄</h1><span class="xsd2-sub">仙姝堕 · 玄门展</span><div class="xsd2-topmap" data-xsd-slot="map" data-slot-number="4"></div><button data-gm data-xsd-slot="5" aria-label="GM">⚙</button></header>'+
       '<div class="xsd2-who"><div class="xsd2-document"><span class="xsd2-plaque" data-xsd-slot="1">'+esc([st.阵营,st.自设?.name||s.identity].filter(Boolean).join(' · '))+'</span>'+
       row('时 间','仙盟历 '+esc(dateText(s.calendarDate))+' · '+esc(st.历时||'0日'),2)+
-      row('地 点',esc(st.地点||'无'),3)+row('修 为',esc(st.修为||'无'))+
+      row('地 点',esc(st.地点||'无'),3)+row('修 为','<button data-realm>'+esc(st.修为||'无')+'</button>')+
       row('氛 围','<span class="xsd2-atmo">'+esc(st.环境||'无')+'</span>')+
       row('状 态',esc(st.状态||'无'))+row('目 标',esc(st.目标||'无'))+
       (st.危机&&st.危机!=='无'?'<div class="xsd2-row crisis"><b>危 机</b><span data-xsd-slot="9">'+esc(st.危机)+'</span></div>':'<span data-xsd-slot="9" hidden></span>')+
@@ -432,6 +434,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     root
       .querySelectorAll("details")
       .forEach((x, i) => (x.open = folds[i] || false));
+    root.querySelector("[data-realm]").onclick=()=>{closeRealm();realmDispose=openRealm(doc,runtime,data,report);};
     root.querySelector("[data-gm]").onclick = () =>
       dialogs.push(openGM(doc, runtime, data, report));
     root
@@ -487,7 +490,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     render,
     destroy() {
       disposed = true;
-      closeFavor();
+      closeFavor();closeRealm();
       unsubscribe();
       opening?.destroy();
       plugins.forEach((f) => f());

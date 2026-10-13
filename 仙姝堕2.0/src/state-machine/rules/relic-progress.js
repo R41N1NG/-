@@ -298,6 +298,7 @@ function relicEvidenceProse(relicId, prose) {
   const visible=String(prose || '')
     .replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi,'')
     .replace(/<(?:Status_block|details)\b[^>]*>[\s\S]*?<\/(?:Status_block|details)>/gi,'')
+    .replace(/<(?:破处|名器互动|实际发生|进度)>[\s\S]*?<\/(?:破处|名器互动|实际发生|进度)>/gi,'')
     .replace(/[「“"][^」”"\n]*[」”"]/g,'');
   let ownerContext=false;
   const evidence=[];
