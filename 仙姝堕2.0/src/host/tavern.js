@@ -85,10 +85,12 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = []) {
   }
 
   const adapter = {
+    getPlayerAvatar(){const image=top.document.querySelector("#user_avatar_block img, #chat .mes[is_user=\"true\"] .avatar img");return image?.src || "";},
     context,
     getDiagnostics() {
       const c = context();
-      return { cardVersion:c.card?.data?.character_version || c.card?.character_version || null,
+      return {
+        cardVersion:c.card?.data?.character_version || c.card?.character_version || null,
         generating:isGenerating(), lifecycleGenerating:generating, aborted,
         stopVisible:visible(top.document.querySelector("#mes_stop")),
       };

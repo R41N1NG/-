@@ -194,7 +194,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.25",
+    character_version: "2.0-framework.26",
     extensions: {
       world: NAME,
       tavern_helper: {
@@ -259,7 +259,7 @@ function build() {
       }
     }
   }
-  fs.writeFileSync(path.join(DIST, NAME + "-v25.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v26.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(

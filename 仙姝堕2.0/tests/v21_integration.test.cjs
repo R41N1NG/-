@@ -39,7 +39,7 @@ test('心迹真实DOM：身份过滤四节点、点击授权中控、活动/历�
 });
 test('重新构建必须包含新面板与上限代码，PNG和latest一致',()=>{
  const {bundle,unpack}=require('../build');const script=bundle();assert.ok(script.includes('xsd2-favor'));assert.ok(script.includes('function favorCap'));assert.ok(script.includes('data-heart-node'));
- const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v25.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.25');
+ const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v26.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.26');
 });
 test('开局容器独立于两翼布局，入世后回到主卷，重新开局可再次移出',()=>{
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document;let s=null;
@@ -82,4 +82,13 @@ test('心迹单实例原生弹窗，不堆叠；顶端地图、旧按钮移除�
  doc.querySelector('[data-heart-node="yhrFinish"]').click();await Promise.resolve();assert.equal(calls[0].payload.nodeId,'yhrFinish');assert.equal(doc.querySelectorAll('dialog').length,0);
  doc.querySelector('[data-favor="叶红缨"]').click();doc.dispatchEvent(new d.window.KeyboardEvent('keydown',{key:'Escape'}));assert.equal(doc.querySelectorAll('dialog').length,0);
  p.destroy();d.window.close();
+});
+test('玩家头像独立于在场人物；高清缩图与夜浴场景图由事件配置切换',()=>{
+ const {portrait}=require('../src/ui/status_panel'),d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document,s=state();
+ const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}},data,()=>{},{getPlayerAvatar:()=>'/avatars/player.png'});
+ assert.ok(doc.querySelector('[data-player-avatar] img').src.endsWith('/avatars/player.png'));assert.equal(doc.querySelector('.xsd2-portrait [data-portrait]'),null);assert.equal(doc.querySelector('[data-player-avatar-file]').accept,'image/png,image/jpeg,image/webp');
+ assert.ok(portrait('叶红缨',s,data).small.endsWith('yehongying.png'));
+ s.activeEvent={pluginId:'character_promotion',promotionId:'yehongying-night',character:'叶红缨'};
+ assert.ok(portrait('叶红缨',s,data).small.endsWith('yehongying_bath_side.png'));assert.ok(portrait('叶红缨',s,data).large.endsWith('yehongying_bath_side.png'));assert.ok(portrait('孤月',s,data).large.endsWith('guyue.png'));
+ s.activeEvent=null;assert.ok(portrait('叶红缨',s,data).large.endsWith('yehongying.png'));p.destroy();d.window.close();
 });

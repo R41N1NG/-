@@ -32,6 +32,7 @@ function source(root) {
       metricEventDefinitions:JSON.parse(read("src/config/metric_events.json")),
       areaBackgroundDefinitions:JSON.parse(read("src/config/area_backgrounds.json")),
       promotionDefinitions:JSON.parse(read("src/config/promotions.json")),
+      portraitScenes:JSON.parse(read("src/config/portrait_scenes.json")),
       characterProfiles: JSON.parse(read("src/config/character_stages.json")).characters,
       relicDb:JSON.parse(read("src/config/relic_db.json")),
       relicEmblems:(()=>{const dir=path.join(root,"src/assets/名器图标");const out={};

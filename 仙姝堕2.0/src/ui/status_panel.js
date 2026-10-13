@@ -1,5 +1,6 @@
 "use strict";
 const { esc, modal } = require("./dom");
+const {mountPlayerAvatar} = require("./player_avatar");
 const { mountOpening } = require("./opening_menu");
 const { renderSettlement } = require("./settlement_panel");
 const { openItem } = require("./item_panel");
@@ -123,8 +124,9 @@ const PORTRAITS = {
 const GOURD_SVG = '<svg class="xsd2-gourd" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.6c-1.9 0-3.2 1.3-3.2 2.8 0 .9.5 1.7 1.2 2.2C8 7.5 6.2 9.4 6.2 11.9c0 3.4 2.7 6.1 5.8 6.1s5.8-2.7 5.8-6.1c0-2.5-1.8-4.4-3.8-5.3.7-.5 1.2-1.3 1.2-2.2 0-1.5-1.3-2.8-3.2-2.8z"/></svg>';
 function portrait(name, s, data) {
   const stagePortrait = s.stat_data?.character_stages?.[name]?.portrait;
-  if (stagePortrait?.small && stagePortrait?.large) return stagePortrait;
-  let id = PORTRAITS[name];
+  if (stagePortrait?.small && stagePortrait?.large) return {...stagePortrait,small:stagePortrait.large,fallback:stagePortrait.small};
+  const scene=data.portraitScenes?.[s.activeEvent?.promotionId];
+  let id = scene && scene.pluginId === s.activeEvent?.pluginId ? scene.portraits?.[name] || PORTRAITS[name] : PORTRAITS[name];
   if (!id) return null;
   const R = data.rules(s.stat_data),
     cfg = Object.values(R.RELIC_PILOT_CONFIG).find(
@@ -135,7 +137,8 @@ function portrait(name, s, data) {
   if (phase > 1 && data.assets.includes(id + "_" + phase + ".jpg"))
     id += "_" + phase;
   return {
-    small: "user/images/xsd_gallery/" + id + ".jpg",
+    small: "user/images/xsd_gallery/" + id + ".png",
+    fallback: "user/images/xsd_gallery/" + id + ".jpg",
     large: "user/images/xsd_gallery/" + id + ".png",
   };
 }
@@ -323,7 +326,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       im.style.cssText = "width:44px;height:44px;border-radius:6px;object-fit:cover;cursor:zoom-in";
       im.dataset.xsd2Zoom = p.large;
       im.addEventListener("click", () => {
-        const zoom=modal(doc,character+" · 立绘");const image=doc.createElement("img");image.src=p.large;image.alt=character;image.onerror=()=>{image.src=p.small;image.onerror=null;};zoom.querySelector(".xsd2-dialog-body").append(image);dialogs.push(()=>zoom.remove());
+        const zoom=modal(doc,character+" · 立绘");const image=doc.createElement("img");image.src=p.large;image.alt=character;image.onerror=()=>{image.src=p.fallback||p.small;image.onerror=null;};zoom.querySelector(".xsd2-dialog-body").append(image);dialogs.push(()=>zoom.remove());
       });
       el.querySelector(".xsd2-dialog-body").insertBefore(im, el.querySelector(".xsd2-fbar"));
     }
@@ -415,13 +418,14 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       row('状 态',esc(st.状态||'无'))+row('目 标',esc(st.目标||'无'))+
       (st.危机&&st.危机!=='无'?'<div class="xsd2-row crisis"><b>危 机</b><span data-xsd-slot="9">'+esc(st.危机)+'</span></div>':'<span data-xsd-slot="9" hidden></span>')+
       row('关 系',relationChips||'暂无记录')+row('储物栏','<button class="xsd2-chip" data-storage>共 '+s.inventory.length+' 种 · 点击查看</button>')+
-      '</div><div class="xsd2-portrait">'+avatar((st.在场角色||[])[0]?.名||s.identity)+'</div></div>'+
+      '</div><div class="xsd2-portrait" data-player-avatar-slot></div></div>'+
       '<span data-xsd-slot="6" hidden></span>'+
       '<div class="xsd2-npcs" data-xsd-slot="16">'+(st.在场角色||[]).map(n=>'<article class="xsd2-npc">'+avatar(n.名)+'<div><h4>'+esc(n.名)+' <small>'+esc(n.修为||'')+'</small></h4><div>关系：'+esc(n.关系||'未明')+'</div><div>情况：'+esc(n.情况||'无')+'</div><div>心境：'+esc(n.心境||'无')+'</div><div>神态：'+esc(n.神态||'无')+'</div></div></article>').join('')+'</div>'+
       '<details><summary>局势与线索</summary><dl>'+field('局势',7)+field('线索',8)+field('暗处','hidden')+'</dl></details>'+
       '<details data-storage-fold><summary>储物栏</summary><div data-xsd-slot="10">'+items+'</div><p data-xsd-slot="11">'+esc(st.纳戒||'无')+'</p><p data-xsd-slot="12">'+(options.readOnly?'此楼状态记录':'点击物品查看介绍与操作')+'</p></details>'+
       '<details><summary>风闻与气象</summary><dl>'+field('近闻',13)+field('远闻',14)+field('天气',15)+'</dl></details>'+
       '<div data-xsd-slot="17"></div><footer class="xsd2-foot">暗处 · '+esc(st.暗处||'无')+' ｜ 持续背景 · '+esc(st.active_area||'无')+(Object.keys(s.manual).length?' ｜ 存在人工设置':'')+'</footer><p class="xsd2-feedback" role="status" aria-live="polite"></p>';
+    plugins.push(mountPlayerAvatar(doc,root.querySelector('[data-player-avatar-slot]'),s,options,report));
     root.querySelector('[data-storage]').onclick=()=>{const fold=root.querySelector('[data-storage-fold]');fold.open=!fold.open;};
     root
       .querySelectorAll("details")
@@ -445,7 +449,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
           img.src = p.large;
           img.alt = b.dataset.portrait;
           img.onerror = () => {
-            if (img.src.endsWith(".png")) img.src = p.small;
+            if (img.src.endsWith(".png")) {img.src = p.fallback||p.small;img.onerror=null;}
             else img.replaceWith(doc.createTextNode("此处尚未部署立绘"));
           };
           el.querySelector(".xsd2-dialog-body").append(img);
@@ -459,7 +463,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       .querySelectorAll("img")
       .forEach(
         (img) =>
-          (img.onerror = () => img.replaceWith(doc.createTextNode(img.alt))),
+          (img.onerror = () => { const name=img.closest('[data-portrait]')?.dataset.portrait;const p=name?portrait(name,s,data):null;if(p?.fallback&&!img.dataset.fallback){img.dataset.fallback='true';img.src=p.fallback;}else img.replaceWith(doc.createTextNode(img.alt)); }),
       );
     for (const plugin of runtime.uiPlugins || [])
       if (plugin.mount && plugin.id !== "character_promotion") {

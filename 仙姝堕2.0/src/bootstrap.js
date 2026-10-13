@@ -77,7 +77,7 @@ function start(win) {
       view.dispatchIntent = intent => target.readOnly
         ? Promise.reject(Error("历史状态仅供查看，请在最新回复中行动"))
         : runtime.dispatchIntent(intent);
-      const panel = mountHUD(doc, el, view, data, report, {readOnly:target.readOnly,settlementEffects:effects});
+      const panel = mountHUD(doc, el, view, data, report, {readOnly:target.readOnly,settlementEffects:effects,getPlayerAvatar:()=>host.getPlayerAvatar?.()});
       huds.set(target.floor, {el, hud:panel, key:target.key, target});
     }
   }

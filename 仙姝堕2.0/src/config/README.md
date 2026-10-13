@@ -12,3 +12,7 @@
 ## v21接入口径
 
 叶红缨赵无忧/自设各四个晋升门槛：20、40、60、80。心迹从promotions.json按身份读取，不用阶段区间起点41/61/81作门槛。正式代码仅src/runtime与src/ui；relic_db.json为名器库，四阶纹章源位于src/assets/名器图标，由tools/data.cjs打包。
+
+## 场景立绘（v26）
+
+portrait_scenes.json按promotionId/pluginId和人物名指定图包ID；夜浴试点使用yehongying_bath_side。静态图包/网络图床仍为外部资源，卡内仅含映射；小图优先高清PNG。

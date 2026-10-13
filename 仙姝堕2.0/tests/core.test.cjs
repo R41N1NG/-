@@ -465,7 +465,7 @@ test("HUD 17槽位、三面板默认收起、本地图链缺图降级及对比�
   assert.ok(source.includes("img.onerror"));
   assert.ok(
     portrait("孤月", { stat_data: {}, known: {} }, data).small.endsWith(
-      "guyue.jpg",
+      "guyue.png",
     ),
   );
   function lum(hex) {
