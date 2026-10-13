@@ -44,6 +44,7 @@ function bundle() {
     "};const cache={};function require(id){if(cache[id])return cache[id].exports;const module={exports:{}};cache[id]=module;modules[id](module,module.exports,require);return module.exports;}require(" +
     JSON.stringify(entry) +
     ");})();";
+  if (!text.includes("<h1>卷中錄</h1>") || !text.includes("xsd2-document")) throw Error("新版卷中录未进入构建，拒绝旧版状态栏交付");
   new vm.Script(text);
   return text;
 }
@@ -193,7 +194,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.22",
+    character_version: "2.0-framework.23",
     extensions: {
       world: NAME,
       tavern_helper: {
@@ -258,7 +259,7 @@ function build() {
       }
     }
   }
-  fs.writeFileSync(path.join(DIST, NAME + "-v22.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v23.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(

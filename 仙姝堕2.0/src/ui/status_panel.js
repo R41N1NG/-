@@ -13,8 +13,9 @@ const PALETTE = {
   muted: "#c5c9bd",
   accent: "#d5b97b",
 };
-const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PALETTE.background};border:1px solid #756746;border-radius:10px;padding:14px;font-family:serif;line-height:1.7}.xsd2-hud button,.xsd2-dialog button,.xsd2-dialog input,.xsd2-dialog select,.xsd2-dialog textarea{color:#eee9d9;background:#273b34;border:1px solid #8b927e;border-radius:5px;padding:7px;margin:3px;font:inherit}.xsd2-hud button:focus-visible,.xsd2-dialog :focus-visible{outline:2px solid #d5b97b;outline-offset:2px}.xsd2-hud header,.xsd2-hud nav,.xsd2-npcs{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.xsd2-hud details{border-top:1px solid #514d3e;margin-top:9px;padding-top:7px}.xsd2-hud summary{cursor:pointer;color:#d5b97b}.xsd2-hud dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0}.xsd2-hud dd{margin:0;color:#c5c9bd}.xsd2-avatar{width:56px;height:68px;object-fit:cover;border-radius:6px}.xsd2-npc{max-width:240px}.xsd2-dialog{max-width:min(680px,90vw);max-height:85vh}.xsd2-dialog::backdrop{background:#000b}.xsd2-dialog header{display:flex;justify-content:space-between}.xsd2-dialog label{display:block;margin:8px 0}.xsd2-dialog textarea{width:90%;min-height:90px}.xsd2-dialog img{max-width:100%;max-height:70vh;object-fit:contain}.xsd2-feedback{color:#ffcb8c}.xsd2-label{font-size:.85em;color:#c5c9bd}
-.xsd2-stagebar{display:flex;gap:16px;align-items:flex-start;width:100%;max-width:1080px;box-sizing:border-box}.xsd2-stagebar>.xsd2-hud{flex:1 1 0;min-width:0;box-sizing:border-box}.xsd2-opening-root{width:100%;min-width:0;box-sizing:border-box}
+const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PALETTE.background};border:1px solid #756746;border-radius:10px;padding:14px;font-family:serif;line-height:1.7}.xsd2-hud button,.xsd2-dialog button,.xsd2-dialog input,.xsd2-dialog select,.xsd2-dialog textarea{color:#eee9d9;background:#273b34;border:1px solid #8b927e;border-radius:5px;padding:7px;margin:3px;font:inherit}.xsd2-hud button:focus-visible,.xsd2-dialog :focus-visible{outline:2px solid #d5b97b;outline-offset:2px}.xsd2-head,.xsd2-hud nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.xsd2-hud summary{cursor:pointer;color:#d5b97b}.xsd2-hud dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0}.xsd2-hud dd{margin:0;color:#c5c9bd}.xsd2-avatar{width:56px;height:68px;object-fit:cover;border-radius:6px}.xsd2-dialog{max-width:min(680px,90vw);max-height:85vh}.xsd2-dialog::backdrop{background:#000b}.xsd2-dialog header{display:flex;justify-content:space-between}.xsd2-dialog label{display:block;margin:8px 0}.xsd2-dialog textarea{width:90%;min-height:90px}.xsd2-dialog img{max-width:100%;max-height:70vh;object-fit:contain}.xsd2-feedback{color:#ffcb8c}.xsd2-label{font-size:.85em;color:#c5c9bd}
+.xsd2-hud{background:linear-gradient(180deg,#202925,#171e1c);border-radius:14px;padding:20px 24px 16px;box-shadow:0 8px 40px #0008}.xsd2-head{border-bottom:1px solid #394139;padding-bottom:12px;position:relative}.xsd2-head::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:1px;background:linear-gradient(90deg,transparent,#d5b97b55 20%,#d5b97b55 80%,transparent)}.xsd2-head h1{margin:0;font-size:26px;letter-spacing:8px;font-weight:600;color:#e8cf8f}.xsd2-head .xsd2-sub{font-size:11px;letter-spacing:3px;color:#89948a}.xsd2-head [data-gm]{margin-left:auto}.xsd2-who{display:flex;gap:14px;margin-top:14px;align-items:flex-start}.xsd2-document{flex:1;min-width:0}.xsd2-plaque{display:inline-block;background:#27332b;border:1px solid #756746;border-radius:6px;padding:6px 14px;letter-spacing:2px}.xsd2-portrait{margin-left:auto}.xsd2-atmo{color:#c5c9bd;font-size:.95em}.xsd2-row span{overflow-wrap:anywhere}.xsd2-npcs{display:block}.xsd2-npc{display:flex;gap:12px;max-width:none;border:1px solid #394139;border-radius:8px;padding:10px;margin-top:8px;background:#1a211e}.xsd2-npc h4{margin:0 0 4px;letter-spacing:2px;color:#d5b97b}.xsd2-npc small{color:#89948a}.xsd2-hud details{border:1px solid #394139;border-radius:8px;background:#1a211e;margin-top:10px;padding:4px 12px}.xsd2-foot{text-align:right;color:#89948a;font-size:11px;letter-spacing:2px;margin-top:12px}@media(max-width:640px){.xsd2-hud{padding:14px}.xsd2-head .xsd2-sub{display:none}.xsd2-row{grid-template-columns:56px minmax(0,1fr)}.xsd2-who{gap:8px}.xsd2-plaque{padding:4px 8px}}
+.xsd2-stagebar{display:flex;gap:16px;align-items:flex-start;width:100%;max-width:1080px;box-sizing:border-box;justify-content:center;margin-inline:auto}.xsd2-stagebar>.xsd2-hud{flex:1 1 0;max-width:660px;min-width:0;box-sizing:border-box}.xsd2-opening-root{width:100%;min-width:0;box-sizing:border-box}
 .xsd2-wing{display:flex;flex-direction:column;gap:10px;padding-top:6px}
 .xsd2-tile{position:relative;width:72px;height:72px;border-radius:10px;border:1px solid #333a35;background:#151d1a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;overflow:hidden;padding:0}
 .xsd2-tile:hover{border-color:#d5b97b;transform:translateY(-2px)}
@@ -28,7 +29,6 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
 .xsd2-row b{color:#d5b97b;font-size:12px;letter-spacing:3px;font-weight:500}
 .xsd2-row.crisis b{color:#e08585}
 .xsd2-row.crisis span{color:#e08585;background:#3a1e1e55;border-radius:4px;padding:2px 8px}
-.xsd2-alert{border:1px solid #7a2e2e;background:#3a1e1e55;color:#e08585;border-radius:6px;padding:5px 10px;margin:8px 0}
 .xsd2-chip{display:inline-block;border:1px solid #756746;border-radius:999px;padding:1px 10px;margin:1px 4px 1px 0;cursor:pointer;color:#eee9d9;font-size:.92em}
 .xsd2-chip:hover{border-color:#d5b97b;color:#e8cf8f}
 .xsd2-gourd{width:13px;height:13px;color:#e8cf8f;vertical-align:-2px;margin-left:4px}
@@ -95,10 +95,12 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
 .xsd2-lightbox p{margin:0;color:#8b927e;font-size:.85em;text-align:center}
 @media (max-width:980px){
   .xsd2-stagebar{flex-direction:column;align-items:stretch}
-  .xsd2-wing{flex-direction:row;flex-wrap:wrap;width:100%;justify-content:flex-start;padding-top:0}
+  .xsd2-stagebar>.xsd2-hud{order:0}
+  .xsd2-wing{order:1;flex-direction:row;flex-wrap:wrap;width:100%;justify-content:flex-start;padding-top:0}
   .xsd2-tile{width:60px;height:60px}
   .xsd2-tile img{width:50px;height:50px}
   .xsd2-cols{grid-template-columns:repeat(2,1fr)}
+  .xsd2-row{grid-template-columns:56px minmax(0,1fr)}
   .xsd2-badge{margin-left:0}
 }`;
 // Names and file IDs are drawn from the migrated registry / local gallery manifest.
@@ -208,7 +210,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       el.dataset.relic = r.id;
       el.title = r.rel.name + " · " + r.rel.carrier;
       const img = doc.createElement("img");
-      img.src = data.relicEmblems?.[r.id]?.[String(r.stage) || "1"] || "";
+      img.src = data.relicEmblems?.[r.id]?.[String(r.stage || 1)] || "";
       img.alt = r.rel.name;
       el.append(img);
       el.onclick = () => openXj(r.id, s);
@@ -407,77 +409,25 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
         return '<span class="xsd2-chip" data-favor="' + esc(name) + '">' + esc(piece) + (hasNode ? GOURD_SVG : "") + "</span>";
       })
       .join("");
+    const row=(label,value,slot="")=>'<div class="xsd2-row"><b>'+label+'</b><span'+(slot?' data-xsd-slot="'+slot+'"':'')+'>'+value+'</span></div>';
+    const items=s.inventory.map(i=>'<button data-item="'+esc(i.id||i.name)+'">'+esc(i.name)+' × '+i.count+' · '+(describeItem(i).consumable?'消耗品':'非消耗品')+'</button>').join('') || '暂无物品';
     root.innerHTML =
-      '<header><span data-xsd-slot="1">' +
-      avatar(s.identity) +
-      "<strong>" +
-      esc(st.自设?.name || s.identity) +
-      "</strong> · " +
-      esc(st.修为) +
-      '</span><span data-xsd-slot="2">仙盟历 ' +
-      esc(dateText(s.calendarDate)) +
-      " · " +
-      esc(st.历时 || "0日") +
-      '</span><span data-xsd-slot="3">' +
-      esc(st.地点) +
-      " · " +
-      esc(st.阵营) +
-      '</span></header><nav><div data-xsd-slot="map" data-slot-number="4"></div><button data-gm data-xsd-slot="5">GM</button><div data-xsd-slot="6"><button data-action="观察四周">观察</button><button data-action="与在场之人交谈">交谈</button><button data-action="自行行动">自由行动</button></div></nav><p>' +
-      esc(st.环境 || "") +
-      "</p><p>" +
-      esc(st.状态 || "") +
-      "</p><p>" +
-      esc(st.目标 || "") +
-      "</p>" +
-      (st.危机 && st.危机 !== "无" ? '<div class="xsd2-alert"><b>危 机</b> · ' + esc(st.危机) + "</div>" : "") +
-      '<details><summary>局势与线索</summary><dl>' +
-      field("局势", 7) +
-      field("线索", 8) +
-      field("危机", 9) +
-      field("暗处", "hidden") +
-      '</dl></details><details><summary>储物栏</summary><div data-xsd-slot="10">' +
-      (s.inventory
-        .map(
-          (i) =>
-            '<button data-item="' +
-            esc(i.id || i.name) +
-            '" title="' + esc(describeItem(i).description + "\n" + describeItem(i).effect) + '">' +
-            esc(i.name) +
-            " × " + i.count + " · " + (describeItem(i).consumable ? "消耗品" : "非消耗品") +
-            "</button>",
-        )
-        .join("") || "暂无物品") +
-      '</div><p data-xsd-slot="11">' +
-      esc(st.纳戒 || "") +
-      '</p><p data-xsd-slot="12">' +
-      (options.readOnly ? "此楼状态记录" : s.manual.inventory ? "物品已人工设置" : "点击物品查看介绍与操作") +
-      "</p></details><details><summary>风闻与气象</summary><dl>" +
-      field("近闻", 13) +
-      field("远闻", 14) +
-      field("天气", 15) +
-      '</dl></details><div class="xsd2-npcs" data-xsd-slot="16">' +
-      (st.在场角色 || [])
-        .map(
-          (n) =>
-            '<article class="xsd2-npc">' +
-            avatar(n.名) +
-            "<strong>" +
-            esc(n.名) +
-            "</strong><div>" +
-            esc(n.修为 || "") +
-            "</div><div>关系：" +
-            esc(n.关系 || "未明") +
-            "</div><div>" +
-            esc(n.心境) +
-            " · " +
-            esc(n.神态) +
-            "</div></article>",
-        )
-        .join("") +
-      '</div><div data-xsd-slot="17"></div><p class="xsd2-label" data-xsd2-relations>' +
-      relationChips +
-      (Object.keys(s.manual).length ? " · 存在人工设置" : "") +
-      '</p><p class="xsd2-feedback" role="status" aria-live="polite"></p>';
+      '<header class="xsd2-head"><h1>卷中錄</h1><span class="xsd2-sub">仙姝堕 · 玄门展</span><button data-gm data-xsd-slot="5" aria-label="GM">⚙</button></header>'+
+      '<div class="xsd2-who"><div class="xsd2-document"><span class="xsd2-plaque" data-xsd-slot="1">'+esc([st.阵营,st.自设?.name||s.identity].filter(Boolean).join(' · '))+'</span>'+
+      row('时 间','仙盟历 '+esc(dateText(s.calendarDate))+' · '+esc(st.历时||'0日'),2)+
+      row('地 点',esc(st.地点||'无'),3)+row('修 为',esc(st.修为||'无'))+
+      row('氛 围','<span class="xsd2-atmo">'+esc(st.环境||'无')+'</span>')+
+      row('状 态',esc(st.状态||'无'))+row('目 标',esc(st.目标||'无'))+
+      (st.危机&&st.危机!=='无'?'<div class="xsd2-row crisis"><b>危 机</b><span data-xsd-slot="9">'+esc(st.危机)+'</span></div>':'<span data-xsd-slot="9" hidden></span>')+
+      row('关 系',relationChips||'暂无记录')+row('储物栏','<button class="xsd2-chip" data-storage>共 '+s.inventory.length+' 种 · 点击查看</button>')+
+      '</div><div class="xsd2-portrait">'+avatar((st.在场角色||[])[0]?.名||s.identity)+'</div></div>'+
+      '<nav><div data-xsd-slot="map" data-slot-number="4"></div><div data-xsd-slot="6"><button data-action="观察四周">观察</button><button data-action="与在场之人交谈">交谈</button><button data-action="自行行动">自由行动</button></div></nav>'+
+      '<div class="xsd2-npcs" data-xsd-slot="16">'+(st.在场角色||[]).map(n=>'<article class="xsd2-npc">'+avatar(n.名)+'<div><h4>'+esc(n.名)+' <small>'+esc(n.修为||'')+'</small></h4><div>关系：'+esc(n.关系||'未明')+'</div><div>情况：'+esc(n.情况||'无')+'</div><div>心境：'+esc(n.心境||'无')+'</div><div>神态：'+esc(n.神态||'无')+'</div></div></article>').join('')+'</div>'+
+      '<details><summary>局势与线索</summary><dl>'+field('局势',7)+field('线索',8)+field('暗处','hidden')+'</dl></details>'+
+      '<details data-storage-fold><summary>储物栏</summary><div data-xsd-slot="10">'+items+'</div><p data-xsd-slot="11">'+esc(st.纳戒||'无')+'</p><p data-xsd-slot="12">'+(options.readOnly?'此楼状态记录':'点击物品查看介绍与操作')+'</p></details>'+
+      '<details><summary>风闻与气象</summary><dl>'+field('近闻',13)+field('远闻',14)+field('天气',15)+'</dl></details>'+
+      '<div data-xsd-slot="17"></div><footer class="xsd2-foot">暗处 · '+esc(st.暗处||'无')+' ｜ 持续背景 · '+esc(st.active_area||'无')+(Object.keys(s.manual).length?' ｜ 存在人工设置':'')+'</footer><p class="xsd2-feedback" role="status" aria-live="polite"></p>';
+    root.querySelector('[data-storage]').onclick=()=>{const fold=root.querySelector('[data-storage-fold]');fold.open=!fold.open;};
     root
       .querySelectorAll("details")
       .forEach((x, i) => (x.open = folds[i] || false));

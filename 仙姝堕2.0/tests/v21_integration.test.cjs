@@ -38,7 +38,7 @@ test('心迹真实DOM：身份过滤四节点、点击授权中控、活动/历�
 });
 test('重新构建必须包含新面板与上限代码，PNG和latest一致',()=>{
  const {bundle,unpack}=require('../build');const script=bundle();assert.ok(script.includes('xsd2-favor'));assert.ok(script.includes('function favorCap'));assert.ok(script.includes('data-heart-node'));
- const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v22.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.22');
+ const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v23.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.23');
 });
 test('开局容器独立于两翼布局，入世后回到主卷，重新开局可再次移出',()=>{
  const d=new JSDOM('<html><head></head><body><main></main></body></html>'),doc=d.window.document;let s=null;
@@ -47,4 +47,11 @@ test('开局容器独立于两翼布局，入世后回到主卷，重新开局�
  assert.equal(doc.querySelector('.xsd2-opening-root').parentElement.tagName,'MAIN');assert.equal(doc.querySelector('.xsd2-stagebar').style.display,'none');
  s=state();p.render();assert.ok(doc.querySelector('.xsd2-hud').parentElement.classList.contains('xsd2-stagebar'));assert.equal(doc.querySelector('.xsd2-stagebar').style.display,'');
  s=null;p.render();assert.equal(doc.querySelector('.xsd2-opening-root').parentElement.tagName,'MAIN');p.destroy();d.window.close();
+});
+test('定稿新版主卷：卷中录标题、身份铭牌、文书行与储物入口，未获纹章有真实图像',()=>{
+ const d=new JSDOM('<html><head></head><body><main></main></body></html>'),doc=d.window.document,s=state();
+ const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}},data,()=>{});
+ assert.equal(doc.querySelector('.xsd2-head h1').textContent,'卷中錄');assert.ok(doc.querySelector('.xsd2-plaque'));assert.equal(doc.querySelectorAll('.xsd2-document>.xsd2-row').length,8);
+ assert.ok([...doc.querySelectorAll('[data-xsd2-wing] img')].every(i=>i.src.startsWith('data:image/webp;base64,')));
+ doc.querySelector('[data-storage]').click();assert.equal(doc.querySelector('[data-storage-fold]').open,true);p.destroy();d.window.close();
 });

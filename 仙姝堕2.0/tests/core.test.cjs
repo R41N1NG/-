@@ -460,7 +460,7 @@ test("HUD 17槽位、三面板默认收起、本地图链缺图降级及对比�
     source = fs.readFileSync(path.join(ROOT, "src/ui/status_panel.js"), "utf8");
   assert.ok(source.includes('data-xsd-slot="map"'));
   assert.ok(source.includes('data-xsd-slot="17"'));
-  assert.equal((source.match(/<details>/g) || []).length, 3);
+  assert.equal((source.match(/<details(?:\s[^>]*)?>/g) || []).length, 3);
   assert.ok(!source.includes("<details open"));
   assert.ok(source.includes("img.onerror"));
   assert.ok(
