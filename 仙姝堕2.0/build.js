@@ -6,7 +6,7 @@ const { source, load } = require("./tools/data.cjs");
 const {storyEntries, metricEntries, areaEntries} = require("./src/runtime/story_entries");
 const {eraEntries}=require("./src/runtime/grand_eras");
 const { evaluateGate } = require("./src/host/worldbook");
-const VERSION = 45; // 卡内版本与dist文件名共用，防止覆盖历史版本。
+const VERSION = 46; // 卡内版本与dist文件名共用，防止覆盖历史版本。
 const ROOT = __dirname,
   NAME = "仙姝堕2.0·框架测试",
   OUT = path.join(ROOT, "最新角色卡"),
@@ -212,6 +212,7 @@ function build() {
         variables: {},
       },
       regex_scripts: [
+        {id:"xsd2-hide-promotion-ready",scriptName:"隐藏剧情完成提示协议",findRegex:"/<Promotion_ready\\b[^>]*>[\\s\\S]*?(?:<\\/Promotion_ready>|(?=<Status_block>|$))/gi",replaceString:"",trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
         {id:"xsd2-hide-favor-report",scriptName:"隐藏好感事件协议",findRegex:"/<好感事件>[\\s\\S]*?(?:<\\/好感事件>|(?=<Status_block>|$))/gi",replaceString:"",trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
         ...Object.values(require("./src/plugins/youjigu_map/event_tree").EVENT_DEFS).map(def => ({
           id:"xsd2-action-label-" + def.id, scriptName:"节点指令显示：" + def.label,

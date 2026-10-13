@@ -180,3 +180,25 @@ test('删掉完成回复撤回判定但保留本次故事与好感，完成可�
  h.chat.pop();await h.r.restore({afterDelete:true});assert.equal(h.stage(),'stage01');assert.equal(h.r.getSnapshot().pending,null);assert.ok(h.r.getSnapshot().activeEvent);assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,20);assert.ok(!h.prompts.at(-1).includes('Promotion_result'));
  await h.click('yhrFinish');assert.notEqual(h.r.getSnapshot().pending.actionCode,oldCode);await h.reply(h.report('是'));assert.equal(h.stage(),'stage02');
 });
+test('自由回合准备是只提示、不晋升；刷新/删楼恢复，点击完成才切阶段',async()=>{
+ const h=fixture();await h.ready();await h.click('yhrNight');const code=h.r.getSnapshot().pending.actionCode;
+ assert.match(h.prompts.at(-1),/Promotion_ready/);await h.reply('你看见她沐浴。<Promotion_ready id="'+code+'">是</Promotion_ready>');
+ assert.equal(h.stage(),'stage01');assert.equal(h.r.getSnapshot().pluginState.character_promotion.ready,true);assert.equal(h.r.getSnapshot().pending,null);await h.r.restore();assert.equal(h.r.getSnapshot().pluginState.character_promotion.ready,true);
+ h.chat.push({is_user:true,mes:'继续'});await h.reply('<Promotion_ready id="wrong">是</Promotion_ready>');assert.equal(h.stage(),'stage01');
+ await h.click('yhrFinish');await h.reply(h.report('是'));assert.equal(h.stage(),'stage02');assert.equal(h.r.getSnapshot().activeEvent,null);
+ // Simulate native variables being lost and only the latest completed checkpoint remaining.
+ const last=await h.adapter.readCheckpoint();h.chat.forEach(m=>m.variables=[]);h.chat.pop();h.adapter.readCheckpoint=async()=>C.clone(last);await h.r.restore();assert.equal(h.stage(),'stage01');assert.ok(h.r.getSnapshot().pending);
+ await h.reply(h.report('是'));assert.equal(h.stage(),'stage02');
+});
+test('自设20/40/60完整链条有各自完成ID，准备回报不能代替完成结算',async()=>{
+ const h=fixture();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{name:'试点',realm:'金丹前期',date:{year:1578,month:4,day:1}}}});await h.r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'叶红缨',key:'好感度',value:60}});
+ for(const [entry,finish,from,to]of [['yhrRogueEnter1','yhrRogueFinish1','stage01','stage02'],['yhrRogueEnter2','yhrRogueFinish2','stage02','stage03'],['yhrRogueEnter2b','yhrRogueFinish2b','stage03','stage04']]){
+ await h.click(entry);const code=h.r.getSnapshot().pending.actionCode;await h.reply('<Promotion_ready id="'+code+'">否</Promotion_ready>');assert.equal(h.r.getSnapshot().pluginState.character_promotion.ready,false);
+ h.chat.push({is_user:true,mes:'继续本次剧情'});await h.reply('<Promotion_ready id="'+code+'">是</Promotion_ready>');assert.equal(h.stage(),from);assert.equal(h.r.getSnapshot().pluginState.character_promotion.ready,true);await h.click(finish);await h.reply(h.report('是'));assert.equal(h.stage(),to);
+ }
+});
+test('删结算回复后重试复用同一玩家指令，不发第二条消息、不提前晋升',async()=>{
+ const h=fixture();await h.ready();await h.click('yhrNight');await h.reply('你已经看见她沐浴。');await h.click('yhrFinish');const sent=h.sent.length,userFloor=h.chat.length-1,code=h.r.getSnapshot().pending.actionCode;let retries=0;h.adapter.retryGeneration=()=>retries++;
+ await h.r.restore();const s=h.r.getSnapshot();await h.r.dispatchIntent({type:'RETRY_COMPLETION',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision}});assert.equal(retries,1);assert.equal(h.sent.length,sent);assert.equal(h.chat.length-1,userFloor);assert.equal(h.stage(),'stage01');assert.equal(h.r.getSnapshot().pending.actionCode,code);
+ await h.reply(h.report('是'));assert.equal(h.stage(),'stage02');await assert.rejects(h.r.dispatchIntent({type:'RETRY_COMPLETION'}),/没有可重试/);
+});

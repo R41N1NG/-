@@ -6,6 +6,7 @@ const { writeMetric, metricSpec, canRecover } = require("./character_stages");
 function proofText(text){return String(text).normalize("NFKC").replace(/[\s\u200b-\u200d\ufeff*_`]/g,"");}
 function stripForEvidence(text) {
   return String(text)
+    .replace(/<Promotion_ready\b[^>]*>[\s\S]*?<\/Promotion_ready>/gi, "")
     .replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi, "")
     .replace(/<details\b[^>]*>[\s\S]*?<\/details>/gi, "")
     .replace(/<Status_block>[\s\S]*?<\/Status_block>/gi, "")

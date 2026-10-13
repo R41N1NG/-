@@ -97,7 +97,7 @@ function mountOpening(doc, root, runtime, data, report, view = {}) {
       const date = C.parseDate(value("custom_timepoint"));
       const extra = [
         value("custom_gender") && "性别：" + value("custom_gender"),
-        value("custom_age") && "年岁：" + value("custom_age"),
+        "年岁：" + (value("custom_age") || "20"),
         value("custom_sect") && "来历：" + value("custom_sect"),
         value("custom_origin"),
       ]
@@ -106,8 +106,9 @@ function mountOpening(doc, root, runtime, data, report, view = {}) {
       void submit({
         identity: "自设",
         custom: {
-          name: value("custom_name"),
-          realm: value("custom_cultivation"),
+          name: value("custom_name") || runtime.getUserName?.() || "无名修士",
+          age: value("custom_age") || "20",
+          realm: value("custom_cultivation") || "金丹前期",
           date,
           place: value("custom_place"),
           origin: extra,
@@ -161,9 +162,12 @@ function mountOpening(doc, root, runtime, data, report, view = {}) {
     img.onerror = () => img.setAttribute("data-xds-missing", "");
     if (img.complete && img.naturalWidth) img.onload();
   }
+  field("custom_name").value=runtime.getUserName?.() || "无名修士";
+  field("custom_age").value="20";
+  field("custom_cultivation").value="金丹前期";
   if (view.mode === "custom_setup") {
     page("custom");
-    field("custom_name").value = view.name || "";
+    field("custom_name").value = view.name || runtime.getUserName?.() || "无名修士";
     root.querySelector('[data-xds-view="flower"]').remove();
     root.querySelector('[data-xds-page="flower"]').remove();
     root.querySelector("[data-xds-back]").remove();

@@ -85,6 +85,13 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
   }
 
   const adapter = {
+    retryGeneration(){
+      preflightSend();const c=ctx(),generate=c.generate || st.generate;
+      if(typeof generate==="function"){Promise.resolve(generate.call(c,"normal")).catch(report);return;}
+      if(typeof helper.triggerSlash==="function"){Promise.resolve(helper.triggerSlash("/trigger")).catch(report);return;}
+      throw Error("宿主未提供重新生成接口，请使用酒馆原生重新生成按钮继续本次结算。");
+    },
+    getUserName(){return String(ctx().name1 || top.name1 || "无名修士").trim();},
     getPlayerAvatar(){const image=top.document.querySelector("#user_avatar_block img, #chat .mes[is_user=\"true\"] .avatar img");return image?.src || "";},
     context,
     getDiagnostics() {

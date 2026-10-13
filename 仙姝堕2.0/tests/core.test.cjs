@@ -1080,3 +1080,6 @@ test('在场角色的好感表与实际共饮申报进入本轮提示；锁定�
  h.c.chat.push({is_user:true,mes:'请叶红缨饮酒'});await h.reply(status({在场:'叶红缨',角色1:'<名>叶红缨</名><关系>同门</关系>'},'叶红缨接过酒盏，与赵无忧共饮，席间开怀。')+'<好感事件>叶红缨｜锚点 yh_gongyin｜依据：叶红缨接过酒盏，与赵无忧共饮，席间开怀。</好感事件>');
  assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,2);
 });
+test('自设留空道号年龄境界使用酒馆用户名20金丹前期；明确输入不覆盖',async()=>{
+ const h=harness();h.adapter.getUserName=()=> '酒馆道友';await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{date:{year:1578,month:3,day:3},name:'',age:'',realm:''}}});assert.equal(h.r.getSnapshot().stat_data.自设.name,'酒馆道友');assert.equal(h.r.getSnapshot().stat_data.自设.age,'20');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹前期');
+});

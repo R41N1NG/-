@@ -40,8 +40,8 @@ function createPromotionPlugin(definitions, storyCatalog = {}) {
       completionQuery:kind === "finish" ? "仅判断本次拜访（起始行动 "+(state(s).entryCode || "当前拜访")+"）之后的实际剧情，不把其他历史拜访当本次结果。"+cfg.query : undefined,
       stageGrant:kind === "finish" ? {character:cfg.character,from:cfg.fromStage,to:cfg.toStage} : undefined,
       // Only reserve the event on entry; do not mark the story complete or upgrade.
-      reservedState:kind === "enter" ? {...state(s),currentId:id,lastResult:null,entryCode:null} : undefined,
-      immediateResult:kind === "enter" ? {outcome:"success",pluginState:{...state(s),currentId:id,lastResult:null,entryCode:null},
+      reservedState:kind === "enter" ? {...state(s),currentId:id,lastResult:null,entryCode:null,ready:false} : undefined,
+      immediateResult:kind === "enter" ? {outcome:"success",pluginState:{...state(s),currentId:id,lastResult:null,entryCode:null,ready:false},
         activeEvent:{pluginId:PLUGIN_ID,character:cfg.character,promotionId:id},rewards:[],known:[]} : undefined,
     };
   }
@@ -59,13 +59,27 @@ function createPromotionPlugin(definitions, storyCatalog = {}) {
     if (report === "是") result.stageGrant = {character:x.cfg.character,from:x.cfg.fromStage,to:x.cfg.toStage};
     return result;
   }
+  function getReadyPrompt(s){
+    const cfg=definitions[state(s).currentId],code=state(s).entryCode || s.pending?.actionCode;
+    if(!cfg || !code || s.activeEvent?.pluginId!==PLUGIN_ID || s.pending?.selection?.promotionKind==="finish" || (s.stat_data.character_metrics?.[cfg.character]?.好感度??0)<0)return "";
+    return "本轮正常演绎后核对当前专属剧情是否已具备完成条件："+cfg.query+"。仅看起始行动"+code+"之后本次剧情及已有真实历史，不补写行动凑条件。文末追加唯一一项<Promotion_ready id=\""+code+"\">是</Promotion_ready>或<Promotion_ready id=\""+code+"\">否</Promotion_ready>。此回报只提示玩家可完成；不结束剧情、不晋升，仍须玩家点击完成后另行结算。";
+  }
+  function observe(s,body,floor){
+    const cfg=definitions[state(s).currentId];
+    if(!cfg || !state(s).entryCode || s.activeEvent?.pluginId!==PLUGIN_ID || stage(s,cfg)!==cfg.fromStage)return;
+    const answer=resultTag(String(body).replaceAll("Promotion_ready","Promotion_result"),state(s).entryCode);
+    // Only the progress protocol is accepted; a final result in a free turn cannot grant readiness.
+    const visible=String(body).replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi,"").replace(/<details\b[^>]*>[\s\S]*?<\/details>/gi,"");
+    if(!/<Promotion_ready\b/.test(visible) || /<Promotion_result\b/.test(visible) || !answer)return;
+    s.pluginState[PLUGIN_ID]={...state(s),ready:answer==="是",readyFloor:floor};
+  }
   function getPrompt(s) {
     const cfg = definitions[state(s).currentId];
     if (!cfg || s.activeEvent?.pluginId !== PLUGIN_ID) return "";
     if((s.stat_data.character_metrics?.[cfg.character]?.好感度??0)<0)return "当前关系已转为负好感，以中控当前负向心智为准；原正向专属剧情暂停，不继续演绎原亲密邀请或提交晋升。已完成阶段保留，玩家可自由行动修复关系。";
-    return "【当前专属故事】"+cfg.label+"。承接已有历史及当前实际地点，沿用"+cfg.character+"原阶段设定。入口已开启，不反复重演敲门/入场，让玩家自由行动。人物阶段尚未晋升，等待玩家点击完成。正文出现结果或节点名称不会自动结算，不自动切换其他事件，不自行跳日。";
+    return "【当前专属故事】"+cfg.label+"。承接已有历史及当前实际地点，沿用"+cfg.character+"原阶段设定。入口已开启，不反复重演敲门/入场，让玩家自由行动。人物阶段尚未晋升，等待玩家点击完成。正文出现结果或节点名称不会自动结算，不自动切换其他事件，不自行跳日。"+getReadyPrompt(s);
   }
-  const plugin = {id:PLUGIN_ID,version:"1.0",select,settle,getPrompt,getDisplayText,
+  const plugin = {id:PLUGIN_ID,version:"1.0",select,settle,getPrompt,getReadyPrompt,observe,getDisplayText,
     list(s) {
       const currentIdent = s.identity || s.stat_data?.身份;
       const filtered = defs.filter(([_, cfg]) => {

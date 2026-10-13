@@ -75,7 +75,7 @@ function buildMenuHtml({
         ${field("custom_name", "道号尊名", "填写道号尊名", 64, 'autocomplete="off"')}
         ${field("custom_gender", "根骨性别", "如：男 / 女 / 自定", 16, 'value="男" autocomplete="off"')}
         ${field("custom_age", "寿数年岁", "如：弱冠之年（20）", 32, 'autocomplete="off"')}
-        <div data-xds-field-box><label data-xds-field-label for="${instanceId}-custom_cultivation">境界修为</label><input type="text" class="xds-input" id="${instanceId}-custom_cultivation" name="custom_cultivation" data-xds-field="custom_cultivation" placeholder="如：练气圆满、筑基初期" maxlength="96">${chips("custom_cultivation", ["练气圆满", "筑基初期", "筑基大圆满", "金丹大修"])}</div>
+        <div data-xds-field-box><label data-xds-field-label for="${instanceId}-custom_cultivation">境界修为</label><input type="text" class="xds-input" id="${instanceId}-custom_cultivation" name="custom_cultivation" data-xds-field="custom_cultivation" placeholder="如：练气圆满、筑基初期" maxlength="96">${chips("custom_cultivation", ["炼气大圆满", "筑基前期", "筑基大圆满", "金丹前期", "金丹中期", "金丹后期", "金丹大圆满"])}</div>
         <div data-xds-field-box="wide"><label data-xds-field-label for="${instanceId}-custom_sect">入世身份</label><input type="text" class="xds-input" id="${instanceId}-custom_sect" name="custom_sect" data-xds-field="custom_sect" placeholder="宗门、行当或来历，随心填写" maxlength="128">${chips("custom_sect", ["大荒散修", "天枢剑宗弃徒", "墨山道外门散人", "天音阁弄琴客", "欢喜魔门谍客"])}</div>
         ${field("custom_place", "入世起点", "填写起点或由故事决定", 128)}
         ${renderTimepoint(instanceId)}

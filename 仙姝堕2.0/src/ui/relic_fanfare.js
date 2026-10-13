@@ -37,7 +37,8 @@ const CSS = `
 @keyframes xsd2FanHostOut{from{opacity:1}to{opacity:0}}
 .xsd2-fan-card{--spd:1;position:relative;width:380px;height:508px;border-radius:14px;background:#141B26;border:1px solid #2A3648;box-shadow:inset 0 0 70px rgba(0,0,0,.6),0 6px 30px rgba(0,0,0,.45);overflow:hidden;cursor:pointer;font-family:serif}
 .xsd2-fan-card::before{content:"";position:absolute;inset:7px;border:1px solid rgba(217,169,60,.26);border-radius:9px;pointer-events:none;z-index:6}
-@media (max-height:720px){.xsd2-fan-card{transform:scale(.8)}}
+/* Card art remains 380×508; scale against the actual viewport, including short windows. */
+.xsd2-fan-card{flex:none;transform:scale(var(--xsd2-fan-scale,1));transform-origin:center}
 .xsd2-fan-card svg{width:100%;height:100%;display:block}
 .xsd2-fan-mist{position:absolute;inset:-20px;z-index:1;pointer-events:none;filter:blur(2px);background:radial-gradient(240px 200px at 18% 10%,rgba(216,64,44,.11),transparent 70%),radial-gradient(260px 220px at 84% 16%,rgba(217,169,60,.11),transparent 70%),radial-gradient(320px 280px at 50% 86%,rgba(217,169,60,.09),transparent 70%)}
 .xsd2-fan-play .xsd2-fan-mist{animation:xsd2FanMist calc(9s/var(--spd)) ease-in-out infinite alternate}
@@ -194,7 +195,7 @@ function mountRelicFanfare(doc, container, data, options = {}) {
   }
   shared.count++;
   const host=doc.createElement("div");host.className="xsd2-fan-host";host.hidden=true;
-  host.dataset.xsd2RelicFanfare="";container.append(host);
+  host.dataset.xsd2RelicFanfare="";doc.body.append(host);
   const clock=options.clock || doc.defaultView;
   const queue=createFxQueue(doc,{clock});
   let timer=null,fade=null,active=null,scope=null,disposed=false,restoreFocus=null,latest=null;
@@ -213,6 +214,7 @@ function mountRelicFanfare(doc, container, data, options = {}) {
   }
   function play(fan,id,stage,done) {
     clear();active={id,stage,done};host.hidden=false;restoreFocus=doc.activeElement;
+    fit();
     const card = doc.createElement("div");
     card.className = "xsd2-fan-card";
     card.title = "点击或按Esc跳过";card.tabIndex=0;card.setAttribute("role","button");card.setAttribute("aria-label",fan.name+"纹章揭幕，点击跳过");
@@ -258,9 +260,11 @@ function mountRelicFanfare(doc, container, data, options = {}) {
       }
     }
   }
+  function fit(){const win=doc.defaultView,v=win.visualViewport;const width=v?.width || win.innerWidth || 380,height=v?.height || win.innerHeight || 508;host.style.setProperty("--xsd2-fan-scale",String(Math.max(.1,Math.min(1,(width-24)/380,(height-24)/508))));}
+  doc.defaultView.addEventListener("resize",fit);doc.defaultView.visualViewport?.addEventListener("resize",fit);
   const escape=e=>{if(e.key==="Escape" && !host.hidden)close(host.firstElementChild);};
   doc.addEventListener("keydown",escape);
-  return {check,destroy(){if(disposed)return;disposed=true;queue.clear();clear();doc.removeEventListener("keydown",escape);host.remove();
+  return {check,destroy(){if(disposed)return;disposed=true;queue.clear();clear();doc.defaultView.removeEventListener("resize",fit);doc.defaultView.visualViewport?.removeEventListener("resize",fit);doc.removeEventListener("keydown",escape);host.remove();
     if(--shared.count===0){shared.style.remove();styles.delete(doc);}
   }};
 }

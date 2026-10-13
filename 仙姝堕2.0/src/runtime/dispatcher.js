@@ -68,8 +68,18 @@ function createDispatcher(adapter, data) {
       const cpFloor=checkpoint?.trail?.length-1;
       if(checkpoint?.chatId===c.chatId && (!checkpoint.branchId||checkpoint.branchId===c.branchId) && compatible(checkpoint,c) && cpFloor<=ceiling && (!best||cpFloor>best.floor || (cpFloor===best.floor && checkpoint.state?.revision>best.state?.revision))) best={state:C.clone(checkpoint.state),floor:cpFloor};
     }
+    // Restore only a locally authorized adjacent action after its reply is deleted/regenerated.
+    // Assistant formatting may change; user choices, candidate IDs and chat scope still must match.
+    for(const e of records){
+      const p=e?.state?.pending || e?.state?.lastPromotionRecovery?.pending,auth=p?.authorization;
+      if(e?.chatId!==c.chatId || (e.branchId && e.branchId!==c.branchId) || !p?.selection?.completionQuery || auth?.chatId!==c.chatId || auth.branchId!==c.branchId || p.floor>ceiling || !C.matchesSnapshot(auth.trail,c.trail) || c.chat.slice(p.floor+2).some(m=>m.is_user&&!m.is_system) || (best && best.floor>p.floor))continue;
+      const user=c.chat[p.floor+1];
+      const authorized=user?.is_user && (p.actionCode ? readActionCode(user.mes)?.code===p.actionCode : String(user.mes).trim()===p.actionText);
+      const restored=C.clone(p.before);if(authorized)restored.pending=C.clone(p);
+      if(!best || p.floor>=best.floor)best={state:restored,floor:p.floor};
+    }
     const p=scopeChatId===c.chatId?current?.pending:null,auth=p?.authorization;
-    if(auth?.chatId===c.chatId && auth.branchId===c.branchId && p.floor<=ceiling && C.matches(auth.trail,c.trail) && (!best||p.floor>=best.floor)) best={state:C.clone(current),floor:p.floor};
+    if(auth?.chatId===c.chatId && auth.branchId===c.branchId && p.floor<=ceiling && C.matchesSnapshot(auth.trail,c.trail) && (!best||p.floor>=best.floor)) best={state:C.clone(current),floor:p.floor};
     if(!best && saved)throw Error("已有进度记录与当前分支不匹配，已停止初始化以保护存档");
     return best;
   }
@@ -426,6 +436,7 @@ function createDispatcher(adapter, data) {
     }
     if (n.reservedState !== undefined)
       next.pluginState[plugin.id] = C.clone(n.reservedState);
+    if(n.promotionKind==="enter")next.pending.prompt += "\n"+(plugin.getReadyPrompt?.(next) || "");
     try {
       await commit(c, next, "pending");
       guard(c);
@@ -848,6 +859,7 @@ function createDispatcher(adapter, data) {
       body += "\n<Status_block>"+C.XML_FIELDS.map(k=>"<"+k+">"+xml(s.stat_data[k])+"</"+k+">").join("")+"</Status_block>";
       delete s.suppressClock;
     } else s = applyStory(s, body, c.floor, m.swipe_id ?? 0, allowInventory);
+    if(!p?.selection?.completionQuery && s.activeEvent){plugins.get(s.activeEvent.pluginId)?.observe?.(s,body,c.floor);}
     if(realmSettled) {
       s.stat_data.历时 = "90日";
       s.settlements ||= {};
@@ -870,6 +882,8 @@ function createDispatcher(adapter, data) {
     if (p?.selection?.completionQuery && s.lastNodeResult?.evidenceMode === "PROMOTION_RESULT") {
       const receipt=s.pluginState[p.pluginId]?.receipt;
       if(receipt?.id === p.id) {
+        const recovery=C.clone(p);delete recovery.before.lastPromotionRecovery;
+        s.lastPromotionRecovery={pending:recovery};
         s.settlements ||= {};
         s.settlements[p.id]={id:p.id,floor:c.floor,title:(p.selection.character || "人物")+" · 缘事已记",mode:"separate",kind:"promotion",
           answer:receipt.answer,stage:s.stat_data.completed_character_stages?.[p.selection.character] || p.selection.stageGrant.from,
@@ -951,8 +965,9 @@ function createDispatcher(adapter, data) {
     if (!profile) throw Error("身份无效");
     let opening = profile;
     if (identity === "自设") {
-      if (!custom?.date || !custom?.name || !custom?.realm)
-        throw Error("请填写自设道号、修为和日期");
+      custom={...custom,name:String(custom?.name || "").trim() || String(adapter.getUserName?.() || c.raw?.name1 || "无名修士").trim(),age:String(custom?.age || "").trim() || "20",realm:String(custom?.realm || "").trim() || "金丹前期"};
+      if(custom.realm==="金丹大修")custom.realm="金丹期";
+      if (!custom.date)throw Error("请填写有效的入世日期");
       C.assertDate(custom.date);
       opening =
         profile
@@ -1019,6 +1034,15 @@ function createDispatcher(adapter, data) {
             prompt:"本轮为闭关三个月的结算演绎。后台已核定耗时90日、原境界"+from+"、新境界"+next.stat_data.修为+"，出关日期为仙盟历"+C.dateText(next.calendarDate)+"。叙述修炼经过和出关结果，保留玩家言行自主权；不再发起是非判定、不额外升境、不追加耗时或奖励，不替玩家启动下一剧情。正常输出Status_block，历时90日，修为使用后台当前境界。"};
           try {await commit(c,next,"realm_pending");guard(c);await adapter.send(next.pending.actionText);return snapshot();}
           catch(error){const now=context();if(token(now)===token(c))await commit(now,before,"rollback");throw error;}
+        }
+        case "RETRY_COMPLETION": {
+          const p=current.pending;
+          if(!p?.selection?.completionQuery || adapter.isGenerating?.())throw Error("当前没有可重试的剧情结算，或回复正在生成");
+          if(intent.expected?.chatId!==c.chatId || intent.expected.branchId!==c.branchId || intent.expected.floor!==c.floor || intent.expected.revision!==current.revision)throw Error("结算按钮来自旧状态，请重新打开");
+          const user=c.chat[c.floor];
+          if(!user?.is_user || readActionCode(user.mes)?.code!==p.actionCode || !C.matchesSnapshot(p.authorization?.trail,c.trail))throw Error("当前末楼不是本次完成指令，不能重试其他分支");
+          if(typeof adapter.retryGeneration!=="function")throw Error("宿主暂不支持重新结算，请使用酒馆原生重新生成");
+          await commit(c,C.clone(current),"retry_completion");guard(c);adapter.retryGeneration();return snapshot();
         }
         case "GM_PATCH": {
           const r = await gm(c, intent.payload);
@@ -1111,6 +1135,7 @@ function createDispatcher(adapter, data) {
   }
   const api = {
     getSnapshot: snapshot,
+    getUserName:()=>String(adapter.getUserName?.() || context().raw?.name1 || "无名修士").trim(),
     getActionDisplay(text) {
       const parsed = readActionCode(text);
       if (!parsed) return null;
