@@ -18,6 +18,7 @@ const {
   OPEN_DATE,
   CLOSE_DATE,
   createInitialState,
+  isXuanjiDead,
   checkActionBlock,
   getAvailableOptions,
   applyAction,
@@ -35,7 +36,7 @@ const PLUGIN_VERSION = "2.0.0";
  * 获取当前插件状态（从快照中读取或初始化）
  */
 function getPluginState(snapshot) {
-  const date = snapshot?.calendarDate || { year: 1578, month: 3, day: 1 };
+  const date = snapshot?.calendarDate || { year: 1578, month: 4, day: 1 };
   const stamp = date.year * 360 + (date.month - 1) * 30 + date.day - 1;
   const state = snapshot?.pluginState?.[PLUGIN_ID]
     ? structuredClone(snapshot.pluginState[PLUGIN_ID])
@@ -52,12 +53,26 @@ function getPluginState(snapshot) {
 
 function getDisplayText(nodeId) {
   const def = EVENT_DEFS[nodeId];
-  return ({k4m8:"进入洞府", s9a3:"进入山涧"})[nodeId] || def?.label;
+  return ({ k4m8: "进入洞府", s9a3: "进入山涧", c9k2: "合力同行" })[nodeId] || def?.label || nodeId;
 }
 function scenePlace(step) {
   return {
-    first: "幽寂谷·谷口岔路", cave: "幽寂谷·洞府", stream: "幽寂谷·山涧",
-    second: "幽寂谷·谷中岔路", valley: "幽寂谷·山谷", secret: "幽寂谷·密室",
+    first: "幽寂谷·谷口岔路",
+    camp: "幽寂谷·驻守营地",
+    camp_wait: "幽寂谷·夕照营地",
+    camp_return: "幽寂谷·营地相迎",
+    valley_deep: "幽寂谷·乱石深涧",
+    chamber_gate: "幽寂谷·石室门前",
+    chamber_inside: "幽寂谷·粉雾石室",
+    chamber_rescue: "幽寂谷·辟幻石室",
+    valley_trio: "幽寂谷·合力深谷",
+    chamber_trio_gate: "幽寂谷·粉障洞口",
+    chamber_trio_cleared: "幽寂谷·勘定石室",
+    cave: "幽寂谷·洞府",
+    stream: "幽寂谷·山涧",
+    second: "幽寂谷·谷中岔路",
+    valley: "幽寂谷·山谷",
+    secret: "幽寂谷·密室",
     done: "幽寂谷外",
   }[step] || "幽寂谷";
 }
@@ -68,11 +83,45 @@ function nodeAllowed(snapshot, def) {
 function narrativeScope(snapshot, state, storyCount) {
   const options = getAvailableOptions(state, storyCount).filter(x => !x.blocked && nodeAllowed(snapshot,EVENT_DEFS[x.id]));
   const descriptions = {
-    k4m8:"一条小径通往洞府，尚未选择进入", s9a3:"另一条沿溪深入山涧，尚未选择进入",
-    h5w9:"离开洞府，继续深入谷中", j8e1:"离开山涧，继续深入谷中",
+    a7x1: "以大局为重引队回营休整，让玄机子与叶红缨独探深谷（需玄机子存活）",
+    b3m8: "察觉二师兄神色有异，假意应允而暗中潜行尾随（需玄机子存活）",
+    c9k2: "当面拒绝分兵提议，坚持同门同行深入探查（若玄机子已死则与师姐二人合力探索）",
+    z8u5: "不再深入探寻，及早收步折返离谷",
+    k8d3: "在营地组织筑基弟子调息驻守，戒备深谷异动",
+    r6t2: "入夜后迎候二人归营，察看叶红缨神色境况",
+    w2j5: "历练事毕，整饬飞舟队伍启程返回宗门复命",
+    q5w4: "循迹摸至深涧石室外，察觉门内粉雾弥漫与异动",
+    t7r1: "果断祭起灵力轰开石门，强行杀入撞破暗局",
+    x8f2: "面对石榻上受幻力侵扰的师姐，直面当下局势自主应对",
+    v4k6: "护持师姐离开深谷，汇合弟子乘飞舟凯旋归宗",
+    m7h4: "深入抵临粉雾洞口，察觉异香与禁制暗自提防",
+    x3v8: "直面粉雾石室机关，自主决定如何破阵取宝探查",
+    p6w1: "平稳收束幽寂谷历练，汇合筑基弟子整队归宗",
+    k4m8: "一条小径通往洞府，尚未选择进入",
+    s9a3: "另一条沿溪深入山涧，尚未选择进入",
+    h5w9: "离开洞府，继续深入谷中",
+    j8e1: "离开山涧，继续深入谷中",
   };
-  const cast = (snapshot.stat_data?.在场角色 || []).map(x => x.名).filter(Boolean);
-  const facts = (state.log || []).slice(-4);
+  const xuanjiDead = isXuanjiDead(state) || isXuanjiDead(snapshot);
+  const inValley = state && !["map", "done"].includes(state.step);
+  let cast;
+  if (inValley) {
+    cast = [
+      snapshot?.identity || "赵无忧",
+      "叶红缨",
+      ...(xuanjiDead ? [] : ["玄机子"]),
+      "墨山道众弟子",
+    ];
+  } else {
+    cast = (snapshot.stat_data?.在场角色 || []).map(x => x.名).filter(Boolean);
+  }
+  const facts = [...(state.log || []).slice(-3)];
+  if (inValley) {
+    facts.unshift(`【人员隔离铁律】幽寂谷现场人员严格限定为：${cast.join("、")}。此前在场人物（如孤月等）留守宗门据点，绝不随行入谷！`);
+    if (xuanjiDead) {
+      facts.push("【兼容性铁律】玄机子已身陨不登场，剧情由赵无忧与叶红缨二人携众弟子探索（仅走分支C同行探查）。");
+    }
+  }
   return buildNarrativeScope({place:scenePlace(state.step), cast, facts,
     options:options.map(x => ({label:getDisplayText(x.id), description:descriptions[x.id]}))});
 }
@@ -102,21 +151,30 @@ function select(snapshot, nodeId) {
     ? scenePlace(def.finish || def.early ? "done" : def.to || state.step) : undefined;
   const confirmed = configuredResult(snapshot, nodeId);
   const scope = narrativeScope(snapshot, confirmed.pluginState || state, storyCount + 1);
-  const prompt = settlementMode === "choice"
+  const xuanjiDead = isXuanjiDead(state) || isXuanjiDead(snapshot);
+  let extraPrompt = "";
+  if (nodeId === "g7p2") {
+    extraPrompt = "\n【承接剧情与人员隔离铁律】必须自然承接上文对话交互（交代与侍女孤月等交谈告一段落并嘱其留守宗门据点，绝不入谷）。奉师尊炎雷子法旨严令，由赵无忧、叶红缨、" + (xuanjiDead ? "" : "玄机子（若存活）、") + "众弟子前往幽寂谷历练。" +
+      (xuanjiDead ? "特别注意：玄机子已死，玄机子不出现，仅赵无忧与叶红缨率队前往，后续仅走分支C。" : "【兼容性提示词】若玄机子在先前剧情中已死亡，则合理改变后续剧情：玄机子绝不出现，仅由赵无忧与叶红缨率队探索，且仅走分支C。");
+  }
+  const prompt = (settlementMode === "choice"
     ? "【玩家点选已确认】玩家已经完成「" + def.label + "」，当前位置已确定为「" + destination +
       "」。直接从此处继续写故事，不再写成准备进入、尚未到达或移动失败；不要重复询问是否前往。" +
       (def.prompt || "")
     : "【固定节点结果已入账】玩家已经完成「" + def.label + "」，已经取得「" + def.reward +
-      "」，已加入背包，同组机关已关闭。直接演绎此结果，不再判断是否取得，不重复发奖。" + (def.prompt || "");
+      "」，已加入背包，同组机关已关闭。直接演绎此结果，不再判断是否取得，不重复发奖。" + (def.prompt || "")) + extraPrompt;
   // Rewards, mutex and confirmed exit costs commit on selection.
   // Pending prevents further clicks; cancellation restores the prior snapshot.
   return {
     id: def.id,
     allowed: true,
     actionText: def.actionText,
-    displayText:getDisplayText(nodeId),
-    rewardAliases:def.reward === "幽寂谷地图"
-      ? {幽寂谷地图:["地图", "残图", "舆图", "残卷"]} : {},
+    displayText: getDisplayText(nodeId),
+    rewardAliases: def.reward === "幽寂谷地图"
+      ? { 幽寂谷地图: ["地图", "残图", "舆图", "残卷"] }
+      : def.reward === "清凉玉佩"
+        ? { 清凉玉佩: ["玉佩", "清凉佩", "辟幻佩"] }
+        : {},
     immediateResult:def.reward || def.exitDays ? confirmed : undefined,
     identities:def.identities || undefined,
     conditions:def.conditions || [],
@@ -252,6 +310,13 @@ function mount(slotElement, runtimeApi) {
 
   slotElement.appendChild(triggerBtn);
 
+  // 1.1 HUD 快捷行动栏（无需打开地图即可直接点选）
+  const hudBar = doc.createElement("div");
+  hudBar.className = "xsd2-youjigu-hud-bar";
+  hudBar.style.cssText =
+    "display:none;align-items:center;flex-wrap:wrap;gap:4px;margin-left:6px;vertical-align:middle;";
+  slotElement.appendChild(hudBar);
+
   // 2. 地图模态浮层
   let modalOverlay = null;
 
@@ -259,6 +324,148 @@ function mount(slotElement, runtimeApi) {
     if (modalOverlay) {
       modalOverlay.remove();
       modalOverlay = null;
+    }
+  }
+
+  async function dispatchNode(nodeId) {
+    try {
+      const currentSnap = runtimeApi.getSnapshot
+        ? runtimeApi.getSnapshot()
+        : null;
+      if (!currentSnap) return;
+
+      await runtimeApi.dispatchIntent({
+        type: "SELECT_NODE",
+        pluginId: PLUGIN_ID,
+        expected: {
+          chatId: currentSnap.chatId,
+          branchId: currentSnap.branchId,
+          floor: currentSnap.floor,
+          revision: currentSnap.revision,
+        },
+        payload: {
+          nodeId,
+        },
+      });
+
+      closeMap();
+      updateHUD();
+    } catch (err) {
+      console.error("[YoujiguMap] 派发失败:", err);
+      win.parent?.toastr?.error?.(err.message || String(err));
+    }
+  }
+
+  function updateHUD() {
+    const snapshot = runtimeApi.getSnapshot ? runtimeApi.getSnapshot() : null;
+    if (!snapshot) return;
+
+    const state = getPluginState(snapshot);
+    const storyCount = snapshot.storyCount || 0;
+    const availableNodes = getAvailableOptions(state, storyCount).filter((x) =>
+      nodeAllowed(snapshot, EVENT_DEFS[x.id]),
+    );
+    const inValley = state && !["map", "done"].includes(state.step);
+    const isPending = Boolean(snapshot.pending);
+
+    // 1. 刷新入口按钮文案与视觉状态
+    if (isPending) {
+      triggerBtn.textContent = "⏳ 行动推进中...";
+      triggerBtn.style.border = "1px solid #997843";
+      triggerBtn.style.color = "#e8cf9c";
+      triggerBtn.style.boxShadow = "none";
+    } else if (inValley) {
+      const selectableCount = availableNodes.filter((x) => !x.blocked).length;
+      triggerBtn.textContent =
+        selectableCount > 0
+          ? `🗺️ 幽寂谷探索 · 待选 (${selectableCount})`
+          : "🗺️ 幽寂谷探索";
+      triggerBtn.style.border = "1px solid #2bd980";
+      triggerBtn.style.color = "#a5f3cb";
+      triggerBtn.style.boxShadow = "0 0 8px rgba(43,217,128,0.4)";
+    } else {
+      const openInMap = availableNodes.some(
+        (x) => x.id === "g7p2" && !x.blocked,
+      );
+      if (openInMap) {
+        triggerBtn.textContent = "🗺️ 南疆地图 · 幽寂谷开放";
+        triggerBtn.style.border = "1px solid #e6a832";
+        triggerBtn.style.color = "#ffd580";
+        triggerBtn.style.boxShadow = "0 0 6px rgba(230,168,50,0.4)";
+      } else {
+        triggerBtn.textContent = "🗺️ 南疆地图";
+        triggerBtn.style.border = "1px solid #785e3b";
+        triggerBtn.style.color = "#dfcba5";
+        triggerBtn.style.boxShadow = "none";
+      }
+    }
+
+    // 2. 刷新 HUD 内嵌行动抉择胶囊栏
+    hudBar.innerHTML = "";
+    if (inValley || availableNodes.some((x) => x.id === "g7p2" && !x.blocked)) {
+      hudBar.style.display = "inline-flex";
+      if (isPending) {
+        const pTag = doc.createElement("span");
+        pTag.style.cssText =
+          "font-size:11px;color:#d8be91;margin-left:4px;opacity:0.85;";
+        pTag.textContent = `⏳「${snapshot.pending.actionText}」进行中`;
+        hudBar.appendChild(pTag);
+      } else {
+        const tipLabel = doc.createElement("span");
+        tipLabel.style.cssText =
+          "font-size:11px;color:#eedbb5;font-weight:bold;margin-left:6px;margin-right:2px;display:inline-flex;align-items:center;";
+        tipLabel.textContent = inValley ? "⚡抉择:" : "✨机缘:";
+        hudBar.appendChild(tipLabel);
+
+        availableNodes.forEach((node) => {
+          const def = EVENT_DEFS[node.id];
+          const isBlocked = !!node.blocked;
+          const pill = doc.createElement("button");
+          pill.type = "button";
+          pill.className = "xsd2-hud-action-pill";
+          pill.setAttribute("data-hud-node-id", node.id);
+          pill.textContent = node.label;
+          pill.title = isBlocked
+            ? `${node.label}（${node.blocked}）`
+            : def?.actionText || node.label;
+          pill.disabled = isBlocked;
+          pill.style.cssText = [
+            "padding:2px 7px",
+            "font-size:11px",
+            "border-radius:3px",
+            "margin-left:4px",
+            "cursor:" + (isBlocked ? "not-allowed" : "pointer"),
+            "background:" +
+              (isBlocked
+                ? "#221c15"
+                : "linear-gradient(180deg, #3a2c1a 0%, #20170d 100%)"),
+            "color:" + (isBlocked ? "#6f614f" : "#ffe0a0"),
+            "border:" +
+              (isBlocked ? "1px solid #4a3e30" : "1px solid #a87e47"),
+            "box-shadow:" + (isBlocked ? "none" : "0 1px 4px rgba(0,0,0,0.5)"),
+            "transition:all 0.15s ease",
+            "white-space:nowrap",
+          ].join(";");
+
+          if (!isBlocked) {
+            pill.onmouseenter = () => {
+              pill.style.borderColor = "#ffd074";
+              pill.style.background = "#4a3922";
+            };
+            pill.onmouseleave = () => {
+              pill.style.borderColor = "#a87e47";
+              pill.style.background =
+                "linear-gradient(180deg, #3a2c1a 0%, #20170d 100%)";
+            };
+            pill.onclick = async () => {
+              await dispatchNode(node.id);
+            };
+          }
+          hudBar.appendChild(pill);
+        });
+      }
+    } else {
+      hudBar.style.display = "none";
     }
   }
 
@@ -270,7 +477,9 @@ function mount(slotElement, runtimeApi) {
 
     const state = getPluginState(snapshot);
     const storyCount = snapshot.storyCount || 0;
-    const availableNodes = getAvailableOptions(state, storyCount).filter(x=>nodeAllowed(snapshot,EVENT_DEFS[x.id]));
+    const availableNodes = getAvailableOptions(state, storyCount).filter((x) =>
+      nodeAllowed(snapshot, EVENT_DEFS[x.id]),
+    );
 
     modalOverlay = doc.createElement("div");
     modalOverlay.className = "xsd2-map-modal-overlay";
@@ -419,33 +628,7 @@ function mount(slotElement, runtimeApi) {
 
         // 点击圆点：触发 SELECT_NODE 派发意图！
         pinBtn.onclick = async () => {
-          try {
-            const currentSnap = runtimeApi.getSnapshot
-              ? runtimeApi.getSnapshot()
-              : null;
-            if (!currentSnap) return;
-
-            // 调用统一调度器派发意图
-            await runtimeApi.dispatchIntent({
-              type: "SELECT_NODE",
-              pluginId: PLUGIN_ID,
-              expected: {
-                chatId: currentSnap.chatId,
-                branchId: currentSnap.branchId,
-                floor: currentSnap.floor,
-                revision: currentSnap.revision,
-              },
-              payload: {
-                nodeId: node.id,
-              },
-            });
-
-            // 成功出动后自动关闭地图
-            closeMap();
-          } catch (err) {
-            console.error("[YoujiguMap] 派发失败:", err);
-            win.parent?.toastr?.error?.(err.message || String(err));
-          }
+          await dispatchNode(node.id);
         };
       }
 
@@ -453,6 +636,134 @@ function mount(slotElement, runtimeApi) {
     });
 
     modalBox.appendChild(atlas);
+
+    // 路线与行动卡片面板（高显著度选择指引）
+    const actionsPanel = doc.createElement("div");
+    actionsPanel.className = "yj-actions-panel";
+    actionsPanel.style.cssText = [
+      "display:flex",
+      "flex-direction:column",
+      "gap:8px",
+      "background:#17130e",
+      "border:1px solid #423524",
+      "border-radius:4px",
+      "padding:10px",
+      "max-height:220px",
+      "overflow-y:auto",
+    ].join(";");
+
+    const panelHeader = doc.createElement("div");
+    panelHeader.style.cssText =
+      "display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;";
+    panelHeader.innerHTML =
+      '<span style="font-size:12px;font-weight:bold;color:#f3e6cf;">📜 待选行动与路线指引</span>' +
+      '<span style="font-size:11px;color:#9b8769;">（点击下方卡片或上方地图圆点均可派发）</span>';
+    actionsPanel.appendChild(panelHeader);
+
+    if (availableNodes.length === 0) {
+      const emptyTip = doc.createElement("div");
+      emptyTip.style.cssText = "font-size:11px;color:#887766;padding:6px;";
+      emptyTip.textContent = "当前场景暂无可推进的探索路线。";
+      actionsPanel.appendChild(emptyTip);
+    } else {
+      availableNodes.forEach((node) => {
+        const def = EVENT_DEFS[node.id];
+        const isBlocked = !!node.blocked;
+        const isPending = !!snapshot.pending;
+
+        const card = doc.createElement("div");
+        card.className = "yj-action-card";
+        card.style.cssText = [
+          "background:" + (isBlocked ? "#1d1711" : "#261d13"),
+          "border:" + (isBlocked ? "1px solid #382c1e" : "1px solid #735732"),
+          "border-radius:4px",
+          "padding:8px 10px",
+          "display:flex",
+          "justify-content:space-between",
+          "align-items:center",
+          "gap:10px",
+          "transition:all 0.15s ease",
+        ].join(";");
+
+        const leftBox = doc.createElement("div");
+        leftBox.style.cssText =
+          "display:flex;flex-direction:column;gap:3px;flex:1;";
+
+        const titleRow = doc.createElement("div");
+        titleRow.style.cssText = "display:flex;align-items:center;gap:6px;";
+        const nameSpan = doc.createElement("span");
+        nameSpan.style.cssText =
+          "font-size:12px;font-weight:bold;color:" +
+          (isBlocked ? "#7d6f5c" : "#ffdf96") +
+          ";";
+        nameSpan.textContent = node.label;
+        titleRow.appendChild(nameSpan);
+
+        if (node.remainingTtl !== undefined) {
+          const ttlBadge = doc.createElement("span");
+          ttlBadge.style.cssText =
+            "font-size:10px;color:#e88a5d;background:#381c10;padding:1px 4px;border-radius:2px;";
+          ttlBadge.textContent = `⏳ 剩余 ${node.remainingTtl} 轮`;
+          titleRow.appendChild(ttlBadge);
+        }
+        if (def?.exitDays) {
+          const dayBadge = doc.createElement("span");
+          dayBadge.style.cssText =
+            "font-size:10px;color:#85c2ff;background:#102238;padding:1px 4px;border-radius:2px;";
+          dayBadge.textContent = `耗时 ${def.exitDays} 日`;
+          titleRow.appendChild(dayBadge);
+        }
+        leftBox.appendChild(titleRow);
+
+        const desc = doc.createElement("div");
+        desc.style.cssText =
+          "font-size:11px;color:" +
+          (isBlocked ? "#665846" : "#b8a68b") +
+          ";line-height:1.4;";
+        desc.textContent = isBlocked
+          ? `[不可选: ${node.blocked}]`
+          : def?.summaryNote || def?.actionText || "";
+        leftBox.appendChild(desc);
+
+        const actBtn = doc.createElement("button");
+        actBtn.type = "button";
+        actBtn.className = "yj-card-btn";
+        actBtn.textContent = isBlocked
+          ? "无法执行"
+          : isPending
+            ? "进行中"
+            : "立即执行 ➔";
+        actBtn.disabled = isBlocked || isPending;
+        actBtn.style.cssText = [
+          "padding:4px 10px",
+          "font-size:11px",
+          "border-radius:3px",
+          "cursor:" + (isBlocked || isPending ? "not-allowed" : "pointer"),
+          "background:" +
+            (isBlocked || isPending
+              ? "#30261b"
+              : "linear-gradient(180deg, #4d3a22 0%, #291d10 100%)"),
+          "color:" + (isBlocked || isPending ? "#6b5c49" : "#fff1cc"),
+          "border:" +
+            (isBlocked || isPending ? "1px solid #4a3a29" : "1px solid #b88a4b"),
+          "box-shadow:" +
+            (isBlocked || isPending ? "none" : "0 2px 6px rgba(0,0,0,0.6)"),
+          "white-space:nowrap",
+        ].join(";");
+
+        if (!isBlocked && !isPending) {
+          actBtn.onclick = async () => {
+            await dispatchNode(node.id);
+          };
+        }
+
+        card.appendChild(leftBox);
+        card.appendChild(actBtn);
+        actionsPanel.appendChild(card);
+      });
+    }
+
+    modalBox.appendChild(actionsPanel);
     modalOverlay.appendChild(modalBox);
 
     // 点击遮罩关闭
@@ -465,6 +776,9 @@ function mount(slotElement, runtimeApi) {
 
   triggerBtn.onclick = renderMapModal;
 
+  // 初始化一次 HUD 状态
+  updateHUD();
+
   // ESC 键关闭
   const onKeydown = (e) => {
     if (e.key === "Escape") closeMap();
@@ -473,6 +787,7 @@ function mount(slotElement, runtimeApi) {
 
   // 订阅统一运行时生命周期变动
   const unsubscribe = runtimeApi.subscribe?.(() => {
+    updateHUD();
     if (modalOverlay) {
       renderMapModal();
     }
@@ -482,6 +797,7 @@ function mount(slotElement, runtimeApi) {
   return function unmount() {
     closeMap();
     triggerBtn.remove();
+    hudBar.remove();
     doc.removeEventListener("keydown", onKeydown);
     if (typeof unsubscribe === "function") unsubscribe();
   };

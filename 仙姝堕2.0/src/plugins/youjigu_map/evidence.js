@@ -60,6 +60,20 @@ function playerSentence(s, def) {
 function verifyMovementEvidence(proseText, def) {
   const places = {
     g7p2: /幽寂谷|谷口|入谷/,
+    a7x1: /营地|大局|回营|队伍/,
+    b3m8: /深谷|尾随|山道|谷道|潜行/,
+    c9k2: /三人|同行|深谷|并肩/,
+    k8d3: /营地|驻守|夕阳|异动/,
+    r6t2: /营地|相迎|归来|归营/,
+    w2j5: /飞舟|拔营|回宗|宗门/,
+    q5w4: /深涧|石室|门外|禁制/,
+    t7r1: /石室|破门|石门|杀入/,
+    x8f2: /石室|红缨|救护|辟幻/,
+    v4k6: /飞舟|并肩|回宗|归宗|凯旋/,
+    m7h4: /粉雾|洞口|深涧|对峙/,
+    x3v8: /石室|残阵|探勘|破阵/,
+    p6w1: /营地|飞舟|回宗|安然/,
+    // 兼容旧节点
     k4m8: /洞府|石门|石窟|洞内/,
     s9a3: /山涧|溪水|溪流|涧/,
     u9h3: /山谷|谷中|腹地/,
@@ -73,7 +87,7 @@ function verifyMovementEvidence(proseText, def) {
     (def.to === "second"
       ? /洞府|山涧|谷中|腹地|岔路/
       : def.finish || def.early
-        ? /幽寂谷|出谷|谷口|山径|出口/
+        ? /幽寂谷|出谷|谷口|山径|出口|宗门|归宗|回宗/
         : null);
   const ok = sentences(proseText).some((s) => {
     if (
@@ -87,9 +101,9 @@ function verifyMovementEvidence(proseText, def) {
     if (def.to === "second")
       return /离开|走出|退出/.test(s) && /深入|腹地|谷中/.test(s);
     if (def.finish || def.early)
-      return /离开|走出|出谷|离去|顺径而出|折返|回返/.test(s);
+      return /离开|走出|出谷|离去|顺径而出|折返|回返|归宗|回宗|回营|拔营|凯旋/.test(s);
     return (
-      /步入|踏入|进入|迈入|走进|抵达|行至|来到/.test(s) &&
+      /步入|踏入|进入|迈入|走进|抵达|行至|来到|回营|尾随|同行|驻守|相迎|破门|杀入|对峙|探勘/.test(s) &&
       !/(?:洞府|石门|密室)(?:之前|前|外)/.test(s)
     );
   });
@@ -103,6 +117,7 @@ function verifyMovementEvidence(proseText, def) {
 function verifyProseEvidence(proseText, def) {
   if (!def || !def.reward) return verifyMovementEvidence(proseText, def || {});
   const words = {
+    清凉玉佩: ["清凉玉佩", "玉佩", "辟幻佩", "清凉佩"],
     幽寂谷地图: ["幽寂谷地图", "地图", "残图", "路线图"],
     丹药: ["丹药", "灵丹", "古丹"],
     草药: ["草药", "灵草", "灵芝", "药草"],

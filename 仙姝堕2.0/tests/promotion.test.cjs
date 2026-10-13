@@ -10,7 +10,14 @@ function fixture(){
     persist:async(c,e)=>{checkpoint={...C.clone(e),branchId:c.branchId};chat[c.floor].variables ||= [];chat[c.floor].variables[chat[c.floor].swipe_id || 0]={stat_data:{...C.clone(e.state.stat_data),xsd2:[C.clone(e)]}};},
     replaceOpening:async t=>{chat[0].mes=t;},replaceStory:async(i,t)=>{chat[i].mes=t;},
     send:async t=>{if(fail)throw Error("发送失败");sent.push(t);chat.push({mes:t,is_user:true});},setPrompt:t=>prompts.push(t),report:()=>{},confirmExit:async()=>true};
-  const r=createDispatcher(adapter,data),plugin=createPromotionPlugin(data.promotionDefinitions,data.nodeStories);r.registerPlugin(plugin);r.registerPlugin(map);
+  const testData = {
+    ...data,
+    greetings: {
+      ...data.greetings,
+      赵无忧: data.greetings.赵无忧.replace("3月3日", "4月1日"),
+    },
+  };
+  const r=createDispatcher(adapter,testData),plugin=createPromotionPlugin(data.promotionDefinitions,data.nodeStories);r.registerPlugin(plugin);r.registerPlugin(map);
   const click=(id,p=plugin)=>{const s=r.getSnapshot();return r.dispatchIntent({type:"SELECT_NODE",pluginId:p.id,expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:id}});};
   const reply=async text=>{chat.push({mes:text,is_user:false,swipe_id:0});return r.settleStory();};
   const stage=()=>r.getSnapshot().stat_data.character_stages.叶红缨.id;

@@ -237,7 +237,7 @@ test("打包HUD快捷行动与地图共用门禁：空闲真实发送，生成�
     require("node:path").join(__dirname, ".."),
   );
   for (const action of ["观察四周", "与在场之人交谈", "自行行动", "地图"]) {
-    const h = await fixture(data.greetings.赵无忧);
+    const h = await fixture(data.greetings.赵无忧.replace("3月3日", "4月1日"));
     try {
       await until(() => h.doc.querySelector(".xsd2-hud"));
       const runtime = h.win.XSD2.runtime;
@@ -309,7 +309,7 @@ test("提示词预计算不会锁动作或阻止原生候选身份恢复，不�
 
 test("原生先STARTED再用户入楼：地图pending留存，HUD不搬用户楼，回复后出现洞府节点", async () => {
   const data = require("../tools/data.cjs").load(require("node:path").join(__dirname, ".."));
-  const h = await fixture(data.greetings.赵无忧);
+  const h = await fixture(data.greetings.赵无忧.replace("3月3日", "4月1日"));
   try {
     await until(() => h.doc.querySelector(".xsd2-hud"));
     h.doc.querySelector(".mes").setAttribute("mesid", "0");
@@ -346,21 +346,21 @@ test("原生先STARTED再用户入楼：地图pending留存，HUD不搬用户楼
     assert.ok([...h.doc.querySelectorAll('[mesid="0"] button')].every(b=>b.disabled));
     h.doc.querySelector('[mesid="2"] .xsd2-map-trigger-btn').click();
     assert.equal(h.doc.querySelector('[data-node-id="g7p2"]'), null);
-    assert.ok(h.doc.querySelector('[data-node-id="k4m8"]'));
-    h.doc.querySelector('[data-node-id="k4m8"]').click();
+    assert.ok(h.doc.querySelector('[data-node-id="b3m8"]'));
+    h.doc.querySelector('[data-node-id="b3m8"]').click();
     await until(() => h.context.chat.length === 4);
-    assert.equal(h.win.XSD2.runtime.getSnapshot().pending?.nodeId, "k4m8");
-    h.context.chat.push({mes:"赵无忧推开石门，步入幽寂谷洞府之中。",is_user:false,variables:[{}]});
+    assert.equal(h.win.XSD2.runtime.getSnapshot().pending?.nodeId, "b3m8");
+    h.context.chat.push({mes:"赵无忧运转敛息术，潜行尾随二人深入深谷。",is_user:false,variables:[{}]});
     h.appendDOM(4);
     await h.emit("CHARACTER_MESSAGE_RENDERED", 4);
     await h.emit("GENERATION_ENDED");
     await until(() => h.doc.querySelector('[mesid="4"] .xsd2-hud'));
-    assert.equal(h.win.XSD2.runtime.getSnapshot().activeEvent?.step, "cave");
+    assert.equal(h.win.XSD2.runtime.getSnapshot().activeEvent?.step, "valley_deep");
     assert.equal(h.doc.querySelector('[mesid="3"] [data-xsd2-root]'), null);
     // Read-only historical state remains at the fork, not the latest cave.
     assert.equal((await h.win.XSD2.runtime.getFloorSnapshot(2)).activeEvent.step, "first");
     h.doc.querySelector('[mesid="4"] .xsd2-map-trigger-btn').click();
-    h.doc.querySelector('[data-node-id="q3f7"]').click();
+    h.doc.querySelector('[data-node-id="q5w4"]').click();
     await until(() => h.context.chat.length === 6);
     await h.emit("GENERATION_STOPPED");
     h.context.chat.pop();
@@ -368,10 +368,9 @@ test("原生先STARTED再用户入楼：地图pending留存，HUD不搬用户楼
     await h.emit("MESSAGE_DELETED");
     await until(() => h.doc.querySelector('[mesid="4"] .xsd2-map-trigger-btn')?.disabled === false);
     assert.equal(h.win.XSD2.runtime.getSnapshot().pending, null);
-    assert.equal(h.win.XSD2.runtime.getSnapshot().activeEvent.step, "cave");
+    assert.equal(h.win.XSD2.runtime.getSnapshot().activeEvent.step, "valley_deep");
     h.doc.querySelector('[mesid="4"] .xsd2-map-trigger-btn').click();
-    assert.ok(h.doc.querySelector('[data-node-id="q3f7"]'));
-    assert.ok(h.doc.querySelector('[data-node-id="b8n2"]'));
+    assert.ok(h.doc.querySelector('[data-node-id="q5w4"]'));
   } finally { h.close(); }
 });
 

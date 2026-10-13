@@ -134,7 +134,7 @@ function build() {
     if(!data.nodeStories[p.entryId]?.content?.trim() || !data.nodeStories[p.finishId]?.content?.trim())throw Error("晋升节点故事绑定缺失："+id);
   }
   if (
-    entries.length !== 226 ||
+    entries.length !== 225 ||
     entries.some((e) => String(e.comment).startsWith("【剧情】"))
   )
     throw Error("世界书底表数量或隔离检查失败");

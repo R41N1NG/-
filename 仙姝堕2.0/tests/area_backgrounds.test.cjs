@@ -30,7 +30,14 @@ function fixture() {
     prompts: [],
     setPrompt(text) { this.prompts.push(text); },
   };
-  const r = createDispatcher(adapter, data);
+  const testData = {
+    ...data,
+    greetings: {
+      ...data.greetings,
+      赵无忧: data.greetings.赵无忧.replace("3月3日", "4月1日"),
+    },
+  };
+  const r = createDispatcher(adapter, testData);
   r.registerPlugin(plugin);
   const click = (id) => {
     const s = r.getSnapshot();
@@ -68,9 +75,9 @@ test("真实调度流：入谷后 active_area=幽寂谷，子地点继承，离�
   let s=h.r.getSnapshot();
   assert.equal(s.stat_data.地点,"幽寂谷·谷口岔路");
   assert.equal(s.stat_data.active_area,"幽寂谷");
-  await h.act("k4m8","你推开石门，步入洞府之中。");
+  await h.act("b3m8","你暗中运转匿气术，潜行尾随二人深入深谷。");
   s=h.r.getSnapshot();
-  assert.equal(s.stat_data.地点,"幽寂谷·洞府");
+  assert.equal(s.stat_data.地点,"幽寂谷·乱石深涧");
   assert.equal(s.stat_data.active_area,"幽寂谷");
   await h.act("z8u5","你提前收拾行装，离开了幽寂谷。");
   s=h.r.getSnapshot();

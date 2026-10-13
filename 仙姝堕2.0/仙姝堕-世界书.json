@@ -2169,41 +2169,6 @@
       "delay": null,
       "displayIndex": 67
     },
-    "68": {
-      "uid": 68,
-      "key": [
-        "幽寂谷秘境"
-      ],
-      "keysecondary": [],
-      "comment": "【势力】幽寂谷秘境",
-      "content": "<faction>\n# 幽寂谷秘境\n- 幽寂谷秘境为天枢剑宗通报、墨山道派队历练的秘境，有上古禁制只容元婴期以下修士进入，开启前由天枢剑宗传讯。环境：终年弥漫灰色瘴气如帷幔低垂、遮蔽天光；扭曲枯木枝桠如鬼爪；充斥腐朽与古老禁制残留威压，死寂中唯有虫豸窸窣窣低鸣，内中仍有不少未被探明的上古禁制与未知区域。已知生物为裂地妖熊（体型庞大、皮糙肉厚、成群自密林深处冲出）。墨山道曾派赵无忧、叶红缨、玄机子带队并率二十名筑基弟子前往，叶红缨以「焚炎破」轰杀妖熊、赵无忧以「墨痕千山阵」困敌。秘境深处另有一处粉色雾障秘境（山洞石室）：洞口笼罩流动的粉红光晕雾气，内为一方四壁光滑如镜的石室，中央有氤氲热气与淡淡灵光的浅粉色温泉池；机关为粉色能量凝聚的枷锁与强行侵入识海制造幻境的惑心幻力。玄机子当年筑基期即已发现此地并备好抵御幻力的清凉玉佩，借此设局侵犯叶红缨，成为其长期要挟的把柄之源。\n- 旁白禁泄：本条为后台设定，只供掌握演绎方向；严禁旁白把其中的机理、名录与后果当作已公开的常识讲透，也不得借状态栏、行动建议或 NPC 之口提前说出。\n</faction>",
-      "constant": false,
-      "vectorized": false,
-      "selective": false,
-      "selectiveLogic": 0,
-      "addMemo": false,
-      "order": 1680,
-      "position": 0,
-      "excludeRecursion": false,
-      "preventRecursion": true,
-      "delayUntilRecursion": false,
-      "probability": 100,
-      "useProbability": true,
-      "depth": 4,
-      "group": "",
-      "groupOverride": false,
-      "groupWeight": 100,
-      "scanDepth": null,
-      "caseSensitive": null,
-      "matchWholeWords": null,
-      "useGroupScoring": null,
-      "automationId": "",
-      "role": null,
-      "sticky": null,
-      "cooldown": null,
-      "delay": null,
-      "displayIndex": 68
-    },
     "69": {
       "uid": 69,
       "key": [

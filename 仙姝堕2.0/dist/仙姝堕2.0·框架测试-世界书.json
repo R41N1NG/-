@@ -2229,42 +2229,6 @@
       "displayIndex": 67,
       "disable": false
     },
-    "68": {
-      "uid": 68,
-      "key": [
-        "幽寂谷秘境"
-      ],
-      "keysecondary": [],
-      "comment": "【势力】幽寂谷秘境",
-      "content": "<faction>\n# 幽寂谷秘境\n- 幽寂谷秘境为天枢剑宗通报、墨山道派队历练的秘境，有上古禁制只容元婴期以下修士进入，开启前由天枢剑宗传讯。环境：终年弥漫灰色瘴气如帷幔低垂、遮蔽天光；扭曲枯木枝桠如鬼爪；充斥腐朽与古老禁制残留威压，死寂中唯有虫豸窸窣窣低鸣，内中仍有不少未被探明的上古禁制与未知区域。已知生物为裂地妖熊（体型庞大、皮糙肉厚、成群自密林深处冲出）。墨山道曾派赵无忧、叶红缨、玄机子带队并率二十名筑基弟子前往，叶红缨以「焚炎破」轰杀妖熊、赵无忧以「墨痕千山阵」困敌。秘境深处另有一处粉色雾障秘境（山洞石室）：洞口笼罩流动的粉红光晕雾气，内为一方四壁光滑如镜的石室，中央有氤氲热气与淡淡灵光的浅粉色温泉池；机关为粉色能量凝聚的枷锁与强行侵入识海制造幻境的惑心幻力。玄机子当年筑基期即已发现此地并备好抵御幻力的清凉玉佩，借此设局侵犯叶红缨，成为其长期要挟的把柄之源。\n- 旁白禁泄：本条为后台设定，只供掌握演绎方向；严禁旁白把其中的机理、名录与后果当作已公开的常识讲透，也不得借状态栏、行动建议或 NPC 之口提前说出。\n</faction>",
-      "constant": false,
-      "vectorized": false,
-      "selective": false,
-      "selectiveLogic": 0,
-      "addMemo": false,
-      "order": 1680,
-      "position": 0,
-      "excludeRecursion": true,
-      "preventRecursion": true,
-      "delayUntilRecursion": false,
-      "probability": 100,
-      "useProbability": true,
-      "depth": 4,
-      "group": "",
-      "groupOverride": false,
-      "groupWeight": 100,
-      "scanDepth": null,
-      "caseSensitive": null,
-      "matchWholeWords": null,
-      "useGroupScoring": null,
-      "automationId": "",
-      "role": null,
-      "sticky": null,
-      "cooldown": null,
-      "delay": null,
-      "displayIndex": 68,
-      "disable": false
-    },
     "69": {
       "uid": 69,
       "key": [
@@ -9410,7 +9374,7 @@
         "XSD2_g7p2_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：进入幽寂谷】\n\n【本轮必须发生】\n只演绎步入幽寂谷入口，山风萧瑟，不提前揭示洞府或山涧深处细节。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：进入幽寂谷】\n\n【本轮必须发生】\n1. 自然承接上文对话与交互，交代与当前在场人物（如侍女孤月等）交谈告一段落并嘱其留守宗门据点；\n2. 奉师尊炎雷子法旨严令安排，由二师兄玄机子（若存活）、五师姐叶红缨、六师弟赵无忧一同领命，率领二十名墨山道筑基精锐弟子整队启程，御乘飞舟前往幽寂谷除害历练；\n3. 队伍御飞舟抵临幽寂谷外围，合力斩灭外围盘踞的裂地妖熊后，行至深谷分兵岔路，不提前揭示深处细节。\n\n【人员隔离铁律】\n此前在场的所有其他人物（如侍女孤月等）自然交代其留守宗门，绝不随行入谷！幽寂谷现场参与者严格限定为：赵无忧、叶红缨、玄机子（若存活）、墨山道众弟子。\n\n【兼容性提示词（若玄机子已死亡）】\n若玄机子在先前剧情中已死亡/陨落，则玄机子绝不出现！合理改变后续剧情：幽寂谷由赵无忧与叶红缨二人携众弟子探索，分歧路线仅可走分支C（两人并肩同行探险、稳妥破阵），不发生玄机子分兵与弄险图谋。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9424,12 +9388,12 @@
     },
     "235": {
       "uid": 235,
-      "comment": "【节点故事】k4m8",
+      "comment": "【节点故事】a7x1",
       "key": [
-        "XSD2_k4m8_"
+        "XSD2_a7x1_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：探索洞府】\n\n【本轮必须发生】\n只演绎来到洞府石门前并进入洞府，不提前开启香炉或暗格。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：引队回营】\n\n【本轮必须发生】\n演绎玄机子提议分兵，玩家以大局为重规劝叶红缨，率先引筑基弟子回营休整，玄机子独引叶红缨探查未知深谷。（注：此路线仅在玄机子存活时成立）\n\n【人物与场景】\n谷中分歧岔路，弟子疲惫，叶红缨面带抗拒但见六师弟发话勉强应允。\n\n【确定结果】\n以大局为重引队回营，到达营地结阵固守。\n\n【边界】\n不代玩家决定深入，深谷内部剧情留白。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9443,12 +9407,12 @@
     },
     "236": {
       "uid": 236,
-      "comment": "【节点故事】s9a3",
+      "comment": "【节点故事】k8d3",
       "key": [
-        "XSD2_s9a3_"
+        "XSD2_k8d3_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：探索山涧】\n\n【本轮必须发生】\n只演绎沿溪涧行进，水声潺潺，不提前触发其他遭遇。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：营地驻守】\n\n【本轮必须发生】\n演绎在营地组织筑基弟子调息警戒，夕阳西下，隐约察觉深谷方向传来异样灵力波动与火光，旋即平息。\n\n【人物与场景】\n临时搭建的防御营地，弟子围坐，四周灰瘴渐起。\n\n【确定结果】\n整备完毕，静候深谷二人归来。\n\n【边界】\n不擅自离开营地，不直接揭开深谷真相。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9462,12 +9426,12 @@
     },
     "237": {
       "uid": 237,
-      "comment": "【节点故事】b8n2",
+      "comment": "【节点故事】r6t2",
       "key": [
-        "XSD2_b8n2_"
+        "XSD2_r6t2_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：开启香炉】\n\n【本轮必须发生】\n演绎开启香炉并取出其中遗留的灵丹，注意同组暗格将不可再启。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「丹药」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：归营相迎】\n\n【本轮必须发生】\n演绎入夜后玄机子与叶红缨归营；玄机子言笑如常维持君子气度，叶红缨衣衫稍乱、神色冰冷躲闪，回避众人目光径自入帐闭门。\n\n【人物与场景】\n夜幕下的营火之畔，气氛微妙压抑。\n\n【确定结果】\n察觉叶红缨神色异样，暗藏端倪。\n\n【边界】\n红缨紧闭营帐避人，不代玩家强行闯入逼问。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9481,12 +9445,12 @@
     },
     "238": {
       "uid": 238,
-      "comment": "【节点故事】q3f7",
+      "comment": "【节点故事】w2j5",
       "key": [
-        "XSD2_q3f7_"
+        "XSD2_w2j5_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：开启暗格】\n\n【本轮必须发生】\n演绎摸索石壁开启暗格，取得幽寂谷地图残卷，注意同组香炉将不可再启。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「幽寂谷地图」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：整队回宗】\n\n【本轮必须发生】\n演绎晨曦拔营，飞舟起驾返回宗门复命；红缨独坐舟尾避人，玄机子谈笑风生。触发天机结算。\n\n【确定结果】\n耗时2日，二十名弟子安然归宗，硬核落账：玄机子胁迫过叶红缨。\n\n【边界】\n历练圆满结束，出谷归宗。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9500,12 +9464,12 @@
     },
     "239": {
       "uid": 239,
-      "comment": "【节点故事】h5w9",
+      "comment": "【节点故事】b3m8",
       "key": [
-        "XSD2_h5w9_"
+        "XSD2_b3m8_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：离开洞府】\n\n【本轮必须发生】\n演绎退出洞府，不再折返，径直穿过谷口岔路深入幽寂谷第二轮腹地。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：潜行尾随】\n\n【本轮必须发生】\n演绎玄机子巧言劝分兵，玩家察觉其异样表面应承，暗令弟子结阵自保，自身运转敛息术悄然尾随二人深入深谷。（注：此路线仅在玄机子存活时成立）\n\n【人物与场景】\n险峻乱石深涧，水雾渐浓，玄机子在前领路心怀鬼胎。\n\n【确定结果】\n成功潜行尾随，逼近深谷腹地。\n\n【边界】\n保持匿气，不提前暴露行踪。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9519,12 +9483,12 @@
     },
     "240": {
       "uid": 240,
-      "comment": "【节点故事】r2c6",
+      "comment": "【节点故事】q5w4",
       "key": [
-        "XSD2_r2c6_"
+        "XSD2_q5w4_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：查看溪水】\n\n【本轮必须发生】\n演绎细观山涧溪流清波，察看水底灵气异象。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：隔门察危】\n\n【本轮必须发生】\n演绎潜行至深涧石室石门外，察觉禁制开启，门缝透出粉色惑心雾障，石室内传出微弱挣扎动静。时效紧迫！\n\n【确定结果】\n到达石室门前，察觉玄机子奸谋。\n\n【边界】\n石门紧闭，等待破门处置。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9538,12 +9502,12 @@
     },
     "241": {
       "uid": 241,
-      "comment": "【节点故事】a6d4",
+      "comment": "【节点故事】t7r1",
       "key": [
-        "XSD2_a6d4_"
+        "XSD2_t7r1_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：查看树丛】\n\n【本轮必须发生】\n演绎拨开溪畔草丛，查探四周痕迹。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：阵力破门】\n\n【本轮必须发生】\n演绎玩家祭起灵力轰碎石门暴起发难，当场撞破玄机子不轨图谋；玄机子惊骇狼狈遁走，石室内留下受幻力缠绕的叶红缨与遗落的清凉玉佩。\n\n【确定结果】\n击退玄机子，当场粉碎其图谋，进入石室面对残局。\n\n【边界】\n玄机子败退，留下石室现场，不替玩家做后续行为决断。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9557,12 +9521,12 @@
     },
     "242": {
       "uid": 242,
-      "comment": "【节点故事】j8e1",
+      "comment": "【节点故事】x8f2",
       "key": [
-        "XSD2_j8e1_"
+        "XSD2_x8f2_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：离开山涧】\n\n【本轮必须发生】\n演绎离开溪水山涧，不再折返，径直深入幽寂谷第二轮腹地。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：石室决断】\n\n【自由回合规则（玩家完全自主输入）】\n面对石榻上受惑心幻力侵袭、微喘迷乱的叶红缨，玩家完全自主决定言行举止（温和救护、问询、或动邪念等）。\n\n【核心客观法则与激惹惊醒铁律】\n叶红缨体内红尘业火与命门灵环相连，绝非任人摆布之物：\n1. 触碰封元灵环惊醒：触碰命门极痛必瞬间击碎幻境，羞愤惊醒后退防备；\n2. 企图破身强侵惊醒：触及死线引爆体内业火自卫，凄厉惊醒将玩家狠狠掀飞；\n3. 端方温和救护：以清凉玉佩或纯净真气化解粉雾，为其披衣守护，红缨平息脱困心怀感激。\n\n【确定结果】\n依据玩家实际输入客观演绎现场反应，等待下一步离谷收官。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9576,12 +9540,12 @@
     },
     "243": {
       "uid": 243,
-      "comment": "【节点故事】u9h3",
+      "comment": "【节点故事】v4k6",
       "key": [
-        "XSD2_u9h3_"
+        "XSD2_v4k6_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：前往山谷】\n\n【本轮必须发生】\n演绎穿过谷中岔路，行至生有灵草的幽静山谷。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：凯旋归宗】\n\n【本轮必须发生】\n演绎二人并肩走出深谷，与驻守弟子汇合并起驾飞舟归宗。缴获清凉玉佩，挫败玄机子暗局。触发天机结算。\n\n【确定结果】\n耗时2日，缴获【清凉玉佩】，硬核落账：识破玄机子幽寂谷暗局、幽寂谷救下叶红缨。\n\n【边界】\n粉碎宿命枷锁，凯旋归宗。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9595,12 +9559,12 @@
     },
     "244": {
       "uid": 244,
-      "comment": "【节点故事】v4t7",
+      "comment": "【节点故事】c9k2",
       "key": [
-        "XSD2_v4t7_"
+        "XSD2_c9k2_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：前往密室】\n\n【本轮必须发生】\n演绎持地图辨认方位，开启隐蔽石隙步入密室。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：合力同行】\n\n【本轮必须发生】\n演绎若玄机子存活，玩家当面力辞其分兵之策，叶红缨顺势赞同，玄机子顾及同门在场只得应允，安顿弟子后三人结伴一同深入；【兼容性铁律】若玄机子已死亡，则玄机子不出现，剧情合理改变为赵无忧与叶红缨二人率领精锐弟子结阵防守后，并肩同行深入探查未知深谷。\n\n【确定结果】\n安顿弟子后结伴深入，合力探查未知深谷。\n\n【边界】\n弟子就地结阵固守，探查小队成形深入。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9614,12 +9578,12 @@
     },
     "245": {
       "uid": 245,
-      "comment": "【节点故事】n5z8",
+      "comment": "【节点故事】m7h4",
       "key": [
-        "XSD2_n5z8_"
+        "XSD2_m7h4_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：收集草药】\n\n【本轮必须发生】\n演绎在山谷崖壁处寻得并采摘草药，收入囊中。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「草药」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：洞前对峙】\n\n【本轮必须发生】\n演绎抵达粉雾洞口，甜腻异香扑面。若玄机子在场，其投鼠忌器不敢妄动，叶红缨靠向玩家暗中戒备，三人形成微妙制衡；若玄机子已死，则为赵无忧与叶红缨二人共同察觉洞中粉雾与异样禁制，携手戒备、商讨破禁。\n\n【确定结果】\n直面洞口禁制与粉雾，谨慎戒备。\n\n【边界】\n洞前对峙与探查，等待破除残阵。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9633,12 +9597,12 @@
     },
     "246": {
       "uid": 246,
-      "comment": "【节点故事】l7q2",
+      "comment": "【节点故事】x3v8",
       "key": [
-        "XSD2_l7q2_"
+        "XSD2_x3v8_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：从出口离开】\n\n【本轮必须发生】\n演绎完成谷中探索，顺山径整装出谷，本次历练圆满结束。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：探勘石室】\n\n【自由回合规则（玩家完全自主输入）】\n直面石室机关粉雾，玩家自主决定破阵、取宝或戒备策略。若玄机子在场，玄机子全程受制毫无下手机会；若玄机子已死，则玄机子不出现，赵无忧与叶红缨同舟共济、合力化解异象。\n\n【确定结果】\n稳妥破除石室残阵，未生恶性事端。\n\n【边界】\n平稳收官，准备出谷。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9652,12 +9616,12 @@
     },
     "247": {
       "uid": 247,
-      "comment": "【节点故事】p1x6",
+      "comment": "【节点故事】p6w1",
       "key": [
-        "XSD2_p1x6_"
+        "XSD2_p6w1_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：打开左边暗格】\n\n【本轮必须发生】\n演绎开启密室左侧石格，取得法宝，右侧暗格随即封死。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「法宝」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：平稳归宗】\n\n【本轮必须发生】\n演绎历练平稳收官，全员返回营地汇合弟子，飞舟起驾安然归宗。无恶性事端发生，红缨安然无恙。触发天机结算。\n\n【确定结果】\n耗时2日，全员无损归宗，硬核落账：幽寂谷历练安澜无恙（若玄机子存活，追加落账：挫败玄机子独行图谋）。\n\n【边界】\n历练平稳圆满结束。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9671,12 +9635,12 @@
     },
     "248": {
       "uid": 248,
-      "comment": "【节点故事】t6v4",
+      "comment": "【节点故事】z8u5",
       "key": [
-        "XSD2_t6v4_"
+        "XSD2_z8u5_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：打开右边暗格】\n\n【本轮必须发生】\n演绎开启密室右侧暗格，取得秘籍，左侧暗格随即封死。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n取得「秘籍」，按后台已入账结果演绎，不重复发奖。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
+      "content": "【节点故事：提前离开幽寂谷】\n\n【本轮必须发生】\n演绎因故决定提前折返，收拾行装离谷。\n\n【确定结果】\n耗时1日，提前离开幽寂谷。\n\n【边界】\n本次幽寂谷行程提前收束。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -9690,44 +9654,6 @@
     },
     "249": {
       "uid": 249,
-      "comment": "【节点故事】e3j9",
-      "key": [
-        "XSD2_e3j9_"
-      ],
-      "keysecondary": [],
-      "content": "【节点故事：离开密室】\n\n【本轮必须发生】\n演绎离开密室暗道，结束本次幽寂谷行程。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
-      "constant": false,
-      "selective": false,
-      "disable": true,
-      "order": 200,
-      "position": 1,
-      "scanDepth": 1,
-      "matchUser": true,
-      "matchCharacter": false,
-      "excludeRecursion": true,
-      "preventRecursion": true
-    },
-    "250": {
-      "uid": 250,
-      "comment": "【节点故事】z8u5",
-      "key": [
-        "XSD2_z8u5_"
-      ],
-      "keysecondary": [],
-      "content": "【节点故事：提前离开幽寂谷】\n\n【本轮必须发生】\n演绎因故决定提前折返，收拾行装离谷。\n\n【人物与场景】\n沿用中控给出的日期、地点、身份和在场人物；结合既有世界书补充环境与人物反应，不添加改变路线的新人物。\n\n【确定结果】\n行动和到达地点以中控确认结果为准。\n\n【边界】\n只能介绍中控列出的当前可见去向，未选择的分支不进入、不揭露内部或奖励。不要输出节点ID或内部代码。",
-      "constant": false,
-      "selective": false,
-      "disable": true,
-      "order": 200,
-      "position": 1,
-      "scanDepth": 1,
-      "matchUser": true,
-      "matchCharacter": false,
-      "excludeRecursion": true,
-      "preventRecursion": true
-    },
-    "251": {
-      "uid": 251,
       "comment": "【节点故事】yhrNight",
       "key": [
         "XSD2_yhrNight_"
@@ -9745,8 +9671,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "252": {
-      "uid": 252,
+    "250": {
+      "uid": 250,
       "comment": "【节点故事】yhrFinish",
       "key": [
         "XSD2_yhrFinish_"
@@ -9764,8 +9690,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "253": {
-      "uid": 253,
+    "251": {
+      "uid": 251,
       "comment": "【节点故事】yhrRogueEnter1",
       "key": [
         "XSD2_yhrRogueEnter1_"
@@ -9783,8 +9709,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "254": {
-      "uid": 254,
+    "252": {
+      "uid": 252,
       "comment": "【节点故事】yhrRogueFinish1",
       "key": [
         "XSD2_yhrRogueFinish1_"
@@ -9802,8 +9728,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "255": {
-      "uid": 255,
+    "253": {
+      "uid": 253,
       "comment": "【节点故事】yhrRogueLeave1",
       "key": [
         "XSD2_yhrRogueLeave1_"
@@ -9821,8 +9747,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "256": {
-      "uid": 256,
+    "254": {
+      "uid": 254,
       "comment": "【节点故事】yhrZwEnter1",
       "key": [
         "XSD2_yhrZwEnter1_"
@@ -9840,8 +9766,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "257": {
-      "uid": 257,
+    "255": {
+      "uid": 255,
       "comment": "【节点故事】yhrZwFinish1",
       "key": [
         "XSD2_yhrZwFinish1_"
@@ -9859,8 +9785,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "258": {
-      "uid": 258,
+    "256": {
+      "uid": 256,
       "comment": "【节点故事】yhrZwLeave1",
       "key": [
         "XSD2_yhrZwLeave1_"
@@ -9878,8 +9804,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "259": {
-      "uid": 259,
+    "257": {
+      "uid": 257,
       "comment": "【节点故事】yhrRogueEnter2",
       "key": [
         "XSD2_yhrRogueEnter2_"
@@ -9897,8 +9823,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "260": {
-      "uid": 260,
+    "258": {
+      "uid": 258,
       "comment": "【节点故事】yhrRogueFinish2",
       "key": [
         "XSD2_yhrRogueFinish2_"
@@ -9916,8 +9842,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "261": {
-      "uid": 261,
+    "259": {
+      "uid": 259,
       "comment": "【节点故事】yhrRogueLeave2",
       "key": [
         "XSD2_yhrRogueLeave2_"
@@ -9935,8 +9861,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "262": {
-      "uid": 262,
+    "260": {
+      "uid": 260,
       "comment": "【节点故事】yhrZwEnter2",
       "key": [
         "XSD2_yhrZwEnter2_"
@@ -9954,8 +9880,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "263": {
-      "uid": 263,
+    "261": {
+      "uid": 261,
       "comment": "【节点故事】yhrZwFinish2",
       "key": [
         "XSD2_yhrZwFinish2_"
@@ -9973,8 +9899,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "264": {
-      "uid": 264,
+    "262": {
+      "uid": 262,
       "comment": "【节点故事】yhrZwLeave2",
       "key": [
         "XSD2_yhrZwLeave2_"
@@ -9992,8 +9918,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "265": {
-      "uid": 265,
+    "263": {
+      "uid": 263,
       "comment": "【节点故事】yhrRogueEnter2b",
       "key": [
         "XSD2_yhrRogueEnter2b_"
@@ -10011,8 +9937,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "266": {
-      "uid": 266,
+    "264": {
+      "uid": 264,
       "comment": "【节点故事】yhrRogueFinish2b",
       "key": [
         "XSD2_yhrRogueFinish2b_"
@@ -10030,8 +9956,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "267": {
-      "uid": 267,
+    "265": {
+      "uid": 265,
       "comment": "【节点故事】yhrRogueLeave2b",
       "key": [
         "XSD2_yhrRogueLeave2b_"
@@ -10049,8 +9975,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "268": {
-      "uid": 268,
+    "266": {
+      "uid": 266,
       "comment": "【节点故事】yhrZwEnter3",
       "key": [
         "XSD2_yhrZwEnter3_"
@@ -10068,8 +9994,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "269": {
-      "uid": 269,
+    "267": {
+      "uid": 267,
       "comment": "【节点故事】yhrZwFinish3",
       "key": [
         "XSD2_yhrZwFinish3_"
@@ -10087,8 +10013,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "270": {
-      "uid": 270,
+    "268": {
+      "uid": 268,
       "comment": "【节点故事】yhrZwLeave3",
       "key": [
         "XSD2_yhrZwLeave3_"
@@ -10106,8 +10032,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "271": {
-      "uid": 271,
+    "269": {
+      "uid": 269,
       "comment": "【节点故事】yhrRogueEnter3",
       "key": [
         "XSD2_yhrRogueEnter3_"
@@ -10125,8 +10051,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "272": {
-      "uid": 272,
+    "270": {
+      "uid": 270,
       "comment": "【节点故事】yhrRogueFinish3",
       "key": [
         "XSD2_yhrRogueFinish3_"
@@ -10144,8 +10070,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "273": {
-      "uid": 273,
+    "271": {
+      "uid": 271,
       "comment": "【节点故事】yhrRogueLeave3",
       "key": [
         "XSD2_yhrRogueLeave3_"
@@ -10163,8 +10089,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "274": {
-      "uid": 274,
+    "272": {
+      "uid": 272,
       "comment": "【人物阶段】叶红缨:stage02:赵无忧",
       "key": [
         "叶红缨",
@@ -10184,8 +10110,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "275": {
-      "uid": 275,
+    "273": {
+      "uid": 273,
       "comment": "【人物阶段】叶红缨:stage02:自设",
       "key": [
         "叶红缨",
@@ -10205,8 +10131,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "276": {
-      "uid": 276,
+    "274": {
+      "uid": 274,
       "comment": "【人物阶段】叶红缨:stage03:赵无忧",
       "key": [
         "叶红缨",
@@ -10226,8 +10152,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "277": {
-      "uid": 277,
+    "275": {
+      "uid": 275,
       "comment": "【人物阶段】叶红缨:stage03:自设",
       "key": [
         "叶红缨",
@@ -10247,8 +10173,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "278": {
-      "uid": 278,
+    "276": {
+      "uid": 276,
       "comment": "【人物阶段】叶红缨:stage04:赵无忧",
       "key": [
         "叶红缨",
@@ -10268,8 +10194,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "279": {
-      "uid": 279,
+    "277": {
+      "uid": 277,
       "comment": "【人物阶段】叶红缨:stage04:自设",
       "key": [
         "叶红缨",
@@ -10289,8 +10215,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "280": {
-      "uid": 280,
+    "278": {
+      "uid": 278,
       "comment": "【人物阶段】叶红缨:stage05:赵无忧",
       "key": [
         "叶红缨",
@@ -10310,8 +10236,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "281": {
-      "uid": 281,
+    "279": {
+      "uid": 279,
       "comment": "【人物阶段】叶红缨:stage05:自设",
       "key": [
         "叶红缨",
@@ -10331,8 +10257,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "282": {
-      "uid": 282,
+    "280": {
+      "uid": 280,
       "comment": "【好感事件表】叶红缨",
       "key": [],
       "keysecondary": [],
@@ -10345,8 +10271,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "283": {
-      "uid": 283,
+    "281": {
+      "uid": 281,
       "comment": "【好感事件表】孤月",
       "key": [],
       "keysecondary": [],
@@ -10359,8 +10285,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "284": {
-      "uid": 284,
+    "282": {
+      "uid": 282,
       "comment": "【好感事件表】闻观语",
       "key": [],
       "keysecondary": [],
@@ -10373,8 +10299,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "285": {
-      "uid": 285,
+    "283": {
+      "uid": 283,
       "comment": "【好感事件表】楚灵夜",
       "key": [],
       "keysecondary": [],
@@ -10387,8 +10313,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "286": {
-      "uid": 286,
+    "284": {
+      "uid": 284,
       "comment": "【好感事件表】苏瑶",
       "key": [],
       "keysecondary": [],
@@ -10401,8 +10327,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "287": {
-      "uid": 287,
+    "285": {
+      "uid": 285,
       "comment": "【好感事件表】苏玲",
       "key": [],
       "keysecondary": [],
@@ -10415,8 +10341,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "288": {
-      "uid": 288,
+    "286": {
+      "uid": 286,
       "comment": "【好感事件表】柳含烟",
       "key": [],
       "keysecondary": [],
@@ -10429,8 +10355,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "289": {
-      "uid": 289,
+    "287": {
+      "uid": 287,
       "comment": "【好感事件表】雨霏柔",
       "key": [],
       "keysecondary": [],
@@ -10443,8 +10369,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "290": {
-      "uid": 290,
+    "288": {
+      "uid": 288,
       "comment": "【好感事件表】云织梦",
       "key": [],
       "keysecondary": [],
@@ -10457,8 +10383,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "291": {
-      "uid": 291,
+    "289": {
+      "uid": 289,
       "comment": "【好感事件表】花芷凝",
       "key": [],
       "keysecondary": [],
@@ -10471,8 +10397,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "292": {
-      "uid": 292,
+    "290": {
+      "uid": 290,
       "comment": "【好感事件表】苏倾寒",
       "key": [],
       "keysecondary": [],
@@ -10485,8 +10411,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "293": {
-      "uid": 293,
+    "291": {
+      "uid": 291,
       "comment": "【好感事件表】慕容清歌",
       "key": [],
       "keysecondary": [],
@@ -10499,8 +10425,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "294": {
-      "uid": 294,
+    "292": {
+      "uid": 292,
       "comment": "【好感事件表】顾云舒",
       "key": [],
       "keysecondary": [],
@@ -10513,8 +10439,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "295": {
-      "uid": 295,
+    "293": {
+      "uid": 293,
       "comment": "【好感事件表】陆烬颜",
       "key": [],
       "keysecondary": [],
@@ -10527,8 +10453,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "296": {
-      "uid": 296,
+    "294": {
+      "uid": 294,
       "comment": "【区域背景】幽寂谷",
       "key": [],
       "keysecondary": [],
@@ -10541,8 +10467,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "297": {
-      "uid": 297,
+    "295": {
+      "uid": 295,
       "comment": "【大势背景】peace",
       "key": [],
       "keysecondary": [],
@@ -10555,8 +10481,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：承平暗涌】\n南域表面承平，各大仙门开山大典举行，极乐密藏外层禁制生隙，幽寂秘境异动已有风闻。幽寂谷探查开放日期为1578年3月1日至4月30日；是否进入、探查及取得物品由对应局部节点决定。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "298": {
-      "uid": 298,
+    "296": {
+      "uid": 296,
       "comment": "【大势背景】calamity",
       "key": [],
       "keysecondary": [],
@@ -10569,8 +10495,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：南域大劫】\n极乐密藏封印已破，远古神诅席卷南域，原有元婴大能重创跌至金丹；炎雷子受创闭关。极乐太子已立天姝会四殿，正魔旧平衡瓦解。常规结婴受到神诅限制，名器是修士突破的少数途径之一。玩家当前境界以后台记录为准，符合本地名器条件仍可重新突破元婴。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "299": {
-      "uid": 299,
+    "297": {
+      "uid": 297,
       "comment": "【大势背景】beast",
       "key": [],
       "keysecondary": [],
@@ -10583,8 +10509,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：天溪兽潮】\n南域大劫及四殿分疆已经发生。大荒凶兽狂潮已合围天溪城，仙盟调兵协防，九龙焚天大阵开启，守城拉锯战已经爆发。这里只确认世界局势，不确认玩家参战、完成守城或城破；具体变化等待局部事件。神诅下名器仍是修士突破的少数途径之一。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "300": {
-      "uid": 300,
+    "298": {
+      "uid": 298,
       "comment": "【大势规则】中控调度",
       "key": [],
       "keysecondary": [],
