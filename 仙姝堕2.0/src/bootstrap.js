@@ -35,6 +35,8 @@ function start(win) {
     const chat = doc.querySelector("#chat");
     const rows = [...(chat?.querySelectorAll(".mes") || [])];
     const targets = [];
+    const controlFloor=c.chat.findLastIndex(m=>!m.is_user&&!m.is_system);
+    const canControl=!host.isGenerating() && !runtime.getSnapshot()?.pending;
     for (const [index, mes] of rows.entries()) {
       const id = mes.getAttribute("mesid");
       const floor = id === null ? index : Number(id), m = c.chat?.[floor];
@@ -46,7 +48,7 @@ function start(win) {
         continue;
       }
       if (m.is_system) continue;
-      const latest = floor === c.chat.length - 1;
+      const latest = floor === c.chat.length - 1 || (floor===controlFloor && canControl);
       const s = latest && !host.isGenerating()
         ? runtime.getSnapshot() : await runtime.getFloorSnapshot(floor);
       if (epoch !== renderEpoch || host.context().chatId !== c.chatId || !active()) return;
@@ -86,9 +88,9 @@ function start(win) {
   async function mirror() {
     if (active()) await host.syncState(runtime.getSnapshot());
   }
-  async function restore() {
+  async function restore(options = {}) {
     if (!active()) return;
-    await runtime.restore();
+    await runtime.restore(options);
     await mirror();
     await render();
   }
@@ -114,7 +116,7 @@ function start(win) {
     );
   }
   on("CHAT_CHANGED", ()=>{effects.reset();return restore();});
-  on("MESSAGE_DELETED", restore);
+  on("MESSAGE_DELETED", ()=>{effects.reset();settleFaultKey=null;lastReportKey=null;return restore({afterDelete:true});});
   on("MESSAGE_SWIPED", async () => {
     host.markAborted(false);
     if (host.isGenerating()) return;
@@ -134,7 +136,16 @@ function start(win) {
     settleFaultKey=null;lastReportKey=null;
     host.markAborted(false);
     host.markGenerating(true);
-    await runtime.replay(_type || "normal");
+    const startedChat=host.context().chatId;
+    try {await runtime.replay(_type || "normal");}
+    catch(error){
+      if(host.context().chatId===startedChat){
+        host.setPrompt("");
+        const state=runtime.getSnapshot();
+        if(state)await host.syncState({...state,stat_data:{...state.stat_data,node_trigger:null}});
+      }
+      throw error;
+    }
     await mirror();
   });
   on("GENERATION_STOPPED", async () => {

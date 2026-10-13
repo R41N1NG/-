@@ -878,3 +878,20 @@ test("节点数值条件与确定变化：条件拒绝不发送，点选变化�
   gated=false; await h.select(); assert.equal(h.r.getSnapshot().stat_data.character_metrics.角色甲.好感,5);
   await h.r.stop(); assert.equal(h.r.getSnapshot().stat_data.character_metrics.角色甲.好感,0);
 });
+
+test('明确内射漏申报名器互动仍增加一升二进度；同楼只算一次，次数达标不代替质变',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{'owner.zhuojiu':'赵无忧','relicStage.zhuojiu':1}});
+ for(let i=1;i<=3;i++){
+  h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status(i===2?{名器互动:'灼酒流炎穴｜赵无忧｜内射'}:{},'本回合赵无忧对叶红缨内射已发生。'));
+  await h.r.settleStory();assert.equal(h.r.getSnapshot().relics.zhuojiu.stages[2].count,i);
+ }
+ assert.equal(h.r.getSnapshot().relics.zhuojiu.stages[2].ready,true);assert.equal(data.rules(h.r.getSnapshot().stat_data).getRelicStage('zhuojiu',h.r.getSnapshot().known),1);
+});
+test('漏申报兜底排除计划否定、思考、回忆、错人和未成形；编辑删楼撤回进度',async()=>{
+ for(const prose of ['赵无忧计划对叶红缨内射。','赵无忧没有对叶红缨内射。','<think>赵无忧对叶红缨内射已发生。</think>','叶红缨回忆上次赵无忧内射。','旁人对叶红缨内射。','孤月与赵无忧在场，叶红缨内射已发生。']){
+  const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':1}});await h.reply(status({},prose));assert.equal(h.r.getSnapshot().relics.zhuojiu,undefined);
+ }
+ const h=harness();await h.opening('赵无忧');await h.reply(status({},'赵无忧对叶红缨内射已发生。'));assert.equal(h.r.getSnapshot().relics.zhuojiu,undefined);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':1}});h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'本回合赵无忧对叶红缨内射已发生。'));assert.equal(h.r.getSnapshot().relics.zhuojiu.stages[2].count,1);
+ h.c.chat.at(-1).mes=status({},'本回合没有发生互动。');await h.r.settleStory();assert.equal(h.r.getSnapshot().relics.zhuojiu,undefined);
+});

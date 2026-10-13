@@ -38,7 +38,7 @@ function fingerprint(chat) {
     JSON.stringify([
       !!m.is_user,
       !!m.is_system,
-      m.swipe_id ?? 0,
+      Number(m.swipe_id ?? 0),
       String(m.mes ?? ""),
     ]),
   );
@@ -54,7 +54,7 @@ function matchesSnapshot(a, b) {
   return Array.isArray(a) && a.length <= b.length && a.every((x,i)=>{
     if(x===b[i])return true;
     try {const old=JSON.parse(x),now=JSON.parse(b[i]);
-      return old.length===4 && now.length===4 && old.slice(0,3).every((v,k)=>v===now[k]) && !old[0] && !old[1];
+      return old.length===4 && now.length===4 && old.slice(0,2).every((v,k)=>v===now[k]) && Number(old[2])===Number(now[2]) && ((!old[0] && !old[1]) || String(old[3]).replace(/\r\n/g,"\n").trim()===String(now[3]).replace(/\r\n/g,"\n").trim());
     } catch {return false;}
   });
 }

@@ -7,6 +7,7 @@ const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
 const { createMetricEvents } = require("./metric_events");
+const {inferRelicActions}=require("./relic_evidence");
 function createDispatcher(adapter, data) {
   const metricEvents = createMetricEvents(
     data.metricEventDefinitions,
@@ -57,10 +58,12 @@ function createDispatcher(adapter, data) {
       if(e?.schema===2)saved=true;
       if(compatible(e,c)){best={state:C.clone(e.state),floor:i};break;}
     }
-    const checkpoint=await adapter.readCheckpoint?.();guard(c);
-    if(checkpoint?.schema===2 && checkpoint.chatId===c.chatId)saved=true;
-    const cpFloor=checkpoint?.trail?.length-1;
-    if(checkpoint?.chatId===c.chatId && (!checkpoint.branchId||checkpoint.branchId===c.branchId) && compatible(checkpoint,c) && cpFloor<=ceiling && (!best||cpFloor>best.floor)) best={state:C.clone(checkpoint.state),floor:cpFloor};
+    const records=adapter.readCheckpoints ? await adapter.readCheckpoints() : [await adapter.readCheckpoint?.()];guard(c);
+    for(const checkpoint of records){
+      if(checkpoint?.schema===2 && checkpoint.chatId===c.chatId)saved=true;
+      const cpFloor=checkpoint?.trail?.length-1;
+      if(checkpoint?.chatId===c.chatId && (!checkpoint.branchId||checkpoint.branchId===c.branchId) && compatible(checkpoint,c) && cpFloor<=ceiling && (!best||cpFloor>best.floor || (cpFloor===best.floor && checkpoint.state?.revision>best.state?.revision))) best={state:C.clone(checkpoint.state),floor:cpFloor};
+    }
     const p=scopeChatId===c.chatId?current?.pending:null,auth=p?.authorization;
     if(auth?.chatId===c.chatId && auth.branchId===c.branchId && p.floor<=ceiling && C.matches(auth.trail,c.trail) && (!best||p.floor>=best.floor)) best={state:C.clone(current),floor:p.floor};
     if(!best && saved)throw Error("已有进度记录与当前分支不匹配，已停止初始化以保护存档");
@@ -683,9 +686,11 @@ function createDispatcher(adapter, data) {
     }
     manual(s);
     const rr = rules(s);
+    const reportedRelics=new Set();
     for (const raw of parsed.interactions || []) {
       const a = rr.parseRelicAction(raw);
       if (!a) continue;
+      reportedRelics.add(a.relicId);
       const validated = rr.validateRelicAction(
         a,
         parsed.prose,
@@ -702,6 +707,8 @@ function createDispatcher(adapter, data) {
           s.stat_data.known,
         );
     }
+    for(const action of inferRelicActions(rr,parsed.prose,s.stat_data.known,s.identity,reportedRelics))
+      s.stat_data.relic_progress=rr.calcRelicProgress(s.stat_data.relic_progress,action,id,swipe,C.hash(text),s.stat_data.known);
     for (const [rid, cfg] of Object.entries(rr.RELIC_PILOT_CONFIG)) {
       const stage = rr.getRelicStage(rid, s.stat_data.known),
         progress = s.stat_data.relic_progress[rid],
@@ -752,7 +759,12 @@ function createDispatcher(adapter, data) {
       return { skipped: true };
     if (!current || scopeChatId !== c.chatId) await load(c);
     if (!current) return { skipped: true };
-    if (current.processed[c.floor] === C.hash(m.mes)) return { skipped: true };
+    const processed=current.processed[c.floor];
+    const normalizedHash=C.hash(String(m.mes).replace(/\r\n/g,"\n").trim());
+    const closedCallback=processed && Object.values(current.settlements || {}).some(x=>x.floor===c.floor && x.kind==="promotion");
+    // The raw callback has already been replaced by display text. Only an
+    // explicit regeneration/delete can revoke its saved settlement receipt.
+    if(processed===C.hash(m.mes) || processed===normalizedHash || closedCallback)return {skipped:true};
     const previous = await history(c, c.floor - 1);
     if (!previous) throw Error("缺少本楼的前置状态");
     let s = previous.state;
@@ -772,7 +784,7 @@ function createDispatcher(adapter, data) {
     if (p) {
       const user = c.chat
         .slice(p.floor + 1, c.floor)
-        .find((x) => x.is_user && !x.is_system);
+        .reverse().find((x) => x.is_user && !x.is_system);
       if (!user || (p.actionCode ? readActionCode(user.mes)?.code !== p.actionCode : String(user.mes).trim() !== p.actionText)) {
         s = C.clone(p.before);
         allowInventory = false;
@@ -1100,7 +1112,15 @@ function createDispatcher(adapter, data) {
     },
     dispatchIntent,
     ready: () => lifecycle(load),
-    restore: () => lifecycle(load),
+    restore: (options = {}) => lifecycle(async c=>{
+      await load(c);
+      if(options.afterDelete && current?.pending?.selection?.completionQuery){
+        // Removing the result cancels the outstanding callback. Its user code
+        // remains history, not an instruction for the next free-form turn.
+        return commit(c,C.clone(current.pending.before),"rollback");
+      }
+      return snapshot();
+    }),
     settleStory: () => lifecycle(story),
     stop: () => dispatchIntent({ type: "CANCEL_PENDING" }),
     registerPlugin(plugin) {
@@ -1121,25 +1141,17 @@ function createDispatcher(adapter, data) {
     },
     replay: (generationType = "regenerate") =>
       lifecycle(async (c) => {
-        // Floor zero has no previous assistant floor; retain its opening state.
-        if (c.floor === 0) return load(c, false);
-        // Native STARTED precedes user-message insertion. The latest assistant
-        // can hold a freshly selected pending; do not rewind past that receipt.
-        const latest = (await adapter.readMessage(c.floor))?.stat_data?.xsd2?.[0];
-        guard(c);
-        if (compatible(latest, c) && latest.state?.pending?.floor === c.floor) {
-          current = C.clone(latest.state);
-          scopeChatId = c.chatId;
-          updatePrompt();
-          return snapshot();
+        if(!["regenerate","swipe"].includes(generationType)){
+          await load(c,false);
+          const p=current?.pending;
+          const lastUser=c.chat.slice(p?.floor+1).reverse().find(m=>m.is_user&&!m.is_system);
+          if(p && lastUser && (p.actionCode ? readActionCode(lastUser.mes)?.code!==p.actionCode : String(lastUser.mes).trim()!==p.actionText))
+            await commit(c,C.clone(p.before),"rollback");
+          updatePrompt();return snapshot();
         }
-        const m = c.chat[c.floor];
-        // Native normal STARTED may precede insertion of the new user message.
-        // Keep the completed latest reply; only regeneration rewinds its action.
-        if (generationType === "normal" && !m?.is_user && compatible(latest,c) &&
-            latest.state?.processed?.[c.floor] === C.hash(m?.mes || "")) {
-          current=C.clone(latest.state);scopeChatId=c.chatId;updatePrompt();return snapshot();
-        }
+        // Explicit regeneration still restores the state before this reply.
+        if(c.floor===0)return load(c,false);
+        const m=c.chat[c.floor];
         const base = await history(c, m?.is_user ? c.floor : c.floor - 1);
         // Native opening swipes / older chats may have valid source identity
         // but no envelope yet. Read that source instead of erasing the identity.

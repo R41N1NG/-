@@ -444,3 +444,42 @@ test('打包结算故障停止自动重试：重复DOM更新不堆叠错误，�
   assert.equal(h.win.XSD2.runtime.getSnapshot().stat_data.character_metrics.叶红缨.好感度,20);
  }finally{h.close();}
 });
+
+test('打包宿主三段晋升：变量丢失刷新、格式归一化正常发送、删完成回复再点心迹完成',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..'));
+ const h=await fixture(data.greetings.赵无忧);
+ h.win.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+ h.win.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new h.win.Event('close'));};
+ try{
+  h.context.saveChat=async()=>{for(const m of h.context.chat)m.swipe_id=String(m.swipe_id??0);};
+  let r=h.win.XSD2.runtime;
+  const select=async id=>{const s=r.getSnapshot();await r.dispatchIntent({type:'SELECT_NODE',pluginId:'character_promotion',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:id}});};
+  const reply=async text=>{const floor=h.context.chat.length;h.context.chat.push({mes:text,is_user:false,swipe_id:0,variables:[{}]});h.appendDOM(floor);await h.emit('GENERATION_ENDED');return floor;};
+  let lastFloor;
+  for(const [score,entry,finish] of [[20,'yhrNight','yhrFinish'],[40,'yhrZwEnter1','yhrZwFinish1'],[60,'yhrZwEnter2','yhrZwFinish2']]){
+   await r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'叶红缨',key:'好感度',value:score}});
+   await select(entry);await reply('本次故事已经发生。<Status_block><在场>叶红缨</在场></Status_block>');await select(finish);
+   lastFloor=await reply('<Promotion_result id="'+r.getSnapshot().pending.actionCode+'">是</Promotion_result>');
+  }
+  assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,'stage04');
+  h.context.chat[2].swipe_id='0';h.context.chat.at(-1).mes+='\r\n';
+  for(const m of h.context.chat)m.variables=[{}];
+  h.win.XSD2.dispose();delete h.win.XSD2;h.win.eval(script);
+  await until(()=>h.win.XSD2?.runtime.getSnapshot()?.stat_data.character_stages.叶红缨.id==='stage04');r=h.win.XSD2.runtime;
+  await h.emit('GENERATION_STARTED','normal',{},false);
+  assert.equal(r.getSnapshot().pending,null);assert.ok(!h.context.prompts.at(-1).includes('Promotion_result'));
+  // No generation is started by the fixture, end its lifecycle before deletion.
+  h.win.XSD2.host?.markGenerating?.(false);
+  await h.emit('GENERATION_ENDED');
+  assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,'stage04');
+  h.context.chat.pop();h.doc.querySelector('[mesid="'+lastFloor+'"]').remove();await h.emit('MESSAGE_DELETED');
+  assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,'stage03');assert.equal(r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,60);assert.equal(r.getSnapshot().pending,null);assert.ok(r.getSnapshot().activeEvent);
+  const control=lastFloor-2;
+  await until(()=>h.doc.querySelector('[mesid="'+control+'"] [data-favor="叶红缨"]'));
+  h.doc.querySelector('[mesid="'+control+'"] [data-favor="叶红缨"]').click();
+  const button=h.doc.querySelector('[data-heart-node="yhrZwFinish2"]');assert.ok(button);assert.equal(button.disabled,false);button.click();
+  await until(()=>r.getSnapshot().pending?.nodeId==='yhrZwFinish2');
+  await reply('<Promotion_result id="'+r.getSnapshot().pending.actionCode+'">是</Promotion_result>');assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,'stage04');
+  await h.emit('GENERATION_STARTED','normal',{},false);h.context.chat.push({mes:'请她喝酒',is_user:true,variables:[{}]});await reply('她接过酒杯。');assert.equal(r.getSnapshot().pending,null);assert.ok(h.context.chat.at(-1).mes.includes('她接过酒杯'));assert.ok(!h.context.prompts.at(-1).includes('Promotion_result'));assert.equal(h.errors.length,0);
+ }finally{h.close();}
+});

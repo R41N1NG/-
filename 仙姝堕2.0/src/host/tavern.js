@@ -117,6 +117,11 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
         return {schema:2,chatId:c.chatId,trail:null};
       return null;
     },
+    async readCheckpoints() {
+      const current=await adapter.readCheckpoint();
+      const vars=await helper.getVariables({type:"chat"});
+      return [current,...(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[])].filter(Boolean);
+    },
     async readMessage(i) {
       return helper.getVariables({ type: "message", message_id: i });
     },
@@ -149,7 +154,14 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       if (back?.stat_data?.xsd2?.[0]?.state?.revision !== e.state.revision)
         throw Error("本楼状态保存复核失败");
       const vars=await helper.getVariables({type:"chat"});guard(c);
-      await helper.replaceVariables({...vars,xsd2_checkpoint:{...C.clone(e),branchId:c.branchId}}, {type:"chat"});guard(c);
+      const checkpoint={...C.clone(e),branchId:c.branchId};
+      // Assistant prose is not part of snapshot identity. Keep compact trails
+      // in the journal so long stories are not copied into every backup.
+      checkpoint.trail=checkpoint.trail.map(x=>{const v=JSON.parse(x);if(!v[0]&&!v[1])v[3]="";return JSON.stringify(v);});
+      const journal=(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[]).filter(x=>
+        !(x.chatId===c.chatId && x.trail?.length===checkpoint.trail.length && C.matchesSnapshot(x.trail,checkpoint.trail)));
+      journal.push(checkpoint);
+      await helper.replaceVariables({...vars,xsd2_checkpoint:checkpoint,xsd2_history:journal}, {type:"chat"});guard(c);
       await save();guard(c);
     },
     async syncState(state) {

@@ -420,7 +420,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       row('氛 围','<span class="xsd2-atmo">'+esc(st.环境||'无')+'</span>')+
       row('状 态',esc(st.状态||'无'))+row('目 标',esc(st.目标||'无'))+
       (st.危机&&st.危机!=='无'?'<div class="xsd2-row crisis"><b>危 机</b><span data-xsd-slot="9">'+esc(st.危机)+'</span></div>':'<span data-xsd-slot="9" hidden></span>')+
-      row('关 系',relationChips||'暂无记录')+row('储物栏','<button class="xsd2-chip" data-storage>共 '+s.inventory.length+' 种 · 点击查看</button>')+
+      row('关 系',relationChips||'暂无记录')+
       '</div><div class="xsd2-portrait" data-player-avatar-slot></div></div>'+
       '<span data-xsd-slot="6" hidden></span>'+
       '<div class="xsd2-npcs" data-xsd-slot="16">'+(st.在场角色||[]).map(n=>'<article class="xsd2-npc">'+avatar(n.名)+'<div><h4>'+esc(n.名)+' <small>'+esc(n.修为||'')+'</small></h4><div>关系：'+esc(n.关系||'未明')+'</div><div>情况：'+esc(n.情况||'无')+'</div><div>心境：'+esc(n.心境||'无')+'</div><div>神态：'+esc(n.神态||'无')+'</div></div></article>').join('')+'</div>'+
@@ -429,7 +429,6 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       '<details><summary>风闻与气象</summary><dl>'+field('近闻',13)+field('远闻',14)+field('天气',15)+'</dl></details>'+
       '<div data-xsd-slot="17"></div><footer class="xsd2-foot">暗处 · '+esc(st.暗处||'无')+' ｜ 持续背景 · '+esc(st.active_area||'无')+(Object.keys(s.manual).length?' ｜ 存在人工设置':'')+'</footer><p class="xsd2-feedback" role="status" aria-live="polite"></p>';
     plugins.push(mountPlayerAvatar(doc,root.querySelector('[data-player-avatar-slot]'),s,options,report));
-    root.querySelector('[data-storage]').onclick=()=>{const fold=root.querySelector('[data-storage-fold]');fold.open=!fold.open;};
     root
       .querySelectorAll("details")
       .forEach((x, i) => (x.open = folds[i] || false));

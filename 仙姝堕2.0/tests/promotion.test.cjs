@@ -161,3 +161,15 @@ test('已有快照全部不兼容时停止初始化，不覆盖原有记录为�
  const h=fixture();await h.ready();const old=JSON.stringify(h.chat[0].variables);h.chat[0].swipe_id=1;
  const restored=createDispatcher(h.adapter,data);await assert.rejects(restored.restore(),/保护存档/);assert.equal(JSON.stringify(h.chat[0].variables),old);
 });
+
+test('正常输入不因回复格式变化重放完成判定，未完成回报被新自由输入替代时撤回指令',async()=>{
+ const h=fixture();await h.ready();await h.click('yhrNight');await h.reply('本次场景已经发生。');await h.click('yhrFinish');await h.reply(h.report('是'));
+ h.chat.at(-1).mes+='\n';await h.r.replay('normal');assert.equal(h.stage(),'stage02');assert.equal(h.r.getSnapshot().pending,null);assert.ok(!h.prompts.at(-1).includes('Promotion_result'));
+ const k=fixture();await k.ready();await k.click('yhrNight');await k.reply('本次场景已经发生。');await k.click('yhrFinish');
+ k.chat.push({is_user:true,mes:'请她喝酒'});await k.r.replay('normal');assert.equal(k.r.getSnapshot().pending,null);assert.ok(k.r.getSnapshot().activeEvent);assert.ok(!k.prompts.at(-1).includes('Promotion_result'));await k.reply('她接过酒杯。');assert.equal(k.stage(),'stage01');
+});
+test('删掉完成回复撤回判定但保留本次故事与好感，完成可以重新点击',async()=>{
+ const h=fixture();await h.ready();await h.click('yhrNight');await h.reply('本次场景已经发生。');await h.click('yhrFinish');const oldCode=h.r.getSnapshot().pending.actionCode;await h.reply(h.report('是'));
+ h.chat.pop();await h.r.restore({afterDelete:true});assert.equal(h.stage(),'stage01');assert.equal(h.r.getSnapshot().pending,null);assert.ok(h.r.getSnapshot().activeEvent);assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,20);assert.ok(!h.prompts.at(-1).includes('Promotion_result'));
+ await h.click('yhrFinish');assert.notEqual(h.r.getSnapshot().pending.actionCode,oldCode);await h.reply(h.report('是'));assert.equal(h.stage(),'stage02');
+});

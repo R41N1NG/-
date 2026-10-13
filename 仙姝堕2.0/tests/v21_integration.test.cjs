@@ -39,7 +39,7 @@ test('心迹真实DOM：身份过滤四节点、点击授权中控、活动/历�
 });
 test('重新构建必须包含新面板与上限代码，PNG和latest一致',()=>{
  const {bundle,unpack}=require('../build');const script=bundle();assert.ok(script.includes('xsd2-favor'));assert.ok(script.includes('function favorCap'));assert.ok(script.includes('data-heart-node'));
- const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v30.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.30');
+ const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v31.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.31');
 });
 test('开局容器独立于两翼布局，入世后回到主卷，重新开局可再次移出',()=>{
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document;let s=null;
@@ -49,12 +49,12 @@ test('开局容器独立于两翼布局，入世后回到主卷，重新开局�
  s=state();p.render();assert.ok(doc.querySelector('.xsd2-hud').parentElement.classList.contains('xsd2-stagebar'));assert.equal(doc.querySelector('.xsd2-stagebar').style.display,'');
  s=null;p.render();assert.equal(doc.querySelector('.xsd2-opening-root').parentElement.tagName,'MAIN');p.destroy();d.window.close();
 });
-test('定稿新版主卷：卷中录标题、身份铭牌、文书行与储物入口，未获纹章有真实图像',()=>{
+test('定稿新版主卷：卷中录标题、身份铭牌、文书行与唯一储物折叠栏，未获纹章有真实图像',()=>{
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document,s=state();
  const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}},data,()=>{});
- assert.equal(doc.querySelector('.xsd2-head h1').textContent,'卷中錄');assert.ok(doc.querySelector('.xsd2-plaque'));assert.equal(doc.querySelectorAll('.xsd2-document>.xsd2-row').length,8);
+ assert.equal(doc.querySelector('.xsd2-head h1').textContent,'卷中錄');assert.ok(doc.querySelector('.xsd2-plaque'));assert.equal(doc.querySelectorAll('.xsd2-document>.xsd2-row').length,7);
  assert.ok([...doc.querySelectorAll('[data-xsd2-wing] img')].every(i=>i.src.startsWith('data:image/webp;base64,')));
- doc.querySelector('[data-storage]').click();assert.equal(doc.querySelector('[data-storage-fold]').open,true);p.destroy();d.window.close();
+ assert.equal(doc.querySelector('[data-storage]'),null);assert.equal(doc.querySelectorAll('[data-storage-fold]').length,1);doc.querySelector('[data-storage-fold]').open=true;assert.equal(doc.querySelector('[data-storage-fold]').open,true);p.destroy();d.window.close();
 });
 test('玄鉴十三名签均可切换；两种退出、背景和Esc关闭清遮罩，重开无死锁',()=>{
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document,s=state();
@@ -110,6 +110,6 @@ test('场景候选随机选择只来自对应图片池，同楼重绘稳定，�
 test('心迹只展示事件名和实际分值；好感协议显示正则隐藏闭合/漏闭标签且保留状态块',()=>{
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document,s=state();s.stat_data.favor_log={叶红缨:[{label:'对饮',delta:2,via:'yh_gongyin',turn:4,note:'正文证据不应显示'}]};
  const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}},data,()=>{});doc.querySelector('[data-favor="叶红缨"]').click();const text=doc.querySelector('.xsd2-flog li').textContent;assert.equal(text,'对饮+2');assert.ok(!doc.querySelector('.xsd2-favor').textContent.includes('yh_gongyin'));assert.ok(!doc.querySelector('.xsd2-favor').textContent.includes('正文证据'));
- const card=require('../build').unpack(fs.readFileSync(path.join(__dirname,'../dist/仙姝堕2.0·框架测试-v30.png')));const x=card.data.extensions.regex_scripts.find(x=>x.id==='xsd2-hide-favor-report');const end=x.findRegex.lastIndexOf('/'),re=new RegExp(x.findRegex.slice(1,end),x.findRegex.slice(end+1));
+ const card=require('../build').unpack(fs.readFileSync(path.join(__dirname,'../dist/仙姝堕2.0·框架测试-v31.png')));const x=card.data.extensions.regex_scripts.find(x=>x.id==='xsd2-hide-favor-report');const end=x.findRegex.lastIndexOf('/'),re=new RegExp(x.findRegex.slice(1,end),x.findRegex.slice(end+1));
  for(const close of ['</好感事件>','']){const raw='故事正文。<好感事件>叶红缨｜锚点 yh_gongyin｜依据：故事正文。'+close+'<Status_block>状态</Status_block>';assert.equal(raw.replace(re,''),'故事正文。<Status_block>状态</Status_block>');}p.destroy();d.window.close();
 });
