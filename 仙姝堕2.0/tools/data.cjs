@@ -55,7 +55,7 @@ function source(root) {
     registry +
     "\n" +
     rules +
-    "\nreturn {IDENTITIES,IDENTITY_FACTION,ALL_FIELDS,FIELD_TABLE,FORM_OF_HOLDERS,HOLDER_TO_RELIC,DEFLOWER_HARD_RES,openFieldsFor,RELIC_PILOT_CONFIG,getRelicStage,parseRelicAction,validateRelicAction,calcRelicProgress,hasRelicPhysiologicalResponse,hasRelicStage3Response,hasRelicStage4Response};};"
+    "\nreturn {IDENTITIES,IDENTITY_FACTION,ALL_FIELDS,FIELD_TABLE,FORM_OF_HOLDERS,HOLDER_TO_RELIC,DEFLOWER_HARD_RES,openFieldsFor,RELIC_PILOT_CONFIG,RELIC_STAGE_ACTIONS,relicEvidenceProse,getRelicStage,parseRelicAction,validateRelicAction,calcRelicProgress,hasRelicPhysiologicalResponse,hasRelicStage3Response,hasRelicStage4Response};};"
   );
 }
 function load(root) {

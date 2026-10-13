@@ -895,3 +895,59 @@ test('漏申报兜底排除计划否定、思考、回忆、错人和未成形�
  await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':1}});h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'本回合赵无忧对叶红缨内射已发生。'));assert.equal(h.r.getSnapshot().relics.zhuojiu.stages[2].count,1);
  h.c.chat.at(-1).mes=status({},'本回合没有发生互动。');await h.r.settleStory();assert.equal(h.r.getSnapshot().relics.zhuojiu,undefined);
 });
+
+test('十三名器×三个进度阶段：漏申报和显式申报统一入账、不双算、不会串阶或串名器',async()=>{
+ const configs=Object.values(data.rules({}).RELIC_PILOT_CONFIG);assert.equal(configs.length,13);
+ for(const cfg of configs)for(const stage of [1,2,3]){
+  const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{['relicStage.'+cfg.id]:stage}});
+  const action={1:'内射',2:'神魂双修',3:'本源共鸣'}[stage];
+  for(let n=1;n<=2;n++){
+   h.c.chat.push({is_user:true,mes:'继续'});
+   await h.reply(status(n===2?{名器互动:cfg.names[0]+'｜赵无忧｜'+action}:{},'本回合赵无忧与'+cfg.owner+'完成'+action+'。'));
+   await h.r.settleStory();assert.equal(h.r.getSnapshot().relics[cfg.id].stages[stage+1].count,n,cfg.id+' stage'+stage);
+   assert.equal(Object.keys(h.r.getSnapshot().relics).length,1,cfg.id+'不能给其他名器入账');
+   assert.equal(data.rules(h.r.getSnapshot().stat_data).getRelicStage(cfg.id,h.r.getSnapshot().known),stage);
+  }
+ }
+});
+test('十三名器高阶质变只属于对应持有者；其他角色、计划、回忆、思考和标签不能提供实证',()=>{
+ const R=data.rules({}),configs=Object.values(R.RELIC_PILOT_CONFIG);
+ for(const cfg of configs){
+  const other=configs.find(x=>x.owner!==cfg.owner && !cfg.ownerAliases.includes(x.owner));
+  for(const [check,event] of [[R.hasRelicStage3Response,'动情配合'],[R.hasRelicStage4Response,'神异质变']]){
+   assert.equal(check(cfg.id,cfg.owner+'已发生'+event+'。'),true,cfg.id);
+   for(const prose of [cfg.owner+'在场。'+other.owner+'已发生'+event+'。',cfg.owner+'计划发生'+event+'。',cfg.owner+'回忆上次发生'+event+'。','<think>'+cfg.owner+'已发生'+event+'。</think>','<Status_block>'+cfg.owner+'已发生'+event+'。</Status_block>'])assert.equal(check(cfg.id,prose),false,cfg.id+': '+prose);
+  }
+  const K={[cfg.formKey]:true,[cfg.stage2Key]:true};
+  const a=R.parseRelicAction(cfg.names[0]+'｜赵无忧｜神魂双修');
+  assert.equal(R.validateRelicAction(a,cfg.owner+'在场。'+other.owner+'与赵无忧完成神魂双修。',K,'赵无忧').ok,false,cfg.id);
+ }
+});
+test('高阶继续按原动作门槛计数；仅内射不增加二升三，达标缺少质变不跳阶',async()=>{
+ for(const stage of [2,3]){
+  const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':stage}});
+  await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['relicStage.zhuojiu']}});
+  h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'本回合赵无忧对叶红缨内射已发生。'));assert.equal(h.r.getSnapshot().relics.zhuojiu,undefined);
+  for(let n=1;n<=3;n++){h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'本回合赵无忧与叶红缨完成'+(stage===2?'神魂双修':'本源共鸣')+'。'));}
+  const s=h.r.getSnapshot();assert.equal(s.relics.zhuojiu.stages[stage+1].count,3);assert.equal(s.relics.zhuojiu.stages[stage+1].ready,true);assert.equal(data.rules(s.stat_data).getRelicStage('zhuojiu',s.known),stage);
+ }
+});
+
+test('二升三/三升四贡献按当前楼层撤回，普通内射显式申报也不能绕过高阶门槛',async()=>{
+ for(const stage of [2,3]){
+  const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.jiuyou':stage}});
+  h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({名器互动:'九幽玄阴穴｜赵无忧｜内射'},'本回合赵无忧对孤月内射已发生。'));assert.equal(h.r.getSnapshot().relics.jiuyou,undefined);
+  const action=stage===2?'神魂双修':'本源共鸣';h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'本回合赵无忧与孤月完成'+action+'。'));assert.equal(h.r.getSnapshot().relics.jiuyou.stages[stage+1].count,1);
+  h.c.chat.pop();await h.r.restore();assert.equal(h.r.getSnapshot().relics.jiuyou,undefined);
+  await h.reply(status({},'孤月计划与赵无忧完成'+action+'。'));assert.equal(h.r.getSnapshot().relics.jiuyou,undefined);
+ }
+});
+
+test('持有者先在前句出现、后句用代称时仍能计数；途中出现其他持有者则停止归属',async()=>{
+ for(const stage of [1,2,3]){
+  const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':stage}});
+  const action={1:'内射',2:'神魂双修',3:'本源共鸣'}[stage];h.c.chat.push({is_user:true,mes:'继续'});
+  await h.reply(status({},'叶红缨在场。你与她完成'+action+'。'));assert.equal(h.r.getSnapshot().relics.zhuojiu.stages[stage+1].count,1);
+  h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'叶红缨在场。孤月走来。你与她完成'+action+'。'));assert.equal(h.r.getSnapshot().relics.zhuojiu.stages[stage+1].count,1);
+ }
+});

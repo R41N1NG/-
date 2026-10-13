@@ -11,6 +11,7 @@
  * ═════════════════════════════════════════════════════════════════════ */
 const COMMON_STAGE2_ACTIONS = ['高潮', '绝顶', '内射高潮', '动情配合', '深度交合', '神魂交契', '神魂双修', '神魂禁制', '植入禁制', '奴种侵蚀', '奴种深植'];
 const COMMON_STAGE3_ACTIONS = ['极乐双修', '本源共鸣', '天地机缘', '极乐交欢', '道韵化形', '神异质变', '天魔同化'];
+const RELIC_STAGE_ACTIONS = {2: COMMON_STAGE2_ACTIONS, 3: COMMON_STAGE3_ACTIONS};
 const RELIC_PILOT_CONFIG = {
   zhuojiu: {
     id: 'zhuojiu',
@@ -285,6 +286,29 @@ function parseRelicAction(value) {
   return null;
 }
 
+/** Keep evidence attached to this holder, including nearby pronoun sentences.
+ * Other named holders reset the context; thoughts, dialogue and non-events do
+ * not establish an action or a stage response. */
+function relicEvidenceProse(relicId, prose) {
+  const cfg=RELIC_PILOT_CONFIG[relicId];
+  if(!cfg)return '';
+  const aliases=cfg.ownerAliases.filter(x=>x!=='师姐').concat(cfg.names.filter(x=>x.length>3));
+  const others=Object.values(RELIC_PILOT_CONFIG).filter(x=>x.id!==relicId)
+    .flatMap(x=>x.ownerAliases.filter(a=>a!=='师姐'&&!aliases.includes(a)));
+  const visible=String(prose || '')
+    .replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi,'')
+    .replace(/<(?:Status_block|details)\b[^>]*>[\s\S]*?<\/(?:Status_block|details)>/gi,'')
+    .replace(/[「“"][^」”"\n]*[」”"]/g,'');
+  let ownerContext=false;
+  const evidence=[];
+  for(const line of visible.split(/[。！？\n]/)){
+    if(others.some(a=>line.includes(a))){ownerContext=false;continue;}
+    if(aliases.some(a=>line.includes(a)))ownerContext=true;
+    if(ownerContext && !/据说|听说|传闻|计划|打算|准备|想要|希望|将要|即将|可能|假如|如果|是否|未|没有|没能|不曾|并不|不是|不会|不愿|讨论|提及|解释|说明|之前|上次|曾经|回忆|记得/.test(line))evidence.push(line);
+  }
+  return evidence.join('。');
+}
+
 /** 核验名器互动申报（纯函数） */
 function validateRelicAction(act, prose, known, currentIdentity) {
   if (!act || !act.relicId) return { ok: false, why: '无效或未知的动作申报' };
@@ -311,11 +335,11 @@ function validateRelicAction(act, prose, known, currentIdentity) {
     return { ok: false, why: `名器「${cfg.names[0]}」已达第四境（极乐），四阶大圆满已闭合` };
   }
 
-  const pText = String(prose || '');
+  const pText = relicEvidenceProse(act.relicId,prose);
 
   // 3. 阶段准入与进阶动作检查（守卫反例 9：已达成第二境拒计一升二点数）
-  const STAGE2_ACTIONS = ['高潮', '绝顶', '内射高潮', '动情配合', '深度交合', '神魂交契', '神魂双修', '神魂禁制', '植入禁制', '奴种侵蚀', '奴种深植'];
-  const STAGE3_ACTIONS = ['极乐双修', '本源共鸣', '天地机缘', '极乐交欢', '道韵化形', '神异质变', '天魔同化'];
+  const STAGE2_ACTIONS = RELIC_STAGE_ACTIONS[2];
+  const STAGE3_ACTIONS = RELIC_STAGE_ACTIONS[3];
 
   if (curStage === 2) {
     const isStage2Act = STAGE2_ACTIONS.includes(act.action) || STAGE3_ACTIONS.includes(act.action);
@@ -492,7 +516,7 @@ function hasRelicPhysiologicalResponse(relicId, prose) {
   const counterNeg = /不仅没有|非但没有|不仅不|非但非|反而|不再/;
   const response = /自发迎合|生理自发|本能迎合|自发蠕动|紧紧缠裹|主动缠裹|疯狂绞吸|情动迎合|名器二阶|二阶「?情动」?|(?:自发|主动|不由自主|本能地?).{0,15}(?:绞紧|吮吸|收缩|蠕动|迎合|吸附|抽搐|拖拽|咬噬|吞咽|绞吸)|(?:内壁|花房|媚肉|穴肉|甬道|名器|阴道|小穴|蜜穴|玉穴|肉壁|肉穴|花穴|穴口|子宫|后庭|菊径|谷道|后门|双峰|雪乳|乳房|乳肉|乳尖|双足|足心|足趾|肉芽).{0,25}(?:痉挛|蠕动|抽搐|吮吸|缠裹|吸附|收缩|开合|扣握|绞吸|吞咽|咬噬)|(?:本能|自主|自发|不由自主|生理).{0,20}(?:迎合|蠕动|缠裹|吸附|收缩|吮吸|开合|绞吸|抽搐|吞咽|咬噬)/g;
 
-  const proseStr = String(prose || '');
+  const proseStr = relicEvidenceProse(relicId,prose);
   const hasOwner = cfg.ownerAliases.some(a => proseStr.includes(a)) || cfg.names.some(n => proseStr.includes(n));
   if (!hasOwner) return false;
 
@@ -530,7 +554,7 @@ function hasRelicPhysiologicalResponse(relicId, prose) {
 function hasRelicStage3Response(relicId, prose) {
   const cfg = RELIC_PILOT_CONFIG[relicId];
   if (!cfg) return false;
-  const proseStr = String(prose || '');
+  const proseStr = relicEvidenceProse(relicId,prose);
   if (!proseStr) return false;
 
   const hasOwner = cfg.ownerAliases.some(a => proseStr.includes(a)) || cfg.names.some(n => proseStr.includes(n));
@@ -563,7 +587,7 @@ function hasRelicStage3Response(relicId, prose) {
 function hasRelicStage4Response(relicId, prose) {
   const cfg = RELIC_PILOT_CONFIG[relicId];
   if (!cfg) return false;
-  const proseStr = String(prose || '');
+  const proseStr = relicEvidenceProse(relicId,prose);
   if (!proseStr) return false;
 
   const hasOwner = cfg.ownerAliases.some(a => proseStr.includes(a)) || cfg.names.some(n => proseStr.includes(n));
