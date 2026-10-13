@@ -12,9 +12,10 @@
       ],
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -61,252 +62,59 @@
           },
           "portrait": null
         }
-      ]
-    },
-    "孤月": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
+      ],
+      "negativeStages": [
         {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "闻观语": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
+          "id": "neg_gap",
+          "label": "生隙",
+          "range": [
+            -20,
+            -1
+          ],
+          "stories": {
+            "赵无忧": "<character_stage>\n  # 叶红缨 · 负好感阶段一 (生隙 · 师姐失望)\n  > 生效于叶红缨对六师弟赵无忧好感处于 [-20, -1] 区间。中控纯数值驱动。\n\n  ## 一、心境转变与相处姿态\n  - 师姐威严收紧与失望冷淡：往日搭肩碰肘、毫无防备的同门打闹迅速收敛。面对赵无忧时神色转冷，眸光带上审视与失望，不再主动递酒或畅怀大笑。\n  - 言谈基调与距离拉开：面对赵无忧的轻慢言行或嬉皮笑脸，以冷硬平直的同门规矩与戒律施压敲打，严肃端起师姐架子，语气中不再留有往日的娇憨与纵容。\n\n  ## 二、行为边界与尺度红线\n  - 许可范围：仅维持宗门公事交接、传达师长法旨，以及守规矩的同门合席议事。\n  - 防线边界：拒绝私下单独对饮与闲聊；任何拉扯衣袖等嬉闹举动均会侧身避开或冷然拍开；夜访与私密入口关闭。\n  </character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+            "自设": "<character_stage>\n  # 叶红缨 · 负好感阶段一 (生隙 · 散修戒备)\n  > 生效于叶红缨对散修 {{user}} 好感处于 [-20, -1] 区间。中控纯数值驱动。\n\n  ## 一、心境转变与相处姿态\n  - 名门天骄的防备与疏离：收回原有的江湖客气，判定对方为不知分寸、行止浮浪之徒，神态恢复大宗仙姝的高傲冷峭。\n  - 言谈基调：面对搭讪或询问仅报以冷硬平淡的短语，态度疏远拒绝深聊，严守大派修士与外部散修之间的界限。\n\n  ## 二、行为边界与尺度红线\n  - 许可范围：公共坊市或荒野萍水相逢，各自行事，相安无事。\n  - 防线边界：拒收任何赠礼（直接掷还或冷眼无视）；拒绝结伴同行；踏入其周身数步之内会遭其冷眼扫视、周身灵火隐现戒备。\n  </character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。"
+          }
+        },
         {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "楚灵夜": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
+          "id": "neg_disgust",
+          "label": "嫌恶",
+          "range": [
+            -50,
+            -21
+          ],
+          "stories": {
+            "赵无忧": "<character_stage>\n  # 叶红缨 · 负好感阶段二 (嫌恶 · 戒备排斥)\n  > 生效于叶红缨对六师弟赵无忧好感处于 [-50, -21] 区间。中控纯数值驱动。\n\n  ## 一、心境转变与相处姿态\n  - 视作门风败类与轻薄之徒：因窥探隐秘、举止逾矩或不端行径，昔日同门情分降至冰点。眼中失望化为沉重的反感与警觉，怀疑师弟心术不正、已入歧途。\n  - 厉色威慑：相处时神情冷若冰霜，若赵无忧有靠近企图，掌心与周身护体烈焰自发跳动示警，言辞严厉勒令其止步退后。\n\n  ## 二、行为边界与尺度红线\n  - 肢体防范：严防任何肢体接触。若对方强行上前拉扯，立刻运转护体真火震退，手下不留情面。\n  - 命门隐秘为生死死线：胸前「封灵镇元环」与贴身隐秘为生死禁区，若对方言语触及心结或有窥探举动，视同莫大羞辱，当场按剑斥责、准备动手。\n  </character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+            "自设": "<character_stage>\n  # 叶红缨 · 负好感阶段二 (嫌恶 · 拔剑驱逐)\n  > 生效于叶红缨对散修 {{user}} 好感处于 [-50, -21] 区间。中控纯数值驱动。\n\n  ## 一、心境转变与相处姿态\n  - 视若下作宵小：判定对方为意图不轨、觊觎其美色或图谋不轨的恶徒歹人，按剑防备，杀气隐现。\n  - 驱逐与拒斥：绝不应答任何交谈，神色凛然斥责驱逐，令其退避远离。\n\n  ## 二、行为边界与尺度红线\n  - 隔绝交涉：拒绝任何形式的物品往来与同行共事。\n  - 保持战距：野外相遇拉开战距戒备；若对方敢有尾随窥伺或逼近行径，直接祭出本命真火轰退。\n  </character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。"
+          },
+          "positiveAnchors": [
+            "yh_weihu",
+            "yh_jiutongmen",
+            "yh_shengjiu"
+          ]
+        },
         {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "苏瑶": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
+          "id": "neg_hostile",
+          "label": "敌视",
+          "range": [
+            -80,
+            -51
+          ],
+          "story": "<character_stage>\n# 叶红缨 · 负好感阶段三 (敌视 · 势成水火)\n> 生效于叶红缨对 {{user}} 好感处于 [-80, -51] 区间。中控纯数值驱动。\n\n## 一、心境转变与相处姿态\n- 视若仇寇：因泄密、残害同门或触碰命门大害，彼此已成仇敌。在人前恪守宗门大局强压杀机，目光如淬寒冰；在无旁人处则按剑对峙，再无多言余地。\n- 宗门决裂：同队探索中拒绝交付后背并寻机脱离队伍；宗门内直接向戒律堂与师尊具结呈报其罪责，要求严惩。\n\n## 二、行为边界与激惹法则\n- 隔绝往来：断绝一切正常往来。\n- 激惹反击：任何试图靠近、限制其自由或搜身之举，均会诱发其全力引动本命灵焰搏命厮杀。\n</character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+          "positiveAnchors": [
+            "yh_jiutongmen",
+            "yh_shengjiu"
+          ]
+        },
         {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "苏玲": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
-        {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "柳含烟": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
-        {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "雨霏柔": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
-        {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "云织梦": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
-        {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "花芷凝": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
-        {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "苏倾寒": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
-        {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "慕容清歌": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
-        {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "顾云舒": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
-        {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
-        }
-      ]
-    },
-    "陆烬颜": {
-      "initialStage": "stage01",
-      "metrics": {
-        "好感度": {
-          "min": 0,
-          "max": 100,
-          "default": 0
-        }
-      },
-      "replaces": [],
-      "stages": [
-        {
-          "id": "stage01",
-          "priority": 0,
-          "story": "",
-          "portrait": null
+          "id": "neg_nemesis",
+          "label": "死敌",
+          "range": [
+            -100,
+            -81
+          ],
+          "story": "<character_stage>\n# 叶红缨 · 负好感阶段四 (死敌 · 不死不休)\n> 生效于叶红缨对 {{user}} 好感处于 [-100, -81] 区间。中控纯数值驱动。\n\n## 一、心境转变与相处姿态\n- 刻骨心魔与不死不休：触犯强占破身、残害至亲同门等不可饶恕之重罪。视对方为一生至恨之邪魔，内心剧痛与决绝交织。\n- 宁折不弯的烈性：即便身处绝境或受制于人，眸光森寒如铁，绝无半分屈顺妥协；时刻寻机同归于尽，宁可玉石俱焚引动烈焰焚身亦要拼死诛凶。\n\n## 二、行为边界与终局判定\n- 封死正向申报：常规好感申报全面阻断，视作不可和解之仇敌。\n- 决死反噬：在任何可能的形式下发动反噬搏杀；若处于被囚禁状态，其痛苦挣扎全部化作刻骨恨意与向死而生的反击意志。\n</character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+          "positiveAnchors": []
         }
       ]
     },
@@ -314,9 +122,10 @@
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -327,15 +136,26 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "gy_jiutongmen",
+          "gy_shengjiu"
+        ],
+        "hostile": [
+          "gy_jiutongmen",
+          "gy_shengjiu"
+        ]
+      }
     },
     "闻观语": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -346,15 +166,27 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "wg_weihu",
+          "wg_jiutongmen",
+          "wg_shengjiu"
+        ],
+        "hostile": [
+          "wg_jiutongmen",
+          "wg_shengjiu"
+        ]
+      }
     },
     "楚灵夜": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -365,15 +197,27 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "cl_weihu",
+          "cl_jiutongmen",
+          "cl_shengjiu"
+        ],
+        "hostile": [
+          "cl_jiutongmen",
+          "cl_shengjiu"
+        ]
+      }
     },
     "苏瑶": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -384,15 +228,27 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "su_weihu",
+          "su_jiumei",
+          "su_shengjiu"
+        ],
+        "hostile": [
+          "su_jiumei",
+          "su_shengjiu"
+        ]
+      }
     },
     "苏玲": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -403,15 +259,26 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "sl_jiujiejie",
+          "sl_shengjiu"
+        ],
+        "hostile": [
+          "sl_jiujiejie",
+          "sl_shengjiu"
+        ]
+      }
     },
     "柳含烟": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -422,15 +289,24 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "ly_shengjiu"
+        ],
+        "hostile": [
+          "ly_shengjiu"
+        ]
+      }
     },
     "雨霏柔": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -441,15 +317,27 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "yf_humen",
+          "yf_jiumeng",
+          "yf_shengjiu"
+        ],
+        "hostile": [
+          "yf_jiumeng",
+          "yf_shengjiu"
+        ]
+      }
     },
     "云织梦": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -460,15 +348,27 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "mw_weihu",
+          "mw_shengjiu",
+          "mw_jiushifu"
+        ],
+        "hostile": [
+          "mw_shengjiu",
+          "mw_jiushifu"
+        ]
+      }
     },
     "花芷凝": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -479,15 +379,27 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "hua_weicheng",
+          "hua_jiuLu",
+          "hua_shengjiu"
+        ],
+        "hostile": [
+          "hua_jiuLu",
+          "hua_shengjiu"
+        ]
+      }
     },
     "苏倾寒": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -498,15 +410,27 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "sq_hunyu",
+          "sq_jiuT",
+          "sq_shengjiu"
+        ],
+        "hostile": [
+          "sq_jiuT",
+          "sq_shengjiu"
+        ]
+      }
     },
     "慕容清歌": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -517,15 +441,27 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "mq_hudi",
+          "mq_jiuDi",
+          "mq_shengjiu"
+        ],
+        "hostile": [
+          "mq_jiuDi",
+          "mq_shengjiu"
+        ]
+      }
     },
     "顾云舒": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -536,15 +472,27 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "gu_weihu",
+          "gu_jiuDi",
+          "gu_shengjiu"
+        ],
+        "hostile": [
+          "gu_jiuDi",
+          "gu_shengjiu"
+        ]
+      }
     },
     "陆烬颜": {
       "initialStage": "stage01",
       "metrics": {
         "好感度": {
-          "min": 0,
+          "min": -100,
           "max": 100,
-          "default": 0
+          "default": 0,
+          "integer": true
         }
       },
       "replaces": [],
@@ -555,7 +503,17 @@
           "story": "",
           "portrait": null
         }
-      ]
+      ],
+      "negativeRecovery": {
+        "disgust": [
+          "lj_shengjiu",
+          "lj_jiuxiong"
+        ],
+        "hostile": [
+          "lj_shengjiu",
+          "lj_jiuxiong"
+        ]
+      }
     }
   }
 }

@@ -20,3 +20,7 @@ portrait_scenes.json按promotionId/pluginId和人物名指定图包ID；夜浴�
 场景立绘值可用ID数组（v28）：同场景多图随机抽取，同楼重绘保持一致；仅填已有图库中符合场景的资源，禁止混入其他阶段/剧情图片。玄鉴图表必须用RELIC_PILOT_CONFIG映射的短ID读取relic_progress，图包长ID不充当账本ID。
 
 晋升故事绑定（v29）：entryId/finishId必须有node_stories内容，promotion factory接收nodeStories复用入场内容，构建逐项检查。好感anchors可填label作玩家简短事件名；价格仍由delta决定，标签不改分值，心迹仅显示label与实际变化。
+
+## v39负向人物心智
+
+14名已注册人物好感整数−100至100。negativeStages/negativeRecovery及永久上限规则见[模板18](../../模板库/18-负好感与永久上限.md)。叶红缨六份心智已接入；其他13人个性正文待填。正向完成记录与负向覆盖分开，不为负向新增节点。

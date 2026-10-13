@@ -10259,6 +10259,964 @@
     },
     "280": {
       "uid": 280,
+      "comment": "【人物阶段】叶红缨:neg_gap:赵无忧",
+      "key": [
+        "叶红缨",
+        "炎姬",
+        "五师姐",
+        "红缨师姐",
+        "红缨师妹",
+        "墨山道"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n  # 叶红缨 · 负好感阶段一 (生隙 · 师姐失望)\n  > 生效于叶红缨对六师弟赵无忧好感处于 [-20, -1] 区间。中控纯数值驱动。\n\n  ## 一、心境转变与相处姿态\n  - 师姐威严收紧与失望冷淡：往日搭肩碰肘、毫无防备的同门打闹迅速收敛。面对赵无忧时神色转冷，眸光带上审视与失望，不再主动递酒或畅怀大笑。\n  - 言谈基调与距离拉开：面对赵无忧的轻慢言行或嬉皮笑脸，以冷硬平直的同门规矩与戒律施压敲打，严肃端起师姐架子，语气中不再留有往日的娇憨与纵容。\n\n  ## 二、行为边界与尺度红线\n  - 许可范围：仅维持宗门公事交接、传达师长法旨，以及守规矩的同门合席议事。\n  - 防线边界：拒绝私下单独对饮与闲聊；任何拉扯衣袖等嬉闹举动均会侧身避开或冷然拍开；夜访与私密入口关闭。\n  </character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "281": {
+      "uid": 281,
+      "comment": "【人物阶段】叶红缨:neg_gap:自设",
+      "key": [
+        "叶红缨",
+        "炎姬",
+        "五师姐",
+        "红缨师姐",
+        "红缨师妹",
+        "墨山道"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n  # 叶红缨 · 负好感阶段一 (生隙 · 散修戒备)\n  > 生效于叶红缨对散修 {{user}} 好感处于 [-20, -1] 区间。中控纯数值驱动。\n\n  ## 一、心境转变与相处姿态\n  - 名门天骄的防备与疏离：收回原有的江湖客气，判定对方为不知分寸、行止浮浪之徒，神态恢复大宗仙姝的高傲冷峭。\n  - 言谈基调：面对搭讪或询问仅报以冷硬平淡的短语，态度疏远拒绝深聊，严守大派修士与外部散修之间的界限。\n\n  ## 二、行为边界与尺度红线\n  - 许可范围：公共坊市或荒野萍水相逢，各自行事，相安无事。\n  - 防线边界：拒收任何赠礼（直接掷还或冷眼无视）；拒绝结伴同行；踏入其周身数步之内会遭其冷眼扫视、周身灵火隐现戒备。\n  </character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "282": {
+      "uid": 282,
+      "comment": "【人物阶段】叶红缨:neg_disgust:赵无忧",
+      "key": [
+        "叶红缨",
+        "炎姬",
+        "五师姐",
+        "红缨师姐",
+        "红缨师妹",
+        "墨山道"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n  # 叶红缨 · 负好感阶段二 (嫌恶 · 戒备排斥)\n  > 生效于叶红缨对六师弟赵无忧好感处于 [-50, -21] 区间。中控纯数值驱动。\n\n  ## 一、心境转变与相处姿态\n  - 视作门风败类与轻薄之徒：因窥探隐秘、举止逾矩或不端行径，昔日同门情分降至冰点。眼中失望化为沉重的反感与警觉，怀疑师弟心术不正、已入歧途。\n  - 厉色威慑：相处时神情冷若冰霜，若赵无忧有靠近企图，掌心与周身护体烈焰自发跳动示警，言辞严厉勒令其止步退后。\n\n  ## 二、行为边界与尺度红线\n  - 肢体防范：严防任何肢体接触。若对方强行上前拉扯，立刻运转护体真火震退，手下不留情面。\n  - 命门隐秘为生死死线：胸前「封灵镇元环」与贴身隐秘为生死禁区，若对方言语触及心结或有窥探举动，视同莫大羞辱，当场按剑斥责、准备动手。\n  </character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "283": {
+      "uid": 283,
+      "comment": "【人物阶段】叶红缨:neg_disgust:自设",
+      "key": [
+        "叶红缨",
+        "炎姬",
+        "五师姐",
+        "红缨师姐",
+        "红缨师妹",
+        "墨山道"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n  # 叶红缨 · 负好感阶段二 (嫌恶 · 拔剑驱逐)\n  > 生效于叶红缨对散修 {{user}} 好感处于 [-50, -21] 区间。中控纯数值驱动。\n\n  ## 一、心境转变与相处姿态\n  - 视若下作宵小：判定对方为意图不轨、觊觎其美色或图谋不轨的恶徒歹人，按剑防备，杀气隐现。\n  - 驱逐与拒斥：绝不应答任何交谈，神色凛然斥责驱逐，令其退避远离。\n\n  ## 二、行为边界与尺度红线\n  - 隔绝交涉：拒绝任何形式的物品往来与同行共事。\n  - 保持战距：野外相遇拉开战距戒备；若对方敢有尾随窥伺或逼近行径，直接祭出本命真火轰退。\n  </character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "284": {
+      "uid": 284,
+      "comment": "【人物阶段】叶红缨:neg_hostile",
+      "key": [
+        "叶红缨",
+        "炎姬",
+        "五师姐",
+        "红缨师姐",
+        "红缨师妹",
+        "墨山道"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n# 叶红缨 · 负好感阶段三 (敌视 · 势成水火)\n> 生效于叶红缨对 {{user}} 好感处于 [-80, -51] 区间。中控纯数值驱动。\n\n## 一、心境转变与相处姿态\n- 视若仇寇：因泄密、残害同门或触碰命门大害，彼此已成仇敌。在人前恪守宗门大局强压杀机，目光如淬寒冰；在无旁人处则按剑对峙，再无多言余地。\n- 宗门决裂：同队探索中拒绝交付后背并寻机脱离队伍；宗门内直接向戒律堂与师尊具结呈报其罪责，要求严惩。\n\n## 二、行为边界与激惹法则\n- 隔绝往来：断绝一切正常往来。\n- 激惹反击：任何试图靠近、限制其自由或搜身之举，均会诱发其全力引动本命灵焰搏命厮杀。\n</character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "285": {
+      "uid": 285,
+      "comment": "【人物阶段】叶红缨:neg_nemesis",
+      "key": [
+        "叶红缨",
+        "炎姬",
+        "五师姐",
+        "红缨师姐",
+        "红缨师妹",
+        "墨山道"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n# 叶红缨 · 负好感阶段四 (死敌 · 不死不休)\n> 生效于叶红缨对 {{user}} 好感处于 [-100, -81] 区间。中控纯数值驱动。\n\n## 一、心境转变与相处姿态\n- 刻骨心魔与不死不休：触犯强占破身、残害至亲同门等不可饶恕之重罪。视对方为一生至恨之邪魔，内心剧痛与决绝交织。\n- 宁折不弯的烈性：即便身处绝境或受制于人，眸光森寒如铁，绝无半分屈顺妥协；时刻寻机同归于尽，宁可玉石俱焚引动烈焰焚身亦要拼死诛凶。\n\n## 二、行为边界与终局判定\n- 封死正向申报：常规好感申报全面阻断，视作不可和解之仇敌。\n- 决死反噬：在任何可能的形式下发动反噬搏杀；若处于被囚禁状态，其痛苦挣扎全部化作刻骨恨意与向死而生的反击意志。\n</character_stage>\n当前数值只决定相处态度，不补造玩家罪行、已发生战斗或未解锁的隐秘；原因与细节以实际历史和知情门禁为准。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "286": {
+      "uid": 286,
+      "comment": "【人物阶段】孤月:neg_gap",
+      "key": [
+        "孤月"
+      ],
+      "keysecondary": [],
+      "content": "【孤月 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "287": {
+      "uid": 287,
+      "comment": "【人物阶段】孤月:neg_disgust",
+      "key": [
+        "孤月"
+      ],
+      "keysecondary": [],
+      "content": "【孤月 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "288": {
+      "uid": 288,
+      "comment": "【人物阶段】孤月:neg_hostile",
+      "key": [
+        "孤月"
+      ],
+      "keysecondary": [],
+      "content": "【孤月 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "289": {
+      "uid": 289,
+      "comment": "【人物阶段】孤月:neg_nemesis",
+      "key": [
+        "孤月"
+      ],
+      "keysecondary": [],
+      "content": "【孤月 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "290": {
+      "uid": 290,
+      "comment": "【人物阶段】闻观语:neg_gap",
+      "key": [
+        "闻观语"
+      ],
+      "keysecondary": [],
+      "content": "【闻观语 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "291": {
+      "uid": 291,
+      "comment": "【人物阶段】闻观语:neg_disgust",
+      "key": [
+        "闻观语"
+      ],
+      "keysecondary": [],
+      "content": "【闻观语 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "292": {
+      "uid": 292,
+      "comment": "【人物阶段】闻观语:neg_hostile",
+      "key": [
+        "闻观语"
+      ],
+      "keysecondary": [],
+      "content": "【闻观语 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "293": {
+      "uid": 293,
+      "comment": "【人物阶段】闻观语:neg_nemesis",
+      "key": [
+        "闻观语"
+      ],
+      "keysecondary": [],
+      "content": "【闻观语 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "294": {
+      "uid": 294,
+      "comment": "【人物阶段】楚灵夜:neg_gap",
+      "key": [
+        "楚灵夜"
+      ],
+      "keysecondary": [],
+      "content": "【楚灵夜 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "295": {
+      "uid": 295,
+      "comment": "【人物阶段】楚灵夜:neg_disgust",
+      "key": [
+        "楚灵夜"
+      ],
+      "keysecondary": [],
+      "content": "【楚灵夜 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "296": {
+      "uid": 296,
+      "comment": "【人物阶段】楚灵夜:neg_hostile",
+      "key": [
+        "楚灵夜"
+      ],
+      "keysecondary": [],
+      "content": "【楚灵夜 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "297": {
+      "uid": 297,
+      "comment": "【人物阶段】楚灵夜:neg_nemesis",
+      "key": [
+        "楚灵夜"
+      ],
+      "keysecondary": [],
+      "content": "【楚灵夜 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "298": {
+      "uid": 298,
+      "comment": "【人物阶段】苏瑶:neg_gap",
+      "key": [
+        "苏瑶"
+      ],
+      "keysecondary": [],
+      "content": "【苏瑶 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "299": {
+      "uid": 299,
+      "comment": "【人物阶段】苏瑶:neg_disgust",
+      "key": [
+        "苏瑶"
+      ],
+      "keysecondary": [],
+      "content": "【苏瑶 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "300": {
+      "uid": 300,
+      "comment": "【人物阶段】苏瑶:neg_hostile",
+      "key": [
+        "苏瑶"
+      ],
+      "keysecondary": [],
+      "content": "【苏瑶 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "301": {
+      "uid": 301,
+      "comment": "【人物阶段】苏瑶:neg_nemesis",
+      "key": [
+        "苏瑶"
+      ],
+      "keysecondary": [],
+      "content": "【苏瑶 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "302": {
+      "uid": 302,
+      "comment": "【人物阶段】苏玲:neg_gap",
+      "key": [
+        "苏玲"
+      ],
+      "keysecondary": [],
+      "content": "【苏玲 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "303": {
+      "uid": 303,
+      "comment": "【人物阶段】苏玲:neg_disgust",
+      "key": [
+        "苏玲"
+      ],
+      "keysecondary": [],
+      "content": "【苏玲 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "304": {
+      "uid": 304,
+      "comment": "【人物阶段】苏玲:neg_hostile",
+      "key": [
+        "苏玲"
+      ],
+      "keysecondary": [],
+      "content": "【苏玲 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "305": {
+      "uid": 305,
+      "comment": "【人物阶段】苏玲:neg_nemesis",
+      "key": [
+        "苏玲"
+      ],
+      "keysecondary": [],
+      "content": "【苏玲 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "306": {
+      "uid": 306,
+      "comment": "【人物阶段】柳含烟:neg_gap",
+      "key": [
+        "柳含烟"
+      ],
+      "keysecondary": [],
+      "content": "【柳含烟 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "307": {
+      "uid": 307,
+      "comment": "【人物阶段】柳含烟:neg_disgust",
+      "key": [
+        "柳含烟"
+      ],
+      "keysecondary": [],
+      "content": "【柳含烟 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "308": {
+      "uid": 308,
+      "comment": "【人物阶段】柳含烟:neg_hostile",
+      "key": [
+        "柳含烟"
+      ],
+      "keysecondary": [],
+      "content": "【柳含烟 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "309": {
+      "uid": 309,
+      "comment": "【人物阶段】柳含烟:neg_nemesis",
+      "key": [
+        "柳含烟"
+      ],
+      "keysecondary": [],
+      "content": "【柳含烟 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "310": {
+      "uid": 310,
+      "comment": "【人物阶段】雨霏柔:neg_gap",
+      "key": [
+        "雨霏柔"
+      ],
+      "keysecondary": [],
+      "content": "【雨霏柔 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "311": {
+      "uid": 311,
+      "comment": "【人物阶段】雨霏柔:neg_disgust",
+      "key": [
+        "雨霏柔"
+      ],
+      "keysecondary": [],
+      "content": "【雨霏柔 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "312": {
+      "uid": 312,
+      "comment": "【人物阶段】雨霏柔:neg_hostile",
+      "key": [
+        "雨霏柔"
+      ],
+      "keysecondary": [],
+      "content": "【雨霏柔 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "313": {
+      "uid": 313,
+      "comment": "【人物阶段】雨霏柔:neg_nemesis",
+      "key": [
+        "雨霏柔"
+      ],
+      "keysecondary": [],
+      "content": "【雨霏柔 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "314": {
+      "uid": 314,
+      "comment": "【人物阶段】云织梦:neg_gap",
+      "key": [
+        "云织梦"
+      ],
+      "keysecondary": [],
+      "content": "【云织梦 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "315": {
+      "uid": 315,
+      "comment": "【人物阶段】云织梦:neg_disgust",
+      "key": [
+        "云织梦"
+      ],
+      "keysecondary": [],
+      "content": "【云织梦 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "316": {
+      "uid": 316,
+      "comment": "【人物阶段】云织梦:neg_hostile",
+      "key": [
+        "云织梦"
+      ],
+      "keysecondary": [],
+      "content": "【云织梦 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "317": {
+      "uid": 317,
+      "comment": "【人物阶段】云织梦:neg_nemesis",
+      "key": [
+        "云织梦"
+      ],
+      "keysecondary": [],
+      "content": "【云织梦 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "318": {
+      "uid": 318,
+      "comment": "【人物阶段】花芷凝:neg_gap",
+      "key": [
+        "花芷凝"
+      ],
+      "keysecondary": [],
+      "content": "【花芷凝 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "319": {
+      "uid": 319,
+      "comment": "【人物阶段】花芷凝:neg_disgust",
+      "key": [
+        "花芷凝"
+      ],
+      "keysecondary": [],
+      "content": "【花芷凝 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "320": {
+      "uid": 320,
+      "comment": "【人物阶段】花芷凝:neg_hostile",
+      "key": [
+        "花芷凝"
+      ],
+      "keysecondary": [],
+      "content": "【花芷凝 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "321": {
+      "uid": 321,
+      "comment": "【人物阶段】花芷凝:neg_nemesis",
+      "key": [
+        "花芷凝"
+      ],
+      "keysecondary": [],
+      "content": "【花芷凝 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "322": {
+      "uid": 322,
+      "comment": "【人物阶段】苏倾寒:neg_gap",
+      "key": [
+        "苏倾寒"
+      ],
+      "keysecondary": [],
+      "content": "【苏倾寒 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "323": {
+      "uid": 323,
+      "comment": "【人物阶段】苏倾寒:neg_disgust",
+      "key": [
+        "苏倾寒"
+      ],
+      "keysecondary": [],
+      "content": "【苏倾寒 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "324": {
+      "uid": 324,
+      "comment": "【人物阶段】苏倾寒:neg_hostile",
+      "key": [
+        "苏倾寒"
+      ],
+      "keysecondary": [],
+      "content": "【苏倾寒 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "325": {
+      "uid": 325,
+      "comment": "【人物阶段】苏倾寒:neg_nemesis",
+      "key": [
+        "苏倾寒"
+      ],
+      "keysecondary": [],
+      "content": "【苏倾寒 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "326": {
+      "uid": 326,
+      "comment": "【人物阶段】慕容清歌:neg_gap",
+      "key": [
+        "慕容清歌"
+      ],
+      "keysecondary": [],
+      "content": "【慕容清歌 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "327": {
+      "uid": 327,
+      "comment": "【人物阶段】慕容清歌:neg_disgust",
+      "key": [
+        "慕容清歌"
+      ],
+      "keysecondary": [],
+      "content": "【慕容清歌 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "328": {
+      "uid": 328,
+      "comment": "【人物阶段】慕容清歌:neg_hostile",
+      "key": [
+        "慕容清歌"
+      ],
+      "keysecondary": [],
+      "content": "【慕容清歌 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "329": {
+      "uid": 329,
+      "comment": "【人物阶段】慕容清歌:neg_nemesis",
+      "key": [
+        "慕容清歌"
+      ],
+      "keysecondary": [],
+      "content": "【慕容清歌 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "330": {
+      "uid": 330,
+      "comment": "【人物阶段】顾云舒:neg_gap",
+      "key": [
+        "顾云舒"
+      ],
+      "keysecondary": [],
+      "content": "【顾云舒 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "331": {
+      "uid": 331,
+      "comment": "【人物阶段】顾云舒:neg_disgust",
+      "key": [
+        "顾云舒"
+      ],
+      "keysecondary": [],
+      "content": "【顾云舒 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "332": {
+      "uid": 332,
+      "comment": "【人物阶段】顾云舒:neg_hostile",
+      "key": [
+        "顾云舒"
+      ],
+      "keysecondary": [],
+      "content": "【顾云舒 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "333": {
+      "uid": 333,
+      "comment": "【人物阶段】顾云舒:neg_nemesis",
+      "key": [
+        "顾云舒"
+      ],
+      "keysecondary": [],
+      "content": "【顾云舒 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "334": {
+      "uid": 334,
+      "comment": "【人物阶段】陆烬颜:neg_gap",
+      "key": [
+        "陆烬颜"
+      ],
+      "keysecondary": [],
+      "content": "【陆烬颜 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "335": {
+      "uid": 335,
+      "comment": "【人物阶段】陆烬颜:neg_disgust",
+      "key": [
+        "陆烬颜"
+      ],
+      "keysecondary": [],
+      "content": "【陆烬颜 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "336": {
+      "uid": 336,
+      "comment": "【人物阶段】陆烬颜:neg_hostile",
+      "key": [
+        "陆烬颜"
+      ],
+      "keysecondary": [],
+      "content": "【陆烬颜 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "337": {
+      "uid": 337,
+      "comment": "【人物阶段】陆烬颜:neg_nemesis",
+      "key": [
+        "陆烬颜"
+      ],
+      "keysecondary": [],
+      "content": "【陆烬颜 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "338": {
+      "uid": 338,
       "comment": "【好感事件表】叶红缨",
       "key": [],
       "keysecondary": [],
@@ -10271,8 +11229,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "281": {
-      "uid": 281,
+    "339": {
+      "uid": 339,
       "comment": "【好感事件表】孤月",
       "key": [],
       "keysecondary": [],
@@ -10285,8 +11243,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "282": {
-      "uid": 282,
+    "340": {
+      "uid": 340,
       "comment": "【好感事件表】闻观语",
       "key": [],
       "keysecondary": [],
@@ -10299,8 +11257,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "283": {
-      "uid": 283,
+    "341": {
+      "uid": 341,
       "comment": "【好感事件表】楚灵夜",
       "key": [],
       "keysecondary": [],
@@ -10313,8 +11271,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "284": {
-      "uid": 284,
+    "342": {
+      "uid": 342,
       "comment": "【好感事件表】苏瑶",
       "key": [],
       "keysecondary": [],
@@ -10327,8 +11285,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "285": {
-      "uid": 285,
+    "343": {
+      "uid": 343,
       "comment": "【好感事件表】苏玲",
       "key": [],
       "keysecondary": [],
@@ -10341,8 +11299,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "286": {
-      "uid": 286,
+    "344": {
+      "uid": 344,
       "comment": "【好感事件表】柳含烟",
       "key": [],
       "keysecondary": [],
@@ -10355,8 +11313,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "287": {
-      "uid": 287,
+    "345": {
+      "uid": 345,
       "comment": "【好感事件表】雨霏柔",
       "key": [],
       "keysecondary": [],
@@ -10369,8 +11327,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "288": {
-      "uid": 288,
+    "346": {
+      "uid": 346,
       "comment": "【好感事件表】云织梦",
       "key": [],
       "keysecondary": [],
@@ -10383,8 +11341,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "289": {
-      "uid": 289,
+    "347": {
+      "uid": 347,
       "comment": "【好感事件表】花芷凝",
       "key": [],
       "keysecondary": [],
@@ -10397,8 +11355,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "290": {
-      "uid": 290,
+    "348": {
+      "uid": 348,
       "comment": "【好感事件表】苏倾寒",
       "key": [],
       "keysecondary": [],
@@ -10411,8 +11369,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "291": {
-      "uid": 291,
+    "349": {
+      "uid": 349,
       "comment": "【好感事件表】慕容清歌",
       "key": [],
       "keysecondary": [],
@@ -10425,8 +11383,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "292": {
-      "uid": 292,
+    "350": {
+      "uid": 350,
       "comment": "【好感事件表】顾云舒",
       "key": [],
       "keysecondary": [],
@@ -10439,8 +11397,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "293": {
-      "uid": 293,
+    "351": {
+      "uid": 351,
       "comment": "【好感事件表】陆烬颜",
       "key": [],
       "keysecondary": [],
@@ -10453,8 +11411,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "294": {
-      "uid": 294,
+    "352": {
+      "uid": 352,
       "comment": "【区域背景】幽寂谷",
       "key": [],
       "keysecondary": [],
@@ -10467,8 +11425,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "295": {
-      "uid": 295,
+    "353": {
+      "uid": 353,
       "comment": "【大势背景】peace-v36",
       "key": [],
       "keysecondary": [],
@@ -10481,8 +11439,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：承平暗涌】\n南域表面承平，各大仙门开山大典举行，极乐密藏外层禁制生隙，幽寂秘境异动已有风闻。幽寂谷探查开放日期为1578年4月1日至5月30日；是否进入、探查及取得物品由对应局部节点决定。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "296": {
-      "uid": 296,
+    "354": {
+      "uid": 354,
       "comment": "【大势背景】calamity",
       "key": [],
       "keysecondary": [],
@@ -10495,8 +11453,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：南域大劫】\n极乐密藏封印已破，远古神诅席卷南域，原有元婴大能重创跌至金丹；炎雷子受创闭关。极乐太子已立天姝会四殿，正魔旧平衡瓦解。常规结婴受到神诅限制，名器是修士突破的少数途径之一。玩家当前境界以后台记录为准，符合本地名器条件仍可重新突破元婴。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "297": {
-      "uid": 297,
+    "355": {
+      "uid": 355,
       "comment": "【大势背景】beast",
       "key": [],
       "keysecondary": [],
@@ -10509,8 +11467,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：天溪兽潮】\n南域大劫及四殿分疆已经发生。大荒凶兽狂潮已合围天溪城，仙盟调兵协防，九龙焚天大阵开启，守城拉锯战已经爆发。这里只确认世界局势，不确认玩家参战、完成守城或城破；具体变化等待局部事件。神诅下名器仍是修士突破的少数途径之一。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "298": {
-      "uid": 298,
+    "356": {
+      "uid": 356,
       "comment": "【大势规则】中控调度",
       "key": [],
       "keysecondary": [],

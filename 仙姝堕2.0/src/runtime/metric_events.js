@@ -1,5 +1,5 @@
 "use strict";
-const { writeMetric, metricSpec } = require("./character_stages");
+const { writeMetric, metricSpec, canRecover } = require("./character_stages");
 
 // 数值事件申报：模型每轮至多一个 <好感事件> 标签，申报「档位」或「锚点ID」＋原文依据；
 // 分值、上限、冷却全部由配置与后台决定，模型只有举证权，没有定价权。
@@ -90,6 +90,7 @@ function createMetricEvents(defs, profiles, promotions) {
       return drop(stat, storyCount, "申报依据不在本回合正文中");
     const spec = metricSpec(profiles, cfg.character, cfg.metric.key);
     let current = stat.character_metrics?.[cfg.character]?.[cfg.metric.key] ?? spec.default;
+    writeMetric(stat,profiles,cfg.character,cfg.metric.key,current);
     let delta, via;
     if (cfg.metric.tiers && cfg.metric.tiers[parsed.target] !== undefined) {
       delta = cfg.metric.tiers[parsed.target];
@@ -110,8 +111,11 @@ function createMetricEvents(defs, profiles, promotions) {
         return drop(stat, storyCount, "锚点 " + anchorId + " 冷却中");
     }
     if (s.manual && s.manual["metric." + cfg.character + "." + cfg.metric.key] !== undefined){record(stat,cfg,via,0,storyCount,parsed.evidence);return drop(stat,storyCount,cfg.character+" 好感处于人工覆盖，自动申报拒绝");}
+    if(delta>0 && !canRecover(stat,profiles,cfg.character,via,parsed.evidence))return drop(stat,storyCount,"当前负好感档位不接受该正向事件");
     // 好感上限铁律：完成节点之前，好感不得越过该节点的数值
-    const cap = favorCap(stat, cfg.character, profiles);
+    const permanent=stat.character_metric_caps?.[cfg.character]?.[cfg.metric.key];
+    const cap = Math.min(favorCap(stat,cfg.character,profiles)??spec.max,Number.isFinite(permanent)?permanent:spec.max);
+    if(delta>0 && Number.isFinite(permanent) && current>=permanent){record(stat,cfg,via,0,storyCount,parsed.evidence);return drop(stat,storyCount,"好感永久上限为−50，不能恢复到−49及以上");}
     if (delta > 0 && cap !== null) {
       if (current >= cap){record(stat,cfg,via,0,storyCount,parsed.evidence);return drop(stat, storyCount, cfg.character + " 好感已达当前节点上限（" + cap + "）——完成对应专属剧情后方可继续累积");}
       if (current + delta > cap) delta = cap - current;

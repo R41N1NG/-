@@ -62,6 +62,7 @@ function createPromotionPlugin(definitions, storyCatalog = {}) {
   function getPrompt(s) {
     const cfg = definitions[state(s).currentId];
     if (!cfg || s.activeEvent?.pluginId !== PLUGIN_ID) return "";
+    if((s.stat_data.character_metrics?.[cfg.character]?.好感度??0)<0)return "当前关系已转为负好感，以中控当前负向心智为准；原正向专属剧情暂停，不继续演绎原亲密邀请或提交晋升。已完成阶段保留，玩家可自由行动修复关系。";
     return "【当前专属故事】"+cfg.label+"。承接已有历史及当前实际地点，沿用"+cfg.character+"原阶段设定。入口已开启，不反复重演敲门/入场，让玩家自由行动。人物阶段尚未晋升，等待玩家点击完成。正文出现结果或节点名称不会自动结算，不自动切换其他事件，不自行跳日。";
   }
   const plugin = {id:PLUGIN_ID,version:"1.0",select,settle,getPrompt,getDisplayText,

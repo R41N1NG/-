@@ -1,4 +1,5 @@
 "use strict";
+const {negativeStages}=require("./character_stages");
 function nodeEntryName(id) { return "【节点故事】" + id; }
 function metricEntryContent(cfg) {
   const rules = [
@@ -47,7 +48,7 @@ function storyEntries(catalog, profiles = {}, startId = 10000) {
       position:1, scanDepth:1, matchUser:true, matchCharacter:false,
       excludeRecursion:true, preventRecursion:true});
   }
-  for (const [name, cfg] of Object.entries(profiles)) for (const stage of cfg.stages || []) {
+  for (const [name, cfg] of Object.entries(profiles)) for (const stage of [...(cfg.stages || []),...negativeStages(cfg,name)]) {
     const keys = cfg.keys && cfg.keys.length ? cfg.keys : [name];
     if (stage.stories && typeof stage.stories === "object") {
       for (const [ident, content] of Object.entries(stage.stories)) {

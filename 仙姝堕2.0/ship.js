@@ -7,6 +7,9 @@ const tests = spawnSync(
   [
     "--test",
     "tests/core.test.cjs",
+    "tests/relic_fanfare.test.cjs",
+    "tests/negative_favor.test.cjs",
+    "tests/gm_panel.test.cjs",
     "tests/realm_feedback.test.cjs",
     "tests/grand_eras.test.cjs",
     "tests/templates.test.cjs",
@@ -15,7 +18,6 @@ const tests = spawnSync(
     "tests/metric_events.test.cjs",
     "tests/area_backgrounds.test.cjs",
     "tests/ui.test.cjs",
-    "tests/v21_integration.test.cjs",
     "tests/opening_host.test.cjs",
     "tests/youjigu_map.test.cjs",
     "tests/map_integration.test.cjs",
@@ -24,4 +26,8 @@ const tests = spawnSync(
 );
 if (tests.status !== 0) process.exit(tests.status || 1);
 require("./build").build();
+// 成品回读依赖本轮构建，不与源码测试并发读取上轮PNG。
+const artifacts = spawnSync(process.execPath, ["--test", "tests/v21_integration.test.cjs"],
+  { cwd: __dirname, stdio: "inherit" });
+if (artifacts.status !== 0) process.exit(artifacts.status || 1);
 require("./deploy_to_tavern.cjs").deploy();

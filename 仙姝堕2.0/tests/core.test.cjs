@@ -485,7 +485,7 @@ test("构建可独立执行、脚本语法、PNG双向回读及世界书防递�
     built = build();
   new vm.Script(built.script);
   assert.deepEqual(unpack(built.image), built.card);
-  assert.equal(built.card.data.character_book.entries.length, 225 + data.grandEras.length + 1 + Object.keys(require("../src/config/node_stories.json")).length + Object.values(require("../tools/data.cjs").load(ROOT).characterProfiles).reduce((n,c)=>n+c.stages.reduce((m,x)=>m+(x.stories ? Object.keys(x.stories).length : (x.story ? 1 : 0)),0),0) + Object.keys(require("../src/config/metric_events.json")).length + Object.keys(require("../src/config/area_backgrounds.json")).length);
+  assert.equal(built.card.data.character_book.entries.length, 225 + data.grandEras.length + 1 + Object.keys(require("../src/config/node_stories.json")).length + Object.values(require("../tools/data.cjs").load(ROOT).characterProfiles).reduce((n,c)=>n+[...c.stages,...require("../src/runtime/character_stages").negativeStages(c,"")].reduce((m,x)=>m+(x.stories ? Object.keys(x.stories).length : (x.story ? 1 : 0)),0),0) + Object.keys(require("../src/config/metric_events.json")).length + Object.keys(require("../src/config/area_backgrounds.json")).length);
   assert.ok(
     built.card.data.character_book.entries.every(
       (e) => e.extensions.exclude_recursion && e.extensions.prevent_recursion,
@@ -1054,4 +1054,11 @@ test('自由回合不按轮次固定计时，分钟按实际耗时累积；累�
  h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({历时:'距出行3日'}));assert.equal(h.r.getSnapshot().clockRemainder,5);
  h.c.chat.push({is_user:true,mes:'长途行走'});await h.reply(status({历时:'1435分钟'}));assert.equal(C.day(h.r.getSnapshot().calendarDate),start+1);assert.equal(h.r.getSnapshot().clockRemainder,0);
  await h.r.restore();assert.equal(C.day(h.r.getSnapshot().calendarDate),start+1);
+});
+
+test('负好感锁定随本地消息存档保存，GM不能绕过；删楼恢复触发前的完整状态',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{'metric.叶红缨.好感度':-50}});await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['metric.叶红缨.好感度']}});
+ h.c.chat.push({is_user:true,mes:'冒犯师姐'});const line='叶红缨冷然斥责赵无忧';await h.reply(status({在场:'<角色1><名>叶红缨</名><关系>戒备</关系></角色1>'},line+'。<好感事件>叶红缨｜记恨｜依据：'+line+'</好感事件>'));
+ assert.equal(h.r.getSnapshot().stat_data.character_metric_caps.叶红缨.好感度,-50);await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.character_stages.叶红缨.id,'neg_hostile');await assert.rejects(h.r.dispatchIntent({type:'GM_PATCH',payload:{'metric.叶红缨.好感度':-49}}),/永久/);
+ h.c.chat.splice(1);await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,-50);assert.equal(h.r.getSnapshot().stat_data.character_metric_caps?.叶红缨,undefined);
 });

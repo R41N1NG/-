@@ -429,6 +429,10 @@ function mount(slotElement, runtimeApi) {
         pTag.textContent = `⏳「${snapshot.pending.actionText}」进行中`;
         hudBar.appendChild(pTag);
       } else {
+        const freeTip=doc.createElement("small");freeTip.className="xsd2-free-action-tip";
+        freeTip.textContent="可先自由行动，准备好后再推进节点。";
+        freeTip.style.cssText="flex-basis:100%;display:block;margin:0 0 3px;color:#c5c9bd;font-size:12px;line-height:1.6;";
+        hudBar.appendChild(freeTip);
         const tipLabel = doc.createElement("span");
         tipLabel.style.cssText =
           "font-size:11px;color:#eedbb5;font-weight:bold;margin-left:6px;margin-right:2px;display:inline-flex;align-items:center;";

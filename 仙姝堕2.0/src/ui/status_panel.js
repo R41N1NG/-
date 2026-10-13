@@ -148,7 +148,7 @@ function portrait(name, s, data) {
   const stagePortrait = s.stat_data?.character_stages?.[name]?.portrait;
   if (stagePortrait?.small && stagePortrait?.large) return {...stagePortrait,small:stagePortrait.large,fallback:stagePortrait.small};
   const scene=data.portraitScenes?.[s.activeEvent?.promotionId];
-  const scenePool=scene && scene.pluginId === s.activeEvent?.pluginId ? scene.portraits?.[name] : null;
+  const scenePool=!s.stat_data?.character_stages?.[name]?.negative && scene && scene.pluginId === s.activeEvent?.pluginId ? scene.portraits?.[name] : null;
   let id = scenePool ? choosePortrait(Array.isArray(scenePool)?scenePool:[scenePool],name,s) : PORTRAITS[name] || PORTRAITS[String(name).replace(/[（(][\s\S]*?[）)]/g,"").trim()];
   if (!id) return null;
   const R = data.rules(s.stat_data),
@@ -294,6 +294,9 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   function openFavor(character, s) {
     closeFavor();
     const value = s.stat_data.character_metrics?.[character]?.好感度 ?? 0;
+    const permanentCap=s.stat_data.character_metric_caps?.[character]?.好感度;
+    const negative=value<0;
+    const negativeLabel=s.stat_data.character_stages?.[character]?.label || "负好感";
     const ladder = favorLadder(data, character, s);
     const completed = s.stat_data.completed_character_stages?.[character];
     const profiles = data.characterProfiles || {};
@@ -305,7 +308,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     })();
     const diamonds = ladder.map((x) => {
       const done = prio(x.toStage) <= prio(completed);
-      const now = !done && x.fromStage === (completed || profiles[character]?.initialStage) && !s.pending && !s.activeEvent && !options.readOnly && meets(s,x.conditions);
+      const now = !negative && !done && x.fromStage === (completed || profiles[character]?.initialStage) && !s.pending && !s.activeEvent && !options.readOnly && meets(s,x.conditions);
       return { threshold: x.threshold, done, now, label: x.label, entryId:x.entryId };
     });
     const log = s.stat_data.favor_log?.[character] || [];
@@ -313,14 +316,17 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     el.classList.add("xsd2-favor");
     favorDialog=el;
     el.addEventListener("close",()=>{if(favorDialog===el)favorDialog=null;});
-    el.querySelector(".xsd2-dialog-body").innerHTML = '<div class="xsd2-fbar"><i style="width:' + value + '%"></i><span>' + value + " / 100" + (cap !== null && value >= cap ? " · 已满盈" : "") + "</span></div>"
+    el.querySelector(".xsd2-dialog-body").innerHTML = '<div class="xsd2-fbar"><i style="width:' + Math.max(0,Math.min(100,value)) + '%"></i><span>' + value + " / 100" + (cap !== null && value >= cap ? " · 已满盈" : "") + "</span></div>"
+      + (Number.isFinite(permanentCap) ? '<div class="xsd2-cap"><p>永久上限−50：不能恢复到−49及以上。</p></div>' : "")
+      + (negative ? '<div class="xsd2-cap"><p>'+esc(negativeLabel)+' · 正向专属剧情暂停；已完成阶段保留。</p></div>' : "")
       + (cap !== null && value >= cap ? '<div class="xsd2-cap"><p>好感已达当前节点上限（' + cap + "）——完成对应专属剧情之前不再累积。</p></div>" : "")
       + (diamonds.length
           ? '<div class="xsd2-nodes">' + diamonds.map((x) =>
-              '<button type="button" data-heart-node="' + esc(x.entryId) + '"' + (x.now ? '' : ' disabled') + ' class="xsd2-node' + (x.done ? " done" : x.now ? " now" : "") + '"'
+              '<button type="button" data-heart-node="' + esc(x.entryId) + '"' + (x.now && !negative ? '' : ' disabled') + ' class="xsd2-node' + (!negative && x.done ? " done" : x.now ? " now" : "") + '"'
               + (x.now ? ' title="点击开启专属剧情：' + esc(x.label) + '"' : "") + ">"
               + (x.now ? GOURD_SVG : "") + "<i></i><span>" + x.threshold + "</span><em>"
-              + (x.done ? "剧情已了" : x.now ? esc(x.label) + " · 可开启" : "未达") + "</em></button>"
+              + (Number.isFinite(permanentCap) ? '<div class="xsd2-cap"><p>永久上限−50：不能恢复到−49及以上。</p></div>' : "")
+      + (negative ? esc(negativeLabel) : x.done ? "剧情已了" : x.now ? esc(x.label) + " · 可开启" : "未达") + "</em></button>"
             ).join("") + "</div>"
           : '<p class="xsd2-label">此人尚未配置晋升之路。</p>')
       + "<h4>近日心迹</h4>"
@@ -331,7 +337,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     const close = () => {el.remove();if(favorDialog===el)favorDialog=null;};
     const active=s.activeEvent?.pluginId === "character_promotion" && s.activeEvent?.character === character
       ? data.promotionDefinitions?.[s.activeEvent.promotionId] : null;
-    if(active && !options.readOnly){const b=doc.createElement("button");b.type="button";b.dataset.heartNode=active.finishId;b.dataset.promotionNode=active.finishId;b.textContent="完成本次剧情";b.disabled=!!s.pending;el.querySelector(".xsd2-dialog-body").prepend(b);}
+    if(active && !negative && !options.readOnly){const b=doc.createElement("button");b.type="button";b.dataset.heartNode=active.finishId;b.dataset.promotionNode=active.finishId;b.textContent="完成本次剧情";b.disabled=!!s.pending;el.querySelector(".xsd2-dialog-body").prepend(b);}
     el.querySelectorAll("[data-heart-node]").forEach(b=>{b.onclick=async()=>{
       b.disabled=true;
       try { const now=runtime.getSnapshot();
@@ -427,7 +433,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
         const hasNode = !s.pending && !s.activeEvent && !options.readOnly && favorLadder(data, name, s).some(
           (x) => (s.stat_data.completed_character_stages?.[name] || data.characterProfiles?.[name]?.initialStage) === x.fromStage && metricOf(name) >= x.threshold,
         );
-        return '<span class="xsd2-chip" data-favor="' + esc(name) + '">' + esc(piece) + (hasNode ? GOURD_SVG : "") + "</span>";
+        return '<span class="xsd2-chip" data-favor="' + esc(name) + '">' + esc(st.character_stages?.[name]?.negative ? name+' · '+st.character_stages[name].label : piece) + (hasNode ? GOURD_SVG : "") + "</span>";
       })
       .join("");
     const row=(label,value,slot="")=>'<div class="xsd2-row"><b>'+label+'</b><span'+(slot?' data-xsd-slot="'+slot+'"':'')+'>'+value+'</span></div>';

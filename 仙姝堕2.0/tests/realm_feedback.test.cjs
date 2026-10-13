@@ -31,6 +31,7 @@ test('地图可进行节点产生主卷醒目通知，关闭/卸载不残留；�
  const h=fixture();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'赵无忧'}});const panel=mountHUD(h.doc,h.doc.querySelector('main'),h.r,data,e=>h.errors.push(e.message));
  assert.equal(h.doc.querySelector('.xsd2-map-node-notice').style.display,'none');
  await h.r.dispatchIntent({type:'GM_PATCH',payload:{calendarDate:{year:1578,month:4,day:1}}});await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['calendarDate']}});
+ assert.match(h.doc.querySelector('.xsd2-free-action-tip').textContent,/可先自由行动/);
  const notice=h.doc.querySelector('.xsd2-map-node-notice');assert.equal(notice.style.display,'block');assert.match(notice.textContent,/地图有 1 个可进行节点/);assert.ok(notice.closest('.xsd2-hud'));
  notice.querySelector('button').click();assert.ok(h.doc.querySelector('.yj-actions-panel'));h.doc.dispatchEvent(new h.dom.window.KeyboardEvent('keydown',{key:'Escape'}));assert.equal(h.doc.querySelector('.yj-actions-panel'),null);
  const s=h.r.getSnapshot();await h.r.dispatchIntent({type:'SELECT_NODE',pluginId:plugin.id,expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:'g7p2'}});

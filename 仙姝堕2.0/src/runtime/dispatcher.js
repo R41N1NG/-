@@ -1,7 +1,7 @@
 "use strict";
 const C = require("./contracts");
 const {meets} = require("./conditions");
-const {resolveStages,writeMetric,metricSpec,completeStage} = require("./character_stages");
+const {resolveStages,writeMetric,metricSpec,completeStage,canRecover} = require("./character_stages");
 const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode } = require("./action_wire");
@@ -309,6 +309,8 @@ function createDispatcher(adapter, data) {
       (p.kind === "item" && plugin ? "\n" + plugin.getPrompt?.(snapshot()) : "")
       : plugin?.getPrompt?.(snapshot()) || "";
     const st = current?.stat_data;
+    const relationNames=new Set([current?.identity,current?.pending?.selection?.character,current?.activeEvent?.character,...(st?.在场角色||[]).map(x=>x.名)]);
+    const relation=st ? [...relationNames].filter(name=>st.character_metrics?.[name]).map(name=>({人物:name,好感:st.character_metrics[name].好感度,当前心智:st.character_stages?.[name]?.label||st.character_stages?.[name]?.id,永久上限:st.character_metric_caps?.[name]?.好感度??null})) : [];
     const baseline = current
       ? "后台当前时点：仙盟历 " +
         C.dateText(current.calendarDate) +
@@ -320,7 +322,7 @@ function createDispatcher(adapter, data) {
         Object.keys(st.known)
           .filter((k) => st.known[k])
           .join("、") +
-        "。纳戒：" +
+        "。后台关系状态："+JSON.stringify(relation)+"；负好感覆盖优先于正向心智，永久上限不得突破；数值本身不制造过去事件。纳戒：" +
         JSON.stringify(st.inventory) +
         "。日期照抄后台；历时只写本回合实际耗时，不按轮次固定增加，不默认半个时辰，不写距事件的累计天数；无法确定耗时写—，不沿用上一轮耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。" +
         (current.activeEvent || p
@@ -404,8 +406,10 @@ function createDispatcher(adapter, data) {
       const spec = metricSpec(data.characterProfiles || {},x.character,x.key);
       if (!Number.isFinite(x.delta)) throw Error("节点数值变化须为有限数值");
       if (next.manual["metric."+x.character+"."+x.key] !== undefined) throw Error("人物数值处于人工覆盖，请先交还自动");
+      if(x.key==="好感度" && x.delta>0 && !canRecover(next.stat_data,data.characterProfiles || {},x.character,"node:"+n.id))continue;
       const value = next.stat_data.character_metrics?.[x.character]?.[x.key] ?? spec.default;
-      writeMetric(next.stat_data,data.characterProfiles || {},x.character,x.key,value+x.delta);
+      const permanent=next.stat_data.character_metric_caps?.[x.character]?.[x.key];
+      writeMetric(next.stat_data,data.characterProfiles || {},x.character,x.key,x.delta>0&&Number.isFinite(permanent)?Math.min(permanent,value+x.delta):value+x.delta);
     }
     if (n.completionQuery) next.pending.prompt += "\n本轮只结算，不继续故事。根据本段历史回答："+n.completionQuery+
       "\n严格输出唯一一项：<Promotion_result id=\""+next.pending.actionCode+"\">是</Promotion_result> 或 <Promotion_result id=\""+next.pending.actionCode+"\">否</Promotion_result>。不得返回另一行动ID，不输出分析过程，不新增剧情来补成成功。";
