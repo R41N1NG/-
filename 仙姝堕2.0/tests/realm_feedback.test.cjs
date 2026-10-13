@@ -13,12 +13,13 @@ function fixture(){
  r.registerPlugin(plugin);r.uiPlugins=[plugin];return {dom,doc:dom.window.document,r,chat,messages,errors};
 }
 const flush=()=>new Promise(r=>setTimeout(r,25));
-test('满足条件的闭关、突破点击真实中控并更新主卷及成功反馈，不发送模型轮',async()=>{
+test('满足条件的闭关、突破点击真实中控并更新主卷及成功反馈，闭关发送一次结算、突破本地',async()=>{
  const h=fixture();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'赵无忧'}});const date=h.r.getSnapshot().calendarDate;
  const panel=mountHUD(h.doc,h.doc.querySelector('main'),h.r,data,e=>h.errors.push(e.message));
  h.doc.querySelector('[data-realm]').click();assert.equal(h.doc.querySelector('[data-realm-act="retreat"]').getAttribute('aria-disabled'),'false');
- h.doc.querySelector('[data-realm-act="retreat"]').click();await flush();assert.equal(h.r.getSnapshot().stat_data.修为,'金丹后期');assert.equal(C.day(h.r.getSnapshot().calendarDate)-C.day(date),90);assert.match(h.doc.querySelector('.xsd2-feedback').textContent,/闭关完成.*金丹后期/);
- await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'筑基大圆满'}});h.doc.querySelector('[data-realm]').click();h.doc.querySelector('[data-realm-act="breakthrough"]').click();await flush();assert.equal(h.r.getSnapshot().stat_data.修为,'金丹前期');assert.match(h.doc.querySelector('.xsd2-feedback').textContent,/突破完成.*金丹前期/);assert.equal(h.messages.length,0);assert.deepEqual(h.errors,[]);panel.destroy();
+ h.doc.querySelector('[data-realm-act="retreat"]').click();await flush();assert.equal(h.r.getSnapshot().stat_data.修为,'金丹后期');assert.equal(C.day(h.r.getSnapshot().calendarDate)-C.day(date),90);assert.match(h.doc.querySelector('.xsd2-feedback').textContent,/闭关结算已发送.*金丹后期/);
+ assert.equal(h.messages.length,1);h.chat.push({mes:'闭关三月结束。<Status_block><历时>90日</历时></Status_block>'});await h.r.settleStory();assert.equal(h.r.getSnapshot().pending,null);assert.equal(C.day(h.r.getSnapshot().calendarDate)-C.day(date),90);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'筑基大圆满'}});h.doc.querySelector('[data-realm]').click();h.doc.querySelector('[data-realm-act="breakthrough"]').click();await flush();assert.equal(h.r.getSnapshot().stat_data.修为,'金丹前期');assert.match(h.doc.querySelector('.xsd2-feedback').textContent,/突破完成.*金丹前期/);assert.equal(h.messages.length,1);assert.deepEqual(h.errors,[]);panel.destroy();
 });
 test('金丹满两按钮均有具体原因，点击解释而不写入；剧情、日期覆盖与未明确境界均有原因',async()=>{
  const h=fixture();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'赵无忧'}});await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'金丹大圆满'}});

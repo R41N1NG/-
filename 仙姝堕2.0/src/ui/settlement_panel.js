@@ -12,6 +12,7 @@ function makeCard(doc,r,animate=false) {
   const date="仙盟历 "+dateText(r.date), title=r.title || "天机落定";
   let verdict;
   if(r.kind === "promotion") verdict=r.answer === "是" ? "此番夜访已毕，所问已验，关系进境已记。" : "此番夜访已毕，所问未成，关系进境如前。";
+  else if(r.kind === "realm") verdict="闭关三月已毕，"+r.from+" → "+r.to+"，修行结果已记。";
   else verdict=(r.exitType || r.action || "此番行程")+"，历时"+r.elapsedDays+"日。"+(rewards.length ? "行囊有所得，天机落定。" : "行程已记，天机落定。");
   const facts=r.facts || [], ledger=[title,r.exitType || r.action || "",...facts,
     "本次所得："+(rewards.join("、") || "无"),"耗时："+r.elapsedDays+"日",date,
@@ -21,8 +22,8 @@ function makeCard(doc,r,animate=false) {
     '<span class="xsd2-tj-seal-s"><span>天</span><span>机</span><span>已</span><span>定</span></span></div>'+
     '<div class="xsd2-tj-verdict">'+esc(verdict)+'</div><div class="xsd2-tj-ledger">'+
     '<div class="xsd2-tj-row"><span class="xsd2-tj-lab">时　序</span><span class="xsd2-tj-val">'+esc(date)+'　<span class="xsd2-tj-up">'+esc(r.elapsedDays)+'日</span></span></div>'+
-    '<div class="xsd2-tj-row"><span class="xsd2-tj-lab">'+(r.kind === "promotion" ? '进　境' : '行　囊')+'</span><span class="xsd2-tj-val">'+
-    esc(r.kind === "promotion" ? r.answer === "是" ? "关系阶段已更新" : "关系阶段未改变" : rewards.join("、") || "无新增所得")+'</span></div></div>'+
+    '<div class="xsd2-tj-row"><span class="xsd2-tj-lab">'+(['promotion','realm'].includes(r.kind) ? '进　境' : '行　囊')+'</span><span class="xsd2-tj-val">'+
+    esc(r.kind === "realm" ? r.from+" → "+r.to : r.kind === "promotion" ? r.answer === "是" ? "关系阶段已更新" : "关系阶段未改变" : rewards.join("、") || "无新增所得")+'</span></div></div>'+
     '<details class="xsd2-tj-ledger-raw"><summary>展开天机底账</summary><pre class="xsd2-tj-raw-settle"></pre></details></div></div></div>';
   section.querySelector("pre").textContent=ledger.filter(Boolean).join("\n");
   return section;

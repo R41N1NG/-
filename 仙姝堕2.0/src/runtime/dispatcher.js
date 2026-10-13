@@ -790,6 +790,7 @@ function createDispatcher(adapter, data) {
       s.manual = { ...s.manual, ...candidate.state.manual };
     let body = String(m.mes);
     const p = s.pending;
+    let realmSettled=false;
     const latestUser = c.chat.slice(0, c.floor).reverse().find(x => x.is_user && !x.is_system);
     let allowInventory = !!p || !/\bXSD2_/.test(String(latestUser?.mes || ""));
     if (p) {
@@ -801,6 +802,11 @@ function createDispatcher(adapter, data) {
         allowInventory = false;
         s.lastNodeResult = { nodeId:p.nodeId, floor:c.floor, outcome:"failure",
           reason:"行动后的用户消息与授权行动不匹配", evidenceMode:null };
+      } else if (p.kind === "realm") {
+        realmSettled=true;
+        s.pending = null;
+        s.suppressClock = true;
+        allowInventory = false;
       } else if (p.kind === "item") {
         s.reconciledUse = C.clone(p.item);
         s.reconciledInventoryChanges = C.clone(s.inventoryChanges || []);
@@ -839,6 +845,12 @@ function createDispatcher(adapter, data) {
       body += "\n<Status_block>"+C.XML_FIELDS.map(k=>"<"+k+">"+xml(s.stat_data[k])+"</"+k+">").join("")+"</Status_block>";
       delete s.suppressClock;
     } else s = applyStory(s, body, c.floor, m.swipe_id ?? 0, allowInventory);
+    if(realmSettled) {
+      s.stat_data.历时 = "90日";
+      s.settlements ||= {};
+      s.settlements[p.id] = {id:p.id,kind:"realm",floor:c.floor,title:"闭关三月 · 修行结算",mode:"separate",action:p.actionText,
+        elapsedDays:90,date:C.clone(s.calendarDate),from:p.realm.from,to:s.stat_data.修为,rewards:[],facts:[p.realm.from+" → "+s.stat_data.修为]};
+    }
     const confirmedPlace = s.lastNodeResult?.floor === c.floor &&
       s.lastNodeResult.outcome === "success" && p?.selection.settlementMode === "choice"
       ? p.selection.destination : undefined;
@@ -993,8 +1005,17 @@ function createDispatcher(adapter, data) {
           if(current.pending||adapter.isGenerating?.()||(intent.payload.kind==="retreat"&&current.activeEvent))throw Error("请先结束当前剧情或行动");
           if(intent.expected?.chatId!==c.chatId||intent.expected.branchId!==c.branchId||intent.expected.floor!==c.floor||intent.expected.revision!==current.revision)throw Error("境界按钮来自旧状态，请重新选择");
           if(intent.payload.kind==="retreat"&&current.manual.calendarDate)throw Error("日期处于人工覆盖，请先交还自动");
-          const next=C.clone(current);Realm.act(next,rules(next),intent.payload.kind,c.floor);
-          return commit(c,next,"realm_action");
+          const retreat=intent.payload.kind==="retreat";
+          if(retreat)adapter.preflightSend?.();
+          const before=C.clone(current),next=C.clone(current),from=next.stat_data.修为;
+          Realm.act(next,rules(next),intent.payload.kind,c.floor);
+          if(!retreat)return commit(c,next,"realm_action");
+          next.pending={id:c.chatId+":realm:"+c.floor+":"+current.revision+":"+ ++serial,kind:"realm",floor:c.floor,
+            actionText:"闭关三个月",displayText:"闭关三个月",authorization:{chatId:c.chatId,branchId:c.branchId,trail:C.clone(c.trail)},before,
+            selection:{settlement:{mode:"separate",title:"闭关三月 · 修行结算"}},realm:{from},
+            prompt:"本轮为闭关三个月的结算演绎。后台已核定耗时90日、原境界"+from+"、新境界"+next.stat_data.修为+"，出关日期为仙盟历"+C.dateText(next.calendarDate)+"。叙述修炼经过和出关结果，保留玩家言行自主权；不再发起是非判定、不额外升境、不追加耗时或奖励，不替玩家启动下一剧情。正常输出Status_block，历时90日，修为使用后台当前境界。"};
+          try {await commit(c,next,"realm_pending");guard(c);await adapter.send(next.pending.actionText);return snapshot();}
+          catch(error){const now=context();if(token(now)===token(c))await commit(now,before,"rollback");throw error;}
         }
         case "GM_PATCH": {
           const r = await gm(c, intent.payload);

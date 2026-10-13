@@ -985,9 +985,9 @@ test('结婴门槛：缺烙印、重复名器和别人的三阶名器不算；�
 });
 test('闭关三个月推进90日并升一档，同日模型口胡不升境，旧按钮和事件中闭关被拒绝',async()=>{
  const h=harness();await h.opening('赵无忧');const date=h.r.getSnapshot().calendarDate,old=h.r.getSnapshot();
- await realmIntent(h,'retreat');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹后期');assert.equal(C.day(h.r.getSnapshot().calendarDate)-C.day(date),90);
+ await realmIntent(h,'retreat');assert.equal(h.sent.length,1);await h.reply(status({历时:'90日'},'你闭关三个月，出关时气息平稳。'));assert.equal(h.r.getSnapshot().stat_data.修为,'金丹后期');assert.equal(C.day(h.r.getSnapshot().calendarDate)-C.day(date),90);
  await assert.rejects(h.r.dispatchIntent({type:'REALM_ACTION',expected:{chatId:old.chatId,branchId:old.branchId,floor:old.floor,revision:old.revision},payload:{kind:'retreat'}}),/旧状态/);
- await realmIntent(h,'retreat');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹大圆满');await assert.rejects(realmIntent(h,'retreat'),/仅适用/);await assert.rejects(realmIntent(h,'breakthrough'),/未满足/);
+ await realmIntent(h,'retreat');await h.reply(status({历时:'90日'}));assert.equal(h.r.getSnapshot().stat_data.修为,'金丹大圆满');await assert.rejects(realmIntent(h,'retreat'),/仅适用/);await assert.rejects(realmIntent(h,'breakthrough'),/未满足/);
  const k=harness();await k.opening('赵无忧');k.r.registerPlugin(plugin());await k.select('enter');await assert.rejects(realmIntent(k,'retreat'),/结束/);
 });
 test('模型的否定、思考和标签不能制造烙印；历史迁移不会再发破处升境奖励',async()=>{
@@ -1020,7 +1020,7 @@ test('闭关、普通耗时及GM日期共用时期判定，末期背景延续且
  const h=harness();await h.opening('赵无忧');
  await h.r.dispatchIntent({type:'GM_PATCH',payload:{calendarDate:{year:1578,month:7,day:30}}});await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['calendarDate']}});
  h.c.chat.push({is_user:true,mes:'歇息一日'});await h.reply(status({历时:'1日'}));assert.equal(h.r.getSnapshot().stat_data.grand_era,'calamity');
- const k=harness();await k.opening('赵无忧');await realmIntent(k,'retreat');await realmIntent(k,'retreat');assert.equal(k.r.getSnapshot().stat_data.grand_era,'calamity');
+ const k=harness();await k.opening('赵无忧');await realmIntent(k,'retreat');await k.reply(status({历时:'90日'}));await realmIntent(k,'retreat');await k.reply(status({历时:'90日'}));assert.equal(k.r.getSnapshot().stat_data.grand_era,'calamity');
  await h.r.dispatchIntent({type:'GM_PATCH',payload:{calendarDate:{year:1579,month:3,day:1}}});assert.equal(h.r.getSnapshot().stat_data.grand_era,'beast');assert.equal(h.r.getSnapshot().stat_data.known['天溪城破'],false);
  await h.r.dispatchIntent({type:'GM_PATCH',payload:{calendarDate:{year:1578,month:3,day:1}}});assert.equal(h.r.getSnapshot().stat_data.grand_era,'peace');assert.equal(h.r.getSnapshot().stat_data.known['南域大劫'],false);
 });
@@ -1062,4 +1062,14 @@ test('负好感锁定随本地消息存档保存，GM不能绕过；删楼恢复
  h.c.chat.push({is_user:true,mes:'冒犯师姐'});const line='叶红缨冷然斥责赵无忧';await h.reply(status({在场:'<角色1><名>叶红缨</名><关系>戒备</关系></角色1>'},line+'。<好感事件>叶红缨｜记恨｜依据：'+line+'</好感事件>'));
  assert.equal(h.r.getSnapshot().stat_data.character_metric_caps.叶红缨.好感度,-50);await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.character_stages.叶红缨.id,'neg_hostile');await assert.rejects(h.r.dispatchIntent({type:'GM_PATCH',payload:{'metric.叶红缨.好感度':-49}}),/永久/);
  h.c.chat.splice(1);await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,-50);assert.equal(h.r.getSnapshot().stat_data.character_metric_caps?.叶红缨,undefined);
+});
+
+test('闭关发送失败回滚，重复点击拒绝、刷新保留、取消恢复和删楼再结算不重复90日',async()=>{
+ const h=harness();await h.opening('赵无忧');const date=C.day(h.r.getSnapshot().calendarDate);
+ h.fail(true);await assert.rejects(realmIntent(h,'retreat'),/send failed/);assert.equal(h.r.getSnapshot().stat_data.修为,'金丹中期');assert.equal(C.day(h.r.getSnapshot().calendarDate),date);assert.equal(h.r.getSnapshot().pending,null);h.fail(false);
+ await realmIntent(h,'retreat');await assert.rejects(realmIntent(h,'retreat'),/结束/);await h.r.restore();assert.equal(h.r.getSnapshot().pending.kind,'realm');
+ await h.reply(status({历时:'90日',修为:'元婴大圆满'},'你闭关结束。'));const s=h.r.getSnapshot();assert.equal(s.pending,null);assert.equal(s.stat_data.修为,'金丹后期');assert.equal(C.day(s.calendarDate),date+90);assert.equal(Object.values(s.settlements).at(-1).kind,'realm');
+ await h.r.settleStory();assert.equal(C.day(h.r.getSnapshot().calendarDate),date+90);h.c.chat.pop();await h.r.restore();assert.equal(h.r.getSnapshot().pending.kind,'realm');await h.reply(status({历时:'90日'}));assert.equal(C.day(h.r.getSnapshot().calendarDate),date+90);
+ h.c.chat.splice(1);await h.r.restore();assert.equal(C.day(h.r.getSnapshot().calendarDate),date);assert.equal(h.r.getSnapshot().stat_data.修为,'金丹中期');
+ const k=harness();await k.opening('赵无忧');const start=C.day(k.r.getSnapshot().calendarDate);await realmIntent(k,'retreat');await k.r.stop();assert.equal(k.r.getSnapshot().pending,null);assert.equal(C.day(k.r.getSnapshot().calendarDate),start);assert.equal(k.r.getSnapshot().stat_data.修为,'金丹中期');
 });

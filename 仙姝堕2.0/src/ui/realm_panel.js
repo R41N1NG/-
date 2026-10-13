@@ -36,7 +36,7 @@ function openRealm(doc,runtime,data,report,onComplete){
   try{
    const result=await runtime.dispatchIntent({type:'REALM_ACTION',expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{kind}});
    const after=result || runtime.getSnapshot();
-   const message=(kind==='retreat'?'闭关完成，耗时90日':'突破完成')+'：'+after.stat_data.修为+' · 仙盟历 '+dateText(after.calendarDate);
+   const message=(kind==='retreat'?'闭关结算已发送，等待回复':'突破完成')+'：'+after.stat_data.修为+' · 仙盟历 '+dateText(after.calendarDate);
    el.close();el.remove();
    if(onComplete)onComplete(message);
    else{const done=modal(doc,kind==='retreat'?'闭关完成':'突破完成');done.querySelector('.xsd2-dialog-body').textContent=message;}

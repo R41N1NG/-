@@ -168,8 +168,14 @@ function portrait(name, s, data) {
   return {
     small: cdn(".png") || "user/images/xsd_gallery/" + id + ".png",
     fallback: "user/images/xsd_gallery/" + id + ".jpg",
+    sources: [cdn(".png"),cdn(".jpg"),"user/images/xsd_gallery/"+id+".png","user/images/xsd_gallery/"+id+".jpg"].filter(Boolean),
     large: cdn(".png") || "user/images/xsd_gallery/" + id + ".png",
   };
+}
+function loadPortrait(img,p,large=false){
+  const urls=[...new Set(p.sources || [large?p.large:p.small,p.fallback,p.small].filter(Boolean))];
+  let index=0;img.src=urls[index];
+  img.onerror=()=>{if(++index<urls.length)img.src=urls[index];else{img.onerror=null;img.replaceWith(img.ownerDocument.createTextNode(img.alt||"暂无立绘"));}};
 }
 // 纹章状态推导：成形=known 旗标、阶段=已知最高阶、归属=名器归属/破处者账本
 function relicStates(s, data) {
@@ -356,11 +362,11 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     const p = portrait(character, s, data);
     if (p) {
       const im = doc.createElement("img");
-      im.src = p.small; im.alt = character;
+      loadPortrait(im,p); im.alt = character;
       im.style.cssText = "width:44px;height:44px;border-radius:6px;object-fit:cover;cursor:zoom-in";
       im.dataset.xsd2Zoom = p.large;
       im.addEventListener("click", () => {
-        const zoom=modal(doc,character+" · 立绘");const image=doc.createElement("img");image.src=p.large;image.alt=character;image.onerror=()=>{image.src=p.fallback||p.small;image.onerror=null;};zoom.querySelector(".xsd2-dialog-body").append(image);dialogs.push(()=>zoom.remove());
+        const zoom=modal(doc,character+" · 立绘");const image=doc.createElement("img");loadPortrait(image,p,true);image.alt=character;zoom.querySelector(".xsd2-dialog-body").append(image);dialogs.push(()=>zoom.remove());
       });
       el.querySelector(".xsd2-dialog-body").insertBefore(im, el.querySelector(".xsd2-fbar"));
     }
@@ -476,12 +482,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
             el = modal(doc, b.dataset.portrait);
           dialogs.push(() => el.remove());
           const img = doc.createElement("img");
-          img.src = p.large;
+          loadPortrait(img,p,true);
           img.alt = b.dataset.portrait;
-          img.onerror = () => {
-            if (img.src.endsWith(".png")) {img.src = p.fallback||p.small;img.onerror=null;}
-            else img.replaceWith(doc.createTextNode("此处尚未部署立绘"));
-          };
           el.querySelector(".xsd2-dialog-body").append(img);
         }),
     );
@@ -489,12 +491,11 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       (c) =>
         (c.onclick = () => openFavor(c.dataset.favor, s)),
     );
-    root
-      .querySelectorAll("img")
-      .forEach(
-        (img) =>
-          (img.onerror = () => { const name=img.closest('[data-portrait]')?.dataset.portrait;const p=name?portrait(name,s,data):null;if(p?.fallback&&!img.dataset.fallback){img.dataset.fallback='true';img.src=p.fallback;}else img.replaceWith(doc.createTextNode(img.alt)); }),
-      );
+    root.querySelectorAll("img").forEach(img=>{
+      const name=img.closest('[data-portrait]')?.dataset.portrait;
+      const p=name?portrait(name,s,data):null;
+      if(p)loadPortrait(img,p);
+    });
     for (const plugin of runtime.uiPlugins || [])
       if (plugin.mount && plugin.id !== "character_promotion") {
         const unmount = plugin.mount(

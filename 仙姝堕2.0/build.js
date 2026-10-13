@@ -6,6 +6,7 @@ const { source, load } = require("./tools/data.cjs");
 const {storyEntries, metricEntries, areaEntries} = require("./src/runtime/story_entries");
 const {eraEntries}=require("./src/runtime/grand_eras");
 const { evaluateGate } = require("./src/host/worldbook");
+const VERSION = 44; // 卡内版本与dist文件名共用，防止覆盖历史版本。
 const ROOT = __dirname,
   NAME = "仙姝堕2.0·框架测试",
   OUT = path.join(ROOT, "最新角色卡"),
@@ -191,7 +192,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.43",
+    character_version: "2.0-framework." + VERSION,
     extensions: {
       world: NAME,
       tavern_helper: {
@@ -257,7 +258,7 @@ function build() {
       }
     }
   }
-  fs.writeFileSync(path.join(DIST, NAME + "-v42.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v" + VERSION + ".png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(
