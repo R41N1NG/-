@@ -6,6 +6,7 @@ const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
+const {metricEntryContent}=require("./story_entries");
 const { createMetricEvents,stripForEvidence } = require("./metric_events");
 const {inferRelicActions}=require("./relic_evidence");
 const Realm=require("./player_realm");
@@ -309,7 +310,7 @@ function createDispatcher(adapter, data) {
       (p.kind === "item" && plugin ? "\n" + plugin.getPrompt?.(snapshot()) : "")
       : plugin?.getPrompt?.(snapshot()) || "";
     const st = current?.stat_data;
-    const relationNames=new Set([current?.identity,current?.pending?.selection?.character,current?.activeEvent?.character,...(st?.在场角色||[]).map(x=>x.名)]);
+    const relationNames=new Set([current?.identity,current?.pending?.selection?.character,current?.activeEvent?.character,...(st?.在场角色||[]).flatMap(x=>[x.名,String(x.名||"").replace(/[（(][\s\S]*?[）)]/g,"").trim()])]);
     const relation=st ? [...relationNames].filter(name=>st.character_metrics?.[name]).map(name=>({人物:name,好感:st.character_metrics[name].好感度,当前心智:st.character_stages?.[name]?.label||st.character_stages?.[name]?.id,永久上限:st.character_metric_caps?.[name]?.好感度??null})) : [];
     const baseline = current
       ? "后台当前时点：仙盟历 " +
@@ -329,7 +330,9 @@ function createDispatcher(adapter, data) {
           ? "事件期间按节点约定停留，退出耗时由后台结算，不另外推进世界日期。"
           : "")
       : "";
-    adapter.setPrompt?.(baseline + "\n" + text);
+    const favorRules=current && !p?.selection?.completionQuery && p?.kind!=="realm"
+      ? Object.values(data.metricEventDefinitions || {}).filter(cfg=>relationNames.has(cfg.character)).map(metricEntryContent).join("\n\n") : "";
+    adapter.setPrompt?.(baseline + "\n" + text + (favorRules ? "\n本轮人物互动须核对以下好感表；已实际发生匹配事件时给出一个标签，普通邀请未获响应不视为已完成共饮。\n"+favorRules : ""));
   }
   async function select(c, intent) {
     if (!current) throw Error("请先选择身份");

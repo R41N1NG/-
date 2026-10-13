@@ -107,7 +107,33 @@ const CSS = `${tokenCss([".xsd2-hud", ".xsd2-dialog", ".xsd2-xj"])}
   .xsd2-cols{grid-template-columns:repeat(2,minmax(0,1fr))}
   .xsd2-row{grid-template-columns:56px minmax(0,1fr)}
   .xsd2-badge{margin-left:0}
-}`;
+}
+.xsd2-mobile-relics{display:none}
+.xsd2-xj{color:#eee9d9;font-family:serif;line-height:1.6}.xsd2-xj [data-close]{background:#273b34;color:var(--xsd2-gold-bright);border:1px solid #8b927e;border-radius:6px;padding:7px;cursor:pointer}.xsd2-xj-sheet header{position:relative;padding-right:48px}.xsd2-xj-sheet header .x{position:absolute;right:0;top:0}
+.xsd2-xj{width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;padding:12px;border:0;box-sizing:border-box;background:transparent;overflow:hidden}
+.xsd2-xj::backdrop{background:#000b}
+.xsd2-xj-sheet{display:flex;flex-direction:column;max-height:calc(100dvh - 24px);overflow:hidden}
+.xsd2-xj-sheet header,.xsd2-xtabs,.xsd2-xj-sheet footer{flex:none}
+.xsd2-cols{min-height:0;overflow:auto;align-items:start;overscroll-behavior:contain}
+.xsd2-portrait-dialog{width:min(800px,calc(100vw - 24px));box-sizing:border-box;overflow:auto;padding:12px}
+.xsd2-portrait-dialog .xsd2-dialog-body img{display:block;width:100%;height:auto;max-height:75dvh;object-fit:contain;margin:auto}
+.xsd2-dialog{box-sizing:border-box;overflow:auto}.xsd2-dialog header{gap:12px;align-items:center}.xsd2-dialog header button{flex:none}
+@media(max-width:980px){
+ .xsd2-stagebar{width:100%;gap:10px;min-width:0}.xsd2-stagebar>.xsd2-hud{width:100%;max-width:none;flex:none}
+ .xsd2-wing{display:none}.xsd2-mobile-relics{display:flex;gap:8px;overflow-x:auto;width:100%;max-width:100%;box-sizing:border-box;padding:5px 2px 10px;flex-wrap:nowrap;scroll-snap-type:x proximity}
+ .xsd2-mobile-relics .xsd2-tile{flex:0 0 64px;width:64px;height:64px;scroll-snap-align:start}.xsd2-mobile-relics .xsd2-tile img{width:58px;height:58px}
+ .xsd2-who{display:block}.xsd2-portrait[data-player-avatar-slot]{display:none}.xsd2-document{width:100%}
+ .xsd2-xj-sheet{width:100%;padding:12px;max-height:calc(100dvh - 24px)}.xsd2-cols{grid-template-columns:1fr;gap:10px}
+ .xsd2-xj-sheet header h3{font-size:17px;letter-spacing:1px}.xsd2-xj-sheet header p{font-size:12px}.xsd2-xj-sheet header img{width:40px;height:40px}.xsd2-xj-sheet footer>span{display:none}
+ .xsd2-xtabs{flex-wrap:nowrap;overflow-x:auto;padding:4px 0}.xsd2-xtab{flex:none;white-space:nowrap}
+ .xsd2-xj-sheet header [data-close]{margin-left:auto;min-width:40px;min-height:40px}
+}
+@media(max-width:480px){
+ .xsd2-hud{padding:14px 12px;font-size:14px}.xsd2-head h1{font-size:25px;letter-spacing:5px}.xsd2-row{grid-template-columns:48px minmax(0,1fr);gap:8px;padding:8px 0}
+ .xsd2-head{gap:8px}.xsd2-dialog{max-width:calc(100vw - 20px);width:calc(100vw - 20px);max-height:90dvh;padding:12px}
+ .xsd2-npc{gap:10px}.xsd2-hud .xsd2-npc{grid-template-columns:56px minmax(0,1fr);gap:10px}.xsd2-hud .xsd2-npc>[data-portrait]{width:56px;height:70px}.xsd2-avatar-placeholder{width:56px;height:70px}
+}
+`;
 // Names and file IDs are drawn from the migrated registry / local gallery manifest.
 const PORTRAITS = {
   玄机子: "xuanjizi",
@@ -207,22 +233,24 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   const fanfare = mountRelicFanfare(doc, container, data);
   const stagebar = doc.createElement("div");
   stagebar.className = "xsd2-stagebar";
+  const mobileRail=doc.createElement("nav");mobileRail.className="xsd2-mobile-relics";mobileRail.setAttribute("aria-label","名器纹章");
   const wingL = doc.createElement("div");
   wingL.className = "xsd2-wing";
   wingL.dataset.xsd2Wing = "left";
   const wingR = doc.createElement("div");
   wingR.className = "xsd2-wing";
   wingR.dataset.xsd2Wing = "right";
-  const xjRoot = doc.createElement("div");
+  const xjRoot = doc.createElement("dialog");
   xjRoot.className = "xsd2-xj";
   container.append(settlement, stagebar);
-  stagebar.append(wingL, root, wingR);
-  container.append(xjRoot);
+  stagebar.append(wingL, root, wingR,mobileRail);
+  const closeXj=()=>{if(xjRoot.open)xjRoot.close();xjRoot.replaceChildren();xjRoot.classList.remove("open");xjRoot.remove();};
+  xjRoot.addEventListener("cancel",e=>{e.preventDefault();closeXj();});
   let favorDialog=null,realmDispose=null,eraDispose=null;
   const closeEras=()=>{eraDispose?.();eraDispose=null;};
   const closeRealm=()=>{realmDispose?.();realmDispose=null;};
   const closeFavor=()=>{favorDialog?.remove();favorDialog=null;};
-  const escape = e => { if(e.key === "Escape") { closeFavor();closeRealm();closeEras(); xjRoot.replaceChildren(); xjRoot.classList.remove("open"); } };
+  const escape = e => { if(e.key === "Escape") { closeFavor();closeRealm();closeEras(); closeXj(); } };
   doc.addEventListener("keydown",escape);
   let plugins = [],
     dialogs = [],
@@ -243,8 +271,10 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       el.onclick = () => openXj(r.id, s);
       return el;
     };
-    wingL.replaceChildren(...tiles.slice(0, 7).map(make));
-    wingR.replaceChildren(...tiles.slice(7).map(make));
+    const mobile=!!doc.defaultView.matchMedia?.("(max-width:980px)").matches;
+    mobileRail.replaceChildren(...(mobile?tiles.map(make):[]));
+    wingL.replaceChildren(...(mobile?[]:tiles.slice(0,7).map(make)));
+    wingR.replaceChildren(...(mobile?[]:tiles.slice(7).map(make)));
   }
   // ── 名器玄鉴：烙印归属＋四境界＋朱批＋浸润＋同页跳转 ──
   function openXj(id, s) {
@@ -295,7 +325,9 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       + '<footer><span>✦ 名器 1-4 阶段已并入玄鉴画卷 · 点击名签即可同页翻阅</span><button class="xsd2-closegold" data-close>✕ 关闭玄鉴</button></footer>'
       + "</div>";
     xjRoot.classList.add("open");
-    const close = () => { xjRoot.replaceChildren(); xjRoot.classList.remove("open"); };
+    if(!xjRoot.isConnected)doc.body.append(xjRoot);
+    if(!xjRoot.open)xjRoot.showModal();
+    const close = closeXj;
     xjRoot.onclick = e => {
       const button=e.target.closest("[data-close],[data-xjtab]");
       if (e.target === xjRoot || button?.hasAttribute("data-close")) close();
@@ -346,6 +378,13 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
           ? '<ul class="xsd2-flog">' + log.map(x=>'<li class="'+(x.delta>0?'up':x.delta<0?'dn':'')+'"><span>'+esc(x.label || ((data.metricEventDefinitions && Object.values(data.metricEventDefinitions).find(c=>c.character===character)?.anchors||[]).find(a=>a.id===x.via)?.label) || (x.via==='记恨'?'不睦':x.via==='记心上'?'交心':'互动'))+'</span><b>'+(x.delta>=0?'+':'')+x.delta+'</b></li>').join('')+'</ul>'
           : '<p class="xsd2-label">近日暂无心迹波动。</p>')
       ;
+    const metricKey="metric."+character+".好感度";
+    if(s.manual?.[metricKey]!==undefined){
+      const note=doc.createElement("p");note.className="xsd2-cap";note.textContent="好感已被GM手动锁定，自然互动暂不改变数值。";el.querySelector(".xsd2-dialog-body").prepend(note);
+      if(!options.readOnly){const release=doc.createElement("button");release.type="button";release.textContent="恢复自然变化";release.dataset.favorRelease="";note.append(release);release.onclick=async()=>{release.disabled=true;try{await runtime.dispatchIntent({type:"GM_RELEASE",payload:{keys:[metricKey]}});closeFavor();openFavor(character,runtime.getSnapshot());}catch(error){report?.(error);release.disabled=false;}};}
+    }
+    const check=s.stat_data.lastFavorCheck;
+    if(check && (check.character===character || check.character===null) && check.reason){const note=doc.createElement("p");note.className="xsd2-label";note.textContent=check.reason;el.querySelector(".xsd2-dialog-body").append(note);}
     const close = () => {el.remove();if(favorDialog===el)favorDialog=null;};
     const active=s.activeEvent?.pluginId === "character_promotion" && s.activeEvent?.character === character
       ? data.promotionDefinitions?.[s.activeEvent.promotionId] : null;
@@ -366,7 +405,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       im.style.cssText = "width:44px;height:44px;border-radius:6px;object-fit:cover;cursor:zoom-in";
       im.dataset.xsd2Zoom = p.large;
       im.addEventListener("click", () => {
-        const zoom=modal(doc,character+" · 立绘");const image=doc.createElement("img");loadPortrait(image,p,true);image.alt=character;zoom.querySelector(".xsd2-dialog-body").append(image);dialogs.push(()=>zoom.remove());
+        const zoom=modal(doc,character+" · 立绘");zoom.classList.add("xsd2-portrait-dialog");const image=doc.createElement("img");loadPortrait(image,p,true);image.alt=character;zoom.querySelector(".xsd2-dialog-body").append(image);dialogs.push(()=>zoom.remove());
       });
       el.querySelector(".xsd2-dialog-body").insertBefore(im, el.querySelector(".xsd2-fbar"));
     }
@@ -480,6 +519,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
         (b.onclick = () => {
           const p = portrait(b.dataset.portrait, s, data),
             el = modal(doc, b.dataset.portrait);
+          el.classList.add("xsd2-portrait-dialog");
           dialogs.push(() => el.remove());
           const img = doc.createElement("img");
           loadPortrait(img,p,true);
@@ -512,6 +552,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   }
   const unsubscribe = runtime.subscribe(render);
   render();
+  const resize=()=>{const s=runtime.getSnapshot();if(s && !disposed){renderWings(s);if(options.readOnly)stagebar.querySelectorAll("[data-relic]").forEach(b=>{b.disabled=true;b.onclick=null;});}};
+  doc.defaultView.addEventListener("resize",resize);
   return {
     render,
     destroy() {
@@ -526,6 +568,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       settlement.remove();
       stagebar.remove();
       doc.removeEventListener("keydown",escape);
+      doc.defaultView.removeEventListener("resize",resize);
       xjRoot.remove();
       style.remove();
     },

@@ -1073,3 +1073,10 @@ test('闭关发送失败回滚，重复点击拒绝、刷新保留、取消恢�
  h.c.chat.splice(1);await h.r.restore();assert.equal(C.day(h.r.getSnapshot().calendarDate),date);assert.equal(h.r.getSnapshot().stat_data.修为,'金丹中期');
  const k=harness();await k.opening('赵无忧');const start=C.day(k.r.getSnapshot().calendarDate);await realmIntent(k,'retreat');await k.r.stop();assert.equal(k.r.getSnapshot().pending,null);assert.equal(C.day(k.r.getSnapshot().calendarDate),start);assert.equal(k.r.getSnapshot().stat_data.修为,'金丹中期');
 });
+
+test('在场角色的好感表与实际共饮申报进入本轮提示；锁定不会自动清除',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.reply(status({在场:'叶红缨',角色1:'<名>叶红缨</名><关系>同门</关系>'},'叶红缨提着酒坛站在竹林边。'));
+ assert.match(h.prompts.at(-1),/yh_gongyin/);assert.match(h.prompts.at(-1),/<好感事件>/);
+ h.c.chat.push({is_user:true,mes:'请叶红缨饮酒'});await h.reply(status({在场:'叶红缨',角色1:'<名>叶红缨</名><关系>同门</关系>'},'叶红缨接过酒盏，与赵无忧共饮，席间开怀。')+'<好感事件>叶红缨｜锚点 yh_gongyin｜依据：叶红缨接过酒盏，与赵无忧共饮，席间开怀。</好感事件>');
+ assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,2);
+});

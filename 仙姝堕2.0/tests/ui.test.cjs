@@ -91,12 +91,12 @@ test("HUD真实DOM：折叠、快捷发送、物品、立绘、GM提交与卸载
   assert.equal(doc.querySelector("dialog"), null);
   doc.querySelector("[data-gm]").click();
   const form = doc.querySelector("dialog form");
-  form.elements.rank.value = "4";
+  form.elements.realm.value = "金丹后期";
   const previous = global.FormData;
   global.FormData = d.window.FormData;
   await form.onsubmit({ preventDefault() {} });
   global.FormData = previous;
-  assert.deepEqual(calls.at(-1), { type: "GM_PATCH", payload: { 段位: 4 } });
+  assert.deepEqual(calls.at(-1), { type: "GM_PATCH", payload: { realm: "金丹后期" } });
   panel.destroy();
   assert.equal(listeners.size, 0);
   assert.equal(doc.querySelector(".xsd2-hud"), null);

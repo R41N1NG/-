@@ -97,3 +97,11 @@ test('对饮简短流水：闭合或末尾漏闭标签可核验，封顶/人工�
  s.stat_data.character_metrics.叶红缨.好感度=40;assert.equal(api.apply(s,report,prose+report,9).changes.length,0);assert.equal(s.stat_data.favor_log.叶红缨[0].delta,0);
  s.stat_data.character_metrics.叶红缨.好感度=20;s.manual['metric.叶红缨.好感度']=20;assert.equal(api.apply(s,report+'</好感事件>',prose,12).changes.length,0);assert.equal(s.stat_data.favor_log.叶红缨[0].delta,0);
 });
+
+test('共饮配置+2：名签附注、显示名锚点、正文排版差异可落账；虚构依据仍拒绝',()=>{
+ const s=state();s.stat_data.在场角色=[{名:'叶红缨（大师姐）'}];const api=createMetricEvents(defs,profiles,{});
+ const prose='**叶红缨**接过酒盏，与赵无忧共饮，席间开怀。';
+ const result=api.apply(s,tag('叶红缨｜对饮｜依据：“叶红缨接过酒盏，与赵无忧共饮，席间开怀。”'),prose,1);
+ assert.equal(result.changes[0].value,2);assert.equal(s.stat_data.favor_log.叶红缨[0].label,'对饮');assert.equal(s.stat_data.lastFavorCheck.reason,null);
+ assert.equal(api.apply(s,tag('叶红缨｜对饮｜依据：叶红缨承诺终生相伴。'),prose,10).changes.length,0);assert.match(s.stat_data.lastFavorCheck.reason,/依据/);
+});

@@ -3,6 +3,7 @@ const { writeMetric, metricSpec, canRecover } = require("./character_stages");
 
 // 数值事件申报：模型每轮至多一个 <好感事件> 标签，申报「档位」或「锚点ID」＋原文依据；
 // 分值、上限、冷却全部由配置与后台决定，模型只有举证权，没有定价权。
+function proofText(text){return String(text).normalize("NFKC").replace(/[\s\u200b-\u200d\ufeff*_`]/g,"");}
 function stripForEvidence(text) {
   return String(text)
     .replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi, "")
@@ -23,14 +24,14 @@ function parseMetricEvent(body) {
     ok: true,
     character: parts[0],
     target: parts[1],
-    evidence: parts[2].replace(/^依据[:：]\s*/, "").trim(),
+    evidence: parts[2].replace(/^依据[:：]\s*/, "").trim().replace(/^[“「『"]|[”」』"]$/g,""),
   };
 }
 function visibleCharacters(stat) {
   return new Set([
     stat.身份,
     stat.stage_focus,
-    ...(stat.在场角色 || []).map((x) => x.名),
+    ...(stat.在场角色 || []).flatMap(x=>[x.名,String(x.名||"").replace(/[（(][\s\S]*?[）)]/g,"").trim()]),
   ]);
 }
 function createMetricEvents(defs, profiles, promotions) {
@@ -64,6 +65,7 @@ function createMetricEvents(defs, profiles, promotions) {
     if(stat.favor_log[cfg.character].length>12)stat.favor_log[cfg.character].length=12;
   }
   function drop(stat, storyCount, reason) {
+    if(stat.lastFavorCheck)stat.lastFavorCheck.reason=reason;
     stat.metric_diag ||= [];
     stat.metric_diag.unshift({ turn: storyCount, reason });
     if (stat.metric_diag.length > 10) stat.metric_diag.length = 10;
@@ -76,6 +78,7 @@ function createMetricEvents(defs, profiles, promotions) {
     const changes = [];
     const visible = visibleCharacters(stat);
     const parsed = parseMetricEvent(body);
+    stat.lastFavorCheck={turn:storyCount,character:parsed.character || null,reason:"本轮未确认新的好感事件"};
     if (!parsed.ok) {
       if (/<好感事件>/.test(String(body))) return drop(stat, storyCount, parsed.reason);
       return { changes };
@@ -86,7 +89,7 @@ function createMetricEvents(defs, profiles, promotions) {
     const [, cfg] = found;
     const st = (stat.metric_state[parsed.character] ||= {});
     const proseVisible = stripForEvidence(prose);
-    if (!parsed.evidence || !proseVisible.includes(parsed.evidence))
+    if (!proofText(parsed.evidence) || !proofText(proseVisible).includes(proofText(parsed.evidence)))
       return drop(stat, storyCount, "申报依据不在本回合正文中");
     const spec = metricSpec(profiles, cfg.character, cfg.metric.key);
     let current = stat.character_metrics?.[cfg.character]?.[cfg.metric.key] ?? spec.default;
@@ -99,15 +102,15 @@ function createMetricEvents(defs, profiles, promotions) {
         return drop(stat, storyCount, cfg.character + "「" + via + "」档位冷却中");
     } else {
       const anchorId = parsed.target.replace(/^锚点\s*/, "");
-      const anchor = (cfg.anchors || []).find((a) => a.id === anchorId);
+      const anchor = (cfg.anchors || []).find((a) => a.id === anchorId || a.label === anchorId);
       if (!anchor) return drop(stat, storyCount, "锚点 " + anchorId + " 不在配置内");
       delta = anchor.delta;
-      via = anchorId;
+      via = anchor.id;
       stat.metric_anchor_done ||= {};
-      if (!anchor.repeat && stat.metric_anchor_done[anchorId])
+      if (!anchor.repeat && stat.metric_anchor_done[anchor.id])
         return drop(stat, storyCount, "锚点 " + anchorId + " 为一次性事件，已结算");
       st.anchorTurn ||= {};
-      if (anchor.repeat !== false && storyCount - (st.anchorTurn[anchorId] || -999) < (cfg.cooldownTurns || 0))
+      if (anchor.repeat !== false && storyCount - (st.anchorTurn[anchor.id] || -999) < (cfg.cooldownTurns || 0))
         return drop(stat, storyCount, "锚点 " + anchorId + " 冷却中");
     }
     if (s.manual && s.manual["metric." + cfg.character + "." + cfg.metric.key] !== undefined){record(stat,cfg,via,0,storyCount,parsed.evidence);return drop(stat,storyCount,cfg.character+" 好感处于人工覆盖，自动申报拒绝");}
@@ -129,9 +132,10 @@ function createMetricEvents(defs, profiles, promotions) {
       const anchorId = via;
       st.anchorTurn ||= {};
       st.anchorTurn[anchorId] = storyCount;
-      const anchor = (cfg.anchors || []).find((a) => a.id === anchorId);
+      const anchor = (cfg.anchors || []).find((a) => a.id === anchorId || a.label === anchorId);
       if (anchor && anchor.repeat === false) stat.metric_anchor_done[anchorId] = true;
     }
+    stat.lastFavorCheck.reason=null;
     record(stat,cfg,via,value-current,storyCount,parsed.evidence);
     changes.push({ character: cfg.character, key: cfg.metric.key, delta, value, via });
     return { changes };
