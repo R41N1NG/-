@@ -192,6 +192,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   container.append(settlement, stagebar);
   stagebar.append(wingL, root, wingR);
   container.append(xjRoot, lightbox);
+  const escape = e => { if(e.key === "Escape") { xjRoot.replaceChildren(); xjRoot.classList.remove("open"); } };
+  doc.addEventListener("keydown",escape);
   let plugins = [],
     dialogs = [],
     disposed = false,
@@ -259,17 +261,18 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       .join("");
     const stageImg = rs.stage > 0 ? data.relicEmblems?.[id]?.[String(rs.stage)] : data.relicEmblems?.[id]?.["1"];
     xjRoot.innerHTML =
-      '<div class="xsd2-xj open"><div class="xsd2-xj-sheet">'
+      '<div class="xsd2-xj-sheet">'
       + '<header><img src="' + (stageImg || "") + '" alt=""><div><h3>仙姝堕 · 名器玄鉴</h3><p>载体宿主：' + esc(rel.carrier) + " · " + esc(rel.name) + '</p></div><span class="xsd2-typetag">' + esc(rel.type) + "</span>" + badge + '<button class="x" data-close>✕</button></header>'
       + '<div class="xsd2-xtabs">' + tabs + '</div><div class="xsd2-cols">' + cols + '</div>'
       + '<footer><span>✦ 名器 1-4 阶段已并入玄鉴画卷 · 点击名签即可同页翻阅</span><button class="xsd2-closegold" data-close>✕ 关闭玄鉴</button></footer>'
-      + "</div></div>";
+      + "</div>";
     xjRoot.classList.add("open");
-    const close = () => (xjRoot.innerHTML = "");
-    const xjEl = xjRoot.querySelector(".xj");
-    xjEl.addEventListener("click", (e) => { if (e.target.classList.contains("xj")) close(); });
-    xjEl.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
-    xjEl.querySelectorAll("[data-xjtab]").forEach((b) => b.addEventListener("click", () => { close(); openXj(b.dataset.xjtab, s); }));
+    const close = () => { xjRoot.replaceChildren(); xjRoot.classList.remove("open"); };
+    xjRoot.onclick = e => {
+      const button=e.target.closest("[data-close],[data-xjtab]");
+      if (e.target === xjRoot || button?.hasAttribute("data-close")) close();
+      else if (button?.hasAttribute("data-xjtab")) openXj(button.dataset.xjtab,runtime.getSnapshot() || s);
+    };
     dialogs.push(close);
   }
   // ── 心迹面板：好感金条＋菱形节点（专属剧情启动钮）＋事件流水 ──
@@ -501,6 +504,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       root.remove();
       settlement.remove();
       stagebar.remove();
+      doc.removeEventListener("keydown",escape);
       xjRoot.remove();
       lightbox.remove();
       style.remove();
