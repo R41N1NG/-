@@ -3,6 +3,7 @@ const { esc, modal } = require("./dom");
 const {mountPlayerAvatar} = require("./player_avatar");
 const { mountOpening } = require("./opening_menu");
 const { renderSettlement } = require("./settlement_panel");
+const { mountRelicFanfare } = require("./relic_fanfare");
 const { openItem } = require("./item_panel");
 const { openGM } = require("./gm_panel");
 const {openEras}=require("./era_panel");
@@ -191,6 +192,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   doc.head.append(style);
   const settlement = doc.createElement("div");
   settlement.dataset.xsd2Settlements = "";
+  const fanfare = mountRelicFanfare(doc, container, data);
   const stagebar = doc.createElement("div");
   stagebar.className = "xsd2-stagebar";
   const wingL = doc.createElement("div");
@@ -389,6 +391,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     stagebar.insertBefore(root, wingR);
     root.className = "xsd2-hud";
     renderWings(s);
+    fanfare.check(s, options);
     const st = s.stat_data,
       field = (k, n) =>
         '<dt data-xsd-slot="' +
@@ -506,7 +509,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     render,
     destroy() {
       disposed = true;
-      closeFavor();closeRealm();closeEras();
+      closeFavor();
+      fanfare.destroy();closeRealm();closeEras();
       unsubscribe();
       opening?.destroy();
       plugins.forEach((f) => f());

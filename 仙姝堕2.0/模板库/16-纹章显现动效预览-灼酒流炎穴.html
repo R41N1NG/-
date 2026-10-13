@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>灼酒流炎穴 · 纹章点亮揭幕 v3</title>
+<style>
+  :root{
+    --bg:#0E141D; --card:#141B26; --ink:#E8DFC8; --ink-dim:#9AA3B2;
+    --gold:#D9A93C; --gold-hi:#F0CC6B; --red:#D8402C; --line:#2A3442;
+    --xk:"STXingkai","华文行楷","XingKai SC","KaiTi","STKaiti","楷体",serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.75 "Microsoft YaHei",system-ui,sans-serif;padding:28px 20px 64px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:2px;color:var(--gold-hi)}
+  h2{font-size:15px;margin:0 0 10px;letter-spacing:1px;color:var(--gold)}
+  .sub{color:var(--ink-dim);font-size:13px;margin:0 0 22px}
+  .grid{display:grid;grid-template-columns:420px 1fr;gap:20px;align-items:start}
+  @media (max-width:920px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:20px}
+  .hint{color:var(--ink-dim);font-size:12px;text-align:center;margin-top:10px}
+
+  /* ---------- 开源毛笔字体（七字子集，OFL 可商用） ---------- */
+  @font-face{font-family:"MSZ Brush";src:url("mashanzheng-7.woff2") format("woff2");font-display:swap}
+  @font-face{font-family:"ZMX Brush";src:url("zhimangxing-7.woff2") format("woff2");font-display:swap}
+  .relic-stage[data-font="msz"]{--xk:"MSZ Brush","STXingkai","华文行楷","XingKai SC","KaiTi","STKaiti","楷体",serif}
+  .relic-stage[data-font="zmx"]{--xk:"ZMX Brush","STXingkai","华文行楷","XingKai SC","KaiTi","STKaiti","楷体",serif}
+  .relic-stage[data-font="msz"] .xk-main span{-webkit-text-stroke-width:.55px}
+  .relic-stage[data-font="zmx"] .xk-main span{-webkit-text-stroke-width:1.1px}
+
+  /* ---------- 揭幕卡舞台 ---------- */
+  .stage-outer{display:flex;justify-content:center}
+  .relic-stage{--spd:1; position:relative; width:380px;height:508px;border-radius:14px;background:#141B26;
+    border:1px solid #2A3648;box-shadow:inset 0 0 70px rgba(0,0,0,.6), 0 6px 30px rgba(0,0,0,.45);
+    overflow:hidden;cursor:pointer}
+  .relic-stage::before{content:"";position:absolute;inset:7px;border:1px solid rgba(217,169,60,.26);border-radius:9px;pointer-events:none;z-index:6}
+  .relic-stage svg{width:100%;height:100%;display:block}
+  .ctrl{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  button{background:#1C2532;color:var(--ink);border:1px solid #334054;border-radius:8px;padding:7px 18px;font-size:13px;cursor:pointer}
+  button:hover{border-color:var(--gold);color:var(--gold-hi)}
+  button.on{border-color:var(--gold);color:var(--gold-hi);background:#243040}
+
+  /* ---------- 灵雾氛围（结算遮罩同款气质） ---------- */
+  .mist{position:absolute;inset:-20px;z-index:1;pointer-events:none;filter:blur(2px);
+    background:
+      radial-gradient(240px 200px at 18% 10%, rgba(216,64,44,.11), transparent 70%),
+      radial-gradient(260px 220px at 84% 16%, rgba(217,169,60,.11), transparent 70%),
+      radial-gradient(320px 280px at 50% 86%, rgba(217,169,60,.09), transparent 70%)}
+  .relic-stage.play .mist{animation:mistDrift calc(9s/var(--spd)) ease-in-out infinite alternate}
+  @keyframes mistDrift{from{transform:translate(-8px,4px) scale(1.02)}to{transform:translate(8px,-6px) scale(1.06)}}
+
+  /* ---------- 行楷标题层（鎏金匾题＋朱砂落印） ---------- */
+  .title-zone{position:absolute;top:0;left:0;right:0;height:170px;z-index:3;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;pointer-events:none}
+  .title-zone::before{content:"";position:absolute;left:50%;top:52%;width:300px;height:120px;transform:translate(-50%,-50%);
+    background:radial-gradient(closest-side, rgba(217,169,60,.14), transparent 75%);opacity:0}
+  .relic-stage.play .title-zone::before{animation:titleHaloIn calc(.9s/var(--spd)) ease-out calc(3.8s/var(--spd)) both,
+    titleHaloPulse calc(.5s/var(--spd)) ease-out calc(4.5s/var(--spd)) both,
+    titleHaloBreath calc(3s/var(--spd)) ease-in-out calc(5.3s/var(--spd)) infinite alternate}
+  .xk-main{margin:0;font-family:var(--xk);font-size:58px;line-height:1.2;letter-spacing:6px;text-indent:6px;white-space:nowrap}
+  .xk-main span{
+    display:inline-block;opacity:0;
+    background:linear-gradient(180deg,#FFF3C6 0%,#F2CF6D 30%,#C08A1E 62%,#6B4C10 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    -webkit-text-stroke:1.1px rgba(74,50,8,.55);
+    filter:drop-shadow(0 3px 3px rgba(0,0,0,.75)) drop-shadow(0 0 16px rgba(217,169,60,.4))}
+  .relic-stage.play .xk-main span{animation:hammerIn calc(.34s/var(--spd)) cubic-bezier(.3,.6,.3,1) both;
+    animation-delay:calc((3.8s + var(--d))/var(--spd))}
+  @keyframes hammerIn{
+    0%{opacity:0;transform:scale(2.35) translateY(-16px);
+       filter:blur(5px) drop-shadow(0 3px 3px rgba(0,0,0,.75)) drop-shadow(0 0 16px rgba(217,169,60,.4))}
+    38%{opacity:1}
+    55%{transform:scale(.9) translateY(3px);
+       filter:blur(0) drop-shadow(0 3px 3px rgba(0,0,0,.75)) drop-shadow(0 0 16px rgba(217,169,60,.4))}
+    75%{transform:scale(1.07)}
+    100%{opacity:1;transform:none;
+       filter:drop-shadow(0 3px 3px rgba(0,0,0,.75)) drop-shadow(0 0 16px rgba(217,169,60,.4))}}
+
+  /* 落字震卡：前四字小震，末字大震 */
+  .relic-stage.play{animation:cardShake calc(.85s/var(--spd)) linear calc(3.93s/var(--spd))}
+  @keyframes cardShake{
+    0%,100%{transform:none}
+    5%{transform:translate(1.6px,-1px) rotate(.15deg)}
+    9%{transform:translate(-1.6px,1px)}
+    13%{transform:none}
+    19%{transform:translate(-2px,1.4px) rotate(-.2deg)}
+    23%{transform:translate(2px,-1.2px)}
+    27%{transform:none}
+    33%{transform:translate(2.3px,1.4px)}
+    37%{transform:translate(-2.3px,-1.4px) rotate(.2deg)}
+    41%{transform:none}
+    47%{transform:translate(-2.6px,1.6px)}
+    51%{transform:translate(2.6px,-1.6px) rotate(-.25deg)}
+    55%{transform:none}
+    62%{transform:translate(4px,-2.4px) rotate(.4deg)}
+    68%{transform:translate(-4px,2.6px) rotate(-.4deg)}
+    74%{transform:translate(3px,-1.6px)}
+    80%{transform:translate(-1.6px,1px)}
+    86%{transform:none}}
+
+  /* 末字落定：墨点迸溅 */
+  .ink-burst{position:absolute;left:50%;top:100px;width:0;height:0;z-index:4;pointer-events:none}
+  .ink-burst i{position:absolute;width:5px;height:5px;border-radius:50%;background:#E8C363;opacity:0;
+    box-shadow:0 0 8px rgba(232,195,99,.8)}
+  .relic-stage.play .ink-burst i{animation:inkPop calc(.55s/var(--spd)) cubic-bezier(.2,.7,.4,1) calc(4.5s/var(--spd)) both}
+  @keyframes inkPop{
+    0%{opacity:0;transform:translate(0,0) scale(.6)}
+    18%{opacity:.95}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.35)}}
+
+  /* 盖印红光一闪 */
+  .redflash{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;
+    background:radial-gradient(300px 220px at 50% 30%, rgba(216,64,44,.3), transparent 75%)}
+  .relic-stage.play .redflash{animation:flash calc(.3s/var(--spd)) ease-out calc(5.5s/var(--spd)) both}
+
+  /* 金线菱纹分隔 */
+  .title-rule{display:flex;align-items:center;gap:9px;width:76%;margin:5px auto 9px}
+  .title-rule i{flex:1;height:1px;opacity:0}
+  .title-rule i:first-child{background:linear-gradient(90deg,transparent,rgba(217,169,60,.8));transform-origin:100% 50%}
+  .title-rule i:last-child{background:linear-gradient(90deg,rgba(217,169,60,.8),transparent);transform-origin:0% 50%}
+  .title-rule b{width:7px;height:7px;background:#E8C363;transform:rotate(45deg);opacity:0;
+    box-shadow:0 0 8px rgba(232,195,99,.7)}
+  .relic-stage.play .title-rule i{animation:lineGrow calc(.55s/var(--spd)) ease-out calc(4.55s/var(--spd)) both}
+  .relic-stage.play .title-rule b{animation:fadeSoft calc(.4s/var(--spd)) ease-out calc(4.9s/var(--spd)) both}
+  @keyframes lineGrow{0%{opacity:0;transform:scaleX(0)}100%{opacity:1;transform:scaleX(1)}}
+  @keyframes fadeSoft{0%{opacity:0;transform:rotate(45deg) scale(.3)}100%{opacity:1;transform:rotate(45deg) scale(1)}}
+
+  /* 朱砂「觉醒」印 */
+  .seal{position:relative;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    width:62px;height:88px;border:2px solid rgba(203,54,42,.92);border-radius:7px;
+    color:#D8402C;font-family:var(--xk);font-size:31px;line-height:1.12;letter-spacing:0;
+    -webkit-text-stroke:.7px rgba(90,16,10,.5);
+    text-shadow:0 0 10px rgba(200,55,42,.55);
+    box-shadow:inset 0 0 9px rgba(200,55,42,.35),0 0 14px rgba(200,55,42,.22);
+    transform:rotate(-4deg);opacity:0}
+  .seal span{display:block}
+  .relic-stage.play .seal{animation:stampIn calc(.55s/var(--spd)) cubic-bezier(.2,1.3,.4,1) calc(4.95s/var(--spd)) both,
+      sealGlow calc(2.8s/var(--spd)) ease-in-out calc(5.8s/var(--spd)) infinite alternate}
+  .seal::after{content:"";position:absolute;inset:-5px;border:1px solid rgba(203,54,42,.85);border-radius:9px;opacity:0}
+  .relic-stage.play .seal::after{animation:stampRing calc(.6s/var(--spd)) ease-out calc(5.42s/var(--spd)) both}
+  @keyframes titleHaloIn{0%{opacity:0}100%{opacity:.3}}
+  @keyframes titleHaloPulse{0%{opacity:.3}30%{opacity:1}100%{opacity:.55}}
+  @keyframes titleHaloBreath{from{opacity:.45}to{opacity:.72}}
+  @keyframes stampIn{
+    0%{opacity:0;transform:rotate(-4deg) scale(1.75)}
+    55%{opacity:1;transform:rotate(-4deg) scale(.93)}
+    78%{transform:rotate(-4deg) scale(1.05)}
+    100%{opacity:1;transform:rotate(-4deg) scale(1)}}
+  @keyframes stampRing{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.4)}}
+  @keyframes sealGlow{
+    from{box-shadow:inset 0 0 9px rgba(200,55,42,.3),0 0 12px rgba(200,55,42,.2)}
+    to{box-shadow:inset 0 0 12px rgba(200,55,42,.5),0 0 22px rgba(200,55,42,.4)}}
+
+  /* ---------- 金粉（揭幕时刻飘落） ---------- */
+  .dust{position:absolute;inset:0;z-index:4;pointer-events:none}
+  .dust i{position:absolute;top:-8px;display:block;width:3px;height:3px;border-radius:50%;background:#F0CC6B;opacity:0}
+  .relic-stage.play .dust i{animation:dustFall calc(var(--t)*1s/var(--spd)) linear calc((5.2s + var(--d)*1s)/var(--spd)) infinite}
+  @keyframes dustFall{
+    0%{opacity:0;transform:translate(0,0)}
+    10%{opacity:.85}
+    100%{opacity:0;transform:translate(var(--dx,6px),310px)}}
+
+  /* ---------- 揭幕遮罩（先罩后揭） ---------- */
+  .veil{position:absolute;inset:0;z-index:5;pointer-events:none;
+    background:radial-gradient(430px 430px at 50% 52%, rgba(10,14,20,.88), rgba(8,11,16,.985))}
+  .relic-stage.play .veil{animation:veilOut calc(1s/var(--spd)) ease-out both}
+  @keyframes veilOut{0%{opacity:1}55%{opacity:.4}100%{opacity:0}}
+
+  /* ---------- SVG 变换基准（坐标均为原图 1254 空间） ---------- */
+  .relic-stage .in,.relic-stage .amb,.relic-stage .fall,.relic-stage .rip,.relic-stage .amb-all,.relic-stage .endglow,.relic-stage .halo{transform-box:fill-box}
+  .relic-stage .in-cup,.relic-stage .in-flameL,.relic-stage .in-flameR,.relic-stage .sway{transform-origin:50% 100%}
+  .relic-stage .in-splashL,.relic-stage .in-splashR,.relic-stage .in-dropC{transform-origin:50% 50%}
+  .relic-stage .breathC{transform-origin:50% 55%}
+  .relic-stage .rip{transform-origin:50% 50%}
+  .relic-stage .amb-all{transform-origin:50% 55%}
+  .relic-stage .rip,.relic-stage .flash,.relic-stage .endglow,.relic-stage .spark{opacity:0}
+
+  /* ---------- 纹章入场编排（一次性，挂 .play 播放） ----------
+     分镜（主人 2026-10-13 定稿）：
+     一 酒盏先陈 0 – 0.5s        二 飞醴入盏 0.8 – 1.4s
+     三 涟漪漾起・盏身轻颤 1.28 – 2.1s
+     四 流炎迸发・两侧溅玉（左右同拍） 1.6 – 2.7s
+     五 酒液弹空・纹章成形 2.8 – 3.55s
+     六 行楷落墨「灼酒流炎穴」3.8 – 4.9s   七 朱砂「觉醒」4.9 – 5.4s，金粉飘落，随后待机 */
+  .relic-stage.play .in-cup    {animation:cupIn   calc(.5s  /var(--spd)) cubic-bezier(.2,.8,.25,1) both}
+  .relic-stage.play .cupDip    {animation:cupDip  calc(.5s  /var(--spd)) ease-out calc(1.3s/var(--spd)) both}
+  .relic-stage.play .fall      {animation:fallDrop calc(.6s /var(--spd)) cubic-bezier(.5,0,.9,.45) calc(.8s/var(--spd)) both}
+  .relic-stage.play .flash     {animation:flash   calc(.35s /var(--spd)) ease-out calc(1.28s/var(--spd)) both}
+  .relic-stage.play .rip1      {animation:ripple  calc(1s   /var(--spd)) ease-out calc(1.32s/var(--spd)) both}
+  .relic-stage.play .rip2      {animation:ripple  calc(1s   /var(--spd)) ease-out calc(1.5s /var(--spd)) both}
+  .relic-stage.play .in-flameL {animation:burst   calc(.8s  /var(--spd)) cubic-bezier(.25,1.15,.35,1) calc(1.6s /var(--spd)) both}
+  .relic-stage.play .in-flameR {animation:burst   calc(.8s  /var(--spd)) cubic-bezier(.25,1.15,.35,1) calc(1.6s /var(--spd)) both}
+  .relic-stage.play .in-splashL{animation:flyL    calc(.8s  /var(--spd)) cubic-bezier(.3,.6,.3,1) calc(1.9s /var(--spd)) both}
+  .relic-stage.play .in-splashR{animation:flyR    calc(.8s  /var(--spd)) cubic-bezier(.3,.6,.3,1) calc(1.9s /var(--spd)) both}
+  .relic-stage.play .in-dropC  {animation:jumpUp  calc(.75s /var(--spd)) cubic-bezier(.3,.9,.4,1) calc(2.8s/var(--spd)) both}
+  .relic-stage.play .halo      {animation:haloIn  calc(.6s  /var(--spd)) ease-out calc(2.9s/var(--spd)) both,
+                                          haloScale calc(2.6s/var(--spd)) ease-in-out calc(2.9s/var(--spd)) infinite alternate}
+  .relic-stage.play .endglow   {animation:endGlow calc(.9s  /var(--spd)) ease-out calc(3.5s/var(--spd)) both}
+  .relic-stage.play .spark     {animation:sparkUp calc(3.6s /var(--spd)) ease-out infinite;animation-delay:calc((3.4s + var(--i)*.45s)/var(--spd))}
+
+  @keyframes cupIn{0%{opacity:0;transform:translateY(26px) scale(.94)}100%{opacity:1;transform:none}}
+  @keyframes cupDip{0%{transform:none}30%{transform:translateY(6px)}65%{transform:translateY(-3px)}100%{transform:none}}
+  @keyframes fallDrop{
+    0%{opacity:0;transform:translateY(-760px)}
+    10%{opacity:1}
+    90%{opacity:1;transform:translateY(-4px)}
+    100%{opacity:0;transform:translateY(0)}}
+  @keyframes flash{0%{opacity:0}30%{opacity:.9}100%{opacity:0}}
+  @keyframes ripple{0%{opacity:0;transform:scale(.22)}8%{opacity:.85}70%{opacity:.35}100%{opacity:0;transform:scale(1.04)}}
+  @keyframes burst{
+    0%{opacity:0;transform:scale(1,.03)}
+    28%{opacity:1}
+    68%{transform:scale(1,1.07) skewX(1.2deg)}
+    100%{opacity:1;transform:none}}
+  @keyframes flyL{
+    0%{opacity:0;transform:translate(246px,109px) scale(.25)}
+    22%{opacity:1}
+    55%{transform:translate(56px,-2px) scale(.85)}
+    78%{transform:translate(-8px,-14px) scale(1.04)}
+    100%{opacity:1;transform:none}}
+  @keyframes flyR{
+    0%{opacity:0;transform:translate(-246px,109px) scale(.25)}
+    22%{opacity:1}
+    55%{transform:translate(-56px,-2px) scale(.85)}
+    78%{transform:translate(8px,-14px) scale(1.04)}
+    100%{opacity:1;transform:none}}
+  @keyframes jumpUp{
+    0%{opacity:0;transform:translateY(288px) scale(.55,.62)}
+    16%{opacity:1}
+    55%{transform:translateY(-18px) scale(.96,1.08)}
+    78%{transform:translateY(8px) scale(1.03,.97)}
+    100%{opacity:1;transform:none}}
+  @keyframes haloIn{0%{opacity:0}100%{opacity:.75}}
+  @keyframes haloScale{from{transform:scale(.92)}to{transform:scale(1.08)}}
+  @keyframes endGlow{0%{opacity:0;transform:scale(.85)}30%{opacity:.5}100%{opacity:0;transform:scale(1.1)}}
+  @keyframes sparkUp{
+    0%{opacity:0;transform:translate(0,0)}
+    12%{opacity:.85}
+    55%{opacity:.45}
+    100%{opacity:0;transform:translate(var(--dx,10px),-70px)}}
+
+  /* ---------- 待机循环 ---------- */
+  .relic-stage.play .amb-all{animation:breath 4.4s ease-in-out infinite alternate}
+  .swayL{animation:swayA 2.9s ease-in-out infinite alternate}
+  .swayR{animation:swayB 3.2s ease-in-out infinite alternate}
+  .breathC{animation:dropBreath 2.8s ease-in-out infinite alternate}
+  .shimL{animation:shimmer 3.4s ease-in-out infinite}
+  .shimR{animation:shimmer 3.4s ease-in-out infinite;animation-delay:-1.7s}
+  @keyframes breath{from{transform:scale(1)}to{transform:scale(1.008)}}
+  @keyframes swayA{from{transform:rotate(-1.6deg) skewX(-1deg)}to{transform:rotate(1.4deg) skewX(1.2deg)}}
+  @keyframes swayB{from{transform:rotate(1.4deg) skewX(1deg)}to{transform:rotate(-1.6deg) skewX(-1.2deg)}}
+  @keyframes dropBreath{from{transform:scale(.97)}to{transform:scale(1.03)}}
+  @keyframes shimmer{0%,100%{opacity:1}50%{opacity:.72}}
+
+  @media (prefers-reduced-motion:reduce){
+    .relic-stage,.relic-stage *{animation:none!important}
+    .xk-main span,.seal,.title-rule i,.title-rule b{opacity:1!important}
+    .seal::after{display:none}
+    .ink-burst,.redflash{display:none}
+    .veil{opacity:0!important}
+  }
+
+  /* ---------- 触发小样（模拟状态栏跳出式揭幕） ---------- */
+  .fake-floor{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+  .fake-msg{margin:0;font-size:13.5px;color:var(--ink);background:#1A211E;border:1px solid #394139;border-radius:8px;padding:10px 14px;line-height:1.8}
+  .fake-msg b{color:var(--gold-hi);margin-right:6px}
+  .fake-ok{color:#9fbf7a;font-size:12px;margin-left:8px}
+  .demo-tile{width:72px;height:72px;border-radius:10px;border:1px solid #333a35;background:#151d1a;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:.5s}
+  .demo-tile img{width:60px;height:60px;object-fit:contain;filter:grayscale(1) brightness(.45);opacity:.5;transition:.5s}
+  .demo-tile.lit{border-color:#d5b97b;box-shadow:0 0 14px #d5b97b55}
+  .demo-tile.lit img{filter:none;opacity:1}
+  .demo-note{margin:0;font-size:12.5px;color:var(--ink-dim)}
+  .fanfare-host{position:fixed;inset:0;z-index:99;display:none;align-items:center;justify-content:center;background:rgba(5,8,12,.82)}
+  .fanfare-host.open{display:flex}
+  .fanfare-host .relic-stage{max-width:94vw;max-height:92vh}
+  @media (max-height:640px){.fanfare-host .relic-stage{transform:scale(.78)}}
+
+  /* ---------- 文档区 ---------- */
+  .steps{margin:0;padding-left:0;list-style:none}
+  .steps li{padding:7px 0;border-bottom:1px dashed #233040;font-size:13.5px}
+  .steps li:last-child{border-bottom:none}
+  .steps b{color:var(--gold-hi);font-weight:600;margin-right:8px}
+  .steps .t{color:var(--ink-dim);font-size:12px;margin-right:8px;font-family:Consolas,monospace}
+  .cmp{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  .cmp img{width:170px;height:170px;border-radius:10px;border:1px solid #1E2836;background:#141B26}
+  .cmp p{flex:1;min-width:200px;margin:0;font-size:13px;color:var(--ink-dim)}
+  ul.notes{margin:0;padding-left:18px;font-size:13px;color:var(--ink-dim)}
+  ul.notes li{margin-bottom:6px}
+  code{background:#1B2430;border:1px solid #2A3648;border-radius:4px;padding:0 5px;font-size:12.5px;color:#D8C89A}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>灼酒流炎穴 · 纹章点亮揭幕</h1>
+  <p class="sub">模板库预览件 · 不入卡 ｜ v3 揭幕卡版：形稿取自原纹章位图自动矢量化，分镜按主人 10-13 设计；结算轮气质（灵雾・遮罩揭幕・金粉）；标题已内嵌开源毛笔字体七字子集（马善政楷 3.9KB / 志莽行 2.8KB，OFL 可商用） ｜ 纯 SVG＋CSS，自包含无依赖</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>点亮揭幕预览</h2>
+      <div class="stage-outer">
+        <div id="stage" class="relic-stage play" data-font="zmx" title="点击画面重播揭幕">
+          <div class="mist"></div>
+
+          <div class="title-zone">
+            <p class="xk-main"><span style="--d:0s">灼</span><span style="--d:.14s">酒</span><span style="--d:.28s">流</span><span style="--d:.42s">炎</span><span style="--d:.56s">穴</span></p>
+            <div class="title-rule"><i></i><b></b><i></i></div>
+            <p class="seal"><span>觉</span><span>醒</span></p>
+          </div>
+
+          <div class="emblem-zone" style="position:absolute;top:170px;left:0;right:0;height:338px;z-index:2">
+          <svg viewBox="0 0 1254 1254" role="img" aria-label="灼酒流炎穴纹章从无到有点亮">
+            <defs>
+              <radialGradient id="gHalo" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"  stop-color="#F0CC6B" stop-opacity=".45"/>
+                <stop offset="55%" stop-color="#D9A93C" stop-opacity=".16"/>
+                <stop offset="100%" stop-color="#D9A93C" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="gEnd" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"  stop-color="#F0CC6B" stop-opacity=".4"/>
+                <stop offset="100%" stop-color="#D9A93C" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle class="endglow" cx="626" cy="740" r="430" fill="url(#gEnd)"/>
+
+            <g class="amb-all">
+              <!-- 中央光晕 -->
+              <circle class="halo" cx="626" cy="600" r="175" fill="url(#gHalo)" opacity=".75"/>
+
+              <!-- 二 · 飞醴入盏（坠落酒滴，用中央焰滴形缩小） -->
+              <g transform="translate(626,852) scale(.55)">
+                <g class="fall"><path fill="#DFAF40" fill-rule="evenodd" transform="translate(-627,-562)"
+                  d="M626 444L637 485L661 531L671 568L671 590L666 611L636 657L628 680L616 654L594 624L583 592L583 564L588 543L616 487L626 445Z"/></g>
+              </g>
+
+              <!-- 四 · 流炎（先画，根被杯口沿遮住；左右同拍泵出） -->
+              <g class="in in-flameL"><g class="amb swayL">
+                <path fill="#D8402C" fill-rule="evenodd" d="M416 294L432 302L448 317L458 333L464 354L464 371L459 390L434 429L423 453L420 469L422 490L431 511L444 528L505 576L527 599L546 630L554 658L554 686L547 709L531 742L530 769L537 787L547 800L590 835L601 854L603 864L583 863L579 853L566 838L534 818L519 803L513 791L510 768L520 733L511 741L499 763L497 784L500 795L517 816L545 834L560 849L567 863L524 862L513 850L471 818L459 802L450 777L450 757L466 708L462 680L442 652L409 633L446 639L464 649L478 662L489 680L493 694L490 728L499 715L505 694L504 670L498 654L481 633L458 619L397 608L366 596L342 574L330 550L326 531L326 506L338 468L358 442L423 387L438 364L442 351L441 331L431 310L416 295ZM416 429L396 442L377 463L368 485L368 502L375 520L392 537L414 548L445 557L406 528L393 504L394 470L404 447L417 429Z"/>
+              </g></g>
+              <g class="in in-flameR"><g class="amb swayR">
+                <path fill="#D8402C" fill-rule="evenodd" d="M835 295L837 296L823 310L814 327L814 360L829 385L887 434L914 465L923 484L928 507L924 549L911 575L889 595L864 606L795 619L777 629L758 650L750 670L749 696L756 718L763 727L761 692L770 670L780 657L808 639L844 633L814 650L801 664L790 686L788 711L801 747L804 771L798 795L786 814L767 832L737 853L730 862L686 863L697 845L715 829L737 816L754 794L754 761L744 743L733 733L743 762L742 786L734 804L720 818L692 834L678 848L670 863L651 864L655 848L664 834L710 796L723 772L722 740L704 702L699 679L701 651L710 625L724 602L743 581L798 539L815 522L831 493L831 454L821 431L795 391L790 373L790 353L795 335L804 319L819 304L835 296ZM838 429L860 470L861 503L851 524L836 539L808 557L843 547L859 539L876 524L885 506L886 487L878 465L860 444L839 429Z"/>
+              </g></g>
+
+              <!-- 一 · 酒盏（杯口沿盖住火舌根） -->
+              <g class="in in-cup"><g class="cupDip">
+                <path fill="#D9A93C" fill-rule="evenodd" d="M454 827L468 827L474 833L404 839L374 845L368 850L390 858L431 864L568 872L686 872L793 867L859 859L886 850L883 846L857 840L780 834L785 827L801 827L886 836L906 843L909 852L896 870L882 906L866 934L852 949L830 965L773 987L686 1000L671 1007L669 1021L684 1041L703 1055L739 1074L660 1082L573 1081L515 1072L548 1056L569 1041L584 1021L582 1007L566 1000L479 987L445 976L421 964L400 948L386 932L371 905L355 865L345 853L345 846L349 842L364 837L410 830L454 828Z"/>
+              </g></g>
+
+              <!-- 三 · 涟漪与入水闪光 -->
+              <g class="rip rip1"><ellipse cx="626" cy="858" rx="235" ry="24" fill="none" stroke="#E8C363" stroke-width="5" vector-effect="non-scaling-stroke"/></g>
+              <g class="rip rip2"><ellipse cx="626" cy="858" rx="235" ry="24" fill="none" stroke="#E8C363" stroke-width="4" vector-effect="non-scaling-stroke"/></g>
+              <ellipse class="flash" cx="626" cy="856" rx="70" ry="10" fill="#F0CC6B"/>
+
+              <!-- 四 · 两侧迸酒（金滴＋红焰尾，同拍迸出） -->
+              <g class="in in-splashL"><g class="amb shimL">
+                <path fill="#DFAF40" d="M299 693L323 695L351 713L377 743L389 765L397 789L380 765L360 748L340 742L306 742L292 736L282 723L281 710L291 696L299 694Z"/>
+                <path fill="#D8402C" d="M344 760L366 762L384 771L408 809L424 821L396 812L385 801L376 784L363 773L349 767L330 766L344 761Z"/>
+              </g></g>
+              <g class="in in-splashR"><g class="amb shimR">
+                <path fill="#DFAF40" d="M938 693L958 694L969 702L973 716L968 730L952 741L913 742L890 750L874 764L856 789L871 752L892 723L920 700L938 694Z"/>
+                <path fill="#D8402C" d="M896 760L915 761L924 766L909 766L894 771L876 786L860 810L848 817L831 820L847 807L855 790L870 771L887 762L896 761Z"/>
+              </g></g>
+
+              <!-- 五 · 中央酒液弹空定格 -->
+              <g class="in in-dropC"><g class="amb breathC">
+                <path fill="#DFAF40" d="M626 444L637 485L661 531L671 568L671 590L666 611L636 657L628 680L616 654L594 624L583 592L583 564L588 543L616 487L626 445Z"/>
+              </g></g>
+
+              <!-- 金粒长飘 -->
+              <g>
+                <circle class="spark" style="--i:0;--dx:14px"  cx="440" cy="470" r="7" fill="#E8C363"/>
+                <circle class="spark" style="--i:1;--dx:-12px" cx="810" cy="440" r="6" fill="#E8C363"/>
+                <circle class="spark" style="--i:2;--dx:20px"  cx="600" cy="330" r="5" fill="#F0CC6B"/>
+                <circle class="spark" style="--i:3;--dx:-18px" cx="700" cy="300" r="7" fill="#F0CC6B"/>
+                <circle class="spark" style="--i:4;--dx:10px"  cx="500" cy="640" r="5" fill="#E8C363"/>
+              </g>
+            </g>
+          </svg>
+          </div>
+
+          <div class="ink-burst">
+            <i style="--dx:-102px;--dy:-30px"></i>
+            <i style="--dx:-64px;--dy:14px"></i>
+            <i style="--dx:-128px;--dy:18px"></i>
+            <i style="--dx:96px;--dy:-34px"></i>
+            <i style="--dx:132px;--dy:10px"></i>
+            <i style="--dx:58px;--dy:22px"></i>
+          </div>
+
+          <div class="redflash"></div>
+
+          <div class="dust">
+            <i style="left:14%;--d:0;   --t:4.6;--dx:8px"></i>
+            <i style="left:26%;--d:1.1; --t:5.2;--dx:-6px"></i>
+            <i style="left:38%;--d:.5;  --t:4.2;--dx:10px"></i>
+            <i style="left:52%;--d:1.6; --t:5.6;--dx:-9px"></i>
+            <i style="left:64%;--d:.2;  --t:4.4;--dx:7px"></i>
+            <i style="left:76%;--d:1.3; --t:5.0;--dx:-7px"></i>
+            <i style="left:86%;--d:.8;  --t:4.8;--dx:9px"></i>
+            <i style="left:47%;--d:2.0; --t:5.4;--dx:-10px"></i>
+          </div>
+
+          <div class="veil"></div>
+        </div>
+      </div>
+      <div class="ctrl">
+        <button id="btn-replay">▶ 重播揭幕</button>
+        <button id="btn-slow">慢速 ½×</button>
+        <button id="btn-norm" class="on">原速 1×</button>
+      </div>
+      <div class="ctrl">
+        <button id="font-msz">楷 · 马善政毛笔</button>
+        <button id="font-zmx" class="on">行 · 志莽行书</button>
+        <button id="font-sys">本机行楷</button>
+      </div>
+      <p class="hint">点击画面任意处也可重播</p>
+    </div>
+
+    <div class="card">
+      <h2>状态栏触发小样（跳出式 · 播一次即逝）</h2>
+      <div class="fake-floor">
+        <p class="fake-msg"><b>你</b>：举杯饮尽，酒液入喉化作一线流炎……<span class="fake-ok">✦ 判定通过</span></p>
+        <button id="demo-trigger">⚡ 模拟：判定通过 · 点亮纹章</button>
+        <div class="demo-tile" id="demo-tile" title="灼酒流炎穴 · 两翼纹章瓷砖示意">
+          <img src="灼酒流炎穴-原纹章参考.png" alt="灼酒流炎穴">
+        </div>
+        <p class="demo-note">点按钮模拟晋升判定完成：揭幕卡自暗幕中弹出、播一次后自动消散，两翼瓷砖随即点亮（灰罩 → 金框）。再次点击可重演；点揭幕卡本身可提前跳过。</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>揭幕编排（共约 5.4 秒，随后待机）</h2>
+        <ul class="steps">
+          <li><b>一 · 遮罩灵雾</b><span class="t">0 – 1s</span>暗幕罩楼，灵雾浮起，随后缓缓揭开（结算遮罩同款气质）。</li>
+          <li><b>二 · 酒盏先陈</b><span class="t">0 – 0.5s</span>初始只有酒盏，轻轻浮现。</li>
+          <li><b>三 · 飞醴入盏</b><span class="t">0.8 – 1.4s</span>一滴酒液自上坠落，加速入盏，涟漪两道荡开、盏身一沉一弹。</li>
+          <li><b>四 · 流炎迸发</b><span class="t">1.6 – 2.7s</span>左右双舌流炎同拍自醴泉腾起，两侧酒液挟红焰尾同时迸出、划弧落定。</li>
+          <li><b>五 · 酒液弹空</b><span class="t">2.8 – 3.55s</span>酒液再次自盏中弹跳至空中，定格为中央金焰，金环亮过，纹章成形。</li>
+          <li><b>六 · 鎏金锤落</b><span class="t">3.8 – 4.85s</span>「灼酒流炎穴」五字如金石凿落，字字震卡；末字落时墨点迸溅、背光爆亮，金线菱纹展开。</li>
+          <li><b>七 · 朱砂落印</b><span class="t">4.95 – 5.6s</span>「觉醒」朱砂印盖落，回弹定印、红光一闪后长明，金粉自卡面飘落，揭幕成。</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>与原设计图对比</h2>
+        <div class="cmp">
+          <img alt="原四阶段纹章设计图" src="灼酒流炎穴-原纹章参考.png"
+               onerror="this.replaceWith(Object.assign(document.createElement('p'),{textContent:'（原设计图未找到）'}))">
+          <p>动画里的每一块形（杯体、双舌流炎连同内勾缝、中央焰滴、双酒滴与红焰尾）都是从右边这张原图按颜色自动描廓提取的矢量路径，静止时与原图逐像素对齐；行楷标题依赖本机字体（华文行楷，缺则回退楷体）。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>实装建议（状态栏跳出式 · 播一次即逝）</h2>
+        <ul class="notes">
+          <li><b>触发信号</b>：状态栏每次 <code>render()</code> 时对名器算 <code>getRelicStage(cfg.id, stat_data.known)</code>——阶段值高于「已播记录」（0→1 成形，或 N→N+1 晋阶）即触发，与两翼瓷砖渲染互不相干（不动瓷砖代码）。</li>
+          <li><b>宿主</b>：仿结算 <code>dataset.xsd2Settlements</code> 的挂法，在 mountHUD 里建一个 fixed 全屏覆盖层容器；触发时注入揭幕卡（本页整套 SVG＋CSS＋七字字体子集，单件约 10KB），播完自动 <code>remove()</code>，点击可跳过。</li>
+          <li><b>只播一次</b>：酒馆 iframe 会随楼重渲染，已播阶段记入 <code>sessionStorage</code>（只增不减）——刷新、回看旧楼、checkpoint 恢复都不会重播；<code>options.readOnly</code>（历史楼只读）直接不播。</li>
+          <li><b>与结算排队</b>：若同楼还有结算遮罩（模板 13），按「结算落印 → 纹章揭幕」顺序串播，避免同框抢戏。</li>
+          <li><b>体积</b>：13 件名器形稿约 40KB＋字体子集 3KB，全部内嵌状态栏无外部请求；其余名器复用同一管线（位图描廓 → 换 path 与题字）。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fanfare-host" id="fanfare-demo"></div>
+
+<script>
+  const stage = document.getElementById('stage');
+  function replay(){
+    stage.classList.remove('play');
+    void stage.getBoundingClientRect();
+    requestAnimationFrame(() => stage.classList.add('play'));
+  }
+  stage.addEventListener('click', replay);
+  document.getElementById('btn-replay').addEventListener('click', replay);
+  const bSlow = document.getElementById('btn-slow'), bNorm = document.getElementById('btn-norm');
+  function setSpd(v){
+    stage.style.setProperty('--spd', v);
+    bSlow.classList.toggle('on', v === 0.5);
+    bNorm.classList.toggle('on', v === 1);
+  }
+  bSlow.addEventListener('click', () => setSpd(0.5));
+  bNorm.addEventListener('click', () => setSpd(1));
+  const fontBtns = { msz: document.getElementById('font-msz'), zmx: document.getElementById('font-zmx'), sys: document.getElementById('font-sys') };
+  function setFont(k){
+    if (k === 'sys') stage.removeAttribute('data-font'); else stage.dataset.font = k;
+    for (const [key, b] of Object.entries(fontBtns)) b.classList.toggle('on', key === k);
+  }
+  fontBtns.msz.addEventListener('click', () => setFont('msz'));
+  fontBtns.zmx.addEventListener('click', () => setFont('zmx'));
+  fontBtns.sys.addEventListener('click', () => setFont('sys'));
+
+  /* ---------- 触发小样：克隆舞台作跳出式揭幕，播一次即移除 ---------- */
+  const fanHost = document.getElementById('fanfare-demo');
+  const demoTile = document.getElementById('demo-tile');
+  let demoTimer = null;
+  document.getElementById('demo-trigger').addEventListener('click', () => {
+    clearTimeout(demoTimer);
+    fanHost.innerHTML = '';
+    const clone = document.getElementById('stage').cloneNode(true);
+    clone.removeAttribute('id');
+    clone.classList.remove('play');
+    clone.title = '点击跳过';
+    fanHost.append(clone);
+    fanHost.classList.add('open');
+    void clone.offsetWidth;
+    clone.classList.add('play');
+    const close = () => {
+      clearTimeout(demoTimer);
+      fanHost.classList.remove('open');
+      clone.remove();
+      demoTile.classList.add('lit');
+    };
+    clone.addEventListener('click', close);
+    demoTimer = setTimeout(close, 7200);
+  });
+</script>
+</body>
+</html>
