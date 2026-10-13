@@ -1,8 +1,7 @@
 "use strict";
 const fs = require("node:fs"),
   path = require("node:path"),
-  vm = require("node:vm"),
-  zlib = require("node:zlib");
+  vm = require("node:vm");
 const { source, load } = require("./tools/data.cjs");
 const {storyEntries, metricEntries, areaEntries} = require("./src/runtime/story_entries");
 const {eraEntries}=require("./src/runtime/grand_eras");
@@ -66,39 +65,31 @@ function chunk(type, data) {
   return Buffer.concat([len, name, data, sum]);
 }
 function png(card) {
-  const w = 256,
-    h = 384,
-    raw = Buffer.alloc((w * 3 + 1) * h);
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      const p = y * (w * 3 + 1) + 1 + x * 3;
-      const edge = x < 9 || x > w - 10 || y < 9 || y > h - 10;
-      const n = edge
-        ? [213, 185, 123]
-        : [
-            23 + Math.floor(y / 30),
-            30 + Math.floor(y / 30),
-            28 + Math.floor(y / 30),
-          ];
-      raw.set(n, p);
+  // 卡面为持久化真源，保留原PNG像素与图块，只嵌入角色卡元数据。
+  const image = fs.readFileSync(path.join(ROOT, "src/assets/card-cover.png"));
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  if (!image.subarray(0, 8).equals(signature)) throw Error("卡面必须是PNG");
+  const parts = [signature];
+  let ended = false;
+  for (let offset = 8; offset < image.length;) {
+    if (offset + 12 > image.length) throw Error("卡面PNG图块截断");
+    const len = image.readUInt32BE(offset), end = offset + len + 12;
+    if (end > image.length) throw Error("卡面PNG图块长度无效");
+    const type = image.toString("ascii", offset + 4, offset + 8);
+    const payload = image.subarray(offset + 8, end - 4);
+    if (crc(image.subarray(offset + 4, end - 4)) !== image.readUInt32BE(end - 4)) throw Error("卡面PNG校验失败");
+    // 清除可能携带的旧卡信息，避免导入时读到旧版。
+    const oldCard = ["tEXt", "iTXt", "zTXt"].includes(type) && /^(chara|ccv3)\0/.test(payload.toString());
+    if (type === "IEND") {
+      parts.push(chunk("tEXt", Buffer.from("chara\0" + Buffer.from(JSON.stringify(card)).toString("base64"))));
+      ended = true;
     }
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(w);
-  ihdr.writeUInt32BE(h, 4);
-  ihdr[8] = 8;
-  ihdr[9] = 2;
-  return Buffer.concat([
-    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
-    chunk("IHDR", ihdr),
-    chunk(
-      "tEXt",
-      Buffer.from(
-        "chara\0" + Buffer.from(JSON.stringify(card)).toString("base64"),
-      ),
-    ),
-    chunk("IDAT", zlib.deflateSync(raw)),
-    chunk("IEND", Buffer.alloc(0)),
-  ]);
+    if (!oldCard) parts.push(image.subarray(offset, end));
+    offset = end;
+    if (ended) break;
+  }
+  if (!ended) throw Error("卡面PNG缺少结束图块");
+  return Buffer.concat(parts);
 }
 function unpack(buffer) {
   for (let offset = 8; offset < buffer.length; ) {
@@ -200,7 +191,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.41",
+    character_version: "2.0-framework.42",
     extensions: {
       world: NAME,
       tavern_helper: {
@@ -266,7 +257,7 @@ function build() {
       }
     }
   }
-  fs.writeFileSync(path.join(DIST, NAME + "-v41.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v42.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(
