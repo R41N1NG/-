@@ -317,6 +317,14 @@ function mount(slotElement, runtimeApi) {
     "display:none;align-items:center;flex-wrap:wrap;gap:4px;margin-left:6px;vertical-align:middle;";
   slotElement.appendChild(hudBar);
 
+  // A full-width notice remains visible beside the document, rather than a tiny map badge.
+  const notice=doc.createElement("div");
+  notice.className="xsd2-map-node-notice";
+  notice.setAttribute("role","status");notice.setAttribute("aria-live","polite");
+  notice.style.cssText="display:none;box-sizing:border-box;width:100%;margin:14px 0;padding:12px 16px;border:2px solid #e6b75b;border-radius:9px;background:linear-gradient(100deg,#493819,#282b20);color:#ffe5a6;font-size:16px;line-height:1.7;box-shadow:0 0 16px #e6b75b33;";
+  const hud=slotElement.closest(".xsd2-hud"),who=hud?.querySelector(".xsd2-who");
+  if(who)who.after(notice);else slotElement.appendChild(notice);
+
   // 2. 地图模态浮层
   let modalOverlay = null;
 
@@ -367,6 +375,16 @@ function mount(slotElement, runtimeApi) {
     );
     const inValley = state && !["map", "done"].includes(state.step);
     const isPending = Boolean(snapshot.pending);
+    const occupied=snapshot.activeEvent && snapshot.activeEvent.pluginId!==PLUGIN_ID;
+    const selectable=availableNodes.filter(x=>!x.blocked);
+    notice.replaceChildren();
+    notice.style.display=!isPending && !occupied && selectable.length ? "block" : "none";
+    if(notice.style.display!=="none"){
+      const title=doc.createElement("strong");title.textContent="✦ 地图有 "+selectable.length+" 个可进行节点";
+      const hint=doc.createElement("div");hint.textContent=inValley?"当前探索有待选行动，可点击下方选项或打开地图继续。":"幽寂谷历练已开放，可直接点击主卷选项开始。";
+      const open=doc.createElement("button");open.type="button";open.textContent="打开地图查看";open.dataset.mapNoticeOpen="";open.onclick=renderMapModal;
+      notice.append(title,hint,open);
+    }
 
     // 1. 刷新入口按钮文案与视觉状态
     if (isPending) {
@@ -796,6 +814,7 @@ function mount(slotElement, runtimeApi) {
   // 卸载清理函数
   return function unmount() {
     closeMap();
+    notice.remove();
     triggerBtn.remove();
     hudBar.remove();
     doc.removeEventListener("keydown", onKeydown);

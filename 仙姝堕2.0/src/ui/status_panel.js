@@ -20,10 +20,10 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
 .xsd2-hud{background:linear-gradient(180deg,#202925,#171e1c);border-radius:14px;padding:20px 24px 16px;box-shadow:0 8px 40px #0008}.xsd2-head{border-bottom:1px solid #394139;padding-bottom:12px;position:relative}.xsd2-head::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:1px;background:linear-gradient(90deg,transparent,#d5b97b55 20%,#d5b97b55 80%,transparent)}.xsd2-head h1{margin:0;font-size:26px;letter-spacing:8px;font-weight:600;color:#e8cf8f}.xsd2-head .xsd2-sub{font-size:11px;letter-spacing:3px;color:#89948a}.xsd2-head [data-gm]{margin-left:auto}.xsd2-who{display:flex;gap:14px;margin-top:14px;align-items:flex-start}.xsd2-document{flex:1;min-width:0}.xsd2-plaque{display:inline-block;background:#27332b;border:1px solid #756746;border-radius:6px;padding:6px 14px;letter-spacing:2px}.xsd2-portrait{margin-left:auto}.xsd2-atmo{color:#c5c9bd;font-size:.95em}.xsd2-row span{overflow-wrap:anywhere}.xsd2-npcs{display:block}.xsd2-npc{display:flex;gap:12px;max-width:none;border:1px solid #394139;border-radius:8px;padding:10px;margin-top:8px;background:#1a211e}.xsd2-npc h4{margin:0 0 4px;letter-spacing:2px;color:#d5b97b}.xsd2-hud .xsd2-npc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;gap:14px}.xsd2-hud .xsd2-npc>[data-portrait],.xsd2-hud .xsd2-portrait>button{width:72px;height:88px;padding:0;margin:0;display:block;line-height:0;overflow:hidden;align-self:start;box-sizing:border-box}.xsd2-hud .xsd2-npc>[data-portrait] img,.xsd2-hud .xsd2-portrait>button img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 25%}.xsd2-hud .xsd2-npc>div{min-width:0}.xsd2-npc small{color:#89948a}.xsd2-hud details{border:1px solid #394139;border-radius:8px;background:#1a211e;margin-top:10px;padding:4px 12px}.xsd2-foot{text-align:right;color:#89948a;font-size:11px;letter-spacing:2px;margin-top:12px}@media(max-width:640px){.xsd2-hud{padding:14px}.xsd2-head .xsd2-sub{display:none}.xsd2-row{grid-template-columns:56px minmax(0,1fr)}.xsd2-who{gap:8px}.xsd2-plaque{padding:4px 8px}}
 .xsd2-stagebar{display:flex;gap:16px;align-items:flex-start;width:100%;max-width:1080px;box-sizing:border-box;justify-content:center;margin-inline:auto}.xsd2-stagebar>.xsd2-hud{flex:1 1 0;max-width:660px;min-width:0;box-sizing:border-box}.xsd2-opening-root{width:100%;min-width:0;box-sizing:border-box}
 .xsd2-wing{display:flex;flex-direction:column;gap:10px;padding-top:6px}
-.xsd2-tile{position:relative;width:72px;height:72px;border-radius:10px;border:1px solid #333a35;background:#151d1a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;overflow:hidden;padding:0}
+.xsd2-tile{position:relative;width:104px;height:104px;border-radius:10px;border:1px solid #333a35;background:#151d1a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;overflow:hidden;padding:0}
 .xsd2-tile:hover{border-color:#d5b97b;transform:translateY(-2px)}
-.xsd2-tile img{width:60px;height:60px;object-fit:contain}
-.xsd2-tile.none img{filter:grayscale(1) brightness(.45);opacity:.5}
+.xsd2-tile img{width:94px;height:94px;object-fit:contain}
+.xsd2-tile.none img{filter:grayscale(1) brightness(.65);opacity:.75}
 .xsd2-tile.other img{filter:grayscale(1) brightness(.72) sepia(1) hue-rotate(-38deg) saturate(2.1)}
 .xsd2-tile.self{border-color:#756746;box-shadow:0 0 10px #d5b97b22}
 .xsd2-tile.other{border-color:#6e2424;background:#241416;box-shadow:0 0 10px #6e242433}
@@ -97,8 +97,8 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
   .xsd2-stagebar{flex-direction:column;align-items:stretch}
   .xsd2-stagebar>.xsd2-hud{order:0}
   .xsd2-wing{order:1;flex-direction:row;flex-wrap:wrap;width:100%;justify-content:flex-start;padding-top:0}
-  .xsd2-tile{width:60px;height:60px}
-  .xsd2-tile img{width:50px;height:50px}
+  .xsd2-tile{width:80px;height:80px}
+  .xsd2-tile img{width:72px;height:72px}
   .xsd2-cols{grid-template-columns:repeat(2,minmax(0,1fr))}
   .xsd2-row{grid-template-columns:56px minmax(0,1fr)}
   .xsd2-badge{margin-left:0}
@@ -437,7 +437,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       .querySelectorAll("details")
       .forEach((x, i) => (x.open = folds[i] || false));
     root.querySelector("[data-eras]").onclick=()=>{closeEras();eraDispose=openEras(doc,runtime,data,report);};
-    root.querySelector("[data-realm]").onclick=()=>{closeRealm();realmDispose=openRealm(doc,runtime,data,report);};
+    root.querySelector("[data-realm]").onclick=()=>{closeRealm();realmDispose=openRealm(doc,runtime,data,report,message=>{const feedback=root.querySelector(".xsd2-feedback");if(feedback)feedback.textContent=message;});};
     root.querySelector("[data-gm]").onclick = () =>
       dialogs.push(openGM(doc, runtime, data, report));
     root

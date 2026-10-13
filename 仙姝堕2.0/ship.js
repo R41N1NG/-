@@ -7,6 +7,7 @@ const tests = spawnSync(
   [
     "--test",
     "tests/core.test.cjs",
+    "tests/realm_feedback.test.cjs",
     "tests/grand_eras.test.cjs",
     "tests/templates.test.cjs",
     "tests/settlement_effects.test.cjs",
