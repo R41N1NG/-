@@ -10,7 +10,7 @@ function resultTag(body, code) {
   const parsed = /^<Promotion_result id="([A-Za-z0-9_-]+)">\s*(是|否)\s*<\/Promotion_result>$/.exec(tags[0][0]);
   return parsed && parsed[1] === code ? parsed[2] : null;
 }
-function createPromotionPlugin(definitions) {
+function createPromotionPlugin(definitions, storyCatalog = {}) {
   const defs = Object.entries(definitions);
   function lookup(nodeId) {
     for (const [id,cfg] of defs) for (const [kind,key] of [["enter","entryId"],["finish","finishId"]])
@@ -35,7 +35,7 @@ function createPromotionPlugin(definitions) {
     const {id,cfg,kind} = x;
     return {id:nodeId,allowed:true,character:cfg.character,displayText:getDisplayText(nodeId),
       actionText:getDisplayText(nodeId),promotionId:id,promotionKind:kind,
-      prompt:kind === "enter" ? cfg.story : "核验本次专属剧情，不凭空补写新的行动以达成条件。",
+      prompt:kind === "enter" ? cfg.story || storyCatalog[cfg.entryId]?.content : "核验本次专属剧情，不凭空补写新的行动以达成条件。",
       conditions:kind === "enter" ? cfg.conditions : [], rewards:[],grantsKnown:[],
       completionQuery:kind === "finish" ? "仅判断本次拜访（起始行动 "+(state(s).entryCode || "当前拜访")+"）之后的实际剧情，不把其他历史拜访当本次结果。"+cfg.query : undefined,
       stageGrant:kind === "finish" ? {character:cfg.character,from:cfg.fromStage,to:cfg.toStage} : undefined,

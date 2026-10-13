@@ -129,6 +129,9 @@ function build() {
     core = sections(read("src/text_data/_card_core.txt")),
     book = JSON.parse(read("仙姝堕-世界书.json")),
     entries = Object.values(book.entries);
+  for(const [id,p] of Object.entries(data.promotionDefinitions)){
+    if(!data.nodeStories[p.entryId]?.content?.trim() || !data.nodeStories[p.finishId]?.content?.trim())throw Error("晋升节点故事绑定缺失："+id);
+  }
   if (
     entries.length !== 234 ||
     entries.some((e) => String(e.comment).startsWith("【剧情】"))
@@ -194,7 +197,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.28",
+    character_version: "2.0-framework.29",
     extensions: {
       world: NAME,
       tavern_helper: {
@@ -214,6 +217,7 @@ function build() {
         variables: {},
       },
       regex_scripts: [
+        {id:"xsd2-hide-favor-report",scriptName:"隐藏好感事件协议",findRegex:"/<好感事件>[\\s\\S]*?(?:<\\/好感事件>|(?=<Status_block>|$))/gi",replaceString:"",trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
         ...Object.values(require("./src/plugins/youjigu_map/event_tree").EVENT_DEFS).map(def => ({
           id:"xsd2-action-label-" + def.id, scriptName:"节点指令显示：" + def.label,
           findRegex:"/\\bXSD2_" + def.id + "_[a-f0-9]{8}\\b/g",
@@ -259,7 +263,7 @@ function build() {
       }
     }
   }
-  fs.writeFileSync(path.join(DIST, NAME + "-v28.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v29.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(

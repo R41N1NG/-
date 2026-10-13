@@ -31,6 +31,7 @@ function source(root) {
         .concat(areaEntries(JSON.parse(read("src/config/area_backgrounds.json")))),
       metricEventDefinitions:JSON.parse(read("src/config/metric_events.json")),
       areaBackgroundDefinitions:JSON.parse(read("src/config/area_backgrounds.json")),
+      nodeStories:JSON.parse(read("src/config/node_stories.json")),
       promotionDefinitions:JSON.parse(read("src/config/promotions.json")),
       portraitScenes:JSON.parse(read("src/config/portrait_scenes.json")),
       characterProfiles: JSON.parse(read("src/config/character_stages.json")).characters,

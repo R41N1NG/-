@@ -413,6 +413,11 @@ test("打包人物入口：好感阈值只解锁，按钮发送代码，完成�
     assert.equal(r.getSnapshot().pending,null);assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,"stage02");
     assert.equal(r.getSnapshot().storyCount,2);assert.match(h.context.chat.at(-1).mes,/叶红缨接过酒坛/);
     assert.ok(!Object.values(r.getSnapshot().settlements).some(x=>x.floor===storyFloor));
+    await r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"叶红缨",key:"好感度",value:40}});
+    await until(()=>h.doc.querySelector('[mesid="'+storyFloor+'"] [data-favor="叶红缨"] .xsd2-gourd'));
+    h.doc.querySelector('[mesid="'+storyFloor+'"] [data-favor="叶红缨"]').click();
+    h.doc.querySelector('[data-heart-node="yhrZwEnter1"]').click();await until(()=>h.sends.length===3);
+    assert.match(h.sends[2],/^XSD2_yhrZwEnter1_/);assert.ok(h.context.prompts.at(-1).includes(data.nodeStories.yhrZwEnter1.content));
     assert.ok(h.errors.length===0);
   }finally{h.close();}
 });

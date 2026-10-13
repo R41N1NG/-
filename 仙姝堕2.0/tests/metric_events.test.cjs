@@ -89,3 +89,11 @@ test("parseMetricEvent 兼容半角分隔与依据前缀",()=>{
   const r=parseMetricEvent(tag("叶红缨|记恨|依据：测试句子"));
   assert.equal(r.character,"叶红缨");assert.equal(r.target,"记恨");assert.equal(r.evidence,"测试句子");
 });
+test('对饮简短流水：闭合或末尾漏闭标签可核验，封顶/人工覆盖记实际+0，自证不入账',()=>{
+ const api=createMetricEvents(defs,data.characterProfiles,data.promotionDefinitions),s=state();s.stat_data.身份='赵无忧';s.stat_data.completed_character_stages={叶红缨:'stage02'};s.stat_data.character_metrics.叶红缨.好感度=20;
+ const prose='叶红缨举杯与你对饮。',report='<好感事件>叶红缨｜锚点 yh_gongyin｜依据：叶红缨举杯与你对饮。';
+ assert.equal(api.apply(s,report,prose+report,5).changes[0].value,22);assert.equal(s.stat_data.favor_log.叶红缨[0].label,'对饮');assert.equal(s.stat_data.favor_log.叶红缨[0].delta,2);
+ const bad=state();assert.equal(api.apply(bad,report,report,5).changes.length,0);
+ s.stat_data.character_metrics.叶红缨.好感度=40;assert.equal(api.apply(s,report,prose+report,9).changes.length,0);assert.equal(s.stat_data.favor_log.叶红缨[0].delta,0);
+ s.stat_data.character_metrics.叶红缨.好感度=20;s.manual['metric.叶红缨.好感度']=20;assert.equal(api.apply(s,report+'</好感事件>',prose,12).changes.length,0);assert.equal(s.stat_data.favor_log.叶红缨[0].delta,0);
+});

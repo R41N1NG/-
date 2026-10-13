@@ -10,7 +10,7 @@ function fixture(){
     persist:async(c,e)=>{chat[c.floor].variables ||= [];chat[c.floor].variables[chat[c.floor].swipe_id || 0]={stat_data:{...C.clone(e.state.stat_data),xsd2:[C.clone(e)]}};},
     replaceOpening:async t=>{chat[0].mes=t;},replaceStory:async(i,t)=>{chat[i].mes=t;},
     send:async t=>{if(fail)throw Error("发送失败");sent.push(t);chat.push({mes:t,is_user:true});},setPrompt:t=>prompts.push(t),report:()=>{},confirmExit:async()=>true};
-  const r=createDispatcher(adapter,data),plugin=createPromotionPlugin(data.promotionDefinitions);r.registerPlugin(plugin);r.registerPlugin(map);
+  const r=createDispatcher(adapter,data),plugin=createPromotionPlugin(data.promotionDefinitions,data.nodeStories);r.registerPlugin(plugin);r.registerPlugin(map);
   const click=(id,p=plugin)=>{const s=r.getSnapshot();return r.dispatchIntent({type:"SELECT_NODE",pluginId:p.id,expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:id}});};
   const reply=async text=>{chat.push({mes:text,is_user:false,swipe_id:0});return r.settleStory();};
   const stage=()=>r.getSnapshot().stat_data.character_stages.叶红缨.id;
@@ -123,4 +123,16 @@ test('完成后正常新输入保留结算状态；重生成才恢复结算前�
   await h.r.replay('regenerate');assert.equal(h.stage(),'stage01');assert.equal(h.r.getSnapshot().pending.nodeId,'yhrFinish');assert.ok(h.prompts.at(-1).includes('Promotion_result'));
   h.chat.pop();await h.reply(h.report('否'));assert.equal(h.stage(),'stage01');await h.r.replay('normal');assert.equal(h.r.getSnapshot().pending,null);
  }
+});
+test('双身份八个晋升入口都连接现有故事；40点节点可发送并完成',async()=>{
+ const plugin=createPromotionPlugin(data.promotionDefinitions,data.nodeStories);
+ for(const cfg of Object.values(data.promotionDefinitions)){
+  const identity=cfg.conditions.find(c=>c.kind==='identity').value,score=cfg.conditions.find(c=>c.kind==='metric').value;
+  const s={identity,stat_data:{character_stages:{叶红缨:{id:cfg.fromStage}},character_metrics:{叶红缨:{好感度:score}}}};
+  const selected=plugin.select(s,cfg.entryId);assert.equal(selected.allowed,true);assert.ok(selected.prompt?.trim());assert.ok(data.embeddedManagedEntries.some(e=>e.comment==='【节点故事】'+cfg.entryId));
+ }
+ const h=fixture();await h.ready();await h.click('yhrNight');await h.reply('你看到她沐浴。');await h.click('yhrFinish');await h.reply(h.report('是'));
+ await h.r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'叶红缨',key:'好感度',value:40}});
+ await h.click('yhrZwEnter1');assert.match(h.sent.at(-1),/^XSD2_yhrZwEnter1_/);assert.ok(h.prompts.at(-1).includes(data.nodeStories.yhrZwEnter1.content));
+ await h.reply('赤焰居中，她与你对饮。');await h.click('yhrZwFinish1');await h.reply(h.report('是'));assert.equal(h.stage(),'stage03');
 });

@@ -52,7 +52,7 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
 .xsd2-flog li{display:flex;gap:8px;align-items:baseline;border-bottom:1px dashed #333931;padding:5px 0}
 .xsd2-flog b{width:34px;text-align:right}
 .xsd2-flog li.up b{color:#9fbf7a}.xsd2-flog li.dn b{color:#e08585}
-.xsd2-flog li span{margin-left:auto;color:#8b927e;font-size:.85em}
+.xsd2-flog li span{margin-left:0;color:#eee9d9;font-size:.95em}.xsd2-flog li b{margin-left:auto}
 .xsd2-xj{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:10}
 .xsd2-xj.open{display:flex}
 .xsd2-xj-sheet{box-sizing:border-box;background:#1b2320;border:1px solid #756746;border-radius:12px;width:min(1080px,96vw);max-height:92vh;overflow:auto;padding:16px 18px}
@@ -306,9 +306,9 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
           : '<p class="xsd2-label">此人尚未配置晋升之路。</p>')
       + "<h4>近日心迹</h4>"
       + (log.length
-          ? '<ul class="xsd2-flog">' + log.map((x) => '<li class="' + (x.delta > 0 ? "up" : "dn") + '"><b>' + (x.delta > 0 ? "+" : "") + x.delta + "</b> " + (x.via === "记心上" || x.via === "记恨" ? "档位 · " : "锚点 · ") + esc(x.note) + "<span>" + x.turn + "轮前</span></li>").join("") + "</ul>"
+          ? '<ul class="xsd2-flog">' + log.map(x=>'<li class="'+(x.delta>0?'up':x.delta<0?'dn':'')+'"><span>'+esc(x.label || ((data.metricEventDefinitions && Object.values(data.metricEventDefinitions).find(c=>c.character===character)?.anchors||[]).find(a=>a.id===x.via)?.label) || (x.via==='记恨'?'不睦':x.via==='记心上'?'交心':'互动'))+'</span><b>'+(x.delta>=0?'+':'')+x.delta+'</b></li>').join('')+'</ul>'
           : '<p class="xsd2-label">近日暂无心迹波动。</p>')
-      + '<p class="xsd2-label">数值与事件由后台核验，模型只作申报；冷却与上限皆按表执行。</p>';
+      ;
     const close = () => {el.remove();if(favorDialog===el)favorDialog=null;};
     const active=s.activeEvent?.pluginId === "character_promotion" && s.activeEvent?.character === character
       ? data.promotionDefinitions?.[s.activeEvent.promotionId] : null;

@@ -16,14 +16,16 @@
         "desc": "赠她好酒（醉春风尤佳）",
         "delta": 1,
         "repeat": true,
-        "perTurn": 1
+        "perTurn": 1,
+        "label": "赠酒"
       },
       {
         "id": "yh_gongyin",
         "desc": "与她共饮，席间开怀",
         "delta": 2,
         "repeat": true,
-        "perTurn": 1
+        "perTurn": 1,
+        "label": "对饮"
       },
       {
         "id": "yh_weihu",

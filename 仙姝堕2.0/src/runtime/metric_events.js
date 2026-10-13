@@ -8,14 +8,14 @@ function stripForEvidence(text) {
     .replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi, "")
     .replace(/<details\b[^>]*>[\s\S]*?<\/details>/gi, "")
     .replace(/<Status_block>[\s\S]*?<\/Status_block>/gi, "")
-    .replace(/<好感事件>[\s\S]*?<\/好感事件>/g, "");
+    .replace(/<好感事件>[\s\S]*?(?:<\/好感事件>|(?=<Status_block>|$))/g, "");
 }
 function parseMetricEvent(body) {
   const visible = String(body)
     .replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi, "")
     .replace(/<details\b[^>]*>[\s\S]*?<\/details>/gi, "");
-  const tags = [...visible.matchAll(/<好感事件>([\s\S]*?)<\/好感事件>/g)];
-  if (tags.length !== 1) return { ok: false, reason: "申报标签缺失或不止一个" };
+  const tags = [...visible.matchAll(/<好感事件>([\s\S]*?)(?:<\/好感事件>|(?=<Status_block>|$))/g)];
+  if (tags.length !== 1 || (visible.match(/<好感事件>/g)||[]).length !== 1) return { ok: false, reason: "申报标签缺失或不止一个" };
   const parts = tags[0][1].split(/[｜|]/).map((x) => x.trim());
   if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2])
     return { ok: false, reason: "申报格式应为 人物名｜档位或锚点ID｜依据" };
@@ -58,6 +58,11 @@ function createMetricEvents(defs, profiles, promotions) {
   function lookup(character) {
     return table.find(([, cfg]) => cfg.character === character);
   }
+  function eventLabel(cfg,via){const anchor=(cfg.anchors||[]).find(x=>x.id===via);return anchor?.label || (anchor?.desc ? anchor.desc.split(/[（，、：]/)[0].replace(/^(与她|给她|赠她|为她|替她|帮她|当众|主动)/,'').slice(0,8) : via==='记心上'?'交心':via==='记恨'?'不睦':'互动');}
+  function record(stat,cfg,via,delta,storyCount,evidence){
+    stat.favor_log ||= {};(stat.favor_log[cfg.character] ||= []).unshift({label:eventLabel(cfg,via),delta,via,turn:storyCount,note:evidence.slice(0,40)});
+    if(stat.favor_log[cfg.character].length>12)stat.favor_log[cfg.character].length=12;
+  }
   function drop(stat, storyCount, reason) {
     stat.metric_diag ||= [];
     stat.metric_diag.unshift({ turn: storyCount, reason });
@@ -83,8 +88,6 @@ function createMetricEvents(defs, profiles, promotions) {
     const proseVisible = stripForEvidence(prose);
     if (!parsed.evidence || !proseVisible.includes(parsed.evidence))
       return drop(stat, storyCount, "申报依据不在本回合正文中");
-    if (s.manual && s.manual["metric." + cfg.character + "." + cfg.metric.key] !== undefined)
-      return drop(stat, storyCount, cfg.character + " 好感处于人工覆盖，自动申报拒绝");
     const spec = metricSpec(profiles, cfg.character, cfg.metric.key);
     let current = stat.character_metrics?.[cfg.character]?.[cfg.metric.key] ?? spec.default;
     let delta, via;
@@ -106,11 +109,11 @@ function createMetricEvents(defs, profiles, promotions) {
       if (anchor.repeat !== false && storyCount - (st.anchorTurn[anchorId] || -999) < (cfg.cooldownTurns || 0))
         return drop(stat, storyCount, "锚点 " + anchorId + " 冷却中");
     }
+    if (s.manual && s.manual["metric." + cfg.character + "." + cfg.metric.key] !== undefined){record(stat,cfg,via,0,storyCount,parsed.evidence);return drop(stat,storyCount,cfg.character+" 好感处于人工覆盖，自动申报拒绝");}
     // 好感上限铁律：完成节点之前，好感不得越过该节点的数值
     const cap = favorCap(stat, cfg.character, profiles);
     if (delta > 0 && cap !== null) {
-      if (current >= cap)
-        return drop(stat, storyCount, cfg.character + " 好感已达当前节点上限（" + cap + "）——完成对应专属剧情后方可继续累积");
+      if (current >= cap){record(stat,cfg,via,0,storyCount,parsed.evidence);return drop(stat, storyCount, cfg.character + " 好感已达当前节点上限（" + cap + "）——完成对应专属剧情后方可继续累积");}
       if (current + delta > cap) delta = cap - current;
     }
     const value = Math.max(spec.min, Math.min(spec.max, current + delta));
@@ -125,11 +128,7 @@ function createMetricEvents(defs, profiles, promotions) {
       const anchor = (cfg.anchors || []).find((a) => a.id === anchorId);
       if (anchor && anchor.repeat === false) stat.metric_anchor_done[anchorId] = true;
     }
-    stat.favor_log ||= {};
-    (stat.favor_log[cfg.character] ||= []).unshift({
-      delta, via, turn: storyCount, note: parsed.evidence.slice(0, 40),
-    });
-    if (stat.favor_log[cfg.character].length > 12) stat.favor_log[cfg.character].length = 12;
+    record(stat,cfg,via,value-current,storyCount,parsed.evidence);
     changes.push({ character: cfg.character, key: cfg.metric.key, delta, value, via });
     return { changes };
   }

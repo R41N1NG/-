@@ -236,7 +236,7 @@ function start(win) {
   const youjiguMapPlugin = require("./plugins/youjigu_map/index");
   exposed.registerPlugin(youjiguMapPlugin);
   const {createPromotionPlugin} = require("./plugins/promotion/index");
-  exposed.registerPlugin(createPromotionPlugin(data.promotionDefinitions));
+  exposed.registerPlugin(createPromotionPlugin(data.promotionDefinitions,data.nodeStories));
   for (const plugin of host.top.XSD2_PLUGINS || [])
     exposed.registerPlugin(plugin);
   async function ensureMounted(retries = 5, interval = 120) {
