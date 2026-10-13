@@ -107,7 +107,9 @@ function createWorldbookHost(helper, getContext, scope = {}) {
       throw Error("当前世界书缺少节点故事条目，请导入新版测试卡和配套世界书");
     let changed = added;
     const updated = entries.map((e) => {
-      const managed = managedEnabled(e.name || e.comment || "",stat);
+      const label=e.name || e.comment || "";
+      const obsoleteRealm=["【设定】南域神诅变局与破境断路","【设定】神诅与南域大劫"].includes(label) && !String(e.content).includes("玩家跌至金丹大圆满");
+      const managed = obsoleteRealm ? false : managedEnabled(label,stat);
       if (managed === null && !String(e.content).startsWith("@@if ")) return e;
       const enabled = managed === null ? evaluateGate(e.content, stat) : managed;
       if (enabled !== e.enabled) {

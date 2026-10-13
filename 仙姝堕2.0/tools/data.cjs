@@ -4,6 +4,7 @@ const fs = require("node:fs"),
   vm = require("node:vm");
 const { buildMenuHtml } = require("./opening/menu-builder.cjs");
 const {storyEntries, metricEntries, areaEntries} = require("../src/runtime/story_entries");
+const {eraEntries}=require("../src/runtime/grand_eras");
 const { POINTS } = require("./opening/timepoint-slider.cjs");
 function source(root) {
   const read = (f) => fs.readFileSync(path.join(root, f), "utf8");
@@ -28,7 +29,9 @@ function source(root) {
       greetings,
       embeddedManagedEntries:storyEntries(JSON.parse(read("src/config/node_stories.json")),JSON.parse(read("src/config/character_stages.json")).characters)
         .concat(metricEntries(JSON.parse(read("src/config/metric_events.json"))))
-        .concat(areaEntries(JSON.parse(read("src/config/area_backgrounds.json")))),
+        .concat(areaEntries(JSON.parse(read("src/config/area_backgrounds.json"))))
+        .concat(eraEntries(JSON.parse(read("src/config/grand_eras.json")))),
+      grandEras:JSON.parse(read("src/config/grand_eras.json")),
       metricEventDefinitions:JSON.parse(read("src/config/metric_events.json")),
       areaBackgroundDefinitions:JSON.parse(read("src/config/area_backgrounds.json")),
       nodeStories:JSON.parse(read("src/config/node_stories.json")),

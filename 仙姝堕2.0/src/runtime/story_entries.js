@@ -86,6 +86,10 @@ function areaEntries(defs = {}, startId = 12000) {
   return entries;
 }
 function managedEnabled(label, stat) {
+  if (label === "【阶段驱动】当前阶段压力与调度") return false;
+  if (label === "【大势规则】中控调度") return true;
+  if (label.startsWith("【中立】")) return false; // Retire the former seven-period schedule in existing bound books.
+  if (label.startsWith("【大势背景】")) return label === "【大势背景】"+stat.grand_era;
   if (label.startsWith("【节点故事】")) return label === nodeEntryName(stat.node_trigger);
   if (Object.values(stat.character_stages || {}).some(x=>(x.replaces || []).includes(label))) return false;
   if (label.startsWith("【人物阶段】")) {

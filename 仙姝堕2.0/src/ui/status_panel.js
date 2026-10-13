@@ -5,6 +5,7 @@ const { mountOpening } = require("./opening_menu");
 const { renderSettlement } = require("./settlement_panel");
 const { openItem } = require("./item_panel");
 const { openGM } = require("./gm_panel");
+const {openEras}=require("./era_panel");
 const {openRealm}=require("./realm_panel");
 const {meets} = require("../runtime/conditions");
 const { dateText } = require("../runtime/contracts");
@@ -190,10 +191,11 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   container.append(settlement, stagebar);
   stagebar.append(wingL, root, wingR);
   container.append(xjRoot);
-  let favorDialog=null,realmDispose=null;
+  let favorDialog=null,realmDispose=null,eraDispose=null;
+  const closeEras=()=>{eraDispose?.();eraDispose=null;};
   const closeRealm=()=>{realmDispose?.();realmDispose=null;};
   const closeFavor=()=>{favorDialog?.remove();favorDialog=null;};
-  const escape = e => { if(e.key === "Escape") { closeFavor();closeRealm(); xjRoot.replaceChildren(); xjRoot.classList.remove("open"); } };
+  const escape = e => { if(e.key === "Escape") { closeFavor();closeRealm();closeEras(); xjRoot.replaceChildren(); xjRoot.classList.remove("open"); } };
   doc.addEventListener("keydown",escape);
   let plugins = [],
     dialogs = [],
@@ -340,7 +342,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   }
   function render() {
     if (disposed) return;
-    closeFavor();closeRealm();
+    closeFavor();closeRealm();closeEras();
     const folds = [...root.querySelectorAll("details")].map((x) => x.open);
     for (const p of plugins) p();
     plugins = [];
@@ -426,7 +428,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       '</div><div class="xsd2-portrait" data-player-avatar-slot></div></div>'+
       '<span data-xsd-slot="6" hidden></span>'+
       '<div class="xsd2-npcs" data-xsd-slot="16">'+(st.在场角色||[]).map(n=>'<article class="xsd2-npc">'+avatar(n.名)+'<div><h4>'+esc(n.名)+' <small>'+esc(n.修为||'')+'</small></h4><div>关系：'+esc(n.关系||'未明')+'</div><div>情况：'+esc(n.情况||'无')+'</div><div>心境：'+esc(n.心境||'无')+'</div><div>神态：'+esc(n.神态||'无')+'</div></div></article>').join('')+'</div>'+
-      '<details><summary>局势与线索</summary><dl>'+field('局势',7)+field('线索',8)+field('暗处','hidden')+'</dl></details>'+
+      '<details><summary>局势与线索</summary><button data-eras>中立大势 · 剧情时期</button><dl>'+field('局势',7)+field('线索',8)+field('暗处','hidden')+'</dl></details>'+
       '<details data-storage-fold><summary>储物栏</summary><div data-xsd-slot="10">'+items+'</div><p data-xsd-slot="11">'+esc(st.纳戒||'无')+'</p><p data-xsd-slot="12">'+(options.readOnly?'此楼状态记录':'点击物品查看介绍与操作')+'</p></details>'+
       '<details><summary>风闻与气象</summary><dl>'+field('近闻',13)+field('远闻',14)+field('天气',15)+'</dl></details>'+
       '<div data-xsd-slot="17"></div><footer class="xsd2-foot">暗处 · '+esc(st.暗处||'无')+' ｜ 持续背景 · '+esc(st.active_area||'无')+(Object.keys(s.manual).length?' ｜ 存在人工设置':'')+'</footer><p class="xsd2-feedback" role="status" aria-live="polite"></p>';
@@ -434,6 +436,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     root
       .querySelectorAll("details")
       .forEach((x, i) => (x.open = folds[i] || false));
+    root.querySelector("[data-eras]").onclick=()=>{closeEras();eraDispose=openEras(doc,runtime,data,report);};
     root.querySelector("[data-realm]").onclick=()=>{closeRealm();realmDispose=openRealm(doc,runtime,data,report);};
     root.querySelector("[data-gm]").onclick = () =>
       dialogs.push(openGM(doc, runtime, data, report));
@@ -490,7 +493,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     render,
     destroy() {
       disposed = true;
-      closeFavor();closeRealm();
+      closeFavor();closeRealm();closeEras();
       unsubscribe();
       opening?.destroy();
       plugins.forEach((f) => f());

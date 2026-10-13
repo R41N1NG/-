@@ -5,6 +5,7 @@ const fs = require("node:fs"),
   zlib = require("node:zlib");
 const { source, load } = require("./tools/data.cjs");
 const {storyEntries, metricEntries, areaEntries} = require("./src/runtime/story_entries");
+const {eraEntries}=require("./src/runtime/grand_eras");
 const { evaluateGate } = require("./src/host/worldbook");
 const ROOT = __dirname,
   NAME = "仙姝堕2.0·框架测试",
@@ -133,7 +134,7 @@ function build() {
     if(!data.nodeStories[p.entryId]?.content?.trim() || !data.nodeStories[p.finishId]?.content?.trim())throw Error("晋升节点故事绑定缺失："+id);
   }
   if (
-    entries.length !== 234 ||
+    entries.length !== 226 ||
     entries.some((e) => String(e.comment).startsWith("【剧情】"))
   )
     throw Error("世界书底表数量或隔离检查失败");
@@ -146,6 +147,8 @@ function build() {
   entries.push(...extra);
   entries.push(...metricEntries(JSON.parse(read("src/config/metric_events.json")),Math.max(...entries.map(e=>e.uid))+1));
   entries.push(...areaEntries(JSON.parse(read("src/config/area_backgrounds.json")),Math.max(...entries.map(e=>e.uid))+1));
+  entries.push(...eraEntries(data.grandEras,Math.max(...entries.map(e=>e.uid))+1));
+  if(entries.some(e=>String(e.comment).startsWith("【中立】")))throw Error("旧七时期条目不得进入成品");
   const script = bundle(),
     characterBook = {
       name: NAME,
@@ -197,7 +200,7 @@ function build() {
     character_book: characterBook,
     tags: ["仙姝堕", "2.0框架测试"],
     creator: "R41N1NG",
-    character_version: "2.0-framework.34",
+    character_version: "2.0-framework.35",
     extensions: {
       world: NAME,
       tavern_helper: {
@@ -263,7 +266,7 @@ function build() {
       }
     }
   }
-  fs.writeFileSync(path.join(DIST, NAME + "-v34.png"), image);
+  fs.writeFileSync(path.join(DIST, NAME + "-v35.png"), image);
   fs.writeFileSync(
     path.join(DIST, NAME + "-世界书.json"),
     JSON.stringify(

@@ -9,7 +9,9 @@ const { startingInventoryFor } = require("./starting_inventory");
 const { createMetricEvents,stripForEvidence } = require("./metric_events");
 const {inferRelicActions}=require("./relic_evidence");
 const Realm=require("./player_realm");
+const Eras=require("./grand_eras");
 function createDispatcher(adapter, data) {
+  const eras=Eras.validate(data.grandEras || []);
   const metricEvents = createMetricEvents(
     data.metricEventDefinitions,
     data.characterProfiles || {},
@@ -122,6 +124,7 @@ function createDispatcher(adapter, data) {
   function normalize(s) {
     C.assertDate(s.calendarDate);
     Realm.ensure(s,rules(s));
+    Eras.reconcile(s,eras);
     s.stat_data.inventory = (s.stat_data.inventory || []).map(describeItem);
     s.stat_data.纳戒 = (s.inventoryChanges || [])
       .map(x => x.action + "：" + x.name + "×" + x.count).join("｜") || "无";
@@ -309,7 +312,7 @@ function createDispatcher(adapter, data) {
     const baseline = current
       ? "后台当前时点：仙盟历 " +
         C.dateText(current.calendarDate) +
-        "。身份：" +
+        "。当前大势："+(Eras.currentEra(eras,current.calendarDate)?.name || "尚无已配置时期")+"。身份：" +
         current.identity +
         "。后台玩家修为："+st.修为+"。玩家境界由本地记录，正文不得自行提升玩家境界。地点：" +
         (p?.selection?.destination || st.地点 || "未定") +
@@ -636,8 +639,8 @@ function createDispatcher(adapter, data) {
       )
         continue;
       if (
-        ["南域大劫", "天姝会存在"].includes(f.name) &&
-        C.day(s.calendarDate) < C.day({ year: 1578, month: 8, day: 1 })
+        eras.some(e=>e.anchors.includes(f.name)) &&
+        C.day(s.calendarDate) < C.day(eras.find(e=>e.anchors.includes(f.name)).startDate)
       )
         continue;
       s.stat_data.known[f.name] = true;
@@ -951,13 +954,15 @@ function createDispatcher(adapter, data) {
         "；" +
         (custom.origin || "");
     }
+    const s = defaults(identity, opening, custom);
+    if (custom) s.stat_data.自设 = C.clone(custom);
+    normalize(s);
+    opening=opening.replace(/<修为>[\s\S]*?<\/修为>/,"<修为>"+s.stat_data.修为+"</修为>");
     const oldId = c.chatId;
     await adapter.replaceOpening(opening);
     c = context();
     if (c.chatId !== oldId || c.floor !== 0)
       throw Error("开局更新期间聊天变化");
-    const s = defaults(identity, opening, custom);
-    if (custom) s.stat_data.自设 = C.clone(custom);
     await commit(c, s, "identity_change");
     await adapter.syncIdentity?.(identity);
     return snapshot();
@@ -973,6 +978,13 @@ function createDispatcher(adapter, data) {
       switch (intent.type) {
         case "SELECT_NODE":
           return select(c, intent);
+        case "ADVANCE_ERA": {
+          if(current.pending||current.activeEvent||adapter.isGenerating?.())throw Error("请先结束当前剧情或行动");
+          if(intent.expected?.chatId!==c.chatId||intent.expected.branchId!==c.branchId||intent.expected.floor!==c.floor||intent.expected.revision!==current.revision)throw Error("时期按钮来自旧状态，请重新选择");
+          if(current.manual.calendarDate)throw Error("日期处于人工覆盖，请先交还自动");
+          const next=C.clone(current);Eras.advance(next,eras,intent.payload.id);
+          return commit(c,next,"era_advance");
+        }
         case "REALM_ACTION": {
           if(current.pending||adapter.isGenerating?.()||(intent.payload.kind==="retreat"&&current.activeEvent))throw Error("请先结束当前剧情或行动");
           if(intent.expected?.chatId!==c.chatId||intent.expected.branchId!==c.branchId||intent.expected.floor!==c.floor||intent.expected.revision!==current.revision)throw Error("境界按钮来自旧状态，请重新选择");

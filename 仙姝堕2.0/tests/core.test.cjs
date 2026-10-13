@@ -485,7 +485,7 @@ test("构建可独立执行、脚本语法、PNG双向回读及世界书防递�
     built = build();
   new vm.Script(built.script);
   assert.deepEqual(unpack(built.image), built.card);
-  assert.equal(built.card.data.character_book.entries.length, 234 + Object.keys(require("../src/config/node_stories.json")).length + Object.values(require("../tools/data.cjs").load(ROOT).characterProfiles).reduce((n,c)=>n+c.stages.reduce((m,x)=>m+(x.stories ? Object.keys(x.stories).length : (x.story ? 1 : 0)),0),0) + Object.keys(require("../src/config/metric_events.json")).length + Object.keys(require("../src/config/area_backgrounds.json")).length);
+  assert.equal(built.card.data.character_book.entries.length, 226 + data.grandEras.length + 1 + Object.keys(require("../src/config/node_stories.json")).length + Object.values(require("../tools/data.cjs").load(ROOT).characterProfiles).reduce((n,c)=>n+c.stages.reduce((m,x)=>m+(x.stories ? Object.keys(x.stories).length : (x.story ? 1 : 0)),0),0) + Object.keys(require("../src/config/metric_events.json")).length + Object.keys(require("../src/config/area_backgrounds.json")).length);
   assert.ok(
     built.card.data.character_book.entries.every(
       (e) => e.extensions.exclude_recursion && e.extensions.prevent_recursion,
@@ -1004,4 +1004,44 @@ test('新境界奖励和烙印不接受思考/外置协议自证，也不能把�
 test('条件满足时可在活动剧情内本地突破，闭关不可跳走当前剧情',async()=>{
  const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'筑基大圆满'}});h.r.registerPlugin(plugin());await h.select('enter');await h.reply(status({},'你已经进入幽寂谷。'));
  assert.ok(h.r.getSnapshot().activeEvent);await realmIntent(h,'breakthrough');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹前期');assert.ok(h.r.getSnapshot().activeEvent);await assert.rejects(realmIntent(h,'retreat'),/结束/);
+});
+
+const eraIntent=(h,id)=>{const s=h.r.getSnapshot();return h.r.dispatchIntent({type:'ADVANCE_ERA',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{id}});};
+test('大势跨时期快进原子落账，不完成局部剧情或发消息奖励，刷新保留',async()=>{
+ const h=harness();await h.opening('赵无忧');const before=h.r.getSnapshot();await eraIntent(h,'beast');const s=h.r.getSnapshot();
+ assert.deepEqual(s.calendarDate,{year:1579,month:1,day:1});assert.equal(s.stat_data.grand_era,'beast');
+ for(const key of ['南域大劫','天姝会存在','天溪城兽潮','兽潮血战'])assert.equal(s.stat_data.known[key],true);
+ assert.equal(s.stat_data.known['天溪城破'],before.stat_data.known['天溪城破']);assert.deepEqual(s.stat_data.inventory,before.stat_data.inventory);
+ assert.equal(s.storyCount,before.storyCount);assert.equal(h.sent.length,0);assert.equal(s.stat_data.node_trigger,null);
+ await assert.rejects(eraIntent(h,'peace'),/未来/);await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.grand_era,'beast');
+});
+test('闭关、普通耗时及GM日期共用时期判定，末期背景延续且不自动城破',async()=>{
+ const h=harness();await h.opening('赵无忧');
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{calendarDate:{year:1578,month:7,day:30}}});await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['calendarDate']}});
+ h.c.chat.push({is_user:true,mes:'歇息一日'});await h.reply(status({历时:'1日'}));assert.equal(h.r.getSnapshot().stat_data.grand_era,'calamity');
+ const k=harness();await k.opening('赵无忧');await realmIntent(k,'retreat');await realmIntent(k,'retreat');assert.equal(k.r.getSnapshot().stat_data.grand_era,'calamity');
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{calendarDate:{year:1579,month:3,day:1}}});assert.equal(h.r.getSnapshot().stat_data.grand_era,'beast');assert.equal(h.r.getSnapshot().stat_data.known['天溪城破'],false);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{calendarDate:{year:1578,month:3,day:1}}});assert.equal(h.r.getSnapshot().stat_data.grand_era,'peace');assert.equal(h.r.getSnapshot().stat_data.known['南域大劫'],false);
+});
+test('元婴大劫一次性跌至金丹大圆满，名器重新结婴后刷新不重复跌境',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'元婴中期'}});await eraIntent(h,'calamity');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹大圆满');
+ await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.player_realm.actions.filter(x=>x.kind==='calamity-drop').length,1);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':3,'owner.zhuojiu':'赵无忧'}});await realmIntent(h,'breakthrough');assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');
+ await h.r.restore();await eraIntent(h,'beast');assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');
+});
+test('快进拒绝忙碌、旧按钮与日期覆盖，删楼恢复时期及跌境前状态',async()=>{
+ const h=harness();await h.opening('赵无忧');const stale=h.r.getSnapshot();await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'元婴前期'}});
+ await assert.rejects(h.r.dispatchIntent({type:'ADVANCE_ERA',expected:{chatId:stale.chatId,branchId:stale.branchId,floor:stale.floor,revision:stale.revision},payload:{id:'calamity'}}),/旧状态/);
+ h.generating(true);await assert.rejects(eraIntent(h,'calamity'),/结束/);h.generating(false);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{calendarDate:{year:1578,month:3,day:3}}});await assert.rejects(eraIntent(h,'calamity'),/交还自动/);await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['calendarDate']}});
+ h.c.chat.push({is_user:true,mes:'等待'});await h.reply(status({历时:'1日'}));await eraIntent(h,'calamity');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹大圆满');
+ h.c.chat.splice(1);await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.grand_era,'peace');assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');
+ const k=harness();await k.opening('赵无忧');k.r.registerPlugin(plugin());await k.select();await assert.rejects(eraIntent(k,'calamity'),/结束/);
+});
+
+test('四殿主大劫日开局含伪装元婴均落金丹大圆满，开局状态与后台一致',async()=>{
+ for(const identity of ['焚欲殿主','欢喜殿主','浊龙殿主','魂欢殿主']){
+  const h=harness();await h.opening(identity);assert.equal(h.r.getSnapshot().stat_data.修为,'金丹大圆满');assert.equal(C.parseStatus(h.c.chat[0].mes).fields.修为,'金丹大圆满');
+  await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.player_realm.actions.filter(x=>x.kind==='calamity-drop').length,1);
+ }
 });
