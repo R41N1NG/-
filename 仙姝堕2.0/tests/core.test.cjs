@@ -915,7 +915,7 @@ test('十三名器高阶质变只属于对应持有者；其他角色、计划�
  for(const cfg of configs){
   const other=configs.find(x=>x.owner!==cfg.owner && !cfg.ownerAliases.includes(x.owner));
   for(const [check,event] of [[R.hasRelicStage3Response,'动情配合'],[R.hasRelicStage4Response,'神异质变']]){
-   assert.equal(check(cfg.id,cfg.owner+'已发生'+event+'。'),true,cfg.id);
+   assert.equal(check(cfg.id,cfg.owner+'已发生'+event+'。'),check===R.hasRelicStage3Response,cfg.id);
    for(const prose of [cfg.owner+'在场。'+other.owner+'已发生'+event+'。',cfg.owner+'计划发生'+event+'。',cfg.owner+'回忆上次发生'+event+'。','<think>'+cfg.owner+'已发生'+event+'。</think>','<Status_block>'+cfg.owner+'已发生'+event+'。</Status_block>'])assert.equal(check(cfg.id,prose),false,cfg.id+': '+prose);
   }
   const K={[cfg.formKey]:true,[cfg.stage2Key]:true};
@@ -950,4 +950,11 @@ test('持有者先在前句出现、后句用代称时仍能计数；途中出�
   await h.reply(status({},'叶红缨在场。你与她完成'+action+'。'));assert.equal(h.r.getSnapshot().relics.zhuojiu.stages[stage+1].count,1);
   h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'叶红缨在场。孤月走来。你与她完成'+action+'。'));assert.equal(h.r.getSnapshot().relics.zhuojiu.stages[stage+1].count,1);
  }
+});
+
+test('三升四未设计：进度达标、质变词和明确四阶声明均不自动晋升，GM旧四阶不被撤销',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':3}});await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['relicStage.zhuojiu']}});
+ for(let n=0;n<3;n++){h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'本回合赵无忧与叶红缨完成本源共鸣。叶红缨发生神异质变，进入名器四阶。'));}
+ const s=h.r.getSnapshot();assert.equal(s.relics.zhuojiu.stages[4].ready,true);assert.equal(data.rules(s.stat_data).getRelicStage('zhuojiu',s.known),3);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':4}});await h.r.restore();assert.equal(data.rules(h.r.getSnapshot().stat_data).getRelicStage('zhuojiu',h.r.getSnapshot().known),4);
 });

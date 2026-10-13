@@ -583,36 +583,7 @@ function hasRelicStage3Response(relicId, prose) {
   return false;
 }
 
-/** 身份：gpt。核验落在名器持有者上的已发生三升四（沉沦 -> 极乐）外貌异相神异质变或阶段声明。 */
-function hasRelicStage4Response(relicId, prose) {
-  const cfg = RELIC_PILOT_CONFIG[relicId];
-  if (!cfg) return false;
-  const proseStr = relicEvidenceProse(relicId,prose);
-  if (!proseStr) return false;
-
-  const hasOwner = cfg.ownerAliases.some(a => proseStr.includes(a)) || cfg.names.some(n => proseStr.includes(n));
-  if (!hasOwner) return false;
-
-  // 显式四阶声明判定
-  if (new RegExp('(?:名器四阶|四阶「?极乐」?|四阶异象.*成形|极乐.*成形|大圆满).*' + cfg.names[0] + '|' + cfg.names[0] + '.*(?:名器四阶|四阶「?极乐」?|四阶异象.*成形|极乐.*成形|大圆满)').test(proseStr)) {
-    return true;
-  }
-  if (/名器四阶「?极乐」?的异象.*已然.*成形|进入名器四阶|达成四阶段|突破至四阶|极乐大圆满/.test(proseStr)) {
-    return true;
-  }
-
-  const sentences = proseStr.split(/[。！？\n]/);
-  const nonFact = /据说|听说|传闻|谣传|计划|打算|准备|想要|希望|将要|即将|可能|或将|若是|假如|倘若|万一|是否|未|没有|没能|不曾|并不|不是|不会|不愿|讨论|提及|解释|说明/;
-  const counterNeg = /不仅没有|非但没有|不仅不|非但非|反而|不再/;
-  const stage4Regex = /(生角|展翼|黑翼|羽翼|道韵化形|天魔道体|极乐天魔|神异质变|肉身异化|不可逆.*质变)/;
-
-  for (const sentence of sentences) {
-    if (!sentence.trim()) continue;
-    if (nonFact.test(sentence) && !counterNeg.test(sentence)) continue;
-    if (stage4Regex.test(sentence)) {
-      return true;
-    }
-  }
+/** Three-to-four promotion awaits the user's design; prose cannot grant it. */
+function hasRelicStage4Response() {
   return false;
 }
-

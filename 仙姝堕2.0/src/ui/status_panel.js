@@ -248,8 +248,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
           const count=Math.max(0,Math.min(target,Number(ledger?.count)||0));
           const pct=Math.round(count/target*100);
           const labels={2:'一升二 · 情动',3:'二升三 · 沉沦',4:'三升四 · 极乐'};
-          const conditions={2:'生理自发迎合与名器质变',3:'心智质变或专属烙印',4:'专属机缘与不可逆外貌异化'};
-          soak='<div class="xsd2-soak" data-relic-progress="'+rs.cfg.id+'" data-target-stage="'+k+'"><b>✦ 阶位浸润（'+labels[k]+' · '+count+'/'+target+'）</b><div class="xsd2-sbar"><i style="width:'+pct+'%"></i></div><p>'+ (count>=target?'火候已满，尚待质变机缘。':'浸润积累中，火候尚未圆满。')+'</p><div class="xsd2-lockbox rule"><b>晋升条件</b><p>浸润达标，并出现'+conditions[k]+'。仅累计次数不能越阶。</p></div></div>';
+          const conditions={2:'生理自发迎合与名器质变',3:'心智质变或专属烙印'};
+          soak='<div class="xsd2-soak" data-relic-progress="'+rs.cfg.id+'" data-target-stage="'+k+'"><b>✦ 阶位浸润（'+labels[k]+' · '+count+'/'+target+'）</b><div class="xsd2-sbar"><i style="width:'+pct+'%"></i></div><p>'+ (k===4?'三升四规则待设计。':count>=target?'火候已满，尚待质变机缘。':'浸润积累中，火候尚未圆满。')+'</p><div class="xsd2-lockbox rule"><b>晋升条件</b><p>'+ (k===4?'待设计，自动晋升暂停。':'浸润达标，并出现'+conditions[k]+'。仅累计次数不能越阶。')+'</p></div></div>';
         }
         return '<div class="xsd2-col' + (awake ? " awake" : "") + (isNext ? " next" : "") + '">'
           + '<div class="xsd2-colhead"><span class="xsd2-jie">第' + CN[k - 1] + '境界</span><span class="xsd2-st">' + (awake ? "✦ 已觉醒" : "🔒 锁羽") + "</span></div>"
