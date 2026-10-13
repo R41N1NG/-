@@ -14,7 +14,7 @@ const PALETTE = {
   accent: "#d5b97b",
 };
 const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PALETTE.background};border:1px solid #756746;border-radius:10px;padding:14px;font-family:serif;line-height:1.7}.xsd2-hud button,.xsd2-dialog button,.xsd2-dialog input,.xsd2-dialog select,.xsd2-dialog textarea{color:#eee9d9;background:#273b34;border:1px solid #8b927e;border-radius:5px;padding:7px;margin:3px;font:inherit}.xsd2-hud button:focus-visible,.xsd2-dialog :focus-visible{outline:2px solid #d5b97b;outline-offset:2px}.xsd2-hud header,.xsd2-hud nav,.xsd2-npcs{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.xsd2-hud details{border-top:1px solid #514d3e;margin-top:9px;padding-top:7px}.xsd2-hud summary{cursor:pointer;color:#d5b97b}.xsd2-hud dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0}.xsd2-hud dd{margin:0;color:#c5c9bd}.xsd2-avatar{width:56px;height:68px;object-fit:cover;border-radius:6px}.xsd2-npc{max-width:240px}.xsd2-dialog{max-width:min(680px,90vw);max-height:85vh}.xsd2-dialog::backdrop{background:#000b}.xsd2-dialog header{display:flex;justify-content:space-between}.xsd2-dialog label{display:block;margin:8px 0}.xsd2-dialog textarea{width:90%;min-height:90px}.xsd2-dialog img{max-width:100%;max-height:70vh;object-fit:contain}.xsd2-feedback{color:#ffcb8c}.xsd2-label{font-size:.85em;color:#c5c9bd}
-.xsd2-stagebar{display:flex;gap:16px;align-items:flex-start;max-width:1080px}
+.xsd2-stagebar{display:flex;gap:16px;align-items:flex-start;width:100%;max-width:1080px;box-sizing:border-box}.xsd2-stagebar>.xsd2-hud{flex:1 1 0;min-width:0;box-sizing:border-box}.xsd2-opening-root{width:100%;min-width:0;box-sizing:border-box}
 .xsd2-wing{display:flex;flex-direction:column;gap:10px;padding-top:6px}
 .xsd2-tile{position:relative;width:72px;height:72px;border-radius:10px;border:1px solid #333a35;background:#151d1a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;overflow:hidden;padding:0}
 .xsd2-tile:hover{border-color:#d5b97b;transform:translateY(-2px)}
@@ -342,6 +342,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     const s = runtime.getSnapshot();
     renderSettlement(doc,settlement,s,options.settlementEffects);
     if (!s) {
+      stagebar.style.display = "none";
+      container.insertBefore(root, stagebar);
       root.className = "xsd2-opening-root";
       const view = runtime.getOpeningView?.() || {
         mode: "identity_menu",
@@ -363,6 +365,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     }
     opening?.destroy();
     opening = null;
+    stagebar.style.display = "";
+    stagebar.insertBefore(root, wingR);
     root.className = "xsd2-hud";
     renderWings(s);
     const st = s.stat_data,

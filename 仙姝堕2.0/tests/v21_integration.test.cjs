@@ -38,5 +38,13 @@ test('心迹真实DOM：身份过滤四节点、点击授权中控、活动/历�
 });
 test('重新构建必须包含新面板与上限代码，PNG和latest一致',()=>{
  const {bundle,unpack}=require('../build');const script=bundle();assert.ok(script.includes('xsd2-favor'));assert.ok(script.includes('function favorCap'));assert.ok(script.includes('data-heart-node'));
- const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v21.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.21');
+ const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v22.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.22');
+});
+test('开局容器独立于两翼布局，入世后回到主卷，重新开局可再次移出',()=>{
+ const d=new JSDOM('<html><head></head><body><main></main></body></html>'),doc=d.window.document;let s=null;
+ const runtime={getSnapshot:()=>s,getOpeningView:()=>({mode:'identity_menu',key:'menu'}),subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}};
+ const p=mountHUD(doc,doc.querySelector('main'),runtime,data,()=>{});
+ assert.equal(doc.querySelector('.xsd2-opening-root').parentElement.tagName,'MAIN');assert.equal(doc.querySelector('.xsd2-stagebar').style.display,'none');
+ s=state();p.render();assert.ok(doc.querySelector('.xsd2-hud').parentElement.classList.contains('xsd2-stagebar'));assert.equal(doc.querySelector('.xsd2-stagebar').style.display,'');
+ s=null;p.render();assert.equal(doc.querySelector('.xsd2-opening-root').parentElement.tagName,'MAIN');p.destroy();d.window.close();
 });
