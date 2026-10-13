@@ -16,3 +16,5 @@
 ## 场景立绘（v26）
 
 portrait_scenes.json按promotionId/pluginId和人物名指定图包ID；夜浴试点使用yehongying_bath_side。静态图包/网络图床仍为外部资源，卡内仅含映射；小图优先高清PNG。
+
+场景立绘值可用ID数组（v28）：同场景多图随机抽取，同楼重绘保持一致；仅填已有图库中符合场景的资源，禁止混入其他阶段/剧情图片。玄鉴图表必须用RELIC_PILOT_CONFIG映射的短ID读取relic_progress，图包长ID不充当账本ID。

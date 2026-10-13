@@ -15,7 +15,7 @@ const PALETTE = {
   accent: "#d5b97b",
 };
 const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PALETTE.background};border:1px solid #756746;border-radius:10px;padding:14px;font-family:serif;line-height:1.7}.xsd2-hud button,.xsd2-dialog button,.xsd2-dialog input,.xsd2-dialog select,.xsd2-dialog textarea{color:#eee9d9;background:#273b34;border:1px solid #8b927e;border-radius:5px;padding:7px;margin:3px;font:inherit}.xsd2-hud button:focus-visible,.xsd2-dialog :focus-visible{outline:2px solid #d5b97b;outline-offset:2px}.xsd2-head,.xsd2-hud nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.xsd2-hud summary{cursor:pointer;color:#d5b97b}.xsd2-hud dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0}.xsd2-hud dd{margin:0;color:#c5c9bd}.xsd2-avatar{width:56px;height:68px;object-fit:cover;border-radius:6px}.xsd2-dialog{max-width:min(680px,90vw);max-height:85vh}.xsd2-dialog::backdrop{background:#000b}.xsd2-dialog header{display:flex;justify-content:space-between}.xsd2-dialog label{display:block;margin:8px 0}.xsd2-dialog textarea{width:90%;min-height:90px}.xsd2-dialog img{max-width:100%;max-height:70vh;object-fit:contain}.xsd2-feedback{color:#ffcb8c}.xsd2-label{font-size:.85em;color:#c5c9bd}
-.xsd2-hud{background:linear-gradient(180deg,#202925,#171e1c);border-radius:14px;padding:20px 24px 16px;box-shadow:0 8px 40px #0008}.xsd2-head{border-bottom:1px solid #394139;padding-bottom:12px;position:relative}.xsd2-head::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:1px;background:linear-gradient(90deg,transparent,#d5b97b55 20%,#d5b97b55 80%,transparent)}.xsd2-head h1{margin:0;font-size:26px;letter-spacing:8px;font-weight:600;color:#e8cf8f}.xsd2-head .xsd2-sub{font-size:11px;letter-spacing:3px;color:#89948a}.xsd2-head [data-gm]{margin-left:auto}.xsd2-who{display:flex;gap:14px;margin-top:14px;align-items:flex-start}.xsd2-document{flex:1;min-width:0}.xsd2-plaque{display:inline-block;background:#27332b;border:1px solid #756746;border-radius:6px;padding:6px 14px;letter-spacing:2px}.xsd2-portrait{margin-left:auto}.xsd2-atmo{color:#c5c9bd;font-size:.95em}.xsd2-row span{overflow-wrap:anywhere}.xsd2-npcs{display:block}.xsd2-npc{display:flex;gap:12px;max-width:none;border:1px solid #394139;border-radius:8px;padding:10px;margin-top:8px;background:#1a211e}.xsd2-npc h4{margin:0 0 4px;letter-spacing:2px;color:#d5b97b}.xsd2-npc small{color:#89948a}.xsd2-hud details{border:1px solid #394139;border-radius:8px;background:#1a211e;margin-top:10px;padding:4px 12px}.xsd2-foot{text-align:right;color:#89948a;font-size:11px;letter-spacing:2px;margin-top:12px}@media(max-width:640px){.xsd2-hud{padding:14px}.xsd2-head .xsd2-sub{display:none}.xsd2-row{grid-template-columns:56px minmax(0,1fr)}.xsd2-who{gap:8px}.xsd2-plaque{padding:4px 8px}}
+.xsd2-hud{background:linear-gradient(180deg,#202925,#171e1c);border-radius:14px;padding:20px 24px 16px;box-shadow:0 8px 40px #0008}.xsd2-head{border-bottom:1px solid #394139;padding-bottom:12px;position:relative}.xsd2-head::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:1px;background:linear-gradient(90deg,transparent,#d5b97b55 20%,#d5b97b55 80%,transparent)}.xsd2-head h1{margin:0;font-size:26px;letter-spacing:8px;font-weight:600;color:#e8cf8f}.xsd2-head .xsd2-sub{font-size:11px;letter-spacing:3px;color:#89948a}.xsd2-head [data-gm]{margin-left:auto}.xsd2-who{display:flex;gap:14px;margin-top:14px;align-items:flex-start}.xsd2-document{flex:1;min-width:0}.xsd2-plaque{display:inline-block;background:#27332b;border:1px solid #756746;border-radius:6px;padding:6px 14px;letter-spacing:2px}.xsd2-portrait{margin-left:auto}.xsd2-atmo{color:#c5c9bd;font-size:.95em}.xsd2-row span{overflow-wrap:anywhere}.xsd2-npcs{display:block}.xsd2-npc{display:flex;gap:12px;max-width:none;border:1px solid #394139;border-radius:8px;padding:10px;margin-top:8px;background:#1a211e}.xsd2-npc h4{margin:0 0 4px;letter-spacing:2px;color:#d5b97b}.xsd2-hud .xsd2-npc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;gap:14px}.xsd2-hud .xsd2-npc>[data-portrait],.xsd2-hud .xsd2-portrait>button{width:72px;height:88px;padding:0;margin:0;display:block;line-height:0;overflow:hidden;align-self:start;box-sizing:border-box}.xsd2-hud .xsd2-npc>[data-portrait] img,.xsd2-hud .xsd2-portrait>button img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 25%}.xsd2-hud .xsd2-npc>div{min-width:0}.xsd2-npc small{color:#89948a}.xsd2-hud details{border:1px solid #394139;border-radius:8px;background:#1a211e;margin-top:10px;padding:4px 12px}.xsd2-foot{text-align:right;color:#89948a;font-size:11px;letter-spacing:2px;margin-top:12px}@media(max-width:640px){.xsd2-hud{padding:14px}.xsd2-head .xsd2-sub{display:none}.xsd2-row{grid-template-columns:56px minmax(0,1fr)}.xsd2-who{gap:8px}.xsd2-plaque{padding:4px 8px}}
 .xsd2-stagebar{display:flex;gap:16px;align-items:flex-start;width:100%;max-width:1080px;box-sizing:border-box;justify-content:center;margin-inline:auto}.xsd2-stagebar>.xsd2-hud{flex:1 1 0;max-width:660px;min-width:0;box-sizing:border-box}.xsd2-opening-root{width:100%;min-width:0;box-sizing:border-box}
 .xsd2-wing{display:flex;flex-direction:column;gap:10px;padding-top:6px}
 .xsd2-tile{position:relative;width:72px;height:72px;border-radius:10px;border:1px solid #333a35;background:#151d1a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;overflow:hidden;padding:0}
@@ -55,7 +55,7 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
 .xsd2-flog li span{margin-left:auto;color:#8b927e;font-size:.85em}
 .xsd2-xj{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:10}
 .xsd2-xj.open{display:flex}
-.xsd2-xj-sheet{background:#1b2320;border:1px solid #756746;border-radius:12px;width:min(1080px,96vw);max-height:92vh;overflow:auto;padding:16px 18px}
+.xsd2-xj-sheet{box-sizing:border-box;background:#1b2320;border:1px solid #756746;border-radius:12px;width:min(1080px,96vw);max-height:92vh;overflow:auto;padding:16px 18px}
 .xsd2-xj-sheet header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #514d3e;padding-bottom:10px}
 .xsd2-xj-sheet header img{width:52px;height:52px;border-radius:8px;border:1px solid #514d3e}
 .xsd2-xj-sheet h3{margin:0;color:#e8cf8f;letter-spacing:3px;font-size:20px}
@@ -68,8 +68,8 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
 .xsd2-xtabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 4px}
 .xsd2-xtab{background:#1a211e;border:1px solid #514d3e;border-radius:6px;color:#c5c9bd;padding:5px 12px;cursor:pointer;font:inherit;font-size:.9em}
 .xsd2-xtab.on{border-color:#d5b97b;color:#e8cf8f;background:#242a22}
-.xsd2-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
-.xsd2-col{border:1px solid #514d3e;border-radius:10px;padding:12px;background:#1a211e;opacity:.62}
+.xsd2-cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+.xsd2-col{min-width:0;overflow-wrap:anywhere;border:1px solid #514d3e;border-radius:10px;padding:12px;background:#1a211e;opacity:.62}
 .xsd2-col.awake{opacity:1;border-color:#756746}
 .xsd2-col.next{border-color:#5a5342}
 .xsd2-colhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
@@ -97,7 +97,7 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
   .xsd2-wing{order:1;flex-direction:row;flex-wrap:wrap;width:100%;justify-content:flex-start;padding-top:0}
   .xsd2-tile{width:60px;height:60px}
   .xsd2-tile img{width:50px;height:50px}
-  .xsd2-cols{grid-template-columns:repeat(2,1fr)}
+  .xsd2-cols{grid-template-columns:repeat(2,minmax(0,1fr))}
   .xsd2-row{grid-template-columns:56px minmax(0,1fr)}
   .xsd2-badge{margin-left:0}
 }`;
@@ -122,19 +122,26 @@ const PORTRAITS = {
   魂欢殿主: "bingxiangsi",
 };
 const GOURD_SVG = '<svg class="xsd2-gourd" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.6c-1.9 0-3.2 1.3-3.2 2.8 0 .9.5 1.7 1.2 2.2C8 7.5 6.2 9.4 6.2 11.9c0 3.4 2.7 6.1 5.8 6.1s5.8-2.7 5.8-6.1c0-2.5-1.8-4.4-3.8-5.3.7-.5 1.2-1.3 1.2-2.2 0-1.5-1.3-2.8-3.2-2.8z"/></svg>';
+const portraitChoices=new Map();
+function choosePortrait(candidates,name,s){
+  const key=JSON.stringify([s.chatId,s.branchId,s.floor,name,candidates]);
+  if(!portraitChoices.has(key)){if(portraitChoices.size>=512)portraitChoices.delete(portraitChoices.keys().next().value);portraitChoices.set(key,candidates[Math.floor(Math.random()*candidates.length)]);}
+  return portraitChoices.get(key);
+}
 function portrait(name, s, data) {
   const stagePortrait = s.stat_data?.character_stages?.[name]?.portrait;
   if (stagePortrait?.small && stagePortrait?.large) return {...stagePortrait,small:stagePortrait.large,fallback:stagePortrait.small};
   const scene=data.portraitScenes?.[s.activeEvent?.promotionId];
-  let id = scene && scene.pluginId === s.activeEvent?.pluginId ? scene.portraits?.[name] || PORTRAITS[name] : PORTRAITS[name];
+  const scenePool=scene && scene.pluginId === s.activeEvent?.pluginId ? scene.portraits?.[name] : null;
+  let id = scenePool ? choosePortrait(Array.isArray(scenePool)?scenePool:[scenePool],name,s) : PORTRAITS[name];
   if (!id) return null;
   const R = data.rules(s.stat_data),
     cfg = Object.values(R.RELIC_PILOT_CONFIG).find(
       (c) => c.owner === name || c.ownerAliases?.includes(name),
     ),
-    stage = cfg ? R.getRelicStage(cfg.id, s.known) : 0;
+    stage = cfg ? R.getRelicStage(cfg.id, s.stat_data?.known || s.known) : 0;
   const phase = stage >= 3 ? 3 : stage >= 2 ? 2 : 1;
-  if (phase > 1 && data.assets.includes(id + "_" + phase + ".jpg"))
+  if (!scenePool && phase > 1 && data.assets.includes(id + "_" + phase + ".jpg"))
     id += "_" + phase;
   return {
     small: "user/images/xsd_gallery/" + id + ".png",
@@ -144,19 +151,12 @@ function portrait(name, s, data) {
 }
 // 纹章状态推导：成形=known 旗标、阶段=已知最高阶、归属=名器归属/破处者账本
 function relicStates(s, data) {
-  const CN = ["一", "二", "三", "四"];
-  return Object.entries(data.relicDb || {}).map(([id, rel]) => {
-    const formed = !!s.known?.[rel.name + "成形"];
-    let stage = 0;
-    for (const k of [1, 2, 3, 4])
-      if (s.known?.[rel.name + CN[k - 1] + "阶段"]) stage = k;
-    const owner = s.stat_data.名器归属?.[id] || s.stat_data.破处者?.[rel.carrier] || "";
-    const state = !formed
-      ? "none"
-      : owner && owner !== s.identity
-        ? "other"
-        : "self";
-    return { id, rel, stage, state, owner };
+  const R=data.rules(s.stat_data),known=s.stat_data.known||s.known||{};
+  return Object.entries(data.relicDb || {}).map(([id,rel])=>{
+    const cfg=Object.values(R.RELIC_PILOT_CONFIG).find(c=>c.names.includes(rel.name)||c.names.includes(id));
+    const stage=cfg?R.getRelicStage(cfg.id,known):0;
+    const owner=s.stat_data.名器归属?.[cfg?.id]||s.stat_data.名器归属?.[id]||s.stat_data.名器归属?.[rel.name]||s.stat_data.破处者?.[rel.carrier]||'';
+    return {id,rel,cfg,stage,owner,state:stage===0?'none':owner&&owner!==s.identity?'other':'self'};
   });
 }
 function favorLadder(data, character, s) {
@@ -241,12 +241,15 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
           : '<p class="xsd2-sign">【天机未启】</p><p>玄妙道机属于混沌阴阳之间，待双修火候与天道机缘突破方可显化。</p>';
         const lockbox = '<div class="xsd2-lockbox"><p>' + esc(stg.lock || "") + "</p></div>";
         let soak = "";
-        if (isNext && k === 2) {
-          const pr = s.stat_data.relic_progress?.[id];
-          if (pr) {
-            const pct = Math.round((pr.count / pr.target) * 100) || 0;
-            soak = '<div class="xsd2-soak"><b>✦ 阶位浸润（一升二 · ' + (pr.count || 0) + "/" + (pr.target || 3) + ' 次 情动）（' + pct + '%）</b><div class="xsd2-sbar"><i style="width:' + pct + '%"></i></div><p>💧 蓄力灌注中：每次有效内射/浸润推进 1 次</p></div>';
-          }
+        if (isNext && k >= 2 && rs.cfg) {
+          const pr = s.stat_data.relic_progress?.[rs.cfg.id];
+          const ledger=pr?.stages?.[k] || ((pr?.target_stage === k || (!pr?.target_stage && k===2))?pr:null);
+          const target=ledger?.target || (k===2?rs.cfg.target:3) || 3;
+          const count=Math.max(0,Math.min(target,Number(ledger?.count)||0));
+          const pct=Math.round(count/target*100);
+          const labels={2:'一升二 · 情动',3:'二升三 · 沉沦',4:'三升四 · 极乐'};
+          const conditions={2:'生理自发迎合与名器质变',3:'心智质变或专属烙印',4:'专属机缘与不可逆外貌异化'};
+          soak='<div class="xsd2-soak" data-relic-progress="'+rs.cfg.id+'" data-target-stage="'+k+'"><b>✦ 阶位浸润（'+labels[k]+' · '+count+'/'+target+'）</b><div class="xsd2-sbar"><i style="width:'+pct+'%"></i></div><p>'+ (count>=target?'火候已满，尚待质变机缘。':'浸润积累中，火候尚未圆满。')+'</p><div class="xsd2-lockbox rule"><b>晋升条件</b><p>浸润达标，并出现'+conditions[k]+'。仅累计次数不能越阶。</p></div></div>';
         }
         return '<div class="xsd2-col' + (awake ? " awake" : "") + (isNext ? " next" : "") + '">'
           + '<div class="xsd2-colhead"><span class="xsd2-jie">第' + CN[k - 1] + '境界</span><span class="xsd2-st">' + (awake ? "✦ 已觉醒" : "🔒 锁羽") + "</span></div>"

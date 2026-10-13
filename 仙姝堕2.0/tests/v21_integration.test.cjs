@@ -39,7 +39,7 @@ test('心迹真实DOM：身份过滤四节点、点击授权中控、活动/历�
 });
 test('重新构建必须包含新面板与上限代码，PNG和latest一致',()=>{
  const {bundle,unpack}=require('../build');const script=bundle();assert.ok(script.includes('xsd2-favor'));assert.ok(script.includes('function favorCap'));assert.ok(script.includes('data-heart-node'));
- const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v27.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.27');
+ const dir=path.join(__dirname,'..');const a=fs.readFileSync(path.join(dir,'dist/仙姝堕2.0·框架测试-v28.png')),b=fs.readFileSync(path.join(dir,'最新角色卡/仙姝堕2.0·框架测试.png'));assert.ok(a.equals(b));assert.equal(unpack(a).data.character_version,'2.0-framework.28');
 });
 test('开局容器独立于两翼布局，入世后回到主卷，重新开局可再次移出',()=>{
  const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document;let s=null;
@@ -89,6 +89,21 @@ test('玩家头像独立于在场人物；高清缩图与夜浴场景图由事�
  assert.ok(doc.querySelector('[data-player-avatar] img').src.endsWith('/avatars/player.png'));assert.equal(doc.querySelector('.xsd2-portrait [data-portrait]'),null);assert.equal(doc.querySelector('[data-player-avatar-file]').accept,'image/png,image/jpeg,image/webp');
  assert.ok(portrait('叶红缨',s,data).small.endsWith('yehongying.png'));
  s.activeEvent={pluginId:'character_promotion',promotionId:'yehongying-night',character:'叶红缨'};
- assert.ok(portrait('叶红缨',s,data).small.endsWith('yehongying_bath_side.png'));assert.ok(portrait('叶红缨',s,data).large.endsWith('yehongying_bath_side.png'));assert.ok(portrait('孤月',s,data).large.endsWith('guyue.png'));
+ assert.match(portrait('叶红缨',s,data).small,/yehongying_bath_(side|front)\.png$/);assert.equal(portrait('叶红缨',s,data).small,portrait('叶红缨',s,data).large);assert.ok(portrait('孤月',s,data).large.endsWith('guyue.png'));
  s.activeEvent=null;assert.ok(portrait('叶红缨',s,data).large.endsWith('yehongying.png'));p.destroy();d.window.close();
+});
+test('十三名器统一用后台短ID显示浸润；无记录0值、各阶晋升条件、关闭切换保持',()=>{
+ const d=makeDom('<html><head></head><body><main></main></body></html>'),doc=d.window.document,s=state(),R=data.rules(s.stat_data);
+ s.stat_data.known={};s.known=s.stat_data.known;s.stat_data.relic_progress={};
+ for(const c of Object.values(R.RELIC_PILOT_CONFIG)){s.known[c.formKey]=true;s.known[c.stage1Key]=true;s.stat_data.relic_progress[c.id]={stages:{2:{count:1,target:3}}};}
+ const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}},data,()=>{});doc.querySelector('[data-xsd2-wing] button').click();
+ for(const [id,rel] of Object.entries(data.relicDb)){const cfg=Object.values(R.RELIC_PILOT_CONFIG).find(c=>c.names.includes(rel.name));doc.querySelector('[data-xjtab="'+id+'"]').click();const progress=doc.querySelector('[data-relic-progress="'+cfg.id+'"]');assert.match(progress.textContent,/1\/3/);assert.match(progress.textContent,/晋升条件/);}
+ delete s.stat_data.relic_progress.jiuyou;doc.querySelector('[data-xjtab="jiuyouxuanyinxue"]').click();assert.match(doc.querySelector('[data-relic-progress="jiuyou"]').textContent,/0\/3/);
+ for(const stage of [2,3]){s.known[R.RELIC_PILOT_CONFIG.jiuyou['stage'+stage+'Key']]=true;s.stat_data.relic_progress.jiuyou={stages:{[stage+1]:{count:2,target:3}}};doc.querySelector('[data-xjtab="jiuyouxuanyinxue"]').click();const bar=doc.querySelector('[data-relic-progress="jiuyou"]');assert.equal(bar.dataset.targetStage,String(stage+1));assert.match(bar.textContent,/2\/3/);assert.match(bar.textContent,/晋升条件/);}
+ p.destroy();d.window.close();
+});
+test('场景候选随机选择只来自对应图片池，同楼重绘稳定，普通场景不选夜浴图',()=>{
+ const {portrait}=require('../src/ui/status_panel'),s=state();s.activeEvent={pluginId:'character_promotion',promotionId:'yehongying-night'};
+ const previous=Math.random;const seen=new Set();try{for(let floor=0;floor<12;floor++){Math.random=()=>floor%2?.9:.1;s.floor=100+floor;const p=portrait('叶红缨',s,data);seen.add(p.large);assert.equal(p.large,portrait('叶红缨',s,data).large);assert.match(p.large,/bath_(front|side)\.png$/);}}finally{Math.random=previous;}
+ assert.equal(seen.size,2);s.activeEvent=null;assert.ok(!portrait('叶红缨',s,data).large.includes('bath'));
 });

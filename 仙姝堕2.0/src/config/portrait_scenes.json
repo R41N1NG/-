@@ -1,6 +1,6 @@
 {
   "yehongying-night": {
     "pluginId": "character_promotion",
-    "portraits": {"叶红缨": "yehongying_bath_side"}
+    "portraits": {"叶红缨": ["yehongying_bath_front", "yehongying_bath_side"]}
   }
 }
