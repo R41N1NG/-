@@ -1045,3 +1045,13 @@ test('四殿主大劫日开局含伪装元婴均落金丹大圆满，开局状�
   await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.player_realm.actions.filter(x=>x.kind==='calamity-drop').length,1);
  }
 });
+
+test('自由回合不按轮次固定计时，分钟按实际耗时累积；累计天数或未知耗时不加天',async()=>{
+ const h=harness();await h.opening('赵无忧');const start=C.day(h.r.getSnapshot().calendarDate);
+ for(let i=0;i<4;i++){h.c.chat.push({is_user:true,mes:'继续交谈'});await h.reply(status({历时:'—'}));}
+ assert.equal(h.r.getSnapshot().clockRemainder||0,0);assert.equal(C.day(h.r.getSnapshot().calendarDate),start);
+ h.c.chat.push({is_user:true,mes:'等候五分钟'});await h.reply(status({历时:'5分钟'}));assert.equal(h.r.getSnapshot().clockRemainder,5);
+ h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({历时:'距出行3日'}));assert.equal(h.r.getSnapshot().clockRemainder,5);
+ h.c.chat.push({is_user:true,mes:'长途行走'});await h.reply(status({历时:'1435分钟'}));assert.equal(C.day(h.r.getSnapshot().calendarDate),start+1);assert.equal(h.r.getSnapshot().clockRemainder,0);
+ await h.r.restore();assert.equal(C.day(h.r.getSnapshot().calendarDate),start+1);
+});

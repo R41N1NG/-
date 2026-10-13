@@ -17,7 +17,7 @@ const PALETTE = {
   accent: "#d5b97b",
 };
 const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PALETTE.background};border:1px solid #756746;border-radius:10px;padding:14px;font-family:serif;line-height:1.7}.xsd2-hud button,.xsd2-dialog button,.xsd2-dialog input,.xsd2-dialog select,.xsd2-dialog textarea{color:#eee9d9;background:#273b34;border:1px solid #8b927e;border-radius:5px;padding:7px;margin:3px;font:inherit}.xsd2-hud button:focus-visible,.xsd2-dialog :focus-visible{outline:2px solid #d5b97b;outline-offset:2px}.xsd2-head,.xsd2-hud nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.xsd2-hud summary{cursor:pointer;color:#d5b97b}.xsd2-hud dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0}.xsd2-hud dd{margin:0;color:#c5c9bd}.xsd2-avatar{width:56px;height:68px;object-fit:cover;border-radius:6px}.xsd2-dialog{max-width:min(680px,90vw);max-height:85vh}.xsd2-dialog::backdrop{background:#000b}.xsd2-dialog header{display:flex;justify-content:space-between}.xsd2-dialog label{display:block;margin:8px 0}.xsd2-dialog textarea{width:90%;min-height:90px}.xsd2-dialog img{max-width:100%;max-height:70vh;object-fit:contain}.xsd2-feedback{color:#ffcb8c}.xsd2-label{font-size:.85em;color:#c5c9bd}
-.xsd2-hud{background:linear-gradient(180deg,#202925,#171e1c);border-radius:14px;padding:20px 24px 16px;box-shadow:0 8px 40px #0008}.xsd2-head{border-bottom:1px solid #394139;padding-bottom:12px;position:relative}.xsd2-head::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:1px;background:linear-gradient(90deg,transparent,#d5b97b55 20%,#d5b97b55 80%,transparent)}.xsd2-head h1{margin:0;font-size:26px;letter-spacing:8px;font-weight:600;color:#e8cf8f}.xsd2-head .xsd2-sub{font-size:11px;letter-spacing:3px;color:#89948a}.xsd2-head [data-gm]{margin-left:auto}.xsd2-who{display:flex;gap:14px;margin-top:14px;align-items:flex-start}.xsd2-document{flex:1;min-width:0}.xsd2-plaque{display:inline-block;background:#27332b;border:1px solid #756746;border-radius:6px;padding:6px 14px;letter-spacing:2px}.xsd2-portrait{margin-left:auto}.xsd2-atmo{color:#c5c9bd;font-size:.95em}.xsd2-row span{overflow-wrap:anywhere}.xsd2-npcs{display:block}.xsd2-npc{display:flex;gap:12px;max-width:none;border:1px solid #394139;border-radius:8px;padding:10px;margin-top:8px;background:#1a211e}.xsd2-npc h4{margin:0 0 4px;letter-spacing:2px;color:#d5b97b}.xsd2-hud .xsd2-npc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;gap:14px}.xsd2-hud .xsd2-npc>[data-portrait],.xsd2-hud .xsd2-portrait>button{width:72px;height:88px;padding:0;margin:0;display:block;line-height:0;overflow:hidden;align-self:start;box-sizing:border-box}.xsd2-hud .xsd2-npc>[data-portrait] img,.xsd2-hud .xsd2-portrait>button img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 25%}.xsd2-hud .xsd2-npc>div{min-width:0}.xsd2-npc small{color:#89948a}.xsd2-hud details{border:1px solid #394139;border-radius:8px;background:#1a211e;margin-top:10px;padding:4px 12px}.xsd2-foot{text-align:right;color:#89948a;font-size:11px;letter-spacing:2px;margin-top:12px}@media(max-width:640px){.xsd2-hud{padding:14px}.xsd2-head .xsd2-sub{display:none}.xsd2-row{grid-template-columns:56px minmax(0,1fr)}.xsd2-who{gap:8px}.xsd2-plaque{padding:4px 8px}}
+.xsd2-hud{background:linear-gradient(180deg,#202925,#171e1c);border-radius:14px;padding:20px 24px 16px;box-shadow:0 8px 40px #0008}.xsd2-head{border-bottom:1px solid #394139;padding-bottom:12px;position:relative}.xsd2-head::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:1px;background:linear-gradient(90deg,transparent,#d5b97b55 20%,#d5b97b55 80%,transparent)}.xsd2-head h1{margin:0;font-size:26px;letter-spacing:8px;font-weight:600;color:#e8cf8f}.xsd2-head .xsd2-sub{font-size:11px;letter-spacing:3px;color:#89948a}.xsd2-head [data-gm]{margin-left:auto}.xsd2-who{display:flex;gap:14px;margin-top:14px;align-items:flex-start}.xsd2-document{flex:1;min-width:0}.xsd2-plaque{display:inline-block;background:#27332b;border:1px solid #756746;border-radius:6px;padding:6px 14px;letter-spacing:2px}.xsd2-portrait{margin-left:auto}.xsd2-atmo{color:#c5c9bd;font-size:.95em}.xsd2-row span{overflow-wrap:anywhere}.xsd2-npcs{display:block}.xsd2-npc{display:flex;gap:12px;max-width:none;border:1px solid #394139;border-radius:8px;padding:10px;margin-top:8px;background:#1a211e}.xsd2-npc h4{margin:0 0 4px;letter-spacing:2px;color:#d5b97b}.xsd2-hud .xsd2-npc{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;gap:14px}.xsd2-hud .xsd2-npc>[data-portrait],.xsd2-hud .xsd2-portrait>button{width:72px;height:88px;padding:0;margin:0;display:block;line-height:0;overflow:hidden;align-self:start;box-sizing:border-box}.xsd2-hud .xsd2-npc>[data-portrait] img,.xsd2-hud .xsd2-portrait>button img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 25%}.xsd2-hud .xsd2-npc>div{min-width:0}.xsd2-avatar-placeholder{width:72px;height:88px;box-sizing:border-box;border:1px solid #394139;border-radius:6px;display:flex;align-items:center;justify-content:center;text-align:center;color:#89948a;font-size:12px}.xsd2-npc small{color:#89948a}.xsd2-hud details{border:1px solid #394139;border-radius:8px;background:#1a211e;margin-top:10px;padding:4px 12px}.xsd2-foot{text-align:right;color:#89948a;font-size:11px;letter-spacing:2px;margin-top:12px}@media(max-width:640px){.xsd2-hud{padding:14px}.xsd2-head .xsd2-sub{display:none}.xsd2-row{grid-template-columns:56px minmax(0,1fr)}.xsd2-who{gap:8px}.xsd2-plaque{padding:4px 8px}}
 .xsd2-stagebar{display:flex;gap:16px;align-items:flex-start;width:100%;max-width:1080px;box-sizing:border-box;justify-content:center;margin-inline:auto}.xsd2-stagebar>.xsd2-hud{flex:1 1 0;max-width:660px;min-width:0;box-sizing:border-box}.xsd2-opening-root{width:100%;min-width:0;box-sizing:border-box}
 .xsd2-wing{display:flex;flex-direction:column;gap:10px;padding-top:6px}
 .xsd2-tile{position:relative;width:104px;height:104px;border-radius:10px;border:1px solid #333a35;background:#151d1a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;overflow:hidden;padding:0}
@@ -105,6 +105,19 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
 }`;
 // Names and file IDs are drawn from the migrated registry / local gallery manifest.
 const PORTRAITS = {
+  玄机子: "xuanjizi",
+  炎雷子: "yanleizi",
+  云逸尘: "yunyichen",
+  清虚散人: "yunyichen",
+  极乐太子: "jiletaizi",
+  炼欲魔君: "lianyumojun",
+  花间二鬼: "huajianergui",
+  残阳老怪: "canyanglaoguai",
+  肉山佛: "roushanfo",
+  九皇子: "jiuhuangzi",
+  厉锋: "lifeng",
+  石岩: "shiyan",
+  柳玉: "liuyu",
   孤月: "guyue",
   叶红缨: "yehongying",
   闻观语: "wenguanyu",
@@ -135,7 +148,7 @@ function portrait(name, s, data) {
   if (stagePortrait?.small && stagePortrait?.large) return {...stagePortrait,small:stagePortrait.large,fallback:stagePortrait.small};
   const scene=data.portraitScenes?.[s.activeEvent?.promotionId];
   const scenePool=scene && scene.pluginId === s.activeEvent?.pluginId ? scene.portraits?.[name] : null;
-  let id = scenePool ? choosePortrait(Array.isArray(scenePool)?scenePool:[scenePool],name,s) : PORTRAITS[name];
+  let id = scenePool ? choosePortrait(Array.isArray(scenePool)?scenePool:[scenePool],name,s) : PORTRAITS[name] || PORTRAITS[String(name).replace(/[（(][\s\S]*?[）)]/g,"").trim()];
   if (!id) return null;
   const R = data.rules(s.stat_data),
     cfg = Object.values(R.RELIC_PILOT_CONFIG).find(
@@ -397,7 +410,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
               '" alt="' +
               esc(name) +
               '"></button>'
-          : "";
+          : '<div class="xsd2-avatar-placeholder" role="img" aria-label="'+esc(name)+'暂无立绘">暂无立绘</div>';
       };
     // 关系刻度 → 心迹入口：注册了好感表的人物可点开，有可推进节点者挂专属标记（叶红缨=小葫芦）
     const metricOf = (name) => s.stat_data.character_metrics?.[name]?.好感度;
