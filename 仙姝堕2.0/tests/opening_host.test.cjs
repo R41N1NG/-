@@ -402,6 +402,17 @@ test("打包人物入口：好感阈值只解锁，按钮发送代码，完成�
     await h.emit("GENERATION_ENDED");
     assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,"stage02");
     assert.ok(!h.context.chat.at(-1).mes.includes("Promotion_result"));
+    // Normal STARTED arrives while the completed settlement is still last.
+    await h.emit("GENERATION_STARTED","normal",{},false);
+    assert.equal(r.getSnapshot().pending,null);assert.equal(r.getSnapshot().activeEvent,null);
+    assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,"stage02");
+    assert.ok(!h.context.prompts.at(-1).includes("Promotion_result"));
+    const userFloor=h.context.chat.length;h.context.chat.push({mes:"请叶红缨喝酒",is_user:true,variables:[{}]});h.appendDOM(userFloor);
+    const storyFloor=h.context.chat.length;h.context.chat.push({mes:"叶红缨接过酒坛。<Status_block><在场>叶红缨</在场></Status_block>",is_user:false,variables:[{}]});h.appendDOM(storyFloor);
+    await h.emit("GENERATION_ENDED");
+    assert.equal(r.getSnapshot().pending,null);assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,"stage02");
+    assert.equal(r.getSnapshot().storyCount,2);assert.match(h.context.chat.at(-1).mes,/叶红缨接过酒坛/);
+    assert.ok(!Object.values(r.getSnapshot().settlements).some(x=>x.floor===storyFloor));
     assert.ok(h.errors.length===0);
   }finally{h.close();}
 });

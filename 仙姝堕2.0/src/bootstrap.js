@@ -130,7 +130,7 @@ function start(win) {
     if (dryRun === true || !active()) return;
     host.markAborted(false);
     host.markGenerating(true);
-    await runtime.replay();
+    await runtime.replay(_type || "normal");
     await mirror();
   });
   on("GENERATION_STOPPED", async () => {

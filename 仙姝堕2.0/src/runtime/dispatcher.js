@@ -1113,7 +1113,7 @@ function createDispatcher(adapter, data) {
         updatePrompt();
       };
     },
-    replay: () =>
+    replay: (generationType = "regenerate") =>
       lifecycle(async (c) => {
         // Floor zero has no previous assistant floor; retain its opening state.
         if (c.floor === 0) return load(c, false);
@@ -1128,6 +1128,12 @@ function createDispatcher(adapter, data) {
           return snapshot();
         }
         const m = c.chat[c.floor];
+        // Native normal STARTED may precede insertion of the new user message.
+        // Keep the completed latest reply; only regeneration rewinds its action.
+        if (generationType === "normal" && !m?.is_user && compatible(latest,c) &&
+            latest.state?.processed?.[c.floor] === C.hash(m?.mes || "")) {
+          current=C.clone(latest.state);scopeChatId=c.chatId;updatePrompt();return snapshot();
+        }
         const base = await history(c, m?.is_user ? c.floor : c.floor - 1);
         // Native opening swipes / older chats may have valid source identity
         // but no envelope yet. Read that source instead of erasing the identity.

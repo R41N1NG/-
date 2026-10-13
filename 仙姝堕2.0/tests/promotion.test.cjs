@@ -114,3 +114,13 @@ test("自设散修专属晋升：只显示自设节点，完成后点亮自设�
   assert.equal(entries.find(x=>x.name==="【人物阶段】叶红缨:stage02:赵无忧").enabled,false);
 });
 
+test('完成后正常新输入保留结算状态；重生成才恢复结算前并重新核验',async()=>{
+ for(const answer of ['是','否']){
+  const h=fixture();await h.ready();await h.click('yhrNight');await h.reply('你看到她沐浴。');await h.click('yhrFinish');await h.reply(h.report(answer));
+  const completedStage=answer==='是'?'stage02':'stage01';
+  await h.r.replay('normal');assert.equal(h.stage(),completedStage);assert.equal(h.r.getSnapshot().pending,null);assert.equal(h.r.getSnapshot().activeEvent,null);assert.ok(!h.prompts.at(-1).includes('Promotion_result'));
+  // Explicit regeneration of this callback must still restore its authorized pending.
+  await h.r.replay('regenerate');assert.equal(h.stage(),'stage01');assert.equal(h.r.getSnapshot().pending.nodeId,'yhrFinish');assert.ok(h.prompts.at(-1).includes('Promotion_result'));
+  h.chat.pop();await h.reply(h.report('否'));assert.equal(h.stage(),'stage01');await h.r.replay('normal');assert.equal(h.r.getSnapshot().pending,null);
+ }
+});
