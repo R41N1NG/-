@@ -5,9 +5,9 @@ const {createDispatcher}=require("../src/runtime/dispatcher");
 const {createPromotionPlugin,resultTag}=require("../src/plugins/promotion");
 const map=require("../src/plugins/youjigu_map");
 function fixture(){
-  const chat=[{mes:"<IdentityMenu/>",variables:[]}], sent=[],prompts=[];let fail=false;
-  const adapter={context:()=>({chatId:"promotion",chat}),readMessage:async i=>C.clone(chat[i]?.variables?.[chat[i]?.swipe_id || 0] || {}),
-    persist:async(c,e)=>{chat[c.floor].variables ||= [];chat[c.floor].variables[chat[c.floor].swipe_id || 0]={stat_data:{...C.clone(e.state.stat_data),xsd2:[C.clone(e)]}};},
+  const chat=[{mes:"<IdentityMenu/>",variables:[]}], sent=[],prompts=[];let fail=false,checkpoint=null;
+  const adapter={readCheckpoint:async()=>C.clone(checkpoint),context:()=>({chatId:"promotion",chat}),readMessage:async i=>C.clone(chat[i]?.variables?.[chat[i]?.swipe_id || 0] || {}),
+    persist:async(c,e)=>{checkpoint={...C.clone(e),branchId:c.branchId};chat[c.floor].variables ||= [];chat[c.floor].variables[chat[c.floor].swipe_id || 0]={stat_data:{...C.clone(e.state.stat_data),xsd2:[C.clone(e)]}};},
     replaceOpening:async t=>{chat[0].mes=t;},replaceStory:async(i,t)=>{chat[i].mes=t;},
     send:async t=>{if(fail)throw Error("发送失败");sent.push(t);chat.push({mes:t,is_user:true});},setPrompt:t=>prompts.push(t),report:()=>{},confirmExit:async()=>true};
   const r=createDispatcher(adapter,data),plugin=createPromotionPlugin(data.promotionDefinitions,data.nodeStories);r.registerPlugin(plugin);r.registerPlugin(map);
@@ -16,7 +16,7 @@ function fixture(){
   const stage=()=>r.getSnapshot().stat_data.character_stages.叶红缨.id;
   const ready=async()=>{await r.dispatchIntent({type:"SELECT_IDENTITY",payload:{identity:"赵无忧"}});await r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"叶红缨",key:"好感度",value:20}});};
   const report=answer=>'<Promotion_result id="'+r.getSnapshot().pending.actionCode+'">'+answer+'</Promotion_result>';
-  return {chat,sent,prompts,r,plugin,click,reply,stage,ready,report,fail:v=>{fail=v;}};
+  return {chat,sent,prompts,r,plugin,click,reply,stage,ready,report,adapter,fail:v=>{fail=v;}};
 }
 test("资格20只解锁；入口单次故事开启，普通对话不晋升，完成是才提交且不加故事轮次",async()=>{
   const h=fixture();await h.ready();assert.equal(h.stage(),"stage01");
@@ -135,4 +135,29 @@ test('双身份八个晋升入口都连接现有故事；40点节点可发送并
  await h.r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'叶红缨',key:'好感度',value:40}});
  await h.click('yhrZwEnter1');assert.match(h.sent.at(-1),/^XSD2_yhrZwEnter1_/);assert.ok(h.prompts.at(-1).includes(data.nodeStories.yhrZwEnter1.content));
  await h.reply('赤焰居中，她与你对饮。');await h.click('yhrZwFinish1');await h.reply(h.report('是'));assert.equal(h.stage(),'stage03');
+});
+
+test('三段晋升完成与刷新：助手正文归一化和楼层变量缺失不清零，聊天备份保留60点与阶段四',async()=>{
+ const h=fixture();await h.ready();
+ for(const [score,entry,finish] of [[20,'yhrNight','yhrFinish'],[40,'yhrZwEnter1','yhrZwFinish1'],[60,'yhrZwEnter2','yhrZwFinish2']]){
+  await h.r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'叶红缨',key:'好感度',value:score}});
+  await h.click(entry);await h.reply('本次专属剧情已经发生。');await h.click(finish);
+  // Native host can normalize prior assistant text and lose its variable slot.
+  for(const m of h.chat){if(!m.is_user){m.mes+='\n';m.variables=[];}}
+  await h.reply(h.report('是'));
+ }
+ assert.equal(h.stage(),'stage04');
+ for(const m of h.chat)if(!m.is_user)m.variables=[];
+ const restored=createDispatcher(h.adapter,data);restored.registerPlugin(h.plugin);await restored.restore();
+ const s=restored.getSnapshot();assert.equal(s.stat_data.character_stages.叶红缨.id,'stage04');assert.equal(s.stat_data.character_metrics.叶红缨.好感度,60);assert.equal(s.pending,null);
+});
+test('快照容忍助手正文变化，但用户代码、候选、角色变化仍隔离；并发校验保持严格',()=>{
+ const a=C.fingerprint([{mes:'正文',swipe_id:0},{mes:'XSD2_action',is_user:true}]);
+ const b=C.fingerprint([{mes:'正文\n',swipe_id:0},{mes:'XSD2_action',is_user:true}]);
+ assert.equal(C.matchesSnapshot(a,b),true);assert.equal(C.matches(a,b),false);
+ for(const chat of [[{mes:'正文',swipe_id:1},{mes:'XSD2_action',is_user:true}],[{mes:'正文'},{mes:'XSD2_other',is_user:true}],[{mes:'正文',is_user:true},{mes:'XSD2_action',is_user:true}]])assert.equal(C.matchesSnapshot(a,C.fingerprint(chat)),false);
+});
+test('已有快照全部不兼容时停止初始化，不覆盖原有记录为零',async()=>{
+ const h=fixture();await h.ready();const old=JSON.stringify(h.chat[0].variables);h.chat[0].swipe_id=1;
+ const restored=createDispatcher(h.adapter,data);await assert.rejects(restored.restore(),/保护存档/);assert.equal(JSON.stringify(h.chat[0].variables),old);
 });

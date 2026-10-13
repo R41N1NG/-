@@ -1,5 +1,6 @@
 "use strict";
 const data = require("./generated-data");
+const C=require("./runtime/contracts");
 const { createDispatcher } = require("./runtime/dispatcher");
 const { createTavernHost } = require("./host/tavern");
 const {createSettlementEffects} = require("./ui/settlement_effects");
@@ -7,7 +8,8 @@ const { mountHUD } = require("./ui/status_panel");
 const CARD_NAME = "仙姝堕2.0·框架测试";
 function start(win) {
   const topWin = (win && win.top) || (win && win.parent) || win;
-  const host = createTavernHost(win, topWin.document, CARD_NAME, data.embeddedManagedEntries),
+  const liveHandoff=topWin.XSD2?.runtime?.getSnapshot?.() || null;
+  const host = createTavernHost(win, topWin.document, CARD_NAME, data.embeddedManagedEntries,liveHandoff),
     doc = host.top.document || topWin.document || win.document;
   host.top.XSD2?.dispose?.();
   const runtime = createDispatcher(host, data);
@@ -23,13 +25,13 @@ function start(win) {
   function active() {
     return !disposed && host.isOurCard();
   }
-  const report = (e) => {
-    if (active()) host.report(e);
-  };
+  let settleFaultKey=null,lastReportKey=null;
+  const faultKey=()=>{const c=host.context();return JSON.stringify([c.chatId,c.branchId,C.hash(JSON.stringify(C.fingerprint(c.chat)))]);};
+  const report = e => {if(!active())return;const key=faultKey()+"|"+(e.message||e);if(key===lastReportKey)return;lastReportKey=key;host.report(e);};
   async function render() {
     if (!active()) return;
     const epoch = ++renderEpoch, c = host.context();
-    effects.update(runtime.getSnapshot(),c);
+    effects.update(settleFaultKey===faultKey()?null:runtime.getSnapshot(),c);
     const chat = doc.querySelector("#chat");
     const rows = [...(chat?.querySelectorAll(".mes") || [])];
     const targets = [];
@@ -92,7 +94,8 @@ function start(win) {
   }
   async function settle() {
     if (!active()) return;
-    try { await runtime.settleStory(); } catch(error) {effects.reset();throw error;}
+    const key=faultKey();if(settleFaultKey===key)return;
+    try { await runtime.settleStory();settleFaultKey=null; } catch(error) {settleFaultKey=key;effects.reset();throw error;}
     await mirror();
     await render();
   }
@@ -128,6 +131,7 @@ function start(win) {
     // Native prompt/token previews emit STARTED with dryRun=true and no ENDED.
     // They must neither acquire the action lock nor replay authoritative state.
     if (dryRun === true || !active()) return;
+    settleFaultKey=null;lastReportKey=null;
     host.markAborted(false);
     host.markGenerating(true);
     await runtime.replay(_type || "normal");
@@ -178,7 +182,7 @@ function start(win) {
     mo = new Win.MutationObserver(() => {
       if (!active()) return;
       // Cover a newly inserted settlement reply before the next browser paint.
-      effects.update(runtime.getSnapshot(),host.context());
+      effects.update(settleFaultKey===faultKey()?null:runtime.getSnapshot(),host.context());
       clearTimeout(moDebounce);
       moDebounce = setTimeout(() => {
         if (!active()) return;

@@ -421,3 +421,26 @@ test("打包人物入口：好感阈值只解锁，按钮发送代码，完成�
     assert.ok(h.errors.length===0);
   }finally{h.close();}
 });
+
+test('打包结算故障停止自动重试：重复DOM更新不堆叠错误，刷新仍从聊天备份恢复好感',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..'));
+ const h=await fixture(data.greetings.赵无忧);
+ try{
+  const r=h.win.XSD2.runtime;
+  await r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'叶红缨',key:'好感度',value:20}});
+  const s=r.getSnapshot();await r.dispatchIntent({type:'SELECT_NODE',pluginId:'character_promotion',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:'yhrNight'}});
+  // Force the missing-base failure at the public boundary. Overlay cleanup must
+  // not schedule the same faulty settlement indefinitely.
+  r.settleStory=async()=>{throw Error('缺少本楼的前置状态');};
+  h.context.chat.push({mes:'新回复',is_user:false,swipe_id:0,variables:[{}]});h.appendDOM(2);
+  await h.emit('GENERATION_ENDED');
+  for(let i=0;i<4;i++){h.doc.querySelector('#chat').append(h.doc.createElement('span'));await new Promise(resolve=>setTimeout(resolve,40));}
+  assert.equal(h.errors.filter(x=>x.includes('缺少本楼')).length,1);
+  // Full script reload recreates the dispatcher; message slot loss must not
+  // erase the independently saved checkpoint.
+  h.context.chat[0].variables=[{}];h.context.chat[0].mes+='\n';
+  h.win.eval(script);
+  await until(()=>h.win.XSD2.runtime!==r && h.win.XSD2.runtime.getSnapshot()?.stat_data.character_metrics.叶红缨.好感度===20);
+  assert.equal(h.win.XSD2.runtime.getSnapshot().stat_data.character_metrics.叶红缨.好感度,20);
+ }finally{h.close();}
+});

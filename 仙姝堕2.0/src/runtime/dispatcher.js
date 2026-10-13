@@ -48,18 +48,23 @@ function createDispatcher(adapter, data) {
       throw Error("聊天、候选或正文已变化，请重新读取");
   }
   function compatible(e, c) {
-    return e?.schema === 2 && C.matches(e.trail, c.trail);
+    return e?.schema === 2 && C.matchesSnapshot(e.trail, c.trail);
   }
   async function history(c, ceiling = c.floor) {
+    let best=null,saved=false;
     for (let i = ceiling; i >= 0; i--) {
-      const e = (await adapter.readMessage(i))?.stat_data?.xsd2?.[0];
-      guard(c);
-      if (compatible(e, c)) {
-        const s = C.clone(e.state);
-        return { state: s, floor: i };
-      }
+      const e=(await adapter.readMessage(i))?.stat_data?.xsd2?.[0];guard(c);
+      if(e?.schema===2)saved=true;
+      if(compatible(e,c)){best={state:C.clone(e.state),floor:i};break;}
     }
-    return null;
+    const checkpoint=await adapter.readCheckpoint?.();guard(c);
+    if(checkpoint?.schema===2 && checkpoint.chatId===c.chatId)saved=true;
+    const cpFloor=checkpoint?.trail?.length-1;
+    if(checkpoint?.chatId===c.chatId && (!checkpoint.branchId||checkpoint.branchId===c.branchId) && compatible(checkpoint,c) && cpFloor<=ceiling && (!best||cpFloor>best.floor)) best={state:C.clone(checkpoint.state),floor:cpFloor};
+    const p=scopeChatId===c.chatId?current?.pending:null,auth=p?.authorization;
+    if(auth?.chatId===c.chatId && auth.branchId===c.branchId && p.floor<=ceiling && C.matches(auth.trail,c.trail) && (!best||p.floor>=best.floor)) best={state:C.clone(current),floor:p.floor};
+    if(!best && saved)throw Error("已有进度记录与当前分支不匹配，已停止初始化以保护存档");
+    return best;
   }
   function defaults(identity, opening, custom) {
     const stat = C.parseStatus(opening).fields;
@@ -383,6 +388,7 @@ function createDispatcher(adapter, data) {
       actionCode:createActionCode(n.id, id),
       prompt: n.prompt,
       floor: c.floor,
+      authorization:{chatId:c.chatId,branchId:c.branchId,trail:C.clone(c.trail)},
       selection: C.clone(n),
       before,
     };
@@ -1016,7 +1022,7 @@ function createDispatcher(adapter, data) {
             return snapshot();
           }
           next.pending = {id:c.chatId+":item:"+c.floor+":"+current.revision+":"+ ++serial,
-            kind:"item", operation:discard ? "discard" : "use", floor:c.floor, actionText:"使用"+meta.name, item:meta, selection:{}, before,
+            kind:"item", authorization:{chatId:c.chatId,branchId:c.branchId,trail:C.clone(c.trail)}, operation:discard ? "discard" : "use", floor:c.floor, actionText:"使用"+meta.name, item:meta, selection:{}, before,
             prompt:itemUsePrompt(meta, meta.count - (meta.consumable ? 1 : 0))};
           await commit(c, next, "item_use");
           guard(c);

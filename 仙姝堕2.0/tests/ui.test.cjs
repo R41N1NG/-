@@ -165,8 +165,10 @@ test("宿主使用原生候选变量、填入后点击发送，并守住非本�
       type === "message"
         ? C.clone(c.chat[message_id].variables[c.chat[message_id].swipe_id])
         : {},
-    replaceVariables: (v, { message_id }) =>
-      (c.chat[message_id].variables[c.chat[message_id].swipe_id] = C.clone(v)),
+    replaceVariables: (v, { type, message_id }) => {
+      if(type === "chat") c.variables=C.clone(v);
+      else c.chat[message_id].variables[c.chat[message_id].swipe_id] = C.clone(v);
+    },
   };
   const host = createTavernHost(win, win.document, "仙姝堕2.0·框架测试");
   assert.equal(host.isOurCard(), true);
@@ -181,7 +183,8 @@ test("宿主使用原生候选变量、填入后点击发送，并守住非本�
     };
   await host.persist(ctx, e);
   assert.equal(c.chat[0].variables[0].foreign, "keep");
-  assert.equal(saved, 1);
+  assert.equal(saved, 2);
+  assert.equal(c.variables.xsd2_checkpoint.state.revision, 1);
   c.chat[0].swipe_id = 1;
   assert.deepEqual(await host.readMessage(0), {});
   c.characters[0].name = "仙姝堕";

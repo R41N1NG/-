@@ -48,6 +48,16 @@ function matches(a, b) {
     Array.isArray(a) && a.length <= b.length && a.every((x, i) => x === b[i])
   );
 }
+// Snapshot identity follows choices and swipe branches. Assistant text may be
+// normalized by the host; concurrency guards still use exact matches().
+function matchesSnapshot(a, b) {
+  return Array.isArray(a) && a.length <= b.length && a.every((x,i)=>{
+    if(x===b[i])return true;
+    try {const old=JSON.parse(x),now=JSON.parse(b[i]);
+      return old.length===4 && now.length===4 && old.slice(0,3).every((v,k)=>v===now[k]) && !old[0] && !old[1];
+    } catch {return false;}
+  });
+}
 function assertDate(d) {
   if (
     !d ||
@@ -204,6 +214,7 @@ module.exports = {
   safe,
   fingerprint,
   matches,
+  matchesSnapshot,
   day,
   fromDay,
   dateText,

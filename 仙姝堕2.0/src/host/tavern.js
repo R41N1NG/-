@@ -1,7 +1,7 @@
 "use strict";
 const C = require("../runtime/contracts");
 const { createWorldbookHost } = require("./worldbook");
-function createTavernHost(win, doc, cardName, embeddedManagedEntries = []) {
+function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveHandoff = null) {
   const top = (win && win.top) || (win && win.parent) || win;
   const helper =
     top?.TavernHelper ||
@@ -98,6 +98,25 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = []) {
     report,
     isGenerating,
     isAborted: () => aborted,
+    async readCheckpoint() {
+      const c=context(),vars=await helper.getVariables({type:"chat"});
+      const saved=vars?.xsd2_checkpoint;
+      if(saved?.chatId===c.chatId && C.matchesSnapshot(saved.trail,C.fingerprint(c.chat)))return saved;
+      // Only migrate a live trusted kernel's pending, bound to this chat and
+      // the adjacent exact user action; never reconstruct from model prose.
+      const p=liveHandoff?.pending;
+      if(liveHandoff?.chatId===c.chatId && liveHandoff.branchId===c.branchId && p?.actionCode && c.chat[p.floor+1]?.is_user && String(c.chat[p.floor+1].mes).trim()===p.actionCode && !c.chat.slice(p.floor+2).some(x=>x.is_user)){
+        const trail=C.fingerprint(c.chat).slice(0,p.floor+1),state=C.clone(liveHandoff);
+        state.pending.authorization={chatId:c.chatId,branchId:c.branchId,trail:C.clone(trail)};
+        return {schema:2,chatId:c.chatId,branchId:c.branchId,trail,state};
+      }
+      if(saved?.chatId===c.chatId)return saved;
+      // Older cards mirrored these fields without a complete checkpoint.
+      // Evidence of an existing save blocks silent zero initialization.
+      if(vars?.stat_data?.character_stages && vars.stat_data.character_metrics)
+        return {schema:2,chatId:c.chatId,trail:null};
+      return null;
+    },
     async readMessage(i) {
       return helper.getVariables({ type: "message", message_id: i });
     },
@@ -129,6 +148,9 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = []) {
       guard(c);
       if (back?.stat_data?.xsd2?.[0]?.state?.revision !== e.state.revision)
         throw Error("本楼状态保存复核失败");
+      const vars=await helper.getVariables({type:"chat"});guard(c);
+      await helper.replaceVariables({...vars,xsd2_checkpoint:{...C.clone(e),branchId:c.branchId}}, {type:"chat"});guard(c);
+      await save();guard(c);
     },
     async syncState(state) {
       const id = context().chatId;
