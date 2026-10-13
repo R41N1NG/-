@@ -14,6 +14,26 @@
 
 > 更早的已闭环项目原文全文已安全移入 `归档/合作（归档-2026-10-09至2026-10-12）.txt` 与 `归档/合作（归档-截至2026-10-09）.txt`（一条未删），阶段总结见第二节，完整索引见第三节。
 
+【2026-10-13 21:20（Asia/Shanghai）｜GLM小狐狸｜前端四件套入卡＋fx_queue 嫁接对方的 scope 版揭幕｜v40】
+
+### 主人这一轮的诉求与原话（一条不省）
+
+“对于角色卡的前端方面，你还有什么建议？”
+“5个都不错，一起做了吧。目标卡是v39哦”
+“算了，转webp不做了，也省不了多少，其他的继续”
+“完成了多少了小狐狸，四十分钟了”
+“有什么反复解决不了的可以上报gpt”
+
+### 实施结果与边界
+
+新增 src/ui/fx_queue.js 动效队列中枢（顺序排队、结算遮罩 .xsd2-tj-on 活跃避让、reduced-motion 直通 skip、clear 停止）；relic_fanfare 嫁接其上：同楼连发从「顶播」改为逐件排队接播，其余为 gpt 会话的 scope 记账主体（未动）。dom.js 增 html  转义模板助手（插值自动 esc、html.raw 显式放行），modal 与 status_panel field() 热点改造，tests/ui_discipline 静态把关「innerHTML 模板串带插值必须走 html」；tokens.js 色板唯一来源，status_panel CSS 全部金色改 var() 引用（取值不变零视觉漂移）；HUD 题头「卷中錄仙姝堕」五字志莽行书子集（2.1KB，OFL）入 h1。发版 v40（基米/gpt 已占 v39 号，本批让位）：348 条世界书，ship 154+13 全过，dist 增 v40 副本。边界：其余 12 件名器揭幕待位图描廓后补 FANFARES 表；430px 窄列揭幕卡仅 scale(.8) 兜底，未做逐项真机验收。
+
+### 防重犯与踩坑
+
+- rebase 冲突 checkout --theirs 语义反转：rebase 中 --theirs 指自己的提交，本次险些用自己版本覆盖对方的 scope 记账强化，靠 git show <对方提交>:path 恢复。
+- 队列重入：clear() 先 finishActive（旧 done 同步触发下一播）再继续清场，会把刚播的新卡 replaceChildren 掉——旧项收尾必须放在清场动作之后。
+- fx_queue 曾静默吞 play 异常，已改为 console.error 暴露。
+
 【2026-10-13 20:30（Asia/Shanghai）｜gpt｜狐狸v38动画复核、基米负好感接入与截图版GM｜v39】
 
 ### 主人这一轮的诉求与原话（一条不省）

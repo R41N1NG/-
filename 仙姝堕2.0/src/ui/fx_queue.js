@@ -22,7 +22,7 @@ function createFxQueue(doc, options = {}) {
       if (reduced()) { try { item.skip?.(); } catch {} next(); return; }
       if (settlementBusy()) { queue.unshift(item); setTimeout(next, retry); return; }
       let handle = null;
-      try { handle = item.play(done); } catch { next(); return; }
+      try { handle = item.play(done); } catch (e) { console.error("[fx_queue] play error", e); next(); return; }
       function done() {
         if (handle) active.delete(handle);
         next();

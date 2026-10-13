@@ -1,9 +1,10 @@
 "use strict";
-// 纹章点亮揭幕：名器阶段推进（known 旗标）时在状态栏上层跳出播放一次，播完即移除。
-// 不触两翼瓷砖渲染；已播阶段记入 sessionStorage（只增不减），刷新/回看/checkpoint 恢复不重播；
-// 历史楼 readOnly 不播；系统减弱动态效果时只记账不播；经 fx_queue 排队，结算遮罩活跃时避让。
-// 形稿由原纹章位图自动描廓提取（模板库/16 号预览件同源管线）；题字为志莽行书七字子集（OFL 可商用）。
 const { createFxQueue } = require("./fx_queue");
+// 纹章点亮揭幕：名器阶段推进（known 旗标）时在状态栏上层跳出播放一次，播完即移除。
+// 不触两翼瓷砖渲染；按聊天/分支/身份记录已播阶段，sessionStorage不可用时使用文档内存。
+// 初次挂载只登记存量；已播记录只增不减，刷新/回看/checkpoint恢复不重播；
+// 历史楼 readOnly 不播；系统减弱动态效果时只记账不播。
+// 形稿由原纹章位图自动描廓提取（模板库/16 号预览件同源管线）；题字为志莽行书七字子集（OFL 可商用）。
 const FANFARES = {
   zhuojiuliuyanxue: {
     name: "灼酒流炎穴",
@@ -24,10 +25,12 @@ const FANFARES = {
     },
   },
 };
-const STORE_KEY = "xsd2RelicFanfare";
-const memory = {};
+const STORE_KEY = "xsd2RelicFanfare:v2";
+const memory = new WeakMap(), styles = new WeakMap();
+let serial=0;
 const CSS = `
 @font-face{font-family:"xsd2FanBrush";src:url(data:font/woff2;base64,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) format("woff2");font-display:swap}
+.xsd2-fan-host[hidden]{display:none}
 .xsd2-fan-host{position:fixed;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;background:rgba(5,8,12,.82);animation:xsd2FanHostIn .35s ease-out both}
 .xsd2-fan-host.xsd2-fan-out{animation:xsd2FanHostOut .4s ease-in both}
 @keyframes xsd2FanHostIn{from{opacity:0}to{opacity:1}}
@@ -152,17 +155,16 @@ const CSS = `
 `;
 function playedMap(doc) {
   try {
-    return JSON.parse(doc.defaultView.sessionStorage.getItem(STORE_KEY) || "{}");
-  } catch {
-    return { ...memory };
-  }
+    const saved=JSON.parse(doc.defaultView.sessionStorage.getItem(STORE_KEY) || "{}");
+    if(saved && typeof saved==="object" && !Array.isArray(saved))return saved;
+  } catch {}
+  return memory.get(doc) || {};
 }
-function markPlayed(doc, id, stage) {
-  const m = playedMap(doc);
-  if ((m[id] || 0) >= stage) return;
-  m[id] = stage;
-  memory[id] = stage;
-  try { doc.defaultView.sessionStorage.setItem(STORE_KEY, JSON.stringify(m)); } catch {}
+function markPlayed(doc, scope, id, stage) {
+  const m=playedMap(doc),ledger=m[scope] && typeof m[scope]==="object" ? m[scope] : {};
+  ledger[id]=Math.max(Number.isFinite(ledger[id])?ledger[id]:0,stage);m[scope]=ledger;
+  memory.set(doc,m);
+  try {doc.defaultView.sessionStorage.setItem(STORE_KEY,JSON.stringify(m));}catch{}
 }
 function emblemSvg(fan) {
   const p = fan.paths;
@@ -184,34 +186,40 @@ function emblemSvg(fan) {
     + '<g class="in in-dropC"><g class="amb breathC"><path fill="' + p.dropC.fill + '" d="' + p.dropC.d + '"/></g></g>'
     + '<g><circle class="spark" style="--i:0;--dx:14px" cx="440" cy="470" r="7" fill="#E8C363"/><circle class="spark" style="--i:1;--dx:-12px" cx="810" cy="440" r="6" fill="#E8C363"/><circle class="spark" style="--i:2;--dx:20px" cx="600" cy="330" r="5" fill="#F0CC6B"/><circle class="spark" style="--i:3;--dx:-18px" cx="700" cy="300" r="7" fill="#F0CC6B"/><circle class="spark" style="--i:4;--dx:10px" cx="500" cy="640" r="5" fill="#E8C363"/></g></g></svg>';
 }
-function mountRelicFanfare(doc, container, data) {
-  let style = doc.querySelector('style[data-xsd2FanStyle]');
-  if (!style) {
-    style = doc.createElement("style");
-    style.dataset.xsd2FanStyle = "";
-    style.textContent = CSS;
-    doc.head.append(style);
+function mountRelicFanfare(doc, container, data, options = {}) {
+  let shared=styles.get(doc);
+  if(!shared || !shared.style.isConnected){
+    const style=doc.createElement("style");style.dataset.xsd2FanStyle="";style.textContent=CSS;doc.head.append(style);
+    shared={style,count:0};styles.set(doc,shared);
   }
-  const host = doc.createElement("div");
-  host.dataset.xsd2RelicFanfare = "";
-  container.append(host);
-  const queue = createFxQueue(doc);
-  let timer = null;
-  function close(card) {
-    clearTimeout(timer);
-    if (!card || !card.isConnected) { host.replaceChildren(); host.classList.remove("xsd2-fan-out"); return; }
-    card.classList.add("xsd2-fan-out");
-    setTimeout(() => { host.replaceChildren(); host.classList.remove("xsd2-fan-out"); }, 420);
+  shared.count++;
+  const host=doc.createElement("div");host.className="xsd2-fan-host";host.hidden=true;
+  host.dataset.xsd2RelicFanfare="";container.append(host);
+  const clock=options.clock || doc.defaultView;
+  const queue=createFxQueue(doc,{clock});
+  let timer=null,fade=null,active=null,scope=null,disposed=false,restoreFocus=null;
+  const instance="xsd2Fan"+(++serial);
+  function clear(){
+    clock.clearTimeout(timer);clock.clearTimeout(fade);timer=fade=null;
+    host.replaceChildren();host.classList.remove("xsd2-fan-out");host.hidden=true;
+    const fin=active;active=null;
+    if(fin && fin.done && !fin.ended){fin.ended=true;try{fin.done();}catch{}}
+    if(restoreFocus?.isConnected)restoreFocus.focus?.({preventScroll:true});restoreFocus=null;
   }
-  function play(fan, done) {
-    host.replaceChildren();
+  function close(card){
+    if(disposed || host.firstElementChild!==card)return;
+    clock.clearTimeout(timer);clock.clearTimeout(fade);host.classList.add("xsd2-fan-out");
+    fade=clock.setTimeout(clear,420);
+  }
+  function play(fan,id,stage,done) {
+    clear();active={id,stage,done};host.hidden=false;restoreFocus=doc.activeElement;
     const card = doc.createElement("div");
     card.className = "xsd2-fan-card";
-    card.title = "点击跳过";
+    card.title = "点击或按Esc跳过";card.tabIndex=0;card.setAttribute("role","button");card.setAttribute("aria-label",fan.name+"纹章揭幕，点击跳过");
     card.innerHTML = '<div class="xsd2-fan-mist"></div>'
       + '<div class="xsd2-fan-title"><p class="xsd2-fan-main"><span style="--d:0s">灼</span><span style="--d:.14s">酒</span><span style="--d:.28s">流</span><span style="--d:.42s">炎</span><span style="--d:.56s">穴</span></p>'
       + '<div class="xsd2-fan-rule"><i></i><b></b><i></i></div><p class="xsd2-fan-seal"><span>觉</span><span>醒</span></p></div>'
-      + '<div class="xsd2-fan-emblem">' + emblemSvg(fan) + "</div>"
+      + '<div class="xsd2-fan-emblem">' + emblemSvg(fan).replaceAll("xsd2FanGh",instance+"Gh").replaceAll("xsd2FanGe",instance+"Ge") + "</div>"
       + '<div class="xsd2-fan-burst"><i style="--dx:-102px;--dy:-30px"></i><i style="--dx:-64px;--dy:14px"></i><i style="--dx:-128px;--dy:18px"></i><i style="--dx:96px;--dy:-34px"></i><i style="--dx:132px;--dy:10px"></i><i style="--dx:58px;--dy:22px"></i></div>'
       + '<div class="xsd2-fan-dust"><i style="left:14%;--d:0;--t:4.6;--dx:8px"></i><i style="left:26%;--d:1.1;--t:5.2;--dx:-6px"></i><i style="left:38%;--d:.5;--t:4.2;--dx:10px"></i><i style="left:52%;--d:1.6;--t:5.6;--dx:-9px"></i><i style="left:64%;--d:.2;--t:4.4;--dx:7px"></i><i style="left:76%;--d:1.3;--t:5;--dx:-7px"></i><i style="left:86%;--d:.8;--t:4.8;--dx:9px"></i><i style="left:47%;--d:2;--t:5.4;--dx:-10px"></i></div>'
       + '<div class="xsd2-fan-red"></div><div class="xsd2-fan-veil"></div>';
@@ -219,43 +227,34 @@ function mountRelicFanfare(doc, container, data) {
     host.classList.remove("xsd2-fan-out");
     void card.offsetWidth;
     card.classList.add("xsd2-fan-play");
-    let ended = false;
-    const finish = () => {
-      if (ended) return;
-      ended = true;
-      clearTimeout(timer);
-      close(card);
-      done();
-    };
-    card.addEventListener("click", finish, { once: true });
-    timer = setTimeout(finish, 7600);
-    return { stop: finish };
+    card.addEventListener("click", () => close(card), { once: true });
+    card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();close(card);}});card.focus?.({preventScroll:true});
+    timer = clock.setTimeout(() => close(card), 7600);
   }
-  function check(s, options = {}) {
-    if (!s || options.readOnly || !data.rules || !host.isConnected) return;
-    let played;
-    try { played = playedMap(doc); } catch { return; }
-    const R = data.rules(s.stat_data), known = s.stat_data.known || s.known || {};
-    const configs = Object.values(R.RELIC_PILOT_CONFIG || {});
-    for (const [id, fan] of Object.entries(FANFARES)) {
-      const cfg = configs.find(c => c.names.includes(id) || c.names.includes(fan.name));
-      const stage = cfg ? R.getRelicStage(cfg.id, known) : 0;
-      if (stage >= 1 && stage > (played[id] || 0)) {
-        markPlayed(doc, id, stage);
-        try { if (doc.defaultView.matchMedia("(prefers-reduced-motion: reduce)").matches) return; } catch { return; }
-        queue.enqueue("fanfare:" + id, (done) => play(fan, done));
-        return;
+  function check(s, opts = {}) {
+    if(disposed)return;
+    if(!s || opts.readOnly || s.pending || !data.rules || !host.isConnected){clear();return;}
+    const nextScope=JSON.stringify([s.chatId,s.branchId||s.chatId,s.identity||s.stat_data?.身份]);
+    if(nextScope!==scope){clear();scope=nextScope;}
+    const played=playedMap(doc),ledger=played[scope] || {};
+    const R=data.rules(s.stat_data),known=s.stat_data.known || s.known || {};
+    const configs=Object.values(R.RELIC_PILOT_CONFIG || {});
+    for(const [id,fan] of Object.entries(FANFARES)){
+      const cfg=configs.find(c=>c.names.includes(id)||c.names.includes(fan.name));
+      const stage=cfg?R.getRelicStage(cfg.id,known):0;
+      if(active?.id===id && stage<active.stage)clear();
+      if(!Object.hasOwn(ledger,id)){markPlayed(doc,scope,id,stage);continue;} // Cold loads are existing state, not new achievements.
+      if(stage>=1 && stage>(Number.isFinite(ledger[id])?ledger[id]:0)){
+        markPlayed(doc,scope,id,stage);
+        if(doc.defaultView.matchMedia?.("(prefers-reduced-motion: reduce)").matches)return;
+        queue.enqueue("fanfare:"+scope+":"+id,(d)=>play(fan,id,stage,d));return;
       }
     }
   }
-  return {
-    check,
-    destroy() {
-      clearTimeout(timer);
-      queue.clear();
-      host.remove();
-      style.remove();
-    },
-  };
+  const escape=e=>{if(e.key==="Escape" && !host.hidden)close(host.firstElementChild);};
+  doc.addEventListener("keydown",escape);
+  return {check,destroy(){if(disposed)return;disposed=true;queue.clear();clear();doc.removeEventListener("keydown",escape);host.remove();
+    if(--shared.count===0){shared.style.remove();styles.delete(doc);}
+  }};
 }
 module.exports = { mountRelicFanfare };
