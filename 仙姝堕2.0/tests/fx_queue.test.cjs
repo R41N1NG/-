@@ -53,3 +53,19 @@ test('fx_queue clear 停止活跃播放并清队', async () => {
   assert.equal(secondPlayed, false, '清队后 b 不得播出');
   assert.equal(q.pending, 0);
 });
+
+function fakeClock(){let serial=0;const jobs=new Map();return {setTimeout(fn){jobs.set(++serial,fn);return serial;},clearTimeout(id){jobs.delete(id);},tick(){const f=[...jobs.values()];jobs.clear();f.forEach(fn=>fn());},size:()=>jobs.size};}
+test('clear取消遮罩等待计时器，马上可播新队列',()=>{
+ const d=makeDom(),doc=d.window.document,t=fakeClock(),q=createFxQueue(doc,{clock:t});let old=0,newPlay=0;
+ doc.body.innerHTML='<div class="xsd2-tj-on"></div>';q.enqueue('old',done=>{old++;done();});assert.equal(t.size(),1);q.clear();assert.equal(t.size(),0);
+ doc.body.replaceChildren();q.enqueue('new',done=>{newPlay++;done();});t.tick();assert.equal(old,0);assert.equal(newPlay,1);assert.equal(q.pending,0);d.window.close();
+});
+test('无句柄也计活跃；clear后的旧done与重复done不抢占新项',()=>{
+ const d=makeDom(),q=createFxQueue(d.window.document);let oldDone,newDone,b=0;
+ q.enqueue('old',done=>{oldDone=done;});assert.equal(q.pending,1);q.clear();q.enqueue('new',done=>{newDone=done;});q.enqueue('b',done=>{b++;done();});oldDone();assert.equal(b,0);assert.equal(q.pending,2);newDone();newDone();assert.equal(b,1);assert.equal(q.pending,0);q.clear();d.window.close();
+});
+test('同步done返回句柄不泄漏或抢占后续播放',()=>{
+ const d=makeDom(),q=createFxQueue(d.window.document);let aDone,bDone,c=0;
+ q.enqueue('a',done=>{aDone=done;done();return {stop(){throw Error('完成项不应被stop');}};});assert.equal(q.pending,0);
+ q.enqueue('b',done=>{bDone=done;});q.enqueue('c',done=>{c++;done();});aDone();assert.equal(c,0);bDone();assert.equal(c,1);assert.equal(q.pending,0);q.clear();d.window.close();
+});

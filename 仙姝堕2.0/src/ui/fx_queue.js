@@ -1,12 +1,11 @@
 "use strict";
-// 动效队列中枢：覆盖层动效在此排队、逐个播放；统一两件事——
-// 1) 结算遮罩活跃（.xsd2-tj-on / .xsd2-settlement-obscured）时避让重试，不与天机演算抢幕；
-// 2) prefers-reduced-motion 时跳过播放、直接调 skip 落账。
+// 顺序播放覆盖层；等待结算遮罩撤下，减弱动态直接skip。
+// clear可复用，取消等待计时器并使旧done失效，切聊天后不会续播旧项。
 function createFxQueue(doc, options = {}) {
+  const clock = options.clock || doc.defaultView;
   const retry = options.retryMs ?? 1200;
   const queue = [];
-  const active = new Set();
-  let draining = false;
+  let active = null, timer = null, generation = 0;
   function settlementBusy() {
     try { return !!doc.querySelector(".xsd2-tj-on,.xsd2-settlement-obscured"); } catch { return false; }
   }
@@ -14,34 +13,35 @@ function createFxQueue(doc, options = {}) {
     try { return !!doc.defaultView.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; }
   }
   function drain() {
-    if (draining) return;
-    draining = true;
-    (function next() {
-      const item = queue.shift();
-      if (!item) { draining = false; return; }
-      if (reduced()) { try { item.skip?.(); } catch {} next(); return; }
-      if (settlementBusy()) { queue.unshift(item); setTimeout(next, retry); return; }
-      let handle = null;
-      try { handle = item.play(done); } catch (e) { console.error("[fx_queue] play error", e); next(); return; }
-      function done() {
-        if (handle) active.delete(handle);
-        next();
+    if (active || timer !== null) return;
+    while (queue.length) {
+      if (reduced()) { const item = queue.shift(); try { item.skip?.(); } catch {} continue; }
+      if (settlementBusy()) {
+        const epoch = generation;
+        timer = clock.setTimeout(() => { timer = null; if (epoch === generation) drain(); }, retry);
+        return;
       }
-      if (handle) active.add(handle);
-    })();
+      const item = queue.shift(), run = { handle: null, generation };
+      active = run;
+      const done = () => {
+        if (active !== run || generation !== run.generation) return;
+        active = null; drain();
+      };
+      try { run.handle = item.play(done); }
+      catch (e) { console.error("[fx_queue] play error", e); done(); }
+      return;
+    }
   }
   return {
-    // enqueue(id, play(done) => handle?, {skip})：play 内部播完/被跳过时必须调 done
-    enqueue(id, play, opts = {}) {
-      queue.push({ id, play, skip: opts.skip });
-      drain();
-    },
+    // play(done)的done可同步调用；不返回handle的播放也计为活跃。
+    enqueue(id, play, opts = {}) { queue.push({ id, play, skip: opts.skip }); drain(); },
     clear() {
-      queue.length = 0;
-      for (const h of active) { try { h?.stop?.(); } catch {} }
-      active.clear();
+      generation++; queue.length = 0;
+      clock.clearTimeout(timer); timer = null;
+      const stopped = active; active = null;
+      try { stopped?.handle?.stop?.(); } catch {}
     },
-    get pending() { return queue.length + active.size; },
+    get pending() { return queue.length + (active ? 1 : 0); },
   };
 }
 module.exports = { createFxQueue };

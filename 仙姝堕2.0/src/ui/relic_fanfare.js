@@ -197,14 +197,14 @@ function mountRelicFanfare(doc, container, data, options = {}) {
   host.dataset.xsd2RelicFanfare="";container.append(host);
   const clock=options.clock || doc.defaultView;
   const queue=createFxQueue(doc,{clock});
-  let timer=null,fade=null,active=null,scope=null,disposed=false,restoreFocus=null;
+  let timer=null,fade=null,active=null,scope=null,disposed=false,restoreFocus=null,latest=null;
   const instance="xsd2Fan"+(++serial);
   function clear(){
     clock.clearTimeout(timer);clock.clearTimeout(fade);timer=fade=null;
     host.replaceChildren();host.classList.remove("xsd2-fan-out");host.hidden=true;
     const fin=active;active=null;
+    const focus=restoreFocus;restoreFocus=null;if(focus?.isConnected)focus.focus?.({preventScroll:true});
     if(fin && fin.done && !fin.ended){fin.ended=true;try{fin.done();}catch{}}
-    if(restoreFocus?.isConnected)restoreFocus.focus?.({preventScroll:true});restoreFocus=null;
   }
   function close(card){
     if(disposed || host.firstElementChild!==card)return;
@@ -233,21 +233,28 @@ function mountRelicFanfare(doc, container, data, options = {}) {
   }
   function check(s, opts = {}) {
     if(disposed)return;
-    if(!s || opts.readOnly || s.pending || !data.rules || !host.isConnected){clear();return;}
+    latest=s;
+    if(!s || opts.readOnly || s.pending || !data.rules || !host.isConnected){queue.clear();clear();return;}
     const nextScope=JSON.stringify([s.chatId,s.branchId||s.chatId,s.identity||s.stat_data?.身份]);
-    if(nextScope!==scope){clear();scope=nextScope;}
+    if(nextScope!==scope){queue.clear();clear();scope=nextScope;}
     const played=playedMap(doc),ledger=played[scope] || {};
     const R=data.rules(s.stat_data),known=s.stat_data.known || s.known || {};
     const configs=Object.values(R.RELIC_PILOT_CONFIG || {});
     for(const [id,fan] of Object.entries(FANFARES)){
       const cfg=configs.find(c=>c.names.includes(id)||c.names.includes(fan.name));
       const stage=cfg?R.getRelicStage(cfg.id,known):0;
-      if(active?.id===id && stage<active.stage)clear();
+      if(active?.id===id && stage<active.stage){queue.clear();clear();}
       if(!Object.hasOwn(ledger,id)){markPlayed(doc,scope,id,stage);continue;} // Cold loads are existing state, not new achievements.
       if(stage>=1 && stage>(Number.isFinite(ledger[id])?ledger[id]:0)){
         markPlayed(doc,scope,id,stage);
         if(doc.defaultView.matchMedia?.("(prefers-reduced-motion: reduce)").matches)return;
-        queue.enqueue("fanfare:"+scope+":"+id,(d)=>play(fan,id,stage,d));return;
+        const queuedScope=scope;
+        queue.enqueue("fanfare:"+scope+":"+id,(done)=>{
+          const live=latest && data.rules(latest.stat_data);
+          if(disposed || queuedScope!==scope || !live || live.getRelicStage(cfg.id,latest.stat_data.known || latest.known || {})<stage){done();return;}
+          play(fan,id,stage,done);
+          return {stop:clear};
+        });return;
       }
     }
   }

@@ -13,7 +13,7 @@ const RAW = Symbol("xsd2RawHtml");
 const html = (strings, ...vals) => {
   let out = strings[0];
   vals.forEach((v, i) => {
-    out += (v && typeof v === "object" && v[RAW] ? v[RAW] : esc(v)) + strings[i + 1];
+    out += (v && typeof v === "object" && Object.hasOwn(v, RAW) ? v[RAW] : esc(v)) + strings[i + 1];
   });
   return out;
 };

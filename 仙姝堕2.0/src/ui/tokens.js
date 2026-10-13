@@ -13,7 +13,8 @@ const TOKENS = {
   ink: "#141B26",        // 墨底
 };
 function tokenCss(scopes) {
-  const body = Object.entries(TOKENS)
+  const palette = {...TOKENS, ...Object.fromEntries(["22","55","66","88"].map(a => ["goldA"+a,TOKENS.gold+a]))};
+  const body = Object.entries(palette)
     .map(([k, v]) => "--xsd2-" + k.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase()) + ":" + v)
     .join(";");
   return scopes.join(",") + "{" + body + "}";

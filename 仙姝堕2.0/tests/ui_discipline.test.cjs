@@ -23,3 +23,11 @@ test('innerHTML 模板串带插值必须经 html` 助手（静态串不拦）', 
   }
   assert.deepEqual(bad, [], '以下 innerHTML 模板串带插值却未走 html` 助手，请改为 html` 或字符串拼接＋esc：' + bad.join('；'));
 });
+
+test('空raw正确渲染，色板实际注入，透明色不拼接到var函数后',()=>{
+ assert.equal(html`<a>${html.raw("")}</a>`,'<a></a>');
+ const {CSS}=require('../src/ui/status_panel');
+ const definitions=new Set([...CSS.matchAll(/(--xsd2-[\w-]+):/g)].map(x=>x[1]));
+ for(const m of CSS.matchAll(/var\((--xsd2-[\w-]+)\)/g))assert.ok(definitions.has(m[1]),m[1]);
+ assert.doesNotMatch(CSS,/var\([^)]*\)[0-9a-f]{2}/i);assert.match(CSS,/--xsd2-gold-a55:#d5b97b55/);
+});
