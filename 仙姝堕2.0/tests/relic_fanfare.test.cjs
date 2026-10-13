@@ -1,8 +1,89 @@
-"use strict";
-const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),{JSDOM}=require('jsdom');
-const {mountRelicFanfare}=require('../src/ui/relic_fanfare'),data=require('../tools/data.cjs').load(path.join(__dirname,'..'));
-function clock(){let time=0,id=0;const jobs=new Map();return{setTimeout(fn,ms){const n=++id;jobs.set(n,{fn,time:time+ms});return n;},clearTimeout(n){jobs.delete(n);},advance(ms){const end=time+ms;for(;;){const next=[...jobs].sort((a,b)=>a[1].time-b[1].time).find(x=>x[1].time<=end);if(!next)break;time=next[1].time;jobs.delete(next[0]);next[1].fn();}time=end;},size:()=>jobs.size};}
-function fixture(reduced=false){const d=new JSDOM('<html><head></head><body><main></main><aside></aside></body></html>',{url:'https://test.local'}),doc=d.window.document,t=clock();d.window.matchMedia=()=>({matches:reduced});const s={chatId:'chat-a',branchId:'branch-a',identity:'赵无忧',floor:2,stat_data:{身份:'赵无忧',known:{}}};const cfg=data.rules(s.stat_data).RELIC_PILOT_CONFIG.zhuojiu;const stage=n=>{s.stat_data.known[cfg.formKey]=n>0;for(let i=1;i<=4;i++)s.stat_data.known[cfg['stage'+i+'Key']]=n>=i;};const fan=mountRelicFanfare(doc,doc.querySelector('main'),data,{clock:t});return{d,doc,t,s,stage,fan,host:()=>doc.querySelector('[data-xsd2-relic-fanfare]')};}
-test('纹章推进真浮层、跳过隐藏且不修改存档；原阶段与其他聊天分别记播放',()=>{const h=fixture();try{h.stage(1);h.fan.check(h.s);assert.equal(h.doc.querySelector('.xsd2-fan-card'),null);h.s.chatId='chat-b';h.s.branchId='branch-b';h.stage(0);h.fan.check(h.s);h.stage(1);h.fan.check(h.s,{readOnly:true});assert.equal(h.doc.querySelector('.xsd2-fan-card'),null);const before=JSON.stringify(h.s);h.fan.check(h.s);assert.ok(h.host().classList.contains('xsd2-fan-host'));assert.equal(h.host().hidden,false);assert.equal(JSON.stringify(h.s),before);h.doc.querySelector('.xsd2-fan-card').click();h.t.advance(420);assert.ok(h.host().hidden);assert.equal(h.t.size(),0);h.fan.check(h.s);assert.equal(h.doc.querySelector('.xsd2-fan-card'),null);h.fan.destroy();const again=mountRelicFanfare(h.doc,h.doc.querySelector('main'),data,{clock:h.t});again.check(h.s);assert.equal(h.doc.querySelector('.xsd2-fan-card'),null);again.destroy();}finally{h.fan.destroy();h.d.window.close();}});
-test('旧淡出不清新动画，回退/聊天切换/卸载清定时器；正常播放自动结束',()=>{const h=fixture();try{h.stage(0);h.fan.check(h.s);h.stage(1);h.fan.check(h.s);h.doc.querySelector('.xsd2-fan-card').click();h.t.advance(10);h.stage(2);h.fan.check(h.s);h.t.advance(410);assert.ok(h.doc.querySelector('.xsd2-fan-card'));h.stage(1);h.fan.check(h.s);assert.equal(h.doc.querySelector('.xsd2-fan-card'),null);assert.equal(h.t.size(),0);h.stage(3);h.fan.check(h.s);h.t.advance(8020);assert.ok(h.host().hidden);h.s.chatId='different';h.stage(0);h.fan.check(h.s);h.stage(1);h.fan.check(h.s);assert.ok(h.doc.querySelector('.xsd2-fan-card'));h.s.chatId='another';h.fan.check(h.s);assert.equal(h.doc.querySelector('.xsd2-fan-card'),null);assert.equal(h.t.size(),0);}finally{h.fan.destroy();assert.equal(h.t.size(),0);h.d.window.close();}});
-test('多楼层样式不互删；减弱动画只记账，损坏存储不影响HUD',()=>{const h=fixture(true);try{const second=mountRelicFanfare(h.doc,h.doc.querySelector('aside'),data,{clock:h.t});assert.equal(h.doc.querySelectorAll('style[data-xsd2-fan-style]').length,1);second.destroy();assert.equal(h.doc.querySelectorAll('style[data-xsd2-fan-style]').length,1);h.d.window.sessionStorage.setItem('xsd2RelicFanfare:v2','null');h.stage(0);h.fan.check(h.s);h.stage(1);h.fan.check(h.s);assert.equal(h.doc.querySelector('.xsd2-fan-card'),null);assert.equal(h.t.size(),0);}finally{h.fan.destroy();assert.equal(h.doc.querySelectorAll('style[data-xsd2-fan-style]').length,0);h.d.window.close();}});
+'use strict';
+// 纹章揭幕行为：known 推进触发一次、重复渲染不重播、readOnly 不播、减弱动态只记账不播；
+// fx_queue：顺序排队、减弱动态跳过、结算遮罩活跃避让。
+const { test } = require('node:test'), assert = require('node:assert/strict');
+const { JSDOM } = require('jsdom');
+const { mountRelicFanfare } = require('../src/ui/relic_fanfare');
+const { createFxQueue } = require('../src/ui/fx_queue');
+
+function makeDom() {
+  const d = new JSDOM('<html><head></head><body><main></main></body></html>');
+  d.window.matchMedia = (q) => ({ matches: /reduce/.test(q) && !!d.__reduced, media: q });
+  return d;
+}
+const data = {
+  rules: () => ({
+    RELIC_PILOT_CONFIG: [{ id: 'pilot_zhuo', names: ['灼酒流炎穴'] }],
+    getRelicStage: (id, known) => known.zhuo || 0,
+  }),
+};
+const cards = (doc) => doc.querySelectorAll('.xsd2-fan-card').length;
+
+test('known 推进触发一次，重复渲染不重播，destroy 清场', () => {
+  const d = makeDom(), doc = d.window.document;
+  const fan = mountRelicFanfare(doc, doc.querySelector('main'), data);
+  const s = { stat_data: { known: { zhuo: 0 } } };
+  fan.check(s, {});
+  assert.equal(cards(doc), 0, '未觉醒不播');
+  s.stat_data.known.zhuo = 1;
+  fan.check(s, {});
+  assert.equal(cards(doc), 1, '觉醒即播一次');
+  fan.check(s, {});
+  fan.check(s, {});
+  assert.equal(cards(doc), 1, '重复渲染不重播');
+  fan.destroy();
+  assert.equal(cards(doc), 0, 'destroy 清场');
+});
+
+test('readOnly 历史楼不播也不记账，正式渲染照常补播', () => {
+  const d = makeDom(), doc = d.window.document;
+  const fan = mountRelicFanfare(doc, doc.querySelector('main'), data);
+  fan.check({ stat_data: { known: { zhuo: 2 } } }, { readOnly: true });
+  assert.equal(cards(doc), 0);
+  fan.check({ stat_data: { known: { zhuo: 2 } } }, {});
+  assert.equal(cards(doc), 1, 'readOnly 不消耗一次性播放');
+  fan.destroy();
+});
+
+test('减弱动态只记账不播', () => {
+  const d = makeDom(); d.__reduced = true;
+  const doc = d.window.document;
+  const fan = mountRelicFanfare(doc, doc.querySelector('main'), data);
+  fan.check({ stat_data: { known: { zhuo: 3 } } }, {});
+  assert.equal(cards(doc), 0);
+  fan.destroy();
+});
+
+test('fx_queue 顺序排队，done 后才播下一个', async () => {
+  const d = makeDom(), doc = d.window.document;
+  const q = createFxQueue(doc);
+  const ran = [];
+  q.enqueue('a', (done) => { ran.push('a'); setTimeout(done, 20); });
+  q.enqueue('b', (done) => { ran.push('b'); done(); });
+  assert.equal(ran.join(''), 'a', 'b 在 a 结束前不播');
+  await new Promise(r => setTimeout(r, 80));
+  assert.equal(ran.join(''), 'ab');
+  assert.equal(q.pending, 0);
+});
+
+test('fx_queue 减弱动态跳过播放直接 skip', async () => {
+  const d = makeDom(); d.__reduced = true;
+  const q = createFxQueue(d.window.document);
+  let played = 0, skipped = 0;
+  q.enqueue('a', () => { played++; }, { skip: () => { skipped++; } });
+  await new Promise(r => setTimeout(r, 30));
+  assert.equal(played, 0); assert.equal(skipped, 1);
+});
+
+test('fx_queue 结算遮罩活跃时避让，遮撤后续播', async () => {
+  const d = makeDom(), doc = d.window.document;
+  doc.body.innerHTML = '<div class="xsd2-tj-on"></div>';
+  const q = createFxQueue(doc, { retryMs: 10 });
+  const ran = [];
+  q.enqueue('a', (done) => { ran.push('a'); done(); });
+  await new Promise(r => setTimeout(r, 40));
+  assert.equal(ran.join(''), '', '遮罩活跃不播');
+  doc.querySelector('.xsd2-tj-on').remove();
+  await new Promise(r => setTimeout(r, 60));
+  assert.equal(ran.join(''), 'a', '遮撤后续播');
+});

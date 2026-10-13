@@ -21,6 +21,8 @@ const tests = spawnSync(
     "tests/opening_host.test.cjs",
     "tests/youjigu_map.test.cjs",
     "tests/map_integration.test.cjs",
+    "tests/relic_fanfare.test.cjs",
+    "tests/ui_discipline.test.cjs",
   ],
   { cwd: __dirname, stdio: "inherit" },
 );
