@@ -266,7 +266,8 @@ test("打包HUD快捷行动与地图共用门禁：空闲真实发送，生成�
       await h.emit("GENERATION_ENDED");
       if (action === "地图") await dispatch();
       else {
-        h.doc.querySelector('[data-action="' + action + '"]').click();
+        assert.equal(h.doc.querySelector("[data-action]"),null);
+        await runtime.dispatchIntent({type:"QUICK_ACTION",payload:{text:action}});
         const fillOnly = ["与在场之人交谈","自行行动"].includes(action);
         await until(() => fillOnly ? h.doc.querySelector("#send_textarea").value.endsWith("：") : h.sends.length === 1);
       }
@@ -383,18 +384,18 @@ test("打包人物入口：好感阈值只解锁，按钮发送代码，完成�
   try{
     const r=h.win.XSD2.runtime;
     await r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"叶红缨",key:"好感度",value:20}});
-    await until(()=>h.doc.querySelector('[data-promotion-menu]'));
-    h.doc.querySelector('[data-promotion-menu]').click();
+    await until(()=>h.doc.querySelector('[data-favor="叶红缨"]'));
+    h.doc.querySelector('[data-favor="叶红缨"]').click();
     assert.equal(r.getSnapshot().stat_data.character_stages.叶红缨.id,"stage01");
-    h.doc.querySelector('[data-promotion-node="yhrNight"]').click();
+    h.doc.querySelector('[data-heart-node="yhrNight"]').click();
     await until(()=>h.sends.length===1);
     assert.match(h.sends[0],/^XSD2_yhrNight_/);
     const enterFloor=h.context.chat.length;
     h.context.chat.push({mes:"你已看到她沐浴。<Status_block><在场>叶红缨</在场></Status_block>",is_user:false,swipe_id:0,variables:[{}]});h.appendDOM(enterFloor);
     await h.emit("GENERATION_ENDED");
-    await until(()=>h.doc.querySelector('[mesid="'+enterFloor+'"] [data-promotion-menu]'));
-    h.doc.querySelector('[mesid="'+enterFloor+'"] [data-promotion-menu]').click();
-    h.doc.querySelector('[data-promotion-node="yhrFinish"]').click();await until(()=>h.sends.length===2);
+    await until(()=>h.doc.querySelector('[mesid="'+enterFloor+'"] [data-favor="叶红缨"]'));
+    h.doc.querySelector('[mesid="'+enterFloor+'"] [data-favor="叶红缨"]').click();
+    h.doc.querySelector('[data-heart-node="yhrFinish"]').click();await until(()=>h.sends.length===2);
     const code=r.getSnapshot().pending.actionCode,finishFloor=h.context.chat.length;
     h.context.chat.push({mes:'<Promotion_result id="'+code+'">是</Promotion_result>',is_user:false,swipe_id:0,variables:[{}]});h.appendDOM(finishFloor);
     await until(()=>h.doc.querySelector('[mesid="'+finishFloor+'"] .mes_text').classList.contains("xsd2-settlement-obscured"));

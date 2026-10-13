@@ -1,7 +1,6 @@
 "use strict";
 const C = require("../../runtime/contracts");
 const {meets} = require("../../runtime/conditions");
-const {mountPromotion} = require("./ui");
 const PLUGIN_ID = "character_promotion";
 function resultTag(body, code) {
   const visible = String(body).replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi, "")
@@ -101,7 +100,6 @@ function createPromotionPlugin(definitions) {
         lastResult: state(s).lastResult,
       }));
     },
-    mount(slot,runtime) {return mountPromotion(slot,runtime,plugin);},
   };
   return plugin;
 }

@@ -41,6 +41,7 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
 .xsd2-node.now em{color:#e8cf8f}
 .xsd2-node em{font-style:normal;font-size:10px;color:#8b927e;white-space:nowrap}
 .xsd2-node span{font-size:11px;color:#c5c9bd}
+.xsd2-topmap{margin-left:auto}.xsd2-head .xsd2-topmap+[data-gm]{margin-left:0}.xsd2-favor{width:min(560px,92vw);box-sizing:border-box;max-height:84vh;overflow:auto}.xsd2-favor header strong{color:#e8cf8f;letter-spacing:3px}.xsd2-favor .xsd2-nodes{flex-wrap:wrap}.xsd2-favor .xsd2-node{min-width:56px;background:transparent}
 .xsd2-cap{border-left:3px solid #e8b46b;padding:4px 10px;background:#241f16;border-radius:0 6px 6px 0;margin:8px 0}
 .xsd2-cap p{margin:0;color:#e8b46b;font-size:.9em}
 .xsd2-fbar{position:relative;height:18px;background:#20281f;border:1px solid #514d3e;border-radius:999px;overflow:hidden}
@@ -89,10 +90,6 @@ const CSS = `.xsd2-hud,.xsd2-dialog{color:${PALETTE.foreground};background:${PAL
 .xsd2-sbar i{display:block;height:100%;background:linear-gradient(90deg,#b98f3e,#e8cf8f)}
 .xsd2-xj-sheet footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:#8b927e;font-size:.85em}
 .xsd2-closegold{background:#242a22;border:1px solid #d5b97b;color:#e8cf8f;border-radius:6px;padding:6px 14px;cursor:pointer;font:inherit}
-.xsd2-lightbox{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:20;cursor:zoom-out}
-.xsd2-lightbox.open{display:flex;flex-direction:column;gap:8px}
-.xsd2-lightbox img{max-width:94vw;max-height:88vh;object-fit:contain;border-radius:8px}
-.xsd2-lightbox p{margin:0;color:#8b927e;font-size:.85em;text-align:center}
 @media (max-width:980px){
   .xsd2-stagebar{flex-direction:column;align-items:stretch}
   .xsd2-stagebar>.xsd2-hud{order:0}
@@ -186,23 +183,17 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   wingR.dataset.xsd2Wing = "right";
   const xjRoot = doc.createElement("div");
   xjRoot.className = "xsd2-xj";
-  const lightbox = doc.createElement("div");
-  lightbox.className = "xsd2-lightbox";
-  lightbox.innerHTML = '<img alt=""><p></p>';
   container.append(settlement, stagebar);
   stagebar.append(wingL, root, wingR);
-  container.append(xjRoot, lightbox);
-  const escape = e => { if(e.key === "Escape") { xjRoot.replaceChildren(); xjRoot.classList.remove("open"); } };
+  container.append(xjRoot);
+  let favorDialog=null;
+  const closeFavor=()=>{favorDialog?.remove();favorDialog=null;};
+  const escape = e => { if(e.key === "Escape") { closeFavor(); xjRoot.replaceChildren(); xjRoot.classList.remove("open"); } };
   doc.addEventListener("keydown",escape);
   let plugins = [],
     dialogs = [],
     disposed = false,
     opening = null;
-  const invoke = (intent) =>
-    runtime.dispatchIntent(intent).catch((error) => {
-      root.querySelector("[role=status]").textContent = error.message;
-      report?.(error);
-    });
   // ── 两翼纹章栏：13 名器真实进度仪表 ──
   function renderWings(s) {
     const tiles = relicStates(s, data);
@@ -273,10 +264,10 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       if (e.target === xjRoot || button?.hasAttribute("data-close")) close();
       else if (button?.hasAttribute("data-xjtab")) openXj(button.dataset.xjtab,runtime.getSnapshot() || s);
     };
-    dialogs.push(close);
   }
   // ── 心迹面板：好感金条＋菱形节点（专属剧情启动钮）＋事件流水 ──
   function openFavor(character, s) {
+    closeFavor();
     const value = s.stat_data.character_metrics?.[character]?.好感度 ?? 0;
     const ladder = favorLadder(data, character, s);
     const completed = s.stat_data.completed_character_stages?.[character];
@@ -293,11 +284,11 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       return { threshold: x.threshold, done, now, label: x.label, entryId:x.entryId };
     });
     const log = s.stat_data.favor_log?.[character] || [];
-    const el = doc.createElement("aside");
-    el.className = "xsd2-favor";
-    el.innerHTML =
-      '<header><h3>' + esc(character) + " · 心迹</h3><button class=\"x\" data-close>✕</button></header>"
-      + '<div class="xsd2-fbar"><i style="width:' + value + '%"></i><span>' + value + " / 100" + (cap !== null && value >= cap ? " · 已满盈" : "") + "</span></div>"
+    const el = modal(doc, character + " · 心迹");
+    el.classList.add("xsd2-favor");
+    favorDialog=el;
+    el.addEventListener("close",()=>{if(favorDialog===el)favorDialog=null;});
+    el.querySelector(".xsd2-dialog-body").innerHTML = '<div class="xsd2-fbar"><i style="width:' + value + '%"></i><span>' + value + " / 100" + (cap !== null && value >= cap ? " · 已满盈" : "") + "</span></div>"
       + (cap !== null && value >= cap ? '<div class="xsd2-cap"><p>好感已达当前节点上限（' + cap + "）——完成对应专属剧情之前不再累积。</p></div>" : "")
       + (diamonds.length
           ? '<div class="xsd2-nodes">' + diamonds.map((x) =>
@@ -312,7 +303,10 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
           ? '<ul class="xsd2-flog">' + log.map((x) => '<li class="' + (x.delta > 0 ? "up" : "dn") + '"><b>' + (x.delta > 0 ? "+" : "") + x.delta + "</b> " + (x.via === "记心上" || x.via === "记恨" ? "档位 · " : "锚点 · ") + esc(x.note) + "<span>" + x.turn + "轮前</span></li>").join("") + "</ul>"
           : '<p class="xsd2-label">近日暂无心迹波动。</p>')
       + '<p class="xsd2-label">数值与事件由后台核验，模型只作申报；冷却与上限皆按表执行。</p>';
-    const close = () => el.remove();
+    const close = () => {el.remove();if(favorDialog===el)favorDialog=null;};
+    const active=s.activeEvent?.pluginId === "character_promotion" && s.activeEvent?.character === character
+      ? data.promotionDefinitions?.[s.activeEvent.promotionId] : null;
+    if(active && !options.readOnly){const b=doc.createElement("button");b.type="button";b.dataset.heartNode=active.finishId;b.dataset.promotionNode=active.finishId;b.textContent="完成本次剧情";b.disabled=!!s.pending;el.querySelector(".xsd2-dialog-body").prepend(b);}
     el.querySelectorAll("[data-heart-node]").forEach(b=>{b.onclick=async()=>{
       b.disabled=true;
       try { const now=runtime.getSnapshot();
@@ -329,18 +323,16 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       im.style.cssText = "width:44px;height:44px;border-radius:6px;object-fit:cover;cursor:zoom-in";
       im.dataset.xsd2Zoom = p.large;
       im.addEventListener("click", () => {
-        lightbox.querySelector("img").src = p.large;
-        lightbox.querySelector("p").textContent = character + " · 立绘大图（本地图包；正式版走 本地图包+图床 双链，不做内嵌）";
-        lightbox.classList.add("open");
+        const zoom=modal(doc,character+" · 立绘");const image=doc.createElement("img");image.src=p.large;image.alt=character;image.onerror=()=>{image.src=p.small;image.onerror=null;};zoom.querySelector(".xsd2-dialog-body").append(image);dialogs.push(()=>zoom.remove());
       });
-      el.insertBefore(im, el.querySelector(".xsd2-fbar"));
+      el.querySelector(".xsd2-dialog-body").insertBefore(im, el.querySelector(".xsd2-fbar"));
     }
-    lightbox.addEventListener("click", () => lightbox.classList.remove("open"));
-    dialogs.push(close);
-    container.append(el);
+
+
   }
   function render() {
     if (disposed) return;
+    closeFavor();
     const folds = [...root.querySelectorAll("details")].map((x) => x.open);
     for (const p of plugins) p();
     plugins = [];
@@ -415,7 +407,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     const row=(label,value,slot="")=>'<div class="xsd2-row"><b>'+label+'</b><span'+(slot?' data-xsd-slot="'+slot+'"':'')+'>'+value+'</span></div>';
     const items=s.inventory.map(i=>'<button data-item="'+esc(i.id||i.name)+'">'+esc(i.name)+' × '+i.count+' · '+(describeItem(i).consumable?'消耗品':'非消耗品')+'</button>').join('') || '暂无物品';
     root.innerHTML =
-      '<header class="xsd2-head"><h1>卷中錄</h1><span class="xsd2-sub">仙姝堕 · 玄门展</span><button data-gm data-xsd-slot="5" aria-label="GM">⚙</button></header>'+
+      '<header class="xsd2-head"><h1>卷中錄</h1><span class="xsd2-sub">仙姝堕 · 玄门展</span><div class="xsd2-topmap" data-xsd-slot="map" data-slot-number="4"></div><button data-gm data-xsd-slot="5" aria-label="GM">⚙</button></header>'+
       '<div class="xsd2-who"><div class="xsd2-document"><span class="xsd2-plaque" data-xsd-slot="1">'+esc([st.阵营,st.自设?.name||s.identity].filter(Boolean).join(' · '))+'</span>'+
       row('时 间','仙盟历 '+esc(dateText(s.calendarDate))+' · '+esc(st.历时||'0日'),2)+
       row('地 点',esc(st.地点||'无'),3)+row('修 为',esc(st.修为||'无'))+
@@ -424,7 +416,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       (st.危机&&st.危机!=='无'?'<div class="xsd2-row crisis"><b>危 机</b><span data-xsd-slot="9">'+esc(st.危机)+'</span></div>':'<span data-xsd-slot="9" hidden></span>')+
       row('关 系',relationChips||'暂无记录')+row('储物栏','<button class="xsd2-chip" data-storage>共 '+s.inventory.length+' 种 · 点击查看</button>')+
       '</div><div class="xsd2-portrait">'+avatar((st.在场角色||[])[0]?.名||s.identity)+'</div></div>'+
-      '<nav><div data-xsd-slot="map" data-slot-number="4"></div><div data-xsd-slot="6"><button data-action="观察四周">观察</button><button data-action="与在场之人交谈">交谈</button><button data-action="自行行动">自由行动</button></div></nav>'+
+      '<span data-xsd-slot="6" hidden></span>'+
       '<div class="xsd2-npcs" data-xsd-slot="16">'+(st.在场角色||[]).map(n=>'<article class="xsd2-npc">'+avatar(n.名)+'<div><h4>'+esc(n.名)+' <small>'+esc(n.修为||'')+'</small></h4><div>关系：'+esc(n.关系||'未明')+'</div><div>情况：'+esc(n.情况||'无')+'</div><div>心境：'+esc(n.心境||'无')+'</div><div>神态：'+esc(n.神态||'无')+'</div></div></article>').join('')+'</div>'+
       '<details><summary>局势与线索</summary><dl>'+field('局势',7)+field('线索',8)+field('暗处','hidden')+'</dl></details>'+
       '<details data-storage-fold><summary>储物栏</summary><div data-xsd-slot="10">'+items+'</div><p data-xsd-slot="11">'+esc(st.纳戒||'无')+'</p><p data-xsd-slot="12">'+(options.readOnly?'此楼状态记录':'点击物品查看介绍与操作')+'</p></details>'+
@@ -443,14 +435,6 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
           (b.onclick = () =>
             dialogs.push(openItem(doc, runtime, b.dataset.item, report))),
       );
-    root.querySelectorAll("[data-action]").forEach(
-      (b) =>
-        (b.onclick = () =>
-          invoke({
-            type: "QUICK_ACTION",
-            payload: { text: b.dataset.action },
-          })),
-    );
     root.querySelectorAll("[data-portrait]").forEach(
       (b) =>
         (b.onclick = () => {
@@ -478,7 +462,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
           (img.onerror = () => img.replaceWith(doc.createTextNode(img.alt))),
       );
     for (const plugin of runtime.uiPlugins || [])
-      if (plugin.mount) {
+      if (plugin.mount && plugin.id !== "character_promotion") {
         const unmount = plugin.mount(
           root.querySelector("[data-xsd-slot=map]"),
           runtime,
@@ -497,6 +481,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     render,
     destroy() {
       disposed = true;
+      closeFavor();
       unsubscribe();
       opening?.destroy();
       plugins.forEach((f) => f());
@@ -506,7 +491,6 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       stagebar.remove();
       doc.removeEventListener("keydown",escape);
       xjRoot.remove();
-      lightbox.remove();
       style.remove();
     },
   };
