@@ -374,5 +374,485 @@
     "entryId": "gyRogueEnter4",
     "finishId": "gyRogueFinish4",
     "query": "根据本段实际剧情，玩家是否已经正面接纳孤月的坦白，双方完成了深夜交心并确立了深层道侣羁绊？"
+  },
+  "wg-stage1": {
+    "character": "闻观语",
+    "label": "问茶试心",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "闻观语",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      }
+    ],
+    "entryId": "wgEnter1",
+    "finishId": "wgFinish1",
+    "query": "根据本段实际剧情，{{user}}是否已经与闻观语完成问茶论道，并明确表达了自己的道心或心性？"
+  },
+  "wg-stage2": {
+    "character": "闻观语",
+    "label": "竹影分忧",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "闻观语",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      }
+    ],
+    "entryId": "wgEnter2",
+    "finishId": "wgFinish2",
+    "query": "根据本段实际剧情，{{user}}是否已经正面扶持或宽慰了疲惫虚弱的闻观语，二人达成了深层互信？"
+  },
+  "wg-stage3": {
+    "character": "闻观语",
+    "label": "同舟寄命",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "闻观语",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      }
+    ],
+    "entryId": "wgEnter3",
+    "finishId": "wgFinish3",
+    "query": "根据本段实际剧情，{{user}}是否已经正面接纳并回应了闻观语的托付之请，二人立下同舟共济的心意？"
+  },
+  "wg-stage4": {
+    "character": "闻观语",
+    "label": "心印同契",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "闻观语",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      }
+    ],
+    "entryId": "wgEnter4",
+    "finishId": "wgFinish4",
+    "query": "根据本段实际剧情，{{user}}是否已经正面应允了闻观语的挽留，双方完成了身心接纳的终生盟誓？"
+  },
+  "cl-stage1": {
+    "character": "楚灵夜",
+    "label": "幽谷见心",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "楚灵夜",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      }
+    ],
+    "entryId": "clEnter1",
+    "finishId": "clFinish1",
+    "query": "根据本段实际剧情，{{user}}是否已经正面接纳了楚灵夜赠送的温养甘露，双方完成了温和友好的初次深谈？"
+  },
+  "cl-stage2": {
+    "character": "楚灵夜",
+    "label": "幽兰吐芳",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "楚灵夜",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      }
+    ],
+    "entryId": "clEnter2",
+    "finishId": "clFinish2",
+    "query": "根据本段实际剧情，{{user}}是否已经正面宽慰了楚灵夜的自卑心事，二人达成了深层互信？"
+  },
+  "cl-stage3": {
+    "character": "楚灵夜",
+    "label": "芳心交映",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "楚灵夜",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      }
+    ],
+    "entryId": "clEnter3",
+    "finishId": "clFinish3",
+    "query": "根据本段实际剧情，{{user}}是否已经正面接纳并回应了楚灵夜的主动依偎与生死誓言，确立了患难与共的情意？"
+  },
+  "cl-stage4": {
+    "character": "楚灵夜",
+    "label": "花开并蒂",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "楚灵夜",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      }
+    ],
+    "entryId": "clEnter4",
+    "finishId": "clFinish4",
+    "query": "根据本段实际剧情，{{user}}是否已经正面应允了楚灵夜的倾心托付，双方完成了身心接纳的终生之誓？"
+  },
+  "sySl-stage1": {
+    "character": "苏瑶",
+    "participants": [
+      "苏瑶",
+      "苏玲"
+    ],
+    "label": "琴箫试清音",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "苏瑶",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      },
+      {
+        "kind": "metric",
+        "character": "苏玲",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      },
+      {
+        "kind": "stage",
+        "character": "苏瑶",
+        "op": "eq",
+        "value": "stage01"
+      },
+      {
+        "kind": "stage",
+        "character": "苏玲",
+        "op": "eq",
+        "value": "stage01"
+      }
+    ],
+    "entryId": "sySlEnter1",
+    "finishId": "sySlFinish1",
+    "query": "根据本段实际剧情，玩家是否已经与苏瑶、苏玲两姐妹共同完成初次音律交流或对谈，且言行得体、未发生轻薄逾矩之事？"
+  },
+  "sySl-stage2": {
+    "character": "苏瑶",
+    "participants": [
+      "苏瑶",
+      "苏玲"
+    ],
+    "label": "风雨共调弦",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "苏瑶",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      },
+      {
+        "kind": "metric",
+        "character": "苏玲",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      },
+      {
+        "kind": "stage",
+        "character": "苏瑶",
+        "op": "eq",
+        "value": "stage02"
+      },
+      {
+        "kind": "stage",
+        "character": "苏玲",
+        "op": "eq",
+        "value": "stage02"
+      }
+    ],
+    "entryId": "sySlEnter2",
+    "finishId": "sySlFinish2",
+    "query": "根据本段实际剧情，玩家是否已经协助苏瑶与苏玲排解气机滞涩，使姐妹二人化险为夷，且双方恪守同道分寸、未曾破身？"
+  },
+  "sySl-stage3": {
+    "character": "苏瑶",
+    "participants": [
+      "苏瑶",
+      "苏玲"
+    ],
+    "label": "双生微澜惊",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "苏瑶",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      },
+      {
+        "kind": "metric",
+        "character": "苏玲",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      },
+      {
+        "kind": "stage",
+        "character": "苏瑶",
+        "op": "eq",
+        "value": "stage03"
+      },
+      {
+        "kind": "stage",
+        "character": "苏玲",
+        "op": "eq",
+        "value": "stage03"
+      }
+    ],
+    "entryId": "sySlEnter3",
+    "finishId": "sySlFinish3",
+    "query": "根据本段实际剧情，苏瑶与苏玲是否在双生灵犀共振发作的情境下袒露了真实心绪，且双方克制守礼、坚决未行破身合道之事？"
+  },
+  "sySl-stage4": {
+    "character": "苏瑶",
+    "participants": [
+      "苏瑶",
+      "苏玲"
+    ],
+    "label": "同心缔并蒂",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "苏瑶",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      },
+      {
+        "kind": "metric",
+        "character": "苏玲",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      },
+      {
+        "kind": "stage",
+        "character": "苏瑶",
+        "op": "eq",
+        "value": "stage04"
+      },
+      {
+        "kind": "stage",
+        "character": "苏玲",
+        "op": "eq",
+        "value": "stage04"
+      }
+    ],
+    "entryId": "sySlEnter4",
+    "finishId": "sySlFinish4",
+    "query": "根据本段实际剧情，苏瑶与苏玲是否已经与玩家立下终身道侣盟约，坦陈心意并完成身心托付？"
+  },
+  "sqh-stage1": {
+    "character": "苏倾寒",
+    "label": "临乱一瞥",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "苏倾寒",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      }
+    ],
+    "entryId": "sqhEnter1",
+    "finishId": "sqhFinish1",
+    "query": "根据本段实际剧情，玩家是否已在苏倾寒注视下独自应对了这桩险情，且她当面问过玩家的名号、二人有过当面的言语交汇？"
+  },
+  "sqh-stage2": {
+    "character": "苏倾寒",
+    "label": "殿前奏对",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "苏倾寒",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      }
+    ],
+    "entryId": "sqhEnter2",
+    "finishId": "sqhFinish2",
+    "query": "根据本段实际剧情，玩家是否已在这一席独对中当面向苏倾寒陈言，且其见解被她听取、认可或采纳？"
+  },
+  "sqh-stage3": {
+    "character": "苏倾寒",
+    "label": "雪夜独对",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "苏倾寒",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      }
+    ],
+    "entryId": "sqhEnter3",
+    "finishId": "sqhFinish3",
+    "query": "根据本段实际剧情，玩家是否已与苏倾寒完成这一场公务之外的私下叙谈，且她向玩家袒露过一句公务之外的心迹或往事？"
+  },
+  "sqh-stage4": {
+    "character": "苏倾寒",
+    "label": "背身一剑",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "苏倾寒",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      }
+    ],
+    "entryId": "sqhEnter4",
+    "finishId": "sqhFinish4",
+    "query": "根据本段实际剧情，玩家是否已在苏倾寒破绽尽显的生死关头与她共历凶险、护得她周全，事后她亦将不得对外言说之事托付于玩家？",
+    "open": {
+      "year": 1578,
+      "month": 8,
+      "day": 1
+    }
+  },
+  "sqh-stage5": {
+    "character": "苏倾寒",
+    "label": "冰魄初破",
+    "fromStage": "stage05",
+    "toStage": "stage06",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "苏倾寒",
+        "key": "好感度",
+        "op": "gte",
+        "value": 90
+      }
+    ],
+    "entryId": "sqhEnter5",
+    "finishId": "sqhFinish5",
+    "query": "根据本段实际剧情，玩家是否已与苏倾寒完成冰魄初破（实质结合、元阴初破）？",
+    "open": {
+      "year": 1578,
+      "month": 8,
+      "day": 1
+    }
+  },
+  "gys-stage1": {
+    "character": "顾云舒",
+    "label": "添一把火",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "顾云舒",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      }
+    ],
+    "entryId": "gysEnter1",
+    "finishId": "gysFinish1",
+    "query": "根据本段实际剧情，玩家是否已在火乱中稳住局面或全身而退，且事后与现身的顾云舒有过当面的言语交汇？"
+  },
+  "gys-stage2": {
+    "character": "顾云舒",
+    "label": "火里真章",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "顾云舒",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      }
+    ],
+    "entryId": "gysEnter2",
+    "finishId": "gysFinish2",
+    "query": "根据本段实际剧情，玩家是否已就这桩悬案给出处置或查出真章，且被顾云舒当面采纳或验证可行？"
+  },
+  "gys-stage3": {
+    "character": "顾云舒",
+    "label": "自己人",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "顾云舒",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      }
+    ],
+    "entryId": "gysEnter3",
+    "finishId": "gysFinish3",
+    "query": "根据本段实际剧情，玩家是否已在她的坐镇之下自行了结这桩风波，且她已将流火阁信物亲手交付、把玩家划作自己人？"
+  },
+  "gys-stage4": {
+    "character": "顾云舒",
+    "label": "流焰初破",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "顾云舒",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      }
+    ],
+    "entryId": "gysEnter4",
+    "finishId": "gysFinish4",
+    "query": "根据本段实际剧情，玩家是否已与顾云舒完成流焰初破（实质结合、元阴初破）？"
   }
 }

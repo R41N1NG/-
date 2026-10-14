@@ -1,13 +1,13 @@
 "use strict";
 const C = require("./contracts");
 const {meets} = require("./conditions");
-const {resolveStages,writeMetric,metricSpec,completeStage,canRecover} = require("./character_stages");
+const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover} = require("./character_stages");
 const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
 const {metricEntryContent}=require("./story_entries");
-const { createMetricEvents,stripForEvidence } = require("./metric_events");
+const { createMetricEvents,stripForEvidence,applyPreFinalPenalty } = require("./metric_events");
 const {inferRelicActions,findDeflowerEvidence}=require("./relic_evidence");
 const Realm=require("./player_realm");
 const Eras=require("./grand_eras");
@@ -156,6 +156,7 @@ function createDispatcher(adapter, data) {
     if (s.activeEvent?.place) s.stat_data.地点 = s.activeEvent.place;
     s.stat_data.node_trigger = s.pending?.nodeId || null;
     s.stat_data.stage_focus = s.pending?.selection?.character || s.activeEvent?.character || s.stat_data.result_focus || null;
+    s.stat_data.stage_focuses=s.pending?.selection?.characters || s.activeEvent?.characters || s.stat_data.result_focuses || [];
     return resolveStages(s, data.characterProfiles || {});
   }
   function manual(s) {
@@ -407,6 +408,7 @@ function createDispatcher(adapter, data) {
     const id =
       c.chatId + ":" + c.floor + ":" + current.revision + ":" + C.hash(JSON.stringify(c.trail)) + ":" + ++serial;
     delete next.stat_data.result_focus;
+    delete next.stat_data.result_focuses;
     next.pending = {
       id,
       pluginId: plugin.id,
@@ -472,6 +474,11 @@ function createDispatcher(adapter, data) {
       )
         throw Error("插件不能接管别人的事件");
       s.activeEvent = C.clone(result.activeEvent);
+    }
+    if(result.stageGrants){
+      if(result.outcome!=="success" || result.stageGrant || p.selection.stageGrant || !p.selection.completionQuery || JSON.stringify(result.stageGrants)!==JSON.stringify(p.selection.stageGrants))throw Error("插件提交未授权的双人阶段");
+      completeStages(s,data.characterProfiles || {},result.stageGrants);
+      s.stat_data.result_focus=result.stageGrants[0].character;s.stat_data.result_focuses=result.stageGrants.map(g=>g.character);
     }
     if (result.stageGrant) {
       if (result.outcome !== "success" || JSON.stringify(result.stageGrant) !== JSON.stringify(p.selection.stageGrant) || !p.selection.completionQuery)
@@ -629,6 +636,7 @@ function createDispatcher(adapter, data) {
   }
   function applyStory(s, text, id, swipe, allowInventory = true) {
     delete s.stat_data.result_focus;
+    delete s.stat_data.result_focuses;
     const parsed = C.parseStatus(text),
       R = rules(s);
     for (const k of C.DISPLAY_FIELDS)
@@ -761,7 +769,12 @@ function createDispatcher(adapter, data) {
     }
     Realm.collect(s,rr,parsed.prose,id);
     try {
-      const applied = metricEvents.apply(s, text, parsed.prose, s.storyCount + 1);
+      const penalized=applyPreFinalPenalty(s,parsed.prose,data.characterProfiles || {},s.storyCount+1);
+      if(penalized.length && s.activeEvent?.pluginId==="character_promotion" && (s.activeEvent.characters || [s.activeEvent.character]).some(name=>penalized.includes(name))){
+        s.activeEvent=null;s.pluginState.character_promotion={...s.pluginState.character_promotion,currentId:null,lastResult:"forced-penalty",ready:false};
+      }
+      const claimed=/<好感事件>([^｜|<]+)/.exec(text)?.[1]?.trim();
+      const applied=penalized.includes(claimed)?{changes:[]}:metricEvents.apply(s,text,parsed.prose,s.storyCount+1);
       if (applied.changes.length) s.lastMetricEvents = applied.changes;
     } catch (error) {
       adapter.report?.(Error("数值事件申报结算失败：" + error.message));
@@ -890,7 +903,7 @@ function createDispatcher(adapter, data) {
         s.lastPromotionRecovery={pending:recovery};
         s.settlements ||= {};
         s.settlements[p.id]={id:p.id,floor:c.floor,title:(p.selection.character || "人物")+" · 缘事已记",mode:"separate",kind:"promotion",
-          answer:receipt.answer,stage:s.stat_data.completed_character_stages?.[p.selection.character] || p.selection.stageGrant.from,
+          answer:receipt.answer,stage:s.stat_data.completed_character_stages?.[p.selection.character] || p.selection.stageGrant?.from || p.selection.stageGrants?.[0]?.from,
           action:p.displayText,elapsedDays:0,date:C.clone(s.calendarDate),rewards:[],facts:["达成条件："+p.selection.completionQuery]};
       }
     }

@@ -32,6 +32,7 @@ function visibleCharacters(stat) {
   return new Set([
     stat.身份,
     stat.stage_focus,
+    ...(stat.stage_focuses || []),
     ...(stat.在场角色 || []).flatMap(x=>[x.名,String(x.名||"").replace(/[（(][\s\S]*?[）)]/g,"").trim()]),
   ]);
 }
@@ -40,12 +41,10 @@ function createMetricEvents(defs, profiles, promotions) {
   // 好感上限梯：按晋升线配置取「当前阶段对应的下一节点阈值」——完成节点之前，好感不得越过该数值
   const ladders = {};
   for (const [, p] of Object.entries(promotions || {})) {
-    const cond = (p.conditions || []).find((c) => c.kind === "metric");
-    if (!cond) continue;
-    (ladders[p.character] ||= []).push({
-      threshold: Number(cond.value),
-      fromStage: p.fromStage, identity: p.conditions?.find(c=>c.kind === "identity")?.value,
-    });
+    for(const name of p.participants || [p.character]){
+      const cond=(p.conditions || []).find(c=>c.kind==="metric"&&c.character===name);if(!cond)continue;
+      (ladders[name] ||= []).push({threshold:Number(cond.value),fromStage:p.fromStage,identity:p.conditions?.find(c=>c.kind==="identity")?.value});
+    }
   }
   function favorCap(stat, character, profilesRef) {
     const list = ladders[character];
@@ -106,6 +105,13 @@ function createMetricEvents(defs, profiles, promotions) {
       const anchor = (cfg.anchors || []).find((a) => a.id === anchorId || a.label === anchorId);
       if (!anchor) return drop(stat, storyCount, "锚点 " + anchorId + " 不在配置内");
       delta = anchor.delta;
+      const penalty=profiles[cfg.character]?.preFinalPenalty;
+      const completed=stat.completed_character_stages?.[cfg.character] || profiles[cfg.character]?.initialStage;
+      if(penalty?.anchorId===anchor.id && (profiles[cfg.character].stages.find(x=>x.id===completed)?.priority??0)<(profiles[cfg.character].stages.find(x=>x.id===penalty.beforeStage)?.priority??Infinity)){
+        const proof=coercionEvidence(proseVisible,[s.identity,stat.自设?.name,"你"].filter(Boolean),cfg.character);
+        if(!proof)return drop(stat,storyCount,"强迫企图缺少真实正文动作，标签不确权");
+        delta=Math.min(current,penalty.target)-current;
+      }
       via = anchor.id;
       stat.metric_anchor_done ||= {};
       if (!anchor.repeat && stat.metric_anchor_done[anchor.id])
@@ -143,4 +149,28 @@ function createMetricEvents(defs, profiles, promotions) {
   }
   return { apply, lookup };
 }
-module.exports = { createMetricEvents, parseMetricEvent, stripForEvidence };
+function coercionEvidence(prose,actors,name){
+ const visible=stripForEvidence(prose).replace(/[「“"][^」”"\n]*[」”"]/g,"");
+ return visible.split(/[。！？\n]/).find(line=>{
+  if(!actors.some(a=>line.includes(a)) || /据说|传闻|计划|准备|打算|假如|如果|讨论|扬言|威胁|声称|宣称|回忆|曾经|上次|记得|想象|幻想|想要|将要|不会|不曾|没有强|并未强/.test(line))return false;
+  return [...line.matchAll(/强行|强迫|强占|硬要/g)].some(m=>{const part=line.slice(m.index).split(/[，；]/)[0];return part.includes(name)&&/破身|侵犯|非礼|强占/.test(part);});
+ });
+}
+function applyPreFinalPenalty(s,prose,profiles,turn){
+ const stat=s.stat_data,visible=stripForEvidence(prose).replace(/[「“"][^」”"\n]*[」”"]/g,"");
+ const actors=[s.identity,stat.自设?.name,"你"].filter(Boolean),penalized=[];
+ for(const [name,cfg] of Object.entries(profiles)){
+  const rule=cfg.preFinalPenalty;if(!rule)continue;
+  const currentStage=stat.completed_character_stages?.[name] || cfg.initialStage;
+  if((cfg.stages.find(x=>x.id===currentStage)?.priority??0)>=(cfg.stages.find(x=>x.id===rule.beforeStage)?.priority??Infinity))continue;
+  const proof=coercionEvidence(visible,actors,name);
+  if(!proof)continue;
+  const current=stat.character_metrics?.[name]?.好感度 ?? cfg.metrics.好感度.default,value=Math.min(current,rule.target);
+  writeMetric(stat,profiles,name,"好感度",value);
+  if(s.manual?.["metric."+name+".好感度"]!==undefined)s.manual["metric."+name+".好感度"]=value;
+  stat.favor_log ||= {};(stat.favor_log[name] ||= []).unshift({label:"强行越界",delta:value-current,via:"pre-final-coercion",turn,note:proof.slice(0,80)});stat.favor_log[name]=stat.favor_log[name].slice(0,12);
+  penalized.push(name);
+ }
+ return penalized;
+}
+module.exports = { applyPreFinalPenalty,createMetricEvents, parseMetricEvent, stripForEvidence };

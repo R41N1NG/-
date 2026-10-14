@@ -410,3 +410,11 @@ test('成型但无名器归属保持灰暗，破处者不能代替归属，明�
  s.stat_data.名器归属.jiuyou='赵无忧';p.render();assert.equal(tile().classList.contains('self'),true);
  s.stat_data.名器归属.jiuyou='其他修士';p.render();assert.equal(tile().classList.contains('other'),true);p.destroy();d.window.close();
 });
+
+test('双姝两边心迹指向同一节点，两人达标才可点；苏倾寒五菱形含90且显示日期门禁',()=>{
+ const d=dom(),doc=d.window.document,s={identity:'赵无忧',chatId:'six-ui',branchId:'six-ui',floor:1,revision:1,calendarDate:{year:1578,month:3,day:3},known:{},inventory:[],manual:{},stat_data:{身份:'赵无忧',known:{},在场角色:[],名器归属:{},关系刻度:'苏瑶、同道｜苏玲、同道｜苏倾寒、相识',character_metrics:{苏瑶:{好感度:20},苏玲:{好感度:19},苏倾寒:{好感度:90}},character_stages:{苏瑶:{id:'stage01'},苏玲:{id:'stage01'},苏倾寒:{id:'stage05'}},completed_character_stages:{苏倾寒:'stage05'}}};
+ const runtime={getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>{}};const p=mountHUD(doc,doc.querySelector('main'),runtime,data,()=>{});
+ for(const name of ['苏瑶','苏玲']){doc.querySelector('[data-favor="'+name+'"]').click();assert.equal(doc.querySelector('[data-heart-node="sySlEnter1"]').disabled,true);doc.querySelector('dialog [data-close]').click();}
+ s.stat_data.character_metrics.苏玲.好感度=20;p.render();for(const name of ['苏瑶','苏玲']){doc.querySelector('[data-favor="'+name+'"]').click();assert.equal(doc.querySelector('[data-heart-node="sySlEnter1"]').disabled,false);doc.querySelector('dialog [data-close]').click();}
+ doc.querySelector('[data-favor="苏倾寒"]').click();assert.equal(doc.querySelectorAll('[data-heart-node]').length,5);assert.equal(doc.querySelector('[data-heart-node="sqhEnter5"]').disabled,true);assert.match(doc.querySelector('dialog').textContent,/1578年8月1日起开放/);doc.querySelector('dialog [data-close]').click();s.calendarDate={year:1578,month:8,day:1};p.render();doc.querySelector('[data-favor="苏倾寒"]').click();assert.equal(doc.querySelector('[data-heart-node="sqhEnter5"]').disabled,false);p.destroy();d.window.close();
+});

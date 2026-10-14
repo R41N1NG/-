@@ -75,4 +75,9 @@ function completeStage(s, profiles, grant) {
   s.stat_data.completed_character_stages ||= {};
   s.stat_data.completed_character_stages[grant.character] = grant.to;
 }
-module.exports = {metricSpec, writeMetric, resolveStages, completeStage, negativeStages, negativeOf, canRecover};
+function completeStages(s,profiles,grants){
+ if(!Array.isArray(grants)||!grants.length||new Set(grants.map(g=>g.character)).size!==grants.length)throw Error("双人阶段提交配置无效");
+ for(const g of grants){const cfg=profiles[g.character],from=cfg?.stages.find(x=>x.id===g.from),to=cfg?.stages.find(x=>x.id===g.to);if(!from||!to||to.priority<=from.priority||s.stat_data.character_stages?.[g.character]?.id!==g.from)throw Error("双人阶段必须同时符合前置条件");}
+ for(const g of grants)completeStage(s,profiles,g);
+}
+module.exports = {completeStages,metricSpec, writeMetric, resolveStages, completeStage, negativeStages, negativeOf, canRecover};

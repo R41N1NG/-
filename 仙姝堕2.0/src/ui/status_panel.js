@@ -1,4 +1,5 @@
 "use strict";
+const C=require("../runtime/contracts");
 const {relicOwner}=require("./relic_owner");
 const { esc, modal, html } = require("./dom");
 const { tokenCss } = require("./tokens");
@@ -222,9 +223,9 @@ function relicStates(s, data) {
 function favorLadder(data, character, s) {
   const list = [];
   for (const [, p] of Object.entries(data.promotionDefinitions || {})) {
-    if (p.character !== character || !meets(s, (p.conditions || []).filter(c=>c.kind === "identity"))) continue;
-    const cond = (p.conditions || []).find((c) => c.kind === "metric");
-    if (cond) list.push({ threshold: Number(cond.value), fromStage: p.fromStage, toStage: p.toStage, label: p.label, entryId:p.entryId, conditions:p.conditions });
+    if (!(p.participants || [p.character]).includes(character) || !meets(s, (p.conditions || []).filter(c=>c.kind === "identity"))) continue;
+    const cond = (p.conditions || []).find((c) => c.kind === "metric" && c.character===character);
+    if (cond) list.push({ threshold: Number(cond.value), fromStage: p.fromStage, toStage: p.toStage, label: p.label, entryId:p.entryId, conditions:p.conditions,open:p.open });
   }
   return list.sort((a, b) => a.threshold - b.threshold);
 }
@@ -358,11 +359,11 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     })();
     const activeId=s.activeEvent?.promotionId || s.pluginState?.character_promotion?.currentId;
     const running=s.activeEvent?.pluginId==="character_promotion" ? data.promotionDefinitions?.[activeId] : null;
-    const active=running?.character===character ? running : null;
+    const active=running && (running.participants || [running.character]).includes(character) ? running : null;
     const diamonds = ladder.map((x) => {
       const done = prio(x.toStage) <= prio(completed);
-      const now = !negative && !done && x.fromStage === (completed || profiles[character]?.initialStage) && !s.pending && !s.activeEvent && !options.readOnly && meets(s,x.conditions);
-      return { threshold: x.threshold, done, now, label: x.label, entryId:x.entryId, running:active?.entryId===x.entryId };
+      const now = !negative && !done && x.fromStage === (completed || profiles[character]?.initialStage) && !s.pending && !s.activeEvent && !options.readOnly && meets(s,x.conditions) && (!x.open || C.day(s.calendarDate)>=C.day(x.open));
+      return { threshold: x.threshold, done, now, label: x.label, entryId:x.entryId, running:active?.entryId===x.entryId,lockedUntil:x.open && C.day(s.calendarDate)<C.day(x.open)?x.open:null };
     });
     const log = s.stat_data.favor_log?.[character] || [];
     const el = modal(doc, character + " · 心迹");
@@ -378,7 +379,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
               '<button type="button" data-heart-node="' + esc(x.entryId) + '"' + (x.now && !negative ? '' : ' disabled') + ' class="xsd2-node' + (!negative && x.done ? " done" : x.now ? " now" : "") + '"'
               + (x.now ? ' title="点击开启专属剧情：' + esc(x.label) + '"' : "") + ">"
               + "<i></i><span>" + x.threshold + "</span><em>"
-      + (negative ? esc(negativeLabel) : x.done ? "剧情已了" : x.running ? "剧情进行中" : options.readOnly ? "历史记录" : x.now ? esc(x.label) + " · 可开启" : "未达") + "</em></button>"
+      + (negative ? esc(negativeLabel) : x.done ? "剧情已了" : x.running ? "剧情进行中" : options.readOnly ? "历史记录" : x.lockedUntil ? esc(C.dateText(x.lockedUntil))+"起开放" : x.now ? esc(x.label) + " · 可开启" : "未达") + "</em></button>"
             ).join("") + "</div>"
           : '<p class="xsd2-label">此人尚未配置晋升之路。</p>')
       + "<h4>近日心迹</h4>"
@@ -488,7 +489,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
         const name = piece.split("、")[0].trim();
         if (metricOf(name) === undefined) return '<span class="xsd2-chip">' + esc(piece) + "</span>";
         const hasNode = !s.pending && !s.activeEvent && !options.readOnly && favorLadder(data, name, s).some(
-          (x) => (s.stat_data.completed_character_stages?.[name] || data.characterProfiles?.[name]?.initialStage) === x.fromStage && metricOf(name) >= x.threshold,
+          (x) => (s.stat_data.completed_character_stages?.[name] || data.characterProfiles?.[name]?.initialStage) === x.fromStage && meets(s,x.conditions) && (!x.open || C.day(s.calendarDate)>=C.day(x.open)),
         );
         return '<span class="xsd2-chip" data-favor="' + esc(name) + '">' + esc(st.character_stages?.[name]?.negative ? name+' · '+st.character_stages[name].label : piece) + (hasNode ? GOURD_SVG : "") + "</span>";
       })

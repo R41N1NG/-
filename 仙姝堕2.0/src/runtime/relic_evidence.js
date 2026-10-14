@@ -39,7 +39,9 @@ function findDeflowerEvidence(holder, prose, rules) {
  const completed=/(落红|破(?:了|去|过|掉)?(?:她|他|其)?的?身|破(?:了|去|过|掉)?(?:她|他|其)?的?处|破瓜|元阴(?:被夺|初破|失守)|失了身)/;
  for(const paragraph of text.split(/\n\s*\n/)){
   let context=false;
-  for(const line of paragraph.split(/[。！？\n]/)){
+  for(const line of paragraph.split(/[。！？\n]/).flatMap(sentence=>group?.holders.length>1 && group.holders.every(h=>sentence.includes(h)) && /(?:两人|二人|姐妹(?:俩|二人)|均|都|分别|先后)[^，；。]{0,45}(?:破身|破处|破瓜|元阴(?:被夺|初破|失守)|落红)/.test(sentence) && !/仅|只有|一人|仍是处子/.test(sentence) ? [sentence] : sentence.split(/[，；]/))){
+   const paired=group?.holders.length>1 && group.holders.every(h=>line.includes(h)) && /(?:两人|二人|姐妹(?:俩|二人)|均|都|分别|先后)[^，；。]{0,45}(?:破(?:了|去|过|掉)?(?:她|他|其)?的?身|破处|破瓜|元阴(?:被夺|初破|失守)|落红)/.test(line) && !/仅|只有|一人|仍是处子/.test(line) && completed.test(line) && !C.noFact.test(line) && !/否认|并非|回忆|曾经|上次|未|没/.test(line);
+   if(paired && !others.filter(h=>!group.holders.includes(h)).some(h=>line.includes(h)))return line;
    if(others.some(h=>line.includes(h))){context=false;continue;}
    const named=aliases.some(a=>line.includes(a));
    if(C.noFact.test(line) || /未|没|否认|并不|不是|并非|拒绝|是否|想要|希望|不会|不愿|讨论|提及|解释|说明|之前|上次|曾经|回忆|记得/.test(line)){if(named)context=false;continue;}

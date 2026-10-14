@@ -134,8 +134,8 @@ test('完成后正常新输入保留结算状态；重生成才恢复结算前�
 test('双身份八个晋升入口都连接现有故事；40点节点可发送并完成',async()=>{
  const plugin=createPromotionPlugin(data.promotionDefinitions,data.nodeStories);
  for(const cfg of Object.values(data.promotionDefinitions)){
-  const identity=cfg.conditions.find(c=>c.kind==='identity').value,score=cfg.conditions.find(c=>c.kind==='metric').value;
-  const s={identity,stat_data:{character_stages:{[cfg.character]:{id:cfg.fromStage}},character_metrics:{[cfg.character]:{好感度:score}}}};
+  const identity=cfg.conditions.find(c=>c.kind==='identity')?.value || '赵无忧',score=cfg.conditions.find(c=>c.kind==='metric').value;
+  const names=cfg.participants || [cfg.character],s={identity,calendarDate:{year:1578,month:8,day:1},stat_data:{character_stages:Object.fromEntries(names.map(n=>[n,{id:cfg.fromStage}])),character_metrics:Object.fromEntries(names.map(n=>[n,{好感度:score}]))}};
   const selected=plugin.select(s,cfg.entryId);assert.equal(selected.allowed,true);assert.ok(selected.prompt?.trim());assert.ok(data.embeddedManagedEntries.some(e=>e.comment==='【节点故事】'+cfg.entryId));
  }
  const h=fixture();await h.ready();await h.click('yhrNight');await h.reply('你看到她沐浴。');await h.click('yhrFinish');await h.reply(h.report('是'));

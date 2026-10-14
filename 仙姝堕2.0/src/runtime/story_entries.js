@@ -95,7 +95,7 @@ function managedEnabled(label, stat) {
   if (label.startsWith("【节点故事】")) return label === nodeEntryName(stat.node_trigger);
   if (Object.values(stat.character_stages || {}).some(x=>(x.replaces || []).includes(label))) return false;
   if (label.startsWith("【人物阶段】")) {
-    const visible = new Set([stat.身份,stat.stage_focus,...(stat.在场角色 || []).map(x=>x.名)]);
+    const visible = new Set([stat.身份,stat.stage_focus,...(stat.stage_focuses || []),...(stat.在场角色 || []).map(x=>x.名)]);
     return Object.entries(stat.character_stages || {}).some(([name,x])=>{
       if (!visible.has(name) || !x.story) return false;
       if (label === "【人物阶段】"+name+":"+x.id) return true;
@@ -105,7 +105,7 @@ function managedEnabled(label, stat) {
   }
   if (label.startsWith("【好感事件表】")) {
     const character = label.slice("【好感事件表】".length);
-    const visible = new Set([stat.身份,stat.stage_focus,...(stat.在场角色 || []).map(x=>x.名)]);
+    const visible = new Set([stat.身份,stat.stage_focus,...(stat.stage_focuses || []),...(stat.在场角色 || []).map(x=>x.名)]);
     return visible.has(character) && !!stat.character_metrics?.[character];
   }
   if (label.startsWith("【区域背景】")) {
