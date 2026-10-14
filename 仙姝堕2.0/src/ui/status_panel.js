@@ -1,4 +1,5 @@
 "use strict";
+const {relicOwner}=require("./relic_owner");
 const { esc, modal, html } = require("./dom");
 const { tokenCss } = require("./tokens");
 const {mountPlayerAvatar} = require("./player_avatar");
@@ -208,14 +209,14 @@ function loadPortrait(img,p,large=false){
   let index=0;img.src=urls[index];
   img.onerror=()=>{if(++index<urls.length)img.src=urls[index];else{img.onerror=null;img.replaceWith(img.ownerDocument.createTextNode(img.alt||"暂无立绘"));}};
 }
-// 纹章状态推导：成形=known 旗标、阶段=已知最高阶、归属=名器归属/破处者账本
+// 纹章状态推导：成形=known 旗标、阶段=已知最高阶、归属=明确的名器归属账本（不以破处者推定）
 function relicStates(s, data) {
   const R=data.rules(s.stat_data),known=s.stat_data.known||s.known||{};
   return Object.entries(data.relicDb || {}).map(([id,rel])=>{
     const cfg=Object.values(R.RELIC_PILOT_CONFIG).find(c=>c.names.includes(rel.name)||c.names.includes(id));
     const stage=cfg?R.getRelicStage(cfg.id,known):0;
-    const owner=s.stat_data.名器归属?.[cfg?.id]||s.stat_data.名器归属?.[id]||s.stat_data.名器归属?.[rel.name]||s.stat_data.破处者?.[rel.carrier]||'';
-    return {id,rel,cfg,stage,owner,state:stage===0?'none':owner&&owner!==s.identity?'other':'self'};
+    const owner=relicOwner(s.stat_data,cfg,id,rel.name);
+    return {id,rel,cfg,stage,owner,state:stage===0 || !owner?'none':owner!==s.identity?'other':'self'};
   });
 }
 function favorLadder(data, character, s) {
@@ -289,9 +290,9 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     const owned = rs.state !== "none";
     const badge = owned
       ? rs.state === "self"
-        ? '<span class="xsd2-badge bself">◈ 目前的烙印归属：' + esc(rs.owner || s.identity) + "（契约主）</span>"
+        ? '<span class="xsd2-badge bself">◈ 目前的烙印归属：' + esc(rs.owner) + "（契约主）</span>"
         : '<span class="xsd2-badge bother">◈ 目前的烙印归属：' + esc(rs.owner) + "（已被占据）</span>"
-      : '<span class="xsd2-badge bnone">◈ 尚未有烙印归属</span>';
+      : '<span class="xsd2-badge bnone">◈ '+(rs.stage>0?'已成型 · 归属未确认':'尚未有烙印归属')+'</span>';
     const tabs = Object.entries(data.relicDb)
       .map(([k, r]) => '<button class="xsd2-xtab' + (k === id ? " on" : "") + '" data-xjtab="' + k + '">' + esc(r.name) + "</button>")
       .join("");

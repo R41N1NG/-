@@ -1,4 +1,5 @@
 "use strict";
+const {relicOwner}=require("./relic_owner");
 const { createFxQueue } = require("./fx_queue");
 // 纹章点亮揭幕：名器阶段推进（known 旗标）时在状态栏上层跳出播放一次，播完即移除。
 // 不触两翼瓷砖渲染；按聊天/分支/身份记录已播阶段，sessionStorage不可用时使用文档内存。
@@ -244,7 +245,7 @@ function mountRelicFanfare(doc, container, data, options = {}) {
     const configs=Object.values(R.RELIC_PILOT_CONFIG || {});
     for(const [id,fan] of Object.entries(FANFARES)){
       const cfg=configs.find(c=>c.names.includes(id)||c.names.includes(fan.name));
-      const stage=cfg?R.getRelicStage(cfg.id,known):0;
+      const stage=cfg && relicOwner(s.stat_data,cfg,id,fan.name)?R.getRelicStage(cfg.id,known):0;
       if(active?.id===id && stage<active.stage){queue.clear();clear();}
       if(!Object.hasOwn(ledger,id)){markPlayed(doc,scope,id,stage);continue;} // Cold loads are existing state, not new achievements.
       if(stage>=1 && stage>(Number.isFinite(ledger[id])?ledger[id]:0)){
@@ -253,7 +254,7 @@ function mountRelicFanfare(doc, container, data, options = {}) {
         const queuedScope=scope;
         queue.enqueue("fanfare:"+scope+":"+id,(done)=>{
           const live=latest && data.rules(latest.stat_data);
-          if(disposed || queuedScope!==scope || !live || live.getRelicStage(cfg.id,latest.stat_data.known || latest.known || {})<stage){done();return;}
+          if(disposed || queuedScope!==scope || !live || !relicOwner(latest.stat_data,cfg,id,fan.name) || live.getRelicStage(cfg.id,latest.stat_data.known || latest.known || {})<stage){done();return;}
           play(fan,id,stage,done);
           return {stop:clear};
         });return;

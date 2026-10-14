@@ -401,3 +401,12 @@ test('自设60剧情完成入口常驻，准备是后醒目提醒；历史心迹
  s.pending={nodeId:'yhrRogueFinish2b',selection:{completionQuery:'是否达成本次剧情'}};p.render();doc.querySelector('[data-favor]').click();const retry=doc.querySelector('[data-completion-retry]');assert.equal(retry.disabled,false);assert.match(retry.textContent,/重新结算/);retry.click();assert.equal(calls.at(-1).type,'RETRY_COMPLETION');
  p.destroy();const h=mountHUD(doc,doc.querySelector('main'),runtime,data,()=>{},{readOnly:true});doc.querySelector('[data-favor]').click();assert.match(doc.querySelector('dialog').textContent,/历史楼状态/);assert.equal(doc.querySelector('[data-heart-node="yhrRogueFinish2b"]'),null);h.destroy();d.window.close();
 });
+
+test('成型但无名器归属保持灰暗，破处者不能代替归属，明确归属才点亮',()=>{
+ const d=dom(),doc=d.window.document,s={identity:'赵无忧',chatId:'owner',branchId:'owner',floor:1,revision:1,calendarDate:{year:1578,month:3,day:3},known:{},inventory:[],manual:{},stat_data:{身份:'赵无忧',known:{'九幽玄阴穴成形':true},在场角色:[],名器归属:{},破处者:{孤月:'赵无忧'}}};
+ const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[]},data,()=>{}),tile=()=>doc.querySelector('[data-relic="jiuyouxuanyinxue"]');
+ assert.equal(tile().classList.contains('none'),true);tile().click();assert.match(doc.querySelector('dialog').textContent,/归属未确认/);doc.querySelector('dialog [data-close]').click();
+ s.stat_data.名器归属.jiuyou='无';p.render();assert.equal(tile().classList.contains('none'),true);
+ s.stat_data.名器归属.jiuyou='赵无忧';p.render();assert.equal(tile().classList.contains('self'),true);
+ s.stat_data.名器归属.jiuyou='其他修士';p.render();assert.equal(tile().classList.contains('other'),true);p.destroy();d.window.close();
+});
