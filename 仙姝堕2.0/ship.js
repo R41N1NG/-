@@ -7,6 +7,7 @@ const tests = spawnSync(
   [
     "--test",
     "tests/core.test.cjs",
+    "tests/xibei.test.cjs",
     "tests/relic_fanfare.test.cjs",
     "tests/negative_favor.test.cjs",
     "tests/gm_panel.test.cjs",

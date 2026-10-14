@@ -869,6 +869,10 @@ function createDispatcher(adapter, data) {
         date:C.clone(s.calendarDate), rewards:C.clone(eventReceipt?.rewards || s.receipts[p.id]?.rewards || []),
         facts:C.clone(eventReceipt?.summaryLog || []), exitType:eventReceipt?.exitType || ""};
     }
+    if(p?.selection?.completionQuery && s.lastNodeResult?.evidenceMode === "XIBEI_JUDGEMENT"){
+      const recovery=C.clone(p);delete recovery.before.lastPromotionRecovery;
+      s.lastPromotionRecovery={pending:recovery};
+    }
     if (p?.selection?.completionQuery && s.lastNodeResult?.evidenceMode === "PROMOTION_RESULT") {
       const receipt=s.pluginState[p.pluginId]?.receipt;
       if(receipt?.id === p.id) {

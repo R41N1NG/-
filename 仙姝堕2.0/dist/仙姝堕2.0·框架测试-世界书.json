@@ -10586,6 +10586,25 @@
     },
     "298": {
       "uid": 298,
+      "comment": "【节点故事】xbxxJudge",
+      "key": [
+        "XSD2_xbxxJudge_"
+      ],
+      "keysecondary": [],
+      "content": "本轮仅按中控提供的起始行动与询问核验实际救护，使用本轮绑定的结果格式。不新增剧情，不代写玩家挡蛊，不借其他历史救护判定本次结果。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "299": {
+      "uid": 299,
       "comment": "【人物阶段】叶红缨:stage02:赵无忧",
       "key": [
         "叶红缨",
@@ -10605,8 +10624,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "299": {
-      "uid": 299,
+    "300": {
+      "uid": 300,
       "comment": "【人物阶段】叶红缨:stage02:自设",
       "key": [
         "叶红缨",
@@ -10626,8 +10645,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "300": {
-      "uid": 300,
+    "301": {
+      "uid": 301,
       "comment": "【人物阶段】叶红缨:stage03:赵无忧",
       "key": [
         "叶红缨",
@@ -10647,8 +10666,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "301": {
-      "uid": 301,
+    "302": {
+      "uid": 302,
       "comment": "【人物阶段】叶红缨:stage03:自设",
       "key": [
         "叶红缨",
@@ -10668,8 +10687,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "302": {
-      "uid": 302,
+    "303": {
+      "uid": 303,
       "comment": "【人物阶段】叶红缨:stage04:赵无忧",
       "key": [
         "叶红缨",
@@ -10689,8 +10708,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "303": {
-      "uid": 303,
+    "304": {
+      "uid": 304,
       "comment": "【人物阶段】叶红缨:stage04:自设",
       "key": [
         "叶红缨",
@@ -10710,8 +10729,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "304": {
-      "uid": 304,
+    "305": {
+      "uid": 305,
       "comment": "【人物阶段】叶红缨:stage05:赵无忧",
       "key": [
         "叶红缨",
@@ -10731,8 +10750,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "305": {
-      "uid": 305,
+    "306": {
+      "uid": 306,
       "comment": "【人物阶段】叶红缨:stage05:自设",
       "key": [
         "叶红缨",
@@ -10752,8 +10771,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "306": {
-      "uid": 306,
+    "307": {
+      "uid": 307,
       "comment": "【人物阶段】叶红缨:neg_gap:赵无忧",
       "key": [
         "叶红缨",
@@ -10773,8 +10792,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "307": {
-      "uid": 307,
+    "308": {
+      "uid": 308,
       "comment": "【人物阶段】叶红缨:neg_gap:自设",
       "key": [
         "叶红缨",
@@ -10794,8 +10813,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "308": {
-      "uid": 308,
+    "309": {
+      "uid": 309,
       "comment": "【人物阶段】叶红缨:neg_disgust:赵无忧",
       "key": [
         "叶红缨",
@@ -10815,8 +10834,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "309": {
-      "uid": 309,
+    "310": {
+      "uid": 310,
       "comment": "【人物阶段】叶红缨:neg_disgust:自设",
       "key": [
         "叶红缨",
@@ -10836,8 +10855,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "310": {
-      "uid": 310,
+    "311": {
+      "uid": 311,
       "comment": "【人物阶段】叶红缨:neg_hostile",
       "key": [
         "叶红缨",
@@ -10857,8 +10876,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "311": {
-      "uid": 311,
+    "312": {
+      "uid": 312,
       "comment": "【人物阶段】叶红缨:neg_nemesis",
       "key": [
         "叶红缨",
@@ -10878,8 +10897,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "312": {
-      "uid": 312,
+    "313": {
+      "uid": 313,
       "comment": "【人物阶段】孤月:stage02:赵无忧",
       "key": [
         "孤月",
@@ -10897,8 +10916,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "313": {
-      "uid": 313,
+    "314": {
+      "uid": 314,
       "comment": "【人物阶段】孤月:stage02:自设",
       "key": [
         "孤月",
@@ -10916,8 +10935,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "314": {
-      "uid": 314,
+    "315": {
+      "uid": 315,
       "comment": "【人物阶段】孤月:stage03:赵无忧",
       "key": [
         "孤月",
@@ -10935,8 +10954,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "315": {
-      "uid": 315,
+    "316": {
+      "uid": 316,
       "comment": "【人物阶段】孤月:stage03:自设",
       "key": [
         "孤月",
@@ -10954,8 +10973,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "316": {
-      "uid": 316,
+    "317": {
+      "uid": 317,
       "comment": "【人物阶段】孤月:stage04:赵无忧",
       "key": [
         "孤月",
@@ -10973,8 +10992,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "317": {
-      "uid": 317,
+    "318": {
+      "uid": 318,
       "comment": "【人物阶段】孤月:stage04:自设",
       "key": [
         "孤月",
@@ -10992,8 +11011,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "318": {
-      "uid": 318,
+    "319": {
+      "uid": 319,
       "comment": "【人物阶段】孤月:stage05:赵无忧",
       "key": [
         "孤月",
@@ -11011,8 +11030,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "319": {
-      "uid": 319,
+    "320": {
+      "uid": 320,
       "comment": "【人物阶段】孤月:stage05:自设",
       "key": [
         "孤月",
@@ -11030,8 +11049,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "320": {
-      "uid": 320,
+    "321": {
+      "uid": 321,
       "comment": "【人物阶段】孤月:neg_gap",
       "key": [
         "孤月",
@@ -11049,8 +11068,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "321": {
-      "uid": 321,
+    "322": {
+      "uid": 322,
       "comment": "【人物阶段】孤月:neg_disgust",
       "key": [
         "孤月",
@@ -11068,8 +11087,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "322": {
-      "uid": 322,
+    "323": {
+      "uid": 323,
       "comment": "【人物阶段】孤月:neg_hostile",
       "key": [
         "孤月",
@@ -11087,8 +11106,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "323": {
-      "uid": 323,
+    "324": {
+      "uid": 324,
       "comment": "【人物阶段】孤月:neg_nemesis",
       "key": [
         "孤月",
@@ -11106,8 +11125,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "324": {
-      "uid": 324,
+    "325": {
+      "uid": 325,
       "comment": "【人物阶段】闻观语:neg_gap",
       "key": [
         "闻观语"
@@ -11122,8 +11141,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "325": {
-      "uid": 325,
+    "326": {
+      "uid": 326,
       "comment": "【人物阶段】闻观语:neg_disgust",
       "key": [
         "闻观语"
@@ -11138,8 +11157,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "326": {
-      "uid": 326,
+    "327": {
+      "uid": 327,
       "comment": "【人物阶段】闻观语:neg_hostile",
       "key": [
         "闻观语"
@@ -11154,8 +11173,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "327": {
-      "uid": 327,
+    "328": {
+      "uid": 328,
       "comment": "【人物阶段】闻观语:neg_nemesis",
       "key": [
         "闻观语"
@@ -11170,8 +11189,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "328": {
-      "uid": 328,
+    "329": {
+      "uid": 329,
       "comment": "【人物阶段】楚灵夜:neg_gap",
       "key": [
         "楚灵夜"
@@ -11186,8 +11205,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "329": {
-      "uid": 329,
+    "330": {
+      "uid": 330,
       "comment": "【人物阶段】楚灵夜:neg_disgust",
       "key": [
         "楚灵夜"
@@ -11202,8 +11221,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "330": {
-      "uid": 330,
+    "331": {
+      "uid": 331,
       "comment": "【人物阶段】楚灵夜:neg_hostile",
       "key": [
         "楚灵夜"
@@ -11218,8 +11237,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "331": {
-      "uid": 331,
+    "332": {
+      "uid": 332,
       "comment": "【人物阶段】楚灵夜:neg_nemesis",
       "key": [
         "楚灵夜"
@@ -11234,8 +11253,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "332": {
-      "uid": 332,
+    "333": {
+      "uid": 333,
       "comment": "【人物阶段】苏瑶:neg_gap",
       "key": [
         "苏瑶"
@@ -11250,8 +11269,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "333": {
-      "uid": 333,
+    "334": {
+      "uid": 334,
       "comment": "【人物阶段】苏瑶:neg_disgust",
       "key": [
         "苏瑶"
@@ -11266,8 +11285,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "334": {
-      "uid": 334,
+    "335": {
+      "uid": 335,
       "comment": "【人物阶段】苏瑶:neg_hostile",
       "key": [
         "苏瑶"
@@ -11282,8 +11301,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "335": {
-      "uid": 335,
+    "336": {
+      "uid": 336,
       "comment": "【人物阶段】苏瑶:neg_nemesis",
       "key": [
         "苏瑶"
@@ -11298,8 +11317,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "336": {
-      "uid": 336,
+    "337": {
+      "uid": 337,
       "comment": "【人物阶段】苏玲:neg_gap",
       "key": [
         "苏玲"
@@ -11314,8 +11333,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "337": {
-      "uid": 337,
+    "338": {
+      "uid": 338,
       "comment": "【人物阶段】苏玲:neg_disgust",
       "key": [
         "苏玲"
@@ -11330,8 +11349,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "338": {
-      "uid": 338,
+    "339": {
+      "uid": 339,
       "comment": "【人物阶段】苏玲:neg_hostile",
       "key": [
         "苏玲"
@@ -11346,8 +11365,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "339": {
-      "uid": 339,
+    "340": {
+      "uid": 340,
       "comment": "【人物阶段】苏玲:neg_nemesis",
       "key": [
         "苏玲"
@@ -11362,8 +11381,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "340": {
-      "uid": 340,
+    "341": {
+      "uid": 341,
       "comment": "【人物阶段】柳含烟:neg_gap",
       "key": [
         "柳含烟"
@@ -11378,8 +11397,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "341": {
-      "uid": 341,
+    "342": {
+      "uid": 342,
       "comment": "【人物阶段】柳含烟:neg_disgust",
       "key": [
         "柳含烟"
@@ -11394,8 +11413,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "342": {
-      "uid": 342,
+    "343": {
+      "uid": 343,
       "comment": "【人物阶段】柳含烟:neg_hostile",
       "key": [
         "柳含烟"
@@ -11410,8 +11429,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "343": {
-      "uid": 343,
+    "344": {
+      "uid": 344,
       "comment": "【人物阶段】柳含烟:neg_nemesis",
       "key": [
         "柳含烟"
@@ -11426,8 +11445,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "344": {
-      "uid": 344,
+    "345": {
+      "uid": 345,
       "comment": "【人物阶段】雨霏柔:neg_gap",
       "key": [
         "雨霏柔"
@@ -11442,8 +11461,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "345": {
-      "uid": 345,
+    "346": {
+      "uid": 346,
       "comment": "【人物阶段】雨霏柔:neg_disgust",
       "key": [
         "雨霏柔"
@@ -11458,8 +11477,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "346": {
-      "uid": 346,
+    "347": {
+      "uid": 347,
       "comment": "【人物阶段】雨霏柔:neg_hostile",
       "key": [
         "雨霏柔"
@@ -11474,8 +11493,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "347": {
-      "uid": 347,
+    "348": {
+      "uid": 348,
       "comment": "【人物阶段】雨霏柔:neg_nemesis",
       "key": [
         "雨霏柔"
@@ -11490,8 +11509,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "348": {
-      "uid": 348,
+    "349": {
+      "uid": 349,
       "comment": "【人物阶段】云织梦:neg_gap",
       "key": [
         "云织梦"
@@ -11506,8 +11525,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "349": {
-      "uid": 349,
+    "350": {
+      "uid": 350,
       "comment": "【人物阶段】云织梦:neg_disgust",
       "key": [
         "云织梦"
@@ -11522,8 +11541,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "350": {
-      "uid": 350,
+    "351": {
+      "uid": 351,
       "comment": "【人物阶段】云织梦:neg_hostile",
       "key": [
         "云织梦"
@@ -11538,8 +11557,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "351": {
-      "uid": 351,
+    "352": {
+      "uid": 352,
       "comment": "【人物阶段】云织梦:neg_nemesis",
       "key": [
         "云织梦"
@@ -11554,8 +11573,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "352": {
-      "uid": 352,
+    "353": {
+      "uid": 353,
       "comment": "【人物阶段】花芷凝:neg_gap",
       "key": [
         "花芷凝"
@@ -11570,8 +11589,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "353": {
-      "uid": 353,
+    "354": {
+      "uid": 354,
       "comment": "【人物阶段】花芷凝:neg_disgust",
       "key": [
         "花芷凝"
@@ -11586,8 +11605,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "354": {
-      "uid": 354,
+    "355": {
+      "uid": 355,
       "comment": "【人物阶段】花芷凝:neg_hostile",
       "key": [
         "花芷凝"
@@ -11602,8 +11621,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "355": {
-      "uid": 355,
+    "356": {
+      "uid": 356,
       "comment": "【人物阶段】花芷凝:neg_nemesis",
       "key": [
         "花芷凝"
@@ -11618,8 +11637,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "356": {
-      "uid": 356,
+    "357": {
+      "uid": 357,
       "comment": "【人物阶段】苏倾寒:neg_gap",
       "key": [
         "苏倾寒"
@@ -11634,8 +11653,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "357": {
-      "uid": 357,
+    "358": {
+      "uid": 358,
       "comment": "【人物阶段】苏倾寒:neg_disgust",
       "key": [
         "苏倾寒"
@@ -11650,8 +11669,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "358": {
-      "uid": 358,
+    "359": {
+      "uid": 359,
       "comment": "【人物阶段】苏倾寒:neg_hostile",
       "key": [
         "苏倾寒"
@@ -11666,8 +11685,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "359": {
-      "uid": 359,
+    "360": {
+      "uid": 360,
       "comment": "【人物阶段】苏倾寒:neg_nemesis",
       "key": [
         "苏倾寒"
@@ -11682,8 +11701,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "360": {
-      "uid": 360,
+    "361": {
+      "uid": 361,
       "comment": "【人物阶段】慕容清歌:neg_gap",
       "key": [
         "慕容清歌"
@@ -11698,8 +11717,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "361": {
-      "uid": 361,
+    "362": {
+      "uid": 362,
       "comment": "【人物阶段】慕容清歌:neg_disgust",
       "key": [
         "慕容清歌"
@@ -11714,8 +11733,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "362": {
-      "uid": 362,
+    "363": {
+      "uid": 363,
       "comment": "【人物阶段】慕容清歌:neg_hostile",
       "key": [
         "慕容清歌"
@@ -11730,8 +11749,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "363": {
-      "uid": 363,
+    "364": {
+      "uid": 364,
       "comment": "【人物阶段】慕容清歌:neg_nemesis",
       "key": [
         "慕容清歌"
@@ -11746,8 +11765,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "364": {
-      "uid": 364,
+    "365": {
+      "uid": 365,
       "comment": "【人物阶段】顾云舒:neg_gap",
       "key": [
         "顾云舒"
@@ -11762,8 +11781,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "365": {
-      "uid": 365,
+    "366": {
+      "uid": 366,
       "comment": "【人物阶段】顾云舒:neg_disgust",
       "key": [
         "顾云舒"
@@ -11778,8 +11797,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "366": {
-      "uid": 366,
+    "367": {
+      "uid": 367,
       "comment": "【人物阶段】顾云舒:neg_hostile",
       "key": [
         "顾云舒"
@@ -11794,8 +11813,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "367": {
-      "uid": 367,
+    "368": {
+      "uid": 368,
       "comment": "【人物阶段】顾云舒:neg_nemesis",
       "key": [
         "顾云舒"
@@ -11810,8 +11829,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "368": {
-      "uid": 368,
+    "369": {
+      "uid": 369,
       "comment": "【人物阶段】陆烬颜:neg_gap",
       "key": [
         "陆烬颜"
@@ -11826,8 +11845,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "369": {
-      "uid": 369,
+    "370": {
+      "uid": 370,
       "comment": "【人物阶段】陆烬颜:neg_disgust",
       "key": [
         "陆烬颜"
@@ -11842,8 +11861,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "370": {
-      "uid": 370,
+    "371": {
+      "uid": 371,
       "comment": "【人物阶段】陆烬颜:neg_hostile",
       "key": [
         "陆烬颜"
@@ -11858,8 +11877,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "371": {
-      "uid": 371,
+    "372": {
+      "uid": 372,
       "comment": "【人物阶段】陆烬颜:neg_nemesis",
       "key": [
         "陆烬颜"
@@ -11874,8 +11893,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "372": {
-      "uid": 372,
+    "373": {
+      "uid": 373,
       "comment": "【好感事件表】叶红缨",
       "key": [],
       "keysecondary": [],
@@ -11888,8 +11907,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "373": {
-      "uid": 373,
+    "374": {
+      "uid": 374,
       "comment": "【好感事件表】孤月",
       "key": [],
       "keysecondary": [],
@@ -11902,8 +11921,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "374": {
-      "uid": 374,
+    "375": {
+      "uid": 375,
       "comment": "【好感事件表】闻观语",
       "key": [],
       "keysecondary": [],
@@ -11916,8 +11935,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "375": {
-      "uid": 375,
+    "376": {
+      "uid": 376,
       "comment": "【好感事件表】楚灵夜",
       "key": [],
       "keysecondary": [],
@@ -11930,8 +11949,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "376": {
-      "uid": 376,
+    "377": {
+      "uid": 377,
       "comment": "【好感事件表】苏瑶",
       "key": [],
       "keysecondary": [],
@@ -11944,8 +11963,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "377": {
-      "uid": 377,
+    "378": {
+      "uid": 378,
       "comment": "【好感事件表】苏玲",
       "key": [],
       "keysecondary": [],
@@ -11958,8 +11977,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "378": {
-      "uid": 378,
+    "379": {
+      "uid": 379,
       "comment": "【好感事件表】柳含烟",
       "key": [],
       "keysecondary": [],
@@ -11972,8 +11991,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "379": {
-      "uid": 379,
+    "380": {
+      "uid": 380,
       "comment": "【好感事件表】雨霏柔",
       "key": [],
       "keysecondary": [],
@@ -11986,8 +12005,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "380": {
-      "uid": 380,
+    "381": {
+      "uid": 381,
       "comment": "【好感事件表】云织梦",
       "key": [],
       "keysecondary": [],
@@ -12000,8 +12019,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "381": {
-      "uid": 381,
+    "382": {
+      "uid": 382,
       "comment": "【好感事件表】花芷凝",
       "key": [],
       "keysecondary": [],
@@ -12014,8 +12033,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "382": {
-      "uid": 382,
+    "383": {
+      "uid": 383,
       "comment": "【好感事件表】苏倾寒",
       "key": [],
       "keysecondary": [],
@@ -12028,8 +12047,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "383": {
-      "uid": 383,
+    "384": {
+      "uid": 384,
       "comment": "【好感事件表】慕容清歌",
       "key": [],
       "keysecondary": [],
@@ -12042,8 +12061,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "384": {
-      "uid": 384,
+    "385": {
+      "uid": 385,
       "comment": "【好感事件表】顾云舒",
       "key": [],
       "keysecondary": [],
@@ -12056,8 +12075,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "385": {
-      "uid": 385,
+    "386": {
+      "uid": 386,
       "comment": "【好感事件表】陆烬颜",
       "key": [],
       "keysecondary": [],
@@ -12070,8 +12089,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "386": {
-      "uid": 386,
+    "387": {
+      "uid": 387,
       "comment": "【区域背景】幽寂谷",
       "key": [],
       "keysecondary": [],
@@ -12084,8 +12103,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "387": {
-      "uid": 387,
+    "388": {
+      "uid": 388,
       "comment": "【区域背景】西北荒漠石山邪窟",
       "key": [],
       "keysecondary": [],
@@ -12098,8 +12117,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "388": {
-      "uid": 388,
+    "389": {
+      "uid": 389,
       "comment": "【大势背景】peace-v48",
       "key": [],
       "keysecondary": [],
@@ -12112,8 +12131,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：承平暗涌】\n南域表面承平，各大仙门开山大典举行，极乐密藏外层禁制生隙，幽寂秘境异动已有风闻。幽寂谷探查开放日期为1578年4月1日至5月30日；是否进入、探查及取得物品由对应局部节点决定。 当前神诅尚未降临，南域修士不受神诅压制，元婴修士尚未因灾变跌境；炎雷子未因灾变受创闭关。各山门尚有常规秩序，秘境异动不能写成神诅降临或天地战力压制。NPC不得把未来灾情当作已知事实报告。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "389": {
-      "uid": 389,
+    "390": {
+      "uid": 390,
       "comment": "【大势背景】calamity",
       "key": [],
       "keysecondary": [],
@@ -12126,8 +12145,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：南域大劫】\n极乐密藏封印已破，远古神诅席卷南域，原有元婴大能重创跌至金丹；炎雷子受创闭关。极乐太子已立天姝会四殿，正魔旧平衡瓦解。常规结婴受到神诅限制，名器是修士突破的少数途径之一。玩家当前境界以后台记录为准，符合本地名器条件仍可重新突破元婴。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "390": {
-      "uid": 390,
+    "391": {
+      "uid": 391,
       "comment": "【大势背景】beast",
       "key": [],
       "keysecondary": [],
@@ -12140,8 +12159,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：天溪兽潮】\n南域大劫及四殿分疆已经发生。大荒凶兽狂潮已合围天溪城，仙盟调兵协防，九龙焚天大阵开启，守城拉锯战已经爆发。这里只确认世界局势，不确认玩家参战、完成守城或城破；具体变化等待局部事件。神诅下名器仍是修士突破的少数途径之一。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "391": {
-      "uid": 391,
+    "392": {
+      "uid": 392,
       "comment": "【大势规则】中控调度",
       "key": [],
       "keysecondary": [],
