@@ -29,4 +29,24 @@ function inferRelicActions(rules, prose, known, identity, reported = new Set()) 
   }
   return result;
 }
-module.exports={inferRelicActions};
+// Attribute a first-stage fact across adjacent sentences without trusting XML claims.
+function findDeflowerEvidence(holder, prose, rules) {
+ const group=rules.FORM_OF_HOLDERS.find(g=>g.holders.includes(holder));
+ const cfg=Object.values(rules.RELIC_PILOT_CONFIG).find(c=>c.formKey===group?.form);
+ const aliases=group?.holders.length===1 ? [...new Set([holder,...(cfg?.ownerAliases || []).filter(a=>a!=='师姐'),...(cfg?.names || [])])] : [holder];
+ const others=rules.FORM_OF_HOLDERS.flatMap(g=>g.holders).filter(h=>h!==holder);
+ const text=stripForEvidence(prose).replace(/<(?:破处|名器互动|实际发生|进度)>[\s\S]*?<\/(?:破处|名器互动|实际发生|进度)>/gi,'').replace(/[「“"][^」”"\n]*[」”"]/g,'');
+ const completed=/(落红|破(?:了|去|过|掉)?(?:她|他|其)?的?身|破(?:了|去|过|掉)?(?:她|他|其)?的?处|破瓜|元阴(?:被夺|初破|失守)|失了身)/;
+ for(const paragraph of text.split(/\n\s*\n/)){
+  let context=false;
+  for(const line of paragraph.split(/[。！？\n]/)){
+   if(others.some(h=>line.includes(h))){context=false;continue;}
+   const named=aliases.some(a=>line.includes(a));
+   if(C.noFact.test(line) || /未|没|否认|并不|不是|并非|拒绝|是否|想要|希望|不会|不愿|讨论|提及|解释|说明|之前|上次|曾经|回忆|记得/.test(line)){if(named)context=false;continue;}
+   if(named)context=true;
+   if(context && completed.test(line))return line;
+  }
+ }
+ return null;
+}
+module.exports={inferRelicActions,findDeflowerEvidence};

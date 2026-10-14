@@ -1084,3 +1084,14 @@ test('在场角色的好感表与实际共饮申报进入本轮提示；锁定�
 test('自设留空道号年龄境界使用酒馆用户名20金丹前期；明确输入不覆盖',async()=>{
  const h=harness();h.adapter.getUserName=()=> '酒馆道友';await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{date:{year:1578,month:3,day:3},name:'',age:'',realm:''}}});assert.equal(h.r.getSnapshot().stat_data.自设.name,'酒馆道友');assert.equal(h.r.getSnapshot().stat_data.自设.age,'20');assert.equal(h.r.getSnapshot().stat_data.修为,'金丹前期');
 });
+
+test('首次成型实证兼容邻句代称及元阴初破；状态申报、传闻和其他人物不确权',async()=>{
+ for(const body of ['孤月在寒玉榻上。你破了她的身，落红已发生。','本回合你使孤月元阴初破。']){
+  const h=harness();await h.opening('赵无忧');await h.reply(status({破处:'孤月、赵无忧',实际发生:'孤月处女丧失、九幽玄阴穴成形、九幽玄阴穴一阶段',名器互动:'九幽玄阴穴｜孤月｜破身'},body));
+  const s=h.r.getSnapshot();assert.equal(s.known['九幽玄阴穴成形'],true);assert.equal(s.known['九幽玄阴穴一阶段'],true);assert.equal(s.stat_data.名器归属.jiuyou,'赵无忧');assert.notEqual(s.known['九幽玄阴穴二阶段'],true);
+ }
+ for(const body of ['孤月尚未现身。你破了她的身，落红已发生。','孤月在榻边。叶红缨走来。你破了她的身，落红已发生。','孤月说：「你破了我的身。」','孤月元阴尚未失守。','孤月并非落红。','孤月未破身。','孤月在场。你回忆曾经破了她的身。','只有状态栏申报，没有正文动作。']){
+  const h=harness();await h.opening('赵无忧');await h.reply(status({破处:'孤月、赵无忧',实际发生:'孤月处女丧失、九幽玄阴穴成形、九幽玄阴穴一阶段',名器互动:'九幽玄阴穴｜孤月｜破身'},body));assert.notEqual(h.r.getSnapshot().known['九幽玄阴穴成形'],true,body);
+ }
+ const book=JSON.parse(fs.readFileSync(path.join(ROOT,'仙姝堕-世界书.json'),'utf8')),entry=book.entries['52'];assert.ok(entry.key.includes('孤月'));assert.equal(evaluateGate(entry.content,{known:{}}),true);assert.ok(!entry.content.startsWith('@@if '));
+});

@@ -514,7 +514,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     const retryCompletion=activePromotion && s.pending?.nodeId===activePromotion.finishId && !!s.pending.selection?.completionQuery;
     if(activePromotion && (!s.pending || retryCompletion) && !options.readOnly && !s.stat_data.character_stages?.[activePromotion.character]?.negative){
       const notice=doc.createElement("div");const ready=!!s.pluginState?.character_promotion?.ready;notice.className="xsd2-promotion-ready-notice"+(ready?"":" ongoing");notice.setAttribute("role","status");notice.setAttribute("aria-live","polite");
-      const label=doc.createElement("span");label.textContent="✦ "+activePromotion.label+(ready?" · 已可完成剧情":" · 剧情进行中");
+      const label=doc.createElement("span");label.textContent="✦ "+activePromotion.label+(ready?" · 已可完成剧情，也可继续探索":" · 剧情进行中");
       const button=doc.createElement("button");button.type="button";button.dataset.promotionReady="";button.textContent=retryCompletion?"重新结算本次剧情":"完成本次剧情";notice.append(label,button);
       root.querySelector(".xsd2-who").after(notice);
       button.onclick=async()=>{button.disabled=true;try{const now=runtime.getSnapshot();await runtime.dispatchIntent({type:retryCompletion?"RETRY_COMPLETION":"SELECT_NODE",pluginId:"character_promotion",expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{nodeId:activePromotion.finishId}});}catch(error){report?.(error);button.disabled=false;}};

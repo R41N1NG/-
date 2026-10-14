@@ -8,7 +8,7 @@ const { createActionCode, readActionCode } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
 const {metricEntryContent}=require("./story_entries");
 const { createMetricEvents,stripForEvidence } = require("./metric_events");
-const {inferRelicActions}=require("./relic_evidence");
+const {inferRelicActions,findDeflowerEvidence}=require("./relic_evidence");
 const Realm=require("./player_realm");
 const Eras=require("./grand_eras");
 function createDispatcher(adapter, data) {
@@ -666,17 +666,7 @@ function createDispatcher(adapter, data) {
     const verifiedProse=stripForEvidence(parsed.prose).replace(/<(?:破处|名器互动|实际发生|进度)>[\s\S]*?<\/(?:破处|名器互动|实际发生|进度)>/gi,"");
     for (const group of R.FORM_OF_HOLDERS) {
       for (const holder of group.holders) {
-        const proofLine = verifiedProse
-          .split(/[。！？\n]/)
-          .find(
-            (line) =>
-              line.includes(holder) &&
-              !C.noFact.test(line) &&
-              R.DEFLOWER_HARD_RES.some(([re]) => re.test(line)) &&
-              /(落红|破(?:了|去|过|掉)?(?:她|他|其)?的?身|破处|元阴被夺|失了身)/.test(
-                line,
-              ),
-          );
+        const proofLine = findDeflowerEvidence(holder,verifiedProse,R);
         if (proofLine) {
           s.stat_data.known[holder + "处女丧失"] = true;
           const record = (parsed.fields.破处 || "")
