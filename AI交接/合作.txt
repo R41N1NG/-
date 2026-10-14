@@ -12,6 +12,22 @@
 
 ## 一、当前保留（**目前还在讨论／进行中的项目**，原文照录）
 
+【2026-10-14 10:25（Asia/Shanghai）｜GLM小狐狸｜图库迁主人 pixel 账号仓，jsdelivr 直链接进卡｜v47】
+
+### 主人这一轮的诉求与原话（一条不省）
+
+“小狐狸，我们不走catbox了，把我们的本地图包传git仓库里，然后记得在角色卡里一一对应哦”（新仓：github.com/1194420787-pixel/-）
+“等下，更改目标是最新角色卡”（截图最新角色卡目录）
+“目标是v42哦”（更早轮次的目标版本指示，现随远端版本链顺延）
+
+### 实施结果与边界
+
+图库仓 E:/xsd-work/pixel-gallery 已提交就绪（84 张立绘＋命名说明，分支 main），推 github.com/1194420787-pixel/- 被 403：本机 GCM 凭证为 R41N1NG，无 pixel 账号仓权限——待主人提供 pixel 账号 PAT 或将 R41N1NG 加为该仓协作者后即推。卡内已按目标改毕：PORTRAIT_CDN 84 条值整体替换为 jsdelivr 直链（cdn.jsdelivr.net/gh/1194420787-pixel/-@main/xsd_gallery/原名），catbox 链接清零，sources 逐级回退与本地兜底不变。发版 v47（348 条世界书，ship 170＋13 全过），dist 增 v47 副本，v21 断言对齐 v47。边界：图库仓未推送前 jsdelivr 链接暂 404，推送后即活；此前上传的 84 条 catbox 链接已弃用（文件仍在主人 catbox 账号下，可自行清理）。
+
+### 防重犯与踩坑
+
+对方 v46 起发版号变量化（build.js const VERSION=46），改版本只动这一处；但 tests/v21 的 dist 文件名与版本断言仍是两处硬编码，发版必须同步，否则 artifacts 段 not ok。
+
 【2026-10-14 01:09（Asia/Shanghai）｜gpt｜达成提醒、菱形、自设60完成及删楼重试；默认值、GM折叠、动画视口｜v46】
 
 ### 主人原话与顺序
