@@ -34,6 +34,12 @@ function reconcile(s,eras){
  if(calamity && stamp<C.day(calamity.startDate))delete st.era_effects.calamity;
  return e;
 }
+function narrativeBoundary(eras,date){
+ const calamity=eras.find(e=>e.id==='calamity'),beast=eras.find(e=>e.id==='beast');
+ if(calamity && C.day(date)<C.day(calamity.startDate))return '当前为大劫之前：神诅尚未降临、蔓延或压制修士；元婴未因大劫跌境，炎雷子未因大劫受创闭关，天姝会四殿尚未成立，天溪兽潮未发生。人物条目中的灾后状态仅限灾后，不可用于当前；此前回复若误写神诅已起，不得续写或当作既成事实。';
+ if(beast && C.day(date)<C.day(beast.startDate))return '南域大劫已发生，天溪兽潮尚未爆发；不提前宣布兽潮、血战或城破。';
+ return '当前世界事实以已启用大势为准，兽潮发生不等于城破或玩家已参战。';
+}
 function advance(s,eras,id){
  const e=eras.find(x=>x.id===id);if(!e)throw Error('未知大势时期');
  const days=C.day(e.startDate)-C.day(s.calendarDate);
@@ -48,4 +54,4 @@ function eraEntries(eras,startId=13000){
  entries.push({uid:startId+eras.length,comment:'【大势规则】中控调度',key:[],keysecondary:[],constant:true,selective:false,disable:true,order:199,position:1,excludeRecursion:true,preventRecursion:true,content:'日期、当前大势、身份、境界、人物阶段与在场角色读取后台。仅当前大势背景生效；世界时期由后台日期确定，个人段位不制造世界事实。局部事件需要玩家点击并按各自完成规则结算；日期到达不自动完成城破、探索或人物晋升。不得引用未注入的未来时期，不重复上演已发生的灾变。状态栏时间照抄后台年月日，历时只申报本回合耗时。'});
  return entries;
 }
-module.exports={validate,currentEra,reconcile,advance,eraEntries};
+module.exports={validate,currentEra,reconcile,advance,eraEntries,narrativeBoundary};

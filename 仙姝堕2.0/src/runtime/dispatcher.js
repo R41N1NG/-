@@ -325,7 +325,7 @@ function createDispatcher(adapter, data) {
     const baseline = current
       ? "后台当前时点：仙盟历 " +
         C.dateText(current.calendarDate) +
-        "。当前大势："+(Eras.currentEra(eras,current.calendarDate)?.name || "尚无已配置时期")+"。身份：" +
+        "。当前大势："+(Eras.currentEra(eras,current.calendarDate)?.name || "尚无已配置时期")+"。时期边界："+Eras.narrativeBoundary(eras,current.calendarDate)+"。身份：" +
         current.identity +
         "。后台玩家修为："+st.修为+"。玩家境界由本地记录，正文不得自行提升玩家境界。地点：" +
         (p?.selection?.destination || st.地点 || "未定") +

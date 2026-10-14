@@ -87,6 +87,7 @@ function areaEntries(defs = {}, startId = 12000) {
   return entries;
 }
 function managedEnabled(label, stat) {
+  if (["【设定】南域神诅与名器破境法则","【设定】南域纪元大势总纲"].includes(label)) return false; // 旧断路规则与未来总纲停用，读取中控当前时期。
   if (label === "【阶段驱动】当前阶段压力与调度") return false;
   if (label === "【大势规则】中控调度") return true;
   if (label.startsWith("【中立】")) return false; // Retire the former seven-period schedule in existing bound books.

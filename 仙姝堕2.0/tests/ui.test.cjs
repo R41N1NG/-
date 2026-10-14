@@ -387,7 +387,7 @@ test("宿主生成门禁：隐藏父容器/hidden/停止按钮无布局不误判
 
 test('84张图链覆盖图库；心迹及大图逐级CDN PNG/JPG、本地PNG/JPG回退',()=>{
  const {portrait}=require('../src/ui/status_panel');assert.equal(Object.keys(PORTRAIT_CDN).length,84);
- for(const asset of data.assets.filter(x=>/\.(png|jpg)$/.test(x)))assert.match(PORTRAIT_CDN[asset],/^https:\/\/files\.catbox\.moe\//);
+ for(const asset of data.assets.filter(x=>/\.(png|jpg)$/.test(x)))assert.equal(PORTRAIT_CDN[asset],'https://cdn.jsdelivr.net/gh/1194420787-pixel/-@main/xsd_gallery/'+asset);
  const d=dom(),doc=d.window.document,s={identity:'赵无忧',chatId:'cdn',branchId:'cdn',floor:1,revision:1,calendarDate:{year:1578,month:3,day:3},known:{},inventory:[],manual:{},stat_data:{身份:'赵无忧',修为:'金丹中期',关系刻度:'叶红缨、同门',known:{},在场角色:[{名:'叶红缨'}],character_metrics:{叶红缨:{好感度:0}},名器归属:{}}};
  const panel=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[]},data,()=>{});
  const p=portrait('叶红缨',s,data);const img=doc.querySelector('[data-portrait] img');assert.equal(img.getAttribute('src'),p.sources[0]);

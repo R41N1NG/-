@@ -174,6 +174,7 @@ test("六套源开局，19字段不删，身份日期及起手门禁一致", asy
     assert.equal(s.identity, name);
     assert.equal(s.calendarDate.month, name === "赵无忧" ? 3 : 8);
     assert.equal(s.calendarDate.day, name === "赵无忧" ? 3 : 1);
+    assert.match(h.prompts.at(-1), name === "赵无忧" ? /神诅尚未降临/ : /南域大劫已发生/);
     assert.equal(s.known.天姝会存在, name !== "赵无忧");
     assert.equal(s.known.极乐引入手, name !== "赵无忧");
     assert.deepEqual(s.inventory, startingInventoryFor(name));
