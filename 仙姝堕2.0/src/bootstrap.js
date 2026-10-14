@@ -26,12 +26,30 @@ function start(win) {
   function active() {
     return !disposed && host.isOurCard();
   }
-  let settleFaultKey=null,lastReportKey=null;
+  let settleFaultKey=null,lastReportKey=null,recoveryPanel=null;
+  function showRecovery(error){
+    if(error?.code!=="XSD2_RECOVERY_MISMATCH" && !String(error?.message || error).includes("已有进度记录与当前分支不匹配"))return;
+    const c=host.context(),chat=doc.querySelector("#chat");
+    const rows=[...(chat?.querySelectorAll(".mes") || [])];
+    const body=rows.reverse().find(row=>{const m=c.chat[Number(row.getAttribute("mesid"))];return m&&!m.is_user&&!m.is_system;})?.querySelector(".mes_text");
+    if(!body)return;
+    recoveryPanel?.remove();recoveryPanel=doc.createElement("aside");recoveryPanel.dataset.xsd2Recovery="";
+    recoveryPanel.style.cssText="padding:16px;margin:12px 0;border:1px solid #ba944c;border-radius:12px;background:#18221d;color:#eee5cc";
+    const title=doc.createElement("strong");title.textContent="仙姝堕 · 进度暂未恢复";
+    const text=doc.createElement("p");text.textContent="原存档已保留，尚未重置或结算。请结束生成后重新读取；若仍失败，可下载诊断信息反馈。";
+    const retry=doc.createElement("button");retry.textContent="重新读取存档";retry.onclick=async()=>{retry.disabled=true;try{await restore();settleFaultKey=null;lastReportKey=null;}catch(e){report(e);}finally{retry.disabled=false;}};
+    const diagnostic=doc.createElement("button");diagnostic.textContent="下载诊断信息";diagnostic.onclick=()=>{
+      const blob=new host.top.Blob([JSON.stringify(runtime.getDiagnostics(),null,2)],{type:"application/json"});
+      const url=host.top.URL.createObjectURL(blob),a=doc.createElement("a");a.href=url;a.download="仙姝堕-恢复诊断.json";a.click();host.top.URL.revokeObjectURL(url);
+    };
+    recoveryPanel.append(title,text,retry,diagnostic);body.append(recoveryPanel);
+  }
   const faultKey=()=>{const c=host.context();return JSON.stringify([c.chatId,c.branchId,C.hash(JSON.stringify(C.fingerprint(c.chat)))]);};
-  const report = e => {if(!active())return;const c=host.context(),message=String(e.message||e);const key=(message.includes("已有进度记录与当前分支不匹配")?JSON.stringify([c.chatId,c.branchId]):faultKey())+"|"+message;if(key===lastReportKey)return;lastReportKey=key;host.report(e);};
+  const report = e => {if(!active())return;const c=host.context(),message=String(e.message||e);const key=(message.includes("已有进度记录与当前分支不匹配")?JSON.stringify([c.chatId,c.branchId]):faultKey())+"|"+message;if(key===lastReportKey)return;lastReportKey=key;host.report(e);showRecovery(e);};
   async function render() {
     if (!active()) return;
     const epoch = ++renderEpoch, c = host.context();
+    if(runtime.getSnapshot()){recoveryPanel?.remove();recoveryPanel=null;}
     effects.update(settleFaultKey===faultKey()?null:runtime.getSnapshot(),c);
     const chat = doc.querySelector("#chat");
     const rows = [...(chat?.querySelectorAll(".mes") || [])];
@@ -92,6 +110,7 @@ function start(win) {
   async function restore(options = {}) {
     if (!active()) return;
     await runtime.restore(options);
+    recoveryPanel?.remove();recoveryPanel=null;
     await mirror();
     await render();
   }
@@ -235,6 +254,7 @@ function start(win) {
       if (disposed) return;
       disposed = true;
       effects.dispose();
+      recoveryPanel?.remove();
       mo?.disconnect();
       clearTimeout(renderTimer);
       clearTimeout(moDebounce);
@@ -271,6 +291,7 @@ function start(win) {
   if (active()) {
     runtime
       .ready()
+      .then(()=>{recoveryPanel?.remove();recoveryPanel=null;})
       .then(mirror)
       .then(render)
       .then(() => ensureMounted())

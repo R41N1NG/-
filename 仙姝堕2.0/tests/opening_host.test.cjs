@@ -493,3 +493,39 @@ test('境界子面板：闭关三月发送结算，单实例关闭、刷新保�
   await h.emit('CHAT_CHANGED');assert.equal(r.getSnapshot().stat_data.修为,'金丹后期');assert.equal(C.day(r.getSnapshot().calendarDate)-start,90);assert.ok(h.context.prompts.at(-1).includes('金丹后期'));assert.equal(h.errors.length,0);
  }finally{h.close();}
 });
+
+test('聊天变量同步与进度写入跨脚本实例排队，旧同步不能覆盖新备份，重roll允许投影前置台账',async()=>{
+ const {createTavernHost}=require('../src/host/tavern');
+ const dom=new JSDOM('<div id="chat"></div>'),win=dom.window;
+ const chat=[{mes:'开局',is_user:false}],context={chatId:'write-race',chat,characters:[{name:'仙姝堕2.0·框架测试'}],characterId:0,saveChat:async()=>{}};
+ let vars={externalKey:'保留'},message={},release,entered;
+ const gate=new Promise(resolve=>release=resolve),reading=new Promise(resolve=>entered=resolve);let blocked=false;
+ win.SillyTavern={getContext:()=>context};win.TavernHelper={
+  getVariables:async({type})=>{if(type==='message')return C.clone(message);const saved=C.clone(vars);if(!blocked){blocked=true;entered();await gate;}return saved;},
+  replaceVariables:async(v,{type})=>{if(type==='chat')vars=C.clone(v);else message=C.clone(v);},
+  getCharWorldbookNames:async()=>({primary:null,additional:[]})
+ };
+ try{
+  const a=createTavernHost(win,win.document,'仙姝堕2.0·框架测试'),b=createTavernHost(win,win.document,'仙姝堕2.0·框架测试');
+  const old={revision:1,stat_data:{地点:'旧地点'}},fresh={revision:2,stat_data:{地点:'新地点'}};
+  const sync=a.syncState(old);await reading;
+  let finished=false;const saving=b.persist({...b.context(),floor:0,trail:C.fingerprint(chat)},{schema:2,chatId:'write-race',branchId:'write-race',trail:C.fingerprint(chat),state:fresh}).then(()=>finished=true);
+  await new Promise(resolve=>setTimeout(resolve,20));assert.equal(finished,false);release();await Promise.all([sync,saving]);
+  assert.equal(vars.xsd2_checkpoint.state.revision,2);assert.equal(vars.xsd2_history.length,1);assert.equal(vars.externalKey,'保留');
+  await a.syncState(old);assert.equal(vars.stat_data.地点,'旧地点');assert.equal(vars.xsd2_checkpoint.state.revision,2);assert.equal(vars.xsd2_history.length,1);
+ }finally{release();dom.window.close();}
+});
+
+test('重roll后无匹配进度显示恢复入口，禁止写入；恢复原分支后重读移除提示',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..'));
+ const h=await fixture(data.greetings.赵无忧);
+ try{
+  await until(()=>h.win.XSD2.runtime.getSnapshot());const old=h.win.XSD2.runtime;
+  h.context.chat[0].swipe_id=1;h.context.chat[0].variables[1]={};h.win.eval(script);
+  await until(()=>h.doc.querySelector('[data-xsd2-recovery]'));
+  const r=h.win.XSD2.runtime;assert.notEqual(r,old);assert.equal(r.getSnapshot(),null);assert.ok(r.getDiagnostics().recoveryFault);assert.equal(h.doc.querySelector('[data-xsd2-recovery]').querySelectorAll('button').length,2);
+  await assert.rejects(r.dispatchIntent({type:'GM_PATCH',payload:{地点:'不能改变'}}),/尚未恢复/);
+  h.context.chat[0].swipe_id=0;h.doc.querySelector('[data-xsd2-recovery] button').click();
+  await until(()=>r.getSnapshot() && !h.doc.querySelector('[data-xsd2-recovery]'));assert.equal(r.getSnapshot().identity,'赵无忧');
+ }finally{h.close();}
+});

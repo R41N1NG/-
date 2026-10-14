@@ -25,7 +25,7 @@ function createDispatcher(adapter, data) {
       return this.defs.find((d) => d.matchPrefix && loc.startsWith(d.matchPrefix))?.area || "";
     },
   };
-  let liveEnvelope=null;
+  let liveEnvelope=null,recoveredEnvelope=null,recoveryFault=null;
   let current = null,
     scopeChatId = null,
     disposed = false,
@@ -71,6 +71,13 @@ function createDispatcher(adapter, data) {
       const cpFloor=checkpoint?.trail?.length-1;
       if(checkpoint?.chatId===c.chatId && (!checkpoint.branchId||checkpoint.branchId===c.branchId) && compatible(checkpoint,c) && cpFloor<=ceiling && (!best||cpFloor>best.floor || (cpFloor===best.floor && checkpoint.state?.revision>best.state?.revision))) best={state:C.clone(checkpoint.state),floor:cpFloor};
     }
+    // A committed reply keeps its exact predecessor separately. It may be read
+    // after native regeneration even when per-message variable slots disappeared.
+    for(const e of [...records])if(e?.previous?.schema===2)records.push(e.previous);
+    for(const checkpoint of records){
+      const cpFloor=checkpoint?.trail?.length-1;
+      if(checkpoint?.chatId===c.chatId && checkpoint.branchId===c.branchId && compatible(checkpoint,c) && cpFloor<=ceiling && (!best || cpFloor>best.floor))best={state:C.clone(checkpoint.state),floor:cpFloor};
+    }
     // Restore only a locally authorized adjacent action after its reply is deleted/regenerated.
     // Assistant formatting may change; user choices, candidate IDs and chat scope still must match.
     for(const e of records){
@@ -83,7 +90,12 @@ function createDispatcher(adapter, data) {
     }
     const p=scopeChatId===c.chatId?current?.pending:null,auth=p?.authorization;
     if(auth?.chatId===c.chatId && auth.branchId===c.branchId && p.floor<=ceiling && C.matchesSnapshot(auth.trail,c.trail) && (!best||p.floor>=best.floor)) best={state:C.clone(current),floor:p.floor};
-    if(!best && saved)throw Error("已有进度记录与当前分支不匹配，已停止初始化以保护存档");
+    if(!best && saved){
+      recoveryFault={chatId:c.chatId,branchId:c.branchId,floor:c.floor,ceiling,recordCount:records.length,recordFloors:records.filter(x=>x?.schema===2).map(x=>x.trail?.length-1),candidates:c.trail.map(x=>{const v=JSON.parse(x);return [v[0],v[1],v[2]];}),reason:"未找到符合当前消息前缀与候选的进度快照"};
+      const error=Error("已有进度记录与当前分支不匹配，已停止初始化以保护存档");error.code="XSD2_RECOVERY_MISMATCH";throw error;
+    }
+    recoveryFault=null;
+    recoveredEnvelope=best ? {schema:2,chatId:c.chatId,branchId:c.branchId,trail:c.trail.slice(0,best.floor+1),state:C.clone(best.state)} : null;
     return best;
   }
   function defaults(identity, opening, custom) {
@@ -190,6 +202,7 @@ function createDispatcher(adapter, data) {
   function snapshot() {
     if (!current) return null;
     const c = context();
+    if(recoveryFault?.chatId===c.chatId)return null;
     if (scopeChatId !== c.chatId) return null;
     const s = C.clone(current);
     return {
@@ -222,6 +235,11 @@ function createDispatcher(adapter, data) {
       trail: c.trail.slice(0, c.floor + 1),
       state: s,
     };
+    const prior=[liveEnvelope,recoveredEnvelope].find(e=>e?.chatId===c.chatId && e.branchId===c.branchId && compatible(e,c)) || null;
+    const previous=prior && prior.trail.length<envelope.trail.length ? prior : prior?.previous;
+    if(previous && compatible(previous,c)){
+      envelope.previous=C.clone(previous);delete envelope.previous.previous;
+    }
     await adapter.persist(c, envelope);
     guard(c);
     liveEnvelope=C.clone(envelope);
@@ -244,6 +262,7 @@ function createDispatcher(adapter, data) {
       .catch(() => {})
       .then(async () => {
         guard(c);
+        if(recoveryFault?.chatId===c.chatId)throw Error("进度尚未恢复，请先重新读取存档；未执行本次操作");
         return fn(c);
       });
     queue = next;
@@ -1164,7 +1183,7 @@ function createDispatcher(adapter, data) {
     getDiagnostics() {
       const c = context(), s = snapshot(), latest = c.chat[c.floor];
       return { schema:1, host:adapter.getDiagnostics?.() || {},
-        floor:c.floor, latestIsUser:!!latest?.is_user,
+        floor:c.floor, latestIsUser:!!latest?.is_user, recoveryFault:C.clone(recoveryFault),
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,
         } : null, event:s?.activeEvent || null,

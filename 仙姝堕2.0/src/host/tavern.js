@@ -40,6 +40,22 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     )
       throw Error("聊天已变化，取消写入");
   }
+  // All instances share the writer: a remounted script must not race its predecessor.
+  const chatWrites = top.__XSD2_CHAT_WRITES__ ||= {tail:Promise.resolve()};
+  function mutateChatVariables(c, update, skipStale=false) {
+    const task=chatWrites.tail.catch(()=>{}).then(async()=>{
+      if(skipStale && (context().chatId!==c.chatId || !C.matches(c.trail,C.fingerprint(context().chat))))return null;
+      guard(c);
+      const old=await helper.getVariables({type:"chat"});
+      if(skipStale && (context().chatId!==c.chatId || !C.matches(c.trail,C.fingerprint(context().chat))))return null;
+      guard(c);
+      const next=update(old || {});
+      await helper.replaceVariables(next,{type:"chat"});guard(c);
+      return next;
+    });
+    chatWrites.tail=task;
+    return task;
+  }
   async function save() {
     const c = ctx();
     if (c.saveChat) await c.saveChat();
@@ -160,29 +176,28 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       guard(c);
       if (back?.stat_data?.xsd2?.[0]?.state?.revision !== e.state.revision)
         throw Error("本楼状态保存复核失败");
-      const vars=await helper.getVariables({type:"chat"});guard(c);
       const checkpoint={...C.clone(e),branchId:c.branchId};
       // Assistant prose is not part of snapshot identity. Keep compact trails
       // in the journal so long stories are not copied into every backup.
-      checkpoint.trail=checkpoint.trail.map(x=>{const v=JSON.parse(x);if(!v[0]&&!v[1])v[3]="";return JSON.stringify(v);});
-      const journal=(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[]).filter(x=>
+      const compact=trail=>trail.map(x=>{const v=JSON.parse(x);if(!v[0]&&!v[1])v[3]="";return JSON.stringify(v);});
+      checkpoint.trail=compact(checkpoint.trail);
+      if(checkpoint.previous?.trail)checkpoint.previous.trail=compact(checkpoint.previous.trail);
+      await mutateChatVariables(c,vars=>{
+        const journal=(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[]).filter(x=>
         !(x.chatId===c.chatId && x.trail?.length===checkpoint.trail.length && C.matchesSnapshot(x.trail,checkpoint.trail)));
-      journal.push(checkpoint);
-      await helper.replaceVariables({...vars,xsd2_checkpoint:checkpoint,xsd2_history:journal}, {type:"chat"});guard(c);
+        journal.push(checkpoint);
+        return {...vars,xsd2_checkpoint:checkpoint,xsd2_history:journal};
+      });
       await save();guard(c);
     },
     async syncState(state) {
-      const id = context().chatId;
-      const old = await helper.getVariables({ type: "chat" });
-      if (context().chatId !== id) throw Error("聊天已切换");
-      await helper.replaceVariables(
-        { ...old, stat_data: C.clone(state?.stat_data || {}) },
-        { type: "chat" },
-      );
-      await book.synchronizeState(
-        state?.stat_data || {},
-        () => context().chatId === id,
-      );
+      const c=context();c.trail=C.fingerprint(c.chat);
+      const written=await mutateChatVariables(c,old=>({
+        ...old,stat_data:C.clone(state?.stat_data || {})
+      }),true);
+      if(!written)return;
+      // Replay may intentionally mirror an older revision before regeneration.
+      await book.synchronizeState(state?.stat_data || {},()=>context().chatId===c.chatId);
     },
     preflightSend,
     fillInput(text) {

@@ -1111,3 +1111,16 @@ test('正常续写消息变量暂失时沿用已提交可信快照，用户选�
  for(const m of h.c.chat)m.variables=[];h.adapter.readCheckpoint=async()=>({schema:2,chatId:h.c.chatId,trail:null});h.c.chat.push({mes:'我继续探索',is_user:true});await h.r.replay('normal');assert.equal(h.r.getSnapshot().revision,revision);assert.equal(h.r.getSnapshot().identity,'赵无忧');
  h.c.chat[0].swipe_id=1;await assert.rejects(h.r.replay('normal'),/保护存档/);
 });
+
+
+test('仅剩最新备份时重roll用绑定的上一快照；不继承被删回复收益、不跨用户选择恢复',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{'metric.叶红缨.好感度':12}});await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['metric.叶红缨.好感度']}});
+ h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'你获得测试灵石。<Status_block><储物栏>获得：测试灵石×1</储物栏></Status_block>'));
+ const saved=h.r.getCheckpoint();assert.ok(saved.previous);assert.ok(!saved.previous.previous);
+ for(const m of h.c.chat)m.variables=[];
+ h.adapter.readCheckpoint=async()=>C.clone(saved);h.c.chat.at(-1).swipe_id=1;h.c.chat.at(-1).mes='正在重写';
+ const fresh=createDispatcher(h.adapter,data);await fresh.replay('regenerate');assert.equal(fresh.getSnapshot().stat_data.character_metrics.叶红缨.好感度,12);assert.ok(!fresh.getSnapshot().inventory.some(x=>x.name==='测试灵石'));
+ h.c.chat[0].swipe_id=1;await assert.rejects(fresh.restore(),/保护存档/);assert.equal(fresh.getSnapshot(),null);assert.ok(fresh.getDiagnostics().recoveryFault);await assert.rejects(fresh.dispatchIntent({type:'GM_PATCH',payload:{地点:'不应写入'}}),/尚未恢复/);
+ h.c.chat[0].swipe_id=0;await fresh.replay('regenerate');assert.equal(fresh.getDiagnostics().recoveryFault,null);assert.ok(fresh.getSnapshot());
+ h.c.chat.at(-1).mes=status({},'重写后的普通交谈。');await fresh.settleStory();assert.ok(fresh.getCheckpoint().previous);assert.ok(!fresh.getSnapshot().inventory.some(x=>x.name==='测试灵石'));
+});
