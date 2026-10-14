@@ -20,7 +20,7 @@ function fixture(){
   const r=createDispatcher(adapter,testData),plugin=createPromotionPlugin(data.promotionDefinitions,data.nodeStories);r.registerPlugin(plugin);r.registerPlugin(map);
   const click=(id,p=plugin)=>{const s=r.getSnapshot();return r.dispatchIntent({type:"SELECT_NODE",pluginId:p.id,expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:id}});};
   const reply=async text=>{chat.push({mes:text,is_user:false,swipe_id:0});return r.settleStory();};
-  const stage=()=>r.getSnapshot().stat_data.character_stages.叶红缨.id;
+  const stage=(character="叶红缨")=>r.getSnapshot().stat_data.character_stages[character].id;
   const ready=async()=>{await r.dispatchIntent({type:"SELECT_IDENTITY",payload:{identity:"赵无忧"}});await r.dispatchIntent({type:"SET_CHARACTER_METRIC",payload:{character:"叶红缨",key:"好感度",value:20}});};
   const report=answer=>'<Promotion_result id="'+r.getSnapshot().pending.actionCode+'">'+answer+'</Promotion_result>';
   return {chat,sent,prompts,r,plugin,click,reply,stage,ready,report,adapter,fail:v=>{fail=v;}};
@@ -201,4 +201,37 @@ test('删结算回复后重试复用同一玩家指令，不发第二条消息�
  const h=fixture();await h.ready();await h.click('yhrNight');await h.reply('你已经看见她沐浴。');await h.click('yhrFinish');const sent=h.sent.length,userFloor=h.chat.length-1,code=h.r.getSnapshot().pending.actionCode;let retries=0;h.adapter.retryGeneration=()=>retries++;
  await h.r.restore();const s=h.r.getSnapshot();await h.r.dispatchIntent({type:'RETRY_COMPLETION',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision}});assert.equal(retries,1);assert.equal(h.sent.length,sent);assert.equal(h.chat.length-1,userFloor);assert.equal(h.stage(),'stage01');assert.equal(h.r.getSnapshot().pending.actionCode,code);
  await h.reply(h.report('是'));assert.equal(h.stage(),'stage02');await assert.rejects(h.r.dispatchIntent({type:'RETRY_COMPLETION'}),/没有可重试/);
+});
+
+test("孤月双轨八节点：阈值/顺序/身份隔离、准备提示、点击完成与世界书互斥完整链",async()=>{
+ const {managedEnabled}=require('../src/runtime/story_entries');
+ for(const identity of ['赵无忧','自设']){
+  const h=fixture();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity,...(identity==='自设'?{custom:{date:{year:1578,month:4,day:1},name:'测试修士',realm:'金丹前期'}}:{})}});
+  const defs=Object.values(data.promotionDefinitions).filter(x=>x.character==='孤月'&&x.conditions.some(c=>c.kind==='identity'&&c.value===identity));assert.equal(defs.length,4);
+  const inventory=C.clone(h.r.getSnapshot().stat_data.inventory),known=C.clone(h.r.getSnapshot().known);
+  for(const cfg of defs){
+   const threshold=cfg.conditions.find(c=>c.kind==='metric').value;
+   await h.r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'孤月',key:'好感度',value:threshold-1}});await assert.rejects(h.click(cfg.entryId),/不满足/);
+   await h.r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'孤月',key:'好感度',value:threshold}});
+   const other=Object.values(data.promotionDefinitions).find(x=>x.character==='孤月'&&x.fromStage===cfg.fromStage&&x.entryId!==cfg.entryId);await assert.rejects(h.click(other.entryId),/不满足/);
+   await assert.rejects(h.click(cfg.finishId),/不满足/);await h.click(cfg.entryId);assert.equal(h.stage('孤月'),cfg.fromStage);
+   assert.match(h.prompts.at(-1),/孤月/);assert.equal(h.r.getSnapshot().activeEvent.character,'孤月');
+   const code=h.r.getSnapshot().pending.actionCode;
+   await h.reply('孤月等候你的回应。<Promotion_ready id="'+code+'">是</Promotion_ready>');assert.equal(h.stage('孤月'),cfg.fromStage);assert.equal(h.r.getSnapshot().pluginState.character_promotion.ready,true);
+   await h.click(cfg.finishId);assert.ok(h.prompts.at(-1).includes(cfg.query));
+   await h.reply(h.report('是'));assert.ok(h.chat.at(-1).mes.includes(cfg.label+'已告一段落'));assert.equal(h.stage('孤月'),cfg.toStage);assert.equal(h.stage(),'stage01');assert.equal(h.r.getSnapshot().activeEvent,null);
+   const stat={...h.r.getSnapshot().stat_data,在场角色:[{名:'孤月'}]};
+   const enabled=data.embeddedManagedEntries.filter(x=>x.comment.startsWith('【人物阶段】孤月:')&&managedEnabled(x.comment,stat));assert.deepEqual(Array.from(enabled,x=>x.comment),['【人物阶段】孤月:'+cfg.toStage+':'+identity]);
+   await h.r.restore();assert.equal(h.stage('孤月'),cfg.toStage);await assert.rejects(h.click(cfg.entryId),/不满足/);
+  }
+  assert.deepEqual(h.r.getSnapshot().stat_data.inventory,inventory);assert.equal(h.r.getSnapshot().known['九幽玄阴穴成形'],known['九幽玄阴穴成形']);assert.deepEqual(h.r.getSnapshot().stat_data.名器归属,{});
+ }
+});
+test("孤月节点错ID、否、删除完成楼及重结算不会借用红缨阶段或奖励",async()=>{
+ const h=fixture();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'赵无忧'}});await h.r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'孤月',key:'好感度',value:20}});
+ await h.click('gyZwEnter1');await h.reply('孤月静候交流。');await h.click('gyZwFinish1');
+ await h.reply('<Promotion_result id="XSD2_yhrFinish_00000000">是</Promotion_result>');assert.equal(h.stage('孤月'),'stage01');assert.ok(h.r.getSnapshot().activeEvent);
+ await h.click('gyZwFinish1');await h.reply(h.report('否'));assert.equal(h.stage('孤月'),'stage01');assert.equal(h.r.getSnapshot().activeEvent,null);
+ await h.click('gyZwEnter1');await h.reply('二人交流。');await h.click('gyZwFinish1');await h.reply(h.report('是'));assert.equal(h.stage('孤月'),'stage02');
+ h.chat.pop();await h.r.restore();assert.equal(h.stage('孤月'),'stage01');assert.ok(h.r.getSnapshot().pending);await h.reply(h.report('否'));assert.equal(h.stage('孤月'),'stage01');assert.equal(h.stage(),'stage01');
 });

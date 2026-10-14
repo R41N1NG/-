@@ -27,7 +27,7 @@ function createPromotionPlugin(definitions, storyCatalog = {}) {
   }
   function getDisplayText(nodeId) {
     const x = lookup(nodeId); if (!x) return null;
-    return x.kind === "enter" ? x.cfg.label : "完成本次拜访";
+    return x.kind === "enter" ? x.cfg.label : "完成本次剧情";
   }
   function select(s,nodeId) {
     const x = lookup(nodeId);
@@ -55,7 +55,7 @@ function createPromotionPlugin(definitions, storyCatalog = {}) {
       body:"本次结算未收到有效回报，尚未改变人物阶段。可以再次点击完成。",reason:"晋升回报缺失、冲突或行动标识不符"};
     const result = {outcome:report === "是" ? "success" : "failure",activeEvent:null,
       pluginState:{...base,currentId:null,lastResult:report,receipt:{id:p.id,character:x.cfg.character,answer:report}},
-      body:report === "是" ? "这段夜访已告一段落。" : "这段夜访尚未达成相应条件。",reason:report === "是" ? "本轮回报确认达成" : "本轮回报未达成",evidenceMode:"PROMOTION_RESULT"};
+      body:report === "是" ? x.cfg.label+"已告一段落。" : x.cfg.label+"尚未达成相应条件。",reason:report === "是" ? "本轮回报确认达成" : "本轮回报未达成",evidenceMode:"PROMOTION_RESULT"};
     if (report === "是") result.stageGrant = {character:x.cfg.character,from:x.cfg.fromStage,to:x.cfg.toStage};
     return result;
   }
