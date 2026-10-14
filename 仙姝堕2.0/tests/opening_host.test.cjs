@@ -529,3 +529,20 @@ test('重roll后无匹配进度显示恢复入口，禁止写入；恢复原分�
   await until(()=>r.getSnapshot() && !h.doc.querySelector('[data-xsd2-recovery]'));assert.equal(r.getSnapshot().identity,'赵无忧');
  }finally{h.close();}
 });
+
+test('打包宿主隐藏旧楼层并导入聊天：前缀匹配恢复好感，新回复仍显示HUD',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..'));
+ const h=await fixture(data.greetings.赵无忧);
+ try{
+  const r=h.win.XSD2.runtime;await until(()=>r.getSnapshot());await r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'叶红缨',key:'好感度',value:12}});
+  h.context.chat.push({mes:'继续',is_user:true,variables:[{}]});h.appendDOM(1);
+  h.context.chat.push({mes:'她向你颔首。<Status_block><在场>叶红缨</在场></Status_block>',is_user:false,variables:[{}]});h.appendDOM(2);await h.emit('GENERATION_ENDED');
+  for(const m of h.context.chat)m.is_system=true;
+  h.context.chatId+=' imported';
+  h.context.chat.push({mes:'继续探索',is_user:true,variables:[{}]});h.appendDOM(3);
+  h.context.chat.push({mes:'你走到石亭。<Status_block><在场>叶红缨</在场></Status_block>',is_user:false,variables:[{}]});h.appendDOM(4);
+  h.win.eval(script);await until(()=>h.win.XSD2.runtime!==r && h.win.XSD2.runtime.getSnapshot()?.stat_data.character_metrics.叶红缨.好感度===12);
+  await h.emit('GENERATION_ENDED');await until(()=>h.doc.querySelector('[mesid="4"] [data-xsd2-root]'));
+  assert.equal(h.win.XSD2.runtime.getDiagnostics().recoveryFault,null);assert.equal(h.errors.length,0);assert.equal(h.doc.querySelector('[data-xsd2-recovery]'),null);
+ }finally{h.close();}
+});

@@ -1124,3 +1124,31 @@ test('仅剩最新备份时重roll用绑定的上一快照；不继承被删回�
  h.c.chat[0].swipe_id=0;await fresh.replay('regenerate');assert.equal(fresh.getDiagnostics().recoveryFault,null);assert.ok(fresh.getSnapshot());
  h.c.chat.at(-1).mes=status({},'重写后的普通交谈。');await fresh.settleStory();assert.ok(fresh.getCheckpoint().previous);assert.ok(!fresh.getSnapshot().inventory.some(x=>x.name==='测试灵石'));
 });
+
+
+test('隐藏0至6楼不改变分支：四份聊天备份仍恢复第6楼，不清零；改用户动作回到前置、改开局候选仍拒绝',async()=>{
+ const h=harness(),journal=[];await h.opening('赵无忧');journal.push(h.r.getCheckpoint());
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'metric.叶红缨.好感度':12}});journal[0]=h.r.getCheckpoint();
+ for(let i=0;i<3;i++){h.c.chat.push({is_user:true,mes:'继续第'+i+'次'});await h.reply(status({},'此番交谈结束。'));journal.push(h.r.getCheckpoint());}
+ assert.deepEqual(journal.map(x=>x.trail.length-1),[0,2,4,6]);
+ const good=h.r.getSnapshot();
+ for(let i=0;i<3;i++){h.c.chat.push({is_user:true,mes:'后续交谈'+i},{is_user:false,mes:status({},'仍在交谈。')});}
+ for(let i=0;i<=6;i++)h.c.chat[i].is_system=true;
+ for(const m of h.c.chat)m.variables=[];
+ h.adapter.readCheckpoints=async()=>C.clone(journal);const r=createDispatcher(h.adapter,data);await r.restore();
+ assert.equal(r.getSnapshot().storyCount,good.storyCount);assert.equal(r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,12);assert.equal(r.getDiagnostics().recoveryFault,null);
+ h.c.chat[1].mes='改为另一个选择';await r.restore();assert.equal(r.getSnapshot().storyCount,0);h.c.chat[1].mes='继续第0次';await r.restore();assert.equal(r.getSnapshot().storyCount,good.storyCount);
+ h.c.chat[0].swipe_id=1;await assert.rejects(r.restore(),/保护存档/);h.c.chat[0].swipe_id=0;await r.restore();assert.equal(r.getSnapshot().identity,'赵无忧');
+ const ordinary=C.fingerprint([{mes:'正文',is_user:false}]),hidden=C.fingerprint([{mes:'正文',is_user:false,is_system:true}]);assert.equal(C.matchesSnapshot(ordinary,hidden),true);assert.equal(C.matchesSnapshot(hidden,ordinary),true);
+ assert.equal(C.matchesSnapshot(C.fingerprint([{mes:'指令甲',is_system:true}]),C.fingerprint([{mes:'指令乙',is_system:true}])),false);
+ assert.equal(C.matches(ordinary,hidden),false);
+});
+
+
+test('导入聊天保留楼层快照且隐藏旧消息时，以当前消息前缀恢复原进度、不借外部聊天备份',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({},'你获得测试灵石。<Status_block><储物栏>获得：测试灵石×1</储物栏></Status_block>'));
+ const old=h.r.getCheckpoint();h.c.chatId='新聊天 imported';h.c.branchId=h.c.chatId;
+ for(const m of h.c.chat)m.is_system=true;
+ h.adapter.readCheckpoints=async()=>[C.clone(old)];const r=createDispatcher(h.adapter,data);await r.restore();assert.equal(r.getSnapshot().chatId,h.c.chatId);assert.ok(r.getSnapshot().inventory.some(x=>x.name==='测试灵石'));
+ h.c.chat[0].swipe_id=1;await assert.rejects(r.restore(),/保护存档/);
+});

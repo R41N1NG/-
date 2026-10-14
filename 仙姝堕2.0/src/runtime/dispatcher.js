@@ -91,7 +91,7 @@ function createDispatcher(adapter, data) {
     const p=scopeChatId===c.chatId?current?.pending:null,auth=p?.authorization;
     if(auth?.chatId===c.chatId && auth.branchId===c.branchId && p.floor<=ceiling && C.matchesSnapshot(auth.trail,c.trail) && (!best||p.floor>=best.floor)) best={state:C.clone(current),floor:p.floor};
     if(!best && saved){
-      recoveryFault={chatId:c.chatId,branchId:c.branchId,floor:c.floor,ceiling,recordCount:records.length,recordFloors:records.filter(x=>x?.schema===2).map(x=>x.trail?.length-1),candidates:c.trail.map(x=>{const v=JSON.parse(x);return [v[0],v[1],v[2]];}),reason:"未找到符合当前消息前缀与候选的进度快照"};
+      recoveryFault={chatId:c.chatId,branchId:c.branchId,floor:c.floor,ceiling,recordCount:records.length,recordFloors:records.filter(x=>x?.schema===2).map(x=>x.trail?.length-1),recordScopes:records.filter(x=>x?.schema===2).map(x=>({chatId:x.chatId,branchId:x.branchId,floor:x.trail?.length-1,compatible:compatible(x,c)})),candidates:c.trail.map(x=>{const v=JSON.parse(x);return [v[0],v[1],v[2]];}),reason:"未找到符合当前消息前缀与候选的进度快照"};
       const error=Error("已有进度记录与当前分支不匹配，已停止初始化以保护存档");error.code="XSD2_RECOVERY_MISMATCH";throw error;
     }
     recoveryFault=null;

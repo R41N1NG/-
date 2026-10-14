@@ -54,7 +54,14 @@ function matchesSnapshot(a, b) {
   return Array.isArray(a) && a.length <= b.length && a.every((x,i)=>{
     if(x===b[i])return true;
     try {const old=JSON.parse(x),now=JSON.parse(b[i]);
-      return old.length===4 && now.length===4 && old.slice(0,2).every((v,k)=>v===now[k]) && Number(old[2])===Number(now[2]) && ((!old[0] && !old[1]) || String(old[3]).replace(/\r\n/g,"\n").trim()===String(now[3]).replace(/\r\n/g,"\n").trim());
+      if(old.length!==4 || now.length!==4 || old[0]!==now[0] || Number(old[2])!==Number(now[2]))return false;
+      const sameText=String(old[3]).replace(/\r\n/g,"\n").trim()===String(now[3]).replace(/\r\n/g,"\n").trim();
+      // SillyTavern uses is_system for /hide too. Visibility is not a branch:
+      // user text stays exact; a compacted ordinary assistant trail can be hidden.
+      if(old[0])return sameText;
+      if(!old[1]&&!now[1])return true;
+      if(old[1]!==now[1])return sameText || (!old[1] && old[3]==="");
+      return sameText;
     } catch {return false;}
   });
 }
