@@ -1,7 +1,7 @@
 "use strict";
 const C = require("../runtime/contracts");
 const { createWorldbookHost } = require("./worldbook");
-function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveHandoff = null) {
+function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveHandoff = null, liveCheckpoint = null) {
   const top = (win && win.top) || (win && win.parent) || win;
   const helper =
     top?.TavernHelper ||
@@ -127,7 +127,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     async readCheckpoints() {
       const current=await adapter.readCheckpoint();
       const vars=await helper.getVariables({type:"chat"});
-      return [current,...(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[])].filter(Boolean);
+      return [current,...(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[]),...(liveCheckpoint?.chatId===context().chatId && liveCheckpoint.branchId===context().branchId?[C.clone(liveCheckpoint)]:[])].filter(Boolean);
     },
     async readMessage(i) {
       return helper.getVariables({ type: "message", message_id: i });

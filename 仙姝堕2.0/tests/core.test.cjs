@@ -1095,3 +1095,19 @@ test('首次成型实证兼容邻句代称及元阴初破；状态申报、传�
  }
  const book=JSON.parse(fs.readFileSync(path.join(ROOT,'仙姝堕-世界书.json'),'utf8')),entry=book.entries['52'];assert.ok(entry.key.includes('孤月'));assert.equal(evaluateGate(entry.content,{known:{}}),true);assert.ok(!entry.content.startsWith('@@if '));
 });
+
+test('储物栏是主协议，旧纳戒仍兼容读取，新旧并存只采用新标签',async()=>{
+ assert.equal(C.XML_FIELDS.includes('储物栏'),true);assert.equal(C.XML_FIELDS.includes('纳戒'),false);assert.equal(C.XML_FIELDS.length,19);
+ for(const field of ['纳戒','储物栏']){
+  const text='<Status_block><'+field+'>获得：测试灵石×1</'+field+'></Status_block>';assert.equal(C.parseStatus(text).fields.纳戒,'获得：测试灵石×1');
+ }
+ const both=C.parseStatus('<Status_block><纳戒>获得：旧物×1</纳戒><储物栏>获得：新物×1</储物栏></Status_block>');assert.equal(both.fields.纳戒,'获得：新物×1');const canonical=C.canonicalStatus('<Status_block><纳戒>旧</纳戒><储物栏>新</储物栏></Status_block>',{identity:'赵无忧',calendarDate:{year:1578,month:3,day:3},stat_data:{储物栏:'新'}});assert.equal((canonical.match(/<储物栏>/g)||[]).length,1);
+ const h=harness();await h.opening('赵无忧');await h.reply('你获得测试灵石。<Status_block><储物栏>获得：测试灵石×1</储物栏></Status_block>');assert.ok(h.r.getSnapshot().inventory.some(x=>x.name==='测试灵石'));assert.ok(h.c.chat.at(-1).mes.includes('<储物栏>'));assert.ok(!h.c.chat.at(-1).mes.includes('<纳戒>'));
+ const doc=new (require('jsdom').JSDOM)(data.openingMenu).window.document;assert.equal(doc.querySelectorAll('[data-xds-field][maxlength]').length,0);
+});
+
+test('正常续写消息变量暂失时沿用已提交可信快照，用户选择变化仍拒绝',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.reply(status({},'你结束了这轮交谈。'));const proof=h.r.getCheckpoint();assert.ok(proof?.trail);const revision=proof.state.revision;
+ for(const m of h.c.chat)m.variables=[];h.adapter.readCheckpoint=async()=>({schema:2,chatId:h.c.chatId,trail:null});h.c.chat.push({mes:'我继续探索',is_user:true});await h.r.replay('normal');assert.equal(h.r.getSnapshot().revision,revision);assert.equal(h.r.getSnapshot().identity,'赵无忧');
+ h.c.chat[0].swipe_id=1;await assert.rejects(h.r.replay('normal'),/保护存档/);
+});

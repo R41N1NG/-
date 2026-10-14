@@ -25,6 +25,7 @@ function createDispatcher(adapter, data) {
       return this.defs.find((d) => d.matchPrefix && loc.startsWith(d.matchPrefix))?.area || "";
     },
   };
+  let liveEnvelope=null;
   let current = null,
     scopeChatId = null,
     disposed = false,
@@ -62,7 +63,9 @@ function createDispatcher(adapter, data) {
       if(e?.schema===2)saved=true;
       if(compatible(e,c)){best={state:C.clone(e.state),floor:i};break;}
     }
+    const local=liveEnvelope?.chatId===c.chatId && liveEnvelope.branchId===c.branchId ? liveEnvelope : null;
     const records=adapter.readCheckpoints ? await adapter.readCheckpoints() : [await adapter.readCheckpoint?.()];guard(c);
+    if(local && (!String(c.chat[0]?.mes || "").includes("<IdentityMenu") || compatible(local,c)))records.push(C.clone(local));
     for(const checkpoint of records){
       if(checkpoint?.schema===2 && checkpoint.chatId===c.chatId)saved=true;
       const cpFloor=checkpoint?.trail?.length-1;
@@ -139,6 +142,7 @@ function createDispatcher(adapter, data) {
     s.stat_data.inventory = (s.stat_data.inventory || []).map(describeItem);
     s.stat_data.纳戒 = (s.inventoryChanges || [])
       .map(x => x.action + "：" + x.name + "×" + x.count).join("｜") || "无";
+    s.stat_data.储物栏 = s.stat_data.纳戒;
     s.stat_data.身份 = s.identity;
     s.stat_data.时间 = "仙盟历 " + C.dateText(s.calendarDate);
     s.stat_data.仙盟历文 = C.dateText(s.calendarDate);
@@ -219,6 +223,7 @@ function createDispatcher(adapter, data) {
     };
     await adapter.persist(c, envelope);
     guard(c);
+    liveEnvelope=C.clone(envelope);
     current = C.clone(s);
     scopeChatId = c.chatId;
     updatePrompt();
@@ -333,7 +338,7 @@ function createDispatcher(adapter, data) {
         Object.keys(st.known)
           .filter((k) => st.known[k])
           .join("、") +
-        "。后台关系状态："+JSON.stringify(relation)+"；负好感覆盖优先于正向心智，永久上限不得突破；数值本身不制造过去事件。纳戒：" +
+        "。后台关系状态："+JSON.stringify(relation)+"；负好感覆盖优先于正向心智，永久上限不得突破；数值本身不制造过去事件。储物栏：" +
         JSON.stringify(st.inventory) +
         "。日期照抄后台；历时只写本回合实际耗时，不按轮次固定增加，不默认半个时辰，不写距事件的累计天数；无法确定耗时写—，不沿用上一轮耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。" +
         (current.activeEvent || p
@@ -395,7 +400,7 @@ function createDispatcher(adapter, data) {
       guard(c);
     }
     if (n.immediateResult?.rewards?.length && current.manual.inventory)
-      throw Error("纳戒处于人工覆盖，请先交还自动再领取固定节点奖励");
+      throw Error("储物栏处于人工覆盖，请先交还自动再领取固定节点奖励");
     adapter.preflightSend?.();
     const before = C.clone(current),
       next = C.clone(current);
@@ -423,6 +428,11 @@ function createDispatcher(adapter, data) {
       const value = next.stat_data.character_metrics?.[x.character]?.[x.key] ?? spec.default;
       const permanent=next.stat_data.character_metric_caps?.[x.character]?.[x.key];
       writeMetric(next.stat_data,data.characterProfiles || {},x.character,x.key,x.delta>0&&Number.isFinite(permanent)?Math.min(permanent,value+x.delta):value+x.delta);
+      if(x.key==="好感度" && x.delta){
+        next.stat_data.favor_log ||= {};
+        (next.stat_data.favor_log[x.character] ||= []).unshift({label:n.displayText || n.actionText,delta:next.stat_data.character_metrics[x.character][x.key]-value,via:"node:"+n.id,turn:next.storyCount});
+        next.stat_data.favor_log[x.character]=next.stat_data.favor_log[x.character].slice(0,12);
+      }
     }
     if (n.completionQuery) next.pending.prompt += "\n本轮只结算，不继续故事。根据本段历史回答："+n.completionQuery+
       "\n严格输出唯一一项：<Promotion_result id=\""+next.pending.actionCode+"\">是</Promotion_result> 或 <Promotion_result id=\""+next.pending.actionCode+"\">否</Promotion_result>。不得返回另一行动ID，不输出分析过程，不新增剧情来补成成功。";
@@ -593,7 +603,7 @@ function createDispatcher(adapter, data) {
           ).test(line),
       );
       if (!proof) {
-        adapter.report?.(Error("纳戒进出缺少正文实证：" + name));
+        adapter.report?.(Error("储物栏进出缺少正文实证：" + name));
         continue;
       }
       const old = s.stat_data.inventory.find((x) => x.name === name);
@@ -1089,11 +1099,11 @@ function createDispatcher(adapter, data) {
           const item = current?.stat_data.inventory.find(
             (x) => x.id === intent.payload.id || x.name === intent.payload.id,
           );
-          if (!item) throw Error("物品不在纳戒");
+          if (!item) throw Error("物品不在储物栏");
           const meta = describeItem(item);
           if (!Number.isSafeInteger(meta.count) || meta.count < 1) throw Error("物品数量无效");
           if ((discard || meta.consumable) && current.manual.inventory)
-            throw Error("纳戒处于人工覆盖，请先交还自动再消耗物品");
+            throw Error("储物栏处于人工覆盖，请先交还自动再消耗物品");
           if (!["send","view"].includes(itemAction(meta))) throw Error("未知物品使用行为");
           const localUse = !discard && itemAction(meta) === "view";
           if (localUse && meta.consumable) throw Error("消耗品不能配置为仅查看使用");
@@ -1198,6 +1208,7 @@ function createDispatcher(adapter, data) {
       }
       return snapshot();
     }),
+    getCheckpoint:()=>liveEnvelope?C.clone(liveEnvelope):null,
     settleStory: () => lifecycle(story),
     stop: () => dispatchIntent({ type: "CANCEL_PENDING" }),
     registerPlugin(plugin) {

@@ -6,7 +6,7 @@ const {managedEnabled}=require('../src/runtime/story_entries');
 function harness(){
  const chat=[{mes:'<IdentityMenu/>',variables:[]}],sent=[];let fail=false,confirmed=true,retries=0,checkpoint=null;
  const adapter={readCheckpoint:async()=>C.clone(checkpoint),context:()=>({chatId:'xibei-test',chat}),readMessage:async i=>C.clone(chat[i]?.variables?.[0] || {}),persist:async(c,e)=>{checkpoint=C.clone(e);chat[c.floor].variables=[{stat_data:{...C.clone(e.state.stat_data),xsd2:[C.clone(e)]}}];},replaceOpening:async t=>chat[0].mes=t,replaceStory:async(i,t)=>chat[i].mes=t,send:async t=>{if(fail)throw Error('发送失败');sent.push(t);chat.push({mes:t,is_user:true});},setPrompt:()=>{},report:()=>{},retryGeneration:()=>{retries++;},confirmExit:async()=>confirmed};
- const r=createDispatcher(adapter,data),plugin=createXibeiPlugin(data.nodeStories);r.registerPlugin(plugin);r.registerPlugin(map);
+ const r=createDispatcher(adapter,data),plugin=createXibeiPlugin(data.nodeStories,data.characterProfiles,data.promotionDefinitions);r.registerPlugin(plugin);r.registerPlugin(map);
  const click=id=>{const s=r.getSnapshot();return r.dispatchIntent({type:'SELECT_NODE',pluginId:'xibei',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:id}});};
  const reply=async text=>{chat.push({mes:text,is_user:false,swipe_id:0});await r.settleStory();};
  const step=()=>r.getSnapshot().pluginState.xibei?.step || 'map';
@@ -31,7 +31,7 @@ test('获书固定奖励/锚点一次落账，当前故事/区域门禁受控，
  await h.run('xbxxFight');await h.click('xbxxLoot');assert.equal(h.r.getSnapshot().known.极乐引入手,true);assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='极乐引').count,1);
  assert.equal(managedEnabled('【节点故事】xbxxLoot',h.r.getSnapshot().stat_data),true);assert.equal(managedEnabled('【节点故事】xbxxAmbush',h.r.getSnapshot().stat_data),false);
  await h.reply('孤月将极乐引交给你。<Status_block><纳戒>获得：极乐引×1</纳戒></Status_block>');assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='极乐引').count,1);
- await assert.rejects(h.click('xbxxLoot'),/尚未到达/);await h.run('xbxxLeave');assert.equal(C.day(h.r.getSnapshot().calendarDate),start+6);assert.equal(h.step(),'done');assert.equal(h.r.getSnapshot().activeEvent,null);assert.equal(h.r.getSnapshot().stat_data.active_area,'');
+ await assert.rejects(h.click('xbxxLoot'),/尚未到达/);await h.run('xbxxLeave');assert.equal(C.day(h.r.getSnapshot().calendarDate),start+6);assert.equal(h.step(),'done');assert.equal(Object.values(h.r.getSnapshot().settlements).at(-1).rewards[0].name,'极乐引');assert.equal(h.r.getSnapshot().activeEvent,null);assert.equal(h.r.getSnapshot().stat_data.active_area,'');
  await h.r.restore();await h.r.settleStory();assert.equal(C.day(h.r.getSnapshot().calendarDate),start+6);await assert.rejects(h.click('xbxxEnter'),/结束/);
 });
 test('救护是/否绑定本次ID、自由回应先于判定、互斥路线及10日结算',async()=>{
@@ -42,7 +42,7 @@ test('救护是/否绑定本次ID、自由回应先于判定、互斥路线及10
   await h.reply('<Promotion_result id="wrong">是</Promotion_result>');assert.equal(h.step(),'ambush');await h.click('xbxxJudge');await h.reply(h.report(answer));
   const route=answer==='是'?'xbxxCure':'xbxxDodge';assert.equal(h.step(),answer==='是'?'rescue':'dodge');await assert.rejects(h.click(answer==='是'?'xbxxDodge':'xbxxCure'),/分支/);
   await h.run(route);await h.run('xbxxFinishA');assert.equal(C.day(h.r.getSnapshot().calendarDate),start+10);await h.r.settleStory();await h.r.restore();assert.equal(C.day(h.r.getSnapshot().calendarDate),start+10);
-  assert.equal(h.r.getSnapshot().stat_data.character_stages.孤月.id,'stage01');assert.notEqual(h.r.getSnapshot().known['九幽玄阴穴成形'],true);
+  assert.equal(h.r.getSnapshot().stat_data.character_metrics.孤月.好感度,answer==='是'?15:5);assert.equal(h.r.getSnapshot().stat_data.character_stages.孤月.id,'stage01');assert.notEqual(h.r.getSnapshot().known['九幽玄阴穴成形'],true);
  }
 });
 test('焚巢10日、取消退出/发送失败不扣时不改状态，停止与删楼可恢复',async()=>{
@@ -62,4 +62,13 @@ test('删除救护结算回复恢复待判定，重试复用原用户指令，�
  h.chat.pop();for(const m of h.chat)m.variables=[];await h.r.restore();assert.equal(h.step(),'ambush');assert.ok(h.r.getSnapshot().pending);const s=h.r.getSnapshot(),code=s.pending.actionCode,count=h.sent.length;
  await h.r.dispatchIntent({type:'RETRY_COMPLETION',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision}});assert.equal(h.retries(),1);assert.equal(h.sent.length,count);assert.equal(h.r.getSnapshot().pending.actionCode,code);
  await h.reply(h.report('否'));assert.equal(h.step(),'dodge');await assert.rejects(h.click('xbxxCure'),/分支/);
+});
+
+test('覆巢好感按路线一次结算，封顶不越阶，获书后储物栏已持有秘籍',async()=>{
+ for(const route of ['rescue','dodge']){
+  const h=harness();await h.open();for(const id of ['xbxxEnter','xbxxFight','xbxxLoot','xbxxAmbush'])await h.run(id);
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='极乐引').count,1);await h.respond();await h.click('xbxxJudge');await h.reply(h.report(route==='rescue'?'是':'否'));await h.run(route==='rescue'?'xbxxCure':'xbxxDodge');
+  await h.r.dispatchIntent({type:'SET_CHARACTER_METRIC',payload:{character:'孤月',key:'好感度',value:19}});await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['metric.孤月.好感度']}});
+  await h.run('xbxxFinishA');assert.equal(h.r.getSnapshot().stat_data.character_metrics.孤月.好感度,20);await h.r.restore();await h.r.settleStory();assert.equal(h.r.getSnapshot().stat_data.character_metrics.孤月.好感度,20);assert.equal(h.r.getSnapshot().stat_data.favor_log.孤月[0].delta,1);
+ }
 });

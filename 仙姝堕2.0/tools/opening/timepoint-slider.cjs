@@ -65,7 +65,7 @@ function renderTimepoint(instanceId) {
   const id = `${instanceId}-custom_timepoint`;
   return `<div data-xds-field-box="wide" data-xds-timepoint-box>
       <label data-xds-field-label for="${id}">当前时点</label>
-      <input type="text" class="xds-input" id="${id}" name="custom_timepoint" data-xds-field="custom_timepoint" placeholder="填写明确时点；可手填，如仙盟历 1579 年 · 6月7日" maxlength="64">
+      <input type="text" class="xds-input" id="${id}" name="custom_timepoint" data-xds-field="custom_timepoint" placeholder="填写明确时点；可手填，如仙盟历 1579 年 · 6月7日">
       <div data-xds-timepoint-enhancer>
         <input type="range" min="0" max="7" step="1" value="2" data-xds-timepoint-range aria-label="当前时点预设，共八个停靠点" aria-valuetext="${escapeHtml(DEFAULT_VALUE)}">
         <output data-xds-timepoint-out aria-live="polite" aria-atomic="true">${escapeHtml(DEFAULT_VALUE)}</output>

@@ -18,10 +18,10 @@ const XML_FIELDS = [
   "危机",
   "关系刻度",
   "实际发生",
-  "纳戒",
+  "储物栏",
 ];
 const DISPLAY_FIELDS = XML_FIELDS.filter(
-  (x) => !["时间", "身份", "实际发生", "纳戒"].includes(x),
+  (x) => !["时间", "身份", "实际发生", "储物栏"].includes(x),
 );
 const clone = (x) =>
   x === undefined ? undefined : JSON.parse(JSON.stringify(x));
@@ -131,7 +131,7 @@ function parseStatus(text) {
     actions = [];
   if (block === undefined)
     return { found: false, fields, cast, actions, prose: String(text) };
-  for (const k of [...XML_FIELDS, "进度", "破处", "名器互动"]) {
+  for (const k of [...XML_FIELDS, "纳戒", "进度", "破处", "名器互动"]) {
     const v =
       new RegExp("<" + k + ">([\\s\\S]*?)</" + k + ">").exec(block)?.[1] ??
       new RegExp("(?:^|\\n)\\s*" + k + "\\s*[:：]\\s*([^\\n]+)").exec(
@@ -139,6 +139,8 @@ function parseStatus(text) {
       )?.[1];
     if (v !== undefined) fields[k] = v.trim();
   }
+  const storage=fields.储物栏 ?? fields.纳戒;
+  if(storage!==undefined){fields.储物栏=storage;fields.纳戒=storage;}
   for (const m of block.matchAll(/<角色(\d+)>([\s\S]*?)<\/角色\1>/g)) {
     const c = { 序号: +m[1] };
     for (const k of ["名", "关系", "情况", "心境", "神态", "修为"])
@@ -181,18 +183,19 @@ function canonicalStatus(text, s, confirmedPlace) {
   text = String(text)
     .replace(/<(?:StatusBlock|status)\b[^>]*>/gi, "<Status_block>")
     .replace(/<\/(?:StatusBlock|status)>/gi, "</Status_block>");
+  text=/<储物栏>/.test(text)?String(text).replace(/<纳戒>[\s\S]*?<\/纳戒>/g,""):String(text).replace(/<纳戒>/g,"<储物栏>").replace(/<\/纳戒>/g,"</储物栏>");
   const p = parseStatus(text),
     values = {
       ...p.fields,
       时间: "仙盟历 " + dateText(s.calendarDate),
       身份: s.identity,
-      纳戒: s.stat_data.纳戒 || "无",
+      储物栏: s.stat_data.储物栏 ?? s.stat_data.纳戒 ?? "无",
     };
   if (s.activeEvent?.place || confirmedPlace) values.地点 = confirmedPlace || s.activeEvent.place;
   let block =
     /<Status_block>[\s\S]*?<\/Status_block>/.exec(text)?.[0] ||
     "<Status_block></Status_block>";
-  for (const k of ["时间", "身份", "纳戒", ...(s.activeEvent?.place || confirmedPlace ? ["地点"] : [])]) {
+  for (const k of ["时间", "身份", "储物栏", ...(s.activeEvent?.place || confirmedPlace ? ["地点"] : [])]) {
     const re = new RegExp("<" + k + ">[\\s\\S]*?</" + k + ">");
     block = re.test(block)
       ? block.replace(re, "<" + k + ">" + values[k] + "</" + k + ">")

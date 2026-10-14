@@ -9,7 +9,8 @@ const CARD_NAME = "仙姝堕2.0·框架测试";
 function start(win) {
   const topWin = (win && win.top) || (win && win.parent) || win;
   const liveHandoff=topWin.XSD2?.runtime?.getSnapshot?.() || null;
-  const host = createTavernHost(win, topWin.document, CARD_NAME, data.embeddedManagedEntries,liveHandoff),
+  const liveCheckpoint=topWin.XSD2?.runtime?.getCheckpoint?.() || null;
+  const host = createTavernHost(win, topWin.document, CARD_NAME, data.embeddedManagedEntries,liveHandoff,liveCheckpoint),
     doc = host.top.document || topWin.document || win.document;
   host.top.XSD2?.dispose?.();
   const runtime = createDispatcher(host, data);
@@ -27,7 +28,7 @@ function start(win) {
   }
   let settleFaultKey=null,lastReportKey=null;
   const faultKey=()=>{const c=host.context();return JSON.stringify([c.chatId,c.branchId,C.hash(JSON.stringify(C.fingerprint(c.chat)))]);};
-  const report = e => {if(!active())return;const key=faultKey()+"|"+(e.message||e);if(key===lastReportKey)return;lastReportKey=key;host.report(e);};
+  const report = e => {if(!active())return;const c=host.context(),message=String(e.message||e);const key=(message.includes("已有进度记录与当前分支不匹配")?JSON.stringify([c.chatId,c.branchId]):faultKey())+"|"+message;if(key===lastReportKey)return;lastReportKey=key;host.report(e);};
   async function render() {
     if (!active()) return;
     const epoch = ++renderEpoch, c = host.context();
@@ -252,7 +253,7 @@ function start(win) {
   exposed.registerPlugin(youjiguMapPlugin);
   const {createPromotionPlugin} = require("./plugins/promotion/index");
   exposed.registerPlugin(createPromotionPlugin(data.promotionDefinitions,data.nodeStories));
-  exposed.registerPlugin(require("./plugins/xibei/index").createXibeiPlugin(data.nodeStories));
+  exposed.registerPlugin(require("./plugins/xibei/index").createXibeiPlugin(data.nodeStories,data.characterProfiles,data.promotionDefinitions));
   for (const plugin of host.top.XSD2_PLUGINS || [])
     exposed.registerPlugin(plugin);
   async function ensureMounted(retries = 5, interval = 120) {

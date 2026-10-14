@@ -52,7 +52,7 @@ function buildMenuHtml({
   const chips = (field, values) =>
     `<div data-xds-chips>${values.map((value) => `<button type="button" data-xds-fill="${field}" data-xds-value="${attr(value)}" aria-pressed="false">${attr(value)}</button>`).join("")}</div>`;
   const field = (name, label, placeholder, max, extra = "") =>
-    `<div data-xds-field-box><label data-xds-field-label for="${instanceId}-${name}">${label}</label><input type="text" id="${instanceId}-${name}" name="${name}" data-xds-field="${name}" class="xds-input" placeholder="${attr(placeholder)}" maxlength="${max}" ${extra}></div>`;
+    `<div data-xds-field-box><label data-xds-field-label for="${instanceId}-${name}">${label}</label><input type="text" id="${instanceId}-${name}" name="${name}" data-xds-field="${name}" class="xds-input" placeholder="${attr(placeholder)}" ${extra}></div>`;
   const template = `<style>${MENU_CSS}</style><div class="xds-menu-wrapper" data-xds-menu>
     <input type="radio" class="xds-page-radio" data-xds-page="flower" id="${instanceId}-page-flower" name="${instanceId}-page" checked aria-label="太微百花谱">
     <input type="radio" class="xds-page-radio" data-xds-page="custom" id="${instanceId}-page-custom" name="${instanceId}-page" aria-label="自设问道书卷">
@@ -75,11 +75,11 @@ function buildMenuHtml({
         ${field("custom_name", "道号尊名", "填写道号尊名", 64, 'autocomplete="off"')}
         ${field("custom_gender", "根骨性别", "如：男 / 女 / 自定", 16, 'value="男" autocomplete="off"')}
         ${field("custom_age", "寿数年岁", "如：弱冠之年（20）", 32, 'autocomplete="off"')}
-        <div data-xds-field-box><label data-xds-field-label for="${instanceId}-custom_cultivation">境界修为</label><input type="text" class="xds-input" id="${instanceId}-custom_cultivation" name="custom_cultivation" data-xds-field="custom_cultivation" placeholder="如：练气圆满、筑基初期" maxlength="96">${chips("custom_cultivation", ["炼气大圆满", "筑基前期", "筑基大圆满", "金丹前期", "金丹中期", "金丹后期", "金丹大圆满"])}</div>
-        <div data-xds-field-box="wide"><label data-xds-field-label for="${instanceId}-custom_sect">入世身份</label><input type="text" class="xds-input" id="${instanceId}-custom_sect" name="custom_sect" data-xds-field="custom_sect" placeholder="宗门、行当或来历，随心填写" maxlength="128">${chips("custom_sect", ["大荒散修", "天枢剑宗弃徒", "墨山道外门散人", "天音阁弄琴客", "欢喜魔门谍客"])}</div>
+        <div data-xds-field-box><label data-xds-field-label for="${instanceId}-custom_cultivation">境界修为</label><input type="text" class="xds-input" id="${instanceId}-custom_cultivation" name="custom_cultivation" data-xds-field="custom_cultivation" placeholder="如：练气圆满、筑基初期">${chips("custom_cultivation", ["炼气大圆满", "筑基前期", "筑基大圆满", "金丹前期", "金丹中期", "金丹后期", "金丹大圆满"])}</div>
+        <div data-xds-field-box="wide"><label data-xds-field-label for="${instanceId}-custom_sect">入世身份</label><input type="text" class="xds-input" id="${instanceId}-custom_sect" name="custom_sect" data-xds-field="custom_sect" placeholder="宗门、行当或来历，随心填写">${chips("custom_sect", ["大荒散修", "天枢剑宗弃徒", "墨山道外门散人", "天音阁弄琴客", "欢喜魔门谍客"])}</div>
         ${field("custom_place", "入世起点", "填写起点或由故事决定", 128)}
         ${renderTimepoint(instanceId)}
-        <div data-xds-field-box="wide"><label data-xds-field-label for="${instanceId}-custom_origin">获取《极乐引》的机缘方式</label><textarea class="xds-textarea" data-xds-field="custom_origin" id="${instanceId}-custom_origin" name="custom_origin" rows="4" maxlength="1800" placeholder="捡得、窃取、夺来、师门密传……写下独属于你的机缘。"></textarea><p data-xds-help>落款后以所填身份、时点与来历启卷。</p></div>
+        <div data-xds-field-box="wide"><label data-xds-field-label for="${instanceId}-custom_origin">获取《极乐引》的机缘方式</label><textarea class="xds-textarea" data-xds-field="custom_origin" id="${instanceId}-custom_origin" name="custom_origin" rows="4" placeholder="捡得、窃取、夺来、师门密传……写下独属于你的机缘。"></textarea><p data-xds-help>落款后以所填身份、时点与来历启卷。</p></div>
       </div><button type="button" class="xds-submit-seal" data-xds-action="submit-custom">提笔落款 · 启卷入世</button><p data-xds-status role="status" aria-live="polite"></p>
     </div></div>
   </div>`;

@@ -4,6 +4,7 @@ const {resultTag}=require('../promotion/index');
 const {modal}=require('../../ui/dom');
 const {buildNarrativeScope}=require('../../runtime/narrative_scope');
 const {OPEN_DATE,EVENT_DEFS,place}=require('./event_tree');
+const {canRecover}=require('../../runtime/character_stages');
 const ID='xibei';
 function state(s){return s.pluginState?.[ID] || {step:'map',route:null};}
 function block(s,d){
@@ -17,19 +18,29 @@ function block(s,d){
  return null;
 }
 function active(st){return st.step==='done'?null:{id:'xibei',pluginId:ID,step:st.step,place:place(st.step)};}
-function configured(s,d){
+function configured(s,d,bonus=0){
  const st={...state(s),step:d.to};
- if(d.exitDays)st.receipt={exitType:d.id==='xbxxLeave'?'early':'finished',rewards:[],summaryLog:['西北除害 · '+d.label,...(st.route?['救护分支：'+(st.route==='rescue'?'出手相护':'剑气自护')]:[])]};
+ if(d.id==='xbxxLoot')st.lootTaken=true;
+ if(d.exitDays)st.receipt={exitType:d.id==='xbxxLeave'?'early':'finished',rewards:(st.lootTaken || s.stat_data.inventory?.some(x=>x.source===ID && x.name==='极乐引'))?[{name:'极乐引',count:1}]:[],summaryLog:['西北除害 · '+d.label,...(d.id==='xbxxFinishA'?['孤月好感 +'+bonus]:[]),...(st.route?['救护分支：'+(st.route==='rescue'?'出手相护':'剑气自护')]:[])]};
  return {outcome:'success',pluginState:st,activeEvent:active(st),rewards:(d.rewards || []).map(name=>({name,count:1})),known:d.grantsKnown || [],...(d.exitDays?{elapsedDays:d.exitDays}:{}),reason:'玩家点选的本地配置结果',evidenceMode:'PLAYER_CHOICE_CONFIRMED'};
 }
-function createXibeiPlugin(stories){
+function createXibeiPlugin(stories,profiles={},promotions={}){
+ function favorBonus(s,d){
+  if(d.id!=='xbxxFinishA' || s.manual?.['metric.孤月.好感度']!==undefined || !canRecover(s.stat_data,profiles,'孤月','node:'+d.id))return 0;
+  const requested=state(s).route==='rescue'?15:state(s).route==='dodge'?5:0,current=s.stat_data.character_metrics?.孤月?.好感度 ?? 0;
+  const completed=s.stat_data.completed_character_stages?.孤月 || profiles.孤月?.initialStage || 'stage01';
+  const thresholds=Object.values(promotions).filter(p=>p.character==='孤月'&&p.fromStage===completed&&p.conditions.some(c=>c.kind==='identity'&&c.value===s.identity)).map(p=>p.conditions.find(c=>c.kind==='metric')?.value).filter(Number.isFinite);
+  const permanent=s.stat_data.character_metric_caps?.孤月?.好感度;
+  const cap=Math.min(profiles.孤月?.metrics?.好感度?.max ?? 100,...thresholds,Number.isFinite(permanent)?permanent:100);
+  return Math.max(0,Math.min(current+requested,cap)-current);
+ }
  function list(s){return Object.values(EVENT_DEFS).filter(d=>!block(s,d));}
  function select(s,id){
   const d=EVENT_DEFS[id],reason=block(s,d);if(reason)return {id,allowed:false,reason};
-  const st=state(s),result=d.judge?null:configured(s,d);
+  const st=state(s),bonus=favorBonus(s,d),result=d.judge?null:configured(s,d,bonus);
   const scope=buildNarrativeScope({place:place(d.to || st.step),cast:['赵无忧','孤月'],facts:['同行者只有赵无忧与孤月，剧情配置中的敌人与受困女子仅在相应现场出现，不引入其他同门','后续路线只由中控授权，不看正文节点名切换','名器/好感阶段继续读取后台，不因解蛊或更衣自动晋升'],options:[]});
-  return {id,allowed:true,actionText:d.label,displayText:d.label,identities:['赵无忧'],open:OPEN_DATE,rewards:d.rewards || [],grantsKnown:d.grantsKnown || [],
-   prompt:d.judge?'只核验本次惊变后玩家已经输入并真实演绎的救护，不新增行动凑答案。':(d.rewards?'【固定奖励已入账】极乐引已加入纳戒，不重复发奖。\n':'')+stories[id].content+'\n'+scope,
+  return {id,allowed:true,actionText:d.label,displayText:d.label,identities:['赵无忧'],open:OPEN_DATE,rewards:d.rewards || [],grantsKnown:d.grantsKnown || [],metricChanges:bonus?[{character:'孤月',key:'好感度',delta:bonus}]:[],
+   prompt:d.judge?'只核验本次惊变后玩家已经输入并真实演绎的救护，不新增行动凑答案。':(d.rewards?'【固定奖励已入账】极乐引已加入储物栏，不重复发奖。\n':'')+stories[id].content+'\n'+scope,
    ...(d.judge?{completionQuery:'仅核验惊变行动'+st.ambushCode+'之后本次历史：玩家是否明确主动出手帮助孤月应对女奴偷袭？只依实际输入，尚未回应则无有效结果，不能补写挡蛊或凭旧救护判是。'}:{immediateResult:result,settlementMode:'choice',destination:place(d.to)}),
    ...(d.exitDays?{exitDays:d.exitDays,confirmText:d.id==='xbxxLeave'?'提前折返并结算6日？':'完成本次西北除害并结算10日？',settlement:{mode:'separate',title:d.label+' · 结算'}}:{})};
  }
