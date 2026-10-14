@@ -10420,7 +10420,7 @@
         "XSD2_xbxxFight_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：剑斩二鬼】\n\n【本轮必须发生】\n1. 深入石山洞府前厅，迎面遭遇盘踞在此的金丹邪修兄弟「花间二鬼」：矮小瘦削擅使淬毒短刃潜行暗袭的兄长王大，与魁梧壮硕手持乌铁巨斧正面强攻的胞弟王二；\n2. 孤月拔出本命寒璃剑，剑气森然若霜雪漫卷；赵无忧并肩策应、攻守兼备，二人默契合击将花间二鬼斩灭伏诛；\n3. 战后前厅邪阵溃散，浮现两条去向分歧：前厅深处隐秘石门后传来微弱女子抽泣与铁索声（分支A：搜救后洞）；或可选择就地搜缴前厅物资、起阵焚毁邪窟（分支B：焚巢平定）；亦可选择见好就收提前折返。\n\n【人物与场景】\n荒漠石窟前厅乱石嶙峋，血腥与恶煞之气未散，二鬼尸身横陈。孤月持剑肃立，雪白剑袍纤尘不染，神色冰冷淡漠。\n\n【确定结果】\n合力斩杀花间二鬼，肃清前厅，直面下一步去向抉择。\n\n【边界】\n未选择的分支不进入，不提前揭露后洞暗室内部详情。",
+      "content": "【节点故事：剑斩二鬼】\n\n【本轮必须发生】\n1. 深入石山洞府前厅，迎面遭遇盘踞在此的金丹邪修兄弟「花间二鬼」：矮小瘦削擅使淬毒短刃潜行暗袭的兄长王大，与魁梧壮硕手持乌铁巨斧正面强攻的胞弟王二；\n2. 孤月拔出本命寒璃剑，剑气森然若霜雪漫卷；赵无忧并肩策应、攻守兼备，二人默契合击将花间二鬼斩灭伏诛；\n3. 战后前厅邪修法阵破散，二鬼伏诛横陈，二人来到前厅石案前整备调息，准备搜检战利品。\n\n【人物与场景】\n荒漠石窟前厅乱石嶙峋，血腥与恶煞之气未散，二鬼尸身横陈。孤月收剑入鞘，雪白剑袍纤尘不染，神色冰冷淡漠。\n\n【确定结果】\n合力斩杀花间二鬼，肃清前厅，推进至子节点【极乐引入手】。\n\n【边界】\n不代写后洞细节，留待搜检战利品后展开下一步。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -10434,12 +10434,12 @@
     },
     "290": {
       "uid": 290,
-      "comment": "【节点故事】xbxxAmbush",
+      "comment": "【节点故事】xbxxLoot",
       "key": [
-        "XSD2_xbxxAmbush_"
+        "XSD2_xbxxLoot_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：后洞惊变】\n\n【本轮必须发生】\n1. 二人破开后洞封印石门，深入昏暗潮湿的私牢暗室，发现数名被花间二鬼掳掠囚禁的良家女子；\n2. 孤月心生恻隐，上前挥剑斩断囚禁铁索、施法救护；\n3. 异变突生！获救女子中，有一名早被二鬼以邪法深度驯化调教的死忠女奴，假意掩面惊恐痛哭，趁孤月靠近施救不备之际，眼中暴起凶芒，自袖中骤然甩出《极乐引》奇蛊【鎏金缠情丝】直刺孤月要害！\n4. 电光石火之间，赵无忧挺身暴起推开孤月，以身为盾挡下突袭！纯金细蛇快如闪电，獠牙幽蓝，狠狠咬破衣物钻入赵无忧经脉；\n5. 孤月惊怒交加，冰魄剑气暴起将偷袭女奴当场震飞制伏！但赵无忧体内阳火瞬间如岩浆般暴走，四肢百骸如遭烈火焚灼，气血逆冲激荡，青筋暴起、汗水涔涔而下，痛苦万分！\n\n【人物与场景】\n昏暗阴冷的后洞私牢，断裂铁索散落，获救女子惊恐瑟缩。赵无忧痛苦倒地微喘，孤月单膝跪地仓皇相扶，清冷容颜满是动容与慌乱。\n\n【确定结果】\n破除后洞囚室，制伏偷袭女奴；赵无忧舍身替孤月挡下鎏金缠情丝身中奇蛊，危在旦夕。\n\n【边界】\n定格在赵无忧中蛊倒地、孤月慌乱抱住他的瞬间，具体解蛊与互动细节留给下一步。",
+      "content": "【节点故事：极乐引入手】\n\n【本轮必须发生】\n1. 二人搜检花间二鬼尸身与前厅石案秘格，起获一部以柔软皮质装订、封皮以朱砂书就三个诡谲大字的邪道秘籍——《极乐引》；\n2. 孤月翻看数页察觉此乃极乐楼搜罗名器、惑乱炉鼎的入门邪功与秘谱，神色微寒，交由赵无忧暂且收存封印；\n3. 战利品收缴完毕，洞府内部局势明晰，浮现三条明确去向分歧：\n   - 分支 A（继续深入）：深入洞府后洞暗室探查；\n   - 分支 B（焚毁邪窟）：就地起真火焚毁整座石山洞府废墟，平稳归宗；\n   - 分支 C（提前折返）：收存秘籍，收拾行装折返墨山道。\n\n【确定结果】\n缴获【《极乐引》】，硬核落账：极乐引入手（解锁卡内《极乐引》总纲、名器谱及相关隐秘条目）。前厅搜缴完毕，直面去向抉择。\n\n【边界】\n客观罗列后续三条去向分歧，不加入女子哭泣等导向性暗示，未选择的分支不进入、不揭示后洞详情。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -10453,12 +10453,12 @@
     },
     "291": {
       "uid": 291,
-      "comment": "【节点故事】xbxxCure",
+      "comment": "【节点故事】xbxxAmbush",
       "key": [
-        "XSD2_xbxxCure_"
+        "XSD2_xbxxAmbush_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：含津更衣】\n\n【自由回合规则（玩家完全自主输入）】\n直面身中鎏金缠情丝、阳火如沸、气血翻腾、在理智与情潮边缘痛苦煎熬的赵无忧，玩家完全自主决定言语、神智挣扎、动作与应对方式（咬牙强忍、向师姐呼救、低语安慰、或神志不清索求等）。\n\n【核心客观法则与解蛊铁律】\n1. 《极乐引》奇蛊铁律：鎏金缠情丝非寻常丹药可解，若十二时辰内不解，必致经脉受焚、丹田受损。解此蛊唯有身负纯阴灵脉之女子，以口含阴津、度入纯阳本源、导引归元方可消解；\n2. 仙子动容与放下矜持：孤月素来清冷自持、高傲孤绝，但目睹赵无忧为救自己舍命中蛊，内心防线被内疚与隐秘深情触动。她眼尾泛红、耳尖滴血，决然褪去端庄架子，俯身跪坐榻前，以温软樱唇含入本源，运转特殊的九幽玄阴精气，缓缓度入赵无忧体内，冰阳交汇导引归元，平息狂暴阳火；\n3. 不设防背身更衣：解蛊平息后，因情毒激荡与真气运转，孤月雪白剑袍染透汗渍津液。在平复清醒的赵无忧面前，孤月卸下心防，未曾回避他，只是默默背过身去，当着赵无忧的面褪下湿损外裳，更换素白新道袍。赵无忧眼前是她欺霜赛雪的清丽玉背与通红如血的耳根，孤月背对赵无忧轻声开口，语带微颤与不加掩饰的信赖；\n4. 破身不是脑控 · 风骨常驻：孤月口含解毒与背身更衣时依旧维持剑修仙子的矜持与内敛，绝非放浪迎合，赤红的耳尖与微颤的身躯尽显内敛心扉初绽的羞涩。\n\n【确定结果】\n依据玩家实际输入客观演绎现场反应，孤月完成口含度津解蛊与背身更衣，等待离窟收官。\n\n【边界】\n绝不代替玩家做动作与言辞决断，中间 100% 留白交给玩家自主发挥。",
+      "content": "【节点故事：后洞惊变】\n\n【本轮必须发生（零代打发难定格）】\n1. 选择分支A继续深入，二人破开后洞封印石门，步入昏暗潮湿的私牢石室，发现数名被花间二鬼掳掠囚禁于此的良家女子；\n2. 孤月心生恻隐，走上前去挥动剑气斩断囚铁索链，温言施救；\n3. 惊变骤起！获救女子之中，有一名早被花间二鬼以邪法深度驯化调教的死忠女奴，假意掩面痛哭求救，趁孤月靠近解缚不备之际，眼中凶芒暴现！\n4. 女奴自宽大袖口中骤然甩出一道快若闪电的金芒——正是《极乐引》凶险奇蛊【鎏金缠情丝】，细如手指的金蛇獠牙幽蓝，直刺孤月要害心脉！\n\n【人物与场景】\n昏暗潮湿的后洞私牢，断裂铁索铮鸣，电光石火之间金蛇毒芒破空暴起，孤月背对变故未及回防，杀机迫在眉睫。\n\n【确定结果与边界留白（严禁代打）】\n故事严格定格在女奴袖中暴射出鎏金缠情丝、直刺孤月要害的千钧一发瞬间！绝不代替玩家决定动作与言辞，绝不擅自代写赵无忧是否出手推开或闪避！中间 100% 留给玩家自由输入应对。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -10472,12 +10472,12 @@
     },
     "292": {
       "uid": 292,
-      "comment": "【节点故事】xbxxFinishA",
+      "comment": "【节点故事】xbxxCure",
       "key": [
-        "XSD2_xbxxFinishA_"
+        "XSD2_xbxxCure_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：覆巢归宗】\n\n【本轮必须发生】\n1. 导引归元后，逼出体外的鎏金缠情丝被孤月反手一剑斩断湮灭，起获残留金精；\n2. 安抚救护受困女子，以宗门信物联络附近仙盟驿站妥善遣送还乡；\n3. 孤月与赵无忧并肩御剑走出石山洞府，迎着荒原晨曦返回墨山道复命。触发天机结算。\n\n【确定结果】\n耗时2日，硬核落账：西北邪修洞府斩杀花间二鬼、舍身替孤月抵挡鎏金缠情丝、孤月含津解蛊并背身更衣、解救被掳女子凯旋归宗。\n\n【边界】\n西北邪修除害圆满功成，凯旋归宗。",
+      "content": "【节点故事：含津更衣】\n\n【判定前置条件（玩家选择挺身救护）】\n本节点仅在上一轮玩家明确输入挺身而出、出手推开孤月或以身挡蛊时触发接续！若玩家未出手救护，严禁进入本节点。\n\n【承接剧情（中蛊惊变）】\n演绎赵无忧在千钧一发之际挺身暴起推开孤月，以身相护硬生生挡下偷袭。纯金细蛇咬破衣襟钻入赵无忧经脉，孤月惊怒之下反手剑气将女奴震飞制伏。但鎏金缠情丝至烈难当，赵无忧体内阳火如火山熔岩爆发，四肢百骸如遭烈火焚灼，气血逆冲激荡，青筋暴起汗如雨下，痛苦万分！\n\n【自由回合规则（玩家完全自主输入）】\n直面中蛊阳火焚身、气血激荡煎熬的赵无忧，玩家完全自主决定言语、动作与神智应对方式。\n\n【核心客观法则与解蛊铁律】\n1. 《极乐引》奇蛊铁律：鎏金缠情丝非寻常丹药可解，若十二时辰内不解，必致经脉受焚、丹田受损。解此蛊唯有身负纯阴灵脉之女子，以口含阴津、度入纯阳本源、导引归元方可消解；\n2. 仙子动容与放下矜持：孤月素来清冷自持、高傲孤绝，但目睹赵无忧为救自己舍命中蛊，内心防线被内疚与隐秘深情触动。她眼尾泛红、耳尖滴血，决然褪去端庄架子，俯身跪坐榻前，以温软樱唇含入本源，运转特殊的九幽玄阴精气，缓缓度入赵无忧体内，冰阳交汇导引归元，平息狂暴阳火；\n3. 不设防背身更衣：解蛊平息后，因情毒激荡与真气运转，孤月雪白剑袍染透汗渍津液。在平复清醒的赵无忧面前，孤月卸下心防，未曾回避他，只是默默背过身去，当着赵无忧的面褪下湿损外裳，更换素白新道袍。赵无忧眼前是她欺霜赛雪的清丽玉背与通红如血的耳根，孤月背对赵无忧轻声开口，语带微颤与不加掩饰的信赖；\n4. 破身不是脑控 · 风骨常驻：孤月口含解毒与背身更衣时依旧维持剑修仙子的矜持与内敛，绝非放浪迎合，赤红的耳尖与微颤的身躯尽显内敛心扉初绽的羞涩。\n\n【确定结果】\n依据玩家实际输入客观演绎现场反应，孤月完成口含度津解蛊与背身更衣，等待离窟收官。\n\n【边界】\n绝不代打玩家动作与言辞，中间 100% 留白交给玩家发挥。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -10491,12 +10491,12 @@
     },
     "293": {
       "uid": 293,
-      "comment": "【节点故事】xbxxFinishB",
+      "comment": "【节点故事】xbxxDodge",
       "key": [
-        "XSD2_xbxxFinishB_"
+        "XSD2_xbxxDodge_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：焚巢回宗】\n\n【本轮必须发生】\n1. 击杀花间二鬼后，搜缴前厅邪修私藏灵资，察觉后洞阴煞难料，玩家与孤月商议以大局为重，不涉险境；\n2. 起动烈火法阵将整座石山邪窟焚为焦土废墟，二人御剑平稳返程归宗。触发天机结算。\n\n【确定结果】\n耗时2日，全员无损归宗，硬核落账：西北石山斩杀花间二鬼、焚毁邪窟。\n\n【边界】\n历练平稳圆满结束。",
+      "content": "【节点故事：险避奇蛊】\n\n【判定前置条件（玩家未出手相护）】\n本节点仅在上一轮玩家未曾出手相护、选择自保退避或未作反应时触发接续。\n\n【本轮必须发生】\n1. 金蛇破空袭来的危急关头，孤月凭借金丹剑修敏锐直觉感知杀机，本命寒璃剑剑气自发护体激荡，身形如清霜残影微晃，险之又险地避开了这致命一击；\n2. 纯金小蛇落空钉入后方坚硬岩壁，入石三分；孤月美眸寒霜骤起，反手挥出一道凌厉冰魄剑气，当场将偷袭的死忠女奴制伏镇压；\n3. 现场险情化解，二人均未中蛊，孤月虽安然无恙但对暗算心有余悸，整顿私牢，施法救护其余瑟缩受惊的良家女子。\n\n【人物与场景】\n后洞私牢内寒气未消，石壁上留有金蛇蚀刻的细小孔洞，女奴被制伏倒地，孤月手按剑柄神色严峻。\n\n【确定结果】\n孤月剑气护体险避偷袭，制伏女奴，化解危机，准备组织女子撤离归宗。\n\n【边界】\n全员无中蛊伤害，不发生解蛊更衣情节，平稳收官准备回宗。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -10510,12 +10510,12 @@
     },
     "294": {
       "uid": 294,
-      "comment": "【节点故事】xbxxLeave",
+      "comment": "【节点故事】xbxxFinishA",
       "key": [
-        "XSD2_xbxxLeave_"
+        "XSD2_xbxxFinishA_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：提前折返】\n\n【本轮必须发生】\n演绎察觉荒原凶煞未明或因故决定提前折返，收拾行装御剑返回墨山道。\n\n【确定结果】\n耗时1日，提前离开西北荒原。\n\n【边界】\n本次西北之行提前收束。",
+      "content": "【节点故事：覆巢归宗】\n\n【本轮必须发生】\n1. 承接后洞事态平息（若此前中蛊解毒，则孤月反手一剑将逼出体外的鎏金缠情丝斩断湮灭，起获残留金精；若此前险避偷袭，则将石壁上的金蛇起获封存）；\n2. 安抚并护送受困女子走出洞府，以宗门信物联络附近仙盟驿站妥善遣送还乡；\n3. 孤月与赵无忧并肩御剑走出石山洞府，迎着荒原晨曦返回墨山道复命。触发天机结算。\n\n【确定结果】\n耗时2日，硬核落账：西北邪修洞府斩杀花间二鬼、深入后洞粉碎暗算、解救被掳女子凯旋归宗（若发生挡蛊，追加落账：舍身替孤月抵挡鎏金缠情丝、孤月含津解蛊并背身更衣）。\n\n【边界】\n西北邪修除害圆满功成，凯旋归宗。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -10529,12 +10529,12 @@
     },
     "295": {
       "uid": 295,
-      "comment": "【节点故事】xbxx",
+      "comment": "【节点故事】xbxxFinishB",
       "key": [
-        "XSD2_xbxx_"
+        "XSD2_xbxxFinishB_"
       ],
       "keysecondary": [],
-      "content": "【节点故事：西北邪修】\n\n【本轮必须发生（搭建舞台与因果契机）】\n1. 自然承接上文，赵无忧与孤月领受师门除害法旨，并肩御剑前往墨山道西北三千里荒原，探查盘踞于荒漠石山的邪修洞府；\n2. 抵达石山破开外围残阵，杀入前厅合力迎战凶煞散修「花间二鬼」（矮小擅毒刺短刃潜袭的兄长王大、魁梧手持乌铁巨斧正面强攻的胞弟王二），二人默契合击将二鬼诛杀；\n3. 战后浮现去路分歧：玩家可选择深入后洞私牢【搜救暗室女子】，亦可选择【搜缴前厅·起阵焚窟】平稳归宗。\n\n【人员隔离铁律】\n此前在场的其余同门与侍从自然交代其留守宗门据点，绝不随行！西北邪修现场严格限定为：赵无忧、孤月二人。\n\n【分支走向：深入后洞搜救女子分支（核心大剧情）】\n若选择深入后洞私牢搜救女子，将触发以下连锁演变与自由互动：\n1. 暗算突生：后洞囚室解救受困女子时，其中一名早被邪法调教驯化的死忠女奴伪装受害，暴起自袖中射出《极乐引》奇蛊【鎏金缠情丝】偷袭孤月！赵无忧挺身推开孤月以身挡蛊，金蛇咬入经脉，女奴被孤月当场震飞制伏；\n2. 中蛊异象：鎏金缠情丝至烈难当，赵无忧体内阳火如火山熔岩爆发，四肢百骸如灼烧，气血逆冲，青筋暴起汗如雨下，痛苦万分；\n3. 【自由回合（中间 100% 留白）】：面对中蛊煎熬的赵无忧，玩家完全自主决定言语、动作与应对；\n4. 【核心客观法则与解蛊铁律】：\n   - 奇蛊非凡药可解，需纯阴灵脉女子（孤月身负特殊的九幽玄阴脉）以口含阴津、度入纯阳本源、导引归元方能化解；\n   - 孤月内心被赵无忧舍身相救触动，满心震撼与内疚，放下清冷矜持，跪坐榻前俯身以温软樱唇含入本源，运转九幽玄阴精气渡入导引，平息狂暴阳火；\n   - 解蛊平息后，孤月剑袍汗湿微损，在赵无忧面前卸下心防，未曾回避他，自然背过身去当面褪下湿损外裳更换素白新道袍，展露出欺霜赛雪的单薄玉背与通红如血的耳尖，语带轻颤诉说信赖；\n   - 破身不是脑控 · 人设风骨常驻：孤月全程维持剑修矜持与内敛，绝非放浪，赤红耳尖尽显少女心扉初绽的羞涩。\n5. 覆巢归宗：孤月一剑将逼出体外的鎏金缠情丝斩断，妥善遣返女子，二人并肩御剑归宗复命。耗时2日，硬核落账：西北邪修洞府斩杀花间二鬼、舍身替孤月抵挡鎏金缠情丝、孤月含津解蛊并背身更衣、解救被掳女子凯旋归宗。\n\n【分支走向：焚窟回宗分支】\n若选择不涉后洞暗室，搜缴前厅物资后起阵烈火焚毁邪窟，平稳归宗。耗时2日，硬核落账：西北石山斩杀花间二鬼、焚毁邪窟。\n\n【确定结果与边界留白】\n只起剧情开头（抵临石山破阵、迎战二鬼并展开分歧），绝不代玩家做言语动作决断，中间 100% 留白交由玩家发挥。后续依据玩家正文实际输入客观演绎与结算。",
+      "content": "【节点故事：焚巢回宗】\n\n【本轮必须发生】\n1. 起获《极乐引》后，察觉后洞阴煞难测，赵无忧与孤月商议以大局为重，不涉险境；\n2. 二人搜缴前厅邪修私藏灵资，起动烈火法阵将整座石山邪窟焚为焦土废墟，御剑平稳返程归宗。触发天机结算。\n\n【确定结果】\n耗时2日，全员无损归宗，硬核落账：西北石山斩杀花间二鬼、缴获极乐引、焚毁邪窟。\n\n【边界】\n历练平稳圆满结束。",
       "constant": false,
       "selective": false,
       "disable": true,
@@ -10548,6 +10548,44 @@
     },
     "296": {
       "uid": 296,
+      "comment": "【节点故事】xbxxLeave",
+      "key": [
+        "XSD2_xbxxLeave_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：提前折返】\n\n【本轮必须发生】\n演绎起获《极乐引》后因故决定提前折返，收拾行装御剑返回墨山道。\n\n【确定结果】\n耗时1日，提前离开西北荒原。\n\n【边界】\n本次西北之行提前收束。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "297": {
+      "uid": 297,
+      "comment": "【节点故事】xbxx",
+      "key": [
+        "XSD2_xbxx_"
+      ],
+      "keysecondary": [],
+      "content": "【节点故事：西北邪修】\n\n【本轮必须发生（搭建舞台与因果契机）】\n1. 自然承接上文，赵无忧与孤月领受师门除害法旨，并肩御剑前往墨山道西北三千里荒原，探查盘踞于荒漠石山的邪修洞府；\n2. 抵达石山破开外围残阵，杀入前厅合力迎战凶煞散修「花间二鬼」（矮小擅毒刃潜袭的兄长王大、魁梧手持乌铁巨斧正面强攻的胞弟王二），二人默契合击将二鬼诛杀；\n3. 战后搜检起获《极乐引》，硬核落账：极乐引入手；随后浮现去向分歧：继续深入洞府、焚毁邪窟回宗、或提前折返。\n\n【人员隔离铁律】\n此前在场的其余同门与侍从自然交代其留守宗门据点，绝不随行！现场严格限定为：赵无忧、孤月二人。\n\n【深入后洞救女分支演进与判定规则】\n若选择继续深入后洞私牢，解救女子时早被驯化的死忠女奴暴起，自袖中甩出《极乐引》奇蛊【鎏金缠情丝】直刺孤月！\n- 剧情严格定格在女奴暴起突袭瞬间，中间100%留白给玩家！\n- 模型根据玩家输入进行【是否出手救护孤月】判定：\n  - 【是】：赵无忧挺身挡蛊中奇蛊阳火焚身，孤月动容以温软樱唇含入本源渡入九幽玄阴精气解蛊；平息后孤月卸下心防当面背身更换素白新道袍，展露单薄玉背与通红耳根；\n  - 【否】：孤月金丹剑气自发护体险避偷袭，反手剑气制伏女奴，安然无恙；\n- 二者均收束于斩断情丝、护送遣返女子、御剑凯旋归宗复命。\n\n【确定结果与边界留白】\n只起剧情开头，绝不代玩家做言语动作决断，中间 100% 留白交由玩家发挥。后续依据玩家正文实际输入客观演绎与结算。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "298": {
+      "uid": 298,
       "comment": "【人物阶段】叶红缨:stage02:赵无忧",
       "key": [
         "叶红缨",
@@ -10567,8 +10605,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "297": {
-      "uid": 297,
+    "299": {
+      "uid": 299,
       "comment": "【人物阶段】叶红缨:stage02:自设",
       "key": [
         "叶红缨",
@@ -10588,8 +10626,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "298": {
-      "uid": 298,
+    "300": {
+      "uid": 300,
       "comment": "【人物阶段】叶红缨:stage03:赵无忧",
       "key": [
         "叶红缨",
@@ -10609,8 +10647,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "299": {
-      "uid": 299,
+    "301": {
+      "uid": 301,
       "comment": "【人物阶段】叶红缨:stage03:自设",
       "key": [
         "叶红缨",
@@ -10630,8 +10668,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "300": {
-      "uid": 300,
+    "302": {
+      "uid": 302,
       "comment": "【人物阶段】叶红缨:stage04:赵无忧",
       "key": [
         "叶红缨",
@@ -10651,8 +10689,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "301": {
-      "uid": 301,
+    "303": {
+      "uid": 303,
       "comment": "【人物阶段】叶红缨:stage04:自设",
       "key": [
         "叶红缨",
@@ -10672,8 +10710,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "302": {
-      "uid": 302,
+    "304": {
+      "uid": 304,
       "comment": "【人物阶段】叶红缨:stage05:赵无忧",
       "key": [
         "叶红缨",
@@ -10693,8 +10731,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "303": {
-      "uid": 303,
+    "305": {
+      "uid": 305,
       "comment": "【人物阶段】叶红缨:stage05:自设",
       "key": [
         "叶红缨",
@@ -10714,8 +10752,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "304": {
-      "uid": 304,
+    "306": {
+      "uid": 306,
       "comment": "【人物阶段】叶红缨:neg_gap:赵无忧",
       "key": [
         "叶红缨",
@@ -10735,8 +10773,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "305": {
-      "uid": 305,
+    "307": {
+      "uid": 307,
       "comment": "【人物阶段】叶红缨:neg_gap:自设",
       "key": [
         "叶红缨",
@@ -10756,8 +10794,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "306": {
-      "uid": 306,
+    "308": {
+      "uid": 308,
       "comment": "【人物阶段】叶红缨:neg_disgust:赵无忧",
       "key": [
         "叶红缨",
@@ -10777,8 +10815,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "307": {
-      "uid": 307,
+    "309": {
+      "uid": 309,
       "comment": "【人物阶段】叶红缨:neg_disgust:自设",
       "key": [
         "叶红缨",
@@ -10798,8 +10836,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "308": {
-      "uid": 308,
+    "310": {
+      "uid": 310,
       "comment": "【人物阶段】叶红缨:neg_hostile",
       "key": [
         "叶红缨",
@@ -10819,8 +10857,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "309": {
-      "uid": 309,
+    "311": {
+      "uid": 311,
       "comment": "【人物阶段】叶红缨:neg_nemesis",
       "key": [
         "叶红缨",
@@ -10840,8 +10878,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "310": {
-      "uid": 310,
+    "312": {
+      "uid": 312,
       "comment": "【人物阶段】孤月:stage02:赵无忧",
       "key": [
         "孤月",
@@ -10859,8 +10897,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "311": {
-      "uid": 311,
+    "313": {
+      "uid": 313,
       "comment": "【人物阶段】孤月:stage02:自设",
       "key": [
         "孤月",
@@ -10878,8 +10916,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "312": {
-      "uid": 312,
+    "314": {
+      "uid": 314,
       "comment": "【人物阶段】孤月:stage03:赵无忧",
       "key": [
         "孤月",
@@ -10897,8 +10935,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "313": {
-      "uid": 313,
+    "315": {
+      "uid": 315,
       "comment": "【人物阶段】孤月:stage03:自设",
       "key": [
         "孤月",
@@ -10916,8 +10954,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "314": {
-      "uid": 314,
+    "316": {
+      "uid": 316,
       "comment": "【人物阶段】孤月:stage04:赵无忧",
       "key": [
         "孤月",
@@ -10935,8 +10973,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "315": {
-      "uid": 315,
+    "317": {
+      "uid": 317,
       "comment": "【人物阶段】孤月:stage04:自设",
       "key": [
         "孤月",
@@ -10954,8 +10992,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "316": {
-      "uid": 316,
+    "318": {
+      "uid": 318,
       "comment": "【人物阶段】孤月:stage05:赵无忧",
       "key": [
         "孤月",
@@ -10973,8 +11011,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "317": {
-      "uid": 317,
+    "319": {
+      "uid": 319,
       "comment": "【人物阶段】孤月:stage05:自设",
       "key": [
         "孤月",
@@ -10992,8 +11030,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "318": {
-      "uid": 318,
+    "320": {
+      "uid": 320,
       "comment": "【人物阶段】孤月:neg_gap",
       "key": [
         "孤月",
@@ -11011,8 +11049,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "319": {
-      "uid": 319,
+    "321": {
+      "uid": 321,
       "comment": "【人物阶段】孤月:neg_disgust",
       "key": [
         "孤月",
@@ -11030,8 +11068,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "320": {
-      "uid": 320,
+    "322": {
+      "uid": 322,
       "comment": "【人物阶段】孤月:neg_hostile",
       "key": [
         "孤月",
@@ -11049,8 +11087,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "321": {
-      "uid": 321,
+    "323": {
+      "uid": 323,
       "comment": "【人物阶段】孤月:neg_nemesis",
       "key": [
         "孤月",
@@ -11068,8 +11106,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "322": {
-      "uid": 322,
+    "324": {
+      "uid": 324,
       "comment": "【人物阶段】闻观语:neg_gap",
       "key": [
         "闻观语"
@@ -11084,8 +11122,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "323": {
-      "uid": 323,
+    "325": {
+      "uid": 325,
       "comment": "【人物阶段】闻观语:neg_disgust",
       "key": [
         "闻观语"
@@ -11100,8 +11138,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "324": {
-      "uid": 324,
+    "326": {
+      "uid": 326,
       "comment": "【人物阶段】闻观语:neg_hostile",
       "key": [
         "闻观语"
@@ -11116,8 +11154,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "325": {
-      "uid": 325,
+    "327": {
+      "uid": 327,
       "comment": "【人物阶段】闻观语:neg_nemesis",
       "key": [
         "闻观语"
@@ -11132,8 +11170,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "326": {
-      "uid": 326,
+    "328": {
+      "uid": 328,
       "comment": "【人物阶段】楚灵夜:neg_gap",
       "key": [
         "楚灵夜"
@@ -11148,8 +11186,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "327": {
-      "uid": 327,
+    "329": {
+      "uid": 329,
       "comment": "【人物阶段】楚灵夜:neg_disgust",
       "key": [
         "楚灵夜"
@@ -11164,8 +11202,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "328": {
-      "uid": 328,
+    "330": {
+      "uid": 330,
       "comment": "【人物阶段】楚灵夜:neg_hostile",
       "key": [
         "楚灵夜"
@@ -11180,8 +11218,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "329": {
-      "uid": 329,
+    "331": {
+      "uid": 331,
       "comment": "【人物阶段】楚灵夜:neg_nemesis",
       "key": [
         "楚灵夜"
@@ -11196,8 +11234,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "330": {
-      "uid": 330,
+    "332": {
+      "uid": 332,
       "comment": "【人物阶段】苏瑶:neg_gap",
       "key": [
         "苏瑶"
@@ -11212,8 +11250,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "331": {
-      "uid": 331,
+    "333": {
+      "uid": 333,
       "comment": "【人物阶段】苏瑶:neg_disgust",
       "key": [
         "苏瑶"
@@ -11228,8 +11266,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "332": {
-      "uid": 332,
+    "334": {
+      "uid": 334,
       "comment": "【人物阶段】苏瑶:neg_hostile",
       "key": [
         "苏瑶"
@@ -11244,8 +11282,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "333": {
-      "uid": 333,
+    "335": {
+      "uid": 335,
       "comment": "【人物阶段】苏瑶:neg_nemesis",
       "key": [
         "苏瑶"
@@ -11260,8 +11298,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "334": {
-      "uid": 334,
+    "336": {
+      "uid": 336,
       "comment": "【人物阶段】苏玲:neg_gap",
       "key": [
         "苏玲"
@@ -11276,8 +11314,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "335": {
-      "uid": 335,
+    "337": {
+      "uid": 337,
       "comment": "【人物阶段】苏玲:neg_disgust",
       "key": [
         "苏玲"
@@ -11292,8 +11330,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "336": {
-      "uid": 336,
+    "338": {
+      "uid": 338,
       "comment": "【人物阶段】苏玲:neg_hostile",
       "key": [
         "苏玲"
@@ -11308,8 +11346,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "337": {
-      "uid": 337,
+    "339": {
+      "uid": 339,
       "comment": "【人物阶段】苏玲:neg_nemesis",
       "key": [
         "苏玲"
@@ -11324,8 +11362,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "338": {
-      "uid": 338,
+    "340": {
+      "uid": 340,
       "comment": "【人物阶段】柳含烟:neg_gap",
       "key": [
         "柳含烟"
@@ -11340,8 +11378,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "339": {
-      "uid": 339,
+    "341": {
+      "uid": 341,
       "comment": "【人物阶段】柳含烟:neg_disgust",
       "key": [
         "柳含烟"
@@ -11356,8 +11394,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "340": {
-      "uid": 340,
+    "342": {
+      "uid": 342,
       "comment": "【人物阶段】柳含烟:neg_hostile",
       "key": [
         "柳含烟"
@@ -11372,8 +11410,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "341": {
-      "uid": 341,
+    "343": {
+      "uid": 343,
       "comment": "【人物阶段】柳含烟:neg_nemesis",
       "key": [
         "柳含烟"
@@ -11388,8 +11426,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "342": {
-      "uid": 342,
+    "344": {
+      "uid": 344,
       "comment": "【人物阶段】雨霏柔:neg_gap",
       "key": [
         "雨霏柔"
@@ -11404,8 +11442,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "343": {
-      "uid": 343,
+    "345": {
+      "uid": 345,
       "comment": "【人物阶段】雨霏柔:neg_disgust",
       "key": [
         "雨霏柔"
@@ -11420,8 +11458,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "344": {
-      "uid": 344,
+    "346": {
+      "uid": 346,
       "comment": "【人物阶段】雨霏柔:neg_hostile",
       "key": [
         "雨霏柔"
@@ -11436,8 +11474,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "345": {
-      "uid": 345,
+    "347": {
+      "uid": 347,
       "comment": "【人物阶段】雨霏柔:neg_nemesis",
       "key": [
         "雨霏柔"
@@ -11452,8 +11490,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "346": {
-      "uid": 346,
+    "348": {
+      "uid": 348,
       "comment": "【人物阶段】云织梦:neg_gap",
       "key": [
         "云织梦"
@@ -11468,8 +11506,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "347": {
-      "uid": 347,
+    "349": {
+      "uid": 349,
       "comment": "【人物阶段】云织梦:neg_disgust",
       "key": [
         "云织梦"
@@ -11484,8 +11522,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "348": {
-      "uid": 348,
+    "350": {
+      "uid": 350,
       "comment": "【人物阶段】云织梦:neg_hostile",
       "key": [
         "云织梦"
@@ -11500,8 +11538,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "349": {
-      "uid": 349,
+    "351": {
+      "uid": 351,
       "comment": "【人物阶段】云织梦:neg_nemesis",
       "key": [
         "云织梦"
@@ -11516,8 +11554,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "350": {
-      "uid": 350,
+    "352": {
+      "uid": 352,
       "comment": "【人物阶段】花芷凝:neg_gap",
       "key": [
         "花芷凝"
@@ -11532,8 +11570,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "351": {
-      "uid": 351,
+    "353": {
+      "uid": 353,
       "comment": "【人物阶段】花芷凝:neg_disgust",
       "key": [
         "花芷凝"
@@ -11548,8 +11586,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "352": {
-      "uid": 352,
+    "354": {
+      "uid": 354,
       "comment": "【人物阶段】花芷凝:neg_hostile",
       "key": [
         "花芷凝"
@@ -11564,8 +11602,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "353": {
-      "uid": 353,
+    "355": {
+      "uid": 355,
       "comment": "【人物阶段】花芷凝:neg_nemesis",
       "key": [
         "花芷凝"
@@ -11580,8 +11618,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "354": {
-      "uid": 354,
+    "356": {
+      "uid": 356,
       "comment": "【人物阶段】苏倾寒:neg_gap",
       "key": [
         "苏倾寒"
@@ -11596,8 +11634,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "355": {
-      "uid": 355,
+    "357": {
+      "uid": 357,
       "comment": "【人物阶段】苏倾寒:neg_disgust",
       "key": [
         "苏倾寒"
@@ -11612,8 +11650,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "356": {
-      "uid": 356,
+    "358": {
+      "uid": 358,
       "comment": "【人物阶段】苏倾寒:neg_hostile",
       "key": [
         "苏倾寒"
@@ -11628,8 +11666,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "357": {
-      "uid": 357,
+    "359": {
+      "uid": 359,
       "comment": "【人物阶段】苏倾寒:neg_nemesis",
       "key": [
         "苏倾寒"
@@ -11644,8 +11682,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "358": {
-      "uid": 358,
+    "360": {
+      "uid": 360,
       "comment": "【人物阶段】慕容清歌:neg_gap",
       "key": [
         "慕容清歌"
@@ -11660,8 +11698,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "359": {
-      "uid": 359,
+    "361": {
+      "uid": 361,
       "comment": "【人物阶段】慕容清歌:neg_disgust",
       "key": [
         "慕容清歌"
@@ -11676,8 +11714,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "360": {
-      "uid": 360,
+    "362": {
+      "uid": 362,
       "comment": "【人物阶段】慕容清歌:neg_hostile",
       "key": [
         "慕容清歌"
@@ -11692,8 +11730,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "361": {
-      "uid": 361,
+    "363": {
+      "uid": 363,
       "comment": "【人物阶段】慕容清歌:neg_nemesis",
       "key": [
         "慕容清歌"
@@ -11708,8 +11746,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "362": {
-      "uid": 362,
+    "364": {
+      "uid": 364,
       "comment": "【人物阶段】顾云舒:neg_gap",
       "key": [
         "顾云舒"
@@ -11724,8 +11762,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "363": {
-      "uid": 363,
+    "365": {
+      "uid": 365,
       "comment": "【人物阶段】顾云舒:neg_disgust",
       "key": [
         "顾云舒"
@@ -11740,8 +11778,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "364": {
-      "uid": 364,
+    "366": {
+      "uid": 366,
       "comment": "【人物阶段】顾云舒:neg_hostile",
       "key": [
         "顾云舒"
@@ -11756,8 +11794,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "365": {
-      "uid": 365,
+    "367": {
+      "uid": 367,
       "comment": "【人物阶段】顾云舒:neg_nemesis",
       "key": [
         "顾云舒"
@@ -11772,8 +11810,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "366": {
-      "uid": 366,
+    "368": {
+      "uid": 368,
       "comment": "【人物阶段】陆烬颜:neg_gap",
       "key": [
         "陆烬颜"
@@ -11788,8 +11826,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "367": {
-      "uid": 367,
+    "369": {
+      "uid": 369,
       "comment": "【人物阶段】陆烬颜:neg_disgust",
       "key": [
         "陆烬颜"
@@ -11804,8 +11842,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "368": {
-      "uid": 368,
+    "370": {
+      "uid": 370,
       "comment": "【人物阶段】陆烬颜:neg_hostile",
       "key": [
         "陆烬颜"
@@ -11820,8 +11858,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "369": {
-      "uid": 369,
+    "371": {
+      "uid": 371,
       "comment": "【人物阶段】陆烬颜:neg_nemesis",
       "key": [
         "陆烬颜"
@@ -11836,8 +11874,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "370": {
-      "uid": 370,
+    "372": {
+      "uid": 372,
       "comment": "【好感事件表】叶红缨",
       "key": [],
       "keysecondary": [],
@@ -11850,8 +11888,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "371": {
-      "uid": 371,
+    "373": {
+      "uid": 373,
       "comment": "【好感事件表】孤月",
       "key": [],
       "keysecondary": [],
@@ -11864,8 +11902,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "372": {
-      "uid": 372,
+    "374": {
+      "uid": 374,
       "comment": "【好感事件表】闻观语",
       "key": [],
       "keysecondary": [],
@@ -11878,8 +11916,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "373": {
-      "uid": 373,
+    "375": {
+      "uid": 375,
       "comment": "【好感事件表】楚灵夜",
       "key": [],
       "keysecondary": [],
@@ -11892,8 +11930,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "374": {
-      "uid": 374,
+    "376": {
+      "uid": 376,
       "comment": "【好感事件表】苏瑶",
       "key": [],
       "keysecondary": [],
@@ -11906,8 +11944,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "375": {
-      "uid": 375,
+    "377": {
+      "uid": 377,
       "comment": "【好感事件表】苏玲",
       "key": [],
       "keysecondary": [],
@@ -11920,8 +11958,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "376": {
-      "uid": 376,
+    "378": {
+      "uid": 378,
       "comment": "【好感事件表】柳含烟",
       "key": [],
       "keysecondary": [],
@@ -11934,8 +11972,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "377": {
-      "uid": 377,
+    "379": {
+      "uid": 379,
       "comment": "【好感事件表】雨霏柔",
       "key": [],
       "keysecondary": [],
@@ -11948,8 +11986,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "378": {
-      "uid": 378,
+    "380": {
+      "uid": 380,
       "comment": "【好感事件表】云织梦",
       "key": [],
       "keysecondary": [],
@@ -11962,8 +12000,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "379": {
-      "uid": 379,
+    "381": {
+      "uid": 381,
       "comment": "【好感事件表】花芷凝",
       "key": [],
       "keysecondary": [],
@@ -11976,8 +12014,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "380": {
-      "uid": 380,
+    "382": {
+      "uid": 382,
       "comment": "【好感事件表】苏倾寒",
       "key": [],
       "keysecondary": [],
@@ -11990,8 +12028,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "381": {
-      "uid": 381,
+    "383": {
+      "uid": 383,
       "comment": "【好感事件表】慕容清歌",
       "key": [],
       "keysecondary": [],
@@ -12004,8 +12042,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "382": {
-      "uid": 382,
+    "384": {
+      "uid": 384,
       "comment": "【好感事件表】顾云舒",
       "key": [],
       "keysecondary": [],
@@ -12018,8 +12056,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "383": {
-      "uid": 383,
+    "385": {
+      "uid": 385,
       "comment": "【好感事件表】陆烬颜",
       "key": [],
       "keysecondary": [],
@@ -12032,8 +12070,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "384": {
-      "uid": 384,
+    "386": {
+      "uid": 386,
       "comment": "【区域背景】幽寂谷",
       "key": [],
       "keysecondary": [],
@@ -12046,8 +12084,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "385": {
-      "uid": 385,
+    "387": {
+      "uid": 387,
       "comment": "【区域背景】西北荒漠石山邪窟",
       "key": [],
       "keysecondary": [],
@@ -12060,8 +12098,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "386": {
-      "uid": 386,
+    "388": {
+      "uid": 388,
       "comment": "【大势背景】peace-v48",
       "key": [],
       "keysecondary": [],
@@ -12074,8 +12112,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：承平暗涌】\n南域表面承平，各大仙门开山大典举行，极乐密藏外层禁制生隙，幽寂秘境异动已有风闻。幽寂谷探查开放日期为1578年4月1日至5月30日；是否进入、探查及取得物品由对应局部节点决定。 当前神诅尚未降临，南域修士不受神诅压制，元婴修士尚未因灾变跌境；炎雷子未因灾变受创闭关。各山门尚有常规秩序，秘境异动不能写成神诅降临或天地战力压制。NPC不得把未来灾情当作已知事实报告。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "387": {
-      "uid": 387,
+    "389": {
+      "uid": 389,
       "comment": "【大势背景】calamity",
       "key": [],
       "keysecondary": [],
@@ -12088,8 +12126,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：南域大劫】\n极乐密藏封印已破，远古神诅席卷南域，原有元婴大能重创跌至金丹；炎雷子受创闭关。极乐太子已立天姝会四殿，正魔旧平衡瓦解。常规结婴受到神诅限制，名器是修士突破的少数途径之一。玩家当前境界以后台记录为准，符合本地名器条件仍可重新突破元婴。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "388": {
-      "uid": 388,
+    "390": {
+      "uid": 390,
       "comment": "【大势背景】beast",
       "key": [],
       "keysecondary": [],
@@ -12102,8 +12140,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：天溪兽潮】\n南域大劫及四殿分疆已经发生。大荒凶兽狂潮已合围天溪城，仙盟调兵协防，九龙焚天大阵开启，守城拉锯战已经爆发。这里只确认世界局势，不确认玩家参战、完成守城或城破；具体变化等待局部事件。神诅下名器仍是修士突破的少数途径之一。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "389": {
-      "uid": 389,
+    "391": {
+      "uid": 391,
       "comment": "【大势规则】中控调度",
       "key": [],
       "keysecondary": [],
