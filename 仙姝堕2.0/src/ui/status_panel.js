@@ -209,7 +209,7 @@ function loadPortrait(img,p,large=false){
   let index=0;img.src=urls[index];
   img.onerror=()=>{if(++index<urls.length)img.src=urls[index];else{img.onerror=null;img.replaceWith(img.ownerDocument.createTextNode(img.alt||"暂无立绘"));}};
 }
-// 纹章状态推导：成形=known 旗标、阶段=已知最高阶、归属=明确的名器归属账本（不以破处者推定）
+// 纹章状态推导：成形=known 旗标、阶段=已知最高阶、归属=名器归属/破处者账本
 function relicStates(s, data) {
   const R=data.rules(s.stat_data),known=s.stat_data.known||s.known||{};
   return Object.entries(data.relicDb || {}).map(([id,rel])=>{
