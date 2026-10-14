@@ -14,6 +14,10 @@
 
 【2026-10-14 10:25（Asia/Shanghai）｜GLM小狐狸｜图库迁主人 pixel 账号仓，jsdelivr 直链接进卡｜v47】
 
+【2026-10-14 10:45（Asia/Shanghai）｜GLM小狐狸｜pixel 图库仓推送成功，v47 图链全量生效｜闭环】
+
+主人在 GitHub 网页接受协作者邀请未生效后，改走 fine-grained PAT（仅授权该仓 Contents 读写，No expiration）授权本机推送：84 张立绘＋命名说明已推入 1194420787-pixel/- 的 main 分支（294d569），jsdelivr 直链抽检全部 200（1.8MB 大图亦秒开）。v47 卡内 84 条链接即时生效，双轨兜底不变。安全备注：fine-grained token 仅限该仓 Contents 权限，配置于本机图库仓 .git/config，不入库不入合作.txt；主人若需轮换可在 GitHub 随时撤销重生成，重配后推送即恢复。
+
 ### 主人这一轮的诉求与原话（一条不省）
 
 “小狐狸，我们不走catbox了，把我们的本地图包传git仓库里，然后记得在角色卡里一一对应哦”（新仓：github.com/1194420787-pixel/-）
