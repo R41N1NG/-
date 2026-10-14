@@ -19,7 +19,7 @@ test('真实状态嵌套口径：申报落账、封顶、晋升后解锁与日�
  assert.equal(s.stat_data.favor_log.叶红缨.length,5);
 });
 test('两条晋升路线阈值均为20/40/60/80，数据源含十三名器与四阶图',()=>{
- for(const identity of ['赵无忧','自设']) assert.deepEqual(Object.values(data.promotionDefinitions).filter(p=>p.conditions.some(c=>c.kind==='identity'&&c.value===identity)).map(p=>p.conditions.find(c=>c.kind==='metric').value),[20,40,60,80]);
+ for(const char of ['叶红缨','孤月']) for(const identity of ['赵无忧','自设']) assert.deepEqual(Object.values(data.promotionDefinitions).filter(p=>p.character===char&&p.conditions.some(c=>c.kind==='identity'&&c.value===identity)).map(p=>p.conditions.find(c=>c.kind==='metric').value),[20,40,60,80]);
  assert.equal(Object.keys(data.relicDb).length,13);assert.equal(Object.keys(data.relicEmblems).length,13);
  for(const id of Object.keys(data.relicDb))for(const phase of [1,2,3,4])assert.match(data.relicEmblems[id][phase],/^data:image\/webp;base64,/);
 });

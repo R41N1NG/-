@@ -135,7 +135,7 @@ test('双身份八个晋升入口都连接现有故事；40点节点可发送并
  const plugin=createPromotionPlugin(data.promotionDefinitions,data.nodeStories);
  for(const cfg of Object.values(data.promotionDefinitions)){
   const identity=cfg.conditions.find(c=>c.kind==='identity').value,score=cfg.conditions.find(c=>c.kind==='metric').value;
-  const s={identity,stat_data:{character_stages:{叶红缨:{id:cfg.fromStage}},character_metrics:{叶红缨:{好感度:score}}}};
+  const s={identity,stat_data:{character_stages:{[cfg.character]:{id:cfg.fromStage}},character_metrics:{[cfg.character]:{好感度:score}}}};
   const selected=plugin.select(s,cfg.entryId);assert.equal(selected.allowed,true);assert.ok(selected.prompt?.trim());assert.ok(data.embeddedManagedEntries.some(e=>e.comment==='【节点故事】'+cfg.entryId));
  }
  const h=fixture();await h.ready();await h.click('yhrNight');await h.reply('你看到她沐浴。');await h.click('yhrFinish');await h.reply(h.report('是'));

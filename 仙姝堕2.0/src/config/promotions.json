@@ -190,5 +190,189 @@
     "finishId": "yhrRogueFinish3",
     "leaveId": "yhrRogueLeave3",
     "query": "根据本段实际剧情，玩家是否已经与叶红缨完成本次危局面对，双方打破戒律、达成了实质的解环接纳或定情结合？"
+  },
+  "guyue-zhaowuyou-stage1": {
+    "character": "孤月",
+    "label": "孤崖问阵",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "赵无忧"
+      },
+      {
+        "kind": "metric",
+        "character": "孤月",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      }
+    ],
+    "entryId": "gyZwEnter1",
+    "finishId": "gyZwFinish1",
+    "query": "根据本段实际剧情，赵无忧是否已经来到孤剑崖与孤月完成独处交流，双方确立了融洽的同门默契？"
+  },
+  "guyue-rogue-stage1": {
+    "character": "孤月",
+    "label": "坊市问道",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "自设"
+      },
+      {
+        "kind": "metric",
+        "character": "孤月",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      }
+    ],
+    "entryId": "gyRogueEnter1",
+    "finishId": "gyRogueFinish1",
+    "query": "根据本段实际剧情，玩家是否已经登台与孤月完成了切磋交手或道法探讨，并展现出端正的修者风范与见识？"
+  },
+  "guyue-zhaowuyou-stage2": {
+    "character": "孤月",
+    "label": "雪夜冰心",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "赵无忧"
+      },
+      {
+        "kind": "metric",
+        "character": "孤月",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      }
+    ],
+    "entryId": "gyZwEnter2",
+    "finishId": "gyZwFinish2",
+    "query": "根据本段实际剧情，孤月是否已经将信物冰心泪交予赵无忧（或双方完成深层雪夜交心），确立了更进一步的私密依恋？"
+  },
+  "guyue-rogue-stage2": {
+    "character": "孤月",
+    "label": "流云协契",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "自设"
+      },
+      {
+        "kind": "metric",
+        "character": "孤月",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      }
+    ],
+    "entryId": "gyRogueEnter2",
+    "finishId": "gyRogueFinish2",
+    "query": "根据本段实际剧情，玩家是否已经与孤月完成了并肩合作或任务应对，确立了彼此互信的同道道友关系？"
+  },
+  "guyue-zhaowuyou-stage3": {
+    "character": "孤月",
+    "label": "解符破戒",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "赵无忧"
+      },
+      {
+        "kind": "metric",
+        "character": "孤月",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      }
+    ],
+    "entryId": "gyZwEnter3",
+    "finishId": "gyZwFinish3",
+    "query": "根据本段实际剧情，赵无忧是否已经与孤月完成了深层身心接纳或突破禁忌的亲密结合？"
+  },
+  "guyue-rogue-stage3": {
+    "character": "孤月",
+    "label": "孤崖引客",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "自设"
+      },
+      {
+        "kind": "metric",
+        "character": "孤月",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      }
+    ],
+    "entryId": "gyRogueEnter3",
+    "finishId": "gyRogueFinish3",
+    "query": "根据本段实际剧情，孤月是否已经正式接引玩家进入孤剑崖做客，双方确立了高山流水的莫逆知己之谊？"
+  },
+  "guyue-zhaowuyou-stage4": {
+    "character": "孤月",
+    "label": "结发",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "赵无忧"
+      },
+      {
+        "kind": "metric",
+        "character": "孤月",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      }
+    ],
+    "entryId": "gyZwEnter4",
+    "finishId": "gyZwFinish4",
+    "query": "根据本段实际剧情，赵无忧是否已经接下孤月的本命剑魂，双方正式立下生死同契的结发道誓？"
+  },
+  "guyue-rogue-stage4": {
+    "character": "孤月",
+    "label": "霜华露真",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "identity",
+        "op": "eq",
+        "value": "自设"
+      },
+      {
+        "kind": "metric",
+        "character": "孤月",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      }
+    ],
+    "entryId": "gyRogueEnter4",
+    "finishId": "gyRogueFinish4",
+    "query": "根据本段实际剧情，玩家是否已经正面接纳孤月的坦白，双方完成了深夜交心并确立了深层道侣羁绊？"
   }
 }
