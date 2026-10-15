@@ -977,10 +977,11 @@ test('金丹期首次采补逐档提升，三个不同名器的破处及本源�
  await realmIntent(h,'breakthrough');assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');await h.r.restore();assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');
  h.c.chat.push({is_user:true,mes:'我已化神'});await h.reply(status({修为:'化神大圆满'},'你宣称修为提升。'));assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');
 });
-test('结婴门槛：缺烙印、重复名器和别人的三阶名器不算；归属玩家的三阶名器可结婴',async()=>{
+test('结婴门槛：失去归属、重复名器和别人的三阶名器不算；归属玩家的三阶名器可结婴',async()=>{
  const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'金丹大圆满'}});
  for(const holder of ['叶红缨','孤月','闻观语']){h.c.chat.push({is_user:true,mes:'继续'});await h.reply(deflowerReply(holder,false));}
- await assert.rejects(realmIntent(h,'breakthrough'),/未满足/);
+ assert.equal(require('../src/runtime/player_realm').eligibility(h.r.getSnapshot(),data.rules(h.r.getSnapshot().stat_data)).marked.length,3);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'owner.jiuyou':'无','owner.xinmo':'无'}});await assert.rejects(realmIntent(h,'breakthrough'),/未满足/);
  await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.zhuojiu':3,'owner.zhuojiu':'别人'}});await assert.rejects(realmIntent(h,'breakthrough'),/未满足/);
  await h.r.dispatchIntent({type:'GM_PATCH',payload:{'owner.zhuojiu':'赵无忧'}});await realmIntent(h,'breakthrough');assert.equal(h.r.getSnapshot().stat_data.修为,'元婴前期');
 });
@@ -1159,13 +1160,13 @@ test('名器诊断导出阶段归属覆盖与首次实证片段，只读不改�
  const before=JSON.stringify(h.r.getCheckpoint()),report=h.r.getDiagnostics();const r=report.relics.find(x=>x.id==='jiuyou');assert.equal(r.stage,1);assert.equal(r.owners.jiuyou,'赵无忧');assert.match(report.relicEvidence[0].proof,/元阴初破/);assert.equal(JSON.stringify(h.r.getCheckpoint()),before);
 });
 
-test('突破与纹章统一归属别名，自设道号可认主；诊断逐项列出缺失烙印且不补造',async()=>{
+test('突破与纹章统一归属别名，自设道号可认主；明确归属即确认烙印、破处仍独立校验',async()=>{
  const Realm=require('../src/runtime/player_realm'),h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{realm:'金丹大圆满'}});
  const s=h.r.getSnapshot(),r=data.rules(s.stat_data);s.identity='自设';s.stat_data.自设={name:'青松'};s.stat_data.名器归属={};s.stat_data.破处者={};s.stat_data.relic_imprints={};
  for(const [i,id] of ['zhuojiu','jiuyou','xinmo'].entries()){const cfg=r.RELIC_PILOT_CONFIG[id],g=r.FORM_OF_HOLDERS.find(x=>x.form===cfg.formKey);s.stat_data.known[cfg.formKey]=true;for(const holder of g.holders){s.stat_data.known[holder+'处女丧失']=true;s.stat_data.破处者[holder]='青松';}s.stat_data.名器归属[cfg.names[i===0?0:cfg.names.length-1]]='青松';s.stat_data.relic_imprints[id]={owner:'青松'};}
  const e=Realm.eligibility(s,r);assert.equal(e.marked.length,3);assert.equal(e.breakthrough,true);
- delete s.stat_data.relic_imprints.jiuyou;const missing=Realm.eligibility(s,r);assert.equal(missing.marked.length,2);assert.deepEqual(missing.details.find(x=>x.id==='jiuyou').missing,['未确认本源烙印']);assert.equal(s.stat_data.relic_imprints.jiuyou,undefined);
- s.stat_data.名器归属.jiuyou='无';assert.equal(Realm.eligibility(s,r).details.find(x=>x.id==='jiuyou').owned,false);
+ delete s.stat_data.relic_imprints.jiuyou;const missing=Realm.eligibility(s,r);assert.equal(missing.marked.length,3);assert.deepEqual(missing.details.find(x=>x.id==='jiuyou').missing,[]);assert.equal(missing.details.find(x=>x.id==='jiuyou').imprinted,true);assert.equal(s.stat_data.relic_imprints.jiuyou,undefined);
+ s.stat_data.破处者.孤月='别人';assert.equal(Realm.eligibility(s,r).marked.length,2);s.stat_data.破处者.孤月='青松';s.stat_data.名器归属.jiuyou='无';assert.equal(Realm.eligibility(s,r).details.find(x=>x.id==='jiuyou').owned,false);
 });
 
 

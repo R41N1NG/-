@@ -45,8 +45,8 @@ function collect(s,rules,prose,floor){
 function eligibility(s,rules){
  const r=s.stat_data.player_realm || parse(s.stat_data.修为),cfgs=Object.values(rules.RELIC_PILOT_CONFIG);
  const details=cfgs.map(cfg=>{
-  const owner=relicOwner(s.stat_data,cfg),formed=!!s.stat_data.known[cfg.formKey],broken=!!brokenByPlayer(s,cfg,rules),owned=playerOwner(s,owner),imprinted=playerOwner(s,s.stat_data.relic_imprints?.[cfg.id]?.owner),stage=rules.getRelicStage(cfg.id,s.stat_data.known);
-  return {id:cfg.id,name:cfg.names[0],owner,formed,broken,owned,imprinted,stage,missing:[!formed?'未确认成型':'',!broken?'未确认由你破处':'',!owned?'归属不是你或未确认':'',!imprinted?'未确认本源烙印':''].filter(Boolean)};
+  const owner=relicOwner(s.stat_data,cfg),formed=!!s.stat_data.known[cfg.formKey],broken=!!brokenByPlayer(s,cfg,rules),owned=playerOwner(s,owner),imprinted=owned,stage=rules.getRelicStage(cfg.id,s.stat_data.known);
+  return {id:cfg.id,name:cfg.names[0],owner,formed,broken,owned,imprinted,stage,missing:[!formed?'未确认成型':'',!broken?'未确认由你破处':'',!owned?'归属不是你或未确认':''].filter(Boolean)};
  });
  const marked=details.filter(c=>c.broken&&c.owned&&c.imprinted),trained=details.filter(c=>c.owned&&c.stage>=3);
  const breakthrough=r.phase==='大圆满' && (['炼气','筑基'].includes(r.major)||(r.major==='金丹'&&(marked.length>=3||trained.length>0)));
