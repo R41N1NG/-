@@ -43,15 +43,22 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
 .trpg .dial-marker { fill: #fff3f3; stroke: #b2747e; stroke-width: 3; }
 .trpg .dial-marker-orbit { transform-origin: 80px 80px; transition: transform 700ms cubic-bezier(.2,.75,.25,1); }
 .trpg .dial-beat-halo { fill: none; stroke: #df9ba8; stroke-width: 1; animation: ring-beat var(--beat) ease-out infinite; }
+.trpg .ecg-line { fill: none; stroke: #efa5b3; stroke-width: 1.25; stroke-linejoin: round; stroke-linecap: round; }
+.trpg .ecg-scroll { animation: ecg-scroll var(--beat) linear infinite; }
 .trpg .dial-number { fill: #ffe6e6; font: 750 38px ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }
 .trpg .dial-label { fill: #c4b6be; font: 9px system-ui, sans-serif; }
 .trpg .dial-scale { fill: #b7b5be; font: 8px ui-monospace, Consolas, monospace; }
 .trpg .dial-note { fill: #afcab4; font: 8px system-ui, sans-serif; }
 .trpg .dial-heart { fill: #eaa4ae; font-size: 12px; animation: beat var(--beat) ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 .trpg .stamina { width: min(100%, 164px); margin-top: -2px; }
-.trpg .stamina-label { display: flex; justify-content: space-between; font-size: 10px; color: #acc5b5; }
+.trpg .stamina { --stamina-color: #96c7a6; }
+.trpg .stamina[data-band="yellow"] { --stamina-color: #ddbe75; }
+.trpg .stamina[data-band="red"] { --stamina-color: #e48b8b; }
+.trpg .stamina-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--stamina-color); }
 .trpg .stamina-meter { display: block; height: 5px; margin-top: 5px; border-radius: 3px; background: #404b45; overflow: hidden; }
-.trpg .stamina-fill { display: block; width: 72%; height: 100%; border-radius: inherit; background: #96c7a6; transition: width 700ms cubic-bezier(.2,.75,.25,1); }
+.trpg .stamina-fill { display: block; width: 72%; height: 100%; border-radius: inherit; background: var(--stamina-color); transition: width 700ms cubic-bezier(.2,.75,.25,1); }
+.trpg .audio-status { flex-basis: 100%; color: var(--muted); font-size: 11px; }
+.trpg button[aria-pressed="true"] { background: #354d43; border-color: #9ab7a4; }
 .trpg progress { display: block; width: 100%; height: 7px; margin-top: 10px; accent-color: #a4b9c9; }
 .trpg .drawer { border-top: 1px solid var(--border); padding: 20px; }
 .trpg .columns { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; }
@@ -85,9 +92,10 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
 @keyframes beat { 0%, 35%, 100% { transform: scale(1); } 12% { transform: scale(1.18); } }
 @keyframes ring-beat { 0%, 40%, 100% { stroke-opacity: .08; stroke-width: 1; } 12% { stroke-opacity: .65; stroke-width: 2.5; } }
 @keyframes dialog-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
-.trpg.motion-paused .dial-heart, .trpg.motion-paused .dial-beat-halo { animation-play-state: paused; }
+@keyframes ecg-scroll { from { transform: translateX(0); } to { transform: translateX(-72px); } }
+.trpg.motion-paused .dial-heart, .trpg.motion-paused .dial-beat-halo, .trpg.motion-paused .ecg-scroll { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {
-  .trpg .dial-heart, .trpg .dial-beat-halo, .trpg dialog[open] { animation: none; }
+  .trpg .dial-heart, .trpg .dial-beat-halo, .trpg .ecg-scroll, .trpg dialog[open] { animation: none; }
   .trpg .dial-marker-orbit, .trpg .stamina-fill { transition: none; }
 }
 @media (max-width: 520px) {
@@ -115,18 +123,20 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
           <div class="stat"><div class="label">距离档</div><div class="value">尾随</div><div class="pips" aria-hidden="true"><i class="pip"></i><i class="pip active"></i><i class="pip"></i><i class="pip"></i></div></div>
           <div class="stat instrument">
             <svg class="heart-dial" viewBox="0 0 160 154" role="img" aria-label="心跳58 BPM，量程30至120，绿色甜区40至65">
+              <defs><clipPath class="ecg-clip"><circle cx="80" cy="80" r="48"></circle></clipPath></defs>
               <path class="dial-track"></path><path class="dial-sweet"></path><g class="dial-ticks"></g>
               <circle class="dial-beat-halo" cx="80" cy="80" r="52" aria-hidden="true"></circle>
+              <g class="ecg-window" aria-hidden="true"><g class="ecg-scroll"><path class="ecg-line"></path></g></g>
               <g class="dial-marker-orbit" style="transform: rotate(219deg)"><circle class="dial-marker" cx="142" cy="80" r="4.5"></circle></g>
               <text x="80" y="51" text-anchor="middle" class="dial-label">心跳</text>
               <text x="80" y="87" text-anchor="middle" class="dial-number">58</text>
-              <text x="80" y="103" text-anchor="middle" class="dial-label">BPM</text>
-              <text x="80" y="121" text-anchor="middle" class="dial-heart" aria-hidden="true">♥</text>
+              <text x="80" y="98" text-anchor="middle" class="dial-label">BPM</text>
+              <text x="62" y="51" text-anchor="middle" class="dial-heart" aria-hidden="true">♥</text>
               <text x="29" y="139" text-anchor="middle" class="dial-scale">30</text>
               <text x="131" y="139" text-anchor="middle" class="dial-scale">120</text>
               <text x="80" y="143" text-anchor="middle" class="dial-note">甜区 40–65</text>
             </svg>
-            <div class="stamina"><div class="stamina-label"><span>体力</span><span class="stamina-value">72%</span></div><div class="stamina-meter" role="progressbar" aria-label="体力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72"><span class="stamina-fill"></span></div></div>
+            <div class="stamina" data-band="green"><div class="stamina-label"><span>体力</span><span class="stamina-value">72%</span></div><div class="stamina-meter" role="progressbar" aria-label="体力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72"><span class="stamina-fill"></span></div></div>
           </div>
         </div>
       </summary>
@@ -145,7 +155,7 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
             <p class="assessment">读时机检定通过 · 此刻天时地利</p>
           </div>
         </div>
-        <nav class="links" aria-label="深页入口"><button type="button" data-dialog="profile">她的档案 ↗</button><button type="button" data-dialog="lies">我说过的话 ↗</button><button type="button" data-dialog="wanted">追缉 ↗</button></nav>
+        <nav class="links" aria-label="深页和声音入口"><button type="button" data-dialog="profile">她的档案 ↗</button><button type="button" data-dialog="lies">我说过的话 ↗</button><button type="button" data-dialog="wanted">追缉 ↗</button><button type="button" id="heartbeat-sound" aria-pressed="false">开启心跳声</button><span class="audio-status" role="status">心跳声已关闭</span></nav>
       </div>
     </details>
     <div class="ledger">本轮结算 · 体力 −3</div>
@@ -159,6 +169,7 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
     <button type="button" data-preset="steady" aria-pressed="true">平稳 · 58</button>
     <button type="button" data-preset="tense" aria-pressed="false">紧张 · 94</button>
     <button type="button" data-preset="recover" aria-pressed="false">缓和 · 62</button>
+    <button type="button" data-preset="spent" aria-pressed="false">疲惫 · 110</button>
     <button type="button" id="preview-play" aria-pressed="false">演示一轮</button>
     <button type="button" id="preview-settlement">结算弹层</button>
     <p class="preview-status" role="status">平稳 · 心跳 58 BPM · 体力 72%</p>
@@ -166,17 +177,27 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
   </div>
 </main>
 <script>
-// 仅作局部交互预览。正式宿主适配、数据广播、音频、结算和存档不在本稿中。
+// 局部交互和合成心跳声预览。正式宿主适配、数据广播、结算和存档不在本稿中。
 (() => {
   const root = document.querySelector('.trpg');
   // 预览快照：圆心读数、圆周位置、心形节拍及体力条从同一份数据绘制。
   const presets = Object.freeze({
     steady: Object.freeze({ label: '平稳', bpm: 58, stamina: 72 }),
     tense: Object.freeze({ label: '紧张', bpm: 94, stamina: 43 }),
-    recover: Object.freeze({ label: '缓和', bpm: 62, stamina: 64 })
+    recover: Object.freeze({ label: '缓和', bpm: 62, stamina: 64 }),
+    spent: Object.freeze({ label: '疲惫', bpm: 110, stamina: 28 })
   });
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const dial = root.querySelector('.heart-dial');
+  const clipId = 'ecg-' + (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+  dial.querySelector('.ecg-clip').id = clipId;
+  dial.querySelector('.ecg-window').setAttribute('clip-path', `url(#${clipId})`);
+  // 一段72单位宽的示意心电波形，每个周期只滚动一段；不作为医学数据。
+  let ecgPath = 'M 0 114';
+  for (let start = 0; start < 288; start += 72) {
+    for (const [x, y] of [[14,114],[18,111],[22,114],[27,114],[30,104],[34,123],[38,110],[43,114],[51,114],[55,111],[60,114],[72,114]]) ecgPath += ` L ${start + x} ${y}`;
+  }
+  dial.querySelector('.ecg-line').setAttribute('d', ecgPath);
   const point = (value, radius = 62) => {
     const angle = (135 + (value - 30) / 90 * 270) * Math.PI / 180;
     return { x: 80 + radius * Math.cos(angle), y: 80 + radius * Math.sin(angle) };
@@ -194,7 +215,106 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
     tick.setAttribute('class', 'dial-tick');
     dial.querySelector('.dial-ticks').append(tick);
   }
+  let currentSnapshot = presets.steady;
+  const soundButton = root.querySelector('#heartbeat-sound');
+  const audioStatus = root.querySelector('.audio-status');
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  let audioContext = null, masterGain = null, audioOn = false, audioPending = false;
+  let audioTimer = null, audioRevision = 0, nextBeat = 0;
+  const voices = new Set();
+  function soundUI(message) {
+    soundButton.textContent = audioPending ? '取消开启' : audioOn ? '关闭心跳声' : '开启心跳声';
+    soundButton.setAttribute('aria-pressed', String(audioOn || audioPending));
+    audioStatus.textContent = message;
+  }
+  function cancelVoices() {
+    for (const oscillator of voices) { try { oscillator.stop(); } catch {} }
+    voices.clear();
+  }
+  function stopAudio(message = '心跳声已关闭') {
+    ++audioRevision;
+    audioOn = false;
+    audioPending = false;
+    clearTimeout(audioTimer);
+    audioTimer = null;
+    cancelVoices();
+    if (audioContext && audioContext.state !== 'closed') audioContext.suspend().catch(() => {});
+    soundUI(message);
+  }
+  function thump(time, frequency, level) {
+    const oscillator = audioContext.createOscillator();
+    const envelope = audioContext.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(frequency, time);
+    oscillator.frequency.exponentialRampToValueAtTime(40, time + .13);
+    envelope.gain.setValueAtTime(.0001, time);
+    envelope.gain.exponentialRampToValueAtTime(level, time + .006);
+    envelope.gain.exponentialRampToValueAtTime(.0001, time + .14);
+    oscillator.connect(envelope).connect(masterGain);
+    voices.add(oscillator);
+    oscillator.onended = () => { voices.delete(oscillator); oscillator.disconnect(); envelope.disconnect(); };
+    oscillator.start(time);
+    oscillator.stop(time + .15);
+  }
+  function scheduleAudio() {
+    if (!audioOn || audioContext.state !== 'running') return;
+    const period = 60 / currentSnapshot.bpm;
+    const now = audioContext.currentTime;
+    if (nextBeat < now - .12) nextBeat = now + .04;
+    while (nextBeat < now + .12) {
+      thump(nextBeat, 82, .75);
+      thump(nextBeat + Math.min(.16, period * .22), 105, .45);
+      nextBeat += period;
+    }
+    audioTimer = setTimeout(scheduleAudio, 25);
+  }
+  function syncAudioTempo() {
+    if (!audioOn) return;
+    clearTimeout(audioTimer);
+    cancelVoices();
+    nextBeat = audioContext.currentTime + .04;
+    scheduleAudio();
+    // 用同一BPM对齐波峰/心形/圆环与下一拍。输出设备仍可能引入音频延迟。
+    const periodMs = 60000 / currentSnapshot.bpm;
+    for (const animation of root.getAnimations({ subtree: true })) {
+      const phase = animation.animationName === 'ecg-scroll' ? 22 / 72 : .12;
+      if (['ecg-scroll', 'beat', 'ring-beat'].includes(animation.animationName)) animation.currentTime = phase * periodMs - 40;
+    }
+  }
+  async function toggleAudio() {
+    if (audioOn || audioPending) return stopAudio();
+    if (!AudioCtor) return soundUI('当前浏览器不支持心跳音效');
+    if (document.hidden) return soundUI('回到页面后点击开启心跳声');
+    const revision = ++audioRevision;
+    audioPending = true;
+    soundUI('正在开启心跳声…');
+    try {
+      if (!audioContext || audioContext.state === 'closed') {
+        audioContext = new AudioCtor();
+        masterGain = audioContext.createGain();
+        masterGain.gain.value = .14;
+        masterGain.connect(audioContext.destination);
+        audioContext.addEventListener('statechange', () => {
+          if (audioOn && audioContext.state !== 'running') stopAudio('播放已暂停，点击可重新开启');
+        });
+      }
+      await audioContext.resume();
+      if (revision !== audioRevision || !root.isConnected || document.hidden) return;
+      if (audioContext.state !== 'running') throw new Error('Audio context did not resume');
+      audioPending = false;
+      audioOn = true;
+      syncAudioTempo();
+      soundUI('心跳声已开启 · 随当前 BPM 变化');
+    } catch {
+      if (revision === audioRevision) stopAudio('未能播放，点击可重试；也可保持静音');
+    }
+  }
+  if (!AudioCtor) {
+    soundButton.disabled = true;
+    soundUI('当前浏览器不支持心跳音效');
+  }
   function renderVitals(snapshot) {
+    currentSnapshot = snapshot;
     const value = Math.min(120, Math.max(30, snapshot.bpm));
     dial.querySelector('.dial-marker-orbit').style.transform = `rotate(${135 + (value - 30) / 90 * 270}deg)`;
     dial.querySelector('.dial-number').textContent = snapshot.bpm;
@@ -203,7 +323,10 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
     root.querySelector('.stamina-value').textContent = `${snapshot.stamina}%`;
     root.querySelector('.stamina-meter').setAttribute('aria-valuenow', snapshot.stamina);
     root.querySelector('.stamina-fill').style.width = `${snapshot.stamina}%`;
+    const band = snapshot.stamina >= 70 ? 'green' : snapshot.stamina >= 35 ? 'yellow' : 'red';
+    root.querySelector('.stamina').dataset.band = band;
     document.querySelector('.preview-status').textContent = `${snapshot.label} · 心跳 ${snapshot.bpm} BPM · 体力 ${snapshot.stamina}%`;
+    syncAudioTempo();
   }
   renderVitals(presets.steady);
 
@@ -261,7 +384,7 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
     demoRunning = true;
     playButton.textContent = '停止演示';
     playButton.setAttribute('aria-pressed', 'true');
-    const sequence = ['tense', 'recover', 'steady'];
+    const sequence = ['tense', 'spent', 'recover', 'steady'];
     let index = 0;
     const step = () => {
       if (!demoRunning) return;
@@ -273,9 +396,20 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
   });
   document.addEventListener('visibilitychange', () => {
     root.classList.toggle('motion-paused', document.hidden);
-    if (document.hidden) stopDemo();
+    if (document.hidden) { stopDemo(); stopAudio('页面已暂停，点击可重新开启心跳声'); }
   });
-  window.addEventListener('pagehide', stopDemo);
+  function dispose() {
+    stopDemo();
+    stopAudio();
+    if (audioContext && audioContext.state !== 'closed') audioContext.close().catch(() => {});
+    observer.disconnect();
+  }
+  const observer = new MutationObserver(() => { if (!root.isConnected) dispose(); });
+  observer.observe(document.body, { childList: true, subtree: true });
+  window.addEventListener('pagehide', dispose);
+  window.addEventListener('pageshow', () => {
+    if (root.isConnected) observer.observe(document.body, { childList: true, subtree: true });
+  });
   const openers = new WeakMap();
   const items = {
     headphones: { name: '耳机', description: '持有物：耳机。当前生效修正见面板中的“耳机伪装 +2”。' },
@@ -293,7 +427,9 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
     // 所有控件均为普通按钮，显式取消默认行为，避免提交宿主外层表单。
     event.preventDefault();
     event.stopPropagation();
-    if (button.hasAttribute('data-close')) {
+    if (button.id === 'heartbeat-sound') {
+      void toggleAudio();
+    } else if (button.hasAttribute('data-close')) {
       button.closest('dialog')?.close();
     } else if (button.dataset.item) {
       const item = items[button.dataset.item];
