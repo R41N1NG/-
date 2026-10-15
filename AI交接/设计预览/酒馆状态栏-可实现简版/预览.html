@@ -13,16 +13,19 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
 .story { margin: 10px 0 22px; color: #c5c8ce; line-height: 1.9; }
 .preview-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; align-items: center; }
 .preview-tools small { color: #9298a1; }
-.trpg { --border: #454b55; --muted: #a9aeb8; --paper: #242830; --beat: 1.03448s;
-  color: #e4e6eb; background: var(--paper); border: 1px solid var(--border); border-radius: 5px; font-size: 13px; }
-.trpg button, .preview-tools button { font: inherit; color: inherit; background: #30353e; border: 1px solid #535b68; border-radius: 3px; padding: 7px 12px; cursor: pointer; }
-.trpg button:hover, .preview-tools button:hover { background: #3a414b; }
+.trpg { --border: #3d4955; --muted: #a0adba; --paper: #222b34; --beat: 1.03448s;
+  color: #e4e6eb; background: var(--paper); border: 1px solid var(--border); border-top: 3px solid #8ca4b5; border-radius: 8px; font-size: 13px; box-shadow: 0 8px 24px #0003; }
+.trpg button, .preview-tools button { font: inherit; color: #d9e4ed; background: #2d3a46; border: 1px solid #526577; border-radius: 5px; padding: 8px 13px; cursor: pointer; min-height: 36px; }
+.trpg button:hover, .preview-tools button:hover { background: #3a4c5c; border-color: #9bb1c3; }
+.trpg button:active { background: #202b35; }
 .trpg button:focus-visible, .trpg summary:focus-visible { outline: 2px solid #bfd3c0; outline-offset: 3px; }
 .trpg summary { list-style: none; cursor: pointer; }
 .trpg summary::-webkit-details-marker { display: none; }
 .trpg .bar { display: grid; grid-template-columns: 1.15fr .85fr 1.5fr .8fr; align-items: stretch; }
-.trpg .stat { min-width: 0; padding: 13px 14px; border-right: 1px solid var(--border); }
+.trpg .stat { min-width: 0; padding: 15px 14px; border-right: 1px solid var(--border); background: #202831; }
+.trpg .stat:first-child { border-top-left-radius: 5px; }
 .trpg .stat:last-child { border-right: 0; }
+.trpg .stat.heart { background: #302a30; border-bottom: 2px solid #b98087; }
 .trpg .label { color: var(--muted); font-size: 11px; line-height: 1.4; }
 .trpg .value { font-size: 17px; font-weight: 650; margin-top: 6px; }
 .trpg .phase { display: flex; align-items: center; gap: 7px; }
@@ -33,9 +36,9 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
 .trpg .pip.active { background: #cbd2dc; }
 .trpg .heart-line { display: flex; align-items: center; gap: 9px; height: 42px; }
 .trpg .heart-icon { color: #e79b9b; display: inline-block; animation: beat var(--beat) ease-in-out infinite; }
-.trpg .bpm { font: 750 40px/1 ui-monospace, Consolas, monospace; color: #f4e5e5; font-variant-numeric: tabular-nums; }
+.trpg .bpm { font: 750 44px/1 ui-monospace, Consolas, monospace; color: #ffe6e6; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
 .trpg .unit { color: var(--muted); font-size: 10px; }
-.trpg .axis { position: relative; height: 7px; background: #454b55; margin-top: 6px; }
+.trpg .axis { position: relative; height: 8px; background: #454b55; margin-top: 9px; }
 /* 固定量程 30..120；甜区是 (40-30)/90 到 (65-30)/90。 */
 .trpg .sweet { position: absolute; left: 11.111%; width: 27.778%; inset-block: 0; background: #8bad8e; }
 .trpg .needle { position: absolute; left: 31.111%; width: 2px; top: -4px; height: 15px; background: white; }
@@ -44,25 +47,33 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
 .trpg .scale .start { left: 0; transform: none; }
 .trpg .scale .end { right: 0; transform: none; }
 .trpg .sweet-note { color: #a9c2ac; font-size: 10px; }
-.trpg progress { display: block; width: 100%; height: 6px; margin-top: 10px; accent-color: #b4bac5; }
-.trpg .drawer { border-top: 1px solid var(--border); padding: 16px; }
+.trpg progress { display: block; width: 100%; height: 7px; margin-top: 10px; accent-color: #a4b9c9; }
+.trpg .drawer { border-top: 1px solid var(--border); padding: 20px; }
 .trpg .columns { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; }
-.trpg h3 { font-size: 12px; margin: 0 0 12px; color: #bec4ce; letter-spacing: .08em; }
-.trpg .money { display: flex; gap: 26px; margin-bottom: 16px; }
+.trpg .column + .column { border-left: 1px solid var(--border); padding-left: 24px; }
+.trpg h3 { font-size: 12px; margin: 0 0 14px; color: #cad6e0; letter-spacing: .08em; }
+.trpg .section-no { color: #83a1b8; font: 11px ui-monospace, Consolas, monospace; margin-right: 8px; }
+.trpg .money { display: flex; gap: 26px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #465463; }
 .trpg .money strong { font: 650 21px ui-monospace, Consolas, monospace; margin-left: 8px; }
 .trpg .items { margin: 0 0 16px; padding: 0; list-style: none; }
-.trpg .items li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 0; }
-.trpg .tag { display: inline-block; padding: 3px 7px; border: 1px solid #59616e; font-size: 12px; }
+.trpg .items li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 0; }
+.trpg .items button { font-size: 12px; }
+.trpg .tag { display: inline-block; padding: 4px 9px; border: 1px solid #627870; border-left: 3px solid #9fbeac; background: #2b3935; color: #cedfd3; border-radius: 3px; font-size: 12px; }
 .trpg .timeline { list-style: none; margin: 0 0 18px; padding: 0; }
-.trpg .timeline li { display: flex; gap: 12px; margin: 10px 0; }
+.trpg .timeline li { display: flex; gap: 12px; margin: 0 0 0 3px; padding: 3px 0 15px 15px; border-left: 1px solid #546879; position: relative; }
+.trpg .timeline li::before { content: ''; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #a8bdcd; left: -3px; top: 10px; }
 .trpg time { color: var(--muted); font-family: ui-monospace, Consolas, monospace; flex-shrink: 0; }
-.trpg .assessment { font-size: 12px; margin: 12px 0 0; color: #c0d0c1; }
+.trpg .assessment { font-size: 12px; margin: 14px 0 0; padding: 8px 10px; border-left: 2px solid #9fb5a0; background: #293732; color: #c0d0c1; }
 .trpg .links { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--border); margin-top: 18px; padding-top: 12px; }
-.trpg .ledger { border-top: 1px solid var(--border); padding: 7px 14px; color: var(--muted); font-size: 11px; }
-.trpg dialog { background: var(--paper); color: #e4e6eb; border: 1px solid #697382; padding: 22px; border-radius: 5px; width: min(580px, calc(100% - 28px)); max-height: 85dvh; overflow: auto; }
+.trpg .ledger { border-top: 1px solid var(--border); padding: 8px 14px; color: var(--muted); background: #1f2730; border-radius: 0 0 7px 7px; font-size: 11px; }
+.trpg dialog { background: var(--paper); color: #e4e6eb; border: 1px solid #697e90; border-top: 3px solid #a2b8ca; padding: 22px; border-radius: 8px; width: min(580px, calc(100% - 28px)); max-height: 85dvh; overflow: auto; box-shadow: 0 16px 60px #0008; }
 .trpg dialog::backdrop { background: #0009; }
 .trpg dialog h2 { font-size: 19px; margin-top: 0; }
-.trpg dialog form { text-align: right; margin-top: 20px; }
+.trpg .dialog-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.trpg .dialog-top h2 { margin-bottom: 12px; }
+.trpg .close-icon { min-width: 36px; padding: 3px 8px; font-size: 21px; line-height: 1; }
+.trpg .dialog-actions { display: flex; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 16px; margin-top: 20px; }
+.trpg .item-meta { color: #afc3d2; font-size: 12px; }
 .trpg .dice { font: 700 30px/1.6 ui-monospace, Consolas, monospace; margin: 15px 0; }
 .trpg .success { color: #b3cdb8; }
 @keyframes beat { 0%, 35%, 100% { transform: scale(1); } 12% { transform: scale(1.18); } }
@@ -79,6 +90,7 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
   .trpg .unit { display: none; }
   .trpg .scale .start, .trpg .scale .end { display: none; }
   .trpg .columns { grid-template-columns: 1fr; gap: 20px; }
+  .trpg .column + .column { border-left: 0; border-top: 1px solid var(--border); padding-left: 0; padding-top: 18px; }
   .trpg .drawer { padding: 12px; }
 }
 </style>
@@ -92,43 +104,83 @@ main { max-width: 850px; padding: 32px 18px; margin: auto; }
         <div class="bar">
           <div class="stat"><div class="label">行动窗口</div><div class="value phase">潜行</div></div>
           <div class="stat"><div class="label">距离档</div><div class="value">尾随</div><div class="pips" aria-hidden="true"><i class="pip"></i><i class="pip active"></i><i class="pip"></i><i class="pip"></i></div></div>
-          <div class="stat"><div class="label">心跳</div><div class="heart-line"><span class="heart-icon" aria-hidden="true">♥</span><strong class="bpm">58</strong><span class="unit">BPM</span></div><div class="axis" aria-label="心跳58，显示量程30至120，甜区40至65"><span class="sweet"></span><span class="needle"></span></div><div class="scale" aria-hidden="true"><span class="start">30</span><span style="left:11.111%">40</span><span style="left:38.889%">65</span><span class="end">120</span></div><div class="sweet-note">甜区 40–65</div></div>
+          <div class="stat heart"><div class="label">心跳</div><div class="heart-line"><span class="heart-icon" aria-hidden="true">♥</span><strong class="bpm">58</strong><span class="unit">BPM</span></div><div class="axis" aria-label="心跳58，显示量程30至120，甜区40至65"><span class="sweet"></span><span class="needle"></span></div><div class="scale" aria-hidden="true"><span class="start">30</span><span style="left:11.111%">40</span><span style="left:38.889%">65</span><span class="end">120</span></div><div class="sweet-note">甜区 40–65</div></div>
           <div class="stat"><div class="label">体力</div><div class="value">72%</div><progress max="100" value="72" aria-label="体力72%"></progress></div>
         </div>
       </summary>
       <div class="drawer">
         <div class="columns">
-          <div>
-            <h3>携行</h3>
+          <div class="column">
+            <h3><span class="section-no">01</span>携行</h3>
             <div class="money"><span>现金<strong>240</strong></span><span>PI<strong>18</strong></span></div>
-            <ul class="items"><li><span>耳机 × 1</span><button data-dialog="item">查看</button></li><li><span>雨伞 × 1</span><button data-dialog="item">查看</button></li></ul>
+            <ul class="items"><li><span>耳机 × 1</span><button type="button" data-item="headphones">查看</button></li><li><span>雨伞 × 1</span><button type="button" data-item="umbrella">查看</button></li></ul>
             <h3>生效修正</h3><span class="tag">耳机伪装 +2</span>
           </div>
-          <div>
-            <h3>她的信号流</h3>
+          <div class="column">
+            <h3><span class="section-no">02</span>她的信号流</h3>
             <ol class="timeline"><li><time>21:14</time><span>便利店买两盒便当</span></li><li><time>21:40</time><span>绕开天桥</span></li></ol>
             <label>接近度<progress value="36" max="100" aria-label="主线接近度"></progress></label>
             <p class="assessment">读时机检定通过 · 此刻天时地利</p>
           </div>
         </div>
-        <nav class="links" aria-label="深页入口"><button data-dialog="profile">她的档案</button><button data-dialog="lies">我说过的话</button><button data-dialog="wanted">追缉</button></nav>
+        <nav class="links" aria-label="深页入口"><button type="button" data-dialog="profile">她的档案 ↗</button><button type="button" data-dialog="lies">我说过的话 ↗</button><button type="button" data-dialog="wanted">追缉 ↗</button></nav>
       </div>
     </details>
     <div class="ledger">本轮结算 · 体力 −3</div>
-    <dialog id="item"><h2>道具</h2><p>这里只演示道具查看入口。正式使用需要后台校验持有量、使用条件并确认结果。</p><p>本预览不会消耗道具或增加修正。</p><form method="dialog"><button>返回</button></form></dialog>
-    <dialog id="profile"><h2>她的档案</h2><h3>已解锁情报</h3><p>今晚在便利店买了两盒便当。</p><p class="label">样例：仅展示已知事实，尚无其他已解锁条目。</p><form method="dialog"><button>返回</button></form></dialog>
-    <dialog id="lies"><h2>我说过的话</h2><p>活跃谎言：暂无。</p><p class="label">正式数据在这里逐条列出可验证度与使用次数。</p><form method="dialog"><button>返回</button></form></dialog>
-    <dialog id="wanted"><h2>追缉</h2><p>当前等级：无。</p><p>已知效果：暂无。</p><form method="dialog"><button>返回</button></form></dialog>
-    <dialog id="settlement"><h2>动作结算 · 样例</h2><p>队列：读时机 → 靠近</p><p>修正：耳机伪装 +2</p><div class="dice">14 + 2 = 16</div><strong class="success">成功</strong><p class="label">这里是固定排版示例，未掷骰、未检定，也未写入存档。</p><form method="dialog"><button>继续</button></form></dialog>
+    <dialog id="item" aria-labelledby="item-title"><div class="dialog-top"><h2 id="item-title">道具</h2><button type="button" class="close-icon" data-close aria-label="关闭道具详情">×</button></div><p class="item-meta">持有数量：1</p><p id="item-description"></p><p class="label">当前仅预览道具详情，实际使用须接后台确认。</p><div class="dialog-actions"><button type="button" data-close>返回</button></div></dialog>
+    <dialog id="profile" aria-labelledby="profile-title"><div class="dialog-top"><h2 id="profile-title">她的档案</h2><button type="button" class="close-icon" data-close aria-label="关闭档案">×</button></div><h3>已解锁情报</h3><p>今晚在便利店买了两盒便当。</p><p class="label">样例：仅展示已知事实，尚无其他已解锁条目。</p><div class="dialog-actions"><button type="button" data-close>返回</button></div></dialog>
+    <dialog id="lies" aria-labelledby="lies-title"><div class="dialog-top"><h2 id="lies-title">我说过的话</h2><button type="button" class="close-icon" data-close aria-label="关闭谎账">×</button></div><p>活跃谎言：暂无。</p><p class="label">正式数据在这里逐条列出可验证度与使用次数。</p><div class="dialog-actions"><button type="button" data-close>返回</button></div></dialog>
+    <dialog id="wanted" aria-labelledby="wanted-title"><div class="dialog-top"><h2 id="wanted-title">追缉</h2><button type="button" class="close-icon" data-close aria-label="关闭追缉">×</button></div><p>当前等级：无。</p><p>已知效果：暂无。</p><div class="dialog-actions"><button type="button" data-close>返回</button></div></dialog>
+    <dialog id="settlement" aria-labelledby="settlement-title"><div class="dialog-top"><h2 id="settlement-title">动作结算 · 样例</h2><button type="button" class="close-icon" data-close aria-label="关闭结算示例">×</button></div><p>队列：读时机 → 靠近</p><p>修正：耳机伪装 +2</p><div class="dice">14 + 2 = 16</div><strong class="success">成功</strong><p class="label">这里是固定排版示例，未掷骰、未检定，也未写入存档。</p><div class="dialog-actions"><button type="button" data-close>继续</button></div></dialog>
   </section>
-  <div class="preview-tools"><button id="preview-settlement">演示结算弹层</button><small>此按钮属于预览工具，不进入正式状态栏。</small></div>
+  <div class="preview-tools"><button type="button" id="preview-settlement">演示结算弹层</button><small>此按钮属于预览工具，不进入正式状态栏。</small></div>
 </main>
 <script>
 // 仅作局部交互预览。正式宿主适配、数据广播、音频、结算和存档不在本稿中。
-const previewRoot = document.querySelector('.trpg');
-document.querySelectorAll('[data-dialog]').forEach(button => {
-  button.addEventListener('click', () => previewRoot.querySelector('#' + button.dataset.dialog).showModal());
-});
-document.querySelector('#preview-settlement').addEventListener('click', () => previewRoot.querySelector('#settlement').showModal());
+(() => {
+  const root = document.querySelector('.trpg');
+  const openers = new WeakMap();
+  const items = {
+    headphones: { name: '耳机', description: '持有物：耳机。当前生效修正见面板中的“耳机伪装 +2”。' },
+    umbrella: { name: '雨伞', description: '持有物：雨伞。样式预览未配置使用效果，不会据此新增修正。' }
+  };
+  function openDialog(id, button) {
+    const dialog = root.querySelector('#' + id);
+    if (!dialog || dialog.open) return;
+    openers.set(dialog, button);
+    dialog.showModal();
+  }
+  root.addEventListener('click', event => {
+    const button = event.target.closest('button');
+    if (!button || !root.contains(button)) return;
+    // 所有控件均为普通按钮，显式取消默认行为，避免提交宿主外层表单。
+    event.preventDefault();
+    event.stopPropagation();
+    if (button.hasAttribute('data-close')) {
+      button.closest('dialog')?.close();
+    } else if (button.dataset.item) {
+      const item = items[button.dataset.item];
+      if (!item) return;
+      root.querySelector('#item-title').textContent = item.name;
+      root.querySelector('#item-description').textContent = item.description;
+      openDialog('item', button);
+    } else if (button.dataset.dialog) {
+      openDialog(button.dataset.dialog, button);
+    }
+  });
+  root.querySelectorAll('dialog').forEach(dialog => {
+    dialog.addEventListener('close', () => openers.get(dialog)?.focus({ preventScroll: true }));
+    // 原生 Esc 保持有效；点击内容及内边距不关闭，只有遮罩区域关闭。
+    dialog.addEventListener('click', event => {
+      if (event.target !== dialog) return;
+      const rect = dialog.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+    });
+  });
+  document.querySelector('#preview-settlement').addEventListener('click', event => {
+    event.preventDefault();
+    openDialog('settlement', event.currentTarget);
+  });
+})();
 </script>
 </html>
