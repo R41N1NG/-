@@ -50,9 +50,11 @@ function createDispatcher(adapter, data) {
     return JSON.stringify([c.chatId, c.branchId, c.trail]);
   }
   function guard(c) {
-    if (disposed || token(c) !== token(context()))
-      throw Error("聊天、候选或正文已变化，请重新读取");
+    const now=context();
+    const appendOnly=c.allowUserAppend && now.chatId===c.chatId && now.branchId===c.branchId && C.matches(c.trail,now.trail) && now.chat.slice(c.trail.length).every(m=>m.is_user&&!m.is_system);
+    if(disposed || (token(c)!==token(now) && !appendOnly))throw Error("聊天、候选或正文已变化，请重新读取");
   }
+
   function compatible(e, c) {
     return e?.schema === 2 && C.matchesSnapshot(e.trail, c.trail);
   }
@@ -480,7 +482,7 @@ function createDispatcher(adapter, data) {
       throw e;
     }
   }
-  function applyResult(s, p, result) {
+  function applyResult(s, p, result, resultFloor=context().floor) {
     if (!result || !["success", "failure", "retry"].includes(result.outcome))
       throw Error("插件未返回明确结果");
     C.safe(result);
@@ -543,7 +545,7 @@ function createDispatcher(adapter, data) {
       s.receipts[p.id] = {
         pluginId: p.pluginId,
         nodeId: p.nodeId,
-        floor: context().floor,
+        floor: resultFloor,
         rewards: p.fixedApplied ? C.clone(s.receipts[p.id]?.rewards || []) : C.clone(rewards),
         elapsedDays: p.fixedApplied ? (s.receipts[p.id]?.elapsedDays || 0) : (result.elapsedDays || 0),
         date: C.clone(s.calendarDate),
@@ -555,7 +557,7 @@ function createDispatcher(adapter, data) {
     s.reconciledRewards =
       p.fixedApplied ? (p.selection.rewards || []) : result.outcome === "success" ? rewardsNames(result) : [];
     s.reconciledRewardAliases = p.fixedApplied ? C.clone(p.selection.rewardAliases || {}) : {};
-    s.lastNodeResult = { nodeId:p.nodeId, floor:context().floor,
+    s.lastNodeResult = { nodeId:p.nodeId, floor:resultFloor,
       outcome:result.outcome, reason:result.reason || "",
       evidenceMode:result.evidenceMode || null };
     s.pending = null;
@@ -803,8 +805,9 @@ function createDispatcher(adapter, data) {
     s.storyCount++;
     return s;
   }
-  async function story(c) {
-    if (adapter.isGenerating?.() || adapter.isAborted?.())
+  async function story(c,options={}) {
+    c={...c,allowUserAppend:true};
+    if ((adapter.isGenerating?.()&&!options.beforeGeneration) || adapter.isAborted?.())
       return { deferred: true };
     const m = c.chat[c.floor];
     if (
@@ -874,9 +877,9 @@ function createDispatcher(adapter, data) {
           body,
         );
         guard(c);
-        if (adapter.isAborted?.() || adapter.isGenerating?.())
+        if (adapter.isAborted?.() || (adapter.isGenerating?.()&&!options.beforeGeneration))
           return { deferred: true };
-        s = applyResult(s, p, result);
+        s = applyResult(s, p, result,c.floor);
         s.suppressClock = true;
         if (result.body !== undefined) body = String(result.body);
       }
@@ -933,11 +936,11 @@ function createDispatcher(adapter, data) {
       const oldId = c.chatId,
         oldFloor = c.floor;
       await adapter.replaceStory(c.floor, fixed);
-      c = context();
-      if (c.chatId !== oldId || c.floor !== oldFloor)
-        throw Error("正文更新期间聊天变化");
+      const refreshed=context();
+      if(refreshed.chatId!==oldId || refreshed.floor<oldFloor || refreshed.chat.slice(oldFloor+1).some(x=>!x.is_user||x.is_system))throw Error("正文更新期间聊天变化");
+      c={...refreshed,floor:oldFloor,allowUserAppend:true};
     }
-    if (adapter.isAborted?.() || adapter.isGenerating?.())
+    if (adapter.isAborted?.() || (adapter.isGenerating?.()&&!options.beforeGeneration))
       return { deferred: true };
     s.processed[c.floor] = C.hash(fixed);
     return commit(c, s, "floor_advance");
@@ -1244,6 +1247,11 @@ function createDispatcher(adapter, data) {
     }),
     getCheckpoint:()=>liveEnvelope?C.clone(liveEnvelope):null,
     settleStory: () => lifecycle(story),
+    flushCompleted:()=>lifecycle(async c=>{
+      const floor=c.chat.findLastIndex(m=>!m.is_user&&!m.is_system);
+      if(floor<1 || c.chat.slice(floor+1).some(m=>!m.is_user||m.is_system))return {skipped:true};
+      return story({...c,floor},{beforeGeneration:true});
+    }),
     stop: () => dispatchIntent({ type: "CANCEL_PENDING" }),
     registerPlugin(plugin) {
       if (

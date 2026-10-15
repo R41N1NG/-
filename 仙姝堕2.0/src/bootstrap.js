@@ -114,13 +114,13 @@ function start(win) {
     await mirror();
     await render();
   }
-  async function settle() {
+  async function settle() {return host.withSaving(async()=>{
     if (!active()) return;
     const key=faultKey();if(settleFaultKey===key)return;
     try { await runtime.settleStory();settleFaultKey=null; } catch(error) {settleFaultKey=key;effects.reset();throw error;}
     await mirror();
     await render();
-  }
+  });}
   function scheduleRender(delay = 60) {
     clearTimeout(renderTimer);
     renderTimer = setTimeout(() => {
@@ -135,6 +135,25 @@ function start(win) {
       host.on(name, (...args) => Promise.resolve(fn(...args)).catch(report)),
     );
   }
+  let queuedSend=null;
+  const gateSend=e=>{
+    const target=e.target;
+    const click=e.type==="click"&&target.closest?.("#send_but");
+    const enter=e.type==="keydown"&&target.id==="send_textarea"&&e.key==="Enter"&&!e.shiftKey&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!e.isComposing;
+    if((!click&&!enter)||!active()||host.isGenerating()||!host.isSaving())return;
+    e.preventDefault();e.stopImmediatePropagation();
+    if(queuedSend)return;
+    const box=doc.querySelector("#send_textarea"),draft=box?.value,chatId=host.context().chatId;
+    if(!draft?.trim())return;
+    const notice=doc.createElement("p");notice.dataset.xsd2Saving="";notice.setAttribute("role","status");notice.textContent="正在保存上一轮，完成后发送这条消息…";box.parentElement.append(notice);
+    const queued={notice};queuedSend=queued;
+    void host.whenSaved().then(()=>{
+      if(disposed||!active()||queuedSend!==queued||host.context().chatId!==chatId||box.value!==draft)return;
+      if(settleFaultKey===faultKey())throw Error("上一轮保存未完成，本条消息尚未发送，草稿已保留。请先处理保存错误。");
+      queuedSend=null;notice.remove();doc.querySelector("#send_but")?.click();
+    }).catch(report).finally(()=>{if(queuedSend===queued)queuedSend=null;notice.remove();});
+  };
+  doc.addEventListener("click",gateSend,true);doc.addEventListener("keydown",gateSend,true);
   on("CHAT_CHANGED", ()=>{effects.reset();return restore();});
   on("MESSAGE_DELETED", ()=>{effects.reset();settleFaultKey=null;lastReportKey=null;return restore({afterDelete:true});});
   on("MESSAGE_SWIPED", async () => {
@@ -153,6 +172,10 @@ function start(win) {
     // Native prompt/token previews emit STARTED with dryRun=true and no ENDED.
     // They must neither acquire the action lock nor replay authoritative state.
     if (dryRun === true || !active()) return;
+    const waitingChat=host.context().chatId;
+    await host.whenSaved();
+    if(!active() || host.context().chatId!==waitingChat)return;
+    if((_type || "normal")==="normal")await runtime.flushCompleted();
     settleFaultKey=null;lastReportKey=null;
     host.markAborted(false);
     host.markGenerating(true);
@@ -255,6 +278,8 @@ function start(win) {
       disposed = true;
       effects.dispose();
       recoveryPanel?.remove();
+      queuedSend?.notice.remove();queuedSend=null;
+      doc.removeEventListener("click",gateSend,true);doc.removeEventListener("keydown",gateSend,true);
       doc.querySelector("[data-xsd2-diagnostic]")?.remove();
       mo?.disconnect();
       clearTimeout(renderTimer);

@@ -38,10 +38,16 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     const n = context();
     if (
       n.chatId !== c.chatId ||
-      JSON.stringify(C.fingerprint(n.chat)) !== JSON.stringify(c.trail)
+      !(JSON.stringify(C.fingerprint(n.chat)) === JSON.stringify(c.trail) || (c.allowUserAppend && C.matches(c.trail,C.fingerprint(n.chat)) && n.chat.slice(c.trail.length).every(m=>m.is_user&&!m.is_system)))
     )
       throw Error("聊天已变化，取消写入");
   }
+  const saveGate=top.__XSD2_SAVE_GATE__ ||= {count:0,waiters:new Set()};
+  async function withSaving(fn){
+    saveGate.count++;
+    try{return await fn();}finally{saveGate.count--;if(!saveGate.count){for(const done of saveGate.waiters)done();saveGate.waiters.clear();}}
+  }
+  const whenSaved=()=>saveGate.count?new Promise(resolve=>saveGate.waiters.add(resolve)):Promise.resolve();
   // All instances share the writer: a remounted script must not race its predecessor.
   const chatWrites = top.__XSD2_CHAT_WRITES__ ||= {tail:Promise.resolve()};
   function mutateChatVariables(c, update, skipStale=false) {
@@ -109,13 +115,14 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       if(typeof helper.triggerSlash==="function"){Promise.resolve(helper.triggerSlash("/trigger")).catch(report);return;}
       throw Error("宿主未提供重新生成接口，请使用酒馆原生重新生成按钮继续本次结算。");
     },
+    withSaving,whenSaved,isSaving:()=>saveGate.count>0,
     getUserName(){return String(ctx().name1 || top.name1 || "无名修士").trim();},
     getPlayerAvatar(){const image=top.document.querySelector("#user_avatar_block img, #chat .mes[is_user=\"true\"] .avatar img");return image?.src || "";},
     context,
     getDiagnostics() {
       const c = context();
       return {
-        recentErrors:C.clone(recentErrors),
+        saving:saveGate.count>0,pendingSaves:saveGate.count,recentErrors:C.clone(recentErrors),
         cardVersion:c.card?.data?.character_version || c.card?.character_version || null,
         generating:isGenerating(), lifecycleGenerating:generating, aborted,
         stopVisible:visible(top.document.querySelector("#mes_stop")),
@@ -151,7 +158,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     async readMessage(i) {
       return helper.getVariables({ type: "message", message_id: i });
     },
-    async persist(c, e) {
+    async persist(c, e) {return withSaving(async()=>{
       guard(c);
       const old = await helper.getVariables({
         type: "message",
@@ -192,8 +199,8 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
         return {...vars,xsd2_checkpoint:checkpoint,xsd2_history:journal};
       });
       await save();guard(c);
-    },
-    async syncState(state) {
+    });},
+    async syncState(state) {return withSaving(async()=>{
       const c=context();c.trail=C.fingerprint(c.chat);
       const written=await mutateChatVariables(c,old=>({
         ...old,stat_data:C.clone(state?.stat_data || {})
@@ -201,7 +208,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       if(!written)return;
       // Replay may intentionally mirror an older revision before regeneration.
       await book.synchronizeState(state?.stat_data || {},()=>context().chatId===c.chatId);
-    },
+    });},
     preflightSend,
     fillInput(text) {
       const box = top.document.querySelector("#send_textarea");

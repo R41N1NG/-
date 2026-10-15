@@ -1176,3 +1176,17 @@ test('已存在境界账本的旧档也从已验证浸润历史补烙印，不�
  Realm.ensure(s,r);assert.equal(s.stat_data.relic_imprints.jiuyou,undefined);
  s.stat_data.relic_progress.jiuyou.history.push({actor:'赵无忧',action:'内射'});const revision=s.revision;Realm.ensure(s,r);assert.equal(s.stat_data.relic_imprints.jiuyou.source,'validated-history');assert.equal(s.revision,revision);assert.equal(Realm.eligibility(s,r).marked.includes(c.names[0]),true);
 });
+
+test('上一轮保存未结束时仅追加下一条用户消息，原楼层仍提交且不丢失或重复收益',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'探索'});
+ const persist=h.adapter.persist;let release,entered;const gate=new Promise(r=>release=r),reading=new Promise(r=>entered=r);
+ h.adapter.persist=async(c,e)=>{if(c.floor===2){entered();await gate;}return persist(c,e);};
+ const done=h.reply(status({储物栏:'获得：测试灵石×1'},'你获得测试灵石。'));await reading;h.c.chat.push({is_user:true,mes:'立即继续'});release();await done;
+ assert.equal(h.r.getSnapshot().storyCount,1);assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='测试灵石').count,1);assert.ok(h.c.chat[2].variables[0].stat_data.xsd2[0]);assert.equal(h.c.chat[3].variables,undefined);
+ await h.r.replay('normal');await h.reply(status({},'你继续前行。'));assert.equal(h.r.getSnapshot().storyCount,2);assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='测试灵石').count,1);
+});
+
+test('新用户楼已入场且宿主已标生成中，生成前补齐前一助手楼而不结算用户楼',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'探索'},{is_user:false,mes:status({储物栏:'获得：测试灵石×1'},'你获得测试灵石。')},{is_user:true,mes:'下一条'});h.generating(true);
+ await h.r.flushCompleted();assert.equal(h.r.getSnapshot().storyCount,1);assert.ok(h.c.chat[2].variables[0].stat_data.xsd2[0]);assert.equal(h.c.chat[3].variables,undefined);await h.r.flushCompleted();assert.equal(h.r.getSnapshot().storyCount,1);
+});

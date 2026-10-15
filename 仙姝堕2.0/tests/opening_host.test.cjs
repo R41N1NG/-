@@ -546,3 +546,29 @@ test('打包宿主隐藏旧楼层并导入聊天：前缀匹配恢复好感，�
   assert.equal(h.win.XSD2.runtime.getDiagnostics().recoveryFault,null);assert.equal(h.errors.length,0);assert.equal(h.doc.querySelector('[data-xsd2-recovery]'),null);
  }finally{h.close();}
 });
+
+test('保存未完快速发送只暂存一条，完成后发送一次；草稿修改后不自动发送旧内容',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..'));
+ for(const edit of [false,true]){
+  const h=await fixture(data.greetings.赵无忧);
+  try{
+   await until(()=>h.win.XSD2.runtime.getSnapshot());let release,entered;const gate=new Promise(r=>release=r),writing=new Promise(r=>entered=r),replace=h.win.TavernHelper.replaceVariables;let held=false;
+   h.win.TavernHelper.replaceVariables=async(v,where)=>{if(where.type==='message'&&where.message_id===2&&!held){held=true;entered();await gate;}return replace(v,where);};
+   h.context.chat.push({is_user:true,mes:'探索',variables:[{}]});h.appendDOM(1);h.context.chat.push({is_user:false,mes:'你获得测试灵石。<Status_block><储物栏>获得：测试灵石×1</储物栏></Status_block>',variables:[{}]});h.appendDOM(2);
+   const ended=h.emit('GENERATION_ENDED');await writing;const box=h.doc.querySelector('#send_textarea');box.value='立即发送下一条';h.doc.querySelector('#send_but').click();h.doc.querySelector('#send_but').click();assert.equal(h.sends.length,0);assert.ok(h.doc.querySelector('[data-xsd2-saving]'));
+   if(edit)box.value='我修改了草稿';release();await ended;await until(()=>!h.doc.querySelector('[data-xsd2-saving]'));
+   assert.equal(h.sends.length,edit?0:1);assert.equal(box.value,edit?'我修改了草稿':'立即发送下一条');assert.equal(h.win.XSD2.runtime.getSnapshot().inventory.find(x=>x.name==='测试灵石').count,1);assert.deepEqual(h.errors,[]);
+  }finally{h.close();}
+ }
+});
+
+test('保存失败释放等待计数但不自动发送草稿，错误可诊断',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..')),h=await fixture(data.greetings.赵无忧);
+ try{
+  await until(()=>h.win.XSD2.runtime.getSnapshot());let release,entered;const gate=new Promise(r=>release=r),writing=new Promise(r=>entered=r),replace=h.win.TavernHelper.replaceVariables;let held=false;
+  h.win.TavernHelper.replaceVariables=async(v,where)=>{if(where.type==='message'&&where.message_id===2&&!held){held=true;entered();await gate;}return replace(v,where);};h.context.saveChat=async()=>{throw Error('测试保存失败');};
+  h.context.chat.push({is_user:true,mes:'探索',variables:[{}]});h.appendDOM(1);h.context.chat.push({is_user:false,mes:'回复结束。<Status_block><历时>10分钟</历时></Status_block>',variables:[{}]});h.appendDOM(2);
+  const ended=h.emit('GENERATION_ENDED');await writing;h.doc.querySelector('#send_textarea').value='保留此草稿';h.doc.querySelector('#send_but').click();release();await ended;await until(()=>!h.doc.querySelector('[data-xsd2-saving]'));
+  assert.equal(h.sends.length,0);assert.equal(h.doc.querySelector('#send_textarea').value,'保留此草稿');assert.equal(h.win.XSD2.runtime.getDiagnostics().host.pendingSaves,0);assert.ok(h.errors.some(x=>x.includes('保存失败')));
+ }finally{h.close();}
+});
