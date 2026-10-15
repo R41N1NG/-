@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>酒馆状态栏 · 可实现简版</title>
+<style>
+/* 外层只模拟消息宽度；.trpg 才是待嵌入的面板。无图片、字体或库依赖。 */
+* { box-sizing: border-box; }
+body { margin: 0; background: #191b1f; color: #e2e3e5; font: 15px/1.6 system-ui, sans-serif; }
+main { max-width: 850px; padding: 32px 18px; margin: auto; }
+.preview-label { color: #90969f; font-size: 12px; margin: 0 0 24px; }
+.speaker { font-weight: 700; }
+.story { margin: 10px 0 22px; color: #c5c8ce; line-height: 1.9; }
+.preview-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; align-items: center; }
+.preview-tools small { color: #9298a1; }
+.trpg { --border: #454b55; --muted: #a9aeb8; --paper: #242830; --beat: 1.03448s;
+  color: #e4e6eb; background: var(--paper); border: 1px solid var(--border); border-radius: 5px; font-size: 13px; }
+.trpg button, .preview-tools button { font: inherit; color: inherit; background: #30353e; border: 1px solid #535b68; border-radius: 3px; padding: 7px 12px; cursor: pointer; }
+.trpg button:hover, .preview-tools button:hover { background: #3a414b; }
+.trpg button:focus-visible, .trpg summary:focus-visible { outline: 2px solid #bfd3c0; outline-offset: 3px; }
+.trpg summary { list-style: none; cursor: pointer; }
+.trpg summary::-webkit-details-marker { display: none; }
+.trpg .bar { display: grid; grid-template-columns: 1.15fr .85fr 1.5fr .8fr; align-items: stretch; }
+.trpg .stat { min-width: 0; padding: 13px 14px; border-right: 1px solid var(--border); }
+.trpg .stat:last-child { border-right: 0; }
+.trpg .label { color: var(--muted); font-size: 11px; line-height: 1.4; }
+.trpg .value { font-size: 17px; font-weight: 650; margin-top: 6px; }
+.trpg .phase { display: flex; align-items: center; gap: 7px; }
+.trpg .phase::after { content: '▾'; color: var(--muted); font-size: 12px; }
+.trpg details[open] .phase::after { content: '▴'; }
+.trpg .pips { display: flex; gap: 5px; margin-top: 10px; }
+.trpg .pip { width: 7px; height: 7px; border: 1px solid #8b93a0; border-radius: 50%; }
+.trpg .pip.active { background: #cbd2dc; }
+.trpg .heart-line { display: flex; align-items: center; gap: 9px; height: 42px; }
+.trpg .heart-icon { color: #e79b9b; display: inline-block; animation: beat var(--beat) ease-in-out infinite; }
+.trpg .bpm { font: 750 40px/1 ui-monospace, Consolas, monospace; color: #f4e5e5; font-variant-numeric: tabular-nums; }
+.trpg .unit { color: var(--muted); font-size: 10px; }
+.trpg .axis { position: relative; height: 7px; background: #454b55; margin-top: 6px; }
+/* 固定量程 30..120；甜区是 (40-30)/90 到 (65-30)/90。 */
+.trpg .sweet { position: absolute; left: 11.111%; width: 27.778%; inset-block: 0; background: #8bad8e; }
+.trpg .needle { position: absolute; left: 31.111%; width: 2px; top: -4px; height: 15px; background: white; }
+.trpg .scale { position: relative; margin-top: 3px; height: 15px; color: var(--muted); font-size: 9px; }
+.trpg .scale span { position: absolute; transform: translateX(-50%); }
+.trpg .scale .start { left: 0; transform: none; }
+.trpg .scale .end { right: 0; transform: none; }
+.trpg .sweet-note { color: #a9c2ac; font-size: 10px; }
+.trpg progress { display: block; width: 100%; height: 6px; margin-top: 10px; accent-color: #b4bac5; }
+.trpg .drawer { border-top: 1px solid var(--border); padding: 16px; }
+.trpg .columns { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; }
+.trpg h3 { font-size: 12px; margin: 0 0 12px; color: #bec4ce; letter-spacing: .08em; }
+.trpg .money { display: flex; gap: 26px; margin-bottom: 16px; }
+.trpg .money strong { font: 650 21px ui-monospace, Consolas, monospace; margin-left: 8px; }
+.trpg .items { margin: 0 0 16px; padding: 0; list-style: none; }
+.trpg .items li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 0; }
+.trpg .tag { display: inline-block; padding: 3px 7px; border: 1px solid #59616e; font-size: 12px; }
+.trpg .timeline { list-style: none; margin: 0 0 18px; padding: 0; }
+.trpg .timeline li { display: flex; gap: 12px; margin: 10px 0; }
+.trpg time { color: var(--muted); font-family: ui-monospace, Consolas, monospace; flex-shrink: 0; }
+.trpg .assessment { font-size: 12px; margin: 12px 0 0; color: #c0d0c1; }
+.trpg .links { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--border); margin-top: 18px; padding-top: 12px; }
+.trpg .ledger { border-top: 1px solid var(--border); padding: 7px 14px; color: var(--muted); font-size: 11px; }
+.trpg dialog { background: var(--paper); color: #e4e6eb; border: 1px solid #697382; padding: 22px; border-radius: 5px; width: min(580px, calc(100% - 28px)); max-height: 85dvh; overflow: auto; }
+.trpg dialog::backdrop { background: #0009; }
+.trpg dialog h2 { font-size: 19px; margin-top: 0; }
+.trpg dialog form { text-align: right; margin-top: 20px; }
+.trpg .dice { font: 700 30px/1.6 ui-monospace, Consolas, monospace; margin: 15px 0; }
+.trpg .success { color: #b3cdb8; }
+@keyframes beat { 0%, 35%, 100% { transform: scale(1); } 12% { transform: scale(1.18); } }
+@media (prefers-reduced-motion: reduce) { .trpg .heart-icon { animation: none; } }
+@media (max-width: 520px) {
+  main { padding: 18px 10px; }
+  .trpg .bar { grid-template-columns: 1fr .78fr 1.35fr .7fr; }
+  .trpg .stat { padding: 10px 7px; }
+  .trpg .label { font-size: 10px; }
+  .trpg .value { font-size: 13px; }
+  .trpg .phase { gap: 3px; }
+  .trpg .bpm { font-size: 34px; }
+  .trpg .heart-line { gap: 5px; }
+  .trpg .unit { display: none; }
+  .trpg .scale .start, .trpg .scale .end { display: none; }
+  .trpg .columns { grid-template-columns: 1fr; gap: 20px; }
+  .trpg .drawer { padding: 12px; }
+}
+</style>
+<main>
+  <p class="preview-label">酒馆消息内嵌样式 / 普通 HTML、CSS、少量交互 / 示例数据</p>
+  <div class="speaker">旁白</div>
+  <p class="story">雨声遮住了脚步。她停在便利店门前，低头看了一眼手表。<br>门帘掀开，街灯把她的影子拉到了人行道上。</p>
+  <section class="trpg" aria-label="玩家状态栏">
+    <details open>
+      <summary aria-label="展开或收起状态详情">
+        <div class="bar">
+          <div class="stat"><div class="label">行动窗口</div><div class="value phase">潜行</div></div>
+          <div class="stat"><div class="label">距离档</div><div class="value">尾随</div><div class="pips" aria-hidden="true"><i class="pip"></i><i class="pip active"></i><i class="pip"></i><i class="pip"></i></div></div>
+          <div class="stat"><div class="label">心跳</div><div class="heart-line"><span class="heart-icon" aria-hidden="true">♥</span><strong class="bpm">58</strong><span class="unit">BPM</span></div><div class="axis" aria-label="心跳58，显示量程30至120，甜区40至65"><span class="sweet"></span><span class="needle"></span></div><div class="scale" aria-hidden="true"><span class="start">30</span><span style="left:11.111%">40</span><span style="left:38.889%">65</span><span class="end">120</span></div><div class="sweet-note">甜区 40–65</div></div>
+          <div class="stat"><div class="label">体力</div><div class="value">72%</div><progress max="100" value="72" aria-label="体力72%"></progress></div>
+        </div>
+      </summary>
+      <div class="drawer">
+        <div class="columns">
+          <div>
+            <h3>携行</h3>
+            <div class="money"><span>现金<strong>240</strong></span><span>PI<strong>18</strong></span></div>
+            <ul class="items"><li><span>耳机 × 1</span><button data-dialog="item">查看</button></li><li><span>雨伞 × 1</span><button data-dialog="item">查看</button></li></ul>
+            <h3>生效修正</h3><span class="tag">耳机伪装 +2</span>
+          </div>
+          <div>
+            <h3>她的信号流</h3>
+            <ol class="timeline"><li><time>21:14</time><span>便利店买两盒便当</span></li><li><time>21:40</time><span>绕开天桥</span></li></ol>
+            <label>接近度<progress value="36" max="100" aria-label="主线接近度"></progress></label>
+            <p class="assessment">读时机检定通过 · 此刻天时地利</p>
+          </div>
+        </div>
+        <nav class="links" aria-label="深页入口"><button data-dialog="profile">她的档案</button><button data-dialog="lies">我说过的话</button><button data-dialog="wanted">追缉</button></nav>
+      </div>
+    </details>
+    <div class="ledger">本轮结算 · 体力 −3</div>
+    <dialog id="item"><h2>道具</h2><p>这里只演示道具查看入口。正式使用需要后台校验持有量、使用条件并确认结果。</p><p>本预览不会消耗道具或增加修正。</p><form method="dialog"><button>返回</button></form></dialog>
+    <dialog id="profile"><h2>她的档案</h2><h3>已解锁情报</h3><p>今晚在便利店买了两盒便当。</p><p class="label">样例：仅展示已知事实，尚无其他已解锁条目。</p><form method="dialog"><button>返回</button></form></dialog>
+    <dialog id="lies"><h2>我说过的话</h2><p>活跃谎言：暂无。</p><p class="label">正式数据在这里逐条列出可验证度与使用次数。</p><form method="dialog"><button>返回</button></form></dialog>
+    <dialog id="wanted"><h2>追缉</h2><p>当前等级：无。</p><p>已知效果：暂无。</p><form method="dialog"><button>返回</button></form></dialog>
+    <dialog id="settlement"><h2>动作结算 · 样例</h2><p>队列：读时机 → 靠近</p><p>修正：耳机伪装 +2</p><div class="dice">14 + 2 = 16</div><strong class="success">成功</strong><p class="label">这里是固定排版示例，未掷骰、未检定，也未写入存档。</p><form method="dialog"><button>继续</button></form></dialog>
+  </section>
+  <div class="preview-tools"><button id="preview-settlement">演示结算弹层</button><small>此按钮属于预览工具，不进入正式状态栏。</small></div>
+</main>
+<script>
+// 仅作局部交互预览。正式宿主适配、数据广播、音频、结算和存档不在本稿中。
+const previewRoot = document.querySelector('.trpg');
+document.querySelectorAll('[data-dialog]').forEach(button => {
+  button.addEventListener('click', () => previewRoot.querySelector('#' + button.dataset.dialog).showModal());
+});
+document.querySelector('#preview-settlement').addEventListener('click', () => previewRoot.querySelector('#settlement').showModal());
+</script>
+</html>
