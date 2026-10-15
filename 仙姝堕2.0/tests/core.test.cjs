@@ -1152,3 +1152,9 @@ test('导入聊天保留楼层快照且隐藏旧消息时，以当前消息前�
  h.adapter.readCheckpoints=async()=>[C.clone(old)];const r=createDispatcher(h.adapter,data);await r.restore();assert.equal(r.getSnapshot().chatId,h.c.chatId);assert.ok(r.getSnapshot().inventory.some(x=>x.name==='测试灵石'));
  h.c.chat[0].swipe_id=1;await assert.rejects(r.restore(),/保护存档/);
 });
+
+
+test('名器诊断导出阶段归属覆盖与首次实证片段，只读不改账本',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.reply(status({破处:'孤月、赵无忧',实际发生:'孤月处女丧失、九幽玄阴穴成形',名器互动:'九幽玄阴穴｜孤月｜破身'},'本回合你使孤月元阴初破。'));
+ const before=JSON.stringify(h.r.getCheckpoint()),report=h.r.getDiagnostics();const r=report.relics.find(x=>x.id==='jiuyou');assert.equal(r.stage,1);assert.equal(r.owners.jiuyou,'赵无忧');assert.match(report.relicEvidence[0].proof,/元阴初破/);assert.equal(JSON.stringify(h.r.getCheckpoint()),before);
+});

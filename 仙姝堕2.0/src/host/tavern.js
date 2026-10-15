@@ -28,7 +28,9 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     };
   }
   const book = createWorldbookHost(helper, ctx, { expectedName: cardName, embeddedManagedEntries });
+  const recentErrors=[];
   const report = (e) => {
+    recentErrors.unshift({at:new Date().toISOString(),message:String(e.message || e),code:e.code || null});recentErrors.length=Math.min(20,recentErrors.length);
     console.error("[仙姝堕2.0]", e);
     top.toastr?.error(String(e.message || e), "仙姝堕");
   };
@@ -113,6 +115,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     getDiagnostics() {
       const c = context();
       return {
+        recentErrors:C.clone(recentErrors),
         cardVersion:c.card?.data?.character_version || c.card?.character_version || null,
         generating:isGenerating(), lifecycleGenerating:generating, aborted,
         stopVisible:visible(top.document.querySelector("#mes_stop")),

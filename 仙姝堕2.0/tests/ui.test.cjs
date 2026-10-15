@@ -405,7 +405,7 @@ test('自设60剧情完成入口常驻，准备是后醒目提醒；历史心迹
 test('成型但无名器归属保持灰暗，破处者不能代替归属，明确归属才点亮',()=>{
  const d=dom(),doc=d.window.document,s={identity:'赵无忧',chatId:'owner',branchId:'owner',floor:1,revision:1,calendarDate:{year:1578,month:3,day:3},known:{},inventory:[],manual:{},stat_data:{身份:'赵无忧',known:{'九幽玄阴穴成形':true},在场角色:[],名器归属:{},破处者:{孤月:'赵无忧'}}};
  const p=mountHUD(doc,doc.querySelector('main'),{getSnapshot:()=>s,subscribe:()=>()=>{},uiPlugins:[]},data,()=>{}),tile=()=>doc.querySelector('[data-relic="jiuyouxuanyinxue"]');
- assert.equal(tile().classList.contains('none'),true);tile().click();assert.match(doc.querySelector('dialog').textContent,/归属未确认/);doc.querySelector('dialog [data-close]').click();
+ assert.equal(tile().classList.contains('none'),true);tile().click();assert.match(doc.querySelector('dialog').textContent,/归属未确认/);assert.equal(doc.querySelectorAll('dialog .xsd2-col.awake').length,0);assert.ok(!doc.querySelector('dialog').textContent.includes('已觉醒'));assert.ok(!doc.querySelector('dialog').textContent.includes('玄妙体征'));doc.querySelector('dialog [data-close]').click();
  s.stat_data.名器归属.jiuyou='无';p.render();assert.equal(tile().classList.contains('none'),true);
  s.stat_data.名器归属.jiuyou='赵无忧';p.render();assert.equal(tile().classList.contains('self'),true);
  s.stat_data.名器归属.jiuyou='其他修士';p.render();assert.equal(tile().classList.contains('other'),true);p.destroy();d.window.close();
@@ -417,4 +417,13 @@ test('双姝两边心迹指向同一节点，两人达标才可点；苏倾寒�
  for(const name of ['苏瑶','苏玲']){doc.querySelector('[data-favor="'+name+'"]').click();assert.equal(doc.querySelector('[data-heart-node="sySlEnter1"]').disabled,true);doc.querySelector('dialog [data-close]').click();}
  s.stat_data.character_metrics.苏玲.好感度=20;p.render();for(const name of ['苏瑶','苏玲']){doc.querySelector('[data-favor="'+name+'"]').click();assert.equal(doc.querySelector('[data-heart-node="sySlEnter1"]').disabled,false);doc.querySelector('dialog [data-close]').click();}
  doc.querySelector('[data-favor="苏倾寒"]').click();assert.equal(doc.querySelectorAll('[data-heart-node]').length,5);assert.equal(doc.querySelector('[data-heart-node="sqhEnter5"]').disabled,true);assert.match(doc.querySelector('dialog').textContent,/1578年8月1日起开放/);doc.querySelector('dialog [data-close]').click();s.calendarDate={year:1578,month:8,day:1};p.render();doc.querySelector('[data-favor="苏倾寒"]').click();assert.equal(doc.querySelector('[data-heart-node="sqhEnter5"]').disabled,false);p.destroy();d.window.close();
+});
+
+
+test('状态栏常驻🐞导出实时诊断，历史只读也可下载且无状态写入',()=>{
+ const d=dom(),doc=d.window.document,s={identity:'赵无忧',chatId:'diag',branchId:'diag',floor:2,revision:9,calendarDate:{year:1578,month:3,day:3},known:{},inventory:[],manual:{},stat_data:{known:{},身份:'赵无忧',名器归属:{},在场角色:[]}};
+ let raw='',clicked='',calls=0;d.window.Blob=class{constructor(parts){raw=parts.join('');}};d.window.URL.createObjectURL=()=> 'blob:diagnostic';d.window.URL.revokeObjectURL=()=>{};d.window.HTMLAnchorElement.prototype.click=function(){clicked=this.download;};
+ const runtime={getSnapshot:()=>s,getDiagnostics:()=>({schema:2,host:{cardVersion:'test'},relics:[{id:'jiuyou',stage:2,owner:null}]}),subscribe:()=>()=>{},uiPlugins:[],dispatchIntent:async()=>calls++};
+ const before=JSON.stringify(s);const p=mountHUD(doc,doc.querySelector('main'),runtime,data,()=>{},{readOnly:true});
+ const b=doc.querySelector('[data-diagnostics]');assert.ok(b);assert.equal(b.textContent,'🐞');assert.equal(b.disabled,false);b.click();const report=JSON.parse(raw);assert.equal(report.relics[0].stage,2);assert.equal(report.view.floor,2);assert.equal(report.view.readOnly,true);assert.equal(clicked,'仙姝堕-报错诊断.json');assert.equal(calls,0);assert.equal(JSON.stringify(s),before);p.destroy();d.window.close();
 });

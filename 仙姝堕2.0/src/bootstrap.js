@@ -5,6 +5,7 @@ const { createDispatcher } = require("./runtime/dispatcher");
 const { createTavernHost } = require("./host/tavern");
 const {createSettlementEffects} = require("./ui/settlement_effects");
 const { mountHUD } = require("./ui/status_panel");
+const {downloadDiagnostics}=require("./ui/diagnostics");
 const CARD_NAME = "仙姝堕2.0·框架测试";
 function start(win) {
   const topWin = (win && win.top) || (win && win.parent) || win;
@@ -39,8 +40,7 @@ function start(win) {
     const text=doc.createElement("p");text.textContent="原存档已保留，尚未重置或结算。请结束生成后重新读取；若仍失败，可下载诊断信息反馈。";
     const retry=doc.createElement("button");retry.textContent="重新读取存档";retry.onclick=async()=>{retry.disabled=true;try{await restore();settleFaultKey=null;lastReportKey=null;}catch(e){report(e);}finally{retry.disabled=false;}};
     const diagnostic=doc.createElement("button");diagnostic.textContent="下载诊断信息";diagnostic.onclick=()=>{
-      const blob=new host.top.Blob([JSON.stringify(runtime.getDiagnostics(),null,2)],{type:"application/json"});
-      const url=host.top.URL.createObjectURL(blob),a=doc.createElement("a");a.href=url;a.download="仙姝堕-恢复诊断.json";a.click();host.top.URL.revokeObjectURL(url);
+      try{downloadDiagnostics(doc,runtime,{recovery:true});}catch(e){report(e);}
     };
     recoveryPanel.append(title,text,retry,diagnostic);body.append(recoveryPanel);
   }

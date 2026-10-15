@@ -1,5 +1,6 @@
 "use strict";
 const C=require("../runtime/contracts");
+const {downloadDiagnostics}=require("./diagnostics");
 const {relicOwner}=require("./relic_owner");
 const { esc, modal, html } = require("./dom");
 const { tokenCss } = require("./tokens");
@@ -293,7 +294,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       ? rs.state === "self"
         ? '<span class="xsd2-badge bself">◈ 目前的烙印归属：' + esc(rs.owner) + "（契约主）</span>"
         : '<span class="xsd2-badge bother">◈ 目前的烙印归属：' + esc(rs.owner) + "（已被占据）</span>"
-      : '<span class="xsd2-badge bnone">◈ '+(rs.stage>0?'已成型 · 归属未确认':'尚未有烙印归属')+'</span>';
+      : '<span class="xsd2-badge bnone">◈ '+(rs.stage>0?'归属未确认 · 未点亮':'尚未有烙印归属')+'</span>';
     const tabs = Object.entries(data.relicDb)
       .map(([k, r]) => '<button class="xsd2-xtab' + (k === id ? " on" : "") + '" data-xjtab="' + k + '">' + esc(r.name) + "</button>")
       .join("");
@@ -302,8 +303,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       .map((k) => {
         const stg = rel.stages[String(k)];
         if (!stg) return "";
-        const awake = rs.stage >= k;
-        const isNext = rs.stage + 1 === k;
+        const awake = owned && rs.stage >= k;
+        const isNext = owned && rs.stage + 1 === k;
         const sign = awake
           ? '<p class="xsd2-sign">【玄妙体征】</p><p>' + esc(stg.desc) + "</p>"
           : '<p class="xsd2-sign">【天机未启】</p><p>玄妙道机属于混沌阴阳之间，待双修火候与天道机缘突破方可显化。</p>';
@@ -327,7 +328,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     const stageImg = rs.stage > 0 ? data.relicEmblems?.[id]?.[String(rs.stage)] : data.relicEmblems?.[id]?.["1"];
     xjRoot.innerHTML =
       '<div class="xsd2-xj-sheet">'
-      + '<header><img src="' + (stageImg || "") + '" alt=""><div><h3>仙姝堕 · 名器玄鉴</h3><p>载体宿主：' + esc(rel.carrier) + " · " + esc(rel.name) + '</p></div><span class="xsd2-typetag">' + esc(rel.type) + "</span>" + badge + '<button class="x" data-close>✕</button></header>'
+      + '<header><img style="'+(!owned?'filter:grayscale(1);opacity:.35':'')+'" src="' + (stageImg || "") + '" alt=""><div><h3>仙姝堕 · 名器玄鉴</h3><p>载体宿主：' + esc(rel.carrier) + " · " + esc(rel.name) + '</p></div><span class="xsd2-typetag">' + esc(rel.type) + "</span>" + badge + '<button class="x" data-close>✕</button></header>'
       + '<div class="xsd2-xtabs">' + tabs + '</div><div class="xsd2-cols">' + cols + '</div>'
       + '<footer><span>✦ 名器 1-4 阶段已并入玄鉴画卷 · 点击名签即可同页翻阅</span><button class="xsd2-closegold" data-close>✕ 关闭玄鉴</button></footer>'
       + "</div>";
@@ -497,7 +498,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     const row=(label,value,slot="")=>'<div class="xsd2-row"><b>'+label+'</b><span'+(slot?' data-xsd-slot="'+slot+'"':'')+'>'+value+'</span></div>';
     const items=s.inventory.map(i=>'<button data-item="'+esc(i.id||i.name)+'">'+esc(i.name)+' × '+i.count+' · '+(describeItem(i).consumable?'消耗品':'非消耗品')+'</button>').join('') || '暂无物品';
     root.innerHTML =
-      '<header class="xsd2-head"><h1>卷中錄</h1><span class="xsd2-sub">仙姝堕 · 玄门展</span><div class="xsd2-topmap" data-xsd-slot="map" data-slot-number="4"></div><button data-gm data-xsd-slot="5" aria-label="GM">⚙</button></header>'+
+      '<header class="xsd2-head"><h1>卷中錄</h1><span class="xsd2-sub">仙姝堕 · 玄门展</span><div class="xsd2-topmap" data-xsd-slot="map" data-slot-number="4"></div><button type="button" data-diagnostics aria-label="下载报错诊断" title="下载报错诊断" style="padding:4px 8px">🐞</button><button data-gm data-xsd-slot="5" aria-label="GM">⚙</button></header>'+
       '<div class="xsd2-who"><div class="xsd2-document"><span class="xsd2-plaque" data-xsd-slot="1">'+esc([st.阵营,st.自设?.name||s.identity].filter(Boolean).join(' · '))+'</span>'+
       row('时 间','仙盟历 '+esc(dateText(s.calendarDate))+' · '+esc(st.历时||'0日'),2)+
       row('地 点',esc(st.地点||'无'),3)+row('修 为','<button data-realm>'+esc(st.修为||'无')+'</button>')+
@@ -527,6 +528,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       .forEach((x, i) => (x.open = folds[i] || false));
     root.querySelector("[data-eras]").onclick=()=>{closeEras();eraDispose=openEras(doc,runtime,data,report);};
     root.querySelector("[data-realm]").onclick=()=>{closeRealm();realmDispose=openRealm(doc,runtime,data,report,message=>{const feedback=root.querySelector(".xsd2-feedback");if(feedback)feedback.textContent=message;});};
+    root.querySelector("[data-diagnostics]").onclick = () => {try{downloadDiagnostics(doc,runtime,{floor:s.floor,revision:s.revision,readOnly:!!options.readOnly});}catch(error){report?.(error);}};
     root.querySelector("[data-gm]").onclick = () =>
       dialogs.push(openGM(doc, runtime, data, report));
     root
@@ -568,8 +570,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       }
     if (options.readOnly) {
       root.dataset.xsd2Readonly = "";
-      root.querySelectorAll("button").forEach(b => { b.disabled = true; b.onclick = null; });
-      stagebar.querySelectorAll("button").forEach(b => { b.disabled = true; b.onclick = null; });
+      root.querySelectorAll("button:not([data-diagnostics])").forEach(b => { b.disabled = true; b.onclick = null; });
+      stagebar.querySelectorAll("button:not([data-diagnostics])").forEach(b => { b.disabled = true; b.onclick = null; });
     }
   }
   const unsubscribe = runtime.subscribe(render);

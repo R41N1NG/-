@@ -705,6 +705,7 @@ function createDispatcher(adapter, data) {
       for (const holder of group.holders) {
         const proofLine = findDeflowerEvidence(holder,verifiedProse,R);
         if (proofLine) {
+          if(!s.stat_data.known[holder+"处女丧失"]){(s.stat_data.relic_evidence_log ||= []).unshift({floor:id,holder,kind:"首次成型实证",proof:proofLine.slice(0,320)});s.stat_data.relic_evidence_log.length=Math.min(16,s.stat_data.relic_evidence_log.length);}
           s.stat_data.known[holder + "处女丧失"] = true;
           const record = (parsed.fields.破处 || "")
             .split("｜")
@@ -1182,7 +1183,8 @@ function createDispatcher(adapter, data) {
     },
     getDiagnostics() {
       const c = context(), s = snapshot(), latest = c.chat[c.floor];
-      return { schema:1, host:adapter.getDiagnostics?.() || {},
+      const relics=s?Object.values(rules(s).RELIC_PILOT_CONFIG).map(cfg=>({id:cfg.id,name:cfg.names[0],holder:cfg.owner,stage:rules(s).getRelicStage(cfg.id,s.stat_data.known),flags:Object.fromEntries([cfg.formKey,cfg.stage1Key,cfg.stage2Key,cfg.stage3Key,cfg.stage4Key,cfg.owner+"处女丧失"].filter(Boolean).map(k=>[k,s.stat_data.known?.[k]===true])),owners:C.clone(s.stat_data.名器归属 || {}),breaker:s.stat_data.破处者?.[cfg.owner] || null,progress:C.clone(s.stat_data.relic_progress?.[cfg.id] || null),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([k])=>k.startsWith("known.")||k.startsWith("relicStage.")||k.startsWith("owner.")))})):[];
+      return { schema:2,relics,relicEvidence:C.clone(s?.stat_data.relic_evidence_log || []), host:adapter.getDiagnostics?.() || {},
         floor:c.floor, latestIsUser:!!latest?.is_user, recoveryFault:C.clone(recoveryFault),
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,

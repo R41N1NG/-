@@ -343,7 +343,7 @@ test("原生先STARTED再用户入楼：地图pending留存，HUD不搬用户楼
     assert.equal(h.win.XSD2.runtime.getSnapshot().activeEvent?.step, "first");
     assert.equal(h.win.XSD2.runtime.getDiagnostics().lastNodeResult.evidenceMode, "PLAYER_CHOICE_CONFIRMED");
     assert.ok(h.doc.querySelector('[mesid="0"] .xsd2-hud'));
-    assert.ok([...h.doc.querySelectorAll('[mesid="0"] button')].every(b=>b.disabled));
+    assert.ok([...h.doc.querySelectorAll('[mesid="0"] button:not([data-diagnostics])')].every(b=>b.disabled));
     h.doc.querySelector('[mesid="2"] .xsd2-map-trigger-btn').click();
     assert.equal(h.doc.querySelector('[data-node-id="g7p2"]'), null);
     assert.ok(h.doc.querySelector('[data-node-id="b3m8"]'));
