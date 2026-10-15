@@ -1190,3 +1190,20 @@ test('新用户楼已入场且宿主已标生成中，生成前补齐前一助�
  const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'探索'},{is_user:false,mes:status({储物栏:'获得：测试灵石×1'},'你获得测试灵石。')},{is_user:true,mes:'下一条'});h.generating(true);
  await h.r.flushCompleted();assert.equal(h.r.getSnapshot().storyCount,1);assert.ok(h.c.chat[2].variables[0].stat_data.xsd2[0]);assert.equal(h.c.chat[3].variables,undefined);await h.r.flushCompleted();assert.equal(h.r.getSnapshot().storyCount,1);
 });
+
+
+test('导入并删除未结算用户补充后，逐条校验保留回复和用户输入，重连楼号保留进度',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'多余补充'},{is_user:true,mes:'第一轮'});await h.reply(status({},'第一轮结束。'));h.c.chat.push({is_user:true,mes:'第二轮'});await h.reply(status({},'第二轮结束。'));
+ const saved=h.r.getCheckpoint(),count=h.r.getSnapshot().storyCount;h.c.chat.splice(1,1);h.c.chatId='重新导入';h.c.branchId=h.c.chatId;for(const m of h.c.chat)m.variables=[];h.adapter.readCheckpoints=async()=>[C.clone(saved)];
+ const r=createDispatcher(h.adapter,data);await r.ready();assert.equal(r.getSnapshot().storyCount,count);assert.equal(r.getSnapshot().history_reassociation.floor,4);assert.deepEqual(Object.keys(r.getSnapshot().processed),['2','4']);
+ h.c.chat.push({is_user:true,mes:'第三轮'},{is_user:false,mes:status({},'第三轮结束。')});await r.flushCompleted();assert.equal(r.getSnapshot().storyCount,count+1);await r.flushCompleted();assert.equal(r.getSnapshot().storyCount,count+1);
+});
+
+test('重连不接受已改用户输入/候选/回复、删助手结果或删授权命令；导入旧记录不能静默清零',async()=>{
+ const {reassociate}=require('../src/runtime/reassociate_history');const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'待删除'},{is_user:true,mes:'保留输入'});await h.reply(status({},'保留回复。'));const saved=h.r.getCheckpoint(),original=C.clone(h.c.chat);
+ const check=chat=>reassociate(saved,{chat,trail:C.fingerprint(chat)});
+ let chat=C.clone(original);chat.splice(1,1);assert.ok(check(chat));chat[1].mes='不同输入';assert.equal(check(chat),null);chat=C.clone(original);chat.splice(1,1);chat[2].swipe_id=1;assert.equal(check(chat),null);chat[2].swipe_id=0;chat[2].mes='改写回复';assert.equal(check(chat),null);
+ chat=C.clone(original);chat.pop();assert.equal(check(chat),null);chat=C.clone(original);chat.splice(1,1);chat.push({is_user:true,mes:'XSD2_next_deadbeef'});assert.equal(check(chat),null);
+ const coded=C.clone(saved),tuple=JSON.parse(coded.trail[1]);tuple[3]='XSD2_test_deadbeef';coded.trail[1]=JSON.stringify(tuple);chat=C.clone(original);chat.splice(1,1);assert.equal(reassociate(coded,{chat,trail:C.fingerprint(chat)}),null);
+ h.c.chat=chat;h.c.chat[1].mes='不同输入';for(const m of h.c.chat)m.variables=[];h.c.chatId='imported';h.c.branchId='imported';h.adapter.readCheckpoints=async()=>[C.clone(saved)];await assert.rejects(createDispatcher(h.adapter,data).ready(),/保护存档/);
+});

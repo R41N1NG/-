@@ -317,6 +317,7 @@ function start(win) {
   if (active()) {
     runtime
       .ready()
+      .then(()=>host.isGenerating()?null:runtime.flushCompleted())
       .then(()=>{recoveryPanel?.remove();recoveryPanel=null;})
       .then(mirror)
       .then(render)

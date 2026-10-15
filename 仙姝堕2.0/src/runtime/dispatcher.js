@@ -1,5 +1,6 @@
 "use strict";
 const C = require("./contracts");
+const {reassociate}=require("./reassociate_history");
 const {meets} = require("./conditions");
 const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover} = require("./character_stages");
 const {QUICK_ACTIONS,itemAction} = require("./button_actions");
@@ -59,17 +60,17 @@ function createDispatcher(adapter, data) {
     return e?.schema === 2 && C.matchesSnapshot(e.trail, c.trail);
   }
   async function history(c, ceiling = c.floor) {
-    let best=null,saved=false;
+    let best=null,saved=false;const localRecords=[];
     for (let i = ceiling; i >= 0; i--) {
       const e=(await adapter.readMessage(i))?.stat_data?.xsd2?.[0];guard(c);
-      if(e?.schema===2)saved=true;
+      if(e?.schema===2){saved=true;localRecords.push(e);}
       if(compatible(e,c)){best={state:C.clone(e.state),floor:i};break;}
     }
     const local=liveEnvelope?.chatId===c.chatId && liveEnvelope.branchId===c.branchId ? liveEnvelope : null;
     const records=adapter.readCheckpoints ? await adapter.readCheckpoints() : [await adapter.readCheckpoint?.()];guard(c);
     if(local && (!String(c.chat[0]?.mes || "").includes("<IdentityMenu") || compatible(local,c)))records.push(C.clone(local));
     for(const checkpoint of records){
-      if(checkpoint?.schema===2 && checkpoint.chatId===c.chatId)saved=true;
+      if(checkpoint?.schema===2)saved=true;
       const cpFloor=checkpoint?.trail?.length-1;
       if(checkpoint?.chatId===c.chatId && (!checkpoint.branchId||checkpoint.branchId===c.branchId) && compatible(checkpoint,c) && cpFloor<=ceiling && (!best||cpFloor>best.floor || (cpFloor===best.floor && checkpoint.state?.revision>best.state?.revision))) best={state:C.clone(checkpoint.state),floor:cpFloor};
     }
@@ -79,6 +80,11 @@ function createDispatcher(adapter, data) {
     for(const checkpoint of records){
       const cpFloor=checkpoint?.trail?.length-1;
       if(checkpoint?.chatId===c.chatId && checkpoint.branchId===c.branchId && compatible(checkpoint,c) && cpFloor<=ceiling && (!best || cpFloor>best.floor))best={state:C.clone(checkpoint.state),floor:cpFloor};
+    }
+    for(const e of [...localRecords,...records]){
+      if(best?.floor>=ceiling)break;
+      const recovered=reassociate(e,c);
+      if(recovered && recovered.floor<=ceiling && (!best||recovered.floor>best.floor))best=recovered;
     }
     // Restore only a locally authorized adjacent action after its reply is deleted/regenerated.
     // Assistant formatting may change; user choices, candidate IDs and chat scope still must match.
@@ -1188,7 +1194,7 @@ function createDispatcher(adapter, data) {
       const c = context(), s = snapshot(), latest = c.chat[c.floor];
       const relics=s?Object.values(rules(s).RELIC_PILOT_CONFIG).map(cfg=>({id:cfg.id,name:cfg.names[0],holder:cfg.owner,stage:rules(s).getRelicStage(cfg.id,s.stat_data.known),flags:Object.fromEntries([cfg.formKey,cfg.stage1Key,cfg.stage2Key,cfg.stage3Key,cfg.stage4Key,cfg.owner+"处女丧失"].filter(Boolean).map(k=>[k,s.stat_data.known?.[k]===true])),owners:C.clone(s.stat_data.名器归属 || {}),breaker:s.stat_data.破处者?.[cfg.owner] || null,progress:C.clone(s.stat_data.relic_progress?.[cfg.id] || null),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([k])=>k.startsWith("known.")||k.startsWith("relicStage.")||k.startsWith("owner.")))})):[];
       return { schema:3,realm:s?Realm.eligibility(s,rules(s)):null,relics,relicEvidence:C.clone(s?.stat_data.relic_evidence_log || []), host:adapter.getDiagnostics?.() || {},
-        floor:c.floor, latestIsUser:!!latest?.is_user, recoveryFault:C.clone(recoveryFault),
+        floor:c.floor, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), recoveryFault:C.clone(recoveryFault),
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,
         } : null, event:s?.activeEvent || null,
