@@ -1,4 +1,5 @@
 "use strict";
+const {assertPanelSnapshot}=require("../../ui/panel_action");
 const {meets} = require("../../runtime/conditions");
 
 /**
@@ -326,7 +327,13 @@ function mount(slotElement, runtimeApi) {
   if(who)who.after(notice);else slotElement.appendChild(notice);
 
   // 2. 地图模态浮层
-  let modalOverlay = null;
+  let modalOverlay = null,modalSnapshot=null,hudSnapshot=runtimeApi.getSnapshot?.(),dispatching=false;
+  const feedback=doc.createElement('p');feedback.dataset.mapFeedback='';feedback.setAttribute('role','status');feedback.hidden=true;slotElement.append(feedback);
+  function showFeedback(message){
+    feedback.textContent=message;feedback.hidden=false;
+    const box=modalOverlay?.querySelector('.xsd2-map-modal-box');
+    if(box){let note=box.querySelector('[data-map-result]');if(!note){note=doc.createElement('p');note.dataset.mapResult='';note.setAttribute('role','status');box.append(note);}note.textContent=message;}
+  }
 
   function closeMap() {
     if (modalOverlay) {
@@ -336,13 +343,18 @@ function mount(slotElement, runtimeApi) {
   }
 
   async function dispatchNode(nodeId) {
+    if(dispatching)return;
+    dispatching=true;
+    const origin=modalOverlay?.isConnected?modalSnapshot:hudSnapshot;
+    const buttons=[...hudBar.querySelectorAll('button'),...(modalOverlay?.querySelectorAll('button')||[]),triggerBtn].map(b=>[b,b.disabled]);
+    buttons.forEach(([b])=>{b.disabled=true;});
     try {
       const currentSnap = runtimeApi.getSnapshot
         ? runtimeApi.getSnapshot()
         : null;
-      if (!currentSnap) return;
+      assertPanelSnapshot(origin,currentSnap);
 
-      await runtimeApi.dispatchIntent({
+      const result=await runtimeApi.dispatchIntent({
         type: "SELECT_NODE",
         pluginId: PLUGIN_ID,
         expected: {
@@ -356,18 +368,22 @@ function mount(slotElement, runtimeApi) {
         },
       });
 
+      if(result?.cancelled){showFeedback('已取消结算，可以继续探索。');return;}
       closeMap();
+      feedback.textContent='';feedback.hidden=true;
       updateHUD();
     } catch (err) {
+      showFeedback(err.message || String(err));
       console.error("[YoujiguMap] 派发失败:", err);
       win.parent?.toastr?.error?.(err.message || String(err));
-    }
+    } finally {dispatching=false;buttons.forEach(([b,disabled])=>{if(b.isConnected)b.disabled=disabled;});}
   }
 
   function updateHUD() {
     const snapshot = runtimeApi.getSnapshot ? runtimeApi.getSnapshot() : null;
     if (!snapshot) return;
 
+    hudSnapshot=snapshot;
     const state = getPluginState(snapshot);
     const storyCount = snapshot.storyCount || 0;
     const availableNodes = getAvailableOptions(state, storyCount).filter((x) =>
@@ -492,10 +508,13 @@ function mount(slotElement, runtimeApi) {
   }
 
   function renderMapModal() {
+    if(dispatching)return;
     closeMap();
+    doc.querySelectorAll(".xsd2-map-modal-overlay").forEach(el=>el.remove());
 
     const snapshot = runtimeApi.getSnapshot ? runtimeApi.getSnapshot() : null;
     if (!snapshot) return;
+    modalSnapshot=snapshot;
 
     const state = getPluginState(snapshot);
     const storyCount = snapshot.storyCount || 0;
@@ -810,7 +829,7 @@ function mount(slotElement, runtimeApi) {
   // 订阅统一运行时生命周期变动
   const unsubscribe = runtimeApi.subscribe?.(() => {
     updateHUD();
-    if (modalOverlay) {
+    if (modalOverlay && !dispatching) {
       renderMapModal();
     }
   });
@@ -819,6 +838,7 @@ function mount(slotElement, runtimeApi) {
   return function unmount() {
     closeMap();
     notice.remove();
+    feedback.remove();
     triggerBtn.remove();
     hudBar.remove();
     doc.removeEventListener("keydown", onKeydown);

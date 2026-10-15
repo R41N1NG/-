@@ -1,4 +1,5 @@
 "use strict";
+const {createPanelAction}=require("./panel_action");
 const {modal,esc}=require('./dom');
 const {dateText}=require('../runtime/contracts');
 const Realm=require('../runtime/player_realm');
@@ -31,19 +32,18 @@ function openRealm(doc,runtime,data,report,onComplete){
  ['breakthrough','retreat'].map(kind=>'<div><button type="button" data-realm-act="'+kind+'" aria-disabled="'+!!reasons[kind]+'"'+(reasons[kind]?' style="opacity:.6;cursor:help"':'')+'>'+(kind==='breakthrough'?'突破至下一境界':'闭关三个月 · 提升一档')+'</button>'+
  (reasons[kind]?'<p class="xsd2-label" data-realm-reason="'+kind+'">'+esc(reasons[kind])+'</p>':'')+'</div>').join('')+
  '<p role="status" data-realm-feedback></p>';
- el.querySelectorAll('[data-realm-act]').forEach(b=>b.onclick=async()=>{
-  const kind=b.dataset.realmAct,now=runtime.getSnapshot(),currentEligibility=Realm.eligibility(now,data.rules(now.stat_data)),reason=blockedReason(now,currentEligibility,kind);
+ const run=createPanelAction(el,runtime,s,error=>{el.querySelector('[data-realm-feedback]').textContent=error.message;report?.(error);});
+ el.querySelectorAll('[data-realm-act]').forEach(b=>b.onclick=()=>run(async now=>{
+  const kind=b.dataset.realmAct,currentEligibility=Realm.eligibility(now,data.rules(now.stat_data)),reason=blockedReason(now,currentEligibility,kind);
   if(reason){el.querySelector('[data-realm-feedback]').textContent=reason;return;}
-  b.disabled=true;
-  try{
+
    const result=await runtime.dispatchIntent({type:'REALM_ACTION',expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{kind}});
    const after=result || runtime.getSnapshot();
    const message=(kind==='retreat'?'闭关结算已发送，等待回复':'突破完成')+'：'+after.stat_data.修为+' · 仙盟历 '+dateText(after.calendarDate);
    el.close();el.remove();
    if(onComplete)onComplete(message);
-   else{const done=modal(doc,kind==='retreat'?'闭关完成':'突破完成');done.querySelector('.xsd2-dialog-body').textContent=message;}
-  }catch(error){el.querySelector('[data-realm-feedback]').textContent=error.message;report?.(error);b.disabled=false;}
- });
+   else{const done=modal(doc,kind==='retreat'?'闭关结算已发送':'突破完成');done.querySelector('.xsd2-dialog-body').textContent=message;}
+ }));
  return ()=>el.remove();
 }
 module.exports={openRealm,blockedReason};

@@ -12,6 +12,7 @@ const tests = spawnSync(
     "tests/relic_fanfare.test.cjs",
     "tests/negative_favor.test.cjs",
     "tests/gm_panel.test.cjs",
+    "tests/panel_actions.test.cjs",
     "tests/realm_feedback.test.cjs",
     "tests/grand_eras.test.cjs",
     "tests/templates.test.cjs",

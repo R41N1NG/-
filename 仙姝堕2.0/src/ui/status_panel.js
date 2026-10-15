@@ -1,4 +1,5 @@
 "use strict";
+const {createPanelAction}=require("./panel_action");
 const C=require("../runtime/contracts");
 const {downloadDiagnostics}=require("./diagnostics");
 const {relicOwner,playerOwner}=require("./relic_owner");
@@ -374,7 +375,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     el.querySelector(".xsd2-dialog-body").innerHTML = '<div class="xsd2-fbar"><i style="width:' + Math.max(0,Math.min(100,value)) + '%"></i><span>' + value + " / 100" + (cap !== null && value >= cap ? " · 已满盈" : "") + "</span></div>"
       + (Number.isFinite(permanentCap) ? '<div class="xsd2-cap"><p>永久上限−50：不能恢复到−49及以上。</p></div>' : "")
       + (negative ? '<div class="xsd2-cap"><p>'+esc(negativeLabel)+' · 正向专属剧情暂停；已完成阶段保留。</p></div>' : "")
-      + (cap !== null && value >= cap ? '<div class="xsd2-cap"><p>好感已达当前节点上限（' + cap + "）——完成对应专属剧情之前不再累积。</p></div>" : "")
+      + (cap !== null && value >= cap ? '<div class="xsd2-cap"><p>好感已达当前节点上限（' + cap + "）——完成对应专属剧情之前不再累积。</p><p>好感节点需在故事节点外开启，请先完成或离开当前故事。</p></div>" : "")
       + (diamonds.length
           ? '<div class="xsd2-nodes">' + diamonds.map((x) =>
               '<button type="button" data-heart-node="' + esc(x.entryId) + '"' + (x.now && !negative ? '' : ' disabled') + ' class="xsd2-node' + (!negative && x.done ? " done" : x.now ? " now" : "") + '"'
@@ -383,6 +384,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       + (negative ? esc(negativeLabel) : x.done ? "剧情已了" : x.running ? "剧情进行中" : options.readOnly ? "历史记录" : x.lockedUntil ? esc(C.dateText(x.lockedUntil))+"起开放" : x.now ? esc(x.label) + " · 可开启" : "未达") + "</em></button>"
             ).join("") + "</div>"
           : '<p class="xsd2-label">此人尚未配置晋升之路。</p>')
+      + (s.activeEvent && s.activeEvent.pluginId!=="character_promotion" ? '<p class="xsd2-label" data-favor-story-block>正在进行故事节点：好感节点需在故事节点外开启，请先完成或离开当前故事。</p>' : '')
       + "<h4>近日心迹</h4>"
       + (log.length
           ? '<ul class="xsd2-flog">' + log.map(x=>'<li class="'+(x.delta>0?'up':x.delta<0?'dn':'')+'"><span>'+esc(x.label || ((data.metricEventDefinitions && Object.values(data.metricEventDefinitions).find(c=>c.character===character)?.anchors||[]).find(a=>a.id===x.via)?.label) || (x.via==='记恨'?'不睦':x.via==='记心上'?'交心':'互动'))+'</span><b>'+(x.delta>=0?'+':'')+x.delta+'</b></li>').join('')+'</ul>'
@@ -393,23 +395,22 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       if(options.focusLatest){const jump=doc.createElement("button");jump.type="button";jump.textContent="前往最新回复";jump.onclick=()=>{closeFavor();options.focusLatest();};note.append(jump);}
       el.querySelector(".xsd2-dialog-body").prepend(note);
     }
+    const actionFeedback=doc.createElement("p");actionFeedback.setAttribute("role","status");el.querySelector(".xsd2-dialog-body").append(actionFeedback);
+    const run=createPanelAction(el,runtime,s,error=>{actionFeedback.textContent=error.message;report?.(error);});
     const metricKey="metric."+character+".好感度";
     if(s.manual?.[metricKey]!==undefined){
       const note=doc.createElement("p");note.className="xsd2-cap";note.textContent="好感已被GM手动锁定，自然互动暂不改变数值。";el.querySelector(".xsd2-dialog-body").prepend(note);
-      if(!options.readOnly){const release=doc.createElement("button");release.type="button";release.textContent="恢复自然变化";release.dataset.favorRelease="";note.append(release);release.onclick=async()=>{release.disabled=true;try{await runtime.dispatchIntent({type:"GM_RELEASE",payload:{keys:[metricKey]}});closeFavor();openFavor(character,runtime.getSnapshot());}catch(error){report?.(error);release.disabled=false;}};}
+      if(!options.readOnly){const release=doc.createElement("button");release.type="button";release.textContent="恢复自然变化";release.dataset.favorRelease="";note.append(release);release.onclick=()=>run(async()=>{await runtime.dispatchIntent({type:"GM_RELEASE",payload:{keys:[metricKey]}});closeFavor();openFavor(character,runtime.getSnapshot());});}
     }
     const check=s.stat_data.lastFavorCheck;
     if(check && (check.character===character || check.character===null) && check.reason){const note=doc.createElement("p");note.className="xsd2-label";note.textContent=check.reason;el.querySelector(".xsd2-dialog-body").append(note);}
     const close = () => {el.remove();if(favorDialog===el)favorDialog=null;};
 
     if(active && !negative && !options.readOnly){const b=doc.createElement("button");b.type="button";b.dataset.heartNode=active.finishId;b.dataset.promotionNode=active.finishId;const retry=s.pending?.nodeId===active.finishId && !!s.pending.selection?.completionQuery;b.textContent=retry?"重新结算本次剧情":"完成本次剧情";b.disabled=!!s.pending&&!retry;if(retry)b.dataset.completionRetry="";el.querySelector(".xsd2-dialog-body").prepend(b);}
-    el.querySelectorAll("[data-heart-node]").forEach(b=>{b.onclick=async()=>{
-      b.disabled=true;
-      try { const now=runtime.getSnapshot();
-        await runtime.dispatchIntent({type:b.hasAttribute("data-completion-retry")?"RETRY_COMPLETION":"SELECT_NODE",pluginId:"character_promotion",expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{nodeId:b.dataset.heartNode}});
-        close();
-      } catch(error) { report?.(error); b.disabled=false; }
-    };});
+    el.querySelectorAll("[data-heart-node]").forEach(b=>{b.onclick=()=>run(async now=>{
+      await runtime.dispatchIntent({type:b.hasAttribute("data-completion-retry")?"RETRY_COMPLETION":"SELECT_NODE",pluginId:"character_promotion",expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{nodeId:b.dataset.heartNode}});
+      close();
+    });});
     el.addEventListener("click", (e) => { if (e.target === el) close(); });
     el.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
     const p = portrait(character, s, data);
@@ -520,7 +521,8 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       const label=doc.createElement("span");label.textContent="✦ "+activePromotion.label+(ready?" · 已可完成剧情，也可继续探索":" · 剧情进行中");
       const button=doc.createElement("button");button.type="button";button.dataset.promotionReady="";button.textContent=retryCompletion?"重新结算本次剧情":"完成本次剧情";notice.append(label,button);
       root.querySelector(".xsd2-who").after(notice);
-      button.onclick=async()=>{button.disabled=true;try{const now=runtime.getSnapshot();await runtime.dispatchIntent({type:retryCompletion?"RETRY_COMPLETION":"SELECT_NODE",pluginId:"character_promotion",expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{nodeId:activePromotion.finishId}});}catch(error){report?.(error);button.disabled=false;}};
+      const run=createPanelAction(root,runtime,s,error=>{const feedback=root.querySelector(".xsd2-feedback");if(feedback)feedback.textContent=error.message;report?.(error);});
+      button.onclick=()=>run(async now=>{await runtime.dispatchIntent({type:retryCompletion?"RETRY_COMPLETION":"SELECT_NODE",pluginId:"character_promotion",expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{nodeId:activePromotion.finishId}});});
     }
     plugins.push(mountPlayerAvatar(doc,root.querySelector('[data-player-avatar-slot]'),s,options,report));
     root

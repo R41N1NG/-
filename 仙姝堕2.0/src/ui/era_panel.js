@@ -1,4 +1,5 @@
 "use strict";
+const {createPanelAction}=require("./panel_action");
 const {modal,esc}=require('./dom');
 const C=require('../runtime/contracts');
 function openEras(doc,runtime,data,report){
@@ -11,11 +12,10 @@ function openEras(doc,runtime,data,report){
   (future?'': '<p>'+esc(e.background)+'</p>')+
   (future?'<button data-era="'+esc(e.id)+'" '+(busy?'disabled':'')+'>快进至 '+C.dateText(e.startDate)+'</button>':'')+'</article>';
  }).join('')+'<p>最后一期结束后延续最近的世界背景，后续变化由局部事件决定。</p><p role="status" data-era-feedback></p>';
- el.querySelectorAll('[data-era]').forEach(b=>b.onclick=async()=>{
-  b.disabled=true;
-  try{const now=runtime.getSnapshot();await runtime.dispatchIntent({type:'ADVANCE_ERA',expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{id:b.dataset.era}});el.close();el.remove();}
-  catch(error){el.querySelector('[data-era-feedback]').textContent=error.message;report?.(error);b.disabled=false;}
- });
+ const run=createPanelAction(el,runtime,s,error=>{el.querySelector('[data-era-feedback]').textContent=error.message;report?.(error);});
+ el.querySelectorAll('[data-era]').forEach(b=>b.onclick=()=>run(async now=>{
+  await runtime.dispatchIntent({type:'ADVANCE_ERA',expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{id:b.dataset.era}});el.close();el.remove();
+ }));
  return ()=>el.remove();
 }
 module.exports={openEras};

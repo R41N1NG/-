@@ -1,4 +1,5 @@
 "use strict";
+const {createPanelAction}=require('./panel_action');
 const {esc,modal}=require('./dom');
 const {describeItem}=require('../runtime/item_catalog');
 const {dateText,clone}=require('../runtime/contracts');
@@ -53,7 +54,8 @@ function openGM(doc,runtime,data,report){
   body.querySelectorAll('[data-all]').forEach(b=>b.onclick=()=>{form.querySelectorAll('[name^="known:"]').forEach(x=>x.checked=b.dataset.all==='1');for(const id of Object.keys(R.RELIC_PILOT_CONFIG))setStage(id,b.dataset.all==='1'?4:0);feedback.textContent='仅修改草稿，保存后生效；世界时期仍由日期决定。';});
   body.querySelector('[data-print]').onclick=()=>{const out=body.querySelector('[data-snapshot-output]');out.hidden=false;out.value=JSON.stringify(runtime.getSnapshot(),null,2);out.parentElement.open=true;body.querySelector('[data-gm-log]').textContent='当前快照已打印到只读面板，未修改存档。';};
   if(runtime.getDiagnostics)body.querySelector('[data-diagnostics]').value=JSON.stringify(runtime.getDiagnostics(),null,2);
-  form.onsubmit=async e=>{e.preventDefault();try{
+  const run=createPanelAction(el,runtime,()=>s,fail);
+  form.onsubmit=e=>{e.preventDefault();return run(async()=>{
    stale();const f=new doc.defaultView.FormData(form),patch={},identity=f.get('identity');if(identity!==s.identity)patch.identity=identity;
    const a=String(f.get('date')).split('-').map(Number),date={year:a[0],month:a[1],day:a[2]};if(JSON.stringify(date)!==JSON.stringify(s.calendarDate))patch.calendarDate=date;
    if(String(f.get('realm')).trim()!==s.stat_data.修为)patch.realm=String(f.get('realm')).trim();
@@ -63,9 +65,9 @@ function openGM(doc,runtime,data,report){
    for(const k of R.ALL_FIELDS){if(forms.has(k)||stages.has(k))continue;const v=f.has('known:'+k);if(v!==!!s.known[k])patch['known.'+k]=v;}
    for(const [id,c]of Object.entries(R.RELIC_PILOT_CONFIG)){const n=+f.get('stage:'+id);if(n!==R.getRelicStage(id,s.known))patch['relicStage.'+id]=n;const owner=String(f.get('owner:'+id)).trim()||null;if(owner!==(s.stat_data.名器归属[id]||null))patch['owner.'+id]=owner;}
    await runtime.dispatchIntent({type:'GM_PATCH',payload:patch});el.close();
-  }catch(error){fail(error);}};
-  body.querySelector('[data-cancel]').onclick=()=>{try{stale();Promise.resolve(runtime.stop()).then(()=>el.close()).catch(fail);}catch(e){fail(e);}};
-  body.querySelector('[data-release-selected]').onclick=()=>{try{stale();runtime.dispatchIntent({type:'GM_RELEASE',payload:{keys:[...body.querySelectorAll('[data-release]:checked')].map(x=>x.dataset.release)}}).then(()=>el.close()).catch(fail);}catch(e){fail(e);}};
+  });};
+  body.querySelector('[data-cancel]').onclick=()=>run(async()=>{stale();await runtime.stop();el.close();});
+  body.querySelector('[data-release-selected]').onclick=()=>run(async()=>{stale();await runtime.dispatchIntent({type:'GM_RELEASE',payload:{keys:[...body.querySelectorAll('[data-release]:checked')].map(x=>x.dataset.release)}});el.close();});
  }
  el.querySelector('[data-reload]').onclick=()=>{s=runtime.getSnapshot();if(!s){el.close();return;}s=clone(s);R=data.rules(s.stat_data);render();};render();
  return ()=>{el.close();el.remove();style.remove();};
