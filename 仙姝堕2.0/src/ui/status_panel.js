@@ -1,7 +1,7 @@
 "use strict";
 const C=require("../runtime/contracts");
 const {downloadDiagnostics}=require("./diagnostics");
-const {relicOwner}=require("./relic_owner");
+const {relicOwner,playerOwner}=require("./relic_owner");
 const { esc, modal, html } = require("./dom");
 const { tokenCss } = require("./tokens");
 const {mountPlayerAvatar} = require("./player_avatar");
@@ -218,7 +218,7 @@ function relicStates(s, data) {
     const cfg=Object.values(R.RELIC_PILOT_CONFIG).find(c=>c.names.includes(rel.name)||c.names.includes(id));
     const stage=cfg?R.getRelicStage(cfg.id,known):0;
     const owner=relicOwner(s.stat_data,cfg,id,rel.name);
-    return {id,rel,cfg,stage,owner,state:stage===0 || !owner?'none':owner!==s.identity?'other':'self'};
+    return {id,rel,cfg,stage,owner,state:stage===0 || !owner?'none':!playerOwner(s,owner)?'other':'self'};
   });
 }
 function favorLadder(data, character, s) {
@@ -528,7 +528,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       .forEach((x, i) => (x.open = folds[i] || false));
     root.querySelector("[data-eras]").onclick=()=>{closeEras();eraDispose=openEras(doc,runtime,data,report);};
     root.querySelector("[data-realm]").onclick=()=>{closeRealm();realmDispose=openRealm(doc,runtime,data,report,message=>{const feedback=root.querySelector(".xsd2-feedback");if(feedback)feedback.textContent=message;});};
-    root.querySelector("[data-diagnostics]").onclick = () => {try{downloadDiagnostics(doc,runtime,{floor:s.floor,revision:s.revision,readOnly:!!options.readOnly});}catch(error){report?.(error);}};
+    root.querySelector("[data-diagnostics]").onclick = () => {try{dialogs.push(downloadDiagnostics(doc,runtime,{floor:s.floor,revision:s.revision,readOnly:!!options.readOnly}));}catch(error){report?.(error);}};
     root.querySelector("[data-gm]").onclick = () =>
       dialogs.push(openGM(doc, runtime, data, report));
     root

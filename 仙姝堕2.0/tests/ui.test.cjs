@@ -427,3 +427,11 @@ test('状态栏常驻🐞导出实时诊断，历史只读也可下载且无状�
  const before=JSON.stringify(s);const p=mountHUD(doc,doc.querySelector('main'),runtime,data,()=>{},{readOnly:true});
  const b=doc.querySelector('[data-diagnostics]');assert.ok(b);assert.equal(b.textContent,'🐞');assert.equal(b.disabled,false);b.click();const report=JSON.parse(raw);assert.equal(report.relics[0].stage,2);assert.equal(report.view.floor,2);assert.equal(report.view.readOnly,true);assert.equal(clicked,'仙姝堕-报错诊断.json');assert.equal(calls,0);assert.equal(JSON.stringify(s),before);p.destroy();d.window.close();
 });
+
+test('浏览器不支持下载或禁止剪贴板时，诊断全文仍可见可手工复制，不堆叠弹窗',async()=>{
+ const {downloadDiagnostics}=require('../src/ui/diagnostics'),d=dom(),doc=d.window.document;
+ const runtime={getDiagnostics:()=>({schema:3,realm:{marked:['测试'],details:[]}})};
+ downloadDiagnostics(doc,runtime);assert.match(doc.querySelector('[data-xsd2-diagnostic] [role="status"]').textContent,/未能启动下载/);assert.equal(JSON.parse(doc.querySelector('[data-xsd2-diagnostic] textarea').value).schema,3);
+ doc.querySelector('[data-diagnostic-copy]').click();await Promise.resolve();assert.match(doc.querySelector('[role="status"]').textContent,/系统复制/);
+ downloadDiagnostics(doc,runtime);assert.equal(doc.querySelectorAll('[data-xsd2-diagnostic]').length,1);doc.querySelector('[data-xsd2-diagnostic] [data-close]').click();assert.equal(doc.querySelector('[data-xsd2-diagnostic]'),null);d.window.close();
+});

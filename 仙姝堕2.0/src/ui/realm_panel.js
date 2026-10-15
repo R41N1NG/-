@@ -26,6 +26,7 @@ function openRealm(doc,runtime,data,report,onComplete){
  '<p>结婴条件：破处并留下本源烙印的三个不同名器，或拥有一个第三阶段名器。</p>'+
  '<p>已确认破处与烙印：'+e.marked.length+'/3'+(e.marked.length?' · '+esc(e.marked.join('、')):'')+'</p>'+
  '<p>归属你的三阶名器：'+esc(e.trained.join('、')||'暂无')+'</p>'+
+ '<details><summary>逐项查看突破条件</summary>'+e.details.filter(x=>x.formed||x.owner||x.stage>0).map(x=>'<p>'+esc(x.name)+'：'+esc(x.missing.join('；')||'破处、归属与本源烙印均已确认')+'</p>').join('')+'</details>'+
  ['breakthrough','retreat'].map(kind=>'<div><button type="button" data-realm-act="'+kind+'" aria-disabled="'+!!reasons[kind]+'"'+(reasons[kind]?' style="opacity:.6;cursor:help"':'')+'>'+(kind==='breakthrough'?'突破至下一境界':'闭关三个月 · 提升一档')+'</button>'+
  (reasons[kind]?'<p class="xsd2-label" data-realm-reason="'+kind+'">'+esc(reasons[kind])+'</p>':'')+'</div>').join('')+
  '<p role="status" data-realm-feedback></p>';

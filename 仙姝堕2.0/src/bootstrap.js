@@ -255,6 +255,7 @@ function start(win) {
       disposed = true;
       effects.dispose();
       recoveryPanel?.remove();
+      doc.querySelector("[data-xsd2-diagnostic]")?.remove();
       mo?.disconnect();
       clearTimeout(renderTimer);
       clearTimeout(moDebounce);
