@@ -590,3 +590,21 @@ test('打包原生保存导入：稳定extra编号落盘，删早期普通输入
   await fresh.flushCompleted();assert.equal(fresh.getSnapshot().storyCount,1);assert.equal(fresh.getDiagnostics().storageIdentityVersion,1);assert.deepEqual(h.errors,[]);
  }finally{h.close();}
 });
+
+test('打包西北归宗：浏览器确认不可用也能在原子页面确认、发送并完成结算',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..')),h=await fixture(data.greetings.赵无忧);
+ try{
+  h.win.HTMLDialogElement.prototype.showModal=function(){this.open=true;};h.win.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new h.win.Event('close'));};
+  h.win.confirm=()=>{throw Error('浏览器已禁止原生确认');};
+  const r=h.win.XSD2.runtime;await until(()=>r.getSnapshot());const start=C.day(r.getSnapshot().calendarDate);
+  const click=async nodeId=>{const s=r.getSnapshot();await r.dispatchIntent({type:'SELECT_NODE',pluginId:'xibei',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId}});};
+  const reply=async text=>{h.context.chat.push({mes:text+'<Status_block><历时>—</历时></Status_block>',is_user:false,variables:[{}]});h.appendDOM(h.context.chat.length-1);await h.emit('GENERATION_ENDED');};
+  for(const id of ['xbxxEnter','xbxxFight','xbxxLoot','xbxxAmbush']){await click(id);await reply('你与孤月完成了当前行动。');}
+  h.context.chat.push({mes:'我退后让孤月自护',is_user:true,variables:[{}]});await reply('你已回应偷袭。');await click('xbxxJudge');await reply('<Promotion_result id="'+r.getSnapshot().pending.actionCode+'">否</Promotion_result>');await click('xbxxDodge');await reply('孤月以剑气自护。');
+  h.doc.querySelector('[data-xibei]:not(:disabled)').click();h.doc.querySelector('[data-xibei-node="xbxxFinishA"]').click();await until(()=>h.doc.querySelector('[data-exit-confirm]'));
+  assert.equal(h.doc.querySelectorAll('dialog').length,1);h.doc.querySelector('[data-exit-cancel]').click();await until(()=>!h.doc.querySelector('[data-exit-confirm]'));await until(()=>!h.doc.querySelector('[data-xibei-node="xbxxFinishA"]').disabled);
+  const count=h.sends.length;assert.equal(C.day(r.getSnapshot().calendarDate),start);h.doc.querySelector('[data-xibei-node="xbxxFinishA"]').click();await until(()=>h.doc.querySelector('[data-exit-confirm]'));h.doc.querySelector('[data-exit-confirm]').click();await until(()=>h.sends.length===count+1);
+  assert.equal(C.day(r.getSnapshot().calendarDate),start+10);assert.equal(h.doc.querySelector('dialog'),null);await reply('你与孤月返回墨山道山门复命。');
+  assert.equal(r.getSnapshot().pending,null);assert.equal(r.getSnapshot().pluginState.xibei.step,'done');assert.equal(r.getSnapshot().stat_data.character_metrics.孤月.好感度,5);assert.equal(h.doc.querySelector('[data-xibei]:not(:disabled)'),null);assert.deepEqual(h.errors,[]);
+ }finally{h.close();}
+});

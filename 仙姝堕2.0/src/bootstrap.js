@@ -276,6 +276,7 @@ function start(win) {
     dispose() {
       if (disposed) return;
       disposed = true;
+      doc.querySelectorAll("[data-xsd2-exit-confirm]").forEach(el=>el.cancelExit?.());
       effects.dispose();
       recoveryPanel?.remove();
       queuedSend?.notice.remove();queuedSend=null;

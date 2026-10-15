@@ -72,3 +72,39 @@ test('覆巢好感按路线一次结算，封顶不越阶，获书后储物栏�
   await h.run('xbxxFinishA');assert.equal(h.r.getSnapshot().stat_data.character_metrics.孤月.好感度,20);await h.r.restore();await h.r.settleStory();assert.equal(h.r.getSnapshot().stat_data.character_metrics.孤月.好感度,20);assert.equal(h.r.getSnapshot().stat_data.favor_log.孤月[0].delta,1);
  }
 });
+
+test('覆巢归宗在原面板确认：取消可重试、确认只发送一次、结算后不再重开入口',async()=>{
+ const {JSDOM}=require('jsdom'),{confirmExit}=require('../src/ui/exit_confirmation'),dom=new JSDOM('<body><div id="slot"></div></body>'),doc=dom.window.document;
+ dom.window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};dom.window.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new dom.window.Event('close'));};
+ const h=harness();await h.open();for(const id of ['xbxxEnter','xbxxFight','xbxxLoot','xbxxAmbush'])await h.run(id);await h.respond();await h.click('xbxxJudge');await h.reply(h.report('否'));await h.run('xbxxDodge');
+ const start=C.day(h.r.getSnapshot().calendarDate),sent=h.sent.length;
+ const adapterConfirm=async n=>confirmExit(doc,n);
+ // Exercise the real dispatcher, not a stubbed successful UI click.
+ const oldCheckpoint=h.r.getCheckpoint(),chat=h.chat;
+ const adapter={context:()=>({chatId:'xibei-test',chat}),readMessage:async i=>C.clone(chat[i]?.variables?.[0]||{}),readCheckpoint:async()=>C.clone(oldCheckpoint),persist:async(c,e)=>{chat[c.floor].variables=[{stat_data:{...C.clone(e.state.stat_data),xsd2:[C.clone(e)]}}];},send:async t=>{h.sent.push(t);chat.push({mes:t,is_user:true});},replaceStory:async(i,t)=>{chat[i].mes=t;},confirmExit:adapterConfirm,setPrompt:()=>{}};
+ const r=createDispatcher(adapter,data),plugin=createXibeiPlugin(data.nodeStories,data.characterProfiles,data.promotionDefinitions);r.registerPlugin(plugin);await r.ready();
+ const dispose=plugin.mount(doc.querySelector('#slot'),r);doc.querySelector('[data-xibei]').click();doc.querySelector('[data-xibei-node="xbxxFinishA"]').click();
+ const tick=()=>new Promise(resolve=>setImmediate(resolve));await tick();assert.equal(doc.querySelectorAll('dialog').length,1);assert.match(doc.querySelector('[data-xsd2-exit-confirm]').textContent,/10日/);
+ doc.querySelector('[data-exit-cancel]').click();await tick();assert.equal(h.sent.length,sent);assert.equal(C.day(r.getSnapshot().calendarDate),start);assert.equal(doc.querySelector('[data-xibei-node="xbxxFinishA"]').disabled,false);assert.match(doc.querySelector('dialog').textContent,/已取消/);
+ doc.querySelector('[data-xibei-node="xbxxFinishA"]').click();await tick();const yes=doc.querySelector('[data-exit-confirm]');yes.click();yes.click();await tick();assert.equal(h.sent.length,sent+1);assert.equal(r.getSnapshot().pending.nodeId,'xbxxFinishA');assert.equal(C.day(r.getSnapshot().calendarDate),start+10);assert.equal(doc.querySelector('dialog'),null);
+ chat.push({mes:'你与孤月回到山门复命。<Status_block><历时>10日</历时></Status_block>',is_user:false});await r.settleStory();assert.equal(r.getSnapshot().pending,null);assert.equal(r.getSnapshot().pluginState.xibei.step,'done');assert.equal(r.getSnapshot().stat_data.character_metrics.孤月.好感度,5);await r.restore();assert.equal(r.getSnapshot().pluginState.xibei.step,'done');assert.equal(C.day(r.getSnapshot().calendarDate),start+10);
+ dispose();const unmount=plugin.mount(doc.querySelector('#slot'),r);assert.equal(doc.querySelector('[data-xibei]'),null);unmount();dom.window.close();
+});
+
+test('西北子页面单实例；关闭确认会取消而不挂住，派发失败后按钮可再点',async()=>{
+ const {JSDOM}=require('jsdom'),{confirmExit}=require('../src/ui/exit_confirmation'),dom=new JSDOM('<body><div id="one"></div><div id="two"></div></body>'),doc=dom.window.document;
+ dom.window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};dom.window.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new dom.window.Event('close'));};
+ const h=harness();await h.open();let fail=true,calls=0;
+ const runtime={getSnapshot:()=>h.r.getSnapshot(),dispatchIntent:async()=>{calls++;if(fail)throw Error('发送失败，请重试');return {};}};
+ const a=h.plugin.mount(doc.querySelector('#one'),runtime),b=h.plugin.mount(doc.querySelector('#two'),runtime);doc.querySelector('#one button').click();doc.querySelector('#two button').click();assert.equal(doc.querySelectorAll('dialog').length,1);
+ doc.querySelector('[data-xibei-node]').click();await new Promise(r=>setImmediate(r));assert.equal(doc.querySelector('[data-xibei-node]').disabled,false);assert.match(doc.querySelector('dialog').textContent,/发送失败/);fail=false;doc.querySelector('[data-xibei-node]').click();await new Promise(r=>setImmediate(r));assert.equal(calls,2);assert.equal(doc.querySelector('dialog'),null);
+ doc.querySelector('#one button').click();const pending=confirmExit(doc,{exitDays:10});doc.querySelector('[data-close]').click();assert.equal(await pending,false);assert.equal(doc.querySelector('[data-xsd2-exit-confirm]'),null);a();b();dom.window.close();
+});
+
+test('行程确认在地图原面板内显示；页面卸载取消，独立确认关闭可再次打开',async()=>{
+ const {JSDOM}=require('jsdom'),{confirmExit}=require('../src/ui/exit_confirmation'),dom=new JSDOM('<body><div class="xsd2-map-modal-box"><button>节点</button></div></body>'),doc=dom.window.document;
+ dom.window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};dom.window.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new dom.window.Event('close'));};
+ let result=confirmExit(doc,{exitDays:2});assert.equal(doc.querySelector('dialog'),null);doc.querySelector('.xsd2-map-modal-box').remove();assert.equal(await result,false);
+ result=confirmExit(doc,{exitDays:6});assert.equal(doc.querySelectorAll('dialog').length,1);doc.querySelector('[data-close]').click();assert.equal(await result,false);
+ result=confirmExit(doc,{exitDays:10});doc.querySelector('[data-exit-confirm]').click();assert.equal(await result,true);assert.equal(doc.querySelector('dialog'),null);dom.window.close();
+});

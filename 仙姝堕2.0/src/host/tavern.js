@@ -1,6 +1,7 @@
 "use strict";
 const C = require("../runtime/contracts");
 const Identity=require("../runtime/message_identity");
+const {confirmExit}=require("../ui/exit_confirmation");
 const { createWorldbookHost } = require("./worldbook");
 function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveHandoff = null, liveCheckpoint = null) {
   const top = (win && win.top) || (win && win.parent) || win;
@@ -228,15 +229,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       aborted = false;
       top.document.querySelector("#send_but").click();
     },
-    confirmExit: (n) =>
-      Promise.resolve(
-        top.confirm(
-          (n.confirmText || "确定离开此处？") +
-            "\n将推进" +
-            n.exitDays +
-            "日。",
-        ),
-      ),
+    confirmExit: (n) => confirmExit(top.document,n),
     async replaceStory(i, text, refresh = "none") {
       const c = context(),
         trail = C.fingerprint(c.chat);

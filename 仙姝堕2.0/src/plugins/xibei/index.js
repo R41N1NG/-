@@ -68,9 +68,26 @@ function createXibeiPlugin(stories,profiles={},promotions={}){
   const doc=slot.ownerDocument,button=doc.createElement('button');button.type='button';button.dataset.xibei='';button.textContent=s.activeEvent?.pluginId===ID?'西北除害 · 继续行动':'西北除害 · 可进行';button.style.cssText='color:#efce84;border:1px solid #d5b97b;border-radius:5px;padding:6px 10px;background:#24342b;box-shadow:0 0 10px #967e4166';slot.append(button);let dialog=null;
   button.onclick=()=>{
    if(dialog?.isConnected)return;
-   dialog=modal(doc,'西北除害');const body=dialog.querySelector('.xsd2-dialog-body'),hint=doc.createElement('p');hint.textContent=state(s).step==='ambush'?'先自由输入回应，再点击判定本次救护。':'可以先自由行动，准备好后再推进节点。';body.append(hint);
-   const retry=s.pending?.nodeId==='xbxxJudge',choices=s.pending?(retry?[{id:'xbxxJudge',label:'重新生成救护判定'}]:[]):list(s);
-   for(const d of choices){const b=doc.createElement('button');b.type='button';b.dataset.xibeiNode=d.id;b.textContent=d.label;b.style.cssText='display:block;margin:8px 0;width:100%;padding:9px;';body.append(b);b.onclick=async()=>{b.disabled=true;try{await runtime.dispatchIntent({type:retry?'RETRY_COMPLETION':'SELECT_NODE',pluginId:ID,expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:d.id}});if(dialog?.isConnected)dialog.close();}catch(e){hint.textContent=e.message;b.disabled=false;}};}
+   const current=runtime.getSnapshot();if(!current || state(current).step==='done')return;
+   // A historical/remounted HUD must not leave a second event dialog behind.
+   doc.querySelectorAll('dialog[data-xsd2-xibei-dialog]').forEach(el=>el.close());
+   dialog=modal(doc,'西北除害');dialog.dataset.xsd2XibeiDialog='';
+   const opened=dialog,body=opened.querySelector('.xsd2-dialog-body'),hint=doc.createElement('p');hint.textContent=state(current).step==='ambush'?'先自由输入回应，再点击判定本次救护。':'可以先自由行动，准备好后再推进节点。';body.append(hint);
+   const retry=current.pending?.nodeId==='xbxxJudge',choices=current.pending?(retry?[{id:'xbxxJudge',label:'重新生成救护判定'}]:[]):list(current);
+   let busy=false;
+   for(const d of choices){
+    const b=doc.createElement('button');b.type='button';b.dataset.xibeiNode=d.id;b.textContent=d.label;b.style.cssText='display:block;margin:8px 0;width:100%;padding:9px;';body.append(b);
+    b.onclick=async()=>{
+     if(busy)return;busy=true;
+     const buttons=[...body.querySelectorAll('[data-xibei-node]')];buttons.forEach(el=>{el.disabled=true;});
+     try{
+      const result=await runtime.dispatchIntent({type:retry?'RETRY_COMPLETION':'SELECT_NODE',pluginId:ID,expected:{chatId:current.chatId,branchId:current.branchId,floor:current.floor,revision:current.revision},payload:{nodeId:d.id}});
+      if(result?.cancelled){hint.textContent='已取消结算，可以继续自由行动，准备好后再推进节点。';return;}
+      if(opened.isConnected)opened.close();
+     }catch(e){hint.textContent=e.message;}
+     finally{busy=false;buttons.forEach(el=>{if(el.isConnected)el.disabled=false;});}
+    };
+   }
    if(!choices.length)hint.textContent='当前回复正在结算，请等待回复完成，或使用酒馆重新生成。';
   };
   return ()=>{button.remove();if(dialog?.isConnected)dialog.close();};
