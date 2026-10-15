@@ -572,3 +572,21 @@ test('保存失败释放等待计数但不自动发送草稿，错误可诊断',
   assert.equal(h.sends.length,0);assert.equal(h.doc.querySelector('#send_textarea').value,'保留此草稿');assert.equal(h.win.XSD2.runtime.getDiagnostics().host.pendingSaves,0);assert.ok(h.errors.some(x=>x.includes('保存失败')));
  }finally{h.close();}
 });
+
+test('打包原生保存导入：稳定extra编号落盘，删早期普通输入、移除楼变量仍恢复且不重复奖励',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..')),h=await fixture(data.greetings.赵无忧);
+ try{
+  const r=h.win.XSD2.runtime;await until(()=>r.getSnapshot());let exported;
+  h.context.saveChat=async()=>{exported=JSON.stringify(h.context.chat);};
+  h.context.chat.push({mes:'额外补充',is_user:true,variables:[{}],extra:{other_extension:'保留'}});h.appendDOM(1);
+  h.context.chat.push({mes:'继续探索',is_user:true,variables:[{}]});h.appendDOM(2);
+  h.context.chat.push({mes:'你获得测试灵石。<Status_block><储物栏>获得：测试灵石×1</储物栏></Status_block>',is_user:false,variables:[{}]});h.appendDOM(3);
+  await h.emit('GENERATION_ENDED');await until(()=>r.getSnapshot().storyCount===1);
+  const identity=JSON.parse(exported)[3].extra.xsd2_identity.revisionId;
+  h.context.chat=JSON.parse(exported);assert.equal(h.context.chat[1].extra.other_extension,'保留');h.context.chat.splice(1,1);for(const m of h.context.chat)m.variables=[{}];h.context.chatId+=' imported';
+  h.doc.querySelector('#chat').replaceChildren();for(let i=0;i<h.context.chat.length;i++)h.appendDOM(i);
+  h.win.eval(script);await until(()=>h.win.XSD2.runtime!==r && h.win.XSD2.runtime.getSnapshot()?.storyCount===1);
+  const fresh=h.win.XSD2.runtime;assert.equal(fresh.getSnapshot().inventory.find(x=>x.name==='测试灵石').count,1);assert.equal(fresh.getDiagnostics().messageIdentity.revisionId,identity);
+  await fresh.flushCompleted();assert.equal(fresh.getSnapshot().storyCount,1);assert.equal(fresh.getDiagnostics().storageIdentityVersion,1);assert.deepEqual(h.errors,[]);
+ }finally{h.close();}
+});

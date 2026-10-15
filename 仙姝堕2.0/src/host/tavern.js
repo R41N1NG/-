@@ -1,5 +1,6 @@
 "use strict";
 const C = require("../runtime/contracts");
+const Identity=require("../runtime/message_identity");
 const { createWorldbookHost } = require("./worldbook");
 function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveHandoff = null, liveCheckpoint = null) {
   const top = (win && win.top) || (win && win.parent) || win;
@@ -19,6 +20,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     const c = ctx();
     const chid = c.characterId ?? c.this_chid;
     return {
+      identities:Identity.identify(c.chat || []),
       chatId: c.chatId || c.getCurrentChatId?.(),
       branchId: c.chatId || c.getCurrentChatId?.(),
       chat: c.chat,
@@ -38,6 +40,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     const n = context();
     if (
       n.chatId !== c.chatId ||
+      (c.identities && JSON.stringify(c.identities)!==JSON.stringify(n.identities.slice(0,c.identities.length))) ||
       !(JSON.stringify(C.fingerprint(n.chat)) === JSON.stringify(c.trail) || (c.allowUserAppend && C.matches(c.trail,C.fingerprint(n.chat)) && n.chat.slice(c.trail.length).every(m=>m.is_user&&!m.is_system)))
     )
       throw Error("聊天已变化，取消写入");
@@ -134,7 +137,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     async readCheckpoint() {
       const c=context(),vars=await helper.getVariables({type:"chat"});
       const saved=vars?.xsd2_checkpoint;
-      if(saved?.chatId===c.chatId && C.matchesSnapshot(saved.trail,C.fingerprint(c.chat)))return saved;
+      if(saved?.identityTrail || (saved?.chatId===c.chatId && C.matchesSnapshot(saved.trail,C.fingerprint(c.chat))))return saved;
       // Only migrate a live trusted kernel's pending, bound to this chat and
       // the adjacent exact user action; never reconstruct from model prose.
       const p=liveHandoff?.pending;
@@ -194,7 +197,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       if(checkpoint.previous?.trail)checkpoint.previous.trail=compact(checkpoint.previous.trail);
       await mutateChatVariables(c,vars=>{
         const journal=(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[]).filter(x=>
-        !(x.chatId===c.chatId && x.trail?.length===checkpoint.trail.length && C.matchesSnapshot(x.trail,checkpoint.trail)));
+        !(checkpoint.identityTrail && x.identityTrail ? JSON.stringify(x.identityTrail)===JSON.stringify(checkpoint.identityTrail) : x.chatId===c.chatId && x.trail?.length===checkpoint.trail.length && C.matchesSnapshot(x.trail,checkpoint.trail)));
         journal.push(checkpoint);
         return {...vars,xsd2_checkpoint:checkpoint,xsd2_history:journal};
       });

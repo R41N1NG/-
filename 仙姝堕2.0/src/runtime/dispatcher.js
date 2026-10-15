@@ -1,5 +1,6 @@
 "use strict";
 const C = require("./contracts");
+const Identity=require("./message_identity");
 const {reassociate}=require("./reassociate_history");
 const {meets} = require("./conditions");
 const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover} = require("./character_stages");
@@ -30,8 +31,7 @@ function createDispatcher(adapter, data) {
   let current = null,
     scopeChatId = null,
     disposed = false,
-    queue = Promise.resolve(),
-    serial = 0;
+    queue = Promise.resolve();
   const subscribers = new Set(),
     plugins = new Map();
   const rules = (s) => data.rules(s.stat_data);
@@ -45,65 +45,80 @@ function createDispatcher(adapter, data) {
       branchId: String(c.branchId || c.chatId),
       floor: c.chat.length - 1,
       trail: C.fingerprint(c.chat),
+      identities:Identity.identify(c.chat),
     };
   }
   function token(c) {
-    return JSON.stringify([c.chatId, c.branchId, c.trail]);
+    return JSON.stringify([c.chatId, c.branchId, c.trail,c.identities]);
   }
   function guard(c) {
     const now=context();
-    const appendOnly=c.allowUserAppend && now.chatId===c.chatId && now.branchId===c.branchId && C.matches(c.trail,now.trail) && now.chat.slice(c.trail.length).every(m=>m.is_user&&!m.is_system);
+    const appendOnly=c.allowUserAppend && now.chatId===c.chatId && now.branchId===c.branchId && C.matches(c.trail,now.trail) && JSON.stringify(c.identities)===JSON.stringify(now.identities.slice(0,c.identities.length)) && now.chat.slice(c.trail.length).every(m=>m.is_user&&!m.is_system);
     if(disposed || (token(c)!==token(now) && !appendOnly))throw Error("聊天、候选或正文已变化，请重新读取");
   }
 
   function compatible(e, c) {
-    return e?.schema === 2 && C.matchesSnapshot(e.trail, c.trail);
+    return e?.schema === 2 && (e.identityTrail ? !!Identity.restore(e,c) : C.matchesSnapshot(e.trail, c.trail));
   }
   async function history(c, ceiling = c.floor) {
     let best=null,saved=false;const localRecords=[];
+    function consider(e,legacyScope=false){
+      if(e?.schema!==2)return;
+      saved=true;
+      const anchor=e.identityTrail?.at(-1);
+      const position=anchor ? c.identities.findIndex(x=>x.messageId===anchor.messageId && x.revisionId===anchor.revisionId) : (e.trail?.length ?? 0)-1;
+      if(position<0 || position>ceiling || (best && (position<best.floor || (position===best.floor && e.state?.revision<=best.state.revision))))return;
+      let found=e.identityTrail ? Identity.restore(e,c) : null;
+      if(!e.identityTrail && C.matchesSnapshot(e.trail,c.trail) && (!legacyScope || (e.chatId===c.chatId && (!e.branchId||e.branchId===c.branchId))))
+        found={state:C.clone(e.state),floor:e.trail.length-1,migrated:true};
+      if(found && found.floor<=ceiling && (!best || found.floor>best.floor || (found.floor===best.floor && found.state.revision>best.state.revision)))best=found;
+    }
     for (let i = ceiling; i >= 0; i--) {
       const e=(await adapter.readMessage(i))?.stat_data?.xsd2?.[0];guard(c);
-      if(e?.schema===2){saved=true;localRecords.push(e);}
-      if(compatible(e,c)){best={state:C.clone(e.state),floor:i};break;}
+      if(e?.schema===2)localRecords.push(e);
+      consider(e);
+      if(best)break;
     }
-    const local=liveEnvelope?.chatId===c.chatId && liveEnvelope.branchId===c.branchId ? liveEnvelope : null;
     const records=adapter.readCheckpoints ? await adapter.readCheckpoints() : [await adapter.readCheckpoint?.()];guard(c);
-    if(local && (!String(c.chat[0]?.mes || "").includes("<IdentityMenu") || compatible(local,c)))records.push(C.clone(local));
-    for(const checkpoint of records){
-      if(checkpoint?.schema===2)saved=true;
-      const cpFloor=checkpoint?.trail?.length-1;
-      if(checkpoint?.chatId===c.chatId && (!checkpoint.branchId||checkpoint.branchId===c.branchId) && compatible(checkpoint,c) && cpFloor<=ceiling && (!best||cpFloor>best.floor || (cpFloor===best.floor && checkpoint.state?.revision>best.state?.revision))) best={state:C.clone(checkpoint.state),floor:cpFloor};
-    }
-    // A committed reply keeps its exact predecessor separately. It may be read
-    // after native regeneration even when per-message variable slots disappeared.
+    if(liveEnvelope?.chatId===c.chatId && liveEnvelope.branchId===c.branchId && (!String(c.chat[0]?.mes || "").includes("<IdentityMenu") || compatible(liveEnvelope,c)))records.push(C.clone(liveEnvelope));
     for(const e of [...records])if(e?.previous?.schema===2)records.push(e.previous);
-    for(const checkpoint of records){
-      const cpFloor=checkpoint?.trail?.length-1;
-      if(checkpoint?.chatId===c.chatId && checkpoint.branchId===c.branchId && compatible(checkpoint,c) && cpFloor<=ceiling && (!best || cpFloor>best.floor))best={state:C.clone(checkpoint.state),floor:cpFloor};
-    }
+    for(const e of records)consider(e,true);
     for(const e of [...localRecords,...records]){
       if(best?.floor>=ceiling)break;
+      // Stable-ID snapshots never fall through to positional legacy matching.
+      if(e?.identityTrail)continue;
       const recovered=reassociate(e,c);
-      if(recovered && recovered.floor<=ceiling && (!best||recovered.floor>best.floor))best=recovered;
+      if(recovered && recovered.floor<=ceiling && (!best||recovered.floor>best.floor))best={...recovered,migrated:true};
     }
     // Restore only a locally authorized adjacent action after its reply is deleted/regenerated.
     // Assistant formatting may change; user choices, candidate IDs and chat scope still must match.
-    for(const e of records){
+    for(const original of records){
+      let e=original;
+      const originalPending=e?.state?.pending || e?.state?.lastPromotionRecovery?.pending;
+      if(originalPending?.authorization?.identityTrail){
+        const a=originalPending.authorization;
+        const recovered=Identity.restore({identityTrail:a.identityTrail,state:{pending:originalPending}},c);
+        if(!recovered)continue;
+        e={chatId:c.chatId,branchId:c.branchId,state:recovered.state};
+      }
       const p=e?.state?.pending || e?.state?.lastPromotionRecovery?.pending,auth=p?.authorization;
-      if(e?.chatId!==c.chatId || (e.branchId && e.branchId!==c.branchId) || !p?.selection?.completionQuery || auth?.chatId!==c.chatId || auth.branchId!==c.branchId || p.floor>ceiling || !C.matchesSnapshot(auth.trail,c.trail) || c.chat.slice(p.floor+2).some(m=>m.is_user&&!m.is_system) || (best && best.floor>p.floor))continue;
+      if(e?.chatId!==c.chatId || (e.branchId && e.branchId!==c.branchId) || !p?.selection?.completionQuery || auth?.chatId!==c.chatId || auth.branchId!==c.branchId || p.floor>ceiling || !Identity.authorized(auth,c) || c.chat.slice(p.floor+2).some(m=>m.is_user&&!m.is_system) || (best && best.floor>p.floor))continue;
       const user=c.chat[p.floor+1];
       const authorized=user?.is_user && (p.actionCode ? readActionCode(user.mes)?.code===p.actionCode : String(user.mes).trim()===p.actionText);
       const restored=C.clone(p.before);if(authorized)restored.pending=C.clone(p);
       if(!best || p.floor>=best.floor)best={state:restored,floor:p.floor};
     }
     const p=scopeChatId===c.chatId?current?.pending:null,auth=p?.authorization;
-    if(auth?.chatId===c.chatId && auth.branchId===c.branchId && p.floor<=ceiling && C.matchesSnapshot(auth.trail,c.trail) && (!best||p.floor>=best.floor)) best={state:C.clone(current),floor:p.floor};
+    if(auth?.chatId===c.chatId && auth.branchId===c.branchId && Identity.authorized(auth,c)){
+      const restored=auth.identityTrail ? Identity.restore({identityTrail:auth.identityTrail,state:current},c) : {state:C.clone(current),floor:p.floor};
+      if(restored && restored.floor<=ceiling && (!best||restored.floor>=best.floor))best=restored;
+    }
     if(!best && saved){
       recoveryFault={chatId:c.chatId,branchId:c.branchId,floor:c.floor,ceiling,recordCount:records.length,recordFloors:records.filter(x=>x?.schema===2).map(x=>x.trail?.length-1),recordScopes:records.filter(x=>x?.schema===2).map(x=>({chatId:x.chatId,branchId:x.branchId,floor:x.trail?.length-1,compatible:compatible(x,c)})),candidates:c.trail.map(x=>{const v=JSON.parse(x);return [v[0],v[1],v[2]];}),reason:"未找到符合当前消息前缀与候选的进度快照"};
       const error=Error("已有进度记录与当前分支不匹配，已停止初始化以保护存档");error.code="XSD2_RECOVERY_MISMATCH";throw error;
     }
     recoveryFault=null;
-    recoveredEnvelope=best ? {schema:2,chatId:c.chatId,branchId:c.branchId,trail:c.trail.slice(0,best.floor+1),state:C.clone(best.state)} : null;
+    recoveredEnvelope=best ? {schema:2,chatId:c.chatId,branchId:c.branchId,trail:c.trail.slice(0,best.floor+1),identityTrail:Identity.trail(c,best.floor),state:C.clone(best.state)} : null;
     return best;
   }
   function defaults(identity, opening, custom) {
@@ -236,11 +251,15 @@ function createDispatcher(adapter, data) {
     s.revision = (current?.revision || s.revision || 0) + 1;
     manual(s);
     s.stat_data.active_area = areaBackgrounds.lookup(String(s.stat_data?.地点 || ""));
+    Identity.upgradeAuthorizations(s,c);
+    Identity.stampProcessed(s,c);
+    Identity.bindReferences(s,c);
     const envelope = {
       schema: 2,
       chatId: c.chatId,
       branchId: c.branchId,
       trail: c.trail.slice(0, c.floor + 1),
+      identityTrail:Identity.trail(c),
       state: s,
     };
     const prior=[liveEnvelope,recoveredEnvelope].find(e=>e?.chatId===c.chatId && e.branchId===c.branchId && compatible(e,c)) || null;
@@ -303,6 +322,7 @@ function createDispatcher(adapter, data) {
         current = C.clone(current.pending.before);
         await commit(c, current, "rollback");
       } else notify("branch_change");
+      if(found.migrated)await commit({...c,floor:found.floor},current,"identity_migration");
       updatePrompt();
       return snapshot();
     }
@@ -433,7 +453,7 @@ function createDispatcher(adapter, data) {
     const before = C.clone(current),
       next = C.clone(current);
     const id =
-      c.chatId + ":" + c.floor + ":" + current.revision + ":" + C.hash(JSON.stringify(c.trail)) + ":" + ++serial;
+      Identity.uid("tx");
     delete next.stat_data.result_focus;
     delete next.stat_data.result_focuses;
     next.pending = {
@@ -445,7 +465,7 @@ function createDispatcher(adapter, data) {
       actionCode:createActionCode(n.id, id),
       prompt: n.prompt,
       floor: c.floor,
-      authorization:{chatId:c.chatId,branchId:c.branchId,trail:C.clone(c.trail)},
+      authorization:Identity.authorization(c),
       selection: C.clone(n),
       before,
     };
@@ -826,7 +846,7 @@ function createDispatcher(adapter, data) {
       return { skipped: true };
     if (!current || scopeChatId !== c.chatId) await load(c);
     if (!current) return { skipped: true };
-    const processed=current.processed[c.floor];
+    const processed=current.processedByRevision?.[c.identities[c.floor].revisionId]?.hash || (!current.history_identity ? current.processed[c.floor] : undefined);
     const normalizedHash=C.hash(String(m.mes).replace(/\r\n/g,"\n").trim());
     const closedCallback=processed && Object.values(current.settlements || {}).some(x=>x.floor===c.floor && x.kind==="promotion");
     // The raw callback has already been replaced by display text. Only an
@@ -841,7 +861,7 @@ function createDispatcher(adapter, data) {
     guard(c);
     if (
       candidate?.chatId === c.chatId &&
-      C.matches(candidate.trail?.slice(0, c.floor), c.trail)
+      (candidate.identityTrail ? !!Identity.mapping(candidate.identityTrail.slice(0,-1),c.identities) && candidate.identityTrail.at(-1)?.messageId===c.identities[c.floor].messageId : C.matches(candidate.trail?.slice(0, c.floor), c.trail))
     )
       s.manual = { ...s.manual, ...candidate.state.manual };
     let body = String(m.mes);
@@ -1074,8 +1094,8 @@ function createDispatcher(adapter, data) {
           const before=C.clone(current),next=C.clone(current),from=next.stat_data.修为;
           Realm.act(next,rules(next),intent.payload.kind,c.floor);
           if(!retreat)return commit(c,next,"realm_action");
-          next.pending={id:c.chatId+":realm:"+c.floor+":"+current.revision+":"+ ++serial,kind:"realm",floor:c.floor,
-            actionText:"闭关三个月",displayText:"闭关三个月",authorization:{chatId:c.chatId,branchId:c.branchId,trail:C.clone(c.trail)},before,
+          next.pending={id:Identity.uid("tx"),kind:"realm",floor:c.floor,
+            actionText:"闭关三个月",displayText:"闭关三个月",authorization:Identity.authorization(c),before,
             selection:{settlement:{mode:"separate",title:"闭关三月 · 修行结算"}},realm:{from},
             prompt:"本轮为闭关三个月的结算演绎。后台已核定耗时90日、原境界"+from+"、新境界"+next.stat_data.修为+"，出关日期为仙盟历"+C.dateText(next.calendarDate)+"。叙述修炼经过和出关结果，保留玩家言行自主权；不再发起是非判定、不额外升境、不追加耗时或奖励，不替玩家启动下一剧情。正常输出Status_block，历时90日，修为使用后台当前境界。"};
           try {await commit(c,next,"realm_pending");guard(c);await adapter.send(next.pending.actionText);return snapshot();}
@@ -1086,7 +1106,7 @@ function createDispatcher(adapter, data) {
           if(!p?.selection?.completionQuery || adapter.isGenerating?.())throw Error("当前没有可重试的剧情结算，或回复正在生成");
           if(intent.expected?.chatId!==c.chatId || intent.expected.branchId!==c.branchId || intent.expected.floor!==c.floor || intent.expected.revision!==current.revision)throw Error("结算按钮来自旧状态，请重新打开");
           const user=c.chat[c.floor];
-          if(!user?.is_user || readActionCode(user.mes)?.code!==p.actionCode || !C.matchesSnapshot(p.authorization?.trail,c.trail))throw Error("当前末楼不是本次完成指令，不能重试其他分支");
+          if(!user?.is_user || readActionCode(user.mes)?.code!==p.actionCode || !Identity.authorized(p.authorization,c))throw Error("当前末楼不是本次完成指令，不能重试其他分支");
           if(typeof adapter.retryGeneration!=="function")throw Error("宿主暂不支持重新结算，请使用酒馆原生重新生成");
           await commit(c,C.clone(current),"retry_completion");guard(c);adapter.retryGeneration();return snapshot();
         }
@@ -1161,8 +1181,8 @@ function createDispatcher(adapter, data) {
             await commit(c,next,discard ? "item_discard" : "item_view");
             return snapshot();
           }
-          next.pending = {id:c.chatId+":item:"+c.floor+":"+current.revision+":"+ ++serial,
-            kind:"item", authorization:{chatId:c.chatId,branchId:c.branchId,trail:C.clone(c.trail)}, operation:discard ? "discard" : "use", floor:c.floor, actionText:"使用"+meta.name, item:meta, selection:{}, before,
+          next.pending = {id:Identity.uid("tx"),
+            kind:"item", authorization:Identity.authorization(c), operation:discard ? "discard" : "use", floor:c.floor, actionText:"使用"+meta.name, item:meta, selection:{}, before,
             prompt:itemUsePrompt(meta, meta.count - (meta.consumable ? 1 : 0))};
           await commit(c, next, "item_use");
           guard(c);
@@ -1194,7 +1214,7 @@ function createDispatcher(adapter, data) {
       const c = context(), s = snapshot(), latest = c.chat[c.floor];
       const relics=s?Object.values(rules(s).RELIC_PILOT_CONFIG).map(cfg=>({id:cfg.id,name:cfg.names[0],holder:cfg.owner,stage:rules(s).getRelicStage(cfg.id,s.stat_data.known),flags:Object.fromEntries([cfg.formKey,cfg.stage1Key,cfg.stage2Key,cfg.stage3Key,cfg.stage4Key,cfg.owner+"处女丧失"].filter(Boolean).map(k=>[k,s.stat_data.known?.[k]===true])),owners:C.clone(s.stat_data.名器归属 || {}),breaker:s.stat_data.破处者?.[cfg.owner] || null,progress:C.clone(s.stat_data.relic_progress?.[cfg.id] || null),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([k])=>k.startsWith("known.")||k.startsWith("relicStage.")||k.startsWith("owner.")))})):[];
       return { schema:3,realm:s?Realm.eligibility(s,rules(s)):null,relics,relicEvidence:C.clone(s?.stat_data.relic_evidence_log || []), host:adapter.getDiagnostics?.() || {},
-        floor:c.floor, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), recoveryFault:C.clone(recoveryFault),
+        floor:c.floor, messageIdentity:C.clone(c.identities[c.floor]), storageIdentityVersion:s?.history_identity?.version || 0, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), recoveryFault:C.clone(recoveryFault),
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,
         } : null, event:s?.activeEvent || null,
@@ -1208,7 +1228,8 @@ function createDispatcher(adapter, data) {
       if (!Number.isInteger(floor) || floor < 0 || floor > c.floor) return null;
       const e = (await adapter.readMessage(floor))?.stat_data?.xsd2?.[0];
       if (token(c) !== token(context()) || !compatible(e, c)) return null;
-      const s = C.clone(e.state.pending && floor < c.floor ? e.state.pending.before : e.state);
+      const resolved=e.identityTrail?Identity.restore(e,c):{state:e.state};
+      const s = C.clone(resolved.state.pending && floor < c.floor ? resolved.state.pending.before : resolved.state);
       normalize(s);
       return { ...s, chatId:c.chatId, branchId:c.branchId, floor,
         inventory:s.stat_data.inventory, known:s.stat_data.known, relics:s.stat_data.relic_progress };

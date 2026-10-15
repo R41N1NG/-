@@ -1,0 +1,115 @@
+"use strict";
+const C = require('./contracts');
+let serial=0;
+function uid(prefix='msg') {
+  const random=globalThis.crypto?.randomUUID?.();
+  return prefix+'_'+(random || Date.now().toString(36)+'_'+(++serial).toString(36)+'_'+Math.random().toString(36).slice(2)+'_'+Math.random().toString(36).slice(2));
+}
+const normalized=x=>String(x??'').replace(/\r\n/g,'\n').trim();
+function signature(text) {
+  const s=normalized(text);
+  return s.length+':'+C.hash(s)+':'+C.hash([...s].reverse().join(''));
+}
+const action=text=>/XSD2_|^\/?(?:解锁|锁定|身份|段位)\s/.test(String(text));
+// Persist on native message.extra and swipe_info[].extra, which travel with
+// exported messages. Never use the message's current array position as its ID.
+function identify(chat) {
+  const seen=new Set();
+  return chat.map(m=>{
+    const slot=Number(m.swipe_id??0), info=m.swipe_info?.[slot];
+    m.extra ||= {};
+    let record=m.extra.xsd2_identity || info?.extra?.xsd2_identity;
+    if(!record?.messageId && Array.isArray(m.swipe_info))record=m.swipe_info.map(x=>x?.extra?.xsd2_identity).find(x=>x?.messageId);
+    if(!record?.messageId || seen.has(record.messageId))record={messageId:uid(),versions:{}};
+    // A cloned native message may share extra with its original in memory.
+    record=C.clone(record);record.versions ||= {};
+    const sig=signature(m.mes), key=slot+':'+sig;
+    const native=info?.extra?.xsd2_identity;
+    const duplicate=native?.revisionId && m.swipe_info?.some((x,i)=>i<slot && x?.extra?.xsd2_identity?.revisionId===native.revisionId);
+    const revisionId=duplicate ? uid('reply') : native?.messageId===record.messageId && native.signature===sig ? native.revisionId : record.versions[key] || uid('reply');
+    record.versions[key]=revisionId;
+    const keys=Object.keys(record.versions);for(const oldKey of keys.slice(0,Math.max(0,keys.length-32)))delete record.versions[oldKey];
+    record.revisionId=revisionId;record.signature=sig;
+    m.extra={...m.extra,xsd2_identity:record};
+    if(info)info.extra={...(info.extra || {}),xsd2_identity:C.clone(record)};
+    seen.add(record.messageId);
+    return {messageId:record.messageId,revisionId,user:!!m.is_user,signature:sig,action:!!m.is_user&&action(m.mes)};
+  });
+}
+function trail(c,floor=c.floor){return C.clone(c.identities.slice(0,floor+1));}
+function same(a,b){return a?.messageId===b?.messageId && a?.revisionId===b?.revisionId && a?.user===b?.user && a?.signature===b?.signature;}
+// A removed ordinary input may shift positions. Every assistant outcome and
+// every command must remain. Insertions/edits/reordered replies fork history.
+function mapping(old,now) {
+  if(!Array.isArray(old)||!old.length||!Array.isArray(now))return null;
+  const map=new Map();let j=0;
+  const ids=new Set();
+  for(let i=0;i<old.length;i++){
+    if(!old[i]?.messageId || ids.has(old[i].messageId))return null;
+    ids.add(old[i].messageId);
+    if(same(old[i],now[j])){map.set(i,j++);continue;}
+    if(i===0 || !old[i].user || old[i].action)return null;
+    // A kept input with a different revision is an edit, not a deletion.
+    if(now.some(x=>x.messageId===old[i].messageId))return null;
+  }
+  if(!map.has(old.length-1))return null;
+  return map;
+}
+function remapState(source,map,c) {
+  const state=C.clone(source);let unsafe=false;
+  function visit(v){
+    if(!v||typeof v!=='object')return;
+    for(const[k,x]of Object.entries(v)){
+      if(k==='floor'&&Number.isInteger(x)){
+        const reference=v.messageRef;
+        const position=reference ? c.identities.findIndex(id=>id.messageId===reference.messageId && id.revisionId===reference.revisionId) : map.get(x);
+        if(Number.isInteger(position) && [...map.values()].includes(position))v[k]=position;else unsafe=true;
+      }else if(k==='processed'&&x&&typeof x==='object'){
+        const next={};for(const[f,h]of Object.entries(x)){if(map.has(+f))next[map.get(+f)]=h;else unsafe=true;}v[k]=next;
+      }else if(k==='authorization'&&x?.identityTrail){
+        const own=mapping(x.identityTrail,c.identities);
+        if(!own){unsafe=true;continue;}
+        const last=own.get(x.identityTrail.length-1);
+        v[k]={chatId:c.chatId,branchId:c.branchId,trail:c.trail.slice(0,last+1),identityTrail:trail(c,last)};
+      }else if(k!=='history_reassociation'&&k!=='history_identity')visit(x);
+    }
+  }
+  visit(state);
+  return unsafe?null:state;
+}
+function restore(e,c) {
+  const map=mapping(e?.identityTrail,c.identities);
+  if(!map||!e.state)return null;
+  const state=remapState(e.state,map,c);
+  if(!state)return null;
+  const floor=map.get(e.identityTrail.length-1);
+  state.history_identity={version:1,messageId:c.identities[floor].messageId,revisionId:c.identities[floor].revisionId};
+  return {state,floor};
+}
+function authorized(auth,c){return auth?.identityTrail ? !!mapping(auth.identityTrail,c.identities) : auth?.chatId===c.chatId && auth.branchId===c.branchId && C.matchesSnapshot(auth.trail,c.trail);}
+function authorization(c){return {chatId:c.chatId,branchId:c.branchId,trail:C.clone(c.trail),identityTrail:trail(c)};}
+function upgradeAuthorizations(s,c){
+  function visit(v){if(!v||typeof v!=='object')return;for(const[k,x]of Object.entries(v)){
+    if(k==='authorization' && x?.trail && !x.identityTrail && C.matchesSnapshot(x.trail,c.trail))
+      v[k]={chatId:c.chatId,branchId:c.branchId,trail:C.clone(x.trail),identityTrail:trail(c,x.trail.length-1)};
+    else visit(x);
+  }}
+  visit(s);
+}
+function bindReferences(s,c){
+  function visit(v){if(!v||typeof v!=='object')return;
+    if(Number.isInteger(v.floor) && !v.messageRef){const id=c.identities[v.floor];if(id)v.messageRef={messageId:id.messageId,revisionId:id.revisionId};}
+    for(const[k,x]of Object.entries(v))if(!['messageRef','history_identity','history_reassociation'].includes(k))visit(x);
+  }
+  visit(s);
+}
+function stampProcessed(s,c){
+  const last=c.identities[c.floor];
+  s.history_identity={version:1,messageId:last.messageId,revisionId:last.revisionId};
+  s.processedByRevision={};
+  for(const[f,hash]of Object.entries(s.processed||{})){
+    const id=c.identities[+f],text=c.chat[+f]?.mes;
+    if(id && (C.hash(text)===hash || C.hash(normalized(text))===hash))s.processedByRevision[id.revisionId]={messageId:id.messageId,hash};
+  }
+}
+module.exports={uid,identify,trail,mapping,restore,remapState,authorized,authorization,stampProcessed,upgradeAuthorizations,bindReferences};

@@ -1194,16 +1194,87 @@ test('新用户楼已入场且宿主已标生成中，生成前补齐前一助�
 
 test('导入并删除未结算用户补充后，逐条校验保留回复和用户输入，重连楼号保留进度',async()=>{
  const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'多余补充'},{is_user:true,mes:'第一轮'});await h.reply(status({},'第一轮结束。'));h.c.chat.push({is_user:true,mes:'第二轮'});await h.reply(status({},'第二轮结束。'));
- const saved=h.r.getCheckpoint(),count=h.r.getSnapshot().storyCount;h.c.chat.splice(1,1);h.c.chatId='重新导入';h.c.branchId=h.c.chatId;for(const m of h.c.chat)m.variables=[];h.adapter.readCheckpoints=async()=>[C.clone(saved)];
+ const saved=h.r.getCheckpoint(),count=h.r.getSnapshot().storyCount;delete saved.identityTrail;if(saved.previous)delete saved.previous.identityTrail;h.c.chat.splice(1,1);h.c.chatId='重新导入';h.c.branchId=h.c.chatId;for(const m of h.c.chat)m.variables=[];h.adapter.readCheckpoints=async()=>[C.clone(saved)];
  const r=createDispatcher(h.adapter,data);await r.ready();assert.equal(r.getSnapshot().storyCount,count);assert.equal(r.getSnapshot().history_reassociation.floor,4);assert.deepEqual(Object.keys(r.getSnapshot().processed),['2','4']);
  h.c.chat.push({is_user:true,mes:'第三轮'},{is_user:false,mes:status({},'第三轮结束。')});await r.flushCompleted();assert.equal(r.getSnapshot().storyCount,count+1);await r.flushCompleted();assert.equal(r.getSnapshot().storyCount,count+1);
 });
 
 test('重连不接受已改用户输入/候选/回复、删助手结果或删授权命令；导入旧记录不能静默清零',async()=>{
- const {reassociate}=require('../src/runtime/reassociate_history');const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'待删除'},{is_user:true,mes:'保留输入'});await h.reply(status({},'保留回复。'));const saved=h.r.getCheckpoint(),original=C.clone(h.c.chat);
+ const {reassociate}=require('../src/runtime/reassociate_history');const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'待删除'},{is_user:true,mes:'保留输入'});await h.reply(status({},'保留回复。'));const saved=h.r.getCheckpoint(),original=C.clone(h.c.chat);delete saved.identityTrail;if(saved.previous)delete saved.previous.identityTrail;
  const check=chat=>reassociate(saved,{chat,trail:C.fingerprint(chat)});
  let chat=C.clone(original);chat.splice(1,1);assert.ok(check(chat));chat[1].mes='不同输入';assert.equal(check(chat),null);chat=C.clone(original);chat.splice(1,1);chat[2].swipe_id=1;assert.equal(check(chat),null);chat[2].swipe_id=0;chat[2].mes='改写回复';assert.equal(check(chat),null);
  chat=C.clone(original);chat.pop();assert.equal(check(chat),null);chat=C.clone(original);chat.splice(1,1);chat.push({is_user:true,mes:'XSD2_next_deadbeef'});assert.equal(check(chat),null);
  const coded=C.clone(saved),tuple=JSON.parse(coded.trail[1]);tuple[3]='XSD2_test_deadbeef';coded.trail[1]=JSON.stringify(tuple);chat=C.clone(original);chat.splice(1,1);assert.equal(reassociate(coded,{chat,trail:C.fingerprint(chat)}),null);
  h.c.chat=chat;h.c.chat[1].mes='不同输入';for(const m of h.c.chat)m.variables=[];h.c.chatId='imported';h.c.branchId='imported';h.adapter.readCheckpoints=async()=>[C.clone(saved)];await assert.rejects(createDispatcher(h.adapter,data).ready(),/保护存档/);
+});
+
+test('稳定消息身份：带奖励节点删早期普通输入并导入，收据随原回复移动且不重复',async()=>{
+ const h=harness();await h.opening('赵无忧');h.r.registerPlugin(plugin());
+ h.c.chat.push({is_user:true,mes:'可删除补充'},{is_user:true,mes:'继续'});await h.reply(status({},'交谈结束。'));
+ await h.select('exit');const tx=h.r.getSnapshot().pending.id;assert.match(tx,/^tx_/);
+ await h.reply(status({},'你离开幽寂谷，带回草药。'));const original=h.r.getSnapshot(),saved=h.r.getCheckpoint();
+ assert.ok(saved.identityTrail);assert.equal(original.receipts[tx].floor,5);assert.equal(original.receipts[tx].messageRef.revisionId,saved.identityTrail.at(-1).revisionId);
+ // The receipt uses its reply ID even when its cached old position is wrong.
+ saved.state.receipts[tx].floor=999;
+ h.c.chat.splice(1,1);h.c.chatId='导入新名字';h.c.branchId=h.c.chatId;for(const m of h.c.chat)m.variables=[];
+ h.adapter.readCheckpoints=async()=>[C.clone(saved)];const fresh=createDispatcher(h.adapter,data);fresh.registerPlugin(plugin());await fresh.ready();
+ const now=fresh.getSnapshot();assert.equal(now.receipts[tx].floor,4);assert.deepEqual(now.calendarDate,original.calendarDate);assert.deepEqual(now.inventory,original.inventory);assert.equal(now.storyCount,original.storyCount);
+ await fresh.flushCompleted();assert.deepEqual(fresh.getSnapshot().inventory,original.inventory);assert.equal(fresh.getSnapshot().storyCount,original.storyCount);
+ // Remove this outcome: the predecessor still carries the authorized action,
+ // and its transaction ID survives the shifted floor and changed chat name.
+ h.c.chat.pop();await fresh.restore();assert.equal(fresh.getSnapshot().pending.id,tx);assert.ok(!fresh.getSnapshot().inventory.some(x=>x.name==='草药'));
+ h.c.chat.push({is_user:false,mes:status({},'重写后带回草药。')});await fresh.settleStory();assert.equal(fresh.getSnapshot().inventory.find(x=>x.name==='草药').count,1);assert.equal(Object.keys(fresh.getSnapshot().receipts).length,1);
+});
+
+test('稳定候选身份：同一楼重抽不继承旧收益，切回原候选恢复原账；编辑回复撤回再算',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'探索'});await h.reply(status({储物栏:'获得：测试灵石×1'},'你获得测试灵石。'));
+ const first=C.clone(h.c.chat.at(-1)),firstId=first.extra.xsd2_identity.revisionId;h.c.chat.at(-1).swipe_id=1;h.c.chat.at(-1).mes=status({},'没有新的发现。');await h.r.replay('swipe');await h.r.settleStory();
+ assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==='测试灵石'));assert.notEqual(h.c.chat.at(-1).extra.xsd2_identity.revisionId,firstId);
+ h.c.chat.at(-1).swipe_id=0;h.c.chat.at(-1).mes=first.mes;await h.r.restore();assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='测试灵石').count,1);
+ h.c.chat.at(-1).mes=status({},'改为普通交谈。');await h.r.restore();await h.r.settleStory();assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==='测试灵石'));assert.equal(h.r.getSnapshot().storyCount,1);
+});
+
+test('稳定身份拒绝已改用户/删授权/删助手/重排/重复消息ID，不能仅凭相同楼号借旧档',async()=>{
+ const I=require('../src/runtime/message_identity'),h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'补充'},{is_user:true,mes:'XSD2_action_deadbeef'});await h.reply(status({},'第一轮。'));h.c.chat.push({is_user:true,mes:'第二次'});await h.reply(status({},'第二轮。'));
+ const saved=h.r.getCheckpoint(),original=C.clone(h.c.chat);
+ const resolve=chat=>I.restore(saved,{chat,identities:I.identify(chat),trail:C.fingerprint(chat),chatId:'new',branchId:'new'});
+ let chat=C.clone(original);chat.splice(1,1);assert.ok(resolve(chat));
+ chat=C.clone(original);chat[1].mes='编辑输入';assert.equal(resolve(chat),null);
+ chat=C.clone(original);chat.splice(2,1);assert.equal(resolve(chat),null);
+ chat=C.clone(original);chat.splice(3,1);assert.equal(resolve(chat),null);
+ chat=C.clone(original);[chat[3],chat[5]]=[chat[5],chat[3]];assert.equal(resolve(chat),null);
+ chat=C.clone(original);chat[5]=C.clone(chat[3]);assert.equal(resolve(chat),null);
+ // Repeated assistant wording is still a different message, never an anchor.
+ chat=C.clone(original);delete chat[5].extra;assert.equal(resolve(chat),null);
+});
+
+test('旧版迁移写出稳定身份，下一次删除普通输入后直接用ID恢复',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'补充'},{is_user:true,mes:'继续'});await h.reply(status({},'普通交谈。'));
+ const old=h.r.getCheckpoint();delete old.identityTrail;delete old.previous;delete old.state.history_identity;delete old.state.processedByRevision;
+ for(const m of h.c.chat){m.variables=[];delete m.extra;}
+ h.adapter.readCheckpoints=async()=>[C.clone(old)];const fresh=createDispatcher(h.adapter,data);await fresh.ready();const migrated=fresh.getCheckpoint();assert.ok(migrated.identityTrail);assert.equal(migrated.state.history_identity.version,1);
+ h.c.chat.splice(1,1);h.c.chatId='import';h.c.branchId='import';for(const m of h.c.chat)m.variables=[];h.adapter.readCheckpoints=async()=>[C.clone(migrated)];const imported=createDispatcher(h.adapter,data);await imported.ready();assert.equal(imported.getSnapshot().storyCount,1);await imported.flushCompleted();assert.equal(imported.getSnapshot().storyCount,1);
+});
+
+test('待执行行动的授权随消息ID移动，刷新后保持同一交易，不能被旧内存楼号覆盖',async()=>{
+ const h=harness();await h.opening('赵无忧');h.r.registerPlugin(plugin());h.c.chat.push({is_user:true,mes:'补充'},{is_user:true,mes:'继续'});await h.reply(status({},'交谈结束。'));await h.select('exit');const tx=h.r.getSnapshot().pending.id;
+ h.c.chat.splice(1,1);await h.r.restore();assert.equal(h.r.getSnapshot().pending.id,tx);assert.equal(h.r.getSnapshot().pending.floor,2);
+ const fresh=createDispatcher(h.adapter,data);fresh.registerPlugin(plugin());await fresh.ready();assert.equal(fresh.getSnapshot().pending.floor,2);
+ h.c.chat.push({is_user:false,mes:status({},'带回草药。')});await fresh.settleStory();assert.equal(fresh.getSnapshot().inventory.find(x=>x.name==='草药').count,1);assert.equal(fresh.getSnapshot().receipts[tx].floor,4);
+});
+
+test('原生候选extra随导入和候选次序移动，稳定ID跟随候选内容而不是数组槽位',()=>{
+ const I=require('../src/runtime/message_identity'),m={mes:'候选甲',swipe_id:0,swipe_info:[{extra:{}},{extra:{}}]};
+ const a=I.identify([m])[0];m.swipe_id=1;m.mes='候选乙';const b=I.identify([m])[0];assert.equal(a.messageId,b.messageId);assert.notEqual(a.revisionId,b.revisionId);
+ const imported=JSON.parse(JSON.stringify(m));[imported.swipe_info[0],imported.swipe_info[1]]=[imported.swipe_info[1],imported.swipe_info[0]];imported.swipe_id=0;
+ assert.equal(I.identify([imported])[0].revisionId,b.revisionId);imported.swipe_id=1;imported.mes='候选甲';assert.equal(I.identify([imported])[0].revisionId,a.revisionId);
+ assert.deepEqual(Object.keys(imported.extra),['xsd2_identity']);
+});
+
+test('原生新候选复制旧extra且正文相同，也有独立回复版本',()=>{
+ const I=require('../src/runtime/message_identity'),m={mes:'相同正文',swipe_id:0,swipe_info:[{extra:{}}]};const a=I.identify([m])[0];m.swipe_info.push(C.clone(m.swipe_info[0]));m.swipe_id=1;const b=I.identify([m])[0];assert.equal(a.messageId,b.messageId);assert.notEqual(a.revisionId,b.revisionId);assert.equal(I.identify([m])[0].revisionId,b.revisionId);
+});
+
+test('共享extra的克隆消息拆分ID，不改其他扩展字段且连续读取保持稳定',()=>{
+ const I=require('../src/runtime/message_identity'),extra={other:123},chat=[{mes:'原消息',extra},{mes:'复制消息',extra}];const a=I.identify(chat),b=I.identify(chat);assert.notEqual(a[0].messageId,a[1].messageId);assert.deepEqual(a,b);assert.equal(chat[0].extra.other,123);assert.equal(chat[1].extra.other,123);
 });
