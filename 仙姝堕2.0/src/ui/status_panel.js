@@ -402,7 +402,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       const note=doc.createElement("p");note.className="xsd2-cap";note.textContent="好感已被GM手动锁定，自然互动暂不改变数值。";el.querySelector(".xsd2-dialog-body").prepend(note);
       if(!options.readOnly){const release=doc.createElement("button");release.type="button";release.textContent="恢复自然变化";release.dataset.favorRelease="";note.append(release);release.onclick=()=>run(async()=>{await runtime.dispatchIntent({type:"GM_RELEASE",payload:{keys:[metricKey]}});closeFavor();openFavor(character,runtime.getSnapshot());});}
     }
-    const check=s.stat_data.lastFavorCheck;
+    const check=s.stat_data.lastFavorChecks?.find(x=>x.character===character) || s.stat_data.lastFavorChecks?.find(x=>x.character===null) || s.stat_data.lastFavorCheck;
     if(check && (check.character===character || check.character===null) && check.reason){const note=doc.createElement("p");note.className="xsd2-label";note.textContent="最近一次好感核验（第"+check.turn+"轮）："+check.reason;el.querySelector(".xsd2-dialog-body").append(note);}
     const close = () => {el.remove();if(favorDialog===el)favorDialog=null;};
 

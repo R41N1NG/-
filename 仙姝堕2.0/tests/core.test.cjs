@@ -1365,3 +1365,21 @@ test('自设首遇仅在场名单仍核验好感并启用表，刷新/重roll不
  h.c.chat.push({is_user:true,mes:'请她喝酒'});await h.reply(status({在场:'叶红缨'},'她尚未接过酒盏。'));
  assert.equal(h.r.getDiagnostics().favor.lastCheck.status,'missing');assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,0);
 });
+
+test('多人救助好感真实调度：两人各结算、刷新不重复、换候选撤回再算、切回恢复',async()=>{
+ const h=harness();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{name:'测试道友',date:{year:1578,month:3,day:3}}}});
+ h.c.chat.push({is_user:true,mes:'同时救助两人'});const quote='你舍身挡住崩落的巨石，将叶红缨和楚灵夜救出险地。';
+ const report=name=>'<好感事件>'+name+'｜锚点 '+(name==='叶红缨'?'yh':'cl')+'_shengjiu｜依据：'+quote+'</好感事件>';
+ await h.reply(status({在场:'叶红缨、楚灵夜'},quote)+report('叶红缨')+report('楚灵夜'));
+ const original=C.clone(h.c.chat.at(-1));let s=h.r.getSnapshot();assert.equal(s.stat_data.character_metrics.叶红缨.好感度,20);assert.equal(s.stat_data.character_metrics.楚灵夜.好感度,20);assert.equal(s.lastMetricEvents.length,2);assert.equal(h.r.getDiagnostics().favor.checks.length,2);
+ await h.r.restore();await h.r.flushCompleted();assert.equal(h.r.getSnapshot().stat_data.favor_log.楚灵夜.length,1);
+ h.c.chat.at(-1).swipe_id=1;h.c.chat.at(-1).mes=status({在场:'叶红缨、楚灵夜'},quote)+report('楚灵夜');await h.r.replay('swipe');await h.r.settleStory();
+ s=h.r.getSnapshot();assert.equal(s.stat_data.character_metrics.叶红缨.好感度,0);assert.equal(s.stat_data.character_metrics.楚灵夜.好感度,20);
+ h.c.chat.at(-1).swipe_id=0;h.c.chat.at(-1).mes=original.mes;await h.r.restore();s=h.r.getSnapshot();assert.equal(s.stat_data.character_metrics.叶红缨.好感度,20);assert.equal(s.stat_data.character_metrics.楚灵夜.好感度,20);
+});
+
+test('多人申报中一人正文惩罚不清空其他人合法好感，也不被重复申报冲销',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'本轮互动'});
+ const quote='叶红缨向你颔首致谢。';await h.reply(status({在场:'叶红缨、楚灵夜'},'你强行非礼楚灵夜。'+quote)+'<好感事件>楚灵夜｜记心上｜依据：你强行非礼楚灵夜。</好感事件><好感事件>叶红缨｜记心上｜依据：'+quote+'</好感事件>');
+ const s=h.r.getSnapshot();assert.equal(s.stat_data.character_metrics.楚灵夜.好感度,-51);assert.equal(s.stat_data.character_metrics.叶红缨.好感度,1);assert.equal(s.stat_data.favor_log.楚灵夜.length,1);assert.equal(s.lastMetricEvents[0].character,'叶红缨');
+});

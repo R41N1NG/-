@@ -1,7 +1,7 @@
 "use strict";
 const { writeMetric, metricSpec, canRecover } = require("./character_stages");
 
-// 数值事件申报：模型每轮至多一个 <好感事件> 标签，申报「档位」或「锚点ID」＋原文依据；
+// 数值事件申报：模型对每个角色每轮至多一个 <好感事件> 标签，申报「档位」或「锚点ID」＋原文依据；
 // 分值、上限、冷却全部由配置与后台决定，模型只有举证权，没有定价权。
 function proofText(text){
  return String(text).replace(/<\/?(?:span|b|strong|em|i|u|s|p|div|br|blockquote)\b[^>]*>/gi,"")
@@ -22,22 +22,29 @@ function stripForEvidence(text) {
     .replace(/<(Status_block|StatusBlock|status)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
     .replace(/<好感事件>[\s\S]*?(?:<\/好感事件>|(?=<Status_block>|$))/g, "");
 }
-function parseMetricEvent(body) {
-  const visible = String(body)
-    .replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi, "")
-    .replace(/<details\b[^>]*>[\s\S]*?<\/details>/gi, "");
-  const tags = [...visible.matchAll(/<好感事件>([\s\S]*?)(?:<\/好感事件>|(?=<Status_block>|$))/g)];
-  if (tags.length !== 1 || (visible.match(/<好感事件>/g)||[]).length !== 1) return { ok: false, reason: "申报标签缺失或不止一个" };
-  const parts = tags[0][1].split(/[｜|]/).map((x) => x.trim());
-  if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2])
-    return { ok: false, reason: "申报格式应为 人物名｜档位或锚点ID｜依据" };
-  return {
-    ok: true,
-    character: canonicalCharacter(parts[0]),
-    target: parts[1],
-    evidence: parts[2].replace(/^依据[:：]\s*/, "").trim().replace(/^[“「『"]|[”」』"]$/g,""),
-  };
+function eventText(body){
+ return String(body)
+  .replace(/<!--[\s\S]*?-->/g,'')
+  .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi,'')
+  .replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi,'')
+  .replace(/<details\b[^>]*>[\s\S]*?<\/details>/gi,'')
+  .replace(/<(Status_block|StatusBlock|status)\b[^>]*>[\s\S]*?<\/\1>/gi,'');
 }
+function parseMetricEvents(body) {
+ const visible=eventText(body);
+ const tags=[...visible.matchAll(/<好感事件>([\s\S]*?)(?:<\/好感事件>|(?=<好感事件>|<(?:Status_block|StatusBlock|status)\b|$))/g)];
+ return tags.map(tag=>{
+  const parts=tag[1].split(/[｜|]/).map(x=>x.trim()),character=canonicalCharacter(parts[0]);
+  if(parts.length!==3 || !parts[0] || !parts[1] || !parts[2])return {ok:false,character,reason:'申报格式应为 人物名｜档位或锚点ID｜依据'};
+  return {ok:true,character,target:parts[1],evidence:parts[2].replace(/^依据[:：]\s*/,'').trim().replace(/^[“「『"]|[”」』"]$/g,'')};
+ });
+}
+// Compatibility for callers that explicitly expect a single report.
+function parseMetricEvent(body) {
+ const reports=parseMetricEvents(body);
+ return reports.length===1?reports[0]:{ok:false,reason:'单条申报读取需要一个标签'};
+}
+
 function visibleCharacters(stat) {
   return new Set([
     stat.身份,
@@ -82,18 +89,14 @@ function createMetricEvents(defs, profiles, promotions) {
     if (stat.metric_diag.length > 10) stat.metric_diag.length = 10;
     return { changes: [] };
   }
-  function apply(s, body, prose, storyCount) {
+  function applyOne(s, parsed, prose, storyCount) {
     const stat = (s.stat_data ||= {});
     stat.metric_state ||= {};
     stat.metric_anchor_done ||= {};
     const changes = [];
     const visible = visibleCharacters(stat);
-    const parsed = parseMetricEvent(body);
-    stat.lastFavorCheck={turn:storyCount,character:parsed.character || null,reported:parsed.ok,status:parsed.ok?"checking":"missing",target:parsed.target || null,reason:"本轮未申报好感事件"};
-    if (!parsed.ok) {
-      if (/<好感事件>/.test(String(body))) return drop(stat, storyCount, parsed.reason);
-      return { changes };
-    }
+    stat.lastFavorCheck={turn:storyCount,character:parsed.character || null,reported:true,status:"checking",target:parsed.target || null,reason:null};
+    if (!parsed.ok)return drop(stat,storyCount,parsed.reason);
     if (!visible.has(parsed.character)) return drop(stat, storyCount, parsed.character + " 不在场，申报无效");
     const found = lookup(parsed.character);
     if (!found) return drop(stat, storyCount, parsed.character + " 未注册好感表");
@@ -131,7 +134,7 @@ function createMetricEvents(defs, profiles, promotions) {
       if (!anchor.repeat && stat.metric_anchor_done[anchor.id])
         return drop(stat, storyCount, "锚点 " + anchorId + " 为一次性事件，已结算");
       st.anchorTurn ||= {};
-      if (anchor.repeat !== false && storyCount - (st.anchorTurn[anchor.id] || -999) < (cfg.cooldownTurns || 0))
+      if (anchor.repeat !== false && storyCount - (st.anchorTurn[anchor.id] || -999) < (anchor.cooldownTurns ?? cfg.cooldownTurns ?? 0))
         return drop(stat, storyCount, "锚点 " + anchorId + " 冷却中");
     }
     if (s.manual && s.manual["metric." + cfg.character + "." + cfg.metric.key] !== undefined){record(stat,cfg,via,0,storyCount,parsed.evidence);return drop(stat,storyCount,cfg.character+" 好感处于人工覆盖，自动申报拒绝");}
@@ -161,6 +164,22 @@ function createMetricEvents(defs, profiles, promotions) {
     changes.push({ character: cfg.character, key: cfg.metric.key, delta, value, via });
     return { changes };
   }
+  function apply(s,body,prose,storyCount,options={}){
+    const stat=(s.stat_data ||= {}),reports=parseMetricEvents(body),checks=[],changes=[];
+    if(!reports.length){
+      stat.lastFavorCheck={turn:storyCount,character:null,reported:false,status:'missing',target:null,reason:'本轮未申报好感事件'};
+      stat.lastFavorChecks=[stat.lastFavorCheck];return {changes};
+    }
+    const grouped=new Map();
+    for(const report of reports){const key=report.character || '';if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(report);}
+    for(const [character,list] of grouped){
+      let parsed=list[0];
+      if(list.length>1)parsed={ok:false,character,reason:character+' 本轮申报不止一次，同一角色仅允许一次好感结算'};
+      if(options.excludedCharacters?.includes(character))parsed={ok:false,character,reason:character+' 本轮已执行正文强迫惩罚，不重复应用普通好感申报'};
+      const result=applyOne(s,parsed,prose,storyCount);changes.push(...result.changes);checks.push(stat.lastFavorCheck);
+    }
+    stat.lastFavorChecks=checks;return {changes};
+  }
   return { apply, lookup };
 }
 function coercionEvidence(prose,actors,name){
@@ -187,4 +206,4 @@ function applyPreFinalPenalty(s,prose,profiles,turn){
  }
  return penalized;
 }
-module.exports = { applyPreFinalPenalty,createMetricEvents, visibleCharacters, parseMetricEvent, stripForEvidence };
+module.exports = { applyPreFinalPenalty,createMetricEvents, visibleCharacters, parseMetricEvent, parseMetricEvents, stripForEvidence };

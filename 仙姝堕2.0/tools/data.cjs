@@ -32,6 +32,7 @@ function source(root) {
         .concat(areaEntries(JSON.parse(read("src/config/area_backgrounds.json"))))
         .concat(eraEntries(JSON.parse(read("src/config/grand_eras.json")))),
       grandEras:JSON.parse(read("src/config/grand_eras.json")),
+      neutralNodes:JSON.parse(read("src/config/neutral_nodes.json")),
       metricEventDefinitions:JSON.parse(read("src/config/metric_events.json")),
       areaBackgroundDefinitions:JSON.parse(read("src/config/area_backgrounds.json")),
       nodeStories:JSON.parse(read("src/config/node_stories.json")),

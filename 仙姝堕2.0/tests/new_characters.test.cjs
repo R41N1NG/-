@@ -66,3 +66,16 @@ test('双姝各自好感封顶共同节点，强迫罚分不接受伪造标签�
  assert.equal(h.r.getSnapshot().stat_data.character_metrics.闻观语.好感度,20);
  h.chat.push({mes:'继续',is_user:true});await h.reply('你强行侵犯闻观语，她阻止你。');assert.equal(h.r.getSnapshot().stat_data.character_metrics.闻观语.好感度,-51);assert.equal(h.r.getSnapshot().activeEvent,null);
 });
+
+test('慕容清歌20/40/60/80四节点由中控晋升，自设共用，完成盟契不伪造身体归属',async()=>{
+ for(const identity of ['赵无忧','自设']){
+  const h=fixture();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity,...(identity==='自设'?{custom:{name:'测试道友',date:{year:1578,month:3,day:3}}}:{})}});
+  for(let i=1;i<=4;i++){
+   await h.metric('慕容清歌',i*20);assert.equal(h.phase('慕容清歌'),'stage0'+i);
+   await h.click('mqEnter'+i);await h.reply('你们在当前场所完成了本次对谈。');assert.equal(h.phase('慕容清歌'),'stage0'+i);
+   await h.click('mqFinish'+i);await h.reply(h.report('是'));assert.equal(h.phase('慕容清歌'),'stage0'+(i+1));
+  }
+  assert.notEqual(h.r.getSnapshot().known['慕容清歌处女丧失'],true);assert.equal(Object.keys(h.r.getSnapshot().stat_data.名器归属).length,0);
+ }
+ const h=fixture();await h.open();h.chat.push({is_user:true,mes:'本轮互动'});await h.reply('你强行侵犯慕容清歌，她出手阻止。');assert.equal(h.r.getSnapshot().stat_data.character_metrics.慕容清歌.好感度,-51);
+});

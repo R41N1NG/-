@@ -153,3 +153,65 @@ test('玩家原例：正文前标签引用不存在的承诺应拒绝，正文�
  const fixed=actual+'<Status_block><在场>叶红缨</在场></Status_block>'+valid;
  assert.equal(api.apply(s,fixed,fixed,2).changes[0].value,1);
 });
+
+function twoPeople(){return {identity:'自设',manual:{},stat_data:{身份:'自设',自设:{name:'测试道友'},在场:'叶红缨、楚灵夜',character_metrics:{叶红缨:{好感度:0},楚灵夜:{好感度:0}}}};}
+const rescue='你舍身挡住崩落的巨石，将叶红缨和楚灵夜救出险地。';
+const rescueYe=tag('叶红缨｜锚点 yh_shengjiu｜依据：'+rescue),rescueChu=tag('楚灵夜｜锚点 cl_shengjiu｜依据：'+rescue);
+
+test('同时救下两人分别结算既有救命锚点：各+20、独立收据，下一次不重复发奖',()=>{
+ const api=createMetricEvents(defs,data.characterProfiles,data.promotionDefinitions),s=twoPeople();
+ const result=api.apply(s,rescueYe+rescueChu,rescue,1);
+ assert.deepEqual(result.changes.map(x=>[x.character,x.delta]),[['叶红缨',20],['楚灵夜',20]]);
+ assert.equal(s.stat_data.metric_anchor_done.yh_shengjiu,true);assert.equal(s.stat_data.metric_anchor_done.cl_shengjiu,true);
+ assert.deepEqual(s.stat_data.lastFavorChecks.map(x=>x.status),['applied','applied']);
+ assert.equal(api.apply(s,rescueYe+rescueChu,rescue,8).changes.length,0);
+ assert.equal(s.stat_data.favor_log.叶红缨.length,1);assert.equal(s.stat_data.favor_log.楚灵夜.length,1);
+});
+
+test('一人错误引用、重复申报或未注册不会挡住另一人的合法事件',()=>{
+ const api=createMetricEvents(defs,data.characterProfiles,data.promotionDefinitions);
+ for(const bad of [tag('叶红缨｜记心上｜依据：根本不存在'),rescueYe+tag('叶红缨（同道）｜记心上｜依据：'+rescue),tag('路人甲｜记心上｜依据：'+rescue)]){
+  for(const body of [bad+rescueChu,rescueChu+bad]){
+   const s=twoPeople(),r=api.apply(s,body,rescue,1);assert.deepEqual(r.changes.map(x=>x.character),['楚灵夜']);assert.equal(s.stat_data.character_metrics.叶红缨.好感度,0);
+   assert.equal(s.stat_data.lastFavorChecks.find(x=>x.character==='楚灵夜').status,'applied');
+  }
+ }
+});
+
+test('冷却、人工覆盖和阶段封顶均按人独立核验，不影响其他人加分',()=>{
+ const api=createMetricEvents(defs,data.characterProfiles,data.promotionDefinitions);
+ const tier=name=>tag(name+'｜记心上｜依据：'+rescue);
+ for(const kind of ['cooldown','manual','cap']){
+  const s=twoPeople();if(kind==='cooldown')s.stat_data.metric_state={叶红缨:{tier:'记心上',turn:1}};
+  if(kind==='manual')s.manual['metric.叶红缨.好感度']=0;
+  if(kind==='cap')s.stat_data.character_metrics.叶红缨.好感度=20;
+  const r=api.apply(s,tier('叶红缨')+tier('楚灵夜'),rescue,2);
+  assert.deepEqual(r.changes.map(x=>x.character),['楚灵夜'],kind);assert.equal(s.stat_data.character_metrics.楚灵夜.好感度,1);
+  assert.equal(s.stat_data.lastFavorChecks.find(x=>x.character==='叶红缨').status,'rejected');
+ }
+});
+
+test('多人标签在思考/状态块不计，单人漏闭不吞掉另一人的独立标签',()=>{
+ const api=createMetricEvents(defs,data.characterProfiles,data.promotionDefinitions),s=twoPeople();
+ const hidden='<think_nya~>'+rescueYe+'</think_nya~><Status_block>'+rescueChu+'</Status_block>';
+ assert.equal(api.apply(s,hidden,rescue,1).changes.length,0);
+ const open=rescueYe.replace('</好感事件>','');assert.equal(api.apply(s,open+rescueChu,rescue,2).changes.length,2);
+ const forged=twoPeople();assert.equal(api.apply(forged,rescueYe+rescueChu,rescueYe+rescueChu,2).changes.length,0);
+});
+
+test('14名角色通用聊天+1和并肩作战+3，按人按事件冷却三回合，提示表与配置一致',()=>{
+ const {metricEntryContent}=require('../src/runtime/story_entries');
+ for(const cfg of Object.values(defs)){
+  const api=createMetricEvents(defs,data.characterProfiles),name=cfg.character;
+  const s={identity:'自设',manual:{},stat_data:{身份:'自设',在场:name,character_metrics:{[name]:{好感度:0}}}};
+  const prose=name+'与你认真交谈后，和你并肩迎战来敌。';
+  const report=id=>tag(name+'｜锚点 '+id+'｜依据：'+prose);
+  assert.equal(api.apply(s,report('common_chat'),prose,1).changes[0].delta,1,name);
+  assert.equal(api.apply(s,report('common_chat'),prose,2).changes.length,0,name);
+  assert.equal(api.apply(s,report('common_chat'),prose,4).changes[0].delta,1,name);
+  assert.equal(api.apply(s,report('common_combat'),prose,5).changes[0].delta,3,name);
+  assert.equal(api.apply(s,report('common_combat'),prose,6).changes.length,0,name);
+  assert.equal(api.apply(s,report('common_combat'),prose,8).changes[0].delta,3,name);
+  assert.match(metricEntryContent(cfg),/common_chat.*冷却3回合/);assert.match(metricEntryContent(cfg),/common_combat.*冷却3回合/);
+ }
+});

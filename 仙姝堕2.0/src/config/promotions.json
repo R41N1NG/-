@@ -854,5 +854,77 @@
     "entryId": "gysEnter4",
     "finishId": "gysFinish4",
     "query": "根据本段实际剧情，玩家是否已与顾云舒完成流焰初破（实质结合、元阴初破）？"
+  },
+  "murongqingge-stage1": {
+    "character": "慕容清歌",
+    "label": "殿堂策道",
+    "fromStage": "stage01",
+    "toStage": "stage02",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "慕容清歌",
+        "key": "好感度",
+        "op": "gte",
+        "value": 20
+      }
+    ],
+    "entryId": "mqEnter1",
+    "finishId": "mqFinish1",
+    "query": "根据本段实际剧情，{{user}}是否已经正面回答了慕容清歌的策问并阐明道心，双方完成了合乎体统的殿堂对谈？"
+  },
+  "murongqingge-stage2": {
+    "character": "慕容清歌",
+    "label": "清音解语",
+    "fromStage": "stage02",
+    "toStage": "stage03",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "慕容清歌",
+        "key": "好感度",
+        "op": "gte",
+        "value": 40
+      }
+    ],
+    "entryId": "mqEnter2",
+    "finishId": "mqFinish2",
+    "query": "根据本段实际剧情，{{user}}是否已经与慕容清歌完成了琴意交流或论道交涉，双方确立了平视的道友知音关系且未发生逾矩之事？"
+  },
+  "murongqingge-stage3": {
+    "character": "慕容清歌",
+    "label": "断弦见真",
+    "fromStage": "stage03",
+    "toStage": "stage04",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "慕容清歌",
+        "key": "好感度",
+        "op": "gte",
+        "value": 60
+      }
+    ],
+    "entryId": "mqEnter3",
+    "finishId": "mqFinish3",
+    "query": "根据本段实际剧情，{{user}}是否已经正面安抚或救助了虚弱断弦的慕容清歌，二人达成了莫逆推心的深厚信任且坚决未行破身之事？"
+  },
+  "murongqingge-stage4": {
+    "character": "慕容清歌",
+    "label": "韶音合契",
+    "fromStage": "stage04",
+    "toStage": "stage05",
+    "conditions": [
+      {
+        "kind": "metric",
+        "character": "慕容清歌",
+        "key": "好感度",
+        "op": "gte",
+        "value": 80
+      }
+    ],
+    "entryId": "mqEnter4",
+    "finishId": "mqFinish4",
+    "query": "根据本段实际剧情，{{user}}是否已经正面应允了慕容清歌的托付相许，双方完成了终身道侣盟契并接纳了彼此？"
   }
 }

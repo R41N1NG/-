@@ -38,3 +38,13 @@ test('授权失配不会静默回退：主卷明确标出失败楼层与节点�
 test('删楼恢复仍显示完整状态栏，并说明后续旧回复不再自动结算',()=>{
  const h=fixture();try{h.state.historyRecovery={kind:'delete',ignoredReplies:['old']};const mounted=mountHUD(h.doc,h.doc.querySelector('main'),h.runtime,data,h.report);assert.ok(h.doc.querySelector('[data-history-recovery]'));assert.match(h.doc.querySelector('[data-history-recovery]').textContent,/最近可信进度/);assert.ok(h.doc.querySelector('[data-storage-fold]'));assert.equal(h.calls.length,0);mounted.destroy();}finally{h.dom.window.close();}
 });
+test('多人好感核验提示各看各人，不拿另一人的失败解释已成功的角色',()=>{
+ const h=fixture();try{
+ h.state.stat_data.在场角色.push({名:'楚灵夜'});h.state.stat_data.character_metrics.楚灵夜={好感度:1};h.state.stat_data.关系刻度='叶红缨、同门｜楚灵夜、同道';
+ const ye={character:'叶红缨',turn:1,reason:'叶红缨好感已达当前节点上限',status:'rejected'},chu={character:'楚灵夜',turn:1,reason:null,status:'applied'};
+ h.state.stat_data.lastFavorChecks=[ye,chu];h.state.stat_data.lastFavorCheck=chu;
+ const panel=mountHUD(h.doc,h.doc.querySelector('main'),h.runtime,data,h.report);
+ h.doc.querySelector('[data-favor="叶红缨"]').click();assert.match(h.doc.querySelector('dialog').textContent,/最近一次好感核验.*叶红缨好感已达/);
+ h.doc.querySelector('dialog [data-close]').click();h.doc.querySelector('[data-favor="楚灵夜"]').click();assert.doesNotMatch(h.doc.querySelector('dialog').textContent,/叶红缨好感已达/);panel.destroy();
+ }finally{h.dom.window.close();}
+});

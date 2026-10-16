@@ -121,6 +121,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -269,6 +287,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -411,6 +447,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -546,6 +600,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -688,6 +760,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -851,6 +941,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -972,6 +1080,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -1100,6 +1226,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -1221,6 +1365,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -1356,6 +1518,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -1484,6 +1664,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -1619,6 +1817,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -1768,6 +1984,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {
@@ -1924,6 +2158,24 @@
         "delta": -50,
         "repeat": true,
         "perTurn": 1
+      },
+      {
+        "id": "common_chat",
+        "label": "聊天",
+        "desc": "双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计",
+        "delta": 1,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
+      },
+      {
+        "id": "common_combat",
+        "label": "并肩作战",
+        "desc": "双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
+        "delta": 3,
+        "repeat": true,
+        "perTurn": 1,
+        "cooldownTurns": 3
       }
     ],
     "rubric": {

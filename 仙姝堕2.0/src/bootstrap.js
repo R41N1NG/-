@@ -310,6 +310,7 @@ function start(win) {
   const {createPromotionPlugin} = require("./plugins/promotion/index");
   exposed.registerPlugin(createPromotionPlugin(data.promotionDefinitions,data.nodeStories));
   exposed.registerPlugin(require("./plugins/xibei/index").createXibeiPlugin(data.nodeStories,data.characterProfiles,data.promotionDefinitions));
+  exposed.registerPlugin(require("./plugins/neutral/index").createNeutralPlugin(data.neutralNodes,data.nodeStories));
   for (const plugin of host.top.XSD2_PLUGINS || [])
     exposed.registerPlugin(plugin);
   async function ensureMounted(retries = 5, interval = 120) {

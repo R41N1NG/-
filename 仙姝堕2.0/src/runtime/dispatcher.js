@@ -428,14 +428,14 @@ function createDispatcher(adapter, data) {
           .join("、") +
         "。后台关系状态："+JSON.stringify(relation)+"；负好感覆盖优先于正向心智，永久上限不得突破；数值本身不制造过去事件。储物栏：" +
         JSON.stringify(st.inventory) +
-        "。好感事件协议适用于全部玩家身份，包括自设；按角色对当前玩家的实际反应判断，不以赵无忧为固定对象。已发生符合好感表的互动时，先完成全部正文和状态栏，再在</Status_block>之后至多申报一个<好感事件>人物名｜档位或锚点ID｜依据：本回合正文连续原句</好感事件>；不改写原句，不从用户邀请直接认定共饮，不重复计分；没有符合条件的新事件则不申报。日期照抄后台；历时只写本回合实际耗时，不按轮次固定增加，不默认半个时辰，不写距事件的累计天数；无法确定耗时写—，不沿用上一轮耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。" +
+        "。好感事件协议适用于全部玩家身份，包括自设；按角色对当前玩家的实际反应判断，不以赵无忧为固定对象。已发生符合好感表的互动时，先完成全部正文和状态栏，再在</Status_block>之后按角色分别申报，每个角色每回合至多一个<好感事件>人物名｜档位或锚点ID｜依据：本回合正文连续原句</好感事件>；不改写原句，不从用户邀请直接认定共饮，不重复计分；没有符合条件的新事件则不申报。日期照抄后台；历时只写本回合实际耗时，不按轮次固定增加，不默认半个时辰，不写距事件的累计天数；无法确定耗时写—，不沿用上一轮耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。" +
         (current.activeEvent || p
           ? "事件期间按节点约定停留，退出耗时由后台结算，不另外推进世界日期。"
           : "")
       : "";
     const favorRules=current && !p?.selection?.completionQuery && p?.kind!=="realm"
       ? Object.values(data.metricEventDefinitions || {}).filter(cfg=>relationNames.has(cfg.character)).map(metricEntryContent).join("\n\n") : "";
-    adapter.setPrompt?.(baseline + "\n" + text + (favorRules ? "\n本轮人物互动须核对以下好感表；已实际发生匹配事件时给出一个标签，普通邀请未获响应不视为已完成共饮。\n"+favorRules : ""));
+    adapter.setPrompt?.(baseline + "\n" + text + (favorRules ? "\n本轮人物互动须核对以下好感表；已实际发生匹配事件时每个受影响角色各给一个标签；同时救助多人可分别申报，不合并角色名，同一角色不重复申报；普通邀请未获响应不视为已完成共饮。\n"+favorRules : ""));
   }
   async function select(c, intent) {
     if (!current) throw Error("请先选择身份");
@@ -757,6 +757,7 @@ function createDispatcher(adapter, data) {
     const statements = parsed.actions;
     for (const f of R.FIELD_TABLE) {
       if (
+        f.kind==='node' ||
         /成形|[一二三四]阶段|处女丧失/.test(f.name) ||
         !statements.includes(f.name) ||
         !f.kws.some((k) => C.fact(parsed.prose, k))
@@ -862,8 +863,8 @@ function createDispatcher(adapter, data) {
       if(penalized.length && s.activeEvent?.pluginId==="character_promotion" && (s.activeEvent.characters || [s.activeEvent.character]).some(name=>penalized.includes(name))){
         s.activeEvent=null;s.pluginState.character_promotion={...s.pluginState.character_promotion,currentId:null,lastResult:"forced-penalty",ready:false};
       }
-      const claimed=/<好感事件>([^｜|<]+)/.exec(text)?.[1]?.trim();
-      const applied=penalized.includes(claimed)?{changes:[]}:metricEvents.apply(s,text,parsed.prose,s.storyCount+1);
+      delete s.lastMetricEvents;
+      const applied=metricEvents.apply(s,text,parsed.prose,s.storyCount+1,{excludedCharacters:penalized});
       if (applied.changes.length) s.lastMetricEvents = applied.changes;
     } catch (error) {
       adapter.report?.(Error("数值事件申报结算失败：" + error.message));
@@ -1261,7 +1262,7 @@ function createDispatcher(adapter, data) {
       const relics=s?Object.values(rules(s).RELIC_PILOT_CONFIG).map(cfg=>({id:cfg.id,name:cfg.names[0],holder:cfg.owner,stage:rules(s).getRelicStage(cfg.id,s.stat_data.known),flags:Object.fromEntries([cfg.formKey,cfg.stage1Key,cfg.stage2Key,cfg.stage3Key,cfg.stage4Key,cfg.owner+"处女丧失"].filter(Boolean).map(k=>[k,s.stat_data.known?.[k]===true])),owners:C.clone(s.stat_data.名器归属 || {}),breaker:s.stat_data.破处者?.[cfg.owner] || null,progress:C.clone(s.stat_data.relic_progress?.[cfg.id] || null),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([k])=>k.startsWith("known.")||k.startsWith("relicStage.")||k.startsWith("owner.")))})):[];
       return { schema:3,realm:s?Realm.eligibility(s,rules(s)):null,relics,relicEvidence:C.clone(s?.stat_data.relic_evidence_log || []), host:adapter.getDiagnostics?.() || {},
         floor:c.floor, messageIdentity:C.clone(c.identities[c.floor]), storageIdentityVersion:s?.history_identity?.version || 0, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), openingConfig:C.clone(s?.openingConfig || null), historyRecovery:C.clone(s?.historyRecovery || null), recoveryFault:C.clone(recoveryFault),
-        favor:s?{lastCheck:C.clone(s.stat_data.lastFavorCheck || null),recentChecks:C.clone(s.stat_data.metric_diag || []),metrics:C.clone(s.stat_data.character_metrics || {}),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([key])=>key.startsWith('metric.')))}:null,
+        favor:s?{lastCheck:C.clone(s.stat_data.lastFavorCheck || null),checks:C.clone(s.stat_data.lastFavorChecks || []),recentChecks:C.clone(s.stat_data.metric_diag || []),metrics:C.clone(s.stat_data.character_metrics || {}),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([key])=>key.startsWith('metric.')))}:null,
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,actionCode:s.pending.actionCode || null,userRef:C.clone(s.pending.userRef || null),
         } : null, event:s?.activeEvent || null,

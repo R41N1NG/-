@@ -1,0 +1,49 @@
+{
+  "frontline": {
+    "label": "前往仙盟防线",
+    "open": {
+      "year": 1578,
+      "month": 9,
+      "day": 1
+    },
+    "entryId": "xmFrontEnter",
+    "query": "根据本段实际剧情，仙盟前哨据点的严峻战备氛围、四地暴起的危局交代以及天溪城告急急需支援的情报是否已经完整呈现，并引出了前往与否的分歧抉择？",
+    "prerequisites": [],
+    "choices": [
+      {
+        "id": "xmFrontGo",
+        "label": "前往天溪城",
+        "grants": [
+          "前往天溪城"
+        ]
+      },
+      {
+        "id": "xmFrontStay",
+        "label": "暂不前往",
+        "grants": []
+      }
+    ]
+  },
+  "tianxi": {
+    "label": "抵达天溪",
+    "open": {
+      "year": 1578,
+      "month": 11,
+      "day": 1
+    },
+    "entryId": "xmTianxiEnter",
+    "query": "根据本段实际剧情，{{user}}是否已经顺利抵临天溪城要塞，目睹了巍峨巨大的雄关城防与戒严而祥和的城内风貌，并完成了入城通关？",
+    "prerequisites": [
+      "前往天溪城"
+    ],
+    "choices": [
+      {
+        "id": "xmTianxiFinish",
+        "label": "完成入城剧情",
+        "grants": [
+          "已抵达天溪"
+        ]
+      }
+    ]
+  }
+}

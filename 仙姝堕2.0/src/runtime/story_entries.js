@@ -5,7 +5,7 @@ function nodeEntryName(id) { return "【节点故事】" + id; }
 function metricEntryContent(cfg) {
   const rules = [
     "【数值申报】本条目只约束对「" + cfg.character + "」的态度申报格式。",
-    "每回合至多输出一个标签：<好感事件>" + cfg.character + "｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>" + cfg.character + "｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。",
+    "对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>" + cfg.character + "｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>" + cfg.character + "｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。",
     "好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。",
   ].join("\n");
   const rubric = [
@@ -15,7 +15,7 @@ function metricEntryContent(cfg) {
     ...(cfg.rubric["记恨"] || []).map((x) => "- " + x),
   ].join("\n");
   const anchors = (cfg.anchors || [])
-    .map((a) => "- " + a.id + "（" + (a.delta > 0 ? "+" : "") + a.delta + "）：" + a.desc)
+    .map((a) => "- " + a.id + "（" + (a.delta > 0 ? "+" : "") + a.delta + (a.cooldownTurns!==undefined ? "，冷却"+a.cooldownTurns+"回合" : "") + "）：" + a.desc)
     .join("\n");
   return rules + "\n\n" + rubric + "\n\n## 锚点事件表\n" + anchors;
 }

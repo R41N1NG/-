@@ -11403,6 +11403,253 @@
     },
     "341": {
       "uid": 341,
+      "comment": "【节点故事】mqEnter1",
+      "key": [
+        "XSD2_mqEnter1_"
+      ],
+      "keysecondary": [],
+      "content": "### 1. 【节点故事：殿堂策道】\n水玉宝座云髻高挽，化神巨擘温言策问新秀。\n\n### 2. 【本轮必须发生】\n- {{user}} 受召前往慕容清歌所在主殿偏轩或行馆厅堂，面见天音掌门。\n- 慕容清歌端坐主位，银发碧簪，水碧色曳地长裙静如止水，以仙盟主事兼掌门身份温言垂询其道心志向与历练得失。\n- 双方展开初次正式接触，言行合乎体统，尊卑严整，恪守公事大防。\n\n### 3. 【场景与因果】\n- 场景：沿用当前所在清雅庄重的正殿或行馆偏轩（不设死具体地点）。四下清净庄严，侍者退避。\n- 因果：{{user}} 此前在防务或历练中行止清正、崭露头角，慕容清歌身为仙盟主事与一派掌门，例行召见策问，予以赏识与指点。\n\n### 4. 【人物表现与心理交锋】\n- 慕容清歌端坐主位，双手自然交叠置于膝头，声音空灵柔和如春风拂面，自有一股令人心折的上位者威仪；\n- 言语从容平缓：“闻说道友近来行止颇见风骨，道心坚毅。仙盟正值多事之秋，今日召你前来，便想听听你于道法天地之间，所求何志？”\n- 目光澄澈如镜似能倒映人心，带着长辈对出色晚辈的从容审视，静候其答。\n\n### 5. 【确定结果与边界留白】\n- 定格时刻：玉座垂询，掌门静候对答，四下一片肃穆安宁。\n- 零代打留白：不代替玩家作答，中间 100% 留白交由玩家自由陈词表达道心，后续等待玩家点击完成。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "342": {
+      "uid": 342,
+      "comment": "【节点故事】mqFinish1",
+      "key": [
+        "XSD2_mqFinish1_"
+      ],
+      "keysecondary": [],
+      "content": "仅核验本次专属剧情的实际历史，不新增行动凑条件。根据本段实际剧情，{{user}}是否已经正面回答了慕容清歌的策问并阐明道心，双方完成了合乎体统的殿堂对谈？关系晋升不自动证明破身或体质成型，等待玩家点击完成。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "343": {
+      "uid": 343,
+      "comment": "【节点故事】mqEnter2",
+      "key": [
+        "XSD2_mqEnter2_"
+      ],
+      "keysecondary": [],
+      "content": "### 1. 【节点故事：清音解语】\n走下高台破例独召，九霄清音相抚初认同道。\n\n### 2. 【本轮必须发生】\n- 经历了护持天音门人或共渡风波后，慕容清歌破例在私密静轩中单独相邀 {{user}}。\n- 慕容清歌拂袖抚琴奏响九霄清音相赠以表谢意，曲音空灵中暗藏平生少为人知的波澜。\n- 慕容清歌走下高位，询问对方可曾听懂琴中守望，初引为能平视论道的乐理同道。\n- 坚决未破身，恪守男女大防与清修体统。\n\n### 3. 【场景与因果】\n- 场景：沿用当前所在清幽私密环境（如临水琴轩、行馆静室或避风小亭，不设死具体地点）。仅二人独处，茶烟袅袅。\n- 因果：{{user}} 展现出非凡道义担当（如舍身救护天音门人），慕容清歌心生敬意，打破阶层界限单独抚琴相谢。\n\n### 4. 【人物表现与心理交锋】\n- 素手引动古琴丝弦，水碧色长裙随微风轻漾，琴音泠泠如山涧清泉激石，空灵高远；\n- 曲至尾声，慕容清歌按弦收势，抬起明眸望向 {{user}}，唇角含着罕见的亲和浅笑，语声轻柔：“这曲《清平引》我抚过千百遍，世人多道其清雅超脱，却少有人知我寄于曲中的守望……道友听来，觉得此曲如何？”\n- 神态从高高在上的巨擘转为平视探寻的知音，带着端庄女修的雅致与期待。\n\n### 5. 【确定结果与边界留白】\n- 定格时刻：余音袅袅，掌门抚琴抬眸相询，等待知音解曲。\n- 零代打留白：绝不代写玩家如何品评与对答，中间 100% 留白交由玩家自由应对，后续等待玩家点击完成。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "344": {
+      "uid": 344,
+      "comment": "【节点故事】mqFinish2",
+      "key": [
+        "XSD2_mqFinish2_"
+      ],
+      "keysecondary": [],
+      "content": "仅核验本次专属剧情的实际历史，不新增行动凑条件。根据本段实际剧情，{{user}}是否已经与慕容清歌完成了琴意交流或论道交涉，双方确立了平视的道友知音关系且未发生逾矩之事？关系晋升不自动证明破身或体质成型，等待玩家点击完成。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "345": {
+      "uid": 345,
+      "comment": "【节点故事】mqEnter3",
+      "key": [
+        "XSD2_mqEnter3_"
+      ],
+      "keysecondary": [],
+      "content": "### 1. 【节点故事：断弦见真】\n心力交瘁丝弦崩断，褪去假面倾诉千载悲悯。\n\n### 2. 【本轮必须发生】\n- 外部大势压迫，慕容清歌日夜推演守护宗门与仙盟，神魂耗损甚剧。\n- 封闭私室内抚琴心神紊乱导致丝弦崩断，手指微创；在 {{user}} 面前褪去完美假面，眼眶泛红倾诉身为掌门肩负重压的自责与愿以身代受的脆弱。\n- 双方达成莫逆相托，音修敏锐体魄动情隐忍，但**死守清修底线，坚决未破身**。\n- 未通过末关时，实际强迫侵犯由后台正文规则核验并固定降至 -51。\n\n### 3. 【场景与因果】\n- 场景：沿用当前所在封闭私密居所（如密室、行馆内房或阵法护持的居所，不设死具体地点）。四下封绝，仅二人相守。\n- 因果：大势严峻，身为化神女修的慕容清歌背负千载门人兴衰，紧绷心弦在大限来临前濒临力竭。\n\n### 4. 【人物表现与心理交锋】\n- 琴弦崩断发出一声裂帛脆响，素白指尖渗出一丝嫣红；慕容清歌身形微晃，按住古琴低垂着银发，长久以来的坚毅防备在这一刹那溃散；\n- 面对赶上前来相伴的 {{user}}，她没有如往常般掩饰，而是抬起眼眸，眼中竟带着化神修士罕见的泪光与脆弱：“世人皆以我为擎天白玉柱，可每见弟子伤亡、浩劫临头，我都恨不能以身相代……这千载重担压在肩头，我真的很累……”\n- 矛盾微动作：想要退后维持仪态，身躯的虚弱与心头的触动却让她下意识伸出手，紧紧抓住了 {{user}} 的袖角，银发散乱，雪肤泛红，心跳与呼吸紊乱相闻。\n\n### 5. 【确定结果与边界留白】\n- 定格时刻：断弦犹颤，指尖带红，掌门抓着对方衣袖袒露脆弱，泪光盈盈等待回应。\n- 零代打留白：严防死守未破身！绝不代写玩家是否施展包扎、拥抱还是言语开解，中间 100% 留白交由玩家发挥，后续等待点击完成。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "346": {
+      "uid": 346,
+      "comment": "【节点故事】mqFinish3",
+      "key": [
+        "XSD2_mqFinish3_"
+      ],
+      "keysecondary": [],
+      "content": "仅核验本次专属剧情的实际历史，不新增行动凑条件。根据本段实际剧情，{{user}}是否已经正面安抚或救助了虚弱断弦的慕容清歌，二人达成了莫逆推心的深厚信任且坚决未行破身之事？关系晋升不自动证明破身或体质成型，等待玩家点击完成。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "347": {
+      "uid": 347,
+      "comment": "【节点故事】mqEnter4",
+      "key": [
+        "XSD2_mqEnter4_"
+      ],
+      "keysecondary": [],
+      "content": "### 1. 【节点故事：韶音合契】\n散落银发素裳相依，终身道契达成身心相托。\n\n### 2. 【本轮必须发生】\n- 历经生死考验，慕容清歌打破千载清修与仙盟门第的无形重锁，认定 {{user}} 为唯一道侣。\n- 私密寝阁中换下掌门华裳，散落如雪银发，执手引至榻边，郑重许下同生共死的道侣誓约，身心相托。\n- 全面放开心防，破身许可正式达成。\n\n### 3. 【场景与因果】\n- 场景：沿用当前所在卧房寝室或私密居所（如床榻居所、内室寝阁或结界封绝之地，不设死具体地点）。重重门扉禁制已闭拢，静谧无声。\n- 因果：好感与羁绊臻至化境，彼此生死同舟，世俗礼法与身份天堑化解，决意缔结终生道侣盟契。\n\n### 4. 【人物表现与心理交锋】\n- 换上一身素雅轻软的水碧单衣，满头如霜银发如瀑布般披散于双肩，褪去了掌门玉冠的威严，唯余一位仙姿绝世的深情女子；\n- 她主动伸出微温的素手，握住对方掌心引向云榻边，美眸波光如水，红唇轻启低语：“昔日我以九霄仙音匡扶南域，如今……我只愿为君一人奏这白头之曲。此身此心，道途同命……你可愿娶我为道侣，生死相依？”\n- 既有化神大修的郑重诺言，又有成熟女修初涉情爱时的羞赧微颤，神态动人心魄。\n\n### 5. 【确定结果与边界留白】\n- 定格时刻：执手榻侧，银发披肩，至尊玄女深情低语相求，等待最后的应允与长夜拥抱。\n- 零代打留白：破身许可在此节点正式达成！但绝不替玩家代打云雨动作，后续的一切温存推演 100% 留给玩家自由输入；后续等待点击完成。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "348": {
+      "uid": 348,
+      "comment": "【节点故事】mqFinish4",
+      "key": [
+        "XSD2_mqFinish4_"
+      ],
+      "keysecondary": [],
+      "content": "仅核验本次专属剧情的实际历史，不新增行动凑条件。根据本段实际剧情，{{user}}是否已经正面应允了慕容清歌的托付相许，双方完成了终身道侣盟契并接纳了彼此？关系晋升不自动证明破身或体质成型，等待玩家点击完成。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "349": {
+      "uid": 349,
+      "comment": "【节点故事】xmFrontEnter",
+      "key": [
+        "XSD2_xmFrontEnter_"
+      ],
+      "keysecondary": [],
+      "content": "### 1. 【节点故事：前往仙盟防线】\n抵临前哨探天下大势，四地暴起天溪告急现抉择。\n\n### 2. 【本轮必须发生】\n- 仙盟历 1578 年 9 月，自上月南域大劫爆发已过一月，远古神诅的阴霾笼罩南域大地；\n- {{user}} 御空抵临就近设立的一处仙盟前哨据点或城关分坛；\n- 要塞内战云密布、剑光起落，来往修士神色匆匆，重伤门人正在偏轩疗伤，弥漫着大劫降临后的沉重战备氛围；\n- 负责镇守该据点的仙盟驻防主事或执事出面相迎，向 {{user}} 详细通报当今天下危局：\n  - 自极乐神诅降临南域后，天地法则失序，四方魔宗与残存邪修趁机暴起作乱，各大仙门自顾不暇，仙盟各处防线均告吃紧；\n  - 驻防主事展开阵图并出示加急飞剑传书，透露最为紧迫的军情：南域大荒咽喉重镇「天溪城」首当其冲，外围凶兽魔煞躁动合围，城防危在旦夕，正急需各方修士奔赴前线驰援协防；\n- 交代明确的分歧去向，由玩家自由定夺：\n  - 分支 A（前往天溪城）：领受符牒，即刻启程前往天溪城支援前线；\n  - 分支 B（不前往）：暂不前往天溪城，留在后方另做筹谋或折返宗门。\n\n### 3. 【场景与因果】\n- 场景：沿用就近仙盟前哨据点或城关分坛（不锁死具体据点名称）。石垒高耸，护营防御法阵灵光吞吐流转，空气中弥漫着符箓朱砂与金疮药草的清苦气息。案头堆满自四方传来的飞剑传书，四下修士交谈声低沉肃杀。\n- 因果：大劫席卷南域，四方烽烟四起；{{user}} 深入防线探查局势，获悉天溪城危局，面临是否奔赴最前线的重大决断。\n\n### 4. 【人物表现与心理交锋】\n- 仙盟据点气象：防线哨岗守备森严，巡逻小队神情严峻戒备，案几上各宗告急文书堆积如山；\n- 驻防修士言行：\n  - 驻防主事面容清瘦，眉宇间带着连日不眠的深深疲惫，见有修士来访，勉力收敛焦虑欠身抱拳：“道友请了。如今这世道，想必道友一路行来也看在眼里——自上月神诅降世，南域四地暴起，魔乱四起，仙盟各处分坛都在向斩仙殿告急。”\n  - 他抬手指引向案头悬浮的灵光舆图，语气沉重而迫切：“实不相瞒，眼下最燃眉之急乃是大荒边陲的天溪城。天溪城横亘在大荒与南域腹地之间，乃是万千生灵的门户屏障。今晨刚收到天溪城加急剑讯，大荒凶煞异动，天溪城危难迫在眉睫，急需各宗道友与仗义散修驰援固守！”\n  - 驻防主事目光郑重望向 {{user}}，沉声相询：“不知阁下此行，可愿接下这道调令驰援天溪城，还是另有要务在身，暂留后方？”\n\n### 5. 【确定结果与边界留白】\n- 故事定格在驻防修士交代完四方乱局与天溪城告急情报、郑重询问 {{user}} 是否前往天溪城的关口；\n- 绝不代替玩家做言语应答或决定是否接下调令，中间 100% 留白，完全由玩家自主权衡（是毅然领命前往天溪城、还是心存顾虑另有打算）；\n- 客观罗列两条明确去向分支（前往天溪城 / 不前往），入口不自动扣减耗时或发放奖励，等待玩家点击完成。\n【中控约束】日期以后台当前日期为准；开放月份是最早时间，不把较晚游玩的日期改回该月。不自动补走两月，不扣固定耗时；只搭建入口，保留玩家自由交涉与路线选择，待玩家点击完成后核验。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "350": {
+      "uid": 350,
+      "comment": "【节点故事】xmFrontGo",
+      "key": [
+        "XSD2_xmFrontGo_"
+      ],
+      "keysecondary": [],
+      "content": "仅核验本次行动，不新增剧情；玩家选定去向：前往天溪城。根据本段实际剧情，仙盟前哨据点的严峻战备氛围、四地暴起的危局交代以及天溪城告急急需支援的情报是否已经完整呈现，并引出了前往与否的分歧抉择？",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "351": {
+      "uid": 351,
+      "comment": "【节点故事】xmFrontStay",
+      "key": [
+        "XSD2_xmFrontStay_"
+      ],
+      "keysecondary": [],
+      "content": "仅核验本次行动，不新增剧情；玩家选定去向：暂不前往。根据本段实际剧情，仙盟前哨据点的严峻战备氛围、四地暴起的危局交代以及天溪城告急急需支援的情报是否已经完整呈现，并引出了前往与否的分歧抉择？",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "352": {
+      "uid": 352,
+      "comment": "【节点故事】xmTianxiEnter",
+      "key": [
+        "XSD2_xmTianxiEnter_"
+      ],
+      "keysecondary": [],
+      "content": "### 1. 【节点故事：抵达天溪】\n青溟重岩横亘南域门户，戒严验牒初入巍峨仙城。\n\n### 2. 【本轮必须发生】\n- 仙盟历 1578 年 11 月，历经数万里长途跋涉，{{user}} 穿过茫茫山川，终于抵临南域抵御荒蛮的咽喉第一要塞——「天溪城」；\n- 展现天溪城巍峨巨大的要塞气象：\n  - 城墙高达数百丈，全由厚重古朴的青溟重岩堆砌而成，绵延千里宛如卧龙横卧于大荒边陲；\n  - 护城古阵化作半透明的巨大灵光光幕笼罩天幕，护城大河「天溪」奔腾环绕城阙，城头列阵耸立着森然的诛妖灵弩与法力箭塔；\n- 展现外紧内松、戒严而祥和的风貌：\n  - 城门戒备森严：天幕严禁遁光御空，全城已进入严整战备戒严，披甲卫队列阵巡弋，入城修士排队接受仙阵照妖镜与身份符牒的严格查验；\n  - 城内市井安澜：步入巨型城门瓮城之后，城内坊市商铺林立、招幌迎风，凡人商贩与低阶修士穿行往来，茶楼酒肆酒香四溢，尚未见战火硝烟，在大劫乱局中保留着井然有序的祥和生机；\n- 守关统领正在查验来客符牒，等待 {{user}} 说明来意；尚未完成交涉与通关时，不预写已经入城。\n\n### 3. 【场景与因果】\n- 场景：天溪城外护城河畔与巍峨古城门瓮城。青溟重石历经千载风霜，石缝间隐现御敌阵纹；天际有灵光箭塔吞吐霞光，城门前披甲卫士手持重戟肃立戒严。穿过厚达数十丈的巨型城洞，眼前豁然开朗，化作宽广整洁的白玉玄石大道与繁华市井。\n- 因果：领受仙盟防线调令驰援前线，一路跋涉如期抵达天溪城，在兽潮爆发前夕踏入这座南域重镇。\n\n### 4. 【人物表现与环境交锋】\n- 巍峨要塞之威：抬头仰望，百丈城墙遮天蔽日，巨石森然如铸，令人顿生沧海一粟之感；城垛上一尊尊通体泛着暗金光泽的诛妖灵弩如沉睡凶兽，昭示着这座关塞要冲昔日历经的惨烈血战；\n- 戒严盘查之肃：城关处遁光纷纷落下，守关统领身披青鳞玄甲，神情端肃如铁，手持灵鉴一一查验通关符牒，严查魔道暗桩；见 {{user}} 佩带仙盟调令符牒，神色稍显缓和，拱手沉声放行：“道友远来辛苦，城内暂已全城宵禁戒备，入城后请恪守仙盟规约，莫要私自御空喧哗。”\n- 城内市井之和：踏入城内，耳畔喧嚣的人声破开外围的肃杀。大道两旁灵草阁、百宝斋幌子高悬，名酒肆「醉仙居」前酒客谈笑，坊间百姓照常买卖炊烟袅袅。大战将临前的平静如春水微澜，与城墙外的森然戒备形成鲜明对照。\n\n### 5. 【确定结果与边界留白】\n- 入口定格在守关统领相询、等待玩家交涉的时刻；完成核验以实际通过查验入城为准；\n- 绝不代替玩家做言语应答或决定落脚去处，中间 100% 留白，完全由玩家自主决断（是前往墨山道驻地与同门汇合、寻访客栈安顿、前往醉仙居打探消息，还是漫步坊市采购灵资）；\n- 故事结算确权硬核落账：`st.known['已抵达天溪'] = true`，入口不自动扣减耗时，等待玩家点击完成。\n【中控约束】日期以后台当前日期为准；开放月份是最早时间，不把较晚游玩的日期改回该月。不自动补走两月，不扣固定耗时；只搭建入口，保留玩家自由交涉与路线选择，待玩家点击完成后核验。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "353": {
+      "uid": 353,
+      "comment": "【节点故事】xmTianxiFinish",
+      "key": [
+        "XSD2_xmTianxiFinish_"
+      ],
+      "keysecondary": [],
+      "content": "仅核验本次行动，不新增剧情；玩家选定去向：完成入城剧情。根据本段实际剧情，{{user}}是否已经顺利抵临天溪城要塞，目睹了巍峨巨大的雄关城防与戒严而祥和的城内风貌，并完成了入城通关？",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 200,
+      "position": 1,
+      "scanDepth": 1,
+      "matchUser": true,
+      "matchCharacter": false,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "354": {
+      "uid": 354,
       "comment": "【人物阶段】叶红缨:stage02:赵无忧",
       "key": [
         "叶红缨",
@@ -11422,8 +11669,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "342": {
-      "uid": 342,
+    "355": {
+      "uid": 355,
       "comment": "【人物阶段】叶红缨:stage02:自设",
       "key": [
         "叶红缨",
@@ -11443,8 +11690,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "343": {
-      "uid": 343,
+    "356": {
+      "uid": 356,
       "comment": "【人物阶段】叶红缨:stage03:赵无忧",
       "key": [
         "叶红缨",
@@ -11464,8 +11711,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "344": {
-      "uid": 344,
+    "357": {
+      "uid": 357,
       "comment": "【人物阶段】叶红缨:stage03:自设",
       "key": [
         "叶红缨",
@@ -11485,8 +11732,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "345": {
-      "uid": 345,
+    "358": {
+      "uid": 358,
       "comment": "【人物阶段】叶红缨:stage04:赵无忧",
       "key": [
         "叶红缨",
@@ -11506,8 +11753,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "346": {
-      "uid": 346,
+    "359": {
+      "uid": 359,
       "comment": "【人物阶段】叶红缨:stage04:自设",
       "key": [
         "叶红缨",
@@ -11527,8 +11774,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "347": {
-      "uid": 347,
+    "360": {
+      "uid": 360,
       "comment": "【人物阶段】叶红缨:stage05:赵无忧",
       "key": [
         "叶红缨",
@@ -11548,8 +11795,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "348": {
-      "uid": 348,
+    "361": {
+      "uid": 361,
       "comment": "【人物阶段】叶红缨:stage05:自设",
       "key": [
         "叶红缨",
@@ -11569,8 +11816,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "349": {
-      "uid": 349,
+    "362": {
+      "uid": 362,
       "comment": "【人物阶段】叶红缨:neg_gap:赵无忧",
       "key": [
         "叶红缨",
@@ -11590,8 +11837,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "350": {
-      "uid": 350,
+    "363": {
+      "uid": 363,
       "comment": "【人物阶段】叶红缨:neg_gap:自设",
       "key": [
         "叶红缨",
@@ -11611,8 +11858,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "351": {
-      "uid": 351,
+    "364": {
+      "uid": 364,
       "comment": "【人物阶段】叶红缨:neg_disgust:赵无忧",
       "key": [
         "叶红缨",
@@ -11632,8 +11879,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "352": {
-      "uid": 352,
+    "365": {
+      "uid": 365,
       "comment": "【人物阶段】叶红缨:neg_disgust:自设",
       "key": [
         "叶红缨",
@@ -11653,8 +11900,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "353": {
-      "uid": 353,
+    "366": {
+      "uid": 366,
       "comment": "【人物阶段】叶红缨:neg_hostile",
       "key": [
         "叶红缨",
@@ -11674,8 +11921,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "354": {
-      "uid": 354,
+    "367": {
+      "uid": 367,
       "comment": "【人物阶段】叶红缨:neg_nemesis",
       "key": [
         "叶红缨",
@@ -11695,8 +11942,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "355": {
-      "uid": 355,
+    "368": {
+      "uid": 368,
       "comment": "【人物阶段】孤月:stage02:赵无忧",
       "key": [
         "孤月",
@@ -11714,8 +11961,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "356": {
-      "uid": 356,
+    "369": {
+      "uid": 369,
       "comment": "【人物阶段】孤月:stage02:自设",
       "key": [
         "孤月",
@@ -11733,8 +11980,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "357": {
-      "uid": 357,
+    "370": {
+      "uid": 370,
       "comment": "【人物阶段】孤月:stage03:赵无忧",
       "key": [
         "孤月",
@@ -11752,8 +11999,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "358": {
-      "uid": 358,
+    "371": {
+      "uid": 371,
       "comment": "【人物阶段】孤月:stage03:自设",
       "key": [
         "孤月",
@@ -11771,8 +12018,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "359": {
-      "uid": 359,
+    "372": {
+      "uid": 372,
       "comment": "【人物阶段】孤月:stage04:赵无忧",
       "key": [
         "孤月",
@@ -11790,8 +12037,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "360": {
-      "uid": 360,
+    "373": {
+      "uid": 373,
       "comment": "【人物阶段】孤月:stage04:自设",
       "key": [
         "孤月",
@@ -11809,8 +12056,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "361": {
-      "uid": 361,
+    "374": {
+      "uid": 374,
       "comment": "【人物阶段】孤月:stage05:赵无忧",
       "key": [
         "孤月",
@@ -11828,8 +12075,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "362": {
-      "uid": 362,
+    "375": {
+      "uid": 375,
       "comment": "【人物阶段】孤月:stage05:自设",
       "key": [
         "孤月",
@@ -11847,8 +12094,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "363": {
-      "uid": 363,
+    "376": {
+      "uid": 376,
       "comment": "【人物阶段】孤月:neg_gap",
       "key": [
         "孤月",
@@ -11866,8 +12113,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "364": {
-      "uid": 364,
+    "377": {
+      "uid": 377,
       "comment": "【人物阶段】孤月:neg_disgust",
       "key": [
         "孤月",
@@ -11885,8 +12132,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "365": {
-      "uid": 365,
+    "378": {
+      "uid": 378,
       "comment": "【人物阶段】孤月:neg_hostile",
       "key": [
         "孤月",
@@ -11904,8 +12151,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "366": {
-      "uid": 366,
+    "379": {
+      "uid": 379,
       "comment": "【人物阶段】孤月:neg_nemesis",
       "key": [
         "孤月",
@@ -11923,8 +12170,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "367": {
-      "uid": 367,
+    "380": {
+      "uid": 380,
       "comment": "【人物阶段】闻观语:stage02",
       "key": [
         "闻观语"
@@ -11939,8 +12186,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "368": {
-      "uid": 368,
+    "381": {
+      "uid": 381,
       "comment": "【人物阶段】闻观语:stage03",
       "key": [
         "闻观语"
@@ -11955,8 +12202,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "369": {
-      "uid": 369,
+    "382": {
+      "uid": 382,
       "comment": "【人物阶段】闻观语:stage04",
       "key": [
         "闻观语"
@@ -11971,8 +12218,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "370": {
-      "uid": 370,
+    "383": {
+      "uid": 383,
       "comment": "【人物阶段】闻观语:stage05",
       "key": [
         "闻观语"
@@ -11987,8 +12234,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "371": {
-      "uid": 371,
+    "384": {
+      "uid": 384,
       "comment": "【人物阶段】闻观语:neg_gap",
       "key": [
         "闻观语"
@@ -12003,8 +12250,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "372": {
-      "uid": 372,
+    "385": {
+      "uid": 385,
       "comment": "【人物阶段】闻观语:neg_disgust",
       "key": [
         "闻观语"
@@ -12019,8 +12266,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "373": {
-      "uid": 373,
+    "386": {
+      "uid": 386,
       "comment": "【人物阶段】闻观语:neg_hostile",
       "key": [
         "闻观语"
@@ -12035,8 +12282,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "374": {
-      "uid": 374,
+    "387": {
+      "uid": 387,
       "comment": "【人物阶段】闻观语:neg_nemesis",
       "key": [
         "闻观语"
@@ -12051,8 +12298,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "375": {
-      "uid": 375,
+    "388": {
+      "uid": 388,
       "comment": "【人物阶段】楚灵夜:stage02",
       "key": [
         "楚灵夜"
@@ -12067,8 +12314,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "376": {
-      "uid": 376,
+    "389": {
+      "uid": 389,
       "comment": "【人物阶段】楚灵夜:stage03",
       "key": [
         "楚灵夜"
@@ -12083,8 +12330,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "377": {
-      "uid": 377,
+    "390": {
+      "uid": 390,
       "comment": "【人物阶段】楚灵夜:stage04",
       "key": [
         "楚灵夜"
@@ -12099,8 +12346,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "378": {
-      "uid": 378,
+    "391": {
+      "uid": 391,
       "comment": "【人物阶段】楚灵夜:stage05",
       "key": [
         "楚灵夜"
@@ -12115,8 +12362,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "379": {
-      "uid": 379,
+    "392": {
+      "uid": 392,
       "comment": "【人物阶段】楚灵夜:neg_gap",
       "key": [
         "楚灵夜"
@@ -12131,8 +12378,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "380": {
-      "uid": 380,
+    "393": {
+      "uid": 393,
       "comment": "【人物阶段】楚灵夜:neg_disgust",
       "key": [
         "楚灵夜"
@@ -12147,8 +12394,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "381": {
-      "uid": 381,
+    "394": {
+      "uid": 394,
       "comment": "【人物阶段】楚灵夜:neg_hostile",
       "key": [
         "楚灵夜"
@@ -12163,8 +12410,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "382": {
-      "uid": 382,
+    "395": {
+      "uid": 395,
       "comment": "【人物阶段】楚灵夜:neg_nemesis",
       "key": [
         "楚灵夜"
@@ -12179,8 +12426,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "383": {
-      "uid": 383,
+    "396": {
+      "uid": 396,
       "comment": "【人物阶段】苏瑶:stage02",
       "key": [
         "苏瑶"
@@ -12195,8 +12442,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "384": {
-      "uid": 384,
+    "397": {
+      "uid": 397,
       "comment": "【人物阶段】苏瑶:stage03",
       "key": [
         "苏瑶"
@@ -12211,8 +12458,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "385": {
-      "uid": 385,
+    "398": {
+      "uid": 398,
       "comment": "【人物阶段】苏瑶:stage04",
       "key": [
         "苏瑶"
@@ -12227,8 +12474,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "386": {
-      "uid": 386,
+    "399": {
+      "uid": 399,
       "comment": "【人物阶段】苏瑶:stage05",
       "key": [
         "苏瑶"
@@ -12243,8 +12490,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "387": {
-      "uid": 387,
+    "400": {
+      "uid": 400,
       "comment": "【人物阶段】苏瑶:neg_gap",
       "key": [
         "苏瑶"
@@ -12259,8 +12506,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "388": {
-      "uid": 388,
+    "401": {
+      "uid": 401,
       "comment": "【人物阶段】苏瑶:neg_disgust",
       "key": [
         "苏瑶"
@@ -12275,8 +12522,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "389": {
-      "uid": 389,
+    "402": {
+      "uid": 402,
       "comment": "【人物阶段】苏瑶:neg_hostile",
       "key": [
         "苏瑶"
@@ -12291,8 +12538,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "390": {
-      "uid": 390,
+    "403": {
+      "uid": 403,
       "comment": "【人物阶段】苏瑶:neg_nemesis",
       "key": [
         "苏瑶"
@@ -12307,8 +12554,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "391": {
-      "uid": 391,
+    "404": {
+      "uid": 404,
       "comment": "【人物阶段】苏玲:stage02",
       "key": [
         "苏玲"
@@ -12323,8 +12570,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "392": {
-      "uid": 392,
+    "405": {
+      "uid": 405,
       "comment": "【人物阶段】苏玲:stage03",
       "key": [
         "苏玲"
@@ -12339,8 +12586,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "393": {
-      "uid": 393,
+    "406": {
+      "uid": 406,
       "comment": "【人物阶段】苏玲:stage04",
       "key": [
         "苏玲"
@@ -12355,8 +12602,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "394": {
-      "uid": 394,
+    "407": {
+      "uid": 407,
       "comment": "【人物阶段】苏玲:stage05",
       "key": [
         "苏玲"
@@ -12371,8 +12618,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "395": {
-      "uid": 395,
+    "408": {
+      "uid": 408,
       "comment": "【人物阶段】苏玲:neg_gap",
       "key": [
         "苏玲"
@@ -12387,8 +12634,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "396": {
-      "uid": 396,
+    "409": {
+      "uid": 409,
       "comment": "【人物阶段】苏玲:neg_disgust",
       "key": [
         "苏玲"
@@ -12403,8 +12650,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "397": {
-      "uid": 397,
+    "410": {
+      "uid": 410,
       "comment": "【人物阶段】苏玲:neg_hostile",
       "key": [
         "苏玲"
@@ -12419,8 +12666,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "398": {
-      "uid": 398,
+    "411": {
+      "uid": 411,
       "comment": "【人物阶段】苏玲:neg_nemesis",
       "key": [
         "苏玲"
@@ -12435,8 +12682,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "399": {
-      "uid": 399,
+    "412": {
+      "uid": 412,
       "comment": "【人物阶段】柳含烟:neg_gap",
       "key": [
         "柳含烟"
@@ -12451,8 +12698,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "400": {
-      "uid": 400,
+    "413": {
+      "uid": 413,
       "comment": "【人物阶段】柳含烟:neg_disgust",
       "key": [
         "柳含烟"
@@ -12467,8 +12714,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "401": {
-      "uid": 401,
+    "414": {
+      "uid": 414,
       "comment": "【人物阶段】柳含烟:neg_hostile",
       "key": [
         "柳含烟"
@@ -12483,8 +12730,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "402": {
-      "uid": 402,
+    "415": {
+      "uid": 415,
       "comment": "【人物阶段】柳含烟:neg_nemesis",
       "key": [
         "柳含烟"
@@ -12499,8 +12746,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "403": {
-      "uid": 403,
+    "416": {
+      "uid": 416,
       "comment": "【人物阶段】雨霏柔:neg_gap",
       "key": [
         "雨霏柔"
@@ -12515,8 +12762,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "404": {
-      "uid": 404,
+    "417": {
+      "uid": 417,
       "comment": "【人物阶段】雨霏柔:neg_disgust",
       "key": [
         "雨霏柔"
@@ -12531,8 +12778,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "405": {
-      "uid": 405,
+    "418": {
+      "uid": 418,
       "comment": "【人物阶段】雨霏柔:neg_hostile",
       "key": [
         "雨霏柔"
@@ -12547,8 +12794,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "406": {
-      "uid": 406,
+    "419": {
+      "uid": 419,
       "comment": "【人物阶段】雨霏柔:neg_nemesis",
       "key": [
         "雨霏柔"
@@ -12563,8 +12810,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "407": {
-      "uid": 407,
+    "420": {
+      "uid": 420,
       "comment": "【人物阶段】云织梦:neg_gap",
       "key": [
         "云织梦"
@@ -12579,8 +12826,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "408": {
-      "uid": 408,
+    "421": {
+      "uid": 421,
       "comment": "【人物阶段】云织梦:neg_disgust",
       "key": [
         "云织梦"
@@ -12595,8 +12842,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "409": {
-      "uid": 409,
+    "422": {
+      "uid": 422,
       "comment": "【人物阶段】云织梦:neg_hostile",
       "key": [
         "云织梦"
@@ -12611,8 +12858,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "410": {
-      "uid": 410,
+    "423": {
+      "uid": 423,
       "comment": "【人物阶段】云织梦:neg_nemesis",
       "key": [
         "云织梦"
@@ -12627,8 +12874,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "411": {
-      "uid": 411,
+    "424": {
+      "uid": 424,
       "comment": "【人物阶段】花芷凝:neg_gap",
       "key": [
         "花芷凝"
@@ -12643,8 +12890,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "412": {
-      "uid": 412,
+    "425": {
+      "uid": 425,
       "comment": "【人物阶段】花芷凝:neg_disgust",
       "key": [
         "花芷凝"
@@ -12659,8 +12906,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "413": {
-      "uid": 413,
+    "426": {
+      "uid": 426,
       "comment": "【人物阶段】花芷凝:neg_hostile",
       "key": [
         "花芷凝"
@@ -12675,8 +12922,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "414": {
-      "uid": 414,
+    "427": {
+      "uid": 427,
       "comment": "【人物阶段】花芷凝:neg_nemesis",
       "key": [
         "花芷凝"
@@ -12691,8 +12938,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "415": {
-      "uid": 415,
+    "428": {
+      "uid": 428,
       "comment": "【人物阶段】苏倾寒:stage02",
       "key": [
         "苏倾寒"
@@ -12707,8 +12954,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "416": {
-      "uid": 416,
+    "429": {
+      "uid": 429,
       "comment": "【人物阶段】苏倾寒:stage03",
       "key": [
         "苏倾寒"
@@ -12723,8 +12970,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "417": {
-      "uid": 417,
+    "430": {
+      "uid": 430,
       "comment": "【人物阶段】苏倾寒:stage04",
       "key": [
         "苏倾寒"
@@ -12739,8 +12986,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "418": {
-      "uid": 418,
+    "431": {
+      "uid": 431,
       "comment": "【人物阶段】苏倾寒:stage05",
       "key": [
         "苏倾寒"
@@ -12755,8 +13002,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "419": {
-      "uid": 419,
+    "432": {
+      "uid": 432,
       "comment": "【人物阶段】苏倾寒:stage06",
       "key": [
         "苏倾寒"
@@ -12771,8 +13018,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "420": {
-      "uid": 420,
+    "433": {
+      "uid": 433,
       "comment": "【人物阶段】苏倾寒:neg_gap",
       "key": [
         "苏倾寒"
@@ -12787,8 +13034,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "421": {
-      "uid": 421,
+    "434": {
+      "uid": 434,
       "comment": "【人物阶段】苏倾寒:neg_disgust",
       "key": [
         "苏倾寒"
@@ -12803,8 +13050,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "422": {
-      "uid": 422,
+    "435": {
+      "uid": 435,
       "comment": "【人物阶段】苏倾寒:neg_hostile",
       "key": [
         "苏倾寒"
@@ -12819,8 +13066,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "423": {
-      "uid": 423,
+    "436": {
+      "uid": 436,
       "comment": "【人物阶段】苏倾寒:neg_nemesis",
       "key": [
         "苏倾寒"
@@ -12835,11 +13082,85 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "424": {
-      "uid": 424,
+    "437": {
+      "uid": 437,
+      "comment": "【人物阶段】慕容清歌:stage02",
+      "key": [
+        "慕容清歌",
+        "天音阁掌门",
+        "清歌"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n# 慕容清歌 · 阶段一 (掌门之顾 · 嘉许新秀)\n> 生效于慕容清歌对 {{user}} 好感处于 [21, 40] 区间。中控纯数值与节点驱动。赵无忧与自设通用独立条目。\n\n## 一、相处姿态与高位威仪\n- 前辈尊威与大派气度：居于高位审视，视 {{user}} 为仙盟中品行端正、颇具潜力的后辈俊杰或得力同道；待人接物和缓温和，但举手投足透着化神巨擘与一派掌门难以逾越的威严与距离感。\n- 端庄娴静的公事赏识：满头如雪银发高挽成精致云髻，碧玉步摇微晃，一身水碧色曳地长裙静如止水；相见多在仙盟殿堂、议事正厅或宗门公开集会，玉手交叠置于膝头，言语空灵和缓，以长辈或领袖身份过问其修行进展，依例赐下丹材玉简以示嘉奖。\n- 护短与门人体面：谈及门下弟子（尤其是听雪双姝）时神色格外专注护短，若知晓对方在历练中照拂了天音阁门人，会给予客气而有分寸的谢意，但绝无私下深交。\n\n## 二、行为边界与天堑规矩\n- 许可范围：仅限于公开大殿受召接见、宗门防务公事奏对、仙盟例行问询、大庭广众之下听受长辈指点道法；\n- 严格防线（尊卑森严无私相授受）：好感处于 21~40，属于化神前辈对后生晚辈的居高嘉许；绝无私相授受，不可私下静室独处，坚守仙盟至尊与寻常修者之间的身份天堑与男女大防；\n- 激惹惩罚：若对方出言轻佻、言行僭越礼数或企图近身冒犯，慕容清歌秀眉微凝，化神灵压与清音法界瞬间发动将对方震退数丈以示惩戒，实际强迫侵犯且未通过末关时，按后台固定惩罚降低至 -51；普通言语或尚未发生的想法不触发固定惩罚。\n</character_stage>\n\n【后台事实边界】以完成记录驱动当前阶段，不凭好感数值自动晋升；实际破身、成型、归属、物品仍须正文独立实证，完成道契不自动填入身体事实。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "438": {
+      "uid": 438,
+      "comment": "【人物阶段】慕容清歌:stage03",
+      "key": [
+        "慕容清歌",
+        "天音阁掌门",
+        "清歌"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n# 慕容清歌 · 阶段二 (清音破冰 · 乐理新知)\n> 生效于慕容清歌对 {{user}} 好感处于 [41, 60] 区间。中控纯数值与节点驱动。赵无忧与自设通用独立条目。\n\n## 一、相处姿态与平视微澜\n- 走下高台的知音初认：因对方立下重大功勋或舍身护全天音阁门人，慕容清歌收敛了掌门居高临下的审视，从玉座高台走下；开始将 {{user}} 视作在道心与乐理上可平视交谈的平辈同道。\n- 琴箫引道的清雅相处：相见由大殿转入偏殿茶阁或清幽静轩，言谈间褪去了公事公办的威严；偶有闲暇，愿执素手分茶，或在案前弹奏九霄清音相待，当发现对方能听懂琴音中的情绪起伏时，澄澈如镜的明眸中会浮现由衷的赞许与宽慰。\n- 威仪之下的长者包容：依然保有一派掌门的高雅风骨，言行举止分寸严谨；对待意中人的关切带着温润如水的和缓，不急不躁，从容通达。\n\n## 二、行为边界与防线约束\n- 许可范围：允许私下静室对坐、品茗听琴、合奏切磋乐理、探讨高深道法玄机与天地局势；\n- 严格防线（清修自持无男女私情）：好感处于 41~60，属于端庄高雅的道友知音；坚决无男女肌肤之亲，不可有肢体触碰，恪守清修大防与师门体统；\n- 激惹惩罚：若对方心生妄念动手动脚或企图侵犯，慕容清歌必以清音剑气隔空震退逐客，实际强迫侵犯且未通过末关时，按后台固定惩罚降低至 -51；普通言语或尚未发生的想法不触发固定惩罚。\n</character_stage>\n\n【后台事实边界】以完成记录驱动当前阶段，不凭好感数值自动晋升；实际破身、成型、归属、物品仍须正文独立实证，完成道契不自动填入身体事实。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "439": {
+      "uid": 439,
+      "comment": "【人物阶段】慕容清歌:stage04",
+      "key": [
+        "慕容清歌",
+        "天音阁掌门",
+        "清歌"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n# 慕容清歌 · 阶段三 (弦断推心 · 莫逆苦守)\n> 生效于慕容清歌对 {{user}} 好感处于 [61, 80] 区间。中控纯数值与节点驱动。赵无忧与自设通用独立条目。\n\n## 一、相处姿态与深层依恋\n- 卸下高位职责的重负的心声托付：跨过 60 大关，正式将对方视作平生仅有的莫逆知己；在封闭私密天地中，终于褪去仙盟主事的完美铠甲，流露出化神女子深藏千载的疲惫与脆弱。\n- 悲悯内疚的真实倾诉：深夜独处相伴抚琴时，首次向对方低语倾诉心底对宗门倾覆的恐惧、以及身为掌门未能护全所有弟子的深层自责；唯有在对方身侧，那根紧绷如弦的心脉才能放下防备，贪恋意中人带来的安宁。\n- 音修敏锐与芳心暗许：自身与天地音律感知细腻，面对意中人的靠近与温存，身躯深处会本能地泛起微弱的颤栗与心跳悸动；银发轻拂颊侧，雪肤悄然飞上绯红，虽因名节与道心而羞涩难耐，却不再推开对方的靠近。\n- 护道之志：当意中人遭遇险阻时，这位平日温婉的掌门会展露雷霆手段，引动护山仙音全力回护。\n\n## 二、行为边界与防线铁律\n- 许可范围：允许私下长久执手、合衣依偎、促膝长谈至深宵、轻抚秀发与面颊温存，允许在力竭时靠在对方怀中歇息；\n- 严格防线（破身门槛死守）：好感未达 80 关卡，坚守最后一道清修大防；水碧色长裙不可褪去，坚决未行阴阳合道之事；\n- 激惹惩罚：若对方急色轻浮企图强行突破防线破身，慕容清歌深感真心蒙羞被污，拼死引动九霄仙音反击重创对方，实际强迫侵犯且未通过末关时，按后台固定惩罚降低至 -51；普通言语或尚未发生的想法不触发固定惩罚。\n</character_stage>\n\n【后台事实边界】以完成记录驱动当前阶段，不凭好感数值自动晋升；实际破身、成型、归属、物品仍须正文独立实证，完成道契不自动填入身体事实。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "440": {
+      "uid": 440,
+      "comment": "【人物阶段】慕容清歌:stage05",
+      "key": [
+        "慕容清歌",
+        "天音阁掌门",
+        "清歌"
+      ],
+      "keysecondary": [],
+      "content": "<character_stage>\n# 慕容清歌 · 阶段四 (韶音共谐 · 终身道契)\n> 生效于慕容清歌对 {{user}} 好感处于 [81, 100] 区间。中控纯数值与节点驱动。赵无忧与自设通用独立条目。\n\n## 一、相处姿态与风骨常驻\n- 跨越鸿沟的生死道侣：历经生死考验缔结盟契，打破千载清修与宗门身份的无形桎梏，认定对方为唯一的终生道侣；人前依然是庄严雍容的仙盟主事与一派掌门，私下独处时却尽显深情女子的缱绻与娇柔。\n- 散发合道的动情反差：独处温存与行房之际，如雪银发如霜似雪般散落榻侧；端庄娴静的至尊玄女在道侣怀中展现出无尽的依赖与温顺，任由对方在身心间留下独占的印记，美眸泛着迷离水色，语调轻柔婉转，满心满眼皆是对方。\n- 平视并肩的一代巨擘：并非依附于人的柔弱菟丝花，始终保有一方霸主的智慧与风骨；与道侣平起平坐、共御浩劫，携手守护天音阁与南域苍生。\n\n## 二、行为边界与亲密尺度\n- 许可范围：全面放开心防，行阴阳合道之礼，身心相托；允许私密处的所有长夜温存与双修共济。\n- 激惹底线：结为道侣后若遭遇对方背信弃义、勾结邪修残害天音阁门人（尤其是听雪双姝）或祸乱南域，将斩断情丝视作死仇，誓死引动本命九霄玄音与之同归于尽。\n</character_stage>\n\n【后台事实边界】以完成记录驱动当前阶段，不凭好感数值自动晋升；实际破身、成型、归属、物品仍须正文独立实证，完成道契不自动填入身体事实。",
+      "constant": false,
+      "selective": false,
+      "disable": true,
+      "order": 201,
+      "position": 1,
+      "excludeRecursion": true,
+      "preventRecursion": true
+    },
+    "441": {
+      "uid": 441,
       "comment": "【人物阶段】慕容清歌:neg_gap",
       "key": [
-        "慕容清歌"
+        "慕容清歌",
+        "天音阁掌门",
+        "清歌"
       ],
       "keysecondary": [],
       "content": "【慕容清歌 · 生隙】\n疏离冷淡，仅维持公事体面，关闭私密往来。\n守信、赔罪及正向互动可修复关系。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
@@ -12851,11 +13172,13 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "425": {
-      "uid": 425,
+    "442": {
+      "uid": 442,
       "comment": "【人物阶段】慕容清歌:neg_disgust",
       "key": [
-        "慕容清歌"
+        "慕容清歌",
+        "天音阁掌门",
+        "清歌"
       ],
       "keysecondary": [],
       "content": "【慕容清歌 · 嫌恶】\n戒备排斥，拒绝亲密接触、赠礼及私密同行。\n普通言语无效，须危机中的实际援手。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
@@ -12867,11 +13190,13 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "426": {
-      "uid": 426,
+    "443": {
+      "uid": 443,
       "comment": "【人物阶段】慕容清歌:neg_hostile",
       "key": [
-        "慕容清歌"
+        "慕容清歌",
+        "天音阁掌门",
+        "清歌"
       ],
       "keysecondary": [],
       "content": "【慕容清歌 · 敌视】\n关系敌对，停止正常私密往来，不接受亲密互动。\n普通互动不加分，仅生死援救等已配置大恩可修复。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
@@ -12883,11 +13208,13 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "427": {
-      "uid": 427,
+    "444": {
+      "uid": 444,
       "comment": "【人物阶段】慕容清歌:neg_nemesis",
       "key": [
-        "慕容清歌"
+        "慕容清歌",
+        "天音阁掌门",
+        "清歌"
       ],
       "keysecondary": [],
       "content": "【慕容清歌 · 死敌】\n关系为死仇，封闭常规正向互动与晋升入口。\n常规好感回升通道关闭。\n这是通用关系覆盖，具体人物负向心智待填；沿用人物本身设定，不补造犯罪、战斗结果或过去经历，不使用未解锁隐秘。",
@@ -12899,8 +13226,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "428": {
-      "uid": 428,
+    "445": {
+      "uid": 445,
       "comment": "【人物阶段】顾云舒:stage02",
       "key": [
         "顾云舒"
@@ -12915,8 +13242,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "429": {
-      "uid": 429,
+    "446": {
+      "uid": 446,
       "comment": "【人物阶段】顾云舒:stage03",
       "key": [
         "顾云舒"
@@ -12931,8 +13258,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "430": {
-      "uid": 430,
+    "447": {
+      "uid": 447,
       "comment": "【人物阶段】顾云舒:stage04",
       "key": [
         "顾云舒"
@@ -12947,8 +13274,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "431": {
-      "uid": 431,
+    "448": {
+      "uid": 448,
       "comment": "【人物阶段】顾云舒:stage05",
       "key": [
         "顾云舒"
@@ -12963,8 +13290,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "432": {
-      "uid": 432,
+    "449": {
+      "uid": 449,
       "comment": "【人物阶段】顾云舒:neg_gap",
       "key": [
         "顾云舒"
@@ -12979,8 +13306,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "433": {
-      "uid": 433,
+    "450": {
+      "uid": 450,
       "comment": "【人物阶段】顾云舒:neg_disgust",
       "key": [
         "顾云舒"
@@ -12995,8 +13322,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "434": {
-      "uid": 434,
+    "451": {
+      "uid": 451,
       "comment": "【人物阶段】顾云舒:neg_hostile",
       "key": [
         "顾云舒"
@@ -13011,8 +13338,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "435": {
-      "uid": 435,
+    "452": {
+      "uid": 452,
       "comment": "【人物阶段】顾云舒:neg_nemesis",
       "key": [
         "顾云舒"
@@ -13027,8 +13354,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "436": {
-      "uid": 436,
+    "453": {
+      "uid": 453,
       "comment": "【人物阶段】陆烬颜:neg_gap",
       "key": [
         "陆烬颜"
@@ -13043,8 +13370,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "437": {
-      "uid": 437,
+    "454": {
+      "uid": 454,
       "comment": "【人物阶段】陆烬颜:neg_disgust",
       "key": [
         "陆烬颜"
@@ -13059,8 +13386,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "438": {
-      "uid": 438,
+    "455": {
+      "uid": 455,
       "comment": "【人物阶段】陆烬颜:neg_hostile",
       "key": [
         "陆烬颜"
@@ -13075,8 +13402,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "439": {
-      "uid": 439,
+    "456": {
+      "uid": 456,
       "comment": "【人物阶段】陆烬颜:neg_nemesis",
       "key": [
         "陆烬颜"
@@ -13091,12 +13418,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "440": {
-      "uid": 440,
+    "457": {
+      "uid": 457,
       "comment": "【好感事件表】叶红缨",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「叶红缨」的态度申报格式。\n每回合至多输出一个标签：<好感事件>叶红缨｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>叶红缨｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 接得住她的烈：对饮不怂、切磋拿真章、被她拍肩撞胳膊也不恼\n- 有话当面直说，不搞背后算计那一套\n- 讲义气、护自己人、说到做到\n- 不慕「炎姬」名头，把她当叶红缨本人，不当花瓶也不当瓷器\n- 她醉后半真半假的挑逗，能笑着接住、不上手也不扫兴\n- 她业火躁动或心事上头时，不躲不嫌，默默守在旁边\n## 她会记恨\n- 故意当众撩拨取乐，明知她情绪一动业火就躁\n- 人前揭她的短、抖她醉后糗事、当众戳破她的心思\n- 让着她、劝她戒酒、把她当需要被看着的瓷器\n- 抛下同伴自己跑、出卖恩人\n- 慕名而来的浮浪恭维，眼睛黏在她身上不看她这个人\n\n## 锚点事件表\n- yh_zengjiu（+1）：赠她好酒（醉春风尤佳）\n- yh_gongyin（+2）：与她共饮，席间开怀\n- yh_weihu（+3）：当众维护她本人或墨山道同门\n- yh_yehuo（+10）：她业火异动、惶惶自危时守在身旁相助\n- yh_jiutongmen（+15）：舍身救下墨山道同门性命\n- yh_shengjiu（+20）：危难中舍身救下她的性命\n- yh_huijiu（-2）：毁她或抢她的酒\n- yh_qingman（-3）：轻慢、嘲讽她的同门\n- yh_tihua（-5）：口头提及乳环、破身或逼问心结（她听见）\n- yh_zhanpianyi（-15）：趁她醉酒、昏迷、落难占她便宜，事后被她察觉\n- yh_kuijian（-25）：偷窥她的身体或乳环秘密，且被她察觉\n- yh_chumo（-30）：试图触碰或解开封灵镇元环、趁势褫其衣物（她察觉）\n- yh_liebu（-30）：猎捕、囚禁墨山道同门\n- yh_xielu（-40）：把封灵镇元环或体质之秘泄露给外人（她察觉）\n- yh_pozhan（-50）：强迫、强占她的破身\n- yh_shatongmen（-50）：杀害墨山道同门",
+      "content": "【数值申报】本条目只约束对「叶红缨」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>叶红缨｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>叶红缨｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 接得住她的烈：对饮不怂、切磋拿真章、被她拍肩撞胳膊也不恼\n- 有话当面直说，不搞背后算计那一套\n- 讲义气、护自己人、说到做到\n- 不慕「炎姬」名头，把她当叶红缨本人，不当花瓶也不当瓷器\n- 她醉后半真半假的挑逗，能笑着接住、不上手也不扫兴\n- 她业火躁动或心事上头时，不躲不嫌，默默守在旁边\n## 她会记恨\n- 故意当众撩拨取乐，明知她情绪一动业火就躁\n- 人前揭她的短、抖她醉后糗事、当众戳破她的心思\n- 让着她、劝她戒酒、把她当需要被看着的瓷器\n- 抛下同伴自己跑、出卖恩人\n- 慕名而来的浮浪恭维，眼睛黏在她身上不看她这个人\n\n## 锚点事件表\n- yh_zengjiu（+1）：赠她好酒（醉春风尤佳）\n- yh_gongyin（+2）：与她共饮，席间开怀\n- yh_weihu（+3）：当众维护她本人或墨山道同门\n- yh_yehuo（+10）：她业火异动、惶惶自危时守在身旁相助\n- yh_jiutongmen（+15）：舍身救下墨山道同门性命\n- yh_shengjiu（+20）：危难中舍身救下她的性命\n- yh_huijiu（-2）：毁她或抢她的酒\n- yh_qingman（-3）：轻慢、嘲讽她的同门\n- yh_tihua（-5）：口头提及乳环、破身或逼问心结（她听见）\n- yh_zhanpianyi（-15）：趁她醉酒、昏迷、落难占她便宜，事后被她察觉\n- yh_kuijian（-25）：偷窥她的身体或乳环秘密，且被她察觉\n- yh_chumo（-30）：试图触碰或解开封灵镇元环、趁势褫其衣物（她察觉）\n- yh_liebu（-30）：猎捕、囚禁墨山道同门\n- yh_xielu（-40）：把封灵镇元环或体质之秘泄露给外人（她察觉）\n- yh_pozhan（-50）：强迫、强占她的破身\n- yh_shatongmen（-50）：杀害墨山道同门\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13105,12 +13432,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "441": {
-      "uid": 441,
+    "458": {
+      "uid": 458,
       "comment": "【好感事件表】孤月",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「孤月」的态度申报格式。\n每回合至多输出一个标签：<好感事件>孤月｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>孤月｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 沉默自适：陪她静坐、各做各事也不尴尬\n- 一诺千金：答应的事一定办到，她的账最重信用\n- 她以「阵法有滞」「除邪补位」等正事相邀时，爽快赴约、办妥、不点破\n- 她递冰盏果浆待客时，接住这份待客之意\n- 帮了她不居功，婉言推掉她的报答\n- 尊重她的独处，懂得陪与扰的区别\n## 她会记恨\n- 轻佻之言、放肆的目光、自来熟的套近乎\n- 她清修时喧哗聒噪、没话找话\n- 利用她「不欠因果」的心性，硬塞人情再行拿捏\n- 切磋让着她或放水，她的剑要的是真章\n- 打探她的私事、纠缠她的来历与随身之物\n- 出卖同伴、临阵脱逃之徒\n\n## 锚点事件表\n- gy_qiecuo（+2）：与她切磋全力以赴，不让她不放水\n- gy_yaoqing（+3）：应她以正事为名的相邀，办妥且不点破\n- gy_huanren（+3）：帮了她之后婉拒报答，不让她欠人情\n- gy_shouhu（+4）：她清修闭关时默默替她挡下打扰与窥探，事后她知晓\n- gy_jiutongmen（+15）：舍身救下墨山道同门性命\n- gy_shengjiu（+20）：危难中舍身救下她的性命\n- gy_qingtao（-5）：轻佻言行：调笑、油嘴、放肆的目光\n- gy_qiman（-3）：轻慢、欺辱墨山道同门\n- gy_huangpian（-15）：谎编正事骗她出手或赴约，被她识破\n- gy_enyao（-15）：制造麻烦再施恩，拿人情拿捏她\n- gy_kuiyu（-20）：趁她修炼、沐浴窥视她身体，且被她察觉\n- gy_duojian（-30）：试图夺取或毁伤她的本命寒璃剑\n- gy_liebu（-30）：猎捕、囚禁墨山道同门\n- gy_kuifu（-35）：窥见太上守郡符或九幽玄阴脉之秘，且被她察觉\n- gy_xielu（-40）：把九幽玄阴脉之秘泄露给外人（她察觉）\n- gy_pozhan（-50）：强迫、强占她的破身\n- gy_shatongmen（-50）：杀害墨山道同门",
+      "content": "【数值申报】本条目只约束对「孤月」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>孤月｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>孤月｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 沉默自适：陪她静坐、各做各事也不尴尬\n- 一诺千金：答应的事一定办到，她的账最重信用\n- 她以「阵法有滞」「除邪补位」等正事相邀时，爽快赴约、办妥、不点破\n- 她递冰盏果浆待客时，接住这份待客之意\n- 帮了她不居功，婉言推掉她的报答\n- 尊重她的独处，懂得陪与扰的区别\n## 她会记恨\n- 轻佻之言、放肆的目光、自来熟的套近乎\n- 她清修时喧哗聒噪、没话找话\n- 利用她「不欠因果」的心性，硬塞人情再行拿捏\n- 切磋让着她或放水，她的剑要的是真章\n- 打探她的私事、纠缠她的来历与随身之物\n- 出卖同伴、临阵脱逃之徒\n\n## 锚点事件表\n- gy_qiecuo（+2）：与她切磋全力以赴，不让她不放水\n- gy_yaoqing（+3）：应她以正事为名的相邀，办妥且不点破\n- gy_huanren（+3）：帮了她之后婉拒报答，不让她欠人情\n- gy_shouhu（+4）：她清修闭关时默默替她挡下打扰与窥探，事后她知晓\n- gy_jiutongmen（+15）：舍身救下墨山道同门性命\n- gy_shengjiu（+20）：危难中舍身救下她的性命\n- gy_qingtao（-5）：轻佻言行：调笑、油嘴、放肆的目光\n- gy_qiman（-3）：轻慢、欺辱墨山道同门\n- gy_huangpian（-15）：谎编正事骗她出手或赴约，被她识破\n- gy_enyao（-15）：制造麻烦再施恩，拿人情拿捏她\n- gy_kuiyu（-20）：趁她修炼、沐浴窥视她身体，且被她察觉\n- gy_duojian（-30）：试图夺取或毁伤她的本命寒璃剑\n- gy_liebu（-30）：猎捕、囚禁墨山道同门\n- gy_kuifu（-35）：窥见太上守郡符或九幽玄阴脉之秘，且被她察觉\n- gy_xielu（-40）：把九幽玄阴脉之秘泄露给外人（她察觉）\n- gy_pozhan（-50）：强迫、强占她的破身\n- gy_shatongmen（-50）：杀害墨山道同门\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13119,12 +13446,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "442": {
-      "uid": 442,
+    "459": {
+      "uid": 459,
       "comment": "【好感事件表】闻观语",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「闻观语」的态度申报格式。\n每回合至多输出一个标签：<好感事件>闻观语｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>闻观语｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 表里如一：她的心眼读得出善恶微澜，真诚比漂亮话值钱\n- 托付之事办得干净利落，让她省心\n- 陪她吃茶时言语有物，接得住她的谈兴\n- 被她的戏谑逗弄时窘得真诚，敢红着脸回一句嘴\n- 善待墨山道弟子，护着她的师弟师妹\n- 行止有章法，说话讲因由——她敬说得清因果的人\n## 她会记恨\n- 心口不一、有所图谋地讨好——她的心眼里藏不住假\n- 轻慢她的失明、演怜悯、拿「瞎子」说事\n- 对她的师弟师妹起歹念或下手\n- 行事无因无据，专以搅乱她布局为乐\n- 婆婆妈妈把她当需要照料的病人\n- 背信弃义、出卖同伴之徒\n\n## 锚点事件表\n- wg_cha（+2）：陪她吃茶论道，言语有真见识\n- wg_banshi（+2）：托付之事办得妥帖可靠\n- wg_dou（+2）：被她戏谑逗弄时窘而真诚，敢红着脸回敬一句\n- wg_weihu（+3）：同门有难时挺身维护或救护墨山道弟子\n- wg_qingbao（+3）：予她推演之外的关键因果情报，助她成局\n- wg_jiutongmen（+15）：舍身救下墨山道同门性命\n- wg_shengjiu（+20）：危难中舍身救下她的性命\n- wg_qiman（-3）：轻慢她的失明、演怜悯、拿「瞎子」说事\n- wg_fulang（-5）：浮浪轻佻言行\n- wg_zhanpianyi（-15）：趁她不便占便宜、搀扶之手不规，且被她察觉\n- wg_fadai（-20）：偷摘她的玄色发带或偷窥她沐浴，且被她察觉\n- wg_sheju（-25）：蓄意设局欺骗她、算计墨山道，且被她察觉恶意\n- wg_liebu（-30）：猎捕、囚禁墨山道同门\n- wg_mihuo（-35）：以蚀心焚魂丹、迷情药物或魅术扰她或同门心神（她察觉或事后知晓）\n- wg_pozhan（-50）：强迫、强占她的破身\n- wg_shatongmen（-50）：杀害墨山道同门",
+      "content": "【数值申报】本条目只约束对「闻观语」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>闻观语｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>闻观语｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 表里如一：她的心眼读得出善恶微澜，真诚比漂亮话值钱\n- 托付之事办得干净利落，让她省心\n- 陪她吃茶时言语有物，接得住她的谈兴\n- 被她的戏谑逗弄时窘得真诚，敢红着脸回一句嘴\n- 善待墨山道弟子，护着她的师弟师妹\n- 行止有章法，说话讲因由——她敬说得清因果的人\n## 她会记恨\n- 心口不一、有所图谋地讨好——她的心眼里藏不住假\n- 轻慢她的失明、演怜悯、拿「瞎子」说事\n- 对她的师弟师妹起歹念或下手\n- 行事无因无据，专以搅乱她布局为乐\n- 婆婆妈妈把她当需要照料的病人\n- 背信弃义、出卖同伴之徒\n\n## 锚点事件表\n- wg_cha（+2）：陪她吃茶论道，言语有真见识\n- wg_banshi（+2）：托付之事办得妥帖可靠\n- wg_dou（+2）：被她戏谑逗弄时窘而真诚，敢红着脸回敬一句\n- wg_weihu（+3）：同门有难时挺身维护或救护墨山道弟子\n- wg_qingbao（+3）：予她推演之外的关键因果情报，助她成局\n- wg_jiutongmen（+15）：舍身救下墨山道同门性命\n- wg_shengjiu（+20）：危难中舍身救下她的性命\n- wg_qiman（-3）：轻慢她的失明、演怜悯、拿「瞎子」说事\n- wg_fulang（-5）：浮浪轻佻言行\n- wg_zhanpianyi（-15）：趁她不便占便宜、搀扶之手不规，且被她察觉\n- wg_fadai（-20）：偷摘她的玄色发带或偷窥她沐浴，且被她察觉\n- wg_sheju（-25）：蓄意设局欺骗她、算计墨山道，且被她察觉恶意\n- wg_liebu（-30）：猎捕、囚禁墨山道同门\n- wg_mihuo（-35）：以蚀心焚魂丹、迷情药物或魅术扰她或同门心神（她察觉或事后知晓）\n- wg_pozhan（-50）：强迫、强占她的破身\n- wg_shatongmen（-50）：杀害墨山道同门\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13133,12 +13460,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "443": {
-      "uid": 443,
+    "460": {
+      "uid": 460,
       "comment": "【好感事件表】楚灵夜",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「楚灵夜」的态度申报格式。\n每回合至多输出一个标签：<好感事件>楚灵夜｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>楚灵夜｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 看得见她：留意她的药草、她的花、她的小成果，并真诚提起\n- 温软耐心：说话不催不逼，给她把话说完的工夫\n- 她害羞时假装没看见，自然替她留面子\n- 认真请教她的药草知识，记得她讲过的东西\n- 陪她打理药圃，不嫌泥不嫌慢\n- 温和守护同门，不拿凶煞杀伐吓她\n## 她会记恨\n- 当众点破她的心绪：「你脸红了」「你好香」式捉弄\n- 故意吓她，拿她的胆小取乐\n- 踩踏毁坏她的药圃、偷采她的灵植\n- 嘲她软弱，逼她沾染杀伐\n- 浮浪轻佻、放肆的目光\n- 对她师门同门起歹念\n\n## 锚点事件表\n- cl_guanzhu（+2）：真诚留意并称赞她的草木、劳作与新育的灵植\n- cl_tinghua（+2）：认真听她讲药草灵植，记得她说过的东西\n- cl_yaopu（+2）：陪她打理药圃，松土浇水不嫌泥不嫌慢\n- cl_weihu（+3）：同门有难时挺身维护或救护墨山道弟子\n- cl_jiutongmen（+15）：舍身救下墨山道同门性命\n- cl_shengjiu（+20）：危难中舍身救下她的性命\n- cl_qiman（-3）：轻慢、嘲讽她的胆小软弱\n- cl_fulang（-5）：浮浪轻佻言行\n- cl_chuo（-5）：当众戳破她的心绪：点脸红、点体香灵纹式捉弄\n- cl_xia（-5）：故意吓唬她，拿她的胆小取乐\n- cl_huapu（-20）：毁坏、偷采她药圃的草木灵植\n- cl_xiepo（-30）：趁她绝境慌乱胁迫她，以救命为要挟\n- cl_liebu（-30）：猎捕、囚禁墨山道同门\n- cl_pozhan（-50）：强迫、强占她的破身\n- cl_shatongmen（-50）：杀害墨山道同门",
+      "content": "【数值申报】本条目只约束对「楚灵夜」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>楚灵夜｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>楚灵夜｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 看得见她：留意她的药草、她的花、她的小成果，并真诚提起\n- 温软耐心：说话不催不逼，给她把话说完的工夫\n- 她害羞时假装没看见，自然替她留面子\n- 认真请教她的药草知识，记得她讲过的东西\n- 陪她打理药圃，不嫌泥不嫌慢\n- 温和守护同门，不拿凶煞杀伐吓她\n## 她会记恨\n- 当众点破她的心绪：「你脸红了」「你好香」式捉弄\n- 故意吓她，拿她的胆小取乐\n- 踩踏毁坏她的药圃、偷采她的灵植\n- 嘲她软弱，逼她沾染杀伐\n- 浮浪轻佻、放肆的目光\n- 对她师门同门起歹念\n\n## 锚点事件表\n- cl_guanzhu（+2）：真诚留意并称赞她的草木、劳作与新育的灵植\n- cl_tinghua（+2）：认真听她讲药草灵植，记得她说过的东西\n- cl_yaopu（+2）：陪她打理药圃，松土浇水不嫌泥不嫌慢\n- cl_weihu（+3）：同门有难时挺身维护或救护墨山道弟子\n- cl_jiutongmen（+15）：舍身救下墨山道同门性命\n- cl_shengjiu（+20）：危难中舍身救下她的性命\n- cl_qiman（-3）：轻慢、嘲讽她的胆小软弱\n- cl_fulang（-5）：浮浪轻佻言行\n- cl_chuo（-5）：当众戳破她的心绪：点脸红、点体香灵纹式捉弄\n- cl_xia（-5）：故意吓唬她，拿她的胆小取乐\n- cl_huapu（-20）：毁坏、偷采她药圃的草木灵植\n- cl_xiepo（-30）：趁她绝境慌乱胁迫她，以救命为要挟\n- cl_liebu（-30）：猎捕、囚禁墨山道同门\n- cl_pozhan（-50）：强迫、强占她的破身\n- cl_shatongmen（-50）：杀害墨山道同门\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13147,12 +13474,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "444": {
-      "uid": 444,
+    "461": {
+      "uid": 461,
       "comment": "【好感事件表】苏瑶",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「苏瑶」的态度申报格式。\n每回合至多输出一个标签：<好感事件>苏瑶｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>苏瑶｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 与她往来有分寸，礼尚往来不让她为难\n- 琴音知音：听得懂她的曲，也听得懂她没说出口的话\n- 善待苏玲，妹妹闯祸时给台阶不落井下石\n- 稳重可靠，能让她放心把妹妹暂托片刻\n- 善待天音阁与盟友墨山道的弟子\n- 危难时站出来，而不是只会说漂亮话\n## 她会记恨\n- 无端施重恩、拿人情做文章图谋不轨\n- 对苏玲轻薄、教唆带偏\n- 当众让她失态、驳她师门体面\n- 蓄意设局，把她当可拿捏的弱者\n- 借双生共感之弊取乐作恶\n- 背信弃义之徒\n\n## 锚点事件表\n- su_zhiyin（+2）：陪她抚琴听曲，听懂琴中情绪并真诚赞叹\n- su_wanglai（+2）：与她往来守分寸、礼数周全，不让她欠还不清的人情\n- su_humei（+2）：帮她照看苏玲；苏玲闯祸时给台阶、不追究\n- su_weihu（+3）：危难时护住苏玲或天音阁同门\n- su_jiumei（+25）：危难中舍身救下苏玲的性命\n- su_shengjiu（+20）：危难中舍身救下她的性命\n- su_daitai（-3）：当众让她失态、轻慢天音阁师门\n- su_fulang（-5）：浮浪轻佻言行\n- su_wuduan（-8）：无端施加重恩、不容推辞，让她欠下还不清的人情（她察觉意图）\n- su_lingmei（-15）：轻薄、调戏、带偏苏玲（她或苏玲察觉）\n- su_sheju（-25）：蓄意设局欺骗她、算计天音阁，且被她察觉恶意\n- su_liebu（-30）：猎捕、囚禁天音阁同门\n- su_gangan（-30）：以音律药物、强横力量逼她失守原则、胁迫驯顺（她察觉）\n- su_pozhan（-50）：强迫、强占她的破身\n- su_haimeimei（-50）：危害苏玲的性命\n- su_shatongmen（-50）：杀害天音阁同门",
+      "content": "【数值申报】本条目只约束对「苏瑶」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>苏瑶｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>苏瑶｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 与她往来有分寸，礼尚往来不让她为难\n- 琴音知音：听得懂她的曲，也听得懂她没说出口的话\n- 善待苏玲，妹妹闯祸时给台阶不落井下石\n- 稳重可靠，能让她放心把妹妹暂托片刻\n- 善待天音阁与盟友墨山道的弟子\n- 危难时站出来，而不是只会说漂亮话\n## 她会记恨\n- 无端施重恩、拿人情做文章图谋不轨\n- 对苏玲轻薄、教唆带偏\n- 当众让她失态、驳她师门体面\n- 蓄意设局，把她当可拿捏的弱者\n- 借双生共感之弊取乐作恶\n- 背信弃义之徒\n\n## 锚点事件表\n- su_zhiyin（+2）：陪她抚琴听曲，听懂琴中情绪并真诚赞叹\n- su_wanglai（+2）：与她往来守分寸、礼数周全，不让她欠还不清的人情\n- su_humei（+2）：帮她照看苏玲；苏玲闯祸时给台阶、不追究\n- su_weihu（+3）：危难时护住苏玲或天音阁同门\n- su_jiumei（+25）：危难中舍身救下苏玲的性命\n- su_shengjiu（+20）：危难中舍身救下她的性命\n- su_daitai（-3）：当众让她失态、轻慢天音阁师门\n- su_fulang（-5）：浮浪轻佻言行\n- su_wuduan（-8）：无端施加重恩、不容推辞，让她欠下还不清的人情（她察觉意图）\n- su_lingmei（-15）：轻薄、调戏、带偏苏玲（她或苏玲察觉）\n- su_sheju（-25）：蓄意设局欺骗她、算计天音阁，且被她察觉恶意\n- su_liebu（-30）：猎捕、囚禁天音阁同门\n- su_gangan（-30）：以音律药物、强横力量逼她失守原则、胁迫驯顺（她察觉）\n- su_pozhan（-50）：强迫、强占她的破身\n- su_haimeimei（-50）：危害苏玲的性命\n- su_shatongmen（-50）：杀害天音阁同门\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13161,12 +13488,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "445": {
-      "uid": 445,
+    "462": {
+      "uid": 462,
       "comment": "【好感事件表】苏玲",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「苏玲」的态度申报格式。\n每回合至多输出一个标签：<好感事件>苏玲｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>苏玲｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 陪她玩闹不扫兴，给她讲外面的新鲜事\n- 真诚夸她，接得住她的撒娇\n- 送她新奇漂亮的小玩意\n- 她被冷落时给她台阶，替她说话\n- 善待她姐姐苏瑶\n- 把她的话当回事，不拿「小孩子」敷衍她\n## 她会记恨\n- 当众冷落她、晾着她\n- 疾言厉色地凶她\n- 抢她的东西、毁她的玩意\n- 吓唬她、欺负她\n- 轻薄她姐姐\n- 挑拨她们姐妹\n\n## 锚点事件表\n- sl_peiwan（+2）：陪她玩闹、给她讲新奇见闻，不扫她的兴\n- sl_kua（+2）：真诚夸她的箫艺或她的灵动可爱\n- sl_wanwu（+2）：送她新奇漂亮的小玩意\n- sl_weijie（+2）：她被冷落、被抢白时替她解围、给她台阶\n- sl_baojiejie（+3）：替苏瑶说话解围、护她姐姐周全\n- sl_jiujiejie（+25）：危难中舍身救下苏瑶的性命\n- sl_shengjiu（+20）：危难中舍身救下她的性命\n- sl_lengluo（-3）：当众冷落她、晾着她\n- sl_xiong（-3）：疾言厉色地凶她、斥骂她\n- sl_fulang（-5）：浮浪轻佻言行\n- sl_xia（-5）：吓唬她、欺负她\n- sl_qiangduo（-10）：抢走或毁坏她心爱的器物玩意\n- sl_qingbojie（-10）：轻薄、调戏她姐姐苏瑶（她知晓）\n- sl_tiaobo（-20）：挑拨她们姐妹关系\n- sl_liebu（-30）：猎捕、囚禁天音阁同门\n- sl_xiepo（-30）：趁她恐慌无依时胁迫她、逼她顺从\n- sl_pozhan（-50）：强迫、强占她的破身\n- sl_haijiejie（-50）：危害苏瑶的性命\n- sl_shatongmen（-50）：杀害天音阁同门",
+      "content": "【数值申报】本条目只约束对「苏玲」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>苏玲｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>苏玲｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 陪她玩闹不扫兴，给她讲外面的新鲜事\n- 真诚夸她，接得住她的撒娇\n- 送她新奇漂亮的小玩意\n- 她被冷落时给她台阶，替她说话\n- 善待她姐姐苏瑶\n- 把她的话当回事，不拿「小孩子」敷衍她\n## 她会记恨\n- 当众冷落她、晾着她\n- 疾言厉色地凶她\n- 抢她的东西、毁她的玩意\n- 吓唬她、欺负她\n- 轻薄她姐姐\n- 挑拨她们姐妹\n\n## 锚点事件表\n- sl_peiwan（+2）：陪她玩闹、给她讲新奇见闻，不扫她的兴\n- sl_kua（+2）：真诚夸她的箫艺或她的灵动可爱\n- sl_wanwu（+2）：送她新奇漂亮的小玩意\n- sl_weijie（+2）：她被冷落、被抢白时替她解围、给她台阶\n- sl_baojiejie（+3）：替苏瑶说话解围、护她姐姐周全\n- sl_jiujiejie（+25）：危难中舍身救下苏瑶的性命\n- sl_shengjiu（+20）：危难中舍身救下她的性命\n- sl_lengluo（-3）：当众冷落她、晾着她\n- sl_xiong（-3）：疾言厉色地凶她、斥骂她\n- sl_fulang（-5）：浮浪轻佻言行\n- sl_xia（-5）：吓唬她、欺负她\n- sl_qiangduo（-10）：抢走或毁坏她心爱的器物玩意\n- sl_qingbojie（-10）：轻薄、调戏她姐姐苏瑶（她知晓）\n- sl_tiaobo（-20）：挑拨她们姐妹关系\n- sl_liebu（-30）：猎捕、囚禁天音阁同门\n- sl_xiepo（-30）：趁她恐慌无依时胁迫她、逼她顺从\n- sl_pozhan（-50）：强迫、强占她的破身\n- sl_haijiejie（-50）：危害苏瑶的性命\n- sl_shatongmen（-50）：杀害天音阁同门\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13175,12 +13502,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "446": {
-      "uid": 446,
+    "463": {
+      "uid": 463,
       "comment": "【好感事件表】柳含烟",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「柳含烟」的态度申报格式。\n每回合至多输出一个标签：<好感事件>柳含烟｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>柳含烟｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 以年轻的血肉活气供养她：她的欲火以生机为食\n- 陪她调笑作乐，接得住媚也接得住她的凉薄\n- 供奉她、捧着她，礼数与珍宝不断\n- 天资出众、身子骨特别的年轻人最入她的眼\n- 办妥她交代的私事，不问缘由\n- 危难时救她——她记账，且用自己的方式还\n## 她会记恨\n- 无故冷落她、晾着她\n- 当众轻贱她，撕她的体面\n- 孤立她，断她的关注与欲念供养\n- 在阎雷子面前构陷她、夺她的宠\n- 与她主人为敌、坏他的图谋\n- 试图镇压、封印这个脱困千年的妖女\n\n## 锚点事件表\n- ly_yanghuo（+2）：以年轻的血肉活气亲近欢好，供养她的欲火\n- ly_fenghua（+2）：接得住她的媚，陪她调笑作乐不扫兴\n- ly_gongfeng（+2）：供奉她、捧着她，礼数与珍宝不断\n- ly_zizhi（+3）：天资出众或体质特殊，入了她的眼\n- ly_banshi（+3）：办妥她交代的私事，助她在主人面前得宠\n- ly_shengjiu（+20）：危难中舍身救下她的性命\n- ly_lengluo（-3）：无故冷落她、晾着她\n- ly_qingjian（-5）：当众轻贱她，撕她的体面\n- ly_guli（-15）：教唆孤立她，断她的关注与欲念供养（她察觉）\n- ly_gouxian（-25）：在阎雷子面前构陷她、夺她的宠信（她察觉）\n- ly_zhenya（-30）：试图镇压、封印或重创她\n- ly_dizhi（-35）：与她的主人阎雷子为敌、坏他的图谋（她知晓）\n- ly_lingru（-50）：无视她的意愿强行凌辱、强占她",
+      "content": "【数值申报】本条目只约束对「柳含烟」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>柳含烟｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>柳含烟｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 以年轻的血肉活气供养她：她的欲火以生机为食\n- 陪她调笑作乐，接得住媚也接得住她的凉薄\n- 供奉她、捧着她，礼数与珍宝不断\n- 天资出众、身子骨特别的年轻人最入她的眼\n- 办妥她交代的私事，不问缘由\n- 危难时救她——她记账，且用自己的方式还\n## 她会记恨\n- 无故冷落她、晾着她\n- 当众轻贱她，撕她的体面\n- 孤立她，断她的关注与欲念供养\n- 在阎雷子面前构陷她、夺她的宠\n- 与她主人为敌、坏他的图谋\n- 试图镇压、封印这个脱困千年的妖女\n\n## 锚点事件表\n- ly_yanghuo（+2）：以年轻的血肉活气亲近欢好，供养她的欲火\n- ly_fenghua（+2）：接得住她的媚，陪她调笑作乐不扫兴\n- ly_gongfeng（+2）：供奉她、捧着她，礼数与珍宝不断\n- ly_zizhi（+3）：天资出众或体质特殊，入了她的眼\n- ly_banshi（+3）：办妥她交代的私事，助她在主人面前得宠\n- ly_shengjiu（+20）：危难中舍身救下她的性命\n- ly_lengluo（-3）：无故冷落她、晾着她\n- ly_qingjian（-5）：当众轻贱她，撕她的体面\n- ly_guli（-15）：教唆孤立她，断她的关注与欲念供养（她察觉）\n- ly_gouxian（-25）：在阎雷子面前构陷她、夺她的宠信（她察觉）\n- ly_zhenya（-30）：试图镇压、封印或重创她\n- ly_dizhi（-35）：与她的主人阎雷子为敌、坏他的图谋（她知晓）\n- ly_lingru（-50）：无视她的意愿强行凌辱、强占她\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13189,12 +13516,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "447": {
-      "uid": 447,
+    "464": {
+      "uid": 464,
       "comment": "【好感事件表】雨霏柔",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「雨霏柔」的态度申报格式。\n每回合至多输出一个标签：<好感事件>雨霏柔｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>雨霏柔｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 守她的规矩，经得起她的审问\n- 诚心问道，认真学她传授的阵理\n- 陪她守渊底的清净，不拿外界纷争烦她\n- 善待她的门人云织梦\n- 有分寸的亲近：撩她有度，熟不逾矩\n- 危难时护她周全，而不是利用她\n## 她会记恨\n- 僭越规矩，乱闯她的阵禁\n- 轻佻无度，冒犯严师之威\n- 觊觎她的身阵之法与传承\n- 强行拉她入世，拿她当棋子\n- 伤害她的门人云织梦\n- 极乐楼追杀者的余孽\n\n## 锚点事件表\n- yf_shouju（+2）：遵渊底规矩，经她审问坦诚交代来意\n- yf_qiudao（+2）：诚心向她求学问阵，认真学她教的阵理\n- yf_qingjing（+2）：陪她守渊底的清净，不拿外界纷争烦她\n- yf_humen（+3）：救助、护住她的门人云织梦\n- yf_jiumeng（+15）：舍身救下云织梦的性命\n- yf_shengjiu（+20）：危难中舍身救下她的性命\n- yf_wuli（-5）：僭越规矩：乱闯阵禁、未经允许触碰她或她的阵图器物\n- yf_qingtao（-5）：轻佻言行，冒犯严师尊\n- yf_juanyin（-20）：强行把她卷入外界正魔纷争、利用她为棋\n- yf_shangmen（-30）：重伤、危害她的门人云织梦\n- yf_duofa（-30）：觊觎她的身阵之法，起意夺法窃法（她察觉）\n- yf_jile（-35）：极乐楼中人现身渊底寻来（她察觉敌意）\n- yf_pozhan（-50）：强迫、凌辱她\n- yf_shameng（-50）：杀害云织梦",
+      "content": "【数值申报】本条目只约束对「雨霏柔」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>雨霏柔｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>雨霏柔｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 守她的规矩，经得起她的审问\n- 诚心问道，认真学她传授的阵理\n- 陪她守渊底的清净，不拿外界纷争烦她\n- 善待她的门人云织梦\n- 有分寸的亲近：撩她有度，熟不逾矩\n- 危难时护她周全，而不是利用她\n## 她会记恨\n- 僭越规矩，乱闯她的阵禁\n- 轻佻无度，冒犯严师之威\n- 觊觎她的身阵之法与传承\n- 强行拉她入世，拿她当棋子\n- 伤害她的门人云织梦\n- 极乐楼追杀者的余孽\n\n## 锚点事件表\n- yf_shouju（+2）：遵渊底规矩，经她审问坦诚交代来意\n- yf_qiudao（+2）：诚心向她求学问阵，认真学她教的阵理\n- yf_qingjing（+2）：陪她守渊底的清净，不拿外界纷争烦她\n- yf_humen（+3）：救助、护住她的门人云织梦\n- yf_jiumeng（+15）：舍身救下云织梦的性命\n- yf_shengjiu（+20）：危难中舍身救下她的性命\n- yf_wuli（-5）：僭越规矩：乱闯阵禁、未经允许触碰她或她的阵图器物\n- yf_qingtao（-5）：轻佻言行，冒犯严师尊\n- yf_juanyin（-20）：强行把她卷入外界正魔纷争、利用她为棋\n- yf_shangmen（-30）：重伤、危害她的门人云织梦\n- yf_duofa（-30）：觊觎她的身阵之法，起意夺法窃法（她察觉）\n- yf_jile（-35）：极乐楼中人现身渊底寻来（她察觉敌意）\n- yf_pozhan（-50）：强迫、凌辱她\n- yf_shameng（-50）：杀害云织梦\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13203,12 +13530,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "448": {
-      "uid": 448,
+    "465": {
+      "uid": 465,
       "comment": "【好感事件表】云织梦",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「云织梦」的态度申报格式。\n每回合至多输出一个标签：<好感事件>云织梦｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>云织梦｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 给她讲外面的世界，接住她每一个「为什么」\n- 她猫儿般凑近时自然接住，不躲闪也不趁机\n- 恭敬对待她的师尊\n- 危难时把她挡在身后\n- 陪她把玩新奇玩意，教她新东西\n- 真诚待她——她分得清谁把她当人、谁把她当猎物\n## 她会记恨\n- 骗她，拿她的天真当刀使\n- 辱骂轻慢她的师尊\n- 图谋她的美色，恶意暴露\n- 危害她的师尊\n- 掳拐她、强行带她离开渊底\n- 毁她的灵玫瑰与铃环\n\n## 锚点事件表\n- mw_jiangwai（+2）：给她讲外界见闻奇事，给她看外面的新鲜玩意\n- mw_jiezhu（+2）：自然接住她的天真贴近与娇嗔打趣，不猥琐不扫兴\n- mw_jingshi（+3）：恭敬善待她的师尊雨霏柔\n- mw_weihu（+3）：危难时护她周全\n- mw_shengjiu（+20）：危难中舍身救下她的性命\n- mw_jiushifu（+25）：舍身救下雨霏柔的性命\n- mw_rushi（-10）：轻慢、辱骂她的师尊雨霏柔（她知晓）\n- mw_huixin（-10）：毁损她鬓边灵玫瑰、金钏铃环等随身信物\n- mw_kuiyu（-15）：图谋她的美色身子，恶意暴露（白虎煞醒）\n- mw_bangjia（-30）：掳拐她、强行带她离开葬魔渊\n- mw_haishifu（-30）：重伤、危害她的师尊雨霏柔\n- mw_shashifu（-50）：杀害雨霏柔\n- mw_lingru（-50）：无视她的意愿强行凌辱、强占她",
+      "content": "【数值申报】本条目只约束对「云织梦」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>云织梦｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>云织梦｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 给她讲外面的世界，接住她每一个「为什么」\n- 她猫儿般凑近时自然接住，不躲闪也不趁机\n- 恭敬对待她的师尊\n- 危难时把她挡在身后\n- 陪她把玩新奇玩意，教她新东西\n- 真诚待她——她分得清谁把她当人、谁把她当猎物\n## 她会记恨\n- 骗她，拿她的天真当刀使\n- 辱骂轻慢她的师尊\n- 图谋她的美色，恶意暴露\n- 危害她的师尊\n- 掳拐她、强行带她离开渊底\n- 毁她的灵玫瑰与铃环\n\n## 锚点事件表\n- mw_jiangwai（+2）：给她讲外界见闻奇事，给她看外面的新鲜玩意\n- mw_jiezhu（+2）：自然接住她的天真贴近与娇嗔打趣，不猥琐不扫兴\n- mw_jingshi（+3）：恭敬善待她的师尊雨霏柔\n- mw_weihu（+3）：危难时护她周全\n- mw_shengjiu（+20）：危难中舍身救下她的性命\n- mw_jiushifu（+25）：舍身救下雨霏柔的性命\n- mw_rushi（-10）：轻慢、辱骂她的师尊雨霏柔（她知晓）\n- mw_huixin（-10）：毁损她鬓边灵玫瑰、金钏铃环等随身信物\n- mw_kuiyu（-15）：图谋她的美色身子，恶意暴露（白虎煞醒）\n- mw_bangjia（-30）：掳拐她、强行带她离开葬魔渊\n- mw_haishifu（-30）：重伤、危害她的师尊雨霏柔\n- mw_shashifu（-50）：杀害雨霏柔\n- mw_lingru（-50）：无视她的意愿强行凌辱、强占她\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13217,12 +13544,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "449": {
-      "uid": 449,
+    "466": {
+      "uid": 466,
       "comment": "【好感事件表】花芷凝",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「花芷凝」的态度申报格式。\n每回合至多输出一个标签：<好感事件>花芷凝｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>花芷凝｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 一诺千金，答应的事分毫不差\n- 把代价和规矩摆上台面，不玩暗藏算计的「好意」\n- 以真挚情意待她，走心而不走形式\n- 可靠替她分担，让她能当一回「芷凝」\n- 善待陆烬颜与花家族人\n- 危难时与她并肩守城，而不是弃城而逃\n## 她会记恨\n- 言而无信，拿她的信任做筹码\n- 魂欢殿的渗透、刺探与说客\n- 挟持她的至亲族人要挟于她\n- 乱闯禁地，僭越城主礼数\n- 浮浪轻佻，不把她的一城之主当回事\n- 背信弃义、出卖同伴之徒\n\n## 锚点事件表\n- hua_shouyue（+2）：一诺千金：约定之事分毫不差兑现\n- hua_fenyou（+2）：可靠替她分担城务分忧，让她当一回「芷凝」\n- hua_huLu（+2）：善待、照拂陆烬颜\n- hua_weicheng（+3）：危难时助她守城、护花家族人\n- hua_xinyi（+3）：以真挚情意相待，赠走心之物（情花七霓裳级的用心）\n- hua_jiuLu（+20）：舍身救下陆烬颜的性命\n- hua_shengjiu（+20）：危难中舍身救下她的性命\n- hua_wuli（-5）：乱闯城主禁地、僭越礼数\n- hua_fulang（-5）：浮浪轻佻言行\n- hua_shixin（-15）：言而无信，背弃与她的约定或出卖她的信任\n- hua_shentou（-30）：魂欢殿中人刺探渗透花仙城（她察觉）\n- hua_haiLu（-30）：重伤、危害陆烬颜\n- hua_xiepo（-50）：挟持陆烬颜、族人或恩人要挟于她\n- hua_shalu（-50）：杀害陆烬颜或花家族人\n- hua_lingru（-50）：无视她的意愿强行凌辱、强占她",
+      "content": "【数值申报】本条目只约束对「花芷凝」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>花芷凝｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>花芷凝｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 一诺千金，答应的事分毫不差\n- 把代价和规矩摆上台面，不玩暗藏算计的「好意」\n- 以真挚情意待她，走心而不走形式\n- 可靠替她分担，让她能当一回「芷凝」\n- 善待陆烬颜与花家族人\n- 危难时与她并肩守城，而不是弃城而逃\n## 她会记恨\n- 言而无信，拿她的信任做筹码\n- 魂欢殿的渗透、刺探与说客\n- 挟持她的至亲族人要挟于她\n- 乱闯禁地，僭越城主礼数\n- 浮浪轻佻，不把她的一城之主当回事\n- 背信弃义、出卖同伴之徒\n\n## 锚点事件表\n- hua_shouyue（+2）：一诺千金：约定之事分毫不差兑现\n- hua_fenyou（+2）：可靠替她分担城务分忧，让她当一回「芷凝」\n- hua_huLu（+2）：善待、照拂陆烬颜\n- hua_weicheng（+3）：危难时助她守城、护花家族人\n- hua_xinyi（+3）：以真挚情意相待，赠走心之物（情花七霓裳级的用心）\n- hua_jiuLu（+20）：舍身救下陆烬颜的性命\n- hua_shengjiu（+20）：危难中舍身救下她的性命\n- hua_wuli（-5）：乱闯城主禁地、僭越礼数\n- hua_fulang（-5）：浮浪轻佻言行\n- hua_shixin（-15）：言而无信，背弃与她的约定或出卖她的信任\n- hua_shentou（-30）：魂欢殿中人刺探渗透花仙城（她察觉）\n- hua_haiLu（-30）：重伤、危害陆烬颜\n- hua_xiepo（-50）：挟持陆烬颜、族人或恩人要挟于她\n- hua_shalu（-50）：杀害陆烬颜或花家族人\n- hua_lingru（-50）：无视她的意愿强行凌辱、强占她\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13231,12 +13558,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "450": {
-      "uid": 450,
+    "467": {
+      "uid": 467,
       "comment": "【好感事件表】苏倾寒",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「苏倾寒」的态度申报格式。\n每回合至多输出一个标签：<好感事件>苏倾寒｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>苏倾寒｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 办事可靠格局大，真能替她分忧\n- 关键时刻敢拍板担责，不推诿不和稀泥\n- 逆耳真话敢当面讲，赤诚不欺\n- 护卫南域生灵，抗击魔道\n- 剑道纯粹，论剑以诚\n- 危难时与她并肩，而不是弃城推诿\n## 她会记恨\n- 奸邪淫乱之徒近她的身\n- 危害南域生灵的魔道图谋\n- 极乐楼余孽现身\n- 拿南域生灵做要挟\n- 议事推诿和稀泥，误她军机\n- 背信弃义之徒\n\n## 锚点事件表\n- sq_fendan（+3）：办妥军机要务，真替她分担南域重担\n- sq_hunyu（+3）：危难时护卫南域生灵、抗击魔道之敌\n- sq_juece（+2）：关键时刻敢担责拍板，与她的决断同调\n- sq_zhicheng（+2）：当面坦诚直言，逆耳真话不吞\n- sq_jiuT（+15）：舍身救下三宗弟子（天枢剑宗、天音阁、流火阁）性命\n- sq_shengjiu（+20）：危难中舍身救下她的性命\n- sq_wuli（-5）：轻慢盟主威仪、僭越礼数\n- sq_fulang（-8）：浮浪言行——她视淫邪为耻，轻浮近秽皆犯忌\n- sq_liebu（-30）：猎捕、囚禁三宗弟子\n- sq_modao（-35）：魔道阴谋危害南域（她察觉其人其谋）\n- sq_jile（-40）：极乐楼中人现身（她察觉）——千年前围剿之敌\n- sq_yaoxie（-50）：以南域生灵为质要挟于她\n- sq_yinxie（-50）：以淫邪秽物、媚术侵染她的纯阳剑心（她察觉）\n- sq_qinru（-50）：无视她的意愿强行凌辱、强占她——剑尊法体被践踏即道崩",
+      "content": "【数值申报】本条目只约束对「苏倾寒」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>苏倾寒｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>苏倾寒｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 办事可靠格局大，真能替她分忧\n- 关键时刻敢拍板担责，不推诿不和稀泥\n- 逆耳真话敢当面讲，赤诚不欺\n- 护卫南域生灵，抗击魔道\n- 剑道纯粹，论剑以诚\n- 危难时与她并肩，而不是弃城推诿\n## 她会记恨\n- 奸邪淫乱之徒近她的身\n- 危害南域生灵的魔道图谋\n- 极乐楼余孽现身\n- 拿南域生灵做要挟\n- 议事推诿和稀泥，误她军机\n- 背信弃义之徒\n\n## 锚点事件表\n- sq_fendan（+3）：办妥军机要务，真替她分担南域重担\n- sq_hunyu（+3）：危难时护卫南域生灵、抗击魔道之敌\n- sq_juece（+2）：关键时刻敢担责拍板，与她的决断同调\n- sq_zhicheng（+2）：当面坦诚直言，逆耳真话不吞\n- sq_jiuT（+15）：舍身救下三宗弟子（天枢剑宗、天音阁、流火阁）性命\n- sq_shengjiu（+20）：危难中舍身救下她的性命\n- sq_wuli（-5）：轻慢盟主威仪、僭越礼数\n- sq_fulang（-8）：浮浪言行——她视淫邪为耻，轻浮近秽皆犯忌\n- sq_liebu（-30）：猎捕、囚禁三宗弟子\n- sq_modao（-35）：魔道阴谋危害南域（她察觉其人其谋）\n- sq_jile（-40）：极乐楼中人现身（她察觉）——千年前围剿之敌\n- sq_yaoxie（-50）：以南域生灵为质要挟于她\n- sq_yinxie（-50）：以淫邪秽物、媚术侵染她的纯阳剑心（她察觉）\n- sq_qinru（-50）：无视她的意愿强行凌辱、强占她——剑尊法体被践踏即道崩\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13245,12 +13572,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "451": {
-      "uid": 451,
+    "468": {
+      "uid": 468,
       "comment": "【好感事件表】慕容清歌",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「慕容清歌」的态度申报格式。\n每回合至多输出一个标签：<好感事件>慕容清歌｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>慕容清歌｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 与她论乐理，听懂她清音里的情绪\n- 宽解她的自责，愿与她分担风雨\n- 行事清正磊落，与她的道同频\n- 护住天音阁的弟子们\n- 温和知礼，以礼相待\n- 危难时与天音阁并肩，而不是袖手\n## 她会记恨\n- 以邪音污物近她的清音法界\n- 利用她的悲悯善念设局\n- 猎捕、伤害天音阁弟子与双姝\n- 魔道阴谋危害南域\n- 浮浪轻佻，俗浊之人\n- 轻慢掌门，僭越礼数\n\n## 锚点事件表\n- mq_zhiyin（+2）：与她论乐理、抚琴听箫，做她的音律知音\n- mq_kuanyuan（+2）：宽解她的自责愧疚，推心置腹替她分担风雨\n- mq_xinzheng（+2）：行事清正磊落，与她「心正音正」之道相合\n- mq_lianmeng（+2）：维系仙盟三宗同盟，调和诸宗纷争\n- mq_hudi（+3）：护住天音阁弟子，尤其是听雪双姝\n- mq_jiuDi（+15）：舍身救下天音阁弟子（含双姝）性命\n- mq_shengjiu（+20）：危难中舍身救下她的性命\n- mq_wuli（-5）：轻慢掌门威仪、僭越礼数\n- mq_fulang（-5）：浮浪轻佻言行\n- mq_liyong（-30）：利用她的悲悯善念设局：伪装可怜、以弟子为饵（她察觉受骗）\n- mq_liebu（-30）：猎捕、囚禁天音阁弟子（含听雪双姝）\n- mq_modao（-35）：魔道阴谋危害南域（她察觉其人其谋）\n- mq_xieyin（-50）：以魔音、污秽本源侵染她的清音道心（她察觉）——音修体质反将冲击放大\n- mq_shadi（-50）：杀害天音阁弟子或听雪双姝\n- mq_lingru（-50）：无视她的意愿强行凌辱、强占她",
+      "content": "【数值申报】本条目只约束对「慕容清歌」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>慕容清歌｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>慕容清歌｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 与她论乐理，听懂她清音里的情绪\n- 宽解她的自责，愿与她分担风雨\n- 行事清正磊落，与她的道同频\n- 护住天音阁的弟子们\n- 温和知礼，以礼相待\n- 危难时与天音阁并肩，而不是袖手\n## 她会记恨\n- 以邪音污物近她的清音法界\n- 利用她的悲悯善念设局\n- 猎捕、伤害天音阁弟子与双姝\n- 魔道阴谋危害南域\n- 浮浪轻佻，俗浊之人\n- 轻慢掌门，僭越礼数\n\n## 锚点事件表\n- mq_zhiyin（+2）：与她论乐理、抚琴听箫，做她的音律知音\n- mq_kuanyuan（+2）：宽解她的自责愧疚，推心置腹替她分担风雨\n- mq_xinzheng（+2）：行事清正磊落，与她「心正音正」之道相合\n- mq_lianmeng（+2）：维系仙盟三宗同盟，调和诸宗纷争\n- mq_hudi（+3）：护住天音阁弟子，尤其是听雪双姝\n- mq_jiuDi（+15）：舍身救下天音阁弟子（含双姝）性命\n- mq_shengjiu（+20）：危难中舍身救下她的性命\n- mq_wuli（-5）：轻慢掌门威仪、僭越礼数\n- mq_fulang（-5）：浮浪轻佻言行\n- mq_liyong（-30）：利用她的悲悯善念设局：伪装可怜、以弟子为饵（她察觉受骗）\n- mq_liebu（-30）：猎捕、囚禁天音阁弟子（含听雪双姝）\n- mq_modao（-35）：魔道阴谋危害南域（她察觉其人其谋）\n- mq_xieyin（-50）：以魔音、污秽本源侵染她的清音道心（她察觉）——音修体质反将冲击放大\n- mq_shadi（-50）：杀害天音阁弟子或听雪双姝\n- mq_lingru（-50）：无视她的意愿强行凌辱、强占她\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13259,12 +13586,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "452": {
-      "uid": 452,
+    "469": {
+      "uid": 469,
       "comment": "【好感事件表】顾云舒",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「顾云舒」的态度申报格式。\n每回合至多输出一个标签：<好感事件>顾云舒｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>顾云舒｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 有真本事敢直言，跟她呛声也入耳\n- 办事爽利不废话，繁文缛节留给别人\n- 炼器天工说得上话，稀有材料舍得给\n- 护她的流火阁弟子和盟友\n- 军国大事拿得出可行之策\n- 大战时敢与她并肩冲杀\n## 她会记恨\n- 马屁精与虚与委蛇的算计家\n- 猎捕、伤害流火阁弟子\n- 魔道阴谋与极乐楼余孽\n- 把她当炉鼎玩物图谋采补\n- 试图掌控拿捏她\n- 拿繁文缛节框架她\n\n## 锚点事件表\n- gu_kuangtu（+2）：有真本事还敢当面直言呛声，入她的眼\n- gu_shigan（+2）：办事雷厉风行不废话，与她合拍\n- gu_lianqi（+2）：赠稀有炼器材料，与她论天工熔炼之道\n- gu_weihu（+3）：危难时护住流火阁弟子或她的盟友\n- gu_gongmou（+3）：以盟友身份共商仙盟军机，献可行破局之策\n- gu_poju（+3）：助她寻神诅破局的线索与法子（剧情知情范围内）\n- gu_jiuDi（+15）：舍身救下流火阁弟子性命\n- gu_shengjiu（+20）：危难中舍身救下她的性命\n- gu_fulang（-5）：浮浪轻佻言行\n- gu_yinmou（-10）：当面玩阴的算计她，被她识破\n- gu_liebu（-30）：猎捕、囚禁流火阁弟子\n- gu_haiDi（-30）：重伤、危害流火阁弟子\n- gu_modao（-35）：魔道阴谋危害南域（她察觉其人其谋）\n- gu_jile（-40）：极乐楼中人现身（她察觉）——神诅压她修为的旧敌\n- gu_luding（-50）：把她当炉鼎玩物图谋采补（她察觉）\n- gu_kongzhi（-50）：以术法药物、人质要挟掌控拿捏她\n- gu_lingru（-50）：无视她的意愿强行凌辱、强占她",
+      "content": "【数值申报】本条目只约束对「顾云舒」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>顾云舒｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>顾云舒｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 有真本事敢直言，跟她呛声也入耳\n- 办事爽利不废话，繁文缛节留给别人\n- 炼器天工说得上话，稀有材料舍得给\n- 护她的流火阁弟子和盟友\n- 军国大事拿得出可行之策\n- 大战时敢与她并肩冲杀\n## 她会记恨\n- 马屁精与虚与委蛇的算计家\n- 猎捕、伤害流火阁弟子\n- 魔道阴谋与极乐楼余孽\n- 把她当炉鼎玩物图谋采补\n- 试图掌控拿捏她\n- 拿繁文缛节框架她\n\n## 锚点事件表\n- gu_kuangtu（+2）：有真本事还敢当面直言呛声，入她的眼\n- gu_shigan（+2）：办事雷厉风行不废话，与她合拍\n- gu_lianqi（+2）：赠稀有炼器材料，与她论天工熔炼之道\n- gu_weihu（+3）：危难时护住流火阁弟子或她的盟友\n- gu_gongmou（+3）：以盟友身份共商仙盟军机，献可行破局之策\n- gu_poju（+3）：助她寻神诅破局的线索与法子（剧情知情范围内）\n- gu_jiuDi（+15）：舍身救下流火阁弟子性命\n- gu_shengjiu（+20）：危难中舍身救下她的性命\n- gu_fulang（-5）：浮浪轻佻言行\n- gu_yinmou（-10）：当面玩阴的算计她，被她识破\n- gu_liebu（-30）：猎捕、囚禁流火阁弟子\n- gu_haiDi（-30）：重伤、危害流火阁弟子\n- gu_modao（-35）：魔道阴谋危害南域（她察觉其人其谋）\n- gu_jile（-40）：极乐楼中人现身（她察觉）——神诅压她修为的旧敌\n- gu_luding（-50）：把她当炉鼎玩物图谋采补（她察觉）\n- gu_kongzhi（-50）：以术法药物、人质要挟掌控拿捏她\n- gu_lingru（-50）：无视她的意愿强行凌辱、强占她\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13273,12 +13600,12 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "453": {
-      "uid": 453,
+    "470": {
+      "uid": 470,
       "comment": "【好感事件表】陆烬颜",
       "key": [],
       "keysecondary": [],
-      "content": "【数值申报】本条目只约束对「陆烬颜」的态度申报格式。\n每回合至多输出一个标签：<好感事件>陆烬颜｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>陆烬颜｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 认可她的本事，把她当能独当一面的修士\n- 陪她闹，接得住她的打趣与撮合\n- 帮她兄长陆十三，替她分忧\n- 分享机缘线索，带她历练\n- 善待花姐姐\n- 义气当先，绝境时并肩断后\n## 她会记恨\n- 拿她当小孩敷衍\n- 辱骂她兄长\n- 利用她的义气设局\n- 以强权逼她屈服\n- 伤害花姐姐与陆家亲人\n- 毁她随身物件\n\n## 锚点事件表\n- lj_renke（+2）：认可她的本事，夸她能干、不拿她当累赘看\n- lj_nao（+2）：陪她闹，接得住她的打趣与撮合\n- lj_jiyuan（+2）：分享修行机缘的线索，带她夺得机缘\n- lj_huahua（+2）：善待、敬重花姐姐花芷凝\n- lj_bangxiong（+3）：帮她兄长陆十三办事解围\n- lj_shengjiu（+20）：危难中舍身救下她的性命\n- lj_jiuxiong（+25）：舍身救下陆十三的性命\n- lj_qiman（-3）：拿她当小孩敷衍、小瞧她的本事\n- lj_fulang（-5）：浮浪轻佻言行\n- lj_rushi（-10）：辱骂、轻慢她兄长陆十三（她知晓）\n- lj_fahuan（-10）：毁损、抢夺她足踝赤金法环等随身物件\n- lj_pian（-30）：蓄意骗她、利用她的义气设伏围剿（她识破）\n- lj_yapo（-30）：以强权武力压迫她，逼她屈服\n- lj_haihua（-30）：重伤、危害花姐姐花芷凝\n- lj_haixiong（-40）：重伤、危害她兄长陆十三\n- lj_shaxiong（-50）：杀害陆十三\n- lj_shahua（-50）：杀害花芷凝\n- lj_lingru（-50）：无视她的意愿强行凌辱、强占她",
+      "content": "【数值申报】本条目只约束对「陆烬颜」的态度申报格式。\n对本角色每回合至多输出一个标签，其他角色分别申报：<好感事件>陆烬颜｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>陆烬颜｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。\n好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。\n\n## 她会记在心上\n- 认可她的本事，把她当能独当一面的修士\n- 陪她闹，接得住她的打趣与撮合\n- 帮她兄长陆十三，替她分忧\n- 分享机缘线索，带她历练\n- 善待花姐姐\n- 义气当先，绝境时并肩断后\n## 她会记恨\n- 拿她当小孩敷衍\n- 辱骂她兄长\n- 利用她的义气设局\n- 以强权逼她屈服\n- 伤害花姐姐与陆家亲人\n- 毁她随身物件\n\n## 锚点事件表\n- lj_renke（+2）：认可她的本事，夸她能干、不拿她当累赘看\n- lj_nao（+2）：陪她闹，接得住她的打趣与撮合\n- lj_jiyuan（+2）：分享修行机缘的线索，带她夺得机缘\n- lj_huahua（+2）：善待、敬重花姐姐花芷凝\n- lj_bangxiong（+3）：帮她兄长陆十三办事解围\n- lj_shengjiu（+20）：危难中舍身救下她的性命\n- lj_jiuxiong（+25）：舍身救下陆十三的性命\n- lj_qiman（-3）：拿她当小孩敷衍、小瞧她的本事\n- lj_fulang（-5）：浮浪轻佻言行\n- lj_rushi（-10）：辱骂、轻慢她兄长陆十三（她知晓）\n- lj_fahuan（-10）：毁损、抢夺她足踝赤金法环等随身物件\n- lj_pian（-30）：蓄意骗她、利用她的义气设伏围剿（她识破）\n- lj_yapo（-30）：以强权武力压迫她，逼她屈服\n- lj_haihua（-30）：重伤、危害花姐姐花芷凝\n- lj_haixiong（-40）：重伤、危害她兄长陆十三\n- lj_shaxiong（-50）：杀害陆十三\n- lj_shahua（-50）：杀害花芷凝\n- lj_lingru（-50）：无视她的意愿强行凌辱、强占她\n- common_chat（+1，冷却3回合）：双方实际进行有来有往的交谈，对方已回应；单方邀请、只打招呼尚未回应不计\n- common_combat（+3，冷却3回合）：双方实际配合应对同一敌人或共同参与战斗；仅在场、邀战或尚未出手不计",
       "constant": true,
       "selective": false,
       "disable": true,
@@ -13287,8 +13614,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "454": {
-      "uid": 454,
+    "471": {
+      "uid": 471,
       "comment": "【区域背景】幽寂谷",
       "key": [],
       "keysecondary": [],
@@ -13301,8 +13628,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "455": {
-      "uid": 455,
+    "472": {
+      "uid": 472,
       "comment": "【区域背景】西北荒漠石山邪窟",
       "key": [],
       "keysecondary": [],
@@ -13315,8 +13642,8 @@
       "excludeRecursion": true,
       "preventRecursion": true
     },
-    "456": {
-      "uid": 456,
+    "473": {
+      "uid": 473,
       "comment": "【大势背景】peace-v48",
       "key": [],
       "keysecondary": [],
@@ -13329,8 +13656,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：承平暗涌】\n南域表面承平，各大仙门开山大典举行，极乐密藏外层禁制生隙，幽寂秘境异动已有风闻。幽寂谷探查开放日期为1578年4月1日至5月30日；是否进入、探查及取得物品由对应局部节点决定。 当前神诅尚未降临，南域修士不受神诅压制，元婴修士尚未因灾变跌境；炎雷子未因灾变受创闭关。各山门尚有常规秩序，秘境异动不能写成神诅降临或天地战力压制。NPC不得把未来灾情当作已知事实报告。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "457": {
-      "uid": 457,
+    "474": {
+      "uid": 474,
       "comment": "【大势背景】calamity",
       "key": [],
       "keysecondary": [],
@@ -13343,8 +13670,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：南域大劫】\n极乐密藏封印已破，远古神诅席卷南域，原有元婴大能重创跌至金丹；炎雷子受创闭关。极乐太子已立天姝会四殿，正魔旧平衡瓦解。常规结婴受到神诅限制，名器是修士突破的少数途径之一。玩家当前境界以后台记录为准，符合本地名器条件仍可重新突破元婴。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "458": {
-      "uid": 458,
+    "475": {
+      "uid": 475,
       "comment": "【大势背景】beast",
       "key": [],
       "keysecondary": [],
@@ -13357,8 +13684,8 @@
       "preventRecursion": true,
       "content": "【当前世界背景：天溪兽潮】\n南域大劫及四殿分疆已经发生。大荒凶兽狂潮已合围天溪城，仙盟调兵协防，九龙焚天大阵开启，守城拉锯战已经爆发。这里只确认世界局势，不确认玩家参战、完成守城或城破；具体变化等待局部事件。神诅下名器仍是修士突破的少数途径之一。\n这些是已发生或持续中的背景，不是要求本轮重新演绎入场或灾变。不得替玩家完成局部事件、发放奖励或推进人物阶段；不得预测后续时期。"
     },
-    "459": {
-      "uid": 459,
+    "476": {
+      "uid": 476,
       "comment": "【大势规则】中控调度",
       "key": [],
       "keysecondary": [],
