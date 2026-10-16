@@ -35,3 +35,6 @@ test('幽寂谷取消保留地图并说明，错误不依赖toast，待派发中
 test('授权失配不会静默回退：主卷明确标出失败楼层与节点未推进，可导出诊断',()=>{
  const h=fixture();try{h.state.lastNodeResult={nodeId:'xbxxLoot',floor:8,outcome:'failure',reason:'行动后的用户消息与授权行动不匹配'};const panel=mountHUD(h.doc,h.doc.querySelector('main'),h.runtime,data,h.report);const notice=h.doc.querySelector('[data-action-mismatch]');assert.match(notice.textContent,/第8楼/);assert.match(notice.textContent,/正文.*不代表节点已完成/);assert.ok(notice.querySelector('[data-diagnostics]'));h.state.lastNodeResult.outcome='success';panel.render();assert.equal(h.doc.querySelector('[data-action-mismatch]'),null);panel.destroy();}finally{h.dom.window.close();}
 });
+test('删楼恢复仍显示完整状态栏，并说明后续旧回复不再自动结算',()=>{
+ const h=fixture();try{h.state.historyRecovery={kind:'delete',ignoredReplies:['old']};const mounted=mountHUD(h.doc,h.doc.querySelector('main'),h.runtime,data,h.report);assert.ok(h.doc.querySelector('[data-history-recovery]'));assert.match(h.doc.querySelector('[data-history-recovery]').textContent,/最近可信进度/);assert.ok(h.doc.querySelector('[data-storage-fold]'));assert.equal(h.calls.length,0);mounted.destroy();}finally{h.dom.window.close();}
+});

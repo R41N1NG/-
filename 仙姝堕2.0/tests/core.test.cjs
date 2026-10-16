@@ -1287,3 +1287,66 @@ test('旧自设开局仅宏展开可验证迁移，保留原档；其他改文�
  const c=()=>({chatId:h.c.chatId,branchId:h.c.branchId,chat:h.c.chat,trail:C.fingerprint(h.c.chat),identities:I.identify(h.c.chat)}),migrate=require('../src/runtime/opening_macros').migrateOpening;
  h.c.chat[0].mes+='多添一句';assert.equal(migrate(saved,c()),null);h.c.chat[0].mes=raw.replaceAll('{{user}}','青岚');h.c.chat[0].swipe_id=1;assert.equal(migrate(saved,c()),null);h.c.chat[0].swipe_id=0;delete h.c.chat[0].extra;assert.equal(migrate(saved,c()),null);
 });
+
+
+test('开局配置独立于展示正文：刷新、导入和首楼重排保留收益，切开局候选仍隔离',async()=>{
+ const h=harness();await h.opening('赵无忧');const I=require('../src/runtime/message_identity');
+ const root=I.identify(h.c.chat)[0],config=C.clone(h.r.getCheckpoint().state.openingConfig);
+ h.c.chat[0].mes+='\n<div>宿主附加展示</div>';assert.deepEqual(I.identify(h.c.chat)[0],root);
+ await h.r.restore();h.c.chat.push({is_user:true,mes:'探索'});await h.reply(status({储物栏:'获得：测试灵石×1'},'你获得测试灵石。'));
+ const saved=h.r.getCheckpoint();h.c.chat[0].mes='<div>开局展示重新排版</div>'+h.c.chat[0].mes;
+ const fresh=createDispatcher(h.adapter,data);await fresh.restore();assert.equal(fresh.getSnapshot().storyCount,1);assert.equal(fresh.getSnapshot().inventory.find(x=>x.name==='测试灵石').count,1);
+ assert.deepEqual(fresh.getSnapshot().openingConfig,config);
+ h.c.chatId='imported';h.c.branchId='imported';for(const m of h.c.chat)m.variables=[];h.adapter.readCheckpoints=async()=>[C.clone(saved)];
+ const imported=createDispatcher(h.adapter,data);await imported.restore();assert.equal(imported.getSnapshot().storyCount,1);
+ h.c.chat[0].swipe_id=1;await assert.rejects(imported.restore(),/保护存档/);
+ h.c.chat[0].swipe_id=0;await imported.restore();assert.equal(imported.getSnapshot().inventory.find(x=>x.name==='测试灵石').count,1);
+ h.c.chat[0].mes='<IdentityMenu/>';await assert.rejects(imported.restore(),/保护存档/);
+});
+
+test('独立开局根不放行后续回复修改，重新选择同身份也不能借旧档',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'探索'});await h.reply(status({储物栏:'获得：测试灵石×1'},'你获得测试灵石。'));
+ h.c.chat.at(-1).mes=status({},'普通交谈。');await h.r.restore();await h.r.settleStory();assert.ok(!h.r.getSnapshot().inventory.some(x=>x.name==='测试灵石'));
+ const I=require('../src/runtime/message_identity'),root=I.identify(h.c.chat)[0],config=h.r.getCheckpoint().state.openingConfig;
+ I.bindOpening(h.c.chat,config.config);assert.notEqual(I.identify(h.c.chat)[0].revisionId,root.revisionId);
+ await assert.rejects(h.r.restore(),/保护存档/);
+});
+
+test('旧版未游玩自设首楼展示变化只迁移配置完全相同的记录',async()=>{
+ const h=harness();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{name:'测试道友',realm:'金丹前期',date:{year:1578,month:3,day:3},origin:'测试来历'}}});
+ // Recreate a pre-v67 root that used the complete body as its identity.
+ delete h.c.chat[0].extra.xsd2_openings;delete h.c.chat[0].extra.xsd2_identity;
+ const I=require('../src/runtime/message_identity'),e=h.r.getCheckpoint();e.identityTrail=I.identify(h.c.chat);e.trail=C.fingerprint(h.c.chat);delete e.state.openingConfig;
+ h.c.chat[0].variables=[];const legacyChat=C.clone(h.c.chat);h.adapter.readCheckpoints=async()=>[C.clone(e)];h.c.chat[0].mes='<div>附加展示</div>\n'+h.c.chat[0].mes;
+ const fresh=createDispatcher(h.adapter,data);await fresh.restore();assert.equal(fresh.getSnapshot().identity,'自设');
+ h.c.chat=C.clone(legacyChat);h.c.chat[0].mes=h.c.chat[0].mes.replace('测试来历','另一来历');await assert.rejects(createDispatcher(h.adapter,data).restore(),/保护存档/);
+ h.c.chat=C.clone(legacyChat);h.c.chat[0].mes=JSON.parse(e.trail[0])[3].replace('金丹前期','元婴前期');await assert.rejects(createDispatcher(h.adapter,data).restore(),/保护存档/);
+});
+
+
+test('删楼组合不锁档：展示变化后删末楼/中间普通输入/中间结算，按可信前缀恢复',async()=>{
+ const h=harness();await h.opening('赵无忧');const records=[h.r.getCheckpoint()];
+ h.c.chat.push({is_user:true,mes:'补充说明'},{is_user:true,mes:'第一次探索'});await h.reply(status({储物栏:'获得：测试灵石×1'},'你获得测试灵石。'));records.push(h.r.getCheckpoint());
+ h.c.chat.push({is_user:true,mes:'第二次探索'});await h.reply(status({},'第二轮交谈。'));records.push(h.r.getCheckpoint());
+ h.c.chat.push({is_user:true,mes:'第三次探索'});await h.reply(status({},'第三轮交谈。'));records.push(h.r.getCheckpoint());
+ const original=C.clone(h.c.chat);h.adapter.readCheckpoints=async()=>C.clone(records);
+ async function restore(chat){h.c.chat=chat;h.c.chat[0].mes='<div>宿主重排</div>'+h.c.chat[0].mes;const r=createDispatcher(h.adapter,data);await r.restore({afterDelete:true});assert.equal(r.getDiagnostics().recoveryFault,null);return r;}
+ let chat=C.clone(original);chat.pop();let r=await restore(chat);assert.equal(r.getSnapshot().storyCount,2);assert.equal(r.getSnapshot().inventory.find(x=>x.name==='测试灵石').count,1);
+ chat=C.clone(original);chat.splice(1,1);r=await restore(chat);assert.equal(r.getSnapshot().storyCount,3);assert.equal(r.getSnapshot().inventory.find(x=>x.name==='测试灵石').count,1);
+ chat=C.clone(original);chat.splice(3,1);r=await restore(chat);assert.equal(r.getSnapshot().storyCount,0);assert.ok(!r.getSnapshot().inventory.some(x=>x.name==='测试灵石'));
+ await r.flushCompleted();assert.equal(r.getSnapshot().storyCount,0);assert.equal(r.getSnapshot().historyRecovery.kind,'delete');
+ h.c.chat.push({is_user:true,mes:'继续交谈'},{is_user:false,mes:status({},'新一轮交谈。')});await r.settleStory();assert.equal(r.getSnapshot().storyCount,1);assert.ok(!r.getSnapshot().inventory.some(x=>x.name==='测试灵石'));
+ const reload=createDispatcher(h.adapter,data);await reload.restore();assert.equal(reload.getSnapshot().storyCount,1);
+ // Removing several ending turns restores the remaining last completed turn.
+ chat=C.clone(original).slice(0,4);r=await restore(chat);assert.equal(r.getSnapshot().storyCount,1);
+});
+
+
+test('已游玩旧档核验后升级开局根，旧候选快照仍可恢复且删楼后不再受首楼改写影响',async()=>{
+ const h=harness();await h.opening('赵无忧');delete h.c.chat[0].extra.xsd2_openings;delete h.c.chat[0].extra.xsd2_identity;
+ const I=require('../src/runtime/message_identity');const root=h.r.getCheckpoint();root.identityTrail=I.identify(h.c.chat);root.trail=C.fingerprint(h.c.chat);delete root.state.openingConfig;delete root.previous;
+ h.c.chat[0].variables=[{stat_data:{xsd2:[C.clone(root)]}}];h.adapter.readCheckpoints=async()=>[C.clone(root)];
+ const legacy=createDispatcher(h.adapter,data);await legacy.restore();assert.ok(legacy.getSnapshot().openingConfig.source);
+ h.c.chat.push({is_user:true,mes:'探索'},{is_user:false,mes:status({储物栏:'获得：测试灵石×1'},'你获得测试灵石。')});await legacy.settleStory();
+ h.c.chat[0].mes='<div>更新后的展示</div>'+h.c.chat[0].mes;h.c.chat.pop();await legacy.restore({afterDelete:true});assert.equal(legacy.getSnapshot().storyCount,0);assert.ok(legacy.getSnapshot());
+});

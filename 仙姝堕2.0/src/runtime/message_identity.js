@@ -13,9 +13,21 @@ function signature(text) {
 const action=text=>/XSD2_|^\/?(?:解锁|锁定|身份|段位)\s/.test(String(text));
 // Persist on native message.extra and swipe_info[].extra, which travel with
 // exported messages. Never use the message's current array position as its ID.
+function bindOpening(chat,config,source=null) {
+ const m=chat[0];if(!m || m.is_user)throw Error('开局消息不存在');
+ const slot=Number(m.swipe_id??0),record={id:uid('opening'),config:C.clone(config),source:C.clone(source)};
+ m.extra={...(m.extra || {}),xsd2_openings:{...(m.extra?.xsd2_openings || {}),[slot]:record}};
+ const info=m.swipe_info?.[slot];if(info)info.extra={...(info.extra || {}),xsd2_opening:C.clone(record)};
+ return C.clone(record);
+}
+function openingRecord(m) {
+ if(!m || m.is_user || /<IdentityMenu\b/.test(String(m.mes)))return null;
+ const slot=Number(m.swipe_id??0);
+ return m.swipe_info?.[slot]?.extra?.xsd2_opening || m.extra?.xsd2_openings?.[slot] || null;
+}
 function identify(chat) {
   const seen=new Set();
-  return chat.map(m=>{
+  return chat.map((m,index)=>{
     const slot=Number(m.swipe_id??0), info=m.swipe_info?.[slot];
     m.extra ||= {};
     let record=m.extra.xsd2_identity || info?.extra?.xsd2_identity;
@@ -23,7 +35,11 @@ function identify(chat) {
     if(!record?.messageId || seen.has(record.messageId))record={messageId:uid(),versions:{}};
     // A cloned native message may share extra with its original in memory.
     record=C.clone(record);record.versions ||= {};
-    const sig=signature(m.mes), key=slot+':'+sig;
+    // Opening configuration is the root of the save. Its display prose may be
+    // reformatted by the host without creating a new game. Live-write guards
+    // still compare the exact chat body through contracts.fingerprint().
+    const opening=index===0?openingRecord(m):null;
+    const sig=opening ? 'opening:'+opening.id+':'+signature(JSON.stringify(opening.config)) : signature(m.mes), key=slot+':'+sig;
     const native=info?.extra?.xsd2_identity;
     const duplicate=native?.revisionId && m.swipe_info?.some((x,i)=>i<slot && x?.extra?.xsd2_identity?.revisionId===native.revisionId);
     const revisionId=duplicate ? uid('reply') : native?.messageId===record.messageId && native.signature===sig ? native.revisionId : record.versions[key] || uid('reply');
@@ -33,11 +49,14 @@ function identify(chat) {
     m.extra={...m.extra,xsd2_identity:record};
     if(info)info.extra={...(info.extra || {}),xsd2_identity:C.clone(record)};
     seen.add(record.messageId);
-    return {messageId:record.messageId,revisionId,user:!!m.is_user,signature:sig,action:!!m.is_user&&action(m.mes)};
+    return {messageId:record.messageId,revisionId,user:!!m.is_user,signature:sig,action:!!m.is_user&&action(m.mes),...(opening?.source?{openingSource:C.clone(opening.source)}:{})};
   });
 }
 function trail(c,floor=c.floor){return C.clone(c.identities.slice(0,floor+1));}
-function same(a,b){return a?.messageId===b?.messageId && a?.revisionId===b?.revisionId && a?.user===b?.user && a?.signature===b?.signature;}
+function same(a,b){
+ const exact=(x,y)=>x?.messageId===y?.messageId && x?.revisionId===y?.revisionId && x?.user===y?.user && x?.signature===y?.signature;
+ return exact(a,b) || (!!b?.openingSource && exact(a,b.openingSource));
+}
 // A removed ordinary input may shift positions. Every assistant outcome and
 // every command must remain. Insertions/edits/reordered replies fork history.
 function mapping(old,now) {
@@ -62,7 +81,7 @@ function remapState(source,map,c) {
     for(const[k,x]of Object.entries(v)){
       if(k==='floor'&&Number.isInteger(x)){
         const reference=v.messageRef;
-        const position=reference ? c.identities.findIndex(id=>id.messageId===reference.messageId && id.revisionId===reference.revisionId) : map.get(x);
+        const position=reference ? c.identities.findIndex(id=>id.messageId===reference.messageId && (id.revisionId===reference.revisionId || id.openingSource?.revisionId===reference.revisionId)) : map.get(x);
         if(Number.isInteger(position) && [...map.values()].includes(position))v[k]=position;else unsafe=true;
       }else if(k==='processed'&&x&&typeof x==='object'){
         const next={};for(const[f,h]of Object.entries(x)){if(map.has(+f))next[map.get(+f)]=h;else unsafe=true;}v[k]=next;
@@ -120,4 +139,4 @@ function explain(e,c){
  }
  return {reason:'消息顺序或内部状态引用不匹配'};
 }
-module.exports={uid,identify,trail,mapping,restore,remapState,authorized,authorization,stampProcessed,upgradeAuthorizations,bindReferences,explain};
+module.exports={uid,bindOpening,openingRecord,same,identify,trail,mapping,restore,remapState,authorized,authorization,stampProcessed,upgradeAuthorizations,bindReferences,explain};

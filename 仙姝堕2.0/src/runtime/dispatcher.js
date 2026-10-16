@@ -68,7 +68,7 @@ function createDispatcher(adapter, data) {
       saved=true;
       const migrated=migrateOpening(e,c);if(migrated)e=migrated;
       const anchor=e.identityTrail?.at(-1);
-      const position=anchor ? c.identities.findIndex(x=>x.messageId===anchor.messageId && x.revisionId===anchor.revisionId) : (e.trail?.length ?? 0)-1;
+      const position=anchor ? c.identities.findIndex(x=>Identity.same(anchor,x)) : (e.trail?.length ?? 0)-1;
       if(position<0 || position>ceiling || (best && (position<best.floor || (position===best.floor && e.state?.revision<=best.state.revision))))return;
       let found=e.identityTrail ? Identity.restore(e,c) : null;
       if(found && migrated)found.migrated=true;
@@ -303,10 +303,16 @@ function createDispatcher(adapter, data) {
     return snapshot();
   }
   function enqueue(fn) {
-    const c = context();
+    let c = context();
     const next = queue
       .catch(() => {})
       .then(async () => {
+        const now=context();
+        // Initialization may stamp the opening while this intent is queued.
+        // Rebase only that internal metadata change: actual prose, every later
+        // message and chat scope must still match exactly. Node revisions are
+        // checked separately by their own expected state.
+        if(c.chatId===now.chatId && c.branchId===now.branchId && JSON.stringify(c.trail)===JSON.stringify(now.trail) && c.identities[0]?.messageId===now.identities[0]?.messageId && JSON.stringify(c.identities.slice(1))===JSON.stringify(now.identities.slice(1)) && Identity.openingRecord(now.chat[0]))c=now;
         guard(c);
         if(recoveryFault?.chatId===c.chatId)throw Error("进度尚未恢复，请先重新读取存档；未执行本次操作");
         return fn(c);
@@ -329,6 +335,17 @@ function createDispatcher(adapter, data) {
   async function load(c, rollbackUnsent = true) {
     const found = await history(c);
     if (found) {
+      // Upgrade a verified legacy game once. Preserve its exact former root
+      // as an alias, so all retained candidate snapshots stay recoverable.
+      if(!Identity.openingRecord(c.chat[0]) && !String(c.chat[0].mes).includes('<IdentityMenu')){
+        const oldTrail=Identity.trail(c,found.floor),rootFields=C.parseStatus(c.chat[0].mes).fields;
+        const config={identity:found.state.identity,custom:C.clone(found.state.stat_data?.自设 || null),date:C.parseDate(rootFields.时间),realm:rootFields.修为,place:rootFields.地点};
+        const record=Identity.bindOpening(c.chat,config,c.identities[0]);
+        c=context();
+        const upgraded=Identity.restore({identityTrail:oldTrail,state:found.state},c);
+        if(!upgraded)throw Error('已验证开局迁移失败，未写入进度');
+        found.state=upgraded.state;found.state.openingConfig=record;found.migrated=true;
+      }
       current = manual(found.state);
       scopeChatId = c.chatId;
       if (
@@ -370,8 +387,11 @@ function createDispatcher(adapter, data) {
       // Reconstruct the opening at its own floor, even when a user turn already
       // exists. Saving at the latest floor would leave story() without a base
       // and lose the identity again when that user turn is deleted.
+      const initial=defaults(identity, first);
+      initial.openingConfig=Identity.bindOpening(c.chat,{identity,custom:C.clone(initial.stat_data.自设 || null),date:C.clone(initial.calendarDate),realm:initial.stat_data.修为,place:initial.stat_data.地点});
+      c=context();
       const result = await commit(
-        { ...c, floor: 0 }, defaults(identity, first), "initialize",
+        { ...c, floor: 0 }, initial, "initialize",
       );
       await adapter.syncIdentity?.(identity);
       return result;
@@ -866,6 +886,7 @@ function createDispatcher(adapter, data) {
       return { skipped: true };
     if (!current || scopeChatId !== c.chatId) await load(c);
     if (!current) return { skipped: true };
+    if(current.historyRecovery?.ignoredReplies?.includes(c.identities[c.floor].revisionId))return {skipped:true,reason:'deleted_history_suffix'};
     const processed=current.processedByRevision?.[c.identities[c.floor].revisionId]?.hash || (!current.history_identity ? current.processed[c.floor] : undefined);
     const normalizedHash=C.hash(String(m.mes).replace(/\r\n/g,"\n").trim());
     const closedCallback=processed && Object.values(current.settlements || {}).some(x=>x.floor===c.floor && x.kind==="promotion");
@@ -1080,6 +1101,9 @@ function createDispatcher(adapter, data) {
     opening=opening.replace(/<修为>[\s\S]*?<\/修为>/,"<修为>"+s.stat_data.修为+"</修为>");
     const oldId = c.chatId;
     await adapter.replaceOpening(opening);
+    const rootContext=adapter.context();
+    if(String(rootContext.chatId)!==oldId || rootContext.chat.length!==1)throw Error("开局更新期间聊天变化");
+    s.openingConfig=Identity.bindOpening(rootContext.chat,{identity,custom:C.clone(custom || null),date:C.clone(s.calendarDate),realm:s.stat_data.修为,place:s.stat_data.地点});
     c = context();
     if (c.chatId !== oldId || c.floor !== 0)
       throw Error("开局更新期间聊天变化");
@@ -1235,7 +1259,7 @@ function createDispatcher(adapter, data) {
       const c = context(), s = snapshot(), latest = c.chat[c.floor];
       const relics=s?Object.values(rules(s).RELIC_PILOT_CONFIG).map(cfg=>({id:cfg.id,name:cfg.names[0],holder:cfg.owner,stage:rules(s).getRelicStage(cfg.id,s.stat_data.known),flags:Object.fromEntries([cfg.formKey,cfg.stage1Key,cfg.stage2Key,cfg.stage3Key,cfg.stage4Key,cfg.owner+"处女丧失"].filter(Boolean).map(k=>[k,s.stat_data.known?.[k]===true])),owners:C.clone(s.stat_data.名器归属 || {}),breaker:s.stat_data.破处者?.[cfg.owner] || null,progress:C.clone(s.stat_data.relic_progress?.[cfg.id] || null),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([k])=>k.startsWith("known.")||k.startsWith("relicStage.")||k.startsWith("owner.")))})):[];
       return { schema:3,realm:s?Realm.eligibility(s,rules(s)):null,relics,relicEvidence:C.clone(s?.stat_data.relic_evidence_log || []), host:adapter.getDiagnostics?.() || {},
-        floor:c.floor, messageIdentity:C.clone(c.identities[c.floor]), storageIdentityVersion:s?.history_identity?.version || 0, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), recoveryFault:C.clone(recoveryFault),
+        floor:c.floor, messageIdentity:C.clone(c.identities[c.floor]), storageIdentityVersion:s?.history_identity?.version || 0, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), openingConfig:C.clone(s?.openingConfig || null), historyRecovery:C.clone(s?.historyRecovery || null), recoveryFault:C.clone(recoveryFault),
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,actionCode:s.pending.actionCode || null,userRef:C.clone(s.pending.userRef || null),
         } : null, event:s?.activeEvent || null,
@@ -1286,11 +1310,24 @@ function createDispatcher(adapter, data) {
     ready: () => lifecycle(load),
     restore: (options = {}) => lifecycle(async c=>{
       await load(c);
-      if(options.afterDelete && current?.pending?.selection?.completionQuery){
-        // Removing the result cancels the outstanding callback. Its user code
-        // remains history, not an instruction for the next free-form turn.
-        return commit(c,C.clone(current.pending.before),"rollback");
+      // Removing a completion result cancels that callback, including when
+      // other retained replies follow it. They must pass through the same
+      // suffix quarantine as other deleted settlements.
+      const cancelled=options.afterDelete && current?.pending?.selection?.completionQuery ? C.clone(current.pending.before) : null;
+      const restored=cancelled || current;
+      const anchor=restored?.history_identity;
+      const trusted=c.identities.findIndex(x=>x.messageId===anchor?.messageId && x.revisionId===anchor?.revisionId);
+      const suffix=c.identities.slice(trusted+1).filter((x,i)=>!x.user && trusted+1+i>0);
+      if(options.afterDelete && current && trusted>=0 && suffix.length){
+        // A deletion forks history at the last verified state. Retained later
+        // prose is not a second authorization to replay abandoned outcomes.
+        const next=C.clone(restored);
+        if(next.pending)Object.assign(next,C.clone(next.pending.before));
+        next.historyRecovery={kind:'delete',trustedMessageId:anchor.messageId,trustedRevisionId:anchor.revisionId,
+          ignoredReplies:[...new Set([...(next.historyRecovery?.ignoredReplies || []),...suffix.map(x=>x.revisionId)])]};
+        return commit(c,next,'history_delete');
       }
+      if(cancelled)return commit(c,cancelled,'rollback');
       return snapshot();
     }),
     getCheckpoint:()=>liveEnvelope?C.clone(liveEnvelope):null,
