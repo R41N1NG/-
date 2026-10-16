@@ -1,5 +1,6 @@
 "use strict";
 const C = require("../runtime/contracts");
+const {matchesAction}=require("../runtime/action_wire");
 const Identity=require("../runtime/message_identity");
 const {expandOpening}=require("../runtime/opening_macros");
 const {confirmExit}=require("../ui/exit_confirmation");
@@ -152,7 +153,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       // Only migrate a live trusted kernel's pending, bound to this chat and
       // the adjacent exact user action; never reconstruct from model prose.
       const p=liveHandoff?.pending;
-      if(liveHandoff?.chatId===c.chatId && liveHandoff.branchId===c.branchId && p?.actionCode && c.chat[p.floor+1]?.is_user && String(c.chat[p.floor+1].mes).trim()===p.actionCode && !c.chat.slice(p.floor+2).some(x=>x.is_user)){
+      if(liveHandoff?.chatId===c.chatId && liveHandoff.branchId===c.branchId && p?.actionCode && c.chat[p.floor+1]?.is_user && matchesAction(p,c.chat[p.floor+1].mes) && !c.chat.slice(p.floor+2).some(x=>x.is_user)){
         const trail=C.fingerprint(c.chat).slice(0,p.floor+1),state=C.clone(liveHandoff);
         state.pending.authorization={chatId:c.chatId,branchId:c.branchId,trail:C.clone(trail)};
         return {schema:2,chatId:c.chatId,branchId:c.branchId,trail,state};

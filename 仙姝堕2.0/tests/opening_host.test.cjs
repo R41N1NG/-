@@ -627,3 +627,16 @@ test('主书无间隔点的同名别名可同步；误绑其他世界书不写�
   for(const alias of ['仙姝堕2.0框架测试','仙姝堕2.0框架测试（2）','仙姝堕2.0·框架测试 (3)']){binding=alias;await h.emit('CHAT_CHANGED');assert.ok(writes>0);assert.equal(r.getDiagnostics().host.worldbook.blocked,false);assert.equal(h.doc.querySelector('[data-xsd2-worldbook-warning]'),null);}
  }finally{h.close();}
 });
+
+test('打包西北链：原生发送被包装并重复代码、附带旧指令，取书和深入不回退',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..')),h=await fixture(data.greetings.赵无忧);
+ try{
+  const r=h.win.XSD2.runtime;await until(()=>r.getSnapshot());
+  h.doc.querySelector('#send_but').addEventListener('click',()=>{const m=h.context.chat.at(-1);m.mes='<本轮用户输入>[[JX47_VALUE_E01_18_BEGIN]]\n'+m.mes+'\n'+m.mes+'\n[[JX47_VALUE_E01_18_END]]</本轮用户输入><recall>XSD2_xbxxFight_deadbeef XSD2_xbxxLoot_12345678</recall>';});
+  for(const nodeId of ['xbxxEnter','xbxxFight','xbxxLoot','xbxxAmbush']){
+   const s=r.getSnapshot();await r.dispatchIntent({type:'SELECT_NODE',pluginId:'xibei',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId}});assert.ok(r.getSnapshot().pending.userRef);
+   await h.emit('GENERATION_STARTED','normal',{},false);h.context.chat.push({mes:'你与孤月完成了当前行动。<Status_block><历时>—</历时></Status_block>',is_user:false,variables:[{}]});h.appendDOM(h.context.chat.length-1);await h.emit('GENERATION_ENDED');assert.equal(r.getSnapshot().lastNodeResult.outcome,'success');
+  }
+  assert.equal(r.getSnapshot().pluginState.xibei.step,'ambush');assert.equal(r.getSnapshot().inventory.find(x=>x.name==='极乐引').count,1);assert.equal(h.doc.querySelector('[data-action-mismatch]'),null);assert.deepEqual(h.errors,[]);
+ }finally{h.close();}
+});

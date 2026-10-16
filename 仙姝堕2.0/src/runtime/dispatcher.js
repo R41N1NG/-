@@ -7,7 +7,7 @@ const {meets} = require("./conditions");
 const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover} = require("./character_stages");
 const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
-const { createActionCode, readActionCode } = require("./action_wire");
+const { createActionCode, readActionCode,readUserInput,matchesAction } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
 const {metricEntryContent}=require("./story_entries");
 const { createMetricEvents,stripForEvidence,applyPreFinalPenalty } = require("./metric_events");
@@ -107,7 +107,7 @@ function createDispatcher(adapter, data) {
       const p=e?.state?.pending || e?.state?.lastPromotionRecovery?.pending,auth=p?.authorization;
       if(e?.chatId!==c.chatId || (e.branchId && e.branchId!==c.branchId) || !p?.selection?.completionQuery || auth?.chatId!==c.chatId || auth.branchId!==c.branchId || p.floor>ceiling || !Identity.authorized(auth,c) || c.chat.slice(p.floor+2).some(m=>m.is_user&&!m.is_system) || (best && best.floor>p.floor))continue;
       const user=c.chat[p.floor+1];
-      const authorized=user?.is_user && (p.actionCode ? readActionCode(user.mes)?.code===p.actionCode : String(user.mes).trim()===p.actionText);
+      const authorized=user?.is_user && matchesAction(p,user.mes);
       const restored=C.clone(p.before);if(authorized)restored.pending=C.clone(p);
       if(!best || p.floor>=best.floor)best={state:restored,floor:p.floor};
     }
@@ -123,6 +123,22 @@ function createDispatcher(adapter, data) {
     recoveryFault=null;
     recoveredEnvelope=best ? {schema:2,chatId:c.chatId,branchId:c.branchId,trail:c.trail.slice(0,best.floor+1),identityTrail:Identity.trail(c,best.floor),state:C.clone(best.state)} : null;
     return best;
+  }
+  function actionFailure(p,c,user,floor){
+    const next=C.clone(p.before);
+    next.lastNodeResult = { nodeId:p.nodeId, floor:floor, outcome:"failure",
+          reason:"行动后的用户消息与授权行动不匹配", evidenceMode:null,
+          actionMismatch:{expectedCode:p.actionCode || null,expectedAction:p.actionText,userFloor:user?c.chat.lastIndexOf(user):null,
+            actualCode:user?readActionCode(user.mes)?.code || null:null,inputHash:user?C.hash(readUserInput(user.mes)):null,
+            inputPreview:user?String(readUserInput(user.mes) ?? '').slice(0,180):'',boundUser:C.clone(p.userRef || null)} };
+    return next;
+  }
+  async function bindPendingUser(c){
+    const p=scopeChatId===c.chatId?current?.pending:null,m=c.chat[c.floor],id=c.identities[c.floor];
+    if(!p || !m?.is_user || m.is_system || c.floor<=p.floor || !matchesAction(p,m.mes) || (p.userRef && p.userRef.messageId!==id.messageId))return {skipped:true};
+    if(p.userRef?.revisionId===id.revisionId)return {skipped:true};
+    const next=C.clone(current);next.pending.userRef={floor:c.floor,messageId:id.messageId,revisionId:id.revisionId,inputHash:C.hash(readUserInput(m.mes))};
+    return commit(c,next,"action_user_bound");
   }
   function defaults(identity, opening, custom) {
     const stat = C.parseStatus(opening).fields;
@@ -503,6 +519,7 @@ function createDispatcher(adapter, data) {
       await commit(c, next, "pending");
       guard(c);
       await adapter.send(next.pending.actionCode);
+      await bindPendingUser(context());
       return snapshot();
     } catch (e) {
       const now = context();
@@ -871,16 +888,15 @@ function createDispatcher(adapter, data) {
     const p = s.pending;
     let realmSettled=false;
     const latestUser = c.chat.slice(0, c.floor).reverse().find(x => x.is_user && !x.is_system);
-    let allowInventory = !!p || !/\bXSD2_/.test(String(latestUser?.mes || ""));
+    const activeInput=readUserInput(latestUser?.mes || "");
+    let allowInventory = !!p || (activeInput!==null && !/\bXSD2_/.test(activeInput));
     if (p) {
       const user = c.chat
         .slice(p.floor + 1, c.floor)
         .reverse().find((x) => x.is_user && !x.is_system);
-      if (!user || (p.actionCode ? readActionCode(user.mes)?.code !== p.actionCode : String(user.mes).trim() !== p.actionText)) {
-        s = C.clone(p.before);
-        allowInventory = false;
-        s.lastNodeResult = { nodeId:p.nodeId, floor:c.floor, outcome:"failure",
-          reason:"行动后的用户消息与授权行动不匹配", evidenceMode:null };
+      if (!user || !matchesAction(p,user.mes) || (p.userRef && c.identities[c.chat.lastIndexOf(user)]?.messageId!==p.userRef.messageId)) {
+        s=actionFailure(p,c,user,c.floor);
+        allowInventory=false;
       } else if (p.kind === "realm") {
         realmSettled=true;
         s.pending = null;
@@ -1102,7 +1118,7 @@ function createDispatcher(adapter, data) {
             actionText:"闭关三个月",displayText:"闭关三个月",authorization:Identity.authorization(c),before,
             selection:{settlement:{mode:"separate",title:"闭关三月 · 修行结算"}},realm:{from},
             prompt:"本轮为闭关三个月的结算演绎。后台已核定耗时90日、原境界"+from+"、新境界"+next.stat_data.修为+"，出关日期为仙盟历"+C.dateText(next.calendarDate)+"。叙述修炼经过和出关结果，保留玩家言行自主权；不再发起是非判定、不额外升境、不追加耗时或奖励，不替玩家启动下一剧情。正常输出Status_block，历时90日，修为使用后台当前境界。"};
-          try {await commit(c,next,"realm_pending");guard(c);await adapter.send(next.pending.actionText);return snapshot();}
+          try {await commit(c,next,"realm_pending");guard(c);await adapter.send(next.pending.actionText);await bindPendingUser(context());return snapshot();}
           catch(error){const now=context();if(token(now)===token(c))await commit(now,before,"rollback");throw error;}
         }
         case "RETRY_COMPLETION": {
@@ -1110,7 +1126,7 @@ function createDispatcher(adapter, data) {
           if(!p?.selection?.completionQuery || adapter.isGenerating?.())throw Error("当前没有可重试的剧情结算，或回复正在生成");
           if(intent.expected?.chatId!==c.chatId || intent.expected.branchId!==c.branchId || intent.expected.floor!==c.floor || intent.expected.revision!==current.revision)throw Error("结算按钮来自旧状态，请重新打开");
           const user=c.chat[c.floor];
-          if(!user?.is_user || readActionCode(user.mes)?.code!==p.actionCode || !Identity.authorized(p.authorization,c))throw Error("当前末楼不是本次完成指令，不能重试其他分支");
+          if(!user?.is_user || readActionCode(user.mes)?.code!==p.actionCode || !Identity.authorized(p.authorization,c) || (p.userRef && c.identities[c.floor]?.messageId!==p.userRef.messageId))throw Error("当前末楼不是本次完成指令，不能重试其他分支");
           if(typeof adapter.retryGeneration!=="function")throw Error("宿主暂不支持重新结算，请使用酒馆原生重新生成");
           await commit(c,C.clone(current),"retry_completion");guard(c);adapter.retryGeneration();return snapshot();
         }
@@ -1190,7 +1206,7 @@ function createDispatcher(adapter, data) {
             prompt:itemUsePrompt(meta, meta.count - (meta.consumable ? 1 : 0))};
           await commit(c, next, "item_use");
           guard(c);
-          try { await adapter.send(next.pending.actionText); }
+          try { await adapter.send(next.pending.actionText);await bindPendingUser(context()); }
           catch(error) {
             const now = context();
             if (token(now) === token(c)) await commit(now,before,"rollback");
@@ -1205,6 +1221,7 @@ function createDispatcher(adapter, data) {
   }
   const api = {
     getSnapshot: snapshot,
+    bindActionUser:()=>lifecycle(bindPendingUser),
     getUserName:()=>String(adapter.getUserName?.() || context().raw?.name1 || "无名修士").trim(),
     getActionDisplay(text) {
       const parsed = readActionCode(text);
@@ -1212,7 +1229,7 @@ function createDispatcher(adapter, data) {
       const pending = current?.pending;
       const label = pending?.actionCode === parsed.code ? pending.displayText
         : [...plugins.values()].map(p => p.getDisplayText?.(parsed.nodeId)).find(Boolean);
-      return label ? String(text).replace(parsed.code, label) : null;
+      return label ? String(readUserInput(text)).split(parsed.code).join(label) : null;
     },
     getDiagnostics() {
       const c = context(), s = snapshot(), latest = c.chat[c.floor];
@@ -1220,7 +1237,7 @@ function createDispatcher(adapter, data) {
       return { schema:3,realm:s?Realm.eligibility(s,rules(s)):null,relics,relicEvidence:C.clone(s?.stat_data.relic_evidence_log || []), host:adapter.getDiagnostics?.() || {},
         floor:c.floor, messageIdentity:C.clone(c.identities[c.floor]), storageIdentityVersion:s?.history_identity?.version || 0, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), recoveryFault:C.clone(recoveryFault),
         identity:s?.identity || null, pending:s?.pending ? {
-          nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,
+          nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,actionCode:s.pending.actionCode || null,userRef:C.clone(s.pending.userRef || null),
         } : null, event:s?.activeEvent || null,
         lastNodeResult:s?.lastNodeResult || null,
         storyCount:s?.storyCount || 0,
@@ -1306,8 +1323,9 @@ function createDispatcher(adapter, data) {
           await load(c,false);
           const p=current?.pending;
           const lastUser=c.chat.slice(p?.floor+1).reverse().find(m=>m.is_user&&!m.is_system);
-          if(p && lastUser && (p.actionCode ? readActionCode(lastUser.mes)?.code!==p.actionCode : String(lastUser.mes).trim()!==p.actionText))
-            await commit(c,C.clone(p.before),"rollback");
+          if(p && lastUser && (!matchesAction(p,lastUser.mes) || (p.userRef && c.identities[c.chat.lastIndexOf(lastUser)]?.messageId!==p.userRef.messageId)))
+            await commit(c,actionFailure(p,c,lastUser,c.floor),"rollback");
+          else if(p && lastUser && matchesAction(p,lastUser.mes))await bindPendingUser({...c,floor:c.chat.lastIndexOf(lastUser)});
           updatePrompt();return snapshot();
         }
         // Explicit regeneration still restores the state before this reply.

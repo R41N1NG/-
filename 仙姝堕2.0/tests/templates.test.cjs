@@ -83,3 +83,14 @@ test("内嵌补项兼容助手结构：选择性关键词、深度1、防递归�
   assert.deepEqual(x.strategy.keys,["XSD2_g7p2_"]); assert.equal(x.recursion.prevent_incoming,true);
   assert.equal(x.effect.sticky,null); assert.equal(x.position.type,"after_character_definition");
 });
+
+test('动作读取只采用本轮输入，重复同代码可识别，历史与两个不同代码不得授权',()=>{
+ const {readActionCode,readUserInput,matchesAction}=require('../src/runtime/action_wire'),code='XSD2_xbxxLoot_12345678',other='XSD2_xbxxFight_deadbeef';
+ assert.equal(readActionCode(code+'\n'+code).code,code);
+ assert.equal(readActionCode('<本轮用户输入>'+code+'</本轮用户输入><recall>'+other+'</recall>').code,code);
+ assert.equal(readActionCode('<本轮用户输入>我继续交谈</本轮用户输入><recall>'+code+'</recall>'),null);
+ assert.equal(readActionCode(code+' '+other),null);
+ assert.equal(readActionCode('<本轮用户输入>'+code+'</本轮用户输入><本轮用户输入>'+other+'</本轮用户输入>'),null);
+ assert.equal(matchesAction({actionText:'闭关三个月'},'<本轮用户输入>闭关三个月</本轮用户输入><recall>旧事</recall>'),true);
+ assert.equal(readUserInput('<本轮用户输入>[[JX47_VALUE_E01_18_BEGIN]]\n使用草药\n[[JX47_VALUE_E01_18_END]]</本轮用户输入>'),'使用草药');
+});

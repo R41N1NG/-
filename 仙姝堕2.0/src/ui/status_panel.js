@@ -514,6 +514,11 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       '<details data-storage-fold><summary>储物栏</summary><div data-xsd-slot="10">'+items+'</div><p data-xsd-slot="11">'+esc(st.纳戒||'无')+'</p><p data-xsd-slot="12">'+(options.readOnly?'此楼状态记录':'点击物品查看介绍与操作')+'</p></details>'+
       '<details><summary>风闻与气象</summary><dl>'+field('近闻',13)+field('远闻',14)+field('天气',15)+'</dl></details>'+
       '<div data-xsd-slot="17"></div><footer class="xsd2-foot">暗处 · '+esc(st.暗处||'无')+' ｜ 持续背景 · '+esc(st.active_area||'无')+(Object.keys(s.manual).length?' ｜ 存在人工设置':'')+'</footer><p class="xsd2-feedback" role="status" aria-live="polite"></p>';
+    if(s.lastNodeResult?.outcome==='failure' && s.lastNodeResult.reason==='行动后的用户消息与授权行动不匹配'){
+      const notice=doc.createElement('aside');notice.dataset.actionMismatch='';notice.className='xsd2-cap';notice.setAttribute('role','alert');
+      notice.textContent='第'+s.lastNodeResult.floor+'楼的节点指令未通过核验，节点已退回执行前；正文写到后续场景不代表节点已完成。请重新选择未完成节点，或导出聊天记录反馈。';
+      const details=doc.createElement('button');details.type='button';details.dataset.diagnostics='';details.textContent='下载诊断';details.onclick=()=>downloadDiagnostics(doc,runtime,{actionMismatch:true});notice.append(details);root.querySelector('.xsd2-who').after(notice);
+    }
     const activePromotion=s.activeEvent?.pluginId==="character_promotion" ? data.promotionDefinitions?.[s.activeEvent.promotionId || s.pluginState?.character_promotion?.currentId] : null;
     const retryCompletion=activePromotion && s.pending?.nodeId===activePromotion.finishId && !!s.pending.selection?.completionQuery;
     if(activePromotion && (!s.pending || retryCompletion) && !options.readOnly && !s.stat_data.character_stages?.[activePromotion.character]?.negative){

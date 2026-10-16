@@ -171,7 +171,7 @@ function start(win) {
   });
   on("MESSAGE_UPDATED", () => scheduleRender(80));
   on("MESSAGE_EDITED", () => scheduleRender(80));
-  on("USER_MESSAGE_RENDERED", () => scheduleRender(50));
+  on("USER_MESSAGE_RENDERED", () => {if(active())void runtime.bindActionUser().catch(report);scheduleRender(50);});
   // setChatMessages(refresh: affected) awaits this native event. Scheduling
   // instead of awaiting our queue avoids waiting for the intent that emitted it.
   on("CHARACTER_MESSAGE_RENDERED", () => scheduleRender(0));
@@ -216,6 +216,7 @@ function start(win) {
     if (!active()) return;
     const m = host.context().chat.at(-1);
     if (!m?.is_user) return;
+    void runtime.bindActionUser().catch(report);
     const match = String(m.mes)
       .trim()
       .match(/^\/?(解锁|锁定|身份|段位)\s+(.+)$/);

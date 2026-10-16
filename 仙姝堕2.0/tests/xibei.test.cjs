@@ -3,9 +3,9 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),path=requ
 const C=require('../src/runtime/contracts'),data=require('../tools/data.cjs').load(path.join(__dirname,'..'));
 const {createDispatcher}=require('../src/runtime/dispatcher'),{createXibeiPlugin,EVENT_DEFS}=require('../src/plugins/xibei'),map=require('../src/plugins/youjigu_map');
 const {managedEnabled}=require('../src/runtime/story_entries');
-function harness(){
+function harness({wrap=t=>t}={}){
  const chat=[{mes:'<IdentityMenu/>',variables:[]}],sent=[];let fail=false,confirmed=true,retries=0,checkpoint=null;
- const adapter={readCheckpoint:async()=>C.clone(checkpoint),context:()=>({chatId:'xibei-test',chat}),readMessage:async i=>C.clone(chat[i]?.variables?.[0] || {}),persist:async(c,e)=>{checkpoint=C.clone(e);chat[c.floor].variables=[{stat_data:{...C.clone(e.state.stat_data),xsd2:[C.clone(e)]}}];},replaceOpening:async t=>chat[0].mes=t,replaceStory:async(i,t)=>chat[i].mes=t,send:async t=>{if(fail)throw Error('发送失败');sent.push(t);chat.push({mes:t,is_user:true});},setPrompt:()=>{},report:()=>{},retryGeneration:()=>{retries++;},confirmExit:async()=>confirmed};
+ const adapter={readCheckpoint:async()=>C.clone(checkpoint),context:()=>({chatId:'xibei-test',chat}),readMessage:async i=>C.clone(chat[i]?.variables?.[0] || {}),persist:async(c,e)=>{checkpoint=C.clone(e);chat[c.floor].variables=[{stat_data:{...C.clone(e.state.stat_data),xsd2:[C.clone(e)]}}];},replaceOpening:async t=>chat[0].mes=t,replaceStory:async(i,t)=>chat[i].mes=t,send:async t=>{if(fail)throw Error('发送失败');sent.push(t);chat.push({mes:wrap(t),is_user:true});},setPrompt:()=>{},report:()=>{},retryGeneration:()=>{retries++;},confirmExit:async()=>confirmed};
  const r=createDispatcher(adapter,data),plugin=createXibeiPlugin(data.nodeStories,data.characterProfiles,data.promotionDefinitions);r.registerPlugin(plugin);r.registerPlugin(map);
  const click=id=>{const s=r.getSnapshot();return r.dispatchIntent({type:'SELECT_NODE',pluginId:'xibei',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:id}});};
  const reply=async text=>{chat.push({mes:text,is_user:false,swipe_id:0});await r.settleStory();};
@@ -107,4 +107,24 @@ test('行程确认在地图原面板内显示；页面卸载取消，独立确�
  let result=confirmExit(doc,{exitDays:2});assert.equal(doc.querySelector('dialog'),null);doc.querySelector('.xsd2-map-modal-box').remove();assert.equal(await result,false);
  result=confirmExit(doc,{exitDays:6});assert.equal(doc.querySelectorAll('dialog').length,1);doc.querySelector('[data-close]').click();assert.equal(await result,false);
  result=confirmExit(doc,{exitDays:10});doc.querySelector('[data-exit-confirm]').click();assert.equal(await result,true);assert.equal(doc.querySelector('dialog'),null);dom.window.close();
+});
+
+
+test('获书与深入使用当前输入和绑定消息：重复回显及历史旧代码不让节点倒退',async()=>{
+ const wrap=t=>'<本轮用户输入>[[JX47_VALUE_E01_B123_BEGIN]]\n'+t+'\n'+t+'\n[[JX47_VALUE_E01_B123_END]]</本轮用户输入><recall>XSD2_xbxxFight_deadbeef XSD2_xbxxLoot_12345678</recall>';
+ const h=harness({wrap});await h.open();
+ for(const id of ['xbxxEnter','xbxxFight','xbxxLoot','xbxxAmbush']){
+  await h.click(id);const p=h.r.getSnapshot().pending;assert.ok(p.userRef);assert.equal(p.userRef.floor,h.chat.length-1);assert.ok(!h.r.getActionDisplay(h.chat.at(-1).mes).includes('XSD2_'));
+  await h.r.replay('normal');await h.reply('你与孤月完成当前动作。<Status_block><历时>—</历时></Status_block>');
+  assert.equal(h.r.getSnapshot().lastNodeResult.outcome,'success');
+ }
+ assert.equal(h.step(),'ambush');assert.equal(h.r.getSnapshot().pending,null);assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='极乐引').count,1);assert.ok(!h.plugin.list(h.r.getSnapshot()).some(x=>x.id==='xbxxLoot'));
+ await h.r.restore();await h.r.settleStory();assert.equal(h.step(),'ambush');assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='极乐引').count,1);
+ // Free response must stay at the attack scene; it cannot resurrect old commands.
+ h.chat.push({mes:'<本轮用户输入>我选择避开偷袭</本轮用户输入><recall>XSD2_xbxxLoot_12345678</recall>',is_user:true});await h.reply('你退后一步。');assert.equal(h.step(),'ambush');assert.ok(h.plugin.list(h.r.getSnapshot()).some(x=>x.id==='xbxxJudge'));
+});
+
+test('原指令已绑定后另发同代码也不能借用授权；真正改选仍撤回固定奖励',async()=>{
+ const h=harness();await h.open();await h.run('xbxxEnter');await h.run('xbxxFight');await h.click('xbxxLoot');const code=h.r.getSnapshot().pending.actionCode;
+ h.chat.push({is_user:true,mes:code});await h.reply('另外一条输入的回复。');assert.equal(h.step(),'loot');assert.equal(h.r.getSnapshot().inventory.some(x=>x.name==='极乐引'),false);assert.equal(h.r.getSnapshot().lastNodeResult.actionMismatch.boundUser.messageId.length>0,true);
 });
