@@ -1350,3 +1350,18 @@ test('已游玩旧档核验后升级开局根，旧候选快照仍可恢复且�
  h.c.chat.push({is_user:true,mes:'探索'},{is_user:false,mes:status({储物栏:'获得：测试灵石×1'},'你获得测试灵石。')});await legacy.settleStory();
  h.c.chat[0].mes='<div>更新后的展示</div>'+h.c.chat[0].mes;h.c.chat.pop();await legacy.restore({afterDelete:true});assert.equal(legacy.getSnapshot().storyCount,0);assert.ok(legacy.getSnapshot());
 });
+
+
+test('自设首遇仅在场名单仍核验好感并启用表，刷新/重roll不重复加；诊断可区分错误引用与漏报',async()=>{
+ const h=harness();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{name:'测试道友',date:{year:1578,month:3,day:3}}}});
+ assert.ok(h.prompts.at(-1).includes('测试道友'));assert.ok(h.prompts.at(-1).includes('</Status_block>之后'));
+ h.c.chat.push({is_user:true,mes:'向同道致意'});
+ const quote='叶红缨向测试道友颔首致谢。';
+ await h.reply(status({在场:'叶红缨（同道）'},'<span>叶红缨</span>向测试道友颔首致谢。')+'<好感事件>叶红缨｜记心上｜依据：'+quote+'</好感事件>');
+ assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,1);assert.ok(h.prompts.at(-1).includes('yh_gongyin'));
+ assert.equal(h.r.getDiagnostics().favor.lastCheck.status,'applied');await h.r.restore();await h.r.flushCompleted();assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,1);
+ h.c.chat.at(-1).swipe_id=1;h.c.chat.at(-1).mes=status({在场:'叶红缨'},'她只是等候你的回应。')+'<好感事件>叶红缨｜记心上｜依据：根本不存在的句子</好感事件>';
+ await h.r.replay('swipe');await h.r.settleStory();assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,0);assert.equal(h.r.getDiagnostics().favor.lastCheck.evidence.matched,false);
+ h.c.chat.push({is_user:true,mes:'请她喝酒'});await h.reply(status({在场:'叶红缨'},'她尚未接过酒盏。'));
+ assert.equal(h.r.getDiagnostics().favor.lastCheck.status,'missing');assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,0);
+});

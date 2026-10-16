@@ -403,7 +403,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       if(!options.readOnly){const release=doc.createElement("button");release.type="button";release.textContent="恢复自然变化";release.dataset.favorRelease="";note.append(release);release.onclick=()=>run(async()=>{await runtime.dispatchIntent({type:"GM_RELEASE",payload:{keys:[metricKey]}});closeFavor();openFavor(character,runtime.getSnapshot());});}
     }
     const check=s.stat_data.lastFavorCheck;
-    if(check && (check.character===character || check.character===null) && check.reason){const note=doc.createElement("p");note.className="xsd2-label";note.textContent=check.reason;el.querySelector(".xsd2-dialog-body").append(note);}
+    if(check && (check.character===character || check.character===null) && check.reason){const note=doc.createElement("p");note.className="xsd2-label";note.textContent="最近一次好感核验（第"+check.turn+"轮）："+check.reason;el.querySelector(".xsd2-dialog-body").append(note);}
     const close = () => {el.remove();if(favorDialog===el)favorDialog=null;};
 
     if(active && !negative && !options.readOnly){const b=doc.createElement("button");b.type="button";b.dataset.heartNode=active.finishId;b.dataset.promotionNode=active.finishId;const retry=s.pending?.nodeId===active.finishId && !!s.pending.selection?.completionQuery;b.textContent=retry?"重新结算本次剧情":"完成本次剧情";b.disabled=!!s.pending&&!retry;if(retry)b.dataset.completionRetry="";el.querySelector(".xsd2-dialog-body").prepend(b);}

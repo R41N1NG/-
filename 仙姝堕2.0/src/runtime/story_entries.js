@@ -1,11 +1,12 @@
 "use strict";
 const {negativeStages}=require("./character_stages");
+const {visibleCharacters}=require("./metric_events");
 function nodeEntryName(id) { return "【节点故事】" + id; }
 function metricEntryContent(cfg) {
   const rules = [
     "【数值申报】本条目只约束对「" + cfg.character + "」的态度申报格式。",
     "每回合至多输出一个标签：<好感事件>" + cfg.character + "｜记心上或记恨｜依据：本回合原文关键句</好感事件>；重大事件用锚点：<好感事件>" + cfg.character + "｜锚点 锚点ID｜依据：本回合原文关键句</好感事件>。",
-    "依据必须是本回合正文里逐字存在的句子；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。",
+    "好感反映她对玩家的态度，适用于所有玩家身份，包括自设；不得把赵无忧当作唯一可增长好感的玩家。标签须放在全部正文和</Status_block>之后；先写完正文，再逐字复制最终正文中一段连续原句作为依据；原句中的你、道号和人物称谓照抄，不互换，不写摘要，不拼接不同段落；同档位或同一锚点冷却期内申报无效；没有值得申报的言行就不要输出标签。",
   ].join("\n");
   const rubric = [
     "## 她会记在心上",
@@ -105,7 +106,7 @@ function managedEnabled(label, stat) {
   }
   if (label.startsWith("【好感事件表】")) {
     const character = label.slice("【好感事件表】".length);
-    const visible = new Set([stat.身份,stat.stage_focus,...(stat.stage_focuses || []),...(stat.在场角色 || []).map(x=>x.名)]);
+    const visible = visibleCharacters(stat);
     return visible.has(character) && !!stat.character_metrics?.[character];
   }
   if (label.startsWith("【区域背景】")) {

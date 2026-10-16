@@ -10,7 +10,7 @@ const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode,readUserInput,matchesAction } = require("./action_wire");
 const { startingInventoryFor } = require("./starting_inventory");
 const {metricEntryContent}=require("./story_entries");
-const { createMetricEvents,stripForEvidence,applyPreFinalPenalty } = require("./metric_events");
+const { createMetricEvents,visibleCharacters,stripForEvidence,applyPreFinalPenalty } = require("./metric_events");
 const {inferRelicActions,findDeflowerEvidence}=require("./relic_evidence");
 const Realm=require("./player_realm");
 const Eras=require("./grand_eras");
@@ -412,13 +412,14 @@ function createDispatcher(adapter, data) {
       (p.kind === "item" && plugin ? "\n" + plugin.getPrompt?.(snapshot()) : "")
       : plugin?.getPrompt?.(snapshot()) || "";
     const st = current?.stat_data;
-    const relationNames=new Set([current?.identity,current?.pending?.selection?.character,current?.activeEvent?.character,...(st?.在场角色||[]).flatMap(x=>[x.名,String(x.名||"").replace(/[（(][\s\S]*?[）)]/g,"").trim()])]);
+    const relationNames=visibleCharacters({...st,stage_focus:current?.pending?.selection?.character || current?.activeEvent?.character || st?.stage_focus});
     const relation=st ? [...relationNames].filter(name=>st.character_metrics?.[name]).map(name=>({人物:name,好感:st.character_metrics[name].好感度,当前心智:st.character_stages?.[name]?.label||st.character_stages?.[name]?.id,永久上限:st.character_metric_caps?.[name]?.好感度??null})) : [];
     const baseline = current
       ? "后台当前时点：仙盟历 " +
         C.dateText(current.calendarDate) +
         "。当前大势："+(Eras.currentEra(eras,current.calendarDate)?.name || "尚无已配置时期")+"。时期边界："+Eras.narrativeBoundary(eras,current.calendarDate)+"。身份：" +
         current.identity +
+        (current.identity==='自设'?"；玩家实际道号："+JSON.stringify(st.自设?.name || adapter.getUserName?.() || '自设道友'):"") +
         "。后台玩家修为："+st.修为+"。玩家境界由本地记录，正文不得自行提升玩家境界。地点：" +
         (p?.selection?.destination || st.地点 || "未定") +
         "。已知事实：" +
@@ -427,7 +428,7 @@ function createDispatcher(adapter, data) {
           .join("、") +
         "。后台关系状态："+JSON.stringify(relation)+"；负好感覆盖优先于正向心智，永久上限不得突破；数值本身不制造过去事件。储物栏：" +
         JSON.stringify(st.inventory) +
-        "。日期照抄后台；历时只写本回合实际耗时，不按轮次固定增加，不默认半个时辰，不写距事件的累计天数；无法确定耗时写—，不沿用上一轮耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。" +
+        "。好感事件协议适用于全部玩家身份，包括自设；按角色对当前玩家的实际反应判断，不以赵无忧为固定对象。已发生符合好感表的互动时，先完成全部正文和状态栏，再在</Status_block>之后至多申报一个<好感事件>人物名｜档位或锚点ID｜依据：本回合正文连续原句</好感事件>；不改写原句，不从用户邀请直接认定共饮，不重复计分；没有符合条件的新事件则不申报。日期照抄后台；历时只写本回合实际耗时，不按轮次固定增加，不默认半个时辰，不写距事件的累计天数；无法确定耗时写—，不沿用上一轮耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。" +
         (current.activeEvent || p
           ? "事件期间按节点约定停留，退出耗时由后台结算，不另外推进世界日期。"
           : "")
@@ -1260,6 +1261,7 @@ function createDispatcher(adapter, data) {
       const relics=s?Object.values(rules(s).RELIC_PILOT_CONFIG).map(cfg=>({id:cfg.id,name:cfg.names[0],holder:cfg.owner,stage:rules(s).getRelicStage(cfg.id,s.stat_data.known),flags:Object.fromEntries([cfg.formKey,cfg.stage1Key,cfg.stage2Key,cfg.stage3Key,cfg.stage4Key,cfg.owner+"处女丧失"].filter(Boolean).map(k=>[k,s.stat_data.known?.[k]===true])),owners:C.clone(s.stat_data.名器归属 || {}),breaker:s.stat_data.破处者?.[cfg.owner] || null,progress:C.clone(s.stat_data.relic_progress?.[cfg.id] || null),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([k])=>k.startsWith("known.")||k.startsWith("relicStage.")||k.startsWith("owner.")))})):[];
       return { schema:3,realm:s?Realm.eligibility(s,rules(s)):null,relics,relicEvidence:C.clone(s?.stat_data.relic_evidence_log || []), host:adapter.getDiagnostics?.() || {},
         floor:c.floor, messageIdentity:C.clone(c.identities[c.floor]), storageIdentityVersion:s?.history_identity?.version || 0, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), openingConfig:C.clone(s?.openingConfig || null), historyRecovery:C.clone(s?.historyRecovery || null), recoveryFault:C.clone(recoveryFault),
+        favor:s?{lastCheck:C.clone(s.stat_data.lastFavorCheck || null),recentChecks:C.clone(s.stat_data.metric_diag || []),metrics:C.clone(s.stat_data.character_metrics || {}),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([key])=>key.startsWith('metric.')))}:null,
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,actionCode:s.pending.actionCode || null,userRef:C.clone(s.pending.userRef || null),
         } : null, event:s?.activeEvent || null,

@@ -3,13 +3,23 @@ const { writeMetric, metricSpec, canRecover } = require("./character_stages");
 
 // 数值事件申报：模型每轮至多一个 <好感事件> 标签，申报「档位」或「锚点ID」＋原文依据；
 // 分值、上限、冷却全部由配置与后台决定，模型只有举证权，没有定价权。
-function proofText(text){return String(text).normalize("NFKC").replace(/[\s\u200b-\u200d\ufeff*_`]/g,"");}
+function proofText(text){
+ return String(text).replace(/<\/?(?:span|b|strong|em|i|u|s|p|div|br|blockquote)\b[^>]*>/gi,"")
+  .replace(/&(?:#(x[0-9a-f]+|[0-9]+)|nbsp|quot|apos|amp|lt|gt);/gi,(entity,n)=>{
+   if(n){const code=n[0].toLowerCase()==='x'?parseInt(n.slice(1),16):Number(n);return code>0&&code<=0x10ffff?String.fromCodePoint(code):entity;}
+   return ({'&nbsp;':' ','&quot;':'"','&apos;':"'",'&amp;':'&','&lt;':'<','&gt;':'>'})[entity.toLowerCase()] || entity;
+  }).normalize("NFKC").replace(/[“”「」『』]/g,'"').replace(/[‘’]/g,"'")
+  .replace(/[\s\u200b-\u200d\ufeff*_`]/g,"");
+}
+function canonicalCharacter(name){return String(name || '').replace(/[（(][\s\S]*?[）)]/g,'').trim();}
 function stripForEvidence(text) {
   return String(text)
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
     .replace(/<Promotion_ready\b[^>]*>[\s\S]*?<\/Promotion_ready>/gi, "")
     .replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi, "")
     .replace(/<details\b[^>]*>[\s\S]*?<\/details>/gi, "")
-    .replace(/<Status_block>[\s\S]*?<\/Status_block>/gi, "")
+    .replace(/<(Status_block|StatusBlock|status)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
     .replace(/<好感事件>[\s\S]*?(?:<\/好感事件>|(?=<Status_block>|$))/g, "");
 }
 function parseMetricEvent(body) {
@@ -23,7 +33,7 @@ function parseMetricEvent(body) {
     return { ok: false, reason: "申报格式应为 人物名｜档位或锚点ID｜依据" };
   return {
     ok: true,
-    character: parts[0],
+    character: canonicalCharacter(parts[0]),
     target: parts[1],
     evidence: parts[2].replace(/^依据[:：]\s*/, "").trim().replace(/^[“「『"]|[”」』"]$/g,""),
   };
@@ -33,8 +43,9 @@ function visibleCharacters(stat) {
     stat.身份,
     stat.stage_focus,
     ...(stat.stage_focuses || []),
-    ...(stat.在场角色 || []).flatMap(x=>[x.名,String(x.名||"").replace(/[（(][\s\S]*?[）)]/g,"").trim()]),
-  ]);
+    ...(stat.在场角色 || []).map(x=>x.名),
+    ...String(stat.在场 || '').split(/[、，,；;｜|\n]/),
+  ].map(canonicalCharacter).filter(Boolean));
 }
 function createMetricEvents(defs, profiles, promotions) {
   const table = Object.entries(defs || {});
@@ -65,7 +76,7 @@ function createMetricEvents(defs, profiles, promotions) {
     if(stat.favor_log[cfg.character].length>12)stat.favor_log[cfg.character].length=12;
   }
   function drop(stat, storyCount, reason) {
-    if(stat.lastFavorCheck)stat.lastFavorCheck.reason=reason;
+    if(stat.lastFavorCheck){stat.lastFavorCheck.reason=reason;stat.lastFavorCheck.status="rejected";}
     stat.metric_diag ||= [];
     stat.metric_diag.unshift({ turn: storyCount, reason });
     if (stat.metric_diag.length > 10) stat.metric_diag.length = 10;
@@ -78,7 +89,7 @@ function createMetricEvents(defs, profiles, promotions) {
     const changes = [];
     const visible = visibleCharacters(stat);
     const parsed = parseMetricEvent(body);
-    stat.lastFavorCheck={turn:storyCount,character:parsed.character || null,reason:"本轮未确认新的好感事件"};
+    stat.lastFavorCheck={turn:storyCount,character:parsed.character || null,reported:parsed.ok,status:parsed.ok?"checking":"missing",target:parsed.target || null,reason:"本轮未申报好感事件"};
     if (!parsed.ok) {
       if (/<好感事件>/.test(String(body))) return drop(stat, storyCount, parsed.reason);
       return { changes };
@@ -89,8 +100,11 @@ function createMetricEvents(defs, profiles, promotions) {
     const [, cfg] = found;
     const st = (stat.metric_state[parsed.character] ||= {});
     const proseVisible = stripForEvidence(prose);
-    if (!proofText(parsed.evidence) || !proofText(proseVisible).includes(proofText(parsed.evidence)))
-      return drop(stat, storyCount, "申报依据不在本回合正文中");
+    const evidence=proofText(parsed.evidence),narrative=proofText(proseVisible);
+    const matched=!!evidence && narrative.includes(evidence);
+    stat.lastFavorCheck.evidence={quote:parsed.evidence.slice(0,240),prosePreview:proseVisible.slice(0,600),matched,normalization:'display-v1'};
+    if (!matched)
+      return drop(stat, storyCount, "申报依据不在本回合正文中：须引用原句，不可改写、拼接或引用上轮内容");
     const spec = metricSpec(profiles, cfg.character, cfg.metric.key);
     let current = stat.character_metrics?.[cfg.character]?.[cfg.metric.key] ?? spec.default;
     writeMetric(stat,profiles,cfg.character,cfg.metric.key,current);
@@ -142,7 +156,7 @@ function createMetricEvents(defs, profiles, promotions) {
       const anchor = (cfg.anchors || []).find((a) => a.id === anchorId || a.label === anchorId);
       if (anchor && anchor.repeat === false) stat.metric_anchor_done[anchorId] = true;
     }
-    stat.lastFavorCheck.reason=null;
+    stat.lastFavorCheck.reason=null;stat.lastFavorCheck.status="applied";
     record(stat,cfg,via,value-current,storyCount,parsed.evidence);
     changes.push({ character: cfg.character, key: cfg.metric.key, delta, value, via });
     return { changes };
@@ -173,4 +187,4 @@ function applyPreFinalPenalty(s,prose,profiles,turn){
  }
  return penalized;
 }
-module.exports = { applyPreFinalPenalty,createMetricEvents, parseMetricEvent, stripForEvidence };
+module.exports = { applyPreFinalPenalty,createMetricEvents, visibleCharacters, parseMetricEvent, stripForEvidence };
