@@ -1278,3 +1278,12 @@ test('原生新候选复制旧extra且正文相同，也有独立回复版本',(
 test('共享extra的克隆消息拆分ID，不改其他扩展字段且连续读取保持稳定',()=>{
  const I=require('../src/runtime/message_identity'),extra={other:123},chat=[{mes:'原消息',extra},{mes:'复制消息',extra}];const a=I.identify(chat),b=I.identify(chat);assert.notEqual(a[0].messageId,a[1].messageId);assert.deepEqual(a,b);assert.equal(chat[0].extra.other,123);assert.equal(chat[1].extra.other,123);
 });
+
+test('旧自设开局仅宏展开可验证迁移，保留原档；其他改文、换候选或丢编号不能借此绕过',async()=>{
+ const h=harness();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{name:'青岚',date:{year:1578,month:3,day:3},realm:'金丹前期'}}});
+ // Construct the exact v64 form: literal macros in its full opening trail.
+ const I=require('../src/runtime/message_identity'),saved=h.r.getCheckpoint(),raw=h.c.chat[0].mes.replace('自设 · 青岚','自设 · {{user}}');h.c.chat[0].mes=raw;const oldIds=I.identify(h.c.chat);saved.identityTrail=oldIds;saved.trail=C.fingerprint(h.c.chat);saved.state.history_identity.revisionId=oldIds[0].revisionId;
+ h.c.chat[0].mes=raw.replaceAll('{{user}}','青岚');h.c.chat[0].variables=[];h.adapter.readCheckpoints=async()=>[C.clone(saved)];const r=createDispatcher(h.adapter,data);await r.ready();assert.equal(r.getSnapshot().identity,'自设');assert.ok(r.getSnapshot().openingMacroMigration);assert.equal(r.getCheckpoint().trail[0],C.fingerprint(h.c.chat)[0]);
+ const c=()=>({chatId:h.c.chatId,branchId:h.c.branchId,chat:h.c.chat,trail:C.fingerprint(h.c.chat),identities:I.identify(h.c.chat)}),migrate=require('../src/runtime/opening_macros').migrateOpening;
+ h.c.chat[0].mes+='多添一句';assert.equal(migrate(saved,c()),null);h.c.chat[0].mes=raw.replaceAll('{{user}}','青岚');h.c.chat[0].swipe_id=1;assert.equal(migrate(saved,c()),null);h.c.chat[0].swipe_id=0;delete h.c.chat[0].extra;assert.equal(migrate(saved,c()),null);
+});

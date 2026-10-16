@@ -1,6 +1,7 @@
 "use strict";
 const C = require("./contracts");
 const Identity=require("./message_identity");
+const {expandOpening,migrateOpening}=require("./opening_macros");
 const {reassociate}=require("./reassociate_history");
 const {meets} = require("./conditions");
 const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover} = require("./character_stages");
@@ -58,17 +59,19 @@ function createDispatcher(adapter, data) {
   }
 
   function compatible(e, c) {
-    return e?.schema === 2 && (e.identityTrail ? !!Identity.restore(e,c) : C.matchesSnapshot(e.trail, c.trail));
+    return e?.schema === 2 && (e.identityTrail ? !!Identity.restore(e,c) || !!migrateOpening(e,c) : C.matchesSnapshot(e.trail, c.trail));
   }
   async function history(c, ceiling = c.floor) {
     let best=null,saved=false;const localRecords=[];
     function consider(e,legacyScope=false){
       if(e?.schema!==2)return;
       saved=true;
+      const migrated=migrateOpening(e,c);if(migrated)e=migrated;
       const anchor=e.identityTrail?.at(-1);
       const position=anchor ? c.identities.findIndex(x=>x.messageId===anchor.messageId && x.revisionId===anchor.revisionId) : (e.trail?.length ?? 0)-1;
       if(position<0 || position>ceiling || (best && (position<best.floor || (position===best.floor && e.state?.revision<=best.state.revision))))return;
       let found=e.identityTrail ? Identity.restore(e,c) : null;
+      if(found && migrated)found.migrated=true;
       if(!e.identityTrail && C.matchesSnapshot(e.trail,c.trail) && (!legacyScope || (e.chatId===c.chatId && (!e.branchId||e.branchId===c.branchId))))
         found={state:C.clone(e.state),floor:e.trail.length-1,migrated:true};
       if(found && found.floor<=ceiling && (!best || found.floor>best.floor || (found.floor===best.floor && found.state.revision>best.state.revision)))best=found;
@@ -114,7 +117,7 @@ function createDispatcher(adapter, data) {
       if(restored && restored.floor<=ceiling && (!best||restored.floor>=best.floor))best=restored;
     }
     if(!best && saved){
-      recoveryFault={chatId:c.chatId,branchId:c.branchId,floor:c.floor,ceiling,recordCount:records.length,recordFloors:records.filter(x=>x?.schema===2).map(x=>x.trail?.length-1),recordScopes:records.filter(x=>x?.schema===2).map(x=>({chatId:x.chatId,branchId:x.branchId,floor:x.trail?.length-1,compatible:compatible(x,c)})),candidates:c.trail.map(x=>{const v=JSON.parse(x);return [v[0],v[1],v[2]];}),reason:"未找到符合当前消息前缀与候选的进度快照"};
+      recoveryFault={chatId:c.chatId,branchId:c.branchId,floor:c.floor,ceiling,recordCount:records.length,recordFloors:records.filter(x=>x?.schema===2).map(x=>x.trail?.length-1),recordScopes:records.filter(x=>x?.schema===2).map(x=>({chatId:x.chatId,branchId:x.branchId,floor:x.trail?.length-1,compatible:compatible(x,c),identityMismatch:Identity.explain(x,c)})),candidates:c.trail.map(x=>{const v=JSON.parse(x);return [v[0],v[1],v[2]];}),reason:"未找到符合当前消息前缀与候选的进度快照"};
       const error=Error("已有进度记录与当前分支不匹配，已停止初始化以保护存档");error.code="XSD2_RECOVERY_MISMATCH";throw error;
     }
     recoveryFault=null;
@@ -1054,6 +1057,7 @@ function createDispatcher(adapter, data) {
         "；" +
         (custom.origin || "");
     }
+    opening=expandOpening(opening,custom?.name || adapter.getUserName?.() || c.raw?.name1,c.raw?.name2 || c.card?.name || c.card?.data?.name);
     const s = defaults(identity, opening, custom);
     if (custom) s.stat_data.自设 = C.clone(custom);
     normalize(s);

@@ -112,4 +112,12 @@ function stampProcessed(s,c){
     if(id && (C.hash(text)===hash || C.hash(normalized(text))===hash))s.processedByRevision[id.revisionId]={messageId:id.messageId,hash};
   }
 }
-module.exports={uid,identify,trail,mapping,restore,remapState,authorized,authorization,stampProcessed,upgradeAuthorizations,bindReferences};
+function explain(e,c){
+ if(!e?.identityTrail)return {reason:'旧存档无稳定消息编号'};
+ for(let i=0;i<e.identityTrail.length;i++){
+  const expected=e.identityTrail[i],position=c.identities.findIndex(x=>x.messageId===expected.messageId),actual=c.identities[position];
+  if(position<0 || !same(expected,actual))return {sourceFloor:i,currentFloor:position,reason:position<0?'消息编号缺失':expected.revisionId!==actual.revisionId?'候选或正文版本不同':'消息内容签名不同',expected:C.clone(expected),actual:C.clone(actual || null)};
+ }
+ return {reason:'消息顺序或内部状态引用不匹配'};
+}
+module.exports={uid,identify,trail,mapping,restore,remapState,authorized,authorization,stampProcessed,upgradeAuthorizations,bindReferences,explain};

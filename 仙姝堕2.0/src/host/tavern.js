@@ -1,6 +1,7 @@
 "use strict";
 const C = require("../runtime/contracts");
 const Identity=require("../runtime/message_identity");
+const {expandOpening}=require("../runtime/opening_macros");
 const {confirmExit}=require("../ui/exit_confirmation");
 const { createWorldbookHost } = require("./worldbook");
 function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveHandoff = null, liveCheckpoint = null) {
@@ -37,6 +38,14 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     console.error("[仙姝堕2.0]", e);
     top.toastr?.error(String(e.message || e), "仙姝堕");
   };
+  let lastBindingError=null;
+  async function syncBook(task){
+    try{const result=await task();lastBindingError=null;return result;}
+    catch(error){if(error.code!=='XSD2_WORLDBOOK_BINDING')throw error;
+      if(lastBindingError!==error.message){lastBindingError=error.message;report(error);}
+      return {skipped:true,reason:error.code};
+    }
+  }
   function guard(c) {
     const n = context();
     if (
@@ -127,6 +136,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       const c = context();
       return {
         saving:saveGate.count>0,pendingSaves:saveGate.count,recentErrors:C.clone(recentErrors),
+        worldbook:book.getDiagnostics?.() || null,
         cardVersion:c.card?.data?.character_version || c.card?.character_version || null,
         generating:isGenerating(), lifecycleGenerating:generating, aborted,
         stopVisible:visible(top.document.querySelector("#mes_stop")),
@@ -211,7 +221,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       }),true);
       if(!written)return;
       // Replay may intentionally mirror an older revision before regeneration.
-      await book.synchronizeState(state?.stat_data || {},()=>context().chatId===c.chatId);
+      await syncBook(()=>book.synchronizeState(state?.stat_data || {},()=>context().chatId===c.chatId));
     });},
     preflightSend,
     fillInput(text) {
@@ -241,7 +251,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       );
       if (c.chat?.[i]) c.chat[i].mes = text;
       const n = context();
-      if (n.chat?.[i]) n.chat[i].mes = text;
+      if (n.chat?.[i]) {n.chat[i].mes=text;const slot=Number(n.chat[i].swipe_id??0);if(Array.isArray(n.chat[i].swipes))n.chat[i].swipes[slot]=text;}
       if (
         n.chatId !== c.chatId ||
         !C.matches(trail.slice(0, i), C.fingerprint(n.chat))
@@ -250,11 +260,12 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       await save();
     },
     async replaceOpening(text) {
+      const c=ctx();text=expandOpening(text,c.name1,c.name2);
       await adapter.replaceStory(0, text, "affected");
     },
     async syncIdentity(identity) {
       const id = context().chatId;
-      return book.synchronize(identity, () => context().chatId === id);
+      return syncBook(()=>book.synchronize(identity, () => context().chatId === id));
     },
     setPrompt(text) {
       const c = ctx();

@@ -608,3 +608,22 @@ test('打包西北归宗：浏览器确认不可用也能在原子页面确认�
   assert.equal(r.getSnapshot().pending,null);assert.equal(r.getSnapshot().pluginState.xibei.step,'done');assert.equal(r.getSnapshot().stat_data.character_metrics.孤月.好感度,5);assert.equal(h.doc.querySelector('[data-xibei]:not(:disabled)'),null);assert.deepEqual(h.errors,[]);
  }finally{h.close();}
 });
+
+test('自设开局先展开用户名并同步原生swipes，首轮发送与重挂载不误判分支',async()=>{
+ const h=await fixture();try{
+  h.context.name1='酒馆道友';h.context.name2='仙姝堕2.0·框架测试';h.context.chat[0].swipes=[h.context.chat[0].mes];h.context.chat[0].swipe_info=[{extra:{}}];
+  h.doc.querySelector('[data-xds-open-custom]').click();h.doc.querySelector('[data-xds-field="custom_name"]').value='青岚';h.doc.querySelector('[data-xds-field="custom_timepoint"]').value='仙盟历1578年3月3日';h.doc.querySelector('[data-xds-action="submit-custom"]').click();await until(()=>h.win.XSD2.runtime.getSnapshot()?.identity==='自设');
+  assert.ok(!h.context.chat[0].mes.includes('{{user}}'));assert.ok(h.context.chat[0].mes.includes('自设 · 青岚'));assert.equal(h.context.chat[0].swipes[0],h.context.chat[0].mes);
+  const r=h.win.XSD2.runtime;h.doc.querySelector('#send_textarea').value='我查看四周';h.doc.querySelector('#send_but').click();await h.emit('GENERATION_STARTED','normal',{},false);h.context.chat.push({mes:'你来到石亭。<Status_block><历时>10分钟</历时></Status_block>',is_user:false,variables:[{}]});h.appendDOM(2);await h.emit('GENERATION_ENDED');assert.equal(r.getSnapshot().storyCount,1);
+  h.win.eval(script);await until(()=>h.win.XSD2.runtime!==r && h.win.XSD2.runtime.getSnapshot()?.storyCount===1);assert.equal(h.win.XSD2.runtime.getSnapshot().stat_data.自设.name,'青岚');assert.deepEqual(h.errors,[]);
+ }finally{h.close();}
+});
+
+test('主书无间隔点的同名别名可同步；误绑其他世界书不写入且HUD仍显示绑定警告',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..')),h=await fixture(data.greetings.赵无忧);
+ try{
+  let binding='其他正式世界书',writes=0;h.win.TavernHelper.getCharWorldbookNames=async()=>({primary:binding});h.win.TavernHelper.getWorldbook=async()=>[{uid:1,name:'【身份】赵无忧',content:'角色身份',enabled:true}];h.win.TavernHelper.replaceWorldbook=async()=>{writes++;};
+  const r=h.win.XSD2.runtime;await r.restore();await h.emit('CHAT_CHANGED');assert.equal(writes,0);assert.ok(h.doc.querySelector('[data-xsd2-root]'));assert.ok(h.doc.querySelector('[data-xsd2-worldbook-warning]'));assert.equal(r.getDiagnostics().host.worldbook.primary,binding);
+  for(const alias of ['仙姝堕2.0框架测试','仙姝堕2.0框架测试（2）','仙姝堕2.0·框架测试 (3)']){binding=alias;await h.emit('CHAT_CHANGED');assert.ok(writes>0);assert.equal(r.getDiagnostics().host.worldbook.blocked,false);assert.equal(h.doc.querySelector('[data-xsd2-worldbook-warning]'),null);}
+ }finally{h.close();}
+});

@@ -51,20 +51,22 @@ function embeddedEntry(raw, uid, sample) {
     effect:{sticky:null,cooldown:null,delay:null}};
 }
 function createWorldbookHost(helper, getContext, scope = {}) {
+  let status={expectedName:scope.expectedName || null,primary:null,blocked:false};
+  function validateName(name){
+    status={expectedName:scope.expectedName || null,primary:name || null,blocked:!!(name && scope.expectedName && ![scope.expectedName,scope.expectedName.replaceAll('·','')].includes(name.replace(/\s*(?:\([1-9]\d*\)|（[1-9]\d*）)$/,'')))};
+    if(status.blocked){const error=Error('2.0测试卡须绑定独立同名世界书，已取消写入其他世界书；当前主书：'+name+'；所需主书：'+scope.expectedName);error.code='XSD2_WORLDBOOK_BINDING';throw error;}
+    return name;
+  }
   async function primary() {
     const bindings = await helper.getCharWorldbookNames("current");
     if (bindings?.primary) {
-      if (scope.expectedName && bindings.primary !== scope.expectedName)
-        throw Error("2.0测试卡须绑定独立同名世界书，已取消写入其他世界书");
-      return bindings.primary;
+      return validateName(bindings.primary);
     }
     const c = getContext(),
       card = c.characters?.[c.characterId ?? c.this_chid];
     const name =
       card?.data?.extensions?.world || card?.extensions?.world || null;
-    if (name && scope.expectedName && name !== scope.expectedName)
-      throw Error("2.0测试卡须绑定独立同名世界书");
-    return name;
+    return validateName(name);
   }
   async function synchronize(identity, expected) {
     const name = await primary();
@@ -121,6 +123,6 @@ function createWorldbookHost(helper, getContext, scope = {}) {
     if (changed)
       await helper.replaceWorldbook(name, updated, { render: "immediate" });
   }
-  return { synchronize, synchronizeState };
+  return { getDiagnostics:()=>({...status}), synchronize, synchronizeState };
 }
 module.exports = { createWorldbookHost, evaluateGate, embeddedEntry };

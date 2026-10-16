@@ -78,6 +78,13 @@ function start(win) {
       targets.push({floor, body, s, readOnly, key});
     }
     if (epoch !== renderEpoch || !active()) return;
+    const binding=host.getDiagnostics().worldbook;
+    const warning=doc.querySelector('[data-xsd2-worldbook-warning]');
+    warning?.remove();
+    if(binding?.blocked){
+      const target=targets.find(t=>!t.readOnly) || targets.at(-1);
+      if(target){const note=doc.createElement('aside');note.dataset.xsd2WorldbookWarning='';note.setAttribute('role','status');note.textContent='世界书未同步：当前主书“'+binding.primary+'”，请绑定“'+binding.expectedName+'”后重新读取。原存档已保留。';note.style.cssText='padding:12px;border:1px solid #b98a50;color:#efce84';target.body.append(note);}
+    }
     for (const [floor, record] of huds) {
       const target = targets.find(x => x.floor === floor);
       if (!target || record.el.parentElement !== target.body || record.target.readOnly !== target.readOnly) {
@@ -279,6 +286,7 @@ function start(win) {
       doc.querySelectorAll("[data-xsd2-exit-confirm]").forEach(el=>el.cancelExit?.());
       effects.dispose();
       recoveryPanel?.remove();
+      doc.querySelector("[data-xsd2-worldbook-warning]")?.remove();
       queuedSend?.notice.remove();queuedSend=null;
       doc.removeEventListener("click",gateSend,true);doc.removeEventListener("keydown",gateSend,true);
       doc.querySelector("[data-xsd2-diagnostic]")?.remove();
