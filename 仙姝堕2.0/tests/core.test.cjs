@@ -362,7 +362,7 @@ test("正文库存实证、消耗及普通历时推进；GM保留人工优先并
   });
   assert.deepEqual(h.r.getSnapshot().manual, {});
 });
-test("否定、计划与仅状态申报不构成物品及名器实证；计数不能自行晋阶", async () => {
+test("储物栏申报可入库，但否定及计数仍不能自行晋升名器", async () => {
   const h = harness();
   await h.opening("赵无忧");
   await h.reply(
@@ -375,7 +375,7 @@ test("否定、计划与仅状态申报不构成物品及名器实证；计数�
       "你尚未得到草药。孤月没有参与此事。",
     ),
   );
-  assert.deepEqual(h.r.getSnapshot().inventory, startingInventoryFor("赵无忧"));
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="草药").count,1);
   assert.equal(h.r.getSnapshot().known.九幽玄阴穴四阶段, false);
   assert.deepEqual(h.r.getSnapshot().relics, {});
   const R = data.rules({}),
@@ -648,11 +648,11 @@ test("插件等待异步证据期间停止，返回成功也不结算", async ()
   assert.equal(h.r.getSnapshot().calendarDate.day, 3);
   assert.ok(h.r.getSnapshot().pending);
 });
-test("普通纳戒也不把旁人取得记给玩家", async () => {
+test("储物栏获得申报按玩家入库，不再由正文主语匹配拦截", async () => {
   const h = harness();
   await h.opening("赵无忧");
   await h.reply(status({ 纳戒: "获得：草药×1" }, "你看见孤月取得草药。"));
-  assert.deepEqual(h.r.getSnapshot().inventory, startingInventoryFor("赵无忧"));
+  assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==="草药").count,1);
 });
 test("测试卡误绑正式书会拒绝同步，不改正式世界书", async () => {
   let written = false;
@@ -1382,4 +1382,38 @@ test('多人申报中一人正文惩罚不清空其他人合法好感，也不�
  const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'本轮互动'});
  const quote='叶红缨向你颔首致谢。';await h.reply(status({在场:'叶红缨、楚灵夜'},'你强行非礼楚灵夜。'+quote)+'<好感事件>楚灵夜｜记心上｜依据：你强行非礼楚灵夜。</好感事件><好感事件>叶红缨｜记心上｜依据：'+quote+'</好感事件>');
  const s=h.r.getSnapshot();assert.equal(s.stat_data.character_metrics.楚灵夜.好感度,-51);assert.equal(s.stat_data.character_metrics.叶红缨.好感度,1);assert.equal(s.stat_data.favor_log.楚灵夜.length,1);assert.equal(s.lastMetricEvents[0].character,'叶红缨');
+});
+
+test('GM好感保存后前一回复仅被重排正文，下个普通回合仍保留人工覆盖',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'交谈'});await h.reply(status({在场:'叶红缨'},'她向你颔首。'));
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'metric.叶红缨.好感度':20}});assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,20);
+ h.c.chat.at(-1).mes='<div>宿主重排</div>'+h.c.chat.at(-1).mes;
+ h.c.chat.push({is_user:true,mes:'继续交谈'});await h.reply(status({在场:'叶红缨'},'她听你说完。'));
+ assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,20);
+});
+
+
+test('故事自创物品无需注册或取物句式，刷新不重复、后续获得累加',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'收下赠礼'});
+ await h.reply(status({储物栏:'获得：故事星砂×2（赠礼）'},'匣盖合拢，她微笑告别。'));
+ const amount=()=>h.r.getSnapshot().inventory.find(x=>x.name==='故事星砂')?.count;
+ assert.equal(amount(),2);await h.r.restore();await h.r.flushCompleted();assert.equal(amount(),2);
+ h.c.chat.push({is_user:true,mes:'继续探索'});await h.reply(status({储物栏:'获得：故事星砂×3'},'行囊又添收获。'));assert.equal(amount(),5);
+ assert.equal(h.r.getDiagnostics().inventory.items.find(x=>x.name==='故事星砂').count,5);
+});
+
+test('GM背包编辑不冻结后续入库或反复覆盖数量',async()=>{
+ const h=harness();await h.opening('赵无忧');await h.r.dispatchIntent({type:'GM_PATCH',payload:{inventory:[{id:'故事旧物',name:'故事旧物',count:2}]}});
+ h.c.chat.push({is_user:true,mes:'收获'});await h.reply(status({储物栏:'获得：故事旧物×1｜获得：故事新物×1'},'归来。'));
+ assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='故事旧物').count,3);assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='故事新物').count,1);
+ h.c.chat.push({is_user:true,mes:'休息'});await h.reply(status({},'风平浪静。'));await h.r.restore();assert.equal(h.r.getSnapshot().inventory.find(x=>x.name==='故事旧物').count,3);
+});
+
+test('GM好感不借给另一个候选；交还自动后重排也不复活旧锁',async()=>{
+ const h=harness();await h.opening('赵无忧');h.c.chat.push({is_user:true,mes:'交谈'});await h.reply(status({在场:'叶红缨'},'她颔首。'));
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'metric.叶红缨.好感度':20}});
+ h.c.chat.at(-1).swipe_id=1;h.c.chat.at(-1).mes=status({在场:'叶红缨'},'另一个候选。');await h.r.replay('swipe');await h.r.settleStory();assert.equal(h.r.getSnapshot().stat_data.character_metrics.叶红缨.好感度,0);
+ await h.r.dispatchIntent({type:'GM_PATCH',payload:{'metric.叶红缨.好感度':20}});await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['metric.叶红缨.好感度']}});
+ h.c.chat.at(-1).mes='<div>排版</div>'+h.c.chat.at(-1).mes;h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({在场:'叶红缨'},'继续交谈。'));
+ assert.equal(h.r.getSnapshot().manual['metric.叶红缨.好感度'],undefined);
 });

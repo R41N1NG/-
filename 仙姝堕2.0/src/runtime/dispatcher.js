@@ -120,6 +120,27 @@ function createDispatcher(adapter, data) {
       recoveryFault={chatId:c.chatId,branchId:c.branchId,floor:c.floor,ceiling,recordCount:records.length,recordFloors:records.filter(x=>x?.schema===2).map(x=>x.trail?.length-1),recordScopes:records.filter(x=>x?.schema===2).map(x=>({chatId:x.chatId,branchId:x.branchId,floor:x.trail?.length-1,compatible:compatible(x,c),identityMismatch:Identity.explain(x,c)})),candidates:c.trail.map(x=>{const v=JSON.parse(x);return [v[0],v[1],v[2]];}),reason:"未找到符合当前消息前缀与候选的进度快照"};
       const error=Error("已有进度记录与当前分支不匹配，已停止初始化以保护存档");error.code="XSD2_RECOVERY_MISMATCH";throw error;
     }
+    if(best){
+      // Only carry explicit GM overrides across edits to their own reply.
+      // The earlier prefix and native candidate must still match.
+      let edited=null;
+      for(const e of [...localRecords,...records]){
+        const ids=e?.identityTrail,overrides=e?.state?.manual;
+        if(!ids?.length || !overrides || !Number.isFinite(e.state.revision))continue;
+        const anchor=ids.at(-1),position=c.identities.findIndex(x=>x.messageId===anchor.messageId);
+        if(position<0 || position>ceiling)continue;
+        if(ids.length===1){if(!Identity.same(anchor,c.identities[position]))continue;}
+        else {
+          const prefix=Identity.mapping(ids.slice(0,-1),c.identities);
+          if(!prefix || prefix.get(ids.length-2)>=position)continue;
+        }
+        let tuple;try{tuple=JSON.parse(e.trail?.at(-1));}catch{continue;}
+        if(!tuple || Number(tuple[2])!==Number(c.chat[position].swipe_id || 0))continue;
+        if(!edited || e.state.revision>edited.revision)edited={revision:e.state.revision,manual:overrides};
+      }
+      if(edited && edited.revision>=best.state.revision)best.state.manual=C.clone(edited.manual);
+      if(best.state.manual?.inventory){best.state.stat_data.inventory=C.clone(best.state.manual.inventory);delete best.state.manual.inventory;}
+    }
     recoveryFault=null;
     recoveredEnvelope=best ? {schema:2,chatId:c.chatId,branchId:c.branchId,trail:c.trail.slice(0,best.floor+1),identityTrail:Identity.trail(c,best.floor),state:C.clone(best.state)} : null;
     return best;
@@ -219,7 +240,7 @@ function createDispatcher(adapter, data) {
         s.identity = v;
         s.stat_data.阵营 = rules(s).IDENTITY_FACTION[v];
       } else if (k === "calendarDate") s.calendarDate = C.clone(v);
-      else if (k === "inventory") s.stat_data.inventory = C.clone(v);
+      else if (k === "inventory") {s.stat_data.inventory = C.clone(v);delete s.manual.inventory;}
       else if (k === "段位") s.stat_data.段位 = v;
       else if (k.startsWith("metric.")) {
         const [character,key] = k.slice(7).split(".");
@@ -650,7 +671,7 @@ function createDispatcher(adapter, data) {
   function applyInventory(s, parsed) {
     const changes = s.manual.inventory && !(s.reconciledUse && !s.reconciledUse.consumable) ? [] : (s.reconciledInventoryChanges || []);
     delete s.reconciledInventoryChanges;
-    if (s.manual.inventory) return changes;
+    if(s.manual.inventory){s.stat_data.inventory=C.clone(s.manual.inventory);delete s.manual.inventory;}
     for (const part of String(parsed.fields.纳戒 || "").split(/[｜|；;]/)) {
       const m = part
         .trim()
@@ -673,7 +694,7 @@ function createDispatcher(adapter, data) {
       const existing = s.stat_data.inventory.find(x => x.name === name);
       if (!gain && existing && !describeItem(existing).consumable &&
         !parsed.prose.split(/[。！？\n，,；;]/).some(line => line.includes(name) && !C.noFact.test(line) && /送给|赠给|丢掉|夺走|损毁|销毁|焚毁/.test(line))) continue;
-      const proof = parsed.prose.split(/[。！？\n]/).some(
+      const proof = gain || parsed.prose.split(/[。！？\n]/).some(
         (line) =>
           line.includes(name) &&
           !C.noFact.test(line) &&
@@ -1262,6 +1283,7 @@ function createDispatcher(adapter, data) {
       const relics=s?Object.values(rules(s).RELIC_PILOT_CONFIG).map(cfg=>({id:cfg.id,name:cfg.names[0],holder:cfg.owner,stage:rules(s).getRelicStage(cfg.id,s.stat_data.known),flags:Object.fromEntries([cfg.formKey,cfg.stage1Key,cfg.stage2Key,cfg.stage3Key,cfg.stage4Key,cfg.owner+"处女丧失"].filter(Boolean).map(k=>[k,s.stat_data.known?.[k]===true])),owners:C.clone(s.stat_data.名器归属 || {}),breaker:s.stat_data.破处者?.[cfg.owner] || null,progress:C.clone(s.stat_data.relic_progress?.[cfg.id] || null),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([k])=>k.startsWith("known.")||k.startsWith("relicStage.")||k.startsWith("owner.")))})):[];
       return { schema:3,realm:s?Realm.eligibility(s,rules(s)):null,relics,relicEvidence:C.clone(s?.stat_data.relic_evidence_log || []), host:adapter.getDiagnostics?.() || {},
         floor:c.floor, messageIdentity:C.clone(c.identities[c.floor]), storageIdentityVersion:s?.history_identity?.version || 0, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), openingConfig:C.clone(s?.openingConfig || null), historyRecovery:C.clone(s?.historyRecovery || null), recoveryFault:C.clone(recoveryFault),
+        inventory:s?{items:C.clone(s.stat_data.inventory || []),manualLocked:!!s.manual?.inventory,changes:C.clone(s.inventoryChanges || [])}:null,
         favor:s?{lastCheck:C.clone(s.stat_data.lastFavorCheck || null),checks:C.clone(s.stat_data.lastFavorChecks || []),recentChecks:C.clone(s.stat_data.metric_diag || []),metrics:C.clone(s.stat_data.character_metrics || {}),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([key])=>key.startsWith('metric.')))}:null,
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,actionCode:s.pending.actionCode || null,userRef:C.clone(s.pending.userRef || null),
