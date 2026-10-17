@@ -5,6 +5,7 @@ const Identity=require("../runtime/message_identity");
 const {expandOpening}=require("../runtime/opening_macros");
 const {confirmExit}=require("../ui/exit_confirmation");
 const { createWorldbookHost } = require("./worldbook");
+const {createRepairBackup}=require('./repair_backup');
 function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveHandoff = null, liveCheckpoint = null) {
   const top = (win && win.top) || (win && win.parent) || win;
   const helper =
@@ -306,6 +307,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
       return () => c.eventSource.removeListener(name, fn);
     },
   };
+  Object.assign(adapter,createRepairBackup({context,rawContext:ctx,guard,helper,save,withSaving}));
   return adapter;
 }
 module.exports = { createTavernHost };

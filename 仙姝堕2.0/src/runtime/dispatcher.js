@@ -7,7 +7,8 @@ const {meets} = require("./conditions");
 const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover} = require("./character_stages");
 const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
-const { createActionCode, readActionCode,readUserInput,matchesAction } = require("./action_wire");
+const { createActionCode, readActionCode,readUserInput,matchesAction,resolveActionReply } = require("./action_wire");
+const {createPlayerRecovery}=require('./player_recovery');
 const { startingInventoryFor } = require("./starting_inventory");
 const {metricEntryContent}=require("./story_entries");
 const { createMetricEvents,visibleCharacters,stripForEvidence,applyPreFinalPenalty } = require("./metric_events");
@@ -145,13 +146,13 @@ function createDispatcher(adapter, data) {
     recoveredEnvelope=best ? {schema:2,chatId:c.chatId,branchId:c.branchId,trail:c.trail.slice(0,best.floor+1),identityTrail:Identity.trail(c,best.floor),state:C.clone(best.state)} : null;
     return best;
   }
-  function actionFailure(p,c,user,floor){
+  function actionFailure(p,c,user,floor,details={}){
     const next=C.clone(p.before);
     next.lastNodeResult = { nodeId:p.nodeId, floor:floor, outcome:"failure",
           reason:"行动后的用户消息与授权行动不匹配", evidenceMode:null,
           actionMismatch:{expectedCode:p.actionCode || null,expectedAction:p.actionText,userFloor:user?c.chat.lastIndexOf(user):null,
             actualCode:user?readActionCode(user.mes)?.code || null:null,inputHash:user?C.hash(readUserInput(user.mes)):null,
-            inputPreview:user?String(readUserInput(user.mes) ?? '').slice(0,180):'',boundUser:C.clone(p.userRef || null)} };
+            inputPreview:user?String(readUserInput(user.mes) ?? '').slice(0,180):'',boundUser:C.clone(p.userRef || null),...details} };
     return next;
   }
   async function bindPendingUser(c){
@@ -896,6 +897,7 @@ function createDispatcher(adapter, data) {
   }
   async function story(c,options={}) {
     c={...c,allowUserAppend:true};
+    if(!options.repairState && adapter.isRepairPaused?.())return {skipped:true,reason:'player_repair_undone'};
     if ((adapter.isGenerating?.()&&!options.beforeGeneration) || adapter.isAborted?.())
       return { deferred: true };
     const m = c.chat[c.floor];
@@ -909,14 +911,14 @@ function createDispatcher(adapter, data) {
       return { skipped: true };
     if (!current || scopeChatId !== c.chatId) await load(c);
     if (!current) return { skipped: true };
-    if(current.historyRecovery?.ignoredReplies?.includes(c.identities[c.floor].revisionId))return {skipped:true,reason:'deleted_history_suffix'};
+    if(!options.repairState && current.historyRecovery?.ignoredReplies?.includes(c.identities[c.floor].revisionId))return {skipped:true,reason:'deleted_history_suffix'};
     const processed=current.processedByRevision?.[c.identities[c.floor].revisionId]?.hash || (!current.history_identity ? current.processed[c.floor] : undefined);
     const normalizedHash=C.hash(String(m.mes).replace(/\r\n/g,"\n").trim());
     const closedCallback=processed && Object.values(current.settlements || {}).some(x=>x.floor===c.floor && x.kind==="promotion");
     // The raw callback has already been replaced by display text. Only an
     // explicit regeneration/delete can revoke its saved settlement receipt.
-    if(processed===C.hash(m.mes) || processed===normalizedHash || closedCallback)return {skipped:true};
-    const previous = await history(c, c.floor - 1);
+    if(!options.repairState && (processed===C.hash(m.mes) || processed===normalizedHash || closedCallback))return {skipped:true};
+    const previous = options.repairState ? {state:C.clone(options.repairState)} : await history(c, c.floor - 1);
     if (!previous) throw Error("缺少本楼的前置状态");
     let s = previous.state;
     // Manual edits on this candidate remain higher priority when its prose is edited.
@@ -935,11 +937,9 @@ function createDispatcher(adapter, data) {
     const activeInput=readUserInput(latestUser?.mes || "");
     let allowInventory = !!p || (activeInput!==null && !/\bXSD2_/.test(activeInput));
     if (p) {
-      const user = c.chat
-        .slice(p.floor + 1, c.floor)
-        .reverse().find((x) => x.is_user && !x.is_system);
-      if (!user || !matchesAction(p,user.mes) || (p.userRef && c.identities[c.chat.lastIndexOf(user)]?.messageId!==p.userRef.messageId)) {
-        s=actionFailure(p,c,user,c.floor);
+      const link=resolveActionReply(p,c),user=c.chat[link.userFloor];
+      if (link.reason || link.replyFloor!==c.floor) {
+        s=actionFailure(p,c,user,c.floor,{expectedReplyFloor:link.replyFloor,reason:link.reason || '当前回复不是原操作对应的回复'});
         allowInventory=false;
       } else if (p.kind === "realm") {
         realmSettled=true;
@@ -1021,7 +1021,10 @@ function createDispatcher(adapter, data) {
     }
     manual(s);
     const fixed = C.canonicalStatus(body, s, confirmedPlace);
-    if (fixed !== m.mes) {
+    // The next ordinary input may already be in the chat when its preceding
+    // completed reply is flushed. Settle it without editing historical prose.
+    const preserveBody=options.preserveBody || (c.chat.length>c.floor+1 && c.chat.slice(c.floor+1).every(x=>x.is_user&&!x.is_system));
+    if (!preserveBody && fixed !== m.mes) {
       const oldId = c.chatId,
         oldFloor = c.floor;
       await adapter.replaceStory(c.floor, fixed);
@@ -1031,7 +1034,7 @@ function createDispatcher(adapter, data) {
     }
     if (adapter.isAborted?.() || (adapter.isGenerating?.()&&!options.beforeGeneration))
       return { deferred: true };
-    s.processed[c.floor] = C.hash(fixed);
+    s.processed[c.floor] = C.hash(preserveBody ? m.mes : fixed);
     return commit(c, s, "floor_advance");
   }
   async function gm(c, payload) {
@@ -1266,7 +1269,25 @@ function createDispatcher(adapter, data) {
       }
     });
   }
+  const playerRecovery=createPlayerRecovery({adapter,context,token,guard,
+    getState:()=>scopeChatId===context().chatId?current:null,
+    getCheckpoint:()=>liveEnvelope?C.clone(liveEnvelope):null,
+    readState:c=>history(c),commit,notify,
+    settle:(c,state)=>story(c,{repairState:state,preserveBody:true}),
+    install:(state,checkpoint)=>{current=state;scopeChatId=context().chatId;liveEnvelope=checkpoint;recoveredEnvelope=null;recoveryFault=null;updatePrompt();},
+  });
   const api = {
+    getRecoveryScope:()=>{const c=context();return {chatId:c.chatId,branchId:c.branchId};},
+    inspectRecovery:async()=>{
+      const chatId=context().chatId;
+      // Host save wrappers can finish one microtask after the runtime queue.
+      // Wait outside that queue, otherwise a check can observe its own gate.
+      await adapter.whenSaved?.();
+      if(context().chatId!==chatId)throw Error('聊天已切换，请重新检查。');
+      return lifecycle(playerRecovery.inspect);
+    },
+    repair:(id,action)=>lifecycle(c=>playerRecovery.run(c,id,action)),
+    undoRepair:()=>lifecycle(playerRecovery.undo),
     getSnapshot: snapshot,
     bindActionUser:()=>lifecycle(bindPendingUser),
     getUserName:()=>String(adapter.getUserName?.() || context().raw?.name1 || "无名修士").trim(),
@@ -1289,6 +1310,7 @@ function createDispatcher(adapter, data) {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,actionCode:s.pending.actionCode || null,userRef:C.clone(s.pending.userRef || null),
         } : null, event:s?.activeEvent || null,
         lastNodeResult:s?.lastNodeResult || null,
+        playerRepair:C.clone(s?.playerRepair || null),
         storyCount:s?.storyCount || 0,
         latestProcessed:s?.processed?.[c.floor] === C.hash(latest?.mes || ""),
       };
@@ -1385,8 +1407,12 @@ function createDispatcher(adapter, data) {
           await load(c,false);
           const p=current?.pending;
           const lastUser=c.chat.slice(p?.floor+1).reverse().find(m=>m.is_user&&!m.is_system);
-          if(p && lastUser && (!matchesAction(p,lastUser.mes) || (p.userRef && c.identities[c.chat.lastIndexOf(lastUser)]?.messageId!==p.userRef.messageId)))
-            await commit(c,actionFailure(p,c,lastUser,c.floor),"rollback");
+          if(p && lastUser && (!matchesAction(p,lastUser.mes) || (p.userRef && c.identities[c.chat.lastIndexOf(lastUser)]?.messageId!==p.userRef.messageId))){
+            // An unprocessed original reply must be flushed, not checked against
+            // the next ordinary input and silently rolled back.
+            const link=resolveActionReply(p,c);
+            if(link.reason || link.replyFloor<0)await commit(c,actionFailure(p,c,lastUser,c.floor),"rollback");
+          }
           else if(p && lastUser && matchesAction(p,lastUser.mes))await bindPendingUser({...c,floor:c.chat.lastIndexOf(lastUser)});
           updatePrompt();return snapshot();
         }

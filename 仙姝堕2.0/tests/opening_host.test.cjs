@@ -526,7 +526,7 @@ test('重roll后无匹配进度显示恢复入口，禁止写入；恢复原分�
   await until(()=>h.win.XSD2.runtime.getSnapshot());const old=h.win.XSD2.runtime;
   h.context.chat[0].swipe_id=1;h.context.chat[0].variables[1]={};h.win.eval(script);
   await until(()=>h.doc.querySelector('[data-xsd2-recovery]'));
-  const r=h.win.XSD2.runtime;assert.notEqual(r,old);assert.equal(r.getSnapshot(),null);assert.ok(r.getDiagnostics().recoveryFault);assert.equal(h.doc.querySelector('[data-xsd2-recovery]').querySelectorAll('button').length,2);
+  const r=h.win.XSD2.runtime;assert.notEqual(r,old);assert.equal(r.getSnapshot(),null);assert.ok(r.getDiagnostics().recoveryFault);assert.equal(h.doc.querySelector('[data-xsd2-recovery]').querySelectorAll('button').length,3);
   await assert.rejects(r.dispatchIntent({type:'GM_PATCH',payload:{地点:'不能改变'}}),/尚未恢复/);
   h.context.chat[0].swipe_id=0;h.doc.querySelector('[data-xsd2-recovery] button').click();
   await until(()=>r.getSnapshot() && !h.doc.querySelector('[data-xsd2-recovery]'));assert.equal(r.getSnapshot().identity,'赵无忧');
@@ -682,4 +682,51 @@ test('原生快照按候选保存，变量回读被扩展清空仍可保存；�
   delete chat[0].extra.xsd2_snapshots;for(const info of chat[0].swipe_info)delete info.extra.xsd2_snapshots;vars={xsd2_checkpoint:{schema:2,chatId:ctx.chatId,trail:[JSON.stringify([false,false,0,'候选甲'])],state:{revision:9}}};
   assert.equal((await host.readCheckpoint()).state.revision,9);
  }finally{dom.window.close();}
+});
+
+test('打包检查修复面板：刷新、跨重挂载撤销，备份不进入消息变量',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..')),h=await fixture(data.greetings.赵无忧);
+ try{
+  h.win.HTMLDialogElement.prototype.showModal=function(){this.open=true;};h.win.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new h.win.Event('close'));};
+  const r=h.win.XSD2.runtime;await until(()=>r.getSnapshot());
+  h.doc.querySelector('[data-player-repair]').click();await until(()=>h.doc.querySelector('[data-recovery-action="repair"]')?.disabled===false);
+  h.doc.querySelector('[data-recovery-action="repair"]').click();
+  await until(()=>h.context.chatMetadata?.xsd2_player_repair?.after);
+  assert.ok(h.context.chatMetadata.xsd2_player_repair.before);assert.equal(JSON.stringify(h.chatVars).includes('originalToken'),false);
+  const beforeRevision=h.context.chatMetadata.xsd2_player_repair.before.revision;
+  h.win.eval(script);await until(()=>h.win.XSD2.runtime!==r && h.win.XSD2.runtime.getSnapshot());
+  h.doc.querySelector('[data-player-repair]').click();await until(()=>h.doc.querySelector('[data-recovery-action="undo"]')?.disabled===false);
+  h.doc.querySelector('[data-recovery-action="undo"]').click();await until(()=>!h.context.chatMetadata.xsd2_player_repair);
+  assert.equal(h.win.XSD2.runtime.getSnapshot().revision,beforeRevision);assert.deepEqual(h.errors,[]);
+ }finally{h.close();}
+});
+
+test('打包漏结算原回复可跨后续普通输入补核验，历史正文不改且不重复奖励',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..')),h=await fixture(data.greetings.赵无忧);
+ try{
+  const r=h.win.XSD2.runtime;await until(()=>r.getSnapshot());
+  r.registerPlugin({id:'repair-fixture',select:(_s,id)=>({id,actionText:'查看石碑',prompt:'查看石碑。',rewards:['石片']}),
+   settle:()=>({outcome:'success',rewards:[{name:'石片',count:1}]})});
+  const s=r.getSnapshot();await r.dispatchIntent({type:'SELECT_NODE',pluginId:'repair-fixture',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:'check'}});
+  h.context.chat.push({mes:'你查看了石碑。',is_user:false,variables:[{}]});h.appendDOM(2);
+  h.context.chat.push({mes:'继续',is_user:true,variables:[{}]});h.appendDOM(3);
+  h.context.chat.push({mes:'你沿路查看。',is_user:false,variables:[{}]});h.appendDOM(4);
+  const original=h.context.chat.map(m=>m.mes),p=await r.inspectRecovery();assert.equal(p.replyCount,2);await r.repair(p.id,'replay');
+  assert.equal(r.getSnapshot().inventory.find(x=>x.name==='石片').count,1);assert.deepEqual(h.context.chat.map(m=>m.mes),original);
+  assert.equal((await r.inspectRecovery()).status,'healthy');await r.undoRepair();assert.equal(r.getSnapshot().inventory.some(x=>x.name==='石片'),false);
+  assert.deepEqual(h.errors,[]);
+ }finally{h.close();}
+});
+
+test('下一条普通输入已入楼时，发送前仍可补结算原回复而不改历史正文',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..')),h=await fixture(data.greetings.赵无忧);
+ try{
+  const r=h.win.XSD2.runtime;await until(()=>r.getSnapshot());let calls=0;
+  r.registerPlugin({id:'flush-fixture',select:(_s,id)=>({id,actionText:'查看石碑',prompt:'查看石碑。'}),settle:()=>{calls++;return {outcome:'success'};}});
+  const s=r.getSnapshot();await r.dispatchIntent({type:'SELECT_NODE',pluginId:'flush-fixture',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:'check'}});
+  h.context.chat.push({mes:'你查看了石碑。',is_user:false,variables:[{}]});h.appendDOM(2);
+  h.context.chat.push({mes:'继续',is_user:true,variables:[{}]});h.appendDOM(3);
+  await r.replay('normal');assert.ok(r.getSnapshot().pending);await r.flushCompleted();
+  assert.equal(calls,1);assert.equal(r.getSnapshot().pending,null);assert.equal(h.context.chat[2].mes,'你查看了石碑。');assert.deepEqual(h.errors,[]);
+ }finally{h.close();}
 });

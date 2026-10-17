@@ -22,4 +22,19 @@ function readActionCode(text) {
   return {code:codes[0],nodeId:/^XSD2_([A-Za-z0-9-]+)_/.exec(codes[0])[1]};
 }
 function matchesAction(p,text){return p.actionCode ? readActionCode(text)?.code===p.actionCode : readUserInput(text)===p.actionText;}
-module.exports = { createActionCode, readActionCode,readUserInput,matchesAction };
+// An action owns the first reply to its original input, never a later turn.
+function resolveActionReply(p,c){
+ const userFloor=p.userRef
+  ? c.identities.findIndex(x=>x.messageId===p.userRef.messageId)
+  : c.chat.findIndex((m,i)=>i>p.floor && m.is_user && !m.is_system);
+ const user=c.chat[userFloor];
+ if(userFloor<=p.floor || !user?.is_user || user.is_system || !matchesAction(p,user.mes))
+  return {userFloor,replyFloor:-1,reason:'操作指令已缺失或改变'};
+ for(let i=userFloor+1;i<c.chat.length;i++){
+  const m=c.chat[i];if(m.is_system)continue;
+  if(m.is_user)return {userFloor,replyFloor:-1,reason:'原操作没有对应回复'};
+  return {userFloor,replyFloor:i,reason:String(m.mes || '').trim()?'':'原回复尚未完成'};
+ }
+ return {userFloor,replyFloor:-1,reason:'原操作尚未收到回复'};
+}
+module.exports = { createActionCode, readActionCode,readUserInput,matchesAction,resolveActionReply };

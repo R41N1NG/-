@@ -6,6 +6,7 @@ const { createTavernHost } = require("./host/tavern");
 const {createSettlementEffects} = require("./ui/settlement_effects");
 const { mountHUD } = require("./ui/status_panel");
 const {downloadDiagnostics}=require("./ui/diagnostics");
+const {openRecovery}=require('./ui/recovery_panel');
 const CARD_NAME = "仙姝堕2.0·框架测试";
 function start(win) {
   const topWin = (win && win.top) || (win && win.parent) || win;
@@ -42,7 +43,8 @@ function start(win) {
     const diagnostic=doc.createElement("button");diagnostic.textContent="下载诊断信息";diagnostic.onclick=()=>{
       try{downloadDiagnostics(doc,runtime,{recovery:true});}catch(e){report(e);}
     };
-    recoveryPanel.append(title,text,retry,diagnostic);body.append(recoveryPanel);
+    const repair=doc.createElement('button');repair.textContent='检查与修复';repair.onclick=()=>openRecovery(doc,runtime,report);
+    recoveryPanel.append(title,text,retry,repair,diagnostic);body.append(recoveryPanel);
   }
   const faultKey=()=>{const c=host.context();return JSON.stringify([c.chatId,c.branchId,C.hash(JSON.stringify(C.fingerprint(c.chat)))]);};
   const report = e => {if(!active())return;const c=host.context(),message=String(e.message||e);const key=(message.includes("已有进度记录与当前分支不匹配")?JSON.stringify([c.chatId,c.branchId]):faultKey())+"|"+message;if(key===lastReportKey)return;lastReportKey=key;host.report(e);showRecovery(e);};
@@ -107,7 +109,7 @@ function start(win) {
       view.dispatchIntent = intent => target.readOnly
         ? Promise.reject(Error("历史状态仅供查看，请在最新回复中行动"))
         : runtime.dispatchIntent(intent);
-      const panel = mountHUD(doc, el, view, data, report, {readOnly:target.readOnly,settlementEffects:effects,getPlayerAvatar:()=>host.getPlayerAvatar?.(),focusLatest:()=>{const floor=runtime.getSnapshot()?.floor;(doc.querySelector('[data-xsd2-floor="'+floor+'"]') || [...doc.querySelectorAll("[data-xsd2-floor]")].sort((a,b)=>Number(a.dataset.xsd2Floor)-Number(b.dataset.xsd2Floor)).at(-1))?.scrollIntoView({behavior:"smooth",block:"center"});}});
+      const panel = mountHUD(doc, el, view, data, report, {readOnly:target.readOnly,canRepair:target.floor===controlFloor&&!host.isGenerating(),settlementEffects:effects,getPlayerAvatar:()=>host.getPlayerAvatar?.(),focusLatest:()=>{const floor=runtime.getSnapshot()?.floor;(doc.querySelector('[data-xsd2-floor="'+floor+'"]') || [...doc.querySelectorAll("[data-xsd2-floor]")].sort((a,b)=>Number(a.dataset.xsd2Floor)-Number(b.dataset.xsd2Floor)).at(-1))?.scrollIntoView({behavior:"smooth",block:"center"});}});
       huds.set(target.floor, {el, hud:panel, key:target.key, target});
     }
   }
@@ -234,7 +236,8 @@ function start(win) {
     await mirror();
   });
   unsubs.push(
-    runtime.subscribe(() => {
+    runtime.subscribe(event => {
+      if(event.type==='player_repair'){settleFaultKey=null;lastReportKey=null;}
       void render().catch(report);
     }),
   );
