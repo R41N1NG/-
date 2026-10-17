@@ -48,3 +48,13 @@ test('多人好感核验提示各看各人，不拿另一人的失败解释已�
  h.doc.querySelector('dialog [data-close]').click();h.doc.querySelector('[data-favor="楚灵夜"]').click();assert.doesNotMatch(h.doc.querySelector('dialog').textContent,/叶红缨好感已达/);panel.destroy();
  }finally{h.dom.window.close();}
 });
+
+test('已修复的旧提醒可收起，原故障记录与删楼作废名单仍保留',()=>{
+ const h=fixture();try{
+  h.state.historyRecovery={kind:'delete',ignoredReplies:['old'],noticeAcknowledged:true};
+  h.state.lastNodeResult={floor:8,outcome:'failure',reason:'行动后的用户消息与授权行动不匹配',actionMismatch:{},repairAcknowledged:true};
+  const panel=mountHUD(h.doc,h.doc.querySelector('main'),h.runtime,data,h.report);
+  assert.equal(h.doc.querySelector('[data-history-recovery]'),null);assert.equal(h.doc.querySelector('[data-action-mismatch]'),null);
+  assert.deepEqual(h.state.historyRecovery.ignoredReplies,['old']);assert.equal(h.state.lastNodeResult.outcome,'failure');panel.destroy();
+ }finally{h.dom.window.close();}
+});

@@ -155,6 +155,44 @@ function fixture() {
 const prose = "你仔细查看了石碑。<Status_block><历时>—</历时></Status_block>";
 const amount = (h) =>
   h.r.getSnapshot().inventory.find((x) => x.name === "石片")?.count || 0;
+async function legacyFailure(h, historyRecovery) {
+  const pending = C.clone(h.r.getSnapshot().pending),
+    state = C.clone(pending.before);
+  const c = {
+    ...h.c,
+    floor: h.c.chat.length - 1,
+    trail: C.fingerprint(h.c.chat),
+    identities: I.identify(h.c.chat),
+  };
+  state.revision = h.r.getSnapshot().revision + 1;
+  state.pending = null;
+  state.lastNodeResult = {
+    nodeId: pending.nodeId,
+    floor: c.floor,
+    outcome: "failure",
+    reason: "行动后的用户消息与授权行动不匹配",
+    actionMismatch: {
+      expectedCode: pending.actionCode,
+      actualCode: pending.actionCode,
+      userFloor: 1,
+      boundUser: C.clone(pending.userRef),
+      expectedReplyFloor: 2,
+      reason: "当前回复不是原操作对应的回复",
+    },
+  };
+  if (historyRecovery) state.historyRecovery = C.clone(historyRecovery);
+  state.processed[c.floor] = C.hash(c.chat[c.floor].mes);
+  state.history_identity = { version: 1, ...c.identities[c.floor] };
+  await h.a.persist(c, {
+    schema: 2,
+    chatId: c.chatId,
+    branchId: c.branchId,
+    trail: c.trail,
+    identityTrail: I.trail(c),
+    state,
+  });
+  await h.reopen();
+}
 
 test("原操作绑定首个对应回复，后续普通输入不是原操作的回复", () => {
   const chat = [
@@ -202,7 +240,7 @@ test("已完成回复漏结算可补核验，重复修复不重复奖励，正�
     original,
   );
 });
-test("先有原回复后继续普通聊天，检查补结算按顺序处理，未冒认后续回复", async () => {
+test("原回复漏回调后继续普通聊天，自动按顺序补结算而不拖到后楼报失配", async () => {
   const h = fixture();
   await h.start();
   await h.select();
@@ -210,13 +248,11 @@ test("先有原回复后继续普通聊天，检查补结算按顺序处理，�
   h.user("继续走走");
   h.reply("你继续沿路查看。");
   await h.r.settleStory();
-  assert.equal(h.settles, 0);
-  assert.ok(h.r.getSnapshot().lastNodeResult.actionMismatch);
+  assert.equal(h.settles, 1);
+  assert.equal(h.r.getSnapshot().lastNodeResult.actionMismatch, undefined);
   const p = await h.r.inspectRecovery();
-  assert.equal(p.status, "repairable");
-  assert.equal(p.firstFloor, 2);
-  assert.equal(p.replyCount, 2);
-  await h.r.repair(p.id, "replay");
+  assert.equal(p.status, "healthy");
+  await h.r.oneClickRecovery();
   assert.equal(amount(h), 1);
   assert.equal(h.settles, 1);
   assert.equal(h.r.getSnapshot().storyCount, 2);
@@ -325,13 +361,17 @@ test("缺失原操作快照不强行完成，其他候选不可拿来补认", as
   h.reply(prose);
   h.user("继续");
   h.reply("你看了看天色。");
-  await h.r.settleStory();
+  await legacyFailure(h);
   h.c.chat[0].variables = [];
   h.c.chat[1].variables = [];
   const p = await h.r.inspectRecovery();
-  assert.equal(p.status, "blocked");
+  assert.equal(p.status, "repairable");
+  assert.deepEqual(p.actions, ["reset_failed"]);
   assert.match(p.message, /缺失/);
   assert.equal(amount(h), 0);
+  await h.r.oneClickRecovery();
+  assert.equal(amount(h), 0);
+  assert.equal(h.r.getSnapshot().lastNodeResult.repairAcknowledged, true);
 });
 test("正常补结算不因物品申报缺实证而阻断节点", async () => {
   const h = fixture();
@@ -379,4 +419,86 @@ test("备份未封口时重新加载仍能撤销，不把备份复制进逐楼�
     assert.equal(JSON.stringify(m.variables).includes("originalToken"), false);
   await h.r.undoRepair();
   assert.equal(amount(h), 0);
+});
+
+test("一键补结算无需先检查，重复点击保留原备份且不重复奖励", async () => {
+  const h = fixture();
+  await h.start();
+  await h.select();
+  h.reply(prose);
+  const first = await h.r.oneClickRecovery();
+  assert.equal(first.status, "repaired");
+  assert.equal(amount(h), 1);
+  const backup = h.c.chatMetadata.xsd2_player_repair.id;
+  await h.r.oneClickRecovery();
+  assert.equal(h.c.chatMetadata.xsd2_player_repair.id, backup);
+  assert.equal(amount(h), 1);
+  assert.equal(h.settles, 1);
+  await h.r.undoRepair();
+  assert.equal(amount(h), 0);
+});
+test("旧版遗留错误与旧删楼提醒可一键清理，进度不伪造且可撤销", async () => {
+  const h = fixture();
+  await h.start();
+  await h.select();
+  h.reply("");
+  h.user("继续");
+  h.reply("你沿路查看。");
+  const marker = {
+    kind: "delete",
+    trustedMessageId: h.c.chat[0].extra.xsd2_identity.messageId,
+    ignoredReplies: ["old-discarded-reply"],
+  };
+  await legacyFailure(h, marker);
+  const before = h.r.getSnapshot(),
+    original = h.c.chat.map((x) => x.mes);
+  const result = await h.r.oneClickRecovery();
+  assert.match(result.message, /尚未完成/);
+  assert.equal(amount(h), 0);
+  assert.equal(h.settles, 0);
+  const after = h.r.getSnapshot();
+  assert.equal(after.lastNodeResult.repairAcknowledged, true);
+  assert.equal(after.historyRecovery.noticeAcknowledged, true);
+  assert.deepEqual(after.historyRecovery.ignoredReplies, marker.ignoredReplies);
+  assert.deepEqual(after.calendarDate, before.calendarDate);
+  assert.deepEqual(after.inventory, before.inventory);
+  assert.deepEqual(
+    h.c.chat.map((x) => x.mes),
+    original,
+  );
+  assert.equal((await h.r.inspectRecovery()).status, "healthy");
+  await h.r.undoRepair();
+  assert.equal(h.r.getSnapshot().lastNodeResult.repairAcknowledged, undefined);
+});
+test("一键修复中断操作会自动选择撤回，备份能撤销", async () => {
+  const h = fixture();
+  await h.start();
+  await h.select();
+  await h.r.oneClickRecovery();
+  assert.equal(h.r.getSnapshot().pending, null);
+  assert.equal(h.settles, 0);
+  await h.r.undoRepair();
+  assert.ok(h.r.getSnapshot().pending);
+});
+test("11楼指令对应12楼，回调遗漏到16楼时先补12楼，不拿16楼误结算", async () => {
+  const h = fixture();
+  await h.start();
+  for (let i = 0; i < 5; i++) {
+    h.user("继续");
+    h.reply("你查看四周。");
+    await h.r.settleStory();
+  }
+  await h.select();
+  assert.equal(h.r.getSnapshot().pending.userRef.floor, 11);
+  h.reply(prose);
+  h.user("继续");
+  h.reply("你沿路查看。");
+  h.user("继续");
+  h.reply("你走到石亭。");
+  await h.r.settleStory();
+  assert.equal(h.r.getSnapshot().lastNodeResult.floor, 12);
+  assert.equal(h.r.getSnapshot().lastNodeResult.outcome, "success");
+  assert.equal(h.settles, 1);
+  assert.equal(amount(h), 1);
+  assert.equal(h.r.getSnapshot().pending, null);
 });

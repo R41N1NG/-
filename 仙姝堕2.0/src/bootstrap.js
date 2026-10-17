@@ -43,7 +43,7 @@ function start(win) {
     const diagnostic=doc.createElement("button");diagnostic.textContent="下载诊断信息";diagnostic.onclick=()=>{
       try{downloadDiagnostics(doc,runtime,{recovery:true});}catch(e){report(e);}
     };
-    const repair=doc.createElement('button');repair.textContent='检查与修复';repair.onclick=()=>openRecovery(doc,runtime,report);
+    const repair=doc.createElement('button');repair.textContent='一键修复';repair.onclick=()=>openRecovery(doc,runtime,report,{auto:true});
     recoveryPanel.append(title,text,retry,repair,diagnostic);body.append(recoveryPanel);
   }
   const faultKey=()=>{const c=host.context();return JSON.stringify([c.chatId,c.branchId,C.hash(JSON.stringify(C.fingerprint(c.chat)))]);};

@@ -1,7 +1,7 @@
 "use strict";
 const { modal } = require("./dom");
 const { downloadDiagnostics } = require("./diagnostics");
-function openRecovery(doc, runtime, report) {
+function openRecovery(doc, runtime, report, options = {}) {
   doc.querySelector("[data-player-recovery]")?.close();
   const sheet = modal(doc, "检查与修复");
   sheet.dataset.playerRecovery = "";
@@ -15,6 +15,7 @@ function openRecovery(doc, runtime, report) {
   const controls = doc.createElement("div"),
     buttons = {};
   for (const [key, label] of Object.entries({
+    oneClick: "一键修复",
     check: "重新检查",
     repair: "检查并修复",
     cancel: "撤回中断操作",
@@ -37,6 +38,7 @@ function openRecovery(doc, runtime, report) {
     },
     origin = scope();
   function enabled() {
+    buttons.oneClick.disabled = busy || !runtime.oneClickRecovery;
     buttons.check.disabled = busy;
     buttons.repair.disabled =
       busy || !plan?.actions?.some((x) => x === "replay" || x === "refresh");
@@ -73,6 +75,11 @@ function openRecovery(doc, runtime, report) {
       message.textContent = prefix + (prefix ? "\n" : "") + plan.message;
   }
   buttons.check.onclick = () => run(() => check());
+  buttons.oneClick.onclick = () =>
+    run(async () => {
+      const result = await runtime.oneClickRecovery();
+      await check(result.message);
+    });
   buttons.repair.onclick = () =>
     run(async () => {
       const result = await runtime.repair(
@@ -93,7 +100,12 @@ function openRecovery(doc, runtime, report) {
     });
   buttons.diagnostic.onclick = () =>
     downloadDiagnostics(doc, runtime, { playerRecovery: true, check: plan });
-  run(() => check());
+  run(async () => {
+    if (options.auto && runtime.oneClickRecovery) {
+      const result = await runtime.oneClickRecovery();
+      await check(result.message);
+    } else await check();
+  });
   return () => sheet.remove();
 }
 module.exports = { openRecovery };

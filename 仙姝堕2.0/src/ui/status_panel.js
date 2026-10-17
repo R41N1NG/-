@@ -500,7 +500,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     const row=(label,value,slot="")=>'<div class="xsd2-row"><b>'+label+'</b><span'+(slot?' data-xsd-slot="'+slot+'"':'')+'>'+value+'</span></div>';
     const items=s.inventory.map(i=>'<button data-item="'+esc(i.id||i.name)+'">'+esc(i.name)+' × '+i.count+' · '+(describeItem(i).consumable?'消耗品':'非消耗品')+'</button>').join('') || '暂无物品';
     root.innerHTML =
-      '<header class="xsd2-head"><h1>卷中錄</h1><span class="xsd2-sub">仙姝堕 · 玄门展</span><div class="xsd2-topmap" data-xsd-slot="map" data-slot-number="4"></div><button type="button" data-player-repair>检查与修复</button><button type="button" data-diagnostics aria-label="下载报错诊断" title="下载报错诊断" style="padding:4px 8px">🐞</button><button data-gm data-xsd-slot="5" aria-label="GM">⚙</button></header>'+
+      '<header class="xsd2-head"><h1>卷中錄</h1><span class="xsd2-sub">仙姝堕 · 玄门展</span><div class="xsd2-topmap" data-xsd-slot="map" data-slot-number="4"></div><button type="button" data-player-repair>一键修复</button><button type="button" data-diagnostics aria-label="下载报错诊断" title="下载报错诊断" style="padding:4px 8px">🐞</button><button data-gm data-xsd-slot="5" aria-label="GM">⚙</button></header>'+
       '<div class="xsd2-who"><div class="xsd2-document"><span class="xsd2-plaque" data-xsd-slot="1">'+esc([st.阵营,st.自设?.name||s.identity].filter(Boolean).join(' · '))+'</span>'+
       row('时 间','仙盟历 '+esc(dateText(s.calendarDate))+' · '+esc(st.历时||'0日'),2)+
       row('地 点',esc(st.地点||'无'),3)+row('修 为','<button data-realm>'+esc(st.修为||'无')+'</button>')+
@@ -515,15 +515,15 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       '<details data-storage-fold><summary>储物栏</summary><div data-xsd-slot="10">'+items+'</div><p data-xsd-slot="11">'+esc(st.纳戒||'无')+'</p><p data-xsd-slot="12">'+(options.readOnly?'此楼状态记录':'点击物品查看介绍与操作')+'</p></details>'+
       '<details><summary>风闻与气象</summary><dl>'+field('近闻',13)+field('远闻',14)+field('天气',15)+'</dl></details>'+
       '<div data-xsd-slot="17"></div><footer class="xsd2-foot">暗处 · '+esc(st.暗处||'无')+' ｜ 持续背景 · '+esc(st.active_area||'无')+(Object.keys(s.manual).length?' ｜ 存在人工设置':'')+'</footer><p class="xsd2-feedback" role="status" aria-live="polite"></p>';
-    if(s.historyRecovery?.kind==='delete'){
+    if(!options.readOnly && s.historyRecovery?.kind==='delete' && !s.historyRecovery.noticeAcknowledged){
       const notice=doc.createElement('aside');notice.dataset.historyRecovery='';notice.className='xsd2-cap';notice.setAttribute('role','status');
       notice.textContent='删楼后已恢复到最近可信进度。受影响的后续旧回复不再自动结算；可继续对话，未完成节点需重新选择。';
       root.querySelector('.xsd2-who').after(notice);
     }
-    if(s.lastNodeResult?.outcome==='failure' && s.lastNodeResult.reason==='行动后的用户消息与授权行动不匹配'){
+    if(!options.readOnly && s.lastNodeResult?.outcome==='failure' && !s.lastNodeResult.repairAcknowledged && s.lastNodeResult.reason==='行动后的用户消息与授权行动不匹配'){
       const notice=doc.createElement('aside');notice.dataset.actionMismatch='';notice.className='xsd2-cap';notice.setAttribute('role','alert');
       notice.textContent='第'+s.lastNodeResult.floor+'楼的节点指令未通过核验，节点已退回执行前；正文写到后续场景不代表节点已完成。请先使用“检查与修复”核验原操作。';
-      const repair=doc.createElement('button');repair.type='button';repair.dataset.playerRepair='';repair.textContent='检查并修复';notice.append(repair);
+      const repair=doc.createElement('button');repair.type='button';repair.dataset.playerRepair='';repair.textContent='一键修复';notice.append(repair);
       const details=doc.createElement('button');details.type='button';details.dataset.diagnostics='';details.textContent='下载诊断';details.onclick=()=>downloadDiagnostics(doc,runtime,{actionMismatch:true});notice.append(details);root.querySelector('.xsd2-who').after(notice);
     }
     const activePromotion=s.activeEvent?.pluginId==="character_promotion" ? data.promotionDefinitions?.[s.activeEvent.promotionId || s.pluginState?.character_promotion?.currentId] : null;
@@ -543,7 +543,9 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     root.querySelector("[data-eras]").onclick=()=>{closeEras();eraDispose=openEras(doc,runtime,data,report);};
     root.querySelector("[data-realm]").onclick=()=>{closeRealm();realmDispose=openRealm(doc,runtime,data,report,message=>{const feedback=root.querySelector(".xsd2-feedback");if(feedback)feedback.textContent=message;});};
     root.querySelector("[data-diagnostics]").onclick = () => {try{dialogs.push(downloadDiagnostics(doc,runtime,{floor:s.floor,revision:s.revision,readOnly:!!options.readOnly}));}catch(error){report?.(error);}};
-    root.querySelectorAll('[data-player-repair]').forEach(button=>{button.onclick=()=>dialogs.push(openRecovery(doc,runtime,report));});
+    root.querySelectorAll('[data-player-repair]').forEach(button=>{button.onclick=()=>dialogs.push(openRecovery(doc,runtime,report,{auto:true}));});
+    if(!options.readOnly && s.playerRepair && s.playerRepair.revision===s.revision && s.playerRepair.message)
+      root.querySelector('.xsd2-feedback').textContent=s.playerRepair.message;
     root.querySelector("[data-gm]").onclick = () =>
       dialogs.push(openGM(doc, runtime, data, report));
     root
@@ -588,7 +590,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       root.querySelectorAll("button:not([data-diagnostics])").forEach(b => { b.disabled = true; b.onclick = null; });
       stagebar.querySelectorAll("button:not([data-diagnostics])").forEach(b => { b.disabled = true; b.onclick = null; });
     }
-    if(options.canRepair && runtime.inspectRecovery)root.querySelectorAll('[data-player-repair]').forEach(button=>{button.disabled=false;button.onclick=()=>dialogs.push(openRecovery(doc,runtime,report));});
+    if(options.canRepair && runtime.inspectRecovery)root.querySelectorAll('[data-player-repair]').forEach(button=>{button.disabled=false;button.onclick=()=>dialogs.push(openRecovery(doc,runtime,report,{auto:true}));});
   }
   const unsubscribe = runtime.subscribe(render);
   render();

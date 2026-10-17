@@ -921,6 +921,25 @@ function createDispatcher(adapter, data) {
     const previous = options.repairState ? {state:C.clone(options.repairState)} : await history(c, c.floor - 1);
     if (!previous) throw Error("缺少本楼的前置状态");
     let s = previous.state;
+    if(!options.repairState && s.pending){
+      const link=resolveActionReply(s.pending,c);
+      const suffix=c.chat.slice(link.userFloor+1,c.floor+1);
+      const extraCommand=suffix.some(m=>m.is_user&&!m.is_system&&/XSD2_/.test(m.mes));
+      const changedManual=JSON.stringify(s.manual)!==JSON.stringify(s.pending.before?.manual);
+      const floors=c.chat.map((m,i)=>i>=link.replyFloor&&i<=c.floor&&!m.is_user&&!m.is_system?i:-1).filter(i=>i>=0);
+      if(!link.reason && link.replyFloor<c.floor && !extraCommand && !changedManual && floors.length<=12 &&
+         Identity.authorized(s.pending.authorization,c) &&
+         !floors.some(i=>s.historyRecovery?.ignoredReplies?.includes(c.identities[i].revisionId))){
+        // A lost/late callback must not drag its task into a later ordinary
+        // turn. Settle the original completed reply, then its ordinary suffix.
+        for(const floor of floors){
+          const result=await story({...c,floor},{...options,repairState:s,preserveBody:true});
+          guard(c);if(result?.deferred || result?.skipped)return result;
+          s=C.clone(current);
+        }
+        return snapshot();
+      }
+    }
     // Manual edits on this candidate remain higher priority when its prose is edited.
     const candidate = (await adapter.readMessage(c.floor))?.stat_data
       ?.xsd2?.[0];
@@ -1277,6 +1296,11 @@ function createDispatcher(adapter, data) {
     install:(state,checkpoint)=>{current=state;scopeChatId=context().chatId;liveEnvelope=checkpoint;recoveredEnvelope=null;recoveryFault=null;updatePrompt();},
   });
   const api = {
+    oneClickRecovery:async()=>{
+      const chatId=context().chatId;await adapter.whenSaved?.();
+      if(context().chatId!==chatId)throw Error('聊天已切换，请重新修复。');
+      return lifecycle(playerRecovery.oneClick);
+    },
     getRecoveryScope:()=>{const c=context();return {chatId:c.chatId,branchId:c.branchId};},
     inspectRecovery:async()=>{
       const chatId=context().chatId;
@@ -1311,6 +1335,8 @@ function createDispatcher(adapter, data) {
         } : null, event:s?.activeEvent || null,
         lastNodeResult:s?.lastNodeResult || null,
         playerRepair:C.clone(s?.playerRepair || null),
+        recoveryStatus:{actionMismatchActive:!!s?.lastNodeResult?.actionMismatch&&!s?.lastNodeResult?.repairAcknowledged,
+          deleteNoticeActive:s?.historyRecovery?.kind==='delete'&&!s.historyRecovery.noticeAcknowledged},
         storyCount:s?.storyCount || 0,
         latestProcessed:s?.processed?.[c.floor] === C.hash(latest?.mes || ""),
       };

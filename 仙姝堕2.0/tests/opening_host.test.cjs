@@ -730,3 +730,19 @@ test('下一条普通输入已入楼时，发送前仍可补结算原回复而�
   assert.equal(calls,1);assert.equal(r.getSnapshot().pending,null);assert.equal(h.context.chat[2].mes,'你查看了石碑。');assert.deepEqual(h.errors,[]);
  }finally{h.close();}
 });
+
+test('一键修复入口点击即撤回中断任务，不需再点检查或处理按钮，结果可见且可撤销',async()=>{
+ const data=require('../tools/data.cjs').load(require('node:path').join(__dirname,'..')),h=await fixture(data.greetings.赵无忧);
+ try{
+  h.win.HTMLDialogElement.prototype.showModal=function(){this.open=true;};h.win.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new h.win.Event('close'));};
+  const r=h.win.XSD2.runtime;await until(()=>r.getSnapshot());
+  r.registerPlugin({id:'one-click-ui',select:(_s,id)=>({id,actionText:'查看石碑',prompt:'查看石碑。'}),settle:()=>({outcome:'success'})});
+  const s=r.getSnapshot();await r.dispatchIntent({type:'SELECT_NODE',pluginId:'one-click-ui',expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:'check'}});
+  await until(()=>h.doc.querySelector('[data-player-repair]:not(:disabled)'));
+  h.doc.querySelector('[data-player-repair]:not(:disabled)').click();
+  await until(()=>!r.getSnapshot().pending && h.context.chatMetadata?.xsd2_player_repair?.after);
+  await until(()=>[...h.doc.querySelectorAll('.xsd2-feedback,[data-player-recovery]')].some(x=>x.textContent.includes('已撤回中断操作')));
+  assert.equal(r.getSnapshot().playerRepair.action,'cancel');assert.deepEqual(h.errors,[]);
+  await r.undoRepair();assert.ok(r.getSnapshot().pending);
+ }finally{h.close();}
+});

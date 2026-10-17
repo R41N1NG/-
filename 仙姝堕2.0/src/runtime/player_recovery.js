@@ -34,10 +34,41 @@ function createPlayerRecovery(h) {
     if (busy()) return blocked("请等回复生成和保存结束，再检查修复。");
     const backup = await h.adapter.readRepairBackup?.();
     h.guard(c);
-    const deny = (message) => ({
-      ...blocked(message),
-      canUndo: undoable(backup, c),
-    });
+    let safeState = null;
+    const deny = (message) => {
+      // A failed action already rolled back to a verified snapshot. If its
+      // original reply cannot be recovered, clear only the stale task marker;
+      // keep all current facts and require a fresh player choice.
+      if (
+        safeState &&
+        !safeState.pending &&
+        safeState.lastNodeResult?.actionMismatch &&
+        !safeState.lastNodeResult.repairAcknowledged &&
+        h.adapter.writeRepairBackup
+      ) {
+        const id = Identity.uid("repair_check");
+        inspected = {
+          id,
+          token: h.token(c),
+          revision: version(),
+          actions: ["reset_failed"],
+          base: C.clone(safeState),
+          floors: [],
+          historyRecovery: C.clone(safeState.historyRecovery),
+        };
+        return {
+          id,
+          status: "repairable",
+          message:
+            message + " 可一键清理失效任务，保留当前进度，再重新选择该节点。",
+          actions: ["reset_failed"],
+          canUndo: undoable(backup, c),
+          replyCount: 0,
+          firstFloor: null,
+        };
+      }
+      return { ...blocked(message), canUndo: undoable(backup, c) };
+    };
     if (undoable(backup, c) && (!backup.after || backup.after.failed))
       return deny(
         "上次修复未完成，修复前备份仍在。请先撤销本次修复，再重新检查。",
@@ -54,10 +85,13 @@ function createPlayerRecovery(h) {
     if (!found?.state) return deny("尚未建立进度，请先完成开局设置。");
     const state = C.clone(found.state),
       actions = ["refresh"];
+    safeState = state;
     let message = "未发现漏结算。可以刷新状态栏与当前数值。",
       base = state,
       floors = [];
-    const failure = state.lastNodeResult;
+    const failure = state.lastNodeResult?.repairAcknowledged
+      ? null
+      : state.lastNodeResult;
     if (failure?.actionMismatch) {
       const expected = failure.actionMismatch.expectedCode;
       let pendingState = null;
@@ -95,9 +129,7 @@ function createPlayerRecovery(h) {
           actions.push("cancel");
           message = link.reason + "。可以撤回这次中断操作后重新选择。";
         } else
-          return deny(
-            "原操作的输入或回复已改变，无法安全补认完成，请重新选择节点。",
-          );
+          return deny("无法重放原操作：" + link.reason + "。不会补认完成。");
       } else {
         const extraCommand = c.chat
           .slice(link.userFloor + 1)
@@ -181,6 +213,7 @@ function createPlayerRecovery(h) {
       actions,
       base,
       floors,
+      historyRecovery: C.clone(state.historyRecovery),
     };
     return {
       id,
@@ -224,6 +257,12 @@ function createPlayerRecovery(h) {
     try {
       let next = C.clone(plan.base);
       if (action === "cancel") next = C.clone(next.pending.before);
+      if (action === "reset_failed") {
+        next.lastNodeResult = {
+          ...next.lastNodeResult,
+          repairAcknowledged: true,
+        };
+      }
       if (action === "replay") {
         for (const floor of plan.floors) {
           h.guard(c);
@@ -236,11 +275,29 @@ function createPlayerRecovery(h) {
         }
       }
       next.repairRunId = repairId;
+      if (plan.historyRecovery)
+        next.historyRecovery = C.clone(plan.historyRecovery);
+      if (next.historyRecovery) next.historyRecovery.noticeAcknowledged = true;
+      const replayMessage = next.pending
+        ? "已核验原回复，但仍缺少有效结算回报，请重试该节点的结算。"
+        : next.lastNodeResult?.outcome === "failure"
+          ? "已核验原回复，节点未通过原有条件，可以重新选择。"
+          : "已重新核验" + plan.floors.length + "条回复。";
+      const message =
+        action === "replay"
+          ? replayMessage
+          : action === "reset_failed"
+            ? "已清理失效任务并保留当前进度。该节点尚未完成，请重新选择；未补发奖励或推进剧情。"
+            : action === "cancel"
+              ? "已撤回中断操作，可以重新选择。"
+              : "已重新读取可信进度并刷新显示。";
       next.playerRepair = {
         id: repairId,
         action,
         replies: action === "replay" ? plan.floors.length : 0,
         at: new Date().toISOString(),
+        message,
+        revision: (h.getState()?.revision || next.revision || 0) + 1,
       };
       await h.commit(c, next, "player_repair");
       h.guard(c);
@@ -248,19 +305,9 @@ function createPlayerRecovery(h) {
         token: h.token(c),
         revision: version(),
       });
-      const replayMessage = next.pending
-        ? "已核验原回复，但仍缺少有效结算回报，请重试该节点的结算。"
-        : next.lastNodeResult?.outcome === "failure"
-          ? "已核验原回复，节点未通过原有条件，可以重新选择。"
-          : "已重新核验" + plan.floors.length + "条回复。";
       return {
         status: "repaired",
-        message:
-          action === "replay"
-            ? replayMessage
-            : action === "cancel"
-              ? "已撤回中断操作，可以重新选择。"
-              : "已重新读取可信进度并刷新显示。",
+        message,
         canUndo: true,
       };
     } catch (error) {
@@ -299,6 +346,42 @@ function createPlayerRecovery(h) {
       canUndo: false,
     };
   }
-  return { inspect, run, undo };
+  async function oneClick(c) {
+    if (busy()) throw Error("请等回复生成和保存结束，再一键修复。");
+    const backup = await h.adapter.readRepairBackup?.();
+    h.guard(c);
+    if (undoable(backup, c) && (!backup.after || backup.after.failed)) {
+      await undo(c);
+      c = h.context();
+    }
+    const check = await inspect(c);
+    h.guard(c);
+    if (!check.actions.length)
+      return {
+        status: "blocked",
+        message: check.message,
+        canUndo: check.canUndo,
+      };
+    const action = ["replay", "reset_failed", "cancel", "refresh"].find((x) =>
+      check.actions.includes(x),
+    );
+    if (
+      action === "refresh" &&
+      h.getState() &&
+      (!inspected.historyRecovery ||
+        inspected.historyRecovery.noticeAcknowledged)
+    ) {
+      await h.adapter.syncState?.(C.clone(h.getState()));
+      h.guard(c);
+      h.notify("player_repair");
+      return {
+        status: "refreshed",
+        message: "已检查并刷新，当前没有需要修补的错误。",
+        canUndo: check.canUndo,
+      };
+    }
+    return run(c, check.id, action);
+  }
+  return { inspect, run, undo, oneClick };
 }
 module.exports = { createPlayerRecovery };
