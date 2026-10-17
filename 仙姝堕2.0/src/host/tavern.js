@@ -122,6 +122,18 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     return generating || visible(top.document.querySelector("#mes_stop"));
   }
 
+  function messageArchives(message) {
+    const records={};
+    for(const archive of [...(message?.swipe_info || []).map(x=>x?.extra?.xsd2_snapshots || {}),message?.extra?.xsd2_snapshots || {}])
+      for(const[key,value]of Object.entries(archive))if(!records[key] || value.checkpoint?.state?.revision>records[key].checkpoint?.state?.revision)records[key]=value;
+    return records;
+  }
+  function resolveCheckpoint(record,c=context()) {
+    if(record?.storage!==2)return record;
+    const message=c.chat.find(m=>m.extra?.xsd2_identity?.messageId===record.messageId);
+    const checkpoint=messageArchives(message)[record.revisionId]?.checkpoint;
+    return checkpoint ? C.clone(checkpoint) : null;
+  }
   const adapter = {
     retryGeneration(){
       preflightSend();const c=ctx(),generate=c.generate || st.generate;
@@ -148,7 +160,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     isAborted: () => aborted,
     async readCheckpoint() {
       const c=context(),vars=await helper.getVariables({type:"chat"});
-      const saved=vars?.xsd2_checkpoint;
+      const saved=resolveCheckpoint(vars?.xsd2_checkpoint,c);
       if(saved?.identityTrail || (saved?.chatId===c.chatId && C.matchesSnapshot(saved.trail,C.fingerprint(c.chat))))return saved;
       // Only migrate a live trusted kernel's pending, bound to this chat and
       // the adjacent exact user action; never reconstruct from model prose.
@@ -159,6 +171,7 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
         return {schema:2,chatId:c.chatId,branchId:c.branchId,trail,state};
       }
       if(saved?.chatId===c.chatId)return saved;
+      if(vars?.xsd2_checkpoint?.storage===2 && !saved)return {schema:2,chatId:c.chatId,trail:null};
       // Older cards mirrored these fields without a complete checkpoint.
       // Evidence of an existing save blocks silent zero initialization.
       if(vars?.stat_data?.character_stages && vars.stat_data.character_metrics)
@@ -168,50 +181,46 @@ function createTavernHost(win, doc, cardName, embeddedManagedEntries = [], liveH
     async readCheckpoints() {
       const current=await adapter.readCheckpoint();
       const vars=await helper.getVariables({type:"chat"});
-      return [current,...(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[]),...(liveCheckpoint?.chatId===context().chatId && liveCheckpoint.branchId===context().branchId?[C.clone(liveCheckpoint)]:[])].filter(Boolean);
+      return [current,...(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[]).map(x=>resolveCheckpoint(x,context())),...(liveCheckpoint?.chatId===context().chatId && liveCheckpoint.branchId===context().branchId?[C.clone(liveCheckpoint)]:[])].filter(Boolean);
     },
     async readMessage(i) {
-      return helper.getVariables({ type: "message", message_id: i });
+      const c=context(),vars=await helper.getVariables({type:"message",message_id:i});
+      const m=c.chat[i],slot=Number(m?.swipe_id ?? 0),id=c.identities[i];
+      const records=Object.values(messageArchives(m)).filter(x=>x.slot===slot && x.checkpoint?.identityTrail?.at(-1)?.messageId===id?.messageId);
+      const record=records.find(x=>x.checkpoint?.identityTrail?.at(-1)?.revisionId===id?.revisionId) || records.sort((a,b)=>b.checkpoint.state.revision-a.checkpoint.state.revision)[0];
+      return record ? {...vars,stat_data:{...vars?.stat_data,xsd2:[C.clone(record.checkpoint)]}} : vars;
     },
     async persist(c, e) {return withSaving(async()=>{
       guard(c);
-      const old = await helper.getVariables({
-        type: "message",
-        message_id: c.floor,
-      });
-      guard(c);
-      await helper.replaceVariables(
-        {
-          ...old,
-          stat_data: {
-            ...(old?.stat_data || {}),
-            ...C.clone(e.state.stat_data),
-            xsd2: [C.clone(e)],
-          },
-        },
-        { type: "message", message_id: c.floor },
-      );
-      guard(c);
-      await save();
-      guard(c);
-      const back = await helper.getVariables({
-        type: "message",
-        message_id: c.floor,
-      });
-      guard(c);
-      if (back?.stat_data?.xsd2?.[0]?.state?.revision !== e.state.revision)
-        throw Error("本楼状态保存复核失败");
-      const checkpoint={...C.clone(e),branchId:c.branchId};
-      // Assistant prose is not part of snapshot identity. Keep compact trails
-      // in the journal so long stories are not copied into every backup.
-      const compact=trail=>trail.map(x=>{const v=JSON.parse(x);if(!v[0]&&!v[1])v[3]="";return JSON.stringify(v);});
-      checkpoint.trail=compact(checkpoint.trail);
-      if(checkpoint.previous?.trail)checkpoint.previous.trail=compact(checkpoint.previous.trail);
+      const checkpoint=C.clone(e);delete checkpoint.previous;
+      // Also compact legacy authorizations nested in pending/before states.
+      function compact(value){if(!value || typeof value!=="object")return;for(const[k,v]of Object.entries(value)){
+        if(k==="trail" && Array.isArray(v))value[k]=C.compactTrail(v);else compact(v);
+      }}
+      compact(checkpoint);
+      const message=c.chat[c.floor],id=c.identities?.[c.floor] || Identity.identify(c.chat)[c.floor];
+      const key=id.revisionId,ref={storage:2,messageId:id.messageId,revisionId:key,revision:e.state.revision};
+      const retained=Object.fromEntries(Object.entries(messageArchives(message)).filter(([,v])=>v.checkpoint?.identityTrail?.at(-1)?.messageId===id.messageId));
+      message.extra={...message.extra,xsd2_snapshots:{...retained,[key]:{slot:Number(message.swipe_id ?? 0),checkpoint}}};
+      const info=message.swipe_info?.[Number(message.swipe_id ?? 0)];
+      if(info)info.extra={...info.extra,xsd2_snapshots:Object.fromEntries(Object.entries(message.extra.xsd2_snapshots).filter(([,v])=>v.slot===Number(message.swipe_id ?? 0)))};
+      const old=await helper.getVariables({type:"message",message_id:c.floor});guard(c);
+      const projection={...old,stat_data:{...old?.stat_data},xsd2_ref:ref};
+      // Current values are projected once at chat scope by syncState().
+      // Keep foreign message fields, not another copy of this card's state.
+      for(const key of Object.keys(e.state.stat_data))delete projection.stat_data[key];
+      delete projection.stat_data.xsd2;
+      // These are our inherited chat backup copies, not another extension's data.
+      delete projection.xsd2_checkpoint;delete projection.xsd2_history;
+      await helper.replaceVariables(projection,{type:"message",message_id:c.floor});guard(c);
+      await save();guard(c);
+      const back=resolveCheckpoint(ref,context());
+      if(back?.state?.revision!==e.state.revision)throw Error("本楼状态保存复核失败");
       await mutateChatVariables(c,vars=>{
         const journal=(Array.isArray(vars?.xsd2_history)?vars.xsd2_history:[]).filter(x=>
-        !(checkpoint.identityTrail && x.identityTrail ? JSON.stringify(x.identityTrail)===JSON.stringify(checkpoint.identityTrail) : x.chatId===c.chatId && x.trail?.length===checkpoint.trail.length && C.matchesSnapshot(x.trail,checkpoint.trail)));
-        journal.push(checkpoint);
-        return {...vars,xsd2_checkpoint:checkpoint,xsd2_history:journal};
+          !(x.storage===2 && x.messageId===ref.messageId && x.revisionId===ref.revisionId));
+        journal.push(ref);
+        return {...vars,xsd2_checkpoint:ref,xsd2_history:journal.slice(-3)};
       });
       await save();guard(c);
     });},

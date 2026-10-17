@@ -33,36 +33,50 @@ function safe(x) {
     safe(x[k]);
   }
 }
+function textSignature(text) {
+  const s=String(text);let forward=2166136261,reverse=2166136261;
+  // Hash every UTF-16 code unit, including emoji low surrogates.
+  for(let i=0;i<s.length;i++){
+    forward=Math.imul(forward^s.charCodeAt(i),16777619);
+    reverse=Math.imul(reverse^s.charCodeAt(s.length-1-i),16777619);
+  }
+  return s.length+":"+(forward>>>0).toString(16)+":"+(reverse>>>0).toString(16);
+}
+function textDigest(text) {
+  const s=String(text ?? "");
+  return {v:1,exact:textSignature(s),normalized:textSignature(s.replace(/\r\n/g,"\n").trim()),action:/XSD2_|^\/?(?:解锁|锁定|身份|段位)\s/.test(s)};
+}
+function digest(value) {return value?.v===1 ? value : textDigest(value);}
+function compactTrail(trail) {
+  return trail.map(x=>{const v=JSON.parse(x);v[3]=digest(v[3]);return JSON.stringify(v);});
+}
+const fingerprintCache=new WeakMap();
 function fingerprint(chat) {
-  return chat.map((m) =>
-    JSON.stringify([
-      !!m.is_user,
-      !!m.is_system,
-      Number(m.swipe_id ?? 0),
-      String(m.mes ?? ""),
-    ]),
-  );
+  return chat.map(m=>{
+    const text=String(m.mes ?? "");let cached=fingerprintCache.get(m);
+    if(!cached || cached.text!==text){cached={text,digest:textDigest(text)};fingerprintCache.set(m,cached);}
+    return JSON.stringify([!!m.is_user,!!m.is_system,Number(m.swipe_id ?? 0),cached.digest]);
+  });
 }
-function matches(a, b) {
-  return (
-    Array.isArray(a) && a.length <= b.length && a.every((x, i) => x === b[i])
-  );
-}
-// Snapshot identity follows choices and swipe branches. Assistant text may be
-// normalized by the host; concurrency guards still use exact matches().
-function matchesSnapshot(a, b) {
-  return Array.isArray(a) && a.length <= b.length && a.every((x,i)=>{
+function matches(a,b) {
+  return Array.isArray(a) && Array.isArray(b) && a.length<=b.length && a.every((x,i)=>{
     if(x===b[i])return true;
-    try {const old=JSON.parse(x),now=JSON.parse(b[i]);
+    try{const old=JSON.parse(x),now=JSON.parse(b[i]);return old.length===4 && now.length===4 && old.slice(0,3).every((v,j)=>v===now[j]) && digest(old[3]).exact===digest(now[3]).exact;}catch{return false;}
+  });
+}
+// Snapshot identity tolerates assistant presentation changes; live guards use
+// exact digests. Legacy full-text trails remain readable during migration.
+function matchesSnapshot(a,b) {
+  return Array.isArray(a) && Array.isArray(b) && a.length<=b.length && a.every((x,i)=>{
+    if(x===b[i])return true;
+    try{const old=JSON.parse(x),now=JSON.parse(b[i]);
       if(old.length!==4 || now.length!==4 || old[0]!==now[0] || Number(old[2])!==Number(now[2]))return false;
-      const sameText=String(old[3]).replace(/\r\n/g,"\n").trim()===String(now[3]).replace(/\r\n/g,"\n").trim();
-      // SillyTavern uses is_system for /hide too. Visibility is not a branch:
-      // user text stays exact; a compacted ordinary assistant trail can be hidden.
+      const sameText=digest(old[3]).normalized===digest(now[3]).normalized;
       if(old[0])return sameText;
       if(!old[1]&&!now[1])return true;
       if(old[1]!==now[1])return sameText || (!old[1] && old[3]==="");
       return sameText;
-    } catch {return false;}
+    }catch{return false;}
   });
 }
 function assertDate(d) {
@@ -223,6 +237,9 @@ module.exports = {
   clone,
   safe,
   fingerprint,
+  compactTrail,
+  trailTextMatches:(value,text)=>digest(value).normalized===digest(text).normalized,
+  trailAction:value=>digest(value).action,
   matches,
   matchesSnapshot,
   day,

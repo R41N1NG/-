@@ -10,7 +10,7 @@ function migrateOpening(e,c){
  const s=e?.state,old=e?.identityTrail?.[0],now=c.identities?.[0];
  if(e?.chatId!==c.chatId || e.branchId!==c.branchId || e.identityTrail?.length!==1 || s?.identity!=='自设' || s.storyCount!==0 || s.pending || s.activeEvent || Object.keys(s.processed||{}).length || Object.keys(s.receipts||{}).length || !old || !now || old.messageId!==now.messageId || old.user || now.user)return null;
  let tuple;try{tuple=JSON.parse(e.trail?.[0]);}catch{return null;}
- if(!tuple || Number(tuple[2])!==Number(c.chat[0]?.swipe_id??0) || !tuple[3] || /<IdentityMenu\b/.test(c.chat[0].mes))return null;
+ if(!tuple || typeof tuple[3]!=="string" || Number(tuple[2])!==Number(c.chat[0]?.swipe_id??0) || !tuple[3] || /<IdentityMenu\b/.test(c.chat[0].mes))return null;
  const normalize=t=>String(t).replace(/\r\n/g,'\n').trim();
  const users=[c.raw?.name1,s.stat_data?.自设?.name].filter(Boolean),char=c.raw?.name2 || c.card?.name || c.card?.data?.name;
  const macroMatch=/\{\{(?:user|char)\}\}/i.test(tuple[3]) && users.some(user=>normalize(expandOpening(tuple[3],user,char))===normalize(c.chat[0].mes));

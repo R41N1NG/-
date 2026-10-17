@@ -1282,7 +1282,7 @@ test('共享extra的克隆消息拆分ID，不改其他扩展字段且连续读�
 test('旧自设开局仅宏展开可验证迁移，保留原档；其他改文、换候选或丢编号不能借此绕过',async()=>{
  const h=harness();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{name:'青岚',date:{year:1578,month:3,day:3},realm:'金丹前期'}}});
  // Construct the exact v64 form: literal macros in its full opening trail.
- const I=require('../src/runtime/message_identity'),saved=h.r.getCheckpoint(),raw=h.c.chat[0].mes.replace('自设 · 青岚','自设 · {{user}}');h.c.chat[0].mes=raw;const oldIds=I.identify(h.c.chat);saved.identityTrail=oldIds;saved.trail=C.fingerprint(h.c.chat);saved.state.history_identity.revisionId=oldIds[0].revisionId;
+ const I=require('../src/runtime/message_identity'),saved=h.r.getCheckpoint(),raw=h.c.chat[0].mes.replace('自设 · 青岚','自设 · {{user}}');h.c.chat[0].mes=raw;const oldIds=I.identify(h.c.chat);saved.identityTrail=oldIds;saved.trail=h.c.chat.map(m=>JSON.stringify([!!m.is_user,!!m.is_system,Number(m.swipe_id??0),String(m.mes??"")]));saved.state.history_identity.revisionId=oldIds[0].revisionId;
  h.c.chat[0].mes=raw.replaceAll('{{user}}','青岚');h.c.chat[0].variables=[];h.adapter.readCheckpoints=async()=>[C.clone(saved)];const r=createDispatcher(h.adapter,data);await r.ready();assert.equal(r.getSnapshot().identity,'自设');assert.ok(r.getSnapshot().openingMacroMigration);assert.equal(r.getCheckpoint().trail[0],C.fingerprint(h.c.chat)[0]);
  const c=()=>({chatId:h.c.chatId,branchId:h.c.branchId,chat:h.c.chat,trail:C.fingerprint(h.c.chat),identities:I.identify(h.c.chat)}),migrate=require('../src/runtime/opening_macros').migrateOpening;
  h.c.chat[0].mes+='多添一句';assert.equal(migrate(saved,c()),null);h.c.chat[0].mes=raw.replaceAll('{{user}}','青岚');h.c.chat[0].swipe_id=1;assert.equal(migrate(saved,c()),null);h.c.chat[0].swipe_id=0;delete h.c.chat[0].extra;assert.equal(migrate(saved,c()),null);
@@ -1316,7 +1316,7 @@ test('旧版未游玩自设首楼展示变化只迁移配置完全相同的记�
  const h=harness();await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{name:'测试道友',realm:'金丹前期',date:{year:1578,month:3,day:3},origin:'测试来历'}}});
  // Recreate a pre-v67 root that used the complete body as its identity.
  delete h.c.chat[0].extra.xsd2_openings;delete h.c.chat[0].extra.xsd2_identity;
- const I=require('../src/runtime/message_identity'),e=h.r.getCheckpoint();e.identityTrail=I.identify(h.c.chat);e.trail=C.fingerprint(h.c.chat);delete e.state.openingConfig;
+ const I=require('../src/runtime/message_identity'),e=h.r.getCheckpoint();e.identityTrail=I.identify(h.c.chat);e.trail=h.c.chat.map(m=>JSON.stringify([!!m.is_user,!!m.is_system,Number(m.swipe_id??0),String(m.mes??"")]));delete e.state.openingConfig;
  h.c.chat[0].variables=[];const legacyChat=C.clone(h.c.chat);h.adapter.readCheckpoints=async()=>[C.clone(e)];h.c.chat[0].mes='<div>附加展示</div>\n'+h.c.chat[0].mes;
  const fresh=createDispatcher(h.adapter,data);await fresh.restore();assert.equal(fresh.getSnapshot().identity,'自设');
  h.c.chat=C.clone(legacyChat);h.c.chat[0].mes=h.c.chat[0].mes.replace('测试来历','另一来历');await assert.rejects(createDispatcher(h.adapter,data).restore(),/保护存档/);
@@ -1416,4 +1416,15 @@ test('GM好感不借给另一个候选；交还自动后重排也不复活旧锁
  await h.r.dispatchIntent({type:'GM_PATCH',payload:{'metric.叶红缨.好感度':20}});await h.r.dispatchIntent({type:'GM_RELEASE',payload:{keys:['metric.叶红缨.好感度']}});
  h.c.chat.at(-1).mes='<div>排版</div>'+h.c.chat.at(-1).mes;h.c.chat.push({is_user:true,mes:'继续'});await h.reply(status({在场:'叶红缨'},'继续交谈。'));
  assert.equal(h.r.getSnapshot().manual['metric.叶红缨.好感度'],undefined);
+});
+
+test('摘要指纹兼容旧全文且检查编辑/候选变化，长正文不进入快照',()=>{
+ assert.equal(C.matches(C.fingerprint([{mes:'😀'}]),C.fingerprint([{mes:'😃'}])),false);
+ const text='前文🌙'.repeat(3000),chat=[{mes:text,is_user:true},{mes:'回复',is_user:false}];
+ const legacy=chat.map(m=>JSON.stringify([!!m.is_user,!!m.is_system,0,m.mes])),modern=C.fingerprint(chat);
+ assert.ok(JSON.stringify(modern).length<500);assert.ok(C.matches(legacy,modern));assert.ok(C.matchesSnapshot(legacy,modern));assert.deepEqual(C.compactTrail(legacy),modern);
+ chat[0].mes+='修改';assert.equal(C.matches(modern,C.fingerprint(chat)),false);assert.equal(C.matchesSnapshot(modern,C.fingerprint(chat)),false);
+ chat[0].mes=text;chat[1].mes='只改助手展示';assert.equal(C.matches(modern,C.fingerprint(chat)),false);assert.ok(C.matchesSnapshot(modern,C.fingerprint(chat)));
+ chat[1].swipe_id=1;assert.equal(C.matchesSnapshot(modern,C.fingerprint(chat)),false);
+ const command=C.fingerprint([{mes:'XSD2_test_123',is_user:true}]);assert.equal(C.trailAction(JSON.parse(command[0])[3]),true);
 });

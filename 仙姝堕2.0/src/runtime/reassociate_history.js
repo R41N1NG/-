@@ -22,12 +22,12 @@ function reassociate(e,c){
   let cursor=oldPrev+1;
   for(let j=newPrev+1;j<ni;j++){
    const kept=c.chat[j];if(!kept.is_user)return null;
-   while(cursor<oi && !(Number(old[cursor][2])===Number(kept.swipe_id??0)&&normalized(old[cursor][3])===normalized(kept.mes))){
-    if(/XSD2_|^\/?(?:解锁|锁定|身份|段位)\s/.test(old[cursor][3]))return null;cursor++;
+   while(cursor<oi && !(Number(old[cursor][2])===Number(kept.swipe_id??0)&&C.trailTextMatches(old[cursor][3],kept.mes))){
+    if(C.trailAction(old[cursor][3]))return null;cursor++;
    }
    if(cursor>=oi)return null;map.set(cursor,j);cursor++;
   }
-  for(;cursor<oi;cursor++)if(/XSD2_|^\/?(?:解锁|锁定|身份|段位)\s/.test(old[cursor][3]))return null;
+  for(;cursor<oi;cursor++)if(C.trailAction(old[cursor][3]))return null;
   map.set(oi,ni);oldPrev=oi;newPrev=ni;
  }
  if(c.chat.slice(newPrev+1).some(m=>m.is_user && /XSD2_|^\/?(?:解锁|锁定|身份|段位)\s/.test(String(m.mes||''))))return null;

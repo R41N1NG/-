@@ -116,6 +116,7 @@ async function fixture(first = "<IdentityMenu/>") {
     win,
     doc,
     context,
+    chatVars,
     errors,
     sends,
     emit,
@@ -171,7 +172,9 @@ test("打包脚本+宿主等待渲染回调：六身份真实跳转，画廊只�
       );
       assert.equal(h.doc.querySelector("[data-xds-menu]"), null);
       assert.equal(h.replacements(), 1);
-      assert.equal(h.context.chat[0].variables[0].stat_data.身份, identity);
+      await until(()=>h.chatVars.stat_data?.身份===identity);
+      assert.equal(h.context.chat[0].variables[0].stat_data.身份,undefined);
+      assert.equal(h.win.XSD2.runtime.getSnapshot().identity,identity);
       assert.equal(h.errors.length, 0);
     } finally {
       h.close();
@@ -511,8 +514,8 @@ test('聊天变量同步与进度写入跨脚本实例排队，旧同步不能�
   const sync=a.syncState(old);await reading;
   let finished=false;const saving=b.persist({...b.context(),floor:0,trail:C.fingerprint(chat)},{schema:2,chatId:'write-race',branchId:'write-race',trail:C.fingerprint(chat),state:fresh}).then(()=>finished=true);
   await new Promise(resolve=>setTimeout(resolve,20));assert.equal(finished,false);release();await Promise.all([sync,saving]);
-  assert.equal(vars.xsd2_checkpoint.state.revision,2);assert.equal(vars.xsd2_history.length,1);assert.equal(vars.externalKey,'保留');
-  await a.syncState(old);assert.equal(vars.stat_data.地点,'旧地点');assert.equal(vars.xsd2_checkpoint.state.revision,2);assert.equal(vars.xsd2_history.length,1);
+  assert.equal((await b.readCheckpoint()).state.revision,2);assert.equal(vars.xsd2_history.length,1);assert.equal(vars.externalKey,'保留');
+  await a.syncState(old);assert.equal(vars.stat_data.地点,'旧地点');assert.equal((await b.readCheckpoint()).state.revision,2);assert.equal(vars.xsd2_history.length,1);
  }finally{release();dom.window.close();}
 });
 
@@ -639,4 +642,44 @@ test('打包西北链：原生发送被包装并重复代码、附带旧指令�
   }
   assert.equal(r.getSnapshot().pluginState.xibei.step,'ambush');assert.equal(r.getSnapshot().inventory.find(x=>x.name==='极乐引').count,1);assert.equal(h.doc.querySelector('[data-action-mismatch]'),null);assert.deepEqual(h.errors,[]);
  }finally{h.close();}
+});
+
+test('轻量消息引用不带全文，聊天日志限三条；180楼复制变量后体积有界且保留早期快照',async()=>{
+ const {createTavernHost}=require('../src/host/tavern'),I=require('../src/runtime/message_identity');
+ const dom=new JSDOM('<div id="chat"></div>'),win=dom.window;
+ const chat=[],ctx={chatId:'size-check',chat,saveChat:async()=>{}},vars={foreign:'保留'};
+ win.SillyTavern={getContext:()=>ctx};win.TavernHelper={getVariables:async({type,message_id})=>C.clone(type==='chat'?vars:chat[message_id].variables || {}),replaceVariables:async(v,{type,message_id})=>{if(type==='chat'){for(const k of Object.keys(vars))delete vars[k];Object.assign(vars,C.clone(v));}else chat[message_id].variables=C.clone(v);},getCharWorldbookNames:async()=>({primary:null,additional:[]})};
+ try{
+  const host=createTavernHost(win,win.document,'仙姝堕2.0·框架测试');
+  for(let i=0;i<180;i++){
+   chat.push({mes:('第'+i+'楼故事正文。').repeat(600),is_user:!!(i%2),swipe_info:[{extra:{}}],variables:C.clone({...vars,stat_data:{external:'外部数据'}})});
+   const c=host.context();c.floor=i;c.trail=C.fingerprint(chat);
+   await host.persist(c,{schema:2,chatId:ctx.chatId,branchId:ctx.chatId,trail:c.trail,identityTrail:I.trail(c),previous:{trail:c.trail,state:{copied:'多余前置'}},state:{revision:i+1,storyCount:i,stat_data:{inventory:[{name:'故事物品',count:i+1}]}}});
+   assert.equal(chat[i].variables.stat_data.xsd2,undefined);assert.equal(chat[i].variables.stat_data.inventory,undefined);assert.equal(chat[i].variables.xsd2_history,undefined);assert.equal(chat[i].variables.stat_data.external,'外部数据');
+  }
+  assert.equal(vars.xsd2_history.length,3);assert.equal(vars.xsd2_checkpoint.state,undefined);assert.equal(vars.foreign,'保留');
+  const bytes=Buffer.byteLength(JSON.stringify({chat,vars}));assert.ok(bytes<16*1024*1024,'180楼总计 '+bytes+' 字节');
+  assert.equal((await host.readMessage(20)).stat_data.xsd2[0].state.revision,21);
+  // All recent backup references point to deleted messages; the older native
+  // message archive still survives without the variable extension's snapshots.
+  chat.splice(21);for(const m of chat)m.variables={};
+  assert.equal((await host.readMessage(20)).stat_data.xsd2[0].state.revision,21);
+  assert.equal((await host.readCheckpoint()).trail,null); // Missing archive is evidence, never a fresh game.
+  console.log('v72 synthetic180 JSON bytes:',bytes);
+ }finally{dom.window.close();}
+});
+
+test('原生快照按候选保存，变量回读被扩展清空仍可保存；旧变量全量存档仍可读取',async()=>{
+ const {createTavernHost}=require('../src/host/tavern'),I=require('../src/runtime/message_identity');
+ const dom=new JSDOM('<div id="chat"></div>'),win=dom.window,chat=[{mes:'候选甲',swipe_id:0,swipe_info:[{extra:{}},{extra:{}}]}],ctx={chatId:'native-candidates',chat,saveChat:async()=>{}};let vars={},message={};
+ win.SillyTavern={getContext:()=>ctx};win.TavernHelper={getVariables:async({type})=>C.clone(type==='chat'?vars:{}),replaceVariables:async(v,{type})=>{if(type==='chat')vars=C.clone(v);else message=C.clone(v);},getCharWorldbookNames:async()=>({primary:null,additional:[]})};
+ try{
+  const host=createTavernHost(win,win.document,'仙姝堕2.0·框架测试');
+  async function save(revision){const c=host.context();c.floor=0;c.trail=C.fingerprint(chat);await host.persist(c,{schema:2,chatId:ctx.chatId,branchId:ctx.chatId,trail:c.trail,identityTrail:I.trail(c),state:{revision,stat_data:{}}});}
+  await save(1);chat[0].swipe_id=1;chat[0].mes='候选乙';await save(2);assert.equal((await host.readMessage(0)).stat_data.xsd2[0].state.revision,2);
+  chat[0].swipe_id=0;chat[0].mes='候选甲';chat[0].extra=C.clone(chat[0].swipe_info[0].extra);assert.equal((await host.readMessage(0)).stat_data.xsd2[0].state.revision,1);
+  assert.equal(message.xsd2_ref.storage,2);
+  delete chat[0].extra.xsd2_snapshots;for(const info of chat[0].swipe_info)delete info.extra.xsd2_snapshots;vars={xsd2_checkpoint:{schema:2,chatId:ctx.chatId,trail:[JSON.stringify([false,false,0,'候选甲'])],state:{revision:9}}};
+  assert.equal((await host.readCheckpoint()).state.revision,9);
+ }finally{dom.window.close();}
 });

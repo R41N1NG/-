@@ -1,6 +1,7 @@
 "use strict";
 const C = require('./contracts');
 let serial=0;
+const signatureCache=new WeakMap();
 function uid(prefix='msg') {
   const random=globalThis.crypto?.randomUUID?.();
   return prefix+'_'+(random || Date.now().toString(36)+'_'+(++serial).toString(36)+'_'+Math.random().toString(36).slice(2)+'_'+Math.random().toString(36).slice(2));
@@ -39,7 +40,9 @@ function identify(chat) {
     // reformatted by the host without creating a new game. Live-write guards
     // still compare the exact chat body through contracts.fingerprint().
     const opening=index===0?openingRecord(m):null;
-    const sig=opening ? 'opening:'+opening.id+':'+signature(JSON.stringify(opening.config)) : signature(m.mes), key=slot+':'+sig;
+    const input=opening ? JSON.stringify(opening.config) : String(m.mes ?? '');
+    let cached=signatureCache.get(m);if(!cached || cached.input!==input){cached={input,signature:signature(input)};signatureCache.set(m,cached);}
+    const sig=opening ? 'opening:'+opening.id+':'+cached.signature : cached.signature, key=slot+':'+sig;
     const native=info?.extra?.xsd2_identity;
     const duplicate=native?.revisionId && m.swipe_info?.some((x,i)=>i<slot && x?.extra?.xsd2_identity?.revisionId===native.revisionId);
     const revisionId=duplicate ? uid('reply') : native?.messageId===record.messageId && native.signature===sig ? native.revisionId : record.versions[key] || uid('reply');

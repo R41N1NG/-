@@ -177,14 +177,15 @@ test("宿主使用原生候选变量、填入后点击发送，并守住非本�
   assert.equal(sent, 1);
   const ctx = { ...host.context(), floor: 0, trail: C.fingerprint(c.chat) },
     e = {
-      schema: 2,
+      schema: 2,chatId:ctx.chatId,branchId:ctx.branchId,identityTrail:ctx.identities,
       state: { revision: 1, stat_data: { 身份: "赵无忧" } },
       trail: ctx.trail,
     };
   await host.persist(ctx, e);
   assert.equal(c.chat[0].variables[0].foreign, "keep");
   assert.equal(saved, 2);
-  assert.equal(c.variables.xsd2_checkpoint.state.revision, 1);
+  assert.equal(c.variables.xsd2_checkpoint.storage, 2);
+  assert.equal((await host.readMessage(0)).stat_data.xsd2[0].state.revision,1);
   c.chat[0].swipe_id = 1;
   assert.deepEqual(await host.readMessage(0), {});
   c.characters[0].name = "仙姝堕";
