@@ -1,6 +1,8 @@
 "use strict";
+const { isPalaceLord, resolveCorruption } = require("./corruption");
 
 const NEGATIVE_DEFAULTS=[
+
  {id:"neg_gap",label:"生隙",range:[-20,-1],boundary:"疏离冷淡，仅维持公事体面，关闭私密往来。",recovery:"守信、赔罪及正向互动可修复关系。"},
  {id:"neg_disgust",label:"嫌恶",range:[-50,-21],boundary:"戒备排斥，拒绝亲密接触、赠礼及私密同行。",recovery:"普通言语无效，须危机中的实际援手。",positiveAnchors:[]},
  {id:"neg_hostile",label:"敌视",range:[-80,-51],boundary:"关系敌对，停止正常私密往来，不接受亲密互动。",recovery:"普通互动不加分，仅生死援救等已配置大恩可修复。",positiveAnchors:[]},
@@ -38,7 +40,20 @@ function writeMetric(stat, profiles, character, key, value) {
   stat.character_metrics[character] ||= {};
   stat.character_metrics[character][key] = value;
 }
-function resolveStages(s, profiles = {}) {
+function resolveStages(s, profiles = {}, rules = null) {
+  const stat = s.stat_data || s;
+  const ident = stat.身份 || s.identity;
+  if (isPalaceLord(ident)) {
+    stat.favor_active = false;
+    stat.corruption_active = true;
+    resolveCorruption(s, rules, profiles);
+    stat.character_stages = {};
+    return s;
+  }
+  stat.favor_active = true;
+  stat.corruption_active = false;
+  delete stat.character_corruption;
+
   s.stat_data.character_metrics ||= {};
   const resolved = {};
   for (const [name, cfg] of Object.entries(profiles)) {
@@ -68,6 +83,8 @@ function resolveStages(s, profiles = {}) {
   return s;
 }
 function completeStage(s, profiles, grant) {
+  const ident = s.stat_data?.身份 || s.identity;
+  if (isPalaceLord(ident)) throw Error("殿主身份下好感晋升关闭");
   const cfg = profiles[grant.character];
   const from = cfg?.stages.find(x=>x.id === grant.from), to = cfg?.stages.find(x=>x.id === grant.to);
   if (!from || !to || to.priority <= from.priority || s.stat_data.character_stages?.[grant.character]?.id !== grant.from)
@@ -80,4 +97,4 @@ function completeStages(s,profiles,grants){
  for(const g of grants){const cfg=profiles[g.character],from=cfg?.stages.find(x=>x.id===g.from),to=cfg?.stages.find(x=>x.id===g.to);if(!from||!to||to.priority<=from.priority||s.stat_data.character_stages?.[g.character]?.id!==g.from)throw Error("双人阶段必须同时符合前置条件");}
  for(const g of grants)completeStage(s,profiles,g);
 }
-module.exports = {completeStages,metricSpec, writeMetric, resolveStages, completeStage, negativeStages, negativeOf, canRecover};
+module.exports = {completeStages,metricSpec, writeMetric, resolveStages, completeStage, negativeStages, negativeOf, canRecover, isPalaceLord, resolveCorruption};

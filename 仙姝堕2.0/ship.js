@@ -27,6 +27,7 @@ const tests = spawnSync(
     "tests/map_integration.test.cjs",
     "tests/ui_discipline.test.cjs",
     "tests/fx_queue.test.cjs",
+    "tests/corruption.test.cjs",
   ],
   { cwd: __dirname, stdio: "inherit" },
 );

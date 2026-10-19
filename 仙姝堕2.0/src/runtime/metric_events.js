@@ -1,5 +1,5 @@
 "use strict";
-const { writeMetric, metricSpec, canRecover } = require("./character_stages");
+const { writeMetric, metricSpec, canRecover, isPalaceLord } = require("./character_stages");
 
 // 数值事件申报：模型对每个角色每轮至多一个 <好感事件> 标签，申报「档位」或「锚点ID」＋原文依据；
 // 分值、上限、冷却全部由配置与后台决定，模型只有举证权，没有定价权。
@@ -94,8 +94,11 @@ function createMetricEvents(defs, profiles, promotions) {
     stat.metric_state ||= {};
     stat.metric_anchor_done ||= {};
     const changes = [];
-    const visible = visibleCharacters(stat);
     stat.lastFavorCheck={turn:storyCount,character:parsed.character || null,reported:true,status:"checking",target:parsed.target || null,reason:null};
+    if (isPalaceLord(s.identity || stat.身份)) {
+      return drop(stat, storyCount, "殿主身份下好感度系统关闭，采用名器恶堕阶梯");
+    }
+    const visible = visibleCharacters(stat);
     if (!parsed.ok)return drop(stat,storyCount,parsed.reason);
     if (!visible.has(parsed.character)) return drop(stat, storyCount, parsed.character + " 不在场，申报无效");
     const found = lookup(parsed.character);
@@ -190,7 +193,9 @@ function coercionEvidence(prose,actors,name){
  });
 }
 function applyPreFinalPenalty(s,prose,profiles,turn){
- const stat=s.stat_data,visible=stripForEvidence(prose).replace(/[「“"][^」”"\n]*[」”"]/g,"");
+ const stat=s.stat_data;
+ if (isPalaceLord(s.identity || stat?.身份)) return [];
+ const visible=stripForEvidence(prose).replace(/[「“"][^」”"\n]*[」”"]/g,"");
  const actors=[s.identity,stat.自设?.name,"你"].filter(Boolean),penalized=[];
  for(const [name,cfg] of Object.entries(profiles)){
   const rule=cfg.preFinalPenalty;if(!rule)continue;

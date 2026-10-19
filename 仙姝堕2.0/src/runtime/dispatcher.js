@@ -4,7 +4,7 @@ const Identity=require("./message_identity");
 const {expandOpening,migrateOpening}=require("./opening_macros");
 const {reassociate}=require("./reassociate_history");
 const {meets} = require("./conditions");
-const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover} = require("./character_stages");
+const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover,isPalaceLord} = require("./character_stages");
 const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode,readUserInput,matchesAction } = require("./action_wire");
@@ -232,7 +232,7 @@ function createDispatcher(adapter, data) {
     s.stat_data.node_trigger = s.pending?.nodeId || null;
     s.stat_data.stage_focus = s.pending?.selection?.character || s.activeEvent?.character || s.stat_data.result_focus || null;
     s.stat_data.stage_focuses=s.pending?.selection?.characters || s.activeEvent?.characters || s.stat_data.result_focuses || [];
-    return resolveStages(s, data.characterProfiles || {});
+    return resolveStages(s, data.characterProfiles || {}, rules(s));
   }
   function manual(s) {
     for (const [k, v] of Object.entries(s.manual || {})) {
@@ -433,8 +433,13 @@ function createDispatcher(adapter, data) {
       (p.kind === "item" && plugin ? "\n" + plugin.getPrompt?.(snapshot()) : "")
       : plugin?.getPrompt?.(snapshot()) || "";
     const st = current?.stat_data;
+    const isLord = isPalaceLord(current?.identity);
     const relationNames=visibleCharacters({...st,stage_focus:current?.pending?.selection?.character || current?.activeEvent?.character || st?.stage_focus});
-    const relation=st ? [...relationNames].filter(name=>st.character_metrics?.[name]).map(name=>({人物:name,好感:st.character_metrics[name].好感度,当前心智:st.character_stages?.[name]?.label||st.character_stages?.[name]?.id,永久上限:st.character_metric_caps?.[name]?.好感度??null})) : [];
+    const relation=st && !isLord ? [...relationNames].filter(name=>st.character_metrics?.[name]).map(name=>({人物:name,好感:st.character_metrics[name].好感度,当前心智:st.character_stages?.[name]?.label||st.character_stages?.[name]?.id,永久上限:st.character_metric_caps?.[name]?.好感度??null})) : [];
+    const corruptionList = st && isLord ? Object.keys(st.character_corruption || {}).filter(name=>relationNames.has(name) || name === '叶红缨').map(name => {
+      const c = st.character_corruption[name];
+      return { 人物: name, 名器: c.relicName, 阶位: c.title, 状态: c.desc };
+    }) : [];
     const baseline = current
       ? "后台当前时点：仙盟历 " +
         C.dateText(current.calendarDate) +
@@ -447,14 +452,19 @@ function createDispatcher(adapter, data) {
         Object.keys(st.known)
           .filter((k) => st.known[k])
           .join("、") +
-        "。后台关系状态："+JSON.stringify(relation)+"；负好感覆盖优先于正向心智，永久上限不得突破；数值本身不制造过去事件。储物栏：" +
-        JSON.stringify(st.inventory) +
-        "。好感事件协议适用于全部玩家身份，包括自设；按角色对当前玩家的实际反应判断，不以赵无忧为固定对象。已发生符合好感表的互动时，先完成全部正文和状态栏，再在</Status_block>之后按角色分别申报，每个角色每回合至多一个<好感事件>人物名｜档位或锚点ID｜依据：本回合正文连续原句</好感事件>；不改写原句，不从用户邀请直接认定共饮，不重复计分；没有符合条件的新事件则不申报。日期照抄后台；历时只写本回合实际耗时，不按轮次固定增加，不默认半个时辰，不写距事件的累计天数；无法确定耗时写—，不沿用上一轮耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。" +
+        (isLord
+          ? "。后台恶堕状态：" + JSON.stringify(corruptionList) +
+            "。殿主身份下好感度系统关闭，不输出<好感事件>标签。名器阶位与恶堕阶段绑定（〇阶·守道 ⟷ 名器未成形；一阶·染尘 ⟷ 名器破身见红初生；二阶·蚀心 ⟷ 名器情动迎合；三阶·沉沦 ⟷ 奴种深植归附；四阶·极乐 ⟷ 天姝鼎炉大成）。储物栏：" +
+            JSON.stringify(st.inventory) +
+            "。日期照抄后台；历时只写本回合实际耗时，不按轮次固定增加，不默认半个时辰，不写距事件的累计天数；无法确定耗时写—，不沿用上一轮耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。"
+          : "。后台关系状态："+JSON.stringify(relation)+"；负好感覆盖优先于正向心智，永久上限不得突破；数值本身不制造过去事件。储物栏：" +
+            JSON.stringify(st.inventory) +
+            "。好感事件协议适用于全部玩家身份，包括自设；按角色对当前玩家的实际反应判断，不以赵无忧为固定对象。已发生符合好感表的互动时，先完成全部正文和状态栏，再在</Status_block>之后按角色分别申报，每个角色每回合至多一个<好感事件>人物名｜档位或锚点ID｜依据：本回合正文连续原句</好感事件>；不改写原句，不从用户邀请直接认定共饮，不重复计分；没有符合条件的新事件则不申报。日期照抄后台；历时只写本回合实际耗时，不按轮次固定增加，不默认半个时辰，不写距事件的累计天数；无法确定耗时写—，不沿用上一轮耗时；物品进出和名器互动按原有状态栏协议申报并与正文相符。") +
         (current.activeEvent || p
           ? "事件期间按节点约定停留，退出耗时由后台结算，不另外推进世界日期。"
           : "")
       : "";
-    const favorRules=current && !p?.selection?.completionQuery && p?.kind!=="realm"
+    const favorRules=current && !isLord && !p?.selection?.completionQuery && p?.kind!=="realm"
       ? Object.values(data.metricEventDefinitions || {}).filter(cfg=>relationNames.has(cfg.character)).map(metricEntryContent).join("\n\n") : "";
     adapter.setPrompt?.(baseline + "\n" + text + (favorRules ? "\n本轮人物互动须核对以下好感表；已实际发生匹配事件时每个受影响角色各给一个标签；同时救助多人可分别申报，不合并角色名，同一角色不重复申报；普通邀请未获响应不视为已完成共饮。\n"+favorRules : ""));
   }
@@ -880,13 +890,16 @@ function createDispatcher(adapter, data) {
     }
     Realm.collect(s,rr,parsed.prose,id);
     try {
-      const penalized=applyPreFinalPenalty(s,parsed.prose,data.characterProfiles || {},s.storyCount+1);
-      if(penalized.length && s.activeEvent?.pluginId==="character_promotion" && (s.activeEvent.characters || [s.activeEvent.character]).some(name=>penalized.includes(name))){
-        s.activeEvent=null;s.pluginState.character_promotion={...s.pluginState.character_promotion,currentId:null,lastResult:"forced-penalty",ready:false};
+      const isLord = isPalaceLord(s.identity || s.stat_data?.身份);
+      if (!isLord) {
+        const penalized=applyPreFinalPenalty(s,parsed.prose,data.characterProfiles || {},s.storyCount+1);
+        if(penalized.length && s.activeEvent?.pluginId==="character_promotion" && (s.activeEvent.characters || [s.activeEvent.character]).some(name=>penalized.includes(name))){
+          s.activeEvent=null;s.pluginState.character_promotion={...s.pluginState.character_promotion,currentId:null,lastResult:"forced-penalty",ready:false};
+        }
+        delete s.lastMetricEvents;
+        const applied=metricEvents.apply(s,text,parsed.prose,s.storyCount+1,{excludedCharacters:penalized});
+        if (applied.changes.length) s.lastMetricEvents = applied.changes;
       }
-      delete s.lastMetricEvents;
-      const applied=metricEvents.apply(s,text,parsed.prose,s.storyCount+1,{excludedCharacters:penalized});
-      if (applied.changes.length) s.lastMetricEvents = applied.changes;
     } catch (error) {
       adapter.report?.(Error("数值事件申报结算失败：" + error.message));
     }

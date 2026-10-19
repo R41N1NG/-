@@ -1,4 +1,5 @@
 "use strict";
+const { isPalaceLord, getCharacterCorruption, CORRUPTION_STAGES } = require("../runtime/corruption");
 const {createPanelAction}=require("./panel_action");
 const C=require("../runtime/contracts");
 const {downloadDiagnostics}=require("./diagnostics");
@@ -255,11 +256,12 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   stagebar.append(wingL, root, wingR,mobileRail);
   const closeXj=()=>{if(xjRoot.open)xjRoot.close();xjRoot.replaceChildren();xjRoot.classList.remove("open");xjRoot.remove();};
   xjRoot.addEventListener("cancel",e=>{e.preventDefault();closeXj();});
-  let favorDialog=null,realmDispose=null,eraDispose=null;
+  let favorDialog=null,corruptionDialog=null,realmDispose=null,eraDispose=null;
   const closeEras=()=>{eraDispose?.();eraDispose=null;};
   const closeRealm=()=>{realmDispose?.();realmDispose=null;};
+  const closeCorruption=()=>{corruptionDialog?.remove();corruptionDialog=null;};
   const closeFavor=()=>{favorDialog?.remove();favorDialog=null;};
-  const escape = e => { if(e.key === "Escape") { closeFavor();closeRealm();closeEras(); closeXj(); } };
+  const escape = e => { if(e.key === "Escape") { closeFavor();closeCorruption();closeRealm();closeEras(); closeXj(); } };
   doc.addEventListener("keydown",escape);
   let plugins = [],
     dialogs = [],
@@ -345,7 +347,11 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
   }
   // ── 心迹面板：好感金条＋菱形节点（专属剧情启动钮）＋事件流水 ──
   function openFavor(character, s) {
+    if (isPalaceLord(s.stat_data?.身份 || s.identity)) {
+      return openCorruption(character, s);
+    }
     closeFavor();
+    closeCorruption();
     const value = s.stat_data.character_metrics?.[character]?.好感度 ?? 0;
     const permanentCap=s.stat_data.character_metric_caps?.[character]?.好感度;
     const negative=value<0;
@@ -427,9 +433,85 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
 
 
   }
+  // ── 恶堕面板：名器阶位＋恶堕五阶图谱＋阶位浸润火候 ──
+  function openCorruption(character, s) {
+    closeCorruption();
+    closeFavor();
+    const c = s.stat_data.character_corruption?.[character] || getCharacterCorruption(character, s.stat_data, data.rules?.(s.stat_data));
+    if (!c) return;
+
+    const pr = s.stat_data.relic_progress?.[c.relicId];
+    let soakInfo = "";
+    if (c.stage >= 1 && c.stage < 4 && pr) {
+      const nextTargetStage = c.stage + 1;
+      const ledger = pr.stages?.[nextTargetStage] || (pr.target_stage === nextTargetStage ? pr : null);
+      const target = ledger?.target || (nextTargetStage === 2 ? 3 : 3);
+      const count = Math.max(0, Math.min(target, Number(ledger?.count) || 0));
+      const pct = Math.round(count / target * 100);
+      soakInfo = '<div class="xsd2-cap" style="border-left-color:var(--xsd2-seal-red,#c8372a);background:#241618">' +
+        '<p style="color:#e08585">✦ 阶位浸润火候（' + count + ' / ' + target + '）</p>' +
+        '<div class="xsd2-sbar" style="margin:4px 0"><i style="width:' + pct + '%;background:linear-gradient(90deg,#9c2b20,#e85d43)"></i></div>' +
+        '</div>';
+    }
+
+    const stagesHtml = CORRUPTION_STAGES.map(stg => {
+      const isCurrent = stg.stage === c.stage;
+      const isDone = stg.stage <= c.stage;
+      const statusBadge = isCurrent
+        ? '<span style="color:var(--xsd2-gold-bright);border:1px solid #756746;padding:1px 6px;border-radius:4px;font-size:11px">✦ 当前阶位</span>'
+        : isDone
+        ? '<span style="color:#9fbf7a;font-size:11px">已沦陷</span>'
+        : '<span style="color:#8b927e;font-size:11px">🔒 待侵蚀</span>';
+      return '<div style="margin:8px 0;padding:8px 10px;border-radius:6px;border:1px solid ' + (isCurrent ? 'var(--xsd2-gold)' : isDone ? '#4a5258' : '#333a35') + ';background:' + (isCurrent ? '#232a20' : '#171e1c') + '">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center">' +
+        '<strong style="color:' + (isCurrent ? 'var(--xsd2-gold-bright)' : isDone ? '#eee9d9' : '#8b927e') + '">' + esc(stg.title) + '（' + esc(stg.relicStageName) + '）</strong>' +
+        statusBadge +
+        '</div>' +
+        '<p style="margin:4px 0 0;font-size:12px;color:' + (isDone ? '#c5c9bd' : '#757e74') + '">' + esc(stg.desc) + '</p>' +
+        '</div>';
+    }).join("");
+
+    const el = modal(doc, character + " · 恶堕阶梯");
+    el.classList.add("xsd2-favor");
+    corruptionDialog = el;
+    el.addEventListener("close", () => { if (corruptionDialog === el) corruptionDialog = null; });
+    el.querySelector(".xsd2-dialog-body").innerHTML =
+      '<div class="xsd2-cap" style="border-left-color:var(--xsd2-gold)">' +
+      '<p><b>载体宿主：' + esc(character) + '</b> ｜ <b>专属名器：' + esc(c.relicName) + '</b></p>' +
+      '<p style="margin-top:4px">当前阶位：<strong style="color:var(--xsd2-gold-bright)">' + esc(c.title) + '</strong>（名器' + esc(c.relicStageName) + '）</p>' +
+      '</div>' +
+      soakInfo +
+      '<div class="xsd2-cap" style="border-left-color:#8b927e;background:#1a211e">' +
+      '<p style="color:#c5c9bd"><b>晋升机缘：</b>' + esc(c.nextRequirement) + '</p>' +
+      '</div>' +
+      '<h4 style="margin:12px 0 4px;color:var(--xsd2-gold)">恶堕五阶图谱</h4>' +
+      '<div class="xsd2-corruption-ladder">' + stagesHtml + '</div>' +
+      '<p class="xsd2-label" style="margin-top:10px">恶堕阶梯与名器阶位同步演变；不采用常规好感度，需依凭双修破身、本源浸润与心神驯服步步推进。</p>';
+
+    const p = portrait(character, s, data);
+    if (p) {
+      const im = doc.createElement("img");
+      loadPortrait(im, p);
+      im.alt = character;
+      im.style.cssText = "width:44px;height:44px;border-radius:6px;object-fit:cover;cursor:zoom-in;float:right;margin-bottom:8px";
+      im.addEventListener("click", () => {
+        const zoom = modal(doc, character + " · 立绘");
+        zoom.classList.add("xsd2-portrait-dialog");
+        const image = doc.createElement("img");
+        loadPortrait(image, p, true);
+        image.alt = character;
+        zoom.querySelector(".xsd2-dialog-body").append(image);
+        dialogs.push(() => zoom.remove());
+      });
+      el.querySelector(".xsd2-dialog-body").prepend(im);
+    }
+    const close = () => { el.remove(); if (corruptionDialog === el) corruptionDialog = null; };
+    el.addEventListener("click", (e) => { if (e.target === el) close(); });
+    el.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", close));
+  }
   function render() {
     if (disposed) return;
-    closeFavor();closeRealm();closeEras();
+    closeFavor();closeCorruption();closeRealm();closeEras();
     const folds = [...root.querySelectorAll("details")].map((x) => x.open);
     for (const p of plugins) p();
     plugins = [];
@@ -481,21 +563,47 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
               '"></button>'
           : '<div class="xsd2-avatar-placeholder" role="img" aria-label="'+esc(name)+'暂无立绘">暂无立绘</div>';
       };
-    // 关系刻度 → 心迹入口：注册了好感表的人物可点开，有可推进节点者挂专属标记（叶红缨=小葫芦）
+    const isLord = isPalaceLord(st.身份 || s.identity);
+    // 关系刻度（赵无忧/自设好感） ｜ 恶堕阶梯（殿主名器恶堕）
     const metricOf = (name) => s.stat_data.character_metrics?.[name]?.好感度;
-    const relationChips = String(st.关系刻度 || "")
-      .split("｜")
-      .map((x) => x.trim())
-      .filter(Boolean)
-      .map((piece) => {
-        const name = piece.split("、")[0].trim();
-        if (metricOf(name) === undefined) return '<span class="xsd2-chip">' + esc(piece) + "</span>";
-        const hasNode = !s.pending && !s.activeEvent && !options.readOnly && favorLadder(data, name, s).some(
-          (x) => (s.stat_data.completed_character_stages?.[name] || data.characterProfiles?.[name]?.initialStage) === x.fromStage && meets(s,x.conditions) && (!x.open || C.day(s.calendarDate)>=C.day(x.open)),
-        );
-        return '<span class="xsd2-chip" data-favor="' + esc(name) + '">' + esc(st.character_stages?.[name]?.negative ? name+' · '+st.character_stages[name].label : piece) + (hasNode ? GOURD_SVG : "") + "</span>";
-      })
-      .join("");
+    let chips = "";
+    if (isLord) {
+      chips = String(st.关系刻度 || "")
+        .split("｜")
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .map((piece) => {
+          const name = piece.split(/[、，,；;｜|\s]/)[0].trim();
+          const c = st.character_corruption?.[name] || getCharacterCorruption(name, st, data.rules?.(st));
+          if (!c) return '<span class="xsd2-chip">' + esc(piece) + "</span>";
+          return '<span class="xsd2-chip" data-corruption="' + esc(name) + '">' + esc(name) + " · " + esc(c.label) + "</span>";
+        })
+        .join("");
+      if (!chips && (st.在场角色 || []).length) {
+        chips = (st.在场角色 || [])
+          .map((npc) => {
+            const c = st.character_corruption?.[npc.名] || getCharacterCorruption(npc.名, st, data.rules?.(st));
+            if (!c) return "";
+            return '<span class="xsd2-chip" data-corruption="' + esc(npc.名) + '">' + esc(npc.名) + " · " + esc(c.label) + "</span>";
+          })
+          .filter(Boolean)
+          .join("");
+      }
+    } else {
+      chips = String(st.关系刻度 || "")
+        .split("｜")
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .map((piece) => {
+          const name = piece.split("、")[0].trim();
+          if (metricOf(name) === undefined) return '<span class="xsd2-chip">' + esc(piece) + "</span>";
+          const hasNode = !s.pending && !s.activeEvent && !options.readOnly && favorLadder(data, name, s).some(
+            (x) => (s.stat_data.completed_character_stages?.[name] || data.characterProfiles?.[name]?.initialStage) === x.fromStage && meets(s,x.conditions) && (!x.open || C.day(s.calendarDate)>=C.day(x.open)),
+          );
+          return '<span class="xsd2-chip" data-favor="' + esc(name) + '">' + esc(st.character_stages?.[name]?.negative ? name+' · '+st.character_stages[name].label : piece) + (hasNode ? GOURD_SVG : "") + "</span>";
+        })
+        .join("");
+    }
     const row=(label,value,slot="")=>'<div class="xsd2-row"><b>'+label+'</b><span'+(slot?' data-xsd-slot="'+slot+'"':'')+'>'+value+'</span></div>';
     const items=s.inventory.map(i=>'<button data-item="'+esc(i.id||i.name)+'">'+esc(i.name)+' × '+i.count+' · '+(describeItem(i).consumable?'消耗品':'非消耗品')+'</button>').join('') || '暂无物品';
     root.innerHTML =
@@ -506,7 +614,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       row('氛 围','<span class="xsd2-atmo">'+esc(st.环境||'无')+'</span>')+
       row('状 态',esc(st.状态||'无'))+row('目 标',esc(st.目标||'无'))+
       (st.危机&&st.危机!=='无'?'<div class="xsd2-row crisis"><b>危 机</b><span data-xsd-slot="9">'+esc(st.危机)+'</span></div>':'<span data-xsd-slot="9" hidden></span>')+
-      row('关 系',relationChips||'暂无记录')+
+      row(isLord ? '恶 堕' : '关 系', chips || '暂无记录')+
       '</div><div class="xsd2-portrait" data-player-avatar-slot></div></div>'+
       '<span data-xsd-slot="6" hidden></span>'+
       '<div class="xsd2-npcs" data-xsd-slot="16">'+(st.在场角色||[]).map(n=>'<article class="xsd2-npc">'+avatar(n.名)+'<div><h4>'+esc(n.名)+' <small>'+esc(n.修为||'')+'</small></h4><div>关系：'+esc(n.关系||'未明')+'</div><div>情况：'+esc(n.情况||'无')+'</div><div>心境：'+esc(n.心境||'无')+'</div><div>神态：'+esc(n.神态||'无')+'</div></div></article>').join('')+'</div>'+
@@ -567,6 +675,10 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       (c) =>
         (c.onclick = () => openFavor(c.dataset.favor, s)),
     );
+    root.querySelectorAll("[data-corruption]").forEach(
+      (c) =>
+        (c.onclick = () => openCorruption(c.dataset.corruption, s)),
+    );
     root.querySelectorAll("img").forEach(img=>{
       const name=img.closest('[data-portrait]')?.dataset.portrait;
       const p=name?portrait(name,s,data):null;
@@ -595,6 +707,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     destroy() {
       disposed = true;
       closeFavor();
+      closeCorruption();
       fanfare.destroy();closeRealm();closeEras();
       unsubscribe();
       opening?.destroy();
