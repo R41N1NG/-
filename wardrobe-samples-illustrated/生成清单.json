@@ -2932,9 +2932,13 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/运动短裤/侧面.png",
     "group": "下装/bottom_jk_shorts",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
+    "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
-    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy sports shorts with white side piping, elastic waist, profile view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy sports shorts with white side piping, elastic waist, profile view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners.",
+    "generated_source": "/workspace/generated_images/exec-7948bf95-3073-40fe-adf7-61efca94c2b0.png",
+    "actual_dimensions": "512x768",
+    "sha256": "2602de2869f2a31365bb148ce3e9cce98abecb08aca4dc802e9ec622e7fbf93b",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_shorts/back.png",
