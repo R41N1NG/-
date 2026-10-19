@@ -2,14 +2,22 @@
 const C = require("../../runtime/contracts");
 const {meets} = require("../../runtime/conditions");
 const PLUGIN_ID = "character_promotion";
-function resultTag(body, code) {
+function parseResultTag(body, code) {
   const visible = String(body).replace(/<(?:think[^>]*|analysis)[^>]*>[\s\S]*?<\/(?:think[^>]*|analysis)>/gi, "")
-    .replace(/<details\b[^>]*>[\s\S]*?<\/details>/gi, "");
-  const tags = [...visible.matchAll(/<Promotion_result\b[^>]*>[\s\S]*?<\/Promotion_result>/g)];
-  if (tags.length !== 1) return null;
-  const parsed = /^<Promotion_result id="([A-Za-z0-9_-]+)">\s*(是|否)\s*<\/Promotion_result>$/.exec(tags[0][0]);
-  return parsed && parsed[1] === code ? parsed[2] : null;
+    .replace(/<details\b[^>]*>[\s\S]*?<\/details>/gi, "")
+    .replace(/<(Reference_Example|recall|history|memory|summary)\b[^>]*>[\s\S]*?<\/\1>/gi,'')
+    .replace(/<(?:think[^>]*|analysis|details)[^>]*>[\s\S]*$/gi,'');
+  const tags = [...visible.matchAll(/<Promotion_result\b[^>]*>[\s\S]*?<\/Promotion_result\s*>/gi)];
+  const starts=[...visible.matchAll(/<Promotion_result\b/gi)].length;
+  const report={answer:null,status:starts>1?'multiple':starts?'malformed':'missing',tagCount:starts,closedTagCount:tags.length,expectedId:code,
+    replyChars:String(body).length,packetPreview:tags[0]?.[0].slice(0,240) || ''};
+  if(tags.length!==1 || starts!==1)return report;
+  const parsed=/^<Promotion_result\s+id\s*=\s*(["'])([A-Za-z0-9_-]+)\1\s*>\s*(是|否)\s*<\/Promotion_result\s*>$/i.exec(tags[0][0]);
+  if(!parsed)return {...report,status:'malformed'};
+  if(parsed[2]!==code)return {...report,status:'wrong_id',receivedId:parsed[2]};
+  return {...report,status:'valid',answer:parsed[3],receivedId:parsed[2]};
 }
+function resultTag(body,code){return parseResultTag(body,code).answer;}
 function createPromotionPlugin(definitions, storyCatalog = {}) {
   const defs = Object.entries(definitions);
   function lookup(nodeId) {
@@ -122,4 +130,4 @@ function createPromotionPlugin(definitions, storyCatalog = {}) {
   };
   return plugin;
 }
-module.exports = {createPromotionPlugin,resultTag,PLUGIN_ID};
+module.exports = {createPromotionPlugin,resultTag,parseResultTag,PLUGIN_ID};

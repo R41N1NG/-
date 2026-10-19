@@ -7,7 +7,7 @@ const {meets} = require("./conditions");
 const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover} = require("./character_stages");
 const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
-const { createActionCode, readActionCode,readUserInput,matchesAction,resolveActionReply } = require("./action_wire");
+const { createActionCode, readActionCode,readUserInput,matchesAction,resolveActionReply,completionMessage } = require("./action_wire");
 const {createPlayerRecovery}=require('./player_recovery');
 const { startingInventoryFor } = require("./starting_inventory");
 const {metricEntryContent}=require("./story_entries");
@@ -561,7 +561,7 @@ function createDispatcher(adapter, data) {
     try {
       await commit(c, next, "pending");
       guard(c);
-      await adapter.send(next.pending.actionCode);
+      await adapter.send(completionMessage(next.pending));
       await bindPendingUser(context());
       return snapshot();
     } catch (e) {
@@ -648,7 +648,7 @@ function createDispatcher(adapter, data) {
     s.reconciledRewardAliases = p.fixedApplied ? C.clone(p.selection.rewardAliases || {}) : {};
     s.lastNodeResult = { nodeId:p.nodeId, floor:resultFloor,
       outcome:result.outcome, reason:result.reason || "",
-      evidenceMode:result.evidenceMode || null };
+      evidenceMode:result.evidenceMode || null,...(result.protocol?{resultProtocol:C.clone(result.protocol)}:{}) };
     s.pending = null;
     return s;
   }
@@ -1042,7 +1042,8 @@ function createDispatcher(adapter, data) {
     const fixed = C.canonicalStatus(body, s, confirmedPlace);
     // The next ordinary input may already be in the chat when its preceding
     // completed reply is flushed. Settle it without editing historical prose.
-    const preserveBody=options.preserveBody || (c.chat.length>c.floor+1 && c.chat.slice(c.floor+1).every(x=>x.is_user&&!x.is_system));
+    const preserveBody=options.preserveBody || (p?.selection?.completionQuery && s.lastNodeResult?.outcome==='retry') ||
+      (c.chat.length>c.floor+1 && c.chat.slice(c.floor+1).every(x=>x.is_user&&!x.is_system));
     if (!preserveBody && fixed !== m.mes) {
       const oldId = c.chatId,
         oldFloor = c.floor;
@@ -1336,7 +1337,8 @@ function createDispatcher(adapter, data) {
         lastNodeResult:s?.lastNodeResult || null,
         playerRepair:C.clone(s?.playerRepair || null),
         recoveryStatus:{actionMismatchActive:!!s?.lastNodeResult?.actionMismatch&&!s?.lastNodeResult?.repairAcknowledged,
-          deleteNoticeActive:s?.historyRecovery?.kind==='delete'&&!s.historyRecovery.noticeAcknowledged},
+          deleteNoticeActive:s?.historyRecovery?.kind==='delete'&&!s.historyRecovery.noticeAcknowledged,
+          judgementRetryActive:s?.lastNodeResult?.nodeId==='xbxxJudge'&&s.lastNodeResult.outcome==='retry'},
         storyCount:s?.storyCount || 0,
         latestProcessed:s?.processed?.[c.floor] === C.hash(latest?.mes || ""),
       };

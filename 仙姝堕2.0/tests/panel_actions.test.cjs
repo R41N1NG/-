@@ -58,3 +58,12 @@ test('已修复的旧提醒可收起，原故障记录与删楼作废名单仍�
   assert.deepEqual(h.state.historyRecovery.ignoredReplies,['old']);assert.equal(h.state.lastNodeResult.outcome,'failure');panel.destroy();
  }finally{h.dom.window.close();}
 });
+
+test('救护回报格式失败有直接重试按钮，不必重做玩家救助输入',async()=>{
+ const h=fixture();try{
+  h.state.lastNodeResult={nodeId:'xbxxJudge',outcome:'retry',reason:'救护判定未完成：缺少结果标签',resultProtocol:{status:'missing'}};
+  const panel=mountHUD(h.doc,h.doc.querySelector('main'),h.runtime,data,h.report);
+  assert.match(h.doc.querySelector('[data-judgement-retry]').textContent,/路线未改变.*原回复已保留/);
+  h.doc.querySelector('[data-retry-judgement]').click();await tick();assert.equal(h.calls.length,1);assert.equal(h.calls[0].payload.nodeId,'xbxxJudge');assert.equal(h.calls[0].pluginId,'xibei');panel.destroy();
+ }finally{h.dom.window.close();}
+});

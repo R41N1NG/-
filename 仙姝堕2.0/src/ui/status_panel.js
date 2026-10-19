@@ -526,6 +526,14 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       const repair=doc.createElement('button');repair.type='button';repair.dataset.playerRepair='';repair.textContent='一键修复';notice.append(repair);
       const details=doc.createElement('button');details.type='button';details.dataset.diagnostics='';details.textContent='下载诊断';details.onclick=()=>downloadDiagnostics(doc,runtime,{actionMismatch:true});notice.append(details);root.querySelector('.xsd2-who').after(notice);
     }
+    if(!options.readOnly && s.lastNodeResult?.nodeId==='xbxxJudge' && s.lastNodeResult.outcome==='retry'){
+      const notice=doc.createElement('aside');notice.dataset.judgementRetry='';notice.className='xsd2-cap';notice.setAttribute('role','alert');
+      notice.textContent=s.lastNodeResult.reason+'。路线未改变；'+(s.lastNodeResult.resultProtocol?'原回复已保留供核查。':'旧版未保留原始回报，请重新请求判定。');
+      const button=doc.createElement('button');button.type='button';button.dataset.retryJudgement='';button.textContent='重新请求救护判定';notice.append(button);
+      const run=createPanelAction(root,runtime,s,error=>{root.querySelector('.xsd2-feedback').textContent=error.message;report?.(error);});
+      button.onclick=()=>run(now=>runtime.dispatchIntent({type:'SELECT_NODE',pluginId:'xibei',expected:{chatId:now.chatId,branchId:now.branchId,floor:now.floor,revision:now.revision},payload:{nodeId:'xbxxJudge'}}));
+      root.querySelector('.xsd2-who').after(notice);
+    }
     const activePromotion=s.activeEvent?.pluginId==="character_promotion" ? data.promotionDefinitions?.[s.activeEvent.promotionId || s.pluginState?.character_promotion?.currentId] : null;
     const retryCompletion=activePromotion && s.pending?.nodeId===activePromotion.finishId && !!s.pending.selection?.completionQuery;
     if(activePromotion && (!s.pending || retryCompletion) && !options.readOnly && !s.stat_data.character_stages?.[activePromotion.character]?.negative){

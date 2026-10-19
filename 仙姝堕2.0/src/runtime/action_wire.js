@@ -22,6 +22,15 @@ function readActionCode(text) {
   return {code:codes[0],nodeId:/^XSD2_([A-Za-z0-9-]+)_/.exec(codes[0])[1]};
 }
 function matchesAction(p,text){return p.actionCode ? readActionCode(text)?.code===p.actionCode : readUserInput(text)===p.actionText;}
+function completionMessage(p){
+ if(!p.selection?.completionQuery)return p.actionCode;
+ // Keep only this request's authorization code in the user message. Entry
+ // codes referenced by a query remain in the extension prompt, not this wire.
+ const query=String(p.selection.completionQuery).replace(/\bXSD2_[A-Za-z0-9-]+_[a-f0-9]{8}\b/g,'本次已绑定的入场');
+ return [p.actionCode,'本轮请求：'+(p.displayText || p.actionText),'只核验本次已经发生的记录，不继续故事、不补写行动。',
+  '核验条件：'+query,'只输出一条结果，格式为 <Promotion_result id="'+p.actionCode+'">答案</Promotion_result>。',
+  '把“答案”替换为“是”或“否”，不得更换行动编号，不输出其他内容。'].join('\n');
+}
 // An action owns the first reply to its original input, never a later turn.
 function resolveActionReply(p,c){
  const userFloor=p.userRef
@@ -37,4 +46,4 @@ function resolveActionReply(p,c){
  }
  return {userFloor,replyFloor:-1,reason:'原操作尚未收到回复'};
 }
-module.exports = { createActionCode, readActionCode,readUserInput,matchesAction,resolveActionReply };
+module.exports = { createActionCode, readActionCode,readUserInput,matchesAction,resolveActionReply,completionMessage };

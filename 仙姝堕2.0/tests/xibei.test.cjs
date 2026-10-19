@@ -128,3 +128,25 @@ test('原指令已绑定后另发同代码也不能借用授权；真正改选�
  const h=harness();await h.open();await h.run('xbxxEnter');await h.run('xbxxFight');await h.click('xbxxLoot');const code=h.r.getSnapshot().pending.actionCode;
  h.chat.push({is_user:true,mes:code});await h.reply('另外一条输入的回复。');assert.equal(h.step(),'loot');assert.equal(h.r.getSnapshot().inventory.some(x=>x.name==='极乐引'),false);assert.equal(h.r.getSnapshot().lastNodeResult.actionMismatch.boundUser.messageId.length>0,true);
 });
+
+test('救护请求自身携带核验条件与回报格式，扩展提示缺失时也不是一串裸编号',async()=>{
+ const {readActionCode}=require('../src/runtime/action_wire'),h=harness();await h.open();
+ for(const id of ['xbxxEnter','xbxxFight','xbxxLoot','xbxxAmbush'])await h.run(id);
+ const entry=h.r.getSnapshot().pluginState.xibei.ambushCode;
+ h.chat.push({mes:'我冲上前尝试挡下',is_user:true});await h.reply('你及时伸手挡在同伴身前。');await h.click('xbxxJudge');
+ const code=h.r.getSnapshot().pending.actionCode,request=h.sent.at(-1);
+ assert.ok(request.includes('核验条件：'));assert.ok(request.includes('Promotion_result'));assert.ok(request.includes('不继续故事'));
+ assert.equal(request.includes(entry),false);assert.equal(readActionCode(request).code,code);
+ await h.reply("<Promotion_result id = '"+code+"'> 是 </Promotion_result>");
+ assert.equal(h.step(),'rescue');assert.equal(h.r.getSnapshot().lastNodeResult.resultProtocol.status,'valid');
+});
+test('无效判定保留原回复与具体解析原因，重试仍绑定新请求而不补认旧回报',async()=>{
+ const h=harness();await h.open();for(const id of ['xbxxEnter','xbxxFight','xbxxLoot','xbxxAmbush'])await h.run(id);
+ await h.respond();await h.click('xbxxJudge');const oldCode=h.r.getSnapshot().pending.actionCode;
+ const raw='模型返回了普通叙述，没有按要求输出判定标签。';await h.reply(raw);
+ assert.equal(h.chat.at(-1).mes,raw);assert.equal(h.step(),'ambush');assert.equal(h.r.getSnapshot().lastNodeResult.resultProtocol.status,'missing');
+ const check=await h.r.inspectRecovery();assert.equal(check.status,'blocked');assert.match(check.message,/重新请求救护判定/);
+ await h.r.restore();await h.r.settleStory();assert.equal(h.chat.at(-1).mes,raw);await h.click('xbxxJudge');
+ await h.reply('<Promotion_result id="'+oldCode+'">是</Promotion_result>');assert.equal(h.step(),'ambush');assert.equal(h.r.getSnapshot().lastNodeResult.resultProtocol.status,'wrong_id');
+ await h.click('xbxxJudge');await h.reply(h.report('否'));assert.equal(h.step(),'dodge');
+});

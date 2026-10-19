@@ -1,6 +1,6 @@
 "use strict";
 const C=require('../../runtime/contracts');
-const {resultTag}=require('../promotion/index');
+const {parseResultTag}=require('../promotion/index');
 const {modal}=require('../../ui/dom');
 const {buildNarrativeScope}=require('../../runtime/narrative_scope');
 const {OPEN_DATE,EVENT_DEFS,place}=require('./event_tree');
@@ -48,10 +48,13 @@ function createXibeiPlugin(stories,profiles={},promotions={}){
   const d=EVENT_DEFS[p.nodeId];if(!d || p.pluginId!==ID)return {outcome:'failure',reason:'西北行动不匹配'};
   const st={...state(s)};
   if(d.judge){
-   const answer=resultTag(body,p.actionCode);
-   if(!answer)return {outcome:'retry',pluginState:st,activeEvent:active(st),body:'未收到有效救护判定，可以重新判定；当前路线未改变。',reason:'救护回报缺失或ID冲突'};
+   const protocol=parseResultTag(body,p.actionCode),answer=protocol.answer;
+   if(!answer){
+    const reason={missing:'缺少结果标签',multiple:'收到多个结果标签',malformed:'结果标签格式不符合约定',wrong_id:'结果行动编号不匹配'}[protocol.status] || '回报无法解析';
+    return {outcome:'retry',pluginState:st,activeEvent:active(st),reason:'救护判定未完成：'+reason,protocol};
+   }
    st.route=answer==='是'?'rescue':'dodge';st.step=st.route;st.judgement={id:p.actionCode,answer};
-   return {outcome:'success',pluginState:st,activeEvent:active(st),rewards:[],known:[],body:answer==='是'?'本次救护已确认，可以继续含津更衣剧情。':'本次未出手相护，可以继续孤月剑气自护剧情。',reason:'本轮救护回报已核验',evidenceMode:'XIBEI_JUDGEMENT'};
+   return {outcome:'success',pluginState:st,activeEvent:active(st),rewards:[],known:[],body:answer==='是'?'本次救护已确认，可以继续含津更衣剧情。':'本次未出手相护，可以继续孤月剑气自护剧情。',reason:'本轮救护回报已核验',evidenceMode:'XIBEI_JUDGEMENT',protocol};
   }
   if(!p.fixedApplied)return {outcome:'failure',reason:'本地节点结果尚未提交'};
   if(d.id==='xbxxAmbush'){st.ambushCode=p.actionCode;st.ambushFloor=s.floor;}
@@ -72,7 +75,9 @@ function createXibeiPlugin(stories,profiles={},promotions={}){
    // A historical/remounted HUD must not leave a second event dialog behind.
    doc.querySelectorAll('dialog[data-xsd2-xibei-dialog]').forEach(el=>el.close());
    dialog=modal(doc,'西北除害');dialog.dataset.xsd2XibeiDialog='';
-   const opened=dialog,body=opened.querySelector('.xsd2-dialog-body'),hint=doc.createElement('p');hint.textContent=state(current).step==='ambush'?'先自由输入回应，再点击判定本次救护。':'可以先自由行动，准备好后再推进节点。';body.append(hint);
+   const opened=dialog,body=opened.querySelector('.xsd2-dialog-body'),hint=doc.createElement('p');hint.textContent=current.lastNodeResult?.nodeId==='xbxxJudge'&&current.lastNodeResult.outcome==='retry'
+    ?current.lastNodeResult.reason+'。路线未改变，请重新请求判定。'
+    :state(current).step==='ambush'?'先自由输入回应，再点击判定本次救护。':'可以先自由行动，准备好后再推进节点。';body.append(hint);
    const retry=current.pending?.nodeId==='xbxxJudge',choices=current.pending?(retry?[{id:'xbxxJudge',label:'重新生成救护判定'}]:[]):list(current);
    let busy=false;
    for(const d of choices){

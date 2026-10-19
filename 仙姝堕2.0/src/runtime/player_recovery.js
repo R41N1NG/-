@@ -86,6 +86,8 @@ function createPlayerRecovery(h) {
     const state = C.clone(found.state),
       actions = ["refresh"];
     safeState = state;
+    if(state.lastNodeResult?.nodeId==='xbxxJudge' && state.lastNodeResult.outcome==='retry')
+      return deny((state.lastNodeResult.reason || '救护判定尚未完成')+'。请使用“重新请求救护判定”，无需重做救助输入。');
     let message = "未发现漏结算。可以刷新状态栏与当前数值。",
       base = state,
       floors = [];

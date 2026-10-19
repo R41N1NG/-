@@ -235,3 +235,20 @@ test("孤月节点错ID、否、删除完成楼及重结算不会借用红缨阶
  await h.click('gyZwEnter1');await h.reply('二人交流。');await h.click('gyZwFinish1');await h.reply(h.report('是'));assert.equal(h.stage('孤月'),'stage02');
  h.chat.pop();await h.r.restore();assert.equal(h.stage('孤月'),'stage01');assert.ok(h.r.getSnapshot().pending);await h.reply(h.report('否'));assert.equal(h.stage('孤月'),'stage01');assert.equal(h.stage(),'stage01');
 });
+
+test('结果标签容忍单引号与排版空白，但仍严格绑定当前编号和唯一答案',()=>{
+ const {parseResultTag}=require('../src/plugins/promotion');
+ const code='XSD2_check_1234abcd';
+ assert.equal(resultTag("<Promotion_result  id = '"+code+"' > 是 </Promotion_result >",code),'是');
+ assert.equal(resultTag('<promotion_result id="'+code+'">否</promotion_result>',code),'否');
+ assert.equal(parseResultTag('<Promotion_result id="wrong">是</Promotion_result>',code).status,'wrong_id');
+ assert.equal(parseResultTag('<Promotion_result id="'+code+'">是</Promotion_result><Promotion_result id="'+code+'">否</Promotion_result>',code).status,'multiple');
+ assert.equal(parseResultTag('<Promotion_result id="'+code+'">是',code).status,'malformed');
+ assert.equal(parseResultTag('未返回标签',code).status,'missing');
+ assert.equal(resultTag('<Promotion_result id="'+code+'" id="wrong">是</Promotion_result>',code),null);
+});
+test('参考示例、历史块及未闭合思考中的结果不能被当作正式回报',()=>{
+ const code='XSD2_check_1234abcd',packet='<Promotion_result id="'+code+'">是</Promotion_result>';
+ for(const name of ['Reference_Example','recall','history','memory','summary'])assert.equal(resultTag('<'+name+'>'+packet+'</'+name+'>',code),null);
+ for(const start of ['<thinking>','<analysis>','<details>'])assert.equal(resultTag(start+packet,code),null);
+});
