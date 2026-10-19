@@ -252,9 +252,9 @@
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
-    "generated_source": "/workspace/generated_images/exec-e39d1884-24d1-40e1-aace-f9852138fa9f.png",
+    "generated_source": "/workspace/generated_images/exec-6a33eefa-7fc9-4071-bbfc-bbcce3d237ee.png",
     "actual_dimensions": "512x512",
-    "sha256": "8338e97d6398e323e3843599b98c0799844876f4a25ecc5de06e1feceebf843a",
+    "sha256": "28e8d2a3966c38cc042dd17f397bb15082c8f0b3ea4df839580578e8ec466fc2",
     "review": "待逐组核验"
   },
   {
