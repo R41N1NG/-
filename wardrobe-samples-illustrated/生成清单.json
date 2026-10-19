@@ -12,7 +12,7 @@
     "status": "generated",
     "generated_source": "/workspace/generated_images/exec-9e911af2-c027-4533-a26d-b2d8bae05779.png",
     "actual_dimensions": "1024x1536",
-    "sha256": "484aec7d88a7d6c9ca71674156a71643df6ab350aeccfa70b7c42d8f90d22fbf",
+    "sha256": "c46abade05bc14bbca01091b1808f9f757419a8bfb8475c6f20e5bcc4a1ad98a",
     "review": "待逐组核验"
   },
   {
@@ -28,7 +28,7 @@
     "status": "generated",
     "generated_source": "/workspace/generated_images/exec-911dabb8-c8ef-4de0-82f4-31fcde00cf4c.png",
     "actual_dimensions": "1024x1536",
-    "sha256": "1f52f32c06b049ecbbb957a6ed265e647710c0d62d1ecc9e2e4e2ef993802971",
+    "sha256": "19ba8bd8d2b07ffa4e7a705c7621cf5b607db0dc7192dd0c903af09c78c37937",
     "review": "待逐组核验"
   },
   {
@@ -44,7 +44,7 @@
     "status": "generated",
     "generated_source": "/workspace/generated_images/exec-008b8805-7eea-4284-b3cd-59fe0c1978ec.png",
     "actual_dimensions": "1024x1536",
-    "sha256": "9fe532dba4307f251fd1d56316670cbd96ca884a020c13e33df2b65269ad7b67",
+    "sha256": "3a525d9b1c6ec252149d5ec6d66d9c6ae662f727a6c0eca2cbc73256dd97bad2",
     "review": "待逐组核验"
   },
   {
@@ -60,7 +60,7 @@
     "status": "generated",
     "generated_source": "/workspace/generated_images/exec-c528a61a-15a4-4781-bdb5-5ffa2f11710f.png",
     "actual_dimensions": "1024x1536",
-    "sha256": "c34b04291e8e7f7ccb60ba0ac40ffe80cbd8c32f3a40943060267d817e7f3565",
+    "sha256": "70b807f779c811d4ddb5ad1f14f446b32a2e217968a70577a383be2b5950e352",
     "review": "待逐组核验"
   },
   {
@@ -75,8 +75,8 @@
     "anchor_relative": null,
     "status": "generated",
     "generated_source": "/workspace/generated_images/exec-ffd801d0-596d-4c6e-bf27-f74371f3c96e.png",
-    "actual_dimensions": "1086x1448",
-    "sha256": "c42b35e4f1ddaef0926ae29bb9733310784a42ac262c90e913bef223b857c3b3",
+    "actual_dimensions": "768x1024",
+    "sha256": "cdfbae48cd59e07e84ffe82ad5cbb68ac17a9b4f7eaab794de9e7c294c2655d7",
     "review": "待逐组核验"
   },
   {
@@ -91,8 +91,8 @@
     "anchor_relative": null,
     "status": "generated",
     "generated_source": "/workspace/generated_images/exec-703cfaae-39b5-4a06-a58f-3d9356d0baeb.png",
-    "actual_dimensions": "1086x1448",
-    "sha256": "50c60c91d9b1fc38b51fe375129a82789a080fa599879073f1f3ed87084bf20b",
+    "actual_dimensions": "768x1024",
+    "sha256": "987b4a16400f2c7113d575f16ff7bd1a40c266648a4da2eb9fde1371603e16e5",
     "review": "待逐组核验"
   },
   {
@@ -107,8 +107,8 @@
     "anchor_relative": null,
     "status": "generated",
     "generated_source": "/workspace/generated_images/exec-857a3b66-e6ab-4643-89f5-8089ab2a029c.png",
-    "actual_dimensions": "1086x1448",
-    "sha256": "771140fece019ae156c6983840de00b2ca93e1da62005a117dcd62c6c1522434",
+    "actual_dimensions": "768x1024",
+    "sha256": "74b598c00c27cca2cd9ef244de35b04612726469b69a4679ddef331e23610a36",
     "review": "待逐组核验"
   },
   {
@@ -121,11 +121,7 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/人物锚点/长发版/清瘦.png",
     "group": "人物锚点",
     "anchor_relative": null,
-    "status": "generated",
-    "generated_source": "/workspace/generated_images/exec-967f483a-270a-4cfa-b82b-f5c81251439e.png",
-    "actual_dimensions": "768x1024",
-    "sha256": "10320f6a80f1c4551ec7ccdb4ee60e010cad8cd3ff28efe69e77d07c0b78617d",
-    "review": "待逐组核验"
+    "status": "pending"
   },
   {
     "source_path": "assets/wardrobe/jk/anchors/top_long_normal.png",
@@ -137,7 +133,11 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/人物锚点/长发版/匀称.png",
     "group": "人物锚点",
     "anchor_relative": null,
-    "status": "pending"
+    "status": "generated",
+    "generated_source": "/workspace/generated_images/exec-89e251b4-1861-44c9-9bba-2615c95201ab.png",
+    "actual_dimensions": "768x1024",
+    "sha256": "c1f8aff1785c15709191e09736b33f49f8d14ec53f7357258e393d175e96b044",
+    "review": "待逐组核验"
   },
   {
     "source_path": "assets/wardrobe/jk/anchors/top_long_full.png",
