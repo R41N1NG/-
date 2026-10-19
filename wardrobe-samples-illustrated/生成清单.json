@@ -207,12 +207,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/头饰/藏青发带/长发/背面.png",
     "group": "头饰/long/head_ribbon_navy",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "needs_revision",
+    "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
-    "generated_source": "/workspace/generated_images/exec-5fd34ae4-ecae-4d11-b999-bbfef4e744a5.png",
+    "generated_source": "/workspace/generated_images/exec-6490cd4a-35d4-41f6-bf58-e77f1966672a.png",
     "actual_dimensions": "512x512",
-    "sha256": "3680d92c53a3aace167e6823376b5c203610e34e82afcbaa52b5995874d37355",
-    "review": "不合格：背面视角未与侧面区分，重做正后方镜头"
+    "sha256": "462531b92d3a7c7f9a3a2806ec98df452c8392090fc7464edaf2f555f5c1a7cd",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/long/head_clip_plaid/side.png",
