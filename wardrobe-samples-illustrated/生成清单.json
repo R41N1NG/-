@@ -2914,13 +2914,13 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/水洗牛仔短裙/侧面.png",
     "group": "下装/bottom_jk_denim",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "generated",
+    "status": "needs_revision",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
     "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing light-wash denim mini skirt, high waist, raw frayed hem, profile view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners.",
     "generated_source": "/workspace/generated_images/exec-51729f91-7805-4779-92ae-b53676cdc66a.png",
     "actual_dimensions": "512x768",
     "sha256": "e30fa4e7475f68a9efb7bb6d3d73e29d180b543ffb20504b7d56862a1286b6e3",
-    "review": "已生成，待视觉复核"
+    "review": "牛仔裙侧面误用藏青百褶裙；背面针织开衫下摆偏离同套正面，需修复套装一致性"
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_denim/back.png",
@@ -2932,13 +2932,13 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/水洗牛仔短裙/背面.png",
     "group": "下装/bottom_jk_denim",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "generated",
+    "status": "needs_revision",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
     "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing light-wash denim mini skirt, high waist, raw frayed hem, back view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners.",
     "generated_source": "/workspace/generated_images/exec-c5bcce4e-f120-46d7-b9cc-a0e217995756.png",
     "actual_dimensions": "512x768",
     "sha256": "ab3e78adeda184cbdca100f1f4b9b0b7630e14c592edb28297de70c234714f57",
-    "review": "已生成，待视觉复核"
+    "review": "牛仔裙侧面误用藏青百褶裙；背面针织开衫下摆偏离同套正面，需修复套装一致性"
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_shorts/front.png",
@@ -3332,8 +3332,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/鞋子/松糕鞋/侧面.png",
     "group": "鞋子/shoe_platform",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-2a5bb6a7-c757-4cc4-9651-e592c59ca9a1.png",
+    "actual_dimensions": "512x512",
+    "sha256": "da02529f7bdcd4eb85878b2c8418fa87edb4fe245353dbd92b70c5b94c2d6cb7",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/shoes/shared/shoe_flats/three-quarter.png",
