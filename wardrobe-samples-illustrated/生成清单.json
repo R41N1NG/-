@@ -2959,12 +2959,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/袜子/白色过膝袜/正面.png",
     "group": "袜子/sock_thigh_white",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "generated",
+    "status": "needs_revision",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
     "generated_source": "/workspace/generated_images/exec-e1cc281f-dc48-44b1-9ca9-ff5990f26290.png",
     "actual_dimensions": "427x640",
     "sha256": "8bb293005d55311d1b52baa023047ea22a639fbc0dcbfd5a84c4755e749577d8",
-    "review": "已生成，待视觉复核"
+    "review": "白色过膝袜袜口误落到膝下，不符合过膝长度；保留原图待重画"
   },
   {
     "source_path": "assets/wardrobe/jk/socks/shared/sock_thigh_white/side.png",
@@ -2976,12 +2976,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/袜子/白色过膝袜/侧面.png",
     "group": "袜子/sock_thigh_white",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "generated",
+    "status": "needs_revision",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
     "generated_source": "/workspace/generated_images/exec-a8a6cf10-0f80-49a5-bb8e-9e2e1bf34101.png",
     "actual_dimensions": "427x640",
     "sha256": "42794cfb24490d0ecb1b1afaa24d328f6b23c30c152c97f466f6fb34067d537f",
-    "review": "已生成，待视觉复核"
+    "review": "白色过膝袜袜口误落到膝下，不符合过膝长度；保留原图待重画"
   },
   {
     "source_path": "assets/wardrobe/jk/socks/shared/sock_thigh_white/back.png",
@@ -2993,12 +2993,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/袜子/白色过膝袜/背面.png",
     "group": "袜子/sock_thigh_white",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "generated",
+    "status": "needs_revision",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
     "generated_source": "/workspace/generated_images/exec-8b252cd1-1b76-44c0-8746-307a3c318d9c.png",
     "actual_dimensions": "427x640",
     "sha256": "9c560691dae8da0d067692c628c46515efef5474b093c84fc91c8da0ac2804bb",
-    "review": "已生成，待视觉复核"
+    "review": "白色过膝袜袜口误落到膝下，不符合过膝长度；保留原图待重画"
   },
   {
     "source_path": "assets/wardrobe/jk/socks/shared/sock_pile_cream/front.png",
@@ -3139,8 +3139,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/鞋子/制服小皮鞋/四分之三侧面.png",
     "group": "鞋子/shoe_leather",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-19ad6414-5dd8-4003-a288-4cc3f3824cbe.png",
+    "actual_dimensions": "512x512",
+    "sha256": "f11c26421fbcb0a94c7757b83f04059e1acea2a069f9ab3dc54b260cccb68b78",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/shoes/shared/shoe_leather/side.png",
