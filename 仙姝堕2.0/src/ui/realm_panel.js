@@ -22,13 +22,18 @@ function blockedReason(s,e,kind){
 function openRealm(doc,runtime,data,report,onComplete){
  const s=runtime.getSnapshot(),e=Realm.eligibility(s,data.rules(s.stat_data)),el=modal(doc,'境界与突破');
  const reasons=Object.fromEntries(['breakthrough','retreat'].map(kind=>[kind,blockedReason(s,e,kind)]));
+ const owned=e.details.filter(x=>x.owned);
+ const stage=x=>x.stage>0?'第'+x.stage+'阶段':'阶段未确认';
  el.querySelector('.xsd2-dialog-body').innerHTML='<p>当前境界：'+esc(s.stat_data.修为)+'</p>'+
+ '<section data-realm-ownership aria-label="已确认归属"><h4>已确认归属</h4><p>归属你的名器：'+owned.length+'件</p>'+
+ (owned.length?'<ul>'+owned.map(x=>'<li data-realm-owned="'+esc(x.id)+'">'+esc(x.name)+' · 归属：'+esc(x.owner)+'（你） · '+esc(stage(x))+'</li>').join('')+'</ul>':'<p>暂无已确认归属你的名器。</p>')+
+ '<p class="xsd2-label">归属确认与突破资格分别显示；下面按各条突破规则计数。</p></section>'+
  '<p>金丹以下：首次破处一个名器，达到当前境界大圆满。</p><p>金丹期内：首次采补一个名器，或闭关三个月，提升一档。</p>'+
  '<p>结婴条件：破处并留下本源烙印的三个不同名器，或拥有一个第三阶段名器。</p>'+
  '<p>明确归属你，即视为本源烙印已确认；破处者仍须是你。</p>'+
  '<p>已确认破处与烙印：'+e.marked.length+'/3'+(e.marked.length?' · '+esc(e.marked.join('、')):'')+'</p>'+
- '<p>归属你的三阶名器：'+esc(e.trained.join('、')||'暂无')+'</p>'+
- '<details><summary>逐项查看突破条件</summary>'+e.details.filter(x=>x.formed||x.owner||x.stage>0).map(x=>'<p>'+esc(x.name)+'：'+esc(x.missing.join('；')||'破处、归属与本源烙印均已确认')+'</p>').join('')+'</details>'+
+ '<p>归属你的三阶名器：'+esc(e.trained.join('、')||'暂无')+'<span class="xsd2-label">（此项仅计第三阶段及以上）</span></p>'+
+ '<details><summary>逐项查看突破条件</summary>'+e.details.filter(x=>x.formed||x.owner||x.stage>0).map(x=>'<p data-realm-relic="'+esc(x.id)+'">'+esc(x.name)+' · 归属：'+esc(x.owner||'未确认')+' · '+esc(stage(x))+'<br>突破条件：'+esc(x.missing.join('；')||'破处、归属与本源烙印均已确认')+'</p>').join('')+'</details>'+
  ['breakthrough','retreat'].map(kind=>'<div><button type="button" data-realm-act="'+kind+'" aria-disabled="'+!!reasons[kind]+'"'+(reasons[kind]?' style="opacity:.6;cursor:help"':'')+'>'+(kind==='breakthrough'?'突破至下一境界':'闭关三个月 · 提升一档')+'</button>'+
  (reasons[kind]?'<p class="xsd2-label" data-realm-reason="'+kind+'">'+esc(reasons[kind])+'</p>':'')+'</div>').join('')+
  '<p role="status" data-realm-feedback></p>';

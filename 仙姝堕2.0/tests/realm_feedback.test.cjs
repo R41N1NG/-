@@ -38,3 +38,29 @@ test('地图可进行节点产生主卷醒目通知，关闭/卸载不残留；�
  const s=h.r.getSnapshot();await h.r.dispatchIntent({type:'SELECT_NODE',pluginId:plugin.id,expected:{chatId:s.chatId,branchId:s.branchId,floor:s.floor,revision:s.revision},payload:{nodeId:'g7p2'}});
  assert.equal(h.doc.querySelector('.xsd2-map-node-notice').style.display,'none');panel.destroy();assert.equal(h.doc.querySelector('.xsd2-map-node-notice'),null);
 });
+
+test('GM设置自设姓名归属后，一阶也列入归属清单，突破计数不因此放宽',async()=>{
+ const h=fixture();try{
+  await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'自设',custom:{name:'东方未明',age:'20',realm:'金丹大圆满',date:{year:1578,month:3,day:3}}}});
+  await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.bingpo':1,'owner.bingpo':'东方未明','known.苏倾寒处女丧失':true}});
+  const before=h.r.getSnapshot(),eligibility=Realm.eligibility(before,data.rules(before.stat_data));
+  assert.equal(eligibility.details.find(x=>x.id==='bingpo').owned,true);assert.equal(eligibility.details.find(x=>x.id==='bingpo').broken,false);assert.equal(eligibility.marked.length,0);assert.equal(eligibility.trained.length,0);
+  let dispose=openRealm(h.doc,h.r,data,e=>h.errors.push(e.message));
+  assert.match(h.doc.querySelector('[data-realm-ownership]').textContent,/归属你的名器：1件/);
+  assert.match(h.doc.querySelector('[data-realm-owned="bingpo"]').textContent,/归属：东方未明（你）.*第1阶段/);
+  assert.match(h.doc.querySelector('[data-realm-relic="bingpo"]').textContent,/归属：东方未明/);
+  assert.equal(h.r.getSnapshot().revision,before.revision);assert.deepEqual(h.r.getSnapshot().manual,before.manual);
+  dispose();await h.r.restore();dispose=openRealm(h.doc,h.r,data,e=>h.errors.push(e.message));assert.ok(h.doc.querySelector('[data-realm-owned="bingpo"]'));dispose();assert.deepEqual(h.errors,[]);
+ }finally{h.r.dispose();h.dom.window.close();}
+});
+test('他人归属不混入玩家清单，详细归属文本转义且不改突破判定',async()=>{
+ const h=fixture();try{
+  await h.r.dispatchIntent({type:'SELECT_IDENTITY',payload:{identity:'赵无忧'}});
+  const other='<img src=x onerror=alert(1)>';
+  await h.r.dispatchIntent({type:'GM_PATCH',payload:{'relicStage.bingpo':1,'owner.bingpo':other}});
+  const dispose=openRealm(h.doc,h.r,data,e=>h.errors.push(e.message));
+  assert.equal(h.doc.querySelector('[data-realm-owned="bingpo"]'),null);
+  assert.match(h.doc.querySelector('[data-realm-ownership]').textContent,/0件/);
+  const details=h.doc.querySelector('[data-realm-relic="bingpo"]');assert.ok(details.textContent.includes(other));assert.equal(details.querySelector('img'),null);dispose();
+ }finally{h.r.dispose();h.dom.window.close();}
+});
