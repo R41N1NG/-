@@ -3003,8 +3003,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/袜子/米白堆堆袜/侧面.png",
     "group": "袜子/sock_pile_cream",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-450a0381-4c9d-4f1a-bab7-007a94343359.png",
+    "actual_dimensions": "427x640",
+    "sha256": "ce838e5209332772d3b74d4f10c37032b2c650e96b9c841996bcea9f43f67fe4",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/socks/shared/sock_pile_cream/back.png",
