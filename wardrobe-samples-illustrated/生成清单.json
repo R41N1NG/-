@@ -2146,9 +2146,15 @@
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
     "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, long straight black hair falling past the shoulders, straight bangs, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; standard garment chest circumference, long hair falling over the shoulders and collar, wearing white sailor blouse with navy collar, two white stripes on the collar edge, short cropped length, framed from shoulders to hips, garment centered. FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP. LATEST: shoulders at top border, no neck/head. Complete relaxed hands inside frame. Natural female garment tailoring, moderate waist, unchanged body proportions. Match view-specific direction anchor rather than side reference.",
     "generated_source": "/workspace/generated_images/exec-6f34394a-89fa-4d68-9a43-1b4ac4b31fb0.png",
-    "actual_dimensions": "512x768",
-    "sha256": "f23b21cff8b5c6de92bc75e7ce5382620776f3100071ea3f44584fb5ade89903",
-    "review": "已生成，待视觉复核"
+    "actual_dimensions": "504x756",
+    "sha256": "44fbad908edf518e1c48a5ae593c489c010917dd96bb6ca457c9218acbfeea1b",
+    "review": "已视觉复核；按用户许可纯裁切去掉顶部颈根，保持衣服、人物与完整手掌不变。",
+    "delivery_crop_final": {
+      "x": 4,
+      "y": 12,
+      "width": 504,
+      "height": 756
+    }
   },
   {
     "source_path": "assets/wardrobe/jk/top/long/normal/top_jk_sailor/side.png",
