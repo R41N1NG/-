@@ -115,11 +115,14 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/人物锚点/通用版/胸围较大.png",
     "group": "人物锚点",
     "anchor_relative": null,
-    "status": "needs_revision",
-    "review": "不合格：需按通用版无头发、仅上装胸围变化的规则重做",
+    "status": "generated",
+    "review": "待逐组核验",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
     "rejected_source": "/workspace/generated_images/exec-857a3b66-e6ab-4643-89f5-8089ab2a029c.png",
-    "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, hair out of frame, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; only a larger garment chest circumference; do not widen shoulders, waist or hips, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo Absolute crop rule: frame begins below the base of the neck; no head, no hair, no loose strands, no hair crossing either shoulder or collar anywhere in the image. Both shoulders and the whole collar must remain visibly free of hair. FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP."
+    "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, hair out of frame, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; only a larger garment chest circumference; do not widen shoulders, waist or hips, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo Absolute crop rule: frame begins below the base of the neck; no head, no hair, no loose strands, no hair crossing either shoulder or collar anywhere in the image. Both shoulders and the whole collar must remain visibly free of hair. FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP.",
+    "generated_source": "/workspace/generated_images/exec-b27d43aa-4e08-4320-9d46-2e9990dca933.png",
+    "actual_dimensions": "768x1024",
+    "sha256": "7b373863391edd35cd3857ee70b5ad36efbdd84018b8db3eb134f4691cc795c1"
   },
   {
     "source_path": "assets/wardrobe/jk/anchors/top_long_slim.png",
