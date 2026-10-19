@@ -3192,8 +3192,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/袜子/纯白短棉袜/正面.png",
     "group": "袜子/sock_cotton_short",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-b64c30ea-99be-4a79-85ff-bbf6100db15f.png",
+    "actual_dimensions": "427x640",
+    "sha256": "c66ded0cdfbdca598a2d34e5faac78a6cc4b52ee9970a864b403f13bccb264a4",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/socks/shared/sock_cotton_short/side.png",
