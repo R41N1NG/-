@@ -2829,8 +2829,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/袜子/黑色及膝袜/侧面.png",
     "group": "袜子/sock_knee_black",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-c67de198-0c18-4142-bbed-15664bec7c2b.png",
+    "actual_dimensions": "427x640",
+    "sha256": "565c778f0eb2a64060e30c994bc823579ed47bfb4bde7fdb4c1159f19a9df8f4",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/socks/shared/sock_knee_black/back.png",
