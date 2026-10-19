@@ -220,8 +220,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/头饰/格纹发夹/长发/侧面.png",
     "group": "头饰/long/head_clip_plaid",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-2a2ce716-d155-49c6-9368-e0bc373169d5.png",
+    "actual_dimensions": "512x512",
+    "sha256": "3bfa20be78dcffbcac6990184b9f654fdbf4e4f7b7271fe34057b81163518e5a",
+    "review": "待逐组核验"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/long/head_clip_plaid/back.png",
