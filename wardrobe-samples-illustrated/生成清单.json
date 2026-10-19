@@ -543,8 +543,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/头饰/格纹发夹/短发/背面.png",
     "group": "头饰/bob/head_clip_plaid",
     "anchor_relative": "人物锚点/短发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-55929abf-2a46-4e74-bc1f-471a3b5ae16a.png",
+    "actual_dimensions": "512x512",
+    "sha256": "d5a2929e162725abc985c604b4572c6d09503ea07279ba9e6d97d743f8898eaf",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/bob/head_earphone_wired/side.png",
