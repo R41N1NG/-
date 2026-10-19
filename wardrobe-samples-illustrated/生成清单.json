@@ -164,11 +164,14 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/人物锚点/长发版/胸围较大.png",
     "group": "人物锚点",
     "anchor_relative": null,
-    "status": "needs_revision",
-    "review": "不合格：需按通用版无头发、仅上装胸围变化的规则重做",
+    "status": "generated",
+    "review": "待逐组核验",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
     "rejected_source": "/workspace/generated_images/exec-de372b52-030b-4ed4-b8eb-b8a4ec56b61f.png",
-    "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, long straight black hair falling over the shoulders and collar, straight bangs, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; only a larger garment chest circumference; do not widen shoulders, waist or hips, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP."
+    "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, long straight black hair falling over the shoulders and collar, straight bangs, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; only a larger garment chest circumference; do not widen shoulders, waist or hips, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP.",
+    "generated_source": "/workspace/generated_images/exec-df92cdf5-0100-4e23-bd27-84abe56bf67d.png",
+    "actual_dimensions": "768x1024",
+    "sha256": "c23c6cee1aadc7ee06c517c4edc80fb9666bfab808d454898c8fa783042ab969"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/long/head_ribbon_navy/side.png",
@@ -2257,7 +2260,8 @@
     "group": "下装/bottom_jk_pleat_navy",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy pleated school skirt with hard pleats, high waist, hem at mid-thigh, framed from waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_pleat_navy/side.png",
@@ -2270,7 +2274,8 @@
     "group": "下装/bottom_jk_pleat_navy",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy pleated school skirt with hard pleats, high waist, hem at mid-thigh, profile view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_pleat_navy/back.png",
@@ -2283,7 +2288,8 @@
     "group": "下装/bottom_jk_pleat_navy",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy pleated school skirt with hard pleats, high waist, hem at mid-thigh, back view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_pleat_plaid/front.png",
@@ -2296,7 +2302,8 @@
     "group": "下装/bottom_jk_pleat_plaid",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing cream and navy plaid pleated skirt, sharp pleats, high waist, hem above the knee, framed from waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_pleat_plaid/side.png",
@@ -2309,7 +2316,8 @@
     "group": "下装/bottom_jk_pleat_plaid",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing cream and navy plaid pleated skirt, sharp pleats, high waist, hem above the knee, profile view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_pleat_plaid/back.png",
@@ -2322,7 +2330,8 @@
     "group": "下装/bottom_jk_pleat_plaid",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing cream and navy plaid pleated skirt, sharp pleats, high waist, hem above the knee, back view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_denim/front.png",
@@ -2335,7 +2344,8 @@
     "group": "下装/bottom_jk_denim",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing light-wash denim mini skirt, high waist, raw frayed hem, framed from waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_denim/side.png",
@@ -2348,7 +2358,8 @@
     "group": "下装/bottom_jk_denim",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing light-wash denim mini skirt, high waist, raw frayed hem, profile view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_denim/back.png",
@@ -2361,7 +2372,8 @@
     "group": "下装/bottom_jk_denim",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing light-wash denim mini skirt, high waist, raw frayed hem, back view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_shorts/front.png",
@@ -2374,7 +2386,8 @@
     "group": "下装/bottom_jk_shorts",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy sports shorts with white side piping, elastic waist, framed from waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_shorts/side.png",
@@ -2387,7 +2400,8 @@
     "group": "下装/bottom_jk_shorts",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy sports shorts with white side piping, elastic waist, profile view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_shorts/back.png",
@@ -2400,7 +2414,8 @@
     "group": "下装/bottom_jk_shorts",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy sports shorts with white side piping, elastic waist, back view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners."
   },
   {
     "source_path": "assets/wardrobe/jk/socks/shared/sock_knee_black/front.png",
