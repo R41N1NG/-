@@ -4,7 +4,7 @@ const Identity=require("./message_identity");
 const {expandOpening,migrateOpening}=require("./opening_macros");
 const {reassociate}=require("./reassociate_history");
 const {meets} = require("./conditions");
-const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover,isPalaceLord} = require("./character_stages");
+const {resolveStages,writeMetric,metricSpec,completeStage,completeStages,canRecover,isPalaceLord,getCharacterCorruption} = require("./character_stages");
 const {QUICK_ACTIONS,itemAction} = require("./button_actions");
 const { describeItem, itemUsePrompt } = require("./item_catalog");
 const { createActionCode, readActionCode,readUserInput,matchesAction } = require("./action_wire");
@@ -756,8 +756,16 @@ function createDispatcher(adapter, data) {
   function applyStory(s, text, id, swipe, allowInventory = true) {
     delete s.stat_data.result_focus;
     delete s.stat_data.result_focuses;
+    s.stat_data.身份 ??= s.identity;
     const parsed = C.parseStatus(text),
       R = rules(s);
+    const prevRelicStages = {};
+    const prevRelicSoak = {};
+    for (const [rid, cfg] of Object.entries(R.RELIC_PILOT_CONFIG || {})) {
+      prevRelicStages[rid] = R.getRelicStage(rid, s.stat_data.known);
+      const targetStg = (prevRelicStages[rid] || 0) + 1;
+      prevRelicSoak[rid] = s.stat_data.relic_progress?.[rid]?.stages?.[targetStg]?.count || 0;
+    }
     for (const k of C.DISPLAY_FIELDS)
       if (parsed.fields[k] && k !== "历时" && k !== "修为") s.stat_data[k] = parsed.fields[k];
     if (parsed.cast.length || parsed.fields.在场 === "无")
@@ -888,9 +896,59 @@ function createDispatcher(adapter, data) {
       )
         s.stat_data.known[cfg.stage4Key] = true;
     }
+    const isLord = isPalaceLord(s.identity || s.stat_data?.身份);
+    if (isLord) {
+      resolveStages(s, data.characterProfiles || {}, rr);
+      s.stat_data.corruption_log ||= [];
+      for (const [rid, cfg] of Object.entries(rr.RELIC_PILOT_CONFIG || {})) {
+        const oldStg = prevRelicStages[rid] || 0;
+        const newStg = rr.getRelicStage(rid, s.stat_data.known);
+        const charName = cfg.owner;
+        if (newStg > oldStg) {
+          const corr = s.stat_data.character_corruption?.[charName] || getCharacterCorruption(charName, s.stat_data, rr);
+          s.stat_data.corruption_log.unshift({
+            floor: id,
+            turn: s.storyCount + 1,
+            type: "stage_leap",
+            kind: "stage_leap",
+            character: charName,
+            fromStage: oldStg,
+            toStage: newStg,
+            relicId: rid,
+            relicName: cfg.names[0],
+            title: corr?.title || "",
+            label: corr?.label || ""
+          });
+        } else if (newStg >= 1 && newStg < 4) {
+          const targetStg = newStg + 1;
+          const oldSoak = prevRelicSoak[rid] || 0;
+          const newProgress = s.stat_data.relic_progress?.[rid]?.stages?.[targetStg];
+          const newSoak = newProgress?.count || 0;
+          if (newSoak > oldSoak) {
+            s.stat_data.corruption_log.unshift({
+              floor: id,
+              turn: s.storyCount + 1,
+              type: "soak",
+              kind: "soak",
+              character: charName,
+              stage: newStg,
+              targetStage: targetStg,
+              fromCount: oldSoak,
+              count: newSoak,
+              target: newProgress?.target || 3,
+              ready: !!newProgress?.ready,
+              relicId: rid,
+              relicName: cfg.names[0]
+            });
+          }
+        }
+      }
+      if (s.stat_data.corruption_log.length > 20) {
+        s.stat_data.corruption_log.length = 20;
+      }
+    }
     Realm.collect(s,rr,parsed.prose,id);
     try {
-      const isLord = isPalaceLord(s.identity || s.stat_data?.身份);
       if (!isLord) {
         const penalized=applyPreFinalPenalty(s,parsed.prose,data.characterProfiles || {},s.storyCount+1);
         if(penalized.length && s.activeEvent?.pluginId==="character_promotion" && (s.activeEvent.characters || [s.activeEvent.character]).some(name=>penalized.includes(name))){
@@ -1298,6 +1356,7 @@ function createDispatcher(adapter, data) {
         floor:c.floor, messageIdentity:C.clone(c.identities[c.floor]), storageIdentityVersion:s?.history_identity?.version || 0, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), openingConfig:C.clone(s?.openingConfig || null), historyRecovery:C.clone(s?.historyRecovery || null), recoveryFault:C.clone(recoveryFault),
         inventory:s?{items:C.clone(s.stat_data.inventory || []),manualLocked:!!s.manual?.inventory,changes:C.clone(s.inventoryChanges || [])}:null,
         favor:s?{lastCheck:C.clone(s.stat_data.lastFavorCheck || null),checks:C.clone(s.stat_data.lastFavorChecks || []),recentChecks:C.clone(s.stat_data.metric_diag || []),metrics:C.clone(s.stat_data.character_metrics || {}),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([key])=>key.startsWith('metric.')))}:null,
+        corruption:s?.stat_data?.corruption_active ? {characters:C.clone(s.stat_data.character_corruption || {}), log:C.clone(s.stat_data.corruption_log || [])} : null,
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,actionCode:s.pending.actionCode || null,userRef:C.clone(s.pending.userRef || null),
         } : null, event:s?.activeEvent || null,

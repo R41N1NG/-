@@ -1,5 +1,5 @@
 "use strict";
-const { isPalaceLord, resolveCorruption } = require("./corruption");
+const { isPalaceLord, resolveCorruption, getCharacterCorruption } = require("./corruption");
 
 const NEGATIVE_DEFAULTS=[
 
@@ -53,6 +53,7 @@ function resolveStages(s, profiles = {}, rules = null) {
   stat.favor_active = true;
   stat.corruption_active = false;
   delete stat.character_corruption;
+  delete stat.corruption_log;
 
   s.stat_data.character_metrics ||= {};
   const resolved = {};
@@ -97,4 +98,4 @@ function completeStages(s,profiles,grants){
  for(const g of grants){const cfg=profiles[g.character],from=cfg?.stages.find(x=>x.id===g.from),to=cfg?.stages.find(x=>x.id===g.to);if(!from||!to||to.priority<=from.priority||s.stat_data.character_stages?.[g.character]?.id!==g.from)throw Error("双人阶段必须同时符合前置条件");}
  for(const g of grants)completeStage(s,profiles,g);
 }
-module.exports = {completeStages,metricSpec, writeMetric, resolveStages, completeStage, negativeStages, negativeOf, canRecover, isPalaceLord, resolveCorruption};
+module.exports = {completeStages,metricSpec, writeMetric, resolveStages, completeStage, negativeStages, negativeOf, canRecover, isPalaceLord, resolveCorruption, getCharacterCorruption};

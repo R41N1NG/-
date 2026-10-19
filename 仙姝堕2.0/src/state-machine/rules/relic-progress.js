@@ -584,7 +584,40 @@ function hasRelicStage3Response(relicId, prose) {
   return false;
 }
 
-/** Three-to-four promotion awaits the user's design; prose cannot grant it. */
-function hasRelicStage4Response() {
+/** 核验名器持有者四阶（沉沦 -> 极乐）大成质变实证（仅在殿主模式下开放剧情晋升）。 */
+function hasRelicStage4Response(relicId, prose) {
+  const ident = typeof readIdentity === 'function' ? readIdentity() : null;
+  const PALACE_LORDS = ['焚欲殿主', '欢喜殿主', '浊龙殿主', '魂欢殿主'];
+  if (!ident || !PALACE_LORDS.includes(String(ident).trim())) return false;
+
+  const cfg = RELIC_PILOT_CONFIG[relicId];
+  if (!cfg) return false;
+  const proseStr = relicEvidenceProse(relicId, prose);
+  if (!proseStr) return false;
+
+  const hasOwner = cfg.ownerAliases.some(a => proseStr.includes(a)) || cfg.names.some(n => proseStr.includes(n));
+  if (!hasOwner) return false;
+
+  // 显式四阶声明判定
+  if (new RegExp('(?:名器四阶|四阶「?极乐」?|四阶异象.*成形|极乐.*成形).*' + cfg.names[0] + '|' + cfg.names[0] + '.*(?:名器四阶|四阶「?极乐」?|四阶异象.*成形|极乐.*成形)').test(proseStr)) {
+    return true;
+  }
+  if (/名器四阶「?极乐」?的异象.*已然.*成形|进入名器四阶|达成四阶段|突破至四阶|极乐天姝大成/.test(proseStr)) {
+    return true;
+  }
+
+  const sentences = proseStr.split(/[。！？\n]/);
+  const nonFact = /据说|听说|传闻|谣传|计划|打算|准备|想要|希望|将要|即将|可能|或将|若是|假如|倘若|万一|是否|未|没有|没能|不曾|并不|不是|不会|不愿|讨论|提及|解释|说明/;
+  const counterNeg = /不仅没有|非但没有|不仅不|非但非|反而|不再/;
+  const stage4Regex = /(极乐天姝|本源密藏|极乐密藏|极乐大成|身心沦陷|身心交融|炉鼎大成|阴阳互融|极乐玄境|身心交泰|永堕极乐)/;
+
+  for (const sentence of sentences) {
+    if (!sentence.trim()) continue;
+    if (nonFact.test(sentence) && !counterNeg.test(sentence)) continue;
+    if (stage4Regex.test(sentence)) {
+      return true;
+    }
+  }
   return false;
 }
+

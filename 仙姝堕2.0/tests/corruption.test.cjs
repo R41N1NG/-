@@ -6,6 +6,8 @@ const { JSDOM } = require("jsdom");
 
 const ROOT = path.join(__dirname, "..");
 const data = require("../tools/data.cjs").load(ROOT);
+const C = require("../src/runtime/contracts");
+const { createDispatcher } = require("../src/runtime/dispatcher");
 const {
   isPalaceLord,
   CORRUPTION_STAGES,
@@ -242,3 +244,210 @@ test("恶堕系统：文本与代码恪守13个禁词规定", () => {
     }
   }
 });
+
+function harness(runtimeData = data) {
+  let c = {
+    chatId: "corrupt_chat",
+    branchId: "main",
+    metadata: {},
+    chat: [{ mes: "<IdentityMenu/>", is_user: false, vars: {} }],
+  };
+  const sent = [], prompts = [];
+  const adapter = {
+    context: () => c,
+    readMessage: async (i) => C.clone(c.chat[i]?.variables?.[c.chat[i]?.swipe_id ?? 0] || {}),
+    persist: async (ctx, e) => {
+      assert.equal(ctx.chatId, c.chatId);
+      const m = c.chat[ctx.floor];
+      m.variables ??= [];
+      m.variables[m.swipe_id ?? 0] = {
+        stat_data: { ...C.clone(e.state.stat_data), xsd2: [C.clone(e)] },
+      };
+    },
+    setPrompt: (x) => prompts.push(x),
+    preflightSend: () => {},
+    isGenerating: () => false,
+    isAborted: () => false,
+    confirmExit: async () => true,
+    send: async (text) => {
+      sent.push(text);
+      c.chat.push({ mes: text, is_user: true });
+    },
+    replaceStory: async (i, text) => { c.chat[i].mes = text; },
+    replaceOpening: async (text) => { c.chat[0].mes = text; },
+    syncIdentity: async () => {},
+    report: () => {},
+  };
+  const r = createDispatcher(adapter, runtimeData);
+  const opening = (identity) => r.dispatchIntent({ type: "SELECT_IDENTITY", payload: { identity } });
+  const reply = (text) => {
+    c.chat.push({ mes: text, is_user: false, swipe_id: 0 });
+    return r.settleStory();
+  };
+  return { r, adapter, sent, prompts, opening, reply, get c() { return c; } };
+}
+
+const status = (fields = {}, prose = "山风拂过山谷。") =>
+  prose +
+  "\n<Status_block>" +
+  Object.entries({
+    时间: "仙盟历 9999年1月1日",
+    身份: "焚欲殿主",
+    历时: "—",
+    ...fields,
+  })
+    .map(([k, v]) => "<" + k + ">" + v + "</" + k + ">")
+    .join("") +
+  "</Status_block>";
+
+test("恶堕系统：中控调度端 0->1->2 阶梯完整流转、浸润火候推进与恶堕日志记录", async () => {
+  const h = harness();
+  await h.opening("焚欲殿主");
+  let snap = h.r.getSnapshot();
+  assert.equal(snap.identity, "焚欲殿主");
+  assert.equal(snap.stat_data.corruption_active, true);
+  assert.equal(snap.stat_data.character_corruption.叶红缨.stage, 0);
+  assert.equal(snap.stat_data.character_corruption.叶红缨.label, "守道");
+
+  // 1. 第1回合：实质破身见红 -> 0阶跃迁至1阶（守道 -> 染尘）
+  await h.reply(status(
+    { 破处: "叶红缨、焚欲殿主", 实际发生: "叶红缨处女丧失、灼酒流炎穴成形" },
+    "焚欲殿主实质破处叶红缨，元阴被夺并落红。"
+  ));
+  snap = h.r.getSnapshot();
+  assert.equal(snap.stat_data.known["叶红缨处女丧失"], true);
+  assert.equal(snap.stat_data.known["灼酒流炎穴成形"], true);
+  assert.equal(snap.stat_data.破处者["叶红缨"], "焚欲殿主");
+  assert.equal(snap.stat_data.名器归属["zhuojiu"], "焚欲殿主");
+  assert.equal(snap.stat_data.character_corruption.叶红缨.stage, 1);
+  assert.equal(snap.stat_data.character_corruption.叶红缨.label, "染尘");
+  assert.equal(snap.stat_data.character_corruption.叶红缨.title, "染尘 · 破禁");
+  assert.ok(Array.isArray(snap.stat_data.corruption_log));
+  assert.equal(snap.stat_data.corruption_log[0].type, "stage_leap");
+  assert.equal(snap.stat_data.corruption_log[0].fromStage, 0);
+  assert.equal(snap.stat_data.corruption_log[0].toStage, 1);
+  assert.equal(snap.stat_data.corruption_log[0].character, "叶红缨");
+
+  // 2. 第2回合：本源浸润第1次 -> 计数 1/3，未就绪，阶段维持1阶
+  h.c.chat.push({ is_user: true, mes: "继续" });
+  await h.reply(status(
+    { 名器互动: "灼酒流炎穴｜焚欲殿主｜内射" },
+    "焚欲殿主挺身深入，浓稠阳精全数灌入叶红缨花房深处。"
+  ));
+  snap = h.r.getSnapshot();
+  assert.equal(snap.stat_data.relic_progress.zhuojiu.stages[2].count, 1);
+  assert.equal(snap.stat_data.relic_progress.zhuojiu.stages[2].ready, false);
+  assert.equal(snap.stat_data.character_corruption.叶红缨.stage, 1);
+  assert.equal(snap.stat_data.corruption_log[0].type, "soak");
+  assert.equal(snap.stat_data.corruption_log[0].count, 1);
+  assert.equal(snap.stat_data.corruption_log[0].target, 3);
+  assert.equal(snap.stat_data.corruption_log[0].ready, false);
+
+  // 3. 第3回合：本源浸润第2次 -> 计数 2/3
+  h.c.chat.push({ is_user: true, mes: "继续" });
+  await h.reply(status(
+    { 名器互动: "灼酒流炎穴｜焚欲殿主｜内射" },
+    "滚烫精液再次全数射入叶红缨体内，灼酒流炎穴至阳本源浸润。"
+  ));
+  snap = h.r.getSnapshot();
+  assert.equal(snap.stat_data.relic_progress.zhuojiu.stages[2].count, 2);
+  assert.equal(snap.stat_data.relic_progress.zhuojiu.stages[2].ready, false);
+  assert.equal(snap.stat_data.character_corruption.叶红缨.stage, 1);
+
+  // 4. 第4回合：本源浸润第3次 -> 达到 3/3，ready 为 true，但尚无生理迎合，阶段仍维持1阶
+  h.c.chat.push({ is_user: true, mes: "继续" });
+  await h.reply(status(
+    { 名器互动: "灼酒流炎穴｜焚欲殿主｜内射" },
+    "叶红缨承纳至阳本源深度交合内射，白浊注入深处，灼酒流炎穴满溢。"
+  ));
+  snap = h.r.getSnapshot();
+  assert.equal(snap.stat_data.relic_progress.zhuojiu.stages[2].count, 3);
+  assert.equal(snap.stat_data.relic_progress.zhuojiu.stages[2].ready, true);
+  assert.equal(snap.stat_data.character_corruption.叶红缨.stage, 1, "火候虽满，无生理迎合前不可越阶");
+
+  // 5. 第5回合：正文触发名器生理自发迎合 -> 1阶跃迁至2阶（染尘 -> 蚀心）
+  h.c.chat.push({ is_user: true, mes: "继续" });
+  await h.reply(status(
+    {},
+    "叶红缨内壁剧烈抽搐痉挛，名器产生生理自发迎合，二阶情动异象成形。"
+  ));
+  snap = h.r.getSnapshot();
+  assert.equal(snap.stat_data.known["灼酒流炎穴二阶段"], true);
+  assert.equal(snap.stat_data.character_corruption.叶红缨.stage, 2);
+  assert.equal(snap.stat_data.character_corruption.叶红缨.label, "蚀心");
+  assert.equal(snap.stat_data.character_corruption.叶红缨.title, "蚀心 · 情动");
+  assert.equal(snap.stat_data.corruption_log[0].type, "stage_leap");
+  assert.equal(snap.stat_data.corruption_log[0].fromStage, 1);
+  assert.equal(snap.stat_data.corruption_log[0].toStage, 2);
+  assert.equal(snap.stat_data.corruption_log[0].character, "叶红缨");
+});
+
+test("恶堕系统：2->3 与 3->4 阶段判定及否定句防御拦截", async () => {
+  const h = harness();
+  await h.opening("焚欲殿主");
+
+  // 1. 破身见红
+  await h.reply(status({ 破处: "叶红缨、焚欲殿主" }, "焚欲殿主实质破处叶红缨，元阴被夺并落红。"));
+
+  // 2. 3次浸润达标
+  for (let i = 0; i < 3; i++) {
+    h.c.chat.push({ is_user: true, mes: "继续" });
+    await h.reply(status({ 名器互动: "灼酒流炎穴｜焚欲殿主｜内射" }, "阳精全数灌入叶红缨花房深处。"));
+  }
+
+  // 3. 生理迎合质变成形 -> 跃迁至2阶
+  h.c.chat.push({ is_user: true, mes: "继续" });
+  await h.reply(status({}, "叶红缨内壁痉挛吮吸，名器产生生理自发迎合，二阶情动异象成形。"));
+  let s = h.r.getSnapshot();
+  assert.equal(s.stat_data.character_corruption.叶红缨.stage, 2);
+
+  // 4. 2升3浸润：3次深度交合（不触发阶段质变词）
+  for (let i = 0; i < 3; i++) {
+    h.c.chat.push({ is_user: true, mes: "继续" });
+    await h.reply(status({ 名器互动: "灼酒流炎穴｜焚欲殿主｜深度交合" }, "叶红缨与焚欲殿主深度交合，花房痉挛，阳精注入。"));
+  }
+  s = h.r.getSnapshot();
+  assert.equal(s.stat_data.relic_progress.zhuojiu.stages[3].count, 3);
+  assert.equal(s.stat_data.relic_progress.zhuojiu.stages[3].ready, true);
+  assert.equal(s.stat_data.character_corruption.叶红缨.stage, 2, "未达成三阶质变前维持二阶");
+
+  // 5. 否定句拦截测试
+  h.c.chat.push({ is_user: true, mes: "继续" });
+  await h.reply(status({}, "叶红缨并未动情配合，心智未曾沉沦。"));
+  s = h.r.getSnapshot();
+  assert.notEqual(s.stat_data.known["灼酒流炎穴三阶段"], true);
+  assert.equal(s.stat_data.character_corruption.叶红缨.stage, 2);
+
+  // 6. 肯定句三阶质变：动情配合，理智防线失守 -> 升至3阶
+  h.c.chat.push({ is_user: true, mes: "继续" });
+  await h.reply(status({}, "叶红缨神魂交契，动情配合，理智防线失守，心智沉沦。"));
+  s = h.r.getSnapshot();
+  assert.equal(s.stat_data.known["灼酒流炎穴三阶段"], true);
+  assert.equal(s.stat_data.character_corruption.叶红缨.stage, 3);
+  assert.equal(s.stat_data.character_corruption.叶红缨.label, "沉沦");
+  assert.equal(s.stat_data.corruption_log[0].type, "stage_leap");
+  assert.equal(s.stat_data.corruption_log[0].fromStage, 2);
+  assert.equal(s.stat_data.corruption_log[0].toStage, 3);
+
+  // 7. 3升4浸润：3次天地机缘（不触发四阶大成词）
+  for (let i = 0; i < 3; i++) {
+    h.c.chat.push({ is_user: true, mes: "继续" });
+    await h.reply(status({ 名器互动: "灼酒流炎穴｜焚欲殿主｜天地机缘" }, "叶红缨逢天地机缘，名器本源共鸣，异化展翼。"));
+  }
+  s = h.r.getSnapshot();
+  assert.equal(s.stat_data.relic_progress.zhuojiu.stages[4].count, 3);
+  assert.equal(s.stat_data.relic_progress.zhuojiu.stages[4].ready, true);
+  assert.equal(s.stat_data.character_corruption.叶红缨.stage, 3, "未达成四阶大成前维持三阶");
+
+  // 8. 肯定句四阶大成质变：身心交融，极乐天姝大成 -> 升至4阶
+  h.c.chat.push({ is_user: true, mes: "继续" });
+  await h.reply(status({}, "叶红缨身心交融，极乐天姝大成，永堕极乐。"));
+  s = h.r.getSnapshot();
+  assert.equal(s.stat_data.known["灼酒流炎穴四阶段"], true);
+  assert.equal(s.stat_data.character_corruption.叶红缨.stage, 4);
+  assert.equal(s.stat_data.character_corruption.叶红缨.label, "极乐");
+  assert.equal(s.stat_data.corruption_log[0].type, "stage_leap");
+  assert.equal(s.stat_data.corruption_log[0].fromStage, 3);
+  assert.equal(s.stat_data.corruption_log[0].toStage, 4);
+});
+

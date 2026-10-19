@@ -118,6 +118,7 @@ function resolveCorruption(s, rules, profiles = {}) {
   if (!isPalaceLord(ident)) {
     stat.corruption_active = false;
     delete stat.character_corruption;
+    delete stat.corruption_log;
     return s;
   }
 

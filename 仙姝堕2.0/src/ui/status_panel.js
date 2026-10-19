@@ -475,6 +475,19 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
     el.classList.add("xsd2-favor");
     corruptionDialog = el;
     el.addEventListener("close", () => { if (corruptionDialog === el) corruptionDialog = null; });
+    const logs = (s.stat_data.corruption_log || []).filter(item => item.character === character);
+    let logHtml = "";
+    if (logs.length) {
+      const itemsHtml = logs.slice(0, 4).map(l => {
+        const text = l.type === "stage_leap"
+          ? '阶位蜕变：' + esc(l.title || (l.toStage + '阶'))
+          : '本源浸润：' + l.count + ' / ' + l.target + (l.ready ? '（火候已足）' : '');
+        return '<li style="margin:2px 0;color:#c5c9bd;font-size:12px">第' + l.turn + '回合 · ' + text + '</li>';
+      }).join("");
+      logHtml = '<h4 style="margin:12px 0 4px;color:var(--xsd2-gold)">侵蚀轨迹</h4>' +
+        '<ul style="margin:0;padding-left:18px;line-height:1.6">' + itemsHtml + '</ul>';
+    }
+
     el.querySelector(".xsd2-dialog-body").innerHTML =
       '<div class="xsd2-cap" style="border-left-color:var(--xsd2-gold)">' +
       '<p><b>载体宿主：' + esc(character) + '</b> ｜ <b>专属名器：' + esc(c.relicName) + '</b></p>' +
@@ -486,6 +499,7 @@ function mountHUD(doc, container, runtime, data, report, options = {}) {
       '</div>' +
       '<h4 style="margin:12px 0 4px;color:var(--xsd2-gold)">恶堕五阶图谱</h4>' +
       '<div class="xsd2-corruption-ladder">' + stagesHtml + '</div>' +
+      logHtml +
       '<p class="xsd2-label" style="margin-top:10px">恶堕阶梯与名器阶位同步演变；不采用常规好感度，需依凭双修破身、本源浸润与心神驯服步步推进。</p>';
 
     const p = portrait(character, s, data);
