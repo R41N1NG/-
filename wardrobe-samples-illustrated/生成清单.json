@@ -121,7 +121,11 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/人物锚点/长发版/清瘦.png",
     "group": "人物锚点",
     "anchor_relative": null,
-    "status": "pending"
+    "status": "generated",
+    "generated_source": "/workspace/generated_images/exec-967f483a-270a-4cfa-b82b-f5c81251439e.png",
+    "actual_dimensions": "768x1024",
+    "sha256": "10320f6a80f1c4551ec7ccdb4ee60e010cad8cd3ff28efe69e77d07c0b78617d",
+    "review": "待逐组核验"
   },
   {
     "source_path": "assets/wardrobe/jk/anchors/top_long_normal.png",
