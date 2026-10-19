@@ -134,9 +134,13 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/人物锚点/长发版/胸围较小.png",
     "group": "人物锚点",
     "anchor_relative": null,
-    "status": "pending",
+    "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
-    "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, long straight black hair falling over the shoulders and collar, straight bangs, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; only a smaller garment chest circumference, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP."
+    "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, long straight black hair falling over the shoulders and collar, straight bangs, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; only a smaller garment chest circumference, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP.",
+    "generated_source": "/workspace/generated_images/exec-03ed7d42-3b51-48b6-93ee-2671c13aa05f.png",
+    "actual_dimensions": "768x1024",
+    "sha256": "5b444a255002179538e92b89de8aa1742a90247ec8a404aa2e76aa3ec05c0a32",
+    "review": "待逐组核验"
   },
   {
     "source_path": "assets/wardrobe/jk/anchors/top_long_normal.png",
