@@ -73,7 +73,11 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/人物锚点/通用版/清瘦.png",
     "group": "人物锚点",
     "anchor_relative": null,
-    "status": "pending"
+    "status": "generated",
+    "generated_source": "/workspace/generated_images/exec-ffd801d0-596d-4c6e-bf27-f74371f3c96e.png",
+    "actual_dimensions": "1086x1448",
+    "sha256": "c42b35e4f1ddaef0926ae29bb9733310784a42ac262c90e913bef223b857c3b3",
+    "review": "待逐组核验"
   },
   {
     "source_path": "assets/wardrobe/jk/anchors/top_base_normal.png",
