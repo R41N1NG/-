@@ -1952,7 +1952,7 @@
     "generated_source": "/workspace/generated_images/exec-5647e5da-640a-499b-8ac5-d76d935f82f4.png",
     "actual_dimensions": "512x768",
     "sha256": "bfd117cb65c715bbd2cb4a646fdc66401180ce5ea133be5b6c3a58b765aec53b",
-    "review": "已生成，待视觉复核"
+    "review": "已逐张自检：对应正侧背方向不变，仅新增同一黑直长发，衣服人物与手掌保留"
   },
   {
     "source_path": "assets/wardrobe/jk/top/long/normal/top_jk_blazer/side.png",
@@ -1970,7 +1970,7 @@
     "generated_source": "/workspace/generated_images/exec-c320e56d-2b47-4452-93f8-791ae20ab884.png",
     "actual_dimensions": "512x768",
     "sha256": "c346a25aae4ecb4173bb346002f9972efa30343f3919425d9a2fa6c22a768ef2",
-    "review": "已生成，待视觉复核"
+    "review": "已逐张自检：对应正侧背方向不变，仅新增同一黑直长发，衣服人物与手掌保留"
   },
   {
     "source_path": "assets/wardrobe/jk/top/long/normal/top_jk_blazer/back.png",
@@ -1988,7 +1988,7 @@
     "generated_source": "/workspace/generated_images/exec-7baba382-3b4d-436a-ba2d-d1b63187a2bb.png",
     "actual_dimensions": "512x768",
     "sha256": "eb7e688a4a7154144605af824b5080ac450b5e20e5a35fef593d1c1ecd16bef9",
-    "review": "已生成，待视觉复核"
+    "review": "已逐张自检：对应正侧背方向不变，仅新增同一黑直长发，衣服人物与手掌保留"
   },
   {
     "source_path": "assets/wardrobe/jk/top/long/normal/top_jk_sailor/front.png",
@@ -2042,9 +2042,13 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/上装/白衬衫/长发/胸围标准/正面.png",
     "group": "上装/long/normal/top_jk_shirt",
     "anchor_relative": "人物锚点/长发版/胸围标准.png",
-    "status": "pending",
+    "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
-    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, long straight black hair falling past the shoulders, straight bangs, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; standard garment chest circumference, long hair falling over the shoulders and collar, wearing crisp white cotton shirt, small square collar, buttoned to the top, framed from shoulders to hips, garment centered. FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP. LATEST: shoulders at top border, no neck/head. Complete relaxed hands inside frame. Natural female garment tailoring, moderate waist, unchanged body proportions. Match view-specific direction anchor rather than side reference."
+    "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, long straight black hair falling past the shoulders, straight bangs, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; standard garment chest circumference, long hair falling over the shoulders and collar, wearing crisp white cotton shirt, small square collar, buttoned to the top, framed from shoulders to hips, garment centered. FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP. LATEST: shoulders at top border, no neck/head. Complete relaxed hands inside frame. Natural female garment tailoring, moderate waist, unchanged body proportions. Match view-specific direction anchor rather than side reference.",
+    "generated_source": "/workspace/generated_images/exec-a3c3f91d-e563-4a3e-a52a-d383b9cb8879.png",
+    "actual_dimensions": "512x768",
+    "sha256": "74083d9b2a73daca99a8cb3c6cd2ec5183fc16816e427a11f8fac2c4f0ea19d6",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/top/long/normal/top_jk_shirt/side.png",
