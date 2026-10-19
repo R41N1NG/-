@@ -2953,8 +2953,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/袜子/白色过膝袜/背面.png",
     "group": "袜子/sock_thigh_white",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-8b252cd1-1b76-44c0-8746-307a3c318d9c.png",
+    "actual_dimensions": "427x640",
+    "sha256": "9c560691dae8da0d067692c628c46515efef5474b093c84fc91c8da0ac2804bb",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/socks/shared/sock_pile_cream/front.png",
