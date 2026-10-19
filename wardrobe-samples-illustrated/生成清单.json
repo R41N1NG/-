@@ -149,7 +149,11 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/人物锚点/长发版/丰腴.png",
     "group": "人物锚点",
     "anchor_relative": null,
-    "status": "pending"
+    "status": "generated",
+    "generated_source": "/workspace/generated_images/exec-de372b52-030b-4ed4-b8eb-b8a4ec56b61f.png",
+    "actual_dimensions": "768x1024",
+    "sha256": "907b8cc56ef341ae2910b4ce05022ea34c3225b2165cc5cef1da2b37d8ad15c8",
+    "review": "待逐组核验"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/long/head_ribbon_navy/side.png",
