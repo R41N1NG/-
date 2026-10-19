@@ -155,7 +155,7 @@ function select(snapshot, nodeId) {
   const xuanjiDead = isXuanjiDead(state) || isXuanjiDead(snapshot);
   let extraPrompt = "";
   if (nodeId === "g7p2") {
-    extraPrompt = "\n【承接剧情与人员隔离铁律】必须自然承接上文对话交互（交代与侍女孤月等交谈告一段落并嘱其留守宗门据点，绝不入谷）。奉师尊炎雷子法旨严令，由赵无忧、叶红缨、" + (xuanjiDead ? "" : "玄机子（若存活）、") + "众弟子前往幽寂谷历练。" +
+    extraPrompt = "\n【承接剧情与人员隔离铁律】必须自然承接上文对话交互（交代与四师姐孤月等交谈告一段落并嘱其留守宗门据点，绝不入谷）。奉师尊炎雷子法旨严令，由赵无忧、叶红缨、" + (xuanjiDead ? "" : "玄机子（若存活）、") + "众弟子前往幽寂谷历练。" +
       (xuanjiDead ? "特别注意：玄机子已死，玄机子不出现，仅赵无忧与叶红缨率队前往，后续仅走分支C。" : "【兼容性提示词】若玄机子在先前剧情中已死亡，则合理改变后续剧情：玄机子绝不出现，仅由赵无忧与叶红缨率队探索，且仅走分支C。");
   }
   const prompt = (settlementMode === "choice"
