@@ -407,8 +407,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/头饰/藏青发带/双马尾/背面.png",
     "group": "头饰/twintails/head_ribbon_navy",
     "anchor_relative": "人物锚点/双马尾全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-49d61b02-ae01-4ca1-a2bf-ed6115761e0f.png",
+    "actual_dimensions": "512x512",
+    "sha256": "e47708af8dc50275be479b75e36019a168efba6fc3b9058faa4df9d818a720ef",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/twintails/head_clip_plaid/side.png",
