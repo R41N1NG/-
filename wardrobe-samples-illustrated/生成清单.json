@@ -3098,8 +3098,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/袜子/条纹运动长袜/侧面.png",
     "group": "袜子/sock_sport_stripe",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-9c3f5830-d5cb-488b-aaef-edb3c5e0957b.png",
+    "actual_dimensions": "427x640",
+    "sha256": "7cf7873d14f5f94036efcd8c3a99980393f281ea91bc99a62734415eeadc66ab",
+    "review": "已生成，待视觉复核"
   },
   {
     "source_path": "assets/wardrobe/jk/socks/shared/sock_sport_stripe/back.png",
