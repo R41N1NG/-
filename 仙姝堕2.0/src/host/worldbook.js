@@ -1,5 +1,6 @@
 "use strict";
 const {managedEnabled} = require("../runtime/story_entries");
+const {visibleCharacters} = require("../runtime/metric_events");
 /** Only the current card's primary worldbook; never scan names or additional books. */
 function evaluateGate(content, stat) {
   const line = String(content).split("\n")[0];
@@ -52,6 +53,7 @@ function embeddedEntry(raw, uid, sample) {
 }
 function createWorldbookHost(helper, getContext, scope = {}) {
   let status={expectedName:scope.expectedName || null,primary:null,blocked:false};
+  let mindsetStatus=[];
   function validateName(name){
     status={expectedName:scope.expectedName || null,primary:name || null,blocked:!!(name && scope.expectedName && ![scope.expectedName,scope.expectedName.replaceAll('·','')].includes(name.replace(/\s*(?:\([1-9]\d*\)|（[1-9]\d*）)$/,'')))};
     if(status.blocked){const error=Error('2.0测试卡须绑定独立同名世界书，已取消写入其他世界书；当前主书：'+name+'；所需主书：'+scope.expectedName);error.code='XSD2_WORLDBOOK_BINDING';throw error;}
@@ -108,21 +110,30 @@ function createWorldbookHost(helper, getContext, scope = {}) {
     if (stat.node_trigger && !entries.some(e=>(e.name || e.comment) === "【节点故事】"+stat.node_trigger))
       throw Error("当前世界书缺少节点故事条目，请导入新版测试卡和配套世界书");
     let changed = added;
+    const visible=visibleCharacters(stat), mindsets=[];
     const updated = entries.map((e) => {
       const label=e.name || e.comment || "";
       const obsoleteRealm=["【设定】南域神诅变局与破境断路","【设定】神诅与南域大劫"].includes(label) && !String(e.content).includes("玩家跌至金丹大圆满");
       const managed = obsoleteRealm ? false : managedEnabled(label,stat);
       if (managed === null && !String(e.content).startsWith("@@if ")) return e;
       const enabled = managed === null ? evaluateGate(e.content, stat) : managed;
-      if (enabled !== e.enabled) {
+      // Region access and keyword activation are separate. Keep an unlocked,
+      // present character's mindset available even when recent turns use pronouns.
+      const mind=label.match(/(?:^|·\s*)([^·]+?)\s*[（(]心智姿态[）)]$/);
+      const present=!!mind && visible.has(mind[1].trim());
+      const constant=!!(enabled && present);
+      const strategyChanged=!!mind && (e.strategy ? e.strategy.type!==(constant?'constant':'selective') : e.constant!==constant);
+      if(mind)mindsets.push({name:label,character:mind[1].trim(),enabled,present,activation:constant?'constant':'selective'});
+      if (enabled !== e.enabled || (e.disable!==undefined && e.disable!==!enabled) || strategyChanged) {
         changed = true;
-        return { ...e, enabled, disable:!enabled };
+        return { ...e, enabled, disable:!enabled,...(mind?(e.strategy?{strategy:{...e.strategy,type:constant?'constant':'selective'}}:{constant}):{}) };
       }
       return e;
     });
     if (changed)
       await helper.replaceWorldbook(name, updated, { render: "immediate" });
+    mindsetStatus=mindsets;
   }
-  return { getDiagnostics:()=>({...status}), synchronize, synchronizeState };
+  return { getDiagnostics:()=>({...status,mindsets:mindsetStatus.map(x=>({...x}))}), synchronize, synchronizeState };
 }
 module.exports = { createWorldbookHost, evaluateGate, embeddedEntry };

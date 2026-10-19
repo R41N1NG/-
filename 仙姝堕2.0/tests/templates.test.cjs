@@ -94,3 +94,35 @@ test('动作读取只采用本轮输入，重复同代码可识别，历史与�
  assert.equal(matchesAction({actionText:'闭关三个月'},'<本轮用户输入>闭关三个月</本轮用户输入><recall>旧事</recall>'),true);
  assert.equal(readUserInput('<本轮用户输入>[[JX47_VALUE_E01_18_BEGIN]]\n使用草药\n[[JX47_VALUE_E01_18_END]]</本轮用户输入>'),'使用草药');
 });
+
+test('区域心智：解锁且在场才常驻，代称轮不依赖关键词，离场或撤销后恢复选择性',async()=>{
+ const gate="@@if (function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()\n人物性格资料";
+ for(const modern of [false,true]){
+  let stored=[{uid:1,name:'花芷凝 (心智姿态)',content:gate,enabled:false,disable:true,...(modern?{strategy:{type:'selective',keys:['花芷凝'],scan_depth:2}}:{constant:false,key:['花芷凝']})}];
+  let writes=0;
+  const host=createWorldbookHost({getCharWorldbookNames:async()=>({primary:'独立卡'}),getWorldbook:async()=>structuredClone(stored),replaceWorldbook:async(_,rows)=>{stored=rows;writes++;}},()=>({}));
+  const stat={known:{已抵达陨仙原:true},在场角色:[{名:'花芷凝（城主）'}]};
+  await host.synchronizeState(stat);
+  assert.equal(stored[0].enabled,true);assert.equal(stored[0].disable,false);
+  assert.equal(modern?stored[0].strategy.type:stored[0].constant,modern?'constant':true);
+  assert.equal(stored[0].content,gate);
+  assert.equal(host.getDiagnostics().mindsets[0].activation,'constant');
+  await host.synchronizeState(stat);assert.equal(writes,1);
+  await host.synchronizeState({...stat,在场角色:[]});
+  assert.equal(stored[0].enabled,true);assert.equal(modern?stored[0].strategy.type:stored[0].constant,modern?'selective':false);
+  await host.synchronizeState({...stat,known:{已抵达陨仙原:false}});
+  assert.equal(stored[0].enabled,false);assert.equal(stored[0].disable,true);
+  assert.equal(host.getDiagnostics().mindsets[0].enabled,false);
+ }
+});
+
+test('区域心智不越过负好感替换，修复启用与禁用标志冲突，地区前缀可识别',async()=>{
+ const gate="@@if (function(){try{return (variables.stat_data?.known?.['已抵达陨仙原'] === true)}catch(e){return false}})()\n性格资料";
+ let stored=[{uid:1,name:'花仙城 · 花芷凝 (心智姿态)',content:gate,enabled:true,disable:true,strategy:{type:'selective',keys:['花芷凝']}}];
+ const host=createWorldbookHost({getCharWorldbookNames:async()=>({primary:'独立卡'}),getWorldbook:async()=>structuredClone(stored),replaceWorldbook:async(_,rows)=>stored=rows},()=>({}));
+ const stat={known:{已抵达陨仙原:true},在场:'花芷凝',character_stages:{}};
+ await host.synchronizeState(stat);assert.equal(stored[0].disable,false);assert.equal(stored[0].strategy.type,'constant');
+ stat.character_stages.花芷凝={replaces:[stored[0].name]};
+ await host.synchronizeState(stat);assert.equal(stored[0].enabled,false);assert.equal(stored[0].strategy.type,'selective');
+ assert.equal(host.getDiagnostics().mindsets[0].enabled,false);
+});

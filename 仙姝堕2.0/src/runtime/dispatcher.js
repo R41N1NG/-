@@ -1331,6 +1331,7 @@ function createDispatcher(adapter, data) {
         floor:c.floor, messageIdentity:C.clone(c.identities[c.floor]), storageIdentityVersion:s?.history_identity?.version || 0, latestIsUser:!!latest?.is_user, historyReassociation:C.clone(s?.history_reassociation || null), openingConfig:C.clone(s?.openingConfig || null), historyRecovery:C.clone(s?.historyRecovery || null), recoveryFault:C.clone(recoveryFault),
         inventory:s?{items:C.clone(s.stat_data.inventory || []),manualLocked:!!s.manual?.inventory,changes:C.clone(s.inventoryChanges || [])}:null,
         favor:s?{lastCheck:C.clone(s.stat_data.lastFavorCheck || null),checks:C.clone(s.stat_data.lastFavorChecks || []),recentChecks:C.clone(s.stat_data.metric_diag || []),metrics:C.clone(s.stat_data.character_metrics || {}),manual:Object.fromEntries(Object.entries(s.manual || {}).filter(([key])=>key.startsWith('metric.')))}:null,
+        worldbookState:s?{known:C.clone(s.stat_data.known || {}),visibleCharacters:[...visibleCharacters(s.stat_data)],characterStages:Object.fromEntries(Object.entries(s.stat_data.character_stages || {}).map(([name,x])=>[name,{id:x.id,replaces:C.clone(x.replaces || [])}]))}:null,
         identity:s?.identity || null, pending:s?.pending ? {
           nodeId:s.pending.nodeId, floor:s.pending.floor, actionText:s.pending.actionText,actionCode:s.pending.actionCode || null,userRef:C.clone(s.pending.userRef || null),
         } : null, event:s?.activeEvent || null,
