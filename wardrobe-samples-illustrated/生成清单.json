@@ -89,7 +89,11 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/人物锚点/通用版/匀称.png",
     "group": "人物锚点",
     "anchor_relative": null,
-    "status": "pending"
+    "status": "generated",
+    "generated_source": "/workspace/generated_images/exec-703cfaae-39b5-4a06-a58f-3d9356d0baeb.png",
+    "actual_dimensions": "1086x1448",
+    "sha256": "50c60c91d9b1fc38b51fe375129a82789a080fa599879073f1f3ed87084bf20b",
+    "review": "待逐组核验"
   },
   {
     "source_path": "assets/wardrobe/jk/anchors/top_base_full.png",
