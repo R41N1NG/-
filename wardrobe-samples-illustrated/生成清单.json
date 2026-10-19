@@ -13,7 +13,7 @@
     "generated_source": "/workspace/generated_images/exec-9e911af2-c027-4533-a26d-b2d8bae05779.png",
     "actual_dimensions": "1024x1536",
     "sha256": "c46abade05bc14bbca01091b1808f9f757419a8bfb8475c6f20e5bcc4a1ad98a",
-    "review": "待逐组核验",
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
   },
   {
@@ -30,7 +30,7 @@
     "generated_source": "/workspace/generated_images/exec-911dabb8-c8ef-4de0-82f4-31fcde00cf4c.png",
     "actual_dimensions": "1024x1536",
     "sha256": "19ba8bd8d2b07ffa4e7a705c7621cf5b607db0dc7192dd0c903af09c78c37937",
-    "review": "待逐组核验",
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
   },
   {
@@ -47,7 +47,7 @@
     "generated_source": "/workspace/generated_images/exec-008b8805-7eea-4284-b3cd-59fe0c1978ec.png",
     "actual_dimensions": "1024x1536",
     "sha256": "3a525d9b1c6ec252149d5ec6d66d9c6ae662f727a6c0eca2cbc73256dd97bad2",
-    "review": "待逐组核验",
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
   },
   {
@@ -64,7 +64,7 @@
     "generated_source": "/workspace/generated_images/exec-c528a61a-15a4-4781-bdb5-5ffa2f11710f.png",
     "actual_dimensions": "1024x1536",
     "sha256": "70b807f779c811d4ddb5ad1f14f446b32a2e217968a70577a383be2b5950e352",
-    "review": "待逐组核验",
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
   },
   {
@@ -78,7 +78,7 @@
     "group": "人物锚点",
     "anchor_relative": null,
     "status": "generated",
-    "review": "待逐组核验",
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
     "rejected_source": "/workspace/generated_images/exec-ffd801d0-596d-4c6e-bf27-f74371f3c96e.png",
     "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, hair out of frame, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; only a smaller garment chest circumference, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo Absolute crop rule: frame begins below the base of the neck; no head, no hair, no loose strands, no hair crossing either shoulder or collar anywhere in the image. Both shoulders and the whole collar must remain visibly free of hair. FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP.",
@@ -97,7 +97,7 @@
     "group": "人物锚点",
     "anchor_relative": null,
     "status": "generated",
-    "review": "待逐组核验",
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
     "rejected_source": "/workspace/generated_images/exec-703cfaae-39b5-4a06-a58f-3d9356d0baeb.png",
     "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, hair out of frame, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; standard garment chest circumference, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo Absolute crop rule: frame begins below the base of the neck; no head, no hair, no loose strands, no hair crossing either shoulder or collar anywhere in the image. Both shoulders and the whole collar must remain visibly free of hair. FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP.",
@@ -116,7 +116,7 @@
     "group": "人物锚点",
     "anchor_relative": null,
     "status": "generated",
-    "review": "待逐组核验",
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
     "rejected_source": "/workspace/generated_images/exec-857a3b66-e6ab-4643-89f5-8089ab2a029c.png",
     "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, hair out of frame, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; only a larger garment chest circumference; do not widen shoulders, waist or hips, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo Absolute crop rule: frame begins below the base of the neck; no head, no hair, no loose strands, no hair crossing either shoulder or collar anywhere in the image. Both shoulders and the whole collar must remain visibly free of hair. FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP.",
@@ -140,7 +140,7 @@
     "generated_source": "/workspace/generated_images/exec-03ed7d42-3b51-48b6-93ee-2671c13aa05f.png",
     "actual_dimensions": "768x1024",
     "sha256": "5b444a255002179538e92b89de8aa1742a90247ec8a404aa2e76aa3ec05c0a32",
-    "review": "待逐组核验"
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发"
   },
   {
     "source_path": "assets/wardrobe/jk/anchors/top_long_normal.png",
@@ -153,7 +153,7 @@
     "group": "人物锚点",
     "anchor_relative": null,
     "status": "generated",
-    "review": "待逐组核验",
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
     "rejected_source": "/workspace/generated_images/exec-89e251b4-1861-44c9-9bba-2615c95201ab.png",
     "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, long straight black hair falling over the shoulders and collar, straight bangs, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; standard garment chest circumference, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP.",
@@ -172,7 +172,7 @@
     "group": "人物锚点",
     "anchor_relative": null,
     "status": "generated",
-    "review": "待逐组核验",
+    "review": "已复核：内部人物参考；上装参考无颈，通用版无头发",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 上装从肩部开始，颈部完全在画面外。所有正式素材均为对应区域近景。",
     "rejected_source": "/workspace/generated_images/exec-de372b52-030b-4ed4-b8eb-b8a4ec56b61f.png",
     "corrected_prompt": "upper body character reference, shoulders to hips, back three-quarter view, long straight black hair falling over the shoulders and collar, straight bangs, East Asian young woman, 160 cm, same fixed adult model, unchanged shoulder width, waistline, waist circumference, hips and limb proportions; only a larger garment chest circumference; do not widen shoulders, waist or hips, wearing navy single-breasted school blazer over a white shirt, plain light-grey seamless backdrop, soft even studio light, anime fashion illustration, clean lineart, soft cel shading, centered, no props, no text, no logo FINAL FRAMING OVERRIDE: extreme garment close-up, cropped exactly at the TOPS OF THE SHOULDERS through the hips. The top edge cuts through the shoulder line. NO NECK, NO THROAT, NO CHIN, NO HEAD may appear anywhere. Do not show the neck opening above the collar. The garment fills the frame. Keep shoulders, waistline, waist circumference, hips and all body proportions identical across chest-size garment variants; change only the chest circumference and chest tailoring ease of the TOP.",
@@ -195,7 +195,7 @@
     "generated_source": "/workspace/generated_images/exec-9a956242-326c-4ef5-8d06-31da60faae8c.png",
     "actual_dimensions": "512x512",
     "sha256": "ce9789ec04829c06dcfb72cae57bbc095477ada5a065d81bc16a243a480f9b23",
-    "review": "待逐组核验"
+    "review": "已复核：近景、指定头饰、无可见五官"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/long/head_ribbon_navy/back.png",
@@ -207,8 +207,12 @@
     "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/头饰/藏青发带/长发/背面.png",
     "group": "头饰/long/head_ribbon_navy",
     "anchor_relative": "人物锚点/长发全身.png",
-    "status": "pending",
-    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。"
+    "status": "generated",
+    "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
+    "generated_source": "/workspace/generated_images/exec-5fd34ae4-ecae-4d11-b999-bbfef4e744a5.png",
+    "actual_dimensions": "512x512",
+    "sha256": "3680d92c53a3aace167e6823376b5c203610e34e82afcbaa52b5995874d37355",
+    "review": "待逐组核验"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/long/head_clip_plaid/side.png",
@@ -225,7 +229,7 @@
     "generated_source": "/workspace/generated_images/exec-2a2ce716-d155-49c6-9368-e0bc373169d5.png",
     "actual_dimensions": "512x512",
     "sha256": "3bfa20be78dcffbcac6990184b9f654fdbf4e4f7b7271fe34057b81163518e5a",
-    "review": "待逐组核验"
+    "review": "已复核：近景、指定头饰、无可见五官"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/long/head_clip_plaid/back.png",
@@ -255,7 +259,7 @@
     "generated_source": "/workspace/generated_images/exec-d3b52090-08fe-4a27-aa8c-af107bd3136b.png",
     "actual_dimensions": "512x512",
     "sha256": "537941c91757b56715c31af070c2cec3679540e070b758caefad549f6f3c3f72",
-    "review": "待逐组核验"
+    "review": "已复核：近景、指定头饰、无可见五官"
   },
   {
     "source_path": "assets/wardrobe/jk/head/hair/long/head_earphone_wired/back.png",
