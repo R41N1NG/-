@@ -1,5 +1,4 @@
-"use strict";
-const {negativeStages}=require("./character_stages");
+const {negativeStages, isPalaceLord}=require("./character_stages");
 const {visibleCharacters}=require("./metric_events");
 function nodeEntryName(id) { return "【节点故事】" + id; }
 function metricEntryContent(cfg) {
@@ -99,8 +98,11 @@ function managedEnabled(label, stat) {
     const visible = new Set([stat.身份,stat.stage_focus,...(stat.stage_focuses || []),...(stat.在场角色 || []).map(x=>x.名)]);
     return Object.entries(stat.character_stages || {}).some(([name,x])=>{
       if (!visible.has(name) || !x.story) return false;
-      if (label === "【人物阶段】"+name+":"+x.id) return true;
+      if (isPalaceLord(stat.身份)) {
+        return label === "【人物阶段】"+name+":"+x.id+":殿主" || label === "【人物阶段】"+name+":"+x.id+":"+stat.身份;
+      }
       if (label === "【人物阶段】"+name+":"+x.id+":"+stat.身份) return true;
+      if (label === "【人物阶段】"+name+":"+x.id) return true;
       return false;
     });
   }

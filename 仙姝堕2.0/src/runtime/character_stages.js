@@ -48,6 +48,25 @@ function resolveStages(s, profiles = {}, rules = null) {
     stat.corruption_active = true;
     resolveCorruption(s, rules, profiles);
     stat.character_stages = {};
+    for (const [name, c] of Object.entries(stat.character_corruption || {})) {
+      const stageId = "stage0" + (c.stage + 1);
+      const cfg = profiles[name];
+      const stageCfg = cfg?.stages?.find(x => x.id === stageId);
+      const story = (stageCfg?.stories && (stageCfg.stories[ident] || stageCfg.stories["殿主"])) || stageCfg?.story || "";
+      stat.character_stages[name] = {
+        id: stageId,
+        corruptionId: c.id,
+        priority: c.stage,
+        label: c.label,
+        title: c.title,
+        story: story,
+        portrait: stageCfg?.portrait || null,
+        negative: false,
+        nodes: [],
+        replaces: cfg?.replaces || [],
+        completedStage: stageId
+      };
+    }
     return s;
   }
   stat.favor_active = true;

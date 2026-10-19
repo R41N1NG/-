@@ -112,7 +112,10 @@ test("恶堕系统：殿主与赵无忧/自设互斥（resolveStages 与 complet
   assert.equal(lordState.stat_data.favor_active, false);
   assert.ok(lordState.stat_data.character_corruption);
   assert.equal(lordState.stat_data.character_corruption.叶红缨.stage, 1);
-  assert.deepEqual(lordState.stat_data.character_stages, {});
+  assert.ok(lordState.stat_data.character_stages.叶红缨);
+  assert.equal(lordState.stat_data.character_stages.叶红缨.id, "stage02");
+  assert.equal(lordState.stat_data.character_stages.叶红缨.label, "染尘");
+  assert.match(lordState.stat_data.character_stages.叶红缨.story, /叶红缨 · 恶堕阶段一/);
   assert.throws(() => completeStage(lordState, profiles, { character: "叶红缨", from: "yh_initial", to: "yh_pingdan" }), /殿主身份下好感晋升关闭/);
 
   // 2. 赵无忧身份下：好感开启，恶堕全量关闭清除
@@ -450,4 +453,33 @@ test("恶堕系统：2->3 与 3->4 阶段判定及否定句防御拦截", async 
   assert.equal(s.stat_data.corruption_log[0].fromStage, 3);
   assert.equal(s.stat_data.corruption_log[0].toStage, 4);
 });
+
+test("恶堕系统：中控调度 managedEnabled 动态开启在场角色专属恶堕心智条目", () => {
+  const { managedEnabled } = require("../src/runtime/story_entries");
+  const profiles = data.characterProfiles || {};
+
+  const lordStat = {
+    身份: "焚欲殿主",
+    在场角色: [{ 名: "叶红缨" }],
+    known: { 灼酒流炎穴二阶段: true }
+  };
+  const s = { stat_data: lordStat };
+  resolveStages(s, profiles, data.rules(lordStat));
+
+  // 当前叶红缨处于二阶(蚀心，映射 stage03)
+  assert.equal(lordStat.character_stages.叶红缨.id, "stage03");
+  assert.equal(lordStat.character_stages.叶红缨.label, "蚀心");
+  assert.match(lordStat.character_stages.叶红缨.story, /叶红缨 · 恶堕阶段二/);
+
+  // 1. 在场叶红缨 stage03:殿主 条目应被中控动态激活
+  assert.equal(managedEnabled("【人物阶段】叶红缨:stage03:殿主", lordStat), true);
+
+  // 2. 非当前阶段（如 stage01 或 stage02）不应激活
+  assert.equal(managedEnabled("【人物阶段】叶红缨:stage01:殿主", lordStat), false);
+  assert.equal(managedEnabled("【人物阶段】叶红缨:stage02:殿主", lordStat), false);
+
+  // 3. 不在场角色（如孤月）不应激活
+  assert.equal(managedEnabled("【人物阶段】孤月:stage01:殿主", lordStat), false);
+});
+
 
