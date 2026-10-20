@@ -3797,9 +3797,9 @@
     "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
     "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing light-wash denim mini skirt, high waist, raw frayed hem, profile view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners.",
-    "generated_source": "/workspace/generated_images/exec-1a9354a6-38b5-43d1-9085-d143d32e309b.png",
+    "generated_source": "/workspace/generated_images/exec-791c503d-087f-4ecd-80e6-4c62f8db629d.png",
     "actual_dimensions": "512x512",
-    "sha256": "5a7c2dda3390d721a7ca1e278f6cb31a276b74e8904119c896fc1e9b9d7d0524",
+    "sha256": "11dfe7150f8063635b31a1966c350cb736b35fb10aededd0a6661244c9f74f8f",
     "review": "下装修订：已上传，待视觉复核。",
     "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。",
     "revisions": [
@@ -3810,6 +3810,15 @@
         "request": "侧面自然腰臀曲线；正背结构区分；更近镜头",
         "source": "/workspace/generated_images/exec-1a9354a6-38b5-43d1-9085-d143d32e309b.png",
         "prompt": "修订第一张成人服装目录插画，同一位25岁成年女性，同一实际身材和套装，与第二张正面的面料和下装款式完全一致。保持严格90度纯侧面，改善站姿和衣料轮廓，让正常女性腰部内收、腰后到臀峰的柔和外弧、胯部到大腿的自然过渡清楚可辨，曲线自然适度，绝不束腰或夸大臀围。近侧手臂稍自然前移，完整手掌在前侧垂落，不能用袖子和手掌挡住腰后及后臀轮廓。上衣仍是原图实际的款式颜色与长度，不换装。镜头明显拉近：画面只包含腰线上方少许到下装下摆下方约5厘米，完整裤/裙与手指处于画内，去掉胸部和大段大腿，不含膝盖。下装的主体充满画面，方形近景。相同灰调柔和厚涂、暖灰背景和柔光，正常成人时装产品图，无字无水印。",
+        "crop": null
+      },
+      {
+        "date": "2026-10-20",
+        "previous_sha256": "5a7c2dda3390d721a7ca1e278f6cb31a276b74e8904119c896fc1e9b9d7d0524",
+        "previous_source": "/workspace/generated_images/exec-1a9354a6-38b5-43d1-9085-d143d32e309b.png",
+        "request": "侧面自然腰臀曲线；正背结构区分；更近镜头",
+        "source": "/workspace/generated_images/exec-791c503d-087f-4ecd-80e6-4c62f8db629d.png",
+        "prompt": "精修这张25岁成年女性日常服装目录插画，保留所有衣服款式、米色开衫下摆长度、丹宁短裙洗色毛边、完整手掌、相同成人体型与纯侧面方向。改善腰背姿态与衣料悬垂，让画面右侧的开衫后片和牛仔裙侧轮廓呈自然连续S形：腰部轻微内凹、胯部顺势外展、到裙摆缓缓回落。后腰到胯部不能是一条笔直的竖线，开衫仍是原来的宽松针织，不能改成紧身衣，也不增大臀围或勒细腰。近侧手掌仍稍靠前，不挡后方轮廓。方形近景只含腰部至裙摆下方少许，保持同样灰调厚涂与暖灰背景柔光，无字。",
         "crop": null
       }
     ]
