@@ -3824,11 +3824,27 @@
     "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
     "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy sports shorts with white side piping, elastic waist, framed from waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners.",
-    "generated_source": "/workspace/generated_images/exec-9a26c296-bb7d-476d-9103-a585cc2c7191.png",
-    "actual_dimensions": "512x768",
-    "sha256": "230c084804eef32664fcf90fb29e325e95d44a8944aacd9848e9ee191e6d1b45",
-    "review": "已自检：款式、对应视角、人物比例与灰调厚涂近景。",
-    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。"
+    "generated_source": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/运动短裤/正面.png",
+    "actual_dimensions": "512x350",
+    "sha256": "6975b2edcae1a7dc316cc0f3bc924b07dbde05cfffbf5ff09c88b932def34373",
+    "review": "修订：仅纯裁切收近正面镜头，保留同套下装完整前片和双手；人物服装无重绘。",
+    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。",
+    "revisions": [
+      {
+        "date": "2026-10-20",
+        "previous_sha256": "230c084804eef32664fcf90fb29e325e95d44a8944aacd9848e9ee191e6d1b45",
+        "previous_source": "/workspace/generated_images/exec-9a26c296-bb7d-476d-9103-a585cc2c7191.png",
+        "request": "侧面自然腰臀曲线；正背结构区分；更近镜头",
+        "source": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/运动短裤/正面.png",
+        "prompt": null,
+        "crop": [
+          0,
+          175,
+          512,
+          350
+        ]
+      }
+    ]
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_shorts/side.png",
