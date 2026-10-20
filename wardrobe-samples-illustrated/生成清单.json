@@ -4321,17 +4321,29 @@
     "prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing white low-top sneakers with grey accents, framed from ankle to floor, three-quarter view, garment centered.",
     "negative": "face, eyes, nose, mouth, portrait, full body, logo, text, watermark, extra limbs, distorted hands, duplicate person, cartoon, 3d render",
     "id": 190,
-    "relative_path": "鞋子/运动鞋/四分之三侧面.png",
-    "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/鞋子/运动鞋/四分之三侧面.png",
+    "relative_path": "鞋子/运动鞋/背面.png",
+    "output": "/workspace/-/wardrobe-samples-illustrated/正式素材/鞋子/运动鞋/背面.png",
     "group": "鞋子/shoe_sneakers",
     "anchor_relative": "人物锚点/长发全身.png",
     "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。",
-    "generated_source": "/workspace/generated_images/exec-98972cfa-b6d9-4078-bac0-c588c9a503a1.png",
+    "generated_source": "/workspace/generated_images/exec-682cfa6f-3346-42e7-8aa4-ce9dfbe1cecd.png",
     "actual_dimensions": "512x512",
-    "sha256": "7281e76cdb39b799d7ccad3b74d9f4cc9d08189f6f52de31452f3da8c31d0a3d",
-    "review": "已自检：款式、对应视角、人物比例与灰调厚涂近景。",
-    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。"
+    "sha256": "1ecd6622b9a52713e967c7c88b85594519304eb1ed6c2ed2e62392c2604e6c97",
+    "review": "鞋子视角修订：正后方背面，已上传待自检。",
+    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。",
+    "revisions": [
+      {
+        "date": "2026-10-20",
+        "previous_sha256": "7281e76cdb39b799d7ccad3b74d9f4cc9d08189f6f52de31452f3da8c31d0a3d",
+        "previous_path": "鞋子/运动鞋/四分之三侧面.png",
+        "request": "鞋子使用侧面和背面；替换旧四分之三侧面",
+        "source": "/workspace/generated_images/exec-682cfa6f-3346-42e7-8aa4-ce9dfbe1cecd.png",
+        "prompt": "同一双成人鞋的产品插画视角修正。参考鞋款、材质、颜色、袜子与成年女性脚踝比例全部保持，镜头改为严格正后方背面，平视双鞋后跟。两只鞋后跟并排，鞋跟后中缝和后底轮廓清楚，鞋头朝远方，不显示鞋头正面或鞋的侧面长轮廓，不能画成斜后方。只含脚踝下方和完整双鞋，方形小特写，双鞋占满画面。保持原来灰调柔和厚涂笔触与暖灰背景柔光，无文字无商标。"
+      }
+    ],
+    "corrected_prompt": "同一双成人鞋的产品插画视角修正。参考鞋款、材质、颜色、袜子与成年女性脚踝比例全部保持，镜头改为严格正后方背面，平视双鞋后跟。两只鞋后跟并排，鞋跟后中缝和后底轮廓清楚，鞋头朝远方，不显示鞋头正面或鞋的侧面长轮廓，不能画成斜后方。只含脚踝下方和完整双鞋，方形小特写，双鞋占满画面。保持原来灰调柔和厚涂笔触与暖灰背景柔光，无文字无商标。",
+    "view_override": "back"
   },
   {
     "source_path": "assets/wardrobe/jk/shoes/shared/shoe_sneakers/side.png",
