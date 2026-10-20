@@ -1,12 +1,12 @@
 {
   "下装正面上楼": {
     "status": "未完成",
-    "reason": "生图工具拒绝输出，moderation_blocked",
+    "reason": "近景及整套穿搭动作参考均被生图工具拒绝，moderation_blocked",
     "delivered_alternative": "02-下装正面.png，静态外景纯裁切"
   },
   "下装背面外景上楼": {
     "status": "未完成",
-    "reason": "生图工具拒绝输出，moderation_blocked",
+    "reason": "近景及整套穿搭动作参考均被生图工具拒绝，moderation_blocked",
     "delivered_alternative": "06-下装背面机位参考.png，原灰背景静态参考"
   }
 }
