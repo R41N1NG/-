@@ -48,5 +48,15 @@
     "dimensions": "512x512",
     "sha256": "ec1853bb4687bff1ac54f596215214ce19ca6b2371fd38d10a05b38a04d5b289",
     "review": "已生成，待视觉核对"
+  },
+  {
+    "name": "06-下装背面机位参考.png",
+    "source": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/藏青百褶短裙/背面.png",
+    "prompt": "复用已核对的同套下装纯背面，作为腰臀高度、画面中心正对臀部区域的水平机位参考。保留灰背景与静态姿势；外景上楼动态编辑被工具拒绝，尚未完成。",
+    "replace": false,
+    "path": "06-下装背面机位参考.png",
+    "dimensions": "512x415",
+    "sha256": "7ce8b23cd8588ee2a3bf5b5b84a1f63b17d16254e2b5b4f53c85946db0bcdbd7",
+    "review": "已生成，待视觉核对"
   }
 ]
