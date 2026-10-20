@@ -3751,11 +3751,27 @@
     "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
     "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing light-wash denim mini skirt, high waist, raw frayed hem, framed from waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners.",
-    "generated_source": "/workspace/generated_images/exec-c8cc4c7e-bfbf-4eb4-ae11-33e76aed8dc6.png",
-    "actual_dimensions": "512x768",
-    "sha256": "14a6b21ad70a2a9f81b381acc46d6686c052c7d81f43fa1bc0dbab7661d360e4",
-    "review": "已自检：款式、对应视角、人物比例与灰调厚涂近景。",
-    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。"
+    "generated_source": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/水洗牛仔短裙/正面.png",
+    "actual_dimensions": "512x460",
+    "sha256": "1fab7f16dacee6aa58af979c533b44b72e1bb67ebcefa1ae412582a5b58baf60",
+    "review": "修订：仅纯裁切收近正面镜头，保留同套下装完整前片和双手；人物服装无重绘。",
+    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。",
+    "revisions": [
+      {
+        "date": "2026-10-20",
+        "previous_sha256": "14a6b21ad70a2a9f81b381acc46d6686c052c7d81f43fa1bc0dbab7661d360e4",
+        "previous_source": "/workspace/generated_images/exec-c8cc4c7e-bfbf-4eb4-ae11-33e76aed8dc6.png",
+        "request": "侧面自然腰臀曲线；正背结构区分；更近镜头",
+        "source": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/水洗牛仔短裙/正面.png",
+        "prompt": null,
+        "crop": [
+          0,
+          100,
+          512,
+          460
+        ]
+      }
+    ]
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_denim/side.png",
