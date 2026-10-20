@@ -3816,11 +3816,22 @@
     "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
     "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing light-wash denim mini skirt, high waist, raw frayed hem, back view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners.",
-    "generated_source": "/workspace/generated_images/exec-d0547ce7-9d6e-46d7-9c84-0b6bfeb1a940.png",
-    "actual_dimensions": "512x768",
-    "sha256": "9eaa0ba8ccfad81cec70a8f90c10d0d8029d067d3efadbd3c9f24661c73cb4fb",
-    "review": "已自检：款式、对应视角、人物比例与灰调厚涂近景。",
-    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。"
+    "generated_source": "/workspace/generated_images/exec-9b66f09d-353e-450d-b670-51f92cb06945.png",
+    "actual_dimensions": "512x512",
+    "sha256": "597f45e07cffe9884732d20e05118a72df823c85e72c6616c77d79221e71e79d",
+    "review": "下装修订：已上传，待视觉复核。",
+    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。",
+    "revisions": [
+      {
+        "date": "2026-10-20",
+        "previous_sha256": "9eaa0ba8ccfad81cec70a8f90c10d0d8029d067d3efadbd3c9f24661c73cb4fb",
+        "previous_source": "/workspace/generated_images/exec-d0547ce7-9d6e-46d7-9c84-0b6bfeb1a940.png",
+        "request": "侧面自然腰臀曲线；正背结构区分；更近镜头",
+        "source": "/workspace/generated_images/exec-9b66f09d-353e-450d-b670-51f92cb06945.png",
+        "prompt": "修改第一张成人日常时装插画，同一25岁成年女性，同一套装，同一身材比例。严格纯背面，相机正对后中线，不能转为侧面或斜角。参考第二张仅核对同套服装的面料和配色，绝不可照搬其正面结构。水洗牛仔短裙的后中接缝和两只五角后贴袋有明确缝线；米色针织开衫长度完全不变，后兜上部被衣摆自然遮住，露出的后兜部分与橙色缝线应能辨认；不添加正面金属纽扣、拉链门襟或前插袋。自然女性腰胯曲线经正常衣料表达，腰线适度内收到胯部自然展开，不束腰，不增大臀围。完整双手自然垂在两侧。镜头拉近为方形产品特写，从腰线略上方到裙/裤下摆下方5厘米，只保留一小段腿根，不能出现胸部、大段大腿或膝盖。上衣片段保持同款式同长度，服装不透明，普通成人成衣目录。相同低饱和灰调柔和厚涂、暖灰背景柔光，无文字水印、无拼图。",
+        "crop": null
+      }
+    ]
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_shorts/front.png",
