@@ -3642,17 +3642,27 @@
     "status": "generated",
     "consistency_rule": "同一人物；身高、肩宽、腰线、腰围、臀围、肤色和四肢比例固定。规格差异只调整上装胸围版型。通用版画内无任何头发。 下装画面中露出的上身必须沿用该套实际配对上装，不统一指定藏青西装。",
     "corrected_prompt": "fashion catalog photography, vertical composition, anonymous model, face cropped out of the frame, matte dark grey seamless backdrop, soft diffused studio light, 50mm lens, shallow depth of field, tasteful editorial look, no text, no logo, no watermark, East Asian young woman, 160 cm, light warm skin tone, face is never visible, wearing navy pleated school skirt with hard pleats, high waist, hem at mid-thigh, back view, waist to just above the knee, garment centered. OUTFIT CONTINUITY: match the actual upper garment paired with this specific outfit, never impose a navy blazer on all outfits. Any visible upper fragment must preserve the paired top reference material, color, hem, cuff and fasteners.",
-    "delivery_crop": {
-      "x": 0,
-      "y": 240,
-      "width": 512,
-      "height": 528
-    },
-    "generated_source": "/workspace/-/wardrobe-samples-illustrated/正式素材/上装/藏青西装外套/通用版/胸围标准/背面.png",
-    "actual_dimensions": "512x528",
-    "sha256": "573c13cbac3025342ad1b1cad2f20ba27289c7794ea3bb02d06d0e469481a94c",
-    "review": "已自检：款式、对应视角、人物比例与灰调厚涂近景。",
-    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。"
+    "generated_source": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/藏青百褶短裙/背面.png",
+    "actual_dimensions": "512x415",
+    "sha256": "73afcb1493d138893ce17aebd0df543f6f715a1151e1eb518f0296a375f64580",
+    "review": "修订：从原纯背面图做更近的纯裁切，保留西装后中缝、后开衩、裙后片与完整双手；未重绘。",
+    "style_rule": "实际成图统一灰调柔和厚涂插画与暖灰柔光背景；原附件摄影提示词只作来源记录。",
+    "revisions": [
+      {
+        "date": "2026-10-20",
+        "previous_sha256": "573c13cbac3025342ad1b1cad2f20ba27289c7794ea3bb02d06d0e469481a94c",
+        "previous_source": "/workspace/-/wardrobe-samples-illustrated/正式素材/上装/藏青西装外套/通用版/胸围标准/背面.png",
+        "request": "侧面自然腰臀曲线；正背结构区分；更近镜头",
+        "source": "/workspace/-/wardrobe-samples-illustrated/正式素材/下装/藏青百褶短裙/背面.png",
+        "prompt": null,
+        "crop": [
+          0,
+          40,
+          512,
+          415
+        ]
+      }
+    ]
   },
   {
     "source_path": "assets/wardrobe/jk/bottom/shared/bottom_jk_pleat_plaid/front.png",
