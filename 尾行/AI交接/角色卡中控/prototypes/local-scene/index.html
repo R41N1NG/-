@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>人物状态 · 第一步原型</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#10171d;color:#e4edf3;font:16px/1.6 system-ui,sans-serif;padding:24px}main{max-width:660px;margin:24px auto}h1{font-size:24px;margin-bottom:4px}.hint{color:#a4b4c0;font-size:14px}.card{background:#18232d;border:1px solid #344552;border-radius:14px;padding:24px;margin-top:20px}.states{display:flex;gap:10px;flex-wrap:wrap}.states span{padding:5px 12px;border:1px solid #435460;border-radius:30px;color:#9aabb8}.states .active{color:#fff0c9;border-color:#d3ac59;background:#493b21}#status{font-size:22px;margin:18px 0 0}button{font:inherit;padding:10px 14px;border-radius:7px;background:#2c414f;border:1px solid #526c7c;color:#f0f6fa;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}#feedback{min-height:28px;color:#d4bd89}#steps{font-variant-numeric:tabular-nums}footer{font-size:13px;color:#99aab7;margin-top:20px}a{color:#acd6f1}
+</style>
+</head>
+<body>
+<main>
+<h1>人物状态 · 第一步</h1>
+<p class="hint">独立状态演示，尚未接入正式角色卡，不读写聊天或正式存档。</p>
+<div class="card">
+<div class="states" aria-label="状态阶段"><span data-state="busy">正在忙</span><span data-state="available">可以交流</span><span data-state="ended">已经结束</span></div>
+<p id="status" role="status"></p>
+<p id="description"></p>
+<p class="hint" id="steps"></p>
+<div class="buttons"><button id="advance" type="button">模拟一次有效行动</button><button id="talk" type="button">测试交流入口</button><button id="inspect" type="button">只查看状态</button></div>
+<p id="feedback" aria-live="polite"></p>
+<div class="buttons"><button id="end" type="button">提前结束场景</button><button id="reset" type="button">重置演示</button></div>
+</div>
+<footer>本例：第 0 步忙碌，第 1～3 步可交流，第 4 步结束。这里的“步”是原型节拍，不是聊天楼层或游戏分钟。交流按钮仅测试门槛，不发放信息、进度或奖励。</footer>
+</main>
+<script src="availability.js"></script>
+<script>
+"use strict";
+const initial={step:0,busyUntilStep:1,leaveAtStep:4,present:true,closed:false};
+let scene={...initial};
+const names={busy:"对方正在处理自己的事情",available:"对方现在方便交流",ended:"这次交流机会已经结束"};
+const descriptions={busy:"交流入口暂不可用。推进一次有效行动后，再查看状态。",available:"交流入口已开放。你也可以继续推进，看看什么时候结束。",ended:"交流入口关闭。重置后可以重新演示。"};
+function paint(message="") {
+ const result=LocalSceneAvailability.availability(scene);
+ document.getElementById("status").textContent=names[result.state];
+ document.getElementById("description").textContent=descriptions[result.state];
+ document.getElementById("steps").textContent=`当前第 ${scene.step} 步 · 第 ${scene.busyUntilStep} 步忙完 · 第 ${scene.leaveAtStep} 步结束`;
+ document.querySelectorAll("[data-state]").forEach(node=>node.classList.toggle("active",node.dataset.state===result.state));
+ document.getElementById("talk").disabled=!result.canTalk;
+ document.getElementById("advance").disabled=result.state==="ended";
+ document.getElementById("end").disabled=result.state==="ended";
+ document.getElementById("feedback").textContent=message;
+}
+document.getElementById("advance").onclick=()=>{
+ if(LocalSceneAvailability.availability(scene).state==="ended")return;
+ scene={...scene,step:scene.step+1};paint("已模拟一次有效行动，状态按规则重新计算。");
+};
+document.getElementById("talk").onclick=()=>{
+ if(!LocalSceneAvailability.availability(scene).canTalk)return;
+ paint("条件通过：这里可以接入交流动作。当前演示不执行交谈结算。");
+};
+document.getElementById("inspect").onclick=()=>paint("已查看，节拍没有推进。");
+document.getElementById("end").onclick=()=>{scene={...scene,closed:true};paint("已提前结束；原有节拍不变。");};
+document.getElementById("reset").onclick=()=>{scene={...initial};paint("已重置演示。");};
+paint();
+</script>
+</body>
+</html>
