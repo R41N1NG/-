@@ -150,6 +150,11 @@ const deadline = setTimeout(() => {
       ok('CSS 解析', [...document.styleSheets].some(s=>s.cssRules.length>100));
       ok('整页无横向溢出', document.documentElement.scrollWidth<=innerWidth+2);
       ok('快照渲染',document.getElementById('heartNum').textContent==='${snap.player.heart}');
+      ok('档案对应当前目标', document.getElementById('vfTarget').textContent.includes('${snap.target.name}'));
+      ok('未知属性不借用后台真值',[...document.querySelectorAll('#pattrs .av')].every(n=>n.textContent==='？'));
+      ok('设备不显示样例在线状态',document.getElementById('devicesBody').textContent.includes('暂未接入')&&!document.getElementById('wx-devices-dialog').textContent.includes('在线'));
+      ok('旧OL样例情报已清理',!document.getElementById('wx-profile-dialog').textContent.includes('两盒便当')&&!document.getElementById('wx-profile-dialog').textContent.includes('#OL-01'));
+
       for(const id of ['wx-terminal-dialog','wx-devices-dialog','wx-profile-dialog','wx-lies-dialog','wx-wanted-dialog','wx-item-dialog','wx-id-dialog','wx-settle-dialog']) {
         const d=document.getElementById(id); if(d.open)d.close(); d.showModal(); const open=d.open; d.close(); ok('弹窗 '+id,open&&!d.open);
       }
@@ -171,6 +176,19 @@ const deadline = setTimeout(() => {
     Buffer.from(screenshot.data, "base64"),
   );
   await evaluate(`WxStatusbar.render(${JSON.stringify(snap)}); true;`);
+  for (const id of ["wx-profile-dialog", "wx-devices-dialog"]) {
+    await evaluate(`document.getElementById('${id}').showModal(); true;`);
+    const shot = await send("Page.captureScreenshot", {
+      format: "png",
+      captureBeyondViewport: false,
+    });
+    fs.writeFileSync(
+      path.join(work, id + "-mobile.png"),
+      Buffer.from(shot.data, "base64"),
+    );
+    await evaluate(`document.getElementById('${id}').close(); true;`);
+  }
+
   await evaluate(
     `WxStatusbar.settle({floor:1,actions:[{name:'检定',d20:15,total:20,dc:13,band:'success',mods:[],attr:{v:5}}],account:{},seg:{}}); true;`,
   );

@@ -9807,6 +9807,7 @@
       var R = require_rules();
       var C = require_checks();
       var map = require_map();
+      var F = require_facts2();
       var ALBUM = require_album();
       var { WEATHER_ICON, SHOE_DIST_FACTOR } = require_constants();
       function createSnapshotSystem({
@@ -9908,6 +9909,17 @@
                 state: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null
               },
               targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
+              profile: {
+                targetId: g.targetId,
+                attrs: {},
+                // No persisted attribute-discovery system exists yet.
+                impressions: [],
+                facts: F.view(g.targetId, {
+                  pi: s.pi,
+                  tickets: [],
+                  assignedFacts: g.targetPersona?.assignedFacts
+                })?.facts || []
+              },
               envSfx,
               placeKind: classifyPlace(curId, cur?.name || ""),
               mode: g.mode,
@@ -9947,12 +9959,7 @@
               }),
               /* 状态栏 HUD 动态内容管道接通 */
               herAlert: g.lastHerAlert || (envSfx ? envSfx === "cat" ? "\u{1F431} \u60CA\u52A8\u6697\u5DF7\u91CE\u732B\uFF01\u5783\u573E\u6876\u4F20\u6765\u6293\u6320\u58F0" : "\u{1F415} \u89E6\u52A8\u5EAD\u9662\u72AC\u5420\uFF01\u9662\u5185\u4F20\u6765\u4F4E\u6C89\u4F4E\u543C" : null),
-              signal: g.signals && g.signals.length > 0 ? g.signals.slice(-8) : [
-                [
-                  g.route && g.route.startTime || "21:00",
-                  "\u76EE\u6807\u79BB\u5F00\u539F\u4F4D\uFF0C\u6B65\u5165\u8857\u9053"
-                ]
-              ],
+              signal: g.signals?.slice(-8) || [],
               proxLog: g.proxLogs && g.proxLogs.length > 0 ? g.proxLogs.slice(-5).reverse() : [],
               assess: g.lastAssess || null,
               ledger: g.lastLedgerSummary || "\u672C\u8F6E\u6682\u65E0\u7ED3\u7B97",
@@ -12267,7 +12274,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.1",
+        version: "0.8.2",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {

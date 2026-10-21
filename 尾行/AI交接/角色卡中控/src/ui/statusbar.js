@@ -30,6 +30,8 @@ const {
   MODE_NAMES,
   lineOf,
 } = require("./display.js");
+const { createDetailsRenderer } = require("./renderers/details.js");
+const { clearLiveData } = require("./renderers/empty.js");
 const { createSnapshotRenderer } = require("./renderers/snapshot.js");
 const { createAudio } = require("./audio.js");
 const { createSettlement } = require("./settlement/controller.js");
@@ -44,6 +46,9 @@ function mountStatusbar(document, window) {
     const node = document.getElementById(id);
     if (node) delete node.dataset.built;
   }
+  clearLiveData(document);
+  const details = createDetailsRenderer({ document });
+  details.reset();
   const noticeAtMount = document.getElementById("wxSyncNotice");
   if (noticeAtMount) noticeAtMount.hidden = true;
   const root =
@@ -148,7 +153,7 @@ function mountStatusbar(document, window) {
   dial.querySelector(".ecg-line").setAttribute("d", ecgPath);
 
   /* ---------- 心跳音效引擎（数值直驱 + 耳鸣层 + spike；双音量滑条独立可调） ---------- */
-  const view = { heart: 58, mode: "stealth", snapshot: null };
+  const view = { heart: 0, mode: "prepare", snapshot: null };
   const audio = createAudio({
     document,
     window,
@@ -157,7 +162,6 @@ function mountStatusbar(document, window) {
     heartToBpm,
     heartFreq,
     ico,
-    MOCKS,
     renderSnapshot,
     getHeart: () => view.heart,
     getMode: () => view.mode,
@@ -612,6 +616,7 @@ function mountStatusbar(document, window) {
   /* ---------- 渲染：snapshot → 面板（真机唯一入口） ---------- */
 
   function renderSnapshot(snap) {
+    details.render(snap);
     return render(snap);
   }
 
@@ -828,21 +833,6 @@ function mountStatusbar(document, window) {
     }
   });
 
-  const items = {
-    headphones: {
-      name: "耳机",
-      description: "持有物：耳机。生效修正：[耳机伪装] 隐蔽 +2。",
-    },
-    umbrella: {
-      name: "雨伞",
-      description: "持有物：雨伞。雨天场景可提供 [雨幕] 掩护加成。",
-    },
-    amulet: {
-      name: "护身符",
-      description:
-        "持有物：护身符。生效标签：胆量 +1（效果只认标签，摘下即失效）。",
-    },
-  };
   const openers = new WeakMap();
   function openDialog(id, button) {
     const dialog = document.getElementById(id);
@@ -872,7 +862,11 @@ function mountStatusbar(document, window) {
       return;
     }
 
-    // 独立演示 / 预览降级环境
+    if (!__WX_PREVIEW__) {
+      reportSyncError("ENGINE_UNAVAILABLE");
+      return;
+    }
+    // 独立预览只在开发包模拟，不在正式包伪造资源变化
     if (view.snapshot && view.snapshot.inventory) {
       const it = view.snapshot.inventory.find((i) => i.id === itemId);
       if (!it) return;
@@ -948,12 +942,14 @@ function mountStatusbar(document, window) {
       event.preventDefault();
       event.stopPropagation();
       const itemKey = button.dataset.wxItem || button.dataset.item;
-      const item = items[itemKey];
+      const item = view.snapshot?.inventory?.find((it) => it.id === itemKey);
       if (!item) return;
       const titleEl = document.getElementById("item-title");
       const descEl = document.getElementById("item-description");
       if (titleEl) titleEl.textContent = item.name;
-      if (descEl) descEl.textContent = item.description;
+      if (descEl) descEl.textContent = item.desc || "暂无说明";
+      const meta = document.getElementById("itemMeta");
+      if (meta) meta.textContent = `持有数量：${item.count ?? 0}`;
       openDialog("wx-item-dialog", button);
     } else if (button.dataset.wxDialog || button.dataset.dialog) {
       event.preventDefault();
@@ -1209,6 +1205,9 @@ function mountStatusbar(document, window) {
     if (dName) dName.textContent = `${persona.name} · ${t.name}`;
     const dRealName = document.getElementById("tDetailRealName");
     if (dRealName) dRealName.textContent = persona.name;
+    const nameSource = document.getElementById("tDetailNameSource");
+    if (nameSource)
+      nameSource.textContent = `（${TARGET_NAME_POOL.surnames.length} 姓 × ${TARGET_NAME_POOL.givenNames.length} 名）`;
     const dPersonality = document.getElementById("tDetailPersonality");
     if (dPersonality) {
       dPersonality.innerHTML = `<span class="tag personality" data-tip="${persona.personalityDesc || ""}">${persona.personality}</span>`;
@@ -1227,8 +1226,9 @@ function mountStatusbar(document, window) {
     if (dBadge) dBadge.textContent = t.type;
     const dStatus = document.getElementById("tDetailStatus");
     if (dStatus) {
-      dStatus.textContent =
-        t.id === "ol" ? "完整动线生活包" : "标准动线 · 框架就绪";
+      dStatus.textContent = TARGET_DATA.content?.[t.id]?.hasPack
+        ? "生活包已接入"
+        : "生活包未完成";
     }
     const dArea = document.getElementById("tDetailArea");
     if (dArea) dArea.textContent = t.area;
@@ -1588,6 +1588,12 @@ function mountStatusbar(document, window) {
           openCreate();
       }
     } else {
+      if (!__WX_PREVIEW__) {
+        ZERO.mode = "tavern";
+        openCreate();
+        updateZeroChip();
+        return;
+      }
       ZERO.mode = "demo";
       let saved = null;
       try {
@@ -1837,95 +1843,6 @@ function mountStatusbar(document, window) {
     lifecycle.timeout(reportLayout, 300);
   }
 
-  /* 谎账 · 雷区可视化（真机由中控谎言账本供数：可验证度定色，活跃带脉点，穿帮划线） */
-  if (__WX_PREVIEW__) {
-    const LIES = [
-      { claim: "自称新来的物业管家", verif: "high", used: 3, status: "active" },
-      { claim: "说自己是这家店常客", verif: "mid", used: 1, status: "active" },
-      { claim: "借口顺路一起走", verif: "low", used: 2, status: "busted" },
-    ];
-    const VER_NAME = {
-      high: "查证类 · 会被查证",
-      mid: "对质类 · 可能被对质",
-      low: "无法验证 · 几乎安全",
-    };
-    const liesBodyEl = document.getElementById("liesBody");
-    if (liesBodyEl) {
-      liesBodyEl.innerHTML =
-        LIES.map(
-          (l) =>
-            `<div class="lie v-${l.verif}${l.status === "busted" ? " busted" : ""}">` +
-            `<span class="dot"></span><span>${l.claim}</span>` +
-            `<span class="ver">${VER_NAME[l.verif]} · 说过${l.used}次${l.status === "busted" ? " · 已穿帮" : ""}</span></div>`,
-        ).join("") || "活跃谎言：暂无。";
-    }
-
-    /* 她的档案 · 属性直读区：打量大成功揭示真实数值；揭示后对应的模糊印象标签消失——
-     准确的数值出来，模糊的指向就没有意义。悬停数值显示表现力说明。 */
-    const HER_PROFILE = {
-      attrs: { 体格: null, 敏捷: null, 敏锐: 7, 胆量: null }, // null = 未查明
-      tags: [
-        // 印象标签挂属性：该属性揭示即隐去
-        { text: "身材匀称", attr: "体格" },
-        { text: "目光警觉", attr: "敏锐" },
-      ],
-    };
-    function herAttrTip(name, v) {
-      const bands =
-        {
-          体格: [
-            [3, "力气比一般姑娘小"],
-            [6, "有健身的痕迹"],
-            [99, "职业级的力气"],
-          ],
-          敏捷: [
-            [3, "动作偏慢"],
-            [6, "身手利落"],
-            [99, "职业级的身手"],
-          ],
-          敏锐: [
-            [3, "迟钝，几乎注意不到异常"],
-            [5, "比一般人细心"],
-            [7, "专业级的观察力——尾行最难骗过的眼睛"],
-            [99, "顶尖的直觉，几乎瞒不过"],
-          ],
-          胆量: [
-            [3, "容易慌"],
-            [6, "沉得住气"],
-            [99, "泰山崩于前的那种镇定"],
-          ],
-        }[name] || [];
-      for (const [cap, text] of bands)
-        if (v <= cap) return `${name} ${v}：${text}`;
-      return `${name} ${v}`;
-    }
-    const revealedSet = new Set(
-      Object.entries(HER_PROFILE.attrs)
-        .filter(([, v]) => v != null)
-        .map(([n]) => n),
-    );
-    const pattrsEl = document.getElementById("pattrs");
-    if (pattrsEl) {
-      pattrsEl.innerHTML = Object.entries(HER_PROFILE.attrs)
-        .map(([name, v]) =>
-          v == null
-            ? `<div class="pattr unknown"><div class="an">${name}</div><div class="av">？</div></div>`
-            : `<div class="pattr" data-tip="${herAttrTip(name, v)}"><div class="an">${name}</div><div class="av">${v}</div></div>`,
-        )
-        .join("");
-    }
-    const ptagsEl = document.getElementById("ptags");
-    if (ptagsEl) {
-      ptagsEl.innerHTML =
-        HER_PROFILE.tags
-          .filter((t) => !revealedSet.has(t.attr))
-          .map(
-            (t) =>
-              `<span class="tag" data-tip="模糊印象：只知道大致范围，打量大成功可揭示准确数值">${t.text}</span>`,
-          )
-          .join("") || '<span class="label">印象已全部被准确数值取代</span>';
-    }
-  }
   function reportSyncError(code) {
     const notice = document.getElementById("wxSyncNotice");
     if (notice) {
@@ -1935,6 +1852,10 @@ function mountStatusbar(document, window) {
     console.warn("[CHAT_SYNC:UI]", code);
   }
   function resetDisplay() {
+    clearLiveData(document);
+    details.reset();
+    render._hist = [];
+    stopAudio();
     ZERO.done = false;
     ZERO.step = 1;
     ZERO.identity = null;
@@ -1943,6 +1864,13 @@ function mountStatusbar(document, window) {
     ZERO.personas = {};
     ZERO.points = { str: 4, agi: 4, nrv: 4, int: 4, cha: 4 };
     view.snapshot = null;
+    currentCapsuleActions = [];
+    currentDynamicCapsules = [];
+    document.getElementById("wxChipsWrap")?.replaceChildren();
+    document.getElementById("wxActionDrawerBody")?.replaceChildren();
+    document
+      .querySelectorAll("dialog.wx-dialog[open]")
+      .forEach((dialog) => dialog.close());
     updateIdBadge(null);
     updateZeroChip();
     openCreate();

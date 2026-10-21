@@ -10,7 +10,16 @@ function generateUIConfig() {
   const lexicon = JSON.parse(
     fs.readFileSync(path.join(root, "src/config/lexicon.json"), "utf8"),
   );
+  const lifepack = JSON.parse(
+    fs.readFileSync(path.join(root, "src/config/lifepack.json"), "utf8"),
+  );
   const data = {
+    targetContent: Object.fromEntries(
+      Object.keys(rules.targets.list).map((id) => [
+        id,
+        { hasPack: !!lifepack.packs[id] },
+      ]),
+    ),
     identities: Object.fromEntries(
       Object.entries(rules.identity.list).map(([id, r]) => [
         id,

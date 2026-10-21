@@ -930,38 +930,6 @@ ${proxLogs.slice(0, 5).join("\n")}`;
     const popCard = document.getElementById("popoverHerState");
     if (popCard) popCard.setAttribute("data-tier", String(alertTier.idx));
 
-    /* 3. 她的档案 · 长焦偷拍取景框对焦与应激手抖联动 */
-    const vfFrame = document.getElementById("vfFrame");
-    const vfMeta = document.getElementById("vfMeta");
-    const vfAfBadge = document.getElementById("vfAfBadge");
-    if (vfFrame && vfAfBadge) {
-      const prox = snap.player.proximity ?? 0;
-      const dist = snap.dist || "same";
-      vfFrame.classList.remove(
-        "af-searching",
-        "af-tracking",
-        "af-locked",
-        "shake-deform",
-        "shake-crash",
-      );
-      if (dist === "far" || prox < 20) {
-        vfFrame.classList.add("af-searching");
-        vfAfBadge.textContent = "[ AF-SEARCHING ]";
-        if (vfMeta) vfMeta.textContent = "ISO 12800 · 1/60s · 距离 25m";
-      } else if (dist === "same" || prox < 40) {
-        vfFrame.classList.add("af-tracking");
-        vfAfBadge.textContent = "[ AF-TRACKING ]";
-        if (vfMeta) vfMeta.textContent = "ISO 6400 · 1/80s · 距离 16m";
-      } else {
-        vfFrame.classList.add("af-locked");
-        vfAfBadge.textContent = "[ AF-LOCK ]";
-        if (vfMeta)
-          vfMeta.textContent = `ISO 3200 · 1/125s · 距离 ${dist === "touch" ? "3m" : "8m"}`;
-      }
-      if (line === "crash") vfFrame.classList.add("shake-crash");
-      else if (line === "deform") vfFrame.classList.add("shake-deform");
-    }
-
     const prevStatusEl = document.getElementById("previewStatus");
     if (prevStatusEl) {
       prevStatusEl.textContent =

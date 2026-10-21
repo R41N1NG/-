@@ -2691,3 +2691,6 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 .photo-toast-txt b { font: 600 12px/1.2 "Noto Sans SC", system-ui, sans-serif; color: var(--t-hi); }
 .photo-toast-txt span { font: 500 10px/1.2 ui-monospace, Consolas, monospace; color: var(--t-low); }
 @keyframes toastIn { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.trpg .wx-sync-notice { padding: 8px 12px; color: #f0b355; background: #241e15; border: 1px solid #6f5833; font-size: 12px; }
+.trpg .wx-sync-notice[hidden] { display: none !important; }

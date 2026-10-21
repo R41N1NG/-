@@ -2698,6 +2698,9 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 .photo-toast-txt span { font: 500 10px/1.2 ui-monospace, Consolas, monospace; color: var(--t-low); }
 @keyframes toastIn { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 
+.trpg .wx-sync-notice { padding: 8px 12px; color: #f0b355; background: #241e15; border: 1px solid #6f5833; font-size: 12px; }
+.trpg .wx-sync-notice[hidden] { display: none !important; }
+
 </style>
 <main class="wx-standalone-main">
   <div class="preview-area" id="previewArea" style="display: none;">
@@ -2706,6 +2709,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
     <p class="story">雨声遮住了脚步。她停在便利店门前，低头看了一眼手表。<br>门帘掀开，街灯把她的影子拉到了人行道上。</p>
   </div>
   <section class="trpg" aria-label="玩家状态栏">
+    <div id="wxSyncNotice" class="wx-sync-notice" role="status" hidden></div>
     <div class="trpg-vignette" id="trpgVignette" aria-hidden="true"></div>
     <div class="her-alert" id="herAlert" data-tip="她刚才的举动。是发现了什么，还是单纯的心血来潮——只有她自己知道。"></div>
 
@@ -2715,38 +2719,38 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
       <div id="zeroChip" hidden role="button" tabindex="0">未开局 · 点击选择身份</div>
       <!-- 左：大区与场所、天气、终局红线、收摊步数 -->
       <div class="slim-left" data-tip="当前动线与场所状态">
-        <span class="slim-dist-badge" id="routeDistrict">老城</span>
-        <span class="slim-place" id="routePlace">杂物暗巷</span>
+        <span class="slim-dist-badge" id="routeDistrict">—</span>
+        <span class="slim-place" id="routePlace">等待开局</span>
         <div class="slim-tags-group">
-          <span class="slim-tag weather" id="routeWeather">小雨</span>
-          <span class="slim-tag strike-tag allowed" id="routeStrikeTag">终局开</span>
-          <span class="slim-tag remain" id="routeRemain">离收摊剩 1 步</span>
+          <span class="slim-tag weather" id="routeWeather">—</span>
+          <span class="slim-tag strike-tag allowed" id="routeStrikeTag">—</span>
+          <span class="slim-tag remain" id="routeRemain">—</span>
           <span class="slim-tag id-badge" id="idBadge" hidden data-tip="你的开局身份（零楼选定，点开看详情）">身份</span>
         </div>
       </div>
 
       <!-- 中：模式与距离档 -->
       <div class="slim-center" id="distStat" data-tip="当前模式与尾行距离档">
-        <span class="slim-phase" id="phase">潜行</span>
+        <span class="slim-phase" id="phase">未开局</span>
         <span class="slim-divider">/</span>
-        <span class="slim-dist" id="distName">同街</span>
-        <span class="slim-pips" id="pips" aria-hidden="true"><i class="pip"></i><i class="pip active"></i><i class="pip"></i><i class="pip"></i></span>
+        <span class="slim-dist" id="distName">—</span>
+        <span class="slim-pips" id="pips" aria-hidden="true"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></span>
       </div>
 
       <!-- 右：体力、跳动小红心心跳子菜单、设备、展开详情 -->
       <div class="slim-right">
         <!-- 迷你体力 -->
         <div class="slim-stamina" id="staminaBox" data-band="green" data-tip="当前体力">
-          <span class="slim-stamina-val" id="staminaVal">72%</span>
-          <span class="slim-stamina-bar"><span class="stamina-fill" id="staminaFill" style="width: 72%;"></span></span>
+          <span class="slim-stamina-val" id="staminaVal">—</span>
+          <span class="slim-stamina-bar"><span class="stamina-fill" id="staminaFill" style="width: 0%;"></span></span>
         </div>
 
         <!-- 心跳子菜单（收起时显示为随心跳频率跳动的小红心，点击向上弹出完整仪表盘） -->
         <div class="heart-popover-wrap" id="heartPopoverWrap">
           <button type="button" class="heart-pill-btn" id="heartPillBtn" aria-expanded="false" aria-haspopup="dialog" data-tip="点击向上弹出心跳仪表盘">
             <span class="mini-heart" id="miniHeart" aria-hidden="true">♥</span>
-            <span class="mini-heart-num" id="miniHeartNum">58</span>
-            <span class="mini-heart-bpm" id="miniBpmNum">72 BPM</span>
+            <span class="mini-heart-num" id="miniHeartNum">—</span>
+            <span class="mini-heart-bpm" id="miniBpmNum">—</span>
           </button>
 
           <!-- 向上弹出子菜单卡片 -->
@@ -2765,16 +2769,16 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
                   <g class="ecg-window" aria-hidden="true"><g class="ecg-scroll"><path class="ecg-line"></path></g></g>
                   <g class="dial-marker-orbit" id="orbit" style="transform: rotate(135deg)"><circle class="dial-marker" cx="142" cy="80" r="4.5"></circle></g>
                   <text x="80" y="48" text-anchor="middle" class="dial-label">心跳</text>
-                  <text x="80" y="87" text-anchor="middle" class="dial-number" id="heartNum">58</text>
-                  <text x="80" y="100" text-anchor="middle" class="dial-bpm" id="bpmNum">72 BPM</text>
+                  <text x="80" y="87" text-anchor="middle" class="dial-number" id="heartNum">—</text>
+                  <text x="80" y="100" text-anchor="middle" class="dial-bpm" id="bpmNum">—</text>
                   <text x="62" y="49" text-anchor="middle" class="dial-heart" aria-hidden="true">♥</text>
                   <text x="27" y="139" text-anchor="middle" class="dial-scale">0</text>
                   <text x="133" y="139" text-anchor="middle" class="dial-scale">100</text>
                 </svg>
                 <!-- 刻度说明已移除：阈值并入 #instrument 的悬停提示，版面让给右侧警觉竖条 -->
                 <div class="stamina" id="fullStaminaBox" data-band="green" data-tip="体力状态">
-                  <div class="stamina-label"><span>体力 <span class="band-name" id="bandName"></span></span><span class="stamina-value" id="fullStaminaVal">72%</span></div>
-                  <div class="stamina-meter" role="progressbar" aria-label="体力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72"><span class="stamina-fill" id="fullStaminaFill"></span></div>
+                  <div class="stamina-label"><span>体力 <span class="band-name" id="bandName"></span></span><span class="stamina-value" id="fullStaminaVal">—</span></div>
+                  <div class="stamina-meter" role="progressbar" aria-label="体力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="stamina-fill" id="fullStaminaFill"></span></div>
                 </div>
                 <svg class="spark" viewBox="0 0 120 20" preserveAspectRatio="none" aria-hidden="true" data-tip="近 12 段的心跳走势复盘；虚线为甜区中线。">
                   <line x1="0" y1="9" x2="120" y2="9"></line>
@@ -2785,8 +2789,8 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
                 <aside class="popover-her" id="popoverHerState" data-tier="0" data-tip="她此刻对你的警觉档位。数值不直接显示——她的脸就是仪表。">
                   <span class="popover-her-title">她的警觉</span>
                   <span class="alert-pips" id="popoverAlertPips" aria-hidden="true"></span>
-                  <span class="popover-her-name" id="popoverAlertText">毫无察觉</span>
-                  <span class="popover-her-range" id="popoverAlertRange">0–20</span>
+                  <span class="popover-her-name" id="popoverAlertText">未知</span>
+                  <span class="popover-her-range" id="popoverAlertRange">—</span>
                 </aside>
               </div>
               <div class="popover-audio-row">
@@ -2826,7 +2830,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
           <div class="wx-modal-title-wrap">
             <span class="wx-terminal-icon" data-ico="clip"></span>
             <h2 class="wx-modal-title" id="terminalTitle">战术终端 · 实时行动手账</h2>
-            <span class="wx-modal-badge" id="terminalFloorBadge">行动阶段</span>
+            <span class="wx-modal-badge" id="terminalFloorBadge">未开局</span>
           </div>
           <button type="button" class="wx-modal-close" id="wx-terminal-close-btn" data-wx-close aria-label="关闭终端">✕</button>
         </div>
@@ -2835,17 +2839,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
           <!-- 动线步进雷达轨（展开时呈现完整节点，带充裕边距不截顶） -->
           <div class="route-tracker" id="routeTracker" data-tip="当前动线推进情况与环境红线状态。前方虚线直通终点，收摊倒计时中。">
             <div class="route-weather-fx" aria-hidden="true"></div>
-            <div class="route-stepper" id="routeStepper">
-              <div class="step-item passed" data-tip="学校正门"><span class="step-dot"><i class="step-ico" data-ico="school"></i></span><span class="step-name">学校正门</span></div>
-              <div class="step-line passed"></div>
-              <div class="step-item unknown" data-tip="？"><span class="step-dot"><i class="step-ico" data-ico="unknown"></i></span><span class="step-name">？</span></div>
-              <div class="step-line passed"></div>
-              <div class="step-item passed" data-tip="24h便利店"><span class="step-dot"><i class="step-ico" data-ico="store"></i></span><span class="step-name">24h便利店</span></div>
-              <div class="step-line passed"></div>
-              <div class="step-item current" data-tip="居民杂物暗巷"><span class="step-dot"><i class="step-ico" data-ico="alley"></i></span><span class="step-name">居民杂物暗巷</span></div>
-              <div class="step-line future"></div>
-              <div class="step-item terminal unknown" data-tip="？"><span class="step-dot"><i class="step-ico" data-ico="unknown"></i></span><span class="step-name">？</span></div>
-            </div>
+            <div class="route-stepper" id="routeStepper"></div>
           </div>
           <!-- 2. 玩家状态核心面板（通栏横向展示：资产 + 五维属性 + 阈值特质） -->
           <div class="wx-player-banner">
@@ -2855,23 +2849,14 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
                 <small class="label" style="font-weight:normal">（绿色增益 / 红色受损）</small>
               </div>
               <div class="money wx-compact-money">
-                <span data-tip="现金：购物与买通的硬通货。来源：打工（1 行动点 = 200 元）。">现金 <strong id="cash">240</strong></span>
-                <span data-tip="情报点 PI：解锁常去店 8 / 工作地 10 / 住处 15 / 完整日程 40 / 深层线索 60。收益受情报值系数加成。">PI <strong id="pi">18</strong></span>
+                <span data-tip="现金：购物与买通的硬通货。具体收支以结算记录为准。">现金 <strong id="cash">—</strong></span>
+                <span data-tip="情报点 PI：影响情报解锁，以当前规则和已解锁条目为准。">PI <strong id="pi">—</strong></span>
               </div>
             </div>
 
-            <!-- 五维属性卡片（5 列等宽，内置静态默认值保底，JS 执行后无缝热更新） -->
-            <div class="attrs wx-attrs" id="wx-attrs">
-              <div class="attr eff-down weak" data-tip="体格 基础 3 −1 ＝ 2"><div class="an">体格</div><div class="av">2</div></div>
-              <div class="attr" data-tip="敏捷 4"><div class="an">敏捷</div><div class="av">4</div></div>
-              <div class="attr eff-down weak" data-tip="胆量 基础 4 −1 ＝ 3"><div class="an">胆量</div><div class="av">3</div></div>
-              <div class="attr eff-up hot" data-tip="情报 基础 7 +1 ＝ 8"><div class="an">情报</div><div class="av">8</div></div>
-              <div class="attr eff-up hot" data-tip="口才 基础 7 +1 ＝ 8"><div class="an">口才</div><div class="av">8</div></div>
-            </div>
-            <div class="attr-tags" id="wx-attr-tags">
-              <span class="tag scene" data-tip="瘦小不显眼：更容易藏在人堆里">不起眼: 遮蔽</span>
-              <span class="tag advantage" data-tip="观察粗糙：打量更难看清，运气加成失效">粗心: 洞察</span>
-            </div>
+            <!-- 五维属性卡片（5 列等宽，内置静态空态占位，JS 执行后无缝热更新） -->
+            <div class="attrs wx-attrs" id="wx-attrs"><div class="attr"><div class="an">体格</div><div class="av">—</div></div><div class="attr"><div class="an">敏捷</div><div class="av">—</div></div><div class="attr"><div class="an">胆量</div><div class="av">—</div></div><div class="attr"><div class="an">情报</div><div class="av">—</div></div><div class="attr"><div class="an">口才</div><div class="av">—</div></div></div>
+            <div class="attr-tags" id="wx-attr-tags"></div>
           </div>
 
           <!-- 3. 双翼战术工作区（左翼：行囊与生效修正；右翼：目标行为信号手账） -->
@@ -2880,22 +2865,12 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
             <div class="wx-wing-column">
               <div class="wx-wing-card">
                 <h3><span class="section-no">01.3</span>战术行囊持有物</h3>
-                <ul class="wx-items items" id="wx-items">
-                  <li><span>耳机 × 1</span><button type="button" data-wx-item="headphones">查看</button></li>
-                  <li><span>雨伞 × 1</span><button type="button" data-wx-item="umbrella">查看</button></li>
-                  <li><span>护身符 × 1</span><button type="button" data-wx-item="amulet">查看</button></li>
-                </ul>
+                <ul class="wx-items items" id="wx-items"></ul>
 
                 <h3 style="margin-top:14px" data-tip="当前生效中的加成与妨碍。来源可以是装备、环境或她的行为——来源消失，加成即失效。">
                   <span class="section-no">01.4</span>生效修正标签栈
                 </h3>
-                <div class="wx-active-tags-container" id="tags">
-                  <span class="tag advantage" data-tip="情报优势：检定额外加成">优势：情报</span>
-                  <span class="tag" data-tip="戴上耳机佯装路人：隐蔽 +1">耳机伪装</span>
-                  <span class="tag scene" data-tip="雨幕遮蔽声响：脚步判定有利">雨幕</span>
-                  <span class="tag scene" data-tip="积水湿滑：敏捷对抗可能打滑">湿滑</span>
-                  <span class="tag target" data-tip="她的步伐加快了">提速 (2)</span>
-                </div>
+                <div class="wx-active-tags-container" id="tags"></div>
               </div>
             </div>
 
@@ -2915,31 +2890,28 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
                   <div class="prox-header">
                     <span class="prox-title"><strong>接近度 (PROXIMITY)</strong></span>
                     <span class="prox-value-wrap">
-                      <strong id="proxVal">36</strong> / 100
-                      <span class="prox-stage-badge" id="proxStage">【眼熟】</span>
+                      <strong id="proxVal">—</strong> / 100
+                      <span class="prox-stage-badge" id="proxStage">—</span>
                     </span>
                   </div>
                   <div class="prox-track-wrap" id="proxTrackWrap" data-tip="接近度加载中...">
                     <div class="prox-meter-bar">
-                      <div class="prox-meter-fill" id="proxFill" style="width: 36%;"></div>
+                      <div class="prox-meter-fill" id="proxFill" style="width: 0%;"></div>
                     </div>
                     <div class="prox-nodes" id="proxNodes">
-                      <div class="pnode passed" style="left: 0%;"><span class="pdot"></span><span class="plabel">0 陌生</span></div>
-                      <div class="pnode active passed" style="left: 20%;"><span class="pdot"></span><span class="plabel">20 眼熟</span></div>
+                      <div class="pnode" style="left: 0%;"><span class="pdot"></span><span class="plabel">0 陌生</span></div>
+                      <div class="pnode" style="left: 20%;"><span class="pdot"></span><span class="plabel">20 眼熟</span></div>
                       <div class="pnode" style="left: 40%;"><span class="pdot"></span><span class="plabel">40 交集</span></div>
                       <div class="pnode" style="left: 60%;"><span class="pdot"></span><span class="plabel">60 搭话</span></div>
                       <div class="pnode" style="left: 80%;"><span class="pdot"></span><span class="plabel">80 不设防</span></div>
                     </div>
                   </div>
-                  <progress id="prox" value="36" max="100" style="display:none" aria-hidden="true"></progress>
+                  <progress id="prox" value="0" max="100" style="display:none" aria-hidden="true"></progress>
                 </div>
 
                 <!-- 行为记录流水时间轴 -->
-                <ul class="timeline" id="signal" data-tip="只记事实：几点、她做了什么。为什么这么做——你自己判断。">
-                  <li><time>21:14</time>便利店买热饮与饭团</li>
-                  <li><time>21:40</time>拐进昏暗窄巷小跑</li>
-                </ul>
-                <p class="assessment" id="assess" data-tip="「读时机」检定通过才出现的机会评估——机会等级对玩家永远不显数，只有这类模糊档位。">读时机检定通过 · 此刻深水盲区绝佳机会</p>
+                <ul class="timeline" id="signal" data-tip="只记事实：几点、她做了什么。为什么这么做——你自己判断。"></ul>
+                <p class="assessment" id="assess" data-tip="「读时机」检定通过才出现的机会评估——机会等级对玩家永远不显数，只有这类模糊档位。"></p>
               </div>
             </div>
           </div>
@@ -2974,7 +2946,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
                 <span class="tactical-label">她的警觉:</span>
                 <div class="tactical-chips" id="alertChips">
                   <span class="alert-pips" id="alertPips"></span>
-                  <span class="alert-text" id="alertText" data-tip="0–20 · 她完全没觉得这晚有什么不对">毫无察觉</span>
+                  <span class="alert-text" id="alertText" data-tip="等待状态同步">未知</span>
                 </div>
               </div>
               <div class="tactical-row" id="sanctuaryRow">
@@ -2992,7 +2964,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
               <button type="button" data-wx-dialog="wx-profile-dialog" data-tip="已解锁情报条目、打量标签、已探日程。注意：面容记忆全暗，重叠那天才知道攒了多少。">她的档案 ↗</button>
               <button type="button" data-wx-dialog="wx-lies-dialog" data-tip="自己埋的雷：红点=易被查证、金点=可对质、灰点=无法验证；脉点=活跃，划线=已穿帮。">我说过的话 ↗</button>
               <button type="button" data-wx-dialog="wx-wanted-dialog" data-tip="追缉等级与已知效果。发酵进度不可见——你不知道他们离找到你多近。">追缉 ↗</button>
-              <button type="button" data-wx-dialog="wx-devices-dialog" data-tip="已部署的跟踪定位器与微型摄像头状态监控。">监控设备 ↗</button>
+              <button type="button" data-wx-dialog="wx-devices-dialog" data-tip="设备记录入口；暂无实时状态。">监控设备 ↗</button>
             </div>
             <div class="audio-popover-wrap" id="audioPopoverWrap">
               <button type="button" class="slim-btn audio-menu-btn" id="audioMenuBtn" data-tip="声音与环境音效设置" aria-expanded="false">
@@ -3016,21 +2988,21 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
         </div>
         <!-- 沉底结算条：移出 .wx-modal-body 的滚动区，做弹窗真正的页脚
              （放在滚动区内只能靠 sticky，内容会被压在条下露出半截） -->
-        <div class="ledger wx-terminal-ledger" id="ledger" data-tip="本楼结算摘要。">本轮结算 · 体力 −3</div>
+        <div class="ledger wx-terminal-ledger" id="ledger" data-tip="本楼结算摘要。">本轮暂无结算</div>
     </dialog>
-    <dialog id="wx-item-dialog" class="wx-dialog trpg" aria-labelledby="item-title"><div class="dialog-top"><h2 id="item-title">道具</h2><button type="button" class="close-icon" data-wx-close aria-label="关闭道具详情">×</button></div><p class="item-meta">持有数量：1</p><p id="item-description"></p><p class="label">当前仅预览道具详情，实际使用须接后台确认。</p><div class="dialog-actions"><button type="button" data-wx-close>返回</button></div></dialog>
+    <dialog id="wx-item-dialog" class="wx-dialog trpg" aria-labelledby="item-title"><div class="dialog-top"><h2 id="item-title">道具</h2><button type="button" class="close-icon" data-wx-close aria-label="关闭道具详情">×</button></div><p class="item-meta" id="itemMeta">尚未选择道具</p><p id="item-description"></p><p class="label">装备与使用以行囊操作后的结算为准。</p><div class="dialog-actions"><button type="button" data-wx-close>返回</button></div></dialog>
     <dialog id="wx-profile-dialog" class="wx-dialog trpg" aria-labelledby="profile-title"><div class="dialog-top"><h2 id="profile-title">她的档案</h2><button type="button" class="close-icon" data-wx-close aria-label="关闭档案">×</button></div>
       <!-- 长焦偷拍取景器 -->
       <div class="surv-viewfinder">
-        <div class="vf-frame af-locked" id="vfFrame">
+        <div class="vf-frame" id="vfFrame">
           <span class="vf-corner tl"></span><span class="vf-corner tr"></span>
           <span class="vf-corner bl"></span><span class="vf-corner br"></span>
           <div class="vf-crosshair"></div>
           <div class="vf-header">
-            <span class="vf-rec"><i class="rec-dot"></i>REC [长焦 85mm · F1.8]</span>
+            <span class="vf-rec"><i class="rec-dot"></i>档案示意图</span>
             <div style="display:flex;align-items:center;gap:4px;">
-              <span class="vf-meta" id="vfMeta">ISO 12800 · 1/60s · 距离 12m</span>
-              <span class="vf-af-badge" id="vfAfBadge">[ AF-LOCK ]</span>
+              <span class="vf-meta" id="vfMeta">暂无观察数据</span>
+              <span class="vf-af-badge" id="vfAfBadge">[ 等待 ]</span>
             </div>
           </div>
           <div class="vf-scene" aria-hidden="true">
@@ -3061,7 +3033,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
                 <line x1="160" y1="70" x2="150" y2="100"/><line x1="240" y1="65" x2="230" y2="95"/>
                 <line x1="320" y1="55" x2="310" y2="85"/><line x1="400" y1="75" x2="390" y2="105"/>
               </g>
-              <!-- 目标 OL 撑伞快步剪影 -->
+              <!-- 装饰剪影：不是实拍画面 -->
               <g transform="translate(215, 30)">
                 <path d="M -34 30 Q 0 -2 34 30 Q 0 24 -34 30 Z" fill="#17222c" stroke="#36495c" stroke-width="1.2"/>
                 <ellipse cx="0" cy="32" rx="6.5" ry="7.5" fill="#10151c"/>
@@ -3075,49 +3047,28 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
             <div class="vf-scanline"></div>
           </div>
           <div class="vf-footer">
-            <span class="vf-tag">目标·外企OL · 档案编号 #OL-01</span>
-            <span class="vf-status">长焦定焦 · 雨夜暗巷背影快照</span>
+            <span class="vf-tag" id="vfTarget">尚未选择目标</span>
+            <span class="vf-status" id="vfStatus">等待开局</span>
           </div>
         </div>
       </div>
-      <h3 style="margin-top:14px">属性 <small class="label" style="font-weight:normal">打量大成功可揭示真实数值；未查明前显示为 ？</small></h3>
-      <div class="pattrs" id="pattrs">
-        <div class="pattr unknown"><div class="an">体格</div><div class="av">？</div></div>
-        <div class="pattr unknown"><div class="an">敏捷</div><div class="av">？</div></div>
-        <div class="pattr" data-tip="敏锐 7：专业级的观察力——尾行最难骗过的眼睛"><div class="an">敏锐</div><div class="av">7</div></div>
-        <div class="pattr unknown"><div class="an">胆量</div><div class="av">？</div></div>
-      </div>
+      <h3 style="margin-top:14px">属性 <small class="label" style="font-weight:normal">未查明前显示为 ？</small></h3>
+      <div class="pattrs" id="pattrs"><div class="pattr unknown"><div class="an">体格</div><div class="av">？</div></div><div class="pattr unknown"><div class="an">敏捷</div><div class="av">？</div></div><div class="pattr unknown"><div class="an">敏锐</div><div class="av">？</div></div><div class="pattr unknown"><div class="an">胆量</div><div class="av">？</div></div></div>
       <h3 style="margin-top:14px">身体印象</h3>
-      <div id="ptags"><span class="tag" data-tip="模糊印象：只知道大致范围，打量大成功可揭示准确数值">身材匀称</span></div>
+      <div id="ptags">暂无已记录的外观印象</div>
       <h3 style="margin-top:14px">已解锁情报</h3>
-      <p id="profileBody">今晚在便利店买了两盒便当。</p><p class="label">正式数据：已解锁条目 + 已探日程。她的心事不在此列。</p>
+      <p id="profileBody">暂无已解锁情报</p><h3>已探明日程</h3><div id="profileSchedule">暂无已探明日程</div>
       <div class="dialog-actions"><button type="button" data-wx-close>返回</button></div></dialog>
     <dialog id="wx-lies-dialog" class="wx-dialog trpg" aria-labelledby="lies-title"><div class="dialog-top"><h2 id="lies-title">我说过的话</h2><button type="button" class="close-icon" data-wx-close aria-label="关闭谎账">×</button></div>
       <div class="lie-legend" data-tip="谎话分三档：身份职业类的谎会被查证；说法行踪类的谎可能被对质；借口感受类的谎几乎无法验证。档位越高，穿帮的雷越响。">
         <span><i class="dot v-high"></i>查证类</span><span><i class="dot v-mid"></i>对质类</span><span><i class="dot v-low"></i>无法验证</span>
       </div>
-      <div id="liesBody"></div>
-      <p class="label">每句谎都是埋进存档的雷：她会验证，穿帮那天一起塌。</p>
+      <div id="liesBody">暂无已保存的谎言记录</div>
+      <p class="label">仅显示已保存的记录。</p>
       <div class="dialog-actions"><button type="button" data-wx-close>返回</button></div></dialog>
-    <dialog id="wx-wanted-dialog" class="wx-dialog trpg" aria-labelledby="wanted-title"><div class="dialog-top"><h2 id="wanted-title">追缉</h2><button type="button" class="close-icon" data-wx-close aria-label="关闭追缉">×</button></div><p id="wantedBody">当前等级：无。</p><p class="label">等级与已知效果；发酵进度不可见。</p><div class="dialog-actions"><button type="button" data-wx-close>返回</button></div></dialog>
+    <dialog id="wx-wanted-dialog" class="wx-dialog trpg" aria-labelledby="wanted-title"><div class="dialog-top"><h2 id="wanted-title">追缉</h2><button type="button" class="close-icon" data-wx-close aria-label="关闭追缉">×</button></div><p id="wantedBody">当前版本未启用追缉系统。</p><p class="label">此处仅保留扩展入口。</p><div class="dialog-actions"><button type="button" data-wx-close>返回</button></div></dialog>
     <dialog id="wx-devices-dialog" class="wx-dialog trpg" aria-labelledby="devices-title"><div class="dialog-top"><h2 id="devices-title">设备</h2><button type="button" class="close-icon" data-wx-close aria-label="关闭设备面板">×</button></div>
-      <div class="dev-card" data-tip="微型定位器嵌在小物件里。屏幕上她是一个红点：知道在哪、动没动、朝哪走。红点看不见她买了什么、和谁并排走——那些要靠你自己靠近。">
-        <div class="dev-head"><span class="dev-name"><span class="dev-ico" data-ico="pin"></span>定位器</span><span class="dev-state">在线</span></div>
-        <div class="dev-where"><span class="dev-loc">城东 · 青柳街便利店</span><span class="dev-mot">静止</span></div>
-        <div class="dev-time">22:41 更新</div>
-        <ol class="dev-feed">
-          <li><time>21:12</time>离开公司</li>
-          <li><time>21:40</time>绕开了常走的滨河路</li>
-        </ol>
-        <p class="dev-note">路线的偏离本身就是消息——有事发生，或者，她起了戒心。</p>
-      </div>
-      <div class="dev-card" data-tip="装进她家里的眼睛。三档：存储款——画面存在机内，每隔三四天要回一趟现场换卡；无线款——走她家网络直连这页，但她家路由器会多出一台陌生设备；防水款——浴室专用，藏得进排风扇和洗发水瓶。拍到的画面每晚归档——直到哪天被她翻出来，那会是另一件事的开始。">
-        <div class="dev-head"><span class="dev-name"><span class="dev-ico" data-ico="video"></span>监控 <span class="dev-sub">存储款 · 卧室</span></span><span class="dev-state">在线</span></div>
-        <!-- 数据契约：安装后由中控 snapshot 填充；帧图片路径约定 assets/cam/（素材线出图：洗澡/换衣等场景帧），caption 为拍摄位与时间戳；素材未接入时保持 no-feed 噪点占位 -->
-        <div class="dev-frame no-feed" id="camFrameBox"><img id="camFrame" alt="监控画面" hidden><span class="dev-frame-rec" aria-hidden="true">REC</span><span class="dev-frame-cap" id="camFrameCap">卧室 · 22:47</span></div>
-        <p class="dev-note">距下次取卡 2 天——每 3~4 天要回一趟现场。</p>
-      </div>
-      <p class="label">设备的动静都汇总在这页；要紧的变化（她到家、路线偏了）会直接弹到状态栏上。</p>
+      <div id="devicesBody" class="label">设备状态暂未接入，暂无可显示的设备记录。</div>
       <div class="dialog-actions"><button type="button" id="openAlbumBtn">相册 ↗</button><button type="button" data-wx-close>返回</button></div></dialog>
 
     <!-- ═══ 相册：贴墙收集（拍照产物） ═══ -->
@@ -3195,31 +3146,31 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
         <div class="target-detail-box" id="targetDetailBox">
           <div class="target-detail-header">
             <div class="target-detail-title-wrap">
-              <span class="target-detail-name" id="tDetailName">疲惫的OL</span>
-              <span class="target-detail-stars" id="tDetailStars">★★☆☆☆</span>
-              <span class="target-detail-badge" id="tDetailBadge">疲惫猎</span>
-              <span class="target-status-badge ready" id="tDetailStatus">完整动线就绪</span>
+              <span class="target-detail-name" id="tDetailName">—</span>
+              <span class="target-detail-stars" id="tDetailStars">—</span>
+              <span class="target-detail-badge" id="tDetailBadge">—</span>
+              <span class="target-status-badge ready" id="tDetailStatus">—</span>
             </div>
             <div class="target-detail-action-wrap">
               <button type="button" class="btn-reroll-target" id="tDetailReroll" title="重新随机摇号目标的姓名、性格、爱好与属性扰动"><span class="btn-ico" data-ico="dice"></span> 重新摇号</button>
-              <span class="target-detail-area" id="tDetailArea">中城CBD ➔ 老城文教区</span>
+              <span class="target-detail-area" id="tDetailArea">—</span>
             </div>
           </div>
-          <p class="target-detail-tagline" id="tDetailTagline">写字楼深夜加完班，高跟鞋敲打在老城夜雨里</p>
+          <p class="target-detail-tagline" id="tDetailTagline">—</p>
           <div class="target-detail-rows">
-            <div class="target-row"><b>目标真名</b><span class="target-gen-name" id="tDetailRealName">林晚秋</span><span class="target-gen-sub" id="tDetailNameSource">(中式姓名库 10×20 随机生成)</span></div>
-            <div class="target-row"><b>性格特质</b><span id="tDetailPersonality"><span class="tag personality" data-tip="【性格·慢热】防备心重，生人社交与搭话检定修正 -2">慢热</span></span></div>
-            <div class="target-row"><b>私密爱好</b><span id="tDetailHobby"><span class="tag hobby" data-tip="【爱好·胶片探店】常在街角橱窗停顿取景，尾随近身检定 +1">胶片探店</span></span></div>
-            <div class="target-row"><b>鞋具着装</b><span id="tDetailShoe"><span class="tag equipment" data-tip="【鞋具·高跟鞋】细高跟鞋，步频清脆，跟钉敲击回响，驱动高跟鞋脚步声">高跟鞋</span></span></div>
-            <div class="target-row"><b>特征标签</b><span id="tDetailFeatures">深夜加班窗口 · [疲惫] 敏锐降低 · 高跟鞋步频清脆</span></div>
-            <div class="target-row"><b>作息规律</b><span id="tDetailWindow">工作日 21:00 起下班，疲惫下防备较低，但动线跨区较长</span></div>
+            <div class="target-row"><b>目标真名</b><span class="target-gen-name" id="tDetailRealName">—</span><span class="target-gen-sub" id="tDetailNameSource">(中式姓名库 10×20 随机生成)</span></div>
+            <div class="target-row"><b>性格特质</b><span id="tDetailPersonality">—</span></div>
+            <div class="target-row"><b>私密爱好</b><span id="tDetailHobby">—</span></div>
+            <div class="target-row"><b>鞋具着装</b><span id="tDetailShoe">—</span></div>
+            <div class="target-row"><b>特征标签</b><span id="tDetailFeatures">—</span></div>
+            <div class="target-row"><b>作息规律</b><span id="tDetailWindow">—</span></div>
             <div class="target-row"><b>情报评估</b><span id="tDetailStats">体格 <b>？</b> · 敏捷 <b>？</b> · 敏锐 <b>？</b> · 胆量 <b>？</b> · 社交 <b>？</b> <small class="label" style="margin-left:6px">（情报迷雾 · 打量或调查后揭示）</small></span></div>
           </div>
 
         </div>
         <div class="create-foot">
           <button type="button" class="zero-btn-prev" id="zeroPrevStep">⬅ 上一步：修改猎手</button>
-          <span class="create-hint" id="targetHint">已锁定：疲惫的OL</span>
+          <span class="create-hint" id="targetHint">请选择目标</span>
           <button type="button" class="create-confirm" id="createConfirm">锁定目标 · 步入夜色 ➔</button>
         </div>
       </div>
@@ -3256,7 +3207,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
             <div class="ekg-widget">
               <div class="ekg-top">
                 <span>生理监护</span>
-                <span class="bpm" id="settleEkgHeart">58 BPM · 甜区</span>
+                <span class="bpm" id="settleEkgHeart">等待结算</span>
               </div>
               <svg class="ekg-svg" viewBox="0 0 200 24" aria-hidden="true">
                 <path class="ekg-trace" d="M0,12 L35,12 L40,6 L45,18 L50,12 L80,12 L85,2 L92,22 L98,12 L130,12 L135,8 L140,16 L145,12 L200,12"/>
@@ -3301,7 +3252,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
       </div>
     </dialog>
   </section>
-  <div class="preview-tools" id="previewTools" style="display: none;" aria-label="动态样式演示工具">
+  <div data-wx-preview-only class="preview-tools" id="previewTools" style="display: none;" aria-label="动态样式演示工具">
     <button type="button" data-preset="sweet" aria-pressed="true">甜区 · 58</button>
     <button type="button" data-preset="deform">过线 · 78</button>
     <button type="button" data-preset="crash">崩溃 · 93</button>
@@ -3442,6 +3393,26 @@ var WxStatusbarUI = (() => {
   var require_rules = __commonJS({
     "src/ui/generated/rules.json"(exports, module) {
       module.exports = {
+        targetContent: {
+          ol: {
+            hasPack: false
+          },
+          college: {
+            hasPack: true
+          },
+          student: {
+            hasPack: true
+          },
+          club: {
+            hasPack: false
+          },
+          wife: {
+            hasPack: false
+          },
+          police: {
+            hasPack: false
+          }
+        },
         identities: {
           student: {
             name: "\u5B66\u751F",
@@ -8270,7 +8241,7 @@ var WxStatusbarUI = (() => {
           ])
         )
       };
-      var TARGET_DATA = { list: CONFIG.targets };
+      var TARGET_DATA = { list: CONFIG.targets, content: CONFIG.targetContent };
       var TARGET_NAME_POOL = CONFIG.generator.namePool;
       var TARGET_PERSONALITY_POOL = CONFIG.generator.personalityPool;
       var TARGET_HOBBY_POOL = CONFIG.generator.hobbyPool;
@@ -8993,6 +8964,200 @@ var WxStatusbarUI = (() => {
         MODE_NAMES,
         lineOf
       };
+    }
+  });
+
+  // src/ui/renderers/details.js
+  var require_details = __commonJS({
+    "src/ui/renderers/details.js"(exports, module) {
+      "use strict";
+      var ATTRS = { str: "\u4F53\u683C", agi: "\u654F\u6377", per: "\u654F\u9510", nrv: "\u80C6\u91CF" };
+      function createDetailsRenderer({ document }) {
+        const text = (id, value) => {
+          const node = document.getElementById(id);
+          if (node) node.textContent = value;
+        };
+        function list(id, entries, empty) {
+          const node = document.getElementById(id);
+          if (!node) return;
+          node.replaceChildren();
+          if (!entries.length) {
+            node.textContent = empty;
+            return;
+          }
+          for (const entry of entries) {
+            const row = document.createElement("p");
+            row.textContent = entry;
+            node.append(row);
+          }
+        }
+        function render(snap) {
+          const target = snap?.target;
+          const profile = snap?.profile?.targetId === target?.id ? snap?.profile : null;
+          text(
+            "vfTarget",
+            target ? [target.realName, target.name].filter(Boolean).join(" \xB7 ") || "\u5F53\u524D\u76EE\u6807" : "\u5C1A\u672A\u9009\u62E9\u76EE\u6807"
+          );
+          text("vfStatus", target ? "\u6863\u6848\u89C6\u56FE \xB7 \u975E\u5B9E\u65F6\u753B\u9762" : "\u7B49\u5F85\u5F00\u5C40");
+          text(
+            "vfMeta",
+            target ? "\u8DDD\u79BB\u6863\u4F4D\uFF1A" + ({ far: "\u8FDC\u7AEF", same: "\u540C\u8857", close: "\u8EAB\u540E", touch: "\u8D34\u8EAB" }[snap.dist] || "\u672A\u77E5") : "\u6682\u65E0\u89C2\u5BDF\u6570\u636E"
+          );
+          text("vfAfBadge", target ? "[ \u6863\u6848 ]" : "[ \u7B49\u5F85 ]");
+          const attrs = document.getElementById("pattrs");
+          if (attrs) {
+            attrs.replaceChildren();
+            for (const [key, label] of Object.entries(ATTRS)) {
+              const value = profile?.attrs?.[key];
+              const known = Number.isFinite(value) && value >= 1 && value <= 10;
+              const row = document.createElement("div");
+              row.className = "pattr" + (known ? "" : " unknown");
+              const title = document.createElement("div");
+              title.className = "an";
+              title.textContent = label;
+              const number = document.createElement("div");
+              number.className = "av";
+              number.textContent = known ? String(value) : "\uFF1F";
+              row.append(title, number);
+              attrs.append(row);
+            }
+          }
+          list(
+            "ptags",
+            Array.isArray(profile?.impressions) ? profile.impressions.filter((x) => typeof x === "string") : [],
+            "\u6682\u65E0\u5DF2\u8BB0\u5F55\u7684\u5916\u89C2\u5370\u8C61"
+          );
+          const facts = Array.isArray(profile?.facts) ? profile.facts : [];
+          list(
+            "profileBody",
+            facts.map((f) => [f.title, f.text].filter(Boolean).join("\uFF1A")),
+            "\u6682\u65E0\u5DF2\u89E3\u9501\u60C5\u62A5"
+          );
+          const route = snap?.route;
+          list(
+            "profileSchedule",
+            route?.nodes?.flatMap(
+              (place, i) => route.known?.[i] ? [
+                `${String(route.times?.[i] || "\u65F6\u95F4\u672A\u8BB0\u5F55").replace(/^(\d{2})(\d{2})$/, "$1:$2")} \xB7 ${place}`
+              ] : []
+            ) || [],
+            "\u6682\u65E0\u5DF2\u63A2\u660E\u65E5\u7A0B"
+          );
+          text("devicesBody", "\u8BBE\u5907\u72B6\u6001\u6682\u672A\u63A5\u5165\uFF0C\u6682\u65E0\u53EF\u663E\u793A\u7684\u8BBE\u5907\u8BB0\u5F55\u3002");
+          text("liesBody", "\u6682\u65E0\u5DF2\u4FDD\u5B58\u7684\u8C0E\u8A00\u8BB0\u5F55\u3002");
+          text("wantedBody", "\u5F53\u524D\u7248\u672C\u672A\u542F\u7528\u8FFD\u7F09\u7CFB\u7EDF\u3002");
+        }
+        return { render, reset: () => render(null) };
+      }
+      module.exports = { createDetailsRenderer };
+    }
+  });
+
+  // src/ui/renderers/empty.js
+  var require_empty = __commonJS({
+    "src/ui/renderers/empty.js"(exports, module) {
+      "use strict";
+      function clearLiveData(document) {
+        const labels = {
+          routeDistrict: "\u2014",
+          routePlace: "\u7B49\u5F85\u5F00\u5C40",
+          routeWeather: "\u2014",
+          routeStrikeTag: "\u2014",
+          routeRemain: "\u2014",
+          phase: "\u672A\u5F00\u5C40",
+          distName: "\u2014",
+          staminaVal: "\u2014",
+          fullStaminaVal: "\u2014",
+          heartNum: "\u2014",
+          miniHeartNum: "\u2014",
+          bpmNum: "\u2014",
+          miniBpmNum: "\u2014",
+          cash: "\u2014",
+          pi: "\u2014",
+          proxVal: "\u2014",
+          proxStage: "\u2014",
+          terminalFloorBadge: "\u672A\u5F00\u5C40",
+          areaFam: "\u6682\u65E0\u8BB0\u5F55",
+          famDesc: "\u2014",
+          alertText: "\u672A\u77E5",
+          popoverAlertText: "\u672A\u77E5",
+          popoverAlertRange: "\u2014",
+          ledger: "\u672C\u8F6E\u6682\u65E0\u7ED3\u7B97",
+          assess: "",
+          herGearName: "",
+          herAlert: "",
+          albumCount: "0 / 0"
+        };
+        for (const [id, label] of Object.entries(labels)) {
+          const node = document.getElementById(id);
+          if (node) node.textContent = label;
+        }
+        for (const id of [
+          "routeStepper",
+          "wx-attrs",
+          "wx-attr-tags",
+          "tags",
+          "signal",
+          "exitChips",
+          "spotChips",
+          "envTags",
+          "alertPips",
+          "popoverAlertPips",
+          "albumWall",
+          "wx-items"
+        ]) {
+          const node = document.getElementById(id);
+          if (node) node.replaceChildren();
+        }
+        for (const id of ["proxFill", "staminaFill", "fullStaminaFill", "famFill"]) {
+          const node = document.getElementById(id);
+          if (node) node.style.width = "0%";
+        }
+        for (const id of ["herGear", "idBadge", "photoToast", "albumDetail"]) {
+          const node = document.getElementById(id);
+          if (node) node.hidden = true;
+        }
+        for (const id of ["spotRow", "sanctuaryRow"]) {
+          const node = document.getElementById(id);
+          if (node) {
+            node.hidden = false;
+            node.style.display = "none";
+          }
+        }
+        for (const id of [
+          "photoToastName",
+          "photoToastMeta",
+          "albumDetailMeta",
+          "item-description"
+        ]) {
+          const node = document.getElementById(id);
+          if (node) node.textContent = "";
+        }
+        const meta = document.getElementById("itemMeta");
+        if (meta) meta.textContent = "\u5C1A\u672A\u9009\u62E9\u9053\u5177";
+        document.querySelectorAll("#pips .pip").forEach((node) => node.classList.remove("active"));
+        for (const id of [
+          "alertRow",
+          "popoverHerState",
+          "staminaBox",
+          "fullStaminaBox"
+        ]) {
+          const node = document.getElementById(id);
+          if (node) {
+            delete node.dataset.tier;
+            delete node.dataset.band;
+          }
+        }
+        const image = document.getElementById("albumDetailImg");
+        if (image) image.removeAttribute("src");
+        document.getElementById("photoToastImg")?.removeAttribute("src");
+        document.getElementById("sparkLine")?.setAttribute("points", "");
+        document.getElementById("herAlert")?.classList.remove("show");
+        document.querySelectorAll(".pnode").forEach((node) => node.classList.remove("active", "passed"));
+        const prox = document.getElementById("prox");
+        if (prox) prox.value = 0;
+      }
+      module.exports = { clearLiveData };
     }
   });
 
@@ -9759,36 +9924,6 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           if (popRange) popRange.textContent = alertTier.range;
           const popCard = document.getElementById("popoverHerState");
           if (popCard) popCard.setAttribute("data-tier", String(alertTier.idx));
-          const vfFrame = document.getElementById("vfFrame");
-          const vfMeta = document.getElementById("vfMeta");
-          const vfAfBadge = document.getElementById("vfAfBadge");
-          if (vfFrame && vfAfBadge) {
-            const prox2 = snap.player.proximity ?? 0;
-            const dist = snap.dist || "same";
-            vfFrame.classList.remove(
-              "af-searching",
-              "af-tracking",
-              "af-locked",
-              "shake-deform",
-              "shake-crash"
-            );
-            if (dist === "far" || prox2 < 20) {
-              vfFrame.classList.add("af-searching");
-              vfAfBadge.textContent = "[ AF-SEARCHING ]";
-              if (vfMeta) vfMeta.textContent = "ISO 12800 \xB7 1/60s \xB7 \u8DDD\u79BB 25m";
-            } else if (dist === "same" || prox2 < 40) {
-              vfFrame.classList.add("af-tracking");
-              vfAfBadge.textContent = "[ AF-TRACKING ]";
-              if (vfMeta) vfMeta.textContent = "ISO 6400 \xB7 1/80s \xB7 \u8DDD\u79BB 16m";
-            } else {
-              vfFrame.classList.add("af-locked");
-              vfAfBadge.textContent = "[ AF-LOCK ]";
-              if (vfMeta)
-                vfMeta.textContent = `ISO 3200 \xB7 1/125s \xB7 \u8DDD\u79BB ${dist === "touch" ? "3m" : "8m"}`;
-            }
-            if (line === "crash") vfFrame.classList.add("shake-crash");
-            else if (line === "deform") vfFrame.classList.add("shake-deform");
-          }
           const prevStatusEl = document.getElementById("previewStatus");
           if (prevStatusEl) {
             prevStatusEl.textContent = `\u5FC3\u8DF3 ${view.heart} \xB7 \u6362\u7B97 ${bpm} BPM \xB7 \u4F53\u529B ${st}%` + (line ? ` \xB7 \u64CD\u4F5C${line === "crash" ? "\u5D29\u6E83" : "\u53D8\u5F62"}` : " \xB7 \u624B\u7A33");
@@ -9824,7 +9959,6 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         heartToBpm,
         heartFreq,
         ico,
-        MOCKS,
         renderSnapshot,
         getHeart,
         getMode,
@@ -10313,6 +10447,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         }
         async function toggleAudio() {
           if (audioOn || audioPending) return stopAudio();
+          if (!getSnapshot()) return soundUI("\u5B8C\u6210\u5F00\u5C40\u540E\u518D\u5F00\u542F\u5FC3\u8DF3\u58F0");
           if (!AudioCtor) return soundUI("\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301\u5FC3\u8DF3\u97F3\u6548");
           if (document.hidden) return soundUI("\u56DE\u5230\u9875\u9762\u540E\u70B9\u51FB\u5F00\u542F\u5FC3\u8DF3\u58F0");
           const revision = ++audioRevision;
@@ -10352,29 +10487,27 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           soundUI("\u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301\u5FC3\u8DF3\u97F3\u6548");
         }
         function spike() {
-          if (!audioOn) return soundUI("\u5148\u5F00\u542F\u96E8\u591C\u5FC3\u8DF3\u58F0\uFF0C\u518D\u8BD5 spike");
-          const t = audioContext.currentTime, v = (0.55 + getHeart() / 100 * 0.45) * vol.heart;
-          thump(t, 38, Math.max(v, 0.5) * 1.9);
-          thump(t + 0.15, 36, Math.max(v, 0.5) * 1.5);
-          const vig = document.getElementById("trpgVignette");
-          if (vig) {
-            vig.classList.remove("pulse");
-            void vig.offsetWidth;
-            vig.classList.add("pulse");
-          }
-          const next = getHeart() + 8 >= 100 ? 100 : getHeart() + 8;
-          renderSnapshot({
-            ...MOCKS[document.querySelector('[data-preset][aria-pressed="true"]')?.dataset.preset || "sweet"],
-            player: {
-              heart: next,
-              stamina: 72,
-              cash: 240,
-              pi: 18,
-              proximity: 36,
-              date: 3,
-              attrs: { str: 2, agi: 4, nrv: 3, int: 8, cha: 8 }
+          if (true) {
+            if (!audioOn) return soundUI("\u5148\u5F00\u542F\u96E8\u591C\u5FC3\u8DF3\u58F0\uFF0C\u518D\u8BD5 spike");
+            const t = audioContext.currentTime, v = (0.55 + getHeart() / 100 * 0.45) * vol.heart;
+            thump(t, 38, Math.max(v, 0.5) * 1.9);
+            thump(t + 0.15, 36, Math.max(v, 0.5) * 1.5);
+            const vig = document.getElementById("trpgVignette");
+            if (vig) {
+              vig.classList.remove("pulse");
+              void vig.offsetWidth;
+              vig.classList.add("pulse");
             }
-          });
+            const snap = getSnapshot();
+            if (snap)
+              renderSnapshot({
+                ...snap,
+                player: {
+                  ...snap.player,
+                  heart: Math.min(100, snap.player.heart + 8)
+                }
+              });
+          }
         }
         function applyVolumes() {
           if (heartBus)
@@ -11452,6 +11585,8 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         MODE_NAMES,
         lineOf
       } = require_display();
+      var { createDetailsRenderer } = require_details();
+      var { clearLiveData } = require_empty();
       var { createSnapshotRenderer } = require_snapshot();
       var { createAudio } = require_audio();
       var { createSettlement } = require_controller();
@@ -11464,6 +11599,9 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           const node = document.getElementById(id);
           if (node) delete node.dataset.built;
         }
+        clearLiveData(document);
+        const details = createDetailsRenderer({ document });
+        details.reset();
         const noticeAtMount = document.getElementById("wxSyncNotice");
         if (noticeAtMount) noticeAtMount.hidden = true;
         const root = document.getElementById("wx-statusbar-root") || document.querySelector("section.trpg") || document.querySelector(".trpg:not(#wx-zero-floor)");
@@ -11536,7 +11674,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           ])
             ecgPath += ` L ${start + x} ${y}`;
         dial.querySelector(".ecg-line").setAttribute("d", ecgPath);
-        const view = { heart: 58, mode: "stealth", snapshot: null };
+        const view = { heart: 0, mode: "prepare", snapshot: null };
         const audio = createAudio({
           document,
           window,
@@ -11545,7 +11683,6 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           heartToBpm,
           heartFreq,
           ico,
-          MOCKS,
           renderSnapshot,
           getHeart: () => view.heart,
           getMode: () => view.mode,
@@ -11932,6 +12069,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           if (det) det.hidden = true;
         });
         function renderSnapshot(snap) {
+          details.render(snap);
           return render(snap);
         }
         const heartPillBtn = document.getElementById("heartPillBtn");
@@ -12086,20 +12224,6 @@ ${proxLogs.slice(0, 5).join("\n")}`;
             document.querySelectorAll("dialog.wx-dialog[open]").forEach((d) => d.close());
           }
         });
-        const items = {
-          headphones: {
-            name: "\u8033\u673A",
-            description: "\u6301\u6709\u7269\uFF1A\u8033\u673A\u3002\u751F\u6548\u4FEE\u6B63\uFF1A[\u8033\u673A\u4F2A\u88C5] \u9690\u853D +2\u3002"
-          },
-          umbrella: {
-            name: "\u96E8\u4F1E",
-            description: "\u6301\u6709\u7269\uFF1A\u96E8\u4F1E\u3002\u96E8\u5929\u573A\u666F\u53EF\u63D0\u4F9B [\u96E8\u5E55] \u63A9\u62A4\u52A0\u6210\u3002"
-          },
-          amulet: {
-            name: "\u62A4\u8EAB\u7B26",
-            description: "\u6301\u6709\u7269\uFF1A\u62A4\u8EAB\u7B26\u3002\u751F\u6548\u6807\u7B7E\uFF1A\u80C6\u91CF +1\uFF08\u6548\u679C\u53EA\u8BA4\u6807\u7B7E\uFF0C\u6458\u4E0B\u5373\u5931\u6548\uFF09\u3002"
-          }
-        };
         const openers = /* @__PURE__ */ new WeakMap();
         function openDialog(id, button) {
           const dialog = document.getElementById(id);
@@ -12123,6 +12247,10 @@ ${proxLogs.slice(0, 5).join("\n")}`;
             } catch (error) {
               reportSyncError(error.code);
             }
+            return;
+          }
+          if (false) {
+            reportSyncError("ENGINE_UNAVAILABLE");
             return;
           }
           if (view.snapshot && view.snapshot.inventory) {
@@ -12192,12 +12320,14 @@ ${proxLogs.slice(0, 5).join("\n")}`;
             event.preventDefault();
             event.stopPropagation();
             const itemKey = button.dataset.wxItem || button.dataset.item;
-            const item = items[itemKey];
+            const item = view.snapshot?.inventory?.find((it) => it.id === itemKey);
             if (!item) return;
             const titleEl = document.getElementById("item-title");
             const descEl = document.getElementById("item-description");
             if (titleEl) titleEl.textContent = item.name;
-            if (descEl) descEl.textContent = item.description;
+            if (descEl) descEl.textContent = item.desc || "\u6682\u65E0\u8BF4\u660E";
+            const meta = document.getElementById("itemMeta");
+            if (meta) meta.textContent = `\u6301\u6709\u6570\u91CF\uFF1A${item.count ?? 0}`;
             openDialog("wx-item-dialog", button);
           } else if (button.dataset.wxDialog || button.dataset.dialog) {
             event.preventDefault();
@@ -12413,6 +12543,9 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           if (dName) dName.textContent = `${persona.name} \xB7 ${t.name}`;
           const dRealName = document.getElementById("tDetailRealName");
           if (dRealName) dRealName.textContent = persona.name;
+          const nameSource = document.getElementById("tDetailNameSource");
+          if (nameSource)
+            nameSource.textContent = `\uFF08${TARGET_NAME_POOL.surnames.length} \u59D3 \xD7 ${TARGET_NAME_POOL.givenNames.length} \u540D\uFF09`;
           const dPersonality = document.getElementById("tDetailPersonality");
           if (dPersonality) {
             dPersonality.innerHTML = `<span class="tag personality" data-tip="${persona.personalityDesc || ""}">${persona.personality}</span>`;
@@ -12431,7 +12564,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           if (dBadge) dBadge.textContent = t.type;
           const dStatus = document.getElementById("tDetailStatus");
           if (dStatus) {
-            dStatus.textContent = t.id === "ol" ? "\u5B8C\u6574\u52A8\u7EBF\u751F\u6D3B\u5305" : "\u6807\u51C6\u52A8\u7EBF \xB7 \u6846\u67B6\u5C31\u7EEA";
+            dStatus.textContent = TARGET_DATA.content?.[t.id]?.hasPack ? "\u751F\u6D3B\u5305\u5DF2\u63A5\u5165" : "\u751F\u6D3B\u5305\u672A\u5B8C\u6210";
           }
           const dArea = document.getElementById("tDetailArea");
           if (dArea) dArea.textContent = t.area;
@@ -12705,6 +12838,12 @@ ${proxLogs.slice(0, 5).join("\n")}`;
                 openCreate();
             }
           } else {
+            if (false) {
+              ZERO.mode = "tavern";
+              openCreate();
+              updateZeroChip();
+              return;
+            }
             ZERO.mode = "demo";
             let saved = null;
             try {
@@ -12913,76 +13052,6 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           lifecycle.on(window, "load", reportLayout);
           lifecycle.timeout(reportLayout, 300);
         }
-        if (true) {
-          let herAttrTip = function(name, v) {
-            const bands = {
-              \u4F53\u683C: [
-                [3, "\u529B\u6C14\u6BD4\u4E00\u822C\u59D1\u5A18\u5C0F"],
-                [6, "\u6709\u5065\u8EAB\u7684\u75D5\u8FF9"],
-                [99, "\u804C\u4E1A\u7EA7\u7684\u529B\u6C14"]
-              ],
-              \u654F\u6377: [
-                [3, "\u52A8\u4F5C\u504F\u6162"],
-                [6, "\u8EAB\u624B\u5229\u843D"],
-                [99, "\u804C\u4E1A\u7EA7\u7684\u8EAB\u624B"]
-              ],
-              \u654F\u9510: [
-                [3, "\u8FDF\u949D\uFF0C\u51E0\u4E4E\u6CE8\u610F\u4E0D\u5230\u5F02\u5E38"],
-                [5, "\u6BD4\u4E00\u822C\u4EBA\u7EC6\u5FC3"],
-                [7, "\u4E13\u4E1A\u7EA7\u7684\u89C2\u5BDF\u529B\u2014\u2014\u5C3E\u884C\u6700\u96BE\u9A97\u8FC7\u7684\u773C\u775B"],
-                [99, "\u9876\u5C16\u7684\u76F4\u89C9\uFF0C\u51E0\u4E4E\u7792\u4E0D\u8FC7"]
-              ],
-              \u80C6\u91CF: [
-                [3, "\u5BB9\u6613\u614C"],
-                [6, "\u6C89\u5F97\u4F4F\u6C14"],
-                [99, "\u6CF0\u5C71\u5D29\u4E8E\u524D\u7684\u90A3\u79CD\u9547\u5B9A"]
-              ]
-            }[name] || [];
-            for (const [cap, text] of bands)
-              if (v <= cap) return `${name} ${v}\uFF1A${text}`;
-            return `${name} ${v}`;
-          };
-          const LIES = [
-            { claim: "\u81EA\u79F0\u65B0\u6765\u7684\u7269\u4E1A\u7BA1\u5BB6", verif: "high", used: 3, status: "active" },
-            { claim: "\u8BF4\u81EA\u5DF1\u662F\u8FD9\u5BB6\u5E97\u5E38\u5BA2", verif: "mid", used: 1, status: "active" },
-            { claim: "\u501F\u53E3\u987A\u8DEF\u4E00\u8D77\u8D70", verif: "low", used: 2, status: "busted" }
-          ];
-          const VER_NAME = {
-            high: "\u67E5\u8BC1\u7C7B \xB7 \u4F1A\u88AB\u67E5\u8BC1",
-            mid: "\u5BF9\u8D28\u7C7B \xB7 \u53EF\u80FD\u88AB\u5BF9\u8D28",
-            low: "\u65E0\u6CD5\u9A8C\u8BC1 \xB7 \u51E0\u4E4E\u5B89\u5168"
-          };
-          const liesBodyEl = document.getElementById("liesBody");
-          if (liesBodyEl) {
-            liesBodyEl.innerHTML = LIES.map(
-              (l) => `<div class="lie v-${l.verif}${l.status === "busted" ? " busted" : ""}"><span class="dot"></span><span>${l.claim}</span><span class="ver">${VER_NAME[l.verif]} \xB7 \u8BF4\u8FC7${l.used}\u6B21${l.status === "busted" ? " \xB7 \u5DF2\u7A7F\u5E2E" : ""}</span></div>`
-            ).join("") || "\u6D3B\u8DC3\u8C0E\u8A00\uFF1A\u6682\u65E0\u3002";
-          }
-          const HER_PROFILE = {
-            attrs: { \u4F53\u683C: null, \u654F\u6377: null, \u654F\u9510: 7, \u80C6\u91CF: null },
-            // null = 未查明
-            tags: [
-              // 印象标签挂属性：该属性揭示即隐去
-              { text: "\u8EAB\u6750\u5300\u79F0", attr: "\u4F53\u683C" },
-              { text: "\u76EE\u5149\u8B66\u89C9", attr: "\u654F\u9510" }
-            ]
-          };
-          const revealedSet = new Set(
-            Object.entries(HER_PROFILE.attrs).filter(([, v]) => v != null).map(([n]) => n)
-          );
-          const pattrsEl = document.getElementById("pattrs");
-          if (pattrsEl) {
-            pattrsEl.innerHTML = Object.entries(HER_PROFILE.attrs).map(
-              ([name, v]) => v == null ? `<div class="pattr unknown"><div class="an">${name}</div><div class="av">\uFF1F</div></div>` : `<div class="pattr" data-tip="${herAttrTip(name, v)}"><div class="an">${name}</div><div class="av">${v}</div></div>`
-            ).join("");
-          }
-          const ptagsEl = document.getElementById("ptags");
-          if (ptagsEl) {
-            ptagsEl.innerHTML = HER_PROFILE.tags.filter((t) => !revealedSet.has(t.attr)).map(
-              (t) => `<span class="tag" data-tip="\u6A21\u7CCA\u5370\u8C61\uFF1A\u53EA\u77E5\u9053\u5927\u81F4\u8303\u56F4\uFF0C\u6253\u91CF\u5927\u6210\u529F\u53EF\u63ED\u793A\u51C6\u786E\u6570\u503C">${t.text}</span>`
-            ).join("") || '<span class="label">\u5370\u8C61\u5DF2\u5168\u90E8\u88AB\u51C6\u786E\u6570\u503C\u53D6\u4EE3</span>';
-          }
-        }
         function reportSyncError(code) {
           const notice = document.getElementById("wxSyncNotice");
           if (notice) {
@@ -12992,6 +13061,10 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           console.warn("[CHAT_SYNC:UI]", code);
         }
         function resetDisplay() {
+          clearLiveData(document);
+          details.reset();
+          render._hist = [];
+          stopAudio();
           ZERO.done = false;
           ZERO.step = 1;
           ZERO.identity = null;
@@ -13000,6 +13073,11 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           ZERO.personas = {};
           ZERO.points = { str: 4, agi: 4, nrv: 4, int: 4, cha: 4 };
           view.snapshot = null;
+          currentCapsuleActions = [];
+          currentDynamicCapsules = [];
+          document.getElementById("wxChipsWrap")?.replaceChildren();
+          document.getElementById("wxActionDrawerBody")?.replaceChildren();
+          document.querySelectorAll("dialog.wx-dialog[open]").forEach((dialog) => dialog.close());
           updateIdBadge(null);
           updateZeroChip();
           openCreate();

@@ -4,6 +4,7 @@ const { classifyPlace } = require("../../contracts/action-requirements.js");
 const R = require("../../config/rules.json");
 const C = require("../checks.js");
 const map = require("../map.js");
+const F = require("../facts.js");
 const ALBUM = require("../album.js");
 const { WEATHER_ICON, SHOE_DIST_FACTOR } = require("./constants.js");
 
@@ -138,6 +139,17 @@ function createSnapshotSystem({
         targetState: g.targetState
           ? JSON.parse(JSON.stringify(g.targetState))
           : null,
+        profile: {
+          targetId: g.targetId,
+          attrs: {}, // No persisted attribute-discovery system exists yet.
+          impressions: [],
+          facts:
+            F.view(g.targetId, {
+              pi: s.pi,
+              tickets: [],
+              assignedFacts: g.targetPersona?.assignedFacts,
+            })?.facts || [],
+        },
         envSfx,
         placeKind: classifyPlace(curId, cur?.name || ""),
         mode: g.mode,
@@ -193,15 +205,7 @@ function createSnapshotSystem({
               ? "🐱 惊动暗巷野猫！垃圾桶传来抓挠声"
               : "🐕 触动庭院犬吠！院内传来低沉低吼"
             : null),
-        signal:
-          g.signals && g.signals.length > 0
-            ? g.signals.slice(-8)
-            : [
-                [
-                  (g.route && g.route.startTime) || "21:00",
-                  "目标离开原位，步入街道",
-                ],
-              ],
+        signal: g.signals?.slice(-8) || [],
         proxLog:
           g.proxLogs && g.proxLogs.length > 0
             ? g.proxLogs.slice(-5).reverse()

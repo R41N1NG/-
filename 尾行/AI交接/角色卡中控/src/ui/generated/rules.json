@@ -1,4 +1,24 @@
 {
+  "targetContent": {
+    "ol": {
+      "hasPack": false
+    },
+    "college": {
+      "hasPack": true
+    },
+    "student": {
+      "hasPack": true
+    },
+    "club": {
+      "hasPack": false
+    },
+    "wife": {
+      "hasPack": false
+    },
+    "police": {
+      "hasPack": false
+    }
+  },
   "identities": {
     "student": {
       "name": "学生",

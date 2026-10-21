@@ -11,7 +11,7 @@ const IDENTITY_DATA = {
   ),
 };
 
-const TARGET_DATA = { list: CONFIG.targets };
+const TARGET_DATA = { list: CONFIG.targets, content: CONFIG.targetContent };
 
 const TARGET_NAME_POOL = CONFIG.generator.namePool;
 

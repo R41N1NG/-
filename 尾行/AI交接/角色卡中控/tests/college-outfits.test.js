@@ -184,7 +184,7 @@ test("女大学生全周动线矩阵：8大路线与节点拓扑全量连通且�
   }
 });
 
-test("突发扰动与作业延误：起点推迟40分钟（至22:10出发）与首节点信号联动及概率公式推导", () => {
+test("突发扰动与作业延误：起点推迟40分钟（至22:10出发）与计划时间联动及概率公式推导", () => {
   const pack = LP.packs.college;
   const { nightConditions } = require("../src/runtime/facts.js");
   const { createGame } = require("../src/runtime/game.js");
@@ -211,7 +211,7 @@ test("突发扰动与作业延误：起点推迟40分钟（至22:10出发）与�
   assert.equal(delayRoute.path[0].place, "school_gate_b", "起点为大学校门");
   assert.equal(delayRoute.path[0].t, "2210", "起点时间必须推迟40分钟至 22:10 出发");
 
-  // 4. 中控状态机集成：装载延误动线时，首条信号起步时间动态呈现为 22:10
+  // 4. 中控状态机集成：装载延误动线时，计划时间为 22:10，未发生的观察不生成信号
   const gDelay = createGame({
     targetId: "college",
     stats: { date: 1, heart: 30, stamina: 100, cash: 800, pi: 0 },
@@ -228,8 +228,7 @@ test("突发扰动与作业延误：起点推迟40分钟（至22:10出发）与�
   });
 
   const snap = gDelay.snapshot();
-  assert.ok(snap.signal && snap.signal.length > 0, "快照必须包含初始信号");
-  assert.equal(snap.signal[0][0], "22:10", "作业延误首条信号时间必须为推迟后的 22:10");
+  assert.deepEqual(snap.signal, [], "计划时间不能伪装为已发生的观察信号");
   assert.equal(snap.route.startTime, "22:10", "动线对象携带的 startTime 必须为 22:10");
 });
 

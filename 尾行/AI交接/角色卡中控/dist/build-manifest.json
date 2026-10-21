@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.1",
+  "version": "0.8.2",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "bf423b449f61898cea092e5e76f8f7187ef396fd19d2894214d86b9b1caa17e7",
+  "sourceHash": "60f23cf52619f9657a95694c52835db288867e1c321da832c372f56cfb7825c6",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "99e70afa73b0de1a033e1f5ee2b510a1d88d6592ff81062def305c0e6fc90e54"
+      "sha256": "3808f76e0cefe60db495dbe647179aed57c8e951111712dd20851b893c03bfc5"
     },
     {
       "file": "package.json",
-      "sha256": "92839b93410c5a71c558c1336e997b2d5473018b35121eb915f49d0310ff5c96"
+      "sha256": "10bb063fa00d7ca0f545288609a897d2f7d87b8588ff2a76e59f320ebafb0486"
     },
     {
       "file": "src/config/lexicon.json",
@@ -195,7 +195,7 @@
     },
     {
       "file": "src/runtime/game/snapshot.js",
-      "sha256": "59c6d28c53a2da3866d6ac8ac016d7c6bfa784a415a62a929d4eeeeef0b7d293"
+      "sha256": "d112dfe6f9fe8b5c72453a546ce2c75e41c476fb4efe6e3a2b5d18af61c20084"
     },
     {
       "file": "src/runtime/game/target.js",
@@ -267,11 +267,11 @@
     },
     {
       "file": "src/ui/audio.js",
-      "sha256": "353e7eb415db4f7bbb5b200e993c4c5befbb8037dcd034d8592aac19360859b0"
+      "sha256": "deec79b0ec7507e90b7f9173130c5071eaab189e566b55cb3f24744a20dc186e"
     },
     {
       "file": "src/ui/creation-data.js",
-      "sha256": "c35ed9d8b35818e0d5c236959cdcd9d0b7f60109e0dcadc89661ab7f8fc97f31"
+      "sha256": "379b0aa8a442c38d2c81d50fb8c0cfa8add15e6890ab031b31b1cfa27a88cf8e"
     },
     {
       "file": "src/ui/creation-presentation.json",
@@ -283,7 +283,7 @@
     },
     {
       "file": "src/ui/generated/rules.json",
-      "sha256": "df2a10bca7bc863532c3ab4f17d6aad5292eaa3113b3b2c6945e72bc7d8d546c"
+      "sha256": "132784bcdf89a55c8e7d9b721e81e3b0d0813be46aa6533f048fe06c052337a1"
     },
     {
       "file": "src/ui/icons.js",
@@ -298,8 +298,16 @@
       "sha256": "a59ccb98dc912bd0ac54b2322b5cd10c30fc0d43317581e37266992121657cb3"
     },
     {
+      "file": "src/ui/renderers/details.js",
+      "sha256": "cd97f9babb5c41dc71788f85660ee8ea5dafdce1da838c62e387eabc5425de1a"
+    },
+    {
+      "file": "src/ui/renderers/empty.js",
+      "sha256": "a86b0bf28c8e73e7dffa3622a96f33494a5ce0f81925f190006d11eb3390c29f"
+    },
+    {
       "file": "src/ui/renderers/snapshot.js",
-      "sha256": "1144a405b4b58121ae47e6bd11709adac3b995a310377a3ecfee408cdd02ddb4"
+      "sha256": "10f3d82a64041745b5c8008a465d841e5ff4d8c09a6da3e84e271d7165164da0"
     },
     {
       "file": "src/ui/settlement/controller.js",
@@ -311,15 +319,15 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "9efe48617cd9ac1d2391c08770a8016dbcf02e7ca28af0f16753809344245b01"
+      "sha256": "5e4dd5e888306bb9769e5e46c1127152c3b2293a86fa726db0513c2fb4cce0f7"
     },
     {
       "file": "src/ui/styles/statusbar.css",
-      "sha256": "b9ebbe8415817fc6b3e860cbb23dce6a2d7d1e148fc424306df6b668154357b2"
+      "sha256": "bc88ec7a74216329733fb54744083d8d6a82883804062ddcd77bf61e7cadda06"
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "9d47de7fd2148d241650010f8b392ee618d633f2aece29f06ee78c4b4fb9f33a"
+      "sha256": "fbe4333aab507ed5f886ef90a3e309c1f2c463fad505576635de9e4ee174eaf7"
     },
     {
       "file": "src/ui/zero-floor/host.js",
@@ -343,7 +351,7 @@
     },
     {
       "file": "tools/build/ui-config.js",
-      "sha256": "0505fec174a9d42a0f7eb0c1fabe2bc01d334dd519698fd68095a7cff30d718c"
+      "sha256": "6e4c76936891fd650aa6771d214fdb85519533e922683289f5f090cd193352ca"
     },
     {
       "file": "tools/build/ui.js",
@@ -352,16 +360,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 517465,
-      "sha256": "fb08b45bf335031f96828282639161930801fc2904a4d6408cea8ce2bb549e64"
+      "bytes": 517676,
+      "sha256": "6e727d5e5185976b45caa2ce738d330dff6eb03cf4d06ed7400ffe13b76b7f19"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1122186,
-      "sha256": "21b4a9b55ad20fc3d3a9ebbc384fedf5ba791884822d4ca36d35aec3ba7fae0c"
+      "bytes": 1119498,
+      "sha256": "119f03a150c52fc652c905c1ac7c0242170e0991e2802b62a64514ec8e4c2b01"
     },
     "尾行.json": {
-      "bytes": 1233381,
-      "sha256": "e4469e49903cb248ce18e648f6d597d0ca44e7e259ffdd672652474155f5cb80"
+      "bytes": 1230382,
+      "sha256": "5a377b8867f855f9ba44ac66c05d0a06da4440a99f866ca90f32c71e2370a643"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

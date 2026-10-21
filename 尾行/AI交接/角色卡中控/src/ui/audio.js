@@ -8,7 +8,6 @@ function createAudio({
   heartToBpm,
   heartFreq,
   ico,
-  MOCKS,
   renderSnapshot,
   getHeart,
   getMode,
@@ -586,6 +585,7 @@ function createAudio({
   }
   async function toggleAudio() {
     if (audioOn || audioPending) return stopAudio();
+    if (!getSnapshot()) return soundUI("完成开局后再开启心跳声");
     if (!AudioCtor) return soundUI("当前浏览器不支持心跳音效");
     if (document.hidden) return soundUI("回到页面后点击开启心跳声");
     const revision = ++audioRevision;
@@ -626,34 +626,30 @@ function createAudio({
   }
   /* 结算 spike：+8 刺激的重拍（真机由中控结算回执触发） */
   function spike() {
-    if (!audioOn) return soundUI("先开启雨夜心跳声，再试 spike");
-    const t = audioContext.currentTime,
-      v = (0.55 + (getHeart() / 100) * 0.45) * vol.heart;
-    thump(t, 38, Math.max(v, 0.5) * 1.9);
-    thump(t + 0.15, 36, Math.max(v, 0.5) * 1.5);
-    const vig = document.getElementById("trpgVignette");
-    if (vig) {
-      vig.classList.remove("pulse");
-      void vig.offsetWidth;
-      vig.classList.add("pulse");
+    if (__WX_PREVIEW__) {
+      if (!audioOn) return soundUI("先开启雨夜心跳声，再试 spike");
+      const t = audioContext.currentTime,
+        v = (0.55 + (getHeart() / 100) * 0.45) * vol.heart;
+      thump(t, 38, Math.max(v, 0.5) * 1.9);
+      thump(t + 0.15, 36, Math.max(v, 0.5) * 1.5);
+      const vig = document.getElementById("trpgVignette");
+      if (vig) {
+        vig.classList.remove("pulse");
+        void vig.offsetWidth;
+        vig.classList.add("pulse");
+      }
+      const snap = getSnapshot();
+      if (snap)
+        renderSnapshot({
+          ...snap,
+          player: {
+            ...snap.player,
+            heart: Math.min(100, snap.player.heart + 8),
+          },
+        });
     }
-    const next = getHeart() + 8 >= 100 ? 100 : getHeart() + 8;
-    renderSnapshot({
-      ...MOCKS[
-        document.querySelector('[data-preset][aria-pressed="true"]')?.dataset
-          .preset || "sweet"
-      ],
-      player: {
-        heart: next,
-        stamina: 72,
-        cash: 240,
-        pi: 18,
-        proximity: 36,
-        date: 3,
-        attrs: { str: 2, agi: 4, nrv: 3, int: 8, cha: 8 },
-      },
-    });
   }
+
   /* 三音量滑条联动 */
   function applyVolumes() {
     if (heartBus)
