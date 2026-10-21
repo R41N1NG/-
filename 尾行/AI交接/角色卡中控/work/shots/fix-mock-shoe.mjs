@@ -1,0 +1,10 @@
+﻿import { readFileSync, writeFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+const here = dirname(fileURLToPath(import.meta.url));
+const file = join(here, "..", "..", "状态栏.html");
+let t = readFileSync(file, "utf8");
+const before = (t.match(/shoe:'flat'[,}]/g) || []).length;
+t = t.replace(/shoe:'flat'(?=[,}])/g, "shoe:'flats'");
+writeFileSync(file, t, "utf8");
+console.log("修正 flat→flats 次数 =", before);

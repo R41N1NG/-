@@ -1,0 +1,15 @@
+﻿import { readFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+const here = dirname(fileURLToPath(import.meta.url));
+const src = readFileSync(join(here, "..", "..", "状态栏.html"), "utf8");
+const CHROME = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+const LAYOUT = `<style>html,body{margin:0;height:100%}body{display:flex;flex-direction:column;justify-content:flex-end;background:#1b1f24}main.wx-standalone-main{min-height:0;padding:0 8px 8px}</style>`;
+const helper = `<script>setInterval(()=>{const c=document.getElementById('wx-create-dialog');if(c){try{c.close()}catch(e){}};const z=document.getElementById('zeroChip');if(z){z.hidden=true;z.style.display='none'}},100);</script>`;
+const html = src.replace("</html>", LAYOUT + helper + "\n</html>");
+const file = join(here, "_bar_c1.html");
+writeFileSync(file, html, "utf8");
+const url = "file:///" + file.replace(/\\/g, "/").replace(/ /g, "%20");
+execFileSync(CHROME, ["--headless=new","--no-sandbox","--disable-gpu","--disable-breakpad","--hide-scrollbars","--allow-file-access-from-files",`--user-data-dir=${join(here,"_ud")}`,"--virtual-time-budget=5000","--window-size=980,220",`--screenshot=${join(here,"bar_c1.png")}`,url], { stdio: "ignore" });
+console.log("bar_c1.png ok");

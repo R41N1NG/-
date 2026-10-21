@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<title>她的警觉 · 竖条三案预览</title>
+<style>
+  :root {
+    --bg: #0b1219;
+    --card: rgba(16, 23, 31, 0.98);
+    --line: #3c526b;
+    --t-hi: #eef4fa;
+    --t-mid: #93a7ba;
+    --t-low: #5f7284;
+    --heat: #f0b355;
+    --danger: #ff5a68;
+    --safe: #5fd6c3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: radial-gradient(circle at 50% 0%, #131c26 0%, #070b10 70%); font-family: "Noto Sans SC", system-ui, sans-serif; color: var(--t-hi); }
+  .wrap { padding: 26px 24px 30px; }
+  h1 { font-size: 14px; font-weight: 600; letter-spacing: .08em; color: var(--t-mid); margin: 0 0 18px; }
+  .row { display: flex; gap: 18px; align-items: flex-start; }
+  .slot { display: flex; flex-direction: column; gap: 8px; }
+  .slot > .tag { font: 600 10px/1 ui-monospace, Consolas, monospace; letter-spacing: .14em; color: var(--t-low); padding-left: 2px; }
+  .card {
+    width: 268px; background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.05);
+  }
+  .head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a3746; padding-bottom: 5px; }
+  .title { font-size: 11px; font-weight: 600; color: #a4b9c9; letter-spacing: .5px; }
+  .x { color: #7d91a3; font-size: 12px; }
+  .body { display: flex; gap: 10px; align-items: stretch; }
+  .left { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+  .dial {
+    width: 118px; height: 118px; border-radius: 50%;
+    border: 9px solid #2a3746; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 55%, rgba(255,255,255,.03), transparent 70%);
+  }
+  .dial::before {
+    content: ''; position: absolute; inset: -9px; border-radius: 50%;
+    background: conic-gradient(from 210deg, transparent 0 18%, var(--safe) 18% 46%, transparent 46% 62%, var(--heat) 62% 72%, transparent 72% 78%, var(--danger) 78% 86%, transparent 86% 100%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 9px), #000 calc(100% - 8px));
+            mask: radial-gradient(farthest-side, transparent calc(100% - 9px), #000 calc(100% - 8px));
+    opacity: .85;
+  }
+  .dial .label { font-size: 9px; color: var(--t-low); letter-spacing: .1em; }
+  .dial .num { font: 700 34px/1 ui-monospace, Consolas, monospace; color: var(--t-hi); }
+  .dial .bpm { font: 500 9px/1 ui-monospace, Consolas, monospace; color: var(--t-low); margin-top: 3px; }
+  .stamina { width: 100%; }
+  .stamina .row2 { display: flex; justify-content: space-between; font-size: 9.5px; color: var(--t-low); margin-bottom: 3px; }
+  .track { height: 5px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .track > i { display: block; height: 100%; width: 72%; background: linear-gradient(90deg, #3f7f74, var(--safe)); }
+  .spark { width: 100%; height: 14px; opacity: .8; }
+
+  /* 右栏 */
+  .her { flex: 0 0 78px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-left: 9px; border-left: 1px solid rgba(255,255,255,.08); justify-content: center; }
+  .her .cap { font: 600 8.5px/1 ui-monospace, Consolas, monospace; letter-spacing: .16em; color: var(--t-low); }
+
+  /* A：五格竖条 */
+  .cells { display: flex; flex-direction: column-reverse; gap: 3px; }
+  .cells i { width: 16px; height: 15px; border-radius: 1px; background: rgba(255,255,255,.09); display: block; }
+  .cells i.on { background: var(--heat); }
+  /* B/C：连续液面 */
+  .gauge { width: 18px; height: 98px; border-radius: 2px; background: rgba(255,255,255,.08); position: relative; overflow: hidden; }
+  .gauge > .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: linear-gradient(180deg, var(--heat), #c98f34); }
+  .gauge .tick { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255,255,255,.14); }
+  .ticklabels { position: relative; width: 100%; height: 98px; }
+  .name { font: 600 14px/1 "Noto Sans SC", system-ui, sans-serif; color: var(--t-mid); }
+  .range { font: 500 9px/1 ui-monospace, Consolas, monospace; color: var(--t-low); letter-spacing: .06em; }
+  .note { margin-top: 16px; font-size: 11px; color: var(--t-low); line-height: 1.7; }
+  .note b { color: var(--t-mid); font-weight: 600; }
+</style>
+<div class="wrap">
+  <h1>她的警觉 · 竖条三案（同一档：留意 2/5）</h1>
+  <div class="row">
+    <div class="slot">
+      <span class="tag">A · 五格离散</span>
+      <div class="card">
+        <div class="head"><span class="title">生理心率与压力监控</span><span class="x">✕</span></div>
+        <div class="body">
+          <div class="left">
+            <div class="dial"><span class="label">心跳</span><span class="num">58</span><span class="bpm">69 BPM</span></div>
+            <div class="stamina"><div class="row2"><span>体力</span><span>72%</span></div><div class="track"><i></i></div></div>
+            <svg class="spark" viewBox="0 0 120 14" preserveAspectRatio="none"><polyline points="0,7 14,7 20,3 26,11 32,7 48,7 54,2 60,12 66,7 84,7 90,5 96,9 102,7 120,7" fill="none" stroke="#5fd6c3" stroke-width="1.4"/></svg>
+          </div>
+          <aside class="her">
+            <span class="cap">她的警觉</span>
+            <span class="cells"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>
+            <span class="name">不安</span>
+            <span class="range">21–40</span>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div class="slot">
+      <span class="tag">B · 连续液面</span>
+      <div class="card">
+        <div class="head"><span class="title">生理心率与压力监控</span><span class="x">✕</span></div>
+        <div class="body">
+          <div class="left">
+            <div class="dial"><span class="label">心跳</span><span class="num">58</span><span class="bpm">69 BPM</span></div>
+            <div class="stamina"><div class="row2"><span>体力</span><span>72%</span></div><div class="track"><i></i></div></div>
+            <svg class="spark" viewBox="0 0 120 14" preserveAspectRatio="none"><polyline points="0,7 14,7 20,3 26,11 32,7 48,7 54,2 60,12 66,7 84,7 90,5 96,9 102,7 120,7" fill="none" stroke="#5fd6c3" stroke-width="1.4"/></svg>
+          </div>
+          <aside class="her">
+            <span class="cap">她的警觉</span>
+            <div class="gauge"><span class="fill"></span></div>
+            <span class="name">不安</span>
+            <span class="range">21–40</span>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div class="slot">
+      <span class="tag">C · 液面 + 刻度</span>
+      <div class="card">
+        <div class="head"><span class="title">生理心率与压力监控</span><span class="x">✕</span></div>
+        <div class="body">
+          <div class="left">
+            <div class="dial"><span class="label">心跳</span><span class="num">58</span><span class="bpm">69 BPM</span></div>
+            <div class="stamina"><div class="row2"><span>体力</span><span>72%</span></div><div class="track"><i></i></div></div>
+            <svg class="spark" viewBox="0 0 120 14" preserveAspectRatio="none"><polyline points="0,7 14,7 20,3 26,11 32,7 48,7 54,2 60,12 66,7 84,7 90,5 96,9 102,7 120,7" fill="none" stroke="#5fd6c3" stroke-width="1.4"/></svg>
+          </div>
+          <aside class="her">
+            <span class="cap">她的警觉</span>
+            <div class="gauge">
+              <span class="fill" style="height:42%"></span>
+              <span class="tick" style="bottom:20%"></span>
+              <span class="tick" style="bottom:40%"></span>
+              <span class="tick" style="bottom:60%"></span>
+              <span class="tick" style="bottom:80%"></span>
+            </div>
+            <span class="name">不安</span>
+            <span class="range">21–40</span>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="note"><b>A</b> 五格离散：一档一格，读的是“她更警觉了一点”，仍然算不出数值。<br>
+  <b>B</b> 连续液面：涨感最强，但液面高度≈数值比例，等于把数字画出来。<br>
+  <b>C</b> 液面 + 20/40/60/80 刻度：涨感与档位兼顾，刻度会诱导顺着算。<br>
+  三案都已去掉「甜区 40–65 · 变形 70 · 崩溃 90」那一行。</p>
+</div>
+</html>

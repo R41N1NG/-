@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>尾行 · 判定演出预览</title>
+<style>
+  :root{
+    --bg:#07090d; --panel:#0d1219; --line:rgba(90,140,200,.25);
+    --cool:#4f8fd6; --bright:#a8d4ff; --cyan:#6fd3c7; --red:#e0566a;
+    --gold:#d6b96a; --tx:#c8d3e8; --dim:#5d6b85;
+    --mono:Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:
+      radial-gradient(ellipse at 50% 0%, #0b1018 0%, var(--bg) 60%), var(--bg);
+    color:var(--tx);font:15px/1.8 "Microsoft YaHei",system-ui,sans-serif;padding:26px 16px 60px}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px)}
+
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-size:19px;letter-spacing:.25em;color:#e8f1fc;display:flex;align-items:center;gap:12px}
+  h1 .rec{font-size:11px;letter-spacing:2px;color:#ffb9c4;font-family:var(--mono);
+    border:1px solid rgba(224,86,106,.45);border-radius:4px;padding:3px 8px;
+    display:inline-flex;align-items:center;gap:6px}
+  h1 .rec i{width:7px;height:7px;border-radius:50%;background:var(--red);
+    box-shadow:0 0 8px rgba(224,86,106,.9);animation:blink 1.2s steps(2) infinite}
+  @keyframes blink{50%{opacity:.15}}
+  .sub{color:var(--dim);font-size:13px;margin:8px 0 20px;line-height:1.9}
+
+  .desk{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:13px;
+    background:linear-gradient(180deg,#101724,#0b101a);border:1px solid var(--line);
+    border-radius:10px;padding:10px 14px;margin-bottom:18px}
+  .desk label{color:var(--dim);display:flex;align-items:center;gap:6px}
+  .desk input[type=checkbox]{accent-color:var(--cool)}
+  .desk input[type=range]{accent-color:var(--cool);width:120px}
+  .desk .val{color:var(--bright);font-family:var(--mono);min-width:40px}
+  button{cursor:pointer;font-family:var(--mono);letter-spacing:.15em;
+    background:linear-gradient(180deg,#16233a,#0e1728);color:var(--bright);
+    border:1px solid rgba(79,143,214,.5);border-radius:6px;padding:7px 20px;font-size:14px;transition:.2s}
+  button:hover{border-color:var(--cool);box-shadow:0 0 12px rgba(79,143,214,.3);color:#fff}
+  button:disabled{opacity:.35;cursor:wait}
+
+  /* ═══ 判定演出面板（插件结算台内） ═══ */
+  .panel{position:relative;overflow:hidden;border-radius:10px;
+    background:linear-gradient(180deg,#0c1220,#090d15);
+    border:1px solid var(--line);
+    min-height:210px;display:flex;align-items:center;justify-content:center}
+  /* 角落取景括弧 */
+  .panel::before,.panel::after,.panel .c3,.panel .c4{
+    content:"";position:absolute;width:14px;height:14px;border:2px solid rgba(79,143,214,.55);z-index:5}
+  .panel::before{top:8px;left:8px;border-right:none;border-bottom:none}
+  .panel::after{top:8px;right:8px;border-left:none;border-bottom:none}
+  .panel .c3{bottom:8px;left:8px;border-right:none;border-top:none}
+  .panel .c4{bottom:8px;right:8px;border-left:none;border-top:none}
+
+  .queue{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+    font:11px var(--mono);letter-spacing:.25em;color:var(--dim);z-index:6}
+
+  /* 背景小雷达环 */
+  .ring-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s}
+  .phase-run .ring-bg{opacity:.55}
+  .ring-bg svg{width:190px;height:190px}
+  .r1{animation:spin 9s linear infinite;transform-box:view-box;transform-origin:center}
+  .r2{animation:spinR 6s linear infinite;transform-box:view-box;transform-origin:center}
+  .phase-run .r1{animation-duration:3.5s}
+  .phase-run .r2{animation-duration:2.2s}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes spinR{to{transform:rotate(-360deg)}}
+
+  /* 心电图线（底部横贯） */
+  .ekg{position:absolute;left:0;right:0;bottom:14px;height:44px;opacity:0;transition:opacity .35s;pointer-events:none}
+  .phase-run .ekg{opacity:.6}
+  .ekg svg{width:100%;height:100%;display:block}
+  .ekg path{fill:none;stroke:rgba(111,211,199,.75);stroke-width:1.6;
+    filter:drop-shadow(0 0 5px rgba(111,211,199,.55))}
+  .ekg .trace{stroke-dasharray:640;stroke-dashoffset:640;animation:ekgRun 1.6s linear infinite}
+  .fast .ekg .trace{animation-duration:0.7s}
+  @keyframes ekgRun{to{stroke-dashoffset:-640}}
+  /* 危险态预留：真机接心跳值（90+ 线转红），与骰子输赢无关，演示中不启用 */
+  .ekg.danger path{stroke:rgba(224,86,106,.85);filter:drop-shadow(0 0 5px rgba(224,86,106,.6))}
+
+  /* 雨丝 */
+  .drops{position:absolute;inset:0;overflow:hidden;opacity:0;transition:opacity .3s}
+  .phase-run .drops{opacity:1}
+  .drop{position:absolute;top:-10%;width:1px;height:34px;
+    background:linear-gradient(180deg,transparent,rgba(140,180,230,.4),transparent);
+    transform:rotate(9deg);animation:fall .8s linear infinite}
+  @keyframes fall{0%{transform:translateY(-6vh) rotate(9deg);opacity:0}15%{opacity:.7}100%{transform:translateY(60vh) rotate(9deg);opacity:.2}}
+
+  /* 主舞台 */
+  .theater{position:relative;z-index:4;text-align:center;padding:26px 20px 20px;width:100%}
+
+  /* ① 捕获徽章 */
+  .badge{display:inline-flex;align-items:center;gap:8px;
+    font:14px var(--mono);letter-spacing:.2em;color:var(--bright);
+    border:1px solid rgba(79,143,214,.5);border-radius:5px;
+    padding:6px 16px;background:rgba(79,143,214,.08);
+    opacity:0;transform:translateY(8px)}
+  .badge.show{animation:badgeIn .35s cubic-bezier(.2,1.2,.4,1) both}
+  @keyframes badgeIn{from{opacity:0;transform:translateY(10px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .badge .tick{color:var(--cyan)}
+
+  /* ② 修正装填条 */
+  .mods{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:34px;margin:16px 0 4px}
+  .mod{font:12px var(--mono);letter-spacing:.1em;padding:4px 12px;border-radius:4px;
+    border:1px solid rgba(79,143,214,.4);color:#9fb8d8;background:rgba(79,143,214,.07);
+    opacity:0;transform:translateY(6px)}
+  .mod.in{animation:modIn .28s ease both}
+  @keyframes modIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .mod.hidden-mod{border-color:rgba(224,86,106,.45);color:#c98a96;background:rgba(224,86,106,.06)}
+  .mod .v{color:var(--bright)}
+  .mod.hidden-mod .v{color:#ff9daa}
+
+  /* ③ 跳字读数 */
+  .counter{position:relative;height:96px;display:flex;align-items:center;justify-content:center;gap:26px}
+  .digits{font:800 72px var(--mono);color:var(--bright);
+    text-shadow:0 0 24px rgba(79,143,214,.55);min-width:120px;text-align:center}
+  .digits.rolling{color:#7ea9dd;text-shadow:0 0 14px rgba(79,143,214,.35)}
+  .digits.locked{animation:lockIn .3s cubic-bezier(.2,1.5,.4,1) both}
+  @keyframes lockIn{from{transform:scale(1.28)}to{transform:scale(1)}}
+  .vsbox{font:15px var(--mono);color:var(--dim);text-align:left;opacity:0;transform:translateX(-8px)}
+  .vsbox.show{opacity:1;transform:none;transition:.3s}
+  .vsbox b{color:var(--tx);font-size:22px}
+  .vsbox .dcv{color:var(--gold)}
+
+  /* 步进词 */
+  .steps{font:12px var(--mono);letter-spacing:.35em;color:var(--dim);margin-top:2px;min-height:20px}
+  .steps em{font-style:normal;color:var(--cyan)}
+
+  /* ④ 结果横幅 */
+  .verdict{margin-top:10px;font:700 20px var(--mono);letter-spacing:.5em;
+    opacity:0;transform:scale(1.3)}
+  .verdict.show{animation:vIn .38s cubic-bezier(.2,1.4,.4,1) .05s both}
+  @keyframes vIn{from{opacity:0;transform:scale(1.35)}to{opacity:1;transform:scale(1)}}
+  .verdict.ok{color:#8fe3b4;text-shadow:0 0 16px rgba(120,220,160,.5)}
+  .verdict.grace{color:var(--gold);text-shadow:0 0 16px rgba(214,185,106,.5)}
+  .verdict.bad{color:var(--red);text-shadow:0 0 16px rgba(224,86,106,.5)}
+  .verdict.crit{color:var(--bright);text-shadow:0 0 20px rgba(168,212,255,.7)}
+
+  /* 冷光闪（盘心） */
+  .flash{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:6;
+    background:radial-gradient(circle at 50% 50%, rgba(224,244,255,.85) 0%, rgba(168,212,255,.35) 25%, transparent 60%)}
+  .flash.go{animation:fl .75s ease-out both}
+  .flash.ok{background:radial-gradient(circle at 50% 50%, rgba(214,255,230,.55) 0%, rgba(120,220,160,.22) 25%, transparent 60%)}
+  .flash.bad{background:radial-gradient(circle at 50% 50%, rgba(255,220,224,.55) 0%, rgba(224,86,106,.22) 25%, transparent 60%)}
+  .flash.crit{background:radial-gradient(circle at 50% 50%, rgba(255,246,214,.6) 0%, rgba(214,185,106,.28) 28%, transparent 65%)}
+  @keyframes fl{0%{opacity:0}15%{opacity:1}62%{opacity:.8}100%{opacity:0}}
+
+  /* 全面板色晕：结果色渗进整个界面（微闪一遍） */
+  .tint{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:3}
+  .tint.go{animation:tintFl .75s ease-out both}
+  .tint.ok{background:radial-gradient(ellipse at 50% 55%, rgba(120,220,160,.09) 0%, rgba(120,220,160,.03) 45%, transparent 75%)}
+  .tint.bad{background:radial-gradient(ellipse at 50% 55%, rgba(224,86,106,.10) 0%, rgba(224,86,106,.03) 45%, transparent 75%)}
+  .tint.crit{background:radial-gradient(ellipse at 50% 55%, rgba(214,185,106,.12) 0%, rgba(214,185,106,.04) 48%, transparent 78%)}
+  @keyframes tintFl{0%{opacity:0}15%{opacity:1}62%{opacity:.8}100%{opacity:0}}
+
+  /* 结果流水条（演出后长出来） */
+  .flow{margin-top:14px;padding:10px 14px;border-top:1px dashed rgba(90,140,200,.25);
+    font:12.5px var(--mono);color:#8fa8c9;opacity:0}
+  .flow.show{animation:modIn .4s ease both}
+  .flow b{color:var(--bright);font-weight:normal}
+  .flow .ok{color:#8fe3b4}.flow .bad{color:var(--red)}
+
+  .note{margin-top:16px;font-size:12.5px;color:#46536b;line-height:2}
+  .note b{color:#7d94b5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="rec"><i></i>JUDGE</span>判定演出 · 插件结算台</h1>
+  <div class="sub">
+    位置：玩家输入 → <b>插件捕获动作队列 → 逐项判定演出（本页）→ 结果包 → LLM 演绎</b>。
+    不做骰子模型——做「掷骰的读数」：跳字减速定格，数字就是后台种子骰的真值。
+  </div>
+
+  <div class="desk">
+    <button id="btn1">单动作演示</button>
+    <button id="btn2">队列连播 ×2（含余波传递）</button>
+    <label>结果
+      <select id="scenePick">
+        <option value="random">随机</option>
+        <option value="success">成功</option>
+        <option value="fail">失败</option>
+        <option value="crit">大成功</option>
+      </select>
+    </label>
+    <label>时长 <input type="range" id="dur" min="1200" max="3000" step="200" value="2200"><span class="val" id="durVal">2.2s</span></label>
+  </div>
+
+  <div class="panel" id="panel">
+    <span class="c3"></span><span class="c4"></span>
+    <div class="queue" id="queue"></div>
+    <div class="ring-bg">
+      <svg viewBox="0 0 200 200">
+        <g class="r1">
+          <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(79,143,214,.3)" stroke-width="1" stroke-dasharray="4 7"/>
+          <circle cx="100" cy="100" r="78" fill="none" stroke="rgba(79,143,214,.18)" stroke-width="1"/>
+        </g>
+        <g class="r2">
+          <circle cx="100" cy="100" r="62" fill="none" stroke="rgba(111,211,199,.22)" stroke-width="1" stroke-dasharray="2 9"/>
+        </g>
+        <circle cx="100" cy="100" r="48" fill="none" stroke="rgba(79,143,214,.25)" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="drops" id="drops"></div>
+    <div class="ekg" id="ekg">
+      <svg viewBox="0 0 640 44" preserveAspectRatio="none">
+        <path class="trace" d="M0,22 L28,22 L36,14 L44,22 L64,22 L72,22 L78,4 L86,38 L94,22 L118,22 L126,17 L134,22 L154,22 L162,22 L168,4 L176,38 L184,22 L208,22 L216,15 L224,22 L244,22 L252,22 L258,4 L266,38 L274,22 L298,22 L306,16 L314,22 L334,22 L342,22 L348,4 L356,38 L364,22 L388,22 L396,14 L404,22 L424,22 L432,22 L438,4 L446,38 L454,22 L478,22 L486,17 L494,22 L514,22 L522,22 L528,4 L536,38 L544,22 L568,22 L576,15 L584,22 L604,22 L612,22 L618,4 L626,38 L634,22 L640,22"/>
+      </svg>
+    </div>
+
+    <div class="theater">
+      <div class="badge" id="badge"></div>
+      <div class="mods" id="mods"></div>
+      <div class="counter">
+        <div class="digits" id="digits">–</div>
+        <div class="vsbox" id="vsbox">vs DC <b class="dcv" id="dcv">–</b></div>
+      </div>
+      <div class="steps" id="steps"></div>
+      <div class="verdict" id="verdict"></div>
+      <div class="flow" id="flow"></div>
+    </div>
+
+    <div class="flash" id="flash"></div>
+    <div class="tint" id="tint"></div>
+  </div>
+
+  <div class="note">
+    <b>演出脚本：</b>捕获徽章弹入（词表命中）→ 修正条逐项装填（她的暗账只显 <span style="color:#ff9daa">?? +2</span>）→
+    盘心跳字减速（种子骰真值）→ 咔哒定格 → 冷光一闪 → 判定词与流水长出。<br>
+    <b>队列连播：</b>第二段的修正条里会出现第一段的余波（[操作变形]），状态实时传递的可见版。
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ---------- 演示用假数据（真机从插件结算结果注入） ---------- */
+  const SCENES = [
+    { name:'跟缀 · 同街', dc:15,
+      mods:[['敏捷',5],['耳机伪装',2],['夜色',2],['?? ',2,'hidden']],
+      d20:14, total:23, band:'success', verdict:'成 功',
+      flow:'[跟速检定] 1d20(14) +5 敏捷 +2 耳机 +2 夜色 = 23 vs DC 15 → 成功' },
+    { name:'贴身尾随', dc:19,
+      mods:[['敏捷',5],['夜色',2],['?? ',2,'hidden']],
+      d20:3, total:8, band:'fail', verdict:'失 败',
+      flow:'[贴身尾随] 1d20(3) +5 敏捷 +2 夜色 = 8 vs DC 19 → 失败' },
+    { name:'读时机', dc:15,
+      mods:[['情报',8]],
+      d20:20, total:28, band:'crit', verdict:'大成功',
+      flow:'[读时机] 1d20(20) +8 情报 = 28 vs DC 15 → 大成功 · 白拿一条额外情报' },
+  ];
+  const BY_BAND = Object.fromEntries(SCENES.map(s=>[s.band,s]));
+
+  const $=id=>document.getElementById(id);
+  const panel=$('panel'), badge=$('badge'), modsBox=$('mods'),
+        digits=$('digits'), dcv=$('dcv'), vsbox=$('vsbox'),
+        steps=$('steps'), verdict=$('verdict'), flow=$('flow'),
+        flash=$('flash'), queueTag=$('queue');
+  let busy=false;
+
+  $('dur').addEventListener('input',e=>$('durVal').textContent=(+e.target.value/1000).toFixed(1)+'s');
+
+  /* 雨丝 */
+  for(let i=0;i<12;i++){
+    const d=document.createElement('span');d.className='drop';
+    d.style.left=(Math.random()*100)+'%';
+    d.style.animationDelay=(Math.random()*0.8)+'s';
+    d.style.animationDuration=(0.6+Math.random()*0.5)+'s';
+    $('drops').appendChild(d);
+  }
+
+  function pick(){
+    const v=$('scenePick').value;
+    if(v==='random') return SCENES[Math.floor(Math.random()*SCENES.length)];
+    return BY_BAND[v];
+  }
+
+  /* ---------- 单段判定演出 ---------- */
+  function playOne(scene, idx, total, dur){
+    return new Promise(res=>{
+      panel.className='panel phase-run fast';
+      const ekg=$('ekg');
+      ekg.classList.remove('danger');   // 心电线只跟心跳值走，不跟骰子输赢
+      queueTag.textContent = total>1 ? `判定 ${idx+1}/${total}` : '';
+      badge.className='mods';
+      badge.className='badge';
+      badge.innerHTML=`<span class="tick">▸</span>${scene.name}`;
+      badge.classList.remove('show'); void badge.offsetWidth; badge.classList.add('show');
+
+      modsBox.innerHTML=''; vsbox.classList.remove('show');
+      verdict.className='verdict'; flow.className='flow'; flow.innerHTML='';
+      digits.className='digits'; digits.textContent='–';
+      steps.innerHTML='';
+
+      const T0=380, T_MOD=360, D=dur, T_ROLL=D-T0-T_MOD-500;
+      const t=[]; const later=(fn,ms)=>t.push(setTimeout(fn,ms));
+
+      /* 修正条逐项装填 */
+      scene.mods.forEach((m,i)=>later(()=>{
+        const el=document.createElement('span');
+        el.className='mod'+(m[2]==='hidden'?' hidden-mod':'');
+        el.innerHTML=`${m[2]==='hidden'?'??':m[0]} <span class="v">${m[1]>=0?'+':''}${m[1]}</span>`;
+        modsBox.appendChild(el);
+        requestAnimationFrame(()=>el.classList.add('in'));
+      }, T0+i*T_MOD));
+      later(()=>steps.innerHTML='<em>汇总修正</em> 完成', T0+scene.mods.length*T_MOD);
+
+      /* 跳字：快速→减速→咔哒定格（数字就是真值；旗标硬停，落定后绝不多跳一帧） */
+      const rollStart=T0+scene.mods.length*T_MOD+120;
+      let rolling=false, rollTimer=null;
+      later(()=>{
+        rolling=true;
+        digits.classList.add('rolling');
+        steps.innerHTML='<em>掷骰</em> …';
+        let el=0, delay=34;
+        const tick=()=>{
+          if(!rolling) return;                  // 落定旗标：硬停
+          digits.textContent=1+Math.floor(Math.random()*20);
+          el+=delay; delay=Math.min(delay*1.14, 260);
+          rollTimer=setTimeout(tick, delay);
+        };
+        tick();
+      }, rollStart);
+
+      /* 定格（顺手掐掉残跳） */
+      later(()=>{
+        rolling=false;
+        if(rollTimer) clearTimeout(rollTimer);
+        digits.textContent=scene.d20;
+        digits.className='digits locked';
+        dcv.textContent=scene.dc;
+        vsbox.classList.add('show');
+        steps.innerHTML='<em>判定</em> …';
+      }, rollStart+T_ROLL);
+
+      /* 冷光+全面板色晕+判定词（色随结果；先摘类强制回流，保证每次都重放动画） */
+      later(()=>{
+        const b=scene.band==='crit'?'crit':scene.band==='fail'?'bad':'ok';
+        flash.className='flash';
+        verdict.className='verdict';
+        verdict.textContent=scene.verdict;
+        requestAnimationFrame(()=>{
+          flash.classList.add('go',b);
+          verdict.classList.add('show',scene.band);
+          const tint=$('tint');
+          tint.className='tint';
+          void tint.offsetWidth;
+          tint.classList.add('go',b);
+        });
+      }, rollStart+T_ROLL+180);
+
+      /* 流水长出，收场（面板退 phase-run：光已先收，心电随 .35s 过渡紧跟着淡出） */
+      later(()=>{
+        panel.className='panel';
+        flow.innerHTML=scene.flow;
+        flow.classList.add('show');
+        res();
+      }, rollStart+T_ROLL+500);
+    });
+  }
+
+  /* ---------- 队列连播 ---------- */
+  async function playQueue(list){
+    if(busy) return; busy=true;
+    document.querySelectorAll('button').forEach(b=>b.disabled=true);
+    for(let i=0;i<list.length;i++){
+      await playOne(list[i], i, list.length, +$('dur').value);
+      if(i<list.length-1) await new Promise(r=>setTimeout(r,320));   // 段间呼吸
+    }
+    document.querySelectorAll('button').forEach(b=>b.disabled=false);
+    busy=false;
+  }
+
+  $('btn1').addEventListener('click',()=>playQueue([pick()]));
+  $('btn2').addEventListener('click',()=>playQueue([SCENES[0], BY_BAND.success]));  // 第二段带第一段余波
+})();
+</script>
+</body>
+</html>

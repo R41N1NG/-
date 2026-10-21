@@ -1,0 +1,30 @@
+{
+  "hair": {
+    "long": "long straight black hair falling past the shoulders, straight bangs",
+    "ponytail": "black high ponytail, straight bangs, tail falling behind the head",
+    "twintails": "black twintails tied high on both sides, straight bangs",
+    "bob": "black chin-length bob, straight bangs, hair ends at the jawline"
+  },
+  "body": {
+    "slim": {
+      "cup": "B",
+      "text": "slender frame, small bust, narrow shoulders and hips"
+    },
+    "normal": {
+      "cup": "D",
+      "text": "balanced figure, fuller bust, defined waist, soft hip curve"
+    },
+    "full": {
+      "cup": "E",
+      "text": "full figure, full bust, rounded hips, soft waistline"
+    }
+  },
+  "counts": {
+    "head": 24,
+    "top": 126,
+    "bottom": 12,
+    "socks": 15,
+    "shoes": 8
+  },
+  "total": 185
+}

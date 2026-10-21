@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>尾行 · 听觉系统全素材调音台 v3.2</title>
+<style>
+  :root {
+    --bg: #090d14;
+    --panel: #131924;
+    --panel-hover: #192231;
+    --border: #232f42;
+    --tx: #cad8ec;
+    --dim: #6d7f99;
+    --hot: #e0566a;
+    --cool: #5ba2e6;
+    --gold: #d6b96a;
+    --green: #7fd6a4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--tx);
+    font: 14px/1.7 system-ui, -apple-system, sans-serif;
+    padding: 24px 18px 70px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header { margin-bottom: 22px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+  h1 { font-size: 21px; letter-spacing: 1.5px; color: #f0f4fc; display: flex; align-items: baseline; gap: 12px; }
+  h1 small { font-size: 12px; color: var(--gold); font-weight: normal; letter-spacing: 0.5px; }
+  .intro { color: var(--dim); font-size: 12.5px; margin-top: 6px; }
+  
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+  
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  section.full { grid-column: 1 / -1; }
+  h2 {
+    font-size: 14px;
+    color: var(--gold);
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .desc { font-size: 11.5px; color: var(--dim); margin-bottom: 12px; line-height: 1.5; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+  .lab { font-size: 11.5px; color: var(--dim); min-width: 36px; }
+  
+  button {
+    background: #1b2435;
+    color: var(--tx);
+    border: 1px solid #33435c;
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  button:hover { border-color: var(--cool); color: #fff; background: #233149; }
+  button:active { transform: translateY(1px); }
+  button.active { background: #223c5e; border-color: #6aa8ea; color: #fff; box-shadow: 0 0 10px rgba(91,162,230,0.3); }
+  button.danger { border-color: #6b353e; }
+  button.danger:hover, button.danger.active { border-color: var(--hot); background: #3d1b24; color: #ff9fae; }
+  button.highlight { border-color: #6b5a35; }
+  button.highlight:hover, button.highlight.active { border-color: var(--gold); background: #3d311b; color: #ffe19f; }
+  
+  .status-tag {
+    font: 11px ui-monospace, Consolas, monospace;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: #101620;
+    color: var(--cool);
+    border: 1px solid #233044;
+    margin-left: auto;
+  }
+  .status-tag.warn { color: var(--hot); border-color: #5c242c; }
+  
+  .sub-console {
+    background: #0d131d;
+    border: 1px solid #1f2b3e;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-top: 12px;
+  }
+  
+  .hr-display {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #0d121b;
+    border: 1px solid #1c2738;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+  .hr-num {
+    font: 700 32px ui-monospace, Consolas, monospace;
+    color: var(--hot);
+    min-width: 65px;
+    text-shadow: 0 0 12px rgba(224,86,106,0.5);
+  }
+  .hr-info { font-size: 12px; color: var(--dim); flex: 1; }
+  .hr-info strong { color: var(--tx); }
+  
+  input[type=range] {
+    flex: 1;
+    accent-color: var(--hot);
+    cursor: pointer;
+    height: 24px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>尾行 · 听觉系统全素材调音台 <small>v3.2 · 真实录音全谱系库</small></h1>
+    <p class="intro">已汇入 11 类真实录音原声素材 · 支持实时低音加重滤波推子 · 覆盖 9 种鞋型步态与都市环境突发音效。</p>
+  </header>
+
+  <div class="grid">
+    <!-- 模块 1：全鞋型脚步声实录展厅 -->
+    <section class="full">
+      <h2>
+        <span>一、她的步态演变 · 全鞋型实录展厅 <small style="color:var(--dim);font-weight:normal">（9 种鞋态真实录音 + 超重低音算法）</small></span>
+        <span class="status-tag" id="footTag">未播放</span>
+      </h2>
+      <p class="desc">点击任意鞋型立即切换对应现场录音；支持控制步频节奏（常规、提速、骤停、单步踩踏），并由下方硬件级低音推子强化次低频击地感。</p>
+      
+      <!-- 鞋型选择阵列 -->
+      <div style="background:#0d131d;border:1px solid #1f2b3e;border-radius:6px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:11.5px;color:var(--gold);margin-bottom:8px;font-weight:600;">👟 鞋型真实录音切换:</div>
+        <div class="row" style="margin-top:0;" id="shoeButtonsGroup">
+          <button data-shoe="heel" class="highlight active">👠 细高跟鞋 (沥青硬路)</button>
+          <button data-shoe="flats">🥿 平底单鞋 (水泥地面)</button>
+          <button data-shoe="leather_shoes">👞 通勤小皮鞋 (瓷砖乐福)</button>
+          <button data-shoe="boots">🥾 硬质靴子 (厚底木板)</button>
+          <button data-shoe="platform">🥿 松糕鞋 (厚底钝重)</button>
+          <button data-shoe="sandals">👡 细带凉鞋 (碎步清响)</button>
+          <button data-shoe="slippers">🩴 居家拖鞋 (啪嗒拖行)</button>
+          <button data-shoe="sneakers">👟 运动软鞋 (胶底摩擦)</button>
+          <button data-shoe="barefoot">👣 赤脚踏步 (肉掌触地)</button>
+          <button data-shoe="reconstruct" class="danger">🔨 纯算法双触点 (WebAudio 65Hz)</button>
+        </div>
+      </div>
+
+      <!-- 步态节奏控制 -->
+      <div class="row">
+        <span class="lab">节奏:</span>
+        <button id="btnFootNormal" class="highlight">▶ 常规跟缀 (92 BPM)</button>
+        <button id="btnFootSprint" class="danger">⚡ 目标提速 (136 BPM)</button>
+        <button id="btnFootHalt">⛔ 目标起疑停步 (骤停死寂)</button>
+        <button id="btnFootTap">👞 单步踏击 (Tap Step)</button>
+        <button id="btnFootStop">⏹ 停止</button>
+      </div>
+
+      <!-- 次低频重音调音推子 -->
+      <div class="sub-console">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:12px;color:var(--gold);font-weight:600;">🎛️ 次低频与重音增强母带 (Low-Shelf 75Hz)</span>
+          <span id="txtBoost" style="font:11.5px ui-monospace,monospace;color:var(--green)">+10 dB 增强</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:2px;">低音推子 (Bass Boost @ 75Hz):</div>
+            <input type="range" id="sliderBassBoost" min="0" max="18" step="1" value="10" style="accent-color:var(--gold)">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--dim);margin-bottom:2px;">算法下潜基频 (Sub Pitch): <span id="txtPitch">65 Hz</span></div>
+            <input type="range" id="sliderSubPitch" min="45" max="120" step="1" value="65" style="accent-color:var(--cool)">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 模块 2：都市街景与突发生物微声场 -->
+    <section>
+      <h2>
+        <span>二、都市夜景与生物突发声场</span>
+        <span class="status-tag" id="cityTag">待命</span>
+      </h2>
+      <p class="desc">包含新采录的暗巷野猫、警戒犬吠与残秋蝉鸣底噪，强化都市夜行心理悬疑。</p>
+      <div class="row">
+        <button id="btnCatMeow">🐱 暗巷惊扰野猫 (突然炸毛喵鸣)</button>
+      </div>
+      <div class="row">
+        <button id="btnDogBark">🐕 庭院铁门狂吠 (暴露警报)</button>
+      </div>
+      <div class="row">
+        <button id="btnCicada">🦗 残秋深夜蝉鸣 (听觉遮蔽白噪)</button>
+      </div>
+      <div class="row">
+        <button id="btnMartBell">🏪 24h便利店双音电子铃</button>
+      </div>
+      <div class="row">
+        <button id="btnWaterDrop">🏮 暗巷铁皮雨棚单发水滴</button>
+      </div>
+      <div class="row">
+        <button id="btnFarCar">🚗 远景高架车流呼啸</button>
+      </div>
+      <div class="row">
+        <button id="btnNightHum">🌙 晴夜都市深层暗震 (55Hz)</button>
+      </div>
+    </section>
+
+    <!-- 模块 3：器材操作与特工微物理触感 -->
+    <section>
+      <h2>
+        <span>三、器材操作与微物理触感</span>
+        <span class="status-tag">瞬态反馈</span>
+      </h2>
+      <p class="desc">手持夜行侦察仪器机械反馈音，增强交互实在感。</p>
+      <div class="row">
+        <button id="btnShutter">📷 长焦单反抓拍快门</button>
+      </div>
+      <div class="row">
+        <button id="btnRelay">🗄 物理继电器吸合 (抽屉展开)</button>
+      </div>
+      <div class="row">
+        <button id="btnPager">📍 定位器数字寻呼 (哔-嘟)</button>
+      </div>
+      <div class="row">
+        <button id="btnPuddleStep">👞 积水水渍踩踏 (距离换档)</button>
+      </div>
+    </section>
+
+    <!-- 模块 4：心跳与生理应激微声场 -->
+    <section class="full">
+      <h2>
+        <span>四、心跳与生理应激微声场 <small style="color:var(--dim);font-weight:normal">（隧道效应 + 气流喘息）</small></span>
+        <span class="status-tag" id="hrTag">心跳：关</span>
+      </h2>
+      <div class="hr-display">
+        <div class="hr-num" id="hrNum">58</div>
+        <div class="hr-info">
+          <div>换算 BPM: <strong id="bpmNum">69</strong> · 状态: <strong id="hrState" style="color:var(--gold)">甜区 · 清晰稳定</strong></div>
+          <div style="font-size:11px;color:var(--dim);margin-top:2px;">心率过线启动发闷；失控 7500Hz 高频耳鸣并伴随急促气流喘息。</div>
+        </div>
+        <input type="range" id="hrSlider" min="20" max="100" value="58">
+      </div>
+      <div class="row">
+        <button id="btnToggleHr" class="active">心跳：开</button>
+        <button data-val="30">平缓待命 30</button>
+        <button data-val="58" class="highlight">甜区稳态 58</button>
+        <button data-val="78" class="danger">过线变形 78</button>
+        <button data-val="94" class="danger">失控崩溃 94</button>
+        <button id="btnSpike" class="danger">💥 结算 spike (+8 重拍)</button>
+        <button id="btnExhale">💨 缓息舒气释放</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="work/audio_data.js"></script>
+
+<script>
+(() => {
+  let ctx = null, masterGain = null;
+  function ensureAudio() {
+    if (!ctx) {
+      const AudioCtor = window.AudioContext || window.webkitAudioContext;
+      ctx = new AudioCtor();
+      masterGain = ctx.createGain();
+      masterGain.gain.value = 0.95;
+      masterGain.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  function createNoiseBuffer(durSec = 2) {
+    const rate = ctx.sampleRate;
+    const buf = ctx.createBuffer(1, rate * durSec, rate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+  let sharedNoiseBuf = null;
+  function getNoiseSource(rate = 1) {
+    ensureAudio();
+    if (!sharedNoiseBuf) sharedNoiseBuf = createNoiseBuffer(2);
+    const src = ctx.createBufferSource();
+    src.buffer = sharedNoiseBuf;
+    src.loop = true;
+    src.playbackRate.value = rate;
+    return src;
+  }
+
+  /* ══════════════════════════════════════════════
+     一、真实鞋型音频映射库与步态控制
+     ══════════════════════════════════════════════ */
+  const AUDIO_SOURCES = {
+    heel:          { name: '高跟鞋 (沥青路)',   src: window.B64_HEELS ? ('data:audio/mp3;base64,' + window.B64_HEELS) : 'work/heels_test.mp3' },
+    flats:         { name: '平底单鞋 (水泥地)', src: 'work/audio_assets/flats.mp3' },
+    leather_shoes: { name: '通勤小皮鞋 (地砖)', src: 'work/audio_assets/leather_shoes.mp3' },
+    boots:         { name: '硬质靴子 (厚底木)', src: 'work/audio_assets/boots.mp3' },
+    platform:      { name: '松糕鞋 (厚底钝响)', src: 'work/audio_assets/platform.mp3' },
+    sandals:       { name: '细带凉鞋 (水泥轻)', src: 'work/audio_assets/sandals.mp3' },
+    slippers:      { name: '居家拖鞋 (拖地行)', src: 'work/audio_assets/slippers.mp3' },
+    sneakers:      { name: '运动软鞋 (胶底擦)', src: 'work/audio_assets/sneakers.mp3' },
+    barefoot:      { name: '赤脚踏步 (肉掌触)', src: 'work/audio_assets/barefoot.mp3' },
+    reconstruct:   { name: 'WebAudio 纯算法',  src: null }
+  };
+
+  let curShoeKey = 'heel';
+  let curAudioEl = null;
+  let footTimer = null;
+  let footPace = 'stopped'; // 'normal' | 'sprint' | 'stopped'
+  const footTag = document.getElementById('footTag');
+
+  // 低音加重滤波器母带
+  let footBusGain = null;
+  let footBassBoost = null;
+  function getFootBus() {
+    ensureAudio();
+    if (!footBusGain) {
+      footBusGain = ctx.createGain();
+      footBusGain.gain.value = 0.95;
+      footBassBoost = ctx.createBiquadFilter();
+      footBassBoost.type = 'lowshelf';
+      footBassBoost.frequency.value = 75;
+      footBassBoost.gain.value = parseFloat(document.getElementById('sliderBassBoost').value || 10);
+      footBusGain.connect(footBassBoost).connect(masterGain);
+    }
+    return { bus: footBusGain, boost: footBassBoost };
+  }
+
+  function stopCurrentFootAudio() {
+    if (footTimer) { clearInterval(footTimer); footTimer = null; }
+    if (curAudioEl) {
+      curAudioEl.pause();
+      curAudioEl.currentTime = 0;
+    }
+  }
+
+  // WebAudio 超重低音双触点算法
+  function triggerSynthStep(t = ctx.currentTime) {
+    const { bus } = getFootBus();
+    const subPitch = parseFloat(document.getElementById('sliderSubPitch').value || 65);
+    const jitter = 0.92 + Math.random() * 0.16;
+
+    // 触点 1：后跟硬击
+    const o1 = ctx.createOscillator(), g1 = ctx.createGain();
+    o1.type = 'sine';
+    o1.frequency.setValueAtTime(subPitch, t);
+    o1.frequency.exponentialRampToValueAtTime(subPitch * 0.48, t + 0.055);
+    g1.gain.setValueAtTime(0.85 * jitter, t);
+    g1.gain.exponentialRampToValueAtTime(0.0001, t + 0.075);
+    o1.connect(g1).connect(bus);
+    o1.start(t); o1.stop(t + 0.08);
+
+    const src1 = getNoiseSource(1.8);
+    const hp1 = ctx.createBiquadFilter();
+    hp1.type = 'highpass';
+    hp1.frequency.value = 3400;
+    const gClick = ctx.createGain();
+    gClick.gain.setValueAtTime(0.55 * jitter, t);
+    gClick.gain.exponentialRampToValueAtTime(0.0001, t + 0.015);
+    src1.connect(hp1).connect(gClick).connect(bus);
+    src1.start(t, Math.random());
+    src1.stop(t + 0.025);
+
+    // 触点 2：前掌微闷音 (+24ms)
+    const t2 = t + 0.024;
+    const oPad = ctx.createOscillator(), gPad = ctx.createGain();
+    oPad.type = 'sine';
+    oPad.frequency.setValueAtTime(95, t2);
+    oPad.frequency.exponentialRampToValueAtTime(45, t2 + 0.045);
+    gPad.gain.setValueAtTime(0.42 * jitter, t2);
+    gPad.gain.exponentialRampToValueAtTime(0.0001, t2 + 0.055);
+    oPad.connect(gPad).connect(bus);
+    oPad.start(t2); oPad.stop(t2 + 0.06);
+  }
+
+  function startFootsteps(pace) {
+    ensureAudio();
+    stopCurrentFootAudio();
+    footPace = pace;
+    const rate = pace === 'sprint' ? 1.35 : 1.0;
+    const interval = pace === 'sprint' ? 440 : 650;
+
+    const shoe = AUDIO_SOURCES[curShoeKey];
+    if (shoe.src) {
+      if (!curAudioEl || curAudioEl.dataset.key !== curShoeKey) {
+        curAudioEl = new Audio(shoe.src);
+        curAudioEl.dataset.key = curShoeKey;
+        curAudioEl.loop = true;
+      }
+      curAudioEl.playbackRate = rate;
+      curAudioEl.play().catch(e => console.log('Audio err:', e));
+    } else {
+      triggerSynthStep();
+      footTimer = setInterval(triggerSynthStep, interval);
+    }
+
+    footTag.className = pace === 'sprint' ? 'status-tag warn' : 'status-tag';
+    footTag.textContent = pace === 'sprint' ? ('提速拉开 (' + shoe.name + ' 136 BPM)') : ('常规跟缀 (' + shoe.name + ' 92 BPM)');
+  }
+
+  function haltFootsteps() {
+    stopCurrentFootAudio();
+    footPace = 'stopped';
+    footTag.className = 'status-tag warn';
+    footTag.textContent = '⛔ 目标骤停起疑！(死寂)';
+  }
+
+  function tapOneStep() {
+    ensureAudio();
+    const shoe = AUDIO_SOURCES[curShoeKey];
+    if (shoe.src) {
+      const oneShot = new Audio(shoe.src);
+      oneShot.currentTime = 0.15;
+      oneShot.play().catch(e => console.log(e));
+      setTimeout(() => oneShot.pause(), 480);
+    } else {
+      triggerSynthStep();
+    }
+  }
+
+  // 绑定鞋型按钮
+  document.querySelectorAll('#shoeButtonsGroup button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#shoeButtonsGroup button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      curShoeKey = btn.dataset.shoe;
+      if (footPace !== 'stopped') startFootsteps(footPace);
+    });
+  });
+
+  document.getElementById('btnFootNormal').addEventListener('click', () => startFootsteps('normal'));
+  document.getElementById('btnFootSprint').addEventListener('click', () => startFootsteps('sprint'));
+  document.getElementById('btnFootHalt').addEventListener('click', haltFootsteps);
+  document.getElementById('btnFootTap').addEventListener('click', tapOneStep);
+  document.getElementById('btnFootStop').addEventListener('click', () => {
+    stopCurrentFootAudio();
+    footPace = 'stopped';
+    footTag.className = 'status-tag';
+    footTag.textContent = '未播放';
+  });
+
+  // 低音推子监听
+  const sliderBassBoost = document.getElementById('sliderBassBoost');
+  const txtBoost = document.getElementById('txtBoost');
+  sliderBassBoost.addEventListener('input', e => {
+    const val = parseFloat(e.target.value);
+    txtBoost.textContent = '+' + val + ' dB 增强';
+    const { boost } = getFootBus();
+    if (boost) boost.gain.value = val;
+  });
+
+  const sliderSubPitch = document.getElementById('sliderSubPitch');
+  const txtPitch = document.getElementById('txtPitch');
+  sliderSubPitch.addEventListener('input', e => {
+    txtPitch.textContent = e.target.value + ' Hz';
+  });
+
+  /* ══════════════════════════════════════════════
+     二、都市街景与突发生物声场
+     ══════════════════════════════════════════════ */
+  function playEnvAudio(src, tagText) {
+    ensureAudio();
+    const audio = new Audio(src);
+    audio.play().catch(e => console.log('Env play error:', e));
+    setCityTag(tagText);
+    return audio;
+  }
+
+  document.getElementById('btnCatMeow').addEventListener('click', () => {
+    playEnvAudio('work/audio_assets/cat_meow.ogg', '🐱 暗巷野猫炸毛受惊');
+  });
+  document.getElementById('btnDogBark').addEventListener('click', () => {
+    playEnvAudio('work/audio_assets/dog_bark.ogg', '🐕 庭院警戒犬吠');
+  });
+
+  let cicadaAudio = null;
+  document.getElementById('btnCicada').addEventListener('click', () => {
+    if (cicadaAudio) {
+      cicadaAudio.pause();
+      cicadaAudio = null;
+      document.getElementById('btnCicada').classList.remove('active');
+      setCityTag('蝉鸣：关');
+      return;
+    }
+    cicadaAudio = playEnvAudio('work/audio_assets/cicada.mp3', '🦗 残秋蝉鸣底噪循环中');
+    cicadaAudio.loop = true;
+    document.getElementById('btnCicada').classList.add('active');
+  });
+
+  // 1. 24h 便利店双音风铃
+  function playMartBell() {
+    ensureAudio();
+    const t = ctx.currentTime;
+    const playChime = (freq, time, dur) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq, time);
+      g.gain.setValueAtTime(0.0001, time);
+      g.gain.linearRampToValueAtTime(0.18, time + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+      o.connect(g).connect(masterGain);
+      o.start(time); o.stop(time + dur + 0.04);
+    };
+    playChime(1650, t, 0.42);
+    playChime(1280, t + 0.16, 0.65);
+    setCityTag('便利店自动门双音铃');
+  }
+  document.getElementById('btnMartBell').addEventListener('click', playMartBell);
+
+  // 2. 暗巷铁皮雨棚单发水滴
+  function playWaterDrop() {
+    ensureAudio();
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(1450, t);
+    o.frequency.exponentialRampToValueAtTime(260, t + 0.032);
+    g.gain.setValueAtTime(0.15, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.075);
+    o.connect(g).connect(masterGain);
+    o.start(t); o.stop(t + 0.09);
+    setCityTag('雨棚铁皮水滴“嗒”');
+  }
+  document.getElementById('btnWaterDrop').addEventListener('click', playWaterDrop);
+
+  // 3. 远车呼啸
+  function playFarCar() {
+    ensureAudio();
+    const t = ctx.currentTime, dur = 3.2;
+    const src = getNoiseSource(0.7);
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = 0.65;
+    bp.frequency.setValueAtTime(420, t);
+    bp.frequency.exponentialRampToValueAtTime(160, t + dur);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 950;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.06, t + dur * 0.35);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(bp).connect(lp).connect(g).connect(masterGain);
+    src.start(t, Math.random());
+    src.stop(t + dur + 0.1);
+    setCityTag('远景车流呼啸');
+  }
+  document.getElementById('btnFarCar').addEventListener('click', playFarCar);
+
+  // 4. 晴夜都市深层低频暗震
+  let nightHumNode = null;
+  function toggleNightHum() {
+    ensureAudio();
+    if (nightHumNode) {
+      nightHumNode.stop();
+      nightHumNode.disconnect();
+      nightHumNode = null;
+      document.getElementById('btnNightHum').classList.remove('active');
+      setCityTag('都市低噪：关');
+      return;
+    }
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 55;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.028, t + 1.2);
+    osc.connect(g).connect(masterGain);
+    osc.start(t);
+    nightHumNode = osc;
+    document.getElementById('btnNightHum').classList.add('active');
+    setCityTag('都市55Hz深层暗震中');
+  }
+  document.getElementById('btnNightHum').addEventListener('click', toggleNightHum);
+
+  function setCityTag(txt) {
+    document.getElementById('cityTag').textContent = txt;
+  }
+
+  /* ══════════════════════════════════════════════
+     三、器材操作与微物理触感音
+     ══════════════════════════════════════════════ */
+  function playShutter() {
+    ensureAudio();
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator(), g1 = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(340, t);
+    osc.frequency.exponentialRampToValueAtTime(70, t + 0.025);
+    g1.gain.setValueAtTime(0.001, t);
+    g1.gain.linearRampToValueAtTime(0.22, t + 0.003);
+    g1.gain.exponentialRampToValueAtTime(0.0001, t + 0.028);
+    osc.connect(g1).connect(masterGain);
+    osc.start(t); osc.stop(t + 0.032);
+  }
+  document.getElementById('btnShutter').addEventListener('click', playShutter);
+
+  function playRelay() {
+    ensureAudio();
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'square';
+    o.frequency.setValueAtTime(2200, t);
+    o.frequency.exponentialRampToValueAtTime(140, t + 0.006);
+    g.gain.setValueAtTime(0.12, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.008);
+    o.connect(g).connect(masterGain);
+    o.start(t); o.stop(t + 0.012);
+  }
+  document.getElementById('btnRelay').addEventListener('click', playRelay);
+
+  function playPager() {
+    ensureAudio();
+    const t = ctx.currentTime;
+    const beep = (freq, time, dur) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq, time);
+      g.gain.setValueAtTime(0.0001, time);
+      g.gain.linearRampToValueAtTime(0.09, time + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+      o.connect(g).connect(masterGain);
+      o.start(time); o.stop(time + dur + 0.01);
+    };
+    beep(2400, t, 0.045);
+    beep(2880, t + 0.055, 0.055);
+  }
+  document.getElementById('btnPager').addEventListener('click', playPager);
+
+  function playPuddleStep() {
+    ensureAudio();
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(90, t);
+    osc.frequency.exponentialRampToValueAtTime(35, t + 0.055);
+    g.gain.setValueAtTime(0.12, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.065);
+    osc.connect(g).connect(masterGain);
+    osc.start(t); osc.stop(t + 0.07);
+  }
+  document.getElementById('btnPuddleStep').addEventListener('click', playPuddleStep);
+
+  /* ══════════════════════════════════════════════
+     四、心跳与生理应激微声场
+     ══════════════════════════════════════════════ */
+  let hrValue = 58;
+  let hrRunning = true;
+  let nextBeatTime = 0;
+  let tinnitusOsc = null, tinnitusGain = null;
+  let hrLoopTimer = null;
+
+  function heartToBpm(v) {
+    return v < 40 ? 45 + v * 0.25 : v < 65 ? 55 + (v - 40) * 0.8 : v < 90 ? 75 + (v - 65) * 1.2 : 105 + (v - 90) * 2.5;
+  }
+  function thump(time, freq, vol) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(freq, time);
+    o.frequency.exponentialRampToValueAtTime(Math.max(freq * 0.45, 20), time + 0.16);
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.linearRampToValueAtTime(vol, time + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + 0.24);
+    o.connect(g).connect(masterGain);
+    o.start(time); o.stop(time + 0.28);
+  }
+
+  function hrSchedule() {
+    if (!hrRunning || !ctx) return;
+    const now = ctx.currentTime;
+    const bpm = heartToBpm(hrValue);
+    const period = 60 / bpm;
+    const freq = hrValue >= 90 ? 50 : 58;
+    const volLevel = 0.55 + (hrValue / 100) * 0.45;
+
+    if (nextBeatTime < now - 0.12) nextBeatTime = now + 0.04;
+    while (nextBeatTime < now + 0.14) {
+      thump(nextBeatTime, freq, volLevel);
+      thump(nextBeatTime + Math.min(0.16, period * 0.22), freq * 0.9, volLevel * 0.8);
+      nextBeatTime += period;
+    }
+
+    if (!tinnitusOsc) {
+      tinnitusOsc = ctx.createOscillator();
+      tinnitusOsc.frequency.value = 7500;
+      tinnitusOsc.type = 'sine';
+      tinnitusGain = ctx.createGain();
+      tinnitusGain.gain.value = 0;
+      tinnitusOsc.connect(tinnitusGain).connect(masterGain);
+      tinnitusOsc.start();
+    }
+    const tinnVol = hrValue > 88 ? Math.min((hrValue - 88) / 12, 1) * 0.025 : 0;
+    tinnitusGain.gain.setTargetAtTime(tinnVol, ctx.currentTime, 0.3);
+
+    hrLoopTimer = setTimeout(hrSchedule, 30);
+  }
+
+  function updateHrUI() {
+    const bpm = Math.round(heartToBpm(hrValue));
+    document.getElementById('hrNum').textContent = hrValue;
+    document.getElementById('bpmNum').textContent = bpm;
+    document.getElementById('hrSlider').value = hrValue;
+
+    let stateText = '甜区 · 清晰稳定';
+    let stateColor = 'var(--gold)';
+    if (hrValue < 40) {
+      stateText = '低压 · 平缓待命';
+      stateColor = 'var(--cool)';
+    } else if (hrValue >= 90) {
+      stateText = '失控崩溃 · 耳鸣暴涨';
+      stateColor = 'var(--hot)';
+    } else if (hrValue >= 70) {
+      stateText = '过线变形 · 听觉狭窄';
+      stateColor = '#e38258';
+    }
+    const el = document.getElementById('hrState');
+    el.textContent = stateText;
+    el.style.color = stateColor;
+  }
+
+  document.getElementById('hrSlider').addEventListener('input', e => {
+    ensureAudio();
+    hrValue = +e.target.value;
+    updateHrUI();
+  });
+  document.querySelectorAll('[data-val]').forEach(b => {
+    b.addEventListener('click', () => {
+      ensureAudio();
+      hrValue = +b.dataset.val;
+      updateHrUI();
+    });
+  });
+
+  const btnToggleHr = document.getElementById('btnToggleHr');
+  btnToggleHr.addEventListener('click', () => {
+    ensureAudio();
+    hrRunning = !hrRunning;
+    btnToggleHr.textContent = hrRunning ? '心跳：开' : '心跳：关';
+    btnToggleHr.classList.toggle('active', hrRunning);
+    document.getElementById('hrTag').textContent = hrRunning ? '心跳：开' : '心跳：关';
+    if (hrRunning) {
+      nextBeatTime = ctx.currentTime + 0.05;
+      hrSchedule();
+    } else {
+      clearTimeout(hrLoopTimer);
+      if (tinnitusGain) tinnitusGain.gain.setTargetAtTime(0, ctx.currentTime, 0.2);
+    }
+  });
+
+  document.getElementById('btnSpike').addEventListener('click', () => {
+    ensureAudio();
+    const t = ctx.currentTime;
+    thump(t, 38, 1.0);
+    thump(t + 0.15, 36, 0.85);
+    hrValue = Math.min(100, hrValue + 8);
+    updateHrUI();
+  });
+
+  document.getElementById('btnExhale').addEventListener('click', () => {
+    hrValue = Math.max(35, hrValue - 12);
+    updateHrUI();
+  });
+
+  updateHrUI();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+/* ═══ P1 预览 · 变体 B：雨夜钠灯（冷底 + 钠黄环境光；她的颜色改藕色） ═══ */
+:root {
+  --ink-0: #0a0e13;
+  --ink-1: #12171e;
+  --ink-2: #181e26;
+  --line: #2a2c31;
+  --t-hi: #f1ece3;
+  --t-mid: #a9a8a0;
+  --t-low: #74746d;
+  --her: #c89498;
+  --heat: #eab35c;
+}
+
+/* 页脚条：底部一层弱的钠黄反光，模拟街灯从上方压下来 */
+body { background: #0a0e13 !important; }
+.trpg {
+  background:
+    radial-gradient(120% 140% at 50% 115%, rgba(234, 179, 92, .085), transparent 58%),
+    var(--ink-0) !important;
+  border-color: var(--line) !important;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, .6) !important;
+}
+.trpg::before {
+  background:
+    radial-gradient(100% 70% at 50% -10%, rgba(255, 226, 176, .07), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(255, 240, 220, .012) 0 1px, transparent 1px 3px) !important;
+}
+
+/* 文字整体回暖一档，中文标题不再拉字距 */
+.slim-place { color: var(--t-hi) !important; }
+.slim-center { background: var(--ink-2) !important; border-color: var(--line) !important; }
+.wx-capsule-bar { background: #070a0e !important; }
+.wx-modal-head {
+  background: linear-gradient(180deg, rgba(234, 179, 92, .075), transparent 92%), #0c1015 !important;
+  border-bottom-color: var(--line) !important;
+}
+.wx-wing-card, .wx-terminal-envbox, .wx-player-banner, .wx-modal-body .route-tracker {
+  background: var(--ink-1) !important;
+  border-color: var(--line) !important;
+}
+.wx-modal-body .route-tracker {
+  background:
+    radial-gradient(90% 140% at 50% 120%, rgba(234, 179, 92, .10), transparent 62%),
+    #141a22 !important;
+}
+.heart-popover-card {
+  background: rgba(13, 17, 22, .98) !important;
+  border-color: var(--line) !important;
+  box-shadow: 0 -10px 34px rgba(0, 0, 0, .9), 0 0 0 1px rgba(234, 179, 92, .10) !important;
+}
+/* 她：藕色（低饱和），不再抢钠黄的暖 */
+.slim-tag.id-badge { background: rgba(200, 148, 152, .10) !important; border-color: rgba(200, 148, 152, .34) !important; color: var(--her) !important; }
+.heart-pill-btn { background: rgba(200, 148, 152, .09) !important; border-color: rgba(200, 148, 152, .36) !important; }
+.mini-heart { color: var(--her) !important; filter: drop-shadow(0 0 4px rgba(200, 148, 152, .45)) !important; }
+.dial-marker { stroke: var(--her) !important; }
+.trpg .tag.personality, .trpg .tag.hobby, .trpg .tag.equipment {
+  background: rgba(200, 148, 152, .08) !important; border-left-color: var(--her) !important; color: #e4c9cc !important;
+}
+
+/* 第二遍：B 的暖光再明显一档（要让人一眼看出不是在 A） */
+.trpg { border-top-color: rgba(234, 179, 92, .24) !important; }
+.trpg::before {
+  background:
+    radial-gradient(130% 95% at 50% -22%, rgba(255, 214, 150, .11), transparent 56%),
+    repeating-linear-gradient(0deg, rgba(255, 240, 220, .012) 0 1px, transparent 1px 3px) !important;
+}
+.wx-capsule-bar { background: #090b0e !important; border-top-color: #26282c !important; }
+.slim-place { color: #f6ecdc !important; }
+.wx-modal-head { background: linear-gradient(180deg, rgba(234, 179, 92, .11), transparent 92%), #0c1015 !important; }

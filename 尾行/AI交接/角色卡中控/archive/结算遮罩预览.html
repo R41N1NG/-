@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>尾行 · 结算遮罩预览</title>
+<style>
+  :root{
+    --bg:#07090d; --panel:#0d1219; --line:rgba(90,140,200,.22);
+    --cool:#4f8fd6; --cool-bright:#a8d4ff; --cool-dim:rgba(79,143,214,.35);
+    --cyan:#6fd3c7; --red:#e0566a; --tx:#c8d3e8; --dim:#5d6b85;
+    --mono:Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(ellipse at 50% 0%, #0b1018 0%, var(--bg) 60%),
+      var(--bg);
+    color:var(--tx); font:15px/1.8 "Microsoft YaHei",system-ui,sans-serif;
+    padding:28px 18px 60px;
+  }
+  /* 全站监控质感：扫描线 + 噪点 */
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.016) 0 1px, transparent 1px 3px);}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.05;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.55'/></svg>");}
+
+  .wrap{max-width:860px;margin:0 auto}
+
+  /* ── 页首 ── */
+  header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:18px}
+  header h1{font-size:24px;letter-spacing:.3em;color:#e8f1fc;font-weight:600;display:flex;align-items:center;gap:14px}
+  header h1 .rec-mini{
+    display:inline-flex;align-items:center;gap:8px;font-size:13px;letter-spacing:3px;
+    color:#ffb9c4;background:rgba(224,86,106,.12);border:1px solid rgba(224,86,106,.45);
+    border-radius:4px;padding:5px 10px;font-family:var(--mono);
+  }
+  .rec-mini i{width:9px;height:9px;border-radius:50%;background:var(--red);
+    box-shadow:0 0 8px rgba(224,86,106,.9);animation:blink 1.2s steps(2) infinite}
+  @keyframes blink{50%{opacity:.15}}
+  header p{margin-top:10px;font-size:13px;line-height:1.9;color:var(--dim)}
+  header p b{color:var(--cool-bright);font-weight:600}
+
+  /* ── 控制台 ── */
+  .desk{display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+    background:linear-gradient(180deg,#101724,#0b101a);
+    border:1px solid var(--line);border-radius:10px;
+    padding:12px 16px;margin-bottom:22px;font-size:13px}
+  .desk label{color:var(--dim);display:flex;align-items:center;gap:8px}
+  .desk select,.desk input[type=range]{accent-color:var(--cool);background:#0a0e15;color:var(--cool-bright);
+    border:1px solid rgba(79,143,214,.35);border-radius:5px;padding:3px 8px;font-family:var(--mono)}
+  .desk .dur-val{color:var(--cool-bright);min-width:52px;font-family:var(--mono)}
+  button.replay{cursor:pointer;letter-spacing:.2em;font-family:var(--mono);
+    background:linear-gradient(180deg,#16233a,#0e1728);color:var(--cool-bright);
+    border:1px solid rgba(79,143,214,.5);border-radius:6px;padding:7px 22px;font-size:14px;transition:all .25s}
+  button.replay:hover{border-color:var(--cool);box-shadow:0 0 14px rgba(79,143,214,.3);color:#fff}
+  .hint{font-size:12px;color:#46536b}
+
+  /* ── 模拟聊天窗 ── */
+  .chat-window{border:1px solid var(--line);border-radius:12px;
+    background:linear-gradient(180deg,#0b0f17,#080b11);padding:18px 18px 26px;overflow:hidden}
+  .chat-window .bar{font-size:12px;color:#4a5568;letter-spacing:.15em;
+    border-bottom:1px dashed rgba(90,140,200,.18);padding-bottom:10px;margin-bottom:16px;font-family:var(--mono)}
+  .floor{margin-bottom:20px}
+  .floor .who{font-size:12px;color:#6b7astat;letter-spacing:.2em;margin-bottom:6px;color:#6b7a96}
+  .floor .msg{background:#0c1119;border:1px solid rgba(255,255,255,.05);
+    border-left:2px solid rgba(79,143,214,.4);border-radius:4px;
+    padding:12px 14px;line-height:2;font-size:14px;color:#a9b6cd}
+
+  /* ── 结算楼 ── */
+  .settle-floor .stage{position:relative;min-height:340px}
+  .raw-settle{font-family:var(--mono);font-size:12px;line-height:1.9;
+    background:#090d13;border:1px dashed rgba(90,140,200,.35);border-radius:4px;
+    padding:14px;color:#7286a3;white-space:pre-wrap;user-select:text}
+  .raw-settle .k{color:#9fb8d8}.raw-settle .g{color:#6fd3c7}.raw-settle .r{color:#e0566a}
+
+  .beautified{display:none;animation:cardIn .8s cubic-bezier(.22,.9,.3,1) both}
+  .veil-line{display:none;text-align:center;padding:34px 10px;color:#5d6b85;font-size:14px;
+    letter-spacing:.25em;line-height:2.4;animation:cardIn .8s ease both}
+  .veil-line .gm{font-size:11px;color:#3d4759;letter-spacing:.1em}
+
+  /* 结算卡：取景器风格 */
+  .card{position:relative;background:linear-gradient(180deg,#101623,#0c111b);
+    border:1px solid rgba(79,143,214,.4);border-radius:6px;
+    padding:26px 30px 22px;
+    box-shadow:0 0 0 4px #080b11,0 0 0 5px rgba(79,143,214,.25),0 12px 40px rgba(0,0,0,.65)}
+  .card::before,.card::after,.card .c3,.card .c4{
+    content:"";position:absolute;width:20px;height:20px;border:2px solid var(--cool);opacity:.9}
+  .card::before{top:6px;left:6px;border-right:none;border-bottom:none}
+  .card::after{top:6px;right:6px;border-left:none;border-bottom:none}
+  .card .c3{bottom:6px;left:6px;border-right:none;border-top:none}
+  .card .c4{bottom:6px;right:6px;border-left:none;border-top:none}
+  .card .head{display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid rgba(79,143,214,.2);padding-bottom:10px;margin-bottom:12px}
+  .card .head .t{font-size:15px;letter-spacing:.3em;color:var(--cool-bright);font-family:var(--mono)}
+  .card .head .tag{font-size:11px;letter-spacing:3px;color:#ffb9c4;font-family:var(--mono);
+    border:1px solid rgba(224,86,106,.5);padding:2px 8px;border-radius:3px;
+    display:inline-flex;align-items:center;gap:6px}
+  .card .head .tag i{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.2s steps(2) infinite}
+  .card .verdict{font-size:14px;line-height:2.1;color:#c3cfdf;margin-bottom:14px}
+  .card .ledger .row{display:flex;gap:12px;font-size:13px;line-height:2;
+    border-top:1px dashed rgba(90,140,200,.15);padding:6px 0}
+  .card .ledger .lab{color:var(--dim);letter-spacing:.3em;flex:0 0 auto;font-family:var(--mono)}
+  .card .ledger .val{color:#a9b6cd}
+  .card .ledger .val em{color:var(--cool-bright);font-style:normal}
+  .card .ledger .val .up{color:var(--cyan)}
+  .card .ledger .val .dn{color:var(--red)}
+  details.ledger-raw{margin-top:10px;font-size:12px;color:var(--dim)}
+  details.ledger-raw summary{cursor:pointer;letter-spacing:.1em;color:#5d6b85}
+  details.ledger-raw summary:hover{color:var(--cool-bright)}
+
+  /* ══════ 遮罩动画层 ══════ */
+  .overlay{position:absolute;inset:-6px;z-index:20;border-radius:10px;
+    background:
+      radial-gradient(ellipse at 50% 42%, #10161f 0%, #0a0e15 55%, #06080d 100%);
+    display:flex;align-items:center;justify-content:center;
+    transition:opacity .8s ease,transform .8s ease,filter .8s ease;
+    overflow:hidden}
+  .overlay.lifted{opacity:0;transform:translateY(-3%) scale(1.015);filter:blur(7px);pointer-events:none}
+
+  /* 雨幕（两股斜雨 + 底部雾） */
+  .rain,.fog{position:absolute;inset:0;pointer-events:none}
+  .fog{background:
+      linear-gradient(180deg, rgba(13,18,28,0) 0%, rgba(10,14,22,.92) 30%, rgba(10,14,22,0) 60%),
+      linear-gradient(0deg,  rgba(13,18,28,0) 0%, rgba(10,14,22,.92) 30%, rgba(10,14,22,0) 60%);
+    opacity:0;transition:opacity .45s ease}
+  .overlay.on .fog{opacity:1;animation:breathe 3s ease-in-out infinite}
+  @keyframes breathe{50%{opacity:.72}}
+  .drop{position:absolute;top:-12%;width:1px;height:52px;
+    background:linear-gradient(180deg,transparent,rgba(140,180,230,.35),transparent);
+    transform:rotate(9deg);opacity:0}
+  .overlay.on .drop{animation:fall 0.9s linear infinite}
+  @keyframes fall{0%{transform:translateY(-8vh) rotate(9deg);opacity:0}
+    12%{opacity:.8}100%{transform:translateY(115vh) rotate(9deg);opacity:.25}}
+
+  /* 雷达锁定盘 */
+  .disc{position:relative;width:min(300px,62vw);aspect-ratio:1;opacity:0;transition:opacity .5s}
+  .overlay.divining .disc{opacity:1}
+  .disc svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 18px rgba(79,143,214,.2))}
+  .ring-o{animation:spin 24s linear infinite}
+  .ring-m{animation:spinR 15s linear infinite}
+  .reticle{animation:spin 8s linear infinite}
+  .overlay.divining .ring-o{animation-duration:8s}
+  .overlay.divining .ring-m{animation-duration:5s}
+  .overlay.divining .reticle{animation-duration:2.6s}
+  .ring-o,.ring-m,.reticle{transform-box:view-box;transform-origin:center}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes spinR{to{transform:rotate(-360deg)}}
+  /* 扫描扇 */
+  .sweep{transform-box:view-box;transform-origin:center;animation:spin 3.2s linear infinite;opacity:0}
+  .overlay.divining .sweep{opacity:1}
+  .overlay.divining .sweep{animation-duration:1.9s}
+
+  /* 十字准星脉动 */
+  .crosshair{opacity:0;transition:opacity .4s}
+  .overlay.divining .crosshair{opacity:.9;animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.45}}
+
+  /* 信号涟漪 */
+  .ripples{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .ripple{position:absolute;width:120px;height:120px;border-radius:50%;
+    border:1px solid rgba(79,143,214,.4);opacity:0}
+  .overlay.divining .ripple{animation:rip 2.2s ease-out infinite}
+  .overlay.divining .r2{animation-delay:.7s}
+  .overlay.divining .r3{animation-delay:1.4s}
+  @keyframes rip{0%{transform:scale(.5);opacity:0}18%{opacity:.75}100%{transform:scale(2.6);opacity:0}}
+
+  /* 信号点：从盘缘向心汇聚（轨迹回传） */
+  .motes{position:absolute;inset:0;pointer-events:none}
+  .mote{position:absolute;width:3px;height:3px;border-radius:50%;
+    background:var(--cool-bright);box-shadow:0 0 6px 1px rgba(168,212,255,.65);opacity:0}
+  .overlay.divining .mote{animation:converge 2s ease-in infinite}
+  @keyframes converge{
+    0%{transform:translate(0,0) scale(1);opacity:0}
+    12%{opacity:.95}
+    100%{transform:translate(var(--dx),var(--dy)) scale(.35);opacity:0}}
+
+  /* 步进符文（竖排右侧）+ 时间码（左下） */
+  .steps{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    writing-mode:vertical-rl;letter-spacing:.5em;color:var(--cool);
+    font-size:15px;opacity:0;transition:opacity .4s;text-shadow:0 0 10px rgba(79,143,214,.45);
+    font-family:var(--mono)}
+  .overlay.divining .steps{opacity:.92}
+  .steps .dot{color:rgba(79,143,214,.4);font-size:11px;margin-top:10px}
+  .timecode{position:absolute;left:16px;bottom:14px;font-family:var(--mono);
+    font-size:11px;letter-spacing:.2em;color:#3f4d63;opacity:0;transition:opacity .4s}
+  .overlay.on .timecode{opacity:1}
+  .timecode .rec{color:var(--red)}
+  .veiltag{position:absolute;left:16px;top:14px;font-size:11px;letter-spacing:.4em;
+    color:#3f4d63;writing-mode:vertical-rl;font-family:var(--mono)}
+
+  /* 锁定冷光 */
+  .flash{position:absolute;inset:0;pointer-events:none;opacity:0;
+    background:radial-gradient(circle at 50% 46%, rgba(224,244,255,.9) 0%, rgba(168,212,255,.45) 22%, rgba(79,143,214,.14) 46%, transparent 70%)}
+  .overlay.sealing .flash{animation:flash .6s ease-out both}
+  @keyframes flash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+
+  /* 监控章落下：已记录 */
+  .seal{position:absolute;left:50%;top:46%;width:150px;height:78px;margin:-39px 0 0 -75px;
+    border:3px solid var(--red);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    color:#ff8a9c;font-size:26px;font-weight:700;letter-spacing:.35em;
+    background:rgba(224,86,106,.08);
+    box-shadow:0 0 24px rgba(224,86,106,.3), inset 0 0 14px rgba(224,86,106,.2);
+    transform:scale(2.8) rotate(-14deg);opacity:0;font-family:var(--mono)}
+  .seal small{font-size:11px;letter-spacing:.15em;color:#c96a79;display:block;text-align:center}
+  .overlay.sealing .seal{animation:stamp .5s cubic-bezier(.2,1.4,.4,1) .12s both}
+  @keyframes stamp{
+    0%{transform:scale(2.8) rotate(-24deg);opacity:0}
+    60%{transform:scale(.94) rotate(-8deg);opacity:1}
+    100%{transform:scale(1) rotate(-8deg);opacity:1}}
+
+  /* 揭幕数据雨（上升的数据点） */
+  .data-up{position:absolute;inset:0;pointer-events:none}
+  .dust{position:absolute;bottom:18%;width:3px;height:3px;border-radius:50%;
+    background:var(--cool-bright);opacity:0;box-shadow:0 0 8px 2px rgba(168,212,255,.5)}
+  .overlay.lifting .dust{animation:drift 1.4s ease-out both}
+  @keyframes drift{
+    0%{opacity:0;transform:translateY(0) scale(1)}
+    15%{opacity:1}
+    100%{opacity:0;transform:translateY(-140px) translateX(var(--wx)) scale(.3)}}
+
+  @keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+  footer{margin-top:26px;border-top:1px solid var(--line);padding-top:16px;
+    font-size:12.5px;line-height:2.1;color:#4d5a72}
+  footer b{color:#8fa8c9}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1><span class="rec-mini"><i></i>REC</span>尾行 · 结算遮罩</h1>
+    <p>
+      给<b>结算楼</b>穿的皮：底下是中控核算的<b>真实结算文字</b>（检定流水／双账落袋／警觉沉淀），
+      上盖一层<b>监控追踪动画</b>——雨幕合拢、雷达扫描、信号回传、冷光锁定「已记录」，
+      演毕揭幕，只把<b>美化后的结算卡</b>给玩家看。动画时长远大于后台核算耗时，防剧透也防穿帮。
+    </p>
+  </header>
+
+  <div class="desk">
+    <button class="replay" id="btnReplay">▶ 重演</button>
+    <label>揭幕模式
+      <select id="mode">
+        <option value="card">结算卡（判词＋折叠底账）</option>
+        <option value="veil">纯遮罩（信号加密）</option>
+        <option value="direct">直出（无遮罩对照）</option>
+      </select>
+    </label>
+    <label>追踪时长
+      <input type="range" id="dur" min="2000" max="6000" step="200" value="3600">
+      <span class="dur-val" id="durVal">3.6s</span>
+    </label>
+    <span class="hint">演出语法与《天机演算》同构，皮肤换为监控追踪</span>
+  </div>
+
+  <div class="chat-window">
+    <div class="bar">模拟酒馆消息区 · 《尾行》（演示页，未接真机）</div>
+
+    <div class="floor">
+      <div class="who">她</div>
+      <div class="msg">便利店的自动门开了又合，她提着塑料袋走进雨里。你隔着半条街，数着自己的心跳。<span style="color:#46536b;font-size:12px">（演示楼层文案）</span></div>
+    </div>
+
+    <div class="floor settle-floor">
+      <div class="who" style="color:#6fd3c7;font-family:var(--mono);font-size:12px;letter-spacing:.2em">尾行结算 · 第 N 楼</div>
+      <div class="stage" id="stage">
+
+        <!-- ① 真实结算文字（被遮住的那层） -->
+        <pre class="raw-settle" id="rawSettle"><span class="k">[中控核算]</span> 夜巡 · 第 3 段（<span class="r">测试数据 · 非正式设定</span>）
+· 动作申报：<span class="g">跟缀｜同街</span> → 词表命中 follow/close
+· 检定：<span class="g">1d20(14) + 敏捷(5) + 耳机伪装(2) + 夜色(2) = 23 vs DC 15</span> → 成功
+· 双账：警觉 +2 · 心跳 +8 · PI +2 · 体力 -1
+· 标签：[耳机伪装] 持续 · [夜色] 持续 · 她侧 [?? +2]（原因不明）
+· 事务 id: wx-1003-07 · 快照已存 · 可回滚</pre>
+
+        <!-- ② 纯遮罩模式的一行话 -->
+        <div class="veil-line" id="veilLine">
+      ▮▮ 此楼信号已加密 ▮▮
+      <div class="gm">（GM 可点此展开底账）</div>
+    </div>
+
+        <!-- ③ 美化结算卡 -->
+        <div class="beautified" id="beautified">
+          <div class="card">
+            <span class="c3"></span><span class="c4"></span>
+            <div class="head">
+              <span class="t">尾行 · 结算</span>
+              <span class="tag"><i></i>已记录</span>
+            </div>
+            <div class="verdict">
+              雨还在下。你收着步子缀进人流，二十步不多不少——她没有回头，便利店的灯光从她肩上滑过去。这一段，你跟得干净。<span style="color:#46536b;font-size:12px">（演示判词）</span>
+            </div>
+            <div class="ledger">
+              <div class="row"><span class="lab">检　定</span><span class="val">1d20 <em>14</em> ＋ 敏捷 5 ＋ 耳机 2 ＋ 夜色 2 ＝ <em>23</em> <span class="up">成功</span></span></div>
+              <div class="row"><span class="lab">收　获</span><span class="val">情报 <em>＋2</em> · 距离保持同街</span></div>
+              <div class="row"><span class="lab">代　价</span><span class="val">她的警觉 <span class="dn">＋2</span> · 心跳 <span class="dn">＋8</span> · 体力 <span class="dn">－1</span></span></div>
+              <div class="row"><span class="lab">状　态</span><span class="val">心跳 46 <span class="up">甜区</span> · 手稳</span></div>
+            </div>
+            <details class="ledger-raw">
+              <summary>展开中控底账（已核 · 可回滚）</summary>
+              <pre class="raw-settle" style="margin-top:8px" id="rawCopy"></pre>
+            </details>
+          </div>
+        </div>
+
+        <!-- ④ 遮罩动画层 -->
+        <div class="overlay" id="overlay">
+          <div class="rain" id="rain"></div>
+          <div class="fog"></div>
+          <div class="disc">
+            <svg viewBox="0 0 400 400" id="discSvg">
+              <defs>
+                <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="rgba(168,212,255,.25)"/>
+                  <stop offset="60%" stop-color="rgba(79,143,214,.10)"/>
+                  <stop offset="100%" stop-color="rgba(79,143,214,0)"/>
+                </radialGradient>
+                <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="rgba(111,211,199,.55)"/>
+                  <stop offset="100%" stop-color="rgba(111,211,199,0)"/>
+                </linearGradient>
+              </defs>
+              <circle cx="200" cy="200" r="196" fill="url(#coreGlow)"/>
+              <g class="ring-o" id="ringCoords"></g>
+              <g class="ring-m" id="ringData"></g>
+              <g id="ticks"></g>
+              <g class="sweep"><path d="M200,200 L200,10 A190,190 0 0 1 328,72 Z" fill="url(#sweepGrad)" opacity=".5"/></g>
+              <g class="crosshair" id="crosshair"></g>
+            </svg>
+          </div>
+          <div class="ripples"><div class="ripple r1"></div><div class="ripple r2"></div><div class="ripple r3"></div></div>
+          <div class="motes" id="motes"></div>
+          <div class="steps"><span id="stepText">比对轨迹</span><span class="dot" id="stepDots">·</span></div>
+          <div class="veiltag">SURVEIL</div>
+          <div class="timecode" id="timecode"><span class="rec">● REC</span> <span id="tc">23:41:07</span> · 35.2275N 115.1041E</div>
+          <div class="flash"></div>
+          <div class="seal"><span>已记录</span></div>
+          <div class="data-up" id="dataUp"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <b>这层皮在遮什么：</b>结算楼照旧输出中控真实核算文字（脚本写 DOM），遮罩层以绝对定位整体覆盖该楼，
+    动画谢幕前玩家看不到任何数字与键名——防止骰值、DC、她的暗账提前剧透。<br>
+    <b>演出语法与天机遮罩同构：</b>灵雾→雨幕 · 星盘→雷达锁定盘 · 灵尘→信号回传点 · 金光验印→冷光锁定「已记录」章 ·
+    步进符文改监控话术（比对轨迹→核对足迹→评估风险→封存档案）· 揭幕金粉→数据雨。<br>
+    <b>揭幕三档：</b>「结算卡」把底账折叠进 details；「纯遮罩」整楼只留一行加密信号；「直出」为对照。<br>
+    <b>接入位（预览版未接）：</b>真机挂在结算楼渲染完成事件上（检测结算标记即覆膜），核算回调先到则等动画，
+    动画先完则等回调，二者齐备才揭幕；重生成/删楼时随楼层撤下。<br>
+    <span style="color:#3d4759">演示页为独立 HTML，无外链无依赖；流水数字均为测试占位。</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const NS='http://www.w3.org/2000/svg';
+  const svg=document.getElementById('discSvg');
+  const CX=200,CY=200;
+
+  function txt(g,s,r,deg,size,fill,mono){
+    const t=document.createElementNS(NS,'text');
+    const a=(deg-90)*Math.PI/180;
+    t.setAttribute('x',CX+r*Math.cos(a));
+    t.setAttribute('y',CY+r*Math.sin(a));
+    t.setAttribute('font-size',size);
+    t.setAttribute('fill',fill);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-family',mono?'Consolas,monospace':'sans-serif');
+    t.setAttribute('letter-spacing','1');
+    t.textContent=s;
+    g.appendChild(t);
+  }
+  function ring(g,r,col,w,dash){
+    const c=document.createElementNS(NS,'circle');
+    c.setAttribute('cx',CX);c.setAttribute('cy',CY);c.setAttribute('r',r);
+    c.setAttribute('fill','none');c.setAttribute('stroke',col);
+    c.setAttribute('stroke-width',w);
+    if(dash)c.setAttribute('stroke-dasharray',dash);
+    g.appendChild(c);
+  }
+
+  /* 外环：方位刻度 + 度数（雷达味） */
+  const gCoords=document.getElementById('ringCoords');
+  ring(gCoords,186,'rgba(79,143,214,.55)',1.2);
+  ring(gCoords,158,'rgba(79,143,214,.28)',1,'3 5');
+  for(let i=0;i<24;i++){
+    const deg=i*15;
+    txt(gCoords,String(deg).padStart(3,'0'),172,deg,11,'rgba(79,143,214,.75)',true);
+  }
+
+  /* 中环：数据流（十六进制碎片） */
+  const gData=document.getElementById('ringData');
+  ring(gData,124,'rgba(111,211,199,.3)',1,'2 6');
+  const hex=['0x3F','0xA2','0x7C','0x11','0xE9','0x4B','0xD0','0x58'];
+  for(let i=0;i<8;i++) txt(gData,hex[i],108,i*45+22,11,'rgba(111,211,199,.55)',true);
+
+  /* 刻度 */
+  const gT=document.getElementById('ticks');
+  for(let i=0;i<72;i++){
+    const a=i*5*Math.PI/180, long=i%6===0;
+    const r1=long?58:62, r2=66;
+    const l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',CX+r1*Math.cos(a));l.setAttribute('y1',CY+r1*Math.sin(a));
+    l.setAttribute('x2',CX+r2*Math.cos(a));l.setAttribute('y2',CY+r2*Math.sin(a));
+    l.setAttribute('stroke',long?'rgba(79,143,214,.6)':'rgba(79,143,214,.22)');
+    l.setAttribute('stroke-width',long?1.4:1);
+    gT.appendChild(l);
+  }
+
+  /* 十字准星（锁定框） */
+  const gC=document.getElementById('crosshair');
+  gC.innerHTML=`
+    <circle cx="200" cy="200" r="34" fill="none" stroke="rgba(168,212,255,.8)" stroke-width="1.2"/>
+    <circle cx="200" cy="200" r="4" fill="rgba(224,86,106,.9)"/>
+    <line x1="200" y1="150" x2="200" y2="180" stroke="rgba(168,212,255,.8)" stroke-width="1.4"/>
+    <line x1="200" y1="220" x2="200" y2="250" stroke="rgba(168,212,255,.8)" stroke-width="1.4"/>
+    <line x1="150" y1="200" x2="180" y2="200" stroke="rgba(168,212,255,.8)" stroke-width="1.4"/>
+    <line x1="220" y1="200" x2="250" y2="200" stroke="rgba(168,212,255,.8)" stroke-width="1.4"/>
+    <path d="M166,166 L166,178 M166,166 L178,166 M234,166 L234,178 M234,166 L222,166 M166,234 L166,222 M166,234 L178,234 M234,234 L234,222 M234,234 L222,234"
+      stroke="rgba(168,212,255,.55)" stroke-width="1.6" fill="none"/>`;
+
+  /* 雨（斜雨丝） */
+  const rain=document.getElementById('rain');
+  for(let i=0;i<26;i++){
+    const d=document.createElement('span');d.className='drop';
+    d.style.left=(Math.random()*104-2)+'%';
+    d.style.animationDelay=(Math.random()*0.9)+'s';
+    d.style.animationDuration=(0.7+Math.random()*0.5)+'s';
+    d.style.opacity=(0.4+Math.random()*0.6);
+    rain.appendChild(d);
+  }
+
+  /* 信号点：从盘缘向心汇聚 */
+  const motes=document.getElementById('motes');
+  for(let i=0;i<14;i++){
+    const m=document.createElement('span');m.className='mote';
+    const ang=Math.random()*Math.PI*2, dist=150+Math.random()*110;
+    const x=Math.cos(ang)*dist, y=Math.sin(ang)*dist;
+    m.style.left='calc(50% + '+(x/340*100)+'%)';
+    m.style.top ='calc(46% + '+(y/340*100)+'%)';
+    m.style.setProperty('--dx',(-x*0.92)+'px');
+    m.style.setProperty('--dy',(-y*0.92)+'px');
+    m.style.animationDelay=(Math.random()*2)+'s';
+    motes.appendChild(m);
+  }
+
+  /* 揭幕数据点 */
+  const up=document.getElementById('dataUp');
+  for(let i=0;i<9;i++){
+    const d=document.createElement('span');d.className='dust';
+    d.style.left=(12+Math.random()*76)+'%';
+    d.style.bottom=(10+Math.random()*40)+'%';
+    d.style.setProperty('--wx',((Math.random()*60-30))+'px');
+    d.style.animationDelay=(Math.random()*.35)+'s';
+    up.appendChild(d);
+  }
+
+  /* ── 流程控制 ── */
+  const overlay=document.getElementById('overlay');
+  const raw=document.getElementById('rawSettle');
+  const rawCopy=document.getElementById('rawCopy');
+  const beautified=document.getElementById('beautified');
+  const veilLine=document.getElementById('veilLine');
+  const stepText=document.getElementById('stepText');
+  const stepDots=document.getElementById('stepDots');
+  const tc=document.getElementById('tc');
+  const selMode=document.getElementById('mode');
+  const rngDur=document.getElementById('dur');
+  const durVal=document.getElementById('durVal');
+  let timers=[];
+
+  rawCopy.innerHTML=raw.innerHTML;
+
+  function resetAll(){
+    timers.forEach(clearTimeout);timers=[];
+    overlay.className='overlay';
+    overlay.style.display='none';
+    beautified.style.display='none';
+    veilLine.style.display='none';
+    raw.style.visibility='visible';
+    raw.style.display='block';
+    document.querySelector('details.ledger-raw').open=false;
+  }
+  function later(fn,ms){timers.push(setTimeout(fn,ms))}
+
+  /* 时间码滚动 */
+  let tcTimer=null;
+  function startTC(){
+    stopTC();
+    let base=23*3600+41*60+7;
+    tcTimer=setInterval(()=>{
+      base=(base+1)%86400;
+      const h=String(Math.floor(base/3600)).padStart(2,'0');
+      const m=String(Math.floor(base%3600/60)).padStart(2,'0');
+      const s=String(base%60).padStart(2,'0');
+      tc.textContent=h+':'+m+':'+s;
+    },1000);
+  }
+  function stopTC(){ if(tcTimer){clearInterval(tcTimer);tcTimer=null;} }
+
+  function play(){
+    resetAll();
+    const mode=selMode.value;
+    if(mode==='direct'){ raw.style.display='block'; return; }
+    overlay.style.display='flex';
+    requestAnimationFrame(()=>overlay.classList.add('on'));       // 雨幕+雾合拢
+    startTC();
+    const D=+rngDur.value;
+    const fog=460, seal=640, divSpan=Math.max(200,(D-fog-seal)/4);
+
+    later(()=>overlay.classList.add('divining'),fog);             // 雷达起转
+    const stepsArr=[
+      ['比对轨迹','·'],
+      ['核对足迹','· ·'],
+      ['评估风险','· · ·'],
+      ['封存档案','· · · ·'],
+    ];
+    stepsArr.forEach((s,i)=>later(()=>{
+      stepText.textContent=s[0];stepDots.textContent=s[1];
+    },fog+i*divSpan+divSpan*0.45));
+
+    later(()=>overlay.classList.add('sealing'),D-seal);           // 冷光+落章
+    later(()=>{
+      stopTC();
+      overlay.classList.add('lifting');overlay.classList.add('lifted');
+      raw.style.visibility='hidden';
+      if(mode==='card') beautified.style.display='block';
+      else veilLine.style.display='block';
+      later(()=>{overlay.classList.remove('divining','sealing');},900);
+    },D);
+  }
+
+  document.getElementById('btnReplay').addEventListener('click',play);
+  selMode.addEventListener('change',play);
+  rngDur.addEventListener('input',()=>durVal.textContent=(+rngDur.value/1000).toFixed(1)+'s');
+  rngDur.addEventListener('change',play);
+
+  veilLine.addEventListener('click',()=>{
+    veilLine.style.display='none';
+    raw.style.visibility='visible';
+    raw.animate([{opacity:0},{opacity:1}],{duration:400});
+  });
+
+  play();
+})();
+</script>
+</body>
+</html>

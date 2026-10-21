@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>尾行状态栏 · P1 设计预览（现状 / A 冷蓝 / C 夜巡）</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; padding: 28px 24px 64px; background: #15181d; color: #e6eef6;
+         font: 14px/1.75 "Microsoft YaHei", system-ui, sans-serif; }
+  h1 { font-size: 21px; margin: 0 0 6px; letter-spacing: 0; }
+  h2 { font-size: 15px; margin: 36px 0 8px; color: #f0b355; letter-spacing: 0; }
+  p { margin: 0 0 14px; color: #9fb0c0; max-width: 1000px; }
+  .note { font-size: 12px; color: #6d7f8f; }
+  .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+  figure { margin: 0; background: #1d2329; border: 1px solid #2c333b; border-radius: 8px; padding: 10px; }
+  figure img { display: block; max-width: 100%; border-radius: 4px; }
+  figcaption { font-size: 12px; color: #9fb0c0; margin-top: 8px; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 3px;
+         border: 1px solid #2c333b; color: #9fb0c0; margin-right: 6px; }
+  .a { border-color: #6fd3c7; color: #6fd3c7; }
+  .c { border-color: #f0b355; color: #f0b355; }
+  code { background: #1d2329; padding: 1px 5px; border-radius: 3px; color: #c9d6e2; font-size: 12px; }
+  ul { color: #9fb0c0; max-width: 1000px; }
+  li { margin-bottom: 6px; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 4px; }
+  .sw { width: 118px; }
+  .sw i { display: block; height: 44px; border-radius: 6px; border: 1px solid #2c333b; }
+  .sw span { display: block; font-size: 11px; color: #9fb0c0; margin-top: 4px; }
+  .sw b { display: block; font-size: 11px; color: #e6eef6; font-weight: 600; }
+</style>
+<h1>尾行状态栏 · P1 设计预览</h1>
+<p>三套真渲染对照：<b>现状</b> / <b class="a">A 冷蓝（收敛色板，保守）</b> / <b class="c">C 夜巡（重做语言，大胆）</b>。
+渲染方式是给 <code>状态栏.html</code> 的副本注入覆盖层，<b>项目文件一个字没动</b>。</p>
+
+<h2>一、常驻条对照（980）</h2>
+<figure><img src="sheet_compare.png" alt="现状 / A / C 对照"><figcaption>自上而下：现状 → A 冷蓝 → C 夜巡</figcaption></figure>
+
+<h2>二、手机 390</h2>
+<figure><img src="sheet_c390.png" alt="现状 / C 在 390 宽"><figcaption>390px：路牌 → 红线 → 距离 → 体力 → 心跳 → 终端</figcaption></figure>
+
+<h2>三、C 案做了什么（六个大动作）</h2>
+<ul>
+  <li><b>去掉描边，用光做结构</b>：整条变成一张贴着输入栏的胶片，顶缘一根钠黄发丝光，底部沉入黑。原先十几处 1px 边框全部撤掉。</li>
+  <li><b>状态不再是 chip，是天气</b>：终局封 ＝ 整条顶光变红；心跳过线 ＝ 底部内发光泛暖；崩溃 ＝ 红色搏动。她要不要动手，一眼就能"感觉到"。</li>
+  <li><b>左半是一块路牌</b>：大区缩成 9.5px 字距拉开的等宽上标，场所名 15px 加重，底下一道渐隐的钠黄灯带。</li>
+  <li><b>距离档改成四根竖刻度</b>：亮的那格发钠黄光，比原来的 5px 圆点读得出"第几档"。</li>
+  <li><b>心跳成为唯一主角</b>：♥ 19px、数字 24px、BPM 退到 9px。整条上最亮的东西从"战术终端按钮"变成心跳。</li>
+  <li><b>胶囊去掉按钮皮</b>：极淡底 + 幽灵描边保留可点感，选中用一条 2px 底部光，危险动作只染字色。</li>
+</ul>
+
+<h2>四、终端（C 案同一套语言）</h2>
+<figure><img src="term_c.png" alt="终端 C" style="max-width:720px"><figcaption>卡片无框、只有顶发丝线；五维 20px 大字；标签改成左侧 2px 色条的文字；导航退成纯文字</figcaption></figure>
+
+<h2>五、心跳仪表盘</h2>
+<figure><img src="heart_c.png" alt="心跳盘 C" style="max-width:720px"><figcaption>甜区＝钠黄（升温）、ECG＝青（生理）、指针＝她</figcaption></figure>
+
+<h2>六、Token 层</h2>
+<div class="swatches">
+  <div class="sw"><i style="background:#070b10"></i><b>--ink-0</b><span>#070b10 底</span></div>
+  <div class="sw"><i style="background:#0d141c"></i><b>--ink-1</b><span>#0d141c 卡片</span></div>
+  <div class="sw"><i style="background:#131c26"></i><b>--ink-2</b><span>#131c26 控件</span></div>
+  <div class="sw"><i style="background:#1d2833"></i><b>--line</b><span>#1d2833 分割</span></div>
+  <div class="sw"><i style="background:#eef4fa"></i><b>--t-hi</b><span>#eef4fa 主文字</span></div>
+  <div class="sw"><i style="background:#93a7ba"></i><b>--t-mid</b><span>#93a7ba 次文字</span></div>
+  <div class="sw"><i style="background:#5f7284"></i><b>--t-low</b><span>#5f7284 说明/上标</span></div>
+  <div class="sw"><i style="background:#f0b355"></i><b>--heat</b><span>甜区 / 优势 / 钠灯</span></div>
+  <div class="sw"><i style="background:#5fd6c3"></i><b>--safe</b><span>增益 / 可动手</span></div>
+  <div class="sw"><i style="background:#ff5a68"></i><b>--danger</b><span>封锁 / 失败</span></div>
+  <div class="sw"><i style="background:#e79aa8"></i><b>--her</b><span>她</span></div>
+</div>
+<p class="note">语义约束：一个颜色只表达一件事；灰阶负责层级，彩色只负责状态。</p>
+
+<h2>七、C 案还欠的（未做，等你点头）</h2>
+<ul>
+  <li>图标仍是 emoji（📱 📋 🌧）——C 案这层语言对彩色 emoji 特别不兼容，必须换单色 SVG（P1-c）。</li>
+  <li>雨丝只做了静态纹理，动势要真机才能看（CSS 动画，不耗性能）。</li>
+  <li>状态染色用了 <code>:has()</code>：Chromium 105+/Safari 15.4+ 生效；旧 webview 只是不染色，不会坏。</li>
+  <li>390 宽时 ♥ 与体力贴得偏紧，落地时要补一条 ≤430 的微调。</li>
+</ul>
+</body>
+</html>

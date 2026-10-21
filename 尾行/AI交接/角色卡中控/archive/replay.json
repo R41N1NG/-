@@ -1,0 +1,522 @@
+{
+ "meta": {
+  "pack": "ol",
+  "name": "疲惫的OL",
+  "salt": "drive-demo-ol-2026-10-16",
+  "generated": "2026-10-16T12:42:34.211Z",
+  "night": {
+   "warinessGain": 0,
+   "nextWeather": "rain",
+   "date": 6
+  },
+  "note": "真机回放：全部快照来自 game.snapshot() 引擎真值，状态栏零 mock。"
+ },
+ "frames": [
+  {
+   "label": "楼1 · 雨夜·写字楼下远缀试拍",
+   "snap": {
+    "player": {
+     "heart": 30,
+     "stamina": 95,
+     "cash": 620,
+     "pi": 18,
+     "proximity": 0,
+     "date": 5,
+     "attrs": {
+      "str": 3,
+      "agi": 5,
+      "nrv": 5,
+      "int": 6,
+      "cha": 4
+     }
+    },
+    "target": {
+     "alertStage": 0,
+     "warinessStage": "低"
+    },
+    "mode": "stealth",
+    "dist": "far",
+    "env": "night",
+    "slot": "e21_23",
+    "tags": [],
+    "area": "老城文教区",
+    "place": "沿街24h便利店",
+    "weather": "rain",
+    "weatherName": "🌧 小雨",
+    "strikeSealed": true,
+    "fam": 1,
+    "route": {
+     "nodes": [
+      "写字楼大堂",
+      "沿街24h便利店",
+      "地铁枢纽出入口",
+      "老街地铁站",
+      "老旧单元楼道"
+     ],
+     "known": [
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "here": 1
+    },
+    "exits": [
+     "地铁枢纽出入口 (前)",
+     "写字楼大堂"
+    ],
+    "spots": [
+     "window_watch",
+     "exit_watch"
+    ],
+    "sanctuaryAlert": "当前即为安全庇护场所"
+   },
+   "flow": [
+    "[跟缀] 1d20(12)  = 17 vs DC 13 → success",
+    "[拍照] 1d20(19)  = 25 vs DC 13 → success",
+    "[段税] 心跳峰值 34 → 体力 -1"
+   ]
+  },
+  {
+   "label": "楼2 · 地铁枢纽·贴近听通话",
+   "snap": {
+    "player": {
+     "heart": 30,
+     "stamina": 94,
+     "cash": 620,
+     "pi": 21,
+     "proximity": 0,
+     "date": 5,
+     "attrs": {
+      "str": 3,
+      "agi": 5,
+      "nrv": 5,
+      "int": 6,
+      "cha": 4
+     }
+    },
+    "target": {
+     "alertStage": 0,
+     "warinessStage": "低"
+    },
+    "mode": "stealth",
+    "dist": "same",
+    "env": "night",
+    "slot": "e21_23",
+    "tags": [],
+    "area": "老城文教区",
+    "place": "地铁枢纽出入口",
+    "weather": "rain",
+    "weatherName": "🌧 小雨",
+    "strikeSealed": true,
+    "fam": 2,
+    "route": {
+     "nodes": [
+      "写字楼大堂",
+      "沿街24h便利店",
+      "地铁枢纽出入口",
+      "老街地铁站",
+      "老旧单元楼道"
+     ],
+     "known": [
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "here": 2
+    },
+    "exits": [
+     "写字楼大堂",
+     "跨街连廊天桥",
+     "沿街24h便利店",
+     "站前公交港湾"
+    ],
+    "spots": [
+     "ticket_gate",
+     "sunken_plaza"
+    ],
+    "sanctuaryAlert": "当前即为安全庇护场所"
+   },
+   "flow": [
+    "[跟缀] 1d20(10)  = 15 vs DC 13 → success",
+    "[贴身听] 1d20(4)  = 10 vs DC 13 → grace",
+    "[段税] 心跳峰值 35 → 体力 -1"
+   ]
+  },
+  {
+   "label": "楼3 · 老街地铁段·情报跨过深层线",
+   "snap": {
+    "player": {
+     "heart": 30,
+     "stamina": 93,
+     "cash": 620,
+     "pi": 60,
+     "proximity": 0,
+     "date": 5,
+     "attrs": {
+      "str": 3,
+      "agi": 5,
+      "nrv": 5,
+      "int": 6,
+      "cha": 4
+     }
+    },
+    "target": {
+     "alertStage": 0,
+     "warinessStage": "低"
+    },
+    "mode": "stealth",
+    "dist": "same",
+    "env": "night",
+    "slot": "e21_23",
+    "tags": [
+     {
+      "name": "优势：情报",
+      "owner": "player",
+      "duration": "flag"
+     }
+    ],
+    "area": "老城文教区",
+    "place": "老街地铁站",
+    "weather": "rain",
+    "weatherName": "🌧 小雨",
+    "strikeSealed": true,
+    "fam": 3,
+    "route": {
+     "nodes": [
+      "写字楼大堂",
+      "沿街24h便利店",
+      "地铁枢纽出入口",
+      "老街地铁站",
+      "老旧单元楼道"
+     ],
+     "known": [
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "here": 3
+    },
+    "exits": [
+     "学区公交总站",
+     "老水泥天桥",
+     "老街24h便利店"
+    ],
+    "spots": [
+     "ticket_gate"
+    ],
+    "sanctuaryAlert": "当前即为安全庇护场所"
+   },
+   "flow": [
+    "[跟缀] 1d20(4)  = 9 vs DC 13 → fail",
+    "[分析] 1d20(5)  = 11 vs DC 12 → fail",
+    "[段税] 心跳峰值 30 → 体力 -1"
+   ]
+  },
+  {
+   "label": "楼4 · 出站跟缀·优势：情报已挂（双骰）",
+   "snap": {
+    "player": {
+     "heart": 25,
+     "stamina": 92,
+     "cash": 620,
+     "pi": 63,
+     "proximity": 0,
+     "date": 5,
+     "attrs": {
+      "str": 3,
+      "agi": 5,
+      "nrv": 5,
+      "int": 6,
+      "cha": 4
+     }
+    },
+    "target": {
+     "alertStage": 0,
+     "warinessStage": "低"
+    },
+    "mode": "stealth",
+    "dist": "same",
+    "env": "night",
+    "slot": "e21_23",
+    "tags": [
+     {
+      "name": "优势：情报",
+      "owner": "player",
+      "duration": "flag"
+     }
+    ],
+    "area": "老城文教区",
+    "place": "老旧单元楼道",
+    "weather": "rain",
+    "weatherName": "🌧 小雨",
+    "strikeSealed": false,
+    "fam": 4,
+    "route": {
+     "nodes": [
+      "写字楼大堂",
+      "沿街24h便利店",
+      "地铁枢纽出入口",
+      "老街地铁站",
+      "老旧单元楼道"
+     ],
+     "known": [
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "here": 4
+    },
+    "exits": [
+     "居民杂物暗巷",
+     "老楼天台"
+    ],
+    "spots": [
+     "listen_home",
+     "door_crack",
+     "try_handle"
+    ],
+    "sanctuaryAlert": "当前即为安全庇护场所"
+   },
+   "flow": [
+    "[跟缀] 1d20(4) +3 连败保底 = 12 vs DC 13 → grace",
+    "[躲藏] 1d20(9)  = 14 vs DC 12 → success",
+    "[段税] 心跳峰值 35 → 体力 -1"
+   ]
+  },
+  {
+   "label": "楼5 · 单元楼道·贴身跟缀（心跳过线·操作变形）",
+   "snap": {
+    "player": {
+     "heart": 92,
+     "stamina": 86,
+     "cash": 620,
+     "pi": 67,
+     "proximity": 0,
+     "date": 5,
+     "attrs": {
+      "str": 3,
+      "agi": 5,
+      "nrv": 5,
+      "int": 6,
+      "cha": 4
+     }
+    },
+    "target": {
+     "alertStage": 0,
+     "warinessStage": "低"
+    },
+    "mode": "stealth",
+    "dist": "close",
+    "env": "night",
+    "slot": "e21_23",
+    "tags": [
+     {
+      "name": "优势：情报",
+      "owner": "player",
+      "duration": "flag"
+     },
+     {
+      "name": "操作变形",
+      "owner": "player",
+      "duration": "flag"
+     },
+     {
+      "name": "操作崩溃",
+      "owner": "player",
+      "duration": "flag"
+     }
+    ],
+    "area": "老城文教区",
+    "place": "老旧单元楼道",
+    "weather": "rain",
+    "weatherName": "🌧 小雨",
+    "strikeSealed": false,
+    "fam": 5,
+    "route": {
+     "nodes": [
+      "写字楼大堂",
+      "沿街24h便利店",
+      "地铁枢纽出入口",
+      "老街地铁站",
+      "老旧单元楼道"
+     ],
+     "known": [
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "here": 4
+    },
+    "exits": [
+     "居民杂物暗巷",
+     "老楼天台"
+    ],
+    "spots": [
+     "listen_home",
+     "door_crack",
+     "try_handle"
+    ],
+    "sanctuaryAlert": "当前即为安全庇护场所"
+   },
+   "flow": [
+    "[跟缀] 1d20(8)  = 13 vs DC 13 → success",
+    "[读时机] 1d20(17)  = 23 vs DC 15 → success",
+    "[段税] 心跳峰值 97 → 体力 -6"
+   ]
+  },
+  {
+   "label": "楼6 · 门前·终局窗口评估",
+   "snap": {
+    "player": {
+     "heart": 92,
+     "stamina": 80,
+     "cash": 620,
+     "pi": 68,
+     "proximity": 0,
+     "date": 5,
+     "attrs": {
+      "str": 3,
+      "agi": 5,
+      "nrv": 5,
+      "int": 6,
+      "cha": 4
+     }
+    },
+    "target": {
+     "alertStage": 0,
+     "warinessStage": "低"
+    },
+    "mode": "stealth",
+    "dist": "close",
+    "env": "night",
+    "slot": "e21_23",
+    "tags": [
+     {
+      "name": "优势：情报",
+      "owner": "player",
+      "duration": "flag"
+     },
+     {
+      "name": "操作变形",
+      "owner": "player",
+      "duration": "flag"
+     },
+     {
+      "name": "操作崩溃",
+      "owner": "player",
+      "duration": "flag"
+     }
+    ],
+    "area": "老城文教区",
+    "place": "老旧单元楼道",
+    "weather": "rain",
+    "weatherName": "🌧 小雨",
+    "strikeSealed": false,
+    "fam": 6,
+    "route": {
+     "nodes": [
+      "写字楼大堂",
+      "沿街24h便利店",
+      "地铁枢纽出入口",
+      "老街地铁站",
+      "老旧单元楼道"
+     ],
+     "known": [
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "here": 4
+    },
+    "exits": [
+     "居民杂物暗巷",
+     "老楼天台"
+    ],
+    "spots": [
+     "listen_home",
+     "door_crack",
+     "try_handle"
+    ],
+    "sanctuaryAlert": "当前即为安全庇护场所"
+   },
+   "flow": [
+    "[跟缀] 1d20(7)  = 12 vs DC 13 → grace",
+    "[段税] 心跳峰值 97 → 体力 -6"
+   ]
+  },
+  {
+   "label": "次晨 · 过夜结算（防备沉淀 ＋ 掷出下一晚天气）",
+   "snap": {
+    "player": {
+     "heart": 30,
+     "stamina": 110,
+     "cash": 620,
+     "pi": 68,
+     "proximity": 0,
+     "date": 6,
+     "attrs": {
+      "str": 3,
+      "agi": 5,
+      "nrv": 5,
+      "int": 6,
+      "cha": 4
+     }
+    },
+    "target": {
+     "alertStage": 0,
+     "warinessStage": "低"
+    },
+    "mode": "stealth",
+    "dist": "close",
+    "env": "night",
+    "slot": "e21_23",
+    "tags": [
+     {
+      "name": "优势：情报",
+      "owner": "player",
+      "duration": "flag"
+     }
+    ],
+    "area": "老城文教区",
+    "place": null,
+    "weather": "rain",
+    "weatherName": "🌧 小雨",
+    "strikeSealed": false,
+    "fam": 6,
+    "route": {
+     "nodes": [
+      "老旧单元楼道",
+      "老街地铁站",
+      "metro_hub_a",
+      "office_lobby_a"
+     ],
+     "known": [
+      1,
+      1,
+      0,
+      0
+     ],
+     "here": -1
+    },
+    "exits": [],
+    "spots": [],
+    "sanctuaryAlert": ""
+   },
+   "flow": [
+    "[过夜] wariness +0 · 明晚天气 rain · 第 6 天"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+[
+ {
+  "key": "div|settleDieShadow|die-shadow#1",
+  "prop": "transform",
+  "before": "matrix(0.928051, 0, 0, 0.928051, 0, 0)",
+  "after": "matrix(0.925534, 0, 0, 0.925534, 0, 0)"
+ }
+]

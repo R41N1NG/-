@@ -1,0 +1,218 @@
+/* ═══════════════════════════════════════════════════════════════
+   C 案 · 夜巡（Night Watch）
+   目标：不再是"仪表盘"，而是「贴在输入栏上方的一条街」。
+   手法：去掉描边与胶囊感 → 用光、留白、字号落差建立层级；
+        状态不再是一个 chip，而是整条的颜色与边缘光（她的状态是天气，不是仪表）。
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --ink-0: #070b10;
+  --ink-1: #0d141c;
+  --ink-2: #131c26;
+  --line: #1d2833;
+  --t-hi: #eef4fa;
+  --t-mid: #93a7ba;
+  --t-low: #5f7284;
+  --heat: #f0b355;
+  --safe: #5fd6c3;
+  --danger: #ff5a68;
+  --her: #e79aa8;
+}
+
+/* ── 胶片条本体：一条顶缘光 + 底部沉入黑 ── */
+body { background: #05080b !important; }
+.trpg {
+  background: linear-gradient(180deg, #0b1219 0%, #080d13 58%, #05080c 100%) !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(240, 179, 85, .26) !important;
+  border-radius: 12px 12px 0 0 !important;
+  box-shadow: 0 -20px 44px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .05) !important;
+}
+/* 雨幕 + 钠灯侧光 + 颗粒：材质层，替代原来几乎看不见的扫描纹 */
+.trpg::before {
+  background:
+    radial-gradient(78% 130% at 12% -10%, rgba(240, 179, 85, .12), transparent 56%),
+    radial-gradient(60% 120% at 96% 120%, rgba(95, 214, 195, .06), transparent 62%),
+    repeating-linear-gradient(102deg, rgba(190, 216, 245, .035) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .012) 0 1px, transparent 1px 3px) !important;
+}
+
+/* ── 左：路牌。大区缩成上标小字，场所名放大，底下一条钠黄灯带 ── */
+.slim-left { gap: 9px !important; }
+.slim-dist-badge {
+  background: none !important; border: 0 !important; padding: 0 !important;
+  color: var(--t-low) !important; font: 600 9.5px/1 ui-monospace, Consolas, monospace !important;
+  letter-spacing: .18em !important;
+}
+.slim-place {
+  position: relative !important; padding-bottom: 4px !important;
+  font-size: 15px !important; font-weight: 600 !important; letter-spacing: .01em !important;
+  color: var(--t-hi) !important;
+}
+.slim-place::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: linear-gradient(90deg, var(--heat), rgba(240, 179, 85, 0));
+}
+/* 状态不再是胶囊：左侧一根 2px 竖条 + 小字 */
+.slim-tag {
+  background: none !important; border: 0 !important; border-left: 2px solid var(--line) !important;
+  border-radius: 0 !important; padding: 0 0 0 7px !important;
+  font-size: 11px !important; color: var(--t-mid) !important;
+}
+.slim-tag.weather { border-left-color: rgba(95, 214, 195, .55) !important; color: #9ed6cd !important; }
+.slim-tag.strike-tag.allowed { border-left-color: rgba(95, 214, 195, .75) !important; color: #a7e5d9 !important; }
+.slim-tag.strike-tag.sealed { border-left-color: var(--danger) !important; color: #ff9aa3 !important; }
+.slim-tag.remain { border-left-color: transparent !important; color: var(--t-low) !important; }
+.slim-tag.id-badge { border-left-color: var(--her) !important; color: #eec3cb !important; }
+
+/* ── 中：距离 = 四根竖刻度 ── */
+.slim-center { background: none !important; border: 0 !important; padding: 0 !important; gap: 8px !important; }
+.slim-phase { font: 600 9.5px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .18em !important; color: var(--t-low) !important; }
+.slim-dist { font-size: 12px !important; font-weight: 600 !important; color: var(--t-hi) !important; }
+.slim-divider { display: none !important; }
+.slim-pips { align-items: center !important; gap: 3px !important; }
+.slim-pips .pip { width: 3px !important; height: 13px !important; border-radius: 1.5px !important; border: 0 !important; background: #22303d !important; }
+.slim-pips .pip.active { background: var(--heat) !important; box-shadow: 0 0 9px rgba(240, 179, 85, .9) !important; }
+
+/* ── 右：心跳是主角，其余读数退成细线 ── */
+.heart-pill-btn { background: none !important; border: 0 !important; padding: 0 !important; gap: 6px !important; }
+.mini-heart { font-size: 19px !important; color: var(--her) !important; filter: drop-shadow(0 0 7px rgba(231, 154, 168, .75)) !important; }
+.mini-heart-num { font-size: 24px !important; font-weight: 600 !important; letter-spacing: -.02em !important; color: #fff !important; text-shadow: 0 0 20px rgba(231, 154, 168, .35) !important; }
+.mini-heart-bpm { font: 500 9px/1 ui-monospace, Consolas, monospace !important; color: var(--t-low) !important; margin-top: 7px !important; margin-left: 4px !important; }
+.slim-stamina { background: none !important; border: 0 !important; padding: 0 !important; gap: 7px !important; }
+.slim-stamina-val { font: 600 11px/1 ui-monospace, Consolas, monospace !important; color: var(--t-mid) !important; }
+.slim-stamina[data-band="yellow"] .slim-stamina-val { color: var(--heat) !important; }
+.slim-stamina[data-band="red"] .slim-stamina-val { color: #ff9aa3 !important; }
+.slim-stamina-bar { width: 40px !important; height: 2px !important; border-radius: 1px !important; background: #1d2933 !important; }
+.slim-btn { background: none !important; border: 0 !important; padding: 2px !important; color: var(--t-mid) !important; font-size: 11px !important; }
+.slim-btn:hover { background: none !important; color: var(--t-hi) !important; }
+
+/* ── 胶囊栏：去边框，选中用一条底部光 ── */
+.wx-capsule-bar { background: linear-gradient(180deg, #070b10, #04070a) !important; border-top: 1px solid rgba(255, 255, 255, .04) !important; }
+.wx-posture-badge {
+  background: none !important; border: 0 !important; padding: 0 !important;
+  color: var(--t-low) !important; font: 600 9.5px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .14em !important;
+}
+.wx-capsule-chip {
+  background: rgba(255, 255, 255, .035) !important; border: 0 !important;
+  color: var(--t-mid) !important; padding: 4px 10px !important; border-radius: 3px !important;
+}
+.wx-capsule-chip:hover { background: rgba(255, 255, 255, .075) !important; color: var(--t-hi) !important; }
+.wx-capsule-chip.active { background: rgba(95, 214, 195, .13) !important; color: var(--safe) !important; box-shadow: inset 0 -2px 0 var(--safe) !important; }
+.wx-capsule-chip.danger { color: #e59aa2 !important; }
+.wx-capsule-chip.danger.active { background: rgba(255, 90, 104, .14) !important; color: #ff9aa3 !important; box-shadow: inset 0 -2px 0 var(--danger) !important; }
+.wx-more-btn { background: none !important; border: 0 !important; color: var(--t-low) !important; }
+.wx-more-btn:hover { color: var(--t-hi) !important; }
+
+/* ── 状态即天气：过线整条泛红，崩溃时内发光搏动 ── */
+.trpg[data-line="deform"] { box-shadow: 0 -20px 44px rgba(0, 0, 0, .7), inset 0 0 34px rgba(240, 179, 85, .14) !important; }
+.trpg[data-line="deform"] .slim-place::after { background: linear-gradient(90deg, #ffd08a, rgba(240, 179, 85, .0)) !important; }
+.trpg[data-line="crash"] { box-shadow: 0 -20px 44px rgba(0, 0, 0, .7), inset 0 0 44px rgba(255, 90, 104, .26) !important; }
+.trpg[data-line="crash"] .slim-place::after { background: linear-gradient(90deg, var(--danger), rgba(255, 90, 104, 0)) !important; }
+.trpg:has(.strike-tag.sealed) { border-top-color: rgba(255, 90, 104, .45) !important; }
+.trpg:has(.strike-tag.sealed)::before {
+  background:
+    radial-gradient(78% 130% at 12% -10%, rgba(255, 90, 104, .14), transparent 56%),
+    radial-gradient(60% 120% at 96% 120%, rgba(95, 214, 195, .05), transparent 62%),
+    repeating-linear-gradient(102deg, rgba(190, 216, 245, .03) 0 1px, transparent 1px 8px) !important;
+}
+
+/* ── 终端：同一套语言（无描边卡片 / 顶部发丝线 / 大字标题） ── */
+dialog.wx-terminal-dialog { background: #070b10 !important; border: 0 !important; border-top: 1px solid rgba(240, 179, 85, .22) !important; box-shadow: 0 30px 80px rgba(0, 0, 0, .9) !important; }
+.wx-modal-head { background: linear-gradient(180deg, rgba(240, 179, 85, .07), transparent 92%) !important; border-bottom: 1px solid rgba(255, 255, 255, .05) !important; }
+.wx-modal-title { font-size: 15px !important; letter-spacing: .02em !important; color: var(--t-hi) !important; }
+.wx-modal-badge { background: rgba(255, 255, 255, .04) !important; border: 0 !important; color: var(--t-low) !important; font: 600 9.5px/1.4 ui-monospace, Consolas, monospace !important; letter-spacing: .12em !important; }
+.wx-wing-card, .wx-terminal-envbox, .wx-player-banner, .wx-modal-body .route-tracker {
+  background: rgba(255, 255, 255, .028) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, .07) !important;
+  border-radius: 4px !important; box-shadow: none !important;
+}
+.wx-wing-card h3, .wx-terminal-envbox h3, .wx-player-banner h3 { color: var(--t-hi) !important; letter-spacing: .02em !important; }
+.section-no { color: var(--t-low) !important; font: 600 9.5px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .16em !important; }
+.attr { background: rgba(255, 255, 255, .03) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, .06) !important; }
+.attr .an { color: var(--t-low) !important; font: 600 10px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .12em !important; }
+.attr .av { color: var(--t-hi) !important; font-size: 20px !important; font-weight: 600 !important; letter-spacing: -.02em !important; }
+.attr.hot .av { color: var(--safe) !important; }
+.attr.weak .av { color: #ff9aa3 !important; }
+.trpg .tag { background: none !important; border: 0 !important; border-left: 2px solid var(--line) !important; border-radius: 0 !important; color: var(--t-mid) !important; padding: 1px 0 1px 7px !important; text-shadow: none !important; }
+.trpg .tag.advantage { border-left-color: var(--heat) !important; color: #f4d6a0 !important; }
+.trpg .tag.debuff, .trpg .tag.target { border-left-color: var(--danger) !important; color: #ffa9b1 !important; }
+.trpg .tag.personality, .trpg .tag.hobby, .trpg .tag.equipment { border-left-color: var(--her) !important; color: #eec3cb !important; }
+.wx-item-row { background: rgba(255, 255, 255, .03) !important; border: 0 !important; border-left: 2px solid var(--line) !important; border-radius: 0 !important; }
+.wx-item-btn { background: none !important; border: 1px solid rgba(255, 255, 255, .12) !important; color: var(--t-mid) !important; }
+.wx-item-btn.btn-equip { border-color: rgba(95, 214, 195, .5) !important; color: var(--safe) !important; }
+.wx-item-btn.btn-unequip { border-color: rgba(255, 90, 104, .45) !important; color: #ff9aa3 !important; }
+.wx-item-equipped-pill { background: none !important; border: 1px solid rgba(95, 214, 195, .45) !important; color: var(--safe) !important; }
+.wx-item-type-badge { background: none !important; border: 0 !important; color: var(--t-low) !important; padding-left: 0 !important; }
+.prox-container { background: none !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, .07) !important; padding-left: 0 !important; padding-right: 0 !important; }
+.prox-meter-bar { background: #17222c !important; height: 3px !important; }
+.prox-meter-fill { background: linear-gradient(90deg, rgba(231, 154, 168, .35), var(--her)) !important; }
+.prox-value-wrap strong { color: var(--t-hi) !important; font-size: 18px !important; }
+.prox-stage-badge { color: var(--her) !important; }
+.pnode .pdot { width: 5px !important; height: 5px !important; }
+.pnode.active .pdot { background: var(--her) !important; border-color: #ffe3ea !important; box-shadow: 0 0 9px rgba(231, 154, 168, .85) !important; }
+.pnode .plabel { color: var(--t-low) !important; font: 500 9.5px/1 ui-monospace, Consolas, monospace !important; }
+.pnode.active .plabel { color: var(--her) !important; }
+.fam-meter { background: #17222c !important; }
+.fam-fill { background: var(--safe) !important; }
+.chip { background: rgba(255, 255, 255, .035) !important; border: 0 !important; color: var(--t-mid) !important; border-radius: 3px !important; }
+.chip-special { color: #f4d6a0 !important; }
+.chip-warn { color: #ffa9b1 !important; }
+.trpg .assessment { background: none !important; border: 0 !important; border-left: 2px solid var(--heat) !important; color: #e9d3ad !important; padding-left: 9px !important; }
+.trpg .timeline li { border-left-color: rgba(255, 255, 255, .08) !important; color: var(--t-mid) !important; }
+.trpg .timeline li::before { background: var(--t-low) !important; }
+.trpg time { color: var(--t-low) !important; font: 500 10px/1 ui-monospace, Consolas, monospace !important; }
+.wx-terminal-links { background: none !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, .06) !important; }
+.wx-terminal-nav-buttons button { background: none !important; border: 0 !important; color: var(--t-mid) !important; padding-left: 0 !important; }
+.wx-terminal-nav-buttons button:hover { color: var(--t-hi) !important; }
+.wx-terminal-ledger { background: none !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, .06) !important; border-radius: 0 !important; color: var(--t-mid) !important; box-shadow: none !important; }
+.wx-modal-close { color: var(--t-mid) !important; font-size: 18px !important; }
+
+/* 心跳盘：甜区=钠黄、ECG=青、指针=她 */
+.dial-track { stroke: #202934 !important; stroke-width: 6 !important; }
+.dial-sweet { stroke: var(--heat) !important; stroke-width: 6 !important; filter: drop-shadow(0 0 6px rgba(240, 179, 85, .55)) !important; }
+.dial-marker { fill: #fffaf2 !important; stroke: var(--her) !important; }
+.dial-beat-halo { stroke: var(--her) !important; filter: none !important; }
+.ecg-line { stroke: var(--safe) !important; filter: none !important; }
+.dial-number { fill: #fff !important; }
+.dial-bpm, .dial-label, .dial-scale { fill: var(--t-low) !important; }
+.dial-caption { color: var(--t-low) !important; }
+.heart-popover-card { background: rgba(8, 12, 17, .98) !important; border: 1px solid rgba(255, 255, 255, .08) !important; box-shadow: 0 -16px 40px rgba(0, 0, 0, .95) !important; }
+.popover-title { color: var(--t-mid) !important; font: 600 10px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .14em !important; }
+
+/* 基础层的「.trpg button { background:#26333e !important }」特异性压过单个类名，
+   这里统一用 .trpg 前缀反压一次：C 案要的是无按钮皮 */
+.trpg .heart-pill-btn { background: none !important; border: 0 !important; padding: 0 !important; min-height: 0 !important; }
+.trpg .heart-pill-btn:hover { background: none !important; border: 0 !important; }
+.trpg .slim-btn { background: none !important; border: 0 !important; padding: 2px 4px !important; min-height: 0 !important; color: var(--t-mid) !important; }
+.trpg .slim-btn:hover { background: none !important; border: 0 !important; color: var(--t-hi) !important; }
+.trpg .wx-posture-badge { background: none !important; border: 0 !important; }
+.trpg .wx-capsule-chip { background: rgba(255, 255, 255, .035) !important; border: 0 !important; color: var(--t-mid) !important; padding: 4px 10px !important; min-height: 0 !important; }
+.trpg .wx-capsule-chip:hover { background: rgba(255, 255, 255, .075) !important; color: var(--t-hi) !important; border: 0 !important; }
+.trpg .wx-capsule-chip.active { background: rgba(95, 214, 195, .13) !important; color: var(--safe) !important; box-shadow: inset 0 -2px 0 var(--safe) !important; }
+.trpg .wx-capsule-chip.danger { color: #e59aa2 !important; }
+.trpg .wx-capsule-chip.danger.active { background: rgba(255, 90, 104, .14) !important; color: #ff9aa3 !important; box-shadow: inset 0 -2px 0 var(--danger) !important; }
+.trpg .wx-more-btn { background: none !important; border: 0 !important; color: var(--t-low) !important; min-height: 0 !important; }
+.trpg .wx-more-btn:hover { background: none !important; color: var(--t-hi) !important; border: 0 !important; }
+.trpg .wx-item-btn { background: none !important; border: 1px solid rgba(255, 255, 255, .12) !important; color: var(--t-mid) !important; min-height: 0 !important; }
+.trpg .wx-item-btn.btn-equip { border-color: rgba(95, 214, 195, .5) !important; color: var(--safe) !important; }
+.trpg .wx-item-btn.btn-unequip { border-color: rgba(255, 90, 104, .45) !important; color: #ff9aa3 !important; }
+.trpg .wx-terminal-nav-buttons button { background: none !important; border: 0 !important; color: var(--t-mid) !important; }
+.trpg .audio-menu-btn, .trpg .wx-modal-close { background: none !important; border: 0 !important; }
+
+/* 构图：左边一坨（路牌+状态+距离），右边一坨（读数），中间留呼吸 —— 不要平均摊开 */
+.trpg .slim-left { flex: 0 1 auto !important; }
+.trpg .slim-center { margin-left: 16px !important; margin-right: auto !important; }
+.trpg .slim-place::after { right: auto !important; width: 62% !important; }
+
+/* 基础层用「.trpg .attr { … !important }」，这里必须同前缀才压得住 */
+.trpg .attr { background: rgba(255, 255, 255, .03) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, .07) !important; border-radius: 2px !important; padding: 8px 4px 7px !important; }
+.trpg .attr .an { font: 600 10px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .14em !important; color: var(--t-low) !important; }
+.trpg .attr .av { font-size: 20px !important; font-weight: 600 !important; letter-spacing: -.02em !important; color: var(--t-hi) !important; }
+.trpg .attr.hot .av { color: var(--safe) !important; }
+.trpg .attr.weak .av { color: #ff9aa3 !important; }
+
+/* 胶囊要还看得出来"能点"：极淡底 + 1px 幽灵描边（不是边框感，是可点击感） */
+.trpg .wx-capsule-chip { background: rgba(255, 255, 255, .055) !important; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07) !important; }
+.trpg .wx-capsule-chip:hover { background: rgba(255, 255, 255, .09) !important; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12) !important; }
+.trpg .wx-capsule-chip.active { background: rgba(95, 214, 195, .13) !important; box-shadow: inset 0 -2px 0 var(--safe), inset 0 0 0 1px rgba(95, 214, 195, .28) !important; }
+.trpg .wx-capsule-chip.danger.active { background: rgba(255, 90, 104, .14) !important; box-shadow: inset 0 -2px 0 var(--danger), inset 0 0 0 1px rgba(255, 90, 104, .3) !important; }
+.trpg .wx-more-btn { background: none !important; color: var(--t-mid) !important; }

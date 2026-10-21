@@ -1,0 +1,164 @@
+/* ═══ P1 预览 · 共用 token 层（只注入到 work/p1/ 的副本里，不碰项目文件） ═══ */
+:root {
+  --ink-0: #0b1018;
+  --ink-1: #121b25;
+  --ink-2: #17222e;
+  --line: #24313f;
+  --t-hi: #e6eef6;
+  --t-mid: #9fb0c0;
+  --t-low: #6d7f8f;
+  --heat: #e8b45c;
+  --safe: #6fd3c7;
+  --danger: #e5485b;
+  --her: #d98fa0;
+}
+
+/* 底板与材质：冷色温 + 顶部一层弱光 + 2% 颗粒（替代原来几乎看不见的 1px 扫描纹） */
+body { background: var(--ink-0) !important; }
+.trpg {
+  background: var(--ink-0) !important;
+  border-color: var(--line) !important;
+  border-bottom-color: #070b11 !important;
+  color: var(--t-hi) !important;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, .55) !important;
+}
+.trpg::before {
+  background:
+    radial-gradient(120% 90% at 50% -30%, rgba(255, 255, 255, .055), transparent 62%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .014) 0 1px, transparent 1px 3px) !important;
+}
+
+/* ── 常驻条：位置最重、读数次之、次级信息最轻 ── */
+.slim-dist-badge {
+  background: var(--ink-2) !important; border-color: var(--line) !important;
+  color: var(--t-mid) !important; font-weight: 600 !important; letter-spacing: 0 !important;
+}
+.slim-place { color: var(--t-hi) !important; font-size: 13px !important; font-weight: 650 !important; letter-spacing: 0 !important; }
+.slim-tag { background: var(--ink-2) !important; border: 1px solid var(--line) !important; color: var(--t-mid) !important; }
+.slim-tag.weather { background: rgba(111, 211, 199, .09) !important; border-color: rgba(111, 211, 199, .34) !important; color: var(--safe) !important; }
+.slim-tag.strike-tag.allowed { background: rgba(111, 211, 199, .10) !important; border-color: rgba(111, 211, 199, .40) !important; color: var(--safe) !important; }
+.slim-tag.strike-tag.sealed { background: rgba(229, 72, 91, .12) !important; border-color: rgba(229, 72, 91, .45) !important; color: #ff9aa6 !important; }
+.slim-tag.remain { background: transparent !important; border-color: transparent !important; color: var(--t-low) !important; }
+.slim-tag.id-badge { background: rgba(217, 143, 160, .10) !important; border-color: rgba(217, 143, 160, .35) !important; color: var(--her) !important; }
+.slim-center { background: var(--ink-2) !important; border-color: var(--line) !important; }
+.slim-phase { color: var(--t-mid) !important; letter-spacing: 0 !important; }
+.slim-divider { color: var(--line) !important; }
+.slim-dist { color: var(--t-hi) !important; font-weight: 600 !important; }
+/* 四个 5px 圆点 → 四段小刻度，读得出档位 */
+.slim-pips { gap: 3px !important; }
+.slim-pips .pip { width: 6px !important; height: 2px !important; border-radius: 1px !important; border: 0 !important; background: #2c3a48 !important; }
+.slim-pips .pip.active { background: var(--heat) !important; box-shadow: 0 0 6px rgba(232, 180, 92, .65) !important; }
+
+/* ── 心跳 = 唯一主角：♥ 放大、数字压紧、BPM 降级 ── */
+.heart-pill-btn {
+  background: rgba(217, 143, 160, .10) !important;
+  border-color: rgba(217, 143, 160, .40) !important;
+  padding: 2px 9px !important;
+}
+.mini-heart { font-size: 16px !important; color: var(--her) !important; filter: drop-shadow(0 0 5px rgba(217, 143, 160, .55)) !important; margin-right: 5px !important; }
+.mini-heart-num { font-size: 15px !important; font-weight: 700 !important; color: var(--t-hi) !important; }
+.mini-heart-bpm { font-size: 10px !important; color: var(--t-low) !important; }
+
+/* ── 体力：数字 + 色带承担，条加粗到 4px ── */
+.slim-stamina { background: var(--ink-2) !important; border-color: var(--line) !important; color: var(--safe) !important; }
+.slim-stamina[data-band="yellow"] { color: var(--heat) !important; border-color: rgba(232, 180, 92, .34) !important; }
+.slim-stamina[data-band="red"] { color: #ff9aa6 !important; border-color: rgba(229, 72, 91, .40) !important; }
+.slim-stamina-bar { width: 26px !important; height: 4px !important; background: #22303c !important; }
+
+/* ── 胶囊栏 ── */
+.wx-capsule-bar { background: #080d13 !important; border-top-color: var(--line) !important; }
+.wx-posture-badge { background: var(--ink-2) !important; border-color: var(--line) !important; color: var(--t-mid) !important; }
+.wx-posture-badge.narrative { background: rgba(232, 180, 92, .09) !important; border-color: rgba(232, 180, 92, .35) !important; color: var(--heat) !important; }
+.wx-capsule-chip { background: var(--ink-2) !important; border: 1px solid var(--line) !important; color: var(--t-mid) !important; }
+.wx-capsule-chip.active { background: rgba(111, 211, 199, .12) !important; border-color: rgba(111, 211, 199, .45) !important; color: var(--safe) !important; box-shadow: none !important; }
+.wx-capsule-chip.danger { border-color: rgba(229, 72, 91, .30) !important; color: #e5909d !important; }
+.wx-capsule-chip.danger.active { background: rgba(229, 72, 91, .14) !important; border-color: rgba(229, 72, 91, .50) !important; color: #ff9aa6 !important; }
+.wx-more-btn { background: var(--ink-2) !important; border-color: var(--line) !important; color: var(--t-mid) !important; }
+
+/* ── 终端 ── */
+.wx-modal-head { background: #0d141d !important; border-bottom-color: var(--line) !important; }
+.wx-modal-title { font-size: 14px !important; letter-spacing: 0 !important; color: var(--t-hi) !important; }
+.wx-modal-badge { background: var(--ink-2) !important; border-color: var(--line) !important; color: var(--t-mid) !important; font-size: 10px !important; letter-spacing: 0 !important; }
+.wx-wing-card, .wx-terminal-envbox, .wx-player-banner, .wx-modal-body .route-tracker {
+  background: var(--ink-1) !important; border-color: var(--line) !important; border-radius: 8px !important;
+}
+.wx-wing-card h3, .wx-terminal-envbox h3, .wx-player-banner h3 { color: var(--t-hi) !important; letter-spacing: 0 !important; }
+.section-no { color: var(--t-low) !important; font-size: 10px !important; letter-spacing: 0 !important; }
+.attr .an { color: var(--t-mid) !important; letter-spacing: 0 !important; }
+.attr .av { color: var(--t-hi) !important; font-size: 18px !important; font-weight: 650 !important; }
+.wx-item-row { background: var(--ink-2) !important; border-color: var(--line) !important; }
+.wx-terminal-ledger { background: #080d13 !important; border-color: var(--line) !important; color: var(--t-mid) !important; }
+.wx-terminal-links { background: var(--ink-1) !important; border-color: var(--line) !important; }
+.wx-terminal-nav-buttons button { background: var(--ink-2) !important; border-color: var(--line) !important; color: var(--t-mid) !important; }
+.links button, .wx-modal-close { color: var(--t-mid) !important; }
+.prox-container { background: var(--ink-2) !important; border-color: var(--line) !important; }
+.prox-meter-bar { background: #22303c !important; }
+.prox-meter-fill { background: linear-gradient(90deg, rgba(232, 180, 92, .45), var(--heat)) !important; }
+.prox-value-wrap strong { color: var(--t-hi) !important; }
+.prox-stage-badge { color: var(--heat) !important; }
+.pnode .plabel { color: var(--t-low) !important; }
+.pnode.active .pdot { background: var(--heat) !important; border-color: #fff3d4 !important; }
+
+/* ── 标签收编：valence（增益/妨碍/中性）× owner（系统/环境/她） ── */
+.trpg .tag {
+  background: var(--ink-2) !important; border: 1px solid var(--line) !important;
+  border-left: 3px solid var(--t-mid) !important; color: var(--t-mid) !important; text-shadow: none !important;
+}
+.trpg .tag.advantage { background: rgba(232, 180, 92, .08) !important; border-left-color: var(--heat) !important; color: #f2d8a4 !important; }
+.trpg .tag.debuff, .trpg .tag.target { background: rgba(229, 72, 91, .07) !important; border-left-color: var(--danger) !important; color: #f0aab2 !important; }
+.trpg .tag.scene { background: var(--ink-2) !important; border-left-color: var(--t-mid) !important; color: var(--t-mid) !important; }
+.trpg .tag.personality, .trpg .tag.hobby, .trpg .tag.equipment { background: rgba(217, 143, 160, .08) !important; border-left-color: var(--her) !important; color: #e9c6cd !important; }
+
+/* ── 心跳盘：甜区=钠黄（升温）、ECG=青（生理）、指针=她 ── */
+.dial-track { stroke: #2a3038 !important; }
+.dial-sweet { stroke: var(--heat) !important; filter: drop-shadow(0 0 5px rgba(232, 180, 92, .5)) !important; }
+.dial-marker { fill: #fff8f0 !important; stroke: var(--her) !important; }
+.dial-beat-halo { stroke: var(--her) !important; filter: none !important; }
+.ecg-line { stroke: var(--safe) !important; filter: none !important; }
+.dial-number { fill: var(--t-hi) !important; }
+.dial-bpm, .dial-label, .dial-scale { fill: var(--t-low) !important; }
+.dial-caption { color: var(--t-low) !important; font-size: 10px !important; }
+.heart-popover-card { background: rgba(14, 20, 29, .98) !important; border-color: var(--line) !important; }
+.popover-title { color: var(--t-mid) !important; letter-spacing: 0 !important; }
+
+/* ═══ 第二遍覆盖：终端内各卡片、行囊、沙盘、抽屉 ═══ */
+dialog.wx-terminal-dialog { background: var(--ink-0) !important; border-color: var(--line) !important; }
+.attr { background: var(--ink-2) !important; border-color: var(--line) !important; }
+.attr.eff-up { border-color: rgba(111, 211, 199, .34) !important; }
+.attr.eff-down { border-color: rgba(229, 72, 91, .32) !important; }
+.attr.hot .av { color: var(--safe) !important; }
+.attr.weak .av { color: #f0aab2 !important; }
+.trpg .assessment { background: rgba(255, 255, 255, .035) !important; border-left-color: var(--t-mid) !important; color: var(--t-mid) !important; }
+.chip { background: var(--ink-2) !important; border: 1px solid var(--line) !important; color: var(--t-mid) !important; border-radius: 4px !important; }
+.chip-special { background: rgba(232, 180, 92, .07) !important; border-color: rgba(232, 180, 92, .30) !important; color: #f0d9a8 !important; }
+.chip-warn { background: rgba(229, 72, 91, .08) !important; border-color: rgba(229, 72, 91, .35) !important; color: #f0aab2 !important; }
+.fam-meter { background: #22303c !important; }
+.fam-fill { background: var(--heat) !important; }
+.fam { color: var(--t-mid) !important; }
+.trpg .timeline li { border-left-color: var(--line) !important; color: var(--t-mid) !important; }
+.trpg .timeline li::before { background: var(--t-low) !important; }
+.trpg time { color: var(--t-low) !important; }
+.wx-item-btn { background: var(--ink-2) !important; border-color: var(--line) !important; color: var(--t-mid) !important; }
+.wx-item-btn.btn-equip { background: rgba(111, 211, 199, .10) !important; border-color: rgba(111, 211, 199, .40) !important; color: var(--safe) !important; }
+.wx-item-btn.btn-unequip { background: rgba(229, 72, 91, .10) !important; border-color: rgba(229, 72, 91, .38) !important; color: #f0aab2 !important; }
+.wx-item-equipped-pill { background: rgba(111, 211, 199, .12) !important; border-color: rgba(111, 211, 199, .40) !important; color: var(--safe) !important; }
+.wx-item-type-badge { background: var(--ink-2) !important; border-color: var(--line) !important; color: var(--t-low) !important; }
+.wx-action-drawer { background: var(--ink-1) !important; border-color: var(--line) !important; }
+.drawer-head { background: #0d141d !important; border-bottom-color: var(--line) !important; }
+.drawer-group-title { color: var(--t-mid) !important; border-left-color: var(--t-low) !important; letter-spacing: 0 !important; }
+.slim-btn { background: var(--ink-2) !important; border-color: var(--line) !important; color: var(--t-mid) !important; }
+.slim-btn:hover { border-color: #3a4a5c !important; color: var(--t-hi) !important; }
+.slim-pips { gap: 4px !important; }
+.slim-pips .pip { width: 7px !important; }
+.wx-terminal-links { border-color: var(--line) !important; }
+.heart-popover-card { background: rgba(14, 20, 29, .99) !important; }
+
+/* 语义归位：接近度=她的（粉）、区域熟练度=玩家知识（青）、心跳甜区/优势=升温（金） */
+.prox-meter-fill { background: linear-gradient(90deg, rgba(217, 143, 160, .35), var(--her)) !important; }
+.pnode.active .pdot { background: var(--her) !important; border-color: #ffe6ec !important; box-shadow: 0 0 8px rgba(217, 143, 160, .7) !important; }
+.pnode.active .plabel { color: var(--her) !important; }
+.prox-stage-badge { color: var(--her) !important; }
+.fam-fill { background: var(--safe) !important; }
+
+/* 未点亮的刻度要看得见（原 #2c3a48 压在 #0b1018 上看不出来） */
+.slim-pips .pip { background: #384a5c !important; border: 0 !important; }
