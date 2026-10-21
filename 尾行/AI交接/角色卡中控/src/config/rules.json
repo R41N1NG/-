@@ -1,0 +1,426 @@
+{
+  "checks": {
+    "follow": 13, "withdraw": 10, "hide": 12, "fake_call": 12, "shop_enter": 13,
+    "record": 13, "plate": 13, "trash": 12, "pick": 16, "perch": 12, "listen_home": 14,
+    "photo": 13, "scan": 12, "deduce": 12, "timing": 15, "listen": 13,
+    "greet": 11, "chat": 13, "ease": 13,
+    "barrier": 14, "pry": 16, "climb": 14, "drag": 10,
+    "stakeout": 15,
+    "locate": 13, "mailbox": 12, "camera": 12, "door": 12, "lurk": 14,
+    "dlisten": 14, "peep": 15, "handle": 13, "lockpick": 18,
+    "ransack": 13, "bug": 15, "tracks": 14, "exit": 12,
+    "transfer": 14, "peers": 13, "visit": 15, "audit": 13, "lobby": 14,
+    "apply": 17, "desk": 14, "gossip": 15,
+    "social": 12, "gps": 15, "parcel": 13, "number": 14,
+    "pump": 14, "guard": 13, "stage": 15,
+    "brace": 14, "grope": 16, "escalate": 18, "shift": 12,
+    "ride_follow": 13, "car_follow": 12, "alight_follow": 13
+  },
+  "check": {
+    "graceMargin": 3,
+    "graceIds": ["follow","enter_tail","ride_along","withdraw","hide","fake_call","shop_enter",
+                 "lurk","lobby","stakeout","ride_follow","car_follow","transfer",
+                 "photo","scan","listen"],
+    "sweetBonus": 1,
+    "sweetLow": 40,
+    "sweetHigh": 65,
+    "coverCap": 5,
+    "identifyMemCoeff": 0.05,
+    "identifyMemMax": 1.0
+  },
+  "advantage": {
+    "piThreshold": 60,
+    "attrThreshold": 10,
+    "sweetHighBonus": 5,
+    "note": "优势五标签（主人定稿 2026-10-16）：累计PI≥60挂[优势:情报]；str/agi/cha≥10挂各自属性优势；nrv≥10挂[优势:胆量]甜区上限+5。效果=该属性1d20检定单骰变双骰，天然铁律：有20必取20(含{1,20})、无20有1锁死取1、否则取高。冲突对抗(2d10)不吃优势。劣势侧不实装。"
+  },
+  "stamina": {
+    "segTax": { "calm": 1, "sweet": 2, "deform": 4, "crash": 6 },
+    "nightRest": { "fullMin": 0.3, "midMin": 0.1, "midTo": 0.8, "lowTo": 0.6 }
+  },
+  "heart": {
+    "cap": 100,
+    "coeffBase": 1.4,
+    "coeffPerNrv": 0.08,
+    "stim": {
+      "none": 0, "lowMin": 5, "lowMax": 10,
+      "midMin": 10, "midMax": 20, "highMin": 25, "highMax": 35,
+      "pump": {
+        "tail": { "far": 5, "same": 8, "close": 12, "touch": 16 },
+        "lost": 5, "exposed": 28, "social": 5,
+        "env": { "cat": 10, "dog": 18 },
+        "familiarEnvFactor": 0.5,
+        "calmSocialProximity": 60
+      }
+    },
+    "baseline": 30,
+    "deformLine": 70,
+    "crashLine": 90,
+    "breathBase": 10,
+    "breathPerNrv": 2,
+    "breathMin": 6,
+    "segDrop": 5,
+    "floor": 20,
+    "areaFamiliarSegments": 10
+  },
+  "alert": {
+    "threat": { "minor": 3, "medium": 8, "major": 20 },
+    "distFactor": { "far": 0.5, "same": 0.8, "close": 1.2, "touch": 1.8 },
+    "envFactor": { "rainNight": 0.7, "night": 0.9, "day": 1.0, "open": 1.4 },
+    "acuityBase": 0.8,
+    "acuityPer": 0.04,
+    "bands": { "uneasy": 21, "suspicious": 41, "confirmed": 61, "react": 81 },
+    "nightBase": { "e18_21": 0, "e21_23": 10, "e23_01": 20, "late": 30 },
+    "familiarCoeff": 0.8
+  },
+  "conflict": {
+    "strWeight": 3,
+    "agiWeight": 2,
+    "oppMods": [-15, -10, -5, 0, 5, 10],
+    "firstStrike": 5,
+    "alertStageBonus": 2,
+    "highHeartLine": 80,
+    "highHeartPenalty": -3,
+    "bands": { "pin": 20, "scuffle": 5, "grindLow": -4 },
+    "femaleCopTraining": 5,
+    "struggleEscapeMax": 3,
+    "struggleDashDiff": 5,
+    "struggleDC": 25,
+    "freezeDC": 13,
+    "hesitationMods": [-10, -5]
+  },
+  "chase": {
+    "startGap": 3,
+    "loseGap": 5,
+    "dashDiff": 5,
+    "staminaPerRound": 6,
+    "herStaminaPerStr": 10,
+    "terrainBonus": 2
+  },
+  "identity": {
+    "pointBuy": 20,
+    "fence": { "base": 0.6, "criminal": 0.75 },
+    "blackMarketDiscount": 0.10,
+    "jobs": {
+      "coach_class": { "name": "私教课", "attr": "str", "exclusive": "coach", "base": 300, "pass": 450, "great": 600, "cost": { "stamina": 20 }, "nativeMult": 1.2 },
+      "black_labor": { "name": "黑工", "attr": "str", "exclusive": "criminal", "baseJob": "mover", "mult": 0.7 }
+    },
+    "list": {
+      "student":   { "id": "student", "name": "学生", "mods": { "agi": 1, "int": 1 },
+                     "freePass": ["school_gate_b", "school_bus_terminal_b"], "tags": [],
+                     "desc": "文教区门禁免检；无本职工种（零工原价），正面不强不带负面" },
+      "criminal":  { "id": "criminal", "name": "罪犯", "mods": { "str": 1, "agi": 1, "nrv": 2 },
+                     "freePass": [], "tags": ["criminal_look", "criminal_blunt"],
+                     "job": "black_labor", "fence": "criminal", "blackMarket": true,
+                     "desc": "黑市器材-10%；销赃0.75；黑工=搬场×0.7；挂相遮蔽-2；无业面社交-2" },
+      "guard":     { "id": "guard", "name": "保安", "mods": { "str": 1, "nrv": 1 },
+                     "freePass": ["office_lobby_a", "parking_b2_a", "unit_stairs_b"], "tags": [],
+                     "shiftRotation": { "order": ["day", "night"] },
+                     "desc": "物业安保体系免检（D区别墅不认）；保安当班320固定本职384；排班周轮换昼→夜=floor((date-1)/7)mod2" },
+      "detective": { "id": "detective", "name": "侦探学徒", "mods": { "int": 1, "agi": 1, "cha": 1 },
+                     "freePass": [], "tags": [], "piMult": 1.2, "ocd": true,
+                     "desc": "PI×1.2（当晚毛入账过夜补差round(×0.2)）；委托佣金200~400；职业病=跟缀中收手锁死" },
+      "bartender": { "id": "bartender", "name": "酒保", "mods": { "cha": 2, "nrv": 1 },
+                     "freePass": ["club_backdoor_c", "food_street_c"], "tags": [],
+                     "deepNightMissSegments": 2,
+                     "desc": "C区夜场免检；酒吧当班本职360/468+小费1d10x10；当班夜错过她动线前2段" },
+      "coach":     { "id": "coach", "name": "健身教练", "mods": { "str": 3, "cha": 1 },
+                     "freePass": [], "tags": ["coach_bulk"], "gymProximity": 20, "apMod": -1, "job": "coach_class",
+                     "desc": "目标日程含健身房→接近度起点+20（facts tags白名单gym）；私教课本职360/540/720；大块头遮蔽-2；每日行动点-1" },
+      "otaku":     { "id": "otaku", "name": "阿宅", "mods": { "int": 1, "cha": 1 },
+                     "freePass": [], "tags": [],
+                     "startKit": { "item": "cam_storage", "value": 800 },
+                     "desc": "开局自带针孔摄像机（存储档，等值800，物品系统落位后入包）；远程接单本职264/370/528+被动150/天" }
+    }
+  },
+  "targets": {
+    "list": {
+      "ol": {
+        "id": "ol", "name": "疲惫的OL", "difficulty": 2, "stars": "★★☆☆☆", "type": "疲惫猎",
+        "area": "中城CBD ➔ 老城文教区", "tagline": "写字楼深夜加完班，高跟鞋敲打在老城夜雨里",
+        "features": "深夜加班窗口 · [疲惫] 敏锐降低 · 高跟鞋步频清脆",
+        "windowNote": "工作日 21:00 起下班，疲惫下防备较低，但动线跨区较长",
+        "shoe": "shoe_heel",
+        "stats": { "str": 3, "agi": 5, "per": 6, "nrv": 4 }, "social": 2, "alertMod": 5,
+        "status": "ready"
+      },
+      "college": {
+        "id": "college", "name": "独居女大学生", "difficulty": 2, "stars": "★★☆☆☆", "type": "标准教科书",
+        "area": "老城文教区", "tagline": "晚归的单车停在楼下，耳机里放着不关的音乐",
+        "features": "校外租房独居 · 课表半固定 · 易分心",
+        "windowNote": "晚自习或兼职归来，独处窗口大，社交圈单纯",
+        "shoe": "shoe_sneakers",
+        "stats": { "str": 3, "agi": 4, "per": 4, "nrv": 4 }, "social": 2, "alertMod": 0,
+        "status": "ready"
+      },
+      "student": {
+        "id": "student", "name": "晚自习高中生", "difficulty": 2, "stars": "★★☆☆☆", "type": "窗口猎",
+        "area": "老城文教区", "tagline": "沉重的书包压着双肩，放学路只有最后一段独行",
+        "features": "放学结伴率高 · 独处窗口稀缺 · 日程极固定",
+        "windowNote": "平日同行人多难以下手，补习晚归或独自值日是唯一窗口",
+        "shoe": "shoe_leather",
+        "stats": { "str": 2, "agi": 4, "per": 4, "nrv": 3 }, "social": 1, "alertMod": -5,
+        "status": "ready"
+      },
+      "club": {
+        "id": "club", "name": "夜店小姐", "difficulty": 3, "stars": "★★★☆☆", "type": "双态猎",
+        "area": "临江娱乐红灯区", "tagline": "后门散场时的冷风吹醒了酒意，包里藏着未拆封的喷雾",
+        "features": "双态切换 · 醉态迟缓/醒态敏锐 · 凌晨空旷街区",
+        "windowNote": "凌晨 02:00 后下班，街面空旷，清醒时反侦察意识极高",
+        "shoe": "shoe_boots",
+        "stats": { "str": 3, "agi": 4, "per": 7, "nrv": 6 }, "social": 3, "alertMod": 0,
+        "status": "ready"
+      },
+      "wife": {
+        "id": "wife", "name": "独居人妻", "difficulty": 4, "stars": "★★★★☆", "type": "白昼猎",
+        "area": "郊野豪宅区 / 老城住宅区", "tagline": "锁好院门的那一刻，偌大的客厅只剩电视的荧光",
+        "features": "白昼不设防 · 丈夫第三方风险 · 定位共享",
+        "windowNote": "白天家中是不设防窗口；但丈夫随时可能折返，双日程博弈",
+        "shoe": "shoe_slippers",
+        "stats": { "str": 3, "agi": 3, "per": 5, "nrv": 4 }, "social": 4, "alertMod": 0,
+        "status": "ready"
+      },
+      "police": {
+        "id": "police", "name": "便衣女刑警", "difficulty": 5, "stars": "★★★★★", "type": "高危BOSS",
+        "area": "全城机动", "tagline": "警惕的目光掠过每一处反光，指节在袖口下微微握紧",
+        "features": "战术反侦察 · 敏锐直觉 · 冲突专业格斗反制",
+        "windowNote": "日程四班三倒极难掌握，嗅觉敏锐，稍有不慎即遭反锁扣押",
+        "shoe": "shoe_leather",
+        "stats": { "str": 6, "agi": 7, "per": 8, "nrv": 9 }, "social": 4, "alertMod": 15,
+        "status": "ready"
+      }
+    },
+    "generator": {
+      "namePool": {
+        "surnames": ["林", "沈", "苏", "顾", "陆", "姜", "叶", "白", "程", "温"],
+        "givenNames": [
+          "幼微", "晚秋", "诗涵", "语棠", "凝雪", "沐晴", "芷若", "楚楚", "依诺", "佳宁",
+          "晓夏", "念慈", "婉清", "昭华", "云舒", "梦瑶", "佩瑶", "希言", "凌薇", "心诺"
+        ]
+      },
+      "personalityPool": [
+        { "id": "stubborn", "name": "要强", "label": "要强", "type": "personality", "tagId": "stubborn", "category": "conflict", "value": 1, "desc": "【性格·要强】自尊逞强，察觉异样快步不示弱，冲突对抗体格 +1" },
+        { "id": "vigilant", "name": "警惕", "label": "警惕", "type": "personality", "tagId": "vigilant", "category": "acuity", "value": 1, "desc": "【性格·警惕】对异响直觉敏锐，有效敏锐暗修正 +1（警觉增量多4%，识脸率提升）" },
+        { "id": "casual", "name": "随性", "label": "随性", "type": "personality", "tagId": "casual", "category": "stealth", "value": 2, "desc": "【性格·随性】随和散漫省事至上，沉浸自身节奏放空，对动静迟钝，玩家隐蔽 +2" },
+        { "id": "timid", "name": "胆小", "label": "胆小", "type": "personality", "tagId": "timid", "category": "sound", "value": -5, "desc": "【性格·胆小】生性胆小怕事，受骇喉咙发紧呼救弱，动静声浪 -5，多选择避走" },
+        { "id": "gentle", "name": "温和", "label": "温和", "type": "personality", "tagId": "gentle", "category": "conflict", "value": -2, "desc": "【性格·温和】性情温和避争端，受制易肢体僵滞，冲突首轮反抗战力 -2" },
+        { "id": "introverted", "name": "内向", "label": "内向", "type": "personality", "tagId": "introverted", "category": "social", "value": -2, "desc": "【性格·内向】腼腆少言避生人，习惯低头独行避开视线，搭话与交涉检定修正 -2" },
+        { "id": "aloof", "name": "清冷", "label": "清冷", "type": "personality", "tagId": "aloof", "category": "sound", "value": -2, "desc": "【性格·清冷】独来独往疏离冷淡，独行小道无接应，动静声浪初值 -2" },
+        { "id": "cheerful", "name": "开朗", "label": "开朗", "type": "personality", "tagId": "cheerful", "category": "sound", "value": 3, "desc": "【性格·开朗】活泼外向精力充沛，遇险反应果断声线清亮，敢于呼救质问，声浪 +3" },
+        { "id": "chic", "name": "爱美", "label": "爱美", "type": "personality", "tagId": "chic", "category": "stealth", "value": 1, "desc": "【性格·爱美】注重穿搭仪容，常在橱窗前驻足理衣理发，制造短暂停顿破绽，玩家接近 +1" },
+        { "id": "naive", "name": "单纯", "label": "单纯", "type": "personality", "tagId": "naive", "category": "social", "value": 2, "desc": "【性格·单纯】心思简单缺少戒备，警惕建立慢，搭话与问路交涉修正 +2" }
+      ],
+      "hobbyPool": [
+        { "id": "film_cafe", "name": "胶片探店", "label": "胶片探店", "type": "hobby", "tagId": "window_pause", "category": "stealth", "value": 1, "dropItem": "item_retro_cam", "desc": "【爱好·胶片探店】常在街角橱窗停顿取景，尾随近身检定 +1；随身带复古卡片机" },
+        { "id": "indie_music", "name": "大耳麦", "label": "大耳麦", "type": "hobby", "tagId": "sound_muffled", "category": "stealth", "value": 1, "dropItem": "item_headphone", "desc": "【爱好·大耳麦】习惯戴大耳麦听歌，听觉迟钝，玩家隐蔽 +1，声浪阈值 -3；随身戴头戴耳麦" },
+        { "id": "journal_craft", "name": "手账", "label": "手账", "type": "hobby", "tagId": "bag_rummage", "category": "stealth", "value": 1, "dropItem": "item_handbook", "desc": "【爱好·手账】常在路口驻足翻包找彩墨笔与票据，提供背身破绽窗口；随身带私密手账" },
+        { "id": "night_run", "name": "香氛", "label": "香氛", "type": "hobby", "tagId": "aroma_trace", "category": "acuity", "value": 0, "dropItem": "item_perfume", "desc": "【爱好·香氛】慢跑更衣备有香氛小样，散发微香，近距离嗅觉识别线索；随身带香氛喷雾" },
+        { "id": "book_tea", "name": "旧书", "label": "旧书", "type": "hobby", "tagId": "bag_heavy", "category": "conflict", "value": -1, "dropItem": "item_old_book", "desc": "【爱好·旧书】帆布包内压着借阅旧书，负重拖累，追逐奔跑敏捷对抗 -1；随身带借阅旧书" },
+        { "id": "sketch_art", "name": "速写", "label": "速写", "type": "hobby", "tagId": "bench_still", "category": "stealth", "value": 2, "dropItem": "item_sketchbook", "desc": "【爱好·速写】常在路灯长椅静坐画街景，处于静止状态，尾随靠近免除移动检定；随身带水彩速写本" }
+      ],
+      "shoePool": {
+        "student_and_college": [
+          { "id": "shoe_sneakers", "name": "运动鞋", "label": "运动鞋", "type": "equipment", "tagId": "shoe_sneakers", "desc": "【鞋具·运动鞋】软胶底球鞋，触地静音微抓地摩擦，驱动运动鞋脚步声" },
+          { "id": "shoe_flats", "name": "平底鞋", "label": "平底鞋", "type": "equipment", "tagId": "shoe_flats", "desc": "【鞋具·平底鞋】薄底平底单鞋，步履轻捷均匀，驱动平底鞋脚步声" },
+          { "id": "shoe_leather", "name": "小皮鞋", "label": "小皮鞋", "type": "equipment", "tagId": "shoe_leather", "desc": "【鞋具·小皮鞋】硬真皮底乐福鞋/校服单鞋，干练清脆，驱动小皮鞋脚步声" },
+          { "id": "shoe_platform", "name": "松糕鞋", "label": "松糕鞋", "type": "equipment", "tagId": "shoe_platform", "desc": "【鞋具·松糕鞋】厚底松糕鞋，钝重沉闷踏步，驱动松糕鞋脚步声" }
+        ],
+        "defaults": {
+          "ol": { "id": "shoe_heel", "name": "高跟鞋", "label": "高跟鞋", "type": "equipment", "tagId": "shoe_heel", "desc": "【鞋具·高跟鞋】细高跟鞋，步频清脆，跟钉敲击回响，驱动高跟鞋脚步声" },
+          "club": { "id": "shoe_boots", "name": "靴子", "label": "靴子", "type": "equipment", "tagId": "shoe_boots", "desc": "【鞋具·靴子】重底皮革靴子，硬质厚重踏步声，驱动靴子脚步声" },
+          "wife": { "id": "shoe_slippers", "name": "拖鞋", "label": "拖鞋", "type": "equipment", "tagId": "shoe_slippers", "desc": "【鞋具·拖鞋】居家拖鞋，啪嗒拖行声，驱动拖鞋脚步声" },
+          "police": { "id": "shoe_leather", "name": "小皮鞋", "label": "小皮鞋", "type": "equipment", "tagId": "shoe_leather", "desc": "【鞋具·小皮鞋】便衣制式皮鞋，利落微硬，驱动小皮鞋脚步声" }
+        }
+      },
+      "statDelta": {
+        "options": [-1, 0, 1],
+        "prob": "均匀三等分 (各 1/3, 33.33%)",
+        "clamp": [1, 10]
+      }
+    }
+  },
+  "tags": {
+    "timid": { "id": "timid", "name": "胆小", "type": "personality", "owner": "target", "category": "sound", "value": -5, "desc": "【性格·胆小】生性胆小怕事，受骇喉咙发紧呼救弱，动静声浪 -5，多选择避走" },
+    "bold": { "id": "bold", "name": "胆大", "type": "personality", "owner": "target", "category": "sound", "value": 2, "desc": "【性格·胆大】胆量较大，遇险敢于抵抗，声浪 +2，挣脱多反击" },
+    "guarded": { "id": "guarded", "name": "慢热", "type": "personality", "owner": "target", "category": "social", "value": -2, "desc": "【性格·慢热】防备心重，生人社交与搭话检定修正 -2" },
+    "stubborn": { "id": "stubborn", "name": "要强", "type": "personality", "owner": "target", "category": "conflict", "value": 1, "desc": "【性格·要强】自尊逞强，察觉异样快步不示弱，冲突对抗体格 +1" },
+    "vigilant": { "id": "vigilant", "name": "警惕", "type": "personality", "owner": "target", "category": "acuity", "value": 1, "desc": "【性格·警惕】对异响直觉敏锐，有效敏锐暗修正 +1（警觉增量多4%，识脸率提升）" },
+    "gentle": { "id": "gentle", "name": "温和", "type": "personality", "owner": "target", "category": "conflict", "value": -2, "desc": "【性格·温和】性情温和避争端，受制易肢体僵滞，冲突首轮反抗战力 -2" },
+    "hesitant": { "id": "hesitant", "name": "温退", "type": "personality", "owner": "target", "category": "conflict", "value": -2, "desc": "【性格·温退】性情温软避事，受惊后肢体僵滞，冲突首轮反抗战力 -2" },
+    "casual": { "id": "casual", "name": "随性", "type": "personality", "owner": "target", "category": "stealth", "value": 2, "desc": "【性格·随性】随和散漫省事至上，沉浸自身节奏放空，对动静迟钝，玩家隐蔽 +2" },
+    "introverted": { "id": "introverted", "name": "内向", "type": "personality", "owner": "target", "category": "social", "value": -2, "desc": "【性格·内向】腼腆少言避生人，习惯低头独行避开视线，搭话与交涉检定修正 -2" },
+    "aloof": { "id": "aloof", "name": "清冷", "type": "personality", "owner": "target", "category": "sound", "value": -2, "desc": "【性格·清冷】独来独往疏离冷淡，独行小道无接应，动静声浪初值 -2" },
+    "cheerful": { "id": "cheerful", "name": "开朗", "type": "personality", "owner": "target", "category": "sound", "value": 3, "desc": "【性格·开朗】活泼外向精力充沛，遇险反应果断声线清亮，敢于呼救质问，声浪 +3" },
+    "chic": { "id": "chic", "name": "爱美", "type": "personality", "owner": "target", "category": "stealth", "value": 1, "desc": "【性格·爱美】注重穿搭仪容，常在橱窗前驻足理衣理发，制造短暂停顿破绽，玩家接近 +1" },
+    "naive": { "id": "naive", "name": "单纯", "type": "personality", "owner": "target", "category": "social", "value": 2, "desc": "【性格·单纯】心思简单缺少戒备，警惕建立慢，搭话与问路交涉修正 +2" },
+    "distracted": { "id": "distracted", "name": "分心", "type": "scene", "owner": "scene", "category": "stealth", "value": 2, "desc": "【情景·分心】同行聊天看手机分神态，视野狭窄，玩家尾随隐蔽 +2" },
+    "accompanied": { "id": "accompanied", "name": "结伴", "type": "scene", "owner": "target", "category": "sound", "value": 5, "desc": "【情景·结伴】身边有伴同行态，声浪 +5，终局动手标签锁死" },
+    "pinned": { "id": "pinned", "name": "压制", "type": "scene", "owner": "target", "category": "conflict", "value": -10, "desc": "【情景·压制】强攻失能态，体格视同1，声浪禁用" },
+    "frozen": { "id": "frozen", "name": "僵住", "type": "scene", "owner": "target", "category": "conflict", "value": -10, "desc": "【情景·僵住】终局生理恐惧态，首轮反抗战力为0，声浪禁用" },
+    "window_pause": { "id": "window_pause", "name": "胶片探店", "type": "hobby", "owner": "scene", "category": "stealth", "value": 1, "desc": "【爱好·胶片探店】常在街角橱窗停顿取景，尾随近身检定 +1" },
+    "sound_muffled": { "id": "sound_muffled", "name": "大耳麦", "type": "hobby", "owner": "scene", "category": "stealth", "value": 1, "desc": "【爱好·大耳麦】习惯戴大耳麦听歌，听觉迟钝，玩家隐蔽 +1，声浪阈值 -3" },
+    "bag_rummage": { "id": "bag_rummage", "name": "手账", "type": "hobby", "owner": "scene", "category": "stealth", "value": 1, "desc": "【爱好·手账】常在路口驻足翻包找彩墨笔与票据，提供背身破绽窗口" },
+    "aroma_trace": { "id": "aroma_trace", "name": "香氛", "type": "hobby", "owner": "target", "category": "acuity", "value": 0, "desc": "【爱好·香氛】慢跑更衣备有香氛小样，散发微香，近距离嗅觉识别线索" },
+    "bag_heavy": { "id": "bag_heavy", "name": "旧书", "type": "hobby", "owner": "target", "category": "conflict", "value": -1, "desc": "【爱好·旧书】帆布包内压着借阅旧书，负重拖累，追逐奔跑敏捷对抗 -1" },
+    "bench_still": { "id": "bench_still", "name": "速写", "type": "hobby", "owner": "scene", "category": "stealth", "value": 2, "desc": "【爱好·速写】常在路灯长椅静坐画街景，处于静止状态，尾随靠近免除移动检定" },
+    "tired": { "id": "tired", "name": "疲惫", "type": "status", "owner": "target", "category": "acuity", "value": -2, "desc": "【特质·疲惫】常驻特质：敏锐暗修正 -2，经 facts.effectiveAcuity 扣减进识脸系数与警觉增量" },
+    "careless": { "id": "careless", "name": "粗心", "type": "status", "owner": "target", "category": "acuity", "value": 0, "desc": "【特质·粗心】心不在焉丢三落四，忘锁率 +15%" },
+    "adv_int": { "id": "adv_int", "name": "优势：情报", "type": "advantage", "owner": "player", "category": "advantage", "value": 0, "desc": "【优势·情报】累计PI≥60：情报属性检定双骰取高" },
+    "adv_agi": { "id": "adv_agi", "name": "优势：敏捷", "type": "advantage", "owner": "player", "category": "advantage", "value": 0, "desc": "【优势·敏捷】敏捷≥10：敏捷属性检定双骰取高" },
+    "adv_str": { "id": "adv_str", "name": "优势：体格", "type": "advantage", "owner": "player", "category": "advantage", "value": 0, "desc": "【优势·体格】体格≥10：体格属性检定双骰取高" },
+    "adv_cha": { "id": "adv_cha", "name": "优势：口才", "type": "advantage", "owner": "player", "category": "advantage", "value": 0, "desc": "【优势·口才】口才≥10：口才属性检定双骰取高" },
+    "adv_nrv": { "id": "adv_nrv", "name": "优势：胆量", "type": "advantage", "owner": "player", "category": "advantage", "value": 5, "desc": "【优势·胆量】胆量≥10：甜区上限+5（65→70）" },
+    "criminal_look": { "id": "criminal_look", "name": "挂相", "type": "identity", "owner": "player", "category": "stealth", "value": -2, "desc": "【身份·挂相】罪犯常驻：遮蔽 -2" },
+    "criminal_blunt": { "id": "criminal_blunt", "name": "无业面", "type": "identity", "owner": "player", "category": "social", "value": -2, "desc": "【身份·无业面】罪犯常驻：明线社交类 -2" },
+    "coach_bulk": { "id": "coach_bulk", "name": "大块头", "type": "identity", "owner": "player", "category": "stealth", "value": -2, "desc": "【身份·大块头】健身教练常驻：遮蔽 -2" },
+    "shoe_heel": { "id": "shoe_heel", "name": "高跟鞋", "type": "equipment", "owner": "target", "category": "equipment", "value": 0, "mod": { "agi": -1 }, "noise": 3, "desc": "【鞋具·高跟鞋】细高跟鞋，步频清脆，跟钉敲击回响；驱动高跟鞋脚步声" },
+    "shoe_flats": { "id": "shoe_flats", "name": "平底鞋", "type": "equipment", "owner": "target", "category": "equipment", "value": 0, "mod": { "agi": 0 }, "noise": 1, "desc": "【鞋具·平底鞋】薄底平底单鞋，步履轻捷均匀；驱动平底鞋脚步声" },
+    "shoe_sneakers": { "id": "shoe_sneakers", "name": "运动鞋", "type": "equipment", "owner": "target", "category": "equipment", "value": 0, "mod": { "agi": 1 }, "noise": 1, "desc": "【鞋具·运动鞋】软胶底球鞋，触地静音微抓地摩擦；驱动运动鞋脚步声" },
+    "shoe_barefoot": { "id": "shoe_barefoot", "name": "赤脚", "type": "equipment", "owner": "target", "category": "equipment", "value": 0, "mod": { "agi": 0 }, "noise": 1, "desc": "【鞋具·赤脚】脱鞋赤脚，肉掌拍击湿瓷砖/地面微黏声；驱动赤脚脚步声" },
+    "shoe_slippers": { "id": "shoe_slippers", "name": "拖鞋", "type": "equipment", "owner": "target", "category": "equipment", "value": 0, "mod": { "agi": -1 }, "noise": 2, "desc": "【鞋具·拖鞋】居家拖鞋，啪嗒拖行声；驱动拖鞋脚步声" },
+    "shoe_boots": { "id": "shoe_boots", "name": "靴子", "type": "equipment", "owner": "target", "category": "equipment", "value": 0, "mod": { "agi": 0 }, "noise": 3, "desc": "【鞋具·靴子】重底皮革靴子，硬质厚重踏步声；驱动靴子脚步声" },
+    "shoe_platform": { "id": "shoe_platform", "name": "松糕鞋", "type": "equipment", "owner": "target", "category": "equipment", "value": 0, "mod": { "agi": -1 }, "noise": 2, "desc": "【鞋具·松糕鞋】厚底松糕鞋，钝重沉闷踏步；驱动松糕鞋脚步声" },
+    "shoe_sandals": { "id": "shoe_sandals", "name": "凉鞋", "type": "equipment", "owner": "target", "category": "equipment", "value": 0, "mod": { "agi": 0 }, "noise": 2, "desc": "【鞋具·凉鞋】夏日细带凉鞋，细带拍脚后跟轻脆碎步；驱动凉鞋脚步声" },
+    "shoe_leather": { "id": "shoe_leather", "name": "小皮鞋", "type": "equipment", "owner": "target", "category": "equipment", "value": 0, "mod": { "agi": 0 }, "noise": 2, "desc": "【鞋具·小皮鞋】硬真皮底乐福鞋/女式单鞋，干练清脆；驱动小皮鞋脚步声" },
+    "bulky": { "id": "bulky", "name": "身形醒目", "type": "status", "owner": "player", "category": "stealth", "value": -1, "desc": "【特质·身形醒目】身材魁梧不易隐藏，隐蔽类 -1" },
+    "unobtrusive": { "id": "unobtrusive", "name": "不起眼", "type": "status", "owner": "player", "category": "stealth", "value": 1, "desc": "【特质·不起眼】身形矮小易混入人群，隐蔽类 +1" },
+    "light_footed": { "id": "light_footed", "name": "脚步轻", "type": "status", "owner": "player", "category": "stealth", "value": 2, "desc": "【特质·脚步轻】步履轻捷，隐蔽类 +2" },
+    "clumsy": { "id": "clumsy", "name": "笨拙", "type": "status", "owner": "player", "category": "stealth", "value": -2, "desc": "【特质·笨拙】行动拖沓易弄出动静，隐蔽类 -2" },
+    "stammer": { "id": "stammer", "name": "结巴", "type": "status", "owner": "player", "category": "social", "value": -2, "desc": "【特质·结巴】紧张结巴，口才类 -2" },
+    "lockpick_gear": { "id": "lockpick_gear", "name": "开锁工具在手", "type": "equipment", "owner": "player", "category": "fine", "value": 4, "desc": "【潜入装备】自带开锁工具，开锁检定敏捷 +4" },
+    "climb_steady": { "id": "climb_steady", "name": "攀爬稳当", "type": "equipment", "owner": "player", "category": "fine", "value": 2, "desc": "【潜入装备】穿着攀爬套装，攀上与落地检定 +2，声响降档" },
+    "cyber_lockpick": { "id": "cyber_lockpick", "name": "数据开锁器", "type": "equipment", "owner": "player", "category": "fine", "value": 4, "desc": "【科技装备】持数据开锁器，电子锁数据开锁情报 +4" },
+    "disguise_delivery": { "id": "disguise_delivery", "name": "外卖伪装", "type": "equipment", "owner": "player", "category": "social", "value": 2, "desc": "【伪装道具】背负外卖箱，写字楼与住宅区门禁通行 +2~3" },
+    "disguise_property": { "id": "disguise_property", "name": "物业伪装", "type": "equipment", "owner": "player", "category": "social", "value": 3, "desc": "【伪装道具】身着物业制服，全天候门禁 +3，带敲门检查权" },
+    "headphones_wear": { "id": "headphones_wear", "name": "耳机伪装", "type": "equipment", "owner": "player", "category": "stealth", "value": 1, "desc": "【便携配件】戴上耳机佯装路人，隐蔽 +1" },
+    "umbrella_shelter": { "id": "umbrella_shelter", "name": "雨伞遮挡", "type": "equipment", "owner": "player", "category": "stealth", "value": 1, "desc": "【便携配件】雨天撑伞遮挡视线与面部，隐蔽 +1" },
+    "amulet_peace": { "id": "amulet_peace", "name": "护身符", "type": "equipment", "owner": "player", "category": "nrv", "value": 1, "desc": "【纪念物】心神安定，胆量检定 +1" },
+    "hand_phone": { "id": "hand_phone", "name": "耍手机", "type": "scene", "owner": "target", "category": "stealth", "value": 2, "desc": "【双手·耍手机】视线吸在屏幕上，知觉迟钝，玩家跟缀隐蔽 +2" },
+    "hand_pocket": { "id": "hand_pocket", "name": "双手保暖", "type": "scene", "owner": "target", "category": "conflict", "value": 2, "desc": "【双手·保暖】双手深陷口袋/缩袖口，遇险反抗迟钝，冲突对抗 DC -2" },
+    "hand_fumble": { "id": "hand_fumble", "name": "翻找物品", "type": "scene", "owner": "target", "category": "stealth", "value": 3, "desc": "【双手·翻找】低头翻包找物，视线离开街道，跟缀隐蔽 +3" },
+    "hand_call": { "id": "hand_call", "name": "接电话", "type": "scene", "owner": "target", "category": "stealth", "value": 1, "desc": "【双手·接电话】单手持机应答，掩盖脚步，玩家隐蔽 +1" },
+    "hand_book": { "id": "hand_book", "name": "看书", "type": "scene", "owner": "target", "category": "stealth", "value": 2, "desc": "【双手·看书】双手捧手册低头默背，玩家隐蔽 +2" },
+    "hand_drink": { "id": "hand_drink", "name": "喝饮品", "type": "scene", "owner": "target", "category": "stealth", "value": 1, "desc": "【双手·喝饮品】单手捧热饮咬吸管，玩家隐蔽 +1" },
+    "hand_eat": { "id": "hand_eat", "name": "吃东西", "type": "scene", "owner": "target", "category": "stealth", "value": 1, "desc": "【双手·吃东西】单手拿防油纸袋小吃，玩家隐蔽 +1" },
+    "somatic_relaxed": { "id": "somatic_relaxed", "name": "轻松舒畅", "type": "status", "owner": "target", "category": "acuity", "value": 0, "desc": "【身心·轻松舒畅】心情松弛，有效敏锐 -1，警觉增长变慢（属性已由 somatic.mod 生效，标签作状态呈现）" },
+    "somatic_fatigued": { "id": "somatic_fatigued", "name": "身心疲惫", "type": "status", "owner": "target", "category": "conflict", "value": 0, "desc": "【身心·身心疲惫】双腿酸沉，逃跑迟缓，冲突对抗 DC -1（属性已由 somatic.mod 生效，标签作状态呈现）" },
+    "somatic_rushing": { "id": "somatic_rushing", "name": "紧绷赶路", "type": "status", "owner": "target", "category": "conflict", "value": 0, "desc": "【身心·紧绷赶路】门禁逼近，步伐急促前倾，冲突对抗 DC +1（属性已由 somatic.mod 生效，标签作状态呈现）" },
+    "somatic_limping": { "id": "somatic_limping", "name": "步履蹒跚", "type": "status", "owner": "target", "category": "agility", "value": 0, "desc": "【身心·步履蹒跚】动作幅度收敛，双腿轻微并拢，迈步稍大时轻微吸气，似触及痛处，敏捷 -2（属性已由 somatic.mod 生效，标签作状态呈现）" },
+    "limping": { "id": "limping", "name": "步履蹒跚", "type": "status", "owner": "target", "category": "agility", "value": 0, "desc": "【身心·步履蹒跚】动作幅度收敛，双腿轻微并拢，迈步稍大时轻微吸气，似触及痛处，敏捷 -2（属性已由 somatic.mod 生效，标签作状态呈现）" }
+  },
+
+  "items": {
+    "lockpick": {
+      "id": "lockpick", "name": "开锁工具", "type": "tool", "slot": "tool", "price": 500,
+      "tag": "lockpick_gear", "effectsDesc": "开锁路线敏捷+4",
+      "desc": "潜入工具（占工具槽）：解锁开锁路线，敏捷检定+4，与攀爬套装互斥占槽"
+    },
+    "climb_gear": {
+      "id": "climb_gear", "name": "攀爬套装", "type": "tool", "slot": "tool", "price": 500,
+      "tag": "climb_steady", "effectsDesc": "攀爬/落地+2·声响降档",
+      "desc": "潜入工具（占工具槽）：攀上与落地检定+2，摔落声响降一档，与开锁工具互斥占槽"
+    },
+    "cyber_lockpick": {
+      "id": "cyber_lockpick", "name": "数据开锁器", "type": "tech", "slot": null, "price": 1200,
+      "tag": "cyber_lockpick", "effectsDesc": "数据开锁情报+4",
+      "desc": "科技门票（不占工具槽）：解锁单元门禁与智能锁数据开锁，情报+4"
+    },
+    "cam_storage": {
+      "id": "cam_storage", "name": "针孔摄像机(存储档)", "type": "device", "slot": null, "price": 800,
+      "effectsDesc": "日程补全·心事线直达",
+      "desc": "数字监控设备（阿宅开局自带）：安装即常驻，居家日程补全，心事线直达"
+    },
+    "cam_wireless": {
+      "id": "cam_wireless", "name": "针孔摄像机(无线档)", "type": "device", "slot": null, "price": 1500,
+      "effectsDesc": "远程实时·读时机双骰",
+      "desc": "数字监控设备：远程无线图传，读时机双骰取高"
+    },
+    "cam_waterproof": {
+      "id": "cam_waterproof", "name": "针孔摄像机(防水档)", "type": "device", "slot": null, "price": 1600,
+      "effectsDesc": "浴室专用·终局窗口",
+      "desc": "数字监控设备：纳米防水密封，卫浴环境专用"
+    },
+    "gps_tracker": {
+      "id": "gps_tracker", "name": "定位器", "type": "device", "slot": null, "price": 800,
+      "effectsDesc": "位置追踪·失联制",
+      "desc": "数字监控设备：安装随身物追踪动线，配合位置系统"
+    },
+    "takeout_box": {
+      "id": "takeout_box", "name": "外卖箱", "type": "disguise", "slot": "disguise", "price": 300,
+      "tag": "disguise_delivery", "effectsDesc": "门禁通行+2~3",
+      "desc": "伪装道具：写字楼与住宅区外卖员身份通行免检/加成+2~3"
+    },
+    "property_uniform": {
+      "id": "property_uniform", "name": "物业制服", "type": "disguise", "slot": "disguise", "price": 400,
+      "tag": "disguise_property", "effectsDesc": "全天门禁+3·敲门权",
+      "desc": "伪装道具：全天候门禁+3，附带敲门检查权，照面需识破对抗"
+    },
+    "energy_drink": {
+      "id": "energy_drink", "name": "能量饮料", "type": "consumable", "slot": null, "price": 30,
+      "effectsDesc": "体力+20·心跳+10(夜专供)",
+      "desc": "消耗补给：夜间专供续命，体力+20但心跳+10，每晚限饮1瓶"
+    },
+    "bento": {
+      "id": "bento", "name": "便当", "type": "consumable", "slot": null, "price": 20,
+      "effectsDesc": "体力+20",
+      "desc": "消耗补给：三餐额度，使用即恢复体力+20"
+    },
+    "onigiri": {
+      "id": "onigiri", "name": "饭团", "type": "consumable", "slot": null, "price": 8,
+      "effectsDesc": "体力+8",
+      "desc": "消耗补给：三餐额度，使用即恢复体力+8"
+    },
+    "coffee": {
+      "id": "coffee", "name": "热咖啡", "type": "consumable", "slot": null, "price": 20,
+      "effectsDesc": "行动点+0.5",
+      "desc": "消耗补给：白天提神，行动点+0.5，日限两杯"
+    },
+    "headphones": {
+      "id": "headphones", "name": "蓝牙耳机", "type": "gear", "slot": "accessory", "price": 150,
+      "tag": "headphones_wear", "effectsDesc": "佯装路人·隐蔽+1",
+      "desc": "便携配件：佯装路人听歌，隐蔽+1"
+    },
+    "umbrella": {
+      "id": "umbrella", "name": "雨伞", "type": "gear", "slot": "hand", "price": 60,
+      "tag": "umbrella_shelter", "effectsDesc": "雨天遮挡·隐蔽+1",
+      "desc": "便携配件：雨天遮蔽视线隐蔽+1，借伞节点门票"
+    },
+    "amulet": {
+      "id": "amulet", "name": "护身符", "type": "trophy", "slot": "pouch", "price": 0,
+      "tag": "amulet_peace", "effectsDesc": "心神安定·胆量+1",
+      "desc": "纪念物/回礼：心神安定，胆量检定+1"
+    },
+    "item_retro_cam": {
+      "id": "item_retro_cam", "name": "复古卡片机", "type": "trophy", "slot": null, "price": 300,
+      "effectsDesc": "胶片街拍·生活照PI+20",
+      "desc": "战利品/私密物证：随身复古卡片机，内含街角橱窗取景照片"
+    },
+    "item_headphone": {
+      "id": "item_headphone", "name": "头戴耳麦", "type": "trophy", "slot": null, "price": 200,
+      "effectsDesc": "降噪耳麦·听歌偏好PI+15",
+      "desc": "战利品/私密物证：常戴的头戴式大耳麦，存有私密歌单"
+    },
+    "item_handbook": {
+      "id": "item_handbook", "name": "私密手账", "type": "trophy", "slot": null, "price": 150,
+      "effectsDesc": "手账小票·日程情报PI+25",
+      "desc": "战利品/私密物证：贴满彩墨笔迹与消费小票的随身手账"
+    },
+    "item_perfume": {
+      "id": "item_perfume", "name": "香氛小样", "type": "trophy", "slot": null, "price": 100,
+      "effectsDesc": "随身微香·嗅觉识别线索",
+      "desc": "战利品/私密物证：便携小瓶装香氛喷雾，近距离散发微香"
+    },
+    "item_old_book": {
+      "id": "item_old_book", "name": "借阅旧书", "type": "trophy", "slot": null, "price": 80,
+      "effectsDesc": "借书卡·借阅轨迹PI+10",
+      "desc": "战利品/私密物证：文教区借阅旧书，夹着干燥花草书签"
+    },
+    "item_sketchbook": {
+      "id": "item_sketchbook", "name": "微型速写本", "type": "trophy", "slot": null, "price": 120,
+      "effectsDesc": "街景草图·长椅驻足PI+20",
+      "desc": "战利品/私密物证：纸面铅笔速写本，记录着夜路路灯与长椅"
+    }
+  }
+}
+
+

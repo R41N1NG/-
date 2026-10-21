@@ -1,0 +1,948 @@
+{
+  "districts": {
+    "A": {
+      "id": "A",
+      "name": "中城CBD商务区",
+      "sectors": [
+        "A-1",
+        "A-2",
+        "A-3"
+      ],
+      "transit_ports": [
+        "metro_hub_a",
+        "bus_bay_a"
+      ],
+      "audio_ambient": "assets/audio/ambient/zone_a_surface.ogg"
+    },
+    "B": {
+      "id": "B",
+      "name": "老城文教区",
+      "sectors": [
+        "B-1",
+        "B-2",
+        "B-3"
+      ],
+      "transit_ports": [
+        "school_bus_terminal_b",
+        "old_metro_b"
+      ],
+      "audio_ambient": "assets/audio/ambient/zone_b_street.ogg"
+    },
+    "C": {
+      "id": "C",
+      "name": "临江娱乐红灯区",
+      "sectors": [
+        "C-1",
+        "C-2",
+        "C-3"
+      ],
+      "transit_ports": [
+        "dock_bus_stop_c",
+        "bridge_head_c"
+      ],
+      "audio_ambient": "assets/audio/ambient/zone_c_clubstreet.ogg"
+    },
+    "D": {
+      "id": "D",
+      "name": "郊野豪宅区",
+      "sectors": [
+        "D-1",
+        "D-2",
+        "D-3"
+      ],
+      "transit_ports": [
+        "suburb_highway_d"
+      ],
+      "audio_ambient": "assets/audio/ambient/zone_d_road.ogg"
+    }
+  },
+  "places": {
+    "office_lobby_a": {
+      "id": "office_lobby_a",
+      "district": "A",
+      "sector": "A-1",
+      "name": "写字楼大堂",
+      "light": "bright",
+      "crowd": "pulse",
+      "surveillance": "dense",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "skybridge_a",
+        "metro_hub_a",
+        "parking_b2_a",
+        "back_alley_a"
+      ],
+      "spots": [
+        "reception",
+        "security_clock"
+      ],
+      "audio_trigger": "footstep_marble",
+      "free_pass": [
+        "guard"
+      ]
+    },
+    "parking_b2_a": {
+      "id": "parking_b2_a",
+      "district": "A",
+      "sector": "A-1",
+      "name": "地下车库B2",
+      "light": "dim",
+      "crowd": "low",
+      "surveillance": "dense",
+      "cover": 1,
+      "indoor": true,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "office_lobby_a",
+        "trash_station_a"
+      ],
+      "spots": [
+        "pillar_hide",
+        "tire_screech"
+      ],
+      "audio_ambient": "assets/audio/ambient/zone_a_parking.ogg",
+      "free_pass": [
+        "guard"
+      ]
+    },
+    "skybridge_a": {
+      "id": "skybridge_a",
+      "district": "A",
+      "sector": "A-2",
+      "name": "跨街连廊天桥",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "low",
+      "cover": -2,
+      "indoor": true,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "office_lobby_a",
+        "metro_hub_a",
+        "bus_bay_a"
+      ],
+      "spots": [
+        "perch_watch"
+      ]
+    },
+    "metro_hub_a": {
+      "id": "metro_hub_a",
+      "district": "A",
+      "sector": "A-2",
+      "name": "地铁枢纽出入口",
+      "light": "bright",
+      "crowd": "pulse",
+      "surveillance": "dense",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": true,
+      "transit_port": true,
+      "exits": [
+        "office_lobby_a",
+        "skybridge_a",
+        "store_24h_a",
+        "bus_bay_a"
+      ],
+      "spots": [
+        "ticket_gate",
+        "sunken_plaza"
+      ]
+    },
+    "bus_bay_a": {
+      "id": "bus_bay_a",
+      "district": "A",
+      "sector": "A-2",
+      "name": "站前公交港湾",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "low",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": true,
+      "exits": [
+        "metro_hub_a",
+        "skybridge_a"
+      ],
+      "spots": [
+        "bus_wait"
+      ]
+    },
+    "store_24h_a": {
+      "id": "store_24h_a",
+      "district": "A",
+      "sector": "A-1",
+      "name": "沿街24h便利店",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": true,
+      "transit_port": false,
+      "exits": [
+        "metro_hub_a",
+        "office_lobby_a"
+      ],
+      "spots": [
+        "window_watch",
+        "exit_watch"
+      ]
+    },
+    "back_alley_a": {
+      "id": "back_alley_a",
+      "district": "A",
+      "sector": "A-3",
+      "name": "后街排风暗巷",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "low",
+      "cover": 2,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "office_lobby_a",
+        "trash_station_a"
+      ],
+      "spots": [
+        "fan_mask",
+        "ebike_hide"
+      ]
+    },
+    "trash_station_a": {
+      "id": "trash_station_a",
+      "district": "A",
+      "sector": "A-3",
+      "name": "垃圾装卸后道",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 2,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "back_alley_a",
+        "parking_b2_a"
+      ],
+      "spots": [
+        "trash_search"
+      ]
+    },
+    "school_gate_b": {
+      "id": "school_gate_b",
+      "district": "B",
+      "sector": "B-1",
+      "name": "学校正门",
+      "light": "bright",
+      "crowd": "pulse",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "school_bus_terminal_b",
+        "old_skybridge_b"
+      ],
+      "spots": [
+        "gate_watch",
+        "rush_mask"
+      ],
+      "free_pass": [
+        "student"
+      ]
+    },
+    "school_bus_terminal_b": {
+      "id": "school_bus_terminal_b",
+      "district": "B",
+      "sector": "B-1",
+      "name": "学区公交总站",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "low",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": true,
+      "exits": [
+        "school_gate_b",
+        "old_skybridge_b",
+        "old_metro_b"
+      ],
+      "spots": [
+        "bus_wait"
+      ],
+      "free_pass": [
+        "student"
+      ]
+    },
+    "old_metro_b": {
+      "id": "old_metro_b",
+      "district": "B",
+      "sector": "B-2",
+      "name": "老街地铁站",
+      "light": "bright",
+      "crowd": "pulse",
+      "surveillance": "dense",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": true,
+      "transit_port": true,
+      "exits": [
+        "school_bus_terminal_b",
+        "old_skybridge_b",
+        "store_24h_b"
+      ],
+      "spots": [
+        "ticket_gate"
+      ]
+    },
+    "old_skybridge_b": {
+      "id": "old_skybridge_b",
+      "district": "B",
+      "sector": "B-2",
+      "name": "老水泥天桥",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "low",
+      "cover": -2,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "school_gate_b",
+        "school_bus_terminal_b",
+        "store_24h_b",
+        "old_park_b"
+      ],
+      "spots": [
+        "perch_watch"
+      ]
+    },
+    "store_24h_b": {
+      "id": "store_24h_b",
+      "district": "B",
+      "sector": "B-2",
+      "name": "老街24h便利店",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": true,
+      "transit_port": false,
+      "exits": [
+        "old_skybridge_b",
+        "old_metro_b",
+        "old_alley_main_b"
+      ],
+      "spots": [
+        "window_watch",
+        "exit_watch"
+      ]
+    },
+    "old_park_b": {
+      "id": "old_park_b",
+      "district": "B",
+      "sector": "B-2",
+      "name": "老居民公园",
+      "light": "dark",
+      "crowd": "low",
+      "surveillance": "low",
+      "cover": 1,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "old_skybridge_b",
+        "old_alley_main_b"
+      ],
+      "spots": [
+        "park_bench",
+        "tree_hide"
+      ]
+    },
+    "old_alley_main_b": {
+      "id": "old_alley_main_b",
+      "district": "B",
+      "sector": "B-3",
+      "name": "老街主弄堂",
+      "light": "dim",
+      "crowd": "low",
+      "surveillance": "none",
+      "cover": 1,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "store_24h_b",
+        "old_park_b",
+        "dark_blind_alley_b",
+        "dead_end_b",
+        "love_hotel_b"
+      ],
+      "spots": [
+        "sodium_lamp",
+        "corner_shadow"
+      ]
+    },
+    "dark_blind_alley_b": {
+      "id": "dark_blind_alley_b",
+      "district": "B",
+      "sector": "B-3",
+      "name": "居民杂物暗巷",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 2,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "old_alley_main_b",
+        "unit_stairs_b"
+      ],
+      "spots": [
+        "trash_hide",
+        "bike_hide"
+      ]
+    },
+    "dead_end_b": {
+      "id": "dead_end_b",
+      "district": "B",
+      "sector": "B-3",
+      "name": "盲端死胡同",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 2,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "old_alley_main_b",
+        "love_hotel_b"
+      ],
+      "spots": [
+        "trap_corner"
+      ]
+    },
+    "love_hotel_b": {
+      "id": "love_hotel_b",
+      "district": "B",
+      "sector": "B-3",
+      "name": "老城情侣旅社",
+      "light": "dim",
+      "crowd": "low",
+      "surveillance": "low",
+      "cover": 1,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "old_alley_main_b",
+        "dead_end_b"
+      ],
+      "spots": [
+        "hotel_neon_sign",
+        "rain_canopy",
+        "front_desk"
+      ]
+    },
+    "unit_stairs_b": {
+      "id": "unit_stairs_b",
+      "district": "B",
+      "sector": "B-3",
+      "name": "老旧单元楼道",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 1,
+      "indoor": true,
+      "strike_sealed": false,
+      "sanctuary": true,
+      "transit_port": false,
+      "exits": [
+        "dark_blind_alley_b",
+        "rooftop_b"
+      ],
+      "spots": [
+        "listen_home",
+        "door_crack",
+        "try_handle"
+      ],
+      "free_pass": [
+        "guard"
+      ]
+    },
+    "rooftop_b": {
+      "id": "rooftop_b",
+      "district": "B",
+      "sector": "B-3",
+      "name": "老楼天台",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "unit_stairs_b"
+      ],
+      "spots": [
+        "perch_watch",
+        "climb_point"
+      ]
+    },
+    "club_backdoor_c": {
+      "id": "club_backdoor_c",
+      "district": "C",
+      "sector": "C-1",
+      "name": "酒吧员工后门",
+      "light": "dim",
+      "crowd": "low",
+      "surveillance": "low",
+      "cover": 1,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "food_street_c",
+        "river_walk_c"
+      ],
+      "spots": [
+        "drunk_exit"
+      ],
+      "free_pass": [
+        "bartender"
+      ]
+    },
+    "food_street_c": {
+      "id": "food_street_c",
+      "district": "C",
+      "sector": "C-1",
+      "name": "大排档夜市街角",
+      "light": "bright",
+      "crowd": "high",
+      "surveillance": "low",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "club_backdoor_c",
+        "store_24h_c",
+        "dock_bus_stop_c"
+      ],
+      "spots": [
+        "carpool_stand"
+      ],
+      "free_pass": [
+        "bartender"
+      ]
+    },
+    "dock_bus_stop_c": {
+      "id": "dock_bus_stop_c",
+      "district": "C",
+      "sector": "C-1",
+      "name": "沿江码头公交站",
+      "light": "dim",
+      "crowd": "low",
+      "surveillance": "low",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": true,
+      "exits": [
+        "food_street_c",
+        "bridge_head_c"
+      ],
+      "spots": [
+        "bus_wait"
+      ]
+    },
+    "bridge_head_c": {
+      "id": "bridge_head_c",
+      "district": "C",
+      "sector": "C-1",
+      "name": "跨江大桥头",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": true,
+      "exits": [
+        "dock_bus_stop_c",
+        "river_walk_c"
+      ],
+      "spots": [
+        "bridge_view"
+      ]
+    },
+    "store_24h_c": {
+      "id": "store_24h_c",
+      "district": "C",
+      "sector": "C-1",
+      "name": "24h沿江便利店",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": true,
+      "transit_port": false,
+      "exits": [
+        "food_street_c",
+        "village_main_c"
+      ],
+      "spots": [
+        "window_watch",
+        "hangover_cure"
+      ]
+    },
+    "river_walk_c": {
+      "id": "river_walk_c",
+      "district": "C",
+      "sector": "C-2",
+      "name": "江堤观景长步道",
+      "light": "dark",
+      "crowd": "low",
+      "surveillance": "none",
+      "cover": 1,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "club_backdoor_c",
+        "river_steps_c",
+        "bridge_head_c"
+      ],
+      "spots": [
+        "river_rail",
+        "sober_walk"
+      ]
+    },
+    "river_steps_c": {
+      "id": "river_steps_c",
+      "district": "C",
+      "sector": "C-2",
+      "name": "亲水避风台阶",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 2,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "river_walk_c",
+        "village_main_c"
+      ],
+      "spots": [
+        "vomit_point",
+        "reed_hide"
+      ]
+    },
+    "village_main_c": {
+      "id": "village_main_c",
+      "district": "C",
+      "sector": "C-3",
+      "name": "城中村握手楼主弄",
+      "light": "dim",
+      "crowd": "low",
+      "surveillance": "none",
+      "cover": 1,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "store_24h_c",
+        "river_steps_c",
+        "narrow_gap_c"
+      ],
+      "spots": [
+        "wet_pavement"
+      ]
+    },
+    "narrow_gap_c": {
+      "id": "narrow_gap_c",
+      "district": "C",
+      "sector": "C-3",
+      "name": "一线天幽湿窄弄",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 2,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "village_main_c",
+        "rental_iron_door_c"
+      ],
+      "spots": [
+        "aircon_drip",
+        "ambush_corner"
+      ]
+    },
+    "rental_iron_door_c": {
+      "id": "rental_iron_door_c",
+      "district": "C",
+      "sector": "C-3",
+      "name": "出租屋楼道铁门",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 1,
+      "indoor": true,
+      "strike_sealed": false,
+      "sanctuary": true,
+      "transit_port": false,
+      "exits": [
+        "narrow_gap_c",
+        "village_roof_c"
+      ],
+      "spots": [
+        "spiral_stairs",
+        "listen_home"
+      ]
+    },
+    "village_roof_c": {
+      "id": "village_roof_c",
+      "district": "C",
+      "sector": "C-3",
+      "name": "共用杂物天台",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 1,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "rental_iron_door_c"
+      ],
+      "spots": [
+        "clothesline_hide",
+        "overlook"
+      ]
+    },
+    "suburb_highway_d": {
+      "id": "suburb_highway_d",
+      "district": "D",
+      "sector": "D-1",
+      "name": "郊野公路长弯道",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": true,
+      "exits": [
+        "gas_station_d",
+        "private_road_d"
+      ],
+      "spots": [
+        "curve_hide"
+      ]
+    },
+    "gas_station_d": {
+      "id": "gas_station_d",
+      "district": "D",
+      "sector": "D-1",
+      "name": "24h公路加油站",
+      "light": "bright",
+      "crowd": "low",
+      "surveillance": "dense",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": true,
+      "transit_port": false,
+      "exits": [
+        "suburb_highway_d",
+        "private_road_d"
+      ],
+      "spots": [
+        "mart_cashier",
+        "pump_island"
+      ]
+    },
+    "private_road_d": {
+      "id": "private_road_d",
+      "district": "D",
+      "sector": "D-2",
+      "name": "林荫私家主车道",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": -2,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "suburb_highway_d",
+        "gas_station_d",
+        "pine_forest_d",
+        "estate_gate_d"
+      ],
+      "spots": [
+        "open_road",
+        "patrol_watch"
+      ]
+    },
+    "pine_forest_d": {
+      "id": "pine_forest_d",
+      "district": "D",
+      "sector": "D-2",
+      "name": "缓坡杉木密林",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 3,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "private_road_d",
+        "estate_gate_d"
+      ],
+      "spots": [
+        "ebike_cache",
+        "tree_ambush"
+      ]
+    },
+    "estate_gate_d": {
+      "id": "estate_gate_d",
+      "district": "D",
+      "sector": "D-3",
+      "name": "庄园铁艺大门",
+      "light": "dim",
+      "crowd": "none",
+      "surveillance": "dense",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "private_road_d",
+        "pine_forest_d",
+        "villa_garden_d"
+      ],
+      "spots": [
+        "gate_intercom",
+        "infrared_cam"
+      ]
+    },
+    "villa_garden_d": {
+      "id": "villa_garden_d",
+      "district": "D",
+      "sector": "D-3",
+      "name": "私家庭院绿篱",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "dense",
+      "cover": 2,
+      "indoor": false,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "estate_gate_d",
+        "garage_side_door_d",
+        "villa_porch_d"
+      ],
+      "spots": [
+        "dog_kennel",
+        "sprinkler"
+      ]
+    },
+    "garage_side_door_d": {
+      "id": "garage_side_door_d",
+      "district": "D",
+      "sector": "D-3",
+      "name": "车库入户侧门",
+      "light": "dark",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 1,
+      "indoor": true,
+      "strike_sealed": false,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "villa_garden_d",
+        "villa_porch_d"
+      ],
+      "spots": [
+        "pick_side_door"
+      ]
+    },
+    "villa_porch_d": {
+      "id": "villa_porch_d",
+      "district": "D",
+      "sector": "D-3",
+      "name": "独栋别墅正门玄关",
+      "light": "bright",
+      "crowd": "none",
+      "surveillance": "dense",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": false,
+      "sanctuary": true,
+      "transit_port": false,
+      "exits": [
+        "villa_garden_d",
+        "garage_side_door_d"
+      ],
+      "spots": [
+        "smart_lock",
+        "home_safe"
+      ]
+    }
+  }
+}

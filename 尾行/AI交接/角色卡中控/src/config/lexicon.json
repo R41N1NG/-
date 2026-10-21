@@ -1,0 +1,1904 @@
+{
+  "modes": [
+    "prepare",
+    "stealth",
+    "contact",
+    "vehicle",
+    "any"
+  ],
+  "argKeys": {
+    "dist": {
+      "far": [
+        "远端",
+        "远远",
+        "对街",
+        "马路对面",
+        "隔着街"
+      ],
+      "same": [
+        "同街",
+        "同侧",
+        "半条街",
+        "二十步",
+        "跟着走"
+      ],
+      "close": [
+        "身后",
+        "十步",
+        "十步左右",
+        "贴着点"
+      ],
+      "touch": [
+        "贴身",
+        "挨着",
+        "一步之内",
+        "伸手可及"
+      ]
+    },
+    "style": {
+      "ambush": [
+        "偷袭",
+        "捂住她",
+        "摸上去",
+        "趁她不注意",
+        "贴身下手"
+      ],
+      "assault": [
+        "强攻",
+        "直接冲上去",
+        "正面动手",
+        "制服她",
+        "扑上去"
+      ]
+    }
+  },
+  "defaultArgs": {
+    "follow": {
+      "dist": "same"
+    },
+    "strike": {
+      "style": "ambush"
+    }
+  },
+  "tags": {
+    "timid": {
+      "id": "timid",
+      "name": "胆小",
+      "aliases": [
+        "胆小",
+        "胆怯",
+        "怯懦"
+      ],
+      "effects": [
+        {
+          "category": "sound",
+          "value": -5
+        }
+      ],
+      "desc": "胆量≤3阈值标签，声浪-5，挣脱多逃跑"
+    },
+    "bold": {
+      "id": "bold",
+      "name": "胆大",
+      "aliases": [
+        "胆大",
+        "大胆",
+        "泼辣",
+        "刚烈"
+      ],
+      "effects": [
+        {
+          "category": "sound",
+          "value": 2
+        }
+      ],
+      "desc": "胆量≥6阈值标签，声浪+2，挣脱多反击"
+    },
+    "pinned": {
+      "id": "pinned",
+      "name": "压制",
+      "aliases": [
+        "压制",
+        "制服",
+        "失能态"
+      ],
+      "effects": [
+        {
+          "category": "conflict",
+          "value": -10
+        }
+      ],
+      "desc": "强攻失能态，体格视同1，声浪禁用"
+    },
+    "frozen": {
+      "id": "frozen",
+      "name": "僵住",
+      "aliases": [
+        "僵住",
+        "吓呆",
+        "僵死"
+      ],
+      "effects": [
+        {
+          "category": "conflict",
+          "value": -10
+        }
+      ],
+      "desc": "终局生理恐惧态，首轮反抗战力为0，声浪禁用"
+    },
+    "hesitant": {
+      "id": "hesitant",
+      "name": "迟疑",
+      "aliases": [
+        "迟疑",
+        "错愕",
+        "不敢置信"
+      ],
+      "effects": [
+        {
+          "category": "conflict",
+          "value": -10
+        }
+      ],
+      "desc": "熟人认知崩溃态，首轮战力-10，首拍无法呼救"
+    },
+    "distracted": {
+      "id": "distracted",
+      "name": "目标分心",
+      "aliases": [
+        "目标分心",
+        "分心",
+        "走神"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 2
+        }
+      ],
+      "desc": "同行聊天看手机分神态，玩家尾随隐蔽+2"
+    },
+    "accompanied": {
+      "id": "accompanied",
+      "name": "结伴同行",
+      "aliases": [
+        "结伴同行",
+        "结伴",
+        "有人陪",
+        "同行"
+      ],
+      "effects": [
+        {
+          "category": "sound",
+          "value": 5
+        }
+      ],
+      "desc": "身边有伴同行态，声浪+5，终局动手标签锁死"
+    },
+    "tired": {
+      "id": "tired",
+      "name": "疲惫",
+      "aliases": [
+        "疲惫",
+        "疲倦",
+        "劳累",
+        "哈欠连天"
+      ],
+      "effects": [],
+      "desc": "常驻特质（pack.traits）：敏锐暗修正-2（数值真源 rules.tags.tired），经 facts.effectiveAcuity 扣减进识脸系数与警觉增量；不挂场景标签栈"
+    },
+    "adv_int": {
+      "id": "adv_int",
+      "name": "优势：情报",
+      "aliases": [
+        "优势情报",
+        "情报优势"
+      ],
+      "effects": [],
+      "desc": "阈值标签：累计PI≥60自动挂——情报属性1d20检定单骰变双骰（有20必取20/无20有1取1/否则取高）；金色显示"
+    },
+    "adv_agi": {
+      "id": "adv_agi",
+      "name": "优势：敏捷",
+      "aliases": [
+        "优势敏捷",
+        "敏捷优势"
+      ],
+      "effects": [],
+      "desc": "阈值标签：敏捷≥10自动挂——敏捷属性1d20检定单骰变双骰（天然铁律同上）；金色显示"
+    },
+    "adv_str": {
+      "id": "adv_str",
+      "name": "优势：体格",
+      "aliases": [
+        "优势体格",
+        "体格优势"
+      ],
+      "effects": [],
+      "desc": "阈值标签：体格≥10自动挂——体格属性1d20检定单骰变双骰（冲突对抗2d10不吃）；金色显示"
+    },
+    "adv_cha": {
+      "id": "adv_cha",
+      "name": "优势：口才",
+      "aliases": [
+        "优势口才",
+        "口才优势"
+      ],
+      "effects": [],
+      "desc": "阈值标签：口才≥10自动挂——口才属性1d20检定单骰变双骰；金色显示"
+    },
+    "adv_nrv": {
+      "id": "adv_nrv",
+      "name": "优势：胆量",
+      "aliases": [
+        "优势胆量",
+        "胆量优势"
+      ],
+      "effects": [],
+      "desc": "阈值标签：胆量≥10自动挂——甜区上限+5（65→70），段位税甜区档同步拓宽；非双骰效果"
+    },
+    "criminal_look": {
+      "id": "criminal_look",
+      "name": "挂相",
+      "aliases": [
+        "挂相",
+        "一脸凶相"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": -2
+        }
+      ],
+      "desc": "身份常驻标签（v0.8）：罪犯开局自动挂——遮蔽-2（眼神气质藏不住）；引擎挂载非LLM申报"
+    },
+    "criminal_blunt": {
+      "id": "criminal_blunt",
+      "name": "无业面",
+      "aliases": [
+        "无业面",
+        "不像正经人"
+      ],
+      "effects": [
+        {
+          "category": "social",
+          "value": -2
+        }
+      ],
+      "desc": "身份常驻标签（v0.8）：罪犯开局自动挂——明线社交类-2（搭话/寒暄/消疑/应对盘问/伪装访客/套话全表）；引擎挂载非LLM申报"
+    },
+    "coach_bulk": {
+      "id": "coach_bulk",
+      "name": "大块头",
+      "aliases": [
+        "大块头",
+        "块头太大"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": -2
+        }
+      ],
+      "desc": "身份常驻标签（v0.8）：健身教练开局自动挂——遮蔽-2（大块头目标大）；引擎挂载非LLM申报"
+    },
+    "shoe_heel": {
+      "id": "shoe_heel",
+      "name": "高跟鞋",
+      "aliases": [
+        "高跟鞋",
+        "细高跟"
+      ],
+      "effects": [],
+      "desc": "目标鞋具：细高跟鞋，步频清脆，跟钉敲击回响；驱动高跟鞋脚步声"
+    },
+    "shoe_flats": {
+      "id": "shoe_flats",
+      "name": "平底鞋",
+      "aliases": [
+        "平底鞋",
+        "平底单鞋"
+      ],
+      "effects": [],
+      "desc": "目标鞋具：薄底平底单鞋，步履轻捷均匀；驱动平底鞋脚步声"
+    },
+    "shoe_sneakers": {
+      "id": "shoe_sneakers",
+      "name": "运动鞋",
+      "aliases": [
+        "运动鞋",
+        "球鞋",
+        "跑鞋"
+      ],
+      "effects": [],
+      "desc": "目标鞋具：软胶底球鞋，触地静音微抓地摩擦；驱动运动鞋脚步声"
+    },
+    "shoe_barefoot": {
+      "id": "shoe_barefoot",
+      "name": "赤脚",
+      "aliases": [
+        "赤脚",
+        "光脚",
+        "脱鞋"
+      ],
+      "effects": [],
+      "desc": "目标状态：脱鞋赤脚，肉掌拍击湿瓷砖/地面微黏声；驱动赤脚脚步声"
+    },
+    "shoe_slippers": {
+      "id": "shoe_slippers",
+      "name": "拖鞋",
+      "aliases": [
+        "拖鞋",
+        "人字拖"
+      ],
+      "effects": [],
+      "desc": "目标鞋具：居家拖鞋，啪嗒拖行声；驱动拖鞋脚步声"
+    },
+    "shoe_boots": {
+      "id": "shoe_boots",
+      "name": "靴子",
+      "aliases": [
+        "靴子",
+        "皮靴",
+        "长靴",
+        "短靴"
+      ],
+      "effects": [],
+      "desc": "目标鞋具：重底皮革靴子，硬质厚重踏步声；驱动靴子脚步声"
+    },
+    "shoe_platform": {
+      "id": "shoe_platform",
+      "name": "松糕鞋",
+      "aliases": [
+        "松糕鞋",
+        "厚底鞋"
+      ],
+      "effects": [],
+      "desc": "目标鞋具：厚底松糕鞋，钝重沉闷踏步；驱动松糕鞋脚步声"
+    },
+    "shoe_sandals": {
+      "id": "shoe_sandals",
+      "name": "凉鞋",
+      "aliases": [
+        "凉鞋",
+        "绑带凉鞋"
+      ],
+      "effects": [],
+      "desc": "目标鞋具：夏日细带凉鞋，细带拍脚后跟轻脆碎步；驱动凉鞋脚步声"
+    },
+    "shoe_leather": {
+      "id": "shoe_leather",
+      "name": "小皮鞋",
+      "aliases": [
+        "小皮鞋",
+        "乐福鞋",
+        "皮鞋"
+      ],
+      "effects": [],
+      "desc": "目标鞋具：硬真皮底乐福鞋/女式单鞋，干练清脆；驱动小皮鞋脚步声"
+    },
+    "careless": {
+      "id": "careless",
+      "name": "粗心",
+      "aliases": [
+        "粗心",
+        "马虎",
+        "丢三落四"
+      ],
+      "effects": [],
+      "desc": "目标特质（pack.traits）：心不在焉丢三落四，忘锁率+15%；脚本内部结算"
+    },
+    "bulky": {
+      "id": "bulky",
+      "name": "身形醒目",
+      "aliases": [
+        "身形醒目",
+        "身材魁梧",
+        "高大显眼"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": -1
+        }
+      ],
+      "desc": "体格≥8阈值标签：身材魁梧不易隐藏，隐蔽类-1"
+    },
+    "unobtrusive": {
+      "id": "unobtrusive",
+      "name": "不起眼",
+      "aliases": [
+        "不起眼",
+        "平平无奇",
+        "矮小瘦弱"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 1
+        }
+      ],
+      "desc": "体格≤3阈值标签：身形矮小易混入人群，隐蔽类+1"
+    },
+    "light_footed": {
+      "id": "light_footed",
+      "name": "脚步轻",
+      "aliases": [
+        "脚步轻",
+        "步履轻盈",
+        "无声无息"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 2
+        }
+      ],
+      "desc": "敏捷≥8阈值标签：步履轻捷，隐蔽类+2"
+    },
+    "clumsy": {
+      "id": "clumsy",
+      "name": "笨拙",
+      "aliases": [
+        "笨拙",
+        "动作迟缓",
+        "毛手毛脚"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": -2
+        }
+      ],
+      "desc": "敏捷≤3阈值标签：行动拖沓易弄出动静，隐蔽类-2"
+    },
+    "stammer": {
+      "id": "stammer",
+      "name": "结巴",
+      "aliases": [
+        "结巴",
+        "说话结巴",
+        "言语支吾"
+      ],
+      "effects": [
+        {
+          "category": "social",
+          "value": -2
+        }
+      ],
+      "desc": "口才≤2且心跳>70阈值标签：紧张结巴，口才类-2"
+    },
+    "guarded": {
+      "id": "guarded",
+      "name": "慢热",
+      "type": "personality",
+      "aliases": [
+        "慢热",
+        "防备心重",
+        "生人防备"
+      ],
+      "effects": [
+        {
+          "category": "social",
+          "value": -2
+        }
+      ],
+      "desc": "【性格·慢热】防备心重，生人社交与搭话检定修正 -2"
+    },
+    "stubborn": {
+      "id": "stubborn",
+      "name": "要强",
+      "type": "personality",
+      "aliases": [
+        "要强",
+        "自尊逞强",
+        "不服输"
+      ],
+      "effects": [
+        {
+          "category": "conflict",
+          "value": 1
+        }
+      ],
+      "desc": "【性格·要强】自尊逞强，察觉异样快步不示弱，冲突对抗体格 +1"
+    },
+    "vigilant": {
+      "id": "vigilant",
+      "name": "警惕",
+      "type": "personality",
+      "aliases": [
+        "警惕",
+        "敏锐好奇",
+        "警觉回头"
+      ],
+      "effects": [
+        {
+          "category": "acuity",
+          "value": 1
+        }
+      ],
+      "desc": "【性格·警惕】对异响直觉敏锐，有效敏锐暗修正 +1（警觉增量多4%，识脸率提升）"
+    },
+    "casual": {
+      "id": "casual",
+      "name": "随性",
+      "type": "personality",
+      "aliases": [
+        "随性",
+        "随和",
+        "散漫",
+        "大大咧咧"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 2
+        }
+      ],
+      "desc": "【性格·随性】随和散漫省事至上，沉浸自身节奏放空，对动静迟钝，玩家隐蔽 +2"
+    },
+    "gentle": {
+      "id": "gentle",
+      "name": "温和",
+      "type": "personality",
+      "aliases": [
+        "温和",
+        "温柔",
+        "顺从柔弱"
+      ],
+      "effects": [
+        {
+          "category": "conflict",
+          "value": -2
+        }
+      ],
+      "desc": "【性格·温和】性情温和避争端，受制易肢体僵滞，冲突首轮反抗战力 -2"
+    },
+    "introverted": {
+      "id": "introverted",
+      "name": "内向",
+      "type": "personality",
+      "aliases": [
+        "内向",
+        "腼腆",
+        "寡言",
+        "孤僻怕生"
+      ],
+      "effects": [
+        {
+          "category": "social",
+          "value": -2
+        }
+      ],
+      "desc": "【性格·内向】腼腆少言避生人，习惯低头独行避开视线，搭话与交涉检定修正 -2"
+    },
+    "aloof": {
+      "id": "aloof",
+      "name": "清冷",
+      "type": "personality",
+      "aliases": [
+        "清冷",
+        "冷淡",
+        "疏离",
+        "独来独往"
+      ],
+      "effects": [
+        {
+          "category": "sound",
+          "value": -2
+        }
+      ],
+      "desc": "【性格·清冷】独来独往疏离冷淡，独行小道无接应，动静声浪初值 -2"
+    },
+    "cheerful": {
+      "id": "cheerful",
+      "name": "开朗",
+      "type": "personality",
+      "aliases": [
+        "开朗",
+        "活泼",
+        "元气",
+        "大方"
+      ],
+      "effects": [
+        {
+          "category": "sound",
+          "value": 3
+        }
+      ],
+      "desc": "【性格·开朗】活泼外向精力充沛，遇险反应果断声线清亮，敢于呼救质问，声浪 +3"
+    },
+    "chic": {
+      "id": "chic",
+      "name": "爱美",
+      "type": "personality",
+      "aliases": [
+        "爱美",
+        "讲究",
+        "自恋整理",
+        "照镜子"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 1
+        }
+      ],
+      "desc": "【性格·爱美】注重穿搭仪容，常在橱窗前驻足理衣理发，制造短暂停顿破绽，玩家接近 +1"
+    },
+    "naive": {
+      "id": "naive",
+      "name": "单纯",
+      "type": "personality",
+      "aliases": [
+        "单纯",
+        "天真",
+        "不设防",
+        "轻信"
+      ],
+      "effects": [
+        {
+          "category": "social",
+          "value": 2
+        }
+      ],
+      "desc": "【性格·单纯】心思简单缺少戒备，警惕建立慢，搭话与问路交涉修正 +2"
+    },
+    "window_pause": {
+      "id": "window_pause",
+      "name": "胶片探店",
+      "type": "hobby",
+      "aliases": [
+        "胶片探店",
+        "橱窗驻足",
+        "探店看橱窗"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 1
+        }
+      ],
+      "desc": "【爱好·胶片探店】常在街角橱窗停顿取景，尾随近身检定 +1"
+    },
+    "sound_muffled": {
+      "id": "sound_muffled",
+      "name": "大耳麦",
+      "type": "hobby",
+      "aliases": [
+        "大耳麦",
+        "降噪耳麦",
+        "听歌分神"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 1
+        }
+      ],
+      "desc": "【爱好·大耳麦】习惯戴大耳麦听歌，听觉迟钝，玩家隐蔽 +1，声浪阈值 -3"
+    },
+    "bag_rummage": {
+      "id": "bag_rummage",
+      "name": "手账",
+      "type": "hobby",
+      "aliases": [
+        "手账",
+        "翻包",
+        "翻找手账",
+        "整理票据"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 1
+        }
+      ],
+      "desc": "【爱好·手账】常在路口驻足翻包找彩墨笔与票据，提供背身破绽窗口"
+    },
+    "aroma_trace": {
+      "id": "aroma_trace",
+      "name": "香氛",
+      "type": "hobby",
+      "aliases": [
+        "香氛",
+        "随身香水",
+        "淡淡香气"
+      ],
+      "effects": [
+        {
+          "category": "acuity",
+          "value": 0
+        }
+      ],
+      "desc": "【爱好·香氛】慢跑更衣备有香氛小样，散发微香，近距离嗅觉识别线索"
+    },
+    "bag_heavy": {
+      "id": "bag_heavy",
+      "name": "旧书",
+      "type": "hobby",
+      "aliases": [
+        "旧书",
+        "包重",
+        "厚重书本",
+        "负重累赘"
+      ],
+      "effects": [
+        {
+          "category": "conflict",
+          "value": -1
+        }
+      ],
+      "desc": "【爱好·旧书】帆布包内压着借阅旧书，负重拖累，追逐奔跑敏捷对抗 -1"
+    },
+    "bench_still": {
+      "id": "bench_still",
+      "name": "速写",
+      "type": "hobby",
+      "aliases": [
+        "速写",
+        "长椅画画",
+        "街头速写",
+        "静坐画景"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 2
+        }
+      ],
+      "desc": "【爱好·速写】常在路灯长椅静坐画街景，处于静止状态，尾随靠近免除移动检定"
+    }
+  },
+  "entries": [
+    {
+      "id": "follow",
+      "name": "跟缀",
+      "args": [
+        "dist"
+      ],
+      "check": "follow",
+      "cost": {
+        "tax": "heart_seg"
+      },
+      "modes": [
+        "stealth"
+      ],
+      "aliases": [
+        "尾随",
+        "跟踪"
+      ]
+    },
+    {
+      "id": "approach",
+      "name": "贴近",
+      "args": [
+        "dist"
+      ],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "withdraw",
+      "name": "拉远",
+      "args": [
+        "dist"
+      ],
+      "check": "withdraw",
+      "modes": [
+        "stealth"
+      ],
+      "requires": {
+        "dist": [
+          "same",
+          "close",
+          "touch"
+        ]
+      },
+      "aliases": [
+        "后撤"
+      ]
+    },
+    {
+      "id": "hide",
+      "name": "躲藏",
+      "args": [],
+      "check": "hide",
+      "modes": [
+        "stealth"
+      ],
+      "requires": {
+        "dist": [
+          "far",
+          "same",
+          "close"
+        ]
+      },
+      "aliases": [
+        "隐蔽"
+      ]
+    },
+    {
+      "id": "wall",
+      "name": "贴墙隐匿",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": [
+        "贴墙"
+      ]
+    },
+    {
+      "id": "breath",
+      "name": "缓息",
+      "args": [],
+      "check": null,
+      "modes": [
+        "any"
+      ],
+      "aliases": [
+        "深呼吸"
+      ]
+    },
+    {
+      "id": "ambush",
+      "name": "抢先埋伏",
+      "args": [
+        "route"
+      ],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "enter_tail",
+      "name": "尾随进楼",
+      "args": [],
+      "check": "follow",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "stop",
+      "name": "停步",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "wait",
+      "name": "等待驻足",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "cross",
+      "name": "横穿换边",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "cover",
+      "name": "借物掩护",
+      "args": [
+        "cover"
+      ],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": [
+        "借物"
+      ]
+    },
+    {
+      "id": "fake_phone",
+      "name": "假装用手机",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "fake_call",
+      "name": "假装通话",
+      "args": [],
+      "check": "fake_call",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "shop_enter",
+      "name": "佯装进店",
+      "args": [],
+      "check": "shop_enter",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "window_watch",
+      "name": "橱窗反射",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "cafe_sit",
+      "name": "入座监视",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "record",
+      "name": "录音",
+      "args": [],
+      "check": "record",
+      "modes": [
+        "stealth",
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "note",
+      "name": "记录日程",
+      "args": [],
+      "check": null,
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "plate",
+      "name": "记车牌",
+      "args": [],
+      "check": "plate",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "trash",
+      "name": "查垃圾",
+      "args": [],
+      "check": "trash",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "pick",
+      "name": "捡拾",
+      "args": [],
+      "check": "pick",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "perch",
+      "name": "登高观察",
+      "args": [],
+      "check": "perch",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "listen_home",
+      "name": "楼下听动静",
+      "args": [],
+      "check": "listen_home",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "stakeout_wait",
+      "name": "定点蹲守",
+      "args": [
+        "spot"
+      ],
+      "check": null,
+      "modes": [
+        "stealth",
+        "prepare"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "disguise",
+      "name": "换装",
+      "args": [
+        "item"
+      ],
+      "check": null,
+      "modes": [
+        "prepare"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "gait",
+      "name": "变换步态",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "abort",
+      "name": "中断离开",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": [
+        "撤离"
+      ]
+    },
+    {
+      "id": "photo",
+      "name": "拍照",
+      "args": [],
+      "check": "photo",
+      "modes": [
+        "stealth",
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "scan",
+      "name": "打量",
+      "args": [
+        "dim"
+      ],
+      "check": "scan",
+      "modes": [
+        "stealth",
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "deduce",
+      "name": "分析",
+      "args": [],
+      "check": "deduce",
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "timing",
+      "name": "读时机",
+      "args": [],
+      "check": "timing",
+      "modes": [
+        "stealth",
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "listen",
+      "name": "贴身听",
+      "args": [],
+      "check": "listen",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "greet",
+      "name": "寒暄",
+      "args": [],
+      "check": "greet",
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "chat",
+      "name": "搭话",
+      "args": [
+        "cdist"
+      ],
+      "check": "chat",
+      "modes": [
+        "contact"
+      ],
+      "aliases": [
+        "搭讪"
+      ]
+    },
+    {
+      "id": "ease",
+      "name": "消疑搭话",
+      "args": [],
+      "check": "ease",
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "misdirection",
+      "name": "误导归因",
+      "args": [],
+      "check": "ease",
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "help",
+      "name": "递物帮忙",
+      "args": [
+        "ticket"
+      ],
+      "check": null,
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "check_visit",
+      "name": "上门检查",
+      "args": [
+        "pretext"
+      ],
+      "check": null,
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "strike",
+      "name": "下手",
+      "args": [
+        "style"
+      ],
+      "check": null,
+      "modes": [
+        "any"
+      ],
+      "requires": {
+        "dist": [
+          "touch",
+          "close"
+        ]
+      },
+      "aliases": [
+        "偷袭",
+        "强攻"
+      ]
+    },
+    {
+      "id": "barrier",
+      "name": "设障",
+      "args": [
+        "obstacle"
+      ],
+      "check": "barrier",
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "pry",
+      "name": "撬门",
+      "args": [],
+      "check": "pry",
+      "modes": [
+        "any"
+      ],
+      "requires": {
+        "place": "door",
+        "dist": [
+          "close",
+          "touch"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "climb",
+      "name": "翻墙",
+      "args": [],
+      "check": "climb",
+      "modes": [
+        "any"
+      ],
+      "requires": {
+        "dist": [
+          "close",
+          "touch"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "drag",
+      "name": "转移",
+      "args": [],
+      "check": "drag",
+      "modes": [
+        "any"
+      ],
+      "requires": {
+        "dist": [
+          "touch"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "pin",
+      "name": "按制",
+      "args": [],
+      "check": null,
+      "modes": [
+        "any"
+      ],
+      "requires": {
+        "dist": [
+          "touch"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "chase",
+      "name": "追逐",
+      "args": [],
+      "check": null,
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "work",
+      "name": "打工",
+      "args": [],
+      "check": null,
+      "modes": [
+        "prepare"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "buy",
+      "name": "购物",
+      "args": [
+        "item"
+      ],
+      "check": null,
+      "modes": [
+        "prepare"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "stakeout",
+      "name": "蹲点",
+      "args": [
+        "spot"
+      ],
+      "check": "stakeout",
+      "modes": [
+        "prepare"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "spot",
+      "name": "刷脸",
+      "args": [
+        "scene"
+      ],
+      "check": null,
+      "modes": [
+        "prepare"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "rest",
+      "name": "休息",
+      "args": [],
+      "check": null,
+      "modes": [
+        "prepare"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "locate",
+      "name": "定位住处",
+      "args": [],
+      "check": "locate",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "watch_lights",
+      "name": "观灯",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "check_mailbox",
+      "name": "查信箱",
+      "args": [],
+      "check": "mailbox",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "watch_visitor",
+      "name": "查访客",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "check_camera",
+      "name": "查监控位",
+      "args": [],
+      "check": "camera",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "check_door",
+      "name": "查门禁",
+      "args": [],
+      "check": "door",
+      "modes": [
+        "stealth"
+      ],
+      "requires": {
+        "place": "door",
+        "dist": [
+          "close",
+          "touch"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "stair_lurk",
+      "name": "楼道潜伏",
+      "args": [],
+      "check": "lurk",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "door_listen",
+      "name": "贴门听",
+      "args": [],
+      "check": "dlisten",
+      "modes": [
+        "stealth"
+      ],
+      "requires": {
+        "place": "door",
+        "dist": [
+          "close",
+          "touch"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "door_peep",
+      "name": "门缝观察",
+      "args": [],
+      "check": "peep",
+      "modes": [
+        "stealth"
+      ],
+      "requires": {
+        "place": "door",
+        "dist": [
+          "close",
+          "touch"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "try_handle",
+      "name": "试门把",
+      "args": [],
+      "check": "handle",
+      "modes": [
+        "stealth"
+      ],
+      "requires": {
+        "place": "door",
+        "dist": [
+          "close",
+          "touch"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "lockpick",
+      "name": "开锁",
+      "args": [
+        "tool"
+      ],
+      "check": "lockpick",
+      "modes": [
+        "any"
+      ],
+      "requires": {
+        "place": "door",
+        "dist": [
+          "close",
+          "touch"
+        ],
+        "items": [
+          "lockpick",
+          "cyber_lockpick"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "break_in",
+      "name": "入室",
+      "args": [],
+      "check": null,
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ransack",
+      "name": "翻找",
+      "args": [
+        "area"
+      ],
+      "check": "ransack",
+      "modes": [
+        "any"
+      ],
+      "requires": {
+        "dist": [
+          "close",
+          "touch"
+        ]
+      },
+      "aliases": []
+    },
+    {
+      "id": "plant_bug",
+      "name": "安装监视",
+      "args": [
+        "device"
+      ],
+      "check": "bug",
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "cover_tracks",
+      "name": "清理痕迹",
+      "args": [],
+      "check": "tracks",
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "plan_exit",
+      "name": "记撤离路线",
+      "args": [],
+      "check": "exit",
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "wait_gate",
+      "name": "蹲守出口",
+      "args": [],
+      "check": null,
+      "modes": [
+        "stealth",
+        "prepare"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ride_along",
+      "name": "通勤同车",
+      "args": [
+        "cabin"
+      ],
+      "check": "follow",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "transfer",
+      "name": "换乘跟进",
+      "args": [],
+      "check": "transfer",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "watch_peers",
+      "name": "观察同侪",
+      "args": [],
+      "check": "peers",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "fake_visit",
+      "name": "伪装访客",
+      "args": [
+        "identity"
+      ],
+      "check": "visit",
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "audit_class",
+      "name": "伪装旁听",
+      "args": [],
+      "check": "audit",
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "lobby_lurk",
+      "name": "大堂潜伏",
+      "args": [],
+      "check": "lobby",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "canteen_watch",
+      "name": "食堂监视",
+      "args": [],
+      "check": null,
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "apply_job",
+      "name": "伪装应聘",
+      "args": [],
+      "check": "apply",
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "check_desk",
+      "name": "查工牌工位",
+      "args": [],
+      "check": "desk",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "hear_gossip",
+      "name": "听同事谈",
+      "args": [],
+      "check": "gossip",
+      "modes": [
+        "contact",
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "follow_work",
+      "name": "反向通勤",
+      "args": [],
+      "check": "follow",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "stalk_social",
+      "name": "查社交",
+      "args": [
+        "platform"
+      ],
+      "check": "social",
+      "modes": [
+        "prepare",
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "monitor_social",
+      "name": "关注动态",
+      "args": [],
+      "check": null,
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "plant_gps",
+      "name": "电子追踪",
+      "args": [
+        "device"
+      ],
+      "check": "gps",
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "check_parcel",
+      "name": "查快递",
+      "args": [],
+      "check": "parcel",
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "get_number",
+      "name": "拼号码",
+      "args": [],
+      "check": "number",
+      "modes": [
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "pump_person",
+      "name": "套话第三方",
+      "args": [
+        "target"
+      ],
+      "check": "pump",
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "bribe",
+      "name": "买通",
+      "args": [
+        "target"
+      ],
+      "check": null,
+      "modes": [
+        "contact",
+        "prepare"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ride_follow",
+      "name": "骑行跟缀",
+      "args": [],
+      "check": "ride_follow",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "car_follow",
+      "name": "驾车跟踪",
+      "args": [],
+      "check": "car_follow",
+      "modes": [
+        "stealth"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "respond_her",
+      "name": "回应她的搭话",
+      "args": [
+        "ctx"
+      ],
+      "check": null,
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "answer_guard",
+      "name": "应对盘问",
+      "args": [
+        "target"
+      ],
+      "check": "guard",
+      "modes": [
+        "contact"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "stage_scene",
+      "name": "布置现场",
+      "args": [],
+      "check": "stage",
+      "modes": [
+        "prepare",
+        "any"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "press_close",
+      "name": "站位贴近",
+      "args": [],
+      "check": null,
+      "modes": [
+        "vehicle"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "brace_touch",
+      "name": "借位接触",
+      "args": [],
+      "check": "brace",
+      "modes": [
+        "vehicle"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "grope",
+      "name": "隔衣触抚",
+      "args": [
+        "part"
+      ],
+      "check": "grope",
+      "modes": [
+        "vehicle"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "escalate",
+      "name": "得寸进尺",
+      "args": [],
+      "check": "escalate",
+      "modes": [
+        "vehicle"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "alight_follow",
+      "name": "下车同随",
+      "args": [],
+      "check": "alight_follow",
+      "modes": [
+        "vehicle"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "car_shift",
+      "name": "车厢换位",
+      "args": [
+        "dir"
+      ],
+      "check": "shift",
+      "modes": [
+        "vehicle"
+      ],
+      "aliases": []
+    }
+  ]
+}

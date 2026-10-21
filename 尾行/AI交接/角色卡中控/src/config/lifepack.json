@@ -1,0 +1,2454 @@
+{
+  "schema": "lifepack/1.0",
+  "note": "解锁门槛表为全局协议（数值策划第二十七节）；六大槽位平滑三级阶梯（L1: 15 / L2: 30 / L3: 55，严格遵循 L1 = floor(L2 / 2) 公式锚）。",
+  "unlock": {
+    "L1": {
+      "home": 15,
+      "schedule": 15,
+      "carry": 15,
+      "social": 15,
+      "psyche": 15,
+      "romance": 15
+    },
+    "L2": {
+      "home": 30,
+      "schedule": 30,
+      "carry": 30,
+      "social": 30,
+      "psyche": 30,
+      "romance": 30
+    },
+    "L3": {
+      "home": 55,
+      "schedule": 55,
+      "carry": 55,
+      "social": 55,
+      "psyche": 55,
+      "romance": 55
+    }
+  },
+  "packs": {
+    "student": {
+      "id": "student",
+      "name": "晚自习高中生",
+      "stats": {
+        "str": 2,
+        "agi": 4,
+        "per": 4,
+        "nrv": 3
+      },
+      "social": 1,
+      "alertMod": -5,
+      "traits": [
+        "timid",
+        "shoe_leather"
+      ],
+      "stability": 0.85,
+      "defaultOutfit": {
+        "id": "outfit_jk_uniform",
+        "name": "制式校服",
+        "shoeId": "shoe_leather",
+        "shoeName": "制服小皮鞋",
+        "desc": "藏青色西装外套配领结与百褶短裙，深灰及膝袜，外罩米色针织长开衫，脚踩黑色制服小皮鞋",
+        "prompt": "通过贴身剪裁的西装制服与百褶短裙，白描出少女青涩端正的挺拔身姿与规矩内敛的学生气质"
+      },
+      "weekendOutfitPool": [
+        {
+          "id": "outfit_hoodie_denim",
+          "name": "连帽卫衣+牛仔短裙",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "运动鞋",
+          "weight": 25,
+          "desc": "浅米灰落肩连帽卫衣搭配高腰水洗牛仔短裙，纯白棉袜与小白鞋（软底运动鞋）",
+          "prompt": "白描卫衣抽绳随步态轻晃，短裙下双腿笔直修长，洋溢着干净清爽的校园青春元气"
+        },
+        {
+          "id": "outfit_knit_pleats",
+          "name": "软羊毛衫+格纹短裙",
+          "shoeId": "shoe_platform",
+          "shoeName": "松糕鞋",
+          "weight": 25,
+          "desc": "奶白色蓬松圆领针织衫，浅驼色英伦格纹短裙，深棕色及膝过膝袜配厚底松糕小皮鞋",
+          "prompt": "白描蓬松针织衫勾勒出的单薄纤细骨架与及膝袜修饰出的匀称小腿，尽显文静温柔的学生书卷气质"
+        },
+        {
+          "id": "outfit_cardigan_onepiece",
+          "name": "针织短开衫+碎花吊带裙",
+          "shoeId": "shoe_flats",
+          "shoeName": "平底鞋",
+          "weight": 25,
+          "desc": "浅粉灰细碎花吊带高腰棉裙，外罩薄燕麦色针织短开衫，平底玛丽珍鞋",
+          "prompt": "白描轻柔波折的裙摆与贴合身形的腰线，展现出难得脱离校服拘谨的少女青涩身姿"
+        },
+        {
+          "id": "outfit_jacket_shorts",
+          "name": "拼色棒球服+运动短裤",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "运动鞋",
+          "weight": 25,
+          "desc": "短款日系棒球夹克内搭纯白修身T恤，滚边运动短裤，条纹运动长袜与轻便跑鞋（运动鞋）",
+          "prompt": "白描短夹克下轻盈活力的步态与健美匀称的双腿线条，展现出大步快走的朝气与身形舒展"
+        }
+      ],
+      "somaticPool": [
+        {
+          "id": "normal",
+          "name": "平常状态",
+          "weight": 40,
+          "mod": {},
+          "desc": "基线平淡放学，步履规律",
+          "reasons": [
+            "日常平稳放学，步履规律平稳，心境平静",
+            "普通的晚归日常，背脊端正，安静前行",
+            "没有特别高兴或烦恼的事情，按照习惯节奏走在老街路上"
+          ],
+          "prompt": "白描其背脊端正、步伐匀称平稳的优等生常态"
+        },
+        {
+          "id": "fatigued",
+          "name": "身心疲惫",
+          "weight": 25,
+          "mod": {
+            "agi": -1
+          },
+          "desc": "身心耗神，双腿酸沉，敏捷 -1",
+          "reasons": [
+            "模拟考连考三门文综，脑子发木发胀，步履拖沓沉重",
+            "下午刚测完女子800米长跑测试，双腿酸沉发软，迈步迟缓",
+            "放学被老师留堂重订正错题，低头叹气，心情低落困倦"
+          ],
+          "prompt": "白描其放学后的疲乏拖沓，肩膀被书包压沉微叹气"
+        },
+        {
+          "id": "relaxed",
+          "name": "轻松舒畅",
+          "weight": 20,
+          "mod": {
+            "per": -1
+          },
+          "desc": "心境松弛，有效敏锐 -1",
+          "reasons": [
+            "今天吹奏部合练被学姐表扬，心情极佳，步伐轻盈飘飘然",
+            "放学顺路买到了刚出炉的草莓大福甜品，满脸满足甜意",
+            "英语随堂小测拿了满分，步履轻盈跳跃，轻声哼着欢快小调",
+            "在走廊刚好和隔壁班暗恋的学长对视并点头招呼，心不在焉地偷笑"
+          ],
+          "prompt": "白描其步态轻盈轻快、随步频微晃书包小挂件的青春体态"
+        },
+        {
+          "id": "rushing",
+          "name": "紧绷赶路",
+          "weight": 15,
+          "mod": {
+            "agi": 1
+          },
+          "desc": "逼近家规门禁，小步前倾疾行，敏捷 +1",
+          "reasons": [
+            "距离严格家规门禁仅剩15分钟，生怕被罚没收手机，急促前倾抢步",
+            "夜空闷雷滚滚未带雨伞，生怕大雨倾盆，小步疾行赶路"
+          ],
+          "prompt": "白描其身体微前倾快步疾走、频频低头确认电子表的神态"
+        }
+      ],
+      "handPool": {
+        "siteOverrides": {
+          "school_bus_terminal_b": {
+            "id": "ticket_fumble",
+            "name": "翻找月票",
+            "fumbling": true,
+            "desc": "在公交站前停步翻包找学生IC卡"
+          },
+          "store_24h_b": {
+            "id": "drink_buy",
+            "name": "买热饮",
+            "fumbling": false,
+            "desc": "在便利店自动贩卖机前买热饮"
+          },
+          "unit_stairs_b": {
+            "id": "key_fumble",
+            "name": "掏钥匙",
+            "fumbling": true,
+            "desc": "在昏暗单元门前摸索防盗门钥匙串"
+          },
+          "old_metro_b": {
+            "id": "metro_fumble",
+            "name": "翻找车票",
+            "fumbling": true,
+            "desc": "在老街地铁出站闸机前停步，低头翻包寻找学生单程票或交通卡"
+          },
+          "school_gate_b": {
+            "id": "bag_tidy",
+            "name": "整理书包",
+            "fumbling": true,
+            "desc": "走出校门后在昏暗门柱旁停步，拉严沉重书包的拉链并系紧围巾"
+          }
+        },
+        "carriagePool": [
+          {
+            "id": "carriage_normal",
+            "name": "扶手乘车",
+            "weight": 45,
+            "duration": 1,
+            "tag": null,
+            "desc": "单手拉着车厢吊环或靠扶手站立，望向漆黑车窗发呆，双手处于空闲态"
+          },
+          {
+            "id": "carriage_phone",
+            "name": "手机与耳机",
+            "weight": 35,
+            "duration": 1,
+            "tag": "hand_phone",
+            "desc": "戴着耳机双手捧手机低头浏览屏幕，外界声响与视线完全被隔绝，跟缀隐蔽 +2"
+          },
+          {
+            "id": "carriage_doze",
+            "name": "摇晃瞌睡",
+            "weight": 20,
+            "duration": 1,
+            "tag": "hand_fumble",
+            "desc": "倚着车厢座椅随着列车晃荡轻轻垂头打瞌睡，双手无力搭在书包上，感知与警惕降至低点"
+          }
+        ],
+        "enRoute": [
+          {
+            "id": "normal",
+            "name": "正常摆臂",
+            "weight": 40,
+            "duration": 2,
+            "tag": null,
+            "desc": "空手自然摆臂，双手处于完全空闲态"
+          },
+          {
+            "id": "phone_browse",
+            "name": "耍手机",
+            "weight": 20,
+            "duration": 2,
+            "tag": "hand_phone",
+            "desc": "低头看屏幕大拇指滑动，玩家跟缀隐蔽 +2"
+          },
+          {
+            "id": "hands_pocket",
+            "name": "保暖插兜",
+            "weight": 8,
+            "duration": 2,
+            "tag": "hand_pocket",
+            "desc": "双手缩在针织开衫袖口里取暖，遇袭反抗 -2"
+          },
+          {
+            "id": "phone_call",
+            "name": "接电话",
+            "weight": 8,
+            "duration": 1,
+            "tag": "hand_call",
+            "desc": "单手贴耳应答家人，玩家隐蔽 +1，反抗 -1"
+          },
+          {
+            "id": "book_read",
+            "name": "看书默背",
+            "weight": 8,
+            "duration": 1,
+            "tag": "hand_book",
+            "desc": "双手捧巴掌大词汇手册默背，玩家隐蔽 +2"
+          },
+          {
+            "id": "drink_sip",
+            "name": "喝饮品",
+            "weight": 8,
+            "duration": 1,
+            "tag": "hand_drink",
+            "desc": "单手捧纸盒奶茶咬吸管，玩家隐蔽 +1，反抗 -1"
+          },
+          {
+            "id": "food_eat",
+            "name": "吃东西",
+            "weight": 8,
+            "duration": 1,
+            "tag": "hand_eat",
+            "desc": "单手拿防油纸袋小吃咀嚼，玩家隐蔽 +1，反抗 -1"
+          }
+        ]
+      },
+      "flavor": {
+        "face": "害怕地咬紧下唇，借助街边自行车反光镜的倒影偷瞥一眼身后",
+        "evade": "双手抓紧书包带，踩着小皮鞋在路灯阴影边缘仓皇小跑",
+        "shield": "低着头小步疾走，一头钻进便利店明亮的白炽灯光下假装看文具",
+        "signal": "颤抖着从校服口袋掏出手机，按亮屏幕假装给家人打电话"
+      },
+      "routes": [
+        {
+          "id": "workday_evening",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "note": "周内晚自习常规放学路线（前半段结伴，后半段独行）",
+          "prompt": "白描晚自习放学后的校门人潮与深巷暮色，前半程与同伴结伴低语，在学区公交站告别后独自拐入老巷",
+          "path": [
+            {
+              "place": "school_gate_b",
+              "t": "2100"
+            },
+            {
+              "place": "school_bus_terminal_b",
+              "t": "2115"
+            },
+            {
+              "place": "store_24h_b",
+              "t": "2130"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "2145"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "2200"
+            }
+          ]
+        },
+        {
+          "id": "friday_late",
+          "days": [
+            5
+          ],
+          "note": "周五单人值日晚归路线（全线无结伴掩护）",
+          "prompt": "白描周五单人值日关门后的寂静夜色，手提沉重书包低头快步独行，整条归途无同伴掩护",
+          "path": [
+            {
+              "place": "school_gate_b",
+              "t": "2130"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "2145"
+            },
+            {
+              "place": "dark_blind_alley_b",
+              "t": "2200"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "2215"
+            }
+          ]
+        },
+        {
+          "id": "saturday_cram",
+          "days": [
+            6
+          ],
+          "note": "周六学习塾补习放学路线（文具店二楼下课归家，独行）",
+          "prompt": "白描补习放学后抱着试卷资料的疲倦与安静，穿搭轻便，在黄昏暮色中独行穿过老巷",
+          "path": [
+            {
+              "place": "store_24h_b",
+              "t": "1830"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "1850"
+            },
+            {
+              "place": "school_bus_terminal_b",
+              "t": "1905"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "1920"
+            }
+          ]
+        },
+        {
+          "id": "saturday_outing",
+          "days": [
+            6
+          ],
+          "note": "周六商圈出游归来路线（地铁站散心归来，手捧小吃饮品）",
+          "prompt": "白描少女难得周末外出游玩的轻松与活力，边走边吮吸奶茶或低头看手机，步履舒缓轻快",
+          "path": [
+            {
+              "place": "old_metro_b",
+              "t": "2030"
+            },
+            {
+              "place": "old_park_b",
+              "t": "2050"
+            },
+            {
+              "place": "store_24h_b",
+              "t": "2110"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "2130"
+            }
+          ]
+        },
+        {
+          "id": "saturday_date_home",
+          "days": [
+            6
+          ],
+          "note": "周六青涩约会·送别回家路线（依依不舍告别男生后独自赶门禁）",
+          "prompt": "白描青涩情侣间离别时的依恋与羞涩，十指相扣又松开的局促告别，随后少女低头确认时间小步快走抢门禁",
+          "path": [
+            {
+              "place": "old_metro_b",
+              "t": "2140"
+            },
+            {
+              "place": "old_park_b",
+              "t": "2155"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "2205"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "2215"
+            }
+          ]
+        },
+        {
+          "id": "saturday_date_hotel",
+          "days": [
+            6
+          ],
+          "note": "周六青涩约会·情侣旅社特殊走向（情侣相伴迈入情侣旅社）",
+          "prompt": "白描青涩情侣初次牵手的局促与娇羞，纯真恋爱的微甜与恩爱。两人十指紧扣，并肩拐入一条陌生狭窄的偏僻侧巷深处；少女心跳微快、掌心泛起细汗，带着对跨入大人世界的向往与紧张。严禁提前剧透目的地具体名称。",
+          "path": [
+            {
+              "place": "old_metro_b",
+              "t": "2140"
+            },
+            {
+              "place": "old_park_b",
+              "t": "2155"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "2210"
+            },
+            {
+              "place": "love_hotel_b",
+              "t": "2220"
+            }
+          ]
+        },
+        {
+          "id": "sunday_rest",
+          "days": [
+            7
+          ],
+          "note": "周日全天居家休整（不出门）",
+          "prompt": "白描少女周日全天在寓所内安静休整，窗帘拉起，未曾外出，街道上无其足迹",
+          "path": [
+            {
+              "place": "unit_stairs_b",
+              "t": "2000"
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "id": "companion",
+          "title": "同桌同行",
+          "mod": 1
+        },
+        {
+          "id": "curfew_tight",
+          "title": "门禁紧迫",
+          "mod": 1
+        },
+        {
+          "id": "solo_duty",
+          "title": "独自值日",
+          "mod": 2
+        }
+      ],
+      "factPool": [
+        {
+          "id": "student_home_area",
+          "slot": "home",
+          "level": 1,
+          "public": false,
+          "title": "居住片区",
+          "text": "住在老城文教区腹地，从学校步行二十分钟以内即可到达。",
+          "place": null,
+          "reveal_via": []
+        },
+        {
+          "id": "student_home_block",
+          "slot": "home",
+          "level": 2,
+          "public": false,
+          "title": "住处环境",
+          "text": "家在一片老旧的独栋公寓区，沿街窄巷没有路灯，围墙上爬着枯藤。",
+          "place": "unit_stairs_b",
+          "reveal_via": []
+        },
+        {
+          "id": "student_home_number",
+          "slot": "home",
+          "level": 3,
+          "public": false,
+          "title": "门牌",
+          "text": "门牌301，门把手上挂着可爱的卡通布套，信箱里塞着升学补习塾的宣传册。",
+          "place": "unit_stairs_b",
+          "reveal_via": [
+            "locate",
+            "check_mailbox"
+          ]
+        },
+        {
+          "id": "student_sched_release",
+          "slot": "schedule",
+          "level": 1,
+          "public": false,
+          "title": "放学时间",
+          "text": "平日晚自习21:00准时打铃下课，周五值日会晚走约半小时。",
+          "place": "school_gate_b",
+          "reveal_via": []
+        },
+        {
+          "id": "student_sched_terminal",
+          "slot": "schedule",
+          "level": 2,
+          "public": false,
+          "title": "散伙节点",
+          "text": "每晚都会与同桌结伴走到学区公交总站，直到同伴上车后才独自步行折返入巷。",
+          "place": "school_bus_terminal_b",
+          "reveal_via": [
+            "follow",
+            "stakeout"
+          ]
+        },
+        {
+          "id": "student_sched_weekend",
+          "slot": "schedule",
+          "level": 3,
+          "public": false,
+          "title": "周末课表",
+          "text": "周六下午在文具店二楼的学习塾补习英文，傍晚独行归家。",
+          "place": "store_24h_b",
+          "reveal_via": [
+            "locate",
+            "ransack"
+          ]
+        },
+        {
+          "id": "student_carry_bag",
+          "slot": "carry",
+          "level": 1,
+          "public": false,
+          "title": "学生提包",
+          "text": "深色制式学生皮包，拉链上挂着磨损掉漆的动漫亚克力钥匙扣。",
+          "place": null,
+          "reveal_via": [
+            "photo",
+            "scan"
+          ]
+        },
+        {
+          "id": "student_carry_bottle",
+          "slot": "carry",
+          "level": 2,
+          "public": false,
+          "title": "侧袋饮品",
+          "text": "书包侧袋经常插着一盒喝了一半的纸盒草莓牛奶，或者浅蓝色的保温水杯。",
+          "place": null,
+          "reveal_via": [
+            "scan",
+            "photo"
+          ]
+        },
+        {
+          "id": "student_carry_handbook",
+          "slot": "carry",
+          "level": 3,
+          "public": false,
+          "title": "随身私密手账",
+          "text": "包底暗格藏着一本用贴纸封好的私密手账，夹层写着暗恋隔壁班男生的学号与心事。",
+          "place": null,
+          "reveal_via": [
+            "ransack",
+            "pick"
+          ]
+        },
+        {
+          "id": "student_social_peer",
+          "slot": "social",
+          "level": 1,
+          "public": false,
+          "title": "社交圈",
+          "text": "社交较窄，全校只和同桌女生亲密无间，面对异性搭话格外拘谨。",
+          "place": null,
+          "reveal_via": [
+            "hear_gossip",
+            "chat"
+          ]
+        },
+        {
+          "id": "student_social_parents",
+          "slot": "social",
+          "level": 2,
+          "public": false,
+          "title": "严苛家教",
+          "text": "父母管教严厉，设立了22:15严格门禁，晚归会被盘问并没收手机。",
+          "place": null,
+          "reveal_via": [
+            "listen",
+            "hear_gossip"
+          ]
+        },
+        {
+          "id": "student_social_crush",
+          "slot": "social",
+          "level": 3,
+          "public": false,
+          "title": "单恋心事",
+          "text": "暗恋隔壁班的升学榜第一名，但自尊心要强从不敢搭话，每天放学会故意从那间教室门前走过。",
+          "place": "school_gate_b",
+          "reveal_via": [
+            "ransack",
+            "audit_class"
+          ]
+        },
+        {
+          "id": "student_psyche_dark",
+          "slot": "psyche",
+          "level": 1,
+          "public": false,
+          "title": "惧黑心理",
+          "text": "生性胆怯怕黑，穿过无灯小巷时会下意识贴着墙边小跑，假装看手机屏幕壮胆。",
+          "place": "old_alley_main_b",
+          "reveal_via": [
+            "timing",
+            "scan"
+          ]
+        },
+        {
+          "id": "student_psyche_stubborn",
+          "slot": "psyche",
+          "level": 2,
+          "public": false,
+          "title": "要强外壳",
+          "text": "自尊心要强，遇到陌生人搭话或紧逼时，会死死咬住嘴唇硬撑快走，绝不主动求饶。",
+          "place": null,
+          "reveal_via": [
+            "greet",
+            "chat"
+          ]
+        },
+        {
+          "id": "student_psyche_scandal",
+          "slot": "psyche",
+          "level": 3,
+          "public": false,
+          "title": "名誉死穴",
+          "text": "誓死捍卫优等生声誉，格外畏惧被学校通报、叫家长或被周围人指指点点——这是能击穿她心理防线的关键要害。",
+          "place": null,
+          "reveal_via": [
+            "audit_class",
+            "chat"
+          ]
+        },
+        {
+          "id": "student_romance_status",
+          "slot": "romance",
+          "level": 1,
+          "public": false,
+          "title": "恋爱状态",
+          "text": "处于情窦初开的单恋阶段，没有正式交往的男朋友，面对异性目光会羞怯避开。",
+          "place": null,
+          "reveal_via": []
+        },
+        {
+          "id": "student_romance_boundary",
+          "slot": "romance",
+          "level": 2,
+          "public": false,
+          "title": "纯情界限",
+          "text": "放学偶尔与暗恋的同级男生结伴走一小段路，连衣袖相碰都会耳根泛红，未有过任何逾矩亲密接触。",
+          "place": null,
+          "reveal_via": [
+            "hear_gossip",
+            "chat",
+            "watch_peers"
+          ]
+        },
+        {
+          "id": "student_romance_virgin",
+          "slot": "romance",
+          "level": 3,
+          "public": false,
+          "title": "纯洁之躯",
+          "text": "始终保有完整的清白处子之身，对男女情事懵懂生涩，身体纯洁无暇。",
+          "place": null,
+          "reveal_via": [
+            "hear_gossip",
+            "pump_person",
+            "audit_class"
+          ]
+        }
+      ],
+      "romancePool": [
+        {
+          "id": "virgin_in_love",
+          "name": "有恋人 未发生关系 处女",
+          "facts": [
+            {
+              "id": "target_romance_virgin_status",
+              "slot": "romance",
+              "level": 1,
+              "public": false,
+              "title": "初恋交往",
+              "text": "正在与同校男生交往，正处于初恋期，尚未发生过逾矩的亲密身体关系。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "target_romance_virgin_boundary",
+              "slot": "romance",
+              "level": 2,
+              "public": false,
+              "title": "纯情底线",
+              "text": "周末约会仅止于牵手与并肩散步，面对男生的更进一步试探会羞涩推拒，坚守最后一道底线。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "chat",
+                "watch_peers"
+              ]
+            },
+            {
+              "id": "target_romance_virgin_core",
+              "slot": "romance",
+              "level": 3,
+              "public": false,
+              "title": "处子之身",
+              "text": "仍保有完整的处女之身，对初次的体验怀着羞涩而谨慎的珍视，视身体纯洁为自身底线。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "experienced_in_love",
+          "name": "有恋人 已发生关系",
+          "facts": [
+            {
+              "id": "target_romance_exp_status",
+              "slot": "romance",
+              "level": 1,
+              "public": false,
+              "title": "亲密交往",
+              "text": "与同校男生稳定交往中，两人感情深厚，已有过实质性的男女亲密接触经验。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "target_romance_exp_boundary",
+              "slot": "romance",
+              "level": 2,
+              "public": false,
+              "title": "过夜痕迹",
+              "text": "周六约会时偶尔会在情侣旅社或对方出租屋过夜，颈侧或锁骨间偶尔隐约留有浅淡吻痕。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "chat",
+                "watch_peers"
+              ]
+            },
+            {
+              "id": "target_romance_exp_core",
+              "slot": "romance",
+              "level": 3,
+              "public": false,
+              "title": "身体经验",
+              "text": "虽已非处子之身，对男女情事已有切实认知，但在外依然保持着知性端庄的学生形象。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "single",
+          "name": "单身",
+          "facts": [
+            {
+              "id": "target_romance_single_status",
+              "slot": "romance",
+              "level": 1,
+              "public": false,
+              "title": "独居单身",
+              "text": "当前处于单身无交往对象状态，独来独往，享受无拘无束的个人独立生活。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "target_romance_single_boundary",
+              "slot": "romance",
+              "level": 2,
+              "public": false,
+              "title": "情感空白",
+              "text": "偶尔受到同系男生的追求但从未松口答应，情感经历空白，对恋爱抱持观望态度。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "chat",
+                "watch_peers"
+              ]
+            },
+            {
+              "id": "target_romance_single_core",
+              "slot": "romance",
+              "level": 3,
+              "public": false,
+              "title": "未涉情事",
+              "text": "始终保持着未曾涉足男女情事的纯洁身心，从未体验过异性的触碰，身体处于未被开发状态。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "college": {
+      "id": "college",
+      "name": "独居女大学生",
+      "stats": {
+        "str": 3,
+        "agi": 4,
+        "per": 4,
+        "nrv": 4
+      },
+      "social": 3,
+      "alertMod": 0,
+      "traits": [
+        "shoe_sneakers"
+      ],
+      "stability": 0.8,
+      "flavor": {
+        "face": "略带好奇或戒备地侧过脸，借着手机屏幕的反光扫一眼身后",
+        "evade": "加快步频走向人多明亮处，步伐在石板路上发出节奏分明的轻响",
+        "shield": "在沿街便利店或奶茶店驻足，假意翻包或查看手机点单",
+        "signal": "戴上耳麦或给室友拨通语音电话，边走边低声说话"
+      },
+      "defaultOutfit": {
+        "id": "outfit_hoodie_denim",
+        "name": "落肩连帽卫衣+宽松牛仔裤",
+        "shoeId": "shoe_sneakers",
+        "shoeName": "滑板鞋",
+        "desc": "米灰色落肩抓绒连帽卫衣搭配水洗浅蓝做旧直筒阔腿拖地牛仔裤，浅灰色纯棉平口运动短袜配白灰拼色经典低帮滑板鞋",
+        "prompt": "白描米灰色宽大落肩卫衣与浅蓝阔腿拖地牛仔裤，浅灰短袜搭经典滑板鞋，展现随性放松、步调松弛的大学女生日常风貌"
+      },
+      "outfits": [
+        {
+          "id": "outfit_hoodie_denim",
+          "name": "落肩连帽卫衣+宽松牛仔裤",
+          "styleGroup": "casual",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "滑板鞋",
+          "socks": "浅灰色纯棉平口运动短袜",
+          "desc": "米灰色落肩抓绒连帽卫衣搭配水洗浅蓝做旧直筒阔腿拖地牛仔裤，浅灰色纯棉平口运动短袜配白灰拼色经典低帮滑板鞋",
+          "prompt": "白描宽大落肩卫衣下摆自然垂落，浅蓝阔腿牛仔裤微堆于滑板鞋面，浅灰平口短袜收于踝部，步伐松散拖沓"
+        },
+        {
+          "id": "outfit_tech_cargo",
+          "name": "防风冲锋夹克+束脚工装裤",
+          "styleGroup": "casual",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "帆布鞋",
+          "socks": "黑色螺纹高弹中筒吸汗棉袜",
+          "desc": "墨黑连帽防风冲锋夹克搭配深军绿多口袋束脚工装慢跑裤，纯黑螺纹高弹中筒棉袜配黑白拼色高帮帆布鞋",
+          "prompt": "白描墨黑冲锋夹克带抽绳斜拉链，工装束脚裤利落收口，黑色高弹螺纹中筒袜包裹脚踝，帆布鞋步频轻快带有橡胶擦地声"
+        },
+        {
+          "id": "outfit_sailor_jk",
+          "name": "正统水手服JK短裙",
+          "styleGroup": "sweet",
+          "shoeId": "shoe_leather",
+          "shoeName": "乐福小皮鞋",
+          "socks": "纯黑高弹纯棉小腿中筒袜",
+          "desc": "藏青色正统短款套头水手服（双白襟线+深红平结）配同色高腰百褶短裙，纯黑高弹纯棉小腿中筒袜，脚踏黑色圆头搭扣亮面皮乐福鞋",
+          "prompt": "白描藏青色短款水手服与微风下轻扬的百褶短裙，纯黑小腿中筒袜平整勾勒小腿轮廓，漆皮乐福鞋敲击地面发出清脆声响"
+        },
+        {
+          "id": "outfit_plaid_jk",
+          "name": "奶茶西式格裙JK套装",
+          "styleGroup": "sweet",
+          "shoeId": "shoe_leather",
+          "shoeName": "学院小皮鞋",
+          "socks": "浅米白细线纯棉堆堆袜",
+          "desc": "奶茶色V领针织背心内搭小方领白衬衫与格纹蝴蝶结，焦糖杏色压褶格纹百褶短裙，浅米白细线纯棉堆堆袜，脚踏深棕哑光软皮学院小皮鞋",
+          "prompt": "白描奶茶针织背心与焦糖格纹短裙的层次感，浅米白堆堆袜在踝部微堆两折，哑光小皮鞋脚步轻捷"
+        },
+        {
+          "id": "outfit_lolita_jsk",
+          "name": "印花托胸Lolita裙",
+          "styleGroup": "sweet",
+          "shoeId": "shoe_platform",
+          "shoeName": "玛丽珍鞋",
+          "socks": "纯白微透提花镂空过膝长筒袜",
+          "desc": "象牙白立领蕾丝长袖雪纺衬衫搭深酒红星月暗纹高腰JSK吊带裙（双层蕾丝边），纯白微透提花镂空过膝长筒袜，深酒红厚底双搭扣玛丽珍鞋",
+          "prompt": "白描深酒红蓬松华丽的JSK裙摆与层叠蕾丝边，纯白微透镂空长筒袜裹至过膝并系有缎带蝴蝶结，厚底玛丽珍鞋踏出沉重而规矩的钝响"
+        },
+        {
+          "id": "outfit_floral_dress",
+          "name": "针织长开衫+碎花吊带长裙",
+          "styleGroup": "elegant",
+          "shoeId": "shoe_flats",
+          "shoeName": "平底单鞋",
+          "socks": "纯白轻薄透气卷边短棉袜",
+          "desc": "软糯燕麦色粗线长款针织开衫搭淡黄细碎小花雪纺吊带长裙，纯白轻薄透气卷边短棉袜微露于浅杏色牛皮平底软底单鞋鞋口",
+          "prompt": "白描燕麦色针织开衫随步态微敞，淡黄碎花雪纺长裙垂至小腿肚轻柔摆动，卷边短袜隐于平底浅口单鞋内，步调温和细微"
+        },
+        {
+          "id": "outfit_cableknit_midiskirt",
+          "name": "麻花毛衣+毛呢百褶中长裙",
+          "styleGroup": "elegant",
+          "shoeId": "shoe_leather",
+          "shoeName": "系带小皮鞋",
+          "socks": "深灰混纺保暖中筒厚棉袜",
+          "desc": "浅灰复古粗棒针麻花套头毛衣搭配墨绿色厚毛呢垂感压褶中长裙，深灰混纺保暖中筒厚棉袜，脚踏深棕色系带英伦小皮鞋",
+          "prompt": "白描厚实麻花毛衣带来端庄书卷感，墨绿厚呢裙摆及至小腿中段行走步幅克制，深灰中筒袜平整收束，系带小皮鞋发出沉稳笃笃声"
+        },
+        {
+          "id": "outfit_corduroy_overall",
+          "name": "高领打底+灯芯绒工装背带长裙",
+          "styleGroup": "elegant",
+          "shoeId": "shoe_flats",
+          "shoeName": "平底软皮鞋",
+          "socks": "姜黄色竖螺纹纯棉小腿袜",
+          "desc": "暖白半高领细罗纹针织打底衫外搭浅卡其色直筒工装背带长裙，姜黄色竖螺纹纯棉小腿袜，脚踏浅杏色牛皮平底软底单鞋",
+          "prompt": "白描暖白高领与浅卡其灯芯绒长裙质感温润，开衩处微露姜黄色竖螺纹小腿袜，步态安稳低调"
+        },
+        {
+          "id": "outfit_leather_jacket_skirt",
+          "name": "短款皮夹克+包臀皮短裙",
+          "styleGroup": "cool",
+          "shoeId": "shoe_platform",
+          "shoeName": "松糕马丁靴",
+          "socks": "深炭灰色40D半透高弹连裤袜",
+          "desc": "哑光黑色修身短款皮质机车夹克配高腰A字包臀皮短裙，深炭灰色40D半透高弹连裤袜，脚踏黑色齿纹厚底松糕马丁靴",
+          "prompt": "白描硬挺黑皮夹克与利落皮短裙勾勒紧凑身形，深炭灰半透连裤袜紧致包裹双腿，厚底马丁靴踏出强硬而沉闷的脚步节奏"
+        },
+        {
+          "id": "outfit_trench_pencil",
+          "name": "双排扣长风衣+毛呢一步裙",
+          "styleGroup": "cool",
+          "shoeId": "shoe_leather",
+          "shoeName": "低跟小皮鞋",
+          "socks": "哑光纯黑微压修腿中筒袜",
+          "desc": "驼色长款双排扣挺括系带风衣内搭黑色高领衫与深灰粗花呢高腰一步直筒裙，哑光纯黑微压修腿中筒袜，脚踏黑色尖头低跟小皮鞋",
+          "prompt": "白描驼色风衣下摆过膝随风微扬，深灰一步裙收束步幅，哑光纯黑中筒袜藏于裙边，低跟小皮鞋在石板街上敲出清冷坚定的声响"
+        },
+        {
+          "id": "outfit_preppy_layered",
+          "name": "假两件针织衫+格纹百褶短裙",
+          "styleGroup": "sweet",
+          "shoeId": "shoe_leather",
+          "shoeName": "乐福小皮鞋",
+          "socks": "深藏青色过膝长筒棉袜",
+          "desc": "浅杏色麻花粗针织开衫内拼白衬衫领，藏青酒红细格纹高腰百褶短裙，深藏青色过膝长筒棉袜，脚踏深咖色擦色复古乐福小皮鞋",
+          "prompt": "白描学院风针织开衫与细格百褶短裙轻快灵动，深藏青过膝长筒袜与裙摆间露出一截肌肤，乐福小皮鞋步履轻盈跳跃"
+        }
+      ],
+      "somaticPool": [
+        {
+          "id": "normal",
+          "name": "平常状态",
+          "weight": 40,
+          "mod": {},
+          "desc": "基线平淡晚归，步履规律",
+          "reasons": [
+            "普通的晚自习结束，步履轻捷匀称，心境平和",
+            "日常去图书馆还完书返程，背着帆布包，安静前行",
+            "没有繁重的大作业干扰，按习惯节奏走在老街路上"
+          ],
+          "prompt": "白描其步履均匀、神情轻松的大学女生夜归常态"
+        },
+        {
+          "id": "fatigued",
+          "name": "身心疲惫",
+          "weight": 25,
+          "mod": {
+            "agi": -1
+          },
+          "desc": "熬夜耗神或兼职奔波，步履拖沓，敏捷 -1",
+          "reasons": [
+            "期末结课连熬两晚大作业展示，精神困倦，步履拖沓沉重",
+            "在校外兼职站立了数小时，小腿酸胀发硬，迈步迟缓",
+            "在实验楼连测多组数据，眼睛干涩发胀，低头拖着步子前行"
+          ],
+          "prompt": "白描其身心困倦、步伐沉缓发拖的疲惫体态，肩膀略微塌下"
+        },
+        {
+          "id": "relaxed",
+          "name": "轻松惬意",
+          "weight": 20,
+          "mod": {
+            "per": -1
+          },
+          "desc": "心境松弛愉快，注意力分散，有效敏锐 -1",
+          "reasons": [
+            "期末小组答辩拿了高分，心情轻松，步伐轻快地晃着帆布包",
+            "路过排队很久的饮品店刚好买到招牌热饮，满脸惬意",
+            "刚收到心仪实习岗位的初审通过通知，看着手机嘴角带笑",
+            "周末约好和同伴去逛展拍照，脚步轻捷，嘴里轻哼着歌"
+          ],
+          "prompt": "白描其神情愉悦、步伐轻快舒展、对身后毫无防备的松弛体态"
+        },
+        {
+          "id": "rushing",
+          "name": "紧绷赶路",
+          "weight": 15,
+          "mod": {
+            "agi": 1
+          },
+          "desc": "门禁临近或天气突变，身体微前倾快步疾走，敏捷 +1",
+          "reasons": [
+            "距离公寓大门门禁锁门只剩最后十分钟，生怕被阿姨记名，小跑快走抢时间",
+            "夜空忽然飘起零星冷雨且未带雨伞，低头护住怀里的电脑包疾步前冲"
+          ],
+          "prompt": "白描其身体微前倾、步频急促、频频看手机时间确认路程的匆忙体态"
+        }
+      ],
+      "handPool": {
+        "siteOverrides": {
+          "campus_library_b": {
+            "id": "bag_pack",
+            "name": "整理书包",
+            "fumbling": true,
+            "desc": "在图书馆闭馆门前台阶上停步，把借阅书籍与保温杯装入帆布包并拉好拉链"
+          },
+          "school_gate_b": {
+            "id": "phone_scan",
+            "name": "刷码出校",
+            "fumbling": false,
+            "desc": "在校门口闸机前点亮手机出示校园码"
+          },
+          "old_skybridge_b": {
+            "id": "bag_tidy",
+            "name": "整理背包",
+            "fumbling": true,
+            "desc": "在老水泥天桥避风处停步，拉开帆布包整理课本与折叠雨伞"
+          },
+          "old_metro_b": {
+            "id": "metro_scan",
+            "name": "刷卡出站",
+            "fumbling": true,
+            "desc": "在地铁出站闸机前停步，从大衣口袋或小包翻找乘车码与耳机盒"
+          },
+          "store_24h_b": {
+            "id": "drink_takeout",
+            "name": "取外带热饮",
+            "fumbling": false,
+            "desc": "在便利店柜台前核对小票并接过打包纸袋"
+          },
+          "unit_stairs_b": {
+            "id": "key_fumble_flat",
+            "name": "摸索钥匙",
+            "fumbling": true,
+            "desc": "在昏暗老旧单元楼入口停步，拉开单肩包拉链摸索出租屋防盗门钥匙"
+          }
+        },
+        "carriagePool": [
+          {
+            "id": "carriage_normal",
+            "name": "扶手乘车",
+            "weight": 45,
+            "duration": 1,
+            "tag": null,
+            "desc": "单手拉着车厢吊环或靠扶手站立，望向漆黑车窗发呆，双手处于空闲态"
+          },
+          {
+            "id": "carriage_phone",
+            "name": "戴耳机刷视频",
+            "weight": 35,
+            "duration": 1,
+            "tag": "hand_phone",
+            "desc": "头戴式耳麦罩在耳边，双手横屏看短视频或网课，外界声响与视线完全隔绝，跟缀隐蔽 +2"
+          },
+          {
+            "id": "carriage_doze",
+            "name": "倚靠瞌睡",
+            "weight": 20,
+            "duration": 1,
+            "tag": "hand_fumble",
+            "desc": "倚着车厢立柱随着列车颠簸轻轻垂头打瞌睡，双手搭在怀里的帆布包上，感知降至低点"
+          }
+        ],
+        "enRoute": [
+          {
+            "id": "normal",
+            "name": "正常摆臂",
+            "weight": 30,
+            "duration": 2,
+            "tag": null,
+            "desc": "单肩背着包，双手自然空闲摆臂，反应灵敏"
+          },
+          {
+            "id": "phone_chat",
+            "name": "低头打字",
+            "weight": 25,
+            "duration": 2,
+            "tag": "hand_phone",
+            "desc": "双手捧手机飞快打字回消息，视线紧盯屏幕，玩家隐蔽 +2"
+          },
+          {
+            "id": "hold_laptop",
+            "name": "双手抱电脑包",
+            "weight": 15,
+            "duration": 2,
+            "tag": "hand_book",
+            "desc": "双手把厚重电脑包或画板护在胸前，行动迟滞，遇袭反抗战力 -1"
+          },
+          {
+            "id": "drink_milktea",
+            "name": "喝热饮",
+            "weight": 15,
+            "duration": 1,
+            "tag": "hand_drink",
+            "desc": "单手提着纸杯咬着吸管小口啜饮，单手占用，反抗战力 -1"
+          },
+          {
+            "id": "hands_pocket",
+            "name": "双手插兜",
+            "weight": 15,
+            "duration": 2,
+            "tag": "hand_pocket",
+            "desc": "双手插在卫衣前兜或外套口袋取暖，遇袭拔手反抗延迟 -2"
+          }
+        ]
+      },
+      "routes": [
+        {
+          "id": "college_evening",
+          "days": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+          "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+          "path": [
+            {
+              "place": "school_gate_b",
+              "t": "2130"
+            },
+            {
+              "place": "old_skybridge_b",
+              "t": "2145"
+            },
+            {
+              "place": "store_24h_b",
+              "t": "2200"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "2215"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "2230"
+            }
+          ]
+        },
+        {
+          "id": "college_delay_evening",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "note": "小组作业延误深夜归途（起点推迟40分钟至22:10，深夜街道空旷）",
+          "prompt": "白描小组大作业或实验结题讨论延误至深夜，22:10 方才匆忙步出紧锁侧门的校门。深夜街道行人稀少、冷风吹过树梢，怀抱笔记本电脑低头快步疾行",
+          "path": [
+            {
+              "place": "school_gate_b",
+              "t": "2210"
+            },
+            {
+              "place": "school_bus_terminal_b",
+              "t": "2225"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "2240"
+            },
+            {
+              "place": "dark_blind_alley_b",
+              "t": "2255"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "2310"
+            }
+          ]
+        },
+        {
+          "id": "college_friday_night",
+          "days": [
+            5
+          ],
+          "note": "周五小吃街与换乘地铁晚归路线",
+          "prompt": "白描周五晚与同学聚餐或逛街后乘地铁返程，在老街地铁站出站，手里提着小吃纸袋或奶茶，步履松弛惬意地走向出租屋",
+          "path": [
+            {
+              "place": "old_metro_b",
+              "t": "2140"
+            },
+            {
+              "place": "old_park_b",
+              "t": "2155"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "2210"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "2225"
+            }
+          ]
+        },
+        {
+          "id": "saturday_cram",
+          "days": [
+            6
+          ],
+          "note": "周六自习室备考晚归路线（抱着厚重资料独行归寝）",
+          "prompt": "白描周六全天在自习室刷题备考后的疲倦与沉静，穿搭随性，抱着厚重参考书独自穿过昏暗老巷",
+          "path": [
+            {
+              "place": "store_24h_b",
+              "t": "1900"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "1920"
+            },
+            {
+              "place": "dark_blind_alley_b",
+              "t": "1935"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "1950"
+            }
+          ]
+        },
+        {
+          "id": "saturday_outing",
+          "days": [
+            6
+          ],
+          "note": "周六商圈看展聚会归来路线（地铁站散心归来，手捧饮品）",
+          "prompt": "白描周末外出逛展聚会后的轻松欢快，拎着小纸袋，边走边看手机，步履轻捷舒展",
+          "path": [
+            {
+              "place": "old_metro_b",
+              "t": "2030"
+            },
+            {
+              "place": "old_park_b",
+              "t": "2050"
+            },
+            {
+              "place": "store_24h_b",
+              "t": "2110"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "2130"
+            }
+          ]
+        },
+        {
+          "id": "saturday_date_home",
+          "days": [
+            6
+          ],
+          "note": "周六青涩约会·送别回家路线（依依不舍告别男生后独自赶门禁）",
+          "prompt": "白描青涩情侣间离别时的依恋与羞涩，十指相扣又松开的局促告别，随后少女低头确认时间小步快走抢门禁",
+          "path": [
+            {
+              "place": "old_metro_b",
+              "t": "2140"
+            },
+            {
+              "place": "old_park_b",
+              "t": "2155"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "2205"
+            },
+            {
+              "place": "unit_stairs_b",
+              "t": "2215"
+            }
+          ]
+        },
+        {
+          "id": "saturday_date_hotel",
+          "days": [
+            6
+          ],
+          "note": "周六青涩约会·情侣旅社特殊走向（情侣相伴迈入情侣旅社）",
+          "prompt": "白描青涩情侣初次牵手的局促与娇羞，纯真恋爱的微甜与恩爱。两人十指紧扣，并肩拐入一条陌生狭窄的偏僻侧巷深处；少女心跳微快、掌心泛起细汗，带着对跨入大人世界的向往与紧张。严禁提前剧透目的地具体名称。",
+          "path": [
+            {
+              "place": "old_metro_b",
+              "t": "2140"
+            },
+            {
+              "place": "old_park_b",
+              "t": "2155"
+            },
+            {
+              "place": "old_alley_main_b",
+              "t": "2210"
+            },
+            {
+              "place": "love_hotel_b",
+              "t": "2220"
+            }
+          ]
+        },
+        {
+          "id": "sunday_rest",
+          "days": [
+            7
+          ],
+          "note": "周日全天居家休整（不出门）",
+          "prompt": "白描女大学生周日全天在出租屋内安静休整、补觉或整理内务，窗帘拉起，未曾外出，街道上无其足迹",
+          "path": [
+            {
+              "place": "unit_stairs_b",
+              "t": "2000"
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "id": "roommate_walk",
+          "title": "室友同行",
+          "mod": 1
+        },
+        {
+          "id": "express_pickup",
+          "title": "顺路取件",
+          "mod": 1
+        },
+        {
+          "id": "ddl_delay",
+          "title": "作业延误",
+          "mod": 2
+        }
+      ],
+      "factPool": [
+        {
+          "id": "college_home_area",
+          "slot": "home",
+          "level": 1,
+          "public": false,
+          "title": "租住片区",
+          "text": "独居在老城文教区边缘的老式弄堂内，距离大学正门步行约十五分钟路程。",
+          "place": null,
+          "reveal_via": []
+        },
+        {
+          "id": "college_home_building",
+          "slot": "home",
+          "level": 2,
+          "public": false,
+          "title": "住处楼栋",
+          "text": "租住在老旧红砖住宅楼三层，弄堂过道未设路灯，楼道外墙爬着枯藤与老化排水管。",
+          "place": "unit_stairs_b",
+          "reveal_via": [
+            "follow",
+            "stakeout"
+          ]
+        },
+        {
+          "id": "college_home_door",
+          "slot": "home",
+          "level": 3,
+          "public": false,
+          "title": "门牌与锁具",
+          "text": "门牌302，老式双排弹子锁，门框上方贴着外卖防窥贴纸，门垫下未藏备用钥匙。",
+          "place": "unit_stairs_b",
+          "reveal_via": [
+            "ransack",
+            "door_peep",
+            "try_handle"
+          ]
+        },
+        {
+          "id": "college_sched_library",
+          "slot": "schedule",
+          "level": 1,
+          "public": false,
+          "title": "自习闭馆时间",
+          "text": "平日晚自习固定在21:30离开图书馆闭馆步出校门，步速匀称，习惯低头看手机。",
+          "place": "school_gate_b",
+          "reveal_via": []
+        },
+        {
+          "id": "college_sched_store",
+          "slot": "schedule",
+          "level": 2,
+          "public": false,
+          "title": "便利店停步",
+          "text": "归途习惯在老天桥下的便利店短暂停留买温热奶品，周六傍晚若不出游就会去自习室备考。",
+          "place": "store_24h_b",
+          "reveal_via": [
+            "follow",
+            "stakeout"
+          ]
+        },
+        {
+          "id": "college_sched_ddl",
+          "slot": "schedule",
+          "level": 3,
+          "public": false,
+          "title": "作业结课延误",
+          "text": "遇实验结题或大作业汇报，离校时间必定推迟40分钟至22:10，独自穿过深夜空旷暗巷。",
+          "place": "school_gate_b",
+          "reveal_via": [
+            "ransack",
+            "pump_person",
+            "audit_class"
+          ]
+        },
+        {
+          "id": "college_carry_bag",
+          "slot": "carry",
+          "level": 1,
+          "public": true,
+          "title": "随身包袋",
+          "text": "单肩米白色厚帆布包，侧袋插着折叠晴雨伞与保温水杯，走路时习惯单手护在身侧。",
+          "place": null,
+          "reveal_via": []
+        },
+        {
+          "id": "college_carry_daily",
+          "slot": "carry",
+          "level": 2,
+          "public": false,
+          "title": "包内常备物",
+          "text": "帆布包内常备：校园一卡通、降噪耳麦盒、荧光笔与薄荷润喉糖、出租屋钥匙串。",
+          "place": null,
+          "reveal_via": [
+            "photo",
+            "scan",
+            "listen",
+            "note"
+          ]
+        },
+        {
+          "id": "college_carry_defense",
+          "slot": "carry",
+          "level": 3,
+          "public": false,
+          "title": "便携防身物",
+          "text": "包内暗格夹层藏着一瓶微型防狼喷雾与一把小巧的美工裁纸刀，防备心重但拿取略显迟滞。",
+          "place": null,
+          "reveal_via": [
+            "pick",
+            "ransack"
+          ]
+        },
+        {
+          "id": "college_social_circle",
+          "slot": "social",
+          "level": 1,
+          "public": false,
+          "title": "人际疏密",
+          "text": "在这座城市没有亲属，人际圈相对封闭，除同系同专业同学外鲜少与外界深入来往。",
+          "place": null,
+          "reveal_via": []
+        },
+        {
+          "id": "college_social_roommate",
+          "slot": "social",
+          "level": 2,
+          "public": false,
+          "title": "结伴同伴",
+          "text": "晚自习偶尔与短发同系室友结伴走出校门，行至天桥分岔路口告别后各自独行。",
+          "place": "school_gate_b",
+          "reveal_via": [
+            "watch_peers"
+          ]
+        },
+        {
+          "id": "college_social_crush",
+          "slot": "social",
+          "level": 3,
+          "public": false,
+          "title": "暧昧心事",
+          "text": "与同组做项目的学长保持着若即若离的好感，周六偶尔受邀看展，但要强的自尊心让她从未主动表白。",
+          "place": null,
+          "reveal_via": [
+            "hear_gossip",
+            "pump_person",
+            "audit_class"
+          ]
+        },
+        {
+          "id": "college_psyche_facade_l1",
+          "slot": "psyche",
+          "level": 1,
+          "public": false,
+          "title": "自尊矜持",
+          "text": "神情自矜，自尊心要强，绝不轻易在生人面前示弱露出慌张神态。",
+          "place": null,
+          "reveal_via": []
+        },
+        {
+          "id": "college_psyche_facade_l2",
+          "slot": "psyche",
+          "level": 2,
+          "public": false,
+          "title": "硬撑快走",
+          "text": "深夜遭遇异样目光或紧逼时，会死死咬住下唇加快步伐硬撑，绝不主动求饶呼救。",
+          "place": null,
+          "reveal_via": [
+            "greet",
+            "chat"
+          ]
+        },
+        {
+          "id": "college_psyche_reputation",
+          "slot": "psyche",
+          "level": 3,
+          "public": false,
+          "title": "知性声誉死穴",
+          "text": "珍视知性得体形象，畏惧隐秘私生活曝光或流言蜚语——这是瓦解其心理防备的要害。",
+          "place": null,
+          "reveal_via": [
+            "audit_class",
+            "chat"
+          ]
+        },
+        {
+          "id": "target_romance_single_status",
+          "slot": "romance",
+          "level": 1,
+          "public": false,
+          "title": "独居单身",
+          "text": "当前处于单身无交往对象状态，独来独往，享受无拘无束的个人独立生活。",
+          "place": null,
+          "reveal_via": []
+        },
+        {
+          "id": "target_romance_single_boundary",
+          "slot": "romance",
+          "level": 2,
+          "public": false,
+          "title": "情感空白",
+          "text": "偶尔受到同系男生的追求但从未松口答应，情感经历空白，对恋爱抱持观望态度。",
+          "place": null,
+          "reveal_via": [
+            "hear_gossip",
+            "chat",
+            "watch_peers"
+          ]
+        },
+        {
+          "id": "target_romance_single_core",
+          "slot": "romance",
+          "level": 3,
+          "public": false,
+          "title": "未涉情事",
+          "text": "始终保持着未曾涉足男女情事的纯洁身心，从未体验过异性的触碰，身体处于未被开发状态。",
+          "place": null,
+          "reveal_via": [
+            "hear_gossip",
+            "pump_person",
+            "audit_class"
+          ]
+        }
+      ],
+      "homePool": [
+        {
+          "id": "home_alley_redbrick",
+          "name": "深巷红砖公寓",
+          "facts": [
+            {
+              "id": "college_home_area",
+              "slot": "home",
+              "level": 1,
+              "public": false,
+              "title": "租住片区",
+              "text": "独居在老城文教区边缘的老式弄堂内，距离大学正门步行约十五分钟路程。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_home_building",
+              "slot": "home",
+              "level": 2,
+              "public": false,
+              "title": "住处楼栋",
+              "text": "租住在老旧红砖住宅楼三层，弄堂过道未设路灯，楼道外墙爬着枯藤与老化排水管。",
+              "place": "unit_stairs_b",
+              "reveal_via": [
+                "follow",
+                "stakeout"
+              ]
+            },
+            {
+              "id": "college_home_door",
+              "slot": "home",
+              "level": 3,
+              "public": false,
+              "title": "门牌与锁具",
+              "text": "门牌302，老式双排弹子锁，门框上方贴着外卖防窥贴纸，门垫下未藏备用钥匙。",
+              "place": "unit_stairs_b",
+              "reveal_via": [
+                "ransack",
+                "door_peep",
+                "try_handle"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "home_street_apartment",
+          "name": "临街商住小公寓",
+          "facts": [
+            {
+              "id": "college_home_street_area",
+              "slot": "home",
+              "level": 1,
+              "public": false,
+              "title": "临街住处",
+              "text": "租住在商业街与老街交汇处的临街商住楼，楼下喧闹，下楼便是快餐店与便利店。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_home_street_corridor",
+              "slot": "home",
+              "level": 2,
+              "public": false,
+              "title": "走廊外廊",
+              "text": "住在临街商住楼五楼单间，电梯老旧需要刷卡，外挂空调机常年滴水在水泥雨棚上。",
+              "place": "unit_stairs_b",
+              "reveal_via": [
+                "follow",
+                "stakeout"
+              ]
+            },
+            {
+              "id": "college_home_street_lock",
+              "slot": "home",
+              "level": 3,
+              "public": false,
+              "title": "密码锁与猫眼",
+              "text": "门牌506，装了电子密码锁并贴有猫眼防窥盖，钥匙扣上挂着带卡套的门禁IC卡。",
+              "place": "unit_stairs_b",
+              "reveal_via": [
+                "ransack",
+                "door_peep",
+                "locate"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "home_rooftop_loft",
+          "name": "顶层私密阁楼",
+          "facts": [
+            {
+              "id": "college_home_loft_area",
+              "slot": "home",
+              "level": 1,
+              "public": false,
+              "title": "顶层自建房",
+              "text": "租住在城中村深处的自建民房顶层，出入要经过一段狭窄昏暗的铁皮扶梯。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_home_loft_roof",
+              "slot": "home",
+              "level": 2,
+              "public": false,
+              "title": "天台单间",
+              "text": "自建房顶层加盖的独立单间，晾衣架搭在水泥天台，视野开阔但楼下过道昏暗无灯。",
+              "place": "unit_stairs_b",
+              "reveal_via": [
+                "follow",
+                "stakeout"
+              ]
+            },
+            {
+              "id": "college_home_loft_door",
+              "slot": "home",
+              "level": 3,
+              "public": false,
+              "title": "阁楼挂锁",
+              "text": "顶层独门601，挂着自购的不锈钢挂锁与老式插销，窗户拉着厚重的遮光窗帘。",
+              "place": "unit_stairs_b",
+              "reveal_via": [
+                "ransack",
+                "door_peep",
+                "try_handle"
+              ]
+            }
+          ]
+        }
+      ],
+      "schedulePool": [
+        {
+          "id": "sched_academic",
+          "name": "图书馆备考型",
+          "preferredPersonalities": [
+            "stubborn",
+            "aloof",
+            "vigilant",
+            "introverted"
+          ],
+          "facts": [
+            {
+              "id": "college_sched_library",
+              "slot": "schedule",
+              "level": 1,
+              "public": false,
+              "title": "自习闭馆时间",
+              "text": "平日晚自习固定在21:30离开图书馆闭馆步出校门，步速匀称，习惯低头看手机。",
+              "place": "school_gate_b",
+              "reveal_via": []
+            },
+            {
+              "id": "college_sched_store",
+              "slot": "schedule",
+              "level": 2,
+              "public": false,
+              "title": "便利店停步",
+              "text": "归途习惯在老天桥下的便利店短暂停留买温热奶品，周六傍晚若不出游就会去自习室备考。",
+              "place": "store_24h_b",
+              "reveal_via": [
+                "follow",
+                "stakeout"
+              ]
+            },
+            {
+              "id": "college_sched_ddl",
+              "slot": "schedule",
+              "level": 3,
+              "public": false,
+              "title": "作业结课延误",
+              "text": "遇实验结题或大作业汇报，离校时间必定推迟40分钟至22:10，独自穿过深夜空旷暗巷。",
+              "place": "school_gate_b",
+              "reveal_via": [
+                "ransack",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sched_parttime",
+          "name": "勤工俭学兼职型",
+          "preferredPersonalities": [
+            "gentle",
+            "stubborn",
+            "casual",
+            "naive"
+          ],
+          "facts": [
+            {
+              "id": "college_sched_parttime_shift",
+              "slot": "schedule",
+              "level": 1,
+              "public": false,
+              "title": "兼职打卡下班",
+              "text": "周一至周四在文教区咖啡店兼职打工至21:45打卡下班，换下围裙后匆匆离开。",
+              "place": "school_gate_b",
+              "reveal_via": []
+            },
+            {
+              "id": "college_sched_parttime_snack",
+              "slot": "schedule",
+              "level": 2,
+              "public": false,
+              "title": "夜宵买单折返",
+              "text": "兼职结束后习惯在老街小吃街买一份打包夜宵，周六下午也经常去店里轮值替班。",
+              "place": "store_24h_b",
+              "reveal_via": [
+                "follow",
+                "stakeout"
+              ]
+            },
+            {
+              "id": "college_sched_parttime_closing",
+              "slot": "schedule",
+              "level": 3,
+              "public": false,
+              "title": "月末盘点打烊",
+              "text": "每逢月末或大促前夜，在店里盘点货物拖延至22:20方才下班，身心疲惫且双手提着重物。",
+              "place": "school_gate_b",
+              "reveal_via": [
+                "ransack",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sched_socialite",
+          "name": "社团社交漫游型",
+          "preferredPersonalities": [
+            "cheerful",
+            "chic",
+            "naive",
+            "casual"
+          ],
+          "facts": [
+            {
+              "id": "college_sched_social_club",
+              "slot": "schedule",
+              "level": 1,
+              "public": false,
+              "title": "社团排练散场",
+              "text": "平日参加学生社团排练，通常在21:20左右走出活动中心，与社员说说笑笑走出校门。",
+              "place": "school_gate_b",
+              "reveal_via": []
+            },
+            {
+              "id": "college_sched_social_friday",
+              "slot": "schedule",
+              "level": 2,
+              "public": false,
+              "title": "周五商圈地铁",
+              "text": "周五晚上常与同伴去商圈聚餐逛街，21:40乘地铁回老街站，手里提着打包纸袋与奶茶。",
+              "place": "old_metro_b",
+              "reveal_via": [
+                "follow",
+                "stakeout"
+              ]
+            },
+            {
+              "id": "college_sched_social_parting",
+              "slot": "schedule",
+              "level": 3,
+              "public": false,
+              "title": "聚会散伙落单",
+              "text": "社团聚会散场后经常有人起哄去第二摊，若推脱不去便会在22:15独自落单走回老巷。",
+              "place": "school_gate_b",
+              "reveal_via": [
+                "ransack",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        }
+      ],
+      "carryPool": [
+        {
+          "id": "carry_academic",
+          "name": "实用厚帆布包",
+          "preferredPersonalities": [
+            "stubborn",
+            "aloof",
+            "vigilant",
+            "introverted",
+            "gentle"
+          ],
+          "facts": [
+            {
+              "id": "college_carry_bag",
+              "slot": "carry",
+              "level": 1,
+              "public": true,
+              "title": "随身包袋",
+              "text": "单肩米白色厚帆布包，侧袋插着折叠晴雨伞与保温水杯，走路时习惯单手护在身侧。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_carry_daily",
+              "slot": "carry",
+              "level": 2,
+              "public": false,
+              "title": "包内常备物",
+              "text": "帆布包内常备：校园一卡通、降噪耳麦盒、荧光笔与薄荷润喉糖、出租屋钥匙串。",
+              "place": null,
+              "reveal_via": [
+                "photo",
+                "scan",
+                "listen",
+                "note"
+              ]
+            },
+            {
+              "id": "college_carry_defense",
+              "slot": "carry",
+              "level": 3,
+              "public": false,
+              "title": "便携防身物",
+              "text": "包内暗格夹层藏着一瓶微型防狼喷雾与一把小巧的美工裁纸刀，防备心重但拿取略显迟滞。",
+              "place": null,
+              "reveal_via": [
+                "pick",
+                "ransack"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "carry_glamour",
+          "name": "精致链条皮包",
+          "preferredPersonalities": [
+            "chic",
+            "cheerful",
+            "naive"
+          ],
+          "facts": [
+            {
+              "id": "college_carry_glamour_bag",
+              "slot": "carry",
+              "level": 1,
+              "public": true,
+              "title": "精致皮包",
+              "text": "浅杏色皮质单肩链条小包，款式精致小巧，金属链条在肩头随着步伐轻微撞击作响。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_carry_glamour_daily",
+              "slot": "carry",
+              "level": 2,
+              "public": false,
+              "title": "补妆用品",
+              "text": "小包内塞得满满当当：气垫粉饼、口红、折叠梳、湿纸巾与带毛绒挂坠的手机。",
+              "place": null,
+              "reveal_via": [
+                "photo",
+                "scan",
+                "listen",
+                "note"
+              ]
+            },
+            {
+              "id": "college_carry_glamour_alarm",
+              "slot": "carry",
+              "level": 3,
+              "public": false,
+              "title": "蜂鸣警报器",
+              "text": "钥匙串上挂着一枚高分贝粉色蜂鸣警报器，拔掉插销会发出尖锐警报，但常被压在包底不易摸出。",
+              "place": null,
+              "reveal_via": [
+                "pick",
+                "ransack"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "carry_casual",
+          "name": "随性尼龙斜挎包",
+          "preferredPersonalities": [
+            "casual",
+            "timid",
+            "vigilant"
+          ],
+          "facts": [
+            {
+              "id": "college_carry_casual_bag",
+              "slot": "carry",
+              "level": 1,
+              "public": true,
+              "title": "轻便斜挎包",
+              "text": "纯黑轻便防泼水尼龙斜挎包，松垮挎在胸前或后背，双手经常插在外套口袋里。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_carry_casual_daily",
+              "slot": "carry",
+              "level": 2,
+              "public": false,
+              "title": "极简随身物",
+              "text": "斜挎包内只有手机充电宝、数据线、纸巾、薄荷口香糖与零散零钱，东西很少。",
+              "place": null,
+              "reveal_via": [
+                "photo",
+                "scan",
+                "listen",
+                "note"
+              ]
+            },
+            {
+              "id": "college_carry_casual_tracker",
+              "slot": "carry",
+              "level": 3,
+              "public": false,
+              "title": "蓝牙寻物器",
+              "text": "钥匙串上挂着蓝牙防丢寻找器，连着手机静默报警，但常常忘记打开手机蓝牙。",
+              "place": null,
+              "reveal_via": [
+                "pick",
+                "ransack"
+              ]
+            }
+          ]
+        }
+      ],
+      "socialPool": [
+        {
+          "id": "social_introvert",
+          "name": "孤僻独行少言型",
+          "preferredPersonalities": [
+            "introverted",
+            "aloof",
+            "vigilant",
+            "timid"
+          ],
+          "facts": [
+            {
+              "id": "college_social_circle",
+              "slot": "social",
+              "level": 1,
+              "public": false,
+              "title": "人际疏密",
+              "text": "在这座城市没有亲属，人际圈相对封闭，除同系同专业同学外鲜少与外界深入来往。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_social_roommate",
+              "slot": "social",
+              "level": 2,
+              "public": false,
+              "title": "结伴同伴",
+              "text": "晚自习偶尔与短发同系室友结伴走出校门，行至天桥分岔路口告别后各自独行。",
+              "place": "school_gate_b",
+              "reveal_via": [
+                "watch_peers"
+              ]
+            },
+            {
+              "id": "college_social_crush",
+              "slot": "social",
+              "level": 3,
+              "public": false,
+              "title": "暧昧心事",
+              "text": "与同组做项目的学长保持着若即若离的好感，周六偶尔受邀看展，但要强的自尊心让她从未主动表白。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "social_extrovert",
+          "name": "活跃聚集群体型",
+          "preferredPersonalities": [
+            "cheerful",
+            "chic",
+            "naive"
+          ],
+          "facts": [
+            {
+              "id": "college_social_extrovert_circle",
+              "slot": "social",
+              "level": 1,
+              "public": false,
+              "title": "活跃社交圈",
+              "text": "性格外向活泼，在校内认识很多不同院系的朋友，经常在社交平台发布聚餐动态。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_social_extrovert_friends",
+              "slot": "social",
+              "level": 2,
+              "public": false,
+              "title": "闺蜜同行",
+              "text": "经常有两三个闺蜜或社团朋友结伴同行至老街路口，分别时总要在路灯下依依不舍聊上好一阵。",
+              "place": "school_gate_b",
+              "reveal_via": [
+                "watch_peers"
+              ]
+            },
+            {
+              "id": "college_social_extrovert_repute",
+              "slot": "social",
+              "level": 3,
+              "public": false,
+              "title": "群体认同感",
+              "text": "格外在乎朋友圈人缘与评价，生怕自己在人前失态丢脸，群体认同感是其心理锚点。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "social_moderate",
+          "name": "温和适度知己型",
+          "preferredPersonalities": [
+            "gentle",
+            "stubborn",
+            "casual"
+          ],
+          "facts": [
+            {
+              "id": "college_social_moderate_circle",
+              "slot": "social",
+              "level": 1,
+              "public": false,
+              "title": "知己两三",
+              "text": "社交圈适度，待人温和客气但有分寸感，只与一两名性格相投的闺蜜保持知心关系。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_social_clerk",
+              "slot": "social",
+              "level": 2,
+              "public": false,
+              "title": "便利店熟面孔",
+              "text": "老街便利店夜班店员认得她，结账时偶尔寒暄两句，是归途中唯一能说上话的街面熟人。",
+              "place": "store_24h_b",
+              "reveal_via": [
+                "watch_peers",
+                "pump_person"
+              ]
+            },
+            {
+              "id": "college_social_moderate_confidant",
+              "slot": "social",
+              "level": 3,
+              "public": false,
+              "title": "私密倾诉",
+              "text": "偶尔与知心闺蜜语音倾诉心事，心中的烦恼与脆弱只向极少数认可的人倾吐。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        }
+      ],
+      "psychePool": [
+        {
+          "id": "psyche_pride",
+          "name": "要强自尊硬撑型",
+          "preferredPersonalities": [
+            "stubborn",
+            "aloof",
+            "vigilant"
+          ],
+          "facts": [
+            {
+              "id": "college_psyche_facade_l1",
+              "slot": "psyche",
+              "level": 1,
+              "public": false,
+              "title": "自尊矜持",
+              "text": "神情自矜，自尊心要强，绝不轻易在生人面前示弱露出慌张神态。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_psyche_facade_l2",
+              "slot": "psyche",
+              "level": 2,
+              "public": false,
+              "title": "硬撑快走",
+              "text": "深夜遭遇异样目光或紧逼时，会死死咬住下唇加快步伐硬撑，绝不主动求饶呼救。",
+              "place": null,
+              "reveal_via": [
+                "greet",
+                "chat"
+              ]
+            },
+            {
+              "id": "college_psyche_reputation",
+              "slot": "psyche",
+              "level": 3,
+              "public": false,
+              "title": "知性声誉死穴",
+              "text": "珍视知性得体形象，畏惧隐秘私生活曝光或流言蜚语——这是瓦解其心理防备的要害。",
+              "place": null,
+              "reveal_via": [
+                "audit_class",
+                "chat"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "psyche_timid",
+          "name": "温软胆怯惧黑型",
+          "preferredPersonalities": [
+            "timid",
+            "gentle",
+            "naive"
+          ],
+          "facts": [
+            {
+              "id": "college_psyche_timid_l1",
+              "slot": "psyche",
+              "level": 1,
+              "public": false,
+              "title": "惧黑怕冷",
+              "text": "胆小怕黑，走入昏暗无灯的老弄堂时神经紧绷，风吹树叶的声响都会让她脚步一顿。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_psyche_timid_l2",
+              "slot": "psyche",
+              "level": 2,
+              "public": false,
+              "title": "慌乱失措",
+              "text": "面对压迫容易慌乱失措，双手紧攥背包带、呼吸急促，眼眶发红几乎不敢反抗。",
+              "place": null,
+              "reveal_via": [
+                "greet",
+                "chat"
+              ]
+            },
+            {
+              "id": "college_psyche_timid_l3",
+              "slot": "psyche",
+              "level": 3,
+              "public": false,
+              "title": "意志受控",
+              "text": "一旦心理防线被逼退，容易陷入无助与唯诺，抵抗意志较为薄弱。",
+              "place": null,
+              "reveal_via": [
+                "audit_class",
+                "chat"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "psyche_cautious",
+          "name": "敏感戒备多疑型",
+          "preferredPersonalities": [
+            "vigilant",
+            "casual",
+            "introverted",
+            "chic"
+          ],
+          "facts": [
+            {
+              "id": "college_psyche_cautious_l1",
+              "slot": "psyche",
+              "level": 1,
+              "public": false,
+              "title": "警觉多疑",
+              "text": "对周围环境抱有天然的不信任感，穿过转角或人少处习惯借助反光玻璃暗中观察身后。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "college_psyche_cautious_l2",
+              "slot": "psyche",
+              "level": 2,
+              "public": false,
+              "title": "果断变向",
+              "text": "察觉异样会果断变向快走，试图借助便利店或街角路灯甩脱，防备心理较强。",
+              "place": null,
+              "reveal_via": [
+                "greet",
+                "chat"
+              ]
+            },
+            {
+              "id": "college_psyche_cautious_l3",
+              "slot": "psyche",
+              "level": 3,
+              "public": false,
+              "title": "恐慌失衡",
+              "text": "一旦发现自己的戒备与算盘全被识破，多疑反会化作无措的恐慌，心理防线迅速瓦解。",
+              "place": null,
+              "reveal_via": [
+                "audit_class",
+                "chat"
+              ]
+            }
+          ]
+        }
+      ],
+      "romancePool": [
+        {
+          "id": "virgin_in_love",
+          "name": "有恋人 未发生关系 处女",
+          "facts": [
+            {
+              "id": "target_romance_virgin_status",
+              "slot": "romance",
+              "level": 1,
+              "public": false,
+              "title": "初恋交往",
+              "text": "正在与同校男生交往，正处于初恋期，尚未发生过逾矩的亲密身体关系。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "target_romance_virgin_boundary",
+              "slot": "romance",
+              "level": 2,
+              "public": false,
+              "title": "纯情底线",
+              "text": "周末约会仅止于牵手与并肩散步，面对男生的更进一步试探会羞涩推拒，坚守最后一道底线。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "chat",
+                "watch_peers"
+              ]
+            },
+            {
+              "id": "target_romance_virgin_core",
+              "slot": "romance",
+              "level": 3,
+              "public": false,
+              "title": "处子之身",
+              "text": "仍保有完整的处女之身，对初次的体验怀着羞涩而谨慎的珍视，视身体纯洁为自身底线。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "experienced_in_love",
+          "name": "有恋人 已发生关系",
+          "facts": [
+            {
+              "id": "target_romance_exp_status",
+              "slot": "romance",
+              "level": 1,
+              "public": false,
+              "title": "亲密交往",
+              "text": "与同校男生稳定交往中，两人感情深厚，已有过实质性的男女亲密接触经验。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "target_romance_exp_boundary",
+              "slot": "romance",
+              "level": 2,
+              "public": false,
+              "title": "过夜痕迹",
+              "text": "周六约会时偶尔会在情侣旅社或对方出租屋过夜，颈侧或锁骨间偶尔隐约留有浅淡吻痕。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "chat",
+                "watch_peers"
+              ]
+            },
+            {
+              "id": "target_romance_exp_core",
+              "slot": "romance",
+              "level": 3,
+              "public": false,
+              "title": "身体经验",
+              "text": "虽已非处子之身，对男女情事已有切实认知，但在外依然保持着知性端庄的学生形象。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "single",
+          "name": "单身",
+          "facts": [
+            {
+              "id": "target_romance_single_status",
+              "slot": "romance",
+              "level": 1,
+              "public": false,
+              "title": "独居单身",
+              "text": "当前处于单身无交往对象状态，独来独往，享受无拘无束的个人独立生活。",
+              "place": null,
+              "reveal_via": []
+            },
+            {
+              "id": "target_romance_single_boundary",
+              "slot": "romance",
+              "level": 2,
+              "public": false,
+              "title": "情感空白",
+              "text": "偶尔受到同系男生的追求但从未松口答应，情感经历空白，对恋爱抱持观望态度。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "chat",
+                "watch_peers"
+              ]
+            },
+            {
+              "id": "target_romance_single_core",
+              "slot": "romance",
+              "level": 3,
+              "public": false,
+              "title": "未涉情事",
+              "text": "始终保持着未曾涉足男女情事的纯洁身心，从未体验过异性的触碰，身体处于未被开发状态。",
+              "place": null,
+              "reveal_via": [
+                "hear_gossip",
+                "pump_person",
+                "audit_class"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

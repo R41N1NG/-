@@ -1,0 +1,146 @@
+{
+  "name": "尾行·中控世界书",
+  "description": "尾行世界书：文风骨架、中控回执与目标群体生态画像",
+  "scan_depth": 2,
+  "token_budget": 4096,
+  "recursive_scanning": false,
+  "extensions": {},
+  "entries": [
+    {
+      "id": 1,
+      "uid": 1,
+      "name": "【题材与文风】现实都市潜行与叙事风骨",
+      "comment": "【题材与文风】现实都市潜行与叙事风骨",
+      "keys": [
+        "尾行",
+        "文风",
+        "都市",
+        "潜行",
+        "叙事"
+      ],
+      "secondary_keys": [],
+      "content": "THEMATIC_FRAMEWORK:\n  GENRE: 现代都市现实主义 | 犯罪心理潜行与追踪博弈\n  TONE: 冷峻、克制、写实市井质感，保持高信息密度\n  SENSORY_ANCHORS:\n    - 视觉介质: 冷雨冲刷沥青路面的反光、路灯昏黄光晕、橱窗倒影、人潮阴影\n    - 听觉介质: 雨水击伞声、硬底鞋与湿滑地面的摩擦脆响、便利店门铃、呼吸与步频\n    - 触觉质感: 潮湿夜气、冷风白雾、微观物理交互细节\n  STYLE_ANCHOR: 冷峻克制市井质感，专注物理底噪与现实环境光影\n\nMOVEMENT_PSYCHOLOGICAL_DECONSTRUCTION:\n  STAGE_1_PUBLIC:\n    AREAS: 地铁出入口、学区校门、写字楼大堂、交通枢纽\n    FOCUS: 公共目光掩护、目标端正的社会面具、利落规律步态\n  STAGE_2_TRANSITIONAL:\n    AREAS: 人行天桥、24h便利店、沿街贩卖机、避雨屋檐\n    FOCUS: 人潮散去、疲惫受迫痕迹外显（揉捏脚腕、呵手、低头慢步）、戒备微松动\n  STAGE_3_ISOLATED:\n    AREAS: 无灯老弄堂、单元楼道、防盗铁门前\n    FOCUS: 空间封死、外界干扰归零、近身呼吸与脚步回音放大、心理张力拉至顶点\n\nTARGET_AUTONOMY:\n  ENTITY_STATUS: 生活在现实处境中的独立个体，具备成熟生存本能与生理极限，非迎合工具\n  SIGNAL_PRINCIPLE: 心理与防备如同天气而非仪表；通过可观测的外在肢体信号呈现（提速、侧目回顾、停步迟疑、拉紧衣领），聚焦微观行为外显\n\nPLAYER_BOUNDARY_&_DRAMATIC_CUT:\n  POV_ADAPTATION: 自适应玩家设定人称（第一人称「我」或第三人称玩家名代称）\n  STAGE_CUTOFF: 正文顺承玩家动作起手与中控客观成效，推进至目标即时外在反应后，即刻定格留白，交由玩家发起下一步行动",
+      "enabled": true,
+      "constant": true,
+      "selective": false,
+      "insertion_order": 10,
+      "position": "before_char",
+      "case_sensitive": false,
+      "extensions": {
+        "position": 0,
+        "display_index": 1,
+        "exclude_recursion": true,
+        "prevent_recursion": true,
+        "delay_until_recursion": false,
+        "probability": 100,
+        "useProbability": true,
+        "depth": 4,
+        "selectiveLogic": 0,
+        "scan_depth": 2
+      }
+    },
+    {
+      "id": 2,
+      "uid": 2,
+      "name": "【中控与回执】数据真源与裁决演绎指南",
+      "comment": "【中控与回执】数据真源与裁决演绎指南",
+      "keys": [
+        "中控",
+        "回执",
+        "裁判",
+        "规则",
+        "结算",
+        "申报"
+      ],
+      "secondary_keys": [],
+      "content": "SEMANTIC_DUAL_INPUT:\n  USER_INPUT: 玩家角色的【主观意图与动作尝试】（他想做什么、起手姿态）\n  CENTRAL_RECEIPT: 物理现实裁决、检定成败与环境态势的【唯一客观真源】\n\nACTION_RESOLUTION_PROTOCOL:\n  ON_SUCCESS:\n    TRIGGER: 动作裁决显示「达成」或「完成（无检定）」\n    ENACTMENT: 顺承描写玩家动作的起手、行进过程与预期成效\n  ON_FAILURE:\n    TRIGGER: 动作裁决显示「未达成」或「失败/意外」\n    MANDATORY_RULE: 触发【叙事断点原则】\n    ENACTMENT:\n      - 承接玩家起手姿态与尝试过程\n      - 随即描写回执指明的客观物理挫折（如踩水滑步、发出声响、视线被阻）\n      - 展开客观物理受阻所导致的即时意外打断与局面阻滞\n\nSPATIAL_&_ENVIRONMENTAL_CONSTRAINTS:\n  TIME_&_WEATHER: 以此作为正文展开的光影照明、地面状态与视听介质\n  INTERACTION_MODE:\n    STEALTH: 明暗隔离态，潜伏暗处，专注暗处视听观察与无声跟缀\n    CONTACT: 正面相对态，展开当面攀谈与言语交谈\n    LOCK: 门锁对抗态，专注锁具物理交互\n    ENDGAME: 身体对抗与约束态\n  DISTANCE_TIERS:\n    FAR: 远端（30米以上，辨别身形轮廓与大范围移动）\n    STREET: 同街（15-20米，依托沿街障碍遮蔽，保持视线追踪）\n    BEHIND: 身后（3-5米，脚步声与身形清晰，高危戒备区）\n    TOUCH: 贴身（1米以内，可及肢体触碰与呼吸声）\n  ESCAPE_VECTOR: 目标受惊或警觉升级时，逃跑动线指向指定的避难场所\n\nTARGET_STATE_SLOTS_MAPPING:\n  ROUTE: 动线情境节点，作为正文展开的具体微观物理舞台\n  OUTFIT: 外貌与着装视线锚点；脚步声音色严格绑定鞋具材质（皮鞋轻脆/高跟鞋硬脆/平底沉闷）\n  SOMATIC: 步频与体态内在生理依据（疲惫/平常/赶路），融入体态细节\n  HAND: 正向注意力焦点；若标有 ⚠️【破绽暴露】，着重描写视线脱离周围、背身无备的微观破绽\n  HER_ALERT: 警觉升级反应；若有输出，正文将其作为目标当前动作的核心反应展开\n\nOUTPUT_DISCIPLINE:\n  TIME_FRAME: 单轮正文集中于当前场所约 1~2 分钟的微观交互切片\n  COMPLETION_ACTION: 描写完目标在当前地点的最新动静后即刻定格；正文末尾申报事实标签 <!-- [FACT:#编号] -->",
+      "enabled": true,
+      "constant": true,
+      "selective": false,
+      "insertion_order": 20,
+      "position": "before_char",
+      "case_sensitive": false,
+      "extensions": {
+        "position": 0,
+        "display_index": 2,
+        "exclude_recursion": true,
+        "prevent_recursion": true,
+        "delay_until_recursion": false,
+        "probability": 100,
+        "useProbability": true,
+        "depth": 4,
+        "selectiveLogic": 0,
+        "scan_depth": 2
+      }
+    },
+    {
+      "id": 3,
+      "uid": 3,
+      "name": "【目标档案】晚自习女高中生",
+      "comment": "【目标档案】晚自习女高中生",
+      "keys": [
+        "高中生",
+        "女高中生",
+        "陈雨婷",
+        "自习",
+        "校服",
+        "JK",
+        "student"
+      ],
+      "secondary_keys": [],
+      "content": "[TARGET_GROUP: student]\nCATEGORY: 在校高中生 | 升学期在读学生群体\nPHYSICAL_STATUS:\n  - 体格与肌肉力量处于天然弱势层级，遭遇正面压制缺乏有效抗衡手段\n  - 缺乏对抗冲突、防暴与反追踪经验，体能储备有限\nINSTITUTIONAL_FRAME:\n  - 处在家庭监护与学校规训的双重约束下，生活圈高度依附于既定体制\n  - 受家庭作息与门禁规矩管束，晚归面临严格的问责与心理重压\n  - 经济与人身依附监护，外部社会求助资源单纯匮乏\nPSYCHOLOGICAL_VULNERABILITY:\n  - 高度在乎学生身份声誉与体面，对“违纪通报、叫家长、被周围社交圈议论指点”具备强烈的应激戒备\n  - 危机处置本能以避险脱离为主，遇突发险情倾向于逃回熟悉安全区而非正面单挑\nBEHAVIOR_BASELINE:\n  - 言行带有校园环境的规矩与收敛底色，遵守秩序\n  - 对暗处潜伏的尾随恶意缺乏系统性的防范与反侦查预警",
+      "enabled": false,
+      "constant": false,
+      "selective": false,
+      "insertion_order": 31,
+      "position": "before_char",
+      "case_sensitive": false,
+      "extensions": {
+        "position": 0,
+        "display_index": 3,
+        "exclude_recursion": true,
+        "prevent_recursion": true,
+        "delay_until_recursion": false,
+        "probability": 100,
+        "useProbability": true,
+        "depth": 4,
+        "selectiveLogic": 0,
+        "scan_depth": 2
+      }
+    },
+    {
+      "id": 4,
+      "uid": 4,
+      "name": "【目标档案】独居女大学生",
+      "comment": "【目标档案】独居女大学生",
+      "keys": [
+        "大学生",
+        "女大学生",
+        "林若雪",
+        "自习",
+        "大学",
+        "college"
+      ],
+      "secondary_keys": [],
+      "content": "[TARGET_GROUP: college]\nCATEGORY: 全日制在校大学生 | 校外独居租住群体\nPHYSICAL_STATUS:\n  - 女性自然生理体格，抗正面力量压制能力薄弱，体能储备属于常规学生区间\n  - 缺乏专业防暴对抗技巧，在突发近身受迫时以本能挣脱与避险为主\nINSTITUTIONAL_FRAME:\n  - 脱离原生家庭日常监护，租住在校外老旧公寓或周边社区，具备独立起居空间但缺乏物理安防支持\n  - 日常行动受排课、大作业与自习作息支配，晚归属于常见生活规律\n  - 人际网络主要依托同系同学与熟人圈子，独处时缺乏即时监护依托\nPSYCHOLOGICAL_VULNERABILITY:\n  - 重视自身在校园社交圈内的知性形象与声誉，对私生活被窥视、被跟踪尾随具备强烈的羞耻感与戒心\n  - 面临试探或异常关注时，起初常因要强或侥幸心理迟疑，不愿轻易声张或当众示弱\n  - 遇到可疑危机时，倾向于向熟悉的室友或公共明亮场所求助，而非正面单挑\nBEHAVIOR_BASELINE:\n  - 习惯独立往返于校区与寓所之间，夜间独行带有日常警惕，但对系统性的潜伏追踪缺乏防范经验\n  - 依靠常态化的市井秩序与沿街商铺获取安全感",
+      "enabled": true,
+      "constant": true,
+      "selective": false,
+      "insertion_order": 30,
+      "position": "before_char",
+      "case_sensitive": false,
+      "extensions": {
+        "position": 0,
+        "display_index": 4,
+        "exclude_recursion": true,
+        "prevent_recursion": true,
+        "delay_until_recursion": false,
+        "probability": 100,
+        "useProbability": true,
+        "depth": 4,
+        "selectiveLogic": 0,
+        "scan_depth": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,292 @@
+{
+  "note": "服装图鉴：变体规则 head→发型、top→通用/长发×体型、bottom/socks/shoes→共用",
+  "variants": {
+    "hair": [
+      "long",
+      "ponytail",
+      "twintails",
+      "bob"
+    ],
+    "body": [
+      "slim",
+      "normal",
+      "full"
+    ]
+  },
+  "items": [
+    {
+      "id": "head_ribbon_navy",
+      "name": "藏青发带",
+      "slot": "head",
+      "angles": [
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "head_clip_plaid",
+      "name": "格纹发夹",
+      "slot": "head",
+      "angles": [
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "head_earphone_wired",
+      "name": "白色有线耳机",
+      "slot": "head",
+      "angles": [
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "top_jk_blazer",
+      "name": "藏青西装外套",
+      "slot": "top",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "top_jk_sailor",
+      "name": "白底水手服上衣",
+      "slot": "top",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "top_jk_shirt",
+      "name": "白衬衫",
+      "slot": "top",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "top_jk_cardigan",
+      "name": "米色针织开衫",
+      "slot": "top",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "top_jk_hoodie",
+      "name": "浅米灰连帽卫衣",
+      "slot": "top",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "top_jk_knit",
+      "name": "奶白蓬松针织衫",
+      "slot": "top",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "top_jk_baseball",
+      "name": "拼色棒球服",
+      "slot": "top",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "bottom_jk_pleat_navy",
+      "name": "藏青百褶短裙",
+      "slot": "bottom",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "bottom_jk_pleat_plaid",
+      "name": "格纹百褶短裙",
+      "slot": "bottom",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "bottom_jk_denim",
+      "name": "水洗牛仔短裙",
+      "slot": "bottom",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "bottom_jk_shorts",
+      "name": "运动短裤",
+      "slot": "bottom",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "sock_knee_black",
+      "name": "黑色及膝袜",
+      "slot": "socks",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "sock_thigh_white",
+      "name": "白色过膝袜",
+      "slot": "socks",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "sock_pile_cream",
+      "name": "米白堆堆袜",
+      "slot": "socks",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "sock_sport_stripe",
+      "name": "条纹运动长袜",
+      "slot": "socks",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "sock_cotton_short",
+      "name": "纯白短棉袜",
+      "slot": "socks",
+      "angles": [
+        "front",
+        "side",
+        "back"
+      ]
+    },
+    {
+      "id": "shoe_leather",
+      "name": "制服小皮鞋",
+      "slot": "shoes",
+      "angles": [
+        "three-quarter",
+        "side"
+      ]
+    },
+    {
+      "id": "shoe_sneakers",
+      "name": "运动鞋",
+      "slot": "shoes",
+      "angles": [
+        "three-quarter",
+        "side"
+      ]
+    },
+    {
+      "id": "shoe_platform",
+      "name": "松糕鞋",
+      "slot": "shoes",
+      "angles": [
+        "three-quarter",
+        "side"
+      ]
+    },
+    {
+      "id": "shoe_flats",
+      "name": "平底鞋",
+      "slot": "shoes",
+      "angles": [
+        "three-quarter",
+        "side"
+      ]
+    }
+  ],
+  "outfits": {
+    "outfit_jk_uniform": {
+      "top": "top_jk_blazer",
+      "bottom": "bottom_jk_pleat_navy",
+      "socks": "sock_knee_black",
+      "shoes": "shoe_leather",
+      "head": "head_ribbon_navy"
+    },
+    "outfit_jk_sailor": {
+      "top": "top_jk_sailor",
+      "bottom": "bottom_jk_pleat_navy",
+      "socks": "sock_knee_black",
+      "shoes": "shoe_leather",
+      "head": "head_ribbon_navy"
+    },
+    "outfit_jk_plaid": {
+      "top": "top_jk_shirt",
+      "bottom": "bottom_jk_pleat_plaid",
+      "socks": "sock_pile_cream",
+      "shoes": "shoe_platform",
+      "head": "head_clip_plaid"
+    },
+    "outfit_jk_hoodie": {
+      "top": "top_jk_hoodie",
+      "bottom": "bottom_jk_denim",
+      "socks": "sock_cotton_short",
+      "shoes": "shoe_sneakers",
+      "head": "head_earphone_wired"
+    },
+    "outfit_jk_knit": {
+      "top": "top_jk_knit",
+      "bottom": "bottom_jk_pleat_plaid",
+      "socks": "sock_thigh_white",
+      "shoes": "shoe_platform",
+      "head": null
+    },
+    "outfit_jk_baseball": {
+      "top": "top_jk_baseball",
+      "bottom": "bottom_jk_shorts",
+      "socks": "sock_sport_stripe",
+      "shoes": "shoe_sneakers",
+      "head": null
+    },
+    "outfit_jk_cardigan": {
+      "top": "top_jk_cardigan",
+      "bottom": "bottom_jk_pleat_navy",
+      "socks": "sock_knee_black",
+      "shoes": "shoe_leather",
+      "head": null
+    }
+  }
+}
