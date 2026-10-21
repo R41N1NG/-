@@ -61,11 +61,11 @@ test("尾行角色卡壳子构建流水线验证", async (t) => {
   });
 
   await t.test("输出文件落地检验", () => {
-    const outCardPath = path.join(__dirname, "../最新角色卡/尾行.json");
+    const outCardPath = path.resolve(__dirname, "../../../最新成品/尾行.json");
     const distCardPath = path.join(__dirname, "../dist/尾行.json");
     const distBookPath = path.join(__dirname, "../dist/尾行-世界书.json");
 
-    assert.ok(fs.existsSync(outCardPath), "最新角色卡/尾行.json 必须真实存在");
+    assert.ok(fs.existsSync(outCardPath), "尾行/最新成品/尾行.json 必须真实存在");
     assert.ok(fs.existsSync(distCardPath), "dist/尾行.json 必须真实存在");
     assert.ok(fs.existsSync(distBookPath), "dist/尾行-世界书.json 必须真实存在");
 

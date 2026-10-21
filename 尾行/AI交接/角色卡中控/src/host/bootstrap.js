@@ -7,8 +7,19 @@ const { loadLexicon } = require("../runtime/lexicon.js");
 const { startGlue } = require("./glue.js");
 const LP = require("../config/lifepack.json");
 
-const gluePromise = startGlue();   // 非酒馆环境/非尾行卡返回 {ok:false}；成功时挂 window.WxGlue
-const api = { createGame, facts, map, loadLexicon, lifepack: LP, glue: gluePromise, version: "0.7" };
+const gluePromise = startGlue().catch((error) => {
+  console.error("[CHAT_SYNC:START_FAILED]", error);
+  return { ok: false, reason: error.code || error.message };
+}); // 非酒馆环境/非尾行卡返回 {ok:false}；成功时挂 window.WxGlue
+const api = {
+  createGame,
+  facts,
+  map,
+  loadLexicon,
+  lifepack: LP,
+  glue: gluePromise,
+  version: require("../../package.json").version,
+};
 
 if (typeof window !== "undefined") window.WxEngine = api;
 if (typeof globalThis !== "undefined") globalThis.WxEngine = api;

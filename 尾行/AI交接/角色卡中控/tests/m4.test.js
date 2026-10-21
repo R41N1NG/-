@@ -13,6 +13,7 @@ const FLUSH = async (n = 6) => { for (let i = 0; i < n; i++) await new Promise(r
 
 function makeMockTavern() {
   const store = {}, listeners = {}, injections = [];
+  let lastRole = "user";
   let lastMsg = "", genCalls = 0, stopCalls = 0, posted = [];
   const G = globalThis;
   G.insertOrAssignVariables = async (obj) => Object.assign(store, obj);
@@ -20,7 +21,7 @@ function makeMockTavern() {
   G.eventOn = (name, fn) => { (listeners[name] = listeners[name] || []).push(fn); };
   G.tavern_events = { MESSAGE_SENT: "MESSAGE_SENT", GENERATION_STARTED: "GENERATION_STARTED",
                       GENERATION_ENDED: "GENERATION_ENDED", MESSAGE_SWIPED: "MESSAGE_SWIPED" };
-  G.getChatMessages = async (range) => [{ message_id: 1, role: "user", message: lastMsg }];
+  G.getChatMessages = async (range) => [{ message_id: 1, role: lastRole, message: lastMsg }];
   G.getCurrentCharacterName = async () => "尾行1";
   // 胶囊出口：主人定「动作只认胶囊点选」，这里模拟玩家点选（未点就是空数组＝纯叙事）
   const sb = { capsules: [], consumeActiveActions() { const c = sb.capsules; sb.capsules = []; return c; } };
@@ -32,7 +33,7 @@ function makeMockTavern() {
   return {
     store, injections, sb,
     get genCalls() { return genCalls; }, get stopCalls() { return stopCalls; },
-    emit: (name) => { for (const fn of listeners[name] || []) fn(); },
+    emit: (name) => { if (name === "MESSAGE_SENT") lastRole = "user"; if (name === "GENERATION_ENDED") lastRole = "assistant"; for (const fn of listeners[name] || []) fn(); },
     setLast: (t) => { lastMsg = t; },
     cleanup() { for (const k of ["insertOrAssignVariables","getVariables","eventOn","tavern_events","getChatMessages",
                                  "getCurrentCharacterName","injectPrompts","uninjectPrompts","generate","stopAllGeneration","WxStatusbar"]) delete G[k];
@@ -61,7 +62,10 @@ test("M4-1 全链：发送→结算→注入回执→放行；回执相零账目
   assert.ok(receipt.content.includes("跟缀"), "回执应含跟缀");
   assert.ok(receipt.content.includes("拍照"), "回执应含拍照");
   assert.ok(receipt.content.includes("唯一数值真源"), "回执应带纪律头");
-  assert.ok(mock.store.wx_save && mock.store.wx_save.v === 1, "存档应落变量");
+  assert.ok(mock.store.wx_save && mock.store.wx_save.v === 2, "存档应落变量");
+  assert.equal(typeof globalThis.WxGlue.getSyncDiagnostics, "function");
+  assert.ok(globalThis.WxGlue.getSyncDiagnostics().events.some(e => e.stage === "persist.done"),
+    "胶水必须接入独立的聊天存档同步模块");
   const heartAfterSettle = mock.store.wx_snap.player.heart;
   const floor1 = mock.store.wx_snap.floor ?? mock.store.wx_save.floor;
   assert.ok(heartAfterSettle !== undefined);

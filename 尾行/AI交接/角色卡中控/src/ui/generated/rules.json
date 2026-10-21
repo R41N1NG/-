@@ -1,0 +1,573 @@
+{
+  "identities": {
+    "student": {
+      "name": "学生",
+      "mods": {
+        "agi": 1,
+        "int": 1
+      }
+    },
+    "criminal": {
+      "name": "罪犯",
+      "mods": {
+        "str": 1,
+        "agi": 1,
+        "nrv": 2
+      }
+    },
+    "guard": {
+      "name": "保安",
+      "mods": {
+        "str": 1,
+        "nrv": 1
+      }
+    },
+    "detective": {
+      "name": "侦探学徒",
+      "mods": {
+        "int": 1,
+        "agi": 1,
+        "cha": 1
+      }
+    },
+    "bartender": {
+      "name": "酒保",
+      "mods": {
+        "cha": 2,
+        "nrv": 1
+      }
+    },
+    "coach": {
+      "name": "健身教练",
+      "mods": {
+        "str": 3,
+        "cha": 1
+      }
+    },
+    "otaku": {
+      "name": "阿宅",
+      "mods": {
+        "int": 1,
+        "cha": 1
+      }
+    }
+  },
+  "targets": {
+    "ol": {
+      "id": "ol",
+      "name": "疲惫的OL",
+      "difficulty": 2,
+      "stars": "★★☆☆☆",
+      "type": "疲惫猎",
+      "area": "中城CBD ➔ 老城文教区",
+      "tagline": "写字楼深夜加完班，高跟鞋敲打在老城夜雨里",
+      "features": "深夜加班窗口 · [疲惫] 敏锐降低 · 高跟鞋步频清脆",
+      "windowNote": "工作日 21:00 起下班，疲惫下防备较低，但动线跨区较长",
+      "shoe": "shoe_heel",
+      "stats": {
+        "str": 3,
+        "agi": 5,
+        "per": 6,
+        "nrv": 4
+      },
+      "social": 2,
+      "alertMod": 5,
+      "status": "ready"
+    },
+    "college": {
+      "id": "college",
+      "name": "独居女大学生",
+      "difficulty": 2,
+      "stars": "★★☆☆☆",
+      "type": "标准教科书",
+      "area": "老城文教区",
+      "tagline": "晚归的单车停在楼下，耳机里放着不关的音乐",
+      "features": "校外租房独居 · 课表半固定 · 易分心",
+      "windowNote": "晚自习或兼职归来，独处窗口大，社交圈单纯",
+      "shoe": "shoe_sneakers",
+      "stats": {
+        "str": 3,
+        "agi": 4,
+        "per": 4,
+        "nrv": 4
+      },
+      "social": 2,
+      "alertMod": 0,
+      "status": "ready"
+    },
+    "student": {
+      "id": "student",
+      "name": "晚自习高中生",
+      "difficulty": 2,
+      "stars": "★★☆☆☆",
+      "type": "窗口猎",
+      "area": "老城文教区",
+      "tagline": "沉重的书包压着双肩，放学路只有最后一段独行",
+      "features": "放学结伴率高 · 独处窗口稀缺 · 日程极固定",
+      "windowNote": "平日同行人多难以下手，补习晚归或独自值日是唯一窗口",
+      "shoe": "shoe_leather",
+      "stats": {
+        "str": 2,
+        "agi": 4,
+        "per": 4,
+        "nrv": 3
+      },
+      "social": 1,
+      "alertMod": -5,
+      "status": "ready"
+    },
+    "club": {
+      "id": "club",
+      "name": "夜店小姐",
+      "difficulty": 3,
+      "stars": "★★★☆☆",
+      "type": "双态猎",
+      "area": "临江娱乐红灯区",
+      "tagline": "后门散场时的冷风吹醒了酒意，包里藏着未拆封的喷雾",
+      "features": "双态切换 · 醉态迟缓/醒态敏锐 · 凌晨空旷街区",
+      "windowNote": "凌晨 02:00 后下班，街面空旷，清醒时反侦察意识极高",
+      "shoe": "shoe_boots",
+      "stats": {
+        "str": 3,
+        "agi": 4,
+        "per": 7,
+        "nrv": 6
+      },
+      "social": 3,
+      "alertMod": 0,
+      "status": "ready"
+    },
+    "wife": {
+      "id": "wife",
+      "name": "独居人妻",
+      "difficulty": 4,
+      "stars": "★★★★☆",
+      "type": "白昼猎",
+      "area": "郊野豪宅区 / 老城住宅区",
+      "tagline": "锁好院门的那一刻，偌大的客厅只剩电视的荧光",
+      "features": "白昼不设防 · 丈夫第三方风险 · 定位共享",
+      "windowNote": "白天家中是不设防窗口；但丈夫随时可能折返，双日程博弈",
+      "shoe": "shoe_slippers",
+      "stats": {
+        "str": 3,
+        "agi": 3,
+        "per": 5,
+        "nrv": 4
+      },
+      "social": 4,
+      "alertMod": 0,
+      "status": "ready"
+    },
+    "police": {
+      "id": "police",
+      "name": "便衣女刑警",
+      "difficulty": 5,
+      "stars": "★★★★★",
+      "type": "高危BOSS",
+      "area": "全城机动",
+      "tagline": "警惕的目光掠过每一处反光，指节在袖口下微微握紧",
+      "features": "战术反侦察 · 敏锐直觉 · 冲突专业格斗反制",
+      "windowNote": "日程四班三倒极难掌握，嗅觉敏锐，稍有不慎即遭反锁扣押",
+      "shoe": "shoe_leather",
+      "stats": {
+        "str": 6,
+        "agi": 7,
+        "per": 8,
+        "nrv": 9
+      },
+      "social": 4,
+      "alertMod": 15,
+      "status": "ready"
+    }
+  },
+  "generator": {
+    "namePool": {
+      "surnames": [
+        "林",
+        "沈",
+        "苏",
+        "顾",
+        "陆",
+        "姜",
+        "叶",
+        "白",
+        "程",
+        "温"
+      ],
+      "givenNames": [
+        "幼微",
+        "晚秋",
+        "诗涵",
+        "语棠",
+        "凝雪",
+        "沐晴",
+        "芷若",
+        "楚楚",
+        "依诺",
+        "佳宁",
+        "晓夏",
+        "念慈",
+        "婉清",
+        "昭华",
+        "云舒",
+        "梦瑶",
+        "佩瑶",
+        "希言",
+        "凌薇",
+        "心诺"
+      ]
+    },
+    "personalityPool": [
+      {
+        "id": "stubborn",
+        "name": "要强",
+        "label": "要强",
+        "type": "personality",
+        "tagId": "stubborn",
+        "category": "conflict",
+        "value": 1,
+        "desc": "【性格·要强】自尊逞强，察觉异样快步不示弱，冲突对抗体格 +1"
+      },
+      {
+        "id": "vigilant",
+        "name": "警惕",
+        "label": "警惕",
+        "type": "personality",
+        "tagId": "vigilant",
+        "category": "acuity",
+        "value": 1,
+        "desc": "【性格·警惕】对异响直觉敏锐，有效敏锐暗修正 +1（警觉增量多4%，识脸率提升）"
+      },
+      {
+        "id": "casual",
+        "name": "随性",
+        "label": "随性",
+        "type": "personality",
+        "tagId": "casual",
+        "category": "stealth",
+        "value": 2,
+        "desc": "【性格·随性】随和散漫省事至上，沉浸自身节奏放空，对动静迟钝，玩家隐蔽 +2"
+      },
+      {
+        "id": "timid",
+        "name": "胆小",
+        "label": "胆小",
+        "type": "personality",
+        "tagId": "timid",
+        "category": "sound",
+        "value": -5,
+        "desc": "【性格·胆小】生性胆小怕事，受骇喉咙发紧呼救弱，动静声浪 -5，多选择避走"
+      },
+      {
+        "id": "gentle",
+        "name": "温和",
+        "label": "温和",
+        "type": "personality",
+        "tagId": "gentle",
+        "category": "conflict",
+        "value": -2,
+        "desc": "【性格·温和】性情温和避争端，受制易肢体僵滞，冲突首轮反抗战力 -2"
+      },
+      {
+        "id": "introverted",
+        "name": "内向",
+        "label": "内向",
+        "type": "personality",
+        "tagId": "introverted",
+        "category": "social",
+        "value": -2,
+        "desc": "【性格·内向】腼腆少言避生人，习惯低头独行避开视线，搭话与交涉检定修正 -2"
+      },
+      {
+        "id": "aloof",
+        "name": "清冷",
+        "label": "清冷",
+        "type": "personality",
+        "tagId": "aloof",
+        "category": "sound",
+        "value": -2,
+        "desc": "【性格·清冷】独来独往疏离冷淡，独行小道无接应，动静声浪初值 -2"
+      },
+      {
+        "id": "cheerful",
+        "name": "开朗",
+        "label": "开朗",
+        "type": "personality",
+        "tagId": "cheerful",
+        "category": "sound",
+        "value": 3,
+        "desc": "【性格·开朗】活泼外向精力充沛，遇险反应果断声线清亮，敢于呼救质问，声浪 +3"
+      },
+      {
+        "id": "chic",
+        "name": "爱美",
+        "label": "爱美",
+        "type": "personality",
+        "tagId": "chic",
+        "category": "stealth",
+        "value": 1,
+        "desc": "【性格·爱美】注重穿搭仪容，常在橱窗前驻足理衣理发，制造短暂停顿破绽，玩家接近 +1"
+      },
+      {
+        "id": "naive",
+        "name": "单纯",
+        "label": "单纯",
+        "type": "personality",
+        "tagId": "naive",
+        "category": "social",
+        "value": 2,
+        "desc": "【性格·单纯】心思简单缺少戒备，警惕建立慢，搭话与问路交涉修正 +2"
+      }
+    ],
+    "hobbyPool": [
+      {
+        "id": "film_cafe",
+        "name": "胶片探店",
+        "label": "胶片探店",
+        "type": "hobby",
+        "tagId": "window_pause",
+        "category": "stealth",
+        "value": 1,
+        "dropItem": "item_retro_cam",
+        "desc": "【爱好·胶片探店】常在街角橱窗停顿取景，尾随近身检定 +1；随身带复古卡片机"
+      },
+      {
+        "id": "indie_music",
+        "name": "大耳麦",
+        "label": "大耳麦",
+        "type": "hobby",
+        "tagId": "sound_muffled",
+        "category": "stealth",
+        "value": 1,
+        "dropItem": "item_headphone",
+        "desc": "【爱好·大耳麦】习惯戴大耳麦听歌，听觉迟钝，玩家隐蔽 +1，声浪阈值 -3；随身戴头戴耳麦"
+      },
+      {
+        "id": "journal_craft",
+        "name": "手账",
+        "label": "手账",
+        "type": "hobby",
+        "tagId": "bag_rummage",
+        "category": "stealth",
+        "value": 1,
+        "dropItem": "item_handbook",
+        "desc": "【爱好·手账】常在路口驻足翻包找彩墨笔与票据，提供背身破绽窗口；随身带私密手账"
+      },
+      {
+        "id": "night_run",
+        "name": "香氛",
+        "label": "香氛",
+        "type": "hobby",
+        "tagId": "aroma_trace",
+        "category": "acuity",
+        "value": 0,
+        "dropItem": "item_perfume",
+        "desc": "【爱好·香氛】慢跑更衣备有香氛小样，散发微香，近距离嗅觉识别线索；随身带香氛喷雾"
+      },
+      {
+        "id": "book_tea",
+        "name": "旧书",
+        "label": "旧书",
+        "type": "hobby",
+        "tagId": "bag_heavy",
+        "category": "conflict",
+        "value": -1,
+        "dropItem": "item_old_book",
+        "desc": "【爱好·旧书】帆布包内压着借阅旧书，负重拖累，追逐奔跑敏捷对抗 -1；随身带借阅旧书"
+      },
+      {
+        "id": "sketch_art",
+        "name": "速写",
+        "label": "速写",
+        "type": "hobby",
+        "tagId": "bench_still",
+        "category": "stealth",
+        "value": 2,
+        "dropItem": "item_sketchbook",
+        "desc": "【爱好·速写】常在路灯长椅静坐画街景，处于静止状态，尾随靠近免除移动检定；随身带水彩速写本"
+      }
+    ],
+    "shoePool": {
+      "student_and_college": [
+        {
+          "id": "shoe_sneakers",
+          "name": "运动鞋",
+          "label": "运动鞋",
+          "type": "equipment",
+          "tagId": "shoe_sneakers",
+          "desc": "【鞋具·运动鞋】软胶底球鞋，触地静音微抓地摩擦，驱动运动鞋脚步声"
+        },
+        {
+          "id": "shoe_flats",
+          "name": "平底鞋",
+          "label": "平底鞋",
+          "type": "equipment",
+          "tagId": "shoe_flats",
+          "desc": "【鞋具·平底鞋】薄底平底单鞋，步履轻捷均匀，驱动平底鞋脚步声"
+        },
+        {
+          "id": "shoe_leather",
+          "name": "小皮鞋",
+          "label": "小皮鞋",
+          "type": "equipment",
+          "tagId": "shoe_leather",
+          "desc": "【鞋具·小皮鞋】硬真皮底乐福鞋/校服单鞋，干练清脆，驱动小皮鞋脚步声"
+        },
+        {
+          "id": "shoe_platform",
+          "name": "松糕鞋",
+          "label": "松糕鞋",
+          "type": "equipment",
+          "tagId": "shoe_platform",
+          "desc": "【鞋具·松糕鞋】厚底松糕鞋，钝重沉闷踏步，驱动松糕鞋脚步声"
+        }
+      ],
+      "defaults": {
+        "ol": {
+          "id": "shoe_heel",
+          "name": "高跟鞋",
+          "label": "高跟鞋",
+          "type": "equipment",
+          "tagId": "shoe_heel",
+          "desc": "【鞋具·高跟鞋】细高跟鞋，步频清脆，跟钉敲击回响，驱动高跟鞋脚步声"
+        },
+        "club": {
+          "id": "shoe_boots",
+          "name": "靴子",
+          "label": "靴子",
+          "type": "equipment",
+          "tagId": "shoe_boots",
+          "desc": "【鞋具·靴子】重底皮革靴子，硬质厚重踏步声，驱动靴子脚步声"
+        },
+        "wife": {
+          "id": "shoe_slippers",
+          "name": "拖鞋",
+          "label": "拖鞋",
+          "type": "equipment",
+          "tagId": "shoe_slippers",
+          "desc": "【鞋具·拖鞋】居家拖鞋，啪嗒拖行声，驱动拖鞋脚步声"
+        },
+        "police": {
+          "id": "shoe_leather",
+          "name": "小皮鞋",
+          "label": "小皮鞋",
+          "type": "equipment",
+          "tagId": "shoe_leather",
+          "desc": "【鞋具·小皮鞋】便衣制式皮鞋，利落微硬，驱动小皮鞋脚步声"
+        }
+      }
+    },
+    "statDelta": {
+      "options": [
+        -1,
+        0,
+        1
+      ],
+      "prob": "均匀三等分 (各 1/3, 33.33%)",
+      "clamp": [
+        1,
+        10
+      ]
+    }
+  },
+  "heart": {
+    "sweet": [
+      40,
+      65
+    ],
+    "lines": [
+      70,
+      90
+    ]
+  },
+  "requirements": {
+    "withdraw": {
+      "dist": [
+        "same",
+        "close",
+        "touch"
+      ]
+    },
+    "hide": {
+      "dist": [
+        "far",
+        "same",
+        "close"
+      ]
+    },
+    "strike": {
+      "dist": [
+        "touch",
+        "close"
+      ]
+    },
+    "pry": {
+      "place": "door",
+      "dist": [
+        "close",
+        "touch"
+      ]
+    },
+    "climb": {
+      "dist": [
+        "close",
+        "touch"
+      ]
+    },
+    "drag": {
+      "dist": [
+        "touch"
+      ]
+    },
+    "pin": {
+      "dist": [
+        "touch"
+      ]
+    },
+    "check_door": {
+      "place": "door",
+      "dist": [
+        "close",
+        "touch"
+      ]
+    },
+    "door_listen": {
+      "place": "door",
+      "dist": [
+        "close",
+        "touch"
+      ]
+    },
+    "door_peep": {
+      "place": "door",
+      "dist": [
+        "close",
+        "touch"
+      ]
+    },
+    "try_handle": {
+      "place": "door",
+      "dist": [
+        "close",
+        "touch"
+      ]
+    },
+    "lockpick": {
+      "place": "door",
+      "dist": [
+        "close",
+        "touch"
+      ],
+      "items": [
+        "lockpick",
+        "cyber_lockpick"
+      ]
+    },
+    "ransack": {
+      "dist": [
+        "close",
+        "touch"
+      ]
+    }
+  }
+}

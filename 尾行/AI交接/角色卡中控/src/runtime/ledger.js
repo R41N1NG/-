@@ -10,9 +10,18 @@
 const C = require("./checks.js");
 const R = require("../config/rules.json");
 
-const LIMITS = { alert: [0, 100], wariness: [0, 100], heart: [0, R.heart.cap], stamina: [0, 999],
-                 cash: [0, 999999], pi: [0, 999], proximity: [0, 100],
-                 faceMem: [0, 20], pursuit: [0, 5], date: [1, 999999] };
+const LIMITS = {
+  alert: [0, 100],
+  wariness: [0, 100],
+  heart: [0, R.heart.cap],
+  stamina: [0, 999],
+  cash: [0, 999999],
+  pi: [0, 999],
+  proximity: [0, 100],
+  faceMem: [0, 20],
+  pursuit: [0, 5],
+  date: [1, 999999],
+};
 
 function createLedger(init = {}) {
   const start = {
@@ -28,10 +37,16 @@ function createLedger(init = {}) {
     pursuit: init.pursuit ?? 0,
   };
   // 心跳开局基线按胆量校准
-  if (init.nrv != null && init.heart == null) start.heart = C.heartBaseline(init.nrv);
+  if (init.nrv != null && init.heart == null)
+    start.heart = C.heartBaseline(init.nrv);
 
+  for (const [k, v] of Object.entries(start)) {
+    if (typeof v !== "number" || !Number.isFinite(v))
+      throw new TypeError(`初始账目必须为有限数字: ${k}`);
+    start[k] = Math.max(LIMITS[k][0], Math.min(LIMITS[k][1], v));
+  }
   let seq = 0;
-  const snapshots = new Map();   // seq → 深拷贝快照
+  const snapshots = new Map(); // seq → 深拷贝快照
 
   const state = start;
   const clamp = (k, v) => Math.max(LIMITS[k][0], Math.min(LIMITS[k][1], v));
@@ -40,7 +55,9 @@ function createLedger(init = {}) {
     state,
 
     /** 读账。 */
-    get(k) { return state[k]; },
+    get(k) {
+      return state[k];
+    },
 
     /**
      * 事务提交：变更集一次性落账。
@@ -51,14 +68,25 @@ function createLedger(init = {}) {
     commit(changes, meta = {}) {
       const before = { ...state };
       const applied = {};
+      const after = { ...state };
       for (const [k, dv] of Object.entries(changes)) {
-        if (!(k in LIMITS)) throw new Error(`未知账目: ${k}`);
+        if (!Object.prototype.hasOwnProperty.call(LIMITS, k))
+          throw new Error(`未知账目: ${k}`);
+        if (typeof dv !== "number" || !Number.isFinite(dv))
+          throw new TypeError(`账目增量必须为有限数字: ${k}`);
         const nv = clamp(k, state[k] + dv);
-        applied[k] = nv - state[k];     // 实际落账（撞边界时 ≠ 申报增量）
-        state[k] = nv;
+        applied[k] = nv - state[k];
+        after[k] = nv;
       }
+      Object.assign(state, after);
       const seqNo = ++seq;
-      snapshots.set(seqNo, { before, after: { ...state }, changes, meta, applied });
+      snapshots.set(seqNo, {
+        before,
+        after: { ...state },
+        changes,
+        meta,
+        applied,
+      });
       return { seq: seqNo, before, after: { ...state }, applied, meta };
     },
 
@@ -75,9 +103,30 @@ function createLedger(init = {}) {
     /* ---------- 复合结算（纯函数组装，仍走 commit 单入口） ---------- */
 
     /** 动作结算：双账（情报收益 / 暴露代价）+ 心跳。delta 由中控用 checks 算好后传入。 */
-    settleAction({ alertD = 0, heartD = 0, piD = 0, staminaD = 0, cashD = 0, proximityD = 0, faceMemD = 0 }, meta) {
-      return this.commit({ alert: alertD, heart: heartD, pi: piD, stamina: staminaD,
-                           cash: cashD, proximity: proximityD, faceMem: faceMemD }, meta);
+    settleAction(
+      {
+        alertD = 0,
+        heartD = 0,
+        piD = 0,
+        staminaD = 0,
+        cashD = 0,
+        proximityD = 0,
+        faceMemD = 0,
+      },
+      meta,
+    ) {
+      return this.commit(
+        {
+          alert: alertD,
+          heart: heartD,
+          pi: piD,
+          stamina: staminaD,
+          cash: cashD,
+          proximity: proximityD,
+          faceMem: faceMemD,
+        },
+        meta,
+      );
     },
 
     /**
@@ -87,24 +136,38 @@ function createLedger(init = {}) {
     settleNight({ peakAlert, nrv, staminaMax = 100 }) {
       const warinessD = C.warinessGain(peakAlert);
       const ratio = state.stamina / staminaMax;
-      const rest = ratio >= R.stamina.nightRest.fullMin ? 1
-        : ratio >= R.stamina.nightRest.midMin ? R.stamina.nightRest.midTo
-        : R.stamina.nightRest.lowTo;
+      const rest =
+        ratio >= R.stamina.nightRest.fullMin
+          ? 1
+          : ratio >= R.stamina.nightRest.midMin
+            ? R.stamina.nightRest.midTo
+            : R.stamina.nightRest.lowTo;
       const staminaTarget = Math.round(staminaMax * rest);
-      const r = this.commit({
-        wariness: warinessD,
-        alert: -(state.alert),                       // 当晚警觉清零
-        heart: C.heartBaseline(nrv) - state.heart,   // 回基线
-        stamina: staminaTarget - state.stamina,      // 恢复至（非恢复量）
-        date: 1,
-      }, { reason: "settleNight" });
-      return { ...r, warinessGain: warinessD, restRatio: rest, nextStartAlert: Math.round(state.wariness / 5) };
+      const r = this.commit(
+        {
+          wariness: warinessD,
+          alert: -state.alert, // 当晚警觉清零
+          heart: C.heartBaseline(nrv) - state.heart, // 回基线
+          stamina: staminaTarget - state.stamina, // 恢复至（非恢复量）
+          date: 1,
+        },
+        { reason: "settleNight" },
+      );
+      return {
+        ...r,
+        warinessGain: warinessD,
+        restRatio: rest,
+        nextStartAlert: Math.round(state.wariness / 5),
+      };
     },
 
     /** 追缉：只升不降（7 日冷却回落由调度层走 commit 直改，此处封快路径）。 */
     raisePursuit(level) {
       if (level <= state.pursuit) return null;
-      return this.commit({ pursuit: level - state.pursuit }, { reason: "pursuit" });
+      return this.commit(
+        { pursuit: level - state.pursuit },
+        { reason: "pursuit" },
+      );
     },
   };
 }

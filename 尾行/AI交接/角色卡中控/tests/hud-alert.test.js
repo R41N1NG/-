@@ -8,7 +8,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { createGame } = require("../src/runtime/game.js");
 
-const html = fs.readFileSync(path.join(__dirname, "..", "状态栏.html"), "utf8");
+const html = require("./helpers/ui-source.js").readUISource();
 
 test("快照：只给她的警觉档位，不给原始数值（明暗分离）", () => {
   const g = createGame({

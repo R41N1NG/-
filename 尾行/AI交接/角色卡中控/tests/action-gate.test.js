@@ -10,7 +10,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { createGame } = require("../src/runtime/game.js");
 
-const html = fs.readFileSync(path.join(__dirname, "..", "状态栏.html"), "utf8");
+const html = require("./helpers/ui-source.js").readUISource();
 
 function gameAt(placeId, extra = {}) {
   return createGame({
@@ -132,8 +132,7 @@ test("手打无效：不给胶囊时输入「开锁」不产生任何动作（�
 });
 
 test("UI：距离边界——贴身逼近 / 最远拉开 / 贴身影匿 / 非贴身按制 / 低位缓息都灰", () => {
-  const fnMatch = html.match(/function capsuleGate\(c, snap\)[\s\S]*?\n  \}/);
-  const capsuleGate = new Function("c", "snap", fnMatch[0] + "\nreturn capsuleGate(c, snap);");
+  const { capsuleGate } = require("../src/ui/action-options.js");
 
   const touchApproach = capsuleGate({ id: "follow", name: "贴身逼近", args: { dist: "touch" } }, { dist: "touch", place: "alley_b", inventory: [] });
   assert.equal(touchApproach.lock, true);
@@ -157,9 +156,7 @@ test("UI：距离边界——贴身逼近 / 最远拉开 / 贴身影匿 / 非贴
 });
 
 test("UI：胶囊门槛——偷袭需贴身、开锁需工具、街上隐藏门类、同街灰掉破门与翻找", () => {
-  const fnMatch = html.match(/function capsuleGate\(c, snap\)[\s\S]*?\n  \}/);
-  assert.ok(fnMatch, "应能提取 capsuleGate");
-  const capsuleGate = new Function("c", "snap", fnMatch[0] + "\nreturn capsuleGate(c, snap);");
+  const { capsuleGate } = require("../src/ui/action-options.js");
 
   const same = capsuleGate({ id: "strike", name: "下手 (偷袭)", args: { style: "ambush" } }, { dist: "same", place: "alley_b", inventory: [] });
   assert.equal(same.lock, true);

@@ -1,0 +1,1453 @@
+{
+  "description": "重构前引擎生成的 v1 存档、快照及续局结果；用于模块化兼容验证。",
+  "save": {
+    "v": 1,
+    "sessionSalt": "modular-compatibility",
+    "player": {
+      "str": 4,
+      "agi": 5,
+      "nrv": 5,
+      "int": 5,
+      "cha": 5,
+      "staminaMax": 120,
+      "inventory": [
+        {
+          "id": "lockpick",
+          "count": 1,
+          "equipped": false
+        }
+      ]
+    },
+    "target": {
+      "str": 3,
+      "agi": 4,
+      "per": 5,
+      "nrv": 4,
+      "social": 2
+    },
+    "targetBase": {
+      "str": 3,
+      "agi": 4,
+      "per": 5,
+      "nrv": 4,
+      "social": 2
+    },
+    "targetId": "college",
+    "targetPersona": null,
+    "targetState": {
+      "outfit": {
+        "id": "outfit_tech_cargo",
+        "name": "防风冲锋夹克+束脚工装裤",
+        "desc": "墨黑连帽防风冲锋夹克搭配深军绿多口袋束脚工装慢跑裤，纯黑螺纹高弹中筒棉袜配黑白拼色高帮帆布鞋",
+        "prompt": "白描墨黑冲锋夹克带抽绳斜拉链，工装束脚裤利落收口，黑色高弹螺纹中筒袜包裹脚踝，帆布鞋步频轻快带有橡胶擦地声",
+        "socks": "黑色螺纹高弹中筒吸汗棉袜",
+        "shoeId": "shoe_sneakers",
+        "shoeName": "帆布鞋",
+        "styleGroup": "casual",
+        "isWeekend": false
+      },
+      "somatic": {
+        "id": "fatigued",
+        "name": "身心疲惫",
+        "desc": "熬夜耗神或兼职奔波，步履拖沓，敏捷 -1",
+        "mod": {
+          "agi": -1
+        },
+        "reason": "在校外兼职站立了数小时，小腿酸胀发硬，迈步迟缓",
+        "tag": "somatic_fatigued",
+        "prompt": "白描其身心困倦、步伐沉缓发拖的疲惫体态，肩膀略微塌下"
+      },
+      "hand": {
+        "id": "key_fumble_flat",
+        "name": "摸索钥匙",
+        "desc": "在昏暗老旧单元楼入口停步，拉开单肩包拉链摸索出租屋防盗门钥匙",
+        "fumbling": true,
+        "tag": "hand_fumble",
+        "remainingDuration": 1,
+        "isSiteOverride": true
+      },
+      "route": {
+        "id": "college_evening",
+        "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+        "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+        "startTime": "21:30",
+        "here": 4,
+        "nodes": [
+          "school_gate_b",
+          "old_skybridge_b",
+          "store_24h_b",
+          "old_alley_main_b",
+          "unit_stairs_b"
+        ],
+        "currentPlace": "老旧单元楼道"
+      }
+    },
+    "dateCount": 0,
+    "hotelVisitedCount": 0,
+    "lastHotelDate": null,
+    "inventory": [
+      {
+        "id": "lockpick",
+        "count": 1,
+        "equipped": false
+      }
+    ],
+    "nightDrinkUsed": false,
+    "mode": "stealth",
+    "dist": "close",
+    "env": "night",
+    "slot": "e21_23",
+    "world": {
+      "weather": "clear",
+      "district": "B"
+    },
+    "route": {
+      "id": "college_evening",
+      "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+      "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+      "startTime": "21:30",
+      "nodes": [
+        "school_gate_b",
+        "old_skybridge_b",
+        "store_24h_b",
+        "old_alley_main_b",
+        "unit_stairs_b"
+      ],
+      "times": [
+        "2130",
+        "2145",
+        "2200",
+        "2215",
+        "2230"
+      ],
+      "here": 4,
+      "known": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "famSegs": {
+      "A": 0,
+      "B": 10,
+      "C": 0,
+      "D": 0
+    },
+    "tags": [
+      {
+        "id": "shoe_sneakers",
+        "name": "运动鞋",
+        "owner": "target",
+        "type": "equipment",
+        "category": "equipment",
+        "effects": [],
+        "duration": {
+          "type": "flag"
+        }
+      },
+      {
+        "id": "somatic_fatigued",
+        "name": "身心疲惫",
+        "owner": "target",
+        "type": "status",
+        "category": "conflict",
+        "effects": [],
+        "duration": {
+          "type": "night"
+        }
+      },
+      {
+        "id": "hand_fumble",
+        "name": "翻找物品",
+        "owner": "target",
+        "type": "scene",
+        "category": "stealth",
+        "effects": [
+          {
+            "category": "stealth",
+            "value": 3
+          }
+        ],
+        "duration": {
+          "type": "scene",
+          "count": 1
+        }
+      }
+    ],
+    "identity": null,
+    "tailing": false,
+    "nightPiGross": 11,
+    "startKit": null,
+    "proxLogs": [],
+    "signals": [
+      [
+        "21:00",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "21:15",
+        "目标沿街前行，维持稳定步频"
+      ],
+      [
+        "21:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "21:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "22:00",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "00:30",
+        "目标动向推进：前往 [老旧单元楼道]"
+      ],
+      [
+        "22:15",
+        "目标沿街前行，维持稳定步频"
+      ],
+      [
+        "照片",
+        "拍到 白底水手服上衣（背面）"
+      ],
+      [
+        "22:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "22:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "21:00",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "21:15",
+        "目标沿街前行，维持稳定步频"
+      ],
+      [
+        "照片",
+        "拍到 拼色棒球服（背面）"
+      ],
+      [
+        "21:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "21:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "22:00",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "22:15",
+        "目标沿街前行，维持稳定步频"
+      ],
+      [
+        "22:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "22:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "21:00",
+        "目标保持行进，你在侧后方观察记录"
+      ]
+    ],
+    "lastAssess": null,
+    "lastHerAlert": null,
+    "lastLedgerSummary": "本轮结算 · 无数值变动",
+    "floor": 24,
+    "consecFails": 0,
+    "alertLatch": [],
+    "alertEvent": null,
+    "alertHold": 0,
+    "fleeing": false,
+    "album": {
+      "top_jk_cardigan|side": {
+        "file": "jk/top/base/normal/top_jk_cardigan/side.png",
+        "name": "米色针织开衫",
+        "slot": "top",
+        "angle": "side",
+        "t": 2,
+        "place": "老街24h便利店",
+        "dist": "same"
+      },
+      "top_jk_sailor|back": {
+        "file": "jk/top/base/normal/top_jk_sailor/back.png",
+        "name": "白底水手服上衣",
+        "slot": "top",
+        "angle": "back",
+        "t": 14,
+        "place": "老旧单元楼道",
+        "dist": "same"
+      },
+      "top_jk_baseball|back": {
+        "file": "jk/top/base/normal/top_jk_baseball/back.png",
+        "name": "拼色棒球服",
+        "slot": "top",
+        "angle": "back",
+        "t": 18,
+        "place": "老旧单元楼道",
+        "dist": "same"
+      }
+    },
+    "setBonusDone": {},
+    "captureSeq": 3,
+    "tickets": [],
+    "ticketsIssued": 1,
+    "ledgerState": {
+      "date": 2,
+      "alert": 2,
+      "wariness": 0,
+      "heart": 30,
+      "stamina": 108,
+      "cash": 1000,
+      "pi": 19,
+      "proximity": 0,
+      "faceMem": 1,
+      "pursuit": 0
+    }
+  },
+  "snapshot": {
+    "player": {
+      "heart": 30,
+      "stamina": 108,
+      "cash": 1000,
+      "pi": 19,
+      "proximity": 0,
+      "date": 2,
+      "attrs": {
+        "str": 4,
+        "agi": 5,
+        "nrv": 5,
+        "int": 5,
+        "cha": 5
+      }
+    },
+    "target": {
+      "id": "college",
+      "name": "独居女大学生",
+      "realName": null,
+      "persona": null,
+      "stats": {
+        "str": 3,
+        "agi": 4,
+        "per": 5,
+        "nrv": 4,
+        "social": 2
+      },
+      "alertStage": 0,
+      "warinessStage": "低",
+      "shoe": "sneakers",
+      "shoeInfo": {
+        "id": "shoe_sneakers",
+        "name": "运动鞋",
+        "agi": 1,
+        "noise": 1,
+        "distFactor": 1.25,
+        "level": 1
+      },
+      "state": {
+        "outfit": {
+          "id": "outfit_tech_cargo",
+          "name": "防风冲锋夹克+束脚工装裤",
+          "desc": "墨黑连帽防风冲锋夹克搭配深军绿多口袋束脚工装慢跑裤，纯黑螺纹高弹中筒棉袜配黑白拼色高帮帆布鞋",
+          "prompt": "白描墨黑冲锋夹克带抽绳斜拉链，工装束脚裤利落收口，黑色高弹螺纹中筒袜包裹脚踝，帆布鞋步频轻快带有橡胶擦地声",
+          "socks": "黑色螺纹高弹中筒吸汗棉袜",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "帆布鞋",
+          "styleGroup": "casual",
+          "isWeekend": false
+        },
+        "somatic": {
+          "id": "fatigued",
+          "name": "身心疲惫",
+          "desc": "熬夜耗神或兼职奔波，步履拖沓，敏捷 -1",
+          "mod": {
+            "agi": -1
+          },
+          "reason": "在校外兼职站立了数小时，小腿酸胀发硬，迈步迟缓",
+          "tag": "somatic_fatigued",
+          "prompt": "白描其身心困倦、步伐沉缓发拖的疲惫体态，肩膀略微塌下"
+        },
+        "hand": {
+          "id": "key_fumble_flat",
+          "name": "摸索钥匙",
+          "desc": "在昏暗老旧单元楼入口停步，拉开单肩包拉链摸索出租屋防盗门钥匙",
+          "fumbling": true,
+          "tag": "hand_fumble",
+          "remainingDuration": 1,
+          "isSiteOverride": true
+        },
+        "route": {
+          "id": "college_evening",
+          "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+          "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+          "startTime": "21:30",
+          "here": 4,
+          "nodes": [
+            "school_gate_b",
+            "old_skybridge_b",
+            "store_24h_b",
+            "old_alley_main_b",
+            "unit_stairs_b"
+          ],
+          "currentPlace": "老旧单元楼道"
+        }
+      }
+    },
+    "targetState": {
+      "outfit": {
+        "id": "outfit_tech_cargo",
+        "name": "防风冲锋夹克+束脚工装裤",
+        "desc": "墨黑连帽防风冲锋夹克搭配深军绿多口袋束脚工装慢跑裤，纯黑螺纹高弹中筒棉袜配黑白拼色高帮帆布鞋",
+        "prompt": "白描墨黑冲锋夹克带抽绳斜拉链，工装束脚裤利落收口，黑色高弹螺纹中筒袜包裹脚踝，帆布鞋步频轻快带有橡胶擦地声",
+        "socks": "黑色螺纹高弹中筒吸汗棉袜",
+        "shoeId": "shoe_sneakers",
+        "shoeName": "帆布鞋",
+        "styleGroup": "casual",
+        "isWeekend": false
+      },
+      "somatic": {
+        "id": "fatigued",
+        "name": "身心疲惫",
+        "desc": "熬夜耗神或兼职奔波，步履拖沓，敏捷 -1",
+        "mod": {
+          "agi": -1
+        },
+        "reason": "在校外兼职站立了数小时，小腿酸胀发硬，迈步迟缓",
+        "tag": "somatic_fatigued",
+        "prompt": "白描其身心困倦、步伐沉缓发拖的疲惫体态，肩膀略微塌下"
+      },
+      "hand": {
+        "id": "key_fumble_flat",
+        "name": "摸索钥匙",
+        "desc": "在昏暗老旧单元楼入口停步，拉开单肩包拉链摸索出租屋防盗门钥匙",
+        "fumbling": true,
+        "tag": "hand_fumble",
+        "remainingDuration": 1,
+        "isSiteOverride": true
+      },
+      "route": {
+        "id": "college_evening",
+        "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+        "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+        "startTime": "21:30",
+        "here": 4,
+        "nodes": [
+          "school_gate_b",
+          "old_skybridge_b",
+          "store_24h_b",
+          "old_alley_main_b",
+          "unit_stairs_b"
+        ],
+        "currentPlace": "老旧单元楼道"
+      }
+    },
+    "envSfx": "dog",
+    "mode": "stealth",
+    "dist": "close",
+    "env": "night",
+    "slot": "e21_23",
+    "identity": {
+      "id": null,
+      "name": null,
+      "shift": null,
+      "kit": null
+    },
+    "tags": [
+      {
+        "id": "shoe_sneakers",
+        "name": "运动鞋",
+        "owner": "target",
+        "type": "equipment",
+        "duration": "flag"
+      },
+      {
+        "id": "somatic_fatigued",
+        "name": "身心疲惫",
+        "owner": "target",
+        "type": "status",
+        "duration": "night"
+      },
+      {
+        "id": "hand_fumble",
+        "name": "翻找物品",
+        "owner": "target",
+        "type": "scene",
+        "duration": "scene",
+        "count": 1
+      }
+    ],
+    "inventory": [
+      {
+        "id": "lockpick",
+        "name": "开锁工具",
+        "type": "tool",
+        "slot": "tool",
+        "count": 1,
+        "equipped": false,
+        "canEquip": true,
+        "canUse": false,
+        "desc": "潜入工具（占工具槽）：解锁开锁路线，敏捷检定+4，与攀爬套装互斥占槽",
+        "effectsDesc": "开锁路线敏捷+4"
+      }
+    ],
+    "herAlert": "🐕 触动庭院犬吠！院内传来低沉低吼",
+    "signal": [
+      [
+        "照片",
+        "拍到 拼色棒球服（背面）"
+      ],
+      [
+        "21:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "21:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "22:00",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "22:15",
+        "目标沿街前行，维持稳定步频"
+      ],
+      [
+        "22:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "22:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "21:00",
+        "目标保持行进，你在侧后方观察记录"
+      ]
+    ],
+    "proxLog": [],
+    "assess": null,
+    "ledger": "本轮结算 · 无数值变动",
+    "area": "老城文教区",
+    "place": "老旧单元楼道",
+    "weather": "clear",
+    "weatherName": "🌙 晴夜",
+    "strikeSealed": false,
+    "fam": 10,
+    "route": {
+      "id": "college_evening",
+      "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+      "startTime": "21:30",
+      "times": [
+        "2130",
+        "2145",
+        "2200",
+        "2215",
+        "2230"
+      ],
+      "nodes": [
+        "学校正门",
+        "老水泥天桥",
+        "老街24h便利店",
+        "老街主弄堂",
+        "老旧单元楼道"
+      ],
+      "known": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "here": 4
+    },
+    "exits": [
+      "居民杂物暗巷",
+      "老楼天台"
+    ],
+    "spots": [
+      "listen_home",
+      "door_crack",
+      "try_handle"
+    ],
+    "sanctuaryAlert": "当前即为安全庇护场所",
+    "album": {
+      "count": 3,
+      "total": 58,
+      "shots": [
+        {
+          "key": "top_jk_cardigan|side",
+          "file": "jk/top/base/normal/top_jk_cardigan/side.png",
+          "name": "米色针织开衫",
+          "slot": "top",
+          "angle": "side",
+          "t": 2,
+          "place": "老街24h便利店",
+          "dist": "same"
+        },
+        {
+          "key": "top_jk_sailor|back",
+          "file": "jk/top/base/normal/top_jk_sailor/back.png",
+          "name": "白底水手服上衣",
+          "slot": "top",
+          "angle": "back",
+          "t": 14,
+          "place": "老旧单元楼道",
+          "dist": "same"
+        },
+        {
+          "key": "top_jk_baseball|back",
+          "file": "jk/top/base/normal/top_jk_baseball/back.png",
+          "name": "拼色棒球服",
+          "slot": "top",
+          "angle": "back",
+          "t": 18,
+          "place": "老旧单元楼道",
+          "dist": "same"
+        }
+      ]
+    },
+    "capture": null
+  },
+  "input": {
+    "text": "兼容续局",
+    "options": {
+      "actions": [
+        {
+          "id": "follow",
+          "name": "跟缀",
+          "args": {
+            "dist": "same"
+          }
+        }
+      ]
+    }
+  },
+  "next": {
+    "floor": 25,
+    "actions": [
+      {
+        "type": "action",
+        "id": "follow",
+        "name": "跟缀",
+        "label": "跟缀",
+        "d20": 15,
+        "raw": [
+          15
+        ],
+        "mods": [],
+        "dc": 10,
+        "total": 20,
+        "band": "success",
+        "attr": {
+          "name": "敏捷",
+          "v": 5
+        },
+        "targetMod": 3,
+        "darkReveal": "翻找物品 (+3)",
+        "ledger": {
+          "seq": 1,
+          "applied": {
+            "alert": 0,
+            "heart": 0,
+            "pi": 2,
+            "stamina": 0,
+            "cash": 0,
+            "proximity": 0,
+            "faceMem": 0
+          }
+        }
+      }
+    ],
+    "facts": [],
+    "lies": [],
+    "mode": null,
+    "diag": {
+      "parseErrors": 0,
+      "halfWidthPipe": 0,
+      "actionOverflow": 0,
+      "degradedSamples": [],
+      "factBad": 0,
+      "lieBad": 0,
+      "modeBad": 0,
+      "modeDup": 0,
+      "unknownAction": []
+    },
+    "logs": [
+      "[跟缀] 1d20(15)  = 20 vs DC 10 → success",
+      "[刺激] 持续尾随·same +8 → 心跳 +8",
+      "[段税] 心跳峰值 38 → 体力 -1"
+    ],
+    "ledgerSeqs": [
+      1
+    ],
+    "seg": {
+      "heartPeak": 38,
+      "staminaTax": -1
+    },
+    "floorApplied": {
+      "stamina": -1,
+      "heart": 3,
+      "alert": 0,
+      "pi": 2,
+      "proximity": 0,
+      "cash": 0
+    },
+    "stats": {
+      "player": {
+        "heart": 33,
+        "stamina": 107,
+        "cash": 1000,
+        "pi": 21,
+        "proximity": 0,
+        "date": 2,
+        "attrs": {
+          "str": 4,
+          "agi": 5,
+          "nrv": 5,
+          "int": 5,
+          "cha": 5
+        }
+      },
+      "target": {
+        "id": "college",
+        "name": "独居女大学生",
+        "realName": null,
+        "persona": null,
+        "stats": {
+          "str": 3,
+          "agi": 4,
+          "per": 5,
+          "nrv": 4,
+          "social": 2
+        },
+        "alertStage": 0,
+        "warinessStage": "低",
+        "shoe": "sneakers",
+        "shoeInfo": {
+          "id": "shoe_sneakers",
+          "name": "运动鞋",
+          "agi": 1,
+          "noise": 1,
+          "distFactor": 1,
+          "level": 1
+        },
+        "state": {
+          "outfit": {
+            "id": "outfit_tech_cargo",
+            "name": "防风冲锋夹克+束脚工装裤",
+            "desc": "墨黑连帽防风冲锋夹克搭配深军绿多口袋束脚工装慢跑裤，纯黑螺纹高弹中筒棉袜配黑白拼色高帮帆布鞋",
+            "prompt": "白描墨黑冲锋夹克带抽绳斜拉链，工装束脚裤利落收口，黑色高弹螺纹中筒袜包裹脚踝，帆布鞋步频轻快带有橡胶擦地声",
+            "socks": "黑色螺纹高弹中筒吸汗棉袜",
+            "shoeId": "shoe_sneakers",
+            "shoeName": "帆布鞋",
+            "styleGroup": "casual",
+            "isWeekend": false
+          },
+          "somatic": {
+            "id": "fatigued",
+            "name": "身心疲惫",
+            "desc": "熬夜耗神或兼职奔波，步履拖沓，敏捷 -1",
+            "mod": {
+              "agi": -1
+            },
+            "reason": "在校外兼职站立了数小时，小腿酸胀发硬，迈步迟缓",
+            "tag": "somatic_fatigued",
+            "prompt": "白描其身心困倦、步伐沉缓发拖的疲惫体态，肩膀略微塌下"
+          },
+          "hand": {
+            "id": "key_fumble_flat",
+            "name": "摸索钥匙",
+            "desc": "在昏暗老旧单元楼入口停步，拉开单肩包拉链摸索出租屋防盗门钥匙",
+            "fumbling": true,
+            "tag": "hand_fumble",
+            "remainingDuration": 1,
+            "isSiteOverride": true
+          },
+          "route": {
+            "id": "college_evening",
+            "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+            "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+            "startTime": "21:30",
+            "here": 4,
+            "nodes": [
+              "school_gate_b",
+              "old_skybridge_b",
+              "store_24h_b",
+              "old_alley_main_b",
+              "unit_stairs_b"
+            ],
+            "currentPlace": "老旧单元楼道"
+          }
+        }
+      },
+      "targetState": {
+        "outfit": {
+          "id": "outfit_tech_cargo",
+          "name": "防风冲锋夹克+束脚工装裤",
+          "desc": "墨黑连帽防风冲锋夹克搭配深军绿多口袋束脚工装慢跑裤，纯黑螺纹高弹中筒棉袜配黑白拼色高帮帆布鞋",
+          "prompt": "白描墨黑冲锋夹克带抽绳斜拉链，工装束脚裤利落收口，黑色高弹螺纹中筒袜包裹脚踝，帆布鞋步频轻快带有橡胶擦地声",
+          "socks": "黑色螺纹高弹中筒吸汗棉袜",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "帆布鞋",
+          "styleGroup": "casual",
+          "isWeekend": false
+        },
+        "somatic": {
+          "id": "fatigued",
+          "name": "身心疲惫",
+          "desc": "熬夜耗神或兼职奔波，步履拖沓，敏捷 -1",
+          "mod": {
+            "agi": -1
+          },
+          "reason": "在校外兼职站立了数小时，小腿酸胀发硬，迈步迟缓",
+          "tag": "somatic_fatigued",
+          "prompt": "白描其身心困倦、步伐沉缓发拖的疲惫体态，肩膀略微塌下"
+        },
+        "hand": {
+          "id": "key_fumble_flat",
+          "name": "摸索钥匙",
+          "desc": "在昏暗老旧单元楼入口停步，拉开单肩包拉链摸索出租屋防盗门钥匙",
+          "fumbling": true,
+          "tag": "hand_fumble",
+          "remainingDuration": 1,
+          "isSiteOverride": true
+        },
+        "route": {
+          "id": "college_evening",
+          "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+          "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+          "startTime": "21:30",
+          "here": 4,
+          "nodes": [
+            "school_gate_b",
+            "old_skybridge_b",
+            "store_24h_b",
+            "old_alley_main_b",
+            "unit_stairs_b"
+          ],
+          "currentPlace": "老旧单元楼道"
+        }
+      },
+      "envSfx": null,
+      "mode": "stealth",
+      "dist": "same",
+      "env": "night",
+      "slot": "e21_23",
+      "identity": {
+        "id": null,
+        "name": null,
+        "shift": null,
+        "kit": null
+      },
+      "tags": [
+        {
+          "id": "shoe_sneakers",
+          "name": "运动鞋",
+          "owner": "target",
+          "type": "equipment",
+          "duration": "flag"
+        },
+        {
+          "id": "somatic_fatigued",
+          "name": "身心疲惫",
+          "owner": "target",
+          "type": "status",
+          "duration": "night"
+        },
+        {
+          "id": "hand_fumble",
+          "name": "翻找物品",
+          "owner": "target",
+          "type": "scene",
+          "duration": "scene",
+          "count": 1
+        }
+      ],
+      "inventory": [
+        {
+          "id": "lockpick",
+          "name": "开锁工具",
+          "type": "tool",
+          "slot": "tool",
+          "count": 1,
+          "equipped": false,
+          "canEquip": true,
+          "canUse": false,
+          "desc": "潜入工具（占工具槽）：解锁开锁路线，敏捷检定+4，与攀爬套装互斥占槽",
+          "effectsDesc": "开锁路线敏捷+4"
+        }
+      ],
+      "herAlert": null,
+      "signal": [
+        [
+          "21:30",
+          "目标在路口短暂停留，记录其正面特征"
+        ],
+        [
+          "21:45",
+          "目标保持行进，你在侧后方观察记录"
+        ],
+        [
+          "22:00",
+          "目标保持行进，你在侧后方观察记录"
+        ],
+        [
+          "22:15",
+          "目标沿街前行，维持稳定步频"
+        ],
+        [
+          "22:30",
+          "目标在路口短暂停留，记录其正面特征"
+        ],
+        [
+          "22:45",
+          "目标保持行进，你在侧后方观察记录"
+        ],
+        [
+          "21:00",
+          "目标保持行进，你在侧后方观察记录"
+        ],
+        [
+          "21:15",
+          "目标沿街前行，维持稳定步频"
+        ]
+      ],
+      "proxLog": [],
+      "assess": null,
+      "ledger": "本轮结算 · 体力 -1 · 心跳 +3 · PI +2",
+      "area": "老城文教区",
+      "place": "老旧单元楼道",
+      "weather": "clear",
+      "weatherName": "🌙 晴夜",
+      "strikeSealed": false,
+      "fam": 10,
+      "route": {
+        "id": "college_evening",
+        "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+        "startTime": "21:30",
+        "times": [
+          "2130",
+          "2145",
+          "2200",
+          "2215",
+          "2230"
+        ],
+        "nodes": [
+          "学校正门",
+          "老水泥天桥",
+          "老街24h便利店",
+          "老街主弄堂",
+          "老旧单元楼道"
+        ],
+        "known": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "here": 4
+      },
+      "exits": [
+        "居民杂物暗巷",
+        "老楼天台"
+      ],
+      "spots": [
+        "listen_home",
+        "door_crack",
+        "try_handle"
+      ],
+      "sanctuaryAlert": "当前即为安全庇护场所",
+      "album": {
+        "count": 3,
+        "total": 58,
+        "shots": [
+          {
+            "key": "top_jk_cardigan|side",
+            "file": "jk/top/base/normal/top_jk_cardigan/side.png",
+            "name": "米色针织开衫",
+            "slot": "top",
+            "angle": "side",
+            "t": 2,
+            "place": "老街24h便利店",
+            "dist": "same"
+          },
+          {
+            "key": "top_jk_sailor|back",
+            "file": "jk/top/base/normal/top_jk_sailor/back.png",
+            "name": "白底水手服上衣",
+            "slot": "top",
+            "angle": "back",
+            "t": 14,
+            "place": "老旧单元楼道",
+            "dist": "same"
+          },
+          {
+            "key": "top_jk_baseball|back",
+            "file": "jk/top/base/normal/top_jk_baseball/back.png",
+            "name": "拼色棒球服",
+            "slot": "top",
+            "angle": "back",
+            "t": 18,
+            "place": "老旧单元楼道",
+            "dist": "same"
+          }
+        ]
+      },
+      "capture": null
+    },
+    "capture": null,
+    "flow": [
+      "[跟缀] 1d20(15)  = 20 vs DC 10 → success",
+      "[刺激] 持续尾随·same +8 → 心跳 +8",
+      "[段税] 心跳峰值 38 → 体力 -1"
+    ],
+    "queue": [
+      {
+        "id": "follow",
+        "name": "跟缀",
+        "args": {
+          "dist": "same"
+        }
+      }
+    ],
+    "package": {
+      "floor": 25,
+      "actions": [
+        {
+          "id": "follow",
+          "name": "跟缀",
+          "label": "跟缀",
+          "d20": 15,
+          "total": 20,
+          "dc": 10,
+          "band": "success",
+          "mods": [],
+          "attr": {
+            "name": "敏捷",
+            "v": 5
+          },
+          "targetMod": 3,
+          "darkReveal": "翻找物品 (+3)",
+          "raw": [
+            15
+          ],
+          "ledger": {
+            "seq": 1,
+            "applied": {
+              "alert": 0,
+              "heart": 0,
+              "pi": 2,
+              "stamina": 0,
+              "cash": 0,
+              "proximity": 0,
+              "faceMem": 0
+            }
+          },
+          "rejected": false,
+          "reason": null
+        }
+      ],
+      "account": {
+        "stamina": -1,
+        "heart": 3,
+        "alert": 0,
+        "pi": 2,
+        "proximity": 0,
+        "cash": 0
+      },
+      "seg": {
+        "heartPeak": 38,
+        "staminaTax": -1
+      },
+      "logs": [
+        "[跟缀] 1d20(15)  = 20 vs DC 10 → success",
+        "[刺激] 持续尾随·same +8 → 心跳 +8",
+        "[段税] 心跳峰值 38 → 体力 -1"
+      ],
+      "narrativeOnly": false,
+      "targetState": {
+        "outfit": {
+          "id": "outfit_tech_cargo",
+          "name": "防风冲锋夹克+束脚工装裤",
+          "desc": "墨黑连帽防风冲锋夹克搭配深军绿多口袋束脚工装慢跑裤，纯黑螺纹高弹中筒棉袜配黑白拼色高帮帆布鞋",
+          "prompt": "白描墨黑冲锋夹克带抽绳斜拉链，工装束脚裤利落收口，黑色高弹螺纹中筒袜包裹脚踝，帆布鞋步频轻快带有橡胶擦地声",
+          "socks": "黑色螺纹高弹中筒吸汗棉袜",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "帆布鞋",
+          "styleGroup": "casual",
+          "isWeekend": false
+        },
+        "somatic": {
+          "id": "fatigued",
+          "name": "身心疲惫",
+          "desc": "熬夜耗神或兼职奔波，步履拖沓，敏捷 -1",
+          "mod": {
+            "agi": -1
+          },
+          "reason": "在校外兼职站立了数小时，小腿酸胀发硬，迈步迟缓",
+          "tag": "somatic_fatigued",
+          "prompt": "白描其身心困倦、步伐沉缓发拖的疲惫体态，肩膀略微塌下"
+        },
+        "hand": {
+          "id": "key_fumble_flat",
+          "name": "摸索钥匙",
+          "desc": "在昏暗老旧单元楼入口停步，拉开单肩包拉链摸索出租屋防盗门钥匙",
+          "fumbling": true,
+          "tag": "hand_fumble",
+          "remainingDuration": 1,
+          "isSiteOverride": true
+        },
+        "route": {
+          "id": "college_evening",
+          "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+          "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+          "startTime": "21:30",
+          "here": 4,
+          "nodes": [
+            "school_gate_b",
+            "old_skybridge_b",
+            "store_24h_b",
+            "old_alley_main_b",
+            "unit_stairs_b"
+          ],
+          "currentPlace": "老旧单元楼道"
+        }
+      },
+      "herAlert": null,
+      "alertEvent": null
+    }
+  },
+  "nextSave": {
+    "v": 1,
+    "sessionSalt": "modular-compatibility",
+    "player": {
+      "str": 4,
+      "agi": 5,
+      "nrv": 5,
+      "int": 5,
+      "cha": 5,
+      "staminaMax": 120,
+      "inventory": [
+        {
+          "id": "lockpick",
+          "count": 1,
+          "equipped": false
+        }
+      ]
+    },
+    "target": {
+      "str": 3,
+      "agi": 4,
+      "per": 5,
+      "nrv": 4,
+      "social": 2
+    },
+    "targetBase": {
+      "str": 3,
+      "agi": 4,
+      "per": 5,
+      "nrv": 4,
+      "social": 2
+    },
+    "targetId": "college",
+    "targetPersona": null,
+    "targetState": {
+      "outfit": {
+        "id": "outfit_tech_cargo",
+        "name": "防风冲锋夹克+束脚工装裤",
+        "desc": "墨黑连帽防风冲锋夹克搭配深军绿多口袋束脚工装慢跑裤，纯黑螺纹高弹中筒棉袜配黑白拼色高帮帆布鞋",
+        "prompt": "白描墨黑冲锋夹克带抽绳斜拉链，工装束脚裤利落收口，黑色高弹螺纹中筒袜包裹脚踝，帆布鞋步频轻快带有橡胶擦地声",
+        "socks": "黑色螺纹高弹中筒吸汗棉袜",
+        "shoeId": "shoe_sneakers",
+        "shoeName": "帆布鞋",
+        "styleGroup": "casual",
+        "isWeekend": false
+      },
+      "somatic": {
+        "id": "fatigued",
+        "name": "身心疲惫",
+        "desc": "熬夜耗神或兼职奔波，步履拖沓，敏捷 -1",
+        "mod": {
+          "agi": -1
+        },
+        "reason": "在校外兼职站立了数小时，小腿酸胀发硬，迈步迟缓",
+        "tag": "somatic_fatigued",
+        "prompt": "白描其身心困倦、步伐沉缓发拖的疲惫体态，肩膀略微塌下"
+      },
+      "hand": {
+        "id": "key_fumble_flat",
+        "name": "摸索钥匙",
+        "desc": "在昏暗老旧单元楼入口停步，拉开单肩包拉链摸索出租屋防盗门钥匙",
+        "fumbling": true,
+        "tag": "hand_fumble",
+        "remainingDuration": 1,
+        "isSiteOverride": true
+      },
+      "route": {
+        "id": "college_evening",
+        "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+        "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+        "startTime": "21:30",
+        "here": 4,
+        "nodes": [
+          "school_gate_b",
+          "old_skybridge_b",
+          "store_24h_b",
+          "old_alley_main_b",
+          "unit_stairs_b"
+        ],
+        "currentPlace": "老旧单元楼道"
+      }
+    },
+    "dateCount": 0,
+    "hotelVisitedCount": 0,
+    "lastHotelDate": null,
+    "inventory": [
+      {
+        "id": "lockpick",
+        "count": 1,
+        "equipped": false
+      }
+    ],
+    "nightDrinkUsed": false,
+    "mode": "stealth",
+    "dist": "same",
+    "env": "night",
+    "slot": "e21_23",
+    "world": {
+      "weather": "clear",
+      "district": "B"
+    },
+    "route": {
+      "id": "college_evening",
+      "note": "周内晚自习常规返程路线（自习闭馆后归寝）",
+      "prompt": "白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋",
+      "startTime": "21:30",
+      "nodes": [
+        "school_gate_b",
+        "old_skybridge_b",
+        "store_24h_b",
+        "old_alley_main_b",
+        "unit_stairs_b"
+      ],
+      "times": [
+        "2130",
+        "2145",
+        "2200",
+        "2215",
+        "2230"
+      ],
+      "here": 4,
+      "known": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "famSegs": {
+      "A": 0,
+      "B": 10,
+      "C": 0,
+      "D": 0
+    },
+    "tags": [
+      {
+        "id": "shoe_sneakers",
+        "name": "运动鞋",
+        "owner": "target",
+        "type": "equipment",
+        "category": "equipment",
+        "effects": [],
+        "duration": {
+          "type": "flag"
+        }
+      },
+      {
+        "id": "somatic_fatigued",
+        "name": "身心疲惫",
+        "owner": "target",
+        "type": "status",
+        "category": "conflict",
+        "effects": [],
+        "duration": {
+          "type": "night"
+        }
+      },
+      {
+        "id": "hand_fumble",
+        "name": "翻找物品",
+        "owner": "target",
+        "type": "scene",
+        "category": "stealth",
+        "effects": [
+          {
+            "category": "stealth",
+            "value": 3
+          }
+        ],
+        "duration": {
+          "type": "scene",
+          "count": 1
+        }
+      }
+    ],
+    "identity": null,
+    "tailing": false,
+    "nightPiGross": 13,
+    "startKit": null,
+    "proxLogs": [],
+    "signals": [
+      [
+        "21:15",
+        "目标沿街前行，维持稳定步频"
+      ],
+      [
+        "21:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "21:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "22:00",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "00:30",
+        "目标动向推进：前往 [老旧单元楼道]"
+      ],
+      [
+        "22:15",
+        "目标沿街前行，维持稳定步频"
+      ],
+      [
+        "照片",
+        "拍到 白底水手服上衣（背面）"
+      ],
+      [
+        "22:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "22:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "21:00",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "21:15",
+        "目标沿街前行，维持稳定步频"
+      ],
+      [
+        "照片",
+        "拍到 拼色棒球服（背面）"
+      ],
+      [
+        "21:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "21:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "22:00",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "22:15",
+        "目标沿街前行，维持稳定步频"
+      ],
+      [
+        "22:30",
+        "目标在路口短暂停留，记录其正面特征"
+      ],
+      [
+        "22:45",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "21:00",
+        "目标保持行进，你在侧后方观察记录"
+      ],
+      [
+        "21:15",
+        "目标沿街前行，维持稳定步频"
+      ]
+    ],
+    "lastAssess": null,
+    "lastHerAlert": null,
+    "lastLedgerSummary": "本轮结算 · 体力 -1 · 心跳 +3 · PI +2",
+    "floor": 25,
+    "consecFails": 0,
+    "alertLatch": [],
+    "alertEvent": null,
+    "alertHold": 0,
+    "fleeing": false,
+    "album": {
+      "top_jk_cardigan|side": {
+        "file": "jk/top/base/normal/top_jk_cardigan/side.png",
+        "name": "米色针织开衫",
+        "slot": "top",
+        "angle": "side",
+        "t": 2,
+        "place": "老街24h便利店",
+        "dist": "same"
+      },
+      "top_jk_sailor|back": {
+        "file": "jk/top/base/normal/top_jk_sailor/back.png",
+        "name": "白底水手服上衣",
+        "slot": "top",
+        "angle": "back",
+        "t": 14,
+        "place": "老旧单元楼道",
+        "dist": "same"
+      },
+      "top_jk_baseball|back": {
+        "file": "jk/top/base/normal/top_jk_baseball/back.png",
+        "name": "拼色棒球服",
+        "slot": "top",
+        "angle": "back",
+        "t": 18,
+        "place": "老旧单元楼道",
+        "dist": "same"
+      }
+    },
+    "setBonusDone": {},
+    "captureSeq": 3,
+    "tickets": [],
+    "ticketsIssued": 1,
+    "ledgerState": {
+      "date": 2,
+      "alert": 2,
+      "wariness": 0,
+      "heart": 33,
+      "stamina": 107,
+      "cash": 1000,
+      "pi": 21,
+      "proximity": 0,
+      "faceMem": 1,
+      "pursuit": 0
+    }
+  }
+}

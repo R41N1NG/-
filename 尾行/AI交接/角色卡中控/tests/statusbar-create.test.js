@@ -9,22 +9,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 const R = require("../src/config/rules.json");
 
-const HTML = fs.readFileSync(path.join(__dirname, "..", "状态栏.html"), "utf8");
+const HTML = require("./helpers/ui-source.js").readUISource();
 
-function extractConst(name) {
-  const at = HTML.indexOf("const " + name + " = ");
-  assert.ok(at >= 0, `状态栏.html 缺少 ${name}`);
-  const rest = HTML.slice(at + name.length);
-  const start = Math.min(...["{", "["].map(c => { const i = rest.indexOf(c); return i < 0 ? Infinity : i; }));
-  assert.ok(Number.isFinite(start), `${name} 不是对象/数组字面量`);
-  const open = rest[start], close = open === "{" ? "}" : "]";
-  let depth = 0;
-  for (let i = start; i < rest.length; i++) {
-    if (rest[i] === open) depth++;
-    else if (rest[i] === close) { depth--; if (depth === 0) return (new Function("return " + rest.slice(start, i + 1)))(); }
-  }
-  assert.fail(`${name} 括号不配平`);
-}
+function extractConst(name) { return require("../src/ui/creation-data.js")[name]; }
 
 const ID = extractConst("IDENTITY_DATA");
 const TARGETS = extractConst("TARGET_DATA");
@@ -81,7 +68,7 @@ test("档位人话：五维各五档非空（数值策划档位表直译）", ()
 });
 
 test("DOM 锚点：零楼两步走向导面板/步骤条/目标卡网格/徽记/未开局钮/摇号组件/胶水接口全部在位", () => {
-  for (const anchor of ['id="wx-create-dialog"', 'id="wx-id-dialog"', 'id="idBadge"', 'id="zeroChip"',
+  for (const anchor of ['id="wx-zero-floor"', 'id="wx-id-dialog"', 'id="idBadge"', 'id="zeroChip"',
                         'id="createConfirm"', 'id="idResetBtn"', "updateIdBadge(snap)", "zeroFloorInit",
                         'id="zeroStep1"', 'id="zeroStep2"', 'id="zeroNextStep"', 'id="zeroPrevStep"',
                         'id="targetGrid"', 'id="targetDetailBox"', 'switchZeroStep',
@@ -90,7 +77,7 @@ test("DOM 锚点：零楼两步走向导面板/步骤条/目标卡网格/徽记/
     assert.ok(HTML.includes(anchor), `状态栏.html 缺 ${anchor}`);
   }
   const buildJs = fs.readFileSync(path.join(__dirname, "..", "build-statusbar.js"), "utf8");
-  assert.ok(buildJs.includes("wx-create-dialog"), "构建断言未覆盖零楼面板");
+  assert.ok(buildJs.includes("wx-zero-floor"), "构建断言未覆盖零楼面板");
   const glueJs = fs.readFileSync(path.join(__dirname, "..", "src/host/glue.js"), "utf8");
   assert.ok(glueJs.includes("newGame") && glueJs.includes("resetGame"), "glue 缺零楼接口");
 });

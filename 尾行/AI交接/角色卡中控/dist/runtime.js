@@ -2714,172 +2714,95 @@
     }
   });
 
-  // src/runtime/parse.js
-  var require_parse = __commonJS({
-    "src/runtime/parse.js"(exports, module) {
-      var { normalize, loadLexicon } = require_lexicon2();
-      var TAG_RE = /<(动作|事实|谎言|模式)>([\s\S]*?)<\/\1>/g;
-      var MODE_WORDS = {
-        "prepare": "prepare",
-        "\u51C6\u5907": "prepare",
-        "stealth": "stealth",
-        "\u6F5C\u884C": "stealth",
-        "contact": "contact",
-        "\u63A5\u89E6": "contact",
-        "vehicle": "vehicle",
-        "\u8F66\u53A2": "vehicle"
-      };
-      var VERIF_WORDS = { "high": "high", "\u9AD8": "high", "mid": "mid", "\u4E2D": "mid", "low": "low", "\u4F4E": "low" };
-      var ACTION_QUEUE_MAX = 3;
-      function splitSegs(body, diag) {
-        if (body.includes("|")) diag.halfWidthPipe++;
-        return body.split(/[｜|]/).map((s) => s.trim()).filter(Boolean);
-      }
-      function parseFloor(text, lex) {
-        const L = lex || loadLexicon();
-        const diag = {
-          parseErrors: 0,
-          halfWidthPipe: 0,
-          actionOverflow: 0,
-          degradedSamples: [],
-          factBad: 0,
-          lieBad: 0,
-          modeBad: 0,
-          modeDup: 0,
-          unknownAction: []
-        };
-        const tags = [];
-        let actionCount = 0, modeCount = 0;
-        const src = String(text || "");
-        TAG_RE.lastIndex = 0;
-        let m;
-        while ((m = TAG_RE.exec(src)) !== null) {
-          const [full, kind, body] = m;
-          try {
-            if (kind === "\u52A8\u4F5C") {
-              if (actionCount >= ACTION_QUEUE_MAX) {
-                diag.actionOverflow++;
-                continue;
-              }
-              const r = normalize(splitSegs(body, diag).join(" "), L);
-              if (!r.hit) {
-                diag.parseErrors++;
-                diag.unknownAction.push(body.slice(0, 24));
-                continue;
-              }
-              actionCount++;
-              tags.push({ type: "action", id: r.id, name: r.name, args: r.args });
-            } else if (kind === "\u4E8B\u5B9E") {
-              const segs = splitSegs(body, diag);
-              const tm = /^#(\d+)$/.exec(segs[0] || "");
-              if (!tm) {
-                diag.factBad++;
-                continue;
-              }
-              tags.push({ type: "fact", ticket: Number(tm[1]) });
-            } else if (kind === "\u8C0E\u8A00") {
-              const segs = splitSegs(body, diag);
-              if (segs.length < 4) {
-                diag.lieBad++;
-                continue;
-              }
-              const v = VERIF_WORDS[segs[3].toLowerCase()] || null;
-              if (!v) {
-                diag.lieBad++;
-                continue;
-              }
-              tags.push({ type: "lie", claim: segs[0], to: segs[1], scene: segs[2], verifiability: v });
-            } else if (kind === "\u6A21\u5F0F") {
-              const val = MODE_WORDS[body.trim().toLowerCase()] || MODE_WORDS[body.trim()];
-              if (!val) {
-                diag.modeBad++;
-                continue;
-              }
-              if (modeCount >= 1) {
-                diag.modeDup++;
-                continue;
-              }
-              modeCount++;
-              tags.push({ type: "mode", mode: val });
-            }
-          } catch (_) {
-            diag.parseErrors++;
-          }
+  // src/shared/random.js
+  var require_random = __commonJS({
+    "src/shared/random.js"(exports, module) {
+      var MASK = 4294967295;
+      var req = typeof __require === "function" ? __require : null;
+      var nodeCrypto = req ? (() => {
+        try {
+          return req("crypto");
+        } catch (e) {
+          return null;
         }
-        const cleanText = src.replace(TAG_RE, "").trim();
-        return { tags, cleanText, diag };
+      })() : null;
+      function newSessionSalt() {
+        if (nodeCrypto) return nodeCrypto.randomBytes(16).toString("hex");
+        const buf = new Uint8Array(16);
+        if (globalThis.crypto && globalThis.crypto.getRandomValues)
+          globalThis.crypto.getRandomValues(buf);
+        else for (let i = 0; i < 16; i++) buf[i] = Date.now() + i * 7919 & 255;
+        return Array.from(buf, (x) => x.toString(16).padStart(2, "0")).join("");
       }
-      function verifyEvidence(cleanText, claim) {
-        if (!claim || !cleanText) return false;
-        return cleanText.includes(claim);
+      function rng(seed) {
+        let a = seed >>> 0;
+        return function next() {
+          a = a + 1831565813 & MASK;
+          let t = Math.imul(a ^ a >>> 15, 1 | a);
+          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
       }
-      module.exports = { parseFloor, verifyEvidence, ACTION_QUEUE_MAX };
+      function floorSeed(sessionSalt, floor) {
+        let h = 2166136261;
+        const s = String(sessionSalt) + ":" + String(floor);
+        for (let i = 0; i < s.length; i++) {
+          h ^= s.charCodeAt(i);
+          h = Math.imul(h, 16777619) & MASK;
+        }
+        return h >>> 0;
+      }
+      function actionSeed(sessionSalt, floor, seq, version = 2) {
+        let h = floorSeed(sessionSalt, floor);
+        if (version >= 2 && typeof seq === "string")
+          h = floorSeed(String(sessionSalt) + ":domain:" + seq, floor);
+        else h ^= seq * 2654435761 & MASK;
+        h = Math.imul(h ^ h >>> 16, 2246822507) & MASK;
+        return h >>> 0;
+      }
+      var d = (next, sides) => Math.floor(next() * sides) + 1;
+      function rollD20(seed, mode = "normal") {
+        const next = rng(seed);
+        const a = d(next, 20), b = d(next, 20);
+        if (mode === "adv") {
+          const d20 = a === 20 || b === 20 ? 20 : a === 1 || b === 1 ? 1 : Math.max(a, b);
+          return { d20, raw: [a, b] };
+        }
+        if (mode === "dis") return { d20: Math.min(a, b), raw: [a, b] };
+        return { d20: a, raw: [a] };
+      }
+      function roll2D10(seed) {
+        const next = rng(seed);
+        return {
+          dice: [d(next, 10), d(next, 10)],
+          sum: null,
+          get total() {
+            return this.dice[0] + this.dice[1];
+          }
+        };
+      }
+      function pickIndex(seed, count) {
+        if (!Number.isInteger(count) || count <= 0)
+          throw new RangeError("\u5019\u9009\u6570\u91CF\u5FC5\u987B\u4E3A\u6B63\u6574\u6570");
+        return Math.floor(rng(seed)() * count);
+      }
+      module.exports = {
+        pickIndex,
+        newSessionSalt,
+        rng,
+        floorSeed,
+        actionSeed,
+        rollD20,
+        roll2D10
+      };
     }
   });
 
-  // src/runtime/tags.js
-  var require_tags = __commonJS({
-    "src/runtime/tags.js"(exports, module) {
-      var CAPS = { stealth: 6, fine: 4, conflict: 5, social: 5 };
-      function apply(stack, tag) {
-        const same = stack.find((t) => t.id === tag.id);
-        if (same) {
-          if (tag.duration.type === "flag") same.duration = { type: "flag" };
-          else if (tag.duration.type === "scene")
-            same.duration.count = Math.max(same.duration.count || 0, tag.duration.count);
-          if (tag.type && !same.type) same.type = tag.type;
-          return stack;
-        }
-        stack.push({
-          id: tag.id,
-          name: tag.name,
-          owner: tag.owner,
-          type: tag.type || "status",
-          category: tag.category,
-          effects: (tag.effects || []).slice(),
-          duration: { ...tag.duration }
-        });
-        return stack;
-      }
-      function remove(stack, id) {
-        const i = stack.findIndex((t) => t.id === id);
-        if (i >= 0) stack.splice(i, 1);
-        return stack;
-      }
-      function tick(stack) {
-        for (let i = stack.length - 1; i >= 0; i--) {
-          const t = stack[i];
-          if (t.duration.type === "scene") {
-            if (--t.duration.count <= 0) stack.splice(i, 1);
-          }
-        }
-        return stack;
-      }
-      function clearNight(stack) {
-        return stack.filter((t) => t.duration.type === "flag");
-      }
-      function summarize(stack, category) {
-        const hits = [];
-        for (const t of stack) {
-          for (const e of t.effects) {
-            if (e.category === category) hits.push({ src: t.name, owner: t.owner, v: e.value });
-          }
-        }
-        let sum = hits.reduce((s, h) => s + h.v, 0);
-        const cap = CAPS[category];
-        let capped = false;
-        if (sum > cap) {
-          sum = cap;
-          capped = true;
-        }
-        if (sum < -cap) {
-          sum = -cap;
-          capped = true;
-        }
-        return { sum, capped, breakdown: hits };
-      }
-      var PITY_BONUS = 3;
-      module.exports = { apply, remove, tick, clearNight, summarize, CAPS, PITY_BONUS };
+  // src/runtime/dice.js
+  var require_dice = __commonJS({
+    "src/runtime/dice.js"(exports, module) {
+      "use strict";
+      module.exports = require_random();
     }
   });
 
@@ -3054,70 +2977,6 @@
     }
   });
 
-  // src/runtime/dice.js
-  var require_dice = __commonJS({
-    "src/runtime/dice.js"(exports, module) {
-      var MASK = 4294967295;
-      var req = typeof __require === "function" ? __require : null;
-      var nodeCrypto = req ? (() => {
-        try {
-          return req("crypto");
-        } catch (e) {
-          return null;
-        }
-      })() : null;
-      function newSessionSalt() {
-        if (nodeCrypto) return nodeCrypto.randomBytes(16).toString("hex");
-        const buf = new Uint8Array(16);
-        if (globalThis.crypto && globalThis.crypto.getRandomValues) globalThis.crypto.getRandomValues(buf);
-        else for (let i = 0; i < 16; i++) buf[i] = Date.now() + i * 7919 & 255;
-        return Array.from(buf, (x) => x.toString(16).padStart(2, "0")).join("");
-      }
-      function rng(seed) {
-        let a = seed >>> 0;
-        return function next() {
-          a = a + 1831565813 & MASK;
-          let t = Math.imul(a ^ a >>> 15, 1 | a);
-          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-          return ((t ^ t >>> 14) >>> 0) / 4294967296;
-        };
-      }
-      function floorSeed(sessionSalt, floor) {
-        let h = 2166136261;
-        const s = String(sessionSalt) + ":" + String(floor);
-        for (let i = 0; i < s.length; i++) {
-          h ^= s.charCodeAt(i);
-          h = Math.imul(h, 16777619) & MASK;
-        }
-        return h >>> 0;
-      }
-      function actionSeed(sessionSalt, floor, seq) {
-        let h = floorSeed(sessionSalt, floor);
-        h ^= seq * 2654435761 & MASK;
-        h = Math.imul(h ^ h >>> 16, 2246822507) & MASK;
-        return h >>> 0;
-      }
-      var d = (next, sides) => Math.floor(next() * sides) + 1;
-      function rollD20(seed, mode = "normal") {
-        const next = rng(seed);
-        const a = d(next, 20), b = d(next, 20);
-        if (mode === "adv") {
-          const d20 = a === 20 || b === 20 ? 20 : a === 1 || b === 1 ? 1 : Math.max(a, b);
-          return { d20, raw: [a, b] };
-        }
-        if (mode === "dis") return { d20: Math.min(a, b), raw: [a, b] };
-        return { d20: a, raw: [a] };
-      }
-      function roll2D10(seed) {
-        const next = rng(seed);
-        return { dice: [d(next, 10), d(next, 10)], sum: null, get total() {
-          return this.dice[0] + this.dice[1];
-        } };
-      }
-      module.exports = { newSessionSalt, rng, floorSeed, actionSeed, rollD20, roll2D10 };
-    }
-  });
-
   // src/runtime/ledger.js
   var require_ledger = __commonJS({
     "src/runtime/ledger.js"(exports, module) {
@@ -3148,7 +3007,13 @@
           faceMem: init.faceMem ?? 0,
           pursuit: init.pursuit ?? 0
         };
-        if (init.nrv != null && init.heart == null) start.heart = C.heartBaseline(init.nrv);
+        if (init.nrv != null && init.heart == null)
+          start.heart = C.heartBaseline(init.nrv);
+        for (const [k, v] of Object.entries(start)) {
+          if (typeof v !== "number" || !Number.isFinite(v))
+            throw new TypeError(`\u521D\u59CB\u8D26\u76EE\u5FC5\u987B\u4E3A\u6709\u9650\u6570\u5B57: ${k}`);
+          start[k] = Math.max(LIMITS[k][0], Math.min(LIMITS[k][1], v));
+        }
         let seq = 0;
         const snapshots = /* @__PURE__ */ new Map();
         const state = start;
@@ -3168,14 +3033,25 @@
           commit(changes, meta = {}) {
             const before = { ...state };
             const applied = {};
+            const after = { ...state };
             for (const [k, dv] of Object.entries(changes)) {
-              if (!(k in LIMITS)) throw new Error(`\u672A\u77E5\u8D26\u76EE: ${k}`);
+              if (!Object.prototype.hasOwnProperty.call(LIMITS, k))
+                throw new Error(`\u672A\u77E5\u8D26\u76EE: ${k}`);
+              if (typeof dv !== "number" || !Number.isFinite(dv))
+                throw new TypeError(`\u8D26\u76EE\u589E\u91CF\u5FC5\u987B\u4E3A\u6709\u9650\u6570\u5B57: ${k}`);
               const nv = clamp(k, state[k] + dv);
               applied[k] = nv - state[k];
-              state[k] = nv;
+              after[k] = nv;
             }
+            Object.assign(state, after);
             const seqNo = ++seq;
-            snapshots.set(seqNo, { before, after: { ...state }, changes, meta, applied });
+            snapshots.set(seqNo, {
+              before,
+              after: { ...state },
+              changes,
+              meta,
+              applied
+            });
             return { seq: seqNo, before, after: { ...state }, applied, meta };
           },
           /** 快照回滚：删楼/swipe/分支切换，按 seq 整笔还原。 */
@@ -3188,16 +3064,27 @@
           },
           /* ---------- 复合结算（纯函数组装，仍走 commit 单入口） ---------- */
           /** 动作结算：双账（情报收益 / 暴露代价）+ 心跳。delta 由中控用 checks 算好后传入。 */
-          settleAction({ alertD = 0, heartD = 0, piD = 0, staminaD = 0, cashD = 0, proximityD = 0, faceMemD = 0 }, meta) {
-            return this.commit({
-              alert: alertD,
-              heart: heartD,
-              pi: piD,
-              stamina: staminaD,
-              cash: cashD,
-              proximity: proximityD,
-              faceMem: faceMemD
-            }, meta);
+          settleAction({
+            alertD = 0,
+            heartD = 0,
+            piD = 0,
+            staminaD = 0,
+            cashD = 0,
+            proximityD = 0,
+            faceMemD = 0
+          }, meta) {
+            return this.commit(
+              {
+                alert: alertD,
+                heart: heartD,
+                pi: piD,
+                stamina: staminaD,
+                cash: cashD,
+                proximity: proximityD,
+                faceMem: faceMemD
+              },
+              meta
+            );
           },
           /**
            * 过夜结算：警觉峰值沉淀防备、心跳回基线、体力「恢复至」分档（v0.6）、日期+1。
@@ -3208,26 +3095,1105 @@
             const ratio = state.stamina / staminaMax;
             const rest = ratio >= R.stamina.nightRest.fullMin ? 1 : ratio >= R.stamina.nightRest.midMin ? R.stamina.nightRest.midTo : R.stamina.nightRest.lowTo;
             const staminaTarget = Math.round(staminaMax * rest);
-            const r = this.commit({
-              wariness: warinessD,
-              alert: -state.alert,
-              // 当晚警觉清零
-              heart: C.heartBaseline(nrv) - state.heart,
-              // 回基线
-              stamina: staminaTarget - state.stamina,
-              // 恢复至（非恢复量）
-              date: 1
-            }, { reason: "settleNight" });
-            return { ...r, warinessGain: warinessD, restRatio: rest, nextStartAlert: Math.round(state.wariness / 5) };
+            const r = this.commit(
+              {
+                wariness: warinessD,
+                alert: -state.alert,
+                // 当晚警觉清零
+                heart: C.heartBaseline(nrv) - state.heart,
+                // 回基线
+                stamina: staminaTarget - state.stamina,
+                // 恢复至（非恢复量）
+                date: 1
+              },
+              { reason: "settleNight" }
+            );
+            return {
+              ...r,
+              warinessGain: warinessD,
+              restRatio: rest,
+              nextStartAlert: Math.round(state.wariness / 5)
+            };
           },
           /** 追缉：只升不降（7 日冷却回落由调度层走 commit 直改，此处封快路径）。 */
           raisePursuit(level) {
             if (level <= state.pursuit) return null;
-            return this.commit({ pursuit: level - state.pursuit }, { reason: "pursuit" });
+            return this.commit(
+              { pursuit: level - state.pursuit },
+              { reason: "pursuit" }
+            );
           }
         };
       }
       module.exports = { createLedger, LIMITS };
+    }
+  });
+
+  // src/config/places.json
+  var require_places = __commonJS({
+    "src/config/places.json"(exports, module) {
+      module.exports = {
+        districts: {
+          A: {
+            id: "A",
+            name: "\u4E2D\u57CECBD\u5546\u52A1\u533A",
+            sectors: [
+              "A-1",
+              "A-2",
+              "A-3"
+            ],
+            transit_ports: [
+              "metro_hub_a",
+              "bus_bay_a"
+            ],
+            audio_ambient: "assets/audio/ambient/zone_a_surface.ogg"
+          },
+          B: {
+            id: "B",
+            name: "\u8001\u57CE\u6587\u6559\u533A",
+            sectors: [
+              "B-1",
+              "B-2",
+              "B-3"
+            ],
+            transit_ports: [
+              "school_bus_terminal_b",
+              "old_metro_b"
+            ],
+            audio_ambient: "assets/audio/ambient/zone_b_street.ogg"
+          },
+          C: {
+            id: "C",
+            name: "\u4E34\u6C5F\u5A31\u4E50\u7EA2\u706F\u533A",
+            sectors: [
+              "C-1",
+              "C-2",
+              "C-3"
+            ],
+            transit_ports: [
+              "dock_bus_stop_c",
+              "bridge_head_c"
+            ],
+            audio_ambient: "assets/audio/ambient/zone_c_clubstreet.ogg"
+          },
+          D: {
+            id: "D",
+            name: "\u90CA\u91CE\u8C6A\u5B85\u533A",
+            sectors: [
+              "D-1",
+              "D-2",
+              "D-3"
+            ],
+            transit_ports: [
+              "suburb_highway_d"
+            ],
+            audio_ambient: "assets/audio/ambient/zone_d_road.ogg"
+          }
+        },
+        places: {
+          office_lobby_a: {
+            id: "office_lobby_a",
+            district: "A",
+            sector: "A-1",
+            name: "\u5199\u5B57\u697C\u5927\u5802",
+            light: "bright",
+            crowd: "pulse",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "skybridge_a",
+              "metro_hub_a",
+              "parking_b2_a",
+              "back_alley_a"
+            ],
+            spots: [
+              "reception",
+              "security_clock"
+            ],
+            audio_trigger: "footstep_marble",
+            free_pass: [
+              "guard"
+            ]
+          },
+          parking_b2_a: {
+            id: "parking_b2_a",
+            district: "A",
+            sector: "A-1",
+            name: "\u5730\u4E0B\u8F66\u5E93B2",
+            light: "dim",
+            crowd: "low",
+            surveillance: "dense",
+            cover: 1,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "office_lobby_a",
+              "trash_station_a"
+            ],
+            spots: [
+              "pillar_hide",
+              "tire_screech"
+            ],
+            audio_ambient: "assets/audio/ambient/zone_a_parking.ogg",
+            free_pass: [
+              "guard"
+            ]
+          },
+          skybridge_a: {
+            id: "skybridge_a",
+            district: "A",
+            sector: "A-2",
+            name: "\u8DE8\u8857\u8FDE\u5ECA\u5929\u6865",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: -2,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "office_lobby_a",
+              "metro_hub_a",
+              "bus_bay_a"
+            ],
+            spots: [
+              "perch_watch"
+            ]
+          },
+          metro_hub_a: {
+            id: "metro_hub_a",
+            district: "A",
+            sector: "A-2",
+            name: "\u5730\u94C1\u67A2\u7EBD\u51FA\u5165\u53E3",
+            light: "bright",
+            crowd: "pulse",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: true,
+            exits: [
+              "office_lobby_a",
+              "skybridge_a",
+              "store_24h_a",
+              "bus_bay_a"
+            ],
+            spots: [
+              "ticket_gate",
+              "sunken_plaza"
+            ]
+          },
+          bus_bay_a: {
+            id: "bus_bay_a",
+            district: "A",
+            sector: "A-2",
+            name: "\u7AD9\u524D\u516C\u4EA4\u6E2F\u6E7E",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: true,
+            exits: [
+              "metro_hub_a",
+              "skybridge_a"
+            ],
+            spots: [
+              "bus_wait"
+            ]
+          },
+          store_24h_a: {
+            id: "store_24h_a",
+            district: "A",
+            sector: "A-1",
+            name: "\u6CBF\u885724h\u4FBF\u5229\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: false,
+            exits: [
+              "metro_hub_a",
+              "office_lobby_a"
+            ],
+            spots: [
+              "window_watch",
+              "exit_watch"
+            ]
+          },
+          back_alley_a: {
+            id: "back_alley_a",
+            district: "A",
+            sector: "A-3",
+            name: "\u540E\u8857\u6392\u98CE\u6697\u5DF7",
+            light: "dark",
+            crowd: "none",
+            surveillance: "low",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "office_lobby_a",
+              "trash_station_a"
+            ],
+            spots: [
+              "fan_mask",
+              "ebike_hide"
+            ]
+          },
+          trash_station_a: {
+            id: "trash_station_a",
+            district: "A",
+            sector: "A-3",
+            name: "\u5783\u573E\u88C5\u5378\u540E\u9053",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "back_alley_a",
+              "parking_b2_a"
+            ],
+            spots: [
+              "trash_search"
+            ]
+          },
+          school_gate_b: {
+            id: "school_gate_b",
+            district: "B",
+            sector: "B-1",
+            name: "\u5B66\u6821\u6B63\u95E8",
+            light: "bright",
+            crowd: "pulse",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "school_bus_terminal_b",
+              "old_skybridge_b"
+            ],
+            spots: [
+              "gate_watch",
+              "rush_mask"
+            ],
+            free_pass: [
+              "student"
+            ]
+          },
+          school_bus_terminal_b: {
+            id: "school_bus_terminal_b",
+            district: "B",
+            sector: "B-1",
+            name: "\u5B66\u533A\u516C\u4EA4\u603B\u7AD9",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: true,
+            exits: [
+              "school_gate_b",
+              "old_skybridge_b",
+              "old_metro_b"
+            ],
+            spots: [
+              "bus_wait"
+            ],
+            free_pass: [
+              "student"
+            ]
+          },
+          old_metro_b: {
+            id: "old_metro_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u8001\u8857\u5730\u94C1\u7AD9",
+            light: "bright",
+            crowd: "pulse",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: true,
+            exits: [
+              "school_bus_terminal_b",
+              "old_skybridge_b",
+              "store_24h_b"
+            ],
+            spots: [
+              "ticket_gate"
+            ]
+          },
+          old_skybridge_b: {
+            id: "old_skybridge_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u8001\u6C34\u6CE5\u5929\u6865",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: -2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "school_gate_b",
+              "school_bus_terminal_b",
+              "store_24h_b",
+              "old_park_b"
+            ],
+            spots: [
+              "perch_watch"
+            ]
+          },
+          store_24h_b: {
+            id: "store_24h_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u8001\u885724h\u4FBF\u5229\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: false,
+            exits: [
+              "old_skybridge_b",
+              "old_metro_b",
+              "old_alley_main_b"
+            ],
+            spots: [
+              "window_watch",
+              "exit_watch"
+            ]
+          },
+          old_park_b: {
+            id: "old_park_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u8001\u5C45\u6C11\u516C\u56ED",
+            light: "dark",
+            crowd: "low",
+            surveillance: "low",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "old_skybridge_b",
+              "old_alley_main_b"
+            ],
+            spots: [
+              "park_bench",
+              "tree_hide"
+            ]
+          },
+          old_alley_main_b: {
+            id: "old_alley_main_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u8001\u8857\u4E3B\u5F04\u5802",
+            light: "dim",
+            crowd: "low",
+            surveillance: "none",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "store_24h_b",
+              "old_park_b",
+              "dark_blind_alley_b",
+              "dead_end_b",
+              "love_hotel_b"
+            ],
+            spots: [
+              "sodium_lamp",
+              "corner_shadow"
+            ]
+          },
+          dark_blind_alley_b: {
+            id: "dark_blind_alley_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u5C45\u6C11\u6742\u7269\u6697\u5DF7",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "old_alley_main_b",
+              "unit_stairs_b"
+            ],
+            spots: [
+              "trash_hide",
+              "bike_hide"
+            ]
+          },
+          dead_end_b: {
+            id: "dead_end_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u76F2\u7AEF\u6B7B\u80E1\u540C",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "old_alley_main_b",
+              "love_hotel_b"
+            ],
+            spots: [
+              "trap_corner"
+            ]
+          },
+          love_hotel_b: {
+            id: "love_hotel_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u8001\u57CE\u60C5\u4FA3\u65C5\u793E",
+            light: "dim",
+            crowd: "low",
+            surveillance: "low",
+            cover: 1,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "old_alley_main_b",
+              "dead_end_b"
+            ],
+            spots: [
+              "hotel_neon_sign",
+              "rain_canopy",
+              "front_desk"
+            ]
+          },
+          unit_stairs_b: {
+            id: "unit_stairs_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u8001\u65E7\u5355\u5143\u697C\u9053",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 1,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: true,
+            transit_port: false,
+            exits: [
+              "dark_blind_alley_b",
+              "rooftop_b"
+            ],
+            spots: [
+              "listen_home",
+              "door_crack",
+              "try_handle"
+            ],
+            free_pass: [
+              "guard"
+            ]
+          },
+          rooftop_b: {
+            id: "rooftop_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u8001\u697C\u5929\u53F0",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 0,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "unit_stairs_b"
+            ],
+            spots: [
+              "perch_watch",
+              "climb_point"
+            ]
+          },
+          club_backdoor_c: {
+            id: "club_backdoor_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u9152\u5427\u5458\u5DE5\u540E\u95E8",
+            light: "dim",
+            crowd: "low",
+            surveillance: "low",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "food_street_c",
+              "river_walk_c"
+            ],
+            spots: [
+              "drunk_exit"
+            ],
+            free_pass: [
+              "bartender"
+            ]
+          },
+          food_street_c: {
+            id: "food_street_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u5927\u6392\u6863\u591C\u5E02\u8857\u89D2",
+            light: "bright",
+            crowd: "high",
+            surveillance: "low",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "club_backdoor_c",
+              "store_24h_c",
+              "dock_bus_stop_c"
+            ],
+            spots: [
+              "carpool_stand"
+            ],
+            free_pass: [
+              "bartender"
+            ]
+          },
+          dock_bus_stop_c: {
+            id: "dock_bus_stop_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u6CBF\u6C5F\u7801\u5934\u516C\u4EA4\u7AD9",
+            light: "dim",
+            crowd: "low",
+            surveillance: "low",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: true,
+            exits: [
+              "food_street_c",
+              "bridge_head_c"
+            ],
+            spots: [
+              "bus_wait"
+            ]
+          },
+          bridge_head_c: {
+            id: "bridge_head_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u8DE8\u6C5F\u5927\u6865\u5934",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: true,
+            exits: [
+              "dock_bus_stop_c",
+              "river_walk_c"
+            ],
+            spots: [
+              "bridge_view"
+            ]
+          },
+          store_24h_c: {
+            id: "store_24h_c",
+            district: "C",
+            sector: "C-1",
+            name: "24h\u6CBF\u6C5F\u4FBF\u5229\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: false,
+            exits: [
+              "food_street_c",
+              "village_main_c"
+            ],
+            spots: [
+              "window_watch",
+              "hangover_cure"
+            ]
+          },
+          river_walk_c: {
+            id: "river_walk_c",
+            district: "C",
+            sector: "C-2",
+            name: "\u6C5F\u5824\u89C2\u666F\u957F\u6B65\u9053",
+            light: "dark",
+            crowd: "low",
+            surveillance: "none",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "club_backdoor_c",
+              "river_steps_c",
+              "bridge_head_c"
+            ],
+            spots: [
+              "river_rail",
+              "sober_walk"
+            ]
+          },
+          river_steps_c: {
+            id: "river_steps_c",
+            district: "C",
+            sector: "C-2",
+            name: "\u4EB2\u6C34\u907F\u98CE\u53F0\u9636",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "river_walk_c",
+              "village_main_c"
+            ],
+            spots: [
+              "vomit_point",
+              "reed_hide"
+            ]
+          },
+          village_main_c: {
+            id: "village_main_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u57CE\u4E2D\u6751\u63E1\u624B\u697C\u4E3B\u5F04",
+            light: "dim",
+            crowd: "low",
+            surveillance: "none",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "store_24h_c",
+              "river_steps_c",
+              "narrow_gap_c"
+            ],
+            spots: [
+              "wet_pavement"
+            ]
+          },
+          narrow_gap_c: {
+            id: "narrow_gap_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u4E00\u7EBF\u5929\u5E7D\u6E7F\u7A84\u5F04",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "village_main_c",
+              "rental_iron_door_c"
+            ],
+            spots: [
+              "aircon_drip",
+              "ambush_corner"
+            ]
+          },
+          rental_iron_door_c: {
+            id: "rental_iron_door_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u51FA\u79DF\u5C4B\u697C\u9053\u94C1\u95E8",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 1,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: true,
+            transit_port: false,
+            exits: [
+              "narrow_gap_c",
+              "village_roof_c"
+            ],
+            spots: [
+              "spiral_stairs",
+              "listen_home"
+            ]
+          },
+          village_roof_c: {
+            id: "village_roof_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u5171\u7528\u6742\u7269\u5929\u53F0",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "rental_iron_door_c"
+            ],
+            spots: [
+              "clothesline_hide",
+              "overlook"
+            ]
+          },
+          suburb_highway_d: {
+            id: "suburb_highway_d",
+            district: "D",
+            sector: "D-1",
+            name: "\u90CA\u91CE\u516C\u8DEF\u957F\u5F2F\u9053",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 0,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: true,
+            exits: [
+              "gas_station_d",
+              "private_road_d"
+            ],
+            spots: [
+              "curve_hide"
+            ]
+          },
+          gas_station_d: {
+            id: "gas_station_d",
+            district: "D",
+            sector: "D-1",
+            name: "24h\u516C\u8DEF\u52A0\u6CB9\u7AD9",
+            light: "bright",
+            crowd: "low",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: false,
+            exits: [
+              "suburb_highway_d",
+              "private_road_d"
+            ],
+            spots: [
+              "mart_cashier",
+              "pump_island"
+            ]
+          },
+          private_road_d: {
+            id: "private_road_d",
+            district: "D",
+            sector: "D-2",
+            name: "\u6797\u836B\u79C1\u5BB6\u4E3B\u8F66\u9053",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: -2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "suburb_highway_d",
+              "gas_station_d",
+              "pine_forest_d",
+              "estate_gate_d"
+            ],
+            spots: [
+              "open_road",
+              "patrol_watch"
+            ]
+          },
+          pine_forest_d: {
+            id: "pine_forest_d",
+            district: "D",
+            sector: "D-2",
+            name: "\u7F13\u5761\u6749\u6728\u5BC6\u6797",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 3,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "private_road_d",
+              "estate_gate_d"
+            ],
+            spots: [
+              "ebike_cache",
+              "tree_ambush"
+            ]
+          },
+          estate_gate_d: {
+            id: "estate_gate_d",
+            district: "D",
+            sector: "D-3",
+            name: "\u5E84\u56ED\u94C1\u827A\u5927\u95E8",
+            light: "dim",
+            crowd: "none",
+            surveillance: "dense",
+            cover: 0,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "private_road_d",
+              "pine_forest_d",
+              "villa_garden_d"
+            ],
+            spots: [
+              "gate_intercom",
+              "infrared_cam"
+            ]
+          },
+          villa_garden_d: {
+            id: "villa_garden_d",
+            district: "D",
+            sector: "D-3",
+            name: "\u79C1\u5BB6\u5EAD\u9662\u7EFF\u7BF1",
+            light: "dark",
+            crowd: "none",
+            surveillance: "dense",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "estate_gate_d",
+              "garage_side_door_d",
+              "villa_porch_d"
+            ],
+            spots: [
+              "dog_kennel",
+              "sprinkler"
+            ]
+          },
+          garage_side_door_d: {
+            id: "garage_side_door_d",
+            district: "D",
+            sector: "D-3",
+            name: "\u8F66\u5E93\u5165\u6237\u4FA7\u95E8",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 1,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "villa_garden_d",
+              "villa_porch_d"
+            ],
+            spots: [
+              "pick_side_door"
+            ]
+          },
+          villa_porch_d: {
+            id: "villa_porch_d",
+            district: "D",
+            sector: "D-3",
+            name: "\u72EC\u680B\u522B\u5885\u6B63\u95E8\u7384\u5173",
+            light: "bright",
+            crowd: "none",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: true,
+            transit_port: false,
+            exits: [
+              "villa_garden_d",
+              "garage_side_door_d"
+            ],
+            spots: [
+              "smart_lock",
+              "home_safe"
+            ]
+          }
+        }
+      };
+    }
+  });
+
+  // src/runtime/map.js
+  var require_map = __commonJS({
+    "src/runtime/map.js"(exports, module) {
+      var defaultPlacesData = require_places();
+      var MapRuntime = class {
+        constructor(data = defaultPlacesData) {
+          this.districts = data.districts || {};
+          this.places = data.places || {};
+        }
+        getPlace(placeId) {
+          return this.places[placeId] || null;
+        }
+        getDistrict(districtId) {
+          return this.districts[districtId] || null;
+        }
+        getExits(placeId) {
+          const place = this.getPlace(placeId);
+          return place ? place.exits || [] : [];
+        }
+        isStrikeAllowed(placeId) {
+          const place = this.getPlace(placeId);
+          if (!place) return false;
+          return !place.strike_sealed;
+        }
+        isTransitPort(placeId) {
+          const place = this.getPlace(placeId);
+          if (!place) return false;
+          return !!place.transit_port;
+        }
+        // 逃跑 AI 寻路：广度优先搜索 (BFS) 寻找最近的庇护所 (Sanctuary)
+        findNearestSanctuary(startPlaceId, maxDepth = 4) {
+          const start = this.getPlace(startPlaceId);
+          if (!start) return null;
+          if (start.sanctuary) return startPlaceId;
+          const queue = [{ id: startPlaceId, depth: 0, path: [startPlaceId] }];
+          const visited = /* @__PURE__ */ new Set([startPlaceId]);
+          while (queue.length > 0) {
+            const current = queue.shift();
+            if (current.depth >= maxDepth) continue;
+            const place = this.getPlace(current.id);
+            if (!place) continue;
+            for (const nextId of place.exits) {
+              if (!visited.has(nextId)) {
+                visited.add(nextId);
+                const nextPlace = this.getPlace(nextId);
+                if (nextPlace && nextPlace.sanctuary) {
+                  return {
+                    sanctuaryId: nextId,
+                    steps: current.depth + 1,
+                    nextStep: current.path[1] || nextId,
+                    fullPath: [...current.path, nextId]
+                  };
+                }
+                queue.push({
+                  id: nextId,
+                  depth: current.depth + 1,
+                  path: [...current.path, nextId]
+                });
+              }
+            }
+          }
+          return null;
+        }
+        // 计算天气与当前场所节点的动态耦合修正
+        getWeatherModifiers(weather = "clear", placeId) {
+          const place = this.getPlace(placeId);
+          if (!place) return { tags: [], mods: {} };
+          if (place.indoor) {
+            return {
+              tags: [],
+              mods: { indoorImmunity: true }
+            };
+          }
+          const result = { tags: [], mods: {} };
+          if (weather === "rain") {
+            result.tags.push("tag_rain");
+            result.mods.stealth = 1;
+            result.mods.sound = -2;
+            result.mods.faceCover = 2;
+            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c"];
+            if (slipperyPlaces.includes(placeId)) {
+              result.tags.push("tag_slippery");
+              result.mods.slipRisk = true;
+            }
+          } else if (weather === "storm") {
+            result.tags.push("tag_storm");
+            result.mods.stealth = 2;
+            result.mods.sound = -5;
+            result.mods.followSpeed = -2;
+            result.mods.surveillanceDiscount = 0.5;
+            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c", "private_road_d"];
+            if (slipperyPlaces.includes(placeId)) {
+              result.tags.push("tag_slippery");
+              result.mods.slipRisk = true;
+            }
+          }
+          return result;
+        }
+      };
+      var defaultMap = new MapRuntime();
+      module.exports = {
+        MapRuntime,
+        defaultMap,
+        getPlace: (id) => defaultMap.getPlace(id),
+        getDistrict: (id) => defaultMap.getDistrict(id),
+        getExits: (id) => defaultMap.getExits(id),
+        isStrikeAllowed: (id) => defaultMap.isStrikeAllowed(id),
+        isTransitPort: (id) => defaultMap.isTransitPort(id),
+        findNearestSanctuary: (id, maxDepth) => defaultMap.findNearestSanctuary(id, maxDepth),
+        getWeatherModifiers: (weather, placeId) => defaultMap.getWeatherModifiers(weather, placeId)
+      };
     }
   });
 
@@ -5691,1624 +6657,6 @@
     }
   });
 
-  // src/config/places.json
-  var require_places = __commonJS({
-    "src/config/places.json"(exports, module) {
-      module.exports = {
-        districts: {
-          A: {
-            id: "A",
-            name: "\u4E2D\u57CECBD\u5546\u52A1\u533A",
-            sectors: [
-              "A-1",
-              "A-2",
-              "A-3"
-            ],
-            transit_ports: [
-              "metro_hub_a",
-              "bus_bay_a"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_a_surface.ogg"
-          },
-          B: {
-            id: "B",
-            name: "\u8001\u57CE\u6587\u6559\u533A",
-            sectors: [
-              "B-1",
-              "B-2",
-              "B-3"
-            ],
-            transit_ports: [
-              "school_bus_terminal_b",
-              "old_metro_b"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_b_street.ogg"
-          },
-          C: {
-            id: "C",
-            name: "\u4E34\u6C5F\u5A31\u4E50\u7EA2\u706F\u533A",
-            sectors: [
-              "C-1",
-              "C-2",
-              "C-3"
-            ],
-            transit_ports: [
-              "dock_bus_stop_c",
-              "bridge_head_c"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_c_clubstreet.ogg"
-          },
-          D: {
-            id: "D",
-            name: "\u90CA\u91CE\u8C6A\u5B85\u533A",
-            sectors: [
-              "D-1",
-              "D-2",
-              "D-3"
-            ],
-            transit_ports: [
-              "suburb_highway_d"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_d_road.ogg"
-          }
-        },
-        places: {
-          office_lobby_a: {
-            id: "office_lobby_a",
-            district: "A",
-            sector: "A-1",
-            name: "\u5199\u5B57\u697C\u5927\u5802",
-            light: "bright",
-            crowd: "pulse",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "skybridge_a",
-              "metro_hub_a",
-              "parking_b2_a",
-              "back_alley_a"
-            ],
-            spots: [
-              "reception",
-              "security_clock"
-            ],
-            audio_trigger: "footstep_marble",
-            free_pass: [
-              "guard"
-            ]
-          },
-          parking_b2_a: {
-            id: "parking_b2_a",
-            district: "A",
-            sector: "A-1",
-            name: "\u5730\u4E0B\u8F66\u5E93B2",
-            light: "dim",
-            crowd: "low",
-            surveillance: "dense",
-            cover: 1,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "office_lobby_a",
-              "trash_station_a"
-            ],
-            spots: [
-              "pillar_hide",
-              "tire_screech"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_a_parking.ogg",
-            free_pass: [
-              "guard"
-            ]
-          },
-          skybridge_a: {
-            id: "skybridge_a",
-            district: "A",
-            sector: "A-2",
-            name: "\u8DE8\u8857\u8FDE\u5ECA\u5929\u6865",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "low",
-            cover: -2,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "office_lobby_a",
-              "metro_hub_a",
-              "bus_bay_a"
-            ],
-            spots: [
-              "perch_watch"
-            ]
-          },
-          metro_hub_a: {
-            id: "metro_hub_a",
-            district: "A",
-            sector: "A-2",
-            name: "\u5730\u94C1\u67A2\u7EBD\u51FA\u5165\u53E3",
-            light: "bright",
-            crowd: "pulse",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: true,
-            exits: [
-              "office_lobby_a",
-              "skybridge_a",
-              "store_24h_a",
-              "bus_bay_a"
-            ],
-            spots: [
-              "ticket_gate",
-              "sunken_plaza"
-            ]
-          },
-          bus_bay_a: {
-            id: "bus_bay_a",
-            district: "A",
-            sector: "A-2",
-            name: "\u7AD9\u524D\u516C\u4EA4\u6E2F\u6E7E",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "low",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: true,
-            exits: [
-              "metro_hub_a",
-              "skybridge_a"
-            ],
-            spots: [
-              "bus_wait"
-            ]
-          },
-          store_24h_a: {
-            id: "store_24h_a",
-            district: "A",
-            sector: "A-1",
-            name: "\u6CBF\u885724h\u4FBF\u5229\u5E97",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: false,
-            exits: [
-              "metro_hub_a",
-              "office_lobby_a"
-            ],
-            spots: [
-              "window_watch",
-              "exit_watch"
-            ]
-          },
-          back_alley_a: {
-            id: "back_alley_a",
-            district: "A",
-            sector: "A-3",
-            name: "\u540E\u8857\u6392\u98CE\u6697\u5DF7",
-            light: "dark",
-            crowd: "none",
-            surveillance: "low",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "office_lobby_a",
-              "trash_station_a"
-            ],
-            spots: [
-              "fan_mask",
-              "ebike_hide"
-            ]
-          },
-          trash_station_a: {
-            id: "trash_station_a",
-            district: "A",
-            sector: "A-3",
-            name: "\u5783\u573E\u88C5\u5378\u540E\u9053",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "back_alley_a",
-              "parking_b2_a"
-            ],
-            spots: [
-              "trash_search"
-            ]
-          },
-          school_gate_b: {
-            id: "school_gate_b",
-            district: "B",
-            sector: "B-1",
-            name: "\u5B66\u6821\u6B63\u95E8",
-            light: "bright",
-            crowd: "pulse",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "school_bus_terminal_b",
-              "old_skybridge_b"
-            ],
-            spots: [
-              "gate_watch",
-              "rush_mask"
-            ],
-            free_pass: [
-              "student"
-            ]
-          },
-          school_bus_terminal_b: {
-            id: "school_bus_terminal_b",
-            district: "B",
-            sector: "B-1",
-            name: "\u5B66\u533A\u516C\u4EA4\u603B\u7AD9",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "low",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: true,
-            exits: [
-              "school_gate_b",
-              "old_skybridge_b",
-              "old_metro_b"
-            ],
-            spots: [
-              "bus_wait"
-            ],
-            free_pass: [
-              "student"
-            ]
-          },
-          old_metro_b: {
-            id: "old_metro_b",
-            district: "B",
-            sector: "B-2",
-            name: "\u8001\u8857\u5730\u94C1\u7AD9",
-            light: "bright",
-            crowd: "pulse",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: true,
-            exits: [
-              "school_bus_terminal_b",
-              "old_skybridge_b",
-              "store_24h_b"
-            ],
-            spots: [
-              "ticket_gate"
-            ]
-          },
-          old_skybridge_b: {
-            id: "old_skybridge_b",
-            district: "B",
-            sector: "B-2",
-            name: "\u8001\u6C34\u6CE5\u5929\u6865",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "low",
-            cover: -2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "school_gate_b",
-              "school_bus_terminal_b",
-              "store_24h_b",
-              "old_park_b"
-            ],
-            spots: [
-              "perch_watch"
-            ]
-          },
-          store_24h_b: {
-            id: "store_24h_b",
-            district: "B",
-            sector: "B-2",
-            name: "\u8001\u885724h\u4FBF\u5229\u5E97",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: false,
-            exits: [
-              "old_skybridge_b",
-              "old_metro_b",
-              "old_alley_main_b"
-            ],
-            spots: [
-              "window_watch",
-              "exit_watch"
-            ]
-          },
-          old_park_b: {
-            id: "old_park_b",
-            district: "B",
-            sector: "B-2",
-            name: "\u8001\u5C45\u6C11\u516C\u56ED",
-            light: "dark",
-            crowd: "low",
-            surveillance: "low",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "old_skybridge_b",
-              "old_alley_main_b"
-            ],
-            spots: [
-              "park_bench",
-              "tree_hide"
-            ]
-          },
-          old_alley_main_b: {
-            id: "old_alley_main_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u8001\u8857\u4E3B\u5F04\u5802",
-            light: "dim",
-            crowd: "low",
-            surveillance: "none",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "store_24h_b",
-              "old_park_b",
-              "dark_blind_alley_b",
-              "dead_end_b",
-              "love_hotel_b"
-            ],
-            spots: [
-              "sodium_lamp",
-              "corner_shadow"
-            ]
-          },
-          dark_blind_alley_b: {
-            id: "dark_blind_alley_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u5C45\u6C11\u6742\u7269\u6697\u5DF7",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "old_alley_main_b",
-              "unit_stairs_b"
-            ],
-            spots: [
-              "trash_hide",
-              "bike_hide"
-            ]
-          },
-          dead_end_b: {
-            id: "dead_end_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u76F2\u7AEF\u6B7B\u80E1\u540C",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "old_alley_main_b",
-              "love_hotel_b"
-            ],
-            spots: [
-              "trap_corner"
-            ]
-          },
-          love_hotel_b: {
-            id: "love_hotel_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u8001\u57CE\u60C5\u4FA3\u65C5\u793E",
-            light: "dim",
-            crowd: "low",
-            surveillance: "low",
-            cover: 1,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "old_alley_main_b",
-              "dead_end_b"
-            ],
-            spots: [
-              "hotel_neon_sign",
-              "rain_canopy",
-              "front_desk"
-            ]
-          },
-          unit_stairs_b: {
-            id: "unit_stairs_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u8001\u65E7\u5355\u5143\u697C\u9053",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 1,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: true,
-            transit_port: false,
-            exits: [
-              "dark_blind_alley_b",
-              "rooftop_b"
-            ],
-            spots: [
-              "listen_home",
-              "door_crack",
-              "try_handle"
-            ],
-            free_pass: [
-              "guard"
-            ]
-          },
-          rooftop_b: {
-            id: "rooftop_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u8001\u697C\u5929\u53F0",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 0,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "unit_stairs_b"
-            ],
-            spots: [
-              "perch_watch",
-              "climb_point"
-            ]
-          },
-          club_backdoor_c: {
-            id: "club_backdoor_c",
-            district: "C",
-            sector: "C-1",
-            name: "\u9152\u5427\u5458\u5DE5\u540E\u95E8",
-            light: "dim",
-            crowd: "low",
-            surveillance: "low",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "food_street_c",
-              "river_walk_c"
-            ],
-            spots: [
-              "drunk_exit"
-            ],
-            free_pass: [
-              "bartender"
-            ]
-          },
-          food_street_c: {
-            id: "food_street_c",
-            district: "C",
-            sector: "C-1",
-            name: "\u5927\u6392\u6863\u591C\u5E02\u8857\u89D2",
-            light: "bright",
-            crowd: "high",
-            surveillance: "low",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "club_backdoor_c",
-              "store_24h_c",
-              "dock_bus_stop_c"
-            ],
-            spots: [
-              "carpool_stand"
-            ],
-            free_pass: [
-              "bartender"
-            ]
-          },
-          dock_bus_stop_c: {
-            id: "dock_bus_stop_c",
-            district: "C",
-            sector: "C-1",
-            name: "\u6CBF\u6C5F\u7801\u5934\u516C\u4EA4\u7AD9",
-            light: "dim",
-            crowd: "low",
-            surveillance: "low",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: true,
-            exits: [
-              "food_street_c",
-              "bridge_head_c"
-            ],
-            spots: [
-              "bus_wait"
-            ]
-          },
-          bridge_head_c: {
-            id: "bridge_head_c",
-            district: "C",
-            sector: "C-1",
-            name: "\u8DE8\u6C5F\u5927\u6865\u5934",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: true,
-            exits: [
-              "dock_bus_stop_c",
-              "river_walk_c"
-            ],
-            spots: [
-              "bridge_view"
-            ]
-          },
-          store_24h_c: {
-            id: "store_24h_c",
-            district: "C",
-            sector: "C-1",
-            name: "24h\u6CBF\u6C5F\u4FBF\u5229\u5E97",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: false,
-            exits: [
-              "food_street_c",
-              "village_main_c"
-            ],
-            spots: [
-              "window_watch",
-              "hangover_cure"
-            ]
-          },
-          river_walk_c: {
-            id: "river_walk_c",
-            district: "C",
-            sector: "C-2",
-            name: "\u6C5F\u5824\u89C2\u666F\u957F\u6B65\u9053",
-            light: "dark",
-            crowd: "low",
-            surveillance: "none",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "club_backdoor_c",
-              "river_steps_c",
-              "bridge_head_c"
-            ],
-            spots: [
-              "river_rail",
-              "sober_walk"
-            ]
-          },
-          river_steps_c: {
-            id: "river_steps_c",
-            district: "C",
-            sector: "C-2",
-            name: "\u4EB2\u6C34\u907F\u98CE\u53F0\u9636",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "river_walk_c",
-              "village_main_c"
-            ],
-            spots: [
-              "vomit_point",
-              "reed_hide"
-            ]
-          },
-          village_main_c: {
-            id: "village_main_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u57CE\u4E2D\u6751\u63E1\u624B\u697C\u4E3B\u5F04",
-            light: "dim",
-            crowd: "low",
-            surveillance: "none",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "store_24h_c",
-              "river_steps_c",
-              "narrow_gap_c"
-            ],
-            spots: [
-              "wet_pavement"
-            ]
-          },
-          narrow_gap_c: {
-            id: "narrow_gap_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u4E00\u7EBF\u5929\u5E7D\u6E7F\u7A84\u5F04",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "village_main_c",
-              "rental_iron_door_c"
-            ],
-            spots: [
-              "aircon_drip",
-              "ambush_corner"
-            ]
-          },
-          rental_iron_door_c: {
-            id: "rental_iron_door_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u51FA\u79DF\u5C4B\u697C\u9053\u94C1\u95E8",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 1,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: true,
-            transit_port: false,
-            exits: [
-              "narrow_gap_c",
-              "village_roof_c"
-            ],
-            spots: [
-              "spiral_stairs",
-              "listen_home"
-            ]
-          },
-          village_roof_c: {
-            id: "village_roof_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u5171\u7528\u6742\u7269\u5929\u53F0",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "rental_iron_door_c"
-            ],
-            spots: [
-              "clothesline_hide",
-              "overlook"
-            ]
-          },
-          suburb_highway_d: {
-            id: "suburb_highway_d",
-            district: "D",
-            sector: "D-1",
-            name: "\u90CA\u91CE\u516C\u8DEF\u957F\u5F2F\u9053",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 0,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: true,
-            exits: [
-              "gas_station_d",
-              "private_road_d"
-            ],
-            spots: [
-              "curve_hide"
-            ]
-          },
-          gas_station_d: {
-            id: "gas_station_d",
-            district: "D",
-            sector: "D-1",
-            name: "24h\u516C\u8DEF\u52A0\u6CB9\u7AD9",
-            light: "bright",
-            crowd: "low",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: false,
-            exits: [
-              "suburb_highway_d",
-              "private_road_d"
-            ],
-            spots: [
-              "mart_cashier",
-              "pump_island"
-            ]
-          },
-          private_road_d: {
-            id: "private_road_d",
-            district: "D",
-            sector: "D-2",
-            name: "\u6797\u836B\u79C1\u5BB6\u4E3B\u8F66\u9053",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: -2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "suburb_highway_d",
-              "gas_station_d",
-              "pine_forest_d",
-              "estate_gate_d"
-            ],
-            spots: [
-              "open_road",
-              "patrol_watch"
-            ]
-          },
-          pine_forest_d: {
-            id: "pine_forest_d",
-            district: "D",
-            sector: "D-2",
-            name: "\u7F13\u5761\u6749\u6728\u5BC6\u6797",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 3,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "private_road_d",
-              "estate_gate_d"
-            ],
-            spots: [
-              "ebike_cache",
-              "tree_ambush"
-            ]
-          },
-          estate_gate_d: {
-            id: "estate_gate_d",
-            district: "D",
-            sector: "D-3",
-            name: "\u5E84\u56ED\u94C1\u827A\u5927\u95E8",
-            light: "dim",
-            crowd: "none",
-            surveillance: "dense",
-            cover: 0,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "private_road_d",
-              "pine_forest_d",
-              "villa_garden_d"
-            ],
-            spots: [
-              "gate_intercom",
-              "infrared_cam"
-            ]
-          },
-          villa_garden_d: {
-            id: "villa_garden_d",
-            district: "D",
-            sector: "D-3",
-            name: "\u79C1\u5BB6\u5EAD\u9662\u7EFF\u7BF1",
-            light: "dark",
-            crowd: "none",
-            surveillance: "dense",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "estate_gate_d",
-              "garage_side_door_d",
-              "villa_porch_d"
-            ],
-            spots: [
-              "dog_kennel",
-              "sprinkler"
-            ]
-          },
-          garage_side_door_d: {
-            id: "garage_side_door_d",
-            district: "D",
-            sector: "D-3",
-            name: "\u8F66\u5E93\u5165\u6237\u4FA7\u95E8",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 1,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "villa_garden_d",
-              "villa_porch_d"
-            ],
-            spots: [
-              "pick_side_door"
-            ]
-          },
-          villa_porch_d: {
-            id: "villa_porch_d",
-            district: "D",
-            sector: "D-3",
-            name: "\u72EC\u680B\u522B\u5885\u6B63\u95E8\u7384\u5173",
-            light: "bright",
-            crowd: "none",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: true,
-            transit_port: false,
-            exits: [
-              "villa_garden_d",
-              "garage_side_door_d"
-            ],
-            spots: [
-              "smart_lock",
-              "home_safe"
-            ]
-          }
-        }
-      };
-    }
-  });
-
-  // src/runtime/map.js
-  var require_map = __commonJS({
-    "src/runtime/map.js"(exports, module) {
-      var defaultPlacesData = require_places();
-      var MapRuntime = class {
-        constructor(data = defaultPlacesData) {
-          this.districts = data.districts || {};
-          this.places = data.places || {};
-        }
-        getPlace(placeId) {
-          return this.places[placeId] || null;
-        }
-        getDistrict(districtId) {
-          return this.districts[districtId] || null;
-        }
-        getExits(placeId) {
-          const place = this.getPlace(placeId);
-          return place ? place.exits || [] : [];
-        }
-        isStrikeAllowed(placeId) {
-          const place = this.getPlace(placeId);
-          if (!place) return false;
-          return !place.strike_sealed;
-        }
-        isTransitPort(placeId) {
-          const place = this.getPlace(placeId);
-          if (!place) return false;
-          return !!place.transit_port;
-        }
-        // 逃跑 AI 寻路：广度优先搜索 (BFS) 寻找最近的庇护所 (Sanctuary)
-        findNearestSanctuary(startPlaceId, maxDepth = 4) {
-          const start = this.getPlace(startPlaceId);
-          if (!start) return null;
-          if (start.sanctuary) return startPlaceId;
-          const queue = [{ id: startPlaceId, depth: 0, path: [startPlaceId] }];
-          const visited = /* @__PURE__ */ new Set([startPlaceId]);
-          while (queue.length > 0) {
-            const current = queue.shift();
-            if (current.depth >= maxDepth) continue;
-            const place = this.getPlace(current.id);
-            if (!place) continue;
-            for (const nextId of place.exits) {
-              if (!visited.has(nextId)) {
-                visited.add(nextId);
-                const nextPlace = this.getPlace(nextId);
-                if (nextPlace && nextPlace.sanctuary) {
-                  return {
-                    sanctuaryId: nextId,
-                    steps: current.depth + 1,
-                    nextStep: current.path[1] || nextId,
-                    fullPath: [...current.path, nextId]
-                  };
-                }
-                queue.push({
-                  id: nextId,
-                  depth: current.depth + 1,
-                  path: [...current.path, nextId]
-                });
-              }
-            }
-          }
-          return null;
-        }
-        // 计算天气与当前场所节点的动态耦合修正
-        getWeatherModifiers(weather = "clear", placeId) {
-          const place = this.getPlace(placeId);
-          if (!place) return { tags: [], mods: {} };
-          if (place.indoor) {
-            return {
-              tags: [],
-              mods: { indoorImmunity: true }
-            };
-          }
-          const result = { tags: [], mods: {} };
-          if (weather === "rain") {
-            result.tags.push("tag_rain");
-            result.mods.stealth = 1;
-            result.mods.sound = -2;
-            result.mods.faceCover = 2;
-            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c"];
-            if (slipperyPlaces.includes(placeId)) {
-              result.tags.push("tag_slippery");
-              result.mods.slipRisk = true;
-            }
-          } else if (weather === "storm") {
-            result.tags.push("tag_storm");
-            result.mods.stealth = 2;
-            result.mods.sound = -5;
-            result.mods.followSpeed = -2;
-            result.mods.surveillanceDiscount = 0.5;
-            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c", "private_road_d"];
-            if (slipperyPlaces.includes(placeId)) {
-              result.tags.push("tag_slippery");
-              result.mods.slipRisk = true;
-            }
-          }
-          return result;
-        }
-      };
-      var defaultMap = new MapRuntime();
-      module.exports = {
-        MapRuntime,
-        defaultMap,
-        getPlace: (id) => defaultMap.getPlace(id),
-        getDistrict: (id) => defaultMap.getDistrict(id),
-        getExits: (id) => defaultMap.getExits(id),
-        isStrikeAllowed: (id) => defaultMap.isStrikeAllowed(id),
-        isTransitPort: (id) => defaultMap.isTransitPort(id),
-        findNearestSanctuary: (id, maxDepth) => defaultMap.findNearestSanctuary(id, maxDepth),
-        getWeatherModifiers: (weather, placeId) => defaultMap.getWeatherModifiers(weather, placeId)
-      };
-    }
-  });
-
-  // src/runtime/facts.js
-  var require_facts = __commonJS({
-    "src/runtime/facts.js"(exports, module) {
-      var LP = require_lifepack();
-      var R = require_rules();
-      var RAW_LEXICON = require_lexicon();
-      var map = require_map();
-      var SLOTS = ["home", "schedule", "carry", "social", "psyche", "romance"];
-      var FACT_TAGS = ["gym"];
-      var L2_TICKET_GATE = {
-        carry: ["photo", "scan", "listen", "note", "watch_lights"],
-        social: ["watch_peers"],
-        romance: ["hear_gossip", "chat", "watch_peers"]
-      };
-      function loadPack(id, data = LP) {
-        return data.packs[id] || null;
-      }
-      function l1FormulaHold(unlock = LP.unlock) {
-        return SLOTS.every(
-          (s) => unlock.L1[s] === null || unlock.L1[s] === Math.floor((unlock.L2[s] || 0) / 2)
-        );
-      }
-      function slotLevel(slot, intel = {}, unlock = LP.unlock) {
-        const pi = intel.pi || 0;
-        for (const lv of [3, 2, 1]) {
-          const t = unlock["L" + lv][slot];
-          if (t === null) {
-            if (lv === 3) return 3;
-            continue;
-          }
-          if (pi >= t) return lv;
-        }
-        return 0;
-      }
-      function factVisible(fact, level, tickets = [], slot = fact.slot) {
-        if (fact.public) return true;
-        if (level < fact.level) return false;
-        const set = tickets instanceof Set ? tickets : new Set(tickets);
-        if (fact.level === 3) return (fact.reveal_via || []).some((a) => set.has(a));
-        if (fact.level === 2) {
-          const gate = L2_TICKET_GATE[slot];
-          return !gate || gate.some((a) => set.has(a));
-        }
-        return true;
-      }
-      function view(packId, intel = {}, data = LP) {
-        const pack = loadPack(packId, data);
-        if (!pack) return null;
-        const levels = {};
-        const facts = [];
-        for (const slot of SLOTS) levels[slot] = slotLevel(slot, intel, data.unlock);
-        const factList = intel && (intel.assignedFacts || intel.facts) || pack.factPool || [];
-        for (const f of factList) {
-          if (factVisible(f, levels[f.slot], intel.tickets || [])) {
-            facts.push({ id: f.id, slot: f.slot, level: f.level, title: f.title, text: f.text, place: f.place });
-          }
-        }
-        return { pack: packId, levels, facts };
-      }
-      function nightConditions(packId, rng, data = LP) {
-        const pack = loadPack(packId, data);
-        if (!pack) return null;
-        return pack.conditions.map((c) => {
-          const p = Math.round(c.mod * (1 - pack.stability) * 1e6) / 1e6;
-          return { id: c.id, title: c.title, active: rng() < p };
-        });
-      }
-      function effectiveAcuity(per, traits = []) {
-        let mod = 0;
-        for (const t of traits) {
-          const tid = typeof t === "string" ? t : t && t.id;
-          const def = R.tags && R.tags[tid];
-          if (def && def.category === "acuity" && typeof def.value === "number") {
-            mod += def.value;
-          }
-        }
-        return Math.max(1, Math.min(10, per + mod));
-      }
-      function packHasGym(packId, data = LP) {
-        const pack = loadPack(packId, data);
-        if (!pack) return false;
-        return (pack.factPool || []).some((f) => f.slot === "schedule" && (f.tags || []).includes("gym"));
-      }
-      function validate(pack, data = LP) {
-        const errors = [];
-        const at = `pack(${pack.id || "?"})`;
-        if (!pack.id || !pack.name) errors.push(`${at}: \u7F3A id/name`);
-        for (const k of ["str", "agi", "per", "nrv"]) {
-          if (typeof pack.stats?.[k] !== "number") errors.push(`${at}: stats.${k} \u7F3A\u5931`);
-        }
-        if (typeof pack.social !== "number") errors.push(`${at}: social \u7F3A\u5931`);
-        if (typeof pack.stability !== "number" || pack.stability <= 0 || pack.stability >= 1)
-          errors.push(`${at}: stability \u987B\u5728 (0,1) \u5F00\u533A\u95F4`);
-        const tagIds = new Set(Object.keys(RAW_LEXICON.tags));
-        for (const t of pack.traits || []) {
-          if (!tagIds.has(t)) errors.push(`${at}: traits "${t}" \u4E0D\u5728\u8BCD\u8868 tags\uFF08\u9ED1\u6237\uFF09`);
-        }
-        const entryIds = new Set(RAW_LEXICON.entries.map((e) => e.id));
-        for (const f of pack.factPool || []) {
-          const fat = `${at}.fact(${f.id || "?"})`;
-          if (!f.id || !f.title || !f.text) errors.push(`${fat}: \u7F3A id/title/text`);
-          if (!SLOTS.includes(f.slot)) errors.push(`${fat}: \u975E\u6CD5\u69FD\u4F4D ${f.slot}`);
-          if (![1, 2, 3].includes(f.level)) errors.push(`${fat}: \u975E\u6CD5\u5C42\u7EA7 ${f.level}`);
-          if (f.place && !map.getPlace(f.place)) errors.push(`${fat}: place "${f.place}" \u4E0D\u5728 places.json`);
-          for (const a of f.reveal_via || []) {
-            if (!entryIds.has(a)) errors.push(`${fat}: reveal_via "${a}" \u4E0D\u5728\u8BCD\u8868 entries\uFF08\u9ED1\u6237\uFF09`);
-          }
-          for (const t of f.tags || []) {
-            if (!FACT_TAGS.includes(t)) errors.push(`${fat}: tags "${t}" \u4E0D\u5728\u4E8B\u5B9E\u6807\u8BB0\u767D\u540D\u5355\uFF08\u9ED1\u6237\uFF09`);
-          }
-        }
-        for (const r of pack.routes || []) {
-          for (const step of r.path || []) {
-            if (!map.getPlace(step.place)) errors.push(`${at}.route(${r.id}): \u8282\u70B9 "${step.place}" \u4E0D\u5728 places.json`);
-          }
-        }
-        return errors;
-      }
-      module.exports = {
-        SLOTS,
-        FACT_TAGS,
-        L2_TICKET_GATE,
-        loadPack,
-        l1FormulaHold,
-        slotLevel,
-        factVisible,
-        view,
-        nightConditions,
-        effectiveAcuity,
-        packHasGym,
-        validate
-      };
-    }
-  });
-
-  // src/runtime/target_state.js
-  var require_target_state = __commonJS({
-    "src/runtime/target_state.js"(exports, module) {
-      var D = require_dice();
-      var T = require_tags();
-      var LP = require_lifepack();
-      var R = require_rules();
-      function isWeekend(date) {
-        const day = ((date || 1) - 1) % 7 + 1;
-        return day >= 6;
-      }
-      function toSeed(seed) {
-        if (typeof seed === "number") return seed >>> 0;
-        return D.floorSeed(String(seed || 0), 0);
-      }
-      function weightedSample(list, seed, weightKey = "weight") {
-        if (!list || !list.length) return { item: null, next: null };
-        const total = list.reduce((s, it) => s + (it[weightKey] || 1), 0);
-        const next = D.rng(toSeed(seed));
-        const r = next() * total;
-        let acc = 0;
-        for (const it of list) {
-          acc += it[weightKey] || 1;
-          if (r <= acc) return { item: it, next };
-        }
-        return { item: list[list.length - 1], next };
-      }
-      var PERSONALITY_STYLE_MAP = {
-        casual: ["casual"],
-        stubborn: ["casual", "cool"],
-        vigilant: ["cool", "casual"],
-        timid: ["elegant", "sweet"],
-        gentle: ["elegant"],
-        introverted: ["elegant", "cool"],
-        aloof: ["cool", "casual"],
-        cheerful: ["casual", "sweet"],
-        chic: ["sweet"],
-        naive: ["sweet", "elegant"],
-        guarded: ["cool", "casual", "elegant"],
-        oblivious: ["casual"]
-      };
-      var SWEET_EXCLUDE_FOR_COOL = /* @__PURE__ */ new Set(["outfit_sailor_jk", "outfit_plaid_jk", "outfit_lolita_jsk"]);
-      function sampleOutfit(pack, date, seed, persona) {
-        const p = pack || LP.packs.college || LP.packs.student;
-        const weekend = isWeekend(date);
-        if (p.outfits && p.outfits.length) {
-          const personalityId = persona && (persona.personalityId || persona.personalityTag || persona.personality) || pack && pack.traits && pack.traits.find((t) => PERSONALITY_STYLE_MAP[t]) || "casual";
-          const allowedStyles = PERSONALITY_STYLE_MAP[personalityId] || ["casual", "elegant"];
-          let candidates = p.outfits.filter((o) => allowedStyles.includes(o.styleGroup));
-          if (personalityId === "aloof" || personalityId === "stubborn") {
-            candidates = candidates.filter((o) => !SWEET_EXCLUDE_FOR_COOL.has(o.id));
-          }
-          if (!candidates.length) {
-            candidates = p.outfits.filter((o) => !SWEET_EXCLUDE_FOR_COOL.has(o.id));
-          }
-          if (!candidates.length) candidates = p.outfits;
-          if (persona && persona.shoeId && candidates.some((o) => o.shoeId === persona.shoeId)) {
-            candidates = candidates.filter((o) => o.shoeId === persona.shoeId);
-          }
-          const idx = typeof seed === "number" && Number.isFinite(seed) ? Math.abs(seed) % candidates.length : Math.floor(Math.random() * candidates.length);
-          const item = candidates[idx];
-          return {
-            id: item.id,
-            name: item.name,
-            desc: item.desc,
-            prompt: item.prompt,
-            socks: item.socks || "",
-            shoeId: item.shoeId || "shoe_sneakers",
-            shoeName: item.shoeName || "\u8FD0\u52A8\u978B",
-            styleGroup: item.styleGroup,
-            isWeekend: weekend
-          };
-        }
-        if (weekend && p.weekendOutfitPool && p.weekendOutfitPool.length) {
-          const { item } = weightedSample(p.weekendOutfitPool, seed);
-          return {
-            id: item.id,
-            name: item.name,
-            desc: item.desc,
-            prompt: item.prompt,
-            shoeId: item.shoeId || "shoe_sneakers",
-            shoeName: item.shoeName || "\u8FD0\u52A8\u978B",
-            isWeekend: true
-          };
-        }
-        const targetDef = R.targets && R.targets.list && R.targets.list[p.id];
-        const defaultShoeId = targetDef?.shoe || "shoe_heel";
-        const def = p.defaultOutfit || {
-          id: "outfit_default",
-          name: "\u65E5\u5E38\u8863\u88C5",
-          desc: "\u89C4\u77E9\u5E38\u670D",
-          prompt: "\u767D\u63CF\u5176\u89C4\u77E9\u5F97\u4F53\u7684\u65E5\u5E38\u88C5\u675F",
-          shoeId: defaultShoeId,
-          shoeName: R.tags && R.tags[defaultShoeId]?.name || "\u65E5\u5E38\u978B\u5177"
-        };
-        return {
-          id: def.id,
-          name: def.name,
-          desc: def.desc,
-          prompt: def.prompt,
-          shoeId: def.shoeId || defaultShoeId,
-          shoeName: def.shoeName || "\u5C0F\u76AE\u978B",
-          isWeekend: false
-        };
-      }
-      function isLimpingDate(date, lastHotelDate) {
-        if (!lastHotelDate || !date) return false;
-        return date === lastHotelDate + 2 || date === lastHotelDate + 3;
-      }
-      function sampleSomatic(pack, seed, opts = {}) {
-        if (opts.isLimping) {
-          return {
-            id: "limping",
-            name: "\u6B65\u5C65\u8E52\u8DDA",
-            desc: "\u53CC\u817F\u8F7B\u5FAE\u5E76\u62E2\uFF0C\u8FC8\u6B65\u7A0D\u5927\u65F6\u8F7B\u5FAE\u5438\u6C14\uFF0C\u4F3C\u89E6\u53CA\u75DB\u5904\uFF0C\u654F\u6377 -2",
-            mod: { agi: -2 },
-            reason: "\u5468\u672B\u4EB2\u5BC6\u521D\u8BD5\u540E\u7684\u751F\u7406\u53D7\u8FEB\u53CD\u5E94\uFF0C\u6B65\u6001\u8FDF\u7F13\u6536\u655B",
-            tag: "somatic_limping",
-            prompt: "\u767D\u63CF\u5C11\u5973\u6B65\u6001\u660E\u663E\u6536\u655B\u53D8\u5C0F\uFF0C\u4E24\u817F\u5FAE\u5E76\uFF0C\u8FC8\u6B65\u8F7B\u7F13\u4E14\u5076\u5C14\u8F7B\u5FAE\u5438\u6C14\uFF0C\u4F3C\u89E6\u53CA\u9690\u79D8\u75DB\u5904\uFF0C\u795E\u8272\u7565\u5E26\u5C40\u4FC3"
-          };
-        }
-        const p = pack || LP.packs.college || LP.packs.student;
-        if (!p.somaticPool || !p.somaticPool.length) {
-          return {
-            id: "normal",
-            name: "\u5E73\u5E38\u72B6\u6001",
-            desc: "\u57FA\u7EBF\u5E73\u6DE1",
-            mod: {},
-            reason: "\u65E5\u5E38\u665A\u5F52\uFF0C\u5FC3\u5883\u5E73\u7A33",
-            tag: null,
-            prompt: "\u767D\u63CF\u5176\u5E73\u9759\u5300\u901F\u7684\u6B65\u6001"
-          };
-        }
-        const { item, next } = weightedSample(p.somaticPool, seed);
-        let reason = "";
-        if (item.reasons && item.reasons.length) {
-          const idx = Math.floor(next() * item.reasons.length);
-          reason = item.reasons[idx] || item.reasons[0];
-        }
-        return {
-          id: item.id,
-          name: item.name,
-          desc: item.desc || "",
-          mod: item.mod || {},
-          reason,
-          tag: item.tag || (item.id === "normal" ? null : "somatic_" + item.id),
-          prompt: item.prompt || ""
-        };
-      }
-      function resolveHand(pack, placeId, currentHand, seed, opts = {}) {
-        const p = pack || LP.packs.college || LP.packs.student;
-        const pool = p.handPool || {};
-        if ((opts.isCarriage || placeId === "metro_carriage" || placeId === "carriage") && pool.carriagePool && pool.carriagePool.length) {
-          const { item: item2 } = weightedSample(pool.carriagePool, seed);
-          return {
-            id: item2.id,
-            name: item2.name,
-            desc: item2.desc || "",
-            fumbling: !!item2.fumbling,
-            tag: item2.tag || (item2.fumbling ? "hand_fumble" : null),
-            remainingDuration: item2.duration || 1,
-            isSiteOverride: false,
-            isCarriage: true
-          };
-        }
-        if (placeId && pool.siteOverrides && pool.siteOverrides[placeId]) {
-          const ov = pool.siteOverrides[placeId];
-          return {
-            id: ov.id,
-            name: ov.name,
-            desc: ov.desc || "",
-            fumbling: !!ov.fumbling,
-            tag: ov.tag || (ov.fumbling ? "hand_fumble" : null),
-            remainingDuration: 1,
-            isSiteOverride: true
-          };
-        }
-        if (currentHand && !currentHand.isSiteOverride && (currentHand.remainingDuration || 0) > 1) {
-          return {
-            ...currentHand,
-            remainingDuration: currentHand.remainingDuration - 1
-          };
-        }
-        const enRoute = pool.enRoute || [
-          { id: "normal", name: "\u81EA\u7136\u5782\u624B", weight: 100, duration: 2, tag: null, desc: "\u81EA\u7136\u6446\u81C2\u524D\u884C" }
-        ];
-        const { item } = weightedSample(enRoute, seed);
-        return {
-          id: item.id,
-          name: item.name,
-          desc: item.desc || "",
-          fumbling: !!item.fumbling,
-          tag: item.tag || null,
-          remainingDuration: item.duration || 1,
-          isSiteOverride: false
-        };
-      }
-      function syncTargetStateTags(stack, targetState) {
-        const removePrefixes = ["hand_", "somatic_"];
-        for (let i = stack.length - 1; i >= 0; i--) {
-          const t = stack[i];
-          if (t.owner === "target" && t.id && removePrefixes.some((p) => t.id.startsWith(p))) {
-            stack.splice(i, 1);
-          }
-        }
-        if (!targetState) return;
-        if (targetState.somatic && targetState.somatic.tag) {
-          const tagDef = R.tags && R.tags[targetState.somatic.tag];
-          if (tagDef) {
-            T.apply(stack, {
-              id: tagDef.id,
-              name: tagDef.name,
-              owner: "target",
-              type: "status",
-              category: tagDef.category || "status",
-              effects: tagDef.value ? [{ category: tagDef.category, value: tagDef.value }] : [],
-              duration: { type: "night" }
-            });
-          }
-        }
-        if (targetState.hand && targetState.hand.tag) {
-          const tagDef = R.tags && R.tags[targetState.hand.tag];
-          if (tagDef) {
-            T.apply(stack, {
-              id: tagDef.id,
-              name: tagDef.name,
-              owner: "target",
-              type: "scene",
-              category: tagDef.category || "stealth",
-              effects: tagDef.value ? [{ category: tagDef.category, value: tagDef.value }] : [],
-              duration: { type: "scene", count: targetState.hand.remainingDuration || 1 }
-            });
-          }
-        }
-        if (targetState.hand && targetState.hand.fumbling && (!targetState.hand.tag || targetState.hand.tag !== "hand_fumble")) {
-          const tagDef = R.tags && R.tags.hand_fumble;
-          if (tagDef) {
-            T.apply(stack, {
-              id: tagDef.id,
-              name: tagDef.name,
-              owner: "target",
-              type: "scene",
-              category: tagDef.category || "stealth",
-              effects: tagDef.value ? [{ category: tagDef.category, value: tagDef.value }] : [],
-              duration: { type: "scene", count: 1 }
-            });
-          }
-        }
-      }
-      function resolveSaturdayRoutine(pack, persona, seed) {
-        if (persona && persona.saturdayRoutine) {
-          return persona.saturdayRoutine;
-        }
-        const social = persona && persona.finalStats && persona.finalStats.social || persona && persona.social || pack && pack.social || 1;
-        const personalityId = persona && (persona.personality?.id || persona.personality) || pack && pack.traits && pack.traits.find((t) => ["timid", "guarded", "stubborn", "gentle", "curious", "oblivious"].includes(t)) || "timid";
-        let weights = { cram: 50, outing: 35, date: 15 };
-        if (social <= 1) {
-          if (personalityId === "timid" || personalityId === "guarded") {
-            weights = { cram: 65, outing: 30, date: 5 };
-          } else {
-            weights = { cram: 55, outing: 35, date: 10 };
-          }
-        } else if (social === 2) {
-          if (personalityId === "guarded" || personalityId === "stubborn") {
-            weights = { cram: 45, outing: 40, date: 15 };
-          } else {
-            weights = { cram: 35, outing: 45, date: 20 };
-          }
-        } else {
-          weights = { cram: 20, outing: 50, date: 30 };
-        }
-        const pool = [
-          { id: "cram", weight: weights.cram },
-          { id: "outing", weight: weights.outing },
-          { id: "date", weight: weights.date }
-        ];
-        const { item } = weightedSample(pool, seed);
-        return item.id;
-      }
-      function getDateHotelThreshold(personalityId) {
-        if (personalityId === "timid" || personalityId === "anxious") return 4;
-        if (personalityId === "guarded") return 3;
-        return 2;
-      }
-      function resolveSaturdayRoute(pack, saturdayRoutine, dateCount, personalityId, seed, opts = {}) {
-        const routes = pack?.routes || [];
-        if (saturdayRoutine === "cram") {
-          return routes.find((r) => r.id === "saturday_cram") || routes[0];
-        }
-        if (saturdayRoutine === "outing") {
-          return routes.find((r) => r.id === "saturday_outing") || routes[0];
-        }
-        if (saturdayRoutine === "date") {
-          const threshold = getDateHotelThreshold(personalityId);
-          if ((dateCount || 0) >= threshold) {
-            const next = D.rng(toSeed(seed));
-            const isHotel = next() < 0.5;
-            if (isHotel) {
-              const base = routes.find((r) => r.id === "saturday_date_hotel") || routes.find((r) => r.id === "saturday_date_home") || routes[0];
-              const isFirst = (opts.hotelVisitedCount || 0) === 0;
-              return {
-                ...base,
-                isFirstHotel: isFirst,
-                note: isFirst ? "\u5468\u516D\u9752\u6DA9\u7EA6\u4F1A\xB7\u672A\u77E5\u65B0\u52A8\u7EBF\u5206\u652F" : "\u5468\u516D\u60C5\u4FA3\u7EA6\u4F1A\xB7\u60C5\u4FA3\u65C5\u793E\u8D70\u5411",
-                prompt: isFirst ? "\u767D\u63CF\u9752\u6DA9\u60C5\u4FA3\u521D\u6B21\u7275\u624B\u7684\u5C40\u4FC3\u4E0E\u5A07\u7F9E\uFF0C\u7EAF\u771F\u604B\u7231\u7684\u5FAE\u751C\u4E0E\u6069\u7231\u3002\u4E24\u4EBA\u5341\u6307\u7D27\u6263\uFF0C\u5E76\u80A9\u62D0\u5165\u4E00\u6761\u964C\u751F\u72ED\u7A84\u7684\u504F\u50FB\u4FA7\u5DF7\u6DF1\u5904\uFF1B\u5C11\u5973\u5FC3\u8DF3\u5FAE\u5FEB\u3001\u638C\u5FC3\u6CDB\u8D77\u7EC6\u6C57\uFF0C\u5E26\u7740\u5BF9\u8DE8\u5165\u5927\u4EBA\u4E16\u754C\u7684\u5411\u5F80\u4E0E\u7D27\u5F20\u3002\u4E25\u7981\u63D0\u524D\u5267\u900F\u76EE\u7684\u5730\u540D\u79F0\u3002" : "\u767D\u63CF\u60C5\u4FA3\u4E8C\u4EBA\u98DF\u9AD3\u77E5\u5473\u540E\u7684\u719F\u7A14\u4EB2\u6635\u4E0E\u6069\u7231\u7F20\u7EF5\uFF0C\u4F4E\u58F0\u8033\u8BED\u4E0E\u4EB2\u5BC6\u4F9D\u504E\uFF0C\u7275\u624B\u8F7B\u8F66\u719F\u8DEF\u8D70\u5411\u5DF7\u6DF1\u5904\u7684\u60C5\u4FA3\u65C5\u793E\u3002",
-                known: isFirst ? [1, 1, 1, 0] : [1, 1, 1, 1]
-              };
-            }
-          }
-          return routes.find((r) => r.id === "saturday_date_home") || routes[0];
-        }
-        return routes.find((r) => r.days && r.days.includes(6)) || routes[0];
-      }
-      function resolveTargetFacts(pack, persona, seed = 12345) {
-        const p = pack || LP.packs.college || LP.packs.student;
-        if (!p) return { assignedFacts: [], factSummary: {} };
-        if (persona && persona.assignedFacts && Array.isArray(persona.assignedFacts) && persona.assignedFacts.length) {
-          return {
-            assignedFacts: persona.assignedFacts,
-            factSummary: persona.factSummary || {}
-          };
-        }
-        if (!p.homePool) {
-          const facts = (p.factPool || []).slice();
-          return {
-            assignedFacts: facts,
-            factSummary: {}
-          };
-        }
-        const next = D.rng(toSeed(seed));
-        const personalityId = persona && (persona.personalityId || persona.personalityTag || persona.personality?.id || persona.personality) || "casual";
-        const homePool = p.homePool || [];
-        const chosenHome = homePool.length ? homePool[Math.floor(next() * homePool.length)] : null;
-        function pickByPersonality(pool, prefMap) {
-          if (!pool || !pool.length) return null;
-          const weights = pool.map((branch) => {
-            const prefs = prefMap && prefMap[branch.id] || branch.preferredPersonalities || [];
-            return prefs.includes(personalityId) ? 3 : 1;
-          });
-          const totalW = weights.reduce((a, b) => a + b, 0);
-          let r = next() * totalW;
-          for (let i = 0; i < pool.length; i++) {
-            r -= weights[i];
-            if (r <= 0) return pool[i];
-          }
-          return pool[0];
-        }
-        const schedulePrefMap = {
-          sched_academic: ["stubborn", "aloof", "vigilant", "introverted"],
-          sched_parttime: ["gentle", "stubborn", "casual", "naive"],
-          sched_socialite: ["cheerful", "chic", "naive", "casual"]
-        };
-        const chosenSchedule = pickByPersonality(p.schedulePool, schedulePrefMap);
-        const carryPrefMap = {
-          carry_academic: ["stubborn", "aloof", "vigilant", "introverted", "gentle"],
-          carry_glamour: ["chic", "cheerful", "naive"],
-          carry_casual: ["casual", "timid", "vigilant"]
-        };
-        const chosenCarry = pickByPersonality(p.carryPool, carryPrefMap);
-        const socialPrefMap = {
-          social_introvert: ["introverted", "aloof", "vigilant", "timid"],
-          social_extrovert: ["cheerful", "chic", "naive"],
-          social_moderate: ["gentle", "stubborn", "casual"]
-        };
-        const chosenSocial = pickByPersonality(p.socialPool, socialPrefMap);
-        const psychePrefMap = {
-          psyche_pride: ["stubborn", "aloof", "vigilant"],
-          psyche_timid: ["timid", "gentle", "naive"],
-          psyche_cautious: ["vigilant", "casual", "introverted", "chic"]
-        };
-        const chosenPsyche = pickByPersonality(p.psychePool, psychePrefMap);
-        const romancePool = p.romancePool || [];
-        let chosenRomance = null;
-        if (persona && persona.romanceState) {
-          chosenRomance = romancePool.find((r) => r.id === persona.romanceState) || null;
-        }
-        if (!chosenRomance && romancePool.length) {
-          chosenRomance = romancePool[Math.floor(next() * romancePool.length)];
-        }
-        const chosenBranches = [chosenHome, chosenSchedule, chosenCarry, chosenSocial, chosenPsyche, chosenRomance].filter(Boolean);
-        const assignedFacts = [];
-        for (const b of chosenBranches) {
-          if (b.facts && Array.isArray(b.facts)) {
-            for (const f of b.facts) assignedFacts.push(f);
-          }
-        }
-        const factSummary = {
-          home: chosenHome ? chosenHome.id : null,
-          schedule: chosenSchedule ? chosenSchedule.id : null,
-          carry: chosenCarry ? chosenCarry.id : null,
-          social: chosenSocial ? chosenSocial.id : null,
-          psyche: chosenPsyche ? chosenPsyche.id : null,
-          romance: chosenRomance ? chosenRomance.id : null
-        };
-        if (persona) {
-          persona.assignedFacts = assignedFacts;
-          persona.factSummary = factSummary;
-        }
-        return { assignedFacts, factSummary };
-      }
-      module.exports = {
-        isWeekend,
-        isLimpingDate,
-        sampleOutfit,
-        sampleSomatic,
-        resolveHand,
-        syncTargetStateTags,
-        resolveSaturdayRoutine,
-        getDateHotelThreshold,
-        resolveSaturdayRoute,
-        resolveTargetFacts
-      };
-    }
-  });
-
   // src/config/wardrobe.json
   var require_wardrobe = __commonJS({
     "src/config/wardrobe.json"(exports, module) {
@@ -7607,6 +6955,637 @@
     }
   });
 
+  // src/contracts/persona.js
+  var require_persona = __commonJS({
+    "src/contracts/persona.js"(exports, module) {
+      "use strict";
+      var LP = require_lifepack();
+      var W = require_wardrobe();
+      var R = require_rules();
+      function personalityIdOf(persona) {
+        if (!persona) return null;
+        const value = persona.personalityId || persona.personalityTag || persona.personality?.id || persona.personality;
+        if (typeof value !== "string") return null;
+        return R.targets.generator.personalityPool.find(
+          (p) => p.id === value || p.name === value
+        )?.id || value;
+      }
+      function normalizePersona(value) {
+        if (value == null) return null;
+        const copy = JSON.parse(JSON.stringify(value));
+        const id = personalityIdOf(copy);
+        if (id) copy.personalityId = id;
+        return copy;
+      }
+      function validatePersona(value, targetId, { complete = false, references = true } = {}) {
+        if (value == null && !complete) return;
+        const fail = (field) => {
+          throw Object.assign(new Error(`\u4EBA\u7269\u6570\u636E\u65E0\u6548\uFF1A${field}`), {
+            code: "PERSONA_INVALID"
+          });
+        };
+        if (!value || typeof value !== "object" || Array.isArray(value)) fail("\u753B\u50CF");
+        if (value.targetId && value.targetId !== targetId) fail("\u76EE\u6807\u7C7B\u578B\u4E0D\u4E00\u81F4");
+        if (references && !R.targets.list[targetId]) fail("\u76EE\u6807\u7C7B\u578B");
+        const pid = personalityIdOf(value);
+        if (references && pid && !R.tags[pid] && !["oblivious", "curious", "anxious"].includes(pid))
+          fail("\u6027\u683C");
+        for (const field of ["personalityTag", "hobbyTag", "shoeId"])
+          if (references && value[field] && !R.tags[value[field]]) fail(field);
+        if (value.finalStats) {
+          for (const [key, n] of Object.entries(value.finalStats))
+            if (!["str", "agi", "per", "nrv", "social"].includes(key) || !Number.isFinite(n) || n < 1 || n > 10)
+              fail(`\u5C5E\u6027 ${key}`);
+        }
+        if (value.assignedFacts != null && (!Array.isArray(value.assignedFacts) || value.assignedFacts.some((f) => !f || typeof f.id !== "string")))
+          fail("\u56FA\u5B9A\u4E8B\u5B9E");
+        for (const field of ["hair", "body"])
+          if (references && value[field] != null && !W.variants[field].includes(value[field]))
+            fail(field);
+        if (value.generatorVersion != null && (typeof value.generationSeed !== "string" || !value.generationSeed))
+          fail("\u751F\u6210\u79CD\u5B50");
+        if (complete) {
+          if (typeof value.generationSeed !== "string" || !value.generationSeed)
+            fail("\u751F\u6210\u79CD\u5B50");
+          if (!R.targets.generator.personalityPool.some((p) => p.id === pid))
+            fail("\u6027\u683C\u5F15\u7528");
+          if (!R.targets.generator.hobbyPool.some((h) => h.id === value.hobbyId))
+            fail("\u7231\u597D\u5F15\u7528");
+          const pack = LP.packs[targetId];
+          if (pack) {
+            const validFacts = new Set((pack.factPool || []).map((f) => f.id));
+            for (const [key, pool] of Object.entries(pack)) {
+              if (key.endsWith("Pool") && Array.isArray(pool))
+                for (const branch of pool)
+                  for (const f of branch.facts || []) validFacts.add(f.id);
+            }
+            if (value.assignedFacts?.some((f) => !validFacts.has(f.id)))
+              fail("\u4E8B\u5B9E\u5F15\u7528");
+            const slotPools = {
+              home: "homePool",
+              schedule: "schedulePool",
+              carry: "carryPool",
+              social: "socialPool",
+              psyche: "psychePool",
+              romance: "romancePool"
+            };
+            for (const [slot, pool] of Object.entries(slotPools)) {
+              const selected = value.factSummary?.[slot];
+              if (selected != null && !pack[pool]?.some((b) => b.id === selected))
+                fail(`\u4E8B\u5B9E\u5206\u652F ${slot}`);
+            }
+          }
+        }
+        if (value.generatorVersion != null && value.generatorVersion !== 1)
+          fail("\u751F\u6210\u5668\u7248\u672C");
+        if (complete && (!value.name || !pid || !value.hobbyId || !value.shoeId || !value.finalStats || !Array.isArray(value.assignedFacts)))
+          fail("\u5B8C\u6574\u753B\u50CF");
+        if (complete && ["str", "agi", "per", "nrv", "social"].some(
+          (k) => !Number.isFinite(value.finalStats[k])
+        ))
+          fail("\u5C5E\u6027\u7F3A\u5931");
+      }
+      module.exports = { personalityIdOf, normalizePersona, validatePersona };
+    }
+  });
+
+  // src/runtime/tags.js
+  var require_tags = __commonJS({
+    "src/runtime/tags.js"(exports, module) {
+      var CAPS = { stealth: 6, fine: 4, conflict: 5, social: 5 };
+      function apply(stack, tag) {
+        const same = stack.find((t) => t.id === tag.id);
+        if (same) {
+          if (tag.duration.type === "flag") same.duration = { type: "flag" };
+          else if (tag.duration.type === "scene")
+            same.duration.count = Math.max(same.duration.count || 0, tag.duration.count);
+          if (tag.type && !same.type) same.type = tag.type;
+          return stack;
+        }
+        stack.push({
+          id: tag.id,
+          name: tag.name,
+          owner: tag.owner,
+          type: tag.type || "status",
+          category: tag.category,
+          effects: (tag.effects || []).slice(),
+          duration: { ...tag.duration }
+        });
+        return stack;
+      }
+      function remove(stack, id) {
+        const i = stack.findIndex((t) => t.id === id);
+        if (i >= 0) stack.splice(i, 1);
+        return stack;
+      }
+      function tick(stack) {
+        for (let i = stack.length - 1; i >= 0; i--) {
+          const t = stack[i];
+          if (t.duration.type === "scene") {
+            if (--t.duration.count <= 0) stack.splice(i, 1);
+          }
+        }
+        return stack;
+      }
+      function clearNight(stack) {
+        return stack.filter((t) => t.duration.type === "flag");
+      }
+      function summarize(stack, category) {
+        const hits = [];
+        for (const t of stack) {
+          for (const e of t.effects) {
+            if (e.category === category) hits.push({ src: t.name, owner: t.owner, v: e.value });
+          }
+        }
+        let sum = hits.reduce((s, h) => s + h.v, 0);
+        const cap = CAPS[category];
+        let capped = false;
+        if (sum > cap) {
+          sum = cap;
+          capped = true;
+        }
+        if (sum < -cap) {
+          sum = -cap;
+          capped = true;
+        }
+        return { sum, capped, breakdown: hits };
+      }
+      var PITY_BONUS = 3;
+      module.exports = { apply, remove, tick, clearNight, summarize, CAPS, PITY_BONUS };
+    }
+  });
+
+  // src/persona/facts.js
+  var require_facts = __commonJS({
+    "src/persona/facts.js"(exports, module) {
+      "use strict";
+      var LP = require_lifepack();
+      var D = require_random();
+      var { personalityIdOf } = require_persona();
+      function toSeed(seed) {
+        return typeof seed === "number" ? seed >>> 0 : D.floorSeed(String(seed || 0), 0);
+      }
+      function resolveTargetFacts(pack, persona, seed = 12345) {
+        const p = pack || LP.packs.college || LP.packs.student;
+        if (!p) return { assignedFacts: [], factSummary: {} };
+        if (persona && persona.assignedFacts && Array.isArray(persona.assignedFacts) && persona.assignedFacts.length) {
+          return {
+            assignedFacts: persona.assignedFacts,
+            factSummary: persona.factSummary || {}
+          };
+        }
+        if (!p.homePool) {
+          const facts = (p.factPool || []).slice();
+          if (persona) {
+            persona.assignedFacts = facts;
+            persona.factSummary = {};
+          }
+          return { assignedFacts: facts, factSummary: {} };
+        }
+        const next = D.rng(toSeed(seed));
+        const personalityId = personalityIdOf(persona) || "casual";
+        const homePool = p.homePool || [];
+        const chosenHome = homePool.length ? homePool[Math.floor(next() * homePool.length)] : null;
+        function pickByPersonality(pool, prefMap) {
+          if (!pool || !pool.length) return null;
+          const weights = pool.map((branch) => {
+            const prefs = prefMap && prefMap[branch.id] || branch.preferredPersonalities || [];
+            return prefs.includes(personalityId) ? 3 : 1;
+          });
+          const totalW = weights.reduce((a, b) => a + b, 0);
+          let r = next() * totalW;
+          for (let i = 0; i < pool.length; i++) {
+            r -= weights[i];
+            if (r <= 0) return pool[i];
+          }
+          return pool[0];
+        }
+        const schedulePrefMap = {
+          sched_academic: ["stubborn", "aloof", "vigilant", "introverted"],
+          sched_parttime: ["gentle", "stubborn", "casual", "naive"],
+          sched_socialite: ["cheerful", "chic", "naive", "casual"]
+        };
+        const chosenSchedule = pickByPersonality(p.schedulePool, schedulePrefMap);
+        const carryPrefMap = {
+          carry_academic: ["stubborn", "aloof", "vigilant", "introverted", "gentle"],
+          carry_glamour: ["chic", "cheerful", "naive"],
+          carry_casual: ["casual", "timid", "vigilant"]
+        };
+        const chosenCarry = pickByPersonality(p.carryPool, carryPrefMap);
+        const socialPrefMap = {
+          social_introvert: ["introverted", "aloof", "vigilant", "timid"],
+          social_extrovert: ["cheerful", "chic", "naive"],
+          social_moderate: ["gentle", "stubborn", "casual"]
+        };
+        const chosenSocial = pickByPersonality(p.socialPool, socialPrefMap);
+        const psychePrefMap = {
+          psyche_pride: ["stubborn", "aloof", "vigilant"],
+          psyche_timid: ["timid", "gentle", "naive"],
+          psyche_cautious: ["vigilant", "casual", "introverted", "chic"]
+        };
+        const chosenPsyche = pickByPersonality(p.psychePool, psychePrefMap);
+        const romancePool = p.romancePool || [];
+        let chosenRomance = null;
+        if (persona && persona.romanceState) {
+          chosenRomance = romancePool.find((r) => r.id === persona.romanceState) || null;
+        }
+        if (!chosenRomance && romancePool.length) {
+          chosenRomance = romancePool[Math.floor(next() * romancePool.length)];
+        }
+        const chosenBranches = [
+          chosenHome,
+          chosenSchedule,
+          chosenCarry,
+          chosenSocial,
+          chosenPsyche,
+          chosenRomance
+        ].filter(Boolean);
+        const assignedFacts = [];
+        for (const b of chosenBranches) {
+          if (b.facts && Array.isArray(b.facts)) {
+            for (const f of b.facts) assignedFacts.push(f);
+          }
+        }
+        const factSummary = {
+          home: chosenHome ? chosenHome.id : null,
+          schedule: chosenSchedule ? chosenSchedule.id : null,
+          carry: chosenCarry ? chosenCarry.id : null,
+          social: chosenSocial ? chosenSocial.id : null,
+          psyche: chosenPsyche ? chosenPsyche.id : null,
+          romance: chosenRomance ? chosenRomance.id : null
+        };
+        if (persona) {
+          persona.assignedFacts = assignedFacts;
+          persona.factSummary = factSummary;
+        }
+        return { assignedFacts, factSummary };
+      }
+      module.exports = { resolveTargetFacts };
+    }
+  });
+
+  // src/runtime/target_state.js
+  var require_target_state = __commonJS({
+    "src/runtime/target_state.js"(exports, module) {
+      var D = require_dice();
+      var { personalityIdOf } = require_persona();
+      var T = require_tags();
+      var LP = require_lifepack();
+      var R = require_rules();
+      function isWeekend(date) {
+        const day = ((date || 1) - 1) % 7 + 1;
+        return day >= 6;
+      }
+      function toSeed(seed) {
+        if (typeof seed === "number") return seed >>> 0;
+        return D.floorSeed(String(seed || 0), 0);
+      }
+      function weightedSample(list, seed, weightKey = "weight") {
+        if (!list || !list.length) return { item: null, next: null };
+        const total = list.reduce((s, it) => s + (it[weightKey] ?? 1), 0);
+        if (!Number.isFinite(total) || total <= 0 || list.some(
+          (it) => !Number.isFinite(it[weightKey] ?? 1) || (it[weightKey] ?? 1) < 0
+        ))
+          throw new RangeError("\u65E0\u6548\u7684\u62BD\u6837\u6743\u91CD");
+        const next = D.rng(toSeed(seed));
+        const r = next() * total;
+        let acc = 0;
+        for (const it of list) {
+          acc += it[weightKey] ?? 1;
+          if (r < acc) return { item: it, next };
+        }
+        return { item: list[list.length - 1], next };
+      }
+      var PERSONALITY_STYLE_MAP = {
+        casual: ["casual"],
+        stubborn: ["casual", "cool"],
+        vigilant: ["cool", "casual"],
+        timid: ["elegant", "sweet"],
+        gentle: ["elegant"],
+        introverted: ["elegant", "cool"],
+        aloof: ["cool", "casual"],
+        cheerful: ["casual", "sweet"],
+        chic: ["sweet"],
+        naive: ["sweet", "elegant"],
+        guarded: ["cool", "casual", "elegant"],
+        oblivious: ["casual"]
+      };
+      var SWEET_EXCLUDE_FOR_COOL = /* @__PURE__ */ new Set([
+        "outfit_sailor_jk",
+        "outfit_plaid_jk",
+        "outfit_lolita_jsk"
+      ]);
+      function sampleOutfit(pack, date, seed, persona) {
+        const p = pack || LP.packs.college || LP.packs.student;
+        const weekend = isWeekend(date);
+        if (p.outfits && p.outfits.length) {
+          const personalityId = personalityIdOf(persona) || pack && pack.traits && pack.traits.find((t) => PERSONALITY_STYLE_MAP[t]) || "casual";
+          const allowedStyles = PERSONALITY_STYLE_MAP[personalityId] || [
+            "casual",
+            "elegant"
+          ];
+          let candidates = p.outfits.filter(
+            (o) => allowedStyles.includes(o.styleGroup)
+          );
+          if (personalityId === "aloof" || personalityId === "stubborn") {
+            candidates = candidates.filter((o) => !SWEET_EXCLUDE_FOR_COOL.has(o.id));
+          }
+          if (!candidates.length) {
+            candidates = p.outfits.filter((o) => !SWEET_EXCLUDE_FOR_COOL.has(o.id));
+          }
+          if (!candidates.length) candidates = p.outfits;
+          if (persona && persona.shoeId && candidates.some((o) => o.shoeId === persona.shoeId)) {
+            candidates = candidates.filter((o) => o.shoeId === persona.shoeId);
+          }
+          const idx = D.pickIndex(toSeed(seed), candidates.length);
+          const item = candidates[idx];
+          return {
+            id: item.id,
+            name: item.name,
+            desc: item.desc,
+            prompt: item.prompt,
+            socks: item.socks || "",
+            shoeId: item.shoeId || "shoe_sneakers",
+            shoeName: item.shoeName || "\u8FD0\u52A8\u978B",
+            styleGroup: item.styleGroup,
+            isWeekend: weekend
+          };
+        }
+        if (weekend && p.weekendOutfitPool && p.weekendOutfitPool.length) {
+          const { item } = weightedSample(p.weekendOutfitPool, seed);
+          return {
+            id: item.id,
+            name: item.name,
+            desc: item.desc,
+            prompt: item.prompt,
+            shoeId: item.shoeId || "shoe_sneakers",
+            shoeName: item.shoeName || "\u8FD0\u52A8\u978B",
+            isWeekend: true
+          };
+        }
+        const targetDef = R.targets && R.targets.list && R.targets.list[p.id];
+        const defaultShoeId = targetDef?.shoe || "shoe_heel";
+        const def = p.defaultOutfit || {
+          id: "outfit_default",
+          name: "\u65E5\u5E38\u8863\u88C5",
+          desc: "\u89C4\u77E9\u5E38\u670D",
+          prompt: "\u767D\u63CF\u5176\u89C4\u77E9\u5F97\u4F53\u7684\u65E5\u5E38\u88C5\u675F",
+          shoeId: defaultShoeId,
+          shoeName: R.tags && R.tags[defaultShoeId]?.name || "\u65E5\u5E38\u978B\u5177"
+        };
+        return {
+          id: def.id,
+          name: def.name,
+          desc: def.desc,
+          prompt: def.prompt,
+          shoeId: def.shoeId || defaultShoeId,
+          shoeName: def.shoeName || "\u5C0F\u76AE\u978B",
+          isWeekend: false
+        };
+      }
+      function isLimpingDate(date, lastHotelDate) {
+        if (!lastHotelDate || !date) return false;
+        return date === lastHotelDate + 2 || date === lastHotelDate + 3;
+      }
+      function sampleSomatic(pack, seed, opts = {}) {
+        if (opts.isLimping) {
+          return {
+            id: "limping",
+            name: "\u6B65\u5C65\u8E52\u8DDA",
+            desc: "\u53CC\u817F\u8F7B\u5FAE\u5E76\u62E2\uFF0C\u8FC8\u6B65\u7A0D\u5927\u65F6\u8F7B\u5FAE\u5438\u6C14\uFF0C\u4F3C\u89E6\u53CA\u75DB\u5904\uFF0C\u654F\u6377 -2",
+            mod: { agi: -2 },
+            reason: "\u5468\u672B\u4EB2\u5BC6\u521D\u8BD5\u540E\u7684\u751F\u7406\u53D7\u8FEB\u53CD\u5E94\uFF0C\u6B65\u6001\u8FDF\u7F13\u6536\u655B",
+            tag: "somatic_limping",
+            prompt: "\u767D\u63CF\u5C11\u5973\u6B65\u6001\u660E\u663E\u6536\u655B\u53D8\u5C0F\uFF0C\u4E24\u817F\u5FAE\u5E76\uFF0C\u8FC8\u6B65\u8F7B\u7F13\u4E14\u5076\u5C14\u8F7B\u5FAE\u5438\u6C14\uFF0C\u4F3C\u89E6\u53CA\u9690\u79D8\u75DB\u5904\uFF0C\u795E\u8272\u7565\u5E26\u5C40\u4FC3"
+          };
+        }
+        const p = pack || LP.packs.college || LP.packs.student;
+        if (!p.somaticPool || !p.somaticPool.length) {
+          return {
+            id: "normal",
+            name: "\u5E73\u5E38\u72B6\u6001",
+            desc: "\u57FA\u7EBF\u5E73\u6DE1",
+            mod: {},
+            reason: "\u65E5\u5E38\u665A\u5F52\uFF0C\u5FC3\u5883\u5E73\u7A33",
+            tag: null,
+            prompt: "\u767D\u63CF\u5176\u5E73\u9759\u5300\u901F\u7684\u6B65\u6001"
+          };
+        }
+        const { item, next } = weightedSample(p.somaticPool, seed);
+        let reason = "";
+        if (item.reasons && item.reasons.length) {
+          const idx = Math.floor(next() * item.reasons.length);
+          reason = item.reasons[idx] || item.reasons[0];
+        }
+        return {
+          id: item.id,
+          name: item.name,
+          desc: item.desc || "",
+          mod: item.mod || {},
+          reason,
+          tag: item.tag || (item.id === "normal" ? null : "somatic_" + item.id),
+          prompt: item.prompt || ""
+        };
+      }
+      function resolveHand(pack, placeId, currentHand, seed, opts = {}) {
+        const p = pack || LP.packs.college || LP.packs.student;
+        const pool = p.handPool || {};
+        if ((opts.isCarriage || placeId === "metro_carriage" || placeId === "carriage") && pool.carriagePool && pool.carriagePool.length) {
+          const { item: item2 } = weightedSample(pool.carriagePool, seed);
+          return {
+            id: item2.id,
+            name: item2.name,
+            desc: item2.desc || "",
+            fumbling: !!item2.fumbling,
+            tag: item2.tag || (item2.fumbling ? "hand_fumble" : null),
+            remainingDuration: item2.duration || 1,
+            isSiteOverride: false,
+            isCarriage: true
+          };
+        }
+        if (placeId && pool.siteOverrides && pool.siteOverrides[placeId]) {
+          const ov = pool.siteOverrides[placeId];
+          return {
+            id: ov.id,
+            name: ov.name,
+            desc: ov.desc || "",
+            fumbling: !!ov.fumbling,
+            tag: ov.tag || (ov.fumbling ? "hand_fumble" : null),
+            remainingDuration: 1,
+            isSiteOverride: true
+          };
+        }
+        if (currentHand && !currentHand.isSiteOverride && (currentHand.remainingDuration || 0) > 1) {
+          return {
+            ...currentHand,
+            remainingDuration: currentHand.remainingDuration - 1
+          };
+        }
+        const enRoute = pool.enRoute || [
+          {
+            id: "normal",
+            name: "\u81EA\u7136\u5782\u624B",
+            weight: 100,
+            duration: 2,
+            tag: null,
+            desc: "\u81EA\u7136\u6446\u81C2\u524D\u884C"
+          }
+        ];
+        const { item } = weightedSample(enRoute, seed);
+        return {
+          id: item.id,
+          name: item.name,
+          desc: item.desc || "",
+          fumbling: !!item.fumbling,
+          tag: item.tag || null,
+          remainingDuration: item.duration || 1,
+          isSiteOverride: false
+        };
+      }
+      function syncTargetStateTags(stack, targetState) {
+        const removePrefixes = ["hand_", "somatic_"];
+        for (let i = stack.length - 1; i >= 0; i--) {
+          const t = stack[i];
+          if (t.owner === "target" && t.id && removePrefixes.some((p) => t.id.startsWith(p))) {
+            stack.splice(i, 1);
+          }
+        }
+        if (!targetState) return;
+        if (targetState.somatic && targetState.somatic.tag) {
+          const tagDef = R.tags && R.tags[targetState.somatic.tag];
+          if (tagDef) {
+            T.apply(stack, {
+              id: tagDef.id,
+              name: tagDef.name,
+              owner: "target",
+              type: "status",
+              category: tagDef.category || "status",
+              effects: tagDef.value ? [{ category: tagDef.category, value: tagDef.value }] : [],
+              duration: { type: "night" }
+            });
+          }
+        }
+        if (targetState.hand && targetState.hand.tag) {
+          const tagDef = R.tags && R.tags[targetState.hand.tag];
+          if (tagDef) {
+            T.apply(stack, {
+              id: tagDef.id,
+              name: tagDef.name,
+              owner: "target",
+              type: "scene",
+              category: tagDef.category || "stealth",
+              effects: tagDef.value ? [{ category: tagDef.category, value: tagDef.value }] : [],
+              duration: {
+                type: "scene",
+                count: targetState.hand.remainingDuration || 1
+              }
+            });
+          }
+        }
+        if (targetState.hand && targetState.hand.fumbling && (!targetState.hand.tag || targetState.hand.tag !== "hand_fumble")) {
+          const tagDef = R.tags && R.tags.hand_fumble;
+          if (tagDef) {
+            T.apply(stack, {
+              id: tagDef.id,
+              name: tagDef.name,
+              owner: "target",
+              type: "scene",
+              category: tagDef.category || "stealth",
+              effects: tagDef.value ? [{ category: tagDef.category, value: tagDef.value }] : [],
+              duration: { type: "scene", count: 1 }
+            });
+          }
+        }
+      }
+      function resolveSaturdayRoutine(pack, persona, seed) {
+        if (persona && persona.saturdayRoutine) {
+          return persona.saturdayRoutine;
+        }
+        const social = persona && persona.finalStats && persona.finalStats.social || persona && persona.social || pack && pack.social || 1;
+        const personalityId = personalityIdOf(persona) || pack && pack.traits && pack.traits.find(
+          (t) => [
+            "timid",
+            "guarded",
+            "stubborn",
+            "gentle",
+            "curious",
+            "oblivious"
+          ].includes(t)
+        ) || "timid";
+        let weights = { cram: 50, outing: 35, date: 15 };
+        if (social <= 1) {
+          if (personalityId === "timid" || personalityId === "guarded") {
+            weights = { cram: 65, outing: 30, date: 5 };
+          } else {
+            weights = { cram: 55, outing: 35, date: 10 };
+          }
+        } else if (social === 2) {
+          if (personalityId === "guarded" || personalityId === "stubborn") {
+            weights = { cram: 45, outing: 40, date: 15 };
+          } else {
+            weights = { cram: 35, outing: 45, date: 20 };
+          }
+        } else {
+          weights = { cram: 20, outing: 50, date: 30 };
+        }
+        const pool = [
+          { id: "cram", weight: weights.cram },
+          { id: "outing", weight: weights.outing },
+          { id: "date", weight: weights.date }
+        ];
+        const { item } = weightedSample(pool, seed);
+        return item.id;
+      }
+      function getDateHotelThreshold(personalityId) {
+        if (personalityId === "timid" || personalityId === "anxious") return 4;
+        if (personalityId === "guarded") return 3;
+        return 2;
+      }
+      function resolveSaturdayRoute(pack, saturdayRoutine, dateCount, personalityId, seed, opts = {}) {
+        const routes = pack?.routes || [];
+        if (saturdayRoutine === "cram") {
+          return routes.find((r) => r.id === "saturday_cram") || routes[0];
+        }
+        if (saturdayRoutine === "outing") {
+          return routes.find((r) => r.id === "saturday_outing") || routes[0];
+        }
+        if (saturdayRoutine === "date") {
+          const threshold = getDateHotelThreshold(personalityId);
+          if ((dateCount || 0) >= threshold) {
+            const next = D.rng(toSeed(seed));
+            const isHotel = next() < 0.5;
+            if (isHotel) {
+              const base = routes.find((r) => r.id === "saturday_date_hotel") || routes.find((r) => r.id === "saturday_date_home") || routes[0];
+              const isFirst = (opts.hotelVisitedCount || 0) === 0;
+              return {
+                ...base,
+                isFirstHotel: isFirst,
+                note: isFirst ? "\u5468\u516D\u9752\u6DA9\u7EA6\u4F1A\xB7\u672A\u77E5\u65B0\u52A8\u7EBF\u5206\u652F" : "\u5468\u516D\u60C5\u4FA3\u7EA6\u4F1A\xB7\u60C5\u4FA3\u65C5\u793E\u8D70\u5411",
+                prompt: isFirst ? "\u767D\u63CF\u9752\u6DA9\u60C5\u4FA3\u521D\u6B21\u7275\u624B\u7684\u5C40\u4FC3\u4E0E\u5A07\u7F9E\uFF0C\u7EAF\u771F\u604B\u7231\u7684\u5FAE\u751C\u4E0E\u6069\u7231\u3002\u4E24\u4EBA\u5341\u6307\u7D27\u6263\uFF0C\u5E76\u80A9\u62D0\u5165\u4E00\u6761\u964C\u751F\u72ED\u7A84\u7684\u504F\u50FB\u4FA7\u5DF7\u6DF1\u5904\uFF1B\u5C11\u5973\u5FC3\u8DF3\u5FAE\u5FEB\u3001\u638C\u5FC3\u6CDB\u8D77\u7EC6\u6C57\uFF0C\u5E26\u7740\u5BF9\u8DE8\u5165\u5927\u4EBA\u4E16\u754C\u7684\u5411\u5F80\u4E0E\u7D27\u5F20\u3002\u4E25\u7981\u63D0\u524D\u5267\u900F\u76EE\u7684\u5730\u540D\u79F0\u3002" : "\u767D\u63CF\u60C5\u4FA3\u4E8C\u4EBA\u98DF\u9AD3\u77E5\u5473\u540E\u7684\u719F\u7A14\u4EB2\u6635\u4E0E\u6069\u7231\u7F20\u7EF5\uFF0C\u4F4E\u58F0\u8033\u8BED\u4E0E\u4EB2\u5BC6\u4F9D\u504E\uFF0C\u7275\u624B\u8F7B\u8F66\u719F\u8DEF\u8D70\u5411\u5DF7\u6DF1\u5904\u7684\u60C5\u4FA3\u65C5\u793E\u3002",
+                known: isFirst ? [1, 1, 1, 0] : [1, 1, 1, 1]
+              };
+            }
+          }
+          return routes.find((r) => r.id === "saturday_date_home") || routes[0];
+        }
+        return routes.find((r) => r.days && r.days.includes(6)) || routes[0];
+      }
+      var { resolveTargetFacts } = require_facts();
+      module.exports = {
+        isWeekend,
+        isLimpingDate,
+        sampleOutfit,
+        sampleSomatic,
+        resolveHand,
+        syncTargetStateTags,
+        resolveSaturdayRoutine,
+        getDateHotelThreshold,
+        resolveSaturdayRoute,
+        resolveTargetFacts
+      };
+    }
+  });
+
   // src/runtime/album.js
   var require_album = __commonJS({
     "src/runtime/album.js"(exports, module) {
@@ -7660,30 +7639,31 @@
     }
   });
 
-  // src/runtime/game.js
-  var require_game = __commonJS({
-    "src/runtime/game.js"(exports, module) {
-      var { loadLexicon, normalize: D_norm } = require_lexicon2();
-      var { parseFloor, verifyEvidence } = require_parse();
-      var T = require_tags();
-      var C = require_checks();
-      var D = require_dice();
-      var { createLedger } = require_ledger();
-      var facts = require_facts();
-      var map = require_map();
-      var R = require_rules();
-      var LP = require_lifepack();
-      var TS = require_target_state();
-      var ALBUM = require_album();
+  // src/runtime/game/constants.js
+  var require_constants = __commonJS({
+    "src/runtime/game/constants.js"(exports, module) {
+      "use strict";
       var DIST_KEY = { far: "far", same: "same", close: "close", touch: "touch" };
       var DIST_CN = { far: "\u8FDC\u7AEF", same: "\u540C\u8857", close: "\u8EAB\u540E", touch: "\u8D34\u8EAB" };
       var DIST_RANK = { far: 0, same: 1, close: 2, touch: 3 };
       var DIST_DOWN = { touch: "close", close: "same", same: "far", far: "far" };
-      var CA_CN = { front: "\u6B63\u9762", side: "\u4FA7\u9762", back: "\u80CC\u9762", "three-quarter": "\u659C\u4FA7" };
+      var CA_CN = {
+        front: "\u6B63\u9762",
+        side: "\u4FA7\u9762",
+        back: "\u80CC\u9762",
+        "three-quarter": "\u659C\u4FA7"
+      };
       var WEATHER_BANDS = { clear: [1, 14], rain: [15, 18], storm: [19, 20] };
       var WEATHER_ICON = { clear: "\u{1F319} \u6674\u591C", rain: "\u{1F327} \u5C0F\u96E8", storm: "\u26C8 \u66B4\u96E8" };
       var HUNTER_MODES = ["stealth", "contact", "vehicle"];
-      var TAIL_PUMP_IDS = ["follow", "ride_along", "transfer", "follow_work", "ride_follow", "car_follow"];
+      var TAIL_PUMP_IDS = [
+        "follow",
+        "ride_along",
+        "transfer",
+        "follow_work",
+        "ride_follow",
+        "car_follow"
+      ];
       var SHOE_ID_MAP = {
         shoe_heel: "heel",
         shoe_flats: "flats",
@@ -7696,67 +7676,35 @@
         shoe_leather: "leather"
       };
       var SHOE_DIST_FACTOR = { far: 0.6, same: 1, close: 1.25, touch: 1.5 };
-      function createGame(init = {}) {
-        const lex = loadLexicon();
-        let salt = init.sessionSalt || D.newSessionSalt();
-        const g = {
-          sessionSalt: salt,
-          player: init.player || { str: 4, agi: 5, nrv: 5, int: 5, cha: 5, staminaMax: 120 },
-          target: init.target || { str: 3, agi: 4, per: 5, nrv: 4, social: 2 },
-          targetId: init.targetId || init.saved && init.saved.targetId || "college",
-          targetPersona: init.targetPersona || init.saved && init.saved.targetPersona || null,
-          targetState: init.targetState || init.saved && init.saved.targetState || null,
-          mode: init.mode || "stealth",
-          dist: init.dist || "same",
-          env: init.env || "night",
-          slot: init.slot || "e21_23",
-          tickets: init.tickets || [],
-          // 本楼事件票据 [{no, kind, guide}]
-          ticketsIssued: init.ticketsIssued || 1,
-          world: init.world || { weather: "clear", district: "B" },
-          // 每晚天气与她所在大区（真源在脚本）
-          route: init.route || null,
-          // 她的当晚动线 {nodes:[placeId], known:[0|1], here:int}
-          dateCount: init.dateCount || init.saved && init.saved.dateCount || 0,
-          hotelVisitedCount: init.hotelVisitedCount || init.saved && init.saved.hotelVisitedCount || 0,
-          lastHotelDate: init.lastHotelDate ?? (init.saved && init.saved.lastHotelDate) ?? null,
-          famSegs: init.famSegs || { A: 0, B: 0, C: 0, D: 0 },
-          // 分区熟悉度段数（10 段熟区）
-          proxLogs: init.proxLogs || [],
-          signals: init.signals || [],
-          lastAssess: init.lastAssess || null,
-          lastHerAlert: init.lastHerAlert || null,
-          lastLedgerSummary: init.lastLedgerSummary || null,
-          consecFails: 0,
-          logs: [],
-          /* 过档行为（她的警觉每跨一档做一件事，一晚一档只响一次） */
-          alertLatch: init.alertLatch || [],
-          alertEvent: init.alertEvent || null,
-          alertHold: init.alertHold || 0,
-          fleeing: !!init.fleeing,
-          /* 相册：键＝itemId|角度；值是这张照片的元信息 */
-          album: init.album || {},
-          setBonusDone: init.setBonusDone || {},
-          capture: null
-        };
-        if (g.targetPersona) {
-          if (!g.targetPersona.hair) {
-            const i = D.rollD20(D.actionSeed(salt, 0, "hair")).d20 % ALBUM.WARDROBE.variants.hair.length;
-            g.targetPersona.hair = ALBUM.WARDROBE.variants.hair[i];
-          }
-          if (!g.targetPersona.body) {
-            const i = D.rollD20(D.actionSeed(salt, 0, "body")).d20 % ALBUM.WARDROBE.variants.body.length;
-            g.targetPersona.body = ALBUM.WARDROBE.variants.body[i];
-          }
-        }
-        if (g.targetPersona && !g.targetPersona.assignedFacts) {
-          const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
-          TS.resolveTargetFacts(pack, g.targetPersona, D.actionSeed(salt, 0, "facts"));
-        }
-        if (g.targetPersona && g.targetPersona.finalStats) {
-          g.target = Object.assign({}, g.target, g.targetPersona.finalStats);
-        }
-        g.targetBase = { ...g.target };
+      module.exports = {
+        DIST_KEY,
+        DIST_CN,
+        DIST_RANK,
+        DIST_DOWN,
+        CA_CN,
+        WEATHER_BANDS,
+        WEATHER_ICON,
+        HUNTER_MODES,
+        TAIL_PUMP_IDS,
+        SHOE_ID_MAP,
+        SHOE_DIST_FACTOR
+      };
+    }
+  });
+
+  // src/runtime/game/target.js
+  var require_target = __commonJS({
+    "src/runtime/game/target.js"(exports, module) {
+      "use strict";
+      var { personalityIdOf } = require_persona();
+      var R = require_rules();
+      var D = require_dice();
+      var T = require_tags();
+      var LP = require_lifepack();
+      var TS = require_target_state();
+      var map = require_map();
+      var { SHOE_ID_MAP, WEATHER_BANDS } = require_constants();
+      function createTargetSystem({ g, L, seedAt, log, syncHeartTags }) {
         function applyTargetState() {
           if (!g.targetState) return;
           g.target = { ...g.targetBase };
@@ -7773,7 +7721,9 @@
           const outfitShoe = (isWeekend || isCollege) && g.targetState.outfit && g.targetState.outfit.shoeId || g.targetPersona && g.targetPersona.shoeId || g.targetState.outfit && g.targetState.outfit.shoeId;
           if (outfitShoe && R.tags && R.tags[outfitShoe]) {
             const stack = g.tags || (g.tags = []);
-            const oldShoe = stack.find((t) => t.owner === "target" && t.id && t.id.startsWith("shoe_"));
+            const oldShoe = stack.find(
+              (t) => t.owner === "target" && t.id && t.id.startsWith("shoe_")
+            );
             if (oldShoe && oldShoe.id !== outfitShoe) {
               T.remove(stack, oldShoe.id);
               const def = R.tags[outfitShoe];
@@ -7791,14 +7741,17 @@
           applyShoeMod(g.target);
         }
         function activeShoeDef() {
-          const tag = (g.tags || []).find((t) => t.owner === "target" && t.id && t.id.startsWith("shoe_"));
+          const tag = (g.tags || []).find(
+            (t) => t.owner === "target" && t.id && t.id.startsWith("shoe_")
+          );
           return tag && R.tags ? R.tags[tag.id] || null : null;
         }
         function applyShoeMod(stats) {
           const def = activeShoeDef();
           if (!def || !def.mod || !stats) return stats;
           for (const [k, v] of Object.entries(def.mod)) {
-            if (stats[k] !== void 0) stats[k] = Math.max(1, Math.min(10, stats[k] + v));
+            if (stats[k] !== void 0)
+              stats[k] = Math.max(1, Math.min(10, stats[k] + v));
           }
           return stats;
         }
@@ -7808,9 +7761,20 @@
           const dayOfWeek = ((d || 1) - 1) % 7 + 1;
           const isLimping = TS.isLimpingDate(d, g.lastHotelDate);
           if (dayOfWeek === 6 && (pack.id === "student" || pack.id === "college") && !g.route) {
-            const routine = g.targetPersona?.saturdayRoutine || (g.targetPersona ? g.targetPersona.saturdayRoutine = TS.resolveSaturdayRoutine(pack, g.targetPersona, D.actionSeed(salt, 0, "saturday_routine")) : "cram");
-            const personalityId = g.targetPersona?.personality?.id || g.targetPersona?.personality || "timid";
-            const routeDef = TS.resolveSaturdayRoute(pack, routine, g.dateCount || 0, personalityId, D.actionSeed(salt, d, "saturday_route_branch"), { hotelVisitedCount: g.hotelVisitedCount || 0 });
+            const routine = g.targetPersona?.saturdayRoutine || (g.targetPersona ? g.targetPersona.saturdayRoutine = TS.resolveSaturdayRoutine(
+              pack,
+              g.targetPersona,
+              seedAt(0, "saturday_routine")
+            ) : "cram");
+            const personalityId = personalityIdOf(g.targetPersona) || "timid";
+            const routeDef = TS.resolveSaturdayRoute(
+              pack,
+              routine,
+              g.dateCount || 0,
+              personalityId,
+              seedAt(d, "saturday_route_branch"),
+              { hotelVisitedCount: g.hotelVisitedCount || 0 }
+            );
             if (routeDef) {
               const startT = routeDef.path && routeDef.path[0] && routeDef.path[0].t ? `${routeDef.path[0].t.slice(0, 2)}:${routeDef.path[0].t.slice(2)}` : "21:00";
               g.route = {
@@ -7825,7 +7789,9 @@
               };
             }
           } else if (dayOfWeek === 7 && (pack.id === "student" || pack.id === "college") && !g.route) {
-            const sundayRoute = (pack.routes || []).find((r) => r.id === "sunday_rest") || {
+            const sundayRoute = (pack.routes || []).find(
+              (r) => r.id === "sunday_rest"
+            ) || {
               id: "sunday_rest",
               note: "\u5468\u65E5\u5168\u5929\u5C45\u5BB6\u4F11\u6574\uFF08\u4E0D\u51FA\u95E8\uFF09",
               prompt: "\u767D\u63CF\u5C11\u5973\u5468\u65E5\u5168\u5929\u5728\u5BD3\u6240\u5185\u5B89\u9759\u4F11\u6574\uFF0C\u7A97\u5E18\u62C9\u8D77\uFF0C\u672A\u66FE\u5916\u51FA\uFF0C\u8857\u9053\u4E0A\u65E0\u5176\u8DB3\u8FF9",
@@ -7843,11 +7809,21 @@
             };
             g.tailing = false;
           }
-          const outfit = TS.sampleOutfit(pack, d, D.actionSeed(salt, d, "outfit"), g.targetPersona || g.target);
-          const somatic = TS.sampleSomatic(pack, D.actionSeed(salt, d, "somatic"), { isLimping });
+          const outfit = TS.sampleOutfit(
+            pack,
+            d,
+            seedAt(d, "outfit"),
+            g.targetPersona || g.target
+          );
+          const somatic = TS.sampleSomatic(pack, seedAt(d, "somatic"), { isLimping });
           const curPlaceId = g.route && g.route.here >= 0 ? g.route.nodes[g.route.here] : g.route && g.route.nodes ? g.route.nodes[0] : null;
           const curPlaceName = curPlaceId ? map.getPlace(curPlaceId)?.name || curPlaceId : null;
-          const hand = TS.resolveHand(pack, curPlaceId, null, D.actionSeed(salt, g.floor || 0, "hand"));
+          const hand = TS.resolveHand(
+            pack,
+            curPlaceId,
+            null,
+            seedAt(g.floor || 0, "hand")
+          );
           g.targetState = {
             outfit,
             somatic,
@@ -7864,314 +7840,320 @@
           };
           applyTargetState();
         }
-        g.player.inventory = Array.isArray(init.inventory) ? init.inventory : Array.isArray(g.player.inventory) ? g.player.inventory : [];
-        g.nightDrinkUsed = !!init.nightDrinkUsed;
-        const L = g.ledger = createLedger({ ...init.stats, nrv: g.player.nrv });
-        applyIdentity(init.identity, { targetGym: init.targetGym, packId: init.packId });
-        syncThresholdTags();
-        syncEquippedTags();
-        syncTargetShoeTags();
-        syncPersonaTags();
-        if (!g.targetState) initTargetState();
-        else applyTargetState();
-        if (init.saved) {
-          const s = init.saved;
-          if (s.sessionSalt !== void 0) salt = s.sessionSalt;
-          for (const k of [
-            "player",
-            "target",
-            "targetId",
-            "targetPersona",
-            "targetState",
-            "mode",
-            "dist",
-            "env",
-            "slot",
-            "world",
-            "route",
-            "famSegs",
-            "tags",
-            "floor",
-            "consecFails",
-            "tickets",
-            "ticketsIssued",
-            "identity",
-            "startKit",
-            "proxLogs",
-            "signals",
-            "lastAssess",
-            "lastHerAlert",
-            "lastLedgerSummary",
-            "nightDrinkUsed",
-            "dateCount",
-            "hotelVisitedCount",
-            "lastHotelDate",
-            "alertLatch",
-            "alertEvent",
-            "alertHold",
-            "fleeing",
-            "album",
-            "setBonusDone",
-            "captureSeq"
-          ]) {
-            if (s[k] !== void 0) g[k] = s[k];
+        function syncTargetShoeTags() {
+          const stack = g.tags || (g.tags = []);
+          const found = stack.find(
+            (t) => t.owner === "target" && t.id && t.id.startsWith("shoe_")
+          );
+          if (found && SHOE_ID_MAP[found.id]) {
+            return SHOE_ID_MAP[found.id];
           }
-          if (s.targetBase !== void 0) g.targetBase = { ...s.targetBase };
-          if (s.inventory !== void 0) g.player.inventory = JSON.parse(JSON.stringify(s.inventory));
-          if (s.tailing !== void 0) g.tailing = s.tailing;
-          if (s.nightPiGross) g.nightPiGross = s.nightPiGross;
-          g.sessionSalt = salt;
-          Object.assign(L.state, s.ledgerState || {});
-          g.logs = [];
-          syncThresholdTags();
-          syncEquippedTags();
-          syncTargetShoeTags();
-          syncPersonaTags();
-          applyTargetState();
-        }
-        (function backfillRouteTimes() {
-          const r = g.route;
-          if (!r || !Array.isArray(r.nodes)) return;
-          if (Array.isArray(r.times) && r.times.length === r.nodes.length) return;
-          const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
-          const def = (pack.routes || []).find((x) => x.id === r.id);
-          if (!def || !Array.isArray(def.path) || def.path.length !== r.nodes.length) return;
-          r.times = def.path.map((p) => p.t);
-          if (!r.startTime && def.path[0] && def.path[0].t) {
-            r.startTime = `${def.path[0].t.slice(0, 2)}:${def.path[0].t.slice(2)}`;
+          const isWeekend = g.targetState && g.targetState.outfit && g.targetState.outfit.isWeekend;
+          const isCollege = g.targetId === "college";
+          const shoeTagId = (isWeekend || isCollege) && g.targetState && g.targetState.outfit && g.targetState.outfit.shoeId || g.targetPersona && g.targetPersona.shoeId || g.targetState && g.targetState.outfit && g.targetState.outfit.shoeId || R.targets && R.targets.list && R.targets.list[g.targetId] && R.targets.list[g.targetId].shoe || "shoe_heel";
+          const def = R.tags && R.tags[shoeTagId] ? R.tags[shoeTagId] : R.tags.shoe_heel;
+          if (def) {
+            T.apply(stack, {
+              id: def.id,
+              name: def.name,
+              owner: "target",
+              type: "equipment",
+              category: "equipment",
+              effects: [],
+              duration: { type: "flag" }
+            });
+            return SHOE_ID_MAP[def.id] || "heel";
           }
-          applyTargetState();
-        })();
-        function log(line) {
-          g.logs.push(line);
+          return "heel";
         }
-        function seedFor(seq) {
-          return D.actionSeed(salt, g.floor || 0, seq);
+        function syncPersonaTags() {
+          if (!g.targetPersona) return;
+          const stack = g.tags || (g.tags = []);
+          const pTagId = g.targetPersona.personalityTag || g.targetPersona.personalityId;
+          if (pTagId && R.tags && R.tags[pTagId]) {
+            const def = R.tags[pTagId];
+            T.apply(stack, {
+              id: def.id,
+              name: def.name,
+              owner: def.owner || "target",
+              type: def.type || "personality",
+              category: def.category || "social",
+              effects: def.value ? [{ category: def.category, value: def.value }] : [],
+              duration: { type: "flag" }
+            });
+          }
+          const hTagId = g.targetPersona.hobbyTag || g.targetPersona.hobbyId;
+          if (hTagId && R.tags && R.tags[hTagId]) {
+            const def = R.tags[hTagId];
+            T.apply(stack, {
+              id: def.id,
+              name: def.name,
+              owner: def.owner || "scene",
+              type: def.type || "hobby",
+              category: def.category || "stealth",
+              effects: def.value ? [{ category: def.category, value: def.value }] : [],
+              duration: { type: "flag" }
+            });
+          }
         }
-        function isFamiliar() {
-          return L.get("proximity") >= 20 && L.get("proximity") < 40;
-        }
-        function distFactor() {
-          return R.alert.distFactor[g.dist] ?? 1;
-        }
-        function targetEffectiveAcuity() {
-          const acuityMod = T.summarize(g.tags || [], "acuity").sum;
-          return Math.max(1, Math.min(10, (g.target.per || 4) + acuityMod));
-        }
-        function gain({ threat = null, dist = g.dist, stim = 0 }) {
-          const alertD = threat ? C.alertDelta({ threat, dist, env: g.env, acuity: targetEffectiveAcuity(), familiar: isFamiliar() }) : 0;
-          const heartD = stim ? C.heartDelta({ stim, nrv: g.player.nrv }) : 0;
-          return { alertD, heartD };
-        }
-        function runCheck(entry, args, seq) {
-          const cat = categoryOf(entry.id);
-          const sum = T.summarize(g.tags || (g.tags = []), cat);
-          const mods = sum.breakdown.filter((h) => h.owner !== "target").map((h) => ({ src: h.src, v: h.v }));
-          const targetMod = sum.breakdown.filter((h) => h.owner === "target").reduce((s, h) => s + h.v, 0);
-          const pity = T.PITY_BONUS && g.consecFails >= 2 ? C.pityBonus(g.consecFails) : 0;
-          if (pity) mods.push({ src: "\u8FDE\u8D25\u4FDD\u5E95", v: pity });
-          const dc = (R.checks[entry.check] ?? 10) - targetMod;
-          const advTagged = (g.tags || []).some((t) => t.id === "adv_" + attrKeyOf(entry.id));
-          const mode = args && args.adv || advTagged ? "adv" : args && args.dis ? "dis" : "normal";
-          const roll = D.rollD20(seedFor(seq), mode);
-          const res = C.d20Check({
-            d20: roll.d20,
-            attr: attrOf(entry.id),
-            mods,
-            dc,
-            stealth: (R.check.graceIds || []).includes(entry.id)
+        function nightFall() {
+          if (g.tailing) {
+            const atEnd = g.route && g.route.here >= g.route.nodes.length - 1;
+            if (!atEnd)
+              return {
+                blocked: true,
+                reason: "\u804C\u4E1A\u75C5\uFF1A\u8DDF\u7F00\u672A\u7ED3\u675F\uFF0C\u4ECA\u665A\u53EA\u80FD\u8DDF\u4E22\u6216\u8DDF\u5979\u5230\u5BB6"
+              };
+          }
+          const curDate = L.get("date");
+          if (g.route && g.route.id === "saturday_date_hotel") {
+            g.hotelVisitedCount = (g.hotelVisitedCount || 0) + 1;
+            g.lastHotelDate = curDate;
+          }
+          const r = L.settleNight({
+            peakAlert: L.get("alert"),
+            nrv: g.player.nrv,
+            staminaMax: g.player.staminaMax
           });
-          const attrKey = attrKeyOf(entry.id);
-          const ATTR_NAMES = { agi: "\u654F\u6377", str: "\u4F53\u683C", int: "\u60C5\u62A5", cha: "\u53E3\u624D", nrv: "\u80C6\u91CF" };
-          const attr = { name: ATTR_NAMES[attrKey] || "\u5C5E\u6027", v: attrOf(entry.id) };
-          const targetTags = sum.breakdown.filter((h) => h.owner === "target");
-          const darkReveal = targetTags.length ? targetTags.map((h) => `${h.src} (${h.v >= 0 ? "+" : ""}${h.v})`).join("\u3001") : null;
-          return { roll, res, mods, dc, sum, attr, targetMod, darkReveal };
-        }
-        function attrKeyOf(id) {
-          const agility = [
-            "follow",
-            "approach",
-            "withdraw",
-            "hide",
-            "wall",
-            "enter_tail",
-            "stop",
-            "wait",
-            "cross",
-            "cover",
-            "fake_phone",
-            "fake_call",
-            "shop_enter",
-            "window_watch",
-            "cafe_sit",
-            "ride_along",
-            "transfer",
-            "follow_work",
-            "ride_follow",
-            "car_follow",
-            "climb"
-          ];
-          const brawn = ["barrier", "pry", "drag", "pin", "lockpick", "break_in"];
-          const intel = [
-            "photo",
-            "scan",
-            "deduce",
-            "timing",
-            "listen",
-            "perch",
-            "note",
-            "record",
-            "plate",
-            "trash",
-            "pick",
-            "listen_home",
-            "locate",
-            "watch_lights",
-            "check_mailbox",
-            "watch_visitor",
-            "check_camera",
-            "check_door",
-            "stair_lurk",
-            "door_listen",
-            "door_peep",
-            "try_handle",
-            "ransack",
-            "plant_bug",
-            "cover_tracks",
-            "plan_exit",
-            "wait_gate",
-            "watch_peers",
-            "check_desk",
-            "hear_gossip",
-            "stalk_social",
-            "monitor_social",
-            "check_parcel",
-            "get_number",
-            "stakeout"
-          ];
-          const charm = [
-            "greet",
-            "chat",
-            "ease",
-            "misdirection",
-            "respond_her",
-            "answer_guard",
-            "fake_visit",
-            "audit_class",
-            "lobby_lurk",
-            "apply_job",
-            "pump_person",
-            "bribe"
-          ];
-          if (brawn.includes(id)) return "str";
-          if (charm.includes(id)) return "cha";
-          if (intel.includes(id)) return "int";
-          return "agi";
-        }
-        function attrOf(id) {
-          return g.player[attrKeyOf(id)];
-        }
-        function categoryOf(id) {
-          const fine = ["photo", "record", "pick", "ransack", "lockpick", "plant_bug", "cover_tracks"];
-          const conflict = ["strike", "pin", "drag"];
-          const social = [
-            "greet",
-            "chat",
-            "ease",
-            "misdirection",
-            "respond_her",
-            "answer_guard",
-            "fake_visit",
-            "audit_class",
-            "lobby_lurk",
-            "apply_job",
-            "pump_person",
-            "bribe"
-          ];
-          if (fine.includes(id)) return "fine";
-          if (conflict.includes(id)) return "conflict";
-          if (social.includes(id)) return "social";
-          return "stealth";
-        }
-        function currentPlaceKind() {
-          const id = g.route && Array.isArray(g.route.nodes) && g.route.here >= 0 ? String(g.route.nodes[g.route.here] || "") : "";
-          if (!id) return "";
-          if (/unit|stairs|gate|door|porch|lobby|entrance/.test(id)) return "door";
-          if (/residence|room|home|flat|apartment|villa/.test(id)) return "room";
-          const name = String((map.getPlace(id) || {}).name || "");
-          if (/楼道|单元|门|玄关|电梯|台阶|入口/.test(name)) return "door";
-          if (/客厅|卧室|房间|室内|屋内|玄关内/.test(name)) return "room";
-          return "";
-        }
-        function placeNameNow() {
-          if (!g.route || !Array.isArray(g.route.nodes)) return "";
-          const id = g.route.nodes[g.route.here];
-          return id && (map.getPlace(id) || {}).name || "";
-        }
-        function capturePhoto(dist) {
-          const persona = g.targetPersona || {};
-          const owned = Object.keys(g.album || {});
-          const cands = ALBUM.captureList(persona, owned, dist);
-          if (!cands.length) return null;
-          g.captureSeq = (g.captureSeq || 0) + 1;
-          const pick = cands[D.rollD20(D.actionSeed(salt, g.floor || 1, "capture_" + g.captureSeq)).d20 % cands.length];
-          const meta = {
-            file: pick.file,
-            name: pick.item.name,
-            slot: pick.item.slot,
-            angle: pick.angle,
-            t: g.floor || 1,
-            place: placeNameNow(),
-            dist
-          };
-          g.album[pick.key] = meta;
+          (g.tags || (g.tags = [])).length ? T.clearNight(g.tags) && (g.tags = T.clearNight(g.tags)) : null;
+          syncHeartTags();
+          g.consecFails = 0;
+          const mult = g.identity && R.identity.list[g.identity] && R.identity.list[g.identity].piMult || 1;
           let piBonus = 0;
-          if (dist === "touch" && pick.angle === "front") piBonus += 1;
-          const sb = ALBUM.setBonus(g.album, g.setBonusDone);
-          piBonus += sb.pi;
-          g.lastCapture = { key: pick.key, ...meta, piBonus, outfits: sb.outfits };
-          g.capture = g.lastCapture;
-          g.signals = g.signals || [];
-          g.signals.push(["\u7167\u7247", `\u62CD\u5230 ${pick.item.name}\uFF08${CA_CN[pick.angle] || pick.angle}\uFF09`]);
-          if (g.signals.length > 20) g.signals.shift();
-          return g.lastCapture;
+          if (mult > 1 && g.nightPiGross > 0) {
+            piBonus = Math.round(g.nightPiGross * (mult - 1));
+            if (piBonus > 0) {
+              L.commit({ pi: piBonus }, { reason: "identity_pi" });
+              log(
+                `[\u8EAB\u4EFD] PI\xD7${mult}\uFF1A\u5F53\u665A\u6BDB\u5165\u8D26 ${g.nightPiGross}\uFF0C\u8865\u5DEE +${piBonus}`
+              );
+            }
+          }
+          g.nightPiGross = 0;
+          g.tailing = false;
+          g.nightDrinkUsed = false;
+          g.alertLatch = [];
+          g.alertEvent = null;
+          g.alertHold = 0;
+          g.fleeing = false;
+          const wd = D.rollD20(seedAt(9e3 + (g.floor || 0), "weather")).d20;
+          g.world.weather = wd <= WEATHER_BANDS.clear[1] ? "clear" : wd <= WEATHER_BANDS.rain[1] ? "rain" : "storm";
+          g.nightStartFloor = g.floor || 0;
+          const nextDate = L.get("date");
+          const dayOfWeek = ((nextDate || 1) - 1) % 7 + 1;
+          const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
+          const isLimping = TS.isLimpingDate(nextDate, g.lastHotelDate);
+          if (dayOfWeek === 6 && (pack.id === "student" || pack.id === "college")) {
+            const routine = g.targetPersona?.saturdayRoutine || (g.targetPersona ? g.targetPersona.saturdayRoutine = TS.resolveSaturdayRoutine(
+              pack,
+              g.targetPersona,
+              seedAt(0, "saturday_routine")
+            ) : "cram");
+            if (routine === "date") {
+              g.dateCount = (g.dateCount || 0) + 1;
+            }
+            const personalityId = personalityIdOf(g.targetPersona) || "timid";
+            const routeDef = TS.resolveSaturdayRoute(
+              pack,
+              routine,
+              g.dateCount || 0,
+              personalityId,
+              seedAt(nextDate, "saturday_route_branch"),
+              { hotelVisitedCount: g.hotelVisitedCount || 0 }
+            );
+            if (routeDef) {
+              const startT = routeDef.path && routeDef.path[0] && routeDef.path[0].t ? `${routeDef.path[0].t.slice(0, 2)}:${routeDef.path[0].t.slice(2)}` : "21:00";
+              g.route = {
+                id: routeDef.id,
+                note: routeDef.note,
+                prompt: routeDef.prompt,
+                startTime: startT,
+                nodes: routeDef.path.map((p) => p.place),
+                times: routeDef.path.map((p) => p.t),
+                here: 0,
+                known: routeDef.known || routeDef.path.map(() => 1)
+              };
+            }
+          } else if (dayOfWeek === 7 && (pack.id === "student" || pack.id === "college")) {
+            const sundayRoute = (pack.routes || []).find(
+              (r2) => r2.id === "sunday_rest"
+            ) || {
+              id: "sunday_rest",
+              note: "\u5468\u65E5\u5168\u5929\u5C45\u5BB6\u4F11\u6574\uFF08\u4E0D\u51FA\u95E8\uFF09",
+              prompt: "\u767D\u63CF\u5C11\u5973\u5468\u65E5\u5168\u5929\u5728\u5BD3\u6240\u5185\u5B89\u9759\u4F11\u6574\uFF0C\u7A97\u5E18\u62C9\u8D77\uFF0C\u672A\u66FE\u5916\u51FA\uFF0C\u8857\u9053\u4E0A\u65E0\u5176\u8DB3\u8FF9",
+              path: [{ place: "unit_stairs_b", t: "2000" }]
+            };
+            g.route = {
+              id: sundayRoute.id,
+              note: sundayRoute.note,
+              prompt: sundayRoute.prompt,
+              startTime: "20:00",
+              nodes: sundayRoute.path.map((p) => p.place),
+              times: sundayRoute.path.map((p) => p.t),
+              here: 0,
+              known: [1]
+            };
+            g.tailing = false;
+          } else if (dayOfWeek >= 1 && dayOfWeek <= 5 && (pack.id === "student" || pack.id === "college")) {
+            let routeDef = null;
+            if (dayOfWeek === 5) {
+              routeDef = pack.routes.find(
+                (r2) => r2.id === "friday_late" || r2.id === "college_friday_night"
+              );
+            }
+            if (!routeDef) {
+              routeDef = pack.routes.find(
+                (r2) => r2.id === "college_evening" || r2.id === "workday_evening"
+              ) || pack.routes[0];
+            }
+            if (routeDef) {
+              const startT = routeDef.path && routeDef.path[0] && routeDef.path[0].t ? `${routeDef.path[0].t.slice(0, 2)}:${routeDef.path[0].t.slice(2)}` : "21:00";
+              g.route = {
+                id: routeDef.id,
+                note: routeDef.note,
+                prompt: routeDef.prompt,
+                startTime: startT,
+                nodes: routeDef.path.map((p) => p.place),
+                times: routeDef.path.map((p) => p.t),
+                here: 0,
+                known: routeDef.known || routeDef.path.map(() => 1)
+              };
+            }
+          }
+          const outfit = TS.sampleOutfit(
+            pack,
+            nextDate,
+            seedAt(nextDate, "outfit"),
+            g.targetPersona || g.target
+          );
+          const somatic = TS.sampleSomatic(pack, seedAt(nextDate, "somatic"), {
+            isLimping
+          });
+          const startPlaceId = g.route && g.route.nodes ? g.route.nodes[0] : null;
+          const startPlaceName = startPlaceId ? map.getPlace(startPlaceId)?.name || startPlaceId : null;
+          const hand = TS.resolveHand(
+            pack,
+            startPlaceId,
+            null,
+            seedAt(9e3 + (g.floor || 0), "hand_night")
+          );
+          g.targetState = {
+            outfit,
+            somatic,
+            hand,
+            route: g.route ? {
+              id: g.route.id,
+              note: g.route.note,
+              prompt: g.route.prompt,
+              startTime: g.route.startTime,
+              here: g.route.here || 0,
+              nodes: g.route.nodes,
+              currentPlace: startPlaceName
+            } : null
+          };
+          applyTargetState();
+          return {
+            seq: r.seq,
+            warinessGain: r.warinessGain,
+            nextStartAlert: r.nextStartAlert,
+            date: L.get("date"),
+            nextWeather: g.world.weather,
+            piBonus,
+            targetState: g.targetState
+          };
         }
+        return {
+          applyTargetState,
+          applyShoeMod,
+          initTargetState,
+          syncTargetShoeTags,
+          syncPersonaTags,
+          nightFall
+        };
+      }
+      module.exports = { createTargetSystem };
+    }
+  });
+
+  // src/contracts/action-requirements.js
+  var require_action_requirements = __commonJS({
+    "src/contracts/action-requirements.js"(exports, module) {
+      "use strict";
+      function classifyPlace(id, name = "") {
+        const place = String(id || ""), label = String(name || "");
+        if (/unit|stairs|gate|door|porch|lobby|entrance/i.test(place) || /楼道|单元|门|玄关|电梯|台阶|入口/.test(label))
+          return "door";
+        if (/residence|room|home|flat|apartment|villa/i.test(place) || /客厅|卧室|房间|室内|屋内/.test(label))
+          return "room";
+        return "";
+      }
+      function requirementFailure(requires, context) {
+        if (!requires) return null;
+        if (requires.place && context.placeKind !== requires.place)
+          return {
+            code: "place",
+            reason: `\u9700\u8981${requires.place === "door" ? "\u95E8\u524D / \u697C\u9053 / \u7384\u5173" : "\u5BA4\u5185"}\u573A\u6240`
+          };
+        if (requires.dist?.length && !requires.dist.includes(context.dist))
+          return {
+            code: "dist",
+            reason: `\u9700\u8981${requires.dist.map((d) => ({ far: "\u8FDC\u7AEF", same: "\u540C\u8857", close: "\u8EAB\u540E", touch: "\u8D34\u8EAB" })[d] || d).join(" / ")}\u8DDD\u79BB`
+          };
+        const items = requires.items || [];
+        if (items.length && !context.inventory.some(
+          (it) => items.includes(it.id) && (it.count ?? 1) > 0
+        ))
+          return { code: "items", reason: "\u7F3A\u5C11\u6240\u9700\u968F\u8EAB\u5DE5\u5177" };
+        return null;
+      }
+      module.exports = { classifyPlace, requirementFailure };
+    }
+  });
+
+  // src/runtime/game/actions.js
+  var require_actions = __commonJS({
+    "src/runtime/game/actions.js"(exports, module) {
+      "use strict";
+      var {
+        requirementFailure
+      } = require_action_requirements();
+      var R = require_rules();
+      var C = require_checks();
+      var { DIST_CN, DIST_KEY, DIST_RANK } = require_constants();
+      function createActionSystem({
+        g,
+        L,
+        lex,
+        log,
+        capturePhoto,
+        currentPlaceKind,
+        gain,
+        runCheck,
+        syncHeartTags
+      }) {
         function settleAction(tag, seq) {
           const entry = lex.byId.get(tag.id);
           if (!entry) return null;
-          const out = { type: "action", id: tag.id, name: tag.name, label: tag.label || tag.name };
+          const out = {
+            type: "action",
+            id: tag.id,
+            name: tag.name,
+            label: tag.label || tag.name
+          };
           if (!(entry.modes || []).includes(g.mode) && !(entry.modes || []).includes("any")) {
             out.rejected = true;
             out.reason = `\u52A8\u4F5C [${tag.name}] \u9700\u8981\u6A21\u5F0F\uFF1A${(entry.modes || []).join("/")}`;
             return out;
           }
-          const req = entry.requires;
-          if (req) {
-            if (req.place) {
-              const kind = currentPlaceKind();
-              if (kind !== req.place) {
-                const label = req.place === "door" ? "\u95E8\u524D / \u697C\u9053 / \u7384\u5173" : "\u5BA4\u5185";
-                out.rejected = true;
-                out.reason = `\u52A8\u4F5C [${tag.name}] \u53EA\u80FD\u5728${label}\u4F7F\u7528\uFF08\u5F53\u524D\u4E0D\u5728\u8BE5\u573A\u6240\uFF09`;
-                return out;
-              }
-            }
-            const dist2 = DIST_KEY[tag.args?.dist] || g.dist;
-            if (Array.isArray(req.dist) && req.dist.length && !req.dist.includes(dist2)) {
-              out.rejected = true;
-              out.reason = `\u52A8\u4F5C [${tag.name}] \u9700\u8981\u8DDD\u79BB\uFF1A${req.dist.map((d) => DIST_CN[d] || d).join(" / ")}\uFF08\u5F53\u524D ${DIST_CN[dist2] || dist2}\uFF09`;
-              return out;
-            }
-            if (Array.isArray(req.items) && req.items.length) {
-              const held = (g.player.inventory || []).filter((it) => req.items.includes(it.id) && (it.count || 1) > 0);
-              if (!held.length) {
-                const names = req.items.map((id) => R.items && R.items[id] && R.items[id].name || id).join(" / ");
-                out.rejected = true;
-                out.reason = `\u52A8\u4F5C [${tag.name}] \u9700\u8981\u968F\u8EAB\u5DE5\u5177\uFF1A${names}\uFF08\u53EF\u5728\u7EC8\u7AEF\xB7\u6218\u672F\u884C\u56CA\u5185\u8D2D\u4E70\u4E0E\u88C5\u5907\uFF09`;
-                return out;
-              }
-            }
+          const failure = requirementFailure(entry.requires, {
+            placeKind: currentPlaceKind(),
+            dist: g.dist,
+            inventory: g.player.inventory || []
+          });
+          if (failure) {
+            out.rejected = true;
+            out.reason = `\u52A8\u4F5C [${tag.name}] ${failure.reason}${failure.code === "items" ? "\uFF1A" + entry.requires.items.map((id) => R.items[id]?.name || id).join(" / ") : ""}`;
+            return out;
           }
           if (tag.id === "strike" && (tag.args?.style || "ambush") === "ambush" && g.dist !== "touch") {
             out.rejected = true;
@@ -8187,7 +8169,10 @@
             out.noRoll = true;
             if (tag.id === "breath") {
               const gainAmt = C.breathGain(g.player.nrv);
-              const r2 = L.commit({ heart: -Math.min(gainAmt, L.get("heart") - 20) }, { reason: "breath" });
+              const r2 = L.commit(
+                { heart: -Math.min(gainAmt, L.get("heart") - 20) },
+                { reason: "breath" }
+              );
               out.ledger = r2;
               out.text = `\u7F13\u606F\uFF1A\u5FC3\u8DF3 -${Math.max(0, -r2.applied.heart)}`;
             } else if (tag.id === "withdraw") {
@@ -8209,7 +8194,11 @@
             return out;
           }
           syncHeartTags();
-          const { roll, res, mods, dc, attr, targetMod, darkReveal } = runCheck(entry, tag.args, seq);
+          const { roll, res, mods, dc, attr, targetMod, darkReveal } = runCheck(
+            entry,
+            tag.args,
+            seq
+          );
           out.d20 = roll.d20;
           out.raw = roll.raw;
           out.mods = mods;
@@ -8255,7 +8244,10 @@
             }
           }
           syncHeartTags();
-          const r = L.settleAction({ alertD, heartD, piD, staminaD, faceMemD }, { reason: tag.id });
+          const r = L.settleAction(
+            { alertD, heartD, piD, staminaD, faceMemD },
+            { reason: tag.id }
+          );
           out.ledger = { seq: r.seq, applied: r.applied };
           if (piD > 0) g.nightPiGross = (g.nightPiGross || 0) + piD;
           if (g.identity === "detective" && tag.id === "follow") {
@@ -8272,9 +8264,717 @@
             }
           }
           g.consecFails = res.band === "fail" || res.band === "nat1" ? g.consecFails + 1 : 0;
-          log(`[${tag.name}] 1d20(${roll.d20}) ${mods.map((m) => `${m.v >= 0 ? "+" : ""}${m.v} ${m.src}`).join(" ")} = ${res.total} vs DC ${dc} \u2192 ${res.band}`);
+          log(
+            `[${tag.name}] 1d20(${roll.d20}) ${mods.map((m) => `${m.v >= 0 ? "+" : ""}${m.v} ${m.src}`).join(" ")} = ${res.total} vs DC ${dc} \u2192 ${res.band}`
+          );
           return out;
         }
+        return { settleAction };
+      }
+      module.exports = { createActionSystem };
+    }
+  });
+
+  // src/runtime/game/clock.js
+  var require_clock = __commonJS({
+    "src/runtime/game/clock.js"(exports, module) {
+      "use strict";
+      function clockMinutes(g, floor = g.floor) {
+        const match = String(g.route?.startTime || "21:00").match(
+          /^(\d{1,2}):(\d{2})$/
+        );
+        const base = match ? Number(match[1]) * 60 + Number(match[2]) : 1260;
+        return base + Math.max(0, (floor || 1) - (g.nightStartFloor || 0) - 1) * 15;
+      }
+      function clockLabel(g) {
+        const min = clockMinutes(g);
+        return `${String(Math.floor(min / 60) % 24).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+      }
+      module.exports = { clockMinutes, clockLabel };
+    }
+  });
+
+  // src/contracts/validation.js
+  var require_validation = __commonJS({
+    "src/contracts/validation.js"(exports, module) {
+      "use strict";
+      function validateActions(value) {
+        if (!Array.isArray(value) || value.length > 3)
+          throw new TypeError("\u52A8\u4F5C\u961F\u5217\u5FC5\u987B\u4E3A\u6570\u7EC4\uFF0C\u6700\u591A\u4E09\u4E2A\u52A8\u4F5C");
+        for (const action of value) {
+          if (!action || typeof action !== "object" || typeof action.id !== "string" && typeof action.name !== "string")
+            throw new TypeError("\u52A8\u4F5C\u9700\u8981\u6709\u6548 id \u6216\u540D\u79F0");
+          if (action.args != null && (typeof action.args !== "object" || Array.isArray(action.args)))
+            throw new TypeError("\u52A8\u4F5C\u53C2\u6570\u5FC5\u987B\u4E3A\u5BF9\u8C61");
+          if (action.args?.dist != null && !["far", "same", "close", "touch"].includes(action.args.dist))
+            throw new TypeError("\u65E0\u6548\u7684\u8DDD\u79BB\u53C2\u6570");
+          if (action.args?.style != null && !["assault", "ambush"].includes(action.args.style))
+            throw new TypeError("\u65E0\u6548\u7684\u52A8\u4F5C\u65B9\u5F0F");
+        }
+      }
+      module.exports = { validateActions };
+    }
+  });
+
+  // src/runtime/parse.js
+  var require_parse = __commonJS({
+    "src/runtime/parse.js"(exports, module) {
+      "use strict";
+      var { normalize, loadLexicon } = require_lexicon2();
+      var MODE_WORDS = {
+        prepare: "prepare",
+        \u51C6\u5907: "prepare",
+        stealth: "stealth",
+        \u6F5C\u884C: "stealth",
+        contact: "contact",
+        \u63A5\u89E6: "contact",
+        vehicle: "vehicle",
+        \u8F66\u53A2: "vehicle"
+      };
+      var VERIF_WORDS = {
+        high: "high",
+        \u9AD8: "high",
+        mid: "mid",
+        \u4E2D: "mid",
+        low: "low",
+        \u4F4E: "low"
+      };
+      var ACTION_QUEUE_MAX = 3;
+      var KINDS = { ACTION: "\u52A8\u4F5C", FACT: "\u4E8B\u5B9E", LIE: "\u8C0E\u8A00", MODE: "\u6A21\u5F0F" };
+      function parseFloor(text, lex) {
+        const L = lex || loadLexicon();
+        const diag = {
+          parseErrors: 0,
+          halfWidthPipe: 0,
+          actionOverflow: 0,
+          degradedSamples: [],
+          factBad: 0,
+          lieBad: 0,
+          modeBad: 0,
+          modeDup: 0,
+          unknownAction: []
+        };
+        const tags = [];
+        let actionCount = 0, modeCount = 0;
+        function read(kind, body, compact = false) {
+          const split = () => {
+            if (body.includes("|")) diag.halfWidthPipe++;
+            return body.split(/[｜|]/).map((s) => s.trim()).filter(Boolean);
+          };
+          try {
+            if (kind === "\u52A8\u4F5C") {
+              if (actionCount >= ACTION_QUEUE_MAX) {
+                diag.actionOverflow++;
+                return;
+              }
+              const entry = L.byId.get(body.trim());
+              const r = entry ? { hit: true, id: entry.id, name: entry.name, args: {} } : normalize(split().join(" "), L);
+              if (!r.hit) {
+                diag.parseErrors++;
+                diag.unknownAction.push(body.slice(0, 24));
+                return;
+              }
+              actionCount++;
+              tags.push({ type: "action", id: r.id, name: r.name, args: r.args });
+            } else if (kind === "\u4E8B\u5B9E") {
+              const match = /^#([\w-]+)$/.exec(split()[0] || "");
+              if (!match) {
+                diag.factBad++;
+                return;
+              }
+              tags.push({
+                type: "fact",
+                ticket: /^\d+$/.test(match[1]) ? Number(match[1]) : match[1]
+              });
+            } else if (kind === "\u8C0E\u8A00") {
+              const segs = split();
+              const level = compact && segs.length === 2 ? VERIF_WORDS[segs[0].toLowerCase()] : VERIF_WORDS[(segs[3] || "").toLowerCase()];
+              if (!level || segs.length < 4 && !(compact && segs.length === 2)) {
+                diag.lieBad++;
+                return;
+              }
+              tags.push({
+                type: "lie",
+                claim: compact && segs.length === 2 ? segs[1] : segs[0],
+                to: compact && segs.length === 2 ? "target" : segs[1],
+                scene: segs[2] || "current",
+                verifiability: level
+              });
+            } else if (kind === "\u6A21\u5F0F") {
+              const mode = MODE_WORDS[body.trim().toLowerCase()];
+              if (!mode) {
+                diag.modeBad++;
+                return;
+              }
+              if (modeCount++) {
+                diag.modeDup++;
+                return;
+              }
+              tags.push({ type: "mode", mode });
+            }
+          } catch {
+            diag.parseErrors++;
+          }
+        }
+        const cleanText = String(text || "").replace(
+          /<(动作|事实|谎言|模式)>([\s\S]*?)<\/\1>|<!--([\s\S]*?)-->/g,
+          (full, kind, body, comment) => {
+            if (kind) {
+              read(kind, body);
+              return "";
+            }
+            let recognized = false;
+            for (const match of comment.matchAll(
+              /\[(ACTION|FACT|LIE|MODE):([^\]]*)\]/gi
+            )) {
+              recognized = true;
+              read(KINDS[match[1].toUpperCase()], match[2], true);
+            }
+            return recognized ? "" : full;
+          }
+        ).trim();
+        return { tags, cleanText, diag };
+      }
+      function verifyEvidence(cleanText, claim) {
+        return !!claim && !!cleanText && cleanText.includes(claim);
+      }
+      module.exports = { parseFloor, verifyEvidence, ACTION_QUEUE_MAX };
+    }
+  });
+
+  // src/runtime/game/turn.js
+  var require_turn = __commonJS({
+    "src/runtime/game/turn.js"(exports, module) {
+      "use strict";
+      var { clockLabel } = require_clock();
+      var { validateActions } = require_validation();
+      var R = require_rules();
+      var C = require_checks();
+      var D = require_dice();
+      var LP = require_lifepack();
+      var TS = require_target_state();
+      var map = require_map();
+      var { normalize: D_norm } = require_lexicon2();
+      var { parseFloor, verifyEvidence } = require_parse();
+      var { DIST_KEY, HUNTER_MODES, TAIL_PUMP_IDS } = require_constants();
+      function createTurnSystem({
+        g,
+        L,
+        lex,
+        seedAt,
+        log,
+        addProxLog,
+        advanceRouteByClock,
+        applyTargetState,
+        categoryOf,
+        herAdvance,
+        resolveAlertCross,
+        settleAction,
+        snapshot,
+        sweetHighNow,
+        syncThresholdTags
+      }) {
+        function rollEnvSfx() {
+          if (g.mode !== "stealth") return null;
+          const here = g.route ? g.route.here : -1;
+          const curId = g.route && here >= 0 ? g.route.nodes[here] : null;
+          const cur = curId ? map.getPlace(curId) : null;
+          if (!cur) return null;
+          if (curId.includes("metro") || curId.includes("lobby") || curId.includes("store"))
+            return null;
+          const sfxSeed = seedAt(g.floor || 0, 99);
+          const sfxRoll = D.rollD20(sfxSeed).d20;
+          const isAlley = curId.includes("alley") || curId.includes("stairs") || curId.includes("backstreet") || (cur.spots || []).length > 1;
+          const isResidential = curId.includes("unit") || curId.includes("residence") || curId.includes("stairs") || curId.includes("old");
+          const catThreshold = g.dist === "touch" || g.dist === "close" ? 5 : 3;
+          const dogLow = L.get("alert") >= 41 ? 17 : 19;
+          if (isAlley && sfxRoll <= catThreshold) return "cat";
+          if (isResidential && sfxRoll >= dogLow) return "dog";
+          return null;
+        }
+        function translateInput(text) {
+          const clauses = String(text || "").split(/[，,。；;\n！!？?·]+|然后|接着|顺便|之后|再试|同时/).map((s) => s.trim()).filter(Boolean);
+          const out = [], seen = /* @__PURE__ */ new Set();
+          for (const c of clauses) {
+            if (out.length >= 3) break;
+            const r = D_norm(c, lex);
+            if (r.hit && !seen.has(r.id)) seen.add(r.id), out.push(r);
+          }
+          return out;
+        }
+        function settleInput(playerText, opts = {}) {
+          if (opts.actions != null) validateActions(opts.actions);
+          let queue = [];
+          if (opts.actions && opts.actions.length) {
+            queue = opts.actions.map((act) => {
+              const entry = act.id && lex.byId.get(act.id) || act.name && lex.byName.get(act.name);
+              if (!entry)
+                throw Object.assign(
+                  new Error(`\u672A\u6CE8\u518C\u7684\u52A8\u4F5C\uFF1A${act.id || act.name}`),
+                  { code: "ACTION_INVALID" }
+                );
+              return {
+                id: entry ? entry.id : act.id,
+                name: entry ? entry.name : act.name,
+                label: act.name || (entry ? entry.name : act.id),
+                args: act.args || {}
+              };
+            }).filter((r) => r.id && lex.byId.has(r.id));
+          } else if (opts.allowTextFallback === true) {
+            queue = translateInput(playerText);
+          }
+          const results = processFloor(playerText || "", {
+            ...opts,
+            _actionQueue: queue,
+            _fromInput: true
+          });
+          results.queue = queue.map((r) => ({
+            id: r.id,
+            name: r.name,
+            args: r.args
+          }));
+          results.package = {
+            floor: results.floor,
+            actions: results.actions.map((a) => ({
+              id: a.id,
+              name: a.name,
+              label: a.label || a.name,
+              d20: a.d20,
+              total: a.total,
+              dc: a.dc,
+              band: a.band,
+              mods: a.mods,
+              attr: a.attr || null,
+              targetMod: a.targetMod || 0,
+              darkReveal: a.darkReveal || null,
+              raw: a.raw,
+              ledger: a.ledger,
+              noRoll: a.noRoll,
+              text: a.text,
+              rejected: a.rejected || false,
+              reason: a.reason || null
+            })),
+            account: results.floorApplied || null,
+            seg: results.seg || null,
+            logs: g.logs.slice(),
+            narrativeOnly: queue.length === 0 || results.actions.length === 0,
+            targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
+            herAlert: g.lastHerAlert || null,
+            alertEvent: g.alertEvent ? { ...g.alertEvent } : null
+          };
+          return results;
+        }
+        function processFloor(llmText, opts = {}) {
+          if (opts.replyOnly) return processReply(llmText);
+          const beforeLedger = { ...L.state };
+          const replyOnly = opts.replyOnly === true;
+          if (!replyOnly) g.floor = opts.floor ?? (g.floor || 0) + 1;
+          g.logs = [];
+          g.lastHerAlert = null;
+          g.capture = null;
+          if (!replyOnly) g.alertEvent = null;
+          if (!replyOnly) advanceRouteByClock();
+          if (!replyOnly && g.fleeing && g.route) {
+            herAdvance(true);
+            if (g.route.here >= g.route.nodes.length - 1) g.tailing = false;
+          }
+          if (!replyOnly && g.targetState) {
+            const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
+            const here = g.route ? g.route.here : -1;
+            const curId = g.route && here >= 0 ? g.route.nodes[here] : null;
+            g.targetState.hand = TS.resolveHand(
+              pack,
+              curId,
+              g.targetState.hand,
+              seedAt(g.floor || 0, "hand")
+            );
+            if (g.targetState.route && g.route) {
+              g.targetState.route.here = here;
+              g.targetState.route.currentPlace = curId ? map.getPlace(curId)?.name || curId : null;
+            }
+            applyTargetState();
+          }
+          const { tags, cleanText, diag } = opts._fromInput ? { tags: [], cleanText: String(llmText || ""), diag: {} } : parseFloor(llmText, lex);
+          syncThresholdTags();
+          const results = {
+            floor: g.floor,
+            actions: [],
+            facts: [],
+            lies: [],
+            mode: null,
+            diag,
+            logs: g.logs,
+            ledgerSeqs: []
+          };
+          const floorApplied = {
+            stamina: 0,
+            heart: 0,
+            alert: 0,
+            pi: 0,
+            proximity: 0,
+            cash: 0
+          };
+          const modeTag = tags.find((t) => t.type === "mode");
+          if (modeTag) {
+            g.mode = modeTag.mode;
+            results.mode = modeTag.mode;
+          }
+          for (const lie of tags.filter((t) => t.type === "lie")) {
+            const ok = verifyEvidence(cleanText, lie.claim);
+            if (ok) results.lies.push({ ...lie, verified: true });
+            else results.lies.push({ ...lie, verified: false, dropped: true });
+          }
+          let seq = 0;
+          let heartPeak = L.get("heart");
+          let tailFloor = null;
+          const actionQueue = replyOnly ? [] : Array.isArray(opts._actionQueue) ? opts._actionQueue.map((a) => ({
+            type: "action",
+            id: a.id,
+            name: a.name,
+            label: a.label || a.name,
+            args: a.args
+          })) : opts._fromInput ? [] : tags.filter((t) => t.type === "action");
+          for (const tag of actionQueue) {
+            const out = settleAction(tag, seq++);
+            if (out) {
+              results.actions.push(out);
+              if (out.ledger?.seq) results.ledgerSeqs.push(out.ledger.seq);
+              if (out.ledger?.applied) {
+                for (const [k, v] of Object.entries(out.ledger.applied)) {
+                  if (floorApplied[k] !== void 0) floorApplied[k] += v;
+                }
+              }
+              if (!tailFloor && TAIL_PUMP_IDS.includes(tag.id) && out.band) {
+                tailFloor = {
+                  band: out.band,
+                  dist: DIST_KEY[tag.args?.dist] || g.dist
+                };
+              }
+            }
+            heartPeak = Math.max(heartPeak, L.get("heart"));
+          }
+          if (!replyOnly) resolveAlertCross();
+          if (!replyOnly && HUNTER_MODES.includes(g.mode)) {
+            const P = R.heart.stim.pump;
+            const calm = g.mode === "contact" && L.get("proximity") >= P.calmSocialProximity;
+            const pumped = [];
+            if (tailFloor && !calm) {
+              let stim = 0, src = "";
+              if (tailFloor.band === "nat1") {
+                stim = P.exposed;
+                src = "\u7206\u9732\u7167\u9762";
+              } else if (tailFloor.band === "fail") {
+                stim = P.lost;
+                src = "\u8DDF\u4E22";
+              } else if (tailFloor.band === "grace" || tailFloor.band === "nat20") {
+                stim = 0;
+              } else {
+                stim = P.tail[tailFloor.dist] ?? P.tail.same;
+                src = `\u6301\u7EED\u5C3E\u968F\xB7${tailFloor.dist}`;
+              }
+              if (stim > 0) pumped.push({ stim, src });
+            }
+            if (!tailFloor && g.mode === "contact" && !calm && actionQueue.some(
+              (t) => t.type === "action" && lex.byId.get(t.id) && categoryOf(t.id) === "social"
+            )) {
+              pumped.push({ stim: P.social, src: "\u4F2A\u88C5\u5BD2\u6684" });
+            }
+            const sfx = rollEnvSfx();
+            g._envSfx = sfx;
+            if (sfx) {
+              let stim = P.env[sfx] || 0;
+              const fam = g.famSegs[g.world.district] || 0;
+              const halved = fam >= R.heart.areaFamiliarSegments;
+              if (halved) stim = Math.round(stim * P.familiarEnvFactor);
+              pumped.push({
+                stim,
+                src: (sfx === "cat" ? "\u732B\u60CA\u53EB" : "\u72D7\u5420") + (halved ? "\xB7\u719F\u533A\u51CF\u534A" : "")
+              });
+            }
+            for (const p of pumped) {
+              if (p.stim <= 0) continue;
+              const d = C.heartDelta({ stim: p.stim, nrv: g.player.nrv });
+              if (d) {
+                L.commit({ heart: d }, { reason: "stim" });
+                floorApplied.heart += d;
+                log(`[\u523A\u6FC0] ${p.src} +${p.stim} \u2192 \u5FC3\u8DF3 +${d}`);
+              }
+            }
+            heartPeak = Math.max(heartPeak, L.get("heart"));
+          } else {
+            g._envSfx = null;
+          }
+          if (!replyOnly && HUNTER_MODES.includes(g.mode)) {
+            const tax = C.staminaSegTax(heartPeak, sweetHighNow());
+            let appliedTax = 0;
+            if (tax) {
+              appliedTax = L.commit({ stamina: tax }, { reason: "seg_tax" }).applied.stamina;
+              floorApplied.stamina += appliedTax;
+              log(`[\u6BB5\u7A0E] \u5FC3\u8DF3\u5CF0\u503C ${heartPeak} \u2192 \u4F53\u529B ${appliedTax}`);
+            }
+            const dropped = C.segHeartDrop(L.get("heart"), g.player.nrv);
+            if (dropped !== L.get("heart")) {
+              const dH = dropped - L.get("heart");
+              L.commit({ heart: dH }, { reason: "seg_drop" });
+              floorApplied.heart += dH;
+            }
+            results.seg = { heartPeak, staminaTax: appliedTax };
+            const d = g.world.district;
+            if (d && g.famSegs[d] !== void 0) {
+              g.famSegs[d] = Math.min(g.famSegs[d] + 1, R.heart.areaFamiliarSegments);
+            }
+          }
+          if (floorApplied.proximity !== 0) {
+            const actName = actionQueue[0]?.name || "\u63A5\u89E6\u4EA4\u4E92";
+            addProxLog(floorApplied.proximity, actName);
+          }
+          if (floorApplied.alert >= 8 || C.alertStage(L.get("alert")) >= 2) {
+            const stage = C.alertStage(L.get("alert"));
+            const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
+            const flavor = pack.flavor || {};
+            if (stage === 3)
+              g.lastHerAlert = `\u26A0\uFE0F \u76EE\u6807\u795E\u8272\u614C\u4E71\uFF0C\u811A\u6B65\u660E\u663E\u52A0\u5FEB\uFF01\uFF08${flavor.evade || "\u5C0F\u8DD1\u79BB\u5F00"}\uFF09`;
+            else if (stage === 2)
+              g.lastHerAlert = `\u26A0\uFE0F \u76EE\u6807\u653E\u6162\u811A\u6B65\uFF0C\u9891\u9891\u4FA7\u76EE\u56DE\u987E\uFF01\uFF08${flavor.face || "\u5077\u77A5\u8EAB\u540E"}\uFF09`;
+            else if (floorApplied.alert >= 8)
+              g.lastHerAlert = `\u26A0\uFE0F \u76EE\u6807\u4F3C\u4E4E\u6709\u6240\u5BDF\u89C9\uFF0C\u6B65\u4F10\u6709\u4E9B\u8FDF\u7591\uFF08${flavor.face || "\u7565\u5E26\u8B66\u60D5"}\uFF09`;
+          }
+          const tm = clockLabel(g);
+          const firstAction = results.actions[0];
+          let signalTxt = null;
+          if (firstAction) {
+            if (firstAction.id === "follow") signalTxt = "\u76EE\u6807\u6CBF\u8857\u524D\u884C\uFF0C\u7EF4\u6301\u7A33\u5B9A\u6B65\u9891";
+            else if (firstAction.id === "photo")
+              signalTxt = "\u76EE\u6807\u5728\u8DEF\u53E3\u77ED\u6682\u505C\u7559\uFF0C\u8BB0\u5F55\u5176\u6B63\u9762\u7279\u5F81";
+            else if (firstAction.id === "scan")
+              signalTxt = "\u76EE\u6807\u73AF\u987E\u56DB\u5468\uFF0C\u4FA7\u5411\u8EAB\u5F62\u6E05\u6670";
+            else if (firstAction.id === "timing")
+              signalTxt = "\u89C2\u5BDF\u5176\u4E3E\u6B62\u795E\u6001\uFF0C\u6355\u6349\u9632\u5907\u677E\u61C8\u95F4\u9699";
+            else if (firstAction.id === "shop_enter")
+              signalTxt = "\u76EE\u6807\u8FDB\u5165\u6CBF\u8857\u5546\u94FA\uFF0C\u9A7B\u8DB3\u8D27\u67B6\u524D";
+            else signalTxt = "\u76EE\u6807\u4FDD\u6301\u884C\u8FDB\uFF0C\u4F60\u5728\u4FA7\u540E\u65B9\u89C2\u5BDF\u8BB0\u5F55";
+          }
+          if (signalTxt) {
+            g.signals = g.signals || [];
+            g.signals.push([tm, signalTxt]);
+            if (g.signals.length > 20) g.signals.shift();
+          }
+          for (const key of Object.keys(floorApplied))
+            floorApplied[key] = L.get(key) - beforeLedger[key];
+          const parts = [];
+          if (floorApplied.stamina)
+            parts.push(
+              `\u4F53\u529B ${floorApplied.stamina > 0 ? "+" : ""}${floorApplied.stamina}`
+            );
+          if (floorApplied.heart)
+            parts.push(
+              `\u5FC3\u8DF3 ${floorApplied.heart > 0 ? "+" : ""}${floorApplied.heart}`
+            );
+          if (floorApplied.alert)
+            parts.push(
+              `\u8B66\u89C9 ${floorApplied.alert > 0 ? "+" : ""}${floorApplied.alert}`
+            );
+          if (floorApplied.pi)
+            parts.push(`PI ${floorApplied.pi > 0 ? "+" : ""}${floorApplied.pi}`);
+          if (floorApplied.proximity)
+            parts.push(
+              `\u63A5\u8FD1\u5EA6 ${floorApplied.proximity > 0 ? "+" : ""}${floorApplied.proximity}`
+            );
+          if (floorApplied.cash)
+            parts.push(
+              `\u73B0\u91D1 ${floorApplied.cash > 0 ? "+" : ""}${floorApplied.cash}`
+            );
+          g.lastLedgerSummary = parts.length > 0 ? `\u672C\u8F6E\u7ED3\u7B97 \xB7 ${parts.join(" \xB7 ")}` : "\u672C\u8F6E\u7ED3\u7B97 \xB7 \u65E0\u6570\u503C\u53D8\u52A8";
+          for (const t of tags.filter((t2) => t2.type === "fact")) {
+            const issued = g.tickets.find((k) => k.no === t.ticket);
+            results.facts.push({ ticket: t.ticket, consumed: !!issued });
+          }
+          if (!opts._fromInput) g.tickets = [];
+          results.floorApplied = floorApplied;
+          results.stats = snapshot();
+          results.capture = g.capture || null;
+          results.flow = g.logs.slice();
+          return results;
+        }
+        function processReply(llmText) {
+          const { tags, cleanText, diag } = parseFloor(llmText, lex);
+          const mode = tags.find((t) => t.type === "mode");
+          if (mode) g.mode = mode.mode;
+          const claims = tags.filter((t) => t.type === "lie").map((t) => ({ ...t, verified: verifyEvidence(cleanText, t.claim) }));
+          const facts = tags.filter((t) => t.type === "fact").map((t) => ({
+            ticket: t.ticket,
+            consumed: g.tickets.some((k) => String(k.no) === String(t.ticket))
+          }));
+          const consumed = new Set(
+            facts.filter((t) => t.consumed).map((t) => String(t.ticket))
+          );
+          g.tickets = g.tickets.filter((t) => !consumed.has(String(t.no)));
+          return {
+            floor: g.floor,
+            actions: [],
+            facts,
+            lies: claims,
+            mode: mode?.mode || null,
+            diag,
+            stats: snapshot()
+          };
+        }
+        return {
+          rollEnvSfx,
+          translateInput,
+          settleInput,
+          processFloor,
+          processReply
+        };
+      }
+      module.exports = { createTurnSystem };
+    }
+  });
+
+  // src/runtime/facts.js
+  var require_facts2 = __commonJS({
+    "src/runtime/facts.js"(exports, module) {
+      var LP = require_lifepack();
+      var R = require_rules();
+      var RAW_LEXICON = require_lexicon();
+      var map = require_map();
+      var SLOTS = ["home", "schedule", "carry", "social", "psyche", "romance"];
+      var FACT_TAGS = ["gym"];
+      var L2_TICKET_GATE = {
+        carry: ["photo", "scan", "listen", "note", "watch_lights"],
+        social: ["watch_peers"],
+        romance: ["hear_gossip", "chat", "watch_peers"]
+      };
+      function loadPack(id, data = LP) {
+        return data.packs[id] || null;
+      }
+      function l1FormulaHold(unlock = LP.unlock) {
+        return SLOTS.every(
+          (s) => unlock.L1[s] === null || unlock.L1[s] === Math.floor((unlock.L2[s] || 0) / 2)
+        );
+      }
+      function slotLevel(slot, intel = {}, unlock = LP.unlock) {
+        const pi = intel.pi || 0;
+        for (const lv of [3, 2, 1]) {
+          const t = unlock["L" + lv][slot];
+          if (t === null) {
+            if (lv === 3) return 3;
+            continue;
+          }
+          if (pi >= t) return lv;
+        }
+        return 0;
+      }
+      function factVisible(fact, level, tickets = [], slot = fact.slot) {
+        if (fact.public) return true;
+        if (level < fact.level) return false;
+        const set = tickets instanceof Set ? tickets : new Set(tickets);
+        if (fact.level === 3) return (fact.reveal_via || []).some((a) => set.has(a));
+        if (fact.level === 2) {
+          const gate = L2_TICKET_GATE[slot];
+          return !gate || gate.some((a) => set.has(a));
+        }
+        return true;
+      }
+      function view(packId, intel = {}, data = LP) {
+        const pack = loadPack(packId, data);
+        if (!pack) return null;
+        const levels = {};
+        const facts = [];
+        for (const slot of SLOTS) levels[slot] = slotLevel(slot, intel, data.unlock);
+        const factList = intel && (intel.assignedFacts || intel.facts) || pack.factPool || [];
+        for (const f of factList) {
+          if (factVisible(f, levels[f.slot], intel.tickets || [])) {
+            facts.push({ id: f.id, slot: f.slot, level: f.level, title: f.title, text: f.text, place: f.place });
+          }
+        }
+        return { pack: packId, levels, facts };
+      }
+      function nightConditions(packId, rng, data = LP) {
+        const pack = loadPack(packId, data);
+        if (!pack) return null;
+        return pack.conditions.map((c) => {
+          const p = Math.round(c.mod * (1 - pack.stability) * 1e6) / 1e6;
+          return { id: c.id, title: c.title, active: rng() < p };
+        });
+      }
+      function effectiveAcuity(per, traits = []) {
+        let mod = 0;
+        for (const t of traits) {
+          const tid = typeof t === "string" ? t : t && t.id;
+          const def = R.tags && R.tags[tid];
+          if (def && def.category === "acuity" && typeof def.value === "number") {
+            mod += def.value;
+          }
+        }
+        return Math.max(1, Math.min(10, per + mod));
+      }
+      function packHasGym(packId, data = LP) {
+        const pack = loadPack(packId, data);
+        if (!pack) return false;
+        return (pack.factPool || []).some((f) => f.slot === "schedule" && (f.tags || []).includes("gym"));
+      }
+      function validate(pack, data = LP) {
+        const errors = [];
+        const at = `pack(${pack.id || "?"})`;
+        if (!pack.id || !pack.name) errors.push(`${at}: \u7F3A id/name`);
+        for (const k of ["str", "agi", "per", "nrv"]) {
+          if (typeof pack.stats?.[k] !== "number") errors.push(`${at}: stats.${k} \u7F3A\u5931`);
+        }
+        if (typeof pack.social !== "number") errors.push(`${at}: social \u7F3A\u5931`);
+        if (typeof pack.stability !== "number" || pack.stability <= 0 || pack.stability >= 1)
+          errors.push(`${at}: stability \u987B\u5728 (0,1) \u5F00\u533A\u95F4`);
+        const tagIds = new Set(Object.keys(RAW_LEXICON.tags));
+        for (const t of pack.traits || []) {
+          if (!tagIds.has(t)) errors.push(`${at}: traits "${t}" \u4E0D\u5728\u8BCD\u8868 tags\uFF08\u9ED1\u6237\uFF09`);
+        }
+        const entryIds = new Set(RAW_LEXICON.entries.map((e) => e.id));
+        for (const f of pack.factPool || []) {
+          const fat = `${at}.fact(${f.id || "?"})`;
+          if (!f.id || !f.title || !f.text) errors.push(`${fat}: \u7F3A id/title/text`);
+          if (!SLOTS.includes(f.slot)) errors.push(`${fat}: \u975E\u6CD5\u69FD\u4F4D ${f.slot}`);
+          if (![1, 2, 3].includes(f.level)) errors.push(`${fat}: \u975E\u6CD5\u5C42\u7EA7 ${f.level}`);
+          if (f.place && !map.getPlace(f.place)) errors.push(`${fat}: place "${f.place}" \u4E0D\u5728 places.json`);
+          for (const a of f.reveal_via || []) {
+            if (!entryIds.has(a)) errors.push(`${fat}: reveal_via "${a}" \u4E0D\u5728\u8BCD\u8868 entries\uFF08\u9ED1\u6237\uFF09`);
+          }
+          for (const t of f.tags || []) {
+            if (!FACT_TAGS.includes(t)) errors.push(`${fat}: tags "${t}" \u4E0D\u5728\u4E8B\u5B9E\u6807\u8BB0\u767D\u540D\u5355\uFF08\u9ED1\u6237\uFF09`);
+          }
+        }
+        for (const r of pack.routes || []) {
+          for (const step of r.path || []) {
+            if (!map.getPlace(step.place)) errors.push(`${at}.route(${r.id}): \u8282\u70B9 "${step.place}" \u4E0D\u5728 places.json`);
+          }
+        }
+        return errors;
+      }
+      module.exports = {
+        SLOTS,
+        FACT_TAGS,
+        L2_TICKET_GATE,
+        loadPack,
+        l1FormulaHold,
+        slotLevel,
+        factVisible,
+        view,
+        nightConditions,
+        effectiveAcuity,
+        packHasGym,
+        validate
+      };
+    }
+  });
+
+  // src/runtime/game/player.js
+  var require_player = __commonJS({
+    "src/runtime/game/player.js"(exports, module) {
+      "use strict";
+      var R = require_rules();
+      var T = require_tags();
+      var C = require_checks();
+      var facts = require_facts2();
+      function createPlayerSystem({ g, L, log }) {
         function sweetHighNow() {
           const advNrv = (g.tags || []).some((t) => t.id === "adv_nrv");
           return R.check.sweetHigh + (advNrv ? R.advantage.sweetHighBonus : 0);
@@ -8282,9 +8982,25 @@
         function syncHeartTags() {
           const lines = C.heartLines(L.get("heart"), sweetHighNow());
           const stack = g.tags || (g.tags = []);
-          if (lines.deform === -2) T.apply(stack, { id: "deform", name: "\u64CD\u4F5C\u53D8\u5F62", owner: "player", category: "fine", effects: [{ category: "fine", value: -2 }], duration: { type: "flag" } });
+          if (lines.deform === -2)
+            T.apply(stack, {
+              id: "deform",
+              name: "\u64CD\u4F5C\u53D8\u5F62",
+              owner: "player",
+              category: "fine",
+              effects: [{ category: "fine", value: -2 }],
+              duration: { type: "flag" }
+            });
           else if (lines.deform === 0) T.remove(stack, "deform");
-          if (lines.crash) T.apply(stack, { id: "crash", name: "\u64CD\u4F5C\u5D29\u6E83", owner: "player", category: "fine", effects: [{ category: "fine", value: -2 }], duration: { type: "flag" } });
+          if (lines.crash)
+            T.apply(stack, {
+              id: "crash",
+              name: "\u64CD\u4F5C\u5D29\u6E83",
+              owner: "player",
+              category: "fine",
+              effects: [{ category: "fine", value: -2 }],
+              duration: { type: "flag" }
+            });
           else T.remove(stack, "crash");
         }
         function applyIdentity(identityId, opts = {}) {
@@ -8325,7 +9041,11 @@
           if (def.startKit) {
             g.startKit = { ...def.startKit };
             if (def.startKit.item && !g.player.inventory.some((it) => it.id === def.startKit.item)) {
-              g.player.inventory.push({ id: def.startKit.item, count: 1, equipped: false });
+              g.player.inventory.push({
+                id: def.startKit.item,
+                count: 1,
+                equipped: false
+              });
             }
           }
           return true;
@@ -8349,28 +9069,80 @@
           const stack = g.tags || (g.tags = []);
           const defs = [
             { id: "adv_int", name: "\u4F18\u52BF\uFF1A\u60C5\u62A5", on: L.get("pi") >= A.piThreshold },
-            { id: "adv_agi", name: "\u4F18\u52BF\uFF1A\u654F\u6377", on: g.player.agi >= A.attrThreshold },
-            { id: "adv_str", name: "\u4F18\u52BF\uFF1A\u4F53\u683C", on: g.player.str >= A.attrThreshold },
-            { id: "adv_cha", name: "\u4F18\u52BF\uFF1A\u53E3\u624D", on: g.player.cha >= A.attrThreshold },
-            { id: "adv_nrv", name: "\u4F18\u52BF\uFF1A\u80C6\u91CF", on: g.player.nrv >= A.attrThreshold }
+            {
+              id: "adv_agi",
+              name: "\u4F18\u52BF\uFF1A\u654F\u6377",
+              on: g.player.agi >= A.attrThreshold
+            },
+            {
+              id: "adv_str",
+              name: "\u4F18\u52BF\uFF1A\u4F53\u683C",
+              on: g.player.str >= A.attrThreshold
+            },
+            {
+              id: "adv_cha",
+              name: "\u4F18\u52BF\uFF1A\u53E3\u624D",
+              on: g.player.cha >= A.attrThreshold
+            },
+            {
+              id: "adv_nrv",
+              name: "\u4F18\u52BF\uFF1A\u80C6\u91CF",
+              on: g.player.nrv >= A.attrThreshold
+            }
           ];
           for (const d of defs) {
-            if (d.on) T.apply(stack, {
-              id: d.id,
-              name: d.name,
-              owner: "player",
-              category: "advantage",
-              effects: [],
-              duration: { type: "flag" }
-            });
+            if (d.on)
+              T.apply(stack, {
+                id: d.id,
+                name: d.name,
+                owner: "player",
+                category: "advantage",
+                effects: [],
+                duration: { type: "flag" }
+              });
             else T.remove(stack, d.id);
           }
           const attrDefs = [
-            { id: "bulky", name: "\u8EAB\u5F62\u9192\u76EE", owner: "player", category: "stealth", value: -1, on: g.player.str >= 8 },
-            { id: "unobtrusive", name: "\u4E0D\u8D77\u773C", owner: "player", category: "stealth", value: 1, on: g.player.str <= 3 },
-            { id: "light_footed", name: "\u811A\u6B65\u8F7B", owner: "player", category: "stealth", value: 2, on: g.player.agi >= 8 },
-            { id: "clumsy", name: "\u7B28\u62D9", owner: "player", category: "stealth", value: -2, on: g.player.agi <= 3 },
-            { id: "stammer", name: "\u7ED3\u5DF4", owner: "player", category: "social", value: -2, on: g.player.cha <= 2 && L.get("heart") > 70 }
+            {
+              id: "bulky",
+              name: "\u8EAB\u5F62\u9192\u76EE",
+              owner: "player",
+              category: "stealth",
+              value: -1,
+              on: g.player.str >= 8
+            },
+            {
+              id: "unobtrusive",
+              name: "\u4E0D\u8D77\u773C",
+              owner: "player",
+              category: "stealth",
+              value: 1,
+              on: g.player.str <= 3
+            },
+            {
+              id: "light_footed",
+              name: "\u811A\u6B65\u8F7B",
+              owner: "player",
+              category: "stealth",
+              value: 2,
+              on: g.player.agi >= 8
+            },
+            {
+              id: "clumsy",
+              name: "\u7B28\u62D9",
+              owner: "player",
+              category: "stealth",
+              value: -2,
+              on: g.player.agi <= 3
+            },
+            {
+              id: "stammer",
+              name: "\u7ED3\u5DF4",
+              owner: "player",
+              category: "social",
+              value: -2,
+              on: g.player.cha <= 2 && L.get("heart") > 70
+            }
           ];
           for (const d of attrDefs) {
             if (d.on) {
@@ -8387,6 +9159,27 @@
             }
           }
         }
+        return {
+          sweetHighNow,
+          syncHeartTags,
+          applyIdentity,
+          addProxLog,
+          identityShift,
+          syncThresholdTags
+        };
+      }
+      module.exports = { createPlayerSystem };
+    }
+  });
+
+  // src/runtime/game/inventory.js
+  var require_inventory = __commonJS({
+    "src/runtime/game/inventory.js"(exports, module) {
+      "use strict";
+      var R = require_rules();
+      var T = require_tags();
+      var { HUNTER_MODES } = require_constants();
+      function createInventorySystem({ g, L, log, syncHeartTags }) {
         function syncEquippedTags() {
           const stack = g.tags || (g.tags = []);
           const equippedIds = /* @__PURE__ */ new Set();
@@ -8483,10 +9276,13 @@
         }
         function useItem(itemId) {
           g.player.inventory = g.player.inventory || [];
-          const it = g.player.inventory.find((i) => i.id === itemId && (i.count || 1) > 0);
+          const it = g.player.inventory.find(
+            (i) => i.id === itemId && (i.count || 1) > 0
+          );
           if (!it) return { ok: false, reason: "\u884C\u56CA\u4E2D\u65E0\u6B64\u53EF\u7528\u6D88\u8017\u54C1" };
           const def = R.items && R.items[itemId];
-          if (!def || def.type !== "consumable") return { ok: false, reason: "\u8BE5\u7269\u54C1\u4E0D\u662F\u6D88\u8017\u54C1" };
+          if (!def || def.type !== "consumable")
+            return { ok: false, reason: "\u8BE5\u7269\u54C1\u4E0D\u662F\u6D88\u8017\u54C1" };
           if (itemId === "energy_drink") {
             if (!HUNTER_MODES.includes(g.mode)) {
               return { ok: false, reason: "\u80FD\u91CF\u996E\u6599\u4EC5\u9650\u591C\u95F4\u884C\u52A8\u7A97\u53E3\u53EF\u7528" };
@@ -8499,10 +9295,18 @@
             const staminaMax = g.player.staminaMax || 100 + (g.player.str || 4) * 5;
             const curStam = L.get("stamina");
             const staminaGain = Math.min(20, staminaMax - curStam);
-            L.commit({ stamina: staminaGain, heart: 10 }, { reason: "item_energy_drink" });
+            L.commit(
+              { stamina: staminaGain, heart: 10 },
+              { reason: "item_energy_drink" }
+            );
             syncHeartTags();
             log(`[\u884C\u56CA] \u996E\u7528\u80FD\u91CF\u996E\u6599\uFF1A\u4F53\u529B+${staminaGain}\uFF0C\u5FC3\u60B8\u5FC3\u8DF3+10`);
-            return { ok: true, msg: "\u996E\u7528\u80FD\u91CF\u996E\u6599\uFF1A\u4F53\u529B+20\uFF0C\u5FC3\u60B8\u5FC3\u8DF3+10", stamina: staminaGain, heart: 10 };
+            return {
+              ok: true,
+              msg: "\u996E\u7528\u80FD\u91CF\u996E\u6599\uFF1A\u4F53\u529B+20\uFF0C\u5FC3\u60B8\u5FC3\u8DF3+10",
+              stamina: staminaGain,
+              heart: 10
+            };
           }
           if (itemId === "bento") {
             removeItem(itemId, 1);
@@ -8511,7 +9315,11 @@
             const staminaGain = Math.min(20, staminaMax - curStam);
             L.commit({ stamina: staminaGain }, { reason: "item_bento" });
             log(`[\u884C\u56CA] \u98DF\u7528\u4FBF\u5F53\uFF1A\u4F53\u529B+${staminaGain}`);
-            return { ok: true, msg: `\u98DF\u7528\u4FBF\u5F53\uFF1A\u4F53\u529B+${staminaGain}`, stamina: staminaGain };
+            return {
+              ok: true,
+              msg: `\u98DF\u7528\u4FBF\u5F53\uFF1A\u4F53\u529B+${staminaGain}`,
+              stamina: staminaGain
+            };
           }
           if (itemId === "onigiri") {
             removeItem(itemId, 1);
@@ -8520,7 +9328,11 @@
             const staminaGain = Math.min(8, staminaMax - curStam);
             L.commit({ stamina: staminaGain }, { reason: "item_onigiri" });
             log(`[\u884C\u56CA] \u98DF\u7528\u996D\u56E2\uFF1A\u4F53\u529B+${staminaGain}`);
-            return { ok: true, msg: `\u98DF\u7528\u996D\u56E2\uFF1A\u4F53\u529B+${staminaGain}`, stamina: staminaGain };
+            return {
+              ok: true,
+              msg: `\u98DF\u7528\u996D\u56E2\uFF1A\u4F53\u529B+${staminaGain}`,
+              stamina: staminaGain
+            };
           }
           if (itemId === "coffee") {
             removeItem(itemId, 1);
@@ -8529,449 +9341,217 @@
           }
           return { ok: false, reason: "\u6682\u672A\u5B9E\u88C5\u8BE5\u6D88\u8017\u54C1\u4F7F\u7528\u6548\u679C" };
         }
-        function syncTargetShoeTags() {
-          const stack = g.tags || (g.tags = []);
-          const found = stack.find((t) => t.owner === "target" && t.id && t.id.startsWith("shoe_"));
-          if (found && SHOE_ID_MAP[found.id]) {
-            return SHOE_ID_MAP[found.id];
-          }
-          const isWeekend = g.targetState && g.targetState.outfit && g.targetState.outfit.isWeekend;
-          const isCollege = g.targetId === "college";
-          const shoeTagId = (isWeekend || isCollege) && g.targetState && g.targetState.outfit && g.targetState.outfit.shoeId || g.targetPersona && g.targetPersona.shoeId || g.targetState && g.targetState.outfit && g.targetState.outfit.shoeId || R.targets && R.targets.list && R.targets.list[g.targetId] && R.targets.list[g.targetId].shoe || "shoe_heel";
-          const def = R.tags && R.tags[shoeTagId] ? R.tags[shoeTagId] : R.tags.shoe_heel;
-          if (def) {
-            T.apply(stack, {
-              id: def.id,
-              name: def.name,
-              owner: "target",
-              type: "equipment",
-              category: "equipment",
-              effects: [],
-              duration: { type: "flag" }
-            });
-            return SHOE_ID_MAP[def.id] || "heel";
-          }
-          return "heel";
+        return {
+          syncEquippedTags,
+          addItem,
+          removeItem,
+          equipItem,
+          unequipItem,
+          useItem
+        };
+      }
+      module.exports = { createInventorySystem };
+    }
+  });
+
+  // src/runtime/game/checks.js
+  var require_checks2 = __commonJS({
+    "src/runtime/game/checks.js"(exports, module) {
+      "use strict";
+      var R = require_rules();
+      var T = require_tags();
+      var C = require_checks();
+      var D = require_dice();
+      function createCheckSystem({ g, seedFor, isFamiliar }) {
+        function targetEffectiveAcuity() {
+          const acuityMod = T.summarize(g.tags || [], "acuity").sum;
+          return Math.max(1, Math.min(10, (g.target.per || 4) + acuityMod));
         }
-        function syncPersonaTags() {
-          if (!g.targetPersona) return;
-          const stack = g.tags || (g.tags = []);
-          const pTagId = g.targetPersona.personalityTag || g.targetPersona.personalityId;
-          if (pTagId && R.tags && R.tags[pTagId]) {
-            const def = R.tags[pTagId];
-            T.apply(stack, {
-              id: def.id,
-              name: def.name,
-              owner: def.owner || "target",
-              type: def.type || "personality",
-              category: def.category || "social",
-              effects: def.value ? [{ category: def.category, value: def.value }] : [],
-              duration: { type: "flag" }
-            });
-          }
-          const hTagId = g.targetPersona.hobbyTag || g.targetPersona.hobbyId;
-          if (hTagId && R.tags && R.tags[hTagId]) {
-            const def = R.tags[hTagId];
-            T.apply(stack, {
-              id: def.id,
-              name: def.name,
-              owner: def.owner || "scene",
-              type: def.type || "hobby",
-              category: def.category || "stealth",
-              effects: def.value ? [{ category: def.category, value: def.value }] : [],
-              duration: { type: "flag" }
-            });
-          }
-        }
-        function rollEnvSfx() {
-          if (g.mode !== "stealth") return null;
-          const here = g.route ? g.route.here : -1;
-          const curId = g.route && here >= 0 ? g.route.nodes[here] : null;
-          const cur = curId ? map.getPlace(curId) : null;
-          if (!cur) return null;
-          if (curId.includes("metro") || curId.includes("lobby") || curId.includes("store")) return null;
-          const sfxSeed = D.actionSeed(salt, g.floor || 0, 99);
-          const sfxRoll = D.rollD20(sfxSeed).d20;
-          const isAlley = curId.includes("alley") || curId.includes("stairs") || curId.includes("backstreet") || (cur.spots || []).length > 1;
-          const isResidential = curId.includes("unit") || curId.includes("residence") || curId.includes("stairs") || curId.includes("old");
-          const catThreshold = g.dist === "touch" || g.dist === "close" ? 5 : 3;
-          const dogLow = L.get("alert") >= 41 ? 17 : 19;
-          if (isAlley && sfxRoll <= catThreshold) return "cat";
-          if (isResidential && sfxRoll >= dogLow) return "dog";
-          return null;
-        }
-        function translateInput(text) {
-          const clauses = String(text || "").split(/[，,。；;\n！!？?·]+|然后|接着|顺便|之后|再试|同时/).map((s) => s.trim()).filter(Boolean);
-          const out = [], seen = /* @__PURE__ */ new Set();
-          for (const c of clauses) {
-            if (out.length >= 3) break;
-            const r = D_norm(c, lex);
-            if (r.hit && !seen.has(r.id)) seen.add(r.id), out.push(r);
-          }
-          return out;
-        }
-        function settleInput(playerText, opts = {}) {
-          let queue = [];
-          if (opts.actions && opts.actions.length) {
-            queue = opts.actions.map((act) => {
-              const entry = act.id && lex.byId.get(act.id) || act.name && lex.byName.get(act.name);
-              return {
-                id: entry ? entry.id : act.id,
-                name: entry ? entry.name : act.name,
-                label: act.name || (entry ? entry.name : act.id),
-                args: act.args || {}
-              };
-            }).filter((r) => r.id && lex.byId.has(r.id));
-          } else if (opts.allowTextFallback === true) {
-            queue = translateInput(playerText);
-          }
-          const results = processFloor(playerText || "", { ...opts, _actionQueue: queue, _fromInput: true });
-          results.queue = queue.map((r) => ({ id: r.id, name: r.name, args: r.args }));
-          results.package = {
-            floor: results.floor,
-            actions: results.actions.map((a) => ({
-              id: a.id,
-              name: a.name,
-              label: a.label || a.name,
-              d20: a.d20,
-              total: a.total,
-              dc: a.dc,
-              band: a.band,
-              mods: a.mods,
-              attr: a.attr || null,
-              targetMod: a.targetMod || 0,
-              darkReveal: a.darkReveal || null,
-              raw: a.raw,
-              ledger: a.ledger,
-              noRoll: a.noRoll,
-              text: a.text,
-              rejected: a.rejected || false,
-              reason: a.reason || null
-            })),
-            account: results.floorApplied || null,
-            seg: results.seg || null,
-            logs: g.logs.slice(),
-            narrativeOnly: queue.length === 0 || results.actions.length === 0,
-            targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
-            herAlert: g.lastHerAlert || null,
-            alertEvent: g.alertEvent ? { ...g.alertEvent } : null
-          };
-          return results;
-        }
-        function processFloor(llmText, opts = {}) {
-          const replyOnly = opts.replyOnly === true;
-          if (!replyOnly) g.floor = opts.floor ?? (g.floor || 0) + 1;
-          g.logs = [];
-          g.lastHerAlert = null;
-          g.capture = null;
-          if (!replyOnly) g.alertEvent = null;
-          if (!replyOnly) advanceRouteByClock();
-          if (!replyOnly && g.fleeing && g.route) {
-            herAdvance(true);
-            if (g.route.here >= g.route.nodes.length - 1) g.tailing = false;
-          }
-          if (!replyOnly && g.targetState) {
-            const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
-            const here = g.route ? g.route.here : -1;
-            const curId = g.route && here >= 0 ? g.route.nodes[here] : null;
-            g.targetState.hand = TS.resolveHand(pack, curId, g.targetState.hand, D.actionSeed(salt, g.floor || 0, "hand"));
-            if (g.targetState.route && g.route) {
-              g.targetState.route.here = here;
-              g.targetState.route.currentPlace = curId ? map.getPlace(curId)?.name || curId : null;
-            }
-            applyTargetState();
-          }
-          const { tags, cleanText, diag } = parseFloor(llmText, lex);
-          syncThresholdTags();
-          const results = { floor: g.floor, actions: [], facts: [], lies: [], mode: null, diag, logs: g.logs, ledgerSeqs: [] };
-          const floorApplied = { stamina: 0, heart: 0, alert: 0, pi: 0, proximity: 0, cash: 0 };
-          const modeTag = tags.find((t) => t.type === "mode");
-          if (modeTag) {
-            g.mode = modeTag.mode;
-            results.mode = modeTag.mode;
-          }
-          for (const lie of tags.filter((t) => t.type === "lie")) {
-            const ok = verifyEvidence(cleanText, lie.claim);
-            if (ok) results.lies.push({ ...lie, verified: true });
-            else results.lies.push({ ...lie, verified: false, dropped: true });
-          }
-          let seq = 0;
-          let heartPeak = L.get("heart");
-          let tailFloor = null;
-          const actionQueue = replyOnly ? [] : Array.isArray(opts._actionQueue) ? opts._actionQueue.map((a) => ({ type: "action", id: a.id, name: a.name, label: a.label || a.name, args: a.args })) : opts._fromInput ? [] : tags.filter((t) => t.type === "action");
-          for (const tag of actionQueue) {
-            const out = settleAction(tag, seq++);
-            if (out) {
-              results.actions.push(out);
-              if (out.ledger?.seq) results.ledgerSeqs.push(out.ledger.seq);
-              if (out.ledger?.applied) {
-                for (const [k, v] of Object.entries(out.ledger.applied)) {
-                  if (floorApplied[k] !== void 0) floorApplied[k] += v;
-                }
-              }
-              if (!tailFloor && TAIL_PUMP_IDS.includes(tag.id) && out.band) {
-                tailFloor = { band: out.band, dist: DIST_KEY[tag.args?.dist] || g.dist };
-              }
-            }
-            heartPeak = Math.max(heartPeak, L.get("heart"));
-          }
-          if (!replyOnly) resolveAlertCross();
-          if (!replyOnly && HUNTER_MODES.includes(g.mode)) {
-            const P = R.heart.stim.pump;
-            const calm = g.mode === "contact" && L.get("proximity") >= P.calmSocialProximity;
-            const pumped = [];
-            if (tailFloor && !calm) {
-              let stim = 0, src = "";
-              if (tailFloor.band === "nat1") {
-                stim = P.exposed;
-                src = "\u7206\u9732\u7167\u9762";
-              } else if (tailFloor.band === "fail") {
-                stim = P.lost;
-                src = "\u8DDF\u4E22";
-              } else if (tailFloor.band === "grace" || tailFloor.band === "nat20") {
-                stim = 0;
-              } else {
-                stim = P.tail[tailFloor.dist] ?? P.tail.same;
-                src = `\u6301\u7EED\u5C3E\u968F\xB7${tailFloor.dist}`;
-              }
-              if (stim > 0) pumped.push({ stim, src });
-            }
-            if (!tailFloor && g.mode === "contact" && !calm && tags.some((t) => t.type === "action" && lex.byId.get(t.id) && categoryOf(t.id) === "social")) {
-              pumped.push({ stim: P.social, src: "\u4F2A\u88C5\u5BD2\u6684" });
-            }
-            const sfx = rollEnvSfx();
-            g._envSfx = sfx;
-            if (sfx) {
-              let stim = P.env[sfx] || 0;
-              const fam = g.famSegs[g.world.district] || 0;
-              const halved = fam >= R.heart.areaFamiliarSegments;
-              if (halved) stim = Math.round(stim * P.familiarEnvFactor);
-              pumped.push({ stim, src: (sfx === "cat" ? "\u732B\u60CA\u53EB" : "\u72D7\u5420") + (halved ? "\xB7\u719F\u533A\u51CF\u534A" : "") });
-            }
-            for (const p of pumped) {
-              if (p.stim <= 0) continue;
-              const d = C.heartDelta({ stim: p.stim, nrv: g.player.nrv });
-              if (d) {
-                L.commit({ heart: d }, { reason: "stim" });
-                floorApplied.heart += d;
-                log(`[\u523A\u6FC0] ${p.src} +${p.stim} \u2192 \u5FC3\u8DF3 +${d}`);
-              }
-            }
-            heartPeak = Math.max(heartPeak, L.get("heart"));
-          } else {
-            g._envSfx = null;
-          }
-          if (!replyOnly && HUNTER_MODES.includes(g.mode)) {
-            const tax = C.staminaSegTax(heartPeak, sweetHighNow());
-            if (tax) {
-              L.commit({ stamina: tax }, { reason: "seg_tax" });
-              floorApplied.stamina += tax;
-              log(`[\u6BB5\u7A0E] \u5FC3\u8DF3\u5CF0\u503C ${heartPeak} \u2192 \u4F53\u529B ${tax}`);
-            }
-            const dropped = C.segHeartDrop(L.get("heart"), g.player.nrv);
-            if (dropped !== L.get("heart")) {
-              const dH = dropped - L.get("heart");
-              L.commit({ heart: dH }, { reason: "seg_drop" });
-              floorApplied.heart += dH;
-            }
-            results.seg = { heartPeak, staminaTax: tax };
-            const d = g.world.district;
-            if (d && g.famSegs[d] !== void 0) {
-              g.famSegs[d] = Math.min(g.famSegs[d] + 1, R.heart.areaFamiliarSegments);
-            }
-          }
-          if (floorApplied.proximity !== 0) {
-            const actName = tags.find((t) => t.type === "action")?.name || "\u63A5\u89E6\u4EA4\u4E92";
-            addProxLog(floorApplied.proximity, actName);
-          }
-          if (floorApplied.alert >= 8 || C.alertStage(L.get("alert")) >= 2) {
-            const stage = C.alertStage(L.get("alert"));
-            const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
-            const flavor = pack.flavor || {};
-            if (stage === 3) g.lastHerAlert = `\u26A0\uFE0F \u76EE\u6807\u795E\u8272\u614C\u4E71\uFF0C\u811A\u6B65\u660E\u663E\u52A0\u5FEB\uFF01\uFF08${flavor.evade || "\u5C0F\u8DD1\u79BB\u5F00"}\uFF09`;
-            else if (stage === 2) g.lastHerAlert = `\u26A0\uFE0F \u76EE\u6807\u653E\u6162\u811A\u6B65\uFF0C\u9891\u9891\u4FA7\u76EE\u56DE\u987E\uFF01\uFF08${flavor.face || "\u5077\u77A5\u8EAB\u540E"}\uFF09`;
-            else if (floorApplied.alert >= 8) g.lastHerAlert = `\u26A0\uFE0F \u76EE\u6807\u4F3C\u4E4E\u6709\u6240\u5BDF\u89C9\uFF0C\u6B65\u4F10\u6709\u4E9B\u8FDF\u7591\uFF08${flavor.face || "\u7565\u5E26\u8B66\u60D5"}\uFF09`;
-          }
-          const timeMin = (g.floor || 1) * 15 % 120;
-          const hh = 21 + Math.floor(timeMin / 60);
-          const mm = (timeMin % 60).toString().padStart(2, "0");
-          const tm = `${hh}:${mm}`;
-          const firstAction = results.actions[0];
-          let signalTxt = null;
-          if (firstAction) {
-            if (firstAction.id === "follow") signalTxt = "\u76EE\u6807\u6CBF\u8857\u524D\u884C\uFF0C\u7EF4\u6301\u7A33\u5B9A\u6B65\u9891";
-            else if (firstAction.id === "photo") signalTxt = "\u76EE\u6807\u5728\u8DEF\u53E3\u77ED\u6682\u505C\u7559\uFF0C\u8BB0\u5F55\u5176\u6B63\u9762\u7279\u5F81";
-            else if (firstAction.id === "scan") signalTxt = "\u76EE\u6807\u73AF\u987E\u56DB\u5468\uFF0C\u4FA7\u5411\u8EAB\u5F62\u6E05\u6670";
-            else if (firstAction.id === "timing") signalTxt = "\u89C2\u5BDF\u5176\u4E3E\u6B62\u795E\u6001\uFF0C\u6355\u6349\u9632\u5907\u677E\u61C8\u95F4\u9699";
-            else if (firstAction.id === "shop_enter") signalTxt = "\u76EE\u6807\u8FDB\u5165\u6CBF\u8857\u5546\u94FA\uFF0C\u9A7B\u8DB3\u8D27\u67B6\u524D";
-            else signalTxt = "\u76EE\u6807\u4FDD\u6301\u884C\u8FDB\uFF0C\u4F60\u5728\u4FA7\u540E\u65B9\u89C2\u5BDF\u8BB0\u5F55";
-          }
-          if (signalTxt) {
-            g.signals = g.signals || [];
-            g.signals.push([tm, signalTxt]);
-            if (g.signals.length > 20) g.signals.shift();
-          }
-          const parts = [];
-          if (floorApplied.stamina) parts.push(`\u4F53\u529B ${floorApplied.stamina > 0 ? "+" : ""}${floorApplied.stamina}`);
-          if (floorApplied.heart) parts.push(`\u5FC3\u8DF3 ${floorApplied.heart > 0 ? "+" : ""}${floorApplied.heart}`);
-          if (floorApplied.alert) parts.push(`\u8B66\u89C9 ${floorApplied.alert > 0 ? "+" : ""}${floorApplied.alert}`);
-          if (floorApplied.pi) parts.push(`PI ${floorApplied.pi > 0 ? "+" : ""}${floorApplied.pi}`);
-          if (floorApplied.proximity) parts.push(`\u63A5\u8FD1\u5EA6 ${floorApplied.proximity > 0 ? "+" : ""}${floorApplied.proximity}`);
-          if (floorApplied.cash) parts.push(`\u73B0\u91D1 ${floorApplied.cash > 0 ? "+" : ""}${floorApplied.cash}`);
-          g.lastLedgerSummary = parts.length > 0 ? `\u672C\u8F6E\u7ED3\u7B97 \xB7 ${parts.join(" \xB7 ")}` : "\u672C\u8F6E\u7ED3\u7B97 \xB7 \u65E0\u6570\u503C\u53D8\u52A8";
-          for (const t of tags.filter((t2) => t2.type === "fact")) {
-            const issued = g.tickets.find((k) => k.no === t.ticket);
-            results.facts.push({ ticket: t.ticket, consumed: !!issued });
-          }
-          g.tickets = [];
-          results.floorApplied = floorApplied;
-          results.stats = snapshot();
-          results.capture = g.capture || null;
-          results.flow = g.logs.slice();
-          return results;
-        }
-        function processReply(llmText, opts = {}) {
-          const filtered = String(llmText || "").replace(/<动作>[\s\S]*?<\/动作>/g, "");
-          return processFloor(filtered, { ...opts, floor: g.floor, replyOnly: true });
-        }
-        function snapshot() {
-          const s = L.state;
-          const w = g.world;
-          const districtObj = map.getDistrict(w.district);
-          const here = g.route ? g.route.here : -1;
-          const curId = g.route && here >= 0 ? g.route.nodes[here] : null;
-          const cur = curId ? map.getPlace(curId) : null;
-          const nextId = g.route && here >= 0 && here + 1 < g.route.nodes.length ? g.route.nodes[here + 1] : null;
-          const routeView = g.route ? {
-            id: g.route.id,
-            note: g.route.note,
-            startTime: g.route.startTime,
-            times: g.route.times || null,
-            nodes: g.route.nodes.map((id, i) => g.route.known && g.route.known[i] ? map.getPlace(id)?.name || id : id),
-            known: g.route.known || g.route.nodes.map(() => 1),
-            here
-          } : null;
-          const exits = cur ? cur.exits.map((id) => (map.getPlace(id)?.name || id) + (id === nextId ? " (\u524D)" : "")) : [];
-          let sanctuaryAlert = "";
-          if (cur) {
-            if (cur.sanctuary) sanctuaryAlert = "\u5F53\u524D\u5373\u4E3A\u5B89\u5168\u5E87\u62A4\u573A\u6240";
-            else {
-              const sn = map.findNearestSanctuary(curId);
-              sanctuaryAlert = sn ? `\u82E5\u76EE\u6807\u53D7\u60CA\uFF1A\u5C06\u5FAA\u6700\u8FD1\u901A\u8DEF\u9003\u5F80 [${map.getPlace(sn.sanctuaryId)?.name || sn.sanctuaryId}] (${sn.steps}\u6B65)` : "\u6B64\u5904\u547C\u6551\u65E0\u95E8\u2014\u2014\u58F0\u6D6A\u4F20\u5BFC\u8870\u51CF\u4E3A 0\uFF08\u5B64\u5C9B\u533A\uFF09";
-            }
-          }
-          const activeShoe = syncTargetShoeTags();
-          const envSfx = g._envSfx !== void 0 ? g._envSfx : rollEnvSfx();
-          return {
-            player: {
-              heart: s.heart,
-              stamina: s.stamina,
-              cash: s.cash,
-              pi: s.pi,
-              proximity: s.proximity,
-              date: s.date,
-              attrs: { str: g.player.str, agi: g.player.agi, nrv: g.player.nrv, int: g.player.int, cha: g.player.cha }
-            },
-            target: {
-              id: g.targetId || "college",
-              name: R.targets && R.targets.list && R.targets.list[g.targetId || "college"] ? R.targets.list[g.targetId || "college"].name : "\u72EC\u5C45\u5973\u5927\u5B66\u751F",
-              realName: g.targetPersona ? g.targetPersona.name : null,
-              persona: g.targetPersona ? JSON.parse(JSON.stringify(g.targetPersona)) : null,
-              /* 她的有效属性 = 基底 + 当天身心扰动 + 鞋具修正（每次现算，不依赖 g.target 的中间态） */
-              stats: (() => {
-                const base = g.targetBase || g.target || {};
-                const out = {};
-                for (const k of ["str", "agi", "per", "nrv", "social"]) out[k] = base[k];
-                const som = g.targetState && g.targetState.somatic && g.targetState.somatic.mod;
-                if (som) for (const [k, v] of Object.entries(som)) {
-                  if (out[k] !== void 0) out[k] = Math.max(1, out[k] + v);
-                }
-                return applyShoeMod(out);
-              })(),
-              alertStage: C.alertStage(s.alert),
-              warinessStage: s.wariness >= 60 ? "\u9AD8" : s.wariness >= 30 ? "\u4E2D" : "\u4F4E",
-              shoe: activeShoe,
-              /* 鞋具读数（状态栏悬停用）：鞋型 + 敏捷修正 + 步声基准 + 按距离折算的当前声级 */
-              shoeInfo: (() => {
-                const id = (g.tags || []).find((t) => t.owner === "target" && t.id && t.id.startsWith("shoe_"))?.id;
-                const def = id && R.tags ? R.tags[id] : null;
-                if (!def) return null;
-                const base = typeof def.noise === "number" ? def.noise : 1;
-                const factor = SHOE_DIST_FACTOR[g.dist] ?? 1;
-                return {
-                  id: def.id,
-                  name: def.name,
-                  agi: def.mod && typeof def.mod.agi === "number" ? def.mod.agi : 0,
-                  noise: base,
-                  distFactor: factor,
-                  level: Math.max(0, Math.min(5, Math.round(base * factor)))
-                };
-              })(),
-              state: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null
-            },
-            targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
-            envSfx,
-            mode: g.mode,
-            dist: g.dist,
+        function gain({ threat = null, dist = g.dist, stim = 0 }) {
+          const alertD = threat ? C.alertDelta({
+            threat,
+            dist,
             env: g.env,
-            slot: g.slot,
-            identity: {
-              id: g.identity || null,
-              name: g.identity && R.identity.list[g.identity] ? R.identity.list[g.identity].name : null,
-              shift: identityShift(),
-              kit: g.startKit || null
-            },
-            // v0.8 身份徽记数据源（状态栏常驻条）
-            tags: (g.tags || []).map((t) => ({ id: t.id, name: t.name, owner: t.owner, type: t.type || "status", duration: t.duration.type, count: t.duration.count })),
-            /* 战术行囊持有物 */
-            inventory: (g.player.inventory || []).map((it) => {
-              const def = R.items && R.items[it.id] ? R.items[it.id] : { name: it.id, type: "misc", desc: "" };
-              return {
-                id: it.id,
-                name: def.name,
-                type: def.type,
-                slot: def.slot || null,
-                count: it.count || 1,
-                equipped: !!it.equipped,
-                canEquip: !!(def.slot || def.type === "tool" || def.type === "gear" || def.type === "disguise"),
-                canUse: def.type === "consumable",
-                desc: def.desc || "",
-                effectsDesc: def.effectsDesc || ""
-              };
-            }),
-            /* 状态栏 HUD 动态内容管道接通 */
-            herAlert: g.lastHerAlert || (envSfx ? envSfx === "cat" ? "\u{1F431} \u60CA\u52A8\u6697\u5DF7\u91CE\u732B\uFF01\u5783\u573E\u6876\u4F20\u6765\u6293\u6320\u58F0" : "\u{1F415} \u89E6\u52A8\u5EAD\u9662\u72AC\u5420\uFF01\u9662\u5185\u4F20\u6765\u4F4E\u6C89\u4F4E\u543C" : null),
-            signal: g.signals && g.signals.length > 0 ? g.signals.slice(-8) : [[g.route && g.route.startTime || "21:00", "\u76EE\u6807\u79BB\u5F00\u539F\u4F4D\uFF0C\u6B65\u5165\u8857\u9053"]],
-            proxLog: g.proxLogs && g.proxLogs.length > 0 ? g.proxLogs.slice(-5).reverse() : [],
-            assess: g.lastAssess || null,
-            ledger: g.lastLedgerSummary || "\u672C\u8F6E\u6682\u65E0\u7ED3\u7B97",
-            /* 地图 HUD 字段（状态栏 route-tracker + 战术沙盘） */
-            area: districtObj ? districtObj.name : "\u672A\u77E5",
-            place: cur && routeView.known[here] ? cur.name : null,
-            weather: w.weather,
-            weatherName: WEATHER_ICON[w.weather] || "\u{1F319} \u6674\u591C",
-            strikeSealed: cur ? !!cur.strike_sealed : false,
-            fam: w.district ? g.famSegs[w.district] || 0 : 0,
-            route: routeView,
-            exits,
-            spots: cur ? cur.spots || [] : [],
-            sanctuaryAlert,
-            /* 相册：计数 + 已拍清单（贴墙渲染用） */
-            album: (() => {
-              const persona = g.targetPersona || {};
-              const shots = Object.entries(g.album || {}).map(([k, v]) => ({ key: k, ...v }));
-              return { count: shots.length, total: ALBUM.totalFor(persona), shots };
-            })(),
-            capture: g.capture || null
-          };
+            acuity: targetEffectiveAcuity(),
+            familiar: isFamiliar()
+          }) : 0;
+          const heartD = stim ? C.heartDelta({ stim, nrv: g.player.nrv }) : 0;
+          return { alertD, heartD };
         }
+        function runCheck(entry, args, seq) {
+          const cat = categoryOf(entry.id);
+          const sum = T.summarize(g.tags || (g.tags = []), cat);
+          const mods = sum.breakdown.filter((h) => h.owner !== "target").map((h) => ({ src: h.src, v: h.v }));
+          const targetMod = sum.breakdown.filter((h) => h.owner === "target").reduce((s, h) => s + h.v, 0);
+          const pity = T.PITY_BONUS && g.consecFails >= 2 ? C.pityBonus(g.consecFails) : 0;
+          if (pity) mods.push({ src: "\u8FDE\u8D25\u4FDD\u5E95", v: pity });
+          const dc = (R.checks[entry.check] ?? 10) - targetMod;
+          const advTagged = (g.tags || []).some(
+            (t) => t.id === "adv_" + attrKeyOf(entry.id)
+          );
+          const mode = args && args.adv || advTagged ? "adv" : args && args.dis ? "dis" : "normal";
+          const roll = D.rollD20(seedFor(seq), mode);
+          const res = C.d20Check({
+            d20: roll.d20,
+            attr: attrOf(entry.id),
+            mods,
+            dc,
+            stealth: (R.check.graceIds || []).includes(entry.id)
+          });
+          const attrKey = attrKeyOf(entry.id);
+          const ATTR_NAMES = {
+            agi: "\u654F\u6377",
+            str: "\u4F53\u683C",
+            int: "\u60C5\u62A5",
+            cha: "\u53E3\u624D",
+            nrv: "\u80C6\u91CF"
+          };
+          const attr = { name: ATTR_NAMES[attrKey] || "\u5C5E\u6027", v: attrOf(entry.id) };
+          const targetTags = sum.breakdown.filter((h) => h.owner === "target");
+          const darkReveal = targetTags.length ? targetTags.map((h) => `${h.src} (${h.v >= 0 ? "+" : ""}${h.v})`).join("\u3001") : null;
+          return { roll, res, mods, dc, sum, attr, targetMod, darkReveal };
+        }
+        function attrKeyOf(id) {
+          const agility = [
+            "follow",
+            "approach",
+            "withdraw",
+            "hide",
+            "wall",
+            "enter_tail",
+            "stop",
+            "wait",
+            "cross",
+            "cover",
+            "fake_phone",
+            "fake_call",
+            "shop_enter",
+            "window_watch",
+            "cafe_sit",
+            "ride_along",
+            "transfer",
+            "follow_work",
+            "ride_follow",
+            "car_follow",
+            "climb"
+          ];
+          const brawn = ["barrier", "pry", "drag", "pin", "lockpick", "break_in"];
+          const intel = [
+            "photo",
+            "scan",
+            "deduce",
+            "timing",
+            "listen",
+            "perch",
+            "note",
+            "record",
+            "plate",
+            "trash",
+            "pick",
+            "listen_home",
+            "locate",
+            "watch_lights",
+            "check_mailbox",
+            "watch_visitor",
+            "check_camera",
+            "check_door",
+            "stair_lurk",
+            "door_listen",
+            "door_peep",
+            "try_handle",
+            "ransack",
+            "plant_bug",
+            "cover_tracks",
+            "plan_exit",
+            "wait_gate",
+            "watch_peers",
+            "check_desk",
+            "hear_gossip",
+            "stalk_social",
+            "monitor_social",
+            "check_parcel",
+            "get_number",
+            "stakeout"
+          ];
+          const charm = [
+            "greet",
+            "chat",
+            "ease",
+            "misdirection",
+            "respond_her",
+            "answer_guard",
+            "fake_visit",
+            "audit_class",
+            "lobby_lurk",
+            "apply_job",
+            "pump_person",
+            "bribe"
+          ];
+          if (brawn.includes(id)) return "str";
+          if (charm.includes(id)) return "cha";
+          if (intel.includes(id)) return "int";
+          return "agi";
+        }
+        function attrOf(id) {
+          return g.player[attrKeyOf(id)];
+        }
+        function categoryOf(id) {
+          const fine = [
+            "photo",
+            "record",
+            "pick",
+            "ransack",
+            "lockpick",
+            "plant_bug",
+            "cover_tracks"
+          ];
+          const conflict = ["strike", "pin", "drag"];
+          const social = [
+            "greet",
+            "chat",
+            "ease",
+            "misdirection",
+            "respond_her",
+            "answer_guard",
+            "fake_visit",
+            "audit_class",
+            "lobby_lurk",
+            "apply_job",
+            "pump_person",
+            "bribe"
+          ];
+          if (fine.includes(id)) return "fine";
+          if (conflict.includes(id)) return "conflict";
+          if (social.includes(id)) return "social";
+          return "stealth";
+        }
+        return { targetEffectiveAcuity, gain, runCheck, categoryOf };
+      }
+      module.exports = { createCheckSystem };
+    }
+  });
+
+  // src/runtime/game/route.js
+  var require_route = __commonJS({
+    "src/runtime/game/route.js"(exports, module) {
+      "use strict";
+      var { clockMinutes } = require_clock();
+      var map = require_map();
+      var LP = require_lifepack();
+      var TS = require_target_state();
+      function createRouteSystem({ g, seedAt, applyTargetState }) {
         function setRoute(route) {
           g.route = route;
           if (g.targetState && route && route.nodes) {
             const curId = route.nodes[route.here || 0];
             const curName = curId ? map.getPlace(curId)?.name || curId : null;
             const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
-            g.targetState.hand = TS.resolveHand(pack, curId, g.targetState.hand, D.actionSeed(salt, g.floor || 0, "hand_set_route"));
+            g.targetState.hand = TS.resolveHand(
+              pack,
+              curId,
+              g.targetState.hand,
+              seedAt(g.floor || 0, "hand_set_route")
+            );
             if (g.targetState.route) {
               g.targetState.route.id = route.id;
               g.targetState.route.note = route.note;
@@ -8994,7 +9574,12 @@
             }
             if (g.targetState) {
               const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
-              g.targetState.hand = TS.resolveHand(pack, toId, g.targetState.hand, D.actionSeed(salt, g.floor || 0, "hand_adv_" + g.route.here));
+              g.targetState.hand = TS.resolveHand(
+                pack,
+                toId,
+                g.targetState.hand,
+                seedAt(g.floor || 0, "hand_adv_" + g.route.here)
+              );
               if (g.targetState.route) {
                 g.targetState.route.here = g.route.here;
                 g.targetState.route.currentPlace = toName;
@@ -9005,18 +9590,86 @@
           if (g.route && g.route.here >= g.route.nodes.length - 1) g.tailing = false;
           return g.route ? g.route.here : -1;
         }
+        function routeClockMin(floor) {
+          return clockMinutes(g, floor);
+        }
+        function hhmmToMin(t) {
+          const s = String(t || "").replace(":", "");
+          if (!/^\d{3,4}$/.test(s)) return null;
+          const v = s.padStart(4, "0");
+          return parseInt(v.slice(0, 2), 10) * 60 + parseInt(v.slice(2), 10);
+        }
+        function fmtMin(min) {
+          const h = Math.floor(min / 60) % 24;
+          return `${String(h).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+        }
+        function advanceRouteByClock() {
+          const r = g.route;
+          if (!r || !Array.isArray(r.nodes) || !Array.isArray(r.times) || !r.times.length)
+            return r ? r.here || 0 : -1;
+          if (g.alertHold > 0) {
+            g.alertHold -= 1;
+            return r.here || 0;
+          }
+          const now = routeClockMin(g.floor || 1);
+          const from = r.here || 0;
+          while (r.here < r.nodes.length - 1) {
+            let t = null, previous = 0;
+            for (let index = 0; index <= r.here + 1; index++) {
+              t = hhmmToMin(r.times[index]);
+              if (t === null) break;
+              while (t < previous) t += 1440;
+              previous = t;
+            }
+            if (t === null || t > now) break;
+            herAdvance(true);
+          }
+          if (r.here > from) {
+            const toName = map.getPlace(r.nodes[r.here])?.name || r.nodes[r.here];
+            g.signals = g.signals || [];
+            g.signals.push([fmtMin(now), `\u76EE\u6807\u52A8\u5411\u63A8\u8FDB\uFF1A\u524D\u5F80 [${toName}]`]);
+            if (g.signals.length > 20) g.signals.shift();
+          }
+          return r.here;
+        }
+        function revealNode(i) {
+          if (g.route && g.route.known && i >= 0 && i < g.route.known.length)
+            g.route.known[i] = 1;
+        }
+        return { setRoute, herAdvance, advanceRouteByClock, revealNode };
+      }
+      module.exports = { createRouteSystem };
+    }
+  });
+
+  // src/runtime/game/alert.js
+  var require_alert = __commonJS({
+    "src/runtime/game/alert.js"(exports, module) {
+      "use strict";
+      var R = require_rules();
+      var C = require_checks();
+      var D = require_dice();
+      var { DIST_DOWN, DIST_CN } = require_constants();
+      function createAlertSystem({
+        g,
+        L,
+        seedAt,
+        log,
+        targetEffectiveAcuity,
+        herAdvance
+      }) {
         function alertBranch() {
           const nrv = g.target.nrv || 4, per = g.target.per || 4;
           if (nrv > per) return "turn";
           if (per > nrv) return "detour";
-          const roll = D.rollD20(D.actionSeed(salt, g.floor || 1, "alert_branch")).d20;
+          const roll = D.rollD20(seedAt(g.floor || 1, "alert_branch")).d20;
           return roll <= 7 ? "turn" : roll <= 14 ? "detour" : "shop";
         }
         function applyAlertBehavior(stage) {
           const floor = g.floor || 1;
           const ev = { stage, floor, kind: "", detail: "" };
           if (stage === 1) {
-            const roll = D.rollD20(D.actionSeed(salt, floor, "alert_pace")).d20;
+            const roll = D.rollD20(seedAt(floor, "alert_pace")).d20;
             const total = roll + (g.player.agi || 0);
             const dc = R.checks && R.checks.follow || 13;
             ev.kind = "\u63D0\u901F";
@@ -9033,8 +9686,8 @@
             if (branch === "turn") {
               ev.kind = "\u9AA4\u505C\u56DE\u5934";
               if (g.dist === "close" || g.dist === "touch") {
-                const her = D.rollD20(D.actionSeed(salt, floor, "alert_turn_her")).d20 + targetEffectiveAcuity();
-                const me = D.rollD20(D.actionSeed(salt, floor, "alert_turn_me")).d20 + (g.player.agi || 0);
+                const her = D.rollD20(seedAt(floor, "alert_turn_her")).d20 + targetEffectiveAcuity();
+                const me = D.rollD20(seedAt(floor, "alert_turn_me")).d20 + (g.player.agi || 0);
                 if (me >= her) {
                   L.commit({ alert: -5 }, { reason: "alert_turn" });
                   ev.detail = `\u5979\u56DE\u5934\u626B\u8857\uFF0C\u4F60\u8D34\u8FDB\u9634\u5F71\uFF08${me} \u2265 ${her}\uFF09\uFF1A\u5979\u6CA1\u770B\u6E05\uFF0C\u8B66\u89C9 -5`;
@@ -9088,215 +9741,662 @@
             applyAlertBehavior(stage);
           }
         }
-        function routeClockMin(floor) {
-          const start = g.route && g.route.startTime ? String(g.route.startTime) : "";
-          const m = start.match(/^(\d{1,2}):(\d{2})$/);
-          const base = m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 21 * 60;
-          return base + Math.max(0, (floor || 1) - 1) * 15;
+        return { resolveAlertCross };
+      }
+      module.exports = { createAlertSystem };
+    }
+  });
+
+  // src/runtime/game/album.js
+  var require_album2 = __commonJS({
+    "src/runtime/game/album.js"(exports, module) {
+      "use strict";
+      var D = require_dice();
+      var ALBUM = require_album();
+      var map = require_map();
+      var { CA_CN } = require_constants();
+      function createAlbumSystem({ g, seedAt }) {
+        function placeNameNow() {
+          if (!g.route || !Array.isArray(g.route.nodes)) return "";
+          const id = g.route.nodes[g.route.here];
+          return id && (map.getPlace(id) || {}).name || "";
         }
-        function hhmmToMin(t) {
-          const s = String(t || "").replace(":", "");
-          if (!/^\d{3,4}$/.test(s)) return null;
-          const v = s.padStart(4, "0");
-          return parseInt(v.slice(0, 2), 10) * 60 + parseInt(v.slice(2), 10);
-        }
-        function fmtMin(min) {
-          const h = Math.floor(min / 60) % 24;
-          return `${String(h).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
-        }
-        function advanceRouteByClock() {
-          const r = g.route;
-          if (!r || !Array.isArray(r.nodes) || !Array.isArray(r.times) || !r.times.length) return r ? r.here || 0 : -1;
-          if (g.alertHold > 0) {
-            g.alertHold -= 1;
-            return r.here || 0;
-          }
-          const now = routeClockMin(g.floor || 1);
-          const from = r.here || 0;
-          while (r.here < r.nodes.length - 1) {
-            const t = hhmmToMin(r.times[r.here + 1]);
-            if (t === null || t > now) break;
-            herAdvance(true);
-          }
-          if (r.here > from) {
-            const toName = map.getPlace(r.nodes[r.here])?.name || r.nodes[r.here];
-            g.signals = g.signals || [];
-            g.signals.push([fmtMin(now), `\u76EE\u6807\u52A8\u5411\u63A8\u8FDB\uFF1A\u524D\u5F80 [${toName}]`]);
-            if (g.signals.length > 20) g.signals.shift();
-          }
-          return r.here;
-        }
-        function revealNode(i) {
-          if (g.route && g.route.known && i >= 0 && i < g.route.known.length) g.route.known[i] = 1;
-        }
-        function nightFall() {
-          if (g.tailing) {
-            const atEnd = g.route && g.route.here >= g.route.nodes.length - 1;
-            if (!atEnd) return { blocked: true, reason: "\u804C\u4E1A\u75C5\uFF1A\u8DDF\u7F00\u672A\u7ED3\u675F\uFF0C\u4ECA\u665A\u53EA\u80FD\u8DDF\u4E22\u6216\u8DDF\u5979\u5230\u5BB6" };
-          }
-          const curDate = L.get("date");
-          if (g.route && g.route.id === "saturday_date_hotel") {
-            g.hotelVisitedCount = (g.hotelVisitedCount || 0) + 1;
-            g.lastHotelDate = curDate;
-          }
-          const r = L.settleNight({ peakAlert: L.get("alert"), nrv: g.player.nrv, staminaMax: g.player.staminaMax });
-          (g.tags || (g.tags = [])).length ? T.clearNight(g.tags) && (g.tags = T.clearNight(g.tags)) : null;
-          syncHeartTags();
-          g.consecFails = 0;
-          const mult = g.identity && R.identity.list[g.identity] && R.identity.list[g.identity].piMult || 1;
-          let piBonus = 0;
-          if (mult > 1 && g.nightPiGross > 0) {
-            piBonus = Math.round(g.nightPiGross * (mult - 1));
-            if (piBonus > 0) {
-              L.commit({ pi: piBonus }, { reason: "identity_pi" });
-              log(`[\u8EAB\u4EFD] PI\xD7${mult}\uFF1A\u5F53\u665A\u6BDB\u5165\u8D26 ${g.nightPiGross}\uFF0C\u8865\u5DEE +${piBonus}`);
-            }
-          }
-          g.nightPiGross = 0;
-          g.tailing = false;
-          g.nightDrinkUsed = false;
-          g.alertLatch = [];
-          g.alertEvent = null;
-          g.alertHold = 0;
-          g.fleeing = false;
-          const wd = D.rollD20(D.actionSeed(salt, 9e3 + (g.floor || 0), "weather")).d20;
-          g.world.weather = wd <= WEATHER_BANDS.clear[1] ? "clear" : wd <= WEATHER_BANDS.rain[1] ? "rain" : "storm";
-          const nextDate = L.get("date");
-          const dayOfWeek = ((nextDate || 1) - 1) % 7 + 1;
-          const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
-          const isLimping = TS.isLimpingDate(nextDate, g.lastHotelDate);
-          if (dayOfWeek === 6 && (pack.id === "student" || pack.id === "college")) {
-            const routine = g.targetPersona?.saturdayRoutine || (g.targetPersona ? g.targetPersona.saturdayRoutine = TS.resolveSaturdayRoutine(pack, g.targetPersona, D.actionSeed(salt, 0, "saturday_routine")) : "cram");
-            if (routine === "date") {
-              g.dateCount = (g.dateCount || 0) + 1;
-            }
-            const personalityId = g.targetPersona?.personality?.id || g.targetPersona?.personality || "timid";
-            const routeDef = TS.resolveSaturdayRoute(pack, routine, g.dateCount || 0, personalityId, D.actionSeed(salt, nextDate, "saturday_route_branch"), { hotelVisitedCount: g.hotelVisitedCount || 0 });
-            if (routeDef) {
-              const startT = routeDef.path && routeDef.path[0] && routeDef.path[0].t ? `${routeDef.path[0].t.slice(0, 2)}:${routeDef.path[0].t.slice(2)}` : "21:00";
-              g.route = {
-                id: routeDef.id,
-                note: routeDef.note,
-                prompt: routeDef.prompt,
-                startTime: startT,
-                nodes: routeDef.path.map((p) => p.place),
-                times: routeDef.path.map((p) => p.t),
-                here: 0,
-                known: routeDef.known || routeDef.path.map(() => 1)
-              };
-            }
-          } else if (dayOfWeek === 7 && (pack.id === "student" || pack.id === "college")) {
-            const sundayRoute = (pack.routes || []).find((r2) => r2.id === "sunday_rest") || {
-              id: "sunday_rest",
-              note: "\u5468\u65E5\u5168\u5929\u5C45\u5BB6\u4F11\u6574\uFF08\u4E0D\u51FA\u95E8\uFF09",
-              prompt: "\u767D\u63CF\u5C11\u5973\u5468\u65E5\u5168\u5929\u5728\u5BD3\u6240\u5185\u5B89\u9759\u4F11\u6574\uFF0C\u7A97\u5E18\u62C9\u8D77\uFF0C\u672A\u66FE\u5916\u51FA\uFF0C\u8857\u9053\u4E0A\u65E0\u5176\u8DB3\u8FF9",
-              path: [{ place: "unit_stairs_b", t: "2000" }]
-            };
-            g.route = {
-              id: sundayRoute.id,
-              note: sundayRoute.note,
-              prompt: sundayRoute.prompt,
-              startTime: "20:00",
-              nodes: sundayRoute.path.map((p) => p.place),
-              times: sundayRoute.path.map((p) => p.t),
-              here: 0,
-              known: [1]
-            };
-            g.tailing = false;
-          } else if (dayOfWeek >= 1 && dayOfWeek <= 5 && (pack.id === "student" || pack.id === "college")) {
-            let routeDef = null;
-            if (dayOfWeek === 5) {
-              routeDef = pack.routes.find((r2) => r2.id === "friday_late" || r2.id === "college_friday_night");
-            }
-            if (!routeDef) {
-              routeDef = pack.routes.find((r2) => r2.id === "college_evening" || r2.id === "workday_evening") || pack.routes[0];
-            }
-            if (routeDef) {
-              const startT = routeDef.path && routeDef.path[0] && routeDef.path[0].t ? `${routeDef.path[0].t.slice(0, 2)}:${routeDef.path[0].t.slice(2)}` : "21:00";
-              g.route = {
-                id: routeDef.id,
-                note: routeDef.note,
-                prompt: routeDef.prompt,
-                startTime: startT,
-                nodes: routeDef.path.map((p) => p.place),
-                times: routeDef.path.map((p) => p.t),
-                here: 0,
-                known: routeDef.known || routeDef.path.map(() => 1)
-              };
-            }
-          }
-          const outfit = TS.sampleOutfit(pack, nextDate, D.actionSeed(salt, nextDate, "outfit"), g.targetPersona || g.target);
-          const somatic = TS.sampleSomatic(pack, D.actionSeed(salt, nextDate, "somatic"), { isLimping });
-          const startPlaceId = g.route && g.route.nodes ? g.route.nodes[0] : null;
-          const startPlaceName = startPlaceId ? map.getPlace(startPlaceId)?.name || startPlaceId : null;
-          const hand = TS.resolveHand(pack, startPlaceId, null, D.actionSeed(salt, 9e3 + (g.floor || 0), "hand_night"));
-          g.targetState = {
-            outfit,
-            somatic,
-            hand,
-            route: g.route ? {
-              id: g.route.id,
-              note: g.route.note,
-              prompt: g.route.prompt,
-              startTime: g.route.startTime,
-              here: g.route.here || 0,
-              nodes: g.route.nodes,
-              currentPlace: startPlaceName
-            } : null
+        function capturePhoto(dist) {
+          const persona = g.targetPersona || {};
+          const owned = Object.keys(g.album || {});
+          const cands = ALBUM.captureList(persona, owned, dist);
+          if (!cands.length) return null;
+          g.captureSeq = (g.captureSeq || 0) + 1;
+          const seed = seedAt(g.floor || 1, "capture_" + g.captureSeq);
+          const pick = cands[g.rngVersion === 1 ? D.rollD20(seed).d20 % cands.length : D.pickIndex(seed, cands.length)];
+          const meta = {
+            file: pick.file,
+            name: pick.item.name,
+            slot: pick.item.slot,
+            angle: pick.angle,
+            t: g.floor || 1,
+            place: placeNameNow(),
+            dist
           };
+          g.album[pick.key] = meta;
+          let piBonus = 0;
+          if (dist === "touch" && pick.angle === "front") piBonus += 1;
+          const sb = ALBUM.setBonus(g.album, g.setBonusDone);
+          piBonus += sb.pi;
+          g.lastCapture = { key: pick.key, ...meta, piBonus, outfits: sb.outfits };
+          g.capture = g.lastCapture;
+          g.signals = g.signals || [];
+          g.signals.push([
+            "\u7167\u7247",
+            `\u62CD\u5230 ${pick.item.name}\uFF08${CA_CN[pick.angle] || pick.angle}\uFF09`
+          ]);
+          if (g.signals.length > 20) g.signals.shift();
+          return g.lastCapture;
+        }
+        return { capturePhoto };
+      }
+      module.exports = { createAlbumSystem };
+    }
+  });
+
+  // src/runtime/game/snapshot.js
+  var require_snapshot = __commonJS({
+    "src/runtime/game/snapshot.js"(exports, module) {
+      "use strict";
+      var { classifyPlace } = require_action_requirements();
+      var R = require_rules();
+      var C = require_checks();
+      var map = require_map();
+      var ALBUM = require_album();
+      var { WEATHER_ICON, SHOE_DIST_FACTOR } = require_constants();
+      function createSnapshotSystem({
+        g,
+        L,
+        syncTargetShoeTags,
+        applyShoeMod,
+        identityShift,
+        rollEnvSfx
+      }) {
+        function snapshot() {
+          const s = L.state;
+          const w = g.world;
+          const districtObj = map.getDistrict(w.district);
+          const here = g.route ? g.route.here : -1;
+          const curId = g.route && here >= 0 ? g.route.nodes[here] : null;
+          const cur = curId ? map.getPlace(curId) : null;
+          const nextId = g.route && here >= 0 && here + 1 < g.route.nodes.length ? g.route.nodes[here + 1] : null;
+          const routeView = g.route ? {
+            id: g.route.id,
+            note: g.route.note,
+            startTime: g.route.startTime,
+            times: g.route.times || null,
+            nodes: g.route.nodes.map(
+              (id, i) => g.route.known && g.route.known[i] ? map.getPlace(id)?.name || id : id
+            ),
+            known: g.route.known || g.route.nodes.map(() => 1),
+            here
+          } : null;
+          const exits = cur ? cur.exits.map(
+            (id) => (map.getPlace(id)?.name || id) + (id === nextId ? " (\u524D)" : "")
+          ) : [];
+          let sanctuaryAlert = "";
+          if (cur) {
+            if (cur.sanctuary) sanctuaryAlert = "\u5F53\u524D\u5373\u4E3A\u5B89\u5168\u5E87\u62A4\u573A\u6240";
+            else {
+              const sn = map.findNearestSanctuary(curId);
+              sanctuaryAlert = sn ? `\u82E5\u76EE\u6807\u53D7\u60CA\uFF1A\u5C06\u5FAA\u6700\u8FD1\u901A\u8DEF\u9003\u5F80 [${map.getPlace(sn.sanctuaryId)?.name || sn.sanctuaryId}] (${sn.steps}\u6B65)` : "\u6B64\u5904\u547C\u6551\u65E0\u95E8\u2014\u2014\u58F0\u6D6A\u4F20\u5BFC\u8870\u51CF\u4E3A 0\uFF08\u5B64\u5C9B\u533A\uFF09";
+            }
+          }
+          const activeShoe = syncTargetShoeTags();
+          const envSfx = g._envSfx !== void 0 ? g._envSfx : rollEnvSfx();
+          return JSON.parse(
+            JSON.stringify({
+              player: {
+                heart: s.heart,
+                stamina: s.stamina,
+                cash: s.cash,
+                pi: s.pi,
+                proximity: s.proximity,
+                date: s.date,
+                attrs: {
+                  str: g.player.str,
+                  agi: g.player.agi,
+                  nrv: g.player.nrv,
+                  int: g.player.int,
+                  cha: g.player.cha
+                }
+              },
+              target: {
+                id: g.targetId || "college",
+                name: R.targets && R.targets.list && R.targets.list[g.targetId || "college"] ? R.targets.list[g.targetId || "college"].name : "\u72EC\u5C45\u5973\u5927\u5B66\u751F",
+                realName: g.targetPersona ? g.targetPersona.name : null,
+                persona: g.targetPersona ? JSON.parse(JSON.stringify(g.targetPersona)) : null,
+                /* 她的有效属性 = 基底 + 当天身心扰动 + 鞋具修正（每次现算，不依赖 g.target 的中间态） */
+                stats: (() => {
+                  const base = g.targetBase || g.target || {};
+                  const out = {};
+                  for (const k of ["str", "agi", "per", "nrv", "social"])
+                    out[k] = base[k];
+                  const som = g.targetState && g.targetState.somatic && g.targetState.somatic.mod;
+                  if (som)
+                    for (const [k, v] of Object.entries(som)) {
+                      if (out[k] !== void 0) out[k] = Math.max(1, out[k] + v);
+                    }
+                  return applyShoeMod(out);
+                })(),
+                alertStage: C.alertStage(s.alert),
+                warinessStage: s.wariness >= 60 ? "\u9AD8" : s.wariness >= 30 ? "\u4E2D" : "\u4F4E",
+                shoe: activeShoe,
+                /* 鞋具读数（状态栏悬停用）：鞋型 + 敏捷修正 + 步声基准 + 按距离折算的当前声级 */
+                shoeInfo: (() => {
+                  const id = (g.tags || []).find(
+                    (t) => t.owner === "target" && t.id && t.id.startsWith("shoe_")
+                  )?.id;
+                  const def = id && R.tags ? R.tags[id] : null;
+                  if (!def) return null;
+                  const base = typeof def.noise === "number" ? def.noise : 1;
+                  const factor = SHOE_DIST_FACTOR[g.dist] ?? 1;
+                  return {
+                    id: def.id,
+                    name: def.name,
+                    agi: def.mod && typeof def.mod.agi === "number" ? def.mod.agi : 0,
+                    noise: base,
+                    distFactor: factor,
+                    level: Math.max(0, Math.min(5, Math.round(base * factor)))
+                  };
+                })(),
+                state: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null
+              },
+              targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
+              envSfx,
+              placeKind: classifyPlace(curId, cur?.name || ""),
+              mode: g.mode,
+              dist: g.dist,
+              env: g.env,
+              slot: g.slot,
+              identity: {
+                id: g.identity || null,
+                name: g.identity && R.identity.list[g.identity] ? R.identity.list[g.identity].name : null,
+                shift: identityShift(),
+                kit: g.startKit || null
+              },
+              // v0.8 身份徽记数据源（状态栏常驻条）
+              tags: (g.tags || []).map((t) => ({
+                id: t.id,
+                name: t.name,
+                owner: t.owner,
+                type: t.type || "status",
+                duration: t.duration.type,
+                count: t.duration.count
+              })),
+              /* 战术行囊持有物 */
+              inventory: (g.player.inventory || []).map((it) => {
+                const def = R.items && R.items[it.id] ? R.items[it.id] : { name: it.id, type: "misc", desc: "" };
+                return {
+                  id: it.id,
+                  name: def.name,
+                  type: def.type,
+                  slot: def.slot || null,
+                  count: it.count || 1,
+                  equipped: !!it.equipped,
+                  canEquip: !!(def.slot || def.type === "tool" || def.type === "gear" || def.type === "disguise"),
+                  canUse: def.type === "consumable",
+                  desc: def.desc || "",
+                  effectsDesc: def.effectsDesc || ""
+                };
+              }),
+              /* 状态栏 HUD 动态内容管道接通 */
+              herAlert: g.lastHerAlert || (envSfx ? envSfx === "cat" ? "\u{1F431} \u60CA\u52A8\u6697\u5DF7\u91CE\u732B\uFF01\u5783\u573E\u6876\u4F20\u6765\u6293\u6320\u58F0" : "\u{1F415} \u89E6\u52A8\u5EAD\u9662\u72AC\u5420\uFF01\u9662\u5185\u4F20\u6765\u4F4E\u6C89\u4F4E\u543C" : null),
+              signal: g.signals && g.signals.length > 0 ? g.signals.slice(-8) : [
+                [
+                  g.route && g.route.startTime || "21:00",
+                  "\u76EE\u6807\u79BB\u5F00\u539F\u4F4D\uFF0C\u6B65\u5165\u8857\u9053"
+                ]
+              ],
+              proxLog: g.proxLogs && g.proxLogs.length > 0 ? g.proxLogs.slice(-5).reverse() : [],
+              assess: g.lastAssess || null,
+              ledger: g.lastLedgerSummary || "\u672C\u8F6E\u6682\u65E0\u7ED3\u7B97",
+              /* 地图 HUD 字段（状态栏 route-tracker + 战术沙盘） */
+              area: districtObj ? districtObj.name : "\u672A\u77E5",
+              place: cur && routeView.known[here] ? cur.name : null,
+              weather: w.weather,
+              weatherName: WEATHER_ICON[w.weather] || "\u{1F319} \u6674\u591C",
+              strikeSealed: cur ? !!cur.strike_sealed : false,
+              fam: w.district ? g.famSegs[w.district] || 0 : 0,
+              route: routeView,
+              exits,
+              spots: cur ? cur.spots || [] : [],
+              sanctuaryAlert,
+              /* 相册：计数 + 已拍清单（贴墙渲染用） */
+              album: (() => {
+                const persona = g.targetPersona || {};
+                const shots = Object.entries(g.album || {}).map(([k, v]) => ({
+                  key: k,
+                  ...v
+                }));
+                return { count: shots.length, total: ALBUM.totalFor(persona), shots };
+              })(),
+              capture: g.capture || null
+            })
+          );
+        }
+        return { snapshot };
+      }
+      module.exports = { createSnapshotSystem };
+    }
+  });
+
+  // src/runtime/game/save.js
+  var require_save = __commonJS({
+    "src/runtime/game/save.js"(exports, module) {
+      "use strict";
+      function createSaveSystem({ g, L, getSalt }) {
+        function save() {
+          return JSON.parse(
+            JSON.stringify({
+              v: 2,
+              rngVersion: g.rngVersion,
+              nightStartFloor: g.nightStartFloor || 0,
+              envSfx: g._envSfx ?? null,
+              sessionSalt: getSalt(),
+              player: { ...g.player },
+              target: { ...g.target },
+              targetBase: { ...g.targetBase },
+              targetId: g.targetId || "ol",
+              targetPersona: g.targetPersona ? JSON.parse(JSON.stringify(g.targetPersona)) : null,
+              targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
+              dateCount: g.dateCount || 0,
+              hotelVisitedCount: g.hotelVisitedCount || 0,
+              lastHotelDate: g.lastHotelDate || null,
+              inventory: JSON.parse(JSON.stringify(g.player.inventory || [])),
+              nightDrinkUsed: !!g.nightDrinkUsed,
+              mode: g.mode,
+              dist: g.dist,
+              env: g.env,
+              slot: g.slot,
+              world: { ...g.world },
+              route: g.route ? JSON.parse(JSON.stringify(g.route)) : null,
+              famSegs: { ...g.famSegs },
+              tags: JSON.parse(JSON.stringify(g.tags || [])),
+              identity: g.identity || null,
+              tailing: !!g.tailing,
+              nightPiGross: g.nightPiGross || 0,
+              startKit: g.startKit || null,
+              proxLogs: JSON.parse(JSON.stringify(g.proxLogs || [])),
+              signals: JSON.parse(JSON.stringify(g.signals || [])),
+              lastAssess: g.lastAssess || null,
+              lastHerAlert: g.lastHerAlert || null,
+              lastLedgerSummary: g.lastLedgerSummary || null,
+              floor: g.floor || 0,
+              consecFails: g.consecFails,
+              alertLatch: (g.alertLatch || []).slice(),
+              alertEvent: g.alertEvent || null,
+              alertHold: g.alertHold || 0,
+              fleeing: !!g.fleeing,
+              album: JSON.parse(JSON.stringify(g.album || {})),
+              setBonusDone: JSON.parse(JSON.stringify(g.setBonusDone || {})),
+              captureSeq: g.captureSeq || 0,
+              tickets: JSON.parse(JSON.stringify(g.tickets)),
+              ticketsIssued: g.ticketsIssued,
+              ledgerState: { ...L.state }
+            })
+          );
+        }
+        return { save };
+      }
+      module.exports = { createSaveSystem };
+    }
+  });
+
+  // src/runtime/persistence/migrations.js
+  var require_migrations = __commonJS({
+    "src/runtime/persistence/migrations.js"(exports, module) {
+      "use strict";
+      var { LIMITS } = require_ledger();
+      var {
+        normalizePersona,
+        validatePersona
+      } = require_persona();
+      var CURRENT_SAVE_VERSION = 2;
+      function migrateSave(saved) {
+        if (!saved || typeof saved !== "object" || ![1, 2].includes(saved.v))
+          throw Object.assign(new Error("\u4E0D\u652F\u6301\u7684\u5B58\u6863\u7248\u672C"), {
+            code: "SAVE_VERSION_UNSUPPORTED"
+          });
+        const copy = JSON.parse(JSON.stringify(saved));
+        if (!Number.isInteger(copy.floor) || copy.floor < 0 || typeof copy.sessionSalt !== "string" || !copy.ledgerState)
+          throw Object.assign(new Error("\u5B58\u6863\u7F3A\u5C11\u6709\u6548\u56DE\u5408\u3001\u968F\u673A\u72B6\u6001\u6216\u8D26\u672C"), {
+            code: "SAVE_INVALID"
+          });
+        for (const [key, [min, max]] of Object.entries(LIMITS)) {
+          const value = copy.ledgerState[key];
+          if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max)
+            throw Object.assign(new Error(`\u5B58\u6863\u8D26\u76EE\u65E0\u6548\uFF1A${key}`), {
+              code: "SAVE_INVALID"
+            });
+        }
+        for (const [key, value] of Object.entries(copy.ledgerState))
+          if (!Object.prototype.hasOwnProperty.call(LIMITS, key) || typeof value !== "number" || !Number.isFinite(value))
+            throw Object.assign(new Error(`\u5B58\u6863\u8D26\u76EE\u65E0\u6548\uFF1A${key}`), {
+              code: "SAVE_INVALID"
+            });
+        if (copy.v === 1) {
+          copy.rngVersion ?? (copy.rngVersion = 1);
+          copy.nightStartFloor ?? (copy.nightStartFloor = 0);
+          copy.v = 2;
+        }
+        if (![1, 2].includes(copy.rngVersion) || !Number.isInteger(copy.nightStartFloor) || copy.nightStartFloor < 0 || copy.nightStartFloor > copy.floor)
+          throw Object.assign(new Error("\u5B58\u6863\u65F6\u95F4\u6216\u968F\u673A\u7248\u672C\u65E0\u6548"), {
+            code: "SAVE_INVALID"
+          });
+        copy.targetPersona = normalizePersona(copy.targetPersona);
+        validatePersona(copy.targetPersona, copy.targetId || "college", {
+          references: false
+        });
+        return copy;
+      }
+      module.exports = { CURRENT_SAVE_VERSION, migrateSave };
+    }
+  });
+
+  // src/runtime/game.js
+  var require_game = __commonJS({
+    "src/runtime/game.js"(exports, module) {
+      var { loadLexicon } = require_lexicon2();
+      var D = require_dice();
+      var { createLedger } = require_ledger();
+      var map = require_map();
+      var LP = require_lifepack();
+      var TS = require_target_state();
+      var ALBUM = require_album();
+      var { createTargetSystem } = require_target();
+      var { createActionSystem } = require_actions();
+      var { createTurnSystem } = require_turn();
+      var { createPlayerSystem } = require_player();
+      var { createInventorySystem } = require_inventory();
+      var { createCheckSystem } = require_checks2();
+      var { createRouteSystem } = require_route();
+      var { createAlertSystem } = require_alert();
+      var { createAlbumSystem } = require_album2();
+      var { createSnapshotSystem } = require_snapshot();
+      var { createSaveSystem } = require_save();
+      var { classifyPlace } = require_action_requirements();
+      var { migrateSave } = require_migrations();
+      var {
+        normalizePersona,
+        validatePersona
+      } = require_persona();
+      function createGame(init = {}) {
+        if (init.targetPersona) {
+          init = { ...init, targetPersona: normalizePersona(init.targetPersona) };
+          validatePersona(
+            init.targetPersona,
+            init.targetId || init.targetPersona.targetId || "college",
+            { complete: init.targetPersona.generatorVersion != null }
+          );
+        }
+        if (init.saved) init = { ...init, saved: migrateSave(init.saved) };
+        const rngVersion = init.saved?.rngVersion ?? 2;
+        const lex = loadLexicon();
+        let salt = init.sessionSalt || D.newSessionSalt();
+        const g = {
+          sessionSalt: salt,
+          rngVersion,
+          nightStartFloor: init.saved?.nightStartFloor ?? init.nightStartFloor ?? 0,
+          player: init.player || {
+            str: 4,
+            agi: 5,
+            nrv: 5,
+            int: 5,
+            cha: 5,
+            staminaMax: 120
+          },
+          target: init.target || { str: 3, agi: 4, per: 5, nrv: 4, social: 2 },
+          targetId: init.targetId || init.saved && init.saved.targetId || "college",
+          targetPersona: init.targetPersona || init.saved && init.saved.targetPersona || null,
+          targetState: init.targetState || init.saved && init.saved.targetState || null,
+          mode: init.mode || "stealth",
+          dist: init.dist || "same",
+          env: init.env || "night",
+          slot: init.slot || "e21_23",
+          tickets: init.tickets || [],
+          // 本楼事件票据 [{no, kind, guide}]
+          ticketsIssued: init.ticketsIssued || 1,
+          world: init.world || { weather: "clear", district: "B" },
+          // 每晚天气与她所在大区（真源在脚本）
+          route: init.route || null,
+          // 她的当晚动线 {nodes:[placeId], known:[0|1], here:int}
+          dateCount: init.dateCount || init.saved && init.saved.dateCount || 0,
+          hotelVisitedCount: init.hotelVisitedCount || init.saved && init.saved.hotelVisitedCount || 0,
+          lastHotelDate: init.lastHotelDate ?? (init.saved && init.saved.lastHotelDate) ?? null,
+          famSegs: init.famSegs || { A: 0, B: 0, C: 0, D: 0 },
+          // 分区熟悉度段数（10 段熟区）
+          proxLogs: init.proxLogs || [],
+          signals: init.signals || [],
+          lastAssess: init.lastAssess || null,
+          lastHerAlert: init.lastHerAlert || null,
+          lastLedgerSummary: init.lastLedgerSummary || null,
+          consecFails: 0,
+          logs: [],
+          /* 过档行为（她的警觉每跨一档做一件事，一晚一档只响一次） */
+          alertLatch: init.alertLatch || [],
+          alertEvent: init.alertEvent || null,
+          alertHold: init.alertHold || 0,
+          fleeing: !!init.fleeing,
+          /* 相册：键＝itemId|角度；值是这张照片的元信息 */
+          album: init.album || {},
+          setBonusDone: init.setBonusDone || {},
+          capture: null
+        };
+        if (g.targetPersona) {
+          if (!g.targetPersona.hair) {
+            const i = D.pickIndex(
+              D.actionSeed(salt, 0, "hair", rngVersion),
+              ALBUM.WARDROBE.variants.hair.length
+            );
+            g.targetPersona.hair = ALBUM.WARDROBE.variants.hair[i];
+          }
+          if (!g.targetPersona.body) {
+            const i = D.pickIndex(
+              D.actionSeed(salt, 0, "body", rngVersion),
+              ALBUM.WARDROBE.variants.body.length
+            );
+            g.targetPersona.body = ALBUM.WARDROBE.variants.body[i];
+          }
+        }
+        if (g.targetPersona && !g.targetPersona.assignedFacts) {
+          const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
+          TS.resolveTargetFacts(
+            pack,
+            g.targetPersona,
+            D.actionSeed(salt, 0, "facts", rngVersion)
+          );
+        }
+        if (g.targetPersona && g.targetPersona.finalStats) {
+          g.target = Object.assign({}, g.target, g.targetPersona.finalStats);
+        }
+        g.targetBase = { ...g.target };
+        g.player.inventory = Array.isArray(init.inventory) ? init.inventory : Array.isArray(g.player.inventory) ? g.player.inventory : [];
+        g.nightDrinkUsed = !!init.nightDrinkUsed;
+        const L = g.ledger = createLedger({ ...init.stats, nrv: g.player.nrv });
+        const seedAt = (floor, domain) => D.actionSeed(salt, floor, domain, rngVersion);
+        const getSalt = () => salt;
+        const {
+          sweetHighNow,
+          syncHeartTags,
+          applyIdentity,
+          addProxLog,
+          identityShift,
+          syncThresholdTags
+        } = createPlayerSystem({ g, L, log });
+        const {
+          syncEquippedTags,
+          addItem,
+          removeItem,
+          equipItem,
+          unequipItem,
+          useItem
+        } = createInventorySystem({ g, L, log, syncHeartTags });
+        const {
+          applyTargetState,
+          applyShoeMod,
+          initTargetState,
+          syncTargetShoeTags,
+          syncPersonaTags,
+          nightFall
+        } = createTargetSystem({ g, L, seedAt, log, syncHeartTags });
+        const { targetEffectiveAcuity, gain, runCheck, categoryOf } = createCheckSystem({ g, seedFor, isFamiliar });
+        const { setRoute, herAdvance, advanceRouteByClock, revealNode } = createRouteSystem({ g, seedAt, applyTargetState });
+        const { resolveAlertCross } = createAlertSystem({
+          g,
+          L,
+          seedAt,
+          log,
+          targetEffectiveAcuity,
+          herAdvance
+        });
+        const { capturePhoto } = createAlbumSystem({ g, seedAt });
+        const { settleAction } = createActionSystem({
+          g,
+          L,
+          lex,
+          log,
+          capturePhoto,
+          currentPlaceKind,
+          gain,
+          runCheck,
+          syncHeartTags
+        });
+        const {
+          rollEnvSfx,
+          translateInput,
+          settleInput,
+          processFloor,
+          processReply
+        } = createTurnSystem({
+          g,
+          L,
+          lex,
+          seedAt,
+          log,
+          addProxLog,
+          advanceRouteByClock,
+          applyTargetState,
+          categoryOf,
+          herAdvance,
+          resolveAlertCross,
+          settleAction,
+          snapshot: () => snapshot(),
+          sweetHighNow,
+          syncThresholdTags
+        });
+        const { snapshot } = createSnapshotSystem({
+          g,
+          L,
+          syncTargetShoeTags,
+          applyShoeMod,
+          identityShift,
+          rollEnvSfx
+        });
+        const { save } = createSaveSystem({ g, L, getSalt });
+        applyIdentity(init.identity, {
+          targetGym: init.targetGym,
+          packId: init.packId
+        });
+        syncThresholdTags();
+        syncEquippedTags();
+        syncTargetShoeTags();
+        syncPersonaTags();
+        if (!g.targetState) initTargetState();
+        else applyTargetState();
+        if (init.saved) {
+          const s = init.saved;
+          if (s.sessionSalt !== void 0) salt = s.sessionSalt;
+          for (const k of [
+            "player",
+            "target",
+            "targetId",
+            "targetPersona",
+            "targetState",
+            "mode",
+            "dist",
+            "env",
+            "slot",
+            "world",
+            "route",
+            "famSegs",
+            "tags",
+            "floor",
+            "consecFails",
+            "tickets",
+            "ticketsIssued",
+            "identity",
+            "startKit",
+            "proxLogs",
+            "signals",
+            "lastAssess",
+            "lastHerAlert",
+            "lastLedgerSummary",
+            "nightDrinkUsed",
+            "dateCount",
+            "hotelVisitedCount",
+            "lastHotelDate",
+            "alertLatch",
+            "alertEvent",
+            "alertHold",
+            "fleeing",
+            "album",
+            "setBonusDone",
+            "captureSeq"
+          ]) {
+            if (s[k] !== void 0) g[k] = s[k];
+          }
+          if (s.targetBase !== void 0) g.targetBase = { ...s.targetBase };
+          if (s.inventory !== void 0)
+            g.player.inventory = JSON.parse(JSON.stringify(s.inventory));
+          if (s.tailing !== void 0) g.tailing = s.tailing;
+          if (s.nightPiGross) g.nightPiGross = s.nightPiGross;
+          g.sessionSalt = salt;
+          Object.assign(L.state, s.ledgerState || {});
+          g._envSfx = s.envSfx ?? null;
+          g.logs = [];
+          syncThresholdTags();
+          syncEquippedTags();
+          syncTargetShoeTags();
+          syncPersonaTags();
           applyTargetState();
-          return { seq: r.seq, warinessGain: r.warinessGain, nextStartAlert: r.nextStartAlert, date: L.get("date"), nextWeather: g.world.weather, piBonus, targetState: g.targetState };
+        }
+        (function backfillRouteTimes() {
+          const r = g.route;
+          if (!r || !Array.isArray(r.nodes)) return;
+          if (Array.isArray(r.times) && r.times.length === r.nodes.length) return;
+          const pack = LP.packs && LP.packs[g.targetId] || LP.packs.college || LP.packs.student;
+          const def = (pack.routes || []).find((x) => x.id === r.id);
+          if (!def || !Array.isArray(def.path) || def.path.length !== r.nodes.length)
+            return;
+          r.times = def.path.map((p) => p.t);
+          if (!r.startTime && def.path[0] && def.path[0].t) {
+            r.startTime = `${def.path[0].t.slice(0, 2)}:${def.path[0].t.slice(2)}`;
+          }
+          applyTargetState();
+        })();
+        function log(line) {
+          g.logs.push(line);
+        }
+        function seedFor(seq) {
+          return D.actionSeed(salt, g.floor || 0, seq, rngVersion);
+        }
+        function isFamiliar() {
+          return L.get("proximity") >= 20 && L.get("proximity") < 40;
+        }
+        function currentPlaceKind() {
+          const id = g.route?.nodes?.[g.route.here] || "";
+          return classifyPlace(id, map.getPlace(id)?.name || "");
         }
         function gmSet(changes = {}) {
           const { tailing, ...rest } = changes;
           if (tailing !== void 0) g.tailing = !!tailing;
           return L.commit(rest, { reason: "gm" });
-        }
-        function save() {
-          return {
-            v: 1,
-            sessionSalt: salt,
-            player: { ...g.player },
-            target: { ...g.target },
-            targetBase: { ...g.targetBase },
-            targetId: g.targetId || "ol",
-            targetPersona: g.targetPersona ? JSON.parse(JSON.stringify(g.targetPersona)) : null,
-            targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
-            dateCount: g.dateCount || 0,
-            hotelVisitedCount: g.hotelVisitedCount || 0,
-            lastHotelDate: g.lastHotelDate || null,
-            inventory: JSON.parse(JSON.stringify(g.player.inventory || [])),
-            nightDrinkUsed: !!g.nightDrinkUsed,
-            mode: g.mode,
-            dist: g.dist,
-            env: g.env,
-            slot: g.slot,
-            world: { ...g.world },
-            route: g.route ? JSON.parse(JSON.stringify(g.route)) : null,
-            famSegs: { ...g.famSegs },
-            tags: JSON.parse(JSON.stringify(g.tags || [])),
-            identity: g.identity || null,
-            tailing: !!g.tailing,
-            nightPiGross: g.nightPiGross || 0,
-            startKit: g.startKit || null,
-            proxLogs: JSON.parse(JSON.stringify(g.proxLogs || [])),
-            signals: JSON.parse(JSON.stringify(g.signals || [])),
-            lastAssess: g.lastAssess || null,
-            lastHerAlert: g.lastHerAlert || null,
-            lastLedgerSummary: g.lastLedgerSummary || null,
-            floor: g.floor || 0,
-            consecFails: g.consecFails,
-            alertLatch: (g.alertLatch || []).slice(),
-            alertEvent: g.alertEvent || null,
-            alertHold: g.alertHold || 0,
-            fleeing: !!g.fleeing,
-            album: JSON.parse(JSON.stringify(g.album || {})),
-            setBonusDone: JSON.parse(JSON.stringify(g.setBonusDone || {})),
-            captureSeq: g.captureSeq || 0,
-            tickets: JSON.parse(JSON.stringify(g.tickets)),
-            ticketsIssued: g.ticketsIssued,
-            ledgerState: { ...L.state }
-          };
         }
         return {
           processFloor,
@@ -9337,17 +10437,22 @@
     }
   });
 
-  // src/host/glue.js
-  var require_glue = __commonJS({
-    "src/host/glue.js"(exports, module) {
-      var { createGame } = require_game();
-      var LP = require_lifepack();
-      var R = require_rules();
-      var VAR_SAVE = "wx_save";
-      var VAR_SNAP = "wx_snap";
-      var VAR_INIT = "wx_init";
-      var VAR_CONF = "wx_conf";
-      var BAND_CN = { success: "\u6210\u529F", grace: "\u52C9\u5F3A", fail: "\u5931\u8D25", nat1: "\u5929\u71361", nat20: "\u5927\u6210\u529F" };
+  // src/contracts/chat-scope.js
+  var require_chat_scope = __commonJS({
+    "src/contracts/chat-scope.js"(exports, module) {
+      "use strict";
+      function scopeKey(characterId, chatId) {
+        return chatId == null || chatId === "" ? null : JSON.stringify([characterId ?? null, String(chatId)]);
+      }
+      module.exports = { scopeKey };
+    }
+  });
+
+  // src/host/environment.js
+  var require_environment = __commonJS({
+    "src/host/environment.js"(exports, module) {
+      "use strict";
+      var { scopeKey } = require_chat_scope();
       function hostFrames() {
         const list = [];
         try {
@@ -9365,7 +10470,8 @@
           }
         } catch (e) {
         }
-        if (typeof globalThis !== "undefined" && !list.includes(globalThis)) list.push(globalThis);
+        if (typeof globalThis !== "undefined" && !list.includes(globalThis))
+          list.push(globalThis);
         return list;
       }
       function findTavernHelper() {
@@ -9400,12 +10506,14 @@
         const holder = (() => {
           for (const w of frames) {
             try {
-              if (w && typeof w.insertOrAssignVariables === "function" && typeof w.getVariables === "function") return w;
+              if (w && typeof w.insertOrAssignVariables === "function" && typeof w.getVariables === "function")
+                return w;
             } catch (e) {
             }
             try {
               const th = w && w.TavernHelper;
-              if (th && typeof th.insertOrAssignVariables === "function" && typeof th.getVariables === "function") return th;
+              if (th && typeof th.insertOrAssignVariables === "function" && typeof th.getVariables === "function")
+                return th;
             } catch (e) {
             }
           }
@@ -9418,11 +10526,20 @@
             if (holder) await holder.insertOrAssignVariables(obj, { type: "chat" });
           }
         };
+        const subscriptions = [];
+        let eventsDisposed = false;
         const onEvent = (name, fn) => {
+          const callback = fn;
+          fn = (...args) => {
+            if (!eventsDisposed) return callback(...args);
+          };
           for (const w of frames) {
             try {
               if (typeof w.eventOn === "function" && w.tavern_events && w.tavern_events[name]) {
-                w.eventOn(w.tavern_events[name], fn);
+                const subscription = w.eventOn(w.tavern_events[name], fn);
+                subscriptions.push(
+                  () => subscription?.stop?.() ?? w.eventRemoveListener?.(w.tavern_events[name], fn)
+                );
                 return true;
               }
             } catch (e) {
@@ -9430,17 +10547,43 @@
             try {
               const th = w.TavernHelper;
               if (th && typeof th.eventOn === "function" && th.tavern_events && th.tavern_events[name]) {
-                th.eventOn(th.tavern_events[name], fn);
+                const subscription = th.eventOn(th.tavern_events[name], fn);
+                subscriptions.push(
+                  () => subscription?.stop?.() ?? th.eventRemoveListener?.(th.tavern_events[name], fn)
+                );
                 return true;
               }
             } catch (e) {
             }
             try {
               if (w.eventSource && typeof w.eventSource.on === "function") {
-                w.eventSource.on(String(name).toLowerCase(), fn);
+                const eventName = w.event_types?.[name] || String(name).toLowerCase();
+                w.eventSource.on(eventName, fn);
+                subscriptions.push(
+                  () => (w.eventSource.removeListener || w.eventSource.off)?.call(
+                    w.eventSource,
+                    eventName,
+                    fn
+                  )
+                );
                 return true;
               }
             } catch (e) {
+            }
+          }
+          for (const w of frames) {
+            try {
+              const ctx = w.SillyTavern?.getContext?.();
+              const source = ctx?.eventSource;
+              if (source?.on) {
+                const event = ctx.eventTypes?.[name] || ctx.event_types?.[name] || String(name).toLowerCase();
+                source.on(event, fn);
+                subscriptions.push(
+                  () => (source.removeListener || source.off)?.call(source, event, fn)
+                );
+                return true;
+              }
+            } catch {
             }
           }
           return false;
@@ -9499,13 +10642,15 @@
           const helperInject = pick("injectPrompts");
           if (helperInject) {
             try {
-              await helperInject(arr.map((b) => ({
-                id: b.id,
-                position: POS_HELPER[b.position] || "in_chat",
-                depth: Number.isFinite(b.depth) ? b.depth : 1,
-                role: ROLE_HELPER[b.role] || "system",
-                content: b.content
-              })));
+              await helperInject(
+                arr.map((b) => ({
+                  id: b.id,
+                  position: POS_HELPER[b.position] || "in_chat",
+                  depth: Number.isFinite(b.depth) ? b.depth : 1,
+                  role: ROLE_HELPER[b.role] || "system",
+                  content: b.content
+                }))
+              );
               return { mode: "tavernhelper", verified: null };
             } catch (e) {
             }
@@ -9556,8 +10701,41 @@
             }
           }
         };
+        const readContext = async () => {
+          let ctx = null;
+          for (const w of frames) {
+            try {
+              if (typeof w.SillyTavern?.getContext === "function") {
+                ctx = w.SillyTavern.getContext();
+                break;
+              }
+            } catch {
+            }
+          }
+          const helperChatId = pick("getCurrentChatId");
+          const chatId = ctx?.chatId ?? ctx?.chat_id ?? (helperChatId ? await helperChatId() : null);
+          const characterId = ctx?.characterId ?? ctx?.this_chid ?? null;
+          const scope = scopeKey(characterId, chatId);
+          const history = Array.isArray(ctx?.chat) ? ctx.chat.map((m, index) => ({
+            id: m.message_id ?? index,
+            role: m.is_user ? "user" : m.is_system ? "system" : "assistant",
+            text: String(m.mes ?? m.message ?? m.content ?? ""),
+            swipe: m.swipe_id ?? null
+          })) : null;
+          return { scope, history };
+        };
         return {
           vars,
+          readContext,
+          dispose: () => {
+            eventsDisposed = true;
+            for (const stop of subscriptions.splice(0)) {
+              try {
+                stop();
+              } catch {
+              }
+            }
+          },
           onEvent,
           readLast,
           readById,
@@ -9574,6 +10752,50 @@
         if (typeof m === "string") return m;
         return String((m && (m.mes ?? m.content ?? m.message)) ?? "");
       }
+      function hostFn(name) {
+        for (const w of hostFrames()) {
+          try {
+            if (typeof w[name] === "function") return w[name].bind(w);
+          } catch (e) {
+          }
+          try {
+            const th = w && w.TavernHelper;
+            if (th && typeof th[name] === "function") return th[name].bind(th);
+          } catch (e) {
+          }
+        }
+        return null;
+      }
+      function hostCharacterData() {
+        for (const w of hostFrames()) {
+          try {
+            const st = w && w.SillyTavern;
+            if (!st || typeof st.getContext !== "function") continue;
+            const ctx = st.getContext();
+            const ch = ctx && ctx.characters && ctx.characters[ctx.characterId ?? ctx.this_chid];
+            if (ch && ch.data) return ch.data;
+          } catch (e) {
+          }
+        }
+        return null;
+      }
+      module.exports = {
+        hostFrames,
+        findTavernHelper,
+        detectApi,
+        extractLlmText,
+        hostFn,
+        hostCharacterData
+      };
+    }
+  });
+
+  // src/host/initial-state.js
+  var require_initial_state = __commonJS({
+    "src/host/initial-state.js"(exports, module) {
+      "use strict";
+      var LP = require_lifepack();
+      var R = require_rules();
       function defaultInit(overrides = {}) {
         const targetId = overrides && overrides.targetId || "college";
         const targetPersona = overrides && overrides.targetPersona || null;
@@ -9581,7 +10803,9 @@
         const targetDef = R.targets && R.targets.list && R.targets.list[targetId] || R.targets && R.targets.list && R.targets.list.student;
         let route = null;
         if (pack && pack.routes) {
-          const evening = pack.routes.find((r) => r.id === "college_evening" || r.id === "workday_evening") || pack.routes[0];
+          const evening = pack.routes.find(
+            (r) => r.id === "college_evening" || r.id === "workday_evening"
+          ) || pack.routes[0];
           if (evening) {
             const startT = evening.path && evening.path[0] && evening.path[0].t ? `${evening.path[0].t.slice(0, 2)}:${evening.path[0].t.slice(2)}` : "21:00";
             route = {
@@ -9609,7 +10833,10 @@
             here: 0
           } : null;
         }
-        let targetStats = pack ? { ...pack.stats, social: pack.social } : { ...targetDef.stats || { str: 3, agi: 4, per: 5, nrv: 4 }, social: targetDef.social || 2 };
+        let targetStats = pack ? { ...pack.stats, social: pack.social } : {
+          ...targetDef.stats || { str: 3, agi: 4, per: 5, nrv: 4 },
+          social: targetDef.social || 2
+        };
         if (targetPersona && targetPersona.finalStats) {
           targetStats = Object.assign(targetStats, targetPersona.finalStats);
         }
@@ -9626,6 +10853,21 @@
           route
         };
       }
+      module.exports = { defaultInit };
+    }
+  });
+
+  // src/host/receipt.js
+  var require_receipt = __commonJS({
+    "src/host/receipt.js"(exports, module) {
+      "use strict";
+      var BAND_CN = {
+        success: "\u6210\u529F",
+        grace: "\u52C9\u5F3A",
+        fail: "\u5931\u8D25",
+        nat1: "\u5929\u71361",
+        nat20: "\u5927\u6210\u529F"
+      };
       function receiptText(r) {
         const lines = [`\u3010\u7B2C${r.floor}\u697C \xB7 \u4E2D\u63A7\u7ED3\u7B97\u56DE\u6267\uFF08\u552F\u4E00\u6570\u503C\u771F\u6E90\uFF09\u3011`];
         const st = r.stats || r.package && r.package.stats || {};
@@ -9674,9 +10916,13 @@
         const placeName = ts && ts.route && ts.route.currentPlace || st.place || null;
         const placeStr = placeName ? `\u5730\u70B9\uFF1A[${placeName}]\uFF5C` : "";
         lines.push(`[\u65F6\u7A7A\u4E0E\u73AF\u5883] \u65F6\u95F4\uFF1A${timeStr}\uFF5C${placeStr}\u73AF\u5883\uFF1A${weatherDesc}`);
-        lines.push(`[\u7AD9\u4F4D\u4E0E\u6A21\u5F0F] \u4EA4\u4E92\u6A21\u5F0F\uFF1A${modeDesc}\uFF5C\u76F8\u5BF9\u8DDD\u79BB\uFF1A${distDesc}${sanc}`);
+        lines.push(
+          `[\u7AD9\u4F4D\u4E0E\u6A21\u5F0F] \u4EA4\u4E92\u6A21\u5F0F\uFF1A${modeDesc}\uFF5C\u76F8\u5BF9\u8DDD\u79BB\uFF1A${distDesc}${sanc}`
+        );
         if (pkg.narrativeOnly) {
-          lines.push("\u672C\u8F6E\u73A9\u5BB6\u672A\u70B9\u9009\u4EFB\u4F55\u52A8\u4F5C\u80F6\u56CA\uFF1A\u7EAF\u53D9\u4E8B\u63A8\u8FDB\uFF0C\u4E0D\u5F97\u51ED\u7A7A\u53D1\u751F\u68C0\u5B9A\u6216\u4F53\u529B/\u5FC3\u8DF3/\u8B66\u89C9\u53D8\u52A8\u3002");
+          lines.push(
+            "\u672C\u8F6E\u73A9\u5BB6\u672A\u70B9\u9009\u4EFB\u4F55\u52A8\u4F5C\u80F6\u56CA\uFF1A\u7EAF\u53D9\u4E8B\u63A8\u8FDB\uFF0C\u4E0D\u5F97\u51ED\u7A7A\u53D1\u751F\u68C0\u5B9A\u6216\u4F53\u529B/\u5FC3\u8DF3/\u8B66\u89C9\u53D8\u52A8\u3002"
+          );
         } else if (pkg.actions && pkg.actions.length) {
           lines.push("[\u52A8\u4F5C\u88C1\u51B3]");
           for (const a of pkg.actions) {
@@ -9693,48 +10939,74 @@
             const bandStr = BAND_CN[a.band] || (isFail ? "\u672A\u8FBE\u6210" : "\u8FBE\u6210");
             let detail = a.text || "";
             if (isFail && !detail) {
-              if (actName.includes("\u6F5C\u884C") || actName.includes("\u85CF\u533F")) detail = "\u8E29\u4E2D\u79EF\u6C34\u6216\u788E\u6742\u7269\u5F15\u53D1\u7EC6\u5FAE\u52A8\u9759\uFF0C\u5F15\u8D77\u53CD\u5149\u6CE8\u610F";
-              else if (actName.includes("\u62CD\u7167") || actName.includes("\u6253\u91CF") || actName.includes("\u89C2\u5BDF")) detail = "\u89C6\u7EBF\u88AB\u96E8\u4F1E\u4E0E\u884C\u4EBA\u7269\u4EF6\u906E\u6321\uFF0C\u89D2\u5EA6\u4E0D\u4F73";
-              else if (actName.includes("\u9501") || actName.includes("\u64AC")) detail = "\u9501\u82AF\u9508\u6B7B\u5361\u6DA9\uFF0C\u53D1\u51FA\u91D1\u5C5E\u78B0\u649E\u8106\u54CD";
+              if (actName.includes("\u6F5C\u884C") || actName.includes("\u85CF\u533F"))
+                detail = "\u8E29\u4E2D\u79EF\u6C34\u6216\u788E\u6742\u7269\u5F15\u53D1\u7EC6\u5FAE\u52A8\u9759\uFF0C\u5F15\u8D77\u53CD\u5149\u6CE8\u610F";
+              else if (actName.includes("\u62CD\u7167") || actName.includes("\u6253\u91CF") || actName.includes("\u89C2\u5BDF"))
+                detail = "\u89C6\u7EBF\u88AB\u96E8\u4F1E\u4E0E\u884C\u4EBA\u7269\u4EF6\u906E\u6321\uFF0C\u89D2\u5EA6\u4E0D\u4F73";
+              else if (actName.includes("\u9501") || actName.includes("\u64AC"))
+                detail = "\u9501\u82AF\u9508\u6B7B\u5361\u6DA9\uFF0C\u53D1\u51FA\u91D1\u5C5E\u78B0\u649E\u8106\u54CD";
               else detail = "\u53D7\u9650\u4E8E\u73B0\u573A\u73AF\u5883\u7A81\u53D1\u5E72\u6270\uFF0C\u52A8\u4F5C\u53D7\u963B";
             }
-            lines.push(`- ${actName}\uFF1A${bandStr}${detail ? "\uFF08" + detail + "\uFF09" : ""}`);
+            lines.push(
+              `- ${actName}\uFF1A${bandStr}${detail ? "\uFF08" + detail + "\uFF09" : ""}`
+            );
           }
         }
         if (pkg.alertEvent) {
-          lines.push(`- \u5979\u7684\u8FC7\u6863\u53CD\u5E94\uFF1A${pkg.alertEvent.kind}\uFF08${pkg.alertEvent.detail}\uFF09`);
+          lines.push(
+            `- \u5979\u7684\u8FC7\u6863\u53CD\u5E94\uFF1A${pkg.alertEvent.kind}\uFF08${pkg.alertEvent.detail}\uFF09`
+          );
         }
         if (pkg.capture) {
-          const cn = { front: "\u6B63\u9762", side: "\u4FA7\u9762", back: "\u80CC\u9762", "three-quarter": "\u659C\u4FA7" };
+          const cn = {
+            front: "\u6B63\u9762",
+            side: "\u4FA7\u9762",
+            back: "\u80CC\u9762",
+            "three-quarter": "\u659C\u4FA7"
+          };
           const al = pkg.stats && pkg.stats.album ? pkg.stats.album : null;
-          lines.push(`- \u62CD\u7167\u6210\u679C\uFF1A${pkg.capture.name} \xB7 ${cn[pkg.capture.angle] || pkg.capture.angle}` + (al ? `\uFF08\u76F8\u518C ${al.count}/${al.total}\uFF09` : "") + `\uFF1BPI +${pkg.capture.piBonus}`);
+          lines.push(
+            `- \u62CD\u7167\u6210\u679C\uFF1A${pkg.capture.name} \xB7 ${cn[pkg.capture.angle] || pkg.capture.angle}` + (al ? `\uFF08\u76F8\u518C ${al.count}/${al.total}\uFF09` : "") + `\uFF1BPI +${pkg.capture.piBonus}`
+          );
         }
-        const fails = (pkg.actions || []).filter((a) => a.band === "fail" || a.band === "crit_fail");
+        const fails = (pkg.actions || []).filter(
+          (a) => a.band === "fail" || a.band === "crit_fail"
+        );
         if (fails.length) {
           const failNames = fails.map((a) => a.label || a.name).join("\u3001");
-          lines.push(`\u3010\u53D9\u4E8B\u65AD\u70B9\u539F\u5219\u3011\uFF1A\u73A9\u5BB6\u8F93\u5165\u7684\u5185\u5BB9\u4EC5\u4E3A\u5176\u201C\u4E3B\u89C2\u9884\u60F3\u4E0E\u52A8\u4F5C\u5C1D\u8BD5\u201D\u3002\u5224\u5B9A\u4E3A\u672A\u8FBE\u6210\uFF08${failNames} \u5931\u8D25/\u610F\u5916\uFF09\uFF0C\u73A9\u5BB6\u63CF\u5199\u7684\u6210\u529F\u9884\u60F3\u672A\u53D1\u751F\uFF01\u8BF7\u5728\u6B63\u6587\u627F\u63A5\u5C1D\u8BD5\u7EC6\u8282\uFF0C\u968F\u5373\u63CF\u5199\u7A81\u53D1\u610F\u5916\u963B\u788D\u4E0E\u771F\u5B9E\u632B\u6298\u540E\u679C\u3002`);
+          lines.push(
+            `\u3010\u53D9\u4E8B\u65AD\u70B9\u539F\u5219\u3011\uFF1A\u73A9\u5BB6\u8F93\u5165\u7684\u5185\u5BB9\u4EC5\u4E3A\u5176\u201C\u4E3B\u89C2\u9884\u60F3\u4E0E\u52A8\u4F5C\u5C1D\u8BD5\u201D\u3002\u5224\u5B9A\u4E3A\u672A\u8FBE\u6210\uFF08${failNames} \u5931\u8D25/\u610F\u5916\uFF09\uFF0C\u73A9\u5BB6\u63CF\u5199\u7684\u6210\u529F\u9884\u60F3\u672A\u53D1\u751F\uFF01\u8BF7\u5728\u6B63\u6587\u627F\u63A5\u5C1D\u8BD5\u7EC6\u8282\uFF0C\u968F\u5373\u63CF\u5199\u7A81\u53D1\u610F\u5916\u963B\u788D\u4E0E\u771F\u5B9E\u632B\u6298\u540E\u679C\u3002`
+          );
         }
         if (ts) {
           lines.push("\u3010\u76EE\u6807\u5F53\u524D\u6001\u52BF\u4E0E\u884C\u4E3A\u7126\u70B9\uFF08\u767D\u63CF\u7EA6\u675F\uFF09\u3011");
           const defaultTargetName = st.targetId === "college" ? "\u6797\u82E5\u96EA" : "\u9648\u96E8\u5A77";
-          const targetName = st.target && (st.target.realName || st.target.name) || (ts.targetName || defaultTargetName);
+          const targetName = st.target && (st.target.realName || st.target.name) || ts.targetName || defaultTargetName;
           if (st.target) {
             lines.push(`- \u76EE\u6807\u4EBA\u7269\uFF1A${targetName}`);
           }
           if (ts.route) {
             const curLoc = ts.route.currentPlace ? `[${ts.route.currentPlace}] ` : "";
             const noteStr = ts.route.note ? `[${ts.route.note}] ` : "";
-            lines.push(`- \u52A8\u7EBF\u60C5\u5883\uFF1A${curLoc}${noteStr}${ts.route.prompt || ""}`.trim());
+            lines.push(
+              `- \u52A8\u7EBF\u60C5\u5883\uFF1A${curLoc}${noteStr}${ts.route.prompt || ""}`.trim()
+            );
           }
           if (placeName) {
-            lines.push(`- \u5F53\u524D\u4F4D\u7F6E\uFF1A[${placeName}]\uFF08\u672C\u697C\u5979\u53EA\u5728\u8FD9\u91CC\uFF1B\u4E25\u7981\u628A\u5979\u5199\u5230\u522B\u7684\u573A\u6240\uFF0C\u4E5F\u4E25\u7981\u63D0\u524D\u62B5\u8FBE\u4E0B\u4E00\u7AD9\u2014\u2014\u5730\u70B9\u53D8\u66F4\u53EA\u8BA4\u56DE\u6267\u91CC\u7684\u300C\u76EE\u6807\u52A8\u5411\u63A8\u8FDB\u300D\uFF09`);
+            lines.push(
+              `- \u5F53\u524D\u4F4D\u7F6E\uFF1A[${placeName}]\uFF08\u672C\u697C\u5979\u53EA\u5728\u8FD9\u91CC\uFF1B\u4E25\u7981\u628A\u5979\u5199\u5230\u522B\u7684\u573A\u6240\uFF0C\u4E5F\u4E25\u7981\u63D0\u524D\u62B5\u8FBE\u4E0B\u4E00\u7AD9\u2014\u2014\u5730\u70B9\u53D8\u66F4\u53EA\u8BA4\u56DE\u6267\u91CC\u7684\u300C\u76EE\u6807\u52A8\u5411\u63A8\u8FDB\u300D\uFF09`
+            );
           }
           if (ts.outfit) {
-            lines.push(`- \u5F53\u524D\u7740\u88C5\uFF1A[${ts.outfit.name}] ${ts.outfit.desc}\u3002${ts.outfit.prompt || ""}`);
+            lines.push(
+              `- \u5F53\u524D\u7740\u88C5\uFF1A[${ts.outfit.name}] ${ts.outfit.desc}\u3002${ts.outfit.prompt || ""}`
+            );
           }
           if (ts.somatic) {
             const modStr = Object.entries(ts.somatic.mod || {}).map(([k, v]) => `${k.toUpperCase()} ${v > 0 ? "+" : ""}${v}`).join(" ");
-            lines.push(`- \u60C5\u7EEA\u8EAB\u5FC3\uFF1A[${ts.somatic.name}] ${ts.somatic.reason}${modStr ? `\uFF08${modStr}\uFF09` : ""}\u3002${ts.somatic.prompt || ""}`);
+            lines.push(
+              `- \u60C5\u7EEA\u8EAB\u5FC3\uFF1A[${ts.somatic.name}] ${ts.somatic.reason}${modStr ? `\uFF08${modStr}\uFF09` : ""}\u3002${ts.somatic.prompt || ""}`
+            );
           }
           if (ts.hand) {
             let handExtra = "";
@@ -9750,9 +11022,21 @@
             lines.push(`- \u8B66\u89C9\u53CD\u5E94\uFF1A${herAlert}`);
           }
         }
-        lines.push("\u7EAA\u5F8B\uFF1A\u5355\u8F6E\u6B63\u6587\u4EC5\u9650\u5F53\u524D\u573A\u6240\u7EA6 1~2 \u5206\u949F\u5FAE\u89C2\u5207\u7247\uFF0C\u63CF\u5199\u5B8C\u6700\u65B0\u52A8\u9759\u540E\u5373\u523B\u5B9A\u683C\uFF1B\u672C\u8F6E\u52A8\u4F5C\u4E0E\u6570\u503C\u5DF2\u7531\u4E2D\u63A7\u5C01\u8D26\uFF0C\u6B63\u6587\u7167\u6B64\u56DE\u6267\u6F14\u7ECE\uFF0C\u6210\u8D25\u4E0D\u5F97\u7BE1\u6539\uFF1B\u6587\u672B\u6309\u89C4\u7533\u62A5\u4E8B\u5B9E\u3002");
+        lines.push(
+          "\u7EAA\u5F8B\uFF1A\u5355\u8F6E\u6B63\u6587\u4EC5\u9650\u5F53\u524D\u573A\u6240\u7EA6 1~2 \u5206\u949F\u5FAE\u89C2\u5207\u7247\uFF0C\u63CF\u5199\u5B8C\u6700\u65B0\u52A8\u9759\u540E\u5373\u523B\u5B9A\u683C\uFF1B\u672C\u8F6E\u52A8\u4F5C\u4E0E\u6570\u503C\u5DF2\u7531\u4E2D\u63A7\u5C01\u8D26\uFF0C\u6B63\u6587\u7167\u6B64\u56DE\u6267\u6F14\u7ECE\uFF0C\u6210\u8D25\u4E0D\u5F97\u7BE1\u6539\uFF1B\u6587\u672B\u6309\u89C4\u7533\u62A5\u4E8B\u5B9E\u3002"
+        );
         return lines.join("\n");
       }
+      module.exports = { receiptText };
+    }
+  });
+
+  // src/host/worldbook.js
+  var require_worldbook = __commonJS({
+    "src/host/worldbook.js"(exports, module) {
+      "use strict";
+      var { findTavernHelper, hostCharacterData } = require_environment();
+      var R = require_rules();
       var TARGET_ENTRY_NAMES = {
         student: "\u3010\u76EE\u6807\u6863\u6848\u3011\u665A\u81EA\u4E60\u5973\u9AD8\u4E2D\u751F",
         college: "\u3010\u76EE\u6807\u6863\u6848\u3011\u72EC\u5C45\u5973\u5927\u5B66\u751F",
@@ -9760,34 +11044,8 @@
         club: "\u3010\u76EE\u6807\u6863\u6848\u3011\u591C\u573A\u966A\u9152\u5973\u516C\u5173",
         wife: "\u3010\u76EE\u6807\u6863\u6848\u3011\u72EC\u5C45\u5168\u804C\u5C11\u5987"
       };
-      function hostFn(name) {
-        for (const w of hostFrames()) {
-          try {
-            if (typeof w[name] === "function") return w[name].bind(w);
-          } catch (e) {
-          }
-          try {
-            const th = w && w.TavernHelper;
-            if (th && typeof th[name] === "function") return th[name].bind(th);
-          } catch (e) {
-          }
-        }
-        return null;
-      }
-      function hostCharacterData() {
-        for (const w of hostFrames()) {
-          try {
-            const st = w && w.SillyTavern;
-            if (!st || typeof st.getContext !== "function") continue;
-            const ctx = st.getContext();
-            const ch = ctx && ctx.characters && ctx.characters[ctx.characterId ?? ctx.this_chid];
-            if (ch && ch.data) return ch.data;
-          } catch (e) {
-          }
-        }
-        return null;
-      }
-      async function syncTargetWorldbook(targetId = "college") {
+      async function syncTargetWorldbook(targetId = "college", guard = async () => {
+      }) {
         const attempts = [];
         const helper = findTavernHelper();
         if (!helper || typeof helper.getWorldbook !== "function" || typeof helper.replaceWorldbook !== "function") {
@@ -9799,7 +11057,8 @@
             try {
               const bindings = await helper.getCharWorldbookNames("current");
               if (bindings && bindings.primary) names.push(bindings.primary);
-              if (bindings && Array.isArray(bindings.additional)) names.push(...bindings.additional);
+              if (bindings && Array.isArray(bindings.additional))
+                names.push(...bindings.additional);
               if (Array.isArray(bindings)) names.push(...bindings);
             } catch (e) {
               attempts.push("getCharWorldbookNames \u5931\u8D25: " + (e && e.message));
@@ -9824,7 +11083,9 @@
           for (const name of [...new Set(names.filter(Boolean))]) {
             try {
               const got = await helper.getWorldbook(name);
-              attempts.push("\u8BFB " + name + " \u2192 " + (Array.isArray(got) ? got.length : 0) + " \u6761");
+              attempts.push(
+                "\u8BFB " + name + " \u2192 " + (Array.isArray(got) ? got.length : 0) + " \u6761"
+              );
               if (Array.isArray(got) && got.some((e) => /^【目标档案】/.test(e.name || e.comment || ""))) {
                 bookName = name;
                 entries = got;
@@ -9834,16 +11095,28 @@
               attempts.push("\u8BFB " + name + " \u5931\u8D25: " + (e && e.message));
             }
           }
-          if (!bookName) return { skipped: true, reason: "\u6CA1\u627E\u5230\u5E26\u3010\u76EE\u6807\u6863\u6848\u3011\u7684\u4E16\u754C\u4E66", attempts };
-          const targetEntries = entries.filter((e) => /^【目标档案】/.test(e.name || e.comment || ""));
-          const activeName = TARGET_ENTRY_NAMES[targetId] || `\u3010\u76EE\u6807\u6863\u6848\u3011${targetId}`;
+          if (!bookName)
+            return {
+              skipped: true,
+              reason: "\u6CA1\u627E\u5230\u5E26\u3010\u76EE\u6807\u6863\u6848\u3011\u7684\u4E16\u754C\u4E66",
+              attempts
+            };
+          const targetEntries = entries.filter(
+            (e) => /^【目标档案】/.test(e.name || e.comment || "")
+          );
+          const configuredName = R.targets.list[targetId]?.worldbookEntry || TARGET_ENTRY_NAMES[targetId];
+          const activeEntry = targetEntries.find(
+            (e) => (e.content || "").match(/\[TARGET_GROUP:\s*([a-z_]+)\s*\]/)?.[1] === targetId || (e.name || e.comment || "") === configuredName
+          );
+          const activeName = activeEntry ? activeEntry.name || activeEntry.comment : null;
+          const targetMissing = !activeEntry;
           let changed = false;
           const updated = entries.map((e) => {
             const label = e.name || e.comment || "";
             if (/^【目标档案】/.test(label)) {
               const shouldEnable = label === activeName;
               const shouldConstant = shouldEnable;
-              if (e.enabled !== shouldEnable || e.constant !== shouldConstant) {
+              if (e.enabled !== shouldEnable || e.constant !== shouldConstant || e.disable !== !shouldEnable) {
                 changed = true;
                 return {
                   ...e,
@@ -9855,17 +11128,49 @@
             }
             return e;
           });
-          if (!changed) return { ok: true, name: bookName, targetId, activeName, unchanged: true, attempts };
+          if (!changed)
+            return {
+              ok: true,
+              name: bookName,
+              targetId,
+              activeName,
+              targetMissing,
+              unchanged: true,
+              attempts
+            };
+          await guard();
           await helper.replaceWorldbook(bookName, updated, { render: "immediate" });
-          console.log(`[M4][\u4E16\u754C\u4E66] \u76EE\u6807\u6761\u76EE\u540C\u6B65\u6210\u529F\uFF1A${activeName} (\u5E38\u9A7B)\uFF0C\u5176\u4F59\u7981\u7528`);
-          return { ok: true, name: bookName, targetId, activeName, attempts };
+          console.log(
+            `[M4][\u4E16\u754C\u4E66] \u76EE\u6807\u6761\u76EE\u540C\u6B65\u6210\u529F\uFF1A${activeName || "\u65E0\u5339\u914D\u6863\u6848\uFF0C\u5168\u90E8\u76EE\u6807\u6761\u76EE\u5173\u95ED"}\uFF0C\u5176\u4F59\u7981\u7528`
+          );
+          return {
+            ok: true,
+            name: bookName,
+            targetId,
+            activeName,
+            targetMissing,
+            attempts
+          };
         } catch (err) {
-          console.warn("[M4][\u4E16\u754C\u4E66] \u76EE\u6807\u6761\u76EE\u540C\u6B65\u5F02\u5E38\uFF1A", err && (err.message || err));
+          console.warn(
+            "[M4][\u4E16\u754C\u4E66] \u76EE\u6807\u6761\u76EE\u540C\u6B65\u5F02\u5E38\uFF1A",
+            err && (err.message || err)
+          );
           return { ok: false, error: err && err.message, attempts };
         }
       }
+      module.exports = { syncTargetWorldbook };
+    }
+  });
+
+  // src/host/opening.js
+  var require_opening = __commonJS({
+    "src/host/opening.js"(exports, module) {
+      "use strict";
+      var { hostCharacterData, hostFn, hostFrames } = require_environment();
       var OPENING_SOURCE = { college: "first_mes", student: "alt:0" };
-      async function applyTargetOpening(targetId) {
+      async function applyTargetOpening(targetId, guard = async () => {
+      }) {
         const spec = OPENING_SOURCE[targetId];
         if (!spec) return { skipped: true, reason: "\u8BE5\u76EE\u6807\u6CA1\u6709\u72EC\u7ACB\u5F00\u573A\u767D" };
         const card = hostCharacterData();
@@ -9886,109 +11191,867 @@
           } catch (e) {
           }
         }
-        if (count !== null && count > 1) return { skipped: true, reason: "\u804A\u5929\u5DF2\u6709\u5185\u5BB9\uFF0C\u4E0D\u8986\u76D6\u5F00\u573A" };
+        if (count !== null && count > 1)
+          return { skipped: true, reason: "\u804A\u5929\u5DF2\u6709\u5185\u5BB9\uFF0C\u4E0D\u8986\u76D6\u5F00\u573A" };
         try {
+          await guard();
           await setMsgs([{ message_id: 0, message: text }], { refresh: "affected" });
           return { ok: true, swapped: targetId };
         } catch (e) {
           return { ok: false, error: e && e.message };
         }
       }
-      async function startGlue() {
-        const api = detectApi();
-        if (!api.vars.has) return { ok: false, reason: "\u65E0\u9152\u9986\u53D8\u91CF API\uFF08\u975E\u9152\u9986\u52A9\u624B\u73AF\u5883\uFF09" };
-        const g0 = typeof globalThis !== "undefined" ? globalThis : window;
-        const nameHolder = typeof g0.getCurrentCharacterName === "function" && g0 || (g0.TavernHelper && g0.TavernHelper.getCurrentCharacterName ? g0.TavernHelper : null);
-        if (nameHolder) {
+      module.exports = { applyTargetOpening };
+    }
+  });
+
+  // src/host/chat-sync/keys.js
+  var require_keys = __commonJS({
+    "src/host/chat-sync/keys.js"(exports, module) {
+      "use strict";
+      module.exports = Object.freeze({
+        VAR_SAVE: "wx_save",
+        VAR_SNAP: "wx_snap",
+        VAR_INIT: "wx_init",
+        VAR_CONF: "wx_conf",
+        VAR_TIMELINE: "wx_timeline",
+        VAR_BACKUP: "wx_sync_backup",
+        VAR_DIAG: "wx_diag"
+      });
+    }
+  });
+
+  // src/host/chat-sync/repository.js
+  var require_repository = __commonJS({
+    "src/host/chat-sync/repository.js"(exports, module) {
+      "use strict";
+      var {
+        VAR_SAVE,
+        VAR_SNAP,
+        VAR_INIT,
+        VAR_CONF,
+        VAR_DIAG,
+        VAR_TIMELINE,
+        VAR_BACKUP
+      } = require_keys();
+      function createChatRepository(vars) {
+        return {
+          read: () => vars.read(),
+          writeSnapshot: ({ save, snap, diagnostics, timeline, backup, init }) => vars.assign({
+            ...init === void 0 ? {} : { [VAR_INIT]: init },
+            [VAR_SAVE]: save,
+            [VAR_SNAP]: snap,
+            [VAR_DIAG]: diagnostics,
+            ...timeline === void 0 ? {} : { [VAR_TIMELINE]: timeline },
+            ...backup === void 0 ? {} : { [VAR_BACKUP]: backup }
+          }),
+          begin: (init) => vars.assign({ [VAR_INIT]: init, [VAR_SAVE]: null }),
+          reset: (backup) => vars.assign({
+            [VAR_INIT]: null,
+            [VAR_SAVE]: null,
+            [VAR_SNAP]: null,
+            [VAR_DIAG]: null,
+            [VAR_TIMELINE]: null,
+            [VAR_BACKUP]: backup
+          }),
+          writeConf: (conf) => vars.assign({ [VAR_CONF]: conf })
+        };
+      }
+      module.exports = { createChatRepository };
+    }
+  });
+
+  // src/host/chat-sync/diagnostics.js
+  var require_diagnostics = __commonJS({
+    "src/host/chat-sync/diagnostics.js"(exports, module) {
+      "use strict";
+      function createSyncDiagnostics({ now = Date.now, limit = 24 } = {}) {
+        let sequence = 0;
+        const events = [];
+        function record(stage, details = {}) {
+          events.push({ sequence: ++sequence, at: now(), stage, ...details });
+          if (events.length > limit) events.shift();
+        }
+        function failure(stage, code, cause) {
+          record(stage, { code });
+          const error = new Error(`[CHAT_SYNC:${code}] ${stage}`, { cause });
+          error.code = code;
+          return error;
+        }
+        function snapshot() {
+          return { schema: 1, events: events.map((event) => ({ ...event })) };
+        }
+        return { record, failure, snapshot };
+      }
+      module.exports = { createSyncDiagnostics };
+    }
+  });
+
+  // src/host/chat-sync/session.js
+  var require_session = __commonJS({
+    "src/host/chat-sync/session.js"(exports, module) {
+      "use strict";
+      function createSession(readContext, onChange) {
+        let epoch = 0, scope;
+        async function capture() {
+          const context = await readContext();
+          const key = context?.scope ?? null;
+          if (scope !== key) {
+            const initialized = scope !== void 0;
+            scope = key;
+            epoch++;
+            onChange(context, initialized);
+          }
+          return {
+            epoch,
+            scope: key,
+            context: context || { scope: null, history: null }
+          };
+        }
+        async function check(token) {
+          const current = await capture();
+          if (token.epoch !== epoch || token.scope !== current.scope)
+            throw Object.assign(new Error("\u804A\u5929\u5DF2\u5207\u6362\uFF0C\u65E7\u4EFB\u52A1\u5DF2\u53D6\u6D88"), {
+              code: "STALE_SESSION"
+            });
+          return current.context;
+        }
+        return {
+          capture,
+          check,
+          invalidate() {
+            epoch++;
+          },
+          get epoch() {
+            return epoch;
+          }
+        };
+      }
+      module.exports = { createSession };
+    }
+  });
+
+  // src/host/chat-sync/timeline.js
+  var require_timeline = __commonJS({
+    "src/host/chat-sync/timeline.js"(exports, module) {
+      "use strict";
+      var clone = (value) => value == null ? value : JSON.parse(JSON.stringify(value));
+      function fingerprint(value) {
+        const text = typeof value === "string" ? value : JSON.stringify(value);
+        return [2166136261, 2246822507, 3266489909, 668265263].map((seed) => {
+          let h = seed;
+          for (let i = 0; i < text.length; i++)
+            h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+          return (h >>> 0).toString(16).padStart(8, "0");
+        }).join("");
+      }
+      function tokens(history) {
+        return history.map(
+          (m, index) => fingerprint([m.id ?? index, m.role, m.text || "", m.swipe ?? null])
+        );
+      }
+      var prefix = (a, b) => a.length <= b.length && a.every((v, i) => v === b[i]);
+      function userIndex(history, id) {
+        if (!Array.isArray(history)) return -1;
+        if (id !== void 0 && id !== null)
+          return history.findIndex(
+            (m) => m.role === "user" && String(m.id) === String(id)
+          );
+        for (let i = history.length - 1; i >= 0; i--)
+          if (history[i].role === "user") return i;
+        return -1;
+      }
+      function newTimeline(save, history, owner, beforeUser) {
+        const index = beforeUser === void 0 ? -1 : userIndex(history, beforeUser);
+        const baseHistory = index >= 0 ? history.slice(0, index) : history;
+        return {
+          schema: 1,
+          owner,
+          revision: 0,
+          base: { path: tokens(baseHistory || []), save: clone(save) },
+          nodes: []
+        };
+      }
+      function validateTimeline(value) {
+        if (!value || value.schema !== 1 || !value.base?.save || !Array.isArray(value.base.path) || !Array.isArray(value.nodes) || !Number.isInteger(value.revision))
+          throw Object.assign(new Error("\u65F6\u95F4\u7EBF\u6570\u636E\u635F\u574F\u6216\u7248\u672C\u4E0D\u652F\u6301"), {
+            code: "TIMELINE_INVALID"
+          });
+        for (const n of value.nodes)
+          if (!Array.isArray(n.path) || typeof n.key !== "string" || n.key !== fingerprint(n.path) || !n.before || !n.afterInput || !n.after)
+            throw Object.assign(new Error("\u56DE\u5408\u8BB0\u5F55\u635F\u574F"), {
+              code: "TIMELINE_INVALID"
+            });
+        return clone(value);
+      }
+      function locate(timeline, history) {
+        const path = tokens(history);
+        if (!prefix(timeline.base.path, path))
+          throw Object.assign(
+            new Error("\u804A\u5929\u4FEE\u6539\u65E9\u4E8E\u53EF\u6062\u590D\u7684\u5B58\u6863\u68C0\u67E5\u70B9\uFF0C\u539F\u6863\u5DF2\u4FDD\u7559"),
+            { code: "HISTORY_OUTSIDE_WINDOW" }
+          );
+        let node = null;
+        for (const n of timeline.nodes)
+          if (prefix(n.path, path) && (!node || n.path.length > node.path.length))
+            node = n;
+        const save = node ? node.replyPath && prefix(node.replyPath, path) ? node.after : node.afterInput : timeline.base.save;
+        return { node, save: clone(save), path };
+      }
+      function inputPath(history, messageId) {
+        const index = userIndex(history, messageId);
+        if (index < 0)
+          throw Object.assign(new Error("\u73A9\u5BB6\u6D88\u606F\u5C1A\u672A\u843D\u5165\u5F53\u524D\u804A\u5929"), {
+            code: "MESSAGE_NOT_FOUND"
+          });
+        return tokens(history.slice(0, index + 1));
+      }
+      function prune(timeline, currentPath, limit = 64) {
+        if (timeline.nodes.length <= limit) return;
+        const chain = timeline.nodes.filter((n) => prefix(n.path, currentPath)).sort((a, b) => a.path.length - b.path.length);
+        const cut = chain[Math.max(0, chain.length - Math.floor(limit / 2) - 1)];
+        if (!cut)
+          throw Object.assign(new Error("\u65F6\u95F4\u7EBF\u5BB9\u91CF\u4E0D\u8DB3\uFF0C\u539F\u8FDB\u5EA6\u5DF2\u4FDD\u7559"), {
+            code: "TIMELINE_FULL"
+          });
+        timeline.base = { path: cut.replyPath || cut.path, save: clone(cut.after) };
+        timeline.nodes = timeline.nodes.filter(
+          (n) => prefix(timeline.base.path, n.path)
+        );
+      }
+      module.exports = {
+        clone,
+        fingerprint,
+        tokens,
+        prefix,
+        userIndex,
+        newTimeline,
+        validateTimeline,
+        locate,
+        inputPath,
+        prune
+      };
+    }
+  });
+
+  // src/host/chat-sync/controller.js
+  var require_controller = __commonJS({
+    "src/host/chat-sync/controller.js"(exports, module) {
+      "use strict";
+      var { VAR_SAVE, VAR_INIT, VAR_CONF, VAR_TIMELINE } = require_keys();
+      var { createChatRepository } = require_repository();
+      var { createSyncDiagnostics } = require_diagnostics();
+      var { createSession } = require_session();
+      var T = require_timeline();
+      function createChatSync({
+        state,
+        vars,
+        createGame,
+        defaultInit,
+        syncTargetWorldbook,
+        applyTargetOpening,
+        publishSnapshot = () => {
+        },
+        clearReceipt = () => {
+        },
+        readContext = async () => ({ scope: null, history: null }),
+        now = Date.now
+      }) {
+        const repository = createChatRepository(vars);
+        const diagnostics = createSyncDiagnostics({ now });
+        let journal = null, revision = null, queue = Promise.resolve(), disposed = false, blocked = null, hasSaved = false, savedFingerprint;
+        const session = createSession(readContext, (context, initialized) => {
+          if (initialized) {
+            state.game = null;
+            state.conf = { autoSettle: false };
+            state.pending = null;
+            state.raced = false;
+            journal = null;
+            revision = null;
+            blocked = null;
+            hasSaved = false;
+            savedFingerprint = void 0;
+            clearReceipt();
+          }
+          diagnostics.record("session.active", {
+            verified: context?.scope != null,
+            history: Array.isArray(context?.history)
+          });
+        });
+        const fail = (code, message) => Object.assign(new Error(message), { code });
+        function exclusive(operation) {
+          const ticket = session.capture();
+          ticket.catch(() => {
+          });
+          const task = queue.then(async () => {
+            if (disposed) throw fail("SYNC_DISPOSED", "\u540C\u6B65\u6A21\u5757\u5DF2\u5378\u8F7D");
+            const token = await ticket;
+            await session.check(token);
+            try {
+              return await operation(token);
+            } catch (cause) {
+              if ([
+                "HISTORY_OUTSIDE_WINDOW",
+                "TIMELINE_INVALID",
+                "SAVE_INVALID",
+                "SAVE_VERSION_UNSUPPORTED",
+                "WRITE_CONFLICT"
+              ].includes(cause.code))
+                blocked = cause.code;
+              diagnostics.record("operation.failed", {
+                code: cause.code || "SYNC_FAILED"
+              });
+              throw cause;
+            }
+          });
+          queue = task.catch(() => {
+          });
+          return task;
+        }
+        async function readVariables(token) {
+          diagnostics.record("read.start");
+          await session.check(token);
+          let value;
           try {
-            const name = String(await nameHolder.getCurrentCharacterName() || "");
-            if (name && !name.includes("\u5C3E\u884C")) return { ok: false, reason: "\u975E\u5C3E\u884C\u5361\uFF08" + name + "\uFF09" };
-          } catch (e) {
+            value = await repository.read() || {};
+          } catch (cause) {
+            throw diagnostics.failure("read.failed", "READ_FAILED", cause);
           }
+          await session.check(token);
+          diagnostics.record("read.done");
+          return value;
         }
-        const state = { game: null, conf: { autoSettle: false }, pending: null, raced: false, injectMode: null, injectVerified: null };
-        {
-          const v0 = await api.vars.read();
-          if (v0[VAR_CONF]) Object.assign(state.conf, v0[VAR_CONF]);
+        function syncConf(variables) {
+          if (variables[VAR_CONF])
+            state.conf = { ...state.conf, ...variables[VAR_CONF] };
         }
-        async function rebuild() {
-          const v = await api.vars.read();
-          if (v[VAR_CONF]) Object.assign(state.conf, v[VAR_CONF]);
-          const saved = v[VAR_SAVE];
-          if (saved && saved.v === 1) {
-            state.game = createGame({ saved });
-          } else {
-            const init = Object.assign(defaultInit(v[VAR_INIT]), v[VAR_INIT] || {});
-            state.game = createGame(init);
+        function restore(save) {
+          return createGame({ saved: T.clone(save) });
+        }
+        async function load(token, { force = false, beforeUser } = {}) {
+          if (blocked && !force)
+            throw fail(blocked, "\u5B58\u6863\u5C1A\u672A\u5B8C\u6210\u6821\u9A8C\uFF0C\u8BF7\u6062\u590D\u5BF9\u5E94\u804A\u5929\u6216\u91CD\u65B0\u8BFB\u53D6");
+          if (state.game && !force) return state.game;
+          const variables = await readVariables(token);
+          syncConf(variables);
+          diagnostics.record("restore.start");
+          let game;
+          try {
+            const saved = variables[VAR_SAVE];
+            savedFingerprint = T.fingerprint(saved ?? null);
+            hasSaved = saved != null;
+            if (saved != null) {
+              if (![1, 2].includes(saved.v))
+                throw fail("SAVE_VERSION_UNSUPPORTED", "\u5B58\u6863\u7248\u672C\u4E0D\u652F\u6301\uFF0C\u539F\u6863\u5DF2\u4FDD\u7559");
+              game = restore(saved);
+            } else
+              game = createGame(
+                Object.assign(
+                  defaultInit(variables[VAR_INIT]),
+                  variables[VAR_INIT] || {}
+                )
+              );
+            journal = variables[VAR_TIMELINE] == null ? null : T.validateTimeline(variables[VAR_TIMELINE]);
+            revision = journal?.revision ?? null;
+            if (token.scope && Array.isArray(token.context.history)) {
+              if (!journal)
+                journal = T.newTimeline(
+                  game.save(),
+                  token.context.history,
+                  token.scope,
+                  beforeUser
+                );
+              const found = T.locate(journal, token.context.history);
+              game = restore(found.save);
+            }
+          } catch (cause) {
+            state.game = null;
+            journal = null;
+            if (cause.code) throw cause;
+            throw diagnostics.failure("restore.failed", "RESTORE_FAILED", cause);
           }
-          const currentTargetId = state.game && state.game._g && state.game._g.targetId || v[VAR_INIT] && v[VAR_INIT].targetId || "college";
-          syncTargetWorldbook(currentTargetId).then((res) => {
-            state.wb = res;
+          await session.check(token);
+          state.game = game;
+          blocked = null;
+          diagnostics.record("restore.done", { floor: game.save().floor });
+          const targetId = game._g?.targetId || variables[VAR_INIT]?.targetId || "college";
+          Promise.resolve(syncTargetWorldbook(targetId, () => session.check(token))).then(async (result) => {
+            try {
+              await session.check(token);
+              state.wb = result;
+            } catch {
+            }
           }).catch(() => {
           });
-          return state.game;
+          return game;
         }
-        async function persist() {
-          const snap = state.game.snapshot();
-          await api.vars.assign({
-            [VAR_SNAP]: snap,
-            [VAR_SAVE]: state.game.save(),
-            wx_diag: {
-              inject: state.injectMode || "unknown",
-              verified: state.injectVerified ?? null,
-              wb: state.wb ? { ok: !!state.wb.ok, skipped: !!state.wb.skipped, reason: state.wb.reason || state.wb.error || null, name: state.wb.name || null, active: state.wb.activeName || null } : null,
-              opening: state.opening || null,
-              floor: state.game.save().floor,
-              at: Date.now()
-            }
-          });
+        async function persist(token, { reason = "save", init } = {}) {
+          if (blocked) throw fail(blocked, "\u65F6\u95F4\u7EBF\u6821\u9A8C\u672A\u5B8C\u6210\uFF0C\u5DF2\u963B\u6B62\u8986\u76D6\u5B58\u6863");
+          diagnostics.record("persist.prepare");
+          let snap, save;
           try {
-            if (typeof window !== "undefined" && window.parent && window.parent !== window) {
-              window.parent.postMessage({ wxSnap: snap }, "*");
+            snap = state.game.snapshot();
+            save = state.game.save();
+          } catch (cause) {
+            throw diagnostics.failure(
+              "persist.prepare.failed",
+              "SERIALIZE_FAILED",
+              cause
+            );
+          }
+          const previous = await readVariables(token);
+          if ((previous[VAR_TIMELINE]?.revision ?? null) !== revision)
+            throw fail(
+              "WRITE_CONFLICT",
+              "\u5B58\u6863\u5DF2\u88AB\u5176\u4ED6\u5B9E\u4F8B\u4FEE\u6539\uFF0C\u8BF7\u91CD\u65B0\u8BFB\u53D6\uFF1B\u672C\u6B21\u672A\u8986\u76D6"
+            );
+          if (savedFingerprint !== void 0 && T.fingerprint(previous[VAR_SAVE] ?? null) !== savedFingerprint)
+            throw fail("WRITE_CONFLICT", "\u5B58\u6863\u6B63\u6587\u88AB\u5176\u4ED6\u811A\u672C\u4FEE\u6539\uFF1B\u672C\u6B21\u672A\u8986\u76D6");
+          const nextJournal = T.clone(journal);
+          if (nextJournal) {
+            nextJournal.revision = (revision ?? 0) + 1;
+            nextJournal.owner = token.scope;
+          }
+          const hostDiagnostics = {
+            inject: state.injectMode || "unknown",
+            verified: state.injectVerified ?? null,
+            wb: state.wb ? {
+              ok: !!state.wb.ok,
+              skipped: !!state.wb.skipped,
+              reason: state.wb.reason || state.wb.error || null,
+              name: state.wb.name || null,
+              active: state.wb.activeName || null
+            } : null,
+            opening: state.opening || null,
+            floor: save.floor,
+            at: now(),
+            sync: {
+              scopeVerified: !!token.scope,
+              timeline: !!nextJournal,
+              revision: nextJournal?.revision ?? null,
+              scope: token.scope,
+              reason
             }
-          } catch (e) {
+          };
+          diagnostics.record("persist.write", { floor: save.floor });
+          await session.check(token);
+          try {
+            await repository.writeSnapshot({
+              save,
+              snap,
+              diagnostics: hostDiagnostics,
+              timeline: nextJournal,
+              backup: previous[VAR_SAVE] ? {
+                save: previous[VAR_SAVE],
+                timeline: previous[VAR_TIMELINE] || null,
+                at: now(),
+                reason
+              } : void 0,
+              init
+            });
+          } catch (cause) {
+            throw diagnostics.failure("persist.failed", "WRITE_FAILED", cause);
+          }
+          await session.check(token);
+          journal = nextJournal;
+          revision = journal?.revision ?? null;
+          hasSaved = true;
+          savedFingerprint = T.fingerprint(save);
+          diagnostics.record("persist.done", { floor: save.floor });
+          try {
+            await publishSnapshot(snap, { scope: token.scope, revision });
+          } catch {
+            diagnostics.record("publish.failed", {
+              code: "PUBLISH_FAILED",
+              floor: save.floor
+            });
           }
           return snap;
         }
-        async function handleFloor(llmText) {
-          if (!state.game) await rebuild();
-          const result = state.game.processFloor(String(llmText || ""));
-          result.stats = await persist();
-          return result;
-        }
-        async function newGame(init) {
-          await api.vars.assign({ [VAR_INIT]: init, [VAR_SAVE]: null });
-          state.game = null;
-          await rebuild();
-          if (init && init.targetId) {
-            try {
-              state.wb = await syncTargetWorldbook(init.targetId);
-            } catch (e) {
-              state.wb = { ok: false, error: e && e.message };
+        function draftRollback(game, timeline, token) {
+          return (error) => {
+            if (session.epoch === token.epoch) {
+              state.game = game;
+              journal = timeline;
             }
-            try {
-              state.opening = await applyTargetOpening(init.targetId);
-            } catch (e) {
-              state.opening = { ok: false, error: e && e.message };
+            throw error;
+          };
+        }
+        async function reconcile(token) {
+          await load(token);
+          const context = await session.check(token);
+          if (!hasSaved && (!journal || journal.nodes.length === 0)) {
+            await publishSnapshot(null, { scope: token.scope });
+            return null;
+          }
+          if (!journal || !Array.isArray(context.history)) {
+            const snap = state.game.snapshot();
+            await publishSnapshot(snap, { scope: token.scope });
+            return snap;
+          }
+          const found = T.locate(journal, context.history);
+          const old = state.game, oldJournal = T.clone(journal);
+          state.game = restore(found.save);
+          if (found.node) {
+            const index = T.userIndex(
+              context.history,
+              context.history[found.node.path.length - 1]?.id
+            );
+            const reply2 = context.history.slice(index + 1).find((m) => m.role === "assistant");
+            if (reply2 && (!found.node.replyPath || !T.prefix(found.node.replyPath, T.tokens(context.history)))) {
+              state.game.processReply(reply2.text);
+              const end = context.history.indexOf(reply2) + 1;
+              found.node.replyPath = T.tokens(context.history.slice(0, end));
+              found.node.after = state.game.save();
             }
           }
-          return persist();
+          try {
+            if (T.fingerprint(old.save()) !== T.fingerprint(state.game.save()) || journal.owner !== token.scope)
+              return await persist(token, { reason: "history-recovery" });
+            const snap = state.game.snapshot();
+            await publishSnapshot(snap, { scope: token.scope, revision });
+            return snap;
+          } catch (error) {
+            return draftRollback(old, oldJournal, token)(error);
+          }
         }
-        async function resetGame() {
-          await api.vars.assign({ [VAR_INIT]: null, [VAR_SAVE]: null });
-          state.game = null;
-          syncTargetWorldbook("college").catch(() => {
+        async function input(token, { messageId, text, actions = [] }) {
+          await load(token, { beforeUser: messageId });
+          const context = await session.check(token);
+          const path = journal && Array.isArray(context.history) ? T.inputPath(context.history, messageId) : null;
+          const key = path && T.fingerprint(path);
+          const existing = key && journal.nodes.find((n) => n.key === key);
+          if (existing) {
+            await reconcile(token);
+            diagnostics.record("input.reused", { floor: existing.result.floor });
+            return { ...T.clone(existing.result), reused: true };
+          }
+          const old = state.game, oldJournal = T.clone(journal);
+          const before = journal ? T.locate(journal, context.history).save : old.save();
+          state.game = restore(before);
+          try {
+            const result = state.game.settleInput(text, { actions });
+            if (journal) {
+              const after = state.game.save();
+              journal.nodes.push({
+                key,
+                path,
+                before: T.clone(before),
+                afterInput: T.clone(after),
+                after: T.clone(after),
+                result: T.clone(result),
+                replyPath: null
+              });
+              T.prune(journal, path);
+            }
+            result.stats = await persist(token, { reason: "input" });
+            return T.clone(result);
+          } catch (error) {
+            return draftRollback(old, oldJournal, token)(error);
+          }
+        }
+        async function reply(token, { text, auto = false } = {}) {
+          const context = await session.check(token);
+          const index = T.userIndex(context.history);
+          await load(token, {
+            beforeUser: index >= 0 ? context.history[index].id : void 0
           });
+          if (!text) return null;
+          const old = state.game, oldJournal = T.clone(journal);
+          try {
+            let node = null;
+            if (journal && index >= 0) {
+              const path = T.inputPath(context.history, context.history[index].id), key = T.fingerprint(path);
+              node = journal.nodes.find((n) => n.key === key);
+              if (!node && !auto) return null;
+              if (!node) {
+                const before = T.locate(journal, context.history).save;
+                state.game = restore(before);
+                const result = state.game.processFloor(text);
+                node = {
+                  key,
+                  path,
+                  before,
+                  afterInput: state.game.save(),
+                  after: state.game.save(),
+                  result: T.clone(result),
+                  replyPath: null,
+                  auto: true
+                };
+                journal.nodes.push(node);
+                T.prune(journal, path);
+              } else {
+                const fullPath = T.tokens(context.history);
+                if (node.replyPath && T.prefix(node.replyPath, fullPath)) {
+                  await reconcile(token);
+                  return T.clone(node.result);
+                }
+                state.game = restore(node.afterInput);
+                state.game.processReply(text);
+              }
+              node.replyPath = T.tokens(context.history);
+              node.after = state.game.save();
+            } else {
+              state.game = restore(old.save());
+              if (auto) state.game.processFloor(text);
+              else state.game.processReply(text);
+            }
+            return await persist(token, { reason: "reply" });
+          } catch (error) {
+            return draftRollback(old, oldJournal, token)(error);
+          }
         }
-        async function setConf(patch) {
-          Object.assign(state.conf, patch || {});
-          await api.vars.assign({ [VAR_CONF]: state.conf });
-          return state.conf;
+        async function newGame(token, init) {
+          const previous = await readVariables(token), old = state.game, oldJournal = T.clone(journal);
+          revision = previous[VAR_TIMELINE]?.revision ?? null;
+          savedFingerprint = T.fingerprint(previous[VAR_SAVE] ?? null);
+          try {
+            state.game = createGame(Object.assign(defaultInit(init), init || {}));
+            blocked = null;
+            if (init?.targetId) {
+              state.wb = await syncTargetWorldbook(
+                init.targetId,
+                () => session.check(token)
+              );
+              await session.check(token);
+              state.opening = await applyTargetOpening(
+                init.targetId,
+                () => session.check(token)
+              );
+              await session.check(token);
+            }
+            const current = await session.check(token);
+            journal = token.scope && Array.isArray(current.history) ? T.newTimeline(state.game.save(), current.history, token.scope) : null;
+            state.pending = null;
+            state.raced = false;
+            clearReceipt();
+            return await persist(token, { reason: "new-game", init });
+          } catch (cause) {
+            if (!cause.code)
+              cause = diagnostics.failure("new.failed", "NEW_GAME_FAILED", cause);
+            return draftRollback(old, oldJournal, token)(cause);
+          }
+        }
+        function interrupt() {
+          session.invalidate();
+          state.pending = null;
+          state.raced = false;
+          clearReceipt();
+        }
+        return {
+          rebuild: () => exclusive((token) => load(token, { force: true })),
+          persist: () => exclusive((token) => persist(token)),
+          refreshConf: () => exclusive(async (token) => {
+            const v = await readVariables(token);
+            syncConf(v);
+            return v;
+          }),
+          newGame: (init) => {
+            interrupt();
+            return exclusive((token) => newGame(token, init));
+          },
+          resetGame: () => {
+            interrupt();
+            return exclusive(async (token) => {
+              const previous = await readVariables(token);
+              await session.check(token);
+              try {
+                await repository.reset(
+                  previous[VAR_SAVE] ? {
+                    save: previous[VAR_SAVE],
+                    timeline: previous[VAR_TIMELINE] || null,
+                    at: now(),
+                    reason: "reset"
+                  } : null
+                );
+              } catch (cause) {
+                throw diagnostics.failure("reset.failed", "RESET_FAILED", cause);
+              }
+              await session.check(token);
+              state.game = null;
+              journal = null;
+              revision = null;
+              blocked = null;
+              diagnostics.record("reset.done");
+              await publishSnapshot(null);
+            });
+          },
+          setConf: (patch) => exclusive(async (token) => {
+            const next = { ...state.conf, ...patch };
+            if (typeof next.autoSettle !== "boolean" || next.injectPos != null && ![0, 1, 2].includes(next.injectPos) || next.injectDepth != null && (!Number.isInteger(next.injectDepth) || next.injectDepth < 0 || next.injectDepth > 100))
+              throw fail("CONFIG_INVALID", "\u8BBE\u7F6E\u5B57\u6BB5\u65E0\u6548");
+            await session.check(token);
+            try {
+              await repository.writeConf(next);
+            } catch (cause) {
+              throw diagnostics.failure(
+                "config.failed",
+                "CONFIG_WRITE_FAILED",
+                cause
+              );
+            }
+            await session.check(token);
+            state.conf = next;
+            return { ...next };
+          }),
+          runInput: (options) => exclusive((token) => input(token, options)),
+          runReply: (options) => exclusive((token) => reply(token, options)),
+          reconcile: () => exclusive(reconcile),
+          mutate: (method, ...args) => exclusive(async (token) => {
+            await load(token);
+            const old = state.game, oldJournal = T.clone(journal);
+            state.game = restore(old.save());
+            const allowed = [
+              "addItem",
+              "removeItem",
+              "equipItem",
+              "unequipItem",
+              "useItem",
+              "nightFall"
+            ];
+            if (!allowed.includes(method))
+              throw fail("COMMAND_INVALID", "\u4E0D\u652F\u6301\u7684\u6E38\u620F\u64CD\u4F5C");
+            try {
+              const result = state.game[method](...args);
+              if (journal) {
+                const context = await session.check(token), found = T.locate(journal, context.history);
+                if (found.node) {
+                  found.node.after = state.game.save();
+                  if (!found.node.replyPath)
+                    found.node.afterInput = state.game.save();
+                } else journal.base.save = state.game.save();
+              }
+              await persist(token, { reason: "command" });
+              return result;
+            } catch (error) {
+              return draftRollback(old, oldJournal, token)(error);
+            }
+          }),
+          restoreBackup: () => exclusive(async (token) => {
+            const variables = await readVariables(token), backup = variables.wx_sync_backup;
+            if (!backup?.save) throw fail("BACKUP_MISSING", "\u6CA1\u6709\u53EF\u6062\u590D\u7684\u5907\u4EFD");
+            const candidate = restore(backup.save);
+            const restoredJournal = backup.timeline ? T.validateTimeline(backup.timeline) : null;
+            if (restoredJournal && Array.isArray(token.context.history))
+              T.locate(restoredJournal, token.context.history);
+            const old = state.game, oldJournal = T.clone(journal);
+            state.game = candidate;
+            journal = restoredJournal;
+            revision = variables[VAR_TIMELINE]?.revision ?? null;
+            savedFingerprint = T.fingerprint(variables[VAR_SAVE] ?? null);
+            blocked = null;
+            try {
+              return await persist(token, { reason: "backup-recovery" });
+            } catch (error) {
+              return draftRollback(old, oldJournal, token)(error);
+            }
+          }),
+          getCurrentResult: () => exclusive(async (token) => {
+            await load(token);
+            if (!journal) return null;
+            const context = await session.check(token);
+            return T.clone(T.locate(journal, context.history).node?.result || null);
+          }),
+          interrupt,
+          captureSession: session.capture,
+          checkSession: session.check,
+          dispose: () => {
+            disposed = true;
+            interrupt();
+          },
+          getSyncDiagnostics: () => ({
+            ...diagnostics.snapshot(),
+            capabilities: {
+              scopeVerified: journal?.owner != null,
+              timeline: !!journal
+            },
+            revision,
+            blocked
+          })
+        };
+      }
+      module.exports = { createChatSync };
+    }
+  });
+
+  // src/host/glue.js
+  var require_glue = __commonJS({
+    "src/host/glue.js"(exports, module) {
+      var {
+        hostFrames,
+        findTavernHelper,
+        detectApi,
+        extractLlmText,
+        hostFn,
+        hostCharacterData
+      } = require_environment();
+      var { defaultInit } = require_initial_state();
+      var { receiptText } = require_receipt();
+      var { syncTargetWorldbook } = require_worldbook();
+      var { applyTargetOpening } = require_opening();
+      var { createGame } = require_game();
+      var {
+        VAR_SAVE,
+        VAR_SNAP,
+        VAR_INIT,
+        VAR_CONF
+      } = require_keys();
+      var { createChatSync } = require_controller();
+      async function startGlue() {
+        const api = detectApi();
+        if (!api.vars.has)
+          return { ok: false, reason: "\u65E0\u9152\u9986\u53D8\u91CF API\uFF08\u975E\u9152\u9986\u52A9\u624B\u73AF\u5883\uFF09" };
+        const g0 = typeof globalThis !== "undefined" ? globalThis : window;
+        const nameReader = hostFn("getCurrentCharacterName");
+        if (nameReader) {
+          try {
+            const name = String(await nameReader() || "");
+            if (name && !name.includes("\u5C3E\u884C"))
+              return { ok: false, reason: "\u975E\u5C3E\u884C\u5361\uFF08" + name + "\uFF09" };
+          } catch (e) {
+          }
+        }
+        const state = {
+          game: null,
+          conf: { autoSettle: false },
+          pending: null,
+          raced: false,
+          injectMode: null,
+          injectVerified: null
+        };
+        const sync = createChatSync({
+          state,
+          vars: api.vars,
+          readContext: api.readContext,
+          clearReceipt: () => {
+            try {
+              api.uninjectPrompts(["wx_receipt"]);
+            } catch {
+            }
+          },
+          createGame,
+          defaultInit,
+          syncTargetWorldbook,
+          applyTargetOpening,
+          publishSnapshot: (snap, metadata) => {
+            if (typeof window !== "undefined") {
+              const target = window.parent || window;
+              target.postMessage(
+                snap ? { wxSnap: snap, wxScope: metadata?.scope } : { wxReset: true, wxScope: metadata?.scope },
+                "*"
+              );
+            }
+          }
+        });
+        const { rebuild, persist, newGame, resetGame, setConf } = sync;
+        await sync.refreshConf();
+        async function handleFloor(llmText) {
+          return sync.runReply({ text: String(llmText || ""), auto: true });
         }
         function notifySettlePanel(r) {
           let shown = false;
           try {
-            const top = typeof window !== "undefined" && window.parent && window.parent !== window ? window.parent : null;
+            const top = typeof window !== "undefined" && window.parent && window.parent !== window ? window.parent : typeof window !== "undefined" ? window : null;
             if (top && top.WxStatusbar && typeof top.WxStatusbar.settle === "function") {
               top.WxStatusbar.settle(r.package);
               shown = true;
@@ -10001,20 +12064,26 @@
           console.log("[M4] \u9762\u677F\u901A\u77E5\u5DF2\u53D1", shown ? "\uFF08\u76F4\u8C03\u2713\uFF09" : "\uFF08\u4EC5\u6D88\u606F\u901A\u9053\uFF09");
         }
         async function onUserSent(messageId) {
+          const token = await sync.captureSession();
+          const pending = { messageId };
+          state.pending = pending;
           try {
-            console.log("[M4] MESSAGE_SENT \u6536\u5230", messageId !== void 0 ? "\u697C" + messageId : "");
+            console.log(
+              "[M4] MESSAGE_SENT \u6536\u5230",
+              messageId !== void 0 ? "\u697C" + messageId : ""
+            );
             if (state.conf.autoSettle) {
               console.log("[M4] \u81EA\u52A8\u63B7\u6A21\u5F0F\uFF0C\u8DF3\u8FC7\u62E6\u622A");
               return;
             }
             const msg = await api.readById(messageId);
             const text = extractLlmText(msg);
-            if (!text || text.startsWith("/")) {
+            if (msg?.role === "assistant" || msg?.is_user === false) return;
+            if (!text || text.trimStart().startsWith("/")) {
               console.log("[M4] \u7A7A\u8F93\u5165/\u659C\u6760\u547D\u4EE4\uFF0C\u653E\u884C\u4E0D\u7ED3\u7B97");
               return;
             }
-            state.pending = { text };
-            if (!state.game) await rebuild();
+            await sync.checkSession(token);
             const topWin = typeof window !== "undefined" && window.parent && window.parent !== window ? window.parent : typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : null;
             let pickedActions = null;
             if (topWin && topWin.WxStatusbar && typeof topWin.WxStatusbar.consumeActiveActions === "function") {
@@ -10024,10 +12093,18 @@
               }
             }
             const actSummary = pickedActions && pickedActions.length ? pickedActions.map((a) => `${a.id}(${a.name || a.id})`).join(", ") : "\u672A\u9009\u80F6\u56CA\uFF08\u7EAF\u53D9\u4E8B\uFF09";
-            console.log(`[M4] \u52A8\u4F5C\u8F93\u5165\uFF1A[${actSummary}] \uFF5C \u4F34\u968F\u53D9\u4E8B\uFF1A${String(text).slice(0, 30)}`);
-            const r = state.game.settleInput(text, { actions: pickedActions || [] });
-            state.pending = null;
-            console.log(`[M4] \u7ED3\u7B97\u5B8C\u6210\uFF1A\u697C${r.floor} \xB7 \u52A8\u4F5C${r.package.actions.length}\u4E2A${r.package.narrativeOnly ? "\uFF08\u7EAF\u53D9\u4E8B\uFF09" : ""}`);
+            console.log(
+              `[M4] \u52A8\u4F5C\u8F93\u5165\uFF1A[${actSummary}] \uFF5C \u4F34\u968F\u53D9\u4E8B\uFF1A${String(text).slice(0, 30)}`
+            );
+            const r = await sync.runInput({
+              messageId,
+              text,
+              actions: pickedActions || []
+            });
+            await sync.checkSession(token);
+            console.log(
+              `[M4] \u7ED3\u7B97\u5B8C\u6210\uFF1A\u697C${r.floor} \xB7 \u52A8\u4F5C${r.package.actions.length}\u4E2A${r.package.narrativeOnly ? "\uFF08\u7EAF\u53D9\u4E8B\uFF09" : ""}`
+            );
             let injectRes = null;
             if (api.injectPrompts) {
               try {
@@ -10036,23 +12113,31 @@
               }
               const pos = Number.isInteger(state.conf.injectPos) ? state.conf.injectPos : 1;
               const depth = Number.isInteger(state.conf.injectDepth) ? state.conf.injectDepth : 1;
-              injectRes = await api.injectPrompts([{
-                id: "wx_receipt",
-                position: pos,
-                depth,
-                role: 0,
-                content: receiptText(r)
-              }]);
+              injectRes = await api.injectPrompts([
+                {
+                  id: "wx_receipt",
+                  position: pos,
+                  depth,
+                  role: 0,
+                  content: receiptText(r)
+                }
+              ]);
             }
             state.injectMode = injectRes ? injectRes.mode : "none";
             state.injectVerified = injectRes ? injectRes.verified : null;
             if (injectRes) {
-              console.log(`[M4] \u56DE\u6267\u5DF2\u6CE8\u5165 \u2713\uFF08\u901A\u9053\uFF1A${injectRes.mode}\uFF09` + (injectRes.verified === null ? "" : injectRes.verified ? "\uFF0C\u56DE\u8BFB\u6821\u9A8C\u901A\u8FC7" : "\uFF0C\u56DE\u8BFB\u6821\u9A8C\u4E0D\u7B26"));
+              console.log(
+                `[M4] \u56DE\u6267\u5DF2\u6CE8\u5165 \u2713\uFF08\u901A\u9053\uFF1A${injectRes.mode}\uFF09` + (injectRes.verified === null ? "" : injectRes.verified ? "\uFF0C\u56DE\u8BFB\u6821\u9A8C\u901A\u8FC7" : "\uFF0C\u56DE\u8BFB\u6821\u9A8C\u4E0D\u7B26")
+              );
             } else {
-              console.warn("[M4] \u56DE\u6267\u6CE8\u5165\u5931\u8D25\uFF1ATavernHelper.injectPrompts \u4E0E SillyTavern.setExtensionPrompt \u90FD\u4E0D\u53EF\u7528\u2014\u2014\u6A21\u578B\u5C06\u770B\u4E0D\u5230\u4E2D\u63A7\u771F\u503C");
+              console.warn(
+                "[M4] \u56DE\u6267\u6CE8\u5165\u5931\u8D25\uFF1ATavernHelper.injectPrompts \u4E0E SillyTavern.setExtensionPrompt \u90FD\u4E0D\u53EF\u7528\u2014\u2014\u6A21\u578B\u5C06\u770B\u4E0D\u5230\u4E2D\u63A7\u771F\u503C"
+              );
             }
+            await sync.checkSession(token);
             await persist();
-            notifySettlePanel(r);
+            await sync.checkSession(token);
+            if (!r.reused) notifySettlePanel(r);
             console.log("[M4] \u9762\u677F\u901A\u77E5\u5DF2\u53D1 \u2713");
             if (state.raced && api.stopAllGeneration && api.generate) {
               state.raced = false;
@@ -10061,44 +12146,81 @@
               } catch (e) {
               }
               try {
-                api.generate({});
+                await api.generate({});
               } catch (e) {
               }
             }
           } catch (e) {
             console.warn("[M4] \u62E6\u622A\u7ED3\u7B97\u5931\u8D25\uFF1A", e && (e.stack || e.message || e));
-            state.pending = null;
+            if (!["STALE_SESSION", "SYNC_DISPOSED"].includes(e.code)) reportError(e);
+          } finally {
+            if (state.pending === pending) state.pending = null;
           }
+        }
+        let generationSession = null;
+        function reportError(error) {
+          const top = typeof window !== "undefined" ? window.parent || window : null;
+          top?.WxStatusbar?.reportSyncError?.(error.code || "SYNC_FAILED");
         }
         async function onReplyEnded() {
+          const ticket = generationSession;
           try {
-            const v = await api.vars.read();
-            if (v[VAR_CONF]) Object.assign(state.conf, v[VAR_CONF]);
+            if (ticket) await sync.checkSession(await ticket);
+            await sync.refreshConf();
             const msg = api.readLast ? await api.readLast() : null;
+            if (msg?.role === "user" || msg?.is_user === true) return;
             const text = extractLlmText(msg);
-            if (state.conf.autoSettle) {
-              if (text) await handleFloor(text);
-              return;
-            }
-            if (!state.game) {
-              await rebuild();
-              return;
-            }
-            if (text) {
-              state.game.processReply(text);
-              await persist();
-            }
-          } catch (e) {
+            if (ticket) await sync.checkSession(await ticket);
+            await sync.runReply({ text, auto: state.conf.autoSettle });
+          } catch (error) {
+            console.warn("[CHAT_SYNC:REPLY_FAILED]", error);
+            if (error.code !== "STALE_SESSION") reportError(error);
           }
         }
-        api.onEvent("MESSAGE_SENT", (messageId) => onUserSent(messageId));
+        async function refreshHistory() {
+          try {
+            const token = await sync.captureSession();
+            await sync.reconcile();
+            const result = await sync.getCurrentResult();
+            await sync.checkSession(token);
+            if (result?.package)
+              await api.injectPrompts([
+                {
+                  id: "wx_receipt",
+                  position: 1,
+                  depth: 1,
+                  role: 0,
+                  content: receiptText(result)
+                }
+              ]);
+            else api.uninjectPrompts(["wx_receipt"]);
+          } catch (error) {
+            console.warn("[CHAT_SYNC:RECOVERY_FAILED]", error);
+            if (!["STALE_SESSION", "SYNC_DISPOSED"].includes(error.code))
+              reportError(error);
+          }
+        }
+        g0.WxGlue?.dispose?.();
+        api.onEvent("MESSAGE_SENT", (messageId) => {
+          onUserSent(messageId).catch((error) => reportError(error));
+        });
         api.onEvent("GENERATION_STARTED", () => {
+          generationSession = sync.captureSession();
           if (state.pending) state.raced = true;
         });
         api.onEvent("GENERATION_ENDED", onReplyEnded);
-        api.onEvent("MESSAGE_SWIPED", () => {
+        api.onEvent("CHAT_CHANGED", () => {
+          generationSession = null;
+          sync.interrupt();
+          try {
+            api.stopAllGeneration?.();
+          } catch {
+          }
+          refreshHistory();
         });
-        if (typeof globalThis !== "undefined" && !globalThis.WxGlue) {
+        for (const name of ["MESSAGE_DELETED", "MESSAGE_UPDATED", "MESSAGE_SWIPED"])
+          api.onEvent(name, refreshHistory);
+        if (typeof globalThis !== "undefined") {
           globalThis.WxGlue = {
             handleFloor,
             rebuild,
@@ -10106,6 +12228,14 @@
             newGame,
             resetGame,
             setConf,
+            command: sync.mutate,
+            reconcile: sync.reconcile,
+            restoreBackup: sync.restoreBackup,
+            dispose: () => {
+              api.dispose();
+              sync.dispose();
+            },
+            getSyncDiagnostics: sync.getSyncDiagnostics,
             syncTargetWorldbook,
             onUserSent,
             onReplyEnded,
@@ -10119,7 +12249,46 @@
         }
         return { ok: true, hasEvent: true, hasReadLast: !!api.readLast };
       }
-      module.exports = { startGlue, syncTargetWorldbook, applyTargetOpening, receiptText, VAR_SAVE, VAR_SNAP, VAR_INIT, VAR_CONF };
+      module.exports = {
+        startGlue,
+        syncTargetWorldbook,
+        applyTargetOpening,
+        receiptText,
+        VAR_SAVE,
+        VAR_SNAP,
+        VAR_INIT,
+        VAR_CONF
+      };
+    }
+  });
+
+  // package.json
+  var require_package = __commonJS({
+    "package.json"(exports, module) {
+      module.exports = {
+        name: "weixing-engine",
+        version: "0.8.1",
+        private: true,
+        description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
+        scripts: {
+          test: "node tools/test.cjs",
+          build: "node build.js",
+          "build:runtime": "node build-runtime.js",
+          "build:ui": "node tools/build/ui.js",
+          "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
+          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js m4.test.js inject.test.js target-default.test.js",
+          typecheck: "tsc -p tsconfig.contracts.json",
+          "test:browser": "node tools/check-browser.cjs"
+        },
+        devDependencies: {
+          "@types/node": "24.10.0",
+          acorn: "8.15.0",
+          esbuild: "0.25.12",
+          jsdom: "26.1.0",
+          prettier: "3.6.2",
+          typescript: "5.9.3"
+        }
+      };
     }
   });
 
@@ -10127,13 +12296,24 @@
   var require_bootstrap = __commonJS({
     "src/host/bootstrap.js"(exports, module) {
       var { createGame } = require_game();
-      var facts = require_facts();
+      var facts = require_facts2();
       var map = require_map();
       var { loadLexicon } = require_lexicon2();
       var { startGlue } = require_glue();
       var LP = require_lifepack();
-      var gluePromise = startGlue();
-      var api = { createGame, facts, map, loadLexicon, lifepack: LP, glue: gluePromise, version: "0.7" };
+      var gluePromise = startGlue().catch((error) => {
+        console.error("[CHAT_SYNC:START_FAILED]", error);
+        return { ok: false, reason: error.code || error.message };
+      });
+      var api = {
+        createGame,
+        facts,
+        map,
+        loadLexicon,
+        lifepack: LP,
+        glue: gluePromise,
+        version: require_package().version
+      };
       if (typeof window !== "undefined") window.WxEngine = api;
       if (typeof globalThis !== "undefined") globalThis.WxEngine = api;
       if (typeof module !== "undefined") module.exports = api;

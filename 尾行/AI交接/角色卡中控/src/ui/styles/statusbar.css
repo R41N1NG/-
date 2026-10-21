@@ -1,0 +1,2693 @@
+/* GLM 样式骨架保留；刻度/数据接口/音效引擎按尾行规格适配。无图片、字体或库依赖。 */
+.trpg, .trpg *, .wx-terminal-backdrop, .wx-terminal-backdrop *, .wx-dialog, .wx-dialog * {
+  box-sizing: border-box;
+}
+main.wx-standalone-main {
+  width: 100%;
+  max-width: 960px;
+  min-height: 100%;
+  padding: 0 4px;
+  margin: 0 auto;
+  overflow: visible;
+  /* 独立预览壳不在下面的全局 border-box 名单里：content-box 下 100% + 左右内边距会横向溢出 */
+  box-sizing: border-box;
+  /* 预览壳是 flex 列容器，.trpg 作为它的 flex item 默认 min-width:auto 会被子项撑破 */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.preview-area { display: none; margin-bottom: 12px; }
+.preview-label { color: #90969f; font-size: 11px; margin: 0 0 10px; }
+.speaker { font-weight: 700; font-size: 13px; }
+.story { margin: 6px 0 14px; color: #c5c8ce; line-height: 1.7; font-size: 13px; }
+.preview-tools { display: none; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+.preview-tools small { color: #9298a1; }
+.preview-tools button[aria-pressed="true"] { border-color: #b3c9b9; background: #354d43; }
+.preview-status { flex-basis: 100%; margin: 0; color: #a9bcb0; font-size: 12px; }
+/* ═══ C 案 · 夜巡：色板 token + 胶片条外壳 ═══
+   语义约束：一个颜色只表达一件事；灰阶负责层级，彩色只负责状态。 */
+.trpg { --border: #1d2833; --muted: #93a7ba; --paper: #0d141c; --beat: 0.833s;
+  --ink-0: #070b10;
+  --ink-1: #0d141c;
+  --ink-2: #131c26;
+  --line: #1d2833;
+  --t-hi: #eef4fa;
+  --t-mid: #93a7ba;
+  --t-low: #5f7284;
+  --heat: #f0b355;
+  --safe: #5fd6c3;
+  --danger: #ff5a68;
+  --her: #e79aa8;
+  color: var(--t-hi);
+  background: linear-gradient(180deg, #0b1219 0%, #080d13 58%, #05080c 100%);
+  border: 0;
+  border-top: 1px solid rgba(240, 179, 85, 0.26);
+  border-radius: 12px 12px 0 0;
+  font-size: 12px;
+  box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+/* 材质层：钠灯侧光 + 冷侧反光 + 雨幕 + 颗粒（原来那层 alpha 0.012 的扫描纹基本看不见） */
+.trpg::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(78% 130% at 12% -10%, rgba(240, 179, 85, 0.12), transparent 56%),
+    radial-gradient(60% 120% at 96% 120%, rgba(95, 214, 195, 0.06), transparent 62%),
+    repeating-linear-gradient(102deg, rgba(190, 216, 245, 0.035) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px);
+  border-radius: inherit;
+}
+/* 状态即天气：过线泛暖，崩溃泛红；终局封时顶光转红 */
+.trpg[data-line="deform"] {
+  box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 34px rgba(240, 179, 85, 0.14);
+}
+.trpg[data-line="crash"] {
+  box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 44px rgba(255, 90, 104, 0.26);
+}
+.trpg:has(.slim-tag.strike-tag.sealed) {
+  border-top-color: rgba(255, 90, 104, 0.45);
+}
+.trpg button, #wx-statusbar-root button, .wx-terminal-backdrop button, dialog.wx-dialog button, .preview-tools button {
+  font: inherit;
+  color: #d9e4ed !important;
+  background: #26333e !important;
+  border: 1px solid #4a5d70 !important;
+  border-radius: 5px;
+  padding: 4px 10px;
+  cursor: pointer;
+  min-height: 28px;
+  transition: all .15s;
+  box-sizing: border-box;
+}
+.trpg button:hover, #wx-statusbar-root button:hover, .wx-terminal-backdrop button:hover, dialog.wx-dialog button:hover, .preview-tools button:hover {
+  background: #354757 !important;
+  border-color: #8da6bd !important;
+  color: #ffffff !important;
+}
+.trpg button:active, #wx-statusbar-root button:active, .wx-terminal-backdrop button:active, dialog.wx-dialog button:active {
+  background: #1c2630 !important;
+}
+.trpg button:focus-visible { outline: 1px solid rgba(240, 179, 85, 0.55); outline-offset: 2px; }
+
+/* ═══ 常驻条：一块路牌 + 一排读数（C 案） ═══ */
+.trpg-slim-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 10px;
+  gap: 8px;
+  position: relative;
+  z-index: 5;
+  user-select: none;
+}
+.slim-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+}
+/* 大区：等宽小上标，不再是一枚蓝徽章 */
+.slim-dist-badge {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--t-low);
+  font: 600 9.5px/1 ui-monospace, Consolas, monospace;
+  letter-spacing: .18em;
+}
+/* 场所：路牌。15px 加重 + 底下一道向右渐隐的钠黄灯带 */
+.slim-place {
+  position: relative;
+  padding-bottom: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--t-hi);
+}
+.slim-place::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 62%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--heat), rgba(240, 179, 85, 0));
+}
+.slim-tags-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+/* 状态不再是胶囊：左侧一根 2px 竖条 + 小字 */
+.slim-tag {
+  font-size: 11px;
+  padding: 0 0 0 7px;
+  border-left: 2px solid var(--line);
+  border-radius: 0;
+  white-space: nowrap;
+  color: var(--t-mid);
+}
+.slim-tag.weather {
+  border-left-color: rgba(95, 214, 195, .55);
+  color: #9ed6cd;
+}
+.slim-tag.strike-tag.allowed {
+  border-left-color: rgba(95, 214, 195, .75);
+  color: #a7e5d9;
+}
+.slim-tag.strike-tag.sealed {
+  border-left-color: var(--danger);
+  color: #ff9aa3;
+}
+.slim-tag.remain {
+  border-left-color: transparent;
+  color: var(--t-low);
+  font-size: 10.5px;
+}
+.slim-tag.id-badge {
+  border-left-color: var(--her);
+  color: #eec3cb;
+  cursor: pointer;
+}
+
+/* ── C4 单色图标：默认 1em，按场景覆盖尺寸；全部 currentColor，跟着文字色走 ── */
+.wx-ico { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; flex: none; stroke-width: 1.7; }
+/* 12~13px 的小图标把线加粗半档，否则在深底上糊成一团 */
+.step-ico .wx-ico, .slim-tag.weather .wx-ico, .slim-tag.id-badge .wx-ico,
+.wx-item-type-badge .wx-ico, .audio-ico .wx-ico, .phone-icon .wx-ico, .term-ico .wx-ico { stroke-width: 2; }
+.step-ico { display: inline-flex; align-items: center; justify-content: center; }
+.step-ico .wx-ico { width: 13px; height: 13px; }
+.wx-terminal-icon .wx-ico { width: 16px; height: 16px; }
+.phone-icon .wx-ico, .term-ico .wx-ico { width: 13px; height: 13px; }
+.audio-ico .wx-ico { width: 12px; height: 12px; }
+.dev-ico .wx-ico { width: 13px; height: 13px; margin-right: 6px; vertical-align: -2px; }
+.btn-ico .wx-ico { width: 13px; height: 13px; vertical-align: -2px; }
+.slim-tag.weather .wx-ico, .slim-tag.id-badge .wx-ico { width: 12px; height: 12px; margin-right: 3px; vertical-align: -2px; }
+.wx-item-type-badge .wx-ico { width: 12px; height: 12px; margin-right: 4px; vertical-align: -2px; opacity: .85; }
+
+/* ── 她的鞋具：只露鞋名，细节走悬停 ── */
+.gear-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.gear-line[hidden] { display: none !important; }
+.gear-label {
+  font: 600 9.5px/1 ui-monospace, Consolas, monospace;
+  letter-spacing: .16em;
+  color: var(--t-low);
+  flex: none;
+}
+.gear-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t-hi);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.18);
+  cursor: default;
+}
+
+/* 距离档：四根竖刻度，亮的那格发钠黄光 */
+.slim-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 11px;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.slim-phase {
+  color: var(--t-low);
+  font: 600 9.5px/1 ui-monospace, Consolas, monospace;
+  letter-spacing: .18em;
+}
+.slim-divider {
+  display: none;
+}
+.slim-dist {
+  color: var(--t-hi);
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.slim-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.slim-pips .pip {
+  width: 3px;
+  height: 13px;
+  border-radius: 1.5px;
+  border: 0;
+  background: #22303d;
+}
+.slim-pips .pip.active {
+  background: var(--heat);
+  box-shadow: 0 0 9px rgba(240, 179, 85, 0.9);
+}
+.slim-pips.warm .pip.active {
+  background: var(--heat);
+  border-color: var(--heat);
+  box-shadow: 0 0 9px rgba(240, 179, 85, 0.9);
+}
+
+.slim-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* 体力：一根细线，数字用等宽 */
+.slim-stamina {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  color: var(--t-mid);
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+}
+.slim-stamina[data-band="yellow"] { color: var(--heat); }
+.slim-stamina[data-band="red"] { color: #ff9aa3; }
+.slim-stamina-val {
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 600;
+  font-size: 11px;
+}
+.slim-stamina-bar {
+  width: 40px;
+  height: 2px;
+  background: #1d2933;
+  border-radius: 1px;
+  overflow: hidden;
+  display: inline-block;
+}
+.slim-stamina-bar .stamina-fill {
+  display: block;
+  height: 100%;
+  background: currentColor;
+  transition: width .3s ease;
+}
+
+/* 心跳：全条唯一的主角（♥ 19px / 数字 24px / BPM 退成 9px） */
+.heart-popover-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.trpg .heart-pill-btn {
+  background: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  color: var(--t-hi);
+  font-size: 11.5px;
+  transition: opacity .15s ease;
+  min-height: 0 !important;
+}
+.trpg .heart-pill-btn:hover { background: none !important; border: 0 !important; opacity: .9; }
+.trpg .heart-pill-btn.open { background: none !important; border: 0 !important; box-shadow: none !important; }
+@keyframes mini-heart-beat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.36); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.18); }
+  70% { transform: scale(1); }
+}
+.mini-heart {
+  display: inline-block;
+  color: var(--her);
+  animation: mini-heart-beat var(--beat, 0.833s) ease-in-out infinite;
+  transform-origin: center;
+  font-size: 19px;
+  line-height: 1;
+  filter: drop-shadow(0 0 7px rgba(231, 154, 168, 0.75));
+}
+.trpg[data-line="deform"] .mini-heart {
+  color: var(--heat);
+  filter: drop-shadow(0 0 9px rgba(240, 179, 85, 0.85));
+}
+.trpg[data-line="crash"] .mini-heart {
+  color: var(--danger);
+  filter: drop-shadow(0 0 11px rgba(255, 90, 104, 0.95));
+}
+.mini-heart-num {
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: -.02em;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(231, 154, 168, 0.35);
+}
+.mini-heart-bpm {
+  font-size: 9.5px;
+  /* 9px 上用 --t-low 会掉到 3.5:1，这里单开一档中间灰 */
+  color: #7f92a4;
+  margin-left: 1px;
+  align-self: center;
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 500;
+}
+
+/* 向上弹出的心跳仪表盘卡片 */
+.heart-popover-card {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  width: 300px;
+  max-width: calc(100vw - 20px);
+  background: rgba(16, 23, 31, 0.98);
+  border: 1px solid #3c526b;
+  border-radius: 8px;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  padding: 10px 12px;
+  z-index: 10002;
+  backdrop-filter: blur(14px);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  animation: popover-up .18s cubic-bezier(.16, 1, .3, 1);
+}
+.heart-popover-card.show {
+  display: flex !important;
+}
+.heart-popover-card::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  right: 28px;
+  width: 10px;
+  height: 10px;
+  background: #18222d;
+  border-right: 1px solid #3c526b;
+  border-bottom: 1px solid #3c526b;
+  transform: rotate(45deg);
+}
+@keyframes popover-up {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.popover-head {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #2a3746;
+}
+.popover-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a4b9c9;
+  letter-spacing: .5px;
+}
+.popover-close-btn {
+  background: transparent !important;
+  border: 0 !important;
+  color: #7d91a3 !important;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px !important;
+  min-height: 0 !important;
+  line-height: 1;
+}
+.popover-close-btn:hover {
+  color: #fff !important;
+}
+.popover-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.popover-content .heart-dial {
+  width: 154px;
+}
+.popover-content .stamina {
+  width: 154px;
+  margin-top: 2px;
+}
+.popover-content .spark {
+  width: 154px;
+  margin-top: 5px;
+}
+/* 弹层两栏：左＝生理仪表，右＝她的警觉（给档位与刻度，不给数值） */
+.popover-grid {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  align-items: stretch;
+  justify-content: center;
+}
+.popover-grid .instrument { flex: 1 1 auto; min-width: 0; }
+.popover-her {
+  flex: 0 0 86px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  padding-left: 9px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+.popover-her-title { font: 600 9px/1 ui-monospace, Consolas, monospace; letter-spacing: .14em; color: var(--t-low); }
+.popover-her .alert-pips { margin-right: 0; flex-direction: column-reverse; gap: 3px; }
+.popover-her .alert-pips i { width: 15px; height: 15px; border-radius: 2px; }
+.popover-her-name { font: 600 13px/1.1 "Noto Sans SC", system-ui, sans-serif; color: var(--t-mid); }
+.popover-her-range { font: 500 9px/1 ui-monospace, Consolas, monospace; color: var(--t-low); letter-spacing: .06em; }
+.popover-her[data-tier="3"] .popover-her-name, .popover-her[data-tier="4"] .popover-her-name { color: #ff9aa3; }
+.popover-audio-row {
+  margin-top: 8px;
+  width: 100%;
+}
+.audio-btn {
+  width: 100%;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #1e2835;
+  border: 1px solid #34475a;
+  color: #d1dde8;
+  cursor: pointer;
+  min-height: 25px;
+  transition: all .15s;
+}
+.audio-btn:hover {
+  background: #293849;
+  border-color: #5c7996;
+}
+.audio-btn[aria-pressed="true"] {
+  background: #233e32;
+  border-color: #4d7a63;
+  color: #9ee0bd;
+}
+
+/* 窄条小按钮：去掉按钮皮，只留文字与图标 */
+.trpg .slim-btn {
+  background: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 2px 4px !important;
+  cursor: pointer;
+  color: var(--t-mid) !important;
+  font-size: 11px;
+  min-height: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color .15s;
+}
+.trpg .slim-btn:hover {
+  background: none !important;
+  border: 0 !important;
+  color: var(--t-hi) !important;
+}
+.trpg .slim-btn.drawer-toggle-btn.active, .trpg .slim-btn.terminal-toggle-btn.active {
+  background: none !important;
+  border: 0 !important;
+  color: var(--heat) !important;
+}
+
+/* ═══ 行动胶囊栏（C1：先随胶片条收底，胶囊本体在 C3 重做） ═══ */
+.wx-capsule-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 32px;
+  padding: 3px 10px;
+  background: #070b10;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  z-index: 80;
+  user-select: none;
+}
+/* ═══ 行动胶囊栏（C3：去按钮皮，只保留"可点感"） ═══
+   交互钩子全部原样：类名 wx-capsule-chip / active / danger、✓ 勾选、aria-expanded、
+   .wx-posture-badge.narrative 都由 JS 切换，这里只动外观。 */
+.wx-posture-badge {
+  font: 600 9.5px/1 ui-monospace, Consolas, monospace;
+  letter-spacing: .14em;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--t-low);
+  border: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color .15s;
+}
+.wx-posture-badge:hover {
+  background: none;
+  border: 0;
+  color: var(--t-mid);
+}
+.wx-posture-badge.narrative {
+  background: none;
+  color: var(--heat);
+  border: 0;
+}
+.wx-chips-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  padding: 1px 0;
+  scrollbar-width: none;
+}
+.wx-chips-wrap::-webkit-scrollbar { display: none; }
+/* 极淡底 + 1px 幽灵描边 = 可点；选中用底部 2px 光条，不再整块变绿 */
+.trpg .wx-capsule-chip {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.055) !important;
+  color: var(--t-mid) !important;
+  border: 0 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, box-shadow .15s, color .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.4;
+  min-height: 26px !important;
+}
+.trpg .wx-capsule-chip:hover {
+  background: rgba(255, 255, 255, 0.09) !important;
+  color: var(--t-hi) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+.trpg .wx-capsule-chip.active {
+  background: rgba(95, 214, 195, 0.13) !important;
+  color: var(--safe) !important;
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--safe), inset 0 0 0 1px rgba(95, 214, 195, 0.30) !important;
+}
+.trpg .wx-capsule-chip.danger {
+  color: #e59aa2 !important;
+}
+.trpg .wx-capsule-chip.danger.active {
+  background: rgba(255, 90, 104, 0.14) !important;
+  color: #ff9aa3 !important;
+  box-shadow: inset 0 -2px 0 var(--danger), inset 0 0 0 1px rgba(255, 90, 104, 0.32) !important;
+}
+/* 条件不足：虚线幽灵条 + 降透明，悬停给「缺什么」 */
+.trpg .wx-capsule-chip.locked {
+  color: var(--t-low) !important;
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+  border: 0 !important;
+  outline: 1px dashed rgba(255, 255, 255, 0.14);
+  outline-offset: -3px;
+  opacity: .62;
+  cursor: not-allowed;
+}
+.trpg .wx-capsule-chip.locked:hover {
+  background: transparent !important;
+  color: var(--t-mid) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  opacity: .8;
+}
+.trpg .wx-capsule-chip .chip-check {
+  font-size: 10px;
+  font-weight: 700;
+}
+.trpg .wx-more-btn {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: none !important;
+  color: var(--t-low) !important;
+  border: 0 !important;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s;
+  min-height: 26px !important;
+}
+.trpg .wx-more-btn:hover {
+  background: none !important;
+  color: var(--t-hi) !important;
+  border: 0 !important;
+}
+.trpg .wx-more-btn.active {
+  background: none !important;
+  color: var(--heat) !important;
+  border: 0 !important;
+}
+
+/* ═══ 二级动作抽屉 ═══ */
+.wx-action-drawer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  background: #080c11;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.85);
+  z-index: 100;
+  max-height: min(340px, 60vh);
+  display: flex;
+  flex-direction: column;
+}
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, rgba(240, 179, 85, 0.06), transparent 92%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.drawer-title {
+  font: 600 10px/1 ui-monospace, Consolas, monospace;
+  letter-spacing: .14em;
+  color: var(--t-mid);
+}
+.trpg .drawer-close {
+  background: transparent !important;
+  border: none !important;
+  color: var(--t-mid) !important;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0 4px !important;
+  min-height: auto !important;
+}
+.trpg .drawer-close:hover {
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+}
+.drawer-body {
+  padding: 10px 12px 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.drawer-group-title {
+  font: 600 9.5px/1 ui-monospace, Consolas, monospace;
+  letter-spacing: .16em;
+  color: var(--t-low);
+  margin-bottom: 6px;
+  border-left: 2px solid rgba(255, 255, 255, 0.14);
+  padding-left: 6px;
+}
+.drawer-group-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ═══ 战术终端（HTML5 Top Layer 原生模态对话框，穿透所有层级与容器） ═══ */
+dialog.wx-terminal-dialog, dialog.wx-dialog.wx-terminal-dialog {
+  position: fixed !important;
+  inset: 0 !important;
+  margin: auto !important;
+  width: min(860px, calc(100vw - 20px)) !important;
+  max-height: 86dvh !important;
+  /* inset:0 + height:auto 会让盒子被上下拉伸铺满（再由 max-height 截在 86dvh），
+     内容不满时就在结算条下面留一条空带；fit-content 让弹窗按内容收口。 */
+  height: fit-content !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  background: #070b10 !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(240, 179, 85, 0.22) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.92) !important;
+  color: var(--t-hi) !important;
+  z-index: 100000 !important;
+  box-sizing: border-box !important;
+  animation: modal-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+dialog.wx-terminal-dialog:not([open]) {
+  display: none !important;
+}
+dialog.wx-terminal-dialog::backdrop {
+  background: rgba(5, 10, 16, 0.85) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+@keyframes modal-pop {
+  from { opacity: 0; transform: scale(0.96) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.wx-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: linear-gradient(180deg, rgba(240, 179, 85, 0.07), transparent 92%), #0a0f15;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+.wx-modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wx-terminal-icon {
+  font-size: 15px;
+}
+.wx-modal-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--t-hi);
+  letter-spacing: 0.02em;
+}
+.wx-modal-badge {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--t-low);
+  border: 0;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font: 600 9.5px/1.5 ui-monospace, Consolas, monospace;
+  letter-spacing: .12em;
+}
+.wx-modal-close {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--t-mid) !important;
+  font-size: 17px;
+  cursor: pointer;
+  padding: 4px 8px !important;
+  line-height: 1;
+  min-height: 0 !important;
+  transition: color 0.15s;
+}
+.wx-modal-close:hover {
+  color: #fff !important;
+}
+.wx-modal-body {
+  /* 结算条已移出滚动区做页脚，这里恢复正常底边距 */
+  padding: 14px 18px 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* 不长个子：内容短时弹窗贴内容收口（否则 86dvh 的上限会把正文拉高，
+     在页脚上方留出一大块空区）；内容超限时 overflow 让它照常滚动。 */
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px;
+}
+.wx-modal-body::-webkit-scrollbar { width: 6px; }
+.wx-modal-body::-webkit-scrollbar-track { background: #0d1217; }
+.wx-modal-body::-webkit-scrollbar-thumb { background: #354556; border-radius: 3px; }
+
+/* 模态内动线通栏舒展排版（留出安全顶边，图标绝不截顶） */
+.wx-modal-body .route-tracker {
+  background: #16202b;
+  border: 1px solid #2c3a4a;
+  border-radius: 6px;
+  padding: 12px 16px 14px;
+  margin-bottom: 2px;
+  overflow: visible;
+  width: 100%;
+}
+.trpg .heart-dial { display: block; width: min(100%, 164px); height: auto; overflow: visible; }
+.trpg .dial-track { stroke: #3a3842; stroke-width: 8; fill: none; stroke-linecap: round; }
+.trpg .dial-sweet { stroke: #82b68c; stroke-width: 8; fill: none; filter: drop-shadow(0 0 4px rgba(130, 182, 140, 0.55)); }
+.trpg .dial-tick { stroke: #7a7d88; stroke-width: 1; }
+.trpg .dial-linemark { stroke-width: 2.4; }
+.trpg .dial-marker { fill: #fff5f5; stroke: #b2747e; stroke-width: 3; filter: drop-shadow(0 0 5px rgba(223, 155, 168, 0.85)); }
+.trpg .dial-marker-orbit { transform-origin: 80px 80px; transition: transform 700ms cubic-bezier(.2,.75,.25,1); }
+.trpg .dial-beat-halo { fill: none; stroke: #df9ba8; stroke-width: 1; animation: ring-beat var(--beat) ease-out infinite; filter: drop-shadow(0 0 3px rgba(223, 155, 168, 0.5)); }
+.trpg .ecg-line { fill: none; stroke: #6fe3c7; stroke-width: 1.35; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 3.5px rgba(111, 227, 199, 0.8)); }
+.trpg .ecg-scroll { animation: ecg-scroll var(--beat) linear infinite; }
+.trpg .dial-number { fill: #ffe6e6; font: 750 38px ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }
+.trpg[data-line="deform"] .dial-number { fill: #f3dda4; text-shadow: 0 0 10px rgba(243, 221, 164, 0.55); }
+.trpg[data-line="crash"] .dial-number { fill: #ff8b99; text-shadow: 0 0 14px rgba(255, 80, 100, 0.85); }
+.trpg .dial-bpm { fill: #c4b6be; font: 10px ui-monospace, Consolas, monospace; }
+.trpg .dial-label { fill: #c4b6be; font: 9px system-ui, sans-serif; }
+.trpg .dial-scale { fill: #b7b5be; font: 8px ui-monospace, Consolas, monospace; }
+.trpg .dial-heart { fill: #eaa4ae; font-size: 12px; animation: beat var(--beat) ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.trpg .stamina { width: min(100%, 164px); margin-top: -2px; }
+.trpg .stamina { --stamina-color: #96c7a6; }
+.trpg .stamina[data-band="yellow"] { --stamina-color: #ddbe75; }
+.trpg .stamina[data-band="red"] { --stamina-color: #e48b8b; }
+.trpg .stamina-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--stamina-color); }
+.trpg .stamina-label .band-name { font-size: 9px; opacity:.85 }
+.trpg .stamina-meter { display: block; height: 5px; margin-top: 5px; border-radius: 3px; background: #404b45; overflow: hidden; }
+.trpg .stamina-fill { display: block; width: 72%; height: 100%; border-radius: inherit; background: var(--stamina-color); transition: width 700ms cubic-bezier(.2,.75,.25,1); }
+.trpg .audio-status { flex-basis: 100%; color: var(--muted); font-size: 11px; }
+.trpg .dev-card { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.07); border-radius: 0; padding: 14px 0 4px; margin-bottom: 14px; background: none; }
+.trpg .dev-card.dev-off { opacity: .55; }
+.trpg .dev-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.trpg .dev-name { font-weight: 600; font-size: 14px; color: var(--t-hi); }
+.trpg .dev-state { font: 600 9.5px/1.6 ui-monospace, Consolas, monospace; color: var(--safe); background: rgba(95, 214, 195, 0.10); border: 0; border-radius: 2px; padding: 0 6px; letter-spacing: .08em; white-space: nowrap; }
+.trpg .dev-off .dev-state { color: var(--t-low); background: rgba(255, 255, 255, 0.05); }
+.trpg .dev-where { margin-top: 10px; font-size: 15px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.trpg .dev-loc { color: var(--t-hi); }
+.trpg .dev-mot { color: var(--t-mid); font-size: 12px; white-space: nowrap; }
+.trpg .dev-time { color: var(--t-low); font-size: 10px; margin-top: 3px; font-family: ui-monospace, Consolas, monospace; }
+.trpg .dev-feed { margin: 10px 0 0; padding: 0; list-style: none; font-size: 12px; color: var(--t-mid); }
+.trpg .dev-feed li { padding: 5px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.trpg .dev-feed time { color: var(--t-low); font-size: 10px; font-family: ui-monospace, Consolas, monospace; margin-right: 10px; }
+.trpg .dev-note { margin: 8px 0 0; color: var(--t-low); font-size: 11px; line-height: 1.5; }
+.trpg .dev-frame { position: relative; margin-top: 12px; aspect-ratio: 16 / 9; border-radius: 4px; background: #05080c; border: 1px solid rgba(255, 255, 255, 0.06); overflow: hidden; }
+.trpg .dev-frame.no-feed { background: radial-gradient(ellipse at 32% 38%, #101820 0%, transparent 62%), radial-gradient(ellipse at 72% 68%, #0c1218 0%, transparent 55%), #05080c; }
+.trpg .dev-frame img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(.75) contrast(1.05); }
+/* 帧图未接入时是 hidden，但下面的 display:block 会盖掉 UA 的 [hidden] 规则，会把 alt 文字画出来 */
+.trpg .dev-frame img[hidden] { display: none !important; }
+.trpg .dev-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 3px); }
+.trpg .dev-frame-cap { position: absolute; right: 6px; bottom: 5px; font: 10px ui-monospace, Consolas, monospace; color: #9fb6c4; background: #0d1216cc; padding: 1px 6px; border-radius: 2px; letter-spacing: .04em; }
+.trpg .dev-frame-rec { position: absolute; left: 7px; top: 6px; font: 9px ui-monospace, Consolas, monospace; color: #e0566a; letter-spacing: .12em; }
+.trpg .dev-frame-rec::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #e0566a; margin-right: 5px; vertical-align: 1px; animation: rec-blink 1.6s steps(1) infinite; }
+@keyframes rec-blink { 50% { opacity: 0; } }
+.trpg .dev-sub { font-size: 10px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+.trpg button[aria-pressed="true"] { background: #354d43; border-color: #9ab7a4; }
+.trpg progress { display: block; width: 100%; height: 7px; margin-top: 10px; accent-color: #a4b9c9; }
+.trpg h3 { font-size: 12px; margin: 0 0 14px; color: var(--t-hi); letter-spacing: .02em; }
+.trpg .section-no { color: var(--t-low); font: 600 9.5px/1 ui-monospace, Consolas, monospace; letter-spacing: .16em; margin-right: 8px; }
+.trpg .money { display: flex; gap: 26px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.trpg .money strong { font: 600 21px ui-monospace, Consolas, monospace; margin-left: 8px; color: var(--t-hi); }
+
+/* ═══ 战术终端 · 模块化呼吸感排版系统（C 案：无框卡片 + 顶发丝线） ═══ */
+.wx-player-banner {
+  background: rgba(255, 255, 255, 0.028);
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 4px;
+  padding: 12px 14px 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.wx-banner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.wx-banner-title {
+  font-size: 12px;
+  color: var(--t-hi);
+  letter-spacing: .02em;
+}
+.wx-compact-money {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+.wx-compact-money strong {
+  font: 650 17px ui-monospace, Consolas, monospace;
+  margin-left: 6px;
+  color: #e2edf8;
+}
+
+/* 玩家五维属性（实效值：基础+标签加值；绿=有增益，红=被削弱，悬停/长按看明细） */
+#wx-attrs, .trpg .attrs, .wx-attrs {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+  min-height: 52px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.trpg .attr {
+  position: relative !important;
+  text-align: center !important;
+  padding: 8px 4px 7px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 2px !important;
+  box-sizing: border-box !important;
+  transition: all .2s;
+}
+.trpg .attr .an {
+  font: 600 10px/1 ui-monospace, Consolas, monospace !important;
+  color: var(--t-low) !important;
+  letter-spacing: .14em !important;
+}
+.trpg .attr .av {
+  font: 600 20px ui-monospace, Consolas, monospace !important;
+  letter-spacing: -.02em !important;
+  margin-top: 4px !important;
+  color: var(--t-hi) !important;
+}
+.trpg .attr.hot .av, .trpg .attr .av.hot { color: var(--safe) !important; }
+.trpg .attr.weak .av, .trpg .attr .av.weak { color: #ff9aa3 !important; }
+.trpg .attr.eff-up { border-top-color: rgba(95, 214, 195, 0.45) !important; background: rgba(95, 214, 195, 0.05) !important; }
+.trpg .attr.eff-up .av { color: var(--safe) !important; }
+.trpg .attr.eff-down { border-top-color: rgba(255, 90, 104, 0.45) !important; background: rgba(255, 90, 104, 0.05) !important; }
+.trpg .attr.eff-down .av { color: #ff9aa3 !important; }
+
+/* ═══ 双翼战术工作区（左：行囊与生效修正；右：目标信号手账） ═══ */
+.wx-tactical-wings {
+  display: grid !important;
+  grid-template-columns: 1fr 1.25fr !important;
+  gap: 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 680px) {
+  .wx-tactical-wings {
+    grid-template-columns: 1fr !important;
+  }
+}
+.wx-wing-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.wx-wing-card {
+  background: rgba(255, 255, 255, 0.028);
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 4px;
+  padding: 12px 14px;
+  height: 100%;
+  box-sizing: border-box;
+}
+.wx-wing-card h3 {
+  font-size: 12px;
+  margin: 0 0 10px;
+  color: var(--t-hi);
+  letter-spacing: .02em;
+}
+.wx-active-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+}
+
+/* ═══ 环境战术沙盘面板 ═══ */
+.wx-terminal-envbox {
+  background: rgba(255, 255, 255, 0.028);
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin-top: 0 !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ═══ 底部深页导航与音频调控 ═══ */
+.wx-terminal-links {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  background: none;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 0;
+  padding: 10px 0 !important;
+  margin-top: 0 !important;
+  gap: 10px !important;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+.wx-terminal-nav-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.wx-terminal-nav-buttons button {
+  font-size: 11.5px !important;
+  padding: 4px 2px !important;
+  background: none !important;
+  border: 0 !important;
+  color: var(--t-mid) !important;
+}
+.wx-terminal-nav-buttons button:hover {
+  background: none !important;
+  border: 0 !important;
+  color: var(--t-hi) !important;
+}
+
+/* ═══ 沉底结算条 ═══ */
+/* 她的警觉：五格刻度 + 档位名，不报精确数值（数值只在悬停提示里给区间）
+   五格固定配色（主人定：2 绿 1 黄 1 橘 1 红），从下往上点亮＝警觉在涨 */
+.alert-pips { display: inline-flex; gap: 3px; align-items: center; margin-right: 6px; }
+.alert-pips i { width: 10px; height: 6px; border-radius: 1px; background: rgba(255, 255, 255, 0.10); display: block; }
+.alert-pips i:nth-child(1), .alert-pips i:nth-child(2) { --pip: #5fd6c3; }
+.alert-pips i:nth-child(3) { --pip: #f0c75e; }
+.alert-pips i:nth-child(4) { --pip: #f08a4b; }
+.alert-pips i:nth-child(5) { --pip: #ff5a68; }
+.alert-pips i.on { background: var(--pip, var(--heat)); }
+.alert-text { font: 600 11px/1 ui-monospace, Consolas, monospace; color: var(--t-mid); letter-spacing: .04em; }
+#alertRow[data-tier="3"] .alert-text { color: #ff9aa3; }
+#alertRow[data-tier="4"] .alert-text { color: var(--danger); }
+.wx-terminal-ledger {
+  background: none !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 0 !important;
+  padding: 8px 0 !important;
+  color: var(--t-mid) !important;
+  font-size: 11px !important;
+  margin-top: 0 !important;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+/* 沉底结算条是弹窗页脚（不在滚动区内），左右留出与正文一致的边距；
+   选择器带 [data-tip] 压过 :1891 的「.trpg .ledger{margin-top:12px}」。 */
+.trpg .wx-terminal-ledger[data-tip] {
+  width: auto;
+  /* 左右与正文卡片的 18px 内边距对齐；底部留 14px（终端弹窗自身 padding 已归零） */
+  margin: 0 18px 14px;
+  box-shadow: 0 -6px 14px rgba(0, 0, 0, 0.45);
+}
+/* 全站悬停说明：仅限尾行组件内部带 data-tip 的元素，绝不干扰宿主与第三方扩展 */
+.trpg [data-tip], .wx-terminal-backdrop [data-tip], .wx-dialog [data-tip] { position: relative; }
+/* 收起态用 display:none 而不是 opacity:0——绝对定位的说明框即使透明也会计入
+   scrollWidth（实测常驻条因此虚胖 16px，窄屏上把整条顶出视口）。 */
+.trpg [data-tip]::after, .wx-terminal-backdrop [data-tip]::after, .wx-dialog [data-tip]::after {
+  content: attr(data-tip); display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: #0b0f16; border: 1px solid #526577; padding: 6px 11px; border-radius: 4px;
+  font-size: 10.5px; color: #c8d3e8; white-space: pre-wrap; width: max-content; max-width: 320px;
+  text-align: left; line-height: 1.6; z-index: 10005;
+  pointer-events: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.85);
+}
+.trpg [data-tip]:hover::after, .trpg [data-tip]:active::after,
+.wx-terminal-backdrop [data-tip]:hover::after, .wx-terminal-backdrop [data-tip]:active::after,
+.wx-dialog [data-tip]:hover::after, .wx-dialog [data-tip]:active::after { display: block; }
+.slim-left [data-tip]::after { left: 0; transform: none; }
+.slim-right [data-tip]::after { left: auto; right: 0; transform: none; }
+#wx-attr-tags, .trpg .attr-tags { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+#wx-attr-tags .tag, .trpg .attr-tags .tag { margin: 0; font-size: 11px; padding: 3px 8px; }
+/* ═══ 战术行囊持有物列表 ═══ */
+.wx-items, .trpg .items {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3b5066 #151d26;
+  padding-right: 4px;
+}
+.wx-items::-webkit-scrollbar, .trpg .items::-webkit-scrollbar {
+  width: 5px;
+}
+.wx-items::-webkit-scrollbar-track, .trpg .items::-webkit-scrollbar-track {
+  background: #151d26;
+  border-radius: 3px;
+}
+.wx-items::-webkit-scrollbar-thumb, .trpg .items::-webkit-scrollbar-thumb {
+  background: #3b5066;
+  border-radius: 3px;
+}
+.wx-items::-webkit-scrollbar-thumb:hover, .trpg .items::-webkit-scrollbar-thumb:hover {
+  background: #526f8d;
+}
+.wx-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 6px 8px;
+  background: none;
+  border: 0;
+  border-left: 2px solid rgba(255, 255, 255, 0.10);
+  border-radius: 0;
+  transition: border-color .15s ease;
+}
+.wx-item-row:hover {
+  background: none;
+  border-left-color: rgba(255, 255, 255, 0.24);
+}
+.wx-item-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.wx-item-type-badge {
+  font: 600 9.5px/1.5 ui-monospace, Consolas, monospace;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--t-low);
+  border: 0;
+  letter-spacing: .1em;
+  white-space: nowrap;
+}
+.wx-item-name {
+  font-size: 11.5px;
+  color: var(--t-hi);
+  font-weight: 550;
+  white-space: nowrap;
+}
+.wx-item-count {
+  font-size: 11px;
+  color: var(--t-mid);
+  font-family: ui-monospace, Consolas, monospace;
+}
+.wx-item-equipped-pill {
+  font-size: 9.5px;
+  padding: 0 5px;
+  border-radius: 2px;
+  background: rgba(95, 214, 195, 0.10);
+  color: var(--safe);
+  border: 0;
+  border-left: 2px solid var(--safe);
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.wx-item-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.wx-item-btn {
+  font-size: 10.5px !important;
+  padding: 2px 8px !important;
+  border-radius: 2px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: none !important;
+  color: var(--t-mid) !important;
+  cursor: pointer;
+  line-height: 1.4 !important;
+  transition: border-color .15s, color .15s;
+}
+.wx-item-btn:hover {
+  background: none !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: var(--t-hi) !important;
+}
+.wx-item-btn.btn-equip {
+  border-color: rgba(95, 214, 195, 0.5) !important;
+  background: none !important;
+  color: var(--safe) !important;
+}
+.wx-item-btn.btn-equip:hover {
+  background: rgba(95, 214, 195, 0.08) !important;
+  border-color: rgba(95, 214, 195, 0.8) !important;
+}
+.wx-item-btn.btn-unequip {
+  border-color: rgba(255, 90, 104, 0.45) !important;
+  background: none !important;
+  color: #ff9aa3 !important;
+}
+.wx-item-btn.btn-unequip:hover {
+  background: rgba(255, 90, 104, 0.08) !important;
+  border-color: rgba(255, 90, 104, 0.75) !important;
+}
+.wx-item-btn.btn-use {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: none !important;
+  color: var(--t-mid) !important;
+}
+.wx-item-btn.btn-use:hover {
+  border-color: rgba(255, 255, 255, 0.34) !important;
+  color: var(--t-hi) !important;
+}
+.wx-item-empty {
+  padding: 12px 0;
+  text-align: center;
+  color: var(--t-low);
+  font-size: 11.5px;
+  list-style: none;
+}
+
+/* ═══ 标签体系（C 案：左侧 2px 色条 + 文字，不做胶囊） ═══ */
+.trpg .tag { display: inline-block; padding: 1px 0 1px 7px; border: 0; border-left: 2px solid var(--line); background: none; color: var(--t-mid); border-radius: 0; font-size: 11px; margin: 0 8px 6px 0; white-space: nowrap; }
+.trpg .tag.debuff { border-left-color: var(--danger); color: #ffa9b1; }
+.trpg .tag.target { border-left-color: var(--danger); color: #ffa9b1; }
+.trpg .tag.scene  { border-left-color: var(--t-mid); color: var(--t-mid); }
+.trpg .tag.advantage { border-left-color: var(--heat); color: #f4d6a0; text-shadow: none; }
+.preview-tools .replay-label { font: 11px ui-monospace, Consolas, monospace; color: #9fb5a0; white-space: nowrap; }
+.trpg .tag.personality { border-left-color: var(--her); color: #eec3cb; }
+.trpg .tag.hobby       { border-left-color: var(--her); color: #eec3cb; }
+.trpg .tag.equipment   { border-left-color: var(--her); color: #eec3cb; }
+.trpg .tag.fading { opacity: .65; }
+
+
+/* ═══ 接近度五档刻度进度轨 ═══ */
+.prox-container {
+  margin: 10px 0 16px;
+  background: none;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0;
+  padding: 12px 0 14px;
+}
+.prox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--t-hi);
+  margin-bottom: 10px;
+  white-space: nowrap !important;
+}
+.prox-value-wrap {
+  font-size: 11px;
+  color: var(--t-mid);
+}
+.prox-value-wrap strong {
+  font: 600 18px ui-monospace, Consolas, monospace;
+  letter-spacing: -.02em;
+  color: var(--t-hi);
+  margin-right: 2px;
+}
+.prox-stage-badge {
+  color: var(--her);
+  font-weight: 600;
+  margin-left: 4px;
+}
+.prox-track-wrap {
+  position: relative;
+  padding: 8px 6px 20px;
+  cursor: help;
+}
+.prox-meter-bar {
+  width: 100%;
+  height: 3px;
+  background: #17222c;
+  border-radius: 1.5px;
+  overflow: hidden;
+  position: relative;
+}
+.prox-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(231, 154, 168, .35), var(--her));
+  border-radius: 1.5px;
+  transition: width .3s ease;
+}
+.prox-nodes {
+  position: relative;
+  width: 100%;
+  margin-top: -5px;   /* 圆点 5px，让圆心骑在 3px 轨道中线上 */
+}
+.pnode {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.pnode .pdot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #1a2530;
+  border: 1px solid #33465a;
+  transition: all .2s;
+}
+.pnode .plabel {
+  font: 500 9.5px/1 ui-monospace, Consolas, monospace;
+  color: var(--t-low);
+  margin-top: 5px;
+  white-space: nowrap;
+}
+.pnode.passed .pdot {
+  background: #3f5568;
+  border-color: #5d7b93;
+}
+.pnode.passed .plabel {
+  color: var(--t-mid);
+}
+.pnode.active .pdot {
+  background: var(--her);
+  border-color: #ffe3ea;
+  box-shadow: 0 0 9px rgba(231, 154, 168, 0.85);
+  transform: scale(1.35);
+}
+.pnode.active .plabel {
+  color: var(--her);
+  font-weight: 600;
+}
+.trpg .timeline { list-style: none; margin: 0 0 18px; padding: 0; }
+.trpg .timeline li { display: flex; gap: 12px; margin: 0 0 0 3px; padding: 3px 0 15px 15px; border-left: 1px solid rgba(255, 255, 255, 0.08); position: relative; color: var(--t-mid); }
+.trpg .timeline li::before { content: ''; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--t-low); left: -3px; top: 10px; }
+.trpg time { color: var(--t-low); font-family: ui-monospace, Consolas, monospace; font-size: 10px; flex-shrink: 0; }
+.trpg .assessment { font-size: 12px; margin: 14px 0 0; padding: 2px 0 2px 10px; border-left: 2px solid var(--heat); background: none; color: #e9d3ad; }
+/* ═══ 动线推进雷达轨（常驻层） ═══ */
+.route-tracker {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.024);
+  border-bottom: 0;
+  padding: 10px 14px 12px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+.route-weather-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.route-meta, .route-stepper {
+  position: relative;
+  z-index: 1;
+}
+/* 雨天：斜向细雨丝微流动 */
+.route-tracker.is-rain .route-weather-fx {
+  opacity: 0.22;
+  background-image: repeating-linear-gradient(
+    110deg,
+    transparent,
+    transparent 11px,
+    rgba(140, 190, 240, 0.45) 12px,
+    transparent 13px
+  );
+  background-size: 40px 40px;
+  animation: route-rain-anim 0.85s linear infinite;
+}
+/* 暴雨：雨丝密集加急 */
+.route-tracker.is-storm .route-weather-fx {
+  opacity: 0.38;
+  background-image: repeating-linear-gradient(
+    118deg,
+    transparent,
+    transparent 7px,
+    rgba(170, 215, 255, 0.7) 8px,
+    transparent 9px
+  );
+  background-size: 30px 30px;
+  animation: route-rain-anim 0.42s linear infinite;
+}
+/* 晴夜：微弱路灯钠黄光晕 */
+.route-tracker.is-clear .route-weather-fx {
+  opacity: 0.15;
+  background: radial-gradient(ellipse at 80% 20%, rgba(245, 212, 131, 0.45) 0%, transparent 65%);
+}
+@keyframes route-rain-anim {
+  0% { background-position: 0 0; }
+  100% { background-position: -40px 80px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-tracker.is-rain .route-weather-fx,
+  .route-tracker.is-storm .route-weather-fx { animation: none; }
+}
+.route-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11.5px;
+  margin-bottom: 7px;
+}
+.route-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #dce6ee;
+  font-weight: 600;
+}
+.route-dist-badge {
+  background: #253342;
+  border: 1px solid #4a637b;
+  color: #9ebfdc;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: normal;
+}
+.route-status-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+}
+/* 微型步进轨（C4：图标改成 20px 圆盘承载 12px 单色图标，不再是 emoji 撑破 8px 圆点） */
+.route-stepper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 6px 0 4px;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--t-low);
+  white-space: nowrap;
+}
+.step-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+.step-item.passed .step-dot {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+.step-item.passed {
+  color: var(--t-low);
+}
+.step-item.passed .step-ico {
+  opacity: .45;
+}
+.step-item.current {
+  color: var(--heat);
+  font-weight: 600;
+}
+.step-item.current .step-dot {
+  background: rgba(240, 179, 85, 0.14);
+  border-color: rgba(240, 179, 85, 0.55);
+  animation: step-breathe 2.2s ease-in-out infinite;
+}
+.step-item.current .step-ico {
+  opacity: 1;
+  color: var(--heat);
+}
+/* 当前节点呼吸高亮：光晕一涨一落，机会窗口正在流逝的搏动感 */
+@keyframes step-breathe {
+  0%, 100% { box-shadow: 0 0 4px rgba(240, 179, 85, 0.35); }
+  50%      { box-shadow: 0 0 13px rgba(240, 179, 85, 0.85); }
+}
+.step-item.terminal .step-dot {
+  border-radius: 4px;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.step-item.terminal.current .step-dot {
+  background: rgba(255, 90, 104, 0.16);
+  border-color: rgba(255, 90, 104, 0.60);
+  animation: step-breathe-red 2.2s ease-in-out infinite;
+}
+@keyframes step-breathe-red {
+  0%, 100% { box-shadow: 0 0 4px rgba(255, 90, 104, 0.35); }
+  50%      { box-shadow: 0 0 13px rgba(255, 90, 104, 0.85); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-item.current .step-dot,
+  .step-item.terminal.current .step-dot { animation: none; }
+}
+.step-item.unknown {
+  color: var(--t-low);
+}
+.step-item.unknown .step-dot {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+}
+.step-item.unknown .step-ico {
+  opacity: .35;
+}
+.step-item.unknown .step-name {
+  font-weight: 700;
+  color: var(--t-low);
+}
+.step-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  min-width: 14px;
+  margin: 0 6px;
+}
+.step-line.passed {
+  background: rgba(255, 255, 255, 0.18);
+}
+.step-line.future {
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14) 3px, transparent 3px, transparent 7px);
+}
+
+/* ═══ 抽屉层 · 战术沙盘面板 ═══ */
+.envbox {
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 14px;
+}
+.env-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--t-hi);
+  margin-bottom: 8px;
+}
+.env-header .fam {
+  color: var(--t-mid);
+  font: 600 10px/1 ui-monospace, Consolas, monospace;
+  letter-spacing: .06em;
+}
+.env-fam-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.fam-meter {
+  flex: 1;
+  height: 3px;
+  background: #17222c;
+  border-radius: 1.5px;
+  overflow: hidden;
+}
+.fam-fill {
+  display: block;
+  height: 100%;
+  background: var(--safe);
+  border-radius: 1.5px;
+}
+.tactical-grid {
+  background: none;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0;
+  padding: 10px 0 0;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11.5px;
+}
+.tactical-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.tactical-label {
+  color: var(--t-low);
+  min-width: 68px;
+  flex-shrink: 0;
+}
+.tactical-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.chip {
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.045);
+  border: 0;
+  color: var(--t-mid);
+}
+.chip-ico {
+  display: inline-block;
+  margin-right: 4px;
+  font-weight: 700;
+  font-size: 10px;
+  opacity: .85;
+}
+.chip-exit {
+  background: rgba(255, 255, 255, 0.045);
+  border: 0;
+  color: var(--t-mid);
+}
+.chip-spot {
+  background: rgba(240, 179, 85, 0.08);
+  border: 0;
+  color: #e8c98d;
+}
+.chip-sanctuary {
+  background: rgba(255, 90, 104, 0.10);
+  border: 0;
+  color: #ffa9b1;
+}
+.chip-sanctuary .chip-ico {
+  color: #ff7588;
+  animation: rec-blink 1.2s infinite;
+}
+.step-ico {
+  line-height: 1;
+  opacity: .8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-item.passed .step-ico {
+  opacity: .45;
+}
+.step-item.current .step-ico {
+  opacity: 1;
+  color: var(--heat);
+}
+.step-item.unknown .step-ico {
+  opacity: .35;
+}
+.envtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 10px;
+}
+.envtag {
+  display: inline-block;
+  padding: 2.5px 8px;
+  border: 1px solid #4a6a8a;
+  border-left: 3px solid #6fa8d6;
+  background: #22303f;
+  color: #c6dcee;
+  border-radius: 3px;
+  font-size: 11px;
+}
+/* ═══ 底部深页与音频综合调控 ═══ */
+.trpg .links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  margin-top: 18px;
+  padding-top: 12px;
+  position: relative;
+  gap: 10px;
+}
+.links-left {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.audio-popover-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+}
+.audio-menu-btn {
+  background: #18222d;
+  border: 1px solid #36495d;
+  border-radius: 4px;
+  padding: 3px 9px;
+  cursor: pointer;
+  color: #cad8e6;
+  font-size: 11px;
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all .15s;
+}
+.audio-menu-btn:hover {
+  background: #233142;
+  border-color: #55779c;
+  color: #fff;
+}
+.audio-menu-btn.active {
+  background: #25384d;
+  border-color: #6a96c7;
+  color: #8fc2f5;
+  box-shadow: 0 0 8px rgba(106, 150, 199, 0.35);
+}
+.audio-popover-panel {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: #141d27;
+  border: 1px solid #3b5066;
+  border-radius: 6px;
+  padding: 10px 12px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: popover-up .15s ease-out;
+}
+.audio-popover-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #283748;
+  padding-bottom: 6px;
+}
+.audio-popover-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a4b9c9;
+}
+.audio-master-switch {
+  font-size: 10px !important;
+  padding: 2px 7px !important;
+  min-height: 22px !important;
+  background: #212c38 !important;
+  border: 1px solid #3d5064 !important;
+  color: #c7d5e2 !important;
+  border-radius: 3px !important;
+  cursor: pointer;
+}
+.audio-master-switch[aria-pressed="true"] {
+  background: #233e32 !important;
+  border-color: #4d7a63 !important;
+  color: #9ee0bd !important;
+}
+.audio-sliders-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.audio-slider-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: #9ab0c2;
+  gap: 8px;
+}
+.audio-slider-item input[type=range] {
+  width: 110px;
+  accent-color: #df9ba8;
+  cursor: pointer;
+}
+.audio-popover-status {
+  font-size: 10px;
+  color: #7b8f9f;
+  text-align: right;
+  border-top: 1px dashed #2b3a4a;
+  padding-top: 5px;
+}
+/* 她的动静警示槽（常驻条右上角，过档事件亮两段） */
+.trpg { position: relative; }
+/* 全屏/状态栏边缘应激暗角（Vignette） */
+.trpg-vignette {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 7;
+  transition: box-shadow 0.4s ease;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
+}
+/* 变形态：边缘暗红收窄 */
+.trpg[data-line="deform"] .trpg-vignette {
+  box-shadow: inset 0 0 38px rgba(175, 45, 55, 0.38);
+}
+/* 崩溃态：深红逼近 + 随心跳重拍搏动 */
+.trpg[data-line="crash"] .trpg-vignette {
+  box-shadow: inset 0 0 54px rgba(225, 35, 50, 0.62);
+  animation: vignette-throb var(--beat, 0.8s) ease-in-out infinite;
+}
+@keyframes vignette-throb {
+  0%, 100% { box-shadow: inset 0 0 44px rgba(190, 30, 45, 0.5); }
+  50%      { box-shadow: inset 0 0 66px rgba(245, 40, 60, 0.78); }
+}
+/* 结算 spike 重拍脉冲 */
+.trpg-vignette.pulse {
+  animation: vignette-pulse 0.45s ease-out forwards;
+}
+@keyframes vignette-pulse {
+  0%   { box-shadow: inset 0 0 78px rgba(255, 45, 60, 0.88); }
+  100% { box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trpg[data-line="crash"] .trpg-vignette,
+  .trpg-vignette.pulse { animation: none; }
+}
+.her-alert { position: absolute; top: -12px; right: 16px; z-index: 9; padding: 3px 12px; border-radius: 10px;
+  background: #392b2f; border: 1px solid #7a5a60; color: #e3c3ca; font-size: 12px; letter-spacing: .1em;
+  box-shadow: 0 2px 10px #0007; opacity: 0; transform: translateY(-5px); transition: .35s; pointer-events: none; }
+.her-alert.show { opacity: 1; transform: none; }
+/* 心跳历史迷你曲线 */
+.spark { display: block; width: min(100%, 164px); height: 20px; margin-top: 7px; }
+.spark polyline { fill: none; stroke: #6fd3c7; stroke-width: 1.5; filter: drop-shadow(0 0 3px rgba(111,211,199,.45)); }
+.spark line { stroke: rgba(146,187,154,.4); stroke-width: 1; stroke-dasharray: 2 3; }
+/* 接触模式：距离 pip 换暖色（朋友的位，不是贼的位） */
+.pips.warm .pip.active { background: #d6b96a; border-color: #d6b96a; }
+/* 标签将到期 */
+.trpg .tag.fading { opacity: .55; }
+/* 谎账：雷区可视化 */
+.lie { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12.5px; border-top: 1px dashed #465463; }
+.lie:first-child { border-top: 0; }
+.lie .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; animation: blink 1.2s steps(2) infinite; }
+.lie.v-high .dot { background: #e0566a; }
+.lie.v-mid .dot { background: #d6b96a; }
+.lie.v-low .dot { background: #8b93a0; animation: none; }
+.lie.busted { opacity: .45; text-decoration: line-through; }
+.lie .ver { margin-left: auto; font-size: 10px; color: var(--muted); }
+/* 她的档案：属性直读区（高情报揭示真实数值，未查明显示 ?） */
+.pattrs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.pattr { text-align: center; padding: 8px 0 7px; background: rgba(255, 255, 255, 0.03); border: 0; border-top: 1px solid rgba(255, 255, 255, 0.07); border-radius: 2px; }
+.pattr .an { font: 600 10px/1 ui-monospace, Consolas, monospace; color: var(--t-low); letter-spacing: .14em; }
+.pattr .av { font: 600 19px ui-monospace, Consolas, monospace; margin-top: 4px; color: var(--t-hi); }
+.pattr.unknown .av { color: var(--t-low); }
+.pattr .at { font: 500 9.5px ui-monospace, Consolas, monospace; color: var(--t-mid); margin-top: 3px; }
+
+/* ═══ 她的档案 · 长焦偷拍取景框 ═══ */
+.surv-viewfinder {
+  margin-bottom: 16px;
+  background: #090e15;
+  border: 1px solid #2b3a4a;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.vf-frame {
+  position: relative;
+  background: #0d131b;
+  border: 1px solid #1f2a36;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.vf-corner {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid #63809e;
+  z-index: 5;
+  pointer-events: none;
+}
+.vf-corner.tl { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }
+.vf-corner.tr { top: 6px; right: 6px; border-left: 0; border-bottom: 0; }
+.vf-corner.bl { bottom: 6px; left: 6px; border-right: 0; border-top: 0; }
+.vf-corner.br { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }
+.vf-crosshair {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 22px; height: 22px;
+  transform: translate(-50%, -50%);
+  border: 1px dashed rgba(111, 211, 199, 0.35);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+}
+.vf-crosshair::before, .vf-crosshair::after {
+  content: ''; position: absolute; background: rgba(111, 211, 199, 0.45);
+}
+.vf-crosshair::before { top: 50%; left: -6px; width: 34px; height: 1px; transform: translateY(-50%); }
+.vf-crosshair::after { left: 50%; top: -6px; height: 34px; width: 1px; transform: translateX(-50%); }
+.vf-header {
+  position: absolute;
+  top: 6px; left: 16px; right: 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  font: 9.5px ui-monospace, Consolas, monospace;
+  color: #9cb3c7;
+  z-index: 6;
+  text-shadow: 0 1px 3px #000;
+  pointer-events: none;
+}
+.vf-rec {
+  color: #e0566a;
+  letter-spacing: .08em;
+  font-weight: 600;
+  display: flex; align-items: center; gap: 4px;
+}
+.vf-rec .rec-dot {
+  display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #e0566a;
+  box-shadow: 0 0 5px #e0566a;
+  animation: rec-blink 1.4s steps(1) infinite;
+}
+.vf-meta {
+  color: #6d859a;
+  font-size: 9px;
+}
+.vf-scene {
+  position: relative;
+  width: 100%;
+  height: 130px;
+  overflow: hidden;
+  background: #080d14;
+}
+.vf-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: contrast(1.1) saturate(0.85);
+  transition: filter 0.4s ease;
+}
+/* 距离虚化 */
+.vf-frame.af-searching .vf-canvas {
+  filter: blur(2.5px) contrast(0.95) saturate(0.65);
+}
+.vf-frame.af-tracking .vf-canvas {
+  filter: blur(1.2px) contrast(1.05) saturate(0.8);
+}
+.vf-frame.af-locked .vf-canvas {
+  filter: blur(0px) contrast(1.15) saturate(0.9);
+}
+/* 对焦微标 */
+.vf-af-badge {
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  font-size: 8.5px;
+  margin-left: 6px;
+}
+.vf-frame.af-searching .vf-af-badge {
+  color: #dfba68;
+  background: rgba(223, 186, 104, 0.16);
+  border: 1px solid rgba(223, 186, 104, 0.45);
+}
+.vf-frame.af-tracking .vf-af-badge {
+  color: #8bb8dc;
+  background: rgba(139, 184, 220, 0.16);
+  border: 1px solid rgba(139, 184, 220, 0.45);
+}
+.vf-frame.af-locked .vf-af-badge {
+  color: #72cf9c;
+  background: rgba(114, 207, 156, 0.16);
+  border: 1px solid rgba(114, 207, 156, 0.45);
+}
+/* 心跳手抖 */
+.vf-frame.shake-deform .vf-canvas {
+  animation: vf-shake-light 0.18s infinite alternate ease-in-out;
+}
+.vf-frame.shake-crash .vf-canvas {
+  animation: vf-shake-heavy 0.12s infinite alternate ease-in-out;
+}
+@keyframes vf-shake-light {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(0.7px, -0.6px) rotate(0.25deg); }
+}
+@keyframes vf-shake-heavy {
+  0%   { transform: translate(-1.2px, 0.9px) rotate(-0.45deg); }
+  50%  { transform: translate(1.3px, -1.1px) rotate(0.55deg); }
+  100% { transform: translate(-0.8px, -1px) rotate(-0.35deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vf-frame.shake-deform .vf-canvas,
+  .vf-frame.shake-crash .vf-canvas { animation: none; }
+}
+.vf-scanline {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 3px);
+  opacity: 0.7;
+}
+.vf-footer {
+  position: absolute;
+  bottom: 6px; left: 16px; right: 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  font: 9px ui-monospace, Consolas, monospace;
+  color: #6b8296;
+  z-index: 6;
+  text-shadow: 0 1px 3px #000;
+  pointer-events: none;
+}
+.vf-tag {
+  color: #9ab4cb;
+}
+.vf-status {
+  color: #8faea0;
+}
+
+.lie-legend { display: flex; gap: 16px; font-size: 11px; color: var(--muted); margin-bottom: 10px; align-items: center; }
+.lie-legend .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+@keyframes blink { 50% { opacity: .15; } }
+.trpg .ledger { border-top: 1px solid var(--border); padding: 8px 14px; color: var(--muted); background: #1f2730; border-radius: 0 0 7px 7px; font-size: 11px; margin-top: 12px; }
+/* ═══ 全局 Dialog 浮层弹窗加固（统一 TRPG 暗色风格） ═══ */
+/* ═══ 尾行专属 Dialog 浮层弹窗加固（统一 TRPG 暗色风格，绝不污染宿主与第三方扩展） ═══ */
+/* 终端弹窗排除在外：它自带 header/body 分区，padding 由 :599 定 0。
+   此前两条 !important 特异性打平、靠源码顺序分胜负，终端被套上 20/22 内边距。 */
+dialog.wx-dialog:not(.wx-terminal-dialog), .trpg dialog.wx-dialog:not(.wx-terminal-dialog) {
+  background: #070b10 !important;
+  color: var(--t-hi) !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(240, 179, 85, 0.22) !important;
+  padding: 20px 22px !important;
+  border-radius: 10px !important;
+  width: min(580px, calc(100% - 28px)) !important;
+  max-height: 85dvh !important;
+  overflow: auto !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95) !important;
+  box-sizing: border-box !important;
+}
+dialog.wx-dialog::backdrop, .trpg dialog.wx-dialog::backdrop {
+  background: rgba(5, 10, 16, 0.85) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+dialog.wx-dialog[open], .trpg dialog.wx-dialog[open] { animation: dialog-in 160ms ease-out; }
+dialog.wx-dialog h2, .trpg dialog.wx-dialog h2 { font-size: 16px; margin-top: 0; color: var(--t-hi); letter-spacing: .02em; }
+.wx-dialog .dialog-top, .trpg .wx-dialog .dialog-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); margin-bottom: 16px; }
+.wx-dialog .dialog-top h2, .trpg .wx-dialog .dialog-top h2 { margin-bottom: 10px; }
+.wx-dialog .close-icon, .trpg .wx-dialog .close-icon {
+  min-width: 32px; padding: 2px 8px; font-size: 17px; line-height: 1; cursor: pointer;
+  background: transparent !important; border: 0 !important; color: var(--t-mid) !important; transition: color .15s;
+}
+.wx-dialog .close-icon:hover, .trpg .wx-dialog .close-icon:hover { color: #fff !important; }
+.wx-dialog .dialog-actions, .trpg .wx-dialog .dialog-actions { display: flex; justify-content: flex-end; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px; margin-top: 18px; }
+dialog.wx-dialog button, .trpg dialog.wx-dialog button, .wx-terminal-modal button {
+  font: inherit !important; color: #d9e4ed !important; background: #26333e !important; border: 1px solid #4a5d70 !important; border-radius: 5px !important; padding: 4px 12px !important; cursor: pointer !important; min-height: 28px !important; transition: all .15s !important;
+}
+/* 关闭键不吃通用按钮皮：它必须排在 :1969 之后、且特异性更高（dialog + 两class） */
+dialog.wx-dialog .wx-modal-close, dialog.wx-dialog .close-icon,
+.trpg dialog.wx-dialog .wx-modal-close, .trpg dialog.wx-dialog .close-icon {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  min-height: 0 !important;
+  padding: 4px 8px !important;
+  color: var(--t-mid) !important;
+  font-size: 17px !important;
+}
+dialog.wx-dialog .wx-modal-close:hover, dialog.wx-dialog .close-icon:hover,
+.trpg dialog.wx-dialog .wx-modal-close:hover, .trpg dialog.wx-dialog .close-icon:hover {
+  background: transparent !important;
+  border: 0 !important;
+  color: #ffffff !important;
+}
+dialog.wx-dialog button:hover, .trpg dialog.wx-dialog button:hover, .wx-terminal-modal button:hover { background: #354757 !important; border-color: #8da6bd !important; color: #fff !important; }
+.trpg .item-meta { color: #afc3d2; font-size: 12px; }
+.trpg .dice { font: 700 30px/1.6 ui-monospace, Consolas, monospace; margin: 15px 0; }
+.trpg .success { color: #b3cdb8; }
+@keyframes beat { 0%, 35%, 100% { transform: scale(1); } 12% { transform: scale(1.18); } }
+@keyframes ring-beat { 0%, 40%, 100% { stroke-opacity: .08; stroke-width: 1; } 12% { stroke-opacity: .65; stroke-width: 2.5; } }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ecg-scroll { from { transform: translateX(0); } to { transform: translateX(-72px); } }
+.trpg.motion-paused .dial-heart, .trpg.motion-paused .dial-beat-halo, .trpg.motion-paused .ecg-scroll { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .trpg .dial-heart, .trpg .dial-beat-halo, .trpg .ecg-scroll, .trpg dialog.wx-dialog[open] { animation: none; }
+  .trpg .dial-marker-orbit, .trpg .stamina-fill { transition: none; }
+  .trpg .dev-frame-rec::before { animation: none; }
+}
+/* ═══ 零楼 · 开局两步走向导（第一步：猎手身份属性 ➔ 第二步：锁定目标角色；零楼数零 token） ═══ */
+#wx-zero-floor { position: static; width: 100%; max-width: 820px; min-width: 0; box-sizing: border-box; padding: 16px; margin: 12px auto; background: #131b23; border: 1px solid #354351; border-radius: 8px; color: var(--t-hi); white-space: normal; overflow-wrap: anywhere; }
+#wx-zero-floor[hidden], [data-wx-opening][hidden] { display: none !important; }
+#wx-zero-floor button { cursor: pointer; }
+@media(max-width: 560px) { #wx-zero-floor { padding: 10px; } #wx-zero-floor .target-grid { grid-template-columns: 1fr; } #wx-zero-floor .zero-title-wrap { flex-wrap: wrap; } }
+/* 关闭态一律不占版面：作者态的 display:flex 会盖过 UA 的 dialog:not([open]){display:none}，
+   导致创角向导 close() 之后仍占 399px 版面（真机实测）。 */
+dialog.wx-dialog:not([open]) { display: none !important; }
+.zero-wizard-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 12px; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }
+.zero-title-wrap { display: flex; align-items: baseline; gap: 8px; }
+#wx-zero-floor .zero-title-wrap h2 { font-size: 15px; font-weight: 600; color: var(--t-hi); letter-spacing: .02em; }
+.zero-sub { color: var(--t-low); font: 500 10px/1.5 ui-monospace, Consolas, monospace; letter-spacing: .06em; }
+.zero-steps-bar { display: flex; align-items: center; gap: 8px; }
+/* 步骤药丸与页签都在创角弹窗里，统一带 #wx-zero-floor 作用域：
+   宿主通用按钮皮是 `.trpg dialog.wx-dialog button`（0,2,2），单类前缀（0,2,0）压不住。 */
+#wx-zero-floor .zero-step-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 0 !important; background: none !important; border: 0 !important; border-radius: 0 !important; color: var(--t-low) !important; font: 600 10px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .12em; cursor: pointer; transition: color .15s; }
+#wx-zero-floor .zero-step-pill .step-num { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: none !important; border: 1px solid rgba(255, 255, 255, 0.16) !important; color: var(--t-low) !important; font-size: 9.5px; font-weight: 700; }
+#wx-zero-floor .zero-step-pill.active { color: var(--heat) !important; }
+#wx-zero-floor .zero-step-pill.active .step-num { background: var(--heat) !important; border-color: var(--heat) !important; color: #0b0f14 !important; }
+#wx-zero-floor .zero-step-pill.completed { color: var(--safe) !important; }
+#wx-zero-floor .zero-step-pill.completed .step-num { border-color: rgba(95, 214, 195, 0.5) !important; color: var(--safe) !important; }
+.zero-step-divider { color: var(--t-low); opacity: .5; font-size: 11px; }
+
+.zero-step-view { display: flex; flex-direction: column; min-height: 0; }
+.zero-step-view[hidden] { display: none; }
+
+#wx-zero-floor .create-tabs { display: flex; gap: 8px; margin: 0 0 14px; }
+#wx-zero-floor .create-tab { background: none !important; border: 0 !important; border-radius: 0 !important; color: var(--t-low) !important; padding: 4px 0 !important; margin-right: 16px; font: 600 10px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .12em; }
+#wx-zero-floor .create-tab.active { background: none !important; color: var(--heat) !important; box-shadow: inset 0 -2px 0 var(--heat); }
+#wx-zero-floor .create-pane[hidden] { display: none; }
+#wx-zero-floor .id-grid, #wx-zero-floor .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; max-height: 290px; overflow-y: auto; padding-right: 4px; }
+#wx-zero-floor .id-card { text-align: left; background: rgba(255, 255, 255, 0.028) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, 0.07) !important; border-radius: 4px !important; cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-height: 0; transition: background-color .15s; }
+#wx-zero-floor .id-card:hover { background: rgba(255, 255, 255, 0.055) !important; }
+#wx-zero-floor .id-card.sel { background: rgba(240, 179, 85, 0.07) !important; border-top-color: var(--heat) !important; }
+#wx-zero-floor .id-name { font-size: 15px; font-weight: 600; color: var(--t-hi); }
+#wx-zero-floor .id-tagline { font-size: 11px; color: var(--t-mid); font-style: italic; }
+#wx-zero-floor .id-line { font-size: 11px; color: var(--t-mid); line-height: 1.55; }
+#wx-zero-floor .id-line b { color: var(--safe); font-weight: 600; }
+#wx-zero-floor .id-line.bad b { color: #ff9aa3; }
+#wx-zero-floor .alloc { margin-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 10px; }
+#wx-zero-floor .alloc-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 10px; }
+#wx-zero-floor .alloc-remain { font: 600 15px/1 ui-monospace, Consolas, monospace; color: var(--heat); white-space: nowrap; }
+#wx-zero-floor .alloc-remain.warn { color: #ff9aa3; }
+#wx-zero-floor .alloc-row { display: grid; grid-template-columns: 44px auto 96px 1fr; align-items: center; gap: 10px; padding: 4px 0; }
+#wx-zero-floor .alloc-name { font-size: 13px; font-weight: 600; color: var(--t-hi); }
+#wx-zero-floor .stepper { display: flex; align-items: center; gap: 6px; }
+#wx-zero-floor .stepper button { background: rgba(255, 255, 255, 0.05) !important; border: 0 !important; border-radius: 2px !important; color: var(--t-mid) !important; }
+#wx-zero-floor .stepper button:disabled { opacity: .35; cursor: not-allowed; }
+#wx-zero-floor .alloc-val { font: 600 19px/1 ui-monospace, Consolas, monospace; color: var(--t-hi); text-align: center; min-width: 30px; }
+#wx-zero-floor .alloc-mod { font: 600 11px/1.3 ui-monospace, Consolas, monospace; color: var(--safe); text-align: center; white-space: nowrap; }
+#wx-zero-floor .alloc-mod.waste { color: #ff9aa3; }
+#wx-zero-floor .alloc-tier { font-size: 11px; color: var(--t-low); }
+#wx-zero-floor .alloc-warn { color: #ff9aa3; font-size: 11px; margin: 4px 0 0; min-height: 15px; }
+
+/* 步骤 2：目标卡片网格与详情 */
+.target-section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 10px; flex-wrap: wrap; }
+.target-sub-note { font-size: 11px; color: #7fd4c1; }
+.target-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
+#wx-zero-floor .target-card { text-align: left; background: rgba(255, 255, 255, 0.028) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, 0.07) !important; border-radius: 4px !important; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: background-color .15s; }
+#wx-zero-floor .target-card:hover { background: rgba(255, 255, 255, 0.055) !important; }
+#wx-zero-floor .target-card.sel { background: rgba(240, 179, 85, 0.07) !important; border-top-color: var(--heat) !important; }
+.target-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+#wx-zero-floor .target-name { font-size: 14px; font-weight: 600; color: var(--t-hi); }
+#wx-zero-floor .target-stars { font-size: 11px; color: var(--heat); letter-spacing: 1px; }
+#wx-zero-floor .target-detail-stars { font-size: 12px; color: var(--heat); letter-spacing: 1px; }
+#wx-zero-floor .target-meta-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--t-mid); gap: 6px; }
+#wx-zero-floor .target-type-badge { display: inline-block; padding: 0 0 0 6px; border: 0 !important; border-left: 2px solid var(--t-low) !important; border-radius: 0 !important; font: 600 9.5px/1.4 ui-monospace, Consolas, monospace; letter-spacing: .08em; background: none !important; color: var(--t-mid) !important; }
+#wx-zero-floor .target-area { font-size: 11px; color: var(--t-mid); }
+#wx-zero-floor .target-tagline { font-size: 11px; color: var(--t-mid); font-style: italic; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#wx-zero-floor .target-features { font-size: 10px; color: var(--t-mid); line-height: 1.4; }
+
+#wx-zero-floor .target-detail-box { margin-top: 10px; background: rgba(255, 255, 255, 0.024) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, 0.07) !important; border-radius: 4px !important; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; }
+#wx-zero-floor .target-detail-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important; padding-bottom: 5px; }
+.target-detail-title-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.target-detail-action-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+#wx-zero-floor .target-detail-name { font-size: 15px; font-weight: 600; color: var(--t-hi) !important; }
+#wx-zero-floor .target-detail-badge { padding: 1px 7px; border: 0 !important; border-left: 2px solid var(--her) !important; border-radius: 2px !important; font-size: 11px; font-weight: 600; background: rgba(217, 143, 160, 0.10) !important; color: #eec3cb !important; }
+#wx-zero-floor .target-status-badge { font-size: 10px; padding: 1px 6px; border-radius: 4px; }
+#wx-zero-floor .target-status-badge.ready { background: rgba(95, 214, 195, 0.10) !important; border: 0 !important; border-left: 2px solid var(--safe) !important; border-radius: 2px !important; color: var(--safe) !important; }
+#wx-zero-floor .btn-reroll-target { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px !important; font-size: 12px !important; font-weight: 600; letter-spacing: .04em; border-radius: 2px !important; background: rgba(240, 179, 85, 0.12) !important; border: 1px solid rgba(240, 179, 85, 0.55) !important; color: var(--heat) !important; cursor: pointer; transition: all .15s; }
+#wx-zero-floor .btn-reroll-target .btn-ico svg { width: 14px; height: 14px; }
+#wx-zero-floor .btn-reroll-target:hover { background: rgba(240, 179, 85, 0.22) !important; border-color: var(--heat) !important; color: #ffe2b0 !important; }
+#wx-zero-floor .target-gen-name { font-weight: 600; color: var(--t-hi); font-size: 13px; letter-spacing: 0; }
+#wx-zero-floor .target-gen-sub { font-size: 10px; color: var(--t-low); margin-left: 6px; }
+#wx-zero-floor .target-stat-delta-pos { color: var(--safe); font-weight: 600; margin-left: 2px; }
+#wx-zero-floor .target-stat-delta-neg { color: #ff9aa3; font-weight: 600; margin-left: 2px; }
+.target-detail-area { font-size: 11px; color: #8da4b8; }
+.target-detail-tagline { font-size: 11px; color: #afc3d2; font-style: italic; margin: 0; }
+.target-detail-rows { display: flex; flex-direction: column; gap: 3px; font-size: 11px; }
+#wx-zero-floor .target-row { color: var(--t-low); }
+#wx-zero-floor .target-row b { color: var(--t-mid); margin-right: 6px; }
+
+/* 底部操作条 */
+#wx-zero-floor .create-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 12px; margin-top: 14px; gap: 12px; flex-wrap: wrap; }
+#wx-zero-floor .create-hint { font-size: 12px; color: var(--t-low); }
+#wx-zero-floor .zero-btn-prev { background: none !important; border: 1px solid rgba(255, 255, 255, 0.14) !important; color: var(--t-mid) !important; border-radius: 2px !important; cursor: pointer; transition: all .15s; }
+#wx-zero-floor .zero-btn-prev:hover { background: rgba(255, 255, 255, 0.05) !important; color: var(--t-hi) !important; }
+#wx-zero-floor .zero-btn-next, #wx-zero-floor .create-confirm:not(:disabled) { background: rgba(240, 179, 85, 0.12) !important; border: 1px solid rgba(240, 179, 85, 0.45) !important; border-radius: 2px !important; color: var(--heat) !important; cursor: pointer; transition: all .15s; }
+#wx-zero-floor .zero-btn-next:hover, #wx-zero-floor .create-confirm:not(:disabled):hover { background: rgba(240, 179, 85, 0.2) !important; color: #ffe2b0 !important; }
+#wx-zero-floor .zero-btn-next:disabled, #wx-zero-floor .create-confirm:disabled { opacity: .35 !important; cursor: not-allowed; }
+/* 常驻条身份徽记（青色，与优势金色区分；v0.8） */
+.trpg .slim-tag.id-badge { cursor: pointer; color: #a8e6d5; border-color: #3f6c62; }
+.trpg .slim-tag.id-badge:hover { border-color: #7fd4c1; }
+/* 未开局覆盖钮（新局且未确认身份时盖住常驻条） */
+.trpg-slim-bar { position: relative; }
+#zeroChip { position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(13, 19, 26, .94); border: 1px dashed #4a5d70; border-radius: 7px; color: #7fd4c1; font-size: 13px; cursor: pointer; }
+#zeroChip[hidden] { display: none; }
+/* ═══ M4-2 三翼战术 Canvas 判定台样式（夜巡语言：去边框、顶部留一条极细线、光与材质当结构） ═══
+   判定台是单例弹窗，规则统一带 #wx-settle-dialog 作用域：
+   一是压得住宿主通用按钮皮（dialog.wx-dialog button 带 !important），二是避免与终端的同名类互相牵连。 */
+dialog#wx-settle-dialog {
+  width: min(860px, calc(100vw - 16px)) !important;
+  max-height: 92vh !important;
+  background: #070b10 !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(240, 179, 85, 0.22) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.92) !important;
+  padding: 14px 16px !important;
+}
+.settle-body {
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 4px 0 8px;
+}
+#wx-settle-dialog .stage-console {
+  display: grid;
+  grid-template-columns: 210px 1fr 240px;
+  gap: 12px;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 10px;
+  padding: 2px 0 !important;
+  position: relative;
+  overflow: hidden;
+}
+@media (max-width: 760px) {
+  .stage-console { grid-template-columns: 1fr; }
+}
+#wx-settle-dialog .wing {
+  background: rgba(255, 255, 255, 0.028) !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 4px !important;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 10;
+}
+.wing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(75, 125, 185, 0.18);
+  padding-bottom: 5px;
+  font-size: 11px;
+}
+#wx-settle-dialog .wing-tag {
+  font: 600 9.5px/1.5 ui-monospace, Consolas, monospace !important;
+  color: var(--t-low) !important;
+  border: 0 !important;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: .16em;
+}
+#wx-settle-dialog .wing-title { color: var(--t-mid) !important; letter-spacing: 0.04em; font-weight: 600 !important; }
+
+#wx-settle-dialog .action-badge {
+  font: 600 11.5px/1.5 ui-monospace, Consolas, monospace !important;
+  color: #f4d6a0 !important;
+  background: rgba(240, 179, 85, 0.08) !important;
+  border: 0 !important;
+  border-left: 2px solid var(--heat) !important;
+  border-radius: 0 !important;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mods-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 100px;
+}
+#wx-settle-dialog .chip-item {
+  font: 11.5px Consolas, monospace;
+  padding: 3px 8px;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 0 !important;
+  border-left: 2px solid rgba(255, 255, 255, 0.14) !important;
+  color: var(--t-mid) !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: chipSlideIn .25s cubic-bezier(.16, 1.3, .3, 1) forwards;
+}
+@keyframes chipSlideIn { to { opacity: 1; transform: translateX(0); } }
+#wx-settle-dialog .chip-item.hidden-mod {
+  border-left-color: var(--danger) !important;
+  color: #ffa9b1 !important;
+  background: rgba(255, 90, 104, 0.07) !important;
+}
+#wx-settle-dialog .chip-item.ripple-mod {
+  border-left-color: var(--heat) !important;
+  color: #f0d9a8 !important;
+  background: rgba(240, 179, 85, 0.06) !important;
+}
+#wx-settle-dialog .chip-item b { color: var(--t-hi) !important; font-weight: normal; }
+
+#wx-settle-dialog .ekg-widget {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 0 !important;
+  padding: 6px 8px;
+}
+#wx-settle-dialog .ekg-top {
+  display: flex;
+  justify-content: space-between;
+  font: 10px Consolas, monospace;
+  color: var(--t-low) !important;
+  margin-bottom: 2px;
+}
+#wx-settle-dialog .ekg-top .bpm { color: var(--safe) !important; font-weight: 600 !important; }
+.ekg-svg { width: 100%; height: 22px; display: block; }
+#wx-settle-dialog .ekg-trace {
+  fill: none;
+  stroke: rgba(95, 214, 195, 0.8) !important;
+  stroke-width: 1.6;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: ekgLoop 1.8s linear infinite;
+}
+@keyframes ekgLoop { to { stroke-dashoffset: -200; } }
+
+#wx-settle-dialog .stage-center {
+  position: relative;
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: none !important;
+}
+.stage-center .corner {
+  position: absolute; width: 12px; height: 12px; border: 2px solid rgba(79, 143, 214, 0.45); pointer-events: none; transition: border-color .3s;
+}
+#wx-settle-dialog .stage-center .corner { border-color: rgba(255, 255, 255, 0.18) !important; }
+.stage-center .c-tl { top: 6px; left: 6px; border-right: none; border-bottom: none; }
+.stage-center .c-tr { top: 6px; right: 6px; border-left: none; border-bottom: none; }
+.stage-center .c-bl { bottom: 6px; left: 6px; border-right: none; border-top: none; }
+.stage-center .c-br { bottom: 6px; right: 6px; border-left: none; border-top: none; }
+
+#wx-settle-dialog .hud-status {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  font: 10px Consolas, monospace; letter-spacing: 0.2em; color: var(--t-low) !important;
+  transition: color .3s; white-space: nowrap; z-index: 8;
+}
+
+#wx-settle-dialog .radar-ring {
+  position: absolute; width: 260px; height: 260px; border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.10) !important; pointer-events: none;
+  animation: rSpin 18s linear infinite;
+}
+@keyframes rSpin { to { transform: rotate(360deg); } }
+
+.die-stage-center {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+canvas#settleDieCanvas {
+  display: block;
+  width: 250px;
+  height: 250px;
+  z-index: 5;
+  cursor: grab;
+}
+canvas#settleDieCanvas:active { cursor: grabbing; }
+
+#wx-settle-dialog .die-shadow {
+  position: absolute;
+  width: 160px;
+  height: 18px;
+  bottom: -6px;
+  left: 45px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 70%) !important;
+  pointer-events: none;
+  z-index: 2;
+  transition: transform .15s ease;
+}
+
+#wx-settle-dialog .verdict-box {
+  text-align: center;
+  padding: 5px;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 4px !important;
+  border: 0 !important;
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#wx-settle-dialog .verdict-badge {
+  font: 700 20px Consolas, monospace;
+  letter-spacing: 0.2em;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: all .28s cubic-bezier(.2, 1.4, .4, 1);
+}
+#wx-settle-dialog .verdict-badge.show { opacity: 1; transform: scale(1); }
+#wx-settle-dialog .verdict-badge.crit { color: var(--heat) !important; text-shadow: 0 0 18px rgba(240, 179, 85, 0.55) !important; }
+#wx-settle-dialog .verdict-badge.fail { color: #ff9aa3 !important; text-shadow: 0 0 16px rgba(255, 90, 104, 0.45) !important; }
+#wx-settle-dialog .verdict-badge.success { color: var(--safe) !important; text-shadow: 0 0 16px rgba(95, 214, 195, 0.45) !important; }
+#wx-settle-dialog .verdict-badge.grace { color: #e9d3ad !important; text-shadow: none !important; }
+
+#wx-settle-dialog .math-line {
+  font: 11px Consolas, monospace;
+  color: var(--t-low) !important;
+  margin-top: 2px;
+}
+#wx-settle-dialog .math-line b { color: var(--t-hi) !important; font-weight: normal; }
+
+.ledger-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 90px;
+}
+#wx-settle-dialog .ledger-row {
+  font: 11px Consolas, monospace;
+  padding: 2.5px 7px;
+  border-radius: 0 !important;
+  background: none !important;
+  border-left: 2px solid rgba(255, 255, 255, 0.16) !important;
+  color: var(--t-mid) !important;
+  display: flex;
+  justify-content: space-between;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all .25s ease;
+}
+#wx-settle-dialog .ledger-row.show { opacity: 1; transform: translateY(0); }
+#wx-settle-dialog .ledger-row.warn { border-left-color: var(--danger) !important; color: #ff9aa3 !important; }
+#wx-settle-dialog .ledger-row.gain { border-left-color: var(--safe) !important; color: var(--safe) !important; }
+.ledger-row .val { font-weight: bold; }
+
+#wx-settle-dialog .dark-reveal-card {
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #ffa9b1 !important;
+  background: rgba(255, 90, 104, 0.06) !important;
+  border: 0 !important;
+  border-left: 2px solid var(--danger) !important;
+  border-radius: 0 !important;
+  padding: 5px 7px;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all .3s ease;
+  margin-top: auto;
+}
+#wx-settle-dialog .dark-reveal-card.show { opacity: 1; transform: scale(1); }
+#wx-settle-dialog .dark-reveal-card b { color: #ffc2c8 !important; }
+
+#wx-settle-dialog .queue-history {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08) !important;
+  padding-top: 4px;
+}
+#wx-settle-dialog .history-item {
+  font: 10px Consolas, monospace;
+  padding: 2px 5px;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 0 !important;
+  border-left: 2px solid rgba(255, 255, 255, 0.12) !important;
+  color: var(--t-low) !important;
+  display: flex;
+  justify-content: space-between;
+}
+#wx-settle-dialog .history-item b { color: var(--t-hi) !important; font-weight: normal; }
+
+.flash-overlay {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 7;
+}
+.flash-overlay.ok { background: radial-gradient(circle at 50% 50%, rgba(142,226,179,.22) 0%, transparent 68%); animation: fl .7s ease-out; }
+.flash-overlay.bad { background: radial-gradient(circle at 50% 50%, rgba(224,86,106,.24) 0%, transparent 68%); animation: fl .7s ease-out; }
+.flash-overlay.crit { background: radial-gradient(circle at 50% 50%, rgba(216,183,104,.32) 0%, transparent 68%); animation: fl .85s ease-out; }
+@keyframes fl { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+
+/* 底栏沿用 .dialog-actions 的排布（勾选与确认同侧），这里只补夜巡的语言化内边距 */
+.settle-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; }
+#wx-settle-dialog .settle-actions { padding-top: 12px !important; border-top: 1px solid rgba(255, 255, 255, 0.06) !important; }
+#wx-settle-dialog .settle-auto { font-size: 12px; color: var(--t-mid) !important; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+#wx-settle-dialog .settle-ack { min-width: 88px !important; font-weight: 700; }
+#wx-settle-dialog .settle-ack:not(:disabled) {
+  background: rgba(95, 214, 195, 0.12) !important;
+  border: 1px solid rgba(95, 214, 195, 0.45) !important;
+  border-radius: 2px !important;
+  color: var(--safe) !important;
+}
+#wx-settle-dialog .settle-ack:not(:disabled):hover { background: rgba(95, 214, 195, 0.2) !important; color: #d8fff6 !important; }
+/* 旧 520px 块里 .bar/.columns/.column/.drawer/.value/.phase 已随 GLM 骨架废弃，只留仍在用的三类 */
+@media (max-width: 520px) {
+  .trpg .stat { padding: 10px 7px; }
+  .trpg .label { font-size: 10px; }
+  .trpg .stat.instrument { padding: 8px 8px 10px; }
+  .trpg .heart-dial { width: min(100%, 124px); }
+}
+
+/* ═══ 桌面窄窗（≤800px）先让一层 ═══
+   C 案字号抬高后（场所 15px / 心跳 24px），整套左簇需要的宽度比原来更大；
+   窗口窄于 ≈860 时就会把标签齐根裁掉。先收三样最低价值的读数：
+   收摊步数、BPM、设备入口（后两者终端里都有），并把路牌与刻度收一档。 */
+@media (max-width: 860px) {
+  .slim-tag.remain { display: none; }
+  .mini-heart-bpm { display: none; }
+  /* .trpg .slim-btn 把 display 写回了 inline-flex，这里要同前缀压回来 */
+  .trpg .slim-btn.phone-stat { display: none !important; }
+  /* 场所名走省略号，别齐根裁掉半截标签 */
+  .slim-left { min-width: 0; gap: 7px; }
+  .slim-place { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+  .slim-tags-group { gap: 7px; }
+  .slim-tag { font-size: 10.5px; padding-left: 6px; }
+  .slim-center { gap: 6px; }
+  .mini-heart-num { font-size: 21px; }
+  .mini-heart { font-size: 17px; }
+}
+
+/* ≤660px：再收一层——大区徽记（场所名已足够定位）与 4 个距离点（档位文字仍在）。
+   561~660 区间实测左簇仍会被裁掉 5~64px。 */
+@media (max-width: 660px) {
+  .slim-dist-badge { display: none; }
+  .slim-pips { display: none; }
+  .slim-divider { display: none; }
+}
+
+/* ═══ 手机断点（≤560px）常驻条与终端重排 ═══
+   旧 520px 块只管 .bar/.columns/.column/.drawer 等已废弃的 GLM 骨架类；
+   新结构（trpg-slim-bar / wx-capsule-bar / wx-terminal-*）此前没有任何响应式规则，
+   390px 下左簇被 min-width:0 压成 0 宽、终端按钮被裁半个字。 */
+@media (max-width: 560px) {
+  /* 常驻条：保留位置、距离档、终局红线、心跳、终端；次级信息让位 */
+  /* 预览壳在窄屏上收内边距（box-sizing / min-width 已在基础规则里处理） */
+  main.wx-standalone-main { padding: 10px 8px; }
+  .trpg-slim-bar { padding: 0 6px; gap: 5px; }
+  .slim-left { gap: 5px; }
+  .slim-place { font-size: 12.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .slim-tags-group { gap: 6px; }
+  /* 天气：终端沙盘与动线雨幕特效里都还在，条上不重复占位 */
+  .slim-tag.weather { display: none; }
+  /* 收摊步数：次级信息，保留在终端与 tooltip */
+  .slim-tag.remain { display: none; }
+  /* C 案的标签是"左竖条 + 文字"，窄屏只收字号，不能补 padding 把竖条挤没 */
+  .slim-tag.strike-tag.allowed, .slim-tag.strike-tag.sealed { font-size: 10px; padding: 0 0 0 5px; }
+  .slim-tag.id-badge { font-size: 10px; padding: 0 0 0 5px; }
+  /* 距离档与读数之间拉一根发丝线，别读成一句话 */
+  .slim-center { gap: 4px; padding: 0 8px 0 0; border-right: 1px solid rgba(255, 255, 255, 0.07); }
+  .slim-pips { display: none; }
+  .slim-divider { display: none; }
+  .slim-right { gap: 8px; }
+  .slim-stamina { padding: 0; }
+  /* 40px 细线在窄条上没有信息量，数字承担 */
+  .slim-stamina-bar { display: none; }
+  .mini-heart-bpm { display: none; }
+  .mini-heart { font-size: 17px; }
+  .mini-heart-num { font-size: 22px; }
+  .trpg .heart-pill-btn { padding: 0 !important; }
+  .trpg .slim-btn { padding: 2px 2px !important; }
+  /* 设备入口在终端深页里已有（监控设备 ↗），条上让位给终端图标 */
+  .phone-stat { display: none; }
+  .term-txt { display: none; }
+
+  /* 胶囊条：压缩内边距，靠横向滑动承载全部胶囊（C3：只收尺寸，不动皮肤） */
+  .wx-capsule-bar { padding: 3px 6px; gap: 5px; }
+  .wx-posture-badge { font-size: 9px; gap: 3px; }
+  .trpg .wx-capsule-chip { font-size: 10.5px; padding: 3px 8px; min-height: 26px !important; }
+  .trpg .wx-more-btn { font-size: 10.5px; padding: 3px 4px; }
+  /* 右边缘渐隐，提示这一排可以横滑（否则被裁的胶囊看起来像渲染错） */
+  .wx-chips-wrap {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);
+  }
+
+  /* 心跳弹层：贴边不越界，刻度文字不再随 SVG 缩到 6px */
+  .heart-popover-card { width: min(300px, calc(100vw - 16px)); right: -4px; padding: 9px 10px; }
+  .popover-content .heart-dial { width: 138px; }
+  .popover-content .stamina, .popover-content .spark { width: 138px; }
+
+  /* 终端：标题不再折三行，徽记让位；动线轨可横滑而不是被切 */
+  .wx-modal-head { padding: 10px 12px; gap: 8px; }
+  .wx-modal-title { font-size: 12.5px; letter-spacing: 0; }
+  /* 阶段徽记（第 N 晚 · 潜行阶段）是模式唯一读数，不隐藏，只收紧 */
+  .wx-modal-badge { font-size: 9.5px; padding: 1px 5px; line-height: 1.25; max-width: none; white-space: nowrap; }
+  .wx-terminal-icon { display: none; }
+  .wx-modal-close { padding: 4px 6px !important; font-size: 15px; }
+  .wx-modal-body { padding: 12px 12px 10px; }
+  .wx-modal-body .route-tracker { padding: 10px 12px 12px; }
+  .route-stepper { overflow-x: auto; scrollbar-width: none; }
+  .route-stepper::-webkit-scrollbar { display: none; }
+  .wx-terminal-envbox, .wx-wing-card { padding: 10px 12px; }
+  .trpg .wx-terminal-ledger[data-tip] { margin: 0 12px 10px; }
+
+  /* 判定台单翼叠放后，三翼间距收一档 */
+  .stage-console { padding: 10px; gap: 10px; }
+}
+
+/* ≤430px：再让一档——大区徽记退场（场所名已足够定位，大区在终端沙盘里），
+   把宽度还给场所名，避免窄条上只剩一个「居」字。 */
+@media (max-width: 430px) {
+  .slim-dist-badge { display: none; }
+  .slim-tag.strike-tag.allowed, .slim-tag.strike-tag.sealed { font-size: 9.5px; padding: 0 0 0 4px; }
+  /* 模式（潜行）在终端阶段徽记里仍有读数；窄条上把宽度让给场所与红线 */
+  .slim-phase { display: none; }
+  .slim-place { font-size: 12px; }
+}
+
+/* ≤380px（小屏安卓 / SE）：只剩 2px 的富余，把间隙与心跳内边距再收一点，
+   让场所名不被省略号截掉。 */
+@media (max-width: 380px) {
+  .trpg-slim-bar { gap: 4px; padding: 0 5px; }
+  .slim-right { gap: 3px; }
+  .heart-pill-btn { padding: 2px 5px; }
+  .mini-heart { margin-right: 3px; }
+}
+/* ═══ 相册（贴墙）与拍照即时卡片 ═══ */
+.wx-album-dialog { width: min(92vw, 560px); max-height: 80vh; }
+.album-count { font: 600 11px/1 ui-monospace, Consolas, monospace; color: var(--t-low); margin-left: 6px; }
+.album-wall { overflow-y: auto; padding: 8px 4px 12px; display: flex; flex-direction: column; gap: 10px; }
+.wall-sec { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; padding-top: 14px; position: relative; }
+.wall-sec::before {
+  content: attr(data-cn); position: absolute; top: 0; left: 0;
+  font: 600 10px/1 ui-monospace, Consolas, monospace; letter-spacing: .14em; color: var(--t-low);
+}
+.photo {
+  width: 76px; height: 104px; background: #e8e6e1; padding: 4px 4px 14px; border-radius: 2px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.45); transform: rotate(var(--tilt, -1.5deg));
+  cursor: pointer; position: relative; box-sizing: border-box;
+}
+.photo:nth-child(3n) { --tilt: 1.6deg; }
+.photo:nth-child(4n) { --tilt: -2.2deg; }
+.photo img { width: 100%; height: 86px; object-fit: cover; display: block; background: #2a2f35; }
+.photo .cap { position: absolute; left: 5px; right: 5px; bottom: 3px; font: 500 8px/1.2 ui-monospace, Consolas, monospace; color: #4a4a46; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.photo.empty { height: 96px; background: transparent; box-shadow: none; border: 1px dashed rgba(255,255,255,.18); border-radius: 2px; cursor: default; }
+.photo.empty::after { content: ""; }
+.photo.broken { background: #2b2a27; }
+.photo.broken img { display: none; }
+.photo.broken .cap { color: #8c8a80; }
+.album-detail { position: fixed; inset: 0; background: rgba(4,7,10,.92); z-index: 20050; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; }
+.album-detail[hidden] { display: none; }
+.album-detail img { max-width: min(92vw, 520px); max-height: 68vh; object-fit: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+.album-detail-meta { font: 500 12px/1.6 ui-monospace, Consolas, monospace; color: var(--t-mid); text-align: center; }
+.photo-toast {
+  position: fixed; right: 16px; bottom: 118px; z-index: 20040;
+  display: flex; gap: 8px; align-items: center; padding: 8px;
+  background: rgba(16,23,31,.96); border: 1px solid var(--line); border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5); animation: toastIn .22s ease-out;
+}
+.photo-toast[hidden] { display: none; }
+.photo-toast img { width: 44px; height: 58px; object-fit: cover; border-radius: 2px; background: #2a2f35; }
+.photo-toast-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.photo-toast-txt b { font: 600 12px/1.2 "Noto Sans SC", system-ui, sans-serif; color: var(--t-hi); }
+.photo-toast-txt span { font: 500 10px/1.2 ui-monospace, Consolas, monospace; color: var(--t-low); }
+@keyframes toastIn { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }

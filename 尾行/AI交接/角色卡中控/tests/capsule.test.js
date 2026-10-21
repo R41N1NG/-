@@ -12,7 +12,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const htmlPath = path.join(__dirname, "..", "状态栏.html");
-const html = fs.readFileSync(htmlPath, "utf8");
+const html = require("./helpers/ui-source.js").readUISource();
 
 test("DOM 锚点：行动胶囊栏、姿态徽标、胶囊容器、更多按钮与二级抽屉在位", () => {
   assert.ok(html.includes('id="wxCapsuleBar"'), "应有 wxCapsuleBar 容器");
@@ -26,9 +26,7 @@ test("DOM 锚点：行动胶囊栏、姿态徽标、胶囊容器、更多按钮�
 
 test("胶囊自适应逻辑：同街场景产出 4 胶囊且默认姿态为跟缀", () => {
   // 提取 html 内 getDynamicCapsules 函数进行逻辑测试
-  const fnMatch = html.match(/function getDynamicCapsules\(snap\)[\s\S]*?\n  \}/);
-  assert.ok(fnMatch, "应能在 html 中匹配到 getDynamicCapsules");
-  const getDynamicCapsules = new Function("snap", fnMatch[0] + "\nreturn getDynamicCapsules(snap);");
+  const { getDynamicCapsules } = require("../src/ui/action-options.js");
 
   // 同街潜行
   const samePlan = getDynamicCapsules({ mode: "stealth", dist: "same", place: "street_b" });
@@ -64,14 +62,11 @@ test("胶囊自适应逻辑：同街场景产出 4 胶囊且默认姿态为跟�
 
 test("回执断点原则：检定失败时注入戏剧性转折指令", () => {
   const { createGame } = require("../src/runtime/game.js");
-  const glueSrc = fs.readFileSync(path.join(__dirname, "..", "src", "host", "glue.js"), "utf8");
-  const fnMatch = glueSrc.match(/function receiptText\(r\)[\s\S]*?\n\}/);
-  assert.ok(fnMatch, "应能提取 receiptText");
 
   // 构造 BAND_CN 与 ACC_CN 模拟环境
   const BAND_CN = { crit_success: "大成功", success: "成功", grace: "勉强", fail: "失败", crit_fail: "大失败" };
   const ACC_CN = { stamina: "体力", heart: "心跳", alert: "警觉", pi: "情报", proximity: "接近度", cash: "现金" };
-  const receiptText = new Function("r", "BAND_CN", "ACC_CN", fnMatch[0] + "\nreturn receiptText(r);");
+  const { receiptText } = require("../src/host/receipt.js");
 
   // 模拟成功结算包
   const successRes = {
@@ -141,13 +136,10 @@ test("胶囊直达模式对不同 UI 按钮名称与自然语言输入完全解�
 
 test("回执动态连线：生活包 targetState 与警觉反应正确注入 receiptText 白描指令", () => {
   const { createGame } = require("../src/runtime/game.js");
-  const glueSrc = fs.readFileSync(path.join(__dirname, "..", "src", "host", "glue.js"), "utf8");
-  const fnMatch = glueSrc.match(/function receiptText\(r\)[\s\S]*?\n\}/);
-  assert.ok(fnMatch, "应能提取 receiptText");
 
   const BAND_CN = { crit_success: "大成功", success: "成功", grace: "勉强", fail: "失败", crit_fail: "大失败" };
   const ACC_CN = { stamina: "体力", heart: "心跳", alert: "警觉", pi: "情报", proximity: "接近度", cash: "现金" };
-  const receiptText = new Function("r", "BAND_CN", "ACC_CN", fnMatch[0] + "\nreturn receiptText(r);");
+  const { receiptText } = require("../src/host/receipt.js");
 
   // 1. 初始化高中生（student）开局，装载常规晚自习动线
   const g = createGame({

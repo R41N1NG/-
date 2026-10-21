@@ -1,6 +1,12 @@
 # 尾行 · 角色卡中控（AI 交接）
 
 本目录是「尾行」角色卡的中控工程：引擎 + 状态栏 UI + 测试 + 构建脚本。
+**重点维护：** 玩家反馈“对话与存档不匹配、串档、重复扣账”时，先查 [聊天与存档同步专项](docs/聊天与存档同步专项.md) 和 `src/host/chat-sync/`；运行 `npm run test:sync`。
+
+本轮变更及能力边界见 [优化复审](docs/优化复审.md)。存档已升级到 v2，旧 v1 档自动迁移并保留旧随机流。
+
+模块职责、依赖边界与增删步骤见 [模块化维护指南](docs/模块化维护指南.md)。
+
 图形素材在上级 [图片/](../图片/)，美术提示词清单在本目录 `美术/`。
 
 ## 一句话
@@ -14,22 +20,30 @@
 | `src/runtime/` | 引擎（game / checks / ledger / map / album / target_state …） |
 | `src/host/glue.js` | 宿主胶水：变量、回执注入、开场切换 |
 | `src/config/` | rules / lexicon / lifepack / wardrobe |
-| `状态栏.html` | 状态栏 UI（esbuild 打成 `dist/wx-statusbar.user.js`） |
-| `tests/` | 279 项单测（`node --test tests/*.test.js`） |
+| `src/ui/` | 状态栏开发源码（结构、样式、音频、渲染、判定台等模块） |
+| `状态栏.html` | 自动生成的独立预览；通过 `npm run build:ui` 重建 |
+| `tests/` | 316 项测试通过，无 TODO 验收（`npm test`） |
 | `最新角色卡/尾行.json` | 交付卡（Spec V2，含内嵌世界书） |
 | `美术/` | JK 试水图清单（GPT / ComfyUI）与运行时索引 |
 
 ## 构建
 
 ```bash
-node build.js            # 产出 dist/runtime.js、dist/wx-statusbar.user.js、最新角色卡/尾行.json
-node --test tests/*.test.js
+npm ci
+npm test
+# 本地完整构建：设置 WX_SKIP_SYNC=1 可跳过外部酒馆热同步
+npm run build            # 产出 dist/runtime.js、dist/wx-statusbar.user.js、最新角色卡/尾行.json
+npm run build:ui         # 从 src/ui 重建 状态栏.html 预览
 ```
 
 ## 现状（2026-10-21）
 
-- 279 项单测全绿；卡 863,604 字节。
+- 业务模块化：引擎按职责装配，宿主适配和 UI 分层；316 项测试通过，无 TODO 验收。产物体积以构建输出为准。
 - 警觉：0–20 毫无察觉 / 21–40 不安 / 41–60 起疑 / 61–80 确认 / 81+ 反应；五格竖条（2 绿 1 黄 1 橘 1 红）。
 - 过档行为：提速（跟速 DC13）／回头·绕路·进店（按胆量敏锐）／开跑／摊牌，一晚每档一次。
 - 相册：拍照只出未拥有，角度受距离限制，PI +2 / 贴身正面 +3 / 套装齐 +2；贴墙 UI + 6 秒即时卡片；图片走本地 `user/images/wx_wardrobe/`。
 - 待办：白天/夜晚两阶段分离；缩略图批量脚本；冲突系统接线。
+
+零楼创角与生成器维护（v0.8.1）：见 [零楼与人物生成](docs/零楼与人物生成.md)。创角直接位于第 0 条消息内；目标档案的互斥启闭和开场切换继续通过宿主建局接口处理。
+
+成品统一交付到项目顶层 `尾行/最新成品/尾行.json`（已内嵌世界书）；该目录仅保留最新角色卡。被替换的文件及旧交付目录由构建工具移至 `尾行/成品归档/` 的时间批次，`dist/` 仅作构建中间产物。

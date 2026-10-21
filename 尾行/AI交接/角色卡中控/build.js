@@ -3,13 +3,14 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { buildWorldbook } = require("./src/runtime/worldbook_builder");
-const { validateNarrativeDiscipline } = require("./src/utils/narrative_validator");
+const {
+  validateNarrativeDiscipline,
+} = require("./src/utils/narrative_validator");
 
 const ROOT = __dirname;
 const NAME = "尾行";
-const VERSION = "0.7.0";
+const VERSION = require("./package.json").version;
 const DIST = path.join(ROOT, "dist");
-const OUT = path.join(ROOT, "最新角色卡");
 
 function sections(text) {
   return Object.fromEntries(
@@ -19,7 +20,7 @@ function sections(text) {
       .map((x) => {
         const i = x.indexOf("\n");
         return [x.slice(0, i).trim(), x.slice(i + 1).trim()];
-      })
+      }),
   );
 }
 
@@ -32,15 +33,23 @@ function _doBuild() {
   /* 开场白（主人 2026-10-19 定稿）：默认目标是独居女大学生，所以 first_mes 用女大开场；
      女高开场降为 alternate_greetings[0]，由创角向导按目标切换。 */
   const firstMesStudent = read("src/text_data/_card_first_mes.txt").trim();
-  const firstMesCollege = fs.existsSync(path.join(ROOT, "src/text_data/_card_first_mes_college.txt"))
+  const firstMesCollege = fs.existsSync(
+    path.join(ROOT, "src/text_data/_card_first_mes_college.txt"),
+  )
     ? read("src/text_data/_card_first_mes_college.txt").trim()
     : "";
   const firstMes = firstMesCollege || firstMesStudent;
   const mesExample = read("src/text_data/_card_mes.txt").trim();
 
   // 风骨与规范物理级强校验（违规直接拦截并提示先读 GEMINI.md）
-  validateNarrativeDiscipline(core.SYSTEM_PROMPT || "", "卡核心系统提示词 SYSTEM_PROMPT");
-  validateNarrativeDiscipline(core.POST_HISTORY_INSTRUCTIONS || "", "历史后指令 POST_HISTORY_INSTRUCTIONS");
+  validateNarrativeDiscipline(
+    core.SYSTEM_PROMPT || "",
+    "卡核心系统提示词 SYSTEM_PROMPT",
+  );
+  validateNarrativeDiscipline(
+    core.POST_HISTORY_INSTRUCTIONS || "",
+    "历史后指令 POST_HISTORY_INSTRUCTIONS",
+  );
   validateNarrativeDiscipline(core.DESCRIPTION || "", "卡片描述 DESCRIPTION");
   validateNarrativeDiscipline(core.SCENARIO || "", "开局情境 SCENARIO");
   validateNarrativeDiscipline(firstMes, "卡片首条开场白 first_mes");
@@ -48,25 +57,28 @@ function _doBuild() {
 
   // 2. 组装世界书
   const characterBook = buildWorldbook(ROOT);
-  for (const entry of (characterBook.entries || [])) {
-    validateNarrativeDiscipline(entry.content, `世界书条目内容 [${entry.name}]`);
+  for (const entry of characterBook.entries || []) {
+    validateNarrativeDiscipline(
+      entry.content,
+      `世界书条目内容 [${entry.name}]`,
+    );
   }
 
   // 3. 构建整合版引擎+状态栏脚本 (dist/wx-statusbar.user.js)
   //    先重编引擎产物：buildStatusbar 读的是 dist/runtime.js，
   //    这一步原先只由 build-runtime.js 单独负责，导致 npm run build 长期把旧引擎打进卡里。
-  try {
-    require("./build-runtime.js");
-  } catch (err) {
-    console.warn("引擎产物构建失败（将沿用 dist/runtime.js 旧档）：", err && err.message);
-  }
+  const { buildRuntime } = require("./build-runtime.js");
+  buildRuntime();
   const { buildStatusbar } = require("./build-statusbar");
   const userScriptContent = buildStatusbar();
 
   // 女高开场降为备选问候语（与 first_mes 对调）
   const altGreetings = firstMesCollege ? [firstMesStudent] : [];
   for (let i = 0; i < altGreetings.length; i++) {
-    validateNarrativeDiscipline(altGreetings[i], `备选开场白 alternate_greetings[${i}]`);
+    validateNarrativeDiscipline(
+      altGreetings[i],
+      `备选开场白 alternate_greetings[${i}]`,
+    );
   }
 
   // 4. 组装 SillyTavern Card Spec V2
@@ -77,7 +89,10 @@ function _doBuild() {
     scenario: core.SCENARIO || "",
     first_mes: firstMes,
     mes_example: mesExample,
-    creator_notes: "【尾行】现实都市心理追猎TRPG角色卡。\n架构规格：v0.7.0 闭环版\n特性：底层单一真源中控、四类标签申报协议、常驻动线轨与心跳状态栏、首发独居女大学生角色生活包（女高中生为备选目标，开场白在 alternate_greetings）。",
+    creator_notes:
+      "【尾行】现实都市心理追猎TRPG角色卡。\n架构规格：v" +
+      VERSION +
+      " 同步与模块化版\n特性：底层单一真源中控、四类标签申报协议、常驻动线轨与心跳状态栏、首发独居女大学生角色生活包（女高中生为备选目标，开场白在 alternate_greetings）。",
     system_prompt: core.SYSTEM_PROMPT || "",
     post_history_instructions: core.POST_HISTORY_INSTRUCTIONS || "",
     alternate_greetings: altGreetings,
@@ -100,10 +115,10 @@ function _doBuild() {
             info: "引擎+胶水+原生嵌入状态栏（esbuild 防截断版）；卡名含尾行时自动激活；数据存聊天变量 wx_snap/wx_save。",
             button: { enabled: false, buttons: [] },
             data: {},
-            export_with: { data: true, button: true }
-          }
+            export_with: { data: true, button: true },
+          },
         ],
-        variables: {}
+        variables: {},
       },
       regex_scripts: [
         {
@@ -119,32 +134,36 @@ function _doBuild() {
           runOnEdit: true,
           substituteRegex: 0,
           minDepth: null,
-          maxDepth: null
-        }
-      ]
-    }
+          maxDepth: null,
+        },
+      ],
+    },
   };
 
   const card = {
     spec: "chara_card_v2",
     spec_version: "2.0",
-    data: body
+    data: body,
   };
 
   // 5. 校验与输出
   fs.mkdirSync(DIST, { recursive: true });
-  fs.mkdirSync(OUT, { recursive: true });
 
   const cardJsonStr = JSON.stringify(card, null, 2);
   const distCardPath = path.join(DIST, `${NAME}.json`);
-  const outCardPath = path.join(OUT, `${NAME}.json`);
   const distBookPath = path.join(DIST, `${NAME}-世界书.json`);
-  const outBookPath = path.join(OUT, `${NAME}-世界书.json`);
 
   fs.writeFileSync(distCardPath, cardJsonStr, "utf8");
-  fs.writeFileSync(outCardPath, cardJsonStr, "utf8");
-  fs.writeFileSync(distBookPath, JSON.stringify(characterBook, null, 2), "utf8");
-  fs.writeFileSync(outBookPath, JSON.stringify(characterBook, null, 2), "utf8");
+  fs.writeFileSync(
+    distBookPath,
+    JSON.stringify(characterBook, null, 2),
+    "utf8",
+  );
+
+  require("./tools/build/manifest.js").writeManifest(ROOT);
+  const delivery = require("./tools/build/delivery.js").publishLatest(ROOT);
+  const outCardPath = delivery.destination;
+  if (delivery.archive) console.log(`· 历史成品归档: ${delivery.archive}`);
 
   console.log(`[构建成功] 尾行角色卡 v${VERSION}`);
   console.log(`· 角色卡路径: ${outCardPath}`);
@@ -152,9 +171,11 @@ function _doBuild() {
   console.log(`· 卡片体积: ${Buffer.byteLength(cardJsonStr)} 字节`);
 
   // 6. 热同步至本地活跃酒馆环境（TT 酒馆 E:/tavern）
-  //    WX_SKIP_SYNC=1 时跳过：主人的 TT 不是标准酒馆目录，卡只认 最新角色卡/ 这一份。
+  //    WX_SKIP_SYNC=1 时跳过：主人的 TT 不是标准酒馆目录，卡只认 尾行/最新成品/ 这一份。
   if (process.env.WX_SKIP_SYNC === "1") {
-    console.log("· 已按 WX_SKIP_SYNC=1 跳过酒馆热同步（只出 最新角色卡/ 里的那张卡）");
+    console.log(
+      "· 已按 WX_SKIP_SYNC=1 跳过酒馆热同步（只出 尾行/最新成品/ 里的那张卡）",
+    );
   } else {
     try {
       const { syncToTavern } = require("./tools/sync-to-tavern");
@@ -181,7 +202,7 @@ function build() {
         "--------------------------------------------------------------------------------",
         ` 错误详情: ${err.message}`,
         "================================================================================",
-        ""
+        "",
       ].join("\n");
       const wrappedErr = new Error(banner);
       wrappedErr.cause = err;

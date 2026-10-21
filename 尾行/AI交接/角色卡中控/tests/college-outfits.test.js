@@ -11,22 +11,9 @@ const R = require("../src/config/rules.json");
 const LP = require("../src/config/lifepack.json");
 const { sampleOutfit } = require("../src/runtime/target_state.js");
 
-const HTML = fs.readFileSync(path.join(__dirname, "..", "状态栏.html"), "utf8");
+const HTML = require("./helpers/ui-source.js").readUISource();
 
-function extractConst(name) {
-  const at = HTML.indexOf("const " + name + " = ");
-  assert.ok(at >= 0, `状态栏.html 缺少 ${name}`);
-  const rest = HTML.slice(at + name.length);
-  const start = Math.min(...["{", "["].map(c => { const i = rest.indexOf(c); return i < 0 ? Infinity : i; }));
-  assert.ok(Number.isFinite(start), `${name} 不是对象/数组字面量`);
-  const open = rest[start], close = open === "{" ? "}" : "]";
-  let depth = 0;
-  for (let i = start; i < rest.length; i++) {
-    if (rest[i] === open) depth++;
-    else if (rest[i] === close) { depth--; if (depth === 0) return (new Function("return " + rest.slice(start, i + 1)))(); }
-  }
-  assert.fail(`${name} 括号不配平`);
-}
+function extractConst(name) { return require("../src/ui/creation-data.js")[name]; }
 
 const PERSONALITY_POOL = extractConst("TARGET_PERSONALITY_POOL");
 
