@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "width": 1100,
+  "height": 1180,
+  "frames": {
+    "D": {
+      "x": 570,
+      "y": 20,
+      "width": 500,
+      "height": 440
+    },
+    "A": {
+      "x": 570,
+      "y": 500,
+      "width": 500,
+      "height": 440
+    },
+    "B": {
+      "x": 20,
+      "y": 250,
+      "width": 500,
+      "height": 440
+    },
+    "C": {
+      "x": 20,
+      "y": 720,
+      "width": 500,
+      "height": 440
+    }
+  },
+  "coordinates": {
+    "office_lobby_a": [
+      130,
+      80
+    ],
+    "parking_b2_a": [
+      70,
+      180
+    ],
+    "skybridge_a": [
+      250,
+      100
+    ],
+    "metro_hub_a": [
+      350,
+      180
+    ],
+    "bus_bay_a": [
+      420,
+      80
+    ],
+    "store_24h_a": [
+      360,
+      300
+    ],
+    "back_alley_a": [
+      150,
+      260
+    ],
+    "trash_station_a": [
+      80,
+      345
+    ],
+    "school_gate_b": [
+      160,
+      75
+    ],
+    "school_bus_terminal_b": [
+      300,
+      80
+    ],
+    "old_metro_b": [
+      410,
+      150
+    ],
+    "old_skybridge_b": [
+      175,
+      160
+    ],
+    "store_24h_b": [
+      285,
+      230
+    ],
+    "old_park_b": [
+      70,
+      230
+    ],
+    "old_alley_main_b": [
+      190,
+      300
+    ],
+    "dark_blind_alley_b": [
+      310,
+      315
+    ],
+    "unit_stairs_b": [
+      410,
+      320
+    ],
+    "rooftop_b": [
+      420,
+      380
+    ],
+    "dead_end_b": [
+      90,
+      340
+    ],
+    "love_hotel_b": [
+      120,
+      390
+    ],
+    "player_base_b": [
+      60,
+      105
+    ],
+    "club_backdoor_c": [
+      70,
+      80
+    ],
+    "food_street_c": [
+      190,
+      95
+    ],
+    "dock_bus_stop_c": [
+      310,
+      65
+    ],
+    "bridge_head_c": [
+      430,
+      100
+    ],
+    "store_24h_c": [
+      210,
+      195
+    ],
+    "river_walk_c": [
+      360,
+      210
+    ],
+    "river_steps_c": [
+      360,
+      300
+    ],
+    "village_main_c": [
+      140,
+      295
+    ],
+    "narrow_gap_c": [
+      250,
+      340
+    ],
+    "rental_iron_door_c": [
+      350,
+      365
+    ],
+    "village_roof_c": [
+      440,
+      365
+    ],
+    "black_market_c": [
+      65,
+      355
+    ],
+    "suburb_highway_d": [
+      90,
+      345
+    ],
+    "gas_station_d": [
+      220,
+      345
+    ],
+    "private_road_d": [
+      210,
+      245
+    ],
+    "pine_forest_d": [
+      80,
+      200
+    ],
+    "estate_gate_d": [
+      310,
+      170
+    ],
+    "villa_garden_d": [
+      360,
+      85
+    ],
+    "garage_side_door_d": [
+      230,
+      60
+    ],
+    "villa_porch_d": [
+      430,
+      65
+    ]
+  },
+  "transitLinks": [
+    [
+      "metro_hub_a",
+      "old_metro_b"
+    ],
+    [
+      "old_metro_b",
+      "dock_bus_stop_c"
+    ],
+    [
+      "bus_bay_a",
+      "suburb_highway_d"
+    ]
+  ],
+  "privatePlaces": [
+    "unit_stairs_b",
+    "rooftop_b",
+    "rental_iron_door_c",
+    "village_roof_c",
+    "estate_gate_d",
+    "villa_garden_d",
+    "garage_side_door_d",
+    "villa_porch_d"
+  ],
+  "home": "player_base_b",
+  "blackMarket": "black_market_c"
+}

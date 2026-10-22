@@ -415,7 +415,7 @@ test("日程 UI：真实桥接保存后更新、连点不重扣，业务拒绝�
     ui.render(h.snap);
     const buttons = () =>
       dom.window.document.querySelectorAll("#wxDailyActionGrid button");
-    assert.equal(buttons().length, 6);
+    assert.equal(buttons().length, 7);
     assert.equal(buttons()[1].disabled, false);
     buttons()[0].click();
     buttons()[0].click();
@@ -427,7 +427,7 @@ test("日程 UI：真实桥接保存后更新、连点不重扣，业务拒绝�
       /休息完成/,
     );
     h.state.generating = true;
-    buttons()[5].click();
+    dom.window.document.querySelector('[data-action-id="daily.pass"]').click();
     for (let i = 0; i < 10; i++) await new Promise((r) => setImmediate(r));
     assert.equal(h.snap.dayPlan.period, 1);
     assert.equal(errors, 0);

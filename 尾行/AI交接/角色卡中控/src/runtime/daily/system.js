@@ -4,6 +4,8 @@ const {
   createDayPlan,
   validateDayPlan,
 } = require("../../contracts/day-plan.js");
+const { validateSpatial } = require("../../contracts/spatial.js");
+const { prepareMove } = require("../spatial/system.js");
 const { validateEconomy } = require("../../contracts/economy.js");
 const { deliverDue } = require("../economy/shop.js");
 const { LIMITS } = require("../ledger.js");
@@ -26,6 +28,7 @@ function createDailySystem({
       targetId: g.targetId,
       identity: g.identity,
       economy: g.economy,
+      spatial: g.spatial,
     });
   }
   function token() {
@@ -119,9 +122,14 @@ function createDailySystem({
     if (
       Object.keys(result).some(
         (key) =>
-          !["summary", "ledger", "payload", "inventory", "economy"].includes(
-            key,
-          ),
+          ![
+            "summary",
+            "ledger",
+            "payload",
+            "inventory",
+            "economy",
+            "spatial",
+          ].includes(key),
       )
     )
       throw fail("DAY_EFFECT_INVALID", "活动含有尚未支持的效果类型");
@@ -163,7 +171,9 @@ function createDailySystem({
     }
     const economy =
       result.economy === undefined ? null : validateEconomy(result.economy);
-    return { ledger, inventory, economy };
+    const spatial =
+      result.spatial === undefined ? null : validateSpatial(result.spatial);
+    return { ledger, inventory, economy, spatial };
   }
   function execute(request) {
     if (
@@ -213,6 +223,7 @@ function createDailySystem({
       ledger = {},
       inventory = null,
       economy = null,
+      spatial = null,
       cost = 0;
     if (request.command === "enable") {
       if (p.source !== "legacy") throw fail("DAY_STALE", "日程已经启用");
@@ -237,7 +248,7 @@ function createDailySystem({
         clone(request.args || {}),
         clone(entry.definition),
       );
-      ({ ledger, inventory, economy } = applyEffects(result));
+      ({ ledger, inventory, economy, spatial } = applyEffects(result));
       cost = entry.definition.cost;
       next.spent += cost;
       if (entry.definition.mode === "scene") {
@@ -250,6 +261,11 @@ function createDailySystem({
           payload: clone(result.payload || {}),
         };
       } else advance(next);
+    } else if (request.command === "move") {
+      if (p.source !== "daily" || p.activity || p.ended)
+        throw fail("DAY_UNAVAILABLE", "当前不能通过地图移动");
+      result = prepareMove(context(), request.args?.placeId);
+      ({ ledger, inventory, economy, spatial } = applyEffects(result));
     } else if (["finish", "cancel"].includes(request.command)) {
       if (
         p.source !== "daily" ||
@@ -266,7 +282,7 @@ function createDailySystem({
       if (typeof handler !== "function")
         throw fail("DAY_UNAVAILABLE", "当前活动暂不能在这里结束");
       result = handler(context(), clone(request.args || {}), clone(p.activity));
-      ({ ledger, inventory, economy } = applyEffects(result));
+      ({ ledger, inventory, economy, spatial } = applyEffects(result));
       next.activity = null;
       advance(next);
     } else if (request.command === "next-day") {
@@ -274,7 +290,7 @@ function createDailySystem({
         throw fail("DAY_UNAVAILABLE", "请先结束当天的安排");
       // 复用现有整卡日期、天气与角色状态轮转，不另写一套日历。
       const arrivals = deliverDue(context(), L.get("date") + 1);
-      ({ ledger, inventory, economy } = applyEffects(arrivals));
+      ({ ledger, inventory, economy, spatial } = applyEffects(arrivals));
       const outcome = nextDay();
       if (outcome?.blocked) throw fail("DAY_BUSY", outcome.reason);
       next = {
@@ -307,6 +323,7 @@ function createDailySystem({
       L.commit(ledger, { reason: "daily-activity", action: request.actionId });
     if (inventory) g.player.inventory = inventory;
     if (economy) g.economy = economy;
+    if (spatial) g.spatial = spatial;
     g.dayPlan = next;
     afterCommit();
     // 五时段只在完整活动结束时推进，内部回合不能改变此处。

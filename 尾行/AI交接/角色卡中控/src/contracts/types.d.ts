@@ -81,7 +81,7 @@ export interface EconomyOrder {
   id: string;
   date: number;
   total: number;
-  channel: "retail" | "black_market";
+  channel: "retail" | "online" | "black_market";
   lines: {
     id: string;
     quantity: number;
@@ -102,6 +102,20 @@ export interface EconomyState {
   } | null;
   orders: EconomyOrder[];
 }
+export interface SpatialState {
+  schema: 1;
+  playerPlaceId: string;
+  assumed: boolean;
+  tracking: "none" | "visual" | "lost";
+  lastSeen: {
+    targetId: string;
+    placeId: string;
+    date: number;
+    period: number;
+    turn: number;
+  } | null;
+  knownPlaces: string[];
+}
 export interface SavedGame {
   v: 2;
   sessionSalt: string;
@@ -111,6 +125,7 @@ export interface SavedGame {
   ledgerState: Record<string, number>;
   dayPlan?: DayPlan;
   economy?: EconomyState;
+  spatial?: SpatialState;
   [key: string]: unknown;
 }
 export interface TimelineNode {

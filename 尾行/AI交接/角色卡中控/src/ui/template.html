@@ -120,6 +120,15 @@
       <div class="wx-day-bottom"><span class="wx-day-activity"><i aria-hidden="true"></i><span id="wxDayActivity">尚无日程记录</span></span><span id="wxDayHint">每日行动与时段</span></div>
     </div>
 
+    <details id="wxCityMap" class="wx-city-map" open>
+      <summary>城市地图<span id="wxCityPosition">等待地图数据</span></summary>
+      <div id="wxCityTabs" class="wx-city-tabs"></div>
+      <div class="wx-city-legend"><span class="player">● 你的位置</span><span class="target">● 目标目视位置</span><span class="last">○ 最后目击</span><span>虚线：跨区接驳</span></div>
+      <div id="wxCityCanvas" class="wx-city-canvas"></div>
+      <div id="wxCityInfo" class="wx-city-info"></div>
+      <p class="wx-city-note">空间示意图，不按真实距离绘制。点地点查看；浏览不改变位置。市内移动不占活动机会，采购确认后才扣点、推进时段。</p>
+      <p id="wxCityNotice" class="wx-city-notice" role="status"></p>
+    </details>
     <details class="wx-daily-actions" id="wxDailyActions" open>
       <summary>日程行动<span>每个时段选择一次活动</span></summary>
       <div class="wx-daily-action-grid" id="wxDailyActionGrid"></div>

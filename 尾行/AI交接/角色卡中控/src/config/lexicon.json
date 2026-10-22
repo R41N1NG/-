@@ -1965,6 +1965,17 @@
       "args": [],
       "check": null,
       "dailyOnly": true
+    },
+    {
+      "id": "daily.black_market",
+      "name": "日程·黑市采购",
+      "modes": [
+        "any"
+      ],
+      "args": [],
+      "check": null,
+      "aliases": [],
+      "dailyOnly": true
     }
   ]
 }

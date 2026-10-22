@@ -8,6 +8,7 @@ function createSaveSystem({ g, L, getSalt }) {
         v: 2,
         dayPlan: g.dayPlan,
         economy: g.economy,
+        spatial: g.spatial,
         rngVersion: g.rngVersion,
         nightStartFloor: g.nightStartFloor || 0,
         envSfx: g._envSfx ?? null,

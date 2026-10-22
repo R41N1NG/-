@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.7",
+  "version": "0.8.8",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "2f600651ef16a7113e3307d73b6adfcd90fae6b7b7ba0d7b7961eabf1c6eeeb2",
+  "sourceHash": "d0170e4a098f1456f422e50dfa64d68d26461ca4a8385d87ad5afb7e06117798",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,15 +19,19 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "ecea0d45acdb71f83bbea167a568afb5074a8809eee6cb03084d1f9d66b8149b"
+      "sha256": "56933ced774ac83ad5a3aed0be265c580d275811c764a3e69d8ae9ae0c56e009"
     },
     {
       "file": "package.json",
-      "sha256": "6771a6636d507168090f664c358100baee8c0d4cd157180f1ceafe4fe4dee125"
+      "sha256": "c48e2c8663378d8ce638d227a0f670bc25204a3b5b5276d22c04cf807fef16ab"
+    },
+    {
+      "file": "src/config/city-layout.json",
+      "sha256": "9080830d6e681ea6f042fd061fd8c46e2875c4a85e7f299feaeaaa57de0d7e07"
     },
     {
       "file": "src/config/daily-actions.json",
-      "sha256": "e216b0bd8572cbc4145326fd3acc4be887baf2d31e3e4f43e5e2dbafc2ca0dfe"
+      "sha256": "4b9f1b8787e2699aa4355643d8a9f6cd22b1a88305289aea4e3b3ed0c575ccf7"
     },
     {
       "file": "src/config/day-plan.json",
@@ -35,11 +39,11 @@
     },
     {
       "file": "src/config/economy.json",
-      "sha256": "47a14a92ad0ee849b4d83791495b124b026560c8a208164991379f20df6e4ba8"
+      "sha256": "8c138b87e717bf91d23681ffffe493130e4931e72de28b9baea1ccf13012efc0"
     },
     {
       "file": "src/config/lexicon.json",
-      "sha256": "eb2de521fa370be52c5a5c48607b6742ab97b66af9dee9edbb1abd46173290cf"
+      "sha256": "c11dff07243ab1cefcbbb4be9b7515ab06c854f5fd62df1111a7ebf88d4eaace"
     },
     {
       "file": "src/config/lifepack.json",
@@ -47,7 +51,7 @@
     },
     {
       "file": "src/config/places.json",
-      "sha256": "2f1ea96e1ac6d34185b62b8213d83af094bc0fe7fe19bc6a51481ccc9f49b243"
+      "sha256": "378dcef1b73dfed4beda30539af9801d56747f183a61bff8b935ee399ae27015"
     },
     {
       "file": "src/config/rules.json",
@@ -75,15 +79,19 @@
     },
     {
       "file": "src/contracts/economy.js",
-      "sha256": "4d3ee41ede84cb59b47a09260504b5616e4ef44e0f5b540111d00e43aa5447e8"
+      "sha256": "c423e8a004d9d90874a971b381cbdb126b2f595e60708f768be3e1a23e6a11eb"
     },
     {
       "file": "src/contracts/persona.js",
       "sha256": "0737e820bb8cb8081851f21cd862d5b59e0bd7a76cf9960c020fd98a6793f61a"
     },
     {
+      "file": "src/contracts/spatial.js",
+      "sha256": "22fd2f8128b0d174a5ad3e667b6307b4f6a277198795bd7648e7b276e24db922"
+    },
+    {
       "file": "src/contracts/types.d.ts",
-      "sha256": "49a4c0acc933f96530f67e1fd34c02f4f7e587de42a0bca71ceabf5ecc09eae9"
+      "sha256": "d4d7114620d9e22accb293bea15b6dca404f6c7b12dfa18095d0d01a24bfaf3c"
     },
     {
       "file": "src/contracts/validation.js",
@@ -123,7 +131,7 @@
     },
     {
       "file": "src/host/daily-context.js",
-      "sha256": "35be8e884dfe355e70407ada0450dbf96820ad4dcd16803753685ce75b2ffaf0"
+      "sha256": "5e6a3e9bdd7299a4b4cda8271bc990cf1e7e55ee3acb1fdee79bb6bc6f1ef4c1"
     },
     {
       "file": "src/host/environment.js",
@@ -171,11 +179,11 @@
     },
     {
       "file": "src/runtime/daily/registry.js",
-      "sha256": "ee8064a3bfdb15f4d54e9b2aa5cd84e3bc7b23b8260638323892b1e31f33fd97"
+      "sha256": "f0ded27c6d48b8b44ed02aed384d63d5fbadb34f1376916ccbc64d1de0d3bf7e"
     },
     {
       "file": "src/runtime/daily/system.js",
-      "sha256": "770538a1097bc0804949bb9188f5b1e1293674af91da9b10a40a30f6ec6520db"
+      "sha256": "a16958a9bc1154d382bff8c25684b1ef99208c93d0e232841957776476518394"
     },
     {
       "file": "src/runtime/dice.js",
@@ -183,7 +191,7 @@
     },
     {
       "file": "src/runtime/economy/shop.js",
-      "sha256": "d5fa0077bbdaa5abcaa7a05a9486dea199291f8a5f52b102d8cb2a62e84f9861"
+      "sha256": "bfbbf1b652636ab95b2bcb4fda203869073aa4414e5091c6173d603c0571ae35"
     },
     {
       "file": "src/runtime/economy/work.js",
@@ -195,7 +203,7 @@
     },
     {
       "file": "src/runtime/game.js",
-      "sha256": "1612a38c2916577a3505b60bd82bbbbb5840cff6b1370c24dadda96e1758a29a"
+      "sha256": "f19303633c0eaaa64368d0b3fe2465aa0f9de3535348c0a57e535416f66f51d2"
     },
     {
       "file": "src/runtime/game/actions.js",
@@ -235,11 +243,11 @@
     },
     {
       "file": "src/runtime/game/save.js",
-      "sha256": "dfda3d0495673eef6c79c13b2ee5d1053457a3f58e3adefce3f1dc8f4ae62d0b"
+      "sha256": "f0029a723694f325ae4737036746c1d89e58b9563afd60f212af177981e7611d"
     },
     {
       "file": "src/runtime/game/snapshot.js",
-      "sha256": "c1678882a4ade06be7157d9aafb01af62a8c91689fed7862fd269cc8a8daf753"
+      "sha256": "b5b94eb95c2ad62673d5301200d803f9605b8ded6275593008d2fdfbdb1eae5e"
     },
     {
       "file": "src/runtime/game/target.js",
@@ -247,7 +255,7 @@
     },
     {
       "file": "src/runtime/game/turn.js",
-      "sha256": "f1614dd26704970015a9abe881c5ca4f17aeb002eedb789f9d0bcbd7019a283d"
+      "sha256": "79596ee9c89b0d76f659c794bbf98278e89fbd338f58258732024d07017cf0a2"
     },
     {
       "file": "src/runtime/ledger.js",
@@ -268,6 +276,10 @@
     {
       "file": "src/runtime/persistence/migrations.js",
       "sha256": "5ca3cd2e236566a3dd79db944060387de5665f90936078883563ed634f03b6f0"
+    },
+    {
+      "file": "src/runtime/spatial/system.js",
+      "sha256": "df42349cea0fdb3ce3f11f98796dda35c35799217088202cbeb687fe5344ec1e"
     },
     {
       "file": "src/runtime/tags.js",
@@ -323,11 +335,11 @@
     },
     {
       "file": "src/ui/daily/actions.js",
-      "sha256": "9efab5054b1354349c70e1366f83ad730c0fa9525a269a1e784c1f05ff0f9d3a"
+      "sha256": "c68e408fb4bcc550aec72f779062cdc073cfa5db8e16c79de1458503a4ab722e"
     },
     {
       "file": "src/ui/daily/economy-inputs.js",
-      "sha256": "651c2a2a0be6cee76b12c1aef130f2afb98db2712006b7bae73e419aceba499d"
+      "sha256": "008379bce40420b9365c7e887a0e8441cfc1c4f67d8c7ebca371620ae7aca61e"
     },
     {
       "file": "src/ui/display.js",
@@ -344,6 +356,10 @@
     {
       "file": "src/ui/lifecycle.js",
       "sha256": "20f7c2a1525433282d32972b8152869913d563c5d95d179d92b72a28b35047fc"
+    },
+    {
+      "file": "src/ui/map/city-map.js",
+      "sha256": "c37b50fa6c83d707d030a251de2fd1f556cdff4990e8ba53cedd78c60b42666a"
     },
     {
       "file": "src/ui/preview-data.js",
@@ -375,11 +391,11 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "35b3dea4cb7f77dc7e10f5027c1f6561cf66a6c1d85f00f6885e5f036a173807"
+      "sha256": "d86c996c1a82d8a9005c9d3a781ba1343d94826c8a92c951008d2237390f288e"
     },
     {
       "file": "src/ui/styles/statusbar.css",
-      "sha256": "e7664913361fcb28720e11a89d227194e5ed8885695421a6399fd37950c157ac"
+      "sha256": "66ad8288eddddc2ccbe44c490759e8adf5c9df1eb3b0e9ad14e748e52a08860b"
     },
     {
       "file": "src/ui/sync-notice.js",
@@ -387,7 +403,7 @@
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "0cd2c66305bf2ab28b3384405670cf046d0bd709aed85ff7a77dfea7bf09b1de"
+      "sha256": "27d033b4a3dc8b54f751773b17b352141e13defdc5d5817778629874c5c015bd"
     },
     {
       "file": "src/ui/zero-floor/host.js",
@@ -403,11 +419,11 @@
     },
     {
       "file": "tools/build/daily-preview-entry.js",
-      "sha256": "e0c74925ab134b4c1098c634f6cd21e072d6dd117938b6bf11740c96694c1152"
+      "sha256": "3e6cb45999b20c98633e21fe582d080a64641a179ed61c4eb4491519f77f6d19"
     },
     {
       "file": "tools/build/day-preview.js",
-      "sha256": "65dac159bc59877400c82ce138f08fca928778a641524c2b04589124ef18ff04"
+      "sha256": "d20160a940da39a375df91a7dc52319ac845f94d995bfced51c95c5844b8bc13"
     },
     {
       "file": "tools/build/delivery.js",
@@ -428,16 +444,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 575149,
-      "sha256": "3defc468e01f5fd68cda4ad11582a95ba5c9b5ace931f9d6613f723bd0a8ab0a"
+      "bytes": 593655,
+      "sha256": "ec406421ae528f4a325b490c117c8f3feed693d679a8ead97942a5815869d72d"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1220451,
-      "sha256": "ec931df2b4ce75d442df74b070dfe94fb2f9e77be1aca8da19d07af15eed5a5c"
+      "bytes": 1255786,
+      "sha256": "c2325d0d5180a98d422e5179bb0abe8a0eae875c7aa36b99fb6a6041fb2569c0"
     },
     "尾行.json": {
-      "bytes": 1337411,
-      "sha256": "1cb11dcf69af685e33cd1de8d36c12a969afeec1e60b79ab203d35e6a98d04bb"
+      "bytes": 1374642,
+      "sha256": "87a8b761138e755fed03ff3da8a90798eccf97053f7c302ae824b2ae204c1483"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

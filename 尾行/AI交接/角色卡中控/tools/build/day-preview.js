@@ -74,9 +74,9 @@ function buildDayPreview() {
 html{min-height:100%;background:#080e14}body{margin:0;color:#c6d0d7;font:14px/1.7 system-ui,sans-serif;background:radial-gradient(ellipse at 50% 0,#1b2b34,transparent 65%)}
 .preview-shell{max-width:1000px;margin:0 auto;padding:42px 24px 50px}.preview-eyebrow{font-size:11px;letter-spacing:3px;color:#bca879}.preview-shell h1{font-size:26px;font-weight:500;color:#edf0ed;margin:8px 0 12px}.preview-shell p{max-width:760px;color:#869da9;font-size:12px}.daily-preview-controls{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 10px}.daily-preview-controls button{padding:7px 12px;border:1px solid #344650;background:#101b23;color:#9eb0bc;border-radius:5px;font:12px system-ui;cursor:pointer}.daily-preview-controls button[aria-pressed="true"]{border-color:#b59e6c;color:#eddbb5;background:#29271f}.preview-description{min-height:42px;margin-bottom:22px}main.wx-standalone-main{padding:0;max-width:none}.preview-bottom{font-size:11px;color:#677e8b;border-top:1px solid #1e303a;margin-top:24px;padding-top:14px}@media(max-width:560px){.preview-shell{padding:24px 12px}.preview-shell h1{font-size:22px}.daily-preview-controls{gap:6px}.daily-preview-controls button{padding:7px 9px}.preview-description{min-height:65px}}
 </style>
-<div class="preview-shell"><div class="preview-eyebrow">尾行 / 状态栏预览</div><h1>每日行动与时段</h1><p>阿宅 × 女大学生。每天 4 点行动点，每时段一次行动；尾行消耗 2 点，仍只算一次行动。</p><div class="daily-preview-controls" id="dailyPreviewControls"></div><p class="preview-description" id="dailyPreviewDescription"></p>
+<div class="preview-shell"><div class="preview-eyebrow">尾行 / 状态栏预览</div><h1>城市地图与每日行动</h1><p>阿宅 × 女大学生。每天 4 点行动点，每时段一次行动；尾行消耗 2 点，仍只算一次行动。</p><div class="daily-preview-controls" id="dailyPreviewControls"></div><p class="preview-description" id="dailyPreviewDescription"></p>
 <main class="wx-standalone-main"><section class="trpg" aria-label="玩家状态栏">${bodyHtml}</section></main>
-<div class="preview-bottom">本页使用正式界面、引擎和保存流程。打工、采买、休息／度过时段可操作；交流与尾行待接内容和条件。尾行中按钮仅载入展示样例。试玩进度与酒馆存档相互独立。</div></div>
+<div class="preview-bottom">本页使用正式界面、引擎和保存流程。地图、市内移动、线上补给与固定黑市采购可操作；交流与尾行待接内容和条件。尾行中按钮仅载入展示样例。试玩进度与酒馆存档相互独立。</div></div>
 <script>${(script + "\n" + boot).replace(/<\/script/gi, "<\\/script")}</script></html>`;
   const directory = path.join(ROOT, "previews/day-plan");
   fs.mkdirSync(directory, { recursive: true });

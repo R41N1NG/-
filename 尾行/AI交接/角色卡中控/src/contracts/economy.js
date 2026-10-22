@@ -38,7 +38,7 @@ function validateEconomy(value) {
       seen.has(order.id) ||
       !integer(order.date, 1) ||
       !integer(order.total, 1) ||
-      !["retail", "black_market"].includes(order.channel) ||
+      !["retail", "online", "black_market"].includes(order.channel) ||
       !Array.isArray(order.lines) ||
       !order.lines.length ||
       order.lines.length > CONFIG.maxCartLines

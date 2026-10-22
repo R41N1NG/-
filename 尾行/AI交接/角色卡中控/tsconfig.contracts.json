@@ -18,6 +18,7 @@
     "src/contracts/action-requirements.js",
     "src/contracts/day-plan.js",
     "src/host/chat-sync/session.js",
-    "src/contracts/economy.js"
+    "src/contracts/economy.js",
+    "src/contracts/spatial.js"
   ]
 }

@@ -27,6 +27,7 @@ function createTurnSystem({
   snapshot,
   sweetHighNow,
   syncThresholdTags,
+  syncSpatial = () => {},
 }) {
   /* ---------- 每楼主流程 ---------- */
   /**
@@ -452,6 +453,7 @@ function createTurnSystem({
     }
     if (!opts._fromInput) g.tickets = [];
 
+    if (!replyOnly) syncSpatial(results);
     results.floorApplied = floorApplied;
     results.stats = snapshot();
     results.capture = g.capture || null;

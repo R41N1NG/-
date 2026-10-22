@@ -20,6 +20,7 @@ const handlers = {
   pass: { available: () => null, prepare: () => ({ summary: "已度过本时段" }) },
   work: require("../economy/work.js").handler,
   shop: require("../economy/shop.js").handler,
+  black_market: require("../economy/shop.js").blackMarketHandler,
   talk: { available: () => "当前没有可开展的交流事件", prepare: null },
   tailing: { available: () => "当前没有可接入的出行机会", prepare: null },
 };

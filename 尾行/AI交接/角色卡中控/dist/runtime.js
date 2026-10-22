@@ -2673,6 +2673,17 @@
             args: [],
             check: null,
             dailyOnly: true
+          },
+          {
+            id: "daily.black_market",
+            name: "\u65E5\u7A0B\xB7\u9ED1\u5E02\u91C7\u8D2D",
+            modes: [
+              "any"
+            ],
+            args: [],
+            check: null,
+            aliases: [],
+            dailyOnly: true
           }
         ]
       };
@@ -3576,7 +3587,8 @@
             transit_port: false,
             exits: [
               "old_skybridge_b",
-              "old_alley_main_b"
+              "old_alley_main_b",
+              "player_base_b"
             ],
             spots: [
               "park_bench",
@@ -3895,7 +3907,8 @@
             exits: [
               "store_24h_c",
               "river_steps_c",
-              "narrow_gap_c"
+              "narrow_gap_c",
+              "black_market_c"
             ],
             spots: [
               "wet_pavement"
@@ -4143,6 +4156,42 @@
               "smart_lock",
               "home_safe"
             ]
+          },
+          player_base_b: {
+            id: "player_base_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u4F60\u7684\u636E\u70B9",
+            light: "bright",
+            crowd: "none",
+            surveillance: "none",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "old_park_b"
+            ],
+            spots: []
+          },
+          black_market_c: {
+            id: "black_market_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u4E34\u6C5F\u9ED1\u5E02",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "village_main_c"
+            ],
+            spots: []
           }
         }
       };
@@ -8543,7 +8592,9 @@
         settleAction,
         snapshot,
         sweetHighNow,
-        syncThresholdTags
+        syncThresholdTags,
+        syncSpatial = () => {
+        }
       }) {
         function rollEnvSfx() {
           if (g.mode !== "stealth") return null;
@@ -8861,6 +8912,7 @@
             results.facts.push({ ticket: t.ticket, consumed: !!issued });
           }
           if (!opts._fromInput) g.tickets = [];
+          if (!replyOnly) syncSpatial(results);
           results.floorApplied = floorApplied;
           results.stats = snapshot();
           results.capture = g.capture || null;
@@ -9870,6 +9922,372 @@
     }
   });
 
+  // src/config/city-layout.json
+  var require_city_layout = __commonJS({
+    "src/config/city-layout.json"(exports, module) {
+      module.exports = {
+        schema: 1,
+        width: 1100,
+        height: 1180,
+        frames: {
+          D: {
+            x: 570,
+            y: 20,
+            width: 500,
+            height: 440
+          },
+          A: {
+            x: 570,
+            y: 500,
+            width: 500,
+            height: 440
+          },
+          B: {
+            x: 20,
+            y: 250,
+            width: 500,
+            height: 440
+          },
+          C: {
+            x: 20,
+            y: 720,
+            width: 500,
+            height: 440
+          }
+        },
+        coordinates: {
+          office_lobby_a: [
+            130,
+            80
+          ],
+          parking_b2_a: [
+            70,
+            180
+          ],
+          skybridge_a: [
+            250,
+            100
+          ],
+          metro_hub_a: [
+            350,
+            180
+          ],
+          bus_bay_a: [
+            420,
+            80
+          ],
+          store_24h_a: [
+            360,
+            300
+          ],
+          back_alley_a: [
+            150,
+            260
+          ],
+          trash_station_a: [
+            80,
+            345
+          ],
+          school_gate_b: [
+            160,
+            75
+          ],
+          school_bus_terminal_b: [
+            300,
+            80
+          ],
+          old_metro_b: [
+            410,
+            150
+          ],
+          old_skybridge_b: [
+            175,
+            160
+          ],
+          store_24h_b: [
+            285,
+            230
+          ],
+          old_park_b: [
+            70,
+            230
+          ],
+          old_alley_main_b: [
+            190,
+            300
+          ],
+          dark_blind_alley_b: [
+            310,
+            315
+          ],
+          unit_stairs_b: [
+            410,
+            320
+          ],
+          rooftop_b: [
+            420,
+            380
+          ],
+          dead_end_b: [
+            90,
+            340
+          ],
+          love_hotel_b: [
+            120,
+            390
+          ],
+          player_base_b: [
+            60,
+            105
+          ],
+          club_backdoor_c: [
+            70,
+            80
+          ],
+          food_street_c: [
+            190,
+            95
+          ],
+          dock_bus_stop_c: [
+            310,
+            65
+          ],
+          bridge_head_c: [
+            430,
+            100
+          ],
+          store_24h_c: [
+            210,
+            195
+          ],
+          river_walk_c: [
+            360,
+            210
+          ],
+          river_steps_c: [
+            360,
+            300
+          ],
+          village_main_c: [
+            140,
+            295
+          ],
+          narrow_gap_c: [
+            250,
+            340
+          ],
+          rental_iron_door_c: [
+            350,
+            365
+          ],
+          village_roof_c: [
+            440,
+            365
+          ],
+          black_market_c: [
+            65,
+            355
+          ],
+          suburb_highway_d: [
+            90,
+            345
+          ],
+          gas_station_d: [
+            220,
+            345
+          ],
+          private_road_d: [
+            210,
+            245
+          ],
+          pine_forest_d: [
+            80,
+            200
+          ],
+          estate_gate_d: [
+            310,
+            170
+          ],
+          villa_garden_d: [
+            360,
+            85
+          ],
+          garage_side_door_d: [
+            230,
+            60
+          ],
+          villa_porch_d: [
+            430,
+            65
+          ]
+        },
+        transitLinks: [
+          [
+            "metro_hub_a",
+            "old_metro_b"
+          ],
+          [
+            "old_metro_b",
+            "dock_bus_stop_c"
+          ],
+          [
+            "bus_bay_a",
+            "suburb_highway_d"
+          ]
+        ],
+        privatePlaces: [
+          "unit_stairs_b",
+          "rooftop_b",
+          "rental_iron_door_c",
+          "village_roof_c",
+          "estate_gate_d",
+          "villa_garden_d",
+          "garage_side_door_d",
+          "villa_porch_d"
+        ],
+        home: "player_base_b",
+        blackMarket: "black_market_c"
+      };
+    }
+  });
+
+  // src/runtime/spatial/system.js
+  var require_system = __commonJS({
+    "src/runtime/spatial/system.js"(exports, module) {
+      "use strict";
+      var { places, districts } = require_places();
+      var layout = require_city_layout();
+      var { TAIL_PUMP_IDS } = require_constants();
+      var clone = (x) => JSON.parse(JSON.stringify(x));
+      var activeScene = (g) => ["stealth", "contact", "vehicle"].includes(g.mode) && (g.dayPlan.source !== "daily" || g.dayPlan.activity?.kind === "tailing");
+      function routePlace(g) {
+        const id = g.route?.nodes?.[g.route.here];
+        return places[id] && g.route?.known?.[g.route.here] !== 0 ? id : null;
+      }
+      function sceneVisible(g) {
+        return activeScene(g) && g.spatial.tracking === "visual" && g.spatial.lastSeen?.turn === (g.floor || 0) && g.spatial.lastSeen.placeId === routePlace(g) && g.spatial.playerPlaceId === g.spatial.lastSeen.placeId;
+      }
+      function observeScene(g, date, results) {
+        if (!activeScene(g)) return;
+        const attempts = (results?.actions || []).filter(
+          (a) => TAIL_PUMP_IDS.includes(a.id) && !a.rejected && a.band
+        );
+        const attempt = attempts.at(-1);
+        const escaped = g.fleeing && g.route?.here >= g.route?.nodes.length - 1;
+        if (attempt?.band === "fail" || escaped) {
+          g.spatial.tracking = "lost";
+          return;
+        }
+        if ((g.spatial.tracking === "lost" || g.spatial.assumed) && !attempt) return;
+        const id = routePlace(g);
+        if (!id) return;
+        g.spatial.playerPlaceId = id;
+        g.spatial.assumed = false;
+        g.spatial.tracking = "visual";
+        g.spatial.lastSeen = {
+          targetId: g.targetId || "college",
+          placeId: id,
+          date,
+          period: g.dayPlan.period,
+          turn: g.floor || 0
+        };
+        if (!g.spatial.knownPlaces.includes(id)) g.spatial.knownPlaces.push(id);
+      }
+      function moveReason(ctx, id) {
+        const p = places[id];
+        if (!p) return "\u6CA1\u6709\u8FD9\u4E2A\u5730\u70B9";
+        if (layout.privatePlaces.includes(id))
+          return "\u8FD9\u91CC\u9700\u8981\u539F\u6709\u7684\u573A\u6240\u8FDB\u5165\u6761\u4EF6\uFF0C\u5730\u56FE\u4E0D\u80FD\u76F4\u63A5\u8FDB\u5165";
+        if (p.district === "D") return "\u5317\u90CA\u4EA4\u901A\u6761\u4EF6\u5C1A\u672A\u63A5\u901A";
+        if (id === ctx.spatial.playerPlaceId) return "\u4F60\u5DF2\u5728\u8FD9\u91CC";
+        const queue = [ctx.spatial.playerPlaceId], seen = new Set(queue);
+        while (queue.length) {
+          const here = queue.shift();
+          if (here === id) return null;
+          const exits = [
+            ...places[here]?.exits || [],
+            ...layout.transitLinks.flatMap(
+              ([a, b]) => a === here ? [b] : b === here ? [a] : []
+            )
+          ];
+          for (const next of exits)
+            if (!seen.has(next) && places[next]?.district !== "D" && !layout.privatePlaces.includes(next)) {
+              seen.add(next);
+              queue.push(next);
+            }
+        }
+        return "\u5F53\u524D\u6CA1\u6709\u53EF\u901A\u884C\u8DEF\u7EBF";
+      }
+      function prepareMove(ctx, id) {
+        const reason = moveReason(ctx, id);
+        if (reason) throw Object.assign(Error(reason), { code: "DAY_UNAVAILABLE" });
+        const spatial = clone(ctx.spatial);
+        spatial.playerPlaceId = id;
+        spatial.assumed = false;
+        return { summary: `\u5DF2\u524D\u5F80${places[id].name}\uFF0C\u5E02\u5185\u79FB\u52A8\u4E0D\u6D88\u8017\u884C\u52A8\u70B9`, spatial };
+      }
+      function cityView(g, date) {
+        const spatial = g.spatial, live = sceneVisible(g) && spatial.lastSeen?.date === date;
+        const nodes = Object.entries(places).map(([id, p]) => {
+          const hidden = layout.privatePlaces.includes(id) && !spatial.knownPlaces.includes(id) && spatial.playerPlaceId !== id;
+          const [x, y] = layout.coordinates[id];
+          const frame = layout.frames[p.district];
+          return {
+            id,
+            district: p.district,
+            name: hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : p.name,
+            x: x + frame.x,
+            y: y + frame.y,
+            hidden,
+            service: id === layout.blackMarket ? "black_market" : id === layout.home ? "home" : null,
+            moveReason: g.dayPlan.source !== "daily" ? "\u539F\u5C3E\u884C\u6D41\u7A0B\u4E2D\u7531\u56DE\u5408\u51B3\u5B9A\u79FB\u52A8" : g.dayPlan.activity ? "\u8BF7\u5148\u7ED3\u675F\u5F53\u524D\u6D3B\u52A8" : g.dayPlan.ended ? "\u672C\u65E5\u5DF2\u7ED3\u675F" : moveReason({ spatial }, id)
+          };
+        });
+        const edges = [];
+        for (const [id, p] of Object.entries(places))
+          for (const to of p.exits) {
+            if (places[to].exits.includes(id) && id > to) continue;
+            edges.push({
+              from: id,
+              to,
+              transit: false,
+              oneWay: !places[to].exits.includes(id)
+            });
+          }
+        for (const [from, to] of layout.transitLinks)
+          edges.push({ from, to, transit: true });
+        const last = spatial.lastSeen?.targetId === (g.targetId || "college") ? spatial.lastSeen : null;
+        return {
+          width: layout.width,
+          height: layout.height,
+          frames: Object.entries(layout.frames).map(([id, f]) => ({
+            id,
+            ...f,
+            name: districts[id].name
+          })),
+          nodes,
+          edges,
+          player: {
+            placeId: spatial.playerPlaceId,
+            name: places[spatial.playerPlaceId].name,
+            district: places[spatial.playerPlaceId].district,
+            assumed: spatial.assumed
+          },
+          target: last ? {
+            placeId: last.placeId,
+            name: places[last.placeId].name,
+            date: last.date,
+            period: last.period,
+            live,
+            status: live ? "\u76EE\u89C6\u4F4D\u7F6E" : "\u6700\u540E\u76EE\u51FB"
+          } : null,
+          note: "\u7A7A\u95F4\u793A\u610F\u56FE\uFF0C\u8FDE\u7EBF\u8868\u793A\u901A\u8DEF\uFF1B\u865A\u7EBF\u8868\u793A\u8DE8\u533A\u63A5\u9A73\uFF0C\u4E0D\u6309\u771F\u5B9E\u8DDD\u79BB\u7ED8\u5236\u3002"
+        };
+      }
+      module.exports = { activeScene, observeScene, prepareMove, cityView };
+    }
+  });
+
   // src/config/economy.json
   var require_economy = __commonJS({
     "src/config/economy.json"(exports, module) {
@@ -9933,7 +10351,14 @@
             device: 1,
             disguise: 1,
             gear: 0
-          }
+          },
+          onlineItemIds: [
+            "bento",
+            "onigiri",
+            "energy_drink"
+          ],
+          blackMarketPlace: "black_market_c",
+          actionPointFoodIds: []
         }
       };
     }
@@ -9947,16 +10372,16 @@
       var CONFIG = require_economy().commerce;
       var clone = (x) => JSON.parse(JSON.stringify(x));
       var error = (message) => Object.assign(Error(message), { code: "DAY_UNAVAILABLE" });
-      function catalog(ctx, channel = "retail") {
-        if (!["retail", "black_market"].includes(channel))
-          throw error("\u672A\u77E5\u8D2D\u7269\u6E20\u9053");
-        if (channel === "black_market" && !RULES.identity.list[ctx.identity]?.blackMarket)
-          throw error("\u5F53\u524D\u8EAB\u4EFD\u6CA1\u6709\u9ED1\u5E02\u6E20\u9053");
+      function catalog(ctx, channel = "online") {
+        if (!["online", "black_market"].includes(channel))
+          throw error("\u65E7\u5546\u573A\u6E20\u9053\u5DF2\u8C03\u6574\uFF0C\u8BF7\u91CD\u65B0\u9009\u62E9\u7EBF\u4E0A\u8865\u7ED9\u6216\u9ED1\u5E02");
+        if (channel === "black_market" && ctx.spatial?.playerPlaceId !== CONFIG.blackMarketPlace)
+          throw error("\u8BF7\u5148\u901A\u8FC7\u5730\u56FE\u524D\u5F80\u4E34\u6C5F\u9ED1\u5E02");
+        const foods = new Set(CONFIG.onlineItemIds);
         return Object.values(RULES.items).filter(
-          (item) => Object.prototype.hasOwnProperty.call(CONFIG.deliveryDays, item.type) && Number.isSafeInteger(item.price) && item.price > 0
+          (item) => Object.prototype.hasOwnProperty.call(CONFIG.deliveryDays, item.type) && Number.isSafeInteger(item.price) && item.price > 0 && (channel === "online" ? foods.has(item.id) : !foods.has(item.id) && item.type !== "consumable")
         ).map((item) => {
-          const equipment = CONFIG.deliveryDays[item.type] > 0;
-          const discount = channel === "black_market" && equipment ? RULES.identity.blackMarketDiscount : 0;
+          const discount = channel === "black_market" && RULES.identity.list[ctx.identity]?.blackMarket ? RULES.identity.blackMarketDiscount : 0;
           return {
             id: item.id,
             name: item.name,
@@ -9968,75 +10393,83 @@
           };
         });
       }
-      var handler = {
-        available: () => null,
-        view: (ctx) => ({
-          type: "shop",
-          cash: ctx.ledger.cash,
-          channels: [
-            { id: "retail", name: "\u5546\u573A" },
-            ...RULES.identity.list[ctx.identity]?.blackMarket ? [{ id: "black_market", name: "\u9ED1\u5E02\uFF08\u5668\u6750\u4E5D\u6298\uFF09" }] : []
-          ],
-          catalogs: {
-            retail: catalog(ctx),
-            ...RULES.identity.list[ctx.identity]?.blackMarket ? { black_market: catalog(ctx, "black_market") } : {}
-          },
-          maxQuantity: CONFIG.maxQuantity,
-          maxCartLines: CONFIG.maxCartLines,
-          note: "\u4E00\u6279\u91C7\u4E70\u6D88\u8017 1 \u70B9\uFF1B\u666E\u901A\u54C1\u5F53\u6B21\u5165\u5E93\uFF0C\u5668\u6750\u9694\u65E5\u5230\u8D27\u3002"
-        }),
-        prepare(ctx, args) {
-          if (!Array.isArray(args.cart) || !args.cart.length || args.cart.length > CONFIG.maxCartLines)
-            throw error("\u8BF7\u9009\u62E9\u5546\u54C1\uFF0C\u8D2D\u7269\u6E05\u5355\u4E0D\u80FD\u4E3A\u7A7A\u6216\u8D85\u957F");
-          const channel = args.channel || "retail", items = new Map(catalog(ctx, channel).map((x) => [x.id, x])), quantities = /* @__PURE__ */ new Map();
-          for (const line of args.cart) {
-            if (!line || !items.has(line.id) || !Number.isSafeInteger(line.quantity) || line.quantity < 1 || line.quantity > CONFIG.maxQuantity)
-              throw error("\u5546\u54C1\u6216\u6570\u91CF\u65E0\u6548");
-            const qty = (quantities.get(line.id) || 0) + line.quantity;
-            if (qty > CONFIG.maxQuantity) throw error("\u540C\u4E00\u5546\u54C1\u6570\u91CF\u8FC7\u591A");
-            quantities.set(line.id, qty);
-          }
-          const lines = [...quantities].map(([id, quantity]) => {
-            const item = items.get(id);
-            return {
-              id,
-              quantity,
-              unitPrice: item.unitPrice,
-              dueDate: ctx.ledger.date + item.deliveryDays,
-              delivered: item.deliveryDays === 0
-            };
-          });
-          const total = lines.reduce(
-            (sum, line) => sum + line.unitPrice * line.quantity,
-            0
-          );
-          if (!Number.isSafeInteger(total) || ctx.ledger.cash < total)
-            throw error("\u73B0\u91D1\u4E0D\u8DB3\uFF0C\u672C\u6B21\u672A\u6263\u8D39");
-          const economy = clone(ctx.economy);
-          if (economy.orders.length >= CONFIG.maxOrders) {
-            const index = economy.orders.findIndex(
-              (o) => o.lines.every((l) => l.delivered)
+      function createShopHandler(channel) {
+        const isBlack = channel === "black_market";
+        return {
+          available: (ctx) => isBlack && ctx.spatial.playerPlaceId !== CONFIG.blackMarketPlace ? "\u8BF7\u5148\u901A\u8FC7\u5730\u56FE\u524D\u5F80\u4E34\u6C5F\u9ED1\u5E02" : null,
+          view: (ctx) => ({
+            type: "shop",
+            actionId: isBlack ? "daily.black_market" : "daily.shop",
+            title: isBlack ? "\u4E34\u6C5F\u9ED1\u5E02\u91C7\u8D2D" : "\u7EBF\u4E0A\u98DF\u54C1\u8865\u7ED9",
+            cash: ctx.ledger.cash,
+            channels: [
+              {
+                id: channel,
+                name: isBlack ? "\u4E34\u6C5F\u9ED1\u5E02" + (RULES.identity.list[ctx.identity]?.blackMarket ? "\uFF08\u8EAB\u4EFD\u4E5D\u6298\uFF09" : "") : "\u7EBF\u4E0A\u8865\u7ED9"
+              }
+            ],
+            catalogs: {
+              [channel]: isBlack && ctx.spatial.playerPlaceId !== CONFIG.blackMarketPlace ? [] : catalog(ctx, channel)
+            },
+            maxQuantity: CONFIG.maxQuantity,
+            maxCartLines: CONFIG.maxCartLines,
+            note: isBlack ? "\u56FA\u5B9A\u573A\u6240\u91C7\u8D2D\uFF1B\u5668\u6750\u6309\u539F\u4F9B\u8D27\u89C4\u5219\u5230\u8D27\u3002\u786E\u8BA4\u4E00\u6279\u6D88\u8017 1 \u70B9\u3002" : "\u4EC5\u552E\u98DF\u54C1\u8865\u7ED9\uFF1B\u6D4F\u89C8\u4E0D\u6263\u70B9\uFF0C\u786E\u8BA4\u4E00\u6279\u6D88\u8017 1 \u70B9\u3002\u884C\u52A8\u70B9\u6062\u590D\u98DF\u54C1\u5F85\u5B9A\u3002"
+          }),
+          prepare(ctx, args) {
+            if (args.channel && args.channel !== channel)
+              throw error("\u91C7\u8D2D\u5165\u53E3\u4E0E\u6E20\u9053\u4E0D\u4E00\u81F4");
+            if (!Array.isArray(args.cart) || !args.cart.length || args.cart.length > CONFIG.maxCartLines)
+              throw error("\u8BF7\u9009\u62E9\u5546\u54C1\uFF0C\u6E05\u5355\u4E0D\u80FD\u4E3A\u7A7A\u6216\u8D85\u957F");
+            const items = new Map(catalog(ctx, channel).map((x) => [x.id, x])), quantities = /* @__PURE__ */ new Map();
+            for (const line of args.cart) {
+              if (!line || !items.has(line.id) || !Number.isSafeInteger(line.quantity) || line.quantity < 1 || line.quantity > CONFIG.maxQuantity)
+                throw error("\u5F53\u524D\u6E20\u9053\u4E0D\u51FA\u552E\u8BE5\u5546\u54C1\uFF0C\u6216\u6570\u91CF\u65E0\u6548");
+              const quantity = (quantities.get(line.id) || 0) + line.quantity;
+              if (quantity > CONFIG.maxQuantity) throw error("\u540C\u4E00\u5546\u54C1\u6570\u91CF\u8FC7\u591A");
+              quantities.set(line.id, quantity);
+            }
+            const lines = [...quantities].map(([id, quantity]) => {
+              const item = items.get(id);
+              return {
+                id,
+                quantity,
+                unitPrice: item.unitPrice,
+                dueDate: ctx.ledger.date + item.deliveryDays,
+                delivered: item.deliveryDays === 0
+              };
+            });
+            const total = lines.reduce(
+              (sum, line) => sum + line.unitPrice * line.quantity,
+              0
             );
-            if (index < 0) throw error("\u5F85\u6536\u8D27\u8BA2\u5355\u5DF2\u6EE1\uFF0C\u8BF7\u5148\u7B49\u5F85\u5230\u8D27");
-            economy.orders.splice(index, 1);
+            if (!Number.isSafeInteger(total) || ctx.ledger.cash < total)
+              throw error("\u73B0\u91D1\u4E0D\u8DB3\uFF0C\u672C\u6B21\u672A\u6263\u8D39");
+            const economy = clone(ctx.economy);
+            if (economy.orders.length >= CONFIG.maxOrders) {
+              const index = economy.orders.findIndex(
+                (o) => o.lines.every((l) => l.delivered)
+              );
+              if (index < 0) throw error("\u5F85\u6536\u8D27\u8BA2\u5355\u5DF2\u6EE1");
+              economy.orders.splice(index, 1);
+            }
+            economy.orders.push({
+              id: `order-${ctx.ledger.date}-${ctx.dayPlan.sequence || 0}`,
+              date: ctx.ledger.date,
+              total,
+              channel,
+              lines
+            });
+            return {
+              summary: `${isBlack ? "\u9ED1\u5E02\u91C7\u8D2D" : "\u7EBF\u4E0A\u8865\u7ED9"}\u5B8C\u6210\uFF0C\u652F\u4ED8 ${total}${lines.some((l) => !l.delivered) ? "\uFF1B\u5668\u6750\u5C06\u5728\u4E0B\u4E00\u5929\u5230\u8D27" : "\uFF1B\u5546\u54C1\u5DF2\u5165\u5E93"}`,
+              ledger: { cash: -total },
+              inventory: lines.filter((l) => l.delivered).map((l) => ({ id: l.id, add: l.quantity })),
+              economy
+            };
           }
-          economy.orders.push({
-            id: `order-${ctx.ledger.date}-${ctx.dayPlan.sequence || 0}`,
-            date: ctx.ledger.date,
-            total,
-            channel,
-            lines
-          });
-          const inventory = lines.filter((l) => l.delivered).map((l) => ({ id: l.id, add: l.quantity }));
-          const delayed = lines.some((l) => !l.delivered);
-          return {
-            summary: `\u91C7\u4E70\u5B8C\u6210\uFF0C\u652F\u4ED8 ${total}${delayed ? "\uFF1B\u5668\u6750\u5C06\u5728\u4E0B\u4E00\u5929\u5230\u8D27" : "\uFF1B\u5546\u54C1\u5DF2\u5165\u5E93"}`,
-            ledger: { cash: -total },
-            inventory,
-            economy
-          };
-        }
-      };
+        };
+      }
+      var handler = createShopHandler("online");
+      var blackMarketHandler = createShopHandler("black_market");
       function deliverDue(ctx, date) {
         const economy = clone(ctx.economy), counts = /* @__PURE__ */ new Map();
         for (const order of economy.orders)
@@ -10063,7 +10496,13 @@
           }))
         };
       }
-      module.exports = { catalog, handler, deliverDue, economyView };
+      module.exports = {
+        catalog,
+        handler,
+        blackMarketHandler,
+        deliverDue,
+        economyView
+      };
     }
   });
 
@@ -10146,6 +10585,7 @@
     "src/runtime/game/snapshot.js"(exports, module) {
       "use strict";
       var { classifyPlace } = require_action_requirements();
+      var { cityView } = require_system();
       var { economyView } = require_shop();
       var R = require_rules();
       var C = require_checks();
@@ -10202,6 +10642,7 @@
             JSON.stringify({
               dayPlan: { ...dayPlanView(g.dayPlan, s.date), token: getDayToken() },
               economy: economyView(g.economy),
+              cityMap: cityView(g, s.date),
               dayActions: getDayActivities(),
               dayControls: getDayControls(),
               player: {
@@ -10316,8 +10757,8 @@
               assess: g.lastAssess || null,
               ledger: g.lastLedgerSummary || "\u672C\u8F6E\u6682\u65E0\u7ED3\u7B97",
               /* 地图 HUD 字段（状态栏 route-tracker + 战术沙盘） */
-              area: districtObj ? districtObj.name : "\u672A\u77E5",
-              place: !dailyIdle && cur && routeView.known[here] ? cur.name : dailyIdle ? "\u65E5\u7A0B\u5B89\u6392" : null,
+              area: dailyIdle ? map.getDistrict(map.getPlace(g.spatial.playerPlaceId).district).name : districtObj ? districtObj.name : "\u672A\u77E5",
+              place: !dailyIdle && cur && routeView.known[here] ? cur.name : dailyIdle ? map.getPlace(g.spatial.playerPlaceId).name : null,
               weather: w.weather,
               weatherName: dailyIdle && g.dayPlan.period < 3 && w.weather === "clear" ? "\u6674\u5929" : WEATHER_ICON[w.weather] || "\u{1F319} \u6674\u591C",
               strikeSealed: cur ? !!cur.strike_sealed : false,
@@ -10356,6 +10797,7 @@
               v: 2,
               dayPlan: g.dayPlan,
               economy: g.economy,
+              spatial: g.spatial,
               rngVersion: g.rngVersion,
               nightStartFloor: g.nightStartFloor || 0,
               envSfx: g._envSfx ?? null,
@@ -10430,7 +10872,7 @@
           throw invalid();
         const seen = /* @__PURE__ */ new Set();
         for (const order of value.orders) {
-          if (!order || typeof order.id !== "string" || !order.id || seen.has(order.id) || !integer(order.date, 1) || !integer(order.total, 1) || !["retail", "black_market"].includes(order.channel) || !Array.isArray(order.lines) || !order.lines.length || order.lines.length > CONFIG.maxCartLines)
+          if (!order || typeof order.id !== "string" || !order.id || seen.has(order.id) || !integer(order.date, 1) || !integer(order.total, 1) || !["retail", "online", "black_market"].includes(order.channel) || !Array.isArray(order.lines) || !order.lines.length || order.lines.length > CONFIG.maxCartLines)
             throw invalid();
           seen.add(order.id);
           let total = 0;
@@ -10449,16 +10891,107 @@
     }
   });
 
+  // src/contracts/spatial.js
+  var require_spatial = __commonJS({
+    "src/contracts/spatial.js"(exports, module) {
+      "use strict";
+      var { places } = require_places();
+      var layout = require_city_layout();
+      var clone = (x) => JSON.parse(JSON.stringify(x));
+      var validId = (id) => typeof id === "string" && Object.prototype.hasOwnProperty.call(places, id);
+      function createSpatial({ placeId = layout.home, assumed = false } = {}) {
+        return {
+          schema: 1,
+          playerPlaceId: placeId,
+          assumed,
+          tracking: "none",
+          lastSeen: null,
+          knownPlaces: []
+        };
+      }
+      function validateSpatial(value) {
+        const seen = value?.lastSeen;
+        if (!value || value.schema !== 1 || !validId(value.playerPlaceId) || typeof value.assumed !== "boolean" || !["none", "visual", "lost"].includes(value.tracking) || !Array.isArray(value.knownPlaces) || value.knownPlaces.some((id) => !validId(id)) || new Set(value.knownPlaces).size !== value.knownPlaces.length || seen !== null && (!seen || !validId(seen.placeId) || typeof seen.targetId !== "string" || !Number.isSafeInteger(seen.date) || seen.date < 1 || !Number.isInteger(seen.period) || seen.period < 0 || seen.period > 4 || !Number.isSafeInteger(seen.turn) || seen.turn < 0))
+          throw Object.assign(Error("\u5730\u56FE\u4F4D\u7F6E\u5B58\u6863\u65E0\u6548\uFF0C\u539F\u8FDB\u5EA6\u5DF2\u4FDD\u7559"), {
+            code: "SAVE_INVALID"
+          });
+        return clone(value);
+      }
+      module.exports = { createSpatial, validateSpatial };
+    }
+  });
+
   // src/config/daily-actions.json
   var require_daily_actions = __commonJS({
     "src/config/daily-actions.json"(exports, module) {
       module.exports = [
-        { id: "daily.rest", name: "\u4F11\u606F", cost: 1, mode: "instant", kind: "routine", handler: "rest", effect: "\u6062\u590D 50 \u70B9\u4F53\u529B\uFF0C\u4E0D\u8D85\u8FC7\u4E0A\u9650", recovery: 50 },
-        { id: "daily.work", name: "\u6253\u5DE5\uFF0F\u63A5\u5355", cost: 1, mode: "instant", kind: "routine", handler: "work", inputRequired: true, effect: "\u6309\u672C\u6B21\u5DE5\u79CD\u7ED3\u7B97\u62A5\u916C\u4E0E\u6D88\u8017" },
-        { id: "daily.shop", name: "\u8D2D\u7269", cost: 1, mode: "instant", kind: "routine", handler: "shop", inputRequired: true, effect: "\u4E00\u6B21\u6279\u91CF\u91C7\u4E70\uFF0C\u7ED3\u8D26\u524D\u5217\u660E\u603B\u4EF7" },
-        { id: "daily.talk", name: "\u72EC\u7ACB\u4EA4\u6D41", cost: 1, mode: "scene", kind: "routine", handler: "talk", effect: "\u5C55\u5F00\u4E00\u6B21\u4EA4\u6D41\uFF0C\u6210\u679C\u7531\u5177\u4F53\u4E8B\u4EF6\u51B3\u5B9A" },
-        { id: "daily.tailing", name: "\u5C3E\u884C", cost: 2, mode: "scene", kind: "tailing", handler: "tailing", effect: "\u8FDB\u5165\u8FDE\u7EED\u5C3E\u884C\u56DE\u5408\uFF0C\u6574\u6BB5\u7ED3\u675F\u540E\u63A8\u8FDB\u65F6\u6BB5" },
-        { id: "daily.pass", name: "\u5EA6\u8FC7\u672C\u65F6\u6BB5", cost: 0, mode: "instant", kind: "routine", handler: "pass", effect: "\u65E0\u6536\u76CA\u548C\u6062\u590D\uFF0C\u76F4\u63A5\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5" }
+        {
+          id: "daily.rest",
+          name: "\u4F11\u606F",
+          cost: 1,
+          mode: "instant",
+          kind: "routine",
+          handler: "rest",
+          effect: "\u6062\u590D 50 \u70B9\u4F53\u529B\uFF0C\u4E0D\u8D85\u8FC7\u4E0A\u9650",
+          recovery: 50
+        },
+        {
+          id: "daily.work",
+          name: "\u6253\u5DE5\uFF0F\u63A5\u5355",
+          cost: 1,
+          mode: "instant",
+          kind: "routine",
+          handler: "work",
+          inputRequired: true,
+          effect: "\u6309\u672C\u6B21\u5DE5\u79CD\u7ED3\u7B97\u62A5\u916C\u4E0E\u6D88\u8017"
+        },
+        {
+          id: "daily.shop",
+          name: "\u7EBF\u4E0A\u8865\u7ED9",
+          cost: 1,
+          mode: "instant",
+          kind: "routine",
+          handler: "shop",
+          inputRequired: true,
+          effect: "\u53EA\u552E\u98DF\u54C1\u8865\u7ED9\uFF0C\u4E00\u6279\u786E\u8BA4\u540E\u6263\u8D39"
+        },
+        {
+          id: "daily.black_market",
+          name: "\u9ED1\u5E02\u91C7\u8D2D",
+          cost: 1,
+          mode: "instant",
+          kind: "routine",
+          handler: "black_market",
+          inputRequired: true,
+          effect: "\u987B\u5230\u4E34\u6C5F\u9ED1\u5E02\uFF0C\u5668\u6750\u6309\u8BA2\u5355\u9694\u65E5\u5230\u8D27"
+        },
+        {
+          id: "daily.talk",
+          name: "\u72EC\u7ACB\u4EA4\u6D41",
+          cost: 1,
+          mode: "scene",
+          kind: "routine",
+          handler: "talk",
+          effect: "\u5C55\u5F00\u4E00\u6B21\u4EA4\u6D41\uFF0C\u6210\u679C\u7531\u5177\u4F53\u4E8B\u4EF6\u51B3\u5B9A"
+        },
+        {
+          id: "daily.tailing",
+          name: "\u5C3E\u884C",
+          cost: 2,
+          mode: "scene",
+          kind: "tailing",
+          handler: "tailing",
+          effect: "\u8FDB\u5165\u8FDE\u7EED\u5C3E\u884C\u56DE\u5408\uFF0C\u6574\u6BB5\u7ED3\u675F\u540E\u63A8\u8FDB\u65F6\u6BB5"
+        },
+        {
+          id: "daily.pass",
+          name: "\u5EA6\u8FC7\u672C\u65F6\u6BB5",
+          cost: 0,
+          mode: "instant",
+          kind: "routine",
+          handler: "pass",
+          effect: "\u65E0\u6536\u76CA\u548C\u6062\u590D\uFF0C\u76F4\u63A5\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5"
+        }
       ];
     }
   });
@@ -10573,6 +11106,7 @@
         pass: { available: () => null, prepare: () => ({ summary: "\u5DF2\u5EA6\u8FC7\u672C\u65F6\u6BB5" }) },
         work: require_work().handler,
         shop: require_shop().handler,
+        black_market: require_shop().blackMarketHandler,
         talk: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u5F00\u5C55\u7684\u4EA4\u6D41\u4E8B\u4EF6", prepare: null },
         tailing: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u63A5\u5165\u7684\u51FA\u884C\u673A\u4F1A", prepare: null }
       };
@@ -10592,7 +11126,7 @@
   });
 
   // src/runtime/daily/system.js
-  var require_system = __commonJS({
+  var require_system2 = __commonJS({
     "src/runtime/daily/system.js"(exports, module) {
       "use strict";
       var {
@@ -10600,6 +11134,8 @@
         createDayPlan,
         validateDayPlan
       } = require_day_plan2();
+      var { validateSpatial } = require_spatial();
+      var { prepareMove } = require_system();
       var { validateEconomy } = require_economy2();
       var { deliverDue } = require_shop();
       var { LIMITS } = require_ledger();
@@ -10622,7 +11158,8 @@
             world: g.world,
             targetId: g.targetId,
             identity: g.identity,
-            economy: g.economy
+            economy: g.economy,
+            spatial: g.spatial
           });
         }
         function token() {
@@ -10710,9 +11247,14 @@
           if (!result || typeof result.summary !== "string")
             throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u6CA1\u6709\u6709\u6548\u7ED3\u7B97\u7ED3\u679C");
           if (Object.keys(result).some(
-            (key) => !["summary", "ledger", "payload", "inventory", "economy"].includes(
-              key
-            )
+            (key) => ![
+              "summary",
+              "ledger",
+              "payload",
+              "inventory",
+              "economy",
+              "spatial"
+            ].includes(key)
           ))
             throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u542B\u6709\u5C1A\u672A\u652F\u6301\u7684\u6548\u679C\u7C7B\u578B");
           const ledger = result.ledger || {};
@@ -10739,7 +11281,8 @@
             }
           }
           const economy = result.economy === void 0 ? null : validateEconomy(result.economy);
-          return { ledger, inventory, economy };
+          const spatial = result.spatial === void 0 ? null : validateSpatial(result.spatial);
+          return { ledger, inventory, economy, spatial };
         }
         function execute(request) {
           if (!request || typeof request.operationId !== "string" || !request.operationId || request.operationId.length > 128)
@@ -10769,7 +11312,7 @@
             period: p.period,
             remaining: DAY_PLAN_RULES.budget - p.spent
           };
-          let next = clone(p), result = { summary: "" }, ledger = {}, inventory = null, economy = null, cost = 0;
+          let next = clone(p), result = { summary: "" }, ledger = {}, inventory = null, economy = null, spatial = null, cost = 0;
           if (request.command === "enable") {
             if (p.source !== "legacy") throw fail("DAY_STALE", "\u65E5\u7A0B\u5DF2\u7ECF\u542F\u7528");
             if ((g.floor || 0) > 0 && g.route && g.route.here < g.route.nodes.length - 1)
@@ -10788,7 +11331,7 @@
               clone(request.args || {}),
               clone(entry.definition)
             );
-            ({ ledger, inventory, economy } = applyEffects(result));
+            ({ ledger, inventory, economy, spatial } = applyEffects(result));
             cost = entry.definition.cost;
             next.spent += cost;
             if (entry.definition.mode === "scene") {
@@ -10801,6 +11344,11 @@
                 payload: clone(result.payload || {})
               };
             } else advance(next);
+          } else if (request.command === "move") {
+            if (p.source !== "daily" || p.activity || p.ended)
+              throw fail("DAY_UNAVAILABLE", "\u5F53\u524D\u4E0D\u80FD\u901A\u8FC7\u5730\u56FE\u79FB\u52A8");
+            result = prepareMove(context(), request.args?.placeId);
+            ({ ledger, inventory, economy, spatial } = applyEffects(result));
           } else if (["finish", "cancel"].includes(request.command)) {
             if (p.source !== "daily" || !p.activity || request.activityId !== p.activity.id)
               throw fail("DAY_STALE", "\u5F53\u524D\u6D3B\u52A8\u5DF2\u7ECF\u53D8\u5316");
@@ -10810,14 +11358,14 @@
             if (typeof handler !== "function")
               throw fail("DAY_UNAVAILABLE", "\u5F53\u524D\u6D3B\u52A8\u6682\u4E0D\u80FD\u5728\u8FD9\u91CC\u7ED3\u675F");
             result = handler(context(), clone(request.args || {}), clone(p.activity));
-            ({ ledger, inventory, economy } = applyEffects(result));
+            ({ ledger, inventory, economy, spatial } = applyEffects(result));
             next.activity = null;
             advance(next);
           } else if (request.command === "next-day") {
             if (p.source !== "daily" || !p.ended || p.activity)
               throw fail("DAY_UNAVAILABLE", "\u8BF7\u5148\u7ED3\u675F\u5F53\u5929\u7684\u5B89\u6392");
             const arrivals = deliverDue(context(), L.get("date") + 1);
-            ({ ledger, inventory, economy } = applyEffects(arrivals));
+            ({ ledger, inventory, economy, spatial } = applyEffects(arrivals));
             const outcome = nextDay();
             if (outcome?.blocked) throw fail("DAY_BUSY", outcome.reason);
             next = {
@@ -10850,6 +11398,7 @@
             L.commit(ledger, { reason: "daily-activity", action: request.actionId });
           if (inventory) g.player.inventory = inventory;
           if (economy) g.economy = economy;
+          if (spatial) g.spatial = spatial;
           g.dayPlan = next;
           afterCommit();
           if (!next.activity) {
@@ -10939,8 +11488,10 @@
       var { createSnapshotSystem } = require_snapshot();
       var { createSaveSystem } = require_save();
       var { createEconomy, validateEconomy } = require_economy2();
+      var { createSpatial, validateSpatial } = require_spatial();
+      var { observeScene } = require_system();
       var { createDailyRegistry } = require_registry();
-      var { createDailySystem } = require_system();
+      var { createDailySystem } = require_system2();
       var { classifyPlace } = require_action_requirements();
       var { migrateSave } = require_migrations();
       var { createDayPlan, validateDayPlan } = require_day_plan2();
@@ -11109,6 +11660,7 @@
           resolveAlertCross,
           settleAction,
           snapshot: () => snapshot(),
+          syncSpatial: (results) => observeScene(g, L.get("date"), results),
           sweetHighNow,
           syncThresholdTags
         });
@@ -11197,12 +11749,26 @@
         g.economy = validateEconomy(
           init.saved?.economy ?? init.economy ?? createEconomy()
         );
+        const oldPlace = g.route?.nodes?.[g.route.here];
+        const hasSavedSpatial = init.saved && Object.prototype.hasOwnProperty.call(init.saved, "spatial");
+        g.spatial = validateSpatial(
+          hasSavedSpatial ? init.saved.spatial : init.spatial !== void 0 ? init.spatial : createSpatial({
+            placeId: g.dayPlan.source === "legacy" && map.getPlace(oldPlace) ? oldPlace : void 0,
+            assumed: !!init.saved
+          })
+        );
+        if (!hasSavedSpatial && init.spatial === void 0 && g.dayPlan.source === "legacy")
+          observeScene(g, L.get("date"));
         const dailySystem = createDailySystem({
           g,
           L,
           registry: createDailyRegistry(services.dailyActions || []),
           nextDay: legacyNightFall,
-          afterCommit: syncThresholdTags
+          afterCommit: () => {
+            syncThresholdTags();
+            if (g.dayPlan.source === "daily")
+              g.world.district = map.getPlace(g.spatial.playerPlaceId).district;
+          }
         });
         function nightFall() {
           if (g.dayPlan.source === "daily")
@@ -11899,6 +12465,8 @@
         return [
           "\u3010\u65E5\u7A0B\u72B6\u6001 \xB7 \u672C\u5730\u5B58\u6863\u4E3A\u51C6\u3011",
           `\u7B2C ${p.date} \u5929\uFF0C${p.periodName}\uFF0C\u884C\u52A8\u70B9 ${p.remaining}/${p.budget}\u3002`,
+          `\u73A9\u5BB6\u6240\u5728\u5730\u70B9\uFF1A${snap.cityMap?.player?.name || "\u5C1A\u672A\u786E\u5B9A"}\u3002`,
+          snap.cityMap?.target ? `\u76EE\u6807\u6700\u540E\u5DF2\u77E5\u4F4D\u7F6E\uFF1A${snap.cityMap.target.name}\uFF08\u7B2C ${snap.cityMap.target.date} \u5929\uFF09\uFF0C\u4E0D\u4EE3\u8868\u5B9E\u65F6\u4F4D\u7F6E\u3002` : "\u76EE\u6807\u4F4D\u7F6E\u5C1A\u65E0\u76EE\u51FB\u8BB0\u5F55\u3002",
           p.activity ? `\u5F53\u524D\u6D3B\u52A8\uFF1A${p.activity.name}\u3002` : p.ended ? "\u672C\u65E5\u5DF2\u7ED3\u675F\uFF0C\u7B49\u5F85\u8FDB\u5165\u4E0B\u4E00\u5929\u3002" : "\u5F53\u524D\u6CA1\u6709\u8FDB\u884C\u4E2D\u7684\u6D3B\u52A8\u3002",
           last ? `\u6700\u8FD1\u5DF2\u7ED3\u7B97\u6D3B\u52A8\uFF1A${last}` : "\u5C1A\u65E0\u5DF2\u7ED3\u7B97\u7684\u65E5\u7A0B\u6D3B\u52A8\u3002",
           "\u73A9\u5BB6\u8F93\u5165\u4EC5\u4E3A\u4F34\u968F\u53D9\u4E8B\u3002\u4E0D\u5F97\u51ED\u6587\u5B57\u6263\u70B9\u3001\u63A8\u8FDB\u65F6\u6BB5\u3001\u53D1\u653E\u91D1\u94B1\u7269\u54C1\u6216\u89E3\u9501\u60C5\u62A5\uFF1B\u5B9E\u9645\u7ED3\u679C\u53EA\u8BA4\u672C\u5730\u6D3B\u52A8\u56DE\u6267\u3002",
@@ -13435,7 +14003,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.7",
+        version: "0.8.8",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -13444,7 +14012,7 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
+          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs",
           "preview:daily": "node tools/build/day-preview.js"

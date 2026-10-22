@@ -376,7 +376,8 @@
       "transit_port": false,
       "exits": [
         "old_skybridge_b",
-        "old_alley_main_b"
+        "old_alley_main_b",
+        "player_base_b"
       ],
       "spots": [
         "park_bench",
@@ -695,7 +696,8 @@
       "exits": [
         "store_24h_c",
         "river_steps_c",
-        "narrow_gap_c"
+        "narrow_gap_c",
+        "black_market_c"
       ],
       "spots": [
         "wet_pavement"
@@ -943,6 +945,42 @@
         "smart_lock",
         "home_safe"
       ]
+    },
+    "player_base_b": {
+      "id": "player_base_b",
+      "district": "B",
+      "sector": "B-2",
+      "name": "你的据点",
+      "light": "bright",
+      "crowd": "none",
+      "surveillance": "none",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "old_park_b"
+      ],
+      "spots": []
+    },
+    "black_market_c": {
+      "id": "black_market_c",
+      "district": "C",
+      "sector": "C-3",
+      "name": "临江黑市",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "low",
+      "cover": 0,
+      "indoor": true,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": [
+        "village_main_c"
+      ],
+      "spots": []
     }
   }
 }

@@ -37,6 +37,8 @@ function nextDay(g) {
   while (!g.snapshot().dayPlan.ended) act(g, "daily.pass");
   g.executeDailyCommand(req(g, null, {}, "next-day"));
 }
+const goMarket = (g) =>
+  g.executeDailyCommand(req(g, null, { placeId: "black_market_c" }, "move"));
 const owned = (g, id) =>
   g.save().player.inventory.find((x) => x.id === id)?.count || 0;
 
@@ -110,28 +112,26 @@ test("保安排班与待定工种：只开放已明确时段／代价，不凭�
       assert.equal(jobs.find((j) => j.id === id).enabled, false);
   }
 });
-test("商场批量结账：只认商品ID与数量，当次入库与隔日到货分开", () => {
+test("线上食品与黑市器材分别结账，普通入库与隔日到货分开", () => {
   const g = game(),
     cash = g.snapshot().player.cash;
-  act(g, "daily.shop", {
-    cart: [
-      { id: "bento", quantity: 2 },
-      { id: "climb_gear", quantity: 1 },
-    ],
-    total: 1,
+  act(g, "daily.shop", { cart: [{ id: "bento", quantity: 2 }], total: 1 });
+  goMarket(g);
+  act(g, "daily.black_market", {
+    cart: [{ id: "climb_gear", quantity: 1 }],
     price: 1,
   });
   assert.equal(g.snapshot().player.cash, cash - 540);
   assert.equal(owned(g, "bento"), 2);
   assert.equal(owned(g, "climb_gear"), 0);
-  assert.equal(g.snapshot().dayPlan.remaining, 3);
-  assert.equal(g.save().economy.orders[0].lines[1].dueDate, 2);
+  assert.equal(g.snapshot().dayPlan.remaining, 2);
+  assert.equal(g.save().economy.orders[1].lines[0].dueDate, 2);
   const copy = createGame({ saved: g.save() });
   nextDay(copy);
   assert.equal(owned(copy, "climb_gear"), 1);
   assert.equal(owned(copy, "bento"), 2);
   assert.equal(
-    copy.save().economy.orders[0].lines.every((l) => l.delivered),
+    copy.save().economy.orders[1].lines.every((l) => l.delivered),
     true,
   );
   const once = createGame({ saved: copy.save() });
@@ -157,20 +157,20 @@ test("商场验证：资金不足、无效清单、非卖品与越权黑市都�
     assert.deepEqual(g.save(), saved);
   }
 });
-test("黑市与合并数量：身份器材折扣来自旧配置，补给不打折，重复行不会超买", () => {
-  const g = game({ identity: "criminal" });
-  const cash = g.snapshot().player.cash;
+test("黑市身份折扣来自旧配置；线上食品不打折，重复清单行合并", () => {
+  const g = game({ identity: "criminal" }),
+    cash = g.snapshot().player.cash;
+  goMarket(g);
+  act(g, "daily.black_market", { cart: [{ id: "climb_gear", quantity: 1 }] });
   act(g, "daily.shop", {
-    channel: "black_market",
     cart: [
-      { id: "climb_gear", quantity: 1 },
       { id: "bento", quantity: 1 },
       { id: "bento", quantity: 1 },
     ],
   });
   assert.equal(g.snapshot().player.cash, cash - 490);
   assert.equal(owned(g, "bento"), 2);
-  assert.equal(g.save().economy.orders[0].lines.length, 2);
+  assert.equal(g.save().economy.orders[1].lines.length, 1);
 });
 test("经济存档：旧档补空态，订单损坏拒绝读取；失败不能静默重置购买或工作", () => {
   const g = game(),
@@ -178,7 +178,8 @@ test("经济存档：旧档补空态，订单损坏拒绝读取；失败不能�
   delete save.economy;
   const old = createGame({ saved: save });
   assert.deepEqual(old.save().economy, createEconomy());
-  act(g, "daily.shop", { cart: [{ id: "climb_gear", quantity: 1 }] });
+  goMarket(g);
+  act(g, "daily.black_market", { cart: [{ id: "climb_gear", quantity: 1 }] });
   for (const edit of [
     (e) => e.orders[0].total++,
     (e) => (e.orders[0].lines[0].quantity = NaN),
@@ -272,20 +273,17 @@ test("经济分支：改写购买锚点会恢复购买前状态，恢复原回�
   h.history.push({ id: 1, role: "assistant", text: "shop anchor" });
   await h.run(
     h.request("daily.shop", {
-      cart: [
-        { id: "bento", quantity: 2 },
-        { id: "climb_gear", quantity: 1 },
-      ],
+      cart: [{ id: "bento", quantity: 2 }],
     }),
   );
-  assert.equal(h.snap.player.cash, 1460);
+  assert.equal(h.snap.player.cash, 1960);
   h.history[1].text = "alternative";
   await h.sync.reconcile();
   assert.equal(h.snap.player.cash, 2000);
   assert.equal(h.snap.economy.orders.length, 0);
   h.history[1].text = "shop anchor";
   await h.sync.reconcile();
-  assert.equal(h.snap.player.cash, 1460);
+  assert.equal(h.snap.player.cash, 1960);
   assert.equal(owned(h.state.game, "bento"), 2);
   assert.equal(h.snap.economy.orders.length, 1);
 });
@@ -373,8 +371,14 @@ test("到货换日提交失败：日期与订单一起回滚，丢应答重试�
   for (const failure of ["before", "after"]) {
     const h = host();
     await h.sync.newGame({});
+    await h.run({
+      ...h.request(null, { placeId: "black_market_c" }),
+      command: "move",
+    });
     await h.run(
-      h.request("daily.shop", { cart: [{ id: "climb_gear", quantity: 1 }] }),
+      h.request("daily.black_market", {
+        cart: [{ id: "climb_gear", quantity: 1 }],
+      }),
     );
     while (!h.snap.dayPlan.ended) await h.run(h.request("daily.pass"));
     const request = { ...h.request(null), command: "next-day" },
@@ -434,7 +438,8 @@ test("经济表单生命周期：销毁取消等待选择并移除节点，重�
 
 test("普通用品按原分类即时入库，器材未到货前不可装备；到货后复用原行囊", () => {
   const g = game();
-  act(g, "daily.shop", {
+  goMarket(g);
+  act(g, "daily.black_market", {
     cart: [
       { id: "umbrella", quantity: 1 },
       { id: "climb_gear", quantity: 1 },

@@ -58,6 +58,13 @@
       "device": 1,
       "disguise": 1,
       "gear": 0
-    }
+    },
+    "onlineItemIds": [
+      "bento",
+      "onigiri",
+      "energy_drink"
+    ],
+    "blackMarketPlace": "black_market_c",
+    "actionPointFoodIds": []
   }
 }

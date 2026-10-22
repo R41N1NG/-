@@ -6,6 +6,10 @@ function dailyContextText(snap) {
   return [
     "【日程状态 · 本地存档为准】",
     `第 ${p.date} 天，${p.periodName}，行动点 ${p.remaining}/${p.budget}。`,
+    `玩家所在地点：${snap.cityMap?.player?.name || "尚未确定"}。`,
+    snap.cityMap?.target
+      ? `目标最后已知位置：${snap.cityMap.target.name}（第 ${snap.cityMap.target.date} 天），不代表实时位置。`
+      : "目标位置尚无目击记录。",
     p.activity
       ? `当前活动：${p.activity.name}。`
       : p.ended

@@ -1,8 +1,69 @@
 [
-  { "id": "daily.rest", "name": "休息", "cost": 1, "mode": "instant", "kind": "routine", "handler": "rest", "effect": "恢复 50 点体力，不超过上限", "recovery": 50 },
-  { "id": "daily.work", "name": "打工／接单", "cost": 1, "mode": "instant", "kind": "routine", "handler": "work", "inputRequired": true, "effect": "按本次工种结算报酬与消耗" },
-  { "id": "daily.shop", "name": "购物", "cost": 1, "mode": "instant", "kind": "routine", "handler": "shop", "inputRequired": true, "effect": "一次批量采买，结账前列明总价" },
-  { "id": "daily.talk", "name": "独立交流", "cost": 1, "mode": "scene", "kind": "routine", "handler": "talk", "effect": "展开一次交流，成果由具体事件决定" },
-  { "id": "daily.tailing", "name": "尾行", "cost": 2, "mode": "scene", "kind": "tailing", "handler": "tailing", "effect": "进入连续尾行回合，整段结束后推进时段" },
-  { "id": "daily.pass", "name": "度过本时段", "cost": 0, "mode": "instant", "kind": "routine", "handler": "pass", "effect": "无收益和恢复，直接进入下一时段" }
+  {
+    "id": "daily.rest",
+    "name": "休息",
+    "cost": 1,
+    "mode": "instant",
+    "kind": "routine",
+    "handler": "rest",
+    "effect": "恢复 50 点体力，不超过上限",
+    "recovery": 50
+  },
+  {
+    "id": "daily.work",
+    "name": "打工／接单",
+    "cost": 1,
+    "mode": "instant",
+    "kind": "routine",
+    "handler": "work",
+    "inputRequired": true,
+    "effect": "按本次工种结算报酬与消耗"
+  },
+  {
+    "id": "daily.shop",
+    "name": "线上补给",
+    "cost": 1,
+    "mode": "instant",
+    "kind": "routine",
+    "handler": "shop",
+    "inputRequired": true,
+    "effect": "只售食品补给，一批确认后扣费"
+  },
+  {
+    "id": "daily.black_market",
+    "name": "黑市采购",
+    "cost": 1,
+    "mode": "instant",
+    "kind": "routine",
+    "handler": "black_market",
+    "inputRequired": true,
+    "effect": "须到临江黑市，器材按订单隔日到货"
+  },
+  {
+    "id": "daily.talk",
+    "name": "独立交流",
+    "cost": 1,
+    "mode": "scene",
+    "kind": "routine",
+    "handler": "talk",
+    "effect": "展开一次交流，成果由具体事件决定"
+  },
+  {
+    "id": "daily.tailing",
+    "name": "尾行",
+    "cost": 2,
+    "mode": "scene",
+    "kind": "tailing",
+    "handler": "tailing",
+    "effect": "进入连续尾行回合，整段结束后推进时段"
+  },
+  {
+    "id": "daily.pass",
+    "name": "度过本时段",
+    "cost": 0,
+    "mode": "instant",
+    "kind": "routine",
+    "handler": "pass",
+    "effect": "无收益和恢复，直接进入下一时段"
+  }
 ]

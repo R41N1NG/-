@@ -11,8 +11,8 @@ const R = require("../src/config/rules.json");
 let LEX;
 test.before(() => { LEX = loadLexicon(); });
 
-test("词表加载：103 条全量，校验零错误", () => {
-  assert.equal(LEX.entries.length, 103);
+test("词表加载：104 条全量，校验零错误", () => {
+  assert.equal(LEX.entries.length, 104);
 });
 
 test("id 唯一性：注入重复 id 必须抛错", () => {
@@ -105,7 +105,7 @@ test("空串与垃圾输入安全降级", () => {
   assert.equal(normalize("...", LEX).degraded, true);
 });
 
-test("全程无伤检：103 条逐一自我归一全部命中", () => {
+test("全程无伤检：104 条逐一自我归一全部命中", () => {
   for (const e of LEX.entries) {
     const r = normalize(e.name, LEX);
     assert.equal(r.hit, true, `词条自检失败: ${e.id}`);

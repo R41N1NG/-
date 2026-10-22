@@ -33,6 +33,7 @@ const {
 const { createDetailsRenderer } = require("./renderers/details.js");
 const { clearLiveData } = require("./renderers/empty.js");
 const { createDayPlanRenderer } = require("./renderers/day-plan.js");
+const { createCityMapUI } = require("./map/city-map.js");
 const { createDailyActionsUI } = require("./daily/actions.js");
 const { createSnapshotRenderer } = require("./renderers/snapshot.js");
 const { createAudio } = require("./audio.js");
@@ -64,6 +65,14 @@ function mountStatusbar(document, window) {
     window,
     lifecycle,
     getGlue: () => window.WxGlue || globalThis.WxGlue,
+    reportSyncError,
+  });
+  const cityMapUI = createCityMapUI({
+    document,
+    window,
+    lifecycle,
+    getGlue: () => window.WxGlue || globalThis.WxGlue,
+    openAction: (id) => dailyActionsUI.openAction(id),
     reportSyncError,
   });
   const noticeAtMount = document.getElementById("wxSyncNotice");
@@ -635,6 +644,7 @@ function mountStatusbar(document, window) {
   function renderSnapshot(snap) {
     dayPlanRenderer.render(snap);
     dailyActionsUI.render(snap);
+    cityMapUI.render(snap);
     const capsuleBar = document.getElementById("wxCapsuleBar");
     const dailyIdle =
       snap.dayPlan?.source === "daily" &&
@@ -1885,6 +1895,7 @@ function mountStatusbar(document, window) {
   }
   function resetDisplay() {
     dailyActionsUI.reset();
+    cityMapUI.reset();
     dayPlanRenderer.reset();
     syncNotice.clear();
     clearLiveData(document);

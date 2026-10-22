@@ -1,6 +1,7 @@
 "use strict";
 // snapshot：依赖由 game.js 装配，每个游戏实例独立持有状态。
 const { classifyPlace } = require("../../contracts/action-requirements.js");
+const { cityView } = require("../spatial/system.js");
 const { economyView } = require("../economy/shop.js");
 const R = require("../../config/rules.json");
 const C = require("../checks.js");
@@ -77,6 +78,7 @@ function createSnapshotSystem({
       JSON.stringify({
         dayPlan: { ...dayPlanView(g.dayPlan, s.date), token: getDayToken() },
         economy: economyView(g.economy),
+        cityMap: cityView(g, s.date),
         dayActions: getDayActivities(),
         dayControls: getDayControls(),
         player: {
@@ -225,12 +227,16 @@ function createSnapshotSystem({
         assess: g.lastAssess || null,
         ledger: g.lastLedgerSummary || "本轮暂无结算",
         /* 地图 HUD 字段（状态栏 route-tracker + 战术沙盘） */
-        area: districtObj ? districtObj.name : "未知",
+        area: dailyIdle
+          ? map.getDistrict(map.getPlace(g.spatial.playerPlaceId).district).name
+          : districtObj
+            ? districtObj.name
+            : "未知",
         place:
           !dailyIdle && cur && routeView.known[here]
             ? cur.name
             : dailyIdle
-              ? "日程安排"
+              ? map.getPlace(g.spatial.playerPlaceId).name
               : null,
         weather: w.weather,
         weatherName:

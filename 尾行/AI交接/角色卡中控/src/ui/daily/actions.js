@@ -195,6 +195,16 @@ function createDailyActionsUI({
   return {
     render,
     reset,
+    openAction(id) {
+      const button = [
+        ...(grid?.querySelectorAll("button[data-action-id]") || []),
+      ].find((b) => b.dataset.actionId === id);
+      if (button && !button.disabled) {
+        const details = document.getElementById("wxDailyActions");
+        if (details) details.open = true;
+        button.click();
+      }
+    },
     registerInput(id, provider) {
       if (typeof provider !== "function") throw Error("活动输入接口无效");
       const previous = inputs.get(id);

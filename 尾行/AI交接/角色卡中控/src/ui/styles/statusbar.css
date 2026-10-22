@@ -2767,3 +2767,31 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 .trpg .wx-order { margin: 6px 0; padding: 7px 10px; border-left: 2px solid #455f6a; background: #15212a; }
 .trpg .wx-order strong { font-size: 11px; color: #c5b589; }
 @media(max-width:560px) { .trpg .wx-work-list, .trpg .wx-shop-list { grid-template-columns: minmax(0,1fr); } }
+
+/* 共用地点拓扑与固定空间布局；地图浏览不触发移动。 */
+.trpg .wx-city-map { margin: 0 10px 10px; padding: 10px 12px; border: 1px solid #354b57; border-radius: 7px; background: #0c1720ed; }
+.trpg .wx-city-map summary { cursor:pointer; font-size:13px; color:#d4dfe4; }
+.trpg .wx-city-map summary span { display:block; margin:6px 0 8px; font-size:11px; color:#9db4c1; }
+.trpg .wx-city-tabs,.trpg .wx-city-legend { display:flex;flex-wrap:wrap;gap:7px;margin:8px 0; }
+.trpg .wx-city-tabs button,.trpg .wx-city-info button { padding:7px 10px; background:#172935;color:#b6cad4;border:1px solid #425f70;border-radius:4px;font-size:11px;cursor:pointer; }
+.trpg .wx-city-tabs button[aria-pressed="true"] { color:#e6d0a2;border-color:#a59164;background:#2c2d25; }
+.trpg .wx-city-info button:disabled { opacity:.5;cursor:default; }
+.trpg .wx-city-legend { font-size:10px;color:#728d9c; }
+.trpg .wx-city-legend .player {color:#79c5ed}.trpg .wx-city-legend .target {color:#e594a3}.trpg .wx-city-legend .last {color:#d1ae6b}
+.trpg .wx-city-canvas { border:1px solid #253b48;border-radius:5px;background:radial-gradient(ellipse,#122531,#08121b); }
+.trpg .wx-city-canvas svg { width:100%;height:410px;display:block; }
+.trpg .wx-city-region {fill:#10212a;stroke:#314c5c;stroke-width:1.2}.trpg [data-region="C"] .wx-city-region {fill:#10252a}.trpg [data-region="D"] .wx-city-region {fill:#172521}
+.trpg .wx-city-region-title {fill:#728e9c;font:16px system-ui}.trpg .wx-city-north {fill:#9cb5c1;font:22px system-ui}.trpg .wx-city-river {fill:none;stroke:#275065;stroke-width:22;opacity:.5}
+.trpg .wx-city-road {stroke:#3c5967;stroke-width:2.1}.trpg .wx-city-road.transit {stroke:#a38c60;stroke-width:2;stroke-dasharray:8 7;opacity:.65}.trpg .wx-city-road.unknown {stroke-dasharray:3 5;opacity:.5}
+.trpg .wx-city-node {cursor:pointer;outline:none}.trpg .wx-city-node circle {fill:#7896a6;stroke:#1c303d;stroke-width:2}.trpg .wx-city-node.service circle {fill:#ddbf78}.trpg .wx-city-node.unknown circle {fill:#263c48}
+.trpg .wx-city-node.selected circle,.trpg .wx-city-node:focus circle {stroke:#f5d79b;stroke-width:3;fill:#ccb17e}.trpg .wx-city-label {fill:#c1d0d8;font:12px system-ui;paint-order:stroke;stroke:#10202a;stroke-width:4px;stroke-linejoin:round}.trpg .wx-city-node.unknown text {fill:#617783}
+.trpg .wx-map-player circle {fill:#4aa4d266;stroke:#87d4ff;stroke-width:2.5}.trpg .wx-map-target circle {fill:#d6819566;stroke:#f3a8bc;stroke-width:2.5}.trpg .wx-map-target circle.last-seen {fill:none;stroke:#d4b06e;stroke-dasharray:4 3}
+.trpg .overview .wx-city-label {display:none}.trpg .overview .selected .wx-city-label,.trpg .overview .service .wx-city-label {display:block;font-size:16px}.trpg .overview .wx-city-region-title {font-size:22px}
+.trpg .wx-city-info {padding-top:10px;font-size:12px;color:#cfdae0}.trpg .wx-city-info p,.trpg .wx-city-note,.trpg .wx-city-notice {font-size:10px;line-height:1.7;color:#859fae;margin:6px 0}.trpg .wx-city-info button {margin:4px 6px 0 0}.trpg .wx-city-notice {color:#c7b888}
+@media(max-width:560px){.trpg .wx-city-map{margin:0 6px 8px;padding:9px}.trpg .wx-city-canvas svg{height:340px}.trpg .wx-city-tabs button{font-size:10px;padding:6px 8px}}
+
+.trpg .wx-city-label { font-size:14px; }
+.trpg .wx-city-canvas svg.overview { height:650px; }
+.trpg .overview .wx-city-region-title { font-size:32px; }
+.trpg .overview .service .wx-city-label,.trpg .overview .selected .wx-city-label { font-size:22px; }
+@media(max-width:560px){.trpg .wx-city-canvas svg.overview{height:420px}}

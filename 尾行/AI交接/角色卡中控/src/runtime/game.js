@@ -23,6 +23,8 @@ const { createAlbumSystem } = require("./game/album.js");
 const { createSnapshotSystem } = require("./game/snapshot.js");
 const { createSaveSystem } = require("./game/save.js");
 const { createEconomy, validateEconomy } = require("../contracts/economy.js");
+const { createSpatial, validateSpatial } = require("../contracts/spatial.js");
+const { observeScene } = require("./spatial/system.js");
 const { createDailyRegistry } = require("./daily/registry.js");
 const { createDailySystem } = require("./daily/system.js");
 
@@ -212,6 +214,7 @@ function createGame(init = {}, services = {}) {
     resolveAlertCross,
     settleAction,
     snapshot: () => snapshot(),
+    syncSpatial: (results) => observeScene(g, L.get("date"), results),
     sweetHighNow,
     syncThresholdTags,
   });
@@ -304,12 +307,38 @@ function createGame(init = {}, services = {}) {
   g.economy = validateEconomy(
     init.saved?.economy ?? init.economy ?? createEconomy(),
   );
+  const oldPlace = g.route?.nodes?.[g.route.here];
+  const hasSavedSpatial =
+    init.saved && Object.prototype.hasOwnProperty.call(init.saved, "spatial");
+  g.spatial = validateSpatial(
+    hasSavedSpatial
+      ? init.saved.spatial
+      : init.spatial !== undefined
+        ? init.spatial
+        : createSpatial({
+            placeId:
+              g.dayPlan.source === "legacy" && map.getPlace(oldPlace)
+                ? oldPlace
+                : undefined,
+            assumed: !!init.saved,
+          }),
+  );
+  if (
+    !hasSavedSpatial &&
+    init.spatial === undefined &&
+    g.dayPlan.source === "legacy"
+  )
+    observeScene(g, L.get("date"));
   const dailySystem = createDailySystem({
     g,
     L,
     registry: createDailyRegistry(services.dailyActions || []),
     nextDay: legacyNightFall,
-    afterCommit: syncThresholdTags,
+    afterCommit: () => {
+      syncThresholdTags();
+      if (g.dayPlan.source === "daily")
+        g.world.district = map.getPlace(g.spatial.playerPlaceId).district;
+    },
   });
   function nightFall() {
     if (g.dayPlan.source === "daily")

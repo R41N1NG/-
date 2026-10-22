@@ -231,7 +231,7 @@ const deadline = setTimeout(() => {
       ok('日程开局 4/4',document.getElementById('wxDayAp').textContent==='4'&&document.getElementById('wxDayBudget').textContent==='4');
       ok('五时段与早间标记',document.querySelectorAll('#wxDayPeriods li').length===5&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='早间');
       ok('日程待机不显示目标距离或原尾行胶囊',document.getElementById('distStat').hidden&&document.getElementById('wxCapsuleBar').hidden);
-      ok('统一活动区展示六项费用',document.querySelectorAll('#wxDailyActionGrid button').length===6&&document.querySelector('[data-action-id="daily.rest"]').textContent.includes('1 点')&&document.querySelector('[data-action-id="daily.tailing"]').textContent.includes('2 点'));
+      ok('统一活动区展示七项费用',document.querySelectorAll('#wxDailyActionGrid button').length===7&&document.querySelector('[data-action-id="daily.rest"]').textContent.includes('1 点')&&document.querySelector('[data-action-id="daily.tailing"]').textContent.includes('2 点'));
       ok('未接内容禁用且说明原因', ['daily.talk','daily.tailing'].every(id=>document.querySelector('[data-action-id="'+id+'"]').disabled));
       document.querySelector('[data-action-id="daily.rest"]').click(); await window.__dailyPreviewOperation; await Promise.resolve();
       ok('休息实际扣点并推进时段',document.getElementById('wxDayAp').textContent==='3'&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='午间');
@@ -250,11 +250,22 @@ const deadline = setTimeout(() => {
       ok('阿宅接单实际获得264且一天一班',(await getVariables()).wx_save.ledgerState.cash===before.ledgerState.cash+264&&document.getElementById('wxDayAp').textContent==='3'&&document.querySelector('[data-action-id="daily.work"]').disabled);
       document.querySelector('[data-action-id="daily.shop"]').click();
       const quantity=document.querySelector('[data-item-id="bento"]');quantity.value='2';quantity.dispatchEvent(new Event('input'));
-      const gear=document.querySelector('[data-item-id="climb_gear"]');gear.value='1';gear.dispatchEvent(new Event('input'));
-      ok('购物提前显示一批总价与行动费用',document.querySelector('[data-economy-total]').textContent.includes('总价 540')&&document.querySelector('[data-economy-total]').textContent.includes('行动点 1'));
+      ok('线上商城仅售食品补给',!document.querySelector('[data-item-id="lockpick"]')&&!document.querySelector('[data-item-id="climb_gear"]')&&document.querySelectorAll('#wxEconomyInput [data-item-id]').length===3);
+      ok('购物提前显示一批总价与行动费用',document.querySelector('[data-economy-total]').textContent.includes('总价 40')&&document.querySelector('[data-economy-total]').textContent.includes('行动点 1'));
       document.querySelector('[data-economy-submit]').click(); await Promise.resolve(); await window.__dailyPreviewOperation; await Promise.resolve();
+      const food=(await getVariables()).wx_save;
+      ok('线上付款与食品入库同步保存',food.ledgerState.cash===before.ledgerState.cash+264-40&&food.player.inventory.find(i=>i.id==='bento').count===2&&document.getElementById('wxDayAp').textContent==='2');
+      document.querySelector('[data-map-district="C"]').click();
+      document.querySelector('[data-place-id="black_market_c"]').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+      ok('地图点选仅浏览，不改玩家位置',(await getVariables()).wx_save.spatial.playerPlaceId==='player_base_b');
+      document.querySelector('[data-map-move="black_market_c"]').click();await window.__dailyPreviewOperation;await Promise.resolve();
+      ok('固定黑市移动保存独立位置且不扣AP',(await getVariables()).wx_save.spatial.playerPlaceId==='black_market_c'&&document.getElementById('wxDayAp').textContent==='2'&&document.getElementById('wxCityPosition').textContent.includes('临江黑市'));
+      document.querySelector('[data-map-market]').click();
+      const gear=document.querySelector('[data-item-id="climb_gear"]');gear.value='1';gear.dispatchEvent(new Event('input'));
+      ok('黑市供应器材且不混入食品',!document.querySelector('#wxEconomyInput [data-item-id="bento"]')&&document.querySelector('[data-economy-total]').textContent.includes('总价 500'));
+      document.querySelector('[data-economy-submit]').click();await Promise.resolve();await window.__dailyPreviewOperation;await Promise.resolve();
       const bought=(await getVariables()).wx_save;
-      ok('付款与入库、待收货同步保存',bought.ledgerState.cash===before.ledgerState.cash+264-540&&bought.player.inventory.find(i=>i.id==='bento').count===2&&!bought.player.inventory.some(i=>i.id==='climb_gear')&&document.getElementById('wxDayAp').textContent==='2'&&document.getElementById('wxEconomyOrders').textContent.includes('第 2 天到货'));
+      ok('黑市付款与待收货同步保存',bought.ledgerState.cash===before.ledgerState.cash+264-540&&!bought.player.inventory.some(i=>i.id==='climb_gear')&&document.getElementById('wxDayAp').textContent==='1'&&document.getElementById('wxEconomyOrders').textContent.includes('第 2 天到货'));
       while(!((await getVariables()).wx_save.dayPlan.ended)){document.querySelector('[data-action-id="daily.pass"]').click();await window.__dailyPreviewOperation;await Promise.resolve();}
       document.querySelector('[data-day-command="next-day"]').click(); await window.__dailyPreviewOperation; await Promise.resolve();
       ok('隔日到货一次入库',(await getVariables()).wx_save.player.inventory.find(i=>i.id==='climb_gear')?.count===1);
@@ -267,6 +278,7 @@ const deadline = setTimeout(() => {
       document.querySelector('[data-day-command="next-day"]').click(); await window.__dailyPreviewOperation; await Promise.resolve();
       ok('日终换日恢复四点并回早间',document.getElementById('wxDayAp').textContent==='4'&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='早间');
       document.querySelector('[data-state-index="4"]').click(); await window.__dailyPreviewReady;
+      ok('地图保留真实目视目标标记',!!document.querySelector('.wx-map-target circle:not(.last-seen)'));
       ok('旧流程明确提示未启用活动扣点',document.getElementById('wxDayHint').textContent==='日程活动尚未启用');
       document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady;
       return checks;
@@ -291,6 +303,7 @@ const deadline = setTimeout(() => {
   for (const [kind, width] of [
     ["work", 1100],
     ["shop", 390],
+    ["black_market", 1100],
   ]) {
     await send("Emulation.setDeviceMetricsOverride", {
       width,
@@ -299,7 +312,29 @@ const deadline = setTimeout(() => {
       mobile: false,
     });
     await evaluate(
-      `(async()=>{ document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady; document.querySelector('[data-action-id="daily.${kind}"]').click(); await Promise.resolve(); document.getElementById('wxEconomyInput').scrollIntoView({block:'start'}); })()`,
+      `(async()=>{ document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady; ${kind === "black_market" ? `document.querySelector('[data-map-district="C"]').click();document.querySelector('[data-place-id="black_market_c"]').dispatchEvent(new MouseEvent('click',{bubbles:true}));document.querySelector('[data-map-move="black_market_c"]').click();await window.__dailyPreviewOperation;await Promise.resolve();` : ""}document.querySelector('[data-action-id="daily.${kind}"]').click(); await Promise.resolve(); document.getElementById('wxEconomyInput').scrollIntoView({block:'start'}); })()`,
+    );
+    const shot = await send("Page.captureScreenshot", {
+      format: "png",
+      captureBeyondViewport: true,
+    });
+    fs.writeFileSync(
+      path.join(path.dirname(preview.file), kind + ".png"),
+      Buffer.from(shot.data, "base64"),
+    );
+  }
+  for (const [kind, width, region] of [
+    ["map-city", 1100, "all"],
+    ["map-district", 390, "B"],
+  ]) {
+    await send("Emulation.setDeviceMetricsOverride", {
+      width,
+      height: 900,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await evaluate(
+      `(async()=>{document.querySelector('[data-state-index="4"]').click();await window.__dailyPreviewReady;document.querySelector('[data-map-district="${region}"]').click();document.getElementById('wxCityMap').scrollIntoView({block:'start'});})()`,
     );
     const shot = await send("Page.captureScreenshot", {
       format: "png",

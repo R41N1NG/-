@@ -87,9 +87,11 @@ function createEconomyInputsUI({ document, lifecycle, status }) {
       };
     });
   }
-  function selectShop(snap) {
-    return open(snap, "商场采买", (form, body, confirm) => {
-      const action = snap.dayActions.find((x) => x.id === "daily.shop"),
+  function selectShop(snap, id = "daily.shop") {
+    const title =
+      snap.dayActions.find((x) => x.id === id)?.input?.title || "采购";
+    return open(snap, title, (form, body, confirm) => {
+      const action = snap.dayActions.find((x) => x.id === id),
         input = action.input;
       body.append(node("p", input.note));
       const channel = node("select");
@@ -208,7 +210,8 @@ function createEconomyInputsUI({ document, lifecycle, status }) {
   return {
     providers: [
       ["daily.work", selectWork],
-      ["daily.shop", selectShop],
+      ["daily.shop", (snap) => selectShop(snap)],
+      ["daily.black_market", (snap) => selectShop(snap, "daily.black_market")],
     ],
     render,
     reset,
