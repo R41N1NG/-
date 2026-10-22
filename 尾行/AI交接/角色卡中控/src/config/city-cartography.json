@@ -1,0 +1,484 @@
+{
+  "schema": 1,
+  "districts": {
+    "B": {
+      "subtitle": "学校 · 老街 · 住宅",
+      "roads": [
+        {
+          "name": "学府路",
+          "points": [
+            [0, 145],
+            [620, 145]
+          ],
+          "width": 24,
+          "kind": "street",
+          "label": [365, 149]
+        },
+        {
+          "name": "槐荫街",
+          "points": [
+            [0, 290],
+            [620, 290]
+          ],
+          "width": 22,
+          "kind": "street",
+          "label": [135, 294]
+        },
+        {
+          "name": "老街",
+          "points": [
+            [250, 145],
+            [250, 480]
+          ],
+          "width": 22,
+          "kind": "street",
+          "label": [250, 260]
+        },
+        {
+          "name": "东巷",
+          "points": [
+            [465, 145],
+            [465, 480]
+          ],
+          "width": 14,
+          "kind": "street",
+          "label": [465, 445]
+        },
+        {
+          "name": "",
+          "points": [
+            [250, 350],
+            [465, 350],
+            [465, 430]
+          ],
+          "width": 9,
+          "kind": "lane"
+        },
+        {
+          "name": "",
+          "points": [
+            [90, 290],
+            [90, 395]
+          ],
+          "width": 8,
+          "kind": "lane"
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "campus",
+          "box": [25, 45, 190, 77],
+          "label": "校园"
+        },
+        {
+          "kind": "transit",
+          "box": [285, 54, 145, 65]
+        },
+        {
+          "kind": "home",
+          "box": [30, 185, 90, 78]
+        },
+        {
+          "kind": "park",
+          "box": [137, 185, 85, 78]
+        },
+        {
+          "kind": "shop",
+          "box": [285, 190, 145, 74]
+        },
+        {
+          "kind": "transit",
+          "box": [500, 187, 92, 76]
+        },
+        {
+          "kind": "housing",
+          "box": [285, 320, 145, 65]
+        },
+        {
+          "kind": "housing",
+          "box": [500, 320, 92, 105]
+        },
+        {
+          "kind": "shop",
+          "box": [130, 400, 90, 66]
+        },
+        {
+          "kind": "housing",
+          "box": [30, 320, 33, 70]
+        },
+        {
+          "kind": "housing",
+          "box": [117, 320, 103, 66]
+        },
+        {
+          "kind": "housing",
+          "box": [285, 400, 145, 63]
+        }
+      ]
+    },
+    "A": {
+      "subtitle": "写字楼 · 商业街 · 交通枢纽",
+      "roads": [
+        {
+          "name": "商务大道",
+          "points": [
+            [0, 145],
+            [620, 145]
+          ],
+          "width": 28,
+          "kind": "street",
+          "label": [365, 149]
+        },
+        {
+          "name": "中城路",
+          "points": [
+            [250, 40],
+            [250, 480]
+          ],
+          "width": 24,
+          "kind": "street",
+          "label": [250, 278]
+        },
+        {
+          "name": "后街",
+          "points": [
+            [0, 290],
+            [620, 290]
+          ],
+          "width": 18,
+          "kind": "street",
+          "label": [355, 294]
+        },
+        {
+          "name": "站前路",
+          "points": [
+            [465, 40],
+            [465, 480]
+          ],
+          "width": 24,
+          "kind": "street",
+          "label": [465, 420]
+        },
+        {
+          "name": "",
+          "points": [
+            [0, 430],
+            [465, 430]
+          ],
+          "width": 12,
+          "kind": "lane"
+        },
+        {
+          "name": "",
+          "points": [
+            [350, 290],
+            [350, 430]
+          ],
+          "width": 10,
+          "kind": "lane"
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "office",
+          "box": [30, 48, 180, 83]
+        },
+        {
+          "kind": "office",
+          "box": [30, 176, 180, 90]
+        },
+        {
+          "kind": "office",
+          "box": [285, 50, 145, 76]
+        },
+        {
+          "kind": "transit",
+          "box": [500, 50, 92, 78]
+        },
+        {
+          "kind": "transit",
+          "box": [285, 188, 145, 77]
+        },
+        {
+          "kind": "office",
+          "box": [500, 185, 92, 80]
+        },
+        {
+          "kind": "shop",
+          "box": [500, 320, 92, 70]
+        },
+        {
+          "kind": "service",
+          "box": [30, 335, 180, 77]
+        },
+        {
+          "kind": "office",
+          "box": [285, 320, 43, 80]
+        },
+        {
+          "kind": "office",
+          "box": [373, 320, 57, 80]
+        }
+      ]
+    },
+    "C": {
+      "subtitle": "沿江步道 · 夜市 · 城中村",
+      "roads": [
+        {
+          "name": "临江路",
+          "points": [
+            [0, 145],
+            [620, 145]
+          ],
+          "width": 24,
+          "kind": "street",
+          "label": [355, 149]
+        },
+        {
+          "name": "南街",
+          "points": [
+            [0, 290],
+            [620, 290]
+          ],
+          "width": 20,
+          "kind": "street",
+          "label": [355, 294]
+        },
+        {
+          "name": "码头路",
+          "points": [
+            [465, 40],
+            [465, 425],
+            [620, 425]
+          ],
+          "width": 20,
+          "kind": "street",
+          "label": [465, 255]
+        },
+        {
+          "name": "",
+          "points": [
+            [250, 40],
+            [250, 425]
+          ],
+          "width": 18,
+          "kind": "street"
+        },
+        {
+          "name": "沿江步道",
+          "points": [
+            [0, 450],
+            [485, 450],
+            [570, 470]
+          ],
+          "width": 14,
+          "kind": "walk",
+          "label": [120, 454]
+        },
+        {
+          "name": "",
+          "points": [
+            [70, 320],
+            [250, 320],
+            [250, 425]
+          ],
+          "width": 8,
+          "kind": "lane"
+        },
+        {
+          "name": "",
+          "points": [
+            [170, 290],
+            [170, 425]
+          ],
+          "width": 8,
+          "kind": "lane"
+        },
+        {
+          "name": "",
+          "points": [
+            [0, 350],
+            [250, 350]
+          ],
+          "width": 8,
+          "kind": "lane"
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "nightlife",
+          "box": [30, 52, 180, 75]
+        },
+        {
+          "kind": "market",
+          "box": [285, 52, 145, 75]
+        },
+        {
+          "kind": "transit",
+          "box": [500, 52, 92, 75]
+        },
+        {
+          "kind": "housing",
+          "box": [30, 185, 180, 75]
+        },
+        {
+          "kind": "shop",
+          "box": [285, 188, 145, 75]
+        },
+        {
+          "kind": "park",
+          "box": [500, 185, 92, 75]
+        },
+        {
+          "kind": "housing",
+          "box": [285, 320, 145, 105]
+        },
+        {
+          "kind": "housing",
+          "box": [30, 303, 30, 33]
+        },
+        {
+          "kind": "housing",
+          "box": [85, 303, 65, 33]
+        },
+        {
+          "kind": "housing",
+          "box": [185, 303, 38, 33]
+        },
+        {
+          "kind": "housing",
+          "box": [185, 370, 38, 52]
+        },
+        {
+          "kind": "market",
+          "box": [30, 370, 120, 52]
+        }
+      ]
+    },
+    "D": {
+      "subtitle": "林地 · 公路 · 住宅院落",
+      "roads": [
+        {
+          "name": "郊野公路",
+          "points": [
+            [0, 390],
+            [620, 390]
+          ],
+          "width": 28,
+          "kind": "highway",
+          "label": [170, 394]
+        },
+        {
+          "name": "林间支路",
+          "points": [
+            [320, 390],
+            [320, 170],
+            [390, 170]
+          ],
+          "width": 14,
+          "kind": "street",
+          "label": [320, 352]
+        },
+        {
+          "name": "",
+          "points": [
+            [320, 205],
+            [600, 205]
+          ],
+          "width": 12,
+          "kind": "street"
+        },
+        {
+          "name": "",
+          "points": [
+            [140, 390],
+            [140, 480]
+          ],
+          "width": 10,
+          "kind": "street"
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "forest",
+          "box": [25, 55, 225, 285]
+        },
+        {
+          "kind": "garden",
+          "box": [355, 178, 235, 155]
+        },
+        {
+          "kind": "villa",
+          "box": [355, 55, 235, 105]
+        },
+        {
+          "kind": "service",
+          "box": [50, 415, 180, 55]
+        },
+        {
+          "kind": "park",
+          "box": [365, 420, 225, 50]
+        }
+      ]
+    }
+  },
+  "landmarks": {
+    "school_gate_b": ["学校", "school"],
+    "school_bus_terminal_b": ["学区总站", "bus"],
+    "old_metro_b": ["老街站", "metro"],
+    "old_park_b": ["老城公园", "park"],
+    "player_base_b": ["你的据点", "home"],
+    "love_hotel_b": ["旅社", "hotel"],
+    "office_lobby_a": ["写字楼", "office"],
+    "parking_b2_a": ["地下车库 B2", "parking"],
+    "skybridge_a": ["连廊天桥", "bridge"],
+    "metro_hub_a": ["中城站", "metro"],
+    "bus_bay_a": ["公交港湾", "bus"],
+    "store_24h_a": ["便利店", "shop"],
+    "trash_station_a": ["装卸后道", "service"],
+    "back_alley_a": ["后街暗巷", "lane"],
+    "old_skybridge_b": ["水泥天桥", "bridge"],
+    "store_24h_b": ["便利店", "shop"],
+    "old_alley_main_b": ["主巷", "lane"],
+    "dark_blind_alley_b": ["盲区巷", "lane"],
+    "unit_stairs_b": ["单元楼道", "housing"],
+    "rooftop_b": ["楼顶", "housing"],
+    "dead_end_b": ["尽头", "lane"],
+    "club_backdoor_c": ["夜店后门", "nightlife"],
+    "food_street_c": ["夜市", "market"],
+    "dock_bus_stop_c": ["码头站", "bus"],
+    "bridge_head_c": ["桥头", "bridge"],
+    "store_24h_c": ["便利店", "shop"],
+    "river_walk_c": ["江边步道", "walk"],
+    "river_steps_c": ["江边台阶", "walk"],
+    "village_main_c": ["城中村", "housing"],
+    "narrow_gap_c": ["夹缝小巷", "lane"],
+    "rental_iron_door_c": ["出租屋入口", "housing"],
+    "village_roof_c": ["平房屋顶", "housing"],
+    "black_market_c": ["临江黑市", "black_market"],
+    "suburb_highway_d": ["郊野公路", "highway"],
+    "gas_station_d": ["加油站", "gas"],
+    "private_road_d": ["林间支路", "lane"],
+    "pine_forest_d": ["松林", "park"],
+    "estate_gate_d": ["住宅入口", "housing"],
+    "villa_garden_d": ["院落", "park"],
+    "garage_side_door_d": ["车库侧门", "parking"],
+    "villa_porch_d": ["住宅门廊", "housing"]
+  },
+  "overview": [
+    "school_gate_b",
+    "old_metro_b",
+    "old_park_b",
+    "player_base_b",
+    "office_lobby_a",
+    "metro_hub_a",
+    "bus_bay_a",
+    "club_backdoor_c",
+    "food_street_c",
+    "black_market_c",
+    "river_walk_c",
+    "suburb_highway_d",
+    "gas_station_d",
+    "pine_forest_d"
+  ]
+}

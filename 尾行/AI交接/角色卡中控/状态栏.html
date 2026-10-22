@@ -2775,32 +2775,449 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 @media(max-width:560px) { .trpg .wx-work-list, .trpg .wx-shop-list { grid-template-columns: minmax(0,1fr); } }
 
 /* 共用地点拓扑与固定空间布局；地图浏览不触发移动。 */
-.trpg .wx-city-map { margin: 0 10px 10px; padding: 10px 12px; border: 1px solid #354b57; border-radius: 7px; background: #0c1720ed; }
-.trpg .wx-city-map summary { cursor:pointer; font-size:13px; color:#d4dfe4; }
-.trpg .wx-city-map summary span { display:block; margin:6px 0 8px; font-size:11px; color:#9db4c1; }
-.trpg .wx-city-tabs,.trpg .wx-city-legend { display:flex;flex-wrap:wrap;gap:7px;margin:8px 0; }
-.trpg .wx-city-tabs button,.trpg .wx-city-info button { padding:7px 10px; background:#172935;color:#b6cad4;border:1px solid #425f70;border-radius:4px;font-size:11px;cursor:pointer; }
-.trpg .wx-city-tabs button[aria-pressed="true"] { color:#e6d0a2;border-color:#a59164;background:#2c2d25; }
-.trpg .wx-city-info button:disabled { opacity:.5;cursor:default; }
-.trpg .wx-city-legend { font-size:10px;color:#728d9c; }
-.trpg .wx-city-legend .player {color:#79c5ed}.trpg .wx-city-legend .target {color:#e594a3}.trpg .wx-city-legend .last {color:#d1ae6b}
-.trpg .wx-city-canvas { border:1px solid #253b48;border-radius:5px;background:radial-gradient(ellipse,#122531,#08121b); }
-.trpg .wx-city-canvas svg { width:100%;height:410px;display:block; }
-.trpg .wx-city-region {fill:#10212a;stroke:#314c5c;stroke-width:1.2}.trpg [data-region="C"] .wx-city-region {fill:#10252a}.trpg [data-region="D"] .wx-city-region {fill:#172521}
-.trpg .wx-city-region-title {fill:#728e9c;font:16px system-ui}.trpg .wx-city-north {fill:#9cb5c1;font:22px system-ui}.trpg .wx-city-river {fill:none;stroke:#275065;stroke-width:22;opacity:.5}
-.trpg .wx-city-road {stroke:#3c5967;stroke-width:2.1}.trpg .wx-city-road.transit {stroke:#a38c60;stroke-width:2;stroke-dasharray:8 7;opacity:.65}.trpg .wx-city-road.unknown {stroke-dasharray:3 5;opacity:.5}
-.trpg .wx-city-node {cursor:pointer;outline:none}.trpg .wx-city-node circle {fill:#7896a6;stroke:#1c303d;stroke-width:2}.trpg .wx-city-node.service circle {fill:#ddbf78}.trpg .wx-city-node.unknown circle {fill:#263c48}
-.trpg .wx-city-node.selected circle,.trpg .wx-city-node:focus circle {stroke:#f5d79b;stroke-width:3;fill:#ccb17e}.trpg .wx-city-label {fill:#c1d0d8;font:12px system-ui;paint-order:stroke;stroke:#10202a;stroke-width:4px;stroke-linejoin:round}.trpg .wx-city-node.unknown text {fill:#617783}
-.trpg .wx-map-player circle {fill:#4aa4d266;stroke:#87d4ff;stroke-width:2.5}.trpg .wx-map-target circle {fill:#d6819566;stroke:#f3a8bc;stroke-width:2.5}.trpg .wx-map-target circle.last-seen {fill:none;stroke:#d4b06e;stroke-dasharray:4 3}
-.trpg .overview .wx-city-label {display:none}.trpg .overview .selected .wx-city-label,.trpg .overview .service .wx-city-label {display:block;font-size:16px}.trpg .overview .wx-city-region-title {font-size:22px}
-.trpg .wx-city-info {padding-top:10px;font-size:12px;color:#cfdae0}.trpg .wx-city-info p,.trpg .wx-city-note,.trpg .wx-city-notice {font-size:10px;line-height:1.7;color:#859fae;margin:6px 0}.trpg .wx-city-info button {margin:4px 6px 0 0}.trpg .wx-city-notice {color:#c7b888}
-@media(max-width:560px){.trpg .wx-city-map{margin:0 6px 8px;padding:9px}.trpg .wx-city-canvas svg{height:340px}.trpg .wx-city-tabs button{font-size:10px;padding:6px 8px}}
 
-.trpg .wx-city-label { font-size:14px; }
-.trpg .wx-city-canvas svg.overview { height:650px; }
-.trpg .overview .wx-city-region-title { font-size:32px; }
-.trpg .overview .service .wx-city-label,.trpg .overview .selected .wx-city-label { font-size:22px; }
-@media(max-width:560px){.trpg .wx-city-canvas svg.overview{height:420px}}
+/* 城市地图独立样式；地理底图与 HUD 主题在此衔接。 */
+.trpg .wx-city-map {
+  margin: 0 10px 10px;
+  padding: 10px 12px;
+  border: 1px solid #354b57;
+  border-radius: 7px;
+  background: #0c1720ed;
+}
+.trpg .wx-city-map summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: #d4dfe4;
+}
+.trpg .wx-city-map summary span {
+  display: block;
+  margin: 6px 0 8px;
+  font-size: 11px;
+  color: #9db4c1;
+}
+.trpg .wx-city-tabs,
+.trpg .wx-city-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 8px 0;
+}
+.trpg .wx-city-tabs button,
+.trpg .wx-city-info button {
+  padding: 7px 10px;
+  background: #172935;
+  color: #b6cad4;
+  border: 1px solid #425f70;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.trpg .wx-city-tabs button[aria-pressed="true"] {
+  color: #e6d0a2;
+  border-color: #a59164;
+  background: #2c2d25;
+}
+.trpg .wx-city-info button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.trpg .wx-city-legend {
+  font-size: 10px;
+  color: #728d9c;
+}
+.trpg .wx-city-legend .player {
+  color: #79c5ed;
+}
+.trpg .wx-city-legend .target {
+  color: #e594a3;
+}
+.trpg .wx-city-legend .last {
+  color: #d1ae6b;
+}
+/* 俯视街区地图：地理底图与可交互地点分层，避免把拓扑边当街道。 */
+.trpg .wx-city-canvas {
+  border: 1px solid #677779;
+  border-radius: 7px;
+  overflow: hidden;
+  background: #e3e1d5;
+  isolation: isolate;
+}
+.trpg .wx-city-canvas svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: system-ui, sans-serif;
+}
+.trpg .wx-city-canvas svg.overview {
+  height: auto;
+}
+.trpg .wx-map-land {
+  fill: #e3e1d5;
+}
+.trpg .wx-map-ground {
+  fill: #deddd0;
+}
+.trpg .ground-D {
+  fill: #d8decb;
+}
+.trpg .ground-C {
+  fill: #e3d9cd;
+}
+.trpg .ground-A {
+  fill: #d9dfe0;
+}
+.trpg .wx-map-water {
+  fill: #88b2c3;
+  stroke: #6e99aa;
+  stroke-width: 3;
+}
+.trpg .wx-map-water-line {
+  fill: none;
+  stroke: #a6c8d4;
+  stroke-width: 2;
+  opacity: 0.65;
+}
+.trpg .wx-map-water-label {
+  fill: #477487;
+  font-size: 24px;
+  letter-spacing: 10px;
+}
+.trpg .wx-map-street path {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.trpg .road-edge {
+  stroke: #b7b8ab;
+}
+.trpg .road-surface {
+  stroke: #faf7e9;
+}
+.trpg .highway .road-surface {
+  stroke: #f7e6b8;
+}
+.trpg .road-center {
+  stroke: #d1ba82;
+  stroke-width: 1.5;
+  stroke-dasharray: 9 7;
+}
+.trpg .lane .road-edge {
+  stroke: #b1aea3;
+}
+.trpg .lane .road-surface {
+  stroke: #e9e4d7;
+}
+.trpg .walk .road-surface {
+  stroke: #c9c1ab;
+}
+.trpg .wx-map-block .parcel {
+  fill: #b3bab4;
+  stroke: #919d97;
+  stroke-width: 1;
+}
+.trpg .wx-map-block .roof {
+  fill: #c8cdc4;
+  stroke: #a6b0a8;
+  stroke-width: 1;
+}
+.trpg .wx-map-block .roof-unit {
+  fill: #a0ada8;
+}
+.trpg .wx-map-block .roof-window {
+  stroke: #8b9ea3;
+  stroke-width: 7;
+}
+.trpg .wx-map-block.campus .parcel {
+  fill: #cdbb99;
+  stroke: #b39a70;
+}
+.trpg .wx-map-block.campus .roof {
+  fill: #d8ccae;
+}
+.trpg .wx-map-block .campus-yard {
+  fill: #acb59a;
+  stroke: #96a387;
+}
+.trpg .wx-map-block.office .parcel {
+  fill: #a9bac1;
+  stroke: #839ba5;
+}
+.trpg .wx-map-block.office .roof {
+  fill: #c2cfd2;
+}
+.trpg .wx-map-block.housing .parcel {
+  fill: #c3b9ab;
+  stroke: #a69b8e;
+}
+.trpg .wx-map-block.housing .roof {
+  fill: #d4cdc0;
+}
+.trpg .wx-map-block.shop .parcel,
+.trpg .wx-map-block.market .parcel {
+  fill: #d5b99c;
+  stroke: #b99977;
+}
+.trpg .wx-map-block.shop .roof,
+.trpg .wx-map-block.market .roof {
+  fill: #e2cdb1;
+}
+.trpg .wx-map-block.nightlife .parcel {
+  fill: #beaaba;
+  stroke: #a18d9a;
+}
+.trpg .wx-map-block.nightlife .roof {
+  fill: #d3c2ce;
+}
+.trpg .wx-map-block.transit .parcel {
+  fill: #b4c4c7;
+  stroke: #8ba6ab;
+}
+.trpg .wx-map-block.transit .roof {
+  fill: #d0dadd;
+}
+.trpg .wx-map-block.villa .parcel {
+  fill: #bfb2a0;
+}
+.trpg .wx-map-block.villa .roof {
+  fill: #d9ceba;
+}
+.trpg .wx-map-block.park .parcel,
+.trpg .wx-map-block.garden .parcel,
+.trpg .wx-map-block.forest .parcel {
+  fill: #b4c59f;
+  stroke: #96b187;
+}
+.trpg .wx-map-block.forest .parcel {
+  fill: #a3bc98;
+}
+.trpg .wx-map-block .tree {
+  fill: #89a980;
+  stroke: #7a9b72;
+  stroke-width: 1;
+  opacity: 0.7;
+}
+.trpg .wx-map-block .park-path {
+  fill: none;
+  stroke: #d8d5bc;
+  stroke-width: 6;
+}
+.trpg .wx-map-footbridge {
+  fill: #aaa995;
+  stroke: #8b927e;
+  stroke-width: 1;
+}
+.trpg .wx-map-bridge-steps {
+  fill: none;
+  stroke: #d9dbc6;
+  stroke-width: 2;
+}
+.trpg .wx-map-crosswalk {
+  stroke: #faf9ef;
+  stroke-width: 3;
+}
+.trpg .wx-map-street-label {
+  fill: #787b70;
+  font-size: 10px;
+  letter-spacing: 3px;
+  pointer-events: none;
+}
+.trpg .wx-map-district-title {
+  fill: #4b605c;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: 3px;
+  paint-order: stroke;
+  stroke: #e0e2d5;
+  stroke-width: 4;
+  pointer-events: none;
+}
+.trpg .wx-map-district-subtitle {
+  fill: #6f7e71;
+  font-size: 10px;
+  letter-spacing: 2px;
+  pointer-events: none;
+}
+.trpg .wx-city-node {
+  cursor: pointer;
+  outline: none;
+}
+.trpg .wx-map-place-hit {
+  fill: transparent;
+  stroke: none;
+}
+.trpg .wx-city-label {
+  fill: #354948;
+  font-size: 15px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #e9e8db;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.trpg .wx-city-node.unknown .wx-city-label {
+  fill: #7c8073;
+  font-size: 12px;
+  font-weight: 400;
+}
+.trpg .wx-city-node.selected .wx-map-place-hit,
+.trpg .wx-city-node:focus .wx-map-place-hit {
+  fill: #faedc070;
+  stroke: #9d773a;
+  stroke-width: 2;
+  stroke-dasharray: 4 2;
+}
+.trpg .wx-city-node.service .wx-city-label {
+  fill: #72501d;
+  font-weight: 750;
+}
+.trpg .wx-map-place-icon {
+  fill: #6c8585;
+  stroke: #f4f0db;
+  stroke-width: 1;
+}
+.trpg .kind-metro .wx-map-place-icon {
+  fill: #527d93;
+}
+.trpg .kind-school .wx-map-place-icon {
+  fill: #968457;
+}
+.trpg .service .wx-map-place-icon {
+  fill: #9c753e;
+}
+.trpg .wx-map-icon-label {
+  fill: #fff8e8;
+  font-size: 10px;
+  font-weight: 700;
+  pointer-events: none;
+}
+.trpg .wx-map-player,
+.trpg .wx-map-target {
+  pointer-events: none;
+}
+.trpg .wx-map-player circle,
+.trpg .wx-map-player .wx-map-pin-tip {
+  fill: #2b779f;
+  stroke: #e8f8ff;
+  stroke-width: 2;
+}
+.trpg .wx-map-target circle,
+.trpg .wx-map-target .wx-map-pin-tip {
+  fill: #ab576c;
+  stroke: #fff3f4;
+  stroke-width: 2;
+}
+.trpg .wx-map-target circle.last-seen {
+  fill: #ad8847;
+  stroke-dasharray: 3 2;
+}
+.trpg .wx-map-pin-label {
+  fill: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  stroke: none;
+}
+.trpg .wx-map-compass path {
+  fill: #647c70;
+  stroke: #f5f3df;
+  stroke-width: 1;
+}
+.trpg .wx-map-compass-label {
+  fill: #64766b;
+  font-size: 14px;
+  font-weight: 700;
+}
+.trpg
+  .overview
+  .wx-city-node:not(.overview-landmark):not(.selected):not(.positioned) {
+  display: none;
+}
+.trpg .overview .wx-city-label {
+  font-size: 19px;
+  stroke-width: 5;
+}
+.trpg .overview .wx-map-district-title {
+  font-size: 28px;
+}
+.trpg .overview .wx-map-district-subtitle {
+  font-size: 15px;
+}
+.trpg .overview .wx-map-street-label {
+  font-size: 14px;
+}
+.trpg .overview .wx-map-place-hit {
+  width: 120px;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.trpg .overview .wx-map-place-icon,
+.trpg .overview .wx-map-icon-label {
+  display: none;
+}
+.trpg .wx-city-info {
+  padding-top: 10px;
+  font-size: 12px;
+  color: #cfdae0;
+}
+.trpg .wx-city-info p,
+.trpg .wx-city-note,
+.trpg .wx-city-notice {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #859fae;
+  margin: 6px 0;
+}
+.trpg .wx-city-info button {
+  margin: 4px 6px 0 0;
+}
+.trpg .wx-city-notice {
+  color: #c7b888;
+}
+.trpg .wx-city-tabs .wx-map-zoom-control {
+  border-style: dashed;
+}
+.trpg .wx-city-canvas.is-zoomed {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.trpg .wx-city-canvas.is-zoomed svg {
+  min-width: 1000px;
+}
+.trpg .wx-city-canvas.is-zoomed svg.overview {
+  min-width: 1440px;
+}
+@media (max-width: 560px) {
+  .trpg .wx-city-map {
+    margin: 0 6px 8px;
+    padding: 9px;
+  }
+  .trpg .wx-city-tabs button {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+  .trpg .wx-city-canvas {
+    overflow-x: auto;
+  }
+  .trpg .wx-city-canvas svg {
+    min-width: 0;
+  }
+  .trpg .wx-city-canvas.is-zoomed svg {
+    min-width: 560px;
+  }
+  .trpg .wx-city-canvas.is-zoomed svg.overview {
+    min-width: 900px;
+  }
+  .trpg .wx-city-label {
+    font-size: 18px;
+  }
+  .trpg .wx-city-node.unknown .wx-city-label {
+    font-size: 14px;
+  }
+  .trpg .wx-city-canvas {
+    scrollbar-width: thin;
+    scrollbar-color: #6b7b7b #d7d9ce;
+  }
+}
 
 </style>
 <main class="wx-standalone-main">
@@ -2920,10 +3337,10 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
     <details id="wxCityMap" class="wx-city-map" open>
       <summary>城市地图<span id="wxCityPosition">等待地图数据</span></summary>
       <div id="wxCityTabs" class="wx-city-tabs"></div>
-      <div class="wx-city-legend"><span class="player">● 你的位置</span><span class="target">● 目标目视位置</span><span class="last">○ 最后目击</span><span>虚线：跨区接驳</span></div>
+      <div class="wx-city-legend"><span class="player">● 你的位置</span><span class="target">● 目标目视位置</span><span class="last">○ 最后目击</span><span>浅色街道 · 绿色公园 · 蓝色江面</span></div>
       <div id="wxCityCanvas" class="wx-city-canvas"></div>
       <div id="wxCityInfo" class="wx-city-info"></div>
-      <p class="wx-city-note">空间示意图，不按真实距离绘制。点地点查看；浏览不改变位置。市内移动不占活动机会，采购确认后才扣点、推进时段。</p>
+      <p class="wx-city-note">点击建筑或地点查看；先选街区，需要时点“放大查看”并横向滑动。浏览不改变位置。市内移动不占活动机会，采购确认后才扣点、推进时段。</p>
       <p id="wxCityNotice" class="wx-city-notice" role="status"></p>
     </details>
     <details class="wx-daily-actions" id="wxDailyActions" open>
@@ -9450,10 +9867,853 @@ var WxStatusbarUI = (() => {
     }
   });
 
+  // src/config/city-cartography.json
+  var require_city_cartography = __commonJS({
+    "src/config/city-cartography.json"(exports, module) {
+      module.exports = {
+        schema: 1,
+        districts: {
+          B: {
+            subtitle: "\u5B66\u6821 \xB7 \u8001\u8857 \xB7 \u4F4F\u5B85",
+            roads: [
+              {
+                name: "\u5B66\u5E9C\u8DEF",
+                points: [
+                  [0, 145],
+                  [620, 145]
+                ],
+                width: 24,
+                kind: "street",
+                label: [365, 149]
+              },
+              {
+                name: "\u69D0\u836B\u8857",
+                points: [
+                  [0, 290],
+                  [620, 290]
+                ],
+                width: 22,
+                kind: "street",
+                label: [135, 294]
+              },
+              {
+                name: "\u8001\u8857",
+                points: [
+                  [250, 145],
+                  [250, 480]
+                ],
+                width: 22,
+                kind: "street",
+                label: [250, 260]
+              },
+              {
+                name: "\u4E1C\u5DF7",
+                points: [
+                  [465, 145],
+                  [465, 480]
+                ],
+                width: 14,
+                kind: "street",
+                label: [465, 445]
+              },
+              {
+                name: "",
+                points: [
+                  [250, 350],
+                  [465, 350],
+                  [465, 430]
+                ],
+                width: 9,
+                kind: "lane"
+              },
+              {
+                name: "",
+                points: [
+                  [90, 290],
+                  [90, 395]
+                ],
+                width: 8,
+                kind: "lane"
+              }
+            ],
+            blocks: [
+              {
+                kind: "campus",
+                box: [25, 45, 190, 77],
+                label: "\u6821\u56ED"
+              },
+              {
+                kind: "transit",
+                box: [285, 54, 145, 65]
+              },
+              {
+                kind: "home",
+                box: [30, 185, 90, 78]
+              },
+              {
+                kind: "park",
+                box: [137, 185, 85, 78]
+              },
+              {
+                kind: "shop",
+                box: [285, 190, 145, 74]
+              },
+              {
+                kind: "transit",
+                box: [500, 187, 92, 76]
+              },
+              {
+                kind: "housing",
+                box: [285, 320, 145, 65]
+              },
+              {
+                kind: "housing",
+                box: [500, 320, 92, 105]
+              },
+              {
+                kind: "shop",
+                box: [130, 400, 90, 66]
+              },
+              {
+                kind: "housing",
+                box: [30, 320, 33, 70]
+              },
+              {
+                kind: "housing",
+                box: [117, 320, 103, 66]
+              },
+              {
+                kind: "housing",
+                box: [285, 400, 145, 63]
+              }
+            ]
+          },
+          A: {
+            subtitle: "\u5199\u5B57\u697C \xB7 \u5546\u4E1A\u8857 \xB7 \u4EA4\u901A\u67A2\u7EBD",
+            roads: [
+              {
+                name: "\u5546\u52A1\u5927\u9053",
+                points: [
+                  [0, 145],
+                  [620, 145]
+                ],
+                width: 28,
+                kind: "street",
+                label: [365, 149]
+              },
+              {
+                name: "\u4E2D\u57CE\u8DEF",
+                points: [
+                  [250, 40],
+                  [250, 480]
+                ],
+                width: 24,
+                kind: "street",
+                label: [250, 278]
+              },
+              {
+                name: "\u540E\u8857",
+                points: [
+                  [0, 290],
+                  [620, 290]
+                ],
+                width: 18,
+                kind: "street",
+                label: [355, 294]
+              },
+              {
+                name: "\u7AD9\u524D\u8DEF",
+                points: [
+                  [465, 40],
+                  [465, 480]
+                ],
+                width: 24,
+                kind: "street",
+                label: [465, 420]
+              },
+              {
+                name: "",
+                points: [
+                  [0, 430],
+                  [465, 430]
+                ],
+                width: 12,
+                kind: "lane"
+              },
+              {
+                name: "",
+                points: [
+                  [350, 290],
+                  [350, 430]
+                ],
+                width: 10,
+                kind: "lane"
+              }
+            ],
+            blocks: [
+              {
+                kind: "office",
+                box: [30, 48, 180, 83]
+              },
+              {
+                kind: "office",
+                box: [30, 176, 180, 90]
+              },
+              {
+                kind: "office",
+                box: [285, 50, 145, 76]
+              },
+              {
+                kind: "transit",
+                box: [500, 50, 92, 78]
+              },
+              {
+                kind: "transit",
+                box: [285, 188, 145, 77]
+              },
+              {
+                kind: "office",
+                box: [500, 185, 92, 80]
+              },
+              {
+                kind: "shop",
+                box: [500, 320, 92, 70]
+              },
+              {
+                kind: "service",
+                box: [30, 335, 180, 77]
+              },
+              {
+                kind: "office",
+                box: [285, 320, 43, 80]
+              },
+              {
+                kind: "office",
+                box: [373, 320, 57, 80]
+              }
+            ]
+          },
+          C: {
+            subtitle: "\u6CBF\u6C5F\u6B65\u9053 \xB7 \u591C\u5E02 \xB7 \u57CE\u4E2D\u6751",
+            roads: [
+              {
+                name: "\u4E34\u6C5F\u8DEF",
+                points: [
+                  [0, 145],
+                  [620, 145]
+                ],
+                width: 24,
+                kind: "street",
+                label: [355, 149]
+              },
+              {
+                name: "\u5357\u8857",
+                points: [
+                  [0, 290],
+                  [620, 290]
+                ],
+                width: 20,
+                kind: "street",
+                label: [355, 294]
+              },
+              {
+                name: "\u7801\u5934\u8DEF",
+                points: [
+                  [465, 40],
+                  [465, 425],
+                  [620, 425]
+                ],
+                width: 20,
+                kind: "street",
+                label: [465, 255]
+              },
+              {
+                name: "",
+                points: [
+                  [250, 40],
+                  [250, 425]
+                ],
+                width: 18,
+                kind: "street"
+              },
+              {
+                name: "\u6CBF\u6C5F\u6B65\u9053",
+                points: [
+                  [0, 450],
+                  [485, 450],
+                  [570, 470]
+                ],
+                width: 14,
+                kind: "walk",
+                label: [120, 454]
+              },
+              {
+                name: "",
+                points: [
+                  [70, 320],
+                  [250, 320],
+                  [250, 425]
+                ],
+                width: 8,
+                kind: "lane"
+              },
+              {
+                name: "",
+                points: [
+                  [170, 290],
+                  [170, 425]
+                ],
+                width: 8,
+                kind: "lane"
+              },
+              {
+                name: "",
+                points: [
+                  [0, 350],
+                  [250, 350]
+                ],
+                width: 8,
+                kind: "lane"
+              }
+            ],
+            blocks: [
+              {
+                kind: "nightlife",
+                box: [30, 52, 180, 75]
+              },
+              {
+                kind: "market",
+                box: [285, 52, 145, 75]
+              },
+              {
+                kind: "transit",
+                box: [500, 52, 92, 75]
+              },
+              {
+                kind: "housing",
+                box: [30, 185, 180, 75]
+              },
+              {
+                kind: "shop",
+                box: [285, 188, 145, 75]
+              },
+              {
+                kind: "park",
+                box: [500, 185, 92, 75]
+              },
+              {
+                kind: "housing",
+                box: [285, 320, 145, 105]
+              },
+              {
+                kind: "housing",
+                box: [30, 303, 30, 33]
+              },
+              {
+                kind: "housing",
+                box: [85, 303, 65, 33]
+              },
+              {
+                kind: "housing",
+                box: [185, 303, 38, 33]
+              },
+              {
+                kind: "housing",
+                box: [185, 370, 38, 52]
+              },
+              {
+                kind: "market",
+                box: [30, 370, 120, 52]
+              }
+            ]
+          },
+          D: {
+            subtitle: "\u6797\u5730 \xB7 \u516C\u8DEF \xB7 \u4F4F\u5B85\u9662\u843D",
+            roads: [
+              {
+                name: "\u90CA\u91CE\u516C\u8DEF",
+                points: [
+                  [0, 390],
+                  [620, 390]
+                ],
+                width: 28,
+                kind: "highway",
+                label: [170, 394]
+              },
+              {
+                name: "\u6797\u95F4\u652F\u8DEF",
+                points: [
+                  [320, 390],
+                  [320, 170],
+                  [390, 170]
+                ],
+                width: 14,
+                kind: "street",
+                label: [320, 352]
+              },
+              {
+                name: "",
+                points: [
+                  [320, 205],
+                  [600, 205]
+                ],
+                width: 12,
+                kind: "street"
+              },
+              {
+                name: "",
+                points: [
+                  [140, 390],
+                  [140, 480]
+                ],
+                width: 10,
+                kind: "street"
+              }
+            ],
+            blocks: [
+              {
+                kind: "forest",
+                box: [25, 55, 225, 285]
+              },
+              {
+                kind: "garden",
+                box: [355, 178, 235, 155]
+              },
+              {
+                kind: "villa",
+                box: [355, 55, 235, 105]
+              },
+              {
+                kind: "service",
+                box: [50, 415, 180, 55]
+              },
+              {
+                kind: "park",
+                box: [365, 420, 225, 50]
+              }
+            ]
+          }
+        },
+        landmarks: {
+          school_gate_b: ["\u5B66\u6821", "school"],
+          school_bus_terminal_b: ["\u5B66\u533A\u603B\u7AD9", "bus"],
+          old_metro_b: ["\u8001\u8857\u7AD9", "metro"],
+          old_park_b: ["\u8001\u57CE\u516C\u56ED", "park"],
+          player_base_b: ["\u4F60\u7684\u636E\u70B9", "home"],
+          love_hotel_b: ["\u65C5\u793E", "hotel"],
+          office_lobby_a: ["\u5199\u5B57\u697C", "office"],
+          parking_b2_a: ["\u5730\u4E0B\u8F66\u5E93 B2", "parking"],
+          skybridge_a: ["\u8FDE\u5ECA\u5929\u6865", "bridge"],
+          metro_hub_a: ["\u4E2D\u57CE\u7AD9", "metro"],
+          bus_bay_a: ["\u516C\u4EA4\u6E2F\u6E7E", "bus"],
+          store_24h_a: ["\u4FBF\u5229\u5E97", "shop"],
+          trash_station_a: ["\u88C5\u5378\u540E\u9053", "service"],
+          back_alley_a: ["\u540E\u8857\u6697\u5DF7", "lane"],
+          old_skybridge_b: ["\u6C34\u6CE5\u5929\u6865", "bridge"],
+          store_24h_b: ["\u4FBF\u5229\u5E97", "shop"],
+          old_alley_main_b: ["\u4E3B\u5DF7", "lane"],
+          dark_blind_alley_b: ["\u76F2\u533A\u5DF7", "lane"],
+          unit_stairs_b: ["\u5355\u5143\u697C\u9053", "housing"],
+          rooftop_b: ["\u697C\u9876", "housing"],
+          dead_end_b: ["\u5C3D\u5934", "lane"],
+          club_backdoor_c: ["\u591C\u5E97\u540E\u95E8", "nightlife"],
+          food_street_c: ["\u591C\u5E02", "market"],
+          dock_bus_stop_c: ["\u7801\u5934\u7AD9", "bus"],
+          bridge_head_c: ["\u6865\u5934", "bridge"],
+          store_24h_c: ["\u4FBF\u5229\u5E97", "shop"],
+          river_walk_c: ["\u6C5F\u8FB9\u6B65\u9053", "walk"],
+          river_steps_c: ["\u6C5F\u8FB9\u53F0\u9636", "walk"],
+          village_main_c: ["\u57CE\u4E2D\u6751", "housing"],
+          narrow_gap_c: ["\u5939\u7F1D\u5C0F\u5DF7", "lane"],
+          rental_iron_door_c: ["\u51FA\u79DF\u5C4B\u5165\u53E3", "housing"],
+          village_roof_c: ["\u5E73\u623F\u5C4B\u9876", "housing"],
+          black_market_c: ["\u4E34\u6C5F\u9ED1\u5E02", "black_market"],
+          suburb_highway_d: ["\u90CA\u91CE\u516C\u8DEF", "highway"],
+          gas_station_d: ["\u52A0\u6CB9\u7AD9", "gas"],
+          private_road_d: ["\u6797\u95F4\u652F\u8DEF", "lane"],
+          pine_forest_d: ["\u677E\u6797", "park"],
+          estate_gate_d: ["\u4F4F\u5B85\u5165\u53E3", "housing"],
+          villa_garden_d: ["\u9662\u843D", "park"],
+          garage_side_door_d: ["\u8F66\u5E93\u4FA7\u95E8", "parking"],
+          villa_porch_d: ["\u4F4F\u5B85\u95E8\u5ECA", "housing"]
+        },
+        overview: [
+          "school_gate_b",
+          "old_metro_b",
+          "old_park_b",
+          "player_base_b",
+          "office_lobby_a",
+          "metro_hub_a",
+          "bus_bay_a",
+          "club_backdoor_c",
+          "food_street_c",
+          "black_market_c",
+          "river_walk_c",
+          "suburb_highway_d",
+          "gas_station_d",
+          "pine_forest_d"
+        ]
+      };
+    }
+  });
+
+  // src/ui/map/cartography.js
+  var require_cartography = __commonJS({
+    "src/ui/map/cartography.js"(exports, module) {
+      "use strict";
+      var art = require_city_cartography();
+      function drawCityMap({ svg, map, view, selected }) {
+        const frame = map.frames.find((f) => f.id === view);
+        const viewHeight = frame ? frame.height + (view === "C" ? 110 : 40) : map.height;
+        const drawing = svg("svg", {
+          width: frame ? frame.width + 36 : map.width,
+          height: viewHeight,
+          viewBox: frame ? `${frame.x - 18} ${frame.y - 15} ${frame.width + 36} ${viewHeight}` : `0 0 ${map.width} ${map.height}`,
+          role: "group",
+          "aria-label": "\u57CE\u5E02\u8857\u533A\u5730\u56FE\uFF1A\u9053\u8DEF\u3001\u5EFA\u7B51\u3001\u7EFF\u5730\u4E0E\u4F4D\u7F6E"
+        });
+        drawing.classList.toggle("overview", view === "all");
+        const text = (parent2, value, x, y, cls, extra = {}) => {
+          const e = svg("text", {
+            x,
+            y,
+            class: cls,
+            "text-anchor": "middle",
+            ...extra
+          });
+          e.textContent = value;
+          parent2.append(e);
+          return e;
+        };
+        drawing.append(
+          svg("rect", {
+            x: 0,
+            y: 0,
+            width: map.width,
+            height: map.height,
+            class: "wx-map-land"
+          })
+        );
+        for (const f of map.frames)
+          drawing.append(
+            svg("rect", {
+              x: f.x - 16,
+              y: f.y - 18,
+              width: f.width + 32,
+              height: f.height + 38,
+              rx: 22,
+              class: `wx-map-ground ground-${f.id}`
+            })
+          );
+        const water = svg("path", {
+          d: "M -20 1200 C 230 1180 360 1225 585 1202 S 1020 1180 1460 1195 L 1460 1320 L -20 1320 Z",
+          class: "wx-map-water"
+        });
+        drawing.append(water);
+        for (let row = 0; row < 3; row++)
+          drawing.append(
+            svg("path", {
+              d: `M 0 ${1230 + row * 24} Q 220 ${1215 + row * 24} 440 ${1230 + row * 24} T 880 ${1230 + row * 24} T 1440 ${1230 + row * 24}`,
+              class: "wx-map-water-line"
+            })
+          );
+        text(drawing, "\u6C5F\u3000\u9762", 900, 1250, "wx-map-water-label");
+        const roads = [];
+        const road = (parent2, points, width, kind, name, label) => {
+          const d = points.map((p, i) => `${i ? "L" : "M"} ${p[0]} ${p[1]}`).join(" ");
+          const group = svg("g", { class: `wx-map-street ${kind || "street"}` });
+          group.append(
+            svg("path", { d, class: "road-edge", "stroke-width": width + 3 }),
+            svg("path", { d, class: "road-surface", "stroke-width": width })
+          );
+          if (kind === "highway")
+            group.append(svg("path", { d, class: "road-center" }));
+          parent2.append(group);
+          if (name && label)
+            roads.push({
+              parent: parent2,
+              name,
+              label,
+              vertical: points[0][0] === points[1][0]
+            });
+        };
+        road(
+          drawing,
+          [
+            [720, 0],
+            [720, 1175]
+          ],
+          34,
+          "highway",
+          "\u57CE\u4E2D\u5927\u9053",
+          [720, 625]
+        );
+        road(
+          drawing,
+          [
+            [0, 630],
+            [1440, 630]
+          ],
+          28,
+          "street",
+          "\u4E1C\u897F\u5E72\u9053",
+          [1090, 634]
+        );
+        road(
+          drawing,
+          [
+            [680, 245],
+            [720, 245]
+          ],
+          24
+        );
+        road(
+          drawing,
+          [
+            [720, 490],
+            [760, 490]
+          ],
+          28
+        );
+        road(
+          drawing,
+          [
+            [680, 825],
+            [760, 825]
+          ],
+          26
+        );
+        for (const f of map.frames) {
+          const data = art.districts[f.id];
+          const g = svg("g", {
+            transform: `translate(${f.x} ${f.y})`,
+            "data-region": f.id
+          });
+          drawing.append(g);
+          data.blocks.forEach((b, index) => {
+            const [x, y, width, height] = b.box;
+            const parcel = svg("g", { class: `wx-map-block ${b.kind}` });
+            parcel.append(
+              svg("rect", {
+                x,
+                y,
+                width,
+                height,
+                rx: b.kind === "forest" ? 26 : 4,
+                class: "parcel"
+              })
+            );
+            const green = ["forest", "park", "garden"].includes(b.kind);
+            if (green) {
+              for (let cy = y + 17; cy < y + height - 8; cy += 30)
+                for (let cx = x + 14; cx < x + width - 8; cx += 30) {
+                  parcel.append(
+                    svg("circle", {
+                      cx: cx + (Math.round(cy) % 2 ? 4 : 0),
+                      cy,
+                      r: b.kind === "forest" ? 10 : 6,
+                      class: "tree"
+                    })
+                  );
+                }
+              parcel.append(
+                svg("path", {
+                  d: `M ${x + 8} ${y + height - 9} L ${x + width / 2} ${y + height / 2} L ${x + width - 8} ${y + 9}`,
+                  class: "park-path"
+                })
+              );
+            } else {
+              parcel.append(
+                svg("rect", {
+                  x: x + 6,
+                  y: y + 6,
+                  width: width - 12,
+                  height: height - 12,
+                  rx: 2,
+                  class: "roof"
+                })
+              );
+              if (width > 70 && height > 50) {
+                parcel.append(
+                  svg("rect", {
+                    x: x + width - 29,
+                    y: y + 11,
+                    width: 14,
+                    height: 9,
+                    class: "roof-unit"
+                  })
+                );
+                if (b.kind === "office")
+                  for (let w = x + 12; w < x + width - 13; w += 15)
+                    parcel.append(
+                      svg("path", {
+                        d: `M ${w} ${y + height - 17} v 9`,
+                        class: "roof-window"
+                      })
+                    );
+              }
+              if (b.kind === "campus") {
+                parcel.append(
+                  svg("rect", {
+                    x: x + 10,
+                    y: y + height - 24,
+                    width: width - 20,
+                    height: 14,
+                    rx: 2,
+                    class: "campus-yard"
+                  })
+                );
+              }
+            }
+            g.append(parcel);
+          });
+          data.roads.forEach(
+            (r) => road(g, r.points, r.width, r.kind, r.name, r.label)
+          );
+          if (f.id === "A" || f.id === "B") {
+            g.append(
+              svg("rect", {
+                x: 225,
+                y: 124,
+                width: 50,
+                height: 12,
+                class: "wx-map-footbridge"
+              })
+            );
+            g.append(
+              svg("path", {
+                d: "M 229 125 v 10 m 8 -10 v 10 m 8 -10 v 10 m 8 -10 v 10 m 8 -10 v 10 m 8 -10 v 10",
+                class: "wx-map-bridge-steps"
+              })
+            );
+          }
+          if (f.id !== "D") {
+            for (let x = 270; x <= 284; x += 5)
+              g.append(
+                svg("path", { d: `M ${x} 136 v 18`, class: "wx-map-crosswalk" })
+              );
+          }
+        }
+        for (const r of roads)
+          text(
+            r.parent,
+            r.name,
+            ...r.label,
+            "wx-map-street-label",
+            r.vertical ? { "writing-mode": "vertical-rl" } : {}
+          );
+        for (const f of map.frames) {
+          text(drawing, f.name, f.x + 310, f.y + 19, "wx-map-district-title");
+          text(
+            drawing,
+            art.districts[f.id].subtitle,
+            f.x + 310,
+            f.y + 42,
+            "wx-map-district-subtitle"
+          );
+        }
+        const nodes = new Map(map.nodes.map((n) => [n.id, n]));
+        const positioned = /* @__PURE__ */ new Set([map.player.placeId, map.target?.placeId]);
+        for (const n of map.nodes) {
+          const [shortName, kind] = art.landmarks[n.id];
+          const g = svg("g", {
+            "data-place-id": n.id,
+            role: "button",
+            tabindex: view !== "all" && n.district !== view || view === "all" && !art.overview.includes(n.id) && !positioned.has(n.id) && n.id !== selected ? -1 : 0,
+            "aria-hidden": view !== "all" && n.district !== view ? "true" : "false",
+            "aria-label": n.name,
+            class: `wx-city-node kind-${kind}${n.hidden ? " unknown" : ""}${selected === n.id ? " selected" : ""}${n.service ? " service" : ""}${art.overview.includes(n.id) ? " overview-landmark" : ""}${positioned.has(n.id) ? " positioned" : ""}`
+          });
+          const title = svg("title");
+          title.textContent = n.name;
+          g.append(title);
+          g.append(
+            svg("rect", {
+              x: n.x - 47,
+              y: n.y - 20,
+              width: 94,
+              height: 42,
+              rx: 5,
+              class: "wx-map-place-hit"
+            })
+          );
+          const label = n.hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : shortName;
+          text(g, label, n.x, n.y + 5, "wx-city-label");
+          if (n.service || ["metro", "bus", "school", "office", "gas"].includes(kind)) {
+            const symbols = {
+              metro: "M",
+              bus: "BUS",
+              school: "\u6821",
+              office: "\u697C",
+              gas: "\u6CB9",
+              home: "\u5BB6",
+              black_market: "\u9ED1\u5E02"
+            };
+            g.append(
+              svg("rect", {
+                x: n.x - 14,
+                y: n.y - 36,
+                width: 28,
+                height: 19,
+                rx: 3,
+                class: "wx-map-place-icon"
+              })
+            );
+            text(g, symbols[kind] || "\u5E97", n.x, n.y - 22, "wx-map-icon-label");
+          }
+          drawing.append(g);
+        }
+        const target = map.target;
+        function mark(id, kind) {
+          const n = nodes.get(id);
+          if (!n) return;
+          const offset = map.player.placeId === target?.placeId ? kind === "player" ? -18 : 18 : 0;
+          const x = n.x + offset, y = n.y - 53;
+          const g = svg("g", {
+            class: `wx-map-${kind}`,
+            "aria-label": kind === "player" ? "\u73A9\u5BB6\u4F4D\u7F6E" : target.status
+          });
+          g.append(
+            svg("path", {
+              d: `M ${x - 6} ${y + 10} L ${x} ${y + 21} L ${x + 6} ${y + 10}`,
+              class: "wx-map-pin-tip"
+            })
+          );
+          g.append(
+            svg("circle", {
+              cx: x,
+              cy: y,
+              r: 13,
+              class: kind === "target" && !target.live ? "last-seen" : ""
+            })
+          );
+          text(
+            g,
+            kind === "player" ? "\u4F60" : target.live ? "\u76EE" : "\u5FC6",
+            x,
+            y + 4,
+            "wx-map-pin-label"
+          );
+          drawing.append(g);
+        }
+        mark(map.player.placeId, "player");
+        if (target) mark(target.placeId, "target");
+        const nx = frame ? frame.x + 590 : 1355, ny = frame ? frame.y + 58 : 55;
+        const compass = svg("g", { class: "wx-map-compass" });
+        compass.append(svg("path", { d: `M ${nx} ${ny} l -7 20 l 7 -5 l 7 5 Z` }));
+        text(compass, "\u5317", nx, ny - 8, "wx-map-compass-label");
+        drawing.append(compass);
+        return drawing;
+      }
+      module.exports = { drawCityMap };
+    }
+  });
+
   // src/ui/map/city-map.js
   var require_city_map = __commonJS({
     "src/ui/map/city-map.js"(exports, module) {
       "use strict";
+      var { drawCityMap } = require_cartography();
       function createCityMapUI({
         document,
         window,
@@ -9464,7 +10724,7 @@ var WxStatusbarUI = (() => {
       }) {
         const root = document.getElementById("wxCityMap"), canvas = document.getElementById("wxCityCanvas"), tabs = document.getElementById("wxCityTabs"), info = document.getElementById("wxCityInfo"), position = document.getElementById("wxCityPosition"), notice = document.getElementById("wxCityNotice");
         const NS = "http://www.w3.org/2000/svg";
-        let snapshot = null, view = null, selected = null, pending = null, retry = null, counter = 0;
+        let snapshot = null, view = null, selected = null, pending = null, retry = null, counter = 0, zoomed = false;
         const el = (tag, text) => {
           const e = document.createElement(tag);
           if (text !== void 0) e.textContent = text;
@@ -9478,6 +10738,7 @@ var WxStatusbarUI = (() => {
         const same = (a, b) => a?.scope === b?.scope && a?.epoch === b?.epoch;
         function reset() {
           snapshot = null;
+          zoomed = false;
           view = null;
           selected = null;
           pending = null;
@@ -9492,6 +10753,7 @@ var WxStatusbarUI = (() => {
           if (!root || !snap?.cityMap) return reset();
           if (snapshot && !same(snapshot.dayPlan.sync, snap.dayPlan.sync)) {
             view = null;
+            zoomed = false;
             selected = null;
             pending = null;
             retry = null;
@@ -9513,115 +10775,23 @@ var WxStatusbarUI = (() => {
             b.setAttribute("aria-pressed", String(view === item.id));
             tabs.append(b);
           }
-          const frame = map.frames.find((f) => f.id === view), box = frame ? `${frame.x - 12} ${frame.y - 12} ${frame.width + 24} ${frame.height + 24}` : `0 0 ${map.width} ${map.height}`;
-          const drawing = svg("svg", {
-            viewBox: box,
-            role: "img",
-            "aria-label": "\u57CE\u5E02\u5730\u70B9\u4E0E\u901A\u8DEF\u793A\u610F\u56FE"
-          });
-          drawing.classList.toggle("overview", view === "all");
-          const defs = svg("defs"), marker = svg("marker", {
-            id: "wxMapArrow",
-            viewBox: "0 0 10 10",
-            refX: 8,
-            refY: 5,
-            markerWidth: 5,
-            markerHeight: 5,
-            orient: "auto-start-reverse"
-          });
-          marker.append(svg("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#697d87" }));
-          defs.append(marker);
-          drawing.append(defs);
-          drawing.append(
-            svg("path", {
-              d: "M 25 1110 Q 240 1050 460 1125 T 1080 1080",
-              class: "wx-city-river"
-            })
-          );
-          for (const f of map.frames) {
-            const g = svg("g", { "data-region": f.id });
-            g.append(
-              svg("rect", {
-                x: f.x,
-                y: f.y,
-                width: f.width,
-                height: f.height,
-                rx: 14,
-                class: "wx-city-region"
-              })
+          for (const [mode, title] of [
+            ["fit", "\u9002\u5408\u5C4F\u5E55"],
+            ["detail", "\u653E\u5927\u67E5\u770B"]
+          ]) {
+            const b = el("button", title);
+            b.type = "button";
+            b.dataset.mapZoom = mode;
+            b.className = "wx-map-zoom-control";
+            b.setAttribute(
+              "aria-pressed",
+              String(mode === (zoomed ? "detail" : "fit"))
             );
-            const title = svg("text", {
-              x: f.x + 16,
-              y: f.y + 29,
-              class: "wx-city-region-title"
-            });
-            title.textContent = f.name;
-            g.append(title);
-            drawing.append(g);
+            tabs.append(b);
           }
+          canvas.classList.toggle("is-zoomed", zoomed);
+          canvas.replaceChildren(drawCityMap({ svg, map, view, selected }));
           const nodes = new Map(map.nodes.map((n2) => [n2.id, n2]));
-          for (const edge of map.edges) {
-            const a = nodes.get(edge.from), b = nodes.get(edge.to);
-            if (!a || !b) continue;
-            drawing.append(
-              svg("line", {
-                x1: a.x,
-                y1: a.y,
-                x2: b.x,
-                y2: b.y,
-                class: `wx-city-road${edge.transit ? " transit" : ""}${a.hidden || b.hidden ? " unknown" : ""}`,
-                ...edge.oneWay ? { "marker-end": "url(#wxMapArrow)" } : {}
-              })
-            );
-          }
-          for (const n2 of map.nodes) {
-            const g = svg("g", {
-              "data-place-id": n2.id,
-              role: "button",
-              tabindex: 0,
-              "aria-label": n2.name,
-              class: `wx-city-node${n2.hidden ? " unknown" : ""}${selected === n2.id ? " selected" : ""}${n2.service ? " service" : ""}`
-            });
-            const title = svg("title");
-            title.textContent = n2.name;
-            g.append(
-              title,
-              svg("circle", { cx: n2.x, cy: n2.y, r: n2.service ? 7 : 5 })
-            );
-            const label = svg("text", {
-              x: n2.x,
-              y: n2.y - 13,
-              "text-anchor": "middle",
-              class: "wx-city-label"
-            });
-            label.textContent = n2.name.length > 9 ? n2.name.slice(0, 8) + "\u2026" : n2.name;
-            g.append(label);
-            drawing.append(g);
-          }
-          function mark(id, kind) {
-            const n2 = nodes.get(id);
-            if (!n2) return;
-            const offset = map.player.placeId === target?.placeId ? kind === "player" ? -9 : 9 : 0;
-            const g = svg("g", {
-              class: `wx-map-${kind}`,
-              "aria-label": kind === "player" ? "\u73A9\u5BB6\u4F4D\u7F6E" : target.status
-            });
-            g.append(
-              svg("circle", {
-                cx: n2.x + offset,
-                cy: n2.y,
-                r: 12,
-                class: kind === "target" && !target.live ? "last-seen" : ""
-              })
-            );
-            drawing.append(g);
-          }
-          mark(map.player.placeId, "player");
-          if (target) mark(target.placeId, "target");
-          const north = svg("text", { x: 50, y: 65, class: "wx-city-north" });
-          north.textContent = "\u5317 \u2191";
-          drawing.append(north);
-          canvas.replaceChildren(drawing);
           const n = nodes.get(selected);
           info.replaceChildren();
           if (!n) return;
@@ -9680,10 +10850,36 @@ var WxStatusbarUI = (() => {
           }
         }
         function choose(event) {
+          const zoom = event.target.closest?.("[data-map-zoom]");
+          if (zoom) {
+            zoomed = zoom.dataset.mapZoom === "detail";
+            render(snapshot);
+            if (!zoomed) canvas.scrollLeft = 0;
+            else {
+              const map = snapshot.cityMap;
+              const frame = map.frames.find((f) => f.id === view);
+              const n = map.nodes.find(
+                (n2) => n2.id === selected && (!frame || n2.district === frame.id)
+              );
+              if (n) {
+                const start = frame ? frame.x - 18 : 0;
+                const width = frame ? frame.width + 36 : map.width;
+                canvas.scrollLeft = (n.x - start) / width * canvas.firstElementChild.getBoundingClientRect().width - canvas.clientWidth / 2;
+              }
+            }
+            return;
+          }
           const tab = event.target.closest?.("[data-map-district]");
           if (tab) {
             view = tab.dataset.mapDistrict;
+            const map = snapshot.cityMap;
+            if (view !== "all" && !map.nodes.some((n) => n.id === selected && n.district === view)) {
+              const local = map.nodes.filter((n) => n.district === view && !n.hidden);
+              selected = (local.find((n) => n.service) || local[0])?.id || selected;
+            }
+            zoomed = false;
             render(snapshot);
+            canvas.scrollLeft = 0;
             return;
           }
           const node = event.target.closest?.("[data-place-id]");

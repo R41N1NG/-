@@ -159,7 +159,7 @@ function cityView(g, date) {
           status: live ? "目视位置" : "最后目击",
         }
       : null,
-    note: "空间示意图，连线表示通路；虚线表示跨区接驳，不按真实距离绘制。",
+    note: "固定街区地图。地块表示空间分布；可通行范围以地点入口为准。",
   };
 }
 module.exports = { activeScene, observeScene, prepareMove, cityView };

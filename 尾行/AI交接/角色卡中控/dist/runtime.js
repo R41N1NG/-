@@ -9927,198 +9927,198 @@
     "src/config/city-layout.json"(exports, module) {
       module.exports = {
         schema: 1,
-        width: 1100,
-        height: 1180,
+        width: 1440,
+        height: 1300,
         frames: {
-          D: {
-            x: 570,
-            y: 20,
-            width: 500,
-            height: 440
-          },
-          A: {
-            x: 570,
-            y: 500,
-            width: 500,
-            height: 440
-          },
           B: {
-            x: 20,
-            y: 250,
-            width: 500,
-            height: 440
+            x: 60,
+            y: 100,
+            width: 620,
+            height: 480
+          },
+          D: {
+            x: 760,
+            y: 100,
+            width: 620,
+            height: 480
           },
           C: {
-            x: 20,
-            y: 720,
-            width: 500,
-            height: 440
+            x: 60,
+            y: 680,
+            width: 620,
+            height: 480
+          },
+          A: {
+            x: 760,
+            y: 680,
+            width: 620,
+            height: 480
           }
         },
         coordinates: {
           office_lobby_a: [
-            130,
-            80
+            122,
+            90
           ],
           parking_b2_a: [
-            70,
-            180
+            122,
+            225
           ],
           skybridge_a: [
             250,
-            100
+            145
           ],
           metro_hub_a: [
             350,
-            180
+            225
           ],
           bus_bay_a: [
-            420,
-            80
+            545,
+            90
           ],
           store_24h_a: [
-            360,
-            300
+            545,
+            350
           ],
           back_alley_a: [
-            150,
-            260
+            350,
+            350
           ],
           trash_station_a: [
-            80,
-            345
+            122,
+            390
           ],
           school_gate_b: [
-            160,
-            75
+            122,
+            90
           ],
           school_bus_terminal_b: [
-            300,
-            80
+            355,
+            90
           ],
           old_metro_b: [
-            410,
-            150
+            545,
+            225
           ],
           old_skybridge_b: [
-            175,
-            160
+            250,
+            145
           ],
           store_24h_b: [
-            285,
-            230
+            355,
+            225
           ],
           old_park_b: [
-            70,
-            230
+            180,
+            225
           ],
           old_alley_main_b: [
-            190,
-            300
+            350,
+            350
           ],
           dark_blind_alley_b: [
-            310,
-            315
+            465,
+            375
           ],
           unit_stairs_b: [
-            410,
-            320
+            545,
+            345
           ],
           rooftop_b: [
-            420,
-            380
+            545,
+            395
           ],
           dead_end_b: [
             90,
-            340
+            350
           ],
           love_hotel_b: [
-            120,
-            390
+            175,
+            435
           ],
           player_base_b: [
-            60,
-            105
+            75,
+            225
           ],
           club_backdoor_c: [
-            70,
-            80
+            115,
+            90
           ],
           food_street_c: [
-            190,
-            95
+            355,
+            90
           ],
           dock_bus_stop_c: [
-            310,
-            65
+            545,
+            90
           ],
           bridge_head_c: [
-            430,
-            100
+            570,
+            425
           ],
           store_24h_c: [
-            210,
-            195
+            355,
+            225
           ],
           river_walk_c: [
-            360,
-            210
+            430,
+            450
           ],
           river_steps_c: [
-            360,
-            300
+            535,
+            470
           ],
           village_main_c: [
-            140,
-            295
+            170,
+            350
           ],
           narrow_gap_c: [
             250,
-            340
+            375
           ],
           rental_iron_door_c: [
-            350,
-            365
+            355,
+            345
           ],
           village_roof_c: [
-            440,
-            365
+            355,
+            395
           ],
           black_market_c: [
-            65,
-            355
+            100,
+            395
           ],
           suburb_highway_d: [
-            90,
-            345
+            430,
+            390
           ],
           gas_station_d: [
-            220,
-            345
+            140,
+            440
           ],
           private_road_d: [
-            210,
-            245
+            320,
+            335
           ],
           pine_forest_d: [
-            80,
-            200
+            140,
+            205
           ],
           estate_gate_d: [
-            310,
-            170
+            320,
+            285
           ],
           villa_garden_d: [
-            360,
-            85
+            470,
+            225
           ],
           garage_side_door_d: [
-            230,
-            60
+            390,
+            110
           ],
           villa_porch_d: [
-            430,
-            65
+            540,
+            110
           ]
         },
         transitLinks: [
@@ -10281,7 +10281,7 @@
             live,
             status: live ? "\u76EE\u89C6\u4F4D\u7F6E" : "\u6700\u540E\u76EE\u51FB"
           } : null,
-          note: "\u7A7A\u95F4\u793A\u610F\u56FE\uFF0C\u8FDE\u7EBF\u8868\u793A\u901A\u8DEF\uFF1B\u865A\u7EBF\u8868\u793A\u8DE8\u533A\u63A5\u9A73\uFF0C\u4E0D\u6309\u771F\u5B9E\u8DDD\u79BB\u7ED8\u5236\u3002"
+          note: "\u56FA\u5B9A\u8857\u533A\u5730\u56FE\u3002\u5730\u5757\u8868\u793A\u7A7A\u95F4\u5206\u5E03\uFF1B\u53EF\u901A\u884C\u8303\u56F4\u4EE5\u5730\u70B9\u5165\u53E3\u4E3A\u51C6\u3002"
         };
       }
       module.exports = { activeScene, observeScene, prepareMove, cityView };
@@ -14003,7 +14003,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.8",
+        version: "0.8.9",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {

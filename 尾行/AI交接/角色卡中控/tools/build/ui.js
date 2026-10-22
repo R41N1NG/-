@@ -8,10 +8,11 @@ const ROOT = path.resolve(__dirname, "../..");
 /** UI 源码是 src/ui；状态栏.html 是供直接打开的生成预览。 */
 function buildUI({ preview = true, writePreview = true } = {}) {
   require("./ui-config.js").generateUIConfig();
-  const css = fs.readFileSync(
-    path.join(ROOT, "src/ui/styles/statusbar.css"),
-    "utf8",
-  );
+  const css = ["statusbar.css", "city-map.css"]
+    .map((file) =>
+      fs.readFileSync(path.join(ROOT, "src/ui/styles", file), "utf8"),
+    )
+    .join("\n");
   const template = fs.readFileSync(
     path.join(ROOT, "src/ui/template.html"),
     "utf8",

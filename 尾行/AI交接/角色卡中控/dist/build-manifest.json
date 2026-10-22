@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.8",
+  "version": "0.8.9",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "d0170e4a098f1456f422e50dfa64d68d26461ca4a8385d87ad5afb7e06117798",
+  "sourceHash": "4ac278e1a0853e3b1b179cffd7f4abddfa00f493c9af7d884fc0f9cb29d25f02",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,15 +19,19 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "56933ced774ac83ad5a3aed0be265c580d275811c764a3e69d8ae9ae0c56e009"
+      "sha256": "ded6117201086540e6c1c70967e3ff3ad5213841890eda0a30db7f2007c7b178"
     },
     {
       "file": "package.json",
-      "sha256": "c48e2c8663378d8ce638d227a0f670bc25204a3b5b5276d22c04cf807fef16ab"
+      "sha256": "0108507e7802d47e5da45b47f1751185748d4eb036860ec791ed4e4c3dc338bd"
+    },
+    {
+      "file": "src/config/city-cartography.json",
+      "sha256": "3033141cc40b8961e38023f3d23c8a3859ee3e4c02fa46bd09640ac12b229b7e"
     },
     {
       "file": "src/config/city-layout.json",
-      "sha256": "9080830d6e681ea6f042fd061fd8c46e2875c4a85e7f299feaeaaa57de0d7e07"
+      "sha256": "3ae5577c624921118c93f8058b0dad11f1056fc09192e834db2dccc7770fb24b"
     },
     {
       "file": "src/config/daily-actions.json",
@@ -279,7 +283,7 @@
     },
     {
       "file": "src/runtime/spatial/system.js",
-      "sha256": "df42349cea0fdb3ce3f11f98796dda35c35799217088202cbeb687fe5344ec1e"
+      "sha256": "98316916ed0df6327d04bbe2cff157072a7de7f198e7f2103c54cf6f9de8c683"
     },
     {
       "file": "src/runtime/tags.js",
@@ -358,8 +362,12 @@
       "sha256": "20f7c2a1525433282d32972b8152869913d563c5d95d179d92b72a28b35047fc"
     },
     {
+      "file": "src/ui/map/cartography.js",
+      "sha256": "bd3160f6fd870ef3595c823d0636f91991b22464a928949bc2e34eda5be5d444"
+    },
+    {
       "file": "src/ui/map/city-map.js",
-      "sha256": "c37b50fa6c83d707d030a251de2fd1f556cdff4990e8ba53cedd78c60b42666a"
+      "sha256": "3d2cdc04738a55ba1884f80f2baf63937a5bcb12b5e0d3211ce10c748fdfd238"
     },
     {
       "file": "src/ui/preview-data.js",
@@ -394,8 +402,12 @@
       "sha256": "d86c996c1a82d8a9005c9d3a781ba1343d94826c8a92c951008d2237390f288e"
     },
     {
+      "file": "src/ui/styles/city-map.css",
+      "sha256": "ab27e458d7aaf6364ee0ad386e9cca7f9146a2b463a83637e0bc18ca1d222429"
+    },
+    {
       "file": "src/ui/styles/statusbar.css",
-      "sha256": "66ad8288eddddc2ccbe44c490759e8adf5c9df1eb3b0e9ad14e748e52a08860b"
+      "sha256": "434646dd34626d3e64b65098f9cf6d3f1fa2218d12de167a5aaa591d55301399"
     },
     {
       "file": "src/ui/sync-notice.js",
@@ -403,7 +415,7 @@
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "27d033b4a3dc8b54f751773b17b352141e13defdc5d5817778629874c5c015bd"
+      "sha256": "4abe8018e22b67d6116b22c3c71918cc0033c6286273b49c160199c5798bfc22"
     },
     {
       "file": "src/ui/zero-floor/host.js",
@@ -439,21 +451,21 @@
     },
     {
       "file": "tools/build/ui.js",
-      "sha256": "219977755d011a3ea4485aa5ff5da7ceda82837baa5ec81695d7c9f97a904f84"
+      "sha256": "711543ef6a40c2c787a54d028a9c555e82c57da999ac6d106d96935aef2aa8c4"
     }
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 593655,
-      "sha256": "ec406421ae528f4a325b490c117c8f3feed693d679a8ead97942a5815869d72d"
+      "bytes": 593654,
+      "sha256": "3c089940b53774101c0750b2840035d73a869b76b70663e5dde56d6a07f172f7"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1255786,
-      "sha256": "c2325d0d5180a98d422e5179bb0abe8a0eae875c7aa36b99fb6a6041fb2569c0"
+      "bytes": 1285151,
+      "sha256": "6bf39b637eadd5c22f5eda4436917abc5895e2a59ebe7f21edb6fee336cc138b"
     },
     "尾行.json": {
-      "bytes": 1374642,
-      "sha256": "87a8b761138e755fed03ff3da8a90798eccf97053f7c302ae824b2ae204c1483"
+      "bytes": 1406025,
+      "sha256": "c598b97456011ffc4c77ff892fbde36a8d9917c68f686c2faff702436e9125bb"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

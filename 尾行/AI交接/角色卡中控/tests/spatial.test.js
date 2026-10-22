@@ -316,6 +316,31 @@ test("地图UI：点选只浏览，确认移动才保存；固定黑市能打开
     ui.render(h.snap);
     const doc = dom.window.document;
     assert.equal(doc.querySelectorAll("g[data-place-id]").length, 41);
+    assert.ok(doc.querySelectorAll(".wx-map-block").length > 30);
+    assert.ok(doc.querySelector(".wx-map-water"));
+    const beforeView = clone(h.state.game.save());
+    doc.querySelector('[data-map-zoom="detail"]').click();
+    assert.ok(
+      doc.getElementById("wxCityCanvas").classList.contains("is-zoomed"),
+    );
+    doc.querySelector('[data-map-zoom="fit"]').click();
+    assert.equal(
+      doc.getElementById("wxCityCanvas").classList.contains("is-zoomed"),
+      false,
+    );
+    assert.deepEqual(h.state.game.save(), beforeView);
+    for (const id of layout.privatePlaces) {
+      const node = doc.querySelector(`[data-place-id="${id}"]`);
+      assert.ok(node.textContent.includes("未探明区域"));
+      assert.equal(node.textContent.includes(places[id].name), false);
+    }
+    assert.equal(
+      doc
+        .querySelector('[data-place-id="black_market_c"]')
+        .getAttribute("tabindex"),
+      "-1",
+    );
+
     doc.querySelector('[data-map-district="C"]').click();
     doc
       .querySelector('[data-place-id="black_market_c"]')
@@ -350,4 +375,50 @@ test("空损坏地图字段不能冒充旧档缺字段；旧流程位置兼容�
   assert.equal(old.snapshot().cityMap.target, null);
   assert.deepEqual(old.save().route, save.route);
   assert.deepEqual(old.save().ledgerState, save.ledgerState);
+});
+
+test("街区底图配置：道路与建筑在所属区内，地点短名覆盖真实地点且旧档按ID重新投影", () => {
+  const art = require("../src/config/city-cartography.json");
+  assert.deepEqual(
+    Object.keys(art.landmarks).sort(),
+    Object.keys(places).sort(),
+  );
+  for (const [id, data] of Object.entries(art.districts)) {
+    const frame = layout.frames[id];
+    assert.ok(data.blocks.length > 3 && data.roads.length > 2);
+    for (const {
+      box: [x, y, w, h],
+    } of data.blocks) {
+      assert.ok(
+        x >= 0 &&
+          y >= 0 &&
+          w > 12 &&
+          h > 12 &&
+          x + w <= frame.width &&
+          y + h <= frame.height,
+      );
+    }
+    for (const road of data.roads) {
+      assert.ok(road.width > 0 && road.points.length > 1);
+      for (const [x, y] of road.points)
+        assert.ok(x >= 0 && y >= 0 && x <= frame.width && y <= frame.height);
+    }
+  }
+  const g = game();
+  move(g, "black_market_c");
+  const save = g.save(),
+    before = clone(save);
+  const restored = createGame({ saved: save }),
+    node = restored
+      .snapshot()
+      .cityMap.nodes.find((n) => n.id === "black_market_c");
+  assert.deepEqual(restored.save(), before);
+  assert.equal(
+    node.x,
+    layout.frames.C.x + layout.coordinates.black_market_c[0],
+  );
+  assert.equal(
+    node.y,
+    layout.frames.C.y + layout.coordinates.black_market_c[1],
+  );
 });

@@ -241,6 +241,14 @@ const deadline = setTimeout(() => {
       ok('度过时段零消耗推进一次',document.getElementById('wxDayAp').textContent==='3'&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='午后');
       document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady;
       const before=(await getVariables()).wx_save;
+      const canvas=document.getElementById('wxCityCanvas');
+      ok('街区地图有建筑道路绿地与江面',document.querySelectorAll('.wx-map-block').length>30&&document.querySelector('.wx-map-street .road-surface')&&document.querySelector('.wx-map-water')&&document.querySelector('.wx-map-block .tree'));
+      ok('默认完整街区适合屏幕',canvas.scrollWidth<=canvas.clientWidth+2);
+      document.querySelector('[data-map-zoom="detail"]').click();
+      ok('放大地图可横向查看，整页不溢出',canvas.scrollWidth>canvas.clientWidth&&document.documentElement.scrollWidth<=innerWidth+2);
+      document.querySelector('[data-map-zoom="fit"]').click();
+      ok('缩放浏览不改存档',JSON.stringify((await getVariables()).wx_save)===JSON.stringify(before)&&canvas.scrollWidth<=canvas.clientWidth+2);
+
       document.querySelector('[data-action-id="daily.work"]').click();
       ok('已有工作入口可选，不扣浏览费用',!document.getElementById('wxEconomyInput').hidden&&document.querySelector('input[value="remote"]')&&document.getElementById('wxDayAp').textContent==='4');
       // 模拟轮询刷新：不能使等待确认的选择失效。
@@ -326,6 +334,7 @@ const deadline = setTimeout(() => {
   for (const [kind, width, region] of [
     ["map-city", 1100, "all"],
     ["map-district", 390, "B"],
+    ["map-riverside", 1100, "C"],
   ]) {
     await send("Emulation.setDeviceMetricsOverride", {
       width,
@@ -336,9 +345,11 @@ const deadline = setTimeout(() => {
     await evaluate(
       `(async()=>{document.querySelector('[data-state-index="4"]').click();await window.__dailyPreviewReady;document.querySelector('[data-map-district="${region}"]').click();document.getElementById('wxCityMap').scrollIntoView({block:'start'});})()`,
     );
+    const clip = await evaluate(`(()=>{const r=document.getElementById('wxCityMap').getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1};})()`);
     const shot = await send("Page.captureScreenshot", {
       format: "png",
       captureBeyondViewport: true,
+      clip,
     });
     fs.writeFileSync(
       path.join(path.dirname(preview.file), kind + ".png"),

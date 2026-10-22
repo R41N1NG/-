@@ -1,4 +1,5 @@
 "use strict";
+const { drawCityMap } = require("./cartography.js");
 function createCityMapUI({
   document,
   window,
@@ -19,7 +20,8 @@ function createCityMapUI({
     selected = null,
     pending = null,
     retry = null,
-    counter = 0;
+    counter = 0,
+    zoomed = false;
   const el = (tag, text) => {
     const e = document.createElement(tag);
     if (text !== undefined) e.textContent = text;
@@ -33,6 +35,7 @@ function createCityMapUI({
   const same = (a, b) => a?.scope === b?.scope && a?.epoch === b?.epoch;
   function reset() {
     snapshot = null;
+    zoomed = false;
     view = null;
     selected = null;
     pending = null;
@@ -47,6 +50,7 @@ function createCityMapUI({
     if (!root || !snap?.cityMap) return reset();
     if (snapshot && !same(snapshot.dayPlan.sync, snap.dayPlan.sync)) {
       view = null;
+      zoomed = false;
       selected = null;
       pending = null;
       retry = null;
@@ -68,125 +72,23 @@ function createCityMapUI({
       b.setAttribute("aria-pressed", String(view === item.id));
       tabs.append(b);
     }
-    const frame = map.frames.find((f) => f.id === view),
-      box = frame
-        ? `${frame.x - 12} ${frame.y - 12} ${frame.width + 24} ${frame.height + 24}`
-        : `0 0 ${map.width} ${map.height}`;
-    const drawing = svg("svg", {
-      viewBox: box,
-      role: "img",
-      "aria-label": "城市地点与通路示意图",
-    });
-    drawing.classList.toggle("overview", view === "all");
-    const defs = svg("defs"),
-      marker = svg("marker", {
-        id: "wxMapArrow",
-        viewBox: "0 0 10 10",
-        refX: 8,
-        refY: 5,
-        markerWidth: 5,
-        markerHeight: 5,
-        orient: "auto-start-reverse",
-      });
-    marker.append(svg("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#697d87" }));
-    defs.append(marker);
-    drawing.append(defs);
-    drawing.append(
-      svg("path", {
-        d: "M 25 1110 Q 240 1050 460 1125 T 1080 1080",
-        class: "wx-city-river",
-      }),
-    );
-    for (const f of map.frames) {
-      const g = svg("g", { "data-region": f.id });
-      g.append(
-        svg("rect", {
-          x: f.x,
-          y: f.y,
-          width: f.width,
-          height: f.height,
-          rx: 14,
-          class: "wx-city-region",
-        }),
+    for (const [mode, title] of [
+      ["fit", "适合屏幕"],
+      ["detail", "放大查看"],
+    ]) {
+      const b = el("button", title);
+      b.type = "button";
+      b.dataset.mapZoom = mode;
+      b.className = "wx-map-zoom-control";
+      b.setAttribute(
+        "aria-pressed",
+        String(mode === (zoomed ? "detail" : "fit")),
       );
-      const title = svg("text", {
-        x: f.x + 16,
-        y: f.y + 29,
-        class: "wx-city-region-title",
-      });
-      title.textContent = f.name;
-      g.append(title);
-      drawing.append(g);
+      tabs.append(b);
     }
+    canvas.classList.toggle("is-zoomed", zoomed);
+    canvas.replaceChildren(drawCityMap({ svg, map, view, selected }));
     const nodes = new Map(map.nodes.map((n) => [n.id, n]));
-    for (const edge of map.edges) {
-      const a = nodes.get(edge.from),
-        b = nodes.get(edge.to);
-      if (!a || !b) continue;
-      drawing.append(
-        svg("line", {
-          x1: a.x,
-          y1: a.y,
-          x2: b.x,
-          y2: b.y,
-          class: `wx-city-road${edge.transit ? " transit" : ""}${a.hidden || b.hidden ? " unknown" : ""}`,
-          ...(edge.oneWay ? { "marker-end": "url(#wxMapArrow)" } : {}),
-        }),
-      );
-    }
-    for (const n of map.nodes) {
-      const g = svg("g", {
-        "data-place-id": n.id,
-        role: "button",
-        tabindex: 0,
-        "aria-label": n.name,
-        class: `wx-city-node${n.hidden ? " unknown" : ""}${selected === n.id ? " selected" : ""}${n.service ? " service" : ""}`,
-      });
-      const title = svg("title");
-      title.textContent = n.name;
-      g.append(
-        title,
-        svg("circle", { cx: n.x, cy: n.y, r: n.service ? 7 : 5 }),
-      );
-      const label = svg("text", {
-        x: n.x,
-        y: n.y - 13,
-        "text-anchor": "middle",
-        class: "wx-city-label",
-      });
-      label.textContent = n.name.length > 9 ? n.name.slice(0, 8) + "…" : n.name;
-      g.append(label);
-      drawing.append(g);
-    }
-    function mark(id, kind) {
-      const n = nodes.get(id);
-      if (!n) return;
-      const offset =
-        map.player.placeId === target?.placeId
-          ? kind === "player"
-            ? -9
-            : 9
-          : 0;
-      const g = svg("g", {
-        class: `wx-map-${kind}`,
-        "aria-label": kind === "player" ? "玩家位置" : target.status,
-      });
-      g.append(
-        svg("circle", {
-          cx: n.x + offset,
-          cy: n.y,
-          r: 12,
-          class: kind === "target" && !target.live ? "last-seen" : "",
-        }),
-      );
-      drawing.append(g);
-    }
-    mark(map.player.placeId, "player");
-    if (target) mark(target.placeId, "target");
-    const north = svg("text", { x: 50, y: 65, class: "wx-city-north" });
-    north.textContent = "北 ↑";
-    drawing.append(north);
-    canvas.replaceChildren(drawing);
     const n = nodes.get(selected);
     info.replaceChildren();
     if (!n) return;
@@ -261,10 +163,42 @@ function createCityMapUI({
     }
   }
   function choose(event) {
+    const zoom = event.target.closest?.("[data-map-zoom]");
+    if (zoom) {
+      zoomed = zoom.dataset.mapZoom === "detail";
+      render(snapshot);
+      if (!zoomed) canvas.scrollLeft = 0;
+      else {
+        const map = snapshot.cityMap;
+        const frame = map.frames.find((f) => f.id === view);
+        const n = map.nodes.find(
+          (n) => n.id === selected && (!frame || n.district === frame.id),
+        );
+        if (n) {
+          const start = frame ? frame.x - 18 : 0;
+          const width = frame ? frame.width + 36 : map.width;
+          canvas.scrollLeft =
+            ((n.x - start) / width) *
+              canvas.firstElementChild.getBoundingClientRect().width -
+            canvas.clientWidth / 2;
+        }
+      }
+      return;
+    }
     const tab = event.target.closest?.("[data-map-district]");
     if (tab) {
       view = tab.dataset.mapDistrict;
+      const map = snapshot.cityMap;
+      if (
+        view !== "all" &&
+        !map.nodes.some((n) => n.id === selected && n.district === view)
+      ) {
+        const local = map.nodes.filter((n) => n.district === view && !n.hidden);
+        selected = (local.find((n) => n.service) || local[0])?.id || selected;
+      }
+      zoomed = false;
       render(snapshot);
+      canvas.scrollLeft = 0;
       return;
     }
     const node = event.target.closest?.("[data-place-id]");
