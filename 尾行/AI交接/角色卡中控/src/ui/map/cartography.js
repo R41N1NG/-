@@ -1,7 +1,8 @@
 "use strict";
 // 地图画面只读配置与位置投影，不计算移动、目击或采购资格。
 const art = require("../../config/city-cartography.json");
-function drawCityMap({ svg, map, view, selected }) {
+const { drawTransit } = require("./transit.js");
+function drawCityMap({ svg, map, view, selected, showTransit = true }) {
   const frame = map.frames.find((f) => f.id === view);
   const viewHeight = frame
     ? frame.height + (view === "C" ? 110 : 40)
@@ -49,19 +50,19 @@ function drawCityMap({ svg, map, view, selected }) {
         class: `wx-map-ground ground-${f.id}`,
       }),
     );
-  const water = svg("path", {
-    d: "M -20 1200 C 230 1180 360 1225 585 1202 S 1020 1180 1460 1195 L 1460 1320 L -20 1320 Z",
-    class: "wx-map-water",
-  });
-  drawing.append(water);
-  for (let row = 0; row < 3; row++)
-    drawing.append(
-      svg("path", {
-        d: `M 0 ${1230 + row * 24} Q 220 ${1215 + row * 24} 440 ${1230 + row * 24} T 880 ${1230 + row * 24} T 1440 ${1230 + row * 24}`,
-        class: "wx-map-water-line",
-      }),
-    );
-  text(drawing, "江　面", 900, 1250, "wx-map-water-label");
+  for (const [x, y, width, height] of art.world.fields) {
+    const field = svg("g", { class: "wx-map-countryside" });
+    field.append(svg("rect", { x, y, width, height, rx: 8 }));
+    for (let dx = 12; dx < width; dx += 18)
+      field.append(
+        svg("path", { d: `M ${x + dx} ${y + 10} v ${height - 20}` }),
+      );
+    drawing.append(field);
+  }
+  drawing.append(svg("path", { d: art.world.river, class: "wx-map-water" }));
+  text(drawing, "江　面", ...art.world.waterLabel, "wx-map-water-label");
+  for (const label of art.world.labels)
+    text(drawing, label.text, ...label.at, `wx-map-area-label ${label.kind}`);
   const roads = [];
   const road = (parent, points, width, kind, name, label) => {
     const d = points
@@ -83,52 +84,19 @@ function drawCityMap({ svg, map, view, selected }) {
         vertical: points[0][0] === points[1][0],
       });
   };
-  road(
-    drawing,
-    [
-      [720, 0],
-      [720, 1175],
-    ],
-    34,
-    "highway",
-    "城中大道",
-    [720, 625],
-  );
-  road(
-    drawing,
-    [
-      [0, 630],
-      [1440, 630],
-    ],
-    28,
-    "street",
-    "东西干道",
-    [1090, 634],
-  );
-  road(
-    drawing,
-    [
-      [680, 245],
-      [720, 245],
-    ],
-    24,
-  );
-  road(
-    drawing,
-    [
-      [720, 490],
-      [760, 490],
-    ],
-    28,
-  );
-  road(
-    drawing,
-    [
-      [680, 825],
-      [760, 825],
-    ],
-    26,
-  );
+  for (const r of art.world.arterials)
+    road(drawing, r.points, r.width, r.kind, r.name, r.label);
+  for (const bridge of art.world.bridges) {
+    road(drawing, bridge.points, bridge.width, "bridge");
+    const [a, b] = bridge.points;
+    for (const dy of [-bridge.width / 2, bridge.width / 2])
+      drawing.append(
+        svg("path", {
+          d: `M ${a[0]} ${a[1] + dy} L ${b[0]} ${b[1] + dy}`,
+          class: "wx-map-bridge-rail",
+        }),
+      );
+  }
   for (const f of map.frames) {
     const data = art.districts[f.id];
     const g = svg("g", {
@@ -253,20 +221,35 @@ function drawCityMap({ svg, map, view, selected }) {
       "wx-map-street-label",
       r.vertical ? { "writing-mode": "vertical-rl" } : {},
     );
+  if (showTransit) drawing.append(drawTransit({ svg, map, text }));
   for (const f of map.frames) {
-    text(drawing, f.name, f.x + 310, f.y + 19, "wx-map-district-title");
+    text(
+      drawing,
+      `${f.id}区 · ${f.name}`,
+      f.x + f.width / 2,
+      f.y + 19,
+      "wx-map-district-title",
+    );
     text(
       drawing,
       art.districts[f.id].subtitle,
-      f.x + 310,
+      f.x + f.width / 2,
       f.y + 42,
       "wx-map-district-subtitle",
     );
   }
   const nodes = new Map(map.nodes.map((n) => [n.id, n]));
   const positioned = new Set([map.player.placeId, map.target?.placeId]);
+  const stationIds = new Set(
+    showTransit ? (map.transit || []).flatMap((r) => r.stops) : [],
+  );
   for (const n of map.nodes) {
     const [shortName, kind] = art.landmarks[n.id];
+    const label = n.hidden ? "未探明区域" : shortName;
+    const hitWidth = Math.max(
+      94,
+      label.length * (view === "all" ? 26 : 15) + 12,
+    );
     const g = svg("g", {
       "data-place-id": n.id,
       role: "button",
@@ -274,30 +257,30 @@ function drawCityMap({ svg, map, view, selected }) {
         (view !== "all" && n.district !== view) ||
         (view === "all" &&
           !art.overview.includes(n.id) &&
+          !stationIds.has(n.id) &&
           !positioned.has(n.id) &&
           n.id !== selected)
           ? -1
           : 0,
       "aria-hidden": view !== "all" && n.district !== view ? "true" : "false",
       "aria-label": n.name,
-      class: `wx-city-node kind-${kind}${n.hidden ? " unknown" : ""}${selected === n.id ? " selected" : ""}${n.service ? " service" : ""}${art.overview.includes(n.id) ? " overview-landmark" : ""}${positioned.has(n.id) ? " positioned" : ""}`,
+      class: `wx-city-node kind-${kind}${n.hidden ? " unknown" : ""}${selected === n.id ? " selected" : ""}${n.service ? " service" : ""}${art.overview.includes(n.id) || stationIds.has(n.id) ? " overview-landmark" : ""}${positioned.has(n.id) ? " positioned" : ""}`,
     });
     const title = svg("title");
     title.textContent = n.name;
     g.append(title);
     g.append(
       svg("rect", {
-        x: n.x - 47,
-        y: n.y - 20,
-        width: 94,
-        height: 42,
+        x: n.x - hitWidth / 2,
+        y: n.y - 30,
+        width: hitWidth,
+        height: stationIds.has(n.id) ? 66 : 54,
         rx: 5,
         class: "wx-map-place-hit",
       }),
     );
     // 地图短名只缩短已知名称；私人区域未解锁时不透出住宅／门锁名称。
-    const label = n.hidden ? "未探明区域" : shortName;
-    text(g, label, n.x, n.y + 5, "wx-city-label");
+    text(g, label, n.x, n.y + (stationIds.has(n.id) ? 26 : 5), "wx-city-label");
     if (
       n.service ||
       ["metro", "bus", "school", "office", "gas"].includes(kind)
@@ -305,7 +288,7 @@ function drawCityMap({ svg, map, view, selected }) {
       const symbols = {
         metro: "M",
         bus: "BUS",
-        school: "校",
+        school: n.id === "high_school_gate_b" ? "高" : "大",
         office: "楼",
         gas: "油",
         home: "家",
@@ -367,7 +350,7 @@ function drawCityMap({ svg, map, view, selected }) {
   mark(map.player.placeId, "player");
   if (target) mark(target.placeId, "target");
   // 每个视图都保留北向；地图无旋转，切换街区不改变空间方向。
-  const nx = frame ? frame.x + 590 : 1355,
+  const nx = frame ? frame.x + frame.width - 30 : map.width - 65,
     ny = frame ? frame.y + 58 : 55;
   const compass = svg("g", { class: "wx-map-compass" });
   compass.append(svg("path", { d: `M ${nx} ${ny} l -7 20 l 7 -5 l 7 5 Z` }));

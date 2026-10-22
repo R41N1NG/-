@@ -1,213 +1,109 @@
 {
   "schema": 1,
-  "width": 1440,
-  "height": 1300,
+  "width": 2100,
+  "height": 2140,
   "frames": {
     "B": {
-      "x": 60,
-      "y": 100,
-      "width": 620,
-      "height": 480
+      "x": 80,
+      "y": 760,
+      "width": 760,
+      "height": 560
     },
     "D": {
-      "x": 760,
-      "y": 100,
-      "width": 620,
-      "height": 480
+      "x": 1410,
+      "y": 80,
+      "width": 600,
+      "height": 420
     },
     "C": {
-      "x": 60,
-      "y": 680,
-      "width": 620,
-      "height": 480
+      "x": 80,
+      "y": 1430,
+      "width": 800,
+      "height": 560
     },
     "A": {
-      "x": 760,
-      "y": 680,
-      "width": 620,
-      "height": 480
+      "x": 1060,
+      "y": 950,
+      "width": 960,
+      "height": 800
     }
   },
   "coordinates": {
-    "office_lobby_a": [
-      122,
-      90
-    ],
-    "parking_b2_a": [
-      122,
-      225
-    ],
-    "skybridge_a": [
-      250,
-      145
-    ],
-    "metro_hub_a": [
-      350,
-      225
-    ],
-    "bus_bay_a": [
-      545,
-      90
-    ],
-    "store_24h_a": [
-      545,
-      350
-    ],
-    "back_alley_a": [
-      350,
-      350
-    ],
-    "trash_station_a": [
-      122,
-      390
-    ],
-    "school_gate_b": [
-      122,
-      90
-    ],
-    "school_bus_terminal_b": [
-      355,
-      90
-    ],
-    "old_metro_b": [
-      545,
-      225
-    ],
-    "old_skybridge_b": [
-      250,
-      145
-    ],
-    "store_24h_b": [
-      355,
-      225
-    ],
-    "old_park_b": [
-      180,
-      225
-    ],
-    "old_alley_main_b": [
-      350,
-      350
-    ],
-    "dark_blind_alley_b": [
-      465,
-      375
-    ],
-    "unit_stairs_b": [
-      545,
-      345
-    ],
-    "rooftop_b": [
-      545,
-      395
-    ],
-    "dead_end_b": [
-      90,
-      350
-    ],
-    "love_hotel_b": [
-      175,
-      435
-    ],
-    "player_base_b": [
-      75,
-      225
-    ],
-    "club_backdoor_c": [
-      115,
-      90
-    ],
-    "food_street_c": [
-      355,
-      90
-    ],
-    "dock_bus_stop_c": [
-      545,
-      90
-    ],
-    "bridge_head_c": [
-      570,
-      425
-    ],
-    "store_24h_c": [
-      355,
-      225
-    ],
-    "river_walk_c": [
-      430,
-      450
-    ],
-    "river_steps_c": [
-      535,
-      470
-    ],
-    "village_main_c": [
-      170,
-      350
-    ],
-    "narrow_gap_c": [
-      250,
-      375
-    ],
-    "rental_iron_door_c": [
-      355,
-      345
-    ],
-    "village_roof_c": [
-      355,
-      395
-    ],
-    "black_market_c": [
-      100,
-      395
-    ],
-    "suburb_highway_d": [
-      430,
-      390
-    ],
-    "gas_station_d": [
-      140,
-      440
-    ],
-    "private_road_d": [
-      320,
-      335
-    ],
-    "pine_forest_d": [
-      140,
-      205
-    ],
-    "estate_gate_d": [
-      320,
-      285
-    ],
-    "villa_garden_d": [
-      470,
-      225
-    ],
-    "garage_side_door_d": [
-      390,
-      110
-    ],
-    "villa_porch_d": [
-      540,
-      110
-    ]
+    "office_lobby_a": [122, 90],
+    "parking_b2_a": [122, 225],
+    "skybridge_a": [250, 145],
+    "metro_hub_a": [350, 225],
+    "bus_bay_a": [545, 90],
+    "store_24h_a": [545, 350],
+    "back_alley_a": [350, 350],
+    "trash_station_a": [122, 390],
+    "school_gate_b": [140, 100],
+    "school_bus_terminal_b": [355, 190],
+    "old_metro_b": [685, 265],
+    "old_skybridge_b": [250, 150],
+    "store_24h_b": [355, 285],
+    "old_park_b": [180, 285],
+    "old_alley_main_b": [350, 410],
+    "dark_blind_alley_b": [465, 435],
+    "unit_stairs_b": [685, 405],
+    "rooftop_b": [685, 455],
+    "dead_end_b": [90, 410],
+    "love_hotel_b": [175, 500],
+    "player_base_b": [75, 285],
+    "club_backdoor_c": [115, 90],
+    "food_street_c": [355, 90],
+    "dock_bus_stop_c": [545, 90],
+    "bridge_head_c": [765, 450],
+    "store_24h_c": [355, 225],
+    "river_walk_c": [430, 525],
+    "river_steps_c": [535, 550],
+    "village_main_c": [170, 350],
+    "narrow_gap_c": [250, 375],
+    "rental_iron_door_c": [355, 345],
+    "village_roof_c": [355, 395],
+    "black_market_c": [100, 395],
+    "suburb_highway_d": [430, 390],
+    "gas_station_d": [140, 360],
+    "private_road_d": [320, 335],
+    "pine_forest_d": [140, 205],
+    "estate_gate_d": [320, 285],
+    "villa_garden_d": [470, 225],
+    "garage_side_door_d": [390, 110],
+    "villa_porch_d": [540, 110],
+    "central_mall_a": [755, 90],
+    "bank_a": [690, 225],
+    "business_cafe_a": [835, 225],
+    "clinic_a": [690, 350],
+    "business_hotel_a": [835, 350],
+    "central_plaza_a": [755, 490],
+    "pedestrian_street_a": [350, 500],
+    "department_store_a": [122, 570],
+    "cinema_a": [350, 570],
+    "gym_a": [545, 570],
+    "restaurant_a": [690, 630],
+    "courier_a": [835, 630],
+    "taxi_rank_a": [755, 730],
+    "public_parking_a": [545, 720],
+    "apartment_plaza_a": [350, 720],
+    "coworking_a": [122, 720],
+    "electronics_a": [690, 570],
+    "station_square_a": [545, 225],
+    "high_school_gate_b": [560, 100],
+    "university_library_b": [75, 205],
+    "university_canteen_b": [190, 205],
+    "university_sports_b": [335, 90],
+    "campus_bookshop_b": [560, 205],
+    "campus_cafe_b": [560, 315],
+    "student_street_b": [355, 500],
+    "university_dorm_gate_b": [560, 500],
+    "bar_street_c": [115, 225],
+    "ktv_c": [695, 90],
+    "hotel_c": [695, 225],
+    "late_restaurant_c": [695, 350],
+    "livehouse_c": [545, 350],
+    "courier_c": [695, 490],
+    "laundry_c": [355, 490]
   },
-  "transitLinks": [
-    [
-      "metro_hub_a",
-      "old_metro_b"
-    ],
-    [
-      "old_metro_b",
-      "dock_bus_stop_c"
-    ],
-    [
-      "bus_bay_a",
-      "suburb_highway_d"
-    ]
-  ],
   "privatePlaces": [
     "unit_stairs_b",
     "rooftop_b",

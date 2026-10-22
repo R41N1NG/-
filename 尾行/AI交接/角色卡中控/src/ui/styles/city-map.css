@@ -368,7 +368,6 @@
   font-size: 14px;
 }
 .trpg .overview .wx-map-place-hit {
-  width: 120px;
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -439,4 +438,105 @@
     scrollbar-width: thin;
     scrollbar-color: #6b7b7b #d7d9ce;
   }
+}
+/* 交通图层与市区／郊外标识。路网始终作为街区底图保留。 */
+.trpg .wx-map-countryside rect {
+  fill: #ced6bb;
+  stroke: #b5c4a0;
+  stroke-width: 2;
+}
+.trpg .wx-map-countryside path {
+  fill: none;
+  stroke: #b5c49d;
+  stroke-width: 2;
+}
+.trpg .wx-map-area-label {
+  fill: #74876e;
+  font-size: 27px;
+  letter-spacing: 4px;
+}
+.trpg .wx-map-area-label.urban {
+  fill: #677d80;
+  font-size: 30px;
+}
+.trpg .wx-map-bridge-rail {
+  stroke: #869284;
+  stroke-width: 3;
+  fill: none;
+}
+.trpg .wx-map-transit path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.trpg .wx-transit-casing {
+  stroke: #faf8ec;
+  stroke-width: 13;
+  opacity: 0.85;
+}
+.trpg .wx-transit-route {
+  stroke: #327b9c;
+  stroke-width: 7;
+}
+.trpg .wx-map-transit.bus .wx-transit-route {
+  stroke: #b67c39;
+  stroke-width: 6;
+  stroke-dasharray: 12 8;
+}
+.trpg .wx-map-transit.road .wx-transit-route {
+  stroke: #667b6d;
+  stroke-width: 7;
+  stroke-dasharray: 3 9;
+}
+.trpg .wx-transit-label {
+  fill: #385f72;
+  font-size: 16px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #f6f3e5;
+  stroke-width: 5;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.trpg .bus .wx-transit-label {
+  fill: #93622e;
+}
+.trpg .road .wx-transit-label {
+  fill: #526b57;
+}
+.trpg .wx-transit-stop {
+  pointer-events: none;
+}
+.trpg .wx-city-legend .metro {
+  color: #70b5d5;
+}
+.trpg .wx-city-legend .bus {
+  color: #d1aa6e;
+}
+.trpg .wx-city-legend .highway {
+  color: #9bb69d;
+}
+.trpg .overview .wx-city-label {
+  font-size: 26px;
+}
+.trpg .overview .wx-map-district-title {
+  font-size: 33px;
+}
+.trpg .overview .wx-map-district-subtitle {
+  font-size: 19px;
+}
+.trpg .overview .wx-transit-label {
+  font-size: 23px;
+}
+.trpg .wx-map-district-title {
+  letter-spacing: 1px;
+  font-size: 21px;
+}
+/* 街区内使用站点和图例识别线路；线路全名放在总图，避免边缘截字。 */
+.trpg .wx-transit-label {
+  display: none;
+}
+.trpg .overview .wx-transit-label {
+  display: block;
 }

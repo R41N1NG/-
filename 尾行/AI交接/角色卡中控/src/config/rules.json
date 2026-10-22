@@ -107,7 +107,7 @@
     },
     "list": {
       "student":   { "id": "student", "name": "学生", "mods": { "agi": 1, "int": 1 },
-                     "freePass": ["school_gate_b", "school_bus_terminal_b"], "tags": [],
+                     "freePass": ["school_gate_b", "school_bus_terminal_b", "high_school_gate_b"], "tags": [],
                      "desc": "文教区门禁免检；无本职工种（零工原价），正面不强不带负面" },
       "criminal":  { "id": "criminal", "name": "罪犯", "mods": { "str": 1, "agi": 1, "nrv": 2 },
                      "freePass": [], "tags": ["criminal_look", "criminal_blunt"],

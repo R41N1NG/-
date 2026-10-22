@@ -1,6 +1,10 @@
 "use strict";
 const { places, districts } = require("../../config/places.json");
 const layout = require("../../config/city-layout.json");
+const { routes } = require("../../config/city-transit.json");
+const transitLinks = routes.flatMap((r) =>
+  r.stops.slice(1).map((to, i) => [r.stops[i], to]),
+);
 const { TAIL_PUMP_IDS } = require("../game/constants.js");
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const activeScene = (g) =>
@@ -59,7 +63,7 @@ function moveReason(ctx, id) {
     if (here === id) return null;
     const exits = [
       ...(places[here]?.exits || []),
-      ...layout.transitLinks.flatMap(([a, b]) =>
+      ...transitLinks.flatMap(([a, b]) =>
         a === here ? [b] : b === here ? [a] : [],
       ),
     ];
@@ -96,7 +100,9 @@ function cityView(g, date) {
     return {
       id,
       district: p.district,
-      name: hidden ? "未探明区域" : p.name,
+      name: hidden ? "未探明区域" : p.mapName || p.name,
+      sector: hidden ? null : p.sector,
+      facility: hidden ? null : p.facility ? { ...p.facility } : null,
       x: x + frame.x,
       y: y + frame.y,
       hidden,
@@ -127,7 +133,7 @@ function cityView(g, date) {
         oneWay: !places[to].exits.includes(id),
       });
     }
-  for (const [from, to] of layout.transitLinks)
+  for (const [from, to] of transitLinks)
     edges.push({ from, to, transit: true });
   const last =
     spatial.lastSeen?.targetId === (g.targetId || "college")
@@ -140,19 +146,23 @@ function cityView(g, date) {
       id,
       ...f,
       name: districts[id].name,
+      setting: districts[id].setting,
     })),
     nodes,
     edges,
+    transit: clone(routes),
     player: {
       placeId: spatial.playerPlaceId,
-      name: places[spatial.playerPlaceId].name,
+      name:
+        places[spatial.playerPlaceId].mapName ||
+        places[spatial.playerPlaceId].name,
       district: places[spatial.playerPlaceId].district,
       assumed: spatial.assumed,
     },
     target: last
       ? {
           placeId: last.placeId,
-          name: places[last.placeId].name,
+          name: places[last.placeId].mapName || places[last.placeId].name,
           date: last.date,
           period: last.period,
           live,

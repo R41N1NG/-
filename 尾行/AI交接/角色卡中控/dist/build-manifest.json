@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.10",
+  "version": "0.8.11",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "8be71c28438f19e04eb024c5f0a4dcc663695b0247bdec6227c26457e65620a8",
+  "sourceHash": "836f92f5554330ae7fa01315832863c63c7021cc96ece669de43998a98808cc1",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,19 +19,23 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "e5f8ca20fd81025e63b72fa23e853336b32b79b52e4e7e0ba29bc24fd6b8ccfa"
+      "sha256": "f43505c008c15c6a8380a917228b3fd7599f609156f7800695a28814d3d18043"
     },
     {
       "file": "package.json",
-      "sha256": "712c886b642466d91a99330716c6cbaccc641d2e2a6bd3aa7ea7a26040413614"
+      "sha256": "a4e3d0ead136fb9c6eca0089708b77a222f0005d53371aeeb480ff08653fce70"
     },
     {
       "file": "src/config/city-cartography.json",
-      "sha256": "3033141cc40b8961e38023f3d23c8a3859ee3e4c02fa46bd09640ac12b229b7e"
+      "sha256": "e838aff7ac5eed7152e7e428392b0be8500ec5e5da77cf125d34a5a2c55e2a36"
     },
     {
       "file": "src/config/city-layout.json",
-      "sha256": "3ae5577c624921118c93f8058b0dad11f1056fc09192e834db2dccc7770fb24b"
+      "sha256": "cb00a1b993b07f39938f4f033a80bfbfc8fadf115ef714d0576ad2895a34af94"
+    },
+    {
+      "file": "src/config/city-transit.json",
+      "sha256": "3952f5a19851626321df38edf08148ede8b49e90a4a42217024956eba20dd452"
     },
     {
       "file": "src/config/daily-actions.json",
@@ -51,15 +55,15 @@
     },
     {
       "file": "src/config/lifepack.json",
-      "sha256": "3f88163e6752e9b47f707e3e1f9df7515192bd75b5eb119f354666b77287eb45"
+      "sha256": "c0f4954ff2464bb9b007eb567e49be61d836cc922a04c9a5a4873362fee10bb5"
     },
     {
       "file": "src/config/places.json",
-      "sha256": "378dcef1b73dfed4beda30539af9801d56747f183a61bff8b935ee399ae27015"
+      "sha256": "a58c45d06cb6baa766545ff07ce52ef083358089810778f4e6e47b68b06ec8e7"
     },
     {
       "file": "src/config/rules.json",
-      "sha256": "c360af9e7652765f34034d4a426cb9a4ab255b23350230ba3ada6785157557aa"
+      "sha256": "29d591eee65b8473b0535cac8d43a88da03005032c411fe58070977e9908f527"
     },
     {
       "file": "src/config/wardrobe.json",
@@ -283,7 +287,7 @@
     },
     {
       "file": "src/runtime/spatial/system.js",
-      "sha256": "98316916ed0df6327d04bbe2cff157072a7de7f198e7f2103c54cf6f9de8c683"
+      "sha256": "3ba70144fdef84cd37dd8c8e1828ca795a327f3499c065fd57d5d564aae09844"
     },
     {
       "file": "src/runtime/tags.js",
@@ -363,11 +367,15 @@
     },
     {
       "file": "src/ui/map/cartography.js",
-      "sha256": "bd3160f6fd870ef3595c823d0636f91991b22464a928949bc2e34eda5be5d444"
+      "sha256": "88af8768b9faca602668dc87782da90c41e3eb6c784a431f6185da2f8c88ebae"
     },
     {
       "file": "src/ui/map/city-map.js",
-      "sha256": "3d2cdc04738a55ba1884f80f2baf63937a5bcb12b5e0d3211ce10c748fdfd238"
+      "sha256": "7a88a7ff3cd800be82e7cd1b0b2b032984b534c9dc8b1569638fc6987524e2e7"
+    },
+    {
+      "file": "src/ui/map/transit.js",
+      "sha256": "9b1ca655acbeedf358ee6b96ec83108b1cc706a2c647c69d2a6569ce7ad11814"
     },
     {
       "file": "src/ui/preview-data.js",
@@ -403,7 +411,7 @@
     },
     {
       "file": "src/ui/styles/city-map.css",
-      "sha256": "ab27e458d7aaf6364ee0ad386e9cca7f9146a2b463a83637e0bc18ca1d222429"
+      "sha256": "c92992bade00ca31d646e9b3234e603cc24a2ab5276c8a55aa8d065d223aeaba"
     },
     {
       "file": "src/ui/styles/statusbar.css",
@@ -419,7 +427,7 @@
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "b33051792bd2523be1d421001d26ab638c134f5d2953e71de253c10ba7465318"
+      "sha256": "0bbc435f663ae9037d5e06bab313f6314f7278118fa4060f691a7d958f9b84cd"
     },
     {
       "file": "src/ui/zero-floor/host.js",
@@ -476,16 +484,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 593725,
-      "sha256": "d579ba925b89325c2ad7763c4b34c517374d087609d17e1d4a2f81bc2563cee9"
+      "bytes": 618492,
+      "sha256": "8378ff60e7c945512e8c18311b67573c967d3938e8170c879c1b4765e27f63f7"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1307222,
-      "sha256": "2f5020ff48eb92453d9efc9b0f13b592cc8f255c1e69a554bc5ddbd5b8926116"
+      "bytes": 1348144,
+      "sha256": "6ed4c36973a8739dcb8c9445ba05b2c3ff349cedaa364ed819a3e9692012b6b1"
     },
     "尾行.json": {
-      "bytes": 1429207,
-      "sha256": "76bea4aee34120972c9f741d30057440b610fe495f997a37f55f26569ba2e24d"
+      "bytes": 1473639,
+      "sha256": "41e9c776fc0a759a101ec5a6ac3fe5417c8ce29e6c722326bce0cb2d8d4d26fb"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

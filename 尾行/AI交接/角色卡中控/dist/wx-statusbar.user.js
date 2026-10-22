@@ -1,5 +1,5 @@
 /*!
- * 尾行 · 酒馆助手整合脚本 v0.8.10（引擎＋胶水＋原生嵌入状态栏，一条粘完即用）
+ * 尾行 · 酒馆助手整合脚本 v0.8.11（引擎＋胶水＋原生嵌入状态栏，一条粘完即用）
  * 安装：酒馆助手 → 脚本 → 角色卡脚本 → 新建 → 粘贴本文件全文 → 启用。
  * 嵌入特性：纯原生 DOM 无 iframe、无滑块、直接嵌入输入栏 #form_sheld，心跳卡片与抽屉向上弹出不遮挡输入。
  */
@@ -196,7 +196,7 @@
               id: "student",
               name: "\u5B66\u751F",
               mods: { agi: 1, int: 1 },
-              freePass: ["school_gate_b", "school_bus_terminal_b"],
+              freePass: ["school_gate_b", "school_bus_terminal_b", "high_school_gate_b"],
               tags: [],
               desc: "\u6587\u6559\u533A\u95E8\u7981\u514D\u68C0\uFF1B\u65E0\u672C\u804C\u5DE5\u79CD\uFF08\u96F6\u5DE5\u539F\u4EF7\uFF09\uFF0C\u6B63\u9762\u4E0D\u5F3A\u4E0D\u5E26\u8D1F\u9762"
             },
@@ -3219,57 +3219,34 @@
           A: {
             id: "A",
             name: "\u4E2D\u57CECBD\u5546\u52A1\u533A",
-            sectors: [
-              "A-1",
-              "A-2",
-              "A-3"
-            ],
-            transit_ports: [
-              "metro_hub_a",
-              "bus_bay_a"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_a_surface.ogg"
+            sectors: ["A-1", "A-2", "A-3", "A-4", "A-5"],
+            transit_ports: ["metro_hub_a", "bus_bay_a"],
+            audio_ambient: "assets/audio/ambient/zone_a_surface.ogg",
+            setting: "urban"
           },
           B: {
             id: "B",
             name: "\u8001\u57CE\u6587\u6559\u533A",
-            sectors: [
-              "B-1",
-              "B-2",
-              "B-3"
-            ],
-            transit_ports: [
-              "school_bus_terminal_b",
-              "old_metro_b"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_b_street.ogg"
+            sectors: ["B-1", "B-2", "B-3", "B-4", "B-5"],
+            transit_ports: ["school_bus_terminal_b", "old_metro_b"],
+            audio_ambient: "assets/audio/ambient/zone_b_street.ogg",
+            setting: "urban"
           },
           C: {
             id: "C",
             name: "\u4E34\u6C5F\u5A31\u4E50\u7EA2\u706F\u533A",
-            sectors: [
-              "C-1",
-              "C-2",
-              "C-3"
-            ],
-            transit_ports: [
-              "dock_bus_stop_c",
-              "bridge_head_c"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_c_clubstreet.ogg"
+            sectors: ["C-1", "C-2", "C-3", "C-4"],
+            transit_ports: ["dock_bus_stop_c", "bridge_head_c"],
+            audio_ambient: "assets/audio/ambient/zone_c_clubstreet.ogg",
+            setting: "urban"
           },
           D: {
             id: "D",
             name: "\u90CA\u91CE\u8C6A\u5B85\u533A",
-            sectors: [
-              "D-1",
-              "D-2",
-              "D-3"
-            ],
-            transit_ports: [
-              "suburb_highway_d"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_d_road.ogg"
+            sectors: ["D-1", "D-2", "D-3"],
+            transit_ports: ["suburb_highway_d"],
+            audio_ambient: "assets/audio/ambient/zone_d_road.ogg",
+            setting: "suburb"
           }
         },
         places: {
@@ -3286,20 +3263,10 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "skybridge_a",
-              "metro_hub_a",
-              "parking_b2_a",
-              "back_alley_a"
-            ],
-            spots: [
-              "reception",
-              "security_clock"
-            ],
+            exits: ["skybridge_a", "metro_hub_a", "parking_b2_a", "back_alley_a"],
+            spots: ["reception", "security_clock"],
             audio_trigger: "footstep_marble",
-            free_pass: [
-              "guard"
-            ]
+            free_pass: ["guard"]
           },
           parking_b2_a: {
             id: "parking_b2_a",
@@ -3314,18 +3281,10 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "office_lobby_a",
-              "trash_station_a"
-            ],
-            spots: [
-              "pillar_hide",
-              "tire_screech"
-            ],
+            exits: ["office_lobby_a", "trash_station_a"],
+            spots: ["pillar_hide", "tire_screech"],
             audio_ambient: "assets/audio/ambient/zone_a_parking.ogg",
-            free_pass: [
-              "guard"
-            ]
+            free_pass: ["guard"]
           },
           skybridge_a: {
             id: "skybridge_a",
@@ -3340,14 +3299,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "office_lobby_a",
-              "metro_hub_a",
-              "bus_bay_a"
-            ],
-            spots: [
-              "perch_watch"
-            ]
+            exits: ["office_lobby_a", "metro_hub_a", "bus_bay_a"],
+            spots: ["perch_watch"]
           },
           metro_hub_a: {
             id: "metro_hub_a",
@@ -3366,12 +3319,27 @@
               "office_lobby_a",
               "skybridge_a",
               "store_24h_a",
-              "bus_bay_a"
+              "bus_bay_a",
+              "central_mall_a",
+              "bank_a",
+              "business_cafe_a",
+              "clinic_a",
+              "business_hotel_a",
+              "central_plaza_a",
+              "pedestrian_street_a",
+              "department_store_a",
+              "cinema_a",
+              "gym_a",
+              "restaurant_a",
+              "courier_a",
+              "taxi_rank_a",
+              "public_parking_a",
+              "apartment_plaza_a",
+              "coworking_a",
+              "electronics_a",
+              "station_square_a"
             ],
-            spots: [
-              "ticket_gate",
-              "sunken_plaza"
-            ]
+            spots: ["ticket_gate", "sunken_plaza"]
           },
           bus_bay_a: {
             id: "bus_bay_a",
@@ -3386,13 +3354,8 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: true,
-            exits: [
-              "metro_hub_a",
-              "skybridge_a"
-            ],
-            spots: [
-              "bus_wait"
-            ]
+            exits: ["metro_hub_a", "skybridge_a"],
+            spots: ["bus_wait"]
           },
           store_24h_a: {
             id: "store_24h_a",
@@ -3407,14 +3370,8 @@
             strike_sealed: true,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "metro_hub_a",
-              "office_lobby_a"
-            ],
-            spots: [
-              "window_watch",
-              "exit_watch"
-            ]
+            exits: ["metro_hub_a", "office_lobby_a"],
+            spots: ["window_watch", "exit_watch"]
           },
           back_alley_a: {
             id: "back_alley_a",
@@ -3429,14 +3386,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "office_lobby_a",
-              "trash_station_a"
-            ],
-            spots: [
-              "fan_mask",
-              "ebike_hide"
-            ]
+            exits: ["office_lobby_a", "trash_station_a"],
+            spots: ["fan_mask", "ebike_hide"]
           },
           trash_station_a: {
             id: "trash_station_a",
@@ -3451,13 +3402,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "back_alley_a",
-              "parking_b2_a"
-            ],
-            spots: [
-              "trash_search"
-            ]
+            exits: ["back_alley_a", "parking_b2_a"],
+            spots: ["trash_search"]
           },
           school_gate_b: {
             id: "school_gate_b",
@@ -3474,15 +3420,15 @@
             transit_port: false,
             exits: [
               "school_bus_terminal_b",
-              "old_skybridge_b"
+              "old_skybridge_b",
+              "university_library_b",
+              "university_canteen_b",
+              "university_sports_b",
+              "university_dorm_gate_b"
             ],
-            spots: [
-              "gate_watch",
-              "rush_mask"
-            ],
-            free_pass: [
-              "student"
-            ]
+            spots: ["gate_watch", "rush_mask"],
+            free_pass: ["student"],
+            mapName: "\u5927\u5B66\u6B63\u95E8"
           },
           school_bus_terminal_b: {
             id: "school_bus_terminal_b",
@@ -3500,14 +3446,13 @@
             exits: [
               "school_gate_b",
               "old_skybridge_b",
-              "old_metro_b"
+              "old_metro_b",
+              "high_school_gate_b",
+              "campus_bookshop_b",
+              "campus_cafe_b"
             ],
-            spots: [
-              "bus_wait"
-            ],
-            free_pass: [
-              "student"
-            ]
+            spots: ["bus_wait"],
+            free_pass: ["student"]
           },
           old_metro_b: {
             id: "old_metro_b",
@@ -3522,14 +3467,8 @@
             strike_sealed: true,
             sanctuary: true,
             transit_port: true,
-            exits: [
-              "school_bus_terminal_b",
-              "old_skybridge_b",
-              "store_24h_b"
-            ],
-            spots: [
-              "ticket_gate"
-            ]
+            exits: ["school_bus_terminal_b", "old_skybridge_b", "store_24h_b"],
+            spots: ["ticket_gate"]
           },
           old_skybridge_b: {
             id: "old_skybridge_b",
@@ -3550,9 +3489,7 @@
               "store_24h_b",
               "old_park_b"
             ],
-            spots: [
-              "perch_watch"
-            ]
+            spots: ["perch_watch"]
           },
           store_24h_b: {
             id: "store_24h_b",
@@ -3570,12 +3507,10 @@
             exits: [
               "old_skybridge_b",
               "old_metro_b",
-              "old_alley_main_b"
+              "old_alley_main_b",
+              "student_street_b"
             ],
-            spots: [
-              "window_watch",
-              "exit_watch"
-            ]
+            spots: ["window_watch", "exit_watch"]
           },
           old_park_b: {
             id: "old_park_b",
@@ -3590,15 +3525,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_skybridge_b",
-              "old_alley_main_b",
-              "player_base_b"
-            ],
-            spots: [
-              "park_bench",
-              "tree_hide"
-            ]
+            exits: ["old_skybridge_b", "old_alley_main_b", "player_base_b"],
+            spots: ["park_bench", "tree_hide"]
           },
           old_alley_main_b: {
             id: "old_alley_main_b",
@@ -3620,10 +3548,7 @@
               "dead_end_b",
               "love_hotel_b"
             ],
-            spots: [
-              "sodium_lamp",
-              "corner_shadow"
-            ]
+            spots: ["sodium_lamp", "corner_shadow"]
           },
           dark_blind_alley_b: {
             id: "dark_blind_alley_b",
@@ -3638,14 +3563,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_alley_main_b",
-              "unit_stairs_b"
-            ],
-            spots: [
-              "trash_hide",
-              "bike_hide"
-            ]
+            exits: ["old_alley_main_b", "unit_stairs_b"],
+            spots: ["trash_hide", "bike_hide"]
           },
           dead_end_b: {
             id: "dead_end_b",
@@ -3660,13 +3579,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_alley_main_b",
-              "love_hotel_b"
-            ],
-            spots: [
-              "trap_corner"
-            ]
+            exits: ["old_alley_main_b", "love_hotel_b"],
+            spots: ["trap_corner"]
           },
           love_hotel_b: {
             id: "love_hotel_b",
@@ -3681,15 +3595,8 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_alley_main_b",
-              "dead_end_b"
-            ],
-            spots: [
-              "hotel_neon_sign",
-              "rain_canopy",
-              "front_desk"
-            ]
+            exits: ["old_alley_main_b", "dead_end_b"],
+            spots: ["hotel_neon_sign", "rain_canopy", "front_desk"]
           },
           unit_stairs_b: {
             id: "unit_stairs_b",
@@ -3704,18 +3611,9 @@
             strike_sealed: false,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "dark_blind_alley_b",
-              "rooftop_b"
-            ],
-            spots: [
-              "listen_home",
-              "door_crack",
-              "try_handle"
-            ],
-            free_pass: [
-              "guard"
-            ]
+            exits: ["dark_blind_alley_b", "rooftop_b"],
+            spots: ["listen_home", "door_crack", "try_handle"],
+            free_pass: ["guard"]
           },
           rooftop_b: {
             id: "rooftop_b",
@@ -3730,13 +3628,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "unit_stairs_b"
-            ],
-            spots: [
-              "perch_watch",
-              "climb_point"
-            ]
+            exits: ["unit_stairs_b"],
+            spots: ["perch_watch", "climb_point"]
           },
           club_backdoor_c: {
             id: "club_backdoor_c",
@@ -3751,16 +3644,9 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "food_street_c",
-              "river_walk_c"
-            ],
-            spots: [
-              "drunk_exit"
-            ],
-            free_pass: [
-              "bartender"
-            ]
+            exits: ["food_street_c", "river_walk_c"],
+            spots: ["drunk_exit"],
+            free_pass: ["bartender"]
           },
           food_street_c: {
             id: "food_street_c",
@@ -3778,14 +3664,11 @@
             exits: [
               "club_backdoor_c",
               "store_24h_c",
-              "dock_bus_stop_c"
+              "dock_bus_stop_c",
+              "bar_street_c"
             ],
-            spots: [
-              "carpool_stand"
-            ],
-            free_pass: [
-              "bartender"
-            ]
+            spots: ["carpool_stand"],
+            free_pass: ["bartender"]
           },
           dock_bus_stop_c: {
             id: "dock_bus_stop_c",
@@ -3802,11 +3685,13 @@
             transit_port: true,
             exits: [
               "food_street_c",
-              "bridge_head_c"
+              "bridge_head_c",
+              "ktv_c",
+              "hotel_c",
+              "late_restaurant_c",
+              "livehouse_c"
             ],
-            spots: [
-              "bus_wait"
-            ]
+            spots: ["bus_wait"]
           },
           bridge_head_c: {
             id: "bridge_head_c",
@@ -3821,13 +3706,8 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: true,
-            exits: [
-              "dock_bus_stop_c",
-              "river_walk_c"
-            ],
-            spots: [
-              "bridge_view"
-            ]
+            exits: ["dock_bus_stop_c", "river_walk_c"],
+            spots: ["bridge_view"]
           },
           store_24h_c: {
             id: "store_24h_c",
@@ -3842,14 +3722,8 @@
             strike_sealed: true,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "food_street_c",
-              "village_main_c"
-            ],
-            spots: [
-              "window_watch",
-              "hangover_cure"
-            ]
+            exits: ["food_street_c", "village_main_c"],
+            spots: ["window_watch", "hangover_cure"]
           },
           river_walk_c: {
             id: "river_walk_c",
@@ -3864,15 +3738,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "club_backdoor_c",
-              "river_steps_c",
-              "bridge_head_c"
-            ],
-            spots: [
-              "river_rail",
-              "sober_walk"
-            ]
+            exits: ["club_backdoor_c", "river_steps_c", "bridge_head_c"],
+            spots: ["river_rail", "sober_walk"]
           },
           river_steps_c: {
             id: "river_steps_c",
@@ -3887,14 +3754,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "river_walk_c",
-              "village_main_c"
-            ],
-            spots: [
-              "vomit_point",
-              "reed_hide"
-            ]
+            exits: ["river_walk_c", "village_main_c"],
+            spots: ["vomit_point", "reed_hide"]
           },
           village_main_c: {
             id: "village_main_c",
@@ -3913,11 +3774,11 @@
               "store_24h_c",
               "river_steps_c",
               "narrow_gap_c",
-              "black_market_c"
+              "black_market_c",
+              "courier_c",
+              "laundry_c"
             ],
-            spots: [
-              "wet_pavement"
-            ]
+            spots: ["wet_pavement"]
           },
           narrow_gap_c: {
             id: "narrow_gap_c",
@@ -3932,14 +3793,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "village_main_c",
-              "rental_iron_door_c"
-            ],
-            spots: [
-              "aircon_drip",
-              "ambush_corner"
-            ]
+            exits: ["village_main_c", "rental_iron_door_c"],
+            spots: ["aircon_drip", "ambush_corner"]
           },
           rental_iron_door_c: {
             id: "rental_iron_door_c",
@@ -3954,14 +3809,8 @@
             strike_sealed: false,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "narrow_gap_c",
-              "village_roof_c"
-            ],
-            spots: [
-              "spiral_stairs",
-              "listen_home"
-            ]
+            exits: ["narrow_gap_c", "village_roof_c"],
+            spots: ["spiral_stairs", "listen_home"]
           },
           village_roof_c: {
             id: "village_roof_c",
@@ -3976,13 +3825,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "rental_iron_door_c"
-            ],
-            spots: [
-              "clothesline_hide",
-              "overlook"
-            ]
+            exits: ["rental_iron_door_c"],
+            spots: ["clothesline_hide", "overlook"]
           },
           suburb_highway_d: {
             id: "suburb_highway_d",
@@ -3997,13 +3841,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: true,
-            exits: [
-              "gas_station_d",
-              "private_road_d"
-            ],
-            spots: [
-              "curve_hide"
-            ]
+            exits: ["gas_station_d", "private_road_d"],
+            spots: ["curve_hide"]
           },
           gas_station_d: {
             id: "gas_station_d",
@@ -4018,14 +3857,8 @@
             strike_sealed: true,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "suburb_highway_d",
-              "private_road_d"
-            ],
-            spots: [
-              "mart_cashier",
-              "pump_island"
-            ]
+            exits: ["suburb_highway_d", "private_road_d"],
+            spots: ["mart_cashier", "pump_island"]
           },
           private_road_d: {
             id: "private_road_d",
@@ -4046,10 +3879,7 @@
               "pine_forest_d",
               "estate_gate_d"
             ],
-            spots: [
-              "open_road",
-              "patrol_watch"
-            ]
+            spots: ["open_road", "patrol_watch"]
           },
           pine_forest_d: {
             id: "pine_forest_d",
@@ -4064,14 +3894,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "private_road_d",
-              "estate_gate_d"
-            ],
-            spots: [
-              "ebike_cache",
-              "tree_ambush"
-            ]
+            exits: ["private_road_d", "estate_gate_d"],
+            spots: ["ebike_cache", "tree_ambush"]
           },
           estate_gate_d: {
             id: "estate_gate_d",
@@ -4086,15 +3910,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "private_road_d",
-              "pine_forest_d",
-              "villa_garden_d"
-            ],
-            spots: [
-              "gate_intercom",
-              "infrared_cam"
-            ]
+            exits: ["private_road_d", "pine_forest_d", "villa_garden_d"],
+            spots: ["gate_intercom", "infrared_cam"]
           },
           villa_garden_d: {
             id: "villa_garden_d",
@@ -4109,15 +3926,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "estate_gate_d",
-              "garage_side_door_d",
-              "villa_porch_d"
-            ],
-            spots: [
-              "dog_kennel",
-              "sprinkler"
-            ]
+            exits: ["estate_gate_d", "garage_side_door_d", "villa_porch_d"],
+            spots: ["dog_kennel", "sprinkler"]
           },
           garage_side_door_d: {
             id: "garage_side_door_d",
@@ -4132,13 +3942,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "villa_garden_d",
-              "villa_porch_d"
-            ],
-            spots: [
-              "pick_side_door"
-            ]
+            exits: ["villa_garden_d", "villa_porch_d"],
+            spots: ["pick_side_door"]
           },
           villa_porch_d: {
             id: "villa_porch_d",
@@ -4153,14 +3958,8 @@
             strike_sealed: false,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "villa_garden_d",
-              "garage_side_door_d"
-            ],
-            spots: [
-              "smart_lock",
-              "home_safe"
-            ]
+            exits: ["villa_garden_d", "garage_side_door_d"],
+            spots: ["smart_lock", "home_safe"]
           },
           player_base_b: {
             id: "player_base_b",
@@ -4175,9 +3974,7 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_park_b"
-            ],
+            exits: ["old_park_b"],
             spots: []
           },
           black_market_c: {
@@ -4193,10 +3990,702 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "village_main_c"
-            ],
+            exits: ["village_main_c"],
             spots: []
+          },
+          central_mall_a: {
+            id: "central_mall_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u4E2D\u57CE\u7EFC\u5408\u5546\u573A",
+            mapName: "\u4E2D\u57CE\u7EFC\u5408\u5546\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "mall",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          bank_a: {
+            id: "bank_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u94F6\u884C\u8425\u4E1A\u5385",
+            mapName: "\u94F6\u884C\u8425\u4E1A\u5385",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          business_cafe_a: {
+            id: "business_cafe_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u5546\u52A1\u5496\u5561\u9986",
+            mapName: "\u5546\u52A1\u5496\u5561\u9986",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          clinic_a: {
+            id: "clinic_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u7EFC\u5408\u95E8\u8BCA",
+            mapName: "\u7EFC\u5408\u95E8\u8BCA",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          business_hotel_a: {
+            id: "business_hotel_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u5546\u52A1\u9152\u5E97",
+            mapName: "\u5546\u52A1\u9152\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "hotel",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          central_plaza_a: {
+            id: "central_plaza_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u4E2D\u5FC3\u5E7F\u573A",
+            mapName: "\u4E2D\u5FC3\u5E7F\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "plaza",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          pedestrian_street_a: {
+            id: "pedestrian_street_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u5546\u4E1A\u6B65\u884C\u8857",
+            mapName: "\u5546\u4E1A\u6B65\u884C\u8857",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "market",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          department_store_a: {
+            id: "department_store_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u767E\u8D27\u5546\u573A",
+            mapName: "\u767E\u8D27\u5546\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "mall",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          cinema_a: {
+            id: "cinema_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u57CE\u5E02\u5F71\u57CE",
+            mapName: "\u57CE\u5E02\u5F71\u57CE",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          gym_a: {
+            id: "gym_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u5065\u8EAB\u4E2D\u5FC3",
+            mapName: "\u5065\u8EAB\u4E2D\u5FC3",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          restaurant_a: {
+            id: "restaurant_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u5546\u52A1\u9910\u5385",
+            mapName: "\u5546\u52A1\u9910\u5385",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          courier_a: {
+            id: "courier_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u5FEB\u9012\u9A7F\u7AD9",
+            mapName: "\u5FEB\u9012\u9A7F\u7AD9",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          taxi_rank_a: {
+            id: "taxi_rank_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u51FA\u79DF\u8F66\u5019\u8F66\u70B9",
+            mapName: "\u51FA\u79DF\u8F66\u5019\u8F66\u70B9",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "transit",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          public_parking_a: {
+            id: "public_parking_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u516C\u5171\u505C\u8F66\u573A",
+            mapName: "\u516C\u5171\u505C\u8F66\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "parking",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          apartment_plaza_a: {
+            id: "apartment_plaza_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u516C\u5BD3\u5E7F\u573A",
+            mapName: "\u516C\u5BD3\u5E7F\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "housing",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          coworking_a: {
+            id: "coworking_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u8054\u5408\u529E\u516C\u697C",
+            mapName: "\u8054\u5408\u529E\u516C\u697C",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "office",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          electronics_a: {
+            id: "electronics_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u6570\u7801\u5546\u57CE",
+            mapName: "\u6570\u7801\u5546\u57CE",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "mall",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          station_square_a: {
+            id: "station_square_a",
+            district: "A",
+            sector: "A-2",
+            name: "\u7AD9\u524D\u5E7F\u573A",
+            mapName: "\u7AD9\u524D\u5E7F\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "plaza",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          high_school_gate_b: {
+            id: "high_school_gate_b",
+            district: "B",
+            sector: "B-5",
+            name: "\u9AD8\u4E2D\u6B63\u95E8",
+            mapName: "\u9AD8\u4E2D\u6B63\u95E8",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_bus_terminal_b"],
+            spots: [],
+            facility: {
+              kind: "school",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            },
+            free_pass: ["student"]
+          },
+          university_library_b: {
+            id: "university_library_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u56FE\u4E66\u9986",
+            mapName: "\u5927\u5B66\u56FE\u4E66\u9986",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "library",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          university_canteen_b: {
+            id: "university_canteen_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u98DF\u5802",
+            mapName: "\u5927\u5B66\u98DF\u5802",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          university_sports_b: {
+            id: "university_sports_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u8FD0\u52A8\u573A",
+            mapName: "\u5927\u5B66\u8FD0\u52A8\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "sports",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          campus_bookshop_b: {
+            id: "campus_bookshop_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5B66\u5E9C\u4E66\u5E97",
+            mapName: "\u5B66\u5E9C\u4E66\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_bus_terminal_b"],
+            spots: [],
+            facility: {
+              kind: "library",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          campus_cafe_b: {
+            id: "campus_cafe_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5B66\u5E9C\u5496\u5561\u9986",
+            mapName: "\u5B66\u5E9C\u5496\u5561\u9986",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_bus_terminal_b"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          student_street_b: {
+            id: "student_street_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5B66\u751F\u751F\u6D3B\u8857",
+            mapName: "\u5B66\u751F\u751F\u6D3B\u8857",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["store_24h_b"],
+            spots: [],
+            facility: {
+              kind: "market",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          university_dorm_gate_b: {
+            id: "university_dorm_gate_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3",
+            mapName: "\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "housing",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          bar_street_c: {
+            id: "bar_street_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u9713\u8679\u9152\u5427\u8857",
+            mapName: "\u9713\u8679\u9152\u5427\u8857",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["food_street_c"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          ktv_c: {
+            id: "ktv_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u591C\u95F4\u6B4C\u5385",
+            mapName: "\u591C\u95F4\u6B4C\u5385",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          hotel_c: {
+            id: "hotel_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u4E34\u6C5F\u65C5\u9986",
+            mapName: "\u4E34\u6C5F\u65C5\u9986",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "hotel",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          late_restaurant_c: {
+            id: "late_restaurant_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u6DF1\u591C\u98DF\u5802",
+            mapName: "\u6DF1\u591C\u98DF\u5802",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          livehouse_c: {
+            id: "livehouse_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u73B0\u573A\u97F3\u4E50\u9152\u5427",
+            mapName: "\u73B0\u573A\u97F3\u4E50\u9152\u5427",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          courier_c: {
+            id: "courier_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9",
+            mapName: "\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["village_main_c"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          laundry_c: {
+            id: "laundry_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u81EA\u52A9\u6D17\u8863\u5E97",
+            mapName: "\u81EA\u52A9\u6D17\u8863\u5E97",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["village_main_c"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
           }
         }
       };
@@ -4503,6 +4992,12 @@
                   name: "\u6574\u7406\u4E66\u5305",
                   fumbling: true,
                   desc: "\u8D70\u51FA\u6821\u95E8\u540E\u5728\u660F\u6697\u95E8\u67F1\u65C1\u505C\u6B65\uFF0C\u62C9\u4E25\u6C89\u91CD\u4E66\u5305\u7684\u62C9\u94FE\u5E76\u7CFB\u7D27\u56F4\u5DFE"
+                },
+                high_school_gate_b: {
+                  id: "bag_tidy",
+                  name: "\u6574\u7406\u4E66\u5305",
+                  fumbling: true,
+                  desc: "\u8D70\u51FA\u6821\u95E8\u540E\u5728\u660F\u6697\u95E8\u67F1\u65C1\u505C\u6B65\uFF0C\u62C9\u4E25\u6C89\u91CD\u4E66\u5305\u7684\u62C9\u94FE\u5E76\u7CFB\u7D27\u56F4\u5DFE"
                 }
               },
               carriagePool: [
@@ -4610,7 +5105,7 @@
                 prompt: "\u767D\u63CF\u665A\u81EA\u4E60\u653E\u5B66\u540E\u7684\u6821\u95E8\u4EBA\u6F6E\u4E0E\u6DF1\u5DF7\u66AE\u8272\uFF0C\u524D\u534A\u7A0B\u4E0E\u540C\u4F34\u7ED3\u4F34\u4F4E\u8BED\uFF0C\u5728\u5B66\u533A\u516C\u4EA4\u7AD9\u544A\u522B\u540E\u72EC\u81EA\u62D0\u5165\u8001\u5DF7",
                 path: [
                   {
-                    place: "school_gate_b",
+                    place: "high_school_gate_b",
                     t: "2100"
                   },
                   {
@@ -4640,7 +5135,7 @@
                 prompt: "\u767D\u63CF\u5468\u4E94\u5355\u4EBA\u503C\u65E5\u5173\u95E8\u540E\u7684\u5BC2\u9759\u591C\u8272\uFF0C\u624B\u63D0\u6C89\u91CD\u4E66\u5305\u4F4E\u5934\u5FEB\u6B65\u72EC\u884C\uFF0C\u6574\u6761\u5F52\u9014\u65E0\u540C\u4F34\u63A9\u62A4",
                 path: [
                   {
-                    place: "school_gate_b",
+                    place: "high_school_gate_b",
                     t: "2130"
                   },
                   {
@@ -4834,7 +5329,7 @@
                 public: false,
                 title: "\u653E\u5B66\u65F6\u95F4",
                 text: "\u5E73\u65E5\u665A\u81EA\u4E6021:00\u51C6\u65F6\u6253\u94C3\u4E0B\u8BFE\uFF0C\u5468\u4E94\u503C\u65E5\u4F1A\u665A\u8D70\u7EA6\u534A\u5C0F\u65F6\u3002",
-                place: "school_gate_b",
+                place: "high_school_gate_b",
                 reveal_via: []
               },
               {
@@ -4935,7 +5430,7 @@
                 public: false,
                 title: "\u5355\u604B\u5FC3\u4E8B",
                 text: "\u6697\u604B\u9694\u58C1\u73ED\u7684\u5347\u5B66\u699C\u7B2C\u4E00\u540D\uFF0C\u4F46\u81EA\u5C0A\u5FC3\u8981\u5F3A\u4ECE\u4E0D\u6562\u642D\u8BDD\uFF0C\u6BCF\u5929\u653E\u5B66\u4F1A\u6545\u610F\u4ECE\u90A3\u95F4\u6559\u5BA4\u95E8\u524D\u8D70\u8FC7\u3002",
-                place: "school_gate_b",
+                place: "high_school_gate_b",
                 reveal_via: [
                   "ransack",
                   "audit_class"
@@ -9932,214 +10427,110 @@
     "src/config/city-layout.json"(exports, module) {
       module.exports = {
         schema: 1,
-        width: 1440,
-        height: 1300,
+        width: 2100,
+        height: 2140,
         frames: {
           B: {
-            x: 60,
-            y: 100,
-            width: 620,
-            height: 480
+            x: 80,
+            y: 760,
+            width: 760,
+            height: 560
           },
           D: {
-            x: 760,
-            y: 100,
-            width: 620,
-            height: 480
+            x: 1410,
+            y: 80,
+            width: 600,
+            height: 420
           },
           C: {
-            x: 60,
-            y: 680,
-            width: 620,
-            height: 480
+            x: 80,
+            y: 1430,
+            width: 800,
+            height: 560
           },
           A: {
-            x: 760,
-            y: 680,
-            width: 620,
-            height: 480
+            x: 1060,
+            y: 950,
+            width: 960,
+            height: 800
           }
         },
         coordinates: {
-          office_lobby_a: [
-            122,
-            90
-          ],
-          parking_b2_a: [
-            122,
-            225
-          ],
-          skybridge_a: [
-            250,
-            145
-          ],
-          metro_hub_a: [
-            350,
-            225
-          ],
-          bus_bay_a: [
-            545,
-            90
-          ],
-          store_24h_a: [
-            545,
-            350
-          ],
-          back_alley_a: [
-            350,
-            350
-          ],
-          trash_station_a: [
-            122,
-            390
-          ],
-          school_gate_b: [
-            122,
-            90
-          ],
-          school_bus_terminal_b: [
-            355,
-            90
-          ],
-          old_metro_b: [
-            545,
-            225
-          ],
-          old_skybridge_b: [
-            250,
-            145
-          ],
-          store_24h_b: [
-            355,
-            225
-          ],
-          old_park_b: [
-            180,
-            225
-          ],
-          old_alley_main_b: [
-            350,
-            350
-          ],
-          dark_blind_alley_b: [
-            465,
-            375
-          ],
-          unit_stairs_b: [
-            545,
-            345
-          ],
-          rooftop_b: [
-            545,
-            395
-          ],
-          dead_end_b: [
-            90,
-            350
-          ],
-          love_hotel_b: [
-            175,
-            435
-          ],
-          player_base_b: [
-            75,
-            225
-          ],
-          club_backdoor_c: [
-            115,
-            90
-          ],
-          food_street_c: [
-            355,
-            90
-          ],
-          dock_bus_stop_c: [
-            545,
-            90
-          ],
-          bridge_head_c: [
-            570,
-            425
-          ],
-          store_24h_c: [
-            355,
-            225
-          ],
-          river_walk_c: [
-            430,
-            450
-          ],
-          river_steps_c: [
-            535,
-            470
-          ],
-          village_main_c: [
-            170,
-            350
-          ],
-          narrow_gap_c: [
-            250,
-            375
-          ],
-          rental_iron_door_c: [
-            355,
-            345
-          ],
-          village_roof_c: [
-            355,
-            395
-          ],
-          black_market_c: [
-            100,
-            395
-          ],
-          suburb_highway_d: [
-            430,
-            390
-          ],
-          gas_station_d: [
-            140,
-            440
-          ],
-          private_road_d: [
-            320,
-            335
-          ],
-          pine_forest_d: [
-            140,
-            205
-          ],
-          estate_gate_d: [
-            320,
-            285
-          ],
-          villa_garden_d: [
-            470,
-            225
-          ],
-          garage_side_door_d: [
-            390,
-            110
-          ],
-          villa_porch_d: [
-            540,
-            110
-          ]
+          office_lobby_a: [122, 90],
+          parking_b2_a: [122, 225],
+          skybridge_a: [250, 145],
+          metro_hub_a: [350, 225],
+          bus_bay_a: [545, 90],
+          store_24h_a: [545, 350],
+          back_alley_a: [350, 350],
+          trash_station_a: [122, 390],
+          school_gate_b: [140, 100],
+          school_bus_terminal_b: [355, 190],
+          old_metro_b: [685, 265],
+          old_skybridge_b: [250, 150],
+          store_24h_b: [355, 285],
+          old_park_b: [180, 285],
+          old_alley_main_b: [350, 410],
+          dark_blind_alley_b: [465, 435],
+          unit_stairs_b: [685, 405],
+          rooftop_b: [685, 455],
+          dead_end_b: [90, 410],
+          love_hotel_b: [175, 500],
+          player_base_b: [75, 285],
+          club_backdoor_c: [115, 90],
+          food_street_c: [355, 90],
+          dock_bus_stop_c: [545, 90],
+          bridge_head_c: [765, 450],
+          store_24h_c: [355, 225],
+          river_walk_c: [430, 525],
+          river_steps_c: [535, 550],
+          village_main_c: [170, 350],
+          narrow_gap_c: [250, 375],
+          rental_iron_door_c: [355, 345],
+          village_roof_c: [355, 395],
+          black_market_c: [100, 395],
+          suburb_highway_d: [430, 390],
+          gas_station_d: [140, 360],
+          private_road_d: [320, 335],
+          pine_forest_d: [140, 205],
+          estate_gate_d: [320, 285],
+          villa_garden_d: [470, 225],
+          garage_side_door_d: [390, 110],
+          villa_porch_d: [540, 110],
+          central_mall_a: [755, 90],
+          bank_a: [690, 225],
+          business_cafe_a: [835, 225],
+          clinic_a: [690, 350],
+          business_hotel_a: [835, 350],
+          central_plaza_a: [755, 490],
+          pedestrian_street_a: [350, 500],
+          department_store_a: [122, 570],
+          cinema_a: [350, 570],
+          gym_a: [545, 570],
+          restaurant_a: [690, 630],
+          courier_a: [835, 630],
+          taxi_rank_a: [755, 730],
+          public_parking_a: [545, 720],
+          apartment_plaza_a: [350, 720],
+          coworking_a: [122, 720],
+          electronics_a: [690, 570],
+          station_square_a: [545, 225],
+          high_school_gate_b: [560, 100],
+          university_library_b: [75, 205],
+          university_canteen_b: [190, 205],
+          university_sports_b: [335, 90],
+          campus_bookshop_b: [560, 205],
+          campus_cafe_b: [560, 315],
+          student_street_b: [355, 500],
+          university_dorm_gate_b: [560, 500],
+          bar_street_c: [115, 225],
+          ktv_c: [695, 90],
+          hotel_c: [695, 225],
+          late_restaurant_c: [695, 350],
+          livehouse_c: [545, 350],
+          courier_c: [695, 490],
+          laundry_c: [355, 490]
         },
-        transitLinks: [
-          [
-            "metro_hub_a",
-            "old_metro_b"
-          ],
-          [
-            "old_metro_b",
-            "dock_bus_stop_c"
-          ],
-          [
-            "bus_bay_a",
-            "suburb_highway_d"
-          ]
-        ],
         privatePlaces: [
           "unit_stairs_b",
           "rooftop_b",
@@ -10156,12 +10547,85 @@
     }
   });
 
+  // src/config/city-transit.json
+  var require_city_transit = __commonJS({
+    "src/config/city-transit.json"(exports, module) {
+      module.exports = {
+        schema: 1,
+        routes: [
+          {
+            id: "metro_1",
+            name: "\u5730\u94C1 1 \u53F7\u7EBF",
+            kind: "metro",
+            stops: ["old_metro_b", "metro_hub_a"],
+            path: ["old_metro_b", [900, 1025], [900, 1175], "metro_hub_a"],
+            label: [1080, 1150],
+            note: "\u8FDE\u63A5\u8001\u57CE\u6587\u6559\u533A\u4E0E\u4E2D\u57CE CBD\u3002"
+          },
+          {
+            id: "night_bus",
+            name: "\u591C\u5E02\u73AF\u7EBF\u516C\u4EA4",
+            kind: "bus",
+            stops: ["school_bus_terminal_b", "dock_bus_stop_c"],
+            path: [
+              "school_bus_terminal_b",
+              [435, 910],
+              [700, 910],
+              [700, 1365],
+              [330, 1365],
+              [330, 1575],
+              [625, 1575],
+              "dock_bus_stop_c"
+            ],
+            label: [445, 1392],
+            note: "\u8FDE\u63A5 B \u533A\u5B66\u533A\u603B\u7AD9\u4E0E C \u533A\u7801\u5934\u7AD9\u3002"
+          },
+          {
+            id: "river_express",
+            name: "\u8DE8\u6C5F\u5FEB\u7EBF\u516C\u4EA4",
+            kind: "bus",
+            stops: ["bus_bay_a", "bridge_head_c"],
+            path: [
+              "bus_bay_a",
+              [1605, 1095],
+              [1975, 1095],
+              [1975, 1880],
+              "bridge_head_c"
+            ],
+            label: [1460, 1850],
+            note: "\u8FDE\u63A5\u4E2D\u57CE\u516C\u4EA4\u6E2F\u6E7E\u4E0E\u4E34\u6C5F\u5927\u6865\u5934\u3002"
+          },
+          {
+            id: "north_road",
+            name: "\u5317\u73AF\u516C\u8DEF",
+            kind: "road",
+            stops: ["bus_bay_a", "suburb_highway_d"],
+            path: [
+              "bus_bay_a",
+              [1605, 1095],
+              [1975, 1095],
+              [1975, 630],
+              [1840, 630],
+              "suburb_highway_d"
+            ],
+            label: [1740, 655],
+            note: "D \u533A\u4EC5\u7ECF\u516C\u8DEF\u62B5\u8FBE\uFF0C\u5730\u56FE\u4E0D\u63D0\u4F9B\u76F4\u63A5\u8FDB\u90CA\u5916\u7684\u6377\u5F84\u3002"
+          }
+        ]
+      };
+    }
+  });
+
   // src/runtime/spatial/system.js
   var require_system = __commonJS({
     "src/runtime/spatial/system.js"(exports, module) {
       "use strict";
       var { places, districts } = require_places();
       var layout = require_city_layout();
+      var { routes } = require_city_transit();
+      var transitLinks = routes.flatMap(
+        (r) => r.stops.slice(1).map((to, i) => [r.stops[i], to])
+      );
       var { TAIL_PUMP_IDS } = require_constants();
       var clone = (x) => JSON.parse(JSON.stringify(x));
       var activeScene = (g) => ["stealth", "contact", "vehicle"].includes(g.mode) && (g.dayPlan.source !== "daily" || g.dayPlan.activity?.kind === "tailing");
@@ -10211,7 +10675,7 @@
           if (here === id) return null;
           const exits = [
             ...places[here]?.exits || [],
-            ...layout.transitLinks.flatMap(
+            ...transitLinks.flatMap(
               ([a, b]) => a === here ? [b] : b === here ? [a] : []
             )
           ];
@@ -10240,7 +10704,9 @@
           return {
             id,
             district: p.district,
-            name: hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : p.name,
+            name: hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : p.mapName || p.name,
+            sector: hidden ? null : p.sector,
+            facility: hidden ? null : p.facility ? { ...p.facility } : null,
             x: x + frame.x,
             y: y + frame.y,
             hidden,
@@ -10259,7 +10725,7 @@
               oneWay: !places[to].exits.includes(id)
             });
           }
-        for (const [from, to] of layout.transitLinks)
+        for (const [from, to] of transitLinks)
           edges.push({ from, to, transit: true });
         const last = spatial.lastSeen?.targetId === (g.targetId || "college") ? spatial.lastSeen : null;
         return {
@@ -10268,19 +10734,21 @@
           frames: Object.entries(layout.frames).map(([id, f]) => ({
             id,
             ...f,
-            name: districts[id].name
+            name: districts[id].name,
+            setting: districts[id].setting
           })),
           nodes,
           edges,
+          transit: clone(routes),
           player: {
             placeId: spatial.playerPlaceId,
-            name: places[spatial.playerPlaceId].name,
+            name: places[spatial.playerPlaceId].mapName || places[spatial.playerPlaceId].name,
             district: places[spatial.playerPlaceId].district,
             assumed: spatial.assumed
           },
           target: last ? {
             placeId: last.placeId,
-            name: places[last.placeId].name,
+            name: places[last.placeId].mapName || places[last.placeId].name,
             date: last.date,
             period: last.period,
             live,
@@ -14008,7 +14476,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.10",
+        version: "0.8.11",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -15348,7 +15816,7 @@ var WxStatusbarUI = (() => {
               id: "student",
               name: "\u5B66\u751F",
               mods: { agi: 1, int: 1 },
-              freePass: ["school_gate_b", "school_bus_terminal_b"],
+              freePass: ["school_gate_b", "school_bus_terminal_b", "high_school_gate_b"],
               tags: [],
               desc: "\u6587\u6559\u533A\u95E8\u7981\u514D\u68C0\uFF1B\u65E0\u672C\u804C\u5DE5\u79CD\uFF08\u96F6\u5DE5\u539F\u4EF7\uFF09\uFF0C\u6B63\u9762\u4E0D\u5F3A\u4E0D\u5E26\u8D1F\u9762"
             },
@@ -16046,6 +16514,12 @@ var WxStatusbarUI = (() => {
                   name: "\u6574\u7406\u4E66\u5305",
                   fumbling: true,
                   desc: "\u8D70\u51FA\u6821\u95E8\u540E\u5728\u660F\u6697\u95E8\u67F1\u65C1\u505C\u6B65\uFF0C\u62C9\u4E25\u6C89\u91CD\u4E66\u5305\u7684\u62C9\u94FE\u5E76\u7CFB\u7D27\u56F4\u5DFE"
+                },
+                high_school_gate_b: {
+                  id: "bag_tidy",
+                  name: "\u6574\u7406\u4E66\u5305",
+                  fumbling: true,
+                  desc: "\u8D70\u51FA\u6821\u95E8\u540E\u5728\u660F\u6697\u95E8\u67F1\u65C1\u505C\u6B65\uFF0C\u62C9\u4E25\u6C89\u91CD\u4E66\u5305\u7684\u62C9\u94FE\u5E76\u7CFB\u7D27\u56F4\u5DFE"
                 }
               },
               carriagePool: [
@@ -16153,7 +16627,7 @@ var WxStatusbarUI = (() => {
                 prompt: "\u767D\u63CF\u665A\u81EA\u4E60\u653E\u5B66\u540E\u7684\u6821\u95E8\u4EBA\u6F6E\u4E0E\u6DF1\u5DF7\u66AE\u8272\uFF0C\u524D\u534A\u7A0B\u4E0E\u540C\u4F34\u7ED3\u4F34\u4F4E\u8BED\uFF0C\u5728\u5B66\u533A\u516C\u4EA4\u7AD9\u544A\u522B\u540E\u72EC\u81EA\u62D0\u5165\u8001\u5DF7",
                 path: [
                   {
-                    place: "school_gate_b",
+                    place: "high_school_gate_b",
                     t: "2100"
                   },
                   {
@@ -16183,7 +16657,7 @@ var WxStatusbarUI = (() => {
                 prompt: "\u767D\u63CF\u5468\u4E94\u5355\u4EBA\u503C\u65E5\u5173\u95E8\u540E\u7684\u5BC2\u9759\u591C\u8272\uFF0C\u624B\u63D0\u6C89\u91CD\u4E66\u5305\u4F4E\u5934\u5FEB\u6B65\u72EC\u884C\uFF0C\u6574\u6761\u5F52\u9014\u65E0\u540C\u4F34\u63A9\u62A4",
                 path: [
                   {
-                    place: "school_gate_b",
+                    place: "high_school_gate_b",
                     t: "2130"
                   },
                   {
@@ -16377,7 +16851,7 @@ var WxStatusbarUI = (() => {
                 public: false,
                 title: "\u653E\u5B66\u65F6\u95F4",
                 text: "\u5E73\u65E5\u665A\u81EA\u4E6021:00\u51C6\u65F6\u6253\u94C3\u4E0B\u8BFE\uFF0C\u5468\u4E94\u503C\u65E5\u4F1A\u665A\u8D70\u7EA6\u534A\u5C0F\u65F6\u3002",
-                place: "school_gate_b",
+                place: "high_school_gate_b",
                 reveal_via: []
               },
               {
@@ -16478,7 +16952,7 @@ var WxStatusbarUI = (() => {
                 public: false,
                 title: "\u5355\u604B\u5FC3\u4E8B",
                 text: "\u6697\u604B\u9694\u58C1\u73ED\u7684\u5347\u5B66\u699C\u7B2C\u4E00\u540D\uFF0C\u4F46\u81EA\u5C0A\u5FC3\u8981\u5F3A\u4ECE\u4E0D\u6562\u642D\u8BDD\uFF0C\u6BCF\u5929\u653E\u5B66\u4F1A\u6545\u610F\u4ECE\u90A3\u95F4\u6559\u5BA4\u95E8\u524D\u8D70\u8FC7\u3002",
-                place: "school_gate_b",
+                place: "high_school_gate_b",
                 reveal_via: [
                   "ransack",
                   "audit_class"
@@ -19810,54 +20284,54 @@ var WxStatusbarUI = (() => {
         schema: 1,
         districts: {
           B: {
-            subtitle: "\u5B66\u6821 \xB7 \u8001\u8857 \xB7 \u4F4F\u5B85",
+            subtitle: "\u5927\u5B66\u57CE \xB7 \u9AD8\u4E2D\u6821\u533A \xB7 \u8001\u8857\u4F4F\u5B85",
             roads: [
               {
                 name: "\u5B66\u5E9C\u8DEF",
                 points: [
-                  [0, 145],
-                  [620, 145]
+                  [0, 150],
+                  [760, 150]
                 ],
                 width: 24,
                 kind: "street",
-                label: [365, 149]
+                label: [350, 154]
               },
               {
                 name: "\u69D0\u836B\u8857",
                 points: [
-                  [0, 290],
-                  [620, 290]
+                  [0, 350],
+                  [760, 350]
                 ],
                 width: 22,
                 kind: "street",
-                label: [135, 294]
+                label: [130, 354]
               },
               {
                 name: "\u8001\u8857",
                 points: [
-                  [250, 145],
-                  [250, 480]
+                  [250, 150],
+                  [250, 560]
                 ],
                 width: 22,
                 kind: "street",
-                label: [250, 260]
+                label: [250, 300]
               },
               {
                 name: "\u4E1C\u5DF7",
                 points: [
-                  [465, 145],
-                  [465, 480]
+                  [465, 150],
+                  [465, 560]
                 ],
                 width: 14,
                 kind: "street",
-                label: [465, 445]
+                label: [465, 520]
               },
               {
                 name: "",
                 points: [
-                  [250, 350],
-                  [465, 350],
-                  [465, 430]
+                  [250, 410],
+                  [465, 410],
+                  [465, 490]
                 ],
                 width: 9,
                 kind: "lane"
@@ -19865,73 +20339,110 @@ var WxStatusbarUI = (() => {
               {
                 name: "",
                 points: [
-                  [90, 290],
-                  [90, 395]
+                  [90, 350],
+                  [90, 455]
                 ],
                 width: 8,
                 kind: "lane"
+              },
+              {
+                name: "\u6587\u6559\u4E1C\u8DEF",
+                points: [
+                  [620, 150],
+                  [620, 560]
+                ],
+                width: 20,
+                kind: "street",
+                label: [620, 325]
               }
             ],
             blocks: [
               {
                 kind: "campus",
-                box: [25, 45, 190, 77],
-                label: "\u6821\u56ED"
+                box: [30, 60, 220, 80]
               },
               {
-                kind: "transit",
-                box: [285, 54, 145, 65]
-              },
-              {
-                kind: "home",
-                box: [30, 185, 90, 78]
+                kind: "campus",
+                box: [450, 60, 230, 80]
               },
               {
                 kind: "park",
-                box: [137, 185, 85, 78]
-              },
-              {
-                kind: "shop",
-                box: [285, 190, 145, 74]
+                box: [285, 60, 100, 55]
               },
               {
                 kind: "transit",
-                box: [500, 187, 92, 76]
+                box: [285, 165, 145, 62]
               },
               {
-                kind: "housing",
-                box: [285, 320, 145, 65]
+                kind: "home",
+                box: [30, 250, 90, 78]
               },
               {
-                kind: "housing",
-                box: [500, 320, 92, 105]
+                kind: "park",
+                box: [137, 250, 85, 78]
               },
               {
                 kind: "shop",
-                box: [130, 400, 90, 66]
+                box: [285, 250, 145, 74]
+              },
+              {
+                kind: "transit",
+                box: [640, 230, 100, 70]
               },
               {
                 kind: "housing",
-                box: [30, 320, 33, 70]
+                box: [285, 380, 145, 65]
               },
               {
                 kind: "housing",
-                box: [117, 320, 103, 66]
+                box: [640, 380, 100, 105]
+              },
+              {
+                kind: "shop",
+                box: [130, 470, 90, 66]
               },
               {
                 kind: "housing",
-                box: [285, 400, 145, 63]
+                box: [30, 380, 33, 70]
+              },
+              {
+                kind: "housing",
+                box: [117, 380, 103, 66]
+              },
+              {
+                kind: "shop",
+                box: [30, 175, 90, 55]
+              },
+              {
+                kind: "shop",
+                box: [145, 175, 90, 55]
+              },
+              {
+                kind: "shop",
+                box: [510, 175, 100, 55]
+              },
+              {
+                kind: "shop",
+                box: [510, 285, 100, 50]
+              },
+              {
+                kind: "market",
+                box: [285, 470, 145, 55]
+              },
+              {
+                kind: "housing",
+                box: [510, 470, 100, 55]
               }
             ]
           },
           A: {
-            subtitle: "\u5199\u5B57\u697C \xB7 \u5546\u4E1A\u8857 \xB7 \u4EA4\u901A\u67A2\u7EBD",
+            subtitle: "\u5546\u52A1\u6838\u5FC3 \xB7 \u8F68\u4EA4\u67A2\u7EBD \xB7 \u5546\u4E1A\u751F\u6D3B\u5708",
             roads: [
               {
                 name: "\u5546\u52A1\u5927\u9053",
                 points: [
                   [0, 145],
-                  [620, 145]
+                  [960, 145]
                 ],
                 width: 28,
                 kind: "street",
@@ -19941,7 +20452,7 @@ var WxStatusbarUI = (() => {
                 name: "\u4E2D\u57CE\u8DEF",
                 points: [
                   [250, 40],
-                  [250, 480]
+                  [250, 800]
                 ],
                 width: 24,
                 kind: "street",
@@ -19951,7 +20462,7 @@ var WxStatusbarUI = (() => {
                 name: "\u540E\u8857",
                 points: [
                   [0, 290],
-                  [620, 290]
+                  [960, 290]
                 ],
                 width: 18,
                 kind: "street",
@@ -19961,7 +20472,7 @@ var WxStatusbarUI = (() => {
                 name: "\u7AD9\u524D\u8DEF",
                 points: [
                   [465, 40],
-                  [465, 480]
+                  [465, 800]
                 ],
                 width: 24,
                 kind: "street",
@@ -19971,7 +20482,7 @@ var WxStatusbarUI = (() => {
                 name: "",
                 points: [
                   [0, 430],
-                  [465, 430]
+                  [960, 430]
                 ],
                 width: 12,
                 kind: "lane"
@@ -19984,6 +20495,54 @@ var WxStatusbarUI = (() => {
                 ],
                 width: 10,
                 kind: "lane"
+              },
+              {
+                name: "\u5546\u4E1A\u5927\u9053",
+                points: [
+                  [0, 645],
+                  [960, 645]
+                ],
+                width: 24,
+                kind: "street",
+                label: [350, 649]
+              },
+              {
+                name: "\u751F\u6D3B\u8DEF",
+                points: [
+                  [610, 145],
+                  [610, 800]
+                ],
+                width: 22,
+                kind: "street",
+                label: [610, 580]
+              },
+              {
+                name: "\u4E1C\u57CE\u5927\u9053",
+                points: [
+                  [915, 0],
+                  [915, 800]
+                ],
+                width: 28,
+                kind: "highway",
+                label: [915, 490]
+              },
+              {
+                name: "",
+                points: [
+                  [0, 490],
+                  [610, 490]
+                ],
+                width: 18,
+                kind: "walk"
+              },
+              {
+                name: "",
+                points: [
+                  [0, 790],
+                  [960, 790]
+                ],
+                width: 18,
+                kind: "street"
               }
             ],
             blocks: [
@@ -20008,7 +20567,7 @@ var WxStatusbarUI = (() => {
                 box: [285, 188, 145, 77]
               },
               {
-                kind: "office",
+                kind: "park",
                 box: [500, 185, 92, 80]
               },
               {
@@ -20026,17 +20585,85 @@ var WxStatusbarUI = (() => {
               {
                 kind: "office",
                 box: [373, 320, 57, 80]
+              },
+              {
+                kind: "mall",
+                box: [650, 50, 240, 80]
+              },
+              {
+                kind: "service",
+                box: [640, 190, 100, 70]
+              },
+              {
+                kind: "shop",
+                box: [780, 190, 110, 70]
+              },
+              {
+                kind: "service",
+                box: [640, 315, 100, 70]
+              },
+              {
+                kind: "office",
+                box: [780, 315, 110, 70]
+              },
+              {
+                kind: "park",
+                box: [650, 435, 240, 90]
+              },
+              {
+                kind: "market",
+                box: [285, 465, 145, 55]
+              },
+              {
+                kind: "mall",
+                box: [30, 535, 180, 75]
+              },
+              {
+                kind: "nightlife",
+                box: [285, 535, 145, 75]
+              },
+              {
+                kind: "service",
+                box: [500, 535, 92, 75]
+              },
+              {
+                kind: "shop",
+                box: [640, 607, 100, 30]
+              },
+              {
+                kind: "service",
+                box: [780, 590, 110, 45]
+              },
+              {
+                kind: "transit",
+                box: [650, 700, 240, 55]
+              },
+              {
+                kind: "service",
+                box: [500, 680, 92, 70]
+              },
+              {
+                kind: "housing",
+                box: [285, 680, 145, 70]
+              },
+              {
+                kind: "office",
+                box: [30, 680, 180, 70]
+              },
+              {
+                kind: "mall",
+                box: [640, 540, 100, 45]
               }
             ]
           },
           C: {
-            subtitle: "\u6CBF\u6C5F\u6B65\u9053 \xB7 \u591C\u5E02 \xB7 \u57CE\u4E2D\u6751",
+            subtitle: "\u9152\u5427\u8857 \xB7 \u591C\u5E02 \xB7 \u6C5F\u5824 \xB7 \u57CE\u4E2D\u6751",
             roads: [
               {
                 name: "\u4E34\u6C5F\u8DEF",
                 points: [
                   [0, 145],
-                  [620, 145]
+                  [800, 145]
                 ],
                 width: 24,
                 kind: "street",
@@ -20046,7 +20673,7 @@ var WxStatusbarUI = (() => {
                 name: "\u5357\u8857",
                 points: [
                   [0, 290],
-                  [620, 290]
+                  [800, 290]
                 ],
                 width: 20,
                 kind: "street",
@@ -20056,8 +20683,8 @@ var WxStatusbarUI = (() => {
                 name: "\u7801\u5934\u8DEF",
                 points: [
                   [465, 40],
-                  [465, 425],
-                  [620, 425]
+                  [465, 450],
+                  [800, 450]
                 ],
                 width: 20,
                 kind: "street",
@@ -20075,13 +20702,13 @@ var WxStatusbarUI = (() => {
               {
                 name: "\u6CBF\u6C5F\u6B65\u9053",
                 points: [
-                  [0, 450],
-                  [485, 450],
-                  [570, 470]
+                  [0, 525],
+                  [485, 525],
+                  [570, 550]
                 ],
                 width: 14,
                 kind: "walk",
-                label: [120, 454]
+                label: [120, 529]
               },
               {
                 name: "",
@@ -20110,6 +20737,16 @@ var WxStatusbarUI = (() => {
                 ],
                 width: 8,
                 kind: "lane"
+              },
+              {
+                name: "\u5A31\u4E50\u4E1C\u8857",
+                points: [
+                  [620, 40],
+                  [620, 560]
+                ],
+                width: 18,
+                kind: "street",
+                label: [620, 260]
               }
             ],
             blocks: [
@@ -20126,7 +20763,7 @@ var WxStatusbarUI = (() => {
                 box: [500, 52, 92, 75]
               },
               {
-                kind: "housing",
+                kind: "nightlife",
                 box: [30, 185, 180, 75]
               },
               {
@@ -20160,17 +20797,41 @@ var WxStatusbarUI = (() => {
               {
                 kind: "market",
                 box: [30, 370, 120, 52]
+              },
+              {
+                kind: "nightlife",
+                box: [650, 50, 90, 75]
+              },
+              {
+                kind: "housing",
+                box: [650, 190, 90, 70]
+              },
+              {
+                kind: "shop",
+                box: [650, 315, 90, 70]
+              },
+              {
+                kind: "nightlife",
+                box: [500, 320, 92, 70]
+              },
+              {
+                kind: "service",
+                box: [645, 465, 100, 50]
+              },
+              {
+                kind: "service",
+                box: [285, 465, 145, 45]
               }
             ]
           },
           D: {
-            subtitle: "\u6797\u5730 \xB7 \u516C\u8DEF \xB7 \u4F4F\u5B85\u9662\u843D",
+            subtitle: "\u90CA\u5916 \xB7 \u6797\u5730 \xB7 \u516C\u8DEF \xB7 \u4F4F\u5B85\u9662\u843D",
             roads: [
               {
                 name: "\u90CA\u91CE\u516C\u8DEF",
                 points: [
                   [0, 390],
-                  [620, 390]
+                  [600, 390]
                 ],
                 width: 28,
                 kind: "highway",
@@ -20200,7 +20861,7 @@ var WxStatusbarUI = (() => {
                 name: "",
                 points: [
                   [140, 390],
-                  [140, 480]
+                  [140, 420]
                 ],
                 width: 10,
                 kind: "street"
@@ -20221,17 +20882,13 @@ var WxStatusbarUI = (() => {
               },
               {
                 kind: "service",
-                box: [50, 415, 180, 55]
-              },
-              {
-                kind: "park",
-                box: [365, 420, 225, 50]
+                box: [50, 340, 180, 40]
               }
             ]
           }
         },
         landmarks: {
-          school_gate_b: ["\u5B66\u6821", "school"],
+          school_gate_b: ["\u5927\u5B66\u6B63\u95E8", "school"],
           school_bus_terminal_b: ["\u5B66\u533A\u603B\u7AD9", "bus"],
           old_metro_b: ["\u8001\u8857\u7AD9", "metro"],
           old_park_b: ["\u8001\u57CE\u516C\u56ED", "park"],
@@ -20271,25 +20928,220 @@ var WxStatusbarUI = (() => {
           estate_gate_d: ["\u4F4F\u5B85\u5165\u53E3", "housing"],
           villa_garden_d: ["\u9662\u843D", "park"],
           garage_side_door_d: ["\u8F66\u5E93\u4FA7\u95E8", "parking"],
-          villa_porch_d: ["\u4F4F\u5B85\u95E8\u5ECA", "housing"]
+          villa_porch_d: ["\u4F4F\u5B85\u95E8\u5ECA", "housing"],
+          central_mall_a: ["\u4E2D\u57CE\u7EFC\u5408\u5546\u573A", "mall"],
+          bank_a: ["\u94F6\u884C\u8425\u4E1A\u5385", "service"],
+          business_cafe_a: ["\u5546\u52A1\u5496\u5561\u9986", "shop"],
+          clinic_a: ["\u7EFC\u5408\u95E8\u8BCA", "service"],
+          business_hotel_a: ["\u5546\u52A1\u9152\u5E97", "hotel"],
+          central_plaza_a: ["\u4E2D\u5FC3\u5E7F\u573A", "plaza"],
+          pedestrian_street_a: ["\u5546\u4E1A\u6B65\u884C\u8857", "market"],
+          department_store_a: ["\u767E\u8D27\u5546\u573A", "mall"],
+          cinema_a: ["\u57CE\u5E02\u5F71\u57CE", "nightlife"],
+          gym_a: ["\u5065\u8EAB\u4E2D\u5FC3", "service"],
+          restaurant_a: ["\u5546\u52A1\u9910\u5385", "shop"],
+          courier_a: ["\u5FEB\u9012\u9A7F\u7AD9", "service"],
+          taxi_rank_a: ["\u51FA\u79DF\u8F66\u5019\u8F66\u70B9", "transit"],
+          public_parking_a: ["\u516C\u5171\u505C\u8F66\u573A", "parking"],
+          apartment_plaza_a: ["\u516C\u5BD3\u5E7F\u573A", "housing"],
+          coworking_a: ["\u8054\u5408\u529E\u516C\u697C", "office"],
+          electronics_a: ["\u6570\u7801\u5546\u57CE", "mall"],
+          station_square_a: ["\u7AD9\u524D\u5E7F\u573A", "plaza"],
+          high_school_gate_b: ["\u9AD8\u4E2D\u6B63\u95E8", "school"],
+          university_library_b: ["\u5927\u5B66\u56FE\u4E66\u9986", "library"],
+          university_canteen_b: ["\u5927\u5B66\u98DF\u5802", "shop"],
+          university_sports_b: ["\u5927\u5B66\u8FD0\u52A8\u573A", "sports"],
+          campus_bookshop_b: ["\u5B66\u5E9C\u4E66\u5E97", "library"],
+          campus_cafe_b: ["\u5B66\u5E9C\u5496\u5561\u9986", "shop"],
+          student_street_b: ["\u5B66\u751F\u751F\u6D3B\u8857", "market"],
+          university_dorm_gate_b: ["\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3", "housing"],
+          bar_street_c: ["\u9713\u8679\u9152\u5427\u8857", "nightlife"],
+          ktv_c: ["\u591C\u95F4\u6B4C\u5385", "nightlife"],
+          hotel_c: ["\u4E34\u6C5F\u65C5\u9986", "hotel"],
+          late_restaurant_c: ["\u6DF1\u591C\u98DF\u5802", "shop"],
+          livehouse_c: ["\u73B0\u573A\u97F3\u4E50\u9152\u5427", "nightlife"],
+          courier_c: ["\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9", "service"],
+          laundry_c: ["\u81EA\u52A9\u6D17\u8863\u5E97", "service"]
         },
         overview: [
           "school_gate_b",
+          "high_school_gate_b",
           "old_metro_b",
-          "old_park_b",
           "player_base_b",
-          "office_lobby_a",
+          "central_mall_a",
           "metro_hub_a",
-          "bus_bay_a",
-          "club_backdoor_c",
+          "office_lobby_a",
+          "central_plaza_a",
+          "bar_street_c",
           "food_street_c",
           "black_market_c",
-          "river_walk_c",
           "suburb_highway_d",
           "gas_station_d",
           "pine_forest_d"
-        ]
+        ],
+        world: {
+          river: "M 930 1400 C 910 1560 940 1800 920 1940 Q 880 2050 600 2030 L -20 2010 L -20 2160 L 2120 2160 L 2120 2020 L 1090 2020 Q 1010 2020 1000 1910 C 1010 1730 980 1550 1000 1400 Z",
+          waterLabel: [1510, 2085],
+          labels: [
+            {
+              text: "\u5E02\u533A \xB7 A / B / C",
+              at: [570, 710],
+              kind: "urban"
+            },
+            {
+              text: "\u5E02\u90CA\u8FC7\u6E21\u5E26",
+              at: [1590, 740],
+              kind: "countryside"
+            }
+          ],
+          fields: [
+            [1180, 540, 170, 110],
+            [1420, 560, 160, 100],
+            [1660, 660, 170, 110],
+            [1880, 800, 125, 90]
+          ],
+          arterials: [
+            {
+              name: "\u5E02\u533A\u5E72\u9053",
+              points: [
+                [900, 710],
+                [900, 1365],
+                [330, 1365],
+                [330, 1470]
+              ],
+              width: 30,
+              kind: "street",
+              label: [900, 1220]
+            },
+            {
+              name: "",
+              points: [
+                [840, 910],
+                [900, 910],
+                [900, 1095],
+                [1060, 1095]
+              ],
+              width: 24,
+              kind: "street"
+            },
+            {
+              name: "\u4E1C\u57CE\u5916\u73AF",
+              points: [
+                [1975, 1095],
+                [1975, 1880],
+                [845, 1880]
+              ],
+              width: 30,
+              kind: "highway",
+              label: [1480, 1884]
+            },
+            {
+              name: "\u5317\u73AF\u516C\u8DEF",
+              points: [
+                [1975, 1095],
+                [1975, 630],
+                [1840, 630],
+                [1840, 470]
+              ],
+              width: 28,
+              kind: "highway",
+              label: [1975, 750]
+            },
+            {
+              name: "",
+              points: [
+                [840, 1110],
+                [900, 1110]
+              ],
+              width: 22,
+              kind: "street"
+            },
+            {
+              name: "",
+              points: [
+                [700, 1320],
+                [700, 1365]
+              ],
+              width: 18,
+              kind: "street"
+            }
+          ],
+          bridges: [
+            {
+              points: [
+                [875, 1880],
+                [1050, 1880]
+              ],
+              width: 34
+            }
+          ]
+        }
       };
+    }
+  });
+
+  // src/ui/map/transit.js
+  var require_transit = __commonJS({
+    "src/ui/map/transit.js"(exports, module) {
+      "use strict";
+      function drawTransit({ svg, map, text }) {
+        const layer = svg("g", {
+          class: "wx-map-transit-layer",
+          "aria-label": "\u57CE\u5E02\u4EA4\u901A\u7F51\u7EDC"
+        });
+        const nodes = new Map(map.nodes.map((n) => [n.id, n]));
+        const served = /* @__PURE__ */ new Map();
+        const colors = { metro: "#327b9c", bus: "#b67c39", road: "#667b6d" };
+        for (const r of map.transit || []) {
+          const points = r.path.map(
+            (p) => typeof p === "string" ? nodes.has(p) ? [nodes.get(p).x, nodes.get(p).y] : null : p
+          );
+          if (points.some((p) => !p)) continue;
+          const line = svg("g", {
+            "data-transit-line": r.id,
+            class: `wx-map-transit ${r.kind}`
+          });
+          const d = points.map((p, i) => `${i ? "L" : "M"} ${p[0]} ${p[1]}`).join(" ");
+          line.append(
+            svg("path", { d, class: "wx-transit-casing" }),
+            svg("path", { d, class: "wx-transit-route" })
+          );
+          const label = text(line, r.name, ...r.label, "wx-transit-label");
+          label.setAttribute("data-line-label", r.id);
+          layer.append(line);
+          for (const id of r.stops) {
+            const old = served.get(id) || [];
+            old.push(r);
+            served.set(id, old);
+          }
+        }
+        for (const [id, routes] of served) {
+          const n = nodes.get(id);
+          if (!n) continue;
+          const station = svg("g", {
+            "data-transit-stop": id,
+            class: "wx-transit-stop",
+            "aria-label": `${n.name}\uFF1A${routes.map((r) => r.name).join("\u3001")}`
+          });
+          station.append(
+            svg("circle", {
+              cx: n.x,
+              cy: n.y,
+              r: routes.length > 1 ? 11 : 8,
+              fill: "#f8f5e7",
+              stroke: colors[routes[0].kind],
+              "stroke-width": 3
+            })
+          );
+          if (routes.length > 1)
+            station.append(
+              svg("circle", { cx: n.x, cy: n.y, r: 5, fill: colors[routes[0].kind] })
+            );
+          layer.append(station);
+        }
+        return layer;
+      }
+      module.exports = { drawTransit };
     }
   });
 
@@ -20298,7 +21150,8 @@ var WxStatusbarUI = (() => {
     "src/ui/map/cartography.js"(exports, module) {
       "use strict";
       var art = require_city_cartography();
-      function drawCityMap({ svg, map, view, selected }) {
+      var { drawTransit } = require_transit();
+      function drawCityMap({ svg, map, view, selected, showTransit = true }) {
         const frame = map.frames.find((f) => f.id === view);
         const viewHeight = frame ? frame.height + (view === "C" ? 110 : 40) : map.height;
         const drawing = svg("svg", {
@@ -20341,19 +21194,19 @@ var WxStatusbarUI = (() => {
               class: `wx-map-ground ground-${f.id}`
             })
           );
-        const water = svg("path", {
-          d: "M -20 1200 C 230 1180 360 1225 585 1202 S 1020 1180 1460 1195 L 1460 1320 L -20 1320 Z",
-          class: "wx-map-water"
-        });
-        drawing.append(water);
-        for (let row = 0; row < 3; row++)
-          drawing.append(
-            svg("path", {
-              d: `M 0 ${1230 + row * 24} Q 220 ${1215 + row * 24} 440 ${1230 + row * 24} T 880 ${1230 + row * 24} T 1440 ${1230 + row * 24}`,
-              class: "wx-map-water-line"
-            })
-          );
-        text(drawing, "\u6C5F\u3000\u9762", 900, 1250, "wx-map-water-label");
+        for (const [x, y, width, height] of art.world.fields) {
+          const field = svg("g", { class: "wx-map-countryside" });
+          field.append(svg("rect", { x, y, width, height, rx: 8 }));
+          for (let dx = 12; dx < width; dx += 18)
+            field.append(
+              svg("path", { d: `M ${x + dx} ${y + 10} v ${height - 20}` })
+            );
+          drawing.append(field);
+        }
+        drawing.append(svg("path", { d: art.world.river, class: "wx-map-water" }));
+        text(drawing, "\u6C5F\u3000\u9762", ...art.world.waterLabel, "wx-map-water-label");
+        for (const label of art.world.labels)
+          text(drawing, label.text, ...label.at, `wx-map-area-label ${label.kind}`);
         const roads = [];
         const road = (parent2, points, width, kind, name, label) => {
           const d = points.map((p, i) => `${i ? "L" : "M"} ${p[0]} ${p[1]}`).join(" ");
@@ -20373,52 +21226,19 @@ var WxStatusbarUI = (() => {
               vertical: points[0][0] === points[1][0]
             });
         };
-        road(
-          drawing,
-          [
-            [720, 0],
-            [720, 1175]
-          ],
-          34,
-          "highway",
-          "\u57CE\u4E2D\u5927\u9053",
-          [720, 625]
-        );
-        road(
-          drawing,
-          [
-            [0, 630],
-            [1440, 630]
-          ],
-          28,
-          "street",
-          "\u4E1C\u897F\u5E72\u9053",
-          [1090, 634]
-        );
-        road(
-          drawing,
-          [
-            [680, 245],
-            [720, 245]
-          ],
-          24
-        );
-        road(
-          drawing,
-          [
-            [720, 490],
-            [760, 490]
-          ],
-          28
-        );
-        road(
-          drawing,
-          [
-            [680, 825],
-            [760, 825]
-          ],
-          26
-        );
+        for (const r of art.world.arterials)
+          road(drawing, r.points, r.width, r.kind, r.name, r.label);
+        for (const bridge of art.world.bridges) {
+          road(drawing, bridge.points, bridge.width, "bridge");
+          const [a, b] = bridge.points;
+          for (const dy of [-bridge.width / 2, bridge.width / 2])
+            drawing.append(
+              svg("path", {
+                d: `M ${a[0]} ${a[1] + dy} L ${b[0]} ${b[1] + dy}`,
+                class: "wx-map-bridge-rail"
+              })
+            );
+        }
         for (const f of map.frames) {
           const data = art.districts[f.id];
           const g = svg("g", {
@@ -20538,48 +21358,62 @@ var WxStatusbarUI = (() => {
             "wx-map-street-label",
             r.vertical ? { "writing-mode": "vertical-rl" } : {}
           );
+        if (showTransit) drawing.append(drawTransit({ svg, map, text }));
         for (const f of map.frames) {
-          text(drawing, f.name, f.x + 310, f.y + 19, "wx-map-district-title");
+          text(
+            drawing,
+            `${f.id}\u533A \xB7 ${f.name}`,
+            f.x + f.width / 2,
+            f.y + 19,
+            "wx-map-district-title"
+          );
           text(
             drawing,
             art.districts[f.id].subtitle,
-            f.x + 310,
+            f.x + f.width / 2,
             f.y + 42,
             "wx-map-district-subtitle"
           );
         }
         const nodes = new Map(map.nodes.map((n) => [n.id, n]));
         const positioned = /* @__PURE__ */ new Set([map.player.placeId, map.target?.placeId]);
+        const stationIds = new Set(
+          showTransit ? (map.transit || []).flatMap((r) => r.stops) : []
+        );
         for (const n of map.nodes) {
           const [shortName, kind] = art.landmarks[n.id];
+          const label = n.hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : shortName;
+          const hitWidth = Math.max(
+            94,
+            label.length * (view === "all" ? 26 : 15) + 12
+          );
           const g = svg("g", {
             "data-place-id": n.id,
             role: "button",
-            tabindex: view !== "all" && n.district !== view || view === "all" && !art.overview.includes(n.id) && !positioned.has(n.id) && n.id !== selected ? -1 : 0,
+            tabindex: view !== "all" && n.district !== view || view === "all" && !art.overview.includes(n.id) && !stationIds.has(n.id) && !positioned.has(n.id) && n.id !== selected ? -1 : 0,
             "aria-hidden": view !== "all" && n.district !== view ? "true" : "false",
             "aria-label": n.name,
-            class: `wx-city-node kind-${kind}${n.hidden ? " unknown" : ""}${selected === n.id ? " selected" : ""}${n.service ? " service" : ""}${art.overview.includes(n.id) ? " overview-landmark" : ""}${positioned.has(n.id) ? " positioned" : ""}`
+            class: `wx-city-node kind-${kind}${n.hidden ? " unknown" : ""}${selected === n.id ? " selected" : ""}${n.service ? " service" : ""}${art.overview.includes(n.id) || stationIds.has(n.id) ? " overview-landmark" : ""}${positioned.has(n.id) ? " positioned" : ""}`
           });
           const title = svg("title");
           title.textContent = n.name;
           g.append(title);
           g.append(
             svg("rect", {
-              x: n.x - 47,
-              y: n.y - 20,
-              width: 94,
-              height: 42,
+              x: n.x - hitWidth / 2,
+              y: n.y - 30,
+              width: hitWidth,
+              height: stationIds.has(n.id) ? 66 : 54,
               rx: 5,
               class: "wx-map-place-hit"
             })
           );
-          const label = n.hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : shortName;
-          text(g, label, n.x, n.y + 5, "wx-city-label");
+          text(g, label, n.x, n.y + (stationIds.has(n.id) ? 26 : 5), "wx-city-label");
           if (n.service || ["metro", "bus", "school", "office", "gas"].includes(kind)) {
             const symbols = {
               metro: "M",
               bus: "BUS",
-              school: "\u6821",
+              school: n.id === "high_school_gate_b" ? "\u9AD8" : "\u5927",
               office: "\u697C",
               gas: "\u6CB9",
               home: "\u5BB6",
@@ -20634,7 +21468,7 @@ var WxStatusbarUI = (() => {
         }
         mark(map.player.placeId, "player");
         if (target) mark(target.placeId, "target");
-        const nx = frame ? frame.x + 590 : 1355, ny = frame ? frame.y + 58 : 55;
+        const nx = frame ? frame.x + frame.width - 30 : map.width - 65, ny = frame ? frame.y + 58 : 55;
         const compass = svg("g", { class: "wx-map-compass" });
         compass.append(svg("path", { d: `M ${nx} ${ny} l -7 20 l 7 -5 l 7 5 Z` }));
         text(compass, "\u5317", nx, ny - 8, "wx-map-compass-label");
@@ -20660,7 +21494,7 @@ var WxStatusbarUI = (() => {
       }) {
         const root = document.getElementById("wxCityMap"), canvas = document.getElementById("wxCityCanvas"), tabs = document.getElementById("wxCityTabs"), info = document.getElementById("wxCityInfo"), position = document.getElementById("wxCityPosition"), notice = document.getElementById("wxCityNotice");
         const NS = "http://www.w3.org/2000/svg";
-        let snapshot = null, view = null, selected = null, pending = null, retry = null, counter = 0, zoomed = false;
+        let snapshot = null, view = null, selected = null, pending = null, retry = null, counter = 0, zoomed = false, showTransit = true;
         const el = (tag, text) => {
           const e = document.createElement(tag);
           if (text !== void 0) e.textContent = text;
@@ -20675,6 +21509,7 @@ var WxStatusbarUI = (() => {
         function reset() {
           snapshot = null;
           zoomed = false;
+          showTransit = true;
           view = null;
           selected = null;
           pending = null;
@@ -20690,6 +21525,7 @@ var WxStatusbarUI = (() => {
           if (snapshot && !same(snapshot.dayPlan.sync, snap.dayPlan.sync)) {
             view = null;
             zoomed = false;
+            showTransit = true;
             selected = null;
             pending = null;
             retry = null;
@@ -20725,8 +21561,15 @@ var WxStatusbarUI = (() => {
             );
             tabs.append(b);
           }
+          const transitToggle = el("button", "\u4EA4\u901A\u7EBF\u8DEF");
+          transitToggle.type = "button";
+          transitToggle.dataset.mapTransit = "true";
+          transitToggle.setAttribute("aria-pressed", String(showTransit));
+          tabs.append(transitToggle);
           canvas.classList.toggle("is-zoomed", zoomed);
-          canvas.replaceChildren(drawCityMap({ svg, map, view, selected }));
+          canvas.replaceChildren(
+            drawCityMap({ svg, map, view, selected, showTransit })
+          );
           const nodes = new Map(map.nodes.map((n2) => [n2.id, n2]));
           const n = nodes.get(selected);
           info.replaceChildren();
@@ -20738,6 +21581,9 @@ var WxStatusbarUI = (() => {
               n.hidden ? "\u5C1A\u672A\u63A2\u660E\u7684\u79C1\u4EBA\u533A\u57DF\uFF0C\u5730\u56FE\u4E0D\u80FD\u4EE3\u66FF\u573A\u6240\u8FDB\u5165\u6761\u4EF6\u3002" : `\u6240\u5728\u533A\u57DF\uFF1A${map.frames.find((f) => f.id === n.district).name}`
             )
           );
+          if (n.facility) info.append(el("p", n.facility.note));
+          const lines = (map.transit || []).filter((r) => r.stops.includes(n.id));
+          for (const r of lines) info.append(el("p", `${r.name}\uFF1A${r.note}`));
           const names = map.edges.filter((e) => e.from === n.id || e.to === n.id).map((e) => nodes.get(e.from === n.id ? e.to : e.from)?.name).filter(Boolean);
           info.append(el("p", `\u901A\u8DEF\u8FDE\u63A5\uFF1A${[...new Set(names)].join("\u3001")}`));
           const move2 = el("button", n.moveReason || "\u524D\u5F80\u8FD9\u91CC \xB7 \u5E02\u5185\u79FB\u52A8\u4E0D\u8017\u884C\u52A8\u70B9");
@@ -20786,6 +21632,11 @@ var WxStatusbarUI = (() => {
           }
         }
         function choose(event) {
+          if (event.target.closest?.("[data-map-transit]")) {
+            showTransit = !showTransit;
+            render(snapshot);
+            return;
+          }
           const zoom = event.target.closest?.("[data-map-zoom]");
           if (zoom) {
             zoomed = zoom.dataset.mapZoom === "detail";
@@ -25478,7 +26329,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
       styleEl.id = "wx-statusbar-style";
       topDoc.head.appendChild(styleEl);
     }
-    styleEl.textContent = "/* GLM 样式骨架保留；刻度/数据接口/音效引擎按尾行规格适配。无图片、字体或库依赖。 */\n.trpg, .trpg *, .wx-terminal-backdrop, .wx-terminal-backdrop *, .wx-dialog, .wx-dialog * {\n  box-sizing: border-box;\n}\nmain.wx-standalone-main {\n  width: 100%;\n  max-width: 960px;\n  min-height: 100%;\n  padding: 0 4px;\n  margin: 0 auto;\n  overflow: visible;\n  /* 独立预览壳不在下面的全局 border-box 名单里：content-box 下 100% + 左右内边距会横向溢出 */\n  box-sizing: border-box;\n  /* 预览壳是 flex 列容器，.trpg 作为它的 flex item 默认 min-width:auto 会被子项撑破 */\n  min-width: 0;\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-end;\n}\n.preview-area { display: none; margin-bottom: 12px; }\n.preview-label { color: #90969f; font-size: 11px; margin: 0 0 10px; }\n.speaker { font-weight: 700; font-size: 13px; }\n.story { margin: 6px 0 14px; color: #c5c8ce; line-height: 1.7; font-size: 13px; }\n.preview-tools { display: none; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }\n.preview-tools small { color: #9298a1; }\n.preview-tools button[aria-pressed=\"true\"] { border-color: #b3c9b9; background: #354d43; }\n.preview-status { flex-basis: 100%; margin: 0; color: #a9bcb0; font-size: 12px; }\n/* ═══ C 案 · 夜巡：色板 token + 胶片条外壳 ═══\n   语义约束：一个颜色只表达一件事；灰阶负责层级，彩色只负责状态。 */\n.trpg { --border: #1d2833; --muted: #93a7ba; --paper: #0d141c; --beat: 0.833s;\n  --ink-0: #070b10;\n  --ink-1: #0d141c;\n  --ink-2: #131c26;\n  --line: #1d2833;\n  --t-hi: #eef4fa;\n  --t-mid: #93a7ba;\n  --t-low: #5f7284;\n  --heat: #f0b355;\n  --safe: #5fd6c3;\n  --danger: #ff5a68;\n  --her: #e79aa8;\n  color: var(--t-hi);\n  background: linear-gradient(180deg, #0b1219 0%, #080d13 58%, #05080c 100%);\n  border: 0;\n  border-top: 1px solid rgba(240, 179, 85, 0.26);\n  border-radius: 12px 12px 0 0;\n  font-size: 12px;\n  box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);\n  position: relative;\n  overflow: visible;\n  width: 100%;\n  min-width: 0;\n  box-sizing: border-box;\n}\n/* 材质层：钠灯侧光 + 冷侧反光 + 雨幕 + 颗粒（原来那层 alpha 0.012 的扫描纹基本看不见） */\n.trpg::before {\n  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;\n  background:\n    radial-gradient(78% 130% at 12% -10%, rgba(240, 179, 85, 0.12), transparent 56%),\n    radial-gradient(60% 120% at 96% 120%, rgba(95, 214, 195, 0.06), transparent 62%),\n    repeating-linear-gradient(102deg, rgba(190, 216, 245, 0.035) 0 1px, transparent 1px 8px),\n    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px);\n  border-radius: inherit;\n}\n/* 状态即天气：过线泛暖，崩溃泛红 */\n.trpg[data-line=\"deform\"] {\n  box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 34px rgba(240, 179, 85, 0.14);\n}\n.trpg[data-line=\"crash\"] {\n  box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 44px rgba(255, 90, 104, 0.26);\n}\n.trpg button, #wx-statusbar-root button, .wx-terminal-backdrop button, dialog.wx-dialog button, .preview-tools button {\n  font: inherit;\n  color: #d9e4ed !important;\n  background: #26333e !important;\n  border: 1px solid #4a5d70 !important;\n  border-radius: 5px;\n  padding: 4px 10px;\n  cursor: pointer;\n  min-height: 28px;\n  transition: all .15s;\n  box-sizing: border-box;\n}\n.trpg button:hover, #wx-statusbar-root button:hover, .wx-terminal-backdrop button:hover, dialog.wx-dialog button:hover, .preview-tools button:hover {\n  background: #354757 !important;\n  border-color: #8da6bd !important;\n  color: #ffffff !important;\n}\n.trpg button:active, #wx-statusbar-root button:active, .wx-terminal-backdrop button:active, dialog.wx-dialog button:active {\n  background: #1c2630 !important;\n}\n.trpg button:focus-visible { outline: 1px solid rgba(240, 179, 85, 0.55); outline-offset: 2px; }\n\n/* ═══ 常驻条：一块路牌 + 一排读数（C 案） ═══ */\n.trpg-slim-bar {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  height: 40px;\n  padding: 0 10px;\n  gap: 8px;\n  position: relative;\n  z-index: 5;\n  user-select: none;\n}\n.slim-left {\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  min-width: 0;\n  flex: 1 1 auto;\n  overflow: hidden;\n  white-space: nowrap;\n}\n/* 大区：等宽小上标，不再是一枚蓝徽章 */\n.slim-dist-badge {\n  background: none;\n  border: 0;\n  padding: 0;\n  color: var(--t-low);\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .18em;\n}\n/* 场所：路牌。15px 加重 + 底下一道向右渐隐的钠黄灯带 */\n.slim-place {\n  position: relative;\n  padding-bottom: 4px;\n  font-size: 15px;\n  font-weight: 600;\n  letter-spacing: .01em;\n  color: var(--t-hi);\n}\n.slim-place::after {\n  content: '';\n  position: absolute;\n  left: 0;\n  bottom: 0;\n  width: 62%;\n  height: 2px;\n  background: linear-gradient(90deg, var(--heat), rgba(240, 179, 85, 0));\n}\n.slim-tags-group {\n  display: inline-flex;\n  align-items: center;\n  gap: 10px;\n}\n/* 状态不再是胶囊：左侧一根 2px 竖条 + 小字 */\n.slim-tag {\n  font-size: 11px;\n  padding: 0 0 0 7px;\n  border-left: 2px solid var(--line);\n  border-radius: 0;\n  white-space: nowrap;\n  color: var(--t-mid);\n}\n.slim-tag.weather {\n  border-left-color: rgba(95, 214, 195, .55);\n  color: #9ed6cd;\n}\n.slim-tag.remain {\n  border-left-color: transparent;\n  color: var(--t-low);\n  font-size: 10.5px;\n}\n.slim-tag.id-badge {\n  border-left-color: var(--her);\n  color: #eec3cb;\n  cursor: pointer;\n}\n\n/* ── C4 单色图标：默认 1em，按场景覆盖尺寸；全部 currentColor，跟着文字色走 ── */\n.wx-ico { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; flex: none; stroke-width: 1.7; }\n/* 12~13px 的小图标把线加粗半档，否则在深底上糊成一团 */\n.step-ico .wx-ico, .slim-tag.weather .wx-ico, .slim-tag.id-badge .wx-ico,\n.wx-item-type-badge .wx-ico, .audio-ico .wx-ico, .phone-icon .wx-ico, .term-ico .wx-ico { stroke-width: 2; }\n.step-ico { display: inline-flex; align-items: center; justify-content: center; }\n.step-ico .wx-ico { width: 13px; height: 13px; }\n.wx-terminal-icon .wx-ico { width: 16px; height: 16px; }\n.phone-icon .wx-ico, .term-ico .wx-ico { width: 13px; height: 13px; }\n.audio-ico .wx-ico { width: 12px; height: 12px; }\n.dev-ico .wx-ico { width: 13px; height: 13px; margin-right: 6px; vertical-align: -2px; }\n.btn-ico .wx-ico { width: 13px; height: 13px; vertical-align: -2px; }\n.slim-tag.weather .wx-ico, .slim-tag.id-badge .wx-ico { width: 12px; height: 12px; margin-right: 3px; vertical-align: -2px; }\n.wx-item-type-badge .wx-ico { width: 12px; height: 12px; margin-right: 4px; vertical-align: -2px; opacity: .85; }\n\n/* ── 她的鞋具：只露鞋名，细节走悬停 ── */\n.gear-line {\n  display: flex;\n  align-items: baseline;\n  gap: 8px;\n  padding-bottom: 10px;\n  margin-bottom: 10px;\n  border-bottom: 1px solid rgba(255, 255, 255, 0.06);\n}\n.gear-line[hidden] { display: none !important; }\n.gear-label {\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .16em;\n  color: var(--t-low);\n  flex: none;\n}\n.gear-name {\n  font-size: 12px;\n  font-weight: 600;\n  color: var(--t-hi);\n  border-bottom: 1px dashed rgba(255, 255, 255, 0.18);\n  cursor: default;\n}\n\n/* 距离档：四根竖刻度，亮的那格发钠黄光 */\n.slim-center {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  white-space: nowrap;\n  flex-shrink: 0;\n  font-size: 11px;\n  background: none;\n  border: 0;\n  padding: 0;\n}\n.slim-phase {\n  color: var(--t-low);\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .18em;\n}\n.slim-divider {\n  display: none;\n}\n.slim-dist {\n  color: var(--t-hi);\n  font-size: 12px;\n  font-weight: 600;\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n}\n.slim-pips {\n  display: inline-flex;\n  align-items: center;\n  gap: 3px;\n}\n.slim-pips .pip {\n  width: 3px;\n  height: 13px;\n  border-radius: 1.5px;\n  border: 0;\n  background: #22303d;\n}\n.slim-pips .pip.active {\n  background: var(--heat);\n  box-shadow: 0 0 9px rgba(240, 179, 85, 0.9);\n}\n.slim-pips.warm .pip.active {\n  background: var(--heat);\n  border-color: var(--heat);\n  box-shadow: 0 0 9px rgba(240, 179, 85, 0.9);\n}\n\n.slim-right {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  flex-shrink: 0;\n}\n\n/* 体力：一根细线，数字用等宽 */\n.slim-stamina {\n  display: inline-flex;\n  align-items: center;\n  gap: 7px;\n  font-size: 10.5px;\n  color: var(--t-mid);\n  background: none;\n  padding: 0;\n  border-radius: 0;\n  border: 0;\n}\n.slim-stamina[data-band=\"yellow\"] { color: var(--heat); }\n.slim-stamina[data-band=\"red\"] { color: #ff9aa3; }\n.slim-stamina-val {\n  font-family: ui-monospace, Consolas, monospace;\n  font-weight: 600;\n  font-size: 11px;\n}\n.slim-stamina-bar {\n  width: 40px;\n  height: 2px;\n  background: #1d2933;\n  border-radius: 1px;\n  overflow: hidden;\n  display: inline-block;\n}\n.slim-stamina-bar .stamina-fill {\n  display: block;\n  height: 100%;\n  background: currentColor;\n  transition: width .3s ease;\n}\n\n/* 心跳：全条唯一的主角（♥ 19px / 数字 24px / BPM 退成 9px） */\n.heart-popover-wrap {\n  position: relative;\n  display: inline-flex;\n  align-items: center;\n}\n.trpg .heart-pill-btn {\n  background: none !important;\n  border: 0 !important;\n  border-radius: 0 !important;\n  padding: 0 !important;\n  cursor: pointer;\n  display: inline-flex;\n  align-items: baseline;\n  gap: 3px;\n  color: var(--t-hi);\n  font-size: 11.5px;\n  transition: opacity .15s ease;\n  min-height: 0 !important;\n}\n.trpg .heart-pill-btn:hover { background: none !important; border: 0 !important; opacity: .9; }\n.trpg .heart-pill-btn.open { background: none !important; border: 0 !important; box-shadow: none !important; }\n@keyframes mini-heart-beat {\n  0%, 100% { transform: scale(1); }\n  14% { transform: scale(1.36); }\n  28% { transform: scale(1); }\n  42% { transform: scale(1.18); }\n  70% { transform: scale(1); }\n}\n.mini-heart {\n  display: inline-block;\n  color: var(--her);\n  animation: mini-heart-beat var(--beat, 0.833s) ease-in-out infinite;\n  transform-origin: center;\n  font-size: 19px;\n  line-height: 1;\n  filter: drop-shadow(0 0 7px rgba(231, 154, 168, 0.75));\n}\n.trpg[data-line=\"deform\"] .mini-heart {\n  color: var(--heat);\n  filter: drop-shadow(0 0 9px rgba(240, 179, 85, 0.85));\n}\n.trpg[data-line=\"crash\"] .mini-heart {\n  color: var(--danger);\n  filter: drop-shadow(0 0 11px rgba(255, 90, 104, 0.95));\n}\n.mini-heart-num {\n  font-family: ui-monospace, Consolas, monospace;\n  font-weight: 600;\n  font-size: 24px;\n  letter-spacing: -.02em;\n  color: #ffffff;\n  text-shadow: 0 0 20px rgba(231, 154, 168, 0.35);\n}\n.mini-heart-bpm {\n  font-size: 9.5px;\n  /* 9px 上用 --t-low 会掉到 3.5:1，这里单开一档中间灰 */\n  color: #7f92a4;\n  margin-left: 1px;\n  align-self: center;\n  font-family: ui-monospace, Consolas, monospace;\n  font-weight: 500;\n}\n\n/* 向上弹出的心跳仪表盘卡片 */\n.heart-popover-card {\n  position: absolute;\n  bottom: calc(100% + 8px);\n  right: 0;\n  width: 300px;\n  max-width: calc(100vw - 20px);\n  background: rgba(16, 23, 31, 0.98);\n  border: 1px solid #3c526b;\n  border-radius: 8px;\n  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.06);\n  padding: 10px 12px;\n  z-index: 10002;\n  backdrop-filter: blur(14px);\n  display: none;\n  flex-direction: column;\n  align-items: center;\n  animation: popover-up .18s cubic-bezier(.16, 1, .3, 1);\n}\n.heart-popover-card.show {\n  display: flex !important;\n}\n.heart-popover-card::after {\n  content: '';\n  position: absolute;\n  bottom: -6px;\n  right: 28px;\n  width: 10px;\n  height: 10px;\n  background: #18222d;\n  border-right: 1px solid #3c526b;\n  border-bottom: 1px solid #3c526b;\n  transform: rotate(45deg);\n}\n@keyframes popover-up {\n  from { opacity: 0; transform: translateY(8px) scale(0.96); }\n  to { opacity: 1; transform: translateY(0) scale(1); }\n}\n.popover-head {\n  display: flex;\n  justify-content: space-between;\n  width: 100%;\n  align-items: center;\n  padding-bottom: 5px;\n  margin-bottom: 6px;\n  border-bottom: 1px solid #2a3746;\n}\n.popover-title {\n  font-size: 11px;\n  font-weight: 600;\n  color: #a4b9c9;\n  letter-spacing: .5px;\n}\n.popover-close-btn {\n  background: transparent !important;\n  border: 0 !important;\n  color: #7d91a3 !important;\n  cursor: pointer;\n  font-size: 12px;\n  padding: 2px 4px !important;\n  min-height: 0 !important;\n  line-height: 1;\n}\n.popover-close-btn:hover {\n  color: #fff !important;\n}\n.popover-content {\n  width: 100%;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n.popover-content .heart-dial {\n  width: 154px;\n}\n.popover-content .stamina {\n  width: 154px;\n  margin-top: 2px;\n}\n.popover-content .spark {\n  width: 154px;\n  margin-top: 5px;\n}\n/* 弹层两栏：左＝生理仪表，右＝她的警觉（给档位与刻度，不给数值） */\n.popover-grid {\n  display: flex;\n  gap: 8px;\n  width: 100%;\n  align-items: stretch;\n  justify-content: center;\n}\n.popover-grid .instrument { flex: 1 1 auto; min-width: 0; }\n.popover-her {\n  flex: 0 0 86px;\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n  justify-content: center;\n  gap: 6px;\n  padding-left: 9px;\n  border-left: 1px solid rgba(255, 255, 255, 0.08);\n}\n.popover-her-title { font: 600 9px/1 ui-monospace, Consolas, monospace; letter-spacing: .14em; color: var(--t-low); }\n.popover-her .alert-pips { margin-right: 0; flex-direction: column-reverse; gap: 3px; }\n.popover-her .alert-pips i { width: 15px; height: 15px; border-radius: 2px; }\n.popover-her-name { font: 600 13px/1.1 \"Noto Sans SC\", system-ui, sans-serif; color: var(--t-mid); }\n.popover-her-range { font: 500 9px/1 ui-monospace, Consolas, monospace; color: var(--t-low); letter-spacing: .06em; }\n.popover-her[data-tier=\"3\"] .popover-her-name, .popover-her[data-tier=\"4\"] .popover-her-name { color: #ff9aa3; }\n.popover-audio-row {\n  margin-top: 8px;\n  width: 100%;\n}\n.audio-btn {\n  width: 100%;\n  font-size: 11px;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: #1e2835;\n  border: 1px solid #34475a;\n  color: #d1dde8;\n  cursor: pointer;\n  min-height: 25px;\n  transition: all .15s;\n}\n.audio-btn:hover {\n  background: #293849;\n  border-color: #5c7996;\n}\n.audio-btn[aria-pressed=\"true\"] {\n  background: #233e32;\n  border-color: #4d7a63;\n  color: #9ee0bd;\n}\n\n/* 窄条小按钮：去掉按钮皮，只留文字与图标 */\n.trpg .slim-btn {\n  background: none !important;\n  border: 0 !important;\n  border-radius: 0 !important;\n  padding: 2px 4px !important;\n  cursor: pointer;\n  color: var(--t-mid) !important;\n  font-size: 11px;\n  min-height: 0 !important;\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  transition: color .15s;\n}\n.trpg .slim-btn:hover {\n  background: none !important;\n  border: 0 !important;\n  color: var(--t-hi) !important;\n}\n.trpg .slim-btn.drawer-toggle-btn.active, .trpg .slim-btn.terminal-toggle-btn.active {\n  background: none !important;\n  border: 0 !important;\n  color: var(--heat) !important;\n}\n\n/* ═══ 行动胶囊栏（C1：先随胶片条收底，胶囊本体在 C3 重做） ═══ */\n.wx-capsule-bar {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 6px;\n  min-height: 32px;\n  padding: 3px 10px;\n  background: #070b10;\n  border-top: 1px solid rgba(255, 255, 255, 0.04);\n  position: relative;\n  z-index: 80;\n  user-select: none;\n}\n/* ═══ 行动胶囊栏（C3：去按钮皮，只保留\"可点感\"） ═══\n   交互钩子全部原样：类名 wx-capsule-chip / active / danger、✓ 勾选、aria-expanded、\n   .wx-posture-badge.narrative 都由 JS 切换，这里只动外观。 */\n.wx-posture-badge {\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .14em;\n  padding: 0;\n  border-radius: 0;\n  background: none;\n  color: var(--t-low);\n  border: 0;\n  white-space: nowrap;\n  cursor: pointer;\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  transition: color .15s;\n}\n.wx-posture-badge:hover {\n  background: none;\n  border: 0;\n  color: var(--t-mid);\n}\n.wx-posture-badge.narrative {\n  background: none;\n  color: var(--heat);\n  border: 0;\n}\n.wx-chips-wrap {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  flex: 1 1 auto;\n  overflow-x: auto;\n  padding: 1px 0;\n  scrollbar-width: none;\n}\n.wx-chips-wrap::-webkit-scrollbar { display: none; }\n/* 极淡底 + 1px 幽灵描边 = 可点；选中用底部 2px 光条，不再整块变绿 */\n.trpg .wx-capsule-chip {\n  font-size: 11px;\n  padding: 3px 10px;\n  border-radius: 3px;\n  background: rgba(255, 255, 255, 0.055) !important;\n  color: var(--t-mid) !important;\n  border: 0 !important;\n  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);\n  cursor: pointer;\n  white-space: nowrap;\n  transition: background .15s, box-shadow .15s, color .15s;\n  display: inline-flex;\n  align-items: center;\n  gap: 5px;\n  line-height: 1.4;\n  min-height: 26px !important;\n}\n.trpg .wx-capsule-chip:hover {\n  background: rgba(255, 255, 255, 0.09) !important;\n  color: var(--t-hi) !important;\n  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);\n}\n.trpg .wx-capsule-chip.active {\n  background: rgba(95, 214, 195, 0.13) !important;\n  color: var(--safe) !important;\n  font-weight: 600;\n  box-shadow: inset 0 -2px 0 var(--safe), inset 0 0 0 1px rgba(95, 214, 195, 0.30) !important;\n}\n.trpg .wx-capsule-chip.danger {\n  color: #e59aa2 !important;\n}\n.trpg .wx-capsule-chip.danger.active {\n  background: rgba(255, 90, 104, 0.14) !important;\n  color: #ff9aa3 !important;\n  box-shadow: inset 0 -2px 0 var(--danger), inset 0 0 0 1px rgba(255, 90, 104, 0.32) !important;\n}\n/* 条件不足：虚线幽灵条 + 降透明，悬停给「缺什么」 */\n.trpg .wx-capsule-chip.locked {\n  color: var(--t-low) !important;\n  background: transparent !important;\n  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);\n  border: 0 !important;\n  outline: 1px dashed rgba(255, 255, 255, 0.14);\n  outline-offset: -3px;\n  opacity: .62;\n  cursor: not-allowed;\n}\n.trpg .wx-capsule-chip.locked:hover {\n  background: transparent !important;\n  color: var(--t-mid) !important;\n  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);\n  opacity: .8;\n}\n.trpg .wx-capsule-chip .chip-check {\n  font-size: 10px;\n  font-weight: 700;\n}\n.trpg .wx-more-btn {\n  font-size: 11px;\n  padding: 3px 8px;\n  border-radius: 3px;\n  background: none !important;\n  color: var(--t-low) !important;\n  border: 0 !important;\n  cursor: pointer;\n  white-space: nowrap;\n  transition: color .15s;\n  min-height: 26px !important;\n}\n.trpg .wx-more-btn:hover {\n  background: none !important;\n  color: var(--t-hi) !important;\n  border: 0 !important;\n}\n.trpg .wx-more-btn.active {\n  background: none !important;\n  color: var(--heat) !important;\n  border: 0 !important;\n}\n\n/* ═══ 二级动作抽屉 ═══ */\n.wx-action-drawer {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 100%;\n  background: #080c11;\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.07);\n  border-radius: 8px 8px 0 0;\n  box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.85);\n  z-index: 100;\n  max-height: min(340px, 60vh);\n  display: flex;\n  flex-direction: column;\n}\n.drawer-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: 8px 12px;\n  background: linear-gradient(180deg, rgba(240, 179, 85, 0.06), transparent 92%);\n  border-bottom: 1px solid rgba(255, 255, 255, 0.06);\n}\n.drawer-title {\n  font: 600 10px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .14em;\n  color: var(--t-mid);\n}\n.trpg .drawer-close {\n  background: transparent !important;\n  border: none !important;\n  color: var(--t-mid) !important;\n  font-size: 15px;\n  cursor: pointer;\n  padding: 0 4px !important;\n  min-height: auto !important;\n}\n.trpg .drawer-close:hover {\n  background: transparent !important;\n  border: none !important;\n  color: #ffffff !important;\n}\n.drawer-body {\n  padding: 10px 12px 22px;\n  overflow-y: auto;\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n}\n.drawer-group-title {\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .16em;\n  color: var(--t-low);\n  margin-bottom: 6px;\n  border-left: 2px solid rgba(255, 255, 255, 0.14);\n  padding-left: 6px;\n}\n.drawer-group-chips {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n/* ═══ 战术终端（HTML5 Top Layer 原生模态对话框，穿透所有层级与容器） ═══ */\ndialog.wx-terminal-dialog, dialog.wx-dialog.wx-terminal-dialog {\n  position: fixed !important;\n  inset: 0 !important;\n  margin: auto !important;\n  width: min(860px, calc(100vw - 20px)) !important;\n  max-height: 86dvh !important;\n  /* inset:0 + height:auto 会让盒子被上下拉伸铺满（再由 max-height 截在 86dvh），\n     内容不满时就在结算条下面留一条空带；fit-content 让弹窗按内容收口。 */\n  height: fit-content !important;\n  padding: 0 !important;\n  display: flex;\n  flex-direction: column;\n  overflow: hidden !important;\n  background: #070b10 !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(240, 179, 85, 0.22) !important;\n  border-radius: 10px !important;\n  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.92) !important;\n  color: var(--t-hi) !important;\n  z-index: 100000 !important;\n  box-sizing: border-box !important;\n  animation: modal-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);\n}\ndialog.wx-terminal-dialog:not([open]) {\n  display: none !important;\n}\ndialog.wx-terminal-dialog::backdrop {\n  background: rgba(5, 10, 16, 0.85) !important;\n  backdrop-filter: blur(8px) !important;\n  -webkit-backdrop-filter: blur(8px) !important;\n}\n@keyframes modal-pop {\n  from { opacity: 0; transform: scale(0.96) translateY(12px); }\n  to { opacity: 1; transform: scale(1) translateY(0); }\n}\n.wx-modal-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 12px 18px;\n  background: linear-gradient(180deg, rgba(240, 179, 85, 0.07), transparent 92%), #0a0f15;\n  border-bottom: 1px solid rgba(255, 255, 255, 0.05);\n  flex-shrink: 0;\n}\n.wx-modal-title-wrap {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n.wx-terminal-icon {\n  font-size: 15px;\n}\n.wx-modal-title {\n  margin: 0;\n  font-size: 15px;\n  font-weight: 600;\n  color: var(--t-hi);\n  letter-spacing: 0.02em;\n}\n.wx-modal-badge {\n  background: rgba(255, 255, 255, 0.04);\n  color: var(--t-low);\n  border: 0;\n  padding: 1px 7px;\n  border-radius: 3px;\n  font: 600 9.5px/1.5 ui-monospace, Consolas, monospace;\n  letter-spacing: .12em;\n}\n.wx-modal-close {\n  background: transparent !important;\n  border: 0 !important;\n  color: var(--t-mid) !important;\n  font-size: 17px;\n  cursor: pointer;\n  padding: 4px 8px !important;\n  line-height: 1;\n  min-height: 0 !important;\n  transition: color 0.15s;\n}\n.wx-modal-close:hover {\n  color: #fff !important;\n}\n.wx-modal-body {\n  /* 结算条已移出滚动区做页脚，这里恢复正常底边距 */\n  padding: 14px 18px 12px;\n  overflow-y: auto;\n  overflow-x: hidden;\n  /* 不长个子：内容短时弹窗贴内容收口（否则 86dvh 的上限会把正文拉高，\n     在页脚上方留出一大块空区）；内容超限时 overflow 让它照常滚动。 */\n  flex: 0 1 auto;\n  min-height: 0;\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 12px;\n}\n.wx-modal-body::-webkit-scrollbar { width: 6px; }\n.wx-modal-body::-webkit-scrollbar-track { background: #0d1217; }\n.wx-modal-body::-webkit-scrollbar-thumb { background: #354556; border-radius: 3px; }\n\n/* 模态内动线通栏舒展排版（留出安全顶边，图标绝不截顶） */\n.wx-modal-body .route-tracker {\n  background: #16202b;\n  border: 1px solid #2c3a4a;\n  border-radius: 6px;\n  padding: 12px 16px 14px;\n  margin-bottom: 2px;\n  overflow: visible;\n  width: 100%;\n}\n.trpg .heart-dial { display: block; width: min(100%, 164px); height: auto; overflow: visible; }\n.trpg .dial-track { stroke: #3a3842; stroke-width: 8; fill: none; stroke-linecap: round; }\n.trpg .dial-sweet { stroke: #82b68c; stroke-width: 8; fill: none; filter: drop-shadow(0 0 4px rgba(130, 182, 140, 0.55)); }\n.trpg .dial-tick { stroke: #7a7d88; stroke-width: 1; }\n.trpg .dial-linemark { stroke-width: 2.4; }\n.trpg .dial-marker { fill: #fff5f5; stroke: #b2747e; stroke-width: 3; filter: drop-shadow(0 0 5px rgba(223, 155, 168, 0.85)); }\n.trpg .dial-marker-orbit { transform-origin: 80px 80px; transition: transform 700ms cubic-bezier(.2,.75,.25,1); }\n.trpg .dial-beat-halo { fill: none; stroke: #df9ba8; stroke-width: 1; animation: ring-beat var(--beat) ease-out infinite; filter: drop-shadow(0 0 3px rgba(223, 155, 168, 0.5)); }\n.trpg .ecg-line { fill: none; stroke: #6fe3c7; stroke-width: 1.35; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 3.5px rgba(111, 227, 199, 0.8)); }\n.trpg .ecg-scroll { animation: ecg-scroll var(--beat) linear infinite; }\n.trpg .dial-number { fill: #ffe6e6; font: 750 38px ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }\n.trpg[data-line=\"deform\"] .dial-number { fill: #f3dda4; text-shadow: 0 0 10px rgba(243, 221, 164, 0.55); }\n.trpg[data-line=\"crash\"] .dial-number { fill: #ff8b99; text-shadow: 0 0 14px rgba(255, 80, 100, 0.85); }\n.trpg .dial-bpm { fill: #c4b6be; font: 10px ui-monospace, Consolas, monospace; }\n.trpg .dial-label { fill: #c4b6be; font: 9px system-ui, sans-serif; }\n.trpg .dial-scale { fill: #b7b5be; font: 8px ui-monospace, Consolas, monospace; }\n.trpg .dial-heart { fill: #eaa4ae; font-size: 12px; animation: beat var(--beat) ease-in-out infinite; transform-box: fill-box; transform-origin: center; }\n.trpg .stamina { width: min(100%, 164px); margin-top: -2px; }\n.trpg .stamina { --stamina-color: #96c7a6; }\n.trpg .stamina[data-band=\"yellow\"] { --stamina-color: #ddbe75; }\n.trpg .stamina[data-band=\"red\"] { --stamina-color: #e48b8b; }\n.trpg .stamina-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--stamina-color); }\n.trpg .stamina-label .band-name { font-size: 9px; opacity:.85 }\n.trpg .stamina-meter { display: block; height: 5px; margin-top: 5px; border-radius: 3px; background: #404b45; overflow: hidden; }\n.trpg .stamina-fill { display: block; width: 72%; height: 100%; border-radius: inherit; background: var(--stamina-color); transition: width 700ms cubic-bezier(.2,.75,.25,1); }\n.trpg .audio-status { flex-basis: 100%; color: var(--muted); font-size: 11px; }\n.trpg .dev-card { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.07); border-radius: 0; padding: 14px 0 4px; margin-bottom: 14px; background: none; }\n.trpg .dev-card.dev-off { opacity: .55; }\n.trpg .dev-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }\n.trpg .dev-name { font-weight: 600; font-size: 14px; color: var(--t-hi); }\n.trpg .dev-state { font: 600 9.5px/1.6 ui-monospace, Consolas, monospace; color: var(--safe); background: rgba(95, 214, 195, 0.10); border: 0; border-radius: 2px; padding: 0 6px; letter-spacing: .08em; white-space: nowrap; }\n.trpg .dev-off .dev-state { color: var(--t-low); background: rgba(255, 255, 255, 0.05); }\n.trpg .dev-where { margin-top: 10px; font-size: 15px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }\n.trpg .dev-loc { color: var(--t-hi); }\n.trpg .dev-mot { color: var(--t-mid); font-size: 12px; white-space: nowrap; }\n.trpg .dev-time { color: var(--t-low); font-size: 10px; margin-top: 3px; font-family: ui-monospace, Consolas, monospace; }\n.trpg .dev-feed { margin: 10px 0 0; padding: 0; list-style: none; font-size: 12px; color: var(--t-mid); }\n.trpg .dev-feed li { padding: 5px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); }\n.trpg .dev-feed time { color: var(--t-low); font-size: 10px; font-family: ui-monospace, Consolas, monospace; margin-right: 10px; }\n.trpg .dev-note { margin: 8px 0 0; color: var(--t-low); font-size: 11px; line-height: 1.5; }\n.trpg .dev-frame { position: relative; margin-top: 12px; aspect-ratio: 16 / 9; border-radius: 4px; background: #05080c; border: 1px solid rgba(255, 255, 255, 0.06); overflow: hidden; }\n.trpg .dev-frame.no-feed { background: radial-gradient(ellipse at 32% 38%, #101820 0%, transparent 62%), radial-gradient(ellipse at 72% 68%, #0c1218 0%, transparent 55%), #05080c; }\n.trpg .dev-frame img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(.75) contrast(1.05); }\n/* 帧图未接入时是 hidden，但下面的 display:block 会盖掉 UA 的 [hidden] 规则，会把 alt 文字画出来 */\n.trpg .dev-frame img[hidden] { display: none !important; }\n.trpg .dev-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 3px); }\n.trpg .dev-frame-cap { position: absolute; right: 6px; bottom: 5px; font: 10px ui-monospace, Consolas, monospace; color: #9fb6c4; background: #0d1216cc; padding: 1px 6px; border-radius: 2px; letter-spacing: .04em; }\n.trpg .dev-frame-rec { position: absolute; left: 7px; top: 6px; font: 9px ui-monospace, Consolas, monospace; color: #e0566a; letter-spacing: .12em; }\n.trpg .dev-frame-rec::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #e0566a; margin-right: 5px; vertical-align: 1px; animation: rec-blink 1.6s steps(1) infinite; }\n@keyframes rec-blink { 50% { opacity: 0; } }\n.trpg .dev-sub { font-size: 10px; color: var(--muted); font-weight: 400; margin-left: 6px; }\n.trpg button[aria-pressed=\"true\"] { background: #354d43; border-color: #9ab7a4; }\n.trpg progress { display: block; width: 100%; height: 7px; margin-top: 10px; accent-color: #a4b9c9; }\n.trpg h3 { font-size: 12px; margin: 0 0 14px; color: var(--t-hi); letter-spacing: .02em; }\n.trpg .section-no { color: var(--t-low); font: 600 9.5px/1 ui-monospace, Consolas, monospace; letter-spacing: .16em; margin-right: 8px; }\n.trpg .money { display: flex; gap: 26px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }\n.trpg .money strong { font: 600 21px ui-monospace, Consolas, monospace; margin-left: 8px; color: var(--t-hi); }\n\n/* ═══ 战术终端 · 模块化呼吸感排版系统（C 案：无框卡片 + 顶发丝线） ═══ */\n.wx-player-banner {\n  background: rgba(255, 255, 255, 0.028);\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.07);\n  border-radius: 4px;\n  padding: 12px 14px 10px;\n  width: 100%;\n  box-sizing: border-box;\n}\n.wx-banner-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 10px;\n  margin-bottom: 10px;\n  padding-bottom: 8px;\n  border-bottom: 1px solid rgba(255, 255, 255, 0.05);\n}\n.wx-banner-title {\n  font-size: 12px;\n  color: var(--t-hi);\n  letter-spacing: .02em;\n}\n.wx-compact-money {\n  display: flex;\n  gap: 18px;\n  align-items: center;\n  margin: 0 !important;\n  padding: 0 !important;\n  border: none !important;\n}\n.wx-compact-money strong {\n  font: 650 17px ui-monospace, Consolas, monospace;\n  margin-left: 6px;\n  color: #e2edf8;\n}\n\n/* 玩家五维属性（实效值：基础+标签加值；绿=有增益，红=被削弱，悬停/长按看明细） */\n#wx-attrs, .trpg .attrs, .wx-attrs {\n  display: grid !important;\n  grid-template-columns: repeat(5, 1fr) !important;\n  gap: 8px !important;\n  margin-bottom: 8px !important;\n  min-height: 52px !important;\n  width: 100% !important;\n  box-sizing: border-box !important;\n}\n.trpg .attr {\n  position: relative !important;\n  text-align: center !important;\n  padding: 8px 4px 7px !important;\n  background: rgba(255, 255, 255, 0.03) !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;\n  border-radius: 2px !important;\n  box-sizing: border-box !important;\n  transition: all .2s;\n}\n.trpg .attr .an {\n  font: 600 10px/1 ui-monospace, Consolas, monospace !important;\n  color: var(--t-low) !important;\n  letter-spacing: .14em !important;\n}\n.trpg .attr .av {\n  font: 600 20px ui-monospace, Consolas, monospace !important;\n  letter-spacing: -.02em !important;\n  margin-top: 4px !important;\n  color: var(--t-hi) !important;\n}\n.trpg .attr.hot .av, .trpg .attr .av.hot { color: var(--safe) !important; }\n.trpg .attr.weak .av, .trpg .attr .av.weak { color: #ff9aa3 !important; }\n.trpg .attr.eff-up { border-top-color: rgba(95, 214, 195, 0.45) !important; background: rgba(95, 214, 195, 0.05) !important; }\n.trpg .attr.eff-up .av { color: var(--safe) !important; }\n.trpg .attr.eff-down { border-top-color: rgba(255, 90, 104, 0.45) !important; background: rgba(255, 90, 104, 0.05) !important; }\n.trpg .attr.eff-down .av { color: #ff9aa3 !important; }\n\n/* ═══ 双翼战术工作区（左：行囊与生效修正；右：目标信号手账） ═══ */\n.wx-tactical-wings {\n  display: grid !important;\n  grid-template-columns: 1fr 1.25fr !important;\n  gap: 12px !important;\n  width: 100% !important;\n  box-sizing: border-box !important;\n}\n@media (max-width: 680px) {\n  .wx-tactical-wings {\n    grid-template-columns: 1fr !important;\n  }\n}\n.wx-wing-column {\n  min-width: 0;\n  display: flex;\n  flex-direction: column;\n}\n.wx-wing-card {\n  background: rgba(255, 255, 255, 0.028);\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.07);\n  border-radius: 4px;\n  padding: 12px 14px;\n  height: 100%;\n  box-sizing: border-box;\n}\n.wx-wing-card h3 {\n  font-size: 12px;\n  margin: 0 0 10px;\n  color: var(--t-hi);\n  letter-spacing: .02em;\n}\n.wx-active-tags-container {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  min-height: 28px;\n}\n\n/* ═══ 环境战术沙盘面板 ═══ */\n.wx-terminal-envbox {\n  background: rgba(255, 255, 255, 0.028);\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;\n  border-radius: 4px;\n  padding: 12px 14px;\n  margin-top: 0 !important;\n  width: 100%;\n  box-sizing: border-box;\n}\n\n/* ═══ 底部深页导航与音频调控 ═══ */\n.wx-terminal-links {\n  display: flex !important;\n  justify-content: space-between !important;\n  align-items: center !important;\n  background: none;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;\n  border-radius: 0;\n  padding: 10px 0 !important;\n  margin-top: 0 !important;\n  gap: 10px !important;\n  flex-wrap: wrap;\n  width: 100%;\n  box-sizing: border-box;\n}\n.wx-terminal-nav-buttons {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n  align-items: center;\n}\n.wx-terminal-nav-buttons button {\n  font-size: 11.5px !important;\n  padding: 4px 2px !important;\n  background: none !important;\n  border: 0 !important;\n  color: var(--t-mid) !important;\n}\n.wx-terminal-nav-buttons button:hover {\n  background: none !important;\n  border: 0 !important;\n  color: var(--t-hi) !important;\n}\n\n/* ═══ 沉底结算条 ═══ */\n/* 她的警觉：五格刻度 + 档位名，不报精确数值（数值只在悬停提示里给区间）\n   五格固定配色（主人定：2 绿 1 黄 1 橘 1 红），从下往上点亮＝警觉在涨 */\n.alert-pips { display: inline-flex; gap: 3px; align-items: center; margin-right: 6px; }\n.alert-pips i { width: 10px; height: 6px; border-radius: 1px; background: rgba(255, 255, 255, 0.10); display: block; }\n.alert-pips i:nth-child(1), .alert-pips i:nth-child(2) { --pip: #5fd6c3; }\n.alert-pips i:nth-child(3) { --pip: #f0c75e; }\n.alert-pips i:nth-child(4) { --pip: #f08a4b; }\n.alert-pips i:nth-child(5) { --pip: #ff5a68; }\n.alert-pips i.on { background: var(--pip, var(--heat)); }\n.alert-text { font: 600 11px/1 ui-monospace, Consolas, monospace; color: var(--t-mid); letter-spacing: .04em; }\n#alertRow[data-tier=\"3\"] .alert-text { color: #ff9aa3; }\n#alertRow[data-tier=\"4\"] .alert-text { color: var(--danger); }\n.wx-terminal-ledger {\n  background: none !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;\n  border-radius: 0 !important;\n  padding: 8px 0 !important;\n  color: var(--t-mid) !important;\n  font-size: 11px !important;\n  margin-top: 0 !important;\n  box-sizing: border-box;\n  flex-shrink: 0;\n}\n/* 沉底结算条是弹窗页脚（不在滚动区内），左右留出与正文一致的边距；\n   选择器带 [data-tip] 压过 :1891 的「.trpg .ledger{margin-top:12px}」。 */\n.trpg .wx-terminal-ledger[data-tip] {\n  width: auto;\n  /* 左右与正文卡片的 18px 内边距对齐；底部留 14px（终端弹窗自身 padding 已归零） */\n  margin: 0 18px 14px;\n  box-shadow: 0 -6px 14px rgba(0, 0, 0, 0.45);\n}\n/* 全站悬停说明：仅限尾行组件内部带 data-tip 的元素，绝不干扰宿主与第三方扩展 */\n.trpg [data-tip], .wx-terminal-backdrop [data-tip], .wx-dialog [data-tip] { position: relative; }\n/* 收起态用 display:none 而不是 opacity:0——绝对定位的说明框即使透明也会计入\n   scrollWidth（实测常驻条因此虚胖 16px，窄屏上把整条顶出视口）。 */\n.trpg [data-tip]::after, .wx-terminal-backdrop [data-tip]::after, .wx-dialog [data-tip]::after {\n  content: attr(data-tip); display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);\n  background: #0b0f16; border: 1px solid #526577; padding: 6px 11px; border-radius: 4px;\n  font-size: 10.5px; color: #c8d3e8; white-space: pre-wrap; width: max-content; max-width: 320px;\n  text-align: left; line-height: 1.6; z-index: 10005;\n  pointer-events: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.85);\n}\n.trpg [data-tip]:hover::after, .trpg [data-tip]:active::after,\n.wx-terminal-backdrop [data-tip]:hover::after, .wx-terminal-backdrop [data-tip]:active::after,\n.wx-dialog [data-tip]:hover::after, .wx-dialog [data-tip]:active::after { display: block; }\n.slim-left [data-tip]::after { left: 0; transform: none; }\n.slim-right [data-tip]::after { left: auto; right: 0; transform: none; }\n#wx-attr-tags, .trpg .attr-tags { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 6px; }\n#wx-attr-tags .tag, .trpg .attr-tags .tag { margin: 0; font-size: 11px; padding: 3px 8px; }\n/* ═══ 战术行囊持有物列表 ═══ */\n.wx-items, .trpg .items {\n  margin: 0 0 16px;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  max-height: 240px;\n  overflow-y: auto;\n  scrollbar-width: thin;\n  scrollbar-color: #3b5066 #151d26;\n  padding-right: 4px;\n}\n.wx-items::-webkit-scrollbar, .trpg .items::-webkit-scrollbar {\n  width: 5px;\n}\n.wx-items::-webkit-scrollbar-track, .trpg .items::-webkit-scrollbar-track {\n  background: #151d26;\n  border-radius: 3px;\n}\n.wx-items::-webkit-scrollbar-thumb, .trpg .items::-webkit-scrollbar-thumb {\n  background: #3b5066;\n  border-radius: 3px;\n}\n.wx-items::-webkit-scrollbar-thumb:hover, .trpg .items::-webkit-scrollbar-thumb:hover {\n  background: #526f8d;\n}\n.wx-item-row {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n  padding: 6px 0 6px 8px;\n  background: none;\n  border: 0;\n  border-left: 2px solid rgba(255, 255, 255, 0.10);\n  border-radius: 0;\n  transition: border-color .15s ease;\n}\n.wx-item-row:hover {\n  background: none;\n  border-left-color: rgba(255, 255, 255, 0.24);\n}\n.wx-item-left {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  min-width: 0;\n  flex-wrap: wrap;\n}\n.wx-item-type-badge {\n  font: 600 9.5px/1.5 ui-monospace, Consolas, monospace;\n  padding: 0;\n  border-radius: 0;\n  background: none;\n  color: var(--t-low);\n  border: 0;\n  letter-spacing: .1em;\n  white-space: nowrap;\n}\n.wx-item-name {\n  font-size: 11.5px;\n  color: var(--t-hi);\n  font-weight: 550;\n  white-space: nowrap;\n}\n.wx-item-count {\n  font-size: 11px;\n  color: var(--t-mid);\n  font-family: ui-monospace, Consolas, monospace;\n}\n.wx-item-equipped-pill {\n  font-size: 9.5px;\n  padding: 0 5px;\n  border-radius: 2px;\n  background: rgba(95, 214, 195, 0.10);\n  color: var(--safe);\n  border: 0;\n  border-left: 2px solid var(--safe);\n  font-weight: 600;\n  letter-spacing: .02em;\n}\n.wx-item-right {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  flex-shrink: 0;\n}\n.wx-item-btn {\n  font-size: 10.5px !important;\n  padding: 2px 8px !important;\n  border-radius: 2px !important;\n  border: 1px solid rgba(255, 255, 255, 0.14) !important;\n  background: none !important;\n  color: var(--t-mid) !important;\n  cursor: pointer;\n  line-height: 1.4 !important;\n  transition: border-color .15s, color .15s;\n}\n.wx-item-btn:hover {\n  background: none !important;\n  border-color: rgba(255, 255, 255, 0.3) !important;\n  color: var(--t-hi) !important;\n}\n.wx-item-btn.btn-equip {\n  border-color: rgba(95, 214, 195, 0.5) !important;\n  background: none !important;\n  color: var(--safe) !important;\n}\n.wx-item-btn.btn-equip:hover {\n  background: rgba(95, 214, 195, 0.08) !important;\n  border-color: rgba(95, 214, 195, 0.8) !important;\n}\n.wx-item-btn.btn-unequip {\n  border-color: rgba(255, 90, 104, 0.45) !important;\n  background: none !important;\n  color: #ff9aa3 !important;\n}\n.wx-item-btn.btn-unequip:hover {\n  background: rgba(255, 90, 104, 0.08) !important;\n  border-color: rgba(255, 90, 104, 0.75) !important;\n}\n.wx-item-btn.btn-use {\n  border-color: rgba(255, 255, 255, 0.18) !important;\n  background: none !important;\n  color: var(--t-mid) !important;\n}\n.wx-item-btn.btn-use:hover {\n  border-color: rgba(255, 255, 255, 0.34) !important;\n  color: var(--t-hi) !important;\n}\n.wx-item-empty {\n  padding: 12px 0;\n  text-align: center;\n  color: var(--t-low);\n  font-size: 11.5px;\n  list-style: none;\n}\n\n/* ═══ 标签体系（C 案：左侧 2px 色条 + 文字，不做胶囊） ═══ */\n.trpg .tag { display: inline-block; padding: 1px 0 1px 7px; border: 0; border-left: 2px solid var(--line); background: none; color: var(--t-mid); border-radius: 0; font-size: 11px; margin: 0 8px 6px 0; white-space: nowrap; }\n.trpg .tag.debuff { border-left-color: var(--danger); color: #ffa9b1; }\n.trpg .tag.target { border-left-color: var(--danger); color: #ffa9b1; }\n.trpg .tag.scene  { border-left-color: var(--t-mid); color: var(--t-mid); }\n.trpg .tag.advantage { border-left-color: var(--heat); color: #f4d6a0; text-shadow: none; }\n.preview-tools .replay-label { font: 11px ui-monospace, Consolas, monospace; color: #9fb5a0; white-space: nowrap; }\n.trpg .tag.personality { border-left-color: var(--her); color: #eec3cb; }\n.trpg .tag.hobby       { border-left-color: var(--her); color: #eec3cb; }\n.trpg .tag.equipment   { border-left-color: var(--her); color: #eec3cb; }\n.trpg .tag.fading { opacity: .65; }\n\n\n/* ═══ 接近度五档刻度进度轨 ═══ */\n.prox-container {\n  margin: 10px 0 16px;\n  background: none;\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.07);\n  border-radius: 0;\n  padding: 12px 0 14px;\n}\n.prox-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  font-size: 12px;\n  color: var(--t-hi);\n  margin-bottom: 10px;\n  white-space: nowrap !important;\n}\n.prox-value-wrap {\n  font-size: 11px;\n  color: var(--t-mid);\n}\n.prox-value-wrap strong {\n  font: 600 18px ui-monospace, Consolas, monospace;\n  letter-spacing: -.02em;\n  color: var(--t-hi);\n  margin-right: 2px;\n}\n.prox-stage-badge {\n  color: var(--her);\n  font-weight: 600;\n  margin-left: 4px;\n}\n.prox-track-wrap {\n  position: relative;\n  padding: 8px 6px 20px;\n  cursor: help;\n}\n.prox-meter-bar {\n  width: 100%;\n  height: 3px;\n  background: #17222c;\n  border-radius: 1.5px;\n  overflow: hidden;\n  position: relative;\n}\n.prox-meter-fill {\n  height: 100%;\n  background: linear-gradient(90deg, rgba(231, 154, 168, .35), var(--her));\n  border-radius: 1.5px;\n  transition: width .3s ease;\n}\n.prox-nodes {\n  position: relative;\n  width: 100%;\n  margin-top: -5px;   /* 圆点 5px，让圆心骑在 3px 轨道中线上 */\n}\n.pnode {\n  position: absolute;\n  top: 0;\n  transform: translateX(-50%);\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  pointer-events: none;\n}\n.pnode .pdot {\n  width: 5px;\n  height: 5px;\n  border-radius: 50%;\n  background: #1a2530;\n  border: 1px solid #33465a;\n  transition: all .2s;\n}\n.pnode .plabel {\n  font: 500 9.5px/1 ui-monospace, Consolas, monospace;\n  color: var(--t-low);\n  margin-top: 5px;\n  white-space: nowrap;\n}\n.pnode.passed .pdot {\n  background: #3f5568;\n  border-color: #5d7b93;\n}\n.pnode.passed .plabel {\n  color: var(--t-mid);\n}\n.pnode.active .pdot {\n  background: var(--her);\n  border-color: #ffe3ea;\n  box-shadow: 0 0 9px rgba(231, 154, 168, 0.85);\n  transform: scale(1.35);\n}\n.pnode.active .plabel {\n  color: var(--her);\n  font-weight: 600;\n}\n.trpg .timeline { list-style: none; margin: 0 0 18px; padding: 0; }\n.trpg .timeline li { display: flex; gap: 12px; margin: 0 0 0 3px; padding: 3px 0 15px 15px; border-left: 1px solid rgba(255, 255, 255, 0.08); position: relative; color: var(--t-mid); }\n.trpg .timeline li::before { content: ''; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--t-low); left: -3px; top: 10px; }\n.trpg time { color: var(--t-low); font-family: ui-monospace, Consolas, monospace; font-size: 10px; flex-shrink: 0; }\n.trpg .assessment { font-size: 12px; margin: 14px 0 0; padding: 2px 0 2px 10px; border-left: 2px solid var(--heat); background: none; color: #e9d3ad; }\n/* ═══ 动线推进雷达轨（常驻层） ═══ */\n.route-tracker {\n  position: relative;\n  overflow: hidden;\n  background: rgba(255, 255, 255, 0.024);\n  border-bottom: 0;\n  padding: 10px 14px 12px;\n  border-top-left-radius: 4px;\n  border-top-right-radius: 4px;\n}\n.route-weather-fx {\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  z-index: 0;\n  opacity: 0;\n  transition: opacity 0.5s ease;\n}\n.route-meta, .route-stepper {\n  position: relative;\n  z-index: 1;\n}\n/* 雨天：斜向细雨丝微流动 */\n.route-tracker.is-rain .route-weather-fx {\n  opacity: 0.22;\n  background-image: repeating-linear-gradient(\n    110deg,\n    transparent,\n    transparent 11px,\n    rgba(140, 190, 240, 0.45) 12px,\n    transparent 13px\n  );\n  background-size: 40px 40px;\n  animation: route-rain-anim 0.85s linear infinite;\n}\n/* 暴雨：雨丝密集加急 */\n.route-tracker.is-storm .route-weather-fx {\n  opacity: 0.38;\n  background-image: repeating-linear-gradient(\n    118deg,\n    transparent,\n    transparent 7px,\n    rgba(170, 215, 255, 0.7) 8px,\n    transparent 9px\n  );\n  background-size: 30px 30px;\n  animation: route-rain-anim 0.42s linear infinite;\n}\n/* 晴夜：微弱路灯钠黄光晕 */\n.route-tracker.is-clear .route-weather-fx {\n  opacity: 0.15;\n  background: radial-gradient(ellipse at 80% 20%, rgba(245, 212, 131, 0.45) 0%, transparent 65%);\n}\n@keyframes route-rain-anim {\n  0% { background-position: 0 0; }\n  100% { background-position: -40px 80px; }\n}\n@media (prefers-reduced-motion: reduce) {\n  .route-tracker.is-rain .route-weather-fx,\n  .route-tracker.is-storm .route-weather-fx { animation: none; }\n}\n.route-meta {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 8px;\n  font-size: 11.5px;\n  margin-bottom: 7px;\n}\n.route-title {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: #dce6ee;\n  font-weight: 600;\n}\n.route-dist-badge {\n  background: #253342;\n  border: 1px solid #4a637b;\n  color: #9ebfdc;\n  padding: 1px 6px;\n  border-radius: 3px;\n  font-size: 10px;\n  font-weight: normal;\n}\n.route-status-tags {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 10.5px;\n}\n/* 微型步进轨（C4：图标改成 20px 圆盘承载 12px 单色图标，不再是 emoji 撑破 8px 圆点） */\n.route-stepper {\n  display: flex;\n  align-items: center;\n  width: 100%;\n  padding: 6px 0 4px;\n}\n.step-item {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 10.5px;\n  color: var(--t-low);\n  white-space: nowrap;\n}\n.step-dot {\n  width: 20px;\n  height: 20px;\n  border-radius: 50%;\n  border: 1px solid rgba(255, 255, 255, 0.12);\n  background: rgba(255, 255, 255, 0.04);\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;\n}\n.step-item.passed .step-dot {\n  background: rgba(255, 255, 255, 0.05);\n  border-color: rgba(255, 255, 255, 0.10);\n}\n.step-item.passed {\n  color: var(--t-low);\n}\n.step-item.passed .step-ico {\n  opacity: .45;\n}\n.step-item.current {\n  color: var(--heat);\n  font-weight: 600;\n}\n.step-item.current .step-dot {\n  background: rgba(240, 179, 85, 0.14);\n  border-color: rgba(240, 179, 85, 0.55);\n  animation: step-breathe 2.2s ease-in-out infinite;\n}\n.step-item.current .step-ico {\n  opacity: 1;\n  color: var(--heat);\n}\n/* 当前节点呼吸高亮：光晕一涨一落，机会窗口正在流逝的搏动感 */\n@keyframes step-breathe {\n  0%, 100% { box-shadow: 0 0 4px rgba(240, 179, 85, 0.35); }\n  50%      { box-shadow: 0 0 13px rgba(240, 179, 85, 0.85); }\n}\n.step-item.terminal .step-dot {\n  border-radius: 4px;\n  border-color: rgba(255, 255, 255, 0.12);\n}\n.step-item.terminal.current .step-dot {\n  background: rgba(255, 90, 104, 0.16);\n  border-color: rgba(255, 90, 104, 0.60);\n  animation: step-breathe-red 2.2s ease-in-out infinite;\n}\n@keyframes step-breathe-red {\n  0%, 100% { box-shadow: 0 0 4px rgba(255, 90, 104, 0.35); }\n  50%      { box-shadow: 0 0 13px rgba(255, 90, 104, 0.85); }\n}\n@media (prefers-reduced-motion: reduce) {\n  .step-item.current .step-dot,\n  .step-item.terminal.current .step-dot { animation: none; }\n}\n.step-item.unknown {\n  color: var(--t-low);\n}\n.step-item.unknown .step-dot {\n  border-style: dashed;\n  border-color: rgba(255, 255, 255, 0.12);\n  background: rgba(255, 255, 255, 0.02);\n}\n.step-item.unknown .step-ico {\n  opacity: .35;\n}\n.step-item.unknown .step-name {\n  font-weight: 700;\n  color: var(--t-low);\n}\n.step-line {\n  flex: 1;\n  height: 1px;\n  background: rgba(255, 255, 255, 0.08);\n  min-width: 14px;\n  margin: 0 6px;\n}\n.step-line.passed {\n  background: rgba(255, 255, 255, 0.18);\n}\n.step-line.future {\n  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14) 3px, transparent 3px, transparent 7px);\n}\n\n/* ═══ 抽屉层 · 战术沙盘面板 ═══ */\n.envbox {\n  margin-top: 16px;\n  border-top: 1px solid rgba(255, 255, 255, 0.06);\n  padding-top: 14px;\n}\n.env-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  font-size: 13px;\n  color: var(--t-hi);\n  margin-bottom: 8px;\n}\n.env-header .fam {\n  color: var(--t-mid);\n  font: 600 10px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .06em;\n}\n.env-fam-bar {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  font-size: 11px;\n  color: var(--muted);\n  margin-bottom: 10px;\n}\n.fam-meter {\n  flex: 1;\n  height: 3px;\n  background: #17222c;\n  border-radius: 1.5px;\n  overflow: hidden;\n}\n.fam-fill {\n  display: block;\n  height: 100%;\n  background: var(--safe);\n  border-radius: 1.5px;\n}\n.tactical-grid {\n  background: none;\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.06);\n  border-radius: 0;\n  padding: 10px 0 0;\n  margin-top: 8px;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  font-size: 11.5px;\n}\n.tactical-row {\n  display: flex;\n  align-items: flex-start;\n  gap: 8px;\n}\n.tactical-label {\n  color: var(--t-low);\n  min-width: 68px;\n  flex-shrink: 0;\n}\n.tactical-chips {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 5px;\n}\n.chip {\n  padding: 2px 8px;\n  border-radius: 3px;\n  font-size: 11px;\n  display: inline-flex;\n  align-items: center;\n  background: rgba(255, 255, 255, 0.045);\n  border: 0;\n  color: var(--t-mid);\n}\n.chip-ico {\n  display: inline-block;\n  margin-right: 4px;\n  font-weight: 700;\n  font-size: 10px;\n  opacity: .85;\n}\n.chip-exit {\n  background: rgba(255, 255, 255, 0.045);\n  border: 0;\n  color: var(--t-mid);\n}\n.chip-spot {\n  background: rgba(240, 179, 85, 0.08);\n  border: 0;\n  color: #e8c98d;\n}\n.chip-sanctuary {\n  background: rgba(255, 90, 104, 0.10);\n  border: 0;\n  color: #ffa9b1;\n}\n.chip-sanctuary .chip-ico {\n  color: #ff7588;\n  animation: rec-blink 1.2s infinite;\n}\n.step-ico {\n  line-height: 1;\n  opacity: .8;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n}\n.step-item.passed .step-ico {\n  opacity: .45;\n}\n.step-item.current .step-ico {\n  opacity: 1;\n  color: var(--heat);\n}\n.step-item.unknown .step-ico {\n  opacity: .35;\n}\n.envtags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  margin: 6px 0 10px;\n}\n.envtag {\n  display: inline-block;\n  padding: 2.5px 8px;\n  border: 1px solid #4a6a8a;\n  border-left: 3px solid #6fa8d6;\n  background: #22303f;\n  color: #c6dcee;\n  border-radius: 3px;\n  font-size: 11px;\n}\n/* ═══ 底部深页与音频综合调控 ═══ */\n.trpg .links {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  border-top: 1px solid var(--border);\n  margin-top: 18px;\n  padding-top: 12px;\n  position: relative;\n  gap: 10px;\n}\n.links-left {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n  align-items: center;\n}\n.audio-popover-wrap {\n  position: relative;\n  display: inline-flex;\n  align-items: center;\n  margin-left: auto;\n}\n.audio-menu-btn {\n  background: #18222d;\n  border: 1px solid #36495d;\n  border-radius: 4px;\n  padding: 3px 9px;\n  cursor: pointer;\n  color: #cad8e6;\n  font-size: 11px;\n  min-height: 25px;\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  transition: all .15s;\n}\n.audio-menu-btn:hover {\n  background: #233142;\n  border-color: #55779c;\n  color: #fff;\n}\n.audio-menu-btn.active {\n  background: #25384d;\n  border-color: #6a96c7;\n  color: #8fc2f5;\n  box-shadow: 0 0 8px rgba(106, 150, 199, 0.35);\n}\n.audio-popover-panel {\n  position: absolute;\n  bottom: calc(100% + 8px);\n  right: 0;\n  width: 200px;\n  background: #141d27;\n  border: 1px solid #3b5066;\n  border-radius: 6px;\n  padding: 10px 12px;\n  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);\n  z-index: 10001;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  animation: popover-up .15s ease-out;\n}\n.audio-popover-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  border-bottom: 1px solid #283748;\n  padding-bottom: 6px;\n}\n.audio-popover-title {\n  font-size: 11px;\n  font-weight: 600;\n  color: #a4b9c9;\n}\n.audio-master-switch {\n  font-size: 10px !important;\n  padding: 2px 7px !important;\n  min-height: 22px !important;\n  background: #212c38 !important;\n  border: 1px solid #3d5064 !important;\n  color: #c7d5e2 !important;\n  border-radius: 3px !important;\n  cursor: pointer;\n}\n.audio-master-switch[aria-pressed=\"true\"] {\n  background: #233e32 !important;\n  border-color: #4d7a63 !important;\n  color: #9ee0bd !important;\n}\n.audio-sliders-group {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.audio-slider-item {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  font-size: 10.5px;\n  color: #9ab0c2;\n  gap: 8px;\n}\n.audio-slider-item input[type=range] {\n  width: 110px;\n  accent-color: #df9ba8;\n  cursor: pointer;\n}\n.audio-popover-status {\n  font-size: 10px;\n  color: #7b8f9f;\n  text-align: right;\n  border-top: 1px dashed #2b3a4a;\n  padding-top: 5px;\n}\n/* 她的动静警示槽（常驻条右上角，过档事件亮两段） */\n.trpg { position: relative; }\n/* 全屏/状态栏边缘应激暗角（Vignette） */\n.trpg-vignette {\n  position: absolute;\n  inset: 0;\n  border-radius: 8px;\n  pointer-events: none;\n  z-index: 7;\n  transition: box-shadow 0.4s ease;\n  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);\n}\n/* 变形态：边缘暗红收窄 */\n.trpg[data-line=\"deform\"] .trpg-vignette {\n  box-shadow: inset 0 0 38px rgba(175, 45, 55, 0.38);\n}\n/* 崩溃态：深红逼近 + 随心跳重拍搏动 */\n.trpg[data-line=\"crash\"] .trpg-vignette {\n  box-shadow: inset 0 0 54px rgba(225, 35, 50, 0.62);\n  animation: vignette-throb var(--beat, 0.8s) ease-in-out infinite;\n}\n@keyframes vignette-throb {\n  0%, 100% { box-shadow: inset 0 0 44px rgba(190, 30, 45, 0.5); }\n  50%      { box-shadow: inset 0 0 66px rgba(245, 40, 60, 0.78); }\n}\n/* 结算 spike 重拍脉冲 */\n.trpg-vignette.pulse {\n  animation: vignette-pulse 0.45s ease-out forwards;\n}\n@keyframes vignette-pulse {\n  0%   { box-shadow: inset 0 0 78px rgba(255, 45, 60, 0.88); }\n  100% { box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35); }\n}\n@media (prefers-reduced-motion: reduce) {\n  .trpg[data-line=\"crash\"] .trpg-vignette,\n  .trpg-vignette.pulse { animation: none; }\n}\n.her-alert { position: absolute; top: -12px; right: 16px; z-index: 9; padding: 3px 12px; border-radius: 10px;\n  background: #392b2f; border: 1px solid #7a5a60; color: #e3c3ca; font-size: 12px; letter-spacing: .1em;\n  box-shadow: 0 2px 10px #0007; opacity: 0; transform: translateY(-5px); transition: .35s; pointer-events: none; }\n.her-alert.show { opacity: 1; transform: none; }\n/* 心跳历史迷你曲线 */\n.spark { display: block; width: min(100%, 164px); height: 20px; margin-top: 7px; }\n.spark polyline { fill: none; stroke: #6fd3c7; stroke-width: 1.5; filter: drop-shadow(0 0 3px rgba(111,211,199,.45)); }\n.spark line { stroke: rgba(146,187,154,.4); stroke-width: 1; stroke-dasharray: 2 3; }\n/* 接触模式：距离 pip 换暖色（朋友的位，不是贼的位） */\n.pips.warm .pip.active { background: #d6b96a; border-color: #d6b96a; }\n/* 标签将到期 */\n.trpg .tag.fading { opacity: .55; }\n/* 谎账：雷区可视化 */\n.lie { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12.5px; border-top: 1px dashed #465463; }\n.lie:first-child { border-top: 0; }\n.lie .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; animation: blink 1.2s steps(2) infinite; }\n.lie.v-high .dot { background: #e0566a; }\n.lie.v-mid .dot { background: #d6b96a; }\n.lie.v-low .dot { background: #8b93a0; animation: none; }\n.lie.busted { opacity: .45; text-decoration: line-through; }\n.lie .ver { margin-left: auto; font-size: 10px; color: var(--muted); }\n/* 她的档案：属性直读区（高情报揭示真实数值，未查明显示 ?） */\n.pattrs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }\n.pattr { text-align: center; padding: 8px 0 7px; background: rgba(255, 255, 255, 0.03); border: 0; border-top: 1px solid rgba(255, 255, 255, 0.07); border-radius: 2px; }\n.pattr .an { font: 600 10px/1 ui-monospace, Consolas, monospace; color: var(--t-low); letter-spacing: .14em; }\n.pattr .av { font: 600 19px ui-monospace, Consolas, monospace; margin-top: 4px; color: var(--t-hi); }\n.pattr.unknown .av { color: var(--t-low); }\n.pattr .at { font: 500 9.5px ui-monospace, Consolas, monospace; color: var(--t-mid); margin-top: 3px; }\n\n/* ═══ 她的档案 · 长焦偷拍取景框 ═══ */\n.surv-viewfinder {\n  margin-bottom: 16px;\n  background: #090e15;\n  border: 1px solid #2b3a4a;\n  border-radius: 6px;\n  padding: 8px;\n  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4);\n}\n.vf-frame {\n  position: relative;\n  background: #0d131b;\n  border: 1px solid #1f2a36;\n  border-radius: 4px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n}\n.vf-corner {\n  position: absolute;\n  width: 9px;\n  height: 9px;\n  border: 1.5px solid #63809e;\n  z-index: 5;\n  pointer-events: none;\n}\n.vf-corner.tl { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }\n.vf-corner.tr { top: 6px; right: 6px; border-left: 0; border-bottom: 0; }\n.vf-corner.bl { bottom: 6px; left: 6px; border-right: 0; border-top: 0; }\n.vf-corner.br { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }\n.vf-crosshair {\n  position: absolute;\n  top: 50%; left: 50%;\n  width: 22px; height: 22px;\n  transform: translate(-50%, -50%);\n  border: 1px dashed rgba(111, 211, 199, 0.35);\n  border-radius: 50%;\n  pointer-events: none;\n  z-index: 4;\n}\n.vf-crosshair::before, .vf-crosshair::after {\n  content: ''; position: absolute; background: rgba(111, 211, 199, 0.45);\n}\n.vf-crosshair::before { top: 50%; left: -6px; width: 34px; height: 1px; transform: translateY(-50%); }\n.vf-crosshair::after { left: 50%; top: -6px; height: 34px; width: 1px; transform: translateX(-50%); }\n.vf-header {\n  position: absolute;\n  top: 6px; left: 16px; right: 16px;\n  display: flex; justify-content: space-between; align-items: center;\n  font: 9.5px ui-monospace, Consolas, monospace;\n  color: #9cb3c7;\n  z-index: 6;\n  text-shadow: 0 1px 3px #000;\n  pointer-events: none;\n}\n.vf-rec {\n  color: #e0566a;\n  letter-spacing: .08em;\n  font-weight: 600;\n  display: flex; align-items: center; gap: 4px;\n}\n.vf-rec .rec-dot {\n  display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #e0566a;\n  box-shadow: 0 0 5px #e0566a;\n  animation: rec-blink 1.4s steps(1) infinite;\n}\n.vf-meta {\n  color: #6d859a;\n  font-size: 9px;\n}\n.vf-scene {\n  position: relative;\n  width: 100%;\n  height: 130px;\n  overflow: hidden;\n  background: #080d14;\n}\n.vf-canvas {\n  display: block;\n  width: 100%;\n  height: 100%;\n  filter: contrast(1.1) saturate(0.85);\n  transition: filter 0.4s ease;\n}\n/* 距离虚化 */\n.vf-frame.af-searching .vf-canvas {\n  filter: blur(2.5px) contrast(0.95) saturate(0.65);\n}\n.vf-frame.af-tracking .vf-canvas {\n  filter: blur(1.2px) contrast(1.05) saturate(0.8);\n}\n.vf-frame.af-locked .vf-canvas {\n  filter: blur(0px) contrast(1.15) saturate(0.9);\n}\n/* 对焦微标 */\n.vf-af-badge {\n  padding: 1px 5px;\n  border-radius: 2px;\n  font-weight: 700;\n  letter-spacing: .05em;\n  font-size: 8.5px;\n  margin-left: 6px;\n}\n.vf-frame.af-searching .vf-af-badge {\n  color: #dfba68;\n  background: rgba(223, 186, 104, 0.16);\n  border: 1px solid rgba(223, 186, 104, 0.45);\n}\n.vf-frame.af-tracking .vf-af-badge {\n  color: #8bb8dc;\n  background: rgba(139, 184, 220, 0.16);\n  border: 1px solid rgba(139, 184, 220, 0.45);\n}\n.vf-frame.af-locked .vf-af-badge {\n  color: #72cf9c;\n  background: rgba(114, 207, 156, 0.16);\n  border: 1px solid rgba(114, 207, 156, 0.45);\n}\n/* 心跳手抖 */\n.vf-frame.shake-deform .vf-canvas {\n  animation: vf-shake-light 0.18s infinite alternate ease-in-out;\n}\n.vf-frame.shake-crash .vf-canvas {\n  animation: vf-shake-heavy 0.12s infinite alternate ease-in-out;\n}\n@keyframes vf-shake-light {\n  0%   { transform: translate(0, 0) rotate(0deg); }\n  100% { transform: translate(0.7px, -0.6px) rotate(0.25deg); }\n}\n@keyframes vf-shake-heavy {\n  0%   { transform: translate(-1.2px, 0.9px) rotate(-0.45deg); }\n  50%  { transform: translate(1.3px, -1.1px) rotate(0.55deg); }\n  100% { transform: translate(-0.8px, -1px) rotate(-0.35deg); }\n}\n@media (prefers-reduced-motion: reduce) {\n  .vf-frame.shake-deform .vf-canvas,\n  .vf-frame.shake-crash .vf-canvas { animation: none; }\n}\n.vf-scanline {\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 3px);\n  opacity: 0.7;\n}\n.vf-footer {\n  position: absolute;\n  bottom: 6px; left: 16px; right: 16px;\n  display: flex; justify-content: space-between; align-items: center;\n  font: 9px ui-monospace, Consolas, monospace;\n  color: #6b8296;\n  z-index: 6;\n  text-shadow: 0 1px 3px #000;\n  pointer-events: none;\n}\n.vf-tag {\n  color: #9ab4cb;\n}\n.vf-status {\n  color: #8faea0;\n}\n\n.lie-legend { display: flex; gap: 16px; font-size: 11px; color: var(--muted); margin-bottom: 10px; align-items: center; }\n.lie-legend .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }\n@keyframes blink { 50% { opacity: .15; } }\n.trpg .ledger { border-top: 1px solid var(--border); padding: 8px 14px; color: var(--muted); background: #1f2730; border-radius: 0 0 7px 7px; font-size: 11px; margin-top: 12px; }\n/* ═══ 全局 Dialog 浮层弹窗加固（统一 TRPG 暗色风格） ═══ */\n/* ═══ 尾行专属 Dialog 浮层弹窗加固（统一 TRPG 暗色风格，绝不污染宿主与第三方扩展） ═══ */\n/* 终端弹窗排除在外：它自带 header/body 分区，padding 由 :599 定 0。\n   此前两条 !important 特异性打平、靠源码顺序分胜负，终端被套上 20/22 内边距。 */\ndialog.wx-dialog:not(.wx-terminal-dialog), .trpg dialog.wx-dialog:not(.wx-terminal-dialog) {\n  background: #070b10 !important;\n  color: var(--t-hi) !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(240, 179, 85, 0.22) !important;\n  padding: 20px 22px !important;\n  border-radius: 10px !important;\n  width: min(580px, calc(100% - 28px)) !important;\n  max-height: 85dvh !important;\n  overflow: auto !important;\n  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95) !important;\n  box-sizing: border-box !important;\n}\ndialog.wx-dialog::backdrop, .trpg dialog.wx-dialog::backdrop {\n  background: rgba(5, 10, 16, 0.85) !important;\n  backdrop-filter: blur(6px) !important;\n  -webkit-backdrop-filter: blur(6px) !important;\n}\ndialog.wx-dialog[open], .trpg dialog.wx-dialog[open] { animation: dialog-in 160ms ease-out; }\ndialog.wx-dialog h2, .trpg dialog.wx-dialog h2 { font-size: 16px; margin-top: 0; color: var(--t-hi); letter-spacing: .02em; }\n.wx-dialog .dialog-top, .trpg .wx-dialog .dialog-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); margin-bottom: 16px; }\n.wx-dialog .dialog-top h2, .trpg .wx-dialog .dialog-top h2 { margin-bottom: 10px; }\n.wx-dialog .close-icon, .trpg .wx-dialog .close-icon {\n  min-width: 32px; padding: 2px 8px; font-size: 17px; line-height: 1; cursor: pointer;\n  background: transparent !important; border: 0 !important; color: var(--t-mid) !important; transition: color .15s;\n}\n.wx-dialog .close-icon:hover, .trpg .wx-dialog .close-icon:hover { color: #fff !important; }\n.wx-dialog .dialog-actions, .trpg .wx-dialog .dialog-actions { display: flex; justify-content: flex-end; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px; margin-top: 18px; }\ndialog.wx-dialog button, .trpg dialog.wx-dialog button, .wx-terminal-modal button {\n  font: inherit !important; color: #d9e4ed !important; background: #26333e !important; border: 1px solid #4a5d70 !important; border-radius: 5px !important; padding: 4px 12px !important; cursor: pointer !important; min-height: 28px !important; transition: all .15s !important;\n}\n/* 关闭键不吃通用按钮皮：它必须排在 :1969 之后、且特异性更高（dialog + 两class） */\ndialog.wx-dialog .wx-modal-close, dialog.wx-dialog .close-icon,\n.trpg dialog.wx-dialog .wx-modal-close, .trpg dialog.wx-dialog .close-icon {\n  background: transparent !important;\n  border: 0 !important;\n  border-radius: 0 !important;\n  min-height: 0 !important;\n  padding: 4px 8px !important;\n  color: var(--t-mid) !important;\n  font-size: 17px !important;\n}\ndialog.wx-dialog .wx-modal-close:hover, dialog.wx-dialog .close-icon:hover,\n.trpg dialog.wx-dialog .wx-modal-close:hover, .trpg dialog.wx-dialog .close-icon:hover {\n  background: transparent !important;\n  border: 0 !important;\n  color: #ffffff !important;\n}\ndialog.wx-dialog button:hover, .trpg dialog.wx-dialog button:hover, .wx-terminal-modal button:hover { background: #354757 !important; border-color: #8da6bd !important; color: #fff !important; }\n.trpg .item-meta { color: #afc3d2; font-size: 12px; }\n.trpg .dice { font: 700 30px/1.6 ui-monospace, Consolas, monospace; margin: 15px 0; }\n.trpg .success { color: #b3cdb8; }\n@keyframes beat { 0%, 35%, 100% { transform: scale(1); } 12% { transform: scale(1.18); } }\n@keyframes ring-beat { 0%, 40%, 100% { stroke-opacity: .08; stroke-width: 1; } 12% { stroke-opacity: .65; stroke-width: 2.5; } }\n@keyframes dialog-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }\n@keyframes ecg-scroll { from { transform: translateX(0); } to { transform: translateX(-72px); } }\n.trpg.motion-paused .dial-heart, .trpg.motion-paused .dial-beat-halo, .trpg.motion-paused .ecg-scroll { animation-play-state: paused; }\n@media (prefers-reduced-motion: reduce) {\n  .trpg .dial-heart, .trpg .dial-beat-halo, .trpg .ecg-scroll, .trpg dialog.wx-dialog[open] { animation: none; }\n  .trpg .dial-marker-orbit, .trpg .stamina-fill { transition: none; }\n  .trpg .dev-frame-rec::before { animation: none; }\n}\n/* ═══ 零楼 · 开局两步走向导（第一步：猎手身份属性 ➔ 第二步：锁定目标角色；零楼数零 token） ═══ */\n#wx-zero-floor { position: static; width: 100%; max-width: 820px; min-width: 0; box-sizing: border-box; padding: 16px; margin: 12px auto; background: #131b23; border: 1px solid #354351; border-radius: 8px; color: var(--t-hi); white-space: normal; overflow-wrap: anywhere; }\n#wx-zero-floor[hidden], [data-wx-opening][hidden] { display: none !important; }\n#wx-zero-floor button { cursor: pointer; }\n@media(max-width: 560px) { #wx-zero-floor { padding: 10px; } #wx-zero-floor .target-grid { grid-template-columns: 1fr; } #wx-zero-floor .zero-title-wrap { flex-wrap: wrap; } }\n/* 关闭态一律不占版面：作者态的 display:flex 会盖过 UA 的 dialog:not([open]){display:none}，\n   导致创角向导 close() 之后仍占 399px 版面（真机实测）。 */\ndialog.wx-dialog:not([open]) { display: none !important; }\n.zero-wizard-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 12px; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }\n.zero-title-wrap { display: flex; align-items: baseline; gap: 8px; }\n#wx-zero-floor .zero-title-wrap h2 { font-size: 15px; font-weight: 600; color: var(--t-hi); letter-spacing: .02em; }\n.zero-sub { color: var(--t-low); font: 500 10px/1.5 ui-monospace, Consolas, monospace; letter-spacing: .06em; }\n.zero-steps-bar { display: flex; align-items: center; gap: 8px; }\n/* 步骤药丸与页签都在创角弹窗里，统一带 #wx-zero-floor 作用域：\n   宿主通用按钮皮是 `.trpg dialog.wx-dialog button`（0,2,2），单类前缀（0,2,0）压不住。 */\n#wx-zero-floor .zero-step-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 0 !important; background: none !important; border: 0 !important; border-radius: 0 !important; color: var(--t-low) !important; font: 600 10px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .12em; cursor: pointer; transition: color .15s; }\n#wx-zero-floor .zero-step-pill .step-num { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: none !important; border: 1px solid rgba(255, 255, 255, 0.16) !important; color: var(--t-low) !important; font-size: 9.5px; font-weight: 700; }\n#wx-zero-floor .zero-step-pill.active { color: var(--heat) !important; }\n#wx-zero-floor .zero-step-pill.active .step-num { background: var(--heat) !important; border-color: var(--heat) !important; color: #0b0f14 !important; }\n#wx-zero-floor .zero-step-pill.completed { color: var(--safe) !important; }\n#wx-zero-floor .zero-step-pill.completed .step-num { border-color: rgba(95, 214, 195, 0.5) !important; color: var(--safe) !important; }\n.zero-step-divider { color: var(--t-low); opacity: .5; font-size: 11px; }\n\n.zero-step-view { display: flex; flex-direction: column; min-height: 0; }\n.zero-step-view[hidden] { display: none; }\n\n#wx-zero-floor .create-tabs { display: flex; gap: 8px; margin: 0 0 14px; }\n#wx-zero-floor .create-tab { background: none !important; border: 0 !important; border-radius: 0 !important; color: var(--t-low) !important; padding: 4px 0 !important; margin-right: 16px; font: 600 10px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .12em; }\n#wx-zero-floor .create-tab.active { background: none !important; color: var(--heat) !important; box-shadow: inset 0 -2px 0 var(--heat); }\n#wx-zero-floor .create-pane[hidden] { display: none; }\n#wx-zero-floor .id-grid, #wx-zero-floor .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; max-height: 290px; overflow-y: auto; padding-right: 4px; }\n#wx-zero-floor .id-card { text-align: left; background: rgba(255, 255, 255, 0.028) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, 0.07) !important; border-radius: 4px !important; cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-height: 0; transition: background-color .15s; }\n#wx-zero-floor .id-card:hover { background: rgba(255, 255, 255, 0.055) !important; }\n#wx-zero-floor .id-card.sel { background: rgba(240, 179, 85, 0.07) !important; border-top-color: var(--heat) !important; }\n#wx-zero-floor .id-name { font-size: 15px; font-weight: 600; color: var(--t-hi); }\n#wx-zero-floor .id-tagline { font-size: 11px; color: var(--t-mid); font-style: italic; }\n#wx-zero-floor .id-line { font-size: 11px; color: var(--t-mid); line-height: 1.55; }\n#wx-zero-floor .id-line b { color: var(--safe); font-weight: 600; }\n#wx-zero-floor .id-line.bad b { color: #ff9aa3; }\n#wx-zero-floor .alloc { margin-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 10px; }\n#wx-zero-floor .alloc-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 10px; }\n#wx-zero-floor .alloc-remain { font: 600 15px/1 ui-monospace, Consolas, monospace; color: var(--heat); white-space: nowrap; }\n#wx-zero-floor .alloc-remain.warn { color: #ff9aa3; }\n#wx-zero-floor .alloc-row { display: grid; grid-template-columns: 44px auto 96px 1fr; align-items: center; gap: 10px; padding: 4px 0; }\n#wx-zero-floor .alloc-name { font-size: 13px; font-weight: 600; color: var(--t-hi); }\n#wx-zero-floor .stepper { display: flex; align-items: center; gap: 6px; }\n#wx-zero-floor .stepper button { background: rgba(255, 255, 255, 0.05) !important; border: 0 !important; border-radius: 2px !important; color: var(--t-mid) !important; }\n#wx-zero-floor .stepper button:disabled { opacity: .35; cursor: not-allowed; }\n#wx-zero-floor .alloc-val { font: 600 19px/1 ui-monospace, Consolas, monospace; color: var(--t-hi); text-align: center; min-width: 30px; }\n#wx-zero-floor .alloc-mod { font: 600 11px/1.3 ui-monospace, Consolas, monospace; color: var(--safe); text-align: center; white-space: nowrap; }\n#wx-zero-floor .alloc-mod.waste { color: #ff9aa3; }\n#wx-zero-floor .alloc-tier { font-size: 11px; color: var(--t-low); }\n#wx-zero-floor .alloc-warn { color: #ff9aa3; font-size: 11px; margin: 4px 0 0; min-height: 15px; }\n\n/* 步骤 2：目标卡片网格与详情 */\n.target-section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 10px; flex-wrap: wrap; }\n.target-sub-note { font-size: 11px; color: #7fd4c1; }\n.target-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 4px; }\n#wx-zero-floor .target-card { text-align: left; background: rgba(255, 255, 255, 0.028) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, 0.07) !important; border-radius: 4px !important; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: background-color .15s; }\n#wx-zero-floor .target-card:hover { background: rgba(255, 255, 255, 0.055) !important; }\n#wx-zero-floor .target-card.sel { background: rgba(240, 179, 85, 0.07) !important; border-top-color: var(--heat) !important; }\n.target-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }\n#wx-zero-floor .target-name { font-size: 14px; font-weight: 600; color: var(--t-hi); }\n#wx-zero-floor .target-stars { font-size: 11px; color: var(--heat); letter-spacing: 1px; }\n#wx-zero-floor .target-detail-stars { font-size: 12px; color: var(--heat); letter-spacing: 1px; }\n#wx-zero-floor .target-meta-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--t-mid); gap: 6px; }\n#wx-zero-floor .target-type-badge { display: inline-block; padding: 0 0 0 6px; border: 0 !important; border-left: 2px solid var(--t-low) !important; border-radius: 0 !important; font: 600 9.5px/1.4 ui-monospace, Consolas, monospace; letter-spacing: .08em; background: none !important; color: var(--t-mid) !important; }\n#wx-zero-floor .target-area { font-size: 11px; color: var(--t-mid); }\n#wx-zero-floor .target-tagline { font-size: 11px; color: var(--t-mid); font-style: italic; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }\n#wx-zero-floor .target-features { font-size: 10px; color: var(--t-mid); line-height: 1.4; }\n\n#wx-zero-floor .target-detail-box { margin-top: 10px; background: rgba(255, 255, 255, 0.024) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, 0.07) !important; border-radius: 4px !important; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; }\n#wx-zero-floor .target-detail-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important; padding-bottom: 5px; }\n.target-detail-title-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.target-detail-action-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n#wx-zero-floor .target-detail-name { font-size: 15px; font-weight: 600; color: var(--t-hi) !important; }\n#wx-zero-floor .target-detail-badge { padding: 1px 7px; border: 0 !important; border-left: 2px solid var(--her) !important; border-radius: 2px !important; font-size: 11px; font-weight: 600; background: rgba(217, 143, 160, 0.10) !important; color: #eec3cb !important; }\n#wx-zero-floor .target-status-badge { font-size: 10px; padding: 1px 6px; border-radius: 4px; }\n#wx-zero-floor .target-status-badge.ready { background: rgba(95, 214, 195, 0.10) !important; border: 0 !important; border-left: 2px solid var(--safe) !important; border-radius: 2px !important; color: var(--safe) !important; }\n#wx-zero-floor .btn-reroll-target { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px !important; font-size: 12px !important; font-weight: 600; letter-spacing: .04em; border-radius: 2px !important; background: rgba(240, 179, 85, 0.12) !important; border: 1px solid rgba(240, 179, 85, 0.55) !important; color: var(--heat) !important; cursor: pointer; transition: all .15s; }\n#wx-zero-floor .btn-reroll-target .btn-ico svg { width: 14px; height: 14px; }\n#wx-zero-floor .btn-reroll-target:hover { background: rgba(240, 179, 85, 0.22) !important; border-color: var(--heat) !important; color: #ffe2b0 !important; }\n#wx-zero-floor .target-gen-name { font-weight: 600; color: var(--t-hi); font-size: 13px; letter-spacing: 0; }\n#wx-zero-floor .target-gen-sub { font-size: 10px; color: var(--t-low); margin-left: 6px; }\n#wx-zero-floor .target-stat-delta-pos { color: var(--safe); font-weight: 600; margin-left: 2px; }\n#wx-zero-floor .target-stat-delta-neg { color: #ff9aa3; font-weight: 600; margin-left: 2px; }\n.target-detail-area { font-size: 11px; color: #8da4b8; }\n.target-detail-tagline { font-size: 11px; color: #afc3d2; font-style: italic; margin: 0; }\n.target-detail-rows { display: flex; flex-direction: column; gap: 3px; font-size: 11px; }\n#wx-zero-floor .target-row { color: var(--t-low); }\n#wx-zero-floor .target-row b { color: var(--t-mid); margin-right: 6px; }\n\n/* 底部操作条 */\n#wx-zero-floor .create-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 12px; margin-top: 14px; gap: 12px; flex-wrap: wrap; }\n#wx-zero-floor .create-hint { font-size: 12px; color: var(--t-low); }\n#wx-zero-floor .zero-btn-prev { background: none !important; border: 1px solid rgba(255, 255, 255, 0.14) !important; color: var(--t-mid) !important; border-radius: 2px !important; cursor: pointer; transition: all .15s; }\n#wx-zero-floor .zero-btn-prev:hover { background: rgba(255, 255, 255, 0.05) !important; color: var(--t-hi) !important; }\n#wx-zero-floor .zero-btn-next, #wx-zero-floor .create-confirm:not(:disabled) { background: rgba(240, 179, 85, 0.12) !important; border: 1px solid rgba(240, 179, 85, 0.45) !important; border-radius: 2px !important; color: var(--heat) !important; cursor: pointer; transition: all .15s; }\n#wx-zero-floor .zero-btn-next:hover, #wx-zero-floor .create-confirm:not(:disabled):hover { background: rgba(240, 179, 85, 0.2) !important; color: #ffe2b0 !important; }\n#wx-zero-floor .zero-btn-next:disabled, #wx-zero-floor .create-confirm:disabled { opacity: .35 !important; cursor: not-allowed; }\n/* 常驻条身份徽记（青色，与优势金色区分；v0.8） */\n.trpg .slim-tag.id-badge { cursor: pointer; color: #a8e6d5; border-color: #3f6c62; }\n.trpg .slim-tag.id-badge:hover { border-color: #7fd4c1; }\n/* 未开局覆盖钮（新局且未确认身份时盖住常驻条） */\n.trpg-slim-bar { position: relative; }\n#zeroChip { position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(13, 19, 26, .94); border: 1px dashed #4a5d70; border-radius: 7px; color: #7fd4c1; font-size: 13px; cursor: pointer; }\n#zeroChip[hidden] { display: none; }\n/* ═══ M4-2 三翼战术 Canvas 判定台样式（夜巡语言：去边框、顶部留一条极细线、光与材质当结构） ═══\n   判定台是单例弹窗，规则统一带 #wx-settle-dialog 作用域：\n   一是压得住宿主通用按钮皮（dialog.wx-dialog button 带 !important），二是避免与终端的同名类互相牵连。 */\ndialog#wx-settle-dialog {\n  width: min(860px, calc(100vw - 16px)) !important;\n  max-height: 92vh !important;\n  background: #070b10 !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(240, 179, 85, 0.22) !important;\n  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.92) !important;\n  padding: 14px 16px !important;\n}\n.settle-body {\n  font-size: 13px;\n  line-height: 1.6;\n  padding: 4px 0 8px;\n}\n#wx-settle-dialog .stage-console {\n  display: grid;\n  grid-template-columns: 210px 1fr 240px;\n  gap: 12px;\n  background: none !important;\n  border: 0 !important;\n  box-shadow: none !important;\n  border-radius: 10px;\n  padding: 2px 0 !important;\n  position: relative;\n  overflow: hidden;\n}\n@media (max-width: 760px) {\n  .stage-console { grid-template-columns: 1fr; }\n}\n#wx-settle-dialog .wing {\n  background: rgba(255, 255, 255, 0.028) !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;\n  border-radius: 4px !important;\n  padding: 10px;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  position: relative;\n  z-index: 10;\n}\n.wing-header {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  border-bottom: 1px solid rgba(75, 125, 185, 0.18);\n  padding-bottom: 5px;\n  font-size: 11px;\n}\n#wx-settle-dialog .wing-tag {\n  font: 600 9.5px/1.5 ui-monospace, Consolas, monospace !important;\n  color: var(--t-low) !important;\n  border: 0 !important;\n  padding: 1px 5px;\n  border-radius: 3px;\n  letter-spacing: .16em;\n}\n#wx-settle-dialog .wing-title { color: var(--t-mid) !important; letter-spacing: 0.04em; font-weight: 600 !important; }\n\n#wx-settle-dialog .action-badge {\n  font: 600 11.5px/1.5 ui-monospace, Consolas, monospace !important;\n  color: #f4d6a0 !important;\n  background: rgba(240, 179, 85, 0.08) !important;\n  border: 0 !important;\n  border-left: 2px solid var(--heat) !important;\n  border-radius: 0 !important;\n  padding: 4px 8px;\n  display: flex;\n  align-items: center;\n  gap: 6px;\n}\n.mods-stack {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n  min-height: 100px;\n}\n#wx-settle-dialog .chip-item {\n  font: 11.5px Consolas, monospace;\n  padding: 3px 8px;\n  border-radius: 0 !important;\n  background: rgba(255, 255, 255, 0.04) !important;\n  border: 0 !important;\n  border-left: 2px solid rgba(255, 255, 255, 0.14) !important;\n  color: var(--t-mid) !important;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  opacity: 0;\n  transform: translateX(-8px);\n  animation: chipSlideIn .25s cubic-bezier(.16, 1.3, .3, 1) forwards;\n}\n@keyframes chipSlideIn { to { opacity: 1; transform: translateX(0); } }\n#wx-settle-dialog .chip-item.hidden-mod {\n  border-left-color: var(--danger) !important;\n  color: #ffa9b1 !important;\n  background: rgba(255, 90, 104, 0.07) !important;\n}\n#wx-settle-dialog .chip-item.ripple-mod {\n  border-left-color: var(--heat) !important;\n  color: #f0d9a8 !important;\n  background: rgba(240, 179, 85, 0.06) !important;\n}\n#wx-settle-dialog .chip-item b { color: var(--t-hi) !important; font-weight: normal; }\n\n#wx-settle-dialog .ekg-widget {\n  margin-top: auto;\n  background: rgba(255, 255, 255, 0.03) !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;\n  border-radius: 0 !important;\n  padding: 6px 8px;\n}\n#wx-settle-dialog .ekg-top {\n  display: flex;\n  justify-content: space-between;\n  font: 10px Consolas, monospace;\n  color: var(--t-low) !important;\n  margin-bottom: 2px;\n}\n#wx-settle-dialog .ekg-top .bpm { color: var(--safe) !important; font-weight: 600 !important; }\n.ekg-svg { width: 100%; height: 22px; display: block; }\n#wx-settle-dialog .ekg-trace {\n  fill: none;\n  stroke: rgba(95, 214, 195, 0.8) !important;\n  stroke-width: 1.6;\n  stroke-dasharray: 200;\n  stroke-dashoffset: 200;\n  animation: ekgLoop 1.8s linear infinite;\n}\n@keyframes ekgLoop { to { stroke-dashoffset: -200; } }\n\n#wx-settle-dialog .stage-center {\n  position: relative;\n  min-height: 350px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  overflow: hidden;\n  background: none !important;\n}\n.stage-center .corner {\n  position: absolute; width: 12px; height: 12px; border: 2px solid rgba(79, 143, 214, 0.45); pointer-events: none; transition: border-color .3s;\n}\n#wx-settle-dialog .stage-center .corner { border-color: rgba(255, 255, 255, 0.18) !important; }\n.stage-center .c-tl { top: 6px; left: 6px; border-right: none; border-bottom: none; }\n.stage-center .c-tr { top: 6px; right: 6px; border-left: none; border-bottom: none; }\n.stage-center .c-bl { bottom: 6px; left: 6px; border-right: none; border-top: none; }\n.stage-center .c-br { bottom: 6px; right: 6px; border-left: none; border-top: none; }\n\n#wx-settle-dialog .hud-status {\n  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);\n  font: 10px Consolas, monospace; letter-spacing: 0.2em; color: var(--t-low) !important;\n  transition: color .3s; white-space: nowrap; z-index: 8;\n}\n\n#wx-settle-dialog .radar-ring {\n  position: absolute; width: 260px; height: 260px; border-radius: 50%;\n  border: 1px dashed rgba(255, 255, 255, 0.10) !important; pointer-events: none;\n  animation: rSpin 18s linear infinite;\n}\n@keyframes rSpin { to { transform: rotate(360deg); } }\n\n.die-stage-center {\n  position: relative;\n  width: 250px;\n  height: 250px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\ncanvas#settleDieCanvas {\n  display: block;\n  width: 250px;\n  height: 250px;\n  z-index: 5;\n  cursor: grab;\n}\ncanvas#settleDieCanvas:active { cursor: grabbing; }\n\n#wx-settle-dialog .die-shadow {\n  position: absolute;\n  width: 160px;\n  height: 18px;\n  bottom: -6px;\n  left: 45px;\n  border-radius: 50%;\n  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 70%) !important;\n  pointer-events: none;\n  z-index: 2;\n  transition: transform .15s ease;\n}\n\n#wx-settle-dialog .verdict-box {\n  text-align: center;\n  padding: 5px;\n  background: rgba(255, 255, 255, 0.03) !important;\n  border-radius: 4px !important;\n  border: 0 !important;\n  min-height: 56px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n}\n#wx-settle-dialog .verdict-badge {\n  font: 700 20px Consolas, monospace;\n  letter-spacing: 0.2em;\n  opacity: 0;\n  transform: scale(0.85);\n  transition: all .28s cubic-bezier(.2, 1.4, .4, 1);\n}\n#wx-settle-dialog .verdict-badge.show { opacity: 1; transform: scale(1); }\n#wx-settle-dialog .verdict-badge.crit { color: var(--heat) !important; text-shadow: 0 0 18px rgba(240, 179, 85, 0.55) !important; }\n#wx-settle-dialog .verdict-badge.fail { color: #ff9aa3 !important; text-shadow: 0 0 16px rgba(255, 90, 104, 0.45) !important; }\n#wx-settle-dialog .verdict-badge.success { color: var(--safe) !important; text-shadow: 0 0 16px rgba(95, 214, 195, 0.45) !important; }\n#wx-settle-dialog .verdict-badge.grace { color: #e9d3ad !important; text-shadow: none !important; }\n\n#wx-settle-dialog .math-line {\n  font: 11px Consolas, monospace;\n  color: var(--t-low) !important;\n  margin-top: 2px;\n}\n#wx-settle-dialog .math-line b { color: var(--t-hi) !important; font-weight: normal; }\n\n.ledger-wrap {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-height: 90px;\n}\n#wx-settle-dialog .ledger-row {\n  font: 11px Consolas, monospace;\n  padding: 2.5px 7px;\n  border-radius: 0 !important;\n  background: none !important;\n  border-left: 2px solid rgba(255, 255, 255, 0.16) !important;\n  color: var(--t-mid) !important;\n  display: flex;\n  justify-content: space-between;\n  opacity: 0;\n  transform: translateY(4px);\n  transition: all .25s ease;\n}\n#wx-settle-dialog .ledger-row.show { opacity: 1; transform: translateY(0); }\n#wx-settle-dialog .ledger-row.warn { border-left-color: var(--danger) !important; color: #ff9aa3 !important; }\n#wx-settle-dialog .ledger-row.gain { border-left-color: var(--safe) !important; color: var(--safe) !important; }\n.ledger-row .val { font-weight: bold; }\n\n#wx-settle-dialog .dark-reveal-card {\n  font-size: 10.5px;\n  line-height: 1.45;\n  color: #ffa9b1 !important;\n  background: rgba(255, 90, 104, 0.06) !important;\n  border: 0 !important;\n  border-left: 2px solid var(--danger) !important;\n  border-radius: 0 !important;\n  padding: 5px 7px;\n  opacity: 0;\n  transform: scale(0.95);\n  transition: all .3s ease;\n  margin-top: auto;\n}\n#wx-settle-dialog .dark-reveal-card.show { opacity: 1; transform: scale(1); }\n#wx-settle-dialog .dark-reveal-card b { color: #ffc2c8 !important; }\n\n#wx-settle-dialog .queue-history {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  margin-top: 4px;\n  border-top: 1px dashed rgba(255, 255, 255, 0.08) !important;\n  padding-top: 4px;\n}\n#wx-settle-dialog .history-item {\n  font: 10px Consolas, monospace;\n  padding: 2px 5px;\n  border-radius: 0 !important;\n  background: rgba(255, 255, 255, 0.03) !important;\n  border: 0 !important;\n  border-left: 2px solid rgba(255, 255, 255, 0.12) !important;\n  color: var(--t-low) !important;\n  display: flex;\n  justify-content: space-between;\n}\n#wx-settle-dialog .history-item b { color: var(--t-hi) !important; font-weight: normal; }\n\n.flash-overlay {\n  position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 7;\n}\n.flash-overlay.ok { background: radial-gradient(circle at 50% 50%, rgba(142,226,179,.22) 0%, transparent 68%); animation: fl .7s ease-out; }\n.flash-overlay.bad { background: radial-gradient(circle at 50% 50%, rgba(224,86,106,.24) 0%, transparent 68%); animation: fl .7s ease-out; }\n.flash-overlay.crit { background: radial-gradient(circle at 50% 50%, rgba(216,183,104,.32) 0%, transparent 68%); animation: fl .85s ease-out; }\n@keyframes fl { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }\n\n/* 底栏沿用 .dialog-actions 的排布（勾选与确认同侧），这里只补夜巡的语言化内边距 */\n.settle-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; }\n#wx-settle-dialog .settle-actions { padding-top: 12px !important; border-top: 1px solid rgba(255, 255, 255, 0.06) !important; }\n#wx-settle-dialog .settle-auto { font-size: 12px; color: var(--t-mid) !important; display: flex; align-items: center; gap: 6px; cursor: pointer; }\n#wx-settle-dialog .settle-ack { min-width: 88px !important; font-weight: 700; }\n#wx-settle-dialog .settle-ack:not(:disabled) {\n  background: rgba(95, 214, 195, 0.12) !important;\n  border: 1px solid rgba(95, 214, 195, 0.45) !important;\n  border-radius: 2px !important;\n  color: var(--safe) !important;\n}\n#wx-settle-dialog .settle-ack:not(:disabled):hover { background: rgba(95, 214, 195, 0.2) !important; color: #d8fff6 !important; }\n/* 旧 520px 块里 .bar/.columns/.column/.drawer/.value/.phase 已随 GLM 骨架废弃，只留仍在用的三类 */\n@media (max-width: 520px) {\n  .trpg .stat { padding: 10px 7px; }\n  .trpg .label { font-size: 10px; }\n  .trpg .stat.instrument { padding: 8px 8px 10px; }\n  .trpg .heart-dial { width: min(100%, 124px); }\n}\n\n/* ═══ 桌面窄窗（≤800px）先让一层 ═══\n   C 案字号抬高后（场所 15px / 心跳 24px），整套左簇需要的宽度比原来更大；\n   窗口窄于 ≈860 时就会把标签齐根裁掉。先收三样最低价值的读数：\n   路线剩余节点、BPM、设备入口（后两者终端里都有），并把路牌与刻度收一档。 */\n@media (max-width: 860px) {\n  .slim-tag.remain { display: none; }\n  .mini-heart-bpm { display: none; }\n  /* .trpg .slim-btn 把 display 写回了 inline-flex，这里要同前缀压回来 */\n  .trpg .slim-btn.phone-stat { display: none !important; }\n  /* 场所名走省略号，别齐根裁掉半截标签 */\n  .slim-left { min-width: 0; gap: 7px; }\n  .slim-place { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }\n  .slim-tags-group { gap: 7px; }\n  .slim-tag { font-size: 10.5px; padding-left: 6px; }\n  .slim-center { gap: 6px; }\n  .mini-heart-num { font-size: 21px; }\n  .mini-heart { font-size: 17px; }\n}\n\n/* ≤660px：再收一层——大区徽记（场所名已足够定位）与 4 个距离点（档位文字仍在）。\n   561~660 区间实测左簇仍会被裁掉 5~64px。 */\n@media (max-width: 660px) {\n  .slim-dist-badge { display: none; }\n  .slim-pips { display: none; }\n  .slim-divider { display: none; }\n}\n\n/* ═══ 手机断点（≤560px）常驻条与终端重排 ═══\n   旧 520px 块只管 .bar/.columns/.column/.drawer 等已废弃的 GLM 骨架类；\n   新结构（trpg-slim-bar / wx-capsule-bar / wx-terminal-*）此前没有任何响应式规则，\n   390px 下左簇被 min-width:0 压成 0 宽、终端按钮被裁半个字。 */\n@media (max-width: 560px) {\n  /* 常驻条：保留位置、距离档、终局红线、心跳、终端；次级信息让位 */\n  /* 预览壳在窄屏上收内边距（box-sizing / min-width 已在基础规则里处理） */\n  main.wx-standalone-main { padding: 10px 8px; }\n  .trpg-slim-bar { padding: 0 6px; gap: 5px; }\n  .slim-left { gap: 5px; }\n  .slim-place { font-size: 12.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }\n  .slim-tags-group { gap: 6px; }\n  /* 天气：终端沙盘与动线雨幕特效里都还在，条上不重复占位 */\n  .slim-tag.weather { display: none; }\n  /* 路线剩余节点：次级信息，保留在终端与 tooltip */\n  .slim-tag.remain { display: none; }\n  /* C 案的标签是\"左竖条 + 文字\"，窄屏只收字号，不能补 padding 把竖条挤没 */\n  .slim-tag.id-badge { font-size: 10px; padding: 0 0 0 5px; }\n  /* 距离档与读数之间拉一根发丝线，别读成一句话 */\n  .slim-center { gap: 4px; padding: 0 8px 0 0; border-right: 1px solid rgba(255, 255, 255, 0.07); }\n  .slim-pips { display: none; }\n  .slim-divider { display: none; }\n  .slim-right { gap: 8px; }\n  .slim-stamina { padding: 0; }\n  /* 40px 细线在窄条上没有信息量，数字承担 */\n  .slim-stamina-bar { display: none; }\n  .mini-heart-bpm { display: none; }\n  .mini-heart { font-size: 17px; }\n  .mini-heart-num { font-size: 22px; }\n  .trpg .heart-pill-btn { padding: 0 !important; }\n  .trpg .slim-btn { padding: 2px 2px !important; }\n  /* 设备入口在终端深页里已有（监控设备 ↗），条上让位给终端图标 */\n  .phone-stat { display: none; }\n  .term-txt { display: none; }\n\n  /* 胶囊条：压缩内边距，靠横向滑动承载全部胶囊（C3：只收尺寸，不动皮肤） */\n  .wx-capsule-bar { padding: 3px 6px; gap: 5px; }\n  .wx-posture-badge { font-size: 9px; gap: 3px; }\n  .trpg .wx-capsule-chip { font-size: 10.5px; padding: 3px 8px; min-height: 26px !important; }\n  .trpg .wx-more-btn { font-size: 10.5px; padding: 3px 4px; }\n  /* 右边缘渐隐，提示这一排可以横滑（否则被裁的胶囊看起来像渲染错） */\n  .wx-chips-wrap {\n    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);\n    mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);\n  }\n\n  /* 心跳弹层：贴边不越界，刻度文字不再随 SVG 缩到 6px */\n  .heart-popover-card { width: min(300px, calc(100vw - 16px)); right: -4px; padding: 9px 10px; }\n  .popover-content .heart-dial { width: 138px; }\n  .popover-content .stamina, .popover-content .spark { width: 138px; }\n\n  /* 终端：标题不再折三行，徽记让位；动线轨可横滑而不是被切 */\n  .wx-modal-head { padding: 10px 12px; gap: 8px; }\n  .wx-modal-title { font-size: 12.5px; letter-spacing: 0; }\n  /* 阶段徽记（第 N 晚 · 潜行阶段）是模式唯一读数，不隐藏，只收紧 */\n  .wx-modal-badge { font-size: 9.5px; padding: 1px 5px; line-height: 1.25; max-width: none; white-space: nowrap; }\n  .wx-terminal-icon { display: none; }\n  .wx-modal-close { padding: 4px 6px !important; font-size: 15px; }\n  .wx-modal-body { padding: 12px 12px 10px; }\n  .wx-modal-body .route-tracker { padding: 10px 12px 12px; }\n  .route-stepper { overflow-x: auto; scrollbar-width: none; }\n  .route-stepper::-webkit-scrollbar { display: none; }\n  .wx-terminal-envbox, .wx-wing-card { padding: 10px 12px; }\n  .trpg .wx-terminal-ledger[data-tip] { margin: 0 12px 10px; }\n\n  /* 判定台单翼叠放后，三翼间距收一档 */\n  .stage-console { padding: 10px; gap: 10px; }\n}\n\n/* ≤430px：再让一档——大区徽记退场（场所名已足够定位，大区在终端沙盘里），\n   把宽度还给场所名，避免窄条上只剩一个「居」字。 */\n@media (max-width: 430px) {\n  .slim-dist-badge { display: none; }\n  /* 模式（潜行）在终端阶段徽记里仍有读数；窄条上把宽度让给场所与当前状态 */\n  .slim-phase { display: none; }\n  .slim-place { font-size: 12px; }\n}\n\n/* ≤380px（小屏安卓 / SE）：只剩 2px 的富余，把间隙与心跳内边距再收一点，\n   让场所名不被省略号截掉。 */\n@media (max-width: 380px) {\n  .trpg-slim-bar { gap: 4px; padding: 0 5px; }\n  .slim-right { gap: 3px; }\n  .heart-pill-btn { padding: 2px 5px; }\n  .mini-heart { margin-right: 3px; }\n}\n/* ═══ 相册（贴墙）与拍照即时卡片 ═══ */\n.wx-album-dialog { width: min(92vw, 560px); max-height: 80vh; }\n.album-count { font: 600 11px/1 ui-monospace, Consolas, monospace; color: var(--t-low); margin-left: 6px; }\n.album-wall { overflow-y: auto; padding: 8px 4px 12px; display: flex; flex-direction: column; gap: 10px; }\n.wall-sec { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; padding-top: 14px; position: relative; }\n.wall-sec::before {\n  content: attr(data-cn); position: absolute; top: 0; left: 0;\n  font: 600 10px/1 ui-monospace, Consolas, monospace; letter-spacing: .14em; color: var(--t-low);\n}\n.photo {\n  width: 76px; height: 104px; background: #e8e6e1; padding: 4px 4px 14px; border-radius: 2px;\n  box-shadow: 0 4px 10px rgba(0,0,0,.45); transform: rotate(var(--tilt, -1.5deg));\n  cursor: pointer; position: relative; box-sizing: border-box;\n}\n.photo:nth-child(3n) { --tilt: 1.6deg; }\n.photo:nth-child(4n) { --tilt: -2.2deg; }\n.photo img { width: 100%; height: 86px; object-fit: cover; display: block; background: #2a2f35; }\n.photo .cap { position: absolute; left: 5px; right: 5px; bottom: 3px; font: 500 8px/1.2 ui-monospace, Consolas, monospace; color: #4a4a46; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }\n.photo.empty { height: 96px; background: transparent; box-shadow: none; border: 1px dashed rgba(255,255,255,.18); border-radius: 2px; cursor: default; }\n.photo.empty::after { content: \"\"; }\n.photo.broken { background: #2b2a27; }\n.photo.broken img { display: none; }\n.photo.broken .cap { color: #8c8a80; }\n.album-detail { position: fixed; inset: 0; background: rgba(4,7,10,.92); z-index: 20050; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; }\n.album-detail[hidden] { display: none; }\n.album-detail img { max-width: min(92vw, 520px); max-height: 68vh; object-fit: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6); }\n.album-detail-meta { font: 500 12px/1.6 ui-monospace, Consolas, monospace; color: var(--t-mid); text-align: center; }\n.photo-toast {\n  position: fixed; right: 16px; bottom: 118px; z-index: 20040;\n  display: flex; gap: 8px; align-items: center; padding: 8px;\n  background: rgba(16,23,31,.96); border: 1px solid var(--line); border-radius: 6px;\n  box-shadow: 0 8px 24px rgba(0,0,0,.5); animation: toastIn .22s ease-out;\n}\n.photo-toast[hidden] { display: none; }\n.photo-toast img { width: 44px; height: 58px; object-fit: cover; border-radius: 2px; background: #2a2f35; }\n.photo-toast-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }\n.photo-toast-txt b { font: 600 12px/1.2 \"Noto Sans SC\", system-ui, sans-serif; color: var(--t-hi); }\n.photo-toast-txt span { font: 500 10px/1.2 ui-monospace, Consolas, monospace; color: var(--t-low); }\n@keyframes toastIn { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }\n\n.trpg .wx-sync-notice { padding: 8px 12px; color: #f0b355; background: #241e15; border: 1px solid #6f5833; font-size: 12px; }\n.trpg .wx-sync-notice[hidden] { display: none !important; }\n\n.trpg .wx-sync-notice button { margin: 6px 8px 0 0; padding: 4px 8px; color: inherit; background: transparent; border: 1px solid #6f5833; border-radius: 4px; cursor: pointer; }\n.trpg .wx-sync-notice textarea { display: block; width: 100%; max-height: 160px; color: inherit; background: #151515; }\n.mes.wx-sync-floor { outline: 2px solid #f0b355; outline-offset: -2px; }\n\n/* 每日行动：只消费 dayPlan 快照，独立于心跳与尾行回合。 */\n.trpg .wx-day-plan { margin: 0 10px 8px; padding: 12px 14px 10px; border: 1px solid rgba(173,188,198,.16); border-radius: 7px; background: linear-gradient(120deg,rgba(26,35,41,.96),rgba(12,19,24,.96)); color: #acb9c0; font: 12px/1.5 \"Noto Sans SC\",system-ui,sans-serif; }\n.trpg .wx-day-heading, .trpg .wx-day-when, .trpg .wx-day-ap, .trpg .wx-day-bottom { display: flex; align-items: center; }\n.trpg .wx-day-heading { justify-content: space-between; gap: 10px; }\n.trpg .wx-day-when { gap: 8px; flex-wrap: wrap; min-width: 0; }\n.trpg .wx-day-kicker { color: #788991; font-size: 10px; letter-spacing: 2px; }\n.trpg .wx-day-dot { color: #586973; }\n.trpg #wxDayPeriod { color: #e2d2ab; font-weight: 500; }\n.trpg .wx-day-ap { flex-shrink: 0; gap: 6px; }\n.trpg #wxDayAp { color: #f2e3bb; font: 500 23px/1 ui-monospace,Consolas,monospace; }\n.trpg .wx-day-ap-total { color: #798d98; }\n.trpg .wx-day-ap-pips { display: flex; gap: 3px; margin-left: 4px; }\n.trpg .wx-day-ap-pips i { width: 6px; height: 14px; border-radius: 2px; background: #c4b184; }\n.trpg .wx-day-ap-pips i.used { background: #303c44; }\n.trpg .wx-day-periods { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); list-style: none; padding: 0; margin: 13px 0 10px; gap: 5px; }\n.trpg .wx-day-periods li { position: relative; text-align: center; padding: 7px 0 0; color: #657883; border-top: 2px solid #2c3942; font-size: 11px; }\n.trpg .wx-day-periods li[data-phase=\"past\"] { color: #a4b0b7; border-color: #70808a; }\n.trpg .wx-day-periods li[data-phase=\"current\"] { color: #efdab0; border-color: #d0b882; }\n.trpg .wx-day-periods li[data-phase=\"current\"]::before { content: \"\"; position: absolute; top: -4px; left: calc(50% - 3px); width: 6px; height: 6px; border-radius: 50%; background: #e4c68b; box-shadow: 0 0 8px #b49b5a66; }\n.trpg .wx-day-bottom { justify-content: space-between; gap: 10px; color: #71858f; font-size: 10px; }\n.trpg .wx-day-activity { display: flex; align-items: center; gap: 6px; min-width: 0; color: #aebfc8; }\n.trpg .wx-day-activity i { width: 5px; height: 5px; border-radius: 50%; background: #6e838f; flex-shrink: 0; }\n.trpg .wx-day-plan[data-state=\"active\"] .wx-day-activity i { background: #b9c8a2; box-shadow: 0 0 7px #adc19855; }\n.trpg .wx-day-plan[data-state=\"empty\"] .wx-day-periods { margin: 0; }\n@media(max-width:560px) {\n  .trpg .wx-day-plan { margin: 0 6px 6px; padding: 10px; }\n  .trpg .wx-day-when { gap: 5px; }\n  .trpg .wx-day-ap-pips { display: none; }\n  .trpg .wx-day-bottom { align-items: flex-start; flex-direction: column; gap: 3px; }\n}\n\n/* 日程活动统一入口。配置决定卡片数量，新增活动无需改 HTML。 */\n.trpg .wx-capsule-bar[hidden] { display: none; }\n.trpg .wx-daily-actions { margin: 0 10px 10px; padding: 0 12px 9px; border: 1px solid #263740; border-radius: 6px; background: #0e171eee; }\n.trpg .wx-daily-actions summary { cursor: pointer; padding: 10px 0; color: #d1dce0; font-size: 12px; }\n.trpg .wx-daily-actions summary span { margin-left: 12px; font-size: 10px; color: #718994; }\n.trpg .wx-daily-action-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }\n.trpg button.wx-daily-action { display: flex; flex-direction: column; gap: 5px; width: 100%; min-width: 0; padding: 10px!important; text-align: left; background: #18242c!important; border-color: #3f535e!important; border-radius: 5px; white-space: normal; }\n.trpg button.wx-daily-action:disabled { opacity: .58; cursor: default; background: #111b22!important; border-color: #263741!important; }\n.trpg .wx-daily-action-head { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; font-size: 12px; }\n.trpg .wx-daily-action-head strong { font-weight: 500; }\n.trpg .wx-daily-action-cost { flex-shrink: 0; color: #dfc38d; font: 11px ui-monospace,Consolas,monospace; }\n.trpg .wx-daily-action-effect { font-size: 10px; line-height: 1.6; color: #9bacb6; }\n.trpg .wx-daily-action-reason { font-size: 10px; color: #ae947c; }\n.trpg .wx-daily-controls { display: flex; gap: 7px; margin-top: 8px; }\n.trpg .wx-daily-controls:empty { display: none; }\n.trpg .wx-daily-controls button { max-width: 350px; }\n.trpg .wx-daily-status { margin: 7px 0 0; font-size: 11px; line-height: 1.6; color: #b0c4b6; }\n.trpg .wx-daily-status:empty { display: none; }\n@media(max-width:560px) {\n  .trpg .wx-daily-actions { margin: 0 6px 8px; padding: 0 9px 8px; }\n  .trpg .wx-daily-action-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }\n  .trpg .wx-daily-actions summary span { margin-left: 8px; }\n  .trpg .wx-daily-action-head { font-size: 11px; }\n}\n\n.trpg #distStat[hidden] { display: none !important; }\n\n/* 经济选择面板：取消／浏览不推进日程，提交交给同一日程命令。 */\n.trpg .wx-economy-input[hidden], .trpg .wx-economy-orders[hidden] { display: none; }\n.trpg .wx-economy-input { margin-top: 10px; padding: 12px; border: 1px solid #536674; border-radius: 5px; background: #101c24; }\n.trpg .wx-economy-input h3 { margin: 0 0 8px; font-size: 14px; color: #e1d1ae; }\n.trpg .wx-economy-input p, .trpg .wx-economy-orders p { margin: 5px 0; color: #9eb1be; font-size: 11px; }\n.trpg .wx-work-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }\n.trpg .wx-work-choice { display: flex; align-items: flex-start; gap: 8px; padding: 9px; background: #192831; border: 1px solid #324751; border-radius: 4px; cursor: pointer; }\n.trpg .wx-work-choice.unavailable { opacity: .5; cursor: default; }\n.trpg .wx-work-choice>span, .trpg .wx-shop-line>span { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 4px; }\n.trpg .wx-work-choice strong, .trpg .wx-shop-line strong { font-size: 12px; font-weight: 500; color: #cfdae0; }\n.trpg .wx-work-choice span span { font-size: 11px; color: #c3b690; }\n.trpg .wx-work-choice small, .trpg .wx-shop-line small { font-size: 10px; color: #8b9ca7; }\n.trpg .wx-shop-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; max-height: 350px; overflow-y: auto; margin-top: 8px; }\n.trpg .wx-shop-line { display: flex; align-items: center; gap: 8px; padding: 8px; background: #17252e; border-radius: 3px; }\n.trpg .wx-shop-line input { box-sizing: border-box; flex: 0 0 54px; width: 54px; padding: 7px 3px; background: #0c1720; border: 1px solid #405765; color: #d5c28f; }\n.trpg .wx-economy-input select { padding: 7px; color: #d2dde2; background: #17252e; border: 1px solid #405765; }\n.trpg .wx-economy-foot { display: flex; gap: 8px; margin-top: 10px; }\n.trpg .wx-economy-foot button { padding: 8px 12px; color: #dfcba6; background: #20323e; border: 1px solid #5e707b; border-radius: 4px; cursor: pointer; }\n.trpg .wx-economy-foot button:disabled { opacity: .4; cursor: default; }\n.trpg .wx-economy-orders { margin-top: 10px; color: #b4c5ce; font-size: 12px; }\n.trpg .wx-order { margin: 6px 0; padding: 7px 10px; border-left: 2px solid #455f6a; background: #15212a; }\n.trpg .wx-order strong { font-size: 11px; color: #c5b589; }\n@media(max-width:560px) { .trpg .wx-work-list, .trpg .wx-shop-list { grid-template-columns: minmax(0,1fr); } }\n\n/* 共用地点拓扑与固定空间布局；地图浏览不触发移动。 */\n\n/* 城市地图独立样式；地理底图与 HUD 主题在此衔接。 */\n.trpg .wx-city-map {\n  margin: 0 10px 10px;\n  padding: 10px 12px;\n  border: 1px solid #354b57;\n  border-radius: 7px;\n  background: #0c1720ed;\n}\n.trpg .wx-city-map summary {\n  cursor: pointer;\n  font-size: 13px;\n  color: #d4dfe4;\n}\n.trpg .wx-city-map summary span {\n  display: block;\n  margin: 6px 0 8px;\n  font-size: 11px;\n  color: #9db4c1;\n}\n.trpg .wx-city-tabs,\n.trpg .wx-city-legend {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 7px;\n  margin: 8px 0;\n}\n.trpg .wx-city-tabs button,\n.trpg .wx-city-info button {\n  padding: 7px 10px;\n  background: #172935;\n  color: #b6cad4;\n  border: 1px solid #425f70;\n  border-radius: 4px;\n  font-size: 11px;\n  cursor: pointer;\n}\n.trpg .wx-city-tabs button[aria-pressed=\"true\"] {\n  color: #e6d0a2;\n  border-color: #a59164;\n  background: #2c2d25;\n}\n.trpg .wx-city-info button:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n.trpg .wx-city-legend {\n  font-size: 10px;\n  color: #728d9c;\n}\n.trpg .wx-city-legend .player {\n  color: #79c5ed;\n}\n.trpg .wx-city-legend .target {\n  color: #e594a3;\n}\n.trpg .wx-city-legend .last {\n  color: #d1ae6b;\n}\n/* 俯视街区地图：地理底图与可交互地点分层，避免把拓扑边当街道。 */\n.trpg .wx-city-canvas {\n  border: 1px solid #677779;\n  border-radius: 7px;\n  overflow: hidden;\n  background: #e3e1d5;\n  isolation: isolate;\n}\n.trpg .wx-city-canvas svg {\n  width: 100%;\n  height: auto;\n  display: block;\n  font-family: system-ui, sans-serif;\n}\n.trpg .wx-city-canvas svg.overview {\n  height: auto;\n}\n.trpg .wx-map-land {\n  fill: #e3e1d5;\n}\n.trpg .wx-map-ground {\n  fill: #deddd0;\n}\n.trpg .ground-D {\n  fill: #d8decb;\n}\n.trpg .ground-C {\n  fill: #e3d9cd;\n}\n.trpg .ground-A {\n  fill: #d9dfe0;\n}\n.trpg .wx-map-water {\n  fill: #88b2c3;\n  stroke: #6e99aa;\n  stroke-width: 3;\n}\n.trpg .wx-map-water-line {\n  fill: none;\n  stroke: #a6c8d4;\n  stroke-width: 2;\n  opacity: 0.65;\n}\n.trpg .wx-map-water-label {\n  fill: #477487;\n  font-size: 24px;\n  letter-spacing: 10px;\n}\n.trpg .wx-map-street path {\n  fill: none;\n  stroke-linejoin: round;\n  stroke-linecap: round;\n}\n.trpg .road-edge {\n  stroke: #b7b8ab;\n}\n.trpg .road-surface {\n  stroke: #faf7e9;\n}\n.trpg .highway .road-surface {\n  stroke: #f7e6b8;\n}\n.trpg .road-center {\n  stroke: #d1ba82;\n  stroke-width: 1.5;\n  stroke-dasharray: 9 7;\n}\n.trpg .lane .road-edge {\n  stroke: #b1aea3;\n}\n.trpg .lane .road-surface {\n  stroke: #e9e4d7;\n}\n.trpg .walk .road-surface {\n  stroke: #c9c1ab;\n}\n.trpg .wx-map-block .parcel {\n  fill: #b3bab4;\n  stroke: #919d97;\n  stroke-width: 1;\n}\n.trpg .wx-map-block .roof {\n  fill: #c8cdc4;\n  stroke: #a6b0a8;\n  stroke-width: 1;\n}\n.trpg .wx-map-block .roof-unit {\n  fill: #a0ada8;\n}\n.trpg .wx-map-block .roof-window {\n  stroke: #8b9ea3;\n  stroke-width: 7;\n}\n.trpg .wx-map-block.campus .parcel {\n  fill: #cdbb99;\n  stroke: #b39a70;\n}\n.trpg .wx-map-block.campus .roof {\n  fill: #d8ccae;\n}\n.trpg .wx-map-block .campus-yard {\n  fill: #acb59a;\n  stroke: #96a387;\n}\n.trpg .wx-map-block.office .parcel {\n  fill: #a9bac1;\n  stroke: #839ba5;\n}\n.trpg .wx-map-block.office .roof {\n  fill: #c2cfd2;\n}\n.trpg .wx-map-block.housing .parcel {\n  fill: #c3b9ab;\n  stroke: #a69b8e;\n}\n.trpg .wx-map-block.housing .roof {\n  fill: #d4cdc0;\n}\n.trpg .wx-map-block.shop .parcel,\n.trpg .wx-map-block.market .parcel {\n  fill: #d5b99c;\n  stroke: #b99977;\n}\n.trpg .wx-map-block.shop .roof,\n.trpg .wx-map-block.market .roof {\n  fill: #e2cdb1;\n}\n.trpg .wx-map-block.nightlife .parcel {\n  fill: #beaaba;\n  stroke: #a18d9a;\n}\n.trpg .wx-map-block.nightlife .roof {\n  fill: #d3c2ce;\n}\n.trpg .wx-map-block.transit .parcel {\n  fill: #b4c4c7;\n  stroke: #8ba6ab;\n}\n.trpg .wx-map-block.transit .roof {\n  fill: #d0dadd;\n}\n.trpg .wx-map-block.villa .parcel {\n  fill: #bfb2a0;\n}\n.trpg .wx-map-block.villa .roof {\n  fill: #d9ceba;\n}\n.trpg .wx-map-block.park .parcel,\n.trpg .wx-map-block.garden .parcel,\n.trpg .wx-map-block.forest .parcel {\n  fill: #b4c59f;\n  stroke: #96b187;\n}\n.trpg .wx-map-block.forest .parcel {\n  fill: #a3bc98;\n}\n.trpg .wx-map-block .tree {\n  fill: #89a980;\n  stroke: #7a9b72;\n  stroke-width: 1;\n  opacity: 0.7;\n}\n.trpg .wx-map-block .park-path {\n  fill: none;\n  stroke: #d8d5bc;\n  stroke-width: 6;\n}\n.trpg .wx-map-footbridge {\n  fill: #aaa995;\n  stroke: #8b927e;\n  stroke-width: 1;\n}\n.trpg .wx-map-bridge-steps {\n  fill: none;\n  stroke: #d9dbc6;\n  stroke-width: 2;\n}\n.trpg .wx-map-crosswalk {\n  stroke: #faf9ef;\n  stroke-width: 3;\n}\n.trpg .wx-map-street-label {\n  fill: #787b70;\n  font-size: 10px;\n  letter-spacing: 3px;\n  pointer-events: none;\n}\n.trpg .wx-map-district-title {\n  fill: #4b605c;\n  font-size: 22px;\n  font-weight: 650;\n  letter-spacing: 3px;\n  paint-order: stroke;\n  stroke: #e0e2d5;\n  stroke-width: 4;\n  pointer-events: none;\n}\n.trpg .wx-map-district-subtitle {\n  fill: #6f7e71;\n  font-size: 10px;\n  letter-spacing: 2px;\n  pointer-events: none;\n}\n.trpg .wx-city-node {\n  cursor: pointer;\n  outline: none;\n}\n.trpg .wx-map-place-hit {\n  fill: transparent;\n  stroke: none;\n}\n.trpg .wx-city-label {\n  fill: #354948;\n  font-size: 15px;\n  font-weight: 600;\n  paint-order: stroke;\n  stroke: #e9e8db;\n  stroke-width: 3px;\n  stroke-linejoin: round;\n  pointer-events: none;\n}\n.trpg .wx-city-node.unknown .wx-city-label {\n  fill: #7c8073;\n  font-size: 12px;\n  font-weight: 400;\n}\n.trpg .wx-city-node.selected .wx-map-place-hit,\n.trpg .wx-city-node:focus .wx-map-place-hit {\n  fill: #faedc070;\n  stroke: #9d773a;\n  stroke-width: 2;\n  stroke-dasharray: 4 2;\n}\n.trpg .wx-city-node.service .wx-city-label {\n  fill: #72501d;\n  font-weight: 750;\n}\n.trpg .wx-map-place-icon {\n  fill: #6c8585;\n  stroke: #f4f0db;\n  stroke-width: 1;\n}\n.trpg .kind-metro .wx-map-place-icon {\n  fill: #527d93;\n}\n.trpg .kind-school .wx-map-place-icon {\n  fill: #968457;\n}\n.trpg .service .wx-map-place-icon {\n  fill: #9c753e;\n}\n.trpg .wx-map-icon-label {\n  fill: #fff8e8;\n  font-size: 10px;\n  font-weight: 700;\n  pointer-events: none;\n}\n.trpg .wx-map-player,\n.trpg .wx-map-target {\n  pointer-events: none;\n}\n.trpg .wx-map-player circle,\n.trpg .wx-map-player .wx-map-pin-tip {\n  fill: #2b779f;\n  stroke: #e8f8ff;\n  stroke-width: 2;\n}\n.trpg .wx-map-target circle,\n.trpg .wx-map-target .wx-map-pin-tip {\n  fill: #ab576c;\n  stroke: #fff3f4;\n  stroke-width: 2;\n}\n.trpg .wx-map-target circle.last-seen {\n  fill: #ad8847;\n  stroke-dasharray: 3 2;\n}\n.trpg .wx-map-pin-label {\n  fill: #fff;\n  font-size: 11px;\n  font-weight: 700;\n  stroke: none;\n}\n.trpg .wx-map-compass path {\n  fill: #647c70;\n  stroke: #f5f3df;\n  stroke-width: 1;\n}\n.trpg .wx-map-compass-label {\n  fill: #64766b;\n  font-size: 14px;\n  font-weight: 700;\n}\n.trpg\n  .overview\n  .wx-city-node:not(.overview-landmark):not(.selected):not(.positioned) {\n  display: none;\n}\n.trpg .overview .wx-city-label {\n  font-size: 19px;\n  stroke-width: 5;\n}\n.trpg .overview .wx-map-district-title {\n  font-size: 28px;\n}\n.trpg .overview .wx-map-district-subtitle {\n  font-size: 15px;\n}\n.trpg .overview .wx-map-street-label {\n  font-size: 14px;\n}\n.trpg .overview .wx-map-place-hit {\n  width: 120px;\n  transform-box: fill-box;\n  transform-origin: center;\n}\n.trpg .overview .wx-map-place-icon,\n.trpg .overview .wx-map-icon-label {\n  display: none;\n}\n.trpg .wx-city-info {\n  padding-top: 10px;\n  font-size: 12px;\n  color: #cfdae0;\n}\n.trpg .wx-city-info p,\n.trpg .wx-city-note,\n.trpg .wx-city-notice {\n  font-size: 10px;\n  line-height: 1.7;\n  color: #859fae;\n  margin: 6px 0;\n}\n.trpg .wx-city-info button {\n  margin: 4px 6px 0 0;\n}\n.trpg .wx-city-notice {\n  color: #c7b888;\n}\n.trpg .wx-city-tabs .wx-map-zoom-control {\n  border-style: dashed;\n}\n.trpg .wx-city-canvas.is-zoomed {\n  overflow-x: auto;\n  scrollbar-width: thin;\n}\n.trpg .wx-city-canvas.is-zoomed svg {\n  min-width: 1000px;\n}\n.trpg .wx-city-canvas.is-zoomed svg.overview {\n  min-width: 1440px;\n}\n@media (max-width: 560px) {\n  .trpg .wx-city-map {\n    margin: 0 6px 8px;\n    padding: 9px;\n  }\n  .trpg .wx-city-tabs button {\n    font-size: 10px;\n    padding: 6px 8px;\n  }\n  .trpg .wx-city-canvas {\n    overflow-x: auto;\n  }\n  .trpg .wx-city-canvas svg {\n    min-width: 0;\n  }\n  .trpg .wx-city-canvas.is-zoomed svg {\n    min-width: 560px;\n  }\n  .trpg .wx-city-canvas.is-zoomed svg.overview {\n    min-width: 900px;\n  }\n  .trpg .wx-city-label {\n    font-size: 18px;\n  }\n  .trpg .wx-city-node.unknown .wx-city-label {\n    font-size: 14px;\n  }\n  .trpg .wx-city-canvas {\n    scrollbar-width: thin;\n    scrollbar-color: #6b7b7b #d7d9ce;\n  }\n}\n\n/* 零楼教程首页。仅作用于本步骤，不改变角色创建、地图或战术终端的主题。 */\n#wx-zero-floor[data-zero-step=\"3\"] {\n  max-width: 1040px;\n  padding: 0;\n  overflow: hidden;\n  background: #101c20;\n  border-color: #3e5454;\n  box-shadow: 0 20px 65px #0004;\n}\n#wx-zero-floor[data-zero-step=\"3\"] .zero-wizard-top {\n  padding: 18px 24px 15px;\n  margin: 0;\n  border-bottom: 1px solid #c5d4c516;\n  background: #142127;\n  gap: 12px;\n  flex-wrap: wrap;\n}\n#wx-zero-floor[data-zero-step=\"3\"] .zero-title-wrap {\n  gap: 8px;\n}\n#wx-zero-floor[data-zero-step=\"3\"] .zero-sub {\n  color: #8ba3a3;\n  font-size: 10px;\n}\n#wx-zero-floor[data-zero-step=\"3\"] .zero-steps-bar {\n  gap: 12px;\n  flex-wrap: wrap;\n}\n#wx-zero-floor .zero-step-pill:disabled {\n  cursor: not-allowed;\n  opacity: 0.45;\n}\n#wx-zero-floor .training-brief {\n  font-family: system-ui, \"Microsoft Yahei\", sans-serif;\n  color: #d5dfd8;\n  background:\n    radial-gradient(ellipse at 80% 12%, #28484645, transparent 65%), #101c20;\n  line-height: 1.6;\n}\n#wx-zero-floor .training-brief-topline {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 14px;\n  padding: 20px 32px 0;\n  font-size: 10px;\n  letter-spacing: 2px;\n  color: #94a7a0;\n}\n#wx-zero-floor .training-brief-phase {\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  color: #c3ad7c;\n  letter-spacing: 1px;\n}\n#wx-zero-floor .training-brief-phase i {\n  width: 5px;\n  height: 5px;\n  border-radius: 50%;\n  background: #bfa56f;\n  box-shadow: 0 0 10px #d7b57e50;\n}\n#wx-zero-floor .training-brief-hero {\n  display: grid;\n  grid-template-columns: 1.05fr 1fr;\n  gap: 26px;\n  padding: 26px 32px 27px;\n  align-items: center;\n}\n#wx-zero-floor .training-brief-eyebrow {\n  display: flex;\n  gap: 9px;\n  align-items: center;\n  margin: 0 0 17px;\n  font-size: 10px;\n  color: #b7a47a;\n  letter-spacing: 2px;\n}\n#wx-zero-floor .training-brief-eyebrow span {\n  width: 17px;\n  height: 1px;\n  background: #b9a26c;\n}\n#wx-zero-floor .training-brief h3 {\n  margin: 0 0 19px;\n  color: #e9ede1;\n  font-size: clamp(27px, 4vw, 43px);\n  line-height: 1.4;\n  letter-spacing: 2px;\n  font-weight: 500;\n  outline: none;\n}\n#wx-zero-floor .training-brief-lead {\n  color: #a8bbb2;\n  font-size: 12px;\n  line-height: 1.95;\n  margin: 0;\n  max-width: 370px;\n}\n#wx-zero-floor .training-brief-coach {\n  display: flex;\n  align-items: flex-start;\n  gap: 13px;\n  margin-top: 25px;\n  padding-top: 16px;\n  border-top: 1px solid #b4c6b61b;\n  position: relative;\n}\n#wx-zero-floor .training-brief-coach-mark {\n  color: #b6a172;\n  font:\n    40px/1 Georgia,\n    serif;\n}\n#wx-zero-floor .training-brief-coach p {\n  margin: 0;\n  color: #91a79c;\n  font-size: 12px;\n  line-height: 1.9;\n}\n#wx-zero-floor .training-brief-coach strong {\n  color: #c5d2bf;\n  font-weight: 500;\n}\n#wx-zero-floor .training-brief-coach-from {\n  font-size: 9px;\n  color: #a69a7d;\n  position: absolute;\n  right: 0;\n  bottom: 0;\n  letter-spacing: 2px;\n}\n#wx-zero-floor .training-brief-art {\n  min-width: 0;\n  position: relative;\n  align-self: stretch;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  background:\n    radial-gradient(ellipse at 50% 70%, #428e7d1f, transparent 65%),\n    linear-gradient(130deg, #19332f44, #0d1b2122);\n  border: 1px solid #69938230;\n  border-radius: 4px;\n  overflow: hidden;\n}\n#wx-zero-floor .training-brief-art::before {\n  content: \"\";\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  background-image:\n    linear-gradient(#69938208 1px, transparent 1px),\n    linear-gradient(90deg, #69938208 1px, transparent 1px);\n  background-size: 24px 24px;\n}\n#wx-zero-floor .training-brief-art-caption {\n  display: flex;\n  justify-content: space-between;\n  font-size: 9px;\n  letter-spacing: 2px;\n  color: #8da99b;\n  padding: 15px 16px 0;\n  position: relative;\n}\n#wx-zero-floor .training-brief-art-caption span:last-child {\n  color: #617e76;\n  font-size: 8px;\n  letter-spacing: 1px;\n}\n#wx-zero-floor #trainingBriefHologram {\n  width: 100%;\n  position: relative;\n}\n#wx-zero-floor #trainingBriefHologram svg {\n  width: 100%;\n  height: auto;\n  display: block;\n  max-height: 310px;\n}\n#wx-zero-floor .holo-ground {\n  fill: #2b594f19;\n  stroke: #5b8f7866;\n  stroke-width: 1;\n}\n#wx-zero-floor .holo-grid {\n  stroke: #528a7144;\n  stroke-width: 0.8;\n  fill: none;\n}\n#wx-zero-floor .holo-wall {\n  fill: #173e38;\n  stroke: #5d9d85aa;\n  stroke-width: 0.8;\n}\n#wx-zero-floor .holo-wall.east {\n  fill: #1b4840;\n}\n#wx-zero-floor .holo-roof {\n  fill: #2b5f50;\n  stroke: #85b99baa;\n  stroke-width: 1;\n}\n#wx-zero-floor .focal .holo-roof {\n  fill: #806c4266;\n  stroke: #c8b57a;\n}\n#wx-zero-floor .focal .holo-wall {\n  fill: #5d543344;\n  stroke: #ad9a65;\n}\n#wx-zero-floor .training-brief-art-foot {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 15px;\n  padding: 0 0 16px;\n  color: #688c7b;\n  font-size: 9px;\n  letter-spacing: 3px;\n}\n#wx-zero-floor .training-brief-art-foot i {\n  width: 18px;\n  height: 1px;\n  background: #73927e44;\n}\n#wx-zero-floor .training-brief-assignment {\n  display: grid;\n  grid-template-columns: 1fr 1fr 1.25fr;\n  gap: 0;\n  margin: 0 32px;\n  padding: 17px 0;\n  border-top: 1px solid #819d8c38;\n  border-bottom: 1px solid #819d8c38;\n}\n#wx-zero-floor .training-brief-assignment > div {\n  min-width: 0;\n  padding: 0 20px;\n  border-right: 1px solid #819d8c22;\n}\n#wx-zero-floor .training-brief-assignment > div:first-child {\n  padding-left: 0;\n}\n#wx-zero-floor .training-brief-assignment > div:last-child {\n  border: 0;\n}\n#wx-zero-floor .training-brief-assignment dt {\n  margin: 0 0 5px;\n  font-size: 10px;\n  color: #7c968b;\n  letter-spacing: 1px;\n}\n#wx-zero-floor .training-brief-assignment dd {\n  margin: 0;\n  color: #d4dccb;\n  font-size: 13px;\n  font-weight: 500;\n  line-height: 1.6;\n  overflow-wrap: anywhere;\n}\n#wx-zero-floor .training-brief-lessons {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 24px;\n  padding: 25px 32px 22px;\n}\n#wx-zero-floor .training-brief-lessons article {\n  display: flex;\n  align-items: flex-start;\n  gap: 12px;\n  min-width: 0;\n}\n#wx-zero-floor .training-brief-number {\n  font:\n    300 22px/1.2 ui-monospace,\n    Consolas,\n    monospace;\n  color: #668875;\n  letter-spacing: -1px;\n  padding-top: 3px;\n}\n#wx-zero-floor .training-brief-lessons h4 {\n  font-weight: 500;\n  margin: 0 0 6px;\n  color: #cad6c5;\n  font-size: 13px;\n  letter-spacing: 1px;\n}\n#wx-zero-floor .training-brief-lessons p {\n  margin: 0;\n  color: #819b8e;\n  font-size: 10px;\n  line-height: 1.9;\n}\n#wx-zero-floor .training-brief-boundary {\n  display: flex;\n  gap: 12px;\n  margin: 0 32px;\n  padding: 13px 15px;\n  background: #ad99600b;\n  border: 1px solid #ad996025;\n  color: #aaac95;\n  font-size: 10px;\n  line-height: 1.9;\n  border-radius: 3px;\n}\n#wx-zero-floor .training-brief-boundary > span:first-child {\n  font-size: 15px;\n  color: #b7a16f;\n}\n#wx-zero-floor .training-brief-footer {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 16px;\n  margin: 24px 32px 20px;\n}\n#wx-zero-floor .training-brief button {\n  font-family: inherit;\n  transition:\n    background-color 0.15s,\n    color 0.15s;\n  line-height: 1.5;\n  box-sizing: border-box;\n  letter-spacing: 0.6px;\n}\n#wx-zero-floor .training-brief-back {\n  padding: 8px 0;\n  background: transparent;\n  border: 0;\n  color: #8ca398;\n  font-size: 11px;\n  text-align: left;\n}\n#wx-zero-floor .training-brief-back:hover {\n  color: #d5dfd1;\n}\n#wx-zero-floor .training-brief-entry {\n  display: flex;\n  align-items: center;\n  gap: 15px;\n}\n#wx-zero-floor .training-brief-entry > span {\n  font-size: 9px;\n  color: #7b9589;\n}\n#wx-zero-floor #trainingBriefStart {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 25px;\n  padding: 12px 20px;\n  border: 1px solid #c2af7c;\n  background: #c2af7c;\n  color: #1b2522;\n  border-radius: 3px;\n  font-size: 12px;\n  font-weight: 650;\n  box-shadow: 0 3px 15px #b5a37116;\n}\n#wx-zero-floor #trainingBriefStart:hover {\n  background: #d2c191;\n}\n#wx-zero-floor .training-brief button:focus-visible {\n  outline: 2px solid #e4cf96;\n  outline-offset: 4px;\n}\n#wx-zero-floor .training-brief button:disabled {\n  cursor: wait;\n  opacity: 0.5;\n}\n#wx-zero-floor .training-brief-notice {\n  margin: 0 32px 17px;\n  color: #e3ba92;\n  font-size: 11px;\n  line-height: 1.8;\n}\n#wx-zero-floor .training-brief-notice:empty {\n  display: none;\n}\n@media (max-width: 600px) {\n  #wx-zero-floor[data-zero-step=\"3\"] .zero-wizard-top {\n    padding: 14px 17px;\n    gap: 12px;\n  }\n  #wx-zero-floor[data-zero-step=\"3\"] .zero-steps-bar {\n    gap: 8px;\n    width: 100%;\n    justify-content: space-between;\n  }\n  #wx-zero-floor .training-brief-topline {\n    padding: 17px 19px 0;\n    font-size: 9px;\n    letter-spacing: 1px;\n  }\n  #wx-zero-floor .training-brief-hero {\n    grid-template-columns: 1fr;\n    gap: 20px;\n    padding: 23px 19px 20px;\n  }\n  #wx-zero-floor .training-brief h3 {\n    font-size: 33px;\n    letter-spacing: 1px;\n    margin-bottom: 14px;\n  }\n  #wx-zero-floor .training-brief-lead {\n    font-size: 12px;\n    max-width: none;\n  }\n  #wx-zero-floor .training-brief-coach {\n    margin-top: 18px;\n    padding-top: 14px;\n  }\n  #wx-zero-floor .training-brief-art {\n    display: none;\n  }\n  #wx-zero-floor .training-brief-assignment {\n    margin: 0 19px;\n    grid-template-columns: 1fr 1fr;\n    padding: 14px 0;\n    row-gap: 14px;\n  }\n  #wx-zero-floor .training-brief-assignment > div {\n    padding: 0 0 0 15px;\n  }\n  #wx-zero-floor .training-brief-assignment > div:nth-child(2) {\n    border: 0;\n  }\n  #wx-zero-floor .training-brief-assignment > div:last-child {\n    grid-column: 1/-1;\n    padding: 12px 0 0;\n    border-top: 1px solid #819d8c22;\n    display: flex;\n    gap: 12px;\n    align-items: center;\n  }\n  #wx-zero-floor .training-brief-assignment > div:last-child dt {\n    margin: 0;\n    flex-shrink: 0;\n  }\n  #wx-zero-floor .training-brief-assignment dd {\n    font-size: 12px;\n  }\n  #wx-zero-floor .training-brief-lessons {\n    grid-template-columns: 1fr;\n    gap: 15px;\n    padding: 20px 19px;\n  }\n  #wx-zero-floor .training-brief-number {\n    font-size: 20px;\n    width: 27px;\n    flex-shrink: 0;\n  }\n  #wx-zero-floor .training-brief-lessons h4 {\n    margin-bottom: 3px;\n    font-size: 13px;\n  }\n  #wx-zero-floor .training-brief-lessons p {\n    font-size: 11px;\n  }\n  #wx-zero-floor .training-brief-boundary {\n    margin: 0 19px;\n    padding: 12px;\n    font-size: 10px;\n    gap: 9px;\n  }\n  #wx-zero-floor .training-brief-footer {\n    margin: 20px 19px;\n    flex-wrap: wrap;\n    gap: 15px;\n  }\n  #wx-zero-floor .training-brief-back {\n    order: 2;\n    width: 100%;\n    text-align: center;\n    font-size: 11px;\n  }\n  #wx-zero-floor .training-brief-entry {\n    width: 100%;\n    flex-direction: column-reverse;\n    gap: 9px;\n  }\n  #wx-zero-floor #trainingBriefStart {\n    width: 100%;\n    justify-content: center;\n    gap: 20px;\n    padding: 13px 16px;\n  }\n  #wx-zero-floor .training-brief-notice {\n    margin: 0 19px 18px;\n  }\n}\n/* 宿主通用按钮皮使用 !important；在本页面内明确区分主、次操作。 */\n#wx-zero-floor .training-brief-back {\n  background: transparent !important;\n  border: 0 !important;\n  color: #8ca398 !important;\n}\n#wx-zero-floor .training-brief-back:hover {\n  background: transparent !important;\n  color: #d5dfd1 !important;\n}\n#wx-zero-floor #trainingBriefStart {\n  background: #c2af7c !important;\n  border: 1px solid #c2af7c !important;\n  color: #1b2522 !important;\n}\n#wx-zero-floor #trainingBriefStart:hover {\n  background: #d2c191 !important;\n  border-color: #d2c191 !important;\n  color: #1b2522 !important;\n}";
+    styleEl.textContent = "/* GLM 样式骨架保留；刻度/数据接口/音效引擎按尾行规格适配。无图片、字体或库依赖。 */\n.trpg, .trpg *, .wx-terminal-backdrop, .wx-terminal-backdrop *, .wx-dialog, .wx-dialog * {\n  box-sizing: border-box;\n}\nmain.wx-standalone-main {\n  width: 100%;\n  max-width: 960px;\n  min-height: 100%;\n  padding: 0 4px;\n  margin: 0 auto;\n  overflow: visible;\n  /* 独立预览壳不在下面的全局 border-box 名单里：content-box 下 100% + 左右内边距会横向溢出 */\n  box-sizing: border-box;\n  /* 预览壳是 flex 列容器，.trpg 作为它的 flex item 默认 min-width:auto 会被子项撑破 */\n  min-width: 0;\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-end;\n}\n.preview-area { display: none; margin-bottom: 12px; }\n.preview-label { color: #90969f; font-size: 11px; margin: 0 0 10px; }\n.speaker { font-weight: 700; font-size: 13px; }\n.story { margin: 6px 0 14px; color: #c5c8ce; line-height: 1.7; font-size: 13px; }\n.preview-tools { display: none; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }\n.preview-tools small { color: #9298a1; }\n.preview-tools button[aria-pressed=\"true\"] { border-color: #b3c9b9; background: #354d43; }\n.preview-status { flex-basis: 100%; margin: 0; color: #a9bcb0; font-size: 12px; }\n/* ═══ C 案 · 夜巡：色板 token + 胶片条外壳 ═══\n   语义约束：一个颜色只表达一件事；灰阶负责层级，彩色只负责状态。 */\n.trpg { --border: #1d2833; --muted: #93a7ba; --paper: #0d141c; --beat: 0.833s;\n  --ink-0: #070b10;\n  --ink-1: #0d141c;\n  --ink-2: #131c26;\n  --line: #1d2833;\n  --t-hi: #eef4fa;\n  --t-mid: #93a7ba;\n  --t-low: #5f7284;\n  --heat: #f0b355;\n  --safe: #5fd6c3;\n  --danger: #ff5a68;\n  --her: #e79aa8;\n  color: var(--t-hi);\n  background: linear-gradient(180deg, #0b1219 0%, #080d13 58%, #05080c 100%);\n  border: 0;\n  border-top: 1px solid rgba(240, 179, 85, 0.26);\n  border-radius: 12px 12px 0 0;\n  font-size: 12px;\n  box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);\n  position: relative;\n  overflow: visible;\n  width: 100%;\n  min-width: 0;\n  box-sizing: border-box;\n}\n/* 材质层：钠灯侧光 + 冷侧反光 + 雨幕 + 颗粒（原来那层 alpha 0.012 的扫描纹基本看不见） */\n.trpg::before {\n  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;\n  background:\n    radial-gradient(78% 130% at 12% -10%, rgba(240, 179, 85, 0.12), transparent 56%),\n    radial-gradient(60% 120% at 96% 120%, rgba(95, 214, 195, 0.06), transparent 62%),\n    repeating-linear-gradient(102deg, rgba(190, 216, 245, 0.035) 0 1px, transparent 1px 8px),\n    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px);\n  border-radius: inherit;\n}\n/* 状态即天气：过线泛暖，崩溃泛红 */\n.trpg[data-line=\"deform\"] {\n  box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 34px rgba(240, 179, 85, 0.14);\n}\n.trpg[data-line=\"crash\"] {\n  box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 44px rgba(255, 90, 104, 0.26);\n}\n.trpg button, #wx-statusbar-root button, .wx-terminal-backdrop button, dialog.wx-dialog button, .preview-tools button {\n  font: inherit;\n  color: #d9e4ed !important;\n  background: #26333e !important;\n  border: 1px solid #4a5d70 !important;\n  border-radius: 5px;\n  padding: 4px 10px;\n  cursor: pointer;\n  min-height: 28px;\n  transition: all .15s;\n  box-sizing: border-box;\n}\n.trpg button:hover, #wx-statusbar-root button:hover, .wx-terminal-backdrop button:hover, dialog.wx-dialog button:hover, .preview-tools button:hover {\n  background: #354757 !important;\n  border-color: #8da6bd !important;\n  color: #ffffff !important;\n}\n.trpg button:active, #wx-statusbar-root button:active, .wx-terminal-backdrop button:active, dialog.wx-dialog button:active {\n  background: #1c2630 !important;\n}\n.trpg button:focus-visible { outline: 1px solid rgba(240, 179, 85, 0.55); outline-offset: 2px; }\n\n/* ═══ 常驻条：一块路牌 + 一排读数（C 案） ═══ */\n.trpg-slim-bar {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  height: 40px;\n  padding: 0 10px;\n  gap: 8px;\n  position: relative;\n  z-index: 5;\n  user-select: none;\n}\n.slim-left {\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  min-width: 0;\n  flex: 1 1 auto;\n  overflow: hidden;\n  white-space: nowrap;\n}\n/* 大区：等宽小上标，不再是一枚蓝徽章 */\n.slim-dist-badge {\n  background: none;\n  border: 0;\n  padding: 0;\n  color: var(--t-low);\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .18em;\n}\n/* 场所：路牌。15px 加重 + 底下一道向右渐隐的钠黄灯带 */\n.slim-place {\n  position: relative;\n  padding-bottom: 4px;\n  font-size: 15px;\n  font-weight: 600;\n  letter-spacing: .01em;\n  color: var(--t-hi);\n}\n.slim-place::after {\n  content: '';\n  position: absolute;\n  left: 0;\n  bottom: 0;\n  width: 62%;\n  height: 2px;\n  background: linear-gradient(90deg, var(--heat), rgba(240, 179, 85, 0));\n}\n.slim-tags-group {\n  display: inline-flex;\n  align-items: center;\n  gap: 10px;\n}\n/* 状态不再是胶囊：左侧一根 2px 竖条 + 小字 */\n.slim-tag {\n  font-size: 11px;\n  padding: 0 0 0 7px;\n  border-left: 2px solid var(--line);\n  border-radius: 0;\n  white-space: nowrap;\n  color: var(--t-mid);\n}\n.slim-tag.weather {\n  border-left-color: rgba(95, 214, 195, .55);\n  color: #9ed6cd;\n}\n.slim-tag.remain {\n  border-left-color: transparent;\n  color: var(--t-low);\n  font-size: 10.5px;\n}\n.slim-tag.id-badge {\n  border-left-color: var(--her);\n  color: #eec3cb;\n  cursor: pointer;\n}\n\n/* ── C4 单色图标：默认 1em，按场景覆盖尺寸；全部 currentColor，跟着文字色走 ── */\n.wx-ico { display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em; flex: none; stroke-width: 1.7; }\n/* 12~13px 的小图标把线加粗半档，否则在深底上糊成一团 */\n.step-ico .wx-ico, .slim-tag.weather .wx-ico, .slim-tag.id-badge .wx-ico,\n.wx-item-type-badge .wx-ico, .audio-ico .wx-ico, .phone-icon .wx-ico, .term-ico .wx-ico { stroke-width: 2; }\n.step-ico { display: inline-flex; align-items: center; justify-content: center; }\n.step-ico .wx-ico { width: 13px; height: 13px; }\n.wx-terminal-icon .wx-ico { width: 16px; height: 16px; }\n.phone-icon .wx-ico, .term-ico .wx-ico { width: 13px; height: 13px; }\n.audio-ico .wx-ico { width: 12px; height: 12px; }\n.dev-ico .wx-ico { width: 13px; height: 13px; margin-right: 6px; vertical-align: -2px; }\n.btn-ico .wx-ico { width: 13px; height: 13px; vertical-align: -2px; }\n.slim-tag.weather .wx-ico, .slim-tag.id-badge .wx-ico { width: 12px; height: 12px; margin-right: 3px; vertical-align: -2px; }\n.wx-item-type-badge .wx-ico { width: 12px; height: 12px; margin-right: 4px; vertical-align: -2px; opacity: .85; }\n\n/* ── 她的鞋具：只露鞋名，细节走悬停 ── */\n.gear-line {\n  display: flex;\n  align-items: baseline;\n  gap: 8px;\n  padding-bottom: 10px;\n  margin-bottom: 10px;\n  border-bottom: 1px solid rgba(255, 255, 255, 0.06);\n}\n.gear-line[hidden] { display: none !important; }\n.gear-label {\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .16em;\n  color: var(--t-low);\n  flex: none;\n}\n.gear-name {\n  font-size: 12px;\n  font-weight: 600;\n  color: var(--t-hi);\n  border-bottom: 1px dashed rgba(255, 255, 255, 0.18);\n  cursor: default;\n}\n\n/* 距离档：四根竖刻度，亮的那格发钠黄光 */\n.slim-center {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  white-space: nowrap;\n  flex-shrink: 0;\n  font-size: 11px;\n  background: none;\n  border: 0;\n  padding: 0;\n}\n.slim-phase {\n  color: var(--t-low);\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .18em;\n}\n.slim-divider {\n  display: none;\n}\n.slim-dist {\n  color: var(--t-hi);\n  font-size: 12px;\n  font-weight: 600;\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n}\n.slim-pips {\n  display: inline-flex;\n  align-items: center;\n  gap: 3px;\n}\n.slim-pips .pip {\n  width: 3px;\n  height: 13px;\n  border-radius: 1.5px;\n  border: 0;\n  background: #22303d;\n}\n.slim-pips .pip.active {\n  background: var(--heat);\n  box-shadow: 0 0 9px rgba(240, 179, 85, 0.9);\n}\n.slim-pips.warm .pip.active {\n  background: var(--heat);\n  border-color: var(--heat);\n  box-shadow: 0 0 9px rgba(240, 179, 85, 0.9);\n}\n\n.slim-right {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  flex-shrink: 0;\n}\n\n/* 体力：一根细线，数字用等宽 */\n.slim-stamina {\n  display: inline-flex;\n  align-items: center;\n  gap: 7px;\n  font-size: 10.5px;\n  color: var(--t-mid);\n  background: none;\n  padding: 0;\n  border-radius: 0;\n  border: 0;\n}\n.slim-stamina[data-band=\"yellow\"] { color: var(--heat); }\n.slim-stamina[data-band=\"red\"] { color: #ff9aa3; }\n.slim-stamina-val {\n  font-family: ui-monospace, Consolas, monospace;\n  font-weight: 600;\n  font-size: 11px;\n}\n.slim-stamina-bar {\n  width: 40px;\n  height: 2px;\n  background: #1d2933;\n  border-radius: 1px;\n  overflow: hidden;\n  display: inline-block;\n}\n.slim-stamina-bar .stamina-fill {\n  display: block;\n  height: 100%;\n  background: currentColor;\n  transition: width .3s ease;\n}\n\n/* 心跳：全条唯一的主角（♥ 19px / 数字 24px / BPM 退成 9px） */\n.heart-popover-wrap {\n  position: relative;\n  display: inline-flex;\n  align-items: center;\n}\n.trpg .heart-pill-btn {\n  background: none !important;\n  border: 0 !important;\n  border-radius: 0 !important;\n  padding: 0 !important;\n  cursor: pointer;\n  display: inline-flex;\n  align-items: baseline;\n  gap: 3px;\n  color: var(--t-hi);\n  font-size: 11.5px;\n  transition: opacity .15s ease;\n  min-height: 0 !important;\n}\n.trpg .heart-pill-btn:hover { background: none !important; border: 0 !important; opacity: .9; }\n.trpg .heart-pill-btn.open { background: none !important; border: 0 !important; box-shadow: none !important; }\n@keyframes mini-heart-beat {\n  0%, 100% { transform: scale(1); }\n  14% { transform: scale(1.36); }\n  28% { transform: scale(1); }\n  42% { transform: scale(1.18); }\n  70% { transform: scale(1); }\n}\n.mini-heart {\n  display: inline-block;\n  color: var(--her);\n  animation: mini-heart-beat var(--beat, 0.833s) ease-in-out infinite;\n  transform-origin: center;\n  font-size: 19px;\n  line-height: 1;\n  filter: drop-shadow(0 0 7px rgba(231, 154, 168, 0.75));\n}\n.trpg[data-line=\"deform\"] .mini-heart {\n  color: var(--heat);\n  filter: drop-shadow(0 0 9px rgba(240, 179, 85, 0.85));\n}\n.trpg[data-line=\"crash\"] .mini-heart {\n  color: var(--danger);\n  filter: drop-shadow(0 0 11px rgba(255, 90, 104, 0.95));\n}\n.mini-heart-num {\n  font-family: ui-monospace, Consolas, monospace;\n  font-weight: 600;\n  font-size: 24px;\n  letter-spacing: -.02em;\n  color: #ffffff;\n  text-shadow: 0 0 20px rgba(231, 154, 168, 0.35);\n}\n.mini-heart-bpm {\n  font-size: 9.5px;\n  /* 9px 上用 --t-low 会掉到 3.5:1，这里单开一档中间灰 */\n  color: #7f92a4;\n  margin-left: 1px;\n  align-self: center;\n  font-family: ui-monospace, Consolas, monospace;\n  font-weight: 500;\n}\n\n/* 向上弹出的心跳仪表盘卡片 */\n.heart-popover-card {\n  position: absolute;\n  bottom: calc(100% + 8px);\n  right: 0;\n  width: 300px;\n  max-width: calc(100vw - 20px);\n  background: rgba(16, 23, 31, 0.98);\n  border: 1px solid #3c526b;\n  border-radius: 8px;\n  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.06);\n  padding: 10px 12px;\n  z-index: 10002;\n  backdrop-filter: blur(14px);\n  display: none;\n  flex-direction: column;\n  align-items: center;\n  animation: popover-up .18s cubic-bezier(.16, 1, .3, 1);\n}\n.heart-popover-card.show {\n  display: flex !important;\n}\n.heart-popover-card::after {\n  content: '';\n  position: absolute;\n  bottom: -6px;\n  right: 28px;\n  width: 10px;\n  height: 10px;\n  background: #18222d;\n  border-right: 1px solid #3c526b;\n  border-bottom: 1px solid #3c526b;\n  transform: rotate(45deg);\n}\n@keyframes popover-up {\n  from { opacity: 0; transform: translateY(8px) scale(0.96); }\n  to { opacity: 1; transform: translateY(0) scale(1); }\n}\n.popover-head {\n  display: flex;\n  justify-content: space-between;\n  width: 100%;\n  align-items: center;\n  padding-bottom: 5px;\n  margin-bottom: 6px;\n  border-bottom: 1px solid #2a3746;\n}\n.popover-title {\n  font-size: 11px;\n  font-weight: 600;\n  color: #a4b9c9;\n  letter-spacing: .5px;\n}\n.popover-close-btn {\n  background: transparent !important;\n  border: 0 !important;\n  color: #7d91a3 !important;\n  cursor: pointer;\n  font-size: 12px;\n  padding: 2px 4px !important;\n  min-height: 0 !important;\n  line-height: 1;\n}\n.popover-close-btn:hover {\n  color: #fff !important;\n}\n.popover-content {\n  width: 100%;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n.popover-content .heart-dial {\n  width: 154px;\n}\n.popover-content .stamina {\n  width: 154px;\n  margin-top: 2px;\n}\n.popover-content .spark {\n  width: 154px;\n  margin-top: 5px;\n}\n/* 弹层两栏：左＝生理仪表，右＝她的警觉（给档位与刻度，不给数值） */\n.popover-grid {\n  display: flex;\n  gap: 8px;\n  width: 100%;\n  align-items: stretch;\n  justify-content: center;\n}\n.popover-grid .instrument { flex: 1 1 auto; min-width: 0; }\n.popover-her {\n  flex: 0 0 86px;\n  display: flex;\n  flex-direction: column;\n  align-items: flex-start;\n  justify-content: center;\n  gap: 6px;\n  padding-left: 9px;\n  border-left: 1px solid rgba(255, 255, 255, 0.08);\n}\n.popover-her-title { font: 600 9px/1 ui-monospace, Consolas, monospace; letter-spacing: .14em; color: var(--t-low); }\n.popover-her .alert-pips { margin-right: 0; flex-direction: column-reverse; gap: 3px; }\n.popover-her .alert-pips i { width: 15px; height: 15px; border-radius: 2px; }\n.popover-her-name { font: 600 13px/1.1 \"Noto Sans SC\", system-ui, sans-serif; color: var(--t-mid); }\n.popover-her-range { font: 500 9px/1 ui-monospace, Consolas, monospace; color: var(--t-low); letter-spacing: .06em; }\n.popover-her[data-tier=\"3\"] .popover-her-name, .popover-her[data-tier=\"4\"] .popover-her-name { color: #ff9aa3; }\n.popover-audio-row {\n  margin-top: 8px;\n  width: 100%;\n}\n.audio-btn {\n  width: 100%;\n  font-size: 11px;\n  padding: 4px 8px;\n  border-radius: 4px;\n  background: #1e2835;\n  border: 1px solid #34475a;\n  color: #d1dde8;\n  cursor: pointer;\n  min-height: 25px;\n  transition: all .15s;\n}\n.audio-btn:hover {\n  background: #293849;\n  border-color: #5c7996;\n}\n.audio-btn[aria-pressed=\"true\"] {\n  background: #233e32;\n  border-color: #4d7a63;\n  color: #9ee0bd;\n}\n\n/* 窄条小按钮：去掉按钮皮，只留文字与图标 */\n.trpg .slim-btn {\n  background: none !important;\n  border: 0 !important;\n  border-radius: 0 !important;\n  padding: 2px 4px !important;\n  cursor: pointer;\n  color: var(--t-mid) !important;\n  font-size: 11px;\n  min-height: 0 !important;\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  transition: color .15s;\n}\n.trpg .slim-btn:hover {\n  background: none !important;\n  border: 0 !important;\n  color: var(--t-hi) !important;\n}\n.trpg .slim-btn.drawer-toggle-btn.active, .trpg .slim-btn.terminal-toggle-btn.active {\n  background: none !important;\n  border: 0 !important;\n  color: var(--heat) !important;\n}\n\n/* ═══ 行动胶囊栏（C1：先随胶片条收底，胶囊本体在 C3 重做） ═══ */\n.wx-capsule-bar {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 6px;\n  min-height: 32px;\n  padding: 3px 10px;\n  background: #070b10;\n  border-top: 1px solid rgba(255, 255, 255, 0.04);\n  position: relative;\n  z-index: 80;\n  user-select: none;\n}\n/* ═══ 行动胶囊栏（C3：去按钮皮，只保留\"可点感\"） ═══\n   交互钩子全部原样：类名 wx-capsule-chip / active / danger、✓ 勾选、aria-expanded、\n   .wx-posture-badge.narrative 都由 JS 切换，这里只动外观。 */\n.wx-posture-badge {\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .14em;\n  padding: 0;\n  border-radius: 0;\n  background: none;\n  color: var(--t-low);\n  border: 0;\n  white-space: nowrap;\n  cursor: pointer;\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  transition: color .15s;\n}\n.wx-posture-badge:hover {\n  background: none;\n  border: 0;\n  color: var(--t-mid);\n}\n.wx-posture-badge.narrative {\n  background: none;\n  color: var(--heat);\n  border: 0;\n}\n.wx-chips-wrap {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  flex: 1 1 auto;\n  overflow-x: auto;\n  padding: 1px 0;\n  scrollbar-width: none;\n}\n.wx-chips-wrap::-webkit-scrollbar { display: none; }\n/* 极淡底 + 1px 幽灵描边 = 可点；选中用底部 2px 光条，不再整块变绿 */\n.trpg .wx-capsule-chip {\n  font-size: 11px;\n  padding: 3px 10px;\n  border-radius: 3px;\n  background: rgba(255, 255, 255, 0.055) !important;\n  color: var(--t-mid) !important;\n  border: 0 !important;\n  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);\n  cursor: pointer;\n  white-space: nowrap;\n  transition: background .15s, box-shadow .15s, color .15s;\n  display: inline-flex;\n  align-items: center;\n  gap: 5px;\n  line-height: 1.4;\n  min-height: 26px !important;\n}\n.trpg .wx-capsule-chip:hover {\n  background: rgba(255, 255, 255, 0.09) !important;\n  color: var(--t-hi) !important;\n  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);\n}\n.trpg .wx-capsule-chip.active {\n  background: rgba(95, 214, 195, 0.13) !important;\n  color: var(--safe) !important;\n  font-weight: 600;\n  box-shadow: inset 0 -2px 0 var(--safe), inset 0 0 0 1px rgba(95, 214, 195, 0.30) !important;\n}\n.trpg .wx-capsule-chip.danger {\n  color: #e59aa2 !important;\n}\n.trpg .wx-capsule-chip.danger.active {\n  background: rgba(255, 90, 104, 0.14) !important;\n  color: #ff9aa3 !important;\n  box-shadow: inset 0 -2px 0 var(--danger), inset 0 0 0 1px rgba(255, 90, 104, 0.32) !important;\n}\n/* 条件不足：虚线幽灵条 + 降透明，悬停给「缺什么」 */\n.trpg .wx-capsule-chip.locked {\n  color: var(--t-low) !important;\n  background: transparent !important;\n  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);\n  border: 0 !important;\n  outline: 1px dashed rgba(255, 255, 255, 0.14);\n  outline-offset: -3px;\n  opacity: .62;\n  cursor: not-allowed;\n}\n.trpg .wx-capsule-chip.locked:hover {\n  background: transparent !important;\n  color: var(--t-mid) !important;\n  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);\n  opacity: .8;\n}\n.trpg .wx-capsule-chip .chip-check {\n  font-size: 10px;\n  font-weight: 700;\n}\n.trpg .wx-more-btn {\n  font-size: 11px;\n  padding: 3px 8px;\n  border-radius: 3px;\n  background: none !important;\n  color: var(--t-low) !important;\n  border: 0 !important;\n  cursor: pointer;\n  white-space: nowrap;\n  transition: color .15s;\n  min-height: 26px !important;\n}\n.trpg .wx-more-btn:hover {\n  background: none !important;\n  color: var(--t-hi) !important;\n  border: 0 !important;\n}\n.trpg .wx-more-btn.active {\n  background: none !important;\n  color: var(--heat) !important;\n  border: 0 !important;\n}\n\n/* ═══ 二级动作抽屉 ═══ */\n.wx-action-drawer {\n  position: absolute;\n  left: 0;\n  right: 0;\n  bottom: 100%;\n  background: #080c11;\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.07);\n  border-radius: 8px 8px 0 0;\n  box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.85);\n  z-index: 100;\n  max-height: min(340px, 60vh);\n  display: flex;\n  flex-direction: column;\n}\n.drawer-head {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: 8px 12px;\n  background: linear-gradient(180deg, rgba(240, 179, 85, 0.06), transparent 92%);\n  border-bottom: 1px solid rgba(255, 255, 255, 0.06);\n}\n.drawer-title {\n  font: 600 10px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .14em;\n  color: var(--t-mid);\n}\n.trpg .drawer-close {\n  background: transparent !important;\n  border: none !important;\n  color: var(--t-mid) !important;\n  font-size: 15px;\n  cursor: pointer;\n  padding: 0 4px !important;\n  min-height: auto !important;\n}\n.trpg .drawer-close:hover {\n  background: transparent !important;\n  border: none !important;\n  color: #ffffff !important;\n}\n.drawer-body {\n  padding: 10px 12px 22px;\n  overflow-y: auto;\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n}\n.drawer-group-title {\n  font: 600 9.5px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .16em;\n  color: var(--t-low);\n  margin-bottom: 6px;\n  border-left: 2px solid rgba(255, 255, 255, 0.14);\n  padding-left: 6px;\n}\n.drawer-group-chips {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n}\n\n/* ═══ 战术终端（HTML5 Top Layer 原生模态对话框，穿透所有层级与容器） ═══ */\ndialog.wx-terminal-dialog, dialog.wx-dialog.wx-terminal-dialog {\n  position: fixed !important;\n  inset: 0 !important;\n  margin: auto !important;\n  width: min(860px, calc(100vw - 20px)) !important;\n  max-height: 86dvh !important;\n  /* inset:0 + height:auto 会让盒子被上下拉伸铺满（再由 max-height 截在 86dvh），\n     内容不满时就在结算条下面留一条空带；fit-content 让弹窗按内容收口。 */\n  height: fit-content !important;\n  padding: 0 !important;\n  display: flex;\n  flex-direction: column;\n  overflow: hidden !important;\n  background: #070b10 !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(240, 179, 85, 0.22) !important;\n  border-radius: 10px !important;\n  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.92) !important;\n  color: var(--t-hi) !important;\n  z-index: 100000 !important;\n  box-sizing: border-box !important;\n  animation: modal-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);\n}\ndialog.wx-terminal-dialog:not([open]) {\n  display: none !important;\n}\ndialog.wx-terminal-dialog::backdrop {\n  background: rgba(5, 10, 16, 0.85) !important;\n  backdrop-filter: blur(8px) !important;\n  -webkit-backdrop-filter: blur(8px) !important;\n}\n@keyframes modal-pop {\n  from { opacity: 0; transform: scale(0.96) translateY(12px); }\n  to { opacity: 1; transform: scale(1) translateY(0); }\n}\n.wx-modal-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 12px 18px;\n  background: linear-gradient(180deg, rgba(240, 179, 85, 0.07), transparent 92%), #0a0f15;\n  border-bottom: 1px solid rgba(255, 255, 255, 0.05);\n  flex-shrink: 0;\n}\n.wx-modal-title-wrap {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n.wx-terminal-icon {\n  font-size: 15px;\n}\n.wx-modal-title {\n  margin: 0;\n  font-size: 15px;\n  font-weight: 600;\n  color: var(--t-hi);\n  letter-spacing: 0.02em;\n}\n.wx-modal-badge {\n  background: rgba(255, 255, 255, 0.04);\n  color: var(--t-low);\n  border: 0;\n  padding: 1px 7px;\n  border-radius: 3px;\n  font: 600 9.5px/1.5 ui-monospace, Consolas, monospace;\n  letter-spacing: .12em;\n}\n.wx-modal-close {\n  background: transparent !important;\n  border: 0 !important;\n  color: var(--t-mid) !important;\n  font-size: 17px;\n  cursor: pointer;\n  padding: 4px 8px !important;\n  line-height: 1;\n  min-height: 0 !important;\n  transition: color 0.15s;\n}\n.wx-modal-close:hover {\n  color: #fff !important;\n}\n.wx-modal-body {\n  /* 结算条已移出滚动区做页脚，这里恢复正常底边距 */\n  padding: 14px 18px 12px;\n  overflow-y: auto;\n  overflow-x: hidden;\n  /* 不长个子：内容短时弹窗贴内容收口（否则 86dvh 的上限会把正文拉高，\n     在页脚上方留出一大块空区）；内容超限时 overflow 让它照常滚动。 */\n  flex: 0 1 auto;\n  min-height: 0;\n  display: flex !important;\n  flex-direction: column !important;\n  gap: 12px;\n}\n.wx-modal-body::-webkit-scrollbar { width: 6px; }\n.wx-modal-body::-webkit-scrollbar-track { background: #0d1217; }\n.wx-modal-body::-webkit-scrollbar-thumb { background: #354556; border-radius: 3px; }\n\n/* 模态内动线通栏舒展排版（留出安全顶边，图标绝不截顶） */\n.wx-modal-body .route-tracker {\n  background: #16202b;\n  border: 1px solid #2c3a4a;\n  border-radius: 6px;\n  padding: 12px 16px 14px;\n  margin-bottom: 2px;\n  overflow: visible;\n  width: 100%;\n}\n.trpg .heart-dial { display: block; width: min(100%, 164px); height: auto; overflow: visible; }\n.trpg .dial-track { stroke: #3a3842; stroke-width: 8; fill: none; stroke-linecap: round; }\n.trpg .dial-sweet { stroke: #82b68c; stroke-width: 8; fill: none; filter: drop-shadow(0 0 4px rgba(130, 182, 140, 0.55)); }\n.trpg .dial-tick { stroke: #7a7d88; stroke-width: 1; }\n.trpg .dial-linemark { stroke-width: 2.4; }\n.trpg .dial-marker { fill: #fff5f5; stroke: #b2747e; stroke-width: 3; filter: drop-shadow(0 0 5px rgba(223, 155, 168, 0.85)); }\n.trpg .dial-marker-orbit { transform-origin: 80px 80px; transition: transform 700ms cubic-bezier(.2,.75,.25,1); }\n.trpg .dial-beat-halo { fill: none; stroke: #df9ba8; stroke-width: 1; animation: ring-beat var(--beat) ease-out infinite; filter: drop-shadow(0 0 3px rgba(223, 155, 168, 0.5)); }\n.trpg .ecg-line { fill: none; stroke: #6fe3c7; stroke-width: 1.35; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 3.5px rgba(111, 227, 199, 0.8)); }\n.trpg .ecg-scroll { animation: ecg-scroll var(--beat) linear infinite; }\n.trpg .dial-number { fill: #ffe6e6; font: 750 38px ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }\n.trpg[data-line=\"deform\"] .dial-number { fill: #f3dda4; text-shadow: 0 0 10px rgba(243, 221, 164, 0.55); }\n.trpg[data-line=\"crash\"] .dial-number { fill: #ff8b99; text-shadow: 0 0 14px rgba(255, 80, 100, 0.85); }\n.trpg .dial-bpm { fill: #c4b6be; font: 10px ui-monospace, Consolas, monospace; }\n.trpg .dial-label { fill: #c4b6be; font: 9px system-ui, sans-serif; }\n.trpg .dial-scale { fill: #b7b5be; font: 8px ui-monospace, Consolas, monospace; }\n.trpg .dial-heart { fill: #eaa4ae; font-size: 12px; animation: beat var(--beat) ease-in-out infinite; transform-box: fill-box; transform-origin: center; }\n.trpg .stamina { width: min(100%, 164px); margin-top: -2px; }\n.trpg .stamina { --stamina-color: #96c7a6; }\n.trpg .stamina[data-band=\"yellow\"] { --stamina-color: #ddbe75; }\n.trpg .stamina[data-band=\"red\"] { --stamina-color: #e48b8b; }\n.trpg .stamina-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--stamina-color); }\n.trpg .stamina-label .band-name { font-size: 9px; opacity:.85 }\n.trpg .stamina-meter { display: block; height: 5px; margin-top: 5px; border-radius: 3px; background: #404b45; overflow: hidden; }\n.trpg .stamina-fill { display: block; width: 72%; height: 100%; border-radius: inherit; background: var(--stamina-color); transition: width 700ms cubic-bezier(.2,.75,.25,1); }\n.trpg .audio-status { flex-basis: 100%; color: var(--muted); font-size: 11px; }\n.trpg .dev-card { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.07); border-radius: 0; padding: 14px 0 4px; margin-bottom: 14px; background: none; }\n.trpg .dev-card.dev-off { opacity: .55; }\n.trpg .dev-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }\n.trpg .dev-name { font-weight: 600; font-size: 14px; color: var(--t-hi); }\n.trpg .dev-state { font: 600 9.5px/1.6 ui-monospace, Consolas, monospace; color: var(--safe); background: rgba(95, 214, 195, 0.10); border: 0; border-radius: 2px; padding: 0 6px; letter-spacing: .08em; white-space: nowrap; }\n.trpg .dev-off .dev-state { color: var(--t-low); background: rgba(255, 255, 255, 0.05); }\n.trpg .dev-where { margin-top: 10px; font-size: 15px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }\n.trpg .dev-loc { color: var(--t-hi); }\n.trpg .dev-mot { color: var(--t-mid); font-size: 12px; white-space: nowrap; }\n.trpg .dev-time { color: var(--t-low); font-size: 10px; margin-top: 3px; font-family: ui-monospace, Consolas, monospace; }\n.trpg .dev-feed { margin: 10px 0 0; padding: 0; list-style: none; font-size: 12px; color: var(--t-mid); }\n.trpg .dev-feed li { padding: 5px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); }\n.trpg .dev-feed time { color: var(--t-low); font-size: 10px; font-family: ui-monospace, Consolas, monospace; margin-right: 10px; }\n.trpg .dev-note { margin: 8px 0 0; color: var(--t-low); font-size: 11px; line-height: 1.5; }\n.trpg .dev-frame { position: relative; margin-top: 12px; aspect-ratio: 16 / 9; border-radius: 4px; background: #05080c; border: 1px solid rgba(255, 255, 255, 0.06); overflow: hidden; }\n.trpg .dev-frame.no-feed { background: radial-gradient(ellipse at 32% 38%, #101820 0%, transparent 62%), radial-gradient(ellipse at 72% 68%, #0c1218 0%, transparent 55%), #05080c; }\n.trpg .dev-frame img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(.75) contrast(1.05); }\n/* 帧图未接入时是 hidden，但下面的 display:block 会盖掉 UA 的 [hidden] 规则，会把 alt 文字画出来 */\n.trpg .dev-frame img[hidden] { display: none !important; }\n.trpg .dev-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 3px); }\n.trpg .dev-frame-cap { position: absolute; right: 6px; bottom: 5px; font: 10px ui-monospace, Consolas, monospace; color: #9fb6c4; background: #0d1216cc; padding: 1px 6px; border-radius: 2px; letter-spacing: .04em; }\n.trpg .dev-frame-rec { position: absolute; left: 7px; top: 6px; font: 9px ui-monospace, Consolas, monospace; color: #e0566a; letter-spacing: .12em; }\n.trpg .dev-frame-rec::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #e0566a; margin-right: 5px; vertical-align: 1px; animation: rec-blink 1.6s steps(1) infinite; }\n@keyframes rec-blink { 50% { opacity: 0; } }\n.trpg .dev-sub { font-size: 10px; color: var(--muted); font-weight: 400; margin-left: 6px; }\n.trpg button[aria-pressed=\"true\"] { background: #354d43; border-color: #9ab7a4; }\n.trpg progress { display: block; width: 100%; height: 7px; margin-top: 10px; accent-color: #a4b9c9; }\n.trpg h3 { font-size: 12px; margin: 0 0 14px; color: var(--t-hi); letter-spacing: .02em; }\n.trpg .section-no { color: var(--t-low); font: 600 9.5px/1 ui-monospace, Consolas, monospace; letter-spacing: .16em; margin-right: 8px; }\n.trpg .money { display: flex; gap: 26px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }\n.trpg .money strong { font: 600 21px ui-monospace, Consolas, monospace; margin-left: 8px; color: var(--t-hi); }\n\n/* ═══ 战术终端 · 模块化呼吸感排版系统（C 案：无框卡片 + 顶发丝线） ═══ */\n.wx-player-banner {\n  background: rgba(255, 255, 255, 0.028);\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.07);\n  border-radius: 4px;\n  padding: 12px 14px 10px;\n  width: 100%;\n  box-sizing: border-box;\n}\n.wx-banner-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 10px;\n  margin-bottom: 10px;\n  padding-bottom: 8px;\n  border-bottom: 1px solid rgba(255, 255, 255, 0.05);\n}\n.wx-banner-title {\n  font-size: 12px;\n  color: var(--t-hi);\n  letter-spacing: .02em;\n}\n.wx-compact-money {\n  display: flex;\n  gap: 18px;\n  align-items: center;\n  margin: 0 !important;\n  padding: 0 !important;\n  border: none !important;\n}\n.wx-compact-money strong {\n  font: 650 17px ui-monospace, Consolas, monospace;\n  margin-left: 6px;\n  color: #e2edf8;\n}\n\n/* 玩家五维属性（实效值：基础+标签加值；绿=有增益，红=被削弱，悬停/长按看明细） */\n#wx-attrs, .trpg .attrs, .wx-attrs {\n  display: grid !important;\n  grid-template-columns: repeat(5, 1fr) !important;\n  gap: 8px !important;\n  margin-bottom: 8px !important;\n  min-height: 52px !important;\n  width: 100% !important;\n  box-sizing: border-box !important;\n}\n.trpg .attr {\n  position: relative !important;\n  text-align: center !important;\n  padding: 8px 4px 7px !important;\n  background: rgba(255, 255, 255, 0.03) !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;\n  border-radius: 2px !important;\n  box-sizing: border-box !important;\n  transition: all .2s;\n}\n.trpg .attr .an {\n  font: 600 10px/1 ui-monospace, Consolas, monospace !important;\n  color: var(--t-low) !important;\n  letter-spacing: .14em !important;\n}\n.trpg .attr .av {\n  font: 600 20px ui-monospace, Consolas, monospace !important;\n  letter-spacing: -.02em !important;\n  margin-top: 4px !important;\n  color: var(--t-hi) !important;\n}\n.trpg .attr.hot .av, .trpg .attr .av.hot { color: var(--safe) !important; }\n.trpg .attr.weak .av, .trpg .attr .av.weak { color: #ff9aa3 !important; }\n.trpg .attr.eff-up { border-top-color: rgba(95, 214, 195, 0.45) !important; background: rgba(95, 214, 195, 0.05) !important; }\n.trpg .attr.eff-up .av { color: var(--safe) !important; }\n.trpg .attr.eff-down { border-top-color: rgba(255, 90, 104, 0.45) !important; background: rgba(255, 90, 104, 0.05) !important; }\n.trpg .attr.eff-down .av { color: #ff9aa3 !important; }\n\n/* ═══ 双翼战术工作区（左：行囊与生效修正；右：目标信号手账） ═══ */\n.wx-tactical-wings {\n  display: grid !important;\n  grid-template-columns: 1fr 1.25fr !important;\n  gap: 12px !important;\n  width: 100% !important;\n  box-sizing: border-box !important;\n}\n@media (max-width: 680px) {\n  .wx-tactical-wings {\n    grid-template-columns: 1fr !important;\n  }\n}\n.wx-wing-column {\n  min-width: 0;\n  display: flex;\n  flex-direction: column;\n}\n.wx-wing-card {\n  background: rgba(255, 255, 255, 0.028);\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.07);\n  border-radius: 4px;\n  padding: 12px 14px;\n  height: 100%;\n  box-sizing: border-box;\n}\n.wx-wing-card h3 {\n  font-size: 12px;\n  margin: 0 0 10px;\n  color: var(--t-hi);\n  letter-spacing: .02em;\n}\n.wx-active-tags-container {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  min-height: 28px;\n}\n\n/* ═══ 环境战术沙盘面板 ═══ */\n.wx-terminal-envbox {\n  background: rgba(255, 255, 255, 0.028);\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;\n  border-radius: 4px;\n  padding: 12px 14px;\n  margin-top: 0 !important;\n  width: 100%;\n  box-sizing: border-box;\n}\n\n/* ═══ 底部深页导航与音频调控 ═══ */\n.wx-terminal-links {\n  display: flex !important;\n  justify-content: space-between !important;\n  align-items: center !important;\n  background: none;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;\n  border-radius: 0;\n  padding: 10px 0 !important;\n  margin-top: 0 !important;\n  gap: 10px !important;\n  flex-wrap: wrap;\n  width: 100%;\n  box-sizing: border-box;\n}\n.wx-terminal-nav-buttons {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n  align-items: center;\n}\n.wx-terminal-nav-buttons button {\n  font-size: 11.5px !important;\n  padding: 4px 2px !important;\n  background: none !important;\n  border: 0 !important;\n  color: var(--t-mid) !important;\n}\n.wx-terminal-nav-buttons button:hover {\n  background: none !important;\n  border: 0 !important;\n  color: var(--t-hi) !important;\n}\n\n/* ═══ 沉底结算条 ═══ */\n/* 她的警觉：五格刻度 + 档位名，不报精确数值（数值只在悬停提示里给区间）\n   五格固定配色（主人定：2 绿 1 黄 1 橘 1 红），从下往上点亮＝警觉在涨 */\n.alert-pips { display: inline-flex; gap: 3px; align-items: center; margin-right: 6px; }\n.alert-pips i { width: 10px; height: 6px; border-radius: 1px; background: rgba(255, 255, 255, 0.10); display: block; }\n.alert-pips i:nth-child(1), .alert-pips i:nth-child(2) { --pip: #5fd6c3; }\n.alert-pips i:nth-child(3) { --pip: #f0c75e; }\n.alert-pips i:nth-child(4) { --pip: #f08a4b; }\n.alert-pips i:nth-child(5) { --pip: #ff5a68; }\n.alert-pips i.on { background: var(--pip, var(--heat)); }\n.alert-text { font: 600 11px/1 ui-monospace, Consolas, monospace; color: var(--t-mid); letter-spacing: .04em; }\n#alertRow[data-tier=\"3\"] .alert-text { color: #ff9aa3; }\n#alertRow[data-tier=\"4\"] .alert-text { color: var(--danger); }\n.wx-terminal-ledger {\n  background: none !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;\n  border-radius: 0 !important;\n  padding: 8px 0 !important;\n  color: var(--t-mid) !important;\n  font-size: 11px !important;\n  margin-top: 0 !important;\n  box-sizing: border-box;\n  flex-shrink: 0;\n}\n/* 沉底结算条是弹窗页脚（不在滚动区内），左右留出与正文一致的边距；\n   选择器带 [data-tip] 压过 :1891 的「.trpg .ledger{margin-top:12px}」。 */\n.trpg .wx-terminal-ledger[data-tip] {\n  width: auto;\n  /* 左右与正文卡片的 18px 内边距对齐；底部留 14px（终端弹窗自身 padding 已归零） */\n  margin: 0 18px 14px;\n  box-shadow: 0 -6px 14px rgba(0, 0, 0, 0.45);\n}\n/* 全站悬停说明：仅限尾行组件内部带 data-tip 的元素，绝不干扰宿主与第三方扩展 */\n.trpg [data-tip], .wx-terminal-backdrop [data-tip], .wx-dialog [data-tip] { position: relative; }\n/* 收起态用 display:none 而不是 opacity:0——绝对定位的说明框即使透明也会计入\n   scrollWidth（实测常驻条因此虚胖 16px，窄屏上把整条顶出视口）。 */\n.trpg [data-tip]::after, .wx-terminal-backdrop [data-tip]::after, .wx-dialog [data-tip]::after {\n  content: attr(data-tip); display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);\n  background: #0b0f16; border: 1px solid #526577; padding: 6px 11px; border-radius: 4px;\n  font-size: 10.5px; color: #c8d3e8; white-space: pre-wrap; width: max-content; max-width: 320px;\n  text-align: left; line-height: 1.6; z-index: 10005;\n  pointer-events: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.85);\n}\n.trpg [data-tip]:hover::after, .trpg [data-tip]:active::after,\n.wx-terminal-backdrop [data-tip]:hover::after, .wx-terminal-backdrop [data-tip]:active::after,\n.wx-dialog [data-tip]:hover::after, .wx-dialog [data-tip]:active::after { display: block; }\n.slim-left [data-tip]::after { left: 0; transform: none; }\n.slim-right [data-tip]::after { left: auto; right: 0; transform: none; }\n#wx-attr-tags, .trpg .attr-tags { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 6px; }\n#wx-attr-tags .tag, .trpg .attr-tags .tag { margin: 0; font-size: 11px; padding: 3px 8px; }\n/* ═══ 战术行囊持有物列表 ═══ */\n.wx-items, .trpg .items {\n  margin: 0 0 16px;\n  padding: 0;\n  list-style: none;\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n  max-height: 240px;\n  overflow-y: auto;\n  scrollbar-width: thin;\n  scrollbar-color: #3b5066 #151d26;\n  padding-right: 4px;\n}\n.wx-items::-webkit-scrollbar, .trpg .items::-webkit-scrollbar {\n  width: 5px;\n}\n.wx-items::-webkit-scrollbar-track, .trpg .items::-webkit-scrollbar-track {\n  background: #151d26;\n  border-radius: 3px;\n}\n.wx-items::-webkit-scrollbar-thumb, .trpg .items::-webkit-scrollbar-thumb {\n  background: #3b5066;\n  border-radius: 3px;\n}\n.wx-items::-webkit-scrollbar-thumb:hover, .trpg .items::-webkit-scrollbar-thumb:hover {\n  background: #526f8d;\n}\n.wx-item-row {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 8px;\n  padding: 6px 0 6px 8px;\n  background: none;\n  border: 0;\n  border-left: 2px solid rgba(255, 255, 255, 0.10);\n  border-radius: 0;\n  transition: border-color .15s ease;\n}\n.wx-item-row:hover {\n  background: none;\n  border-left-color: rgba(255, 255, 255, 0.24);\n}\n.wx-item-left {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  min-width: 0;\n  flex-wrap: wrap;\n}\n.wx-item-type-badge {\n  font: 600 9.5px/1.5 ui-monospace, Consolas, monospace;\n  padding: 0;\n  border-radius: 0;\n  background: none;\n  color: var(--t-low);\n  border: 0;\n  letter-spacing: .1em;\n  white-space: nowrap;\n}\n.wx-item-name {\n  font-size: 11.5px;\n  color: var(--t-hi);\n  font-weight: 550;\n  white-space: nowrap;\n}\n.wx-item-count {\n  font-size: 11px;\n  color: var(--t-mid);\n  font-family: ui-monospace, Consolas, monospace;\n}\n.wx-item-equipped-pill {\n  font-size: 9.5px;\n  padding: 0 5px;\n  border-radius: 2px;\n  background: rgba(95, 214, 195, 0.10);\n  color: var(--safe);\n  border: 0;\n  border-left: 2px solid var(--safe);\n  font-weight: 600;\n  letter-spacing: .02em;\n}\n.wx-item-right {\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  flex-shrink: 0;\n}\n.wx-item-btn {\n  font-size: 10.5px !important;\n  padding: 2px 8px !important;\n  border-radius: 2px !important;\n  border: 1px solid rgba(255, 255, 255, 0.14) !important;\n  background: none !important;\n  color: var(--t-mid) !important;\n  cursor: pointer;\n  line-height: 1.4 !important;\n  transition: border-color .15s, color .15s;\n}\n.wx-item-btn:hover {\n  background: none !important;\n  border-color: rgba(255, 255, 255, 0.3) !important;\n  color: var(--t-hi) !important;\n}\n.wx-item-btn.btn-equip {\n  border-color: rgba(95, 214, 195, 0.5) !important;\n  background: none !important;\n  color: var(--safe) !important;\n}\n.wx-item-btn.btn-equip:hover {\n  background: rgba(95, 214, 195, 0.08) !important;\n  border-color: rgba(95, 214, 195, 0.8) !important;\n}\n.wx-item-btn.btn-unequip {\n  border-color: rgba(255, 90, 104, 0.45) !important;\n  background: none !important;\n  color: #ff9aa3 !important;\n}\n.wx-item-btn.btn-unequip:hover {\n  background: rgba(255, 90, 104, 0.08) !important;\n  border-color: rgba(255, 90, 104, 0.75) !important;\n}\n.wx-item-btn.btn-use {\n  border-color: rgba(255, 255, 255, 0.18) !important;\n  background: none !important;\n  color: var(--t-mid) !important;\n}\n.wx-item-btn.btn-use:hover {\n  border-color: rgba(255, 255, 255, 0.34) !important;\n  color: var(--t-hi) !important;\n}\n.wx-item-empty {\n  padding: 12px 0;\n  text-align: center;\n  color: var(--t-low);\n  font-size: 11.5px;\n  list-style: none;\n}\n\n/* ═══ 标签体系（C 案：左侧 2px 色条 + 文字，不做胶囊） ═══ */\n.trpg .tag { display: inline-block; padding: 1px 0 1px 7px; border: 0; border-left: 2px solid var(--line); background: none; color: var(--t-mid); border-radius: 0; font-size: 11px; margin: 0 8px 6px 0; white-space: nowrap; }\n.trpg .tag.debuff { border-left-color: var(--danger); color: #ffa9b1; }\n.trpg .tag.target { border-left-color: var(--danger); color: #ffa9b1; }\n.trpg .tag.scene  { border-left-color: var(--t-mid); color: var(--t-mid); }\n.trpg .tag.advantage { border-left-color: var(--heat); color: #f4d6a0; text-shadow: none; }\n.preview-tools .replay-label { font: 11px ui-monospace, Consolas, monospace; color: #9fb5a0; white-space: nowrap; }\n.trpg .tag.personality { border-left-color: var(--her); color: #eec3cb; }\n.trpg .tag.hobby       { border-left-color: var(--her); color: #eec3cb; }\n.trpg .tag.equipment   { border-left-color: var(--her); color: #eec3cb; }\n.trpg .tag.fading { opacity: .65; }\n\n\n/* ═══ 接近度五档刻度进度轨 ═══ */\n.prox-container {\n  margin: 10px 0 16px;\n  background: none;\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.07);\n  border-radius: 0;\n  padding: 12px 0 14px;\n}\n.prox-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  font-size: 12px;\n  color: var(--t-hi);\n  margin-bottom: 10px;\n  white-space: nowrap !important;\n}\n.prox-value-wrap {\n  font-size: 11px;\n  color: var(--t-mid);\n}\n.prox-value-wrap strong {\n  font: 600 18px ui-monospace, Consolas, monospace;\n  letter-spacing: -.02em;\n  color: var(--t-hi);\n  margin-right: 2px;\n}\n.prox-stage-badge {\n  color: var(--her);\n  font-weight: 600;\n  margin-left: 4px;\n}\n.prox-track-wrap {\n  position: relative;\n  padding: 8px 6px 20px;\n  cursor: help;\n}\n.prox-meter-bar {\n  width: 100%;\n  height: 3px;\n  background: #17222c;\n  border-radius: 1.5px;\n  overflow: hidden;\n  position: relative;\n}\n.prox-meter-fill {\n  height: 100%;\n  background: linear-gradient(90deg, rgba(231, 154, 168, .35), var(--her));\n  border-radius: 1.5px;\n  transition: width .3s ease;\n}\n.prox-nodes {\n  position: relative;\n  width: 100%;\n  margin-top: -5px;   /* 圆点 5px，让圆心骑在 3px 轨道中线上 */\n}\n.pnode {\n  position: absolute;\n  top: 0;\n  transform: translateX(-50%);\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  pointer-events: none;\n}\n.pnode .pdot {\n  width: 5px;\n  height: 5px;\n  border-radius: 50%;\n  background: #1a2530;\n  border: 1px solid #33465a;\n  transition: all .2s;\n}\n.pnode .plabel {\n  font: 500 9.5px/1 ui-monospace, Consolas, monospace;\n  color: var(--t-low);\n  margin-top: 5px;\n  white-space: nowrap;\n}\n.pnode.passed .pdot {\n  background: #3f5568;\n  border-color: #5d7b93;\n}\n.pnode.passed .plabel {\n  color: var(--t-mid);\n}\n.pnode.active .pdot {\n  background: var(--her);\n  border-color: #ffe3ea;\n  box-shadow: 0 0 9px rgba(231, 154, 168, 0.85);\n  transform: scale(1.35);\n}\n.pnode.active .plabel {\n  color: var(--her);\n  font-weight: 600;\n}\n.trpg .timeline { list-style: none; margin: 0 0 18px; padding: 0; }\n.trpg .timeline li { display: flex; gap: 12px; margin: 0 0 0 3px; padding: 3px 0 15px 15px; border-left: 1px solid rgba(255, 255, 255, 0.08); position: relative; color: var(--t-mid); }\n.trpg .timeline li::before { content: ''; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--t-low); left: -3px; top: 10px; }\n.trpg time { color: var(--t-low); font-family: ui-monospace, Consolas, monospace; font-size: 10px; flex-shrink: 0; }\n.trpg .assessment { font-size: 12px; margin: 14px 0 0; padding: 2px 0 2px 10px; border-left: 2px solid var(--heat); background: none; color: #e9d3ad; }\n/* ═══ 动线推进雷达轨（常驻层） ═══ */\n.route-tracker {\n  position: relative;\n  overflow: hidden;\n  background: rgba(255, 255, 255, 0.024);\n  border-bottom: 0;\n  padding: 10px 14px 12px;\n  border-top-left-radius: 4px;\n  border-top-right-radius: 4px;\n}\n.route-weather-fx {\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  z-index: 0;\n  opacity: 0;\n  transition: opacity 0.5s ease;\n}\n.route-meta, .route-stepper {\n  position: relative;\n  z-index: 1;\n}\n/* 雨天：斜向细雨丝微流动 */\n.route-tracker.is-rain .route-weather-fx {\n  opacity: 0.22;\n  background-image: repeating-linear-gradient(\n    110deg,\n    transparent,\n    transparent 11px,\n    rgba(140, 190, 240, 0.45) 12px,\n    transparent 13px\n  );\n  background-size: 40px 40px;\n  animation: route-rain-anim 0.85s linear infinite;\n}\n/* 暴雨：雨丝密集加急 */\n.route-tracker.is-storm .route-weather-fx {\n  opacity: 0.38;\n  background-image: repeating-linear-gradient(\n    118deg,\n    transparent,\n    transparent 7px,\n    rgba(170, 215, 255, 0.7) 8px,\n    transparent 9px\n  );\n  background-size: 30px 30px;\n  animation: route-rain-anim 0.42s linear infinite;\n}\n/* 晴夜：微弱路灯钠黄光晕 */\n.route-tracker.is-clear .route-weather-fx {\n  opacity: 0.15;\n  background: radial-gradient(ellipse at 80% 20%, rgba(245, 212, 131, 0.45) 0%, transparent 65%);\n}\n@keyframes route-rain-anim {\n  0% { background-position: 0 0; }\n  100% { background-position: -40px 80px; }\n}\n@media (prefers-reduced-motion: reduce) {\n  .route-tracker.is-rain .route-weather-fx,\n  .route-tracker.is-storm .route-weather-fx { animation: none; }\n}\n.route-meta {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 8px;\n  font-size: 11.5px;\n  margin-bottom: 7px;\n}\n.route-title {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  color: #dce6ee;\n  font-weight: 600;\n}\n.route-dist-badge {\n  background: #253342;\n  border: 1px solid #4a637b;\n  color: #9ebfdc;\n  padding: 1px 6px;\n  border-radius: 3px;\n  font-size: 10px;\n  font-weight: normal;\n}\n.route-status-tags {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 10.5px;\n}\n/* 微型步进轨（C4：图标改成 20px 圆盘承载 12px 单色图标，不再是 emoji 撑破 8px 圆点） */\n.route-stepper {\n  display: flex;\n  align-items: center;\n  width: 100%;\n  padding: 6px 0 4px;\n}\n.step-item {\n  display: flex;\n  align-items: center;\n  gap: 6px;\n  font-size: 10.5px;\n  color: var(--t-low);\n  white-space: nowrap;\n}\n.step-dot {\n  width: 20px;\n  height: 20px;\n  border-radius: 50%;\n  border: 1px solid rgba(255, 255, 255, 0.12);\n  background: rgba(255, 255, 255, 0.04);\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;\n}\n.step-item.passed .step-dot {\n  background: rgba(255, 255, 255, 0.05);\n  border-color: rgba(255, 255, 255, 0.10);\n}\n.step-item.passed {\n  color: var(--t-low);\n}\n.step-item.passed .step-ico {\n  opacity: .45;\n}\n.step-item.current {\n  color: var(--heat);\n  font-weight: 600;\n}\n.step-item.current .step-dot {\n  background: rgba(240, 179, 85, 0.14);\n  border-color: rgba(240, 179, 85, 0.55);\n  animation: step-breathe 2.2s ease-in-out infinite;\n}\n.step-item.current .step-ico {\n  opacity: 1;\n  color: var(--heat);\n}\n/* 当前节点呼吸高亮：光晕一涨一落，机会窗口正在流逝的搏动感 */\n@keyframes step-breathe {\n  0%, 100% { box-shadow: 0 0 4px rgba(240, 179, 85, 0.35); }\n  50%      { box-shadow: 0 0 13px rgba(240, 179, 85, 0.85); }\n}\n.step-item.terminal .step-dot {\n  border-radius: 4px;\n  border-color: rgba(255, 255, 255, 0.12);\n}\n.step-item.terminal.current .step-dot {\n  background: rgba(255, 90, 104, 0.16);\n  border-color: rgba(255, 90, 104, 0.60);\n  animation: step-breathe-red 2.2s ease-in-out infinite;\n}\n@keyframes step-breathe-red {\n  0%, 100% { box-shadow: 0 0 4px rgba(255, 90, 104, 0.35); }\n  50%      { box-shadow: 0 0 13px rgba(255, 90, 104, 0.85); }\n}\n@media (prefers-reduced-motion: reduce) {\n  .step-item.current .step-dot,\n  .step-item.terminal.current .step-dot { animation: none; }\n}\n.step-item.unknown {\n  color: var(--t-low);\n}\n.step-item.unknown .step-dot {\n  border-style: dashed;\n  border-color: rgba(255, 255, 255, 0.12);\n  background: rgba(255, 255, 255, 0.02);\n}\n.step-item.unknown .step-ico {\n  opacity: .35;\n}\n.step-item.unknown .step-name {\n  font-weight: 700;\n  color: var(--t-low);\n}\n.step-line {\n  flex: 1;\n  height: 1px;\n  background: rgba(255, 255, 255, 0.08);\n  min-width: 14px;\n  margin: 0 6px;\n}\n.step-line.passed {\n  background: rgba(255, 255, 255, 0.18);\n}\n.step-line.future {\n  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14) 3px, transparent 3px, transparent 7px);\n}\n\n/* ═══ 抽屉层 · 战术沙盘面板 ═══ */\n.envbox {\n  margin-top: 16px;\n  border-top: 1px solid rgba(255, 255, 255, 0.06);\n  padding-top: 14px;\n}\n.env-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: baseline;\n  font-size: 13px;\n  color: var(--t-hi);\n  margin-bottom: 8px;\n}\n.env-header .fam {\n  color: var(--t-mid);\n  font: 600 10px/1 ui-monospace, Consolas, monospace;\n  letter-spacing: .06em;\n}\n.env-fam-bar {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  font-size: 11px;\n  color: var(--muted);\n  margin-bottom: 10px;\n}\n.fam-meter {\n  flex: 1;\n  height: 3px;\n  background: #17222c;\n  border-radius: 1.5px;\n  overflow: hidden;\n}\n.fam-fill {\n  display: block;\n  height: 100%;\n  background: var(--safe);\n  border-radius: 1.5px;\n}\n.tactical-grid {\n  background: none;\n  border: 0;\n  border-top: 1px solid rgba(255, 255, 255, 0.06);\n  border-radius: 0;\n  padding: 10px 0 0;\n  margin-top: 8px;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  font-size: 11.5px;\n}\n.tactical-row {\n  display: flex;\n  align-items: flex-start;\n  gap: 8px;\n}\n.tactical-label {\n  color: var(--t-low);\n  min-width: 68px;\n  flex-shrink: 0;\n}\n.tactical-chips {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 5px;\n}\n.chip {\n  padding: 2px 8px;\n  border-radius: 3px;\n  font-size: 11px;\n  display: inline-flex;\n  align-items: center;\n  background: rgba(255, 255, 255, 0.045);\n  border: 0;\n  color: var(--t-mid);\n}\n.chip-ico {\n  display: inline-block;\n  margin-right: 4px;\n  font-weight: 700;\n  font-size: 10px;\n  opacity: .85;\n}\n.chip-exit {\n  background: rgba(255, 255, 255, 0.045);\n  border: 0;\n  color: var(--t-mid);\n}\n.chip-spot {\n  background: rgba(240, 179, 85, 0.08);\n  border: 0;\n  color: #e8c98d;\n}\n.chip-sanctuary {\n  background: rgba(255, 90, 104, 0.10);\n  border: 0;\n  color: #ffa9b1;\n}\n.chip-sanctuary .chip-ico {\n  color: #ff7588;\n  animation: rec-blink 1.2s infinite;\n}\n.step-ico {\n  line-height: 1;\n  opacity: .8;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n}\n.step-item.passed .step-ico {\n  opacity: .45;\n}\n.step-item.current .step-ico {\n  opacity: 1;\n  color: var(--heat);\n}\n.step-item.unknown .step-ico {\n  opacity: .35;\n}\n.envtags {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 6px;\n  margin: 6px 0 10px;\n}\n.envtag {\n  display: inline-block;\n  padding: 2.5px 8px;\n  border: 1px solid #4a6a8a;\n  border-left: 3px solid #6fa8d6;\n  background: #22303f;\n  color: #c6dcee;\n  border-radius: 3px;\n  font-size: 11px;\n}\n/* ═══ 底部深页与音频综合调控 ═══ */\n.trpg .links {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  border-top: 1px solid var(--border);\n  margin-top: 18px;\n  padding-top: 12px;\n  position: relative;\n  gap: 10px;\n}\n.links-left {\n  display: flex;\n  gap: 8px;\n  flex-wrap: wrap;\n  align-items: center;\n}\n.audio-popover-wrap {\n  position: relative;\n  display: inline-flex;\n  align-items: center;\n  margin-left: auto;\n}\n.audio-menu-btn {\n  background: #18222d;\n  border: 1px solid #36495d;\n  border-radius: 4px;\n  padding: 3px 9px;\n  cursor: pointer;\n  color: #cad8e6;\n  font-size: 11px;\n  min-height: 25px;\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  transition: all .15s;\n}\n.audio-menu-btn:hover {\n  background: #233142;\n  border-color: #55779c;\n  color: #fff;\n}\n.audio-menu-btn.active {\n  background: #25384d;\n  border-color: #6a96c7;\n  color: #8fc2f5;\n  box-shadow: 0 0 8px rgba(106, 150, 199, 0.35);\n}\n.audio-popover-panel {\n  position: absolute;\n  bottom: calc(100% + 8px);\n  right: 0;\n  width: 200px;\n  background: #141d27;\n  border: 1px solid #3b5066;\n  border-radius: 6px;\n  padding: 10px 12px;\n  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);\n  z-index: 10001;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  animation: popover-up .15s ease-out;\n}\n.audio-popover-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  border-bottom: 1px solid #283748;\n  padding-bottom: 6px;\n}\n.audio-popover-title {\n  font-size: 11px;\n  font-weight: 600;\n  color: #a4b9c9;\n}\n.audio-master-switch {\n  font-size: 10px !important;\n  padding: 2px 7px !important;\n  min-height: 22px !important;\n  background: #212c38 !important;\n  border: 1px solid #3d5064 !important;\n  color: #c7d5e2 !important;\n  border-radius: 3px !important;\n  cursor: pointer;\n}\n.audio-master-switch[aria-pressed=\"true\"] {\n  background: #233e32 !important;\n  border-color: #4d7a63 !important;\n  color: #9ee0bd !important;\n}\n.audio-sliders-group {\n  display: flex;\n  flex-direction: column;\n  gap: 6px;\n}\n.audio-slider-item {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  font-size: 10.5px;\n  color: #9ab0c2;\n  gap: 8px;\n}\n.audio-slider-item input[type=range] {\n  width: 110px;\n  accent-color: #df9ba8;\n  cursor: pointer;\n}\n.audio-popover-status {\n  font-size: 10px;\n  color: #7b8f9f;\n  text-align: right;\n  border-top: 1px dashed #2b3a4a;\n  padding-top: 5px;\n}\n/* 她的动静警示槽（常驻条右上角，过档事件亮两段） */\n.trpg { position: relative; }\n/* 全屏/状态栏边缘应激暗角（Vignette） */\n.trpg-vignette {\n  position: absolute;\n  inset: 0;\n  border-radius: 8px;\n  pointer-events: none;\n  z-index: 7;\n  transition: box-shadow 0.4s ease;\n  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);\n}\n/* 变形态：边缘暗红收窄 */\n.trpg[data-line=\"deform\"] .trpg-vignette {\n  box-shadow: inset 0 0 38px rgba(175, 45, 55, 0.38);\n}\n/* 崩溃态：深红逼近 + 随心跳重拍搏动 */\n.trpg[data-line=\"crash\"] .trpg-vignette {\n  box-shadow: inset 0 0 54px rgba(225, 35, 50, 0.62);\n  animation: vignette-throb var(--beat, 0.8s) ease-in-out infinite;\n}\n@keyframes vignette-throb {\n  0%, 100% { box-shadow: inset 0 0 44px rgba(190, 30, 45, 0.5); }\n  50%      { box-shadow: inset 0 0 66px rgba(245, 40, 60, 0.78); }\n}\n/* 结算 spike 重拍脉冲 */\n.trpg-vignette.pulse {\n  animation: vignette-pulse 0.45s ease-out forwards;\n}\n@keyframes vignette-pulse {\n  0%   { box-shadow: inset 0 0 78px rgba(255, 45, 60, 0.88); }\n  100% { box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35); }\n}\n@media (prefers-reduced-motion: reduce) {\n  .trpg[data-line=\"crash\"] .trpg-vignette,\n  .trpg-vignette.pulse { animation: none; }\n}\n.her-alert { position: absolute; top: -12px; right: 16px; z-index: 9; padding: 3px 12px; border-radius: 10px;\n  background: #392b2f; border: 1px solid #7a5a60; color: #e3c3ca; font-size: 12px; letter-spacing: .1em;\n  box-shadow: 0 2px 10px #0007; opacity: 0; transform: translateY(-5px); transition: .35s; pointer-events: none; }\n.her-alert.show { opacity: 1; transform: none; }\n/* 心跳历史迷你曲线 */\n.spark { display: block; width: min(100%, 164px); height: 20px; margin-top: 7px; }\n.spark polyline { fill: none; stroke: #6fd3c7; stroke-width: 1.5; filter: drop-shadow(0 0 3px rgba(111,211,199,.45)); }\n.spark line { stroke: rgba(146,187,154,.4); stroke-width: 1; stroke-dasharray: 2 3; }\n/* 接触模式：距离 pip 换暖色（朋友的位，不是贼的位） */\n.pips.warm .pip.active { background: #d6b96a; border-color: #d6b96a; }\n/* 标签将到期 */\n.trpg .tag.fading { opacity: .55; }\n/* 谎账：雷区可视化 */\n.lie { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12.5px; border-top: 1px dashed #465463; }\n.lie:first-child { border-top: 0; }\n.lie .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; animation: blink 1.2s steps(2) infinite; }\n.lie.v-high .dot { background: #e0566a; }\n.lie.v-mid .dot { background: #d6b96a; }\n.lie.v-low .dot { background: #8b93a0; animation: none; }\n.lie.busted { opacity: .45; text-decoration: line-through; }\n.lie .ver { margin-left: auto; font-size: 10px; color: var(--muted); }\n/* 她的档案：属性直读区（高情报揭示真实数值，未查明显示 ?） */\n.pattrs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }\n.pattr { text-align: center; padding: 8px 0 7px; background: rgba(255, 255, 255, 0.03); border: 0; border-top: 1px solid rgba(255, 255, 255, 0.07); border-radius: 2px; }\n.pattr .an { font: 600 10px/1 ui-monospace, Consolas, monospace; color: var(--t-low); letter-spacing: .14em; }\n.pattr .av { font: 600 19px ui-monospace, Consolas, monospace; margin-top: 4px; color: var(--t-hi); }\n.pattr.unknown .av { color: var(--t-low); }\n.pattr .at { font: 500 9.5px ui-monospace, Consolas, monospace; color: var(--t-mid); margin-top: 3px; }\n\n/* ═══ 她的档案 · 长焦偷拍取景框 ═══ */\n.surv-viewfinder {\n  margin-bottom: 16px;\n  background: #090e15;\n  border: 1px solid #2b3a4a;\n  border-radius: 6px;\n  padding: 8px;\n  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4);\n}\n.vf-frame {\n  position: relative;\n  background: #0d131b;\n  border: 1px solid #1f2a36;\n  border-radius: 4px;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n}\n.vf-corner {\n  position: absolute;\n  width: 9px;\n  height: 9px;\n  border: 1.5px solid #63809e;\n  z-index: 5;\n  pointer-events: none;\n}\n.vf-corner.tl { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }\n.vf-corner.tr { top: 6px; right: 6px; border-left: 0; border-bottom: 0; }\n.vf-corner.bl { bottom: 6px; left: 6px; border-right: 0; border-top: 0; }\n.vf-corner.br { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }\n.vf-crosshair {\n  position: absolute;\n  top: 50%; left: 50%;\n  width: 22px; height: 22px;\n  transform: translate(-50%, -50%);\n  border: 1px dashed rgba(111, 211, 199, 0.35);\n  border-radius: 50%;\n  pointer-events: none;\n  z-index: 4;\n}\n.vf-crosshair::before, .vf-crosshair::after {\n  content: ''; position: absolute; background: rgba(111, 211, 199, 0.45);\n}\n.vf-crosshair::before { top: 50%; left: -6px; width: 34px; height: 1px; transform: translateY(-50%); }\n.vf-crosshair::after { left: 50%; top: -6px; height: 34px; width: 1px; transform: translateX(-50%); }\n.vf-header {\n  position: absolute;\n  top: 6px; left: 16px; right: 16px;\n  display: flex; justify-content: space-between; align-items: center;\n  font: 9.5px ui-monospace, Consolas, monospace;\n  color: #9cb3c7;\n  z-index: 6;\n  text-shadow: 0 1px 3px #000;\n  pointer-events: none;\n}\n.vf-rec {\n  color: #e0566a;\n  letter-spacing: .08em;\n  font-weight: 600;\n  display: flex; align-items: center; gap: 4px;\n}\n.vf-rec .rec-dot {\n  display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #e0566a;\n  box-shadow: 0 0 5px #e0566a;\n  animation: rec-blink 1.4s steps(1) infinite;\n}\n.vf-meta {\n  color: #6d859a;\n  font-size: 9px;\n}\n.vf-scene {\n  position: relative;\n  width: 100%;\n  height: 130px;\n  overflow: hidden;\n  background: #080d14;\n}\n.vf-canvas {\n  display: block;\n  width: 100%;\n  height: 100%;\n  filter: contrast(1.1) saturate(0.85);\n  transition: filter 0.4s ease;\n}\n/* 距离虚化 */\n.vf-frame.af-searching .vf-canvas {\n  filter: blur(2.5px) contrast(0.95) saturate(0.65);\n}\n.vf-frame.af-tracking .vf-canvas {\n  filter: blur(1.2px) contrast(1.05) saturate(0.8);\n}\n.vf-frame.af-locked .vf-canvas {\n  filter: blur(0px) contrast(1.15) saturate(0.9);\n}\n/* 对焦微标 */\n.vf-af-badge {\n  padding: 1px 5px;\n  border-radius: 2px;\n  font-weight: 700;\n  letter-spacing: .05em;\n  font-size: 8.5px;\n  margin-left: 6px;\n}\n.vf-frame.af-searching .vf-af-badge {\n  color: #dfba68;\n  background: rgba(223, 186, 104, 0.16);\n  border: 1px solid rgba(223, 186, 104, 0.45);\n}\n.vf-frame.af-tracking .vf-af-badge {\n  color: #8bb8dc;\n  background: rgba(139, 184, 220, 0.16);\n  border: 1px solid rgba(139, 184, 220, 0.45);\n}\n.vf-frame.af-locked .vf-af-badge {\n  color: #72cf9c;\n  background: rgba(114, 207, 156, 0.16);\n  border: 1px solid rgba(114, 207, 156, 0.45);\n}\n/* 心跳手抖 */\n.vf-frame.shake-deform .vf-canvas {\n  animation: vf-shake-light 0.18s infinite alternate ease-in-out;\n}\n.vf-frame.shake-crash .vf-canvas {\n  animation: vf-shake-heavy 0.12s infinite alternate ease-in-out;\n}\n@keyframes vf-shake-light {\n  0%   { transform: translate(0, 0) rotate(0deg); }\n  100% { transform: translate(0.7px, -0.6px) rotate(0.25deg); }\n}\n@keyframes vf-shake-heavy {\n  0%   { transform: translate(-1.2px, 0.9px) rotate(-0.45deg); }\n  50%  { transform: translate(1.3px, -1.1px) rotate(0.55deg); }\n  100% { transform: translate(-0.8px, -1px) rotate(-0.35deg); }\n}\n@media (prefers-reduced-motion: reduce) {\n  .vf-frame.shake-deform .vf-canvas,\n  .vf-frame.shake-crash .vf-canvas { animation: none; }\n}\n.vf-scanline {\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 3px);\n  opacity: 0.7;\n}\n.vf-footer {\n  position: absolute;\n  bottom: 6px; left: 16px; right: 16px;\n  display: flex; justify-content: space-between; align-items: center;\n  font: 9px ui-monospace, Consolas, monospace;\n  color: #6b8296;\n  z-index: 6;\n  text-shadow: 0 1px 3px #000;\n  pointer-events: none;\n}\n.vf-tag {\n  color: #9ab4cb;\n}\n.vf-status {\n  color: #8faea0;\n}\n\n.lie-legend { display: flex; gap: 16px; font-size: 11px; color: var(--muted); margin-bottom: 10px; align-items: center; }\n.lie-legend .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }\n@keyframes blink { 50% { opacity: .15; } }\n.trpg .ledger { border-top: 1px solid var(--border); padding: 8px 14px; color: var(--muted); background: #1f2730; border-radius: 0 0 7px 7px; font-size: 11px; margin-top: 12px; }\n/* ═══ 全局 Dialog 浮层弹窗加固（统一 TRPG 暗色风格） ═══ */\n/* ═══ 尾行专属 Dialog 浮层弹窗加固（统一 TRPG 暗色风格，绝不污染宿主与第三方扩展） ═══ */\n/* 终端弹窗排除在外：它自带 header/body 分区，padding 由 :599 定 0。\n   此前两条 !important 特异性打平、靠源码顺序分胜负，终端被套上 20/22 内边距。 */\ndialog.wx-dialog:not(.wx-terminal-dialog), .trpg dialog.wx-dialog:not(.wx-terminal-dialog) {\n  background: #070b10 !important;\n  color: var(--t-hi) !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(240, 179, 85, 0.22) !important;\n  padding: 20px 22px !important;\n  border-radius: 10px !important;\n  width: min(580px, calc(100% - 28px)) !important;\n  max-height: 85dvh !important;\n  overflow: auto !important;\n  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95) !important;\n  box-sizing: border-box !important;\n}\ndialog.wx-dialog::backdrop, .trpg dialog.wx-dialog::backdrop {\n  background: rgba(5, 10, 16, 0.85) !important;\n  backdrop-filter: blur(6px) !important;\n  -webkit-backdrop-filter: blur(6px) !important;\n}\ndialog.wx-dialog[open], .trpg dialog.wx-dialog[open] { animation: dialog-in 160ms ease-out; }\ndialog.wx-dialog h2, .trpg dialog.wx-dialog h2 { font-size: 16px; margin-top: 0; color: var(--t-hi); letter-spacing: .02em; }\n.wx-dialog .dialog-top, .trpg .wx-dialog .dialog-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); margin-bottom: 16px; }\n.wx-dialog .dialog-top h2, .trpg .wx-dialog .dialog-top h2 { margin-bottom: 10px; }\n.wx-dialog .close-icon, .trpg .wx-dialog .close-icon {\n  min-width: 32px; padding: 2px 8px; font-size: 17px; line-height: 1; cursor: pointer;\n  background: transparent !important; border: 0 !important; color: var(--t-mid) !important; transition: color .15s;\n}\n.wx-dialog .close-icon:hover, .trpg .wx-dialog .close-icon:hover { color: #fff !important; }\n.wx-dialog .dialog-actions, .trpg .wx-dialog .dialog-actions { display: flex; justify-content: flex-end; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 14px; margin-top: 18px; }\ndialog.wx-dialog button, .trpg dialog.wx-dialog button, .wx-terminal-modal button {\n  font: inherit !important; color: #d9e4ed !important; background: #26333e !important; border: 1px solid #4a5d70 !important; border-radius: 5px !important; padding: 4px 12px !important; cursor: pointer !important; min-height: 28px !important; transition: all .15s !important;\n}\n/* 关闭键不吃通用按钮皮：它必须排在 :1969 之后、且特异性更高（dialog + 两class） */\ndialog.wx-dialog .wx-modal-close, dialog.wx-dialog .close-icon,\n.trpg dialog.wx-dialog .wx-modal-close, .trpg dialog.wx-dialog .close-icon {\n  background: transparent !important;\n  border: 0 !important;\n  border-radius: 0 !important;\n  min-height: 0 !important;\n  padding: 4px 8px !important;\n  color: var(--t-mid) !important;\n  font-size: 17px !important;\n}\ndialog.wx-dialog .wx-modal-close:hover, dialog.wx-dialog .close-icon:hover,\n.trpg dialog.wx-dialog .wx-modal-close:hover, .trpg dialog.wx-dialog .close-icon:hover {\n  background: transparent !important;\n  border: 0 !important;\n  color: #ffffff !important;\n}\ndialog.wx-dialog button:hover, .trpg dialog.wx-dialog button:hover, .wx-terminal-modal button:hover { background: #354757 !important; border-color: #8da6bd !important; color: #fff !important; }\n.trpg .item-meta { color: #afc3d2; font-size: 12px; }\n.trpg .dice { font: 700 30px/1.6 ui-monospace, Consolas, monospace; margin: 15px 0; }\n.trpg .success { color: #b3cdb8; }\n@keyframes beat { 0%, 35%, 100% { transform: scale(1); } 12% { transform: scale(1.18); } }\n@keyframes ring-beat { 0%, 40%, 100% { stroke-opacity: .08; stroke-width: 1; } 12% { stroke-opacity: .65; stroke-width: 2.5; } }\n@keyframes dialog-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }\n@keyframes ecg-scroll { from { transform: translateX(0); } to { transform: translateX(-72px); } }\n.trpg.motion-paused .dial-heart, .trpg.motion-paused .dial-beat-halo, .trpg.motion-paused .ecg-scroll { animation-play-state: paused; }\n@media (prefers-reduced-motion: reduce) {\n  .trpg .dial-heart, .trpg .dial-beat-halo, .trpg .ecg-scroll, .trpg dialog.wx-dialog[open] { animation: none; }\n  .trpg .dial-marker-orbit, .trpg .stamina-fill { transition: none; }\n  .trpg .dev-frame-rec::before { animation: none; }\n}\n/* ═══ 零楼 · 开局两步走向导（第一步：猎手身份属性 ➔ 第二步：锁定目标角色；零楼数零 token） ═══ */\n#wx-zero-floor { position: static; width: 100%; max-width: 820px; min-width: 0; box-sizing: border-box; padding: 16px; margin: 12px auto; background: #131b23; border: 1px solid #354351; border-radius: 8px; color: var(--t-hi); white-space: normal; overflow-wrap: anywhere; }\n#wx-zero-floor[hidden], [data-wx-opening][hidden] { display: none !important; }\n#wx-zero-floor button { cursor: pointer; }\n@media(max-width: 560px) { #wx-zero-floor { padding: 10px; } #wx-zero-floor .target-grid { grid-template-columns: 1fr; } #wx-zero-floor .zero-title-wrap { flex-wrap: wrap; } }\n/* 关闭态一律不占版面：作者态的 display:flex 会盖过 UA 的 dialog:not([open]){display:none}，\n   导致创角向导 close() 之后仍占 399px 版面（真机实测）。 */\ndialog.wx-dialog:not([open]) { display: none !important; }\n.zero-wizard-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 12px; margin-bottom: 14px; gap: 12px; flex-wrap: wrap; }\n.zero-title-wrap { display: flex; align-items: baseline; gap: 8px; }\n#wx-zero-floor .zero-title-wrap h2 { font-size: 15px; font-weight: 600; color: var(--t-hi); letter-spacing: .02em; }\n.zero-sub { color: var(--t-low); font: 500 10px/1.5 ui-monospace, Consolas, monospace; letter-spacing: .06em; }\n.zero-steps-bar { display: flex; align-items: center; gap: 8px; }\n/* 步骤药丸与页签都在创角弹窗里，统一带 #wx-zero-floor 作用域：\n   宿主通用按钮皮是 `.trpg dialog.wx-dialog button`（0,2,2），单类前缀（0,2,0）压不住。 */\n#wx-zero-floor .zero-step-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 0 !important; background: none !important; border: 0 !important; border-radius: 0 !important; color: var(--t-low) !important; font: 600 10px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .12em; cursor: pointer; transition: color .15s; }\n#wx-zero-floor .zero-step-pill .step-num { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: none !important; border: 1px solid rgba(255, 255, 255, 0.16) !important; color: var(--t-low) !important; font-size: 9.5px; font-weight: 700; }\n#wx-zero-floor .zero-step-pill.active { color: var(--heat) !important; }\n#wx-zero-floor .zero-step-pill.active .step-num { background: var(--heat) !important; border-color: var(--heat) !important; color: #0b0f14 !important; }\n#wx-zero-floor .zero-step-pill.completed { color: var(--safe) !important; }\n#wx-zero-floor .zero-step-pill.completed .step-num { border-color: rgba(95, 214, 195, 0.5) !important; color: var(--safe) !important; }\n.zero-step-divider { color: var(--t-low); opacity: .5; font-size: 11px; }\n\n.zero-step-view { display: flex; flex-direction: column; min-height: 0; }\n.zero-step-view[hidden] { display: none; }\n\n#wx-zero-floor .create-tabs { display: flex; gap: 8px; margin: 0 0 14px; }\n#wx-zero-floor .create-tab { background: none !important; border: 0 !important; border-radius: 0 !important; color: var(--t-low) !important; padding: 4px 0 !important; margin-right: 16px; font: 600 10px/1 ui-monospace, Consolas, monospace !important; letter-spacing: .12em; }\n#wx-zero-floor .create-tab.active { background: none !important; color: var(--heat) !important; box-shadow: inset 0 -2px 0 var(--heat); }\n#wx-zero-floor .create-pane[hidden] { display: none; }\n#wx-zero-floor .id-grid, #wx-zero-floor .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; max-height: 290px; overflow-y: auto; padding-right: 4px; }\n#wx-zero-floor .id-card { text-align: left; background: rgba(255, 255, 255, 0.028) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, 0.07) !important; border-radius: 4px !important; cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-height: 0; transition: background-color .15s; }\n#wx-zero-floor .id-card:hover { background: rgba(255, 255, 255, 0.055) !important; }\n#wx-zero-floor .id-card.sel { background: rgba(240, 179, 85, 0.07) !important; border-top-color: var(--heat) !important; }\n#wx-zero-floor .id-name { font-size: 15px; font-weight: 600; color: var(--t-hi); }\n#wx-zero-floor .id-tagline { font-size: 11px; color: var(--t-mid); font-style: italic; }\n#wx-zero-floor .id-line { font-size: 11px; color: var(--t-mid); line-height: 1.55; }\n#wx-zero-floor .id-line b { color: var(--safe); font-weight: 600; }\n#wx-zero-floor .id-line.bad b { color: #ff9aa3; }\n#wx-zero-floor .alloc { margin-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 10px; }\n#wx-zero-floor .alloc-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 10px; }\n#wx-zero-floor .alloc-remain { font: 600 15px/1 ui-monospace, Consolas, monospace; color: var(--heat); white-space: nowrap; }\n#wx-zero-floor .alloc-remain.warn { color: #ff9aa3; }\n#wx-zero-floor .alloc-row { display: grid; grid-template-columns: 44px auto 96px 1fr; align-items: center; gap: 10px; padding: 4px 0; }\n#wx-zero-floor .alloc-name { font-size: 13px; font-weight: 600; color: var(--t-hi); }\n#wx-zero-floor .stepper { display: flex; align-items: center; gap: 6px; }\n#wx-zero-floor .stepper button { background: rgba(255, 255, 255, 0.05) !important; border: 0 !important; border-radius: 2px !important; color: var(--t-mid) !important; }\n#wx-zero-floor .stepper button:disabled { opacity: .35; cursor: not-allowed; }\n#wx-zero-floor .alloc-val { font: 600 19px/1 ui-monospace, Consolas, monospace; color: var(--t-hi); text-align: center; min-width: 30px; }\n#wx-zero-floor .alloc-mod { font: 600 11px/1.3 ui-monospace, Consolas, monospace; color: var(--safe); text-align: center; white-space: nowrap; }\n#wx-zero-floor .alloc-mod.waste { color: #ff9aa3; }\n#wx-zero-floor .alloc-tier { font-size: 11px; color: var(--t-low); }\n#wx-zero-floor .alloc-warn { color: #ff9aa3; font-size: 11px; margin: 4px 0 0; min-height: 15px; }\n\n/* 步骤 2：目标卡片网格与详情 */\n.target-section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 10px; flex-wrap: wrap; }\n.target-sub-note { font-size: 11px; color: #7fd4c1; }\n.target-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 4px; }\n#wx-zero-floor .target-card { text-align: left; background: rgba(255, 255, 255, 0.028) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, 0.07) !important; border-radius: 4px !important; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: background-color .15s; }\n#wx-zero-floor .target-card:hover { background: rgba(255, 255, 255, 0.055) !important; }\n#wx-zero-floor .target-card.sel { background: rgba(240, 179, 85, 0.07) !important; border-top-color: var(--heat) !important; }\n.target-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }\n#wx-zero-floor .target-name { font-size: 14px; font-weight: 600; color: var(--t-hi); }\n#wx-zero-floor .target-stars { font-size: 11px; color: var(--heat); letter-spacing: 1px; }\n#wx-zero-floor .target-detail-stars { font-size: 12px; color: var(--heat); letter-spacing: 1px; }\n#wx-zero-floor .target-meta-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--t-mid); gap: 6px; }\n#wx-zero-floor .target-type-badge { display: inline-block; padding: 0 0 0 6px; border: 0 !important; border-left: 2px solid var(--t-low) !important; border-radius: 0 !important; font: 600 9.5px/1.4 ui-monospace, Consolas, monospace; letter-spacing: .08em; background: none !important; color: var(--t-mid) !important; }\n#wx-zero-floor .target-area { font-size: 11px; color: var(--t-mid); }\n#wx-zero-floor .target-tagline { font-size: 11px; color: var(--t-mid); font-style: italic; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }\n#wx-zero-floor .target-features { font-size: 10px; color: var(--t-mid); line-height: 1.4; }\n\n#wx-zero-floor .target-detail-box { margin-top: 10px; background: rgba(255, 255, 255, 0.024) !important; border: 0 !important; border-top: 1px solid rgba(255, 255, 255, 0.07) !important; border-radius: 4px !important; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; }\n#wx-zero-floor .target-detail-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important; padding-bottom: 5px; }\n.target-detail-title-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.target-detail-action-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n#wx-zero-floor .target-detail-name { font-size: 15px; font-weight: 600; color: var(--t-hi) !important; }\n#wx-zero-floor .target-detail-badge { padding: 1px 7px; border: 0 !important; border-left: 2px solid var(--her) !important; border-radius: 2px !important; font-size: 11px; font-weight: 600; background: rgba(217, 143, 160, 0.10) !important; color: #eec3cb !important; }\n#wx-zero-floor .target-status-badge { font-size: 10px; padding: 1px 6px; border-radius: 4px; }\n#wx-zero-floor .target-status-badge.ready { background: rgba(95, 214, 195, 0.10) !important; border: 0 !important; border-left: 2px solid var(--safe) !important; border-radius: 2px !important; color: var(--safe) !important; }\n#wx-zero-floor .btn-reroll-target { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px !important; font-size: 12px !important; font-weight: 600; letter-spacing: .04em; border-radius: 2px !important; background: rgba(240, 179, 85, 0.12) !important; border: 1px solid rgba(240, 179, 85, 0.55) !important; color: var(--heat) !important; cursor: pointer; transition: all .15s; }\n#wx-zero-floor .btn-reroll-target .btn-ico svg { width: 14px; height: 14px; }\n#wx-zero-floor .btn-reroll-target:hover { background: rgba(240, 179, 85, 0.22) !important; border-color: var(--heat) !important; color: #ffe2b0 !important; }\n#wx-zero-floor .target-gen-name { font-weight: 600; color: var(--t-hi); font-size: 13px; letter-spacing: 0; }\n#wx-zero-floor .target-gen-sub { font-size: 10px; color: var(--t-low); margin-left: 6px; }\n#wx-zero-floor .target-stat-delta-pos { color: var(--safe); font-weight: 600; margin-left: 2px; }\n#wx-zero-floor .target-stat-delta-neg { color: #ff9aa3; font-weight: 600; margin-left: 2px; }\n.target-detail-area { font-size: 11px; color: #8da4b8; }\n.target-detail-tagline { font-size: 11px; color: #afc3d2; font-style: italic; margin: 0; }\n.target-detail-rows { display: flex; flex-direction: column; gap: 3px; font-size: 11px; }\n#wx-zero-floor .target-row { color: var(--t-low); }\n#wx-zero-floor .target-row b { color: var(--t-mid); margin-right: 6px; }\n\n/* 底部操作条 */\n#wx-zero-floor .create-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 12px; margin-top: 14px; gap: 12px; flex-wrap: wrap; }\n#wx-zero-floor .create-hint { font-size: 12px; color: var(--t-low); }\n#wx-zero-floor .zero-btn-prev { background: none !important; border: 1px solid rgba(255, 255, 255, 0.14) !important; color: var(--t-mid) !important; border-radius: 2px !important; cursor: pointer; transition: all .15s; }\n#wx-zero-floor .zero-btn-prev:hover { background: rgba(255, 255, 255, 0.05) !important; color: var(--t-hi) !important; }\n#wx-zero-floor .zero-btn-next, #wx-zero-floor .create-confirm:not(:disabled) { background: rgba(240, 179, 85, 0.12) !important; border: 1px solid rgba(240, 179, 85, 0.45) !important; border-radius: 2px !important; color: var(--heat) !important; cursor: pointer; transition: all .15s; }\n#wx-zero-floor .zero-btn-next:hover, #wx-zero-floor .create-confirm:not(:disabled):hover { background: rgba(240, 179, 85, 0.2) !important; color: #ffe2b0 !important; }\n#wx-zero-floor .zero-btn-next:disabled, #wx-zero-floor .create-confirm:disabled { opacity: .35 !important; cursor: not-allowed; }\n/* 常驻条身份徽记（青色，与优势金色区分；v0.8） */\n.trpg .slim-tag.id-badge { cursor: pointer; color: #a8e6d5; border-color: #3f6c62; }\n.trpg .slim-tag.id-badge:hover { border-color: #7fd4c1; }\n/* 未开局覆盖钮（新局且未确认身份时盖住常驻条） */\n.trpg-slim-bar { position: relative; }\n#zeroChip { position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(13, 19, 26, .94); border: 1px dashed #4a5d70; border-radius: 7px; color: #7fd4c1; font-size: 13px; cursor: pointer; }\n#zeroChip[hidden] { display: none; }\n/* ═══ M4-2 三翼战术 Canvas 判定台样式（夜巡语言：去边框、顶部留一条极细线、光与材质当结构） ═══\n   判定台是单例弹窗，规则统一带 #wx-settle-dialog 作用域：\n   一是压得住宿主通用按钮皮（dialog.wx-dialog button 带 !important），二是避免与终端的同名类互相牵连。 */\ndialog#wx-settle-dialog {\n  width: min(860px, calc(100vw - 16px)) !important;\n  max-height: 92vh !important;\n  background: #070b10 !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(240, 179, 85, 0.22) !important;\n  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.92) !important;\n  padding: 14px 16px !important;\n}\n.settle-body {\n  font-size: 13px;\n  line-height: 1.6;\n  padding: 4px 0 8px;\n}\n#wx-settle-dialog .stage-console {\n  display: grid;\n  grid-template-columns: 210px 1fr 240px;\n  gap: 12px;\n  background: none !important;\n  border: 0 !important;\n  box-shadow: none !important;\n  border-radius: 10px;\n  padding: 2px 0 !important;\n  position: relative;\n  overflow: hidden;\n}\n@media (max-width: 760px) {\n  .stage-console { grid-template-columns: 1fr; }\n}\n#wx-settle-dialog .wing {\n  background: rgba(255, 255, 255, 0.028) !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;\n  border-radius: 4px !important;\n  padding: 10px;\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  position: relative;\n  z-index: 10;\n}\n.wing-header {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  border-bottom: 1px solid rgba(75, 125, 185, 0.18);\n  padding-bottom: 5px;\n  font-size: 11px;\n}\n#wx-settle-dialog .wing-tag {\n  font: 600 9.5px/1.5 ui-monospace, Consolas, monospace !important;\n  color: var(--t-low) !important;\n  border: 0 !important;\n  padding: 1px 5px;\n  border-radius: 3px;\n  letter-spacing: .16em;\n}\n#wx-settle-dialog .wing-title { color: var(--t-mid) !important; letter-spacing: 0.04em; font-weight: 600 !important; }\n\n#wx-settle-dialog .action-badge {\n  font: 600 11.5px/1.5 ui-monospace, Consolas, monospace !important;\n  color: #f4d6a0 !important;\n  background: rgba(240, 179, 85, 0.08) !important;\n  border: 0 !important;\n  border-left: 2px solid var(--heat) !important;\n  border-radius: 0 !important;\n  padding: 4px 8px;\n  display: flex;\n  align-items: center;\n  gap: 6px;\n}\n.mods-stack {\n  display: flex;\n  flex-direction: column;\n  gap: 5px;\n  min-height: 100px;\n}\n#wx-settle-dialog .chip-item {\n  font: 11.5px Consolas, monospace;\n  padding: 3px 8px;\n  border-radius: 0 !important;\n  background: rgba(255, 255, 255, 0.04) !important;\n  border: 0 !important;\n  border-left: 2px solid rgba(255, 255, 255, 0.14) !important;\n  color: var(--t-mid) !important;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  opacity: 0;\n  transform: translateX(-8px);\n  animation: chipSlideIn .25s cubic-bezier(.16, 1.3, .3, 1) forwards;\n}\n@keyframes chipSlideIn { to { opacity: 1; transform: translateX(0); } }\n#wx-settle-dialog .chip-item.hidden-mod {\n  border-left-color: var(--danger) !important;\n  color: #ffa9b1 !important;\n  background: rgba(255, 90, 104, 0.07) !important;\n}\n#wx-settle-dialog .chip-item.ripple-mod {\n  border-left-color: var(--heat) !important;\n  color: #f0d9a8 !important;\n  background: rgba(240, 179, 85, 0.06) !important;\n}\n#wx-settle-dialog .chip-item b { color: var(--t-hi) !important; font-weight: normal; }\n\n#wx-settle-dialog .ekg-widget {\n  margin-top: auto;\n  background: rgba(255, 255, 255, 0.03) !important;\n  border: 0 !important;\n  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;\n  border-radius: 0 !important;\n  padding: 6px 8px;\n}\n#wx-settle-dialog .ekg-top {\n  display: flex;\n  justify-content: space-between;\n  font: 10px Consolas, monospace;\n  color: var(--t-low) !important;\n  margin-bottom: 2px;\n}\n#wx-settle-dialog .ekg-top .bpm { color: var(--safe) !important; font-weight: 600 !important; }\n.ekg-svg { width: 100%; height: 22px; display: block; }\n#wx-settle-dialog .ekg-trace {\n  fill: none;\n  stroke: rgba(95, 214, 195, 0.8) !important;\n  stroke-width: 1.6;\n  stroke-dasharray: 200;\n  stroke-dashoffset: 200;\n  animation: ekgLoop 1.8s linear infinite;\n}\n@keyframes ekgLoop { to { stroke-dashoffset: -200; } }\n\n#wx-settle-dialog .stage-center {\n  position: relative;\n  min-height: 350px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  overflow: hidden;\n  background: none !important;\n}\n.stage-center .corner {\n  position: absolute; width: 12px; height: 12px; border: 2px solid rgba(79, 143, 214, 0.45); pointer-events: none; transition: border-color .3s;\n}\n#wx-settle-dialog .stage-center .corner { border-color: rgba(255, 255, 255, 0.18) !important; }\n.stage-center .c-tl { top: 6px; left: 6px; border-right: none; border-bottom: none; }\n.stage-center .c-tr { top: 6px; right: 6px; border-left: none; border-bottom: none; }\n.stage-center .c-bl { bottom: 6px; left: 6px; border-right: none; border-top: none; }\n.stage-center .c-br { bottom: 6px; right: 6px; border-left: none; border-top: none; }\n\n#wx-settle-dialog .hud-status {\n  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);\n  font: 10px Consolas, monospace; letter-spacing: 0.2em; color: var(--t-low) !important;\n  transition: color .3s; white-space: nowrap; z-index: 8;\n}\n\n#wx-settle-dialog .radar-ring {\n  position: absolute; width: 260px; height: 260px; border-radius: 50%;\n  border: 1px dashed rgba(255, 255, 255, 0.10) !important; pointer-events: none;\n  animation: rSpin 18s linear infinite;\n}\n@keyframes rSpin { to { transform: rotate(360deg); } }\n\n.die-stage-center {\n  position: relative;\n  width: 250px;\n  height: 250px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\ncanvas#settleDieCanvas {\n  display: block;\n  width: 250px;\n  height: 250px;\n  z-index: 5;\n  cursor: grab;\n}\ncanvas#settleDieCanvas:active { cursor: grabbing; }\n\n#wx-settle-dialog .die-shadow {\n  position: absolute;\n  width: 160px;\n  height: 18px;\n  bottom: -6px;\n  left: 45px;\n  border-radius: 50%;\n  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 70%) !important;\n  pointer-events: none;\n  z-index: 2;\n  transition: transform .15s ease;\n}\n\n#wx-settle-dialog .verdict-box {\n  text-align: center;\n  padding: 5px;\n  background: rgba(255, 255, 255, 0.03) !important;\n  border-radius: 4px !important;\n  border: 0 !important;\n  min-height: 56px;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n}\n#wx-settle-dialog .verdict-badge {\n  font: 700 20px Consolas, monospace;\n  letter-spacing: 0.2em;\n  opacity: 0;\n  transform: scale(0.85);\n  transition: all .28s cubic-bezier(.2, 1.4, .4, 1);\n}\n#wx-settle-dialog .verdict-badge.show { opacity: 1; transform: scale(1); }\n#wx-settle-dialog .verdict-badge.crit { color: var(--heat) !important; text-shadow: 0 0 18px rgba(240, 179, 85, 0.55) !important; }\n#wx-settle-dialog .verdict-badge.fail { color: #ff9aa3 !important; text-shadow: 0 0 16px rgba(255, 90, 104, 0.45) !important; }\n#wx-settle-dialog .verdict-badge.success { color: var(--safe) !important; text-shadow: 0 0 16px rgba(95, 214, 195, 0.45) !important; }\n#wx-settle-dialog .verdict-badge.grace { color: #e9d3ad !important; text-shadow: none !important; }\n\n#wx-settle-dialog .math-line {\n  font: 11px Consolas, monospace;\n  color: var(--t-low) !important;\n  margin-top: 2px;\n}\n#wx-settle-dialog .math-line b { color: var(--t-hi) !important; font-weight: normal; }\n\n.ledger-wrap {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n  min-height: 90px;\n}\n#wx-settle-dialog .ledger-row {\n  font: 11px Consolas, monospace;\n  padding: 2.5px 7px;\n  border-radius: 0 !important;\n  background: none !important;\n  border-left: 2px solid rgba(255, 255, 255, 0.16) !important;\n  color: var(--t-mid) !important;\n  display: flex;\n  justify-content: space-between;\n  opacity: 0;\n  transform: translateY(4px);\n  transition: all .25s ease;\n}\n#wx-settle-dialog .ledger-row.show { opacity: 1; transform: translateY(0); }\n#wx-settle-dialog .ledger-row.warn { border-left-color: var(--danger) !important; color: #ff9aa3 !important; }\n#wx-settle-dialog .ledger-row.gain { border-left-color: var(--safe) !important; color: var(--safe) !important; }\n.ledger-row .val { font-weight: bold; }\n\n#wx-settle-dialog .dark-reveal-card {\n  font-size: 10.5px;\n  line-height: 1.45;\n  color: #ffa9b1 !important;\n  background: rgba(255, 90, 104, 0.06) !important;\n  border: 0 !important;\n  border-left: 2px solid var(--danger) !important;\n  border-radius: 0 !important;\n  padding: 5px 7px;\n  opacity: 0;\n  transform: scale(0.95);\n  transition: all .3s ease;\n  margin-top: auto;\n}\n#wx-settle-dialog .dark-reveal-card.show { opacity: 1; transform: scale(1); }\n#wx-settle-dialog .dark-reveal-card b { color: #ffc2c8 !important; }\n\n#wx-settle-dialog .queue-history {\n  display: flex;\n  flex-direction: column;\n  gap: 3px;\n  margin-top: 4px;\n  border-top: 1px dashed rgba(255, 255, 255, 0.08) !important;\n  padding-top: 4px;\n}\n#wx-settle-dialog .history-item {\n  font: 10px Consolas, monospace;\n  padding: 2px 5px;\n  border-radius: 0 !important;\n  background: rgba(255, 255, 255, 0.03) !important;\n  border: 0 !important;\n  border-left: 2px solid rgba(255, 255, 255, 0.12) !important;\n  color: var(--t-low) !important;\n  display: flex;\n  justify-content: space-between;\n}\n#wx-settle-dialog .history-item b { color: var(--t-hi) !important; font-weight: normal; }\n\n.flash-overlay {\n  position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 7;\n}\n.flash-overlay.ok { background: radial-gradient(circle at 50% 50%, rgba(142,226,179,.22) 0%, transparent 68%); animation: fl .7s ease-out; }\n.flash-overlay.bad { background: radial-gradient(circle at 50% 50%, rgba(224,86,106,.24) 0%, transparent 68%); animation: fl .7s ease-out; }\n.flash-overlay.crit { background: radial-gradient(circle at 50% 50%, rgba(216,183,104,.32) 0%, transparent 68%); animation: fl .85s ease-out; }\n@keyframes fl { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }\n\n/* 底栏沿用 .dialog-actions 的排布（勾选与确认同侧），这里只补夜巡的语言化内边距 */\n.settle-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; }\n#wx-settle-dialog .settle-actions { padding-top: 12px !important; border-top: 1px solid rgba(255, 255, 255, 0.06) !important; }\n#wx-settle-dialog .settle-auto { font-size: 12px; color: var(--t-mid) !important; display: flex; align-items: center; gap: 6px; cursor: pointer; }\n#wx-settle-dialog .settle-ack { min-width: 88px !important; font-weight: 700; }\n#wx-settle-dialog .settle-ack:not(:disabled) {\n  background: rgba(95, 214, 195, 0.12) !important;\n  border: 1px solid rgba(95, 214, 195, 0.45) !important;\n  border-radius: 2px !important;\n  color: var(--safe) !important;\n}\n#wx-settle-dialog .settle-ack:not(:disabled):hover { background: rgba(95, 214, 195, 0.2) !important; color: #d8fff6 !important; }\n/* 旧 520px 块里 .bar/.columns/.column/.drawer/.value/.phase 已随 GLM 骨架废弃，只留仍在用的三类 */\n@media (max-width: 520px) {\n  .trpg .stat { padding: 10px 7px; }\n  .trpg .label { font-size: 10px; }\n  .trpg .stat.instrument { padding: 8px 8px 10px; }\n  .trpg .heart-dial { width: min(100%, 124px); }\n}\n\n/* ═══ 桌面窄窗（≤800px）先让一层 ═══\n   C 案字号抬高后（场所 15px / 心跳 24px），整套左簇需要的宽度比原来更大；\n   窗口窄于 ≈860 时就会把标签齐根裁掉。先收三样最低价值的读数：\n   路线剩余节点、BPM、设备入口（后两者终端里都有），并把路牌与刻度收一档。 */\n@media (max-width: 860px) {\n  .slim-tag.remain { display: none; }\n  .mini-heart-bpm { display: none; }\n  /* .trpg .slim-btn 把 display 写回了 inline-flex，这里要同前缀压回来 */\n  .trpg .slim-btn.phone-stat { display: none !important; }\n  /* 场所名走省略号，别齐根裁掉半截标签 */\n  .slim-left { min-width: 0; gap: 7px; }\n  .slim-place { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }\n  .slim-tags-group { gap: 7px; }\n  .slim-tag { font-size: 10.5px; padding-left: 6px; }\n  .slim-center { gap: 6px; }\n  .mini-heart-num { font-size: 21px; }\n  .mini-heart { font-size: 17px; }\n}\n\n/* ≤660px：再收一层——大区徽记（场所名已足够定位）与 4 个距离点（档位文字仍在）。\n   561~660 区间实测左簇仍会被裁掉 5~64px。 */\n@media (max-width: 660px) {\n  .slim-dist-badge { display: none; }\n  .slim-pips { display: none; }\n  .slim-divider { display: none; }\n}\n\n/* ═══ 手机断点（≤560px）常驻条与终端重排 ═══\n   旧 520px 块只管 .bar/.columns/.column/.drawer 等已废弃的 GLM 骨架类；\n   新结构（trpg-slim-bar / wx-capsule-bar / wx-terminal-*）此前没有任何响应式规则，\n   390px 下左簇被 min-width:0 压成 0 宽、终端按钮被裁半个字。 */\n@media (max-width: 560px) {\n  /* 常驻条：保留位置、距离档、终局红线、心跳、终端；次级信息让位 */\n  /* 预览壳在窄屏上收内边距（box-sizing / min-width 已在基础规则里处理） */\n  main.wx-standalone-main { padding: 10px 8px; }\n  .trpg-slim-bar { padding: 0 6px; gap: 5px; }\n  .slim-left { gap: 5px; }\n  .slim-place { font-size: 12.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }\n  .slim-tags-group { gap: 6px; }\n  /* 天气：终端沙盘与动线雨幕特效里都还在，条上不重复占位 */\n  .slim-tag.weather { display: none; }\n  /* 路线剩余节点：次级信息，保留在终端与 tooltip */\n  .slim-tag.remain { display: none; }\n  /* C 案的标签是\"左竖条 + 文字\"，窄屏只收字号，不能补 padding 把竖条挤没 */\n  .slim-tag.id-badge { font-size: 10px; padding: 0 0 0 5px; }\n  /* 距离档与读数之间拉一根发丝线，别读成一句话 */\n  .slim-center { gap: 4px; padding: 0 8px 0 0; border-right: 1px solid rgba(255, 255, 255, 0.07); }\n  .slim-pips { display: none; }\n  .slim-divider { display: none; }\n  .slim-right { gap: 8px; }\n  .slim-stamina { padding: 0; }\n  /* 40px 细线在窄条上没有信息量，数字承担 */\n  .slim-stamina-bar { display: none; }\n  .mini-heart-bpm { display: none; }\n  .mini-heart { font-size: 17px; }\n  .mini-heart-num { font-size: 22px; }\n  .trpg .heart-pill-btn { padding: 0 !important; }\n  .trpg .slim-btn { padding: 2px 2px !important; }\n  /* 设备入口在终端深页里已有（监控设备 ↗），条上让位给终端图标 */\n  .phone-stat { display: none; }\n  .term-txt { display: none; }\n\n  /* 胶囊条：压缩内边距，靠横向滑动承载全部胶囊（C3：只收尺寸，不动皮肤） */\n  .wx-capsule-bar { padding: 3px 6px; gap: 5px; }\n  .wx-posture-badge { font-size: 9px; gap: 3px; }\n  .trpg .wx-capsule-chip { font-size: 10.5px; padding: 3px 8px; min-height: 26px !important; }\n  .trpg .wx-more-btn { font-size: 10.5px; padding: 3px 4px; }\n  /* 右边缘渐隐，提示这一排可以横滑（否则被裁的胶囊看起来像渲染错） */\n  .wx-chips-wrap {\n    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);\n    mask-image: linear-gradient(90deg, #000 calc(100% - 16px), transparent);\n  }\n\n  /* 心跳弹层：贴边不越界，刻度文字不再随 SVG 缩到 6px */\n  .heart-popover-card { width: min(300px, calc(100vw - 16px)); right: -4px; padding: 9px 10px; }\n  .popover-content .heart-dial { width: 138px; }\n  .popover-content .stamina, .popover-content .spark { width: 138px; }\n\n  /* 终端：标题不再折三行，徽记让位；动线轨可横滑而不是被切 */\n  .wx-modal-head { padding: 10px 12px; gap: 8px; }\n  .wx-modal-title { font-size: 12.5px; letter-spacing: 0; }\n  /* 阶段徽记（第 N 晚 · 潜行阶段）是模式唯一读数，不隐藏，只收紧 */\n  .wx-modal-badge { font-size: 9.5px; padding: 1px 5px; line-height: 1.25; max-width: none; white-space: nowrap; }\n  .wx-terminal-icon { display: none; }\n  .wx-modal-close { padding: 4px 6px !important; font-size: 15px; }\n  .wx-modal-body { padding: 12px 12px 10px; }\n  .wx-modal-body .route-tracker { padding: 10px 12px 12px; }\n  .route-stepper { overflow-x: auto; scrollbar-width: none; }\n  .route-stepper::-webkit-scrollbar { display: none; }\n  .wx-terminal-envbox, .wx-wing-card { padding: 10px 12px; }\n  .trpg .wx-terminal-ledger[data-tip] { margin: 0 12px 10px; }\n\n  /* 判定台单翼叠放后，三翼间距收一档 */\n  .stage-console { padding: 10px; gap: 10px; }\n}\n\n/* ≤430px：再让一档——大区徽记退场（场所名已足够定位，大区在终端沙盘里），\n   把宽度还给场所名，避免窄条上只剩一个「居」字。 */\n@media (max-width: 430px) {\n  .slim-dist-badge { display: none; }\n  /* 模式（潜行）在终端阶段徽记里仍有读数；窄条上把宽度让给场所与当前状态 */\n  .slim-phase { display: none; }\n  .slim-place { font-size: 12px; }\n}\n\n/* ≤380px（小屏安卓 / SE）：只剩 2px 的富余，把间隙与心跳内边距再收一点，\n   让场所名不被省略号截掉。 */\n@media (max-width: 380px) {\n  .trpg-slim-bar { gap: 4px; padding: 0 5px; }\n  .slim-right { gap: 3px; }\n  .heart-pill-btn { padding: 2px 5px; }\n  .mini-heart { margin-right: 3px; }\n}\n/* ═══ 相册（贴墙）与拍照即时卡片 ═══ */\n.wx-album-dialog { width: min(92vw, 560px); max-height: 80vh; }\n.album-count { font: 600 11px/1 ui-monospace, Consolas, monospace; color: var(--t-low); margin-left: 6px; }\n.album-wall { overflow-y: auto; padding: 8px 4px 12px; display: flex; flex-direction: column; gap: 10px; }\n.wall-sec { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; padding-top: 14px; position: relative; }\n.wall-sec::before {\n  content: attr(data-cn); position: absolute; top: 0; left: 0;\n  font: 600 10px/1 ui-monospace, Consolas, monospace; letter-spacing: .14em; color: var(--t-low);\n}\n.photo {\n  width: 76px; height: 104px; background: #e8e6e1; padding: 4px 4px 14px; border-radius: 2px;\n  box-shadow: 0 4px 10px rgba(0,0,0,.45); transform: rotate(var(--tilt, -1.5deg));\n  cursor: pointer; position: relative; box-sizing: border-box;\n}\n.photo:nth-child(3n) { --tilt: 1.6deg; }\n.photo:nth-child(4n) { --tilt: -2.2deg; }\n.photo img { width: 100%; height: 86px; object-fit: cover; display: block; background: #2a2f35; }\n.photo .cap { position: absolute; left: 5px; right: 5px; bottom: 3px; font: 500 8px/1.2 ui-monospace, Consolas, monospace; color: #4a4a46; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }\n.photo.empty { height: 96px; background: transparent; box-shadow: none; border: 1px dashed rgba(255,255,255,.18); border-radius: 2px; cursor: default; }\n.photo.empty::after { content: \"\"; }\n.photo.broken { background: #2b2a27; }\n.photo.broken img { display: none; }\n.photo.broken .cap { color: #8c8a80; }\n.album-detail { position: fixed; inset: 0; background: rgba(4,7,10,.92); z-index: 20050; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; }\n.album-detail[hidden] { display: none; }\n.album-detail img { max-width: min(92vw, 520px); max-height: 68vh; object-fit: contain; box-shadow: 0 10px 40px rgba(0,0,0,.6); }\n.album-detail-meta { font: 500 12px/1.6 ui-monospace, Consolas, monospace; color: var(--t-mid); text-align: center; }\n.photo-toast {\n  position: fixed; right: 16px; bottom: 118px; z-index: 20040;\n  display: flex; gap: 8px; align-items: center; padding: 8px;\n  background: rgba(16,23,31,.96); border: 1px solid var(--line); border-radius: 6px;\n  box-shadow: 0 8px 24px rgba(0,0,0,.5); animation: toastIn .22s ease-out;\n}\n.photo-toast[hidden] { display: none; }\n.photo-toast img { width: 44px; height: 58px; object-fit: cover; border-radius: 2px; background: #2a2f35; }\n.photo-toast-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }\n.photo-toast-txt b { font: 600 12px/1.2 \"Noto Sans SC\", system-ui, sans-serif; color: var(--t-hi); }\n.photo-toast-txt span { font: 500 10px/1.2 ui-monospace, Consolas, monospace; color: var(--t-low); }\n@keyframes toastIn { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }\n\n.trpg .wx-sync-notice { padding: 8px 12px; color: #f0b355; background: #241e15; border: 1px solid #6f5833; font-size: 12px; }\n.trpg .wx-sync-notice[hidden] { display: none !important; }\n\n.trpg .wx-sync-notice button { margin: 6px 8px 0 0; padding: 4px 8px; color: inherit; background: transparent; border: 1px solid #6f5833; border-radius: 4px; cursor: pointer; }\n.trpg .wx-sync-notice textarea { display: block; width: 100%; max-height: 160px; color: inherit; background: #151515; }\n.mes.wx-sync-floor { outline: 2px solid #f0b355; outline-offset: -2px; }\n\n/* 每日行动：只消费 dayPlan 快照，独立于心跳与尾行回合。 */\n.trpg .wx-day-plan { margin: 0 10px 8px; padding: 12px 14px 10px; border: 1px solid rgba(173,188,198,.16); border-radius: 7px; background: linear-gradient(120deg,rgba(26,35,41,.96),rgba(12,19,24,.96)); color: #acb9c0; font: 12px/1.5 \"Noto Sans SC\",system-ui,sans-serif; }\n.trpg .wx-day-heading, .trpg .wx-day-when, .trpg .wx-day-ap, .trpg .wx-day-bottom { display: flex; align-items: center; }\n.trpg .wx-day-heading { justify-content: space-between; gap: 10px; }\n.trpg .wx-day-when { gap: 8px; flex-wrap: wrap; min-width: 0; }\n.trpg .wx-day-kicker { color: #788991; font-size: 10px; letter-spacing: 2px; }\n.trpg .wx-day-dot { color: #586973; }\n.trpg #wxDayPeriod { color: #e2d2ab; font-weight: 500; }\n.trpg .wx-day-ap { flex-shrink: 0; gap: 6px; }\n.trpg #wxDayAp { color: #f2e3bb; font: 500 23px/1 ui-monospace,Consolas,monospace; }\n.trpg .wx-day-ap-total { color: #798d98; }\n.trpg .wx-day-ap-pips { display: flex; gap: 3px; margin-left: 4px; }\n.trpg .wx-day-ap-pips i { width: 6px; height: 14px; border-radius: 2px; background: #c4b184; }\n.trpg .wx-day-ap-pips i.used { background: #303c44; }\n.trpg .wx-day-periods { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); list-style: none; padding: 0; margin: 13px 0 10px; gap: 5px; }\n.trpg .wx-day-periods li { position: relative; text-align: center; padding: 7px 0 0; color: #657883; border-top: 2px solid #2c3942; font-size: 11px; }\n.trpg .wx-day-periods li[data-phase=\"past\"] { color: #a4b0b7; border-color: #70808a; }\n.trpg .wx-day-periods li[data-phase=\"current\"] { color: #efdab0; border-color: #d0b882; }\n.trpg .wx-day-periods li[data-phase=\"current\"]::before { content: \"\"; position: absolute; top: -4px; left: calc(50% - 3px); width: 6px; height: 6px; border-radius: 50%; background: #e4c68b; box-shadow: 0 0 8px #b49b5a66; }\n.trpg .wx-day-bottom { justify-content: space-between; gap: 10px; color: #71858f; font-size: 10px; }\n.trpg .wx-day-activity { display: flex; align-items: center; gap: 6px; min-width: 0; color: #aebfc8; }\n.trpg .wx-day-activity i { width: 5px; height: 5px; border-radius: 50%; background: #6e838f; flex-shrink: 0; }\n.trpg .wx-day-plan[data-state=\"active\"] .wx-day-activity i { background: #b9c8a2; box-shadow: 0 0 7px #adc19855; }\n.trpg .wx-day-plan[data-state=\"empty\"] .wx-day-periods { margin: 0; }\n@media(max-width:560px) {\n  .trpg .wx-day-plan { margin: 0 6px 6px; padding: 10px; }\n  .trpg .wx-day-when { gap: 5px; }\n  .trpg .wx-day-ap-pips { display: none; }\n  .trpg .wx-day-bottom { align-items: flex-start; flex-direction: column; gap: 3px; }\n}\n\n/* 日程活动统一入口。配置决定卡片数量，新增活动无需改 HTML。 */\n.trpg .wx-capsule-bar[hidden] { display: none; }\n.trpg .wx-daily-actions { margin: 0 10px 10px; padding: 0 12px 9px; border: 1px solid #263740; border-radius: 6px; background: #0e171eee; }\n.trpg .wx-daily-actions summary { cursor: pointer; padding: 10px 0; color: #d1dce0; font-size: 12px; }\n.trpg .wx-daily-actions summary span { margin-left: 12px; font-size: 10px; color: #718994; }\n.trpg .wx-daily-action-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }\n.trpg button.wx-daily-action { display: flex; flex-direction: column; gap: 5px; width: 100%; min-width: 0; padding: 10px!important; text-align: left; background: #18242c!important; border-color: #3f535e!important; border-radius: 5px; white-space: normal; }\n.trpg button.wx-daily-action:disabled { opacity: .58; cursor: default; background: #111b22!important; border-color: #263741!important; }\n.trpg .wx-daily-action-head { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; font-size: 12px; }\n.trpg .wx-daily-action-head strong { font-weight: 500; }\n.trpg .wx-daily-action-cost { flex-shrink: 0; color: #dfc38d; font: 11px ui-monospace,Consolas,monospace; }\n.trpg .wx-daily-action-effect { font-size: 10px; line-height: 1.6; color: #9bacb6; }\n.trpg .wx-daily-action-reason { font-size: 10px; color: #ae947c; }\n.trpg .wx-daily-controls { display: flex; gap: 7px; margin-top: 8px; }\n.trpg .wx-daily-controls:empty { display: none; }\n.trpg .wx-daily-controls button { max-width: 350px; }\n.trpg .wx-daily-status { margin: 7px 0 0; font-size: 11px; line-height: 1.6; color: #b0c4b6; }\n.trpg .wx-daily-status:empty { display: none; }\n@media(max-width:560px) {\n  .trpg .wx-daily-actions { margin: 0 6px 8px; padding: 0 9px 8px; }\n  .trpg .wx-daily-action-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }\n  .trpg .wx-daily-actions summary span { margin-left: 8px; }\n  .trpg .wx-daily-action-head { font-size: 11px; }\n}\n\n.trpg #distStat[hidden] { display: none !important; }\n\n/* 经济选择面板：取消／浏览不推进日程，提交交给同一日程命令。 */\n.trpg .wx-economy-input[hidden], .trpg .wx-economy-orders[hidden] { display: none; }\n.trpg .wx-economy-input { margin-top: 10px; padding: 12px; border: 1px solid #536674; border-radius: 5px; background: #101c24; }\n.trpg .wx-economy-input h3 { margin: 0 0 8px; font-size: 14px; color: #e1d1ae; }\n.trpg .wx-economy-input p, .trpg .wx-economy-orders p { margin: 5px 0; color: #9eb1be; font-size: 11px; }\n.trpg .wx-work-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }\n.trpg .wx-work-choice { display: flex; align-items: flex-start; gap: 8px; padding: 9px; background: #192831; border: 1px solid #324751; border-radius: 4px; cursor: pointer; }\n.trpg .wx-work-choice.unavailable { opacity: .5; cursor: default; }\n.trpg .wx-work-choice>span, .trpg .wx-shop-line>span { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 4px; }\n.trpg .wx-work-choice strong, .trpg .wx-shop-line strong { font-size: 12px; font-weight: 500; color: #cfdae0; }\n.trpg .wx-work-choice span span { font-size: 11px; color: #c3b690; }\n.trpg .wx-work-choice small, .trpg .wx-shop-line small { font-size: 10px; color: #8b9ca7; }\n.trpg .wx-shop-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; max-height: 350px; overflow-y: auto; margin-top: 8px; }\n.trpg .wx-shop-line { display: flex; align-items: center; gap: 8px; padding: 8px; background: #17252e; border-radius: 3px; }\n.trpg .wx-shop-line input { box-sizing: border-box; flex: 0 0 54px; width: 54px; padding: 7px 3px; background: #0c1720; border: 1px solid #405765; color: #d5c28f; }\n.trpg .wx-economy-input select { padding: 7px; color: #d2dde2; background: #17252e; border: 1px solid #405765; }\n.trpg .wx-economy-foot { display: flex; gap: 8px; margin-top: 10px; }\n.trpg .wx-economy-foot button { padding: 8px 12px; color: #dfcba6; background: #20323e; border: 1px solid #5e707b; border-radius: 4px; cursor: pointer; }\n.trpg .wx-economy-foot button:disabled { opacity: .4; cursor: default; }\n.trpg .wx-economy-orders { margin-top: 10px; color: #b4c5ce; font-size: 12px; }\n.trpg .wx-order { margin: 6px 0; padding: 7px 10px; border-left: 2px solid #455f6a; background: #15212a; }\n.trpg .wx-order strong { font-size: 11px; color: #c5b589; }\n@media(max-width:560px) { .trpg .wx-work-list, .trpg .wx-shop-list { grid-template-columns: minmax(0,1fr); } }\n\n/* 共用地点拓扑与固定空间布局；地图浏览不触发移动。 */\n\n/* 城市地图独立样式；地理底图与 HUD 主题在此衔接。 */\n.trpg .wx-city-map {\n  margin: 0 10px 10px;\n  padding: 10px 12px;\n  border: 1px solid #354b57;\n  border-radius: 7px;\n  background: #0c1720ed;\n}\n.trpg .wx-city-map summary {\n  cursor: pointer;\n  font-size: 13px;\n  color: #d4dfe4;\n}\n.trpg .wx-city-map summary span {\n  display: block;\n  margin: 6px 0 8px;\n  font-size: 11px;\n  color: #9db4c1;\n}\n.trpg .wx-city-tabs,\n.trpg .wx-city-legend {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 7px;\n  margin: 8px 0;\n}\n.trpg .wx-city-tabs button,\n.trpg .wx-city-info button {\n  padding: 7px 10px;\n  background: #172935;\n  color: #b6cad4;\n  border: 1px solid #425f70;\n  border-radius: 4px;\n  font-size: 11px;\n  cursor: pointer;\n}\n.trpg .wx-city-tabs button[aria-pressed=\"true\"] {\n  color: #e6d0a2;\n  border-color: #a59164;\n  background: #2c2d25;\n}\n.trpg .wx-city-info button:disabled {\n  opacity: 0.5;\n  cursor: default;\n}\n.trpg .wx-city-legend {\n  font-size: 10px;\n  color: #728d9c;\n}\n.trpg .wx-city-legend .player {\n  color: #79c5ed;\n}\n.trpg .wx-city-legend .target {\n  color: #e594a3;\n}\n.trpg .wx-city-legend .last {\n  color: #d1ae6b;\n}\n/* 俯视街区地图：地理底图与可交互地点分层，避免把拓扑边当街道。 */\n.trpg .wx-city-canvas {\n  border: 1px solid #677779;\n  border-radius: 7px;\n  overflow: hidden;\n  background: #e3e1d5;\n  isolation: isolate;\n}\n.trpg .wx-city-canvas svg {\n  width: 100%;\n  height: auto;\n  display: block;\n  font-family: system-ui, sans-serif;\n}\n.trpg .wx-city-canvas svg.overview {\n  height: auto;\n}\n.trpg .wx-map-land {\n  fill: #e3e1d5;\n}\n.trpg .wx-map-ground {\n  fill: #deddd0;\n}\n.trpg .ground-D {\n  fill: #d8decb;\n}\n.trpg .ground-C {\n  fill: #e3d9cd;\n}\n.trpg .ground-A {\n  fill: #d9dfe0;\n}\n.trpg .wx-map-water {\n  fill: #88b2c3;\n  stroke: #6e99aa;\n  stroke-width: 3;\n}\n.trpg .wx-map-water-line {\n  fill: none;\n  stroke: #a6c8d4;\n  stroke-width: 2;\n  opacity: 0.65;\n}\n.trpg .wx-map-water-label {\n  fill: #477487;\n  font-size: 24px;\n  letter-spacing: 10px;\n}\n.trpg .wx-map-street path {\n  fill: none;\n  stroke-linejoin: round;\n  stroke-linecap: round;\n}\n.trpg .road-edge {\n  stroke: #b7b8ab;\n}\n.trpg .road-surface {\n  stroke: #faf7e9;\n}\n.trpg .highway .road-surface {\n  stroke: #f7e6b8;\n}\n.trpg .road-center {\n  stroke: #d1ba82;\n  stroke-width: 1.5;\n  stroke-dasharray: 9 7;\n}\n.trpg .lane .road-edge {\n  stroke: #b1aea3;\n}\n.trpg .lane .road-surface {\n  stroke: #e9e4d7;\n}\n.trpg .walk .road-surface {\n  stroke: #c9c1ab;\n}\n.trpg .wx-map-block .parcel {\n  fill: #b3bab4;\n  stroke: #919d97;\n  stroke-width: 1;\n}\n.trpg .wx-map-block .roof {\n  fill: #c8cdc4;\n  stroke: #a6b0a8;\n  stroke-width: 1;\n}\n.trpg .wx-map-block .roof-unit {\n  fill: #a0ada8;\n}\n.trpg .wx-map-block .roof-window {\n  stroke: #8b9ea3;\n  stroke-width: 7;\n}\n.trpg .wx-map-block.campus .parcel {\n  fill: #cdbb99;\n  stroke: #b39a70;\n}\n.trpg .wx-map-block.campus .roof {\n  fill: #d8ccae;\n}\n.trpg .wx-map-block .campus-yard {\n  fill: #acb59a;\n  stroke: #96a387;\n}\n.trpg .wx-map-block.office .parcel {\n  fill: #a9bac1;\n  stroke: #839ba5;\n}\n.trpg .wx-map-block.office .roof {\n  fill: #c2cfd2;\n}\n.trpg .wx-map-block.housing .parcel {\n  fill: #c3b9ab;\n  stroke: #a69b8e;\n}\n.trpg .wx-map-block.housing .roof {\n  fill: #d4cdc0;\n}\n.trpg .wx-map-block.shop .parcel,\n.trpg .wx-map-block.market .parcel {\n  fill: #d5b99c;\n  stroke: #b99977;\n}\n.trpg .wx-map-block.shop .roof,\n.trpg .wx-map-block.market .roof {\n  fill: #e2cdb1;\n}\n.trpg .wx-map-block.nightlife .parcel {\n  fill: #beaaba;\n  stroke: #a18d9a;\n}\n.trpg .wx-map-block.nightlife .roof {\n  fill: #d3c2ce;\n}\n.trpg .wx-map-block.transit .parcel {\n  fill: #b4c4c7;\n  stroke: #8ba6ab;\n}\n.trpg .wx-map-block.transit .roof {\n  fill: #d0dadd;\n}\n.trpg .wx-map-block.villa .parcel {\n  fill: #bfb2a0;\n}\n.trpg .wx-map-block.villa .roof {\n  fill: #d9ceba;\n}\n.trpg .wx-map-block.park .parcel,\n.trpg .wx-map-block.garden .parcel,\n.trpg .wx-map-block.forest .parcel {\n  fill: #b4c59f;\n  stroke: #96b187;\n}\n.trpg .wx-map-block.forest .parcel {\n  fill: #a3bc98;\n}\n.trpg .wx-map-block .tree {\n  fill: #89a980;\n  stroke: #7a9b72;\n  stroke-width: 1;\n  opacity: 0.7;\n}\n.trpg .wx-map-block .park-path {\n  fill: none;\n  stroke: #d8d5bc;\n  stroke-width: 6;\n}\n.trpg .wx-map-footbridge {\n  fill: #aaa995;\n  stroke: #8b927e;\n  stroke-width: 1;\n}\n.trpg .wx-map-bridge-steps {\n  fill: none;\n  stroke: #d9dbc6;\n  stroke-width: 2;\n}\n.trpg .wx-map-crosswalk {\n  stroke: #faf9ef;\n  stroke-width: 3;\n}\n.trpg .wx-map-street-label {\n  fill: #787b70;\n  font-size: 10px;\n  letter-spacing: 3px;\n  pointer-events: none;\n}\n.trpg .wx-map-district-title {\n  fill: #4b605c;\n  font-size: 22px;\n  font-weight: 650;\n  letter-spacing: 3px;\n  paint-order: stroke;\n  stroke: #e0e2d5;\n  stroke-width: 4;\n  pointer-events: none;\n}\n.trpg .wx-map-district-subtitle {\n  fill: #6f7e71;\n  font-size: 10px;\n  letter-spacing: 2px;\n  pointer-events: none;\n}\n.trpg .wx-city-node {\n  cursor: pointer;\n  outline: none;\n}\n.trpg .wx-map-place-hit {\n  fill: transparent;\n  stroke: none;\n}\n.trpg .wx-city-label {\n  fill: #354948;\n  font-size: 15px;\n  font-weight: 600;\n  paint-order: stroke;\n  stroke: #e9e8db;\n  stroke-width: 3px;\n  stroke-linejoin: round;\n  pointer-events: none;\n}\n.trpg .wx-city-node.unknown .wx-city-label {\n  fill: #7c8073;\n  font-size: 12px;\n  font-weight: 400;\n}\n.trpg .wx-city-node.selected .wx-map-place-hit,\n.trpg .wx-city-node:focus .wx-map-place-hit {\n  fill: #faedc070;\n  stroke: #9d773a;\n  stroke-width: 2;\n  stroke-dasharray: 4 2;\n}\n.trpg .wx-city-node.service .wx-city-label {\n  fill: #72501d;\n  font-weight: 750;\n}\n.trpg .wx-map-place-icon {\n  fill: #6c8585;\n  stroke: #f4f0db;\n  stroke-width: 1;\n}\n.trpg .kind-metro .wx-map-place-icon {\n  fill: #527d93;\n}\n.trpg .kind-school .wx-map-place-icon {\n  fill: #968457;\n}\n.trpg .service .wx-map-place-icon {\n  fill: #9c753e;\n}\n.trpg .wx-map-icon-label {\n  fill: #fff8e8;\n  font-size: 10px;\n  font-weight: 700;\n  pointer-events: none;\n}\n.trpg .wx-map-player,\n.trpg .wx-map-target {\n  pointer-events: none;\n}\n.trpg .wx-map-player circle,\n.trpg .wx-map-player .wx-map-pin-tip {\n  fill: #2b779f;\n  stroke: #e8f8ff;\n  stroke-width: 2;\n}\n.trpg .wx-map-target circle,\n.trpg .wx-map-target .wx-map-pin-tip {\n  fill: #ab576c;\n  stroke: #fff3f4;\n  stroke-width: 2;\n}\n.trpg .wx-map-target circle.last-seen {\n  fill: #ad8847;\n  stroke-dasharray: 3 2;\n}\n.trpg .wx-map-pin-label {\n  fill: #fff;\n  font-size: 11px;\n  font-weight: 700;\n  stroke: none;\n}\n.trpg .wx-map-compass path {\n  fill: #647c70;\n  stroke: #f5f3df;\n  stroke-width: 1;\n}\n.trpg .wx-map-compass-label {\n  fill: #64766b;\n  font-size: 14px;\n  font-weight: 700;\n}\n.trpg\n  .overview\n  .wx-city-node:not(.overview-landmark):not(.selected):not(.positioned) {\n  display: none;\n}\n.trpg .overview .wx-city-label {\n  font-size: 19px;\n  stroke-width: 5;\n}\n.trpg .overview .wx-map-district-title {\n  font-size: 28px;\n}\n.trpg .overview .wx-map-district-subtitle {\n  font-size: 15px;\n}\n.trpg .overview .wx-map-street-label {\n  font-size: 14px;\n}\n.trpg .overview .wx-map-place-hit {\n  transform-box: fill-box;\n  transform-origin: center;\n}\n.trpg .overview .wx-map-place-icon,\n.trpg .overview .wx-map-icon-label {\n  display: none;\n}\n.trpg .wx-city-info {\n  padding-top: 10px;\n  font-size: 12px;\n  color: #cfdae0;\n}\n.trpg .wx-city-info p,\n.trpg .wx-city-note,\n.trpg .wx-city-notice {\n  font-size: 10px;\n  line-height: 1.7;\n  color: #859fae;\n  margin: 6px 0;\n}\n.trpg .wx-city-info button {\n  margin: 4px 6px 0 0;\n}\n.trpg .wx-city-notice {\n  color: #c7b888;\n}\n.trpg .wx-city-tabs .wx-map-zoom-control {\n  border-style: dashed;\n}\n.trpg .wx-city-canvas.is-zoomed {\n  overflow-x: auto;\n  scrollbar-width: thin;\n}\n.trpg .wx-city-canvas.is-zoomed svg {\n  min-width: 1000px;\n}\n.trpg .wx-city-canvas.is-zoomed svg.overview {\n  min-width: 1440px;\n}\n@media (max-width: 560px) {\n  .trpg .wx-city-map {\n    margin: 0 6px 8px;\n    padding: 9px;\n  }\n  .trpg .wx-city-tabs button {\n    font-size: 10px;\n    padding: 6px 8px;\n  }\n  .trpg .wx-city-canvas {\n    overflow-x: auto;\n  }\n  .trpg .wx-city-canvas svg {\n    min-width: 0;\n  }\n  .trpg .wx-city-canvas.is-zoomed svg {\n    min-width: 560px;\n  }\n  .trpg .wx-city-canvas.is-zoomed svg.overview {\n    min-width: 900px;\n  }\n  .trpg .wx-city-label {\n    font-size: 18px;\n  }\n  .trpg .wx-city-node.unknown .wx-city-label {\n    font-size: 14px;\n  }\n  .trpg .wx-city-canvas {\n    scrollbar-width: thin;\n    scrollbar-color: #6b7b7b #d7d9ce;\n  }\n}\n/* 交通图层与市区／郊外标识。路网始终作为街区底图保留。 */\n.trpg .wx-map-countryside rect {\n  fill: #ced6bb;\n  stroke: #b5c4a0;\n  stroke-width: 2;\n}\n.trpg .wx-map-countryside path {\n  fill: none;\n  stroke: #b5c49d;\n  stroke-width: 2;\n}\n.trpg .wx-map-area-label {\n  fill: #74876e;\n  font-size: 27px;\n  letter-spacing: 4px;\n}\n.trpg .wx-map-area-label.urban {\n  fill: #677d80;\n  font-size: 30px;\n}\n.trpg .wx-map-bridge-rail {\n  stroke: #869284;\n  stroke-width: 3;\n  fill: none;\n}\n.trpg .wx-map-transit path {\n  fill: none;\n  stroke-linecap: round;\n  stroke-linejoin: round;\n  pointer-events: none;\n}\n.trpg .wx-transit-casing {\n  stroke: #faf8ec;\n  stroke-width: 13;\n  opacity: 0.85;\n}\n.trpg .wx-transit-route {\n  stroke: #327b9c;\n  stroke-width: 7;\n}\n.trpg .wx-map-transit.bus .wx-transit-route {\n  stroke: #b67c39;\n  stroke-width: 6;\n  stroke-dasharray: 12 8;\n}\n.trpg .wx-map-transit.road .wx-transit-route {\n  stroke: #667b6d;\n  stroke-width: 7;\n  stroke-dasharray: 3 9;\n}\n.trpg .wx-transit-label {\n  fill: #385f72;\n  font-size: 16px;\n  font-weight: 600;\n  paint-order: stroke;\n  stroke: #f6f3e5;\n  stroke-width: 5;\n  stroke-linejoin: round;\n  pointer-events: none;\n}\n.trpg .bus .wx-transit-label {\n  fill: #93622e;\n}\n.trpg .road .wx-transit-label {\n  fill: #526b57;\n}\n.trpg .wx-transit-stop {\n  pointer-events: none;\n}\n.trpg .wx-city-legend .metro {\n  color: #70b5d5;\n}\n.trpg .wx-city-legend .bus {\n  color: #d1aa6e;\n}\n.trpg .wx-city-legend .highway {\n  color: #9bb69d;\n}\n.trpg .overview .wx-city-label {\n  font-size: 26px;\n}\n.trpg .overview .wx-map-district-title {\n  font-size: 33px;\n}\n.trpg .overview .wx-map-district-subtitle {\n  font-size: 19px;\n}\n.trpg .overview .wx-transit-label {\n  font-size: 23px;\n}\n.trpg .wx-map-district-title {\n  letter-spacing: 1px;\n  font-size: 21px;\n}\n/* 街区内使用站点和图例识别线路；线路全名放在总图，避免边缘截字。 */\n.trpg .wx-transit-label {\n  display: none;\n}\n.trpg .overview .wx-transit-label {\n  display: block;\n}\n\n/* 零楼教程首页。仅作用于本步骤，不改变角色创建、地图或战术终端的主题。 */\n#wx-zero-floor[data-zero-step=\"3\"] {\n  max-width: 1040px;\n  padding: 0;\n  overflow: hidden;\n  background: #101c20;\n  border-color: #3e5454;\n  box-shadow: 0 20px 65px #0004;\n}\n#wx-zero-floor[data-zero-step=\"3\"] .zero-wizard-top {\n  padding: 18px 24px 15px;\n  margin: 0;\n  border-bottom: 1px solid #c5d4c516;\n  background: #142127;\n  gap: 12px;\n  flex-wrap: wrap;\n}\n#wx-zero-floor[data-zero-step=\"3\"] .zero-title-wrap {\n  gap: 8px;\n}\n#wx-zero-floor[data-zero-step=\"3\"] .zero-sub {\n  color: #8ba3a3;\n  font-size: 10px;\n}\n#wx-zero-floor[data-zero-step=\"3\"] .zero-steps-bar {\n  gap: 12px;\n  flex-wrap: wrap;\n}\n#wx-zero-floor .zero-step-pill:disabled {\n  cursor: not-allowed;\n  opacity: 0.45;\n}\n#wx-zero-floor .training-brief {\n  font-family: system-ui, \"Microsoft Yahei\", sans-serif;\n  color: #d5dfd8;\n  background:\n    radial-gradient(ellipse at 80% 12%, #28484645, transparent 65%), #101c20;\n  line-height: 1.6;\n}\n#wx-zero-floor .training-brief-topline {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 14px;\n  padding: 20px 32px 0;\n  font-size: 10px;\n  letter-spacing: 2px;\n  color: #94a7a0;\n}\n#wx-zero-floor .training-brief-phase {\n  display: flex;\n  align-items: center;\n  gap: 9px;\n  color: #c3ad7c;\n  letter-spacing: 1px;\n}\n#wx-zero-floor .training-brief-phase i {\n  width: 5px;\n  height: 5px;\n  border-radius: 50%;\n  background: #bfa56f;\n  box-shadow: 0 0 10px #d7b57e50;\n}\n#wx-zero-floor .training-brief-hero {\n  display: grid;\n  grid-template-columns: 1.05fr 1fr;\n  gap: 26px;\n  padding: 26px 32px 27px;\n  align-items: center;\n}\n#wx-zero-floor .training-brief-eyebrow {\n  display: flex;\n  gap: 9px;\n  align-items: center;\n  margin: 0 0 17px;\n  font-size: 10px;\n  color: #b7a47a;\n  letter-spacing: 2px;\n}\n#wx-zero-floor .training-brief-eyebrow span {\n  width: 17px;\n  height: 1px;\n  background: #b9a26c;\n}\n#wx-zero-floor .training-brief h3 {\n  margin: 0 0 19px;\n  color: #e9ede1;\n  font-size: clamp(27px, 4vw, 43px);\n  line-height: 1.4;\n  letter-spacing: 2px;\n  font-weight: 500;\n  outline: none;\n}\n#wx-zero-floor .training-brief-lead {\n  color: #a8bbb2;\n  font-size: 12px;\n  line-height: 1.95;\n  margin: 0;\n  max-width: 370px;\n}\n#wx-zero-floor .training-brief-coach {\n  display: flex;\n  align-items: flex-start;\n  gap: 13px;\n  margin-top: 25px;\n  padding-top: 16px;\n  border-top: 1px solid #b4c6b61b;\n  position: relative;\n}\n#wx-zero-floor .training-brief-coach-mark {\n  color: #b6a172;\n  font:\n    40px/1 Georgia,\n    serif;\n}\n#wx-zero-floor .training-brief-coach p {\n  margin: 0;\n  color: #91a79c;\n  font-size: 12px;\n  line-height: 1.9;\n}\n#wx-zero-floor .training-brief-coach strong {\n  color: #c5d2bf;\n  font-weight: 500;\n}\n#wx-zero-floor .training-brief-coach-from {\n  font-size: 9px;\n  color: #a69a7d;\n  position: absolute;\n  right: 0;\n  bottom: 0;\n  letter-spacing: 2px;\n}\n#wx-zero-floor .training-brief-art {\n  min-width: 0;\n  position: relative;\n  align-self: stretch;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  background:\n    radial-gradient(ellipse at 50% 70%, #428e7d1f, transparent 65%),\n    linear-gradient(130deg, #19332f44, #0d1b2122);\n  border: 1px solid #69938230;\n  border-radius: 4px;\n  overflow: hidden;\n}\n#wx-zero-floor .training-brief-art::before {\n  content: \"\";\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  background-image:\n    linear-gradient(#69938208 1px, transparent 1px),\n    linear-gradient(90deg, #69938208 1px, transparent 1px);\n  background-size: 24px 24px;\n}\n#wx-zero-floor .training-brief-art-caption {\n  display: flex;\n  justify-content: space-between;\n  font-size: 9px;\n  letter-spacing: 2px;\n  color: #8da99b;\n  padding: 15px 16px 0;\n  position: relative;\n}\n#wx-zero-floor .training-brief-art-caption span:last-child {\n  color: #617e76;\n  font-size: 8px;\n  letter-spacing: 1px;\n}\n#wx-zero-floor #trainingBriefHologram {\n  width: 100%;\n  position: relative;\n}\n#wx-zero-floor #trainingBriefHologram svg {\n  width: 100%;\n  height: auto;\n  display: block;\n  max-height: 310px;\n}\n#wx-zero-floor .holo-ground {\n  fill: #2b594f19;\n  stroke: #5b8f7866;\n  stroke-width: 1;\n}\n#wx-zero-floor .holo-grid {\n  stroke: #528a7144;\n  stroke-width: 0.8;\n  fill: none;\n}\n#wx-zero-floor .holo-wall {\n  fill: #173e38;\n  stroke: #5d9d85aa;\n  stroke-width: 0.8;\n}\n#wx-zero-floor .holo-wall.east {\n  fill: #1b4840;\n}\n#wx-zero-floor .holo-roof {\n  fill: #2b5f50;\n  stroke: #85b99baa;\n  stroke-width: 1;\n}\n#wx-zero-floor .focal .holo-roof {\n  fill: #806c4266;\n  stroke: #c8b57a;\n}\n#wx-zero-floor .focal .holo-wall {\n  fill: #5d543344;\n  stroke: #ad9a65;\n}\n#wx-zero-floor .training-brief-art-foot {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 15px;\n  padding: 0 0 16px;\n  color: #688c7b;\n  font-size: 9px;\n  letter-spacing: 3px;\n}\n#wx-zero-floor .training-brief-art-foot i {\n  width: 18px;\n  height: 1px;\n  background: #73927e44;\n}\n#wx-zero-floor .training-brief-assignment {\n  display: grid;\n  grid-template-columns: 1fr 1fr 1.25fr;\n  gap: 0;\n  margin: 0 32px;\n  padding: 17px 0;\n  border-top: 1px solid #819d8c38;\n  border-bottom: 1px solid #819d8c38;\n}\n#wx-zero-floor .training-brief-assignment > div {\n  min-width: 0;\n  padding: 0 20px;\n  border-right: 1px solid #819d8c22;\n}\n#wx-zero-floor .training-brief-assignment > div:first-child {\n  padding-left: 0;\n}\n#wx-zero-floor .training-brief-assignment > div:last-child {\n  border: 0;\n}\n#wx-zero-floor .training-brief-assignment dt {\n  margin: 0 0 5px;\n  font-size: 10px;\n  color: #7c968b;\n  letter-spacing: 1px;\n}\n#wx-zero-floor .training-brief-assignment dd {\n  margin: 0;\n  color: #d4dccb;\n  font-size: 13px;\n  font-weight: 500;\n  line-height: 1.6;\n  overflow-wrap: anywhere;\n}\n#wx-zero-floor .training-brief-lessons {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 24px;\n  padding: 25px 32px 22px;\n}\n#wx-zero-floor .training-brief-lessons article {\n  display: flex;\n  align-items: flex-start;\n  gap: 12px;\n  min-width: 0;\n}\n#wx-zero-floor .training-brief-number {\n  font:\n    300 22px/1.2 ui-monospace,\n    Consolas,\n    monospace;\n  color: #668875;\n  letter-spacing: -1px;\n  padding-top: 3px;\n}\n#wx-zero-floor .training-brief-lessons h4 {\n  font-weight: 500;\n  margin: 0 0 6px;\n  color: #cad6c5;\n  font-size: 13px;\n  letter-spacing: 1px;\n}\n#wx-zero-floor .training-brief-lessons p {\n  margin: 0;\n  color: #819b8e;\n  font-size: 10px;\n  line-height: 1.9;\n}\n#wx-zero-floor .training-brief-boundary {\n  display: flex;\n  gap: 12px;\n  margin: 0 32px;\n  padding: 13px 15px;\n  background: #ad99600b;\n  border: 1px solid #ad996025;\n  color: #aaac95;\n  font-size: 10px;\n  line-height: 1.9;\n  border-radius: 3px;\n}\n#wx-zero-floor .training-brief-boundary > span:first-child {\n  font-size: 15px;\n  color: #b7a16f;\n}\n#wx-zero-floor .training-brief-footer {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 16px;\n  margin: 24px 32px 20px;\n}\n#wx-zero-floor .training-brief button {\n  font-family: inherit;\n  transition:\n    background-color 0.15s,\n    color 0.15s;\n  line-height: 1.5;\n  box-sizing: border-box;\n  letter-spacing: 0.6px;\n}\n#wx-zero-floor .training-brief-back {\n  padding: 8px 0;\n  background: transparent;\n  border: 0;\n  color: #8ca398;\n  font-size: 11px;\n  text-align: left;\n}\n#wx-zero-floor .training-brief-back:hover {\n  color: #d5dfd1;\n}\n#wx-zero-floor .training-brief-entry {\n  display: flex;\n  align-items: center;\n  gap: 15px;\n}\n#wx-zero-floor .training-brief-entry > span {\n  font-size: 9px;\n  color: #7b9589;\n}\n#wx-zero-floor #trainingBriefStart {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 25px;\n  padding: 12px 20px;\n  border: 1px solid #c2af7c;\n  background: #c2af7c;\n  color: #1b2522;\n  border-radius: 3px;\n  font-size: 12px;\n  font-weight: 650;\n  box-shadow: 0 3px 15px #b5a37116;\n}\n#wx-zero-floor #trainingBriefStart:hover {\n  background: #d2c191;\n}\n#wx-zero-floor .training-brief button:focus-visible {\n  outline: 2px solid #e4cf96;\n  outline-offset: 4px;\n}\n#wx-zero-floor .training-brief button:disabled {\n  cursor: wait;\n  opacity: 0.5;\n}\n#wx-zero-floor .training-brief-notice {\n  margin: 0 32px 17px;\n  color: #e3ba92;\n  font-size: 11px;\n  line-height: 1.8;\n}\n#wx-zero-floor .training-brief-notice:empty {\n  display: none;\n}\n@media (max-width: 600px) {\n  #wx-zero-floor[data-zero-step=\"3\"] .zero-wizard-top {\n    padding: 14px 17px;\n    gap: 12px;\n  }\n  #wx-zero-floor[data-zero-step=\"3\"] .zero-steps-bar {\n    gap: 8px;\n    width: 100%;\n    justify-content: space-between;\n  }\n  #wx-zero-floor .training-brief-topline {\n    padding: 17px 19px 0;\n    font-size: 9px;\n    letter-spacing: 1px;\n  }\n  #wx-zero-floor .training-brief-hero {\n    grid-template-columns: 1fr;\n    gap: 20px;\n    padding: 23px 19px 20px;\n  }\n  #wx-zero-floor .training-brief h3 {\n    font-size: 33px;\n    letter-spacing: 1px;\n    margin-bottom: 14px;\n  }\n  #wx-zero-floor .training-brief-lead {\n    font-size: 12px;\n    max-width: none;\n  }\n  #wx-zero-floor .training-brief-coach {\n    margin-top: 18px;\n    padding-top: 14px;\n  }\n  #wx-zero-floor .training-brief-art {\n    display: none;\n  }\n  #wx-zero-floor .training-brief-assignment {\n    margin: 0 19px;\n    grid-template-columns: 1fr 1fr;\n    padding: 14px 0;\n    row-gap: 14px;\n  }\n  #wx-zero-floor .training-brief-assignment > div {\n    padding: 0 0 0 15px;\n  }\n  #wx-zero-floor .training-brief-assignment > div:nth-child(2) {\n    border: 0;\n  }\n  #wx-zero-floor .training-brief-assignment > div:last-child {\n    grid-column: 1/-1;\n    padding: 12px 0 0;\n    border-top: 1px solid #819d8c22;\n    display: flex;\n    gap: 12px;\n    align-items: center;\n  }\n  #wx-zero-floor .training-brief-assignment > div:last-child dt {\n    margin: 0;\n    flex-shrink: 0;\n  }\n  #wx-zero-floor .training-brief-assignment dd {\n    font-size: 12px;\n  }\n  #wx-zero-floor .training-brief-lessons {\n    grid-template-columns: 1fr;\n    gap: 15px;\n    padding: 20px 19px;\n  }\n  #wx-zero-floor .training-brief-number {\n    font-size: 20px;\n    width: 27px;\n    flex-shrink: 0;\n  }\n  #wx-zero-floor .training-brief-lessons h4 {\n    margin-bottom: 3px;\n    font-size: 13px;\n  }\n  #wx-zero-floor .training-brief-lessons p {\n    font-size: 11px;\n  }\n  #wx-zero-floor .training-brief-boundary {\n    margin: 0 19px;\n    padding: 12px;\n    font-size: 10px;\n    gap: 9px;\n  }\n  #wx-zero-floor .training-brief-footer {\n    margin: 20px 19px;\n    flex-wrap: wrap;\n    gap: 15px;\n  }\n  #wx-zero-floor .training-brief-back {\n    order: 2;\n    width: 100%;\n    text-align: center;\n    font-size: 11px;\n  }\n  #wx-zero-floor .training-brief-entry {\n    width: 100%;\n    flex-direction: column-reverse;\n    gap: 9px;\n  }\n  #wx-zero-floor #trainingBriefStart {\n    width: 100%;\n    justify-content: center;\n    gap: 20px;\n    padding: 13px 16px;\n  }\n  #wx-zero-floor .training-brief-notice {\n    margin: 0 19px 18px;\n  }\n}\n/* 宿主通用按钮皮使用 !important；在本页面内明确区分主、次操作。 */\n#wx-zero-floor .training-brief-back {\n  background: transparent !important;\n  border: 0 !important;\n  color: #8ca398 !important;\n}\n#wx-zero-floor .training-brief-back:hover {\n  background: transparent !important;\n  color: #d5dfd1 !important;\n}\n#wx-zero-floor #trainingBriefStart {\n  background: #c2af7c !important;\n  border: 1px solid #c2af7c !important;\n  color: #1b2522 !important;\n}\n#wx-zero-floor #trainingBriefStart:hover {\n  background: #d2c191 !important;\n  border-color: #d2c191 !important;\n  color: #1b2522 !important;\n}";
 
     // 2. 支持热更新替换（若已有旧状态栏则安全清理，无需刷新酒馆整页即可立即生效）
     topWin.WxStatusbar?.dispose?.();
@@ -25491,7 +26342,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
     var root = topDoc.createElement("div");
     root.id = "wx-statusbar-root";
     root.className = "trpg";
-    root.innerHTML = "<div id=\"wxSyncNotice\" class=\"wx-sync-notice\" role=\"status\" hidden></div>\n    <div class=\"trpg-vignette\" id=\"trpgVignette\" aria-hidden=\"true\"></div>\n    <div class=\"her-alert\" id=\"herAlert\" data-tip=\"她刚才的举动。是发现了什么，还是单纯的心血来潮——只有她自己知道。\"></div>\n\n    <!-- ═══ 常驻一小窄行（紧贴输入栏，高度38px，不挡正文） ═══ -->\n    <div class=\"trpg-slim-bar\" id=\"trpgSlimBar\">\n      <!-- 零楼 · 未开局覆盖钮（新局未确认身份时盖住常驻条） -->\n      <div id=\"zeroChip\" hidden role=\"button\" tabindex=\"0\">未开局 · 点击选择身份</div>\n      <!-- 左：大区与场所、天气、路线进度 -->\n      <div class=\"slim-left\" data-tip=\"当前动线与场所状态\">\n        <span class=\"slim-dist-badge\" id=\"routeDistrict\">—</span>\n        <span class=\"slim-place\" id=\"routePlace\">等待开局</span>\n        <div class=\"slim-tags-group\">\n          <span class=\"slim-tag weather\" id=\"routeWeather\">—</span>\n          <span class=\"slim-tag remain\" id=\"routeRemain\">—</span>\n          <span class=\"slim-tag id-badge\" id=\"idBadge\" hidden data-tip=\"你的开局身份（零楼选定，点开看详情）\">身份</span>\n        </div>\n      </div>\n\n      <!-- 中：模式与距离档 -->\n      <div class=\"slim-center\" id=\"distStat\" data-tip=\"当前模式与尾行距离档\">\n        <span class=\"slim-phase\" id=\"phase\">未开局</span>\n        <span class=\"slim-divider\">/</span>\n        <span class=\"slim-dist\" id=\"distName\">—</span>\n        <span class=\"slim-pips\" id=\"pips\" aria-hidden=\"true\"><i class=\"pip\"></i><i class=\"pip\"></i><i class=\"pip\"></i><i class=\"pip\"></i></span>\n      </div>\n\n      <!-- 右：体力、跳动小红心心跳子菜单、设备、展开详情 -->\n      <div class=\"slim-right\">\n        <!-- 迷你体力 -->\n        <div class=\"slim-stamina\" id=\"staminaBox\" data-band=\"green\" data-tip=\"当前体力\">\n          <span class=\"slim-stamina-val\" id=\"staminaVal\">—</span>\n          <span class=\"slim-stamina-bar\"><span class=\"stamina-fill\" id=\"staminaFill\" style=\"width: 0%;\"></span></span>\n        </div>\n\n        <!-- 心跳子菜单（收起时显示为随心跳频率跳动的小红心，点击向上弹出完整仪表盘） -->\n        <div class=\"heart-popover-wrap\" id=\"heartPopoverWrap\">\n          <button type=\"button\" class=\"heart-pill-btn\" id=\"heartPillBtn\" aria-expanded=\"false\" aria-haspopup=\"dialog\" data-tip=\"点击向上弹出心跳仪表盘\">\n            <span class=\"mini-heart\" id=\"miniHeart\" aria-hidden=\"true\">♥</span>\n            <span class=\"mini-heart-num\" id=\"miniHeartNum\">—</span>\n            <span class=\"mini-heart-bpm\" id=\"miniBpmNum\">—</span>\n          </button>\n\n          <!-- 向上弹出子菜单卡片 -->\n          <div class=\"heart-popover-card\" id=\"heartPopoverCard\" role=\"dialog\" aria-label=\"心跳仪表盘\">\n            <div class=\"popover-head\">\n              <span class=\"popover-title\">生理心率与压力监控</span>\n              <button type=\"button\" class=\"popover-close-btn\" id=\"heartPopoverClose\" aria-label=\"关闭\">✕</button>\n            </div>\n            <div class=\"popover-content\">\n              <div class=\"popover-grid\">\n                <div class=\"stat instrument\" id=\"instrument\" data-line=\"\" data-tip=\"心跳 0–100。绿弧为甜区 40–65：全检定 +1。70 起操作变形（敏捷 −2），90 起操作崩溃（敏捷 −4）。BPM 为换算读数。\">\n                <svg class=\"heart-dial\" viewBox=\"0 0 160 154\" role=\"img\" aria-label=\"心跳\" id=\"dial\">\n                  <defs><clipPath class=\"ecg-clip\" id=\"ecgClip\"><circle cx=\"80\" cy=\"80\" r=\"48\"></circle></clipPath></defs>\n                  <path class=\"dial-track\"></path><path class=\"dial-sweet\"></path><g class=\"dial-ticks\"></g>\n                  <circle class=\"dial-beat-halo\" cx=\"80\" cy=\"80\" r=\"52\" aria-hidden=\"true\"></circle>\n                  <g class=\"ecg-window\" aria-hidden=\"true\"><g class=\"ecg-scroll\"><path class=\"ecg-line\"></path></g></g>\n                  <g class=\"dial-marker-orbit\" id=\"orbit\" style=\"transform: rotate(135deg)\"><circle class=\"dial-marker\" cx=\"142\" cy=\"80\" r=\"4.5\"></circle></g>\n                  <text x=\"80\" y=\"48\" text-anchor=\"middle\" class=\"dial-label\">心跳</text>\n                  <text x=\"80\" y=\"87\" text-anchor=\"middle\" class=\"dial-number\" id=\"heartNum\">—</text>\n                  <text x=\"80\" y=\"100\" text-anchor=\"middle\" class=\"dial-bpm\" id=\"bpmNum\">—</text>\n                  <text x=\"62\" y=\"49\" text-anchor=\"middle\" class=\"dial-heart\" aria-hidden=\"true\">♥</text>\n                  <text x=\"27\" y=\"139\" text-anchor=\"middle\" class=\"dial-scale\">0</text>\n                  <text x=\"133\" y=\"139\" text-anchor=\"middle\" class=\"dial-scale\">100</text>\n                </svg>\n                <!-- 刻度说明已移除：阈值并入 #instrument 的悬停提示，版面让给右侧警觉竖条 -->\n                <div class=\"stamina\" id=\"fullStaminaBox\" data-band=\"green\" data-tip=\"体力状态\">\n                  <div class=\"stamina-label\"><span>体力 <span class=\"band-name\" id=\"bandName\"></span></span><span class=\"stamina-value\" id=\"fullStaminaVal\">—</span></div>\n                  <div class=\"stamina-meter\" role=\"progressbar\" aria-label=\"体力\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"0\"><span class=\"stamina-fill\" id=\"fullStaminaFill\"></span></div>\n                </div>\n                <svg class=\"spark\" viewBox=\"0 0 120 20\" preserveAspectRatio=\"none\" aria-hidden=\"true\" data-tip=\"近 12 段的心跳走势复盘；虚线为甜区中线。\">\n                  <line x1=\"0\" y1=\"9\" x2=\"120\" y2=\"9\"></line>\n                  <polyline id=\"sparkLine\" points=\"\"></polyline>\n                </svg>\n                </div>\n                <!-- 右侧窄栏：她的警觉（只给档位与五格刻度，不报精确数值） -->\n                <aside class=\"popover-her\" id=\"popoverHerState\" data-tier=\"0\" data-tip=\"她此刻对你的警觉档位。数值不直接显示——她的脸就是仪表。\">\n                  <span class=\"popover-her-title\">她的警觉</span>\n                  <span class=\"alert-pips\" id=\"popoverAlertPips\" aria-hidden=\"true\"></span>\n                  <span class=\"popover-her-name\" id=\"popoverAlertText\">未知</span>\n                  <span class=\"popover-her-range\" id=\"popoverAlertRange\">—</span>\n                </aside>\n              </div>\n              <div class=\"popover-audio-row\">\n                <button type=\"button\" class=\"audio-btn\" id=\"heartbeat-sound\" aria-pressed=\"false\"><span data-ico=\"music\"></span> 开启雨夜心跳声</button>\n              </div>\n            </div>\n          </div>\n        </div>\n\n        <!-- 手机与设备按钮 -->\n        <button type=\"button\" class=\"slim-btn phone-stat\" data-wx-dialog=\"wx-devices-dialog\" data-tip=\"手机与设备\"><span class=\"phone-icon\" aria-hidden=\"true\" data-ico=\"phone\"></span></button>\n\n        <!-- 战术终端入口按钮 -->\n        <button type=\"button\" class=\"slim-btn terminal-toggle-btn\" id=\"wx-terminal-toggle-btn\" data-tip=\"打开手持战术终端（全量属性/行囊/动线/沙盘）\" aria-expanded=\"false\"><span class=\"term-ico\" aria-hidden=\"true\" data-ico=\"clip\"></span> <span class=\"term-txt\">战术终端</span></button>\n      </div>\n    </div>\n\n    <div class=\"wx-day-plan\" id=\"wxDayPlan\" data-state=\"empty\" aria-label=\"每日行动与时段\">\n      <div class=\"wx-day-heading\">\n        <div class=\"wx-day-when\"><span class=\"wx-day-kicker\">日程</span><span id=\"wxDayDate\">等待开局</span><span class=\"wx-day-dot\">·</span><strong id=\"wxDayPeriod\">—</strong></div>\n        <div class=\"wx-day-ap\" aria-label=\"剩余行动点\"><span>行动点</span><strong id=\"wxDayAp\">—</strong><span class=\"wx-day-ap-total\">/ <span id=\"wxDayBudget\">—</span></span><span id=\"wxDayApPips\" class=\"wx-day-ap-pips\" aria-hidden=\"true\"></span></div>\n      </div>\n      <ol class=\"wx-day-periods\" id=\"wxDayPeriods\" aria-label=\"当天五个时段\"></ol>\n      <div class=\"wx-day-bottom\"><span class=\"wx-day-activity\"><i aria-hidden=\"true\"></i><span id=\"wxDayActivity\">尚无日程记录</span></span><span id=\"wxDayHint\">每日行动与时段</span></div>\n    </div>\n\n    <details id=\"wxCityMap\" class=\"wx-city-map\" open>\n      <summary>城市地图<span id=\"wxCityPosition\">等待地图数据</span></summary>\n      <div id=\"wxCityTabs\" class=\"wx-city-tabs\"></div>\n      <div class=\"wx-city-legend\"><span class=\"player\">● 你的位置</span><span class=\"target\">● 目标目视位置</span><span class=\"last\">○ 最后目击</span><span>浅色街道 · 绿色公园 · 蓝色江面</span></div>\n      <div id=\"wxCityCanvas\" class=\"wx-city-canvas\"></div>\n      <div id=\"wxCityInfo\" class=\"wx-city-info\"></div>\n      <p class=\"wx-city-note\">点击建筑或地点查看；先选街区，需要时点“放大查看”并横向滑动。浏览不改变位置。市内移动不占活动机会，采购确认后才扣点、推进时段。</p>\n      <p id=\"wxCityNotice\" class=\"wx-city-notice\" role=\"status\"></p>\n    </details>\n    <details class=\"wx-daily-actions\" id=\"wxDailyActions\" open>\n      <summary>日程行动<span>每个时段选择一次活动</span></summary>\n      <div class=\"wx-daily-action-grid\" id=\"wxDailyActionGrid\"></div>\n      <div class=\"wx-daily-controls\" id=\"wxDailyControls\"></div>\n      <p class=\"wx-daily-status\" id=\"wxDailyStatus\" role=\"status\" aria-live=\"polite\"></p>\n    </details>\n\n    <!-- ═══ 行动胶囊栏（情境自适应 4 胶囊 + 姿态指示 + 二级抽屉展开） ═══ -->\n    <div class=\"wx-capsule-bar\" id=\"wxCapsuleBar\" aria-label=\"战术行动胶囊\">\n      <div class=\"wx-posture-badge\" id=\"wxPostureBadge\" role=\"button\" tabindex=\"0\" data-tip=\"未点选胶囊时，本轮以「跟缀·保持当前距离」继续跟踪。点击切换为纯叙事（不掷骰）。\">默认: 跟缀 · 保持距离</div>\n      <div class=\"wx-chips-wrap\" id=\"wxChipsWrap\"></div>\n      <button type=\"button\" class=\"wx-more-btn\" id=\"wxMoreActionsBtn\" aria-expanded=\"false\" data-tip=\"点开查看当前模式全量战术动作抽屉\">更多 ▾</button>\n\n      <!-- 二级动作抽屉 -->\n      <div class=\"wx-action-drawer\" id=\"wxActionDrawer\" style=\"display: none;\" aria-label=\"全量战术动作抽屉\">\n        <div class=\"drawer-head\">\n          <span class=\"drawer-title\" id=\"wxActionDrawerTitle\">战术动作抽屉</span>\n          <button type=\"button\" class=\"drawer-close\" id=\"wxActionDrawerClose\" aria-label=\"关闭抽屉\">✕</button>\n        </div>\n        <div class=\"drawer-body\" id=\"wxActionDrawerBody\"></div>\n      </div>\n    </div>\n\n    <!-- ═══ 战术终端（HTML5 Top Layer 原生模态对话框，穿透所有层级与容器） ═══ -->\n    <dialog class=\"wx-dialog wx-terminal-dialog trpg\" id=\"wx-terminal-dialog\" aria-labelledby=\"terminalTitle\">\n        <div class=\"wx-modal-head\">\n          <div class=\"wx-modal-title-wrap\">\n            <span class=\"wx-terminal-icon\" data-ico=\"clip\"></span>\n            <h2 class=\"wx-modal-title\" id=\"terminalTitle\">战术终端 · 实时行动手账</h2>\n            <span class=\"wx-modal-badge\" id=\"terminalFloorBadge\">未开局</span>\n          </div>\n          <button type=\"button\" class=\"wx-modal-close\" id=\"wx-terminal-close-btn\" data-wx-close aria-label=\"关闭终端\">✕</button>\n        </div>\n\n        <div class=\"wx-modal-body\">\n          <!-- 动线步进雷达轨（展开时呈现完整节点，带充裕边距不截顶） -->\n          <div class=\"route-tracker\" id=\"routeTracker\" data-tip=\"当前路线的节点进度；未知地点显示问号。节点数不是行动点或剩余回合。\">\n            <div class=\"route-weather-fx\" aria-hidden=\"true\"></div>\n            <div class=\"route-stepper\" id=\"routeStepper\"></div>\n          </div>\n          <!-- 2. 玩家状态核心面板（通栏横向展示：资产 + 五维属性 + 阈值特质） -->\n          <div class=\"wx-player-banner\">\n            <div class=\"wx-banner-header\">\n              <div class=\"wx-banner-title\">\n                <span class=\"section-no\">01</span><strong>玩家资产与五维属性</strong>\n                <small class=\"label\" style=\"font-weight:normal\">（绿色增益 / 红色受损）</small>\n              </div>\n              <div class=\"money wx-compact-money\">\n                <span data-tip=\"现金：购物与买通的硬通货。具体收支以结算记录为准。\">现金 <strong id=\"cash\">—</strong></span>\n                <span data-tip=\"情报点 PI：影响情报解锁，以当前规则和已解锁条目为准。\">PI <strong id=\"pi\">—</strong></span>\n              </div>\n            </div>\n\n            <!-- 五维属性卡片（5 列等宽，内置静态空态占位，JS 执行后无缝热更新） -->\n            <div class=\"attrs wx-attrs\" id=\"wx-attrs\"><div class=\"attr\"><div class=\"an\">体格</div><div class=\"av\">—</div></div><div class=\"attr\"><div class=\"an\">敏捷</div><div class=\"av\">—</div></div><div class=\"attr\"><div class=\"an\">胆量</div><div class=\"av\">—</div></div><div class=\"attr\"><div class=\"an\">情报</div><div class=\"av\">—</div></div><div class=\"attr\"><div class=\"an\">口才</div><div class=\"av\">—</div></div></div>\n            <div class=\"attr-tags\" id=\"wx-attr-tags\"></div>\n          </div>\n\n          <!-- 3. 双翼战术工作区（左翼：行囊与生效修正；右翼：目标行为信号手账） -->\n          <div class=\"wx-tactical-wings\">\n            <!-- 左翼：战术行囊持有物与生效修正标签栈（为后续新系统留出充分扩展空间） -->\n            <div class=\"wx-wing-column\">\n              <div class=\"wx-wing-card\">\n                <h3><span class=\"section-no\">01.3</span>战术行囊持有物</h3>\n                <ul class=\"wx-items items\" id=\"wx-items\"></ul>\n\n                <h3 style=\"margin-top:14px\" data-tip=\"当前生效中的加成与妨碍。来源可以是装备、环境或她的行为——来源消失，加成即失效。\">\n                  <span class=\"section-no\">01.4</span>生效修正标签栈\n                </h3>\n                <div class=\"wx-active-tags-container\" id=\"tags\"></div>\n              </div>\n            </div>\n\n            <!-- 右翼：目标行为信号手账（接近度 + 信号时间轴 + 时机评估） -->\n            <div class=\"wx-wing-column\">\n              <div class=\"wx-wing-card\">\n                <h3><span class=\"section-no\">02</span><span data-tip=\"她今晚的行为记录，只写看到的事实。她为什么这么做——需要你自己判断。\">目标行为信号手账</span></h3>\n\n                <!-- 她的鞋具：只露鞋名，敏捷修正与步声细节走悬停 -->\n                <div class=\"gear-line\" id=\"herGear\" hidden>\n                  <span class=\"gear-label\">她的鞋</span>\n                  <span class=\"gear-name\" id=\"herGearName\"></span>\n                </div>\n                \n                <!-- 接近度五档刻度进度轨（全宽舒展，文字横排不折行） -->\n                <div class=\"prox-container\" id=\"proxContainer\">\n                  <div class=\"prox-header\">\n                    <span class=\"prox-title\"><strong>接近度 (PROXIMITY)</strong></span>\n                    <span class=\"prox-value-wrap\">\n                      <strong id=\"proxVal\">—</strong> / 100\n                      <span class=\"prox-stage-badge\" id=\"proxStage\">—</span>\n                    </span>\n                  </div>\n                  <div class=\"prox-track-wrap\" id=\"proxTrackWrap\" data-tip=\"接近度加载中...\">\n                    <div class=\"prox-meter-bar\">\n                      <div class=\"prox-meter-fill\" id=\"proxFill\" style=\"width: 0%;\"></div>\n                    </div>\n                    <div class=\"prox-nodes\" id=\"proxNodes\">\n                      <div class=\"pnode\" style=\"left: 0%;\"><span class=\"pdot\"></span><span class=\"plabel\">0 陌生</span></div>\n                      <div class=\"pnode\" style=\"left: 20%;\"><span class=\"pdot\"></span><span class=\"plabel\">20 眼熟</span></div>\n                      <div class=\"pnode\" style=\"left: 40%;\"><span class=\"pdot\"></span><span class=\"plabel\">40 交集</span></div>\n                      <div class=\"pnode\" style=\"left: 60%;\"><span class=\"pdot\"></span><span class=\"plabel\">60 搭话</span></div>\n                      <div class=\"pnode\" style=\"left: 80%;\"><span class=\"pdot\"></span><span class=\"plabel\">80 不设防</span></div>\n                    </div>\n                  </div>\n                  <progress id=\"prox\" value=\"0\" max=\"100\" style=\"display:none\" aria-hidden=\"true\"></progress>\n                </div>\n\n                <!-- 行为记录流水时间轴 -->\n                <ul class=\"timeline\" id=\"signal\" data-tip=\"只记事实：几点、她做了什么。为什么这么做——你自己判断。\"></ul>\n                <p class=\"assessment\" id=\"assess\" data-tip=\"「读时机」检定通过才出现的机会评估——机会等级对玩家永远不显数，只有这类模糊档位。\"></p>\n              </div>\n            </div>\n          </div>\n\n          <!-- 4. 环境战术沙盘（通栏专属卡片） -->\n          <div class=\"envbox wx-terminal-envbox\">\n            <div class=\"env-header\">\n              <h3><span class=\"section-no\">03</span><span data-tip=\"当前所在区域、场所与环境修正；战术沙盘显示相邻分支与逃跑预警。\">环境 · 战术沙盘</span></h3>\n              <span class=\"fam\" id=\"areaFam\" data-tip=\"区域熟悉度：同一区域累计 10 个场景段算熟。熟区内环境类刺激减半。\">熟悉 0/10</span>\n            </div>\n            <div class=\"env-fam-bar\">\n              <span class=\"label\">熟练度</span>\n              <div class=\"fam-meter\"><span class=\"fam-fill\" id=\"famFill\" style=\"width: 0%;\"></span></div>\n              <span id=\"famDesc\" class=\"label\">生疏</span>\n            </div>\n            <div class=\"envtags\" id=\"envTags\"></div>\n            \n            <div class=\"tactical-grid\" id=\"tacticalGrid\">\n              <div class=\"tactical-row\">\n                <span class=\"tactical-label\">相邻通路:</span>\n                <div class=\"tactical-chips\" id=\"exitChips\">\n                  <!-- 相邻出口 -->\n                </div>\n              </div>\n              <div class=\"tactical-row\" id=\"spotRow\">\n                <span class=\"tactical-label\">战术特殊位:</span>\n                <div class=\"tactical-chips\" id=\"spotChips\">\n                  <!-- 特殊位 -->\n                </div>\n              </div>\n              <div class=\"tactical-row\" id=\"alertRow\" data-tier=\"0\">\n                <span class=\"tactical-label\">她的警觉:</span>\n                <div class=\"tactical-chips\" id=\"alertChips\">\n                  <span class=\"alert-pips\" id=\"alertPips\"></span>\n                  <span class=\"alert-text\" id=\"alertText\" data-tip=\"等待状态同步\">未知</span>\n                </div>\n              </div>\n              <div class=\"tactical-row\" id=\"sanctuaryRow\">\n                <span class=\"tactical-label\">逃跑预警:</span>\n                <div class=\"tactical-chips\" id=\"sanctuaryTip\">\n                  <!-- 逃跑预测 -->\n                </div>\n              </div>\n            </div>\n          </div>\n\n          <!-- 5. 底部深页导航与音频调控底栏 -->\n          <nav class=\"links wx-terminal-links\" aria-label=\"深页和声音入口\">\n            <div class=\"links-left wx-terminal-nav-buttons\">\n              <button type=\"button\" data-wx-dialog=\"wx-profile-dialog\" data-tip=\"已解锁情报条目、打量标签、已探日程。注意：面容记忆全暗，重叠那天才知道攒了多少。\">她的档案 ↗</button>\n              <button type=\"button\" data-wx-dialog=\"wx-lies-dialog\" data-tip=\"自己埋的雷：红点=易被查证、金点=可对质、灰点=无法验证；脉点=活跃，划线=已穿帮。\">我说过的话 ↗</button>\n              <button type=\"button\" data-wx-dialog=\"wx-wanted-dialog\" data-tip=\"追缉等级与已知效果。发酵进度不可见——你不知道他们离找到你多近。\">追缉 ↗</button>\n              <button type=\"button\" data-wx-dialog=\"wx-devices-dialog\" data-tip=\"设备记录入口；暂无实时状态。\">监控设备 ↗</button>\n            </div>\n            <div class=\"audio-popover-wrap\" id=\"audioPopoverWrap\">\n              <button type=\"button\" class=\"slim-btn audio-menu-btn\" id=\"audioMenuBtn\" data-tip=\"声音与环境音效设置\" aria-expanded=\"false\">\n                <span class=\"audio-ico\" aria-hidden=\"true\" data-ico=\"music\"></span> <span class=\"audio-btn-txt\" id=\"audioBtnTxt\">声音</span>\n              </button>\n              <div class=\"audio-popover-panel\" id=\"audioPopoverPanel\" style=\"display: none;\">\n                <div class=\"audio-popover-head\">\n                  <span class=\"audio-popover-title\">环境声音调控</span>\n                  <button type=\"button\" class=\"audio-master-switch\" id=\"heartbeat-sound\" aria-pressed=\"false\">开启雨夜心跳声</button>\n                </div>\n                <div class=\"audio-sliders-group\">\n                  <label class=\"audio-slider-item\"><span>心跳</span><input type=\"range\" id=\"volHeart\" min=\"0\" max=\"100\" value=\"80\" aria-label=\"心跳音量\"></label>\n                  <label class=\"audio-slider-item\"><span>雨声</span><input type=\"range\" id=\"volRain\" min=\"0\" max=\"100\" value=\"50\" aria-label=\"环境雨声音量\"></label>\n                  <label class=\"audio-slider-item\"><span>脚步声</span><input type=\"range\" id=\"volStep\" min=\"0\" max=\"100\" value=\"70\" aria-label=\"她的脚步声量\"></label>\n                  <label class=\"audio-slider-item\"><span>耳鸣</span><input type=\"range\" id=\"volTinn\" min=\"0\" max=\"100\" value=\"25\" aria-label=\"耳鸣音量\"></label>\n                </div>\n                <div class=\"audio-popover-status\" id=\"audioStatus\">音效已关闭</div>\n              </div>\n            </div>\n          </nav>\n        </div>\n        <!-- 沉底结算条：移出 .wx-modal-body 的滚动区，做弹窗真正的页脚\n             （放在滚动区内只能靠 sticky，内容会被压在条下露出半截） -->\n        <div class=\"ledger wx-terminal-ledger\" id=\"ledger\" data-tip=\"本楼结算摘要。\">本轮暂无结算</div>\n    </dialog>\n    <dialog id=\"wx-item-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"item-title\"><div class=\"dialog-top\"><h2 id=\"item-title\">道具</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭道具详情\">×</button></div><p class=\"item-meta\" id=\"itemMeta\">尚未选择道具</p><p id=\"item-description\"></p><p class=\"label\">装备与使用以行囊操作后的结算为准。</p><div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div></dialog>\n    <dialog id=\"wx-profile-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"profile-title\"><div class=\"dialog-top\"><h2 id=\"profile-title\">她的档案</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭档案\">×</button></div>\n      <!-- 长焦偷拍取景器 -->\n      <div class=\"surv-viewfinder\">\n        <div class=\"vf-frame\" id=\"vfFrame\">\n          <span class=\"vf-corner tl\"></span><span class=\"vf-corner tr\"></span>\n          <span class=\"vf-corner bl\"></span><span class=\"vf-corner br\"></span>\n          <div class=\"vf-crosshair\"></div>\n          <div class=\"vf-header\">\n            <span class=\"vf-rec\"><i class=\"rec-dot\"></i>档案示意图</span>\n            <div style=\"display:flex;align-items:center;gap:4px;\">\n              <span class=\"vf-meta\" id=\"vfMeta\">暂无观察数据</span>\n              <span class=\"vf-af-badge\" id=\"vfAfBadge\">[ 等待 ]</span>\n            </div>\n          </div>\n          <div class=\"vf-scene\" aria-hidden=\"true\">\n            <svg class=\"vf-canvas\" viewBox=\"0 0 440 140\" preserveAspectRatio=\"xMidYMid slice\">\n              <defs>\n                <linearGradient id=\"vfNightSky\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n                  <stop offset=\"0%\" stop-color=\"#080d14\"/>\n                  <stop offset=\"60%\" stop-color=\"#111822\"/>\n                  <stop offset=\"100%\" stop-color=\"#182330\"/>\n                </linearGradient>\n                <linearGradient id=\"vfPuddleGlow\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n                  <stop offset=\"0%\" stop-color=\"#ffd580\" stop-opacity=\"0.25\"/>\n                  <stop offset=\"100%\" stop-color=\"#2a3848\" stop-opacity=\"0.02\"/>\n                </linearGradient>\n              </defs>\n              <rect width=\"440\" height=\"140\" fill=\"url(#vfNightSky)\"/>\n              <!-- 远景街灯晕光与便利店灯箱 -->\n              <circle cx=\"320\" cy=\"35\" r=\"45\" fill=\"#f5d483\" opacity=\"0.1\" filter=\"blur(16px)\"/>\n              <line x1=\"320\" y1=\"35\" x2=\"320\" y2=\"120\" stroke=\"#253444\" stroke-width=\"2\"/>\n              <rect x=\"35\" y=\"32\" width=\"55\" height=\"18\" rx=\"2\" fill=\"#e89d58\" opacity=\"0.2\"/>\n              <!-- 湿滑积水倒影区 -->\n              <polygon points=\"140,115 350,115 390,140 90,140\" fill=\"url(#vfPuddleGlow)\"/>\n              <!-- 雨丝线条 -->\n              <g stroke=\"#56728f\" stroke-width=\"0.8\" opacity=\"0.3\">\n                <line x1=\"40\" y1=\"10\" x2=\"30\" y2=\"40\"/><line x1=\"120\" y1=\"5\" x2=\"110\" y2=\"35\"/>\n                <line x1=\"200\" y1=\"15\" x2=\"190\" y2=\"45\"/><line x1=\"280\" y1=\"0\" x2=\"270\" y2=\"30\"/>\n                <line x1=\"360\" y1=\"20\" x2=\"350\" y2=\"50\"/><line x1=\"80\" y1=\"60\" x2=\"70\" y2=\"90\"/>\n                <line x1=\"160\" y1=\"70\" x2=\"150\" y2=\"100\"/><line x1=\"240\" y1=\"65\" x2=\"230\" y2=\"95\"/>\n                <line x1=\"320\" y1=\"55\" x2=\"310\" y2=\"85\"/><line x1=\"400\" y1=\"75\" x2=\"390\" y2=\"105\"/>\n              </g>\n              <!-- 装饰剪影：不是实拍画面 -->\n              <g transform=\"translate(215, 30)\">\n                <path d=\"M -34 30 Q 0 -2 34 30 Q 0 24 -34 30 Z\" fill=\"#17222c\" stroke=\"#36495c\" stroke-width=\"1.2\"/>\n                <ellipse cx=\"0\" cy=\"32\" rx=\"6.5\" ry=\"7.5\" fill=\"#10151c\"/>\n                <path d=\"M -6 38 Q 0 41 7 38 L 6 45 Q 0 47 -6 45 Z\" fill=\"#7a5a54\"/>\n                <path d=\"M -10 44 L -14 76 L 14 76 L 10 44 Z\" fill=\"#29333d\"/>\n                <line x1=\"-5\" y1=\"76\" x2=\"-7\" y2=\"94\" stroke=\"#161b22\" stroke-width=\"2.5\"/>\n                <line x1=\"5\" y1=\"76\" x2=\"8\" y2=\"90\" stroke=\"#161b22\" stroke-width=\"2.5\"/>\n                <rect x=\"12\" y=\"60\" width=\"8\" height=\"12\" rx=\"1.5\" fill=\"#c3d2e0\" opacity=\"0.6\"/>\n              </g>\n            </svg>\n            <div class=\"vf-scanline\"></div>\n          </div>\n          <div class=\"vf-footer\">\n            <span class=\"vf-tag\" id=\"vfTarget\">尚未选择目标</span>\n            <span class=\"vf-status\" id=\"vfStatus\">等待开局</span>\n          </div>\n        </div>\n      </div>\n      <h3 style=\"margin-top:14px\">属性 <small class=\"label\" style=\"font-weight:normal\">未查明前显示为 ？</small></h3>\n      <div class=\"pattrs\" id=\"pattrs\"><div class=\"pattr unknown\"><div class=\"an\">体格</div><div class=\"av\">？</div></div><div class=\"pattr unknown\"><div class=\"an\">敏捷</div><div class=\"av\">？</div></div><div class=\"pattr unknown\"><div class=\"an\">敏锐</div><div class=\"av\">？</div></div><div class=\"pattr unknown\"><div class=\"an\">胆量</div><div class=\"av\">？</div></div></div>\n      <h3 style=\"margin-top:14px\">身体印象</h3>\n      <div id=\"ptags\">暂无已记录的外观印象</div>\n      <h3 style=\"margin-top:14px\">已解锁情报</h3>\n      <p id=\"profileBody\">暂无已解锁情报</p><h3>已探明日程</h3><div id=\"profileSchedule\">暂无已探明日程</div>\n      <div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div></dialog>\n    <dialog id=\"wx-lies-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"lies-title\"><div class=\"dialog-top\"><h2 id=\"lies-title\">我说过的话</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭谎账\">×</button></div>\n      <div class=\"lie-legend\" data-tip=\"谎话分三档：身份职业类的谎会被查证；说法行踪类的谎可能被对质；借口感受类的谎几乎无法验证。档位越高，穿帮的雷越响。\">\n        <span><i class=\"dot v-high\"></i>查证类</span><span><i class=\"dot v-mid\"></i>对质类</span><span><i class=\"dot v-low\"></i>无法验证</span>\n      </div>\n      <div id=\"liesBody\">暂无已保存的谎言记录</div>\n      <p class=\"label\">仅显示已保存的记录。</p>\n      <div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div></dialog>\n    <dialog id=\"wx-wanted-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"wanted-title\"><div class=\"dialog-top\"><h2 id=\"wanted-title\">追缉</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭追缉\">×</button></div><p id=\"wantedBody\">当前版本未启用追缉系统。</p><p class=\"label\">此处仅保留扩展入口。</p><div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div></dialog>\n    <dialog id=\"wx-devices-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"devices-title\"><div class=\"dialog-top\"><h2 id=\"devices-title\">设备</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭设备面板\">×</button></div>\n      <div id=\"devicesBody\" class=\"label\">设备状态暂未接入，暂无可显示的设备记录。</div>\n      <div class=\"dialog-actions\"><button type=\"button\" id=\"openAlbumBtn\">相册 ↗</button><button type=\"button\" data-wx-close>返回</button></div></dialog>\n\n    <!-- ═══ 相册：贴墙收集（拍照产物） ═══ -->\n    <dialog id=\"wx-album-dialog\" class=\"wx-dialog trpg wx-album-dialog\" aria-labelledby=\"album-title\">\n      <div class=\"dialog-top\">\n        <h2 id=\"album-title\">相册 <span class=\"album-count\" id=\"albumCount\">0 / 0</span></h2>\n        <button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭相册\">×</button>\n      </div>\n      <div class=\"album-wall\" id=\"albumWall\"></div>\n      <div class=\"album-detail\" id=\"albumDetail\" hidden>\n        <img id=\"albumDetailImg\" alt=\"照片\">\n        <div class=\"album-detail-meta\" id=\"albumDetailMeta\"></div>\n      </div>\n      <div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div>\n    </dialog>\n\n    <!-- 拍照即时卡片（6 秒后自动消失） -->\n    <div class=\"photo-toast\" id=\"photoToast\" hidden>\n      <img id=\"photoToastImg\" alt=\"\">\n      <div class=\"photo-toast-txt\"><b id=\"photoToastName\"></b><span id=\"photoToastMeta\"></span></div>\n    </div>\n    <!-- ═══ 零楼 · 开局三步向导（第一步：建立角色 ➔ 第二步：选择目标；新局无档时挂载到第 0 条消息） ═══ -->\n    <div id=\"wx-zero-floor\" class=\"trpg wx-zero-floor\" role=\"region\" aria-labelledby=\"createTitle\" hidden>\n      <div data-zero-slot=\"before\"></div>\n      <div class=\"dialog-top zero-wizard-top\">\n        <div class=\"zero-title-wrap\">\n          <h2 id=\"createTitle\">零楼 · 创角向导</h2>\n          <span class=\"zero-sub\">创建角色 → 选择目标 → 训练简报</span>\n        </div>\n        <!-- 步骤导航条 -->\n        <div class=\"zero-steps-bar\" role=\"tablist\" aria-label=\"零楼向导步骤\">\n          <button type=\"button\" class=\"zero-step-pill active\" id=\"zeroStepTab1\" data-step=\"1\">\n            <span class=\"step-num\">1</span>\n            <span class=\"step-text\">建立角色</span>\n          </button>\n          <span class=\"zero-step-divider\">➔</span>\n          <button type=\"button\" class=\"zero-step-pill\" id=\"zeroStepTab2\" data-step=\"2\">\n            <span class=\"step-num\">2</span>\n            <span class=\"step-text\">选择目标</span>\n          </button>\n          <span class=\"zero-step-divider\">➔</span>\n          <button type=\"button\" class=\"zero-step-pill\" id=\"zeroStepTab3\" data-step=\"3\" disabled>\n            <span class=\"step-num\">3</span><span class=\"step-text\">训练简报</span>\n          </button>\n        </div>\n      </div>\n\n      <!-- ─── 步骤 1：猎手身份与点数 ─── -->\n      <div class=\"zero-step-view\" id=\"zeroStep1\">\n        <div class=\"create-tabs\">\n          <button type=\"button\" class=\"create-tab active\" data-ctab=\"quick\">快捷预设</button>\n          <button type=\"button\" class=\"create-tab\" data-ctab=\"custom\">自定义加点</button>\n        </div>\n        <div class=\"create-pane\" data-cpane=\"quick\" id=\"quickPane\"></div>\n        <div class=\"create-pane\" data-cpane=\"custom\" id=\"customPane\" hidden>\n          <div class=\"id-grid\" id=\"idGrid\"></div>\n          <div class=\"alloc\" id=\"allocBox\">\n            <div class=\"alloc-head\">\n              <span class=\"label\">分 20 点（每项 1~10，身份修正在此之上另算）</span>\n              <span class=\"alloc-remain\" id=\"allocRemain\">剩余 0</span>\n            </div>\n            <div id=\"allocRows\"></div>\n            <p class=\"alloc-warn\" id=\"allocWarn\"></p>\n          </div>\n        </div>\n        <div class=\"create-foot\">\n          <span class=\"create-hint\" id=\"createHint\">选一个身份，把点数分完</span>\n          <button type=\"button\" class=\"zero-btn-next\" id=\"zeroNextStep\" disabled>下一步：选择目标 ➔</button>\n        </div>\n      </div>\n\n      <!-- ─── 步骤 2：锁定目标猎物 ─── -->\n      <div class=\"zero-step-view\" id=\"zeroStep2\" hidden>\n        <div class=\"target-section-head\">\n          <span class=\"label\">选择跟踪目标（六大目标角色库 · 数据与动线插槽已预留）</span>\n          <span class=\"target-sub-note\">当前首发已完全填充：独居女大学生（2★）</span>\n        </div>\n        <div class=\"target-grid\" id=\"targetGrid\"></div>\n        <div class=\"target-detail-box\" id=\"targetDetailBox\">\n          <div class=\"target-detail-header\">\n            <div class=\"target-detail-title-wrap\">\n              <span class=\"target-detail-name\" id=\"tDetailName\">—</span>\n              <span class=\"target-detail-stars\" id=\"tDetailStars\">—</span>\n              <span class=\"target-detail-badge\" id=\"tDetailBadge\">—</span>\n              <span class=\"target-status-badge ready\" id=\"tDetailStatus\">—</span>\n            </div>\n            <div class=\"target-detail-action-wrap\">\n              <button type=\"button\" class=\"btn-reroll-target\" id=\"tDetailReroll\" title=\"重新随机摇号目标的姓名、性格、爱好与属性扰动\"><span class=\"btn-ico\" data-ico=\"dice\"></span> 重新摇号</button>\n              <span class=\"target-detail-area\" id=\"tDetailArea\">—</span>\n            </div>\n          </div>\n          <p class=\"target-detail-tagline\" id=\"tDetailTagline\">—</p>\n          <div class=\"target-detail-rows\">\n            <div class=\"target-row\"><b>目标真名</b><span class=\"target-gen-name\" id=\"tDetailRealName\">—</span><span class=\"target-gen-sub\" id=\"tDetailNameSource\">(中式姓名库 10×20 随机生成)</span></div>\n            <div class=\"target-row\"><b>性格特质</b><span id=\"tDetailPersonality\">—</span></div>\n            <div class=\"target-row\"><b>私密爱好</b><span id=\"tDetailHobby\">—</span></div>\n            <div class=\"target-row\"><b>鞋具着装</b><span id=\"tDetailShoe\">—</span></div>\n            <div class=\"target-row\"><b>特征标签</b><span id=\"tDetailFeatures\">—</span></div>\n            <div class=\"target-row\"><b>作息规律</b><span id=\"tDetailWindow\">—</span></div>\n            <div class=\"target-row\"><b>情报评估</b><span id=\"tDetailStats\">体格 <b>？</b> · 敏捷 <b>？</b> · 敏锐 <b>？</b> · 胆量 <b>？</b> · 社交 <b>？</b> <small class=\"label\" style=\"margin-left:6px\">（情报迷雾 · 打量或调查后揭示）</small></span></div>\n          </div>\n\n        </div>\n        <div class=\"create-foot\">\n          <button type=\"button\" class=\"zero-btn-prev\" id=\"zeroPrevStep\">⬅ 上一步：修改角色</button>\n          <span class=\"create-hint\" id=\"targetHint\">请选择目标</span>\n          <button type=\"button\" class=\"create-confirm\" id=\"createConfirm\">确认目标 · 查看训练简报 ➔</button>\n        </div>\n      </div>\n    <div class=\"zero-step-view training-brief\" id=\"zeroStep3\" hidden aria-labelledby=\"trainingBriefTitle\">\n  <div class=\"training-brief-topline\"><span>全息训练系统</span><span class=\"training-brief-phase\">入场简报 <i aria-hidden=\"true\"></i></span></div>\n  <div class=\"training-brief-hero\">\n    <div class=\"training-brief-intro\">\n      <p class=\"training-brief-eyebrow\"><span aria-hidden=\"true\"></span> 特工基础训练 / 序章</p>\n      <h3 id=\"trainingBriefTitle\" tabindex=\"-1\">先学会观察，<br>再走进人群。</h3>\n      <p class=\"training-brief-lead\">为保卫祖国做好准备。你将作为特工学员，进入全拟真的全息城市，练习观察、判断与隐蔽行动。</p>\n      <div class=\"training-brief-coach\"><span class=\"training-brief-coach-mark\" aria-hidden=\"true\">“</span><p>终端能帮你记住发现，<br><strong>但不会替你知道一切。</strong></p><span class=\"training-brief-coach-from\">训练提示</span></div>\n    </div>\n    <div class=\"training-brief-art\" aria-label=\"全息城市环境示意，不表示目标位置\">\n      <div class=\"training-brief-art-caption\"><span>城市环境</span><span>全息场景示意</span></div>\n      <div id=\"trainingBriefHologram\" aria-hidden=\"true\"></div>\n      <div class=\"training-brief-art-foot\"><span>观察</span><i aria-hidden=\"true\"></i><span>判断</span><i aria-hidden=\"true\"></i><span>行动</span></div>\n    </div>\n  </div>\n  <dl class=\"training-brief-assignment\">\n    <div><dt>你的掩护身份</dt><dd id=\"trainingBriefIdentity\">尚未选择</dd></div>\n    <div><dt>本次训练对象</dt><dd id=\"trainingBriefTarget\">尚未选择</dd></div>\n    <div><dt>情报获取方式</dt><dd>现场观察 · 行动调查</dd></div>\n  </dl>\n  <div class=\"training-brief-lessons\" aria-label=\"基础训练要点\">\n    <article><span class=\"training-brief-number\">01</span><div><h4>认清位置</h4><p>找到自己，分清目视位置与最后目击。</p></div></article>\n    <article><span class=\"training-brief-number\">02</span><div><h4>读懂线索</h4><p>观察与调查所得，才会成为你的情报。</p></div></article>\n    <article><span class=\"training-brief-number\">03</span><div><h4>谨慎行动</h4><p>先看行动条件与代价，再决定怎么做。</p></div></article>\n  </div>\n  <p class=\"training-brief-boundary\"><span aria-hidden=\"true\">◇</span><span>训练对象有自己的生活。她的日程与住址不会在简报中公开，需要你在场景中逐步调查。</span></p>\n  <div class=\"training-brief-footer\">\n    <button type=\"button\" class=\"training-brief-back\" id=\"trainingBriefBack\">← 返回目标选择</button>\n    <div class=\"training-brief-entry\"><span>阅读简报不消耗行动点</span><button type=\"button\" id=\"trainingBriefStart\">载入训练场 <span aria-hidden=\"true\">↗</span></button></div>\n  </div>\n  <p id=\"trainingBriefNotice\" class=\"training-brief-notice\" role=\"status\" aria-live=\"polite\"></p>\n</div>\n\n    <div data-zero-slot=\"after\"></div>\n    </div>\n    <!-- ═══ 身份徽记详情（常驻条徽记点开；含重开新局） ═══ -->\n    <dialog id=\"wx-id-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"idTitle\">\n      <div class=\"dialog-top\">\n        <h2 id=\"idTitle\">身份</h2>\n        <button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭身份详情\">×</button>\n      </div>\n      <div id=\"idDetailBody\"></div>\n      <div class=\"dialog-actions\">\n        <button type=\"button\" id=\"idResetBtn\" data-tip=\"清空本局进度，回到零楼重新选择身份与点数\">重开新局</button>\n        <button type=\"button\" data-wx-close>返回</button>\n      </div>\n    </dialog>\n    <!-- ═══ M4-2 三翼战术 Canvas 判定台（数已定，演出与生成同时进行；确认结果收面板） ═══ -->\n    <dialog id=\"wx-settle-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"settleTitle\">\n      <div class=\"dialog-top\">\n        <h2 id=\"settleTitle\">判定 · 本楼结算</h2>\n        <button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭结算面板\">×</button>\n      </div>\n      <div id=\"settleBody\" class=\"settle-body\">\n        <div class=\"stage-console\" id=\"settleConsole\">\n          <!-- ① 左翼：因 · 检定态势与筹码装填 -->\n          <div class=\"wing wing-left\">\n            <div class=\"wing-header\">\n              <span class=\"wing-tag\">INPUT</span>\n              <span class=\"wing-title\">检定态势与筹码</span>\n            </div>\n            <div class=\"action-badge\" id=\"settleActBadge\">▸ 准备就绪</div>\n            <div class=\"mods-stack\" id=\"settleModsStack\"></div>\n            <div class=\"ekg-widget\">\n              <div class=\"ekg-top\">\n                <span>生理监护</span>\n                <span class=\"bpm\" id=\"settleEkgHeart\">等待结算</span>\n              </div>\n              <svg class=\"ekg-svg\" viewBox=\"0 0 200 24\" aria-hidden=\"true\">\n                <path class=\"ekg-trace\" d=\"M0,12 L35,12 L40,6 L45,18 L50,12 L80,12 L85,2 L92,22 L98,12 L130,12 L135,8 L140,16 L145,12 L200,12\"/>\n              </svg>\n            </div>\n          </div>\n\n          <!-- ② 中央：宿命 · 3D 物理晶体 20 面骰 -->\n          <div class=\"stage-center\">\n            <div class=\"corner c-tl\"></div><div class=\"corner c-tr\"></div>\n            <div class=\"corner c-bl\"></div><div class=\"corner c-br\"></div>\n            <div class=\"hud-status\" id=\"settleHudStatus\">TARGET TRACKING · D20 READY</div>\n            <div class=\"radar-ring\"></div>\n            <div class=\"die-stage-center\">\n              <div class=\"die-shadow\" id=\"settleDieShadow\"></div>\n              <canvas id=\"settleDieCanvas\" width=\"500\" height=\"500\"></canvas>\n            </div>\n            <div class=\"flash-overlay\" id=\"settleFlashOverlay\"></div>\n          </div>\n\n          <!-- ③ 右翼：果 · 判定结论与即时账目 -->\n          <div class=\"wing wing-right\">\n            <div class=\"wing-header\">\n              <span class=\"wing-tag\">OUTPUT</span>\n              <span class=\"wing-title\">判定结论与账目</span>\n            </div>\n            <div class=\"verdict-box\">\n              <div class=\"verdict-badge\" id=\"settleVerdictBadge\">待判定</div>\n              <div class=\"math-line\" id=\"settleMathLine\">—</div>\n            </div>\n            <div class=\"ledger-wrap\" id=\"settleLedgerWrap\">\n              <div class=\"ledger-row show\"><span>等待掷骰结果落定 …</span></div>\n            </div>\n            <div class=\"dark-reveal-card\" id=\"settleDarkRevealCard\"></div>\n            <div class=\"queue-history\" id=\"settleQueueHistory\" style=\"display:none;\"></div>\n          </div>\n        </div>\n      </div>\n      <div class=\"dialog-actions settle-actions\">\n        <label class=\"settle-auto\"><input type=\"checkbox\" id=\"settleAuto\"> 自动掷（跳过面板，旧流程结算）</label>\n        <button type=\"button\" id=\"settleAck\" class=\"settle-ack\">确认结果</button>\n      </div>\n    </dialog>";
+    root.innerHTML = "<div id=\"wxSyncNotice\" class=\"wx-sync-notice\" role=\"status\" hidden></div>\n    <div class=\"trpg-vignette\" id=\"trpgVignette\" aria-hidden=\"true\"></div>\n    <div class=\"her-alert\" id=\"herAlert\" data-tip=\"她刚才的举动。是发现了什么，还是单纯的心血来潮——只有她自己知道。\"></div>\n\n    <!-- ═══ 常驻一小窄行（紧贴输入栏，高度38px，不挡正文） ═══ -->\n    <div class=\"trpg-slim-bar\" id=\"trpgSlimBar\">\n      <!-- 零楼 · 未开局覆盖钮（新局未确认身份时盖住常驻条） -->\n      <div id=\"zeroChip\" hidden role=\"button\" tabindex=\"0\">未开局 · 点击选择身份</div>\n      <!-- 左：大区与场所、天气、路线进度 -->\n      <div class=\"slim-left\" data-tip=\"当前动线与场所状态\">\n        <span class=\"slim-dist-badge\" id=\"routeDistrict\">—</span>\n        <span class=\"slim-place\" id=\"routePlace\">等待开局</span>\n        <div class=\"slim-tags-group\">\n          <span class=\"slim-tag weather\" id=\"routeWeather\">—</span>\n          <span class=\"slim-tag remain\" id=\"routeRemain\">—</span>\n          <span class=\"slim-tag id-badge\" id=\"idBadge\" hidden data-tip=\"你的开局身份（零楼选定，点开看详情）\">身份</span>\n        </div>\n      </div>\n\n      <!-- 中：模式与距离档 -->\n      <div class=\"slim-center\" id=\"distStat\" data-tip=\"当前模式与尾行距离档\">\n        <span class=\"slim-phase\" id=\"phase\">未开局</span>\n        <span class=\"slim-divider\">/</span>\n        <span class=\"slim-dist\" id=\"distName\">—</span>\n        <span class=\"slim-pips\" id=\"pips\" aria-hidden=\"true\"><i class=\"pip\"></i><i class=\"pip\"></i><i class=\"pip\"></i><i class=\"pip\"></i></span>\n      </div>\n\n      <!-- 右：体力、跳动小红心心跳子菜单、设备、展开详情 -->\n      <div class=\"slim-right\">\n        <!-- 迷你体力 -->\n        <div class=\"slim-stamina\" id=\"staminaBox\" data-band=\"green\" data-tip=\"当前体力\">\n          <span class=\"slim-stamina-val\" id=\"staminaVal\">—</span>\n          <span class=\"slim-stamina-bar\"><span class=\"stamina-fill\" id=\"staminaFill\" style=\"width: 0%;\"></span></span>\n        </div>\n\n        <!-- 心跳子菜单（收起时显示为随心跳频率跳动的小红心，点击向上弹出完整仪表盘） -->\n        <div class=\"heart-popover-wrap\" id=\"heartPopoverWrap\">\n          <button type=\"button\" class=\"heart-pill-btn\" id=\"heartPillBtn\" aria-expanded=\"false\" aria-haspopup=\"dialog\" data-tip=\"点击向上弹出心跳仪表盘\">\n            <span class=\"mini-heart\" id=\"miniHeart\" aria-hidden=\"true\">♥</span>\n            <span class=\"mini-heart-num\" id=\"miniHeartNum\">—</span>\n            <span class=\"mini-heart-bpm\" id=\"miniBpmNum\">—</span>\n          </button>\n\n          <!-- 向上弹出子菜单卡片 -->\n          <div class=\"heart-popover-card\" id=\"heartPopoverCard\" role=\"dialog\" aria-label=\"心跳仪表盘\">\n            <div class=\"popover-head\">\n              <span class=\"popover-title\">生理心率与压力监控</span>\n              <button type=\"button\" class=\"popover-close-btn\" id=\"heartPopoverClose\" aria-label=\"关闭\">✕</button>\n            </div>\n            <div class=\"popover-content\">\n              <div class=\"popover-grid\">\n                <div class=\"stat instrument\" id=\"instrument\" data-line=\"\" data-tip=\"心跳 0–100。绿弧为甜区 40–65：全检定 +1。70 起操作变形（敏捷 −2），90 起操作崩溃（敏捷 −4）。BPM 为换算读数。\">\n                <svg class=\"heart-dial\" viewBox=\"0 0 160 154\" role=\"img\" aria-label=\"心跳\" id=\"dial\">\n                  <defs><clipPath class=\"ecg-clip\" id=\"ecgClip\"><circle cx=\"80\" cy=\"80\" r=\"48\"></circle></clipPath></defs>\n                  <path class=\"dial-track\"></path><path class=\"dial-sweet\"></path><g class=\"dial-ticks\"></g>\n                  <circle class=\"dial-beat-halo\" cx=\"80\" cy=\"80\" r=\"52\" aria-hidden=\"true\"></circle>\n                  <g class=\"ecg-window\" aria-hidden=\"true\"><g class=\"ecg-scroll\"><path class=\"ecg-line\"></path></g></g>\n                  <g class=\"dial-marker-orbit\" id=\"orbit\" style=\"transform: rotate(135deg)\"><circle class=\"dial-marker\" cx=\"142\" cy=\"80\" r=\"4.5\"></circle></g>\n                  <text x=\"80\" y=\"48\" text-anchor=\"middle\" class=\"dial-label\">心跳</text>\n                  <text x=\"80\" y=\"87\" text-anchor=\"middle\" class=\"dial-number\" id=\"heartNum\">—</text>\n                  <text x=\"80\" y=\"100\" text-anchor=\"middle\" class=\"dial-bpm\" id=\"bpmNum\">—</text>\n                  <text x=\"62\" y=\"49\" text-anchor=\"middle\" class=\"dial-heart\" aria-hidden=\"true\">♥</text>\n                  <text x=\"27\" y=\"139\" text-anchor=\"middle\" class=\"dial-scale\">0</text>\n                  <text x=\"133\" y=\"139\" text-anchor=\"middle\" class=\"dial-scale\">100</text>\n                </svg>\n                <!-- 刻度说明已移除：阈值并入 #instrument 的悬停提示，版面让给右侧警觉竖条 -->\n                <div class=\"stamina\" id=\"fullStaminaBox\" data-band=\"green\" data-tip=\"体力状态\">\n                  <div class=\"stamina-label\"><span>体力 <span class=\"band-name\" id=\"bandName\"></span></span><span class=\"stamina-value\" id=\"fullStaminaVal\">—</span></div>\n                  <div class=\"stamina-meter\" role=\"progressbar\" aria-label=\"体力\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"0\"><span class=\"stamina-fill\" id=\"fullStaminaFill\"></span></div>\n                </div>\n                <svg class=\"spark\" viewBox=\"0 0 120 20\" preserveAspectRatio=\"none\" aria-hidden=\"true\" data-tip=\"近 12 段的心跳走势复盘；虚线为甜区中线。\">\n                  <line x1=\"0\" y1=\"9\" x2=\"120\" y2=\"9\"></line>\n                  <polyline id=\"sparkLine\" points=\"\"></polyline>\n                </svg>\n                </div>\n                <!-- 右侧窄栏：她的警觉（只给档位与五格刻度，不报精确数值） -->\n                <aside class=\"popover-her\" id=\"popoverHerState\" data-tier=\"0\" data-tip=\"她此刻对你的警觉档位。数值不直接显示——她的脸就是仪表。\">\n                  <span class=\"popover-her-title\">她的警觉</span>\n                  <span class=\"alert-pips\" id=\"popoverAlertPips\" aria-hidden=\"true\"></span>\n                  <span class=\"popover-her-name\" id=\"popoverAlertText\">未知</span>\n                  <span class=\"popover-her-range\" id=\"popoverAlertRange\">—</span>\n                </aside>\n              </div>\n              <div class=\"popover-audio-row\">\n                <button type=\"button\" class=\"audio-btn\" id=\"heartbeat-sound\" aria-pressed=\"false\"><span data-ico=\"music\"></span> 开启雨夜心跳声</button>\n              </div>\n            </div>\n          </div>\n        </div>\n\n        <!-- 手机与设备按钮 -->\n        <button type=\"button\" class=\"slim-btn phone-stat\" data-wx-dialog=\"wx-devices-dialog\" data-tip=\"手机与设备\"><span class=\"phone-icon\" aria-hidden=\"true\" data-ico=\"phone\"></span></button>\n\n        <!-- 战术终端入口按钮 -->\n        <button type=\"button\" class=\"slim-btn terminal-toggle-btn\" id=\"wx-terminal-toggle-btn\" data-tip=\"打开手持战术终端（全量属性/行囊/动线/沙盘）\" aria-expanded=\"false\"><span class=\"term-ico\" aria-hidden=\"true\" data-ico=\"clip\"></span> <span class=\"term-txt\">战术终端</span></button>\n      </div>\n    </div>\n\n    <div class=\"wx-day-plan\" id=\"wxDayPlan\" data-state=\"empty\" aria-label=\"每日行动与时段\">\n      <div class=\"wx-day-heading\">\n        <div class=\"wx-day-when\"><span class=\"wx-day-kicker\">日程</span><span id=\"wxDayDate\">等待开局</span><span class=\"wx-day-dot\">·</span><strong id=\"wxDayPeriod\">—</strong></div>\n        <div class=\"wx-day-ap\" aria-label=\"剩余行动点\"><span>行动点</span><strong id=\"wxDayAp\">—</strong><span class=\"wx-day-ap-total\">/ <span id=\"wxDayBudget\">—</span></span><span id=\"wxDayApPips\" class=\"wx-day-ap-pips\" aria-hidden=\"true\"></span></div>\n      </div>\n      <ol class=\"wx-day-periods\" id=\"wxDayPeriods\" aria-label=\"当天五个时段\"></ol>\n      <div class=\"wx-day-bottom\"><span class=\"wx-day-activity\"><i aria-hidden=\"true\"></i><span id=\"wxDayActivity\">尚无日程记录</span></span><span id=\"wxDayHint\">每日行动与时段</span></div>\n    </div>\n\n    <details id=\"wxCityMap\" class=\"wx-city-map\" open>\n      <summary>城市地图<span id=\"wxCityPosition\">等待地图数据</span></summary>\n      <div id=\"wxCityTabs\" class=\"wx-city-tabs\"></div>\n      <div class=\"wx-city-legend\"><span class=\"player\">● 你的位置</span><span class=\"target\">● 目标目视位置</span><span class=\"last\">○ 最后目击</span><span class=\"metro\">━ 地铁 1 号线</span><span class=\"bus\">┄ 市区公交</span><span class=\"highway\">━ 郊外公路</span></div>\n      <div id=\"wxCityCanvas\" class=\"wx-city-canvas\"></div>\n      <div id=\"wxCityInfo\" class=\"wx-city-info\"></div>\n      <p class=\"wx-city-note\">总图查看市区 A/B/C 与郊外 D 的相对分布；切进街区查看设施。“交通线路”可开关，放大后可横向滑动。浏览不改变位置。市内移动不占活动机会，采购确认后才扣点、推进时段。</p>\n      <p id=\"wxCityNotice\" class=\"wx-city-notice\" role=\"status\"></p>\n    </details>\n    <details class=\"wx-daily-actions\" id=\"wxDailyActions\" open>\n      <summary>日程行动<span>每个时段选择一次活动</span></summary>\n      <div class=\"wx-daily-action-grid\" id=\"wxDailyActionGrid\"></div>\n      <div class=\"wx-daily-controls\" id=\"wxDailyControls\"></div>\n      <p class=\"wx-daily-status\" id=\"wxDailyStatus\" role=\"status\" aria-live=\"polite\"></p>\n    </details>\n\n    <!-- ═══ 行动胶囊栏（情境自适应 4 胶囊 + 姿态指示 + 二级抽屉展开） ═══ -->\n    <div class=\"wx-capsule-bar\" id=\"wxCapsuleBar\" aria-label=\"战术行动胶囊\">\n      <div class=\"wx-posture-badge\" id=\"wxPostureBadge\" role=\"button\" tabindex=\"0\" data-tip=\"未点选胶囊时，本轮以「跟缀·保持当前距离」继续跟踪。点击切换为纯叙事（不掷骰）。\">默认: 跟缀 · 保持距离</div>\n      <div class=\"wx-chips-wrap\" id=\"wxChipsWrap\"></div>\n      <button type=\"button\" class=\"wx-more-btn\" id=\"wxMoreActionsBtn\" aria-expanded=\"false\" data-tip=\"点开查看当前模式全量战术动作抽屉\">更多 ▾</button>\n\n      <!-- 二级动作抽屉 -->\n      <div class=\"wx-action-drawer\" id=\"wxActionDrawer\" style=\"display: none;\" aria-label=\"全量战术动作抽屉\">\n        <div class=\"drawer-head\">\n          <span class=\"drawer-title\" id=\"wxActionDrawerTitle\">战术动作抽屉</span>\n          <button type=\"button\" class=\"drawer-close\" id=\"wxActionDrawerClose\" aria-label=\"关闭抽屉\">✕</button>\n        </div>\n        <div class=\"drawer-body\" id=\"wxActionDrawerBody\"></div>\n      </div>\n    </div>\n\n    <!-- ═══ 战术终端（HTML5 Top Layer 原生模态对话框，穿透所有层级与容器） ═══ -->\n    <dialog class=\"wx-dialog wx-terminal-dialog trpg\" id=\"wx-terminal-dialog\" aria-labelledby=\"terminalTitle\">\n        <div class=\"wx-modal-head\">\n          <div class=\"wx-modal-title-wrap\">\n            <span class=\"wx-terminal-icon\" data-ico=\"clip\"></span>\n            <h2 class=\"wx-modal-title\" id=\"terminalTitle\">战术终端 · 实时行动手账</h2>\n            <span class=\"wx-modal-badge\" id=\"terminalFloorBadge\">未开局</span>\n          </div>\n          <button type=\"button\" class=\"wx-modal-close\" id=\"wx-terminal-close-btn\" data-wx-close aria-label=\"关闭终端\">✕</button>\n        </div>\n\n        <div class=\"wx-modal-body\">\n          <!-- 动线步进雷达轨（展开时呈现完整节点，带充裕边距不截顶） -->\n          <div class=\"route-tracker\" id=\"routeTracker\" data-tip=\"当前路线的节点进度；未知地点显示问号。节点数不是行动点或剩余回合。\">\n            <div class=\"route-weather-fx\" aria-hidden=\"true\"></div>\n            <div class=\"route-stepper\" id=\"routeStepper\"></div>\n          </div>\n          <!-- 2. 玩家状态核心面板（通栏横向展示：资产 + 五维属性 + 阈值特质） -->\n          <div class=\"wx-player-banner\">\n            <div class=\"wx-banner-header\">\n              <div class=\"wx-banner-title\">\n                <span class=\"section-no\">01</span><strong>玩家资产与五维属性</strong>\n                <small class=\"label\" style=\"font-weight:normal\">（绿色增益 / 红色受损）</small>\n              </div>\n              <div class=\"money wx-compact-money\">\n                <span data-tip=\"现金：购物与买通的硬通货。具体收支以结算记录为准。\">现金 <strong id=\"cash\">—</strong></span>\n                <span data-tip=\"情报点 PI：影响情报解锁，以当前规则和已解锁条目为准。\">PI <strong id=\"pi\">—</strong></span>\n              </div>\n            </div>\n\n            <!-- 五维属性卡片（5 列等宽，内置静态空态占位，JS 执行后无缝热更新） -->\n            <div class=\"attrs wx-attrs\" id=\"wx-attrs\"><div class=\"attr\"><div class=\"an\">体格</div><div class=\"av\">—</div></div><div class=\"attr\"><div class=\"an\">敏捷</div><div class=\"av\">—</div></div><div class=\"attr\"><div class=\"an\">胆量</div><div class=\"av\">—</div></div><div class=\"attr\"><div class=\"an\">情报</div><div class=\"av\">—</div></div><div class=\"attr\"><div class=\"an\">口才</div><div class=\"av\">—</div></div></div>\n            <div class=\"attr-tags\" id=\"wx-attr-tags\"></div>\n          </div>\n\n          <!-- 3. 双翼战术工作区（左翼：行囊与生效修正；右翼：目标行为信号手账） -->\n          <div class=\"wx-tactical-wings\">\n            <!-- 左翼：战术行囊持有物与生效修正标签栈（为后续新系统留出充分扩展空间） -->\n            <div class=\"wx-wing-column\">\n              <div class=\"wx-wing-card\">\n                <h3><span class=\"section-no\">01.3</span>战术行囊持有物</h3>\n                <ul class=\"wx-items items\" id=\"wx-items\"></ul>\n\n                <h3 style=\"margin-top:14px\" data-tip=\"当前生效中的加成与妨碍。来源可以是装备、环境或她的行为——来源消失，加成即失效。\">\n                  <span class=\"section-no\">01.4</span>生效修正标签栈\n                </h3>\n                <div class=\"wx-active-tags-container\" id=\"tags\"></div>\n              </div>\n            </div>\n\n            <!-- 右翼：目标行为信号手账（接近度 + 信号时间轴 + 时机评估） -->\n            <div class=\"wx-wing-column\">\n              <div class=\"wx-wing-card\">\n                <h3><span class=\"section-no\">02</span><span data-tip=\"她今晚的行为记录，只写看到的事实。她为什么这么做——需要你自己判断。\">目标行为信号手账</span></h3>\n\n                <!-- 她的鞋具：只露鞋名，敏捷修正与步声细节走悬停 -->\n                <div class=\"gear-line\" id=\"herGear\" hidden>\n                  <span class=\"gear-label\">她的鞋</span>\n                  <span class=\"gear-name\" id=\"herGearName\"></span>\n                </div>\n                \n                <!-- 接近度五档刻度进度轨（全宽舒展，文字横排不折行） -->\n                <div class=\"prox-container\" id=\"proxContainer\">\n                  <div class=\"prox-header\">\n                    <span class=\"prox-title\"><strong>接近度 (PROXIMITY)</strong></span>\n                    <span class=\"prox-value-wrap\">\n                      <strong id=\"proxVal\">—</strong> / 100\n                      <span class=\"prox-stage-badge\" id=\"proxStage\">—</span>\n                    </span>\n                  </div>\n                  <div class=\"prox-track-wrap\" id=\"proxTrackWrap\" data-tip=\"接近度加载中...\">\n                    <div class=\"prox-meter-bar\">\n                      <div class=\"prox-meter-fill\" id=\"proxFill\" style=\"width: 0%;\"></div>\n                    </div>\n                    <div class=\"prox-nodes\" id=\"proxNodes\">\n                      <div class=\"pnode\" style=\"left: 0%;\"><span class=\"pdot\"></span><span class=\"plabel\">0 陌生</span></div>\n                      <div class=\"pnode\" style=\"left: 20%;\"><span class=\"pdot\"></span><span class=\"plabel\">20 眼熟</span></div>\n                      <div class=\"pnode\" style=\"left: 40%;\"><span class=\"pdot\"></span><span class=\"plabel\">40 交集</span></div>\n                      <div class=\"pnode\" style=\"left: 60%;\"><span class=\"pdot\"></span><span class=\"plabel\">60 搭话</span></div>\n                      <div class=\"pnode\" style=\"left: 80%;\"><span class=\"pdot\"></span><span class=\"plabel\">80 不设防</span></div>\n                    </div>\n                  </div>\n                  <progress id=\"prox\" value=\"0\" max=\"100\" style=\"display:none\" aria-hidden=\"true\"></progress>\n                </div>\n\n                <!-- 行为记录流水时间轴 -->\n                <ul class=\"timeline\" id=\"signal\" data-tip=\"只记事实：几点、她做了什么。为什么这么做——你自己判断。\"></ul>\n                <p class=\"assessment\" id=\"assess\" data-tip=\"「读时机」检定通过才出现的机会评估——机会等级对玩家永远不显数，只有这类模糊档位。\"></p>\n              </div>\n            </div>\n          </div>\n\n          <!-- 4. 环境战术沙盘（通栏专属卡片） -->\n          <div class=\"envbox wx-terminal-envbox\">\n            <div class=\"env-header\">\n              <h3><span class=\"section-no\">03</span><span data-tip=\"当前所在区域、场所与环境修正；战术沙盘显示相邻分支与逃跑预警。\">环境 · 战术沙盘</span></h3>\n              <span class=\"fam\" id=\"areaFam\" data-tip=\"区域熟悉度：同一区域累计 10 个场景段算熟。熟区内环境类刺激减半。\">熟悉 0/10</span>\n            </div>\n            <div class=\"env-fam-bar\">\n              <span class=\"label\">熟练度</span>\n              <div class=\"fam-meter\"><span class=\"fam-fill\" id=\"famFill\" style=\"width: 0%;\"></span></div>\n              <span id=\"famDesc\" class=\"label\">生疏</span>\n            </div>\n            <div class=\"envtags\" id=\"envTags\"></div>\n            \n            <div class=\"tactical-grid\" id=\"tacticalGrid\">\n              <div class=\"tactical-row\">\n                <span class=\"tactical-label\">相邻通路:</span>\n                <div class=\"tactical-chips\" id=\"exitChips\">\n                  <!-- 相邻出口 -->\n                </div>\n              </div>\n              <div class=\"tactical-row\" id=\"spotRow\">\n                <span class=\"tactical-label\">战术特殊位:</span>\n                <div class=\"tactical-chips\" id=\"spotChips\">\n                  <!-- 特殊位 -->\n                </div>\n              </div>\n              <div class=\"tactical-row\" id=\"alertRow\" data-tier=\"0\">\n                <span class=\"tactical-label\">她的警觉:</span>\n                <div class=\"tactical-chips\" id=\"alertChips\">\n                  <span class=\"alert-pips\" id=\"alertPips\"></span>\n                  <span class=\"alert-text\" id=\"alertText\" data-tip=\"等待状态同步\">未知</span>\n                </div>\n              </div>\n              <div class=\"tactical-row\" id=\"sanctuaryRow\">\n                <span class=\"tactical-label\">逃跑预警:</span>\n                <div class=\"tactical-chips\" id=\"sanctuaryTip\">\n                  <!-- 逃跑预测 -->\n                </div>\n              </div>\n            </div>\n          </div>\n\n          <!-- 5. 底部深页导航与音频调控底栏 -->\n          <nav class=\"links wx-terminal-links\" aria-label=\"深页和声音入口\">\n            <div class=\"links-left wx-terminal-nav-buttons\">\n              <button type=\"button\" data-wx-dialog=\"wx-profile-dialog\" data-tip=\"已解锁情报条目、打量标签、已探日程。注意：面容记忆全暗，重叠那天才知道攒了多少。\">她的档案 ↗</button>\n              <button type=\"button\" data-wx-dialog=\"wx-lies-dialog\" data-tip=\"自己埋的雷：红点=易被查证、金点=可对质、灰点=无法验证；脉点=活跃，划线=已穿帮。\">我说过的话 ↗</button>\n              <button type=\"button\" data-wx-dialog=\"wx-wanted-dialog\" data-tip=\"追缉等级与已知效果。发酵进度不可见——你不知道他们离找到你多近。\">追缉 ↗</button>\n              <button type=\"button\" data-wx-dialog=\"wx-devices-dialog\" data-tip=\"设备记录入口；暂无实时状态。\">监控设备 ↗</button>\n            </div>\n            <div class=\"audio-popover-wrap\" id=\"audioPopoverWrap\">\n              <button type=\"button\" class=\"slim-btn audio-menu-btn\" id=\"audioMenuBtn\" data-tip=\"声音与环境音效设置\" aria-expanded=\"false\">\n                <span class=\"audio-ico\" aria-hidden=\"true\" data-ico=\"music\"></span> <span class=\"audio-btn-txt\" id=\"audioBtnTxt\">声音</span>\n              </button>\n              <div class=\"audio-popover-panel\" id=\"audioPopoverPanel\" style=\"display: none;\">\n                <div class=\"audio-popover-head\">\n                  <span class=\"audio-popover-title\">环境声音调控</span>\n                  <button type=\"button\" class=\"audio-master-switch\" id=\"heartbeat-sound\" aria-pressed=\"false\">开启雨夜心跳声</button>\n                </div>\n                <div class=\"audio-sliders-group\">\n                  <label class=\"audio-slider-item\"><span>心跳</span><input type=\"range\" id=\"volHeart\" min=\"0\" max=\"100\" value=\"80\" aria-label=\"心跳音量\"></label>\n                  <label class=\"audio-slider-item\"><span>雨声</span><input type=\"range\" id=\"volRain\" min=\"0\" max=\"100\" value=\"50\" aria-label=\"环境雨声音量\"></label>\n                  <label class=\"audio-slider-item\"><span>脚步声</span><input type=\"range\" id=\"volStep\" min=\"0\" max=\"100\" value=\"70\" aria-label=\"她的脚步声量\"></label>\n                  <label class=\"audio-slider-item\"><span>耳鸣</span><input type=\"range\" id=\"volTinn\" min=\"0\" max=\"100\" value=\"25\" aria-label=\"耳鸣音量\"></label>\n                </div>\n                <div class=\"audio-popover-status\" id=\"audioStatus\">音效已关闭</div>\n              </div>\n            </div>\n          </nav>\n        </div>\n        <!-- 沉底结算条：移出 .wx-modal-body 的滚动区，做弹窗真正的页脚\n             （放在滚动区内只能靠 sticky，内容会被压在条下露出半截） -->\n        <div class=\"ledger wx-terminal-ledger\" id=\"ledger\" data-tip=\"本楼结算摘要。\">本轮暂无结算</div>\n    </dialog>\n    <dialog id=\"wx-item-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"item-title\"><div class=\"dialog-top\"><h2 id=\"item-title\">道具</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭道具详情\">×</button></div><p class=\"item-meta\" id=\"itemMeta\">尚未选择道具</p><p id=\"item-description\"></p><p class=\"label\">装备与使用以行囊操作后的结算为准。</p><div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div></dialog>\n    <dialog id=\"wx-profile-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"profile-title\"><div class=\"dialog-top\"><h2 id=\"profile-title\">她的档案</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭档案\">×</button></div>\n      <!-- 长焦偷拍取景器 -->\n      <div class=\"surv-viewfinder\">\n        <div class=\"vf-frame\" id=\"vfFrame\">\n          <span class=\"vf-corner tl\"></span><span class=\"vf-corner tr\"></span>\n          <span class=\"vf-corner bl\"></span><span class=\"vf-corner br\"></span>\n          <div class=\"vf-crosshair\"></div>\n          <div class=\"vf-header\">\n            <span class=\"vf-rec\"><i class=\"rec-dot\"></i>档案示意图</span>\n            <div style=\"display:flex;align-items:center;gap:4px;\">\n              <span class=\"vf-meta\" id=\"vfMeta\">暂无观察数据</span>\n              <span class=\"vf-af-badge\" id=\"vfAfBadge\">[ 等待 ]</span>\n            </div>\n          </div>\n          <div class=\"vf-scene\" aria-hidden=\"true\">\n            <svg class=\"vf-canvas\" viewBox=\"0 0 440 140\" preserveAspectRatio=\"xMidYMid slice\">\n              <defs>\n                <linearGradient id=\"vfNightSky\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n                  <stop offset=\"0%\" stop-color=\"#080d14\"/>\n                  <stop offset=\"60%\" stop-color=\"#111822\"/>\n                  <stop offset=\"100%\" stop-color=\"#182330\"/>\n                </linearGradient>\n                <linearGradient id=\"vfPuddleGlow\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">\n                  <stop offset=\"0%\" stop-color=\"#ffd580\" stop-opacity=\"0.25\"/>\n                  <stop offset=\"100%\" stop-color=\"#2a3848\" stop-opacity=\"0.02\"/>\n                </linearGradient>\n              </defs>\n              <rect width=\"440\" height=\"140\" fill=\"url(#vfNightSky)\"/>\n              <!-- 远景街灯晕光与便利店灯箱 -->\n              <circle cx=\"320\" cy=\"35\" r=\"45\" fill=\"#f5d483\" opacity=\"0.1\" filter=\"blur(16px)\"/>\n              <line x1=\"320\" y1=\"35\" x2=\"320\" y2=\"120\" stroke=\"#253444\" stroke-width=\"2\"/>\n              <rect x=\"35\" y=\"32\" width=\"55\" height=\"18\" rx=\"2\" fill=\"#e89d58\" opacity=\"0.2\"/>\n              <!-- 湿滑积水倒影区 -->\n              <polygon points=\"140,115 350,115 390,140 90,140\" fill=\"url(#vfPuddleGlow)\"/>\n              <!-- 雨丝线条 -->\n              <g stroke=\"#56728f\" stroke-width=\"0.8\" opacity=\"0.3\">\n                <line x1=\"40\" y1=\"10\" x2=\"30\" y2=\"40\"/><line x1=\"120\" y1=\"5\" x2=\"110\" y2=\"35\"/>\n                <line x1=\"200\" y1=\"15\" x2=\"190\" y2=\"45\"/><line x1=\"280\" y1=\"0\" x2=\"270\" y2=\"30\"/>\n                <line x1=\"360\" y1=\"20\" x2=\"350\" y2=\"50\"/><line x1=\"80\" y1=\"60\" x2=\"70\" y2=\"90\"/>\n                <line x1=\"160\" y1=\"70\" x2=\"150\" y2=\"100\"/><line x1=\"240\" y1=\"65\" x2=\"230\" y2=\"95\"/>\n                <line x1=\"320\" y1=\"55\" x2=\"310\" y2=\"85\"/><line x1=\"400\" y1=\"75\" x2=\"390\" y2=\"105\"/>\n              </g>\n              <!-- 装饰剪影：不是实拍画面 -->\n              <g transform=\"translate(215, 30)\">\n                <path d=\"M -34 30 Q 0 -2 34 30 Q 0 24 -34 30 Z\" fill=\"#17222c\" stroke=\"#36495c\" stroke-width=\"1.2\"/>\n                <ellipse cx=\"0\" cy=\"32\" rx=\"6.5\" ry=\"7.5\" fill=\"#10151c\"/>\n                <path d=\"M -6 38 Q 0 41 7 38 L 6 45 Q 0 47 -6 45 Z\" fill=\"#7a5a54\"/>\n                <path d=\"M -10 44 L -14 76 L 14 76 L 10 44 Z\" fill=\"#29333d\"/>\n                <line x1=\"-5\" y1=\"76\" x2=\"-7\" y2=\"94\" stroke=\"#161b22\" stroke-width=\"2.5\"/>\n                <line x1=\"5\" y1=\"76\" x2=\"8\" y2=\"90\" stroke=\"#161b22\" stroke-width=\"2.5\"/>\n                <rect x=\"12\" y=\"60\" width=\"8\" height=\"12\" rx=\"1.5\" fill=\"#c3d2e0\" opacity=\"0.6\"/>\n              </g>\n            </svg>\n            <div class=\"vf-scanline\"></div>\n          </div>\n          <div class=\"vf-footer\">\n            <span class=\"vf-tag\" id=\"vfTarget\">尚未选择目标</span>\n            <span class=\"vf-status\" id=\"vfStatus\">等待开局</span>\n          </div>\n        </div>\n      </div>\n      <h3 style=\"margin-top:14px\">属性 <small class=\"label\" style=\"font-weight:normal\">未查明前显示为 ？</small></h3>\n      <div class=\"pattrs\" id=\"pattrs\"><div class=\"pattr unknown\"><div class=\"an\">体格</div><div class=\"av\">？</div></div><div class=\"pattr unknown\"><div class=\"an\">敏捷</div><div class=\"av\">？</div></div><div class=\"pattr unknown\"><div class=\"an\">敏锐</div><div class=\"av\">？</div></div><div class=\"pattr unknown\"><div class=\"an\">胆量</div><div class=\"av\">？</div></div></div>\n      <h3 style=\"margin-top:14px\">身体印象</h3>\n      <div id=\"ptags\">暂无已记录的外观印象</div>\n      <h3 style=\"margin-top:14px\">已解锁情报</h3>\n      <p id=\"profileBody\">暂无已解锁情报</p><h3>已探明日程</h3><div id=\"profileSchedule\">暂无已探明日程</div>\n      <div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div></dialog>\n    <dialog id=\"wx-lies-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"lies-title\"><div class=\"dialog-top\"><h2 id=\"lies-title\">我说过的话</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭谎账\">×</button></div>\n      <div class=\"lie-legend\" data-tip=\"谎话分三档：身份职业类的谎会被查证；说法行踪类的谎可能被对质；借口感受类的谎几乎无法验证。档位越高，穿帮的雷越响。\">\n        <span><i class=\"dot v-high\"></i>查证类</span><span><i class=\"dot v-mid\"></i>对质类</span><span><i class=\"dot v-low\"></i>无法验证</span>\n      </div>\n      <div id=\"liesBody\">暂无已保存的谎言记录</div>\n      <p class=\"label\">仅显示已保存的记录。</p>\n      <div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div></dialog>\n    <dialog id=\"wx-wanted-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"wanted-title\"><div class=\"dialog-top\"><h2 id=\"wanted-title\">追缉</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭追缉\">×</button></div><p id=\"wantedBody\">当前版本未启用追缉系统。</p><p class=\"label\">此处仅保留扩展入口。</p><div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div></dialog>\n    <dialog id=\"wx-devices-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"devices-title\"><div class=\"dialog-top\"><h2 id=\"devices-title\">设备</h2><button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭设备面板\">×</button></div>\n      <div id=\"devicesBody\" class=\"label\">设备状态暂未接入，暂无可显示的设备记录。</div>\n      <div class=\"dialog-actions\"><button type=\"button\" id=\"openAlbumBtn\">相册 ↗</button><button type=\"button\" data-wx-close>返回</button></div></dialog>\n\n    <!-- ═══ 相册：贴墙收集（拍照产物） ═══ -->\n    <dialog id=\"wx-album-dialog\" class=\"wx-dialog trpg wx-album-dialog\" aria-labelledby=\"album-title\">\n      <div class=\"dialog-top\">\n        <h2 id=\"album-title\">相册 <span class=\"album-count\" id=\"albumCount\">0 / 0</span></h2>\n        <button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭相册\">×</button>\n      </div>\n      <div class=\"album-wall\" id=\"albumWall\"></div>\n      <div class=\"album-detail\" id=\"albumDetail\" hidden>\n        <img id=\"albumDetailImg\" alt=\"照片\">\n        <div class=\"album-detail-meta\" id=\"albumDetailMeta\"></div>\n      </div>\n      <div class=\"dialog-actions\"><button type=\"button\" data-wx-close>返回</button></div>\n    </dialog>\n\n    <!-- 拍照即时卡片（6 秒后自动消失） -->\n    <div class=\"photo-toast\" id=\"photoToast\" hidden>\n      <img id=\"photoToastImg\" alt=\"\">\n      <div class=\"photo-toast-txt\"><b id=\"photoToastName\"></b><span id=\"photoToastMeta\"></span></div>\n    </div>\n    <!-- ═══ 零楼 · 开局三步向导（第一步：建立角色 ➔ 第二步：选择目标；新局无档时挂载到第 0 条消息） ═══ -->\n    <div id=\"wx-zero-floor\" class=\"trpg wx-zero-floor\" role=\"region\" aria-labelledby=\"createTitle\" hidden>\n      <div data-zero-slot=\"before\"></div>\n      <div class=\"dialog-top zero-wizard-top\">\n        <div class=\"zero-title-wrap\">\n          <h2 id=\"createTitle\">零楼 · 创角向导</h2>\n          <span class=\"zero-sub\">创建角色 → 选择目标 → 训练简报</span>\n        </div>\n        <!-- 步骤导航条 -->\n        <div class=\"zero-steps-bar\" role=\"tablist\" aria-label=\"零楼向导步骤\">\n          <button type=\"button\" class=\"zero-step-pill active\" id=\"zeroStepTab1\" data-step=\"1\">\n            <span class=\"step-num\">1</span>\n            <span class=\"step-text\">建立角色</span>\n          </button>\n          <span class=\"zero-step-divider\">➔</span>\n          <button type=\"button\" class=\"zero-step-pill\" id=\"zeroStepTab2\" data-step=\"2\">\n            <span class=\"step-num\">2</span>\n            <span class=\"step-text\">选择目标</span>\n          </button>\n          <span class=\"zero-step-divider\">➔</span>\n          <button type=\"button\" class=\"zero-step-pill\" id=\"zeroStepTab3\" data-step=\"3\" disabled>\n            <span class=\"step-num\">3</span><span class=\"step-text\">训练简报</span>\n          </button>\n        </div>\n      </div>\n\n      <!-- ─── 步骤 1：猎手身份与点数 ─── -->\n      <div class=\"zero-step-view\" id=\"zeroStep1\">\n        <div class=\"create-tabs\">\n          <button type=\"button\" class=\"create-tab active\" data-ctab=\"quick\">快捷预设</button>\n          <button type=\"button\" class=\"create-tab\" data-ctab=\"custom\">自定义加点</button>\n        </div>\n        <div class=\"create-pane\" data-cpane=\"quick\" id=\"quickPane\"></div>\n        <div class=\"create-pane\" data-cpane=\"custom\" id=\"customPane\" hidden>\n          <div class=\"id-grid\" id=\"idGrid\"></div>\n          <div class=\"alloc\" id=\"allocBox\">\n            <div class=\"alloc-head\">\n              <span class=\"label\">分 20 点（每项 1~10，身份修正在此之上另算）</span>\n              <span class=\"alloc-remain\" id=\"allocRemain\">剩余 0</span>\n            </div>\n            <div id=\"allocRows\"></div>\n            <p class=\"alloc-warn\" id=\"allocWarn\"></p>\n          </div>\n        </div>\n        <div class=\"create-foot\">\n          <span class=\"create-hint\" id=\"createHint\">选一个身份，把点数分完</span>\n          <button type=\"button\" class=\"zero-btn-next\" id=\"zeroNextStep\" disabled>下一步：选择目标 ➔</button>\n        </div>\n      </div>\n\n      <!-- ─── 步骤 2：锁定目标猎物 ─── -->\n      <div class=\"zero-step-view\" id=\"zeroStep2\" hidden>\n        <div class=\"target-section-head\">\n          <span class=\"label\">选择跟踪目标（六大目标角色库 · 数据与动线插槽已预留）</span>\n          <span class=\"target-sub-note\">当前首发已完全填充：独居女大学生（2★）</span>\n        </div>\n        <div class=\"target-grid\" id=\"targetGrid\"></div>\n        <div class=\"target-detail-box\" id=\"targetDetailBox\">\n          <div class=\"target-detail-header\">\n            <div class=\"target-detail-title-wrap\">\n              <span class=\"target-detail-name\" id=\"tDetailName\">—</span>\n              <span class=\"target-detail-stars\" id=\"tDetailStars\">—</span>\n              <span class=\"target-detail-badge\" id=\"tDetailBadge\">—</span>\n              <span class=\"target-status-badge ready\" id=\"tDetailStatus\">—</span>\n            </div>\n            <div class=\"target-detail-action-wrap\">\n              <button type=\"button\" class=\"btn-reroll-target\" id=\"tDetailReroll\" title=\"重新随机摇号目标的姓名、性格、爱好与属性扰动\"><span class=\"btn-ico\" data-ico=\"dice\"></span> 重新摇号</button>\n              <span class=\"target-detail-area\" id=\"tDetailArea\">—</span>\n            </div>\n          </div>\n          <p class=\"target-detail-tagline\" id=\"tDetailTagline\">—</p>\n          <div class=\"target-detail-rows\">\n            <div class=\"target-row\"><b>目标真名</b><span class=\"target-gen-name\" id=\"tDetailRealName\">—</span><span class=\"target-gen-sub\" id=\"tDetailNameSource\">(中式姓名库 10×20 随机生成)</span></div>\n            <div class=\"target-row\"><b>性格特质</b><span id=\"tDetailPersonality\">—</span></div>\n            <div class=\"target-row\"><b>私密爱好</b><span id=\"tDetailHobby\">—</span></div>\n            <div class=\"target-row\"><b>鞋具着装</b><span id=\"tDetailShoe\">—</span></div>\n            <div class=\"target-row\"><b>特征标签</b><span id=\"tDetailFeatures\">—</span></div>\n            <div class=\"target-row\"><b>作息规律</b><span id=\"tDetailWindow\">—</span></div>\n            <div class=\"target-row\"><b>情报评估</b><span id=\"tDetailStats\">体格 <b>？</b> · 敏捷 <b>？</b> · 敏锐 <b>？</b> · 胆量 <b>？</b> · 社交 <b>？</b> <small class=\"label\" style=\"margin-left:6px\">（情报迷雾 · 打量或调查后揭示）</small></span></div>\n          </div>\n\n        </div>\n        <div class=\"create-foot\">\n          <button type=\"button\" class=\"zero-btn-prev\" id=\"zeroPrevStep\">⬅ 上一步：修改角色</button>\n          <span class=\"create-hint\" id=\"targetHint\">请选择目标</span>\n          <button type=\"button\" class=\"create-confirm\" id=\"createConfirm\">确认目标 · 查看训练简报 ➔</button>\n        </div>\n      </div>\n    <div class=\"zero-step-view training-brief\" id=\"zeroStep3\" hidden aria-labelledby=\"trainingBriefTitle\">\n  <div class=\"training-brief-topline\"><span>全息训练系统</span><span class=\"training-brief-phase\">入场简报 <i aria-hidden=\"true\"></i></span></div>\n  <div class=\"training-brief-hero\">\n    <div class=\"training-brief-intro\">\n      <p class=\"training-brief-eyebrow\"><span aria-hidden=\"true\"></span> 特工基础训练 / 序章</p>\n      <h3 id=\"trainingBriefTitle\" tabindex=\"-1\">先学会观察，<br>再走进人群。</h3>\n      <p class=\"training-brief-lead\">为保卫祖国做好准备。你将作为特工学员，进入全拟真的全息城市，练习观察、判断与隐蔽行动。</p>\n      <div class=\"training-brief-coach\"><span class=\"training-brief-coach-mark\" aria-hidden=\"true\">“</span><p>终端能帮你记住发现，<br><strong>但不会替你知道一切。</strong></p><span class=\"training-brief-coach-from\">训练提示</span></div>\n    </div>\n    <div class=\"training-brief-art\" aria-label=\"全息城市环境示意，不表示目标位置\">\n      <div class=\"training-brief-art-caption\"><span>城市环境</span><span>全息场景示意</span></div>\n      <div id=\"trainingBriefHologram\" aria-hidden=\"true\"></div>\n      <div class=\"training-brief-art-foot\"><span>观察</span><i aria-hidden=\"true\"></i><span>判断</span><i aria-hidden=\"true\"></i><span>行动</span></div>\n    </div>\n  </div>\n  <dl class=\"training-brief-assignment\">\n    <div><dt>你的掩护身份</dt><dd id=\"trainingBriefIdentity\">尚未选择</dd></div>\n    <div><dt>本次训练对象</dt><dd id=\"trainingBriefTarget\">尚未选择</dd></div>\n    <div><dt>情报获取方式</dt><dd>现场观察 · 行动调查</dd></div>\n  </dl>\n  <div class=\"training-brief-lessons\" aria-label=\"基础训练要点\">\n    <article><span class=\"training-brief-number\">01</span><div><h4>认清位置</h4><p>找到自己，分清目视位置与最后目击。</p></div></article>\n    <article><span class=\"training-brief-number\">02</span><div><h4>读懂线索</h4><p>观察与调查所得，才会成为你的情报。</p></div></article>\n    <article><span class=\"training-brief-number\">03</span><div><h4>谨慎行动</h4><p>先看行动条件与代价，再决定怎么做。</p></div></article>\n  </div>\n  <p class=\"training-brief-boundary\"><span aria-hidden=\"true\">◇</span><span>训练对象有自己的生活。她的日程与住址不会在简报中公开，需要你在场景中逐步调查。</span></p>\n  <div class=\"training-brief-footer\">\n    <button type=\"button\" class=\"training-brief-back\" id=\"trainingBriefBack\">← 返回目标选择</button>\n    <div class=\"training-brief-entry\"><span>阅读简报不消耗行动点</span><button type=\"button\" id=\"trainingBriefStart\">载入训练场 <span aria-hidden=\"true\">↗</span></button></div>\n  </div>\n  <p id=\"trainingBriefNotice\" class=\"training-brief-notice\" role=\"status\" aria-live=\"polite\"></p>\n</div>\n\n    <div data-zero-slot=\"after\"></div>\n    </div>\n    <!-- ═══ 身份徽记详情（常驻条徽记点开；含重开新局） ═══ -->\n    <dialog id=\"wx-id-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"idTitle\">\n      <div class=\"dialog-top\">\n        <h2 id=\"idTitle\">身份</h2>\n        <button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭身份详情\">×</button>\n      </div>\n      <div id=\"idDetailBody\"></div>\n      <div class=\"dialog-actions\">\n        <button type=\"button\" id=\"idResetBtn\" data-tip=\"清空本局进度，回到零楼重新选择身份与点数\">重开新局</button>\n        <button type=\"button\" data-wx-close>返回</button>\n      </div>\n    </dialog>\n    <!-- ═══ M4-2 三翼战术 Canvas 判定台（数已定，演出与生成同时进行；确认结果收面板） ═══ -->\n    <dialog id=\"wx-settle-dialog\" class=\"wx-dialog trpg\" aria-labelledby=\"settleTitle\">\n      <div class=\"dialog-top\">\n        <h2 id=\"settleTitle\">判定 · 本楼结算</h2>\n        <button type=\"button\" class=\"close-icon\" data-wx-close aria-label=\"关闭结算面板\">×</button>\n      </div>\n      <div id=\"settleBody\" class=\"settle-body\">\n        <div class=\"stage-console\" id=\"settleConsole\">\n          <!-- ① 左翼：因 · 检定态势与筹码装填 -->\n          <div class=\"wing wing-left\">\n            <div class=\"wing-header\">\n              <span class=\"wing-tag\">INPUT</span>\n              <span class=\"wing-title\">检定态势与筹码</span>\n            </div>\n            <div class=\"action-badge\" id=\"settleActBadge\">▸ 准备就绪</div>\n            <div class=\"mods-stack\" id=\"settleModsStack\"></div>\n            <div class=\"ekg-widget\">\n              <div class=\"ekg-top\">\n                <span>生理监护</span>\n                <span class=\"bpm\" id=\"settleEkgHeart\">等待结算</span>\n              </div>\n              <svg class=\"ekg-svg\" viewBox=\"0 0 200 24\" aria-hidden=\"true\">\n                <path class=\"ekg-trace\" d=\"M0,12 L35,12 L40,6 L45,18 L50,12 L80,12 L85,2 L92,22 L98,12 L130,12 L135,8 L140,16 L145,12 L200,12\"/>\n              </svg>\n            </div>\n          </div>\n\n          <!-- ② 中央：宿命 · 3D 物理晶体 20 面骰 -->\n          <div class=\"stage-center\">\n            <div class=\"corner c-tl\"></div><div class=\"corner c-tr\"></div>\n            <div class=\"corner c-bl\"></div><div class=\"corner c-br\"></div>\n            <div class=\"hud-status\" id=\"settleHudStatus\">TARGET TRACKING · D20 READY</div>\n            <div class=\"radar-ring\"></div>\n            <div class=\"die-stage-center\">\n              <div class=\"die-shadow\" id=\"settleDieShadow\"></div>\n              <canvas id=\"settleDieCanvas\" width=\"500\" height=\"500\"></canvas>\n            </div>\n            <div class=\"flash-overlay\" id=\"settleFlashOverlay\"></div>\n          </div>\n\n          <!-- ③ 右翼：果 · 判定结论与即时账目 -->\n          <div class=\"wing wing-right\">\n            <div class=\"wing-header\">\n              <span class=\"wing-tag\">OUTPUT</span>\n              <span class=\"wing-title\">判定结论与账目</span>\n            </div>\n            <div class=\"verdict-box\">\n              <div class=\"verdict-badge\" id=\"settleVerdictBadge\">待判定</div>\n              <div class=\"math-line\" id=\"settleMathLine\">—</div>\n            </div>\n            <div class=\"ledger-wrap\" id=\"settleLedgerWrap\">\n              <div class=\"ledger-row show\"><span>等待掷骰结果落定 …</span></div>\n            </div>\n            <div class=\"dark-reveal-card\" id=\"settleDarkRevealCard\"></div>\n            <div class=\"queue-history\" id=\"settleQueueHistory\" style=\"display:none;\"></div>\n          </div>\n        </div>\n      </div>\n      <div class=\"dialog-actions settle-actions\">\n        <label class=\"settle-auto\"><input type=\"checkbox\" id=\"settleAuto\"> 自动掷（跳过面板，旧流程结算）</label>\n        <button type=\"button\" id=\"settleAck\" class=\"settle-ack\">确认结果</button>\n      </div>\n    </dialog>";
 
     if (sendForm && sendForm.parentNode) {
       sendForm.parentNode.insertBefore(root, sendForm);

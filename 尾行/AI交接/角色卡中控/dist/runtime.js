@@ -191,7 +191,7 @@
               id: "student",
               name: "\u5B66\u751F",
               mods: { agi: 1, int: 1 },
-              freePass: ["school_gate_b", "school_bus_terminal_b"],
+              freePass: ["school_gate_b", "school_bus_terminal_b", "high_school_gate_b"],
               tags: [],
               desc: "\u6587\u6559\u533A\u95E8\u7981\u514D\u68C0\uFF1B\u65E0\u672C\u804C\u5DE5\u79CD\uFF08\u96F6\u5DE5\u539F\u4EF7\uFF09\uFF0C\u6B63\u9762\u4E0D\u5F3A\u4E0D\u5E26\u8D1F\u9762"
             },
@@ -3214,57 +3214,34 @@
           A: {
             id: "A",
             name: "\u4E2D\u57CECBD\u5546\u52A1\u533A",
-            sectors: [
-              "A-1",
-              "A-2",
-              "A-3"
-            ],
-            transit_ports: [
-              "metro_hub_a",
-              "bus_bay_a"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_a_surface.ogg"
+            sectors: ["A-1", "A-2", "A-3", "A-4", "A-5"],
+            transit_ports: ["metro_hub_a", "bus_bay_a"],
+            audio_ambient: "assets/audio/ambient/zone_a_surface.ogg",
+            setting: "urban"
           },
           B: {
             id: "B",
             name: "\u8001\u57CE\u6587\u6559\u533A",
-            sectors: [
-              "B-1",
-              "B-2",
-              "B-3"
-            ],
-            transit_ports: [
-              "school_bus_terminal_b",
-              "old_metro_b"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_b_street.ogg"
+            sectors: ["B-1", "B-2", "B-3", "B-4", "B-5"],
+            transit_ports: ["school_bus_terminal_b", "old_metro_b"],
+            audio_ambient: "assets/audio/ambient/zone_b_street.ogg",
+            setting: "urban"
           },
           C: {
             id: "C",
             name: "\u4E34\u6C5F\u5A31\u4E50\u7EA2\u706F\u533A",
-            sectors: [
-              "C-1",
-              "C-2",
-              "C-3"
-            ],
-            transit_ports: [
-              "dock_bus_stop_c",
-              "bridge_head_c"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_c_clubstreet.ogg"
+            sectors: ["C-1", "C-2", "C-3", "C-4"],
+            transit_ports: ["dock_bus_stop_c", "bridge_head_c"],
+            audio_ambient: "assets/audio/ambient/zone_c_clubstreet.ogg",
+            setting: "urban"
           },
           D: {
             id: "D",
             name: "\u90CA\u91CE\u8C6A\u5B85\u533A",
-            sectors: [
-              "D-1",
-              "D-2",
-              "D-3"
-            ],
-            transit_ports: [
-              "suburb_highway_d"
-            ],
-            audio_ambient: "assets/audio/ambient/zone_d_road.ogg"
+            sectors: ["D-1", "D-2", "D-3"],
+            transit_ports: ["suburb_highway_d"],
+            audio_ambient: "assets/audio/ambient/zone_d_road.ogg",
+            setting: "suburb"
           }
         },
         places: {
@@ -3281,20 +3258,10 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "skybridge_a",
-              "metro_hub_a",
-              "parking_b2_a",
-              "back_alley_a"
-            ],
-            spots: [
-              "reception",
-              "security_clock"
-            ],
+            exits: ["skybridge_a", "metro_hub_a", "parking_b2_a", "back_alley_a"],
+            spots: ["reception", "security_clock"],
             audio_trigger: "footstep_marble",
-            free_pass: [
-              "guard"
-            ]
+            free_pass: ["guard"]
           },
           parking_b2_a: {
             id: "parking_b2_a",
@@ -3309,18 +3276,10 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "office_lobby_a",
-              "trash_station_a"
-            ],
-            spots: [
-              "pillar_hide",
-              "tire_screech"
-            ],
+            exits: ["office_lobby_a", "trash_station_a"],
+            spots: ["pillar_hide", "tire_screech"],
             audio_ambient: "assets/audio/ambient/zone_a_parking.ogg",
-            free_pass: [
-              "guard"
-            ]
+            free_pass: ["guard"]
           },
           skybridge_a: {
             id: "skybridge_a",
@@ -3335,14 +3294,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "office_lobby_a",
-              "metro_hub_a",
-              "bus_bay_a"
-            ],
-            spots: [
-              "perch_watch"
-            ]
+            exits: ["office_lobby_a", "metro_hub_a", "bus_bay_a"],
+            spots: ["perch_watch"]
           },
           metro_hub_a: {
             id: "metro_hub_a",
@@ -3361,12 +3314,27 @@
               "office_lobby_a",
               "skybridge_a",
               "store_24h_a",
-              "bus_bay_a"
+              "bus_bay_a",
+              "central_mall_a",
+              "bank_a",
+              "business_cafe_a",
+              "clinic_a",
+              "business_hotel_a",
+              "central_plaza_a",
+              "pedestrian_street_a",
+              "department_store_a",
+              "cinema_a",
+              "gym_a",
+              "restaurant_a",
+              "courier_a",
+              "taxi_rank_a",
+              "public_parking_a",
+              "apartment_plaza_a",
+              "coworking_a",
+              "electronics_a",
+              "station_square_a"
             ],
-            spots: [
-              "ticket_gate",
-              "sunken_plaza"
-            ]
+            spots: ["ticket_gate", "sunken_plaza"]
           },
           bus_bay_a: {
             id: "bus_bay_a",
@@ -3381,13 +3349,8 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: true,
-            exits: [
-              "metro_hub_a",
-              "skybridge_a"
-            ],
-            spots: [
-              "bus_wait"
-            ]
+            exits: ["metro_hub_a", "skybridge_a"],
+            spots: ["bus_wait"]
           },
           store_24h_a: {
             id: "store_24h_a",
@@ -3402,14 +3365,8 @@
             strike_sealed: true,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "metro_hub_a",
-              "office_lobby_a"
-            ],
-            spots: [
-              "window_watch",
-              "exit_watch"
-            ]
+            exits: ["metro_hub_a", "office_lobby_a"],
+            spots: ["window_watch", "exit_watch"]
           },
           back_alley_a: {
             id: "back_alley_a",
@@ -3424,14 +3381,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "office_lobby_a",
-              "trash_station_a"
-            ],
-            spots: [
-              "fan_mask",
-              "ebike_hide"
-            ]
+            exits: ["office_lobby_a", "trash_station_a"],
+            spots: ["fan_mask", "ebike_hide"]
           },
           trash_station_a: {
             id: "trash_station_a",
@@ -3446,13 +3397,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "back_alley_a",
-              "parking_b2_a"
-            ],
-            spots: [
-              "trash_search"
-            ]
+            exits: ["back_alley_a", "parking_b2_a"],
+            spots: ["trash_search"]
           },
           school_gate_b: {
             id: "school_gate_b",
@@ -3469,15 +3415,15 @@
             transit_port: false,
             exits: [
               "school_bus_terminal_b",
-              "old_skybridge_b"
+              "old_skybridge_b",
+              "university_library_b",
+              "university_canteen_b",
+              "university_sports_b",
+              "university_dorm_gate_b"
             ],
-            spots: [
-              "gate_watch",
-              "rush_mask"
-            ],
-            free_pass: [
-              "student"
-            ]
+            spots: ["gate_watch", "rush_mask"],
+            free_pass: ["student"],
+            mapName: "\u5927\u5B66\u6B63\u95E8"
           },
           school_bus_terminal_b: {
             id: "school_bus_terminal_b",
@@ -3495,14 +3441,13 @@
             exits: [
               "school_gate_b",
               "old_skybridge_b",
-              "old_metro_b"
+              "old_metro_b",
+              "high_school_gate_b",
+              "campus_bookshop_b",
+              "campus_cafe_b"
             ],
-            spots: [
-              "bus_wait"
-            ],
-            free_pass: [
-              "student"
-            ]
+            spots: ["bus_wait"],
+            free_pass: ["student"]
           },
           old_metro_b: {
             id: "old_metro_b",
@@ -3517,14 +3462,8 @@
             strike_sealed: true,
             sanctuary: true,
             transit_port: true,
-            exits: [
-              "school_bus_terminal_b",
-              "old_skybridge_b",
-              "store_24h_b"
-            ],
-            spots: [
-              "ticket_gate"
-            ]
+            exits: ["school_bus_terminal_b", "old_skybridge_b", "store_24h_b"],
+            spots: ["ticket_gate"]
           },
           old_skybridge_b: {
             id: "old_skybridge_b",
@@ -3545,9 +3484,7 @@
               "store_24h_b",
               "old_park_b"
             ],
-            spots: [
-              "perch_watch"
-            ]
+            spots: ["perch_watch"]
           },
           store_24h_b: {
             id: "store_24h_b",
@@ -3565,12 +3502,10 @@
             exits: [
               "old_skybridge_b",
               "old_metro_b",
-              "old_alley_main_b"
+              "old_alley_main_b",
+              "student_street_b"
             ],
-            spots: [
-              "window_watch",
-              "exit_watch"
-            ]
+            spots: ["window_watch", "exit_watch"]
           },
           old_park_b: {
             id: "old_park_b",
@@ -3585,15 +3520,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_skybridge_b",
-              "old_alley_main_b",
-              "player_base_b"
-            ],
-            spots: [
-              "park_bench",
-              "tree_hide"
-            ]
+            exits: ["old_skybridge_b", "old_alley_main_b", "player_base_b"],
+            spots: ["park_bench", "tree_hide"]
           },
           old_alley_main_b: {
             id: "old_alley_main_b",
@@ -3615,10 +3543,7 @@
               "dead_end_b",
               "love_hotel_b"
             ],
-            spots: [
-              "sodium_lamp",
-              "corner_shadow"
-            ]
+            spots: ["sodium_lamp", "corner_shadow"]
           },
           dark_blind_alley_b: {
             id: "dark_blind_alley_b",
@@ -3633,14 +3558,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_alley_main_b",
-              "unit_stairs_b"
-            ],
-            spots: [
-              "trash_hide",
-              "bike_hide"
-            ]
+            exits: ["old_alley_main_b", "unit_stairs_b"],
+            spots: ["trash_hide", "bike_hide"]
           },
           dead_end_b: {
             id: "dead_end_b",
@@ -3655,13 +3574,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_alley_main_b",
-              "love_hotel_b"
-            ],
-            spots: [
-              "trap_corner"
-            ]
+            exits: ["old_alley_main_b", "love_hotel_b"],
+            spots: ["trap_corner"]
           },
           love_hotel_b: {
             id: "love_hotel_b",
@@ -3676,15 +3590,8 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_alley_main_b",
-              "dead_end_b"
-            ],
-            spots: [
-              "hotel_neon_sign",
-              "rain_canopy",
-              "front_desk"
-            ]
+            exits: ["old_alley_main_b", "dead_end_b"],
+            spots: ["hotel_neon_sign", "rain_canopy", "front_desk"]
           },
           unit_stairs_b: {
             id: "unit_stairs_b",
@@ -3699,18 +3606,9 @@
             strike_sealed: false,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "dark_blind_alley_b",
-              "rooftop_b"
-            ],
-            spots: [
-              "listen_home",
-              "door_crack",
-              "try_handle"
-            ],
-            free_pass: [
-              "guard"
-            ]
+            exits: ["dark_blind_alley_b", "rooftop_b"],
+            spots: ["listen_home", "door_crack", "try_handle"],
+            free_pass: ["guard"]
           },
           rooftop_b: {
             id: "rooftop_b",
@@ -3725,13 +3623,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "unit_stairs_b"
-            ],
-            spots: [
-              "perch_watch",
-              "climb_point"
-            ]
+            exits: ["unit_stairs_b"],
+            spots: ["perch_watch", "climb_point"]
           },
           club_backdoor_c: {
             id: "club_backdoor_c",
@@ -3746,16 +3639,9 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "food_street_c",
-              "river_walk_c"
-            ],
-            spots: [
-              "drunk_exit"
-            ],
-            free_pass: [
-              "bartender"
-            ]
+            exits: ["food_street_c", "river_walk_c"],
+            spots: ["drunk_exit"],
+            free_pass: ["bartender"]
           },
           food_street_c: {
             id: "food_street_c",
@@ -3773,14 +3659,11 @@
             exits: [
               "club_backdoor_c",
               "store_24h_c",
-              "dock_bus_stop_c"
+              "dock_bus_stop_c",
+              "bar_street_c"
             ],
-            spots: [
-              "carpool_stand"
-            ],
-            free_pass: [
-              "bartender"
-            ]
+            spots: ["carpool_stand"],
+            free_pass: ["bartender"]
           },
           dock_bus_stop_c: {
             id: "dock_bus_stop_c",
@@ -3797,11 +3680,13 @@
             transit_port: true,
             exits: [
               "food_street_c",
-              "bridge_head_c"
+              "bridge_head_c",
+              "ktv_c",
+              "hotel_c",
+              "late_restaurant_c",
+              "livehouse_c"
             ],
-            spots: [
-              "bus_wait"
-            ]
+            spots: ["bus_wait"]
           },
           bridge_head_c: {
             id: "bridge_head_c",
@@ -3816,13 +3701,8 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: true,
-            exits: [
-              "dock_bus_stop_c",
-              "river_walk_c"
-            ],
-            spots: [
-              "bridge_view"
-            ]
+            exits: ["dock_bus_stop_c", "river_walk_c"],
+            spots: ["bridge_view"]
           },
           store_24h_c: {
             id: "store_24h_c",
@@ -3837,14 +3717,8 @@
             strike_sealed: true,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "food_street_c",
-              "village_main_c"
-            ],
-            spots: [
-              "window_watch",
-              "hangover_cure"
-            ]
+            exits: ["food_street_c", "village_main_c"],
+            spots: ["window_watch", "hangover_cure"]
           },
           river_walk_c: {
             id: "river_walk_c",
@@ -3859,15 +3733,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "club_backdoor_c",
-              "river_steps_c",
-              "bridge_head_c"
-            ],
-            spots: [
-              "river_rail",
-              "sober_walk"
-            ]
+            exits: ["club_backdoor_c", "river_steps_c", "bridge_head_c"],
+            spots: ["river_rail", "sober_walk"]
           },
           river_steps_c: {
             id: "river_steps_c",
@@ -3882,14 +3749,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "river_walk_c",
-              "village_main_c"
-            ],
-            spots: [
-              "vomit_point",
-              "reed_hide"
-            ]
+            exits: ["river_walk_c", "village_main_c"],
+            spots: ["vomit_point", "reed_hide"]
           },
           village_main_c: {
             id: "village_main_c",
@@ -3908,11 +3769,11 @@
               "store_24h_c",
               "river_steps_c",
               "narrow_gap_c",
-              "black_market_c"
+              "black_market_c",
+              "courier_c",
+              "laundry_c"
             ],
-            spots: [
-              "wet_pavement"
-            ]
+            spots: ["wet_pavement"]
           },
           narrow_gap_c: {
             id: "narrow_gap_c",
@@ -3927,14 +3788,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "village_main_c",
-              "rental_iron_door_c"
-            ],
-            spots: [
-              "aircon_drip",
-              "ambush_corner"
-            ]
+            exits: ["village_main_c", "rental_iron_door_c"],
+            spots: ["aircon_drip", "ambush_corner"]
           },
           rental_iron_door_c: {
             id: "rental_iron_door_c",
@@ -3949,14 +3804,8 @@
             strike_sealed: false,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "narrow_gap_c",
-              "village_roof_c"
-            ],
-            spots: [
-              "spiral_stairs",
-              "listen_home"
-            ]
+            exits: ["narrow_gap_c", "village_roof_c"],
+            spots: ["spiral_stairs", "listen_home"]
           },
           village_roof_c: {
             id: "village_roof_c",
@@ -3971,13 +3820,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "rental_iron_door_c"
-            ],
-            spots: [
-              "clothesline_hide",
-              "overlook"
-            ]
+            exits: ["rental_iron_door_c"],
+            spots: ["clothesline_hide", "overlook"]
           },
           suburb_highway_d: {
             id: "suburb_highway_d",
@@ -3992,13 +3836,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: true,
-            exits: [
-              "gas_station_d",
-              "private_road_d"
-            ],
-            spots: [
-              "curve_hide"
-            ]
+            exits: ["gas_station_d", "private_road_d"],
+            spots: ["curve_hide"]
           },
           gas_station_d: {
             id: "gas_station_d",
@@ -4013,14 +3852,8 @@
             strike_sealed: true,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "suburb_highway_d",
-              "private_road_d"
-            ],
-            spots: [
-              "mart_cashier",
-              "pump_island"
-            ]
+            exits: ["suburb_highway_d", "private_road_d"],
+            spots: ["mart_cashier", "pump_island"]
           },
           private_road_d: {
             id: "private_road_d",
@@ -4041,10 +3874,7 @@
               "pine_forest_d",
               "estate_gate_d"
             ],
-            spots: [
-              "open_road",
-              "patrol_watch"
-            ]
+            spots: ["open_road", "patrol_watch"]
           },
           pine_forest_d: {
             id: "pine_forest_d",
@@ -4059,14 +3889,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "private_road_d",
-              "estate_gate_d"
-            ],
-            spots: [
-              "ebike_cache",
-              "tree_ambush"
-            ]
+            exits: ["private_road_d", "estate_gate_d"],
+            spots: ["ebike_cache", "tree_ambush"]
           },
           estate_gate_d: {
             id: "estate_gate_d",
@@ -4081,15 +3905,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "private_road_d",
-              "pine_forest_d",
-              "villa_garden_d"
-            ],
-            spots: [
-              "gate_intercom",
-              "infrared_cam"
-            ]
+            exits: ["private_road_d", "pine_forest_d", "villa_garden_d"],
+            spots: ["gate_intercom", "infrared_cam"]
           },
           villa_garden_d: {
             id: "villa_garden_d",
@@ -4104,15 +3921,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "estate_gate_d",
-              "garage_side_door_d",
-              "villa_porch_d"
-            ],
-            spots: [
-              "dog_kennel",
-              "sprinkler"
-            ]
+            exits: ["estate_gate_d", "garage_side_door_d", "villa_porch_d"],
+            spots: ["dog_kennel", "sprinkler"]
           },
           garage_side_door_d: {
             id: "garage_side_door_d",
@@ -4127,13 +3937,8 @@
             strike_sealed: false,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "villa_garden_d",
-              "villa_porch_d"
-            ],
-            spots: [
-              "pick_side_door"
-            ]
+            exits: ["villa_garden_d", "villa_porch_d"],
+            spots: ["pick_side_door"]
           },
           villa_porch_d: {
             id: "villa_porch_d",
@@ -4148,14 +3953,8 @@
             strike_sealed: false,
             sanctuary: true,
             transit_port: false,
-            exits: [
-              "villa_garden_d",
-              "garage_side_door_d"
-            ],
-            spots: [
-              "smart_lock",
-              "home_safe"
-            ]
+            exits: ["villa_garden_d", "garage_side_door_d"],
+            spots: ["smart_lock", "home_safe"]
           },
           player_base_b: {
             id: "player_base_b",
@@ -4170,9 +3969,7 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "old_park_b"
-            ],
+            exits: ["old_park_b"],
             spots: []
           },
           black_market_c: {
@@ -4188,10 +3985,702 @@
             strike_sealed: true,
             sanctuary: false,
             transit_port: false,
-            exits: [
-              "village_main_c"
-            ],
+            exits: ["village_main_c"],
             spots: []
+          },
+          central_mall_a: {
+            id: "central_mall_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u4E2D\u57CE\u7EFC\u5408\u5546\u573A",
+            mapName: "\u4E2D\u57CE\u7EFC\u5408\u5546\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "mall",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          bank_a: {
+            id: "bank_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u94F6\u884C\u8425\u4E1A\u5385",
+            mapName: "\u94F6\u884C\u8425\u4E1A\u5385",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          business_cafe_a: {
+            id: "business_cafe_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u5546\u52A1\u5496\u5561\u9986",
+            mapName: "\u5546\u52A1\u5496\u5561\u9986",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          clinic_a: {
+            id: "clinic_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u7EFC\u5408\u95E8\u8BCA",
+            mapName: "\u7EFC\u5408\u95E8\u8BCA",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          business_hotel_a: {
+            id: "business_hotel_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u5546\u52A1\u9152\u5E97",
+            mapName: "\u5546\u52A1\u9152\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "hotel",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          central_plaza_a: {
+            id: "central_plaza_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u4E2D\u5FC3\u5E7F\u573A",
+            mapName: "\u4E2D\u5FC3\u5E7F\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "plaza",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          pedestrian_street_a: {
+            id: "pedestrian_street_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u5546\u4E1A\u6B65\u884C\u8857",
+            mapName: "\u5546\u4E1A\u6B65\u884C\u8857",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "market",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          department_store_a: {
+            id: "department_store_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u767E\u8D27\u5546\u573A",
+            mapName: "\u767E\u8D27\u5546\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "mall",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          cinema_a: {
+            id: "cinema_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u57CE\u5E02\u5F71\u57CE",
+            mapName: "\u57CE\u5E02\u5F71\u57CE",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          gym_a: {
+            id: "gym_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u5065\u8EAB\u4E2D\u5FC3",
+            mapName: "\u5065\u8EAB\u4E2D\u5FC3",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          restaurant_a: {
+            id: "restaurant_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u5546\u52A1\u9910\u5385",
+            mapName: "\u5546\u52A1\u9910\u5385",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          courier_a: {
+            id: "courier_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u5FEB\u9012\u9A7F\u7AD9",
+            mapName: "\u5FEB\u9012\u9A7F\u7AD9",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          taxi_rank_a: {
+            id: "taxi_rank_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u51FA\u79DF\u8F66\u5019\u8F66\u70B9",
+            mapName: "\u51FA\u79DF\u8F66\u5019\u8F66\u70B9",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "transit",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          public_parking_a: {
+            id: "public_parking_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u516C\u5171\u505C\u8F66\u573A",
+            mapName: "\u516C\u5171\u505C\u8F66\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "parking",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          apartment_plaza_a: {
+            id: "apartment_plaza_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u516C\u5BD3\u5E7F\u573A",
+            mapName: "\u516C\u5BD3\u5E7F\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "housing",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          coworking_a: {
+            id: "coworking_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u8054\u5408\u529E\u516C\u697C",
+            mapName: "\u8054\u5408\u529E\u516C\u697C",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "office",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          electronics_a: {
+            id: "electronics_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u6570\u7801\u5546\u57CE",
+            mapName: "\u6570\u7801\u5546\u57CE",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "mall",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          station_square_a: {
+            id: "station_square_a",
+            district: "A",
+            sector: "A-2",
+            name: "\u7AD9\u524D\u5E7F\u573A",
+            mapName: "\u7AD9\u524D\u5E7F\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "plaza",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          high_school_gate_b: {
+            id: "high_school_gate_b",
+            district: "B",
+            sector: "B-5",
+            name: "\u9AD8\u4E2D\u6B63\u95E8",
+            mapName: "\u9AD8\u4E2D\u6B63\u95E8",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_bus_terminal_b"],
+            spots: [],
+            facility: {
+              kind: "school",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            },
+            free_pass: ["student"]
+          },
+          university_library_b: {
+            id: "university_library_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u56FE\u4E66\u9986",
+            mapName: "\u5927\u5B66\u56FE\u4E66\u9986",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "library",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          university_canteen_b: {
+            id: "university_canteen_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u98DF\u5802",
+            mapName: "\u5927\u5B66\u98DF\u5802",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          university_sports_b: {
+            id: "university_sports_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u8FD0\u52A8\u573A",
+            mapName: "\u5927\u5B66\u8FD0\u52A8\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "sports",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          campus_bookshop_b: {
+            id: "campus_bookshop_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5B66\u5E9C\u4E66\u5E97",
+            mapName: "\u5B66\u5E9C\u4E66\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_bus_terminal_b"],
+            spots: [],
+            facility: {
+              kind: "library",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          campus_cafe_b: {
+            id: "campus_cafe_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5B66\u5E9C\u5496\u5561\u9986",
+            mapName: "\u5B66\u5E9C\u5496\u5561\u9986",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_bus_terminal_b"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          student_street_b: {
+            id: "student_street_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5B66\u751F\u751F\u6D3B\u8857",
+            mapName: "\u5B66\u751F\u751F\u6D3B\u8857",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["store_24h_b"],
+            spots: [],
+            facility: {
+              kind: "market",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          university_dorm_gate_b: {
+            id: "university_dorm_gate_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3",
+            mapName: "\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "housing",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          bar_street_c: {
+            id: "bar_street_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u9713\u8679\u9152\u5427\u8857",
+            mapName: "\u9713\u8679\u9152\u5427\u8857",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["food_street_c"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          ktv_c: {
+            id: "ktv_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u591C\u95F4\u6B4C\u5385",
+            mapName: "\u591C\u95F4\u6B4C\u5385",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          hotel_c: {
+            id: "hotel_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u4E34\u6C5F\u65C5\u9986",
+            mapName: "\u4E34\u6C5F\u65C5\u9986",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "hotel",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          late_restaurant_c: {
+            id: "late_restaurant_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u6DF1\u591C\u98DF\u5802",
+            mapName: "\u6DF1\u591C\u98DF\u5802",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          livehouse_c: {
+            id: "livehouse_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u73B0\u573A\u97F3\u4E50\u9152\u5427",
+            mapName: "\u73B0\u573A\u97F3\u4E50\u9152\u5427",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          courier_c: {
+            id: "courier_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9",
+            mapName: "\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["village_main_c"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          laundry_c: {
+            id: "laundry_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u81EA\u52A9\u6D17\u8863\u5E97",
+            mapName: "\u81EA\u52A9\u6D17\u8863\u5E97",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["village_main_c"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
           }
         }
       };
@@ -4498,6 +4987,12 @@
                   name: "\u6574\u7406\u4E66\u5305",
                   fumbling: true,
                   desc: "\u8D70\u51FA\u6821\u95E8\u540E\u5728\u660F\u6697\u95E8\u67F1\u65C1\u505C\u6B65\uFF0C\u62C9\u4E25\u6C89\u91CD\u4E66\u5305\u7684\u62C9\u94FE\u5E76\u7CFB\u7D27\u56F4\u5DFE"
+                },
+                high_school_gate_b: {
+                  id: "bag_tidy",
+                  name: "\u6574\u7406\u4E66\u5305",
+                  fumbling: true,
+                  desc: "\u8D70\u51FA\u6821\u95E8\u540E\u5728\u660F\u6697\u95E8\u67F1\u65C1\u505C\u6B65\uFF0C\u62C9\u4E25\u6C89\u91CD\u4E66\u5305\u7684\u62C9\u94FE\u5E76\u7CFB\u7D27\u56F4\u5DFE"
                 }
               },
               carriagePool: [
@@ -4605,7 +5100,7 @@
                 prompt: "\u767D\u63CF\u665A\u81EA\u4E60\u653E\u5B66\u540E\u7684\u6821\u95E8\u4EBA\u6F6E\u4E0E\u6DF1\u5DF7\u66AE\u8272\uFF0C\u524D\u534A\u7A0B\u4E0E\u540C\u4F34\u7ED3\u4F34\u4F4E\u8BED\uFF0C\u5728\u5B66\u533A\u516C\u4EA4\u7AD9\u544A\u522B\u540E\u72EC\u81EA\u62D0\u5165\u8001\u5DF7",
                 path: [
                   {
-                    place: "school_gate_b",
+                    place: "high_school_gate_b",
                     t: "2100"
                   },
                   {
@@ -4635,7 +5130,7 @@
                 prompt: "\u767D\u63CF\u5468\u4E94\u5355\u4EBA\u503C\u65E5\u5173\u95E8\u540E\u7684\u5BC2\u9759\u591C\u8272\uFF0C\u624B\u63D0\u6C89\u91CD\u4E66\u5305\u4F4E\u5934\u5FEB\u6B65\u72EC\u884C\uFF0C\u6574\u6761\u5F52\u9014\u65E0\u540C\u4F34\u63A9\u62A4",
                 path: [
                   {
-                    place: "school_gate_b",
+                    place: "high_school_gate_b",
                     t: "2130"
                   },
                   {
@@ -4829,7 +5324,7 @@
                 public: false,
                 title: "\u653E\u5B66\u65F6\u95F4",
                 text: "\u5E73\u65E5\u665A\u81EA\u4E6021:00\u51C6\u65F6\u6253\u94C3\u4E0B\u8BFE\uFF0C\u5468\u4E94\u503C\u65E5\u4F1A\u665A\u8D70\u7EA6\u534A\u5C0F\u65F6\u3002",
-                place: "school_gate_b",
+                place: "high_school_gate_b",
                 reveal_via: []
               },
               {
@@ -4930,7 +5425,7 @@
                 public: false,
                 title: "\u5355\u604B\u5FC3\u4E8B",
                 text: "\u6697\u604B\u9694\u58C1\u73ED\u7684\u5347\u5B66\u699C\u7B2C\u4E00\u540D\uFF0C\u4F46\u81EA\u5C0A\u5FC3\u8981\u5F3A\u4ECE\u4E0D\u6562\u642D\u8BDD\uFF0C\u6BCF\u5929\u653E\u5B66\u4F1A\u6545\u610F\u4ECE\u90A3\u95F4\u6559\u5BA4\u95E8\u524D\u8D70\u8FC7\u3002",
-                place: "school_gate_b",
+                place: "high_school_gate_b",
                 reveal_via: [
                   "ransack",
                   "audit_class"
@@ -9927,214 +10422,110 @@
     "src/config/city-layout.json"(exports, module) {
       module.exports = {
         schema: 1,
-        width: 1440,
-        height: 1300,
+        width: 2100,
+        height: 2140,
         frames: {
           B: {
-            x: 60,
-            y: 100,
-            width: 620,
-            height: 480
+            x: 80,
+            y: 760,
+            width: 760,
+            height: 560
           },
           D: {
-            x: 760,
-            y: 100,
-            width: 620,
-            height: 480
+            x: 1410,
+            y: 80,
+            width: 600,
+            height: 420
           },
           C: {
-            x: 60,
-            y: 680,
-            width: 620,
-            height: 480
+            x: 80,
+            y: 1430,
+            width: 800,
+            height: 560
           },
           A: {
-            x: 760,
-            y: 680,
-            width: 620,
-            height: 480
+            x: 1060,
+            y: 950,
+            width: 960,
+            height: 800
           }
         },
         coordinates: {
-          office_lobby_a: [
-            122,
-            90
-          ],
-          parking_b2_a: [
-            122,
-            225
-          ],
-          skybridge_a: [
-            250,
-            145
-          ],
-          metro_hub_a: [
-            350,
-            225
-          ],
-          bus_bay_a: [
-            545,
-            90
-          ],
-          store_24h_a: [
-            545,
-            350
-          ],
-          back_alley_a: [
-            350,
-            350
-          ],
-          trash_station_a: [
-            122,
-            390
-          ],
-          school_gate_b: [
-            122,
-            90
-          ],
-          school_bus_terminal_b: [
-            355,
-            90
-          ],
-          old_metro_b: [
-            545,
-            225
-          ],
-          old_skybridge_b: [
-            250,
-            145
-          ],
-          store_24h_b: [
-            355,
-            225
-          ],
-          old_park_b: [
-            180,
-            225
-          ],
-          old_alley_main_b: [
-            350,
-            350
-          ],
-          dark_blind_alley_b: [
-            465,
-            375
-          ],
-          unit_stairs_b: [
-            545,
-            345
-          ],
-          rooftop_b: [
-            545,
-            395
-          ],
-          dead_end_b: [
-            90,
-            350
-          ],
-          love_hotel_b: [
-            175,
-            435
-          ],
-          player_base_b: [
-            75,
-            225
-          ],
-          club_backdoor_c: [
-            115,
-            90
-          ],
-          food_street_c: [
-            355,
-            90
-          ],
-          dock_bus_stop_c: [
-            545,
-            90
-          ],
-          bridge_head_c: [
-            570,
-            425
-          ],
-          store_24h_c: [
-            355,
-            225
-          ],
-          river_walk_c: [
-            430,
-            450
-          ],
-          river_steps_c: [
-            535,
-            470
-          ],
-          village_main_c: [
-            170,
-            350
-          ],
-          narrow_gap_c: [
-            250,
-            375
-          ],
-          rental_iron_door_c: [
-            355,
-            345
-          ],
-          village_roof_c: [
-            355,
-            395
-          ],
-          black_market_c: [
-            100,
-            395
-          ],
-          suburb_highway_d: [
-            430,
-            390
-          ],
-          gas_station_d: [
-            140,
-            440
-          ],
-          private_road_d: [
-            320,
-            335
-          ],
-          pine_forest_d: [
-            140,
-            205
-          ],
-          estate_gate_d: [
-            320,
-            285
-          ],
-          villa_garden_d: [
-            470,
-            225
-          ],
-          garage_side_door_d: [
-            390,
-            110
-          ],
-          villa_porch_d: [
-            540,
-            110
-          ]
+          office_lobby_a: [122, 90],
+          parking_b2_a: [122, 225],
+          skybridge_a: [250, 145],
+          metro_hub_a: [350, 225],
+          bus_bay_a: [545, 90],
+          store_24h_a: [545, 350],
+          back_alley_a: [350, 350],
+          trash_station_a: [122, 390],
+          school_gate_b: [140, 100],
+          school_bus_terminal_b: [355, 190],
+          old_metro_b: [685, 265],
+          old_skybridge_b: [250, 150],
+          store_24h_b: [355, 285],
+          old_park_b: [180, 285],
+          old_alley_main_b: [350, 410],
+          dark_blind_alley_b: [465, 435],
+          unit_stairs_b: [685, 405],
+          rooftop_b: [685, 455],
+          dead_end_b: [90, 410],
+          love_hotel_b: [175, 500],
+          player_base_b: [75, 285],
+          club_backdoor_c: [115, 90],
+          food_street_c: [355, 90],
+          dock_bus_stop_c: [545, 90],
+          bridge_head_c: [765, 450],
+          store_24h_c: [355, 225],
+          river_walk_c: [430, 525],
+          river_steps_c: [535, 550],
+          village_main_c: [170, 350],
+          narrow_gap_c: [250, 375],
+          rental_iron_door_c: [355, 345],
+          village_roof_c: [355, 395],
+          black_market_c: [100, 395],
+          suburb_highway_d: [430, 390],
+          gas_station_d: [140, 360],
+          private_road_d: [320, 335],
+          pine_forest_d: [140, 205],
+          estate_gate_d: [320, 285],
+          villa_garden_d: [470, 225],
+          garage_side_door_d: [390, 110],
+          villa_porch_d: [540, 110],
+          central_mall_a: [755, 90],
+          bank_a: [690, 225],
+          business_cafe_a: [835, 225],
+          clinic_a: [690, 350],
+          business_hotel_a: [835, 350],
+          central_plaza_a: [755, 490],
+          pedestrian_street_a: [350, 500],
+          department_store_a: [122, 570],
+          cinema_a: [350, 570],
+          gym_a: [545, 570],
+          restaurant_a: [690, 630],
+          courier_a: [835, 630],
+          taxi_rank_a: [755, 730],
+          public_parking_a: [545, 720],
+          apartment_plaza_a: [350, 720],
+          coworking_a: [122, 720],
+          electronics_a: [690, 570],
+          station_square_a: [545, 225],
+          high_school_gate_b: [560, 100],
+          university_library_b: [75, 205],
+          university_canteen_b: [190, 205],
+          university_sports_b: [335, 90],
+          campus_bookshop_b: [560, 205],
+          campus_cafe_b: [560, 315],
+          student_street_b: [355, 500],
+          university_dorm_gate_b: [560, 500],
+          bar_street_c: [115, 225],
+          ktv_c: [695, 90],
+          hotel_c: [695, 225],
+          late_restaurant_c: [695, 350],
+          livehouse_c: [545, 350],
+          courier_c: [695, 490],
+          laundry_c: [355, 490]
         },
-        transitLinks: [
-          [
-            "metro_hub_a",
-            "old_metro_b"
-          ],
-          [
-            "old_metro_b",
-            "dock_bus_stop_c"
-          ],
-          [
-            "bus_bay_a",
-            "suburb_highway_d"
-          ]
-        ],
         privatePlaces: [
           "unit_stairs_b",
           "rooftop_b",
@@ -10151,12 +10542,85 @@
     }
   });
 
+  // src/config/city-transit.json
+  var require_city_transit = __commonJS({
+    "src/config/city-transit.json"(exports, module) {
+      module.exports = {
+        schema: 1,
+        routes: [
+          {
+            id: "metro_1",
+            name: "\u5730\u94C1 1 \u53F7\u7EBF",
+            kind: "metro",
+            stops: ["old_metro_b", "metro_hub_a"],
+            path: ["old_metro_b", [900, 1025], [900, 1175], "metro_hub_a"],
+            label: [1080, 1150],
+            note: "\u8FDE\u63A5\u8001\u57CE\u6587\u6559\u533A\u4E0E\u4E2D\u57CE CBD\u3002"
+          },
+          {
+            id: "night_bus",
+            name: "\u591C\u5E02\u73AF\u7EBF\u516C\u4EA4",
+            kind: "bus",
+            stops: ["school_bus_terminal_b", "dock_bus_stop_c"],
+            path: [
+              "school_bus_terminal_b",
+              [435, 910],
+              [700, 910],
+              [700, 1365],
+              [330, 1365],
+              [330, 1575],
+              [625, 1575],
+              "dock_bus_stop_c"
+            ],
+            label: [445, 1392],
+            note: "\u8FDE\u63A5 B \u533A\u5B66\u533A\u603B\u7AD9\u4E0E C \u533A\u7801\u5934\u7AD9\u3002"
+          },
+          {
+            id: "river_express",
+            name: "\u8DE8\u6C5F\u5FEB\u7EBF\u516C\u4EA4",
+            kind: "bus",
+            stops: ["bus_bay_a", "bridge_head_c"],
+            path: [
+              "bus_bay_a",
+              [1605, 1095],
+              [1975, 1095],
+              [1975, 1880],
+              "bridge_head_c"
+            ],
+            label: [1460, 1850],
+            note: "\u8FDE\u63A5\u4E2D\u57CE\u516C\u4EA4\u6E2F\u6E7E\u4E0E\u4E34\u6C5F\u5927\u6865\u5934\u3002"
+          },
+          {
+            id: "north_road",
+            name: "\u5317\u73AF\u516C\u8DEF",
+            kind: "road",
+            stops: ["bus_bay_a", "suburb_highway_d"],
+            path: [
+              "bus_bay_a",
+              [1605, 1095],
+              [1975, 1095],
+              [1975, 630],
+              [1840, 630],
+              "suburb_highway_d"
+            ],
+            label: [1740, 655],
+            note: "D \u533A\u4EC5\u7ECF\u516C\u8DEF\u62B5\u8FBE\uFF0C\u5730\u56FE\u4E0D\u63D0\u4F9B\u76F4\u63A5\u8FDB\u90CA\u5916\u7684\u6377\u5F84\u3002"
+          }
+        ]
+      };
+    }
+  });
+
   // src/runtime/spatial/system.js
   var require_system = __commonJS({
     "src/runtime/spatial/system.js"(exports, module) {
       "use strict";
       var { places, districts } = require_places();
       var layout = require_city_layout();
+      var { routes } = require_city_transit();
+      var transitLinks = routes.flatMap(
+        (r) => r.stops.slice(1).map((to, i) => [r.stops[i], to])
+      );
       var { TAIL_PUMP_IDS } = require_constants();
       var clone = (x) => JSON.parse(JSON.stringify(x));
       var activeScene = (g) => ["stealth", "contact", "vehicle"].includes(g.mode) && (g.dayPlan.source !== "daily" || g.dayPlan.activity?.kind === "tailing");
@@ -10206,7 +10670,7 @@
           if (here === id) return null;
           const exits = [
             ...places[here]?.exits || [],
-            ...layout.transitLinks.flatMap(
+            ...transitLinks.flatMap(
               ([a, b]) => a === here ? [b] : b === here ? [a] : []
             )
           ];
@@ -10235,7 +10699,9 @@
           return {
             id,
             district: p.district,
-            name: hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : p.name,
+            name: hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : p.mapName || p.name,
+            sector: hidden ? null : p.sector,
+            facility: hidden ? null : p.facility ? { ...p.facility } : null,
             x: x + frame.x,
             y: y + frame.y,
             hidden,
@@ -10254,7 +10720,7 @@
               oneWay: !places[to].exits.includes(id)
             });
           }
-        for (const [from, to] of layout.transitLinks)
+        for (const [from, to] of transitLinks)
           edges.push({ from, to, transit: true });
         const last = spatial.lastSeen?.targetId === (g.targetId || "college") ? spatial.lastSeen : null;
         return {
@@ -10263,19 +10729,21 @@
           frames: Object.entries(layout.frames).map(([id, f]) => ({
             id,
             ...f,
-            name: districts[id].name
+            name: districts[id].name,
+            setting: districts[id].setting
           })),
           nodes,
           edges,
+          transit: clone(routes),
           player: {
             placeId: spatial.playerPlaceId,
-            name: places[spatial.playerPlaceId].name,
+            name: places[spatial.playerPlaceId].mapName || places[spatial.playerPlaceId].name,
             district: places[spatial.playerPlaceId].district,
             assumed: spatial.assumed
           },
           target: last ? {
             placeId: last.placeId,
-            name: places[last.placeId].name,
+            name: places[last.placeId].mapName || places[last.placeId].name,
             date: last.date,
             period: last.period,
             live,
@@ -14003,7 +14471,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.10",
+        version: "0.8.11",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {

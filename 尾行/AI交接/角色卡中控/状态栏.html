@@ -3146,7 +3146,6 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   font-size: 14px;
 }
 .trpg .overview .wx-map-place-hit {
-  width: 120px;
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -3217,6 +3216,107 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
     scrollbar-width: thin;
     scrollbar-color: #6b7b7b #d7d9ce;
   }
+}
+/* 交通图层与市区／郊外标识。路网始终作为街区底图保留。 */
+.trpg .wx-map-countryside rect {
+  fill: #ced6bb;
+  stroke: #b5c4a0;
+  stroke-width: 2;
+}
+.trpg .wx-map-countryside path {
+  fill: none;
+  stroke: #b5c49d;
+  stroke-width: 2;
+}
+.trpg .wx-map-area-label {
+  fill: #74876e;
+  font-size: 27px;
+  letter-spacing: 4px;
+}
+.trpg .wx-map-area-label.urban {
+  fill: #677d80;
+  font-size: 30px;
+}
+.trpg .wx-map-bridge-rail {
+  stroke: #869284;
+  stroke-width: 3;
+  fill: none;
+}
+.trpg .wx-map-transit path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.trpg .wx-transit-casing {
+  stroke: #faf8ec;
+  stroke-width: 13;
+  opacity: 0.85;
+}
+.trpg .wx-transit-route {
+  stroke: #327b9c;
+  stroke-width: 7;
+}
+.trpg .wx-map-transit.bus .wx-transit-route {
+  stroke: #b67c39;
+  stroke-width: 6;
+  stroke-dasharray: 12 8;
+}
+.trpg .wx-map-transit.road .wx-transit-route {
+  stroke: #667b6d;
+  stroke-width: 7;
+  stroke-dasharray: 3 9;
+}
+.trpg .wx-transit-label {
+  fill: #385f72;
+  font-size: 16px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #f6f3e5;
+  stroke-width: 5;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.trpg .bus .wx-transit-label {
+  fill: #93622e;
+}
+.trpg .road .wx-transit-label {
+  fill: #526b57;
+}
+.trpg .wx-transit-stop {
+  pointer-events: none;
+}
+.trpg .wx-city-legend .metro {
+  color: #70b5d5;
+}
+.trpg .wx-city-legend .bus {
+  color: #d1aa6e;
+}
+.trpg .wx-city-legend .highway {
+  color: #9bb69d;
+}
+.trpg .overview .wx-city-label {
+  font-size: 26px;
+}
+.trpg .overview .wx-map-district-title {
+  font-size: 33px;
+}
+.trpg .overview .wx-map-district-subtitle {
+  font-size: 19px;
+}
+.trpg .overview .wx-transit-label {
+  font-size: 23px;
+}
+.trpg .wx-map-district-title {
+  letter-spacing: 1px;
+  font-size: 21px;
+}
+/* 街区内使用站点和图例识别线路；线路全名放在总图，避免边缘截字。 */
+.trpg .wx-transit-label {
+  display: none;
+}
+.trpg .overview .wx-transit-label {
+  display: block;
 }
 
 /* 零楼教程首页。仅作用于本步骤，不改变角色创建、地图或战术终端的主题。 */
@@ -3851,10 +3951,10 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
     <details id="wxCityMap" class="wx-city-map" open>
       <summary>城市地图<span id="wxCityPosition">等待地图数据</span></summary>
       <div id="wxCityTabs" class="wx-city-tabs"></div>
-      <div class="wx-city-legend"><span class="player">● 你的位置</span><span class="target">● 目标目视位置</span><span class="last">○ 最后目击</span><span>浅色街道 · 绿色公园 · 蓝色江面</span></div>
+      <div class="wx-city-legend"><span class="player">● 你的位置</span><span class="target">● 目标目视位置</span><span class="last">○ 最后目击</span><span class="metro">━ 地铁 1 号线</span><span class="bus">┄ 市区公交</span><span class="highway">━ 郊外公路</span></div>
       <div id="wxCityCanvas" class="wx-city-canvas"></div>
       <div id="wxCityInfo" class="wx-city-info"></div>
-      <p class="wx-city-note">点击建筑或地点查看；先选街区，需要时点“放大查看”并横向滑动。浏览不改变位置。市内移动不占活动机会，采购确认后才扣点、推进时段。</p>
+      <p class="wx-city-note">总图查看市区 A/B/C 与郊外 D 的相对分布；切进街区查看设施。“交通线路”可开关，放大后可横向滑动。浏览不改变位置。市内移动不占活动机会，采购确认后才扣点、推进时段。</p>
       <p id="wxCityNotice" class="wx-city-notice" role="status"></p>
     </details>
     <details class="wx-daily-actions" id="wxDailyActions" open>
@@ -5643,7 +5743,7 @@ var WxStatusbarUI = (() => {
               id: "student",
               name: "\u5B66\u751F",
               mods: { agi: 1, int: 1 },
-              freePass: ["school_gate_b", "school_bus_terminal_b"],
+              freePass: ["school_gate_b", "school_bus_terminal_b", "high_school_gate_b"],
               tags: [],
               desc: "\u6587\u6559\u533A\u95E8\u7981\u514D\u68C0\uFF1B\u65E0\u672C\u804C\u5DE5\u79CD\uFF08\u96F6\u5DE5\u539F\u4EF7\uFF09\uFF0C\u6B63\u9762\u4E0D\u5F3A\u4E0D\u5E26\u8D1F\u9762"
             },
@@ -6341,6 +6441,12 @@ var WxStatusbarUI = (() => {
                   name: "\u6574\u7406\u4E66\u5305",
                   fumbling: true,
                   desc: "\u8D70\u51FA\u6821\u95E8\u540E\u5728\u660F\u6697\u95E8\u67F1\u65C1\u505C\u6B65\uFF0C\u62C9\u4E25\u6C89\u91CD\u4E66\u5305\u7684\u62C9\u94FE\u5E76\u7CFB\u7D27\u56F4\u5DFE"
+                },
+                high_school_gate_b: {
+                  id: "bag_tidy",
+                  name: "\u6574\u7406\u4E66\u5305",
+                  fumbling: true,
+                  desc: "\u8D70\u51FA\u6821\u95E8\u540E\u5728\u660F\u6697\u95E8\u67F1\u65C1\u505C\u6B65\uFF0C\u62C9\u4E25\u6C89\u91CD\u4E66\u5305\u7684\u62C9\u94FE\u5E76\u7CFB\u7D27\u56F4\u5DFE"
                 }
               },
               carriagePool: [
@@ -6448,7 +6554,7 @@ var WxStatusbarUI = (() => {
                 prompt: "\u767D\u63CF\u665A\u81EA\u4E60\u653E\u5B66\u540E\u7684\u6821\u95E8\u4EBA\u6F6E\u4E0E\u6DF1\u5DF7\u66AE\u8272\uFF0C\u524D\u534A\u7A0B\u4E0E\u540C\u4F34\u7ED3\u4F34\u4F4E\u8BED\uFF0C\u5728\u5B66\u533A\u516C\u4EA4\u7AD9\u544A\u522B\u540E\u72EC\u81EA\u62D0\u5165\u8001\u5DF7",
                 path: [
                   {
-                    place: "school_gate_b",
+                    place: "high_school_gate_b",
                     t: "2100"
                   },
                   {
@@ -6478,7 +6584,7 @@ var WxStatusbarUI = (() => {
                 prompt: "\u767D\u63CF\u5468\u4E94\u5355\u4EBA\u503C\u65E5\u5173\u95E8\u540E\u7684\u5BC2\u9759\u591C\u8272\uFF0C\u624B\u63D0\u6C89\u91CD\u4E66\u5305\u4F4E\u5934\u5FEB\u6B65\u72EC\u884C\uFF0C\u6574\u6761\u5F52\u9014\u65E0\u540C\u4F34\u63A9\u62A4",
                 path: [
                   {
-                    place: "school_gate_b",
+                    place: "high_school_gate_b",
                     t: "2130"
                   },
                   {
@@ -6672,7 +6778,7 @@ var WxStatusbarUI = (() => {
                 public: false,
                 title: "\u653E\u5B66\u65F6\u95F4",
                 text: "\u5E73\u65E5\u665A\u81EA\u4E6021:00\u51C6\u65F6\u6253\u94C3\u4E0B\u8BFE\uFF0C\u5468\u4E94\u503C\u65E5\u4F1A\u665A\u8D70\u7EA6\u534A\u5C0F\u65F6\u3002",
-                place: "school_gate_b",
+                place: "high_school_gate_b",
                 reveal_via: []
               },
               {
@@ -6773,7 +6879,7 @@ var WxStatusbarUI = (() => {
                 public: false,
                 title: "\u5355\u604B\u5FC3\u4E8B",
                 text: "\u6697\u604B\u9694\u58C1\u73ED\u7684\u5347\u5B66\u699C\u7B2C\u4E00\u540D\uFF0C\u4F46\u81EA\u5C0A\u5FC3\u8981\u5F3A\u4ECE\u4E0D\u6562\u642D\u8BDD\uFF0C\u6BCF\u5929\u653E\u5B66\u4F1A\u6545\u610F\u4ECE\u90A3\u95F4\u6559\u5BA4\u95E8\u524D\u8D70\u8FC7\u3002",
-                place: "school_gate_b",
+                place: "high_school_gate_b",
                 reveal_via: [
                   "ransack",
                   "audit_class"
@@ -10554,54 +10660,54 @@ var WxStatusbarUI = (() => {
         schema: 1,
         districts: {
           B: {
-            subtitle: "\u5B66\u6821 \xB7 \u8001\u8857 \xB7 \u4F4F\u5B85",
+            subtitle: "\u5927\u5B66\u57CE \xB7 \u9AD8\u4E2D\u6821\u533A \xB7 \u8001\u8857\u4F4F\u5B85",
             roads: [
               {
                 name: "\u5B66\u5E9C\u8DEF",
                 points: [
-                  [0, 145],
-                  [620, 145]
+                  [0, 150],
+                  [760, 150]
                 ],
                 width: 24,
                 kind: "street",
-                label: [365, 149]
+                label: [350, 154]
               },
               {
                 name: "\u69D0\u836B\u8857",
                 points: [
-                  [0, 290],
-                  [620, 290]
+                  [0, 350],
+                  [760, 350]
                 ],
                 width: 22,
                 kind: "street",
-                label: [135, 294]
+                label: [130, 354]
               },
               {
                 name: "\u8001\u8857",
                 points: [
-                  [250, 145],
-                  [250, 480]
+                  [250, 150],
+                  [250, 560]
                 ],
                 width: 22,
                 kind: "street",
-                label: [250, 260]
+                label: [250, 300]
               },
               {
                 name: "\u4E1C\u5DF7",
                 points: [
-                  [465, 145],
-                  [465, 480]
+                  [465, 150],
+                  [465, 560]
                 ],
                 width: 14,
                 kind: "street",
-                label: [465, 445]
+                label: [465, 520]
               },
               {
                 name: "",
                 points: [
-                  [250, 350],
-                  [465, 350],
-                  [465, 430]
+                  [250, 410],
+                  [465, 410],
+                  [465, 490]
                 ],
                 width: 9,
                 kind: "lane"
@@ -10609,73 +10715,110 @@ var WxStatusbarUI = (() => {
               {
                 name: "",
                 points: [
-                  [90, 290],
-                  [90, 395]
+                  [90, 350],
+                  [90, 455]
                 ],
                 width: 8,
                 kind: "lane"
+              },
+              {
+                name: "\u6587\u6559\u4E1C\u8DEF",
+                points: [
+                  [620, 150],
+                  [620, 560]
+                ],
+                width: 20,
+                kind: "street",
+                label: [620, 325]
               }
             ],
             blocks: [
               {
                 kind: "campus",
-                box: [25, 45, 190, 77],
-                label: "\u6821\u56ED"
+                box: [30, 60, 220, 80]
               },
               {
-                kind: "transit",
-                box: [285, 54, 145, 65]
-              },
-              {
-                kind: "home",
-                box: [30, 185, 90, 78]
+                kind: "campus",
+                box: [450, 60, 230, 80]
               },
               {
                 kind: "park",
-                box: [137, 185, 85, 78]
-              },
-              {
-                kind: "shop",
-                box: [285, 190, 145, 74]
+                box: [285, 60, 100, 55]
               },
               {
                 kind: "transit",
-                box: [500, 187, 92, 76]
+                box: [285, 165, 145, 62]
               },
               {
-                kind: "housing",
-                box: [285, 320, 145, 65]
+                kind: "home",
+                box: [30, 250, 90, 78]
               },
               {
-                kind: "housing",
-                box: [500, 320, 92, 105]
+                kind: "park",
+                box: [137, 250, 85, 78]
               },
               {
                 kind: "shop",
-                box: [130, 400, 90, 66]
+                box: [285, 250, 145, 74]
+              },
+              {
+                kind: "transit",
+                box: [640, 230, 100, 70]
               },
               {
                 kind: "housing",
-                box: [30, 320, 33, 70]
+                box: [285, 380, 145, 65]
               },
               {
                 kind: "housing",
-                box: [117, 320, 103, 66]
+                box: [640, 380, 100, 105]
+              },
+              {
+                kind: "shop",
+                box: [130, 470, 90, 66]
               },
               {
                 kind: "housing",
-                box: [285, 400, 145, 63]
+                box: [30, 380, 33, 70]
+              },
+              {
+                kind: "housing",
+                box: [117, 380, 103, 66]
+              },
+              {
+                kind: "shop",
+                box: [30, 175, 90, 55]
+              },
+              {
+                kind: "shop",
+                box: [145, 175, 90, 55]
+              },
+              {
+                kind: "shop",
+                box: [510, 175, 100, 55]
+              },
+              {
+                kind: "shop",
+                box: [510, 285, 100, 50]
+              },
+              {
+                kind: "market",
+                box: [285, 470, 145, 55]
+              },
+              {
+                kind: "housing",
+                box: [510, 470, 100, 55]
               }
             ]
           },
           A: {
-            subtitle: "\u5199\u5B57\u697C \xB7 \u5546\u4E1A\u8857 \xB7 \u4EA4\u901A\u67A2\u7EBD",
+            subtitle: "\u5546\u52A1\u6838\u5FC3 \xB7 \u8F68\u4EA4\u67A2\u7EBD \xB7 \u5546\u4E1A\u751F\u6D3B\u5708",
             roads: [
               {
                 name: "\u5546\u52A1\u5927\u9053",
                 points: [
                   [0, 145],
-                  [620, 145]
+                  [960, 145]
                 ],
                 width: 28,
                 kind: "street",
@@ -10685,7 +10828,7 @@ var WxStatusbarUI = (() => {
                 name: "\u4E2D\u57CE\u8DEF",
                 points: [
                   [250, 40],
-                  [250, 480]
+                  [250, 800]
                 ],
                 width: 24,
                 kind: "street",
@@ -10695,7 +10838,7 @@ var WxStatusbarUI = (() => {
                 name: "\u540E\u8857",
                 points: [
                   [0, 290],
-                  [620, 290]
+                  [960, 290]
                 ],
                 width: 18,
                 kind: "street",
@@ -10705,7 +10848,7 @@ var WxStatusbarUI = (() => {
                 name: "\u7AD9\u524D\u8DEF",
                 points: [
                   [465, 40],
-                  [465, 480]
+                  [465, 800]
                 ],
                 width: 24,
                 kind: "street",
@@ -10715,7 +10858,7 @@ var WxStatusbarUI = (() => {
                 name: "",
                 points: [
                   [0, 430],
-                  [465, 430]
+                  [960, 430]
                 ],
                 width: 12,
                 kind: "lane"
@@ -10728,6 +10871,54 @@ var WxStatusbarUI = (() => {
                 ],
                 width: 10,
                 kind: "lane"
+              },
+              {
+                name: "\u5546\u4E1A\u5927\u9053",
+                points: [
+                  [0, 645],
+                  [960, 645]
+                ],
+                width: 24,
+                kind: "street",
+                label: [350, 649]
+              },
+              {
+                name: "\u751F\u6D3B\u8DEF",
+                points: [
+                  [610, 145],
+                  [610, 800]
+                ],
+                width: 22,
+                kind: "street",
+                label: [610, 580]
+              },
+              {
+                name: "\u4E1C\u57CE\u5927\u9053",
+                points: [
+                  [915, 0],
+                  [915, 800]
+                ],
+                width: 28,
+                kind: "highway",
+                label: [915, 490]
+              },
+              {
+                name: "",
+                points: [
+                  [0, 490],
+                  [610, 490]
+                ],
+                width: 18,
+                kind: "walk"
+              },
+              {
+                name: "",
+                points: [
+                  [0, 790],
+                  [960, 790]
+                ],
+                width: 18,
+                kind: "street"
               }
             ],
             blocks: [
@@ -10752,7 +10943,7 @@ var WxStatusbarUI = (() => {
                 box: [285, 188, 145, 77]
               },
               {
-                kind: "office",
+                kind: "park",
                 box: [500, 185, 92, 80]
               },
               {
@@ -10770,17 +10961,85 @@ var WxStatusbarUI = (() => {
               {
                 kind: "office",
                 box: [373, 320, 57, 80]
+              },
+              {
+                kind: "mall",
+                box: [650, 50, 240, 80]
+              },
+              {
+                kind: "service",
+                box: [640, 190, 100, 70]
+              },
+              {
+                kind: "shop",
+                box: [780, 190, 110, 70]
+              },
+              {
+                kind: "service",
+                box: [640, 315, 100, 70]
+              },
+              {
+                kind: "office",
+                box: [780, 315, 110, 70]
+              },
+              {
+                kind: "park",
+                box: [650, 435, 240, 90]
+              },
+              {
+                kind: "market",
+                box: [285, 465, 145, 55]
+              },
+              {
+                kind: "mall",
+                box: [30, 535, 180, 75]
+              },
+              {
+                kind: "nightlife",
+                box: [285, 535, 145, 75]
+              },
+              {
+                kind: "service",
+                box: [500, 535, 92, 75]
+              },
+              {
+                kind: "shop",
+                box: [640, 607, 100, 30]
+              },
+              {
+                kind: "service",
+                box: [780, 590, 110, 45]
+              },
+              {
+                kind: "transit",
+                box: [650, 700, 240, 55]
+              },
+              {
+                kind: "service",
+                box: [500, 680, 92, 70]
+              },
+              {
+                kind: "housing",
+                box: [285, 680, 145, 70]
+              },
+              {
+                kind: "office",
+                box: [30, 680, 180, 70]
+              },
+              {
+                kind: "mall",
+                box: [640, 540, 100, 45]
               }
             ]
           },
           C: {
-            subtitle: "\u6CBF\u6C5F\u6B65\u9053 \xB7 \u591C\u5E02 \xB7 \u57CE\u4E2D\u6751",
+            subtitle: "\u9152\u5427\u8857 \xB7 \u591C\u5E02 \xB7 \u6C5F\u5824 \xB7 \u57CE\u4E2D\u6751",
             roads: [
               {
                 name: "\u4E34\u6C5F\u8DEF",
                 points: [
                   [0, 145],
-                  [620, 145]
+                  [800, 145]
                 ],
                 width: 24,
                 kind: "street",
@@ -10790,7 +11049,7 @@ var WxStatusbarUI = (() => {
                 name: "\u5357\u8857",
                 points: [
                   [0, 290],
-                  [620, 290]
+                  [800, 290]
                 ],
                 width: 20,
                 kind: "street",
@@ -10800,8 +11059,8 @@ var WxStatusbarUI = (() => {
                 name: "\u7801\u5934\u8DEF",
                 points: [
                   [465, 40],
-                  [465, 425],
-                  [620, 425]
+                  [465, 450],
+                  [800, 450]
                 ],
                 width: 20,
                 kind: "street",
@@ -10819,13 +11078,13 @@ var WxStatusbarUI = (() => {
               {
                 name: "\u6CBF\u6C5F\u6B65\u9053",
                 points: [
-                  [0, 450],
-                  [485, 450],
-                  [570, 470]
+                  [0, 525],
+                  [485, 525],
+                  [570, 550]
                 ],
                 width: 14,
                 kind: "walk",
-                label: [120, 454]
+                label: [120, 529]
               },
               {
                 name: "",
@@ -10854,6 +11113,16 @@ var WxStatusbarUI = (() => {
                 ],
                 width: 8,
                 kind: "lane"
+              },
+              {
+                name: "\u5A31\u4E50\u4E1C\u8857",
+                points: [
+                  [620, 40],
+                  [620, 560]
+                ],
+                width: 18,
+                kind: "street",
+                label: [620, 260]
               }
             ],
             blocks: [
@@ -10870,7 +11139,7 @@ var WxStatusbarUI = (() => {
                 box: [500, 52, 92, 75]
               },
               {
-                kind: "housing",
+                kind: "nightlife",
                 box: [30, 185, 180, 75]
               },
               {
@@ -10904,17 +11173,41 @@ var WxStatusbarUI = (() => {
               {
                 kind: "market",
                 box: [30, 370, 120, 52]
+              },
+              {
+                kind: "nightlife",
+                box: [650, 50, 90, 75]
+              },
+              {
+                kind: "housing",
+                box: [650, 190, 90, 70]
+              },
+              {
+                kind: "shop",
+                box: [650, 315, 90, 70]
+              },
+              {
+                kind: "nightlife",
+                box: [500, 320, 92, 70]
+              },
+              {
+                kind: "service",
+                box: [645, 465, 100, 50]
+              },
+              {
+                kind: "service",
+                box: [285, 465, 145, 45]
               }
             ]
           },
           D: {
-            subtitle: "\u6797\u5730 \xB7 \u516C\u8DEF \xB7 \u4F4F\u5B85\u9662\u843D",
+            subtitle: "\u90CA\u5916 \xB7 \u6797\u5730 \xB7 \u516C\u8DEF \xB7 \u4F4F\u5B85\u9662\u843D",
             roads: [
               {
                 name: "\u90CA\u91CE\u516C\u8DEF",
                 points: [
                   [0, 390],
-                  [620, 390]
+                  [600, 390]
                 ],
                 width: 28,
                 kind: "highway",
@@ -10944,7 +11237,7 @@ var WxStatusbarUI = (() => {
                 name: "",
                 points: [
                   [140, 390],
-                  [140, 480]
+                  [140, 420]
                 ],
                 width: 10,
                 kind: "street"
@@ -10965,17 +11258,13 @@ var WxStatusbarUI = (() => {
               },
               {
                 kind: "service",
-                box: [50, 415, 180, 55]
-              },
-              {
-                kind: "park",
-                box: [365, 420, 225, 50]
+                box: [50, 340, 180, 40]
               }
             ]
           }
         },
         landmarks: {
-          school_gate_b: ["\u5B66\u6821", "school"],
+          school_gate_b: ["\u5927\u5B66\u6B63\u95E8", "school"],
           school_bus_terminal_b: ["\u5B66\u533A\u603B\u7AD9", "bus"],
           old_metro_b: ["\u8001\u8857\u7AD9", "metro"],
           old_park_b: ["\u8001\u57CE\u516C\u56ED", "park"],
@@ -11015,25 +11304,220 @@ var WxStatusbarUI = (() => {
           estate_gate_d: ["\u4F4F\u5B85\u5165\u53E3", "housing"],
           villa_garden_d: ["\u9662\u843D", "park"],
           garage_side_door_d: ["\u8F66\u5E93\u4FA7\u95E8", "parking"],
-          villa_porch_d: ["\u4F4F\u5B85\u95E8\u5ECA", "housing"]
+          villa_porch_d: ["\u4F4F\u5B85\u95E8\u5ECA", "housing"],
+          central_mall_a: ["\u4E2D\u57CE\u7EFC\u5408\u5546\u573A", "mall"],
+          bank_a: ["\u94F6\u884C\u8425\u4E1A\u5385", "service"],
+          business_cafe_a: ["\u5546\u52A1\u5496\u5561\u9986", "shop"],
+          clinic_a: ["\u7EFC\u5408\u95E8\u8BCA", "service"],
+          business_hotel_a: ["\u5546\u52A1\u9152\u5E97", "hotel"],
+          central_plaza_a: ["\u4E2D\u5FC3\u5E7F\u573A", "plaza"],
+          pedestrian_street_a: ["\u5546\u4E1A\u6B65\u884C\u8857", "market"],
+          department_store_a: ["\u767E\u8D27\u5546\u573A", "mall"],
+          cinema_a: ["\u57CE\u5E02\u5F71\u57CE", "nightlife"],
+          gym_a: ["\u5065\u8EAB\u4E2D\u5FC3", "service"],
+          restaurant_a: ["\u5546\u52A1\u9910\u5385", "shop"],
+          courier_a: ["\u5FEB\u9012\u9A7F\u7AD9", "service"],
+          taxi_rank_a: ["\u51FA\u79DF\u8F66\u5019\u8F66\u70B9", "transit"],
+          public_parking_a: ["\u516C\u5171\u505C\u8F66\u573A", "parking"],
+          apartment_plaza_a: ["\u516C\u5BD3\u5E7F\u573A", "housing"],
+          coworking_a: ["\u8054\u5408\u529E\u516C\u697C", "office"],
+          electronics_a: ["\u6570\u7801\u5546\u57CE", "mall"],
+          station_square_a: ["\u7AD9\u524D\u5E7F\u573A", "plaza"],
+          high_school_gate_b: ["\u9AD8\u4E2D\u6B63\u95E8", "school"],
+          university_library_b: ["\u5927\u5B66\u56FE\u4E66\u9986", "library"],
+          university_canteen_b: ["\u5927\u5B66\u98DF\u5802", "shop"],
+          university_sports_b: ["\u5927\u5B66\u8FD0\u52A8\u573A", "sports"],
+          campus_bookshop_b: ["\u5B66\u5E9C\u4E66\u5E97", "library"],
+          campus_cafe_b: ["\u5B66\u5E9C\u5496\u5561\u9986", "shop"],
+          student_street_b: ["\u5B66\u751F\u751F\u6D3B\u8857", "market"],
+          university_dorm_gate_b: ["\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3", "housing"],
+          bar_street_c: ["\u9713\u8679\u9152\u5427\u8857", "nightlife"],
+          ktv_c: ["\u591C\u95F4\u6B4C\u5385", "nightlife"],
+          hotel_c: ["\u4E34\u6C5F\u65C5\u9986", "hotel"],
+          late_restaurant_c: ["\u6DF1\u591C\u98DF\u5802", "shop"],
+          livehouse_c: ["\u73B0\u573A\u97F3\u4E50\u9152\u5427", "nightlife"],
+          courier_c: ["\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9", "service"],
+          laundry_c: ["\u81EA\u52A9\u6D17\u8863\u5E97", "service"]
         },
         overview: [
           "school_gate_b",
+          "high_school_gate_b",
           "old_metro_b",
-          "old_park_b",
           "player_base_b",
-          "office_lobby_a",
+          "central_mall_a",
           "metro_hub_a",
-          "bus_bay_a",
-          "club_backdoor_c",
+          "office_lobby_a",
+          "central_plaza_a",
+          "bar_street_c",
           "food_street_c",
           "black_market_c",
-          "river_walk_c",
           "suburb_highway_d",
           "gas_station_d",
           "pine_forest_d"
-        ]
+        ],
+        world: {
+          river: "M 930 1400 C 910 1560 940 1800 920 1940 Q 880 2050 600 2030 L -20 2010 L -20 2160 L 2120 2160 L 2120 2020 L 1090 2020 Q 1010 2020 1000 1910 C 1010 1730 980 1550 1000 1400 Z",
+          waterLabel: [1510, 2085],
+          labels: [
+            {
+              text: "\u5E02\u533A \xB7 A / B / C",
+              at: [570, 710],
+              kind: "urban"
+            },
+            {
+              text: "\u5E02\u90CA\u8FC7\u6E21\u5E26",
+              at: [1590, 740],
+              kind: "countryside"
+            }
+          ],
+          fields: [
+            [1180, 540, 170, 110],
+            [1420, 560, 160, 100],
+            [1660, 660, 170, 110],
+            [1880, 800, 125, 90]
+          ],
+          arterials: [
+            {
+              name: "\u5E02\u533A\u5E72\u9053",
+              points: [
+                [900, 710],
+                [900, 1365],
+                [330, 1365],
+                [330, 1470]
+              ],
+              width: 30,
+              kind: "street",
+              label: [900, 1220]
+            },
+            {
+              name: "",
+              points: [
+                [840, 910],
+                [900, 910],
+                [900, 1095],
+                [1060, 1095]
+              ],
+              width: 24,
+              kind: "street"
+            },
+            {
+              name: "\u4E1C\u57CE\u5916\u73AF",
+              points: [
+                [1975, 1095],
+                [1975, 1880],
+                [845, 1880]
+              ],
+              width: 30,
+              kind: "highway",
+              label: [1480, 1884]
+            },
+            {
+              name: "\u5317\u73AF\u516C\u8DEF",
+              points: [
+                [1975, 1095],
+                [1975, 630],
+                [1840, 630],
+                [1840, 470]
+              ],
+              width: 28,
+              kind: "highway",
+              label: [1975, 750]
+            },
+            {
+              name: "",
+              points: [
+                [840, 1110],
+                [900, 1110]
+              ],
+              width: 22,
+              kind: "street"
+            },
+            {
+              name: "",
+              points: [
+                [700, 1320],
+                [700, 1365]
+              ],
+              width: 18,
+              kind: "street"
+            }
+          ],
+          bridges: [
+            {
+              points: [
+                [875, 1880],
+                [1050, 1880]
+              ],
+              width: 34
+            }
+          ]
+        }
       };
+    }
+  });
+
+  // src/ui/map/transit.js
+  var require_transit = __commonJS({
+    "src/ui/map/transit.js"(exports, module) {
+      "use strict";
+      function drawTransit({ svg, map, text }) {
+        const layer = svg("g", {
+          class: "wx-map-transit-layer",
+          "aria-label": "\u57CE\u5E02\u4EA4\u901A\u7F51\u7EDC"
+        });
+        const nodes = new Map(map.nodes.map((n) => [n.id, n]));
+        const served = /* @__PURE__ */ new Map();
+        const colors = { metro: "#327b9c", bus: "#b67c39", road: "#667b6d" };
+        for (const r of map.transit || []) {
+          const points = r.path.map(
+            (p) => typeof p === "string" ? nodes.has(p) ? [nodes.get(p).x, nodes.get(p).y] : null : p
+          );
+          if (points.some((p) => !p)) continue;
+          const line = svg("g", {
+            "data-transit-line": r.id,
+            class: `wx-map-transit ${r.kind}`
+          });
+          const d = points.map((p, i) => `${i ? "L" : "M"} ${p[0]} ${p[1]}`).join(" ");
+          line.append(
+            svg("path", { d, class: "wx-transit-casing" }),
+            svg("path", { d, class: "wx-transit-route" })
+          );
+          const label = text(line, r.name, ...r.label, "wx-transit-label");
+          label.setAttribute("data-line-label", r.id);
+          layer.append(line);
+          for (const id of r.stops) {
+            const old = served.get(id) || [];
+            old.push(r);
+            served.set(id, old);
+          }
+        }
+        for (const [id, routes] of served) {
+          const n = nodes.get(id);
+          if (!n) continue;
+          const station = svg("g", {
+            "data-transit-stop": id,
+            class: "wx-transit-stop",
+            "aria-label": `${n.name}\uFF1A${routes.map((r) => r.name).join("\u3001")}`
+          });
+          station.append(
+            svg("circle", {
+              cx: n.x,
+              cy: n.y,
+              r: routes.length > 1 ? 11 : 8,
+              fill: "#f8f5e7",
+              stroke: colors[routes[0].kind],
+              "stroke-width": 3
+            })
+          );
+          if (routes.length > 1)
+            station.append(
+              svg("circle", { cx: n.x, cy: n.y, r: 5, fill: colors[routes[0].kind] })
+            );
+          layer.append(station);
+        }
+        return layer;
+      }
+      module.exports = { drawTransit };
     }
   });
 
@@ -11042,7 +11526,8 @@ var WxStatusbarUI = (() => {
     "src/ui/map/cartography.js"(exports, module) {
       "use strict";
       var art = require_city_cartography();
-      function drawCityMap({ svg, map, view, selected }) {
+      var { drawTransit } = require_transit();
+      function drawCityMap({ svg, map, view, selected, showTransit = true }) {
         const frame = map.frames.find((f) => f.id === view);
         const viewHeight = frame ? frame.height + (view === "C" ? 110 : 40) : map.height;
         const drawing = svg("svg", {
@@ -11085,19 +11570,19 @@ var WxStatusbarUI = (() => {
               class: `wx-map-ground ground-${f.id}`
             })
           );
-        const water = svg("path", {
-          d: "M -20 1200 C 230 1180 360 1225 585 1202 S 1020 1180 1460 1195 L 1460 1320 L -20 1320 Z",
-          class: "wx-map-water"
-        });
-        drawing.append(water);
-        for (let row = 0; row < 3; row++)
-          drawing.append(
-            svg("path", {
-              d: `M 0 ${1230 + row * 24} Q 220 ${1215 + row * 24} 440 ${1230 + row * 24} T 880 ${1230 + row * 24} T 1440 ${1230 + row * 24}`,
-              class: "wx-map-water-line"
-            })
-          );
-        text(drawing, "\u6C5F\u3000\u9762", 900, 1250, "wx-map-water-label");
+        for (const [x, y, width, height] of art.world.fields) {
+          const field = svg("g", { class: "wx-map-countryside" });
+          field.append(svg("rect", { x, y, width, height, rx: 8 }));
+          for (let dx = 12; dx < width; dx += 18)
+            field.append(
+              svg("path", { d: `M ${x + dx} ${y + 10} v ${height - 20}` })
+            );
+          drawing.append(field);
+        }
+        drawing.append(svg("path", { d: art.world.river, class: "wx-map-water" }));
+        text(drawing, "\u6C5F\u3000\u9762", ...art.world.waterLabel, "wx-map-water-label");
+        for (const label of art.world.labels)
+          text(drawing, label.text, ...label.at, `wx-map-area-label ${label.kind}`);
         const roads = [];
         const road = (parent2, points, width, kind, name, label) => {
           const d = points.map((p, i) => `${i ? "L" : "M"} ${p[0]} ${p[1]}`).join(" ");
@@ -11117,52 +11602,19 @@ var WxStatusbarUI = (() => {
               vertical: points[0][0] === points[1][0]
             });
         };
-        road(
-          drawing,
-          [
-            [720, 0],
-            [720, 1175]
-          ],
-          34,
-          "highway",
-          "\u57CE\u4E2D\u5927\u9053",
-          [720, 625]
-        );
-        road(
-          drawing,
-          [
-            [0, 630],
-            [1440, 630]
-          ],
-          28,
-          "street",
-          "\u4E1C\u897F\u5E72\u9053",
-          [1090, 634]
-        );
-        road(
-          drawing,
-          [
-            [680, 245],
-            [720, 245]
-          ],
-          24
-        );
-        road(
-          drawing,
-          [
-            [720, 490],
-            [760, 490]
-          ],
-          28
-        );
-        road(
-          drawing,
-          [
-            [680, 825],
-            [760, 825]
-          ],
-          26
-        );
+        for (const r of art.world.arterials)
+          road(drawing, r.points, r.width, r.kind, r.name, r.label);
+        for (const bridge of art.world.bridges) {
+          road(drawing, bridge.points, bridge.width, "bridge");
+          const [a, b] = bridge.points;
+          for (const dy of [-bridge.width / 2, bridge.width / 2])
+            drawing.append(
+              svg("path", {
+                d: `M ${a[0]} ${a[1] + dy} L ${b[0]} ${b[1] + dy}`,
+                class: "wx-map-bridge-rail"
+              })
+            );
+        }
         for (const f of map.frames) {
           const data = art.districts[f.id];
           const g = svg("g", {
@@ -11282,48 +11734,62 @@ var WxStatusbarUI = (() => {
             "wx-map-street-label",
             r.vertical ? { "writing-mode": "vertical-rl" } : {}
           );
+        if (showTransit) drawing.append(drawTransit({ svg, map, text }));
         for (const f of map.frames) {
-          text(drawing, f.name, f.x + 310, f.y + 19, "wx-map-district-title");
+          text(
+            drawing,
+            `${f.id}\u533A \xB7 ${f.name}`,
+            f.x + f.width / 2,
+            f.y + 19,
+            "wx-map-district-title"
+          );
           text(
             drawing,
             art.districts[f.id].subtitle,
-            f.x + 310,
+            f.x + f.width / 2,
             f.y + 42,
             "wx-map-district-subtitle"
           );
         }
         const nodes = new Map(map.nodes.map((n) => [n.id, n]));
         const positioned = /* @__PURE__ */ new Set([map.player.placeId, map.target?.placeId]);
+        const stationIds = new Set(
+          showTransit ? (map.transit || []).flatMap((r) => r.stops) : []
+        );
         for (const n of map.nodes) {
           const [shortName, kind] = art.landmarks[n.id];
+          const label = n.hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : shortName;
+          const hitWidth = Math.max(
+            94,
+            label.length * (view === "all" ? 26 : 15) + 12
+          );
           const g = svg("g", {
             "data-place-id": n.id,
             role: "button",
-            tabindex: view !== "all" && n.district !== view || view === "all" && !art.overview.includes(n.id) && !positioned.has(n.id) && n.id !== selected ? -1 : 0,
+            tabindex: view !== "all" && n.district !== view || view === "all" && !art.overview.includes(n.id) && !stationIds.has(n.id) && !positioned.has(n.id) && n.id !== selected ? -1 : 0,
             "aria-hidden": view !== "all" && n.district !== view ? "true" : "false",
             "aria-label": n.name,
-            class: `wx-city-node kind-${kind}${n.hidden ? " unknown" : ""}${selected === n.id ? " selected" : ""}${n.service ? " service" : ""}${art.overview.includes(n.id) ? " overview-landmark" : ""}${positioned.has(n.id) ? " positioned" : ""}`
+            class: `wx-city-node kind-${kind}${n.hidden ? " unknown" : ""}${selected === n.id ? " selected" : ""}${n.service ? " service" : ""}${art.overview.includes(n.id) || stationIds.has(n.id) ? " overview-landmark" : ""}${positioned.has(n.id) ? " positioned" : ""}`
           });
           const title = svg("title");
           title.textContent = n.name;
           g.append(title);
           g.append(
             svg("rect", {
-              x: n.x - 47,
-              y: n.y - 20,
-              width: 94,
-              height: 42,
+              x: n.x - hitWidth / 2,
+              y: n.y - 30,
+              width: hitWidth,
+              height: stationIds.has(n.id) ? 66 : 54,
               rx: 5,
               class: "wx-map-place-hit"
             })
           );
-          const label = n.hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : shortName;
-          text(g, label, n.x, n.y + 5, "wx-city-label");
+          text(g, label, n.x, n.y + (stationIds.has(n.id) ? 26 : 5), "wx-city-label");
           if (n.service || ["metro", "bus", "school", "office", "gas"].includes(kind)) {
             const symbols = {
               metro: "M",
               bus: "BUS",
-              school: "\u6821",
+              school: n.id === "high_school_gate_b" ? "\u9AD8" : "\u5927",
               office: "\u697C",
               gas: "\u6CB9",
               home: "\u5BB6",
@@ -11378,7 +11844,7 @@ var WxStatusbarUI = (() => {
         }
         mark(map.player.placeId, "player");
         if (target) mark(target.placeId, "target");
-        const nx = frame ? frame.x + 590 : 1355, ny = frame ? frame.y + 58 : 55;
+        const nx = frame ? frame.x + frame.width - 30 : map.width - 65, ny = frame ? frame.y + 58 : 55;
         const compass = svg("g", { class: "wx-map-compass" });
         compass.append(svg("path", { d: `M ${nx} ${ny} l -7 20 l 7 -5 l 7 5 Z` }));
         text(compass, "\u5317", nx, ny - 8, "wx-map-compass-label");
@@ -11404,7 +11870,7 @@ var WxStatusbarUI = (() => {
       }) {
         const root = document.getElementById("wxCityMap"), canvas = document.getElementById("wxCityCanvas"), tabs = document.getElementById("wxCityTabs"), info = document.getElementById("wxCityInfo"), position = document.getElementById("wxCityPosition"), notice = document.getElementById("wxCityNotice");
         const NS = "http://www.w3.org/2000/svg";
-        let snapshot = null, view = null, selected = null, pending = null, retry = null, counter = 0, zoomed = false;
+        let snapshot = null, view = null, selected = null, pending = null, retry = null, counter = 0, zoomed = false, showTransit = true;
         const el = (tag, text) => {
           const e = document.createElement(tag);
           if (text !== void 0) e.textContent = text;
@@ -11419,6 +11885,7 @@ var WxStatusbarUI = (() => {
         function reset() {
           snapshot = null;
           zoomed = false;
+          showTransit = true;
           view = null;
           selected = null;
           pending = null;
@@ -11434,6 +11901,7 @@ var WxStatusbarUI = (() => {
           if (snapshot && !same(snapshot.dayPlan.sync, snap.dayPlan.sync)) {
             view = null;
             zoomed = false;
+            showTransit = true;
             selected = null;
             pending = null;
             retry = null;
@@ -11469,8 +11937,15 @@ var WxStatusbarUI = (() => {
             );
             tabs.append(b);
           }
+          const transitToggle = el("button", "\u4EA4\u901A\u7EBF\u8DEF");
+          transitToggle.type = "button";
+          transitToggle.dataset.mapTransit = "true";
+          transitToggle.setAttribute("aria-pressed", String(showTransit));
+          tabs.append(transitToggle);
           canvas.classList.toggle("is-zoomed", zoomed);
-          canvas.replaceChildren(drawCityMap({ svg, map, view, selected }));
+          canvas.replaceChildren(
+            drawCityMap({ svg, map, view, selected, showTransit })
+          );
           const nodes = new Map(map.nodes.map((n2) => [n2.id, n2]));
           const n = nodes.get(selected);
           info.replaceChildren();
@@ -11482,6 +11957,9 @@ var WxStatusbarUI = (() => {
               n.hidden ? "\u5C1A\u672A\u63A2\u660E\u7684\u79C1\u4EBA\u533A\u57DF\uFF0C\u5730\u56FE\u4E0D\u80FD\u4EE3\u66FF\u573A\u6240\u8FDB\u5165\u6761\u4EF6\u3002" : `\u6240\u5728\u533A\u57DF\uFF1A${map.frames.find((f) => f.id === n.district).name}`
             )
           );
+          if (n.facility) info.append(el("p", n.facility.note));
+          const lines = (map.transit || []).filter((r) => r.stops.includes(n.id));
+          for (const r of lines) info.append(el("p", `${r.name}\uFF1A${r.note}`));
           const names = map.edges.filter((e) => e.from === n.id || e.to === n.id).map((e) => nodes.get(e.from === n.id ? e.to : e.from)?.name).filter(Boolean);
           info.append(el("p", `\u901A\u8DEF\u8FDE\u63A5\uFF1A${[...new Set(names)].join("\u3001")}`));
           const move2 = el("button", n.moveReason || "\u524D\u5F80\u8FD9\u91CC \xB7 \u5E02\u5185\u79FB\u52A8\u4E0D\u8017\u884C\u52A8\u70B9");
@@ -11530,6 +12008,11 @@ var WxStatusbarUI = (() => {
           }
         }
         function choose(event) {
+          if (event.target.closest?.("[data-map-transit]")) {
+            showTransit = !showTransit;
+            render(snapshot);
+            return;
+          }
           const zoom = event.target.closest?.("[data-map-zoom]");
           if (zoom) {
             zoomed = zoom.dataset.mapZoom === "detail";

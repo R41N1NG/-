@@ -35,7 +35,7 @@ const move = (g, id) =>
   g.executeDailyCommand(request(g, "move", { placeId: id }));
 
 test("地图固定布局：全部场所唯一坐标且在所属区内，跨区交通与黑市接入旧拓扑", () => {
-  assert.equal(Object.keys(places).length, 41);
+  assert.equal(Object.keys(places).length, 74);
   const coordinates = new Set();
   for (const [id, place] of Object.entries(places)) {
     const c = layout.coordinates[id],
@@ -46,8 +46,14 @@ test("地图固定布局：全部场所唯一坐标且在所属区内，跨区�
     assert.ok(!coordinates.has(key));
     coordinates.add(key);
   }
-  for (const link of layout.transitLinks)
-    assert.ok(link.every((id) => places[id].transit_port));
+  const { routes } = require("../src/config/city-transit.json");
+  for (const r of routes) {
+    assert.ok(r.stops.every((id) => places[id]?.transit_port));
+    assert.equal(r.path[0], r.stops[0]);
+    assert.equal(r.path.at(-1), r.stops.at(-1));
+    if (r.kind !== "road")
+      assert.ok(r.stops.every((id) => places[id].district !== "D"));
+  }
   assert.ok(places.black_market_c.exits.includes("village_main_c"));
   assert.equal(places.black_market_c.district, "C");
 });
@@ -315,10 +321,20 @@ test("地图UI：点选只浏览，确认移动才保存；固定黑市能打开
     h.subscribe((s) => ui.render(s));
     ui.render(h.snap);
     const doc = dom.window.document;
-    assert.equal(doc.querySelectorAll("g[data-place-id]").length, 41);
+    assert.equal(
+      doc.querySelectorAll("g[data-place-id]").length,
+      Object.keys(places).length,
+    );
     assert.ok(doc.querySelectorAll(".wx-map-block").length > 30);
     assert.ok(doc.querySelector(".wx-map-water"));
     const beforeView = clone(h.state.game.save());
+    assert.equal(doc.querySelectorAll("[data-transit-line]").length, 4);
+    doc.querySelector("[data-map-transit]").click();
+    assert.equal(doc.querySelectorAll("[data-transit-line]").length, 0);
+    doc.querySelector("[data-map-transit]").click();
+    assert.equal(doc.querySelectorAll("[data-transit-line]").length, 4);
+    assert.deepEqual(h.state.game.save(), beforeView);
+
     doc.querySelector('[data-map-zoom="detail"]').click();
     assert.ok(
       doc.getElementById("wxCityCanvas").classList.contains("is-zoomed"),
@@ -420,5 +436,70 @@ test("街区底图配置：道路与建筑在所属区内，地点短名覆盖�
   assert.equal(
     node.y,
     layout.frames.C.y + layout.coordinates.black_market_c[1],
+  );
+});
+
+test("地区细化：A最大且节点最多，ABC市区相连、D隔开；新设施仅公共入口且不冒充商店", () => {
+  const gap = (a, b) =>
+    Math.hypot(
+      Math.max(0, a.x - b.x - b.width, b.x - a.x - a.width),
+      Math.max(0, a.y - b.y - b.height, b.y - a.y - a.height),
+    );
+  const count = (id) =>
+    Object.values(places).filter((p) => p.district === id).length;
+  for (const id of ["B", "C", "D"]) {
+    assert.ok(
+      layout.frames.A.width * layout.frames.A.height >
+        layout.frames[id].width * layout.frames[id].height,
+    );
+    assert.ok(count("A") > count(id));
+  }
+  for (const id of ["A", "B", "C"])
+    assert.equal(
+      require("../src/config/places.json").districts[id].setting,
+      "urban",
+    );
+  assert.equal(
+    require("../src/config/places.json").districts.D.setting,
+    "suburb",
+  );
+  assert.ok(
+    gap(layout.frames.A, layout.frames.D) >
+      gap(layout.frames.A, layout.frames.B),
+  );
+  const g = game();
+  for (const id of [
+    "central_mall_a",
+    "university_library_b",
+    "high_school_gate_b",
+    "bar_street_c",
+    "laundry_c",
+  ]) {
+    move(g, id);
+    const n = g.snapshot().cityMap.nodes.find((n) => n.id === id);
+    assert.ok(n.facility);
+    assert.equal(n.service, null);
+    assert.equal(places[id].indoor, false);
+    assert.equal(places[id].strike_sealed, true);
+  }
+  assert.throws(() => move(g, "gas_station_d"), { code: "DAY_UNAVAILABLE" });
+});
+
+test("高中与大学：新局各自校门，旧存档校门与手部覆写仍能原样恢复", () => {
+  const student = createGame(defaultInit({ targetId: "student" }));
+  const college = createGame(defaultInit({ targetId: "college" }));
+  assert.equal(student.save().route.nodes[0], "high_school_gate_b");
+  assert.equal(college.save().route.nodes[0], "school_gate_b");
+  const old = student.save();
+  old.route.nodes[0] = "school_gate_b";
+  old.spatial.playerPlaceId = "school_gate_b";
+  old.spatial.lastSeen = null;
+  const restored = createGame({ saved: old });
+  assert.deepEqual(restored.save().route, old.route);
+  assert.equal(restored.save().spatial.playerPlaceId, "school_gate_b");
+  assert.ok(
+    require("../src/config/rules.json").identity.list.student.freePass.includes(
+      "high_school_gate_b",
+    ),
   );
 });

@@ -181,6 +181,12 @@
             "name": "整理书包",
             "fumbling": true,
             "desc": "走出校门后在昏暗门柱旁停步，拉严沉重书包的拉链并系紧围巾"
+          },
+          "high_school_gate_b": {
+            "id": "bag_tidy",
+            "name": "整理书包",
+            "fumbling": true,
+            "desc": "走出校门后在昏暗门柱旁停步，拉严沉重书包的拉链并系紧围巾"
           }
         },
         "carriagePool": [
@@ -288,7 +294,7 @@
           "prompt": "白描晚自习放学后的校门人潮与深巷暮色，前半程与同伴结伴低语，在学区公交站告别后独自拐入老巷",
           "path": [
             {
-              "place": "school_gate_b",
+              "place": "high_school_gate_b",
               "t": "2100"
             },
             {
@@ -318,7 +324,7 @@
           "prompt": "白描周五单人值日关门后的寂静夜色，手提沉重书包低头快步独行，整条归途无同伴掩护",
           "path": [
             {
-              "place": "school_gate_b",
+              "place": "high_school_gate_b",
               "t": "2130"
             },
             {
@@ -512,7 +518,7 @@
           "public": false,
           "title": "放学时间",
           "text": "平日晚自习21:00准时打铃下课，周五值日会晚走约半小时。",
-          "place": "school_gate_b",
+          "place": "high_school_gate_b",
           "reveal_via": []
         },
         {
@@ -613,7 +619,7 @@
           "public": false,
           "title": "单恋心事",
           "text": "暗恋隔壁班的升学榜第一名，但自尊心要强从不敢搭话，每天放学会故意从那间教室门前走过。",
-          "place": "school_gate_b",
+          "place": "high_school_gate_b",
           "reveal_via": [
             "ransack",
             "audit_class"

@@ -283,6 +283,13 @@ const deadline = setTimeout(() => {
       document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady;
       const before=(await getVariables()).wx_save;
       const canvas=document.getElementById('wxCityCanvas');
+      ok('城市交通层含地铁市区公交和郊外公路',document.querySelector('[data-transit-line="metro_1"]')&&document.querySelector('[data-transit-line="night_bus"]')&&document.querySelector('[data-transit-line="river_express"]')&&document.querySelector('[data-transit-line="north_road"]'));
+      document.querySelector('[data-map-transit]').click();
+      ok('关闭交通不移位或扣点',!document.querySelector('[data-transit-line]')&&JSON.stringify((await getVariables()).wx_save)===JSON.stringify(before));
+      document.querySelector('[data-map-transit]').click();
+      document.querySelector('[data-map-district="A"]').click();document.querySelector('[data-place-id="central_mall_a"]').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+      ok('新增设施说明公共入口而不冒充已开商店',document.getElementById('wxCityInfo').textContent.includes('场所内活动暂未开放')&&!document.querySelector('[data-map-market]')&&JSON.stringify((await getVariables()).wx_save)===JSON.stringify(before));
+      document.querySelector('[data-map-district="B"]').click();
       ok('街区地图有建筑道路绿地与江面',document.querySelectorAll('.wx-map-block').length>30&&document.querySelector('.wx-map-street .road-surface')&&document.querySelector('.wx-map-water')&&document.querySelector('.wx-map-block .tree'));
       ok('默认完整街区适合屏幕',canvas.scrollWidth<=canvas.clientWidth+2);
       document.querySelector('[data-map-zoom="detail"]').click();
@@ -376,6 +383,9 @@ const deadline = setTimeout(() => {
     ["map-city", 1100, "all"],
     ["map-district", 390, "B"],
     ["map-riverside", 1100, "C"],
+    ["map-cbd",1100,"A"],
+    ["map-oldtown",1100,"B"],
+    ["map-suburb",1100,"D"],
   ]) {
     await send("Emulation.setDeviceMetricsOverride", {
       width,

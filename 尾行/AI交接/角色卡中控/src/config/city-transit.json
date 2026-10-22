@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "routes": [
+    {
+      "id": "metro_1",
+      "name": "地铁 1 号线",
+      "kind": "metro",
+      "stops": ["old_metro_b", "metro_hub_a"],
+      "path": ["old_metro_b", [900, 1025], [900, 1175], "metro_hub_a"],
+      "label": [1080, 1150],
+      "note": "连接老城文教区与中城 CBD。"
+    },
+    {
+      "id": "night_bus",
+      "name": "夜市环线公交",
+      "kind": "bus",
+      "stops": ["school_bus_terminal_b", "dock_bus_stop_c"],
+      "path": [
+        "school_bus_terminal_b",
+        [435, 910],
+        [700, 910],
+        [700, 1365],
+        [330, 1365],
+        [330, 1575],
+        [625, 1575],
+        "dock_bus_stop_c"
+      ],
+      "label": [445, 1392],
+      "note": "连接 B 区学区总站与 C 区码头站。"
+    },
+    {
+      "id": "river_express",
+      "name": "跨江快线公交",
+      "kind": "bus",
+      "stops": ["bus_bay_a", "bridge_head_c"],
+      "path": [
+        "bus_bay_a",
+        [1605, 1095],
+        [1975, 1095],
+        [1975, 1880],
+        "bridge_head_c"
+      ],
+      "label": [1460, 1850],
+      "note": "连接中城公交港湾与临江大桥头。"
+    },
+    {
+      "id": "north_road",
+      "name": "北环公路",
+      "kind": "road",
+      "stops": ["bus_bay_a", "suburb_highway_d"],
+      "path": [
+        "bus_bay_a",
+        [1605, 1095],
+        [1975, 1095],
+        [1975, 630],
+        [1840, 630],
+        "suburb_highway_d"
+      ],
+      "label": [1740, 655],
+      "note": "D 区仅经公路抵达，地图不提供直接进郊外的捷径。"
+    }
+  ]
+}

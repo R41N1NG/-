@@ -3,57 +3,34 @@
     "A": {
       "id": "A",
       "name": "中城CBD商务区",
-      "sectors": [
-        "A-1",
-        "A-2",
-        "A-3"
-      ],
-      "transit_ports": [
-        "metro_hub_a",
-        "bus_bay_a"
-      ],
-      "audio_ambient": "assets/audio/ambient/zone_a_surface.ogg"
+      "sectors": ["A-1", "A-2", "A-3", "A-4", "A-5"],
+      "transit_ports": ["metro_hub_a", "bus_bay_a"],
+      "audio_ambient": "assets/audio/ambient/zone_a_surface.ogg",
+      "setting": "urban"
     },
     "B": {
       "id": "B",
       "name": "老城文教区",
-      "sectors": [
-        "B-1",
-        "B-2",
-        "B-3"
-      ],
-      "transit_ports": [
-        "school_bus_terminal_b",
-        "old_metro_b"
-      ],
-      "audio_ambient": "assets/audio/ambient/zone_b_street.ogg"
+      "sectors": ["B-1", "B-2", "B-3", "B-4", "B-5"],
+      "transit_ports": ["school_bus_terminal_b", "old_metro_b"],
+      "audio_ambient": "assets/audio/ambient/zone_b_street.ogg",
+      "setting": "urban"
     },
     "C": {
       "id": "C",
       "name": "临江娱乐红灯区",
-      "sectors": [
-        "C-1",
-        "C-2",
-        "C-3"
-      ],
-      "transit_ports": [
-        "dock_bus_stop_c",
-        "bridge_head_c"
-      ],
-      "audio_ambient": "assets/audio/ambient/zone_c_clubstreet.ogg"
+      "sectors": ["C-1", "C-2", "C-3", "C-4"],
+      "transit_ports": ["dock_bus_stop_c", "bridge_head_c"],
+      "audio_ambient": "assets/audio/ambient/zone_c_clubstreet.ogg",
+      "setting": "urban"
     },
     "D": {
       "id": "D",
       "name": "郊野豪宅区",
-      "sectors": [
-        "D-1",
-        "D-2",
-        "D-3"
-      ],
-      "transit_ports": [
-        "suburb_highway_d"
-      ],
-      "audio_ambient": "assets/audio/ambient/zone_d_road.ogg"
+      "sectors": ["D-1", "D-2", "D-3"],
+      "transit_ports": ["suburb_highway_d"],
+      "audio_ambient": "assets/audio/ambient/zone_d_road.ogg",
+      "setting": "suburb"
     }
   },
   "places": {
@@ -70,20 +47,10 @@
       "strike_sealed": true,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "skybridge_a",
-        "metro_hub_a",
-        "parking_b2_a",
-        "back_alley_a"
-      ],
-      "spots": [
-        "reception",
-        "security_clock"
-      ],
+      "exits": ["skybridge_a", "metro_hub_a", "parking_b2_a", "back_alley_a"],
+      "spots": ["reception", "security_clock"],
       "audio_trigger": "footstep_marble",
-      "free_pass": [
-        "guard"
-      ]
+      "free_pass": ["guard"]
     },
     "parking_b2_a": {
       "id": "parking_b2_a",
@@ -98,18 +65,10 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "office_lobby_a",
-        "trash_station_a"
-      ],
-      "spots": [
-        "pillar_hide",
-        "tire_screech"
-      ],
+      "exits": ["office_lobby_a", "trash_station_a"],
+      "spots": ["pillar_hide", "tire_screech"],
       "audio_ambient": "assets/audio/ambient/zone_a_parking.ogg",
-      "free_pass": [
-        "guard"
-      ]
+      "free_pass": ["guard"]
     },
     "skybridge_a": {
       "id": "skybridge_a",
@@ -124,14 +83,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "office_lobby_a",
-        "metro_hub_a",
-        "bus_bay_a"
-      ],
-      "spots": [
-        "perch_watch"
-      ]
+      "exits": ["office_lobby_a", "metro_hub_a", "bus_bay_a"],
+      "spots": ["perch_watch"]
     },
     "metro_hub_a": {
       "id": "metro_hub_a",
@@ -150,12 +103,27 @@
         "office_lobby_a",
         "skybridge_a",
         "store_24h_a",
-        "bus_bay_a"
+        "bus_bay_a",
+        "central_mall_a",
+        "bank_a",
+        "business_cafe_a",
+        "clinic_a",
+        "business_hotel_a",
+        "central_plaza_a",
+        "pedestrian_street_a",
+        "department_store_a",
+        "cinema_a",
+        "gym_a",
+        "restaurant_a",
+        "courier_a",
+        "taxi_rank_a",
+        "public_parking_a",
+        "apartment_plaza_a",
+        "coworking_a",
+        "electronics_a",
+        "station_square_a"
       ],
-      "spots": [
-        "ticket_gate",
-        "sunken_plaza"
-      ]
+      "spots": ["ticket_gate", "sunken_plaza"]
     },
     "bus_bay_a": {
       "id": "bus_bay_a",
@@ -170,13 +138,8 @@
       "strike_sealed": true,
       "sanctuary": false,
       "transit_port": true,
-      "exits": [
-        "metro_hub_a",
-        "skybridge_a"
-      ],
-      "spots": [
-        "bus_wait"
-      ]
+      "exits": ["metro_hub_a", "skybridge_a"],
+      "spots": ["bus_wait"]
     },
     "store_24h_a": {
       "id": "store_24h_a",
@@ -191,14 +154,8 @@
       "strike_sealed": true,
       "sanctuary": true,
       "transit_port": false,
-      "exits": [
-        "metro_hub_a",
-        "office_lobby_a"
-      ],
-      "spots": [
-        "window_watch",
-        "exit_watch"
-      ]
+      "exits": ["metro_hub_a", "office_lobby_a"],
+      "spots": ["window_watch", "exit_watch"]
     },
     "back_alley_a": {
       "id": "back_alley_a",
@@ -213,14 +170,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "office_lobby_a",
-        "trash_station_a"
-      ],
-      "spots": [
-        "fan_mask",
-        "ebike_hide"
-      ]
+      "exits": ["office_lobby_a", "trash_station_a"],
+      "spots": ["fan_mask", "ebike_hide"]
     },
     "trash_station_a": {
       "id": "trash_station_a",
@@ -235,13 +186,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "back_alley_a",
-        "parking_b2_a"
-      ],
-      "spots": [
-        "trash_search"
-      ]
+      "exits": ["back_alley_a", "parking_b2_a"],
+      "spots": ["trash_search"]
     },
     "school_gate_b": {
       "id": "school_gate_b",
@@ -258,15 +204,15 @@
       "transit_port": false,
       "exits": [
         "school_bus_terminal_b",
-        "old_skybridge_b"
+        "old_skybridge_b",
+        "university_library_b",
+        "university_canteen_b",
+        "university_sports_b",
+        "university_dorm_gate_b"
       ],
-      "spots": [
-        "gate_watch",
-        "rush_mask"
-      ],
-      "free_pass": [
-        "student"
-      ]
+      "spots": ["gate_watch", "rush_mask"],
+      "free_pass": ["student"],
+      "mapName": "大学正门"
     },
     "school_bus_terminal_b": {
       "id": "school_bus_terminal_b",
@@ -284,14 +230,13 @@
       "exits": [
         "school_gate_b",
         "old_skybridge_b",
-        "old_metro_b"
+        "old_metro_b",
+        "high_school_gate_b",
+        "campus_bookshop_b",
+        "campus_cafe_b"
       ],
-      "spots": [
-        "bus_wait"
-      ],
-      "free_pass": [
-        "student"
-      ]
+      "spots": ["bus_wait"],
+      "free_pass": ["student"]
     },
     "old_metro_b": {
       "id": "old_metro_b",
@@ -306,14 +251,8 @@
       "strike_sealed": true,
       "sanctuary": true,
       "transit_port": true,
-      "exits": [
-        "school_bus_terminal_b",
-        "old_skybridge_b",
-        "store_24h_b"
-      ],
-      "spots": [
-        "ticket_gate"
-      ]
+      "exits": ["school_bus_terminal_b", "old_skybridge_b", "store_24h_b"],
+      "spots": ["ticket_gate"]
     },
     "old_skybridge_b": {
       "id": "old_skybridge_b",
@@ -334,9 +273,7 @@
         "store_24h_b",
         "old_park_b"
       ],
-      "spots": [
-        "perch_watch"
-      ]
+      "spots": ["perch_watch"]
     },
     "store_24h_b": {
       "id": "store_24h_b",
@@ -354,12 +291,10 @@
       "exits": [
         "old_skybridge_b",
         "old_metro_b",
-        "old_alley_main_b"
+        "old_alley_main_b",
+        "student_street_b"
       ],
-      "spots": [
-        "window_watch",
-        "exit_watch"
-      ]
+      "spots": ["window_watch", "exit_watch"]
     },
     "old_park_b": {
       "id": "old_park_b",
@@ -374,15 +309,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "old_skybridge_b",
-        "old_alley_main_b",
-        "player_base_b"
-      ],
-      "spots": [
-        "park_bench",
-        "tree_hide"
-      ]
+      "exits": ["old_skybridge_b", "old_alley_main_b", "player_base_b"],
+      "spots": ["park_bench", "tree_hide"]
     },
     "old_alley_main_b": {
       "id": "old_alley_main_b",
@@ -404,10 +332,7 @@
         "dead_end_b",
         "love_hotel_b"
       ],
-      "spots": [
-        "sodium_lamp",
-        "corner_shadow"
-      ]
+      "spots": ["sodium_lamp", "corner_shadow"]
     },
     "dark_blind_alley_b": {
       "id": "dark_blind_alley_b",
@@ -422,14 +347,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "old_alley_main_b",
-        "unit_stairs_b"
-      ],
-      "spots": [
-        "trash_hide",
-        "bike_hide"
-      ]
+      "exits": ["old_alley_main_b", "unit_stairs_b"],
+      "spots": ["trash_hide", "bike_hide"]
     },
     "dead_end_b": {
       "id": "dead_end_b",
@@ -444,13 +363,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "old_alley_main_b",
-        "love_hotel_b"
-      ],
-      "spots": [
-        "trap_corner"
-      ]
+      "exits": ["old_alley_main_b", "love_hotel_b"],
+      "spots": ["trap_corner"]
     },
     "love_hotel_b": {
       "id": "love_hotel_b",
@@ -465,15 +379,8 @@
       "strike_sealed": true,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "old_alley_main_b",
-        "dead_end_b"
-      ],
-      "spots": [
-        "hotel_neon_sign",
-        "rain_canopy",
-        "front_desk"
-      ]
+      "exits": ["old_alley_main_b", "dead_end_b"],
+      "spots": ["hotel_neon_sign", "rain_canopy", "front_desk"]
     },
     "unit_stairs_b": {
       "id": "unit_stairs_b",
@@ -488,18 +395,9 @@
       "strike_sealed": false,
       "sanctuary": true,
       "transit_port": false,
-      "exits": [
-        "dark_blind_alley_b",
-        "rooftop_b"
-      ],
-      "spots": [
-        "listen_home",
-        "door_crack",
-        "try_handle"
-      ],
-      "free_pass": [
-        "guard"
-      ]
+      "exits": ["dark_blind_alley_b", "rooftop_b"],
+      "spots": ["listen_home", "door_crack", "try_handle"],
+      "free_pass": ["guard"]
     },
     "rooftop_b": {
       "id": "rooftop_b",
@@ -514,13 +412,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "unit_stairs_b"
-      ],
-      "spots": [
-        "perch_watch",
-        "climb_point"
-      ]
+      "exits": ["unit_stairs_b"],
+      "spots": ["perch_watch", "climb_point"]
     },
     "club_backdoor_c": {
       "id": "club_backdoor_c",
@@ -535,16 +428,9 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "food_street_c",
-        "river_walk_c"
-      ],
-      "spots": [
-        "drunk_exit"
-      ],
-      "free_pass": [
-        "bartender"
-      ]
+      "exits": ["food_street_c", "river_walk_c"],
+      "spots": ["drunk_exit"],
+      "free_pass": ["bartender"]
     },
     "food_street_c": {
       "id": "food_street_c",
@@ -562,14 +448,11 @@
       "exits": [
         "club_backdoor_c",
         "store_24h_c",
-        "dock_bus_stop_c"
+        "dock_bus_stop_c",
+        "bar_street_c"
       ],
-      "spots": [
-        "carpool_stand"
-      ],
-      "free_pass": [
-        "bartender"
-      ]
+      "spots": ["carpool_stand"],
+      "free_pass": ["bartender"]
     },
     "dock_bus_stop_c": {
       "id": "dock_bus_stop_c",
@@ -586,11 +469,13 @@
       "transit_port": true,
       "exits": [
         "food_street_c",
-        "bridge_head_c"
+        "bridge_head_c",
+        "ktv_c",
+        "hotel_c",
+        "late_restaurant_c",
+        "livehouse_c"
       ],
-      "spots": [
-        "bus_wait"
-      ]
+      "spots": ["bus_wait"]
     },
     "bridge_head_c": {
       "id": "bridge_head_c",
@@ -605,13 +490,8 @@
       "strike_sealed": true,
       "sanctuary": false,
       "transit_port": true,
-      "exits": [
-        "dock_bus_stop_c",
-        "river_walk_c"
-      ],
-      "spots": [
-        "bridge_view"
-      ]
+      "exits": ["dock_bus_stop_c", "river_walk_c"],
+      "spots": ["bridge_view"]
     },
     "store_24h_c": {
       "id": "store_24h_c",
@@ -626,14 +506,8 @@
       "strike_sealed": true,
       "sanctuary": true,
       "transit_port": false,
-      "exits": [
-        "food_street_c",
-        "village_main_c"
-      ],
-      "spots": [
-        "window_watch",
-        "hangover_cure"
-      ]
+      "exits": ["food_street_c", "village_main_c"],
+      "spots": ["window_watch", "hangover_cure"]
     },
     "river_walk_c": {
       "id": "river_walk_c",
@@ -648,15 +522,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "club_backdoor_c",
-        "river_steps_c",
-        "bridge_head_c"
-      ],
-      "spots": [
-        "river_rail",
-        "sober_walk"
-      ]
+      "exits": ["club_backdoor_c", "river_steps_c", "bridge_head_c"],
+      "spots": ["river_rail", "sober_walk"]
     },
     "river_steps_c": {
       "id": "river_steps_c",
@@ -671,14 +538,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "river_walk_c",
-        "village_main_c"
-      ],
-      "spots": [
-        "vomit_point",
-        "reed_hide"
-      ]
+      "exits": ["river_walk_c", "village_main_c"],
+      "spots": ["vomit_point", "reed_hide"]
     },
     "village_main_c": {
       "id": "village_main_c",
@@ -697,11 +558,11 @@
         "store_24h_c",
         "river_steps_c",
         "narrow_gap_c",
-        "black_market_c"
+        "black_market_c",
+        "courier_c",
+        "laundry_c"
       ],
-      "spots": [
-        "wet_pavement"
-      ]
+      "spots": ["wet_pavement"]
     },
     "narrow_gap_c": {
       "id": "narrow_gap_c",
@@ -716,14 +577,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "village_main_c",
-        "rental_iron_door_c"
-      ],
-      "spots": [
-        "aircon_drip",
-        "ambush_corner"
-      ]
+      "exits": ["village_main_c", "rental_iron_door_c"],
+      "spots": ["aircon_drip", "ambush_corner"]
     },
     "rental_iron_door_c": {
       "id": "rental_iron_door_c",
@@ -738,14 +593,8 @@
       "strike_sealed": false,
       "sanctuary": true,
       "transit_port": false,
-      "exits": [
-        "narrow_gap_c",
-        "village_roof_c"
-      ],
-      "spots": [
-        "spiral_stairs",
-        "listen_home"
-      ]
+      "exits": ["narrow_gap_c", "village_roof_c"],
+      "spots": ["spiral_stairs", "listen_home"]
     },
     "village_roof_c": {
       "id": "village_roof_c",
@@ -760,13 +609,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "rental_iron_door_c"
-      ],
-      "spots": [
-        "clothesline_hide",
-        "overlook"
-      ]
+      "exits": ["rental_iron_door_c"],
+      "spots": ["clothesline_hide", "overlook"]
     },
     "suburb_highway_d": {
       "id": "suburb_highway_d",
@@ -781,13 +625,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": true,
-      "exits": [
-        "gas_station_d",
-        "private_road_d"
-      ],
-      "spots": [
-        "curve_hide"
-      ]
+      "exits": ["gas_station_d", "private_road_d"],
+      "spots": ["curve_hide"]
     },
     "gas_station_d": {
       "id": "gas_station_d",
@@ -802,14 +641,8 @@
       "strike_sealed": true,
       "sanctuary": true,
       "transit_port": false,
-      "exits": [
-        "suburb_highway_d",
-        "private_road_d"
-      ],
-      "spots": [
-        "mart_cashier",
-        "pump_island"
-      ]
+      "exits": ["suburb_highway_d", "private_road_d"],
+      "spots": ["mart_cashier", "pump_island"]
     },
     "private_road_d": {
       "id": "private_road_d",
@@ -830,10 +663,7 @@
         "pine_forest_d",
         "estate_gate_d"
       ],
-      "spots": [
-        "open_road",
-        "patrol_watch"
-      ]
+      "spots": ["open_road", "patrol_watch"]
     },
     "pine_forest_d": {
       "id": "pine_forest_d",
@@ -848,14 +678,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "private_road_d",
-        "estate_gate_d"
-      ],
-      "spots": [
-        "ebike_cache",
-        "tree_ambush"
-      ]
+      "exits": ["private_road_d", "estate_gate_d"],
+      "spots": ["ebike_cache", "tree_ambush"]
     },
     "estate_gate_d": {
       "id": "estate_gate_d",
@@ -870,15 +694,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "private_road_d",
-        "pine_forest_d",
-        "villa_garden_d"
-      ],
-      "spots": [
-        "gate_intercom",
-        "infrared_cam"
-      ]
+      "exits": ["private_road_d", "pine_forest_d", "villa_garden_d"],
+      "spots": ["gate_intercom", "infrared_cam"]
     },
     "villa_garden_d": {
       "id": "villa_garden_d",
@@ -893,15 +710,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "estate_gate_d",
-        "garage_side_door_d",
-        "villa_porch_d"
-      ],
-      "spots": [
-        "dog_kennel",
-        "sprinkler"
-      ]
+      "exits": ["estate_gate_d", "garage_side_door_d", "villa_porch_d"],
+      "spots": ["dog_kennel", "sprinkler"]
     },
     "garage_side_door_d": {
       "id": "garage_side_door_d",
@@ -916,13 +726,8 @@
       "strike_sealed": false,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "villa_garden_d",
-        "villa_porch_d"
-      ],
-      "spots": [
-        "pick_side_door"
-      ]
+      "exits": ["villa_garden_d", "villa_porch_d"],
+      "spots": ["pick_side_door"]
     },
     "villa_porch_d": {
       "id": "villa_porch_d",
@@ -937,14 +742,8 @@
       "strike_sealed": false,
       "sanctuary": true,
       "transit_port": false,
-      "exits": [
-        "villa_garden_d",
-        "garage_side_door_d"
-      ],
-      "spots": [
-        "smart_lock",
-        "home_safe"
-      ]
+      "exits": ["villa_garden_d", "garage_side_door_d"],
+      "spots": ["smart_lock", "home_safe"]
     },
     "player_base_b": {
       "id": "player_base_b",
@@ -959,9 +758,7 @@
       "strike_sealed": true,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "old_park_b"
-      ],
+      "exits": ["old_park_b"],
       "spots": []
     },
     "black_market_c": {
@@ -977,10 +774,702 @@
       "strike_sealed": true,
       "sanctuary": false,
       "transit_port": false,
-      "exits": [
-        "village_main_c"
-      ],
+      "exits": ["village_main_c"],
       "spots": []
+    },
+    "central_mall_a": {
+      "id": "central_mall_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "中城综合商场",
+      "mapName": "中城综合商场",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "mall",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "bank_a": {
+      "id": "bank_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "银行营业厅",
+      "mapName": "银行营业厅",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "service",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "business_cafe_a": {
+      "id": "business_cafe_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "商务咖啡馆",
+      "mapName": "商务咖啡馆",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "shop",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "clinic_a": {
+      "id": "clinic_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "综合门诊",
+      "mapName": "综合门诊",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "service",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "business_hotel_a": {
+      "id": "business_hotel_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "商务酒店",
+      "mapName": "商务酒店",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "hotel",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "central_plaza_a": {
+      "id": "central_plaza_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "中心广场",
+      "mapName": "中心广场",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "plaza",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "pedestrian_street_a": {
+      "id": "pedestrian_street_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "商业步行街",
+      "mapName": "商业步行街",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "market",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "department_store_a": {
+      "id": "department_store_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "百货商场",
+      "mapName": "百货商场",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "mall",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "cinema_a": {
+      "id": "cinema_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "城市影城",
+      "mapName": "城市影城",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "nightlife",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "gym_a": {
+      "id": "gym_a",
+      "district": "A",
+      "sector": "A-5",
+      "name": "健身中心",
+      "mapName": "健身中心",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "service",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "restaurant_a": {
+      "id": "restaurant_a",
+      "district": "A",
+      "sector": "A-5",
+      "name": "商务餐厅",
+      "mapName": "商务餐厅",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "shop",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "courier_a": {
+      "id": "courier_a",
+      "district": "A",
+      "sector": "A-5",
+      "name": "快递驿站",
+      "mapName": "快递驿站",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "service",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "taxi_rank_a": {
+      "id": "taxi_rank_a",
+      "district": "A",
+      "sector": "A-5",
+      "name": "出租车候车点",
+      "mapName": "出租车候车点",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "transit",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "public_parking_a": {
+      "id": "public_parking_a",
+      "district": "A",
+      "sector": "A-5",
+      "name": "公共停车场",
+      "mapName": "公共停车场",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "parking",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "apartment_plaza_a": {
+      "id": "apartment_plaza_a",
+      "district": "A",
+      "sector": "A-5",
+      "name": "公寓广场",
+      "mapName": "公寓广场",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "housing",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "coworking_a": {
+      "id": "coworking_a",
+      "district": "A",
+      "sector": "A-5",
+      "name": "联合办公楼",
+      "mapName": "联合办公楼",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "office",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "electronics_a": {
+      "id": "electronics_a",
+      "district": "A",
+      "sector": "A-4",
+      "name": "数码商城",
+      "mapName": "数码商城",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "mall",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "station_square_a": {
+      "id": "station_square_a",
+      "district": "A",
+      "sector": "A-2",
+      "name": "站前广场",
+      "mapName": "站前广场",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["metro_hub_a"],
+      "spots": [],
+      "facility": {
+        "kind": "plaza",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "high_school_gate_b": {
+      "id": "high_school_gate_b",
+      "district": "B",
+      "sector": "B-5",
+      "name": "高中正门",
+      "mapName": "高中正门",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["school_bus_terminal_b"],
+      "spots": [],
+      "facility": {
+        "kind": "school",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      },
+      "free_pass": ["student"]
+    },
+    "university_library_b": {
+      "id": "university_library_b",
+      "district": "B",
+      "sector": "B-4",
+      "name": "大学图书馆",
+      "mapName": "大学图书馆",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["school_gate_b"],
+      "spots": [],
+      "facility": {
+        "kind": "library",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "university_canteen_b": {
+      "id": "university_canteen_b",
+      "district": "B",
+      "sector": "B-4",
+      "name": "大学食堂",
+      "mapName": "大学食堂",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["school_gate_b"],
+      "spots": [],
+      "facility": {
+        "kind": "shop",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "university_sports_b": {
+      "id": "university_sports_b",
+      "district": "B",
+      "sector": "B-4",
+      "name": "大学运动场",
+      "mapName": "大学运动场",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["school_gate_b"],
+      "spots": [],
+      "facility": {
+        "kind": "sports",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "campus_bookshop_b": {
+      "id": "campus_bookshop_b",
+      "district": "B",
+      "sector": "B-4",
+      "name": "学府书店",
+      "mapName": "学府书店",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["school_bus_terminal_b"],
+      "spots": [],
+      "facility": {
+        "kind": "library",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "campus_cafe_b": {
+      "id": "campus_cafe_b",
+      "district": "B",
+      "sector": "B-4",
+      "name": "学府咖啡馆",
+      "mapName": "学府咖啡馆",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["school_bus_terminal_b"],
+      "spots": [],
+      "facility": {
+        "kind": "shop",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "student_street_b": {
+      "id": "student_street_b",
+      "district": "B",
+      "sector": "B-4",
+      "name": "学生生活街",
+      "mapName": "学生生活街",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["store_24h_b"],
+      "spots": [],
+      "facility": {
+        "kind": "market",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "university_dorm_gate_b": {
+      "id": "university_dorm_gate_b",
+      "district": "B",
+      "sector": "B-4",
+      "name": "大学宿舍区入口",
+      "mapName": "大学宿舍区入口",
+      "light": "bright",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["school_gate_b"],
+      "spots": [],
+      "facility": {
+        "kind": "housing",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "bar_street_c": {
+      "id": "bar_street_c",
+      "district": "C",
+      "sector": "C-1",
+      "name": "霓虹酒吧街",
+      "mapName": "霓虹酒吧街",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["food_street_c"],
+      "spots": [],
+      "facility": {
+        "kind": "nightlife",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "ktv_c": {
+      "id": "ktv_c",
+      "district": "C",
+      "sector": "C-4",
+      "name": "夜间歌厅",
+      "mapName": "夜间歌厅",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["dock_bus_stop_c"],
+      "spots": [],
+      "facility": {
+        "kind": "nightlife",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "hotel_c": {
+      "id": "hotel_c",
+      "district": "C",
+      "sector": "C-4",
+      "name": "临江旅馆",
+      "mapName": "临江旅馆",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["dock_bus_stop_c"],
+      "spots": [],
+      "facility": {
+        "kind": "hotel",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "late_restaurant_c": {
+      "id": "late_restaurant_c",
+      "district": "C",
+      "sector": "C-4",
+      "name": "深夜食堂",
+      "mapName": "深夜食堂",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["dock_bus_stop_c"],
+      "spots": [],
+      "facility": {
+        "kind": "shop",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "livehouse_c": {
+      "id": "livehouse_c",
+      "district": "C",
+      "sector": "C-4",
+      "name": "现场音乐酒吧",
+      "mapName": "现场音乐酒吧",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["dock_bus_stop_c"],
+      "spots": [],
+      "facility": {
+        "kind": "nightlife",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "courier_c": {
+      "id": "courier_c",
+      "district": "C",
+      "sector": "C-3",
+      "name": "城中村快递站",
+      "mapName": "城中村快递站",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["village_main_c"],
+      "spots": [],
+      "facility": {
+        "kind": "service",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
+    },
+    "laundry_c": {
+      "id": "laundry_c",
+      "district": "C",
+      "sector": "C-3",
+      "name": "自助洗衣店",
+      "mapName": "自助洗衣店",
+      "light": "dim",
+      "crowd": "mid",
+      "surveillance": "mid",
+      "cover": 0,
+      "indoor": false,
+      "strike_sealed": true,
+      "sanctuary": false,
+      "transit_port": false,
+      "exits": ["village_main_c"],
+      "spots": [],
+      "facility": {
+        "kind": "service",
+        "note": "公共入口或外侧区域；场所内活动暂未开放。"
+      }
     }
   }
 }

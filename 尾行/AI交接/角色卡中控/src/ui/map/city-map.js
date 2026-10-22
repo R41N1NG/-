@@ -21,7 +21,8 @@ function createCityMapUI({
     pending = null,
     retry = null,
     counter = 0,
-    zoomed = false;
+    zoomed = false,
+    showTransit = true;
   const el = (tag, text) => {
     const e = document.createElement(tag);
     if (text !== undefined) e.textContent = text;
@@ -36,6 +37,7 @@ function createCityMapUI({
   function reset() {
     snapshot = null;
     zoomed = false;
+    showTransit = true;
     view = null;
     selected = null;
     pending = null;
@@ -51,6 +53,7 @@ function createCityMapUI({
     if (snapshot && !same(snapshot.dayPlan.sync, snap.dayPlan.sync)) {
       view = null;
       zoomed = false;
+      showTransit = true;
       selected = null;
       pending = null;
       retry = null;
@@ -86,8 +89,15 @@ function createCityMapUI({
       );
       tabs.append(b);
     }
+    const transitToggle = el("button", "交通线路");
+    transitToggle.type = "button";
+    transitToggle.dataset.mapTransit = "true";
+    transitToggle.setAttribute("aria-pressed", String(showTransit));
+    tabs.append(transitToggle);
     canvas.classList.toggle("is-zoomed", zoomed);
-    canvas.replaceChildren(drawCityMap({ svg, map, view, selected }));
+    canvas.replaceChildren(
+      drawCityMap({ svg, map, view, selected, showTransit }),
+    );
     const nodes = new Map(map.nodes.map((n) => [n.id, n]));
     const n = nodes.get(selected);
     info.replaceChildren();
@@ -101,6 +111,9 @@ function createCityMapUI({
           : `所在区域：${map.frames.find((f) => f.id === n.district).name}`,
       ),
     );
+    if (n.facility) info.append(el("p", n.facility.note));
+    const lines = (map.transit || []).filter((r) => r.stops.includes(n.id));
+    for (const r of lines) info.append(el("p", `${r.name}：${r.note}`));
     const names = map.edges
       .filter((e) => e.from === n.id || e.to === n.id)
       .map((e) => nodes.get(e.from === n.id ? e.to : e.from)?.name)
@@ -163,6 +176,11 @@ function createCityMapUI({
     }
   }
   function choose(event) {
+    if (event.target.closest?.("[data-map-transit]")) {
+      showTransit = !showTransit;
+      render(snapshot);
+      return;
+    }
     const zoom = event.target.closest?.("[data-map-zoom]");
     if (zoom) {
       zoomed = zoom.dataset.mapZoom === "detail";
