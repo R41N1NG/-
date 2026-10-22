@@ -9799,6 +9799,74 @@
     }
   });
 
+  // src/config/day-plan.json
+  var require_day_plan = __commonJS({
+    "src/config/day-plan.json"(exports, module) {
+      module.exports = {
+        budget: 4,
+        tailingCost: 2,
+        periods: [
+          { id: "morning", name: "\u65E9\u95F4", short: "\u65E9" },
+          { id: "midday", name: "\u5348\u95F4", short: "\u4E2D" },
+          { id: "afternoon", name: "\u5348\u540E", short: "\u5348" },
+          { id: "evening", name: "\u665A\u95F4", short: "\u665A" },
+          { id: "midnight", name: "\u5B50\u591C", short: "\u5B50" }
+        ]
+      };
+    }
+  });
+
+  // src/contracts/day-plan.js
+  var require_day_plan2 = __commonJS({
+    "src/contracts/day-plan.js"(exports, module) {
+      "use strict";
+      var RULES = require_day_plan();
+      var copy = (value) => JSON.parse(JSON.stringify(value));
+      function createDayPlan(slot = "e21_23") {
+        const period = slot === "prepare" ? 2 : ["e23_01", "late"].includes(slot) ? 4 : 3;
+        return {
+          schema: 1,
+          period,
+          spent: 0,
+          activity: null,
+          ended: false,
+          source: "legacy"
+        };
+      }
+      function validateDayPlan(value) {
+        if (!value || value.schema !== 1 || !Number.isInteger(value.period) || value.period < 0 || value.period >= RULES.periods.length || !Number.isInteger(value.spent) || value.spent < 0 || value.spent > RULES.budget || typeof value.ended !== "boolean" || !["legacy", "daily"].includes(value.source))
+          throw Object.assign(new Error("\u65E5\u7A0B\u6570\u636E\u65E0\u6548"), { code: "SAVE_INVALID" });
+        const a = value.activity;
+        if (a !== null && (!a || typeof a.id !== "string" || !a.id || a.id.length > 128 || !["routine", "tailing"].includes(a.kind) || typeof a.name !== "string" || !a.name || a.name.length > 64 || !Number.isInteger(a.cost) || a.cost < 0 || a.cost > RULES.budget || a.cost > value.spent || a.kind === "tailing" && a.cost !== RULES.tailingCost))
+          throw Object.assign(new Error("\u65E5\u7A0B\u6D3B\u52A8\u6570\u636E\u65E0\u6548"), {
+            code: "SAVE_INVALID"
+          });
+        if (value.ended && (value.period !== RULES.periods.length - 1 || a !== null))
+          throw Object.assign(new Error("\u65E5\u7A0B\u7ED3\u675F\u72B6\u6001\u65E0\u6548"), {
+            code: "SAVE_INVALID"
+          });
+        return copy(value);
+      }
+      function dayPlanView(value, date) {
+        const state = validateDayPlan(value);
+        return {
+          ...state,
+          date,
+          budget: RULES.budget,
+          remaining: RULES.budget - state.spent,
+          tailingCost: RULES.tailingCost,
+          periodName: RULES.periods[state.period].name
+        };
+      }
+      module.exports = {
+        DAY_PLAN_RULES: RULES,
+        createDayPlan,
+        validateDayPlan,
+        dayPlanView
+      };
+    }
+  });
+
   // src/runtime/game/snapshot.js
   var require_snapshot = __commonJS({
     "src/runtime/game/snapshot.js"(exports, module) {
@@ -9809,6 +9877,7 @@
       var map = require_map();
       var F = require_facts2();
       var ALBUM = require_album();
+      var { dayPlanView } = require_day_plan2();
       var { WEATHER_ICON, SHOE_DIST_FACTOR } = require_constants();
       function createSnapshotSystem({
         g,
@@ -9852,6 +9921,7 @@
           const envSfx = g._envSfx !== void 0 ? g._envSfx : rollEnvSfx();
           return JSON.parse(
             JSON.stringify({
+              dayPlan: dayPlanView(g.dayPlan, s.date),
               player: {
                 heart: s.heart,
                 stamina: s.stamina,
@@ -10002,6 +10072,7 @@
           return JSON.parse(
             JSON.stringify({
               v: 2,
+              dayPlan: g.dayPlan,
               rngVersion: g.rngVersion,
               nightStartFloor: g.nightStartFloor || 0,
               envSfx: g._envSfx ?? null,
@@ -10064,6 +10135,7 @@
         normalizePersona,
         validatePersona
       } = require_persona();
+      var { validateDayPlan } = require_day_plan2();
       var CURRENT_SAVE_VERSION = 2;
       function migrateSave(saved) {
         if (!saved || typeof saved !== "object" || ![1, 2].includes(saved.v))
@@ -10096,6 +10168,7 @@
           throw Object.assign(new Error("\u5B58\u6863\u65F6\u95F4\u6216\u968F\u673A\u7248\u672C\u65E0\u6548"), {
             code: "SAVE_INVALID"
           });
+        if (copy.dayPlan !== void 0) validateDayPlan(copy.dayPlan);
         copy.targetPersona = normalizePersona(copy.targetPersona);
         validatePersona(copy.targetPersona, copy.targetId || "college", {
           references: false
@@ -10129,6 +10202,7 @@
       var { createSaveSystem } = require_save();
       var { classifyPlace } = require_action_requirements();
       var { migrateSave } = require_migrations();
+      var { createDayPlan, validateDayPlan } = require_day_plan2();
       var {
         normalizePersona,
         validatePersona
@@ -10250,7 +10324,7 @@
           initTargetState,
           syncTargetShoeTags,
           syncPersonaTags,
-          nightFall
+          nightFall: legacyNightFall
         } = createTargetSystem({ g, L, seedAt, log, syncHeartTags });
         const { targetEffectiveAcuity, gain, runCheck, categoryOf } = createCheckSystem({ g, seedFor, isFamiliar });
         const { setRoute, herAdvance, advanceRouteByClock, revealNode } = createRouteSystem({ g, seedAt, applyTargetState });
@@ -10372,6 +10446,14 @@
           syncTargetShoeTags();
           syncPersonaTags();
           applyTargetState();
+        }
+        g.dayPlan = validateDayPlan(
+          init.saved?.dayPlan ?? init.dayPlan ?? createDayPlan(g.slot)
+        );
+        function nightFall() {
+          const result = legacyNightFall();
+          if (!result?.blocked) g.dayPlan = createDayPlan(g.slot);
+          return result;
         }
         (function backfillRouteTimes() {
           const r = g.route;
@@ -12452,7 +12534,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.3",
+        version: "0.8.4",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -12461,9 +12543,10 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
+          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
-          "test:browser": "node tools/check-browser.cjs"
+          "test:browser": "node tools/check-browser.cjs",
+          "preview:daily": "node tools/build/day-preview.js"
         },
         devDependencies: {
           "@types/node": "24.10.0",

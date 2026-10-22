@@ -6,6 +6,7 @@ const C = require("../checks.js");
 const map = require("../map.js");
 const F = require("../facts.js");
 const ALBUM = require("../album.js");
+const { dayPlanView } = require("../../contracts/day-plan.js");
 const { WEATHER_ICON, SHOE_DIST_FACTOR } = require("./constants.js");
 
 function createSnapshotSystem({
@@ -67,6 +68,7 @@ function createSnapshotSystem({
 
     return JSON.parse(
       JSON.stringify({
+        dayPlan: dayPlanView(g.dayPlan, s.date),
         player: {
           heart: s.heart,
           stamina: s.stamina,

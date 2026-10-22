@@ -514,3 +514,33 @@ test("切换聊天后旧恢复按钮的确认不能作用于新聊天", async ()
   );
   assert.deepEqual(h.stores.B, {});
 });
+
+test("日程完整字段随聊天隔离和重读恢复，不从界面重新生成点数", async () => {
+  const h = host();
+  const plan = {
+    schema: 1,
+    period: 3,
+    spent: 2,
+    activity: {
+      id: "tailing-current",
+      kind: "tailing",
+      name: "尾行进行中",
+      cost: 2,
+    },
+    ended: false,
+    source: "daily",
+  };
+  await h.sync.newGame({ dayPlan: plan });
+  await send(h, "one");
+  h.setActive("B");
+  await h.sync.newGame({
+    dayPlan: { ...plan, period: 0, spent: 0, activity: null },
+  });
+  assert.equal(h.stores.B.wx_snap.dayPlan.remaining, 4);
+  h.setActive("A");
+  await h.sync.reconcile();
+  assert.equal(h.state.game.snapshot().dayPlan.remaining, 2);
+  assert.deepEqual(h.stores.A.wx_save.dayPlan, plan);
+  await h.sync.rebuild();
+  assert.equal(h.state.game.snapshot().dayPlan.activity.id, "tailing-current");
+});

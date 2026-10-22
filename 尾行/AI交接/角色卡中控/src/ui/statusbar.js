@@ -32,6 +32,7 @@ const {
 } = require("./display.js");
 const { createDetailsRenderer } = require("./renderers/details.js");
 const { clearLiveData } = require("./renderers/empty.js");
+const { createDayPlanRenderer } = require("./renderers/day-plan.js");
 const { createSnapshotRenderer } = require("./renderers/snapshot.js");
 const { createAudio } = require("./audio.js");
 const { createSettlement } = require("./settlement/controller.js");
@@ -55,6 +56,8 @@ function mountStatusbar(document, window) {
   clearLiveData(document);
   const details = createDetailsRenderer({ document });
   details.reset();
+  const dayPlanRenderer = createDayPlanRenderer({ document });
+  dayPlanRenderer.reset();
   const noticeAtMount = document.getElementById("wxSyncNotice");
   if (noticeAtMount) noticeAtMount.hidden = true;
   const root =
@@ -622,6 +625,7 @@ function mountStatusbar(document, window) {
   /* ---------- 渲染：snapshot → 面板（真机唯一入口） ---------- */
 
   function renderSnapshot(snap) {
+    dayPlanRenderer.render(snap);
     details.render(snap);
     return render(snap);
   }
@@ -1860,6 +1864,7 @@ function mountStatusbar(document, window) {
     syncNotice.report(error);
   }
   function resetDisplay() {
+    dayPlanRenderer.reset();
     syncNotice.clear();
     clearLiveData(document);
     details.reset();

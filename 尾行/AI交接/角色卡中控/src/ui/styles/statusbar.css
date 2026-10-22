@@ -2698,3 +2698,34 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 .trpg .wx-sync-notice button { margin: 6px 8px 0 0; padding: 4px 8px; color: inherit; background: transparent; border: 1px solid #6f5833; border-radius: 4px; cursor: pointer; }
 .trpg .wx-sync-notice textarea { display: block; width: 100%; max-height: 160px; color: inherit; background: #151515; }
 .mes.wx-sync-floor { outline: 2px solid #f0b355; outline-offset: -2px; }
+
+/* 每日行动：只消费 dayPlan 快照，独立于心跳与尾行回合。 */
+.trpg .wx-day-plan { margin: 0 10px 8px; padding: 12px 14px 10px; border: 1px solid rgba(173,188,198,.16); border-radius: 7px; background: linear-gradient(120deg,rgba(26,35,41,.96),rgba(12,19,24,.96)); color: #acb9c0; font: 12px/1.5 "Noto Sans SC",system-ui,sans-serif; }
+.trpg .wx-day-heading, .trpg .wx-day-when, .trpg .wx-day-ap, .trpg .wx-day-bottom { display: flex; align-items: center; }
+.trpg .wx-day-heading { justify-content: space-between; gap: 10px; }
+.trpg .wx-day-when { gap: 8px; flex-wrap: wrap; min-width: 0; }
+.trpg .wx-day-kicker { color: #788991; font-size: 10px; letter-spacing: 2px; }
+.trpg .wx-day-dot { color: #586973; }
+.trpg #wxDayPeriod { color: #e2d2ab; font-weight: 500; }
+.trpg .wx-day-ap { flex-shrink: 0; gap: 6px; }
+.trpg #wxDayAp { color: #f2e3bb; font: 500 23px/1 ui-monospace,Consolas,monospace; }
+.trpg .wx-day-ap-total { color: #798d98; }
+.trpg .wx-day-ap-pips { display: flex; gap: 3px; margin-left: 4px; }
+.trpg .wx-day-ap-pips i { width: 6px; height: 14px; border-radius: 2px; background: #c4b184; }
+.trpg .wx-day-ap-pips i.used { background: #303c44; }
+.trpg .wx-day-periods { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); list-style: none; padding: 0; margin: 13px 0 10px; gap: 5px; }
+.trpg .wx-day-periods li { position: relative; text-align: center; padding: 7px 0 0; color: #657883; border-top: 2px solid #2c3942; font-size: 11px; }
+.trpg .wx-day-periods li[data-phase="past"] { color: #a4b0b7; border-color: #70808a; }
+.trpg .wx-day-periods li[data-phase="current"] { color: #efdab0; border-color: #d0b882; }
+.trpg .wx-day-periods li[data-phase="current"]::before { content: ""; position: absolute; top: -4px; left: calc(50% - 3px); width: 6px; height: 6px; border-radius: 50%; background: #e4c68b; box-shadow: 0 0 8px #b49b5a66; }
+.trpg .wx-day-bottom { justify-content: space-between; gap: 10px; color: #71858f; font-size: 10px; }
+.trpg .wx-day-activity { display: flex; align-items: center; gap: 6px; min-width: 0; color: #aebfc8; }
+.trpg .wx-day-activity i { width: 5px; height: 5px; border-radius: 50%; background: #6e838f; flex-shrink: 0; }
+.trpg .wx-day-plan[data-state="active"] .wx-day-activity i { background: #b9c8a2; box-shadow: 0 0 7px #adc19855; }
+.trpg .wx-day-plan[data-state="empty"] .wx-day-periods { margin: 0; }
+@media(max-width:560px) {
+  .trpg .wx-day-plan { margin: 0 6px 6px; padding: 10px; }
+  .trpg .wx-day-when { gap: 5px; }
+  .trpg .wx-day-ap-pips { display: none; }
+  .trpg .wx-day-bottom { align-items: flex-start; flex-direction: column; gap: 3px; }
+}

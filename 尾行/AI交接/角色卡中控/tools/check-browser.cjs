@@ -209,6 +209,52 @@ const deadline = setTimeout(() => {
     errors,
   });
   await evaluate("WxStatusbar.dispose(); true;");
+  // 用户可打开的独立日程预览：同一正式 UI、实际引擎往返快照。
+  const preview = require("./build/day-preview.js").buildDayPreview();
+  await send("Page.setDocumentContent", {
+    frameId: tree.frameTree.frame.id,
+    html: fs.readFileSync(preview.file, "utf8"),
+  });
+  for (const width of [1100, 390, 320]) {
+    await send("Emulation.setDeviceMetricsOverride", {
+      width,
+      height: 800,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    const checks = await evaluate(`(() => {
+      const checks=[]; const ok=(name,value)=>checks.push({name,ok:!!value});
+      document.querySelector('[data-state-index="0"]').click();
+      ok('日程开局 4/4',document.getElementById('wxDayAp').textContent==='4'&&document.getElementById('wxDayBudget').textContent==='4');
+      ok('五时段与早间标记',document.querySelectorAll('#wxDayPeriods li').length===5&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='早间');
+      document.querySelector('[data-state-index="2"]').click();
+      ok('尾行展示扣 2 点后状态',document.getElementById('wxDayAp').textContent==='2'&&document.getElementById('wxDayActivity').textContent==='尾行进行中');
+      ok('尾行仍占当前晚间时段',document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='晚间');
+      ok('日程预览无横向溢出',document.documentElement.scrollWidth<=innerWidth+2);
+      document.querySelector('[data-state-index="3"]').click();
+      ok('日程结束状态',document.getElementById('wxDayAp').textContent==='0'&&!document.querySelector('#wxDayPeriods [aria-current="step"]'));
+      document.querySelector('[data-state-index="4"]').click();
+      ok('旧流程明确提示未启用活动扣点',document.getElementById('wxDayHint').textContent==='日程活动尚未启用');
+      document.querySelector('[data-state-index="2"]').click();
+      return checks;
+    })()`);
+    result.push(...checks.map((check) => ({ width, ...check })));
+    if (width !== 320) {
+      await delay(120);
+      const shot = await send("Page.captureScreenshot", {
+        format: "png",
+        captureBeyondViewport: false,
+      });
+      fs.writeFileSync(
+        path.join(
+          path.dirname(preview.file),
+          width === 1100 ? "desktop.png" : "mobile.png",
+        ),
+        Buffer.from(shot.data, "base64"),
+      );
+    }
+  }
+  await evaluate("WxStatusbar.dispose(); true;");
   fs.writeFileSync(
     path.join(work, "result.json"),
     JSON.stringify(result, null, 2),

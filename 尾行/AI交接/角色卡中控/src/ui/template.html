@@ -112,6 +112,15 @@
       </div>
     </div>
 
+    <div class="wx-day-plan" id="wxDayPlan" data-state="empty" aria-label="每日行动与时段">
+      <div class="wx-day-heading">
+        <div class="wx-day-when"><span class="wx-day-kicker">日程</span><span id="wxDayDate">等待开局</span><span class="wx-day-dot">·</span><strong id="wxDayPeriod">—</strong></div>
+        <div class="wx-day-ap" aria-label="剩余行动点"><span>行动点</span><strong id="wxDayAp">—</strong><span class="wx-day-ap-total">/ <span id="wxDayBudget">—</span></span><span id="wxDayApPips" class="wx-day-ap-pips" aria-hidden="true"></span></div>
+      </div>
+      <ol class="wx-day-periods" id="wxDayPeriods" aria-label="当天五个时段"></ol>
+      <div class="wx-day-bottom"><span class="wx-day-activity"><i aria-hidden="true"></i><span id="wxDayActivity">尚无日程记录</span></span><span id="wxDayHint">每日行动与时段</span></div>
+    </div>
+
     <!-- ═══ 行动胶囊栏（情境自适应 4 胶囊 + 姿态指示 + 二级抽屉展开） ═══ -->
     <div class="wx-capsule-bar" id="wxCapsuleBar" aria-label="战术行动胶囊">
       <div class="wx-posture-badge" id="wxPostureBadge" role="button" tabindex="0" data-tip="未点选胶囊时，本轮以「跟缀·保持当前距离」继续跟踪。点击切换为纯叙事（不掷骰）。">默认: 跟缀 · 保持距离</div>

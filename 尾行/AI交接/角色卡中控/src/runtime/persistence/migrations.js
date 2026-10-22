@@ -4,6 +4,7 @@ const {
   normalizePersona,
   validatePersona,
 } = require("../../contracts/persona.js");
+const { validateDayPlan } = require("../../contracts/day-plan.js");
 const CURRENT_SAVE_VERSION = 2;
 /** Copy and migrate; unknown versions/corrupt values must never become a new game. */
 function migrateSave(saved) {
@@ -56,6 +57,7 @@ function migrateSave(saved) {
     throw Object.assign(new Error("存档时间或随机版本无效"), {
       code: "SAVE_INVALID",
     });
+  if (copy.dayPlan !== undefined) validateDayPlan(copy.dayPlan);
   copy.targetPersona = normalizePersona(copy.targetPersona);
   validatePersona(copy.targetPersona, copy.targetId || "college", {
     references: false,

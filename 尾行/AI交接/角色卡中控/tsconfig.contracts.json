@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowJs": true, "checkJs": true, "noEmit": true,
     "target": "ES2022", "module": "commonjs", "strictNullChecks": true,
-    "skipLibCheck": true, "types": ["node"]
+    "skipLibCheck": true, "resolveJsonModule": true, "types": ["node"]
   },
-  "files": ["src/contracts/types.d.ts", "src/contracts/validation.js", "src/contracts/action-requirements.js", "src/host/chat-sync/session.js"]
+  "files": ["src/contracts/types.d.ts", "src/contracts/validation.js", "src/contracts/action-requirements.js", "src/contracts/day-plan.js", "src/host/chat-sync/session.js"]
 }

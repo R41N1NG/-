@@ -6,6 +6,7 @@ function createSaveSystem({ g, L, getSalt }) {
     return JSON.parse(
       JSON.stringify({
         v: 2,
+        dayPlan: g.dayPlan,
         rngVersion: g.rngVersion,
         nightStartFloor: g.nightStartFloor || 0,
         envSfx: g._envSfx ?? null,

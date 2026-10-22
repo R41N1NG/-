@@ -160,6 +160,7 @@ function _doBuild() {
     "utf8",
   );
 
+  require("./tools/build/day-preview.js").buildDayPreview();
   require("./tools/build/manifest.js").writeManifest(ROOT);
   const delivery = require("./tools/build/delivery.js").publishLatest(ROOT);
   const outCardPath = delivery.destination;

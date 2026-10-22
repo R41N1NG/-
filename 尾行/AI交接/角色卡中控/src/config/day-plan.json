@@ -1,0 +1,11 @@
+{
+  "budget": 4,
+  "tailingCost": 2,
+  "periods": [
+    { "id": "morning", "name": "早间", "short": "早" },
+    { "id": "midday", "name": "午间", "short": "中" },
+    { "id": "afternoon", "name": "午后", "short": "午" },
+    { "id": "evening", "name": "晚间", "short": "晚" },
+    { "id": "midnight", "name": "子夜", "short": "子" }
+  ]
+}

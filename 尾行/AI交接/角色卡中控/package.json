@@ -1,6 +1,6 @@
 {
   "name": "weixing-engine",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "private": true,
   "description": "尾行 · 数值引擎与酒馆角色卡（检定/心跳/警觉/冲突/追逐/HUD）",
   "scripts": {
@@ -9,9 +9,10 @@
     "build:runtime": "node build-runtime.js",
     "build:ui": "node tools/build/ui.js",
     "format:modules": "prettier --write \"src/runtime/game/**/*.js\" \"src/host/**/*.js\" \"src/ui/**/*.js\" build*.js \"tools/build/*.js\" tools/test.cjs",
-    "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
+    "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
     "typecheck": "tsc -p tsconfig.contracts.json",
-    "test:browser": "node tools/check-browser.cjs"
+    "test:browser": "node tools/check-browser.cjs",
+    "preview:daily": "node tools/build/day-preview.js"
   },
   "devDependencies": {
     "@types/node": "24.10.0",

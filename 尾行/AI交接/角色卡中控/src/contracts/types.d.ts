@@ -35,6 +35,21 @@ export interface RequirementContext {
   dist: Distance;
   inventory: InventoryItem[];
 }
+export interface DayPlan {
+  schema: 1;
+  period: number;
+  spent: number;
+  activity: { id: string; kind: "routine" | "tailing"; name: string; cost: number } | null;
+  ended: boolean;
+  source: "legacy" | "daily";
+}
+export interface DayPlanView extends DayPlan {
+  date: number;
+  budget: number;
+  remaining: number;
+  tailingCost: number;
+  periodName: string;
+}
 export interface SavedGame {
   v: 2;
   sessionSalt: string;
@@ -42,6 +57,7 @@ export interface SavedGame {
   floor: number;
   nightStartFloor: number;
   ledgerState: Record<string, number>;
+  dayPlan?: DayPlan;
   [key: string]: unknown;
 }
 export interface TimelineNode {

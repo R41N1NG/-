@@ -25,6 +25,7 @@ const { createSaveSystem } = require("./game/save.js");
 
 const { classifyPlace } = require("../contracts/action-requirements.js");
 const { migrateSave } = require("./persistence/migrations.js");
+const { createDayPlan, validateDayPlan } = require("../contracts/day-plan.js");
 
 const {
   normalizePersona,
@@ -162,7 +163,7 @@ function createGame(init = {}) {
     initTargetState,
     syncTargetShoeTags,
     syncPersonaTags,
-    nightFall,
+    nightFall: legacyNightFall,
   } = createTargetSystem({ g, L, seedAt, log, syncHeartTags });
   const { targetEffectiveAcuity, gain, runCheck, categoryOf } =
     createCheckSystem({ g, seedFor, isFamiliar });
@@ -288,6 +289,16 @@ function createGame(init = {}) {
     syncTargetShoeTags();
     syncPersonaTags();
     applyTargetState();
+  }
+
+  // 未提供日程的旧档仅补显示字段，不推测已花点数、不改变夜间流程。
+  g.dayPlan = validateDayPlan(
+    init.saved?.dayPlan ?? init.dayPlan ?? createDayPlan(g.slot),
+  );
+  function nightFall() {
+    const result = legacyNightFall();
+    if (!result?.blocked) g.dayPlan = createDayPlan(g.slot);
+    return result;
   }
 
   /* 老存档兼容：早前 route 只存了 nodes、没存发车时刻，按包内同名动线把 times 补回来。

@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.3",
+  "version": "0.8.4",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "4d53385d1d188cee05edef744230b5a2fa624ccaab8c96c8aadddc1115d82d71",
+  "sourceHash": "13e87211f9de73a0af96b75fbb0d7beb455716d383e273913fa19777fcc870d6",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -15,15 +15,19 @@
     },
     {
       "file": "build.js",
-      "sha256": "0ec4d002f7db1ac820ca2377f0176605477a2838d3f672ddcbbde970970d2755"
+      "sha256": "34c9ace915fc5ff64956acfcdfb36d58c099b73a34b604510c3e93f692472831"
     },
     {
       "file": "package-lock.json",
-      "sha256": "f2627932786275a7eff461906a7e482cac60de3b218228a6bf45083797ad3537"
+      "sha256": "c2d75fda68924b7f0f7354295e227c5830e53a4512711585a6f4640761af614f"
     },
     {
       "file": "package.json",
-      "sha256": "d4df6ab555d2cc128a690bb00fa038d9aab7ca52c4580faa5759a06bee329b1c"
+      "sha256": "817347a2efb5b90c8f05c0c3c10c5d84351f52ce1124c94f2f0e1ed2a2b5f971"
+    },
+    {
+      "file": "src/config/day-plan.json",
+      "sha256": "764644c656b9c963e40a964a3f00d10b1ba7b020641827e20a431fe2b4a54a64"
     },
     {
       "file": "src/config/lexicon.json",
@@ -58,12 +62,16 @@
       "sha256": "eb43f48590b961b12874afb19680c70c6c29deb2b6b7069d0ebca21a42d4e344"
     },
     {
+      "file": "src/contracts/day-plan.js",
+      "sha256": "00e3346d7ac8cca53b050bcb1833bebe2e17fc5dea01788955e8f2e476da5bb6"
+    },
+    {
       "file": "src/contracts/persona.js",
       "sha256": "0737e820bb8cb8081851f21cd862d5b59e0bd7a76cf9960c020fd98a6793f61a"
     },
     {
       "file": "src/contracts/types.d.ts",
-      "sha256": "b568d065b8fd8dddddb46a68989fbd163642cd7328ca172ff1794b8973ab67a2"
+      "sha256": "30b7f0d1bb196fd102739c9a57c4eceff8d45457a6b15741a55733ba484a2880"
     },
     {
       "file": "src/contracts/validation.js",
@@ -155,7 +163,7 @@
     },
     {
       "file": "src/runtime/game.js",
-      "sha256": "96fa58fdabfcde81913337c7317638270e47f07eade0e7b04244ab4218a09f79"
+      "sha256": "c3afd5fd54dc8f088cfa870f8563e22d049bee48ed3a49005ee3295be1511a46"
     },
     {
       "file": "src/runtime/game/actions.js",
@@ -195,11 +203,11 @@
     },
     {
       "file": "src/runtime/game/save.js",
-      "sha256": "25f36bb47860a786adcbb8404cb1b439f0373f66d68d53fedf5d18cf3105ed46"
+      "sha256": "8aaff97f4e274915bfc1b64609c7f7dd825c707ecf0ff435f3e7ab75cf14b874"
     },
     {
       "file": "src/runtime/game/snapshot.js",
-      "sha256": "d112dfe6f9fe8b5c72453a546ce2c75e41c476fb4efe6e3a2b5d18af61c20084"
+      "sha256": "98f9237a7e0b0b772ee785e0e6bb1267f47a09facdc311e98f68f2de8275b20b"
     },
     {
       "file": "src/runtime/game/target.js",
@@ -227,7 +235,7 @@
     },
     {
       "file": "src/runtime/persistence/migrations.js",
-      "sha256": "259bd9b6018658c8a5be320d501146574ecdfb5dae5a5c1eceb61c5a1195cb4b"
+      "sha256": "5ca3cd2e236566a3dd79db944060387de5665f90936078883563ed634f03b6f0"
     },
     {
       "file": "src/runtime/tags.js",
@@ -302,6 +310,10 @@
       "sha256": "a59ccb98dc912bd0ac54b2322b5cd10c30fc0d43317581e37266992121657cb3"
     },
     {
+      "file": "src/ui/renderers/day-plan.js",
+      "sha256": "a52039c1c82e73562a368c236dd854203744dd0d453f6306dea36500790cc917"
+    },
+    {
       "file": "src/ui/renderers/details.js",
       "sha256": "cd97f9babb5c41dc71788f85660ee8ea5dafdce1da838c62e387eabc5425de1a"
     },
@@ -323,11 +335,11 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "9760a54731aff6e3cfa49a432ea297a3d4312e09cfb7a700c7e79b44b7317ab0"
+      "sha256": "7c73bb7d0354235cc6bf90b184296acf6949784d638f41c7d945e5e18c130751"
     },
     {
       "file": "src/ui/styles/statusbar.css",
-      "sha256": "b2cccd21a9b9dbe7d43d63c17b5806d96bc49c569339c3d5bf8b875f8a7d5b67"
+      "sha256": "9d53264fe45e1e54c2ae206bbf3020ae7151f5a8228bfd62c5d0f94002bb9974"
     },
     {
       "file": "src/ui/sync-notice.js",
@@ -335,7 +347,7 @@
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "fbe4333aab507ed5f886ef90a3e309c1f2c463fad505576635de9e4ee174eaf7"
+      "sha256": "c97ab3f7607615f3023c8c39a5e023177c66c9b42d7717609dc5023459a4c3f9"
     },
     {
       "file": "src/ui/zero-floor/host.js",
@@ -348,6 +360,10 @@
     {
       "file": "src/utils/narrative_validator.js",
       "sha256": "4d3411fc55d963ea98226eb772f7c5b5d6c38b0a528438d3755268c78066916f"
+    },
+    {
+      "file": "tools/build/day-preview.js",
+      "sha256": "bd9658db51767b5dad7144d2c4646933903fa4df7bd3c0860f52f755c8e54f27"
     },
     {
       "file": "tools/build/delivery.js",
@@ -368,16 +384,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 527883,
-      "sha256": "3e3bf508e3bfb687c45d843bdaf7a06691a638f8f271c83a0c8f696259c1769e"
+      "bytes": 531453,
+      "sha256": "bcc7279fce1853f3e327f6b65c09e4d9ca686b29cc5b0dcf90a3d4cd9856ab42"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1140521,
-      "sha256": "e5336908ab1cb7a03ef0c906ec425517692d5fcae6fae93cb485af1a31332360"
+      "bytes": 1154625,
+      "sha256": "4de2e2929bbe98adee8707f66271a96f83f4ec77e5b0f3889a7304fb6ca9548d"
     },
     "尾行.json": {
-      "bytes": 1253004,
-      "sha256": "5a03eb90279d696992830f225dfd8f328f293e7304a69f43d25c6c1412622eca"
+      "bytes": 1267938,
+      "sha256": "36cac870d5f4c2a92144001b037bfd03ae75d6f493a0b87c93a0c0d6a7405dac"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

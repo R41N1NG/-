@@ -2705,6 +2705,37 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 .trpg .wx-sync-notice textarea { display: block; width: 100%; max-height: 160px; color: inherit; background: #151515; }
 .mes.wx-sync-floor { outline: 2px solid #f0b355; outline-offset: -2px; }
 
+/* 每日行动：只消费 dayPlan 快照，独立于心跳与尾行回合。 */
+.trpg .wx-day-plan { margin: 0 10px 8px; padding: 12px 14px 10px; border: 1px solid rgba(173,188,198,.16); border-radius: 7px; background: linear-gradient(120deg,rgba(26,35,41,.96),rgba(12,19,24,.96)); color: #acb9c0; font: 12px/1.5 "Noto Sans SC",system-ui,sans-serif; }
+.trpg .wx-day-heading, .trpg .wx-day-when, .trpg .wx-day-ap, .trpg .wx-day-bottom { display: flex; align-items: center; }
+.trpg .wx-day-heading { justify-content: space-between; gap: 10px; }
+.trpg .wx-day-when { gap: 8px; flex-wrap: wrap; min-width: 0; }
+.trpg .wx-day-kicker { color: #788991; font-size: 10px; letter-spacing: 2px; }
+.trpg .wx-day-dot { color: #586973; }
+.trpg #wxDayPeriod { color: #e2d2ab; font-weight: 500; }
+.trpg .wx-day-ap { flex-shrink: 0; gap: 6px; }
+.trpg #wxDayAp { color: #f2e3bb; font: 500 23px/1 ui-monospace,Consolas,monospace; }
+.trpg .wx-day-ap-total { color: #798d98; }
+.trpg .wx-day-ap-pips { display: flex; gap: 3px; margin-left: 4px; }
+.trpg .wx-day-ap-pips i { width: 6px; height: 14px; border-radius: 2px; background: #c4b184; }
+.trpg .wx-day-ap-pips i.used { background: #303c44; }
+.trpg .wx-day-periods { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); list-style: none; padding: 0; margin: 13px 0 10px; gap: 5px; }
+.trpg .wx-day-periods li { position: relative; text-align: center; padding: 7px 0 0; color: #657883; border-top: 2px solid #2c3942; font-size: 11px; }
+.trpg .wx-day-periods li[data-phase="past"] { color: #a4b0b7; border-color: #70808a; }
+.trpg .wx-day-periods li[data-phase="current"] { color: #efdab0; border-color: #d0b882; }
+.trpg .wx-day-periods li[data-phase="current"]::before { content: ""; position: absolute; top: -4px; left: calc(50% - 3px); width: 6px; height: 6px; border-radius: 50%; background: #e4c68b; box-shadow: 0 0 8px #b49b5a66; }
+.trpg .wx-day-bottom { justify-content: space-between; gap: 10px; color: #71858f; font-size: 10px; }
+.trpg .wx-day-activity { display: flex; align-items: center; gap: 6px; min-width: 0; color: #aebfc8; }
+.trpg .wx-day-activity i { width: 5px; height: 5px; border-radius: 50%; background: #6e838f; flex-shrink: 0; }
+.trpg .wx-day-plan[data-state="active"] .wx-day-activity i { background: #b9c8a2; box-shadow: 0 0 7px #adc19855; }
+.trpg .wx-day-plan[data-state="empty"] .wx-day-periods { margin: 0; }
+@media(max-width:560px) {
+  .trpg .wx-day-plan { margin: 0 6px 6px; padding: 10px; }
+  .trpg .wx-day-when { gap: 5px; }
+  .trpg .wx-day-ap-pips { display: none; }
+  .trpg .wx-day-bottom { align-items: flex-start; flex-direction: column; gap: 3px; }
+}
+
 </style>
 <main class="wx-standalone-main">
   <div class="preview-area" id="previewArea" style="display: none;">
@@ -2810,6 +2841,15 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
         <!-- 战术终端入口按钮 -->
         <button type="button" class="slim-btn terminal-toggle-btn" id="wx-terminal-toggle-btn" data-tip="打开手持战术终端（全量属性/行囊/动线/沙盘）" aria-expanded="false"><span class="term-ico" aria-hidden="true" data-ico="clip"></span> <span class="term-txt">战术终端</span></button>
       </div>
+    </div>
+
+    <div class="wx-day-plan" id="wxDayPlan" data-state="empty" aria-label="每日行动与时段">
+      <div class="wx-day-heading">
+        <div class="wx-day-when"><span class="wx-day-kicker">日程</span><span id="wxDayDate">等待开局</span><span class="wx-day-dot">·</span><strong id="wxDayPeriod">—</strong></div>
+        <div class="wx-day-ap" aria-label="剩余行动点"><span>行动点</span><strong id="wxDayAp">—</strong><span class="wx-day-ap-total">/ <span id="wxDayBudget">—</span></span><span id="wxDayApPips" class="wx-day-ap-pips" aria-hidden="true"></span></div>
+      </div>
+      <ol class="wx-day-periods" id="wxDayPeriods" aria-label="当天五个时段"></ol>
+      <div class="wx-day-bottom"><span class="wx-day-activity"><i aria-hidden="true"></i><span id="wxDayActivity">尚无日程记录</span></span><span id="wxDayHint">每日行动与时段</span></div>
     </div>
 
     <!-- ═══ 行动胶囊栏（情境自适应 4 胶囊 + 姿态指示 + 二级抽屉展开） ═══ -->
@@ -9165,6 +9205,164 @@ var WxStatusbarUI = (() => {
     }
   });
 
+  // src/config/day-plan.json
+  var require_day_plan = __commonJS({
+    "src/config/day-plan.json"(exports, module) {
+      module.exports = {
+        budget: 4,
+        tailingCost: 2,
+        periods: [
+          { id: "morning", name: "\u65E9\u95F4", short: "\u65E9" },
+          { id: "midday", name: "\u5348\u95F4", short: "\u4E2D" },
+          { id: "afternoon", name: "\u5348\u540E", short: "\u5348" },
+          { id: "evening", name: "\u665A\u95F4", short: "\u665A" },
+          { id: "midnight", name: "\u5B50\u591C", short: "\u5B50" }
+        ]
+      };
+    }
+  });
+
+  // src/contracts/day-plan.js
+  var require_day_plan2 = __commonJS({
+    "src/contracts/day-plan.js"(exports, module) {
+      "use strict";
+      var RULES = require_day_plan();
+      var copy = (value) => JSON.parse(JSON.stringify(value));
+      function createDayPlan(slot = "e21_23") {
+        const period = slot === "prepare" ? 2 : ["e23_01", "late"].includes(slot) ? 4 : 3;
+        return {
+          schema: 1,
+          period,
+          spent: 0,
+          activity: null,
+          ended: false,
+          source: "legacy"
+        };
+      }
+      function validateDayPlan(value) {
+        if (!value || value.schema !== 1 || !Number.isInteger(value.period) || value.period < 0 || value.period >= RULES.periods.length || !Number.isInteger(value.spent) || value.spent < 0 || value.spent > RULES.budget || typeof value.ended !== "boolean" || !["legacy", "daily"].includes(value.source))
+          throw Object.assign(new Error("\u65E5\u7A0B\u6570\u636E\u65E0\u6548"), { code: "SAVE_INVALID" });
+        const a = value.activity;
+        if (a !== null && (!a || typeof a.id !== "string" || !a.id || a.id.length > 128 || !["routine", "tailing"].includes(a.kind) || typeof a.name !== "string" || !a.name || a.name.length > 64 || !Number.isInteger(a.cost) || a.cost < 0 || a.cost > RULES.budget || a.cost > value.spent || a.kind === "tailing" && a.cost !== RULES.tailingCost))
+          throw Object.assign(new Error("\u65E5\u7A0B\u6D3B\u52A8\u6570\u636E\u65E0\u6548"), {
+            code: "SAVE_INVALID"
+          });
+        if (value.ended && (value.period !== RULES.periods.length - 1 || a !== null))
+          throw Object.assign(new Error("\u65E5\u7A0B\u7ED3\u675F\u72B6\u6001\u65E0\u6548"), {
+            code: "SAVE_INVALID"
+          });
+        return copy(value);
+      }
+      function dayPlanView(value, date) {
+        const state = validateDayPlan(value);
+        return {
+          ...state,
+          date,
+          budget: RULES.budget,
+          remaining: RULES.budget - state.spent,
+          tailingCost: RULES.tailingCost,
+          periodName: RULES.periods[state.period].name
+        };
+      }
+      module.exports = {
+        DAY_PLAN_RULES: RULES,
+        createDayPlan,
+        validateDayPlan,
+        dayPlanView
+      };
+    }
+  });
+
+  // src/ui/renderers/day-plan.js
+  var require_day_plan3 = __commonJS({
+    "src/ui/renderers/day-plan.js"(exports, module) {
+      "use strict";
+      var {
+        DAY_PLAN_RULES,
+        validateDayPlan
+      } = require_day_plan2();
+      function createDayPlanRenderer({ document }) {
+        const bar = document.getElementById("wxDayPlan");
+        const put = (id, value) => {
+          const node = document.getElementById(id);
+          if (node) node.textContent = value;
+        };
+        function reset() {
+          if (bar) {
+            bar.dataset.state = "empty";
+            delete bar.dataset.source;
+          }
+          put("wxDayDate", "\u7B49\u5F85\u5F00\u5C40");
+          put("wxDayPeriod", "\u2014");
+          put("wxDayAp", "\u2014");
+          put("wxDayBudget", "\u2014");
+          put("wxDayActivity", "\u5C1A\u65E0\u65E5\u7A0B\u8BB0\u5F55");
+          put("wxDayHint", "\u6BCF\u65E5\u884C\u52A8\u4E0E\u65F6\u6BB5");
+          const rail = document.getElementById("wxDayPeriods");
+          if (rail) rail.replaceChildren();
+          const pips = document.getElementById("wxDayApPips");
+          if (pips) pips.replaceChildren();
+        }
+        function render(snap) {
+          const data = snap?.dayPlan;
+          if (!data) return reset();
+          try {
+            validateDayPlan(data);
+            if (!Number.isInteger(data.date) || data.date < 1)
+              throw Error("invalid date");
+          } catch {
+            reset();
+            put("wxDayActivity", "\u65E5\u7A0B\u6570\u636E\u6682\u4E0D\u53EF\u7528");
+            return;
+          }
+          const remaining = DAY_PLAN_RULES.budget - data.spent;
+          if (bar) {
+            bar.dataset.state = data.ended ? "ended" : data.activity ? "active" : "ready";
+            bar.dataset.source = data.source;
+          }
+          put("wxDayDate", `\u7B2C ${data.date} \u5929`);
+          put(
+            "wxDayPeriod",
+            data.ended ? "\u672C\u65E5\u7ED3\u675F" : DAY_PLAN_RULES.periods[data.period].name
+          );
+          put("wxDayAp", String(remaining));
+          put("wxDayBudget", String(DAY_PLAN_RULES.budget));
+          put(
+            "wxDayActivity",
+            data.source === "legacy" ? "\u539F\u6709\u591C\u95F4\u6D41\u7A0B" : data.activity ? data.activity.name : data.ended ? "\u672C\u65E5\u5B89\u6392\u5DF2\u7ED3\u675F" : "\u5C1A\u672A\u9009\u62E9\u884C\u52A8"
+          );
+          put(
+            "wxDayHint",
+            data.source === "legacy" ? "\u65E5\u7A0B\u6D3B\u52A8\u5C1A\u672A\u542F\u7528" : data.activity ? "\u672C\u6B21\u6D3B\u52A8\u7ED3\u675F\u540E\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5" : "\u6BCF\u65F6\u6BB5 1 \u6B21\u884C\u52A8 \xB7 \u5C3E\u884C\u6D88\u8017 2 \u70B9"
+          );
+          const pips = document.getElementById("wxDayApPips");
+          if (pips) {
+            pips.replaceChildren();
+            for (let i = 0; i < DAY_PLAN_RULES.budget; i++) {
+              const node = document.createElement("i");
+              node.className = i < remaining ? "available" : "used";
+              pips.append(node);
+            }
+          }
+          const rail = document.getElementById("wxDayPeriods");
+          if (rail) {
+            rail.replaceChildren();
+            DAY_PLAN_RULES.periods.forEach((period, i) => {
+              const node = document.createElement("li");
+              node.textContent = period.name;
+              node.dataset.phase = i < data.period || data.ended ? "past" : i === data.period ? "current" : "future";
+              if (i === data.period && !data.ended)
+                node.setAttribute("aria-current", "step");
+              rail.append(node);
+            });
+          }
+        }
+        return { render, reset };
+      }
+      module.exports = { createDayPlanRenderer };
+    }
+  });
+
   // src/ui/renderers/snapshot.js
   var require_snapshot = __commonJS({
     "src/ui/renderers/snapshot.js"(exports, module) {
@@ -11778,6 +11976,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
       } = require_display();
       var { createDetailsRenderer } = require_details();
       var { clearLiveData } = require_empty();
+      var { createDayPlanRenderer } = require_day_plan3();
       var { createSnapshotRenderer } = require_snapshot();
       var { createAudio } = require_audio();
       var { createSettlement } = require_controller();
@@ -11799,6 +11998,8 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         clearLiveData(document);
         const details = createDetailsRenderer({ document });
         details.reset();
+        const dayPlanRenderer = createDayPlanRenderer({ document });
+        dayPlanRenderer.reset();
         const noticeAtMount = document.getElementById("wxSyncNotice");
         if (noticeAtMount) noticeAtMount.hidden = true;
         const root = document.getElementById("wx-statusbar-root") || document.querySelector("section.trpg") || document.querySelector(".trpg:not(#wx-zero-floor)");
@@ -12266,6 +12467,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           if (det) det.hidden = true;
         });
         function renderSnapshot(snap) {
+          dayPlanRenderer.render(snap);
           details.render(snap);
           return render(snap);
         }
@@ -13255,6 +13457,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           syncNotice.report(error);
         }
         function resetDisplay() {
+          dayPlanRenderer.reset();
           syncNotice.clear();
           clearLiveData(document);
           details.reset();
