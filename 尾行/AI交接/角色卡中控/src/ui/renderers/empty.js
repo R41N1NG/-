@@ -5,7 +5,6 @@ function clearLiveData(document) {
     routeDistrict: "—",
     routePlace: "等待开局",
     routeWeather: "—",
-    routeStrikeTag: "—",
     routeRemain: "—",
     phase: "未开局",
     distName: "—",
@@ -98,6 +97,7 @@ function clearLiveData(document) {
   document.getElementById("photoToastImg")?.removeAttribute("src");
   document.getElementById("sparkLine")?.setAttribute("points", "");
   document.getElementById("herAlert")?.classList.remove("show");
+  document.getElementById("routeRemain")?.removeAttribute("data-tip");
   document
     .querySelectorAll(".pnode")
     .forEach((node) => node.classList.remove("active", "passed"));

@@ -611,8 +611,8 @@
             type: "consumable",
             slot: null,
             price: 20,
-            effectsDesc: "\u884C\u52A8\u70B9+0.5",
-            desc: "\u6D88\u8017\u8865\u7ED9\uFF1A\u767D\u5929\u63D0\u795E\uFF0C\u884C\u52A8\u70B9+0.5\uFF0C\u65E5\u9650\u4E24\u676F"
+            effectsDesc: "\u666E\u901A\u996E\u54C1\uFF0C\u65E0\u6570\u503C\u52A0\u6210",
+            desc: "\u666E\u901A\u996E\u54C1\uFF0C\u5F53\u524D\u4E0D\u589E\u52A0\u884C\u52A8\u70B9\u6216\u5176\u4ED6\u6570\u503C"
           },
           headphones: {
             id: "headphones",
@@ -9336,8 +9336,8 @@
           }
           if (itemId === "coffee") {
             removeItem(itemId, 1);
-            log(`[\u884C\u56CA] \u996E\u7528\u70ED\u5496\u5561\uFF1A\u63D0\u795E\u9192\u8111`);
-            return { ok: true, msg: "\u996E\u7528\u70ED\u5496\u5561\uFF1A\u63D0\u795E\u9192\u8111" };
+            log(`[\u884C\u56CA] \u996E\u7528\u70ED\u5496\u5561\uFF1A\u65E0\u6570\u503C\u52A0\u6210`);
+            return { ok: true, msg: "\u996E\u7528\u70ED\u5496\u5561\uFF1A\u65E0\u6570\u503C\u52A0\u6210" };
           }
           return { ok: false, reason: "\u6682\u672A\u5B9E\u88C5\u8BE5\u6D88\u8017\u54C1\u4F7F\u7528\u6548\u679C" };
         }
@@ -12534,7 +12534,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.4",
+        version: "0.8.5",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {

@@ -634,7 +634,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
     if (floorBadge) {
       const day = (snap.player && snap.player.date) || 1;
       const mName = MODE_NAMES[snap.mode] || snap.mode || "潜行";
-      floorBadge.textContent = `第 ${day} 晚 · ${mName}阶段`;
+      floorBadge.textContent = `第 ${day} 天 · ${mName}阶段`;
     }
     /* ═══ 地图 HUD 渲染 ═══ */
     /* 1. 常驻动线雷达轨 (.route-tracker) */
@@ -649,7 +649,6 @@ ${proxLogs.slice(0, 5).join("\n")}`;
     const districtEl = document.getElementById("routeDistrict");
     const placeEl = document.getElementById("routePlace");
     const weatherEl = document.getElementById("routeWeather");
-    const strikeTagEl = document.getElementById("routeStrikeTag");
     const remainEl = document.getElementById("routeRemain");
     const stepperEl = document.getElementById("routeStepper");
 
@@ -688,37 +687,19 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           : "晴夜");
     weatherEl.innerHTML = ico(wKey) + " " + wText;
 
-    // 终局动手状态
-    // 类名契约：初版标记写的是 slim-tag strike-tag（样式在 :123/:128），
-    // 这里曾改写成 route-tag（窄条上没有对应字号，回落成 12px，实测占 117px），
-    // 导致窄条在手机上被红线标签吃掉场所名。保留 slim-tag 前缀，修饰符与 CSS 同名。
-    if (snap.strikeSealed) {
-      strikeTagEl.className = "slim-tag strike-tag sealed";
-      strikeTagEl.textContent = "探头锁定 · 禁动手";
-      strikeTagEl.setAttribute(
-        "data-tip",
-        "当前处于高防或公立探头直照区域，无法发动终局行动",
-      );
-    } else {
-      strikeTagEl.className = "slim-tag strike-tag allowed";
-      strikeTagEl.textContent = "深水盲区 · 终局开";
-      strikeTagEl.setAttribute(
-        "data-tip",
-        "当前处于盲区或掩体死角，终局行动扳机常开",
-      );
-    }
-
-    // 剩余步数与步进轨（未探明地名留出位置显示 ？ 就好）
+    // 路线剩余节点与步进轨（未探明地名留出位置显示 ？ 就好）
     if (route && route.nodes && route.nodes.length) {
       const total = route.nodes.length;
       const remainSteps = total - 1 - hereIdx;
+      remainEl.dataset.tip =
+        "到本次路线终点的剩余节点数，不是行动点或剩余回合。";
 
       if (snap.mode === "prepare" || hereIdx < 0) {
-        remainEl.textContent = "准备期待命";
+        remainEl.textContent = "等待行动";
       } else if (remainSteps <= 0) {
-        remainEl.textContent = "已至终点安全区";
+        remainEl.textContent = "本段路线结束";
       } else {
-        remainEl.textContent = `离收摊剩 ${remainSteps} 步`;
+        remainEl.textContent = `路线剩余 ${remainSteps} 段`;
       }
 
       const NODE_ICONS = {
@@ -771,7 +752,8 @@ ${proxLogs.slice(0, 5).join("\n")}`;
       });
       stepperEl.innerHTML = stepsHtml.join("");
     } else {
-      remainEl.textContent = "常规";
+      remainEl.textContent = "暂无路线";
+      remainEl.dataset.tip = "当前没有路线进度。";
       stepperEl.innerHTML = "";
     }
 

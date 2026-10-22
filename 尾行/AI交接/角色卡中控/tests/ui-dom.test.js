@@ -47,6 +47,15 @@ test("UI 模块集成：构建、挂载、真实快照、胶囊与弹窗交互�
     ])
       assert.equal(typeof api[key], "function", key);
     api.render(legacy.snapshot);
+    assert.equal(window.document.getElementById("routeStrikeTag"), null);
+    const progress = window.document.getElementById("routeRemain");
+    assert.ok(!progress.textContent.includes("收摊"));
+    assert.ok(!progress.textContent.includes("步"));
+    assert.ok(
+      !window.document
+        .querySelector("section.trpg")
+        .textContent.includes("探头锁定"),
+    );
     assert.equal(
       window.document.getElementById("heartNum").textContent,
       String(legacy.snapshot.player.heart),

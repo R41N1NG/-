@@ -63,15 +63,12 @@ main.wx-standalone-main {
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px);
   border-radius: inherit;
 }
-/* 状态即天气：过线泛暖，崩溃泛红；终局封时顶光转红 */
+/* 状态即天气：过线泛暖，崩溃泛红 */
 .trpg[data-line="deform"] {
   box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 34px rgba(240, 179, 85, 0.14);
 }
 .trpg[data-line="crash"] {
   box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 44px rgba(255, 90, 104, 0.26);
-}
-.trpg:has(.slim-tag.strike-tag.sealed) {
-  border-top-color: rgba(255, 90, 104, 0.45);
 }
 .trpg button, #wx-statusbar-root button, .wx-terminal-backdrop button, dialog.wx-dialog button, .preview-tools button {
   font: inherit;
@@ -160,14 +157,6 @@ main.wx-standalone-main {
 .slim-tag.weather {
   border-left-color: rgba(95, 214, 195, .55);
   color: #9ed6cd;
-}
-.slim-tag.strike-tag.allowed {
-  border-left-color: rgba(95, 214, 195, .75);
-  color: #a7e5d9;
-}
-.slim-tag.strike-tag.sealed {
-  border-left-color: var(--danger);
-  color: #ff9aa3;
 }
 .slim-tag.remain {
   border-left-color: transparent;
@@ -2541,7 +2530,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 /* ═══ 桌面窄窗（≤800px）先让一层 ═══
    C 案字号抬高后（场所 15px / 心跳 24px），整套左簇需要的宽度比原来更大；
    窗口窄于 ≈860 时就会把标签齐根裁掉。先收三样最低价值的读数：
-   收摊步数、BPM、设备入口（后两者终端里都有），并把路牌与刻度收一档。 */
+   路线剩余节点、BPM、设备入口（后两者终端里都有），并把路牌与刻度收一档。 */
 @media (max-width: 860px) {
   .slim-tag.remain { display: none; }
   .mini-heart-bpm { display: none; }
@@ -2579,10 +2568,9 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   .slim-tags-group { gap: 6px; }
   /* 天气：终端沙盘与动线雨幕特效里都还在，条上不重复占位 */
   .slim-tag.weather { display: none; }
-  /* 收摊步数：次级信息，保留在终端与 tooltip */
+  /* 路线剩余节点：次级信息，保留在终端与 tooltip */
   .slim-tag.remain { display: none; }
   /* C 案的标签是"左竖条 + 文字"，窄屏只收字号，不能补 padding 把竖条挤没 */
-  .slim-tag.strike-tag.allowed, .slim-tag.strike-tag.sealed { font-size: 10px; padding: 0 0 0 5px; }
   .slim-tag.id-badge { font-size: 10px; padding: 0 0 0 5px; }
   /* 距离档与读数之间拉一根发丝线，别读成一句话 */
   .slim-center { gap: 4px; padding: 0 8px 0 0; border-right: 1px solid rgba(255, 255, 255, 0.07); }
@@ -2639,8 +2627,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
    把宽度还给场所名，避免窄条上只剩一个「居」字。 */
 @media (max-width: 430px) {
   .slim-dist-badge { display: none; }
-  .slim-tag.strike-tag.allowed, .slim-tag.strike-tag.sealed { font-size: 9.5px; padding: 0 0 0 4px; }
-  /* 模式（潜行）在终端阶段徽记里仍有读数；窄条上把宽度让给场所与红线 */
+  /* 模式（潜行）在终端阶段徽记里仍有读数；窄条上把宽度让给场所与当前状态 */
   .slim-phase { display: none; }
   .slim-place { font-size: 12px; }
 }
@@ -2742,13 +2729,12 @@ html{min-height:100%;background:#080e14}body{margin:0;color:#c6d0d7;font:14px/1.
     <div class="trpg-slim-bar" id="trpgSlimBar">
       <!-- 零楼 · 未开局覆盖钮（新局未确认身份时盖住常驻条） -->
       <div id="zeroChip" hidden role="button" tabindex="0">未开局 · 点击选择身份</div>
-      <!-- 左：大区与场所、天气、终局红线、收摊步数 -->
+      <!-- 左：大区与场所、天气、路线进度 -->
       <div class="slim-left" data-tip="当前动线与场所状态">
         <span class="slim-dist-badge" id="routeDistrict">—</span>
         <span class="slim-place" id="routePlace">等待开局</span>
         <div class="slim-tags-group">
           <span class="slim-tag weather" id="routeWeather">—</span>
-          <span class="slim-tag strike-tag allowed" id="routeStrikeTag">—</span>
           <span class="slim-tag remain" id="routeRemain">—</span>
           <span class="slim-tag id-badge" id="idBadge" hidden data-tip="你的开局身份（零楼选定，点开看详情）">身份</span>
         </div>
@@ -2871,7 +2857,7 @@ html{min-height:100%;background:#080e14}body{margin:0;color:#c6d0d7;font:14px/1.
 
         <div class="wx-modal-body">
           <!-- 动线步进雷达轨（展开时呈现完整节点，带充裕边距不截顶） -->
-          <div class="route-tracker" id="routeTracker" data-tip="当前动线推进情况与环境红线状态。前方虚线直通终点，收摊倒计时中。">
+          <div class="route-tracker" id="routeTracker" data-tip="当前路线的节点进度；未知地点显示问号。节点数不是行动点或剩余回合。">
             <div class="route-weather-fx" aria-hidden="true"></div>
             <div class="route-stepper" id="routeStepper"></div>
           </div>
@@ -4989,8 +4975,8 @@ var WxStatusbarUI = (() => {
             type: "consumable",
             slot: null,
             price: 20,
-            effectsDesc: "\u884C\u52A8\u70B9+0.5",
-            desc: "\u6D88\u8017\u8865\u7ED9\uFF1A\u767D\u5929\u63D0\u795E\uFF0C\u884C\u52A8\u70B9+0.5\uFF0C\u65E5\u9650\u4E24\u676F"
+            effectsDesc: "\u666E\u901A\u996E\u54C1\uFF0C\u65E0\u6570\u503C\u52A0\u6210",
+            desc: "\u666E\u901A\u996E\u54C1\uFF0C\u5F53\u524D\u4E0D\u589E\u52A0\u884C\u52A8\u70B9\u6216\u5176\u4ED6\u6570\u503C"
           },
           headphones: {
             id: "headphones",
@@ -8632,7 +8618,6 @@ var WxStatusbarUI = (() => {
           routeDistrict: "\u2014",
           routePlace: "\u7B49\u5F85\u5F00\u5C40",
           routeWeather: "\u2014",
-          routeStrikeTag: "\u2014",
           routeRemain: "\u2014",
           phase: "\u672A\u5F00\u5C40",
           distName: "\u2014",
@@ -8723,6 +8708,7 @@ var WxStatusbarUI = (() => {
         document.getElementById("photoToastImg")?.removeAttribute("src");
         document.getElementById("sparkLine")?.setAttribute("points", "");
         document.getElementById("herAlert")?.classList.remove("show");
+        document.getElementById("routeRemain")?.removeAttribute("data-tip");
         document.querySelectorAll(".pnode").forEach((node) => node.classList.remove("active", "passed"));
         const prox = document.getElementById("prox");
         if (prox) prox.value = 0;
@@ -9421,7 +9407,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           if (floorBadge) {
             const day = snap.player && snap.player.date || 1;
             const mName = MODE_NAMES[snap.mode] || snap.mode || "\u6F5C\u884C";
-            floorBadge.textContent = `\u7B2C ${day} \u665A \xB7 ${mName}\u9636\u6BB5`;
+            floorBadge.textContent = `\u7B2C ${day} \u5929 \xB7 ${mName}\u9636\u6BB5`;
           }
           const routeTrackerEl = document.getElementById("routeTracker");
           if (routeTrackerEl) {
@@ -9434,7 +9420,6 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           const districtEl = document.getElementById("routeDistrict");
           const placeEl = document.getElementById("routePlace");
           const weatherEl = document.getElementById("routeWeather");
-          const strikeTagEl = document.getElementById("routeStrikeTag");
           const remainEl = document.getElementById("routeRemain");
           const stepperEl = document.getElementById("routeStepper");
           let distBadge = snap.area || "\u672A\u77E5";
@@ -9452,30 +9437,16 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           const wKey = snap.weather === "storm" ? "storm" : snap.weather === "rain" ? "rain" : snap.weather === "clear" ? "moon" : snap.weather === "day" ? "sunny" : "moon";
           const wText = stripEmoji(snap.weatherName || "") || (snap.weather === "storm" ? "\u66B4\u96E8" : snap.weather === "rain" ? "\u5C0F\u96E8" : "\u6674\u591C");
           weatherEl.innerHTML = ico(wKey) + " " + wText;
-          if (snap.strikeSealed) {
-            strikeTagEl.className = "slim-tag strike-tag sealed";
-            strikeTagEl.textContent = "\u63A2\u5934\u9501\u5B9A \xB7 \u7981\u52A8\u624B";
-            strikeTagEl.setAttribute(
-              "data-tip",
-              "\u5F53\u524D\u5904\u4E8E\u9AD8\u9632\u6216\u516C\u7ACB\u63A2\u5934\u76F4\u7167\u533A\u57DF\uFF0C\u65E0\u6CD5\u53D1\u52A8\u7EC8\u5C40\u884C\u52A8"
-            );
-          } else {
-            strikeTagEl.className = "slim-tag strike-tag allowed";
-            strikeTagEl.textContent = "\u6DF1\u6C34\u76F2\u533A \xB7 \u7EC8\u5C40\u5F00";
-            strikeTagEl.setAttribute(
-              "data-tip",
-              "\u5F53\u524D\u5904\u4E8E\u76F2\u533A\u6216\u63A9\u4F53\u6B7B\u89D2\uFF0C\u7EC8\u5C40\u884C\u52A8\u6273\u673A\u5E38\u5F00"
-            );
-          }
           if (route && route.nodes && route.nodes.length) {
             const total = route.nodes.length;
             const remainSteps = total - 1 - hereIdx;
+            remainEl.dataset.tip = "\u5230\u672C\u6B21\u8DEF\u7EBF\u7EC8\u70B9\u7684\u5269\u4F59\u8282\u70B9\u6570\uFF0C\u4E0D\u662F\u884C\u52A8\u70B9\u6216\u5269\u4F59\u56DE\u5408\u3002";
             if (snap.mode === "prepare" || hereIdx < 0) {
-              remainEl.textContent = "\u51C6\u5907\u671F\u5F85\u547D";
+              remainEl.textContent = "\u7B49\u5F85\u884C\u52A8";
             } else if (remainSteps <= 0) {
-              remainEl.textContent = "\u5DF2\u81F3\u7EC8\u70B9\u5B89\u5168\u533A";
+              remainEl.textContent = "\u672C\u6BB5\u8DEF\u7EBF\u7ED3\u675F";
             } else {
-              remainEl.textContent = `\u79BB\u6536\u644A\u5269 ${remainSteps} \u6B65`;
+              remainEl.textContent = `\u8DEF\u7EBF\u5269\u4F59 ${remainSteps} \u6BB5`;
             }
             const NODE_ICONS = {
               \u5B66\u6821\u6B63\u95E8: "school",
@@ -9522,7 +9493,8 @@ ${proxLogs.slice(0, 5).join("\n")}`;
             });
             stepperEl.innerHTML = stepsHtml.join("");
           } else {
-            remainEl.textContent = "\u5E38\u89C4";
+            remainEl.textContent = "\u6682\u65E0\u8DEF\u7EBF";
+            remainEl.dataset.tip = "\u5F53\u524D\u6CA1\u6709\u8DEF\u7EBF\u8FDB\u5EA6\u3002";
             stepperEl.innerHTML = "";
           }
           const fam = snap.fam ?? 0;

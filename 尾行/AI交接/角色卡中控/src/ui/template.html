@@ -21,13 +21,12 @@
     <div class="trpg-slim-bar" id="trpgSlimBar">
       <!-- 零楼 · 未开局覆盖钮（新局未确认身份时盖住常驻条） -->
       <div id="zeroChip" hidden role="button" tabindex="0">未开局 · 点击选择身份</div>
-      <!-- 左：大区与场所、天气、终局红线、收摊步数 -->
+      <!-- 左：大区与场所、天气、路线进度 -->
       <div class="slim-left" data-tip="当前动线与场所状态">
         <span class="slim-dist-badge" id="routeDistrict">—</span>
         <span class="slim-place" id="routePlace">等待开局</span>
         <div class="slim-tags-group">
           <span class="slim-tag weather" id="routeWeather">—</span>
-          <span class="slim-tag strike-tag allowed" id="routeStrikeTag">—</span>
           <span class="slim-tag remain" id="routeRemain">—</span>
           <span class="slim-tag id-badge" id="idBadge" hidden data-tip="你的开局身份（零楼选定，点开看详情）">身份</span>
         </div>
@@ -150,7 +149,7 @@
 
         <div class="wx-modal-body">
           <!-- 动线步进雷达轨（展开时呈现完整节点，带充裕边距不截顶） -->
-          <div class="route-tracker" id="routeTracker" data-tip="当前动线推进情况与环境红线状态。前方虚线直通终点，收摊倒计时中。">
+          <div class="route-tracker" id="routeTracker" data-tip="当前路线的节点进度；未知地点显示问号。节点数不是行动点或剩余回合。">
             <div class="route-weather-fx" aria-hidden="true"></div>
             <div class="route-stepper" id="routeStepper"></div>
           </div>

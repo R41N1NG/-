@@ -372,8 +372,8 @@
     },
     "coffee": {
       "id": "coffee", "name": "热咖啡", "type": "consumable", "slot": null, "price": 20,
-      "effectsDesc": "行动点+0.5",
-      "desc": "消耗补给：白天提神，行动点+0.5，日限两杯"
+      "effectsDesc": "普通饮品，无数值加成",
+      "desc": "普通饮品，当前不增加行动点或其他数值"
     },
     "headphones": {
       "id": "headphones", "name": "蓝牙耳机", "type": "gear", "slot": "accessory", "price": 150,

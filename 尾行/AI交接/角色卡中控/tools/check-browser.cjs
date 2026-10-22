@@ -158,6 +158,8 @@ const deadline = setTimeout(() => {
 
       ok('CSS 解析', [...document.styleSheets].some(s=>s.cssRules.length>100));
       ok('整页无横向溢出', document.documentElement.scrollWidth<=innerWidth+2);
+      ok('常驻条不虚构探头锁定',!document.getElementById('routeStrikeTag')&&!document.querySelector('.trpg').textContent.includes('探头锁定'));
+      ok('路线进度不冒充收摊倒计时',!document.getElementById('routeRemain').textContent.includes('收摊')&&!document.getElementById('routeRemain').textContent.includes('步'));
       ok('快照渲染',document.getElementById('heartNum').textContent==='${snap.player.heart}');
       ok('档案对应当前目标', document.getElementById('vfTarget').textContent.includes('${snap.target.name}'));
       ok('未知属性不借用后台真值',[...document.querySelectorAll('#pattrs .av')].every(n=>n.textContent==='？'));

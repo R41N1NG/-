@@ -178,8 +178,8 @@ function createInventorySystem({ g, L, log, syncHeartTags }) {
 
     if (itemId === "coffee") {
       removeItem(itemId, 1);
-      log(`[行囊] 饮用热咖啡：提神醒脑`);
-      return { ok: true, msg: "饮用热咖啡：提神醒脑" };
+      log(`[行囊] 饮用热咖啡：无数值加成`);
+      return { ok: true, msg: "饮用热咖啡：无数值加成" };
     }
 
     return { ok: false, reason: "暂未实装该消耗品使用效果" };

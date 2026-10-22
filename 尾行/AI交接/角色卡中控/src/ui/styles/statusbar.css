@@ -62,15 +62,12 @@ main.wx-standalone-main {
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px);
   border-radius: inherit;
 }
-/* 状态即天气：过线泛暖，崩溃泛红；终局封时顶光转红 */
+/* 状态即天气：过线泛暖，崩溃泛红 */
 .trpg[data-line="deform"] {
   box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 34px rgba(240, 179, 85, 0.14);
 }
 .trpg[data-line="crash"] {
   box-shadow: 0 -20px 44px rgba(0, 0, 0, 0.7), inset 0 0 44px rgba(255, 90, 104, 0.26);
-}
-.trpg:has(.slim-tag.strike-tag.sealed) {
-  border-top-color: rgba(255, 90, 104, 0.45);
 }
 .trpg button, #wx-statusbar-root button, .wx-terminal-backdrop button, dialog.wx-dialog button, .preview-tools button {
   font: inherit;
@@ -159,14 +156,6 @@ main.wx-standalone-main {
 .slim-tag.weather {
   border-left-color: rgba(95, 214, 195, .55);
   color: #9ed6cd;
-}
-.slim-tag.strike-tag.allowed {
-  border-left-color: rgba(95, 214, 195, .75);
-  color: #a7e5d9;
-}
-.slim-tag.strike-tag.sealed {
-  border-left-color: var(--danger);
-  color: #ff9aa3;
 }
 .slim-tag.remain {
   border-left-color: transparent;
@@ -2540,7 +2529,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 /* ═══ 桌面窄窗（≤800px）先让一层 ═══
    C 案字号抬高后（场所 15px / 心跳 24px），整套左簇需要的宽度比原来更大；
    窗口窄于 ≈860 时就会把标签齐根裁掉。先收三样最低价值的读数：
-   收摊步数、BPM、设备入口（后两者终端里都有），并把路牌与刻度收一档。 */
+   路线剩余节点、BPM、设备入口（后两者终端里都有），并把路牌与刻度收一档。 */
 @media (max-width: 860px) {
   .slim-tag.remain { display: none; }
   .mini-heart-bpm { display: none; }
@@ -2578,10 +2567,9 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   .slim-tags-group { gap: 6px; }
   /* 天气：终端沙盘与动线雨幕特效里都还在，条上不重复占位 */
   .slim-tag.weather { display: none; }
-  /* 收摊步数：次级信息，保留在终端与 tooltip */
+  /* 路线剩余节点：次级信息，保留在终端与 tooltip */
   .slim-tag.remain { display: none; }
   /* C 案的标签是"左竖条 + 文字"，窄屏只收字号，不能补 padding 把竖条挤没 */
-  .slim-tag.strike-tag.allowed, .slim-tag.strike-tag.sealed { font-size: 10px; padding: 0 0 0 5px; }
   .slim-tag.id-badge { font-size: 10px; padding: 0 0 0 5px; }
   /* 距离档与读数之间拉一根发丝线，别读成一句话 */
   .slim-center { gap: 4px; padding: 0 8px 0 0; border-right: 1px solid rgba(255, 255, 255, 0.07); }
@@ -2638,8 +2626,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
    把宽度还给场所名，避免窄条上只剩一个「居」字。 */
 @media (max-width: 430px) {
   .slim-dist-badge { display: none; }
-  .slim-tag.strike-tag.allowed, .slim-tag.strike-tag.sealed { font-size: 9.5px; padding: 0 0 0 4px; }
-  /* 模式（潜行）在终端阶段徽记里仍有读数；窄条上把宽度让给场所与红线 */
+  /* 模式（潜行）在终端阶段徽记里仍有读数；窄条上把宽度让给场所与当前状态 */
   .slim-phase { display: none; }
   .slim-place { font-size: 12px; }
 }
