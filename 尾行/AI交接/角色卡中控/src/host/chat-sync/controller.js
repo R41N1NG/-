@@ -178,12 +178,21 @@ function createChatSync({
       .catch(() => {});
     return game;
   }
+  function displaySnapshot(token) {
+    const snap = state.game.snapshot();
+    if (snap.dayPlan)
+      snap.dayPlan.sync = {
+        scope: T.fingerprint(token.scope ?? null),
+        epoch: token.epoch,
+      };
+    return snap;
+  }
   async function persist(token, { reason = "save", init, expectedPath } = {}) {
     if (blocked) throw fail(blocked, "时间线校验未完成，已阻止覆盖存档");
     diagnostics.record("persist.prepare");
     let snap, save;
     try {
-      snap = state.game.snapshot();
+      snap = displaySnapshot(token);
       save = state.game.save();
     } catch (cause) {
       throw diagnostics.failure(
@@ -305,7 +314,7 @@ function createChatSync({
       return null;
     }
     if (!journal || !Array.isArray(context.history)) {
-      const snap = state.game.snapshot();
+      const snap = displaySnapshot(token);
       lastFailure = null;
       await publishSnapshot(snap, { scope: token.scope, syncOk: true });
       return snap;
@@ -329,8 +338,9 @@ function createChatSync({
           (!found.node.replyPath ||
             !T.prefix(found.node.replyPath, T.tokens(context.history)))
         ) {
-          state.game.processReply(reply.text);
           const end = context.history.indexOf(reply) + 1;
+          if (!found.local || found.local.path.length < end)
+            state.game.processReply(reply.text);
           found.node.replyPath = T.tokens(context.history.slice(0, end));
           found.node.after = state.game.save();
         }
@@ -345,7 +355,7 @@ function createChatSync({
           reason: "history-recovery",
           expectedPath: T.tokens(context.history),
         });
-      const snap = state.game.snapshot();
+      const snap = displaySnapshot(token);
       lastFailure = null;
       await publishSnapshot(snap, {
         scope: token.scope,
@@ -360,6 +370,19 @@ function createChatSync({
   async function input(token, { messageId, text, actions = [] }) {
     await load(token, { beforeUser: messageId });
     const context = await session.check(token);
+    if (journal && Array.isArray(context.history))
+      state.game = restore(T.locate(journal, context.history).save);
+    if (
+      state.game._g?.dayPlan?.source === "daily" &&
+      state.game._g.dayPlan.activity?.kind !== "tailing"
+    ) {
+      clearReceipt();
+      return {
+        narrativeOnly: true,
+        floor: state.game.save().floor,
+        stats: displaySnapshot(token),
+      };
+    }
     const path =
       journal && Array.isArray(context.history)
         ? T.inputPath(context.history, messageId)
@@ -415,6 +438,13 @@ function createChatSync({
       beforeUser: index >= 0 ? context.history[index].id : undefined,
     });
     if (!text) return null;
+    if (journal && Array.isArray(context.history))
+      state.game = restore(T.locate(journal, context.history).save);
+    if (
+      state.game._g?.dayPlan?.source === "daily" &&
+      state.game._g.dayPlan.activity?.kind !== "tailing"
+    )
+      return null;
     const old = state.game,
       oldJournal = T.clone(journal);
     try {
@@ -446,8 +476,10 @@ function createChatSync({
             await reconcile(token);
             return T.clone(node.result);
           }
-          state.game = restore(node.afterInput);
-          state.game.processReply(text);
+          const found = T.locate(journal, context.history);
+          state.game = restore(found.save);
+          if (!found.local || found.local.path.length <= index + 1)
+            state.game.processReply(text);
         }
         node.replyPath = T.tokens(context.history);
         node.after = state.game.save();
@@ -599,19 +631,36 @@ function createChatSync({
           "unequipItem",
           "useItem",
           "nightFall",
+          "executeDailyCommand",
         ];
         if (!allowed.includes(method))
           throw fail("COMMAND_INVALID", "不支持的游戏操作");
         try {
+          if (method === "executeDailyCommand") {
+            const guard = args[0]?.sync;
+            if (
+              !guard ||
+              guard.scope !== T.fingerprint(token.scope ?? null) ||
+              guard.epoch !== token.epoch
+            )
+              throw fail("DAY_STALE", "聊天已切换，请按当前日程重新选择");
+            if (
+              state.pending ||
+              state.generating ||
+              commandContext.history?.at(-1)?.role === "user"
+            )
+              throw fail("DAY_BUSY", "请等待当前回复完成后再安排活动");
+          }
           const result = state.game[method](...args);
+          if (method === "executeDailyCommand" && result.reused) return result;
           if (journal) {
-            const context = await session.check(token),
-              found = T.locate(journal, context.history);
-            if (found.node) {
-              found.node.after = state.game.save();
-              if (!found.node.replyPath)
-                found.node.afterInput = state.game.save();
-            } else journal.base.save = state.game.save();
+            const context = await session.check(token);
+            if (!Array.isArray(context.history))
+              throw fail(
+                "HISTORY_UNAVAILABLE",
+                "宿主暂未提供完整聊天历史，请稍后再试",
+              );
+            T.checkpoint(journal, context.history, state.game.save());
           }
           await persist(token, {
             reason: "command",
@@ -695,8 +744,13 @@ function createChatSync({
     getCurrentResult: () =>
       exclusive(async (token) => {
         await load(token);
-        if (!journal) return null;
         const context = await session.check(token);
+        if (
+          state.game._g?.dayPlan?.source === "daily" &&
+          state.game._g.dayPlan.activity?.kind !== "tailing"
+        )
+          return { narrativeOnly: true, stats: displaySnapshot(token) };
+        if (!journal) return null;
         return T.clone(T.locate(journal, context.history).node?.result || null);
       }),
     interrupt,

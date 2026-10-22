@@ -1899,6 +1899,72 @@
         "vehicle"
       ],
       "aliases": []
+    },
+    {
+      "id": "daily.rest",
+      "name": "日程·休息",
+      "aliases": [],
+      "modes": [
+        "any"
+      ],
+      "args": [],
+      "check": null,
+      "dailyOnly": true
+    },
+    {
+      "id": "daily.work",
+      "name": "日程·打工／接单",
+      "aliases": [],
+      "modes": [
+        "any"
+      ],
+      "args": [],
+      "check": null,
+      "dailyOnly": true
+    },
+    {
+      "id": "daily.shop",
+      "name": "日程·购物",
+      "aliases": [],
+      "modes": [
+        "any"
+      ],
+      "args": [],
+      "check": null,
+      "dailyOnly": true
+    },
+    {
+      "id": "daily.talk",
+      "name": "日程·独立交流",
+      "aliases": [],
+      "modes": [
+        "any"
+      ],
+      "args": [],
+      "check": null,
+      "dailyOnly": true
+    },
+    {
+      "id": "daily.tailing",
+      "name": "日程·尾行",
+      "aliases": [],
+      "modes": [
+        "any"
+      ],
+      "args": [],
+      "check": null,
+      "dailyOnly": true
+    },
+    {
+      "id": "daily.pass",
+      "name": "日程·度过本时段",
+      "aliases": [],
+      "modes": [
+        "any"
+      ],
+      "args": [],
+      "check": null,
+      "dailyOnly": true
     }
   ]
 }

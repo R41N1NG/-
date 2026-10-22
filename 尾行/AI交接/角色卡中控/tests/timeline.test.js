@@ -544,3 +544,26 @@ test("日程完整字段随聊天隔离和重读恢复，不从界面重新生�
   await h.sync.rebuild();
   assert.equal(h.state.game.snapshot().dayPlan.activity.id, "tailing-current");
 });
+
+test("本地命令：生成前的物品变化不被回复覆盖，回复分支切换保留对应状态", async () => {
+  const h = host();
+  await h.sync.newGame({});
+  await send(h, "legacy turn");
+  await h.sync.mutate("addItem", "coffee", 2);
+  h.reply("original response");
+  await h.sync.runReply({ text: "original response" });
+  const count = () =>
+    h.state.game.save().player.inventory.find((i) => i.id === "coffee")?.count;
+  assert.equal(count(), 2);
+  await h.sync.mutate("addItem", "coffee", 1);
+  assert.equal(count(), 3);
+  h.histories.A.at(-1).text = "alternative response";
+  await h.sync.reconcile();
+  assert.equal(count(), 2);
+  h.histories.A.at(-1).text = "original response";
+  await h.sync.reconcile();
+  assert.equal(count(), 3);
+  await h.sync.rebuild();
+  await h.sync.reconcile();
+  assert.equal(count(), 3);
+});

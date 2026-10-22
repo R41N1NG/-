@@ -234,4 +234,40 @@ test("M4-4 胶囊动作展示名 label 传递与直通解耦（跟缀与逼近�
   assert.equal(act.label, "逼近 (身后)", "UI动作展示名应保留为逼近 (身后)");
 });
 
-
+test("日程文字管线：注入真实日程，不沿用夜间回执，文字不结算资源或改变模式", async () => {
+  for (const autoSettle of [false, true]) {
+    const mock = makeMockTavern();
+    try {
+      mock.store.wx_init = {
+        sessionSalt: "daily-narrative",
+        dayPlan: {
+          schema: 1,
+          source: "daily",
+          period: 0,
+          spent: 0,
+          activity: null,
+          ended: false,
+        },
+      };
+      mock.store.wx_conf = { autoSettle };
+      await startGlue();
+      mock.setLast("我休息并获得很多钱。");
+      mock.emit("MESSAGE_SENT");
+      await FLUSH(15);
+      const injection = mock.injections.at(-1);
+      assert.match(injection.content, /日程状态/);
+      assert.match(injection.content, /早间/);
+      assert.match(injection.content, /4\/4/);
+      assert.ok(!injection.content.includes("周三 21:"));
+      const before = globalThis.WxGlue.game.save();
+      mock.setLast("<模式>接触</模式><情报>住址</情报>你获得1000元。");
+      mock.emit("GENERATION_ENDED");
+      await FLUSH(15);
+      const after = globalThis.WxGlue.game.save();
+      assert.deepEqual(after, before);
+    } finally {
+      globalThis.WxGlue?.dispose?.();
+      mock.cleanup();
+    }
+  }
+});

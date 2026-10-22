@@ -32,6 +32,12 @@ function createActionSystem({
       label: tag.label || tag.name,
     };
 
+    if (entry.dailyOnly) {
+      out.rejected = true;
+      out.reason = "请通过日程行动区安排这项活动";
+      return out;
+    }
+
     // 模式门槛：词条声明的 modes 不含当前模式 → 拒绝
     if (
       !(entry.modes || []).includes(g.mode) &&

@@ -2,7 +2,7 @@
 const fs = require("node:fs"),
   path = require("node:path");
 const { buildUI } = require("./ui.js");
-const { createGame } = require("../../src/runtime/game.js");
+const esbuild = require("esbuild");
 const { defaultInit } = require("../../src/host/initial-state.js");
 const ROOT = path.resolve(__dirname, "../..");
 function buildDayPreview() {
@@ -13,12 +13,13 @@ function buildDayPreview() {
   const states = [
     {
       title: "早间 · 4 点",
-      description: "当天尚未行动。",
+      description:
+        "可点击休息、度过本时段，实际扣点并保存。上方按钮仅用于重置试玩状态。",
       plan: { period: 0, spent: 0, activity: null, ended: false },
     },
     {
       title: "午后 · 3 点",
-      description: "展示已花费 1 点后的状态；普通活动内容仍待接入。",
+      description: "从午后状态继续试玩：每次活动结束后推进一个时段。",
       plan: { period: 2, spent: 1, activity: null, ended: false },
     },
     {
@@ -43,32 +44,31 @@ function buildDayPreview() {
     },
     {
       title: "当前正式流程",
-      description:
-        "当前角色卡仍沿用原夜间流程。新增日程显示与存档字段已接通，活动扣费和时段推进尚未启用。",
+      description: "旧存档保留原流程；点击启用日程安排后，才使用新日程规则。",
       plan: null,
     },
   ].map((state) => {
     const init = {
       ...defaultInit({ targetId: "college" }),
       identity: "otaku",
-      sessionSalt: "daily-ui-preview-v1",
+      sessionSalt: "daily-ui-preview-v2",
+      stats: { date: 1, heart: 30, stamina: 55, cash: 800, pi: 0 },
     };
     if (state.plan)
       init.dayPlan = { schema: 1, source: "daily", ...state.plan };
-    const game = createGame(init);
-    const saved = game.save();
-    return {
-      title: state.title,
-      description: state.description,
-      snap: createGame({ saved }).snapshot(),
-    };
+    return { title: state.title, description: state.description, init };
   });
-  const boot = `const states=${JSON.stringify(states)};
-window.getVariables=async()=>({wx_save:{v:2}});
-WxStatusbarUI.mountStatusbar(document,window);
-const controls=document.getElementById('dailyPreviewControls');
-function show(index){WxStatusbar.render(states[index].snap);document.getElementById('dailyPreviewDescription').textContent=states[index].description;controls.querySelectorAll('button').forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));window.__dailyPreviewIndex=index;}
-states.forEach((state,index)=>{const button=document.createElement('button');button.type='button';button.textContent=state.title;button.dataset.stateIndex=index;button.onclick=()=>show(index);controls.append(button);});show(0);`;
+  const entry = esbuild.buildSync({
+    entryPoints: [path.join(__dirname, "daily-preview-entry.js")],
+    bundle: true,
+    format: "iife",
+    globalName: "DailyPreview",
+    platform: "browser",
+    target: "es2020",
+    write: false,
+    legalComments: "none",
+  }).outputFiles[0].text;
+  const boot = entry + `\nDailyPreview.boot(${JSON.stringify(states)});`;
   const html = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>尾行 · 每日行动状态栏预览</title>
 <style>${css}
 html{min-height:100%;background:#080e14}body{margin:0;color:#c6d0d7;font:14px/1.7 system-ui,sans-serif;background:radial-gradient(ellipse at 50% 0,#1b2b34,transparent 65%)}
@@ -76,7 +76,7 @@ html{min-height:100%;background:#080e14}body{margin:0;color:#c6d0d7;font:14px/1.
 </style>
 <div class="preview-shell"><div class="preview-eyebrow">尾行 / 状态栏预览</div><h1>每日行动与时段</h1><p>阿宅 × 女大学生。每天 4 点行动点，每时段一次行动；尾行消耗 2 点，仍只算一次行动。</p><div class="daily-preview-controls" id="dailyPreviewControls"></div><p class="preview-description" id="dailyPreviewDescription"></p>
 <main class="wx-standalone-main"><section class="trpg" aria-label="玩家状态栏">${bodyHtml}</section></main>
-<div class="preview-bottom">本页为显示预览，切换按钮不产生游戏进度。演示状态经实际引擎保存、恢复后生成快照。当前交付先接显示和共用存档，全天活动与尾行入口下一步接入。</div></div>
+<div class="preview-bottom">本页使用正式界面、引擎和保存流程。休息／度过时段可操作；其他活动待接具体内容与条件。尾行中按钮仅载入展示样例。试玩进度与酒馆存档相互独立。</div></div>
 <script>${(script + "\n" + boot).replace(/<\/script/gi, "<\\/script")}</script></html>`;
   const directory = path.join(ROOT, "previews/day-plan");
   fs.mkdirSync(directory, { recursive: true });

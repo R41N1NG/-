@@ -68,6 +68,18 @@ function defaultInit(overrides = {}) {
 
   return {
     targetId,
+    ...(overrides.dailyMode
+      ? {
+          dayPlan: {
+            schema: 1,
+            source: "daily",
+            period: 3,
+            spent: 0,
+            activity: null,
+            ended: false,
+          },
+        }
+      : {}),
     targetPersona,
     player: { str: 3, agi: 5, nrv: 5, int: 5, cha: 2, staminaMax: 115 },
     target: targetStats,

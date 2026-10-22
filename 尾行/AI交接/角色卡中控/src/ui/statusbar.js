@@ -33,6 +33,7 @@ const {
 const { createDetailsRenderer } = require("./renderers/details.js");
 const { clearLiveData } = require("./renderers/empty.js");
 const { createDayPlanRenderer } = require("./renderers/day-plan.js");
+const { createDailyActionsUI } = require("./daily/actions.js");
 const { createSnapshotRenderer } = require("./renderers/snapshot.js");
 const { createAudio } = require("./audio.js");
 const { createSettlement } = require("./settlement/controller.js");
@@ -58,6 +59,13 @@ function mountStatusbar(document, window) {
   details.reset();
   const dayPlanRenderer = createDayPlanRenderer({ document });
   dayPlanRenderer.reset();
+  const dailyActionsUI = createDailyActionsUI({
+    document,
+    window,
+    lifecycle,
+    getGlue: () => window.WxGlue || globalThis.WxGlue,
+    reportSyncError,
+  });
   const noticeAtMount = document.getElementById("wxSyncNotice");
   if (noticeAtMount) noticeAtMount.hidden = true;
   const root =
@@ -626,6 +634,18 @@ function mountStatusbar(document, window) {
 
   function renderSnapshot(snap) {
     dayPlanRenderer.render(snap);
+    dailyActionsUI.render(snap);
+    const capsuleBar = document.getElementById("wxCapsuleBar");
+    const dailyIdle =
+      snap.dayPlan?.source === "daily" &&
+      snap.dayPlan.activity?.kind !== "tailing";
+    if (capsuleBar) capsuleBar.hidden = dailyIdle;
+    const distanceBadge = document.getElementById("distStat");
+    if (distanceBadge) distanceBadge.hidden = dailyIdle;
+    if (capsuleBar?.hidden) {
+      currentCapsuleActions = [];
+      currentDynamicCapsules = [];
+    }
     details.render(snap);
     return render(snap);
   }
@@ -1864,6 +1884,7 @@ function mountStatusbar(document, window) {
     syncNotice.report(error);
   }
   function resetDisplay() {
+    dailyActionsUI.reset();
     dayPlanRenderer.reset();
     syncNotice.clear();
     clearLiveData(document);
@@ -1892,6 +1913,7 @@ function mountStatusbar(document, window) {
   Object.assign(window.WxStatusbar, {
     dispose,
     reportSyncError,
+    dailyActions: { registerInput: dailyActionsUI.registerInput },
     reset: resetDisplay,
     zeroFloor: {
       registerExtension: zeroFloor.registerExtension,

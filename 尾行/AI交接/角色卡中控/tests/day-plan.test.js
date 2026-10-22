@@ -77,17 +77,20 @@ test("原有聊天回合不冒充日程完成，时段与预留点数保持不�
   assert.deepEqual(game.save().dayPlan, before);
 });
 
-test("显式过夜才切换日期并初始化下一日字段，读取快照不刷新预算", () => {
+test("日程模式不能通过旧过夜接口重置点数，旧模式过夜仍兼容", () => {
   const game = createGame({
     sessionSalt: "overnight-daily",
     dayPlan: active(),
   });
   for (let i = 0; i < 3; i++)
     assert.equal(game.snapshot().dayPlan.remaining, 2);
-  game.nightFall();
-  assert.equal(game.snapshot().dayPlan.date, 2);
-  assert.equal(game.snapshot().dayPlan.remaining, 4);
-  assert.equal(game.snapshot().dayPlan.activity, null);
+  assert.throws(() => game.nightFall(), { code: "DAY_UNAVAILABLE" });
+  assert.equal(game.snapshot().dayPlan.date, 1);
+  assert.equal(game.snapshot().dayPlan.remaining, 2);
+  const legacy = createGame({ dayPlan: { ...createDayPlan(), spent: 2 } });
+  legacy.nightFall();
+  assert.equal(legacy.snapshot().dayPlan.date, 2);
+  assert.equal(legacy.snapshot().dayPlan.remaining, 4);
 });
 
 test("日程 renderer：点数、五时段、活动真实投影，旧快照和重置清空", () => {

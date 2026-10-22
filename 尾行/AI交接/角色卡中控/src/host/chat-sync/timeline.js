@@ -80,6 +80,34 @@ function validateTimeline(value) {
           kind: "record",
         },
       });
+  if (value.locals !== undefined) {
+    if (!Array.isArray(value.locals) || value.locals.length > 64)
+      throw Object.assign(new Error("本地操作检查点列表损坏"), {
+        code: "TIMELINE_INVALID",
+      });
+    const keys = new Set();
+    for (const c of value.locals) {
+      if (
+        !c ||
+        !validPath(c.path) ||
+        !prefix(value.base.path, c.path) ||
+        c.key !== fingerprint(c.path) ||
+        keys.has(c.key) ||
+        !c.save
+      )
+        throw Object.assign(new Error("本地操作检查点损坏"), {
+          code: "TIMELINE_INVALID",
+          location: {
+            index:
+              Array.isArray(c?.path) && c.path.length
+                ? c.path.length - 1
+                : undefined,
+            kind: "record",
+          },
+        });
+      keys.add(c.key);
+    }
+  }
   return clone(value);
 }
 function locate(timeline, history) {
@@ -105,17 +133,53 @@ function locate(timeline, history) {
       },
     );
   }
+  return { ...select(timeline, path), path };
+}
+function select(timeline, path) {
   let node = null;
   for (const n of timeline.nodes)
     if (prefix(n.path, path) && (!node || n.path.length > node.path.length))
       node = n;
-  const save = node
-    ? node.replyPath && prefix(node.replyPath, path)
+  const replied = node?.replyPath && prefix(node.replyPath, path);
+  let save = node
+    ? replied
       ? node.after
       : node.afterInput
     : timeline.base.save;
-  return { node, save: clone(save), path };
+  let length = node
+    ? replied
+      ? node.replyPath.length
+      : node.path.length
+    : timeline.base.path.length;
+  let local = null;
+  for (const checkpoint of timeline.locals || []) {
+    if (prefix(checkpoint.path, path) && checkpoint.path.length >= length) {
+      save = checkpoint.save;
+      length = checkpoint.path.length;
+      local = checkpoint;
+    }
+  }
+  return { node, local, save: clone(save) };
 }
+function checkpoint(timeline, history, save, limit = 64) {
+  const path = tokens(history),
+    key = fingerprint(path);
+  timeline.locals ||= [];
+  const index = timeline.locals.findIndex((c) => c.key === key);
+  const entry = { path, key, save: clone(save) };
+  if (index >= 0) timeline.locals[index] = entry;
+  else timeline.locals.push(entry);
+  if (timeline.locals.length > limit) {
+    const chain = timeline.locals
+      .filter((c) => prefix(c.path, path))
+      .sort((a, b) => a.path.length - b.path.length);
+    const cut = chain[Math.max(0, chain.length - Math.floor(limit / 2) - 1)];
+    timeline.base = { path: clone(cut.path), save: clone(cut.save) };
+    timeline.nodes = timeline.nodes.filter((n) => prefix(cut.path, n.path));
+    timeline.locals = timeline.locals.filter((c) => prefix(cut.path, c.path));
+  }
+}
+
 function inputPath(history, messageId) {
   const index = userIndex(history, messageId);
   if (index < 0)
@@ -134,13 +198,22 @@ function prune(timeline, currentPath, limit = 64) {
     throw Object.assign(new Error("时间线容量不足，原进度已保留"), {
       code: "TIMELINE_FULL",
     });
-  timeline.base = { path: cut.replyPath || cut.path, save: clone(cut.after) };
+  const cutPath = cut.replyPath || cut.path;
+  timeline.base = {
+    path: clone(cutPath),
+    save: select(timeline, cutPath).save,
+  };
+  if (timeline.locals)
+    timeline.locals = timeline.locals.filter((c) =>
+      prefix(timeline.base.path, c.path),
+    );
   timeline.nodes = timeline.nodes.filter((n) =>
     prefix(timeline.base.path, n.path),
   );
 }
 module.exports = {
   clone,
+  checkpoint,
   fingerprint,
   tokens,
   prefix,

@@ -16,6 +16,9 @@ function createSnapshotSystem({
   applyShoeMod,
   identityShift,
   rollEnvSfx,
+  getDayActivities,
+  getDayToken,
+  getDayControls,
 }) {
   function snapshot() {
     const s = L.state;
@@ -29,21 +32,24 @@ function createSnapshotSystem({
       g.route && here >= 0 && here + 1 < g.route.nodes.length
         ? g.route.nodes[here + 1]
         : null;
-    const routeView = g.route
-      ? {
-          id: g.route.id,
-          note: g.route.note,
-          startTime: g.route.startTime,
-          times: g.route.times || null,
-          nodes: g.route.nodes.map((id, i) =>
-            g.route.known && g.route.known[i]
-              ? map.getPlace(id)?.name || id
-              : id,
-          ),
-          known: g.route.known || g.route.nodes.map(() => 1),
-          here,
-        }
-      : null;
+    const dailyIdle =
+      g.dayPlan.source === "daily" && g.dayPlan.activity?.kind !== "tailing";
+    const routeView =
+      !dailyIdle && g.route
+        ? {
+            id: g.route.id,
+            note: g.route.note,
+            startTime: g.route.startTime,
+            times: g.route.times || null,
+            nodes: g.route.nodes.map((id, i) =>
+              g.route.known && g.route.known[i]
+                ? map.getPlace(id)?.name || id
+                : id,
+            ),
+            known: g.route.known || g.route.nodes.map(() => 1),
+            here,
+          }
+        : null;
     const exits = cur
       ? cur.exits.map(
           (id) =>
@@ -68,7 +74,9 @@ function createSnapshotSystem({
 
     return JSON.parse(
       JSON.stringify({
-        dayPlan: dayPlanView(g.dayPlan, s.date),
+        dayPlan: { ...dayPlanView(g.dayPlan, s.date), token: getDayToken() },
+        dayActions: getDayActivities(),
+        dayControls: getDayControls(),
         player: {
           heart: s.heart,
           stamina: s.stamina,
@@ -216,15 +224,23 @@ function createSnapshotSystem({
         ledger: g.lastLedgerSummary || "本轮暂无结算",
         /* 地图 HUD 字段（状态栏 route-tracker + 战术沙盘） */
         area: districtObj ? districtObj.name : "未知",
-        place: cur && routeView.known[here] ? cur.name : null,
+        place:
+          !dailyIdle && cur && routeView.known[here]
+            ? cur.name
+            : dailyIdle
+              ? "日程安排"
+              : null,
         weather: w.weather,
-        weatherName: WEATHER_ICON[w.weather] || "🌙 晴夜",
+        weatherName:
+          dailyIdle && g.dayPlan.period < 3 && w.weather === "clear"
+            ? "晴天"
+            : WEATHER_ICON[w.weather] || "🌙 晴夜",
         strikeSealed: cur ? !!cur.strike_sealed : false,
         fam: w.district ? g.famSegs[w.district] || 0 : 0,
         route: routeView,
-        exits,
-        spots: cur ? cur.spots || [] : [],
-        sanctuaryAlert,
+        exits: dailyIdle ? [] : exits,
+        spots: !dailyIdle && cur ? cur.spots || [] : [],
+        sanctuaryAlert: dailyIdle ? "" : sanctuaryAlert,
         /* 相册：计数 + 已拍清单（贴墙渲染用） */
         album: (() => {
           const persona = g.targetPersona || {};

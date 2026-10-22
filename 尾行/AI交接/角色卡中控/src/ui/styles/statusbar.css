@@ -2716,3 +2716,30 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   .trpg .wx-day-ap-pips { display: none; }
   .trpg .wx-day-bottom { align-items: flex-start; flex-direction: column; gap: 3px; }
 }
+
+/* 日程活动统一入口。配置决定卡片数量，新增活动无需改 HTML。 */
+.trpg .wx-capsule-bar[hidden] { display: none; }
+.trpg .wx-daily-actions { margin: 0 10px 10px; padding: 0 12px 9px; border: 1px solid #263740; border-radius: 6px; background: #0e171eee; }
+.trpg .wx-daily-actions summary { cursor: pointer; padding: 10px 0; color: #d1dce0; font-size: 12px; }
+.trpg .wx-daily-actions summary span { margin-left: 12px; font-size: 10px; color: #718994; }
+.trpg .wx-daily-action-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+.trpg button.wx-daily-action { display: flex; flex-direction: column; gap: 5px; width: 100%; min-width: 0; padding: 10px!important; text-align: left; background: #18242c!important; border-color: #3f535e!important; border-radius: 5px; white-space: normal; }
+.trpg button.wx-daily-action:disabled { opacity: .58; cursor: default; background: #111b22!important; border-color: #263741!important; }
+.trpg .wx-daily-action-head { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; font-size: 12px; }
+.trpg .wx-daily-action-head strong { font-weight: 500; }
+.trpg .wx-daily-action-cost { flex-shrink: 0; color: #dfc38d; font: 11px ui-monospace,Consolas,monospace; }
+.trpg .wx-daily-action-effect { font-size: 10px; line-height: 1.6; color: #9bacb6; }
+.trpg .wx-daily-action-reason { font-size: 10px; color: #ae947c; }
+.trpg .wx-daily-controls { display: flex; gap: 7px; margin-top: 8px; }
+.trpg .wx-daily-controls:empty { display: none; }
+.trpg .wx-daily-controls button { max-width: 350px; }
+.trpg .wx-daily-status { margin: 7px 0 0; font-size: 11px; line-height: 1.6; color: #b0c4b6; }
+.trpg .wx-daily-status:empty { display: none; }
+@media(max-width:560px) {
+  .trpg .wx-daily-actions { margin: 0 6px 8px; padding: 0 9px 8px; }
+  .trpg .wx-daily-action-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .trpg .wx-daily-actions summary span { margin-left: 8px; }
+  .trpg .wx-daily-action-head { font-size: 11px; }
+}
+
+.trpg #distStat[hidden] { display: none !important; }

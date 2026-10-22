@@ -120,6 +120,13 @@
       <div class="wx-day-bottom"><span class="wx-day-activity"><i aria-hidden="true"></i><span id="wxDayActivity">尚无日程记录</span></span><span id="wxDayHint">每日行动与时段</span></div>
     </div>
 
+    <details class="wx-daily-actions" id="wxDailyActions" open>
+      <summary>日程行动<span>每个时段选择一次活动</span></summary>
+      <div class="wx-daily-action-grid" id="wxDailyActionGrid"></div>
+      <div class="wx-daily-controls" id="wxDailyControls"></div>
+      <p class="wx-daily-status" id="wxDailyStatus" role="status" aria-live="polite"></p>
+    </details>
+
     <!-- ═══ 行动胶囊栏（情境自适应 4 胶囊 + 姿态指示 + 二级抽屉展开） ═══ -->
     <div class="wx-capsule-bar" id="wxCapsuleBar" aria-label="战术行动胶囊">
       <div class="wx-posture-badge" id="wxPostureBadge" role="button" tabindex="0" data-tip="未点选胶囊时，本轮以「跟缀·保持当前距离」继续跟踪。点击切换为纯叙事（不掷骰）。">默认: 跟缀 · 保持距离</div>

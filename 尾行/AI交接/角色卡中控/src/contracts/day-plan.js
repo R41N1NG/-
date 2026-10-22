@@ -28,6 +28,24 @@ function validateDayPlan(value) {
     !["legacy", "daily"].includes(value.source)
   )
     throw Object.assign(new Error("日程数据无效"), { code: "SAVE_INVALID" });
+  if (
+    value.sequence !== undefined &&
+    (!Number.isInteger(value.sequence) || value.sequence < 0)
+  )
+    throw Object.assign(new Error("日程版本无效"), { code: "SAVE_INVALID" });
+  if (
+    value.receipts !== undefined &&
+    (!Array.isArray(value.receipts) ||
+      value.receipts.length > 32 ||
+      value.receipts.some(
+        (r) =>
+          !r ||
+          typeof r.operationId !== "string" ||
+          typeof r.requestKey !== "string" ||
+          typeof r.summary !== "string",
+      ))
+  )
+    throw Object.assign(new Error("日程回执无效"), { code: "SAVE_INVALID" });
   const a = value.activity;
   if (
     a !== null &&

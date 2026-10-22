@@ -16,6 +16,7 @@ const {
 } = require("./environment.js");
 const { defaultInit } = require("./initial-state.js");
 const { receiptText } = require("./receipt.js");
+const { dailyContextText } = require("./daily-context.js");
 const { syncTargetWorldbook } = require("./worldbook.js");
 const { applyTargetOpening } = require("./opening.js");
 const { createGame } = require("../runtime/game.js");
@@ -135,7 +136,11 @@ async function startGlue() {
         "[M4] MESSAGE_SENT 收到",
         messageId !== undefined ? "楼" + messageId : "",
       );
-      if (state.conf.autoSettle) {
+      if (state.conf.autoSettle && !state.game) await sync.rebuild();
+      if (
+        state.conf.autoSettle &&
+        state.game?._g?.dayPlan?.source !== "daily"
+      ) {
         console.log("[M4] 自动掷模式，跳过拦截");
         return;
       }
@@ -181,6 +186,19 @@ async function startGlue() {
         actions: pickedActions || [],
       });
       await sync.checkSession(token);
+      if (r.narrativeOnly) {
+        await api.injectPrompts?.([
+          {
+            id: "wx_receipt",
+            position: state.conf.injectPos ?? 1,
+            depth: state.conf.injectDepth ?? 1,
+            role: 0,
+            content: dailyContextText(r.stats),
+          },
+        ]);
+        await sync.checkSession(token);
+        return;
+      }
       console.log(
         `[M4] 结算完成：楼${r.floor} · 动作${r.package.actions.length}个${r.package.narrativeOnly ? "（纯叙事）" : ""}`,
       );
@@ -259,6 +277,7 @@ async function startGlue() {
     else top?.postMessage({ wxSyncError: report }, "*");
   }
   async function onReplyEnded() {
+    state.generating = false;
     const ticket = generationSession;
     try {
       if (ticket) await sync.checkSession(await ticket);
@@ -279,14 +298,16 @@ async function startGlue() {
       await sync.reconcile();
       const result = await sync.getCurrentResult();
       await sync.checkSession(token);
-      if (result?.package)
+      if (result?.package || result?.narrativeOnly)
         await api.injectPrompts([
           {
             id: "wx_receipt",
             position: 1,
             depth: 1,
             role: 0,
-            content: receiptText(result),
+            content: result.narrativeOnly
+              ? dailyContextText(result.stats)
+              : receiptText(result),
           },
         ]);
       else api.uninjectPrompts(["wx_receipt"]);
@@ -301,12 +322,14 @@ async function startGlue() {
     onUserSent(messageId).catch((error) => reportError(error));
   });
   api.onEvent("GENERATION_STARTED", () => {
+    state.generating = true;
     generationSession = sync.captureSession();
     if (state.pending) state.raced = true;
   });
   api.onEvent("GENERATION_ENDED", onReplyEnded);
   api.onEvent("CHAT_CHANGED", () => {
     generationSession = null;
+    state.generating = false;
     sync.interrupt();
     try {
       api.stopAllGeneration?.();

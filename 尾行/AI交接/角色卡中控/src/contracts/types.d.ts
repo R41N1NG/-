@@ -37,11 +37,25 @@ export interface RequirementContext {
 }
 export interface DayPlan {
   schema: 1;
+  sequence?: number;
+  receipts?: DailyReceipt[];
+  lastReceipt?: DailyReceipt;
   period: number;
   spent: number;
-  activity: { id: string; kind: "routine" | "tailing"; name: string; cost: number } | null;
+  activity: { id: string; kind: "routine" | "tailing"; name: string; cost: number; actionId?: string; payload?: Record<string, unknown> } | null;
   ended: boolean;
   source: "legacy" | "daily";
+}
+export interface DailyToken { date: number; period: number; sequence: number }
+export interface DailyReceipt {
+  operationId: string;
+  command: string;
+  actionId: string | null;
+  requestKey: string;
+  cost: number;
+  before: { date: number; period: number; remaining: number };
+  after: { date: number; period: number; remaining: number };
+  summary: string;
 }
 export interface DayPlanView extends DayPlan {
   date: number;
@@ -49,6 +63,8 @@ export interface DayPlanView extends DayPlan {
   remaining: number;
   tailingCost: number;
   periodName: string;
+  token?: DailyToken;
+  sync?: { scope: string; epoch: number };
 }
 export interface SavedGame {
   v: 2;
@@ -75,6 +91,7 @@ export interface Timeline {
   revision: number;
   base: { path: string[]; save: SavedGame };
   nodes: TimelineNode[];
+  locals?: { key: string; path: string[]; save: SavedGame }[];
 }
 export interface SyncDiagnostics {
   schema: 1;

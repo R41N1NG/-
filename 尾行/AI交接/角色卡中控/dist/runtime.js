@@ -2607,6 +2607,72 @@
               "vehicle"
             ],
             aliases: []
+          },
+          {
+            id: "daily.rest",
+            name: "\u65E5\u7A0B\xB7\u4F11\u606F",
+            aliases: [],
+            modes: [
+              "any"
+            ],
+            args: [],
+            check: null,
+            dailyOnly: true
+          },
+          {
+            id: "daily.work",
+            name: "\u65E5\u7A0B\xB7\u6253\u5DE5\uFF0F\u63A5\u5355",
+            aliases: [],
+            modes: [
+              "any"
+            ],
+            args: [],
+            check: null,
+            dailyOnly: true
+          },
+          {
+            id: "daily.shop",
+            name: "\u65E5\u7A0B\xB7\u8D2D\u7269",
+            aliases: [],
+            modes: [
+              "any"
+            ],
+            args: [],
+            check: null,
+            dailyOnly: true
+          },
+          {
+            id: "daily.talk",
+            name: "\u65E5\u7A0B\xB7\u72EC\u7ACB\u4EA4\u6D41",
+            aliases: [],
+            modes: [
+              "any"
+            ],
+            args: [],
+            check: null,
+            dailyOnly: true
+          },
+          {
+            id: "daily.tailing",
+            name: "\u65E5\u7A0B\xB7\u5C3E\u884C",
+            aliases: [],
+            modes: [
+              "any"
+            ],
+            args: [],
+            check: null,
+            dailyOnly: true
+          },
+          {
+            id: "daily.pass",
+            name: "\u65E5\u7A0B\xB7\u5EA6\u8FC7\u672C\u65F6\u6BB5",
+            aliases: [],
+            modes: [
+              "any"
+            ],
+            args: [],
+            check: null,
+            dailyOnly: true
           }
         ]
       };
@@ -8140,6 +8206,11 @@
             name: tag.name,
             label: tag.label || tag.name
           };
+          if (entry.dailyOnly) {
+            out.rejected = true;
+            out.reason = "\u8BF7\u901A\u8FC7\u65E5\u7A0B\u884C\u52A8\u533A\u5B89\u6392\u8FD9\u9879\u6D3B\u52A8";
+            return out;
+          }
           if (!(entry.modes || []).includes(g.mode) && !(entry.modes || []).includes("any")) {
             out.rejected = true;
             out.reason = `\u52A8\u4F5C [${tag.name}] \u9700\u8981\u6A21\u5F0F\uFF1A${(entry.modes || []).join("/")}`;
@@ -9836,6 +9907,12 @@
       function validateDayPlan(value) {
         if (!value || value.schema !== 1 || !Number.isInteger(value.period) || value.period < 0 || value.period >= RULES.periods.length || !Number.isInteger(value.spent) || value.spent < 0 || value.spent > RULES.budget || typeof value.ended !== "boolean" || !["legacy", "daily"].includes(value.source))
           throw Object.assign(new Error("\u65E5\u7A0B\u6570\u636E\u65E0\u6548"), { code: "SAVE_INVALID" });
+        if (value.sequence !== void 0 && (!Number.isInteger(value.sequence) || value.sequence < 0))
+          throw Object.assign(new Error("\u65E5\u7A0B\u7248\u672C\u65E0\u6548"), { code: "SAVE_INVALID" });
+        if (value.receipts !== void 0 && (!Array.isArray(value.receipts) || value.receipts.length > 32 || value.receipts.some(
+          (r) => !r || typeof r.operationId !== "string" || typeof r.requestKey !== "string" || typeof r.summary !== "string"
+        )))
+          throw Object.assign(new Error("\u65E5\u7A0B\u56DE\u6267\u65E0\u6548"), { code: "SAVE_INVALID" });
         const a = value.activity;
         if (a !== null && (!a || typeof a.id !== "string" || !a.id || a.id.length > 128 || !["routine", "tailing"].includes(a.kind) || typeof a.name !== "string" || !a.name || a.name.length > 64 || !Number.isInteger(a.cost) || a.cost < 0 || a.cost > RULES.budget || a.cost > value.spent || a.kind === "tailing" && a.cost !== RULES.tailingCost))
           throw Object.assign(new Error("\u65E5\u7A0B\u6D3B\u52A8\u6570\u636E\u65E0\u6548"), {
@@ -9885,7 +9962,10 @@
         syncTargetShoeTags,
         applyShoeMod,
         identityShift,
-        rollEnvSfx
+        rollEnvSfx,
+        getDayActivities,
+        getDayToken,
+        getDayControls
       }) {
         function snapshot() {
           const s = L.state;
@@ -9895,7 +9975,8 @@
           const curId = g.route && here >= 0 ? g.route.nodes[here] : null;
           const cur = curId ? map.getPlace(curId) : null;
           const nextId = g.route && here >= 0 && here + 1 < g.route.nodes.length ? g.route.nodes[here + 1] : null;
-          const routeView = g.route ? {
+          const dailyIdle = g.dayPlan.source === "daily" && g.dayPlan.activity?.kind !== "tailing";
+          const routeView = !dailyIdle && g.route ? {
             id: g.route.id,
             note: g.route.note,
             startTime: g.route.startTime,
@@ -9921,7 +10002,9 @@
           const envSfx = g._envSfx !== void 0 ? g._envSfx : rollEnvSfx();
           return JSON.parse(
             JSON.stringify({
-              dayPlan: dayPlanView(g.dayPlan, s.date),
+              dayPlan: { ...dayPlanView(g.dayPlan, s.date), token: getDayToken() },
+              dayActions: getDayActivities(),
+              dayControls: getDayControls(),
               player: {
                 heart: s.heart,
                 stamina: s.stamina,
@@ -10035,15 +10118,15 @@
               ledger: g.lastLedgerSummary || "\u672C\u8F6E\u6682\u65E0\u7ED3\u7B97",
               /* 地图 HUD 字段（状态栏 route-tracker + 战术沙盘） */
               area: districtObj ? districtObj.name : "\u672A\u77E5",
-              place: cur && routeView.known[here] ? cur.name : null,
+              place: !dailyIdle && cur && routeView.known[here] ? cur.name : dailyIdle ? "\u65E5\u7A0B\u5B89\u6392" : null,
               weather: w.weather,
-              weatherName: WEATHER_ICON[w.weather] || "\u{1F319} \u6674\u591C",
+              weatherName: dailyIdle && g.dayPlan.period < 3 && w.weather === "clear" ? "\u6674\u5929" : WEATHER_ICON[w.weather] || "\u{1F319} \u6674\u591C",
               strikeSealed: cur ? !!cur.strike_sealed : false,
               fam: w.district ? g.famSegs[w.district] || 0 : 0,
               route: routeView,
-              exits,
-              spots: cur ? cur.spots || [] : [],
-              sanctuaryAlert,
+              exits: dailyIdle ? [] : exits,
+              spots: !dailyIdle && cur ? cur.spots || [] : [],
+              sanctuaryAlert: dailyIdle ? "" : sanctuaryAlert,
               /* 相册：计数 + 已拍清单（贴墙渲染用） */
               album: (() => {
                 const persona = g.targetPersona || {};
@@ -10126,6 +10209,305 @@
     }
   });
 
+  // src/config/daily-actions.json
+  var require_daily_actions = __commonJS({
+    "src/config/daily-actions.json"(exports, module) {
+      module.exports = [
+        { id: "daily.rest", name: "\u4F11\u606F", cost: 1, mode: "instant", kind: "routine", handler: "rest", effect: "\u6062\u590D 50 \u70B9\u4F53\u529B\uFF0C\u4E0D\u8D85\u8FC7\u4E0A\u9650", recovery: 50 },
+        { id: "daily.work", name: "\u6253\u5DE5\uFF0F\u63A5\u5355", cost: 1, mode: "instant", kind: "routine", handler: "work", effect: "\u6309\u672C\u6B21\u5DE5\u79CD\u7ED3\u7B97\u62A5\u916C\u4E0E\u6D88\u8017" },
+        { id: "daily.shop", name: "\u8D2D\u7269", cost: 1, mode: "instant", kind: "routine", handler: "shop", effect: "\u4E00\u6B21\u6279\u91CF\u91C7\u4E70\uFF0C\u7ED3\u8D26\u524D\u5217\u660E\u603B\u4EF7" },
+        { id: "daily.talk", name: "\u72EC\u7ACB\u4EA4\u6D41", cost: 1, mode: "scene", kind: "routine", handler: "talk", effect: "\u5C55\u5F00\u4E00\u6B21\u4EA4\u6D41\uFF0C\u6210\u679C\u7531\u5177\u4F53\u4E8B\u4EF6\u51B3\u5B9A" },
+        { id: "daily.tailing", name: "\u5C3E\u884C", cost: 2, mode: "scene", kind: "tailing", handler: "tailing", effect: "\u8FDB\u5165\u8FDE\u7EED\u5C3E\u884C\u56DE\u5408\uFF0C\u6574\u6BB5\u7ED3\u675F\u540E\u63A8\u8FDB\u65F6\u6BB5" },
+        { id: "daily.pass", name: "\u5EA6\u8FC7\u672C\u65F6\u6BB5", cost: 0, mode: "instant", kind: "routine", handler: "pass", effect: "\u65E0\u6536\u76CA\u548C\u6062\u590D\uFF0C\u76F4\u63A5\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5" }
+      ];
+    }
+  });
+
+  // src/runtime/daily/registry.js
+  var require_registry = __commonJS({
+    "src/runtime/daily/registry.js"(exports, module) {
+      "use strict";
+      var definitions = require_daily_actions();
+      var { DAY_PLAN_RULES } = require_day_plan2();
+      var clone = (value) => JSON.parse(JSON.stringify(value));
+      var handlers = {
+        rest: {
+          available: (ctx) => ctx.ledger.stamina >= ctx.player.staminaMax ? "\u4F53\u529B\u5DF2\u6EE1" : null,
+          prepare: (ctx, args, def) => ({
+            ledger: {
+              stamina: Math.min(
+                def.recovery,
+                ctx.player.staminaMax - ctx.ledger.stamina
+              )
+            },
+            summary: `\u4F11\u606F\u5B8C\u6210\uFF0C\u6062\u590D ${Math.min(def.recovery, ctx.player.staminaMax - ctx.ledger.stamina)} \u70B9\u4F53\u529B`
+          })
+        },
+        pass: { available: () => null, prepare: () => ({ summary: "\u5DF2\u5EA6\u8FC7\u672C\u65F6\u6BB5" }) },
+        work: { available: () => "\u6682\u65E0\u53EF\u63A5\u5DE5\u4F5C", prepare: null },
+        shop: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u7528\u5546\u5E97", prepare: null },
+        talk: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u5F00\u5C55\u7684\u4EA4\u6D41\u4E8B\u4EF6", prepare: null },
+        tailing: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u63A5\u5165\u7684\u51FA\u884C\u673A\u4F1A", prepare: null }
+      };
+      function createDailyRegistry(extensions = []) {
+        const entries = /* @__PURE__ */ new Map();
+        function add(def, handler) {
+          if (!def || typeof def.id !== "string" || !/^daily\.[a-z][a-z0-9_]*$/.test(def.id) || typeof def.name !== "string" || !def.name || !Number.isInteger(def.cost) || def.cost < 0 || def.cost > DAY_PLAN_RULES.budget || !["instant", "scene"].includes(def.mode) || !["routine", "tailing"].includes(def.kind) || def.kind === "tailing" && def.cost !== DAY_PLAN_RULES.tailingCost || typeof def.effect !== "string" || !handler || typeof handler.available !== "function")
+            throw Error("\u65E5\u7A0B\u6D3B\u52A8\u6CE8\u518C\u65E0\u6548");
+          entries.set(def.id, { definition: clone(def), handler });
+        }
+        definitions.forEach((def) => add(def, handlers[def.handler]));
+        extensions.forEach(({ definition, handler }) => add(definition, handler));
+        return { list: () => [...entries.values()], get: (id) => entries.get(id) };
+      }
+      module.exports = { createDailyRegistry };
+    }
+  });
+
+  // src/runtime/daily/system.js
+  var require_system = __commonJS({
+    "src/runtime/daily/system.js"(exports, module) {
+      "use strict";
+      var {
+        DAY_PLAN_RULES,
+        createDayPlan,
+        validateDayPlan
+      } = require_day_plan2();
+      var { LIMITS } = require_ledger();
+      var ITEMS = require_rules().items;
+      var clone = (value) => JSON.parse(JSON.stringify(value));
+      var fail = (code, message) => Object.assign(new Error(message), { code });
+      function createDailySystem({ g, L, registry, nextDay }) {
+        function context() {
+          return clone({
+            player: g.player,
+            ledger: L.state,
+            dayPlan: g.dayPlan,
+            world: g.world,
+            targetId: g.targetId
+          });
+        }
+        function token() {
+          return {
+            date: L.get("date"),
+            period: g.dayPlan.period,
+            sequence: g.dayPlan.sequence || 0
+          };
+        }
+        function reason(entry) {
+          const p = g.dayPlan;
+          if (p.source !== "daily") return "\u8BF7\u5148\u542F\u7528\u65E5\u7A0B\u5B89\u6392";
+          if (p.ended) return "\u672C\u65E5\u5DF2\u7ED3\u675F";
+          if (p.activity) return "\u8BF7\u5148\u7ED3\u675F\u5F53\u524D\u6D3B\u52A8";
+          if (DAY_PLAN_RULES.budget - p.spent < entry.definition.cost)
+            return "\u884C\u52A8\u70B9\u4E0D\u8DB3";
+          let unavailable;
+          try {
+            unavailable = entry.handler.available(context());
+          } catch {
+            return "\u6D3B\u52A8\u6761\u4EF6\u6A21\u5757\u6682\u4E0D\u53EF\u7528";
+          }
+          if (unavailable) return String(unavailable);
+          if (typeof entry.handler.prepare !== "function")
+            return "\u5F53\u524D\u6CA1\u6709\u53EF\u6267\u884C\u7684\u6D3B\u52A8\u5185\u5BB9";
+          return null;
+        }
+        function activities() {
+          return registry.list().map((entry) => {
+            const unavailable = reason(entry);
+            return {
+              ...clone(entry.definition),
+              enabled: !unavailable,
+              reason: unavailable
+            };
+          });
+        }
+        function controls() {
+          const p = g.dayPlan;
+          if (p.source === "legacy")
+            return [
+              {
+                command: "enable",
+                name: "\u8BD5\u7528\u65E5\u7A0B\u5B89\u6392",
+                effect: "\u4ECE\u5F53\u524D\u65F6\u6BB5\u5F00\u59CB\uFF1B\u5C3E\u884C\u5165\u573A\u6761\u4EF6\u5F85\u63A5\u901A",
+                enabled: !(g.floor > 0 && g.route && g.route.here < g.route.nodes.length - 1),
+                reason: "\u8BF7\u5148\u5B8C\u6210\u5F53\u524D\u539F\u6709\u6D41\u7A0B"
+              }
+            ];
+          if (p.ended)
+            return [
+              {
+                command: "next-day",
+                name: "\u8FDB\u5165\u4E0B\u4E00\u5929",
+                effect: `\u6BCF\u65E5\u6062\u590D ${DAY_PLAN_RULES.budget} \u70B9\uFF0C\u672A\u4F7F\u7528\u7684\u884C\u52A8\u70B9\u4E0D\u4FDD\u7559`,
+                enabled: true
+              }
+            ];
+          if (!p.activity) return [];
+          const entry = registry.get(p.activity.actionId);
+          return ["finish", "cancel"].map((command) => ({
+            command,
+            name: command === "finish" ? "\u5B8C\u6210\u672C\u6B21\u6D3B\u52A8" : "\u7ED3\u675F\u672C\u6B21\u6D3B\u52A8",
+            effect: "\u4E0D\u9000\u8FD8\u5DF2\u6D88\u8017\u70B9\u6570\uFF0C\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5",
+            enabled: typeof entry?.handler[command] === "function",
+            reason: "\u5F53\u524D\u6D3B\u52A8\u7684\u7ED3\u675F\u6761\u4EF6\u5C1A\u672A\u63A5\u901A"
+          }));
+        }
+        function advance(p) {
+          if (p.period < DAY_PLAN_RULES.periods.length - 1) p.period++;
+          else p.ended = true;
+        }
+        function applyEffects(result) {
+          if (!result || typeof result.summary !== "string")
+            throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u6CA1\u6709\u6709\u6548\u7ED3\u7B97\u7ED3\u679C");
+          if (Object.keys(result).some(
+            (key) => !["summary", "ledger", "payload", "inventory"].includes(key)
+          ))
+            throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u542B\u6709\u5C1A\u672A\u652F\u6301\u7684\u6548\u679C\u7C7B\u578B");
+          const ledger = result.ledger || {};
+          for (const [key, value] of Object.entries(ledger)) {
+            if (!Object.prototype.hasOwnProperty.call(LIMITS, key) || key === "date" || !Number.isFinite(value))
+              throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u6570\u503C\u6548\u679C\u65E0\u6548");
+            if (L.get(key) + value < LIMITS[key][0] || L.get(key) + value > LIMITS[key][1])
+              throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u6548\u679C\u8D85\u51FA\u6570\u503C\u8303\u56F4");
+          }
+          const inventory = clone(g.player.inventory || []);
+          if (result.inventory !== void 0) {
+            if (!Array.isArray(result.inventory) || result.inventory.length > 50)
+              throw fail("DAY_EFFECT_INVALID", "\u7269\u54C1\u6548\u679C\u65E0\u6548");
+            for (const change of result.inventory) {
+              if (!change || !Object.prototype.hasOwnProperty.call(ITEMS, change.id) || !Number.isSafeInteger(change.add) || change.add < 1 || change.add > 999)
+                throw fail("DAY_EFFECT_INVALID", "\u7269\u54C1\u6548\u679C\u65E0\u6548");
+              const item = inventory.find((i) => i.id === change.id);
+              if (item) {
+                item.count = (item.count || 1) + change.add;
+                if (!Number.isSafeInteger(item.count))
+                  throw fail("DAY_EFFECT_INVALID", "\u7269\u54C1\u6570\u91CF\u65E0\u6548");
+              } else
+                inventory.push({ id: change.id, count: change.add, equipped: false });
+            }
+          }
+          return { ledger, inventory };
+        }
+        function execute(request) {
+          if (!request || typeof request.operationId !== "string" || !request.operationId || request.operationId.length > 128)
+            throw fail("DAY_REQUEST_INVALID", "\u6D3B\u52A8\u8BF7\u6C42\u65E0\u6548");
+          let requestKey;
+          try {
+            requestKey = JSON.stringify(request);
+          } catch {
+            throw fail("DAY_REQUEST_INVALID", "\u6D3B\u52A8\u8BF7\u6C42\u65E0\u6CD5\u4FDD\u5B58");
+          }
+          if (typeof requestKey !== "string" || requestKey.length > 8192)
+            throw fail("DAY_REQUEST_INVALID", "\u6D3B\u52A8\u8BF7\u6C42\u8FC7\u957F");
+          const p = validateDayPlan(g.dayPlan);
+          const cached = (p.receipts || []).find(
+            (r) => r.operationId === request.operationId
+          );
+          if (cached) {
+            if (cached.command !== request.command || cached.actionId !== (request.actionId || null) || cached.requestKey !== requestKey)
+              throw fail("DAY_REQUEST_INVALID", "\u91CD\u590D\u8BF7\u6C42\u5185\u5BB9\u4E0D\u4E00\u81F4");
+            return { ...clone(cached), reused: true };
+          }
+          const expected = request.expected, current = token();
+          if (!expected || expected.date !== current.date || expected.period !== current.period || expected.sequence !== current.sequence)
+            throw fail("DAY_STALE", "\u65E5\u7A0B\u5DF2\u53D8\u5316\uFF0C\u8BF7\u6309\u5F53\u524D\u72B6\u6001\u91CD\u65B0\u9009\u62E9");
+          const before = {
+            date: current.date,
+            period: p.period,
+            remaining: DAY_PLAN_RULES.budget - p.spent
+          };
+          let next = clone(p), result = { summary: "" }, ledger = {}, inventory = null, cost = 0;
+          if (request.command === "enable") {
+            if (p.source !== "legacy") throw fail("DAY_STALE", "\u65E5\u7A0B\u5DF2\u7ECF\u542F\u7528");
+            if ((g.floor || 0) > 0 && g.route && g.route.here < g.route.nodes.length - 1)
+              throw fail("DAY_BUSY", "\u8BF7\u5148\u5B8C\u6210\u5F53\u524D\u539F\u6709\u6D41\u7A0B\uFF0C\u518D\u542F\u7528\u65E5\u7A0B\u5B89\u6392");
+            next.source = "daily";
+            next.spent = 0;
+            next.activity = null;
+            result.summary = "\u5DF2\u4ECE\u5F53\u524D\u65F6\u6BB5\u542F\u7528\u65E5\u7A0B\u5B89\u6392";
+          } else if (request.command === "start") {
+            const entry = registry.get(request.actionId);
+            if (!entry) throw fail("DAY_UNKNOWN", "\u6CA1\u6709\u8FD9\u9879\u65E5\u7A0B\u6D3B\u52A8");
+            const unavailable = reason(entry);
+            if (unavailable) throw fail("DAY_UNAVAILABLE", unavailable);
+            result = entry.handler.prepare(
+              context(),
+              clone(request.args || {}),
+              clone(entry.definition)
+            );
+            ({ ledger, inventory } = applyEffects(result));
+            cost = entry.definition.cost;
+            next.spent += cost;
+            if (entry.definition.mode === "scene") {
+              next.activity = {
+                id: request.operationId,
+                actionId: entry.definition.id,
+                kind: entry.definition.kind,
+                name: entry.definition.name,
+                cost,
+                payload: clone(result.payload || {})
+              };
+            } else advance(next);
+          } else if (["finish", "cancel"].includes(request.command)) {
+            if (p.source !== "daily" || !p.activity || request.activityId !== p.activity.id)
+              throw fail("DAY_STALE", "\u5F53\u524D\u6D3B\u52A8\u5DF2\u7ECF\u53D8\u5316");
+            const entry = registry.get(p.activity.actionId);
+            if (!entry) throw fail("DAY_UNKNOWN", "\u5F53\u524D\u6D3B\u52A8\u7684\u5904\u7406\u6A21\u5757\u4E0D\u53EF\u7528");
+            const handler = request.command === "finish" ? entry.handler.finish : entry.handler.cancel;
+            if (typeof handler !== "function")
+              throw fail("DAY_UNAVAILABLE", "\u5F53\u524D\u6D3B\u52A8\u6682\u4E0D\u80FD\u5728\u8FD9\u91CC\u7ED3\u675F");
+            result = handler(context(), clone(request.args || {}), clone(p.activity));
+            ({ ledger, inventory } = applyEffects(result));
+            next.activity = null;
+            advance(next);
+          } else if (request.command === "next-day") {
+            if (p.source !== "daily" || !p.ended || p.activity)
+              throw fail("DAY_UNAVAILABLE", "\u8BF7\u5148\u7ED3\u675F\u5F53\u5929\u7684\u5B89\u6392");
+            const outcome = nextDay();
+            if (outcome?.blocked) throw fail("DAY_BUSY", outcome.reason);
+            next = {
+              ...createDayPlan(),
+              source: "daily",
+              period: 0,
+              receipts: p.receipts || []
+            };
+            result.summary = `\u65B0\u7684\u4E00\u5929\u5F00\u59CB\uFF0C\u884C\u52A8\u70B9\u6062\u590D\u81F3 ${DAY_PLAN_RULES.budget} \u70B9`;
+          } else throw fail("DAY_REQUEST_INVALID", "\u4E0D\u652F\u6301\u7684\u65E5\u7A0B\u64CD\u4F5C");
+          next.sequence = (p.sequence || 0) + 1;
+          const receipt = {
+            operationId: request.operationId,
+            command: request.command,
+            actionId: request.actionId || null,
+            requestKey,
+            cost,
+            before,
+            after: {
+              date: L.get("date"),
+              period: next.period,
+              remaining: DAY_PLAN_RULES.budget - next.spent
+            },
+            summary: result.summary
+          };
+          next.receipts = [...next.receipts || [], receipt].slice(-32);
+          next.lastReceipt = receipt;
+          validateDayPlan(next);
+          if (Object.keys(ledger).length)
+            L.commit(ledger, { reason: "daily-activity", action: request.actionId });
+          if (inventory) g.player.inventory = inventory;
+          g.dayPlan = next;
+          if (!next.activity) {
+            g.env = next.period < 3 ? "day" : "night";
+            g.slot = next.period < 3 ? "prepare" : next.period === 3 ? "e21_23" : "e23_01";
+          }
+          return clone(receipt);
+        }
+        return { activities, controls, execute, token };
+      }
+      module.exports = { createDailySystem };
+    }
+  });
+
   // src/runtime/persistence/migrations.js
   var require_migrations = __commonJS({
     "src/runtime/persistence/migrations.js"(exports, module) {
@@ -10200,6 +10582,8 @@
       var { createAlbumSystem } = require_album2();
       var { createSnapshotSystem } = require_snapshot();
       var { createSaveSystem } = require_save();
+      var { createDailyRegistry } = require_registry();
+      var { createDailySystem } = require_system();
       var { classifyPlace } = require_action_requirements();
       var { migrateSave } = require_migrations();
       var { createDayPlan, validateDayPlan } = require_day_plan2();
@@ -10207,7 +10591,7 @@
         normalizePersona,
         validatePersona
       } = require_persona();
-      function createGame(init = {}) {
+      function createGame(init = {}, services = {}) {
         if (init.targetPersona) {
           init = { ...init, targetPersona: normalizePersona(init.targetPersona) };
           validatePersona(
@@ -10377,7 +10761,10 @@
           syncTargetShoeTags,
           applyShoeMod,
           identityShift,
-          rollEnvSfx
+          rollEnvSfx,
+          getDayActivities: () => dailySystem.activities(),
+          getDayToken: () => dailySystem.token(),
+          getDayControls: () => dailySystem.controls()
         });
         const { save } = createSaveSystem({ g, L, getSalt });
         applyIdentity(init.identity, {
@@ -10450,7 +10837,17 @@
         g.dayPlan = validateDayPlan(
           init.saved?.dayPlan ?? init.dayPlan ?? createDayPlan(g.slot)
         );
+        const dailySystem = createDailySystem({
+          g,
+          L,
+          registry: createDailyRegistry(services.dailyActions || []),
+          nextDay: legacyNightFall
+        });
         function nightFall() {
+          if (g.dayPlan.source === "daily")
+            throw Object.assign(new Error("\u8BF7\u5728\u672C\u65E5\u5B89\u6392\u7ED3\u675F\u540E\u4F7F\u7528\u8FDB\u5165\u4E0B\u4E00\u5929"), {
+              code: "DAY_UNAVAILABLE"
+            });
           const result = legacyNightFall();
           if (!result?.blocked) g.dayPlan = createDayPlan(g.slot);
           return result;
@@ -10492,6 +10889,7 @@
           settleInput,
           processReply,
           translateInput,
+          executeDailyCommand: dailySystem.execute,
           nightFall,
           gmSet,
           snapshot,
@@ -10934,6 +11332,16 @@
         else if (targetId === "wife") district = "D";
         return {
           targetId,
+          ...overrides.dailyMode ? {
+            dayPlan: {
+              schema: 1,
+              source: "daily",
+              period: 3,
+              spent: 0,
+              activity: null,
+              ended: false
+            }
+          } : {},
           targetPersona,
           player: { str: 3, agi: 5, nrv: 5, int: 5, cha: 2, staminaMax: 115 },
           target: targetStats,
@@ -11117,6 +11525,27 @@
         return lines.join("\n");
       }
       module.exports = { receiptText };
+    }
+  });
+
+  // src/host/daily-context.js
+  var require_daily_context = __commonJS({
+    "src/host/daily-context.js"(exports, module) {
+      "use strict";
+      function dailyContextText(snap) {
+        const p = snap.dayPlan;
+        const last = p.lastReceipt?.summary;
+        return [
+          "\u3010\u65E5\u7A0B\u72B6\u6001 \xB7 \u672C\u5730\u5B58\u6863\u4E3A\u51C6\u3011",
+          `\u7B2C ${p.date} \u5929\uFF0C${p.periodName}\uFF0C\u884C\u52A8\u70B9 ${p.remaining}/${p.budget}\u3002`,
+          p.activity ? `\u5F53\u524D\u6D3B\u52A8\uFF1A${p.activity.name}\u3002` : p.ended ? "\u672C\u65E5\u5DF2\u7ED3\u675F\uFF0C\u7B49\u5F85\u8FDB\u5165\u4E0B\u4E00\u5929\u3002" : "\u5F53\u524D\u6CA1\u6709\u8FDB\u884C\u4E2D\u7684\u6D3B\u52A8\u3002",
+          last ? `\u6700\u8FD1\u5DF2\u7ED3\u7B97\u6D3B\u52A8\uFF1A${last}` : "\u5C1A\u65E0\u5DF2\u7ED3\u7B97\u7684\u65E5\u7A0B\u6D3B\u52A8\u3002",
+          "\u73A9\u5BB6\u8F93\u5165\u4EC5\u4E3A\u4F34\u968F\u53D9\u4E8B\u3002\u4E0D\u5F97\u51ED\u6587\u5B57\u6263\u70B9\u3001\u63A8\u8FDB\u65F6\u6BB5\u3001\u53D1\u653E\u91D1\u94B1\u7269\u54C1\u6216\u89E3\u9501\u60C5\u62A5\uFF1B\u5B9E\u9645\u7ED3\u679C\u53EA\u8BA4\u672C\u5730\u6D3B\u52A8\u56DE\u6267\u3002",
+          "\u5F53\u524D\u4E0D\u5904\u4E8E\u5C3E\u884C\u9636\u6BB5\u3002\u4E0D\u5F97\u628A\u591C\u95F4\u8DEF\u7EBF\u5F53\u4F5C\u773C\u524D\u573A\u666F\uFF0C\u4E0D\u5F97\u9ED8\u8BA4\u76EE\u6807\u5C31\u5728\u73A9\u5BB6\u9762\u524D\uFF0C\u4E0D\u5F97\u628A\u672A\u89E3\u9501\u60C5\u62A5\u5199\u6210\u73A9\u5BB6\u5DF2\u7ECF\u638C\u63E1\u3002",
+          "\u53EF\u4EE5\u63CF\u5199\u73AF\u5883\u3001\u65E5\u5E38\u7EC6\u8282\u4E0E\u5DF2\u53D1\u751F\u7684\u6D3B\u52A8\uFF0C\u4E0D\u5F97\u53E6\u884C\u5BA3\u5E03\u672A\u6267\u884C\u7684\u6D3B\u52A8\u6210\u529F\u3002"
+        ].join("\n");
+      }
+      module.exports = { dailyContextText };
     }
   });
 
@@ -11478,6 +11907,24 @@
                 kind: "record"
               }
             });
+        if (value.locals !== void 0) {
+          if (!Array.isArray(value.locals) || value.locals.length > 64)
+            throw Object.assign(new Error("\u672C\u5730\u64CD\u4F5C\u68C0\u67E5\u70B9\u5217\u8868\u635F\u574F"), {
+              code: "TIMELINE_INVALID"
+            });
+          const keys = /* @__PURE__ */ new Set();
+          for (const c of value.locals) {
+            if (!c || !validPath(c.path) || !prefix(value.base.path, c.path) || c.key !== fingerprint(c.path) || keys.has(c.key) || !c.save)
+              throw Object.assign(new Error("\u672C\u5730\u64CD\u4F5C\u68C0\u67E5\u70B9\u635F\u574F"), {
+                code: "TIMELINE_INVALID",
+                location: {
+                  index: Array.isArray(c?.path) && c.path.length ? c.path.length - 1 : void 0,
+                  kind: "record"
+                }
+              });
+            keys.add(c.key);
+          }
+        }
         return clone(value);
       }
       function locate(timeline, history) {
@@ -11499,12 +11946,40 @@
             }
           );
         }
+        return { ...select(timeline, path), path };
+      }
+      function select(timeline, path) {
         let node = null;
         for (const n of timeline.nodes)
           if (prefix(n.path, path) && (!node || n.path.length > node.path.length))
             node = n;
-        const save = node ? node.replyPath && prefix(node.replyPath, path) ? node.after : node.afterInput : timeline.base.save;
-        return { node, save: clone(save), path };
+        const replied = node?.replyPath && prefix(node.replyPath, path);
+        let save = node ? replied ? node.after : node.afterInput : timeline.base.save;
+        let length = node ? replied ? node.replyPath.length : node.path.length : timeline.base.path.length;
+        let local = null;
+        for (const checkpoint2 of timeline.locals || []) {
+          if (prefix(checkpoint2.path, path) && checkpoint2.path.length >= length) {
+            save = checkpoint2.save;
+            length = checkpoint2.path.length;
+            local = checkpoint2;
+          }
+        }
+        return { node, local, save: clone(save) };
+      }
+      function checkpoint(timeline, history, save, limit = 64) {
+        const path = tokens(history), key = fingerprint(path);
+        timeline.locals || (timeline.locals = []);
+        const index = timeline.locals.findIndex((c) => c.key === key);
+        const entry = { path, key, save: clone(save) };
+        if (index >= 0) timeline.locals[index] = entry;
+        else timeline.locals.push(entry);
+        if (timeline.locals.length > limit) {
+          const chain = timeline.locals.filter((c) => prefix(c.path, path)).sort((a, b) => a.path.length - b.path.length);
+          const cut = chain[Math.max(0, chain.length - Math.floor(limit / 2) - 1)];
+          timeline.base = { path: clone(cut.path), save: clone(cut.save) };
+          timeline.nodes = timeline.nodes.filter((n) => prefix(cut.path, n.path));
+          timeline.locals = timeline.locals.filter((c) => prefix(cut.path, c.path));
+        }
       }
       function inputPath(history, messageId) {
         const index = userIndex(history, messageId);
@@ -11522,13 +11997,22 @@
           throw Object.assign(new Error("\u65F6\u95F4\u7EBF\u5BB9\u91CF\u4E0D\u8DB3\uFF0C\u539F\u8FDB\u5EA6\u5DF2\u4FDD\u7559"), {
             code: "TIMELINE_FULL"
           });
-        timeline.base = { path: cut.replyPath || cut.path, save: clone(cut.after) };
+        const cutPath = cut.replyPath || cut.path;
+        timeline.base = {
+          path: clone(cutPath),
+          save: select(timeline, cutPath).save
+        };
+        if (timeline.locals)
+          timeline.locals = timeline.locals.filter(
+            (c) => prefix(timeline.base.path, c.path)
+          );
         timeline.nodes = timeline.nodes.filter(
           (n) => prefix(timeline.base.path, n.path)
         );
       }
       module.exports = {
         clone,
+        checkpoint,
         fingerprint,
         tokens,
         prefix,
@@ -11755,12 +12239,21 @@
           });
           return game;
         }
+        function displaySnapshot(token) {
+          const snap = state.game.snapshot();
+          if (snap.dayPlan)
+            snap.dayPlan.sync = {
+              scope: T.fingerprint(token.scope ?? null),
+              epoch: token.epoch
+            };
+          return snap;
+        }
         async function persist(token, { reason = "save", init, expectedPath } = {}) {
           if (blocked) throw fail(blocked, "\u65F6\u95F4\u7EBF\u6821\u9A8C\u672A\u5B8C\u6210\uFF0C\u5DF2\u963B\u6B62\u8986\u76D6\u5B58\u6863");
           diagnostics.record("persist.prepare");
           let snap, save;
           try {
-            snap = state.game.snapshot();
+            snap = displaySnapshot(token);
             save = state.game.save();
           } catch (cause) {
             throw diagnostics.failure(
@@ -11867,7 +12360,7 @@
             return null;
           }
           if (!journal || !Array.isArray(context.history)) {
-            const snap = state.game.snapshot();
+            const snap = displaySnapshot(token);
             lastFailure = null;
             await publishSnapshot(snap, { scope: token.scope, syncOk: true });
             return snap;
@@ -11883,8 +12376,9 @@
               );
               const reply2 = context.history.slice(index + 1).find((m) => m.role === "assistant");
               if (reply2 && (!found.node.replyPath || !T.prefix(found.node.replyPath, T.tokens(context.history)))) {
-                state.game.processReply(reply2.text);
                 const end = context.history.indexOf(reply2) + 1;
+                if (!found.local || found.local.path.length < end)
+                  state.game.processReply(reply2.text);
                 found.node.replyPath = T.tokens(context.history.slice(0, end));
                 found.node.after = state.game.save();
               }
@@ -11894,7 +12388,7 @@
                 reason: "history-recovery",
                 expectedPath: T.tokens(context.history)
               });
-            const snap = state.game.snapshot();
+            const snap = displaySnapshot(token);
             lastFailure = null;
             await publishSnapshot(snap, {
               scope: token.scope,
@@ -11909,6 +12403,16 @@
         async function input(token, { messageId, text, actions = [] }) {
           await load(token, { beforeUser: messageId });
           const context = await session.check(token);
+          if (journal && Array.isArray(context.history))
+            state.game = restore(T.locate(journal, context.history).save);
+          if (state.game._g?.dayPlan?.source === "daily" && state.game._g.dayPlan.activity?.kind !== "tailing") {
+            clearReceipt();
+            return {
+              narrativeOnly: true,
+              floor: state.game.save().floor,
+              stats: displaySnapshot(token)
+            };
+          }
           const path = journal && Array.isArray(context.history) ? T.inputPath(context.history, messageId) : null;
           if (path && context.history[T.userIndex(context.history, messageId)]?.text !== text)
             throw fail("HISTORY_CHANGED", "\u8BFB\u53D6\u7684\u73A9\u5BB6\u6D88\u606F\u5DF2\u53D1\u751F\u53D8\u5316\uFF0C\u672C\u6B21\u672A\u7ED3\u7B97");
@@ -11953,6 +12457,10 @@
             beforeUser: index >= 0 ? context.history[index].id : void 0
           });
           if (!text) return null;
+          if (journal && Array.isArray(context.history))
+            state.game = restore(T.locate(journal, context.history).save);
+          if (state.game._g?.dayPlan?.source === "daily" && state.game._g.dayPlan.activity?.kind !== "tailing")
+            return null;
           const old = state.game, oldJournal = T.clone(journal);
           try {
             let node = null;
@@ -11982,8 +12490,10 @@
                   await reconcile(token);
                   return T.clone(node.result);
                 }
-                state.game = restore(node.afterInput);
-                state.game.processReply(text);
+                const found = T.locate(journal, context.history);
+                state.game = restore(found.save);
+                if (!found.local || found.local.path.length <= index + 1)
+                  state.game.processReply(text);
               }
               node.replyPath = T.tokens(context.history);
               node.after = state.game.save();
@@ -12113,19 +12623,29 @@
               "equipItem",
               "unequipItem",
               "useItem",
-              "nightFall"
+              "nightFall",
+              "executeDailyCommand"
             ];
             if (!allowed.includes(method))
               throw fail("COMMAND_INVALID", "\u4E0D\u652F\u6301\u7684\u6E38\u620F\u64CD\u4F5C");
             try {
+              if (method === "executeDailyCommand") {
+                const guard = args[0]?.sync;
+                if (!guard || guard.scope !== T.fingerprint(token.scope ?? null) || guard.epoch !== token.epoch)
+                  throw fail("DAY_STALE", "\u804A\u5929\u5DF2\u5207\u6362\uFF0C\u8BF7\u6309\u5F53\u524D\u65E5\u7A0B\u91CD\u65B0\u9009\u62E9");
+                if (state.pending || state.generating || commandContext.history?.at(-1)?.role === "user")
+                  throw fail("DAY_BUSY", "\u8BF7\u7B49\u5F85\u5F53\u524D\u56DE\u590D\u5B8C\u6210\u540E\u518D\u5B89\u6392\u6D3B\u52A8");
+              }
               const result = state.game[method](...args);
+              if (method === "executeDailyCommand" && result.reused) return result;
               if (journal) {
-                const context = await session.check(token), found = T.locate(journal, context.history);
-                if (found.node) {
-                  found.node.after = state.game.save();
-                  if (!found.node.replyPath)
-                    found.node.afterInput = state.game.save();
-                } else journal.base.save = state.game.save();
+                const context = await session.check(token);
+                if (!Array.isArray(context.history))
+                  throw fail(
+                    "HISTORY_UNAVAILABLE",
+                    "\u5BBF\u4E3B\u6682\u672A\u63D0\u4F9B\u5B8C\u6574\u804A\u5929\u5386\u53F2\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5"
+                  );
+                T.checkpoint(journal, context.history, state.game.save());
               }
               await persist(token, {
                 reason: "command",
@@ -12197,8 +12717,10 @@
           }),
           getCurrentResult: () => exclusive(async (token) => {
             await load(token);
-            if (!journal) return null;
             const context = await session.check(token);
+            if (state.game._g?.dayPlan?.source === "daily" && state.game._g.dayPlan.activity?.kind !== "tailing")
+              return { narrativeOnly: true, stats: displaySnapshot(token) };
+            if (!journal) return null;
             return T.clone(T.locate(journal, context.history).node?.result || null);
           }),
           interrupt,
@@ -12238,6 +12760,7 @@
       } = require_environment();
       var { defaultInit } = require_initial_state();
       var { receiptText } = require_receipt();
+      var { dailyContextText } = require_daily_context();
       var { syncTargetWorldbook } = require_worldbook();
       var { applyTargetOpening } = require_opening();
       var { createGame } = require_game();
@@ -12331,7 +12854,8 @@
               "[M4] MESSAGE_SENT \u6536\u5230",
               messageId !== void 0 ? "\u697C" + messageId : ""
             );
-            if (state.conf.autoSettle) {
+            if (state.conf.autoSettle && !state.game) await sync.rebuild();
+            if (state.conf.autoSettle && state.game?._g?.dayPlan?.source !== "daily") {
               console.log("[M4] \u81EA\u52A8\u63B7\u6A21\u5F0F\uFF0C\u8DF3\u8FC7\u62E6\u622A");
               return;
             }
@@ -12361,6 +12885,19 @@
               actions: pickedActions || []
             });
             await sync.checkSession(token);
+            if (r.narrativeOnly) {
+              await api.injectPrompts?.([
+                {
+                  id: "wx_receipt",
+                  position: state.conf.injectPos ?? 1,
+                  depth: state.conf.injectDepth ?? 1,
+                  role: 0,
+                  content: dailyContextText(r.stats)
+                }
+              ]);
+              await sync.checkSession(token);
+              return;
+            }
             console.log(
               `[M4] \u7ED3\u7B97\u5B8C\u6210\uFF1A\u697C${r.floor} \xB7 \u52A8\u4F5C${r.package.actions.length}\u4E2A${r.package.narrativeOnly ? "\uFF08\u7EAF\u53D9\u4E8B\uFF09" : ""}`
             );
@@ -12429,6 +12966,7 @@
           else top?.postMessage({ wxSyncError: report }, "*");
         }
         async function onReplyEnded() {
+          state.generating = false;
           const ticket = generationSession;
           try {
             if (ticket) await sync.checkSession(await ticket);
@@ -12449,14 +12987,14 @@
             await sync.reconcile();
             const result = await sync.getCurrentResult();
             await sync.checkSession(token);
-            if (result?.package)
+            if (result?.package || result?.narrativeOnly)
               await api.injectPrompts([
                 {
                   id: "wx_receipt",
                   position: 1,
                   depth: 1,
                   role: 0,
-                  content: receiptText(result)
+                  content: result.narrativeOnly ? dailyContextText(result.stats) : receiptText(result)
                 }
               ]);
             else api.uninjectPrompts(["wx_receipt"]);
@@ -12471,12 +13009,14 @@
           onUserSent(messageId).catch((error) => reportError(error));
         });
         api.onEvent("GENERATION_STARTED", () => {
+          state.generating = true;
           generationSession = sync.captureSession();
           if (state.pending) state.raced = true;
         });
         api.onEvent("GENERATION_ENDED", onReplyEnded);
         api.onEvent("CHAT_CHANGED", () => {
           generationSession = null;
+          state.generating = false;
           sync.interrupt();
           try {
             api.stopAllGeneration?.();
@@ -12534,7 +13074,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.5",
+        version: "0.8.6",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -12543,7 +13083,7 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
+          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs",
           "preview:daily": "node tools/build/day-preview.js"

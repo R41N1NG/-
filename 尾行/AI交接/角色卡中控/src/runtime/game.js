@@ -22,6 +22,8 @@ const { createAlertSystem } = require("./game/alert.js");
 const { createAlbumSystem } = require("./game/album.js");
 const { createSnapshotSystem } = require("./game/snapshot.js");
 const { createSaveSystem } = require("./game/save.js");
+const { createDailyRegistry } = require("./daily/registry.js");
+const { createDailySystem } = require("./daily/system.js");
 
 const { classifyPlace } = require("../contracts/action-requirements.js");
 const { migrateSave } = require("./persistence/migrations.js");
@@ -32,7 +34,7 @@ const {
   validatePersona,
 } = require("../contracts/persona.js");
 
-function createGame(init = {}) {
+function createGame(init = {}, services = {}) {
   if (init.targetPersona) {
     init = { ...init, targetPersona: normalizePersona(init.targetPersona) };
     validatePersona(
@@ -219,6 +221,9 @@ function createGame(init = {}) {
     applyShoeMod,
     identityShift,
     rollEnvSfx,
+    getDayActivities: () => dailySystem.activities(),
+    getDayToken: () => dailySystem.token(),
+    getDayControls: () => dailySystem.controls(),
   });
   const { save } = createSaveSystem({ g, L, getSalt });
   applyIdentity(init.identity, {
@@ -295,7 +300,17 @@ function createGame(init = {}) {
   g.dayPlan = validateDayPlan(
     init.saved?.dayPlan ?? init.dayPlan ?? createDayPlan(g.slot),
   );
+  const dailySystem = createDailySystem({
+    g,
+    L,
+    registry: createDailyRegistry(services.dailyActions || []),
+    nextDay: legacyNightFall,
+  });
   function nightFall() {
+    if (g.dayPlan.source === "daily")
+      throw Object.assign(new Error("请在本日安排结束后使用进入下一天"), {
+        code: "DAY_UNAVAILABLE",
+      });
     const result = legacyNightFall();
     if (!result?.blocked) g.dayPlan = createDayPlan(g.slot);
     return result;
@@ -350,6 +365,7 @@ function createGame(init = {}) {
     settleInput,
     processReply,
     translateInput,
+    executeDailyCommand: dailySystem.execute,
     nightFall,
     gmSet,
     snapshot,

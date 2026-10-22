@@ -2723,6 +2723,33 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   .trpg .wx-day-bottom { align-items: flex-start; flex-direction: column; gap: 3px; }
 }
 
+/* 日程活动统一入口。配置决定卡片数量，新增活动无需改 HTML。 */
+.trpg .wx-capsule-bar[hidden] { display: none; }
+.trpg .wx-daily-actions { margin: 0 10px 10px; padding: 0 12px 9px; border: 1px solid #263740; border-radius: 6px; background: #0e171eee; }
+.trpg .wx-daily-actions summary { cursor: pointer; padding: 10px 0; color: #d1dce0; font-size: 12px; }
+.trpg .wx-daily-actions summary span { margin-left: 12px; font-size: 10px; color: #718994; }
+.trpg .wx-daily-action-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+.trpg button.wx-daily-action { display: flex; flex-direction: column; gap: 5px; width: 100%; min-width: 0; padding: 10px!important; text-align: left; background: #18242c!important; border-color: #3f535e!important; border-radius: 5px; white-space: normal; }
+.trpg button.wx-daily-action:disabled { opacity: .58; cursor: default; background: #111b22!important; border-color: #263741!important; }
+.trpg .wx-daily-action-head { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; font-size: 12px; }
+.trpg .wx-daily-action-head strong { font-weight: 500; }
+.trpg .wx-daily-action-cost { flex-shrink: 0; color: #dfc38d; font: 11px ui-monospace,Consolas,monospace; }
+.trpg .wx-daily-action-effect { font-size: 10px; line-height: 1.6; color: #9bacb6; }
+.trpg .wx-daily-action-reason { font-size: 10px; color: #ae947c; }
+.trpg .wx-daily-controls { display: flex; gap: 7px; margin-top: 8px; }
+.trpg .wx-daily-controls:empty { display: none; }
+.trpg .wx-daily-controls button { max-width: 350px; }
+.trpg .wx-daily-status { margin: 7px 0 0; font-size: 11px; line-height: 1.6; color: #b0c4b6; }
+.trpg .wx-daily-status:empty { display: none; }
+@media(max-width:560px) {
+  .trpg .wx-daily-actions { margin: 0 6px 8px; padding: 0 9px 8px; }
+  .trpg .wx-daily-action-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .trpg .wx-daily-actions summary span { margin-left: 8px; }
+  .trpg .wx-daily-action-head { font-size: 11px; }
+}
+
+.trpg #distStat[hidden] { display: none !important; }
+
 </style>
 <main class="wx-standalone-main">
   <div class="preview-area" id="previewArea" style="display: none;">
@@ -2837,6 +2864,13 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
       <ol class="wx-day-periods" id="wxDayPeriods" aria-label="当天五个时段"></ol>
       <div class="wx-day-bottom"><span class="wx-day-activity"><i aria-hidden="true"></i><span id="wxDayActivity">尚无日程记录</span></span><span id="wxDayHint">每日行动与时段</span></div>
     </div>
+
+    <details class="wx-daily-actions" id="wxDailyActions" open>
+      <summary>日程行动<span>每个时段选择一次活动</span></summary>
+      <div class="wx-daily-action-grid" id="wxDailyActionGrid"></div>
+      <div class="wx-daily-controls" id="wxDailyControls"></div>
+      <p class="wx-daily-status" id="wxDailyStatus" role="status" aria-live="polite"></p>
+    </details>
 
     <!-- ═══ 行动胶囊栏（情境自适应 4 胶囊 + 姿态指示 + 二级抽屉展开） ═══ -->
     <div class="wx-capsule-bar" id="wxCapsuleBar" aria-label="战术行动胶囊">
@@ -9228,6 +9262,12 @@ var WxStatusbarUI = (() => {
       function validateDayPlan(value) {
         if (!value || value.schema !== 1 || !Number.isInteger(value.period) || value.period < 0 || value.period >= RULES.periods.length || !Number.isInteger(value.spent) || value.spent < 0 || value.spent > RULES.budget || typeof value.ended !== "boolean" || !["legacy", "daily"].includes(value.source))
           throw Object.assign(new Error("\u65E5\u7A0B\u6570\u636E\u65E0\u6548"), { code: "SAVE_INVALID" });
+        if (value.sequence !== void 0 && (!Number.isInteger(value.sequence) || value.sequence < 0))
+          throw Object.assign(new Error("\u65E5\u7A0B\u7248\u672C\u65E0\u6548"), { code: "SAVE_INVALID" });
+        if (value.receipts !== void 0 && (!Array.isArray(value.receipts) || value.receipts.length > 32 || value.receipts.some(
+          (r) => !r || typeof r.operationId !== "string" || typeof r.requestKey !== "string" || typeof r.summary !== "string"
+        )))
+          throw Object.assign(new Error("\u65E5\u7A0B\u56DE\u6267\u65E0\u6548"), { code: "SAVE_INVALID" });
         const a = value.activity;
         if (a !== null && (!a || typeof a.id !== "string" || !a.id || a.id.length > 128 || !["routine", "tailing"].includes(a.kind) || typeof a.name !== "string" || !a.name || a.name.length > 64 || !Number.isInteger(a.cost) || a.cost < 0 || a.cost > RULES.budget || a.cost > value.spent || a.kind === "tailing" && a.cost !== RULES.tailingCost))
           throw Object.assign(new Error("\u65E5\u7A0B\u6D3B\u52A8\u6570\u636E\u65E0\u6548"), {
@@ -9346,6 +9386,156 @@ var WxStatusbarUI = (() => {
         return { render, reset };
       }
       module.exports = { createDayPlanRenderer };
+    }
+  });
+
+  // src/ui/daily/actions.js
+  var require_actions = __commonJS({
+    "src/ui/daily/actions.js"(exports, module) {
+      "use strict";
+      function createDailyActionsUI({
+        document,
+        window,
+        lifecycle,
+        getGlue,
+        reportSyncError
+      }) {
+        const grid = document.getElementById("wxDailyActionGrid"), controls = document.getElementById("wxDailyControls"), status = document.getElementById("wxDailyStatus");
+        let snapshot = null, pending = null, retry = null, counter = 0;
+        const inputs = /* @__PURE__ */ new Map();
+        const sameSession = (a, b) => !!a && !!b && a.scope === b.scope && a.epoch === b.epoch;
+        function message(text) {
+          if (status) status.textContent = text;
+        }
+        function reset() {
+          snapshot = null;
+          pending = null;
+          retry = null;
+          grid?.replaceChildren();
+          controls?.replaceChildren();
+          message("");
+        }
+        function card(data, command) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "wx-daily-action";
+          button.dataset.dayCommand = command;
+          if (data.id) button.dataset.actionId = data.id;
+          const heading = document.createElement("span");
+          heading.className = "wx-daily-action-head";
+          const name = document.createElement("strong");
+          name.textContent = data.name;
+          const cost = document.createElement("span");
+          cost.className = "wx-daily-action-cost";
+          cost.textContent = `${data.cost || 0} \u70B9`;
+          heading.append(name, cost);
+          const effect = document.createElement("span");
+          effect.className = "wx-daily-action-effect";
+          effect.textContent = data.effect;
+          const reason = document.createElement("span");
+          reason.className = "wx-daily-action-reason";
+          const missingInput = data.inputRequired && !inputs.has(data.id);
+          button.disabled = !!pending || !data.enabled || !snapshot?.dayPlan?.sync || !!missingInput;
+          reason.textContent = !snapshot?.dayPlan?.sync ? "\u6B63\u5728\u8FDE\u63A5\u5F53\u524D\u65E5\u7A0B" : missingInput ? "\u8BF7\u5148\u9009\u62E9\u6D3B\u52A8\u5185\u5BB9" : !data.enabled ? data.reason || "\u5F53\u524D\u4E0D\u53EF\u6267\u884C" : pending ? "\u6B63\u5728\u4FDD\u5B58\u2026" : "";
+          button.append(heading, effect, reason);
+          return button;
+        }
+        function render(snap) {
+          if (!snap?.dayPlan || !Array.isArray(snap.dayActions)) return reset();
+          if (snapshot && !sameSession(snapshot.dayPlan.sync, snap.dayPlan.sync)) {
+            pending = null;
+            retry = null;
+            message("");
+          }
+          snapshot = snap;
+          if (grid) {
+            grid.replaceChildren();
+            snap.dayActions.forEach((action) => grid.append(card(action, "start")));
+          }
+          if (controls) {
+            controls.replaceChildren();
+            (snap.dayControls || []).forEach(
+              (control) => controls.append(card(control, control.command))
+            );
+            if (retry) {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.dataset.dayCommand = "retry";
+              button.textContent = "\u91CD\u65B0\u63D0\u4EA4\u4E0A\u6B21\u6D3B\u52A8";
+              button.disabled = !!pending;
+              controls.append(button);
+            }
+          }
+        }
+        async function submit(request) {
+          const operation = { request };
+          pending = operation;
+          render(snapshot);
+          try {
+            const glue = getGlue();
+            if (!glue?.command)
+              throw Object.assign(Error("\u65E5\u7A0B\u5F15\u64CE\u5C1A\u672A\u5C31\u7EEA"), {
+                code: "ENGINE_UNAVAILABLE"
+              });
+            const receipt = await glue.command("executeDailyCommand", request);
+            if (lifecycle.disposed || pending !== operation || !sameSession(snapshot?.dayPlan?.sync, request.sync))
+              return;
+            retry = null;
+            message(receipt.summary);
+          } catch (error) {
+            if (lifecycle.disposed || pending !== operation || !sameSession(snapshot?.dayPlan?.sync, request.sync))
+              return;
+            message(error.message || "\u6D3B\u52A8\u672A\u5B8C\u6210\uFF0C\u8BF7\u91CD\u8BD5");
+            if (["WRITE_FAILED", "READ_FAILED", "WRITE_CONFLICT"].includes(error.code)) {
+              retry = request;
+              reportSyncError(error);
+            } else retry = null;
+          } finally {
+            if (pending === operation) {
+              pending = null;
+              if (!lifecycle.disposed && snapshot) render(snapshot);
+            }
+          }
+        }
+        async function click(event) {
+          const button = event.target.closest?.("button[data-day-command]");
+          if (!button || button.disabled || pending || !snapshot?.dayPlan?.sync)
+            return;
+          if (button.dataset.dayCommand === "retry") return submit(retry);
+          const captured = snapshot;
+          let args = {};
+          const input = inputs.get(button.dataset.actionId);
+          if (input) {
+            args = await input(captured);
+            if (args == null || snapshot !== captured || lifecycle.disposed) return;
+          }
+          const operationId = window.crypto?.randomUUID?.() || `daily-${Date.now()}-${++counter}`;
+          const request = {
+            operationId,
+            command: button.dataset.dayCommand,
+            expected: { ...captured.dayPlan.token },
+            sync: { ...captured.dayPlan.sync },
+            args
+          };
+          if (button.dataset.actionId) request.actionId = button.dataset.actionId;
+          if (captured.dayPlan.activity)
+            request.activityId = captured.dayPlan.activity.id;
+          return submit(request);
+        }
+        lifecycle.on(grid, "click", click);
+        lifecycle.on(controls, "click", click);
+        return {
+          render,
+          reset,
+          registerInput(id, provider) {
+            if (typeof provider !== "function") throw Error("\u6D3B\u52A8\u8F93\u5165\u63A5\u53E3\u65E0\u6548");
+            inputs.set(id, provider);
+            if (snapshot) render(snapshot);
+            return () => inputs.delete(id);
+          }
+        };
+      }
+      module.exports = { createDailyActionsUI };
     }
   });
 
@@ -11949,6 +12139,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
       var { createDetailsRenderer } = require_details();
       var { clearLiveData } = require_empty();
       var { createDayPlanRenderer } = require_day_plan3();
+      var { createDailyActionsUI } = require_actions();
       var { createSnapshotRenderer } = require_snapshot();
       var { createAudio } = require_audio();
       var { createSettlement } = require_controller();
@@ -11972,6 +12163,13 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         details.reset();
         const dayPlanRenderer = createDayPlanRenderer({ document });
         dayPlanRenderer.reset();
+        const dailyActionsUI = createDailyActionsUI({
+          document,
+          window,
+          lifecycle,
+          getGlue: () => window.WxGlue || globalThis.WxGlue,
+          reportSyncError
+        });
         const noticeAtMount = document.getElementById("wxSyncNotice");
         if (noticeAtMount) noticeAtMount.hidden = true;
         const root = document.getElementById("wx-statusbar-root") || document.querySelector("section.trpg") || document.querySelector(".trpg:not(#wx-zero-floor)");
@@ -12440,6 +12638,16 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         });
         function renderSnapshot(snap) {
           dayPlanRenderer.render(snap);
+          dailyActionsUI.render(snap);
+          const capsuleBar = document.getElementById("wxCapsuleBar");
+          const dailyIdle = snap.dayPlan?.source === "daily" && snap.dayPlan.activity?.kind !== "tailing";
+          if (capsuleBar) capsuleBar.hidden = dailyIdle;
+          const distanceBadge = document.getElementById("distStat");
+          if (distanceBadge) distanceBadge.hidden = dailyIdle;
+          if (capsuleBar?.hidden) {
+            currentCapsuleActions = [];
+            currentDynamicCapsules = [];
+          }
           details.render(snap);
           return render(snap);
         }
@@ -13429,6 +13637,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           syncNotice.report(error);
         }
         function resetDisplay() {
+          dailyActionsUI.reset();
           dayPlanRenderer.reset();
           syncNotice.clear();
           clearLiveData(document);
@@ -13455,6 +13664,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         Object.assign(window.WxStatusbar, {
           dispose,
           reportSyncError,
+          dailyActions: { registerInput: dailyActionsUI.registerInput },
           reset: resetDisplay,
           zeroFloor: {
             registerExtension: zeroFloor.registerExtension,

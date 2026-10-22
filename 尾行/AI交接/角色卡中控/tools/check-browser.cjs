@@ -224,20 +224,32 @@ const deadline = setTimeout(() => {
       deviceScaleFactor: 1,
       mobile: false,
     });
-    const checks = await evaluate(`(() => {
+    const checks = await evaluate(`(async () => {
+      await window.__dailyPreviewReady;
       const checks=[]; const ok=(name,value)=>checks.push({name,ok:!!value});
-      document.querySelector('[data-state-index="0"]').click();
+      document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady;
       ok('日程开局 4/4',document.getElementById('wxDayAp').textContent==='4'&&document.getElementById('wxDayBudget').textContent==='4');
       ok('五时段与早间标记',document.querySelectorAll('#wxDayPeriods li').length===5&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='早间');
-      document.querySelector('[data-state-index="2"]').click();
+      ok('日程待机不显示目标距离或原尾行胶囊',document.getElementById('distStat').hidden&&document.getElementById('wxCapsuleBar').hidden);
+      ok('统一活动区展示六项费用',document.querySelectorAll('#wxDailyActionGrid button').length===6&&document.querySelector('[data-action-id="daily.rest"]').textContent.includes('1 点')&&document.querySelector('[data-action-id="daily.tailing"]').textContent.includes('2 点'));
+      ok('未接内容禁用且说明原因', ['daily.work','daily.shop','daily.talk','daily.tailing'].every(id=>document.querySelector('[data-action-id="'+id+'"]').disabled));
+      document.querySelector('[data-action-id="daily.rest"]').click(); await window.__dailyPreviewOperation; await Promise.resolve();
+      ok('休息实际扣点并推进时段',document.getElementById('wxDayAp').textContent==='3'&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='午间');
+      await window.__dailyPreviewSync.rebuild(); await window.__dailyPreviewSync.reconcile();
+      ok('重读存档保留休息结果',document.getElementById('wxDayAp').textContent==='3'&&document.getElementById('wxDailyStatus').textContent.includes('休息完成'));
+      document.querySelector('[data-action-id="daily.pass"]').click(); await window.__dailyPreviewOperation; await Promise.resolve();
+      ok('度过时段零消耗推进一次',document.getElementById('wxDayAp').textContent==='3'&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='午后');
+      document.querySelector('[data-state-index="2"]').click(); await window.__dailyPreviewReady;
       ok('尾行展示扣 2 点后状态',document.getElementById('wxDayAp').textContent==='2'&&document.getElementById('wxDayActivity').textContent==='尾行进行中');
       ok('尾行仍占当前晚间时段',document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='晚间');
       ok('日程预览无横向溢出',document.documentElement.scrollWidth<=innerWidth+2);
-      document.querySelector('[data-state-index="3"]').click();
+      document.querySelector('[data-state-index="3"]').click(); await window.__dailyPreviewReady;
       ok('日程结束状态',document.getElementById('wxDayAp').textContent==='0'&&!document.querySelector('#wxDayPeriods [aria-current="step"]'));
-      document.querySelector('[data-state-index="4"]').click();
+      document.querySelector('[data-day-command="next-day"]').click(); await window.__dailyPreviewOperation; await Promise.resolve();
+      ok('日终换日恢复四点并回早间',document.getElementById('wxDayAp').textContent==='4'&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='早间');
+      document.querySelector('[data-state-index="4"]').click(); await window.__dailyPreviewReady;
       ok('旧流程明确提示未启用活动扣点',document.getElementById('wxDayHint').textContent==='日程活动尚未启用');
-      document.querySelector('[data-state-index="2"]').click();
+      document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady;
       return checks;
     })()`);
     result.push(...checks.map((check) => ({ width, ...check })));
@@ -245,7 +257,7 @@ const deadline = setTimeout(() => {
       await delay(120);
       const shot = await send("Page.captureScreenshot", {
         format: "png",
-        captureBeyondViewport: false,
+        captureBeyondViewport: true,
       });
       fs.writeFileSync(
         path.join(
