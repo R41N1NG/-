@@ -2744,6 +2744,30 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 }
 
 .trpg #distStat[hidden] { display: none !important; }
+
+/* 经济选择面板：取消／浏览不推进日程，提交交给同一日程命令。 */
+.trpg .wx-economy-input[hidden], .trpg .wx-economy-orders[hidden] { display: none; }
+.trpg .wx-economy-input { margin-top: 10px; padding: 12px; border: 1px solid #536674; border-radius: 5px; background: #101c24; }
+.trpg .wx-economy-input h3 { margin: 0 0 8px; font-size: 14px; color: #e1d1ae; }
+.trpg .wx-economy-input p, .trpg .wx-economy-orders p { margin: 5px 0; color: #9eb1be; font-size: 11px; }
+.trpg .wx-work-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.trpg .wx-work-choice { display: flex; align-items: flex-start; gap: 8px; padding: 9px; background: #192831; border: 1px solid #324751; border-radius: 4px; cursor: pointer; }
+.trpg .wx-work-choice.unavailable { opacity: .5; cursor: default; }
+.trpg .wx-work-choice>span, .trpg .wx-shop-line>span { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 4px; }
+.trpg .wx-work-choice strong, .trpg .wx-shop-line strong { font-size: 12px; font-weight: 500; color: #cfdae0; }
+.trpg .wx-work-choice span span { font-size: 11px; color: #c3b690; }
+.trpg .wx-work-choice small, .trpg .wx-shop-line small { font-size: 10px; color: #8b9ca7; }
+.trpg .wx-shop-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; max-height: 350px; overflow-y: auto; margin-top: 8px; }
+.trpg .wx-shop-line { display: flex; align-items: center; gap: 8px; padding: 8px; background: #17252e; border-radius: 3px; }
+.trpg .wx-shop-line input { box-sizing: border-box; flex: 0 0 54px; width: 54px; padding: 7px 3px; background: #0c1720; border: 1px solid #405765; color: #d5c28f; }
+.trpg .wx-economy-input select { padding: 7px; color: #d2dde2; background: #17252e; border: 1px solid #405765; }
+.trpg .wx-economy-foot { display: flex; gap: 8px; margin-top: 10px; }
+.trpg .wx-economy-foot button { padding: 8px 12px; color: #dfcba6; background: #20323e; border: 1px solid #5e707b; border-radius: 4px; cursor: pointer; }
+.trpg .wx-economy-foot button:disabled { opacity: .4; cursor: default; }
+.trpg .wx-economy-orders { margin-top: 10px; color: #b4c5ce; font-size: 12px; }
+.trpg .wx-order { margin: 6px 0; padding: 7px 10px; border-left: 2px solid #455f6a; background: #15212a; }
+.trpg .wx-order strong { font-size: 11px; color: #c5b589; }
+@media(max-width:560px) { .trpg .wx-work-list, .trpg .wx-shop-list { grid-template-columns: minmax(0,1fr); } }
 html{min-height:100%;background:#080e14}body{margin:0;color:#c6d0d7;font:14px/1.7 system-ui,sans-serif;background:radial-gradient(ellipse at 50% 0,#1b2b34,transparent 65%)}
 .preview-shell{max-width:1000px;margin:0 auto;padding:42px 24px 50px}.preview-eyebrow{font-size:11px;letter-spacing:3px;color:#bca879}.preview-shell h1{font-size:26px;font-weight:500;color:#edf0ed;margin:8px 0 12px}.preview-shell p{max-width:760px;color:#869da9;font-size:12px}.daily-preview-controls{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 10px}.daily-preview-controls button{padding:7px 12px;border:1px solid #344650;background:#101b23;color:#9eb0bc;border-radius:5px;font:12px system-ui;cursor:pointer}.daily-preview-controls button[aria-pressed="true"]{border-color:#b59e6c;color:#eddbb5;background:#29271f}.preview-description{min-height:42px;margin-bottom:22px}main.wx-standalone-main{padding:0;max-width:none}.preview-bottom{font-size:11px;color:#677e8b;border-top:1px solid #1e303a;margin-top:24px;padding-top:14px}@media(max-width:560px){.preview-shell{padding:24px 12px}.preview-shell h1{font-size:22px}.daily-preview-controls{gap:6px}.daily-preview-controls button{padding:7px 9px}.preview-description{min-height:65px}}
 </style>
@@ -3305,7 +3329,7 @@ html{min-height:100%;background:#080e14}body{margin:0;color:#c6d0d7;font:14px/1.
         <button type="button" id="settleAck" class="settle-ack">确认结果</button>
       </div>
     </dialog></section></main>
-<div class="preview-bottom">本页使用正式界面、引擎和保存流程。休息／度过时段可操作；其他活动待接具体内容与条件。尾行中按钮仅载入展示样例。试玩进度与酒馆存档相互独立。</div></div>
+<div class="preview-bottom">本页使用正式界面、引擎和保存流程。打工、采买、休息／度过时段可操作；交流与尾行待接内容和条件。尾行中按钮仅载入展示样例。试玩进度与酒馆存档相互独立。</div></div>
 <script>"use strict";
 var WxStatusbarUI = (() => {
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -4384,13 +4408,13 @@ var WxStatusbarUI = (() => {
           tagline: "\u8DDF\u5355\u662F\u672C\u884C\uFF0C\u804C\u4E1A\u75C5\u662F\u8DDF\u5230\u5E95",
           perk: "\u60C5\u62A5\u79EF\u7D2F\u5FEB\u4E24\u6210\u2014\u2014\u6BCF\u665A PI \u5165\u8D26 \xD71.2",
           flaw: "\u804C\u4E1A\u75C5\u2014\u2014\u8DDF\u7F00\u4E00\u65E6\u5F00\u59CB\uFF0C\u4ECA\u665A\u6536\u4E0D\u4E86\u624B\uFF08\u8DDF\u4E22\u6216\u5979\u5230\u5BB6\u4E3A\u6B62\uFF09",
-          job: "\u4FA6\u63A2\u59D4\u6258 200~400"
+          job: "\u4FA6\u63A2\u59D4\u6258 200~400\uFF08\u5F85\u63A5\u59D4\u6258\u4E8B\u4EF6\uFF09"
         },
         bartender: {
           tagline: "\u6DF1\u591C\u7684\u5427\u53F0\u540E\uFF0C\u4EC0\u4E48\u8BDD\u90FD\u542C\u8FC7",
           perk: "\u591C\u573A\u514D\u68C0\u2014\u2014\u9152\u5427\u540E\u95E8\u3001\u5927\u6392\u6863\u8857\u89D2",
           flaw: "\u6DF1\u591C\u5FC5\u987B\u4E0A\u73ED\u2014\u2014\u5F53\u73ED\u591C\u9519\u8FC7\u5979\u52A8\u7EBF\u524D\u4E24\u6BB5",
-          job: "\u9152\u5427\u5F53\u73ED 360 / 468 \uFF0B\u5C0F\u8D39"
+          job: "\u9152\u5427\u5F53\u73ED 360/468\uFF0B\u5C0F\u8D39\uFF08\u5F85\u63A5\u665A\u73ED\u7A97\u53E3\uFF09"
         },
         coach: {
           tagline: "\u808C\u8089\u662F\u62DB\u724C\uFF0C\u4E5F\u662F\u7D2F\u8D58",
@@ -4402,7 +4426,7 @@ var WxStatusbarUI = (() => {
           tagline: "\u4E0D\u51FA\u95E8\uFF0C\u4E5F\u77E5\u9053\u8FD9\u57CE\u5E02\u4E00\u534A\u7684\u79D8\u5BC6",
           perk: "\u5F00\u5C40\u81EA\u5E26\u4E00\u53F0\u9488\u5B54\u6444\u50CF\u673A\uFF08\u7B49\u503C 800\uFF09",
           flaw: "\u65E0",
-          job: "\u8FDC\u7A0B\u63A5\u5355 264 / 370 / 528 \uFF0B\u88AB\u52A8 150/\u5929"
+          job: "\u8FDC\u7A0B\u63A5\u5355\u5E95\u85AA 264\uFF1B370/528 \u52A0\u85AA\u6863\u3001\u88AB\u52A8 150/\u5929\u5F85\u63A5"
         }
       };
     }
@@ -8915,10 +8939,215 @@ var WxStatusbarUI = (() => {
     }
   });
 
+  // src/ui/daily/economy-inputs.js
+  var require_economy_inputs = __commonJS({
+    "src/ui/daily/economy-inputs.js"(exports, module) {
+      "use strict";
+      function createEconomyInputsUI({ document, lifecycle, status }) {
+        const panel = document.createElement("div"), orders = document.createElement("details");
+        panel.className = "wx-economy-input";
+        panel.id = "wxEconomyInput";
+        panel.hidden = true;
+        orders.className = "wx-economy-orders";
+        orders.id = "wxEconomyOrders";
+        orders.hidden = true;
+        status?.before(panel, orders);
+        let active = null;
+        const key = (snap) => JSON.stringify([snap?.dayPlan?.sync, snap?.dayPlan?.token]);
+        function node(tag, text, className) {
+          const el = document.createElement(tag);
+          if (text !== void 0) el.textContent = text;
+          if (className) el.className = className;
+          return el;
+        }
+        function close(args = null) {
+          if (!active) return;
+          const resolve = active.resolve;
+          active = null;
+          panel.replaceChildren();
+          panel.hidden = true;
+          resolve(args);
+        }
+        function open(snap, title, build) {
+          close();
+          panel.hidden = false;
+          const form = node("form");
+          form.setAttribute("aria-label", title);
+          form.append(node("h3", title));
+          panel.replaceChildren(form);
+          const promise = new Promise((resolve) => {
+            active = { resolve, key: key(snap) };
+          });
+          const body = node("div", void 0, "wx-economy-body"), foot = node("div", void 0, "wx-economy-foot");
+          const confirm = node("button"), cancel = node("button", "\u53D6\u6D88");
+          confirm.type = "submit";
+          confirm.dataset.economySubmit = "true";
+          cancel.type = "button";
+          cancel.onclick = () => close();
+          form.append(body, foot);
+          foot.append(confirm, cancel);
+          build(form, body, confirm, snap);
+          panel.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+          return promise;
+        }
+        function selectWork(snap) {
+          return open(snap, "\u9009\u62E9\u5DE5\u4F5C", (form, body, confirm) => {
+            const action = snap.dayActions.find((x) => x.id === "daily.work"), input = action.input;
+            body.append(node("p", input.note));
+            const list = node("div", void 0, "wx-work-list");
+            body.append(list);
+            const initial = input.jobs.find((x) => x.enabled);
+            let selected = initial?.id;
+            for (const job of input.jobs) {
+              const label = node("label", void 0, "wx-work-choice"), radio = node("input");
+              radio.type = "radio";
+              radio.name = "wxJob";
+              radio.value = job.id;
+              radio.disabled = !job.enabled;
+              radio.checked = job.id === selected;
+              radio.onchange = () => selected = radio.value;
+              const text = node("span");
+              text.append(
+                node("strong", job.name),
+                node("span", `\u6536\u5165 ${job.income} \xB7 \u4F53\u529B \u2212${job.stamina}`),
+                node("small", job.reason || job.note)
+              );
+              if (!job.enabled) label.classList.add("unavailable");
+              label.append(radio, text);
+              list.append(label);
+            }
+            confirm.textContent = `\u786E\u8BA4\u5DE5\u4F5C \xB7 ${action.cost} \u70B9`;
+            confirm.disabled = !initial;
+            form.onsubmit = (e) => {
+              e.preventDefault();
+              if (selected) close({ jobId: selected });
+            };
+          });
+        }
+        function selectShop(snap) {
+          return open(snap, "\u5546\u573A\u91C7\u4E70", (form, body, confirm) => {
+            const action = snap.dayActions.find((x) => x.id === "daily.shop"), input = action.input;
+            body.append(node("p", input.note));
+            const channel = node("select");
+            channel.setAttribute("aria-label", "\u8D2D\u7269\u6E20\u9053");
+            input.channels.forEach((c) => {
+              const option = node("option", c.name);
+              option.value = c.id;
+              channel.append(option);
+            });
+            body.append(channel);
+            const list = node("div", void 0, "wx-shop-list"), total = node("p");
+            total.dataset.economyTotal = "true";
+            body.append(list, total);
+            const quantities = /* @__PURE__ */ new Map();
+            let invalid = false;
+            function cart() {
+              return [...quantities].filter(([, quantity]) => quantity > 0).map(([id, quantity]) => ({ id, quantity }));
+            }
+            function update() {
+              const items = input.catalogs[channel.value];
+              invalid = [...quantities.values()].some(
+                (v) => !Number.isSafeInteger(v) || v < 0 || v > input.maxQuantity
+              );
+              const entries = cart(), price = entries.reduce(
+                (sum, line) => sum + items.find((x) => x.id === line.id).unitPrice * line.quantity,
+                0
+              );
+              total.textContent = `\u603B\u4EF7 ${price} / \u73B0\u91D1 ${input.cash} \xB7 \u884C\u52A8\u70B9 ${action.cost}${invalid ? " \xB7 \u6570\u91CF\u65E0\u6548" : price > input.cash ? " \xB7 \u73B0\u91D1\u4E0D\u8DB3" : ""}`;
+              confirm.disabled = invalid || !entries.length || price > input.cash || entries.length > input.maxCartLines;
+              confirm.textContent = `\u4ED8\u6B3E ${price} \xB7 ${action.cost} \u70B9`;
+            }
+            function renderCatalog() {
+              list.replaceChildren();
+              for (const item of input.catalogs[channel.value]) {
+                const label = node("label", void 0, "wx-shop-line"), text = node("span");
+                text.append(
+                  node("strong", `${item.name} \xB7 ${item.unitPrice}`),
+                  node(
+                    "small",
+                    `${item.deliveryDays ? "\u9694\u65E5\u5230\u8D27" : "\u5F53\u6B21\u5165\u5E93"} \xB7 \u5DF2\u6301\u6709 ${item.owned}${item.note ? " \xB7 " + item.note : ""}`
+                  )
+                );
+                const quantity = node("input");
+                quantity.type = "number";
+                quantity.min = "0";
+                quantity.max = String(input.maxQuantity);
+                quantity.step = "1";
+                quantity.value = String(quantities.get(item.id) || 0);
+                quantity.dataset.itemId = item.id;
+                quantity.setAttribute("aria-label", `${item.name}\u6570\u91CF`);
+                quantity.oninput = () => {
+                  quantities.set(
+                    item.id,
+                    quantity.value === "" ? 0 : Number(quantity.value)
+                  );
+                  update();
+                };
+                label.append(text, quantity);
+                list.append(label);
+              }
+              update();
+            }
+            channel.onchange = renderCatalog;
+            renderCatalog();
+            form.onsubmit = (e) => {
+              e.preventDefault();
+              update();
+              if (!confirm.disabled) close({ channel: channel.value, cart: cart() });
+            };
+          });
+        }
+        function render(snap) {
+          if (active && active.key !== key(snap)) close();
+          orders.replaceChildren();
+          const history = snap?.economy?.orders || [];
+          orders.hidden = !history.length;
+          if (!history.length) return;
+          const pending = history.filter(
+            (o) => o.lines.some((l) => !l.delivered)
+          ).length;
+          orders.append(node("summary", `\u8BA2\u5355\u4E0E\u5230\u8D27 \xB7 \u5F85\u6536\u8D27 ${pending} \u7B14`));
+          for (const order of history) {
+            const row = node("div", void 0, "wx-order");
+            row.append(node("strong", `\u7B2C ${order.date} \u5929 \xB7 ${order.total}`));
+            for (const line of order.lines)
+              row.append(
+                node(
+                  "p",
+                  `${line.name} \xD7${line.quantity} \xB7 ${line.delivered ? "\u5DF2\u5165\u5E93" : `\u7B2C ${line.dueDate} \u5929\u5230\u8D27`}`
+                )
+              );
+            orders.append(row);
+          }
+        }
+        function reset() {
+          close();
+          orders.hidden = true;
+          orders.replaceChildren();
+        }
+        lifecycle.cleanup?.(() => {
+          reset();
+          panel.remove();
+          orders.remove();
+        });
+        return {
+          providers: [
+            ["daily.work", selectWork],
+            ["daily.shop", selectShop]
+          ],
+          render,
+          reset
+        };
+      }
+      module.exports = { createEconomyInputsUI };
+    }
+  });
+
   // src/ui/daily/actions.js
   var require_actions = __commonJS({
     "src/ui/daily/actions.js"(exports, module) {
       "use strict";
+      var { createEconomyInputsUI } = require_economy_inputs();
       function createDailyActionsUI({
         document,
         window,
@@ -8927,8 +9156,9 @@ var WxStatusbarUI = (() => {
         reportSyncError
       }) {
         const grid = document.getElementById("wxDailyActionGrid"), controls = document.getElementById("wxDailyControls"), status = document.getElementById("wxDailyStatus");
-        let snapshot = null, pending = null, retry = null, counter = 0;
-        const inputs = /* @__PURE__ */ new Map();
+        let snapshot = null, pending = null, retry = null, counter = 0, choosing = null;
+        const economyInputs = createEconomyInputsUI({ document, lifecycle, status });
+        const inputs = new Map(economyInputs.providers);
         const sameSession = (a, b) => !!a && !!b && a.scope === b.scope && a.epoch === b.epoch;
         function message(text) {
           if (status) status.textContent = text;
@@ -8937,6 +9167,8 @@ var WxStatusbarUI = (() => {
           snapshot = null;
           pending = null;
           retry = null;
+          choosing = null;
+          economyInputs.reset();
           grid?.replaceChildren();
           controls?.replaceChildren();
           message("");
@@ -8961,7 +9193,7 @@ var WxStatusbarUI = (() => {
           const reason = document.createElement("span");
           reason.className = "wx-daily-action-reason";
           const missingInput = data.inputRequired && !inputs.has(data.id);
-          button.disabled = !!pending || !data.enabled || !snapshot?.dayPlan?.sync || !!missingInput;
+          button.disabled = !!pending || !!choosing || !data.enabled || !snapshot?.dayPlan?.sync || !!missingInput;
           reason.textContent = !snapshot?.dayPlan?.sync ? "\u6B63\u5728\u8FDE\u63A5\u5F53\u524D\u65E5\u7A0B" : missingInput ? "\u8BF7\u5148\u9009\u62E9\u6D3B\u52A8\u5185\u5BB9" : !data.enabled ? data.reason || "\u5F53\u524D\u4E0D\u53EF\u6267\u884C" : pending ? "\u6B63\u5728\u4FDD\u5B58\u2026" : "";
           button.append(heading, effect, reason);
           return button;
@@ -8970,10 +9202,12 @@ var WxStatusbarUI = (() => {
           if (!snap?.dayPlan || !Array.isArray(snap.dayActions)) return reset();
           if (snapshot && !sameSession(snapshot.dayPlan.sync, snap.dayPlan.sync)) {
             pending = null;
+            choosing = null;
             retry = null;
             message("");
           }
           snapshot = snap;
+          economyInputs.render(snap);
           if (grid) {
             grid.replaceChildren();
             snap.dayActions.forEach((action) => grid.append(card(action, "start")));
@@ -9025,15 +9259,28 @@ var WxStatusbarUI = (() => {
         }
         async function click(event) {
           const button = event.target.closest?.("button[data-day-command]");
-          if (!button || button.disabled || pending || !snapshot?.dayPlan?.sync)
+          if (!button || button.disabled || pending || choosing || !snapshot?.dayPlan?.sync)
             return;
           if (button.dataset.dayCommand === "retry") return submit(retry);
           const captured = snapshot;
           let args = {};
           const input = inputs.get(button.dataset.actionId);
           if (input) {
-            args = await input(captured);
-            if (args == null || snapshot !== captured || lifecycle.disposed) return;
+            const ticket = {};
+            choosing = ticket;
+            render(snapshot);
+            try {
+              args = await input(captured);
+            } catch (error) {
+              if (sameSession(snapshot?.dayPlan?.sync, captured.dayPlan.sync))
+                message(error.message || "\u65E0\u6CD5\u9009\u62E9\u6D3B\u52A8\u5185\u5BB9");
+              return;
+            } finally {
+              if (choosing === ticket) choosing = null;
+              if (snapshot && !lifecycle.disposed) render(snapshot);
+            }
+            if (args == null || !sameSession(snapshot?.dayPlan?.sync, captured.dayPlan.sync) || JSON.stringify(snapshot.dayPlan.token) !== JSON.stringify(captured.dayPlan.token) || lifecycle.disposed)
+              return;
           }
           const operationId = window.crypto?.randomUUID?.() || `daily-${Date.now()}-${++counter}`;
           const request = {
@@ -9055,9 +9302,16 @@ var WxStatusbarUI = (() => {
           reset,
           registerInput(id, provider) {
             if (typeof provider !== "function") throw Error("\u6D3B\u52A8\u8F93\u5165\u63A5\u53E3\u65E0\u6548");
+            const previous = inputs.get(id);
             inputs.set(id, provider);
             if (snapshot) render(snapshot);
-            return () => inputs.delete(id);
+            return () => {
+              if (inputs.get(id) === provider) {
+                if (previous) inputs.set(id, previous);
+                else inputs.delete(id);
+                if (snapshot) render(snapshot);
+              }
+            };
           }
         };
       }
@@ -23081,6 +23335,203 @@ var DailyPreview = (() => {
     }
   });
 
+  // src/config/economy.json
+  var require_economy = __commonJS({
+    "src/config/economy.json"(exports, module) {
+      module.exports = {
+        nativeMultiplier: 1.2,
+        nativeJobs: {
+          otaku: "remote",
+          guard: "guard_shift",
+          bartender: "bar_shift"
+        },
+        jobs: {
+          mover: {
+            name: "\u642C\u573A\u96F6\u5DE5",
+            attr: "str",
+            base: 280,
+            pass: 420,
+            great: 560,
+            stamina: 40
+          },
+          remote: {
+            name: "\u8FDC\u7A0B\u63A5\u5355",
+            attr: "int",
+            base: 220,
+            pass: 308,
+            great: 440,
+            stamina: 0
+          },
+          guard_shift: {
+            name: "\u4FDD\u5B89\u5F53\u73ED",
+            attr: "nrv",
+            base: 320,
+            fixed: true,
+            stamina: 0
+          },
+          bar_shift: {
+            name: "\u9152\u5427\u5F53\u73ED",
+            attr: "cha",
+            base: 300,
+            pass: 390,
+            stamina: 0,
+            pending: "\u665A\u73ED\u5360\u7528\u5C3E\u884C\u7A97\u53E3\u7684\u89C4\u5219\u5C1A\u672A\u63A5\u901A"
+          },
+          delivery: {
+            name: "\u9001\u5916\u5356",
+            attr: "agi",
+            base: 240,
+            pass: 336,
+            great: 480,
+            stamina: 0,
+            pending: "\u66DD\u5149\u6982\u7387\u5C1A\u672A\u786E\u5B9A\uFF0C\u6682\u4E0D\u5F00\u653E\u7ED3\u7B97"
+          }
+        },
+        commerce: {
+          maxCartLines: 20,
+          maxQuantity: 99,
+          maxOrders: 64,
+          deliveryDays: {
+            consumable: 0,
+            tool: 1,
+            tech: 1,
+            device: 1,
+            disguise: 1,
+            gear: 0
+          }
+        }
+      };
+    }
+  });
+
+  // src/runtime/economy/shop.js
+  var require_shop = __commonJS({
+    "src/runtime/economy/shop.js"(exports, module) {
+      "use strict";
+      var RULES = require_rules();
+      var CONFIG = require_economy().commerce;
+      var clone = (x) => JSON.parse(JSON.stringify(x));
+      var error = (message) => Object.assign(Error(message), { code: "DAY_UNAVAILABLE" });
+      function catalog(ctx, channel = "retail") {
+        if (!["retail", "black_market"].includes(channel))
+          throw error("\u672A\u77E5\u8D2D\u7269\u6E20\u9053");
+        if (channel === "black_market" && !RULES.identity.list[ctx.identity]?.blackMarket)
+          throw error("\u5F53\u524D\u8EAB\u4EFD\u6CA1\u6709\u9ED1\u5E02\u6E20\u9053");
+        return Object.values(RULES.items).filter(
+          (item) => Object.prototype.hasOwnProperty.call(CONFIG.deliveryDays, item.type) && Number.isSafeInteger(item.price) && item.price > 0
+        ).map((item) => {
+          const equipment = CONFIG.deliveryDays[item.type] > 0;
+          const discount = channel === "black_market" && equipment ? RULES.identity.blackMarketDiscount : 0;
+          return {
+            id: item.id,
+            name: item.name,
+            type: item.type,
+            unitPrice: Math.round(item.price * (1 - discount)),
+            deliveryDays: CONFIG.deliveryDays[item.type],
+            note: item.type === "device" ? "\u8D2D\u4E70\u4EC5\u5165\u5E93\uFF0C\u8BBE\u5907\u5B89\u88C5\u529F\u80FD\u5F85\u63A5" : item.effectsDesc || "",
+            owned: (ctx.player.inventory || []).find((x) => x.id === item.id)?.count || 0
+          };
+        });
+      }
+      var handler = {
+        available: () => null,
+        view: (ctx) => ({
+          type: "shop",
+          cash: ctx.ledger.cash,
+          channels: [
+            { id: "retail", name: "\u5546\u573A" },
+            ...RULES.identity.list[ctx.identity]?.blackMarket ? [{ id: "black_market", name: "\u9ED1\u5E02\uFF08\u5668\u6750\u4E5D\u6298\uFF09" }] : []
+          ],
+          catalogs: {
+            retail: catalog(ctx),
+            ...RULES.identity.list[ctx.identity]?.blackMarket ? { black_market: catalog(ctx, "black_market") } : {}
+          },
+          maxQuantity: CONFIG.maxQuantity,
+          maxCartLines: CONFIG.maxCartLines,
+          note: "\u4E00\u6279\u91C7\u4E70\u6D88\u8017 1 \u70B9\uFF1B\u666E\u901A\u54C1\u5F53\u6B21\u5165\u5E93\uFF0C\u5668\u6750\u9694\u65E5\u5230\u8D27\u3002"
+        }),
+        prepare(ctx, args) {
+          if (!Array.isArray(args.cart) || !args.cart.length || args.cart.length > CONFIG.maxCartLines)
+            throw error("\u8BF7\u9009\u62E9\u5546\u54C1\uFF0C\u8D2D\u7269\u6E05\u5355\u4E0D\u80FD\u4E3A\u7A7A\u6216\u8D85\u957F");
+          const channel = args.channel || "retail", items = new Map(catalog(ctx, channel).map((x) => [x.id, x])), quantities = /* @__PURE__ */ new Map();
+          for (const line of args.cart) {
+            if (!line || !items.has(line.id) || !Number.isSafeInteger(line.quantity) || line.quantity < 1 || line.quantity > CONFIG.maxQuantity)
+              throw error("\u5546\u54C1\u6216\u6570\u91CF\u65E0\u6548");
+            const qty = (quantities.get(line.id) || 0) + line.quantity;
+            if (qty > CONFIG.maxQuantity) throw error("\u540C\u4E00\u5546\u54C1\u6570\u91CF\u8FC7\u591A");
+            quantities.set(line.id, qty);
+          }
+          const lines = [...quantities].map(([id, quantity]) => {
+            const item = items.get(id);
+            return {
+              id,
+              quantity,
+              unitPrice: item.unitPrice,
+              dueDate: ctx.ledger.date + item.deliveryDays,
+              delivered: item.deliveryDays === 0
+            };
+          });
+          const total = lines.reduce(
+            (sum, line) => sum + line.unitPrice * line.quantity,
+            0
+          );
+          if (!Number.isSafeInteger(total) || ctx.ledger.cash < total)
+            throw error("\u73B0\u91D1\u4E0D\u8DB3\uFF0C\u672C\u6B21\u672A\u6263\u8D39");
+          const economy = clone(ctx.economy);
+          if (economy.orders.length >= CONFIG.maxOrders) {
+            const index = economy.orders.findIndex(
+              (o) => o.lines.every((l) => l.delivered)
+            );
+            if (index < 0) throw error("\u5F85\u6536\u8D27\u8BA2\u5355\u5DF2\u6EE1\uFF0C\u8BF7\u5148\u7B49\u5F85\u5230\u8D27");
+            economy.orders.splice(index, 1);
+          }
+          economy.orders.push({
+            id: `order-${ctx.ledger.date}-${ctx.dayPlan.sequence || 0}`,
+            date: ctx.ledger.date,
+            total,
+            channel,
+            lines
+          });
+          const inventory = lines.filter((l) => l.delivered).map((l) => ({ id: l.id, add: l.quantity }));
+          const delayed = lines.some((l) => !l.delivered);
+          return {
+            summary: `\u91C7\u4E70\u5B8C\u6210\uFF0C\u652F\u4ED8 ${total}${delayed ? "\uFF1B\u5668\u6750\u5C06\u5728\u4E0B\u4E00\u5929\u5230\u8D27" : "\uFF1B\u5546\u54C1\u5DF2\u5165\u5E93"}`,
+            ledger: { cash: -total },
+            inventory,
+            economy
+          };
+        }
+      };
+      function deliverDue(ctx, date) {
+        const economy = clone(ctx.economy), counts = /* @__PURE__ */ new Map();
+        for (const order of economy.orders)
+          for (const line of order.lines) {
+            if (!line.delivered && line.dueDate <= date) {
+              counts.set(line.id, (counts.get(line.id) || 0) + line.quantity);
+              line.delivered = true;
+            }
+          }
+        const inventory = [...counts].map(([id, add]) => ({ id, add }));
+        return {
+          summary: inventory.length ? `\u6536\u5230 ${inventory.reduce((s, l) => s + l.add, 0)} \u4EF6\u5230\u8D27\u5546\u54C1` : "",
+          inventory,
+          economy
+        };
+      }
+      function economyView(economy) {
+        return {
+          workedOn: economy.workedOn,
+          lastWork: economy.lastWork,
+          orders: economy.orders.slice().reverse().map((o) => ({
+            ...o,
+            lines: o.lines.map((l) => ({ ...l, name: RULES.items[l.id].name }))
+          }))
+        };
+      }
+      module.exports = { catalog, handler, deliverDue, economyView };
+    }
+  });
+
   // src/config/day-plan.json
   var require_day_plan = __commonJS({
     "src/config/day-plan.json"(exports, module) {
@@ -23160,6 +23611,7 @@ var DailyPreview = (() => {
     "src/runtime/game/snapshot.js"(exports, module) {
       "use strict";
       var { classifyPlace } = require_action_requirements();
+      var { economyView } = require_shop();
       var R = require_rules();
       var C = require_checks();
       var map = require_map();
@@ -23214,6 +23666,7 @@ var DailyPreview = (() => {
           return JSON.parse(
             JSON.stringify({
               dayPlan: { ...dayPlanView(g.dayPlan, s.date), token: getDayToken() },
+              economy: economyView(g.economy),
               dayActions: getDayActivities(),
               dayControls: getDayControls(),
               player: {
@@ -23367,6 +23820,7 @@ var DailyPreview = (() => {
             JSON.stringify({
               v: 2,
               dayPlan: g.dayPlan,
+              economy: g.economy,
               rngVersion: g.rngVersion,
               nightStartFloor: g.nightStartFloor || 0,
               envSfx: g._envSfx ?? null,
@@ -23420,17 +23874,144 @@ var DailyPreview = (() => {
     }
   });
 
+  // src/contracts/economy.js
+  var require_economy2 = __commonJS({
+    "src/contracts/economy.js"(exports, module) {
+      "use strict";
+      var RULES = require_rules();
+      var CONFIG = require_economy().commerce;
+      var clone = (x) => JSON.parse(JSON.stringify(x));
+      var invalid = () => Object.assign(Error("\u5DE5\u4F5C\u6216\u8BA2\u5355\u5B58\u6863\u65E0\u6548\uFF0C\u539F\u8FDB\u5EA6\u5DF2\u4FDD\u7559"), {
+        code: "SAVE_INVALID"
+      });
+      var integer = (v, min = 0) => Number.isSafeInteger(v) && v >= min;
+      function createEconomy() {
+        return { schema: 1, workedOn: null, lastWork: null, orders: [] };
+      }
+      function validateEconomy(value) {
+        if (!value || value.schema !== 1 || value.workedOn !== null && !integer(value.workedOn, 1) || !Array.isArray(value.orders) || value.orders.length > CONFIG.maxOrders)
+          throw invalid();
+        if (value.lastWork !== null && (!value.lastWork || !integer(value.lastWork.date, 1) || typeof value.lastWork.jobId !== "string" || !integer(value.lastWork.income) || typeof value.lastWork.name !== "string" || value.workedOn !== value.lastWork.date))
+          throw invalid();
+        const seen = /* @__PURE__ */ new Set();
+        for (const order of value.orders) {
+          if (!order || typeof order.id !== "string" || !order.id || seen.has(order.id) || !integer(order.date, 1) || !integer(order.total, 1) || !["retail", "black_market"].includes(order.channel) || !Array.isArray(order.lines) || !order.lines.length || order.lines.length > CONFIG.maxCartLines)
+            throw invalid();
+          seen.add(order.id);
+          let total = 0;
+          const items = /* @__PURE__ */ new Set();
+          for (const line of order.lines) {
+            if (!line || !Object.prototype.hasOwnProperty.call(RULES.items, line.id) || items.has(line.id) || !integer(line.quantity, 1) || line.quantity > CONFIG.maxQuantity || !integer(line.unitPrice, 1) || !integer(line.dueDate, order.date) || typeof line.delivered !== "boolean")
+              throw invalid();
+            items.add(line.id);
+            total += line.unitPrice * line.quantity;
+          }
+          if (!Number.isSafeInteger(total) || total !== order.total) throw invalid();
+        }
+        return clone(value);
+      }
+      module.exports = { createEconomy, validateEconomy };
+    }
+  });
+
   // src/config/daily-actions.json
   var require_daily_actions = __commonJS({
     "src/config/daily-actions.json"(exports, module) {
       module.exports = [
         { id: "daily.rest", name: "\u4F11\u606F", cost: 1, mode: "instant", kind: "routine", handler: "rest", effect: "\u6062\u590D 50 \u70B9\u4F53\u529B\uFF0C\u4E0D\u8D85\u8FC7\u4E0A\u9650", recovery: 50 },
-        { id: "daily.work", name: "\u6253\u5DE5\uFF0F\u63A5\u5355", cost: 1, mode: "instant", kind: "routine", handler: "work", effect: "\u6309\u672C\u6B21\u5DE5\u79CD\u7ED3\u7B97\u62A5\u916C\u4E0E\u6D88\u8017" },
-        { id: "daily.shop", name: "\u8D2D\u7269", cost: 1, mode: "instant", kind: "routine", handler: "shop", effect: "\u4E00\u6B21\u6279\u91CF\u91C7\u4E70\uFF0C\u7ED3\u8D26\u524D\u5217\u660E\u603B\u4EF7" },
+        { id: "daily.work", name: "\u6253\u5DE5\uFF0F\u63A5\u5355", cost: 1, mode: "instant", kind: "routine", handler: "work", inputRequired: true, effect: "\u6309\u672C\u6B21\u5DE5\u79CD\u7ED3\u7B97\u62A5\u916C\u4E0E\u6D88\u8017" },
+        { id: "daily.shop", name: "\u8D2D\u7269", cost: 1, mode: "instant", kind: "routine", handler: "shop", inputRequired: true, effect: "\u4E00\u6B21\u6279\u91CF\u91C7\u4E70\uFF0C\u7ED3\u8D26\u524D\u5217\u660E\u603B\u4EF7" },
         { id: "daily.talk", name: "\u72EC\u7ACB\u4EA4\u6D41", cost: 1, mode: "scene", kind: "routine", handler: "talk", effect: "\u5C55\u5F00\u4E00\u6B21\u4EA4\u6D41\uFF0C\u6210\u679C\u7531\u5177\u4F53\u4E8B\u4EF6\u51B3\u5B9A" },
         { id: "daily.tailing", name: "\u5C3E\u884C", cost: 2, mode: "scene", kind: "tailing", handler: "tailing", effect: "\u8FDB\u5165\u8FDE\u7EED\u5C3E\u884C\u56DE\u5408\uFF0C\u6574\u6BB5\u7ED3\u675F\u540E\u63A8\u8FDB\u65F6\u6BB5" },
         { id: "daily.pass", name: "\u5EA6\u8FC7\u672C\u65F6\u6BB5", cost: 0, mode: "instant", kind: "routine", handler: "pass", effect: "\u65E0\u6536\u76CA\u548C\u6062\u590D\uFF0C\u76F4\u63A5\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5" }
       ];
+    }
+  });
+
+  // src/runtime/economy/work.js
+  var require_work = __commonJS({
+    "src/runtime/economy/work.js"(exports, module) {
+      "use strict";
+      var RULES = require_rules();
+      var CONFIG = require_economy();
+      var error = (message) => Object.assign(Error(message), { code: "DAY_UNAVAILABLE" });
+      function workOptions(ctx) {
+        const identity = ctx.identity;
+        const rows = Object.entries(CONFIG.jobs).map(([id, d]) => ({ id, ...d }));
+        for (const [id, d] of Object.entries(RULES.identity.jobs)) {
+          const base = d.baseJob ? CONFIG.jobs[d.baseJob] : d;
+          rows.push({
+            id,
+            name: d.name,
+            attr: d.attr,
+            base: Math.round(base.base * (d.mult || 1)),
+            pass: Math.round(base.pass * (d.mult || 1)),
+            great: Math.round(base.great * (d.mult || 1)),
+            stamina: d.cost?.stamina ?? base.stamina ?? 0,
+            exclusive: d.exclusive,
+            nativeMultiplier: d.nativeMult || 1
+          });
+        }
+        return rows.map((row) => {
+          const native = CONFIG.nativeJobs[identity] === row.id;
+          const mult = row.nativeMultiplier || (native ? CONFIG.nativeMultiplier : 1);
+          let reason = row.pending || null;
+          if (row.exclusive && identity !== row.exclusive) reason = "\u4EC5\u5BF9\u5E94\u8EAB\u4EFD\u53EF\u63A5";
+          if (identity === "criminal" && row.id !== "black_labor")
+            reason = "\u5F53\u524D\u8EAB\u4EFD\u53EA\u80FD\u63A5\u9ED1\u5DE5";
+          if (ctx.economy.workedOn === ctx.ledger.date)
+            reason = "\u4ECA\u5929\u5DF2\u7ECF\u5B8C\u6210\u4E00\u73ED\u5DE5\u4F5C";
+          if (ctx.ledger.stamina < row.stamina) reason = "\u4F53\u529B\u4E0D\u8DB3\u4EE5\u627F\u62C5\u672C\u6B21\u5DE5\u4F5C";
+          if (identity === "guard" && row.id === "guard_shift") {
+            const night = Math.floor((ctx.ledger.date - 1) / 7) % 2 === 1;
+            if (night ? ctx.dayPlan.period < 3 : ctx.dayPlan.period > 2)
+              reason = night ? "\u672C\u5468\u662F\u591C\u73ED\uFF0C\u8BF7\u5728\u665A\u95F4\u6216\u5B50\u591C\u5F53\u73ED" : "\u672C\u5468\u662F\u663C\u73ED\uFF0C\u8BF7\u5728\u767D\u5929\u5F53\u73ED";
+          }
+          return {
+            id: row.id,
+            name: row.name,
+            income: Math.round(row.base * mult),
+            stamina: row.stamina,
+            fixed: !!row.fixed,
+            enabled: !reason,
+            reason,
+            note: row.fixed ? "\u56FA\u5B9A\u5DE5\u8D44\uFF0C\u65E0\u9700\u68C0\u5B9A" : `\u5F53\u524D\u6309\u5E95\u85AA\u7ED3\u7B97\uFF1B\u5DF2\u5B9A\u52A0\u85AA\u6863 ${Math.round(row.pass * mult)}${row.great ? " / " + Math.round(row.great * mult) : ""}\uFF0C\u68C0\u5B9A\u95E8\u69DB\u5F85\u5B9A`,
+            tiers: {
+              base: Math.round(row.base * mult),
+              pass: row.pass ? Math.round(row.pass * mult) : null,
+              great: row.great ? Math.round(row.great * mult) : null
+            }
+          };
+        });
+      }
+      var handler = {
+        available: (ctx) => workOptions(ctx).some((x) => x.enabled) ? null : ctx.economy.workedOn === ctx.ledger.date ? "\u4ECA\u5929\u5DF2\u7ECF\u5B8C\u6210\u4E00\u73ED\u5DE5\u4F5C" : "\u5F53\u524D\u65F6\u6BB5\u6CA1\u6709\u53EF\u63A5\u5DE5\u4F5C",
+        view: (ctx) => ({
+          type: "work",
+          jobs: workOptions(ctx),
+          note: "\u6BCF\u5929\u6700\u591A\u4E00\u73ED\uFF1B\u786E\u8BA4\u540E\u6D88\u8017 1 \u70B9\u5E76\u63A8\u8FDB\u4E00\u4E2A\u65F6\u6BB5\u3002"
+        }),
+        prepare(ctx, args) {
+          const job = workOptions(ctx).find((x) => x.id === args.jobId);
+          if (!job) throw error("\u8BF7\u9009\u62E9\u6709\u6548\u5DE5\u79CD");
+          if (!job.enabled) throw error(job.reason);
+          const economy = JSON.parse(JSON.stringify(ctx.economy));
+          economy.workedOn = ctx.ledger.date;
+          economy.lastWork = {
+            jobId: job.id,
+            name: job.name,
+            date: ctx.ledger.date,
+            income: job.income,
+            stamina: job.stamina
+          };
+          return {
+            summary: `${job.name}\u5B8C\u6210\uFF0C\u6536\u5165 ${job.income}\uFF0C\u4F53\u529B\u6D88\u8017 ${job.stamina}`,
+            ledger: { cash: job.income, stamina: -job.stamina },
+            economy
+          };
+        }
+      };
+      module.exports = { workOptions, handler };
     }
   });
 
@@ -23455,8 +24036,8 @@ var DailyPreview = (() => {
           })
         },
         pass: { available: () => null, prepare: () => ({ summary: "\u5DF2\u5EA6\u8FC7\u672C\u65F6\u6BB5" }) },
-        work: { available: () => "\u6682\u65E0\u53EF\u63A5\u5DE5\u4F5C", prepare: null },
-        shop: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u7528\u5546\u5E97", prepare: null },
+        work: require_work().handler,
+        shop: require_shop().handler,
         talk: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u5F00\u5C55\u7684\u4EA4\u6D41\u4E8B\u4EF6", prepare: null },
         tailing: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u63A5\u5165\u7684\u51FA\u884C\u673A\u4F1A", prepare: null }
       };
@@ -23484,18 +24065,29 @@ var DailyPreview = (() => {
         createDayPlan,
         validateDayPlan
       } = require_day_plan2();
+      var { validateEconomy } = require_economy2();
+      var { deliverDue } = require_shop();
       var { LIMITS } = require_ledger();
       var ITEMS = require_rules().items;
       var clone = (value) => JSON.parse(JSON.stringify(value));
       var fail = (code, message) => Object.assign(new Error(message), { code });
-      function createDailySystem({ g, L, registry, nextDay }) {
+      function createDailySystem({
+        g,
+        L,
+        registry,
+        nextDay,
+        afterCommit = () => {
+        }
+      }) {
         function context() {
           return clone({
             player: g.player,
             ledger: L.state,
             dayPlan: g.dayPlan,
             world: g.world,
-            targetId: g.targetId
+            targetId: g.targetId,
+            identity: g.identity,
+            economy: g.economy
           });
         }
         function token() {
@@ -23526,8 +24118,19 @@ var DailyPreview = (() => {
         function activities() {
           return registry.list().map((entry) => {
             const unavailable = reason(entry);
+            let input;
+            try {
+              input = entry.handler.view?.(context());
+            } catch {
+              return {
+                ...clone(entry.definition),
+                enabled: false,
+                reason: "\u6D3B\u52A8\u5185\u5BB9\u6682\u4E0D\u53EF\u7528"
+              };
+            }
             return {
               ...clone(entry.definition),
+              ...input ? { input } : {},
               enabled: !unavailable,
               reason: unavailable
             };
@@ -23572,7 +24175,9 @@ var DailyPreview = (() => {
           if (!result || typeof result.summary !== "string")
             throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u6CA1\u6709\u6709\u6548\u7ED3\u7B97\u7ED3\u679C");
           if (Object.keys(result).some(
-            (key) => !["summary", "ledger", "payload", "inventory"].includes(key)
+            (key) => !["summary", "ledger", "payload", "inventory", "economy"].includes(
+              key
+            )
           ))
             throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u542B\u6709\u5C1A\u672A\u652F\u6301\u7684\u6548\u679C\u7C7B\u578B");
           const ledger = result.ledger || {};
@@ -23598,7 +24203,8 @@ var DailyPreview = (() => {
                 inventory.push({ id: change.id, count: change.add, equipped: false });
             }
           }
-          return { ledger, inventory };
+          const economy = result.economy === void 0 ? null : validateEconomy(result.economy);
+          return { ledger, inventory, economy };
         }
         function execute(request) {
           if (!request || typeof request.operationId !== "string" || !request.operationId || request.operationId.length > 128)
@@ -23628,7 +24234,7 @@ var DailyPreview = (() => {
             period: p.period,
             remaining: DAY_PLAN_RULES.budget - p.spent
           };
-          let next = clone(p), result = { summary: "" }, ledger = {}, inventory = null, cost = 0;
+          let next = clone(p), result = { summary: "" }, ledger = {}, inventory = null, economy = null, cost = 0;
           if (request.command === "enable") {
             if (p.source !== "legacy") throw fail("DAY_STALE", "\u65E5\u7A0B\u5DF2\u7ECF\u542F\u7528");
             if ((g.floor || 0) > 0 && g.route && g.route.here < g.route.nodes.length - 1)
@@ -23647,7 +24253,7 @@ var DailyPreview = (() => {
               clone(request.args || {}),
               clone(entry.definition)
             );
-            ({ ledger, inventory } = applyEffects(result));
+            ({ ledger, inventory, economy } = applyEffects(result));
             cost = entry.definition.cost;
             next.spent += cost;
             if (entry.definition.mode === "scene") {
@@ -23669,12 +24275,14 @@ var DailyPreview = (() => {
             if (typeof handler !== "function")
               throw fail("DAY_UNAVAILABLE", "\u5F53\u524D\u6D3B\u52A8\u6682\u4E0D\u80FD\u5728\u8FD9\u91CC\u7ED3\u675F");
             result = handler(context(), clone(request.args || {}), clone(p.activity));
-            ({ ledger, inventory } = applyEffects(result));
+            ({ ledger, inventory, economy } = applyEffects(result));
             next.activity = null;
             advance(next);
           } else if (request.command === "next-day") {
             if (p.source !== "daily" || !p.ended || p.activity)
               throw fail("DAY_UNAVAILABLE", "\u8BF7\u5148\u7ED3\u675F\u5F53\u5929\u7684\u5B89\u6392");
+            const arrivals = deliverDue(context(), L.get("date") + 1);
+            ({ ledger, inventory, economy } = applyEffects(arrivals));
             const outcome = nextDay();
             if (outcome?.blocked) throw fail("DAY_BUSY", outcome.reason);
             next = {
@@ -23683,7 +24291,7 @@ var DailyPreview = (() => {
               period: 0,
               receipts: p.receipts || []
             };
-            result.summary = `\u65B0\u7684\u4E00\u5929\u5F00\u59CB\uFF0C\u884C\u52A8\u70B9\u6062\u590D\u81F3 ${DAY_PLAN_RULES.budget} \u70B9`;
+            result.summary = `\u65B0\u7684\u4E00\u5929\u5F00\u59CB\uFF0C\u884C\u52A8\u70B9\u6062\u590D\u81F3 ${DAY_PLAN_RULES.budget} \u70B9${arrivals.summary ? "\uFF1B" + arrivals.summary : ""}`;
           } else throw fail("DAY_REQUEST_INVALID", "\u4E0D\u652F\u6301\u7684\u65E5\u7A0B\u64CD\u4F5C");
           next.sequence = (p.sequence || 0) + 1;
           const receipt = {
@@ -23706,7 +24314,9 @@ var DailyPreview = (() => {
           if (Object.keys(ledger).length)
             L.commit(ledger, { reason: "daily-activity", action: request.actionId });
           if (inventory) g.player.inventory = inventory;
+          if (economy) g.economy = economy;
           g.dayPlan = next;
+          afterCommit();
           if (!next.activity) {
             g.env = next.period < 3 ? "day" : "night";
             g.slot = next.period < 3 ? "prepare" : next.period === 3 ? "e21_23" : "e23_01";
@@ -23793,6 +24403,7 @@ var DailyPreview = (() => {
       var { createAlbumSystem } = require_album2();
       var { createSnapshotSystem } = require_snapshot();
       var { createSaveSystem } = require_save();
+      var { createEconomy, validateEconomy } = require_economy2();
       var { createDailyRegistry } = require_registry();
       var { createDailySystem } = require_system();
       var { classifyPlace } = require_action_requirements();
@@ -24048,11 +24659,15 @@ var DailyPreview = (() => {
         g.dayPlan = validateDayPlan(
           init.saved?.dayPlan ?? init.dayPlan ?? createDayPlan(g.slot)
         );
+        g.economy = validateEconomy(
+          init.saved?.economy ?? init.economy ?? createEconomy()
+        );
         const dailySystem = createDailySystem({
           g,
           L,
           registry: createDailyRegistry(services.dailyActions || []),
-          nextDay: legacyNightFall
+          nextDay: legacyNightFall,
+          afterCommit: syncThresholdTags
         });
         function nightFall() {
           if (g.dayPlan.source === "daily")
@@ -25243,7 +25858,7 @@ var DailyPreview = (() => {
       var { createChatSync } = require_controller();
       var { defaultInit } = require_initial_state();
       function boot(states) {
-        const storageKey = "weixing-daily-framework-preview-v1";
+        const storageKey = "weixing-daily-framework-preview-v2";
         let store = {}, restored = false;
         try {
           store = JSON.parse(localStorage.getItem(storageKey) || "{}");
@@ -25319,4 +25934,4 @@ var DailyPreview = (() => {
   return require_daily_preview_entry();
 })();
 
-DailyPreview.boot([{"title":"早间 · 4 点","description":"可点击休息、度过本时段，实际扣点并保存。上方按钮仅用于重置试玩状态。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2","dayPlan":{"schema":1,"source":"daily","period":0,"spent":0,"activity":null,"ended":false}}},{"title":"午后 · 3 点","description":"从午后状态继续试玩：每次活动结束后推进一个时段。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2","dayPlan":{"schema":1,"source":"daily","period":2,"spent":1,"activity":null,"ended":false}}},{"title":"尾行中 · 2 点","description":"展示尾行入场扣除 2 点后的预期状态；本页不执行尾行判定。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2","dayPlan":{"schema":1,"source":"daily","period":3,"spent":2,"activity":{"id":"preview-tailing","kind":"tailing","name":"尾行进行中","cost":2},"ended":false}}},{"title":"本日结束 · 0 点","description":"当天结束的显示效果。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2","dayPlan":{"schema":1,"source":"daily","period":4,"spent":4,"activity":null,"ended":true}}},{"title":"当前正式流程","description":"旧存档保留原流程；点击启用日程安排后，才使用新日程规则。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2"}}]);</script></html>
+DailyPreview.boot([{"title":"早间 · 4 点","description":"可选工作、批量采买、休息和度过时段，实际结算并保存。上方按钮仅用于重置试玩状态。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2","dayPlan":{"schema":1,"source":"daily","period":0,"spent":0,"activity":null,"ended":false}}},{"title":"午后 · 3 点","description":"从午后状态继续试玩：每次活动结束后推进一个时段。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2","dayPlan":{"schema":1,"source":"daily","period":2,"spent":1,"activity":null,"ended":false}}},{"title":"尾行中 · 2 点","description":"展示尾行入场扣除 2 点后的预期状态；本页不执行尾行判定。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2","dayPlan":{"schema":1,"source":"daily","period":3,"spent":2,"activity":{"id":"preview-tailing","kind":"tailing","name":"尾行进行中","cost":2},"ended":false}}},{"title":"本日结束 · 0 点","description":"当天结束的显示效果。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2","dayPlan":{"schema":1,"source":"daily","period":4,"spent":4,"activity":null,"ended":true}}},{"title":"当前正式流程","description":"旧存档保留原流程；点击启用日程安排后，才使用新日程规则。","init":{"targetId":"college","targetPersona":null,"player":{"str":3,"agi":5,"nrv":5,"int":5,"cha":2,"staminaMax":115},"target":{"str":3,"agi":4,"per":4,"nrv":4,"social":3},"stats":{"date":1,"heart":30,"stamina":55,"cash":800,"pi":0},"world":{"weather":"clear","district":"B"},"route":{"id":"college_evening","note":"周内晚自习常规返程路线（自习闭馆后归寝）","prompt":"白描秋夜晚自习闭馆后的晚风与校门人流，手提帆布包独自走出校门，踏着夜色穿过老天桥与便利店，步履轻捷走回出租屋","startTime":"21:30","nodes":["school_gate_b","old_skybridge_b","store_24h_b","old_alley_main_b","unit_stairs_b"],"times":["2130","2145","2200","2215","2230"],"known":[1,1,1,1,1],"here":0},"identity":"otaku","sessionSalt":"daily-ui-preview-v2"}}]);</script></html>

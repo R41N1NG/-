@@ -9870,6 +9870,203 @@
     }
   });
 
+  // src/config/economy.json
+  var require_economy = __commonJS({
+    "src/config/economy.json"(exports, module) {
+      module.exports = {
+        nativeMultiplier: 1.2,
+        nativeJobs: {
+          otaku: "remote",
+          guard: "guard_shift",
+          bartender: "bar_shift"
+        },
+        jobs: {
+          mover: {
+            name: "\u642C\u573A\u96F6\u5DE5",
+            attr: "str",
+            base: 280,
+            pass: 420,
+            great: 560,
+            stamina: 40
+          },
+          remote: {
+            name: "\u8FDC\u7A0B\u63A5\u5355",
+            attr: "int",
+            base: 220,
+            pass: 308,
+            great: 440,
+            stamina: 0
+          },
+          guard_shift: {
+            name: "\u4FDD\u5B89\u5F53\u73ED",
+            attr: "nrv",
+            base: 320,
+            fixed: true,
+            stamina: 0
+          },
+          bar_shift: {
+            name: "\u9152\u5427\u5F53\u73ED",
+            attr: "cha",
+            base: 300,
+            pass: 390,
+            stamina: 0,
+            pending: "\u665A\u73ED\u5360\u7528\u5C3E\u884C\u7A97\u53E3\u7684\u89C4\u5219\u5C1A\u672A\u63A5\u901A"
+          },
+          delivery: {
+            name: "\u9001\u5916\u5356",
+            attr: "agi",
+            base: 240,
+            pass: 336,
+            great: 480,
+            stamina: 0,
+            pending: "\u66DD\u5149\u6982\u7387\u5C1A\u672A\u786E\u5B9A\uFF0C\u6682\u4E0D\u5F00\u653E\u7ED3\u7B97"
+          }
+        },
+        commerce: {
+          maxCartLines: 20,
+          maxQuantity: 99,
+          maxOrders: 64,
+          deliveryDays: {
+            consumable: 0,
+            tool: 1,
+            tech: 1,
+            device: 1,
+            disguise: 1,
+            gear: 0
+          }
+        }
+      };
+    }
+  });
+
+  // src/runtime/economy/shop.js
+  var require_shop = __commonJS({
+    "src/runtime/economy/shop.js"(exports, module) {
+      "use strict";
+      var RULES = require_rules();
+      var CONFIG = require_economy().commerce;
+      var clone = (x) => JSON.parse(JSON.stringify(x));
+      var error = (message) => Object.assign(Error(message), { code: "DAY_UNAVAILABLE" });
+      function catalog(ctx, channel = "retail") {
+        if (!["retail", "black_market"].includes(channel))
+          throw error("\u672A\u77E5\u8D2D\u7269\u6E20\u9053");
+        if (channel === "black_market" && !RULES.identity.list[ctx.identity]?.blackMarket)
+          throw error("\u5F53\u524D\u8EAB\u4EFD\u6CA1\u6709\u9ED1\u5E02\u6E20\u9053");
+        return Object.values(RULES.items).filter(
+          (item) => Object.prototype.hasOwnProperty.call(CONFIG.deliveryDays, item.type) && Number.isSafeInteger(item.price) && item.price > 0
+        ).map((item) => {
+          const equipment = CONFIG.deliveryDays[item.type] > 0;
+          const discount = channel === "black_market" && equipment ? RULES.identity.blackMarketDiscount : 0;
+          return {
+            id: item.id,
+            name: item.name,
+            type: item.type,
+            unitPrice: Math.round(item.price * (1 - discount)),
+            deliveryDays: CONFIG.deliveryDays[item.type],
+            note: item.type === "device" ? "\u8D2D\u4E70\u4EC5\u5165\u5E93\uFF0C\u8BBE\u5907\u5B89\u88C5\u529F\u80FD\u5F85\u63A5" : item.effectsDesc || "",
+            owned: (ctx.player.inventory || []).find((x) => x.id === item.id)?.count || 0
+          };
+        });
+      }
+      var handler = {
+        available: () => null,
+        view: (ctx) => ({
+          type: "shop",
+          cash: ctx.ledger.cash,
+          channels: [
+            { id: "retail", name: "\u5546\u573A" },
+            ...RULES.identity.list[ctx.identity]?.blackMarket ? [{ id: "black_market", name: "\u9ED1\u5E02\uFF08\u5668\u6750\u4E5D\u6298\uFF09" }] : []
+          ],
+          catalogs: {
+            retail: catalog(ctx),
+            ...RULES.identity.list[ctx.identity]?.blackMarket ? { black_market: catalog(ctx, "black_market") } : {}
+          },
+          maxQuantity: CONFIG.maxQuantity,
+          maxCartLines: CONFIG.maxCartLines,
+          note: "\u4E00\u6279\u91C7\u4E70\u6D88\u8017 1 \u70B9\uFF1B\u666E\u901A\u54C1\u5F53\u6B21\u5165\u5E93\uFF0C\u5668\u6750\u9694\u65E5\u5230\u8D27\u3002"
+        }),
+        prepare(ctx, args) {
+          if (!Array.isArray(args.cart) || !args.cart.length || args.cart.length > CONFIG.maxCartLines)
+            throw error("\u8BF7\u9009\u62E9\u5546\u54C1\uFF0C\u8D2D\u7269\u6E05\u5355\u4E0D\u80FD\u4E3A\u7A7A\u6216\u8D85\u957F");
+          const channel = args.channel || "retail", items = new Map(catalog(ctx, channel).map((x) => [x.id, x])), quantities = /* @__PURE__ */ new Map();
+          for (const line of args.cart) {
+            if (!line || !items.has(line.id) || !Number.isSafeInteger(line.quantity) || line.quantity < 1 || line.quantity > CONFIG.maxQuantity)
+              throw error("\u5546\u54C1\u6216\u6570\u91CF\u65E0\u6548");
+            const qty = (quantities.get(line.id) || 0) + line.quantity;
+            if (qty > CONFIG.maxQuantity) throw error("\u540C\u4E00\u5546\u54C1\u6570\u91CF\u8FC7\u591A");
+            quantities.set(line.id, qty);
+          }
+          const lines = [...quantities].map(([id, quantity]) => {
+            const item = items.get(id);
+            return {
+              id,
+              quantity,
+              unitPrice: item.unitPrice,
+              dueDate: ctx.ledger.date + item.deliveryDays,
+              delivered: item.deliveryDays === 0
+            };
+          });
+          const total = lines.reduce(
+            (sum, line) => sum + line.unitPrice * line.quantity,
+            0
+          );
+          if (!Number.isSafeInteger(total) || ctx.ledger.cash < total)
+            throw error("\u73B0\u91D1\u4E0D\u8DB3\uFF0C\u672C\u6B21\u672A\u6263\u8D39");
+          const economy = clone(ctx.economy);
+          if (economy.orders.length >= CONFIG.maxOrders) {
+            const index = economy.orders.findIndex(
+              (o) => o.lines.every((l) => l.delivered)
+            );
+            if (index < 0) throw error("\u5F85\u6536\u8D27\u8BA2\u5355\u5DF2\u6EE1\uFF0C\u8BF7\u5148\u7B49\u5F85\u5230\u8D27");
+            economy.orders.splice(index, 1);
+          }
+          economy.orders.push({
+            id: `order-${ctx.ledger.date}-${ctx.dayPlan.sequence || 0}`,
+            date: ctx.ledger.date,
+            total,
+            channel,
+            lines
+          });
+          const inventory = lines.filter((l) => l.delivered).map((l) => ({ id: l.id, add: l.quantity }));
+          const delayed = lines.some((l) => !l.delivered);
+          return {
+            summary: `\u91C7\u4E70\u5B8C\u6210\uFF0C\u652F\u4ED8 ${total}${delayed ? "\uFF1B\u5668\u6750\u5C06\u5728\u4E0B\u4E00\u5929\u5230\u8D27" : "\uFF1B\u5546\u54C1\u5DF2\u5165\u5E93"}`,
+            ledger: { cash: -total },
+            inventory,
+            economy
+          };
+        }
+      };
+      function deliverDue(ctx, date) {
+        const economy = clone(ctx.economy), counts = /* @__PURE__ */ new Map();
+        for (const order of economy.orders)
+          for (const line of order.lines) {
+            if (!line.delivered && line.dueDate <= date) {
+              counts.set(line.id, (counts.get(line.id) || 0) + line.quantity);
+              line.delivered = true;
+            }
+          }
+        const inventory = [...counts].map(([id, add]) => ({ id, add }));
+        return {
+          summary: inventory.length ? `\u6536\u5230 ${inventory.reduce((s, l) => s + l.add, 0)} \u4EF6\u5230\u8D27\u5546\u54C1` : "",
+          inventory,
+          economy
+        };
+      }
+      function economyView(economy) {
+        return {
+          workedOn: economy.workedOn,
+          lastWork: economy.lastWork,
+          orders: economy.orders.slice().reverse().map((o) => ({
+            ...o,
+            lines: o.lines.map((l) => ({ ...l, name: RULES.items[l.id].name }))
+          }))
+        };
+      }
+      module.exports = { catalog, handler, deliverDue, economyView };
+    }
+  });
+
   // src/config/day-plan.json
   var require_day_plan = __commonJS({
     "src/config/day-plan.json"(exports, module) {
@@ -9949,6 +10146,7 @@
     "src/runtime/game/snapshot.js"(exports, module) {
       "use strict";
       var { classifyPlace } = require_action_requirements();
+      var { economyView } = require_shop();
       var R = require_rules();
       var C = require_checks();
       var map = require_map();
@@ -10003,6 +10201,7 @@
           return JSON.parse(
             JSON.stringify({
               dayPlan: { ...dayPlanView(g.dayPlan, s.date), token: getDayToken() },
+              economy: economyView(g.economy),
               dayActions: getDayActivities(),
               dayControls: getDayControls(),
               player: {
@@ -10156,6 +10355,7 @@
             JSON.stringify({
               v: 2,
               dayPlan: g.dayPlan,
+              economy: g.economy,
               rngVersion: g.rngVersion,
               nightStartFloor: g.nightStartFloor || 0,
               envSfx: g._envSfx ?? null,
@@ -10209,17 +10409,144 @@
     }
   });
 
+  // src/contracts/economy.js
+  var require_economy2 = __commonJS({
+    "src/contracts/economy.js"(exports, module) {
+      "use strict";
+      var RULES = require_rules();
+      var CONFIG = require_economy().commerce;
+      var clone = (x) => JSON.parse(JSON.stringify(x));
+      var invalid = () => Object.assign(Error("\u5DE5\u4F5C\u6216\u8BA2\u5355\u5B58\u6863\u65E0\u6548\uFF0C\u539F\u8FDB\u5EA6\u5DF2\u4FDD\u7559"), {
+        code: "SAVE_INVALID"
+      });
+      var integer = (v, min = 0) => Number.isSafeInteger(v) && v >= min;
+      function createEconomy() {
+        return { schema: 1, workedOn: null, lastWork: null, orders: [] };
+      }
+      function validateEconomy(value) {
+        if (!value || value.schema !== 1 || value.workedOn !== null && !integer(value.workedOn, 1) || !Array.isArray(value.orders) || value.orders.length > CONFIG.maxOrders)
+          throw invalid();
+        if (value.lastWork !== null && (!value.lastWork || !integer(value.lastWork.date, 1) || typeof value.lastWork.jobId !== "string" || !integer(value.lastWork.income) || typeof value.lastWork.name !== "string" || value.workedOn !== value.lastWork.date))
+          throw invalid();
+        const seen = /* @__PURE__ */ new Set();
+        for (const order of value.orders) {
+          if (!order || typeof order.id !== "string" || !order.id || seen.has(order.id) || !integer(order.date, 1) || !integer(order.total, 1) || !["retail", "black_market"].includes(order.channel) || !Array.isArray(order.lines) || !order.lines.length || order.lines.length > CONFIG.maxCartLines)
+            throw invalid();
+          seen.add(order.id);
+          let total = 0;
+          const items = /* @__PURE__ */ new Set();
+          for (const line of order.lines) {
+            if (!line || !Object.prototype.hasOwnProperty.call(RULES.items, line.id) || items.has(line.id) || !integer(line.quantity, 1) || line.quantity > CONFIG.maxQuantity || !integer(line.unitPrice, 1) || !integer(line.dueDate, order.date) || typeof line.delivered !== "boolean")
+              throw invalid();
+            items.add(line.id);
+            total += line.unitPrice * line.quantity;
+          }
+          if (!Number.isSafeInteger(total) || total !== order.total) throw invalid();
+        }
+        return clone(value);
+      }
+      module.exports = { createEconomy, validateEconomy };
+    }
+  });
+
   // src/config/daily-actions.json
   var require_daily_actions = __commonJS({
     "src/config/daily-actions.json"(exports, module) {
       module.exports = [
         { id: "daily.rest", name: "\u4F11\u606F", cost: 1, mode: "instant", kind: "routine", handler: "rest", effect: "\u6062\u590D 50 \u70B9\u4F53\u529B\uFF0C\u4E0D\u8D85\u8FC7\u4E0A\u9650", recovery: 50 },
-        { id: "daily.work", name: "\u6253\u5DE5\uFF0F\u63A5\u5355", cost: 1, mode: "instant", kind: "routine", handler: "work", effect: "\u6309\u672C\u6B21\u5DE5\u79CD\u7ED3\u7B97\u62A5\u916C\u4E0E\u6D88\u8017" },
-        { id: "daily.shop", name: "\u8D2D\u7269", cost: 1, mode: "instant", kind: "routine", handler: "shop", effect: "\u4E00\u6B21\u6279\u91CF\u91C7\u4E70\uFF0C\u7ED3\u8D26\u524D\u5217\u660E\u603B\u4EF7" },
+        { id: "daily.work", name: "\u6253\u5DE5\uFF0F\u63A5\u5355", cost: 1, mode: "instant", kind: "routine", handler: "work", inputRequired: true, effect: "\u6309\u672C\u6B21\u5DE5\u79CD\u7ED3\u7B97\u62A5\u916C\u4E0E\u6D88\u8017" },
+        { id: "daily.shop", name: "\u8D2D\u7269", cost: 1, mode: "instant", kind: "routine", handler: "shop", inputRequired: true, effect: "\u4E00\u6B21\u6279\u91CF\u91C7\u4E70\uFF0C\u7ED3\u8D26\u524D\u5217\u660E\u603B\u4EF7" },
         { id: "daily.talk", name: "\u72EC\u7ACB\u4EA4\u6D41", cost: 1, mode: "scene", kind: "routine", handler: "talk", effect: "\u5C55\u5F00\u4E00\u6B21\u4EA4\u6D41\uFF0C\u6210\u679C\u7531\u5177\u4F53\u4E8B\u4EF6\u51B3\u5B9A" },
         { id: "daily.tailing", name: "\u5C3E\u884C", cost: 2, mode: "scene", kind: "tailing", handler: "tailing", effect: "\u8FDB\u5165\u8FDE\u7EED\u5C3E\u884C\u56DE\u5408\uFF0C\u6574\u6BB5\u7ED3\u675F\u540E\u63A8\u8FDB\u65F6\u6BB5" },
         { id: "daily.pass", name: "\u5EA6\u8FC7\u672C\u65F6\u6BB5", cost: 0, mode: "instant", kind: "routine", handler: "pass", effect: "\u65E0\u6536\u76CA\u548C\u6062\u590D\uFF0C\u76F4\u63A5\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5" }
       ];
+    }
+  });
+
+  // src/runtime/economy/work.js
+  var require_work = __commonJS({
+    "src/runtime/economy/work.js"(exports, module) {
+      "use strict";
+      var RULES = require_rules();
+      var CONFIG = require_economy();
+      var error = (message) => Object.assign(Error(message), { code: "DAY_UNAVAILABLE" });
+      function workOptions(ctx) {
+        const identity = ctx.identity;
+        const rows = Object.entries(CONFIG.jobs).map(([id, d]) => ({ id, ...d }));
+        for (const [id, d] of Object.entries(RULES.identity.jobs)) {
+          const base = d.baseJob ? CONFIG.jobs[d.baseJob] : d;
+          rows.push({
+            id,
+            name: d.name,
+            attr: d.attr,
+            base: Math.round(base.base * (d.mult || 1)),
+            pass: Math.round(base.pass * (d.mult || 1)),
+            great: Math.round(base.great * (d.mult || 1)),
+            stamina: d.cost?.stamina ?? base.stamina ?? 0,
+            exclusive: d.exclusive,
+            nativeMultiplier: d.nativeMult || 1
+          });
+        }
+        return rows.map((row) => {
+          const native = CONFIG.nativeJobs[identity] === row.id;
+          const mult = row.nativeMultiplier || (native ? CONFIG.nativeMultiplier : 1);
+          let reason = row.pending || null;
+          if (row.exclusive && identity !== row.exclusive) reason = "\u4EC5\u5BF9\u5E94\u8EAB\u4EFD\u53EF\u63A5";
+          if (identity === "criminal" && row.id !== "black_labor")
+            reason = "\u5F53\u524D\u8EAB\u4EFD\u53EA\u80FD\u63A5\u9ED1\u5DE5";
+          if (ctx.economy.workedOn === ctx.ledger.date)
+            reason = "\u4ECA\u5929\u5DF2\u7ECF\u5B8C\u6210\u4E00\u73ED\u5DE5\u4F5C";
+          if (ctx.ledger.stamina < row.stamina) reason = "\u4F53\u529B\u4E0D\u8DB3\u4EE5\u627F\u62C5\u672C\u6B21\u5DE5\u4F5C";
+          if (identity === "guard" && row.id === "guard_shift") {
+            const night = Math.floor((ctx.ledger.date - 1) / 7) % 2 === 1;
+            if (night ? ctx.dayPlan.period < 3 : ctx.dayPlan.period > 2)
+              reason = night ? "\u672C\u5468\u662F\u591C\u73ED\uFF0C\u8BF7\u5728\u665A\u95F4\u6216\u5B50\u591C\u5F53\u73ED" : "\u672C\u5468\u662F\u663C\u73ED\uFF0C\u8BF7\u5728\u767D\u5929\u5F53\u73ED";
+          }
+          return {
+            id: row.id,
+            name: row.name,
+            income: Math.round(row.base * mult),
+            stamina: row.stamina,
+            fixed: !!row.fixed,
+            enabled: !reason,
+            reason,
+            note: row.fixed ? "\u56FA\u5B9A\u5DE5\u8D44\uFF0C\u65E0\u9700\u68C0\u5B9A" : `\u5F53\u524D\u6309\u5E95\u85AA\u7ED3\u7B97\uFF1B\u5DF2\u5B9A\u52A0\u85AA\u6863 ${Math.round(row.pass * mult)}${row.great ? " / " + Math.round(row.great * mult) : ""}\uFF0C\u68C0\u5B9A\u95E8\u69DB\u5F85\u5B9A`,
+            tiers: {
+              base: Math.round(row.base * mult),
+              pass: row.pass ? Math.round(row.pass * mult) : null,
+              great: row.great ? Math.round(row.great * mult) : null
+            }
+          };
+        });
+      }
+      var handler = {
+        available: (ctx) => workOptions(ctx).some((x) => x.enabled) ? null : ctx.economy.workedOn === ctx.ledger.date ? "\u4ECA\u5929\u5DF2\u7ECF\u5B8C\u6210\u4E00\u73ED\u5DE5\u4F5C" : "\u5F53\u524D\u65F6\u6BB5\u6CA1\u6709\u53EF\u63A5\u5DE5\u4F5C",
+        view: (ctx) => ({
+          type: "work",
+          jobs: workOptions(ctx),
+          note: "\u6BCF\u5929\u6700\u591A\u4E00\u73ED\uFF1B\u786E\u8BA4\u540E\u6D88\u8017 1 \u70B9\u5E76\u63A8\u8FDB\u4E00\u4E2A\u65F6\u6BB5\u3002"
+        }),
+        prepare(ctx, args) {
+          const job = workOptions(ctx).find((x) => x.id === args.jobId);
+          if (!job) throw error("\u8BF7\u9009\u62E9\u6709\u6548\u5DE5\u79CD");
+          if (!job.enabled) throw error(job.reason);
+          const economy = JSON.parse(JSON.stringify(ctx.economy));
+          economy.workedOn = ctx.ledger.date;
+          economy.lastWork = {
+            jobId: job.id,
+            name: job.name,
+            date: ctx.ledger.date,
+            income: job.income,
+            stamina: job.stamina
+          };
+          return {
+            summary: `${job.name}\u5B8C\u6210\uFF0C\u6536\u5165 ${job.income}\uFF0C\u4F53\u529B\u6D88\u8017 ${job.stamina}`,
+            ledger: { cash: job.income, stamina: -job.stamina },
+            economy
+          };
+        }
+      };
+      module.exports = { workOptions, handler };
     }
   });
 
@@ -10244,8 +10571,8 @@
           })
         },
         pass: { available: () => null, prepare: () => ({ summary: "\u5DF2\u5EA6\u8FC7\u672C\u65F6\u6BB5" }) },
-        work: { available: () => "\u6682\u65E0\u53EF\u63A5\u5DE5\u4F5C", prepare: null },
-        shop: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u7528\u5546\u5E97", prepare: null },
+        work: require_work().handler,
+        shop: require_shop().handler,
         talk: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u5F00\u5C55\u7684\u4EA4\u6D41\u4E8B\u4EF6", prepare: null },
         tailing: { available: () => "\u5F53\u524D\u6CA1\u6709\u53EF\u63A5\u5165\u7684\u51FA\u884C\u673A\u4F1A", prepare: null }
       };
@@ -10273,18 +10600,29 @@
         createDayPlan,
         validateDayPlan
       } = require_day_plan2();
+      var { validateEconomy } = require_economy2();
+      var { deliverDue } = require_shop();
       var { LIMITS } = require_ledger();
       var ITEMS = require_rules().items;
       var clone = (value) => JSON.parse(JSON.stringify(value));
       var fail = (code, message) => Object.assign(new Error(message), { code });
-      function createDailySystem({ g, L, registry, nextDay }) {
+      function createDailySystem({
+        g,
+        L,
+        registry,
+        nextDay,
+        afterCommit = () => {
+        }
+      }) {
         function context() {
           return clone({
             player: g.player,
             ledger: L.state,
             dayPlan: g.dayPlan,
             world: g.world,
-            targetId: g.targetId
+            targetId: g.targetId,
+            identity: g.identity,
+            economy: g.economy
           });
         }
         function token() {
@@ -10315,8 +10653,19 @@
         function activities() {
           return registry.list().map((entry) => {
             const unavailable = reason(entry);
+            let input;
+            try {
+              input = entry.handler.view?.(context());
+            } catch {
+              return {
+                ...clone(entry.definition),
+                enabled: false,
+                reason: "\u6D3B\u52A8\u5185\u5BB9\u6682\u4E0D\u53EF\u7528"
+              };
+            }
             return {
               ...clone(entry.definition),
+              ...input ? { input } : {},
               enabled: !unavailable,
               reason: unavailable
             };
@@ -10361,7 +10710,9 @@
           if (!result || typeof result.summary !== "string")
             throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u6CA1\u6709\u6709\u6548\u7ED3\u7B97\u7ED3\u679C");
           if (Object.keys(result).some(
-            (key) => !["summary", "ledger", "payload", "inventory"].includes(key)
+            (key) => !["summary", "ledger", "payload", "inventory", "economy"].includes(
+              key
+            )
           ))
             throw fail("DAY_EFFECT_INVALID", "\u6D3B\u52A8\u542B\u6709\u5C1A\u672A\u652F\u6301\u7684\u6548\u679C\u7C7B\u578B");
           const ledger = result.ledger || {};
@@ -10387,7 +10738,8 @@
                 inventory.push({ id: change.id, count: change.add, equipped: false });
             }
           }
-          return { ledger, inventory };
+          const economy = result.economy === void 0 ? null : validateEconomy(result.economy);
+          return { ledger, inventory, economy };
         }
         function execute(request) {
           if (!request || typeof request.operationId !== "string" || !request.operationId || request.operationId.length > 128)
@@ -10417,7 +10769,7 @@
             period: p.period,
             remaining: DAY_PLAN_RULES.budget - p.spent
           };
-          let next = clone(p), result = { summary: "" }, ledger = {}, inventory = null, cost = 0;
+          let next = clone(p), result = { summary: "" }, ledger = {}, inventory = null, economy = null, cost = 0;
           if (request.command === "enable") {
             if (p.source !== "legacy") throw fail("DAY_STALE", "\u65E5\u7A0B\u5DF2\u7ECF\u542F\u7528");
             if ((g.floor || 0) > 0 && g.route && g.route.here < g.route.nodes.length - 1)
@@ -10436,7 +10788,7 @@
               clone(request.args || {}),
               clone(entry.definition)
             );
-            ({ ledger, inventory } = applyEffects(result));
+            ({ ledger, inventory, economy } = applyEffects(result));
             cost = entry.definition.cost;
             next.spent += cost;
             if (entry.definition.mode === "scene") {
@@ -10458,12 +10810,14 @@
             if (typeof handler !== "function")
               throw fail("DAY_UNAVAILABLE", "\u5F53\u524D\u6D3B\u52A8\u6682\u4E0D\u80FD\u5728\u8FD9\u91CC\u7ED3\u675F");
             result = handler(context(), clone(request.args || {}), clone(p.activity));
-            ({ ledger, inventory } = applyEffects(result));
+            ({ ledger, inventory, economy } = applyEffects(result));
             next.activity = null;
             advance(next);
           } else if (request.command === "next-day") {
             if (p.source !== "daily" || !p.ended || p.activity)
               throw fail("DAY_UNAVAILABLE", "\u8BF7\u5148\u7ED3\u675F\u5F53\u5929\u7684\u5B89\u6392");
+            const arrivals = deliverDue(context(), L.get("date") + 1);
+            ({ ledger, inventory, economy } = applyEffects(arrivals));
             const outcome = nextDay();
             if (outcome?.blocked) throw fail("DAY_BUSY", outcome.reason);
             next = {
@@ -10472,7 +10826,7 @@
               period: 0,
               receipts: p.receipts || []
             };
-            result.summary = `\u65B0\u7684\u4E00\u5929\u5F00\u59CB\uFF0C\u884C\u52A8\u70B9\u6062\u590D\u81F3 ${DAY_PLAN_RULES.budget} \u70B9`;
+            result.summary = `\u65B0\u7684\u4E00\u5929\u5F00\u59CB\uFF0C\u884C\u52A8\u70B9\u6062\u590D\u81F3 ${DAY_PLAN_RULES.budget} \u70B9${arrivals.summary ? "\uFF1B" + arrivals.summary : ""}`;
           } else throw fail("DAY_REQUEST_INVALID", "\u4E0D\u652F\u6301\u7684\u65E5\u7A0B\u64CD\u4F5C");
           next.sequence = (p.sequence || 0) + 1;
           const receipt = {
@@ -10495,7 +10849,9 @@
           if (Object.keys(ledger).length)
             L.commit(ledger, { reason: "daily-activity", action: request.actionId });
           if (inventory) g.player.inventory = inventory;
+          if (economy) g.economy = economy;
           g.dayPlan = next;
+          afterCommit();
           if (!next.activity) {
             g.env = next.period < 3 ? "day" : "night";
             g.slot = next.period < 3 ? "prepare" : next.period === 3 ? "e21_23" : "e23_01";
@@ -10582,6 +10938,7 @@
       var { createAlbumSystem } = require_album2();
       var { createSnapshotSystem } = require_snapshot();
       var { createSaveSystem } = require_save();
+      var { createEconomy, validateEconomy } = require_economy2();
       var { createDailyRegistry } = require_registry();
       var { createDailySystem } = require_system();
       var { classifyPlace } = require_action_requirements();
@@ -10837,11 +11194,15 @@
         g.dayPlan = validateDayPlan(
           init.saved?.dayPlan ?? init.dayPlan ?? createDayPlan(g.slot)
         );
+        g.economy = validateEconomy(
+          init.saved?.economy ?? init.economy ?? createEconomy()
+        );
         const dailySystem = createDailySystem({
           g,
           L,
           registry: createDailyRegistry(services.dailyActions || []),
-          nextDay: legacyNightFall
+          nextDay: legacyNightFall,
+          afterCommit: syncThresholdTags
         });
         function nightFall() {
           if (g.dayPlan.source === "daily")
@@ -13074,7 +13435,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.6",
+        version: "0.8.7",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -13083,7 +13444,7 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
+          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs",
           "preview:daily": "node tools/build/day-preview.js"

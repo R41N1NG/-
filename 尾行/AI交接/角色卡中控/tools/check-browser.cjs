@@ -232,13 +232,32 @@ const deadline = setTimeout(() => {
       ok('五时段与早间标记',document.querySelectorAll('#wxDayPeriods li').length===5&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='早间');
       ok('日程待机不显示目标距离或原尾行胶囊',document.getElementById('distStat').hidden&&document.getElementById('wxCapsuleBar').hidden);
       ok('统一活动区展示六项费用',document.querySelectorAll('#wxDailyActionGrid button').length===6&&document.querySelector('[data-action-id="daily.rest"]').textContent.includes('1 点')&&document.querySelector('[data-action-id="daily.tailing"]').textContent.includes('2 点'));
-      ok('未接内容禁用且说明原因', ['daily.work','daily.shop','daily.talk','daily.tailing'].every(id=>document.querySelector('[data-action-id="'+id+'"]').disabled));
+      ok('未接内容禁用且说明原因', ['daily.talk','daily.tailing'].every(id=>document.querySelector('[data-action-id="'+id+'"]').disabled));
       document.querySelector('[data-action-id="daily.rest"]').click(); await window.__dailyPreviewOperation; await Promise.resolve();
       ok('休息实际扣点并推进时段',document.getElementById('wxDayAp').textContent==='3'&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='午间');
       await window.__dailyPreviewSync.rebuild(); await window.__dailyPreviewSync.reconcile();
       ok('重读存档保留休息结果',document.getElementById('wxDayAp').textContent==='3'&&document.getElementById('wxDailyStatus').textContent.includes('休息完成'));
       document.querySelector('[data-action-id="daily.pass"]').click(); await window.__dailyPreviewOperation; await Promise.resolve();
       ok('度过时段零消耗推进一次',document.getElementById('wxDayAp').textContent==='3'&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='午后');
+      document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady;
+      const before=(await getVariables()).wx_save;
+      document.querySelector('[data-action-id="daily.work"]').click();
+      ok('已有工作入口可选，不扣浏览费用',!document.getElementById('wxEconomyInput').hidden&&document.querySelector('input[value="remote"]')&&document.getElementById('wxDayAp').textContent==='4');
+      // 模拟轮询刷新：不能使等待确认的选择失效。
+      await window.__dailyPreviewSync.reconcile();
+      const remote=document.querySelector('input[value="remote"]');remote.checked=true;remote.dispatchEvent(new Event('change'));
+      document.querySelector('[data-economy-submit]').click(); await Promise.resolve(); await window.__dailyPreviewOperation; await Promise.resolve();
+      ok('阿宅接单实际获得264且一天一班',(await getVariables()).wx_save.ledgerState.cash===before.ledgerState.cash+264&&document.getElementById('wxDayAp').textContent==='3'&&document.querySelector('[data-action-id="daily.work"]').disabled);
+      document.querySelector('[data-action-id="daily.shop"]').click();
+      const quantity=document.querySelector('[data-item-id="bento"]');quantity.value='2';quantity.dispatchEvent(new Event('input'));
+      const gear=document.querySelector('[data-item-id="climb_gear"]');gear.value='1';gear.dispatchEvent(new Event('input'));
+      ok('购物提前显示一批总价与行动费用',document.querySelector('[data-economy-total]').textContent.includes('总价 540')&&document.querySelector('[data-economy-total]').textContent.includes('行动点 1'));
+      document.querySelector('[data-economy-submit]').click(); await Promise.resolve(); await window.__dailyPreviewOperation; await Promise.resolve();
+      const bought=(await getVariables()).wx_save;
+      ok('付款与入库、待收货同步保存',bought.ledgerState.cash===before.ledgerState.cash+264-540&&bought.player.inventory.find(i=>i.id==='bento').count===2&&!bought.player.inventory.some(i=>i.id==='climb_gear')&&document.getElementById('wxDayAp').textContent==='2'&&document.getElementById('wxEconomyOrders').textContent.includes('第 2 天到货'));
+      while(!((await getVariables()).wx_save.dayPlan.ended)){document.querySelector('[data-action-id="daily.pass"]').click();await window.__dailyPreviewOperation;await Promise.resolve();}
+      document.querySelector('[data-day-command="next-day"]').click(); await window.__dailyPreviewOperation; await Promise.resolve();
+      ok('隔日到货一次入库',(await getVariables()).wx_save.player.inventory.find(i=>i.id==='climb_gear')?.count===1);
       document.querySelector('[data-state-index="2"]').click(); await window.__dailyPreviewReady;
       ok('尾行展示扣 2 点后状态',document.getElementById('wxDayAp').textContent==='2'&&document.getElementById('wxDayActivity').textContent==='尾行进行中');
       ok('尾行仍占当前晚间时段',document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='晚间');
@@ -267,6 +286,29 @@ const deadline = setTimeout(() => {
         Buffer.from(shot.data, "base64"),
       );
     }
+  }
+  // 保存经济面板截图，使用真实按钮打开，不构造 UI 假数据。
+  for (const [kind, width] of [
+    ["work", 1100],
+    ["shop", 390],
+  ]) {
+    await send("Emulation.setDeviceMetricsOverride", {
+      width,
+      height: 900,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await evaluate(
+      `(async()=>{ document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady; document.querySelector('[data-action-id="daily.${kind}"]').click(); await Promise.resolve(); document.getElementById('wxEconomyInput').scrollIntoView({block:'start'}); })()`,
+    );
+    const shot = await send("Page.captureScreenshot", {
+      format: "png",
+      captureBeyondViewport: true,
+    });
+    fs.writeFileSync(
+      path.join(path.dirname(preview.file), kind + ".png"),
+      Buffer.from(shot.data, "base64"),
+    );
   }
   await evaluate("WxStatusbar.dispose(); true;");
   fs.writeFileSync(

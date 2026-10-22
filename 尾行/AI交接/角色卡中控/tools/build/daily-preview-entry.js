@@ -4,7 +4,7 @@ const { createGame } = require("../../src/runtime/game.js");
 const { createChatSync } = require("../../src/host/chat-sync/controller.js");
 const { defaultInit } = require("../../src/host/initial-state.js");
 function boot(states) {
-  const storageKey = "weixing-daily-framework-preview-v1";
+  const storageKey = "weixing-daily-framework-preview-v2";
   let store = {},
     restored = false;
   try {

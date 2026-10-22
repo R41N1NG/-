@@ -7,6 +7,7 @@ function createSaveSystem({ g, L, getSalt }) {
       JSON.stringify({
         v: 2,
         dayPlan: g.dayPlan,
+        economy: g.economy,
         rngVersion: g.rngVersion,
         nightStartFloor: g.nightStartFloor || 0,
         envSfx: g._envSfx ?? null,

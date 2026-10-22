@@ -1,0 +1,63 @@
+{
+  "nativeMultiplier": 1.2,
+  "nativeJobs": {
+    "otaku": "remote",
+    "guard": "guard_shift",
+    "bartender": "bar_shift"
+  },
+  "jobs": {
+    "mover": {
+      "name": "搬场零工",
+      "attr": "str",
+      "base": 280,
+      "pass": 420,
+      "great": 560,
+      "stamina": 40
+    },
+    "remote": {
+      "name": "远程接单",
+      "attr": "int",
+      "base": 220,
+      "pass": 308,
+      "great": 440,
+      "stamina": 0
+    },
+    "guard_shift": {
+      "name": "保安当班",
+      "attr": "nrv",
+      "base": 320,
+      "fixed": true,
+      "stamina": 0
+    },
+    "bar_shift": {
+      "name": "酒吧当班",
+      "attr": "cha",
+      "base": 300,
+      "pass": 390,
+      "stamina": 0,
+      "pending": "晚班占用尾行窗口的规则尚未接通"
+    },
+    "delivery": {
+      "name": "送外卖",
+      "attr": "agi",
+      "base": 240,
+      "pass": 336,
+      "great": 480,
+      "stamina": 0,
+      "pending": "曝光概率尚未确定，暂不开放结算"
+    }
+  },
+  "commerce": {
+    "maxCartLines": 20,
+    "maxQuantity": 99,
+    "maxOrders": 64,
+    "deliveryDays": {
+      "consumable": 0,
+      "tool": 1,
+      "tech": 1,
+      "device": 1,
+      "disguise": 1,
+      "gear": 0
+    }
+  }
+}

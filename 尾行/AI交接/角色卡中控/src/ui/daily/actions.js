@@ -1,4 +1,5 @@
 "use strict";
+const { createEconomyInputsUI } = require("./economy-inputs.js");
 function createDailyActionsUI({
   document,
   window,
@@ -12,8 +13,10 @@ function createDailyActionsUI({
   let snapshot = null,
     pending = null,
     retry = null,
-    counter = 0;
-  const inputs = new Map();
+    counter = 0,
+    choosing = null;
+  const economyInputs = createEconomyInputsUI({ document, lifecycle, status });
+  const inputs = new Map(economyInputs.providers);
   const sameSession = (a, b) =>
     !!a && !!b && a.scope === b.scope && a.epoch === b.epoch;
   function message(text) {
@@ -23,6 +26,8 @@ function createDailyActionsUI({
     snapshot = null;
     pending = null;
     retry = null;
+    choosing = null;
+    economyInputs.reset();
     grid?.replaceChildren();
     controls?.replaceChildren();
     message("");
@@ -48,7 +53,11 @@ function createDailyActionsUI({
     reason.className = "wx-daily-action-reason";
     const missingInput = data.inputRequired && !inputs.has(data.id);
     button.disabled =
-      !!pending || !data.enabled || !snapshot?.dayPlan?.sync || !!missingInput;
+      !!pending ||
+      !!choosing ||
+      !data.enabled ||
+      !snapshot?.dayPlan?.sync ||
+      !!missingInput;
     reason.textContent = !snapshot?.dayPlan?.sync
       ? "正在连接当前日程"
       : missingInput
@@ -65,10 +74,12 @@ function createDailyActionsUI({
     if (!snap?.dayPlan || !Array.isArray(snap.dayActions)) return reset();
     if (snapshot && !sameSession(snapshot.dayPlan.sync, snap.dayPlan.sync)) {
       pending = null;
+      choosing = null;
       retry = null;
       message("");
     }
     snapshot = snap;
+    economyInputs.render(snap);
     if (grid) {
       grid.replaceChildren();
       snap.dayActions.forEach((action) => grid.append(card(action, "start")));
@@ -130,15 +141,40 @@ function createDailyActionsUI({
   }
   async function click(event) {
     const button = event.target.closest?.("button[data-day-command]");
-    if (!button || button.disabled || pending || !snapshot?.dayPlan?.sync)
+    if (
+      !button ||
+      button.disabled ||
+      pending ||
+      choosing ||
+      !snapshot?.dayPlan?.sync
+    )
       return;
     if (button.dataset.dayCommand === "retry") return submit(retry);
     const captured = snapshot;
     let args = {};
     const input = inputs.get(button.dataset.actionId);
     if (input) {
-      args = await input(captured);
-      if (args == null || snapshot !== captured || lifecycle.disposed) return;
+      const ticket = {};
+      choosing = ticket;
+      render(snapshot);
+      try {
+        args = await input(captured);
+      } catch (error) {
+        if (sameSession(snapshot?.dayPlan?.sync, captured.dayPlan.sync))
+          message(error.message || "无法选择活动内容");
+        return;
+      } finally {
+        if (choosing === ticket) choosing = null;
+        if (snapshot && !lifecycle.disposed) render(snapshot);
+      }
+      if (
+        args == null ||
+        !sameSession(snapshot?.dayPlan?.sync, captured.dayPlan.sync) ||
+        JSON.stringify(snapshot.dayPlan.token) !==
+          JSON.stringify(captured.dayPlan.token) ||
+        lifecycle.disposed
+      )
+        return;
     }
     const operationId =
       window.crypto?.randomUUID?.() || `daily-${Date.now()}-${++counter}`;
@@ -161,9 +197,16 @@ function createDailyActionsUI({
     reset,
     registerInput(id, provider) {
       if (typeof provider !== "function") throw Error("活动输入接口无效");
+      const previous = inputs.get(id);
       inputs.set(id, provider);
       if (snapshot) render(snapshot);
-      return () => inputs.delete(id);
+      return () => {
+        if (inputs.get(id) === provider) {
+          if (previous) inputs.set(id, previous);
+          else inputs.delete(id);
+          if (snapshot) render(snapshot);
+        }
+      };
     },
   };
 }

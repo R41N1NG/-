@@ -18,8 +18,8 @@ const handlers = {
     }),
   },
   pass: { available: () => null, prepare: () => ({ summary: "已度过本时段" }) },
-  work: { available: () => "暂无可接工作", prepare: null },
-  shop: { available: () => "当前没有可用商店", prepare: null },
+  work: require("../economy/work.js").handler,
+  shop: require("../economy/shop.js").handler,
   talk: { available: () => "当前没有可开展的交流事件", prepare: null },
   tailing: { available: () => "当前没有可接入的出行机会", prepare: null },
 };

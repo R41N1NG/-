@@ -22,6 +22,7 @@ const { createAlertSystem } = require("./game/alert.js");
 const { createAlbumSystem } = require("./game/album.js");
 const { createSnapshotSystem } = require("./game/snapshot.js");
 const { createSaveSystem } = require("./game/save.js");
+const { createEconomy, validateEconomy } = require("../contracts/economy.js");
 const { createDailyRegistry } = require("./daily/registry.js");
 const { createDailySystem } = require("./daily/system.js");
 
@@ -300,11 +301,15 @@ function createGame(init = {}, services = {}) {
   g.dayPlan = validateDayPlan(
     init.saved?.dayPlan ?? init.dayPlan ?? createDayPlan(g.slot),
   );
+  g.economy = validateEconomy(
+    init.saved?.economy ?? init.economy ?? createEconomy(),
+  );
   const dailySystem = createDailySystem({
     g,
     L,
     registry: createDailyRegistry(services.dailyActions || []),
     nextDay: legacyNightFall,
+    afterCommit: syncThresholdTags,
   });
   function nightFall() {
     if (g.dayPlan.source === "daily")

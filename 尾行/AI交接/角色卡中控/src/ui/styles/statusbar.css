@@ -2743,3 +2743,27 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 }
 
 .trpg #distStat[hidden] { display: none !important; }
+
+/* 经济选择面板：取消／浏览不推进日程，提交交给同一日程命令。 */
+.trpg .wx-economy-input[hidden], .trpg .wx-economy-orders[hidden] { display: none; }
+.trpg .wx-economy-input { margin-top: 10px; padding: 12px; border: 1px solid #536674; border-radius: 5px; background: #101c24; }
+.trpg .wx-economy-input h3 { margin: 0 0 8px; font-size: 14px; color: #e1d1ae; }
+.trpg .wx-economy-input p, .trpg .wx-economy-orders p { margin: 5px 0; color: #9eb1be; font-size: 11px; }
+.trpg .wx-work-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.trpg .wx-work-choice { display: flex; align-items: flex-start; gap: 8px; padding: 9px; background: #192831; border: 1px solid #324751; border-radius: 4px; cursor: pointer; }
+.trpg .wx-work-choice.unavailable { opacity: .5; cursor: default; }
+.trpg .wx-work-choice>span, .trpg .wx-shop-line>span { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 4px; }
+.trpg .wx-work-choice strong, .trpg .wx-shop-line strong { font-size: 12px; font-weight: 500; color: #cfdae0; }
+.trpg .wx-work-choice span span { font-size: 11px; color: #c3b690; }
+.trpg .wx-work-choice small, .trpg .wx-shop-line small { font-size: 10px; color: #8b9ca7; }
+.trpg .wx-shop-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; max-height: 350px; overflow-y: auto; margin-top: 8px; }
+.trpg .wx-shop-line { display: flex; align-items: center; gap: 8px; padding: 8px; background: #17252e; border-radius: 3px; }
+.trpg .wx-shop-line input { box-sizing: border-box; flex: 0 0 54px; width: 54px; padding: 7px 3px; background: #0c1720; border: 1px solid #405765; color: #d5c28f; }
+.trpg .wx-economy-input select { padding: 7px; color: #d2dde2; background: #17252e; border: 1px solid #405765; }
+.trpg .wx-economy-foot { display: flex; gap: 8px; margin-top: 10px; }
+.trpg .wx-economy-foot button { padding: 8px 12px; color: #dfcba6; background: #20323e; border: 1px solid #5e707b; border-radius: 4px; cursor: pointer; }
+.trpg .wx-economy-foot button:disabled { opacity: .4; cursor: default; }
+.trpg .wx-economy-orders { margin-top: 10px; color: #b4c5ce; font-size: 12px; }
+.trpg .wx-order { margin: 6px 0; padding: 7px 10px; border-left: 2px solid #455f6a; background: #15212a; }
+.trpg .wx-order strong { font-size: 11px; color: #c5b589; }
+@media(max-width:560px) { .trpg .wx-work-list, .trpg .wx-shop-list { grid-template-columns: minmax(0,1fr); } }

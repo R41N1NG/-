@@ -92,15 +92,10 @@ test("日程：存档往返保留去重回执，旧状态或篡改同编号请�
   );
   assert.deepEqual(restored.save(), before);
 });
-test("日程：未接工作、商店、交流与出行时只解释条件，不收费用", () => {
+test("日程：未接交流与出行时只解释条件，不收费用", () => {
   const g = game(),
     before = g.save();
-  for (const id of [
-    "daily.work",
-    "daily.shop",
-    "daily.talk",
-    "daily.tailing",
-  ]) {
+  for (const id of ["daily.talk", "daily.tailing"]) {
     const row = g.snapshot().dayActions.find((x) => x.id === id);
     assert.equal(row.enabled, false);
     assert.ok(row.reason);
@@ -421,7 +416,7 @@ test("日程 UI：真实桥接保存后更新、连点不重扣，业务拒绝�
     const buttons = () =>
       dom.window.document.querySelectorAll("#wxDailyActionGrid button");
     assert.equal(buttons().length, 6);
-    assert.equal(buttons()[1].disabled, true);
+    assert.equal(buttons()[1].disabled, false);
     buttons()[0].click();
     buttons()[0].click();
     for (let i = 0; i < 10; i++) await new Promise((r) => setImmediate(r));

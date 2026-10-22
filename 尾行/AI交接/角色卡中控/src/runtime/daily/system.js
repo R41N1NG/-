@@ -4,11 +4,19 @@ const {
   createDayPlan,
   validateDayPlan,
 } = require("../../contracts/day-plan.js");
+const { validateEconomy } = require("../../contracts/economy.js");
+const { deliverDue } = require("../economy/shop.js");
 const { LIMITS } = require("../ledger.js");
 const ITEMS = require("../../config/rules.json").items;
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const fail = (code, message) => Object.assign(new Error(message), { code });
-function createDailySystem({ g, L, registry, nextDay }) {
+function createDailySystem({
+  g,
+  L,
+  registry,
+  nextDay,
+  afterCommit = () => {},
+}) {
   function context() {
     return clone({
       player: g.player,
@@ -16,6 +24,8 @@ function createDailySystem({ g, L, registry, nextDay }) {
       dayPlan: g.dayPlan,
       world: g.world,
       targetId: g.targetId,
+      identity: g.identity,
+      economy: g.economy,
     });
   }
   function token() {
@@ -46,8 +56,19 @@ function createDailySystem({ g, L, registry, nextDay }) {
   function activities() {
     return registry.list().map((entry) => {
       const unavailable = reason(entry);
+      let input;
+      try {
+        input = entry.handler.view?.(context());
+      } catch {
+        return {
+          ...clone(entry.definition),
+          enabled: false,
+          reason: "活动内容暂不可用",
+        };
+      }
       return {
         ...clone(entry.definition),
+        ...(input ? { input } : {}),
         enabled: !unavailable,
         reason: unavailable,
       };
@@ -97,7 +118,10 @@ function createDailySystem({ g, L, registry, nextDay }) {
       throw fail("DAY_EFFECT_INVALID", "活动没有有效结算结果");
     if (
       Object.keys(result).some(
-        (key) => !["summary", "ledger", "payload", "inventory"].includes(key),
+        (key) =>
+          !["summary", "ledger", "payload", "inventory", "economy"].includes(
+            key,
+          ),
       )
     )
       throw fail("DAY_EFFECT_INVALID", "活动含有尚未支持的效果类型");
@@ -137,7 +161,9 @@ function createDailySystem({ g, L, registry, nextDay }) {
           inventory.push({ id: change.id, count: change.add, equipped: false });
       }
     }
-    return { ledger, inventory };
+    const economy =
+      result.economy === undefined ? null : validateEconomy(result.economy);
+    return { ledger, inventory, economy };
   }
   function execute(request) {
     if (
@@ -186,6 +212,7 @@ function createDailySystem({ g, L, registry, nextDay }) {
       result = { summary: "" },
       ledger = {},
       inventory = null,
+      economy = null,
       cost = 0;
     if (request.command === "enable") {
       if (p.source !== "legacy") throw fail("DAY_STALE", "日程已经启用");
@@ -210,7 +237,7 @@ function createDailySystem({ g, L, registry, nextDay }) {
         clone(request.args || {}),
         clone(entry.definition),
       );
-      ({ ledger, inventory } = applyEffects(result));
+      ({ ledger, inventory, economy } = applyEffects(result));
       cost = entry.definition.cost;
       next.spent += cost;
       if (entry.definition.mode === "scene") {
@@ -239,13 +266,15 @@ function createDailySystem({ g, L, registry, nextDay }) {
       if (typeof handler !== "function")
         throw fail("DAY_UNAVAILABLE", "当前活动暂不能在这里结束");
       result = handler(context(), clone(request.args || {}), clone(p.activity));
-      ({ ledger, inventory } = applyEffects(result));
+      ({ ledger, inventory, economy } = applyEffects(result));
       next.activity = null;
       advance(next);
     } else if (request.command === "next-day") {
       if (p.source !== "daily" || !p.ended || p.activity)
         throw fail("DAY_UNAVAILABLE", "请先结束当天的安排");
       // 复用现有整卡日期、天气与角色状态轮转，不另写一套日历。
+      const arrivals = deliverDue(context(), L.get("date") + 1);
+      ({ ledger, inventory, economy } = applyEffects(arrivals));
       const outcome = nextDay();
       if (outcome?.blocked) throw fail("DAY_BUSY", outcome.reason);
       next = {
@@ -254,7 +283,7 @@ function createDailySystem({ g, L, registry, nextDay }) {
         period: 0,
         receipts: p.receipts || [],
       };
-      result.summary = `新的一天开始，行动点恢复至 ${DAY_PLAN_RULES.budget} 点`;
+      result.summary = `新的一天开始，行动点恢复至 ${DAY_PLAN_RULES.budget} 点${arrivals.summary ? "；" + arrivals.summary : ""}`;
     } else throw fail("DAY_REQUEST_INVALID", "不支持的日程操作");
     next.sequence = (p.sequence || 0) + 1;
     const receipt = {
@@ -277,7 +306,9 @@ function createDailySystem({ g, L, registry, nextDay }) {
     if (Object.keys(ledger).length)
       L.commit(ledger, { reason: "daily-activity", action: request.actionId });
     if (inventory) g.player.inventory = inventory;
+    if (economy) g.economy = economy;
     g.dayPlan = next;
+    afterCommit();
     // 五时段只在完整活动结束时推进，内部回合不能改变此处。
     if (!next.activity) {
       g.env = next.period < 3 ? "day" : "night";

@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.6",
+  "version": "0.8.7",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "8fe1510af529941b36c795338b3bc5a1d07e6c2b2461be48351ce06870650fe8",
+  "sourceHash": "2f600651ef16a7113e3307d73b6adfcd90fae6b7b7ba0d7b7961eabf1c6eeeb2",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,19 +19,23 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "e7cdd4272516da28f769b42997fee84fff631f2a83a34ec4df706f9a585f06d4"
+      "sha256": "ecea0d45acdb71f83bbea167a568afb5074a8809eee6cb03084d1f9d66b8149b"
     },
     {
       "file": "package.json",
-      "sha256": "482fdc43d7d0e55c292282617419d40996d95c3fc7d4b791324510306c84bd5d"
+      "sha256": "6771a6636d507168090f664c358100baee8c0d4cd157180f1ceafe4fe4dee125"
     },
     {
       "file": "src/config/daily-actions.json",
-      "sha256": "989ee1ab5ebda2b2a991dd66f9109ad3bd48d7d7023bc11071f4860211cafad1"
+      "sha256": "e216b0bd8572cbc4145326fd3acc4be887baf2d31e3e4f43e5e2dbafc2ca0dfe"
     },
     {
       "file": "src/config/day-plan.json",
       "sha256": "764644c656b9c963e40a964a3f00d10b1ba7b020641827e20a431fe2b4a54a64"
+    },
+    {
+      "file": "src/config/economy.json",
+      "sha256": "47a14a92ad0ee849b4d83791495b124b026560c8a208164991379f20df6e4ba8"
     },
     {
       "file": "src/config/lexicon.json",
@@ -70,12 +74,16 @@
       "sha256": "564f749eff97043f24f5c9fc7d3945067d1d969e02c3599ebf216f5ba307effb"
     },
     {
+      "file": "src/contracts/economy.js",
+      "sha256": "4d3ee41ede84cb59b47a09260504b5616e4ef44e0f5b540111d00e43aa5447e8"
+    },
+    {
       "file": "src/contracts/persona.js",
       "sha256": "0737e820bb8cb8081851f21cd862d5b59e0bd7a76cf9960c020fd98a6793f61a"
     },
     {
       "file": "src/contracts/types.d.ts",
-      "sha256": "21c765d89c2abed3b84c17ec491e2c08d26b55e1f89f5e20bcdabb5139c5f64b"
+      "sha256": "49a4c0acc933f96530f67e1fd34c02f4f7e587de42a0bca71ceabf5ecc09eae9"
     },
     {
       "file": "src/contracts/validation.js",
@@ -163,15 +171,23 @@
     },
     {
       "file": "src/runtime/daily/registry.js",
-      "sha256": "4be0d152687f62acc2b3b65b056978d88bf91ecc238f158e8ae277229b9d937c"
+      "sha256": "ee8064a3bfdb15f4d54e9b2aa5cd84e3bc7b23b8260638323892b1e31f33fd97"
     },
     {
       "file": "src/runtime/daily/system.js",
-      "sha256": "6f2a3da55f013f0a37eecd5e76aa515caa3b1fca8897d565e02957ca0063510c"
+      "sha256": "770538a1097bc0804949bb9188f5b1e1293674af91da9b10a40a30f6ec6520db"
     },
     {
       "file": "src/runtime/dice.js",
       "sha256": "f64f6b94e80bc12fb86f76cef9180c83a398131ff883ffce9ae95c9390c7e8f8"
+    },
+    {
+      "file": "src/runtime/economy/shop.js",
+      "sha256": "d5fa0077bbdaa5abcaa7a05a9486dea199291f8a5f52b102d8cb2a62e84f9861"
+    },
+    {
+      "file": "src/runtime/economy/work.js",
+      "sha256": "faccdb60234138b2da91b108d5759beb724b8ef692ac6b150b0668c61be57c08"
     },
     {
       "file": "src/runtime/facts.js",
@@ -179,7 +195,7 @@
     },
     {
       "file": "src/runtime/game.js",
-      "sha256": "f1218d13c8ea350f4e610b8339a738489c49d78dfaf5dbdfd62ee526d27ade32"
+      "sha256": "1612a38c2916577a3505b60bd82bbbbb5840cff6b1370c24dadda96e1758a29a"
     },
     {
       "file": "src/runtime/game/actions.js",
@@ -219,11 +235,11 @@
     },
     {
       "file": "src/runtime/game/save.js",
-      "sha256": "8aaff97f4e274915bfc1b64609c7f7dd825c707ecf0ff435f3e7ab75cf14b874"
+      "sha256": "dfda3d0495673eef6c79c13b2ee5d1053457a3f58e3adefce3f1dc8f4ae62d0b"
     },
     {
       "file": "src/runtime/game/snapshot.js",
-      "sha256": "64c175b2142e8edece032b604c990196079f6561372c274211e173e55685181f"
+      "sha256": "c1678882a4ade06be7157d9aafb01af62a8c91689fed7862fd269cc8a8daf753"
     },
     {
       "file": "src/runtime/game/target.js",
@@ -303,11 +319,15 @@
     },
     {
       "file": "src/ui/creation-presentation.json",
-      "sha256": "2e18727f7b514928913826999461920745c092a5d880aeec55601d75a36e776b"
+      "sha256": "996cccc033fc43dbd951696f1cd0f2fba3277f9126a6d0f6f24c76879d595c8a"
     },
     {
       "file": "src/ui/daily/actions.js",
-      "sha256": "86a1adfd6ad6333f130b5ef781acd8eb66b86ff1ad9a441ac16198936c513eeb"
+      "sha256": "9efab5054b1354349c70e1366f83ad730c0fa9525a269a1e784c1f05ff0f9d3a"
+    },
+    {
+      "file": "src/ui/daily/economy-inputs.js",
+      "sha256": "651c2a2a0be6cee76b12c1aef130f2afb98db2712006b7bae73e419aceba499d"
     },
     {
       "file": "src/ui/display.js",
@@ -359,7 +379,7 @@
     },
     {
       "file": "src/ui/styles/statusbar.css",
-      "sha256": "990290b31297721e488009337084fd60af62d4c1f774bc2692854e361d4697cc"
+      "sha256": "e7664913361fcb28720e11a89d227194e5ed8885695421a6399fd37950c157ac"
     },
     {
       "file": "src/ui/sync-notice.js",
@@ -383,11 +403,11 @@
     },
     {
       "file": "tools/build/daily-preview-entry.js",
-      "sha256": "bcd2e991670799b94caf28b92f87540deb060fae938ec8ad57fb96c827431d25"
+      "sha256": "e0c74925ab134b4c1098c634f6cd21e072d6dd117938b6bf11740c96694c1152"
     },
     {
       "file": "tools/build/day-preview.js",
-      "sha256": "78840a99bd54589ed698140f9ff9b192cf0659297256807e8bc61ace8fe26b2d"
+      "sha256": "65dac159bc59877400c82ce138f08fca928778a641524c2b04589124ef18ff04"
     },
     {
       "file": "tools/build/delivery.js",
@@ -408,16 +428,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 559072,
-      "sha256": "f73223ffa0995337433ff3c4b9dfa21b6b5b780a423d8dc165e64ac1d7d1b231"
+      "bytes": 575149,
+      "sha256": "3defc468e01f5fd68cda4ad11582a95ba5c9b5ace931f9d6613f723bd0a8ab0a"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1191642,
-      "sha256": "d24cd75df4bf4653e900006432da4a09188fd24ed0dec208d5d03f0bdd2ff92a"
+      "bytes": 1220451,
+      "sha256": "ec931df2b4ce75d442df74b070dfe94fb2f9e77be1aca8da19d07af15eed5a5c"
     },
     "尾行.json": {
-      "bytes": 1307199,
-      "sha256": "da00d742d088bbe3a5cb5bcb0f9cfa8b357c604273fe1ec91cc138a2f369e951"
+      "bytes": 1337411,
+      "sha256": "1cb11dcf69af685e33cd1de8d36c12a969afeec1e60b79ab203d35e6a98d04bb"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

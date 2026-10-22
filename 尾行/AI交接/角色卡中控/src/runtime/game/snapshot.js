@@ -1,6 +1,7 @@
 "use strict";
 // snapshot：依赖由 game.js 装配，每个游戏实例独立持有状态。
 const { classifyPlace } = require("../../contracts/action-requirements.js");
+const { economyView } = require("../economy/shop.js");
 const R = require("../../config/rules.json");
 const C = require("../checks.js");
 const map = require("../map.js");
@@ -75,6 +76,7 @@ function createSnapshotSystem({
     return JSON.parse(
       JSON.stringify({
         dayPlan: { ...dayPlanView(g.dayPlan, s.date), token: getDayToken() },
+        economy: economyView(g.economy),
         dayActions: getDayActivities(),
         dayControls: getDayControls(),
         player: {

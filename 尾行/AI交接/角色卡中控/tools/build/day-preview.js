@@ -14,7 +14,7 @@ function buildDayPreview() {
     {
       title: "早间 · 4 点",
       description:
-        "可点击休息、度过本时段，实际扣点并保存。上方按钮仅用于重置试玩状态。",
+        "可选工作、批量采买、休息和度过时段，实际结算并保存。上方按钮仅用于重置试玩状态。",
       plan: { period: 0, spent: 0, activity: null, ended: false },
     },
     {
@@ -76,7 +76,7 @@ html{min-height:100%;background:#080e14}body{margin:0;color:#c6d0d7;font:14px/1.
 </style>
 <div class="preview-shell"><div class="preview-eyebrow">尾行 / 状态栏预览</div><h1>每日行动与时段</h1><p>阿宅 × 女大学生。每天 4 点行动点，每时段一次行动；尾行消耗 2 点，仍只算一次行动。</p><div class="daily-preview-controls" id="dailyPreviewControls"></div><p class="preview-description" id="dailyPreviewDescription"></p>
 <main class="wx-standalone-main"><section class="trpg" aria-label="玩家状态栏">${bodyHtml}</section></main>
-<div class="preview-bottom">本页使用正式界面、引擎和保存流程。休息／度过时段可操作；其他活动待接具体内容与条件。尾行中按钮仅载入展示样例。试玩进度与酒馆存档相互独立。</div></div>
+<div class="preview-bottom">本页使用正式界面、引擎和保存流程。打工、采买、休息／度过时段可操作；交流与尾行待接内容和条件。尾行中按钮仅载入展示样例。试玩进度与酒馆存档相互独立。</div></div>
 <script>${(script + "\n" + boot).replace(/<\/script/gi, "<\\/script")}</script></html>`;
   const directory = path.join(ROOT, "previews/day-plan");
   fs.mkdirSync(directory, { recursive: true });
