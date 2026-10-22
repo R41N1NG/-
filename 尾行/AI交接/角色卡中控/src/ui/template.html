@@ -418,24 +418,28 @@
       <img id="photoToastImg" alt="">
       <div class="photo-toast-txt"><b id="photoToastName"></b><span id="photoToastMeta"></span></div>
     </div>
-    <!-- ═══ 零楼 · 开局两步走向导（第一步：猎手身份属性 ➔ 第二步：锁定目标角色；新局无档时挂载到第 0 条消息） ═══ -->
+    <!-- ═══ 零楼 · 开局三步向导（第一步：建立角色 ➔ 第二步：选择目标；新局无档时挂载到第 0 条消息） ═══ -->
     <div id="wx-zero-floor" class="trpg wx-zero-floor" role="region" aria-labelledby="createTitle" hidden>
       <div data-zero-slot="before"></div>
       <div class="dialog-top zero-wizard-top">
         <div class="zero-title-wrap">
           <h2 id="createTitle">零楼 · 创角向导</h2>
-          <span class="zero-sub">创建角色 → 选择目标 → 开始</span>
+          <span class="zero-sub">创建角色 → 选择目标 → 训练简报</span>
         </div>
         <!-- 步骤导航条 -->
         <div class="zero-steps-bar" role="tablist" aria-label="零楼向导步骤">
           <button type="button" class="zero-step-pill active" id="zeroStepTab1" data-step="1">
             <span class="step-num">1</span>
-            <span class="step-text">猎手身份属性</span>
+            <span class="step-text">建立角色</span>
           </button>
           <span class="zero-step-divider">➔</span>
           <button type="button" class="zero-step-pill" id="zeroStepTab2" data-step="2">
             <span class="step-num">2</span>
-            <span class="step-text">锁定目标角色</span>
+            <span class="step-text">选择目标</span>
+          </button>
+          <span class="zero-step-divider">➔</span>
+          <button type="button" class="zero-step-pill" id="zeroStepTab3" data-step="3" disabled>
+            <span class="step-num">3</span><span class="step-text">训练简报</span>
           </button>
         </div>
       </div>
@@ -497,11 +501,12 @@
 
         </div>
         <div class="create-foot">
-          <button type="button" class="zero-btn-prev" id="zeroPrevStep">⬅ 上一步：修改猎手</button>
+          <button type="button" class="zero-btn-prev" id="zeroPrevStep">⬅ 上一步：修改角色</button>
           <span class="create-hint" id="targetHint">请选择目标</span>
-          <button type="button" class="create-confirm" id="createConfirm">锁定目标 · 步入夜色 ➔</button>
+          <button type="button" class="create-confirm" id="createConfirm">确认目标 · 查看训练简报 ➔</button>
         </div>
       </div>
+    <!-- WX_TRAINING_BRIEF -->
     <div data-zero-slot="after"></div>
     </div>
     <!-- ═══ 身份徽记详情（常驻条徽记点开；含重开新局） ═══ -->

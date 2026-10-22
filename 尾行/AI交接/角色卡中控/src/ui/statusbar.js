@@ -19,6 +19,7 @@ const {
 } = require("./creation-data.js");
 const { createZeroFloorHost } = require("./zero-floor/host.js");
 const { createStages } = require("./zero-floor/stages.js");
+const { createTrainingBrief } = require("./zero-floor/training-brief.js");
 const MOCKS = __WX_PREVIEW__ ? require("./preview-data.js").MOCKS : {};
 const {
   SWEET,
@@ -1132,7 +1133,9 @@ function mountStatusbar(document, window) {
     personas: {},
     points: { str: 4, agi: 4, nrv: 4, int: 4, cha: 4 },
     done: false,
+    submitting: false,
   };
+  let creationAttempt = 0;
   const sumPts = () => Object.values(ZERO.points).reduce((a, b) => a + b, 0);
   const idDef = () =>
     ZERO.identity ? IDENTITY_DATA.list[ZERO.identity] : null;
@@ -1158,18 +1161,52 @@ function mountStatusbar(document, window) {
     lifecycle,
     onChange: (step) => {
       ZERO.step = step;
+      document.getElementById("wx-zero-floor").dataset.zeroStep = String(step);
     },
   });
-  stages.register(1, { tabId: "zeroStepTab1", viewId: "zeroStep1" });
+  stages.register(1, {
+    tabId: "zeroStepTab1",
+    viewId: "zeroStep1",
+    canEnter: () => !ZERO.submitting,
+  });
+  const trainingBrief = createTrainingBrief({
+    document,
+    lifecycle,
+    onBack: () => switchZeroStep(2),
+    onStart: () => createConfirm(),
+  });
   stages.register(2, {
     tabId: "zeroStepTab2",
     viewId: "zeroStep2",
-    canEnter: () => !!ZERO.identity && sumPts() === POINT_BUDGET,
+    canEnter: () =>
+      !ZERO.submitting && !!ZERO.identity && sumPts() === POINT_BUDGET,
     enter: () => {
       renderTargetGrid();
       updateTargetDetail(ZERO.targetId || "college");
     },
   });
+  const canReadBrief = () =>
+    !!ZERO.identity &&
+    sumPts() === POINT_BUDGET &&
+    !!ZERO.targetPersona &&
+    ZERO.targetPersona.targetId === ZERO.targetId;
+  stages.register(3, {
+    tabId: "zeroStepTab3",
+    viewId: "zeroStep3",
+    canEnter: () => !ZERO.submitting && canReadBrief(),
+    enter: () =>
+      trainingBrief.setSelection({
+        identity: idDef(),
+        target: TARGET_DATA.list[ZERO.targetId],
+      }),
+  });
+  function syncBriefAccess() {
+    document
+      .getElementById("zeroStepTab2")
+      ?.classList.toggle("completed", canReadBrief());
+    const tab = document.getElementById("zeroStepTab3");
+    if (tab) tab.disabled = ZERO.submitting || !canReadBrief();
+  }
   function switchZeroStep(step) {
     stages.go(step);
   }
@@ -1220,6 +1257,7 @@ function mountStatusbar(document, window) {
         ZERO.personas[t.id] = ZERO.targetPersona;
       } catch (error) {
         ZERO.targetPersona = null;
+        syncBriefAccess();
         const hint = document.getElementById("targetHint");
         if (hint) hint.textContent = "该目标暂时无法生成，请选择其他目标。";
         const confirm = document.getElementById("createConfirm");
@@ -1288,9 +1326,11 @@ function mountStatusbar(document, window) {
       hint.textContent = `已锁定：${persona.name} · ${t.name}（${t.area}）`;
     const btn = document.getElementById("createConfirm");
     if (btn) btn.disabled = false;
+    syncBriefAccess();
   }
 
   function syncCreate() {
+    syncBriefAccess();
     /* 快捷预设页 */
     const quickPane = document.getElementById("quickPane");
     if (quickPane && !quickPane.dataset.built) {
@@ -1418,7 +1458,7 @@ function mountStatusbar(document, window) {
         ? "先选一个身份"
         : sumPts() !== POINT_BUDGET
           ? `还剩 ${POINT_BUDGET - sumPts()} 点没分`
-          : `猎手就绪：${idDef().name} · ${Object.entries(ZERO.points)
+          : `角色就绪：${idDef().name} · ${Object.entries(ZERO.points)
               .map(([k, v]) => ATTR_NAMES[k] + v)
               .join(" ")}`;
   }
@@ -1431,12 +1471,16 @@ function mountStatusbar(document, window) {
 
   async function createConfirm() {
     if (
+      ZERO.step !== 3 ||
+      ZERO.done ||
+      ZERO.submitting ||
       !ZERO.identity ||
       sumPts() !== POINT_BUDGET ||
       !ZERO.targetPersona ||
       ZERO.targetPersona.targetId !== ZERO.targetId
     )
       return;
+    const attempt = ++creationAttempt;
     const def = idDef();
     const targetDef =
       TARGET_DATA.list[ZERO.targetId || "college"] || TARGET_DATA.list.college;
@@ -1450,23 +1494,27 @@ function mountStatusbar(document, window) {
     if (ZERO.mode === "tavern") {
       const glue = window.WxGlue || globalThis.WxGlue;
       if (!glue || !glue.newGame) {
-        const hint =
-          document.getElementById("targetHint") ||
-          document.getElementById("createHint");
-        if (hint) hint.textContent = "引擎未就绪，稍等几秒再试";
+        trainingBrief.showError({ message: "训练场暂未就绪，请稍后重试。" });
         return;
       }
-      const button = document.getElementById("createConfirm");
-      if (button) button.disabled = true;
+      ZERO.submitting = true;
+      trainingBrief.setLoading(true);
+      syncBriefAccess();
       try {
         await glue.newGame(init);
-        if (lifecycle.disposed) return;
+        if (lifecycle.disposed || attempt !== creationAttempt) return;
         ZERO.done = true;
       } catch (error) {
+        if (lifecycle.disposed || attempt !== creationAttempt) return;
+        trainingBrief.showError(error);
         reportSyncError(error);
         return;
       } finally {
-        if (button) button.disabled = false;
+        if (!lifecycle.disposed && attempt === creationAttempt) {
+          ZERO.submitting = false;
+          trainingBrief.setLoading(false);
+          syncBriefAccess();
+        }
       }
     } else {
       ZERO.done = true;
@@ -1550,6 +1598,9 @@ function mountStatusbar(document, window) {
   async function resetZero() {
     if (!window.confirm("重开新局？当前进度将清空，回到零楼重新选身份与目标。"))
       return;
+    creationAttempt++;
+    ZERO.submitting = false;
+    trainingBrief.reset();
     ZERO.done = false;
     ZERO.step = 1;
     ZERO.identity = null;
@@ -1590,10 +1641,8 @@ function mountStatusbar(document, window) {
   lifecycle.on(document.getElementById("tDetailReroll"), "click", () => {
     updateTargetDetail(ZERO.targetId || "college", true);
   });
-  lifecycle.on(
-    document.getElementById("createConfirm"),
-    "click",
-    createConfirm,
+  lifecycle.on(document.getElementById("createConfirm"), "click", () =>
+    switchZeroStep(3),
   );
   lifecycle.on(document.getElementById("idResetBtn"), "click", () => {
     resetZero();
@@ -1902,6 +1951,9 @@ function mountStatusbar(document, window) {
     details.reset();
     render._hist = [];
     stopAudio();
+    creationAttempt++;
+    ZERO.submitting = false;
+    trainingBrief.reset();
     ZERO.done = false;
     ZERO.step = 1;
     ZERO.identity = null;

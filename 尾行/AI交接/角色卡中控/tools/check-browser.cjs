@@ -99,11 +99,7 @@ const deadline = setTimeout(() => {
   };
   await send("Page.enable");
   const tree = await send("Page.getFrameTree");
-  const { script, css } = buildUI({ preview: false, writePreview: false });
-  const template = fs.readFileSync(
-    path.join(root, "src/ui/template.html"),
-    "utf8",
-  );
+  const { script, css, template } = buildUI({ preview: false, writePreview: false });
   const html = template
     .replace(
       '<main class="wx-standalone-main">',
@@ -211,6 +207,51 @@ const deadline = setTimeout(() => {
     errors,
   });
   await evaluate("WxStatusbar.dispose(); true;");
+  // 教程首页：同一零楼与建局管线。首页不建档，确认载入后续局不重放。
+  const briefPreview = require("./build/training-preview.js").buildTrainingPreview();
+  await send("Page.setDocumentContent", {
+    frameId: tree.frameTree.frame.id,
+    html: fs.readFileSync(briefPreview.file, "utf8"),
+  });
+  await evaluate("window.__trainingPreviewReady");
+  for (const width of [1100, 390, 320]) {
+    await send("Emulation.setDeviceMetricsOverride", {width,height:900,deviceScaleFactor:1,mobile:false});
+    const checks = await evaluate(`(()=>{
+      const checks=[];const ok=(name,value)=>checks.push({name,ok:!!value});
+      WxStatusbar.reset();
+      ok('简报不能越过角色与目标选择',document.getElementById('zeroStepTab3').disabled);
+      document.querySelector('#quickPane [data-preset="otaku"]').click();
+      document.getElementById('zeroNextStep').click();
+      const name=document.getElementById('tDetailRealName').textContent;
+      document.getElementById('createConfirm').click();
+      const brief=document.getElementById('zeroStep3');
+      ok('目标选择后进入零楼教程首页',!brief.hidden&&document.getElementById('wx-zero-floor').closest('.mes')?.getAttribute('mesid')==='0');
+      ok('简报同步实际身份与目标',document.getElementById('trainingBriefIdentity').textContent==='阿宅'&&document.getElementById('trainingBriefTarget').textContent==='独居女大学生');
+      ok('简报不提前建局或泄露目标档案',!__trainingPreviewStore().wx_save&&!brief.textContent.includes(name)&&!brief.textContent.includes(document.getElementById('tDetailWindow').textContent));
+      document.getElementById('trainingBriefBack').click();
+      ok('返回目标不重抽人物',!document.getElementById('zeroStep2').hidden&&document.getElementById('tDetailRealName').textContent===name);
+      document.querySelector('[data-tid="ol"]').click();document.getElementById('createConfirm').click();
+      ok('换目标后简报更新类型',document.getElementById('trainingBriefTarget').textContent==='疲惫的OL');
+      document.getElementById('trainingBriefBack').click();document.querySelector('[data-tid="college"]').click();document.getElementById('createConfirm').click();
+      ok('教程首页适配窄屏且可操作',document.documentElement.scrollWidth<=innerWidth+2&&brief.scrollWidth<=brief.clientWidth+2&&!document.getElementById('trainingBriefStart').disabled);
+      return checks;
+    })()`);
+    result.push(...checks.map(check=>({width,...check})));
+    const clip=await evaluate(`(()=>{const r=document.getElementById('wx-zero-floor').getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1};})()`);
+    const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip});
+    fs.writeFileSync(path.join(path.dirname(briefPreview.file),width===1100?"desktop.png":width===390?"mobile.png":"mobile-320.png"),Buffer.from(shot.data,"base64"));
+  }
+  const briefEnd = await evaluate(`(async()=>{
+    const checks=[];const ok=(name,value)=>checks.push({name,ok:!!value});
+    document.getElementById('trainingBriefStart').click();document.getElementById('trainingBriefStart').click();
+    ok('载入期间防止重复确认',document.getElementById('trainingBriefStart').disabled);
+    await window.__trainingPreviewOperation;await Promise.resolve();
+    ok('确认后沿原管线保存并关闭简报',__trainingPreviewStore().wx_save?.targetId==='college'&&__trainingPreviewStore().wx_save.floor===0&&document.getElementById('wx-zero-floor').hidden);
+    WxStatusbarUI.mountStatusbar(document,window);await new Promise(resolve=>setTimeout(resolve,0));
+    ok('续局不重弹简报或重建人物',document.getElementById('wx-zero-floor').hidden&&__trainingPreviewStore().wx_save.floor===0);
+    WxStatusbar.dispose();return checks;
+  })()`);
+  result.push(...briefEnd);
   // 用户可打开的独立日程预览：同一正式 UI、实际引擎往返快照。
   const preview = require("./build/day-preview.js").buildDayPreview();
   await send("Page.setDocumentContent", {

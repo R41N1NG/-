@@ -67,7 +67,7 @@ test("档位人话：五维各五档非空（数值策划档位表直译）", ()
   }
 });
 
-test("DOM 锚点：零楼两步走向导面板/步骤条/目标卡网格/徽记/未开局钮/摇号组件/胶水接口全部在位", () => {
+test("DOM 锚点：零楼三步向导面板/步骤条/目标卡网格/徽记/未开局钮/摇号组件/胶水接口全部在位", () => {
   for (const anchor of ['id="wx-zero-floor"', 'id="wx-id-dialog"', 'id="idBadge"', 'id="zeroChip"',
                         'id="createConfirm"', 'id="idResetBtn"', "updateIdBadge(snap)", "zeroFloorInit",
                         'id="zeroStep1"', 'id="zeroStep2"', 'id="zeroNextStep"', 'id="zeroPrevStep"',

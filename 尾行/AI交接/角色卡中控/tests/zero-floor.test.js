@@ -169,6 +169,51 @@ test("零楼真实建局：预设、返回、切换缓存、摇号；只确认�
     d.getElementById("tDetailReroll").click();
     const confirmedName = d.getElementById("tDetailRealName").textContent;
     d.getElementById("createConfirm").click();
+    assert.equal(d.getElementById("zeroStep3").hidden, false);
+    assert.equal(store.wx_save, undefined, "简报浏览不提前建局");
+    assert.deepEqual(wbCalls, []);
+    assert.equal(
+      d.getElementById("trainingBriefTarget").textContent,
+      "独居女大学生",
+    );
+    d.getElementById("trainingBriefBack").click();
+    assert.equal(
+      d.getElementById("tDetailRealName").textContent,
+      confirmedName,
+    );
+    d.querySelector('[data-tid="ol"]').click();
+    d.getElementById("createConfirm").click();
+    assert.equal(
+      d.getElementById("trainingBriefTarget").textContent,
+      "疲惫的OL",
+    );
+    d.getElementById("trainingBriefBack").click();
+    d.querySelector('[data-tid="college"]').click();
+    d.getElementById("createConfirm").click();
+    const realNewGame = w.WxGlue.newGame;
+    w.WxGlue.newGame = async () => {
+      throw Object.assign(Error("测试：保存暂不可用"), {
+        code: "WRITE_FAILED",
+      });
+    };
+    d.getElementById("trainingBriefStart").click();
+    await tick();
+    assert.equal(store.wx_save, undefined);
+    assert.equal(d.getElementById("zeroStep3").hidden, false);
+    assert.equal(d.getElementById("trainingBriefStart").disabled, false);
+    assert.ok(
+      d
+        .getElementById("trainingBriefNotice")
+        .textContent.includes("当前选择已保留"),
+    );
+    assert.equal(
+      d.getElementById("tDetailRealName").textContent,
+      confirmedName,
+    );
+    w.WxGlue.newGame = realNewGame;
+    d.getElementById("trainingBriefStart").click();
+    d.getElementById("trainingBriefStart").click();
+    assert.equal(d.getElementById("trainingBriefStart").disabled, true);
     for (let i = 0; i < 20 && !store.wx_save; i++) await tick();
     assert.ok(store.wx_save);
     assert.equal(store.wx_save.floor, 0);
@@ -176,6 +221,9 @@ test("零楼真实建局：预设、返回、切换缓存、摇号；只确认�
     assert.equal(store.wx_save.targetPersona.generatorVersion, 1);
     assert.deepEqual(wbCalls, ["college"]);
     assert.deepEqual(openingCalls, ["college"]);
+    d.getElementById("trainingBriefStart").click();
+    await tick();
+    assert.deepEqual(wbCalls, ["college"], "载入成功后旧按钮不能重复重建局");
     assert.equal(d.querySelectorAll("#chat .mes").length, 1);
     assert.equal(d.querySelector(".mes_text").textContent, "chosen opening");
     assert.equal(d.getElementById("wx-zero-floor").hidden, true);

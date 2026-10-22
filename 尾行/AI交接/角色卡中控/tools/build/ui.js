@@ -8,15 +8,19 @@ const ROOT = path.resolve(__dirname, "../..");
 /** UI 源码是 src/ui；状态栏.html 是供直接打开的生成预览。 */
 function buildUI({ preview = true, writePreview = true } = {}) {
   require("./ui-config.js").generateUIConfig();
-  const css = ["statusbar.css", "city-map.css"]
+  const css = ["statusbar.css", "city-map.css", "training-brief.css"]
     .map((file) =>
       fs.readFileSync(path.join(ROOT, "src/ui/styles", file), "utf8"),
     )
     .join("\n");
-  const template = fs.readFileSync(
-    path.join(ROOT, "src/ui/template.html"),
-    "utf8",
-  );
+  const template = fs
+    .readFileSync(path.join(ROOT, "src/ui/template.html"), "utf8")
+    .replace("<!-- WX_TRAINING_BRIEF -->", () =>
+      fs.readFileSync(
+        path.join(ROOT, "src/ui/zero-floor/training-brief.html"),
+        "utf8",
+      ),
+    );
   const section = template.match(
     /<section class="trpg"[^>]*>([\s\S]*?)<\/section>/i,
   );
@@ -49,7 +53,7 @@ function buildUI({ preview = true, writePreview = true } = {}) {
     .replace("/* WX_STATUSBAR_SCRIPT */", () => previewScript);
   if (writePreview)
     fs.writeFileSync(path.join(ROOT, "状态栏.html"), previewHTML, "utf8");
-  return { css: css.trim(), bodyHtml: section[1].trim(), script };
+  return { css: css.trim(), bodyHtml: section[1].trim(), script, template };
 }
 
 if (require.main === module) {

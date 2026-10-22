@@ -1,23 +1,19 @@
 "use strict";
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
 const vm = require("node:vm");
 const { JSDOM, VirtualConsole } = require("jsdom");
 const { buildUI } = require("../tools/build/ui.js");
 const legacy = require("./fixtures/legacy-v1.json");
 
 test("UI 模块集成：构建、挂载、真实快照、胶囊与弹窗交互无运行错误", async () => {
-  const { script } = buildUI();
+  const { script, template: builtTemplate } = buildUI();
   new vm.Script(script);
   const errors = [];
   const virtualConsole = new VirtualConsole();
   virtualConsole.on("jsdomError", (error) => errors.push(error.message));
   // DOM 交互测试独立于 CSS 支持；样式另用浏览器验收。
-  const template = fs
-    .readFileSync(path.resolve(__dirname, "../src/ui/template.html"), "utf8")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
+  const template = builtTemplate.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
   const dom = new JSDOM(template, {
     url: "https://local.test/",
     runScripts: "dangerously",
@@ -89,7 +85,7 @@ test("UI 模块集成：构建、挂载、真实快照、胶囊与弹窗交互�
 });
 
 test("UI 生命周期：备用轮询连续更新，重挂载不叠加监听和定时器", async () => {
-  const { script } = buildUI({ preview: false, writePreview: false });
+  const { script, template } = buildUI({ preview: false, writePreview: false });
   assert.ok(
     !script.includes("src/ui/preview-data.js"),
     "正式 bundle 不携带演示数据模块",
@@ -101,9 +97,7 @@ test("UI 生命周期：备用轮询连续更新，重挂载不叠加监听和�
   virtualConsole.on("jsdomError", (e) => errors.push(e.message));
   let snapshot = JSON.parse(JSON.stringify(legacy.snapshot));
   const dom = new JSDOM(
-    fs
-      .readFileSync(path.resolve(__dirname, "../src/ui/template.html"), "utf8")
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ""),
+    template.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ""),
     {
       url: "https://local.test/",
       runScripts: "dangerously",

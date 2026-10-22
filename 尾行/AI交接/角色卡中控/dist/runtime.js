@@ -14003,7 +14003,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.9",
+        version: "0.8.10",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -14015,7 +14015,8 @@
           "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs",
-          "preview:daily": "node tools/build/day-preview.js"
+          "preview:daily": "node tools/build/day-preview.js",
+          "preview:training": "node tools/build/training-preview.js"
         },
         devDependencies: {
           "@types/node": "24.10.0",

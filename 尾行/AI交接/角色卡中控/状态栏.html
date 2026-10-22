@@ -3219,6 +3219,520 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   }
 }
 
+/* 零楼教程首页。仅作用于本步骤，不改变角色创建、地图或战术终端的主题。 */
+#wx-zero-floor[data-zero-step="3"] {
+  max-width: 1040px;
+  padding: 0;
+  overflow: hidden;
+  background: #101c20;
+  border-color: #3e5454;
+  box-shadow: 0 20px 65px #0004;
+}
+#wx-zero-floor[data-zero-step="3"] .zero-wizard-top {
+  padding: 18px 24px 15px;
+  margin: 0;
+  border-bottom: 1px solid #c5d4c516;
+  background: #142127;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+#wx-zero-floor[data-zero-step="3"] .zero-title-wrap {
+  gap: 8px;
+}
+#wx-zero-floor[data-zero-step="3"] .zero-sub {
+  color: #8ba3a3;
+  font-size: 10px;
+}
+#wx-zero-floor[data-zero-step="3"] .zero-steps-bar {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+#wx-zero-floor .zero-step-pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+#wx-zero-floor .training-brief {
+  font-family: system-ui, "Microsoft Yahei", sans-serif;
+  color: #d5dfd8;
+  background:
+    radial-gradient(ellipse at 80% 12%, #28484645, transparent 65%), #101c20;
+  line-height: 1.6;
+}
+#wx-zero-floor .training-brief-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 32px 0;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #94a7a0;
+}
+#wx-zero-floor .training-brief-phase {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #c3ad7c;
+  letter-spacing: 1px;
+}
+#wx-zero-floor .training-brief-phase i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #bfa56f;
+  box-shadow: 0 0 10px #d7b57e50;
+}
+#wx-zero-floor .training-brief-hero {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 26px;
+  padding: 26px 32px 27px;
+  align-items: center;
+}
+#wx-zero-floor .training-brief-eyebrow {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin: 0 0 17px;
+  font-size: 10px;
+  color: #b7a47a;
+  letter-spacing: 2px;
+}
+#wx-zero-floor .training-brief-eyebrow span {
+  width: 17px;
+  height: 1px;
+  background: #b9a26c;
+}
+#wx-zero-floor .training-brief h3 {
+  margin: 0 0 19px;
+  color: #e9ede1;
+  font-size: clamp(27px, 4vw, 43px);
+  line-height: 1.4;
+  letter-spacing: 2px;
+  font-weight: 500;
+  outline: none;
+}
+#wx-zero-floor .training-brief-lead {
+  color: #a8bbb2;
+  font-size: 12px;
+  line-height: 1.95;
+  margin: 0;
+  max-width: 370px;
+}
+#wx-zero-floor .training-brief-coach {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-top: 25px;
+  padding-top: 16px;
+  border-top: 1px solid #b4c6b61b;
+  position: relative;
+}
+#wx-zero-floor .training-brief-coach-mark {
+  color: #b6a172;
+  font:
+    40px/1 Georgia,
+    serif;
+}
+#wx-zero-floor .training-brief-coach p {
+  margin: 0;
+  color: #91a79c;
+  font-size: 12px;
+  line-height: 1.9;
+}
+#wx-zero-floor .training-brief-coach strong {
+  color: #c5d2bf;
+  font-weight: 500;
+}
+#wx-zero-floor .training-brief-coach-from {
+  font-size: 9px;
+  color: #a69a7d;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  letter-spacing: 2px;
+}
+#wx-zero-floor .training-brief-art {
+  min-width: 0;
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 70%, #428e7d1f, transparent 65%),
+    linear-gradient(130deg, #19332f44, #0d1b2122);
+  border: 1px solid #69938230;
+  border-radius: 4px;
+  overflow: hidden;
+}
+#wx-zero-floor .training-brief-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(#69938208 1px, transparent 1px),
+    linear-gradient(90deg, #69938208 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+#wx-zero-floor .training-brief-art-caption {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #8da99b;
+  padding: 15px 16px 0;
+  position: relative;
+}
+#wx-zero-floor .training-brief-art-caption span:last-child {
+  color: #617e76;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+#wx-zero-floor #trainingBriefHologram {
+  width: 100%;
+  position: relative;
+}
+#wx-zero-floor #trainingBriefHologram svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 310px;
+}
+#wx-zero-floor .holo-ground {
+  fill: #2b594f19;
+  stroke: #5b8f7866;
+  stroke-width: 1;
+}
+#wx-zero-floor .holo-grid {
+  stroke: #528a7144;
+  stroke-width: 0.8;
+  fill: none;
+}
+#wx-zero-floor .holo-wall {
+  fill: #173e38;
+  stroke: #5d9d85aa;
+  stroke-width: 0.8;
+}
+#wx-zero-floor .holo-wall.east {
+  fill: #1b4840;
+}
+#wx-zero-floor .holo-roof {
+  fill: #2b5f50;
+  stroke: #85b99baa;
+  stroke-width: 1;
+}
+#wx-zero-floor .focal .holo-roof {
+  fill: #806c4266;
+  stroke: #c8b57a;
+}
+#wx-zero-floor .focal .holo-wall {
+  fill: #5d543344;
+  stroke: #ad9a65;
+}
+#wx-zero-floor .training-brief-art-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 0 0 16px;
+  color: #688c7b;
+  font-size: 9px;
+  letter-spacing: 3px;
+}
+#wx-zero-floor .training-brief-art-foot i {
+  width: 18px;
+  height: 1px;
+  background: #73927e44;
+}
+#wx-zero-floor .training-brief-assignment {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.25fr;
+  gap: 0;
+  margin: 0 32px;
+  padding: 17px 0;
+  border-top: 1px solid #819d8c38;
+  border-bottom: 1px solid #819d8c38;
+}
+#wx-zero-floor .training-brief-assignment > div {
+  min-width: 0;
+  padding: 0 20px;
+  border-right: 1px solid #819d8c22;
+}
+#wx-zero-floor .training-brief-assignment > div:first-child {
+  padding-left: 0;
+}
+#wx-zero-floor .training-brief-assignment > div:last-child {
+  border: 0;
+}
+#wx-zero-floor .training-brief-assignment dt {
+  margin: 0 0 5px;
+  font-size: 10px;
+  color: #7c968b;
+  letter-spacing: 1px;
+}
+#wx-zero-floor .training-brief-assignment dd {
+  margin: 0;
+  color: #d4dccb;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+#wx-zero-floor .training-brief-lessons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 25px 32px 22px;
+}
+#wx-zero-floor .training-brief-lessons article {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+#wx-zero-floor .training-brief-number {
+  font:
+    300 22px/1.2 ui-monospace,
+    Consolas,
+    monospace;
+  color: #668875;
+  letter-spacing: -1px;
+  padding-top: 3px;
+}
+#wx-zero-floor .training-brief-lessons h4 {
+  font-weight: 500;
+  margin: 0 0 6px;
+  color: #cad6c5;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+#wx-zero-floor .training-brief-lessons p {
+  margin: 0;
+  color: #819b8e;
+  font-size: 10px;
+  line-height: 1.9;
+}
+#wx-zero-floor .training-brief-boundary {
+  display: flex;
+  gap: 12px;
+  margin: 0 32px;
+  padding: 13px 15px;
+  background: #ad99600b;
+  border: 1px solid #ad996025;
+  color: #aaac95;
+  font-size: 10px;
+  line-height: 1.9;
+  border-radius: 3px;
+}
+#wx-zero-floor .training-brief-boundary > span:first-child {
+  font-size: 15px;
+  color: #b7a16f;
+}
+#wx-zero-floor .training-brief-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 24px 32px 20px;
+}
+#wx-zero-floor .training-brief button {
+  font-family: inherit;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+  line-height: 1.5;
+  box-sizing: border-box;
+  letter-spacing: 0.6px;
+}
+#wx-zero-floor .training-brief-back {
+  padding: 8px 0;
+  background: transparent;
+  border: 0;
+  color: #8ca398;
+  font-size: 11px;
+  text-align: left;
+}
+#wx-zero-floor .training-brief-back:hover {
+  color: #d5dfd1;
+}
+#wx-zero-floor .training-brief-entry {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+#wx-zero-floor .training-brief-entry > span {
+  font-size: 9px;
+  color: #7b9589;
+}
+#wx-zero-floor #trainingBriefStart {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  padding: 12px 20px;
+  border: 1px solid #c2af7c;
+  background: #c2af7c;
+  color: #1b2522;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 650;
+  box-shadow: 0 3px 15px #b5a37116;
+}
+#wx-zero-floor #trainingBriefStart:hover {
+  background: #d2c191;
+}
+#wx-zero-floor .training-brief button:focus-visible {
+  outline: 2px solid #e4cf96;
+  outline-offset: 4px;
+}
+#wx-zero-floor .training-brief button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+#wx-zero-floor .training-brief-notice {
+  margin: 0 32px 17px;
+  color: #e3ba92;
+  font-size: 11px;
+  line-height: 1.8;
+}
+#wx-zero-floor .training-brief-notice:empty {
+  display: none;
+}
+@media (max-width: 600px) {
+  #wx-zero-floor[data-zero-step="3"] .zero-wizard-top {
+    padding: 14px 17px;
+    gap: 12px;
+  }
+  #wx-zero-floor[data-zero-step="3"] .zero-steps-bar {
+    gap: 8px;
+    width: 100%;
+    justify-content: space-between;
+  }
+  #wx-zero-floor .training-brief-topline {
+    padding: 17px 19px 0;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  #wx-zero-floor .training-brief-hero {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 23px 19px 20px;
+  }
+  #wx-zero-floor .training-brief h3 {
+    font-size: 33px;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  #wx-zero-floor .training-brief-lead {
+    font-size: 12px;
+    max-width: none;
+  }
+  #wx-zero-floor .training-brief-coach {
+    margin-top: 18px;
+    padding-top: 14px;
+  }
+  #wx-zero-floor .training-brief-art {
+    display: none;
+  }
+  #wx-zero-floor .training-brief-assignment {
+    margin: 0 19px;
+    grid-template-columns: 1fr 1fr;
+    padding: 14px 0;
+    row-gap: 14px;
+  }
+  #wx-zero-floor .training-brief-assignment > div {
+    padding: 0 0 0 15px;
+  }
+  #wx-zero-floor .training-brief-assignment > div:nth-child(2) {
+    border: 0;
+  }
+  #wx-zero-floor .training-brief-assignment > div:last-child {
+    grid-column: 1/-1;
+    padding: 12px 0 0;
+    border-top: 1px solid #819d8c22;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  #wx-zero-floor .training-brief-assignment > div:last-child dt {
+    margin: 0;
+    flex-shrink: 0;
+  }
+  #wx-zero-floor .training-brief-assignment dd {
+    font-size: 12px;
+  }
+  #wx-zero-floor .training-brief-lessons {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 20px 19px;
+  }
+  #wx-zero-floor .training-brief-number {
+    font-size: 20px;
+    width: 27px;
+    flex-shrink: 0;
+  }
+  #wx-zero-floor .training-brief-lessons h4 {
+    margin-bottom: 3px;
+    font-size: 13px;
+  }
+  #wx-zero-floor .training-brief-lessons p {
+    font-size: 11px;
+  }
+  #wx-zero-floor .training-brief-boundary {
+    margin: 0 19px;
+    padding: 12px;
+    font-size: 10px;
+    gap: 9px;
+  }
+  #wx-zero-floor .training-brief-footer {
+    margin: 20px 19px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  #wx-zero-floor .training-brief-back {
+    order: 2;
+    width: 100%;
+    text-align: center;
+    font-size: 11px;
+  }
+  #wx-zero-floor .training-brief-entry {
+    width: 100%;
+    flex-direction: column-reverse;
+    gap: 9px;
+  }
+  #wx-zero-floor #trainingBriefStart {
+    width: 100%;
+    justify-content: center;
+    gap: 20px;
+    padding: 13px 16px;
+  }
+  #wx-zero-floor .training-brief-notice {
+    margin: 0 19px 18px;
+  }
+}
+/* 宿主通用按钮皮使用 !important；在本页面内明确区分主、次操作。 */
+#wx-zero-floor .training-brief-back {
+  background: transparent !important;
+  border: 0 !important;
+  color: #8ca398 !important;
+}
+#wx-zero-floor .training-brief-back:hover {
+  background: transparent !important;
+  color: #d5dfd1 !important;
+}
+#wx-zero-floor #trainingBriefStart {
+  background: #c2af7c !important;
+  border: 1px solid #c2af7c !important;
+  color: #1b2522 !important;
+}
+#wx-zero-floor #trainingBriefStart:hover {
+  background: #d2c191 !important;
+  border-color: #d2c191 !important;
+  color: #1b2522 !important;
+}
+
 </style>
 <main class="wx-standalone-main">
   <div class="preview-area" id="previewArea" style="display: none;">
@@ -3632,24 +4146,28 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
       <img id="photoToastImg" alt="">
       <div class="photo-toast-txt"><b id="photoToastName"></b><span id="photoToastMeta"></span></div>
     </div>
-    <!-- ═══ 零楼 · 开局两步走向导（第一步：猎手身份属性 ➔ 第二步：锁定目标角色；新局无档时挂载到第 0 条消息） ═══ -->
+    <!-- ═══ 零楼 · 开局三步向导（第一步：建立角色 ➔ 第二步：选择目标；新局无档时挂载到第 0 条消息） ═══ -->
     <div id="wx-zero-floor" class="trpg wx-zero-floor" role="region" aria-labelledby="createTitle" hidden>
       <div data-zero-slot="before"></div>
       <div class="dialog-top zero-wizard-top">
         <div class="zero-title-wrap">
           <h2 id="createTitle">零楼 · 创角向导</h2>
-          <span class="zero-sub">创建角色 → 选择目标 → 开始</span>
+          <span class="zero-sub">创建角色 → 选择目标 → 训练简报</span>
         </div>
         <!-- 步骤导航条 -->
         <div class="zero-steps-bar" role="tablist" aria-label="零楼向导步骤">
           <button type="button" class="zero-step-pill active" id="zeroStepTab1" data-step="1">
             <span class="step-num">1</span>
-            <span class="step-text">猎手身份属性</span>
+            <span class="step-text">建立角色</span>
           </button>
           <span class="zero-step-divider">➔</span>
           <button type="button" class="zero-step-pill" id="zeroStepTab2" data-step="2">
             <span class="step-num">2</span>
-            <span class="step-text">锁定目标角色</span>
+            <span class="step-text">选择目标</span>
+          </button>
+          <span class="zero-step-divider">➔</span>
+          <button type="button" class="zero-step-pill" id="zeroStepTab3" data-step="3" disabled>
+            <span class="step-num">3</span><span class="step-text">训练简报</span>
           </button>
         </div>
       </div>
@@ -3711,11 +4229,44 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 
         </div>
         <div class="create-foot">
-          <button type="button" class="zero-btn-prev" id="zeroPrevStep">⬅ 上一步：修改猎手</button>
+          <button type="button" class="zero-btn-prev" id="zeroPrevStep">⬅ 上一步：修改角色</button>
           <span class="create-hint" id="targetHint">请选择目标</span>
-          <button type="button" class="create-confirm" id="createConfirm">锁定目标 · 步入夜色 ➔</button>
+          <button type="button" class="create-confirm" id="createConfirm">确认目标 · 查看训练简报 ➔</button>
         </div>
       </div>
+    <div class="zero-step-view training-brief" id="zeroStep3" hidden aria-labelledby="trainingBriefTitle">
+  <div class="training-brief-topline"><span>全息训练系统</span><span class="training-brief-phase">入场简报 <i aria-hidden="true"></i></span></div>
+  <div class="training-brief-hero">
+    <div class="training-brief-intro">
+      <p class="training-brief-eyebrow"><span aria-hidden="true"></span> 特工基础训练 / 序章</p>
+      <h3 id="trainingBriefTitle" tabindex="-1">先学会观察，<br>再走进人群。</h3>
+      <p class="training-brief-lead">为保卫祖国做好准备。你将作为特工学员，进入全拟真的全息城市，练习观察、判断与隐蔽行动。</p>
+      <div class="training-brief-coach"><span class="training-brief-coach-mark" aria-hidden="true">“</span><p>终端能帮你记住发现，<br><strong>但不会替你知道一切。</strong></p><span class="training-brief-coach-from">训练提示</span></div>
+    </div>
+    <div class="training-brief-art" aria-label="全息城市环境示意，不表示目标位置">
+      <div class="training-brief-art-caption"><span>城市环境</span><span>全息场景示意</span></div>
+      <div id="trainingBriefHologram" aria-hidden="true"></div>
+      <div class="training-brief-art-foot"><span>观察</span><i aria-hidden="true"></i><span>判断</span><i aria-hidden="true"></i><span>行动</span></div>
+    </div>
+  </div>
+  <dl class="training-brief-assignment">
+    <div><dt>你的掩护身份</dt><dd id="trainingBriefIdentity">尚未选择</dd></div>
+    <div><dt>本次训练对象</dt><dd id="trainingBriefTarget">尚未选择</dd></div>
+    <div><dt>情报获取方式</dt><dd>现场观察 · 行动调查</dd></div>
+  </dl>
+  <div class="training-brief-lessons" aria-label="基础训练要点">
+    <article><span class="training-brief-number">01</span><div><h4>认清位置</h4><p>找到自己，分清目视位置与最后目击。</p></div></article>
+    <article><span class="training-brief-number">02</span><div><h4>读懂线索</h4><p>观察与调查所得，才会成为你的情报。</p></div></article>
+    <article><span class="training-brief-number">03</span><div><h4>谨慎行动</h4><p>先看行动条件与代价，再决定怎么做。</p></div></article>
+  </div>
+  <p class="training-brief-boundary"><span aria-hidden="true">◇</span><span>训练对象有自己的生活。她的日程与住址不会在简报中公开，需要你在场景中逐步调查。</span></p>
+  <div class="training-brief-footer">
+    <button type="button" class="training-brief-back" id="trainingBriefBack">← 返回目标选择</button>
+    <div class="training-brief-entry"><span>阅读简报不消耗行动点</span><button type="button" id="trainingBriefStart">载入训练场 <span aria-hidden="true">↗</span></button></div>
+  </div>
+  <p id="trainingBriefNotice" class="training-brief-notice" role="status" aria-live="polite"></p>
+</div>
+
     <div data-zero-slot="after"></div>
     </div>
     <!-- ═══ 身份徽记详情（常驻条徽记点开；含重开新局） ═══ -->
@@ -9015,6 +9566,135 @@ var WxStatusbarUI = (() => {
     }
   });
 
+  // src/ui/zero-floor/training-brief.js
+  var require_training_brief = __commonJS({
+    "src/ui/zero-floor/training-brief.js"(exports, module) {
+      "use strict";
+      function createTrainingBrief({ document, lifecycle, onBack, onStart }) {
+        const field = (id) => document.getElementById(id);
+        const back = field("trainingBriefBack"), start = field("trainingBriefStart");
+        let busy = false;
+        const holder = field("trainingBriefHologram");
+        if (holder && !holder.childElementCount) {
+          const NS = "http://www.w3.org/2000/svg";
+          const svg = (tag, attrs) => {
+            const e = document.createElementNS(NS, tag);
+            for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+            return e;
+          };
+          const scene = svg("svg", { viewBox: "0 0 440 330", focusable: "false" });
+          const project = (x, y, z = 0) => [
+            220 + (x - y) * 22,
+            86 + (x + y) * 11 - z
+          ];
+          const poly = (points, cls) => svg("polygon", {
+            points: points.map((p) => p.join(",")).join(" "),
+            class: cls
+          });
+          scene.append(
+            poly(
+              [
+                [0, 0],
+                [9, 0],
+                [9, 9],
+                [0, 9]
+              ].map((p) => project(...p)),
+              "holo-ground"
+            )
+          );
+          for (let n = 0; n <= 9; n++) {
+            for (const pair of [
+              [
+                [n, 0],
+                [n, 9]
+              ],
+              [
+                [0, n],
+                [9, n]
+              ]
+            ]) {
+              const [a, b] = pair.map((p) => project(...p));
+              scene.append(svg("path", { d: `M ${a} L ${b}`, class: "holo-grid" }));
+            }
+          }
+          const blocks = [
+            [1, 1, 1.4, 1.2, 24],
+            [3.2, 1, 1.4, 1.2, 48],
+            [5.4, 1, 1.4, 1.2, 19],
+            [7.3, 1, 0.8, 1.2, 32],
+            [1, 3.2, 1.4, 1.4, 28],
+            [3.2, 3.2, 1.4, 1.4, 65],
+            [5.4, 3.2, 1.4, 1.4, 35],
+            [7.3, 3.2, 0.8, 1.4, 20],
+            [1, 5.4, 1.4, 1.4, 17],
+            [3.2, 5.4, 1.4, 1.4, 29],
+            [5.4, 5.4, 1.4, 1.4, 46],
+            [7.3, 5.4, 0.8, 1.4, 20],
+            [1, 7.5, 1.4, 0.8, 14],
+            [3.2, 7.5, 1.4, 0.8, 20],
+            [5.4, 7.5, 1.4, 0.8, 16]
+          ].sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
+          for (const [x, y, w, h, z] of blocks) {
+            const top = [
+              [x, y],
+              [x + w, y],
+              [x + w, y + h],
+              [x, y + h]
+            ].map((p) => project(...p, z));
+            const base = [
+              [x, y],
+              [x + w, y],
+              [x + w, y + h],
+              [x, y + h]
+            ].map((p) => project(...p));
+            const g = svg("g", {
+              class: z === 65 ? "holo-building focal" : "holo-building"
+            });
+            g.append(
+              poly([top[1], top[2], base[2], base[1]], "holo-wall east"),
+              poly([top[2], top[3], base[3], base[2]], "holo-wall west"),
+              poly(top, "holo-roof")
+            );
+            scene.append(g);
+          }
+          holder.replaceChildren(scene);
+        }
+        lifecycle.on(back, "click", () => {
+          if (!busy) onBack();
+        });
+        lifecycle.on(start, "click", () => {
+          if (!busy) onStart();
+        });
+        function setLoading(value) {
+          busy = value;
+          if (value) field("trainingBriefNotice").textContent = "";
+          if (start) {
+            start.disabled = value;
+            start.textContent = value ? "\u6B63\u5728\u8F7D\u5165\u2026" : "\u8F7D\u5165\u8BAD\u7EC3\u573A \u2197";
+          }
+          if (back) back.disabled = value;
+          field("zeroStep3")?.setAttribute("aria-busy", String(value));
+        }
+        return {
+          setSelection({ identity, target }) {
+            field("trainingBriefIdentity").textContent = identity?.name || "\u5C1A\u672A\u9009\u62E9";
+            field("trainingBriefTarget").textContent = target?.name || "\u5C1A\u672A\u9009\u62E9";
+            field("trainingBriefNotice").textContent = "";
+          },
+          setLoading,
+          showError(error) {
+            field("trainingBriefNotice").textContent = `\u672A\u80FD\u8F7D\u5165\u8BAD\u7EC3\u573A\uFF0C\u5F53\u524D\u9009\u62E9\u5DF2\u4FDD\u7559\u3002${error?.message || "\u8BF7\u7A0D\u540E\u91CD\u8BD5\u3002"}`;
+          },
+          reset() {
+            setLoading(false);
+            field("trainingBriefNotice").textContent = "";
+          }
+        };
+      }
+      module.exports = { createTrainingBrief };
+    }
+  });
+
   // src/ui/preview-data.js
   var require_preview_data = __commonJS({
     "src/ui/preview-data.js"(exports, module) {
@@ -13897,6 +14577,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
       } = require_creation_data();
       var { createZeroFloorHost } = require_host();
       var { createStages } = require_stages();
+      var { createTrainingBrief } = require_training_brief();
       var MOCKS = true ? require_preview_data().MOCKS : {};
       var {
         SWEET,
@@ -14816,8 +15497,10 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           targetPersona: null,
           personas: {},
           points: { str: 4, agi: 4, nrv: 4, int: 4, cha: 4 },
-          done: false
+          done: false,
+          submitting: false
         };
+        let creationAttempt = 0;
         const sumPts = () => Object.values(ZERO.points).reduce((a, b) => a + b, 0);
         const idDef = () => ZERO.identity ? IDENTITY_DATA.list[ZERO.identity] : null;
         function switchPane(name) {
@@ -14837,18 +15520,44 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           lifecycle,
           onChange: (step) => {
             ZERO.step = step;
+            document.getElementById("wx-zero-floor").dataset.zeroStep = String(step);
           }
         });
-        stages.register(1, { tabId: "zeroStepTab1", viewId: "zeroStep1" });
+        stages.register(1, {
+          tabId: "zeroStepTab1",
+          viewId: "zeroStep1",
+          canEnter: () => !ZERO.submitting
+        });
+        const trainingBrief = createTrainingBrief({
+          document,
+          lifecycle,
+          onBack: () => switchZeroStep(2),
+          onStart: () => createConfirm()
+        });
         stages.register(2, {
           tabId: "zeroStepTab2",
           viewId: "zeroStep2",
-          canEnter: () => !!ZERO.identity && sumPts() === POINT_BUDGET,
+          canEnter: () => !ZERO.submitting && !!ZERO.identity && sumPts() === POINT_BUDGET,
           enter: () => {
             renderTargetGrid();
             updateTargetDetail(ZERO.targetId || "college");
           }
         });
+        const canReadBrief = () => !!ZERO.identity && sumPts() === POINT_BUDGET && !!ZERO.targetPersona && ZERO.targetPersona.targetId === ZERO.targetId;
+        stages.register(3, {
+          tabId: "zeroStepTab3",
+          viewId: "zeroStep3",
+          canEnter: () => !ZERO.submitting && canReadBrief(),
+          enter: () => trainingBrief.setSelection({
+            identity: idDef(),
+            target: TARGET_DATA.list[ZERO.targetId]
+          })
+        });
+        function syncBriefAccess() {
+          document.getElementById("zeroStepTab2")?.classList.toggle("completed", canReadBrief());
+          const tab = document.getElementById("zeroStepTab3");
+          if (tab) tab.disabled = ZERO.submitting || !canReadBrief();
+        }
         function switchZeroStep(step) {
           stages.go(step);
         }
@@ -14882,6 +15591,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
               ZERO.personas[t.id] = ZERO.targetPersona;
             } catch (error) {
               ZERO.targetPersona = null;
+              syncBriefAccess();
               const hint2 = document.getElementById("targetHint");
               if (hint2) hint2.textContent = "\u8BE5\u76EE\u6807\u6682\u65F6\u65E0\u6CD5\u751F\u6210\uFF0C\u8BF7\u9009\u62E9\u5176\u4ED6\u76EE\u6807\u3002";
               const confirm = document.getElementById("createConfirm");
@@ -14944,8 +15654,10 @@ ${proxLogs.slice(0, 5).join("\n")}`;
             hint.textContent = `\u5DF2\u9501\u5B9A\uFF1A${persona.name} \xB7 ${t.name}\uFF08${t.area}\uFF09`;
           const btn = document.getElementById("createConfirm");
           if (btn) btn.disabled = false;
+          syncBriefAccess();
         }
         function syncCreate() {
+          syncBriefAccess();
           const quickPane = document.getElementById("quickPane");
           if (quickPane && !quickPane.dataset.built) {
             quickPane.dataset.built = "1";
@@ -15034,7 +15746,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           if (tab1) tab1.classList.toggle("completed", ok);
           const hint = document.getElementById("createHint");
           if (hint)
-            hint.textContent = !ZERO.identity ? "\u5148\u9009\u4E00\u4E2A\u8EAB\u4EFD" : sumPts() !== POINT_BUDGET ? `\u8FD8\u5269 ${POINT_BUDGET - sumPts()} \u70B9\u6CA1\u5206` : `\u730E\u624B\u5C31\u7EEA\uFF1A${idDef().name} \xB7 ${Object.entries(ZERO.points).map(([k, v]) => ATTR_NAMES[k] + v).join(" ")}`;
+            hint.textContent = !ZERO.identity ? "\u5148\u9009\u4E00\u4E2A\u8EAB\u4EFD" : sumPts() !== POINT_BUDGET ? `\u8FD8\u5269 ${POINT_BUDGET - sumPts()} \u70B9\u6CA1\u5206` : `\u89D2\u8272\u5C31\u7EEA\uFF1A${idDef().name} \xB7 ${Object.entries(ZERO.points).map(([k, v]) => ATTR_NAMES[k] + v).join(" ")}`;
         }
         function openCreate() {
           switchZeroStep(ZERO.step || 1);
@@ -15042,8 +15754,9 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           zeroFloor.show();
         }
         async function createConfirm() {
-          if (!ZERO.identity || sumPts() !== POINT_BUDGET || !ZERO.targetPersona || ZERO.targetPersona.targetId !== ZERO.targetId)
+          if (ZERO.step !== 3 || ZERO.done || ZERO.submitting || !ZERO.identity || sumPts() !== POINT_BUDGET || !ZERO.targetPersona || ZERO.targetPersona.targetId !== ZERO.targetId)
             return;
+          const attempt = ++creationAttempt;
           const def = idDef();
           const targetDef = TARGET_DATA.list[ZERO.targetId || "college"] || TARGET_DATA.list.college;
           const persona = ZERO.targetPersona;
@@ -15056,21 +15769,27 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           if (ZERO.mode === "tavern") {
             const glue = window.WxGlue || globalThis.WxGlue;
             if (!glue || !glue.newGame) {
-              const hint = document.getElementById("targetHint") || document.getElementById("createHint");
-              if (hint) hint.textContent = "\u5F15\u64CE\u672A\u5C31\u7EEA\uFF0C\u7A0D\u7B49\u51E0\u79D2\u518D\u8BD5";
+              trainingBrief.showError({ message: "\u8BAD\u7EC3\u573A\u6682\u672A\u5C31\u7EEA\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5\u3002" });
               return;
             }
-            const button = document.getElementById("createConfirm");
-            if (button) button.disabled = true;
+            ZERO.submitting = true;
+            trainingBrief.setLoading(true);
+            syncBriefAccess();
             try {
               await glue.newGame(init);
-              if (lifecycle.disposed) return;
+              if (lifecycle.disposed || attempt !== creationAttempt) return;
               ZERO.done = true;
             } catch (error) {
+              if (lifecycle.disposed || attempt !== creationAttempt) return;
+              trainingBrief.showError(error);
               reportSyncError(error);
               return;
             } finally {
-              if (button) button.disabled = false;
+              if (!lifecycle.disposed && attempt === creationAttempt) {
+                ZERO.submitting = false;
+                trainingBrief.setLoading(false);
+                syncBriefAccess();
+              }
             }
           } else {
             ZERO.done = true;
@@ -15128,6 +15847,9 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         async function resetZero() {
           if (!window.confirm("\u91CD\u5F00\u65B0\u5C40\uFF1F\u5F53\u524D\u8FDB\u5EA6\u5C06\u6E05\u7A7A\uFF0C\u56DE\u5230\u96F6\u697C\u91CD\u65B0\u9009\u8EAB\u4EFD\u4E0E\u76EE\u6807\u3002"))
             return;
+          creationAttempt++;
+          ZERO.submitting = false;
+          trainingBrief.reset();
           ZERO.done = false;
           ZERO.step = 1;
           ZERO.identity = null;
@@ -15174,7 +15896,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         lifecycle.on(
           document.getElementById("createConfirm"),
           "click",
-          createConfirm
+          () => switchZeroStep(3)
         );
         lifecycle.on(document.getElementById("idResetBtn"), "click", () => {
           resetZero();
@@ -15427,6 +16149,9 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           details.reset();
           render._hist = [];
           stopAudio();
+          creationAttempt++;
+          ZERO.submitting = false;
+          trainingBrief.reset();
           ZERO.done = false;
           ZERO.step = 1;
           ZERO.identity = null;

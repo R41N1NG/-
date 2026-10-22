@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.9",
+  "version": "0.8.10",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "4ac278e1a0853e3b1b179cffd7f4abddfa00f493c9af7d884fc0f9cb29d25f02",
+  "sourceHash": "8be71c28438f19e04eb024c5f0a4dcc663695b0247bdec6227c26457e65620a8",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "ded6117201086540e6c1c70967e3ff3ad5213841890eda0a30db7f2007c7b178"
+      "sha256": "e5f8ca20fd81025e63b72fa23e853336b32b79b52e4e7e0ba29bc24fd6b8ccfa"
     },
     {
       "file": "package.json",
-      "sha256": "0108507e7802d47e5da45b47f1751185748d4eb036860ec791ed4e4c3dc338bd"
+      "sha256": "712c886b642466d91a99330716c6cbaccc641d2e2a6bd3aa7ea7a26040413614"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -399,7 +399,7 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "d86c996c1a82d8a9005c9d3a781ba1343d94826c8a92c951008d2237390f288e"
+      "sha256": "9cf71025f347e2ddc8224268039f970cd24f212f08e5e46ad771bed8233d0207"
     },
     {
       "file": "src/ui/styles/city-map.css",
@@ -410,12 +410,16 @@
       "sha256": "434646dd34626d3e64b65098f9cf6d3f1fa2218d12de167a5aaa591d55301399"
     },
     {
+      "file": "src/ui/styles/training-brief.css",
+      "sha256": "f05a2ea7c48dc98246168dd07e5d8c029da9232b563f13e594876d8897e4e576"
+    },
+    {
       "file": "src/ui/sync-notice.js",
       "sha256": "2c7a9ff5515fe8b70856a09b422b1a55c07f0c22adf979118e87c627a038431d"
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "4abe8018e22b67d6116b22c3c71918cc0033c6286273b49c160199c5798bfc22"
+      "sha256": "b33051792bd2523be1d421001d26ab638c134f5d2953e71de253c10ba7465318"
     },
     {
       "file": "src/ui/zero-floor/host.js",
@@ -424,6 +428,14 @@
     {
       "file": "src/ui/zero-floor/stages.js",
       "sha256": "591bb21bf891147c0ed1c56329a71571876b6d0df4ff20ad21e5bf8dae8ffd4b"
+    },
+    {
+      "file": "src/ui/zero-floor/training-brief.html",
+      "sha256": "c9b2697ad911a23d229b28d25e98430633151d4831d599b811e6c69aa5184f2a"
+    },
+    {
+      "file": "src/ui/zero-floor/training-brief.js",
+      "sha256": "4dba42a0c72d00352dd31c9e1cd99721b480231ccc74ce1d2ce550fda133d74d"
     },
     {
       "file": "src/utils/narrative_validator.js",
@@ -446,26 +458,34 @@
       "sha256": "6b68894ef842c5a9c97c40324c384fccfaf9e439cb6fd9ecec3ad9ade1cf9896"
     },
     {
+      "file": "tools/build/training-preview-entry.js",
+      "sha256": "46e31970011100b53d32665c1aad90294c13081055f179e36f34f785257c1a1a"
+    },
+    {
+      "file": "tools/build/training-preview.js",
+      "sha256": "7b388c18dd17b44af001a4ba57820a03db43bc477a72faf8fef1f09b03af8ac8"
+    },
+    {
       "file": "tools/build/ui-config.js",
       "sha256": "6e4c76936891fd650aa6771d214fdb85519533e922683289f5f090cd193352ca"
     },
     {
       "file": "tools/build/ui.js",
-      "sha256": "711543ef6a40c2c787a54d028a9c555e82c57da999ac6d106d96935aef2aa8c4"
+      "sha256": "58f1d9d2e82733f509f3f1fb01025d9b86fea2c8744603d66f88cbb811f385ce"
     }
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 593654,
-      "sha256": "3c089940b53774101c0750b2840035d73a869b76b70663e5dde56d6a07f172f7"
+      "bytes": 593725,
+      "sha256": "d579ba925b89325c2ad7763c4b34c517374d087609d17e1d4a2f81bc2563cee9"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1285151,
-      "sha256": "6bf39b637eadd5c22f5eda4436917abc5895e2a59ebe7f21edb6fee336cc138b"
+      "bytes": 1307222,
+      "sha256": "2f5020ff48eb92453d9efc9b0f13b592cc8f255c1e69a554bc5ddbd5b8926116"
     },
     "尾行.json": {
-      "bytes": 1406025,
-      "sha256": "c598b97456011ffc4c77ff892fbde36a8d9917c68f686c2faff702436e9125bb"
+      "bytes": 1429207,
+      "sha256": "76bea4aee34120972c9f741d30057440b610fe495f997a37f55f26569ba2e24d"
     },
     "尾行-世界书.json": {
       "bytes": 10130,
