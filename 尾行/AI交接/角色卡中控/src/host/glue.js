@@ -73,8 +73,16 @@ async function startGlue() {
         const target = window.parent || window;
         target.postMessage(
           snap
-            ? { wxSnap: snap, wxScope: metadata?.scope }
-            : { wxReset: true, wxScope: metadata?.scope },
+            ? {
+                wxSnap: snap,
+                wxScope: metadata?.scope,
+                wxSyncOk: metadata?.syncOk,
+              }
+            : {
+                wxReset: true,
+                wxScope: metadata?.scope,
+                wxSyncOk: metadata?.syncOk,
+              },
           "*",
         );
       }
@@ -241,7 +249,14 @@ async function startGlue() {
   let generationSession = null;
   function reportError(error) {
     const top = typeof window !== "undefined" ? window.parent || window : null;
-    top?.WxStatusbar?.reportSyncError?.(error.code || "SYNC_FAILED");
+    if (["STALE_SESSION", "SYNC_DISPOSED"].includes(error.code)) return;
+    const report = error.report || {
+      code: error.code || "SYNC_FAILED",
+      location: error.location,
+    };
+    if (top?.WxStatusbar?.reportSyncError)
+      top.WxStatusbar.reportSyncError(report);
+    else top?.postMessage({ wxSyncError: report }, "*");
   }
   async function onReplyEnded() {
     const ticket = generationSession;
@@ -312,6 +327,7 @@ async function startGlue() {
       command: sync.mutate,
       reconcile: sync.reconcile,
       restoreBackup: sync.restoreBackup,
+      acceptCurrentSave: sync.acceptCurrentSave,
       dispose: () => {
         api.dispose();
         sync.dispose();

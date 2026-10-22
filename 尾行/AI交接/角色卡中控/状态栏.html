@@ -2701,6 +2701,10 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 .trpg .wx-sync-notice { padding: 8px 12px; color: #f0b355; background: #241e15; border: 1px solid #6f5833; font-size: 12px; }
 .trpg .wx-sync-notice[hidden] { display: none !important; }
 
+.trpg .wx-sync-notice button { margin: 6px 8px 0 0; padding: 4px 8px; color: inherit; background: transparent; border: 1px solid #6f5833; border-radius: 4px; cursor: pointer; }
+.trpg .wx-sync-notice textarea { display: block; width: 100%; max-height: 160px; color: inherit; background: #151515; }
+.mes.wx-sync-floor { outline: 2px solid #f0b355; outline-offset: -2px; }
+
 </style>
 <main class="wx-standalone-main">
   <div class="preview-area" id="previewArea" style="display: none;">
@@ -11551,6 +11555,193 @@ ${proxLogs.slice(0, 5).join("\n")}`;
     }
   });
 
+  // src/contracts/chat-sync-report.js
+  var require_chat_sync_report = __commonJS({
+    "src/contracts/chat-sync-report.js"(exports, module) {
+      "use strict";
+      var MESSAGES = {
+        HISTORY_OUTSIDE_WINDOW: "\u804A\u5929\u5386\u53F2\u4E0E\u6700\u65E9\u4FDD\u7559\u7684\u68C0\u67E5\u70B9\u4E0D\u540C\uFF0C\u5DF2\u6682\u505C\u8986\u76D6\u5B58\u6863\u3002\u8BF7\u6062\u590D\u76F8\u5E94\u804A\u5929\u5185\u5BB9\u540E\u91CD\u65B0\u6821\u9A8C\u3002",
+        TIMELINE_INVALID: "\u56DE\u5408\u8BB0\u5F55\u635F\u574F\uFF0C\u5DF2\u4FDD\u7559\u539F\u6863\u3002\u8BF7\u68C0\u67E5\u5907\u4EFD\u6216\u63D0\u4F9B\u8BCA\u65AD\u4FE1\u606F\u3002",
+        SAVE_INVALID: "\u5B58\u6863\u6570\u636E\u635F\u574F\uFF0C\u5DF2\u4FDD\u7559\u539F\u6863\u3002\u8BF7\u68C0\u67E5\u5907\u4EFD\u3002",
+        SAVE_VERSION_UNSUPPORTED: "\u6B64\u5B58\u6863\u7248\u672C\u6682\u4E0D\u652F\u6301\uFF0C\u8BF7\u4F7F\u7528\u5BF9\u5E94\u7248\u672C\u7684\u89D2\u8272\u5361\u3002",
+        WRITE_CONFLICT: "\u5176\u4ED6\u811A\u672C\u5B9E\u4F8B\u4FEE\u6539\u4E86\u5B58\u6863\uFF0C\u672C\u6B21\u672A\u8986\u76D6\u3002\u8BF7\u5173\u95ED\u91CD\u590D\u5B9E\u4F8B\u540E\u91CD\u65B0\u6821\u9A8C\u3002",
+        WRITE_FAILED: "\u5B58\u50A8\u5E94\u7B54\u5931\u8D25\uFF0C\u5185\u5B58\u64CD\u4F5C\u5DF2\u64A4\u56DE\u3002\u8BF7\u5148\u91CD\u65B0\u6821\u9A8C\u786E\u8BA4\u662F\u5426\u5DF2\u843D\u76D8\uFF0C\u518D\u91CD\u8BD5\u539F\u64CD\u4F5C\u3002",
+        READ_FAILED: "\u6682\u65F6\u65E0\u6CD5\u8BFB\u53D6\u5B58\u6863\uFF0C\u8BF7\u7A0D\u540E\u91CD\u65B0\u6821\u9A8C\u3002",
+        HISTORY_CHANGED: "\u64CD\u4F5C\u671F\u95F4\u804A\u5929\u53D1\u751F\u53D8\u5316\uFF0C\u5185\u5B58\u64CD\u4F5C\u5DF2\u64A4\u56DE\u3002\u8BF7\u91CD\u65B0\u6821\u9A8C\u540E\u518D\u64CD\u4F5C\u3002",
+        MESSAGE_NOT_FOUND: "\u5F53\u524D\u804A\u5929\u4E2D\u5C1A\u672A\u627E\u5230\u8FD9\u6761\u73A9\u5BB6\u6D88\u606F\uFF0C\u672C\u6B21\u672A\u7ED3\u7B97\u3002\u8BF7\u7B49\u5F85\u6D88\u606F\u52A0\u8F7D\u540E\u91CD\u8BD5\u3002",
+        RECOVERY_CONFIRM_REQUIRED: "\u8BF7\u5148\u786E\u8BA4\u662F\u5426\u4EE5\u73B0\u5B58\u5B58\u6863\u7684\u8FDB\u5EA6\u4E3A\u51C6\u7EE7\u7EED\u3002",
+        RECOVERY_EXPIRED: "\u804A\u5929\u5DF2\u7ECF\u5207\u6362\uFF0C\u8BF7\u5728\u5F53\u524D\u804A\u5929\u91CD\u65B0\u6821\u9A8C\u540E\u518D\u9009\u62E9\u6062\u590D\u3002",
+        RECOVERY_UNAVAILABLE: "\u5BBF\u4E3B\u672A\u63D0\u4F9B\u5B8C\u6574\u804A\u5929\u8EAB\u4EFD\u548C\u5386\u53F2\uFF0C\u6682\u65F6\u65E0\u6CD5\u5EFA\u7ACB\u65B0\u68C0\u67E5\u70B9\u3002",
+        BACKUP_MISSING: "\u6CA1\u6709\u53EF\u6062\u590D\u7684\u5907\u4EFD\u3002"
+      };
+      function syncReport(error = {}, context = {}) {
+        var _a;
+        const code = typeof error === "string" ? error : error.code || "SYNC_FAILED";
+        const result = {
+          code,
+          message: MESSAGES[code] || "\u64CD\u4F5C\u672A\u5B8C\u6210\uFF0C\u8BF7\u4FDD\u7559\u5F53\u524D\u804A\u5929\u5E76\u91CD\u65B0\u6821\u9A8C\u3002"
+        };
+        const source = error.location || {};
+        const epoch = context.sessionEpoch ?? error.sessionEpoch;
+        if (Number.isInteger(epoch)) result.sessionEpoch = epoch;
+        result.location = {};
+        for (const key of [
+          "index",
+          "messageId",
+          "kind",
+          "checkpointIndex",
+          "gameTurn"
+        ])
+          if (["string", "number"].includes(typeof source[key]))
+            result.location[key] = source[key];
+        if (Number.isInteger(context.gameTurn))
+          (_a = result.location).gameTurn ?? (_a.gameTurn = context.gameTurn);
+        return result;
+      }
+      module.exports = { syncReport };
+    }
+  });
+
+  // src/ui/sync-notice.js
+  var require_sync_notice = __commonJS({
+    "src/ui/sync-notice.js"(exports, module) {
+      "use strict";
+      var { syncReport } = require_chat_sync_report();
+      function createSyncNotice({ document, lifecycle, getGlue }) {
+        const notice = document.getElementById("wxSyncNotice");
+        let active = null;
+        function clear() {
+          active = null;
+          if (notice) {
+            notice.hidden = true;
+            notice.replaceChildren();
+          }
+        }
+        function report(error) {
+          const source = error?.report || error;
+          active = syncReport(
+            typeof source === "string" ? source : {
+              code: source?.code,
+              location: source?.location,
+              sessionEpoch: source?.sessionEpoch
+            }
+          );
+          if (!notice) return;
+          notice.hidden = false;
+          notice.replaceChildren();
+          const text = document.createElement("div");
+          const loc = active.location;
+          const floor = Number.isInteger(loc.index) && loc.index >= 0 ? `\u9996\u6B21\u5DEE\u5F02\uFF1A\u804A\u5929\u7B2C ${loc.index} \u697C\uFF08\u4ECE 0 \u697C\u8D77\u7B97\uFF09${loc.kind === "missing" ? "\u5DF2\u7F3A\u5931" : ""}\u3002` : "\u65E0\u6CD5\u786E\u5B9A\u5177\u4F53\u804A\u5929\u697C\u5C42\u3002";
+          text.textContent = `${floor} ${active.message} \u9519\u8BEF\u7801\uFF1A${active.code}`;
+          notice.append(text);
+          function button(label, name) {
+            const el = document.createElement("button");
+            el.type = "button";
+            el.textContent = label;
+            el.dataset.syncAction = name;
+            notice.append(el);
+            return el;
+          }
+          if (loc.messageId != null && loc.kind !== "missing")
+            button("\u5B9A\u4F4D\u8BE5\u697C", "locate");
+          button("\u91CD\u65B0\u6821\u9A8C\u8FDB\u5EA6", "retry");
+          if (active.code === "HISTORY_OUTSIDE_WINDOW")
+            button("\u4FDD\u7559\u73B0\u5B58\u8FDB\u5EA6\u7EE7\u7EED", "rebase");
+          button("\u590D\u5236\u8BCA\u65AD\u4FE1\u606F", "copy");
+        }
+        lifecycle.on(notice, "click", async (event) => {
+          const button = event.target.closest?.("button[data-sync-action]");
+          if (!button || !active) return;
+          const current = active;
+          if (button.dataset.syncAction === "locate") {
+            const node = [...document.querySelectorAll(".mes[mesid]")].find(
+              (el) => el.getAttribute("mesid") === String(current.location.messageId)
+            );
+            if (node) {
+              node.scrollIntoView?.({ behavior: "smooth", block: "center" });
+              node.classList.add("wx-sync-floor");
+              lifecycle.timeout(() => node.classList.remove("wx-sync-floor"), 5e3);
+            } else button.textContent = "\u8BE5\u697C\u672A\u52A0\u8F7D\uFF0C\u8BF7\u5148\u52A0\u8F7D\u5386\u53F2\u6D88\u606F";
+          } else if (button.dataset.syncAction === "retry") {
+            const glue = getGlue();
+            if (!glue?.reconcile) {
+              button.textContent = "\u540C\u6B65\u6A21\u5757\u672A\u5C31\u7EEA\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5";
+              return;
+            }
+            button.disabled = true;
+            try {
+              await glue.reconcile();
+              if (!lifecycle.disposed && active === current) clear();
+            } catch (error) {
+              if (!lifecycle.disposed && active === current) report(error);
+            } finally {
+              button.disabled = false;
+            }
+          } else if (button.dataset.syncAction === "rebase") {
+            if (notice.querySelector('[data-sync-action="confirm-rebase"]')) return;
+            const explanation = document.createElement("div");
+            explanation.textContent = "\u786E\u8BA4\u540E\u4EE5\u73B0\u5B58\u5B58\u6863\u7684\u6570\u503C\u548C\u8FDB\u5EA6\u4E3A\u51C6\uFF0C\u5907\u4EFD\u65E7\u6863\u53CA\u65F6\u95F4\u7EBF\uFF0C\u5E76\u4ECE\u5F53\u524D\u804A\u5929\u5EFA\u7ACB\u65B0\u68C0\u67E5\u70B9\u3002\u66F4\u65E9\u7684\u804A\u5929\u6539\u52A8\u4E0D\u4F1A\u8865\u7B97\uFF1B\u4E0D\u4F1A\u91CD\u5F00\u6E38\u620F\u3002";
+            explanation.dataset.syncConfirmation = "true";
+            notice.append(explanation);
+            const confirm = document.createElement("button");
+            confirm.type = "button";
+            confirm.dataset.syncAction = "confirm-rebase";
+            confirm.textContent = "\u786E\u8BA4\u6309\u73B0\u5B58\u5B58\u6863\u7EE7\u7EED";
+            const cancel = document.createElement("button");
+            cancel.type = "button";
+            cancel.dataset.syncAction = "cancel-rebase";
+            cancel.textContent = "\u53D6\u6D88";
+            explanation.append(confirm, cancel);
+          } else if (button.dataset.syncAction === "cancel-rebase") {
+            notice.querySelector("[data-sync-confirmation]")?.remove();
+          } else if (button.dataset.syncAction === "confirm-rebase") {
+            const glue = getGlue();
+            if (!glue?.acceptCurrentSave) {
+              button.textContent = "\u6062\u590D\u6A21\u5757\u672A\u5C31\u7EEA\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5";
+              return;
+            }
+            button.disabled = true;
+            try {
+              await glue.acceptCurrentSave({
+                confirm: true,
+                expectedEpoch: current.sessionEpoch
+              });
+              if (!lifecycle.disposed && active === current) clear();
+            } catch (error) {
+              if (!lifecycle.disposed && active === current) report(error);
+            } finally {
+              button.disabled = false;
+            }
+          } else if (button.dataset.syncAction === "copy") {
+            let output = notice.querySelector("textarea");
+            if (!output) {
+              output = document.createElement("textarea");
+              output.readOnly = true;
+              notice.append(output);
+            }
+            output.value = JSON.stringify(
+              { ...current, diagnostics: getGlue()?.getSyncDiagnostics?.() },
+              null,
+              2
+            );
+            output.focus();
+            output.select();
+            button.textContent = "\u8BCA\u65AD\u5DF2\u9009\u4E2D\uFF0C\u53EF\u590D\u5236";
+          }
+        });
+        clear();
+        return {
+          report,
+          clear,
+          get active() {
+            return active;
+          }
+        };
+      }
+      module.exports = { createSyncNotice };
+    }
+  });
+
   // src/ui/statusbar.js
   var require_statusbar = __commonJS({
     "src/ui/statusbar.js"(exports, module) {
@@ -11592,9 +11783,15 @@ ${proxLogs.slice(0, 5).join("\n")}`;
       var { createSettlement } = require_controller();
       var { scopeKey } = require_chat_scope();
       var { createLifecycle } = require_lifecycle();
+      var { createSyncNotice } = require_sync_notice();
       function mountStatusbar(document, window) {
         window.WxStatusbar?.dispose?.();
         const lifecycle = createLifecycle(window);
+        const syncNotice = createSyncNotice({
+          document,
+          lifecycle,
+          getGlue: () => window.WxGlue || globalThis.WxGlue
+        });
         for (const id of ["quickPane", "idGrid", "allocRows", "targetGrid"]) {
           const node = document.getElementById(id);
           if (node) delete node.dataset.built;
@@ -12245,7 +12442,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
               await glue.command(methods[action], itemId);
               playFootstepSound();
             } catch (error) {
-              reportSyncError(error.code);
+              reportSyncError(error);
             }
             return;
           }
@@ -12706,7 +12903,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
               if (lifecycle.disposed) return;
               ZERO.done = true;
             } catch (error) {
-              reportSyncError(error.code);
+              reportSyncError(error);
               return;
             } finally {
               if (button) button.disabled = false;
@@ -13006,8 +13203,6 @@ ${proxLogs.slice(0, 5).join("\n")}`;
               if (tools) tools.style.display = "none";
             }
             if (lifecycle.disposed) return;
-            const notice = document.getElementById("wxSyncNotice");
-            if (notice) notice.hidden = true;
             ZERO.done = true;
             updateZeroChip();
             zeroFloor.hide();
@@ -13018,6 +13213,9 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           });
           lifecycle.on(window, "message", (e) => {
             if (!isCurrentScope(e.data?.wxScope)) return;
+            if (e.data?.wxSyncOk && !(window.WxGlue || globalThis.WxGlue)?.getSyncDiagnostics?.().lastFailure)
+              syncNotice.clear();
+            if (e.data?.wxSyncError) reportSyncError(e.data.wxSyncError);
             if (e.data?.wxReset) resetDisplay();
             else if (e.data?.wxSnap) activate(e.data.wxSnap);
           });
@@ -13052,15 +13250,12 @@ ${proxLogs.slice(0, 5).join("\n")}`;
           lifecycle.on(window, "load", reportLayout);
           lifecycle.timeout(reportLayout, 300);
         }
-        function reportSyncError(code) {
-          const notice = document.getElementById("wxSyncNotice");
-          if (notice) {
-            notice.hidden = false;
-            notice.textContent = "\u8FDB\u5EA6\u540C\u6B65\u672A\u5B8C\u6210\uFF0C\u8BF7\u4FDD\u7559\u5F53\u524D\u804A\u5929\u540E\u91CD\u8BD5\u3002";
-          }
-          console.warn("[CHAT_SYNC:UI]", code);
+        function reportSyncError(error) {
+          if (["STALE_SESSION", "SYNC_DISPOSED"].includes(error?.code)) return;
+          syncNotice.report(error);
         }
         function resetDisplay() {
+          syncNotice.clear();
           clearLiveData(document);
           details.reset();
           render._hist = [];
@@ -13092,6 +13287,8 @@ ${proxLogs.slice(0, 5).join("\n")}`;
             go: stages.go
           }
         });
+        const initialFailure = (window.WxGlue || globalThis.WxGlue)?.getSyncDiagnostics?.().lastFailure;
+        if (initialFailure) reportSyncError(initialFailure);
         return { dispose };
       }
       module.exports = { mountStatusbar };

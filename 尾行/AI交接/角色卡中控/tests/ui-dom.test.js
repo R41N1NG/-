@@ -128,9 +128,18 @@ test("UI 生命周期：备用轮询连续更新，重挂载不叠加监听和�
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(intervals.size, 1);
     await [...intervals.values()][0]();
+    w.WxStatusbar.reportSyncError({
+      code: "HISTORY_OUTSIDE_WINDOW",
+      location: { index: 0, messageId: 0 },
+    });
     snapshot = { ...snapshot, player: { ...snapshot.player, heart: 44 } };
     await [...intervals.values()][0]();
     assert.equal(w.document.getElementById("heartNum").textContent, "44");
+    assert.equal(
+      w.document.getElementById("wxSyncNotice").hidden,
+      false,
+      "备用快照不能掩盖未解决的错误",
+    );
     w.WxStatusbarUI.mountStatusbar(w.document, w);
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(intervals.size, 1, "旧轮询必须被清理");

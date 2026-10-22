@@ -2694,3 +2694,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 
 .trpg .wx-sync-notice { padding: 8px 12px; color: #f0b355; background: #241e15; border: 1px solid #6f5833; font-size: 12px; }
 .trpg .wx-sync-notice[hidden] { display: none !important; }
+
+.trpg .wx-sync-notice button { margin: 6px 8px 0 0; padding: 4px 8px; color: inherit; background: transparent; border: 1px solid #6f5833; border-radius: 4px; cursor: pointer; }
+.trpg .wx-sync-notice textarea { display: block; width: 100%; max-height: 160px; color: inherit; background: #151515; }
+.mes.wx-sync-floor { outline: 2px solid #f0b355; outline-offset: -2px; }

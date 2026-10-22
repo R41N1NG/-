@@ -147,6 +147,15 @@ const deadline = setTimeout(() => {
       WxStatusbar.render(${JSON.stringify(snap)});
       ok('确认或续局后恢复开场',document.querySelector('#chat .mes_text').textContent==='Opening text'&&zero.hidden);
 
+      WxStatusbar.reportSyncError({code:'HISTORY_OUTSIDE_WINDOW',location:{index:0,messageId:0,kind:'changed'}});
+      const syncNotice=document.getElementById('wxSyncNotice');
+      ok('同步提示显示真实聊天楼层',!syncNotice.hidden&&syncNotice.textContent.includes('聊天第 0 楼'));
+      syncNotice.querySelector('[data-sync-action="locate"]').click();
+      ok('同步提示可以高亮对应楼层',document.querySelector('#chat .mes').classList.contains('wx-sync-floor'));
+      syncNotice.querySelector('[data-sync-action="copy"]').click();
+      ok('同步诊断可复制',JSON.parse(syncNotice.querySelector('textarea').value).location.index===0);
+      WxStatusbar.reset(); WxStatusbar.render(${JSON.stringify(snap)});
+
       ok('CSS 解析', [...document.styleSheets].some(s=>s.cssRules.length>100));
       ok('整页无横向溢出', document.documentElement.scrollWidth<=innerWidth+2);
       ok('快照渲染',document.getElementById('heartNum').textContent==='${snap.player.heart}');

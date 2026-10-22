@@ -11286,7 +11286,7 @@
           return error;
         }
         function snapshot() {
-          return { schema: 1, events: events.map((event) => ({ ...event })) };
+          return { schema: 1, events: JSON.parse(JSON.stringify(events)) };
         }
         return { record, failure, snapshot };
       }
@@ -11379,25 +11379,44 @@
           nodes: []
         };
       }
+      function validPath(path) {
+        return Array.isArray(path) && path.every((v) => typeof v === "string" && /^[a-f0-9]{32}$/.test(v));
+      }
       function validateTimeline(value) {
-        if (!value || value.schema !== 1 || !value.base?.save || !Array.isArray(value.base.path) || !Array.isArray(value.nodes) || !Number.isInteger(value.revision))
+        if (!value || value.schema !== 1 || !value.base?.save || !validPath(value.base.path) || !Array.isArray(value.nodes) || !Number.isInteger(value.revision) || value.revision < 0)
           throw Object.assign(new Error("\u65F6\u95F4\u7EBF\u6570\u636E\u635F\u574F\u6216\u7248\u672C\u4E0D\u652F\u6301"), {
             code: "TIMELINE_INVALID"
           });
         for (const n of value.nodes)
-          if (!Array.isArray(n.path) || typeof n.key !== "string" || n.key !== fingerprint(n.path) || !n.before || !n.afterInput || !n.after)
+          if (!n || !validPath(n.path) || !prefix(value.base.path, n.path) || n.replyPath != null && (!validPath(n.replyPath) || !prefix(n.path, n.replyPath)) || typeof n.key !== "string" || n.key !== fingerprint(n.path) || !n.before || !n.afterInput || !n.after || !n.result)
             throw Object.assign(new Error("\u56DE\u5408\u8BB0\u5F55\u635F\u574F"), {
-              code: "TIMELINE_INVALID"
+              code: "TIMELINE_INVALID",
+              location: {
+                index: Array.isArray(n?.path) ? n.path.length - 1 : void 0,
+                kind: "record"
+              }
             });
         return clone(value);
       }
       function locate(timeline, history) {
         const path = tokens(history);
-        if (!prefix(timeline.base.path, path))
+        if (!prefix(timeline.base.path, path)) {
+          let index = 0;
+          while (index < path.length && index < timeline.base.path.length && path[index] === timeline.base.path[index])
+            index++;
           throw Object.assign(
             new Error("\u804A\u5929\u4FEE\u6539\u65E9\u4E8E\u53EF\u6062\u590D\u7684\u5B58\u6863\u68C0\u67E5\u70B9\uFF0C\u539F\u6863\u5DF2\u4FDD\u7559"),
-            { code: "HISTORY_OUTSIDE_WINDOW" }
+            {
+              code: "HISTORY_OUTSIDE_WINDOW",
+              location: {
+                index,
+                messageId: history[index]?.id,
+                kind: index >= path.length ? "missing" : "changed",
+                checkpointIndex: timeline.base.path.length - 1
+              }
+            }
           );
+        }
         let node = null;
         for (const n of timeline.nodes)
           if (prefix(n.path, path) && (!node || n.path.length > node.path.length))
@@ -11441,6 +11460,53 @@
     }
   });
 
+  // src/contracts/chat-sync-report.js
+  var require_chat_sync_report = __commonJS({
+    "src/contracts/chat-sync-report.js"(exports, module) {
+      "use strict";
+      var MESSAGES = {
+        HISTORY_OUTSIDE_WINDOW: "\u804A\u5929\u5386\u53F2\u4E0E\u6700\u65E9\u4FDD\u7559\u7684\u68C0\u67E5\u70B9\u4E0D\u540C\uFF0C\u5DF2\u6682\u505C\u8986\u76D6\u5B58\u6863\u3002\u8BF7\u6062\u590D\u76F8\u5E94\u804A\u5929\u5185\u5BB9\u540E\u91CD\u65B0\u6821\u9A8C\u3002",
+        TIMELINE_INVALID: "\u56DE\u5408\u8BB0\u5F55\u635F\u574F\uFF0C\u5DF2\u4FDD\u7559\u539F\u6863\u3002\u8BF7\u68C0\u67E5\u5907\u4EFD\u6216\u63D0\u4F9B\u8BCA\u65AD\u4FE1\u606F\u3002",
+        SAVE_INVALID: "\u5B58\u6863\u6570\u636E\u635F\u574F\uFF0C\u5DF2\u4FDD\u7559\u539F\u6863\u3002\u8BF7\u68C0\u67E5\u5907\u4EFD\u3002",
+        SAVE_VERSION_UNSUPPORTED: "\u6B64\u5B58\u6863\u7248\u672C\u6682\u4E0D\u652F\u6301\uFF0C\u8BF7\u4F7F\u7528\u5BF9\u5E94\u7248\u672C\u7684\u89D2\u8272\u5361\u3002",
+        WRITE_CONFLICT: "\u5176\u4ED6\u811A\u672C\u5B9E\u4F8B\u4FEE\u6539\u4E86\u5B58\u6863\uFF0C\u672C\u6B21\u672A\u8986\u76D6\u3002\u8BF7\u5173\u95ED\u91CD\u590D\u5B9E\u4F8B\u540E\u91CD\u65B0\u6821\u9A8C\u3002",
+        WRITE_FAILED: "\u5B58\u50A8\u5E94\u7B54\u5931\u8D25\uFF0C\u5185\u5B58\u64CD\u4F5C\u5DF2\u64A4\u56DE\u3002\u8BF7\u5148\u91CD\u65B0\u6821\u9A8C\u786E\u8BA4\u662F\u5426\u5DF2\u843D\u76D8\uFF0C\u518D\u91CD\u8BD5\u539F\u64CD\u4F5C\u3002",
+        READ_FAILED: "\u6682\u65F6\u65E0\u6CD5\u8BFB\u53D6\u5B58\u6863\uFF0C\u8BF7\u7A0D\u540E\u91CD\u65B0\u6821\u9A8C\u3002",
+        HISTORY_CHANGED: "\u64CD\u4F5C\u671F\u95F4\u804A\u5929\u53D1\u751F\u53D8\u5316\uFF0C\u5185\u5B58\u64CD\u4F5C\u5DF2\u64A4\u56DE\u3002\u8BF7\u91CD\u65B0\u6821\u9A8C\u540E\u518D\u64CD\u4F5C\u3002",
+        MESSAGE_NOT_FOUND: "\u5F53\u524D\u804A\u5929\u4E2D\u5C1A\u672A\u627E\u5230\u8FD9\u6761\u73A9\u5BB6\u6D88\u606F\uFF0C\u672C\u6B21\u672A\u7ED3\u7B97\u3002\u8BF7\u7B49\u5F85\u6D88\u606F\u52A0\u8F7D\u540E\u91CD\u8BD5\u3002",
+        RECOVERY_CONFIRM_REQUIRED: "\u8BF7\u5148\u786E\u8BA4\u662F\u5426\u4EE5\u73B0\u5B58\u5B58\u6863\u7684\u8FDB\u5EA6\u4E3A\u51C6\u7EE7\u7EED\u3002",
+        RECOVERY_EXPIRED: "\u804A\u5929\u5DF2\u7ECF\u5207\u6362\uFF0C\u8BF7\u5728\u5F53\u524D\u804A\u5929\u91CD\u65B0\u6821\u9A8C\u540E\u518D\u9009\u62E9\u6062\u590D\u3002",
+        RECOVERY_UNAVAILABLE: "\u5BBF\u4E3B\u672A\u63D0\u4F9B\u5B8C\u6574\u804A\u5929\u8EAB\u4EFD\u548C\u5386\u53F2\uFF0C\u6682\u65F6\u65E0\u6CD5\u5EFA\u7ACB\u65B0\u68C0\u67E5\u70B9\u3002",
+        BACKUP_MISSING: "\u6CA1\u6709\u53EF\u6062\u590D\u7684\u5907\u4EFD\u3002"
+      };
+      function syncReport(error = {}, context = {}) {
+        var _a;
+        const code = typeof error === "string" ? error : error.code || "SYNC_FAILED";
+        const result = {
+          code,
+          message: MESSAGES[code] || "\u64CD\u4F5C\u672A\u5B8C\u6210\uFF0C\u8BF7\u4FDD\u7559\u5F53\u524D\u804A\u5929\u5E76\u91CD\u65B0\u6821\u9A8C\u3002"
+        };
+        const source = error.location || {};
+        const epoch = context.sessionEpoch ?? error.sessionEpoch;
+        if (Number.isInteger(epoch)) result.sessionEpoch = epoch;
+        result.location = {};
+        for (const key of [
+          "index",
+          "messageId",
+          "kind",
+          "checkpointIndex",
+          "gameTurn"
+        ])
+          if (["string", "number"].includes(typeof source[key]))
+            result.location[key] = source[key];
+        if (Number.isInteger(context.gameTurn))
+          (_a = result.location).gameTurn ?? (_a.gameTurn = context.gameTurn);
+        return result;
+      }
+      module.exports = { syncReport };
+    }
+  });
+
   // src/host/chat-sync/controller.js
   var require_controller = __commonJS({
     "src/host/chat-sync/controller.js"(exports, module) {
@@ -11450,6 +11516,7 @@
       var { createSyncDiagnostics } = require_diagnostics();
       var { createSession } = require_session();
       var T = require_timeline();
+      var { syncReport } = require_chat_sync_report();
       function createChatSync({
         state,
         vars,
@@ -11466,7 +11533,7 @@
       }) {
         const repository = createChatRepository(vars);
         const diagnostics = createSyncDiagnostics({ now });
-        let journal = null, revision = null, queue = Promise.resolve(), disposed = false, blocked = null, hasSaved = false, savedFingerprint;
+        let journal = null, revision = null, queue = Promise.resolve(), disposed = false, blocked = null, hasSaved = false, savedFingerprint, lastFailure = null, needsReload = false;
         const session = createSession(readContext, (context, initialized) => {
           if (initialized) {
             state.game = null;
@@ -11476,6 +11543,8 @@
             journal = null;
             revision = null;
             blocked = null;
+            lastFailure = null;
+            needsReload = false;
             hasSaved = false;
             savedFingerprint = void 0;
             clearReceipt();
@@ -11497,6 +11566,7 @@
             try {
               return await operation(token);
             } catch (cause) {
+              await session.check(token);
               if ([
                 "HISTORY_OUTSIDE_WINDOW",
                 "TIMELINE_INVALID",
@@ -11505,9 +11575,14 @@
                 "WRITE_CONFLICT"
               ].includes(cause.code))
                 blocked = cause.code;
-              diagnostics.record("operation.failed", {
-                code: cause.code || "SYNC_FAILED"
-              });
+              if (!["STALE_SESSION", "SYNC_DISPOSED"].includes(cause.code) && session.epoch === token.epoch) {
+                cause.report = syncReport(cause, {
+                  gameTurn: state.game?._g?.floor,
+                  sessionEpoch: token.epoch
+                });
+                lastFailure = cause.report;
+                diagnostics.record("operation.failed", cause.report);
+              }
               throw cause;
             }
           });
@@ -11536,8 +11611,12 @@
           return createGame({ saved: T.clone(save) });
         }
         async function load(token, { force = false, beforeUser } = {}) {
+          force = force || needsReload;
           if (blocked && !force)
-            throw fail(blocked, "\u5B58\u6863\u5C1A\u672A\u5B8C\u6210\u6821\u9A8C\uFF0C\u8BF7\u6062\u590D\u5BF9\u5E94\u804A\u5929\u6216\u91CD\u65B0\u8BFB\u53D6");
+            throw Object.assign(
+              fail(blocked, "\u5B58\u6863\u5C1A\u672A\u5B8C\u6210\u6821\u9A8C\uFF0C\u8BF7\u6062\u590D\u5BF9\u5E94\u804A\u5929\u6216\u91CD\u65B0\u8BFB\u53D6"),
+              { location: lastFailure?.location }
+            );
           if (state.game && !force) return state.game;
           const variables = await readVariables(token);
           syncConf(variables);
@@ -11568,7 +11647,8 @@
                   token.scope,
                   beforeUser
                 );
-              const found = T.locate(journal, token.context.history);
+              const current = await session.check(token);
+              const found = T.locate(journal, current.history);
               game = restore(found.save);
             }
           } catch (cause) {
@@ -11579,6 +11659,7 @@
           }
           await session.check(token);
           state.game = game;
+          needsReload = false;
           blocked = null;
           diagnostics.record("restore.done", { floor: game.save().floor });
           const targetId = game._g?.targetId || variables[VAR_INIT]?.targetId || "college";
@@ -11592,7 +11673,7 @@
           });
           return game;
         }
-        async function persist(token, { reason = "save", init } = {}) {
+        async function persist(token, { reason = "save", init, expectedPath } = {}) {
           if (blocked) throw fail(blocked, "\u65F6\u95F4\u7EBF\u6821\u9A8C\u672A\u5B8C\u6210\uFF0C\u5DF2\u963B\u6B62\u8986\u76D6\u5B58\u6863");
           diagnostics.record("persist.prepare");
           let snap, save;
@@ -11640,8 +11721,11 @@
               reason
             }
           };
+          const current = await session.check(token);
+          if (expectedPath && T.fingerprint(T.tokens(current.history || [])) !== T.fingerprint(expectedPath))
+            throw fail("HISTORY_CHANGED", "\u64CD\u4F5C\u671F\u95F4\u804A\u5929\u53D1\u751F\u53D8\u5316\uFF0C\u672C\u6B21\u672A\u4FDD\u5B58");
           diagnostics.record("persist.write", { floor: save.floor });
-          await session.check(token);
+          needsReload = true;
           try {
             await repository.writeSnapshot({
               save,
@@ -11659,14 +11743,22 @@
           } catch (cause) {
             throw diagnostics.failure("persist.failed", "WRITE_FAILED", cause);
           }
-          await session.check(token);
+          const committedContext = await session.check(token);
+          if (expectedPath && T.fingerprint(T.tokens(committedContext.history || [])) !== T.fingerprint(expectedPath))
+            throw fail("HISTORY_CHANGED", "\u5B58\u50A8\u671F\u95F4\u804A\u5929\u53D1\u751F\u53D8\u5316\uFF0C\u8BF7\u91CD\u65B0\u6821\u9A8C");
+          needsReload = false;
           journal = nextJournal;
           revision = journal?.revision ?? null;
           hasSaved = true;
           savedFingerprint = T.fingerprint(save);
+          lastFailure = null;
           diagnostics.record("persist.done", { floor: save.floor });
           try {
-            await publishSnapshot(snap, { scope: token.scope, revision });
+            await publishSnapshot(snap, {
+              scope: token.scope,
+              revision,
+              syncOk: true
+            });
           } catch {
             diagnostics.record("publish.failed", {
               code: "PUBLISH_FAILED",
@@ -11685,38 +11777,48 @@
           };
         }
         async function reconcile(token) {
-          await load(token);
+          await load(token, { force: !!blocked });
           const context = await session.check(token);
           if (!hasSaved && (!journal || journal.nodes.length === 0)) {
-            await publishSnapshot(null, { scope: token.scope });
+            lastFailure = null;
+            await publishSnapshot(null, { scope: token.scope, syncOk: true });
             return null;
           }
           if (!journal || !Array.isArray(context.history)) {
             const snap = state.game.snapshot();
-            await publishSnapshot(snap, { scope: token.scope });
+            lastFailure = null;
+            await publishSnapshot(snap, { scope: token.scope, syncOk: true });
             return snap;
           }
           const found = T.locate(journal, context.history);
           const old = state.game, oldJournal = T.clone(journal);
           state.game = restore(found.save);
-          if (found.node) {
-            const index = T.userIndex(
-              context.history,
-              context.history[found.node.path.length - 1]?.id
-            );
-            const reply2 = context.history.slice(index + 1).find((m) => m.role === "assistant");
-            if (reply2 && (!found.node.replyPath || !T.prefix(found.node.replyPath, T.tokens(context.history)))) {
-              state.game.processReply(reply2.text);
-              const end = context.history.indexOf(reply2) + 1;
-              found.node.replyPath = T.tokens(context.history.slice(0, end));
-              found.node.after = state.game.save();
-            }
-          }
           try {
-            if (T.fingerprint(old.save()) !== T.fingerprint(state.game.save()) || journal.owner !== token.scope)
-              return await persist(token, { reason: "history-recovery" });
+            if (found.node) {
+              const index = T.userIndex(
+                context.history,
+                context.history[found.node.path.length - 1]?.id
+              );
+              const reply2 = context.history.slice(index + 1).find((m) => m.role === "assistant");
+              if (reply2 && (!found.node.replyPath || !T.prefix(found.node.replyPath, T.tokens(context.history)))) {
+                state.game.processReply(reply2.text);
+                const end = context.history.indexOf(reply2) + 1;
+                found.node.replyPath = T.tokens(context.history.slice(0, end));
+                found.node.after = state.game.save();
+              }
+            }
+            if (T.fingerprint(old.save()) !== T.fingerprint(state.game.save()) || savedFingerprint !== T.fingerprint(state.game.save()) || T.fingerprint(oldJournal) !== T.fingerprint(journal) || journal.owner !== token.scope)
+              return await persist(token, {
+                reason: "history-recovery",
+                expectedPath: T.tokens(context.history)
+              });
             const snap = state.game.snapshot();
-            await publishSnapshot(snap, { scope: token.scope, revision });
+            lastFailure = null;
+            await publishSnapshot(snap, {
+              scope: token.scope,
+              revision,
+              syncOk: true
+            });
             return snap;
           } catch (error) {
             return draftRollback(old, oldJournal, token)(error);
@@ -11726,6 +11828,8 @@
           await load(token, { beforeUser: messageId });
           const context = await session.check(token);
           const path = journal && Array.isArray(context.history) ? T.inputPath(context.history, messageId) : null;
+          if (path && context.history[T.userIndex(context.history, messageId)]?.text !== text)
+            throw fail("HISTORY_CHANGED", "\u8BFB\u53D6\u7684\u73A9\u5BB6\u6D88\u606F\u5DF2\u53D1\u751F\u53D8\u5316\uFF0C\u672C\u6B21\u672A\u7ED3\u7B97");
           const key = path && T.fingerprint(path);
           const existing = key && journal.nodes.find((n) => n.key === key);
           if (existing) {
@@ -11751,7 +11855,10 @@
               });
               T.prune(journal, path);
             }
-            result.stats = await persist(token, { reason: "input" });
+            result.stats = await persist(token, {
+              reason: "input",
+              expectedPath: Array.isArray(context.history) ? T.tokens(context.history) : void 0
+            });
             return T.clone(result);
           } catch (error) {
             return draftRollback(old, oldJournal, token)(error);
@@ -11803,7 +11910,10 @@
               if (auto) state.game.processFloor(text);
               else state.game.processReply(text);
             }
-            return await persist(token, { reason: "reply" });
+            return await persist(token, {
+              reason: "reply",
+              expectedPath: Array.isArray(context.history) ? T.tokens(context.history) : void 0
+            });
           } catch (error) {
             return draftRollback(old, oldJournal, token)(error);
           }
@@ -11847,7 +11957,13 @@
         }
         return {
           rebuild: () => exclusive((token) => load(token, { force: true })),
-          persist: () => exclusive((token) => persist(token)),
+          persist: () => exclusive(async (token) => {
+            if (journal) await reconcile(token);
+            const context = await session.check(token);
+            return persist(token, {
+              expectedPath: Array.isArray(context.history) ? T.tokens(context.history) : void 0
+            });
+          }),
           refreshConf: () => exclusive(async (token) => {
             const v = await readVariables(token);
             syncConf(v);
@@ -11905,7 +12021,8 @@
           runReply: (options) => exclusive((token) => reply(token, options)),
           reconcile: () => exclusive(reconcile),
           mutate: (method, ...args) => exclusive(async (token) => {
-            await load(token);
+            await reconcile(token);
+            const commandContext = await session.check(token);
             const old = state.game, oldJournal = T.clone(journal);
             state.game = restore(old.save());
             const allowed = [
@@ -11928,8 +12045,47 @@
                     found.node.afterInput = state.game.save();
                 } else journal.base.save = state.game.save();
               }
-              await persist(token, { reason: "command" });
+              await persist(token, {
+                reason: "command",
+                expectedPath: Array.isArray(commandContext.history) ? T.tokens(commandContext.history) : void 0
+              });
               return result;
+            } catch (error) {
+              return draftRollback(old, oldJournal, token)(error);
+            }
+          }),
+          acceptCurrentSave: ({ confirm = false, expectedEpoch } = {}) => exclusive(async (token) => {
+            if (!confirm)
+              throw fail("RECOVERY_CONFIRM_REQUIRED", "\u987B\u786E\u8BA4\u4EE5\u73B0\u5B58\u5B58\u6863\u4E3A\u51C6\u7EE7\u7EED");
+            if (expectedEpoch != null && expectedEpoch !== token.epoch)
+              throw fail("RECOVERY_EXPIRED", "\u6062\u590D\u64CD\u4F5C\u6240\u5C5E\u804A\u5929\u5DF2\u7ECF\u5207\u6362");
+            const variables = await readVariables(token);
+            const saved = variables[VAR_SAVE];
+            if (!saved) throw fail("SAVE_INVALID", "\u6CA1\u6709\u53EF\u7528\u4E8E\u7EE7\u7EED\u7684\u5B8C\u6574\u5B58\u6863");
+            if (![1, 2].includes(saved.v))
+              throw fail("SAVE_VERSION_UNSUPPORTED", "\u5B58\u6863\u7248\u672C\u4E0D\u652F\u6301");
+            const candidate = restore(saved);
+            const context = await session.check(token);
+            if (!token.scope || !Array.isArray(context.history))
+              throw fail(
+                "RECOVERY_UNAVAILABLE",
+                "\u5BBF\u4E3B\u672A\u63D0\u4F9B\u5B8C\u6574\u804A\u5929\u8EAB\u4EFD\u548C\u5386\u53F2\uFF0C\u4E0D\u80FD\u91CD\u5EFA\u68C0\u67E5\u70B9"
+              );
+            const old = state.game, oldJournal = T.clone(journal);
+            state.game = candidate;
+            journal = T.newTimeline(candidate.save(), context.history, token.scope);
+            revision = variables[VAR_TIMELINE]?.revision ?? null;
+            savedFingerprint = T.fingerprint(saved);
+            blocked = null;
+            try {
+              const snap = await persist(token, {
+                reason: "accept-current-save",
+                expectedPath: T.tokens(context.history)
+              });
+              state.pending = null;
+              state.raced = false;
+              clearReceipt();
+              return snap;
             } catch (error) {
               return draftRollback(old, oldJournal, token)(error);
             }
@@ -11937,10 +12093,11 @@
           restoreBackup: () => exclusive(async (token) => {
             const variables = await readVariables(token), backup = variables.wx_sync_backup;
             if (!backup?.save) throw fail("BACKUP_MISSING", "\u6CA1\u6709\u53EF\u6062\u590D\u7684\u5907\u4EFD");
-            const candidate = restore(backup.save);
+            let candidate = restore(backup.save);
             const restoredJournal = backup.timeline ? T.validateTimeline(backup.timeline) : null;
-            if (restoredJournal && Array.isArray(token.context.history))
-              T.locate(restoredJournal, token.context.history);
+            const context = await session.check(token);
+            if (restoredJournal && Array.isArray(context.history))
+              candidate = restore(T.locate(restoredJournal, context.history).save);
             const old = state.game, oldJournal = T.clone(journal);
             state.game = candidate;
             journal = restoredJournal;
@@ -11948,7 +12105,10 @@
             savedFingerprint = T.fingerprint(variables[VAR_SAVE] ?? null);
             blocked = null;
             try {
-              return await persist(token, { reason: "backup-recovery" });
+              return await persist(token, {
+                reason: "backup-recovery",
+                expectedPath: Array.isArray(context.history) ? T.tokens(context.history) : void 0
+              });
             } catch (error) {
               return draftRollback(old, oldJournal, token)(error);
             }
@@ -11973,7 +12133,9 @@
               timeline: !!journal
             },
             revision,
-            blocked
+            blocked,
+            needsReload,
+            lastFailure: T.clone(lastFailure)
           })
         };
       }
@@ -12044,7 +12206,15 @@
             if (typeof window !== "undefined") {
               const target = window.parent || window;
               target.postMessage(
-                snap ? { wxSnap: snap, wxScope: metadata?.scope } : { wxReset: true, wxScope: metadata?.scope },
+                snap ? {
+                  wxSnap: snap,
+                  wxScope: metadata?.scope,
+                  wxSyncOk: metadata?.syncOk
+                } : {
+                  wxReset: true,
+                  wxScope: metadata?.scope,
+                  wxSyncOk: metadata?.syncOk
+                },
                 "*"
               );
             }
@@ -12167,7 +12337,14 @@
         let generationSession = null;
         function reportError(error) {
           const top = typeof window !== "undefined" ? window.parent || window : null;
-          top?.WxStatusbar?.reportSyncError?.(error.code || "SYNC_FAILED");
+          if (["STALE_SESSION", "SYNC_DISPOSED"].includes(error.code)) return;
+          const report = error.report || {
+            code: error.code || "SYNC_FAILED",
+            location: error.location
+          };
+          if (top?.WxStatusbar?.reportSyncError)
+            top.WxStatusbar.reportSyncError(report);
+          else top?.postMessage({ wxSyncError: report }, "*");
         }
         async function onReplyEnded() {
           const ticket = generationSession;
@@ -12238,6 +12415,7 @@
             command: sync.mutate,
             reconcile: sync.reconcile,
             restoreBackup: sync.restoreBackup,
+            acceptCurrentSave: sync.acceptCurrentSave,
             dispose: () => {
               api.dispose();
               sync.dispose();
@@ -12274,7 +12452,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.2",
+        version: "0.8.3",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -12283,7 +12461,7 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js m4.test.js inject.test.js target-default.test.js",
+          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs"
         },

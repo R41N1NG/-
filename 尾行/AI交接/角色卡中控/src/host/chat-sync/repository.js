@@ -10,7 +10,7 @@ const {
 } = require("./keys.js");
 
 // [CHAT_SYNC:STORAGE] 宿主聊天变量的读写出口。引擎序列化仍在 runtime/game/save.js。
-// 注意：当前 vars API 跟随宿主的活动聊天；CHAT_CHANGED 隔离/版本校验尚待接线。
+// 注意：当前 vars API 跟随宿主的活动聊天；调用方负责会话代际与 revision 校验；宿主 API 本身不提供原子 CAS。
 function createChatRepository(vars) {
   return {
     read: () => vars.read(),

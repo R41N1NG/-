@@ -40,39 +40,71 @@ function newTimeline(save, history, owner, beforeUser) {
     nodes: [],
   };
 }
+function validPath(path) {
+  return (
+    Array.isArray(path) &&
+    path.every((v) => typeof v === "string" && /^[a-f0-9]{32}$/.test(v))
+  );
+}
 function validateTimeline(value) {
   if (
     !value ||
     value.schema !== 1 ||
     !value.base?.save ||
-    !Array.isArray(value.base.path) ||
+    !validPath(value.base.path) ||
     !Array.isArray(value.nodes) ||
-    !Number.isInteger(value.revision)
+    !Number.isInteger(value.revision) ||
+    value.revision < 0
   )
     throw Object.assign(new Error("时间线数据损坏或版本不支持"), {
       code: "TIMELINE_INVALID",
     });
   for (const n of value.nodes)
     if (
-      !Array.isArray(n.path) ||
+      !n ||
+      !validPath(n.path) ||
+      !prefix(value.base.path, n.path) ||
+      (n.replyPath != null &&
+        (!validPath(n.replyPath) || !prefix(n.path, n.replyPath))) ||
       typeof n.key !== "string" ||
       n.key !== fingerprint(n.path) ||
       !n.before ||
       !n.afterInput ||
-      !n.after
+      !n.after ||
+      !n.result
     )
       throw Object.assign(new Error("回合记录损坏"), {
         code: "TIMELINE_INVALID",
+        location: {
+          index: Array.isArray(n?.path) ? n.path.length - 1 : undefined,
+          kind: "record",
+        },
       });
   return clone(value);
 }
 function locate(timeline, history) {
   const path = tokens(history);
-  if (!prefix(timeline.base.path, path))
+  if (!prefix(timeline.base.path, path)) {
+    let index = 0;
+    while (
+      index < path.length &&
+      index < timeline.base.path.length &&
+      path[index] === timeline.base.path[index]
+    )
+      index++;
     throw Object.assign(
       new Error("聊天修改早于可恢复的存档检查点，原档已保留"),
-      { code: "HISTORY_OUTSIDE_WINDOW" },
+      {
+        code: "HISTORY_OUTSIDE_WINDOW",
+        location: {
+          index,
+          messageId: history[index]?.id,
+          kind: index >= path.length ? "missing" : "changed",
+          checkpointIndex: timeline.base.path.length - 1,
+        },
+      },
     );
+  }
   let node = null;
   for (const n of timeline.nodes)
     if (prefix(n.path, path) && (!node || n.path.length > node.path.length))

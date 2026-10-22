@@ -4,6 +4,7 @@ const { createChatRepository } = require("./repository.js");
 const { createSyncDiagnostics } = require("./diagnostics.js");
 const { createSession } = require("./session.js");
 const T = require("./timeline.js");
+const { syncReport } = require("../../contracts/chat-sync-report.js");
 
 /** [CHAT_SYNC:ENTRY] Serialized operations, guarded sessions and full-state recovery. */
 function createChatSync({
@@ -26,7 +27,9 @@ function createChatSync({
     disposed = false,
     blocked = null,
     hasSaved = false,
-    savedFingerprint;
+    savedFingerprint,
+    lastFailure = null,
+    needsReload = false;
   const session = createSession(readContext, (context, initialized) => {
     if (initialized) {
       state.game = null;
@@ -36,6 +39,8 @@ function createChatSync({
       journal = null;
       revision = null;
       blocked = null;
+      lastFailure = null;
+      needsReload = false;
       hasSaved = false;
       savedFingerprint = undefined;
       clearReceipt();
@@ -57,6 +62,7 @@ function createChatSync({
       try {
         return await operation(token);
       } catch (cause) {
+        await session.check(token); // 迟到的旧聊天错误不得污染当前会话。
         if (
           [
             "HISTORY_OUTSIDE_WINDOW",
@@ -67,9 +73,17 @@ function createChatSync({
           ].includes(cause.code)
         )
           blocked = cause.code;
-        diagnostics.record("operation.failed", {
-          code: cause.code || "SYNC_FAILED",
-        });
+        if (
+          !["STALE_SESSION", "SYNC_DISPOSED"].includes(cause.code) &&
+          session.epoch === token.epoch
+        ) {
+          cause.report = syncReport(cause, {
+            gameTurn: state.game?._g?.floor,
+            sessionEpoch: token.epoch,
+          });
+          lastFailure = cause.report;
+          diagnostics.record("operation.failed", cause.report);
+        }
         throw cause;
       }
     });
@@ -97,8 +111,12 @@ function createChatSync({
     return createGame({ saved: T.clone(save) });
   }
   async function load(token, { force = false, beforeUser } = {}) {
+    force = force || needsReload;
     if (blocked && !force)
-      throw fail(blocked, "存档尚未完成校验，请恢复对应聊天或重新读取");
+      throw Object.assign(
+        fail(blocked, "存档尚未完成校验，请恢复对应聊天或重新读取"),
+        { location: lastFailure?.location },
+      );
     if (state.game && !force) return state.game;
     const variables = await readVariables(token);
     syncConf(variables);
@@ -132,7 +150,8 @@ function createChatSync({
             token.scope,
             beforeUser,
           );
-        const found = T.locate(journal, token.context.history);
+        const current = await session.check(token);
+        const found = T.locate(journal, current.history);
         game = restore(found.save);
       }
     } catch (cause) {
@@ -143,6 +162,7 @@ function createChatSync({
     }
     await session.check(token);
     state.game = game;
+    needsReload = false;
     blocked = null;
     diagnostics.record("restore.done", { floor: game.save().floor });
     // Completion belongs to this session; late worldbook responses cannot update another chat's diagnostics.
@@ -158,7 +178,7 @@ function createChatSync({
       .catch(() => {});
     return game;
   }
-  async function persist(token, { reason = "save", init } = {}) {
+  async function persist(token, { reason = "save", init, expectedPath } = {}) {
     if (blocked) throw fail(blocked, "时间线校验未完成，已阻止覆盖存档");
     diagnostics.record("persist.prepare");
     let snap, save;
@@ -211,8 +231,15 @@ function createChatSync({
         reason,
       },
     };
+    const current = await session.check(token);
+    if (
+      expectedPath &&
+      T.fingerprint(T.tokens(current.history || [])) !==
+        T.fingerprint(expectedPath)
+    )
+      throw fail("HISTORY_CHANGED", "操作期间聊天发生变化，本次未保存");
     diagnostics.record("persist.write", { floor: save.floor });
-    await session.check(token);
+    needsReload = true; // Promise 拒绝不代表宿主一定未落盘；下次操作须重新读取。
     try {
       await repository.writeSnapshot({
         save,
@@ -232,14 +259,26 @@ function createChatSync({
     } catch (cause) {
       throw diagnostics.failure("persist.failed", "WRITE_FAILED", cause);
     }
-    await session.check(token);
+    const committedContext = await session.check(token);
+    if (
+      expectedPath &&
+      T.fingerprint(T.tokens(committedContext.history || [])) !==
+        T.fingerprint(expectedPath)
+    )
+      throw fail("HISTORY_CHANGED", "存储期间聊天发生变化，请重新校验");
+    needsReload = false;
     journal = nextJournal;
     revision = journal?.revision ?? null;
     hasSaved = true;
     savedFingerprint = T.fingerprint(save);
+    lastFailure = null;
     diagnostics.record("persist.done", { floor: save.floor });
     try {
-      await publishSnapshot(snap, { scope: token.scope, revision });
+      await publishSnapshot(snap, {
+        scope: token.scope,
+        revision,
+        syncOk: true,
+      });
     } catch {
       diagnostics.record("publish.failed", {
         code: "PUBLISH_FAILED",
@@ -258,49 +297,61 @@ function createChatSync({
     };
   }
   async function reconcile(token) {
-    await load(token);
+    await load(token, { force: !!blocked });
     const context = await session.check(token);
     if (!hasSaved && (!journal || journal.nodes.length === 0)) {
-      await publishSnapshot(null, { scope: token.scope });
+      lastFailure = null;
+      await publishSnapshot(null, { scope: token.scope, syncOk: true });
       return null;
     }
     if (!journal || !Array.isArray(context.history)) {
       const snap = state.game.snapshot();
-      await publishSnapshot(snap, { scope: token.scope });
+      lastFailure = null;
+      await publishSnapshot(snap, { scope: token.scope, syncOk: true });
       return snap;
     }
     const found = T.locate(journal, context.history);
     const old = state.game,
       oldJournal = T.clone(journal);
     state.game = restore(found.save);
-    // Reapply only reply declarations, never action settlement, when a swipe/edit changed prose.
-    if (found.node) {
-      const index = T.userIndex(
-        context.history,
-        context.history[found.node.path.length - 1]?.id,
-      );
-      const reply = context.history
-        .slice(index + 1)
-        .find((m) => m.role === "assistant");
-      if (
-        reply &&
-        (!found.node.replyPath ||
-          !T.prefix(found.node.replyPath, T.tokens(context.history)))
-      ) {
-        state.game.processReply(reply.text);
-        const end = context.history.indexOf(reply) + 1;
-        found.node.replyPath = T.tokens(context.history.slice(0, end));
-        found.node.after = state.game.save();
-      }
-    }
     try {
+      // Reapply only reply declarations, never action settlement, when a swipe/edit changed prose.
+      if (found.node) {
+        const index = T.userIndex(
+          context.history,
+          context.history[found.node.path.length - 1]?.id,
+        );
+        const reply = context.history
+          .slice(index + 1)
+          .find((m) => m.role === "assistant");
+        if (
+          reply &&
+          (!found.node.replyPath ||
+            !T.prefix(found.node.replyPath, T.tokens(context.history)))
+        ) {
+          state.game.processReply(reply.text);
+          const end = context.history.indexOf(reply) + 1;
+          found.node.replyPath = T.tokens(context.history.slice(0, end));
+          found.node.after = state.game.save();
+        }
+      }
       if (
         T.fingerprint(old.save()) !== T.fingerprint(state.game.save()) ||
+        savedFingerprint !== T.fingerprint(state.game.save()) ||
+        T.fingerprint(oldJournal) !== T.fingerprint(journal) ||
         journal.owner !== token.scope
       )
-        return await persist(token, { reason: "history-recovery" });
+        return await persist(token, {
+          reason: "history-recovery",
+          expectedPath: T.tokens(context.history),
+        });
       const snap = state.game.snapshot();
-      await publishSnapshot(snap, { scope: token.scope, revision });
+      lastFailure = null;
+      await publishSnapshot(snap, {
+        scope: token.scope,
+        revision,
+        syncOk: true,
+      });
       return snap;
     } catch (error) {
       return draftRollback(old, oldJournal, token)(error);
@@ -313,6 +364,11 @@ function createChatSync({
       journal && Array.isArray(context.history)
         ? T.inputPath(context.history, messageId)
         : null;
+    if (
+      path &&
+      context.history[T.userIndex(context.history, messageId)]?.text !== text
+    )
+      throw fail("HISTORY_CHANGED", "读取的玩家消息已发生变化，本次未结算");
     const key = path && T.fingerprint(path);
     const existing = key && journal.nodes.find((n) => n.key === key);
     if (existing) {
@@ -341,7 +397,12 @@ function createChatSync({
         });
         T.prune(journal, path);
       }
-      result.stats = await persist(token, { reason: "input" });
+      result.stats = await persist(token, {
+        reason: "input",
+        expectedPath: Array.isArray(context.history)
+          ? T.tokens(context.history)
+          : undefined,
+      });
       return T.clone(result);
     } catch (error) {
       return draftRollback(old, oldJournal, token)(error);
@@ -395,7 +456,12 @@ function createChatSync({
         if (auto) state.game.processFloor(text);
         else state.game.processReply(text);
       }
-      return await persist(token, { reason: "reply" });
+      return await persist(token, {
+        reason: "reply",
+        expectedPath: Array.isArray(context.history)
+          ? T.tokens(context.history)
+          : undefined,
+      });
     } catch (error) {
       return draftRollback(old, oldJournal, token)(error);
     }
@@ -442,7 +508,16 @@ function createChatSync({
   }
   return {
     rebuild: () => exclusive((token) => load(token, { force: true })),
-    persist: () => exclusive((token) => persist(token)),
+    persist: () =>
+      exclusive(async (token) => {
+        if (journal) await reconcile(token);
+        const context = await session.check(token);
+        return persist(token, {
+          expectedPath: Array.isArray(context.history)
+            ? T.tokens(context.history)
+            : undefined,
+        });
+      }),
     refreshConf: () =>
       exclusive(async (token) => {
         const v = await readVariables(token);
@@ -512,7 +587,8 @@ function createChatSync({
     reconcile: () => exclusive(reconcile),
     mutate: (method, ...args) =>
       exclusive(async (token) => {
-        await load(token);
+        await reconcile(token);
+        const commandContext = await session.check(token);
         const old = state.game,
           oldJournal = T.clone(journal);
         state.game = restore(old.save());
@@ -537,8 +613,51 @@ function createChatSync({
                 found.node.afterInput = state.game.save();
             } else journal.base.save = state.game.save();
           }
-          await persist(token, { reason: "command" });
+          await persist(token, {
+            reason: "command",
+            expectedPath: Array.isArray(commandContext.history)
+              ? T.tokens(commandContext.history)
+              : undefined,
+          });
           return result;
+        } catch (error) {
+          return draftRollback(old, oldJournal, token)(error);
+        }
+      }),
+    acceptCurrentSave: ({ confirm = false, expectedEpoch } = {}) =>
+      exclusive(async (token) => {
+        if (!confirm)
+          throw fail("RECOVERY_CONFIRM_REQUIRED", "须确认以现存存档为准继续");
+        if (expectedEpoch != null && expectedEpoch !== token.epoch)
+          throw fail("RECOVERY_EXPIRED", "恢复操作所属聊天已经切换");
+        const variables = await readVariables(token);
+        const saved = variables[VAR_SAVE];
+        if (!saved) throw fail("SAVE_INVALID", "没有可用于继续的完整存档");
+        if (![1, 2].includes(saved.v))
+          throw fail("SAVE_VERSION_UNSUPPORTED", "存档版本不支持");
+        const candidate = restore(saved);
+        const context = await session.check(token);
+        if (!token.scope || !Array.isArray(context.history))
+          throw fail(
+            "RECOVERY_UNAVAILABLE",
+            "宿主未提供完整聊天身份和历史，不能重建检查点",
+          );
+        const old = state.game,
+          oldJournal = T.clone(journal);
+        state.game = candidate;
+        journal = T.newTimeline(candidate.save(), context.history, token.scope);
+        revision = variables[VAR_TIMELINE]?.revision ?? null;
+        savedFingerprint = T.fingerprint(saved);
+        blocked = null;
+        try {
+          const snap = await persist(token, {
+            reason: "accept-current-save",
+            expectedPath: T.tokens(context.history),
+          });
+          state.pending = null;
+          state.raced = false;
+          clearReceipt();
+          return snap;
         } catch (error) {
           return draftRollback(old, oldJournal, token)(error);
         }
@@ -548,12 +667,13 @@ function createChatSync({
         const variables = await readVariables(token),
           backup = variables.wx_sync_backup;
         if (!backup?.save) throw fail("BACKUP_MISSING", "没有可恢复的备份");
-        const candidate = restore(backup.save);
+        let candidate = restore(backup.save);
         const restoredJournal = backup.timeline
           ? T.validateTimeline(backup.timeline)
           : null;
-        if (restoredJournal && Array.isArray(token.context.history))
-          T.locate(restoredJournal, token.context.history);
+        const context = await session.check(token);
+        if (restoredJournal && Array.isArray(context.history))
+          candidate = restore(T.locate(restoredJournal, context.history).save);
         const old = state.game,
           oldJournal = T.clone(journal);
         state.game = candidate;
@@ -562,7 +682,12 @@ function createChatSync({
         savedFingerprint = T.fingerprint(variables[VAR_SAVE] ?? null);
         blocked = null;
         try {
-          return await persist(token, { reason: "backup-recovery" });
+          return await persist(token, {
+            reason: "backup-recovery",
+            expectedPath: Array.isArray(context.history)
+              ? T.tokens(context.history)
+              : undefined,
+          });
         } catch (error) {
           return draftRollback(old, oldJournal, token)(error);
         }
@@ -589,6 +714,8 @@ function createChatSync({
       },
       revision,
       blocked,
+      needsReload,
+      lastFailure: T.clone(lastFailure),
     }),
   };
 }

@@ -39,9 +39,15 @@ const { createSettlement } = require("./settlement/controller.js");
 // 页面与酒馆共用一个入口；document/window 由宿主注入。
 const { scopeKey } = require("../contracts/chat-scope.js");
 const { createLifecycle } = require("./lifecycle.js");
+const { createSyncNotice } = require("./sync-notice.js");
 function mountStatusbar(document, window) {
   window.WxStatusbar?.dispose?.();
   const lifecycle = createLifecycle(window);
+  const syncNotice = createSyncNotice({
+    document,
+    lifecycle,
+    getGlue: () => window.WxGlue || globalThis.WxGlue,
+  });
   for (const id of ["quickPane", "idGrid", "allocRows", "targetGrid"]) {
     const node = document.getElementById(id);
     if (node) delete node.dataset.built;
@@ -857,7 +863,7 @@ function mountStatusbar(document, window) {
         await glue.command(methods[action], itemId);
         playFootstepSound();
       } catch (error) {
-        reportSyncError(error.code);
+        reportSyncError(error);
       }
       return;
     }
@@ -1423,7 +1429,7 @@ function mountStatusbar(document, window) {
         if (lifecycle.disposed) return;
         ZERO.done = true;
       } catch (error) {
-        reportSyncError(error.code);
+        reportSyncError(error);
         return;
       } finally {
         if (button) button.disabled = false;
@@ -1778,8 +1784,7 @@ function mountStatusbar(document, window) {
         if (tools) tools.style.display = "none";
       }
       if (lifecycle.disposed) return;
-      const notice = document.getElementById("wxSyncNotice");
-      if (notice) notice.hidden = true;
+
       ZERO.done = true;
       updateZeroChip();
       zeroFloor.hide();
@@ -1792,6 +1797,13 @@ function mountStatusbar(document, window) {
     // 主通道：壳/引擎 postMessage {wxSnap}
     lifecycle.on(window, "message", (e) => {
       if (!isCurrentScope(e.data?.wxScope)) return;
+      if (
+        e.data?.wxSyncOk &&
+        !(window.WxGlue || globalThis.WxGlue)?.getSyncDiagnostics?.()
+          .lastFailure
+      )
+        syncNotice.clear();
+      if (e.data?.wxSyncError) reportSyncError(e.data.wxSyncError);
       if (e.data?.wxReset) resetDisplay();
       else if (e.data?.wxSnap) activate(e.data.wxSnap);
     });
@@ -1843,15 +1855,12 @@ function mountStatusbar(document, window) {
     lifecycle.timeout(reportLayout, 300);
   }
 
-  function reportSyncError(code) {
-    const notice = document.getElementById("wxSyncNotice");
-    if (notice) {
-      notice.hidden = false;
-      notice.textContent = "进度同步未完成，请保留当前聊天后重试。";
-    }
-    console.warn("[CHAT_SYNC:UI]", code);
+  function reportSyncError(error) {
+    if (["STALE_SESSION", "SYNC_DISPOSED"].includes(error?.code)) return;
+    syncNotice.report(error);
   }
   function resetDisplay() {
+    syncNotice.clear();
     clearLiveData(document);
     details.reset();
     render._hist = [];
@@ -1885,6 +1894,10 @@ function mountStatusbar(document, window) {
       go: stages.go,
     },
   });
+  const initialFailure = (
+    window.WxGlue || globalThis.WxGlue
+  )?.getSyncDiagnostics?.().lastFailure;
+  if (initialFailure) reportSyncError(initialFailure);
   return { dispose };
 }
 

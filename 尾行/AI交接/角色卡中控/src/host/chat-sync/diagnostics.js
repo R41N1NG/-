@@ -15,7 +15,7 @@ function createSyncDiagnostics({ now = Date.now, limit = 24 } = {}) {
     return error;
   }
   function snapshot() {
-    return { schema: 1, events: events.map((event) => ({ ...event })) };
+    return { schema: 1, events: JSON.parse(JSON.stringify(events)) };
   }
   return { record, failure, snapshot };
 }

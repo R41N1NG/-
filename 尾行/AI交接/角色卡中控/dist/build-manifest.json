@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.2",
+  "version": "0.8.3",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "60f23cf52619f9657a95694c52835db288867e1c321da832c372f56cfb7825c6",
+  "sourceHash": "4d53385d1d188cee05edef744230b5a2fa624ccaab8c96c8aadddc1115d82d71",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "3808f76e0cefe60db495dbe647179aed57c8e951111712dd20851b893c03bfc5"
+      "sha256": "f2627932786275a7eff461906a7e482cac60de3b218228a6bf45083797ad3537"
     },
     {
       "file": "package.json",
-      "sha256": "10bb063fa00d7ca0f545288609a897d2f7d87b8588ff2a76e59f320ebafb0486"
+      "sha256": "d4df6ab555d2cc128a690bb00fa038d9aab7ca52c4580faa5759a06bee329b1c"
     },
     {
       "file": "src/config/lexicon.json",
@@ -54,6 +54,10 @@
       "sha256": "ad48bbda027bb9283292264a061c09b6cad3ab0758d34c5bac779d04d21953c9"
     },
     {
+      "file": "src/contracts/chat-sync-report.js",
+      "sha256": "eb43f48590b961b12874afb19680c70c6c29deb2b6b7069d0ebca21a42d4e344"
+    },
+    {
       "file": "src/contracts/persona.js",
       "sha256": "0737e820bb8cb8081851f21cd862d5b59e0bd7a76cf9960c020fd98a6793f61a"
     },
@@ -71,11 +75,11 @@
     },
     {
       "file": "src/host/chat-sync/controller.js",
-      "sha256": "407fea73f70f28705643186ca504f4e1ae2807d03ae6f25eb9e72f078d3bbeb0"
+      "sha256": "e6fa6fab949b3f723c1fb034351f8c70e80fdb803c826161df68831c8dbcce87"
     },
     {
       "file": "src/host/chat-sync/diagnostics.js",
-      "sha256": "5b76bb1ce4f36245162ab7a1460846c1f90de8b10b8a98d5cd2b63d58fe951ca"
+      "sha256": "670f00bad48c8c33e9d6375106d662e7dcb2ba41eb192d6fbca00d1f14abf185"
     },
     {
       "file": "src/host/chat-sync/keys.js",
@@ -83,11 +87,11 @@
     },
     {
       "file": "src/host/chat-sync/README.md",
-      "sha256": "9822bece85f57d440cfd53432568b7d63e0d4d9e3e356860e73779655799757c"
+      "sha256": "b959facee0061e7228c57a401d44753fe5cc6569ea9e869fbc851c657fa0d62a"
     },
     {
       "file": "src/host/chat-sync/repository.js",
-      "sha256": "5eab82e4c69ba47e05877121fcdf433a3ac1625b34de5079af3d803227765262"
+      "sha256": "5495d47bb59c6519d222593ce5bad870e0d3c44dca9d5a1d0cd52f68a003e227"
     },
     {
       "file": "src/host/chat-sync/session.js",
@@ -95,7 +99,7 @@
     },
     {
       "file": "src/host/chat-sync/timeline.js",
-      "sha256": "cf5c5debb3c011d1e8e4e07a5c37365e70c661f4165ae8736e17870c1c5f6818"
+      "sha256": "23cc412cfa3970086b262f43a1778e931005b2cb2a658cad33e267ca6bf156ae"
     },
     {
       "file": "src/host/environment.js",
@@ -103,7 +107,7 @@
     },
     {
       "file": "src/host/glue.js",
-      "sha256": "184ad92795becbc414d41ed314a4fb5b541454cb8e648e49f14b0324d1b145fe"
+      "sha256": "4423a4e742560b56fc367691fe54990ddf5a44c4c07c3e50a26493e466803f8f"
     },
     {
       "file": "src/host/initial-state.js",
@@ -319,11 +323,15 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "5e4dd5e888306bb9769e5e46c1127152c3b2293a86fa726db0513c2fb4cce0f7"
+      "sha256": "9760a54731aff6e3cfa49a432ea297a3d4312e09cfb7a700c7e79b44b7317ab0"
     },
     {
       "file": "src/ui/styles/statusbar.css",
-      "sha256": "bc88ec7a74216329733fb54744083d8d6a82883804062ddcd77bf61e7cadda06"
+      "sha256": "b2cccd21a9b9dbe7d43d63c17b5806d96bc49c569339c3d5bf8b875f8a7d5b67"
+    },
+    {
+      "file": "src/ui/sync-notice.js",
+      "sha256": "2c7a9ff5515fe8b70856a09b422b1a55c07f0c22adf979118e87c627a038431d"
     },
     {
       "file": "src/ui/template.html",
@@ -360,16 +368,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 517676,
-      "sha256": "6e727d5e5185976b45caa2ce738d330dff6eb03cf4d06ed7400ffe13b76b7f19"
+      "bytes": 527883,
+      "sha256": "3e3bf508e3bfb687c45d843bdaf7a06691a638f8f271c83a0c8f696259c1769e"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1119498,
-      "sha256": "119f03a150c52fc652c905c1ac7c0242170e0991e2802b62a64514ec8e4c2b01"
+      "bytes": 1140521,
+      "sha256": "e5336908ab1cb7a03ef0c906ec425517692d5fcae6fae93cb485af1a31332360"
     },
     "尾行.json": {
-      "bytes": 1230382,
-      "sha256": "5a377b8867f855f9ba44ac66c05d0a06da4440a99f866ca90f32c71e2370a643"
+      "bytes": 1253004,
+      "sha256": "5a03eb90279d696992830f225dfd8f328f293e7304a69f43d25c6c1412622eca"
     },
     "尾行-世界书.json": {
       "bytes": 10130,
