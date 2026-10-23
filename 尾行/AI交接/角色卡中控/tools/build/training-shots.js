@@ -27,6 +27,7 @@ async function buildTrainingShots() {
         mobile: false,
       });
       const html = ui.template
+        .replace('<main class="wx-standalone-main">', '<main class="wx-standalone-main"><div id="chat"><div class="mes" mesid="0"><div class="mes_text">教学截图</div></div></div>')
         .replace("/* WX_STATUSBAR_CSS */", () => ui.css)
         .replace(
           "/* WX_STATUSBAR_SCRIPT */",
@@ -217,6 +218,15 @@ async function buildTrainingShots() {
           "③ 结论与账目",
           "比较总值与难度，再看成功／失败及资源变化。",
         ],
+      ]);
+      await b.evaluate("document.getElementById('wx-settle-dialog').close();WxStatusbar.reset();document.getElementById('attributeLessonContinue').click();document.querySelector('#quickPane [data-preset=otaku]').click();true");
+      await capture("player-allocation", "#allocBox", [
+        ["#allocRemain", "基础点数", "把基础点全部分完，再继续。"],
+        ['.alloc-row[data-k="int"]', "读一行加点", "基础数值、身份修正与最终档位放在同一行；加减按钮只调整基础点。"],
+      ]);
+      await b.evaluate("document.getElementById('zeroNextStep').click();document.getElementById('attributeLessonContinue').click();true");
+      await capture("target-attributes", "#tDetailStats", [
+        ["#tDetailStats", "五项未知值", "问号表示尚未确认，不代表 0；目标不会因被选中而公开真实属性。"],
       ]);
       await b.evaluate("WxStatusbar.dispose();true");
     }

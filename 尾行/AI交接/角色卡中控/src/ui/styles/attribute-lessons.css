@@ -1,0 +1,38 @@
+/* 属性课和全教程开关独立维护，不改变正式状态栏。 */
+#wx-zero-floor .tutorial-skip-bar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:0 0 24px; padding:16px 18px; border:1px solid #d8b77066; border-radius:8px; background:linear-gradient(110deg,#bc9a4b18,#bc9a4b06); }
+#wx-zero-floor .tutorial-skip-bar > div { display:grid; gap:4px; }
+#wx-zero-floor .tutorial-skip-bar strong { font-size:13px; font-weight:500; color:#ead3a5; }
+#wx-zero-floor #tutorialSkipHint { color:#9aaa9f; font-size:11px; line-height:1.7; }
+#wx-zero-floor #tutorialSkipAll { flex-shrink:0; padding:12px 16px !important; border:1px solid #d7bd82 !important; background:#d7bd82 !important; color:#18251f !important; border-radius:5px !important; font-size:13px; font-weight:650; cursor:pointer; }
+#wx-zero-floor #tutorialSkipAll:focus-visible { outline:2px solid #ffedbf; outline-offset:4px; }
+#wx-zero-floor #tutorialSkippedStatus { color:#b5c6b1; font-size:12px; white-space:nowrap; }
+#wx-zero-floor .attribute-lesson-heading { padding:14px 0 26px; max-width:730px; }
+#wx-zero-floor .attribute-lesson-heading h3 { font-size:clamp(24px,3.3vw,35px); line-height:1.4; color:#e0e5d7; font-weight:450; margin:12px 0; letter-spacing:.02em; }
+#wx-zero-floor .attribute-lesson-heading > p:last-child { color:#9cad9b; font-size:13px; line-height:1.9; margin:0; }
+#wx-zero-floor .attribute-cards { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:9px; margin-bottom:26px; }
+#wx-zero-floor .attribute-cards article { position:relative; padding:18px 14px; background:#ffffff03; border-top:1px solid #d9bf883b; border-radius:4px; }
+#wx-zero-floor .attribute-card-index { font:10px/1.5 ui-monospace,monospace; color:#9e8e68; }
+#wx-zero-floor .attribute-cards h4 { font-size:22px; color:#dddec6; font-weight:500; margin:10px 0; }
+#wx-zero-floor .attribute-cards strong { color:#c6b78d; font-size:11px; font-weight:500; }
+#wx-zero-floor .attribute-cards p { font-size:12px; line-height:1.85; color:#9bad9d; margin:9px 0 0; }
+#wx-zero-floor .attribute-lesson-body { display:grid; grid-template-columns:minmax(0,1fr); gap:24px; align-items:start; }
+#wx-zero-floor .attribute-lesson-figure { margin:0; padding:16px; border:1px solid #5e776544; border-radius:7px; background:#06131633; min-width:0; }
+#wx-zero-floor .attribute-lesson-figure figcaption { font-size:11px; color:#b4bfa8; line-height:1.8; }
+#wx-zero-floor .attribute-lesson-figure .training-shot-notes { grid-template-columns:1fr; }
+#wx-zero-floor .attribute-lesson-reading { padding:8px 0; }
+#wx-zero-floor .attribute-lesson-reading ol { padding:0; list-style:none; counter-reset:attribute-rule; margin:18px 0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+#wx-zero-floor .attribute-lesson-reading li { position:relative; padding:0 0 18px 30px; counter-increment:attribute-rule; }
+#wx-zero-floor .attribute-lesson-reading li::before { content:counter(attribute-rule,decimal-leading-zero); position:absolute; left:0; top:2px; font:10px ui-monospace,monospace; color:#b9a16f; }
+#wx-zero-floor .attribute-lesson-reading strong { color:#d2d7bd; font-size:14px; font-weight:500; }
+#wx-zero-floor .attribute-lesson-reading p { color:#97aa96; font-size:12px; line-height:1.9; margin:8px 0 0; }
+#wx-zero-floor .attribute-lesson-footer { display:flex; justify-content:flex-end; gap:12px; padding:24px 0 8px; border-top:1px solid #a5b69f22; margin-top:24px; flex-wrap:wrap; }
+#wx-zero-floor #zeroCreationError { color:#f1adb2; font-size:13px; line-height:1.8; padding:12px; border-left:2px solid #e89fa7; }
+@media(max-width:700px){
+ #wx-zero-floor .attribute-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ #wx-zero-floor .attribute-cards article:last-child { grid-column:1/-1; }
+ #wx-zero-floor .attribute-lesson-body { grid-template-columns:1fr; }
+ #wx-zero-floor .attribute-lesson-reading ol { grid-template-columns:1fr; gap:0; }
+ #wx-zero-floor .tutorial-skip-bar { flex-wrap:wrap; gap:10px; padding:13px; }
+ #wx-zero-floor #tutorialSkipAll { width:100%; text-align:center; }
+ #wx-zero-floor .attribute-lesson-footer .zero-btn-next { width:100%; }
+}

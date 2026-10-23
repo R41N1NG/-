@@ -23,13 +23,14 @@ function buildUI({
         "正式界面或案例规则已变更，请先运行 npm run screenshots:training 更新原界面截图",
       );
   }
-  const css = ["statusbar.css", "city-map.css", "training-brief.css"]
+  const css = ["statusbar.css", "city-map.css", "training-brief.css", "attribute-lessons.css"]
     .map((file) =>
       fs.readFileSync(path.join(ROOT, "src/ui/styles", file), "utf8"),
     )
     .join("\n");
   const template = fs
     .readFileSync(path.join(ROOT, "src/ui/template.html"), "utf8")
+    .replace("<!-- WX_ATTRIBUTE_LESSONS -->", () => fs.readFileSync(path.join(ROOT, "src/ui/zero-floor/attribute-lessons.html"), "utf8"))
     .replace("<!-- WX_TRAINING_BRIEF -->", () =>
       fs.readFileSync(
         path.join(ROOT, "src/ui/zero-floor/training-brief.html"),

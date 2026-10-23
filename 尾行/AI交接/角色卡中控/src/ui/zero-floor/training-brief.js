@@ -8,6 +8,7 @@ function createTrainingBrief({
   onBack,
   onStart,
   onDemonstrate,
+  onSkipAll = onStart,
 }) {
   const field = (id) => document.getElementById(id);
   const root = field("zeroStep3"),
@@ -90,7 +91,7 @@ function createTrainingBrief({
     if (!busy && page === TRAINING_PAGES.length - 1) onStart();
   });
   lifecycle.on(skip, "click", () => {
-    if (!busy) onStart();
+    if (!busy) onSkipAll();
   });
   lifecycle.on(next, "click", () => show(page + 1));
   lifecycle.on(prev, "click", () => show(page - 1));

@@ -20,6 +20,8 @@ const {
 const { createZeroFloorHost } = require("./zero-floor/host.js");
 const { createStages } = require("./zero-floor/stages.js");
 const { createTrainingBrief } = require("./zero-floor/training-brief.js");
+const { createTutorialPolicy } = require("./zero-floor/tutorial-policy.js");
+const { createAttributeLessons } = require("./zero-floor/attribute-lessons.js");
 const MOCKS = __WX_PREVIEW__ ? require("./preview-data.js").MOCKS : {};
 const {
   SWEET,
@@ -1136,6 +1138,7 @@ function mountStatusbar(document, window) {
     done: false,
     submitting: false,
   };
+  const tutorials = createTutorialPolicy(window);
   let creationAttempt = 0;
   const sumPts = () => Object.values(ZERO.points).reduce((a, b) => a + b, 0);
   const idDef = () =>
@@ -1165,16 +1168,33 @@ function mountStatusbar(document, window) {
       document.getElementById("wx-zero-floor").dataset.zeroStep = String(step);
     },
   });
+  const attributeLessons = createAttributeLessons({
+    document, lifecycle,
+    onContinue: (course, destination) => {
+      if (ZERO.step !== 0 || ZERO.submitting) return;
+      tutorials.complete(course);
+      switchZeroStep(destination);
+    },
+    onBack: () => { if (!ZERO.submitting) switchZeroStep(1); },
+  });
+  stages.register(0, { viewId: "zeroAttributeLesson", canEnter: () => !ZERO.submitting });
+  function showAttributeBefore(course) {
+    if (!tutorials.shouldShow(course)) return false;
+    attributeLessons.show(course);
+    stages.go(0);
+    return true;
+  }
   stages.register(1, {
     tabId: "zeroStepTab1",
     viewId: "zeroStep1",
-    canEnter: () => !ZERO.submitting,
+    canEnter: () => !ZERO.submitting && !showAttributeBefore("player"),
   });
   const trainingBrief = createTrainingBrief({
     document,
     lifecycle,
     onBack: () => switchZeroStep(2),
     onStart: () => createConfirm(),
+    onSkipAll: () => skipAllTutorials(),
     onDemonstrate: (pkg) => {
       const dialog = document.getElementById("wx-settle-dialog");
       const auto = document.getElementById("settleAuto");
@@ -1213,7 +1233,7 @@ function mountStatusbar(document, window) {
     tabId: "zeroStepTab2",
     viewId: "zeroStep2",
     canEnter: () =>
-      !ZERO.submitting && !!ZERO.identity && sumPts() === POINT_BUDGET,
+      !ZERO.submitting && !!ZERO.identity && sumPts() === POINT_BUDGET && !showAttributeBefore("target"),
     enter: () => {
       renderTargetGrid();
       updateTargetDetail(ZERO.targetId || "college");
@@ -1227,7 +1247,7 @@ function mountStatusbar(document, window) {
   stages.register(3, {
     tabId: "zeroStepTab3",
     viewId: "zeroStep3",
-    canEnter: () => !ZERO.submitting && canReadBrief(),
+    canEnter: () => !ZERO.submitting && !tutorials.isSkipped() && canReadBrief(),
     enter: () =>
       trainingBrief.setSelection({
         identity: idDef(),
@@ -1239,11 +1259,51 @@ function mountStatusbar(document, window) {
       .getElementById("zeroStepTab2")
       ?.classList.toggle("completed", canReadBrief());
     const tab = document.getElementById("zeroStepTab3");
-    if (tab) tab.disabled = ZERO.submitting || !canReadBrief();
+    if (tab) {
+      tab.disabled = ZERO.submitting || !canReadBrief();
+      tab.hidden = tutorials.isSkipped();
+    }
+    syncTutorialControls();
   }
   function switchZeroStep(step) {
     stages.go(step);
   }
+  function syncTutorialControls() {
+    const skipped = tutorials.isSkipped();
+    document.getElementById("tutorialSkipAll").hidden = skipped;
+    document.getElementById("tutorialSkipAll").disabled = ZERO.submitting;
+    document.getElementById("tutorialSkippedStatus").hidden = !skipped;
+    document.getElementById("trainingStepDivider").hidden = skipped;
+    document.getElementById("zeroFlowLabel").textContent = skipped
+      ? "创建角色 → 选择目标 → 载入训练场"
+      : "属性入门 → 创建角色 → 选择目标 → 入门训练";
+    const confirm = document.getElementById("createConfirm");
+    confirm.textContent = ZERO.submitting ? "正在载入…" : skipped ? "确认目标 · 载入训练场 ↗" : "确认目标 · 查看训练简报 ➔";
+    confirm.disabled = ZERO.submitting || !canReadBrief();
+    for (const button of document.querySelectorAll("#zeroStep2 button")) {
+      if (button !== confirm) button.disabled = ZERO.submitting;
+    }
+  }
+  function skipAllTutorials() {
+    if (ZERO.submitting || tutorials.isSkipped()) return;
+    const persisted = tutorials.skipAll();
+    document.getElementById("tutorialSkipHint").textContent = persisted
+      ? "已记住：此浏览器后续不再显示任何教程。"
+      : "本次已跳过全部教程；浏览器未允许保存此偏好。";
+    const wasBrief = ZERO.step === 3;
+    if (ZERO.step === 0) switchZeroStep(attributeLessons.destination());
+    else if (wasBrief) switchZeroStep(2);
+    syncBriefAccess();
+    if (wasBrief) createConfirm();
+  }
+  lifecycle.on(document.getElementById("tutorialSkipAll"), "click", skipAllTutorials);
+  function showCreationError(error) {
+    if (!tutorials.isSkipped()) { trainingBrief.showError(error); return; }
+    const notice = document.getElementById("zeroCreationError");
+    notice.textContent = `训练场暂未载入：${error?.message || "请稍后重试"}。可再次点击“确认目标 · 载入训练场”。`;
+    notice.hidden = false;
+  }
+
 
   function renderTargetGrid() {
     const grid = document.getElementById("targetGrid");
@@ -1276,6 +1336,7 @@ function mountStatusbar(document, window) {
   }
 
   function updateTargetDetail(tid, forceReroll = false) {
+    if (ZERO.submitting) return;
     const t = TARGET_DATA.list[tid] || TARGET_DATA.list.college;
     ZERO.targetId = t.id;
     if (
@@ -1498,14 +1559,15 @@ function mountStatusbar(document, window) {
   }
 
   function openCreate() {
-    switchZeroStep(ZERO.step || 1);
+    if (ZERO.step === 0) attributeLessons.show(attributeLessons.destination() === 2 ? "target" : "player");
+    switchZeroStep(ZERO.step);
     syncCreate();
     zeroFloor.show();
   }
 
   async function createConfirm() {
     if (
-      ZERO.step !== 3 ||
+      (ZERO.step !== 3 && !(tutorials.isSkipped() && ZERO.step === 2)) ||
       ZERO.done ||
       ZERO.submitting ||
       !ZERO.identity ||
@@ -1514,6 +1576,7 @@ function mountStatusbar(document, window) {
       ZERO.targetPersona.targetId !== ZERO.targetId
     )
       return;
+    document.getElementById("zeroCreationError").hidden = true;
     const attempt = ++creationAttempt;
     const def = idDef();
     const targetDef =
@@ -1528,7 +1591,7 @@ function mountStatusbar(document, window) {
     if (ZERO.mode === "tavern") {
       const glue = window.WxGlue || globalThis.WxGlue;
       if (!glue || !glue.newGame) {
-        trainingBrief.showError({ message: "训练场暂未就绪，请稍后重试。" });
+        showCreationError({ message: "训练场暂未就绪，请稍后重试。" });
         return;
       }
       ZERO.submitting = true;
@@ -1540,7 +1603,7 @@ function mountStatusbar(document, window) {
         ZERO.done = true;
       } catch (error) {
         if (lifecycle.disposed || attempt !== creationAttempt) return;
-        trainingBrief.showError(error);
+        showCreationError(error);
         reportSyncError(error);
         return;
       } finally {
@@ -1635,6 +1698,8 @@ function mountStatusbar(document, window) {
     creationAttempt++;
     ZERO.submitting = false;
     trainingBrief.reset();
+    tutorials.resetSession();
+    document.getElementById("zeroCreationError").hidden = true;
     ZERO.done = false;
     ZERO.step = 1;
     ZERO.identity = null;
@@ -1676,7 +1741,7 @@ function mountStatusbar(document, window) {
     updateTargetDetail(ZERO.targetId || "college", true);
   });
   lifecycle.on(document.getElementById("createConfirm"), "click", () =>
-    switchZeroStep(3),
+    tutorials.isSkipped() ? createConfirm() : switchZeroStep(3),
   );
   lifecycle.on(document.getElementById("idResetBtn"), "click", () => {
     resetZero();
@@ -1988,6 +2053,8 @@ function mountStatusbar(document, window) {
     creationAttempt++;
     ZERO.submitting = false;
     trainingBrief.reset();
+    tutorials.resetSession();
+    document.getElementById("zeroCreationError").hidden = true;
     ZERO.done = false;
     ZERO.step = 1;
     ZERO.identity = null;
@@ -2014,7 +2081,11 @@ function mountStatusbar(document, window) {
     reset: resetDisplay,
     zeroFloor: {
       registerExtension: zeroFloor.registerExtension,
-      registerStep: stages.register,
+      registerStep: (id, definition) => stages.register(id, {
+        ...definition,
+        canEnter: () => (!definition.tutorialId || tutorials.shouldShow(definition.tutorialId)) && (!definition.canEnter || definition.canEnter()),
+      }),
+      tutorials: { shouldShow: tutorials.shouldShow, isSkipped: tutorials.isSkipped },
       go: stages.go,
     },
   });

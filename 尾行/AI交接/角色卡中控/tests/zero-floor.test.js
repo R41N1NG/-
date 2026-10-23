@@ -157,14 +157,17 @@ test("零楼真实建局：预设、返回、切换缓存、摇号；只确认�
       "0",
     );
     assert.equal(d.querySelector("dialog#wx-zero-floor"), null);
+    if (!d.getElementById("zeroAttributeLesson").hidden) d.getElementById("attributeLessonContinue").click();
     d.querySelector("#quickPane button").click();
     d.getElementById("zeroNextStep").click();
+    if (!d.getElementById("zeroAttributeLesson").hidden) d.getElementById("attributeLessonContinue").click();
     const name = d.getElementById("tDetailRealName").textContent;
     d.querySelector('[data-tid="ol"]').click();
     d.querySelector('[data-tid="college"]').click();
     assert.equal(d.getElementById("tDetailRealName").textContent, name);
     d.getElementById("zeroPrevStep").click();
     d.getElementById("zeroNextStep").click();
+    if (!d.getElementById("zeroAttributeLesson").hidden) d.getElementById("attributeLessonContinue").click();
     assert.equal(d.getElementById("tDetailRealName").textContent, name);
     assert.deepEqual(wbCalls, []);
     assert.equal(store.wx_save, undefined);
@@ -243,8 +246,10 @@ test("零楼真实建局：预设、返回、切换缓存、摇号；只确认�
     assert.deepEqual(wbCalls, ["college"]);
     assert.deepEqual(errors, []);
     w.WxStatusbar.reset();
+    if (!d.getElementById("zeroAttributeLesson").hidden) d.getElementById("attributeLessonContinue").click();
     d.querySelector("#quickPane button").click();
     d.getElementById("zeroNextStep").click();
+    if (!d.getElementById("zeroAttributeLesson").hidden) d.getElementById("attributeLessonContinue").click();
     assert.equal(
       d.getElementById("zeroStep2").hidden,
       false,

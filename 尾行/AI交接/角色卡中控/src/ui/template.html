@@ -424,7 +424,7 @@
       <div class="dialog-top zero-wizard-top">
         <div class="zero-title-wrap">
           <h2 id="createTitle">零楼 · 创角向导</h2>
-          <span class="zero-sub">创建角色 → 选择目标 → 训练简报</span>
+          <span class="zero-sub" id="zeroFlowLabel">属性入门 → 创建角色 → 选择目标 → 入门训练</span>
         </div>
         <!-- 步骤导航条 -->
         <div class="zero-steps-bar" role="tablist" aria-label="零楼向导步骤">
@@ -437,13 +437,20 @@
             <span class="step-num">2</span>
             <span class="step-text">选择目标</span>
           </button>
-          <span class="zero-step-divider">➔</span>
+          <span class="zero-step-divider" id="trainingStepDivider">➔</span>
           <button type="button" class="zero-step-pill" id="zeroStepTab3" data-step="3" disabled>
             <span class="step-num">3</span><span class="step-text">训练简报</span>
           </button>
         </div>
       </div>
 
+      <div class="tutorial-skip-bar">
+        <div><strong>想直接开始？</strong><span id="tutorialSkipHint">属性说明、操作图解及后续教程均可一次关闭。</span></div>
+        <button type="button" id="tutorialSkipAll">一键跳过所有教程 <span aria-hidden="true">↗</span></button>
+        <span id="tutorialSkippedStatus" role="status" hidden>全部教程已关闭</span>
+      </div>
+      <p id="zeroCreationError" role="alert" hidden></p>
+      <!-- WX_ATTRIBUTE_LESSONS -->
       <!-- ─── 步骤 1：猎手身份与点数 ─── -->
       <div class="zero-step-view" id="zeroStep1">
         <div class="create-tabs">

@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.16",
+  "version": "0.8.17",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "991256ff3ec00de5c35a7be86734b13b7f2a60a554e75aa82640629f9159b6a0",
+  "sourceHash": "4a116be5e7de3a0a0ccbd09aedface30a611d904b5df671a940c468a77c6cf45",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "bdd4ed3b24253e07c98fc573cb7da297e8ff3d70724fdcd0a2aef313815e2acf"
+      "sha256": "e763979054324deb9fd928a7658874298dd03ffcf2dde3cdb0120b523ac8aa33"
     },
     {
       "file": "package.json",
-      "sha256": "e8fba6c4c7e3bfd64a8ebc9f2ca4d8c3223ad83a5883d32a59d54b7636a30cb1"
+      "sha256": "325c1bfc0f8e490c856392e82b57928d0f5a3358e48ad55885cff1b893bc65bf"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -359,7 +359,7 @@
     },
     {
       "file": "src/ui/generated/training-shots.json",
-      "sha256": "99d2fc0ce06c2c4e9398e2cec0c51c46edb1fda9ecbec09f3f4be32d9661df4d"
+      "sha256": "8aa384eb3bc3c305bdb32ffc539dbebba48dff1dd23569c5a72cf4bc89536a1c"
     },
     {
       "file": "src/ui/generated/wardrobe-images.json",
@@ -419,7 +419,11 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "d47a10b789074cfcce76b5ed2c46bbc27dffc0611bbff95bff93ce7b45e32b07"
+      "sha256": "25e8123cd5fd5693edd25503b529106d2e565dd274a999037393644d1724a332"
+    },
+    {
+      "file": "src/ui/styles/attribute-lessons.css",
+      "sha256": "792e6c46f893f1e0759cbbcba95b252e76ccb9bff1f97b8b8f4e78d5b3f9ae87"
     },
     {
       "file": "src/ui/styles/city-map.css",
@@ -439,7 +443,15 @@
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "0bbc435f663ae9037d5e06bab313f6314f7278118fa4060f691a7d958f9b84cd"
+      "sha256": "2ef566bbe1fd7f9c7e822604f14b52050b98863db9609a03b5b29e4943715088"
+    },
+    {
+      "file": "src/ui/zero-floor/attribute-lessons.html",
+      "sha256": "29206f370182df9703b5411d3e11c5fd4ea2503fc75f12fb662be4b95c62e37c"
+    },
+    {
+      "file": "src/ui/zero-floor/attribute-lessons.js",
+      "sha256": "d1f67dd7077b34435257c501405f1cb4473800dc237af7848c866847d31870c2"
     },
     {
       "file": "src/ui/zero-floor/host.js",
@@ -451,19 +463,27 @@
     },
     {
       "file": "src/ui/zero-floor/training-brief.html",
-      "sha256": "da3c63cda320477105dc448f83bc68ecab24e82cb2b79050271d086f2b239723"
+      "sha256": "7c5f0035965cc1894cd09c9570e8d58b7ff14e019a619331f1850b19dd05bd7d"
     },
     {
       "file": "src/ui/zero-floor/training-brief.js",
-      "sha256": "82e27b3f9312d051a01ab665a891bd41e7c283a6322d5c5f1e11ea281387aaec"
+      "sha256": "d4e984584aac2d7d44b294cb956185e2627ddddd9fae600015a62047b455d10b"
     },
     {
       "file": "src/ui/zero-floor/training-examples.js",
-      "sha256": "9d18975a67e6b3b0030c61f48cb2c67725c5b06b3533df162ce4c2e83e7ca944"
+      "sha256": "7c1ad64e4a6a3bcb0dabf666cb7b4e8792d95c5af9636756137fb491ea044ec4"
     },
     {
       "file": "src/ui/zero-floor/training-pages.js",
       "sha256": "291696f7869271d7b673e969cc2f1950f6bd8035b2049d4e44af2f78393fc052"
+    },
+    {
+      "file": "src/ui/zero-floor/training-pictures.js",
+      "sha256": "e150f23f79dc47434251c8badc100bcff26f122cbb0389e803d4f2ff2ebac9d0"
+    },
+    {
+      "file": "src/ui/zero-floor/tutorial-policy.js",
+      "sha256": "46e6044941c32fa520a611adb82b6bcfb03a753d3645159876dc71c682362df1"
     },
     {
       "file": "src/utils/narrative_validator.js",
@@ -491,11 +511,11 @@
     },
     {
       "file": "tools/build/training-preview-entry.js",
-      "sha256": "46e31970011100b53d32665c1aad90294c13081055f179e36f34f785257c1a1a"
+      "sha256": "f8f2c0c4bc745f43360272fa268eab77fdfa8f45073faa0f061312a13dacf9de"
     },
     {
       "file": "tools/build/training-preview.js",
-      "sha256": "b4e33a4bd9ce42724466506dba5e3b5b62e7e63f9b16dbabe56d35532f34e73f"
+      "sha256": "8db30ce1acb09a0210aa21417d23b2e950c6085bc19a17e37c5e131ad99411e0"
     },
     {
       "file": "tools/build/training-sample.js",
@@ -507,7 +527,7 @@
     },
     {
       "file": "tools/build/training-shots.js",
-      "sha256": "922571eff060206b1616a743253eb071d24d9f648e499029972fb53eef84434d"
+      "sha256": "4a8501d7408a07a10a3b9b436f9914464a69add10589cef6f53b894ef6b1623b"
     },
     {
       "file": "tools/build/ui-config.js",
@@ -515,7 +535,7 @@
     },
     {
       "file": "tools/build/ui.js",
-      "sha256": "9ac77fafcb9d27ca1828fb4426c3b2d1d85967def358de84d4115288a59ddb6c"
+      "sha256": "2d7fd2a71d80ee2eb19674c9ad374779734608d6412b80cde0570f603d62d9c9"
     },
     {
       "file": "tools/build/wardrobe-assets.py",
@@ -524,16 +544,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 621398,
-      "sha256": "22a925c647f1d92f6c1cdb718d884f82f956bb4a8165dde39dc97ea0f4306a60"
+      "bytes": 621483,
+      "sha256": "5935c875c4af1415748f064bd0e39436400e6bc6970c096c8116ce78c7dc4b99"
     },
     "wx-statusbar.user.js": {
-      "bytes": 13755198,
-      "sha256": "f5af0d67a8ee00b16ffff5e182929e846b949983aed0726bc78827f0c1caaf0f"
+      "bytes": 14455664,
+      "sha256": "74cadf66942f38eb68516a034020c1c1cefadc1d8a05851fb625b4c95881e46c"
     },
     "尾行.json": {
-      "bytes": 13888054,
-      "sha256": "d17f6cf2c4a69ec86b89bbe9e49d0915cd1f7321ebc8377957bbe50051e3c23d"
+      "bytes": 14590234,
+      "sha256": "c2ba74c0a1a5eb0e0eb1ab905a77c255b17b2becebba20777204e1de65c502e4"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

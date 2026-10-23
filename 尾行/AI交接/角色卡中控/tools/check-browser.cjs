@@ -51,7 +51,7 @@ const deadline = setTimeout(() => {
   stop();
   console.error("浏览器检查超时");
   process.exit(1);
-}, 90000);
+}, 120000);
 (async () => {
   const active = path.join(profile, "DevToolsActivePort");
   for (let i = 0; i < 80 && !fs.existsSync(active); i++) await delay(150);
@@ -135,7 +135,7 @@ const deadline = setTimeout(() => {
       const zero=document.getElementById('wx-zero-floor');
       ok('零楼挂在第0条消息内', zero.closest('.mes')?.getAttribute('mesid')==='0'&&!zero.hidden);
       ok('零楼不是弹窗',zero.tagName==='DIV'&&getComputedStyle(zero).position==='static');
-      document.querySelector('#quickPane button').click();document.getElementById('zeroNextStep').click();
+      if(!document.getElementById('zeroAttributeLesson').hidden)document.getElementById('attributeLessonContinue').click();document.querySelector('#quickPane button').click();document.getElementById('zeroNextStep').click();if(!document.getElementById('zeroAttributeLesson').hidden)document.getElementById('attributeLessonContinue').click();
       ok('零楼切换到目标步骤',!document.getElementById('zeroStep2').hidden);
       ok('零楼宽度不超消息',zero.scrollWidth<=zero.clientWidth+2);
       document.getElementById('zeroPrevStep').click();
@@ -172,7 +172,7 @@ const deadline = setTimeout(() => {
     result.push(...checks.map((check) => ({ width, ...check })));
   }
   await evaluate(
-    "WxStatusbar.reset(); document.querySelector('#quickPane button').click(); document.getElementById('zeroNextStep').click(); true;",
+    "WxStatusbar.reset(); if(!document.getElementById('zeroAttributeLesson').hidden)document.getElementById('attributeLessonContinue').click();document.querySelector('#quickPane button').click(); document.getElementById('zeroNextStep').click();if(!document.getElementById('zeroAttributeLesson').hidden)document.getElementById('attributeLessonContinue').click(); true;",
   );
   const screenshot = await send("Page.captureScreenshot", {
     format: "png",
@@ -220,8 +220,8 @@ const deadline = setTimeout(() => {
       const checks=[];const ok=(name,value)=>checks.push({name,ok:!!value});
       WxStatusbar.reset();
       ok('简报不能越过角色与目标选择',document.getElementById('zeroStepTab3').disabled);
-      document.querySelector('#quickPane [data-preset="otaku"]').click();
-      document.getElementById('zeroNextStep').click();
+      if(!document.getElementById('zeroAttributeLesson').hidden)document.getElementById('attributeLessonContinue').click();document.querySelector('#quickPane [data-preset="otaku"]').click();
+      document.getElementById('zeroNextStep').click();if(!document.getElementById('zeroAttributeLesson').hidden)document.getElementById('attributeLessonContinue').click();
       const name=document.getElementById('tDetailRealName').textContent;
       document.getElementById('createConfirm').click();
       const brief=document.getElementById('zeroStep3');
@@ -327,6 +327,53 @@ const deadline = setTimeout(() => {
     WxStatusbar.dispose();return checks;
   })()`);
   result.push(...skipChecks);
+
+  // 两个属性前置页使用同一零楼，截图也从正式页面获取。
+  const attributePreview = require("./build/training-preview.js").buildTrainingPreview({ entry: "attributes" });
+  await send("Page.setDocumentContent", {frameId:tree.frameTree.frame.id,html:fs.readFileSync(attributePreview.file,"utf8")});
+  await evaluate("window.__trainingPreviewReady");
+  for (const width of [1100,390,320]) {
+    await send("Emulation.setDeviceMetricsOverride",{width,height:1000,deviceScaleFactor:1,mobile:false});
+    const before = await evaluate(`(()=>{
+      WxStatusbar.reset();const checks=[];const ok=(name,v)=>checks.push({width:${width},name,ok:!!v});
+      const course=document.getElementById('zeroAttributeLesson'),skip=document.getElementById('tutorialSkipAll');
+      ok('创角前先显示玩家属性课',!course.hidden&&course.dataset.attributeCourse==='player'&&document.getElementById('zeroStep1').hidden);
+      ok('属性课保留五项说明和高清正式截图',course.querySelectorAll('.attribute-cards article').length===5&&[...course.querySelectorAll('img')].some(i=>i.src.startsWith('data:image/png'))&&!course.textContent.includes('截图尚未生成'));
+      ok('全跳过按钮醒目且明确',!skip.hidden&&skip.textContent.includes('一键跳过所有教程')&&skip.getBoundingClientRect().height>=40);
+      ok('玩家属性课手机不横向溢出',document.documentElement.scrollWidth<=innerWidth+2);
+      ok('阅读属性不生成角色存档或目标',!__trainingPreviewStore().wx_save&&document.getElementById('zeroStep2').hidden);
+      window.scrollTo(0,0);return checks;
+    })()`);result.push(...before);
+    async function shotAttribute(kind) {
+      const clip=await evaluate("(()=>{const r=document.getElementById('wx-zero-floor').getBoundingClientRect();return{x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1}})()");
+      const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip});
+      fs.writeFileSync(path.join(path.dirname(attributePreview.file),kind+'-'+width+'.png'),Buffer.from(shot.data,'base64'));
+    }
+    await shotAttribute('player');
+    result.push(...await evaluate(`(()=>{
+      const checks=[];const ok=(name,v)=>checks.push({width:${width},name,ok:!!v});
+      document.getElementById('attributeLessonContinue').click();
+      ok('读完玩家属性后进入正式创角',!document.getElementById('zeroStep1').hidden);
+      document.querySelector('#quickPane [data-preset="otaku"]').click();document.getElementById('zeroNextStep').click();
+      const course=document.getElementById('zeroAttributeLesson');
+      ok('选择目标前先显示目标属性课',!course.hidden&&course.dataset.attributeCourse==='target'&&document.getElementById('zeroStep2').hidden);
+      ok('目标属性明确区分问号和情报点',course.textContent.includes('问号')&&course.textContent.includes('情报点不是情报属性'));
+      ok('目标属性课手机不横向溢出',document.documentElement.scrollWidth<=innerWidth+2);
+      window.scrollTo(0,0);return checks;
+    })()`));
+    await shotAttribute('target');
+    await evaluate("document.getElementById('attributeLessonContinue').click();true");
+  }
+  result.push(...await evaluate(`(async()=>{
+    const checks=[];const ok=(name,v)=>checks.push({name,ok:!!v});
+    WxStatusbar.reset();document.getElementById('tutorialSkipAll').click();
+    ok('一键跳过后直接显示创角且所有教程页隐藏',!document.getElementById('zeroStep1').hidden&&document.getElementById('zeroAttributeLesson').hidden&&document.getElementById('zeroStep3').hidden);
+    document.querySelector('#quickPane [data-preset="otaku"]').click();document.getElementById('zeroNextStep').click();
+    ok('全跳过后选目标不再经过教程',!document.getElementById('zeroStep2').hidden&&document.getElementById('zeroStepTab3').hidden&&document.getElementById('createConfirm').textContent.includes('载入训练场'));
+    document.getElementById('createConfirm').click();await window.__trainingPreviewOperation;
+    ok('全跳过仍完成正式建局',__trainingPreviewStore().wx_save?.floor===0&&__trainingPreviewStore().wx_save.ledgerState.pi===0&&document.getElementById('wx-zero-floor').hidden);
+    WxStatusbar.dispose();return checks;
+  })()`));
 
   // 用户可打开的独立日程预览：同一正式 UI、实际引擎往返快照。
   const preview = require("./build/day-preview.js").buildDayPreview();

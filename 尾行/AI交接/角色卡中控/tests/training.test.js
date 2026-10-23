@@ -210,6 +210,8 @@ test("教程截图来自当前正式 UI 与规则，截图变更不会静默落�
     "capsule",
     "capsule-focus",
     "settlement",
+    "player-allocation",
+    "target-attributes",
   ]) {
     assert.ok(shots[id].src.startsWith("data:image/png;base64,"));
     assert.ok(shots[id].width > 0 && shots[id].height > 0);
@@ -230,7 +232,7 @@ test("教程截图来自当前正式 UI 与规则，截图变更不会静默落�
     before.exits.every((name) => !name.includes("(前)")),
     "未知路线不能通过出口标签提前泄露",
   );
-  for (const id of ["statusbar", "terminal", "map-visible", "map-lost", "capsule", "capsule-focus", "settlement"]) {
+  for (const id of ["statusbar", "terminal", "map-visible", "map-lost", "capsule", "capsule-focus", "settlement", "player-allocation", "target-attributes"]) {
     assert.ok(shots[id + "-mobile"].src.startsWith("data:image/png;base64,"));
     assert.ok(shots[id + "-mobile"].boxes.length > 0);
   }

@@ -3,7 +3,7 @@
 const { createChatSync } = require("../../src/host/chat-sync/controller.js");
 const { createGame } = require("../../src/runtime/game.js");
 const { defaultInit } = require("../../src/host/initial-state.js");
-function boot() {
+function boot(options = {}) {
   let store = {};
   const state = { game: null, conf: {} };
   const sync = createChatSync({
@@ -47,8 +47,11 @@ function boot() {
   window.WxStatusbarUI.mountStatusbar(document, window);
   window.__trainingPreviewReady = (async () => {
     await new Promise((resolve) => window.setTimeout(resolve, 0));
+    if (options.entry === "attributes") return;
+    if (!document.getElementById("zeroAttributeLesson").hidden) document.getElementById("attributeLessonContinue").click();
     document.querySelector('#quickPane [data-preset="otaku"]')?.click();
     document.getElementById("zeroNextStep").click();
+    if (!document.getElementById("zeroAttributeLesson").hidden) document.getElementById("attributeLessonContinue").click();
     document.getElementById("createConfirm").click();
   })();
 }
