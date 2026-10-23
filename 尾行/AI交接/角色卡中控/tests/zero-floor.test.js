@@ -337,7 +337,7 @@ test("PPT 首页：公开地理图解不读取隐私或伪造定位，浏览和�
     brief.setSelection(selection);
     const diagram = d.getElementById("trainingBriefDiagram");
     const drawing = diagram.innerHTML;
-    assert.ok(diagram.querySelector('img[src^="data:image/jpeg"]'));
+    assert.ok(diagram.querySelector('img[src^="data:image/png"]'));
     assert.ok(diagram.querySelector(".training-shot-mark"));
     assert.ok(diagram.querySelector("img").alt.includes("map-visible"));
     assert.ok(

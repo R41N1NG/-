@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.15",
+  "version": "0.8.16",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "9ca4ad6a52851cdfb15d27fae906a637a81ff8a2e227cb98a03448f270b82ba8",
+  "sourceHash": "991256ff3ec00de5c35a7be86734b13b7f2a60a554e75aa82640629f9159b6a0",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "764ab7d8f2e0039b57851f88040bb55c021840eecdf754ea069e4575af06163e"
+      "sha256": "bdd4ed3b24253e07c98fc573cb7da297e8ff3d70724fdcd0a2aef313815e2acf"
     },
     {
       "file": "package.json",
-      "sha256": "d9eeb844d78cdadf21f4c16cb452b2e66a51b12233f933c1eba6204f0eef4424"
+      "sha256": "e8fba6c4c7e3bfd64a8ebc9f2ca4d8c3223ad83a5883d32a59d54b7636a30cb1"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -359,7 +359,7 @@
     },
     {
       "file": "src/ui/generated/training-shots.json",
-      "sha256": "cf679871939267a3a00ff158799e0cccfee04577287a4c6bf025ecd5fd547393"
+      "sha256": "99d2fc0ce06c2c4e9398e2cec0c51c46edb1fda9ecbec09f3f4be32d9661df4d"
     },
     {
       "file": "src/ui/generated/wardrobe-images.json",
@@ -431,7 +431,7 @@
     },
     {
       "file": "src/ui/styles/training-brief.css",
-      "sha256": "d7dc68410680c49fd096e2e7e36fee9c8f5d76588fa93223e9f20bf3059eac2f"
+      "sha256": "d1be2c43791366a1e558ae02593a3c898f5d950f28a3f9a93813456dc74dc9f1"
     },
     {
       "file": "src/ui/sync-notice.js",
@@ -451,7 +451,7 @@
     },
     {
       "file": "src/ui/zero-floor/training-brief.html",
-      "sha256": "f513204e21427ff2fa62624de46d049eb280fe217f40e6ae85e16b739c59348b"
+      "sha256": "da3c63cda320477105dc448f83bc68ecab24e82cb2b79050271d086f2b239723"
     },
     {
       "file": "src/ui/zero-floor/training-brief.js",
@@ -459,7 +459,7 @@
     },
     {
       "file": "src/ui/zero-floor/training-examples.js",
-      "sha256": "7fe4a3da3de4b43ceab53546d5f446afbb3ffec499a8a8e03f6076595e46f758"
+      "sha256": "9d18975a67e6b3b0030c61f48cb2c67725c5b06b3533df162ce4c2e83e7ca944"
     },
     {
       "file": "src/ui/zero-floor/training-pages.js",
@@ -507,7 +507,7 @@
     },
     {
       "file": "tools/build/training-shots.js",
-      "sha256": "e09f96bc8cda566601cd429ea6f0cfee1e9df8efbb401f22df24db2977799913"
+      "sha256": "922571eff060206b1616a743253eb071d24d9f648e499029972fb53eef84434d"
     },
     {
       "file": "tools/build/ui-config.js",
@@ -525,15 +525,15 @@
   "outputs": {
     "runtime.js": {
       "bytes": 621398,
-      "sha256": "0b16755652b70ebd4ef602129b3cc1b5c3ade22a3508dcb62302be7eb5c7660f"
+      "sha256": "22a925c647f1d92f6c1cdb718d884f82f956bb4a8165dde39dc97ea0f4306a60"
     },
     "wx-statusbar.user.js": {
-      "bytes": 4932533,
-      "sha256": "572e44967bba380772a25667064d7a1c300b9d6ad16bd2a4953480b9a512fc70"
+      "bytes": 13755198,
+      "sha256": "f5af0d67a8ee00b16ffff5e182929e846b949983aed0726bc78827f0c1caaf0f"
     },
     "尾行.json": {
-      "bytes": 5065301,
-      "sha256": "c1412d8af74cbfebef2d6991771f6a1c8da2bdee3be29a994f3a74301b7ffe11"
+      "bytes": 13888054,
+      "sha256": "d17f6cf2c4a69ec86b89bbe9e49d0915cd1f7321ebc8377957bbe50051e3c23d"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

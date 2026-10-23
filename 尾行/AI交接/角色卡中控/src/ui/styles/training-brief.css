@@ -1117,23 +1117,51 @@
 }
 #wx-zero-floor .training-shot-mark {
   position: absolute;
-  border: 2px solid #e5bb60 !important;
-  background: #e5bb600a !important;
+  display: block;
+  box-sizing: border-box !important;
+  border: 0 !important;
+  background: transparent !important;
   padding: 0 !important;
-  border-radius: 3px;
+  margin: 0 !important;
   min-height: 0 !important;
-  color: #f7e3ac !important;
+  min-width: 0 !important;
+  border-radius: 0 !important;
+  transform: none;
+  pointer-events: none;
+  color: #e6cf97 !important;
+  --annotation-color: #e6cf97;
 }
-#wx-zero-floor .training-shot-mark > b {
+#wx-zero-floor .training-shot-mark[hidden] { display: none !important; }
+#wx-zero-floor .training-shot-mark::after {
+  content: "";
   position: absolute;
-  left: -2px;
-  top: -16px;
-  background: #d6b56c;
-  color: #18211d;
-  font: 10px/16px system-ui;
-  min-width: 16px;
-  text-align: center;
+  inset: -3px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--annotation-color),var(--annotation-color)) left top / 12px 1px no-repeat,
+    linear-gradient(var(--annotation-color),var(--annotation-color)) left top / 1px 12px no-repeat,
+    linear-gradient(var(--annotation-color),var(--annotation-color)) right top / 12px 1px no-repeat,
+    linear-gradient(var(--annotation-color),var(--annotation-color)) right top / 1px 12px no-repeat,
+    linear-gradient(var(--annotation-color),var(--annotation-color)) left bottom / 12px 1px no-repeat,
+    linear-gradient(var(--annotation-color),var(--annotation-color)) left bottom / 1px 12px no-repeat,
+    linear-gradient(var(--annotation-color),var(--annotation-color)) right bottom / 12px 1px no-repeat,
+    linear-gradient(var(--annotation-color),var(--annotation-color)) right bottom / 1px 12px no-repeat;
 }
+#wx-zero-floor .training-shot-instruction { color: #9bafa8; font-size: 11px; margin: 14px 0 0; }
+#wx-zero-floor .training-shot-choice {
+  display: flex; gap: 10px; width: 100%; height: 100%; text-align: left;
+  border: 1px solid transparent !important; border-radius: 7px !important;
+  background: transparent !important; padding: 10px !important; margin: 0 !important;
+  color: #bacbc2 !important; cursor: pointer;
+}
+#wx-zero-floor .training-shot-choice[aria-pressed="true"] {
+  border-color: #b7a27866 !important; background: #b7a2780c !important;
+}
+#wx-zero-floor .training-shot-choice:hover { background: #ffffff08 !important; }
+#wx-zero-floor .training-shot-choice:focus-visible { outline: 2px solid #e6cf97; outline-offset: 2px; }
+#wx-zero-floor .training-shot-number { flex: 0 0 23px; color: #cdb985; font: 11px/1.8 ui-monospace,monospace; }
+#wx-zero-floor .training-shot-copy { display: block; }
+#wx-zero-floor .training-shot-description { display: block; font-size: 12px; line-height: 1.8; color: #9caf9f; margin-top: 5px; }
 #wx-zero-floor .training-shot-notes {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1157,7 +1185,7 @@
 #wx-zero-floor .training-shot-notes strong {
   color: #d3ddc6;
   font-weight: 500;
-  font-size: 11px;
+  font-size: 13px;
 }
 #wx-zero-floor .training-shot-notes p {
   color: #8fa790;
@@ -1201,7 +1229,9 @@
   font: 600 14px system-ui;
 }
 #wx-zero-floor .training-capsule-target {
-  animation: training-capsule-pulse 1.4s ease-in-out infinite;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: training-capsule-pulse 1.8s ease-in-out infinite;
 }
 #wx-zero-floor .training-capsule-target[aria-pressed="true"] {
   background: #e5bb6066 !important;
@@ -1209,7 +1239,7 @@
 }
 @keyframes training-capsule-pulse {
   50% {
-    box-shadow: 0 0 0 7px #e5bb6066;
+    box-shadow: 0 0 0 3px #e5bb6033;
   }
 }
 #wx-zero-floor .training-demo-replay {
@@ -1257,7 +1287,7 @@
   border: 0;
 }
 .training-zoom-content {
-  min-width: 860px;
+  min-width: 0;
 }
 .training-zoom-content img {
   width: 100%;
@@ -1270,8 +1300,8 @@
 #wx-settle-dialog[data-training-demo] .wing-left,
 #wx-settle-dialog[data-training-demo] .stage-center,
 #wx-settle-dialog[data-training-demo] .wing-right {
-  outline: 2px solid #d2b16b;
-  outline-offset: -2px;
+  outline: none;
+  box-shadow: inset 0 1px #d2b16b88;
 }
 #wx-settle-dialog[data-training-demo] .wing-left::before {
   content: "① 检定条件与修正";

@@ -23,7 +23,7 @@ async function buildTrainingShots() {
       await b.send("Emulation.setDeviceMetricsOverride", {
         width: viewport,
         height: 2000,
-        deviceScaleFactor: viewport === 390 ? 2 : 1,
+        deviceScaleFactor: 2,
         mobile: false,
       });
       const html = ui.template
@@ -39,6 +39,9 @@ async function buildTrainingShots() {
       const rectCode = (s) =>
         `(()=>{const e=document.querySelector(${JSON.stringify(s)});if(!e)throw Error('截图元素不存在');const r=e.getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height}})()`;
       async function capture(id, selector, regions) {
+        // 字体与弹窗入场动画完成后再测量；避免 transform 让测量与截图处于不同帧。
+        await b.evaluate("document.fonts.ready.then(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))))");
+        await b.delay(300);
         let clip = await b.evaluate(rectCode(selector));
         if (id === "capsule") {
           const r = await b.evaluate(rectCode("#wxActionDrawer"));
@@ -61,6 +64,7 @@ async function buildTrainingShots() {
         const boxes = [];
         for (const [target, title, note] of regions) {
           const r = await b.evaluate(rectCode(target));
+          if (r.width < 4 || r.height < 4) throw Error(`标注区域无有效面积：${id} ${target}`);
           boxes.push({
             left: ((r.x - clip.x) / clip.width) * 100,
             top: ((r.y - clip.y) / clip.height) * 100,
@@ -71,19 +75,19 @@ async function buildTrainingShots() {
           });
         }
         const shot = await b.send("Page.captureScreenshot", {
-          format: "jpeg",
-          quality: 86,
+          format: "png",
           captureBeyondViewport: true,
           clip: { ...clip, scale: 1 },
         });
         fs.writeFileSync(
-          path.join(out, id + (viewport === 390 ? "-mobile" : "") + ".jpg"),
+          path.join(out, id + (viewport === 390 ? "-mobile" : "") + ".png"),
           Buffer.from(shot.data, "base64"),
         );
         shots[id + (viewport === 390 ? "-mobile" : "")] = {
-          src: "data:image/jpeg;base64," + shot.data,
+          src: "data:image/png;base64," + shot.data,
           width: clip.width,
           height: clip.height,
+          pixelRatio: 2,
           boxes,
         };
       }
@@ -124,7 +128,7 @@ async function buildTrainingShots() {
           "现金、情报点和玩家五维属性在这里。",
         ],
         ["#tags", "生效修正", "装备、身份或当前状态带来的增益与妨碍。"],
-        ["#proxNodes", "接近度", "接触进展另行记录，不等同目标的警觉。"],
+        ["#proxContainer", "接近度", "接触进展另行记录，不等同目标的警觉。"],
         [
           ".wx-terminal-envbox",
           "环境与沙盘",

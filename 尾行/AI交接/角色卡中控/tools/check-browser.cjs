@@ -51,7 +51,7 @@ const deadline = setTimeout(() => {
   stop();
   console.error("浏览器检查超时");
   process.exit(1);
-}, 60000);
+}, 90000);
 (async () => {
   const active = path.join(profile, "DevToolsActivePort");
   for (let i = 0; i < 80 && !fs.existsSync(active); i++) await delay(150);
@@ -235,7 +235,7 @@ const deadline = setTimeout(() => {
       document.getElementById('trainingBriefBack').click();document.querySelector('[data-tid="college"]').click();document.getElementById('createConfirm').click();
       ok('教程首页适配窄屏且可操作',document.documentElement.scrollWidth<=innerWidth+2&&brief.scrollWidth<=brief.clientWidth+2&&!document.getElementById('trainingBriefNext').disabled);
       const diagram=document.getElementById('trainingBriefDiagram');
-      ok('PPT 图解手机也保留高亮框与箭头',diagram.getBoundingClientRect().width>200&&diagram.getBoundingClientRect().height>100&&getComputedStyle(diagram).display!=='none'&&diagram.querySelector('img[src^="data:image/jpeg"]')&&diagram.querySelector('.training-shot-mark'));
+      ok('PPT 图解手机也保留高亮框与箭头',diagram.getBoundingClientRect().width>200&&diagram.getBoundingClientRect().height>100&&getComputedStyle(diagram).display!=='none'&&diagram.querySelector('img[src^="data:image/png"]')&&diagram.querySelector('.training-shot-mark'));
       ok('PPT 首步明确且示例不冒充实时定位',brief.textContent.includes('打开城市地图，确认自己在哪里')&&brief.textContent.includes('教学示意，非实时定位')&&!diagram.querySelector('button, [tabindex], .wx-map-target, .wx-map-player'));
       return checks;
     })()`);
@@ -250,9 +250,20 @@ const deadline = setTimeout(() => {
         const brief=document.getElementById('zeroStep3');
         ok('教程第 ${page+1} 页可到达且只显示一页',brief.dataset.trainingPage==='${page}'&&document.querySelectorAll('[data-training-slide]:not([hidden])').length===1);
         ok('教程第 ${page+1} 页窄屏不溢出',document.documentElement.scrollWidth<=innerWidth+2&&brief.scrollWidth<=brief.clientWidth+2);
+        if (${page}===1) {
+          const sources=[...document.querySelectorAll('.training-real-terminal .training-source-picture')].filter(e=>e.getBoundingClientRect().width>0);
+          const terminal=sources.at(-1), frame=terminal.querySelector('.training-shot-frame');
+          const choices=[...terminal.querySelectorAll('.training-shot-choice')],marks=[...frame.querySelectorAll('.training-shot-mark')];
+          ok('高清终端使用二倍无损图片',frame.querySelector('img').naturalWidth>=frame.querySelector('img').width*1.4);
+          ok('标注默认只突出一项',marks.filter(m=>!m.hidden).length===1);
+          choices[8].click();const active=marks.filter(m=>!m.hidden),r=active[0].getBoundingClientRect();
+          ok('接近度框选完整区域且不再成为横线',active.length===1&&active[0]===marks[8]&&r.height>25&&getComputedStyle(active[0]).boxSizing==='border-box');
+          ok('说明按钮可切换高亮且不遮盖文字',choices[8].getAttribute('aria-pressed')==='true'&&!active[0].querySelector('b'));
+          choices[0].click();
+        }
         if (${page}===2) {
           const map=document.getElementById('trainingBriefLocatedMap');
-          ok('示例蓝橙位置点无字且同地分开',[...map.querySelectorAll('img[src^="data:image/jpeg"]')].filter(i=>i.getBoundingClientRect().width>0).length===2&&map.textContent.includes('最后目击')&&map.textContent.includes('真实跟缀失败'));
+          ok('示例蓝橙位置点无字且同地分开',[...map.querySelectorAll('img[src^="data:image/png"]')].filter(i=>i.getBoundingClientRect().width>0).length===2&&map.textContent.includes('最后目击')&&map.textContent.includes('真实跟缀失败'));
         }
         if (${page}===3) {
           const send=document.querySelector('[data-training-send]'),output=document.querySelector('[data-training-output]');

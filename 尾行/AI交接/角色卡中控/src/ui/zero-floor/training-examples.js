@@ -30,6 +30,7 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
     }
     zoom.querySelector(".training-zoom-content")?.remove();
     const wrap = el("div", "training-zoom-content");
+    wrap.style.width = Math.round(shot.width * 1.5) + "px";
     wrap.append(picture(id, false, false));
     zoom.append(wrap);
     zoom.showModal();
@@ -61,6 +62,7 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
     img.width = data.width;
     img.height = data.height;
     frame.append(img);
+    const marks = [];
     data.boxes.forEach((box, i) => {
       const mark = el(interactive ? "button" : "span", "training-shot-mark");
       Object.assign(mark.style, {
@@ -69,7 +71,8 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
         width: box.width + "%",
         height: box.height + "%",
       });
-      mark.append(el("b", "", String(i + 1)));
+      mark.hidden = !interactive && i !== 0;
+      marks.push(mark);
       mark.title = box.title;
       mark.setAttribute("aria-label", box.title + "：" + box.note);
       if (interactive) {
@@ -85,14 +88,22 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
     if (descriptions) {
       const list = el("ol", "training-shot-notes");
       data.boxes.forEach((b, i) => {
-        const li = el("li");
-        li.append(el("b", "", String(i + 1)));
-        const text = el("div");
-        text.append(el("strong", "", b.title), el("p", "", b.note));
-        li.append(text);
+        const li = el("li"), choice = el("button", "training-shot-choice");
+        choice.type = "button";
+        choice.setAttribute("aria-pressed", String(i === 0));
+        choice.append(el("b", "training-shot-number", String(i + 1).padStart(2, "0")));
+        const text = el("span", "training-shot-copy");
+        text.append(el("strong", "", b.title), el("span", "training-shot-description", b.note));
+        choice.append(text);
+        lifecycle.on(choice, "click", () => {
+          if (interactive) return;
+          marks.forEach((mark, j) => { mark.hidden = j !== i; });
+          list.querySelectorAll("button").forEach((button, j) => button.setAttribute("aria-pressed", String(j === i)));
+        });
+        li.append(choice);
         list.append(li);
       });
-      holder.append(list);
+      holder.append(el("p", "training-shot-instruction", "点击下方说明，查看对应位置"), list);
     }
     const enlarge = el("button", "training-shot-enlarge", "放大原截图 ↗");
     enlarge.type = "button";
@@ -131,7 +142,7 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
     el("h4", "training-example-subtitle", "放大打量胶囊（原截图裁切）"),
     picture("capsule-focus", true, true),
   );
-  const status = el("p", "training-ui-queue", "① 点击上方金框内的“打量”胶囊");
+  const status = el("p", "training-ui-queue", "① 点击上方箭头指向的“打量”胶囊");
   status.dataset.trainingQueue = "";
   status.setAttribute("role", "status");
   action.append(status);
@@ -196,7 +207,7 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
       ? "已发送：打量。判定与收录结果见下方。"
       : selected
         ? "已选中：打量。现在点击“示范发送”。"
-        : "① 点击上方金框内的“打量”胶囊";
+        : "① 点击上方箭头指向的“打量”胶囊";
   }
   for (const select of selects)
     lifecycle.on(select, "click", () => {

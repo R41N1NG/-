@@ -211,12 +211,18 @@ test("教程截图来自当前正式 UI 与规则，截图变更不会静默落�
     "capsule-focus",
     "settlement",
   ]) {
-    assert.ok(shots[id].src.startsWith("data:image/jpeg;base64,"));
+    assert.ok(shots[id].src.startsWith("data:image/png;base64,"));
     assert.ok(shots[id].width > 0 && shots[id].height > 0);
+    const png = Buffer.from(shots[id].src.split(",")[1], "base64");
+    assert.ok(Math.abs(png.readUInt32BE(16) - shots[id].width * 2) <= 1);
+    assert.ok(Math.abs(png.readUInt32BE(20) - shots[id].height * 2) <= 1);
+    assert.equal(shots[id].pixelRatio, 2);
     assert.ok(shots[id].boxes.length > 0);
-    for (const box of shots[id].boxes)
+    for (const box of shots[id].boxes) {
+      assert.ok(box.width > 0 && box.height > 0, "框选区域不得为零高横线");
       for (const key of ["left", "top", "width", "height"])
         assert.ok(Number.isFinite(box[key]));
+    }
   }
   const { before } = require("../tools/build/training-sample").trainingScenes();
   assert.ok(before.route.known.slice(1).every((n) => n === 0));
@@ -225,7 +231,7 @@ test("教程截图来自当前正式 UI 与规则，截图变更不会静默落�
     "未知路线不能通过出口标签提前泄露",
   );
   for (const id of ["statusbar", "terminal", "map-visible", "map-lost", "capsule", "capsule-focus", "settlement"]) {
-    assert.ok(shots[id + "-mobile"].src.startsWith("data:image/jpeg;base64,"));
+    assert.ok(shots[id + "-mobile"].src.startsWith("data:image/png;base64,"));
     assert.ok(shots[id + "-mobile"].boxes.length > 0);
   }
   assert.equal(shots.settlement.boxes.length, 3);
