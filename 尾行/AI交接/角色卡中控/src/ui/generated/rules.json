@@ -41,6 +41,56 @@
       ]
     }
   ],
+  "trainingSample": {
+    "caseId": "college-scan-success",
+    "targetName": "独居女大学生",
+    "before": {
+      "place": "大学正门",
+      "playerPlaceId": "school_gate_b",
+      "targetPlaceId": "school_gate_b",
+      "targetLive": true,
+      "heart": 30,
+      "stamina": 100,
+      "pi": 0,
+      "date": 1,
+      "period": "晚间",
+      "remaining": 4,
+      "budget": 4,
+      "source": "legacy"
+    },
+    "after": {
+      "place": "大学正门",
+      "playerPlaceId": "school_gate_b",
+      "targetPlaceId": "school_gate_b",
+      "targetLive": true,
+      "heart": 30,
+      "stamina": 99,
+      "pi": 2,
+      "date": 1,
+      "period": "晚间",
+      "remaining": 4,
+      "budget": 4,
+      "source": "legacy"
+    },
+    "action": {
+      "id": "scan",
+      "name": "打量",
+      "band": "success",
+      "d20": 11,
+      "total": 17,
+      "dc": 12
+    },
+    "record": [
+      "21:30",
+      "目标环顾四周，侧向身形清晰"
+    ],
+    "delta": {
+      "pi": 2,
+      "stamina": -1
+    },
+    "newFactCount": 0,
+    "attrsRevealed": 0
+  },
   "targetContent": {
     "ol": {
       "hasPack": false

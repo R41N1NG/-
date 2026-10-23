@@ -34,6 +34,7 @@ function generateUIConfig() {
   });
   const data = {
     trainingExample,
+    trainingSample: require("./training-sample.js").buildTrainingSample(),
     targetContent: Object.fromEntries(
       Object.keys(rules.targets.list).map((id) => [
         id,

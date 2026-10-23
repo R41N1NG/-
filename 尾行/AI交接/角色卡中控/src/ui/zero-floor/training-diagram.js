@@ -2,7 +2,7 @@
 // 无状态教学插图：只取公开地理配置，不接收引擎、路线、人物档案或存档。
 const { trainingExample } = require("../generated/rules.json");
 const { districts } = require("../../config/city-cartography.json");
-function drawTrainingDiagram(document) {
+function drawTrainingDiagram(document, exampleScene) {
   const svg = (tag, attrs = {}) => {
     const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
     for (const [key, value] of Object.entries(attrs))
@@ -126,6 +126,27 @@ function drawTrainingDiagram(document) {
   );
   text("从公开入口开始", 298, 59, "training-map-callout-title", "start");
   text("示例起点 · 大学正门", 298, 80, "training-map-callout-note", "start");
+  if (exampleScene) {
+    // 仅接受构建时已公开的教学案例；标记仍只按公开点白名单绘制。
+    const ids = [
+      exampleScene.playerPlaceId,
+      exampleScene.targetLive ? exampleScene.targetPlaceId : null,
+    ];
+    ids.forEach((id, i) => {
+      const point = trainingExample.find((p) => p.id === id);
+      if (!point) return;
+      const offset = ids[0] === ids[1] ? (i === 0 ? -18 : 18) : 0;
+      const group = svg("g", {
+        class: `training-map-pin ${i === 0 ? "player" : "target"}`,
+      });
+      const [x, y] = point.at;
+      group.append(svg("circle", { cx: x + offset, cy: y - 54, r: 12 }));
+      group.append(
+        svg("path", { d: `M ${x + offset - 5} ${y - 44} l 5 10 l 5 -10` }),
+      );
+      root.append(group);
+    });
+  }
   return root;
 }
 module.exports = { drawTrainingDiagram };

@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.13",
+  "version": "0.8.14",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "7b25f54a5c0c24d00846902f93e9fb44b67ad2229416bfddaa024db2affe3da1",
+  "sourceHash": "8c2b12163d170aeba12784bd4c9bb701ba66b63d26bed52c13116c89476e13f6",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "ed30ee5029391d05f440eab94ee996aafd5ed4e904000ef1ec75d3bf990d9839"
+      "sha256": "5800cb036d6ac8b53db95b8e3d5de98d0bcafd0e8e5612232dd5a23cd04afb98"
     },
     {
       "file": "package.json",
-      "sha256": "cdde02f4d6a4a83eba8044ed7966008ea78fecac6a3980c19b5147f37c105f80"
+      "sha256": "a42753f31a508fbc379a327e3a966d3fb5a0a524ff41e0954478f62cfb45461a"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -355,7 +355,7 @@
     },
     {
       "file": "src/ui/generated/rules.json",
-      "sha256": "aa8eddb0372aa1629dd937f66c7e49979fc19f21ddcd9787e78e0b94e39b0e89"
+      "sha256": "d857a99f25dcf5dbd64dedb205a22d580d8aaca17ad81016a09554ff8e52ef65"
     },
     {
       "file": "src/ui/icons.js",
@@ -419,7 +419,7 @@
     },
     {
       "file": "src/ui/styles/training-brief.css",
-      "sha256": "96b86aeb5c1988f78333812e155660b9a3f8fc58a07e8fdf35cd40feeaf530e9"
+      "sha256": "22bdb93b3b60ad5a756ffd80a820ac2e66e210bd5fc3766ca9e2aa421b5dd66c"
     },
     {
       "file": "src/ui/sync-notice.js",
@@ -439,15 +439,23 @@
     },
     {
       "file": "src/ui/zero-floor/training-brief.html",
-      "sha256": "c080dda4757dad158b1eaa81a17dee957cca22363b1b165ba1fb6274efa30cb2"
+      "sha256": "0f1e72c61ee6ead49ff5519c9e515c7832dc6d3b7907a4e6eb0348ae68524dcb"
     },
     {
       "file": "src/ui/zero-floor/training-brief.js",
-      "sha256": "9e4487f8e8ccb442a80113cc24b01501ff8e8d84bcb44f0664f53a3d1971d74f"
+      "sha256": "8bcbf5d67de04499a5864af367924229d3823f0af96989d73f61766bb53b3e5b"
     },
     {
       "file": "src/ui/zero-floor/training-diagram.js",
-      "sha256": "ba8a9404f98f9b7277173d14e491d4bcd7cc2a8c1f09babe84031340387d47c6"
+      "sha256": "1b31260993dcb879dcb75f01df3027ba67375c8c2be2a154eca4a63f81dea810"
+    },
+    {
+      "file": "src/ui/zero-floor/training-examples.js",
+      "sha256": "2cee6febbb25464e0c030f9ea28549ebf84d2442db9d58716df972771acc59c2"
+    },
+    {
+      "file": "src/ui/zero-floor/training-pages.js",
+      "sha256": "291696f7869271d7b673e969cc2f1950f6bd8035b2049d4e44af2f78393fc052"
     },
     {
       "file": "src/utils/narrative_validator.js",
@@ -470,16 +478,24 @@
       "sha256": "6b68894ef842c5a9c97c40324c384fccfaf9e439cb6fd9ecec3ad9ade1cf9896"
     },
     {
+      "file": "tools/build/training-overview.js",
+      "sha256": "c132107b4eef0eecce5120eede45aacad325ef351287cb9d6bf8c386c6c02fef"
+    },
+    {
       "file": "tools/build/training-preview-entry.js",
       "sha256": "46e31970011100b53d32665c1aad90294c13081055f179e36f34f785257c1a1a"
     },
     {
       "file": "tools/build/training-preview.js",
-      "sha256": "8d43b7edc604c9cfafd7bf36baa74c0b5342403c8c322cf1e5c7c80919df7994"
+      "sha256": "b4e33a4bd9ce42724466506dba5e3b5b62e7e63f9b16dbabe56d35532f34e73f"
+    },
+    {
+      "file": "tools/build/training-sample.js",
+      "sha256": "59a44b96ca8768c7d2b3cd080ea5d29fee7f6f73f775a44966f98d5bbf1a5a3a"
     },
     {
       "file": "tools/build/ui-config.js",
-      "sha256": "d874dd7318af9d811ead9a97af3df305c07f6cc38b369659061d61c2e0e75e81"
+      "sha256": "43b58212cfef0ecc749ee59cdad03489fac068cc316370ce83da185685c1af01"
     },
     {
       "file": "tools/build/ui.js",
@@ -489,15 +505,15 @@
   "outputs": {
     "runtime.js": {
       "bytes": 618607,
-      "sha256": "e125d2b7e1e01428ca57e8c209da12f0167873653fa568bef3757aa0ae5545c6"
+      "sha256": "87d5c49011a816a425ff994409d2e58506f88bffab0dc0140ba430a20f0329c9"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1352055,
-      "sha256": "fc191586e8a1f0811151a8b1b30d8e0989289bd3d50445daad20ed381332a639"
+      "bytes": 1393653,
+      "sha256": "126719d750fe7442846c7700a59763075c269b5500c6f8089ababf55df49dc15"
     },
     "尾行.json": {
-      "bytes": 1477867,
-      "sha256": "5b9386c499d25214cd40aa766d5f8220a09b537b74fb921771417f339c22815a"
+      "bytes": 1522313,
+      "sha256": "1771553bb6ed96328d7a2cbed3ac70feec8af43726c5a0367419b3db90ab4529"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

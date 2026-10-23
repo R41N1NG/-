@@ -51,7 +51,7 @@ const deadline = setTimeout(() => {
   stop();
   console.error("浏览器检查超时");
   process.exit(1);
-}, 45000);
+}, 60000);
 (async () => {
   const active = path.join(profile, "DevToolsActivePort");
   for (let i = 0; i < 80 && !fs.existsSync(active); i++) await delay(150);
@@ -233,7 +233,7 @@ const deadline = setTimeout(() => {
       document.querySelector('[data-tid="ol"]').click();document.getElementById('createConfirm').click();
       ok('换目标后简报更新类型',document.getElementById('trainingBriefTarget').textContent==='疲惫的OL');
       document.getElementById('trainingBriefBack').click();document.querySelector('[data-tid="college"]').click();document.getElementById('createConfirm').click();
-      ok('教程首页适配窄屏且可操作',document.documentElement.scrollWidth<=innerWidth+2&&brief.scrollWidth<=brief.clientWidth+2&&!document.getElementById('trainingBriefStart').disabled);
+      ok('教程首页适配窄屏且可操作',document.documentElement.scrollWidth<=innerWidth+2&&brief.scrollWidth<=brief.clientWidth+2&&!document.getElementById('trainingBriefNext').disabled);
       const diagram=document.getElementById('trainingBriefDiagram');
       ok('PPT 图解手机也保留高亮框与箭头',diagram.getBoundingClientRect().width>200&&diagram.getBoundingClientRect().height>100&&getComputedStyle(diagram).display!=='none'&&diagram.querySelector('.training-map-highlight')&&diagram.querySelector('.training-map-arrow'));
       ok('PPT 首步明确且示例不冒充实时定位',brief.textContent.includes('打开城市地图，确认自己在哪里')&&brief.textContent.includes('教学示意，非实时定位')&&!diagram.querySelector('button, [tabindex], .wx-map-target, .wx-map-player'));
@@ -243,6 +243,40 @@ const deadline = setTimeout(() => {
     const clip=await evaluate(`(()=>{const r=document.getElementById('wx-zero-floor').getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1};})()`);
     const shot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip});
     fs.writeFileSync(path.join(path.dirname(briefPreview.file),width===1100?"desktop.png":width===390?"mobile.png":"mobile-320.png"),Buffer.from(shot.data,"base64"));
+    for (let page = 1; page < 5; page++) {
+      const pageChecks = await evaluate(`(()=>{
+        const checks=[];const ok=(name,value)=>checks.push({name,ok:!!value});
+        document.querySelector('[data-training-page="${page}"]').click();
+        const brief=document.getElementById('zeroStep3');
+        ok('教程第 ${page+1} 页可到达且只显示一页',brief.dataset.trainingPage==='${page}'&&document.querySelectorAll('[data-training-slide]:not([hidden])').length===1);
+        ok('教程第 ${page+1} 页窄屏不溢出',document.documentElement.scrollWidth<=innerWidth+2&&brief.scrollWidth<=brief.clientWidth+2);
+        if (${page}===2) {
+          const map=document.getElementById('trainingBriefLocatedMap');
+          ok('示例蓝橙位置点无字且同地分开',map.querySelectorAll('.training-map-pin').length===2&&!map.querySelector('.training-map-pin text')&&getComputedStyle(map.querySelector('.player')).fill==='rgb(49, 139, 192)'&&getComputedStyle(map.querySelector('.target')).fill==='rgb(225, 141, 48)');
+        }
+        if (${page}===3) {
+          const send=document.querySelector('[data-training-send]'),output=document.querySelector('[data-training-output]');
+          document.getElementById('trainingBriefNarration').value='我已经知道了她的住址';
+          ok('文字不能替代点选示范动作',send.disabled&&output.hidden);
+          document.querySelector('[data-training-select]').click();
+          ok('选中打量只入队未执行',!send.disabled&&output.hidden);
+          send.click();const text=output.textContent;send.click();
+          ok('示范发送有真实结果且不累加或建局',!output.hidden&&text.includes('情报 PI +2')&&text===output.textContent&&send.disabled&&!__trainingPreviewStore().wx_save);
+          document.getElementById('trainingBriefNarration').value='我留意她的步幅和周围动静。';
+        }
+        if (${page}===4) {
+          ok('成果显示新增观察与未知边界',document.querySelector('[data-training-record]').textContent.includes('目标环顾四周')&&document.querySelector('.training-result-example').textContent.includes('本例新增档案条目：0 条'));
+          ok('最后一页才出现载入按钮',!document.getElementById('trainingBriefStart').hidden&&document.getElementById('trainingBriefNext').hidden);
+        }
+        window.scrollTo(0,0);return checks;
+      })()`);
+      result.push(...pageChecks.map(check=>({width,...check})));
+      const pageClip=await evaluate(`(()=>{const r=document.getElementById('wx-zero-floor').getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1};})()`);
+      const pageShot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:pageClip});
+      const variant=width===1100?"desktop":width===390?"mobile":"mobile-320";
+      fs.writeFileSync(path.join(path.dirname(briefPreview.file),`page-${page+1}-${variant}.png`),Buffer.from(pageShot.data,"base64"));
+    }
+
   }
   const briefEnd = await evaluate(`(async()=>{
     const checks=[];const ok=(name,value)=>checks.push({name,ok:!!value});
@@ -255,6 +289,20 @@ const deadline = setTimeout(() => {
     WxStatusbar.dispose();return checks;
   })()`);
   result.push(...briefEnd);
+  // 跳过入口同样必须接正式建局，且不会把教学示范的收益带入新局。
+  await send("Page.setDocumentContent", {frameId:tree.frameTree.frame.id,html:fs.readFileSync(briefPreview.file,"utf8")});
+  const skipChecks=await evaluate(`(async()=>{
+    await window.__trainingPreviewReady;
+    const checks=[];const ok=(name,value)=>checks.push({name,ok:!!value});
+    document.getElementById('trainingBriefSkip').click();document.getElementById('trainingBriefSkip').click();
+    ok('跳过教程的载入期间也禁用重复点击',document.getElementById('trainingBriefSkip').disabled);
+    await window.__trainingPreviewOperation;await Promise.resolve();
+    const saved=__trainingPreviewStore().wx_save;
+    ok('跳过沿正式管线建局且不带示例情报',saved?.targetId==='college'&&saved.floor===0&&saved.ledgerState.pi===0&&document.getElementById('wx-zero-floor').hidden);
+    WxStatusbar.dispose();return checks;
+  })()`);
+  result.push(...skipChecks);
+
   // 用户可打开的独立日程预览：同一正式 UI、实际引擎往返快照。
   const preview = require("./build/day-preview.js").buildDayPreview();
   await send("Page.setDocumentContent", {
@@ -413,6 +461,13 @@ const deadline = setTimeout(() => {
     );
   }
   await evaluate("WxStatusbar.dispose(); true;");
+  const overview = require("./build/training-overview.js").buildTrainingOverview();
+  await send("Emulation.setDeviceMetricsOverride", {width:1600,height:900,deviceScaleFactor:1,mobile:false});
+  await send("Page.setDocumentContent", {frameId:tree.frameTree.frame.id,html:overview.embedded});
+  await evaluate("Promise.all([...document.images].map(image=>image.decode()))");
+  const overviewClip=await evaluate('(()=>{const r=document.querySelector("main").getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1}})()');
+  const overviewShot=await send("Page.captureScreenshot", {format:"png",captureBeyondViewport:true,clip:overviewClip});
+  fs.writeFileSync(path.join(path.dirname(overview.file),"overview.png"),Buffer.from(overviewShot.data,"base64"));
   fs.writeFileSync(
     path.join(work, "result.json"),
     JSON.stringify(result, null, 2),

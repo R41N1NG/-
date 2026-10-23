@@ -565,3 +565,539 @@
     font-size: 22px;
   }
 }
+
+/* 第一项训练的五页课件；翻页与示范只是阅读 UI，不影响游戏状态。 */
+#wx-zero-floor .training-brief [hidden] {
+  display: none !important;
+}
+#wx-zero-floor .training-page-nav {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+  margin: 20px 32px 0;
+}
+#wx-zero-floor .training-page-nav button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  min-width: 0;
+  background: #17292a !important;
+  color: #8da79a !important;
+  border: 1px solid #3b5148 !important;
+  text-align: left;
+  font-size: 11px;
+}
+#wx-zero-floor .training-page-nav button span {
+  font:
+    11px ui-monospace,
+    monospace;
+  color: #6c8877;
+}
+#wx-zero-floor .training-page-nav button strong {
+  font-weight: 500;
+}
+#wx-zero-floor .training-page-nav button[aria-current="step"] {
+  background: #c4a86a15 !important;
+  border-color: #b89e64 !important;
+  color: #e2ce99 !important;
+}
+#wx-zero-floor .training-page-nav button[aria-current="step"] span {
+  color: #d1b579;
+}
+#wx-zero-floor .training-slides {
+  min-height: 490px;
+}
+#wx-zero-floor .training-lesson-layout {
+  display: grid;
+  grid-template-columns: 0.9fr 1.2fr;
+  gap: 30px;
+  align-items: center;
+  padding: 26px 32px;
+}
+#wx-zero-floor .training-lesson-copy {
+  min-width: 0;
+}
+#wx-zero-floor .training-lesson-copy h4 {
+  font-size: 24px;
+  line-height: 1.6;
+  font-weight: 450;
+  color: #e1e8d9;
+  margin: 9px 0 22px;
+  letter-spacing: 0.5px;
+}
+#wx-zero-floor .training-lesson-points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 19px;
+}
+#wx-zero-floor .training-lesson-points li {
+  display: flex;
+  gap: 11px;
+}
+#wx-zero-floor .training-lesson-points li > b {
+  font:
+    11px ui-monospace,
+    monospace;
+  color: #baa271;
+  padding-top: 4px;
+}
+#wx-zero-floor .training-lesson-points strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: #c8d6c5;
+}
+#wx-zero-floor .training-lesson-points p {
+  color: #8ba393;
+  font-size: 11px;
+  line-height: 1.9;
+  margin: 5px 0 0;
+}
+#wx-zero-floor .training-lesson-note {
+  margin: 19px 0 0;
+  padding: 12px 13px;
+  border-left: 2px solid #637c62;
+  background: #7f94770a;
+  color: #91a08c;
+  font-size: 10px;
+  line-height: 1.9;
+}
+#wx-zero-floor .training-example {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid #637f6d55;
+  border-radius: 6px;
+  background: #102127;
+  overflow: hidden;
+}
+#wx-zero-floor .training-example > figcaption {
+  padding: 11px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #637f6d33;
+}
+#wx-zero-floor .training-example > figcaption strong {
+  font-size: 11px;
+  font-weight: 500;
+  color: #c3d3c2;
+}
+#wx-zero-floor .training-example > figcaption span {
+  font-size: 9px;
+  color: #829d8d;
+}
+#wx-zero-floor .training-example-caption {
+  font-size: 9px;
+  color: #779183;
+  line-height: 1.9;
+  padding: 11px 14px;
+  margin: 0;
+  border-top: 1px solid #637f6d33;
+}
+#wx-zero-floor [data-training-example="terminal"],
+#wx-zero-floor [data-training-example="action"],
+#wx-zero-floor [data-training-example="result"] {
+  padding: 18px;
+}
+#wx-zero-floor .training-ui-callout {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 9px;
+  font-size: 11px;
+}
+#wx-zero-floor .training-ui-callout:first-child {
+  margin-top: 0;
+}
+#wx-zero-floor .training-ui-callout b {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  min-height: 22px;
+  border: 1px solid #bca36e77;
+  color: #d2b477;
+  font:
+    10px ui-monospace,
+    monospace;
+  border-radius: 3px;
+}
+#wx-zero-floor .training-ui-callout strong {
+  color: #d6d9bd;
+  font-weight: 500;
+}
+#wx-zero-floor .training-ui-callout span {
+  color: #8ca08a;
+  font-size: 9px;
+  margin-left: auto;
+}
+#wx-zero-floor .training-ui-box {
+  background: #152c30;
+  border: 1px solid #779d8329;
+  padding: 13px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: #b7cbbb;
+}
+#wx-zero-floor .training-ui-box p {
+  margin: 6px 0 0;
+}
+#wx-zero-floor .training-ui-box .training-ui-label {
+  margin: 0 0 9px;
+  color: #809c8b;
+  font-size: 10px;
+}
+#wx-zero-floor .training-ui-highlight {
+  border: 1px dashed #c4a56b;
+  background: #bca16b0a;
+  box-shadow: inset 3px 0 #c4a56b;
+}
+#wx-zero-floor .training-ui-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+#wx-zero-floor .training-ui-bar strong {
+  font-weight: 500;
+  color: #e0d5aa;
+}
+#wx-zero-floor .training-ui-bar > span {
+  font-size: 9px;
+}
+#wx-zero-floor .training-ui-bar .training-ui-link {
+  margin-left: auto;
+}
+#wx-zero-floor .training-ui-link {
+  color: #d7bd85;
+  font-size: 10px;
+}
+#wx-zero-floor .training-ui-date {
+  font-size: 11px;
+  color: #a7c4b5;
+  padding-top: 8px;
+}
+#wx-zero-floor .training-ui-muted {
+  color: #7d9889;
+  font-size: 10px;
+  line-height: 1.9;
+}
+#wx-zero-floor .training-ui-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+#wx-zero-floor .training-ui-chips > span {
+  padding: 7px 12px;
+  border: 1px solid #405c50;
+  border-radius: 4px;
+  color: #849e90;
+  font-size: 11px;
+}
+#wx-zero-floor .training-ui-chips > .selected {
+  border: 1px solid #ccb47b;
+  color: #e7d4a1;
+  box-shadow: 0 0 0 2px #c4a56b22;
+}
+#wx-zero-floor .training-map-position {
+  font-size: 10px;
+  color: #a6bfb0;
+  padding: 12px 14px;
+}
+#wx-zero-floor .training-map-position p {
+  margin: 0;
+}
+#wx-zero-floor #trainingBriefLocatedMap svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+#wx-zero-floor .training-map-pin {
+  stroke: #f4f5e7;
+  stroke-width: 2;
+}
+#wx-zero-floor .training-map-pin.player {
+  fill: #318bc0;
+}
+#wx-zero-floor .training-map-pin.target {
+  fill: #e18d30;
+}
+#wx-zero-floor .training-color-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin: 0 4px 0 10px;
+}
+#wx-zero-floor .training-color-dot:first-child {
+  margin-left: 0;
+}
+#wx-zero-floor .training-color-dot.blue {
+  background: #318bc0;
+}
+#wx-zero-floor .training-color-dot.orange {
+  background: #e18d30;
+}
+#wx-zero-floor .training-color-dot.last {
+  border: 1px dashed #e18d30;
+}
+#wx-zero-floor .training-ui-action-chips {
+  padding: 13px 0;
+}
+#wx-zero-floor .training-scan-button {
+  background: #2a3d35 !important;
+  color: #ddc797 !important;
+  border: 1px dashed #c4a56b !important;
+  padding: 8px 17px;
+  box-shadow: 0 0 0 3px #c4a56b11;
+}
+#wx-zero-floor .training-scan-button[aria-pressed="true"] {
+  background: #c4a56b !important;
+  color: #18271e !important;
+  border-style: solid !important;
+}
+#wx-zero-floor .training-ui-queue {
+  font-size: 10px;
+  color: #b3bb97;
+  margin: 0 0 16px;
+}
+#wx-zero-floor .training-narration-label {
+  display: block;
+  color: #89a294;
+  font-size: 10px;
+  margin: 13px 0 7px;
+}
+#wx-zero-floor .training-narration {
+  width: 100%;
+  max-width: 100%;
+  resize: vertical;
+  padding: 10px;
+  font:
+    11px/1.9 system-ui,
+    sans-serif;
+  border: 1px solid #3c5849;
+  border-radius: 4px;
+  color: #b9cbbd;
+  background: #0d1b20;
+}
+#wx-zero-floor .training-narration:focus-visible {
+  outline: 1px solid #c4a56b;
+  outline-offset: 3px;
+}
+#wx-zero-floor .training-demo-send {
+  width: 100%;
+  margin-top: 9px;
+  padding: 11px;
+  border: 1px solid #b5a06b !important;
+  background: #b5a06b !important;
+  color: #19261d !important;
+}
+#wx-zero-floor .training-demo-output {
+  margin-top: 14px;
+  border-left: 2px solid #6ca78d;
+  padding: 10px 12px;
+  background: #5c957015;
+  font-size: 11px;
+}
+#wx-zero-floor .training-demo-output strong {
+  font-weight: 500;
+  color: #b7d9ba;
+}
+#wx-zero-floor .training-demo-output p {
+  margin: 6px 0 0;
+}
+#wx-zero-floor .training-ui-gain {
+  color: #cab785;
+  font-size: 10px;
+}
+#wx-zero-floor .training-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+#wx-zero-floor .training-comparison > div:last-child {
+  border-color: #a8955f88;
+}
+#wx-zero-floor .training-ui-value {
+  font:
+    26px/1.7 ui-monospace,
+    monospace;
+  color: #d7c18c;
+}
+#wx-zero-floor [data-training-record] time {
+  color: #d2b779;
+  font:
+    10px ui-monospace,
+    monospace;
+}
+#wx-zero-floor .training-ui-route-hint {
+  margin: 14px 0 0;
+  color: #c3b37f;
+  font-size: 10px;
+  line-height: 1.9;
+}
+#wx-zero-floor .training-summary {
+  margin: 0 32px 20px;
+  padding: 15px 18px;
+  border: 1px solid #8c9e6955;
+  border-radius: 4px;
+  background: #7f947710;
+}
+#wx-zero-floor .training-summary > span {
+  color: #a4b291;
+  font-size: 10px;
+}
+#wx-zero-floor .training-summary p {
+  font-size: 12px;
+  color: #d5dcc3;
+  margin: 7px 0 11px;
+}
+#wx-zero-floor .training-summary i {
+  font-style: normal;
+  color: #7c957b;
+  padding: 0 6px;
+}
+#wx-zero-floor .training-summary button {
+  border: 1px solid #7c957b55 !important;
+  background: transparent !important;
+  color: #aabd9f !important;
+  padding: 5px 10px;
+  font-size: 10px;
+}
+#wx-zero-floor .training-deck-secondary {
+  display: grid;
+  gap: 3px;
+}
+#wx-zero-floor .training-skip {
+  padding: 6px 0;
+  background: transparent !important;
+  border: 0 !important;
+  color: #698574 !important;
+  font-size: 9px;
+  text-align: left;
+}
+#wx-zero-floor .training-deck-turn {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#wx-zero-floor .training-page-prev {
+  padding: 11px 13px;
+  background: transparent !important;
+  border: 1px solid #617b6655 !important;
+  color: #96aa92 !important;
+  font-size: 11px;
+}
+#wx-zero-floor #trainingBriefNext {
+  padding: 12px 16px;
+  background: #c2af7c !important;
+  color: #1b2522 !important;
+  border: 1px solid #c2af7c !important;
+  font-size: 12px;
+}
+#wx-zero-floor .training-deck-footer .training-brief-entry {
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 7px;
+}
+@media (max-width: 600px) {
+  #wx-zero-floor .training-page-nav {
+    margin: 17px 18px 0;
+    gap: 4px;
+  }
+  #wx-zero-floor .training-page-nav button {
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    padding: 9px 2px;
+    font-size: 10px;
+    text-align: center;
+  }
+  #wx-zero-floor .training-page-nav button span {
+    font-size: 9px;
+  }
+  #wx-zero-floor .training-slides {
+    min-height: 0;
+  }
+  #wx-zero-floor .training-lesson-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 23px 18px;
+  }
+  #wx-zero-floor .training-lesson-copy h4 {
+    font-size: 22px;
+    margin: 9px 0 17px;
+  }
+  #wx-zero-floor .training-lesson-copy h4 br {
+    display: none;
+  }
+  #wx-zero-floor .training-lesson-points {
+    gap: 15px;
+  }
+  #wx-zero-floor .training-example > figcaption {
+    padding: 10px 11px;
+  }
+  #wx-zero-floor .training-example > figcaption strong {
+    font-size: 10px;
+  }
+  #wx-zero-floor .training-example > figcaption span {
+    font-size: 8px;
+  }
+  #wx-zero-floor [data-training-example="terminal"],
+  #wx-zero-floor [data-training-example="action"],
+  #wx-zero-floor [data-training-example="result"] {
+    padding: 14px 11px;
+  }
+  #wx-zero-floor .training-ui-callout {
+    font-size: 10px;
+  }
+  #wx-zero-floor .training-ui-callout span {
+    font-size: 8px;
+  }
+  #wx-zero-floor .training-summary {
+    margin: 0 18px 18px;
+    padding: 14px;
+  }
+  #wx-zero-floor .training-summary p {
+    font-size: 11px;
+    line-height: 2;
+  }
+  #wx-zero-floor .training-deck-footer {
+    flex-direction: column-reverse;
+  }
+  #wx-zero-floor .training-deck-footer .training-brief-entry {
+    width: 100%;
+    align-items: center;
+  }
+  #wx-zero-floor .training-deck-turn {
+    width: 100%;
+  }
+  #wx-zero-floor .training-page-prev {
+    flex-shrink: 0;
+    padding: 13px 10px;
+  }
+  #wx-zero-floor #trainingBriefNext,
+  #wx-zero-floor #trainingBriefStart {
+    flex: 1;
+    width: auto;
+    justify-content: center;
+    padding: 13px 10px;
+    font-size: 11px;
+  }
+  #wx-zero-floor .training-deck-secondary {
+    width: 100%;
+    text-align: center;
+  }
+  #wx-zero-floor .training-skip {
+    text-align: center;
+  }
+}
+#wx-zero-floor .training-lesson-points li > b {
+  flex: 0 0 20px;
+  white-space: nowrap;
+}

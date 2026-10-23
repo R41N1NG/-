@@ -190,6 +190,12 @@ test("零楼真实建局：预设、返回、切换缓存、摇号；只确认�
     d.getElementById("trainingBriefBack").click();
     d.querySelector('[data-tid="college"]').click();
     d.getElementById("createConfirm").click();
+    d.querySelector('[data-training-page="3"]').click();
+    d.querySelector('[data-training-select="scan"]').click();
+    d.querySelector("[data-training-send]").click();
+    assert.equal(store.wx_save, undefined, "教学示范不提前写正式存档");
+    d.getElementById("trainingBriefNext").click();
+    assert.equal(d.getElementById("trainingBriefStart").hidden, false);
     const realNewGame = w.WxGlue.newGame;
     w.WxGlue.newGame = async () => {
       throw Object.assign(Error("测试：保存暂不可用"), {
@@ -217,6 +223,7 @@ test("零楼真实建局：预设、返回、切换缓存、摇号；只确认�
     for (let i = 0; i < 20 && !store.wx_save; i++) await tick();
     assert.ok(store.wx_save);
     assert.equal(store.wx_save.floor, 0);
+    assert.equal(store.wx_save.ledgerState.pi, 0, "示范 PI 不得进入正式存档");
     assert.equal(store.wx_save.targetPersona.name, confirmedName);
     assert.equal(store.wx_save.targetPersona.generatorVersion, 1);
     assert.deepEqual(wbCalls, ["college"]);
