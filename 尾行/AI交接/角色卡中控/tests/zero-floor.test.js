@@ -297,3 +297,70 @@ test("目标条目切换：机器标识扩展、关闭其他条目、保留普�
     delete globalThis.TavernHelper;
   }
 });
+
+test("PPT 首页：公开地理图解不读取隐私或伪造定位，浏览和切换不触发建局", () => {
+  const {
+    createTrainingBrief,
+  } = require("../src/ui/zero-floor/training-brief");
+  const dom = new JSDOM(buildUI({ writePreview: false }).template);
+  const d = dom.window.document,
+    life = createLifecycle(dom.window);
+  let calls = 0;
+  try {
+    const brief = createTrainingBrief({
+      document: d,
+      lifecycle: life,
+      onBack: () => calls++,
+      onStart: () => calls++,
+    });
+    const secret = "不能出现的目标住址";
+    const selection = {
+      identity: { name: "阿宅" },
+      target: {
+        name: "独居女大学生",
+        home: secret,
+        route: { nodes: [secret] },
+        stats: { per: 99 },
+      },
+    };
+    const before = JSON.stringify(selection);
+    brief.setSelection(selection);
+    const diagram = d.getElementById("trainingBriefDiagram");
+    const drawing = diagram.innerHTML;
+    assert.ok(diagram.querySelector(".training-map-highlight"));
+    assert.ok(diagram.querySelector(".training-map-arrow"));
+    assert.ok(diagram.textContent.includes("大学正门"));
+    assert.ok(
+      d
+        .getElementById("zeroStep3")
+        .textContent.includes("教学示意，非实时定位"),
+    );
+    assert.equal(
+      diagram.querySelector(
+        "button, a, [tabindex], .wx-map-player, .wx-map-target",
+      ),
+      null,
+    );
+    assert.equal(
+      d.getElementById("zeroStep3").textContent.includes(secret),
+      false,
+    );
+    diagram
+      .querySelector("svg")
+      .dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+    brief.setSelection({
+      identity: { name: "学生" },
+      target: { name: "疲惫的OL" },
+    });
+    assert.equal(diagram.innerHTML, drawing, "示例地图不能随目标隐藏路线改变");
+    assert.equal(
+      d.getElementById("trainingBriefTarget").textContent,
+      "疲惫的OL",
+    );
+    assert.equal(JSON.stringify(selection), before);
+    assert.equal(calls, 0);
+  } finally {
+    life.dispose();
+    dom.window.close();
+  }
+});

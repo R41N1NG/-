@@ -1,6 +1,6 @@
 {
   "name": "weixing-engine",
-  "version": "0.8.12",
+  "version": "0.8.13",
   "private": true,
   "description": "尾行 · 数值引擎与酒馆角色卡（检定/心跳/警觉/冲突/追逐/HUD）",
   "scripts": {

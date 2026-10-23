@@ -3315,7 +3315,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   display: block;
 }
 
-/* 零楼教程首页。仅作用于本步骤，不改变角色创建、地图或战术终端的主题。 */
+/* 零楼 PPT 教程第一页。样式只限于本步骤，示意图不参与实际地图操作。 */
 #wx-zero-floor[data-zero-step="3"] {
   max-width: 1040px;
   padding: 0;
@@ -3325,7 +3325,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   box-shadow: 0 20px 65px #0004;
 }
 #wx-zero-floor[data-zero-step="3"] .zero-wizard-top {
-  padding: 18px 24px 15px;
+  padding: 17px 28px;
   margin: 0;
   border-bottom: 1px solid #c5d4c516;
   background: #142127;
@@ -3351,210 +3351,76 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   font-family: system-ui, "Microsoft Yahei", sans-serif;
   color: #d5dfd8;
   background:
-    radial-gradient(ellipse at 80% 12%, #28484645, transparent 65%), #101c20;
-  line-height: 1.6;
+    radial-gradient(ellipse at 95% 5%, #28484655, transparent 55%), #101c20;
+  line-height: 1.7;
+}
+#wx-zero-floor .training-brief *,
+#wx-zero-floor .training-brief *::before,
+#wx-zero-floor .training-brief *::after {
+  box-sizing: border-box;
 }
 #wx-zero-floor .training-brief-topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 20px 32px 0;
+  gap: 12px;
+  padding: 23px 32px 0;
   font-size: 10px;
-  letter-spacing: 2px;
-  color: #94a7a0;
+  letter-spacing: 1.5px;
+  color: #8ba89d;
 }
 #wx-zero-floor .training-brief-phase {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #c3ad7c;
-  letter-spacing: 1px;
+  color: #b9a578;
 }
 #wx-zero-floor .training-brief-phase i {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #bfa56f;
-  box-shadow: 0 0 10px #d7b57e50;
+  background: #c7ad74;
 }
-#wx-zero-floor .training-brief-hero {
-  display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  gap: 26px;
-  padding: 26px 32px 27px;
-  align-items: center;
+#wx-zero-floor .training-brief-heading {
+  padding: 23px 32px 24px;
 }
 #wx-zero-floor .training-brief-eyebrow {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  margin: 0 0 17px;
+  margin: 0 0 8px;
   font-size: 10px;
-  color: #b7a47a;
+  color: #bfa875;
   letter-spacing: 2px;
 }
 #wx-zero-floor .training-brief-eyebrow span {
-  width: 17px;
-  height: 1px;
-  background: #b9a26c;
+  color: #60796e;
+  padding: 0 6px;
 }
 #wx-zero-floor .training-brief h3 {
-  margin: 0 0 19px;
-  color: #e9ede1;
-  font-size: clamp(27px, 4vw, 43px);
+  margin: 0 0 12px;
+  color: #eff0e4;
+  font-size: clamp(28px, 4vw, 39px);
+  font-weight: 500;
   line-height: 1.4;
   letter-spacing: 2px;
-  font-weight: 500;
   outline: none;
 }
 #wx-zero-floor .training-brief-lead {
-  color: #a8bbb2;
-  font-size: 12px;
-  line-height: 1.95;
   margin: 0;
-  max-width: 370px;
-}
-#wx-zero-floor .training-brief-coach {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  margin-top: 25px;
-  padding-top: 16px;
-  border-top: 1px solid #b4c6b61b;
-  position: relative;
-}
-#wx-zero-floor .training-brief-coach-mark {
-  color: #b6a172;
-  font:
-    40px/1 Georgia,
-    serif;
-}
-#wx-zero-floor .training-brief-coach p {
-  margin: 0;
-  color: #91a79c;
+  max-width: 660px;
   font-size: 12px;
+  color: #a1b5aa;
   line-height: 1.9;
-}
-#wx-zero-floor .training-brief-coach strong {
-  color: #c5d2bf;
-  font-weight: 500;
-}
-#wx-zero-floor .training-brief-coach-from {
-  font-size: 9px;
-  color: #a69a7d;
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  letter-spacing: 2px;
-}
-#wx-zero-floor .training-brief-art {
-  min-width: 0;
-  position: relative;
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background:
-    radial-gradient(ellipse at 50% 70%, #428e7d1f, transparent 65%),
-    linear-gradient(130deg, #19332f44, #0d1b2122);
-  border: 1px solid #69938230;
-  border-radius: 4px;
-  overflow: hidden;
-}
-#wx-zero-floor .training-brief-art::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(#69938208 1px, transparent 1px),
-    linear-gradient(90deg, #69938208 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-#wx-zero-floor .training-brief-art-caption {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: #8da99b;
-  padding: 15px 16px 0;
-  position: relative;
-}
-#wx-zero-floor .training-brief-art-caption span:last-child {
-  color: #617e76;
-  font-size: 8px;
-  letter-spacing: 1px;
-}
-#wx-zero-floor #trainingBriefHologram {
-  width: 100%;
-  position: relative;
-}
-#wx-zero-floor #trainingBriefHologram svg {
-  width: 100%;
-  height: auto;
-  display: block;
-  max-height: 310px;
-}
-#wx-zero-floor .holo-ground {
-  fill: #2b594f19;
-  stroke: #5b8f7866;
-  stroke-width: 1;
-}
-#wx-zero-floor .holo-grid {
-  stroke: #528a7144;
-  stroke-width: 0.8;
-  fill: none;
-}
-#wx-zero-floor .holo-wall {
-  fill: #173e38;
-  stroke: #5d9d85aa;
-  stroke-width: 0.8;
-}
-#wx-zero-floor .holo-wall.east {
-  fill: #1b4840;
-}
-#wx-zero-floor .holo-roof {
-  fill: #2b5f50;
-  stroke: #85b99baa;
-  stroke-width: 1;
-}
-#wx-zero-floor .focal .holo-roof {
-  fill: #806c4266;
-  stroke: #c8b57a;
-}
-#wx-zero-floor .focal .holo-wall {
-  fill: #5d543344;
-  stroke: #ad9a65;
-}
-#wx-zero-floor .training-brief-art-foot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  padding: 0 0 16px;
-  color: #688c7b;
-  font-size: 9px;
-  letter-spacing: 3px;
-}
-#wx-zero-floor .training-brief-art-foot i {
-  width: 18px;
-  height: 1px;
-  background: #73927e44;
 }
 #wx-zero-floor .training-brief-assignment {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.25fr;
-  gap: 0;
+  grid-template-columns: 1fr 1fr 1fr;
   margin: 0 32px;
-  padding: 17px 0;
-  border-top: 1px solid #819d8c38;
-  border-bottom: 1px solid #819d8c38;
+  padding: 14px 0;
+  border-block: 1px solid #819d8c30;
 }
 #wx-zero-floor .training-brief-assignment > div {
   min-width: 0;
   padding: 0 20px;
-  border-right: 1px solid #819d8c22;
+  border-right: 1px solid #819d8c25;
 }
 #wx-zero-floor .training-brief-assignment > div:first-child {
   padding-left: 0;
@@ -3563,95 +3429,275 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   border: 0;
 }
 #wx-zero-floor .training-brief-assignment dt {
-  margin: 0 0 5px;
-  font-size: 10px;
-  color: #7c968b;
+  font-size: 9px;
+  color: #799588;
+  margin: 0 0 4px;
   letter-spacing: 1px;
 }
 #wx-zero-floor .training-brief-assignment dd {
   margin: 0;
   color: #d4dccb;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.6;
+  font-size: 12px;
   overflow-wrap: anywhere;
 }
-#wx-zero-floor .training-brief-lessons {
+#wx-zero-floor .training-brief-hero {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  padding: 25px 32px 22px;
+  grid-template-columns: 0.85fr 1.3fr;
+  gap: 30px;
+  padding: 26px 32px;
+  align-items: center;
 }
-#wx-zero-floor .training-brief-lessons article {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+#wx-zero-floor .training-brief-mission {
   min-width: 0;
 }
-#wx-zero-floor .training-brief-number {
-  font:
-    300 22px/1.2 ui-monospace,
-    Consolas,
-    monospace;
-  color: #668875;
-  letter-spacing: -1px;
-  padding-top: 3px;
-}
-#wx-zero-floor .training-brief-lessons h4 {
-  font-weight: 500;
-  margin: 0 0 6px;
-  color: #cad6c5;
-  font-size: 13px;
+#wx-zero-floor .training-brief-kicker {
+  font-size: 10px;
+  color: #94a99a;
   letter-spacing: 1px;
 }
-#wx-zero-floor .training-brief-lessons p {
+#wx-zero-floor .training-brief-mission h4 {
+  font-size: 23px;
+  color: #e2e7d9;
+  font-weight: 450;
+  line-height: 1.65;
+  margin: 9px 0 13px;
+  letter-spacing: 1px;
+}
+#wx-zero-floor .training-brief-mission > p {
+  font-size: 11px;
+  color: #8fa89b;
   margin: 0;
-  color: #819b8e;
+  line-height: 1.95;
+}
+#wx-zero-floor .training-brief-clue {
+  border-left: 2px solid #c5a468;
+  margin: 20px 0 15px;
+  padding: 1px 0 1px 14px;
+}
+#wx-zero-floor .training-brief-clue > span {
+  display: block;
+  color: #c0a66f;
+  font-size: 9px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+#wx-zero-floor .training-brief-clue strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #d9dfcb;
+}
+#wx-zero-floor .training-brief-clue p {
   font-size: 10px;
+  color: #91a497;
+  margin: 6px 0 0;
   line-height: 1.9;
 }
-#wx-zero-floor .training-brief-boundary {
+#wx-zero-floor .training-brief-mission > .training-brief-unknown {
+  color: #758e82;
+  font-size: 10px;
+}
+#wx-zero-floor .training-brief-art {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid #71867a55;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #15252a;
+}
+#wx-zero-floor .training-brief-art-caption {
   display: flex;
-  gap: 12px;
-  margin: 0 32px;
-  padding: 13px 15px;
-  background: #ad99600b;
-  border: 1px solid #ad996025;
-  color: #aaac95;
-  font-size: 10px;
-  line-height: 1.9;
-  border-radius: 3px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 14px;
+  align-items: center;
 }
-#wx-zero-floor .training-brief-boundary > span:first-child {
-  font-size: 15px;
-  color: #b7a16f;
+#wx-zero-floor .training-brief-art-caption strong {
+  font-size: 11px;
+  font-weight: 500;
+  color: #c0d0c0;
+}
+#wx-zero-floor .training-brief-art-caption > span {
+  font-size: 9px;
+  color: #809b8c;
+}
+#wx-zero-floor #trainingBriefDiagram {
+  background: #dce0d0;
+}
+#wx-zero-floor #trainingBriefDiagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+#wx-zero-floor .training-map-ground {
+  fill: #dce0d0;
+}
+#wx-zero-floor .training-map-block {
+  fill: #bcc6b6;
+  stroke: #9caa98;
+}
+#wx-zero-floor .training-map-block.campus {
+  fill: #cfbc97;
+  stroke: #b09b70;
+}
+#wx-zero-floor .training-map-block.shop {
+  fill: #c2b7a1;
+}
+#wx-zero-floor .training-map-block.park {
+  fill: #9db397;
+}
+#wx-zero-floor .training-map-roof {
+  fill: #e4e3d5;
+  fill-opacity: 0.4;
+  stroke: #fbf9e6;
+  stroke-opacity: 0.4;
+}
+#wx-zero-floor .training-map-road-edge {
+  fill: none;
+  stroke: #b3b7a8;
+  stroke-linejoin: round;
+}
+#wx-zero-floor .training-map-road {
+  fill: none;
+  stroke: #f5f3e7;
+  stroke-linejoin: round;
+}
+#wx-zero-floor .training-map-label {
+  font:
+    13px system-ui,
+    sans-serif;
+  fill: #51665c;
+}
+#wx-zero-floor .training-map-label.focus {
+  fill: #354c43;
+  font-size: 18px;
+  font-weight: 650;
+}
+#wx-zero-floor .training-map-road-label {
+  fill: #808776;
+  font:
+    10px system-ui,
+    sans-serif;
+}
+#wx-zero-floor .training-map-highlight {
+  fill: #e6b65010;
+  stroke: #bd8b36;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+#wx-zero-floor .training-map-corners {
+  fill: none;
+  stroke: #8f6221;
+  stroke-width: 3;
+}
+#wx-zero-floor .training-map-arrow {
+  fill: none;
+  stroke: #9c6e27;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+#wx-zero-floor .training-map-callout {
+  fill: #faf7e9;
+  stroke: #c2a16a;
+}
+#wx-zero-floor .training-map-callout-title {
+  fill: #594a2d;
+  font:
+    600 14px system-ui,
+    sans-serif;
+}
+#wx-zero-floor .training-map-callout-note {
+  fill: #8a7855;
+  font:
+    11px system-ui,
+    sans-serif;
+}
+#wx-zero-floor .training-brief-art-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 13px 6px;
+  color: #a4b8aa;
+  font-size: 9px;
+  flex-wrap: wrap;
+}
+#wx-zero-floor .training-brief-art-foot span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+#wx-zero-floor .training-brief-art-foot i {
+  width: 9px;
+  height: 9px;
+  border: 1px solid #c3a167;
+}
+#wx-zero-floor .training-brief-example-note {
+  color: #759084;
+  font-size: 9px;
+  line-height: 1.8;
+  margin: 0;
+  padding: 0 13px 10px;
+}
+#wx-zero-floor .training-brief-next {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 32px;
+  padding: 15px 18px;
+  background: #89aa8b0a;
+  border: 1px solid #8ba18a33;
+  border-radius: 4px;
+}
+#wx-zero-floor .training-brief-next-arrow {
+  color: #c1aa76;
+  font-size: 27px;
+  line-height: 1;
+}
+#wx-zero-floor .training-brief-next div > span {
+  font-size: 9px;
+  color: #8da291;
+}
+#wx-zero-floor .training-brief-next p {
+  font-size: 13px;
+  color: #d0dac9;
+  margin: 3px 0 0;
+}
+#wx-zero-floor .training-brief-next strong {
+  color: #e4cd94;
+  font-weight: 500;
+}
+#wx-zero-floor .training-brief-next-tag {
+  margin-left: auto;
+  color: #758c7d;
+  font-size: 10px;
+  white-space: nowrap;
 }
 #wx-zero-floor .training-brief-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin: 24px 32px 20px;
+  margin: 20px 32px;
 }
 #wx-zero-floor .training-brief button {
   font-family: inherit;
+  line-height: 1.5;
   transition:
     background-color 0.15s,
     color 0.15s;
-  line-height: 1.5;
-  box-sizing: border-box;
   letter-spacing: 0.6px;
 }
 #wx-zero-floor .training-brief-back {
   padding: 8px 0;
-  background: transparent;
-  border: 0;
-  color: #8ca398;
+  background: transparent !important;
+  border: 0 !important;
+  color: #8ca398 !important;
   font-size: 11px;
   text-align: left;
 }
 #wx-zero-floor .training-brief-back:hover {
-  color: #d5dfd1;
+  background: transparent !important;
+  color: #d5dfd1 !important;
 }
 #wx-zero-floor .training-brief-entry {
   display: flex;
@@ -3668,16 +3714,16 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   justify-content: space-between;
   gap: 25px;
   padding: 12px 20px;
-  border: 1px solid #c2af7c;
-  background: #c2af7c;
-  color: #1b2522;
+  border: 1px solid #c2af7c !important;
+  background: #c2af7c !important;
+  color: #1b2522 !important;
   border-radius: 3px;
   font-size: 12px;
   font-weight: 650;
-  box-shadow: 0 3px 15px #b5a37116;
 }
 #wx-zero-floor #trainingBriefStart:hover {
-  background: #d2c191;
+  background: #d2c191 !important;
+  border-color: #d2c191 !important;
 }
 #wx-zero-floor .training-brief button:focus-visible {
   outline: 2px solid #e4cf96;
@@ -3696,10 +3742,24 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 #wx-zero-floor .training-brief-notice:empty {
   display: none;
 }
+#wx-zero-floor .training-brief-page-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 32px;
+  border-top: 1px solid #77968220;
+  color: #718a7c;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+#wx-zero-floor .training-brief-page-foot b {
+  color: #c1aa76;
+  font:
+    12px ui-monospace,
+    monospace;
+}
 @media (max-width: 600px) {
   #wx-zero-floor[data-zero-step="3"] .zero-wizard-top {
     padding: 14px 17px;
-    gap: 12px;
   }
   #wx-zero-floor[data-zero-step="3"] .zero-steps-bar {
     gap: 8px;
@@ -3707,85 +3767,83 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
     justify-content: space-between;
   }
   #wx-zero-floor .training-brief-topline {
-    padding: 17px 19px 0;
-    font-size: 9px;
-    letter-spacing: 1px;
+    padding: 17px 18px 0;
+    font-size: 8px;
+    letter-spacing: 0.6px;
   }
-  #wx-zero-floor .training-brief-hero {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 23px 19px 20px;
+  #wx-zero-floor .training-brief-heading {
+    padding: 20px 18px;
   }
   #wx-zero-floor .training-brief h3 {
-    font-size: 33px;
+    font-size: 28px;
     letter-spacing: 1px;
-    margin-bottom: 14px;
   }
   #wx-zero-floor .training-brief-lead {
-    font-size: 12px;
-    max-width: none;
-  }
-  #wx-zero-floor .training-brief-coach {
-    margin-top: 18px;
-    padding-top: 14px;
-  }
-  #wx-zero-floor .training-brief-art {
-    display: none;
+    font-size: 11px;
   }
   #wx-zero-floor .training-brief-assignment {
-    margin: 0 19px;
+    margin: 0 18px;
     grid-template-columns: 1fr 1fr;
-    padding: 14px 0;
-    row-gap: 14px;
+    padding: 12px 0;
+    row-gap: 12px;
   }
   #wx-zero-floor .training-brief-assignment > div {
-    padding: 0 0 0 15px;
+    padding: 0 0 0 12px;
   }
   #wx-zero-floor .training-brief-assignment > div:nth-child(2) {
     border: 0;
   }
   #wx-zero-floor .training-brief-assignment > div:last-child {
     grid-column: 1/-1;
-    padding: 12px 0 0;
+    padding: 10px 0 0;
     border-top: 1px solid #819d8c22;
     display: flex;
-    gap: 12px;
     align-items: center;
+    gap: 13px;
   }
   #wx-zero-floor .training-brief-assignment > div:last-child dt {
     margin: 0;
     flex-shrink: 0;
   }
-  #wx-zero-floor .training-brief-assignment dd {
+  #wx-zero-floor .training-brief-hero {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 20px 18px;
+  }
+  #wx-zero-floor .training-brief-mission h4 {
+    font-size: 21px;
+    margin: 7px 0 10px;
+  }
+  #wx-zero-floor .training-brief-mission h4 br {
+    display: none;
+  }
+  #wx-zero-floor .training-brief-clue {
+    margin: 14px 0 10px;
+  }
+  #wx-zero-floor .training-brief-art-caption {
+    padding: 9px 11px;
+  }
+  #wx-zero-floor .training-brief-art-caption strong {
+    font-size: 10px;
+  }
+  #wx-zero-floor .training-brief-art-caption > span {
+    font-size: 8px;
+  }
+  #wx-zero-floor .training-brief-next {
+    margin: 0 18px;
+    padding: 13px 12px;
+    gap: 10px;
+  }
+  #wx-zero-floor .training-brief-next p {
     font-size: 12px;
   }
-  #wx-zero-floor .training-brief-lessons {
-    grid-template-columns: 1fr;
-    gap: 15px;
-    padding: 20px 19px;
-  }
-  #wx-zero-floor .training-brief-number {
-    font-size: 20px;
-    width: 27px;
-    flex-shrink: 0;
-  }
-  #wx-zero-floor .training-brief-lessons h4 {
-    margin-bottom: 3px;
-    font-size: 13px;
-  }
-  #wx-zero-floor .training-brief-lessons p {
-    font-size: 11px;
-  }
-  #wx-zero-floor .training-brief-boundary {
-    margin: 0 19px;
-    padding: 12px;
-    font-size: 10px;
-    gap: 9px;
+  #wx-zero-floor .training-brief-next-tag {
+    display: none;
   }
   #wx-zero-floor .training-brief-footer {
-    margin: 20px 19px;
+    margin: 18px;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 12px;
   }
   #wx-zero-floor .training-brief-back {
     order: 2;
@@ -3796,7 +3854,7 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
   #wx-zero-floor .training-brief-entry {
     width: 100%;
     flex-direction: column-reverse;
-    gap: 9px;
+    gap: 8px;
   }
   #wx-zero-floor #trainingBriefStart {
     width: 100%;
@@ -3805,28 +3863,24 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
     padding: 13px 16px;
   }
   #wx-zero-floor .training-brief-notice {
-    margin: 0 19px 18px;
+    margin: 0 18px 18px;
+  }
+  #wx-zero-floor .training-brief-page-foot {
+    padding: 11px 18px;
+    font-size: 8px;
   }
 }
-/* 宿主通用按钮皮使用 !important；在本页面内明确区分主、次操作。 */
-#wx-zero-floor .training-brief-back {
-  background: transparent !important;
-  border: 0 !important;
-  color: #8ca398 !important;
-}
-#wx-zero-floor .training-brief-back:hover {
-  background: transparent !important;
-  color: #d5dfd1 !important;
-}
-#wx-zero-floor #trainingBriefStart {
-  background: #c2af7c !important;
-  border: 1px solid #c2af7c !important;
-  color: #1b2522 !important;
-}
-#wx-zero-floor #trainingBriefStart:hover {
-  background: #d2c191 !important;
-  border-color: #d2c191 !important;
-  color: #1b2522 !important;
+
+@media (max-width: 600px) {
+  #wx-zero-floor .training-map-callout-title {
+    font-size: 20px;
+  }
+  #wx-zero-floor .training-map-callout-note {
+    font-size: 13px;
+  }
+  #wx-zero-floor .training-map-label.focus {
+    font-size: 22px;
+  }
 }
 
 </style>
@@ -4330,37 +4384,102 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
           <button type="button" class="create-confirm" id="createConfirm">确认目标 · 查看训练简报 ➔</button>
         </div>
       </div>
-    <div class="zero-step-view training-brief" id="zeroStep3" hidden aria-labelledby="trainingBriefTitle">
-  <div class="training-brief-topline"><span>全息训练系统</span><span class="training-brief-phase">入场简报 <i aria-hidden="true"></i></span></div>
-  <div class="training-brief-hero">
-    <div class="training-brief-intro">
-      <p class="training-brief-eyebrow"><span aria-hidden="true"></span> 特工基础训练 / 序章</p>
-      <h3 id="trainingBriefTitle" tabindex="-1">先学会观察，<br>再走进人群。</h3>
-      <p class="training-brief-lead">为保卫祖国做好准备。你将作为特工学员，进入全拟真的全息城市，练习观察、判断与隐蔽行动。</p>
-      <div class="training-brief-coach"><span class="training-brief-coach-mark" aria-hidden="true">“</span><p>终端能帮你记住发现，<br><strong>但不会替你知道一切。</strong></p><span class="training-brief-coach-from">训练提示</span></div>
-    </div>
-    <div class="training-brief-art" aria-label="全息城市环境示意，不表示目标位置">
-      <div class="training-brief-art-caption"><span>城市环境</span><span>全息场景示意</span></div>
-      <div id="trainingBriefHologram" aria-hidden="true"></div>
-      <div class="training-brief-art-foot"><span>观察</span><i aria-hidden="true"></i><span>判断</span><i aria-hidden="true"></i><span>行动</span></div>
-    </div>
+    <div
+  class="zero-step-view training-brief"
+  id="zeroStep3"
+  hidden
+  aria-labelledby="trainingBriefTitle"
+>
+  <div class="training-brief-topline">
+    <span>全息潜行训练 · 入门教程</span
+    ><span class="training-brief-phase"
+      >入场说明 <i aria-hidden="true"></i
+    ></span>
   </div>
+  <header class="training-brief-heading">
+    <p class="training-brief-eyebrow">
+      第 01 页 <span aria-hidden="true">—</span> 先明确任务
+    </p>
+    <h3 id="trainingBriefTitle" tabindex="-1">你的第一项训练</h3>
+    <p class="training-brief-lead">
+      为保卫祖国做好准备。你将以特工学员的身份，进入全拟真的全息城市，学习观察、判断与隐蔽行动。
+    </p>
+  </header>
   <dl class="training-brief-assignment">
-    <div><dt>你的掩护身份</dt><dd id="trainingBriefIdentity">尚未选择</dd></div>
-    <div><dt>本次训练对象</dt><dd id="trainingBriefTarget">尚未选择</dd></div>
-    <div><dt>情报获取方式</dt><dd>现场观察 · 行动调查</dd></div>
+    <div>
+      <dt>你的掩护身份</dt>
+      <dd id="trainingBriefIdentity">尚未选择</dd>
+    </div>
+    <div>
+      <dt>本次训练对象</dt>
+      <dd id="trainingBriefTarget">尚未选择</dd>
+    </div>
+    <div>
+      <dt>本页目标</dt>
+      <dd>知道从哪里开始</dd>
+    </div>
   </dl>
-  <div class="training-brief-lessons" aria-label="基础训练要点">
-    <article><span class="training-brief-number">01</span><div><h4>认清位置</h4><p>找到自己，分清目视位置与最后目击。</p></div></article>
-    <article><span class="training-brief-number">02</span><div><h4>读懂线索</h4><p>观察与调查所得，才会成为你的情报。</p></div></article>
-    <article><span class="training-brief-number">03</span><div><h4>谨慎行动</h4><p>先看行动条件与代价，再决定怎么做。</p></div></article>
+  <div class="training-brief-hero">
+    <div class="training-brief-mission">
+      <span class="training-brief-kicker">这次要学会什么？</span>
+      <h4>从一个公开起点，<br />开始认识目标。</h4>
+      <p>
+        先认清周围环境，再从实际发现中寻找线索。你需要判断下一步做什么，而不是一开始就掌握她的全部生活。
+      </p>
+      <div class="training-brief-clue">
+        <span>为什么从这里开始</span><strong>训练会先给你一个公开起点。</strong>
+        <p>右图以大学正门为例：它给出调查的方向，不代表目标现在就在那里。</p>
+      </div>
+      <p class="training-brief-unknown">
+        目标的位置、日程与住址，需要在场景中逐步确认。
+      </p>
+    </div>
+    <figure class="training-brief-art">
+      <figcaption class="training-brief-art-caption">
+        <strong>图解 · 从哪里开始</strong><span>大学城教学示例</span>
+      </figcaption>
+      <div
+        id="trainingBriefDiagram"
+        role="img"
+        aria-label="大学城教学示意：金色方框和箭头指向大学正门这一公开起点；不显示玩家或目标的实时位置"
+      ></div>
+      <div class="training-brief-art-foot">
+        <span><i aria-hidden="true"></i> 金框：示例起点</span
+        ><span>目标位置：待现场确认</span>
+      </div>
+      <p class="training-brief-example-note">
+        教学示意，非实时定位。你的实际起点以载入后的场景为准。
+      </p>
+    </figure>
   </div>
-  <p class="training-brief-boundary"><span aria-hidden="true">◇</span><span>训练对象有自己的生活。她的日程与住址不会在简报中公开，需要你在场景中逐步调查。</span></p>
+  <div class="training-brief-next">
+    <span class="training-brief-next-arrow" aria-hidden="true">↗</span>
+    <div>
+      <span>载入后，先做这一件事</span>
+      <p>打开<strong>城市地图</strong>，确认自己在哪里。</p>
+    </div>
+    <span class="training-brief-next-tag">先认路，再行动</span>
+  </div>
   <div class="training-brief-footer">
-    <button type="button" class="training-brief-back" id="trainingBriefBack">← 返回目标选择</button>
-    <div class="training-brief-entry"><span>阅读简报不消耗行动点</span><button type="button" id="trainingBriefStart">载入训练场 <span aria-hidden="true">↗</span></button></div>
+    <button type="button" class="training-brief-back" id="trainingBriefBack">
+      ← 返回目标选择
+    </button>
+    <div class="training-brief-entry">
+      <span>阅读不消耗行动点</span
+      ><button type="button" id="trainingBriefStart">
+        载入训练场 <span aria-hidden="true">↗</span>
+      </button>
+    </div>
   </div>
-  <p id="trainingBriefNotice" class="training-brief-notice" role="status" aria-live="polite"></p>
+  <p
+    id="trainingBriefNotice"
+    class="training-brief-notice"
+    role="status"
+    aria-live="polite"
+  ></p>
+  <div class="training-brief-page-foot">
+    <span><b>01</b> / 入场训练</span><span>接下来认识：战术终端</span>
+  </div>
 </div>
 
     <div data-zero-slot="after"></div>
@@ -4582,6 +4701,48 @@ var WxStatusbarUI = (() => {
   var require_rules = __commonJS({
     "src/ui/generated/rules.json"(exports, module) {
       module.exports = {
+        trainingExample: [
+          {
+            id: "school_gate_b",
+            name: "\u5927\u5B66\u6B63\u95E8",
+            at: [
+              140,
+              100
+            ]
+          },
+          {
+            id: "university_library_b",
+            name: "\u5927\u5B66\u56FE\u4E66\u9986",
+            at: [
+              75,
+              205
+            ]
+          },
+          {
+            id: "university_canteen_b",
+            name: "\u5927\u5B66\u98DF\u5802",
+            at: [
+              190,
+              205
+            ]
+          },
+          {
+            id: "school_bus_terminal_b",
+            name: "\u5B66\u533A\u516C\u4EA4\u603B\u7AD9",
+            at: [
+              355,
+              190
+            ]
+          },
+          {
+            id: "store_24h_b",
+            name: "\u8001\u885724h\u4FBF\u5229\u5E97",
+            at: [
+              355,
+              285
+            ]
+          }
+        ],
         targetContent: {
           ol: {
             hasPack: false
@@ -9668,99 +9829,950 @@ var WxStatusbarUI = (() => {
     }
   });
 
+  // src/config/city-cartography.json
+  var require_city_cartography = __commonJS({
+    "src/config/city-cartography.json"(exports, module) {
+      module.exports = {
+        schema: 1,
+        districts: {
+          B: {
+            subtitle: "\u5927\u5B66\u57CE \xB7 \u9AD8\u4E2D\u6821\u533A \xB7 \u8001\u8857\u4F4F\u5B85",
+            roads: [
+              {
+                name: "\u5B66\u5E9C\u8DEF",
+                points: [
+                  [0, 150],
+                  [760, 150]
+                ],
+                width: 24,
+                kind: "street",
+                label: [350, 154]
+              },
+              {
+                name: "\u69D0\u836B\u8857",
+                points: [
+                  [0, 350],
+                  [760, 350]
+                ],
+                width: 22,
+                kind: "street",
+                label: [130, 354]
+              },
+              {
+                name: "\u8001\u8857",
+                points: [
+                  [250, 150],
+                  [250, 560]
+                ],
+                width: 22,
+                kind: "street",
+                label: [250, 300]
+              },
+              {
+                name: "\u4E1C\u5DF7",
+                points: [
+                  [465, 150],
+                  [465, 560]
+                ],
+                width: 14,
+                kind: "street",
+                label: [465, 520]
+              },
+              {
+                name: "",
+                points: [
+                  [250, 410],
+                  [465, 410],
+                  [465, 490]
+                ],
+                width: 9,
+                kind: "lane"
+              },
+              {
+                name: "",
+                points: [
+                  [90, 350],
+                  [90, 455]
+                ],
+                width: 8,
+                kind: "lane"
+              },
+              {
+                name: "\u6587\u6559\u4E1C\u8DEF",
+                points: [
+                  [620, 150],
+                  [620, 560]
+                ],
+                width: 20,
+                kind: "street",
+                label: [620, 325]
+              }
+            ],
+            blocks: [
+              {
+                kind: "campus",
+                box: [30, 60, 220, 80]
+              },
+              {
+                kind: "campus",
+                box: [450, 60, 230, 80]
+              },
+              {
+                kind: "park",
+                box: [285, 60, 100, 55]
+              },
+              {
+                kind: "transit",
+                box: [285, 165, 145, 62]
+              },
+              {
+                kind: "home",
+                box: [30, 250, 90, 78]
+              },
+              {
+                kind: "park",
+                box: [137, 250, 85, 78]
+              },
+              {
+                kind: "shop",
+                box: [285, 250, 145, 74]
+              },
+              {
+                kind: "transit",
+                box: [640, 230, 100, 70]
+              },
+              {
+                kind: "housing",
+                box: [285, 380, 145, 65]
+              },
+              {
+                kind: "housing",
+                box: [640, 380, 100, 105]
+              },
+              {
+                kind: "shop",
+                box: [130, 470, 90, 66]
+              },
+              {
+                kind: "housing",
+                box: [30, 380, 33, 70]
+              },
+              {
+                kind: "housing",
+                box: [117, 380, 103, 66]
+              },
+              {
+                kind: "shop",
+                box: [30, 175, 90, 55]
+              },
+              {
+                kind: "shop",
+                box: [145, 175, 90, 55]
+              },
+              {
+                kind: "shop",
+                box: [510, 175, 100, 55]
+              },
+              {
+                kind: "shop",
+                box: [510, 285, 100, 50]
+              },
+              {
+                kind: "market",
+                box: [285, 470, 145, 55]
+              },
+              {
+                kind: "housing",
+                box: [510, 470, 100, 55]
+              }
+            ]
+          },
+          A: {
+            subtitle: "\u5546\u52A1\u6838\u5FC3 \xB7 \u8F68\u4EA4\u67A2\u7EBD \xB7 \u5546\u4E1A\u751F\u6D3B\u5708",
+            roads: [
+              {
+                name: "\u5546\u52A1\u5927\u9053",
+                points: [
+                  [0, 145],
+                  [960, 145]
+                ],
+                width: 28,
+                kind: "street",
+                label: [365, 149]
+              },
+              {
+                name: "\u4E2D\u57CE\u8DEF",
+                points: [
+                  [250, 40],
+                  [250, 800]
+                ],
+                width: 24,
+                kind: "street",
+                label: [250, 278]
+              },
+              {
+                name: "\u540E\u8857",
+                points: [
+                  [0, 290],
+                  [960, 290]
+                ],
+                width: 18,
+                kind: "street",
+                label: [355, 294]
+              },
+              {
+                name: "\u7AD9\u524D\u8DEF",
+                points: [
+                  [465, 40],
+                  [465, 800]
+                ],
+                width: 24,
+                kind: "street",
+                label: [465, 420]
+              },
+              {
+                name: "",
+                points: [
+                  [0, 430],
+                  [960, 430]
+                ],
+                width: 12,
+                kind: "lane"
+              },
+              {
+                name: "",
+                points: [
+                  [350, 290],
+                  [350, 430]
+                ],
+                width: 10,
+                kind: "lane"
+              },
+              {
+                name: "\u5546\u4E1A\u5927\u9053",
+                points: [
+                  [0, 645],
+                  [960, 645]
+                ],
+                width: 24,
+                kind: "street",
+                label: [350, 649]
+              },
+              {
+                name: "\u751F\u6D3B\u8DEF",
+                points: [
+                  [610, 145],
+                  [610, 800]
+                ],
+                width: 22,
+                kind: "street",
+                label: [610, 580]
+              },
+              {
+                name: "\u4E1C\u57CE\u5927\u9053",
+                points: [
+                  [915, 0],
+                  [915, 800]
+                ],
+                width: 28,
+                kind: "highway",
+                label: [915, 490]
+              },
+              {
+                name: "",
+                points: [
+                  [0, 490],
+                  [610, 490]
+                ],
+                width: 18,
+                kind: "walk"
+              },
+              {
+                name: "",
+                points: [
+                  [0, 790],
+                  [960, 790]
+                ],
+                width: 18,
+                kind: "street"
+              }
+            ],
+            blocks: [
+              {
+                kind: "office",
+                box: [30, 48, 180, 83]
+              },
+              {
+                kind: "office",
+                box: [30, 176, 180, 90]
+              },
+              {
+                kind: "office",
+                box: [285, 50, 145, 76]
+              },
+              {
+                kind: "transit",
+                box: [500, 50, 92, 78]
+              },
+              {
+                kind: "transit",
+                box: [285, 188, 145, 77]
+              },
+              {
+                kind: "park",
+                box: [500, 185, 92, 80]
+              },
+              {
+                kind: "shop",
+                box: [500, 320, 92, 70]
+              },
+              {
+                kind: "service",
+                box: [30, 335, 180, 77]
+              },
+              {
+                kind: "office",
+                box: [285, 320, 43, 80]
+              },
+              {
+                kind: "office",
+                box: [373, 320, 57, 80]
+              },
+              {
+                kind: "mall",
+                box: [650, 50, 240, 80]
+              },
+              {
+                kind: "service",
+                box: [640, 190, 100, 70]
+              },
+              {
+                kind: "shop",
+                box: [780, 190, 110, 70]
+              },
+              {
+                kind: "service",
+                box: [640, 315, 100, 70]
+              },
+              {
+                kind: "office",
+                box: [780, 315, 110, 70]
+              },
+              {
+                kind: "park",
+                box: [650, 435, 240, 90]
+              },
+              {
+                kind: "market",
+                box: [285, 465, 145, 55]
+              },
+              {
+                kind: "mall",
+                box: [30, 535, 180, 75]
+              },
+              {
+                kind: "nightlife",
+                box: [285, 535, 145, 75]
+              },
+              {
+                kind: "service",
+                box: [500, 535, 92, 75]
+              },
+              {
+                kind: "shop",
+                box: [640, 607, 100, 30]
+              },
+              {
+                kind: "service",
+                box: [780, 590, 110, 45]
+              },
+              {
+                kind: "transit",
+                box: [650, 700, 240, 55]
+              },
+              {
+                kind: "service",
+                box: [500, 680, 92, 70]
+              },
+              {
+                kind: "housing",
+                box: [285, 680, 145, 70]
+              },
+              {
+                kind: "office",
+                box: [30, 680, 180, 70]
+              },
+              {
+                kind: "mall",
+                box: [640, 540, 100, 45]
+              }
+            ]
+          },
+          C: {
+            subtitle: "\u9152\u5427\u8857 \xB7 \u591C\u5E02 \xB7 \u6C5F\u5824 \xB7 \u57CE\u4E2D\u6751",
+            roads: [
+              {
+                name: "\u4E34\u6C5F\u8DEF",
+                points: [
+                  [0, 145],
+                  [800, 145]
+                ],
+                width: 24,
+                kind: "street",
+                label: [355, 149]
+              },
+              {
+                name: "\u5357\u8857",
+                points: [
+                  [0, 290],
+                  [800, 290]
+                ],
+                width: 20,
+                kind: "street",
+                label: [355, 294]
+              },
+              {
+                name: "\u7801\u5934\u8DEF",
+                points: [
+                  [465, 40],
+                  [465, 450],
+                  [800, 450]
+                ],
+                width: 20,
+                kind: "street",
+                label: [465, 255]
+              },
+              {
+                name: "",
+                points: [
+                  [250, 40],
+                  [250, 425]
+                ],
+                width: 18,
+                kind: "street"
+              },
+              {
+                name: "\u6CBF\u6C5F\u6B65\u9053",
+                points: [
+                  [0, 525],
+                  [485, 525],
+                  [570, 550]
+                ],
+                width: 14,
+                kind: "walk",
+                label: [120, 529]
+              },
+              {
+                name: "",
+                points: [
+                  [70, 320],
+                  [250, 320],
+                  [250, 425]
+                ],
+                width: 8,
+                kind: "lane"
+              },
+              {
+                name: "",
+                points: [
+                  [170, 290],
+                  [170, 425]
+                ],
+                width: 8,
+                kind: "lane"
+              },
+              {
+                name: "",
+                points: [
+                  [0, 350],
+                  [250, 350]
+                ],
+                width: 8,
+                kind: "lane"
+              },
+              {
+                name: "\u5A31\u4E50\u4E1C\u8857",
+                points: [
+                  [620, 40],
+                  [620, 560]
+                ],
+                width: 18,
+                kind: "street",
+                label: [620, 260]
+              }
+            ],
+            blocks: [
+              {
+                kind: "nightlife",
+                box: [30, 52, 180, 75]
+              },
+              {
+                kind: "market",
+                box: [285, 52, 145, 75]
+              },
+              {
+                kind: "transit",
+                box: [500, 52, 92, 75]
+              },
+              {
+                kind: "nightlife",
+                box: [30, 185, 180, 75]
+              },
+              {
+                kind: "shop",
+                box: [285, 188, 145, 75]
+              },
+              {
+                kind: "park",
+                box: [500, 185, 92, 75]
+              },
+              {
+                kind: "housing",
+                box: [285, 320, 145, 105]
+              },
+              {
+                kind: "housing",
+                box: [30, 303, 30, 33]
+              },
+              {
+                kind: "housing",
+                box: [85, 303, 65, 33]
+              },
+              {
+                kind: "housing",
+                box: [185, 303, 38, 33]
+              },
+              {
+                kind: "housing",
+                box: [185, 370, 38, 52]
+              },
+              {
+                kind: "market",
+                box: [30, 370, 120, 52]
+              },
+              {
+                kind: "nightlife",
+                box: [650, 50, 90, 75]
+              },
+              {
+                kind: "housing",
+                box: [650, 190, 90, 70]
+              },
+              {
+                kind: "shop",
+                box: [650, 315, 90, 70]
+              },
+              {
+                kind: "nightlife",
+                box: [500, 320, 92, 70]
+              },
+              {
+                kind: "service",
+                box: [645, 465, 100, 50]
+              },
+              {
+                kind: "service",
+                box: [285, 465, 145, 45]
+              }
+            ]
+          },
+          D: {
+            subtitle: "\u90CA\u5916 \xB7 \u6797\u5730 \xB7 \u516C\u8DEF \xB7 \u4F4F\u5B85\u9662\u843D",
+            roads: [
+              {
+                name: "\u90CA\u91CE\u516C\u8DEF",
+                points: [
+                  [0, 390],
+                  [600, 390]
+                ],
+                width: 28,
+                kind: "highway",
+                label: [170, 394]
+              },
+              {
+                name: "\u6797\u95F4\u652F\u8DEF",
+                points: [
+                  [320, 390],
+                  [320, 170],
+                  [390, 170]
+                ],
+                width: 14,
+                kind: "street",
+                label: [320, 352]
+              },
+              {
+                name: "",
+                points: [
+                  [320, 205],
+                  [600, 205]
+                ],
+                width: 12,
+                kind: "street"
+              },
+              {
+                name: "",
+                points: [
+                  [140, 390],
+                  [140, 420]
+                ],
+                width: 10,
+                kind: "street"
+              }
+            ],
+            blocks: [
+              {
+                kind: "forest",
+                box: [25, 55, 225, 285]
+              },
+              {
+                kind: "garden",
+                box: [355, 178, 235, 155]
+              },
+              {
+                kind: "villa",
+                box: [355, 55, 235, 105]
+              },
+              {
+                kind: "service",
+                box: [50, 340, 180, 40]
+              }
+            ]
+          }
+        },
+        landmarks: {
+          school_gate_b: ["\u5927\u5B66\u6B63\u95E8", "school"],
+          school_bus_terminal_b: ["\u5B66\u533A\u603B\u7AD9", "bus"],
+          old_metro_b: ["\u8001\u8857\u7AD9", "metro"],
+          old_park_b: ["\u8001\u57CE\u516C\u56ED", "park"],
+          player_base_b: ["\u4F60\u7684\u636E\u70B9", "home"],
+          love_hotel_b: ["\u65C5\u793E", "hotel"],
+          office_lobby_a: ["\u5199\u5B57\u697C", "office"],
+          parking_b2_a: ["\u5730\u4E0B\u8F66\u5E93 B2", "parking"],
+          skybridge_a: ["\u8FDE\u5ECA\u5929\u6865", "bridge"],
+          metro_hub_a: ["\u4E2D\u57CE\u7AD9", "metro"],
+          bus_bay_a: ["\u516C\u4EA4\u6E2F\u6E7E", "bus"],
+          store_24h_a: ["\u4FBF\u5229\u5E97", "shop"],
+          trash_station_a: ["\u88C5\u5378\u540E\u9053", "service"],
+          back_alley_a: ["\u540E\u8857\u6697\u5DF7", "lane"],
+          old_skybridge_b: ["\u6C34\u6CE5\u5929\u6865", "bridge"],
+          store_24h_b: ["\u4FBF\u5229\u5E97", "shop"],
+          old_alley_main_b: ["\u4E3B\u5DF7", "lane"],
+          dark_blind_alley_b: ["\u76F2\u533A\u5DF7", "lane"],
+          unit_stairs_b: ["\u5355\u5143\u697C\u9053", "housing"],
+          rooftop_b: ["\u697C\u9876", "housing"],
+          dead_end_b: ["\u5C3D\u5934", "lane"],
+          club_backdoor_c: ["\u591C\u5E97\u540E\u95E8", "nightlife"],
+          food_street_c: ["\u591C\u5E02", "market"],
+          dock_bus_stop_c: ["\u7801\u5934\u7AD9", "bus"],
+          bridge_head_c: ["\u6865\u5934", "bridge"],
+          store_24h_c: ["\u4FBF\u5229\u5E97", "shop"],
+          river_walk_c: ["\u6C5F\u8FB9\u6B65\u9053", "walk"],
+          river_steps_c: ["\u6C5F\u8FB9\u53F0\u9636", "walk"],
+          village_main_c: ["\u57CE\u4E2D\u6751", "housing"],
+          narrow_gap_c: ["\u5939\u7F1D\u5C0F\u5DF7", "lane"],
+          rental_iron_door_c: ["\u51FA\u79DF\u5C4B\u5165\u53E3", "housing"],
+          village_roof_c: ["\u5E73\u623F\u5C4B\u9876", "housing"],
+          black_market_c: ["\u4E34\u6C5F\u9ED1\u5E02", "black_market"],
+          suburb_highway_d: ["\u90CA\u91CE\u516C\u8DEF", "highway"],
+          gas_station_d: ["\u52A0\u6CB9\u7AD9", "gas"],
+          private_road_d: ["\u6797\u95F4\u652F\u8DEF", "lane"],
+          pine_forest_d: ["\u677E\u6797", "park"],
+          estate_gate_d: ["\u4F4F\u5B85\u5165\u53E3", "housing"],
+          villa_garden_d: ["\u9662\u843D", "park"],
+          garage_side_door_d: ["\u8F66\u5E93\u4FA7\u95E8", "parking"],
+          villa_porch_d: ["\u4F4F\u5B85\u95E8\u5ECA", "housing"],
+          central_mall_a: ["\u4E2D\u57CE\u7EFC\u5408\u5546\u573A", "mall"],
+          bank_a: ["\u94F6\u884C\u8425\u4E1A\u5385", "service"],
+          business_cafe_a: ["\u5546\u52A1\u5496\u5561\u9986", "shop"],
+          clinic_a: ["\u7EFC\u5408\u95E8\u8BCA", "service"],
+          business_hotel_a: ["\u5546\u52A1\u9152\u5E97", "hotel"],
+          central_plaza_a: ["\u4E2D\u5FC3\u5E7F\u573A", "plaza"],
+          pedestrian_street_a: ["\u5546\u4E1A\u6B65\u884C\u8857", "market"],
+          department_store_a: ["\u767E\u8D27\u5546\u573A", "mall"],
+          cinema_a: ["\u57CE\u5E02\u5F71\u57CE", "nightlife"],
+          gym_a: ["\u5065\u8EAB\u4E2D\u5FC3", "service"],
+          restaurant_a: ["\u5546\u52A1\u9910\u5385", "shop"],
+          courier_a: ["\u5FEB\u9012\u9A7F\u7AD9", "service"],
+          taxi_rank_a: ["\u51FA\u79DF\u8F66\u5019\u8F66\u70B9", "transit"],
+          public_parking_a: ["\u516C\u5171\u505C\u8F66\u573A", "parking"],
+          apartment_plaza_a: ["\u516C\u5BD3\u5E7F\u573A", "housing"],
+          coworking_a: ["\u8054\u5408\u529E\u516C\u697C", "office"],
+          electronics_a: ["\u6570\u7801\u5546\u57CE", "mall"],
+          station_square_a: ["\u7AD9\u524D\u5E7F\u573A", "plaza"],
+          high_school_gate_b: ["\u9AD8\u4E2D\u6B63\u95E8", "school"],
+          university_library_b: ["\u5927\u5B66\u56FE\u4E66\u9986", "library"],
+          university_canteen_b: ["\u5927\u5B66\u98DF\u5802", "shop"],
+          university_sports_b: ["\u5927\u5B66\u8FD0\u52A8\u573A", "sports"],
+          campus_bookshop_b: ["\u5B66\u5E9C\u4E66\u5E97", "library"],
+          campus_cafe_b: ["\u5B66\u5E9C\u5496\u5561\u9986", "shop"],
+          student_street_b: ["\u5B66\u751F\u751F\u6D3B\u8857", "market"],
+          university_dorm_gate_b: ["\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3", "housing"],
+          bar_street_c: ["\u9713\u8679\u9152\u5427\u8857", "nightlife"],
+          ktv_c: ["\u591C\u95F4\u6B4C\u5385", "nightlife"],
+          hotel_c: ["\u4E34\u6C5F\u65C5\u9986", "hotel"],
+          late_restaurant_c: ["\u6DF1\u591C\u98DF\u5802", "shop"],
+          livehouse_c: ["\u73B0\u573A\u97F3\u4E50\u9152\u5427", "nightlife"],
+          courier_c: ["\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9", "service"],
+          laundry_c: ["\u81EA\u52A9\u6D17\u8863\u5E97", "service"]
+        },
+        overview: [
+          "school_gate_b",
+          "high_school_gate_b",
+          "old_metro_b",
+          "player_base_b",
+          "central_mall_a",
+          "metro_hub_a",
+          "office_lobby_a",
+          "central_plaza_a",
+          "bar_street_c",
+          "food_street_c",
+          "black_market_c",
+          "suburb_highway_d",
+          "gas_station_d",
+          "pine_forest_d"
+        ],
+        world: {
+          river: "M 930 1400 C 910 1560 940 1800 920 1940 Q 880 2050 600 2030 L -20 2010 L -20 2160 L 2120 2160 L 2120 2020 L 1090 2020 Q 1010 2020 1000 1910 C 1010 1730 980 1550 1000 1400 Z",
+          waterLabel: [1510, 2085],
+          labels: [
+            {
+              text: "\u5E02\u533A \xB7 A / B / C",
+              at: [570, 710],
+              kind: "urban"
+            },
+            {
+              text: "\u5E02\u90CA\u8FC7\u6E21\u5E26",
+              at: [1590, 740],
+              kind: "countryside"
+            }
+          ],
+          fields: [
+            [1180, 540, 170, 110],
+            [1420, 560, 160, 100],
+            [1660, 660, 170, 110],
+            [1880, 800, 125, 90]
+          ],
+          arterials: [
+            {
+              name: "\u5E02\u533A\u5E72\u9053",
+              points: [
+                [900, 710],
+                [900, 1365],
+                [330, 1365],
+                [330, 1470]
+              ],
+              width: 30,
+              kind: "street",
+              label: [900, 1220]
+            },
+            {
+              name: "",
+              points: [
+                [840, 910],
+                [900, 910],
+                [900, 1095],
+                [1060, 1095]
+              ],
+              width: 24,
+              kind: "street"
+            },
+            {
+              name: "\u4E1C\u57CE\u5916\u73AF",
+              points: [
+                [1975, 1095],
+                [1975, 1880],
+                [845, 1880]
+              ],
+              width: 30,
+              kind: "highway",
+              label: [1480, 1884]
+            },
+            {
+              name: "\u5317\u73AF\u516C\u8DEF",
+              points: [
+                [1975, 1095],
+                [1975, 630],
+                [1840, 630],
+                [1840, 470]
+              ],
+              width: 28,
+              kind: "highway",
+              label: [1975, 750]
+            },
+            {
+              name: "",
+              points: [
+                [840, 1110],
+                [900, 1110]
+              ],
+              width: 22,
+              kind: "street"
+            },
+            {
+              name: "",
+              points: [
+                [700, 1320],
+                [700, 1365]
+              ],
+              width: 18,
+              kind: "street"
+            }
+          ],
+          bridges: [
+            {
+              points: [
+                [875, 1880],
+                [1050, 1880]
+              ],
+              width: 34
+            }
+          ]
+        }
+      };
+    }
+  });
+
+  // src/ui/zero-floor/training-diagram.js
+  var require_training_diagram = __commonJS({
+    "src/ui/zero-floor/training-diagram.js"(exports, module) {
+      "use strict";
+      var { trainingExample } = require_rules();
+      var { districts } = require_city_cartography();
+      function drawTrainingDiagram(document) {
+        const svg = (tag, attrs = {}) => {
+          const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+          for (const [key, value] of Object.entries(attrs))
+            el.setAttribute(key, String(value));
+          return el;
+        };
+        const root = svg("svg", {
+          viewBox: "0 0 480 340",
+          focusable: "false",
+          "aria-hidden": "true"
+        });
+        const text = (value, x, y, cls, anchor = "middle") => {
+          const el = svg("text", { x, y, class: cls, "text-anchor": anchor });
+          el.textContent = value;
+          root.append(el);
+        };
+        root.append(
+          svg("rect", { width: 480, height: 340, class: "training-map-ground" })
+        );
+        for (const {
+          box: [x, y, width, height],
+          kind
+        } of districts.B.blocks) {
+          if (x + width > 440 || y + height > 335) continue;
+          root.append(
+            svg("rect", {
+              x,
+              y,
+              width,
+              height,
+              rx: 5,
+              class: `training-map-block ${kind}`
+            })
+          );
+          root.append(
+            svg("rect", {
+              x: x + 6,
+              y: y + 6,
+              width: width - 12,
+              height: height - 12,
+              rx: 2,
+              class: "training-map-roof"
+            })
+          );
+        }
+        for (const road of districts.B.roads) {
+          const d = road.points.map(([x, y], i) => `${i ? "L" : "M"} ${x} ${y}`).join(" ");
+          root.append(
+            svg("path", {
+              d,
+              "stroke-width": road.width + 3,
+              class: "training-map-road-edge"
+            })
+          );
+          root.append(
+            svg("path", {
+              d,
+              "stroke-width": road.width,
+              class: "training-map-road"
+            })
+          );
+        }
+        for (const {
+          id,
+          name,
+          at: [x, y]
+        } of trainingExample) {
+          text(
+            name,
+            x,
+            y + 5,
+            id === "school_gate_b" ? "training-map-label focus" : "training-map-label"
+          );
+        }
+        text("\u5B66\u5E9C\u8DEF", 360, 155, "training-map-road-label");
+        text("\u8001\u8857", 250, 305, "training-map-road-label");
+        root.append(
+          svg("rect", {
+            x: 24,
+            y: 54,
+            width: 232,
+            height: 92,
+            rx: 7,
+            class: "training-map-highlight"
+          })
+        );
+        root.append(
+          svg("path", {
+            d: "M 24 73 V 54 H 43 M 237 54 H 256 V 73 M 256 127 V 146 H 237 M 43 146 H 24 V 127",
+            class: "training-map-corners"
+          })
+        );
+        root.append(
+          svg("path", {
+            d: "M 289 94 H 275 V 105 H 259",
+            class: "training-map-arrow"
+          })
+        );
+        root.append(
+          svg("path", {
+            d: "M 266 99 L 258 105 L 266 111",
+            class: "training-map-arrow"
+          })
+        );
+        root.append(
+          svg("rect", {
+            x: 283,
+            y: 32,
+            width: 178,
+            height: 64,
+            rx: 5,
+            class: "training-map-callout"
+          })
+        );
+        text("\u4ECE\u516C\u5F00\u5165\u53E3\u5F00\u59CB", 298, 59, "training-map-callout-title", "start");
+        text("\u793A\u4F8B\u8D77\u70B9 \xB7 \u5927\u5B66\u6B63\u95E8", 298, 80, "training-map-callout-note", "start");
+        return root;
+      }
+      module.exports = { drawTrainingDiagram };
+    }
+  });
+
   // src/ui/zero-floor/training-brief.js
   var require_training_brief = __commonJS({
     "src/ui/zero-floor/training-brief.js"(exports, module) {
       "use strict";
+      var { drawTrainingDiagram } = require_training_diagram();
       function createTrainingBrief({ document, lifecycle, onBack, onStart }) {
         const field = (id) => document.getElementById(id);
         const back = field("trainingBriefBack"), start = field("trainingBriefStart");
         let busy = false;
-        const holder = field("trainingBriefHologram");
-        if (holder && !holder.childElementCount) {
-          const NS = "http://www.w3.org/2000/svg";
-          const svg = (tag, attrs) => {
-            const e = document.createElementNS(NS, tag);
-            for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
-            return e;
-          };
-          const scene = svg("svg", { viewBox: "0 0 440 330", focusable: "false" });
-          const project = (x, y, z = 0) => [
-            220 + (x - y) * 22,
-            86 + (x + y) * 11 - z
-          ];
-          const poly = (points, cls) => svg("polygon", {
-            points: points.map((p) => p.join(",")).join(" "),
-            class: cls
-          });
-          scene.append(
-            poly(
-              [
-                [0, 0],
-                [9, 0],
-                [9, 9],
-                [0, 9]
-              ].map((p) => project(...p)),
-              "holo-ground"
-            )
-          );
-          for (let n = 0; n <= 9; n++) {
-            for (const pair of [
-              [
-                [n, 0],
-                [n, 9]
-              ],
-              [
-                [0, n],
-                [9, n]
-              ]
-            ]) {
-              const [a, b] = pair.map((p) => project(...p));
-              scene.append(svg("path", { d: `M ${a} L ${b}`, class: "holo-grid" }));
-            }
-          }
-          const blocks = [
-            [1, 1, 1.4, 1.2, 24],
-            [3.2, 1, 1.4, 1.2, 48],
-            [5.4, 1, 1.4, 1.2, 19],
-            [7.3, 1, 0.8, 1.2, 32],
-            [1, 3.2, 1.4, 1.4, 28],
-            [3.2, 3.2, 1.4, 1.4, 65],
-            [5.4, 3.2, 1.4, 1.4, 35],
-            [7.3, 3.2, 0.8, 1.4, 20],
-            [1, 5.4, 1.4, 1.4, 17],
-            [3.2, 5.4, 1.4, 1.4, 29],
-            [5.4, 5.4, 1.4, 1.4, 46],
-            [7.3, 5.4, 0.8, 1.4, 20],
-            [1, 7.5, 1.4, 0.8, 14],
-            [3.2, 7.5, 1.4, 0.8, 20],
-            [5.4, 7.5, 1.4, 0.8, 16]
-          ].sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
-          for (const [x, y, w, h, z] of blocks) {
-            const top = [
-              [x, y],
-              [x + w, y],
-              [x + w, y + h],
-              [x, y + h]
-            ].map((p) => project(...p, z));
-            const base = [
-              [x, y],
-              [x + w, y],
-              [x + w, y + h],
-              [x, y + h]
-            ].map((p) => project(...p));
-            const g = svg("g", {
-              class: z === 65 ? "holo-building focal" : "holo-building"
-            });
-            g.append(
-              poly([top[1], top[2], base[2], base[1]], "holo-wall east"),
-              poly([top[2], top[3], base[3], base[2]], "holo-wall west"),
-              poly(top, "holo-roof")
-            );
-            scene.append(g);
-          }
-          holder.replaceChildren(scene);
-        }
+        const holder = field("trainingBriefDiagram");
+        if (holder && !holder.childElementCount)
+          holder.replaceChildren(drawTrainingDiagram(document));
         lifecycle.on(back, "click", () => {
           if (!busy) onBack();
         });
@@ -10646,809 +11658,6 @@ var WxStatusbarUI = (() => {
         return { render, reset };
       }
       module.exports = { createDayPlanRenderer };
-    }
-  });
-
-  // src/config/city-cartography.json
-  var require_city_cartography = __commonJS({
-    "src/config/city-cartography.json"(exports, module) {
-      module.exports = {
-        schema: 1,
-        districts: {
-          B: {
-            subtitle: "\u5927\u5B66\u57CE \xB7 \u9AD8\u4E2D\u6821\u533A \xB7 \u8001\u8857\u4F4F\u5B85",
-            roads: [
-              {
-                name: "\u5B66\u5E9C\u8DEF",
-                points: [
-                  [0, 150],
-                  [760, 150]
-                ],
-                width: 24,
-                kind: "street",
-                label: [350, 154]
-              },
-              {
-                name: "\u69D0\u836B\u8857",
-                points: [
-                  [0, 350],
-                  [760, 350]
-                ],
-                width: 22,
-                kind: "street",
-                label: [130, 354]
-              },
-              {
-                name: "\u8001\u8857",
-                points: [
-                  [250, 150],
-                  [250, 560]
-                ],
-                width: 22,
-                kind: "street",
-                label: [250, 300]
-              },
-              {
-                name: "\u4E1C\u5DF7",
-                points: [
-                  [465, 150],
-                  [465, 560]
-                ],
-                width: 14,
-                kind: "street",
-                label: [465, 520]
-              },
-              {
-                name: "",
-                points: [
-                  [250, 410],
-                  [465, 410],
-                  [465, 490]
-                ],
-                width: 9,
-                kind: "lane"
-              },
-              {
-                name: "",
-                points: [
-                  [90, 350],
-                  [90, 455]
-                ],
-                width: 8,
-                kind: "lane"
-              },
-              {
-                name: "\u6587\u6559\u4E1C\u8DEF",
-                points: [
-                  [620, 150],
-                  [620, 560]
-                ],
-                width: 20,
-                kind: "street",
-                label: [620, 325]
-              }
-            ],
-            blocks: [
-              {
-                kind: "campus",
-                box: [30, 60, 220, 80]
-              },
-              {
-                kind: "campus",
-                box: [450, 60, 230, 80]
-              },
-              {
-                kind: "park",
-                box: [285, 60, 100, 55]
-              },
-              {
-                kind: "transit",
-                box: [285, 165, 145, 62]
-              },
-              {
-                kind: "home",
-                box: [30, 250, 90, 78]
-              },
-              {
-                kind: "park",
-                box: [137, 250, 85, 78]
-              },
-              {
-                kind: "shop",
-                box: [285, 250, 145, 74]
-              },
-              {
-                kind: "transit",
-                box: [640, 230, 100, 70]
-              },
-              {
-                kind: "housing",
-                box: [285, 380, 145, 65]
-              },
-              {
-                kind: "housing",
-                box: [640, 380, 100, 105]
-              },
-              {
-                kind: "shop",
-                box: [130, 470, 90, 66]
-              },
-              {
-                kind: "housing",
-                box: [30, 380, 33, 70]
-              },
-              {
-                kind: "housing",
-                box: [117, 380, 103, 66]
-              },
-              {
-                kind: "shop",
-                box: [30, 175, 90, 55]
-              },
-              {
-                kind: "shop",
-                box: [145, 175, 90, 55]
-              },
-              {
-                kind: "shop",
-                box: [510, 175, 100, 55]
-              },
-              {
-                kind: "shop",
-                box: [510, 285, 100, 50]
-              },
-              {
-                kind: "market",
-                box: [285, 470, 145, 55]
-              },
-              {
-                kind: "housing",
-                box: [510, 470, 100, 55]
-              }
-            ]
-          },
-          A: {
-            subtitle: "\u5546\u52A1\u6838\u5FC3 \xB7 \u8F68\u4EA4\u67A2\u7EBD \xB7 \u5546\u4E1A\u751F\u6D3B\u5708",
-            roads: [
-              {
-                name: "\u5546\u52A1\u5927\u9053",
-                points: [
-                  [0, 145],
-                  [960, 145]
-                ],
-                width: 28,
-                kind: "street",
-                label: [365, 149]
-              },
-              {
-                name: "\u4E2D\u57CE\u8DEF",
-                points: [
-                  [250, 40],
-                  [250, 800]
-                ],
-                width: 24,
-                kind: "street",
-                label: [250, 278]
-              },
-              {
-                name: "\u540E\u8857",
-                points: [
-                  [0, 290],
-                  [960, 290]
-                ],
-                width: 18,
-                kind: "street",
-                label: [355, 294]
-              },
-              {
-                name: "\u7AD9\u524D\u8DEF",
-                points: [
-                  [465, 40],
-                  [465, 800]
-                ],
-                width: 24,
-                kind: "street",
-                label: [465, 420]
-              },
-              {
-                name: "",
-                points: [
-                  [0, 430],
-                  [960, 430]
-                ],
-                width: 12,
-                kind: "lane"
-              },
-              {
-                name: "",
-                points: [
-                  [350, 290],
-                  [350, 430]
-                ],
-                width: 10,
-                kind: "lane"
-              },
-              {
-                name: "\u5546\u4E1A\u5927\u9053",
-                points: [
-                  [0, 645],
-                  [960, 645]
-                ],
-                width: 24,
-                kind: "street",
-                label: [350, 649]
-              },
-              {
-                name: "\u751F\u6D3B\u8DEF",
-                points: [
-                  [610, 145],
-                  [610, 800]
-                ],
-                width: 22,
-                kind: "street",
-                label: [610, 580]
-              },
-              {
-                name: "\u4E1C\u57CE\u5927\u9053",
-                points: [
-                  [915, 0],
-                  [915, 800]
-                ],
-                width: 28,
-                kind: "highway",
-                label: [915, 490]
-              },
-              {
-                name: "",
-                points: [
-                  [0, 490],
-                  [610, 490]
-                ],
-                width: 18,
-                kind: "walk"
-              },
-              {
-                name: "",
-                points: [
-                  [0, 790],
-                  [960, 790]
-                ],
-                width: 18,
-                kind: "street"
-              }
-            ],
-            blocks: [
-              {
-                kind: "office",
-                box: [30, 48, 180, 83]
-              },
-              {
-                kind: "office",
-                box: [30, 176, 180, 90]
-              },
-              {
-                kind: "office",
-                box: [285, 50, 145, 76]
-              },
-              {
-                kind: "transit",
-                box: [500, 50, 92, 78]
-              },
-              {
-                kind: "transit",
-                box: [285, 188, 145, 77]
-              },
-              {
-                kind: "park",
-                box: [500, 185, 92, 80]
-              },
-              {
-                kind: "shop",
-                box: [500, 320, 92, 70]
-              },
-              {
-                kind: "service",
-                box: [30, 335, 180, 77]
-              },
-              {
-                kind: "office",
-                box: [285, 320, 43, 80]
-              },
-              {
-                kind: "office",
-                box: [373, 320, 57, 80]
-              },
-              {
-                kind: "mall",
-                box: [650, 50, 240, 80]
-              },
-              {
-                kind: "service",
-                box: [640, 190, 100, 70]
-              },
-              {
-                kind: "shop",
-                box: [780, 190, 110, 70]
-              },
-              {
-                kind: "service",
-                box: [640, 315, 100, 70]
-              },
-              {
-                kind: "office",
-                box: [780, 315, 110, 70]
-              },
-              {
-                kind: "park",
-                box: [650, 435, 240, 90]
-              },
-              {
-                kind: "market",
-                box: [285, 465, 145, 55]
-              },
-              {
-                kind: "mall",
-                box: [30, 535, 180, 75]
-              },
-              {
-                kind: "nightlife",
-                box: [285, 535, 145, 75]
-              },
-              {
-                kind: "service",
-                box: [500, 535, 92, 75]
-              },
-              {
-                kind: "shop",
-                box: [640, 607, 100, 30]
-              },
-              {
-                kind: "service",
-                box: [780, 590, 110, 45]
-              },
-              {
-                kind: "transit",
-                box: [650, 700, 240, 55]
-              },
-              {
-                kind: "service",
-                box: [500, 680, 92, 70]
-              },
-              {
-                kind: "housing",
-                box: [285, 680, 145, 70]
-              },
-              {
-                kind: "office",
-                box: [30, 680, 180, 70]
-              },
-              {
-                kind: "mall",
-                box: [640, 540, 100, 45]
-              }
-            ]
-          },
-          C: {
-            subtitle: "\u9152\u5427\u8857 \xB7 \u591C\u5E02 \xB7 \u6C5F\u5824 \xB7 \u57CE\u4E2D\u6751",
-            roads: [
-              {
-                name: "\u4E34\u6C5F\u8DEF",
-                points: [
-                  [0, 145],
-                  [800, 145]
-                ],
-                width: 24,
-                kind: "street",
-                label: [355, 149]
-              },
-              {
-                name: "\u5357\u8857",
-                points: [
-                  [0, 290],
-                  [800, 290]
-                ],
-                width: 20,
-                kind: "street",
-                label: [355, 294]
-              },
-              {
-                name: "\u7801\u5934\u8DEF",
-                points: [
-                  [465, 40],
-                  [465, 450],
-                  [800, 450]
-                ],
-                width: 20,
-                kind: "street",
-                label: [465, 255]
-              },
-              {
-                name: "",
-                points: [
-                  [250, 40],
-                  [250, 425]
-                ],
-                width: 18,
-                kind: "street"
-              },
-              {
-                name: "\u6CBF\u6C5F\u6B65\u9053",
-                points: [
-                  [0, 525],
-                  [485, 525],
-                  [570, 550]
-                ],
-                width: 14,
-                kind: "walk",
-                label: [120, 529]
-              },
-              {
-                name: "",
-                points: [
-                  [70, 320],
-                  [250, 320],
-                  [250, 425]
-                ],
-                width: 8,
-                kind: "lane"
-              },
-              {
-                name: "",
-                points: [
-                  [170, 290],
-                  [170, 425]
-                ],
-                width: 8,
-                kind: "lane"
-              },
-              {
-                name: "",
-                points: [
-                  [0, 350],
-                  [250, 350]
-                ],
-                width: 8,
-                kind: "lane"
-              },
-              {
-                name: "\u5A31\u4E50\u4E1C\u8857",
-                points: [
-                  [620, 40],
-                  [620, 560]
-                ],
-                width: 18,
-                kind: "street",
-                label: [620, 260]
-              }
-            ],
-            blocks: [
-              {
-                kind: "nightlife",
-                box: [30, 52, 180, 75]
-              },
-              {
-                kind: "market",
-                box: [285, 52, 145, 75]
-              },
-              {
-                kind: "transit",
-                box: [500, 52, 92, 75]
-              },
-              {
-                kind: "nightlife",
-                box: [30, 185, 180, 75]
-              },
-              {
-                kind: "shop",
-                box: [285, 188, 145, 75]
-              },
-              {
-                kind: "park",
-                box: [500, 185, 92, 75]
-              },
-              {
-                kind: "housing",
-                box: [285, 320, 145, 105]
-              },
-              {
-                kind: "housing",
-                box: [30, 303, 30, 33]
-              },
-              {
-                kind: "housing",
-                box: [85, 303, 65, 33]
-              },
-              {
-                kind: "housing",
-                box: [185, 303, 38, 33]
-              },
-              {
-                kind: "housing",
-                box: [185, 370, 38, 52]
-              },
-              {
-                kind: "market",
-                box: [30, 370, 120, 52]
-              },
-              {
-                kind: "nightlife",
-                box: [650, 50, 90, 75]
-              },
-              {
-                kind: "housing",
-                box: [650, 190, 90, 70]
-              },
-              {
-                kind: "shop",
-                box: [650, 315, 90, 70]
-              },
-              {
-                kind: "nightlife",
-                box: [500, 320, 92, 70]
-              },
-              {
-                kind: "service",
-                box: [645, 465, 100, 50]
-              },
-              {
-                kind: "service",
-                box: [285, 465, 145, 45]
-              }
-            ]
-          },
-          D: {
-            subtitle: "\u90CA\u5916 \xB7 \u6797\u5730 \xB7 \u516C\u8DEF \xB7 \u4F4F\u5B85\u9662\u843D",
-            roads: [
-              {
-                name: "\u90CA\u91CE\u516C\u8DEF",
-                points: [
-                  [0, 390],
-                  [600, 390]
-                ],
-                width: 28,
-                kind: "highway",
-                label: [170, 394]
-              },
-              {
-                name: "\u6797\u95F4\u652F\u8DEF",
-                points: [
-                  [320, 390],
-                  [320, 170],
-                  [390, 170]
-                ],
-                width: 14,
-                kind: "street",
-                label: [320, 352]
-              },
-              {
-                name: "",
-                points: [
-                  [320, 205],
-                  [600, 205]
-                ],
-                width: 12,
-                kind: "street"
-              },
-              {
-                name: "",
-                points: [
-                  [140, 390],
-                  [140, 420]
-                ],
-                width: 10,
-                kind: "street"
-              }
-            ],
-            blocks: [
-              {
-                kind: "forest",
-                box: [25, 55, 225, 285]
-              },
-              {
-                kind: "garden",
-                box: [355, 178, 235, 155]
-              },
-              {
-                kind: "villa",
-                box: [355, 55, 235, 105]
-              },
-              {
-                kind: "service",
-                box: [50, 340, 180, 40]
-              }
-            ]
-          }
-        },
-        landmarks: {
-          school_gate_b: ["\u5927\u5B66\u6B63\u95E8", "school"],
-          school_bus_terminal_b: ["\u5B66\u533A\u603B\u7AD9", "bus"],
-          old_metro_b: ["\u8001\u8857\u7AD9", "metro"],
-          old_park_b: ["\u8001\u57CE\u516C\u56ED", "park"],
-          player_base_b: ["\u4F60\u7684\u636E\u70B9", "home"],
-          love_hotel_b: ["\u65C5\u793E", "hotel"],
-          office_lobby_a: ["\u5199\u5B57\u697C", "office"],
-          parking_b2_a: ["\u5730\u4E0B\u8F66\u5E93 B2", "parking"],
-          skybridge_a: ["\u8FDE\u5ECA\u5929\u6865", "bridge"],
-          metro_hub_a: ["\u4E2D\u57CE\u7AD9", "metro"],
-          bus_bay_a: ["\u516C\u4EA4\u6E2F\u6E7E", "bus"],
-          store_24h_a: ["\u4FBF\u5229\u5E97", "shop"],
-          trash_station_a: ["\u88C5\u5378\u540E\u9053", "service"],
-          back_alley_a: ["\u540E\u8857\u6697\u5DF7", "lane"],
-          old_skybridge_b: ["\u6C34\u6CE5\u5929\u6865", "bridge"],
-          store_24h_b: ["\u4FBF\u5229\u5E97", "shop"],
-          old_alley_main_b: ["\u4E3B\u5DF7", "lane"],
-          dark_blind_alley_b: ["\u76F2\u533A\u5DF7", "lane"],
-          unit_stairs_b: ["\u5355\u5143\u697C\u9053", "housing"],
-          rooftop_b: ["\u697C\u9876", "housing"],
-          dead_end_b: ["\u5C3D\u5934", "lane"],
-          club_backdoor_c: ["\u591C\u5E97\u540E\u95E8", "nightlife"],
-          food_street_c: ["\u591C\u5E02", "market"],
-          dock_bus_stop_c: ["\u7801\u5934\u7AD9", "bus"],
-          bridge_head_c: ["\u6865\u5934", "bridge"],
-          store_24h_c: ["\u4FBF\u5229\u5E97", "shop"],
-          river_walk_c: ["\u6C5F\u8FB9\u6B65\u9053", "walk"],
-          river_steps_c: ["\u6C5F\u8FB9\u53F0\u9636", "walk"],
-          village_main_c: ["\u57CE\u4E2D\u6751", "housing"],
-          narrow_gap_c: ["\u5939\u7F1D\u5C0F\u5DF7", "lane"],
-          rental_iron_door_c: ["\u51FA\u79DF\u5C4B\u5165\u53E3", "housing"],
-          village_roof_c: ["\u5E73\u623F\u5C4B\u9876", "housing"],
-          black_market_c: ["\u4E34\u6C5F\u9ED1\u5E02", "black_market"],
-          suburb_highway_d: ["\u90CA\u91CE\u516C\u8DEF", "highway"],
-          gas_station_d: ["\u52A0\u6CB9\u7AD9", "gas"],
-          private_road_d: ["\u6797\u95F4\u652F\u8DEF", "lane"],
-          pine_forest_d: ["\u677E\u6797", "park"],
-          estate_gate_d: ["\u4F4F\u5B85\u5165\u53E3", "housing"],
-          villa_garden_d: ["\u9662\u843D", "park"],
-          garage_side_door_d: ["\u8F66\u5E93\u4FA7\u95E8", "parking"],
-          villa_porch_d: ["\u4F4F\u5B85\u95E8\u5ECA", "housing"],
-          central_mall_a: ["\u4E2D\u57CE\u7EFC\u5408\u5546\u573A", "mall"],
-          bank_a: ["\u94F6\u884C\u8425\u4E1A\u5385", "service"],
-          business_cafe_a: ["\u5546\u52A1\u5496\u5561\u9986", "shop"],
-          clinic_a: ["\u7EFC\u5408\u95E8\u8BCA", "service"],
-          business_hotel_a: ["\u5546\u52A1\u9152\u5E97", "hotel"],
-          central_plaza_a: ["\u4E2D\u5FC3\u5E7F\u573A", "plaza"],
-          pedestrian_street_a: ["\u5546\u4E1A\u6B65\u884C\u8857", "market"],
-          department_store_a: ["\u767E\u8D27\u5546\u573A", "mall"],
-          cinema_a: ["\u57CE\u5E02\u5F71\u57CE", "nightlife"],
-          gym_a: ["\u5065\u8EAB\u4E2D\u5FC3", "service"],
-          restaurant_a: ["\u5546\u52A1\u9910\u5385", "shop"],
-          courier_a: ["\u5FEB\u9012\u9A7F\u7AD9", "service"],
-          taxi_rank_a: ["\u51FA\u79DF\u8F66\u5019\u8F66\u70B9", "transit"],
-          public_parking_a: ["\u516C\u5171\u505C\u8F66\u573A", "parking"],
-          apartment_plaza_a: ["\u516C\u5BD3\u5E7F\u573A", "housing"],
-          coworking_a: ["\u8054\u5408\u529E\u516C\u697C", "office"],
-          electronics_a: ["\u6570\u7801\u5546\u57CE", "mall"],
-          station_square_a: ["\u7AD9\u524D\u5E7F\u573A", "plaza"],
-          high_school_gate_b: ["\u9AD8\u4E2D\u6B63\u95E8", "school"],
-          university_library_b: ["\u5927\u5B66\u56FE\u4E66\u9986", "library"],
-          university_canteen_b: ["\u5927\u5B66\u98DF\u5802", "shop"],
-          university_sports_b: ["\u5927\u5B66\u8FD0\u52A8\u573A", "sports"],
-          campus_bookshop_b: ["\u5B66\u5E9C\u4E66\u5E97", "library"],
-          campus_cafe_b: ["\u5B66\u5E9C\u5496\u5561\u9986", "shop"],
-          student_street_b: ["\u5B66\u751F\u751F\u6D3B\u8857", "market"],
-          university_dorm_gate_b: ["\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3", "housing"],
-          bar_street_c: ["\u9713\u8679\u9152\u5427\u8857", "nightlife"],
-          ktv_c: ["\u591C\u95F4\u6B4C\u5385", "nightlife"],
-          hotel_c: ["\u4E34\u6C5F\u65C5\u9986", "hotel"],
-          late_restaurant_c: ["\u6DF1\u591C\u98DF\u5802", "shop"],
-          livehouse_c: ["\u73B0\u573A\u97F3\u4E50\u9152\u5427", "nightlife"],
-          courier_c: ["\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9", "service"],
-          laundry_c: ["\u81EA\u52A9\u6D17\u8863\u5E97", "service"]
-        },
-        overview: [
-          "school_gate_b",
-          "high_school_gate_b",
-          "old_metro_b",
-          "player_base_b",
-          "central_mall_a",
-          "metro_hub_a",
-          "office_lobby_a",
-          "central_plaza_a",
-          "bar_street_c",
-          "food_street_c",
-          "black_market_c",
-          "suburb_highway_d",
-          "gas_station_d",
-          "pine_forest_d"
-        ],
-        world: {
-          river: "M 930 1400 C 910 1560 940 1800 920 1940 Q 880 2050 600 2030 L -20 2010 L -20 2160 L 2120 2160 L 2120 2020 L 1090 2020 Q 1010 2020 1000 1910 C 1010 1730 980 1550 1000 1400 Z",
-          waterLabel: [1510, 2085],
-          labels: [
-            {
-              text: "\u5E02\u533A \xB7 A / B / C",
-              at: [570, 710],
-              kind: "urban"
-            },
-            {
-              text: "\u5E02\u90CA\u8FC7\u6E21\u5E26",
-              at: [1590, 740],
-              kind: "countryside"
-            }
-          ],
-          fields: [
-            [1180, 540, 170, 110],
-            [1420, 560, 160, 100],
-            [1660, 660, 170, 110],
-            [1880, 800, 125, 90]
-          ],
-          arterials: [
-            {
-              name: "\u5E02\u533A\u5E72\u9053",
-              points: [
-                [900, 710],
-                [900, 1365],
-                [330, 1365],
-                [330, 1470]
-              ],
-              width: 30,
-              kind: "street",
-              label: [900, 1220]
-            },
-            {
-              name: "",
-              points: [
-                [840, 910],
-                [900, 910],
-                [900, 1095],
-                [1060, 1095]
-              ],
-              width: 24,
-              kind: "street"
-            },
-            {
-              name: "\u4E1C\u57CE\u5916\u73AF",
-              points: [
-                [1975, 1095],
-                [1975, 1880],
-                [845, 1880]
-              ],
-              width: 30,
-              kind: "highway",
-              label: [1480, 1884]
-            },
-            {
-              name: "\u5317\u73AF\u516C\u8DEF",
-              points: [
-                [1975, 1095],
-                [1975, 630],
-                [1840, 630],
-                [1840, 470]
-              ],
-              width: 28,
-              kind: "highway",
-              label: [1975, 750]
-            },
-            {
-              name: "",
-              points: [
-                [840, 1110],
-                [900, 1110]
-              ],
-              width: 22,
-              kind: "street"
-            },
-            {
-              name: "",
-              points: [
-                [700, 1320],
-                [700, 1365]
-              ],
-              width: 18,
-              kind: "street"
-            }
-          ],
-          bridges: [
-            {
-              points: [
-                [875, 1880],
-                [1050, 1880]
-              ],
-              width: 34
-            }
-          ]
-        }
-      };
     }
   });
 

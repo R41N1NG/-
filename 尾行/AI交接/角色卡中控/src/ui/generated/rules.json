@@ -1,4 +1,46 @@
 {
+  "trainingExample": [
+    {
+      "id": "school_gate_b",
+      "name": "大学正门",
+      "at": [
+        140,
+        100
+      ]
+    },
+    {
+      "id": "university_library_b",
+      "name": "大学图书馆",
+      "at": [
+        75,
+        205
+      ]
+    },
+    {
+      "id": "university_canteen_b",
+      "name": "大学食堂",
+      "at": [
+        190,
+        205
+      ]
+    },
+    {
+      "id": "school_bus_terminal_b",
+      "name": "学区公交总站",
+      "at": [
+        355,
+        190
+      ]
+    },
+    {
+      "id": "store_24h_b",
+      "name": "老街24h便利店",
+      "at": [
+        355,
+        285
+      ]
+    }
+  ],
   "targetContent": {
     "ol": {
       "hasPack": false

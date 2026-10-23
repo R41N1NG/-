@@ -13,7 +13,27 @@ function generateUIConfig() {
   const lifepack = JSON.parse(
     fs.readFileSync(path.join(root, "src/config/lifepack.json"), "utf8"),
   );
+  const { places } = JSON.parse(
+    fs.readFileSync(path.join(root, "src/config/places.json"), "utf8"),
+  );
+  const layout = JSON.parse(
+    fs.readFileSync(path.join(root, "src/config/city-layout.json"), "utf8"),
+  );
+  // 教学页只打包公开示例点的名称和坐标，不把完整场所规则再带入 UI。
+  const trainingExample = [
+    "school_gate_b",
+    "university_library_b",
+    "university_canteen_b",
+    "school_bus_terminal_b",
+    "store_24h_b",
+  ].map((id) => {
+    const p = places[id];
+    if (!p || p.district !== "B" || layout.privatePlaces.includes(id))
+      throw Error(`教学示例必须是 B 区公开地点：${id}`);
+    return { id, name: p.mapName || p.name, at: layout.coordinates[id] };
+  });
   const data = {
+    trainingExample,
     targetContent: Object.fromEntries(
       Object.keys(rules.targets.list).map((id) => [
         id,

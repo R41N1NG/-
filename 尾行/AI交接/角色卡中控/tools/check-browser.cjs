@@ -234,6 +234,9 @@ const deadline = setTimeout(() => {
       ok('换目标后简报更新类型',document.getElementById('trainingBriefTarget').textContent==='疲惫的OL');
       document.getElementById('trainingBriefBack').click();document.querySelector('[data-tid="college"]').click();document.getElementById('createConfirm').click();
       ok('教程首页适配窄屏且可操作',document.documentElement.scrollWidth<=innerWidth+2&&brief.scrollWidth<=brief.clientWidth+2&&!document.getElementById('trainingBriefStart').disabled);
+      const diagram=document.getElementById('trainingBriefDiagram');
+      ok('PPT 图解手机也保留高亮框与箭头',diagram.getBoundingClientRect().width>200&&diagram.getBoundingClientRect().height>100&&getComputedStyle(diagram).display!=='none'&&diagram.querySelector('.training-map-highlight')&&diagram.querySelector('.training-map-arrow'));
+      ok('PPT 首步明确且示例不冒充实时定位',brief.textContent.includes('打开城市地图，确认自己在哪里')&&brief.textContent.includes('教学示意，非实时定位')&&!diagram.querySelector('button, [tabindex], .wx-map-target, .wx-map-player'));
       return checks;
     })()`);
     result.push(...checks.map(check=>({width,...check})));

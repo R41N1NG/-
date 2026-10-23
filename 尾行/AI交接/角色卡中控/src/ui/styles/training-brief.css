@@ -1,4 +1,4 @@
-/* 零楼教程首页。仅作用于本步骤，不改变角色创建、地图或战术终端的主题。 */
+/* 零楼 PPT 教程第一页。样式只限于本步骤，示意图不参与实际地图操作。 */
 #wx-zero-floor[data-zero-step="3"] {
   max-width: 1040px;
   padding: 0;
@@ -8,7 +8,7 @@
   box-shadow: 0 20px 65px #0004;
 }
 #wx-zero-floor[data-zero-step="3"] .zero-wizard-top {
-  padding: 18px 24px 15px;
+  padding: 17px 28px;
   margin: 0;
   border-bottom: 1px solid #c5d4c516;
   background: #142127;
@@ -34,210 +34,76 @@
   font-family: system-ui, "Microsoft Yahei", sans-serif;
   color: #d5dfd8;
   background:
-    radial-gradient(ellipse at 80% 12%, #28484645, transparent 65%), #101c20;
-  line-height: 1.6;
+    radial-gradient(ellipse at 95% 5%, #28484655, transparent 55%), #101c20;
+  line-height: 1.7;
+}
+#wx-zero-floor .training-brief *,
+#wx-zero-floor .training-brief *::before,
+#wx-zero-floor .training-brief *::after {
+  box-sizing: border-box;
 }
 #wx-zero-floor .training-brief-topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 20px 32px 0;
+  gap: 12px;
+  padding: 23px 32px 0;
   font-size: 10px;
-  letter-spacing: 2px;
-  color: #94a7a0;
+  letter-spacing: 1.5px;
+  color: #8ba89d;
 }
 #wx-zero-floor .training-brief-phase {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #c3ad7c;
-  letter-spacing: 1px;
+  color: #b9a578;
 }
 #wx-zero-floor .training-brief-phase i {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #bfa56f;
-  box-shadow: 0 0 10px #d7b57e50;
+  background: #c7ad74;
 }
-#wx-zero-floor .training-brief-hero {
-  display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  gap: 26px;
-  padding: 26px 32px 27px;
-  align-items: center;
+#wx-zero-floor .training-brief-heading {
+  padding: 23px 32px 24px;
 }
 #wx-zero-floor .training-brief-eyebrow {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  margin: 0 0 17px;
+  margin: 0 0 8px;
   font-size: 10px;
-  color: #b7a47a;
+  color: #bfa875;
   letter-spacing: 2px;
 }
 #wx-zero-floor .training-brief-eyebrow span {
-  width: 17px;
-  height: 1px;
-  background: #b9a26c;
+  color: #60796e;
+  padding: 0 6px;
 }
 #wx-zero-floor .training-brief h3 {
-  margin: 0 0 19px;
-  color: #e9ede1;
-  font-size: clamp(27px, 4vw, 43px);
+  margin: 0 0 12px;
+  color: #eff0e4;
+  font-size: clamp(28px, 4vw, 39px);
+  font-weight: 500;
   line-height: 1.4;
   letter-spacing: 2px;
-  font-weight: 500;
   outline: none;
 }
 #wx-zero-floor .training-brief-lead {
-  color: #a8bbb2;
-  font-size: 12px;
-  line-height: 1.95;
   margin: 0;
-  max-width: 370px;
-}
-#wx-zero-floor .training-brief-coach {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  margin-top: 25px;
-  padding-top: 16px;
-  border-top: 1px solid #b4c6b61b;
-  position: relative;
-}
-#wx-zero-floor .training-brief-coach-mark {
-  color: #b6a172;
-  font:
-    40px/1 Georgia,
-    serif;
-}
-#wx-zero-floor .training-brief-coach p {
-  margin: 0;
-  color: #91a79c;
+  max-width: 660px;
   font-size: 12px;
+  color: #a1b5aa;
   line-height: 1.9;
-}
-#wx-zero-floor .training-brief-coach strong {
-  color: #c5d2bf;
-  font-weight: 500;
-}
-#wx-zero-floor .training-brief-coach-from {
-  font-size: 9px;
-  color: #a69a7d;
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  letter-spacing: 2px;
-}
-#wx-zero-floor .training-brief-art {
-  min-width: 0;
-  position: relative;
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background:
-    radial-gradient(ellipse at 50% 70%, #428e7d1f, transparent 65%),
-    linear-gradient(130deg, #19332f44, #0d1b2122);
-  border: 1px solid #69938230;
-  border-radius: 4px;
-  overflow: hidden;
-}
-#wx-zero-floor .training-brief-art::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(#69938208 1px, transparent 1px),
-    linear-gradient(90deg, #69938208 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-#wx-zero-floor .training-brief-art-caption {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: #8da99b;
-  padding: 15px 16px 0;
-  position: relative;
-}
-#wx-zero-floor .training-brief-art-caption span:last-child {
-  color: #617e76;
-  font-size: 8px;
-  letter-spacing: 1px;
-}
-#wx-zero-floor #trainingBriefHologram {
-  width: 100%;
-  position: relative;
-}
-#wx-zero-floor #trainingBriefHologram svg {
-  width: 100%;
-  height: auto;
-  display: block;
-  max-height: 310px;
-}
-#wx-zero-floor .holo-ground {
-  fill: #2b594f19;
-  stroke: #5b8f7866;
-  stroke-width: 1;
-}
-#wx-zero-floor .holo-grid {
-  stroke: #528a7144;
-  stroke-width: 0.8;
-  fill: none;
-}
-#wx-zero-floor .holo-wall {
-  fill: #173e38;
-  stroke: #5d9d85aa;
-  stroke-width: 0.8;
-}
-#wx-zero-floor .holo-wall.east {
-  fill: #1b4840;
-}
-#wx-zero-floor .holo-roof {
-  fill: #2b5f50;
-  stroke: #85b99baa;
-  stroke-width: 1;
-}
-#wx-zero-floor .focal .holo-roof {
-  fill: #806c4266;
-  stroke: #c8b57a;
-}
-#wx-zero-floor .focal .holo-wall {
-  fill: #5d543344;
-  stroke: #ad9a65;
-}
-#wx-zero-floor .training-brief-art-foot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  padding: 0 0 16px;
-  color: #688c7b;
-  font-size: 9px;
-  letter-spacing: 3px;
-}
-#wx-zero-floor .training-brief-art-foot i {
-  width: 18px;
-  height: 1px;
-  background: #73927e44;
 }
 #wx-zero-floor .training-brief-assignment {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.25fr;
-  gap: 0;
+  grid-template-columns: 1fr 1fr 1fr;
   margin: 0 32px;
-  padding: 17px 0;
-  border-top: 1px solid #819d8c38;
-  border-bottom: 1px solid #819d8c38;
+  padding: 14px 0;
+  border-block: 1px solid #819d8c30;
 }
 #wx-zero-floor .training-brief-assignment > div {
   min-width: 0;
   padding: 0 20px;
-  border-right: 1px solid #819d8c22;
+  border-right: 1px solid #819d8c25;
 }
 #wx-zero-floor .training-brief-assignment > div:first-child {
   padding-left: 0;
@@ -246,95 +112,275 @@
   border: 0;
 }
 #wx-zero-floor .training-brief-assignment dt {
-  margin: 0 0 5px;
-  font-size: 10px;
-  color: #7c968b;
+  font-size: 9px;
+  color: #799588;
+  margin: 0 0 4px;
   letter-spacing: 1px;
 }
 #wx-zero-floor .training-brief-assignment dd {
   margin: 0;
   color: #d4dccb;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.6;
+  font-size: 12px;
   overflow-wrap: anywhere;
 }
-#wx-zero-floor .training-brief-lessons {
+#wx-zero-floor .training-brief-hero {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  padding: 25px 32px 22px;
+  grid-template-columns: 0.85fr 1.3fr;
+  gap: 30px;
+  padding: 26px 32px;
+  align-items: center;
 }
-#wx-zero-floor .training-brief-lessons article {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+#wx-zero-floor .training-brief-mission {
   min-width: 0;
 }
-#wx-zero-floor .training-brief-number {
-  font:
-    300 22px/1.2 ui-monospace,
-    Consolas,
-    monospace;
-  color: #668875;
-  letter-spacing: -1px;
-  padding-top: 3px;
-}
-#wx-zero-floor .training-brief-lessons h4 {
-  font-weight: 500;
-  margin: 0 0 6px;
-  color: #cad6c5;
-  font-size: 13px;
+#wx-zero-floor .training-brief-kicker {
+  font-size: 10px;
+  color: #94a99a;
   letter-spacing: 1px;
 }
-#wx-zero-floor .training-brief-lessons p {
+#wx-zero-floor .training-brief-mission h4 {
+  font-size: 23px;
+  color: #e2e7d9;
+  font-weight: 450;
+  line-height: 1.65;
+  margin: 9px 0 13px;
+  letter-spacing: 1px;
+}
+#wx-zero-floor .training-brief-mission > p {
+  font-size: 11px;
+  color: #8fa89b;
   margin: 0;
-  color: #819b8e;
+  line-height: 1.95;
+}
+#wx-zero-floor .training-brief-clue {
+  border-left: 2px solid #c5a468;
+  margin: 20px 0 15px;
+  padding: 1px 0 1px 14px;
+}
+#wx-zero-floor .training-brief-clue > span {
+  display: block;
+  color: #c0a66f;
+  font-size: 9px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+#wx-zero-floor .training-brief-clue strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #d9dfcb;
+}
+#wx-zero-floor .training-brief-clue p {
   font-size: 10px;
+  color: #91a497;
+  margin: 6px 0 0;
   line-height: 1.9;
 }
-#wx-zero-floor .training-brief-boundary {
+#wx-zero-floor .training-brief-mission > .training-brief-unknown {
+  color: #758e82;
+  font-size: 10px;
+}
+#wx-zero-floor .training-brief-art {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid #71867a55;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #15252a;
+}
+#wx-zero-floor .training-brief-art-caption {
   display: flex;
-  gap: 12px;
-  margin: 0 32px;
-  padding: 13px 15px;
-  background: #ad99600b;
-  border: 1px solid #ad996025;
-  color: #aaac95;
-  font-size: 10px;
-  line-height: 1.9;
-  border-radius: 3px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 14px;
+  align-items: center;
 }
-#wx-zero-floor .training-brief-boundary > span:first-child {
-  font-size: 15px;
-  color: #b7a16f;
+#wx-zero-floor .training-brief-art-caption strong {
+  font-size: 11px;
+  font-weight: 500;
+  color: #c0d0c0;
+}
+#wx-zero-floor .training-brief-art-caption > span {
+  font-size: 9px;
+  color: #809b8c;
+}
+#wx-zero-floor #trainingBriefDiagram {
+  background: #dce0d0;
+}
+#wx-zero-floor #trainingBriefDiagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+#wx-zero-floor .training-map-ground {
+  fill: #dce0d0;
+}
+#wx-zero-floor .training-map-block {
+  fill: #bcc6b6;
+  stroke: #9caa98;
+}
+#wx-zero-floor .training-map-block.campus {
+  fill: #cfbc97;
+  stroke: #b09b70;
+}
+#wx-zero-floor .training-map-block.shop {
+  fill: #c2b7a1;
+}
+#wx-zero-floor .training-map-block.park {
+  fill: #9db397;
+}
+#wx-zero-floor .training-map-roof {
+  fill: #e4e3d5;
+  fill-opacity: 0.4;
+  stroke: #fbf9e6;
+  stroke-opacity: 0.4;
+}
+#wx-zero-floor .training-map-road-edge {
+  fill: none;
+  stroke: #b3b7a8;
+  stroke-linejoin: round;
+}
+#wx-zero-floor .training-map-road {
+  fill: none;
+  stroke: #f5f3e7;
+  stroke-linejoin: round;
+}
+#wx-zero-floor .training-map-label {
+  font:
+    13px system-ui,
+    sans-serif;
+  fill: #51665c;
+}
+#wx-zero-floor .training-map-label.focus {
+  fill: #354c43;
+  font-size: 18px;
+  font-weight: 650;
+}
+#wx-zero-floor .training-map-road-label {
+  fill: #808776;
+  font:
+    10px system-ui,
+    sans-serif;
+}
+#wx-zero-floor .training-map-highlight {
+  fill: #e6b65010;
+  stroke: #bd8b36;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+#wx-zero-floor .training-map-corners {
+  fill: none;
+  stroke: #8f6221;
+  stroke-width: 3;
+}
+#wx-zero-floor .training-map-arrow {
+  fill: none;
+  stroke: #9c6e27;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+#wx-zero-floor .training-map-callout {
+  fill: #faf7e9;
+  stroke: #c2a16a;
+}
+#wx-zero-floor .training-map-callout-title {
+  fill: #594a2d;
+  font:
+    600 14px system-ui,
+    sans-serif;
+}
+#wx-zero-floor .training-map-callout-note {
+  fill: #8a7855;
+  font:
+    11px system-ui,
+    sans-serif;
+}
+#wx-zero-floor .training-brief-art-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 13px 6px;
+  color: #a4b8aa;
+  font-size: 9px;
+  flex-wrap: wrap;
+}
+#wx-zero-floor .training-brief-art-foot span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+#wx-zero-floor .training-brief-art-foot i {
+  width: 9px;
+  height: 9px;
+  border: 1px solid #c3a167;
+}
+#wx-zero-floor .training-brief-example-note {
+  color: #759084;
+  font-size: 9px;
+  line-height: 1.8;
+  margin: 0;
+  padding: 0 13px 10px;
+}
+#wx-zero-floor .training-brief-next {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 32px;
+  padding: 15px 18px;
+  background: #89aa8b0a;
+  border: 1px solid #8ba18a33;
+  border-radius: 4px;
+}
+#wx-zero-floor .training-brief-next-arrow {
+  color: #c1aa76;
+  font-size: 27px;
+  line-height: 1;
+}
+#wx-zero-floor .training-brief-next div > span {
+  font-size: 9px;
+  color: #8da291;
+}
+#wx-zero-floor .training-brief-next p {
+  font-size: 13px;
+  color: #d0dac9;
+  margin: 3px 0 0;
+}
+#wx-zero-floor .training-brief-next strong {
+  color: #e4cd94;
+  font-weight: 500;
+}
+#wx-zero-floor .training-brief-next-tag {
+  margin-left: auto;
+  color: #758c7d;
+  font-size: 10px;
+  white-space: nowrap;
 }
 #wx-zero-floor .training-brief-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin: 24px 32px 20px;
+  margin: 20px 32px;
 }
 #wx-zero-floor .training-brief button {
   font-family: inherit;
+  line-height: 1.5;
   transition:
     background-color 0.15s,
     color 0.15s;
-  line-height: 1.5;
-  box-sizing: border-box;
   letter-spacing: 0.6px;
 }
 #wx-zero-floor .training-brief-back {
   padding: 8px 0;
-  background: transparent;
-  border: 0;
-  color: #8ca398;
+  background: transparent !important;
+  border: 0 !important;
+  color: #8ca398 !important;
   font-size: 11px;
   text-align: left;
 }
 #wx-zero-floor .training-brief-back:hover {
-  color: #d5dfd1;
+  background: transparent !important;
+  color: #d5dfd1 !important;
 }
 #wx-zero-floor .training-brief-entry {
   display: flex;
@@ -351,16 +397,16 @@
   justify-content: space-between;
   gap: 25px;
   padding: 12px 20px;
-  border: 1px solid #c2af7c;
-  background: #c2af7c;
-  color: #1b2522;
+  border: 1px solid #c2af7c !important;
+  background: #c2af7c !important;
+  color: #1b2522 !important;
   border-radius: 3px;
   font-size: 12px;
   font-weight: 650;
-  box-shadow: 0 3px 15px #b5a37116;
 }
 #wx-zero-floor #trainingBriefStart:hover {
-  background: #d2c191;
+  background: #d2c191 !important;
+  border-color: #d2c191 !important;
 }
 #wx-zero-floor .training-brief button:focus-visible {
   outline: 2px solid #e4cf96;
@@ -379,10 +425,24 @@
 #wx-zero-floor .training-brief-notice:empty {
   display: none;
 }
+#wx-zero-floor .training-brief-page-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 32px;
+  border-top: 1px solid #77968220;
+  color: #718a7c;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+#wx-zero-floor .training-brief-page-foot b {
+  color: #c1aa76;
+  font:
+    12px ui-monospace,
+    monospace;
+}
 @media (max-width: 600px) {
   #wx-zero-floor[data-zero-step="3"] .zero-wizard-top {
     padding: 14px 17px;
-    gap: 12px;
   }
   #wx-zero-floor[data-zero-step="3"] .zero-steps-bar {
     gap: 8px;
@@ -390,85 +450,83 @@
     justify-content: space-between;
   }
   #wx-zero-floor .training-brief-topline {
-    padding: 17px 19px 0;
-    font-size: 9px;
-    letter-spacing: 1px;
+    padding: 17px 18px 0;
+    font-size: 8px;
+    letter-spacing: 0.6px;
   }
-  #wx-zero-floor .training-brief-hero {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 23px 19px 20px;
+  #wx-zero-floor .training-brief-heading {
+    padding: 20px 18px;
   }
   #wx-zero-floor .training-brief h3 {
-    font-size: 33px;
+    font-size: 28px;
     letter-spacing: 1px;
-    margin-bottom: 14px;
   }
   #wx-zero-floor .training-brief-lead {
-    font-size: 12px;
-    max-width: none;
-  }
-  #wx-zero-floor .training-brief-coach {
-    margin-top: 18px;
-    padding-top: 14px;
-  }
-  #wx-zero-floor .training-brief-art {
-    display: none;
+    font-size: 11px;
   }
   #wx-zero-floor .training-brief-assignment {
-    margin: 0 19px;
+    margin: 0 18px;
     grid-template-columns: 1fr 1fr;
-    padding: 14px 0;
-    row-gap: 14px;
+    padding: 12px 0;
+    row-gap: 12px;
   }
   #wx-zero-floor .training-brief-assignment > div {
-    padding: 0 0 0 15px;
+    padding: 0 0 0 12px;
   }
   #wx-zero-floor .training-brief-assignment > div:nth-child(2) {
     border: 0;
   }
   #wx-zero-floor .training-brief-assignment > div:last-child {
     grid-column: 1/-1;
-    padding: 12px 0 0;
+    padding: 10px 0 0;
     border-top: 1px solid #819d8c22;
     display: flex;
-    gap: 12px;
     align-items: center;
+    gap: 13px;
   }
   #wx-zero-floor .training-brief-assignment > div:last-child dt {
     margin: 0;
     flex-shrink: 0;
   }
-  #wx-zero-floor .training-brief-assignment dd {
+  #wx-zero-floor .training-brief-hero {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 20px 18px;
+  }
+  #wx-zero-floor .training-brief-mission h4 {
+    font-size: 21px;
+    margin: 7px 0 10px;
+  }
+  #wx-zero-floor .training-brief-mission h4 br {
+    display: none;
+  }
+  #wx-zero-floor .training-brief-clue {
+    margin: 14px 0 10px;
+  }
+  #wx-zero-floor .training-brief-art-caption {
+    padding: 9px 11px;
+  }
+  #wx-zero-floor .training-brief-art-caption strong {
+    font-size: 10px;
+  }
+  #wx-zero-floor .training-brief-art-caption > span {
+    font-size: 8px;
+  }
+  #wx-zero-floor .training-brief-next {
+    margin: 0 18px;
+    padding: 13px 12px;
+    gap: 10px;
+  }
+  #wx-zero-floor .training-brief-next p {
     font-size: 12px;
   }
-  #wx-zero-floor .training-brief-lessons {
-    grid-template-columns: 1fr;
-    gap: 15px;
-    padding: 20px 19px;
-  }
-  #wx-zero-floor .training-brief-number {
-    font-size: 20px;
-    width: 27px;
-    flex-shrink: 0;
-  }
-  #wx-zero-floor .training-brief-lessons h4 {
-    margin-bottom: 3px;
-    font-size: 13px;
-  }
-  #wx-zero-floor .training-brief-lessons p {
-    font-size: 11px;
-  }
-  #wx-zero-floor .training-brief-boundary {
-    margin: 0 19px;
-    padding: 12px;
-    font-size: 10px;
-    gap: 9px;
+  #wx-zero-floor .training-brief-next-tag {
+    display: none;
   }
   #wx-zero-floor .training-brief-footer {
-    margin: 20px 19px;
+    margin: 18px;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 12px;
   }
   #wx-zero-floor .training-brief-back {
     order: 2;
@@ -479,7 +537,7 @@
   #wx-zero-floor .training-brief-entry {
     width: 100%;
     flex-direction: column-reverse;
-    gap: 9px;
+    gap: 8px;
   }
   #wx-zero-floor #trainingBriefStart {
     width: 100%;
@@ -488,26 +546,22 @@
     padding: 13px 16px;
   }
   #wx-zero-floor .training-brief-notice {
-    margin: 0 19px 18px;
+    margin: 0 18px 18px;
+  }
+  #wx-zero-floor .training-brief-page-foot {
+    padding: 11px 18px;
+    font-size: 8px;
   }
 }
-/* 宿主通用按钮皮使用 !important；在本页面内明确区分主、次操作。 */
-#wx-zero-floor .training-brief-back {
-  background: transparent !important;
-  border: 0 !important;
-  color: #8ca398 !important;
-}
-#wx-zero-floor .training-brief-back:hover {
-  background: transparent !important;
-  color: #d5dfd1 !important;
-}
-#wx-zero-floor #trainingBriefStart {
-  background: #c2af7c !important;
-  border: 1px solid #c2af7c !important;
-  color: #1b2522 !important;
-}
-#wx-zero-floor #trainingBriefStart:hover {
-  background: #d2c191 !important;
-  border-color: #d2c191 !important;
-  color: #1b2522 !important;
+
+@media (max-width: 600px) {
+  #wx-zero-floor .training-map-callout-title {
+    font-size: 20px;
+  }
+  #wx-zero-floor .training-map-callout-note {
+    font-size: 13px;
+  }
+  #wx-zero-floor .training-map-label.focus {
+    font-size: 22px;
+  }
 }

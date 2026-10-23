@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.12",
+  "version": "0.8.13",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "6f27b845f9499e8b7c77e680ad761b4c514e8ab8bb5bca1074e0974708fe97fe",
+  "sourceHash": "7b25f54a5c0c24d00846902f93e9fb44b67ad2229416bfddaa024db2affe3da1",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "f8ce8dda3420e58dff4313961657bfc54da85f0121a09f323f3572a265753e4a"
+      "sha256": "ed30ee5029391d05f440eab94ee996aafd5ed4e904000ef1ec75d3bf990d9839"
     },
     {
       "file": "package.json",
-      "sha256": "17852d40db069cfe5dbb61921270e397cf529c6e19c0fb4c114015f4c8db31c2"
+      "sha256": "cdde02f4d6a4a83eba8044ed7966008ea78fecac6a3980c19b5147f37c105f80"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -355,7 +355,7 @@
     },
     {
       "file": "src/ui/generated/rules.json",
-      "sha256": "132784bcdf89a55c8e7d9b721e81e3b0d0813be46aa6533f048fe06c052337a1"
+      "sha256": "aa8eddb0372aa1629dd937f66c7e49979fc19f21ddcd9787e78e0b94e39b0e89"
     },
     {
       "file": "src/ui/icons.js",
@@ -419,7 +419,7 @@
     },
     {
       "file": "src/ui/styles/training-brief.css",
-      "sha256": "f05a2ea7c48dc98246168dd07e5d8c029da9232b563f13e594876d8897e4e576"
+      "sha256": "96b86aeb5c1988f78333812e155660b9a3f8fc58a07e8fdf35cd40feeaf530e9"
     },
     {
       "file": "src/ui/sync-notice.js",
@@ -439,11 +439,15 @@
     },
     {
       "file": "src/ui/zero-floor/training-brief.html",
-      "sha256": "c9b2697ad911a23d229b28d25e98430633151d4831d599b811e6c69aa5184f2a"
+      "sha256": "c080dda4757dad158b1eaa81a17dee957cca22363b1b165ba1fb6274efa30cb2"
     },
     {
       "file": "src/ui/zero-floor/training-brief.js",
-      "sha256": "4dba42a0c72d00352dd31c9e1cd99721b480231ccc74ce1d2ce550fda133d74d"
+      "sha256": "9e4487f8e8ccb442a80113cc24b01501ff8e8d84bcb44f0664f53a3d1971d74f"
+    },
+    {
+      "file": "src/ui/zero-floor/training-diagram.js",
+      "sha256": "ba8a9404f98f9b7277173d14e491d4bcd7cc2a8c1f09babe84031340387d47c6"
     },
     {
       "file": "src/utils/narrative_validator.js",
@@ -471,11 +475,11 @@
     },
     {
       "file": "tools/build/training-preview.js",
-      "sha256": "7b388c18dd17b44af001a4ba57820a03db43bc477a72faf8fef1f09b03af8ac8"
+      "sha256": "8d43b7edc604c9cfafd7bf36baa74c0b5342403c8c322cf1e5c7c80919df7994"
     },
     {
       "file": "tools/build/ui-config.js",
-      "sha256": "6e4c76936891fd650aa6771d214fdb85519533e922683289f5f090cd193352ca"
+      "sha256": "d874dd7318af9d811ead9a97af3df305c07f6cc38b369659061d61c2e0e75e81"
     },
     {
       "file": "tools/build/ui.js",
@@ -485,15 +489,15 @@
   "outputs": {
     "runtime.js": {
       "bytes": 618607,
-      "sha256": "f135fb076acb0bf85cd81cfc046c0de15af49cc80916cc7eefc7a77b09a0d4ed"
+      "sha256": "e125d2b7e1e01428ca57e8c209da12f0167873653fa568bef3757aa0ae5545c6"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1348085,
-      "sha256": "1dc510d3a74e9dd180c055f691eca65d446dd890c5af79b6b6d50da55ba9eedd"
+      "bytes": 1352055,
+      "sha256": "fc191586e8a1f0811151a8b1b30d8e0989289bd3d50445daad20ed381332a639"
     },
     "尾行.json": {
-      "bytes": 1473565,
-      "sha256": "c8ca3616505396f22041ba741e9fc0276322c5b52ae37b3e3cc3cae54d59bbb6"
+      "bytes": 1477867,
+      "sha256": "5b9386c499d25214cd40aa766d5f8220a09b537b74fb921771417f339c22815a"
     },
     "尾行-世界书.json": {
       "bytes": 10130,
