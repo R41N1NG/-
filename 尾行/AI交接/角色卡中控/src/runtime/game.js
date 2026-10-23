@@ -24,7 +24,7 @@ const { createSnapshotSystem } = require("./game/snapshot.js");
 const { createSaveSystem } = require("./game/save.js");
 const { createEconomy, validateEconomy } = require("../contracts/economy.js");
 const { createSpatial, validateSpatial } = require("../contracts/spatial.js");
-const { observeScene } = require("./spatial/system.js");
+const { observeScene, routePlace } = require("./spatial/system.js");
 const { createDailyRegistry } = require("./daily/registry.js");
 const { createDailySystem } = require("./daily/system.js");
 
@@ -307,7 +307,8 @@ function createGame(init = {}, services = {}) {
   g.economy = validateEconomy(
     init.saved?.economy ?? init.economy ?? createEconomy(),
   );
-  const oldPlace = g.route?.nodes?.[g.route.here];
+  // 只能从明确已知的路线节点推断旧流程起点，不能借目标的隐藏节点定位玩家。
+  const oldPlace = routePlace(g);
   const hasSavedSpatial =
     init.saved && Object.prototype.hasOwnProperty.call(init.saved, "spatial");
   g.spatial = validateSpatial(
@@ -320,7 +321,7 @@ function createGame(init = {}, services = {}) {
               g.dayPlan.source === "legacy" && map.getPlace(oldPlace)
                 ? oldPlace
                 : undefined,
-            assumed: !!init.saved,
+            assumed: !!init.saved || (g.dayPlan.source === "legacy" && !oldPlace),
           }),
   );
   if (

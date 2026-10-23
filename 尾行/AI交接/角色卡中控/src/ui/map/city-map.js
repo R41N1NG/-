@@ -66,7 +66,7 @@ function createCityMapUI({
       view = map.player.district;
     if (!selected) selected = map.player.placeId;
     const target = map.target;
-    position.textContent = `你在：${map.player.name}${map.player.assumed ? "（旧档起始位置）" : ""} · ${target ? `${target.status}：${target.name}${target.live ? "" : `（第 ${target.date} 天）`}` : "目标位置：尚无目击记录"}`;
+    position.textContent = `你在：${map.player.name}${map.player.assumed ? "（待确认位置）" : ""} · ${target ? `${target.status}：${target.name}${target.live ? "" : `（第 ${target.date} 天）`}` : "目标位置：尚无目击记录"}`;
     tabs.replaceChildren();
     for (const item of [{ id: "all", name: "全城" }, ...map.frames]) {
       const b = el("button", item.name);

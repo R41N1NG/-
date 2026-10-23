@@ -175,6 +175,93 @@ test("目标位置只认本地目击：开局可见，跟丢冻结最后位置�
   }
   assert.equal(found, true, "测试样本应包含真实的本地跟丢结果");
 });
+test("隐藏或缺失的路线知识不能泄露目标，也不能成为玩家起点", () => {
+  for (const known of [[0], [], undefined]) {
+    const init = defaultInit();
+    init.route = { ...init.route, nodes: ["unit_stairs_b"], here: 0, known };
+    const g = createGame(init);
+    const view = g.snapshot().cityMap;
+    assert.equal(view.target, null);
+    assert.equal(view.player.placeId, layout.home);
+    assert.equal(view.player.assumed, true);
+    assert.equal(view.nodes.find((n) => n.id === "unit_stairs_b").hidden, true);
+    g.processReply("她就在单元楼梯间，我也到了那里。");
+    assert.equal(g.snapshot().cityMap.target, null);
+    assert.equal(g.snapshot().cityMap.player.placeId, layout.home);
+    const restored = createGame({ saved: g.save() });
+    assert.deepEqual(restored.save().spatial, g.save().spatial);
+  }
+});
+test("真实目击可随本地跟进行动更新；仅改路线和模型描述不让玩家或目击点瞬移", () => {
+  let observed = false;
+  for (let salt = 0; salt < 80; salt++) {
+    const g = createGame({ ...defaultInit(), sessionSalt: `seen-${salt}` });
+    const first = g.snapshot().cityMap;
+    const route = clone(g.save().route);
+    route.here = 1;
+    g.setRoute(route);
+    const changed = g.snapshot().cityMap;
+    assert.equal(changed.player.placeId, first.player.placeId);
+    assert.equal(changed.target.placeId, first.target.placeId);
+    assert.equal(changed.target.live, false);
+    g.processReply("她走到下一个地方了。");
+    assert.deepEqual(g.snapshot().cityMap.player, changed.player);
+    assert.deepEqual(g.snapshot().cityMap.target, changed.target);
+    const result = g.settleInput("", {
+      actions: [{ id: "follow", name: "跟缀", args: { dist: "same" } }],
+    });
+    if (result.actions[0]?.band !== "success" && result.actions[0]?.band !== "great") continue;
+    const view = g.snapshot().cityMap;
+    assert.equal(view.target.live, true);
+    assert.equal(view.target.placeId, view.player.placeId);
+    assert.equal(view.target.placeId, g.save().route.nodes[g.save().route.here]);
+    assert.deepEqual(createGame({ saved: g.save() }).snapshot().cityMap.target, view.target);
+    observed = true;
+    break;
+  }
+  assert.equal(observed, true, "应覆盖一次真实成功跟进");
+});
+test("目击记录隔日降为最后目击，其他目标的记录不能画成当前目标", () => {
+  const saved = createGame(defaultInit()).save();
+  assert.ok(saved.spatial.lastSeen);
+  saved.ledgerState.date += 1;
+  const later = createGame({ saved });
+  assert.equal(later.snapshot().cityMap.target.live, false);
+  assert.equal(later.snapshot().cityMap.target.date, saved.spatial.lastSeen.date);
+  saved.targetId = "ol";
+  assert.equal(createGame({ saved }).snapshot().cityMap.target, null);
+});
+test("位置点不含文字；同地点的玩家和目标可辨认，最后目击保留独立样式", () => {
+  const { JSDOM } = require("jsdom");
+  const { drawCityMap } = require("../src/ui/map/cartography.js");
+  const dom = new JSDOM();
+  try {
+    const doc = dom.window.document;
+    const svg = (name, attrs) => {
+      const el = doc.createElementNS("http://www.w3.org/2000/svg", name);
+      for (const [k, v] of Object.entries(attrs || {})) el.setAttribute(k, v);
+      return el;
+    };
+    const g = createGame(defaultInit());
+    const render = () => drawCityMap({ svg, map: g.snapshot().cityMap, view: "all" });
+    const drawing = render();
+    const player = drawing.querySelector(".wx-map-player");
+    const target = drawing.querySelector(".wx-map-target");
+    assert.equal(player.querySelector("text"), null);
+    assert.equal(target.querySelector("text"), null);
+    assert.notEqual(player.querySelector("circle").getAttribute("cx"), target.querySelector("circle").getAttribute("cx"));
+    assert.equal(target.getAttribute("aria-label"), "目视位置");
+    const route = clone(g.save().route);
+    route.here = 1;
+    g.setRoute(route);
+    const last = render().querySelector(".wx-map-target.last-seen");
+    assert.ok(last.querySelector("circle.last-seen"));
+    assert.equal(last.getAttribute("aria-label"), "最后目击");
+    assert.equal(last.querySelector("text"), null);
+  } finally {
+    dom.window.close();
+  }
+});
 test("旧档位置兼容和损坏保护：只补起点，不补目标实时位置，不重置原账本", () => {
   const original = game().save();
   delete original.spatial;

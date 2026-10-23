@@ -321,7 +321,7 @@ function drawCityMap({ svg, map, view, selected, showTransit = true }) {
     const x = n.x + offset,
       y = n.y - 53;
     const g = svg("g", {
-      class: `wx-map-${kind}`,
+      class: `wx-map-${kind}${kind === "target" && !target.live ? " last-seen" : ""}`,
       "aria-label": kind === "player" ? "玩家位置" : target.status,
     });
     g.append(
@@ -337,13 +337,6 @@ function drawCityMap({ svg, map, view, selected, showTransit = true }) {
         r: 13,
         class: kind === "target" && !target.live ? "last-seen" : "",
       }),
-    );
-    text(
-      g,
-      kind === "player" ? "你" : target.live ? "目" : "忆",
-      x,
-      y + 4,
-      "wx-map-pin-label",
     );
     drawing.append(g);
   }

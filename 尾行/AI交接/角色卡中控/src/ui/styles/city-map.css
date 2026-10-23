@@ -51,10 +51,10 @@
   color: #79c5ed;
 }
 .trpg .wx-city-legend .target {
-  color: #e594a3;
+  color: #e9a14e;
 }
 .trpg .wx-city-legend .last {
-  color: #d1ae6b;
+  color: #e9a14e;
 }
 /* 俯视街区地图：地理底图与可交互地点分层，避免把拓扑边当街道。 */
 .trpg .wx-city-canvas {
@@ -319,25 +319,21 @@
 }
 .trpg .wx-map-player circle,
 .trpg .wx-map-player .wx-map-pin-tip {
-  fill: #2b779f;
+  fill: #318bc0;
   stroke: #e8f8ff;
   stroke-width: 2;
 }
 .trpg .wx-map-target circle,
 .trpg .wx-map-target .wx-map-pin-tip {
-  fill: #ab576c;
-  stroke: #fff3f4;
+  fill: #e18d30;
+  stroke: #fff3df;
   stroke-width: 2;
 }
-.trpg .wx-map-target circle.last-seen {
-  fill: #ad8847;
+.trpg .wx-map-target.last-seen circle,
+.trpg .wx-map-target.last-seen .wx-map-pin-tip {
+  fill: none;
+  stroke: #d27b20;
   stroke-dasharray: 3 2;
-}
-.trpg .wx-map-pin-label {
-  fill: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  stroke: none;
 }
 .trpg .wx-map-compass path {
   fill: #647c70;

@@ -12,12 +12,13 @@ const activeScene = (g) =>
   (g.dayPlan.source !== "daily" || g.dayPlan.activity?.kind === "tailing");
 function routePlace(g) {
   const id = g.route?.nodes?.[g.route.here];
-  return places[id] && g.route?.known?.[g.route.here] !== 0 ? id : null;
+  return places[id] && g.route?.known?.[g.route.here] === 1 ? id : null;
 }
 function sceneVisible(g) {
   return (
     activeScene(g) &&
     g.spatial.tracking === "visual" &&
+    g.spatial.lastSeen?.targetId === (g.targetId || "college") &&
     g.spatial.lastSeen?.turn === (g.floor || 0) &&
     g.spatial.lastSeen.placeId === routePlace(g) &&
     g.spatial.playerPlaceId === g.spatial.lastSeen.placeId
@@ -172,4 +173,4 @@ function cityView(g, date) {
     note: "固定街区地图。地块表示空间分布；可通行范围以地点入口为准。",
   };
 }
-module.exports = { activeScene, observeScene, prepareMove, cityView };
+module.exports = { activeScene, routePlace, observeScene, prepareMove, cityView };

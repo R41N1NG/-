@@ -269,6 +269,7 @@ const deadline = setTimeout(() => {
       await window.__dailyPreviewReady;
       const checks=[]; const ok=(name,value)=>checks.push({name,ok:!!value});
       document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady;
+      ok('无目击记录不画目标点',!document.querySelector('.wx-map-target'));
       ok('日程开局 4/4',document.getElementById('wxDayAp').textContent==='4'&&document.getElementById('wxDayBudget').textContent==='4');
       ok('五时段与早间标记',document.querySelectorAll('#wxDayPeriods li').length===5&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='早间');
       ok('日程待机不显示目标距离或原尾行胶囊',document.getElementById('distStat').hidden&&document.getElementById('wxCapsuleBar').hidden);
@@ -335,6 +336,7 @@ const deadline = setTimeout(() => {
       ok('日终换日恢复四点并回早间',document.getElementById('wxDayAp').textContent==='4'&&document.querySelector('#wxDayPeriods [aria-current="step"]').textContent==='早间');
       document.querySelector('[data-state-index="4"]').click(); await window.__dailyPreviewReady;
       ok('地图保留真实目视目标标记',!!document.querySelector('.wx-map-target circle:not(.last-seen)'));
+      ok('位置点仅用蓝橙颜色不含字',!document.querySelector('.wx-map-player text, .wx-map-target text')&&getComputedStyle(document.querySelector('.wx-map-player circle')).fill==='rgb(49, 139, 192)'&&getComputedStyle(document.querySelector('.wx-map-target circle')).fill==='rgb(225, 141, 48)');
       ok('旧流程明确提示未启用活动扣点',document.getElementById('wxDayHint').textContent==='日程活动尚未启用');
       document.querySelector('[data-state-index="0"]').click(); await window.__dailyPreviewReady;
       return checks;

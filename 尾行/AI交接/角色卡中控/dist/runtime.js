@@ -10626,10 +10626,10 @@
       var activeScene = (g) => ["stealth", "contact", "vehicle"].includes(g.mode) && (g.dayPlan.source !== "daily" || g.dayPlan.activity?.kind === "tailing");
       function routePlace(g) {
         const id = g.route?.nodes?.[g.route.here];
-        return places[id] && g.route?.known?.[g.route.here] !== 0 ? id : null;
+        return places[id] && g.route?.known?.[g.route.here] === 1 ? id : null;
       }
       function sceneVisible(g) {
-        return activeScene(g) && g.spatial.tracking === "visual" && g.spatial.lastSeen?.turn === (g.floor || 0) && g.spatial.lastSeen.placeId === routePlace(g) && g.spatial.playerPlaceId === g.spatial.lastSeen.placeId;
+        return activeScene(g) && g.spatial.tracking === "visual" && g.spatial.lastSeen?.targetId === (g.targetId || "college") && g.spatial.lastSeen?.turn === (g.floor || 0) && g.spatial.lastSeen.placeId === routePlace(g) && g.spatial.playerPlaceId === g.spatial.lastSeen.placeId;
       }
       function observeScene(g, date, results) {
         if (!activeScene(g)) return;
@@ -10752,7 +10752,7 @@
           note: "\u56FA\u5B9A\u8857\u533A\u5730\u56FE\u3002\u5730\u5757\u8868\u793A\u7A7A\u95F4\u5206\u5E03\uFF1B\u53EF\u901A\u884C\u8303\u56F4\u4EE5\u5730\u70B9\u5165\u53E3\u4E3A\u51C6\u3002"
         };
       }
-      module.exports = { activeScene, observeScene, prepareMove, cityView };
+      module.exports = { activeScene, routePlace, observeScene, prepareMove, cityView };
     }
   });
 
@@ -11957,7 +11957,7 @@
       var { createSaveSystem } = require_save();
       var { createEconomy, validateEconomy } = require_economy2();
       var { createSpatial, validateSpatial } = require_spatial();
-      var { observeScene } = require_system();
+      var { observeScene, routePlace } = require_system();
       var { createDailyRegistry } = require_registry();
       var { createDailySystem } = require_system2();
       var { classifyPlace } = require_action_requirements();
@@ -12217,12 +12217,12 @@
         g.economy = validateEconomy(
           init.saved?.economy ?? init.economy ?? createEconomy()
         );
-        const oldPlace = g.route?.nodes?.[g.route.here];
+        const oldPlace = routePlace(g);
         const hasSavedSpatial = init.saved && Object.prototype.hasOwnProperty.call(init.saved, "spatial");
         g.spatial = validateSpatial(
           hasSavedSpatial ? init.saved.spatial : init.spatial !== void 0 ? init.spatial : createSpatial({
             placeId: g.dayPlan.source === "legacy" && map.getPlace(oldPlace) ? oldPlace : void 0,
-            assumed: !!init.saved
+            assumed: !!init.saved || g.dayPlan.source === "legacy" && !oldPlace
           })
         );
         if (!hasSavedSpatial && init.spatial === void 0 && g.dayPlan.source === "legacy")
@@ -14471,7 +14471,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.11",
+        version: "0.8.12",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
