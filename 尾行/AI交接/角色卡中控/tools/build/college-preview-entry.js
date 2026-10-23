@@ -19,10 +19,15 @@ function boot() {
   }
   function decorateMoves() {
     if (!model) return;
-    document.querySelectorAll("[data-map-move]").forEach((b) => {
-      const q = model.quote(b.dataset.mapMove);
-      if (!q.reason && b.textContent !== q.label) b.textContent = q.label;
-      b.title = q.label;
+    document.querySelectorAll("#wxCityMap [data-place-id]").forEach((node) => {
+      const q = model.quote(node.dataset.placeId);
+      const label = q.reason || q.label.replace("前往", "点击前往");
+      const title = node.querySelector("title");
+      if (title && title.textContent !== label) title.textContent = label;
+      if (node.getAttribute("aria-label") !== label)
+        node.setAttribute("aria-label", label);
+      node.setAttribute("aria-disabled", String(!!q.reason));
+      node.classList.toggle("college-map-blocked", !!q.reason);
     });
   }
   function render() {
@@ -52,16 +57,13 @@ function boot() {
         return n;
       }),
     );
-    document.querySelectorAll("[data-college-place]").forEach((b) => {
-      const q = snap.previewMoves[b.dataset.collegePlace];
-      b.disabled = !!q.reason;
-      b.textContent = q.label;
-      b.title =
-        q.reason ||
-        `到达后：${q.arrival.ended ? "本日结束" : ["早间", "午间", "午后", "晚间", "子夜"][q.arrival.period]}，按到达时的日程判断目视`;
-    });
     $("collegePass").disabled = model.active() || snap.dayPlan.ended;
     decorateMoves();
+    const mapStatus = $("collegeMapStatus");
+    if (mapStatus)
+      mapStatus.textContent = t.active
+        ? "尾行中：地图可浏览，位置随跟随动作结算。"
+        : `${snap.dayPlan.periodName} · 剩余${t.remaining}/3格。点击地图地点直接移动；同区1格、跨区2格，均不扣行动点。`;
     $("collegePhase").textContent =
       `第${snap.player.date}天 · ${snap.dayPlan.periodName} · 行动点 ${snap.dayPlan.remaining}/4`;
   }
@@ -100,6 +102,12 @@ function boot() {
     message("试玩进度未能恢复，已载入独立演示起点；酒馆存档未受影响。");
   }
   window.WxStatusbarUI.mountStatusbar(document, window);
+  document.querySelector("#wxCityMap .wx-city-note").textContent =
+    "点击地区、缩放或拖动只浏览；点击地点直接移动，同区1格、跨区2格，不扣行动点。私人区域与交通条件仍须满足；尾行中位置由跟随动作结算。";
+  const mapStatus = document.createElement("p");
+  mapStatus.id = "collegeMapStatus";
+  mapStatus.setAttribute("role", "status");
+  $("wxCityCanvas").before(mapStatus);
   const mapObserver = new MutationObserver(decorateMoves);
   mapObserver.observe(document.querySelector(".trpg"), {
     childList: true,
@@ -151,11 +159,92 @@ function boot() {
       return message("先确认本次判定结果，再继续行动。");
     act(() => model.follow(window.WxStatusbar.consumeActiveActions()));
   };
-  document
-    .querySelectorAll("[data-college-place]")
-    .forEach(
-      (b) => (b.onclick = () => act(() => model.move(b.dataset.collegePlace))),
-    );
+  // 地图直接移动，仅拦截移动意图；缩放、分区与拖动仍由正式地图处理。
+  let pointer = null;
+  const mapTarget = (event) =>
+    event.target.closest?.("#wxCityMap [data-place-id]");
+  document.addEventListener(
+    "pointerdown",
+    (e) => {
+      if (e.target.closest?.("#wxCityMap"))
+        pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, drag: false };
+    },
+    true,
+  );
+  document.addEventListener(
+    "pointermove",
+    (e) => {
+      if (
+        pointer &&
+        e.pointerId === pointer.id &&
+        Math.hypot(e.clientX - pointer.x, e.clientY - pointer.y) > 8
+      )
+        pointer.drag = true;
+    },
+    true,
+  );
+  document.addEventListener(
+    "pointercancel",
+    () => {
+      if (pointer) pointer.drag = true;
+    },
+    true,
+  );
+  document.addEventListener(
+    "click",
+    (e) => {
+      const node = mapTarget(e);
+      if (pointer?.drag) {
+        pointer = null;
+        if (node) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+        return;
+      }
+      pointer = null;
+      if (node) {
+        const id = node.dataset.placeId;
+        queueMicrotask(() => act(() => model.move(id)));
+        return;
+      }
+      const region = e.target.closest?.("#wxCityMap [data-region]");
+      if (region)
+        document
+          .querySelector(`[data-map-district="${region.dataset.region}"]`)
+          ?.click();
+    },
+    true,
+  );
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      const node = mapTarget(e);
+      if (node && ["Enter", " "].includes(e.key)) {
+        e.preventDefault();
+        if (!e.repeat) {
+          const id = node.dataset.placeId;
+          queueMicrotask(() => act(() => model.move(id)));
+        }
+      }
+    },
+    true,
+  );
+  document.addEventListener(
+    "pointerover",
+    (e) => {
+      const node = mapTarget(e);
+      if (!node) return;
+      const q = model.quote(node.dataset.placeId),
+        t = model.snapshot().previewTime;
+      const text = model.active()
+        ? "尾行中：地图可浏览，位置随跟随动作结算。"
+        : `点击地点直接移动 · ${q.label}；剩余${t.remaining}/3格时间。`;
+      const status = $("collegeMapStatus");
+      if (status.textContent !== text) status.textContent = text;
+    },
+    true,
+  );
   $("collegeReset").onclick = () => {
     if ($("wx-settle-dialog")?.open) $("wx-settle-dialog").close();
     model = createPreview();

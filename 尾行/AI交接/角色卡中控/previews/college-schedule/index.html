@@ -4708,8 +4708,8 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
  #wx-zero-floor #tutorialSkipAll { width:100%; text-align:center; }
  #wx-zero-floor .attribute-lesson-footer .zero-btn-next { width:100%; }
 }
- html{background:#081316}body{margin:0;color:#cfddd9;font:14px/1.7 system-ui;background:radial-gradient(ellipse at 20% 0,#243c3c,transparent 65%)}.college-shell{max-width:1120px;margin:auto;padding:32px 20px}.college-label{color:#bba778;font-size:11px;letter-spacing:2px}.college-shell h1{font-size:25px;margin:8px 0}.college-note{color:#8da7a6;font-size:12px}.college-guide{padding:14px 18px;background:#10272c;border:1px solid #2d4c51;border-radius:10px;margin:20px 0}.college-guide h2{font-size:18px;margin:0;color:#e8e5d7}.college-guide p{margin:6px 0 12px}.college-controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.college-shell button,.college-shell select{font:inherit;font-size:12px;color:#c7dcd8;border:1px solid #38565d;border-radius:6px;background:#152a30;padding:8px 12px;cursor:pointer}.college-shell button:disabled{opacity:.45;cursor:default}.college-shell .college-primary{border-color:#b59d62;color:#eed5a4;background:#403922}#collegeNotice{color:#d4b879;min-height:24px;font-size:12px}.college-shell main.wx-standalone-main{padding:0;max-width:none}#collegePhase{color:#8ccfc3;font-size:12px}.college-clock{display:flex;align-items:center;gap:12px;color:#dbcca5;font-size:12px;margin:9px 0 15px}.college-clock i{display:inline-block;width:22px;height:7px;margin-right:5px;border-radius:2px;background:#c0ad7d}.college-clock i.used{background:#263d40} .college-footer{color:#77928e;font-size:11px;margin-top:20px}@media(max-width:560px){.college-shell{padding:20px 10px}.college-shell h1{font-size:21px}.college-guide{padding:12px}.college-controls{gap:6px}}
- </style><body><div class="college-shell"><div class="college-label">全息训练 / 独立玩法预览</div><h1>到现场，再决定是否跟随</h1><p class="college-note">从午间开始。每时段3格时间。同区移动1格、跨区2格，均不扣行动点；到达时可能已经换了时段。</p><div class="college-controls"><button id="collegeReset">重置试玩</button><button id="collegePass">度过当前时段 · 0点</button></div><section class="college-guide"><div id="collegePhase"></div><div class="college-clock"><span id="collegeTime"></span><span id="collegeTimeCells" aria-hidden="true"></span></div><h2 id="collegeSceneTitle"></h2><p id="collegeSceneText"></p><div class="college-controls"><button data-college-place="university_canteen_b">去大学食堂 · 免费移动</button><button data-college-place="university_library_b">去大学图书馆 · 免费移动</button><button data-college-place="school_gate_b">去大学正门</button><button data-college-place="metro_hub_a">去CBD地铁枢纽</button></div><button id="collegeStart" class="college-primary"></button><div id="collegeTailControls" hidden><div class="college-controls"><select id="collegeDistance" aria-label="跟随距离"><option value="far">远端</option><option value="same" selected>同街</option><option value="close">身后</option><option value="touch">贴身</option></select><button id="collegeFollow" class="college-primary">跟随一段 · 不再扣行动点</button><button id="collegeSend">执行下方选中的动作</button><button id="collegeStop">中止尾行 · 不退2点</button></div></div><div id="collegeNotice" role="status"></div></section><main class="wx-standalone-main"><section class="trpg" aria-label="玩家状态栏"><div id="wxSyncNotice" class="wx-sync-notice" role="status" hidden></div>
+ html{background:#081316}body{margin:0;color:#cfddd9;font:14px/1.7 system-ui;background:radial-gradient(ellipse at 20% 0,#243c3c,transparent 65%)}.college-shell{max-width:1120px;margin:auto;padding:32px 20px}.college-label{color:#bba778;font-size:11px;letter-spacing:2px}.college-shell h1{font-size:25px;margin:8px 0}.college-note{color:#8da7a6;font-size:12px}.college-guide{padding:14px 18px;background:#10272c;border:1px solid #2d4c51;border-radius:10px;margin:20px 0}.college-guide h2{font-size:18px;margin:0;color:#e8e5d7}.college-guide p{margin:6px 0 12px}.college-controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.college-shell button,.college-shell select{font:inherit;font-size:12px;color:#c7dcd8;border:1px solid #38565d;border-radius:6px;background:#152a30;padding:8px 12px;cursor:pointer}.college-shell button:disabled{opacity:.45;cursor:default}.college-shell .college-primary{border-color:#b59d62;color:#eed5a4;background:#403922}#collegeNotice{color:#d4b879;min-height:24px;font-size:12px}.college-shell main.wx-standalone-main{padding:0;max-width:none}#collegePhase{color:#8ccfc3;font-size:12px}.college-clock{display:flex;align-items:center;gap:12px;color:#dbcca5;font-size:12px;margin:9px 0 15px}.college-clock i{display:inline-block;width:22px;height:7px;margin-right:5px;border-radius:2px;background:#c0ad7d}.college-clock i.used{background:#263d40} #collegeMapStatus{color:#acc6c1;font-size:12px;margin:8px 0 12px;height:3.4em;overflow:hidden}.college-map-hint{font-size:12px;color:#b9cdbf}#wxCityMap [data-map-move],#wxCityMap [data-map-retry]{display:none!important}#wxCityMap .wx-city-node{cursor:pointer}#wxCityMap .college-map-blocked{cursor:not-allowed} .college-footer{color:#77928e;font-size:11px;margin-top:20px}@media(max-width:560px){#collegeMapStatus{height:5.1em}.college-shell{padding:20px 10px}.college-shell h1{font-size:21px}.college-guide{padding:12px}.college-controls{gap:6px}}
+ </style><body><div class="college-shell"><div class="college-label">全息训练 / 独立玩法预览</div><h1>到现场，再决定是否跟随</h1><p class="college-note">从午间开始，在地图上自由选择地点。每时段3格时间。同区移动1格、跨区2格，均不扣行动点；到达时可能已经换了时段。</p><div class="college-controls"><button id="collegeReset">重置试玩</button><button id="collegePass">度过当前时段 · 0点</button></div><section class="college-guide"><div id="collegePhase"></div><div class="college-clock"><span id="collegeTime"></span><span id="collegeTimeCells" aria-hidden="true"></span></div><h2 id="collegeSceneTitle"></h2><p id="collegeSceneText"></p><p id="collegeMapHint" class="college-map-hint">直接点击下方地图地点前往；同区1格、跨区2格，不扣行动点。</p><button id="collegeStart" class="college-primary"></button><div id="collegeTailControls" hidden><div class="college-controls"><select id="collegeDistance" aria-label="跟随距离"><option value="far">远端</option><option value="same" selected>同街</option><option value="close">身后</option><option value="touch">贴身</option></select><button id="collegeFollow" class="college-primary">跟随一段 · 不再扣行动点</button><button id="collegeSend">执行下方选中的动作</button><button id="collegeStop">中止尾行 · 不退2点</button></div></div><div id="collegeNotice" role="status"></div></section><main class="wx-standalone-main"><section class="trpg" aria-label="玩家状态栏"><div id="wxSyncNotice" class="wx-sync-notice" role="status" hidden></div>
     <div class="trpg-vignette" id="trpgVignette" aria-hidden="true"></div>
     <div class="her-alert" id="herAlert" data-tip="她刚才的举动。是发现了什么，还是单纯的心血来潮——只有她自己知道。"></div>
 
@@ -31509,10 +31509,15 @@ var CollegePreview = (() => {
         }
         function decorateMoves() {
           if (!model) return;
-          document.querySelectorAll("[data-map-move]").forEach((b) => {
-            const q = model.quote(b.dataset.mapMove);
-            if (!q.reason && b.textContent !== q.label) b.textContent = q.label;
-            b.title = q.label;
+          document.querySelectorAll("#wxCityMap [data-place-id]").forEach((node) => {
+            const q = model.quote(node.dataset.placeId);
+            const label = q.reason || q.label.replace("\u524D\u5F80", "\u70B9\u51FB\u524D\u5F80");
+            const title = node.querySelector("title");
+            if (title && title.textContent !== label) title.textContent = label;
+            if (node.getAttribute("aria-label") !== label)
+              node.setAttribute("aria-label", label);
+            node.setAttribute("aria-disabled", String(!!q.reason));
+            node.classList.toggle("college-map-blocked", !!q.reason);
           });
         }
         function render() {
@@ -31536,14 +31541,11 @@ var CollegePreview = (() => {
               return n;
             })
           );
-          document.querySelectorAll("[data-college-place]").forEach((b) => {
-            const q = snap.previewMoves[b.dataset.collegePlace];
-            b.disabled = !!q.reason;
-            b.textContent = q.label;
-            b.title = q.reason || `\u5230\u8FBE\u540E\uFF1A${q.arrival.ended ? "\u672C\u65E5\u7ED3\u675F" : ["\u65E9\u95F4", "\u5348\u95F4", "\u5348\u540E", "\u665A\u95F4", "\u5B50\u591C"][q.arrival.period]}\uFF0C\u6309\u5230\u8FBE\u65F6\u7684\u65E5\u7A0B\u5224\u65AD\u76EE\u89C6`;
-          });
           $("collegePass").disabled = model.active() || snap.dayPlan.ended;
           decorateMoves();
+          const mapStatus2 = $("collegeMapStatus");
+          if (mapStatus2)
+            mapStatus2.textContent = t.active ? "\u5C3E\u884C\u4E2D\uFF1A\u5730\u56FE\u53EF\u6D4F\u89C8\uFF0C\u4F4D\u7F6E\u968F\u8DDF\u968F\u52A8\u4F5C\u7ED3\u7B97\u3002" : `${snap.dayPlan.periodName} \xB7 \u5269\u4F59${t.remaining}/3\u683C\u3002\u70B9\u51FB\u5730\u56FE\u5730\u70B9\u76F4\u63A5\u79FB\u52A8\uFF1B\u540C\u533A1\u683C\u3001\u8DE8\u533A2\u683C\uFF0C\u5747\u4E0D\u6263\u884C\u52A8\u70B9\u3002`;
           $("collegePhase").textContent = `\u7B2C${snap.player.date}\u5929 \xB7 ${snap.dayPlan.periodName} \xB7 \u884C\u52A8\u70B9 ${snap.dayPlan.remaining}/4`;
         }
         window.getVariables = async () => {
@@ -31581,6 +31583,11 @@ var CollegePreview = (() => {
           message("\u8BD5\u73A9\u8FDB\u5EA6\u672A\u80FD\u6062\u590D\uFF0C\u5DF2\u8F7D\u5165\u72EC\u7ACB\u6F14\u793A\u8D77\u70B9\uFF1B\u9152\u9986\u5B58\u6863\u672A\u53D7\u5F71\u54CD\u3002");
         }
         window.WxStatusbarUI.mountStatusbar(document, window);
+        document.querySelector("#wxCityMap .wx-city-note").textContent = "\u70B9\u51FB\u5730\u533A\u3001\u7F29\u653E\u6216\u62D6\u52A8\u53EA\u6D4F\u89C8\uFF1B\u70B9\u51FB\u5730\u70B9\u76F4\u63A5\u79FB\u52A8\uFF0C\u540C\u533A1\u683C\u3001\u8DE8\u533A2\u683C\uFF0C\u4E0D\u6263\u884C\u52A8\u70B9\u3002\u79C1\u4EBA\u533A\u57DF\u4E0E\u4EA4\u901A\u6761\u4EF6\u4ECD\u987B\u6EE1\u8DB3\uFF1B\u5C3E\u884C\u4E2D\u4F4D\u7F6E\u7531\u8DDF\u968F\u52A8\u4F5C\u7ED3\u7B97\u3002";
+        const mapStatus = document.createElement("p");
+        mapStatus.id = "collegeMapStatus";
+        mapStatus.setAttribute("role", "status");
+        $("wxCityCanvas").before(mapStatus);
         const mapObserver = new MutationObserver(decorateMoves);
         mapObserver.observe(document.querySelector(".trpg"), {
           childList: true,
@@ -31627,8 +31634,80 @@ var CollegePreview = (() => {
             return message("\u5148\u786E\u8BA4\u672C\u6B21\u5224\u5B9A\u7ED3\u679C\uFF0C\u518D\u7EE7\u7EED\u884C\u52A8\u3002");
           act(() => model.follow(window.WxStatusbar.consumeActiveActions()));
         };
-        document.querySelectorAll("[data-college-place]").forEach(
-          (b) => b.onclick = () => act(() => model.move(b.dataset.collegePlace))
+        let pointer = null;
+        const mapTarget = (event) => event.target.closest?.("#wxCityMap [data-place-id]");
+        document.addEventListener(
+          "pointerdown",
+          (e) => {
+            if (e.target.closest?.("#wxCityMap"))
+              pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, drag: false };
+          },
+          true
+        );
+        document.addEventListener(
+          "pointermove",
+          (e) => {
+            if (pointer && e.pointerId === pointer.id && Math.hypot(e.clientX - pointer.x, e.clientY - pointer.y) > 8)
+              pointer.drag = true;
+          },
+          true
+        );
+        document.addEventListener(
+          "pointercancel",
+          () => {
+            if (pointer) pointer.drag = true;
+          },
+          true
+        );
+        document.addEventListener(
+          "click",
+          (e) => {
+            const node = mapTarget(e);
+            if (pointer?.drag) {
+              pointer = null;
+              if (node) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+              }
+              return;
+            }
+            pointer = null;
+            if (node) {
+              const id = node.dataset.placeId;
+              queueMicrotask(() => act(() => model.move(id)));
+              return;
+            }
+            const region = e.target.closest?.("#wxCityMap [data-region]");
+            if (region)
+              document.querySelector(`[data-map-district="${region.dataset.region}"]`)?.click();
+          },
+          true
+        );
+        document.addEventListener(
+          "keydown",
+          (e) => {
+            const node = mapTarget(e);
+            if (node && ["Enter", " "].includes(e.key)) {
+              e.preventDefault();
+              if (!e.repeat) {
+                const id = node.dataset.placeId;
+                queueMicrotask(() => act(() => model.move(id)));
+              }
+            }
+          },
+          true
+        );
+        document.addEventListener(
+          "pointerover",
+          (e) => {
+            const node = mapTarget(e);
+            if (!node) return;
+            const q = model.quote(node.dataset.placeId), t = model.snapshot().previewTime;
+            const text = model.active() ? "\u5C3E\u884C\u4E2D\uFF1A\u5730\u56FE\u53EF\u6D4F\u89C8\uFF0C\u4F4D\u7F6E\u968F\u8DDF\u968F\u52A8\u4F5C\u7ED3\u7B97\u3002" : `\u70B9\u51FB\u5730\u70B9\u76F4\u63A5\u79FB\u52A8 \xB7 ${q.label}\uFF1B\u5269\u4F59${t.remaining}/3\u683C\u65F6\u95F4\u3002`;
+            const status = $("collegeMapStatus");
+            if (status.textContent !== text) status.textContent = text;
+          },
+          true
         );
         $("collegeReset").onclick = () => {
           if ($("wx-settle-dialog")?.open) $("wx-settle-dialog").close();
