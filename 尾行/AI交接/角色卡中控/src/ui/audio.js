@@ -145,7 +145,7 @@ function createAudio({
   function updateAudioStatus() {
     if (!audioOn) return soundUI("音效已关闭");
     if (!HUNTER_MODES[getMode()]) {
-      soundUI("准备期 · 猎手状态未激活 · 心跳静默（自动待命）");
+      soundUI("准备期 · 潜行状态未激活 · 心跳静默（自动待命）");
       return;
     }
     const { hasRain, isStorm } = getRainState(getSnapshot());
@@ -544,7 +544,7 @@ function createAudio({
       osc.stop(t + 0.06);
     }
   }
-  /* 猎手状态门禁：心跳声只在尾行/潜伏/伪装接触/终局激活，准备期与熟络社交静默 */
+  /* 潜行状态门禁：心跳声只在尾行/潜伏/伪装接触/终局激活，准备期与熟络社交静默 */
   const HUNTER_MODES = { stealth: 1, contact: 1, vehicle: 1 };
 
   function scheduleAudio() {
@@ -552,7 +552,7 @@ function createAudio({
     if (!HUNTER_MODES[getMode()]) {
       audioTimer = lifecycle.timeout(scheduleAudio, 300);
       return;
-    } // 待命：切回猎手模式自动恢复
+    } // 待命：切回潜行模式自动恢复
     const period = 60 / heartToBpm(getHeart());
     const freq = heartFreq(getHeart());
     const volLevel = (0.55 + (getHeart() / 100) * 0.45) * vol.heart; // 基础翻倍：满值贴 1.0

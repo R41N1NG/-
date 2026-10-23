@@ -263,7 +263,6 @@
               name: "\u75B2\u60EB\u7684OL",
               difficulty: 2,
               stars: "\u2605\u2605\u2606\u2606\u2606",
-              type: "\u75B2\u60EB\u730E",
               area: "\u4E2D\u57CECBD \u2794 \u8001\u57CE\u6587\u6559\u533A",
               tagline: "\u5199\u5B57\u697C\u6DF1\u591C\u52A0\u5B8C\u73ED\uFF0C\u9AD8\u8DDF\u978B\u6572\u6253\u5728\u8001\u57CE\u591C\u96E8\u91CC",
               features: "\u6DF1\u591C\u52A0\u73ED\u7A97\u53E3 \xB7 [\u75B2\u60EB] \u654F\u9510\u964D\u4F4E \xB7 \u9AD8\u8DDF\u978B\u6B65\u9891\u6E05\u8106",
@@ -279,7 +278,6 @@
               name: "\u72EC\u5C45\u5973\u5927\u5B66\u751F",
               difficulty: 2,
               stars: "\u2605\u2605\u2606\u2606\u2606",
-              type: "\u6807\u51C6\u6559\u79D1\u4E66",
               area: "\u8001\u57CE\u6587\u6559\u533A",
               tagline: "\u665A\u5F52\u7684\u5355\u8F66\u505C\u5728\u697C\u4E0B\uFF0C\u8033\u673A\u91CC\u653E\u7740\u4E0D\u5173\u7684\u97F3\u4E50",
               features: "\u6821\u5916\u79DF\u623F\u72EC\u5C45 \xB7 \u8BFE\u8868\u534A\u56FA\u5B9A \xB7 \u6613\u5206\u5FC3",
@@ -295,7 +293,6 @@
               name: "\u665A\u81EA\u4E60\u9AD8\u4E2D\u751F",
               difficulty: 2,
               stars: "\u2605\u2605\u2606\u2606\u2606",
-              type: "\u7A97\u53E3\u730E",
               area: "\u8001\u57CE\u6587\u6559\u533A",
               tagline: "\u6C89\u91CD\u7684\u4E66\u5305\u538B\u7740\u53CC\u80A9\uFF0C\u653E\u5B66\u8DEF\u53EA\u6709\u6700\u540E\u4E00\u6BB5\u72EC\u884C",
               features: "\u653E\u5B66\u7ED3\u4F34\u7387\u9AD8 \xB7 \u72EC\u5904\u7A97\u53E3\u7A00\u7F3A \xB7 \u65E5\u7A0B\u6781\u56FA\u5B9A",
@@ -311,7 +308,6 @@
               name: "\u591C\u5E97\u5C0F\u59D0",
               difficulty: 3,
               stars: "\u2605\u2605\u2605\u2606\u2606",
-              type: "\u53CC\u6001\u730E",
               area: "\u4E34\u6C5F\u5A31\u4E50\u7EA2\u706F\u533A",
               tagline: "\u540E\u95E8\u6563\u573A\u65F6\u7684\u51B7\u98CE\u5439\u9192\u4E86\u9152\u610F\uFF0C\u5305\u91CC\u85CF\u7740\u672A\u62C6\u5C01\u7684\u55B7\u96FE",
               features: "\u53CC\u6001\u5207\u6362 \xB7 \u9189\u6001\u8FDF\u7F13/\u9192\u6001\u654F\u9510 \xB7 \u51CC\u6668\u7A7A\u65F7\u8857\u533A",
@@ -327,7 +323,6 @@
               name: "\u72EC\u5C45\u4EBA\u59BB",
               difficulty: 4,
               stars: "\u2605\u2605\u2605\u2605\u2606",
-              type: "\u767D\u663C\u730E",
               area: "\u90CA\u91CE\u8C6A\u5B85\u533A / \u8001\u57CE\u4F4F\u5B85\u533A",
               tagline: "\u9501\u597D\u9662\u95E8\u7684\u90A3\u4E00\u523B\uFF0C\u504C\u5927\u7684\u5BA2\u5385\u53EA\u5269\u7535\u89C6\u7684\u8367\u5149",
               features: "\u767D\u663C\u4E0D\u8BBE\u9632 \xB7 \u4E08\u592B\u7B2C\u4E09\u65B9\u98CE\u9669 \xB7 \u5B9A\u4F4D\u5171\u4EAB",
@@ -343,7 +338,6 @@
               name: "\u4FBF\u8863\u5973\u5211\u8B66",
               difficulty: 5,
               stars: "\u2605\u2605\u2605\u2605\u2605",
-              type: "\u9AD8\u5371BOSS",
               area: "\u5168\u57CE\u673A\u52A8",
               tagline: "\u8B66\u60D5\u7684\u76EE\u5149\u63A0\u8FC7\u6BCF\u4E00\u5904\u53CD\u5149\uFF0C\u6307\u8282\u5728\u8896\u53E3\u4E0B\u5FAE\u5FAE\u63E1\u7D27",
               features: "\u6218\u672F\u53CD\u4FA6\u5BDF \xB7 \u654F\u9510\u76F4\u89C9 \xB7 \u51B2\u7A81\u4E13\u4E1A\u683C\u6597\u53CD\u5236",
@@ -8278,6 +8272,30 @@
     }
   });
 
+  // src/runtime/target-knowledge.js
+  var require_target_knowledge = __commonJS({
+    "src/runtime/target-knowledge.js"(exports, module) {
+      "use strict";
+      var ATTRIBUTES = { per: "\u654F\u9510", agi: "\u654F\u6377", str: "\u4F53\u683C", nrv: "\u80C6\u91CF" };
+      function validateKnowledge(value, targetId) {
+        const known = value?.targetId === targetId && Array.isArray(value.known) ? [...new Set(value.known.filter((key) => Object.hasOwn(ATTRIBUTES, key)))] : [];
+        return { targetId, known };
+      }
+      function knownAttributes(g) {
+        const knowledge = validateKnowledge(g.targetKnowledge, g.targetId);
+        return Object.fromEntries(knowledge.known.filter((key) => Number.isFinite(g.targetBase?.[key])).map((key) => [key, g.targetBase[key]]));
+      }
+      function unlockTargetAttribute(g) {
+        g.targetKnowledge = validateKnowledge(g.targetKnowledge, g.targetId);
+        const key = Object.keys(ATTRIBUTES).find((key2) => !g.targetKnowledge.known.includes(key2) && Number.isFinite(g.targetBase?.[key2]));
+        if (!key) return null;
+        g.targetKnowledge.known.push(key);
+        return { key, name: ATTRIBUTES[key], value: g.targetBase[key] };
+      }
+      module.exports = { validateKnowledge, knownAttributes, unlockTargetAttribute, ATTRIBUTES };
+    }
+  });
+
   // src/runtime/game/constants.js
   var require_constants = __commonJS({
     "src/runtime/game/constants.js"(exports, module) {
@@ -8759,6 +8777,7 @@
       var R = require_rules();
       var { observationItems } = require_album();
       var C = require_checks();
+      var { unlockTargetAttribute } = require_target_knowledge();
       var { DIST_CN, DIST_KEY, DIST_RANK } = require_constants();
       function createActionSystem({
         g,
@@ -8898,6 +8917,10 @@
             const items = observationItems(outfit);
             const here = g.route?.here;
             const visible = g.spatial?.tracking === "visual" && g.spatial.lastSeen?.date === L.get("date") && g.route?.known?.[here] === 1;
+            if (visible && ["same", "close", "touch"].includes(g.dist) && res.band === "nat20") {
+              out.attributeUnlock = unlockTargetAttribute(g);
+              if (!out.attributeUnlock) out.attributeUnlockEmpty = true;
+            }
             const cap = visible ? capturePhoto(g.dist, {
               angle: "side",
               items,
@@ -9420,6 +9443,10 @@
             else if (firstAction.id === "shop_enter")
               signalTxt = "\u76EE\u6807\u8FDB\u5165\u6CBF\u8857\u5546\u94FA\uFF0C\u9A7B\u8DB3\u8D27\u67B6\u524D";
             else signalTxt = "\u76EE\u6807\u4FDD\u6301\u884C\u8FDB\uFF0C\u4F60\u5728\u4FA7\u540E\u65B9\u89C2\u5BDF\u8BB0\u5F55";
+          }
+          if (signalTxt && firstAction?.attributeUnlock) {
+            const attr = firstAction.attributeUnlock;
+            signalTxt += `\uFF1B\u5927\u6210\u529F\u989D\u5916\u6536\u76CA\uFF1A\u76EE\u6807${attr.name} ${attr.value}\uFF08\u57FA\u7840\u503C\uFF09\u5DF2\u89E3\u9501`;
           }
           if (signalTxt) {
             g.signals = g.signals || [];
@@ -11105,6 +11132,7 @@
   var require_snapshot = __commonJS({
     "src/runtime/game/snapshot.js"(exports, module) {
       "use strict";
+      var { knownAttributes } = require_target_knowledge();
       var { classifyPlace } = require_action_requirements();
       var { cityView } = require_system();
       var { economyView } = require_shop();
@@ -11225,8 +11253,7 @@
               targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
               profile: {
                 targetId: g.targetId,
-                attrs: {},
-                // No persisted attribute-discovery system exists yet.
+                attrs: knownAttributes(g),
                 impressions: [],
                 facts: F.view(g.targetId, {
                   pi: s.pi,
@@ -11338,6 +11365,7 @@
               target: { ...g.target },
               targetBase: { ...g.targetBase },
               targetId: g.targetId || "ol",
+              targetKnowledge: g.targetKnowledge,
               targetPersona: g.targetPersona ? JSON.parse(JSON.stringify(g.targetPersona)) : null,
               targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
               dateCount: g.dateCount || 0,
@@ -12008,6 +12036,7 @@
       var LP = require_lifepack();
       var TS = require_target_state();
       var ALBUM = require_album();
+      var { validateKnowledge } = require_target_knowledge();
       var { createTargetSystem } = require_target();
       var { createActionSystem } = require_actions();
       var { createTurnSystem } = require_turn();
@@ -12089,6 +12118,7 @@
           alertHold: init.alertHold || 0,
           fleeing: !!init.fleeing,
           /* 相册：键＝itemId|角度；值是这张照片的元信息 */
+          targetKnowledge: init.targetKnowledge || null,
           album: init.album || {},
           setBonusDone: init.setBonusDone || {},
           capture: null
@@ -12254,6 +12284,7 @@
             "alertEvent",
             "alertHold",
             "fleeing",
+            "targetKnowledge",
             "album",
             "setBonusDone",
             "captureSeq"
@@ -12275,6 +12306,7 @@
           syncPersonaTags();
           applyTargetState();
         }
+        g.targetKnowledge = validateKnowledge(g.targetKnowledge, g.targetId);
         g.dayPlan = validateDayPlan(
           init.saved?.dayPlan ?? init.dayPlan ?? createDayPlan(g.slot)
         );
@@ -14535,7 +14567,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.17",
+        version: "0.8.18",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {

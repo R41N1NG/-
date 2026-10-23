@@ -5,6 +5,7 @@ const {
 const R = require("../../config/rules.json");
 const { observationItems } = require("../album.js");
 const C = require("../checks.js");
+const { unlockTargetAttribute } = require("../target-knowledge.js");
 const { DIST_CN, DIST_KEY, DIST_RANK } = require("./constants.js");
 
 function createActionSystem({
@@ -194,6 +195,10 @@ function createActionSystem({
         g.spatial?.tracking === "visual" &&
         g.spatial.lastSeen?.date === L.get("date") &&
         g.route?.known?.[here] === 1;
+      if (visible && ["same", "close", "touch"].includes(g.dist) && res.band === "nat20") {
+        out.attributeUnlock = unlockTargetAttribute(g);
+        if (!out.attributeUnlock) out.attributeUnlockEmpty = true;
+      }
       const cap = visible
         ? capturePhoto(g.dist, {
             angle: "side",

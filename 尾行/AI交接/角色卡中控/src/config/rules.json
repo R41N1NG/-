@@ -136,7 +136,7 @@
   "targets": {
     "list": {
       "ol": {
-        "id": "ol", "name": "疲惫的OL", "difficulty": 2, "stars": "★★☆☆☆", "type": "疲惫猎",
+        "id": "ol", "name": "疲惫的OL", "difficulty": 2, "stars": "★★☆☆☆",
         "area": "中城CBD ➔ 老城文教区", "tagline": "写字楼深夜加完班，高跟鞋敲打在老城夜雨里",
         "features": "深夜加班窗口 · [疲惫] 敏锐降低 · 高跟鞋步频清脆",
         "windowNote": "工作日 21:00 起下班，疲惫下防备较低，但动线跨区较长",
@@ -145,7 +145,7 @@
         "status": "ready"
       },
       "college": {
-        "id": "college", "name": "独居女大学生", "difficulty": 2, "stars": "★★☆☆☆", "type": "标准教科书",
+        "id": "college", "name": "独居女大学生", "difficulty": 2, "stars": "★★☆☆☆",
         "area": "老城文教区", "tagline": "晚归的单车停在楼下，耳机里放着不关的音乐",
         "features": "校外租房独居 · 课表半固定 · 易分心",
         "windowNote": "晚自习或兼职归来，独处窗口大，社交圈单纯",
@@ -154,7 +154,7 @@
         "status": "ready"
       },
       "student": {
-        "id": "student", "name": "晚自习高中生", "difficulty": 2, "stars": "★★☆☆☆", "type": "窗口猎",
+        "id": "student", "name": "晚自习高中生", "difficulty": 2, "stars": "★★☆☆☆",
         "area": "老城文教区", "tagline": "沉重的书包压着双肩，放学路只有最后一段独行",
         "features": "放学结伴率高 · 独处窗口稀缺 · 日程极固定",
         "windowNote": "平日同行人多难以下手，补习晚归或独自值日是唯一窗口",
@@ -163,7 +163,7 @@
         "status": "ready"
       },
       "club": {
-        "id": "club", "name": "夜店小姐", "difficulty": 3, "stars": "★★★☆☆", "type": "双态猎",
+        "id": "club", "name": "夜店小姐", "difficulty": 3, "stars": "★★★☆☆",
         "area": "临江娱乐红灯区", "tagline": "后门散场时的冷风吹醒了酒意，包里藏着未拆封的喷雾",
         "features": "双态切换 · 醉态迟缓/醒态敏锐 · 凌晨空旷街区",
         "windowNote": "凌晨 02:00 后下班，街面空旷，清醒时反侦察意识极高",
@@ -172,7 +172,7 @@
         "status": "ready"
       },
       "wife": {
-        "id": "wife", "name": "独居人妻", "difficulty": 4, "stars": "★★★★☆", "type": "白昼猎",
+        "id": "wife", "name": "独居人妻", "difficulty": 4, "stars": "★★★★☆",
         "area": "郊野豪宅区 / 老城住宅区", "tagline": "锁好院门的那一刻，偌大的客厅只剩电视的荧光",
         "features": "白昼不设防 · 丈夫第三方风险 · 定位共享",
         "windowNote": "白天家中是不设防窗口；但丈夫随时可能折返，双日程博弈",
@@ -181,7 +181,7 @@
         "status": "ready"
       },
       "police": {
-        "id": "police", "name": "便衣女刑警", "difficulty": 5, "stars": "★★★★★", "type": "高危BOSS",
+        "id": "police", "name": "便衣女刑警", "difficulty": 5, "stars": "★★★★★",
         "area": "全城机动", "tagline": "警惕的目光掠过每一处反光，指节在袖口下微微握紧",
         "features": "战术反侦察 · 敏锐直觉 · 冲突专业格斗反制",
         "windowNote": "日程四班三倒极难掌握，嗅觉敏锐，稍有不慎即遭反锁扣押",

@@ -1354,3 +1354,7 @@
     display: block;
   }
 }
+
+#wx-zero-floor .training-attribute-unlock { border-left:2px solid #ddc381; padding:15px 18px; background:#ddc3810b; margin:14px 0; }
+#wx-zero-floor .training-attribute-unlock strong { color:#e5ce99; font-size:13px; font-weight:500; }
+#wx-zero-floor .training-attribute-unlock > p { color:#c9d7bd; font-size:13px; line-height:1.8; }

@@ -114,7 +114,7 @@ test("打量示范：选中后才能发送，文字不解锁情报，重复与�
     h.click("[data-training-send]");
     assert.equal(output.hidden, false);
     const text = output.textContent;
-    assert.ok(text.includes("情报 PI +2"));
+    assert.ok(text.includes("情报 PI +6"));
     h.click("[data-training-send]");
     h.click("#trainingBriefNext");
     h.click("#trainingBriefPrev");
@@ -171,7 +171,7 @@ test("案例来自正式打量结算；只投影公开信息，不捏造属性�
   const sample = buildTrainingSample();
   const { createGame } = require("../src/runtime/game");
   const { defaultInit } = require("../src/host/initial-state");
-  const g = createGame({ ...defaultInit(), sessionSalt: "tutorial-3" });
+  const g = createGame({ ...defaultInit(), sessionSalt: "tutorial-crit-95" });
   const before = g.snapshot();
   const result = g.settleInput("", {
     actions: [{ id: "scan", name: "打量", args: {} }],
@@ -186,7 +186,10 @@ test("案例来自正式打量结算；只投影公开信息，不捏造属性�
   );
   assert.deepEqual(sample.record, after.signal.at(-1));
   assert.equal(sample.newFactCount, 0);
-  assert.equal(sample.attrsRevealed, 0);
+  assert.equal(sample.attrsRevealed, 1);
+  assert.equal(sample.action.d20, 20);
+  assert.equal(sample.action.band, "nat20");
+  assert.deepEqual(sample.attributeUnlock, {key:"per", name:"敏锐", value:4});
   assert.equal(sample.after.remaining, sample.before.remaining);
   assert.equal(sample.before.playerPlaceId, sample.before.targetPlaceId);
   assert.equal(sample.before.targetLive, true);

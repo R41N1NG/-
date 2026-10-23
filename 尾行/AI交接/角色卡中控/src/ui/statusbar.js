@@ -1315,7 +1315,7 @@ function mountStatusbar(document, window) {
           ([id, t]) =>
             `<button type="button" class="target-card" data-tid="${id}">` +
             `<div class="target-head"><span class="target-name">${t.name}</span><span class="target-stars">${t.stars}</span></div>` +
-            `<div class="target-meta-row"><span class="target-type-badge">${t.type}</span><span class="target-area">${t.area}</span></div>` +
+            `<div class="target-meta-row"><span class="target-area">${t.area}</span></div>` +
             `<div class="target-tagline">“${t.tagline}”</div>` +
             `<div class="target-features">${t.features}</div>` +
             `</button>`,
@@ -1395,8 +1395,6 @@ function mountStatusbar(document, window) {
     }
     const dStars = document.getElementById("tDetailStars");
     if (dStars) dStars.textContent = t.stars;
-    const dBadge = document.getElementById("tDetailBadge");
-    if (dBadge) dBadge.textContent = t.type;
     const dStatus = document.getElementById("tDetailStatus");
     if (dStatus) {
       dStatus.textContent = TARGET_DATA.content?.[t.id]?.hasPack

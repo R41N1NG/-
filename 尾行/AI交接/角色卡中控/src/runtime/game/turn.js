@@ -411,6 +411,10 @@ function createTurnSystem({
         signalTxt = "目标进入沿街商铺，驻足货架前";
       else signalTxt = "目标保持行进，你在侧后方观察记录";
     }
+    if (signalTxt && firstAction?.attributeUnlock) {
+      const attr = firstAction.attributeUnlock;
+      signalTxt += `；大成功额外收益：目标${attr.name} ${attr.value}（基础值）已解锁`;
+    }
     if (signalTxt) {
       g.signals = g.signals || [];
       g.signals.push([tm, signalTxt]);

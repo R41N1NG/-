@@ -42,7 +42,7 @@
     }
   ],
   "trainingSample": {
-    "caseId": "college-scan-success",
+    "caseId": "college-scan-nat20",
     "targetName": "独居女大学生",
     "before": {
       "place": "大学正门",
@@ -63,9 +63,9 @@
       "playerPlaceId": "school_gate_b",
       "targetPlaceId": "school_gate_b",
       "targetLive": true,
-      "heart": 35,
-      "stamina": 98,
-      "pi": 2,
+      "heart": 30,
+      "stamina": 99,
+      "pi": 6,
       "date": 1,
       "period": "晚间",
       "remaining": 4,
@@ -85,6 +85,11 @@
       "piBonus": 0,
       "outfits": []
     },
+    "attributeUnlock": {
+      "key": "per",
+      "name": "敏锐",
+      "value": 4
+    },
     "settlement": {
       "floor": 1,
       "actions": [
@@ -93,9 +98,9 @@
           "id": "scan",
           "name": "打量",
           "label": "打量",
-          "d20": 10,
+          "d20": 20,
           "raw": [
-            10
+            20
           ],
           "mods": [
             {
@@ -104,14 +109,19 @@
             }
           ],
           "dc": 12,
-          "total": 16,
-          "band": "success",
+          "total": 26,
+          "band": "nat20",
           "attr": {
             "name": "情报",
             "v": 5
           },
           "targetMod": 0,
           "darkReveal": null,
+          "attributeUnlock": {
+            "key": "per",
+            "name": "敏锐",
+            "value": 4
+          },
           "capture": {
             "key": "top_jk_hoodie|side",
             "file": "jk/top/base/normal/top_jk_hoodie/side.png",
@@ -130,7 +140,7 @@
             "applied": {
               "alert": 0,
               "heart": 0,
-              "pi": 2,
+              "pi": 6,
               "stamina": 0,
               "cash": 0,
               "proximity": 0,
@@ -140,16 +150,16 @@
         }
       ],
       "account": {
-        "stamina": -2,
-        "heart": 5,
+        "stamina": -1,
+        "heart": 0,
         "alert": 0,
-        "pi": 2,
+        "pi": 6,
         "proximity": 0,
         "cash": 0
       },
       "seg": {
-        "heartPeak": 40,
-        "staminaTax": -2
+        "heartPeak": 30,
+        "staminaTax": -1
       }
     },
     "lost": {
@@ -173,21 +183,21 @@
     "action": {
       "id": "scan",
       "name": "打量",
-      "band": "success",
-      "d20": 10,
-      "total": 16,
+      "band": "nat20",
+      "d20": 20,
+      "total": 26,
       "dc": 12
     },
     "record": [
       "21:30",
-      "目标侧向身形清晰，收录浅米灰连帽卫衣（侧面）"
+      "目标侧向身形清晰，收录浅米灰连帽卫衣（侧面）；大成功额外收益：目标敏锐 4（基础值）已解锁"
     ],
     "delta": {
-      "pi": 2,
-      "stamina": -2
+      "pi": 6,
+      "stamina": -1
     },
     "newFactCount": 0,
-    "attrsRevealed": 0
+    "attrsRevealed": 1
   },
   "targetContent": {
     "ol": {
@@ -268,7 +278,6 @@
       "name": "疲惫的OL",
       "difficulty": 2,
       "stars": "★★☆☆☆",
-      "type": "疲惫猎",
       "area": "中城CBD ➔ 老城文教区",
       "tagline": "写字楼深夜加完班，高跟鞋敲打在老城夜雨里",
       "features": "深夜加班窗口 · [疲惫] 敏锐降低 · 高跟鞋步频清脆",
@@ -289,7 +298,6 @@
       "name": "独居女大学生",
       "difficulty": 2,
       "stars": "★★☆☆☆",
-      "type": "标准教科书",
       "area": "老城文教区",
       "tagline": "晚归的单车停在楼下，耳机里放着不关的音乐",
       "features": "校外租房独居 · 课表半固定 · 易分心",
@@ -310,7 +318,6 @@
       "name": "晚自习高中生",
       "difficulty": 2,
       "stars": "★★☆☆☆",
-      "type": "窗口猎",
       "area": "老城文教区",
       "tagline": "沉重的书包压着双肩，放学路只有最后一段独行",
       "features": "放学结伴率高 · 独处窗口稀缺 · 日程极固定",
@@ -331,7 +338,6 @@
       "name": "夜店小姐",
       "difficulty": 3,
       "stars": "★★★☆☆",
-      "type": "双态猎",
       "area": "临江娱乐红灯区",
       "tagline": "后门散场时的冷风吹醒了酒意，包里藏着未拆封的喷雾",
       "features": "双态切换 · 醉态迟缓/醒态敏锐 · 凌晨空旷街区",
@@ -352,7 +358,6 @@
       "name": "独居人妻",
       "difficulty": 4,
       "stars": "★★★★☆",
-      "type": "白昼猎",
       "area": "郊野豪宅区 / 老城住宅区",
       "tagline": "锁好院门的那一刻，偌大的客厅只剩电视的荧光",
       "features": "白昼不设防 · 丈夫第三方风险 · 定位共享",
@@ -373,7 +378,6 @@
       "name": "便衣女刑警",
       "difficulty": 5,
       "stars": "★★★★★",
-      "type": "高危BOSS",
       "area": "全城机动",
       "tagline": "警惕的目光掠过每一处反光，指节在袖口下微微握紧",
       "features": "战术反侦察 · 敏锐直觉 · 冲突专业格斗反制",

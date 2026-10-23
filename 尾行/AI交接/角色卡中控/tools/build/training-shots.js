@@ -216,7 +216,7 @@ async function buildTrainingShots() {
         [
           "#wx-settle-dialog .wing-right",
           "③ 结论与账目",
-          "比较总值与难度，再看成功／失败及资源变化。",
+          "天然20是大成功。本例额外解锁目标敏锐的基础值；收益来自同一次正式结算。",
         ],
       ]);
       await b.evaluate("document.getElementById('wx-settle-dialog').close();WxStatusbar.reset();document.getElementById('attributeLessonContinue').click();document.querySelector('#quickPane [data-preset=otaku]').click();true");

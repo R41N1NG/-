@@ -230,6 +230,7 @@ test("零楼真实建局：预设、返回、切换缓存、摇号；只确认�
     assert.ok(store.wx_save);
     assert.equal(store.wx_save.floor, 0);
     assert.equal(store.wx_save.ledgerState.pi, 0, "示范 PI 不得进入正式存档");
+    assert.deepEqual(store.wx_save.targetKnowledge.known, [], "示范解锁的属性不能进入正式新局");
     assert.equal(store.wx_save.targetPersona.name, confirmedName);
     assert.equal(store.wx_save.targetPersona.generatorVersion, 1);
     assert.deepEqual(wbCalls, ["college"]);

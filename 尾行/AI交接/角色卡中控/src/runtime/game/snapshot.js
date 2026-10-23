@@ -1,4 +1,5 @@
 "use strict";
+const { knownAttributes } = require("../target-knowledge.js");
 // snapshot：依赖由 game.js 装配，每个游戏实例独立持有状态。
 const { classifyPlace } = require("../../contracts/action-requirements.js");
 const { cityView } = require("../spatial/system.js");
@@ -156,7 +157,7 @@ function createSnapshotSystem({
           : null,
         profile: {
           targetId: g.targetId,
-          attrs: {}, // No persisted attribute-discovery system exists yet.
+          attrs: knownAttributes(g),
           impressions: [],
           facts:
             F.view(g.targetId, {

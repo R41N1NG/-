@@ -9,14 +9,14 @@ function trainingInit() {
   return init;
 }
 function trainingScenes() {
-  const game = createGame({ ...trainingInit(), sessionSalt: "tutorial-3" });
+  const game = createGame({ ...trainingInit(), sessionSalt: "tutorial-crit-95" });
   const before = game.snapshot();
   const result = game.settleInput("", {
     actions: [{ id: "scan", name: "打量", args: {} }],
   });
   const action = result.actions[0],
     after = game.snapshot();
-  if (action?.band !== "success" || !after.signal?.length)
+  if (action?.band !== "nat20" || !after.signal?.length)
     throw Error("教学案例未产生预期的本地打量结果，请核对引擎规则后更新案例");
   let lostBefore, lostAfter;
   for (let i = 0; i < 80; i++) {
@@ -53,11 +53,12 @@ function buildTrainingSample() {
     source: s.dayPlan.source,
   });
   return {
-    caseId: "college-scan-success",
+    caseId: "college-scan-nat20",
     targetName: before.target.name,
     before: view(before),
     after: view(after),
     capture: after.capture,
+    attributeUnlock: action.attributeUnlock,
     settlement: {
       floor: 1,
       actions: result.actions,
@@ -81,7 +82,7 @@ function buildTrainingSample() {
       pi: after.player.pi - before.player.pi,
       stamina: after.player.stamina - before.player.stamina,
     },
-    // 打量不会直接揭示属性，且本例没有解锁新的档案条目。
+    // 只投影本次已揭示的属性和已解锁条目数量，不打包隐藏属性。
     newFactCount: after.profile.facts.filter(
       (f) => !before.profile.facts.some((old) => old.id === f.id),
     ).length,

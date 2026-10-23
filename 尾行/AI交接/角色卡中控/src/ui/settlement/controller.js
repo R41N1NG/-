@@ -566,6 +566,13 @@ function createSettlement({
           });
       }
     }
+    if (isNat20) ledgerItems.push({ label: "天然 20", val: "大成功", type: "gain" });
+    if (act.attributeUnlock) {
+      const attr = act.attributeUnlock;
+      ledgerItems.push({ label: "额外收益", val: `目标${attr.name} ${attr.value} 已解锁`, type: "gain" });
+    } else if (act.attributeUnlockEmpty) {
+      ledgerItems.push({ label: "属性已齐", val: "无新的属性可解锁", type: "" });
+    }
     if (act.pkgSeg && act.pkgSeg.staminaTax) {
       const taxVal = Number(act.pkgSeg.staminaTax);
       ledgerItems.push({

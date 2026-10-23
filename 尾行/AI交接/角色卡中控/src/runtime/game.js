@@ -10,6 +10,7 @@ const map = require("./map.js");
 const LP = require("../config/lifepack.json");
 const TS = require("./target_state.js");
 const ALBUM = require("./album.js");
+const { validateKnowledge } = require("./target-knowledge.js");
 
 const { createTargetSystem } = require("./game/target.js");
 const { createActionSystem } = require("./game/actions.js");
@@ -98,6 +99,7 @@ function createGame(init = {}, services = {}) {
     alertHold: init.alertHold || 0,
     fleeing: !!init.fleeing,
     /* 相册：键＝itemId|角度；值是这张照片的元信息 */
+    targetKnowledge: init.targetKnowledge || null,
     album: init.album || {},
     setBonusDone: init.setBonusDone || {},
     capture: null,
@@ -278,6 +280,7 @@ function createGame(init = {}, services = {}) {
       "alertEvent",
       "alertHold",
       "fleeing",
+      "targetKnowledge",
       "album",
       "setBonusDone",
       "captureSeq",
@@ -299,6 +302,8 @@ function createGame(init = {}, services = {}) {
     syncPersonaTags();
     applyTargetState();
   }
+
+  g.targetKnowledge = validateKnowledge(g.targetKnowledge, g.targetId);
 
   // 未提供日程的旧档仅补显示字段，不推测已花点数、不改变夜间流程。
   g.dayPlan = validateDayPlan(

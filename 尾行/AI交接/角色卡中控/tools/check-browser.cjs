@@ -225,6 +225,7 @@ const deadline = setTimeout(() => {
       const name=document.getElementById('tDetailRealName').textContent;
       document.getElementById('createConfirm').click();
       const brief=document.getElementById('zeroStep3');
+      ok('目标选择页已去分类称号并使用重新生成',!document.querySelector('.target-type-badge')&&document.getElementById('tDetailReroll').textContent.includes('重新生成'));
       ok('目标选择后进入零楼教程首页',!brief.hidden&&document.getElementById('wx-zero-floor').closest('.mes')?.getAttribute('mesid')==='0');
       ok('简报同步实际身份与目标',document.getElementById('trainingBriefIdentity').textContent==='阿宅'&&document.getElementById('trainingBriefTarget').textContent==='独居女大学生');
       ok('简报不提前建局或泄露目标档案',!__trainingPreviewStore().wx_save&&!brief.textContent.includes(name)&&!brief.textContent.includes(document.getElementById('tDetailWindow').textContent));
@@ -272,7 +273,7 @@ const deadline = setTimeout(() => {
           [...document.querySelectorAll('[data-training-select]')].find(b=>b.getBoundingClientRect().width>0).click();
           ok('选中打量只入队未执行',!send.disabled&&output.hidden);
           send.click();const text=output.textContent;send.click();
-          ok('示范发送有真实结果且不累加或建局',!output.hidden&&text.includes('情报 PI +2')&&text===output.textContent&&send.disabled&&!__trainingPreviewStore().wx_save);
+          ok('示范发送有真实结果且不累加或建局',!output.hidden&&text.includes('情报 PI +6')&&text===output.textContent&&send.disabled&&!__trainingPreviewStore().wx_save);
           document.getElementById('trainingBriefNarration').value='我留意她的步幅和周围动静。';
         }
         if (${page}===4) {
@@ -290,6 +291,7 @@ const deadline = setTimeout(() => {
         result.push({width,name:'示范发送调用原判定台并标出三部分',ok:await evaluate("document.getElementById('wx-settle-dialog').open&&document.getElementById('wx-settle-dialog').dataset.trainingDemo==='true'&&document.getElementById('settleDieCanvas').width>0&&document.getElementById('settleAuto').disabled")});
         result.push({width,name:'判定三部分均在面板内且手机纵向排列',ok:await evaluate("(()=>{const d=document.getElementById('wx-settle-dialog').getBoundingClientRect(),panels=[...document.querySelectorAll('#wx-settle-dialog .wing-left,#wx-settle-dialog .stage-center,#wx-settle-dialog .wing-right')].map(e=>e.getBoundingClientRect());return panels.every(r=>r.left>=d.left&&r.right<=d.right+1)&&(innerWidth>760||panels.every((r,i)=>!i||r.top>=panels[i-1].bottom-1))})()")});
         await delay(700);
+        result.push({width,name:'大成功右栏标出天然20及额外属性解锁',ok:await evaluate("document.getElementById('settleVerdictBadge').textContent.includes('20')&&document.getElementById('settleVerdictBadge').textContent.includes('大 成 功')&&document.getElementById('settleLedgerWrap').textContent.includes('额外收益')&&document.getElementById('settleLedgerWrap').textContent.includes('目标敏锐 4 已解锁')")});
         const dialogClip=await evaluate("(()=>{const r=document.getElementById('wx-settle-dialog').getBoundingClientRect();return{x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1}})()");
         const dialogShot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:dialogClip});
         fs.writeFileSync(path.join(path.dirname(briefPreview.file),'settlement-live-'+width+'.png'),Buffer.from(dialogShot.data,'base64'));
@@ -308,7 +310,7 @@ const deadline = setTimeout(() => {
     document.getElementById('trainingBriefStart').click();document.getElementById('trainingBriefStart').click();
     ok('载入期间防止重复确认',document.getElementById('trainingBriefStart').disabled);
     await window.__trainingPreviewOperation;await Promise.resolve();
-    ok('确认后沿原管线保存并关闭简报',__trainingPreviewStore().wx_save?.targetId==='college'&&__trainingPreviewStore().wx_save.floor===0&&document.getElementById('wx-zero-floor').hidden);
+    ok('确认后沿原管线保存并关闭简报',__trainingPreviewStore().wx_save?.targetId==='college'&&__trainingPreviewStore().wx_save.floor===0&&document.getElementById('wx-zero-floor').hidden&&__trainingPreviewStore().wx_save.targetKnowledge.known.length===0);
     WxStatusbarUI.mountStatusbar(document,window);await new Promise(resolve=>setTimeout(resolve,0));
     ok('续局不重弹简报或重建人物',document.getElementById('wx-zero-floor').hidden&&__trainingPreviewStore().wx_save.floor===0);
     WxStatusbar.dispose();return checks;
@@ -363,6 +365,7 @@ const deadline = setTimeout(() => {
     })()`));
     await shotAttribute('target');
     await evaluate("document.getElementById('attributeLessonContinue').click();true");
+    await shotAttribute('selection');
   }
   result.push(...await evaluate(`(async()=>{
     const checks=[];const ok=(name,v)=>checks.push({name,ok:!!v});
