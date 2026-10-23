@@ -400,7 +400,11 @@ function createTurnSystem({
       else if (firstAction.id === "photo")
         signalTxt = "目标在路口短暂停留，记录其正面特征";
       else if (firstAction.id === "scan")
-        signalTxt = "目标环顾四周，侧向身形清晰";
+        signalTxt = firstAction.capture
+          ? `目标侧向身形清晰，收录${firstAction.capture.name}（侧面）`
+          : ["success", "nat20"].includes(firstAction.band)
+            ? "目标侧向身形清晰，未取得可新增的侧面图"
+            : "尝试打量，未取得新的侧面记录";
       else if (firstAction.id === "timing")
         signalTxt = "观察其举止神态，捕捉防备松懈间隙";
       else if (firstAction.id === "shop_enter")

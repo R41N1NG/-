@@ -1,10 +1,14 @@
 "use strict";
 /** 零楼第三步：五页 PPT。浏览页号属于 UI，不进入游戏时间线或独立存档。 */
-const { drawTrainingDiagram } = require("./training-diagram.js");
 const { TRAINING_PAGES } = require("./training-pages.js");
 const { createTrainingExamples } = require("./training-examples.js");
-const { trainingSample } = require("../generated/rules.json");
-function createTrainingBrief({ document, lifecycle, onBack, onStart }) {
+function createTrainingBrief({
+  document,
+  lifecycle,
+  onBack,
+  onStart,
+  onDemonstrate,
+}) {
   const field = (id) => document.getElementById(id);
   const root = field("zeroStep3"),
     back = field("trainingBriefBack"),
@@ -16,16 +20,12 @@ function createTrainingBrief({ document, lifecycle, onBack, onStart }) {
   let busy = false,
     page = 0,
     selectionKey = null;
-  const holders = [
-    ["trainingBriefDiagram", undefined],
-    ["trainingBriefLocatedMap", trainingSample.before],
-  ];
-  for (const [id, scene] of holders) {
-    const holder = field(id);
-    if (holder && !holder.childElementCount)
-      holder.replaceChildren(drawTrainingDiagram(document, scene));
-  }
-  const examples = createTrainingExamples({ document, lifecycle, root });
+  const examples = createTrainingExamples({
+    document,
+    lifecycle,
+    root,
+    onDemonstrate,
+  });
   nav?.replaceChildren();
   TRAINING_PAGES.forEach((slide, i) => {
     const button = document.createElement("button");

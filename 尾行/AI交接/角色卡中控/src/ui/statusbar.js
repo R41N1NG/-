@@ -180,6 +180,8 @@ function mountStatusbar(document, window) {
   dial.querySelector(".ecg-line").setAttribute("d", ecgPath);
 
   /* ---------- 心跳音效引擎（数值直驱 + 耳鸣层 + spike；双音量滑条独立可调） ---------- */
+  let trainingHeart = null,
+    trainingDemoSeq = 0;
   const view = { heart: 0, mode: "prepare", snapshot: null };
   const audio = createAudio({
     document,
@@ -528,7 +530,7 @@ function mountStatusbar(document, window) {
   }
 
   /* ---------- 相册：贴墙渲染 + 拍照即时卡片 ---------- */
-  const IMG_BASE = "user/images/wx_wardrobe/";
+  const { photoSource } = require("./photo-source.js");
   const SLOT_CN = {
     head: "头饰",
     top: "上装",
@@ -549,8 +551,7 @@ function mountStatusbar(document, window) {
     close: "身后",
     touch: "贴身",
   };
-  const imgUrl = (file, thumb) =>
-    IMG_BASE + (thumb ? String(file).replace(/\.png$/, ".jpg") : file);
+  const imgUrl = photoSource;
 
   let albumSnap = null;
   let toastTimer = null,
@@ -1174,6 +1175,39 @@ function mountStatusbar(document, window) {
     lifecycle,
     onBack: () => switchZeroStep(2),
     onStart: () => createConfirm(),
+    onDemonstrate: (pkg) => {
+      const dialog = document.getElementById("wx-settle-dialog");
+      const auto = document.getElementById("settleAuto");
+      const anchor = document.createComment("training-settlement-home");
+      dialog.parentNode.insertBefore(anchor, dialog);
+      document.body.append(dialog);
+      let restored = false;
+      const wasAuto = SETTLE.auto,
+        wasChecked = auto?.checked;
+      SETTLE.auto = false;
+      if (auto) {
+        auto.disabled = true;
+        auto.checked = false;
+      }
+      trainingHeart = 30;
+      dialog.dataset.trainingDemo = "true";
+      const restore = () => {
+        if (restored) return;
+        restored = true;
+        anchor.replaceWith(dialog);
+        SETTLE.auto = wasAuto;
+        trainingHeart = null;
+        if (auto) {
+          auto.disabled = false;
+          auto.checked = wasChecked;
+        }
+        delete dialog.dataset.trainingDemo;
+        dialog.removeEventListener("close", restore);
+      };
+      dialog.addEventListener("close", restore);
+      lifecycle.cleanup(restore);
+      showSettle({ ...pkg, floor: -1000 - ++trainingDemoSeq });
+    },
   });
   stages.register(2, {
     tabId: "zeroStepTab2",
@@ -1724,7 +1758,7 @@ function mountStatusbar(document, window) {
     window,
     lifecycle,
     getAudioContext: () => audio.context,
-    getHeart: () => view.heart,
+    getHeart: () => trainingHeart ?? view.heart,
     heartToBpm,
   });
   // 胶囊条点击选定/取消（条件不足的灰条不接点击，悬停说明缺什么）

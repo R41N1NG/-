@@ -7560,6 +7560,19 @@
             shoes: "shoe_leather",
             head: null
           }
+        },
+        observationOutfits: {
+          outfit_hoodie_denim: [
+            "top_jk_hoodie"
+          ],
+          outfit_sailor_jk: [
+            "top_jk_sailor",
+            "bottom_jk_pleat_navy",
+            "sock_knee_black"
+          ],
+          outfit_preppy_layered: [
+            "bottom_jk_pleat_plaid"
+          ]
         }
       };
     }
@@ -8245,7 +8258,23 @@
         }
         return { pi: newly.length * 2, outfits: newly };
       }
-      module.exports = { DIR, fileOf, anglesFor, captureList, totalFor, setBonus, WARDROBE };
+      function observationItems(outfit = {}) {
+        const ids = /* @__PURE__ */ new Set([
+          outfit.shoeId,
+          ...WARDROBE.observationOutfits[outfit.id] || []
+        ]);
+        return WARDROBE.items.filter((item) => ids.has(item.id)).map((item) => item.id);
+      }
+      module.exports = {
+        observationItems,
+        DIR,
+        fileOf,
+        anglesFor,
+        captureList,
+        totalFor,
+        setBonus,
+        WARDROBE
+      };
     }
   });
 
@@ -8728,6 +8757,7 @@
         requirementFailure
       } = require_action_requirements();
       var R = require_rules();
+      var { observationItems } = require_album();
       var C = require_checks();
       var { DIST_CN, DIST_KEY, DIST_RANK } = require_constants();
       function createActionSystem({
@@ -8808,6 +8838,11 @@
             }
             return out;
           }
+          if (tag.id === "scan" && g.spatial?.tracking === "lost") {
+            out.rejected = true;
+            out.reason = "\u5DF2\u7ECF\u5931\u53BB\u76EE\u6807\u76EE\u89C6\uFF0C\u5148\u6062\u590D\u76EE\u89C6\u518D\u6253\u91CF";
+            return out;
+          }
           syncHeartTags();
           const { roll, res, mods, dc, attr, targetMod, darkReveal } = runCheck(
             entry,
@@ -8857,6 +8892,21 @@
               piD = 0;
               out.captureEmpty = true;
             }
+          }
+          if (tag.id === "scan" && ["success", "nat20"].includes(res.band)) {
+            const outfit = g.targetState?.outfit || {};
+            const items = observationItems(outfit);
+            const here = g.route?.here;
+            const visible = g.spatial?.tracking === "visual" && g.spatial.lastSeen?.date === L.get("date") && g.route?.known?.[here] === 1;
+            const cap = visible ? capturePhoto(g.dist, {
+              angle: "side",
+              items,
+              source: "scan"
+            }) : null;
+            if (cap) {
+              piD += cap.piBonus;
+              out.capture = cap;
+            } else out.captureEmpty = true;
           }
           syncHeartTags();
           const r = L.settleAction(
@@ -9364,7 +9414,7 @@
             else if (firstAction.id === "photo")
               signalTxt = "\u76EE\u6807\u5728\u8DEF\u53E3\u77ED\u6682\u505C\u7559\uFF0C\u8BB0\u5F55\u5176\u6B63\u9762\u7279\u5F81";
             else if (firstAction.id === "scan")
-              signalTxt = "\u76EE\u6807\u73AF\u987E\u56DB\u5468\uFF0C\u4FA7\u5411\u8EAB\u5F62\u6E05\u6670";
+              signalTxt = firstAction.capture ? `\u76EE\u6807\u4FA7\u5411\u8EAB\u5F62\u6E05\u6670\uFF0C\u6536\u5F55${firstAction.capture.name}\uFF08\u4FA7\u9762\uFF09` : ["success", "nat20"].includes(firstAction.band) ? "\u76EE\u6807\u4FA7\u5411\u8EAB\u5F62\u6E05\u6670\uFF0C\u672A\u53D6\u5F97\u53EF\u65B0\u589E\u7684\u4FA7\u9762\u56FE" : "\u5C1D\u8BD5\u6253\u91CF\uFF0C\u672A\u53D6\u5F97\u65B0\u7684\u4FA7\u9762\u8BB0\u5F55";
             else if (firstAction.id === "timing")
               signalTxt = "\u89C2\u5BDF\u5176\u4E3E\u6B62\u795E\u6001\uFF0C\u6355\u6349\u9632\u5907\u677E\u61C8\u95F4\u9699";
             else if (firstAction.id === "shop_enter")
@@ -10379,10 +10429,12 @@
           const id = g.route.nodes[g.route.here];
           return id && (map.getPlace(id) || {}).name || "";
         }
-        function capturePhoto(dist) {
+        function capturePhoto(dist, options = {}) {
           const persona = g.targetPersona || {};
           const owned = Object.keys(g.album || {});
-          const cands = ALBUM.captureList(persona, owned, dist);
+          const cands = ALBUM.captureList(persona, owned, dist).filter(
+            (c) => (!options.angle || c.angle === options.angle) && (!options.items || options.items.includes(c.item.id))
+          );
           if (!cands.length) return null;
           g.captureSeq = (g.captureSeq || 0) + 1;
           const seed = seedAt(g.floor || 1, "capture_" + g.captureSeq);
@@ -10394,7 +10446,8 @@
             angle: pick.angle,
             t: g.floor || 1,
             place: placeNameNow(),
-            dist
+            dist,
+            source: options.source || "photo"
           };
           g.album[pick.key] = meta;
           let piBonus = 0;
@@ -10405,8 +10458,8 @@
           g.capture = g.lastCapture;
           g.signals = g.signals || [];
           g.signals.push([
-            "\u7167\u7247",
-            `\u62CD\u5230 ${pick.item.name}\uFF08${CA_CN[pick.angle] || pick.angle}\uFF09`
+            options.source === "scan" ? "\u89C2\u5BDF" : "\u7167\u7247",
+            `${options.source === "scan" ? "\u6536\u5F55" : "\u62CD\u5230"} ${pick.item.name}\uFF08${CA_CN[pick.angle] || pick.angle}\uFF09`
           ]);
           if (g.signals.length > 20) g.signals.shift();
           return g.lastCapture;
@@ -11094,7 +11147,7 @@
             here
           } : null;
           const exits = cur ? cur.exits.map(
-            (id) => (map.getPlace(id)?.name || id) + (id === nextId ? " (\u524D)" : "")
+            (id) => (map.getPlace(id)?.name || id) + (id === nextId && g.route?.known?.[here + 1] === 1 ? " (\u524D)" : "")
           ) : [];
           let sanctuaryAlert = "";
           if (cur) {
@@ -11242,7 +11295,18 @@
                   key: k,
                   ...v
                 }));
-                return { count: shots.length, total: ALBUM.totalFor(persona), shots };
+                return {
+                  count: shots.length,
+                  total: ALBUM.totalFor(persona),
+                  shots,
+                  catalog: ALBUM.captureList(persona, [], "touch").map((c) => ({
+                    key: c.key,
+                    slot: c.item.slot,
+                    name: c.item.name,
+                    file: c.file,
+                    angle: c.angle
+                  }))
+                };
               })(),
               capture: g.capture || null
             })
@@ -14471,7 +14535,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.14",
+        version: "0.8.15",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -14480,10 +14544,11 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js",
+          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js album.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs",
           "preview:daily": "node tools/build/day-preview.js",
+          "screenshots:training": "node tools/build/training-shots.js",
           "preview:training": "node tools/build/training-preview.js"
         },
         devDependencies: {

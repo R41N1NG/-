@@ -55,7 +55,8 @@ function createSnapshotSystem({
     const exits = cur
       ? cur.exits.map(
           (id) =>
-            (map.getPlace(id)?.name || id) + (id === nextId ? " (前)" : ""),
+            (map.getPlace(id)?.name || id) +
+            (id === nextId && g.route?.known?.[here + 1] === 1 ? " (前)" : ""),
         )
       : [];
     let sanctuaryAlert = "";
@@ -256,7 +257,18 @@ function createSnapshotSystem({
             key: k,
             ...v,
           }));
-          return { count: shots.length, total: ALBUM.totalFor(persona), shots };
+          return {
+            count: shots.length,
+            total: ALBUM.totalFor(persona),
+            shots,
+            catalog: ALBUM.captureList(persona, [], "touch").map((c) => ({
+              key: c.key,
+              slot: c.item.slot,
+              name: c.item.name,
+              file: c.file,
+              angle: c.angle,
+            })),
+          };
         })(),
         capture: g.capture || null,
       }),

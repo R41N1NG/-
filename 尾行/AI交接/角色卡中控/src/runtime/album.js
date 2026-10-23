@@ -16,7 +16,8 @@ const DIR = (item, persona) => {
   return "shared";
 };
 
-const fileOf = (item, persona, angle) => `jk/${item.slot}/${DIR(item, persona)}/${item.id}/${angle}.png`;
+const fileOf = (item, persona, angle) =>
+  `jk/${item.slot}/${DIR(item, persona)}/${item.id}/${angle}.png`;
 
 /** 该距离下允许的角度。远端＝只拍到剪影，不进相册。 */
 const anglesFor = (dist) => {
@@ -49,12 +50,12 @@ function totalFor(persona) {
 
 /** 套装齐活奖励：四件都拍过（任意角度）且未领过 → 每套 +2。 */
 function setBonus(album, done = {}) {
-  const ids = new Set(Object.keys(album).map(k => k.split("|")[0]));
+  const ids = new Set(Object.keys(album).map((k) => k.split("|")[0]));
   const newly = [];
   for (const [outfitId, set] of Object.entries(WARDROBE.outfits)) {
     if (done[outfitId]) continue;
     const need = [set.top, set.bottom, set.socks, set.shoes].filter(Boolean);
-    if (need.every(id => ids.has(id))) {
+    if (need.every((id) => ids.has(id))) {
       done[outfitId] = true;
       newly.push(outfitId);
     }
@@ -62,4 +63,24 @@ function setBonus(album, done = {}) {
   return { pi: newly.length * 2, outfits: newly };
 }
 
-module.exports = { DIR, fileOf, anglesFor, captureList, totalFor, setBonus, WARDROBE };
+/** 打量只收录当前装束有准确对应素材的部位，缺图不以别的衣服冒充。 */
+function observationItems(outfit = {}) {
+  const ids = new Set([
+    outfit.shoeId,
+    ...(WARDROBE.observationOutfits[outfit.id] || []),
+  ]);
+  return WARDROBE.items
+    .filter((item) => ids.has(item.id))
+    .map((item) => item.id);
+}
+
+module.exports = {
+  observationItems,
+  DIR,
+  fileOf,
+  anglesFor,
+  captureList,
+  totalFor,
+  setBonus,
+  WARDROBE,
+};

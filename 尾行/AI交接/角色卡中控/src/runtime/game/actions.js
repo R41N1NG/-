@@ -3,6 +3,7 @@ const {
   requirementFailure,
 } = require("../../contracts/action-requirements.js");
 const R = require("../../config/rules.json");
+const { observationItems } = require("../album.js");
 const C = require("../checks.js");
 const { DIST_CN, DIST_KEY, DIST_RANK } = require("./constants.js");
 
@@ -113,6 +114,12 @@ function createActionSystem({
       return out;
     }
 
+    if (tag.id === "scan" && g.spatial?.tracking === "lost") {
+      out.rejected = true;
+      out.reason = "已经失去目标目视，先恢复目视再打量";
+      return out;
+    }
+
     // 心跳阈值标签在检定前同步：过线瞬间生效，当次动作就吃罚（无白嫖窗口）
     syncHeartTags();
     const { roll, res, mods, dc, attr, targetMod, darkReveal } = runCheck(
@@ -175,6 +182,29 @@ function createActionSystem({
         piD = 0;
         out.captureEmpty = true;
       }
+    }
+
+    // 打量成功收录当前可辨认服装的一张未拥有侧视图，不另造一份相册。
+    if (tag.id === "scan" && ["success", "nat20"].includes(res.band)) {
+      const outfit = g.targetState?.outfit || {};
+      const items = observationItems(outfit);
+      // 未有对应素材的部位不以其他款式冒充；仅在目视和合法距离成立时收录。
+      const here = g.route?.here;
+      const visible =
+        g.spatial?.tracking === "visual" &&
+        g.spatial.lastSeen?.date === L.get("date") &&
+        g.route?.known?.[here] === 1;
+      const cap = visible
+        ? capturePhoto(g.dist, {
+            angle: "side",
+            items,
+            source: "scan",
+          })
+        : null;
+      if (cap) {
+        piD += cap.piBonus;
+        out.capture = cap;
+      } else out.captureEmpty = true;
     }
 
     // 结算后再同步一次（本动作的心跳变化影响下一动作）

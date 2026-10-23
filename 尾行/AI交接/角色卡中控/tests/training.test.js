@@ -71,14 +71,12 @@ test("五页课件：顺序、边界、返回、键盘与重置，页号不会�
       }),
     );
     assert.equal(h.page(), 3, "输入框的方向键不能翻页");
-    h.d
-      .getElementById("trainingBriefTitle")
-      .dispatchEvent(
-        new h.dom.window.KeyboardEvent("keydown", {
-          key: "ArrowLeft",
-          bubbles: true,
-        }),
-      );
+    h.d.getElementById("trainingBriefTitle").dispatchEvent(
+      new h.dom.window.KeyboardEvent("keydown", {
+        key: "ArrowLeft",
+        bubbles: true,
+      }),
+    );
     assert.equal(h.page(), 2);
     assert.deepEqual(h.calls, []);
     h.brief.setSelection(h.selection);
@@ -173,7 +171,7 @@ test("案例来自正式打量结算；只投影公开信息，不捏造属性�
   const sample = buildTrainingSample();
   const { createGame } = require("../src/runtime/game");
   const { defaultInit } = require("../src/host/initial-state");
-  const g = createGame({ ...defaultInit(), sessionSalt: "tutorial-0" });
+  const g = createGame({ ...defaultInit(), sessionSalt: "tutorial-3" });
   const before = g.snapshot();
   const result = g.settleInput("", {
     actions: [{ id: "scan", name: "打量", args: {} }],
@@ -194,4 +192,42 @@ test("案例来自正式打量结算；只投影公开信息，不捏造属性�
   assert.equal(sample.before.targetLive, true);
   for (const key of ["targetPersona", "targetStats", "route", "facts", "saved"])
     assert.equal(Object.hasOwn(sample, key), false);
+});
+
+test("教程截图来自当前正式 UI 与规则，截图变更不会静默落后于状态栏", () => {
+  const path = require("node:path");
+  const {
+    shots,
+    sourceHash,
+  } = require("../src/ui/generated/training-shots.json");
+  const { trainingShotHash } = require("../tools/build/training-shot-hash");
+  assert.equal(sourceHash, trainingShotHash(path.resolve(__dirname, "..")));
+  for (const id of [
+    "statusbar",
+    "terminal",
+    "map-visible",
+    "map-lost",
+    "capsule",
+    "capsule-focus",
+    "settlement",
+  ]) {
+    assert.ok(shots[id].src.startsWith("data:image/jpeg;base64,"));
+    assert.ok(shots[id].width > 0 && shots[id].height > 0);
+    assert.ok(shots[id].boxes.length > 0);
+    for (const box of shots[id].boxes)
+      for (const key of ["left", "top", "width", "height"])
+        assert.ok(Number.isFinite(box[key]));
+  }
+  const { before } = require("../tools/build/training-sample").trainingScenes();
+  assert.ok(before.route.known.slice(1).every((n) => n === 0));
+  assert.ok(
+    before.exits.every((name) => !name.includes("(前)")),
+    "未知路线不能通过出口标签提前泄露",
+  );
+  for (const id of ["statusbar", "terminal", "map-visible", "map-lost", "capsule", "capsule-focus", "settlement"]) {
+    assert.ok(shots[id + "-mobile"].src.startsWith("data:image/jpeg;base64,"));
+    assert.ok(shots[id + "-mobile"].boxes.length > 0);
+  }
+  assert.equal(shots.settlement.boxes.length, 3);
+  assert.ok(shots.terminal.boxes.length >= 10);
 });

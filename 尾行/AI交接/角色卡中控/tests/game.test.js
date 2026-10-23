@@ -137,7 +137,9 @@ test("管道：动线快照——大区名/当前场所/未知遮蔽/前方标�
   assert.equal(s.route.here, 2);
   assert.equal(s.route.nodes[0], "学校正门");      // 已探明节点翻成人话名
   assert.equal(s.route.known[1], 0);               // 未探明遮蔽照传（前端显示 ？）
-  assert.ok(s.exits.some(e => e.includes("老旧单元楼道") && e.includes("(前)")));  // 动线去向标前
+  assert.ok(s.exits.every(e => !e.includes("(前)")), "未知路线不标出目标去向");
+  g.revealNode(3);
+  assert.ok(g.snapshot().exits.some(e => e.includes("老旧单元楼道") && e.includes("(前)")), "探明后保留原前方标记");
   assert.ok(s.spots.length >= 1);                  // 微点 id 原样给（前端翻人话）
   assert.ok(s.sanctuaryAlert.includes("老旧单元楼道") && s.sanctuaryAlert.includes("1步"));  // BFS：她逃向自家楼道
 });

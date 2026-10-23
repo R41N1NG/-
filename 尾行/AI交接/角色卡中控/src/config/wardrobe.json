@@ -288,5 +288,18 @@
       "shoes": "shoe_leather",
       "head": null
     }
+  },
+  "observationOutfits": {
+    "outfit_hoodie_denim": [
+      "top_jk_hoodie"
+    ],
+    "outfit_sailor_jk": [
+      "top_jk_sailor",
+      "bottom_jk_pleat_navy",
+      "sock_knee_black"
+    ],
+    "outfit_preppy_layered": [
+      "bottom_jk_pleat_plaid"
+    ]
   }
 }

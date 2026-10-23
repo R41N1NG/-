@@ -1,112 +1,154 @@
 "use strict";
-// 教学展示仅消费构建时白名单案例。点击示范不访问 WxGlue，不运行生产命令。
+// 所有操作图均为正式界面真实截图；这里只绘制透明标注与隔离示范按钮。
 const { trainingSample: sample } = require("../generated/rules.json");
-function createTrainingExamples({ document, lifecycle, root }) {
+const { shots } = require("../generated/training-shots.json");
+const { photoSource } = require("../photo-source.js");
+function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
   const el = (tag, cls, text) => {
-    const node = document.createElement(tag);
-    if (cls) node.className = cls;
-    if (text !== undefined) node.textContent = text;
-    return node;
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
   };
-  const mount = (kind, content) =>
+  const mount = (kind, node) =>
     root
       .querySelector(`[data-training-example="${kind}"]`)
-      ?.replaceChildren(content);
-  const tag = (number, title, hint) => {
-    const row = el("div", "training-ui-callout");
-    row.append(
-      el("b", "", number),
-      el("strong", "", title),
-      el("span", "", hint),
-    );
-    return row;
-  };
-  const block = (title) => {
-    const b = el("div", "training-ui-box");
-    if (title) b.append(el("p", "training-ui-label", title));
-    return b;
-  };
-  const signed = (n) => `${n > 0 ? "+" : ""}${n}`;
-  const { before, after } = sample;
-  const terminal = el("div", "training-ui-terminal");
-  terminal.append(tag("01", "状态栏", "先读当前状态 ↓"));
-  const bar = block();
-  bar.classList.add("training-ui-highlight");
-  const line = el("div", "training-ui-bar");
-  line.append(
-    el("strong", "", before.place),
-    el("span", "", `体力 ${before.stamina} · 心跳 ${before.heart}`),
-    el("span", "training-ui-link", "战术终端 ↗"),
+      ?.replaceChildren(node);
+  let zoom = null;
+  function openZoom(id) {
+    const shot = shots[id];
+    if (!shot) return;
+    if (!zoom) {
+      zoom = el("dialog", "training-shot-zoom");
+      zoom.setAttribute("aria-label", "正式界面原截图");
+      const close = el("button", "", "关闭大图 ×");
+      close.type = "button";
+      zoom.append(close);
+      document.body.append(zoom);
+      lifecycle.on(close, "click", () => zoom.close());
+      lifecycle.cleanup(() => zoom.remove());
+    }
+    zoom.querySelector(".training-zoom-content")?.remove();
+    const wrap = el("div", "training-zoom-content");
+    wrap.append(picture(id, false, false));
+    zoom.append(wrap);
+    zoom.showModal();
+  }
+  function picture(id, descriptions = true, interactive = false) {
+    if (shots[id + "-mobile"]) {
+      const pair = el("div", "training-shot-pair");
+      const desktop = singlePicture(id, descriptions, interactive),
+        mobile = singlePicture(id + "-mobile", descriptions, interactive);
+      desktop.classList.add("training-shot-desktop");
+      mobile.classList.add("training-shot-mobile");
+      pair.append(desktop, mobile);
+      return pair;
+    }
+    return singlePicture(id, descriptions, interactive);
+  }
+  function singlePicture(id, descriptions = true, interactive = false) {
+    const data = shots[id],
+      holder = el("div", "training-source-picture");
+    if (!data) {
+      holder.textContent = "截图尚未生成，请运行截图构建。";
+      return holder;
+    }
+    const frame = el("div", "training-shot-frame");
+    frame.style.aspectRatio = `${data.width} / ${data.height}`;
+    const img = el("img");
+    img.src = data.src;
+    img.alt = `正式界面截图：${id}`;
+    img.width = data.width;
+    img.height = data.height;
+    frame.append(img);
+    data.boxes.forEach((box, i) => {
+      const mark = el(interactive ? "button" : "span", "training-shot-mark");
+      Object.assign(mark.style, {
+        left: box.left + "%",
+        top: box.top + "%",
+        width: box.width + "%",
+        height: box.height + "%",
+      });
+      mark.append(el("b", "", String(i + 1)));
+      mark.title = box.title;
+      mark.setAttribute("aria-label", box.title + "：" + box.note);
+      if (interactive) {
+        mark.type = "button";
+        mark.dataset.trainingSelect = "scan";
+        mark.classList.add("training-capsule-target");
+        mark.setAttribute("aria-pressed", "false");
+        mark.append(el("strong", "training-click-prompt", "↓ 点这里：打量"));
+      }
+      frame.append(mark);
+    });
+    holder.append(frame);
+    if (descriptions) {
+      const list = el("ol", "training-shot-notes");
+      data.boxes.forEach((b, i) => {
+        const li = el("li");
+        li.append(el("b", "", String(i + 1)));
+        const text = el("div");
+        text.append(el("strong", "", b.title), el("p", "", b.note));
+        li.append(text);
+        list.append(li);
+      });
+      holder.append(list);
+    }
+    const enlarge = el("button", "training-shot-enlarge", "放大原截图 ↗");
+    enlarge.type = "button";
+    lifecycle.on(enlarge, "click", () => openZoom(id));
+    if (descriptions) holder.append(enlarge);
+    return holder;
+  }
+  const first = document.getElementById("trainingBriefDiagram");
+  first?.replaceChildren(picture("map-visible", false));
+  const terminal = el("div", "training-real-terminal");
+  terminal.append(
+    el("h4", "", "先找到入口"),
+    picture("statusbar"),
+    el("h4", "", "再读完整展开的终端"),
+    picture("terminal"),
   );
-  bar.append(
-    line,
-    el(
-      "p",
-      "training-ui-date",
-      `第 ${before.date} 天 · ${before.period}　行动点 ${before.remaining} / ${before.budget}`,
-    ),
-    el("p", "training-ui-muted", "原流程示例 · 日程活动尚未启用"),
-  );
-  terminal.append(bar, tag("02", "更多 ▾", "展开“侦查与取证” ↓"));
-  const drawer = block("侦查与取证");
-  const chips = el("div", "training-ui-chips");
-  for (const label of ["拍照", "打量", "读时机"])
-    chips.append(el("span", label === "打量" ? "selected" : "", label));
-  drawer.append(chips);
-  terminal.append(drawer, tag("03", "战术终端", "观察流水 / 本轮结算 ↓"));
-  const records = block("行动后回来查看");
-  records.append(
-    el("p", "training-ui-muted", "新的观察会带着时间出现在流水中。"),
-    el("span", "training-ui-link", "她的档案 ↗"),
-  );
-  terminal.append(records);
   mount("terminal", terminal);
+  const location = document.getElementById("trainingBriefLocatedMap");
+  location?.replaceChildren(
+    el("h4", "training-example-subtitle", "① 仍在目视：实心橙点"),
+    picture("map-visible"),
+    el("h4", "training-example-subtitle", "② 跟缀失败：只剩最后目击"),
+    picture("map-lost"),
+  );
   mount(
     "location",
     el(
       "p",
       "",
-      `你在：${before.place} · ${before.targetLive ? "目视位置" : "最后目击"}：${before.place}`,
+      `真实案例：入场时在大学正门目视目标 → 下一回合跟缀检定失败 → ${sample.lost.after.status}；未再显示目标当前去向。`,
     ),
   );
-
   const action = el("div", "training-action-example");
-  action.append(tag("01", "更多 → 侦查与取证", "点选打量 ↓"));
-  const actionChoices = el("div", "training-ui-chips training-ui-action-chips");
-  actionChoices.append(el("span", "", "拍照"));
-  const select = el("button", "training-scan-button", "打量");
-  select.type = "button";
-  select.dataset.trainingSelect = "scan";
-  select.setAttribute("aria-pressed", "false");
-  actionChoices.append(select, el("span", "", "读时机"));
-  action.append(actionChoices);
-  const status = el("p", "training-ui-queue", "待选动作：点击上方“打量”");
+  action.append(
+    picture("capsule"),
+    el("h4", "training-example-subtitle", "放大打量胶囊（原截图裁切）"),
+    picture("capsule-focus", true, true),
+  );
+  const status = el("p", "training-ui-queue", "① 点击上方金框内的“打量”胶囊");
   status.dataset.trainingQueue = "";
   status.setAttribute("role", "status");
-  action.append(status, tag("02", "随本轮发送", "文字可以补充做法 ↓"));
-  const inputLabel = el(
+  action.append(status);
+  const label = el(
     "label",
     "training-narration-label",
-    "伴随描写（可选，仅用于这次示范）",
+    "伴随描写（可选，仅用于示范）",
   );
+  label.htmlFor = "trainingBriefNarration";
   const input = el("textarea", "training-narration");
-  input.id = "trainingBriefNarration";
+  input.id = label.htmlFor;
   input.rows = 2;
+  input.placeholder = "我留意她的步幅和周围动静。";
   input.maxLength = 500;
-  input.placeholder = "例如：我留意她的步幅和周围动静。";
-  inputLabel.htmlFor = input.id;
-  action.append(inputLabel, input);
-  action.append(
-    el(
-      "p",
-      "training-ui-muted",
-      `本例：${before.place} / 已目视目标 / 同街。发送后比较实际消耗。`,
-    ),
-  );
-  const send = el("button", "training-demo-send", "示范发送本轮 →");
+  const send = el("button", "training-demo-send", "② 示范发送，查看判定动画 →");
   send.type = "button";
   send.dataset.trainingSend = "";
-  send.disabled = true;
   const output = el("div", "training-demo-output");
   output.dataset.trainingOutput = "";
   output.setAttribute("role", "status");
@@ -117,84 +159,104 @@ function createTrainingExamples({ document, lifecycle, root }) {
     el(
       "p",
       "training-ui-gain",
-      `情报 PI ${signed(sample.delta.pi)} · 体力 ${signed(sample.delta.stamina)} · 日程行动点 ${before.remaining} → ${after.remaining}`,
-    ),
-    el(
-      "p",
-      "training-ui-muted",
-      "这是一次成功示例；正式游玩的结果取决于当次检定。",
+      `情报 PI +${sample.delta.pi} · 体力 ${sample.delta.stamina} · 日程行动点 ${sample.before.remaining} → ${sample.after.remaining}`,
     ),
   );
-  action.append(send, output);
+  const replay = el("button", "training-demo-replay", "重播判定动画 ↗");
+  replay.type = "button";
+  replay.hidden = true;
+  action.append(
+    label,
+    input,
+    send,
+    output,
+    replay,
+    el("h4", "training-example-subtitle", "判定界面的三个部分"),
+    picture("settlement"),
+  );
   mount("action", action);
   let selected = false,
     demonstrated = false,
     busy = false;
+  const selects = [...action.querySelectorAll("[data-training-select]")];
   function sync() {
-    select.disabled = busy;
-    select.setAttribute("aria-pressed", String(selected));
+    for (const select of selects) {
+      select.disabled = busy;
+      select.setAttribute("aria-pressed", String(selected));
+    }
     send.disabled = busy || !selected || demonstrated;
-    send.textContent = demonstrated ? "示范已展示 ✓" : "示范发送本轮 →";
-    status.textContent = demonstrated
-      ? "已发送示范动作：打量"
-      : selected
-        ? "已选中：打量 · 发送后才执行"
-        : "待选动作：点击上方“打量”";
-    output.hidden = !demonstrated;
+    send.textContent = demonstrated
+      ? "示范已展示 ✓"
+      : "② 示范发送，查看判定动画 →";
     input.disabled = busy;
+    replay.disabled = busy;
+    replay.hidden = !demonstrated;
+    output.hidden = !demonstrated;
+    status.textContent = demonstrated
+      ? "已发送：打量。判定与收录结果见下方。"
+      : selected
+        ? "已选中：打量。现在点击“示范发送”。"
+        : "① 点击上方金框内的“打量”胶囊";
   }
-  lifecycle.on(select, "click", () => {
-    if (busy || demonstrated) return;
-    selected = !selected;
-    sync();
-  });
+  for (const select of selects)
+    lifecycle.on(select, "click", () => {
+      if (busy || demonstrated) return;
+      selected = !selected;
+      sync();
+    });
+  const animate = () =>
+    onDemonstrate?.(JSON.parse(JSON.stringify(sample.settlement)));
   lifecycle.on(send, "click", () => {
     if (busy || !selected || demonstrated) return;
     demonstrated = true;
     sync();
+    animate();
+  });
+  lifecycle.on(replay, "click", () => {
+    if (!busy) animate();
   });
   const result = el("div", "training-result-example");
   const comparison = el("div", "training-comparison");
-  for (const [title, view] of [
-    ["行动前", before],
-    ["行动后", after],
+  for (const [title, s] of [
+    ["行动前", sample.before],
+    ["行动后", sample.after],
   ]) {
-    const column = block(title);
-    column.append(
-      el("strong", "training-ui-value", `PI ${view.pi}`),
-      el("p", "", `体力 ${view.stamina}`),
-      el(
-        "p",
-        "training-ui-muted",
-        `日程行动点 ${view.remaining} / ${view.budget}`,
-      ),
+    const cell = el("div", "training-ui-box");
+    cell.append(
+      el("p", "", title),
+      el("strong", "training-ui-value", "PI " + s.pi),
+      el("p", "", "体力 " + s.stamina),
     );
-    comparison.append(column);
+    comparison.append(cell);
   }
-  result.append(
-    comparison,
-    tag("新增", "终端观察流水", "在这里看到第一次发现 ↓"),
-  );
-  const record = block();
-  record.classList.add("training-ui-highlight");
+  const record = el("div", "training-ui-box training-ui-highlight");
+  record.dataset.trainingRecord = "";
   record.append(
     el("time", "", sample.record[0]),
     el("p", "", sample.record[1]),
   );
-  record.dataset.trainingRecord = "";
-  result.append(record);
-  const limits = block("仍然未知");
-  limits.append(
-    el("p", "training-ui-muted", "住址与后续行程：未因这次打量解锁"),
-    el("p", "training-ui-muted", "目标属性：仍为 ？"),
-    el("p", "training-ui-muted", `本例新增档案条目：${sample.newFactCount} 条`),
-  );
+  result.append(comparison, record);
+  if (sample.capture) {
+    const card = el("figure", "training-capture-card"),
+      image = el("img");
+    image.src = photoSource(sample.capture.file);
+    image.alt = sample.capture.name + " · 侧面";
+    card.append(
+      image,
+      el("figcaption", "", `本次新增：${sample.capture.name} · 侧面`),
+    );
+    result.append(card);
+  }
   result.append(
-    limits,
     el(
       "p",
-      "training-ui-route-hint",
-      "查流水 → 核对结算 → 条件满足后再查“她的档案”",
+      "training-ui-muted",
+      "从当前可辨认且有对应素材的服装部位中，选取一张尚未拥有的侧视图；侧图已齐不会重复获得。",
+    ),
+    el(
+      "p",
+      "training-ui-muted",
+      `本例新增档案条目：${sample.newFactCount} 条；住址与后续行程仍未解锁。`,
     ),
   );
   mount("result", result);
@@ -208,6 +270,7 @@ function createTrainingExamples({ document, lifecycle, root }) {
       selected = false;
       demonstrated = false;
       input.value = "";
+      zoom?.close();
       sync();
     },
   };

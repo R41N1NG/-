@@ -116,11 +116,13 @@ test("零楼真实建局：预设、返回、切换缓存、摇号；只确认�
   try {
     const w = dom.window,
       d = w.document;
+    w.HTMLCanvasElement.prototype.getContext = () => null;
     w.HTMLDialogElement.prototype.showModal = function () {
       this.open = true;
     };
     w.HTMLDialogElement.prototype.close = function () {
       this.open = false;
+      this.dispatchEvent(new w.Event("close"));
     };
     w.getVariables = async () => JSON.parse(JSON.stringify(store));
     w.SillyTavern = { getContext: () => ({ characterId: 1, chatId: "zero" }) };
@@ -193,6 +195,7 @@ test("零楼真实建局：预设、返回、切换缓存、摇号；只确认�
     d.querySelector('[data-training-page="3"]').click();
     d.querySelector('[data-training-select="scan"]').click();
     d.querySelector("[data-training-send]").click();
+    d.getElementById("wx-settle-dialog").close();
     assert.equal(store.wx_save, undefined, "教学示范不提前写正式存档");
     d.getElementById("trainingBriefNext").click();
     assert.equal(d.getElementById("trainingBriefStart").hidden, false);
@@ -334,9 +337,9 @@ test("PPT 首页：公开地理图解不读取隐私或伪造定位，浏览和�
     brief.setSelection(selection);
     const diagram = d.getElementById("trainingBriefDiagram");
     const drawing = diagram.innerHTML;
-    assert.ok(diagram.querySelector(".training-map-highlight"));
-    assert.ok(diagram.querySelector(".training-map-arrow"));
-    assert.ok(diagram.textContent.includes("大学正门"));
+    assert.ok(diagram.querySelector('img[src^="data:image/jpeg"]'));
+    assert.ok(diagram.querySelector(".training-shot-mark"));
+    assert.ok(diagram.querySelector("img").alt.includes("map-visible"));
     assert.ok(
       d
         .getElementById("zeroStep3")
@@ -353,7 +356,7 @@ test("PPT 首页：公开地理图解不读取隐私或伪造定位，浏览和�
       false,
     );
     diagram
-      .querySelector("svg")
+      .querySelector("img")
       .dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
     brief.setSelection({
       identity: { name: "学生" },

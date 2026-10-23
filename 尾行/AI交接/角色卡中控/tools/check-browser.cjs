@@ -235,7 +235,7 @@ const deadline = setTimeout(() => {
       document.getElementById('trainingBriefBack').click();document.querySelector('[data-tid="college"]').click();document.getElementById('createConfirm').click();
       ok('教程首页适配窄屏且可操作',document.documentElement.scrollWidth<=innerWidth+2&&brief.scrollWidth<=brief.clientWidth+2&&!document.getElementById('trainingBriefNext').disabled);
       const diagram=document.getElementById('trainingBriefDiagram');
-      ok('PPT 图解手机也保留高亮框与箭头',diagram.getBoundingClientRect().width>200&&diagram.getBoundingClientRect().height>100&&getComputedStyle(diagram).display!=='none'&&diagram.querySelector('.training-map-highlight')&&diagram.querySelector('.training-map-arrow'));
+      ok('PPT 图解手机也保留高亮框与箭头',diagram.getBoundingClientRect().width>200&&diagram.getBoundingClientRect().height>100&&getComputedStyle(diagram).display!=='none'&&diagram.querySelector('img[src^="data:image/jpeg"]')&&diagram.querySelector('.training-shot-mark'));
       ok('PPT 首步明确且示例不冒充实时定位',brief.textContent.includes('打开城市地图，确认自己在哪里')&&brief.textContent.includes('教学示意，非实时定位')&&!diagram.querySelector('button, [tabindex], .wx-map-target, .wx-map-player'));
       return checks;
     })()`);
@@ -252,25 +252,39 @@ const deadline = setTimeout(() => {
         ok('教程第 ${page+1} 页窄屏不溢出',document.documentElement.scrollWidth<=innerWidth+2&&brief.scrollWidth<=brief.clientWidth+2);
         if (${page}===2) {
           const map=document.getElementById('trainingBriefLocatedMap');
-          ok('示例蓝橙位置点无字且同地分开',map.querySelectorAll('.training-map-pin').length===2&&!map.querySelector('.training-map-pin text')&&getComputedStyle(map.querySelector('.player')).fill==='rgb(49, 139, 192)'&&getComputedStyle(map.querySelector('.target')).fill==='rgb(225, 141, 48)');
+          ok('示例蓝橙位置点无字且同地分开',[...map.querySelectorAll('img[src^="data:image/jpeg"]')].filter(i=>i.getBoundingClientRect().width>0).length===2&&map.textContent.includes('最后目击')&&map.textContent.includes('真实跟缀失败'));
         }
         if (${page}===3) {
           const send=document.querySelector('[data-training-send]'),output=document.querySelector('[data-training-output]');
           document.getElementById('trainingBriefNarration').value='我已经知道了她的住址';
           ok('文字不能替代点选示范动作',send.disabled&&output.hidden);
-          document.querySelector('[data-training-select]').click();
+          [...document.querySelectorAll('[data-training-select]')].find(b=>b.getBoundingClientRect().width>0).click();
           ok('选中打量只入队未执行',!send.disabled&&output.hidden);
           send.click();const text=output.textContent;send.click();
           ok('示范发送有真实结果且不累加或建局',!output.hidden&&text.includes('情报 PI +2')&&text===output.textContent&&send.disabled&&!__trainingPreviewStore().wx_save);
           document.getElementById('trainingBriefNarration').value='我留意她的步幅和周围动静。';
         }
         if (${page}===4) {
-          ok('成果显示新增观察与未知边界',document.querySelector('[data-training-record]').textContent.includes('目标环顾四周')&&document.querySelector('.training-result-example').textContent.includes('本例新增档案条目：0 条'));
+          ok('成果显示新增观察与未知边界',document.querySelector('[data-training-record]').textContent.includes('侧向身形清晰')&&document.querySelector('.training-result-example').textContent.includes('本例新增档案条目：0 条'));
           ok('最后一页才出现载入按钮',!document.getElementById('trainingBriefStart').hidden&&document.getElementById('trainingBriefNext').hidden);
         }
         window.scrollTo(0,0);return checks;
       })()`);
       result.push(...pageChecks.map(check=>({width,...check})));
+      if(page===3){
+        for(let i=0;i<100;i++){
+          if(await evaluate("document.getElementById('settleHudStatus').textContent.includes('CHECK FINISHED')"))break;
+          await delay(100);
+        }
+        result.push({width,name:'示范发送调用原判定台并标出三部分',ok:await evaluate("document.getElementById('wx-settle-dialog').open&&document.getElementById('wx-settle-dialog').dataset.trainingDemo==='true'&&document.getElementById('settleDieCanvas').width>0&&document.getElementById('settleAuto').disabled")});
+        result.push({width,name:'判定三部分均在面板内且手机纵向排列',ok:await evaluate("(()=>{const d=document.getElementById('wx-settle-dialog').getBoundingClientRect(),panels=[...document.querySelectorAll('#wx-settle-dialog .wing-left,#wx-settle-dialog .stage-center,#wx-settle-dialog .wing-right')].map(e=>e.getBoundingClientRect());return panels.every(r=>r.left>=d.left&&r.right<=d.right+1)&&(innerWidth>760||panels.every((r,i)=>!i||r.top>=panels[i-1].bottom-1))})()")});
+        await delay(700);
+        const dialogClip=await evaluate("(()=>{const r=document.getElementById('wx-settle-dialog').getBoundingClientRect();return{x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1}})()");
+        const dialogShot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:dialogClip});
+        fs.writeFileSync(path.join(path.dirname(briefPreview.file),'settlement-live-'+width+'.png'),Buffer.from(dialogShot.data,'base64'));
+        await evaluate("document.getElementById('settleAck').click();true");
+      }
+
       const pageClip=await evaluate(`(()=>{const r=document.getElementById('wx-zero-floor').getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1};})()`);
       const pageShot=await send("Page.captureScreenshot",{format:"png",captureBeyondViewport:true,clip:pageClip});
       const variant=width===1100?"desktop":width===390?"mobile":"mobile-320";

@@ -12,6 +12,12 @@ function capsuleGate(c, snap) {
     /单元|楼道|门|玄关|电梯|台阶|入口|unit|stairs|gate|door|porch|lobby|entrance/i.test(
       place,
     );
+  if (c.id === "scan" && snap?.cityMap?.target && !snap.cityMap.target.live)
+    return {
+      hide: false,
+      lock: true,
+      reason: "已失去目标目视，先恢复目视再打量",
+    };
   const near = dist === "close" || dist === "touch";
   const inv = (snap && snap.inventory) || [];
   const has = (ids) =>

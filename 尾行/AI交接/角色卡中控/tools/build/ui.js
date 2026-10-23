@@ -6,8 +6,23 @@ const esbuild = require("esbuild");
 const ROOT = path.resolve(__dirname, "../..");
 
 /** UI 源码是 src/ui；状态栏.html 是供直接打开的生成预览。 */
-function buildUI({ preview = true, writePreview = true } = {}) {
+function buildUI({
+  preview = true,
+  writePreview = true,
+  skipTrainingShotCheck = false,
+} = {}) {
   require("./ui-config.js").generateUIConfig();
+  const shotsFile = path.join(ROOT, "src/ui/generated/training-shots.json");
+  if (!skipTrainingShotCheck) {
+    const meta = JSON.parse(fs.readFileSync(shotsFile, "utf8"));
+    if (
+      meta.sourceHash !==
+      require("./training-shot-hash.js").trainingShotHash(ROOT)
+    )
+      throw Error(
+        "正式界面或案例规则已变更，请先运行 npm run screenshots:training 更新原界面截图",
+      );
+  }
   const css = ["statusbar.css", "city-map.css", "training-brief.css"]
     .map((file) =>
       fs.readFileSync(path.join(ROOT, "src/ui/styles", file), "utf8"),

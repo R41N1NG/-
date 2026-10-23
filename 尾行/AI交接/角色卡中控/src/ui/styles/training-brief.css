@@ -1101,3 +1101,226 @@
   flex: 0 0 20px;
   white-space: nowrap;
 }
+/* 原界面截图与透明标注；框的位置来自浏览器实测元素坐标。 */
+#wx-zero-floor .training-source-picture {
+  margin: 12px 0 22px;
+}
+#wx-zero-floor .training-shot-frame {
+  position: relative;
+  width: 100%;
+  background: #080e14;
+}
+#wx-zero-floor .training-shot-frame > img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+#wx-zero-floor .training-shot-mark {
+  position: absolute;
+  border: 2px solid #e5bb60 !important;
+  background: #e5bb600a !important;
+  padding: 0 !important;
+  border-radius: 3px;
+  min-height: 0 !important;
+  color: #f7e3ac !important;
+}
+#wx-zero-floor .training-shot-mark > b {
+  position: absolute;
+  left: -2px;
+  top: -16px;
+  background: #d6b56c;
+  color: #18211d;
+  font: 10px/16px system-ui;
+  min-width: 16px;
+  text-align: center;
+}
+#wx-zero-floor .training-shot-notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+#wx-zero-floor .training-shot-notes li {
+  display: flex;
+  gap: 9px;
+}
+#wx-zero-floor .training-shot-notes li > b {
+  flex: 0 0 18px;
+  font:
+    10px ui-monospace,
+    monospace;
+  color: #d6b56c;
+  padding-top: 4px;
+}
+#wx-zero-floor .training-shot-notes strong {
+  color: #d3ddc6;
+  font-weight: 500;
+  font-size: 11px;
+}
+#wx-zero-floor .training-shot-notes p {
+  color: #8fa790;
+  font-size: 10px;
+  line-height: 1.9;
+  margin: 4px 0 0;
+}
+#wx-zero-floor .training-shot-enlarge {
+  font-size: 10px;
+  color: #d6be83 !important;
+  background: transparent !important;
+  border: 1px solid #8e795044 !important;
+  margin-top: 12px;
+  padding: 6px 10px;
+}
+#wx-zero-floor [data-training-slide="1"] .training-lesson-layout,
+#wx-zero-floor [data-training-slide="3"] .training-lesson-layout {
+  grid-template-columns: 1fr;
+}
+#wx-zero-floor [data-training-slide="1"] .training-lesson-points,
+#wx-zero-floor [data-training-slide="3"] .training-lesson-points {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#wx-zero-floor .training-example-subtitle,
+#wx-zero-floor .training-real-terminal > h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #d9c18b;
+  margin: 16px 0;
+}
+#wx-zero-floor .training-click-prompt {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(100% + 20px);
+  white-space: nowrap;
+  padding: 7px 11px;
+  background: #e0bd70;
+  color: #1a241d;
+  border-radius: 3px;
+  font: 600 14px system-ui;
+}
+#wx-zero-floor .training-capsule-target {
+  animation: training-capsule-pulse 1.4s ease-in-out infinite;
+}
+#wx-zero-floor .training-capsule-target[aria-pressed="true"] {
+  background: #e5bb6066 !important;
+  animation: none;
+}
+@keyframes training-capsule-pulse {
+  50% {
+    box-shadow: 0 0 0 7px #e5bb6066;
+  }
+}
+#wx-zero-floor .training-demo-replay {
+  background: transparent !important;
+  border: 1px solid #678875 !important;
+  color: #bacda7 !important;
+  font-size: 11px;
+  padding: 8px;
+  margin-top: 10px;
+}
+#wx-zero-floor .training-capture-card {
+  margin: 15px 0;
+}
+#wx-zero-floor .training-capture-card img {
+  display: block;
+  width: min(100%, 384px);
+  height: auto;
+  margin: auto;
+  border-radius: 5px;
+}
+#wx-zero-floor .training-capture-card figcaption {
+  text-align: center;
+  font-size: 11px;
+  color: #d3bc7c;
+  padding: 10px;
+}
+.training-shot-zoom {
+  width: min(1150px, 96vw);
+  max-height: 94vh;
+  overflow: auto;
+  background: #0d1c23;
+  border: 1px solid #91a077;
+  color: #d3dcc2;
+}
+.training-shot-zoom::backdrop {
+  background: #000b;
+}
+.training-shot-zoom > button {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  padding: 10px;
+  background: #c2af7c;
+  border: 0;
+}
+.training-zoom-content {
+  min-width: 860px;
+}
+.training-zoom-content img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.training-zoom-content .training-shot-mark {
+  display: none;
+}
+#wx-settle-dialog[data-training-demo] .wing-left,
+#wx-settle-dialog[data-training-demo] .stage-center,
+#wx-settle-dialog[data-training-demo] .wing-right {
+  outline: 2px solid #d2b16b;
+  outline-offset: -2px;
+}
+#wx-settle-dialog[data-training-demo] .wing-left::before {
+  content: "① 检定条件与修正";
+}
+#wx-settle-dialog[data-training-demo] .stage-center::before {
+  content: "② D20 动画与落点";
+}
+#wx-settle-dialog[data-training-demo] .wing-right::before {
+  content: "③ 成功失败与账目";
+}
+#wx-settle-dialog[data-training-demo] .wing-left::before,
+#wx-settle-dialog[data-training-demo] .stage-center::before,
+#wx-settle-dialog[data-training-demo] .wing-right::before {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  color: #17221a;
+  background: #d2b16b;
+  padding: 3px 7px;
+  font: 10px system-ui;
+}
+@media (max-width: 600px) {
+  #wx-zero-floor .training-shot-notes {
+    grid-template-columns: 1fr;
+  }
+  #wx-zero-floor [data-training-slide="1"] .training-lesson-points,
+  #wx-zero-floor [data-training-slide="3"] .training-lesson-points {
+    grid-template-columns: 1fr;
+  }
+  #wx-zero-floor .training-click-prompt {
+    font-size: 10px;
+    padding: 4px 7px;
+    bottom: calc(100% + 10px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #wx-zero-floor .training-capsule-target {
+    animation: none;
+  }
+}
+.training-shot-mobile {
+  display: none;
+}
+@media (max-width: 600px) {
+  .training-shot-desktop {
+    display: none;
+  }
+  .training-shot-mobile {
+    display: block;
+  }
+}

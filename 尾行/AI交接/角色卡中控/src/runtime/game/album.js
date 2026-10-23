@@ -12,10 +12,14 @@ function createAlbumSystem({ g, seedAt }) {
     return (id && (map.getPlace(id) || {}).name) || "";
   }
 
-  function capturePhoto(dist) {
+  function capturePhoto(dist, options = {}) {
     const persona = g.targetPersona || {};
     const owned = Object.keys(g.album || {});
-    const cands = ALBUM.captureList(persona, owned, dist);
+    const cands = ALBUM.captureList(persona, owned, dist).filter(
+      (c) =>
+        (!options.angle || c.angle === options.angle) &&
+        (!options.items || options.items.includes(c.item.id)),
+    );
     if (!cands.length) return null;
     g.captureSeq = (g.captureSeq || 0) + 1;
     const seed = seedAt(g.floor || 1, "capture_" + g.captureSeq);
@@ -33,6 +37,7 @@ function createAlbumSystem({ g, seedAt }) {
       t: g.floor || 1,
       place: placeNameNow(),
       dist,
+      source: options.source || "photo",
     };
     g.album[pick.key] = meta;
     let piBonus = 0;
@@ -43,8 +48,8 @@ function createAlbumSystem({ g, seedAt }) {
     g.capture = g.lastCapture;
     g.signals = g.signals || [];
     g.signals.push([
-      "照片",
-      `拍到 ${pick.item.name}（${CA_CN[pick.angle] || pick.angle}）`,
+      options.source === "scan" ? "观察" : "照片",
+      `${options.source === "scan" ? "收录" : "拍到"} ${pick.item.name}（${CA_CN[pick.angle] || pick.angle}）`,
     ]);
     if (g.signals.length > 20) g.signals.shift();
     return g.lastCapture;

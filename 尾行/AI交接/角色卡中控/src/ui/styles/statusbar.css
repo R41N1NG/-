@@ -2237,7 +2237,7 @@ dialog#wx-settle-dialog {
   overflow: hidden;
 }
 @media (max-width: 760px) {
-  .stage-console { grid-template-columns: 1fr; }
+  #wx-settle-dialog .stage-console { grid-template-columns: minmax(0, 1fr); }
 }
 #wx-settle-dialog .wing {
   background: rgba(255, 255, 255, 0.028) !important;

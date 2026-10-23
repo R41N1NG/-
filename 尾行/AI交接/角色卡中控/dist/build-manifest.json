@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.14",
+  "version": "0.8.15",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "8c2b12163d170aeba12784bd4c9bb701ba66b63d26bed52c13116c89476e13f6",
+  "sourceHash": "9ca4ad6a52851cdfb15d27fae906a637a81ff8a2e227cb98a03448f270b82ba8",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "5800cb036d6ac8b53db95b8e3d5de98d0bcafd0e8e5612232dd5a23cd04afb98"
+      "sha256": "764ab7d8f2e0039b57851f88040bb55c021840eecdf754ea069e4575af06163e"
     },
     {
       "file": "package.json",
-      "sha256": "a42753f31a508fbc379a327e3a966d3fb5a0a524ff41e0954478f62cfb45461a"
+      "sha256": "d9eeb844d78cdadf21f4c16cb452b2e66a51b12233f933c1eba6204f0eef4424"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -67,7 +67,7 @@
     },
     {
       "file": "src/config/wardrobe.json",
-      "sha256": "fd16dd3588fb19a25d96c34306835f60920f7af4a590556b4f918ded95057225"
+      "sha256": "fd68c539c59969dcc9e0491d956e7d90016cb01d194286376cd37e632f63d144"
     },
     {
       "file": "src/contracts/action-requirements.js",
@@ -179,7 +179,7 @@
     },
     {
       "file": "src/runtime/album.js",
-      "sha256": "5c745f679f1b3f220cd3146134f707ae0525a43046e9fc1af82f322a5647aeed"
+      "sha256": "dd15fb60d6631af07a7a80bfd9d5ec0a3d8657d6649aefe61516278f2cb5ba57"
     },
     {
       "file": "src/runtime/checks.js",
@@ -215,11 +215,11 @@
     },
     {
       "file": "src/runtime/game/actions.js",
-      "sha256": "786d965452d0f9f3991c3fb9972a9690673365ea6f6baac234b86b8bd67fd651"
+      "sha256": "438aa0e28f170aed2d973b75ee9e51c30b1655c9f718d60e88414c29865c8185"
     },
     {
       "file": "src/runtime/game/album.js",
-      "sha256": "af3b415ebfa71304a93158ded609583253537dbe410f9fdff533f476937a46c3"
+      "sha256": "0dce135f8928588f549cf3a3a2635ebdfab58fb0f4881030a37783dcfdbfff2a"
     },
     {
       "file": "src/runtime/game/alert.js",
@@ -255,7 +255,7 @@
     },
     {
       "file": "src/runtime/game/snapshot.js",
-      "sha256": "b5b94eb95c2ad62673d5301200d803f9605b8ded6275593008d2fdfbdb1eae5e"
+      "sha256": "52d4b31d4d25f870d7c8e33c676cec80e43241c0d82a438850e4cf0cc885f69a"
     },
     {
       "file": "src/runtime/game/target.js",
@@ -263,7 +263,7 @@
     },
     {
       "file": "src/runtime/game/turn.js",
-      "sha256": "79596ee9c89b0d76f659c794bbf98278e89fbd338f58258732024d07017cf0a2"
+      "sha256": "875dc63b85d768ea0d158caf3bf8bc600507325211ed9660b2fab11f90713a02"
     },
     {
       "file": "src/runtime/ledger.js",
@@ -323,7 +323,7 @@
     },
     {
       "file": "src/ui/action-options.js",
-      "sha256": "1bfada92fe446404ed08af179d69fcbe51fe831261a5152100a36251692a17f7"
+      "sha256": "5b9a1f584236dc705787b77f3d2fa7f0e7f132e6a1cff336341dfee61fd9cbab"
     },
     {
       "file": "src/ui/alert-view.js",
@@ -355,7 +355,15 @@
     },
     {
       "file": "src/ui/generated/rules.json",
-      "sha256": "d857a99f25dcf5dbd64dedb205a22d580d8aaca17ad81016a09554ff8e52ef65"
+      "sha256": "ff2f97796065ccd3cb3651a7c7ac2e80b642ad258a982f3488427e94d5359c65"
+    },
+    {
+      "file": "src/ui/generated/training-shots.json",
+      "sha256": "cf679871939267a3a00ff158799e0cccfee04577287a4c6bf025ecd5fd547393"
+    },
+    {
+      "file": "src/ui/generated/wardrobe-images.json",
+      "sha256": "b8d5e4adb46314f62a336561dfd0f60cae245b30ffe3c61463eca31121621952"
     },
     {
       "file": "src/ui/icons.js",
@@ -376,6 +384,10 @@
     {
       "file": "src/ui/map/transit.js",
       "sha256": "9b1ca655acbeedf358ee6b96ec83108b1cc706a2c647c69d2a6569ce7ad11814"
+    },
+    {
+      "file": "src/ui/photo-source.js",
+      "sha256": "347c4e1b753a230003973960f52d4fd3bc2286b5232a51263cfb57c92f8ecdbc"
     },
     {
       "file": "src/ui/preview-data.js",
@@ -407,7 +419,7 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "9cf71025f347e2ddc8224268039f970cd24f212f08e5e46ad771bed8233d0207"
+      "sha256": "d47a10b789074cfcce76b5ed2c46bbc27dffc0611bbff95bff93ce7b45e32b07"
     },
     {
       "file": "src/ui/styles/city-map.css",
@@ -415,11 +427,11 @@
     },
     {
       "file": "src/ui/styles/statusbar.css",
-      "sha256": "434646dd34626d3e64b65098f9cf6d3f1fa2218d12de167a5aaa591d55301399"
+      "sha256": "7a31395dd0f9339c62294a0d23e36240e2606556bd1d96aae0e10e905b3f4bb0"
     },
     {
       "file": "src/ui/styles/training-brief.css",
-      "sha256": "22bdb93b3b60ad5a756ffd80a820ac2e66e210bd5fc3766ca9e2aa421b5dd66c"
+      "sha256": "d7dc68410680c49fd096e2e7e36fee9c8f5d76588fa93223e9f20bf3059eac2f"
     },
     {
       "file": "src/ui/sync-notice.js",
@@ -439,19 +451,15 @@
     },
     {
       "file": "src/ui/zero-floor/training-brief.html",
-      "sha256": "0f1e72c61ee6ead49ff5519c9e515c7832dc6d3b7907a4e6eb0348ae68524dcb"
+      "sha256": "f513204e21427ff2fa62624de46d049eb280fe217f40e6ae85e16b739c59348b"
     },
     {
       "file": "src/ui/zero-floor/training-brief.js",
-      "sha256": "8bcbf5d67de04499a5864af367924229d3823f0af96989d73f61766bb53b3e5b"
-    },
-    {
-      "file": "src/ui/zero-floor/training-diagram.js",
-      "sha256": "1b31260993dcb879dcb75f01df3027ba67375c8c2be2a154eca4a63f81dea810"
+      "sha256": "82e27b3f9312d051a01ab665a891bd41e7c283a6322d5c5f1e11ea281387aaec"
     },
     {
       "file": "src/ui/zero-floor/training-examples.js",
-      "sha256": "2cee6febbb25464e0c030f9ea28549ebf84d2442db9d58716df972771acc59c2"
+      "sha256": "7fe4a3da3de4b43ceab53546d5f446afbb3ffec499a8a8e03f6076595e46f758"
     },
     {
       "file": "src/ui/zero-floor/training-pages.js",
@@ -491,7 +499,15 @@
     },
     {
       "file": "tools/build/training-sample.js",
-      "sha256": "59a44b96ca8768c7d2b3cd080ea5d29fee7f6f73f775a44966f98d5bbf1a5a3a"
+      "sha256": "7d36684f0bfc55b3f1ba492d33bd8cfbf61d218ed8592166874e3999fec69ea2"
+    },
+    {
+      "file": "tools/build/training-shot-hash.js",
+      "sha256": "0bda93a446d406214dc0395313785c4bb7c66ab246dbd3ee86f2a071a7d7a9e0"
+    },
+    {
+      "file": "tools/build/training-shots.js",
+      "sha256": "e09f96bc8cda566601cd429ea6f0cfee1e9df8efbb401f22df24db2977799913"
     },
     {
       "file": "tools/build/ui-config.js",
@@ -499,21 +515,25 @@
     },
     {
       "file": "tools/build/ui.js",
-      "sha256": "58f1d9d2e82733f509f3f1fb01025d9b86fea2c8744603d66f88cbb811f385ce"
+      "sha256": "9ac77fafcb9d27ca1828fb4426c3b2d1d85967def358de84d4115288a59ddb6c"
+    },
+    {
+      "file": "tools/build/wardrobe-assets.py",
+      "sha256": "e06f798a8b4fced985678cf116732e4eff85e47336a09e94b2c61210341a0f14"
     }
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 618607,
-      "sha256": "87d5c49011a816a425ff994409d2e58506f88bffab0dc0140ba430a20f0329c9"
+      "bytes": 621398,
+      "sha256": "0b16755652b70ebd4ef602129b3cc1b5c3ade22a3508dcb62302be7eb5c7660f"
     },
     "wx-statusbar.user.js": {
-      "bytes": 1393653,
-      "sha256": "126719d750fe7442846c7700a59763075c269b5500c6f8089ababf55df49dc15"
+      "bytes": 4932533,
+      "sha256": "572e44967bba380772a25667064d7a1c300b9d6ad16bd2a4953480b9a512fc70"
     },
     "尾行.json": {
-      "bytes": 1522313,
-      "sha256": "1771553bb6ed96328d7a2cbed3ac70feec8af43726c5a0367419b3db90ab4529"
+      "bytes": 5065301,
+      "sha256": "c1412d8af74cbfebef2d6991771f6a1c8da2bdee3be29a994f3a74301b7ffe11"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

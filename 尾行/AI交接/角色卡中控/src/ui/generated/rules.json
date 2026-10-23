@@ -63,8 +63,8 @@
       "playerPlaceId": "school_gate_b",
       "targetPlaceId": "school_gate_b",
       "targetLive": true,
-      "heart": 30,
-      "stamina": 99,
+      "heart": 35,
+      "stamina": 98,
       "pi": 2,
       "date": 1,
       "period": "晚间",
@@ -72,21 +72,119 @@
       "budget": 4,
       "source": "legacy"
     },
+    "capture": {
+      "key": "top_jk_hoodie|side",
+      "file": "jk/top/base/normal/top_jk_hoodie/side.png",
+      "name": "浅米灰连帽卫衣",
+      "slot": "top",
+      "angle": "side",
+      "t": 1,
+      "place": "学校正门",
+      "dist": "same",
+      "source": "scan",
+      "piBonus": 0,
+      "outfits": []
+    },
+    "settlement": {
+      "floor": 1,
+      "actions": [
+        {
+          "type": "action",
+          "id": "scan",
+          "name": "打量",
+          "label": "打量",
+          "d20": 10,
+          "raw": [
+            10
+          ],
+          "mods": [
+            {
+              "src": "不起眼",
+              "v": 1
+            }
+          ],
+          "dc": 12,
+          "total": 16,
+          "band": "success",
+          "attr": {
+            "name": "情报",
+            "v": 5
+          },
+          "targetMod": 0,
+          "darkReveal": null,
+          "capture": {
+            "key": "top_jk_hoodie|side",
+            "file": "jk/top/base/normal/top_jk_hoodie/side.png",
+            "name": "浅米灰连帽卫衣",
+            "slot": "top",
+            "angle": "side",
+            "t": 1,
+            "place": "学校正门",
+            "dist": "same",
+            "source": "scan",
+            "piBonus": 0,
+            "outfits": []
+          },
+          "ledger": {
+            "seq": 1,
+            "applied": {
+              "alert": 0,
+              "heart": 0,
+              "pi": 2,
+              "stamina": 0,
+              "cash": 0,
+              "proximity": 0,
+              "faceMem": 0
+            }
+          }
+        }
+      ],
+      "account": {
+        "stamina": -2,
+        "heart": 5,
+        "alert": 0,
+        "pi": 2,
+        "proximity": 0,
+        "cash": 0
+      },
+      "seg": {
+        "heartPeak": 40,
+        "staminaTax": -2
+      }
+    },
+    "lost": {
+      "before": {
+        "placeId": "school_gate_b",
+        "name": "大学正门",
+        "date": 1,
+        "period": 3,
+        "live": true,
+        "status": "目视位置"
+      },
+      "after": {
+        "placeId": "school_gate_b",
+        "name": "大学正门",
+        "date": 1,
+        "period": 3,
+        "live": false,
+        "status": "最后目击"
+      }
+    },
     "action": {
       "id": "scan",
       "name": "打量",
       "band": "success",
-      "d20": 11,
-      "total": 17,
+      "d20": 10,
+      "total": 16,
       "dc": 12
     },
     "record": [
       "21:30",
-      "目标环顾四周，侧向身形清晰"
+      "目标侧向身形清晰，收录浅米灰连帽卫衣（侧面）"
     ],
     "delta": {
       "pi": 2,
-      "stamina": -1
+      "stamina": -2
     },
     "newFactCount": 0,
     "attrsRevealed": 0
