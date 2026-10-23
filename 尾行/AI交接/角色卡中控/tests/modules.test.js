@@ -16,7 +16,8 @@ test("旧 v1 存档迁移到 v2，保留账目、装备与数值动作随机流"
   for (const key of ["ledgerState", "inventory", "album", "targetBase", "floor", "route"]) assert.deepEqual(clone(upgraded[key]), legacy.save[key], key);
   const result = game.settleInput(legacy.input.text, legacy.input.options);
   assert.deepEqual(result.actions.map(a => [a.id, a.d20, a.total, a.band]), legacy.next.actions.map(a => [a.id, a.d20, a.total, a.band]));
-  assert.deepEqual(clone(game.save().ledgerState), legacy.nextSave.ledgerState);
+  // 新规则取消逐动作PI；旧档骰流与其余账目保持兼容。
+  assert.deepEqual(clone(game.save().ledgerState), {...legacy.nextSave.ledgerState, pi:legacy.save.ledgerState.pi});
 });
 
 test("模块实例隔离：行囊、账本、模式与快照不跨实例共享", () => {

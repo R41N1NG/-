@@ -5,8 +5,9 @@ const map = require("../map.js");
 const LP = require("../../config/lifepack.json");
 const TS = require("../target_state.js");
 
-function createRouteSystem({ g, seedAt, applyTargetState }) {
+function createRouteSystem({ g, seedAt, applyTargetState, investigation }) {
   function setRoute(route) {
+    investigation.finish("路线切换");
     g.route = route;
     if (g.targetState && route && route.nodes) {
       const curId = route.nodes[route.here || 0];
@@ -107,7 +108,7 @@ function createRouteSystem({ g, seedAt, applyTargetState }) {
       if (t === null || t > now) break;
       herAdvance(true);
     }
-    if (r.here > from) {
+    if (r.here > from && r.known?.[r.here] === 1) {
       const toName = map.getPlace(r.nodes[r.here])?.name || r.nodes[r.here];
       g.signals = g.signals || [];
       g.signals.push([fmtMin(now), `目标动向推进：前往 [${toName}]`]);
@@ -117,8 +118,10 @@ function createRouteSystem({ g, seedAt, applyTargetState }) {
   }
 
   function revealNode(i) {
-    if (g.route && g.route.known && i >= 0 && i < g.route.known.length)
+    if (g.route && g.route.known && i >= 0 && i < g.route.known.length) {
       g.route.known[i] = 1;
+      investigation.confirmEdge(i);
+    }
   }
 
   return { setRoute, herAdvance, advanceRouteByClock, revealNode };

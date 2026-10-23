@@ -28,7 +28,7 @@ function createSettlement({
     stamina: "体力消耗",
     heart: "心跳进账",
     alert: "警觉变动",
-    pi: "PI情报",
+    pi: "PI熟练度",
     proximity: "接近度推进",
     cash: "现金",
   };
@@ -515,7 +515,7 @@ function createSettlement({
         heart: "心跳进账",
         alert: "警觉变动",
         stamina: "体力消耗",
-        pi: "PI情报",
+        pi: "PI熟练度",
       };
       for (const [k, v] of Object.entries(act.ledger.applied)) {
         if (!v) continue;
@@ -560,18 +560,53 @@ function createSettlement({
           });
         if (acc.pi)
           ledgerItems.push({
-            label: "PI情报收益",
+            label: "PI熟练度收益",
             val: `+${acc.pi}`,
             type: "gain",
           });
       }
     }
-    if (isNat20) ledgerItems.push({ label: "天然 20", val: "大成功", type: "gain" });
+    if (act.exposure)
+      ledgerItems.push({
+        label: "近距离暴露",
+        val: `${act.exposure.base} − 敏捷${act.exposure.reduction} = +${act.exposure.applied}`,
+        type: "warn",
+      });
+    if (act.discoveries?.length)
+      ledgerItems.push({
+        label: "首次线索",
+        val: `${act.discoveries.length}项 · PI +${act.discoveries.reduce((s, c) => s + c.pi, 0)}（${act.investigationReceipt ? "已结算" : "待尾行结算"}）`,
+        type: "gain",
+      });
+    if (act.investigationReceipt) {
+      const receipt = act.investigationReceipt;
+      ledgerItems.push({
+        label: "整段结算",
+        val: `保底 +${receipt.minimum} · 线索 +${receipt.clueGain}`,
+        type: "gain",
+      });
+    }
+    if (act.investigationReceipt)
+      ledgerItems.push({
+        label: "PI到账",
+        val: `+${act.investigationReceipt.pi}`,
+        type: "gain",
+      });
+    if (isNat20)
+      ledgerItems.push({ label: "天然 20", val: "大成功", type: "gain" });
     if (act.attributeUnlock) {
       const attr = act.attributeUnlock;
-      ledgerItems.push({ label: "额外收益", val: `目标${attr.name} ${attr.value} 已解锁`, type: "gain" });
+      ledgerItems.push({
+        label: "额外收益",
+        val: `目标${attr.name} ${attr.value} 已解锁`,
+        type: "gain",
+      });
     } else if (act.attributeUnlockEmpty) {
-      ledgerItems.push({ label: "属性已齐", val: "无新的属性可解锁", type: "" });
+      ledgerItems.push({
+        label: "属性已齐",
+        val: "无新的属性可解锁",
+        type: "",
+      });
     }
     if (act.pkgSeg && act.pkgSeg.staminaTax) {
       const taxVal = Number(act.pkgSeg.staminaTax);
@@ -795,6 +830,8 @@ function createSettlement({
         : dlg.setAttribute("open", "");
     }
 
+    for (const act of actions)
+      act.investigationReceipt = pkg.investigation || null;
     runSettleQueue(actions, pkg.account, pkg.seg);
   }
 

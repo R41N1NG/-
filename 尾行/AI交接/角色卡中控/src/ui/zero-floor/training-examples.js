@@ -74,12 +74,18 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
     el(
       "p",
       "training-ui-gain",
-      `情报 PI +${sample.delta.pi} · 体力 ${sample.delta.stamina} · 日程行动点 ${sample.before.remaining} → ${sample.after.remaining}`,
+      `PI即时变动 ${sample.delta.pi}（首次线索奖励待尾行结算） · 体力 ${sample.delta.stamina} · 日程行动点 ${sample.before.remaining} → ${sample.after.remaining}`,
     ),
   );
   if (sample.attributeUnlock) {
     const attr = sample.attributeUnlock;
-    output.append(el("p", "training-ui-gain", `天然 20：大成功。额外收益：目标${attr.name} ${attr.value}（基础值）已解锁。`));
+    output.append(
+      el(
+        "p",
+        "training-ui-gain",
+        `天然 20：大成功。额外收益：目标${attr.name} ${attr.value}（基础值）已解锁。`,
+      ),
+    );
   }
   const replay = el("button", "training-demo-replay", "重播判定动画 ↗");
   replay.type = "button";
@@ -158,9 +164,15 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
   if (sample.attributeUnlock) {
     const attr = sample.attributeUnlock;
     const unlock = el("div", "training-attribute-unlock");
-    unlock.append(el("strong", "", "天然 20 · 大成功的额外收益"),
+    unlock.append(
+      el("strong", "", "天然 20 · 大成功的额外收益"),
       el("p", "", `目标${attr.name}：？ → ${attr.value}（基础值）`),
-      el("p", "training-ui-muted", "一项目标属性已解锁；其余未确认的属性仍显示问号。"));
+      el(
+        "p",
+        "training-ui-muted",
+        "一项目标属性已解锁；其余未确认的属性仍显示问号。",
+      ),
+    );
     result.append(unlock);
   }
   if (sample.capture) {

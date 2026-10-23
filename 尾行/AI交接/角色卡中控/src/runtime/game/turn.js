@@ -24,6 +24,7 @@ function createTurnSystem({
   herAdvance,
   resolveAlertCross,
   settleAction,
+  investigation,
   snapshot,
   sweetHighNow,
   syncThresholdTags,
@@ -141,6 +142,11 @@ function createTurnSystem({
         attr: a.attr || null,
         targetMod: a.targetMod || 0,
         darkReveal: a.darkReveal || null,
+        exposure: a.exposure || null,
+        discoveries: a.discoveries || [],
+        attributeUnlock: a.attributeUnlock || null,
+        attributeUnlockEmpty: !!a.attributeUnlockEmpty,
+        capture: a.capture || null,
         raw: a.raw,
         ledger: a.ledger,
         noRoll: a.noRoll,
@@ -148,6 +154,7 @@ function createTurnSystem({
         rejected: a.rejected || false,
         reason: a.reason || null,
       })),
+      investigation: results.investigation || null,
       account: results.floorApplied || null,
       seg: results.seg || null,
       logs: g.logs.slice(),
@@ -170,6 +177,8 @@ function createTurnSystem({
     g.lastHerAlert = null;
     g.capture = null;
     if (!replyOnly) g.alertEvent = null; // 过档事件只在本楼回执里出现一次
+
+    investigation.beginTurn();
 
     // 她按自己的返程表走：先把地点推进到本楼钟点该到的那一站，再结算玩家动作
     if (!replyOnly) advanceRouteByClock();
@@ -420,6 +429,8 @@ function createTurnSystem({
       g.signals.push([tm, signalTxt]);
       if (g.signals.length > 20) g.signals.shift();
     }
+
+    results.investigation = investigation.endTurn(results);
 
     // 由实际账面差值汇总，包含过档行为和上下限钳制，避免回执与存档不一致。
     for (const key of Object.keys(floorApplied))

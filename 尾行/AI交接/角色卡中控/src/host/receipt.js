@@ -10,7 +10,7 @@ const ACC_CN = {
   stamina: "体力",
   heart: "心跳",
   alert: "警觉",
-  pi: "情报",
+  pi: "调查熟练度",
   proximity: "接近度",
   cash: "现金",
 };

@@ -31,11 +31,19 @@ function observeScene(g, date, results) {
   );
   const attempt = attempts.at(-1);
   const escaped = g.fleeing && g.route?.here >= g.route?.nodes.length - 1;
-  if (attempt?.band === "fail" || escaped) {
+  if (["fail", "nat1"].includes(attempt?.band) || escaped) {
     g.spatial.tracking = "lost";
     return;
   }
   if ((g.spatial.tracking === "lost" || g.spatial.assumed) && !attempt) return;
+  // 合法成功跟进沿原玩法更新当前目击点；不据此补出已走过的连接或未来路线。
+  if (attempt && ["success", "grace", "nat20"].includes(attempt.band)) {
+    const here = g.route?.here;
+    if (places[g.route?.nodes?.[here]]) {
+      g.route.known ||= g.route.nodes.map(() => 0);
+      g.route.known[here] = 1;
+    }
+  }
   const id = routePlace(g);
   if (!id) return;
   g.spatial.playerPlaceId = id;
@@ -173,4 +181,10 @@ function cityView(g, date) {
     note: "固定街区地图。地块表示空间分布；可通行范围以地点入口为准。",
   };
 }
-module.exports = { activeScene, routePlace, observeScene, prepareMove, cityView };
+module.exports = {
+  activeScene,
+  routePlace,
+  observeScene,
+  prepareMove,
+  cityView,
+};

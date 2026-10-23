@@ -130,25 +130,18 @@ test("教练接近度 +20：targetGym 或生活包 gym 标记二选一命中，�
 /* ---------- 侦探：PI ×1.2 与职业病 ---------- */
 
 test("侦探 PI ×1.2：当晚毛入账过夜补差 round(×0.2)，无身份不补", () => {
-  const det = newGame("detective");
-  let pi = 0;
-  for (let f = 1; f <= 4; f++) {
-    det.processFloor(`<动作>拍照</动作>`, { floor: f });
-    pi = det.ledger.get("pi");
-  }
-  const gross = pi;   // 拍照是唯一 PI 来源，段末不动 PI
-  const before = det.ledger.get("pi");
-  const r = det.nightFall();
-  const expect = Math.round(gross * 0.2);
-  assert.equal(r.piBonus, expect);
-  assert.equal(det.ledger.get("pi"), before + expect);
-  // 同盐同输入、属性对齐（情报同为 6）的无身份局：毛入账一致但不补差
-  const plain = createGame({ sessionSalt: SALT, player: { ...BASE, int: BASE.int + 1 },
-                             target: { str: 3, agi: 4, per: 5, nrv: 4, social: 2 },
-                             stats: { date: 1, heart: 30, stamina: 100, cash: 3000 } });
-  for (let f = 1; f <= 4; f++) plain.processFloor(`<动作>拍照</动作>`, { floor: f });
-  assert.equal(plain.ledger.get("pi"), gross);
-  assert.equal(plain.nightFall().piBonus, 0);
+  const {defaultInit}=require("../src/host/initial-state");
+  const det=createGame({...defaultInit(),identity:"detective",sessionSalt:"tutorial-crit-95"});
+  det.settleInput("",{actions:[{id:"scan"}]});
+  assert.equal(det.ledger.get("pi"),0,"首次线索等待整段结算");
+  const r=det.nightFall();
+  assert.equal(r.investigation.clueGain,3);
+  assert.equal(r.piBonus,Math.round(3*0.2));
+  assert.equal(det.ledger.get("pi"),3+r.piBonus);
+  const plain=createGame({...defaultInit(),sessionSalt:"tutorial-crit-95"});
+  plain.settleInput("",{actions:[{id:"scan"}]});
+  assert.equal(plain.nightFall().piBonus,0);
+  assert.equal(plain.ledger.get("pi"),3);
 });
 
 test("侦探职业病：跟缀中收摊被拒；跟丢/她到家/GM 清除三者解锁", () => {

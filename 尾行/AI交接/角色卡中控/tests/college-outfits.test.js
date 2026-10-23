@@ -294,23 +294,23 @@ test("女大学生六大槽位事实池：18条细分情报基准与多选项开
   assert.equal(v0.facts.length, 1);
   assert.equal(v0.facts[0].id, "college_carry_bag");
 
-  // 第一阶段 L1（PI=15）：解锁全部 6 个槽位 L1 事实
-  const v15 = view("college", { pi: 15, tickets: [] });
-  assert.ok(v15.facts.length >= 6, "PI=15 时应解锁六大槽位 L1 事实");
+  // 确认第一层证据后显示各槽位L1；PI本身不再解锁
+  const v15 = view("college", { pi: 15, knownFacts:pack.factPool.filter(f => f.level === 1).map(f => f.id) });
+  assert.ok(v15.facts.length >= 6, "确认L1证据后显示六大槽位事实");
   assert.ok(v15.facts.some(f => f.id === "college_home_area"));
   assert.ok(v15.facts.some(f => f.id === "college_sched_library"));
   assert.ok(v15.facts.some(f => f.id === "target_romance_single_status"));
 
-  // 第二阶段 L2（PI=30，持有对应观察票）：解锁 L2 事实
-  const v30 = view("college", { pi: 30, tickets: ["photo", "watch_peers", "chat"] });
-  assert.ok(v30.facts.length >= 12, "PI=30 且持有观察票时应解锁 12 条生活情报");
+  // 确认第二层证据后显示L2事实
+  const v30 = view("college", { pi: 30, knownFacts:pack.factPool.filter(f => f.level <= 2).map(f => f.id) });
+  assert.ok(v30.facts.length >= 12, "确认L2证据后显示12条生活情报");
   assert.ok(v30.facts.some(f => f.id === "college_home_building"));
   assert.ok(v30.facts.some(f => f.id === "college_sched_store"));
   assert.ok(v30.facts.some(f => f.id === "college_social_roommate"));
   assert.ok(v30.facts.some(f => f.id === "target_romance_single_boundary"));
 
-  // 终局全开（PI=55，持有全套动作票据）：解锁 L3 核心要害，18 条情报全部点亮
-  const v55 = view("college", { pi: 55, tickets: ["ransack", "pick", "audit_class", "door_peep", "photo", "watch_peers", "pump_person", "chat"] });
+  // 逐条确认全部证据后，18条情报全部可见
+  const v55 = view("college", { pi: 55, knownFacts:pack.factPool.map(f => f.id) });
   assert.equal(v55.facts.length, 18, "全部条件齐备时 18 条情报全量点亮");
   assert.ok(v55.facts.some(f => f.id === "college_home_door"));
   assert.ok(v55.facts.some(f => f.id === "college_sched_ddl"));

@@ -40,10 +40,9 @@ function createAlbumSystem({ g, seedAt }) {
       source: options.source || "photo",
     };
     g.album[pick.key] = meta;
-    let piBonus = 0;
-    if (dist === "touch" && pick.angle === "front") piBonus += 1;
+    const piBonus = 0; // PI 由尾行整段结算；照片本身保留收藏功能。
     const sb = ALBUM.setBonus(g.album, g.setBonusDone);
-    piBonus += sb.pi;
+
     g.lastCapture = { key: pick.key, ...meta, piBonus, outfits: sb.outfits };
     g.capture = g.lastCapture;
     g.signals = g.signals || [];

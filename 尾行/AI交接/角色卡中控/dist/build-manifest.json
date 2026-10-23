@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.18",
+  "version": "0.8.19",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "2376c916d2a66bce0a549e3a654717092c150c19b8cc2e38eb33e645acf610b9",
+  "sourceHash": "7382e7ad8499f149791125de082d3c1eef3a24609f4b7711b7355595ad37204b",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "c445906fdea3e1d3e49e51a7cd6f300d2fce0270fc8aec6544bad4b98ddd5475"
+      "sha256": "34612acffdd020ae1cef290220953359f59ffd70367a12d50e068640bb86431e"
     },
     {
       "file": "package.json",
-      "sha256": "cfdddf2de23afd67539920886a66444539942443080207ae6214520db328f917"
+      "sha256": "e1ca7772542d0a158cc040fdd509bd0abaf2677e167f65a9e29e053698d003ff"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -63,7 +63,7 @@
     },
     {
       "file": "src/config/rules.json",
-      "sha256": "c89e7dd59d3891325a9ccb71a652048db6c1b5bec66c3b414149a7d4b1b6d620"
+      "sha256": "70716091db7bfdca7905664164cce9acdfd7b9dfbd2e3716e2681744439749db"
     },
     {
       "file": "src/config/wardrobe.json",
@@ -151,7 +151,7 @@
     },
     {
       "file": "src/host/initial-state.js",
-      "sha256": "0e07185d402eac5b8b37707de21deae3e9b6f6c0623e5bc9395963f74a04c80f"
+      "sha256": "c5349068a202b70b59472b91085bee00166f7446698995f053bdbc5ac113c0db"
     },
     {
       "file": "src/host/opening.js",
@@ -159,7 +159,7 @@
     },
     {
       "file": "src/host/receipt.js",
-      "sha256": "05b430afb4ce88f17659c351769ef648f78b7d4fd1f91f815f3da0d19ee8507f"
+      "sha256": "29c56536b536b18a829ab75ea612800889e6a497ded81fee721ef5e826c8e379"
     },
     {
       "file": "src/host/worldbook.js",
@@ -207,19 +207,19 @@
     },
     {
       "file": "src/runtime/facts.js",
-      "sha256": "836e95f6ef231077f40ccfa0e2a85cd6223a3535d1d461f3285c1e9fc1afc4d7"
+      "sha256": "cda5e12d3df3eacb4698ce86abc28b7f78fab269e0bb53340aea94a95caa1b03"
     },
     {
       "file": "src/runtime/game.js",
-      "sha256": "c4a548bfe07b757ea699835b9dc278af80cd957c3db7eee9368e0005620df762"
+      "sha256": "5839e87a6e5572501d17f42f7c606b024708042e04a1b22aa799b7d86119c48e"
     },
     {
       "file": "src/runtime/game/actions.js",
-      "sha256": "1390370a466a3704b18cd0005e574ac8885b04733d08cb691eb881adf2544828"
+      "sha256": "dc32cf14b81269fffb8b6679d0b0a3969ab3a265c3a57ef8db97f26ca0d53f44"
     },
     {
       "file": "src/runtime/game/album.js",
-      "sha256": "0dce135f8928588f549cf3a3a2635ebdfab58fb0f4881030a37783dcfdbfff2a"
+      "sha256": "06f08fa81f13ad3656cb8adbcfa40dbd962f55a28e253ffb6264c3fa4ca75177"
     },
     {
       "file": "src/runtime/game/alert.js",
@@ -227,7 +227,7 @@
     },
     {
       "file": "src/runtime/game/checks.js",
-      "sha256": "128b6a9d7d972b2da192f8bf1f8891322a8c6fb19224d00fd75357fb96a26b0b"
+      "sha256": "7ad816e4b0902c034097368e9a0c701b29cb4c1a5494b9231734296ff549bf64"
     },
     {
       "file": "src/runtime/game/clock.js",
@@ -247,23 +247,27 @@
     },
     {
       "file": "src/runtime/game/route.js",
-      "sha256": "c7001c9a5a74004cdca1efefa458f07212328be183090585ac893b55aef1ee58"
+      "sha256": "a482ceec8b81ea8d68628dbb26e72c4d10ddb202831627871fef10db5161962c"
     },
     {
       "file": "src/runtime/game/save.js",
-      "sha256": "041f3cce4b697b45bbfeda2a4de0356ebf323a0069a3d1c25b54177b4eb3851a"
+      "sha256": "9459d85ad9d649ffbffc971d917306208d8b28feed02aaa0400868359942ce66"
     },
     {
       "file": "src/runtime/game/snapshot.js",
-      "sha256": "99043da38d10d12844ff7b66c4b3d044b5293be19efc02001d608f7391af4e17"
+      "sha256": "c3bf8b97cff9ce3087b35bb0d6737b0c5dfd4f5649c418668d20b5e3dd8cef41"
     },
     {
       "file": "src/runtime/game/target.js",
-      "sha256": "878b561ec14866b0abe5624e8465c051ec8b8f51955cf38b28d349efbc547e1e"
+      "sha256": "1df75960a911f6a3348c068e2723f4f2a7dff30f10d3ec3041a186c5bb47dcbb"
     },
     {
       "file": "src/runtime/game/turn.js",
-      "sha256": "64a089d9e0840f2415d690f2ab2b64da2e0abc50e983f5c37e66b67e70673b70"
+      "sha256": "e59f9cc24586bac820a1b45e0da3817c23385d18b24ef3e7f59eb308fcc9e962"
+    },
+    {
+      "file": "src/runtime/investigation.js",
+      "sha256": "f772c6b9b522fbc4a8378a54acff2c0fd75838777afd819c477d938e658af145"
     },
     {
       "file": "src/runtime/ledger.js",
@@ -287,7 +291,7 @@
     },
     {
       "file": "src/runtime/spatial/system.js",
-      "sha256": "8c3116cf8a951491e63852701f7a98930258f9c809366aa3a32a4d973b07b16c"
+      "sha256": "5226cc5365db99cb2dbc1184d4dd718acd007b9ad80da31c8eba6bc251855278"
     },
     {
       "file": "src/runtime/tags.js",
@@ -359,11 +363,11 @@
     },
     {
       "file": "src/ui/generated/rules.json",
-      "sha256": "2d55fa55ce6b7bfaf98984311c10cbbab937642b357112a6029abdfc3b993b29"
+      "sha256": "a01de370fe40687c780b2b8343584d78a8fea8d0e732cee0448ec57160d65cd0"
     },
     {
       "file": "src/ui/generated/training-shots.json",
-      "sha256": "72014d014e0fd86edfd3c6ed5440396314543d6f38c9234a0ec1c9064358ea24"
+      "sha256": "aaf84706dfdd86c8870a84a93859d394357a86eb1f156fbb38908b5fb37339ab"
     },
     {
       "file": "src/ui/generated/wardrobe-images.json",
@@ -411,11 +415,11 @@
     },
     {
       "file": "src/ui/renderers/snapshot.js",
-      "sha256": "3ff745c448770c25e842a0519f999ac4ced01247dcf570788de8ac565ca008f0"
+      "sha256": "3c71051f9b55aa467e321e8c9a1d5de7e99ec27bfc15ce73d1a6444976feef0f"
     },
     {
       "file": "src/ui/settlement/controller.js",
-      "sha256": "1c43ebed01871019f157f9027daa469dae74b9601701ab91bd4d29a7a787e763"
+      "sha256": "4fea87d6fde44ace159c2cdc1042ef9518988fd4dc0924d4aa0d43364b75217d"
     },
     {
       "file": "src/ui/settlement/geometry.js",
@@ -447,7 +451,7 @@
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "3d7db3a44305a934a29643b30853953c0c5608afa7bcf11b676ebc1ca3f0edad"
+      "sha256": "f2a94acf575eedc742ce16b755df2026543821621d369b5763ec8bf1cc04a567"
     },
     {
       "file": "src/ui/zero-floor/attribute-lessons.html",
@@ -455,7 +459,7 @@
     },
     {
       "file": "src/ui/zero-floor/attribute-lessons.js",
-      "sha256": "b29b5878339a6e1615910cf707e9dbe6d880058b2734d25dfb2d5295d0e9ff97"
+      "sha256": "c1612121da1c295a324450591ba4d7badecf2556f77d6b4f5b18995b44ed56b1"
     },
     {
       "file": "src/ui/zero-floor/host.js",
@@ -467,7 +471,7 @@
     },
     {
       "file": "src/ui/zero-floor/training-brief.html",
-      "sha256": "027c81598d63d8dc67861e5a0b919b324dafe560c5d8f28ed9582ff85db64c84"
+      "sha256": "619b7849e685779eb5ce4d308fe3f9446608b568129af55b18a59c8be4f410d9"
     },
     {
       "file": "src/ui/zero-floor/training-brief.js",
@@ -475,11 +479,11 @@
     },
     {
       "file": "src/ui/zero-floor/training-examples.js",
-      "sha256": "7d95134175c7c7780898e168537a6a478a3d5ffaf34fe62e80c4d62cc783cb96"
+      "sha256": "3b6082856f6c69c394290138fa8e3df5cfef7b96bc3b4e4147dbb1304241b8c9"
     },
     {
       "file": "src/ui/zero-floor/training-pages.js",
-      "sha256": "291696f7869271d7b673e969cc2f1950f6bd8035b2049d4e44af2f78393fc052"
+      "sha256": "ea85fdbf5f86dc416a1cfe75e19c6bee3f7d219716d4731df283665aa266699e"
     },
     {
       "file": "src/ui/zero-floor/training-pictures.js",
@@ -508,6 +512,10 @@
     {
       "file": "tools/build/manifest.js",
       "sha256": "6b68894ef842c5a9c97c40324c384fccfaf9e439cb6fd9ecec3ad9ade1cf9896"
+    },
+    {
+      "file": "tools/build/pi-preview.js",
+      "sha256": "4b857ffe6010e0a89501d4398cde3f194880dfb3218f14448ba72c77a5c3e92b"
     },
     {
       "file": "tools/build/training-overview.js",
@@ -548,16 +556,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 623434,
-      "sha256": "337aa1abc1b03750e2348f995075c29f2560af30ad7dee89357634d4875f4e14"
+      "bytes": 635879,
+      "sha256": "7edb75f32566eabe13c149fd6bf0e2f8a08e20a5dac0958550e8e09171bd384a"
     },
     "wx-statusbar.user.js": {
-      "bytes": 14521089,
-      "sha256": "fcdb66493820c3a2d19f0c826b56befa21c78ccb0aaa4447157985b09caf6208"
+      "bytes": 14582708,
+      "sha256": "40a832b1f32ac6ab8b97528ecef9a02589d2fade37fddc469cb7600b17cdf052"
     },
     "尾行.json": {
-      "bytes": 14655869,
-      "sha256": "39b2c3f8c45acf8658965d988dae5f86f32708915257f14a97d4d2f49e522a18"
+      "bytes": 14718229,
+      "sha256": "b0495f37b97f997df93fa3fc07509de8b5e9e37a746158bd2b08b0fb691226a8"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

@@ -155,13 +155,18 @@ function createSnapshotSystem({
         targetState: g.targetState
           ? JSON.parse(JSON.stringify(g.targetState))
           : null,
+        investigation: {
+          pendingClues: g.investigation.session?.clues.length || 0,
+          effectiveSegments: g.investigation.session?.effective || 0,
+          lastReceipt: g.investigation.lastReceipt,
+        },
         profile: {
           targetId: g.targetId,
           attrs: knownAttributes(g),
           impressions: [],
           facts:
             F.view(g.targetId, {
-              pi: s.pi,
+              knownFacts: g.investigation.knownFacts,
               tickets: [],
               assignedFacts: g.targetPersona?.assignedFacts,
             })?.facts || [],

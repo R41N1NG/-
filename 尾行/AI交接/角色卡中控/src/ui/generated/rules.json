@@ -65,7 +65,7 @@
       "targetLive": true,
       "heart": 30,
       "stamina": 99,
-      "pi": 6,
+      "pi": 0,
       "date": 1,
       "period": "晚间",
       "remaining": 4,
@@ -135,12 +135,19 @@
             "piBonus": 0,
             "outfits": []
           },
+          "exposure": null,
+          "discoveries": [
+            {
+              "id": "attr:per",
+              "pi": 3
+            }
+          ],
           "ledger": {
             "seq": 1,
             "applied": {
               "alert": 0,
               "heart": 0,
-              "pi": 6,
+              "pi": 0,
               "stamina": 0,
               "cash": 0,
               "proximity": 0,
@@ -153,7 +160,7 @@
         "stamina": -1,
         "heart": 0,
         "alert": 0,
-        "pi": 6,
+        "pi": 0,
         "proximity": 0,
         "cash": 0
       },
@@ -193,7 +200,7 @@
       "目标侧向身形清晰，收录浅米灰连帽卫衣（侧面）；大成功额外收益：目标敏锐 4（基础值）已解锁"
     ],
     "delta": {
-      "pi": 6,
+      "pi": 0,
       "stamina": -1
     },
     "newFactCount": 0,

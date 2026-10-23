@@ -27,7 +27,7 @@ test('槽位层级判定：平滑 PI 门槛逐档生效（15/30/55）', () => {
 });
 
 test('预算制视图（四闸②）：L0 只见 public，层级随 PI 稳步提升', () => {
-  const v0 = F.view('college', { pi: 0, tickets: [] });
+  const v0 = F.legacyView('college', { pi: 0, tickets: [] });
   assert.deepEqual(v0.levels, {
     carry: 0,
     home: 0,
@@ -40,7 +40,7 @@ test('预算制视图（四闸②）：L0 只见 public，层级随 PI 稳步提
   assert.deepEqual(v0.facts.map(f => f.id), ['college_carry_bag']);
 
   // PI 15: 解锁所有槽位 L1 事实
-  const v1 = F.view('college', { pi: 15, tickets: [] });
+  const v1 = F.legacyView('college', { pi: 15, tickets: [] });
   assert.equal(v1.levels.home, 1);
   assert.equal(v1.levels.schedule, 1);
   assert.equal(v1.levels.social, 1);
@@ -49,7 +49,7 @@ test('预算制视图（四闸②）：L0 只见 public，层级随 PI 稳步提
   assert.ok(v1.facts.some(f => f.id === 'target_romance_single_status'));
 
   // PI 30: 达到 L2 资格；carry 需观察票、social 需 watch_peers、romance 需情感票
-  const v2NoTicket = F.view('college', { pi: 30, tickets: [] });
+  const v2NoTicket = F.legacyView('college', { pi: 30, tickets: [] });
   assert.equal(v2NoTicket.facts.some(f => f.id === 'college_carry_daily'), false);
   assert.equal(v2NoTicket.facts.some(f => f.id === 'college_social_roommate'), false);
   assert.equal(v2NoTicket.facts.some(f => f.id === 'target_romance_single_boundary'), false);
@@ -58,13 +58,13 @@ test('预算制视图（四闸②）：L0 只见 public，层级随 PI 稳步提
   assert.ok(v2NoTicket.facts.some(f => f.id === 'college_sched_store'));
 
   // 补上对应票据后 L2 顺利解锁
-  const v2WithTickets = F.view('college', { pi: 30, tickets: ['photo', 'watch_peers', 'chat'] });
+  const v2WithTickets = F.legacyView('college', { pi: 30, tickets: ['photo', 'watch_peers', 'chat'] });
   assert.ok(v2WithTickets.facts.some(f => f.id === 'college_carry_daily'));
   assert.ok(v2WithTickets.facts.some(f => f.id === 'college_social_roommate'));
   assert.ok(v2WithTickets.facts.some(f => f.id === 'target_romance_single_boundary'));
 
   // PI 55: 达到 L3 资格，需单项动作票命中
-  const v3 = F.view('college', { pi: 55, tickets: ['ransack', 'audit_class', 'pump_person'] });
+  const v3 = F.legacyView('college', { pi: 55, tickets: ['ransack', 'audit_class', 'pump_person'] });
   assert.ok(v3.facts.some(f => f.id === 'college_home_door'));
   assert.ok(v3.facts.some(f => f.id === 'college_sched_ddl'));
   assert.ok(v3.facts.some(f => f.id === 'college_carry_defense'));

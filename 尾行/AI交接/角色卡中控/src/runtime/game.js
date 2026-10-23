@@ -10,6 +10,7 @@ const map = require("./map.js");
 const LP = require("../config/lifepack.json");
 const TS = require("./target_state.js");
 const ALBUM = require("./album.js");
+const { createInvestigation } = require("./investigation.js");
 const { validateKnowledge } = require("./target-knowledge.js");
 
 const { createTargetSystem } = require("./game/target.js");
@@ -164,6 +165,7 @@ function createGame(init = {}, services = {}) {
     unequipItem,
     useItem,
   } = createInventorySystem({ g, L, log, syncHeartTags });
+  const investigation = createInvestigation({ g, L });
   const {
     applyTargetState,
     applyShoeMod,
@@ -171,11 +173,11 @@ function createGame(init = {}, services = {}) {
     syncTargetShoeTags,
     syncPersonaTags,
     nightFall: legacyNightFall,
-  } = createTargetSystem({ g, L, seedAt, log, syncHeartTags });
+  } = createTargetSystem({ g, L, seedAt, log, syncHeartTags, investigation });
   const { targetEffectiveAcuity, gain, runCheck, categoryOf } =
-    createCheckSystem({ g, seedFor, isFamiliar });
+    createCheckSystem({ g, seedFor, isFamiliar, investigation });
   const { setRoute, herAdvance, advanceRouteByClock, revealNode } =
-    createRouteSystem({ g, seedAt, applyTargetState });
+    createRouteSystem({ g, seedAt, applyTargetState, investigation });
   const { resolveAlertCross } = createAlertSystem({
     g,
     L,
@@ -191,6 +193,7 @@ function createGame(init = {}, services = {}) {
     lex,
     log,
     capturePhoto,
+    investigation,
     currentPlaceKind,
     gain,
     runCheck,
@@ -217,6 +220,7 @@ function createGame(init = {}, services = {}) {
     settleAction,
     snapshot: () => snapshot(),
     syncSpatial: (results) => observeScene(g, L.get("date"), results),
+    investigation,
     sweetHighNow,
     syncThresholdTags,
   });
@@ -281,6 +285,7 @@ function createGame(init = {}, services = {}) {
       "alertHold",
       "fleeing",
       "targetKnowledge",
+      "investigation",
       "album",
       "setBonusDone",
       "captureSeq",
@@ -304,6 +309,7 @@ function createGame(init = {}, services = {}) {
   }
 
   g.targetKnowledge = validateKnowledge(g.targetKnowledge, g.targetId);
+  investigation.restore(init.saved);
 
   // 未提供日程的旧档仅补显示字段，不推测已花点数、不改变夜间流程。
   g.dayPlan = validateDayPlan(
@@ -326,7 +332,8 @@ function createGame(init = {}, services = {}) {
               g.dayPlan.source === "legacy" && map.getPlace(oldPlace)
                 ? oldPlace
                 : undefined,
-            assumed: !!init.saved || (g.dayPlan.source === "legacy" && !oldPlace),
+            assumed:
+              !!init.saved || (g.dayPlan.source === "legacy" && !oldPlace),
           }),
   );
   if (
@@ -341,6 +348,8 @@ function createGame(init = {}, services = {}) {
     registry: createDailyRegistry(services.dailyActions || []),
     nextDay: legacyNightFall,
     afterCommit: () => {
+      if (g.dayPlan.source === "daily" && !g.dayPlan.activity)
+        investigation.finish("活动结束");
       syncThresholdTags();
       if (g.dayPlan.source === "daily")
         g.world.district = map.getPlace(g.spatial.playerPlaceId).district;

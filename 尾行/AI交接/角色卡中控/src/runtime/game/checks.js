@@ -5,7 +5,7 @@ const T = require("../tags.js");
 const C = require("../checks.js");
 const D = require("../dice.js");
 
-function createCheckSystem({ g, seedFor, isFamiliar }) {
+function createCheckSystem({ g, seedFor, isFamiliar, investigation }) {
   function targetEffectiveAcuity() {
     const acuityMod = T.summarize(g.tags || [], "acuity").sum;
     return Math.max(1, Math.min(10, (g.target.per || 4) + acuityMod));
@@ -37,6 +37,8 @@ function createCheckSystem({ g, seedFor, isFamiliar }) {
     const pity =
       T.PITY_BONUS && g.consecFails >= 2 ? C.pityBonus(g.consecFails) : 0;
     if (pity) mods.push({ src: "连败保底", v: pity });
+    const nextBonus = investigation.nextBonus(entry.id);
+    if (nextBonus) mods.push({ src: "已掌握下一站", v: nextBonus });
 
     const dc = (R.checks[entry.check] ?? 10) - targetMod; // 她的暗账降 DC 表现为负修正
     // 优势双骰：属性阈值标签自动驱动（效果只认标签；冲突对抗 2d10 不走此处，天然不吃）

@@ -18,6 +18,7 @@ function createSaveSystem({ g, L, getSalt }) {
         targetBase: { ...g.targetBase },
         targetId: g.targetId || "ol",
         targetKnowledge: g.targetKnowledge,
+        investigation: g.investigation,
         targetPersona: g.targetPersona
           ? JSON.parse(JSON.stringify(g.targetPersona))
           : null,

@@ -14,6 +14,7 @@ function createActionSystem({
   lex,
   log,
   capturePhoto,
+  investigation,
   currentPlaceKind,
   gain,
   runCheck,
@@ -147,14 +148,12 @@ function createActionSystem({
     const dist = DIST_KEY[tag.args?.dist] || g.dist;
 
     if (res.band === "success") {
-      piD = Math.round(2 * (0.6 + g.player.int * 0.06));
       if (tag.id === "follow") g.dist = dist; // 跟缀成功推进距离档
       if (tag.id === "withdraw") g.dist = "far"; // 后撤成功拉开（此前漏接，骰了却不动距离）
     } else if (res.band === "grace") {
       const gg = gain({ threat: "minor", dist });
       alertD = gg.alertD;
       heartD = gg.heartD + 5;
-      piD = Math.round(1 * (0.6 + g.player.int * 0.06));
       faceMemD = C.faceMemGain({ band: "grace" }); // 勉强瞥见：记忆+1，不掷认脸
     } else if (res.band === "fail") {
       const gg = gain({ threat: "minor", dist });
@@ -166,7 +165,6 @@ function createActionSystem({
       heartD = gg.heartD;
       faceMemD = C.faceMemGain({ band: "nat1" }); // 爆露照面：记忆+2
     } else if (res.band === "nat20") {
-      piD = Math.round(4 * (0.6 + g.player.int * 0.06)) + 2;
       if (tag.id === "follow") g.dist = dist;
     }
 
@@ -177,7 +175,6 @@ function createActionSystem({
     ) {
       const cap = capturePhoto(dist);
       if (cap) {
-        piD += cap.piBonus;
         out.capture = cap;
       } else {
         piD = 0;
@@ -195,7 +192,11 @@ function createActionSystem({
         g.spatial?.tracking === "visual" &&
         g.spatial.lastSeen?.date === L.get("date") &&
         g.route?.known?.[here] === 1;
-      if (visible && ["same", "close", "touch"].includes(g.dist) && res.band === "nat20") {
+      if (
+        visible &&
+        ["same", "close", "touch"].includes(g.dist) &&
+        res.band === "nat20"
+      ) {
         out.attributeUnlock = unlockTargetAttribute(g);
         if (!out.attributeUnlock) out.attributeUnlockEmpty = true;
       }
@@ -207,10 +208,13 @@ function createActionSystem({
           })
         : null;
       if (cap) {
-        piD += cap.piBonus;
         out.capture = cap;
       } else out.captureEmpty = true;
     }
+
+    out.exposure = investigation.exposure(tag.id, dist);
+    alertD += out.exposure?.applied || 0;
+    out.discoveries = investigation.record(out);
 
     // 结算后再同步一次（本动作的心跳变化影响下一动作）
     syncHeartTags();

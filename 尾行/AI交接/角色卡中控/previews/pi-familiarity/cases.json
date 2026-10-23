@@ -1,0 +1,5574 @@
+{
+  "unknown": {
+    "snap": {
+      "dayPlan": {
+        "schema": 1,
+        "period": 3,
+        "spent": 0,
+        "activity": null,
+        "ended": false,
+        "source": "legacy",
+        "date": 1,
+        "budget": 4,
+        "remaining": 4,
+        "tailingCost": 2,
+        "periodName": "晚间",
+        "token": {
+          "date": 1,
+          "period": 3,
+          "sequence": 0
+        }
+      },
+      "economy": {
+        "workedOn": null,
+        "lastWork": null,
+        "orders": []
+      },
+      "cityMap": {
+        "width": 2100,
+        "height": 2140,
+        "frames": [
+          {
+            "id": "B",
+            "x": 80,
+            "y": 760,
+            "width": 760,
+            "height": 560,
+            "name": "老城文教区",
+            "setting": "urban"
+          },
+          {
+            "id": "D",
+            "x": 1410,
+            "y": 80,
+            "width": 600,
+            "height": 420,
+            "name": "郊野豪宅区",
+            "setting": "suburb"
+          },
+          {
+            "id": "C",
+            "x": 80,
+            "y": 1430,
+            "width": 800,
+            "height": 560,
+            "name": "临江娱乐红灯区",
+            "setting": "urban"
+          },
+          {
+            "id": "A",
+            "x": 1060,
+            "y": 950,
+            "width": 960,
+            "height": 800,
+            "name": "中城CBD商务区",
+            "setting": "urban"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "office_lobby_a",
+            "district": "A",
+            "name": "写字楼大堂",
+            "sector": "A-1",
+            "facility": null,
+            "x": 1182,
+            "y": 1040,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "parking_b2_a",
+            "district": "A",
+            "name": "地下车库B2",
+            "sector": "A-1",
+            "facility": null,
+            "x": 1182,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "skybridge_a",
+            "district": "A",
+            "name": "跨街连廊天桥",
+            "sector": "A-2",
+            "facility": null,
+            "x": 1310,
+            "y": 1095,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "metro_hub_a",
+            "district": "A",
+            "name": "地铁枢纽出入口",
+            "sector": "A-2",
+            "facility": null,
+            "x": 1410,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "bus_bay_a",
+            "district": "A",
+            "name": "站前公交港湾",
+            "sector": "A-2",
+            "facility": null,
+            "x": 1605,
+            "y": 1040,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "store_24h_a",
+            "district": "A",
+            "name": "沿街24h便利店",
+            "sector": "A-1",
+            "facility": null,
+            "x": 1605,
+            "y": 1300,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "back_alley_a",
+            "district": "A",
+            "name": "后街排风暗巷",
+            "sector": "A-3",
+            "facility": null,
+            "x": 1410,
+            "y": 1300,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "trash_station_a",
+            "district": "A",
+            "name": "垃圾装卸后道",
+            "sector": "A-3",
+            "facility": null,
+            "x": 1182,
+            "y": 1340,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "school_gate_b",
+            "district": "B",
+            "name": "大学正门",
+            "sector": "B-1",
+            "facility": null,
+            "x": 220,
+            "y": 860,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "school_bus_terminal_b",
+            "district": "B",
+            "name": "学区公交总站",
+            "sector": "B-1",
+            "facility": null,
+            "x": 435,
+            "y": 950,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "old_metro_b",
+            "district": "B",
+            "name": "老街地铁站",
+            "sector": "B-2",
+            "facility": null,
+            "x": 765,
+            "y": 1025,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "old_skybridge_b",
+            "district": "B",
+            "name": "老水泥天桥",
+            "sector": "B-2",
+            "facility": null,
+            "x": 330,
+            "y": 910,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "store_24h_b",
+            "district": "B",
+            "name": "老街24h便利店",
+            "sector": "B-2",
+            "facility": null,
+            "x": 435,
+            "y": 1045,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "old_park_b",
+            "district": "B",
+            "name": "老居民公园",
+            "sector": "B-2",
+            "facility": null,
+            "x": 260,
+            "y": 1045,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "old_alley_main_b",
+            "district": "B",
+            "name": "老街主弄堂",
+            "sector": "B-3",
+            "facility": null,
+            "x": 430,
+            "y": 1170,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "dark_blind_alley_b",
+            "district": "B",
+            "name": "居民杂物暗巷",
+            "sector": "B-3",
+            "facility": null,
+            "x": 545,
+            "y": 1195,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "dead_end_b",
+            "district": "B",
+            "name": "盲端死胡同",
+            "sector": "B-3",
+            "facility": null,
+            "x": 170,
+            "y": 1170,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "love_hotel_b",
+            "district": "B",
+            "name": "老城情侣旅社",
+            "sector": "B-3",
+            "facility": null,
+            "x": 255,
+            "y": 1260,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "unit_stairs_b",
+            "district": "B",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 765,
+            "y": 1165,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "rooftop_b",
+            "district": "B",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 765,
+            "y": 1215,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "club_backdoor_c",
+            "district": "C",
+            "name": "酒吧员工后门",
+            "sector": "C-1",
+            "facility": null,
+            "x": 195,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "food_street_c",
+            "district": "C",
+            "name": "大排档夜市街角",
+            "sector": "C-1",
+            "facility": null,
+            "x": 435,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "dock_bus_stop_c",
+            "district": "C",
+            "name": "沿江码头公交站",
+            "sector": "C-1",
+            "facility": null,
+            "x": 625,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "bridge_head_c",
+            "district": "C",
+            "name": "跨江大桥头",
+            "sector": "C-1",
+            "facility": null,
+            "x": 845,
+            "y": 1880,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "store_24h_c",
+            "district": "C",
+            "name": "24h沿江便利店",
+            "sector": "C-1",
+            "facility": null,
+            "x": 435,
+            "y": 1655,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "river_walk_c",
+            "district": "C",
+            "name": "江堤观景长步道",
+            "sector": "C-2",
+            "facility": null,
+            "x": 510,
+            "y": 1955,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "river_steps_c",
+            "district": "C",
+            "name": "亲水避风台阶",
+            "sector": "C-2",
+            "facility": null,
+            "x": 615,
+            "y": 1980,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "village_main_c",
+            "district": "C",
+            "name": "城中村握手楼主弄",
+            "sector": "C-3",
+            "facility": null,
+            "x": 250,
+            "y": 1780,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "narrow_gap_c",
+            "district": "C",
+            "name": "一线天幽湿窄弄",
+            "sector": "C-3",
+            "facility": null,
+            "x": 330,
+            "y": 1805,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "rental_iron_door_c",
+            "district": "C",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 435,
+            "y": 1775,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "village_roof_c",
+            "district": "C",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 435,
+            "y": 1825,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "suburb_highway_d",
+            "district": "D",
+            "name": "郊野公路长弯道",
+            "sector": "D-1",
+            "facility": null,
+            "x": 1840,
+            "y": 470,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "gas_station_d",
+            "district": "D",
+            "name": "24h公路加油站",
+            "sector": "D-1",
+            "facility": null,
+            "x": 1550,
+            "y": 440,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "private_road_d",
+            "district": "D",
+            "name": "林荫私家主车道",
+            "sector": "D-2",
+            "facility": null,
+            "x": 1730,
+            "y": 415,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "pine_forest_d",
+            "district": "D",
+            "name": "缓坡杉木密林",
+            "sector": "D-2",
+            "facility": null,
+            "x": 1550,
+            "y": 285,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "estate_gate_d",
+            "district": "D",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 1730,
+            "y": 365,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "villa_garden_d",
+            "district": "D",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 1880,
+            "y": 305,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "garage_side_door_d",
+            "district": "D",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 1800,
+            "y": 190,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "villa_porch_d",
+            "district": "D",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 1950,
+            "y": 190,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "player_base_b",
+            "district": "B",
+            "name": "你的据点",
+            "sector": "B-2",
+            "facility": null,
+            "x": 155,
+            "y": 1045,
+            "hidden": false,
+            "service": "home",
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "black_market_c",
+            "district": "C",
+            "name": "临江黑市",
+            "sector": "C-3",
+            "facility": null,
+            "x": 180,
+            "y": 1825,
+            "hidden": false,
+            "service": "black_market",
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "central_mall_a",
+            "district": "A",
+            "name": "中城综合商场",
+            "sector": "A-4",
+            "facility": {
+              "kind": "mall",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1815,
+            "y": 1040,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "bank_a",
+            "district": "A",
+            "name": "银行营业厅",
+            "sector": "A-4",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1750,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "business_cafe_a",
+            "district": "A",
+            "name": "商务咖啡馆",
+            "sector": "A-4",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1895,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "clinic_a",
+            "district": "A",
+            "name": "综合门诊",
+            "sector": "A-4",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1750,
+            "y": 1300,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "business_hotel_a",
+            "district": "A",
+            "name": "商务酒店",
+            "sector": "A-4",
+            "facility": {
+              "kind": "hotel",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1895,
+            "y": 1300,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "central_plaza_a",
+            "district": "A",
+            "name": "中心广场",
+            "sector": "A-4",
+            "facility": {
+              "kind": "plaza",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1815,
+            "y": 1440,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "pedestrian_street_a",
+            "district": "A",
+            "name": "商业步行街",
+            "sector": "A-4",
+            "facility": {
+              "kind": "market",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1410,
+            "y": 1450,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "department_store_a",
+            "district": "A",
+            "name": "百货商场",
+            "sector": "A-4",
+            "facility": {
+              "kind": "mall",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1182,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "cinema_a",
+            "district": "A",
+            "name": "城市影城",
+            "sector": "A-4",
+            "facility": {
+              "kind": "nightlife",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1410,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "gym_a",
+            "district": "A",
+            "name": "健身中心",
+            "sector": "A-5",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1605,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "restaurant_a",
+            "district": "A",
+            "name": "商务餐厅",
+            "sector": "A-5",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1750,
+            "y": 1580,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "courier_a",
+            "district": "A",
+            "name": "快递驿站",
+            "sector": "A-5",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1895,
+            "y": 1580,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "taxi_rank_a",
+            "district": "A",
+            "name": "出租车候车点",
+            "sector": "A-5",
+            "facility": {
+              "kind": "transit",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1815,
+            "y": 1680,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "public_parking_a",
+            "district": "A",
+            "name": "公共停车场",
+            "sector": "A-5",
+            "facility": {
+              "kind": "parking",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1605,
+            "y": 1670,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "apartment_plaza_a",
+            "district": "A",
+            "name": "公寓广场",
+            "sector": "A-5",
+            "facility": {
+              "kind": "housing",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1410,
+            "y": 1670,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "coworking_a",
+            "district": "A",
+            "name": "联合办公楼",
+            "sector": "A-5",
+            "facility": {
+              "kind": "office",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1182,
+            "y": 1670,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "electronics_a",
+            "district": "A",
+            "name": "数码商城",
+            "sector": "A-4",
+            "facility": {
+              "kind": "mall",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1750,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "station_square_a",
+            "district": "A",
+            "name": "站前广场",
+            "sector": "A-2",
+            "facility": {
+              "kind": "plaza",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1605,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "high_school_gate_b",
+            "district": "B",
+            "name": "高中正门",
+            "sector": "B-5",
+            "facility": {
+              "kind": "school",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 640,
+            "y": 860,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "university_library_b",
+            "district": "B",
+            "name": "大学图书馆",
+            "sector": "B-4",
+            "facility": {
+              "kind": "library",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 155,
+            "y": 965,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "university_canteen_b",
+            "district": "B",
+            "name": "大学食堂",
+            "sector": "B-4",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 270,
+            "y": 965,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "university_sports_b",
+            "district": "B",
+            "name": "大学运动场",
+            "sector": "B-4",
+            "facility": {
+              "kind": "sports",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 415,
+            "y": 850,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "campus_bookshop_b",
+            "district": "B",
+            "name": "学府书店",
+            "sector": "B-4",
+            "facility": {
+              "kind": "library",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 640,
+            "y": 965,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "campus_cafe_b",
+            "district": "B",
+            "name": "学府咖啡馆",
+            "sector": "B-4",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 640,
+            "y": 1075,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "student_street_b",
+            "district": "B",
+            "name": "学生生活街",
+            "sector": "B-4",
+            "facility": {
+              "kind": "market",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 435,
+            "y": 1260,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "university_dorm_gate_b",
+            "district": "B",
+            "name": "大学宿舍区入口",
+            "sector": "B-4",
+            "facility": {
+              "kind": "housing",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 640,
+            "y": 1260,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "bar_street_c",
+            "district": "C",
+            "name": "霓虹酒吧街",
+            "sector": "C-1",
+            "facility": {
+              "kind": "nightlife",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 195,
+            "y": 1655,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "ktv_c",
+            "district": "C",
+            "name": "夜间歌厅",
+            "sector": "C-4",
+            "facility": {
+              "kind": "nightlife",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 775,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "hotel_c",
+            "district": "C",
+            "name": "临江旅馆",
+            "sector": "C-4",
+            "facility": {
+              "kind": "hotel",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 775,
+            "y": 1655,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "late_restaurant_c",
+            "district": "C",
+            "name": "深夜食堂",
+            "sector": "C-4",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 775,
+            "y": 1780,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "livehouse_c",
+            "district": "C",
+            "name": "现场音乐酒吧",
+            "sector": "C-4",
+            "facility": {
+              "kind": "nightlife",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 625,
+            "y": 1780,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "courier_c",
+            "district": "C",
+            "name": "城中村快递站",
+            "sector": "C-3",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 775,
+            "y": 1920,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "laundry_c",
+            "district": "C",
+            "name": "自助洗衣店",
+            "sector": "C-3",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 435,
+            "y": 1920,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          }
+        ],
+        "edges": [
+          {
+            "from": "office_lobby_a",
+            "to": "skybridge_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "office_lobby_a",
+            "to": "parking_b2_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "parking_b2_a",
+            "to": "trash_station_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "office_lobby_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "skybridge_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "store_24h_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "pedestrian_street_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "restaurant_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "taxi_rank_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "public_parking_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "station_square_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bus_bay_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bus_bay_a",
+            "to": "skybridge_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "store_24h_a",
+            "to": "office_lobby_a",
+            "transit": false,
+            "oneWay": true
+          },
+          {
+            "from": "back_alley_a",
+            "to": "office_lobby_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "back_alley_a",
+            "to": "trash_station_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_gate_b",
+            "to": "university_library_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_gate_b",
+            "to": "university_canteen_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_gate_b",
+            "to": "university_sports_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_gate_b",
+            "to": "university_dorm_gate_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_bus_terminal_b",
+            "to": "school_gate_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_metro_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_metro_b",
+            "to": "old_skybridge_b",
+            "transit": false,
+            "oneWay": true
+          },
+          {
+            "from": "old_metro_b",
+            "to": "store_24h_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_skybridge_b",
+            "to": "school_gate_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_skybridge_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_skybridge_b",
+            "to": "store_24h_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "store_24h_b",
+            "to": "student_street_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_park_b",
+            "to": "old_skybridge_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_park_b",
+            "to": "player_base_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_alley_main_b",
+            "to": "store_24h_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_alley_main_b",
+            "to": "old_park_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dark_blind_alley_b",
+            "to": "old_alley_main_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dark_blind_alley_b",
+            "to": "unit_stairs_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dead_end_b",
+            "to": "old_alley_main_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dead_end_b",
+            "to": "love_hotel_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "love_hotel_b",
+            "to": "old_alley_main_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "rooftop_b",
+            "to": "unit_stairs_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "club_backdoor_c",
+            "to": "food_street_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "club_backdoor_c",
+            "to": "river_walk_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "food_street_c",
+            "to": "store_24h_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "food_street_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "ktv_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "hotel_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "late_restaurant_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "livehouse_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bridge_head_c",
+            "to": "dock_bus_stop_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bridge_head_c",
+            "to": "river_walk_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "store_24h_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "river_steps_c",
+            "to": "river_walk_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "river_steps_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "narrow_gap_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "narrow_gap_c",
+            "to": "rental_iron_door_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "rental_iron_door_c",
+            "to": "village_roof_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "gas_station_d",
+            "to": "suburb_highway_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "gas_station_d",
+            "to": "private_road_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "private_road_d",
+            "to": "suburb_highway_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "pine_forest_d",
+            "to": "private_road_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "estate_gate_d",
+            "to": "private_road_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "estate_gate_d",
+            "to": "pine_forest_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "estate_gate_d",
+            "to": "villa_garden_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "villa_garden_d",
+            "to": "villa_porch_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "garage_side_door_d",
+            "to": "villa_garden_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "garage_side_door_d",
+            "to": "villa_porch_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "black_market_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "central_mall_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bank_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "business_cafe_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "clinic_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "business_hotel_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "central_plaza_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "department_store_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "cinema_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "gym_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "courier_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "apartment_plaza_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "coworking_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "electronics_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "high_school_gate_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "campus_bookshop_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "campus_cafe_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bar_street_c",
+            "to": "food_street_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "courier_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "laundry_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_metro_b",
+            "to": "metro_hub_a",
+            "transit": true
+          },
+          {
+            "from": "school_bus_terminal_b",
+            "to": "dock_bus_stop_c",
+            "transit": true
+          },
+          {
+            "from": "bus_bay_a",
+            "to": "bridge_head_c",
+            "transit": true
+          },
+          {
+            "from": "bus_bay_a",
+            "to": "suburb_highway_d",
+            "transit": true
+          }
+        ],
+        "transit": [
+          {
+            "id": "metro_1",
+            "name": "地铁 1 号线",
+            "kind": "metro",
+            "stops": [
+              "old_metro_b",
+              "metro_hub_a"
+            ],
+            "path": [
+              "old_metro_b",
+              [
+                900,
+                1025
+              ],
+              [
+                900,
+                1175
+              ],
+              "metro_hub_a"
+            ],
+            "label": [
+              1080,
+              1150
+            ],
+            "note": "连接老城文教区与中城 CBD。"
+          },
+          {
+            "id": "night_bus",
+            "name": "夜市环线公交",
+            "kind": "bus",
+            "stops": [
+              "school_bus_terminal_b",
+              "dock_bus_stop_c"
+            ],
+            "path": [
+              "school_bus_terminal_b",
+              [
+                435,
+                910
+              ],
+              [
+                700,
+                910
+              ],
+              [
+                700,
+                1365
+              ],
+              [
+                330,
+                1365
+              ],
+              [
+                330,
+                1575
+              ],
+              [
+                625,
+                1575
+              ],
+              "dock_bus_stop_c"
+            ],
+            "label": [
+              445,
+              1392
+            ],
+            "note": "连接 B 区学区总站与 C 区码头站。"
+          },
+          {
+            "id": "river_express",
+            "name": "跨江快线公交",
+            "kind": "bus",
+            "stops": [
+              "bus_bay_a",
+              "bridge_head_c"
+            ],
+            "path": [
+              "bus_bay_a",
+              [
+                1605,
+                1095
+              ],
+              [
+                1975,
+                1095
+              ],
+              [
+                1975,
+                1880
+              ],
+              "bridge_head_c"
+            ],
+            "label": [
+              1460,
+              1850
+            ],
+            "note": "连接中城公交港湾与临江大桥头。"
+          },
+          {
+            "id": "north_road",
+            "name": "北环公路",
+            "kind": "road",
+            "stops": [
+              "bus_bay_a",
+              "suburb_highway_d"
+            ],
+            "path": [
+              "bus_bay_a",
+              [
+                1605,
+                1095
+              ],
+              [
+                1975,
+                1095
+              ],
+              [
+                1975,
+                630
+              ],
+              [
+                1840,
+                630
+              ],
+              "suburb_highway_d"
+            ],
+            "label": [
+              1740,
+              655
+            ],
+            "note": "D 区仅经公路抵达，地图不提供直接进郊外的捷径。"
+          }
+        ],
+        "player": {
+          "placeId": "store_24h_b",
+          "name": "老街24h便利店",
+          "district": "B",
+          "assumed": false
+        },
+        "target": {
+          "placeId": "store_24h_b",
+          "name": "老街24h便利店",
+          "date": 1,
+          "period": 3,
+          "live": true,
+          "status": "目视位置"
+        },
+        "note": "固定街区地图。地块表示空间分布；可通行范围以地点入口为准。"
+      },
+      "dayActions": [
+        {
+          "id": "daily.rest",
+          "name": "休息",
+          "cost": 1,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "rest",
+          "effect": "恢复 50 点体力，不超过上限",
+          "recovery": 50,
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.work",
+          "name": "打工／接单",
+          "cost": 1,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "work",
+          "inputRequired": true,
+          "effect": "按本次工种结算报酬与消耗",
+          "input": {
+            "type": "work",
+            "jobs": [
+              {
+                "id": "mover",
+                "name": "搬场零工",
+                "income": 280,
+                "stamina": 40,
+                "fixed": false,
+                "enabled": true,
+                "reason": null,
+                "note": "当前按底薪结算；已定加薪档 420 / 560，检定门槛待定",
+                "tiers": {
+                  "base": 280,
+                  "pass": 420,
+                  "great": 560
+                }
+              },
+              {
+                "id": "remote",
+                "name": "远程接单",
+                "income": 220,
+                "stamina": 0,
+                "fixed": false,
+                "enabled": true,
+                "reason": null,
+                "note": "当前按底薪结算；已定加薪档 308 / 440，检定门槛待定",
+                "tiers": {
+                  "base": 220,
+                  "pass": 308,
+                  "great": 440
+                }
+              },
+              {
+                "id": "guard_shift",
+                "name": "保安当班",
+                "income": 320,
+                "stamina": 0,
+                "fixed": true,
+                "enabled": true,
+                "reason": null,
+                "note": "固定工资，无需检定",
+                "tiers": {
+                  "base": 320,
+                  "pass": null,
+                  "great": null
+                }
+              },
+              {
+                "id": "bar_shift",
+                "name": "酒吧当班",
+                "income": 300,
+                "stamina": 0,
+                "fixed": false,
+                "enabled": false,
+                "reason": "晚班占用尾行窗口的规则尚未接通",
+                "note": "当前按底薪结算；已定加薪档 390，检定门槛待定",
+                "tiers": {
+                  "base": 300,
+                  "pass": 390,
+                  "great": null
+                }
+              },
+              {
+                "id": "delivery",
+                "name": "送外卖",
+                "income": 240,
+                "stamina": 0,
+                "fixed": false,
+                "enabled": false,
+                "reason": "曝光概率尚未确定，暂不开放结算",
+                "note": "当前按底薪结算；已定加薪档 336 / 480，检定门槛待定",
+                "tiers": {
+                  "base": 240,
+                  "pass": 336,
+                  "great": 480
+                }
+              },
+              {
+                "id": "coach_class",
+                "name": "私教课",
+                "income": 360,
+                "stamina": 20,
+                "fixed": false,
+                "enabled": false,
+                "reason": "仅对应身份可接",
+                "note": "当前按底薪结算；已定加薪档 540 / 720，检定门槛待定",
+                "tiers": {
+                  "base": 360,
+                  "pass": 540,
+                  "great": 720
+                }
+              },
+              {
+                "id": "black_labor",
+                "name": "黑工",
+                "income": 196,
+                "stamina": 40,
+                "fixed": false,
+                "enabled": false,
+                "reason": "仅对应身份可接",
+                "note": "当前按底薪结算；已定加薪档 294 / 392，检定门槛待定",
+                "tiers": {
+                  "base": 196,
+                  "pass": 294,
+                  "great": 392
+                }
+              }
+            ],
+            "note": "每天最多一班；确认后消耗 1 点并推进一个时段。"
+          },
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.shop",
+          "name": "线上补给",
+          "cost": 1,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "shop",
+          "inputRequired": true,
+          "effect": "只售食品补给，一批确认后扣费",
+          "input": {
+            "type": "shop",
+            "actionId": "daily.shop",
+            "title": "线上食品补给",
+            "cash": 3000,
+            "channels": [
+              {
+                "id": "online",
+                "name": "线上补给"
+              }
+            ],
+            "catalogs": {
+              "online": [
+                {
+                  "id": "energy_drink",
+                  "name": "能量饮料",
+                  "type": "consumable",
+                  "unitPrice": 30,
+                  "deliveryDays": 0,
+                  "note": "体力+20·心跳+10(夜专供)",
+                  "owned": 0
+                },
+                {
+                  "id": "bento",
+                  "name": "便当",
+                  "type": "consumable",
+                  "unitPrice": 20,
+                  "deliveryDays": 0,
+                  "note": "体力+20",
+                  "owned": 0
+                },
+                {
+                  "id": "onigiri",
+                  "name": "饭团",
+                  "type": "consumable",
+                  "unitPrice": 8,
+                  "deliveryDays": 0,
+                  "note": "体力+8",
+                  "owned": 0
+                }
+              ]
+            },
+            "maxQuantity": 99,
+            "maxCartLines": 20,
+            "note": "仅售食品补给；浏览不扣点，确认一批消耗 1 点。行动点恢复食品待定。"
+          },
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.black_market",
+          "name": "黑市采购",
+          "cost": 1,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "black_market",
+          "inputRequired": true,
+          "effect": "须到临江黑市，器材按订单隔日到货",
+          "input": {
+            "type": "shop",
+            "actionId": "daily.black_market",
+            "title": "临江黑市采购",
+            "cash": 3000,
+            "channels": [
+              {
+                "id": "black_market",
+                "name": "临江黑市"
+              }
+            ],
+            "catalogs": {
+              "black_market": []
+            },
+            "maxQuantity": 99,
+            "maxCartLines": 20,
+            "note": "固定场所采购；器材按原供货规则到货。确认一批消耗 1 点。"
+          },
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.talk",
+          "name": "独立交流",
+          "cost": 1,
+          "mode": "scene",
+          "kind": "routine",
+          "handler": "talk",
+          "effect": "展开一次交流，成果由具体事件决定",
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.tailing",
+          "name": "尾行",
+          "cost": 2,
+          "mode": "scene",
+          "kind": "tailing",
+          "handler": "tailing",
+          "effect": "进入连续尾行回合，整段结束后推进时段",
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.pass",
+          "name": "度过本时段",
+          "cost": 0,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "pass",
+          "effect": "无收益和恢复，直接进入下一时段",
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        }
+      ],
+      "dayControls": [
+        {
+          "command": "enable",
+          "name": "试用日程安排",
+          "effect": "从当前时段开始；尾行入场条件待接通",
+          "enabled": true,
+          "reason": "请先完成当前原有流程"
+        }
+      ],
+      "player": {
+        "heart": 30,
+        "stamina": 99,
+        "cash": 3000,
+        "pi": 28,
+        "proximity": 0,
+        "date": 1,
+        "attrs": {
+          "str": 3,
+          "agi": 5,
+          "nrv": 5,
+          "int": 5,
+          "cha": 2
+        }
+      },
+      "target": {
+        "id": "college",
+        "name": "独居女大学生",
+        "realName": null,
+        "persona": null,
+        "stats": {
+          "str": 3,
+          "agi": 5,
+          "per": 4,
+          "nrv": 4,
+          "social": 3
+        },
+        "alertStage": 0,
+        "warinessStage": "低",
+        "shoe": "sneakers",
+        "shoeInfo": {
+          "id": "shoe_sneakers",
+          "name": "运动鞋",
+          "agi": 1,
+          "noise": 1,
+          "distFactor": 1.25,
+          "level": 1
+        },
+        "state": {
+          "outfit": {
+            "id": "outfit_hoodie_denim",
+            "name": "落肩连帽卫衣+宽松牛仔裤",
+            "desc": "米灰色落肩抓绒连帽卫衣搭配水洗浅蓝做旧直筒阔腿拖地牛仔裤，浅灰色纯棉平口运动短袜配白灰拼色经典低帮滑板鞋",
+            "prompt": "白描宽大落肩卫衣下摆自然垂落，浅蓝阔腿牛仔裤微堆于滑板鞋面，浅灰平口短袜收于踝部，步伐松散拖沓",
+            "socks": "浅灰色纯棉平口运动短袜",
+            "shoeId": "shoe_sneakers",
+            "shoeName": "滑板鞋",
+            "styleGroup": "casual",
+            "isWeekend": false
+          },
+          "somatic": {
+            "id": "normal",
+            "name": "平常状态",
+            "desc": "基线平淡晚归，步履规律",
+            "mod": {},
+            "reason": "没有繁重的大作业干扰，按习惯节奏走在老街路上",
+            "tag": null,
+            "prompt": "白描其步履均匀、神情轻松的大学女生夜归常态"
+          },
+          "hand": {
+            "id": "drink_takeout",
+            "name": "取外带热饮",
+            "desc": "在便利店柜台前核对小票并接过打包纸袋",
+            "fumbling": false,
+            "tag": null,
+            "remainingDuration": 1,
+            "isSiteOverride": true
+          },
+          "route": {
+            "id": "preview",
+            "startTime": "21:00",
+            "here": 1,
+            "nodes": [
+              "school_gate_b",
+              "store_24h_b"
+            ],
+            "currentPlace": "老街24h便利店"
+          }
+        }
+      },
+      "targetState": {
+        "outfit": {
+          "id": "outfit_hoodie_denim",
+          "name": "落肩连帽卫衣+宽松牛仔裤",
+          "desc": "米灰色落肩抓绒连帽卫衣搭配水洗浅蓝做旧直筒阔腿拖地牛仔裤，浅灰色纯棉平口运动短袜配白灰拼色经典低帮滑板鞋",
+          "prompt": "白描宽大落肩卫衣下摆自然垂落，浅蓝阔腿牛仔裤微堆于滑板鞋面，浅灰平口短袜收于踝部，步伐松散拖沓",
+          "socks": "浅灰色纯棉平口运动短袜",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "滑板鞋",
+          "styleGroup": "casual",
+          "isWeekend": false
+        },
+        "somatic": {
+          "id": "normal",
+          "name": "平常状态",
+          "desc": "基线平淡晚归，步履规律",
+          "mod": {},
+          "reason": "没有繁重的大作业干扰，按习惯节奏走在老街路上",
+          "tag": null,
+          "prompt": "白描其步履均匀、神情轻松的大学女生夜归常态"
+        },
+        "hand": {
+          "id": "drink_takeout",
+          "name": "取外带热饮",
+          "desc": "在便利店柜台前核对小票并接过打包纸袋",
+          "fumbling": false,
+          "tag": null,
+          "remainingDuration": 1,
+          "isSiteOverride": true
+        },
+        "route": {
+          "id": "preview",
+          "startTime": "21:00",
+          "here": 1,
+          "nodes": [
+            "school_gate_b",
+            "store_24h_b"
+          ],
+          "currentPlace": "老街24h便利店"
+        }
+      },
+      "investigation": {
+        "pendingClues": 0,
+        "effectiveSegments": 0,
+        "lastReceipt": {
+          "reason": "本次路线结束",
+          "date": 1,
+          "effective": 1,
+          "minimum": 2,
+          "clues": [
+            "edge:[\"school_gate_b\",\"store_24h_b\"]",
+            "fact:college_sched_store"
+          ],
+          "clueGain": 6,
+          "pi": 8
+        }
+      },
+      "profile": {
+        "targetId": "college",
+        "attrs": {},
+        "impressions": [],
+        "facts": [
+          {
+            "id": "college_sched_store",
+            "slot": "schedule",
+            "level": 2,
+            "title": "便利店停步",
+            "text": "归途习惯在老天桥下的便利店短暂停留买温热奶品，周六傍晚若不出游就会去自习室备考。",
+            "place": "store_24h_b"
+          },
+          {
+            "id": "college_carry_bag",
+            "slot": "carry",
+            "level": 1,
+            "title": "随身包袋",
+            "text": "单肩米白色厚帆布包，侧袋插着折叠晴雨伞与保温水杯，走路时习惯单手护在身侧。",
+            "place": null
+          }
+        ]
+      },
+      "envSfx": null,
+      "placeKind": "",
+      "mode": "stealth",
+      "dist": "close",
+      "env": "night",
+      "slot": "e21_23",
+      "identity": {
+        "id": null,
+        "name": null,
+        "shift": null,
+        "kit": null
+      },
+      "tags": [
+        {
+          "id": "unobtrusive",
+          "name": "不起眼",
+          "owner": "player",
+          "type": "status",
+          "duration": "flag"
+        },
+        {
+          "id": "shoe_sneakers",
+          "name": "运动鞋",
+          "owner": "target",
+          "type": "equipment",
+          "duration": "flag"
+        }
+      ],
+      "inventory": [],
+      "herAlert": null,
+      "signal": [
+        [
+          "21:00",
+          "目标沿街前行，维持稳定步频"
+        ],
+        [
+          "调查结算",
+          "本次路线结束：有效跟随 1 段，保底 +2，首次线索 2 项 +6，PI实际 +8"
+        ]
+      ],
+      "proxLog": [],
+      "assess": null,
+      "ledger": "本轮结算 · 体力 -1 · 警觉 +3 · PI +8",
+      "area": "老城文教区",
+      "place": "老街24h便利店",
+      "weather": "clear",
+      "weatherName": "🌙 晴夜",
+      "strikeSealed": true,
+      "fam": 1,
+      "route": {
+        "id": "preview",
+        "startTime": "21:00",
+        "times": [
+          "2100",
+          "2100"
+        ],
+        "nodes": [
+          "学校正门",
+          "老街24h便利店"
+        ],
+        "known": [
+          1,
+          1
+        ],
+        "here": 1
+      },
+      "exits": [
+        "老水泥天桥",
+        "老街地铁站",
+        "老街主弄堂",
+        "学生生活街"
+      ],
+      "spots": [
+        "window_watch",
+        "exit_watch"
+      ],
+      "sanctuaryAlert": "当前即为安全庇护场所",
+      "album": {
+        "count": 0,
+        "total": 58,
+        "shots": [],
+        "catalog": [
+          {
+            "key": "head_ribbon_navy|side",
+            "slot": "head",
+            "name": "藏青发带",
+            "file": "jk/head/hair/long/head_ribbon_navy/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "head_ribbon_navy|back",
+            "slot": "head",
+            "name": "藏青发带",
+            "file": "jk/head/hair/long/head_ribbon_navy/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "head_clip_plaid|side",
+            "slot": "head",
+            "name": "格纹发夹",
+            "file": "jk/head/hair/long/head_clip_plaid/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "head_clip_plaid|back",
+            "slot": "head",
+            "name": "格纹发夹",
+            "file": "jk/head/hair/long/head_clip_plaid/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "head_earphone_wired|side",
+            "slot": "head",
+            "name": "白色有线耳机",
+            "file": "jk/head/hair/long/head_earphone_wired/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "head_earphone_wired|back",
+            "slot": "head",
+            "name": "白色有线耳机",
+            "file": "jk/head/hair/long/head_earphone_wired/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_blazer|front",
+            "slot": "top",
+            "name": "藏青西装外套",
+            "file": "jk/top/base/normal/top_jk_blazer/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_blazer|side",
+            "slot": "top",
+            "name": "藏青西装外套",
+            "file": "jk/top/base/normal/top_jk_blazer/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_blazer|back",
+            "slot": "top",
+            "name": "藏青西装外套",
+            "file": "jk/top/base/normal/top_jk_blazer/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_sailor|front",
+            "slot": "top",
+            "name": "白底水手服上衣",
+            "file": "jk/top/base/normal/top_jk_sailor/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_sailor|side",
+            "slot": "top",
+            "name": "白底水手服上衣",
+            "file": "jk/top/base/normal/top_jk_sailor/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_sailor|back",
+            "slot": "top",
+            "name": "白底水手服上衣",
+            "file": "jk/top/base/normal/top_jk_sailor/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_shirt|front",
+            "slot": "top",
+            "name": "白衬衫",
+            "file": "jk/top/base/normal/top_jk_shirt/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_shirt|side",
+            "slot": "top",
+            "name": "白衬衫",
+            "file": "jk/top/base/normal/top_jk_shirt/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_shirt|back",
+            "slot": "top",
+            "name": "白衬衫",
+            "file": "jk/top/base/normal/top_jk_shirt/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_cardigan|front",
+            "slot": "top",
+            "name": "米色针织开衫",
+            "file": "jk/top/base/normal/top_jk_cardigan/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_cardigan|side",
+            "slot": "top",
+            "name": "米色针织开衫",
+            "file": "jk/top/base/normal/top_jk_cardigan/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_cardigan|back",
+            "slot": "top",
+            "name": "米色针织开衫",
+            "file": "jk/top/base/normal/top_jk_cardigan/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_hoodie|front",
+            "slot": "top",
+            "name": "浅米灰连帽卫衣",
+            "file": "jk/top/base/normal/top_jk_hoodie/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_hoodie|side",
+            "slot": "top",
+            "name": "浅米灰连帽卫衣",
+            "file": "jk/top/base/normal/top_jk_hoodie/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_hoodie|back",
+            "slot": "top",
+            "name": "浅米灰连帽卫衣",
+            "file": "jk/top/base/normal/top_jk_hoodie/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_knit|front",
+            "slot": "top",
+            "name": "奶白蓬松针织衫",
+            "file": "jk/top/base/normal/top_jk_knit/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_knit|side",
+            "slot": "top",
+            "name": "奶白蓬松针织衫",
+            "file": "jk/top/base/normal/top_jk_knit/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_knit|back",
+            "slot": "top",
+            "name": "奶白蓬松针织衫",
+            "file": "jk/top/base/normal/top_jk_knit/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_baseball|front",
+            "slot": "top",
+            "name": "拼色棒球服",
+            "file": "jk/top/base/normal/top_jk_baseball/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_baseball|side",
+            "slot": "top",
+            "name": "拼色棒球服",
+            "file": "jk/top/base/normal/top_jk_baseball/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_baseball|back",
+            "slot": "top",
+            "name": "拼色棒球服",
+            "file": "jk/top/base/normal/top_jk_baseball/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "bottom_jk_pleat_navy|front",
+            "slot": "bottom",
+            "name": "藏青百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_navy/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "bottom_jk_pleat_navy|side",
+            "slot": "bottom",
+            "name": "藏青百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_navy/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "bottom_jk_pleat_navy|back",
+            "slot": "bottom",
+            "name": "藏青百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_navy/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "bottom_jk_pleat_plaid|front",
+            "slot": "bottom",
+            "name": "格纹百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_plaid/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "bottom_jk_pleat_plaid|side",
+            "slot": "bottom",
+            "name": "格纹百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_plaid/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "bottom_jk_pleat_plaid|back",
+            "slot": "bottom",
+            "name": "格纹百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_plaid/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "bottom_jk_denim|front",
+            "slot": "bottom",
+            "name": "水洗牛仔短裙",
+            "file": "jk/bottom/shared/bottom_jk_denim/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "bottom_jk_denim|side",
+            "slot": "bottom",
+            "name": "水洗牛仔短裙",
+            "file": "jk/bottom/shared/bottom_jk_denim/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "bottom_jk_denim|back",
+            "slot": "bottom",
+            "name": "水洗牛仔短裙",
+            "file": "jk/bottom/shared/bottom_jk_denim/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "bottom_jk_shorts|front",
+            "slot": "bottom",
+            "name": "运动短裤",
+            "file": "jk/bottom/shared/bottom_jk_shorts/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "bottom_jk_shorts|side",
+            "slot": "bottom",
+            "name": "运动短裤",
+            "file": "jk/bottom/shared/bottom_jk_shorts/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "bottom_jk_shorts|back",
+            "slot": "bottom",
+            "name": "运动短裤",
+            "file": "jk/bottom/shared/bottom_jk_shorts/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_knee_black|front",
+            "slot": "socks",
+            "name": "黑色及膝袜",
+            "file": "jk/socks/shared/sock_knee_black/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_knee_black|side",
+            "slot": "socks",
+            "name": "黑色及膝袜",
+            "file": "jk/socks/shared/sock_knee_black/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_knee_black|back",
+            "slot": "socks",
+            "name": "黑色及膝袜",
+            "file": "jk/socks/shared/sock_knee_black/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_thigh_white|front",
+            "slot": "socks",
+            "name": "白色过膝袜",
+            "file": "jk/socks/shared/sock_thigh_white/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_thigh_white|side",
+            "slot": "socks",
+            "name": "白色过膝袜",
+            "file": "jk/socks/shared/sock_thigh_white/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_thigh_white|back",
+            "slot": "socks",
+            "name": "白色过膝袜",
+            "file": "jk/socks/shared/sock_thigh_white/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_pile_cream|front",
+            "slot": "socks",
+            "name": "米白堆堆袜",
+            "file": "jk/socks/shared/sock_pile_cream/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_pile_cream|side",
+            "slot": "socks",
+            "name": "米白堆堆袜",
+            "file": "jk/socks/shared/sock_pile_cream/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_pile_cream|back",
+            "slot": "socks",
+            "name": "米白堆堆袜",
+            "file": "jk/socks/shared/sock_pile_cream/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_sport_stripe|front",
+            "slot": "socks",
+            "name": "条纹运动长袜",
+            "file": "jk/socks/shared/sock_sport_stripe/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_sport_stripe|side",
+            "slot": "socks",
+            "name": "条纹运动长袜",
+            "file": "jk/socks/shared/sock_sport_stripe/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_sport_stripe|back",
+            "slot": "socks",
+            "name": "条纹运动长袜",
+            "file": "jk/socks/shared/sock_sport_stripe/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_cotton_short|front",
+            "slot": "socks",
+            "name": "纯白短棉袜",
+            "file": "jk/socks/shared/sock_cotton_short/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_cotton_short|side",
+            "slot": "socks",
+            "name": "纯白短棉袜",
+            "file": "jk/socks/shared/sock_cotton_short/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_cotton_short|back",
+            "slot": "socks",
+            "name": "纯白短棉袜",
+            "file": "jk/socks/shared/sock_cotton_short/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "shoe_leather|side",
+            "slot": "shoes",
+            "name": "制服小皮鞋",
+            "file": "jk/shoes/shared/shoe_leather/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "shoe_sneakers|side",
+            "slot": "shoes",
+            "name": "运动鞋",
+            "file": "jk/shoes/shared/shoe_sneakers/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "shoe_platform|side",
+            "slot": "shoes",
+            "name": "松糕鞋",
+            "file": "jk/shoes/shared/shoe_platform/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "shoe_flats|side",
+            "slot": "shoes",
+            "name": "平底鞋",
+            "file": "jk/shoes/shared/shoe_flats/side.png",
+            "angle": "side"
+          }
+        ]
+      },
+      "capture": null
+    },
+    "pkg": {
+      "floor": 1,
+      "actions": [
+        {
+          "id": "follow",
+          "name": "跟缀",
+          "label": "跟缀",
+          "d20": 20,
+          "total": 26,
+          "dc": 13,
+          "band": "nat20",
+          "mods": [
+            {
+              "src": "不起眼",
+              "v": 1
+            }
+          ],
+          "attr": {
+            "name": "敏捷",
+            "v": 5
+          },
+          "targetMod": 0,
+          "darkReveal": null,
+          "exposure": {
+            "base": 4,
+            "reduction": 1,
+            "applied": 3,
+            "dist": "close"
+          },
+          "discoveries": [
+            {
+              "id": "edge:[\"school_gate_b\",\"store_24h_b\"]",
+              "pi": 3
+            },
+            {
+              "id": "fact:college_sched_store",
+              "pi": 3
+            }
+          ],
+          "attributeUnlock": null,
+          "attributeUnlockEmpty": false,
+          "capture": null,
+          "raw": [
+            20
+          ],
+          "ledger": {
+            "seq": 1,
+            "applied": {
+              "alert": 3,
+              "heart": 0,
+              "pi": 0,
+              "stamina": 0,
+              "cash": 0,
+              "proximity": 0,
+              "faceMem": 0
+            }
+          },
+          "rejected": false,
+          "reason": null
+        }
+      ],
+      "investigation": {
+        "reason": "本次路线结束",
+        "date": 1,
+        "effective": 1,
+        "minimum": 2,
+        "clues": [
+          "edge:[\"school_gate_b\",\"store_24h_b\"]",
+          "fact:college_sched_store"
+        ],
+        "clueGain": 6,
+        "pi": 8
+      },
+      "account": {
+        "stamina": -1,
+        "heart": 0,
+        "alert": 3,
+        "pi": 8,
+        "proximity": 0,
+        "cash": 0
+      },
+      "seg": {
+        "heartPeak": 30,
+        "staminaTax": -1
+      },
+      "logs": [
+        "[跟缀] 1d20(20) +1 不起眼 = 26 vs DC 13 → nat20",
+        "[段税] 心跳峰值 30 → 体力 -1"
+      ],
+      "narrativeOnly": false,
+      "targetState": {
+        "outfit": {
+          "id": "outfit_hoodie_denim",
+          "name": "落肩连帽卫衣+宽松牛仔裤",
+          "desc": "米灰色落肩抓绒连帽卫衣搭配水洗浅蓝做旧直筒阔腿拖地牛仔裤，浅灰色纯棉平口运动短袜配白灰拼色经典低帮滑板鞋",
+          "prompt": "白描宽大落肩卫衣下摆自然垂落，浅蓝阔腿牛仔裤微堆于滑板鞋面，浅灰平口短袜收于踝部，步伐松散拖沓",
+          "socks": "浅灰色纯棉平口运动短袜",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "滑板鞋",
+          "styleGroup": "casual",
+          "isWeekend": false
+        },
+        "somatic": {
+          "id": "normal",
+          "name": "平常状态",
+          "desc": "基线平淡晚归，步履规律",
+          "mod": {},
+          "reason": "没有繁重的大作业干扰，按习惯节奏走在老街路上",
+          "tag": null,
+          "prompt": "白描其步履均匀、神情轻松的大学女生夜归常态"
+        },
+        "hand": {
+          "id": "drink_takeout",
+          "name": "取外带热饮",
+          "desc": "在便利店柜台前核对小票并接过打包纸袋",
+          "fumbling": false,
+          "tag": null,
+          "remainingDuration": 1,
+          "isSiteOverride": true
+        },
+        "route": {
+          "id": "preview",
+          "startTime": "21:00",
+          "here": 1,
+          "nodes": [
+            "school_gate_b",
+            "store_24h_b"
+          ],
+          "currentPlace": "老街24h便利店"
+        }
+      },
+      "herAlert": null,
+      "alertEvent": null
+    }
+  },
+  "known": {
+    "snap": {
+      "dayPlan": {
+        "schema": 1,
+        "period": 3,
+        "spent": 0,
+        "activity": null,
+        "ended": false,
+        "source": "legacy",
+        "date": 1,
+        "budget": 4,
+        "remaining": 4,
+        "tailingCost": 2,
+        "periodName": "晚间",
+        "token": {
+          "date": 1,
+          "period": 3,
+          "sequence": 0
+        }
+      },
+      "economy": {
+        "workedOn": null,
+        "lastWork": null,
+        "orders": []
+      },
+      "cityMap": {
+        "width": 2100,
+        "height": 2140,
+        "frames": [
+          {
+            "id": "B",
+            "x": 80,
+            "y": 760,
+            "width": 760,
+            "height": 560,
+            "name": "老城文教区",
+            "setting": "urban"
+          },
+          {
+            "id": "D",
+            "x": 1410,
+            "y": 80,
+            "width": 600,
+            "height": 420,
+            "name": "郊野豪宅区",
+            "setting": "suburb"
+          },
+          {
+            "id": "C",
+            "x": 80,
+            "y": 1430,
+            "width": 800,
+            "height": 560,
+            "name": "临江娱乐红灯区",
+            "setting": "urban"
+          },
+          {
+            "id": "A",
+            "x": 1060,
+            "y": 950,
+            "width": 960,
+            "height": 800,
+            "name": "中城CBD商务区",
+            "setting": "urban"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "office_lobby_a",
+            "district": "A",
+            "name": "写字楼大堂",
+            "sector": "A-1",
+            "facility": null,
+            "x": 1182,
+            "y": 1040,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "parking_b2_a",
+            "district": "A",
+            "name": "地下车库B2",
+            "sector": "A-1",
+            "facility": null,
+            "x": 1182,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "skybridge_a",
+            "district": "A",
+            "name": "跨街连廊天桥",
+            "sector": "A-2",
+            "facility": null,
+            "x": 1310,
+            "y": 1095,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "metro_hub_a",
+            "district": "A",
+            "name": "地铁枢纽出入口",
+            "sector": "A-2",
+            "facility": null,
+            "x": 1410,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "bus_bay_a",
+            "district": "A",
+            "name": "站前公交港湾",
+            "sector": "A-2",
+            "facility": null,
+            "x": 1605,
+            "y": 1040,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "store_24h_a",
+            "district": "A",
+            "name": "沿街24h便利店",
+            "sector": "A-1",
+            "facility": null,
+            "x": 1605,
+            "y": 1300,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "back_alley_a",
+            "district": "A",
+            "name": "后街排风暗巷",
+            "sector": "A-3",
+            "facility": null,
+            "x": 1410,
+            "y": 1300,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "trash_station_a",
+            "district": "A",
+            "name": "垃圾装卸后道",
+            "sector": "A-3",
+            "facility": null,
+            "x": 1182,
+            "y": 1340,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "school_gate_b",
+            "district": "B",
+            "name": "大学正门",
+            "sector": "B-1",
+            "facility": null,
+            "x": 220,
+            "y": 860,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "school_bus_terminal_b",
+            "district": "B",
+            "name": "学区公交总站",
+            "sector": "B-1",
+            "facility": null,
+            "x": 435,
+            "y": 950,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "old_metro_b",
+            "district": "B",
+            "name": "老街地铁站",
+            "sector": "B-2",
+            "facility": null,
+            "x": 765,
+            "y": 1025,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "old_skybridge_b",
+            "district": "B",
+            "name": "老水泥天桥",
+            "sector": "B-2",
+            "facility": null,
+            "x": 330,
+            "y": 910,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "store_24h_b",
+            "district": "B",
+            "name": "老街24h便利店",
+            "sector": "B-2",
+            "facility": null,
+            "x": 435,
+            "y": 1045,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "old_park_b",
+            "district": "B",
+            "name": "老居民公园",
+            "sector": "B-2",
+            "facility": null,
+            "x": 260,
+            "y": 1045,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "old_alley_main_b",
+            "district": "B",
+            "name": "老街主弄堂",
+            "sector": "B-3",
+            "facility": null,
+            "x": 430,
+            "y": 1170,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "dark_blind_alley_b",
+            "district": "B",
+            "name": "居民杂物暗巷",
+            "sector": "B-3",
+            "facility": null,
+            "x": 545,
+            "y": 1195,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "dead_end_b",
+            "district": "B",
+            "name": "盲端死胡同",
+            "sector": "B-3",
+            "facility": null,
+            "x": 170,
+            "y": 1170,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "love_hotel_b",
+            "district": "B",
+            "name": "老城情侣旅社",
+            "sector": "B-3",
+            "facility": null,
+            "x": 255,
+            "y": 1260,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "unit_stairs_b",
+            "district": "B",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 765,
+            "y": 1165,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "rooftop_b",
+            "district": "B",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 765,
+            "y": 1215,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "club_backdoor_c",
+            "district": "C",
+            "name": "酒吧员工后门",
+            "sector": "C-1",
+            "facility": null,
+            "x": 195,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "food_street_c",
+            "district": "C",
+            "name": "大排档夜市街角",
+            "sector": "C-1",
+            "facility": null,
+            "x": 435,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "dock_bus_stop_c",
+            "district": "C",
+            "name": "沿江码头公交站",
+            "sector": "C-1",
+            "facility": null,
+            "x": 625,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "bridge_head_c",
+            "district": "C",
+            "name": "跨江大桥头",
+            "sector": "C-1",
+            "facility": null,
+            "x": 845,
+            "y": 1880,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "store_24h_c",
+            "district": "C",
+            "name": "24h沿江便利店",
+            "sector": "C-1",
+            "facility": null,
+            "x": 435,
+            "y": 1655,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "river_walk_c",
+            "district": "C",
+            "name": "江堤观景长步道",
+            "sector": "C-2",
+            "facility": null,
+            "x": 510,
+            "y": 1955,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "river_steps_c",
+            "district": "C",
+            "name": "亲水避风台阶",
+            "sector": "C-2",
+            "facility": null,
+            "x": 615,
+            "y": 1980,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "village_main_c",
+            "district": "C",
+            "name": "城中村握手楼主弄",
+            "sector": "C-3",
+            "facility": null,
+            "x": 250,
+            "y": 1780,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "narrow_gap_c",
+            "district": "C",
+            "name": "一线天幽湿窄弄",
+            "sector": "C-3",
+            "facility": null,
+            "x": 330,
+            "y": 1805,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "rental_iron_door_c",
+            "district": "C",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 435,
+            "y": 1775,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "village_roof_c",
+            "district": "C",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 435,
+            "y": 1825,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "suburb_highway_d",
+            "district": "D",
+            "name": "郊野公路长弯道",
+            "sector": "D-1",
+            "facility": null,
+            "x": 1840,
+            "y": 470,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "gas_station_d",
+            "district": "D",
+            "name": "24h公路加油站",
+            "sector": "D-1",
+            "facility": null,
+            "x": 1550,
+            "y": 440,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "private_road_d",
+            "district": "D",
+            "name": "林荫私家主车道",
+            "sector": "D-2",
+            "facility": null,
+            "x": 1730,
+            "y": 415,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "pine_forest_d",
+            "district": "D",
+            "name": "缓坡杉木密林",
+            "sector": "D-2",
+            "facility": null,
+            "x": 1550,
+            "y": 285,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "estate_gate_d",
+            "district": "D",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 1730,
+            "y": 365,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "villa_garden_d",
+            "district": "D",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 1880,
+            "y": 305,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "garage_side_door_d",
+            "district": "D",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 1800,
+            "y": 190,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "villa_porch_d",
+            "district": "D",
+            "name": "未探明区域",
+            "sector": null,
+            "facility": null,
+            "x": 1950,
+            "y": 190,
+            "hidden": true,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "player_base_b",
+            "district": "B",
+            "name": "你的据点",
+            "sector": "B-2",
+            "facility": null,
+            "x": 155,
+            "y": 1045,
+            "hidden": false,
+            "service": "home",
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "black_market_c",
+            "district": "C",
+            "name": "临江黑市",
+            "sector": "C-3",
+            "facility": null,
+            "x": 180,
+            "y": 1825,
+            "hidden": false,
+            "service": "black_market",
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "central_mall_a",
+            "district": "A",
+            "name": "中城综合商场",
+            "sector": "A-4",
+            "facility": {
+              "kind": "mall",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1815,
+            "y": 1040,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "bank_a",
+            "district": "A",
+            "name": "银行营业厅",
+            "sector": "A-4",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1750,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "business_cafe_a",
+            "district": "A",
+            "name": "商务咖啡馆",
+            "sector": "A-4",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1895,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "clinic_a",
+            "district": "A",
+            "name": "综合门诊",
+            "sector": "A-4",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1750,
+            "y": 1300,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "business_hotel_a",
+            "district": "A",
+            "name": "商务酒店",
+            "sector": "A-4",
+            "facility": {
+              "kind": "hotel",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1895,
+            "y": 1300,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "central_plaza_a",
+            "district": "A",
+            "name": "中心广场",
+            "sector": "A-4",
+            "facility": {
+              "kind": "plaza",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1815,
+            "y": 1440,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "pedestrian_street_a",
+            "district": "A",
+            "name": "商业步行街",
+            "sector": "A-4",
+            "facility": {
+              "kind": "market",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1410,
+            "y": 1450,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "department_store_a",
+            "district": "A",
+            "name": "百货商场",
+            "sector": "A-4",
+            "facility": {
+              "kind": "mall",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1182,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "cinema_a",
+            "district": "A",
+            "name": "城市影城",
+            "sector": "A-4",
+            "facility": {
+              "kind": "nightlife",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1410,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "gym_a",
+            "district": "A",
+            "name": "健身中心",
+            "sector": "A-5",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1605,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "restaurant_a",
+            "district": "A",
+            "name": "商务餐厅",
+            "sector": "A-5",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1750,
+            "y": 1580,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "courier_a",
+            "district": "A",
+            "name": "快递驿站",
+            "sector": "A-5",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1895,
+            "y": 1580,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "taxi_rank_a",
+            "district": "A",
+            "name": "出租车候车点",
+            "sector": "A-5",
+            "facility": {
+              "kind": "transit",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1815,
+            "y": 1680,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "public_parking_a",
+            "district": "A",
+            "name": "公共停车场",
+            "sector": "A-5",
+            "facility": {
+              "kind": "parking",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1605,
+            "y": 1670,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "apartment_plaza_a",
+            "district": "A",
+            "name": "公寓广场",
+            "sector": "A-5",
+            "facility": {
+              "kind": "housing",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1410,
+            "y": 1670,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "coworking_a",
+            "district": "A",
+            "name": "联合办公楼",
+            "sector": "A-5",
+            "facility": {
+              "kind": "office",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1182,
+            "y": 1670,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "electronics_a",
+            "district": "A",
+            "name": "数码商城",
+            "sector": "A-4",
+            "facility": {
+              "kind": "mall",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1750,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "station_square_a",
+            "district": "A",
+            "name": "站前广场",
+            "sector": "A-2",
+            "facility": {
+              "kind": "plaza",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 1605,
+            "y": 1175,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "high_school_gate_b",
+            "district": "B",
+            "name": "高中正门",
+            "sector": "B-5",
+            "facility": {
+              "kind": "school",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 640,
+            "y": 860,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "university_library_b",
+            "district": "B",
+            "name": "大学图书馆",
+            "sector": "B-4",
+            "facility": {
+              "kind": "library",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 155,
+            "y": 965,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "university_canteen_b",
+            "district": "B",
+            "name": "大学食堂",
+            "sector": "B-4",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 270,
+            "y": 965,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "university_sports_b",
+            "district": "B",
+            "name": "大学运动场",
+            "sector": "B-4",
+            "facility": {
+              "kind": "sports",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 415,
+            "y": 850,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "campus_bookshop_b",
+            "district": "B",
+            "name": "学府书店",
+            "sector": "B-4",
+            "facility": {
+              "kind": "library",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 640,
+            "y": 965,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "campus_cafe_b",
+            "district": "B",
+            "name": "学府咖啡馆",
+            "sector": "B-4",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 640,
+            "y": 1075,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "student_street_b",
+            "district": "B",
+            "name": "学生生活街",
+            "sector": "B-4",
+            "facility": {
+              "kind": "market",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 435,
+            "y": 1260,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "university_dorm_gate_b",
+            "district": "B",
+            "name": "大学宿舍区入口",
+            "sector": "B-4",
+            "facility": {
+              "kind": "housing",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 640,
+            "y": 1260,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "bar_street_c",
+            "district": "C",
+            "name": "霓虹酒吧街",
+            "sector": "C-1",
+            "facility": {
+              "kind": "nightlife",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 195,
+            "y": 1655,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "ktv_c",
+            "district": "C",
+            "name": "夜间歌厅",
+            "sector": "C-4",
+            "facility": {
+              "kind": "nightlife",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 775,
+            "y": 1520,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "hotel_c",
+            "district": "C",
+            "name": "临江旅馆",
+            "sector": "C-4",
+            "facility": {
+              "kind": "hotel",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 775,
+            "y": 1655,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "late_restaurant_c",
+            "district": "C",
+            "name": "深夜食堂",
+            "sector": "C-4",
+            "facility": {
+              "kind": "shop",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 775,
+            "y": 1780,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "livehouse_c",
+            "district": "C",
+            "name": "现场音乐酒吧",
+            "sector": "C-4",
+            "facility": {
+              "kind": "nightlife",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 625,
+            "y": 1780,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "courier_c",
+            "district": "C",
+            "name": "城中村快递站",
+            "sector": "C-3",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 775,
+            "y": 1920,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          },
+          {
+            "id": "laundry_c",
+            "district": "C",
+            "name": "自助洗衣店",
+            "sector": "C-3",
+            "facility": {
+              "kind": "service",
+              "note": "公共入口或外侧区域；场所内活动暂未开放。"
+            },
+            "x": 435,
+            "y": 1920,
+            "hidden": false,
+            "service": null,
+            "moveReason": "原尾行流程中由回合决定移动"
+          }
+        ],
+        "edges": [
+          {
+            "from": "office_lobby_a",
+            "to": "skybridge_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "office_lobby_a",
+            "to": "parking_b2_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "parking_b2_a",
+            "to": "trash_station_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "office_lobby_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "skybridge_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "store_24h_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "pedestrian_street_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "restaurant_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "taxi_rank_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "public_parking_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "metro_hub_a",
+            "to": "station_square_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bus_bay_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bus_bay_a",
+            "to": "skybridge_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "store_24h_a",
+            "to": "office_lobby_a",
+            "transit": false,
+            "oneWay": true
+          },
+          {
+            "from": "back_alley_a",
+            "to": "office_lobby_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "back_alley_a",
+            "to": "trash_station_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_gate_b",
+            "to": "university_library_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_gate_b",
+            "to": "university_canteen_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_gate_b",
+            "to": "university_sports_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_gate_b",
+            "to": "university_dorm_gate_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "school_bus_terminal_b",
+            "to": "school_gate_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_metro_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_metro_b",
+            "to": "old_skybridge_b",
+            "transit": false,
+            "oneWay": true
+          },
+          {
+            "from": "old_metro_b",
+            "to": "store_24h_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_skybridge_b",
+            "to": "school_gate_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_skybridge_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_skybridge_b",
+            "to": "store_24h_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "store_24h_b",
+            "to": "student_street_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_park_b",
+            "to": "old_skybridge_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_park_b",
+            "to": "player_base_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_alley_main_b",
+            "to": "store_24h_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_alley_main_b",
+            "to": "old_park_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dark_blind_alley_b",
+            "to": "old_alley_main_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dark_blind_alley_b",
+            "to": "unit_stairs_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dead_end_b",
+            "to": "old_alley_main_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dead_end_b",
+            "to": "love_hotel_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "love_hotel_b",
+            "to": "old_alley_main_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "rooftop_b",
+            "to": "unit_stairs_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "club_backdoor_c",
+            "to": "food_street_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "club_backdoor_c",
+            "to": "river_walk_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "food_street_c",
+            "to": "store_24h_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "food_street_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "ktv_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "hotel_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "late_restaurant_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "dock_bus_stop_c",
+            "to": "livehouse_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bridge_head_c",
+            "to": "dock_bus_stop_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bridge_head_c",
+            "to": "river_walk_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "store_24h_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "river_steps_c",
+            "to": "river_walk_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "river_steps_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "narrow_gap_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "narrow_gap_c",
+            "to": "rental_iron_door_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "rental_iron_door_c",
+            "to": "village_roof_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "gas_station_d",
+            "to": "suburb_highway_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "gas_station_d",
+            "to": "private_road_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "private_road_d",
+            "to": "suburb_highway_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "pine_forest_d",
+            "to": "private_road_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "estate_gate_d",
+            "to": "private_road_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "estate_gate_d",
+            "to": "pine_forest_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "estate_gate_d",
+            "to": "villa_garden_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "villa_garden_d",
+            "to": "villa_porch_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "garage_side_door_d",
+            "to": "villa_garden_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "garage_side_door_d",
+            "to": "villa_porch_d",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "black_market_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "central_mall_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bank_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "business_cafe_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "clinic_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "business_hotel_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "central_plaza_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "department_store_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "cinema_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "gym_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "courier_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "apartment_plaza_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "coworking_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "electronics_a",
+            "to": "metro_hub_a",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "high_school_gate_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "campus_bookshop_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "campus_cafe_b",
+            "to": "school_bus_terminal_b",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "bar_street_c",
+            "to": "food_street_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "courier_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "laundry_c",
+            "to": "village_main_c",
+            "transit": false,
+            "oneWay": false
+          },
+          {
+            "from": "old_metro_b",
+            "to": "metro_hub_a",
+            "transit": true
+          },
+          {
+            "from": "school_bus_terminal_b",
+            "to": "dock_bus_stop_c",
+            "transit": true
+          },
+          {
+            "from": "bus_bay_a",
+            "to": "bridge_head_c",
+            "transit": true
+          },
+          {
+            "from": "bus_bay_a",
+            "to": "suburb_highway_d",
+            "transit": true
+          }
+        ],
+        "transit": [
+          {
+            "id": "metro_1",
+            "name": "地铁 1 号线",
+            "kind": "metro",
+            "stops": [
+              "old_metro_b",
+              "metro_hub_a"
+            ],
+            "path": [
+              "old_metro_b",
+              [
+                900,
+                1025
+              ],
+              [
+                900,
+                1175
+              ],
+              "metro_hub_a"
+            ],
+            "label": [
+              1080,
+              1150
+            ],
+            "note": "连接老城文教区与中城 CBD。"
+          },
+          {
+            "id": "night_bus",
+            "name": "夜市环线公交",
+            "kind": "bus",
+            "stops": [
+              "school_bus_terminal_b",
+              "dock_bus_stop_c"
+            ],
+            "path": [
+              "school_bus_terminal_b",
+              [
+                435,
+                910
+              ],
+              [
+                700,
+                910
+              ],
+              [
+                700,
+                1365
+              ],
+              [
+                330,
+                1365
+              ],
+              [
+                330,
+                1575
+              ],
+              [
+                625,
+                1575
+              ],
+              "dock_bus_stop_c"
+            ],
+            "label": [
+              445,
+              1392
+            ],
+            "note": "连接 B 区学区总站与 C 区码头站。"
+          },
+          {
+            "id": "river_express",
+            "name": "跨江快线公交",
+            "kind": "bus",
+            "stops": [
+              "bus_bay_a",
+              "bridge_head_c"
+            ],
+            "path": [
+              "bus_bay_a",
+              [
+                1605,
+                1095
+              ],
+              [
+                1975,
+                1095
+              ],
+              [
+                1975,
+                1880
+              ],
+              "bridge_head_c"
+            ],
+            "label": [
+              1460,
+              1850
+            ],
+            "note": "连接中城公交港湾与临江大桥头。"
+          },
+          {
+            "id": "north_road",
+            "name": "北环公路",
+            "kind": "road",
+            "stops": [
+              "bus_bay_a",
+              "suburb_highway_d"
+            ],
+            "path": [
+              "bus_bay_a",
+              [
+                1605,
+                1095
+              ],
+              [
+                1975,
+                1095
+              ],
+              [
+                1975,
+                630
+              ],
+              [
+                1840,
+                630
+              ],
+              "suburb_highway_d"
+            ],
+            "label": [
+              1740,
+              655
+            ],
+            "note": "D 区仅经公路抵达，地图不提供直接进郊外的捷径。"
+          }
+        ],
+        "player": {
+          "placeId": "store_24h_b",
+          "name": "老街24h便利店",
+          "district": "B",
+          "assumed": false
+        },
+        "target": {
+          "placeId": "store_24h_b",
+          "name": "老街24h便利店",
+          "date": 1,
+          "period": 3,
+          "live": true,
+          "status": "目视位置"
+        },
+        "note": "固定街区地图。地块表示空间分布；可通行范围以地点入口为准。"
+      },
+      "dayActions": [
+        {
+          "id": "daily.rest",
+          "name": "休息",
+          "cost": 1,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "rest",
+          "effect": "恢复 50 点体力，不超过上限",
+          "recovery": 50,
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.work",
+          "name": "打工／接单",
+          "cost": 1,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "work",
+          "inputRequired": true,
+          "effect": "按本次工种结算报酬与消耗",
+          "input": {
+            "type": "work",
+            "jobs": [
+              {
+                "id": "mover",
+                "name": "搬场零工",
+                "income": 280,
+                "stamina": 40,
+                "fixed": false,
+                "enabled": true,
+                "reason": null,
+                "note": "当前按底薪结算；已定加薪档 420 / 560，检定门槛待定",
+                "tiers": {
+                  "base": 280,
+                  "pass": 420,
+                  "great": 560
+                }
+              },
+              {
+                "id": "remote",
+                "name": "远程接单",
+                "income": 220,
+                "stamina": 0,
+                "fixed": false,
+                "enabled": true,
+                "reason": null,
+                "note": "当前按底薪结算；已定加薪档 308 / 440，检定门槛待定",
+                "tiers": {
+                  "base": 220,
+                  "pass": 308,
+                  "great": 440
+                }
+              },
+              {
+                "id": "guard_shift",
+                "name": "保安当班",
+                "income": 320,
+                "stamina": 0,
+                "fixed": true,
+                "enabled": true,
+                "reason": null,
+                "note": "固定工资，无需检定",
+                "tiers": {
+                  "base": 320,
+                  "pass": null,
+                  "great": null
+                }
+              },
+              {
+                "id": "bar_shift",
+                "name": "酒吧当班",
+                "income": 300,
+                "stamina": 0,
+                "fixed": false,
+                "enabled": false,
+                "reason": "晚班占用尾行窗口的规则尚未接通",
+                "note": "当前按底薪结算；已定加薪档 390，检定门槛待定",
+                "tiers": {
+                  "base": 300,
+                  "pass": 390,
+                  "great": null
+                }
+              },
+              {
+                "id": "delivery",
+                "name": "送外卖",
+                "income": 240,
+                "stamina": 0,
+                "fixed": false,
+                "enabled": false,
+                "reason": "曝光概率尚未确定，暂不开放结算",
+                "note": "当前按底薪结算；已定加薪档 336 / 480，检定门槛待定",
+                "tiers": {
+                  "base": 240,
+                  "pass": 336,
+                  "great": 480
+                }
+              },
+              {
+                "id": "coach_class",
+                "name": "私教课",
+                "income": 360,
+                "stamina": 20,
+                "fixed": false,
+                "enabled": false,
+                "reason": "仅对应身份可接",
+                "note": "当前按底薪结算；已定加薪档 540 / 720，检定门槛待定",
+                "tiers": {
+                  "base": 360,
+                  "pass": 540,
+                  "great": 720
+                }
+              },
+              {
+                "id": "black_labor",
+                "name": "黑工",
+                "income": 196,
+                "stamina": 40,
+                "fixed": false,
+                "enabled": false,
+                "reason": "仅对应身份可接",
+                "note": "当前按底薪结算；已定加薪档 294 / 392，检定门槛待定",
+                "tiers": {
+                  "base": 196,
+                  "pass": 294,
+                  "great": 392
+                }
+              }
+            ],
+            "note": "每天最多一班；确认后消耗 1 点并推进一个时段。"
+          },
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.shop",
+          "name": "线上补给",
+          "cost": 1,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "shop",
+          "inputRequired": true,
+          "effect": "只售食品补给，一批确认后扣费",
+          "input": {
+            "type": "shop",
+            "actionId": "daily.shop",
+            "title": "线上食品补给",
+            "cash": 3000,
+            "channels": [
+              {
+                "id": "online",
+                "name": "线上补给"
+              }
+            ],
+            "catalogs": {
+              "online": [
+                {
+                  "id": "energy_drink",
+                  "name": "能量饮料",
+                  "type": "consumable",
+                  "unitPrice": 30,
+                  "deliveryDays": 0,
+                  "note": "体力+20·心跳+10(夜专供)",
+                  "owned": 0
+                },
+                {
+                  "id": "bento",
+                  "name": "便当",
+                  "type": "consumable",
+                  "unitPrice": 20,
+                  "deliveryDays": 0,
+                  "note": "体力+20",
+                  "owned": 0
+                },
+                {
+                  "id": "onigiri",
+                  "name": "饭团",
+                  "type": "consumable",
+                  "unitPrice": 8,
+                  "deliveryDays": 0,
+                  "note": "体力+8",
+                  "owned": 0
+                }
+              ]
+            },
+            "maxQuantity": 99,
+            "maxCartLines": 20,
+            "note": "仅售食品补给；浏览不扣点，确认一批消耗 1 点。行动点恢复食品待定。"
+          },
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.black_market",
+          "name": "黑市采购",
+          "cost": 1,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "black_market",
+          "inputRequired": true,
+          "effect": "须到临江黑市，器材按订单隔日到货",
+          "input": {
+            "type": "shop",
+            "actionId": "daily.black_market",
+            "title": "临江黑市采购",
+            "cash": 3000,
+            "channels": [
+              {
+                "id": "black_market",
+                "name": "临江黑市"
+              }
+            ],
+            "catalogs": {
+              "black_market": []
+            },
+            "maxQuantity": 99,
+            "maxCartLines": 20,
+            "note": "固定场所采购；器材按原供货规则到货。确认一批消耗 1 点。"
+          },
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.talk",
+          "name": "独立交流",
+          "cost": 1,
+          "mode": "scene",
+          "kind": "routine",
+          "handler": "talk",
+          "effect": "展开一次交流，成果由具体事件决定",
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.tailing",
+          "name": "尾行",
+          "cost": 2,
+          "mode": "scene",
+          "kind": "tailing",
+          "handler": "tailing",
+          "effect": "进入连续尾行回合，整段结束后推进时段",
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        },
+        {
+          "id": "daily.pass",
+          "name": "度过本时段",
+          "cost": 0,
+          "mode": "instant",
+          "kind": "routine",
+          "handler": "pass",
+          "effect": "无收益和恢复，直接进入下一时段",
+          "enabled": false,
+          "reason": "请先启用日程安排"
+        }
+      ],
+      "dayControls": [
+        {
+          "command": "enable",
+          "name": "试用日程安排",
+          "effect": "从当前时段开始；尾行入场条件待接通",
+          "enabled": true,
+          "reason": "请先完成当前原有流程"
+        }
+      ],
+      "player": {
+        "heart": 30,
+        "stamina": 99,
+        "cash": 3000,
+        "pi": 25,
+        "proximity": 0,
+        "date": 1,
+        "attrs": {
+          "str": 3,
+          "agi": 5,
+          "nrv": 5,
+          "int": 5,
+          "cha": 2
+        }
+      },
+      "target": {
+        "id": "college",
+        "name": "独居女大学生",
+        "realName": null,
+        "persona": null,
+        "stats": {
+          "str": 3,
+          "agi": 5,
+          "per": 4,
+          "nrv": 4,
+          "social": 3
+        },
+        "alertStage": 0,
+        "warinessStage": "低",
+        "shoe": "sneakers",
+        "shoeInfo": {
+          "id": "shoe_sneakers",
+          "name": "运动鞋",
+          "agi": 1,
+          "noise": 1,
+          "distFactor": 1.25,
+          "level": 1
+        },
+        "state": {
+          "outfit": {
+            "id": "outfit_hoodie_denim",
+            "name": "落肩连帽卫衣+宽松牛仔裤",
+            "desc": "米灰色落肩抓绒连帽卫衣搭配水洗浅蓝做旧直筒阔腿拖地牛仔裤，浅灰色纯棉平口运动短袜配白灰拼色经典低帮滑板鞋",
+            "prompt": "白描宽大落肩卫衣下摆自然垂落，浅蓝阔腿牛仔裤微堆于滑板鞋面，浅灰平口短袜收于踝部，步伐松散拖沓",
+            "socks": "浅灰色纯棉平口运动短袜",
+            "shoeId": "shoe_sneakers",
+            "shoeName": "滑板鞋",
+            "styleGroup": "casual",
+            "isWeekend": false
+          },
+          "somatic": {
+            "id": "normal",
+            "name": "平常状态",
+            "desc": "基线平淡晚归，步履规律",
+            "mod": {},
+            "reason": "没有繁重的大作业干扰，按习惯节奏走在老街路上",
+            "tag": null,
+            "prompt": "白描其步履均匀、神情轻松的大学女生夜归常态"
+          },
+          "hand": {
+            "id": "drink_takeout",
+            "name": "取外带热饮",
+            "desc": "在便利店柜台前核对小票并接过打包纸袋",
+            "fumbling": false,
+            "tag": null,
+            "remainingDuration": 1,
+            "isSiteOverride": true
+          },
+          "route": {
+            "id": "preview",
+            "startTime": "21:00",
+            "here": 1,
+            "nodes": [
+              "school_gate_b",
+              "store_24h_b"
+            ],
+            "currentPlace": "老街24h便利店"
+          }
+        }
+      },
+      "targetState": {
+        "outfit": {
+          "id": "outfit_hoodie_denim",
+          "name": "落肩连帽卫衣+宽松牛仔裤",
+          "desc": "米灰色落肩抓绒连帽卫衣搭配水洗浅蓝做旧直筒阔腿拖地牛仔裤，浅灰色纯棉平口运动短袜配白灰拼色经典低帮滑板鞋",
+          "prompt": "白描宽大落肩卫衣下摆自然垂落，浅蓝阔腿牛仔裤微堆于滑板鞋面，浅灰平口短袜收于踝部，步伐松散拖沓",
+          "socks": "浅灰色纯棉平口运动短袜",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "滑板鞋",
+          "styleGroup": "casual",
+          "isWeekend": false
+        },
+        "somatic": {
+          "id": "normal",
+          "name": "平常状态",
+          "desc": "基线平淡晚归，步履规律",
+          "mod": {},
+          "reason": "没有繁重的大作业干扰，按习惯节奏走在老街路上",
+          "tag": null,
+          "prompt": "白描其步履均匀、神情轻松的大学女生夜归常态"
+        },
+        "hand": {
+          "id": "drink_takeout",
+          "name": "取外带热饮",
+          "desc": "在便利店柜台前核对小票并接过打包纸袋",
+          "fumbling": false,
+          "tag": null,
+          "remainingDuration": 1,
+          "isSiteOverride": true
+        },
+        "route": {
+          "id": "preview",
+          "startTime": "21:00",
+          "here": 1,
+          "nodes": [
+            "school_gate_b",
+            "store_24h_b"
+          ],
+          "currentPlace": "老街24h便利店"
+        }
+      },
+      "investigation": {
+        "pendingClues": 0,
+        "effectiveSegments": 0,
+        "lastReceipt": {
+          "reason": "本次路线结束",
+          "date": 1,
+          "effective": 1,
+          "minimum": 2,
+          "clues": [
+            "fact:college_sched_store"
+          ],
+          "clueGain": 3,
+          "pi": 5
+        }
+      },
+      "profile": {
+        "targetId": "college",
+        "attrs": {},
+        "impressions": [],
+        "facts": [
+          {
+            "id": "college_sched_store",
+            "slot": "schedule",
+            "level": 2,
+            "title": "便利店停步",
+            "text": "归途习惯在老天桥下的便利店短暂停留买温热奶品，周六傍晚若不出游就会去自习室备考。",
+            "place": "store_24h_b"
+          },
+          {
+            "id": "college_carry_bag",
+            "slot": "carry",
+            "level": 1,
+            "title": "随身包袋",
+            "text": "单肩米白色厚帆布包，侧袋插着折叠晴雨伞与保温水杯，走路时习惯单手护在身侧。",
+            "place": null
+          }
+        ]
+      },
+      "envSfx": null,
+      "placeKind": "",
+      "mode": "stealth",
+      "dist": "close",
+      "env": "night",
+      "slot": "e21_23",
+      "identity": {
+        "id": null,
+        "name": null,
+        "shift": null,
+        "kit": null
+      },
+      "tags": [
+        {
+          "id": "unobtrusive",
+          "name": "不起眼",
+          "owner": "player",
+          "type": "status",
+          "duration": "flag"
+        },
+        {
+          "id": "shoe_sneakers",
+          "name": "运动鞋",
+          "owner": "target",
+          "type": "equipment",
+          "duration": "flag"
+        }
+      ],
+      "inventory": [],
+      "herAlert": null,
+      "signal": [
+        [
+          "21:00",
+          "目标动向推进：前往 [老街24h便利店]"
+        ],
+        [
+          "21:00",
+          "目标沿街前行，维持稳定步频"
+        ],
+        [
+          "调查结算",
+          "本次路线结束：有效跟随 1 段，保底 +2，首次线索 1 项 +3，PI实际 +5"
+        ]
+      ],
+      "proxLog": [],
+      "assess": null,
+      "ledger": "本轮结算 · 体力 -1 · 警觉 +3 · PI +5",
+      "area": "老城文教区",
+      "place": "老街24h便利店",
+      "weather": "clear",
+      "weatherName": "🌙 晴夜",
+      "strikeSealed": true,
+      "fam": 1,
+      "route": {
+        "id": "preview",
+        "startTime": "21:00",
+        "times": [
+          "2100",
+          "2100"
+        ],
+        "nodes": [
+          "学校正门",
+          "老街24h便利店"
+        ],
+        "known": [
+          1,
+          1
+        ],
+        "here": 1
+      },
+      "exits": [
+        "老水泥天桥",
+        "老街地铁站",
+        "老街主弄堂",
+        "学生生活街"
+      ],
+      "spots": [
+        "window_watch",
+        "exit_watch"
+      ],
+      "sanctuaryAlert": "当前即为安全庇护场所",
+      "album": {
+        "count": 0,
+        "total": 58,
+        "shots": [],
+        "catalog": [
+          {
+            "key": "head_ribbon_navy|side",
+            "slot": "head",
+            "name": "藏青发带",
+            "file": "jk/head/hair/long/head_ribbon_navy/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "head_ribbon_navy|back",
+            "slot": "head",
+            "name": "藏青发带",
+            "file": "jk/head/hair/long/head_ribbon_navy/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "head_clip_plaid|side",
+            "slot": "head",
+            "name": "格纹发夹",
+            "file": "jk/head/hair/long/head_clip_plaid/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "head_clip_plaid|back",
+            "slot": "head",
+            "name": "格纹发夹",
+            "file": "jk/head/hair/long/head_clip_plaid/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "head_earphone_wired|side",
+            "slot": "head",
+            "name": "白色有线耳机",
+            "file": "jk/head/hair/long/head_earphone_wired/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "head_earphone_wired|back",
+            "slot": "head",
+            "name": "白色有线耳机",
+            "file": "jk/head/hair/long/head_earphone_wired/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_blazer|front",
+            "slot": "top",
+            "name": "藏青西装外套",
+            "file": "jk/top/base/normal/top_jk_blazer/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_blazer|side",
+            "slot": "top",
+            "name": "藏青西装外套",
+            "file": "jk/top/base/normal/top_jk_blazer/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_blazer|back",
+            "slot": "top",
+            "name": "藏青西装外套",
+            "file": "jk/top/base/normal/top_jk_blazer/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_sailor|front",
+            "slot": "top",
+            "name": "白底水手服上衣",
+            "file": "jk/top/base/normal/top_jk_sailor/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_sailor|side",
+            "slot": "top",
+            "name": "白底水手服上衣",
+            "file": "jk/top/base/normal/top_jk_sailor/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_sailor|back",
+            "slot": "top",
+            "name": "白底水手服上衣",
+            "file": "jk/top/base/normal/top_jk_sailor/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_shirt|front",
+            "slot": "top",
+            "name": "白衬衫",
+            "file": "jk/top/base/normal/top_jk_shirt/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_shirt|side",
+            "slot": "top",
+            "name": "白衬衫",
+            "file": "jk/top/base/normal/top_jk_shirt/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_shirt|back",
+            "slot": "top",
+            "name": "白衬衫",
+            "file": "jk/top/base/normal/top_jk_shirt/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_cardigan|front",
+            "slot": "top",
+            "name": "米色针织开衫",
+            "file": "jk/top/base/normal/top_jk_cardigan/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_cardigan|side",
+            "slot": "top",
+            "name": "米色针织开衫",
+            "file": "jk/top/base/normal/top_jk_cardigan/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_cardigan|back",
+            "slot": "top",
+            "name": "米色针织开衫",
+            "file": "jk/top/base/normal/top_jk_cardigan/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_hoodie|front",
+            "slot": "top",
+            "name": "浅米灰连帽卫衣",
+            "file": "jk/top/base/normal/top_jk_hoodie/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_hoodie|side",
+            "slot": "top",
+            "name": "浅米灰连帽卫衣",
+            "file": "jk/top/base/normal/top_jk_hoodie/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_hoodie|back",
+            "slot": "top",
+            "name": "浅米灰连帽卫衣",
+            "file": "jk/top/base/normal/top_jk_hoodie/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_knit|front",
+            "slot": "top",
+            "name": "奶白蓬松针织衫",
+            "file": "jk/top/base/normal/top_jk_knit/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_knit|side",
+            "slot": "top",
+            "name": "奶白蓬松针织衫",
+            "file": "jk/top/base/normal/top_jk_knit/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_knit|back",
+            "slot": "top",
+            "name": "奶白蓬松针织衫",
+            "file": "jk/top/base/normal/top_jk_knit/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "top_jk_baseball|front",
+            "slot": "top",
+            "name": "拼色棒球服",
+            "file": "jk/top/base/normal/top_jk_baseball/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "top_jk_baseball|side",
+            "slot": "top",
+            "name": "拼色棒球服",
+            "file": "jk/top/base/normal/top_jk_baseball/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "top_jk_baseball|back",
+            "slot": "top",
+            "name": "拼色棒球服",
+            "file": "jk/top/base/normal/top_jk_baseball/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "bottom_jk_pleat_navy|front",
+            "slot": "bottom",
+            "name": "藏青百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_navy/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "bottom_jk_pleat_navy|side",
+            "slot": "bottom",
+            "name": "藏青百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_navy/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "bottom_jk_pleat_navy|back",
+            "slot": "bottom",
+            "name": "藏青百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_navy/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "bottom_jk_pleat_plaid|front",
+            "slot": "bottom",
+            "name": "格纹百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_plaid/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "bottom_jk_pleat_plaid|side",
+            "slot": "bottom",
+            "name": "格纹百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_plaid/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "bottom_jk_pleat_plaid|back",
+            "slot": "bottom",
+            "name": "格纹百褶短裙",
+            "file": "jk/bottom/shared/bottom_jk_pleat_plaid/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "bottom_jk_denim|front",
+            "slot": "bottom",
+            "name": "水洗牛仔短裙",
+            "file": "jk/bottom/shared/bottom_jk_denim/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "bottom_jk_denim|side",
+            "slot": "bottom",
+            "name": "水洗牛仔短裙",
+            "file": "jk/bottom/shared/bottom_jk_denim/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "bottom_jk_denim|back",
+            "slot": "bottom",
+            "name": "水洗牛仔短裙",
+            "file": "jk/bottom/shared/bottom_jk_denim/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "bottom_jk_shorts|front",
+            "slot": "bottom",
+            "name": "运动短裤",
+            "file": "jk/bottom/shared/bottom_jk_shorts/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "bottom_jk_shorts|side",
+            "slot": "bottom",
+            "name": "运动短裤",
+            "file": "jk/bottom/shared/bottom_jk_shorts/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "bottom_jk_shorts|back",
+            "slot": "bottom",
+            "name": "运动短裤",
+            "file": "jk/bottom/shared/bottom_jk_shorts/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_knee_black|front",
+            "slot": "socks",
+            "name": "黑色及膝袜",
+            "file": "jk/socks/shared/sock_knee_black/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_knee_black|side",
+            "slot": "socks",
+            "name": "黑色及膝袜",
+            "file": "jk/socks/shared/sock_knee_black/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_knee_black|back",
+            "slot": "socks",
+            "name": "黑色及膝袜",
+            "file": "jk/socks/shared/sock_knee_black/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_thigh_white|front",
+            "slot": "socks",
+            "name": "白色过膝袜",
+            "file": "jk/socks/shared/sock_thigh_white/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_thigh_white|side",
+            "slot": "socks",
+            "name": "白色过膝袜",
+            "file": "jk/socks/shared/sock_thigh_white/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_thigh_white|back",
+            "slot": "socks",
+            "name": "白色过膝袜",
+            "file": "jk/socks/shared/sock_thigh_white/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_pile_cream|front",
+            "slot": "socks",
+            "name": "米白堆堆袜",
+            "file": "jk/socks/shared/sock_pile_cream/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_pile_cream|side",
+            "slot": "socks",
+            "name": "米白堆堆袜",
+            "file": "jk/socks/shared/sock_pile_cream/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_pile_cream|back",
+            "slot": "socks",
+            "name": "米白堆堆袜",
+            "file": "jk/socks/shared/sock_pile_cream/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_sport_stripe|front",
+            "slot": "socks",
+            "name": "条纹运动长袜",
+            "file": "jk/socks/shared/sock_sport_stripe/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_sport_stripe|side",
+            "slot": "socks",
+            "name": "条纹运动长袜",
+            "file": "jk/socks/shared/sock_sport_stripe/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_sport_stripe|back",
+            "slot": "socks",
+            "name": "条纹运动长袜",
+            "file": "jk/socks/shared/sock_sport_stripe/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "sock_cotton_short|front",
+            "slot": "socks",
+            "name": "纯白短棉袜",
+            "file": "jk/socks/shared/sock_cotton_short/front.png",
+            "angle": "front"
+          },
+          {
+            "key": "sock_cotton_short|side",
+            "slot": "socks",
+            "name": "纯白短棉袜",
+            "file": "jk/socks/shared/sock_cotton_short/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "sock_cotton_short|back",
+            "slot": "socks",
+            "name": "纯白短棉袜",
+            "file": "jk/socks/shared/sock_cotton_short/back.png",
+            "angle": "back"
+          },
+          {
+            "key": "shoe_leather|side",
+            "slot": "shoes",
+            "name": "制服小皮鞋",
+            "file": "jk/shoes/shared/shoe_leather/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "shoe_sneakers|side",
+            "slot": "shoes",
+            "name": "运动鞋",
+            "file": "jk/shoes/shared/shoe_sneakers/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "shoe_platform|side",
+            "slot": "shoes",
+            "name": "松糕鞋",
+            "file": "jk/shoes/shared/shoe_platform/side.png",
+            "angle": "side"
+          },
+          {
+            "key": "shoe_flats|side",
+            "slot": "shoes",
+            "name": "平底鞋",
+            "file": "jk/shoes/shared/shoe_flats/side.png",
+            "angle": "side"
+          }
+        ]
+      },
+      "capture": null
+    },
+    "pkg": {
+      "floor": 1,
+      "actions": [
+        {
+          "id": "follow",
+          "name": "跟缀",
+          "label": "跟缀",
+          "d20": 20,
+          "total": 29,
+          "dc": 13,
+          "band": "nat20",
+          "mods": [
+            {
+              "src": "不起眼",
+              "v": 1
+            },
+            {
+              "src": "已掌握下一站",
+              "v": 3
+            }
+          ],
+          "attr": {
+            "name": "敏捷",
+            "v": 5
+          },
+          "targetMod": 0,
+          "darkReveal": null,
+          "exposure": {
+            "base": 4,
+            "reduction": 1,
+            "applied": 3,
+            "dist": "close"
+          },
+          "discoveries": [
+            {
+              "id": "fact:college_sched_store",
+              "pi": 3
+            }
+          ],
+          "attributeUnlock": null,
+          "attributeUnlockEmpty": false,
+          "capture": null,
+          "raw": [
+            20
+          ],
+          "ledger": {
+            "seq": 1,
+            "applied": {
+              "alert": 3,
+              "heart": 0,
+              "pi": 0,
+              "stamina": 0,
+              "cash": 0,
+              "proximity": 0,
+              "faceMem": 0
+            }
+          },
+          "rejected": false,
+          "reason": null
+        }
+      ],
+      "investigation": {
+        "reason": "本次路线结束",
+        "date": 1,
+        "effective": 1,
+        "minimum": 2,
+        "clues": [
+          "fact:college_sched_store"
+        ],
+        "clueGain": 3,
+        "pi": 5
+      },
+      "account": {
+        "stamina": -1,
+        "heart": 0,
+        "alert": 3,
+        "pi": 5,
+        "proximity": 0,
+        "cash": 0
+      },
+      "seg": {
+        "heartPeak": 30,
+        "staminaTax": -1
+      },
+      "logs": [
+        "[跟缀] 1d20(20) +1 不起眼 +3 已掌握下一站 = 29 vs DC 13 → nat20",
+        "[段税] 心跳峰值 30 → 体力 -1"
+      ],
+      "narrativeOnly": false,
+      "targetState": {
+        "outfit": {
+          "id": "outfit_hoodie_denim",
+          "name": "落肩连帽卫衣+宽松牛仔裤",
+          "desc": "米灰色落肩抓绒连帽卫衣搭配水洗浅蓝做旧直筒阔腿拖地牛仔裤，浅灰色纯棉平口运动短袜配白灰拼色经典低帮滑板鞋",
+          "prompt": "白描宽大落肩卫衣下摆自然垂落，浅蓝阔腿牛仔裤微堆于滑板鞋面，浅灰平口短袜收于踝部，步伐松散拖沓",
+          "socks": "浅灰色纯棉平口运动短袜",
+          "shoeId": "shoe_sneakers",
+          "shoeName": "滑板鞋",
+          "styleGroup": "casual",
+          "isWeekend": false
+        },
+        "somatic": {
+          "id": "normal",
+          "name": "平常状态",
+          "desc": "基线平淡晚归，步履规律",
+          "mod": {},
+          "reason": "没有繁重的大作业干扰，按习惯节奏走在老街路上",
+          "tag": null,
+          "prompt": "白描其步履均匀、神情轻松的大学女生夜归常态"
+        },
+        "hand": {
+          "id": "drink_takeout",
+          "name": "取外带热饮",
+          "desc": "在便利店柜台前核对小票并接过打包纸袋",
+          "fumbling": false,
+          "tag": null,
+          "remainingDuration": 1,
+          "isSiteOverride": true
+        },
+        "route": {
+          "id": "preview",
+          "startTime": "21:00",
+          "here": 1,
+          "nodes": [
+            "school_gate_b",
+            "store_24h_b"
+          ],
+          "currentPlace": "老街24h便利店"
+        }
+      },
+      "herAlert": null,
+      "alertEvent": null
+    }
+  }
+}

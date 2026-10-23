@@ -114,7 +114,7 @@ test("打量示范：选中后才能发送，文字不解锁情报，重复与�
     h.click("[data-training-send]");
     assert.equal(output.hidden, false);
     const text = output.textContent;
-    assert.ok(text.includes("情报 PI +6"));
+    assert.ok(text.includes("PI即时变动 0") && text.includes("首次线索奖励待尾行结算"));
     h.click("[data-training-send]");
     h.click("#trainingBriefNext");
     h.click("#trainingBriefPrev");

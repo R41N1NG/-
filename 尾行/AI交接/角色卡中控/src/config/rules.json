@@ -420,7 +420,29 @@
       "effectsDesc": "街景草图·长椅驻足PI+20",
       "desc": "战利品/私密物证：纸面铅笔速写本，记录着夜路路灯与长椅"
     }
+  },
+  "investigation": {
+    "knownNextBands": [
+      [
+        0,
+        2
+      ],
+      [
+        20,
+        3
+      ],
+      [
+        40,
+        4
+      ]
+    ],
+    "minimum": 2,
+    "firstClue": 3,
+    "nearExposure": {
+      "close": 4,
+      "touch": 8
+    },
+    "agilityPerReduction": 3,
+    "maxReductionFraction": 0.5
   }
 }
-
-

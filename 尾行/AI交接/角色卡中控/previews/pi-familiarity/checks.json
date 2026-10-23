@@ -1,0 +1,72 @@
+[
+  {
+    "width": 1100,
+    "id": "known",
+    "bonus": 3,
+    "exposure": 3,
+    "receipt": {
+      "reason": "本次路线结束",
+      "date": 1,
+      "effective": 1,
+      "minimum": 2,
+      "clues": [
+        "fact:college_sched_store"
+      ],
+      "clueGain": 3,
+      "pi": 5
+    }
+  },
+  {
+    "width": 1100,
+    "id": "unknown",
+    "bonus": 0,
+    "exposure": 3,
+    "receipt": {
+      "reason": "本次路线结束",
+      "date": 1,
+      "effective": 1,
+      "minimum": 2,
+      "clues": [
+        "edge:[\"school_gate_b\",\"store_24h_b\"]",
+        "fact:college_sched_store"
+      ],
+      "clueGain": 6,
+      "pi": 8
+    }
+  },
+  {
+    "width": 390,
+    "id": "known",
+    "bonus": 3,
+    "exposure": 3,
+    "receipt": {
+      "reason": "本次路线结束",
+      "date": 1,
+      "effective": 1,
+      "minimum": 2,
+      "clues": [
+        "fact:college_sched_store"
+      ],
+      "clueGain": 3,
+      "pi": 5
+    }
+  },
+  {
+    "width": 390,
+    "id": "unknown",
+    "bonus": 0,
+    "exposure": 3,
+    "receipt": {
+      "reason": "本次路线结束",
+      "date": 1,
+      "effective": 1,
+      "minimum": 2,
+      "clues": [
+        "edge:[\"school_gate_b\",\"store_24h_b\"]",
+        "fact:college_sched_store"
+      ],
+      "clueGain": 6,
+      "pi": 8
+    }
+  }
+]

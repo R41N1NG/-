@@ -125,7 +125,10 @@ function createSnapshotRenderer({
     } else herAlert.classList.remove("show");
     /* 携行 + 五维属性 + 阈值标签 + 标签栈 */
     document.getElementById("cash").textContent = snap.player.cash;
-    document.getElementById("pi").textContent = snap.player.pi;
+    const piEl = document.getElementById("pi");
+    piEl.textContent = snap.player.pi;
+    piEl.title = `当前目标调查熟练度；已知下一站跟随 +${snap.player.pi >= 40 ? 4 : snap.player.pi >= 20 ? 3 : 2}，未知 +0；60点获得情报检定优势。待结算线索 ${snap.investigation?.pendingClues || 0} 项。`;
+
     /* ═══ 她的鞋具：只露鞋名，敏捷修正/步声/距离折算细节走悬停 ═══ */
     {
       const shoeLine = document.getElementById("herGear");
@@ -397,7 +400,7 @@ ${proxLogs.slice(0, 5).join("\n")}`;
         valueTip: "双骰取高",
         owner: "player",
         isAdvantage: true,
-        desc: "累计情报点≥60：情报属性检定单骰变双骰（有20必取20/无20有1取1/否则取高）",
+        desc: "当前目标调查熟练度≥60：情报属性检定单骰变双骰（有20必取20/无20有1取1/否则取高）",
       },
       "优势：敏捷": {
         label: "优势：敏捷",

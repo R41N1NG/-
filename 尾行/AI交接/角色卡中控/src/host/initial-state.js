@@ -28,7 +28,7 @@ function defaultInit(overrides = {}) {
         startTime: startT,
         nodes: evening.path.map((s) => s.place),
         times: evening.path.map((s) => s.t),
-        known: evening.path.map(() => 1),
+        known: evening.path.map((_, i) => (i === 0 ? 1 : 0)),
         here: 0,
       };
     }
@@ -46,7 +46,7 @@ function defaultInit(overrides = {}) {
           startTime: "21:00",
           nodes: evening.path.map((s) => s.place),
           times: evening.path.map((s) => s.t),
-          known: evening.path.map(() => 1),
+          known: evening.path.map((_, i) => (i === 0 ? 1 : 0)),
           here: 0,
         }
       : null;

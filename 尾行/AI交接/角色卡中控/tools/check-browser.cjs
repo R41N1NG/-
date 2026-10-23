@@ -273,7 +273,7 @@ const deadline = setTimeout(() => {
           [...document.querySelectorAll('[data-training-select]')].find(b=>b.getBoundingClientRect().width>0).click();
           ok('选中打量只入队未执行',!send.disabled&&output.hidden);
           send.click();const text=output.textContent;send.click();
-          ok('示范发送有真实结果且不累加或建局',!output.hidden&&text.includes('情报 PI +6')&&text===output.textContent&&send.disabled&&!__trainingPreviewStore().wx_save);
+          ok('示范发送有真实结果且不累加或建局',!output.hidden&&text.includes('PI即时变动 0')&&text.includes('首次线索奖励待尾行结算')&&text===output.textContent&&send.disabled&&!__trainingPreviewStore().wx_save);
           document.getElementById('trainingBriefNarration').value='我留意她的步幅和周围动静。';
         }
         if (${page}===4) {
@@ -359,7 +359,7 @@ const deadline = setTimeout(() => {
       document.querySelector('#quickPane [data-preset="otaku"]').click();document.getElementById('zeroNextStep').click();
       const course=document.getElementById('zeroAttributeLesson');
       ok('选择目标前先显示目标属性课',!course.hidden&&course.dataset.attributeCourse==='target'&&document.getElementById('zeroStep2').hidden);
-      ok('目标属性明确区分问号和情报点',course.textContent.includes('问号')&&course.textContent.includes('情报点不是情报属性'));
+      ok('目标属性明确区分问号和调查熟练度',course.textContent.includes('问号')&&course.textContent.includes('调查熟练度不是情报属性'));
       ok('目标属性课手机不横向溢出',document.documentElement.scrollWidth<=innerWidth+2);
       window.scrollTo(0,0);return checks;
     })()`));

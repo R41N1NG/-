@@ -198,18 +198,22 @@ test("观察侧图随聊天路径回滚恢复，重复结算不重复发图", as
     await sync.runInput(req);
     const first = structuredClone(store.wx_save.album);
     const knowledge = structuredClone(store.wx_save.targetKnowledge);
+    const investigation = structuredClone(store.wx_save.investigation);
     assert.deepEqual(state.game.snapshot().profile.attrs, {per:4});
     assert.equal(Object.keys(first).length, 1);
     await sync.runInput(req);
     assert.deepEqual(store.wx_save.album, first);
     assert.deepEqual(store.wx_save.targetKnowledge, knowledge);
+    assert.deepEqual(store.wx_save.investigation, investigation);
     history[1].text = "另一个分支";
     await sync.reconcile();
     assert.equal(state.game.snapshot().album.count, 0);
+    assert.equal(state.game.snapshot().investigation.pendingClues, 0);
     assert.deepEqual(state.game.snapshot().profile.attrs, {});
     history[1].text = "观察";
     await sync.reconcile();
     assert.deepEqual(state.game.save().album, first);
+    assert.deepEqual(state.game.save().investigation, investigation);
     assert.deepEqual(state.game.snapshot().profile.attrs, {per:4});
   } finally {
     sync.dispose();

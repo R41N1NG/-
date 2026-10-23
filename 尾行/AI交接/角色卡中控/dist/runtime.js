@@ -692,6 +692,30 @@
             effectsDesc: "\u8857\u666F\u8349\u56FE\xB7\u957F\u6905\u9A7B\u8DB3PI+20",
             desc: "\u6218\u5229\u54C1/\u79C1\u5BC6\u7269\u8BC1\uFF1A\u7EB8\u9762\u94C5\u7B14\u901F\u5199\u672C\uFF0C\u8BB0\u5F55\u7740\u591C\u8DEF\u8DEF\u706F\u4E0E\u957F\u6905"
           }
+        },
+        investigation: {
+          knownNextBands: [
+            [
+              0,
+              2
+            ],
+            [
+              20,
+              3
+            ],
+            [
+              40,
+              4
+            ]
+          ],
+          minimum: 2,
+          firstClue: 3,
+          nearExposure: {
+            close: 4,
+            touch: 8
+          },
+          agilityPerReduction: 3,
+          maxReductionFraction: 0.5
         }
       };
     }
@@ -8272,27 +8296,177 @@
     }
   });
 
-  // src/runtime/target-knowledge.js
-  var require_target_knowledge = __commonJS({
-    "src/runtime/target-knowledge.js"(exports, module) {
-      "use strict";
-      var ATTRIBUTES = { per: "\u654F\u9510", agi: "\u654F\u6377", str: "\u4F53\u683C", nrv: "\u80C6\u91CF" };
-      function validateKnowledge(value, targetId) {
-        const known = value?.targetId === targetId && Array.isArray(value.known) ? [...new Set(value.known.filter((key) => Object.hasOwn(ATTRIBUTES, key)))] : [];
-        return { targetId, known };
+  // src/runtime/facts.js
+  var require_facts2 = __commonJS({
+    "src/runtime/facts.js"(exports, module) {
+      var LP = require_lifepack();
+      var R = require_rules();
+      var RAW_LEXICON = require_lexicon();
+      var map = require_map();
+      var SLOTS = ["home", "schedule", "carry", "social", "psyche", "romance"];
+      var FACT_TAGS = ["gym"];
+      var L2_TICKET_GATE = {
+        carry: ["photo", "scan", "listen", "note", "watch_lights"],
+        social: ["watch_peers"],
+        romance: ["hear_gossip", "chat", "watch_peers"]
+      };
+      function loadPack(id, data = LP) {
+        return data.packs[id] || null;
       }
-      function knownAttributes(g) {
-        const knowledge = validateKnowledge(g.targetKnowledge, g.targetId);
-        return Object.fromEntries(knowledge.known.filter((key) => Number.isFinite(g.targetBase?.[key])).map((key) => [key, g.targetBase[key]]));
+      function l1FormulaHold(unlock = LP.unlock) {
+        return SLOTS.every(
+          (s) => unlock.L1[s] === null || unlock.L1[s] === Math.floor((unlock.L2[s] || 0) / 2)
+        );
       }
-      function unlockTargetAttribute(g) {
-        g.targetKnowledge = validateKnowledge(g.targetKnowledge, g.targetId);
-        const key = Object.keys(ATTRIBUTES).find((key2) => !g.targetKnowledge.known.includes(key2) && Number.isFinite(g.targetBase?.[key2]));
-        if (!key) return null;
-        g.targetKnowledge.known.push(key);
-        return { key, name: ATTRIBUTES[key], value: g.targetBase[key] };
+      function slotLevel(slot, intel = {}, unlock = LP.unlock) {
+        const pi = intel.pi || 0;
+        for (const lv of [3, 2, 1]) {
+          const t = unlock["L" + lv][slot];
+          if (t === null) {
+            if (lv === 3) return 3;
+            continue;
+          }
+          if (pi >= t) return lv;
+        }
+        return 0;
       }
-      module.exports = { validateKnowledge, knownAttributes, unlockTargetAttribute, ATTRIBUTES };
+      function factVisible(fact, level, tickets = [], slot = fact.slot) {
+        if (fact.public) return true;
+        if (level < fact.level) return false;
+        const set = tickets instanceof Set ? tickets : new Set(tickets);
+        if (fact.level === 3) return (fact.reveal_via || []).some((a) => set.has(a));
+        if (fact.level === 2) {
+          const gate = L2_TICKET_GATE[slot];
+          return !gate || gate.some((a) => set.has(a));
+        }
+        return true;
+      }
+      function legacyView(packId, intel = {}, data = LP) {
+        const pack = loadPack(packId, data);
+        if (!pack) return null;
+        const levels = {};
+        const facts = [];
+        for (const slot of SLOTS) levels[slot] = slotLevel(slot, intel, data.unlock);
+        const factList = intel && (intel.assignedFacts || intel.facts) || pack.factPool || [];
+        for (const f of factList) {
+          if (factVisible(f, levels[f.slot], intel.tickets || [])) {
+            facts.push({
+              id: f.id,
+              slot: f.slot,
+              level: f.level,
+              title: f.title,
+              text: f.text,
+              place: f.place
+            });
+          }
+        }
+        return { pack: packId, levels, facts };
+      }
+      function view(packId, intel = {}, data = LP) {
+        const pack = loadPack(packId, data);
+        if (!pack) return null;
+        const known = new Set(intel.knownFacts || []);
+        const facts = (intel.assignedFacts || intel.facts || pack.factPool || []).filter((f) => f.public || known.has(f.id)).map(({ id, slot, level, title, text, place }) => ({
+          id,
+          slot,
+          level,
+          title,
+          text,
+          place
+        }));
+        const levels = Object.fromEntries(
+          SLOTS.map((s) => [
+            s,
+            Math.max(0, ...facts.filter((f) => f.slot === s).map((f) => f.level))
+          ])
+        );
+        return { pack: packId, levels, facts };
+      }
+      function nightConditions(packId, rng, data = LP) {
+        const pack = loadPack(packId, data);
+        if (!pack) return null;
+        return pack.conditions.map((c) => {
+          const p = Math.round(c.mod * (1 - pack.stability) * 1e6) / 1e6;
+          return { id: c.id, title: c.title, active: rng() < p };
+        });
+      }
+      function effectiveAcuity(per, traits = []) {
+        let mod = 0;
+        for (const t of traits) {
+          const tid = typeof t === "string" ? t : t && t.id;
+          const def = R.tags && R.tags[tid];
+          if (def && def.category === "acuity" && typeof def.value === "number") {
+            mod += def.value;
+          }
+        }
+        return Math.max(1, Math.min(10, per + mod));
+      }
+      function packHasGym(packId, data = LP) {
+        const pack = loadPack(packId, data);
+        if (!pack) return false;
+        return (pack.factPool || []).some(
+          (f) => f.slot === "schedule" && (f.tags || []).includes("gym")
+        );
+      }
+      function validate(pack, data = LP) {
+        const errors = [];
+        const at = `pack(${pack.id || "?"})`;
+        if (!pack.id || !pack.name) errors.push(`${at}: \u7F3A id/name`);
+        for (const k of ["str", "agi", "per", "nrv"]) {
+          if (typeof pack.stats?.[k] !== "number")
+            errors.push(`${at}: stats.${k} \u7F3A\u5931`);
+        }
+        if (typeof pack.social !== "number") errors.push(`${at}: social \u7F3A\u5931`);
+        if (typeof pack.stability !== "number" || pack.stability <= 0 || pack.stability >= 1)
+          errors.push(`${at}: stability \u987B\u5728 (0,1) \u5F00\u533A\u95F4`);
+        const tagIds = new Set(Object.keys(RAW_LEXICON.tags));
+        for (const t of pack.traits || []) {
+          if (!tagIds.has(t))
+            errors.push(`${at}: traits "${t}" \u4E0D\u5728\u8BCD\u8868 tags\uFF08\u9ED1\u6237\uFF09`);
+        }
+        const entryIds = new Set(RAW_LEXICON.entries.map((e) => e.id));
+        for (const f of pack.factPool || []) {
+          const fat = `${at}.fact(${f.id || "?"})`;
+          if (!f.id || !f.title || !f.text) errors.push(`${fat}: \u7F3A id/title/text`);
+          if (!SLOTS.includes(f.slot)) errors.push(`${fat}: \u975E\u6CD5\u69FD\u4F4D ${f.slot}`);
+          if (![1, 2, 3].includes(f.level))
+            errors.push(`${fat}: \u975E\u6CD5\u5C42\u7EA7 ${f.level}`);
+          if (f.place && !map.getPlace(f.place))
+            errors.push(`${fat}: place "${f.place}" \u4E0D\u5728 places.json`);
+          for (const a of f.reveal_via || []) {
+            if (!entryIds.has(a))
+              errors.push(`${fat}: reveal_via "${a}" \u4E0D\u5728\u8BCD\u8868 entries\uFF08\u9ED1\u6237\uFF09`);
+          }
+          for (const t of f.tags || []) {
+            if (!FACT_TAGS.includes(t))
+              errors.push(`${fat}: tags "${t}" \u4E0D\u5728\u4E8B\u5B9E\u6807\u8BB0\u767D\u540D\u5355\uFF08\u9ED1\u6237\uFF09`);
+          }
+        }
+        for (const r of pack.routes || []) {
+          for (const step of r.path || []) {
+            if (!map.getPlace(step.place))
+              errors.push(
+                `${at}.route(${r.id}): \u8282\u70B9 "${step.place}" \u4E0D\u5728 places.json`
+              );
+          }
+        }
+        return errors;
+      }
+      module.exports = {
+        SLOTS,
+        FACT_TAGS,
+        L2_TICKET_GATE,
+        loadPack,
+        l1FormulaHold,
+        slotLevel,
+        factVisible,
+        view,
+        legacyView,
+        nightConditions,
+        effectiveAcuity,
+        packHasGym,
+        validate
+      };
     }
   });
 
@@ -8349,6 +8523,233 @@
     }
   });
 
+  // src/runtime/investigation.js
+  var require_investigation = __commonJS({
+    "src/runtime/investigation.js"(exports, module) {
+      "use strict";
+      var R = require_rules().investigation;
+      var LP = require_lifepack();
+      var F = require_facts2();
+      var { TAIL_PUMP_IDS } = require_constants();
+      var good = (a) => !a.rejected && ["success", "grace", "nat20"].includes(a.band);
+      var clone = (x) => JSON.parse(JSON.stringify(x));
+      function createInvestigation({ g, L }) {
+        let origin = null;
+        const facts = () => g.targetPersona?.assignedFacts || LP.packs[g.targetId]?.factPool || [];
+        const routeKey = () => JSON.stringify([g.route?.id || "", g.route?.nodes || []]);
+        const edgeKey = (from, to) => JSON.stringify([from, to]);
+        function restore(saved) {
+          const value = g.investigation;
+          if (value && value.targetId === g.targetId) {
+            const lists = ["knownFacts", "edges", "rewardedClues", "minimumDays"];
+            if (value.schema !== 1 || lists.some(
+              (k) => !Array.isArray(value[k]) || value[k].some((x) => typeof x !== "string")
+            ) || value.session && (!Number.isInteger(value.session.effective) || value.session.effective < 0 || !Array.isArray(value.session.clues) || value.session.clues.some((x) => typeof x !== "string") || typeof value.session.route !== "string" || !Number.isInteger(value.session.date)))
+              throw Object.assign(Error("\u5B58\u6863\u8C03\u67E5\u8BB0\u5F55\u65E0\u6548\uFF1Ainvestigation"), {
+                code: "SAVE_INVALID"
+              });
+            g.investigation = clone(value);
+            return;
+          }
+          const knownFacts = saved ? (F.legacyView(g.targetId, {
+            pi: L.get("pi"),
+            assignedFacts: g.targetPersona?.assignedFacts,
+            tickets: []
+          })?.facts || []).map((f) => f.id) : [];
+          g.investigation = {
+            schema: 1,
+            targetId: g.targetId,
+            knownFacts,
+            edges: [],
+            rewardedClues: [
+              ...knownFacts.map((id) => "fact:" + id),
+              ...(g.targetKnowledge?.known || []).map((k) => "attr:" + k)
+            ],
+            minimumDays: [],
+            session: null,
+            lastReceipt: null
+          };
+        }
+        function session() {
+          const p = g.investigation;
+          if (!p.session)
+            p.session = {
+              date: L.get("date"),
+              route: routeKey(),
+              effective: 0,
+              clues: []
+            };
+          return p.session;
+        }
+        function applyKnownRoute() {
+          var _a;
+          if (!g.route?.nodes) return;
+          (_a = g.route).known || (_a.known = g.route.nodes.map((_, i) => i === 0 ? 1 : 0));
+          for (let i = 1; i < g.route.nodes.length; i++) {
+            if (g.investigation.edges.includes(
+              edgeKey(g.route.nodes[i - 1], g.route.nodes[i])
+            ))
+              g.route.known[i] = 1;
+          }
+        }
+        function beginTurn() {
+          applyKnownRoute();
+          origin = {
+            here: g.route?.here,
+            place: g.route?.nodes?.[g.route.here],
+            route: routeKey(),
+            visual: g.spatial?.tracking === "visual" && !g.spatial.assumed && g.spatial.lastSeen?.targetId === g.targetId && g.spatial.lastSeen?.date === L.get("date") && g.spatial.lastSeen?.placeId === g.route?.nodes?.[g.route.here]
+          };
+        }
+        function nextBonus(id) {
+          if (!TAIL_PUMP_IDS.includes(id) || !origin?.visual || origin.route !== routeKey())
+            return 0;
+          const here = g.route?.here;
+          if (here !== origin.here && here !== origin.here + 1) return 0;
+          const next = g.route.nodes[origin.here + 1];
+          if (!next || !g.investigation.edges.includes(edgeKey(origin.place, next)))
+            return 0;
+          return R.knownNextBands.reduce(
+            (v, [min, bonus]) => L.get("pi") >= min ? bonus : v,
+            0
+          );
+        }
+        function confirmEdge(i) {
+          if (!Number.isInteger(i) || i < 1 || !g.route?.nodes?.[i]) return;
+          const edge = edgeKey(g.route.nodes[i - 1], g.route.nodes[i]);
+          if (!g.investigation.edges.includes(edge)) g.investigation.edges.push(edge);
+        }
+        function exposure(id, dist) {
+          if (!TAIL_PUMP_IDS.includes(id)) return null;
+          const base = R.nearExposure[dist] || 0;
+          if (!base) return null;
+          const reduction = Math.min(
+            Math.floor(Math.max(0, g.player.agi) / R.agilityPerReduction),
+            Math.floor(base * R.maxReductionFraction)
+          );
+          return { base, reduction, applied: base - reduction, dist };
+        }
+        function addClue(id, discovered) {
+          const p = g.investigation, s = session();
+          if (!p.rewardedClues.includes(id) && !s.clues.includes(id)) {
+            s.clues.push(id);
+            discovered.push({ id, pi: R.firstClue });
+          }
+        }
+        function record(action) {
+          const discovered = [];
+          if (!good(action)) return discovered;
+          const p = g.investigation;
+          const tracking = TAIL_PUMP_IDS.includes(action.id) && origin?.visual && origin.route === routeKey();
+          const here = g.route?.here;
+          if (tracking && here === origin.here + 1) {
+            const place2 = g.route.nodes[here];
+            const edge = edgeKey(origin.place, place2);
+            if (!p.edges.includes(edge)) {
+              p.edges.push(edge);
+              addClue("edge:" + edge, discovered);
+            }
+            g.route.known[here] = 1;
+          }
+          const place = g.route?.nodes?.[here];
+          const visible = origin?.visual && g.route?.known?.[here] === 1 && (place === origin.place || tracking && here === origin.here + 1);
+          if (visible) {
+            for (const f of facts()) {
+              if (!f.public && f.place && f.place === place && (f.reveal_via || []).includes(action.id) && !p.knownFacts.includes(f.id)) {
+                p.knownFacts.push(f.id);
+                addClue("fact:" + f.id, discovered);
+              }
+            }
+            if (action.attributeUnlock)
+              addClue("attr:" + action.attributeUnlock.key, discovered);
+          }
+          return discovered;
+        }
+        function finish(reason) {
+          const p = g.investigation, s = p.session;
+          if (!s) return null;
+          const dayKey = JSON.stringify([s.date, s.route]);
+          const minimum = s.effective > 0 && !p.minimumDays.includes(dayKey) ? R.minimum : 0;
+          const clues = [...new Set(s.clues)].filter(
+            (id) => !p.rewardedClues.includes(id)
+          );
+          const base = minimum + clues.length * R.firstClue;
+          const r = base ? L.commit({ pi: base }, { reason: "investigation-session" }) : null;
+          if (minimum) p.minimumDays.push(dayKey);
+          p.rewardedClues.push(...clues);
+          g.nightPiGross = (g.nightPiGross || 0) + (r?.applied.pi || 0);
+          const receipt = {
+            reason,
+            date: s.date,
+            effective: s.effective,
+            minimum,
+            clues,
+            clueGain: clues.length * R.firstClue,
+            pi: r?.applied.pi || 0
+          };
+          p.lastReceipt = receipt;
+          p.session = null;
+          g.signals || (g.signals = []);
+          g.signals.push([
+            "\u8C03\u67E5\u7ED3\u7B97",
+            `${reason}\uFF1A\u6709\u6548\u8DDF\u968F ${s.effective} \u6BB5\uFF0C\u4FDD\u5E95 +${minimum}\uFF0C\u9996\u6B21\u7EBF\u7D22 ${clues.length} \u9879 +${receipt.clueGain}\uFF0CPI\u5B9E\u9645 +${receipt.pi}`
+          ]);
+          g.signals = g.signals.slice(-20);
+          return clone(receipt);
+        }
+        function endTurn(results) {
+          const attempts = results.actions.filter(
+            (a) => TAIL_PUMP_IDS.includes(a.id) && !a.rejected && a.band
+          );
+          const successful = origin?.visual && origin.route === routeKey() && attempts.some(good);
+          if (successful) session().effective++;
+          const failed = attempts.some((a) => ["fail", "nat1"].includes(a.band));
+          if (failed || attempts.length && g.route?.here >= g.route?.nodes.length - 1 || g.fleeing && g.route?.here >= g.route?.nodes.length - 1 || g.alertEvent?.stage === 4)
+            return finish(
+              failed ? "\u5C3E\u884C\u4E2D\u65AD" : g.fleeing ? "\u76EE\u6807\u79BB\u5F00" : "\u672C\u6B21\u8DEF\u7EBF\u7ED3\u675F"
+            );
+          return null;
+        }
+        return {
+          restore,
+          beginTurn,
+          nextBonus,
+          confirmEdge,
+          applyKnownRoute,
+          exposure,
+          record,
+          endTurn,
+          finish
+        };
+      }
+      module.exports = { createInvestigation };
+    }
+  });
+
+  // src/runtime/target-knowledge.js
+  var require_target_knowledge = __commonJS({
+    "src/runtime/target-knowledge.js"(exports, module) {
+      "use strict";
+      var ATTRIBUTES = { per: "\u654F\u9510", agi: "\u654F\u6377", str: "\u4F53\u683C", nrv: "\u80C6\u91CF" };
+      function validateKnowledge(value, targetId) {
+        const known = value?.targetId === targetId && Array.isArray(value.known) ? [...new Set(value.known.filter((key) => Object.hasOwn(ATTRIBUTES, key)))] : [];
+        return { targetId, known };
+      }
+      function knownAttributes(g) {
+        const knowledge = validateKnowledge(g.targetKnowledge, g.targetId);
+        return Object.fromEntries(knowledge.known.filter((key) => Number.isFinite(g.targetBase?.[key])).map((key) => [key, g.targetBase[key]]));
+      }
+      function unlockTargetAttribute(g) {
+        g.targetKnowledge = validateKnowledge(g.targetKnowledge, g.targetId);
+        const key = Object.keys(ATTRIBUTES).find((key2) => !g.targetKnowledge.known.includes(key2) && Number.isFinite(g.targetBase?.[key2]));
+        if (!key) return null;
+        g.targetKnowledge.known.push(key);
+        return { key, name: ATTRIBUTES[key], value: g.targetBase[key] };
+      }
+      module.exports = { validateKnowledge, knownAttributes, unlockTargetAttribute, ATTRIBUTES };
+    }
+  });
+
   // src/runtime/game/target.js
   var require_target = __commonJS({
     "src/runtime/game/target.js"(exports, module) {
@@ -8361,7 +8762,14 @@
       var TS = require_target_state();
       var map = require_map();
       var { SHOE_ID_MAP, WEATHER_BANDS } = require_constants();
-      function createTargetSystem({ g, L, seedAt, log, syncHeartTags }) {
+      function createTargetSystem({
+        g,
+        L,
+        seedAt,
+        log,
+        syncHeartTags,
+        investigation
+      }) {
         function applyTargetState() {
           if (!g.targetState) return;
           g.target = { ...g.targetBase };
@@ -8442,7 +8850,7 @@
                 nodes: routeDef.path.map((p) => p.place),
                 times: routeDef.path.map((p) => p.t),
                 here: 0,
-                known: routeDef.known || routeDef.path.map(() => 1)
+                known: routeDef.path.map((_, i) => i === 0 ? 1 : 0)
               };
             }
           } else if (dayOfWeek === 7 && (pack.id === "student" || pack.id === "college") && !g.route) {
@@ -8562,6 +8970,7 @@
                 reason: "\u804C\u4E1A\u75C5\uFF1A\u8DDF\u7F00\u672A\u7ED3\u675F\uFF0C\u4ECA\u665A\u53EA\u80FD\u8DDF\u4E22\u6216\u8DDF\u5979\u5230\u5BB6"
               };
           }
+          const investigationReceipt = investigation.finish("\u7ED3\u675F\u5C3E\u884C");
           const curDate = L.get("date");
           if (g.route && g.route.id === "saturday_date_hotel") {
             g.hotelVisitedCount = (g.hotelVisitedCount || 0) + 1;
@@ -8628,7 +9037,7 @@
                 nodes: routeDef.path.map((p) => p.place),
                 times: routeDef.path.map((p) => p.t),
                 here: 0,
-                known: routeDef.known || routeDef.path.map(() => 1)
+                known: routeDef.path.map((_, i) => i === 0 ? 1 : 0)
               };
             }
           } else if (dayOfWeek === 7 && (pack.id === "student" || pack.id === "college")) {
@@ -8673,7 +9082,7 @@
                 nodes: routeDef.path.map((p) => p.place),
                 times: routeDef.path.map((p) => p.t),
                 here: 0,
-                known: routeDef.known || routeDef.path.map(() => 1)
+                known: routeDef.path.map((_, i) => i === 0 ? 1 : 0)
               };
             }
           }
@@ -8709,6 +9118,7 @@
             } : null
           };
           applyTargetState();
+          investigation.applyKnownRoute();
           return {
             seq: r.seq,
             warinessGain: r.warinessGain,
@@ -8716,6 +9126,7 @@
             date: L.get("date"),
             nextWeather: g.world.weather,
             piBonus,
+            investigation: investigationReceipt,
             targetState: g.targetState
           };
         }
@@ -8785,6 +9196,7 @@
         lex,
         log,
         capturePhoto,
+        investigation,
         currentPlaceKind,
         gain,
         runCheck,
@@ -8880,14 +9292,12 @@
           let alertD = 0, heartD = 0, piD = 0, faceMemD = 0, staminaD = -(entry.cost?.stamina || 0);
           const dist = DIST_KEY[tag.args?.dist] || g.dist;
           if (res.band === "success") {
-            piD = Math.round(2 * (0.6 + g.player.int * 0.06));
             if (tag.id === "follow") g.dist = dist;
             if (tag.id === "withdraw") g.dist = "far";
           } else if (res.band === "grace") {
             const gg = gain({ threat: "minor", dist });
             alertD = gg.alertD;
             heartD = gg.heartD + 5;
-            piD = Math.round(1 * (0.6 + g.player.int * 0.06));
             faceMemD = C.faceMemGain({ band: "grace" });
           } else if (res.band === "fail") {
             const gg = gain({ threat: "minor", dist });
@@ -8899,13 +9309,11 @@
             heartD = gg.heartD;
             faceMemD = C.faceMemGain({ band: "nat1" });
           } else if (res.band === "nat20") {
-            piD = Math.round(4 * (0.6 + g.player.int * 0.06)) + 2;
             if (tag.id === "follow") g.dist = dist;
           }
           if (tag.id === "photo" && (res.band === "success" || res.band === "nat20")) {
             const cap = capturePhoto(dist);
             if (cap) {
-              piD += cap.piBonus;
               out.capture = cap;
             } else {
               piD = 0;
@@ -8927,10 +9335,12 @@
               source: "scan"
             }) : null;
             if (cap) {
-              piD += cap.piBonus;
               out.capture = cap;
             } else out.captureEmpty = true;
           }
+          out.exposure = investigation.exposure(tag.id, dist);
+          alertD += out.exposure?.applied || 0;
+          out.discoveries = investigation.record(out);
           syncHeartTags();
           const r = L.settleAction(
             { alertD, heartD, piD, staminaD, faceMemD },
@@ -9158,6 +9568,7 @@
         herAdvance,
         resolveAlertCross,
         settleAction,
+        investigation,
         snapshot,
         sweetHighNow,
         syncThresholdTags,
@@ -9237,6 +9648,11 @@
               attr: a.attr || null,
               targetMod: a.targetMod || 0,
               darkReveal: a.darkReveal || null,
+              exposure: a.exposure || null,
+              discoveries: a.discoveries || [],
+              attributeUnlock: a.attributeUnlock || null,
+              attributeUnlockEmpty: !!a.attributeUnlockEmpty,
+              capture: a.capture || null,
               raw: a.raw,
               ledger: a.ledger,
               noRoll: a.noRoll,
@@ -9244,6 +9660,7 @@
               rejected: a.rejected || false,
               reason: a.reason || null
             })),
+            investigation: results.investigation || null,
             account: results.floorApplied || null,
             seg: results.seg || null,
             logs: g.logs.slice(),
@@ -9263,6 +9680,7 @@
           g.lastHerAlert = null;
           g.capture = null;
           if (!replyOnly) g.alertEvent = null;
+          investigation.beginTurn();
           if (!replyOnly) advanceRouteByClock();
           if (!replyOnly && g.fleeing && g.route) {
             herAdvance(true);
@@ -9453,6 +9871,7 @@
             g.signals.push([tm, signalTxt]);
             if (g.signals.length > 20) g.signals.shift();
           }
+          results.investigation = investigation.endTurn(results);
           for (const key of Object.keys(floorApplied))
             floorApplied[key] = L.get(key) - beforeLedger[key];
           const parts = [];
@@ -9523,141 +9942,6 @@
         };
       }
       module.exports = { createTurnSystem };
-    }
-  });
-
-  // src/runtime/facts.js
-  var require_facts2 = __commonJS({
-    "src/runtime/facts.js"(exports, module) {
-      var LP = require_lifepack();
-      var R = require_rules();
-      var RAW_LEXICON = require_lexicon();
-      var map = require_map();
-      var SLOTS = ["home", "schedule", "carry", "social", "psyche", "romance"];
-      var FACT_TAGS = ["gym"];
-      var L2_TICKET_GATE = {
-        carry: ["photo", "scan", "listen", "note", "watch_lights"],
-        social: ["watch_peers"],
-        romance: ["hear_gossip", "chat", "watch_peers"]
-      };
-      function loadPack(id, data = LP) {
-        return data.packs[id] || null;
-      }
-      function l1FormulaHold(unlock = LP.unlock) {
-        return SLOTS.every(
-          (s) => unlock.L1[s] === null || unlock.L1[s] === Math.floor((unlock.L2[s] || 0) / 2)
-        );
-      }
-      function slotLevel(slot, intel = {}, unlock = LP.unlock) {
-        const pi = intel.pi || 0;
-        for (const lv of [3, 2, 1]) {
-          const t = unlock["L" + lv][slot];
-          if (t === null) {
-            if (lv === 3) return 3;
-            continue;
-          }
-          if (pi >= t) return lv;
-        }
-        return 0;
-      }
-      function factVisible(fact, level, tickets = [], slot = fact.slot) {
-        if (fact.public) return true;
-        if (level < fact.level) return false;
-        const set = tickets instanceof Set ? tickets : new Set(tickets);
-        if (fact.level === 3) return (fact.reveal_via || []).some((a) => set.has(a));
-        if (fact.level === 2) {
-          const gate = L2_TICKET_GATE[slot];
-          return !gate || gate.some((a) => set.has(a));
-        }
-        return true;
-      }
-      function view(packId, intel = {}, data = LP) {
-        const pack = loadPack(packId, data);
-        if (!pack) return null;
-        const levels = {};
-        const facts = [];
-        for (const slot of SLOTS) levels[slot] = slotLevel(slot, intel, data.unlock);
-        const factList = intel && (intel.assignedFacts || intel.facts) || pack.factPool || [];
-        for (const f of factList) {
-          if (factVisible(f, levels[f.slot], intel.tickets || [])) {
-            facts.push({ id: f.id, slot: f.slot, level: f.level, title: f.title, text: f.text, place: f.place });
-          }
-        }
-        return { pack: packId, levels, facts };
-      }
-      function nightConditions(packId, rng, data = LP) {
-        const pack = loadPack(packId, data);
-        if (!pack) return null;
-        return pack.conditions.map((c) => {
-          const p = Math.round(c.mod * (1 - pack.stability) * 1e6) / 1e6;
-          return { id: c.id, title: c.title, active: rng() < p };
-        });
-      }
-      function effectiveAcuity(per, traits = []) {
-        let mod = 0;
-        for (const t of traits) {
-          const tid = typeof t === "string" ? t : t && t.id;
-          const def = R.tags && R.tags[tid];
-          if (def && def.category === "acuity" && typeof def.value === "number") {
-            mod += def.value;
-          }
-        }
-        return Math.max(1, Math.min(10, per + mod));
-      }
-      function packHasGym(packId, data = LP) {
-        const pack = loadPack(packId, data);
-        if (!pack) return false;
-        return (pack.factPool || []).some((f) => f.slot === "schedule" && (f.tags || []).includes("gym"));
-      }
-      function validate(pack, data = LP) {
-        const errors = [];
-        const at = `pack(${pack.id || "?"})`;
-        if (!pack.id || !pack.name) errors.push(`${at}: \u7F3A id/name`);
-        for (const k of ["str", "agi", "per", "nrv"]) {
-          if (typeof pack.stats?.[k] !== "number") errors.push(`${at}: stats.${k} \u7F3A\u5931`);
-        }
-        if (typeof pack.social !== "number") errors.push(`${at}: social \u7F3A\u5931`);
-        if (typeof pack.stability !== "number" || pack.stability <= 0 || pack.stability >= 1)
-          errors.push(`${at}: stability \u987B\u5728 (0,1) \u5F00\u533A\u95F4`);
-        const tagIds = new Set(Object.keys(RAW_LEXICON.tags));
-        for (const t of pack.traits || []) {
-          if (!tagIds.has(t)) errors.push(`${at}: traits "${t}" \u4E0D\u5728\u8BCD\u8868 tags\uFF08\u9ED1\u6237\uFF09`);
-        }
-        const entryIds = new Set(RAW_LEXICON.entries.map((e) => e.id));
-        for (const f of pack.factPool || []) {
-          const fat = `${at}.fact(${f.id || "?"})`;
-          if (!f.id || !f.title || !f.text) errors.push(`${fat}: \u7F3A id/title/text`);
-          if (!SLOTS.includes(f.slot)) errors.push(`${fat}: \u975E\u6CD5\u69FD\u4F4D ${f.slot}`);
-          if (![1, 2, 3].includes(f.level)) errors.push(`${fat}: \u975E\u6CD5\u5C42\u7EA7 ${f.level}`);
-          if (f.place && !map.getPlace(f.place)) errors.push(`${fat}: place "${f.place}" \u4E0D\u5728 places.json`);
-          for (const a of f.reveal_via || []) {
-            if (!entryIds.has(a)) errors.push(`${fat}: reveal_via "${a}" \u4E0D\u5728\u8BCD\u8868 entries\uFF08\u9ED1\u6237\uFF09`);
-          }
-          for (const t of f.tags || []) {
-            if (!FACT_TAGS.includes(t)) errors.push(`${fat}: tags "${t}" \u4E0D\u5728\u4E8B\u5B9E\u6807\u8BB0\u767D\u540D\u5355\uFF08\u9ED1\u6237\uFF09`);
-          }
-        }
-        for (const r of pack.routes || []) {
-          for (const step of r.path || []) {
-            if (!map.getPlace(step.place)) errors.push(`${at}.route(${r.id}): \u8282\u70B9 "${step.place}" \u4E0D\u5728 places.json`);
-          }
-        }
-        return errors;
-      }
-      module.exports = {
-        SLOTS,
-        FACT_TAGS,
-        L2_TICKET_GATE,
-        loadPack,
-        l1FormulaHold,
-        slotLevel,
-        factVisible,
-        view,
-        nightConditions,
-        effectiveAcuity,
-        packHasGym,
-        validate
-      };
     }
   });
 
@@ -10057,7 +10341,7 @@
       var T = require_tags();
       var C = require_checks();
       var D = require_dice();
-      function createCheckSystem({ g, seedFor, isFamiliar }) {
+      function createCheckSystem({ g, seedFor, isFamiliar, investigation }) {
         function targetEffectiveAcuity() {
           const acuityMod = T.summarize(g.tags || [], "acuity").sum;
           return Math.max(1, Math.min(10, (g.target.per || 4) + acuityMod));
@@ -10080,6 +10364,8 @@
           const targetMod = sum.breakdown.filter((h) => h.owner === "target").reduce((s, h) => s + h.v, 0);
           const pity = T.PITY_BONUS && g.consecFails >= 2 ? C.pityBonus(g.consecFails) : 0;
           if (pity) mods.push({ src: "\u8FDE\u8D25\u4FDD\u5E95", v: pity });
+          const nextBonus = investigation.nextBonus(entry.id);
+          if (nextBonus) mods.push({ src: "\u5DF2\u638C\u63E1\u4E0B\u4E00\u7AD9", v: nextBonus });
           const dc = (R.checks[entry.check] ?? 10) - targetMod;
           const advTagged = (g.tags || []).some(
             (t) => t.id === "adv_" + attrKeyOf(entry.id)
@@ -10234,8 +10520,9 @@
       var map = require_map();
       var LP = require_lifepack();
       var TS = require_target_state();
-      function createRouteSystem({ g, seedAt, applyTargetState }) {
+      function createRouteSystem({ g, seedAt, applyTargetState, investigation }) {
         function setRoute(route) {
+          investigation.finish("\u8DEF\u7EBF\u5207\u6362");
           g.route = route;
           if (g.targetState && route && route.nodes) {
             const curId = route.nodes[route.here || 0];
@@ -10319,7 +10606,7 @@
             if (t === null || t > now) break;
             herAdvance(true);
           }
-          if (r.here > from) {
+          if (r.here > from && r.known?.[r.here] === 1) {
             const toName = map.getPlace(r.nodes[r.here])?.name || r.nodes[r.here];
             g.signals = g.signals || [];
             g.signals.push([fmtMin(now), `\u76EE\u6807\u52A8\u5411\u63A8\u8FDB\uFF1A\u524D\u5F80 [${toName}]`]);
@@ -10328,8 +10615,10 @@
           return r.here;
         }
         function revealNode(i) {
-          if (g.route && g.route.known && i >= 0 && i < g.route.known.length)
+          if (g.route && g.route.known && i >= 0 && i < g.route.known.length) {
             g.route.known[i] = 1;
+            investigation.confirmEdge(i);
+          }
         }
         return { setRoute, herAdvance, advanceRouteByClock, revealNode };
       }
@@ -10477,10 +10766,8 @@
             source: options.source || "photo"
           };
           g.album[pick.key] = meta;
-          let piBonus = 0;
-          if (dist === "touch" && pick.angle === "front") piBonus += 1;
+          const piBonus = 0;
           const sb = ALBUM.setBonus(g.album, g.setBonusDone);
-          piBonus += sb.pi;
           g.lastCapture = { key: pick.key, ...meta, piBonus, outfits: sb.outfits };
           g.capture = g.lastCapture;
           g.signals = g.signals || [];
@@ -10712,17 +10999,25 @@
         return activeScene(g) && g.spatial.tracking === "visual" && g.spatial.lastSeen?.targetId === (g.targetId || "college") && g.spatial.lastSeen?.turn === (g.floor || 0) && g.spatial.lastSeen.placeId === routePlace(g) && g.spatial.playerPlaceId === g.spatial.lastSeen.placeId;
       }
       function observeScene(g, date, results) {
+        var _a;
         if (!activeScene(g)) return;
         const attempts = (results?.actions || []).filter(
           (a) => TAIL_PUMP_IDS.includes(a.id) && !a.rejected && a.band
         );
         const attempt = attempts.at(-1);
         const escaped = g.fleeing && g.route?.here >= g.route?.nodes.length - 1;
-        if (attempt?.band === "fail" || escaped) {
+        if (["fail", "nat1"].includes(attempt?.band) || escaped) {
           g.spatial.tracking = "lost";
           return;
         }
         if ((g.spatial.tracking === "lost" || g.spatial.assumed) && !attempt) return;
+        if (attempt && ["success", "grace", "nat20"].includes(attempt.band)) {
+          const here = g.route?.here;
+          if (places[g.route?.nodes?.[here]]) {
+            (_a = g.route).known || (_a.known = g.route.nodes.map(() => 0));
+            g.route.known[here] = 1;
+          }
+        }
         const id = routePlace(g);
         if (!id) return;
         g.spatial.playerPlaceId = id;
@@ -10832,7 +11127,13 @@
           note: "\u56FA\u5B9A\u8857\u533A\u5730\u56FE\u3002\u5730\u5757\u8868\u793A\u7A7A\u95F4\u5206\u5E03\uFF1B\u53EF\u901A\u884C\u8303\u56F4\u4EE5\u5730\u70B9\u5165\u53E3\u4E3A\u51C6\u3002"
         };
       }
-      module.exports = { activeScene, routePlace, observeScene, prepareMove, cityView };
+      module.exports = {
+        activeScene,
+        routePlace,
+        observeScene,
+        prepareMove,
+        cityView
+      };
     }
   });
 
@@ -11251,12 +11552,17 @@
                 state: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null
               },
               targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
+              investigation: {
+                pendingClues: g.investigation.session?.clues.length || 0,
+                effectiveSegments: g.investigation.session?.effective || 0,
+                lastReceipt: g.investigation.lastReceipt
+              },
               profile: {
                 targetId: g.targetId,
                 attrs: knownAttributes(g),
                 impressions: [],
                 facts: F.view(g.targetId, {
-                  pi: s.pi,
+                  knownFacts: g.investigation.knownFacts,
                   tickets: [],
                   assignedFacts: g.targetPersona?.assignedFacts
                 })?.facts || []
@@ -11366,6 +11672,7 @@
               targetBase: { ...g.targetBase },
               targetId: g.targetId || "ol",
               targetKnowledge: g.targetKnowledge,
+              investigation: g.investigation,
               targetPersona: g.targetPersona ? JSON.parse(JSON.stringify(g.targetPersona)) : null,
               targetState: g.targetState ? JSON.parse(JSON.stringify(g.targetState)) : null,
               dateCount: g.dateCount || 0,
@@ -12036,6 +12343,7 @@
       var LP = require_lifepack();
       var TS = require_target_state();
       var ALBUM = require_album();
+      var { createInvestigation } = require_investigation();
       var { validateKnowledge } = require_target_knowledge();
       var { createTargetSystem } = require_target();
       var { createActionSystem } = require_actions();
@@ -12172,6 +12480,7 @@
           unequipItem,
           useItem
         } = createInventorySystem({ g, L, log, syncHeartTags });
+        const investigation = createInvestigation({ g, L });
         const {
           applyTargetState,
           applyShoeMod,
@@ -12179,9 +12488,9 @@
           syncTargetShoeTags,
           syncPersonaTags,
           nightFall: legacyNightFall
-        } = createTargetSystem({ g, L, seedAt, log, syncHeartTags });
-        const { targetEffectiveAcuity, gain, runCheck, categoryOf } = createCheckSystem({ g, seedFor, isFamiliar });
-        const { setRoute, herAdvance, advanceRouteByClock, revealNode } = createRouteSystem({ g, seedAt, applyTargetState });
+        } = createTargetSystem({ g, L, seedAt, log, syncHeartTags, investigation });
+        const { targetEffectiveAcuity, gain, runCheck, categoryOf } = createCheckSystem({ g, seedFor, isFamiliar, investigation });
+        const { setRoute, herAdvance, advanceRouteByClock, revealNode } = createRouteSystem({ g, seedAt, applyTargetState, investigation });
         const { resolveAlertCross } = createAlertSystem({
           g,
           L,
@@ -12197,6 +12506,7 @@
           lex,
           log,
           capturePhoto,
+          investigation,
           currentPlaceKind,
           gain,
           runCheck,
@@ -12223,6 +12533,7 @@
           settleAction,
           snapshot: () => snapshot(),
           syncSpatial: (results) => observeScene(g, L.get("date"), results),
+          investigation,
           sweetHighNow,
           syncThresholdTags
         });
@@ -12285,6 +12596,7 @@
             "alertHold",
             "fleeing",
             "targetKnowledge",
+            "investigation",
             "album",
             "setBonusDone",
             "captureSeq"
@@ -12307,6 +12619,7 @@
           applyTargetState();
         }
         g.targetKnowledge = validateKnowledge(g.targetKnowledge, g.targetId);
+        investigation.restore(init.saved);
         g.dayPlan = validateDayPlan(
           init.saved?.dayPlan ?? init.dayPlan ?? createDayPlan(g.slot)
         );
@@ -12329,6 +12642,8 @@
           registry: createDailyRegistry(services.dailyActions || []),
           nextDay: legacyNightFall,
           afterCommit: () => {
+            if (g.dayPlan.source === "daily" && !g.dayPlan.activity)
+              investigation.finish("\u6D3B\u52A8\u7ED3\u675F");
             syncThresholdTags();
             if (g.dayPlan.source === "daily")
               g.world.district = map.getPlace(g.spatial.playerPlaceId).district;
@@ -12793,7 +13108,7 @@
               startTime: startT,
               nodes: evening.path.map((s) => s.place),
               times: evening.path.map((s) => s.t),
-              known: evening.path.map(() => 1),
+              known: evening.path.map((_, i) => i === 0 ? 1 : 0),
               here: 0
             };
           }
@@ -12807,7 +13122,7 @@
             startTime: "21:00",
             nodes: evening.path.map((s) => s.place),
             times: evening.path.map((s) => s.t),
-            known: evening.path.map(() => 1),
+            known: evening.path.map((_, i) => i === 0 ? 1 : 0),
             here: 0
           } : null;
         }
@@ -14567,7 +14882,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.18",
+        version: "0.8.19",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -14576,9 +14891,10 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js album.test.js",
+          "test:sync": "node tools/test.cjs investigation.test.js chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js album.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs",
+          "preview:pi": "node tools/build/pi-preview.js",
           "preview:daily": "node tools/build/day-preview.js",
           "screenshots:training": "node tools/build/training-shots.js",
           "preview:training": "node tools/build/training-preview.js",

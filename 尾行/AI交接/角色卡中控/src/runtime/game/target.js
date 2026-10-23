@@ -8,7 +8,14 @@ const TS = require("../target_state.js");
 const map = require("../map.js");
 const { SHOE_ID_MAP, WEATHER_BANDS } = require("./constants.js");
 
-function createTargetSystem({ g, L, seedAt, log, syncHeartTags }) {
+function createTargetSystem({
+  g,
+  L,
+  seedAt,
+  log,
+  syncHeartTags,
+  investigation,
+}) {
   function applyTargetState() {
     if (!g.targetState) return;
     g.target = { ...g.targetBase };
@@ -116,7 +123,7 @@ function createTargetSystem({ g, L, seedAt, log, syncHeartTags }) {
           nodes: routeDef.path.map((p) => p.place),
           times: routeDef.path.map((p) => p.t),
           here: 0,
-          known: routeDef.known || routeDef.path.map(() => 1),
+          known: routeDef.path.map((_, i) => (i === 0 ? 1 : 0)),
         };
       }
     } else if (
@@ -316,6 +323,7 @@ function createTargetSystem({ g, L, seedAt, log, syncHeartTags }) {
           reason: "职业病：跟缀未结束，今晚只能跟丢或跟她到家",
         };
     }
+    const investigationReceipt = investigation.finish("结束尾行");
     const curDate = L.get("date");
     if (g.route && g.route.id === "saturday_date_hotel") {
       g.hotelVisitedCount = (g.hotelVisitedCount || 0) + 1;
@@ -406,7 +414,7 @@ function createTargetSystem({ g, L, seedAt, log, syncHeartTags }) {
           nodes: routeDef.path.map((p) => p.place),
           times: routeDef.path.map((p) => p.t),
           here: 0,
-          known: routeDef.known || routeDef.path.map(() => 1),
+          known: routeDef.path.map((_, i) => (i === 0 ? 1 : 0)),
         };
       }
     } else if (
@@ -463,7 +471,7 @@ function createTargetSystem({ g, L, seedAt, log, syncHeartTags }) {
           nodes: routeDef.path.map((p) => p.place),
           times: routeDef.path.map((p) => p.t),
           here: 0,
-          known: routeDef.known || routeDef.path.map(() => 1),
+          known: routeDef.path.map((_, i) => (i === 0 ? 1 : 0)),
         };
       }
     }
@@ -503,6 +511,7 @@ function createTargetSystem({ g, L, seedAt, log, syncHeartTags }) {
         : null,
     };
     applyTargetState();
+    investigation.applyKnownRoute();
     return {
       seq: r.seq,
       warinessGain: r.warinessGain,
@@ -510,6 +519,7 @@ function createTargetSystem({ g, L, seedAt, log, syncHeartTags }) {
       date: L.get("date"),
       nextWeather: g.world.weather,
       piBonus,
+      investigation: investigationReceipt,
       targetState: g.targetState,
     };
   }
