@@ -1,0 +1,283 @@
+<style>
+#zyx-zero-floor, #zyx-zero-floor * { box-sizing: border-box; }
+#zyx-zero-floor {
+  --zyx-ink: #101719; --zyx-panel: #182023; --zyx-line: #455054;
+  --zyx-text: #e1e4de; --zyx-muted: #acb6b3; --zyx-red: #984b41; --zyx-gold: #b4a27b;
+  position: relative; isolation: isolate; width: 100%; max-width: 760px; margin: 16px auto;
+  padding: 26px; overflow: hidden; border: 1px solid var(--zyx-line); border-top: 3px solid #877955;
+  border-radius: 8px; color: var(--zyx-text); background: var(--zyx-ink);
+  font: 14px/1.7 system-ui, sans-serif; box-shadow: 0 14px 38px #0003; text-align: left;
+}
+#zyx-zero-floor [hidden] { display: none !important; }
+#zyx-zero-floor .zyx-landscape { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; opacity: .6; pointer-events: none; }
+#zyx-zero-floor::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(180deg,#10171922,#101719bb 43%,#101719 90%); }
+#zyx-zero-floor .zyx-heading { display: flex; justify-content: space-between; gap: 20px; border-bottom: 1px solid #7e8c8355; padding-bottom: 18px; margin-bottom: 22px; }
+#zyx-zero-floor .zyx-kicker { font-size: 10px; letter-spacing: .22em; color: #c2c7bd; margin: 0 0 5px; }
+#zyx-zero-floor h1 { font: 34px/1.3 ui-serif, 'Noto Serif CJK SC', 'Songti SC', SimSun, serif; letter-spacing: .18em; color: #f0eee4; margin: 0; }
+#zyx-zero-floor h1 small { font-size: 19px; color: #d2c8b0; letter-spacing: .1em; }
+#zyx-zero-floor .zyx-seal { writing-mode: vertical-rl; border: 1px solid #b86e5f; color: #e3a090; padding: 5px 4px; font: 13px/1.2 ui-serif, SimSun, serif; letter-spacing: .18em; align-self: center; transform: rotate(-4deg); }
+#zyx-zero-floor h2 { font-size: 19px; font-weight: 600; margin: 0 0 6px; color: var(--zyx-text); }
+#zyx-zero-floor p { margin: 0 0 14px; }
+#zyx-zero-floor .zyx-subtitle { color: var(--zyx-muted); font-size: 12px; }
+#zyx-zero-floor .zyx-step { animation: zyx-step-in 230ms ease-out; }
+#zyx-zero-floor .zyx-roles { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; margin: 22px 0; }
+#zyx-zero-floor button { font: inherit; cursor: pointer; color: inherit; }
+#zyx-zero-floor button:focus-visible, #zyx-zero-floor input:focus-visible, #zyx-zero-floor select:focus-visible, #zyx-zero-floor textarea:focus-visible { outline: 2px solid #c5b58e; outline-offset: 3px; }
+#zyx-zero-floor .zyx-role { position: relative; display: flex; flex-direction: column; align-items: stretch; overflow: hidden; min-width: 0; padding: 0 11px 14px; border: 1px solid #586460; border-radius: 4px; background: #172024d9; transition: transform 180ms ease, border-color 180ms ease; text-align: left; }
+#zyx-zero-floor .zyx-role::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%,#9da99b35,transparent 68%); opacity: .25; transition: opacity 220ms ease; pointer-events: none; }
+#zyx-zero-floor .zyx-role:hover, #zyx-zero-floor .zyx-role:focus-visible { transform: translateY(-4px); border-color: var(--zyx-gold); }
+#zyx-zero-floor .zyx-role:hover::before, #zyx-zero-floor .zyx-role:focus-visible::before { opacity: 1; }
+#zyx-zero-floor .zyx-silhouette { width: 100%; height: 148px; color: #0a1012; position: relative; }
+#zyx-zero-floor .zyx-silhouette .zyx-haze { fill: #70817b; opacity: .32; }
+#zyx-zero-floor .zyx-role strong { font: 18px/1.5 ui-serif, SimSun, serif; color: #e4e2d4; letter-spacing: .05em; margin-top: 2px; }
+#zyx-zero-floor .zyx-role span { position: relative; color: var(--zyx-muted); font-size: 11px; margin-top: 6px; }
+#zyx-zero-floor .zyx-footnote { color: #a5b2ae; font-size: 11px; padding-top: 15px; border-top: 1px solid #48585466; }
+#zyx-zero-floor .zyx-back { border: 0; padding: 4px 0; margin-bottom: 16px; min-height: 36px; background: transparent; color: #c8c2af; }
+#zyx-zero-floor .zyx-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+#zyx-zero-floor .zyx-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+#zyx-zero-floor .zyx-field > span { color: #c6d0ca; font-size: 12px; }
+#zyx-zero-floor .zyx-wide { grid-column: 1 / -1; }
+#zyx-zero-floor input, #zyx-zero-floor select, #zyx-zero-floor textarea { display: block; width: 100%; min-width: 0; border: 1px solid #52615e; background: #111a1e; border-radius: 4px; padding: 10px 12px; color: var(--zyx-text); font: inherit; line-height: 1.6; color-scheme: dark; }
+#zyx-zero-floor input::placeholder, #zyx-zero-floor textarea::placeholder { color: #869792; opacity: 1; }
+#zyx-zero-floor textarea { min-height: 110px; resize: vertical; }
+#zyx-zero-floor .zyx-realm-note { grid-column: 1 / -1; margin-top: -4px; padding: 11px 13px; background: #27332f; border-left: 2px solid #8b9e88; color: #c5d2c6; font-size: 12px; }
+#zyx-zero-floor .zyx-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+#zyx-zero-floor .zyx-button { padding: 10px 17px; min-height: 42px; border: 1px solid #768178; background: #293732; border-radius: 4px; color: #e4e7dc; transition: background 160ms ease; }
+#zyx-zero-floor .zyx-button:hover { background: #364740; }
+#zyx-zero-floor .zyx-primary { border-color: #b47a63; background: #79473e; color: #fff2e7; }
+#zyx-zero-floor .zyx-primary:hover { background: #92594e; }
+#zyx-zero-floor .zyx-status { color: #dfcfad; margin: 14px 0 0; min-height: 23px; font-size: 12px; overflow-wrap: anywhere; }
+#zyx-zero-floor .zyx-record { padding: 20px; border: 1px solid #8b8067; border-left: 3px solid #b49166; background: #252923; margin: 20px 0; }
+#zyx-zero-floor .zyx-record-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-bottom: 1px solid #8c816744; padding-bottom: 12px; margin-bottom: 15px; }
+#zyx-zero-floor .zyx-record-head h2 { font: 23px/1.5 ui-serif, SimSun, serif; }
+#zyx-zero-floor .zyx-record-mark { padding: 2px 8px; border: 1px solid #bd7867; color: #e5a895; font-size: 11px; }
+#zyx-zero-floor dl { display: grid; grid-template-columns: 64px minmax(0,1fr); gap: 10px 16px; margin: 0; }
+#zyx-zero-floor dt { color: #afbaae; font-size: 12px; }
+#zyx-zero-floor dd { margin: 0; color: #e6e8de; overflow-wrap: anywhere; white-space: pre-wrap; }
+#zyx-zero-floor .zyx-output-label { display: block; color: var(--zyx-muted); font-size: 12px; margin: 20px 0 7px; }
+#zyx-zero-floor .zyx-output { min-height: 180px; font-size: 12px; }
+#zyx-zero-floor .zyx-fallback { border-top: 1px solid #48585466; margin-top: 20px; padding-top: 13px; font-size: 11px; color: var(--zyx-muted); }
+@keyframes zyx-step-in { from { opacity: 0; transform: translateX(9px); } to { opacity: 1; transform: translateX(0); } }
+@media (max-width: 560px) {
+  #zyx-zero-floor { padding: 18px 14px; }
+  #zyx-zero-floor .zyx-roles { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #zyx-zero-floor .zyx-silhouette { height: 128px; }
+  #zyx-zero-floor .zyx-fields { grid-template-columns: minmax(0,1fr); }
+  #zyx-zero-floor h1 { font-size: 29px; }
+  #zyx-zero-floor .zyx-record { padding: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #zyx-zero-floor .zyx-step { animation: none; }
+  #zyx-zero-floor .zyx-role, #zyx-zero-floor .zyx-role::before, #zyx-zero-floor .zyx-button { transition: none; }
+  #zyx-zero-floor .zyx-role:hover, #zyx-zero-floor .zyx-role:focus-visible { transform: none; }
+}
+</style>
+
+<div id="zyx-zero-floor">
+  <svg class="zyx-landscape" viewBox="0 0 760 580" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+    <rect width="760" height="580" fill="#26373c"></rect>
+    <circle cx="592" cy="88" r="40" fill="#bdc8c3" opacity=".22"></circle>
+    <path d="M0 262 75 156 132 208 213 86 285 179 349 130 421 227 496 162 577 214 670 98 760 211V580H0Z" fill="#536567" opacity=".35"></path>
+    <path d="M0 335 86 259 170 303 278 174 356 294 442 234 536 323 629 196 760 326V580H0Z" fill="#17282d"></path>
+    <path d="M0 421 109 354 192 390 291 304 377 403 498 347 582 405 682 331 760 415V580H0Z" fill="#101d22"></path>
+    <path d="M270 580Q360 439 407 409T476 344" fill="none" stroke="#7b8981" stroke-width="13" opacity=".18"></path>
+  </svg>
+  <header class="zyx-heading"><div><p class="zyx-kicker">宣德 · 赣闽粤界</p><h1>朱颜血 <small>· 丹杏</small></h1></div><span class="zyx-seal">入世</span></header>
+
+  <section class="zyx-step" data-step="choose">
+    <h2>山雨将至，来者何人</h2><p class="zyx-subtitle">先选一重身位，再定姓名、来历与落脚之处。</p>
+    <div class="zyx-roles">
+      <button type="button" class="zyx-role" data-role="jinyiwei">
+        <svg class="zyx-silhouette" viewBox="0 0 140 150" aria-hidden="true"><ellipse class="zyx-haze" cx="70" cy="78" rx="47" ry="65"></ellipse><path fill="currentColor" d="M54 30 60 14H82L87 30 104 33 103 40 39 40 38 33Z"></path><ellipse fill="currentColor" cx="71" cy="45" rx="14" ry="17"></ellipse><path fill="currentColor" d="M55 60 86 59 103 91 113 143H29L39 94Z"></path><path d="m87 77 17 13-17 8M45 89l16 5M101 83 82 139" fill="none" stroke="currentColor" stroke-width="8"></path><path d="M47 87H93" stroke="#53615a" stroke-width="2"></path></svg>
+        <strong>锦衣缇骑</strong><span>北司密令，便衣南下。绣春刀藏在商旅衣下。</span>
+      </button>
+      <button type="button" class="zyx-role" data-role="yuzu">
+        <svg class="zyx-silhouette" viewBox="0 0 140 150" aria-hidden="true"><ellipse class="zyx-haze" cx="70" cy="78" rx="47" ry="65"></ellipse><path fill="currentColor" d="m52 30 7-14 24 2 6 17Z"></path><ellipse fill="currentColor" cx="70" cy="45" rx="14" ry="17"></ellipse><path fill="currentColor" d="m55 60 24-2 17 25-7 34 7 26H37l6-44Z"></path><path d="m50 77-13 25 15 10m34-36 22 30-2 30M54 113l-8 30m34-30 7 30" fill="none" stroke="currentColor" stroke-width="10"></path><path d="M105 107q27 1 14 18t-12 15" fill="none" stroke="currentColor" stroke-width="3"></path></svg>
+        <strong>黑狱恶差</strong><span>荒山牢所，法外营生。一串锁钥，几分官威。</span>
+      </button>
+      <button type="button" class="zyx-role" data-role="xiake">
+        <svg class="zyx-silhouette" viewBox="0 0 140 150" aria-hidden="true"><ellipse class="zyx-haze" cx="70" cy="78" rx="47" ry="65"></ellipse><path d="m34 18 54 118" stroke="currentColor" stroke-width="7"></path><path fill="currentColor" d="m69 17 38 26H31Z"></path><ellipse fill="currentColor" cx="69" cy="48" rx="13" ry="16"></ellipse><path fill="currentColor" d="m55 61 27-1 17 44 17 37H25l20-40Z"></path><path d="m50 75-18 32m51-33 19 32M57 126l-4 19m25-20 6 20" stroke="currentColor" stroke-width="9"></path><path d="M45 90q22 9 49-1" fill="none" stroke="#53615a" stroke-width="2"></path></svg>
+        <strong>江湖任侠</strong><span>负剑戴笠，山道独行。此番去留，由你自定。</span>
+      </button>
+      <button type="button" class="zyx-role" data-role="custom">
+        <svg class="zyx-silhouette" viewBox="0 0 140 150" aria-hidden="true"><ellipse class="zyx-haze" cx="70" cy="78" rx="47" ry="65"></ellipse><ellipse fill="currentColor" cx="70" cy="39" rx="15" ry="20"></ellipse><path fill="currentColor" d="M55 63q15-8 30 0l13 33-7 10-7-21v30l5 30H73l-3-27-3 27H51l5-30V85l-8 22-7-10Z"></path></svg>
+        <strong>身世自设</strong><span>来处未记，去路未定。亲手写下一页身世。</span>
+      </button>
+    </div>
+    <p class="zyx-footnote">六境皆在先天之前。身份只定开端，不替你决定往后的言行。</p>
+  </section>
+
+  <section class="zyx-step" data-step="configure" hidden>
+    <button type="button" class="zyx-back" data-action="choose">‹ 返回重选</button>
+    <h2 data-config-title>细定身世</h2><p class="zyx-subtitle">各项均可调整；自设身份的来历与场景可暂留空。</p>
+    <div class="zyx-fields">
+      <label class="zyx-field"><span>人物姓名</span><input data-input="name" type="text" autocomplete="off"></label>
+      <label class="zyx-field"><span>年岁</span><input data-input="age" type="number" min="1" step="1" value="20" inputmode="numeric"></label>
+      <label class="zyx-field" data-rank-field><span>锦衣卫职级</span><select data-input="rank"><option value="小旗">小旗</option><option value="总旗（正七品）" selected>总旗（正七品）</option><option value="百户">百户</option></select></label>
+      <label class="zyx-field" data-origin-field><span>身份出处／门派</span><input data-input="origin" type="text" autocomplete="off"></label>
+      <label class="zyx-field"><span>武功境界</span><select data-input="realm" aria-describedby="zyx-realm-note"><option>末流</option><option>凡骨</option><option>淬体</option><option selected>冲脉</option><option>通明</option><option>入微</option></select></label>
+      <p class="zyx-realm-note" id="zyx-realm-note" role="status"></p>
+      <label class="zyx-field zyx-wide"><span>开局场景与动机</span><textarea data-input="scene" rows="4" placeholder="从何处起步，为何来到此地？"></textarea></label>
+    </div>
+    <button type="button" class="zyx-button zyx-primary" data-action="confirm">确认档案 · 生成卷宗</button>
+    <p class="zyx-status" data-form-status role="status"></p>
+  </section>
+
+  <section class="zyx-step" data-step="record" hidden>
+    <button type="button" class="zyx-back" data-action="edit">‹ 返回修改</button>
+    <div class="zyx-record"><div class="zyx-record-head"><h2>入世卷宗</h2><span class="zyx-record-mark">待启程</span></div>
+      <dl><dt>姓名</dt><dd data-record="name"></dd><dt>年岁</dt><dd data-record="age"></dd><dt>身位</dt><dd data-record="role"></dd><dt>来处</dt><dd data-record="origin"></dd><dt>武境</dt><dd data-record="realm"></dd><dt>开局</dt><dd data-record="scene"></dd></dl>
+    </div>
+    <p class="zyx-subtitle">确认后填入酒馆输入栏，由你检查并发送第一条消息。</p>
+    <div class="zyx-actions"><button type="button" class="zyx-button zyx-primary" data-action="fill">踏入江湖 · 填入输入栏</button><button type="button" class="zyx-button" data-action="copy">复制开局设定</button></div>
+    <p class="zyx-status" data-output-status role="status"></p>
+    <label class="zyx-output-label">完整开局文本（也可长按复制）<textarea class="zyx-output" data-output readonly rows="10"></textarea></label>
+  </section>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const root = document.currentScript?.previousElementSibling?.id === 'zyx-zero-floor'
+    ? document.currentScript.previousElementSibling : document.getElementById('zyx-zero-floor');
+  if (!root || root.dataset.initialized) return;
+  root.dataset.initialized = 'true';
+  // 拼接宏，避免酒馆在替换脚本源码时把玩家姓名嵌入JavaScript字面量。
+  const USER_MACRO = '{' + '{user}' + '}';
+  const DEFAULT_POLICY = 'byRole'; // 用户确认按身份字典；uniform可切换统一20岁/冲脉。
+  const realms = Object.freeze({
+    '末流': '下三境第一阶。市井粗浅拳脚与寻常民夫，全凭凡骨膂力，无内气护体，见刃即伤。',
+    '凡骨': '下三境第二阶。军中精壮士卒与宗门初级门人，筋骨初通，略通套路合击，难敌内力附刃。',
+    '淬体': '下三境第三阶（如孙天羽、阎罗望）。肉身筋骨经受磨砺，气血饱满沉凝，耐受皮肉重击，身手沉健。',
+    '冲脉': '中三境第四阶（如卓天雄）。真气通达奇经，可内力附刃震断凡兵，以一敌十，军中百户将校水准。',
+    '通明': '中三境第五阶（如白雪莲、陆寒渊）。真气贯通脏腑百骸，气机圆融通达，举手投足可断木裂石，能空手震碎二十五斤死囚重枷。',
+    '入微': '中三境第六阶巅峰（如青萝/影雀）。真气贯通十二正经，隔空点穴错骨，内息隐纳自如，数十凡骨难近其身。'
+  });
+  const roles = Object.freeze({
+    jinyiwei: { title: '锦衣缇骑', age: '24', realm: '通明', origin: '锦衣卫北镇抚司·总旗', scene: '长宁县城 · 悦来客栈。奉北镇抚司密令化装为生药客商，追查白莲逆党密函，刚在城中落脚。' },
+    yuzu: { title: '黑狱恶差', age: '26', realm: '淬体', origin: '豺狼坡废庙监狱·司职狱卒', scene: '豺狼坡黑狱 · 正殿公堂。依附于阎罗望与孙天羽麾下，正在前院饮酒掷骰，坐等肥羊上门。' },
+    xiake: { title: '江湖任侠', age: '20', realm: '冲脉', origin: '江湖游侠（名门/散修）', scene: '神仙岭 · 杏花村客栈。山雨连绵，夜行荒径二十里，正推开竹篱柴门进入杏花村客栈避雨打尖。' },
+    custom: { title: '身世自设', age: '20', realm: '凡骨', origin: '', scene: '' }
+  });
+  const drafts = new Map();
+  const fields = Object.fromEntries([...root.querySelectorAll('[data-input]')].map(el => [el.dataset.input, el]));
+  let selected = null, output = '';
+  fields.name.placeholder = USER_MACRO;
+  function show(step) {
+    for (const pane of root.querySelectorAll('[data-step]')) pane.hidden = pane.dataset.step !== step;
+    const heading = root.querySelector(`[data-step="${step}"] h2`);
+    if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
+  }
+  function saveDraft() {
+    if (selected) drafts.set(selected, Object.fromEntries(Object.entries(fields).map(([key, el]) => [key, el.value])));
+  }
+  function explainRealm() {
+    const description = realms[fields.realm.value] || '';
+    root.querySelector('#zyx-realm-note').textContent = description;
+    fields.realm.title = description; // 电脑悬停；下方常显解释兼顾触屏和键盘。
+  }
+  function configure(id) {
+    if (!roles[id]) return;
+    selected = id;
+    const role = roles[id];
+    const values = drafts.get(id) || { name: '', age: DEFAULT_POLICY === 'uniform' ? '20' : role.age,
+      origin: role.origin, rank: '总旗（正七品）', realm: DEFAULT_POLICY === 'uniform' ? '冲脉' : role.realm, scene: role.scene };
+    for (const [key, value] of Object.entries(values)) fields[key].value = value;
+    root.querySelector('[data-config-title]').textContent = role.title + ' · 细定身世';
+    root.querySelector('[data-rank-field]').hidden = id !== 'jinyiwei';
+    root.querySelector('[data-origin-field]').hidden = id === 'jinyiwei';
+    fields.origin.placeholder = id === 'custom' ? '由你填写来历' : '可填写门派或来历';
+    root.querySelector('[data-form-status]').textContent = '';
+    explainRealm();
+    show('configure');
+  }
+  function hostWindows() {
+    const windows = [window];
+    try { if (window.parent !== window) windows.push(window.parent); } catch {}
+    try { if (!windows.includes(window.top)) windows.push(window.top); } catch {}
+    return windows;
+  }
+  function playerName() {
+    for (const host of hostWindows()) {
+      try {
+        const name = host.SillyTavern?.getContext?.()?.name1;
+        if (typeof name === 'string' && name.trim()) return name.trim();
+      } catch {}
+    }
+    return USER_MACRO;
+  }
+  function confirmRecord() {
+    if (!roles[selected]) return;
+    const ageText = fields.age.value.trim() || (DEFAULT_POLICY === 'uniform' ? '20' : roles[selected].age), age = Number(ageText);
+    if (fields.age.validity.badInput || !Number.isSafeInteger(age) || age < 1) {
+      root.querySelector('[data-form-status]').textContent = '请填写大于零的整数年龄。';
+      fields.age.focus(); return;
+    }
+    if (!Object.hasOwn(realms, fields.realm.value)) return;
+    saveDraft();
+    const record = {
+      name: fields.name.value.trim() || playerName(), age: age + '岁', role: roles[selected].title,
+      origin: selected === 'jinyiwei' ? '锦衣卫北镇抚司 · ' + fields.rank.value : fields.origin.value.trim(),
+      realm: fields.realm.value, scene: fields.scene.value.trim()
+    };
+    for (const node of root.querySelectorAll('[data-record]')) node.textContent = record[node.dataset.record] || '未填写';
+    output = '[玩家开局设定已载入]\n' + JSON.stringify({ 姓名: record.name, 年龄: age, 身位: record.role,
+      身份出处: record.origin, 武功境界: record.realm, 开局场景与动机: record.scene }, null, 2)
+      + '\n\n请以此为本次玩家开局设定，依现有世界观铺陈当前场景。只写相遇开端，不替玩家决定台词或行动，不把背景说明当作已发生的战果。未填写的出身、门派或场景先询问玩家，不自行补定。武功境界以这份设定为准，不自行升境。';
+    root.querySelector('[data-output]').value = output;
+    root.querySelector('[data-output-status]').textContent = '卷宗已生成，尚未发送。';
+    show('record');
+  }
+  async function copyOutput() {
+    const status = root.querySelector('[data-output-status]');
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
+      await navigator.clipboard.writeText(output);
+      status.textContent = '开局设定已复制；可粘贴到酒馆输入栏后发送。';
+    } catch {
+      const area = root.querySelector('[data-output]');
+      area.focus(); area.select(); area.setSelectionRange(0, area.value.length);
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch {}
+      status.textContent = copied ? '开局设定已复制。' : '已选中完整文本；请使用复制或长按复制。';
+    }
+  }
+  function fillInput() {
+    const status = root.querySelector('[data-output-status]');
+    for (const host of hostWindows()) {
+      try {
+        const box = host.document.querySelector('#send_textarea');
+        if (!box || typeof box.value !== 'string' || box.disabled || box.readOnly) continue;
+        const previous = box.value;
+        if (previous.includes(output)) { status.textContent = '这份设定已在输入栏中，请检查后发送。'; return; }
+        box.value = previous.trim() ? previous + '\n\n' + output : output;
+        const HostEvent = box.ownerDocument.defaultView.Event;
+        box.dispatchEvent(new HostEvent('input', { bubbles: true }));
+        box.focus();
+        status.textContent = previous.trim() ? '已追加到现有草稿末尾；原草稿保留，请在酒馆检查后发送。' : '已填入酒馆输入栏；请检查后点击发送，开始江湖。';
+        return;
+      } catch {}
+    }
+    status.textContent = '当前未连接到酒馆输入栏。请复制下方开局文本，粘贴后发送。';
+  }
+  root.addEventListener('click', event => {
+    const button = event.target.closest('button');
+    if (!button || !root.contains(button)) return;
+    event.preventDefault(); event.stopPropagation();
+    if (button.dataset.role) { configure(button.dataset.role); return; }
+    switch (button.dataset.action) {
+      case 'choose': saveDraft(); show('choose'); break;
+      case 'edit': show('configure'); break;
+      case 'confirm': confirmRecord(); break;
+      case 'copy': void copyOutput(); break;
+      case 'fill': fillInput(); break;
+    }
+  });
+  root.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && event.target.matches('input') && !event.isComposing) {
+      event.preventDefault(); event.stopPropagation(); confirmRecord();
+    }
+  });
+  fields.realm.addEventListener('change', explainRealm);
+})();
+</script>
