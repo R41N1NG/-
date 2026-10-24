@@ -1,0 +1,257 @@
+[
+  {
+    "width": 1100,
+    "name": "默认甜区示例明确区分50负荷与63BPM",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实修正 calm",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "图片高清且框选不越界 calm",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实修正 buffer",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "图片高清且框选不越界 buffer",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实修正 deform",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "图片高清且框选不越界 deform",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实修正 crash",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "图片高清且框选不越界 crash",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "手机无横向溢出",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "说明切换为单项框选",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "原图可放大",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "缓息真实结果与代价明确",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "优势甜区与70精细惩罚可同时成立",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "阅读不写游戏进度",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "全跳过刷新后不加载课程图片",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "页面无报错",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "默认甜区示例明确区分50负荷与63BPM",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实修正 calm",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "图片高清且框选不越界 calm",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实修正 buffer",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "图片高清且框选不越界 buffer",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实修正 deform",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "图片高清且框选不越界 deform",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实修正 crash",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "图片高清且框选不越界 crash",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "手机无横向溢出",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "说明切换为单项框选",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "原图可放大",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "缓息真实结果与代价明确",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "优势甜区与70精细惩罚可同时成立",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "阅读不写游戏进度",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "全跳过刷新后不加载课程图片",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "页面无报错",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "默认甜区示例明确区分50负荷与63BPM",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实修正 calm",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "图片高清且框选不越界 calm",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实修正 buffer",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "图片高清且框选不越界 buffer",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实修正 deform",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "图片高清且框选不越界 deform",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实修正 crash",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "图片高清且框选不越界 crash",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "手机无横向溢出",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "说明切换为单项框选",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "原图可放大",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "缓息真实结果与代价明确",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "优势甜区与70精细惩罚可同时成立",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "阅读不写游戏进度",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "全跳过刷新后不加载课程图片",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "页面无报错",
+    "ok": true
+  }
+]

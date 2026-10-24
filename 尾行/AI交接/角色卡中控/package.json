@@ -1,6 +1,6 @@
 {
   "name": "weixing-engine",
-  "version": "0.8.22",
+  "version": "0.8.23",
   "private": true,
   "description": "尾行 · 数值引擎与酒馆角色卡（检定/心跳/警觉/冲突/追逐/HUD）",
   "scripts": {
@@ -19,7 +19,10 @@
     "preview:attributes": "node tools/build/training-preview.js --attributes",
     "screenshots:day-tutorial": "node tools/build/day-tailing-shots.js",
     "preview:day-tutorial": "node tools/build/day-tailing-preview.js",
-    "test:day-tutorial": "node tools/check-day-tailing-course.cjs"
+    "test:day-tutorial": "node tools/check-day-tailing-course.cjs",
+    "screenshots:heart-tutorial": "node tools/build/heart-lesson-shots.js",
+    "preview:heart-tutorial": "node tools/build/heart-lesson-preview.js",
+    "test:heart-tutorial": "node tools/check-heart-lesson.cjs"
   },
   "devDependencies": {
     "@types/node": "24.10.0",

@@ -51,6 +51,7 @@ function generateUIConfig() {
     generator: rules.targets.generator,
     heart: {
       sweet: [rules.check.sweetLow, rules.check.sweetHigh],
+      sweetHighBonus: rules.advantage.sweetHighBonus,
       lines: [rules.heart.deformLine, rules.heart.crashLine],
     },
     requirements: Object.fromEntries(

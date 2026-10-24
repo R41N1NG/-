@@ -15027,7 +15027,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.22",
+        version: "0.8.23",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -15046,7 +15046,10 @@
           "preview:attributes": "node tools/build/training-preview.js --attributes",
           "screenshots:day-tutorial": "node tools/build/day-tailing-shots.js",
           "preview:day-tutorial": "node tools/build/day-tailing-preview.js",
-          "test:day-tutorial": "node tools/check-day-tailing-course.cjs"
+          "test:day-tutorial": "node tools/check-day-tailing-course.cjs",
+          "screenshots:heart-tutorial": "node tools/build/heart-lesson-shots.js",
+          "preview:heart-tutorial": "node tools/build/heart-lesson-preview.js",
+          "test:heart-tutorial": "node tools/check-heart-lesson.cjs"
         },
         devDependencies: {
           "@types/node": "24.10.0",

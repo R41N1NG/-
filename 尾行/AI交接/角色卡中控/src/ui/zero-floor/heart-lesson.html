@@ -1,0 +1,80 @@
+<main id="wx-zero-floor" class="day-course-shell heart-lesson-shell">
+  <section id="heartLesson" hidden aria-labelledby="heartLessonTitle">
+    <header class="heart-lesson-top">
+      <span>全息潜行训练 · 第三组 / 第1页</span
+      ><button type="button" id="heartLessonSkipAll">
+        一键跳过所有教程 ↗
+      </button>
+    </header>
+    <div class="heart-lesson-heading">
+      <span>心跳与甜区</span>
+      <h1 id="heartLessonTitle">先分清负荷，再判断要不要继续</h1>
+      <p>
+        适度的负荷会带来甜区加值；继续升高则会失去收益，并触发精细操作惩罚。本页用同一组真实界面，解释这条变化。
+      </p>
+    </div>
+    <div class="heart-lesson-basics">
+      <article>
+        <h2>大数字：负荷值</h2>
+        <p>心跳负荷的量程是0–100。甜区和操作线都按这个值判断。</p>
+      </article>
+      <article>
+        <h2>小数字：BPM</h2>
+        <p>BPM由负荷换算，用于显示和音效。它不作为另一份独立资源结算。</p>
+      </article>
+      <article>
+        <h2>本例：胆量5</h2>
+        <p>
+          默认甜区40–65；70起精细检定−2，90起合计−4。进入范围的当次判定就生效。
+        </p>
+      </article>
+    </div>
+    <figure class="heart-lesson-figure">
+      <figcaption>① 先找到入口 · 点击状态栏右侧的小红心</figcaption>
+      <div id="heartEntryPicture"></div>
+    </figure>
+    <section class="heart-lesson-states" aria-labelledby="heartStatesHeading">
+      <h2 id="heartStatesHeading">② 看看不同负荷下，面板与实际修正怎样变化</h2>
+      <p class="heart-lesson-note">
+        点选情形查看原界面；点击截图下的说明切换框选。这里不会改变你的实际游戏状态。
+      </p>
+      <div id="heartStateTabs" role="group" aria-label="五种心跳负荷示例"></div>
+      <div class="heart-state-copy">
+        <h3 id="heartStateTitle"></h3>
+        <p id="heartStateCopy"></p>
+        <strong id="heartStateReadings"></strong>
+        <p id="heartStateMod" aria-live="polite"></p>
+      </div>
+      <figure class="heart-lesson-figure">
+        <figcaption>真实心跳面板 · 负荷、绿弧与BPM位置保持原样</figcaption>
+        <div id="heartStatePicture"></div>
+      </figure>
+    </section>
+    <section class="heart-lesson-breath">
+      <h2>③ 缓息能降负荷，但不是暂停按钮</h2>
+      <p>
+        缓息本身不掷骰，也不恢复体力；仍占用一个内部回合，目标可能继续行动。胆量影响缓息效果，降到20后不能再靠缓息降低。是否会失去目视，仍要看当轮现场反馈。
+      </p>
+      <details id="heartBreathDetail">
+        <summary>展开一次真实缓息结算：75 → 60</summary>
+        <p id="heartBreathResult"></p>
+        <p class="heart-lesson-note">
+          本例还包含段末回落；不要把整轮下降15当成缓息固定效果。缓息所在回合仍按当段峰值结算体力。
+        </p>
+        <div id="heartBreathPicture"></div>
+      </details>
+    </section>
+    <details class="heart-lesson-advanced">
+      <summary>补充：有胆量优势时，绿弧拓宽意味着什么？</summary>
+      <p id="heartAdvancedCopy"></p>
+    </details>
+    <footer class="heart-lesson-footer">
+      <span>阅读、框选和查看示例不消耗资源，不写游戏进度。</span
+      ><button type="button" id="heartLessonComplete">这一页我读懂了 ✓</button>
+    </footer>
+  </section>
+  <section id="heartLessonDone" hidden>
+    <h1>训练说明</h1>
+    <p id="heartLessonDoneText" role="status"></p>
+  </section>
+</main>

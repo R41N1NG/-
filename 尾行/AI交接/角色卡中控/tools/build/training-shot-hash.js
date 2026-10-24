@@ -28,6 +28,7 @@ function trainingShotHash(root) {
     scan(path.join(root, dir));
   for (const file of [
     "src/ui/statusbar.js",
+    "src/ui/display.js",
     "src/ui/template.html",
     "src/ui/styles/statusbar.css",
     "src/ui/styles/city-map.css",

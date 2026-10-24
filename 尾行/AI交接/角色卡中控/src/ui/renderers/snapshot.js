@@ -3,6 +3,7 @@ const { ico, stripEmoji } = require("../icons.js");
 const { ALERT_TIERS, alertTierOf } = require("../alert-view.js");
 const {
   SWEET,
+  sweetRangeOf,
   LINES,
   heartToBpm,
   heartFreq,
@@ -18,6 +19,7 @@ function createSnapshotRenderer({
   lifecycle,
   root,
   dial,
+  setSweetRange,
   view,
   audio,
   renderers,
@@ -46,10 +48,14 @@ function createSnapshotRenderer({
     if (miniBpmNum) miniBpmNum.textContent = bpm + " BPM";
     document.getElementById("orbit").style.transform =
       `rotate(${135 + (view.heart / 100) * 270}deg)`;
+    const range = sweetRangeOf(snap);
+    setSweetRange?.(range);
     dial.setAttribute(
       "aria-label",
-      `心跳${view.heart}，量程0至100，甜区40至65`,
+      `心跳负荷${view.heart}，量程0至100，甜区${range[0]}至${range[1]}`,
     );
+    document.getElementById("instrument").dataset.tip =
+      `心跳负荷0–100；当前甜区${range[0]}–${range[1]}，检定+1。${LINES[0]}起精细检定−2；${LINES[1]}起精细检定合计−4，不是敏捷属性降低。BPM是换算读数。`;
     root.style.setProperty("--beat", `${60 / bpm}s`);
     const line = lineOf(view.heart);
     document.getElementById("instrument").dataset.line = line;

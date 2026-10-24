@@ -3,6 +3,13 @@ const CONFIG = require("./generated/rules.json");
 const SWEET = CONFIG.heart.sweet;
 
 const LINES = CONFIG.heart.lines;
+const sweetRangeOf = (snap) => [
+  SWEET[0],
+  SWEET[1] +
+    ((snap?.tags || []).some((t) => t.id === "adv_nrv")
+      ? CONFIG.heart.sweetHighBonus
+      : 0),
+];
 
 const heartToBpm = (v) =>
   v < 40
@@ -43,6 +50,7 @@ const lineOf = (heart) => {
 };
 module.exports = {
   SWEET,
+  sweetRangeOf,
   LINES,
   heartToBpm,
   heartFreq,

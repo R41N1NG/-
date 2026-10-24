@@ -221,6 +221,7 @@ function mountStatusbar(document, window) {
     lifecycle,
     root,
     dial,
+    setSweetRange: (range) => dial.querySelector(".dial-sweet").setAttribute("d", arc(...range)),
     view,
     audio,
     renderers: {

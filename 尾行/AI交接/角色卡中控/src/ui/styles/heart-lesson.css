@@ -1,0 +1,216 @@
+#wx-zero-floor.heart-lesson-shell {
+  max-width: 1060px;
+}
+#wx-zero-floor .heart-lesson-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: #a5bdb3;
+  font-size: 12px;
+}
+#heartLessonSkipAll {
+  border-color: #b59a5c;
+  color: #f0d8a1;
+  background: #423823;
+}
+#wx-zero-floor .heart-lesson-heading {
+  margin: 28px 0 24px;
+}
+#wx-zero-floor .heart-lesson-heading > span {
+  font-size: 11px;
+  color: #cfb87f;
+  letter-spacing: 3px;
+}
+#wx-zero-floor .heart-lesson-heading h1 {
+  font-size: 28px;
+  line-height: 1.5;
+  margin: 8px 0 13px;
+  font-weight: 550;
+}
+#wx-zero-floor .heart-lesson-heading > p {
+  margin: 0;
+  color: #a9bfb5;
+}
+#wx-zero-floor .heart-lesson-basics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+#wx-zero-floor .heart-lesson-basics article {
+  padding: 14px 16px;
+  background: #162e30;
+  border-top: 2px solid #75ac9c;
+}
+#wx-zero-floor .heart-lesson-basics h2 {
+  margin: 0 0 7px;
+  font-size: 14px;
+}
+#wx-zero-floor .heart-lesson-basics p {
+  font-size: 12px;
+  color: #adc0b4;
+  margin: 0;
+}
+#wx-zero-floor .heart-lesson-figure {
+  margin: 18px 0 24px;
+  background: #0c1a1e;
+  border: 1px solid #304c48;
+  border-radius: 6px;
+  padding: 16px;
+}
+#wx-zero-floor .heart-lesson-figure > figcaption {
+  font-size: 12px;
+  color: #b6c7b9;
+  margin-bottom: 13px;
+}
+#wx-zero-floor .heart-lesson-states > h2,
+#wx-zero-floor .heart-lesson-breath > h2 {
+  font-size: 19px;
+  margin: 28px 0 10px;
+  font-weight: 500;
+}
+#wx-zero-floor #heartStateTabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+#heartStateTabs button {
+  flex: 1 1 150px;
+}
+#heartStateTabs [aria-pressed="true"] {
+  color: #edd6a0;
+  background: #3c3926;
+  border-color: #c4a96c;
+}
+#wx-zero-floor .heart-state-copy {
+  border-left: 2px solid #d2b976;
+  background: #193034;
+  padding: 13px 18px;
+}
+#wx-zero-floor .heart-state-copy h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+#wx-zero-floor .heart-state-copy p {
+  font-size: 13px;
+  color: #c1cec0;
+  margin: 7px 0;
+}
+#heartStateReadings {
+  display: block;
+  font:
+    600 17px/1.8 ui-monospace,
+    monospace;
+  letter-spacing: 0.04em;
+  color: #ddc68e;
+}
+#wx-zero-floor #heartStateMod {
+  font-size: 15px;
+  padding: 10px 12px;
+  background: #ffffff05;
+  border: 1px solid #88b1a722;
+}
+#wx-zero-floor #heartStateMod[data-band="gain"] {
+  color: #77d7bc;
+}
+#wx-zero-floor #heartStateMod[data-band="warn"] {
+  color: #f4a8a2;
+}
+#wx-zero-floor .heart-lesson-note {
+  color: #92aea2;
+  font-size: 12px;
+}
+#wx-zero-floor .heart-lesson-breath > p {
+  color: #b2c7b9;
+  font-size: 13px;
+}
+#wx-zero-floor .heart-lesson-breath details,
+#wx-zero-floor .heart-lesson-advanced {
+  border: 1px solid #31514b;
+  padding: 14px 16px;
+  margin: 16px 0;
+  background: #12292c;
+}
+#wx-zero-floor .heart-lesson-breath summary,
+#wx-zero-floor .heart-lesson-advanced summary {
+  cursor: pointer;
+  color: #d9c58f;
+}
+#heartBreathResult {
+  color: #b5d5c7;
+  font-size: 14px;
+}
+#wx-zero-floor .heart-lesson-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid #36534c;
+  padding-top: 20px;
+  margin-top: 24px;
+}
+#wx-zero-floor .heart-lesson-footer span {
+  font-size: 11px;
+  color: #8da89c;
+}
+#heartLessonComplete {
+  color: #efd7a5;
+  border-color: #bca36a;
+}
+#wx-zero-floor .heart-lesson-states .training-shot-pair {
+  max-width: 600px;
+  margin: 0 auto;
+}
+#wx-zero-floor #heartBreathPicture .training-shot-pair {
+  max-width: 600px;
+  margin: 0 auto;
+}
+@media (max-width: 650px) {
+  #wx-zero-floor .heart-lesson-heading h1 {
+    font-size: 22px;
+  }
+  #wx-zero-floor .heart-lesson-basics {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  #wx-zero-floor .heart-lesson-basics article {
+    padding: 10px 12px;
+  }
+  #wx-zero-floor .heart-lesson-top {
+    align-items: flex-start;
+    font-size: 10px;
+  }
+  #heartLessonSkipAll {
+    max-width: 145px;
+    font-size: 11px;
+    padding: 8px;
+  }
+  #wx-zero-floor .heart-lesson-figure {
+    padding: 10px;
+  }
+  #wx-zero-floor .heart-lesson-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  #heartStateTabs button {
+    flex-basis: 40%;
+    font-size: 12px;
+  }
+  #wx-zero-floor .heart-state-copy {
+    padding: 12px;
+  }
+  #heartStateReadings {
+    font-size: 15px;
+  }
+  #wx-zero-floor #heartStateMod {
+    font-size: 13px;
+  }
+}
+
+#wx-zero-floor #heartStatePicture .training-shot-frame,
+#wx-zero-floor #heartBreathPicture .training-shot-frame {
+  max-width: 300px;
+  margin-inline: auto;
+}
