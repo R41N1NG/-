@@ -1,14 +1,17 @@
 "use strict";
 const { createPreview } = require("./college-preview-model");
+const { createTailView } = require("./college-preview-tail-view");
 function boot() {
   const key = "wx_college_schedule_preview_v1";
   let model,
     epoch = 0,
     settleSeq = 0,
-    busy = false;
+    busy = false,
+    tailView;
   const $ = (id) => document.getElementById(id);
   const message = (text) => {
     $("collegeNotice").textContent = text;
+    $("collegeTailNotice").textContent = text;
   };
   function persist() {
     try {
@@ -34,6 +37,7 @@ function boot() {
     const snap = model.snapshot();
     snap.dayPlan.sync = { scope: "college-preview", epoch };
     window.WxStatusbar.render(snap);
+    tailView?.render(snap);
     $("collegeSceneTitle").textContent = snap.previewScene.title;
     $("collegeSceneText").textContent = snap.previewScene.text;
     $("collegeTailControls").hidden = !model.active();
@@ -57,7 +61,10 @@ function boot() {
         return n;
       }),
     );
-    $("collegePass").disabled = model.active() || snap.dayPlan.ended;
+    $("collegePass").disabled =
+      model.active() ||
+      snap.previewTailing.pendingOutcome ||
+      snap.dayPlan.ended;
     decorateMoves();
     const mapStatus = $("collegeMapStatus");
     if (mapStatus)
@@ -102,6 +109,8 @@ function boot() {
     message("试玩进度未能恢复，已载入独立演示起点；酒馆存档未受影响。");
   }
   window.WxStatusbarUI.mountStatusbar(document, window);
+  tailView = createTailView(document);
+  $("wx-settle-dialog").addEventListener("close", () => tailView.focusResult());
   document.querySelector("#wxCityMap .wx-city-note").textContent =
     "点击地区、缩放或拖动只浏览；点击地点直接移动，同区1格、跨区2格，不扣行动点。私人区域与交通条件仍须满足；尾行中位置由跟随动作结算。";
   const mapStatus = document.createElement("p");
@@ -126,7 +135,9 @@ function boot() {
           floor: -10000 - ++settleSeq,
         });
         if (!model.active())
-          message("本次尾行已结束，时段已推进；已获得的线索保留。");
+          message(
+            `${model.snapshot().previewTailing.outcome?.title || "这次跟随告一段落"}。确认收获后，可以回到日程继续安排。`,
+          );
       } else if (result?.summary)
         message(
           result.command === "start" && result.actionId === "daily.pass"
@@ -139,6 +150,15 @@ function boot() {
       busy = false;
     }
   }
+  $("collegeReturn").onclick = () => {
+    if ($("wx-settle-dialog").open)
+      return message("先看完这次行动的判定结果。");
+    model.acknowledgeOutcome();
+    persist();
+    render();
+    message("已回到日程，之前确认的信息会保留。");
+    $("collegePhase").scrollIntoView({ block: "start" });
+  };
   $("collegeStart").onclick = () =>
     act(() => model.execute(model.request("start", "daily.tailing")));
   $("collegePass").onclick = () =>

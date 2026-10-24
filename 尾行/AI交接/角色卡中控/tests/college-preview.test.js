@@ -215,3 +215,54 @@ test("跟丢自动退出，已获得的线索和费用保留，结束后时间�
   const restored = createPreview(p.save());
   assert.equal(restored.snapshot().player.pi, p.snapshot().player.pi);
 });
+
+test("跟丢结果保存最后目击和收益，不泄露之后的未知地点，返回日程不重结算", () => {
+  const p = createPreview(null, { period: 3 });
+  enter(p);
+  for (let i = 0; i < 8 && p.active(); i++) p.follow();
+  const s = p.snapshot(),
+    o = s.previewTailing.outcome;
+  assert.equal(o.kind, "lost");
+  assert.equal(o.title, "已经找不到她了");
+  assert.equal(o.lastSeen.placeId, "old_skybridge_b");
+  assert.equal(o.pi, s.player.pi);
+  assert.equal(o.acknowledged, false);
+  assert.equal(s.previewTailing.pendingOutcome, true);
+  assert.throws(() => p.move("school_gate_b"), /返回日程/);
+  const restored = createPreview(p.save()),
+    pi = restored.snapshot().player.pi;
+  assert.deepEqual(restored.snapshot().previewTailing.outcome, o);
+  restored.acknowledgeOutcome();
+  restored.acknowledgeOutcome();
+  assert.equal(restored.snapshot().previewTailing.pendingOutcome, false);
+  assert.equal(restored.snapshot().player.pi, pi);
+  assert.equal(restored.snapshot().dayPlan.period, 4);
+  assert.equal(restored.snapshot().dayPlan.remaining, 2);
+  assert.equal(restored.snapshot().previewTime.used, 0);
+  assert.equal(
+    createPreview(restored.save()).snapshot().previewTailing.pendingOutcome,
+    false,
+  );
+});
+test("主动停下和跟到终点分别记录，不伪造跟丢；旧试玩不凭空补出结果", () => {
+  const p = createPreview(null, { period: 3 });
+  enter(p);
+  p.execute(p.request("cancel"));
+  assert.equal(p.snapshot().previewTailing.outcome.kind, "stopped");
+  assert.equal(p.snapshot().previewTailing.outcome.pi, 0);
+  const complete = createPreview(null, {
+    period: 3,
+    seed: "college-preview-2",
+  });
+  enter(complete);
+  for (let i = 0; i < 8 && complete.active(); i++) complete.follow();
+  assert.equal(complete.snapshot().previewTailing.outcome.kind, "completed");
+  assert.equal(
+    complete.snapshot().previewTailing.outcome.lastSeen.placeId,
+    "unit_stairs_b",
+  );
+  const old = createPreview().save();
+  delete old.previewCollege.outcome;
+  delete old.previewCollege.sessionPiStart;
+  assert.equal(createPreview(old).snapshot().previewTailing.outcome, null);
+});

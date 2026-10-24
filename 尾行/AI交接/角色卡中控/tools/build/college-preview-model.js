@@ -37,6 +37,12 @@ const scenes = [
 function createPreview(saved, options = {}) {
   let usedDate = saved?.previewCollege?.usedDate ?? null;
   let serial = saved?.previewCollege?.serial || 0;
+  let outcome = saved?.previewCollege?.outcome
+    ? clone(saved.previewCollege.outcome)
+    : null;
+  let sessionPiStart =
+    saved?.previewCollege?.sessionPiStart ?? saved?.ledgerState?.pi ?? 0;
+  let pendingEnd = null;
   let used = TIME.timeUsed(
     saved?.previewCollege?.timeUsed ?? options.timeUsed ?? 0,
   );
@@ -81,8 +87,10 @@ function createPreview(saved, options = {}) {
             summary: "开始跟随离开，行动点已扣2点",
             payload: { eventId: "college-departure" },
           }),
-          finish: () => ({ summary: "本次尾行结束，进入下一时段" }),
-          cancel: () => ({ summary: "已中止尾行，已消耗的2点不退还" }),
+          finish: () => ({ summary: "这次跟随告一段落，进入下一时段" }),
+          cancel: () => ({
+            summary: "你停下脚步，结束了这次跟随；已用的2点不退还",
+          }),
         },
       },
     ],
@@ -120,7 +128,14 @@ function createPreview(saved, options = {}) {
   function save() {
     return {
       ...game.save(),
-      previewCollege: { schema: 2, usedDate, serial, timeUsed: used },
+      previewCollege: {
+        schema: 3,
+        usedDate,
+        serial,
+        timeUsed: used,
+        outcome,
+        sessionPiStart,
+      },
     };
   }
   function quote(placeId) {
@@ -131,6 +146,8 @@ function createPreview(saved, options = {}) {
     let reason = null,
       to = null;
     try {
+      if (outcome && !outcome.acknowledged)
+        throw Error("请先查看尾行结果，返回日程后再移动");
       if (g.dayPlan.ended || g.dayPlan.activity)
         throw Error(g.dayPlan.ended ? "本日已结束" : "尾行中请使用跟随动作");
       prepareMove({ spatial: g.spatial }, placeId);
@@ -165,6 +182,27 @@ function createPreview(saved, options = {}) {
     if (!active() && s.cityMap.target) s.cityMap.target.live = !!observe();
     if (s.cityMap.target)
       s.cityMap.target.status = s.cityMap.target.live ? "目视位置" : "最后目击";
+    const route = game._g.route;
+    s.previewTailing = {
+      active: active(),
+      outcome: outcome ? clone(outcome) : null,
+      pendingOutcome: !!outcome && !outcome.acknowledged,
+      confirmed: (route?.nodes || []).flatMap((id, i) =>
+        route.known?.[i] === 1 && i <= route.here
+          ? [
+              {
+                id,
+                name: places[id]?.mapName || places[id]?.name || "已确认地点",
+              },
+            ]
+          : [],
+      ),
+      next:
+        active() && route?.known?.[route.here + 1] === 1
+          ? places[route.nodes[route.here + 1]]?.mapName ||
+            places[route.nodes[route.here + 1]]?.name
+          : null,
+    };
     s.previewScene = active()
       ? {
           title: "正式尾行中",
@@ -205,6 +243,11 @@ function createPreview(saved, options = {}) {
       game._g.dayPlan.receipts?.some((r) => r.operationId === req.operationId)
     )
       return game.executeDailyCommand(req);
+    if (outcome && !outcome.acknowledged)
+      throw Error("请先查看尾行结果，返回日程后再继续");
+    const wasActive = active(),
+      priorReceipt = game._g.investigation.lastReceipt;
+    const lastSeenBefore = clone(game._g.spatial.lastSeen);
     const before = {
       period: game._g.dayPlan.period,
       ended: game._g.dayPlan.ended,
@@ -248,6 +291,8 @@ function createPreview(saved, options = {}) {
       req.command === "start" &&
       req.actionId === "daily.tailing"
     ) {
+      outcome = null;
+      sessionPiStart = game.ledger.get("pi");
       usedDate = game.ledger.get("date");
       game._g.floor = 0;
       game._g.nightStartFloor = 0;
@@ -270,6 +315,35 @@ function createPreview(saved, options = {}) {
       game._g.mode = "stealth";
       game._g.dist = "same";
     }
+    if (wasActive && ["finish", "cancel"].includes(req.command)) {
+      const receipt =
+        pendingEnd?.receipt ||
+        (game._g.investigation.lastReceipt !== priorReceipt
+          ? game._g.investigation.lastReceipt
+          : null);
+      const kind =
+        pendingEnd?.kind || (req.command === "cancel" ? "stopped" : "ended");
+      const titles = {
+        lost: "已经找不到她了",
+        escaped: "她已经离开视线",
+        completed: "这段路，你跟到了最后",
+        stopped: "你停下了跟随的脚步",
+        ended: "这次跟随告一段落",
+      };
+      outcome = {
+        kind,
+        title: titles[kind],
+        lastSeen: lastSeenBefore,
+        pi: Math.max(0, game.ledger.get("pi") - sessionPiStart),
+        minimum: receipt?.minimum || 0,
+        clueGain: receipt?.clueGain || 0,
+        clueCount: receipt?.clues?.length || 0,
+        date: game.ledger.get("date"),
+        period: game._g.dayPlan.period,
+        remaining: 4 - game._g.dayPlan.spent,
+        acknowledged: false,
+      };
+    }
     observe();
     return result;
   }
@@ -285,7 +359,26 @@ function createPreview(saved, options = {}) {
       result.investigation ||
       game._g.alertEvent?.stage === 4
     ) {
-      execute(request("finish"));
+      const seen = game._g.spatial.lastSeen;
+      const confirmedEnd =
+        terminal &&
+        game._g.spatial.tracking === "visual" &&
+        seen?.placeId === game._g.route.nodes.at(-1);
+      pendingEnd = {
+        kind: lost
+          ? "lost"
+          : game._g.alertEvent?.stage === 4 || game._g.fleeing
+            ? "escaped"
+            : confirmedEnd
+              ? "completed"
+              : "ended",
+        receipt: result.investigation,
+      };
+      try {
+        execute(request("finish"));
+      } finally {
+        pendingEnd = null;
+      }
       result.stats = snapshot();
     }
     return result;
@@ -301,6 +394,10 @@ function createPreview(saved, options = {}) {
     follow,
     move,
     quote,
+    acknowledgeOutcome: () => {
+      if (outcome) outcome.acknowledged = true;
+      return snapshot();
+    },
     active,
     game,
     places,

@@ -103,7 +103,7 @@ async function main() {
       }
       async function shot(name) {
         await b.evaluate(
-          "document.getElementById('wxCityMap').scrollIntoView({block:'start'});true",
+          "(document.body.dataset.collegeView==='world'?document.getElementById('wxCityMap'):document.getElementById('collegeTailScreen')).scrollIntoView({block:'start'});true",
         );
         await b.delay(350);
         const img = await b.send("Page.captureScreenshot", {
@@ -159,9 +159,13 @@ async function main() {
         "没有提前展示完整路线或住处",
         "(()=>{const s=__collegePreview.snapshot();return s.route.known.slice(1).every(v=>!v)&&!s.profile.facts.some(f=>f.slot==='home')})()",
       );
-      await click('[data-place-id="store_24h_b"]');
       await check(
-        "尾行中点击地图不跳转位置或重复扣费",
+        "进入独立尾行界面，城市移动和日程操作收起",
+        "document.body.dataset.collegeView==='tailing'&&!document.getElementById('collegeTailScreen').hidden&&getComputedStyle(document.getElementById('wxCityMap')).display==='none'&&getComputedStyle(document.getElementById('wxDailyActions')).display==='none'",
+      );
+      await b.evaluate("__collegePreview.move('store_24h_b');true");
+      await check(
+        "尾行中地图请求也不跳转位置或重复扣费",
         "(()=>{const s=__collegePreview.snapshot();return s.cityMap.player.placeId==='school_gate_b'&&s.dayPlan.remaining===2&&s.dayPlan.activity?.kind==='tailing'&&__collegePreview.save().route.here===0})()",
       );
       await shot("tailing");
@@ -197,6 +201,15 @@ async function main() {
         "(()=>{const s=__collegePreview.snapshot();return s.dayPlan.period===4&&s.dayPlan.remaining===2&&!s.dayPlan.activity&&document.getElementById('collegeStart').disabled&&__collegePreview.save().previewCollege.usedDate===1})()",
       );
       await shot("finished");
+      await check(
+        "主动结束停留结果页，说明缘由而非跟丢",
+        "document.body.dataset.collegeView==='outcome'&&document.getElementById('collegeTailHeading').textContent.includes('停下')&&document.getElementById('collegeOutcomePi').textContent.includes('调查熟练度')",
+      );
+      await click("#collegeReturn");
+      await check(
+        "返回日程不重复扣费或推进时段",
+        "document.body.dataset.collegeView==='world'&&__collegePreview.snapshot().dayPlan.remaining===2&&__collegePreview.snapshot().dayPlan.period===4",
+      );
       await check(
         "没有页面横向溢出",
         "document.documentElement.scrollWidth<=innerWidth+2",
@@ -334,6 +347,54 @@ async function main() {
       await check(
         "地图旁持续显示点击方式和时间规则",
         "document.getElementById('collegeMapStatus').textContent.length>0",
+      );
+      await b.evaluate("__collegePreview.reset();true");
+      await click("#collegePass");
+      await click("#collegePass");
+      await click('[data-place-id="school_gate_b"]');
+      await click("#collegeStart");
+      for (
+        let i = 0;
+        i < 8 &&
+        (await b.evaluate(
+          "__collegePreview.snapshot().dayPlan.activity?.kind==='tailing'",
+        ));
+        i++
+      ) {
+        await click("#collegeFollow");
+        for (let n = 0; n < 140; n++) {
+          if (
+            await b.evaluate(
+              "document.getElementById('settleHudStatus').textContent.includes('CHECK FINISHED')",
+            )
+          )
+            break;
+          await b.delay(100);
+        }
+        await b.evaluate(
+          "document.getElementById('wx-settle-dialog').close();true",
+        );
+        await b.delay(180);
+      }
+      await check(
+        "跟丢时以具体目击说明明确提醒",
+        "(()=>{const text=document.getElementById('collegeTailScreen').innerText;return document.body.dataset.collegeView==='outcome'&&text.includes('已经找不到她了')&&text.includes('最后一次看见她')&&text.includes('老水泥天桥')&&!text.includes('已中断')&&!text.includes('便利店')})()",
+      );
+      await check(
+        "结果页显示最后目击、实际收益和已保存进度",
+        "document.getElementById('collegeOutcomePi').textContent.includes('+5')&&document.getElementById('collegeOutcomeNext').textContent.includes('子夜')&&document.getElementById('collegeTailOutcome').getAttribute('role')==='alert'",
+      );
+      await shot("lost");
+      await b.send("Page.reload");
+      await b.delay(1000);
+      await check(
+        "刷新仍展示跟丢说明，收益不重发",
+        "document.body.dataset.collegeView==='outcome'&&document.getElementById('collegeTailHeading').textContent==='已经找不到她了'&&__collegePreview.snapshot().player.pi===5",
+      );
+      await click("#collegeReturn");
+      await check(
+        "跟丢后返回地图保留进度",
+        "document.body.dataset.collegeView==='world'&&__collegePreview.snapshot().player.pi===5&&__collegePreview.snapshot().dayPlan.period===4&&__collegePreview.snapshot().dayPlan.remaining===2",
       );
       await check("页面没有运行错误", "window.__previewErrors.length===0");
     }

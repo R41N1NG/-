@@ -1,0 +1,21 @@
+<section id="collegeTailScreen" class="college-tail-screen" hidden aria-labelledby="collegeTailHeading">
+  <div class="college-tail-topline"><span id="collegeTailBadge" class="college-tail-badge">正式尾行 · 保持目视</span><span id="collegeTailPaid">本次入场已用2点</span></div>
+  <h2 id="collegeTailHeading" tabindex="-1">跟住她的身影</h2>
+  <p id="collegeTailScene" class="college-tail-lead"></p>
+  <div id="collegeTailMetrics" class="college-tail-metrics">
+    <div><span>当前距离</span><strong id="collegeTailDist"></strong></div>
+    <div><span>心跳负荷</span><strong id="collegeTailHeart"></strong></div>
+    <div><span>体力</span><strong id="collegeTailStamina"></strong></div>
+    <div><span>她的警觉</span><strong id="collegeTailAlert"></strong></div>
+  </div>
+  <div id="collegeTailRoute" class="college-tail-route"><span>你已确认的路段</span><p id="collegeTailConfirmed"></p><small id="collegeTailNext"></small></div>
+  <div id="collegeTailControls" hidden>
+    <div class="college-controls"><label for="collegeDistance">跟随距离</label><select id="collegeDistance"><option value="far">远端</option><option value="same" selected>同街</option><option value="close">身后</option><option value="touch">贴身</option></select><button id="collegeFollow" class="college-primary">跟随一段</button><button id="collegeSend">执行下方选中的动作</button><button id="collegeStop">结束这次跟随</button></div>
+    <p class="college-tail-hint">每段跟随使用原有判定。心跳、距离与警觉会随行动变化；内部回合不再扣入场行动点。</p>
+  </div>
+  <section id="collegeTailOutcome" class="college-tail-outcome" hidden role="alert" aria-atomic="true">
+    <div class="college-tail-outcome-grid"><div><span>最后目击</span><strong id="collegeOutcomeLastSeen"></strong><small id="collegeOutcomeLastTime"></small></div><div><span>本次收获</span><strong id="collegeOutcomePi"></strong><small id="collegeOutcomeClues"></small></div></div>
+    <p id="collegeOutcomeNext"></p><button id="collegeReturn" class="college-primary">回到日程安排</button>
+  </section>
+  <p id="collegeTailNotice" class="college-tail-notice" role="status"></p>
+</section>

@@ -4708,8 +4708,36 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
  #wx-zero-floor #tutorialSkipAll { width:100%; text-align:center; }
  #wx-zero-floor .attribute-lesson-footer .zero-btn-next { width:100%; }
 }
+.college-tail-screen{padding:26px;border:1px solid #6b6244;border-radius:14px;background:radial-gradient(ellipse at 95% 0,#68562933,transparent 65%),#0d1d23;margin:20px 0;box-shadow:0 16px 60px #0005}
+.college-tail-topline{display:flex;justify-content:space-between;gap:12px;align-items:center;color:#9bb4af;font-size:12px;flex-wrap:wrap}.college-tail-badge{display:inline-flex;align-items:center;gap:8px;color:#dcc488;letter-spacing:1px}.college-tail-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#d5bb74;box-shadow:0 0 14px #d5bb7444}.college-tail-screen h2{font-size:29px;margin:19px 0 8px;line-height:1.35;color:#f1e2b8}.college-tail-lead{font-size:14px;color:#bccfc9;max-width:780px;line-height:1.9}.college-tail-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:23px 0}.college-tail-metrics>div{padding:12px 15px;border:1px solid #2c4449;border-radius:7px;background:#12282b}.college-tail-metrics span{display:block;color:#8ca7a3;font-size:11px}.college-tail-metrics strong{font-size:23px;font-weight:500;color:#ded9ba}.college-tail-route{border-top:1px solid #31464a;border-bottom:1px solid #31464a;padding:14px 0;margin:18px 0}.college-tail-route>span{font-size:11px;color:#91a6a4}.college-tail-route p{color:#c9dbd0;margin:6px 0}.college-tail-route small,.college-tail-hint{color:#88a49d;font-size:11px}.college-tail-notice{min-height:22px;color:#d2b87b;font-size:12px}.college-tail-outcome{border-top:1px solid #3d4d4c;margin:20px 0 0;padding-top:20px}.college-tail-outcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.college-tail-outcome-grid>div{padding:16px;background:#11282a;border:1px solid #304d4d;border-radius:8px}.college-tail-outcome span,.college-tail-outcome strong,.college-tail-outcome small{display:block}.college-tail-outcome span{font-size:11px;color:#91b0aa}.college-tail-outcome strong{font-size:20px;color:#dce5d8;margin:4px 0}.college-tail-outcome small{color:#91b0aa;font-size:11px}.college-tail-outcome p{color:#b0c8be;font-size:12px}.college-tail-screen[data-outcome="lost"],.college-tail-screen[data-outcome="escaped"]{border-color:#8b5551;background:radial-gradient(ellipse at 95% 0,#b3554222,transparent 65%),#151e22}.college-tail-screen[data-outcome="lost"] h2,.college-tail-screen[data-outcome="escaped"] h2{color:#f0a49a}.college-tail-screen[data-outcome="lost"] .college-tail-badge,.college-tail-screen[data-outcome="escaped"] .college-tail-badge{color:#e6a396}.college-tail-screen[data-outcome="lost"] .college-tail-badge::before,.college-tail-screen[data-outcome="escaped"] .college-tail-badge::before{background:#e6a396}
+body[data-college-view="tailing"] .college-guide,body[data-college-view="outcome"] .college-guide,body[data-college-view="tailing"] .college-note,body[data-college-view="outcome"] .college-note,body[data-college-view="tailing"] .college-shell>h1,body[data-college-view="outcome"] .college-shell>h1,body[data-college-view="tailing"] #collegePass,body[data-college-view="outcome"] #collegePass,body[data-college-view="tailing"] #wxCityMap,body[data-college-view="outcome"] #wxCityMap,body[data-college-view="tailing"] #wxDailyActions,body[data-college-view="outcome"] #wxDailyActions{display:none!important}
+body[data-college-view="outcome"] #wxMoreActionsBtn,body[data-college-view="outcome"] #wxActionDrawer,body[data-college-view="outcome"] #wxCapsuleBar{display:none!important}
+@media(max-width:560px){.college-tail-screen{padding:19px 14px;margin:12px 0}.college-tail-screen h2{font-size:25px}.college-tail-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:18px 0}.college-tail-metrics>div{padding:10px 12px}.college-tail-metrics strong{font-size:21px}.college-tail-outcome-grid{grid-template-columns:1fr}.college-tail-outcome-grid>div{padding:12px}.college-tail-lead{font-size:13px}}
+#collegeTailScreen [hidden]{display:none!important}
+
  html{background:#081316}body{margin:0;color:#cfddd9;font:14px/1.7 system-ui;background:radial-gradient(ellipse at 20% 0,#243c3c,transparent 65%)}.college-shell{max-width:1120px;margin:auto;padding:32px 20px}.college-label{color:#bba778;font-size:11px;letter-spacing:2px}.college-shell h1{font-size:25px;margin:8px 0}.college-note{color:#8da7a6;font-size:12px}.college-guide{padding:14px 18px;background:#10272c;border:1px solid #2d4c51;border-radius:10px;margin:20px 0}.college-guide h2{font-size:18px;margin:0;color:#e8e5d7}.college-guide p{margin:6px 0 12px}.college-controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.college-shell button,.college-shell select{font:inherit;font-size:12px;color:#c7dcd8;border:1px solid #38565d;border-radius:6px;background:#152a30;padding:8px 12px;cursor:pointer}.college-shell button:disabled{opacity:.45;cursor:default}.college-shell .college-primary{border-color:#b59d62;color:#eed5a4;background:#403922}#collegeNotice{color:#d4b879;min-height:24px;font-size:12px}.college-shell main.wx-standalone-main{padding:0;max-width:none}#collegePhase{color:#8ccfc3;font-size:12px}.college-clock{display:flex;align-items:center;gap:12px;color:#dbcca5;font-size:12px;margin:9px 0 15px}.college-clock i{display:inline-block;width:22px;height:7px;margin-right:5px;border-radius:2px;background:#c0ad7d}.college-clock i.used{background:#263d40} #collegeMapStatus{color:#acc6c1;font-size:12px;margin:8px 0 12px;height:3.4em;overflow:hidden}.college-map-hint{font-size:12px;color:#b9cdbf}#wxCityMap [data-map-move],#wxCityMap [data-map-retry]{display:none!important}#wxCityMap .wx-city-node{cursor:pointer}#wxCityMap .college-map-blocked{cursor:not-allowed} .college-footer{color:#77928e;font-size:11px;margin-top:20px}@media(max-width:560px){#collegeMapStatus{height:5.1em}.college-shell{padding:20px 10px}.college-shell h1{font-size:21px}.college-guide{padding:12px}.college-controls{gap:6px}}
- </style><body><div class="college-shell"><div class="college-label">全息训练 / 独立玩法预览</div><h1>到现场，再决定是否跟随</h1><p class="college-note">从午间开始，在地图上自由选择地点。每时段3格时间。同区移动1格、跨区2格，均不扣行动点；到达时可能已经换了时段。</p><div class="college-controls"><button id="collegeReset">重置试玩</button><button id="collegePass">度过当前时段 · 0点</button></div><section class="college-guide"><div id="collegePhase"></div><div class="college-clock"><span id="collegeTime"></span><span id="collegeTimeCells" aria-hidden="true"></span></div><h2 id="collegeSceneTitle"></h2><p id="collegeSceneText"></p><p id="collegeMapHint" class="college-map-hint">直接点击下方地图地点前往；同区1格、跨区2格，不扣行动点。</p><button id="collegeStart" class="college-primary"></button><div id="collegeTailControls" hidden><div class="college-controls"><select id="collegeDistance" aria-label="跟随距离"><option value="far">远端</option><option value="same" selected>同街</option><option value="close">身后</option><option value="touch">贴身</option></select><button id="collegeFollow" class="college-primary">跟随一段 · 不再扣行动点</button><button id="collegeSend">执行下方选中的动作</button><button id="collegeStop">中止尾行 · 不退2点</button></div></div><div id="collegeNotice" role="status"></div></section><main class="wx-standalone-main"><section class="trpg" aria-label="玩家状态栏"><div id="wxSyncNotice" class="wx-sync-notice" role="status" hidden></div>
+ </style><body><div class="college-shell"><div class="college-label">全息训练 / 独立玩法预览</div><h1>到现场，再决定是否跟随</h1><p class="college-note">从午间开始，在地图上自由选择地点。每时段3格时间。同区移动1格、跨区2格，均不扣行动点；到达时可能已经换了时段。</p><div class="college-controls"><button id="collegeReset">重置试玩</button><button id="collegePass">度过当前时段 · 0点</button></div><section class="college-guide"><div id="collegePhase"></div><div class="college-clock"><span id="collegeTime"></span><span id="collegeTimeCells" aria-hidden="true"></span></div><h2 id="collegeSceneTitle"></h2><p id="collegeSceneText"></p><p id="collegeMapHint" class="college-map-hint">直接点击下方地图地点前往；同区1格、跨区2格，不扣行动点。</p><button id="collegeStart" class="college-primary"></button><div id="collegeNotice" role="status"></div></section><section id="collegeTailScreen" class="college-tail-screen" hidden aria-labelledby="collegeTailHeading">
+  <div class="college-tail-topline"><span id="collegeTailBadge" class="college-tail-badge">正式尾行 · 保持目视</span><span id="collegeTailPaid">本次入场已用2点</span></div>
+  <h2 id="collegeTailHeading" tabindex="-1">跟住她的身影</h2>
+  <p id="collegeTailScene" class="college-tail-lead"></p>
+  <div id="collegeTailMetrics" class="college-tail-metrics">
+    <div><span>当前距离</span><strong id="collegeTailDist"></strong></div>
+    <div><span>心跳负荷</span><strong id="collegeTailHeart"></strong></div>
+    <div><span>体力</span><strong id="collegeTailStamina"></strong></div>
+    <div><span>她的警觉</span><strong id="collegeTailAlert"></strong></div>
+  </div>
+  <div id="collegeTailRoute" class="college-tail-route"><span>你已确认的路段</span><p id="collegeTailConfirmed"></p><small id="collegeTailNext"></small></div>
+  <div id="collegeTailControls" hidden>
+    <div class="college-controls"><label for="collegeDistance">跟随距离</label><select id="collegeDistance"><option value="far">远端</option><option value="same" selected>同街</option><option value="close">身后</option><option value="touch">贴身</option></select><button id="collegeFollow" class="college-primary">跟随一段</button><button id="collegeSend">执行下方选中的动作</button><button id="collegeStop">结束这次跟随</button></div>
+    <p class="college-tail-hint">每段跟随使用原有判定。心跳、距离与警觉会随行动变化；内部回合不再扣入场行动点。</p>
+  </div>
+  <section id="collegeTailOutcome" class="college-tail-outcome" hidden role="alert" aria-atomic="true">
+    <div class="college-tail-outcome-grid"><div><span>最后目击</span><strong id="collegeOutcomeLastSeen"></strong><small id="collegeOutcomeLastTime"></small></div><div><span>本次收获</span><strong id="collegeOutcomePi"></strong><small id="collegeOutcomeClues"></small></div></div>
+    <p id="collegeOutcomeNext"></p><button id="collegeReturn" class="college-primary">回到日程安排</button>
+  </section>
+  <p id="collegeTailNotice" class="college-tail-notice" role="status"></p>
+</section>
+<main class="wx-standalone-main"><section class="trpg" aria-label="玩家状态栏"><div id="wxSyncNotice" class="wx-sync-notice" role="status" hidden></div>
     <div class="trpg-vignette" id="trpgVignette" aria-hidden="true"></div>
     <div class="her-alert" id="herAlert" data-tip="她刚才的举动。是发现了什么，还是单纯的心血来潮——只有她自己知道。"></div>
 
@@ -31258,6 +31286,9 @@ var CollegePreview = (() => {
       function createPreview(saved, options = {}) {
         let usedDate = saved?.previewCollege?.usedDate ?? null;
         let serial = saved?.previewCollege?.serial || 0;
+        let outcome = saved?.previewCollege?.outcome ? clone(saved.previewCollege.outcome) : null;
+        let sessionPiStart = saved?.previewCollege?.sessionPiStart ?? saved?.ledgerState?.pi ?? 0;
+        let pendingEnd = null;
         let used = TIME.timeUsed(
           saved?.previewCollege?.timeUsed ?? options.timeUsed ?? 0
         );
@@ -31299,8 +31330,10 @@ var CollegePreview = (() => {
                   summary: "\u5F00\u59CB\u8DDF\u968F\u79BB\u5F00\uFF0C\u884C\u52A8\u70B9\u5DF2\u62632\u70B9",
                   payload: { eventId: "college-departure" }
                 }),
-                finish: () => ({ summary: "\u672C\u6B21\u5C3E\u884C\u7ED3\u675F\uFF0C\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5" }),
-                cancel: () => ({ summary: "\u5DF2\u4E2D\u6B62\u5C3E\u884C\uFF0C\u5DF2\u6D88\u8017\u76842\u70B9\u4E0D\u9000\u8FD8" })
+                finish: () => ({ summary: "\u8FD9\u6B21\u8DDF\u968F\u544A\u4E00\u6BB5\u843D\uFF0C\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5" }),
+                cancel: () => ({
+                  summary: "\u4F60\u505C\u4E0B\u811A\u6B65\uFF0C\u7ED3\u675F\u4E86\u8FD9\u6B21\u8DDF\u968F\uFF1B\u5DF2\u7528\u76842\u70B9\u4E0D\u9000\u8FD8"
+                })
               }
             }
           ]
@@ -31331,7 +31364,14 @@ var CollegePreview = (() => {
         function save() {
           return {
             ...game.save(),
-            previewCollege: { schema: 2, usedDate, serial, timeUsed: used }
+            previewCollege: {
+              schema: 3,
+              usedDate,
+              serial,
+              timeUsed: used,
+              outcome,
+              sessionPiStart
+            }
           };
         }
         function quote(placeId) {
@@ -31339,6 +31379,8 @@ var CollegePreview = (() => {
           const cost = places[placeId] ? TIME.travelCost(places[g.spatial.playerPlaceId], places[placeId]) : 0;
           let reason = null, to = null;
           try {
+            if (outcome && !outcome.acknowledged)
+              throw Error("\u8BF7\u5148\u67E5\u770B\u5C3E\u884C\u7ED3\u679C\uFF0C\u8FD4\u56DE\u65E5\u7A0B\u540E\u518D\u79FB\u52A8");
             if (g.dayPlan.ended || g.dayPlan.activity)
               throw Error(g.dayPlan.ended ? "\u672C\u65E5\u5DF2\u7ED3\u675F" : "\u5C3E\u884C\u4E2D\u8BF7\u4F7F\u7528\u8DDF\u968F\u52A8\u4F5C");
             prepareMove({ spatial: g.spatial }, placeId);
@@ -31371,6 +31413,21 @@ var CollegePreview = (() => {
           if (!active() && s.cityMap.target) s.cityMap.target.live = !!observe();
           if (s.cityMap.target)
             s.cityMap.target.status = s.cityMap.target.live ? "\u76EE\u89C6\u4F4D\u7F6E" : "\u6700\u540E\u76EE\u51FB";
+          const route = game._g.route;
+          s.previewTailing = {
+            active: active(),
+            outcome: outcome ? clone(outcome) : null,
+            pendingOutcome: !!outcome && !outcome.acknowledged,
+            confirmed: (route?.nodes || []).flatMap(
+              (id, i) => route.known?.[i] === 1 && i <= route.here ? [
+                {
+                  id,
+                  name: places[id]?.mapName || places[id]?.name || "\u5DF2\u786E\u8BA4\u5730\u70B9"
+                }
+              ] : []
+            ),
+            next: active() && route?.known?.[route.here + 1] === 1 ? places[route.nodes[route.here + 1]]?.mapName || places[route.nodes[route.here + 1]]?.name : null
+          };
           s.previewScene = active() ? {
             title: "\u6B63\u5F0F\u5C3E\u884C\u4E2D",
             text: "\u5DF2\u8FDB\u5165\u8FD4\u7A0B\u3002\u8DDF\u968F\u5224\u5B9A\u3001\u5FC3\u8DF3\u3001\u8B66\u89C9\u4E0EPI\u7531\u539F\u5F15\u64CE\u7ED3\u7B97\uFF1B\u5185\u90E8\u56DE\u5408\u4E0D\u518D\u6263\u884C\u52A8\u70B9\u3002",
@@ -31399,6 +31456,10 @@ var CollegePreview = (() => {
         function execute(req) {
           if (game._g.dayPlan.receipts?.some((r) => r.operationId === req.operationId))
             return game.executeDailyCommand(req);
+          if (outcome && !outcome.acknowledged)
+            throw Error("\u8BF7\u5148\u67E5\u770B\u5C3E\u884C\u7ED3\u679C\uFF0C\u8FD4\u56DE\u65E5\u7A0B\u540E\u518D\u7EE7\u7EED");
+          const wasActive = active(), priorReceipt = game._g.investigation.lastReceipt;
+          const lastSeenBefore = clone(game._g.spatial.lastSeen);
           const before = {
             period: game._g.dayPlan.period,
             ended: game._g.dayPlan.ended,
@@ -31432,6 +31493,8 @@ var CollegePreview = (() => {
           } else if (!result.reused && (game._g.dayPlan.period !== before.period || game._g.dayPlan.ended !== before.ended || game.ledger.get("date") !== before.date))
             used = 0;
           if (!result.reused && req.command === "start" && req.actionId === "daily.tailing") {
+            outcome = null;
+            sessionPiStart = game.ledger.get("pi");
             usedDate = game.ledger.get("date");
             game._g.floor = 0;
             game._g.nightStartFloor = 0;
@@ -31454,6 +31517,30 @@ var CollegePreview = (() => {
             game._g.mode = "stealth";
             game._g.dist = "same";
           }
+          if (wasActive && ["finish", "cancel"].includes(req.command)) {
+            const receipt = pendingEnd?.receipt || (game._g.investigation.lastReceipt !== priorReceipt ? game._g.investigation.lastReceipt : null);
+            const kind = pendingEnd?.kind || (req.command === "cancel" ? "stopped" : "ended");
+            const titles = {
+              lost: "\u5DF2\u7ECF\u627E\u4E0D\u5230\u5979\u4E86",
+              escaped: "\u5979\u5DF2\u7ECF\u79BB\u5F00\u89C6\u7EBF",
+              completed: "\u8FD9\u6BB5\u8DEF\uFF0C\u4F60\u8DDF\u5230\u4E86\u6700\u540E",
+              stopped: "\u4F60\u505C\u4E0B\u4E86\u8DDF\u968F\u7684\u811A\u6B65",
+              ended: "\u8FD9\u6B21\u8DDF\u968F\u544A\u4E00\u6BB5\u843D"
+            };
+            outcome = {
+              kind,
+              title: titles[kind],
+              lastSeen: lastSeenBefore,
+              pi: Math.max(0, game.ledger.get("pi") - sessionPiStart),
+              minimum: receipt?.minimum || 0,
+              clueGain: receipt?.clueGain || 0,
+              clueCount: receipt?.clues?.length || 0,
+              date: game.ledger.get("date"),
+              period: game._g.dayPlan.period,
+              remaining: 4 - game._g.dayPlan.spent,
+              acknowledged: false
+            };
+          }
           observe();
           return result;
         }
@@ -31464,7 +31551,17 @@ var CollegePreview = (() => {
           const lost = game._g.spatial.tracking === "lost";
           const terminal = game._g.route.here >= game._g.route.nodes.length - 1;
           if (lost || terminal || result.investigation || game._g.alertEvent?.stage === 4) {
-            execute(request("finish"));
+            const seen = game._g.spatial.lastSeen;
+            const confirmedEnd = terminal && game._g.spatial.tracking === "visual" && seen?.placeId === game._g.route.nodes.at(-1);
+            pendingEnd = {
+              kind: lost ? "lost" : game._g.alertEvent?.stage === 4 || game._g.fleeing ? "escaped" : confirmedEnd ? "completed" : "ended",
+              receipt: result.investigation
+            };
+            try {
+              execute(request("finish"));
+            } finally {
+              pendingEnd = null;
+            }
             result.stats = snapshot();
           }
           return result;
@@ -31480,6 +31577,10 @@ var CollegePreview = (() => {
           follow,
           move,
           quote,
+          acknowledgeOutcome: () => {
+            if (outcome) outcome.acknowledged = true;
+            return snapshot();
+          },
           active,
           game,
           places
@@ -31489,16 +31590,145 @@ var CollegePreview = (() => {
     }
   });
 
+  // src/ui/alert-view.js
+  var require_alert_view = __commonJS({
+    "src/ui/alert-view.js"(exports, module) {
+      "use strict";
+      var ALERT_TIERS = [
+        { name: "\u6BEB\u65E0\u5BDF\u89C9", range: "0\u201320", tip: "0\u201320 \xB7 \u5979\u5B8C\u5168\u6CA1\u89C9\u5F97\u8FD9\u665A\u6709\u4EC0\u4E48\u4E0D\u5BF9" },
+        { name: "\u4E0D\u5B89", range: "21\u201340", tip: "21\u201340 \xB7 \u5979\u5F00\u59CB\u7559\u610F\u8EAB\u540E\uFF0C\u6B65\u9891\u53D8\u4E86" },
+        {
+          name: "\u8D77\u7591",
+          range: "41\u201360",
+          tip: "41\u201360 \xB7 \u5979\u653E\u6162\u811A\u6B65\u3001\u9891\u9891\u4FA7\u76EE\uFF0C\u4F1A\u8BD5\u7740\u9493\u4F60"
+        },
+        { name: "\u786E\u8BA4", range: "61\u201380", tip: "61\u201380 \xB7 \u5979\u786E\u4FE1\u88AB\u8DDF\u4E86\uFF0C\u4F1A\u6284\u8FD1\u8DEF\u6216\u6C42\u63F4" },
+        {
+          name: "\u53CD\u5E94",
+          range: "81+",
+          tip: "81\u2013100 \xB7 \u5979\u8FDB\u5165\u5E94\u6FC0\u72B6\u6001\uFF0C\u968F\u65F6\u7206\u53D1\u6216\u9003\u5411\u5E87\u62A4\u6240"
+        }
+      ];
+      function alertTierOf(snap) {
+        const stage = snap && snap.target && Number.isFinite(snap.target.alertStage) ? snap.target.alertStage : 0;
+        const idx = Math.min(4, Math.max(0, stage));
+        return Object.assign({ idx }, ALERT_TIERS[idx]);
+      }
+      module.exports = { ALERT_TIERS, alertTierOf };
+    }
+  });
+
+  // tools/build/college-preview-tail-view.js
+  var require_college_preview_tail_view = __commonJS({
+    "tools/build/college-preview-tail-view.js"(exports, module) {
+      "use strict";
+      var { ALERT_TIERS } = require_alert_view();
+      var names = { far: "\u8FDC\u7AEF", same: "\u540C\u8857", close: "\u8EAB\u540E", touch: "\u8D34\u8EAB" };
+      var periodNames = ["\u65E9\u95F4", "\u5348\u95F4", "\u5348\u540E", "\u665A\u95F4", "\u5B50\u591C"];
+      function createTailView(document2) {
+        const $ = (id) => document2.getElementById(id);
+        const text = (id, value) => {
+          $(id).textContent = value;
+        };
+        let previous = "world";
+        function render(snap) {
+          const t = snap.previewTailing, show = t.active || t.pendingOutcome;
+          const view = t.active ? "tailing" : t.pendingOutcome ? "outcome" : "world";
+          document2.body.dataset.collegeView = view;
+          $("collegeTailScreen").hidden = !show;
+          if (!show) {
+            previous = view;
+            return;
+          }
+          const out = t.pendingOutcome ? t.outcome : null;
+          $("collegeTailScreen").dataset.outcome = out?.kind || "";
+          $("collegeTailControls").hidden = !t.active;
+          $("collegeTailMetrics").hidden = !t.active;
+          $("collegeTailRoute").hidden = !t.active;
+          $("collegeTailOutcome").hidden = !out;
+          text(
+            "collegeTailPaid",
+            `\u672C\u6B21\u5165\u573A\u5DF2\u75282\u70B9 \xB7 \u5F53\u524D\u5269\u4F59${snap.dayPlan.remaining}/4\u70B9`
+          );
+          text(
+            "collegeTailBadge",
+            out ? out.kind === "lost" || out.kind === "escaped" ? "\u5931\u53BB\u76EE\u89C6" : "\u672C\u6B21\u8DDF\u968F\u6536\u83B7" : "\u6B63\u5F0F\u5C3E\u884C \xB7 \u4FDD\u6301\u76EE\u89C6"
+          );
+          text("collegeTailHeading", out ? out.title : "\u8DDF\u4F4F\u5979\u7684\u8EAB\u5F71");
+          const seen = out?.lastSeen || snap.cityMap.target;
+          const place = seen?.placeId ? snap.cityMap.nodes.find((n) => n.id === seen.placeId)?.name : null;
+          if (out) {
+            const descriptions = {
+              lost: `${place ? `\u4F60\u6700\u540E\u4E00\u6B21\u770B\u89C1\u5979\uFF0C\u662F\u5728\u300C${place}\u300D\u3002` : "\u4F60\u6CA1\u80FD\u7EE7\u7EED\u8DDF\u4F4F\u5979\u3002"}\u4E4B\u540E\u5DF2\u7ECF\u627E\u4E0D\u5230\u5979\u7684\u8EAB\u5F71\uFF0C\u63A5\u4E0B\u6765\u7684\u53BB\u5411\u5C1A\u4E0D\u6E05\u695A\u3002`,
+              escaped: "\u5979\u5DF2\u7ECF\u79BB\u5F00\u4F60\u7684\u89C6\u7EBF\u3002\u4F60\u6CA1\u80FD\u91CD\u65B0\u627E\u5230\u5979\uFF0C\u63A5\u4E0B\u6765\u7684\u53BB\u5411\u65E0\u6CD5\u786E\u8BA4\u3002",
+              stopped: "\u4F60\u505C\u4E0B\u811A\u6B65\uFF0C\u6CA1\u6709\u518D\u8DDF\u4E0B\u53BB\u3002\u8FD9\u4E00\u6BB5\u786E\u8BA4\u5230\u7684\u4FE1\u606F\u4F1A\u4FDD\u7559\u3002",
+              completed: `\u4F60\u8DDF\u5230\u4E86\u300C${place || "\u6700\u540E\u786E\u8BA4\u7684\u5730\u70B9"}\u300D\uFF0C\u8FD9\u6BB5\u884C\u7A0B\u5DF2\u7ECF\u7ED3\u675F\u3002\u5177\u4F53\u95E8\u724C\u548C\u5C4B\u5185\u60C5\u51B5\u4ECD\u987B\u53E6\u884C\u786E\u8BA4\u3002`,
+              ended: "\u8FD9\u6B21\u8DDF\u968F\u544A\u4E00\u6BB5\u843D\uFF0C\u5DF2\u7ECF\u786E\u8BA4\u5230\u7684\u4FE1\u606F\u4F1A\u4FDD\u7559\u3002"
+            };
+            text("collegeTailScene", descriptions[out.kind] || descriptions.ended);
+            text("collegeOutcomeLastSeen", place || "\u5C1A\u65E0\u53EF\u786E\u8BA4\u7684\u76EE\u51FB\u5730\u70B9");
+            text(
+              "collegeOutcomeLastTime",
+              seen ? `\u7B2C${seen.date}\u5929 \xB7 ${periodNames[seen.period]}` : "\u4E0D\u663E\u793A\u5979\u7684\u672A\u77E5\u53BB\u5411"
+            );
+            text("collegeOutcomePi", `\u8C03\u67E5\u719F\u7EC3\u5EA6 +${out.pi}`);
+            text(
+              "collegeOutcomeClues",
+              `\u9996\u6B21\u7EBF\u7D22 ${out.clueCount} \u9879 \xB7 \u7EBF\u7D22\u6536\u76CA +${out.clueGain} \xB7 \u8DDF\u968F\u4FDD\u5E95 +${out.minimum}`
+            );
+            text(
+              "collegeOutcomeNext",
+              `\u8FDB\u5EA6\u5DF2\u4FDD\u5B58\uFF0C\u65E5\u7A0B\u5DF2\u8FDB\u5165${periodNames[out.period]}\uFF0C\u884C\u52A8\u70B9\u5269\u4F59${out.remaining}/4\u3002\u56DE\u5230\u65E5\u7A0B\u540E\u53EF\u4EE5\u7EE7\u7EED\u5B89\u6392\uFF1B\u672C\u6B21\u79BB\u6821\u673A\u4F1A\u5DF2\u4F7F\u7528\u3002`
+            );
+          } else {
+            text(
+              "collegeTailScene",
+              snap.cityMap.target?.live ? `\u5979\u4ECD\u5728\u4F60\u7684\u89C6\u7EBF\u4E2D\u3002\u5F53\u524D\u76EE\u89C6\u5730\u70B9\uFF1A${snap.cityMap.target.name}\u3002\u7559\u610F\u8DDD\u79BB\u548C\u5979\u7684\u53CD\u5E94\uFF0C\u518D\u51B3\u5B9A\u4E0B\u4E00\u6B65\u3002` : "\u6682\u672A\u786E\u8BA4\u5979\u7684\u5F53\u524D\u4F4D\u7F6E\uFF0C\u8BF7\u4EE5\u672C\u6B21\u884C\u52A8\u7ED3\u679C\u548C\u6700\u540E\u76EE\u51FB\u4E3A\u51C6\u3002"
+            );
+          }
+          text("collegeTailDist", names[snap.dist] || "\u5F85\u786E\u8BA4");
+          text("collegeTailHeart", String(snap.player.heart));
+          text("collegeTailStamina", String(snap.player.stamina));
+          text(
+            "collegeTailAlert",
+            ALERT_TIERS[snap.target.alertStage]?.name || ALERT_TIERS[snap.target.alertStage]?.label || "\u7559\u610F\u5979\u7684\u53CD\u5E94"
+          );
+          text(
+            "collegeTailConfirmed",
+            t.confirmed.map((n) => n.name).join(" \u2192 ") || "\u6682\u65E0\u65B0\u589E\u8DEF\u7EBF"
+          );
+          text("collegeTailNext", `\u4E0B\u4E00\u7AD9\uFF1A${t.next || "\u5C1A\u672A\u786E\u8BA4"}`);
+          if (view !== previous)
+            requestAnimationFrame(() => {
+              $("collegeTailScreen").scrollIntoView({ block: "start" });
+              $("collegeTailHeading").focus({ preventScroll: true });
+            });
+          previous = view;
+        }
+        function focusResult() {
+          if (document2.body.dataset.collegeView === "outcome") {
+            $("collegeTailScreen").scrollIntoView({ block: "start" });
+            $("collegeTailHeading").focus({ preventScroll: true });
+          }
+        }
+        return { render, focusResult };
+      }
+      module.exports = { createTailView };
+    }
+  });
+
   // tools/build/college-preview-entry.js
   var require_college_preview_entry = __commonJS({
     "tools/build/college-preview-entry.js"(exports, module) {
       var { createPreview } = require_college_preview_model();
+      var { createTailView } = require_college_preview_tail_view();
       function boot() {
         const key = "wx_college_schedule_preview_v1";
-        let model, epoch = 0, settleSeq = 0, busy = false;
+        let model, epoch = 0, settleSeq = 0, busy = false, tailView;
         const $ = (id) => document.getElementById(id);
         const message = (text) => {
           $("collegeNotice").textContent = text;
+          $("collegeTailNotice").textContent = text;
         };
         function persist() {
           try {
@@ -31524,6 +31754,7 @@ var CollegePreview = (() => {
           const snap = model.snapshot();
           snap.dayPlan.sync = { scope: "college-preview", epoch };
           window.WxStatusbar.render(snap);
+          tailView?.render(snap);
           $("collegeSceneTitle").textContent = snap.previewScene.title;
           $("collegeSceneText").textContent = snap.previewScene.text;
           $("collegeTailControls").hidden = !model.active();
@@ -31541,7 +31772,7 @@ var CollegePreview = (() => {
               return n;
             })
           );
-          $("collegePass").disabled = model.active() || snap.dayPlan.ended;
+          $("collegePass").disabled = model.active() || snap.previewTailing.pendingOutcome || snap.dayPlan.ended;
           decorateMoves();
           const mapStatus2 = $("collegeMapStatus");
           if (mapStatus2)
@@ -31583,6 +31814,8 @@ var CollegePreview = (() => {
           message("\u8BD5\u73A9\u8FDB\u5EA6\u672A\u80FD\u6062\u590D\uFF0C\u5DF2\u8F7D\u5165\u72EC\u7ACB\u6F14\u793A\u8D77\u70B9\uFF1B\u9152\u9986\u5B58\u6863\u672A\u53D7\u5F71\u54CD\u3002");
         }
         window.WxStatusbarUI.mountStatusbar(document, window);
+        tailView = createTailView(document);
+        $("wx-settle-dialog").addEventListener("close", () => tailView.focusResult());
         document.querySelector("#wxCityMap .wx-city-note").textContent = "\u70B9\u51FB\u5730\u533A\u3001\u7F29\u653E\u6216\u62D6\u52A8\u53EA\u6D4F\u89C8\uFF1B\u70B9\u51FB\u5730\u70B9\u76F4\u63A5\u79FB\u52A8\uFF0C\u540C\u533A1\u683C\u3001\u8DE8\u533A2\u683C\uFF0C\u4E0D\u6263\u884C\u52A8\u70B9\u3002\u79C1\u4EBA\u533A\u57DF\u4E0E\u4EA4\u901A\u6761\u4EF6\u4ECD\u987B\u6EE1\u8DB3\uFF1B\u5C3E\u884C\u4E2D\u4F4D\u7F6E\u7531\u8DDF\u968F\u52A8\u4F5C\u7ED3\u7B97\u3002";
         const mapStatus = document.createElement("p");
         mapStatus.id = "collegeMapStatus";
@@ -31606,7 +31839,9 @@ var CollegePreview = (() => {
                 floor: -1e4 - ++settleSeq
               });
               if (!model.active())
-                message("\u672C\u6B21\u5C3E\u884C\u5DF2\u7ED3\u675F\uFF0C\u65F6\u6BB5\u5DF2\u63A8\u8FDB\uFF1B\u5DF2\u83B7\u5F97\u7684\u7EBF\u7D22\u4FDD\u7559\u3002");
+                message(
+                  `${model.snapshot().previewTailing.outcome?.title || "\u8FD9\u6B21\u8DDF\u968F\u544A\u4E00\u6BB5\u843D"}\u3002\u786E\u8BA4\u6536\u83B7\u540E\uFF0C\u53EF\u4EE5\u56DE\u5230\u65E5\u7A0B\u7EE7\u7EED\u5B89\u6392\u3002`
+                );
             } else if (result?.summary)
               message(
                 result.command === "start" && result.actionId === "daily.pass" ? `\u5DF2\u8FDB\u5165${model.snapshot().dayPlan.periodName}\uFF1B\u5F53\u524D\u65F6\u6BB5\u5C1A\u672A\u884C\u52A8\u3002` : result.summary
@@ -31617,6 +31852,15 @@ var CollegePreview = (() => {
             busy = false;
           }
         }
+        $("collegeReturn").onclick = () => {
+          if ($("wx-settle-dialog").open)
+            return message("\u5148\u770B\u5B8C\u8FD9\u6B21\u884C\u52A8\u7684\u5224\u5B9A\u7ED3\u679C\u3002");
+          model.acknowledgeOutcome();
+          persist();
+          render();
+          message("\u5DF2\u56DE\u5230\u65E5\u7A0B\uFF0C\u4E4B\u524D\u786E\u8BA4\u7684\u4FE1\u606F\u4F1A\u4FDD\u7559\u3002");
+          $("collegePhase").scrollIntoView({ block: "start" });
+        };
         $("collegeStart").onclick = () => act(() => model.execute(model.request("start", "daily.tailing")));
         $("collegePass").onclick = () => act(() => model.execute(model.request("start", "daily.pass")));
         $("collegeStop").onclick = () => act(() => model.execute(model.request("cancel")));
