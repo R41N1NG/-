@@ -84,13 +84,13 @@ function boot() {
   };
   window.WxGlue = {
     command: async (name, arg) => {
-      if (name !== "executeDailyCommand")
+      if (!["executeDailyCommand", "renameKnownRoute"].includes(name))
         throw Error("此预览只接日程和移动操作");
       if (arg.sync && arg.sync.epoch !== epoch)
         throw Error("试玩已重置，请重新选择");
       const before = model.save();
       try {
-        const r = model.execute(arg);
+        const r = name === "renameKnownRoute" ? model.renameKnownRoute(arg) : model.execute(arg);
         persist();
         render();
         if (r.workCheck && !r.reused)

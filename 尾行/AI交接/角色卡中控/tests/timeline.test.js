@@ -567,3 +567,40 @@ test("本地命令：生成前的物品变化不被回复覆盖，回复分支�
   await h.sync.reconcile();
   assert.equal(count(), 3);
 });
+
+test("路线改名沿聊天检查点保存，刷新不丢；保存失败回滚、旧聊天入口拒绝", async () => {
+  const h=host();
+  const p=require("../tools/build/college-preview-model").createPreview(null,{period:3,seed:"college-preview-2"});
+  p.move("school_gate_b"); p.execute(p.request("start","daily.tailing")); p.follow(); p.follow();
+  const init=p.save();
+  await h.sync.newGame({saved:init});
+  const route=h.state.game.snapshot().profile.routes[0]; assert.ok(route);
+  const req=(name)=>({targetId:h.state.game.snapshot().target.id,id:route.id,name,sync:h.stores.A.wx_snap.dayPlan.sync});
+  await h.sync.mutate("renameKnownRoute",req("校门归途"));
+  assert.equal(h.stores.A.wx_save.investigation.routes[0].name,"校门归途");
+  await h.sync.rebuild(); assert.equal(h.state.game.snapshot().profile.routes[0].name,"校门归途");
+  h.failWrites(true);
+  await assert.rejects(h.sync.mutate("renameKnownRoute",req("不应落盘")));
+  h.failWrites(false);
+  assert.equal(h.state.game.snapshot().profile.routes[0].name,"校门归途");
+  await assert.rejects(h.sync.mutate("renameKnownRoute",{...req("旧入口"),sync:{scope:"stale",epoch:-1}}),{code:"DAY_STALE"});
+  await h.sync.mutate("renameKnownRoute",req("再次命名"));
+  assert.equal(h.stores.A.wx_save.investigation.routes[0].name,"再次命名");
+});
+
+test("路线名称跟随回复分支回退恢复，不串入其他分支", async () => {
+  const h=host(), p=require("../tools/build/college-preview-model").createPreview(null,{period:3,seed:"college-preview-2"});
+  p.move("school_gate_b"); p.execute(p.request("start","daily.tailing")); p.follow(); p.follow();
+  await h.sync.newGame({saved:p.save()});
+  await send(h,"advance"); h.reply("original route reply");
+  await h.sync.runReply({text:"original route reply"});
+  const s=h.stores.A.wx_snap, id=s.profile.routes[0].id;
+  await h.sync.mutate("renameKnownRoute",{targetId:s.target.id,id,name:"分支路线",sync:s.dayPlan.sync});
+  assert.equal(h.state.game.snapshot().profile.routes[0].name,"分支路线");
+  h.histories.A.at(-1).text="alternative route reply";
+  await h.sync.reconcile();
+  assert.equal(h.state.game.snapshot().profile.routes[0].name,"归家路线");
+  h.histories.A.at(-1).text="original route reply";
+  await h.sync.reconcile();
+  assert.equal(h.state.game.snapshot().profile.routes[0].name,"分支路线");
+});

@@ -1,4 +1,5 @@
 "use strict";
+const { knownRoutesView } = require("../known-routes.js");
 const { knownAttributes } = require("../target-knowledge.js");
 // snapshot：依赖由 game.js 装配，每个游戏实例独立持有状态。
 const { classifyPlace } = require("../../contracts/action-requirements.js");
@@ -164,6 +165,7 @@ function createSnapshotSystem({
         profile: {
           targetId: g.targetId,
           attrs: knownAttributes(g),
+          routes: knownRoutesView(g),
           impressions: [],
           facts:
             F.view(g.targetId, {

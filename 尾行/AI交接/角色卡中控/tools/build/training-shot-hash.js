@@ -23,6 +23,7 @@ function trainingShotHash(root) {
     "src/ui/renderers",
     "src/ui/map",
     "src/ui/settlement",
+    "src/ui/profile",
   ])
     scan(path.join(root, dir));
   for (const file of [

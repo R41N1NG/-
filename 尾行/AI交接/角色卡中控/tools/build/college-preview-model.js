@@ -456,6 +456,8 @@ function createPreview(saved, options = {}) {
     if (!active() || !recovery.pending) throw Error("当前没有可用的追找机会");
     recovery.pending = false;
     recovery.attempted = true;
+    // 追找从远端重新建立目视，勉强过关也不能保留失败前的近距离。
+    game._g.dist = "far";
     const r = follow([
       { id: "follow", name: "寻找她的身影", args: { dist: "far" } },
     ]);
@@ -474,6 +476,7 @@ function createPreview(saved, options = {}) {
     execute,
     follow,
     recover,
+    renameKnownRoute: (request) => game.renameKnownRoute(request),
     move,
     quote,
     acknowledgeOutcome: () => {

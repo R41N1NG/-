@@ -4,6 +4,7 @@ const R = require("../../config/rules.json");
 const T = require("../tags.js");
 const C = require("../checks.js");
 const D = require("../dice.js");
+const { TAIL_PUMP_IDS, DIST_KEY } = require("./constants.js");
 
 function createCheckSystem({ g, seedFor, isFamiliar, investigation }) {
   function targetEffectiveAcuity() {
@@ -40,7 +41,12 @@ function createCheckSystem({ g, seedFor, isFamiliar, investigation }) {
     const nextBonus = investigation.nextBonus(entry.id);
     if (nextBonus) mods.push({ src: "已掌握下一站", v: nextBonus });
 
-    const dc = (R.checks[entry.check] ?? 10) - targetMod; // 她的暗账降 DC 表现为负修正
+    const dist = DIST_KEY[args?.dist] || g.dist;
+    const distanceDC =
+      TAIL_PUMP_IDS.includes(entry.id) && dist === "far"
+        ? R.check.farFollowDC
+        : 0;
+    const dc = (R.checks[entry.check] ?? 10) - targetMod + distanceDC; // 她的暗账降 DC 表现为负修正
     // 优势双骰：属性阈值标签自动驱动（效果只认标签；冲突对抗 2d10 不走此处，天然不吃）
     const advTagged = (g.tags || []).some(
       (t) => t.id === "adv_" + attrKeyOf(entry.id),
@@ -86,6 +92,7 @@ function createCheckSystem({ g, seedFor, isFamiliar, investigation }) {
       attr,
       targetMod,
       darkReveal,
+      distanceDC,
       heartState: {
         value: g.ledger.get("heart"),
         sweetLow: R.check.sweetLow,

@@ -103,7 +103,7 @@ async function main() {
       }
       async function shot(name) {
         await b.evaluate(
-          "(document.body.dataset.collegeView==='world'?document.getElementById('wxCityMap'):document.getElementById('collegeTailScreen')).scrollIntoView({block:'start'});true",
+          "(()=>{const d=document.querySelector('dialog[open]');if(d){window.scrollTo(0,0);if(d.id==='wx-profile-dialog'){const p=document.getElementById('profileRoutes');d.scrollTop+=p.getBoundingClientRect().top-d.getBoundingClientRect().top-55;}}else (document.body.dataset.collegeView==='world'?document.getElementById('wxCityMap'):document.getElementById('collegeTailScreen')).scrollIntoView({block:'start'});return true})()",
         );
         await b.delay(350);
         const img = await b.send("Page.captureScreenshot", {
@@ -412,6 +412,16 @@ async function main() {
         "跟丢后返回地图保留进度",
         "document.body.dataset.collegeView==='world'&&__collegePreview.snapshot().player.pi===5&&__collegePreview.snapshot().dayPlan.period===4&&__collegePreview.snapshot().dayPlan.remaining===2",
       );
+      await click('[data-wx-dialog="wx-profile-dialog"]');
+      await check("档案只展示实际探明路段", "(()=>{const e=document.getElementById('profileRoutes');return e.textContent.includes('老水泥天桥')&&!e.textContent.includes('单元')&&e.querySelector('input').value==='归家路线'})()");
+      await b.evaluate("(()=>{const f=document.querySelector('#profileRoutes form');f.elements.routeName.value='校门归途';f.requestSubmit();return true})()");
+      await b.delay(250);
+      await check("路线改名保存且不扣行动点", "__collegePreview.snapshot().profile.routes[0].name==='校门归途'&&__collegePreview.snapshot().dayPlan.remaining===2");
+      await shot("route-profile");
+      await b.evaluate("document.getElementById('wx-profile-dialog').close();true");
+      await b.send("Page.reload");
+      await b.delay(1000);
+      await check("刷新保留路线名称和已探路段", "__collegePreview.snapshot().profile.routes[0].name==='校门归途'&&__collegePreview.snapshot().profile.routes[0].segments.length>0");
       await click('[data-action-id="daily.work"]');
       await check(
         "打工选择显示DC15与各收入档",
@@ -434,6 +444,8 @@ async function main() {
         "打工真实掷骰、属性加成与收入写回",
         "(()=>{const s=__collegePreview.snapshot(),w=__collegePreview.save().economy.lastWork;return w.check.dc===15&&w.check.attr.v===6&&w.income===w.check.ledger.applied.cash&&s.player.cash===800+w.income&&document.getElementById('settleModsStack').textContent.includes('情报属性')})()",
       );
+      await b.delay(350);
+      await check("工作额外收入独立突出且总额与到账一致", "(()=>{const w=__collegePreview.save().economy.lastWork.check.workIncome,e=document.querySelector('#settleLedgerWrap .work-bonus');return w.bonus>0&&w.base+w.bonus===w.total&&e?.textContent.includes(String(w.bonus))&&parseFloat(getComputedStyle(e.querySelector('.val')).fontSize)>=24})()");
       await shot("work-check");
       await b.evaluate(
         "document.getElementById('wx-settle-dialog').close();true",

@@ -67,6 +67,7 @@ function createWorkHandler(seedContext) {
             ? job.tiers.pass || job.tiers.base
             : job.tiers.base;
       const check = {
+        workIncome: { base: job.tiers.base, bonus: income - job.tiers.base, total: income },
         id: "daily.work",
         name: job.name,
         label: job.name,

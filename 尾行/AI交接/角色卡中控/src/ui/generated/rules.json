@@ -117,6 +117,7 @@
           },
           "targetMod": 0,
           "darkReveal": null,
+          "distanceDC": 0,
           "heartState": {
             "value": 30,
             "sweetLow": 40,

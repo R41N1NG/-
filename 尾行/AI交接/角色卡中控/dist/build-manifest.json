@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.20",
+  "version": "0.8.21",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "d26e46d6e1a03bd968408936d589d47f852adfdfa31628f24addf8e16471982a",
+  "sourceHash": "41f79e93a61f1702570178d9b2d1a14fc6dfb400a279bffa76966a6dffbe2387",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "645a6279c7621d8cc476e1ab394884849fe8c9e3a65b974835033578dc26a06a"
+      "sha256": "290c5914249e9ef07bb601bea0851eb9f4a5e9efee48691cfec2cced3f81d44b"
     },
     {
       "file": "package.json",
-      "sha256": "55045bfe95f7ea5ca8213e4dfc12572d28bcc68ed9ec54b0fb77376354da1547"
+      "sha256": "d7a4598b550e3e79912832d749468673de0c99138b02ad83836d30c2463e5a17"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -63,7 +63,7 @@
     },
     {
       "file": "src/config/rules.json",
-      "sha256": "e9571d4f561161465822e11a05d55be96913e616c97e179e58052ec2a16763dd"
+      "sha256": "2af9e3302337c031262ed7d39a169ed9bc28cfe6440bf91ba0854e394f7ec6ad"
     },
     {
       "file": "src/config/wardrobe.json",
@@ -111,7 +111,7 @@
     },
     {
       "file": "src/host/chat-sync/controller.js",
-      "sha256": "90a5645237572fc6c16ababcb6585f62c288f26a735a32b37e682306b8350d6b"
+      "sha256": "230695cafb4ef8d99bef7338685f3000935091490986a12c420480c022a5f32d"
     },
     {
       "file": "src/host/chat-sync/diagnostics.js",
@@ -211,11 +211,11 @@
     },
     {
       "file": "src/runtime/game.js",
-      "sha256": "92f7d533e36219eed82d10fdad635d57bb35441c86c6d0392de15ce830170763"
+      "sha256": "74089369771b1a0ce64938fbc9fb9e56319b5ef97b410c9d7c1021ab3d91f491"
     },
     {
       "file": "src/runtime/game/actions.js",
-      "sha256": "42419e2489e240c3f6e8110344d82628c8bbfaf146caf55c18f91df6baa31dbd"
+      "sha256": "d472c1d529ff3285d41ec4c2d993732440fc899aeacff9a92f0d3594ba2b3d07"
     },
     {
       "file": "src/runtime/game/album.js",
@@ -227,7 +227,7 @@
     },
     {
       "file": "src/runtime/game/checks.js",
-      "sha256": "091685da1874ca64fbeec8dd50830aaccdf4646c8f0c70073f5650d569a2764f"
+      "sha256": "99380a7e00717100898e1018889327f742da2470242dfba1ba954fd536a4a73a"
     },
     {
       "file": "src/runtime/game/clock.js",
@@ -255,7 +255,7 @@
     },
     {
       "file": "src/runtime/game/snapshot.js",
-      "sha256": "5e42a22a4bc7537ebf91bdb4225221a4f24f49d6756623a1b71429e95feb0b96"
+      "sha256": "a357e2d30c54aa617cbf54df3bb811cf733a1eab1318151bbd7c1779e398927b"
     },
     {
       "file": "src/runtime/game/target.js",
@@ -263,11 +263,15 @@
     },
     {
       "file": "src/runtime/game/turn.js",
-      "sha256": "060c451e89e06657ece977d05fa7e65b74134ee265e908cd7a9d097081f448b8"
+      "sha256": "c57e8c4530674f5452862064ecd9dd5e70611ba85fc760d0affed787bc53909d"
     },
     {
       "file": "src/runtime/investigation.js",
-      "sha256": "aa1b08fd1444c7e744871e7aa99a8b76f3a538e80070838eba3df7ec4f66b90b"
+      "sha256": "4a9ea8c5c86d1aa11b4cdcc07275eefd8df1a2ceb6640634a2e1e57561dfd59d"
+    },
+    {
+      "file": "src/runtime/known-routes.js",
+      "sha256": "ceca30478f03cc6a6dd9660ca3018d8b89a5f386d3a11515db315db9867c949f"
     },
     {
       "file": "src/runtime/ledger.js",
@@ -363,11 +367,11 @@
     },
     {
       "file": "src/ui/generated/rules.json",
-      "sha256": "663ffa97163fd789ca077c5ffef99b033608db0d1e1ecb0e5573562643c2c65c"
+      "sha256": "07c3bb421e706023a100b286cf6a77e4e53a9868064ac18fffa020b32d3d6f68"
     },
     {
       "file": "src/ui/generated/training-shots.json",
-      "sha256": "e237b4d09c6c58fd08facfde5c84ce51116e5ac18511c8039353f710c8a60433"
+      "sha256": "5148e8afec10ecafc99cf97fc5f34764c77da9c47e025517cec4d9e7ac7c6136"
     },
     {
       "file": "src/ui/generated/wardrobe-images.json",
@@ -402,6 +406,10 @@
       "sha256": "a59ccb98dc912bd0ac54b2322b5cd10c30fc0d43317581e37266992121657cb3"
     },
     {
+      "file": "src/ui/profile/known-routes.js",
+      "sha256": "64251d8abad835d1319b1eed9d0d0f1a0f28012792136f3fa34ef283bc24ca65"
+    },
+    {
       "file": "src/ui/renderers/day-plan.js",
       "sha256": "a52039c1c82e73562a368c236dd854203744dd0d453f6306dea36500790cc917"
     },
@@ -419,7 +427,7 @@
     },
     {
       "file": "src/ui/settlement/controller.js",
-      "sha256": "173a476a832a4713fb2ebb5e0d286861c06b8f79f84766cf87e028ff16e68aa3"
+      "sha256": "2c82e18aa1e386e265570a2bf55c39982506ac124d9091d9c47033b0b95e1fd4"
     },
     {
       "file": "src/ui/settlement/geometry.js",
@@ -427,7 +435,7 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "f3d704cc49a9e57d1cd90de9839bf13902858b46217afbf5c2d2a1e04930f264"
+      "sha256": "71c5cab6477ca6a5723dcd78a59a6eba557d8dbb91445a35a9d92c2ec6177e51"
     },
     {
       "file": "src/ui/styles/attribute-lessons.css",
@@ -439,7 +447,7 @@
     },
     {
       "file": "src/ui/styles/statusbar.css",
-      "sha256": "7a31395dd0f9339c62294a0d23e36240e2606556bd1d96aae0e10e905b3f4bb0"
+      "sha256": "ea0ab2500d2b8975dc5635acc65389aaab47927d054ce2e893c166d7a35380c5"
     },
     {
       "file": "src/ui/styles/training-brief.css",
@@ -451,7 +459,7 @@
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "f2a94acf575eedc742ce16b755df2026543821621d369b5763ec8bf1cc04a567"
+      "sha256": "571fe39671ec040f1ee321fc06a772322e36df07ac5ab4398d4bc672f782e584"
     },
     {
       "file": "src/ui/zero-floor/attribute-lessons.html",
@@ -499,11 +507,11 @@
     },
     {
       "file": "tools/build/college-preview-entry.js",
-      "sha256": "09ea62641d7a2ae8f99fa1fa6c227b098a8e80586d34b18a11680f79705f1955"
+      "sha256": "8b0d99b9dea25acebb84b4c187b2dd07ccc7c0be4b3649dc79c760a4867b0657"
     },
     {
       "file": "tools/build/college-preview-model.js",
-      "sha256": "d6f1787e9d7a980c59b3b1d52153438143012c51f9c104506049998933c06786"
+      "sha256": "d023a0f0d565d9261998319d05882595b2e3e969a374a7caa7eb7d361507ddb7"
     },
     {
       "file": "tools/build/college-preview-tail-view.js",
@@ -515,7 +523,7 @@
     },
     {
       "file": "tools/build/college-preview-tail.html",
-      "sha256": "9793c9f00918d975ef3142bae2b2047a74acf7156e29e52ea0a150b291868815"
+      "sha256": "e29177b67ce680f52743088b301646f268831a38957ff2a2519309129ab2b771"
     },
     {
       "file": "tools/build/college-preview-time.js",
@@ -523,7 +531,7 @@
     },
     {
       "file": "tools/build/college-preview-work.js",
-      "sha256": "5fcc88cfbd2633bf7fda6ce7f32a4529589e0c15163c865158a1663275b1d79d"
+      "sha256": "5b43e19c0047dfc204f057c38ed4c02921e42a2a55d12f6ef08045fcf2f2ef6c"
     },
     {
       "file": "tools/build/college-preview.js",
@@ -567,7 +575,7 @@
     },
     {
       "file": "tools/build/training-shot-hash.js",
-      "sha256": "0bda93a446d406214dc0395313785c4bb7c66ab246dbd3ee86f2a071a7d7a9e0"
+      "sha256": "17fc7076e28bdcf443e425393472f9c82b2ee3fb463d5e600e2432df068f0cc0"
     },
     {
       "file": "tools/build/training-shots.js",
@@ -588,16 +596,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 638361,
-      "sha256": "6531628ea4bcdae5c0f9f65670b113639df47e560a353939b8dea9c39ca88612"
+      "bytes": 643190,
+      "sha256": "246a3a2e076d3d807198d38314b0ff5eab1d62343eec0741e35d126881c561fb"
     },
     "wx-statusbar.user.js": {
-      "bytes": 14586881,
-      "sha256": "fb4477e8fdaffad939a8f0a34e7623116df330f616e096f3b241dbb40f7588b3"
+      "bytes": 14600048,
+      "sha256": "5b2ef51cf880f63047da75aff4adc475b832cbd7675d4a3f6037649446a0aba1"
     },
     "尾行.json": {
-      "bytes": 14722658,
-      "sha256": "baed4de6bcf36b907fcac757938ed91d22d6ea61f1b17a52a30a8d802ea494f9"
+      "bytes": 14736414,
+      "sha256": "67e633668f351911c169731531cc426f319910ab63ab87f8a4370827987d5d51"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

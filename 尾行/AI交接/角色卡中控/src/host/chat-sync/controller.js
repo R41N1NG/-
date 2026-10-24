@@ -632,11 +632,12 @@ function createChatSync({
           "useItem",
           "nightFall",
           "executeDailyCommand",
+          "renameKnownRoute",
         ];
         if (!allowed.includes(method))
           throw fail("COMMAND_INVALID", "不支持的游戏操作");
         try {
-          if (method === "executeDailyCommand") {
+          if (method === "executeDailyCommand" || method === "renameKnownRoute") {
             const guard = args[0]?.sync;
             if (
               !guard ||

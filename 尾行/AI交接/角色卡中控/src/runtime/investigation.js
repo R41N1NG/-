@@ -1,6 +1,7 @@
 "use strict";
 // 调查熟练度：证据登记、路线加值、整段奖励及幂等状态；仅沿原整卡存档保存。
 const R = require("../config/rules.json").investigation;
+const { restoreRoutes, rememberEdge } = require("./known-routes.js");
 const LP = require("../config/lifepack.json");
 const F = require("./facts.js");
 const { TAIL_PUMP_IDS } = require("./game/constants.js");
@@ -37,6 +38,7 @@ function createInvestigation({ g, L }) {
           code: "SAVE_INVALID",
         });
       g.investigation = clone(value);
+      restoreRoutes(g);
       return;
     }
     const knownFacts = saved
@@ -61,6 +63,7 @@ function createInvestigation({ g, L }) {
       session: null,
       lastReceipt: null,
     };
+    restoreRoutes(g);
   }
   function session() {
     const p = g.investigation;
@@ -121,6 +124,7 @@ function createInvestigation({ g, L }) {
     if (!Number.isInteger(i) || i < 1 || !g.route?.nodes?.[i]) return;
     const edge = edgeKey(g.route.nodes[i - 1], g.route.nodes[i]);
     if (!g.investigation.edges.includes(edge)) g.investigation.edges.push(edge);
+    rememberEdge(g, g.route.nodes[i - 1], g.route.nodes[i]);
   }
   function exposure(id, dist) {
     if (!TAIL_PUMP_IDS.includes(id)) return null;
@@ -156,6 +160,7 @@ function createInvestigation({ g, L }) {
         p.edges.push(edge);
         addClue("edge:" + edge, discovered);
       }
+      rememberEdge(g, origin.place, place);
       g.route.known[here] = 1;
     }
     // 不由角色台词／模型票据解锁；只认当前可观察地点与事实自己的动作证据。

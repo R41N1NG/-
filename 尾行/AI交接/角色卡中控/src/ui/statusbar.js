@@ -33,6 +33,7 @@ const {
   MODE_NAMES,
   lineOf,
 } = require("./display.js");
+const { createKnownRoutesUI } = require("./profile/known-routes.js");
 const { createDetailsRenderer } = require("./renderers/details.js");
 const { clearLiveData } = require("./renderers/empty.js");
 const { createDayPlanRenderer } = require("./renderers/day-plan.js");
@@ -60,7 +61,9 @@ function mountStatusbar(document, window) {
   }
   clearLiveData(document);
   const details = createDetailsRenderer({ document });
+  const knownRoutesUI = createKnownRoutesUI({ document, lifecycle, getGlue: () => window.WxGlue || globalThis.WxGlue });
   details.reset();
+  knownRoutesUI.render(null);
   const dayPlanRenderer = createDayPlanRenderer({ document });
   dayPlanRenderer.reset();
   const dailyActionsUI = createDailyActionsUI({
@@ -661,6 +664,7 @@ function mountStatusbar(document, window) {
       currentDynamicCapsules = [];
     }
     details.render(snap);
+    knownRoutesUI.render(snap);
     return render(snap);
   }
 
@@ -2046,6 +2050,7 @@ function mountStatusbar(document, window) {
     syncNotice.clear();
     clearLiveData(document);
     details.reset();
+    knownRoutesUI.render(null);
     render._hist = [];
     stopAudio();
     creationAttempt++;

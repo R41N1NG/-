@@ -10,6 +10,1674 @@
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
 
+  // src/config/places.json
+  var require_places = __commonJS({
+    "src/config/places.json"(exports, module) {
+      module.exports = {
+        districts: {
+          A: {
+            id: "A",
+            name: "\u4E2D\u57CECBD\u5546\u52A1\u533A",
+            sectors: ["A-1", "A-2", "A-3", "A-4", "A-5"],
+            transit_ports: ["metro_hub_a", "bus_bay_a"],
+            audio_ambient: "assets/audio/ambient/zone_a_surface.ogg",
+            setting: "urban"
+          },
+          B: {
+            id: "B",
+            name: "\u8001\u57CE\u6587\u6559\u533A",
+            sectors: ["B-1", "B-2", "B-3", "B-4", "B-5"],
+            transit_ports: ["school_bus_terminal_b", "old_metro_b"],
+            audio_ambient: "assets/audio/ambient/zone_b_street.ogg",
+            setting: "urban"
+          },
+          C: {
+            id: "C",
+            name: "\u4E34\u6C5F\u5A31\u4E50\u7EA2\u706F\u533A",
+            sectors: ["C-1", "C-2", "C-3", "C-4"],
+            transit_ports: ["dock_bus_stop_c", "bridge_head_c"],
+            audio_ambient: "assets/audio/ambient/zone_c_clubstreet.ogg",
+            setting: "urban"
+          },
+          D: {
+            id: "D",
+            name: "\u90CA\u91CE\u8C6A\u5B85\u533A",
+            sectors: ["D-1", "D-2", "D-3"],
+            transit_ports: ["suburb_highway_d"],
+            audio_ambient: "assets/audio/ambient/zone_d_road.ogg",
+            setting: "suburb"
+          }
+        },
+        places: {
+          office_lobby_a: {
+            id: "office_lobby_a",
+            district: "A",
+            sector: "A-1",
+            name: "\u5199\u5B57\u697C\u5927\u5802",
+            light: "bright",
+            crowd: "pulse",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["skybridge_a", "metro_hub_a", "parking_b2_a", "back_alley_a"],
+            spots: ["reception", "security_clock"],
+            audio_trigger: "footstep_marble",
+            free_pass: ["guard"]
+          },
+          parking_b2_a: {
+            id: "parking_b2_a",
+            district: "A",
+            sector: "A-1",
+            name: "\u5730\u4E0B\u8F66\u5E93B2",
+            light: "dim",
+            crowd: "low",
+            surveillance: "dense",
+            cover: 1,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["office_lobby_a", "trash_station_a"],
+            spots: ["pillar_hide", "tire_screech"],
+            audio_ambient: "assets/audio/ambient/zone_a_parking.ogg",
+            free_pass: ["guard"]
+          },
+          skybridge_a: {
+            id: "skybridge_a",
+            district: "A",
+            sector: "A-2",
+            name: "\u8DE8\u8857\u8FDE\u5ECA\u5929\u6865",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: -2,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["office_lobby_a", "metro_hub_a", "bus_bay_a"],
+            spots: ["perch_watch"]
+          },
+          metro_hub_a: {
+            id: "metro_hub_a",
+            district: "A",
+            sector: "A-2",
+            name: "\u5730\u94C1\u67A2\u7EBD\u51FA\u5165\u53E3",
+            light: "bright",
+            crowd: "pulse",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: true,
+            exits: [
+              "office_lobby_a",
+              "skybridge_a",
+              "store_24h_a",
+              "bus_bay_a",
+              "central_mall_a",
+              "bank_a",
+              "business_cafe_a",
+              "clinic_a",
+              "business_hotel_a",
+              "central_plaza_a",
+              "pedestrian_street_a",
+              "department_store_a",
+              "cinema_a",
+              "gym_a",
+              "restaurant_a",
+              "courier_a",
+              "taxi_rank_a",
+              "public_parking_a",
+              "apartment_plaza_a",
+              "coworking_a",
+              "electronics_a",
+              "station_square_a"
+            ],
+            spots: ["ticket_gate", "sunken_plaza"]
+          },
+          bus_bay_a: {
+            id: "bus_bay_a",
+            district: "A",
+            sector: "A-2",
+            name: "\u7AD9\u524D\u516C\u4EA4\u6E2F\u6E7E",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: true,
+            exits: ["metro_hub_a", "skybridge_a"],
+            spots: ["bus_wait"]
+          },
+          store_24h_a: {
+            id: "store_24h_a",
+            district: "A",
+            sector: "A-1",
+            name: "\u6CBF\u885724h\u4FBF\u5229\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: false,
+            exits: ["metro_hub_a", "office_lobby_a"],
+            spots: ["window_watch", "exit_watch"]
+          },
+          back_alley_a: {
+            id: "back_alley_a",
+            district: "A",
+            sector: "A-3",
+            name: "\u540E\u8857\u6392\u98CE\u6697\u5DF7",
+            light: "dark",
+            crowd: "none",
+            surveillance: "low",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["office_lobby_a", "trash_station_a"],
+            spots: ["fan_mask", "ebike_hide"]
+          },
+          trash_station_a: {
+            id: "trash_station_a",
+            district: "A",
+            sector: "A-3",
+            name: "\u5783\u573E\u88C5\u5378\u540E\u9053",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["back_alley_a", "parking_b2_a"],
+            spots: ["trash_search"]
+          },
+          school_gate_b: {
+            id: "school_gate_b",
+            district: "B",
+            sector: "B-1",
+            name: "\u5B66\u6821\u6B63\u95E8",
+            light: "bright",
+            crowd: "pulse",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "school_bus_terminal_b",
+              "old_skybridge_b",
+              "university_library_b",
+              "university_canteen_b",
+              "university_sports_b",
+              "university_dorm_gate_b"
+            ],
+            spots: ["gate_watch", "rush_mask"],
+            free_pass: ["student"],
+            mapName: "\u5927\u5B66\u6B63\u95E8"
+          },
+          school_bus_terminal_b: {
+            id: "school_bus_terminal_b",
+            district: "B",
+            sector: "B-1",
+            name: "\u5B66\u533A\u516C\u4EA4\u603B\u7AD9",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: true,
+            exits: [
+              "school_gate_b",
+              "old_skybridge_b",
+              "old_metro_b",
+              "high_school_gate_b",
+              "campus_bookshop_b",
+              "campus_cafe_b"
+            ],
+            spots: ["bus_wait"],
+            free_pass: ["student"]
+          },
+          old_metro_b: {
+            id: "old_metro_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u8001\u8857\u5730\u94C1\u7AD9",
+            light: "bright",
+            crowd: "pulse",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: true,
+            exits: ["school_bus_terminal_b", "old_skybridge_b", "store_24h_b"],
+            spots: ["ticket_gate"]
+          },
+          old_skybridge_b: {
+            id: "old_skybridge_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u8001\u6C34\u6CE5\u5929\u6865",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: -2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "school_gate_b",
+              "school_bus_terminal_b",
+              "store_24h_b",
+              "old_park_b"
+            ],
+            spots: ["perch_watch"]
+          },
+          store_24h_b: {
+            id: "store_24h_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u8001\u885724h\u4FBF\u5229\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: false,
+            exits: [
+              "old_skybridge_b",
+              "old_metro_b",
+              "old_alley_main_b",
+              "student_street_b"
+            ],
+            spots: ["window_watch", "exit_watch"]
+          },
+          old_park_b: {
+            id: "old_park_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u8001\u5C45\u6C11\u516C\u56ED",
+            light: "dark",
+            crowd: "low",
+            surveillance: "low",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["old_skybridge_b", "old_alley_main_b", "player_base_b"],
+            spots: ["park_bench", "tree_hide"]
+          },
+          old_alley_main_b: {
+            id: "old_alley_main_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u8001\u8857\u4E3B\u5F04\u5802",
+            light: "dim",
+            crowd: "low",
+            surveillance: "none",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "store_24h_b",
+              "old_park_b",
+              "dark_blind_alley_b",
+              "dead_end_b",
+              "love_hotel_b"
+            ],
+            spots: ["sodium_lamp", "corner_shadow"]
+          },
+          dark_blind_alley_b: {
+            id: "dark_blind_alley_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u5C45\u6C11\u6742\u7269\u6697\u5DF7",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["old_alley_main_b", "unit_stairs_b"],
+            spots: ["trash_hide", "bike_hide"]
+          },
+          dead_end_b: {
+            id: "dead_end_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u76F2\u7AEF\u6B7B\u80E1\u540C",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["old_alley_main_b", "love_hotel_b"],
+            spots: ["trap_corner"]
+          },
+          love_hotel_b: {
+            id: "love_hotel_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u8001\u57CE\u60C5\u4FA3\u65C5\u793E",
+            light: "dim",
+            crowd: "low",
+            surveillance: "low",
+            cover: 1,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["old_alley_main_b", "dead_end_b"],
+            spots: ["hotel_neon_sign", "rain_canopy", "front_desk"]
+          },
+          unit_stairs_b: {
+            id: "unit_stairs_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u8001\u65E7\u5355\u5143\u697C\u9053",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 1,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: true,
+            transit_port: false,
+            exits: ["dark_blind_alley_b", "rooftop_b"],
+            spots: ["listen_home", "door_crack", "try_handle"],
+            free_pass: ["guard"]
+          },
+          rooftop_b: {
+            id: "rooftop_b",
+            district: "B",
+            sector: "B-3",
+            name: "\u8001\u697C\u5929\u53F0",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 0,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["unit_stairs_b"],
+            spots: ["perch_watch", "climb_point"]
+          },
+          club_backdoor_c: {
+            id: "club_backdoor_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u9152\u5427\u5458\u5DE5\u540E\u95E8",
+            light: "dim",
+            crowd: "low",
+            surveillance: "low",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["food_street_c", "river_walk_c"],
+            spots: ["drunk_exit"],
+            free_pass: ["bartender"]
+          },
+          food_street_c: {
+            id: "food_street_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u5927\u6392\u6863\u591C\u5E02\u8857\u89D2",
+            light: "bright",
+            crowd: "high",
+            surveillance: "low",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "club_backdoor_c",
+              "store_24h_c",
+              "dock_bus_stop_c",
+              "bar_street_c"
+            ],
+            spots: ["carpool_stand"],
+            free_pass: ["bartender"]
+          },
+          dock_bus_stop_c: {
+            id: "dock_bus_stop_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u6CBF\u6C5F\u7801\u5934\u516C\u4EA4\u7AD9",
+            light: "dim",
+            crowd: "low",
+            surveillance: "low",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: true,
+            exits: [
+              "food_street_c",
+              "bridge_head_c",
+              "ktv_c",
+              "hotel_c",
+              "late_restaurant_c",
+              "livehouse_c"
+            ],
+            spots: ["bus_wait"]
+          },
+          bridge_head_c: {
+            id: "bridge_head_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u8DE8\u6C5F\u5927\u6865\u5934",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: true,
+            exits: ["dock_bus_stop_c", "river_walk_c"],
+            spots: ["bridge_view"]
+          },
+          store_24h_c: {
+            id: "store_24h_c",
+            district: "C",
+            sector: "C-1",
+            name: "24h\u6CBF\u6C5F\u4FBF\u5229\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: false,
+            exits: ["food_street_c", "village_main_c"],
+            spots: ["window_watch", "hangover_cure"]
+          },
+          river_walk_c: {
+            id: "river_walk_c",
+            district: "C",
+            sector: "C-2",
+            name: "\u6C5F\u5824\u89C2\u666F\u957F\u6B65\u9053",
+            light: "dark",
+            crowd: "low",
+            surveillance: "none",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["club_backdoor_c", "river_steps_c", "bridge_head_c"],
+            spots: ["river_rail", "sober_walk"]
+          },
+          river_steps_c: {
+            id: "river_steps_c",
+            district: "C",
+            sector: "C-2",
+            name: "\u4EB2\u6C34\u907F\u98CE\u53F0\u9636",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["river_walk_c", "village_main_c"],
+            spots: ["vomit_point", "reed_hide"]
+          },
+          village_main_c: {
+            id: "village_main_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u57CE\u4E2D\u6751\u63E1\u624B\u697C\u4E3B\u5F04",
+            light: "dim",
+            crowd: "low",
+            surveillance: "none",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "store_24h_c",
+              "river_steps_c",
+              "narrow_gap_c",
+              "black_market_c",
+              "courier_c",
+              "laundry_c"
+            ],
+            spots: ["wet_pavement"]
+          },
+          narrow_gap_c: {
+            id: "narrow_gap_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u4E00\u7EBF\u5929\u5E7D\u6E7F\u7A84\u5F04",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["village_main_c", "rental_iron_door_c"],
+            spots: ["aircon_drip", "ambush_corner"]
+          },
+          rental_iron_door_c: {
+            id: "rental_iron_door_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u51FA\u79DF\u5C4B\u697C\u9053\u94C1\u95E8",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 1,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: true,
+            transit_port: false,
+            exits: ["narrow_gap_c", "village_roof_c"],
+            spots: ["spiral_stairs", "listen_home"]
+          },
+          village_roof_c: {
+            id: "village_roof_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u5171\u7528\u6742\u7269\u5929\u53F0",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 1,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["rental_iron_door_c"],
+            spots: ["clothesline_hide", "overlook"]
+          },
+          suburb_highway_d: {
+            id: "suburb_highway_d",
+            district: "D",
+            sector: "D-1",
+            name: "\u90CA\u91CE\u516C\u8DEF\u957F\u5F2F\u9053",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 0,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: true,
+            exits: ["gas_station_d", "private_road_d"],
+            spots: ["curve_hide"]
+          },
+          gas_station_d: {
+            id: "gas_station_d",
+            district: "D",
+            sector: "D-1",
+            name: "24h\u516C\u8DEF\u52A0\u6CB9\u7AD9",
+            light: "bright",
+            crowd: "low",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: true,
+            transit_port: false,
+            exits: ["suburb_highway_d", "private_road_d"],
+            spots: ["mart_cashier", "pump_island"]
+          },
+          private_road_d: {
+            id: "private_road_d",
+            district: "D",
+            sector: "D-2",
+            name: "\u6797\u836B\u79C1\u5BB6\u4E3B\u8F66\u9053",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: -2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: [
+              "suburb_highway_d",
+              "gas_station_d",
+              "pine_forest_d",
+              "estate_gate_d"
+            ],
+            spots: ["open_road", "patrol_watch"]
+          },
+          pine_forest_d: {
+            id: "pine_forest_d",
+            district: "D",
+            sector: "D-2",
+            name: "\u7F13\u5761\u6749\u6728\u5BC6\u6797",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 3,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["private_road_d", "estate_gate_d"],
+            spots: ["ebike_cache", "tree_ambush"]
+          },
+          estate_gate_d: {
+            id: "estate_gate_d",
+            district: "D",
+            sector: "D-3",
+            name: "\u5E84\u56ED\u94C1\u827A\u5927\u95E8",
+            light: "dim",
+            crowd: "none",
+            surveillance: "dense",
+            cover: 0,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["private_road_d", "pine_forest_d", "villa_garden_d"],
+            spots: ["gate_intercom", "infrared_cam"]
+          },
+          villa_garden_d: {
+            id: "villa_garden_d",
+            district: "D",
+            sector: "D-3",
+            name: "\u79C1\u5BB6\u5EAD\u9662\u7EFF\u7BF1",
+            light: "dark",
+            crowd: "none",
+            surveillance: "dense",
+            cover: 2,
+            indoor: false,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["estate_gate_d", "garage_side_door_d", "villa_porch_d"],
+            spots: ["dog_kennel", "sprinkler"]
+          },
+          garage_side_door_d: {
+            id: "garage_side_door_d",
+            district: "D",
+            sector: "D-3",
+            name: "\u8F66\u5E93\u5165\u6237\u4FA7\u95E8",
+            light: "dark",
+            crowd: "none",
+            surveillance: "none",
+            cover: 1,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["villa_garden_d", "villa_porch_d"],
+            spots: ["pick_side_door"]
+          },
+          villa_porch_d: {
+            id: "villa_porch_d",
+            district: "D",
+            sector: "D-3",
+            name: "\u72EC\u680B\u522B\u5885\u6B63\u95E8\u7384\u5173",
+            light: "bright",
+            crowd: "none",
+            surveillance: "dense",
+            cover: 0,
+            indoor: true,
+            strike_sealed: false,
+            sanctuary: true,
+            transit_port: false,
+            exits: ["villa_garden_d", "garage_side_door_d"],
+            spots: ["smart_lock", "home_safe"]
+          },
+          player_base_b: {
+            id: "player_base_b",
+            district: "B",
+            sector: "B-2",
+            name: "\u4F60\u7684\u636E\u70B9",
+            light: "bright",
+            crowd: "none",
+            surveillance: "none",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["old_park_b"],
+            spots: []
+          },
+          black_market_c: {
+            id: "black_market_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u4E34\u6C5F\u9ED1\u5E02",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "low",
+            cover: 0,
+            indoor: true,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["village_main_c"],
+            spots: []
+          },
+          central_mall_a: {
+            id: "central_mall_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u4E2D\u57CE\u7EFC\u5408\u5546\u573A",
+            mapName: "\u4E2D\u57CE\u7EFC\u5408\u5546\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "mall",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          bank_a: {
+            id: "bank_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u94F6\u884C\u8425\u4E1A\u5385",
+            mapName: "\u94F6\u884C\u8425\u4E1A\u5385",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          business_cafe_a: {
+            id: "business_cafe_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u5546\u52A1\u5496\u5561\u9986",
+            mapName: "\u5546\u52A1\u5496\u5561\u9986",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          clinic_a: {
+            id: "clinic_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u7EFC\u5408\u95E8\u8BCA",
+            mapName: "\u7EFC\u5408\u95E8\u8BCA",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          business_hotel_a: {
+            id: "business_hotel_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u5546\u52A1\u9152\u5E97",
+            mapName: "\u5546\u52A1\u9152\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "hotel",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          central_plaza_a: {
+            id: "central_plaza_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u4E2D\u5FC3\u5E7F\u573A",
+            mapName: "\u4E2D\u5FC3\u5E7F\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "plaza",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          pedestrian_street_a: {
+            id: "pedestrian_street_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u5546\u4E1A\u6B65\u884C\u8857",
+            mapName: "\u5546\u4E1A\u6B65\u884C\u8857",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "market",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          department_store_a: {
+            id: "department_store_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u767E\u8D27\u5546\u573A",
+            mapName: "\u767E\u8D27\u5546\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "mall",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          cinema_a: {
+            id: "cinema_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u57CE\u5E02\u5F71\u57CE",
+            mapName: "\u57CE\u5E02\u5F71\u57CE",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          gym_a: {
+            id: "gym_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u5065\u8EAB\u4E2D\u5FC3",
+            mapName: "\u5065\u8EAB\u4E2D\u5FC3",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          restaurant_a: {
+            id: "restaurant_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u5546\u52A1\u9910\u5385",
+            mapName: "\u5546\u52A1\u9910\u5385",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          courier_a: {
+            id: "courier_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u5FEB\u9012\u9A7F\u7AD9",
+            mapName: "\u5FEB\u9012\u9A7F\u7AD9",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          taxi_rank_a: {
+            id: "taxi_rank_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u51FA\u79DF\u8F66\u5019\u8F66\u70B9",
+            mapName: "\u51FA\u79DF\u8F66\u5019\u8F66\u70B9",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "transit",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          public_parking_a: {
+            id: "public_parking_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u516C\u5171\u505C\u8F66\u573A",
+            mapName: "\u516C\u5171\u505C\u8F66\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "parking",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          apartment_plaza_a: {
+            id: "apartment_plaza_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u516C\u5BD3\u5E7F\u573A",
+            mapName: "\u516C\u5BD3\u5E7F\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "housing",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          coworking_a: {
+            id: "coworking_a",
+            district: "A",
+            sector: "A-5",
+            name: "\u8054\u5408\u529E\u516C\u697C",
+            mapName: "\u8054\u5408\u529E\u516C\u697C",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "office",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          electronics_a: {
+            id: "electronics_a",
+            district: "A",
+            sector: "A-4",
+            name: "\u6570\u7801\u5546\u57CE",
+            mapName: "\u6570\u7801\u5546\u57CE",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "mall",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          station_square_a: {
+            id: "station_square_a",
+            district: "A",
+            sector: "A-2",
+            name: "\u7AD9\u524D\u5E7F\u573A",
+            mapName: "\u7AD9\u524D\u5E7F\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["metro_hub_a"],
+            spots: [],
+            facility: {
+              kind: "plaza",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          high_school_gate_b: {
+            id: "high_school_gate_b",
+            district: "B",
+            sector: "B-5",
+            name: "\u9AD8\u4E2D\u6B63\u95E8",
+            mapName: "\u9AD8\u4E2D\u6B63\u95E8",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_bus_terminal_b"],
+            spots: [],
+            facility: {
+              kind: "school",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            },
+            free_pass: ["student"]
+          },
+          university_library_b: {
+            id: "university_library_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u56FE\u4E66\u9986",
+            mapName: "\u5927\u5B66\u56FE\u4E66\u9986",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "library",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          university_canteen_b: {
+            id: "university_canteen_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u98DF\u5802",
+            mapName: "\u5927\u5B66\u98DF\u5802",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          university_sports_b: {
+            id: "university_sports_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u8FD0\u52A8\u573A",
+            mapName: "\u5927\u5B66\u8FD0\u52A8\u573A",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "sports",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          campus_bookshop_b: {
+            id: "campus_bookshop_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5B66\u5E9C\u4E66\u5E97",
+            mapName: "\u5B66\u5E9C\u4E66\u5E97",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_bus_terminal_b"],
+            spots: [],
+            facility: {
+              kind: "library",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          campus_cafe_b: {
+            id: "campus_cafe_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5B66\u5E9C\u5496\u5561\u9986",
+            mapName: "\u5B66\u5E9C\u5496\u5561\u9986",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_bus_terminal_b"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          student_street_b: {
+            id: "student_street_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5B66\u751F\u751F\u6D3B\u8857",
+            mapName: "\u5B66\u751F\u751F\u6D3B\u8857",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["store_24h_b"],
+            spots: [],
+            facility: {
+              kind: "market",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          university_dorm_gate_b: {
+            id: "university_dorm_gate_b",
+            district: "B",
+            sector: "B-4",
+            name: "\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3",
+            mapName: "\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3",
+            light: "bright",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["school_gate_b"],
+            spots: [],
+            facility: {
+              kind: "housing",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          bar_street_c: {
+            id: "bar_street_c",
+            district: "C",
+            sector: "C-1",
+            name: "\u9713\u8679\u9152\u5427\u8857",
+            mapName: "\u9713\u8679\u9152\u5427\u8857",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["food_street_c"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          ktv_c: {
+            id: "ktv_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u591C\u95F4\u6B4C\u5385",
+            mapName: "\u591C\u95F4\u6B4C\u5385",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          hotel_c: {
+            id: "hotel_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u4E34\u6C5F\u65C5\u9986",
+            mapName: "\u4E34\u6C5F\u65C5\u9986",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "hotel",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          late_restaurant_c: {
+            id: "late_restaurant_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u6DF1\u591C\u98DF\u5802",
+            mapName: "\u6DF1\u591C\u98DF\u5802",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "shop",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          livehouse_c: {
+            id: "livehouse_c",
+            district: "C",
+            sector: "C-4",
+            name: "\u73B0\u573A\u97F3\u4E50\u9152\u5427",
+            mapName: "\u73B0\u573A\u97F3\u4E50\u9152\u5427",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["dock_bus_stop_c"],
+            spots: [],
+            facility: {
+              kind: "nightlife",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          courier_c: {
+            id: "courier_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9",
+            mapName: "\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["village_main_c"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          },
+          laundry_c: {
+            id: "laundry_c",
+            district: "C",
+            sector: "C-3",
+            name: "\u81EA\u52A9\u6D17\u8863\u5E97",
+            mapName: "\u81EA\u52A9\u6D17\u8863\u5E97",
+            light: "dim",
+            crowd: "mid",
+            surveillance: "mid",
+            cover: 0,
+            indoor: false,
+            strike_sealed: true,
+            sanctuary: false,
+            transit_port: false,
+            exits: ["village_main_c"],
+            spots: [],
+            facility: {
+              kind: "service",
+              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
+            }
+          }
+        }
+      };
+    }
+  });
+
+  // src/runtime/map.js
+  var require_map = __commonJS({
+    "src/runtime/map.js"(exports, module) {
+      var defaultPlacesData = require_places();
+      var MapRuntime = class {
+        constructor(data = defaultPlacesData) {
+          this.districts = data.districts || {};
+          this.places = data.places || {};
+        }
+        getPlace(placeId) {
+          return this.places[placeId] || null;
+        }
+        getDistrict(districtId) {
+          return this.districts[districtId] || null;
+        }
+        getExits(placeId) {
+          const place = this.getPlace(placeId);
+          return place ? place.exits || [] : [];
+        }
+        isStrikeAllowed(placeId) {
+          const place = this.getPlace(placeId);
+          if (!place) return false;
+          return !place.strike_sealed;
+        }
+        isTransitPort(placeId) {
+          const place = this.getPlace(placeId);
+          if (!place) return false;
+          return !!place.transit_port;
+        }
+        // 逃跑 AI 寻路：广度优先搜索 (BFS) 寻找最近的庇护所 (Sanctuary)
+        findNearestSanctuary(startPlaceId, maxDepth = 4) {
+          const start = this.getPlace(startPlaceId);
+          if (!start) return null;
+          if (start.sanctuary) return startPlaceId;
+          const queue = [{ id: startPlaceId, depth: 0, path: [startPlaceId] }];
+          const visited = /* @__PURE__ */ new Set([startPlaceId]);
+          while (queue.length > 0) {
+            const current = queue.shift();
+            if (current.depth >= maxDepth) continue;
+            const place = this.getPlace(current.id);
+            if (!place) continue;
+            for (const nextId of place.exits) {
+              if (!visited.has(nextId)) {
+                visited.add(nextId);
+                const nextPlace = this.getPlace(nextId);
+                if (nextPlace && nextPlace.sanctuary) {
+                  return {
+                    sanctuaryId: nextId,
+                    steps: current.depth + 1,
+                    nextStep: current.path[1] || nextId,
+                    fullPath: [...current.path, nextId]
+                  };
+                }
+                queue.push({
+                  id: nextId,
+                  depth: current.depth + 1,
+                  path: [...current.path, nextId]
+                });
+              }
+            }
+          }
+          return null;
+        }
+        // 计算天气与当前场所节点的动态耦合修正
+        getWeatherModifiers(weather = "clear", placeId) {
+          const place = this.getPlace(placeId);
+          if (!place) return { tags: [], mods: {} };
+          if (place.indoor) {
+            return {
+              tags: [],
+              mods: { indoorImmunity: true }
+            };
+          }
+          const result = { tags: [], mods: {} };
+          if (weather === "rain") {
+            result.tags.push("tag_rain");
+            result.mods.stealth = 1;
+            result.mods.sound = -2;
+            result.mods.faceCover = 2;
+            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c"];
+            if (slipperyPlaces.includes(placeId)) {
+              result.tags.push("tag_slippery");
+              result.mods.slipRisk = true;
+            }
+          } else if (weather === "storm") {
+            result.tags.push("tag_storm");
+            result.mods.stealth = 2;
+            result.mods.sound = -5;
+            result.mods.followSpeed = -2;
+            result.mods.surveillanceDiscount = 0.5;
+            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c", "private_road_d"];
+            if (slipperyPlaces.includes(placeId)) {
+              result.tags.push("tag_slippery");
+              result.mods.slipRisk = true;
+            }
+          }
+          return result;
+        }
+      };
+      var defaultMap = new MapRuntime();
+      module.exports = {
+        MapRuntime,
+        defaultMap,
+        getPlace: (id) => defaultMap.getPlace(id),
+        getDistrict: (id) => defaultMap.getDistrict(id),
+        getExits: (id) => defaultMap.getExits(id),
+        isStrikeAllowed: (id) => defaultMap.isStrikeAllowed(id),
+        isTransitPort: (id) => defaultMap.isTransitPort(id),
+        findNearestSanctuary: (id, maxDepth) => defaultMap.findNearestSanctuary(id, maxDepth),
+        getWeatherModifiers: (weather, placeId) => defaultMap.getWeatherModifiers(weather, placeId)
+      };
+    }
+  });
+
+  // src/runtime/known-routes.js
+  var require_known_routes = __commonJS({
+    "src/runtime/known-routes.js"(exports, module) {
+      "use strict";
+      var map = require_map();
+      var keyOf = (g) => JSON.stringify([g.route?.id || "", g.route?.nodes || []]);
+      var invalid = (message) => Object.assign(Error(message), { code: "ROUTE_INVALID" });
+      function restoreRoutes(g) {
+        const p = g.investigation;
+        if (p.routes === void 0) p.routes = [];
+        if (!Array.isArray(p.routes) || p.routes.length > 128)
+          throw Object.assign(invalid("\u5B58\u6863\u8DEF\u7EBF\u7B14\u8BB0\u65E0\u6548\uFF1Ainvestigation.routes"), {
+            code: "SAVE_INVALID"
+          });
+        const ids = /* @__PURE__ */ new Set(), keys = /* @__PURE__ */ new Set();
+        for (const r of p.routes) {
+          if (!r || typeof r.id !== "string" || !/^route-\d+$/.test(r.id) || ids.has(r.id) || typeof r.key !== "string" || keys.has(r.key) || typeof r.name !== "string" || !validName(r.name) || !Array.isArray(r.edges) || !r.edges.length || r.edges.some(
+            (e) => !Array.isArray(e) || e.length !== 2 || e.some((x) => typeof x !== "string") || !p.edges.includes(JSON.stringify(e))
+          ))
+            throw Object.assign(invalid("\u5B58\u6863\u8DEF\u7EBF\u7B14\u8BB0\u65E0\u6548\uFF1Ainvestigation.routes"), {
+              code: "SAVE_INVALID"
+            });
+          ids.add(r.id);
+          keys.add(r.key);
+        }
+        for (let i = 1; i < (g.route?.nodes.length || 0); i++) {
+          const pair = [g.route.nodes[i - 1], g.route.nodes[i]];
+          if (p.edges.includes(JSON.stringify(pair))) rememberEdge(g, ...pair);
+        }
+      }
+      function validName(name) {
+        return name.trim() === name && [...name].length >= 1 && [...name].length <= 24 && !/[\u0000-\u001f\u007f]/.test(name);
+      }
+      function rememberEdge(g, from, to) {
+        const p = g.investigation;
+        if (!p.edges.includes(JSON.stringify([from, to]))) return;
+        p.routes || (p.routes = []);
+        let r = p.routes.find((r2) => r2.key === keyOf(g));
+        if (!r) {
+          if (p.routes.length >= 128) return;
+          const n = Math.max(0, ...p.routes.map((r2) => Number(r2.id.slice(6)))) + 1;
+          r = { id: `route-${n}`, key: keyOf(g), name: "\u5F52\u5BB6\u8DEF\u7EBF", edges: [] };
+          p.routes.push(r);
+        }
+        if (!r.edges.some((e) => e[0] === from && e[1] === to))
+          r.edges.push([from, to]);
+      }
+      function renameRoute(g, request) {
+        if (request?.targetId !== g.targetId)
+          throw invalid("\u76EE\u6807\u5DF2\u5207\u6362\uFF0C\u8BF7\u91CD\u65B0\u6253\u5F00\u5979\u7684\u6863\u6848");
+        const r = g.investigation.routes?.find((r2) => r2.id === request.id);
+        const name = typeof request?.name === "string" ? request.name.trim() : "";
+        if (!r) throw invalid("\u8FD9\u6761\u8DEF\u7EBF\u5C1A\u672A\u63A2\u660E\uFF0C\u8BF7\u91CD\u65B0\u6253\u5F00\u6863\u6848");
+        if (!validName(name))
+          throw invalid("\u8DEF\u7EBF\u540D\u79F0\u987B\u4E3A1\u201324\u4E2A\u5B57\uFF0C\u4E0D\u80FD\u5305\u542B\u6362\u884C\u6216\u63A7\u5236\u5B57\u7B26");
+        r.name = name;
+        return { id: r.id, name, targetId: g.targetId };
+      }
+      function knownRoutesView(g) {
+        return (g.investigation.routes || []).map((r) => ({
+          id: r.id,
+          name: r.name,
+          // 每段独立投影，断开的证据不能拼成连续路线；不透传内部key或未知节点。
+          segments: r.edges.map(([a, b]) => ({
+            from: map.getPlace(a)?.name || a,
+            to: map.getPlace(b)?.name || b
+          }))
+        }));
+      }
+      module.exports = { restoreRoutes, rememberEdge, renameRoute, knownRoutesView };
+    }
+  });
+
   // src/config/rules.json
   var require_rules = __commonJS({
     "src/config/rules.json"(exports, module) {
@@ -96,6 +1764,7 @@
             "listen"
           ],
           sweetBonus: 1,
+          farFollowDC: 2,
           sweetLow: 40,
           sweetHigh: 65,
           coverCap: 5,
@@ -3223,1601 +4892,6 @@
         };
       }
       module.exports = { createLedger, LIMITS };
-    }
-  });
-
-  // src/config/places.json
-  var require_places = __commonJS({
-    "src/config/places.json"(exports, module) {
-      module.exports = {
-        districts: {
-          A: {
-            id: "A",
-            name: "\u4E2D\u57CECBD\u5546\u52A1\u533A",
-            sectors: ["A-1", "A-2", "A-3", "A-4", "A-5"],
-            transit_ports: ["metro_hub_a", "bus_bay_a"],
-            audio_ambient: "assets/audio/ambient/zone_a_surface.ogg",
-            setting: "urban"
-          },
-          B: {
-            id: "B",
-            name: "\u8001\u57CE\u6587\u6559\u533A",
-            sectors: ["B-1", "B-2", "B-3", "B-4", "B-5"],
-            transit_ports: ["school_bus_terminal_b", "old_metro_b"],
-            audio_ambient: "assets/audio/ambient/zone_b_street.ogg",
-            setting: "urban"
-          },
-          C: {
-            id: "C",
-            name: "\u4E34\u6C5F\u5A31\u4E50\u7EA2\u706F\u533A",
-            sectors: ["C-1", "C-2", "C-3", "C-4"],
-            transit_ports: ["dock_bus_stop_c", "bridge_head_c"],
-            audio_ambient: "assets/audio/ambient/zone_c_clubstreet.ogg",
-            setting: "urban"
-          },
-          D: {
-            id: "D",
-            name: "\u90CA\u91CE\u8C6A\u5B85\u533A",
-            sectors: ["D-1", "D-2", "D-3"],
-            transit_ports: ["suburb_highway_d"],
-            audio_ambient: "assets/audio/ambient/zone_d_road.ogg",
-            setting: "suburb"
-          }
-        },
-        places: {
-          office_lobby_a: {
-            id: "office_lobby_a",
-            district: "A",
-            sector: "A-1",
-            name: "\u5199\u5B57\u697C\u5927\u5802",
-            light: "bright",
-            crowd: "pulse",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["skybridge_a", "metro_hub_a", "parking_b2_a", "back_alley_a"],
-            spots: ["reception", "security_clock"],
-            audio_trigger: "footstep_marble",
-            free_pass: ["guard"]
-          },
-          parking_b2_a: {
-            id: "parking_b2_a",
-            district: "A",
-            sector: "A-1",
-            name: "\u5730\u4E0B\u8F66\u5E93B2",
-            light: "dim",
-            crowd: "low",
-            surveillance: "dense",
-            cover: 1,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["office_lobby_a", "trash_station_a"],
-            spots: ["pillar_hide", "tire_screech"],
-            audio_ambient: "assets/audio/ambient/zone_a_parking.ogg",
-            free_pass: ["guard"]
-          },
-          skybridge_a: {
-            id: "skybridge_a",
-            district: "A",
-            sector: "A-2",
-            name: "\u8DE8\u8857\u8FDE\u5ECA\u5929\u6865",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "low",
-            cover: -2,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["office_lobby_a", "metro_hub_a", "bus_bay_a"],
-            spots: ["perch_watch"]
-          },
-          metro_hub_a: {
-            id: "metro_hub_a",
-            district: "A",
-            sector: "A-2",
-            name: "\u5730\u94C1\u67A2\u7EBD\u51FA\u5165\u53E3",
-            light: "bright",
-            crowd: "pulse",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: true,
-            exits: [
-              "office_lobby_a",
-              "skybridge_a",
-              "store_24h_a",
-              "bus_bay_a",
-              "central_mall_a",
-              "bank_a",
-              "business_cafe_a",
-              "clinic_a",
-              "business_hotel_a",
-              "central_plaza_a",
-              "pedestrian_street_a",
-              "department_store_a",
-              "cinema_a",
-              "gym_a",
-              "restaurant_a",
-              "courier_a",
-              "taxi_rank_a",
-              "public_parking_a",
-              "apartment_plaza_a",
-              "coworking_a",
-              "electronics_a",
-              "station_square_a"
-            ],
-            spots: ["ticket_gate", "sunken_plaza"]
-          },
-          bus_bay_a: {
-            id: "bus_bay_a",
-            district: "A",
-            sector: "A-2",
-            name: "\u7AD9\u524D\u516C\u4EA4\u6E2F\u6E7E",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "low",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: true,
-            exits: ["metro_hub_a", "skybridge_a"],
-            spots: ["bus_wait"]
-          },
-          store_24h_a: {
-            id: "store_24h_a",
-            district: "A",
-            sector: "A-1",
-            name: "\u6CBF\u885724h\u4FBF\u5229\u5E97",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: false,
-            exits: ["metro_hub_a", "office_lobby_a"],
-            spots: ["window_watch", "exit_watch"]
-          },
-          back_alley_a: {
-            id: "back_alley_a",
-            district: "A",
-            sector: "A-3",
-            name: "\u540E\u8857\u6392\u98CE\u6697\u5DF7",
-            light: "dark",
-            crowd: "none",
-            surveillance: "low",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["office_lobby_a", "trash_station_a"],
-            spots: ["fan_mask", "ebike_hide"]
-          },
-          trash_station_a: {
-            id: "trash_station_a",
-            district: "A",
-            sector: "A-3",
-            name: "\u5783\u573E\u88C5\u5378\u540E\u9053",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["back_alley_a", "parking_b2_a"],
-            spots: ["trash_search"]
-          },
-          school_gate_b: {
-            id: "school_gate_b",
-            district: "B",
-            sector: "B-1",
-            name: "\u5B66\u6821\u6B63\u95E8",
-            light: "bright",
-            crowd: "pulse",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "school_bus_terminal_b",
-              "old_skybridge_b",
-              "university_library_b",
-              "university_canteen_b",
-              "university_sports_b",
-              "university_dorm_gate_b"
-            ],
-            spots: ["gate_watch", "rush_mask"],
-            free_pass: ["student"],
-            mapName: "\u5927\u5B66\u6B63\u95E8"
-          },
-          school_bus_terminal_b: {
-            id: "school_bus_terminal_b",
-            district: "B",
-            sector: "B-1",
-            name: "\u5B66\u533A\u516C\u4EA4\u603B\u7AD9",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "low",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: true,
-            exits: [
-              "school_gate_b",
-              "old_skybridge_b",
-              "old_metro_b",
-              "high_school_gate_b",
-              "campus_bookshop_b",
-              "campus_cafe_b"
-            ],
-            spots: ["bus_wait"],
-            free_pass: ["student"]
-          },
-          old_metro_b: {
-            id: "old_metro_b",
-            district: "B",
-            sector: "B-2",
-            name: "\u8001\u8857\u5730\u94C1\u7AD9",
-            light: "bright",
-            crowd: "pulse",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: true,
-            exits: ["school_bus_terminal_b", "old_skybridge_b", "store_24h_b"],
-            spots: ["ticket_gate"]
-          },
-          old_skybridge_b: {
-            id: "old_skybridge_b",
-            district: "B",
-            sector: "B-2",
-            name: "\u8001\u6C34\u6CE5\u5929\u6865",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "low",
-            cover: -2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "school_gate_b",
-              "school_bus_terminal_b",
-              "store_24h_b",
-              "old_park_b"
-            ],
-            spots: ["perch_watch"]
-          },
-          store_24h_b: {
-            id: "store_24h_b",
-            district: "B",
-            sector: "B-2",
-            name: "\u8001\u885724h\u4FBF\u5229\u5E97",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: false,
-            exits: [
-              "old_skybridge_b",
-              "old_metro_b",
-              "old_alley_main_b",
-              "student_street_b"
-            ],
-            spots: ["window_watch", "exit_watch"]
-          },
-          old_park_b: {
-            id: "old_park_b",
-            district: "B",
-            sector: "B-2",
-            name: "\u8001\u5C45\u6C11\u516C\u56ED",
-            light: "dark",
-            crowd: "low",
-            surveillance: "low",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["old_skybridge_b", "old_alley_main_b", "player_base_b"],
-            spots: ["park_bench", "tree_hide"]
-          },
-          old_alley_main_b: {
-            id: "old_alley_main_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u8001\u8857\u4E3B\u5F04\u5802",
-            light: "dim",
-            crowd: "low",
-            surveillance: "none",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "store_24h_b",
-              "old_park_b",
-              "dark_blind_alley_b",
-              "dead_end_b",
-              "love_hotel_b"
-            ],
-            spots: ["sodium_lamp", "corner_shadow"]
-          },
-          dark_blind_alley_b: {
-            id: "dark_blind_alley_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u5C45\u6C11\u6742\u7269\u6697\u5DF7",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["old_alley_main_b", "unit_stairs_b"],
-            spots: ["trash_hide", "bike_hide"]
-          },
-          dead_end_b: {
-            id: "dead_end_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u76F2\u7AEF\u6B7B\u80E1\u540C",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["old_alley_main_b", "love_hotel_b"],
-            spots: ["trap_corner"]
-          },
-          love_hotel_b: {
-            id: "love_hotel_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u8001\u57CE\u60C5\u4FA3\u65C5\u793E",
-            light: "dim",
-            crowd: "low",
-            surveillance: "low",
-            cover: 1,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["old_alley_main_b", "dead_end_b"],
-            spots: ["hotel_neon_sign", "rain_canopy", "front_desk"]
-          },
-          unit_stairs_b: {
-            id: "unit_stairs_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u8001\u65E7\u5355\u5143\u697C\u9053",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 1,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: true,
-            transit_port: false,
-            exits: ["dark_blind_alley_b", "rooftop_b"],
-            spots: ["listen_home", "door_crack", "try_handle"],
-            free_pass: ["guard"]
-          },
-          rooftop_b: {
-            id: "rooftop_b",
-            district: "B",
-            sector: "B-3",
-            name: "\u8001\u697C\u5929\u53F0",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 0,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["unit_stairs_b"],
-            spots: ["perch_watch", "climb_point"]
-          },
-          club_backdoor_c: {
-            id: "club_backdoor_c",
-            district: "C",
-            sector: "C-1",
-            name: "\u9152\u5427\u5458\u5DE5\u540E\u95E8",
-            light: "dim",
-            crowd: "low",
-            surveillance: "low",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["food_street_c", "river_walk_c"],
-            spots: ["drunk_exit"],
-            free_pass: ["bartender"]
-          },
-          food_street_c: {
-            id: "food_street_c",
-            district: "C",
-            sector: "C-1",
-            name: "\u5927\u6392\u6863\u591C\u5E02\u8857\u89D2",
-            light: "bright",
-            crowd: "high",
-            surveillance: "low",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "club_backdoor_c",
-              "store_24h_c",
-              "dock_bus_stop_c",
-              "bar_street_c"
-            ],
-            spots: ["carpool_stand"],
-            free_pass: ["bartender"]
-          },
-          dock_bus_stop_c: {
-            id: "dock_bus_stop_c",
-            district: "C",
-            sector: "C-1",
-            name: "\u6CBF\u6C5F\u7801\u5934\u516C\u4EA4\u7AD9",
-            light: "dim",
-            crowd: "low",
-            surveillance: "low",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: true,
-            exits: [
-              "food_street_c",
-              "bridge_head_c",
-              "ktv_c",
-              "hotel_c",
-              "late_restaurant_c",
-              "livehouse_c"
-            ],
-            spots: ["bus_wait"]
-          },
-          bridge_head_c: {
-            id: "bridge_head_c",
-            district: "C",
-            sector: "C-1",
-            name: "\u8DE8\u6C5F\u5927\u6865\u5934",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: true,
-            exits: ["dock_bus_stop_c", "river_walk_c"],
-            spots: ["bridge_view"]
-          },
-          store_24h_c: {
-            id: "store_24h_c",
-            district: "C",
-            sector: "C-1",
-            name: "24h\u6CBF\u6C5F\u4FBF\u5229\u5E97",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: false,
-            exits: ["food_street_c", "village_main_c"],
-            spots: ["window_watch", "hangover_cure"]
-          },
-          river_walk_c: {
-            id: "river_walk_c",
-            district: "C",
-            sector: "C-2",
-            name: "\u6C5F\u5824\u89C2\u666F\u957F\u6B65\u9053",
-            light: "dark",
-            crowd: "low",
-            surveillance: "none",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["club_backdoor_c", "river_steps_c", "bridge_head_c"],
-            spots: ["river_rail", "sober_walk"]
-          },
-          river_steps_c: {
-            id: "river_steps_c",
-            district: "C",
-            sector: "C-2",
-            name: "\u4EB2\u6C34\u907F\u98CE\u53F0\u9636",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["river_walk_c", "village_main_c"],
-            spots: ["vomit_point", "reed_hide"]
-          },
-          village_main_c: {
-            id: "village_main_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u57CE\u4E2D\u6751\u63E1\u624B\u697C\u4E3B\u5F04",
-            light: "dim",
-            crowd: "low",
-            surveillance: "none",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "store_24h_c",
-              "river_steps_c",
-              "narrow_gap_c",
-              "black_market_c",
-              "courier_c",
-              "laundry_c"
-            ],
-            spots: ["wet_pavement"]
-          },
-          narrow_gap_c: {
-            id: "narrow_gap_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u4E00\u7EBF\u5929\u5E7D\u6E7F\u7A84\u5F04",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["village_main_c", "rental_iron_door_c"],
-            spots: ["aircon_drip", "ambush_corner"]
-          },
-          rental_iron_door_c: {
-            id: "rental_iron_door_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u51FA\u79DF\u5C4B\u697C\u9053\u94C1\u95E8",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 1,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: true,
-            transit_port: false,
-            exits: ["narrow_gap_c", "village_roof_c"],
-            spots: ["spiral_stairs", "listen_home"]
-          },
-          village_roof_c: {
-            id: "village_roof_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u5171\u7528\u6742\u7269\u5929\u53F0",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 1,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["rental_iron_door_c"],
-            spots: ["clothesline_hide", "overlook"]
-          },
-          suburb_highway_d: {
-            id: "suburb_highway_d",
-            district: "D",
-            sector: "D-1",
-            name: "\u90CA\u91CE\u516C\u8DEF\u957F\u5F2F\u9053",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 0,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: true,
-            exits: ["gas_station_d", "private_road_d"],
-            spots: ["curve_hide"]
-          },
-          gas_station_d: {
-            id: "gas_station_d",
-            district: "D",
-            sector: "D-1",
-            name: "24h\u516C\u8DEF\u52A0\u6CB9\u7AD9",
-            light: "bright",
-            crowd: "low",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: true,
-            transit_port: false,
-            exits: ["suburb_highway_d", "private_road_d"],
-            spots: ["mart_cashier", "pump_island"]
-          },
-          private_road_d: {
-            id: "private_road_d",
-            district: "D",
-            sector: "D-2",
-            name: "\u6797\u836B\u79C1\u5BB6\u4E3B\u8F66\u9053",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: -2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: [
-              "suburb_highway_d",
-              "gas_station_d",
-              "pine_forest_d",
-              "estate_gate_d"
-            ],
-            spots: ["open_road", "patrol_watch"]
-          },
-          pine_forest_d: {
-            id: "pine_forest_d",
-            district: "D",
-            sector: "D-2",
-            name: "\u7F13\u5761\u6749\u6728\u5BC6\u6797",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 3,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["private_road_d", "estate_gate_d"],
-            spots: ["ebike_cache", "tree_ambush"]
-          },
-          estate_gate_d: {
-            id: "estate_gate_d",
-            district: "D",
-            sector: "D-3",
-            name: "\u5E84\u56ED\u94C1\u827A\u5927\u95E8",
-            light: "dim",
-            crowd: "none",
-            surveillance: "dense",
-            cover: 0,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["private_road_d", "pine_forest_d", "villa_garden_d"],
-            spots: ["gate_intercom", "infrared_cam"]
-          },
-          villa_garden_d: {
-            id: "villa_garden_d",
-            district: "D",
-            sector: "D-3",
-            name: "\u79C1\u5BB6\u5EAD\u9662\u7EFF\u7BF1",
-            light: "dark",
-            crowd: "none",
-            surveillance: "dense",
-            cover: 2,
-            indoor: false,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["estate_gate_d", "garage_side_door_d", "villa_porch_d"],
-            spots: ["dog_kennel", "sprinkler"]
-          },
-          garage_side_door_d: {
-            id: "garage_side_door_d",
-            district: "D",
-            sector: "D-3",
-            name: "\u8F66\u5E93\u5165\u6237\u4FA7\u95E8",
-            light: "dark",
-            crowd: "none",
-            surveillance: "none",
-            cover: 1,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["villa_garden_d", "villa_porch_d"],
-            spots: ["pick_side_door"]
-          },
-          villa_porch_d: {
-            id: "villa_porch_d",
-            district: "D",
-            sector: "D-3",
-            name: "\u72EC\u680B\u522B\u5885\u6B63\u95E8\u7384\u5173",
-            light: "bright",
-            crowd: "none",
-            surveillance: "dense",
-            cover: 0,
-            indoor: true,
-            strike_sealed: false,
-            sanctuary: true,
-            transit_port: false,
-            exits: ["villa_garden_d", "garage_side_door_d"],
-            spots: ["smart_lock", "home_safe"]
-          },
-          player_base_b: {
-            id: "player_base_b",
-            district: "B",
-            sector: "B-2",
-            name: "\u4F60\u7684\u636E\u70B9",
-            light: "bright",
-            crowd: "none",
-            surveillance: "none",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["old_park_b"],
-            spots: []
-          },
-          black_market_c: {
-            id: "black_market_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u4E34\u6C5F\u9ED1\u5E02",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "low",
-            cover: 0,
-            indoor: true,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["village_main_c"],
-            spots: []
-          },
-          central_mall_a: {
-            id: "central_mall_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u4E2D\u57CE\u7EFC\u5408\u5546\u573A",
-            mapName: "\u4E2D\u57CE\u7EFC\u5408\u5546\u573A",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "mall",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          bank_a: {
-            id: "bank_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u94F6\u884C\u8425\u4E1A\u5385",
-            mapName: "\u94F6\u884C\u8425\u4E1A\u5385",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "service",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          business_cafe_a: {
-            id: "business_cafe_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u5546\u52A1\u5496\u5561\u9986",
-            mapName: "\u5546\u52A1\u5496\u5561\u9986",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "shop",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          clinic_a: {
-            id: "clinic_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u7EFC\u5408\u95E8\u8BCA",
-            mapName: "\u7EFC\u5408\u95E8\u8BCA",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "service",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          business_hotel_a: {
-            id: "business_hotel_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u5546\u52A1\u9152\u5E97",
-            mapName: "\u5546\u52A1\u9152\u5E97",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "hotel",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          central_plaza_a: {
-            id: "central_plaza_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u4E2D\u5FC3\u5E7F\u573A",
-            mapName: "\u4E2D\u5FC3\u5E7F\u573A",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "plaza",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          pedestrian_street_a: {
-            id: "pedestrian_street_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u5546\u4E1A\u6B65\u884C\u8857",
-            mapName: "\u5546\u4E1A\u6B65\u884C\u8857",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "market",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          department_store_a: {
-            id: "department_store_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u767E\u8D27\u5546\u573A",
-            mapName: "\u767E\u8D27\u5546\u573A",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "mall",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          cinema_a: {
-            id: "cinema_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u57CE\u5E02\u5F71\u57CE",
-            mapName: "\u57CE\u5E02\u5F71\u57CE",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "nightlife",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          gym_a: {
-            id: "gym_a",
-            district: "A",
-            sector: "A-5",
-            name: "\u5065\u8EAB\u4E2D\u5FC3",
-            mapName: "\u5065\u8EAB\u4E2D\u5FC3",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "service",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          restaurant_a: {
-            id: "restaurant_a",
-            district: "A",
-            sector: "A-5",
-            name: "\u5546\u52A1\u9910\u5385",
-            mapName: "\u5546\u52A1\u9910\u5385",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "shop",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          courier_a: {
-            id: "courier_a",
-            district: "A",
-            sector: "A-5",
-            name: "\u5FEB\u9012\u9A7F\u7AD9",
-            mapName: "\u5FEB\u9012\u9A7F\u7AD9",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "service",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          taxi_rank_a: {
-            id: "taxi_rank_a",
-            district: "A",
-            sector: "A-5",
-            name: "\u51FA\u79DF\u8F66\u5019\u8F66\u70B9",
-            mapName: "\u51FA\u79DF\u8F66\u5019\u8F66\u70B9",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "transit",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          public_parking_a: {
-            id: "public_parking_a",
-            district: "A",
-            sector: "A-5",
-            name: "\u516C\u5171\u505C\u8F66\u573A",
-            mapName: "\u516C\u5171\u505C\u8F66\u573A",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "parking",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          apartment_plaza_a: {
-            id: "apartment_plaza_a",
-            district: "A",
-            sector: "A-5",
-            name: "\u516C\u5BD3\u5E7F\u573A",
-            mapName: "\u516C\u5BD3\u5E7F\u573A",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "housing",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          coworking_a: {
-            id: "coworking_a",
-            district: "A",
-            sector: "A-5",
-            name: "\u8054\u5408\u529E\u516C\u697C",
-            mapName: "\u8054\u5408\u529E\u516C\u697C",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "office",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          electronics_a: {
-            id: "electronics_a",
-            district: "A",
-            sector: "A-4",
-            name: "\u6570\u7801\u5546\u57CE",
-            mapName: "\u6570\u7801\u5546\u57CE",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "mall",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          station_square_a: {
-            id: "station_square_a",
-            district: "A",
-            sector: "A-2",
-            name: "\u7AD9\u524D\u5E7F\u573A",
-            mapName: "\u7AD9\u524D\u5E7F\u573A",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["metro_hub_a"],
-            spots: [],
-            facility: {
-              kind: "plaza",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          high_school_gate_b: {
-            id: "high_school_gate_b",
-            district: "B",
-            sector: "B-5",
-            name: "\u9AD8\u4E2D\u6B63\u95E8",
-            mapName: "\u9AD8\u4E2D\u6B63\u95E8",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["school_bus_terminal_b"],
-            spots: [],
-            facility: {
-              kind: "school",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            },
-            free_pass: ["student"]
-          },
-          university_library_b: {
-            id: "university_library_b",
-            district: "B",
-            sector: "B-4",
-            name: "\u5927\u5B66\u56FE\u4E66\u9986",
-            mapName: "\u5927\u5B66\u56FE\u4E66\u9986",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["school_gate_b"],
-            spots: [],
-            facility: {
-              kind: "library",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          university_canteen_b: {
-            id: "university_canteen_b",
-            district: "B",
-            sector: "B-4",
-            name: "\u5927\u5B66\u98DF\u5802",
-            mapName: "\u5927\u5B66\u98DF\u5802",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["school_gate_b"],
-            spots: [],
-            facility: {
-              kind: "shop",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          university_sports_b: {
-            id: "university_sports_b",
-            district: "B",
-            sector: "B-4",
-            name: "\u5927\u5B66\u8FD0\u52A8\u573A",
-            mapName: "\u5927\u5B66\u8FD0\u52A8\u573A",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["school_gate_b"],
-            spots: [],
-            facility: {
-              kind: "sports",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          campus_bookshop_b: {
-            id: "campus_bookshop_b",
-            district: "B",
-            sector: "B-4",
-            name: "\u5B66\u5E9C\u4E66\u5E97",
-            mapName: "\u5B66\u5E9C\u4E66\u5E97",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["school_bus_terminal_b"],
-            spots: [],
-            facility: {
-              kind: "library",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          campus_cafe_b: {
-            id: "campus_cafe_b",
-            district: "B",
-            sector: "B-4",
-            name: "\u5B66\u5E9C\u5496\u5561\u9986",
-            mapName: "\u5B66\u5E9C\u5496\u5561\u9986",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["school_bus_terminal_b"],
-            spots: [],
-            facility: {
-              kind: "shop",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          student_street_b: {
-            id: "student_street_b",
-            district: "B",
-            sector: "B-4",
-            name: "\u5B66\u751F\u751F\u6D3B\u8857",
-            mapName: "\u5B66\u751F\u751F\u6D3B\u8857",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["store_24h_b"],
-            spots: [],
-            facility: {
-              kind: "market",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          university_dorm_gate_b: {
-            id: "university_dorm_gate_b",
-            district: "B",
-            sector: "B-4",
-            name: "\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3",
-            mapName: "\u5927\u5B66\u5BBF\u820D\u533A\u5165\u53E3",
-            light: "bright",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["school_gate_b"],
-            spots: [],
-            facility: {
-              kind: "housing",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          bar_street_c: {
-            id: "bar_street_c",
-            district: "C",
-            sector: "C-1",
-            name: "\u9713\u8679\u9152\u5427\u8857",
-            mapName: "\u9713\u8679\u9152\u5427\u8857",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["food_street_c"],
-            spots: [],
-            facility: {
-              kind: "nightlife",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          ktv_c: {
-            id: "ktv_c",
-            district: "C",
-            sector: "C-4",
-            name: "\u591C\u95F4\u6B4C\u5385",
-            mapName: "\u591C\u95F4\u6B4C\u5385",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["dock_bus_stop_c"],
-            spots: [],
-            facility: {
-              kind: "nightlife",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          hotel_c: {
-            id: "hotel_c",
-            district: "C",
-            sector: "C-4",
-            name: "\u4E34\u6C5F\u65C5\u9986",
-            mapName: "\u4E34\u6C5F\u65C5\u9986",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["dock_bus_stop_c"],
-            spots: [],
-            facility: {
-              kind: "hotel",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          late_restaurant_c: {
-            id: "late_restaurant_c",
-            district: "C",
-            sector: "C-4",
-            name: "\u6DF1\u591C\u98DF\u5802",
-            mapName: "\u6DF1\u591C\u98DF\u5802",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["dock_bus_stop_c"],
-            spots: [],
-            facility: {
-              kind: "shop",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          livehouse_c: {
-            id: "livehouse_c",
-            district: "C",
-            sector: "C-4",
-            name: "\u73B0\u573A\u97F3\u4E50\u9152\u5427",
-            mapName: "\u73B0\u573A\u97F3\u4E50\u9152\u5427",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["dock_bus_stop_c"],
-            spots: [],
-            facility: {
-              kind: "nightlife",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          courier_c: {
-            id: "courier_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9",
-            mapName: "\u57CE\u4E2D\u6751\u5FEB\u9012\u7AD9",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["village_main_c"],
-            spots: [],
-            facility: {
-              kind: "service",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          },
-          laundry_c: {
-            id: "laundry_c",
-            district: "C",
-            sector: "C-3",
-            name: "\u81EA\u52A9\u6D17\u8863\u5E97",
-            mapName: "\u81EA\u52A9\u6D17\u8863\u5E97",
-            light: "dim",
-            crowd: "mid",
-            surveillance: "mid",
-            cover: 0,
-            indoor: false,
-            strike_sealed: true,
-            sanctuary: false,
-            transit_port: false,
-            exits: ["village_main_c"],
-            spots: [],
-            facility: {
-              kind: "service",
-              note: "\u516C\u5171\u5165\u53E3\u6216\u5916\u4FA7\u533A\u57DF\uFF1B\u573A\u6240\u5185\u6D3B\u52A8\u6682\u672A\u5F00\u653E\u3002"
-            }
-          }
-        }
-      };
-    }
-  });
-
-  // src/runtime/map.js
-  var require_map = __commonJS({
-    "src/runtime/map.js"(exports, module) {
-      var defaultPlacesData = require_places();
-      var MapRuntime = class {
-        constructor(data = defaultPlacesData) {
-          this.districts = data.districts || {};
-          this.places = data.places || {};
-        }
-        getPlace(placeId) {
-          return this.places[placeId] || null;
-        }
-        getDistrict(districtId) {
-          return this.districts[districtId] || null;
-        }
-        getExits(placeId) {
-          const place = this.getPlace(placeId);
-          return place ? place.exits || [] : [];
-        }
-        isStrikeAllowed(placeId) {
-          const place = this.getPlace(placeId);
-          if (!place) return false;
-          return !place.strike_sealed;
-        }
-        isTransitPort(placeId) {
-          const place = this.getPlace(placeId);
-          if (!place) return false;
-          return !!place.transit_port;
-        }
-        // 逃跑 AI 寻路：广度优先搜索 (BFS) 寻找最近的庇护所 (Sanctuary)
-        findNearestSanctuary(startPlaceId, maxDepth = 4) {
-          const start = this.getPlace(startPlaceId);
-          if (!start) return null;
-          if (start.sanctuary) return startPlaceId;
-          const queue = [{ id: startPlaceId, depth: 0, path: [startPlaceId] }];
-          const visited = /* @__PURE__ */ new Set([startPlaceId]);
-          while (queue.length > 0) {
-            const current = queue.shift();
-            if (current.depth >= maxDepth) continue;
-            const place = this.getPlace(current.id);
-            if (!place) continue;
-            for (const nextId of place.exits) {
-              if (!visited.has(nextId)) {
-                visited.add(nextId);
-                const nextPlace = this.getPlace(nextId);
-                if (nextPlace && nextPlace.sanctuary) {
-                  return {
-                    sanctuaryId: nextId,
-                    steps: current.depth + 1,
-                    nextStep: current.path[1] || nextId,
-                    fullPath: [...current.path, nextId]
-                  };
-                }
-                queue.push({
-                  id: nextId,
-                  depth: current.depth + 1,
-                  path: [...current.path, nextId]
-                });
-              }
-            }
-          }
-          return null;
-        }
-        // 计算天气与当前场所节点的动态耦合修正
-        getWeatherModifiers(weather = "clear", placeId) {
-          const place = this.getPlace(placeId);
-          if (!place) return { tags: [], mods: {} };
-          if (place.indoor) {
-            return {
-              tags: [],
-              mods: { indoorImmunity: true }
-            };
-          }
-          const result = { tags: [], mods: {} };
-          if (weather === "rain") {
-            result.tags.push("tag_rain");
-            result.mods.stealth = 1;
-            result.mods.sound = -2;
-            result.mods.faceCover = 2;
-            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c"];
-            if (slipperyPlaces.includes(placeId)) {
-              result.tags.push("tag_slippery");
-              result.mods.slipRisk = true;
-            }
-          } else if (weather === "storm") {
-            result.tags.push("tag_storm");
-            result.mods.stealth = 2;
-            result.mods.sound = -5;
-            result.mods.followSpeed = -2;
-            result.mods.surveillanceDiscount = 0.5;
-            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c", "private_road_d"];
-            if (slipperyPlaces.includes(placeId)) {
-              result.tags.push("tag_slippery");
-              result.mods.slipRisk = true;
-            }
-          }
-          return result;
-        }
-      };
-      var defaultMap = new MapRuntime();
-      module.exports = {
-        MapRuntime,
-        defaultMap,
-        getPlace: (id) => defaultMap.getPlace(id),
-        getDistrict: (id) => defaultMap.getDistrict(id),
-        getExits: (id) => defaultMap.getExits(id),
-        isStrikeAllowed: (id) => defaultMap.isStrikeAllowed(id),
-        isTransitPort: (id) => defaultMap.isTransitPort(id),
-        findNearestSanctuary: (id, maxDepth) => defaultMap.findNearestSanctuary(id, maxDepth),
-        getWeatherModifiers: (weather, placeId) => defaultMap.getWeatherModifiers(weather, placeId)
-      };
     }
   });
 
@@ -8530,6 +8604,7 @@
     "src/runtime/investigation.js"(exports, module) {
       "use strict";
       var R = require_rules().investigation;
+      var { restoreRoutes, rememberEdge } = require_known_routes();
       var LP = require_lifepack();
       var F = require_facts2();
       var { TAIL_PUMP_IDS } = require_constants();
@@ -8551,6 +8626,7 @@
                 code: "SAVE_INVALID"
               });
             g.investigation = clone(value);
+            restoreRoutes(g);
             return;
           }
           const knownFacts = saved ? (F.legacyView(g.targetId, {
@@ -8571,6 +8647,7 @@
             session: null,
             lastReceipt: null
           };
+          restoreRoutes(g);
         }
         function session() {
           const p = g.investigation;
@@ -8620,6 +8697,7 @@
           if (!Number.isInteger(i) || i < 1 || !g.route?.nodes?.[i]) return;
           const edge = edgeKey(g.route.nodes[i - 1], g.route.nodes[i]);
           if (!g.investigation.edges.includes(edge)) g.investigation.edges.push(edge);
+          rememberEdge(g, g.route.nodes[i - 1], g.route.nodes[i]);
         }
         function exposure(id, dist) {
           if (!TAIL_PUMP_IDS.includes(id)) return null;
@@ -8651,6 +8729,7 @@
               p.edges.push(edge);
               addClue("edge:" + edge, discovered);
             }
+            rememberEdge(g, origin.place, place2);
             g.route.known[here] = 1;
           }
           const place = g.route?.nodes?.[here];
@@ -9278,7 +9357,17 @@
             return out;
           }
           syncHeartTags();
-          const { roll, res, mods, dc, attr, targetMod, darkReveal, heartState } = runCheck(entry, tag.args, seq);
+          const {
+            roll,
+            res,
+            mods,
+            dc,
+            attr,
+            targetMod,
+            darkReveal,
+            distanceDC,
+            heartState
+          } = runCheck(entry, tag.args, seq);
           out.d20 = roll.d20;
           out.raw = roll.raw;
           out.mods = mods;
@@ -9288,6 +9377,7 @@
           out.attr = attr;
           out.targetMod = targetMod;
           out.darkReveal = darkReveal;
+          out.distanceDC = distanceDC;
           out.heartState = heartState;
           let alertD = 0, heartD = 0, piD = 0, faceMemD = 0, staminaD = -(entry.cost?.stamina || 0);
           const dist = DIST_KEY[tag.args?.dist] || g.dist;
@@ -9650,6 +9740,7 @@
               attr: a.attr || null,
               targetMod: a.targetMod || 0,
               darkReveal: a.darkReveal || null,
+              distanceDC: a.distanceDC || 0,
               heartState: a.heartState || null,
               exposure: a.exposure || null,
               discoveries: a.discoveries || [],
@@ -10361,6 +10452,7 @@
       var T = require_tags();
       var C = require_checks();
       var D = require_dice();
+      var { TAIL_PUMP_IDS, DIST_KEY } = require_constants();
       function createCheckSystem({ g, seedFor, isFamiliar, investigation }) {
         function targetEffectiveAcuity() {
           const acuityMod = T.summarize(g.tags || [], "acuity").sum;
@@ -10386,7 +10478,9 @@
           if (pity) mods.push({ src: "\u8FDE\u8D25\u4FDD\u5E95", v: pity });
           const nextBonus = investigation.nextBonus(entry.id);
           if (nextBonus) mods.push({ src: "\u5DF2\u638C\u63E1\u4E0B\u4E00\u7AD9", v: nextBonus });
-          const dc = (R.checks[entry.check] ?? 10) - targetMod;
+          const dist = DIST_KEY[args?.dist] || g.dist;
+          const distanceDC = TAIL_PUMP_IDS.includes(entry.id) && dist === "far" ? R.check.farFollowDC : 0;
+          const dc = (R.checks[entry.check] ?? 10) - targetMod + distanceDC;
           const advTagged = (g.tags || []).some(
             (t) => t.id === "adv_" + attrKeyOf(entry.id)
           );
@@ -10419,6 +10513,7 @@
             attr,
             targetMod,
             darkReveal,
+            distanceDC,
             heartState: {
               value: g.ledger.get("heart"),
               sweetLow: R.check.sweetLow,
@@ -11468,6 +11563,7 @@
   var require_snapshot = __commonJS({
     "src/runtime/game/snapshot.js"(exports, module) {
       "use strict";
+      var { knownRoutesView } = require_known_routes();
       var { knownAttributes } = require_target_knowledge();
       var { classifyPlace } = require_action_requirements();
       var { cityView } = require_system();
@@ -11596,6 +11692,7 @@
               profile: {
                 targetId: g.targetId,
                 attrs: knownAttributes(g),
+                routes: knownRoutesView(g),
                 impressions: [],
                 facts: F.view(g.targetId, {
                   knownFacts: g.investigation.knownFacts,
@@ -12375,6 +12472,7 @@
   // src/runtime/game.js
   var require_game = __commonJS({
     "src/runtime/game.js"(exports, module) {
+      var { renameRoute } = require_known_routes();
       var { loadLexicon } = require_lexicon2();
       var D = require_dice();
       var { createLedger } = require_ledger();
@@ -12741,6 +12839,7 @@
           processReply,
           translateInput,
           executeDailyCommand: dailySystem.execute,
+          renameKnownRoute: (request) => renameRoute(g, request),
           nightFall,
           gmSet,
           snapshot,
@@ -14477,12 +14576,13 @@
               "unequipItem",
               "useItem",
               "nightFall",
-              "executeDailyCommand"
+              "executeDailyCommand",
+              "renameKnownRoute"
             ];
             if (!allowed.includes(method))
               throw fail("COMMAND_INVALID", "\u4E0D\u652F\u6301\u7684\u6E38\u620F\u64CD\u4F5C");
             try {
-              if (method === "executeDailyCommand") {
+              if (method === "executeDailyCommand" || method === "renameKnownRoute") {
                 const guard = args[0]?.sync;
                 if (!guard || guard.scope !== T.fingerprint(token.scope ?? null) || guard.epoch !== token.epoch)
                   throw fail("DAY_STALE", "\u804A\u5929\u5DF2\u5207\u6362\uFF0C\u8BF7\u6309\u5F53\u524D\u65E5\u7A0B\u91CD\u65B0\u9009\u62E9");
@@ -14927,7 +15027,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.20",
+        version: "0.8.21",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -14936,7 +15036,7 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs investigation.test.js chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js album.test.js resource-sweet.test.js",
+          "test:sync": "node tools/test.cjs investigation.test.js chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js album.test.js resource-sweet.test.js route-notes.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs",
           "preview:pi": "node tools/build/pi-preview.js",

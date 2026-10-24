@@ -22,6 +22,7 @@
                  "lurk","lobby","stakeout","ride_follow","car_follow","transfer",
                  "photo","scan","listen"],
     "sweetBonus": 1,
+    "farFollowDC": 2,
     "sweetLow": 40,
     "sweetHigh": 65,
     "coverCap": 5,

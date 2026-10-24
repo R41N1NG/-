@@ -509,6 +509,26 @@ function createSettlement({
       mathLine.innerHTML = `1d20(<b>${settleTargetVal}</b>) +${totalMod}修正 = <b>${finalScore}</b> vs DC ${act.dc}`;
 
     const ledgerItems = [];
+    if (act.workIncome) {
+      const w = act.workIncome;
+      ledgerItems.push({
+        label: "本次总收入",
+        val: `¥ ${w.total}`,
+        type: "gain work-total",
+      });
+      ledgerItems.push({ label: "底薪", val: `¥ ${w.base}`, type: "" });
+      ledgerItems.push({
+        label: w.bonus > 0 ? "判定额外收入" : "本次未获额外收入",
+        val: `+ ¥ ${w.bonus}`,
+        type: w.bonus > 0 ? "gain work-bonus" : "work-no-bonus",
+      });
+    }
+    if (act.distanceDC)
+      ledgerItems.push({
+        label: "远端跟随难度",
+        val: `DC +${act.distanceDC}`,
+        type: "warn",
+      });
     if (act.ledger && act.ledger.applied) {
       const aMap = {
         proximity: "接近度推进",
@@ -516,14 +536,15 @@ function createSettlement({
         alert: "警觉变动",
         stamina: "体力消耗",
         pi: "PI熟练度",
+        cash: "现金收入",
       };
       for (const [k, v] of Object.entries(act.ledger.applied)) {
-        if (!v) continue;
+        if (!v || (k === "cash" && act.workIncome)) continue;
         const isWarn =
           (k === "stamina" && v < 0) ||
           (k === "heart" && v > 0) ||
           (k === "alert" && v > 0);
-        const isGain = (k === "proximity" && v > 0) || (k === "pi" && v > 0);
+        const isGain = ["proximity", "pi", "cash"].includes(k) && v > 0;
         ledgerItems.push({
           label: aMap[k] || k,
           val: `${v > 0 ? "+" : ""}${v}`,

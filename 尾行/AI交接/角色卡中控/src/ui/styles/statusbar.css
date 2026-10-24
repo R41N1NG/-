@@ -2769,3 +2769,15 @@ canvas#settleDieCanvas:active { cursor: grabbing; }
 @media(max-width:560px) { .trpg .wx-work-list, .trpg .wx-shop-list { grid-template-columns: minmax(0,1fr); } }
 
 /* 共用地点拓扑与固定空间布局；地图浏览不触发移动。 */
+
+/* 路线档案及工作奖励 */
+.profile-route { border:1px solid rgba(95,214,195,.25); padding:14px; margin:12px 0; background:rgba(95,214,195,.04); }
+.profile-route form { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+.profile-route label { display:flex; flex-direction:column; gap:6px; flex:1 1 180px; }
+.profile-route input { width:100%; box-sizing:border-box; background:rgba(0,0,0,.25); color:var(--t-main); border:1px solid rgba(95,214,195,.35); padding:9px; font:inherit; }
+.profile-route-segment { border-left:2px solid var(--safe); padding-left:10px; }
+.profile-route-status { color:var(--safe); min-height:1.4em; }
+#wx-settle-dialog .ledger-row.work-total { font-size:16px; padding:10px 8px; }
+#wx-settle-dialog .ledger-row.work-bonus { flex-direction:column; align-items:flex-start; gap:6px; font-size:13px; padding:14px 10px; background:rgba(95,214,195,.1) !important; border:1px solid rgba(95,214,195,.45); }
+#wx-settle-dialog .work-bonus .val { font-size:28px; white-space:nowrap; }
+#wx-settle-dialog .ledger-row.work-no-bonus { padding:8px; }

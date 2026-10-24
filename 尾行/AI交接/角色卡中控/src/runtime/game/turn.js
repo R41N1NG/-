@@ -144,6 +144,7 @@ function createTurnSystem({
         attr: a.attr || null,
         targetMod: a.targetMod || 0,
         darkReveal: a.darkReveal || null,
+        distanceDC: a.distanceDC || 0,
         heartState: a.heartState || null,
         exposure: a.exposure || null,
         discoveries: a.discoveries || [],

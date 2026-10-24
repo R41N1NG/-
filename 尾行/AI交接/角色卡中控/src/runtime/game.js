@@ -3,6 +3,7 @@
  * 职责与修改入口见 docs/模块化维护指南.md。
  * 模块通过显式参数共享本实例状态，禁止导入宿主或 UI。
  */
+const { renameRoute } = require("./known-routes.js");
 const { loadLexicon } = require("./lexicon.js");
 const D = require("./dice.js");
 const { createLedger } = require("./ledger.js");
@@ -422,6 +423,7 @@ function createGame(init = {}, services = {}) {
     processReply,
     translateInput,
     executeDailyCommand: dailySystem.execute,
+    renameKnownRoute: (request) => renameRoute(g, request),
     nightFall,
     gmSet,
     snapshot,

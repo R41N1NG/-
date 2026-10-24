@@ -313,6 +313,8 @@ test("补救成功可继续，之后普通失败不再提供补救；自然1不�
   assert.equal(p.active(), true);
   assert.equal(p.snapshot().cityMap.target.live, true);
   assert.equal(p.snapshot().previewTailing.recovery.lastResult, "found");
+  assert.equal(p.snapshot().dist, "far");
+  assert.equal(r.actions[0].distanceDC, 2);
   assert.equal(p.snapshot().previewTailing.recovery.used, true);
   const q = createPreview(null, { period: 3, seed: "college-preview-37" });
   enter(q);
