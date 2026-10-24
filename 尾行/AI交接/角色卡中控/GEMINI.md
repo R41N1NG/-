@@ -300,3 +300,13 @@ PI改为当前目标调查熟练度；已确认真实相邻下一站时跟随+2/
 known-routes.js独立管理实际连接证据、旧档迁移与命名。investigation.routes可选字段随原v2整卡保存，profile.routes仅白名单投影已证实路段，不泄露内部键或未知终点。档案profileRoutes支持改名（默认归家路线、1–24字），src/ui/profile/known-routes.js处理UI；renameKnownRoute沿原宿主mutate检查scope/epoch及忙碌状态，保存失败回滚和回复分支回退均有测试。改名不耗AP、不推进时间。截图来源哈希加入新profile目录。
 
 验证：461项完整测试、143项同步专项、289项原界面浏览器检查、96项独立预览桌面／手机检查及类型检查通过。预览新增route-profile并更新工作奖励截图。正式成品v0.8.21与构建清单哈希一致，真实上一版归档；DC15工作与首败补救仍为独立预览功能，TT真机待验收。
+
+## v0.8.22 修订入门课与第二组日程尾行教程（2026-10-24）
+
+第一组修订旧地图确认说法、日程行动与内部动作费用、最后目击与补救边界、天然20表述、PI待结算奖励卡；属性前置课说明敏捷近距减免与社交暂不作为可揭示档案属性。正式案例仍由原引擎生成，PI0→0、首次线索1项＋3待结算、敏锐4与卫衣侧图，示范不入真实新局。通用原图呈现抽到screenshot-pictures.js，原training-pictures.js仅注入原图数据，保持原高亮／放大交互。
+
+第二组在previews/day-tailing-tutorial/index.html独立预览：安排一天、到达现场、开始尾行、跟随与收获；末页可切换距离判定／首败追找／确认跟丢／路线档案。day-tailing-course.js/html/css独立内容，读取原tutorial-policy及全跳过偏好，不执行游戏操作、不写回合／教程页存档。正式卡只同步第一组修订；全天日程和第二组自动接入未启用。维护见docs/日程与尾行教程.md。
+
+原图由实际college-preview页面与真实样例拍摄，desktop/mobile各7张、2xPNG与DOM坐标；day-tailing-sample深拷贝每个历史状态，避免补救和返回操作污染先前图片。独立来源哈希过期须重拍；第一页收起真实地图聚焦日程，第二页再展开地图。工具scripts：screenshots:day-tutorial、preview:day-tutorial、test:day-tutorial。
+
+验证：465项完整测试、格式整理后11项教程／UI专项、72项新课程三宽度检查、289项原浏览器检查及类型检查通过。新课检查包含单项框选、原图放大、刷新后全跳过、无横向溢出、旧课待结算说明及页面无报错；TT真机待验收。成品v0.8.22只留最新版，真实上一版已归档，构建清单哈希一致。

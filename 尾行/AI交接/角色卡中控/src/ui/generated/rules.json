@@ -211,7 +211,9 @@
       "stamina": -1
     },
     "newFactCount": 0,
-    "attrsRevealed": 1
+    "attrsRevealed": 1,
+    "pendingClues": 1,
+    "pendingPi": 3
   },
   "targetContent": {
     "ol": {

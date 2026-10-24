@@ -87,6 +87,8 @@ function buildTrainingSample() {
       (f) => !before.profile.facts.some((old) => old.id === f.id),
     ).length,
     attrsRevealed: Object.keys(after.profile.attrs).length,
+    pendingClues: after.investigation.pendingClues,
+    pendingPi: (action.discoveries || []).reduce((n, c) => n + c.pi, 0),
   };
 }
 module.exports = { buildTrainingSample, trainingScenes };

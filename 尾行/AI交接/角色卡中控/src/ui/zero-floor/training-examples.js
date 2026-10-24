@@ -29,7 +29,7 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
   location?.replaceChildren(
     el("h4", "training-example-subtitle", "① 仍在目视：实心橙点"),
     picture("map-visible"),
-    el("h4", "training-example-subtitle", "② 跟缀失败：只剩最后目击"),
+    el("h4", "training-example-subtitle", "② 失去目视：只剩最后目击"),
     picture("map-lost"),
   );
   mount(
@@ -37,7 +37,7 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
     el(
       "p",
       "",
-      `真实案例：入场时在大学正门目视目标 → 下一回合跟缀检定失败 → ${sample.lost.after.status}；未再显示目标当前去向。`,
+      `真实案例：入场时在大学正门目视目标 → 下一回合跟缀检定失败 → ${sample.lost.after.status}；未再显示目标当前去向。此图只讲定位含义，能否补救要看现场是否出现追找入口。`,
     ),
   );
   const action = el("div", "training-action-example");
@@ -161,6 +161,19 @@ function createTrainingExamples({ document, lifecycle, root, onDemonstrate }) {
     el("p", "", sample.record[1]),
   );
   result.append(comparison, record);
+  if (sample.pendingClues > 0) {
+    const pending = el("div", "training-ui-box training-ui-highlight");
+    pending.dataset.trainingPending = "";
+    pending.append(
+      el("strong", "", `首次线索已登记：${sample.pendingClues}项`),
+      el(
+        "p",
+        "",
+        `PI +${sample.pendingPi} 待尾行结束结算；当前已到账PI仍为${sample.after.pi}。`,
+      ),
+    );
+    result.append(pending);
+  }
   if (sample.attributeUnlock) {
     const attr = sample.attributeUnlock;
     const unlock = el("div", "training-attribute-unlock");

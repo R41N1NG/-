@@ -1,0 +1,362 @@
+[
+  {
+    "width": 1100,
+    "name": "四页课程及全教程跳过入口可见",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "正确页号 day",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "手机无横向溢出 day",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "高清截图与对应标注在图片范围内 day",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "正确页号 move",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "手机无横向溢出 move",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "高清截图与对应标注在图片范围内 move",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "正确页号 entry",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "手机无横向溢出 entry",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "高清截图与对应标注在图片范围内 entry",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "正确页号 follow",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "手机无横向溢出 follow",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "高清截图与对应标注在图片范围内 follow",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "情形切换 tailing",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "情形切换 recovery",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "情形切换 lost",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "情形切换 profile",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "阅读课程不产生游戏进度",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "点说明切换单项标注",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "原截图放大可打开",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "全跳过刷新后不再出现",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "第一组不再教旧二次移动确认",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "第一组清楚显示待结算线索",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "页面无运行报错",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "四页课程及全教程跳过入口可见",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "正确页号 day",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "手机无横向溢出 day",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "高清截图与对应标注在图片范围内 day",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "正确页号 move",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "手机无横向溢出 move",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "高清截图与对应标注在图片范围内 move",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "正确页号 entry",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "手机无横向溢出 entry",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "高清截图与对应标注在图片范围内 entry",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "正确页号 follow",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "手机无横向溢出 follow",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "高清截图与对应标注在图片范围内 follow",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "情形切换 tailing",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "情形切换 recovery",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "情形切换 lost",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "情形切换 profile",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "阅读课程不产生游戏进度",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "点说明切换单项标注",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "原截图放大可打开",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "全跳过刷新后不再出现",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "第一组不再教旧二次移动确认",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "第一组清楚显示待结算线索",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "页面无运行报错",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "四页课程及全教程跳过入口可见",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "正确页号 day",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "手机无横向溢出 day",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "高清截图与对应标注在图片范围内 day",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "正确页号 move",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "手机无横向溢出 move",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "高清截图与对应标注在图片范围内 move",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "正确页号 entry",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "手机无横向溢出 entry",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "高清截图与对应标注在图片范围内 entry",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "正确页号 follow",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "手机无横向溢出 follow",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "高清截图与对应标注在图片范围内 follow",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "情形切换 tailing",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "情形切换 recovery",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "情形切换 lost",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "情形切换 profile",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "阅读课程不产生游戏进度",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "点说明切换单项标注",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "原截图放大可打开",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "全跳过刷新后不再出现",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "第一组不再教旧二次移动确认",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "第一组清楚显示待结算线索",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "页面无运行报错",
+    "ok": true
+  }
+]

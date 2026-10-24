@@ -1,0 +1,246 @@
+html {
+  background: #091518;
+  color: #d7e5e1;
+  font:
+    14px/1.75 system-ui,
+    "Microsoft Yahei",
+    sans-serif;
+}
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at 70% 0, #21413b66, transparent 60%);
+}
+* {
+  box-sizing: border-box;
+}
+[hidden] {
+  display: none !important;
+}
+button,
+a {
+  font: inherit;
+}
+button {
+  color: #c4d8d1;
+  background: #183034;
+  border: 1px solid #365552;
+  padding: 9px 13px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #e4c886;
+  outline-offset: 3px;
+}
+a {
+  color: #e4c886;
+}
+.course-preview-note {
+  max-width: 1080px;
+  margin: 22px auto 12px;
+  padding: 0 18px;
+  color: #91aaa4;
+  font-size: 12px;
+}
+#wx-zero-floor.day-course-shell {
+  max-width: 1080px;
+  margin: 0 auto 36px;
+  padding: 24px;
+  background: #102226;
+  border: 1px solid #294744;
+  border-radius: 12px;
+  box-shadow: 0 20px 65px #0004;
+}
+#wx-zero-floor .day-course-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  color: #a7bbb0;
+}
+#wx-zero-floor #dayCourseSkipAll {
+  border-color: #bd9d5e;
+  color: #f0dca8;
+  background: #473c24;
+  white-space: normal;
+}
+#wx-zero-floor #dayCourseNav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 22px 0;
+}
+#wx-zero-floor #dayCourseNav button {
+  flex: 1;
+  text-align: left;
+  min-width: 135px;
+}
+#wx-zero-floor #dayCourseNav [aria-current="step"],
+#wx-zero-floor #dayCourseSituations [aria-pressed="true"] {
+  color: #f0dca8;
+  border-color: #c2a96c;
+  background: #3b3927;
+}
+#wx-zero-floor .day-course-heading span {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #c9b780;
+}
+#wx-zero-floor .day-course-heading h1 {
+  font-size: 27px;
+  font-weight: 550;
+  line-height: 1.5;
+  margin: 8px 0 12px;
+  letter-spacing: 0.03em;
+}
+#wx-zero-floor .day-course-heading > p {
+  color: #a8bcb4;
+  margin: 0 0 22px;
+  font-size: 14px;
+}
+#wx-zero-floor .day-course-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+#wx-zero-floor .day-course-cards article {
+  padding: 14px 16px;
+  border-top: 2px solid #8bbbaa;
+  background: #152d30;
+}
+#wx-zero-floor .day-course-cards h3 {
+  font-size: 14px;
+  margin: 0 0 7px;
+  color: #d6dfca;
+}
+#wx-zero-floor .day-course-cards p {
+  font-size: 12px;
+  color: #a9bfb6;
+  margin: 0;
+}
+#wx-zero-floor .day-course-figure {
+  margin: 0;
+  padding: 16px;
+  background: #0b191d;
+  border: 1px solid #2e4948;
+  border-radius: 6px;
+}
+#wx-zero-floor .day-course-figure > figcaption {
+  font-size: 12px;
+  color: #abc2ba;
+  margin-bottom: 12px;
+}
+#wx-zero-floor #dayCourseSituations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+#wx-zero-floor .day-course-situation {
+  border-left: 2px solid #cdb579;
+  padding: 10px 17px;
+  margin-bottom: 20px;
+  background: #183034;
+}
+#wx-zero-floor .day-course-situation h2 {
+  font-size: 17px;
+  margin: 0 0 7px;
+}
+#wx-zero-floor .day-course-situation p {
+  margin: 0;
+  color: #b6c9be;
+  font-size: 13px;
+}
+#wx-zero-floor .day-course-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 22px;
+}
+#wx-zero-floor .day-course-footer span {
+  font-size: 11px;
+  color: #819d91;
+}
+#wx-zero-floor #dayCourseNext {
+  border-color: #c0a269;
+  color: #ecd39d;
+}
+#wx-zero-floor .training-source-picture:last-child {
+  margin-bottom: 0;
+}
+.training-shot-zoom {
+  padding: 15px;
+  border-radius: 8px;
+}
+.training-shot-zoom .training-shot-frame {
+  position: relative;
+}
+.training-shot-zoom .training-shot-frame > img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.training-shot-zoom .training-shot-mark {
+  display: none;
+}
+@media (max-width: 650px) {
+  #wx-zero-floor.day-course-shell {
+    padding: 16px 12px;
+    margin: 0 8px 24px;
+  }
+  #wx-zero-floor .day-course-top {
+    align-items: flex-start;
+    font-size: 10px;
+  }
+  #wx-zero-floor #dayCourseSkipAll {
+    font-size: 11px;
+    padding: 8px;
+    max-width: 145px;
+  }
+  #wx-zero-floor #dayCourseNav {
+    gap: 6px;
+    margin: 17px 0;
+  }
+  #wx-zero-floor #dayCourseNav button {
+    flex-basis: 44%;
+    min-width: 0;
+    font-size: 12px;
+    padding: 8px;
+  }
+  #wx-zero-floor .day-course-heading h1 {
+    font-size: 22px;
+  }
+  #wx-zero-floor .day-course-cards {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  #wx-zero-floor .day-course-cards article {
+    padding: 10px 12px;
+  }
+  #wx-zero-floor .day-course-figure {
+    padding: 10px;
+  }
+  #wx-zero-floor .day-course-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #wx-zero-floor .day-course-footer span {
+    order: 3;
+    width: 100%;
+  }
+  #wx-zero-floor #dayCourseSituations button {
+    flex: 1 1 40%;
+    font-size: 12px;
+  }
+  #wx-zero-floor .training-shot-notes {
+    grid-template-columns: 1fr;
+  }
+}

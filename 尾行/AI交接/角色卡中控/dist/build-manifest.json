@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.21",
+  "version": "0.8.22",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "41f79e93a61f1702570178d9b2d1a14fc6dfb400a279bffa76966a6dffbe2387",
+  "sourceHash": "382b7228bd075f899d894b08e831b2f3ce90bf213606d7c2f580635f62ecbf42",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "290c5914249e9ef07bb601bea0851eb9f4a5e9efee48691cfec2cced3f81d44b"
+      "sha256": "00f06fcfd8634becee1f4dc0a08dd4877b26b715344c9da6776460136604e5fb"
     },
     {
       "file": "package.json",
-      "sha256": "d7a4598b550e3e79912832d749468673de0c99138b02ad83836d30c2463e5a17"
+      "sha256": "43dab028b43fc2db42879641457f3871cde5e5ae60733c97a09becfd852bb1e3"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -367,11 +367,11 @@
     },
     {
       "file": "src/ui/generated/rules.json",
-      "sha256": "07c3bb421e706023a100b286cf6a77e4e53a9868064ac18fffa020b32d3d6f68"
+      "sha256": "8a0a926c10bde63ee1b1d2100df8dd810a1a8281ecb1e01615a4d274817b0241"
     },
     {
       "file": "src/ui/generated/training-shots.json",
-      "sha256": "5148e8afec10ecafc99cf97fc5f34764c77da9c47e025517cec4d9e7ac7c6136"
+      "sha256": "d6553a28b7977aa00f0ce7809912e44c0e81688770adedb60ed0e794f8e104a8"
     },
     {
       "file": "src/ui/generated/wardrobe-images.json",
@@ -446,6 +446,10 @@
       "sha256": "57616bd69ed88a3f776592aca85f095d578ba2196f5a9b3ecb0c9f9039784a4c"
     },
     {
+      "file": "src/ui/styles/day-tailing-course.css",
+      "sha256": "be1fb5793ff2844bebaf76f9bdd93116a1cc5828811700f69a3796801463f3c5"
+    },
+    {
       "file": "src/ui/styles/statusbar.css",
       "sha256": "ea0ab2500d2b8975dc5635acc65389aaab47927d054ce2e893c166d7a35380c5"
     },
@@ -467,11 +471,23 @@
     },
     {
       "file": "src/ui/zero-floor/attribute-lessons.js",
-      "sha256": "c1612121da1c295a324450591ba4d7badecf2556f77d6b4f5b18995b44ed56b1"
+      "sha256": "3368a8736611286c050f389e685b8507c5b803554d37586b2f2d216f8b9bb7a8"
+    },
+    {
+      "file": "src/ui/zero-floor/day-tailing-course.html",
+      "sha256": "1efb306b22a24a56cb188193c0a7f30097c4ffb045d79a32a2d228431d42689d"
+    },
+    {
+      "file": "src/ui/zero-floor/day-tailing-course.js",
+      "sha256": "d42e9808cedde8b3eb3d152e0d2b5241d941b23802244370fa8648428f12b757"
     },
     {
       "file": "src/ui/zero-floor/host.js",
       "sha256": "4a42fa5758a532397fecda81ed0d462b96504af299272c9db52f414bbda146a2"
+    },
+    {
+      "file": "src/ui/zero-floor/screenshot-pictures.js",
+      "sha256": "301b6e7c77dbe0a1c98e60a707d6e2691a8ad302f7dd20361c43394e585aa52b"
     },
     {
       "file": "src/ui/zero-floor/stages.js",
@@ -479,7 +495,7 @@
     },
     {
       "file": "src/ui/zero-floor/training-brief.html",
-      "sha256": "619b7849e685779eb5ce4d308fe3f9446608b568129af55b18a59c8be4f410d9"
+      "sha256": "5967efe55827cf7db634863ac540be325bf0c0cbbab6cd1ee4dc51366f83a207"
     },
     {
       "file": "src/ui/zero-floor/training-brief.js",
@@ -487,7 +503,7 @@
     },
     {
       "file": "src/ui/zero-floor/training-examples.js",
-      "sha256": "3b6082856f6c69c394290138fa8e3df5cfef7b96bc3b4e4147dbb1304241b8c9"
+      "sha256": "19c420f1fc340cee5ea92c99f2a990a27a7031f791ce310ebfd3558cc704ea6a"
     },
     {
       "file": "src/ui/zero-floor/training-pages.js",
@@ -495,7 +511,7 @@
     },
     {
       "file": "src/ui/zero-floor/training-pictures.js",
-      "sha256": "e150f23f79dc47434251c8badc100bcff26f122cbb0389e803d4f2ff2ebac9d0"
+      "sha256": "3c3bd124e445bf84dda2334f2620a0a1ffa440e6bead2e9cc679346111d76e0e"
     },
     {
       "file": "src/ui/zero-floor/tutorial-policy.js",
@@ -546,6 +562,18 @@
       "sha256": "d20160a940da39a375df91a7dc52319ac845f94d995bfced51c95c5844b8bc13"
     },
     {
+      "file": "tools/build/day-tailing-preview.js",
+      "sha256": "e784402d6213db339f254ba7c7f2455feee3f079b483053e02752c0f0cbb11e3"
+    },
+    {
+      "file": "tools/build/day-tailing-sample.js",
+      "sha256": "c3b36decb138f4aa8ca845c6934a1f2220c582ae2f02b1ea71b9c26e76f5944d"
+    },
+    {
+      "file": "tools/build/day-tailing-shots.js",
+      "sha256": "a5ffe82a4bae00e704f1f4461f4f39e32a2a6551d16b563845273e1846205b3c"
+    },
+    {
       "file": "tools/build/delivery.js",
       "sha256": "378cdba437bd17860c997d87b81283736274673f162eb056a5df9571c579f531"
     },
@@ -567,11 +595,11 @@
     },
     {
       "file": "tools/build/training-preview.js",
-      "sha256": "8db30ce1acb09a0210aa21417d23b2e950c6085bc19a17e37c5e131ad99411e0"
+      "sha256": "baf0e727aef4664ea36545a00813591364ebb653ea80901f5d8126dfa216fde4"
     },
     {
       "file": "tools/build/training-sample.js",
-      "sha256": "3ce899e73307df539b0c4730a25f075cbdec7c761d97d6102adb6a6c13efdedf"
+      "sha256": "fad2bfd5d8e1955b9873bf14dadb6a066802fcebc54ecfcde1cf3b504648a087"
     },
     {
       "file": "tools/build/training-shot-hash.js",
@@ -596,16 +624,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 643190,
-      "sha256": "246a3a2e076d3d807198d38314b0ff5eab1d62343eec0741e35d126881c561fb"
+      "bytes": 643420,
+      "sha256": "5d12bbc026ff69409be79e5facb15255c75e1aa847dc5d23d55d9c5b0c399020"
     },
     "wx-statusbar.user.js": {
-      "bytes": 14600048,
-      "sha256": "5b2ef51cf880f63047da75aff4adc475b832cbd7675d4a3f6037649446a0aba1"
+      "bytes": 14601447,
+      "sha256": "5dd3d24704dc908296e19866799e8c8916b76b2f2002452afb0308b1235a4037"
     },
     "尾行.json": {
-      "bytes": 14736414,
-      "sha256": "67e633668f351911c169731531cc426f319910ab63ab87f8a4370827987d5d51"
+      "bytes": 14737959,
+      "sha256": "68644864cd972e8690b03f08be48c92c471c03fdf4f6be7295bb08dfbb3798e9"
     },
     "尾行-世界书.json": {
       "bytes": 10130,
