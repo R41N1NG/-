@@ -452,9 +452,8 @@ async function main() {
       );
       await b.delay(180);
       await b.evaluate("__collegePreview.reset();true");
-      await click('[data-action-id="daily.rest"]');
       await check(
-        "体力115/115显示100%而不是115%",
+        "新角色体力115/115显示100%而不是115%",
         "(()=>{const s=__collegePreview.snapshot();return s.player.stamina===115&&s.player.staminaMax===115&&document.getElementById('staminaVal').textContent==='100%'&&document.getElementById('staminaBox').dataset.tip.includes('115 / 115')})()",
       );
       await shot("stamina-full");

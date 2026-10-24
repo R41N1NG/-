@@ -454,6 +454,8 @@ function createPreview(saved, options = {}) {
   }
   function recover() {
     if (!active() || !recovery.pending) throw Error("当前没有可用的追找机会");
+    if (game.ledger.get("stamina") < 4)
+      throw Error("体力不足：追找需要4点体力，可先补给或停下");
     recovery.pending = false;
     recovery.attempted = true;
     // 追找从远端重新建立目视，勉强过关也不能保留失败前的近距离。

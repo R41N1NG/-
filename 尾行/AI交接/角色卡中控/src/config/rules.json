@@ -36,6 +36,7 @@
     "note": "优势五标签（主人定稿 2026-10-16）：累计PI≥60挂[优势:情报]；str/agi/cha≥10挂各自属性优势；nrv≥10挂[优势:胆量]甜区上限+5。效果=该属性1d20检定单骰变双骰，天然铁律：有20必取20(含{1,20})、无20有1锁死取1、否则取高。冲突对抗(2d10)不吃优势。劣势侧不实装。"
   },
   "stamina": {
+    "fatigue": { "mildRatio": 0.5, "heavyRatio": 0.25, "mildDC": 1, "heavyDC": 3 },
     "segTax": { "calm": 1, "sweet": 2, "deform": 4, "crash": 6 },
     "nightRest": { "fullMin": 0.3, "midMin": 0.1, "midTo": 0.8, "lowTo": 0.6 }
   },

@@ -37,6 +37,7 @@ test("胆量优势甜区拓宽，离开范围不残留+1标签", () => {
 test("快照带实际体力上限，休息115是115/115而非115%", () => {
   const g = createGame(defaultInit());
   assert.equal(g.snapshot().player.staminaMax, 115);
+  g.gmSet({ stamina: -15 });
   g.gmSet({ stamina: 15 });
   assert.equal(g.snapshot().player.stamina, 115);
   assert.equal(g.snapshot().player.stamina / g.snapshot().player.staminaMax, 1);

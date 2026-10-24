@@ -3,8 +3,13 @@ const {
   classifyPlace,
   requirementFailure,
 } = require("../contracts/action-requirements.js");
+const { staminaFailure } = require("../contracts/stamina.js");
 const CONFIG = require("./generated/rules.json");
 function capsuleGate(c, snap) {
+  const staminaError =
+    snap?.player &&
+    staminaFailure(snap.player.stamina, CONFIG.staminaCosts[c.id] || 0);
+  if (staminaError) return { hide: false, lock: true, reason: staminaError };
   const distLabel = { far: "远端", same: "同街", close: "身后", touch: "贴身" };
   const dist = (snap && snap.dist) || "same";
   const place = String((snap && snap.place) || "");

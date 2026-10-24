@@ -137,3 +137,12 @@ test("保留当前进度必须二次确认，取消不执行恢复", async () =>
     u.dom.window.close();
   }
 });
+
+test("体力不足只提示调整动作，不冒充存档差异，不显示楼层定位或重新校验",()=>{
+ const u=ui(async()=>{});try{
+ u.notice.report({code:'STAMINA_INSUFFICIENT'});
+ assert.match(u.element.textContent,/体力不足/);
+ assert.doesNotMatch(u.element.textContent,/差异|楼层|校验|错误码/);
+ assert.equal(u.element.querySelectorAll('button').length,0);
+ }finally{u.lifecycle.dispose();u.dom.window.close();}
+});

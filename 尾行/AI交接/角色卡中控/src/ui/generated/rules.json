@@ -50,7 +50,7 @@
       "targetPlaceId": "school_gate_b",
       "targetLive": true,
       "heart": 30,
-      "stamina": 100,
+      "stamina": 115,
       "pi": 0,
       "date": 1,
       "period": "晚间",
@@ -64,7 +64,7 @@
       "targetPlaceId": "school_gate_b",
       "targetLive": true,
       "heart": 30,
-      "stamina": 99,
+      "stamina": 112,
       "pi": 0,
       "date": 1,
       "period": "晚间",
@@ -118,6 +118,7 @@
           "targetMod": 0,
           "darkReveal": null,
           "distanceDC": 0,
+          "fatigueDC": 0,
           "heartState": {
             "value": 30,
             "sweetLow": 40,
@@ -150,12 +151,12 @@
             }
           ],
           "ledger": {
-            "seq": 1,
+            "seq": 2,
             "applied": {
               "alert": 0,
               "heart": 0,
               "pi": 0,
-              "stamina": 0,
+              "stamina": -2,
               "cash": 0,
               "proximity": 0,
               "faceMem": 0
@@ -164,7 +165,7 @@
         }
       ],
       "account": {
-        "stamina": -1,
+        "stamina": -3,
         "heart": 0,
         "alert": 0,
         "pi": 0,
@@ -208,7 +209,7 @@
     ],
     "delta": {
       "pi": 0,
-      "stamina": -1
+      "stamina": -3
     },
     "newFactCount": 0,
     "attrsRevealed": 1,
@@ -710,6 +711,22 @@
       70,
       90
     ]
+  },
+  "fatigue": {
+    "mildRatio": 0.5,
+    "heavyRatio": 0.25,
+    "mildDC": 1,
+    "heavyDC": 3
+  },
+  "staminaCosts": {
+    "follow": 4,
+    "photo": 3,
+    "scan": 2,
+    "ride_along": 4,
+    "transfer": 4,
+    "follow_work": 4,
+    "ride_follow": 4,
+    "car_follow": 4
   },
   "requirements": {
     "withdraw": {

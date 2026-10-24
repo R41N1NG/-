@@ -271,7 +271,8 @@ test("跨实例版本冲突拒绝覆盖；损坏档可以从备份显式恢复",
 
 test("时间线保留窗口有界；过早历史修改阻止保存覆盖原档", async () => {
   const h = host();
-  await h.sync.newGame({});
+  // 本例验证历史窗口，不测尾行耐力；预留70轮的资源。
+  await h.sync.newGame({ stats: { stamina: 999 } });
   for (let i = 0; i < 70; i++) {
     await send(h, String(i));
     h.reply();
@@ -604,3 +605,12 @@ test("路线名称跟随回复分支回退恢复，不串入其他分支", async
   await h.sync.reconcile();
   assert.equal(h.state.game.snapshot().profile.routes[0].name,"分支路线");
 });
+
+ test("体力不足不是聊天存档错位：未推进检查点，不留下同步故障，可直接补给继续",async()=>{
+ const h=host();await h.sync.newGame({stats:{stamina:0}});
+ const before=clone(h.stores.A);
+ await assert.rejects(send(h,"继续"),{code:"STAMINA_INSUFFICIENT"});
+ assert.deepEqual(h.stores.A,before);
+ assert.equal(h.sync.getSyncDiagnostics().lastFailure,null);
+ await h.sync.reconcile();
+ });

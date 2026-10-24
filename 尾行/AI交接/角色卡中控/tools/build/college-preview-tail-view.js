@@ -1,4 +1,6 @@
 "use strict";
+const { fatigueOf } = require("../../src/contracts/stamina");
+const RULES = require("../../src/ui/generated/rules.json");
 const { ALERT_TIERS } = require("../../src/ui/alert-view");
 const names = { far: "远端", same: "同街", close: "身后", touch: "贴身" };
 const periodNames = ["早间", "午间", "午后", "晚间", "子夜"];
@@ -93,7 +95,19 @@ function createTailView(document) {
       t.recovery.pending ? "待确认" : names[snap.dist] || "待确认",
     );
     text("collegeTailHeart", String(snap.player.heart));
-    text("collegeTailStamina", String(snap.player.stamina));
+    const fatigue = fatigueOf(
+      snap.player.stamina,
+      snap.player.staminaMax,
+      RULES.fatigue,
+    );
+    text(
+      "collegeTailStamina",
+      `${snap.player.stamina} / ${snap.player.staminaMax} · ${fatigue.name}${fatigue.dc ? ` · 跟随DC+${fatigue.dc}` : ""}`,
+    );
+    $("collegeFollow").disabled = snap.player.stamina < 4;
+    $("collegeFollow").textContent =
+      snap.player.stamina < 4 ? "体力不足，请补给或停下" : "继续跟随 · 体力−4";
+    $("collegeRecover").disabled = snap.player.stamina < 4;
     text(
       "collegeTailAlert",
       ALERT_TIERS[snap.target.alertStage]?.name ||

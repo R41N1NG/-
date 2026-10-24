@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.23",
+  "version": "0.8.24",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "7f71ab8e1d8fe6918aef7560851446f8be10d61bd39d83fd3d76eaefcde73e9b",
+  "sourceHash": "17d0f96dd70dba0e0748d86c5af5376649704eb73358b4ab23fa87585ea6abe5",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "f814f9b0dab232dc0c1f72cd79e24a2e6c48b2d3fb404ca48b7ebcd4daeec919"
+      "sha256": "71b553a24ee62493526b6d94c9da81eb2a447c7144d99acacbbe63580ae32c3a"
     },
     {
       "file": "package.json",
-      "sha256": "b24363d035d943c9736594ef3d43eaa8fa3d91b97554a2d4dbb4162b2ab0fc01"
+      "sha256": "c14d6d071b8fe79276aa9c8a607f5efffad853b6490600ec36ec2920a656f5e4"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -51,7 +51,7 @@
     },
     {
       "file": "src/config/lexicon.json",
-      "sha256": "9d883f7f1a77d4b52c5811683e64dceb797a299cc2098d6729a10c0c8f68a2fe"
+      "sha256": "c272635af033ca44761fae8443a73680fed12c79ba11251a4af54e7c4597059c"
     },
     {
       "file": "src/config/lifepack.json",
@@ -63,7 +63,7 @@
     },
     {
       "file": "src/config/rules.json",
-      "sha256": "2af9e3302337c031262ed7d39a169ed9bc28cfe6440bf91ba0854e394f7ec6ad"
+      "sha256": "3012c57aa4a6a95727c73246d51a97d1819bb2987c1628048a539ef9aae5801a"
     },
     {
       "file": "src/config/wardrobe.json",
@@ -98,6 +98,10 @@
       "sha256": "22fd2f8128b0d174a5ad3e667b6307b4f6a277198795bd7648e7b276e24db922"
     },
     {
+      "file": "src/contracts/stamina.js",
+      "sha256": "5ea243e6931d491ae08154d2baf514289c89b7424b400bf2926bfa8fb3ec5fd5"
+    },
+    {
       "file": "src/contracts/types.d.ts",
       "sha256": "d4d7114620d9e22accb293bea15b6dca404f6c7b12dfa18095d0d01a24bfaf3c"
     },
@@ -111,7 +115,7 @@
     },
     {
       "file": "src/host/chat-sync/controller.js",
-      "sha256": "230695cafb4ef8d99bef7338685f3000935091490986a12c420480c022a5f32d"
+      "sha256": "ac9f9bfc53b538b4ffe4fa58831934f450d1a81b77d5166e7a0a53a332d54f8d"
     },
     {
       "file": "src/host/chat-sync/diagnostics.js",
@@ -151,7 +155,7 @@
     },
     {
       "file": "src/host/initial-state.js",
-      "sha256": "c5349068a202b70b59472b91085bee00166f7446698995f053bdbc5ac113c0db"
+      "sha256": "6d94549b1f2e3b45794ee69927fe617e8c54396456f7df8e497bdcfa0cb56dbb"
     },
     {
       "file": "src/host/opening.js",
@@ -211,11 +215,11 @@
     },
     {
       "file": "src/runtime/game.js",
-      "sha256": "74089369771b1a0ce64938fbc9fb9e56319b5ef97b410c9d7c1021ab3d91f491"
+      "sha256": "b1bd5371014b71d55041fecee0b887b48b16d23b15f71ce3b86b5c8eceb74cd0"
     },
     {
       "file": "src/runtime/game/actions.js",
-      "sha256": "d472c1d529ff3285d41ec4c2d993732440fc899aeacff9a92f0d3594ba2b3d07"
+      "sha256": "86e41e35e9453967f7c2b3effdcfda55d917e71b056ee5bfa9717e5c0fbc403d"
     },
     {
       "file": "src/runtime/game/album.js",
@@ -227,7 +231,7 @@
     },
     {
       "file": "src/runtime/game/checks.js",
-      "sha256": "99380a7e00717100898e1018889327f742da2470242dfba1ba954fd536a4a73a"
+      "sha256": "375704d6a0408305b373a5c60e3f852f06eea80105ea05bb6bf0e140e9b59d7a"
     },
     {
       "file": "src/runtime/game/clock.js",
@@ -263,7 +267,7 @@
     },
     {
       "file": "src/runtime/game/turn.js",
-      "sha256": "c57e8c4530674f5452862064ecd9dd5e70611ba85fc760d0affed787bc53909d"
+      "sha256": "902cb7f7ff397048b2dc54c8d8cd943a9690b1de1461a42699bb7cc91897748f"
     },
     {
       "file": "src/runtime/investigation.js",
@@ -335,7 +339,7 @@
     },
     {
       "file": "src/ui/action-options.js",
-      "sha256": "5b9a1f584236dc705787b77f3d2fa7f0e7f132e6a1cff336341dfee61fd9cbab"
+      "sha256": "b323bc13add6e8c61f4557c49cee449bd3734f24112e5ba94e4063ae856ee24b"
     },
     {
       "file": "src/ui/alert-view.js",
@@ -367,11 +371,11 @@
     },
     {
       "file": "src/ui/generated/rules.json",
-      "sha256": "87ecd3698af574575660f8192fe138338ba67f2101ce50db6157d3ef70e3dcc9"
+      "sha256": "200759da3629634debda1312f639b55cbbbce1641bc0b75d85bdc74b03794ee8"
     },
     {
       "file": "src/ui/generated/training-shots.json",
-      "sha256": "c119948c56d45065de06479ac9afd935bc230c9969c0461776aa553f5943fbf1"
+      "sha256": "58490cf7cd543d3b46b36a407fe1ba2c3f0368a195b537700341c1cd43ce5595"
     },
     {
       "file": "src/ui/generated/wardrobe-images.json",
@@ -423,11 +427,11 @@
     },
     {
       "file": "src/ui/renderers/snapshot.js",
-      "sha256": "280253dfddff0fdde4f683adc50db9b85dc4cfde71823513ff0adb40663288ab"
+      "sha256": "4690afec74f658f8ec6bf2fabd79c8c9481b946f19b3b2856b5d7483338b3322"
     },
     {
       "file": "src/ui/settlement/controller.js",
-      "sha256": "2c82e18aa1e386e265570a2bf55c39982506ac124d9091d9c47033b0b95e1fd4"
+      "sha256": "c9c6ea6893e24e898afe31338b01c00f2e1f500ebdc555d614719484b878b84a"
     },
     {
       "file": "src/ui/settlement/geometry.js",
@@ -435,7 +439,7 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "0b3a8328e2a30f41321b50018dea096e53a37ea4bdd38ea751ee09cf35e86a5b"
+      "sha256": "ad3ba39db84ac5679a76221023041556ab127b3d6b6c3f33c4aecdf7bc4d15f1"
     },
     {
       "file": "src/ui/styles/attribute-lessons.css",
@@ -463,7 +467,7 @@
     },
     {
       "file": "src/ui/sync-notice.js",
-      "sha256": "2c7a9ff5515fe8b70856a09b422b1a55c07f0c22adf979118e87c627a038431d"
+      "sha256": "5be877aa775c0504673f84ba318a8db0638bd9885f32b80c919b992a2e583748"
     },
     {
       "file": "src/ui/template.html",
@@ -539,11 +543,11 @@
     },
     {
       "file": "tools/build/college-preview-model.js",
-      "sha256": "d023a0f0d565d9261998319d05882595b2e3e969a374a7caa7eb7d361507ddb7"
+      "sha256": "dca9361880dcf8f565a91eacce1d27c0af5a581dedcf72f35395478b8152942c"
     },
     {
       "file": "tools/build/college-preview-tail-view.js",
-      "sha256": "22fd1c744d07422b8f419a0b1a8459bc4eeaaeab3ab634a0cefc5b507f88dd77"
+      "sha256": "3bee200b9fe5b7d892629c4026cf9865dfea521c7a80855277d2cd00c9d03fa0"
     },
     {
       "file": "tools/build/college-preview-tail.css",
@@ -627,7 +631,7 @@
     },
     {
       "file": "tools/build/training-shot-hash.js",
-      "sha256": "52b10a81fa56e30865054a7bfb15284dc819c89d468e0f67fe3639465f8a79e1"
+      "sha256": "2ffa65a7a24ea4eeadedb10f9887d5ee334dbfcfadcdb162e5b739380bbacb88"
     },
     {
       "file": "tools/build/training-shots.js",
@@ -635,7 +639,7 @@
     },
     {
       "file": "tools/build/ui-config.js",
-      "sha256": "646a5893b5a8ccf8f3a27bbf862ce8d676e451cef9ef02f1e71f66ec2d42842a"
+      "sha256": "aaeb1ef889a81ca017713f283fa9371f63779a8636e328f80dfe2e6360b35222"
     },
     {
       "file": "tools/build/ui.js",
@@ -648,16 +652,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 643652,
-      "sha256": "a7d0de121a1b6279321a9215304214b452201cca96a5cc52769ae8279c3d68e0"
+      "bytes": 646998,
+      "sha256": "64ffe852b088639ea281c758eabf0952c63a61c9a3e7adaa3b1bf7396745c41d"
     },
     "wx-statusbar.user.js": {
-      "bytes": 14603095,
-      "sha256": "2edd17683c1f4e54b23fe60cee21cbd46ec743d007eb843f1b8bd02c27dfe5bf"
+      "bytes": 14609276,
+      "sha256": "7e3c72b496c8c6da6579bb8c0bdfb84583e66b911f6b960d84e0a71dbbaab7f3"
     },
     "尾行.json": {
-      "bytes": 14739690,
-      "sha256": "b08bc0d45fa749a5dd8239a5d6e1b2ac0448d5d89f858f57b1f04a1507cabc0b"
+      "bytes": 14746279,
+      "sha256": "6d34019c0570398a05ff82785bdc766c78a3ff549a851f7e35bb5647c75a0611"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

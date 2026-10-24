@@ -1,4 +1,6 @@
 "use strict";
+const { fatigueOf } = require("../../contracts/stamina.js");
+const CONFIG = require("../generated/rules.json");
 const { ico, stripEmoji } = require("../icons.js");
 const { ALERT_TIERS, alertTierOf } = require("../alert-view.js");
 const {
@@ -60,7 +62,7 @@ function createSnapshotRenderer({
     const line = lineOf(view.heart);
     document.getElementById("instrument").dataset.line = line;
     root.dataset.line = line;
-    /* 体力：30 气喘 / 10 脱力（数值策划规则） */
+    /* 疲劳由实际体力比例派生；快照渲染不得修改进度。 */
     const st = snap.player.stamina;
     const staminaMax =
       snap.player.staminaMax ||
@@ -69,16 +71,23 @@ function createSnapshotRenderer({
       0,
       Math.min(100, Math.round((st / staminaMax) * 100)),
     );
-    const band =
-      st < 10
-        ? ["red", "· 脱力"]
-        : st < 30
-          ? ["yellow", "· 气喘"]
-          : ["green", ""];
+    const fatigue = fatigueOf(st, staminaMax, CONFIG.fatigue);
+    const band = [
+      fatigue.band,
+      fatigue.band === "green" ? "" : "· " + fatigue.name,
+    ];
+    const staminaTip =
+      `当前体力 ${st} / ${staminaMax}（${staminaPercent}%） · ${fatigue.name}` +
+      (fatigue.dc
+        ? ` · 跟随 DC +${fatigue.dc}`
+        : st === 0
+          ? " · 请补给或结束尾行"
+          : "") +
+      "；跟随4 / 打量2 / 拍照3点，另计每回合心跳消耗";
     const box = document.getElementById("staminaBox");
     if (box) {
       box.dataset.band = band[0];
-      box.dataset.tip = `当前体力 ${st} / ${staminaMax}（${staminaPercent}%）`;
+      box.dataset.tip = staminaTip;
     }
     const sval = document.getElementById("staminaVal");
     if (sval) sval.textContent = staminaPercent + "%";
@@ -99,7 +108,7 @@ function createSnapshotRenderer({
       fullBox
         .querySelector(".stamina-meter")
         ?.setAttribute("aria-valuemax", staminaMax);
-      fullBox.dataset.tip = `当前体力 ${st} / ${staminaMax}`;
+      fullBox.dataset.tip = staminaTip;
     }
     /* 日段×模式 + 距离档（接触/车厢 = 朋友的位，pip 换暖色提醒双态语义） */
     document.getElementById("phase").textContent =

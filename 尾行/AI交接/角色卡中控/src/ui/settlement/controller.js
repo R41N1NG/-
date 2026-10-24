@@ -523,6 +523,12 @@ function createSettlement({
         type: w.bonus > 0 ? "gain work-bonus" : "work-no-bonus",
       });
     }
+    if (act.fatigueDC)
+      ledgerItems.push({
+        label: "疲劳跟随难度",
+        val: `DC +${act.fatigueDC}`,
+        type: "warn",
+      });
     if (act.distanceDC)
       ledgerItems.push({
         label: "远端跟随难度",

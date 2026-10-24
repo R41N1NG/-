@@ -244,6 +244,13 @@ function createGame(init = {}, services = {}) {
     targetGym: init.targetGym,
     packId: init.packId,
   }); // v0.8 开局身份制：修正与常驻标签先落账，再对表优势
+  if (!init.saved && init.stats?.stamina == null) {
+    const maximum = g.player.staminaMax || 100 + g.player.str * 5;
+    L.commit(
+      { stamina: maximum - L.get("stamina") },
+      { reason: "new_game_full_stamina" },
+    );
+  }
   syncThresholdTags(); // 开局即对表：极端出身属性达标直接挂优势
   syncEquippedTags(); // 开局装备标签同步
   syncTargetShoeTags(); // 目标鞋具标签同步

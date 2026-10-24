@@ -1778,6 +1778,7 @@
           note: "\u4F18\u52BF\u4E94\u6807\u7B7E\uFF08\u4E3B\u4EBA\u5B9A\u7A3F 2026-10-16\uFF09\uFF1A\u7D2F\u8BA1PI\u226560\u6302[\u4F18\u52BF:\u60C5\u62A5]\uFF1Bstr/agi/cha\u226510\u6302\u5404\u81EA\u5C5E\u6027\u4F18\u52BF\uFF1Bnrv\u226510\u6302[\u4F18\u52BF:\u80C6\u91CF]\u751C\u533A\u4E0A\u9650+5\u3002\u6548\u679C=\u8BE5\u5C5E\u60271d20\u68C0\u5B9A\u5355\u9AB0\u53D8\u53CC\u9AB0\uFF0C\u5929\u7136\u94C1\u5F8B\uFF1A\u670920\u5FC5\u53D620(\u542B{1,20})\u3001\u65E020\u67091\u9501\u6B7B\u53D61\u3001\u5426\u5219\u53D6\u9AD8\u3002\u51B2\u7A81\u5BF9\u6297(2d10)\u4E0D\u5403\u4F18\u52BF\u3002\u52A3\u52BF\u4FA7\u4E0D\u5B9E\u88C5\u3002"
         },
         stamina: {
+          fatigue: { mildRatio: 0.5, heavyRatio: 0.25, mildDC: 1, heavyDC: 3 },
           segTax: { calm: 1, sweet: 2, deform: 4, crash: 6 },
           nightRest: { fullMin: 0.3, midMin: 0.1, midTo: 0.8, lowTo: 0.6 }
         },
@@ -2457,7 +2458,32 @@
           }
         },
         tags: {
-          sweet_focus: { id: "sweet_focus", name: "\u751C\u533A\u4E13\u6CE8", aliases: ["\u751C\u533A\u4E13\u6CE8"], effects: [{ category: "stealth", value: 1 }, { category: "fine", value: 1 }, { category: "social", value: 1 }, { category: "conflict", value: 1 }], desc: "\u5224\u5B9A\u65F6\u5FC3\u8DF3\u5904\u4E8E\u751C\u533A\uFF0C\u68C0\u5B9A+1\uFF1B\u79BB\u5F00\u751C\u533A\u5373\u79FB\u9664" },
+          sweet_focus: {
+            id: "sweet_focus",
+            name: "\u751C\u533A\u4E13\u6CE8",
+            aliases: [
+              "\u751C\u533A\u4E13\u6CE8"
+            ],
+            effects: [
+              {
+                category: "stealth",
+                value: 1
+              },
+              {
+                category: "fine",
+                value: 1
+              },
+              {
+                category: "social",
+                value: 1
+              },
+              {
+                category: "conflict",
+                value: 1
+              }
+            ],
+            desc: "\u5224\u5B9A\u65F6\u5FC3\u8DF3\u5904\u4E8E\u751C\u533A\uFF0C\u68C0\u5B9A+1\uFF1B\u79BB\u5F00\u751C\u533A\u5373\u79FB\u9664"
+          },
           timid: {
             id: "timid",
             name: "\u80C6\u5C0F",
@@ -3156,7 +3182,8 @@
             ],
             check: "follow",
             cost: {
-              tax: "heart_seg"
+              tax: "heart_seg",
+              stamina: 4
             },
             modes: [
               "stealth"
@@ -3485,7 +3512,10 @@
               "stealth",
               "contact"
             ],
-            aliases: []
+            aliases: [],
+            cost: {
+              stamina: 3
+            }
           },
           {
             id: "scan",
@@ -3498,7 +3528,10 @@
               "stealth",
               "contact"
             ],
-            aliases: []
+            aliases: [],
+            cost: {
+              stamina: 2
+            }
           },
           {
             id: "deduce",
@@ -3993,7 +4026,10 @@
             modes: [
               "stealth"
             ],
-            aliases: []
+            aliases: [],
+            cost: {
+              stamina: 4
+            }
           },
           {
             id: "transfer",
@@ -4003,7 +4039,10 @@
             modes: [
               "stealth"
             ],
-            aliases: []
+            aliases: [],
+            cost: {
+              stamina: 4
+            }
           },
           {
             id: "watch_peers",
@@ -4096,7 +4135,10 @@
             modes: [
               "stealth"
             ],
-            aliases: []
+            aliases: [],
+            cost: {
+              stamina: 4
+            }
           },
           {
             id: "stalk_social",
@@ -4186,7 +4228,10 @@
             modes: [
               "stealth"
             ],
-            aliases: []
+            aliases: [],
+            cost: {
+              stamina: 4
+            }
           },
           {
             id: "car_follow",
@@ -4196,7 +4241,10 @@
             modes: [
               "stealth"
             ],
-            aliases: []
+            aliases: [],
+            cost: {
+              stamina: 4
+            }
           },
           {
             id: "respond_her",
@@ -9260,6 +9308,26 @@
     }
   });
 
+  // src/contracts/stamina.js
+  var require_stamina = __commonJS({
+    "src/contracts/stamina.js"(exports, module) {
+      "use strict";
+      function fatigueOf(current, maximum, rules) {
+        const ratio = Math.max(0, current) / Math.max(1, maximum);
+        if (ratio === 0) return { name: "\u4F53\u529B\u8017\u5C3D", dc: 0, band: "red", ratio };
+        if (ratio < rules.heavyRatio)
+          return { name: "\u75B2\u60EB", dc: rules.heavyDC, band: "red", ratio };
+        if (ratio <= rules.mildRatio)
+          return { name: "\u6C14\u5598", dc: rules.mildDC, band: "yellow", ratio };
+        return { name: "\u4F53\u529B\u5145\u8DB3", dc: 0, band: "green", ratio };
+      }
+      function staminaFailure(current, cost) {
+        return cost > 0 && current < cost ? `\u4F53\u529B\u4E0D\u8DB3\uFF1A\u9700\u8981 ${cost} \u70B9\uFF0C\u5F53\u524D ${current} \u70B9\uFF1B\u53EF\u5148\u8865\u7ED9\u6216\u7ED3\u675F\u672C\u6B21\u5C3E\u884C` : null;
+      }
+      module.exports = { fatigueOf, staminaFailure };
+    }
+  });
+
   // src/runtime/game/actions.js
   var require_actions = __commonJS({
     "src/runtime/game/actions.js"(exports, module) {
@@ -9267,6 +9335,7 @@
       var {
         requirementFailure
       } = require_action_requirements();
+      var { staminaFailure } = require_stamina();
       var R = require_rules();
       var { observationItems } = require_album();
       var C = require_checks();
@@ -9311,6 +9380,15 @@
           if (failure) {
             out.rejected = true;
             out.reason = `\u52A8\u4F5C [${tag.name}] ${failure.reason}${failure.code === "items" ? "\uFF1A" + entry.requires.items.map((id) => R.items[id]?.name || id).join(" / ") : ""}`;
+            return out;
+          }
+          const staminaError = staminaFailure(
+            L.get("stamina"),
+            entry.cost?.stamina || 0
+          );
+          if (staminaError) {
+            out.rejected = true;
+            out.reason = staminaError;
             return out;
           }
           if (tag.id === "strike" && (tag.args?.style || "ambush") === "ambush" && g.dist !== "touch") {
@@ -9366,6 +9444,7 @@
             targetMod,
             darkReveal,
             distanceDC,
+            fatigueDC,
             heartState
           } = runCheck(entry, tag.args, seq);
           out.d20 = roll.d20;
@@ -9378,6 +9457,7 @@
           out.targetMod = targetMod;
           out.darkReveal = darkReveal;
           out.distanceDC = distanceDC;
+          out.fatigueDC = fatigueDC;
           out.heartState = heartState;
           let alertD = 0, heartD = 0, piD = 0, faceMemD = 0, staminaD = -(entry.cost?.stamina || 0);
           const dist = DIST_KEY[tag.args?.dist] || g.dist;
@@ -9636,6 +9716,7 @@
       "use strict";
       var { clockLabel } = require_clock();
       var { validateActions } = require_validation();
+      var { staminaFailure } = require_stamina();
       var R = require_rules();
       var C = require_checks();
       var D = require_dice();
@@ -9716,6 +9797,15 @@
           } else if (opts.allowTextFallback === true) {
             queue = translateInput(playerText);
           }
+          const cost = queue.reduce(
+            (sum, a) => sum + (lex.byId.get(a.id)?.cost?.stamina || 0),
+            0
+          );
+          const staminaError = staminaFailure(L.get("stamina"), cost);
+          if (staminaError)
+            throw Object.assign(new Error(staminaError), {
+              code: "STAMINA_INSUFFICIENT"
+            });
           const results = processFloor(playerText || "", {
             ...opts,
             _actionQueue: queue,
@@ -9741,6 +9831,7 @@
               targetMod: a.targetMod || 0,
               darkReveal: a.darkReveal || null,
               distanceDC: a.distanceDC || 0,
+              fatigueDC: a.fatigueDC || 0,
               heartState: a.heartState || null,
               exposure: a.exposure || null,
               discoveries: a.discoveries || [],
@@ -10449,6 +10540,7 @@
     "src/runtime/game/checks.js"(exports, module) {
       "use strict";
       var R = require_rules();
+      var { fatigueOf } = require_stamina();
       var T = require_tags();
       var C = require_checks();
       var D = require_dice();
@@ -10480,7 +10572,13 @@
           if (nextBonus) mods.push({ src: "\u5DF2\u638C\u63E1\u4E0B\u4E00\u7AD9", v: nextBonus });
           const dist = DIST_KEY[args?.dist] || g.dist;
           const distanceDC = TAIL_PUMP_IDS.includes(entry.id) && dist === "far" ? R.check.farFollowDC : 0;
-          const dc = (R.checks[entry.check] ?? 10) - targetMod + distanceDC;
+          const fatigue = fatigueOf(
+            g.ledger.get("stamina"),
+            g.player.staminaMax || 100 + g.player.str * 5,
+            R.stamina.fatigue
+          );
+          const fatigueDC = TAIL_PUMP_IDS.includes(entry.id) ? fatigue.dc : 0;
+          const dc = (R.checks[entry.check] ?? 10) - targetMod + distanceDC + fatigueDC;
           const advTagged = (g.tags || []).some(
             (t) => t.id === "adv_" + attrKeyOf(entry.id)
           );
@@ -10514,6 +10612,7 @@
             targetMod,
             darkReveal,
             distanceDC,
+            fatigueDC,
             heartState: {
               value: g.ledger.get("heart"),
               sweetLow: R.check.sweetLow,
@@ -12692,6 +12791,13 @@
           targetGym: init.targetGym,
           packId: init.packId
         });
+        if (!init.saved && init.stats?.stamina == null) {
+          const maximum = g.player.staminaMax || 100 + g.player.str * 5;
+          L.commit(
+            { stamina: maximum - L.get("stamina") },
+            { reason: "new_game_full_stamina" }
+          );
+        }
         syncThresholdTags();
         syncEquippedTags();
         syncTargetShoeTags();
@@ -13295,7 +13401,7 @@
           targetPersona,
           player: { str: 3, agi: 5, nrv: 5, int: 5, cha: 2, staminaMax: 115 },
           target: targetStats,
-          stats: { date: 1, heart: 30, stamina: 100, cash: 800, pi: 0 },
+          stats: { date: 1, heart: 30, cash: 800, pi: 0 },
           world: { weather: "clear", district },
           route
         };
@@ -14093,7 +14199,7 @@
                 "WRITE_CONFLICT"
               ].includes(cause.code))
                 blocked = cause.code;
-              if (!["STALE_SESSION", "SYNC_DISPOSED"].includes(cause.code) && session.epoch === token.epoch) {
+              if (!["STALE_SESSION", "SYNC_DISPOSED", "STAMINA_INSUFFICIENT"].includes(cause.code) && session.epoch === token.epoch) {
                 cause.report = syncReport(cause, {
                   gameTurn: state.game?._g?.floor,
                   sessionEpoch: token.epoch
@@ -15027,7 +15133,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.23",
+        version: "0.8.24",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {

@@ -169,6 +169,7 @@ test("正规行动结束当前时段并清时间格，拒绝移动不扣时间�
     p.snapshot().cityMap.player.placeId,
     before.spatial.playerPlaceId,
   );
+  p.game.gmSet({ stamina: -20 });
   p.execute(p.request("start", "daily.rest"));
   assert.equal(p.snapshot().dayPlan.period, 2);
   assert.equal(p.snapshot().previewTime.used, 0);

@@ -61,7 +61,32 @@
     }
   },
   "tags": {
-    "sweet_focus": {"id": "sweet_focus", "name": "甜区专注", "aliases": ["甜区专注"], "effects": [{"category": "stealth", "value": 1}, {"category": "fine", "value": 1}, {"category": "social", "value": 1}, {"category": "conflict", "value": 1}], "desc": "判定时心跳处于甜区，检定+1；离开甜区即移除"},
+    "sweet_focus": {
+      "id": "sweet_focus",
+      "name": "甜区专注",
+      "aliases": [
+        "甜区专注"
+      ],
+      "effects": [
+        {
+          "category": "stealth",
+          "value": 1
+        },
+        {
+          "category": "fine",
+          "value": 1
+        },
+        {
+          "category": "social",
+          "value": 1
+        },
+        {
+          "category": "conflict",
+          "value": 1
+        }
+      ],
+      "desc": "判定时心跳处于甜区，检定+1；离开甜区即移除"
+    },
     "timid": {
       "id": "timid",
       "name": "胆小",
@@ -760,7 +785,8 @@
       ],
       "check": "follow",
       "cost": {
-        "tax": "heart_seg"
+        "tax": "heart_seg",
+        "stamina": 4
       },
       "modes": [
         "stealth"
@@ -1089,7 +1115,10 @@
         "stealth",
         "contact"
       ],
-      "aliases": []
+      "aliases": [],
+      "cost": {
+        "stamina": 3
+      }
     },
     {
       "id": "scan",
@@ -1102,7 +1131,10 @@
         "stealth",
         "contact"
       ],
-      "aliases": []
+      "aliases": [],
+      "cost": {
+        "stamina": 2
+      }
     },
     {
       "id": "deduce",
@@ -1597,7 +1629,10 @@
       "modes": [
         "stealth"
       ],
-      "aliases": []
+      "aliases": [],
+      "cost": {
+        "stamina": 4
+      }
     },
     {
       "id": "transfer",
@@ -1607,7 +1642,10 @@
       "modes": [
         "stealth"
       ],
-      "aliases": []
+      "aliases": [],
+      "cost": {
+        "stamina": 4
+      }
     },
     {
       "id": "watch_peers",
@@ -1700,7 +1738,10 @@
       "modes": [
         "stealth"
       ],
-      "aliases": []
+      "aliases": [],
+      "cost": {
+        "stamina": 4
+      }
     },
     {
       "id": "stalk_social",
@@ -1790,7 +1831,10 @@
       "modes": [
         "stealth"
       ],
-      "aliases": []
+      "aliases": [],
+      "cost": {
+        "stamina": 4
+      }
     },
     {
       "id": "car_follow",
@@ -1800,7 +1844,10 @@
       "modes": [
         "stealth"
       ],
-      "aliases": []
+      "aliases": [],
+      "cost": {
+        "stamina": 4
+      }
     },
     {
       "id": "respond_her",

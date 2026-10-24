@@ -1,6 +1,7 @@
 "use strict";
 const { clockLabel } = require("./clock.js");
 const { validateActions } = require("../../contracts/validation.js");
+const { staminaFailure } = require("../../contracts/stamina.js");
 const R = require("../../config/rules.json");
 const C = require("../checks.js");
 const D = require("../dice.js");
@@ -120,6 +121,15 @@ function createTurnSystem({
       // 主人 2026-10-19 定：手打绝对无效，动作只认胶囊点选，输入框文本只是伴随叙事。
       queue = translateInput(playerText);
     }
+    const cost = queue.reduce(
+      (sum, a) => sum + (lex.byId.get(a.id)?.cost?.stamina || 0),
+      0,
+    );
+    const staminaError = staminaFailure(L.get("stamina"), cost);
+    if (staminaError)
+      throw Object.assign(new Error(staminaError), {
+        code: "STAMINA_INSUFFICIENT",
+      });
     const results = processFloor(playerText || "", {
       ...opts,
       _actionQueue: queue,
@@ -145,6 +155,7 @@ function createTurnSystem({
         targetMod: a.targetMod || 0,
         darkReveal: a.darkReveal || null,
         distanceDC: a.distanceDC || 0,
+        fatigueDC: a.fatigueDC || 0,
         heartState: a.heartState || null,
         exposure: a.exposure || null,
         discoveries: a.discoveries || [],

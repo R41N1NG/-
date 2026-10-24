@@ -83,7 +83,7 @@ function defaultInit(overrides = {}) {
     targetPersona,
     player: { str: 3, agi: 5, nrv: 5, int: 5, cha: 2, staminaMax: 115 },
     target: targetStats,
-    stats: { date: 1, heart: 30, stamina: 100, cash: 800, pi: 0 },
+    stats: { date: 1, heart: 30, cash: 800, pi: 0 },
     world: { weather: "clear", district },
     route,
   };

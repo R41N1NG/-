@@ -74,7 +74,7 @@ function createChatSync({
         )
           blocked = cause.code;
         if (
-          !["STALE_SESSION", "SYNC_DISPOSED"].includes(cause.code) &&
+          !["STALE_SESSION", "SYNC_DISPOSED", "STAMINA_INSUFFICIENT"].includes(cause.code) &&
           session.epoch === token.epoch
         ) {
           cause.report = syncReport(cause, {

@@ -54,6 +54,12 @@ function generateUIConfig() {
       sweetHighBonus: rules.advantage.sweetHighBonus,
       lines: [rules.heart.deformLine, rules.heart.crashLine],
     },
+    fatigue: rules.stamina.fatigue,
+    staminaCosts: Object.fromEntries(
+      lexicon.entries
+        .filter((e) => e.cost?.stamina)
+        .map((e) => [e.id, e.cost.stamina]),
+    ),
     requirements: Object.fromEntries(
       lexicon.entries.filter((e) => e.requires).map((e) => [e.id, e.requires]),
     ),

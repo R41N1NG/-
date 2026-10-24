@@ -2,6 +2,7 @@
 const {
   requirementFailure,
 } = require("../../contracts/action-requirements.js");
+const { staminaFailure } = require("../../contracts/stamina.js");
 const R = require("../../config/rules.json");
 const { observationItems } = require("../album.js");
 const C = require("../checks.js");
@@ -61,6 +62,16 @@ function createActionSystem({
     if (failure) {
       out.rejected = true;
       out.reason = `动作 [${tag.name}] ${failure.reason}${failure.code === "items" ? "：" + entry.requires.items.map((id) => R.items[id]?.name || id).join(" / ") : ""}`;
+      return out;
+    }
+
+    const staminaError = staminaFailure(
+      L.get("stamina"),
+      entry.cost?.stamina || 0,
+    );
+    if (staminaError) {
+      out.rejected = true;
+      out.reason = staminaError;
       return out;
     }
 
@@ -133,6 +144,7 @@ function createActionSystem({
       targetMod,
       darkReveal,
       distanceDC,
+      fatigueDC,
       heartState,
     } = runCheck(entry, tag.args, seq);
     out.d20 = roll.d20;
@@ -145,6 +157,7 @@ function createActionSystem({
     out.targetMod = targetMod;
     out.darkReveal = darkReveal;
     out.distanceDC = distanceDC;
+    out.fatigueDC = fatigueDC;
     out.heartState = heartState;
 
     // 双账结算

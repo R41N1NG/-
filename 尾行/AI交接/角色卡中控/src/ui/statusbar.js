@@ -1,6 +1,9 @@
 "use strict";
 const { WX_ICON, ico, stripEmoji } = require("./icons.js");
 const { ALERT_TIERS, alertTierOf } = require("./alert-view.js");
+const STAMINA_COSTS = require("./generated/rules.json").staminaCosts;
+const costTip = (id) =>
+  STAMINA_COSTS[id] ? ` · 体力 −${STAMINA_COSTS[id]}（另计回合心跳消耗）` : "";
 const { capsuleGate, getDynamicCapsules } = require("./action-options.js");
 const {
   IDENTITY_DATA,
@@ -61,7 +64,11 @@ function mountStatusbar(document, window) {
   }
   clearLiveData(document);
   const details = createDetailsRenderer({ document });
-  const knownRoutesUI = createKnownRoutesUI({ document, lifecycle, getGlue: () => window.WxGlue || globalThis.WxGlue });
+  const knownRoutesUI = createKnownRoutesUI({
+    document,
+    lifecycle,
+    getGlue: () => window.WxGlue || globalThis.WxGlue,
+  });
   details.reset();
   knownRoutesUI.render(null);
   const dayPlanRenderer = createDayPlanRenderer({ document });
@@ -221,7 +228,8 @@ function mountStatusbar(document, window) {
     lifecycle,
     root,
     dial,
-    setSweetRange: (range) => dial.querySelector(".dial-sweet").setAttribute("d", arc(...range)),
+    setSweetRange: (range) =>
+      dial.querySelector(".dial-sweet").setAttribute("d", arc(...range)),
     view,
     audio,
     renderers: {
@@ -391,7 +399,7 @@ function mountStatusbar(document, window) {
         ]
           .filter(Boolean)
           .join(" ");
-        const tip = gate.lock ? gate.reason : c.tip || c.name;
+        const tip = gate.lock ? gate.reason : (c.tip || c.name) + costTip(c.id);
         return `<button type="button" class="${cls}" data-action-id="${c.id}" data-action-name="${c.name}" data-action-args='${JSON.stringify(c.args || {})}' data-tip="${tip}"${gate.lock ? ' aria-disabled="true"' : ""}>${isAct ? '<span class="chip-check">✓</span> ' : ""}${c.name}</button>`;
       })
       .join("");
@@ -465,7 +473,7 @@ function mountStatusbar(document, window) {
             ]
               .filter(Boolean)
               .join(" ");
-            const tip = gate.lock ? gate.reason : act.name;
+            const tip = gate.lock ? gate.reason : act.name + costTip(act.id);
             return `<button type="button" class="${cls}" data-action-id="${act.id}" data-action-name="${act.name}" data-action-args='${JSON.stringify(act.args || {})}' data-tip="${tip}"${gate.lock ? ' aria-disabled="true"' : ""}>${isAct ? '<span class="chip-check">✓</span> ' : ""}${act.name}</button>`;
           })
           .join("");
@@ -1174,15 +1182,21 @@ function mountStatusbar(document, window) {
     },
   });
   const attributeLessons = createAttributeLessons({
-    document, lifecycle,
+    document,
+    lifecycle,
     onContinue: (course, destination) => {
       if (ZERO.step !== 0 || ZERO.submitting) return;
       tutorials.complete(course);
       switchZeroStep(destination);
     },
-    onBack: () => { if (!ZERO.submitting) switchZeroStep(1); },
+    onBack: () => {
+      if (!ZERO.submitting) switchZeroStep(1);
+    },
   });
-  stages.register(0, { viewId: "zeroAttributeLesson", canEnter: () => !ZERO.submitting });
+  stages.register(0, {
+    viewId: "zeroAttributeLesson",
+    canEnter: () => !ZERO.submitting,
+  });
   function showAttributeBefore(course) {
     if (!tutorials.shouldShow(course)) return false;
     attributeLessons.show(course);
@@ -1238,7 +1252,10 @@ function mountStatusbar(document, window) {
     tabId: "zeroStepTab2",
     viewId: "zeroStep2",
     canEnter: () =>
-      !ZERO.submitting && !!ZERO.identity && sumPts() === POINT_BUDGET && !showAttributeBefore("target"),
+      !ZERO.submitting &&
+      !!ZERO.identity &&
+      sumPts() === POINT_BUDGET &&
+      !showAttributeBefore("target"),
     enter: () => {
       renderTargetGrid();
       updateTargetDetail(ZERO.targetId || "college");
@@ -1252,7 +1269,8 @@ function mountStatusbar(document, window) {
   stages.register(3, {
     tabId: "zeroStepTab3",
     viewId: "zeroStep3",
-    canEnter: () => !ZERO.submitting && !tutorials.isSkipped() && canReadBrief(),
+    canEnter: () =>
+      !ZERO.submitting && !tutorials.isSkipped() && canReadBrief(),
     enter: () =>
       trainingBrief.setSelection({
         identity: idDef(),
@@ -1283,7 +1301,11 @@ function mountStatusbar(document, window) {
       ? "创建角色 → 选择目标 → 载入训练场"
       : "属性入门 → 创建角色 → 选择目标 → 入门训练";
     const confirm = document.getElementById("createConfirm");
-    confirm.textContent = ZERO.submitting ? "正在载入…" : skipped ? "确认目标 · 载入训练场 ↗" : "确认目标 · 查看训练简报 ➔";
+    confirm.textContent = ZERO.submitting
+      ? "正在载入…"
+      : skipped
+        ? "确认目标 · 载入训练场 ↗"
+        : "确认目标 · 查看训练简报 ➔";
     confirm.disabled = ZERO.submitting || !canReadBrief();
     for (const button of document.querySelectorAll("#zeroStep2 button")) {
       if (button !== confirm) button.disabled = ZERO.submitting;
@@ -1301,14 +1323,20 @@ function mountStatusbar(document, window) {
     syncBriefAccess();
     if (wasBrief) createConfirm();
   }
-  lifecycle.on(document.getElementById("tutorialSkipAll"), "click", skipAllTutorials);
+  lifecycle.on(
+    document.getElementById("tutorialSkipAll"),
+    "click",
+    skipAllTutorials,
+  );
   function showCreationError(error) {
-    if (!tutorials.isSkipped()) { trainingBrief.showError(error); return; }
+    if (!tutorials.isSkipped()) {
+      trainingBrief.showError(error);
+      return;
+    }
     const notice = document.getElementById("zeroCreationError");
     notice.textContent = `训练场暂未载入：${error?.message || "请稍后重试"}。可再次点击“确认目标 · 载入训练场”。`;
     notice.hidden = false;
   }
-
 
   function renderTargetGrid() {
     const grid = document.getElementById("targetGrid");
@@ -1562,7 +1590,10 @@ function mountStatusbar(document, window) {
   }
 
   function openCreate() {
-    if (ZERO.step === 0) attributeLessons.show(attributeLessons.destination() === 2 ? "target" : "player");
+    if (ZERO.step === 0)
+      attributeLessons.show(
+        attributeLessons.destination() === 2 ? "target" : "player",
+      );
     switchZeroStep(ZERO.step);
     syncCreate();
     zeroFloor.show();
@@ -2085,11 +2116,18 @@ function mountStatusbar(document, window) {
     reset: resetDisplay,
     zeroFloor: {
       registerExtension: zeroFloor.registerExtension,
-      registerStep: (id, definition) => stages.register(id, {
-        ...definition,
-        canEnter: () => (!definition.tutorialId || tutorials.shouldShow(definition.tutorialId)) && (!definition.canEnter || definition.canEnter()),
-      }),
-      tutorials: { shouldShow: tutorials.shouldShow, isSkipped: tutorials.isSkipped },
+      registerStep: (id, definition) =>
+        stages.register(id, {
+          ...definition,
+          canEnter: () =>
+            (!definition.tutorialId ||
+              tutorials.shouldShow(definition.tutorialId)) &&
+            (!definition.canEnter || definition.canEnter()),
+        }),
+      tutorials: {
+        shouldShow: tutorials.shouldShow,
+        isSkipped: tutorials.isSkipped,
+      },
       go: stages.go,
     },
   });
