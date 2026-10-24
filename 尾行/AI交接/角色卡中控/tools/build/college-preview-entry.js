@@ -40,7 +40,9 @@ function boot() {
     tailView?.render(snap);
     $("collegeSceneTitle").textContent = snap.previewScene.title;
     $("collegeSceneText").textContent = snap.previewScene.text;
-    $("collegeTailControls").hidden = !model.active();
+    $("collegeDistance").value = snap.dist;
+    $("collegeTailControls").hidden =
+      !model.active() || snap.previewTailing.recovery.pending;
     const tail = snap.dayActions.find((a) => a.id === "daily.tailing");
     $("collegeStart").hidden = model.active();
     $("collegeStart").disabled = !tail?.enabled;
@@ -91,6 +93,12 @@ function boot() {
         const r = model.execute(arg);
         persist();
         render();
+        if (r.workCheck && !r.reused)
+          window.WxStatusbar.settle({
+            actions: [r.workCheck],
+            account: r.workCheck.ledger.applied,
+            floor: -20000 - ++settleSeq,
+          });
         return r;
       } catch (e) {
         model = createPreview(before);
@@ -129,12 +137,18 @@ function boot() {
       const result = fn();
       persist();
       render();
-      if (result?.package) {
+      const pkg = result?.workCheck
+        ? {
+            actions: [result.workCheck],
+            account: result.workCheck.ledger.applied,
+          }
+        : result?.package;
+      if (pkg) {
         window.WxStatusbar.settle({
-          ...result.package,
+          ...pkg,
           floor: -10000 - ++settleSeq,
         });
-        if (!model.active())
+        if (!model.active() && result?.package)
           message(
             `${model.snapshot().previewTailing.outcome?.title || "这次跟随告一段落"}。确认收获后，可以回到日程继续安排。`,
           );
@@ -159,6 +173,13 @@ function boot() {
     message("已回到日程，之前确认的信息会保留。");
     $("collegePhase").scrollIntoView({ block: "start" });
   };
+  $("collegeRecover").onclick = () => {
+    if ($("wx-settle-dialog").open)
+      return message("先看完这次行动的结果，再决定是否追找。");
+    act(() => model.recover());
+  };
+  $("collegeAbandonRecovery").onclick = () =>
+    act(() => model.execute(model.request("cancel")));
   $("collegeStart").onclick = () =>
     act(() => model.execute(model.request("start", "daily.tailing")));
   $("collegePass").onclick = () =>

@@ -361,7 +361,23 @@ async function main() {
         ));
         i++
       ) {
-        await click("#collegeFollow");
+        const recovering = await b.evaluate(
+          "__collegePreview.snapshot().previewTailing.recovery.pending",
+        );
+        if (recovering) {
+          await check(
+            "首个普通失败留在追找界面，不提前发PI或结束时段",
+            "document.body.dataset.collegeView==='tailing'&&!document.getElementById('collegeRecoveryControls').hidden&&__collegePreview.snapshot().player.pi===0&&__collegePreview.snapshot().dayPlan.period===3",
+          );
+          await shot("recovery");
+          await b.send("Page.reload");
+          await b.delay(1000);
+          await check(
+            "刷新保留一次补救机会及原消耗",
+            "__collegePreview.snapshot().previewTailing.recovery.pending&&__collegePreview.snapshot().previewTailing.recovery.used&&__collegePreview.snapshot().dayPlan.remaining===2",
+          );
+        }
+        await click(recovering ? "#collegeRecover" : "#collegeFollow");
         for (let n = 0; n < 140; n++) {
           if (
             await b.evaluate(
@@ -396,6 +412,72 @@ async function main() {
         "跟丢后返回地图保留进度",
         "document.body.dataset.collegeView==='world'&&__collegePreview.snapshot().player.pi===5&&__collegePreview.snapshot().dayPlan.period===4&&__collegePreview.snapshot().dayPlan.remaining===2",
       );
+      await click('[data-action-id="daily.work"]');
+      await check(
+        "打工选择显示DC15与各收入档",
+        "document.getElementById('wxEconomyInput').textContent.includes('DC15')",
+      );
+      await b.evaluate(
+        "document.querySelector('input[name=wxJob][value=remote]').click();true",
+      );
+      await click("[data-economy-submit]");
+      for (let n = 0; n < 140; n++) {
+        if (
+          await b.evaluate(
+            "document.getElementById('settleHudStatus').textContent.includes('CHECK FINISHED')",
+          )
+        )
+          break;
+        await b.delay(100);
+      }
+      await check(
+        "打工真实掷骰、属性加成与收入写回",
+        "(()=>{const s=__collegePreview.snapshot(),w=__collegePreview.save().economy.lastWork;return w.check.dc===15&&w.check.attr.v===6&&w.income===w.check.ledger.applied.cash&&s.player.cash===800+w.income&&document.getElementById('settleModsStack').textContent.includes('情报属性')})()",
+      );
+      await shot("work-check");
+      await b.evaluate(
+        "document.getElementById('wx-settle-dialog').close();true",
+      );
+      await b.delay(180);
+      await b.evaluate("__collegePreview.reset();true");
+      await click('[data-action-id="daily.rest"]');
+      await check(
+        "体力115/115显示100%而不是115%",
+        "(()=>{const s=__collegePreview.snapshot();return s.player.stamina===115&&s.player.staminaMax===115&&document.getElementById('staminaVal').textContent==='100%'&&document.getElementById('staminaBox').dataset.tip.includes('115 / 115')})()",
+      );
+      await shot("stamina-full");
+      await b.evaluate("__collegePreview.reset();true");
+      await click("#collegePass");
+      await click("#collegePass");
+      await click('[data-place-id="school_gate_b"]');
+      await click("#collegeStart");
+      await b.evaluate(
+        "document.getElementById('collegeDistance').value='touch';true",
+      );
+      for (let step = 0; step < 2; step++) {
+        await click("#collegeFollow");
+        for (let n = 0; n < 140; n++) {
+          if (
+            await b.evaluate(
+              "document.getElementById('settleHudStatus').textContent.includes('CHECK FINISHED')",
+            )
+          )
+            break;
+          await b.delay(100);
+        }
+        if (step === 1) {
+          await check(
+            "跟随进入甜区后实际加1且面板列出来源",
+            "document.getElementById('settleModsStack').textContent.includes('甜区专注')&&document.getElementById('settleEkgHeart').textContent.includes('甜区')",
+          );
+          await shot("sweet-check");
+        }
+        await b.evaluate(
+          "document.getElementById('wx-settle-dialog').close();true",
+        );
+        await b.delay(180);
+      }
+
       await check("页面没有运行错误", "window.__previewErrors.length===0");
     }
   } finally {

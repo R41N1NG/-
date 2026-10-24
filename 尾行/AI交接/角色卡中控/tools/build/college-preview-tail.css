@@ -4,3 +4,5 @@ body[data-college-view="tailing"] .college-guide,body[data-college-view="outcome
 body[data-college-view="outcome"] #wxMoreActionsBtn,body[data-college-view="outcome"] #wxActionDrawer,body[data-college-view="outcome"] #wxCapsuleBar{display:none!important}
 @media(max-width:560px){.college-tail-screen{padding:19px 14px;margin:12px 0}.college-tail-screen h2{font-size:25px}.college-tail-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:18px 0}.college-tail-metrics>div{padding:10px 12px}.college-tail-metrics strong{font-size:21px}.college-tail-outcome-grid{grid-template-columns:1fr}.college-tail-outcome-grid>div{padding:12px}.college-tail-lead{font-size:13px}}
 #collegeTailScreen [hidden]{display:none!important}
+
+.college-recovery{border:1px solid #a58c53;border-radius:9px;padding:16px;background:#342d1d;margin:18px 0}.college-recovery h3{color:#eed5a2;font-size:17px;margin:0 0 8px}.college-recovery p{color:#c5c9b8;font-size:12px;line-height:1.9}

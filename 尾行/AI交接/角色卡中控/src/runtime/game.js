@@ -221,6 +221,9 @@ function createGame(init = {}, services = {}) {
     snapshot: () => snapshot(),
     syncSpatial: (results) => observeScene(g, L.get("date"), results),
     investigation,
+    syncHeartTags,
+    deferTailingFailure: (results) =>
+      services.deferTailingFailure?.({ g, results }) === true,
     sweetHighNow,
     syncThresholdTags,
   });
@@ -308,6 +311,7 @@ function createGame(init = {}, services = {}) {
     applyTargetState();
   }
 
+  syncHeartTags({ sweetOnly: true });
   g.targetKnowledge = validateKnowledge(g.targetKnowledge, g.targetId);
   investigation.restore(init.saved);
 
@@ -351,6 +355,7 @@ function createGame(init = {}, services = {}) {
       if (g.dayPlan.source === "daily" && !g.dayPlan.activity)
         investigation.finish("活动结束");
       syncThresholdTags();
+      syncHeartTags();
       if (g.dayPlan.source === "daily")
         g.world.district = map.getPlace(g.spatial.playerPlaceId).district;
     },
@@ -406,7 +411,9 @@ function createGame(init = {}, services = {}) {
   function gmSet(changes = {}) {
     const { tailing, ...rest } = changes;
     if (tailing !== undefined) g.tailing = !!tailing;
-    return L.commit(rest, { reason: "gm" });
+    const r = L.commit(rest, { reason: "gm" });
+    syncHeartTags();
+    return r;
   }
 
   return {

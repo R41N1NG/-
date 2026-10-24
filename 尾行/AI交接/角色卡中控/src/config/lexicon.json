@@ -61,6 +61,7 @@
     }
   },
   "tags": {
+    "sweet_focus": {"id": "sweet_focus", "name": "甜区专注", "aliases": ["甜区专注"], "effects": [{"category": "stealth", "value": 1}, {"category": "fine", "value": 1}, {"category": "social", "value": 1}, {"category": "conflict", "value": 1}], "desc": "判定时心跳处于甜区，检定+1；离开甜区即移除"},
     "timid": {
       "id": "timid",
       "name": "胆小",

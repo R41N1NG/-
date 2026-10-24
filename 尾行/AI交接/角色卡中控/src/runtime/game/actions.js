@@ -124,11 +124,8 @@ function createActionSystem({
 
     // 心跳阈值标签在检定前同步：过线瞬间生效，当次动作就吃罚（无白嫖窗口）
     syncHeartTags();
-    const { roll, res, mods, dc, attr, targetMod, darkReveal } = runCheck(
-      entry,
-      tag.args,
-      seq,
-    );
+    const { roll, res, mods, dc, attr, targetMod, darkReveal, heartState } =
+      runCheck(entry, tag.args, seq);
     out.d20 = roll.d20;
     out.raw = roll.raw;
     out.mods = mods;
@@ -138,6 +135,7 @@ function createActionSystem({
     out.attr = attr;
     out.targetMod = targetMod;
     out.darkReveal = darkReveal;
+    out.heartState = heartState;
 
     // 双账结算
     let alertD = 0,

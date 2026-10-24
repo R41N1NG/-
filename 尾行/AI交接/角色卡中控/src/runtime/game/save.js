@@ -37,7 +37,10 @@ function createSaveSystem({ g, L, getSalt }) {
         world: { ...g.world },
         route: g.route ? JSON.parse(JSON.stringify(g.route)) : null,
         famSegs: { ...g.famSegs },
-        tags: JSON.parse(JSON.stringify(g.tags || [])),
+        // 甜区是心跳衍生状态，不入持久标签；避免旧档、撤回和失败恢复产生差异。
+        tags: JSON.parse(
+          JSON.stringify((g.tags || []).filter((t) => t.id !== "sweet_focus")),
+        ),
         identity: g.identity || null,
         tailing: !!g.tailing,
         nightPiGross: g.nightPiGross || 0,

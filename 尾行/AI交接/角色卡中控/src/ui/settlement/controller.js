@@ -678,8 +678,23 @@ function createSettlement({
 
       const ekgHeart = document.getElementById("settleEkgHeart");
       if (ekgHeart) {
-        const bpm = heartToBpm(getHeart());
-        ekgHeart.textContent = `${bpm} BPM · 甜区`;
+        const state = act.heartState;
+        const heart = state?.value ?? getHeart();
+        const low = state?.sweetLow ?? 40,
+          high = state?.sweetHigh ?? 65;
+        const label =
+          heart >= low && heart <= high
+            ? "甜区"
+            : heart < low
+              ? "平稳"
+              : heart >= 90
+                ? "过载"
+                : "高压";
+        const bpm = heartToBpm(heart);
+        ekgHeart.textContent = `${bpm} BPM · ${label}`;
+        ekgHeart.title = state
+          ? `判定时心跳${heart}；甜区${low}–${high}`
+          : `当前心跳${heart}`;
       }
 
       const vBadge = document.getElementById("settleVerdictBadge");

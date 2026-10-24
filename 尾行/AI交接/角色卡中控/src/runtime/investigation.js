@@ -219,7 +219,7 @@ function createInvestigation({ g, L }) {
     g.signals = g.signals.slice(-20);
     return clone(receipt);
   }
-  function endTurn(results) {
+  function endTurn(results, { deferFailure = false } = {}) {
     const attempts = results.actions.filter(
       (a) => TAIL_PUMP_IDS.includes(a.id) && !a.rejected && a.band,
     );
@@ -227,6 +227,7 @@ function createInvestigation({ g, L }) {
       origin?.visual && origin.route === routeKey() && attempts.some(good);
     if (successful) session().effective++;
     const failed = attempts.some((a) => ["fail", "nat1"].includes(a.band));
+    if (failed && deferFailure) return null;
     if (
       failed ||
       (attempts.length && g.route?.here >= g.route?.nodes.length - 1) ||

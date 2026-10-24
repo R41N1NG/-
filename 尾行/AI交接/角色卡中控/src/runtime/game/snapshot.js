@@ -86,6 +86,7 @@ function createSnapshotSystem({
         player: {
           heart: s.heart,
           stamina: s.stamina,
+          staminaMax: g.player.staminaMax || 100 + g.player.str * 5,
           cash: s.cash,
           pi: s.pi,
           proximity: s.proximity,

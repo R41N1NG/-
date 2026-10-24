@@ -56,6 +56,13 @@ function createSnapshotRenderer({
     root.dataset.line = line;
     /* 体力：30 气喘 / 10 脱力（数值策划规则） */
     const st = snap.player.stamina;
+    const staminaMax =
+      snap.player.staminaMax ||
+      (snap.player.attrs?.str ? 100 + snap.player.attrs.str * 5 : 100);
+    const staminaPercent = Math.max(
+      0,
+      Math.min(100, Math.round((st / staminaMax) * 100)),
+    );
     const band =
       st < 10
         ? ["red", "· 脱力"]
@@ -63,23 +70,30 @@ function createSnapshotRenderer({
           ? ["yellow", "· 气喘"]
           : ["green", ""];
     const box = document.getElementById("staminaBox");
-    if (box) box.dataset.band = band[0];
+    if (box) {
+      box.dataset.band = band[0];
+      box.dataset.tip = `当前体力 ${st} / ${staminaMax}（${staminaPercent}%）`;
+    }
     const sval = document.getElementById("staminaVal");
-    if (sval) sval.textContent = st + "%";
+    if (sval) sval.textContent = staminaPercent + "%";
     const sfill = document.getElementById("staminaFill");
-    if (sfill) sfill.style.width = st + "%";
+    if (sfill) sfill.style.width = staminaPercent + "%";
     const fullBox = document.getElementById("fullStaminaBox");
     if (fullBox) {
       fullBox.dataset.band = band[0];
       const fullSVal = document.getElementById("fullStaminaVal");
-      if (fullSVal) fullSVal.textContent = st + "%";
+      if (fullSVal) fullSVal.textContent = staminaPercent + "%";
       const bname = document.getElementById("bandName");
       if (bname) bname.textContent = band[1];
       const fullFill = document.getElementById("fullStaminaFill");
-      if (fullFill) fullFill.style.width = st + "%";
+      if (fullFill) fullFill.style.width = staminaPercent + "%";
       fullBox
         .querySelector(".stamina-meter")
         ?.setAttribute("aria-valuenow", st);
+      fullBox
+        .querySelector(".stamina-meter")
+        ?.setAttribute("aria-valuemax", staminaMax);
+      fullBox.dataset.tip = `当前体力 ${st} / ${staminaMax}`;
     }
     /* 日段×模式 + 距离档（接触/车厢 = 朋友的位，pip 换暖色提醒双态语义） */
     document.getElementById("phase").textContent =

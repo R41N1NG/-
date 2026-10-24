@@ -25,6 +25,8 @@ function createTurnSystem({
   resolveAlertCross,
   settleAction,
   investigation,
+  syncHeartTags,
+  deferTailingFailure = () => false,
   snapshot,
   sweetHighNow,
   syncThresholdTags,
@@ -142,6 +144,7 @@ function createTurnSystem({
         attr: a.attr || null,
         targetMod: a.targetMod || 0,
         darkReveal: a.darkReveal || null,
+        heartState: a.heartState || null,
         exposure: a.exposure || null,
         discoveries: a.discoveries || [],
         attributeUnlock: a.attributeUnlock || null,
@@ -430,7 +433,10 @@ function createTurnSystem({
       if (g.signals.length > 20) g.signals.shift();
     }
 
-    results.investigation = investigation.endTurn(results);
+    syncHeartTags();
+    results.investigation = investigation.endTurn(results, {
+      deferFailure: deferTailingFailure(results),
+    });
 
     // 由实际账面差值汇总，包含过档行为和上下限钳制，避免回执与存档不一致。
     for (const key of Object.keys(floorApplied))

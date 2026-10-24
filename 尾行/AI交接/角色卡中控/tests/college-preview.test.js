@@ -203,7 +203,10 @@ test("跟丢自动退出，已获得的线索和费用保留，结束后时间�
   const p = createPreview(null, { period: 3 });
   enter(p);
   let last;
-  for (let i = 0; i < 8 && p.active(); i++) last = p.follow();
+  for (let i = 0; i < 10 && p.active(); i++)
+    last = p.snapshot().previewTailing.recovery.pending
+      ? p.recover()
+      : p.follow();
   assert.equal(p.active(), false);
   assert.equal(p.snapshot().dayPlan.period, 4);
   assert.equal(p.snapshot().previewTime.used, 0);
@@ -219,7 +222,8 @@ test("跟丢自动退出，已获得的线索和费用保留，结束后时间�
 test("跟丢结果保存最后目击和收益，不泄露之后的未知地点，返回日程不重结算", () => {
   const p = createPreview(null, { period: 3 });
   enter(p);
-  for (let i = 0; i < 8 && p.active(); i++) p.follow();
+  for (let i = 0; i < 10 && p.active(); i++)
+    p.snapshot().previewTailing.recovery.pending ? p.recover() : p.follow();
   const s = p.snapshot(),
     o = s.previewTailing.outcome;
   assert.equal(o.kind, "lost");
@@ -265,4 +269,98 @@ test("主动停下和跟到终点分别记录，不伪造跟丢；旧试玩不�
   delete old.previewCollege.outcome;
   delete old.previewCollege.sessionPiStart;
   assert.equal(createPreview(old).snapshot().previewTailing.outcome, null);
+});
+
+test("首个普通失败只暂失目视，不结算PI、不推进时段；保存恢复仍可补救一次", () => {
+  const p = createPreview(null, { period: 3 });
+  enter(p);
+  while (!p.snapshot().previewTailing.recovery.pending && p.active())
+    p.follow();
+  let s = p.snapshot();
+  assert.equal(s.previewTailing.recovery.pending, true);
+  assert.equal(s.previewTailing.outcome, null);
+  assert.equal(s.player.pi, 0);
+  assert.equal(s.dayPlan.period, 3);
+  assert.equal(s.dayPlan.remaining, 2);
+  const restored = createPreview(p.save()),
+    floor = restored.save().floor,
+    stamina = restored.snapshot().player.stamina;
+  assert.throws(() => restored.follow(), /先选择/);
+  const r = restored.recover();
+  assert.equal(restored.save().floor, floor + 1);
+  assert.ok(restored.snapshot().player.stamina < stamina);
+  assert.equal(restored.snapshot().dayPlan.remaining, 2);
+  assert.equal(
+    restored.snapshot().previewTailing.outcome.recoveryAttempted,
+    true,
+  );
+  assert.equal(restored.snapshot().player.pi, 5);
+  assert.throws(() => restored.recover(), /没有可用/);
+  assert.equal(
+    createPreview(restored.save()).snapshot().previewTailing.outcome.pi,
+    5,
+  );
+  assert.equal(r.actions[0].id, "follow");
+});
+test("补救成功可继续，之后普通失败不再提供补救；自然1不冒充普通失败", () => {
+  const p = createPreview(null, { period: 3, seed: "college-preview-5" });
+  enter(p);
+  while (!p.snapshot().previewTailing.recovery.pending && p.active())
+    p.follow();
+  assert.equal(p.snapshot().player.pi, 0);
+  const r = p.recover();
+  assert.ok(["success", "grace", "nat20"].includes(r.actions[0].band));
+  assert.equal(p.active(), true);
+  assert.equal(p.snapshot().cityMap.target.live, true);
+  assert.equal(p.snapshot().previewTailing.recovery.lastResult, "found");
+  assert.equal(p.snapshot().previewTailing.recovery.used, true);
+  const q = createPreview(null, { period: 3, seed: "college-preview-37" });
+  enter(q);
+  q.follow();
+  assert.equal(q.snapshot().previewTailing.recovery.pending, true);
+  q.recover();
+  q.follow();
+  assert.equal(q.active(), false);
+  assert.equal(q.snapshot().previewTailing.recovery.pending, false);
+  const critical = createPreview(null, {
+    period: 3,
+    seed: "college-preview-1",
+  });
+  enter(critical);
+  while (critical.active()) critical.follow();
+  assert.equal(critical.snapshot().previewTailing.recovery.used, false);
+});
+test("DC15打工真实属性和甜区入式，本职收入包含加成，重复请求不再掷骰", () => {
+  const p = createPreview();
+  const req = p.request("start", "daily.work", { jobId: "remote" });
+  const r = p.execute(req);
+  assert.equal(r.workCheck.dc, 15);
+  assert.equal(r.workCheck.attr.v, 6);
+  const expected =
+    r.workCheck.band === "nat20"
+      ? 528
+      : r.workCheck.band === "success"
+        ? 370
+        : 264;
+  assert.equal(p.snapshot().player.cash, 800 + expected);
+  assert.equal(p.snapshot().dayPlan.remaining, 3);
+  const restored = createPreview(p.save()),
+    before = restored.save();
+  assert.equal(restored.execute(req).reused, true);
+  assert.deepEqual(restored.save(), before);
+  const saved = createPreview().save();
+  saved.ledgerState.heart = 46;
+  const sweet = createPreview(saved);
+  const a = sweet.execute(
+    sweet.request("start", "daily.work", { jobId: "remote" }),
+  ).workCheck;
+  assert.ok(a.mods.some((m) => m.src === "甜区专注" && m.v === 1));
+  const guard = createPreview().save();
+  guard.identity = "guard";
+  const fixed = createPreview(guard);
+  const f = fixed.execute(
+    fixed.request("start", "daily.work", { jobId: "guard_shift" }),
+  );
+  assert.equal(f.workCheck, undefined);
+  assert.equal(fixed.snapshot().player.cash, 1184);
 });

@@ -77,7 +77,26 @@ function createCheckSystem({ g, seedFor, isFamiliar, investigation }) {
           .join("、")
       : null;
 
-    return { roll, res, mods, dc, sum, attr, targetMod, darkReveal };
+    return {
+      roll,
+      res,
+      mods,
+      dc,
+      sum,
+      attr,
+      targetMod,
+      darkReveal,
+      heartState: {
+        value: g.ledger.get("heart"),
+        sweetLow: R.check.sweetLow,
+        sweetHigh:
+          R.check.sweetHigh +
+          ((g.tags || []).some((t) => t.id === "adv_nrv")
+            ? R.advantage.sweetHighBonus
+            : 0),
+        sweet: (g.tags || []).some((t) => t.id === "sweet_focus"),
+      },
+    };
   }
 
   function attrKeyOf(id) {

@@ -117,6 +117,12 @@
           },
           "targetMod": 0,
           "darkReveal": null,
+          "heartState": {
+            "value": 30,
+            "sweetLow": 40,
+            "sweetHigh": 65,
+            "sweet": false
+          },
           "attributeUnlock": {
             "key": "per",
             "name": "敏锐",

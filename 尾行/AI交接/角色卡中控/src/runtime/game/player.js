@@ -11,9 +11,23 @@ function createPlayerSystem({ g, L, log }) {
     return R.check.sweetHigh + (advNrv ? R.advantage.sweetHighBonus : 0);
   }
 
-  function syncHeartTags() {
+  function syncHeartTags({ sweetOnly = false } = {}) {
     const lines = C.heartLines(L.get("heart"), sweetHighNow());
     const stack = g.tags || (g.tags = []);
+    if (lines.sweet)
+      T.apply(stack, {
+        id: "sweet_focus",
+        name: "甜区专注",
+        owner: "player",
+        category: "stealth",
+        effects: ["stealth", "fine", "social", "conflict"].map((category) => ({
+          category,
+          value: R.check.sweetBonus,
+        })),
+        duration: { type: "flag" },
+      });
+    else T.remove(stack, "sweet_focus");
+    if (sweetOnly) return;
     if (lines.deform === -2)
       T.apply(stack, {
         id: "deform",

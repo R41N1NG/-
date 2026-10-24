@@ -4,6 +4,8 @@ const { createGame } = require("../../src/runtime/game");
 const { defaultInit } = require("../../src/host/initial-state");
 const { createSpatial } = require("../../src/contracts/spatial");
 const TIME = require("./college-preview-time");
+const { createWorkHandler } = require("./college-preview-work");
+const { TAIL_PUMP_IDS } = require("../../src/runtime/game/constants");
 const { prepareMove } = require("../../src/runtime/spatial/system");
 const periods = require("../../src/config/day-plan.json").periods;
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -43,13 +45,22 @@ function createPreview(saved, options = {}) {
   let sessionPiStart =
     saved?.previewCollege?.sessionPiStart ?? saved?.ledgerState?.pi ?? 0;
   let pendingEnd = null;
+  let recovery = clone(
+    saved?.previewCollege?.recovery || {
+      used: false,
+      pending: false,
+      attempted: false,
+      lastResult: null,
+      lastSeen: null,
+    },
+  );
   let used = TIME.timeUsed(
     saved?.previewCollege?.timeUsed ?? options.timeUsed ?? 0,
   );
   const initial = {
     ...defaultInit(),
     identity: "otaku",
-    sessionSalt: options.seed || "college-preview-0",
+    sessionSalt: options.seed || "college-preview-9",
     dayPlan: {
       schema: 1,
       source: "daily",
@@ -74,7 +85,37 @@ function createPreview(saved, options = {}) {
     return null;
   }
   game = createGame(saved ? { saved } : initial, {
+    deferTailingFailure: ({ g, results }) => {
+      const attempts = results.actions.filter(
+        (a) => !a.rejected && TAIL_PUMP_IDS.includes(a.id),
+      );
+      if (
+        g.dayPlan.activity?.kind !== "tailing" ||
+        recovery.used ||
+        attempts.at(-1)?.band !== "fail" ||
+        attempts.some((a) => a.band === "nat1") ||
+        g.alertEvent?.stage === 4
+      )
+        return false;
+      recovery = {
+        used: true,
+        pending: true,
+        attempted: false,
+        lastResult: null,
+        lastSeen: clone(g.spatial.lastSeen),
+      };
+      return true;
+    },
     dailyActions: [
+      {
+        definition: require("../../src/config/daily-actions.json").find(
+          (d) => d.id === "daily.work",
+        ),
+        handler: createWorkHandler(() => ({
+          salt: game.save().sessionSalt,
+          rngVersion: game._g.rngVersion,
+        })),
+      },
       {
         definition: {
           ...definition,
@@ -129,12 +170,13 @@ function createPreview(saved, options = {}) {
     return {
       ...game.save(),
       previewCollege: {
-        schema: 3,
+        schema: 4,
         usedDate,
         serial,
         timeUsed: used,
         outcome,
         sessionPiStart,
+        recovery,
       },
     };
   }
@@ -187,6 +229,7 @@ function createPreview(saved, options = {}) {
       active: active(),
       outcome: outcome ? clone(outcome) : null,
       pendingOutcome: !!outcome && !outcome.acknowledged,
+      recovery: clone(recovery),
       confirmed: (route?.nodes || []).flatMap((id, i) =>
         route.known?.[i] === 1 && i <= route.here
           ? [
@@ -292,10 +335,16 @@ function createPreview(saved, options = {}) {
       req.actionId === "daily.tailing"
     ) {
       outcome = null;
+      recovery = {
+        used: false,
+        pending: false,
+        attempted: false,
+        lastResult: null,
+        lastSeen: null,
+      };
       sessionPiStart = game.ledger.get("pi");
       usedDate = game.ledger.get("date");
-      game._g.floor = 0;
-      game._g.nightStartFloor = 0;
+      game._g.nightStartFloor = game._g.floor || 0;
       game.setRoute({
         id: "college-preview-return",
         note: "标准工作日返程预览",
@@ -342,22 +391,42 @@ function createPreview(saved, options = {}) {
         period: game._g.dayPlan.period,
         remaining: 4 - game._g.dayPlan.spent,
         acknowledged: false,
+        recoveryAttempted: recovery.attempted,
+        declinedRecovery: recovery.pending,
       };
+      recovery.pending = false;
+    }
+    if (
+      !result.reused &&
+      req.command === "start" &&
+      req.actionId === "daily.work"
+    ) {
+      const check = game._g.economy.lastWork?.check;
+      if (check) {
+        result = { ...result, workCheck: clone(check) };
+        game._g.dayPlan.receipts = game._g.dayPlan.receipts.map((r) =>
+          r.operationId === req.operationId ? clone(result) : r,
+        );
+        game._g.dayPlan.lastReceipt = clone(result);
+      }
     }
     observe();
     return result;
   }
   function follow(actions = [{ id: "follow", args: { dist: game.dist } }]) {
     if (!active()) throw Error("请先在离校现场进入正式尾行");
+    if (recovery.pending) throw Error("她暂时离开视线，请先选择追找或停下");
+    recovery.lastResult = null;
     if (!Array.isArray(actions) || !actions.length) throw Error("请先选择动作");
     const result = game.settleInput("", { actions });
     const lost = game._g.spatial.tracking === "lost";
     const terminal = game._g.route.here >= game._g.route.nodes.length - 1;
     if (
-      lost ||
-      terminal ||
-      result.investigation ||
-      game._g.alertEvent?.stage === 4
+      !recovery.pending &&
+      (lost ||
+        terminal ||
+        result.investigation ||
+        game._g.alertEvent?.stage === 4)
     ) {
       const seen = game._g.spatial.lastSeen;
       const confirmedEnd =
@@ -383,6 +452,18 @@ function createPreview(saved, options = {}) {
     }
     return result;
   }
+  function recover() {
+    if (!active() || !recovery.pending) throw Error("当前没有可用的追找机会");
+    recovery.pending = false;
+    recovery.attempted = true;
+    const r = follow([
+      { id: "follow", name: "寻找她的身影", args: { dist: "far" } },
+    ]);
+    recovery.lastResult =
+      game._g.spatial.tracking === "visual" ? "found" : "lost";
+    r.stats = snapshot();
+    return r;
+  }
   function move(placeId) {
     return execute(request("move", undefined, { placeId }));
   }
@@ -392,6 +473,7 @@ function createPreview(saved, options = {}) {
     request,
     execute,
     follow,
+    recover,
     move,
     quote,
     acknowledgeOutcome: () => {

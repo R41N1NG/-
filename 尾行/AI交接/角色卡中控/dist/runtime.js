@@ -417,6 +417,7 @@
           }
         },
         tags: {
+          sweet_focus: { id: "sweet_focus", name: "\u751C\u533A\u4E13\u6CE8", owner: "player", type: "status", category: "stealth", value: 1, desc: "\u5224\u5B9A\u65F6\u5FC3\u8DF3\u5904\u4E8E\u751C\u533A\uFF0C\u68C0\u5B9A+1\uFF1B\u79BB\u5F00\u751C\u533A\u5373\u79FB\u9664" },
           timid: { id: "timid", name: "\u80C6\u5C0F", type: "personality", owner: "target", category: "sound", value: -5, desc: "\u3010\u6027\u683C\xB7\u80C6\u5C0F\u3011\u751F\u6027\u80C6\u5C0F\u6015\u4E8B\uFF0C\u53D7\u9A87\u5589\u5499\u53D1\u7D27\u547C\u6551\u5F31\uFF0C\u52A8\u9759\u58F0\u6D6A -5\uFF0C\u591A\u9009\u62E9\u907F\u8D70" },
           bold: { id: "bold", name: "\u80C6\u5927", type: "personality", owner: "target", category: "sound", value: 2, desc: "\u3010\u6027\u683C\xB7\u80C6\u5927\u3011\u80C6\u91CF\u8F83\u5927\uFF0C\u9047\u9669\u6562\u4E8E\u62B5\u6297\uFF0C\u58F0\u6D6A +2\uFF0C\u6323\u8131\u591A\u53CD\u51FB" },
           guarded: { id: "guarded", name: "\u6162\u70ED", type: "personality", owner: "target", category: "social", value: -2, desc: "\u3010\u6027\u683C\xB7\u6162\u70ED\u3011\u9632\u5907\u5FC3\u91CD\uFF0C\u751F\u4EBA\u793E\u4EA4\u4E0E\u642D\u8BDD\u68C0\u5B9A\u4FEE\u6B63 -2" },
@@ -787,6 +788,7 @@
           }
         },
         tags: {
+          sweet_focus: { id: "sweet_focus", name: "\u751C\u533A\u4E13\u6CE8", aliases: ["\u751C\u533A\u4E13\u6CE8"], effects: [{ category: "stealth", value: 1 }, { category: "fine", value: 1 }, { category: "social", value: 1 }, { category: "conflict", value: 1 }], desc: "\u5224\u5B9A\u65F6\u5FC3\u8DF3\u5904\u4E8E\u751C\u533A\uFF0C\u68C0\u5B9A+1\uFF1B\u79BB\u5F00\u751C\u533A\u5373\u79FB\u9664" },
           timid: {
             id: "timid",
             name: "\u80C6\u5C0F",
@@ -8697,13 +8699,14 @@
           g.signals = g.signals.slice(-20);
           return clone(receipt);
         }
-        function endTurn(results) {
+        function endTurn(results, { deferFailure = false } = {}) {
           const attempts = results.actions.filter(
             (a) => TAIL_PUMP_IDS.includes(a.id) && !a.rejected && a.band
           );
           const successful = origin?.visual && origin.route === routeKey() && attempts.some(good);
           if (successful) session().effective++;
           const failed = attempts.some((a) => ["fail", "nat1"].includes(a.band));
+          if (failed && deferFailure) return null;
           if (failed || attempts.length && g.route?.here >= g.route?.nodes.length - 1 || g.fleeing && g.route?.here >= g.route?.nodes.length - 1 || g.alertEvent?.stage === 4)
             return finish(
               failed ? "\u5C3E\u884C\u4E2D\u65AD" : g.fleeing ? "\u76EE\u6807\u79BB\u5F00" : "\u672C\u6B21\u8DEF\u7EBF\u7ED3\u675F"
@@ -9275,11 +9278,7 @@
             return out;
           }
           syncHeartTags();
-          const { roll, res, mods, dc, attr, targetMod, darkReveal } = runCheck(
-            entry,
-            tag.args,
-            seq
-          );
+          const { roll, res, mods, dc, attr, targetMod, darkReveal, heartState } = runCheck(entry, tag.args, seq);
           out.d20 = roll.d20;
           out.raw = roll.raw;
           out.mods = mods;
@@ -9289,6 +9288,7 @@
           out.attr = attr;
           out.targetMod = targetMod;
           out.darkReveal = darkReveal;
+          out.heartState = heartState;
           let alertD = 0, heartD = 0, piD = 0, faceMemD = 0, staminaD = -(entry.cost?.stamina || 0);
           const dist = DIST_KEY[tag.args?.dist] || g.dist;
           if (res.band === "success") {
@@ -9569,6 +9569,8 @@
         resolveAlertCross,
         settleAction,
         investigation,
+        syncHeartTags,
+        deferTailingFailure = () => false,
         snapshot,
         sweetHighNow,
         syncThresholdTags,
@@ -9648,6 +9650,7 @@
               attr: a.attr || null,
               targetMod: a.targetMod || 0,
               darkReveal: a.darkReveal || null,
+              heartState: a.heartState || null,
               exposure: a.exposure || null,
               discoveries: a.discoveries || [],
               attributeUnlock: a.attributeUnlock || null,
@@ -9871,7 +9874,10 @@
             g.signals.push([tm, signalTxt]);
             if (g.signals.length > 20) g.signals.shift();
           }
-          results.investigation = investigation.endTurn(results);
+          syncHeartTags();
+          results.investigation = investigation.endTurn(results, {
+            deferFailure: deferTailingFailure(results)
+          });
           for (const key of Object.keys(floorApplied))
             floorApplied[key] = L.get(key) - beforeLedger[key];
           const parts = [];
@@ -9958,9 +9964,23 @@
           const advNrv = (g.tags || []).some((t) => t.id === "adv_nrv");
           return R.check.sweetHigh + (advNrv ? R.advantage.sweetHighBonus : 0);
         }
-        function syncHeartTags() {
+        function syncHeartTags({ sweetOnly = false } = {}) {
           const lines = C.heartLines(L.get("heart"), sweetHighNow());
           const stack = g.tags || (g.tags = []);
+          if (lines.sweet)
+            T.apply(stack, {
+              id: "sweet_focus",
+              name: "\u751C\u533A\u4E13\u6CE8",
+              owner: "player",
+              category: "stealth",
+              effects: ["stealth", "fine", "social", "conflict"].map((category) => ({
+                category,
+                value: R.check.sweetBonus
+              })),
+              duration: { type: "flag" }
+            });
+          else T.remove(stack, "sweet_focus");
+          if (sweetOnly) return;
           if (lines.deform === -2)
             T.apply(stack, {
               id: "deform",
@@ -10390,7 +10410,22 @@
           const attr = { name: ATTR_NAMES[attrKey] || "\u5C5E\u6027", v: attrOf(entry.id) };
           const targetTags = sum.breakdown.filter((h) => h.owner === "target");
           const darkReveal = targetTags.length ? targetTags.map((h) => `${h.src} (${h.v >= 0 ? "+" : ""}${h.v})`).join("\u3001") : null;
-          return { roll, res, mods, dc, sum, attr, targetMod, darkReveal };
+          return {
+            roll,
+            res,
+            mods,
+            dc,
+            sum,
+            attr,
+            targetMod,
+            darkReveal,
+            heartState: {
+              value: g.ledger.get("heart"),
+              sweetLow: R.check.sweetLow,
+              sweetHigh: R.check.sweetHigh + ((g.tags || []).some((t) => t.id === "adv_nrv") ? R.advantage.sweetHighBonus : 0),
+              sweet: (g.tags || []).some((t) => t.id === "sweet_focus")
+            }
+          };
         }
         function attrKeyOf(id) {
           const agility = [
@@ -11498,6 +11533,7 @@
               player: {
                 heart: s.heart,
                 stamina: s.stamina,
+                staminaMax: g.player.staminaMax || 100 + g.player.str * 5,
                 cash: s.cash,
                 pi: s.pi,
                 proximity: s.proximity,
@@ -11687,7 +11723,10 @@
               world: { ...g.world },
               route: g.route ? JSON.parse(JSON.stringify(g.route)) : null,
               famSegs: { ...g.famSegs },
-              tags: JSON.parse(JSON.stringify(g.tags || [])),
+              // 甜区是心跳衍生状态，不入持久标签；避免旧档、撤回和失败恢复产生差异。
+              tags: JSON.parse(
+                JSON.stringify((g.tags || []).filter((t) => t.id !== "sweet_focus"))
+              ),
               identity: g.identity || null,
               tailing: !!g.tailing,
               nightPiGross: g.nightPiGross || 0,
@@ -12534,6 +12573,8 @@
           snapshot: () => snapshot(),
           syncSpatial: (results) => observeScene(g, L.get("date"), results),
           investigation,
+          syncHeartTags,
+          deferTailingFailure: (results) => services.deferTailingFailure?.({ g, results }) === true,
           sweetHighNow,
           syncThresholdTags
         });
@@ -12618,6 +12659,7 @@
           syncPersonaTags();
           applyTargetState();
         }
+        syncHeartTags({ sweetOnly: true });
         g.targetKnowledge = validateKnowledge(g.targetKnowledge, g.targetId);
         investigation.restore(init.saved);
         g.dayPlan = validateDayPlan(
@@ -12645,6 +12687,7 @@
             if (g.dayPlan.source === "daily" && !g.dayPlan.activity)
               investigation.finish("\u6D3B\u52A8\u7ED3\u675F");
             syncThresholdTags();
+            syncHeartTags();
             if (g.dayPlan.source === "daily")
               g.world.district = map.getPlace(g.spatial.playerPlaceId).district;
           }
@@ -12688,7 +12731,9 @@
         function gmSet(changes = {}) {
           const { tailing, ...rest } = changes;
           if (tailing !== void 0) g.tailing = !!tailing;
-          return L.commit(rest, { reason: "gm" });
+          const r = L.commit(rest, { reason: "gm" });
+          syncHeartTags();
+          return r;
         }
         return {
           processFloor,
@@ -14882,7 +14927,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.19",
+        version: "0.8.20",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -14891,7 +14936,7 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs investigation.test.js chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js album.test.js",
+          "test:sync": "node tools/test.cjs investigation.test.js chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js album.test.js resource-sweet.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs",
           "preview:pi": "node tools/build/pi-preview.js",
