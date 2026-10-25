@@ -1,0 +1,28 @@
+'use strict';
+// gpt：直接运行上游阶段过滤/替换函数，不把普通reduce当酒馆调用链。附件脚本不执行。
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
+const base=__dirname,root=path.resolve(base,'..');
+const rules=JSON.parse(fs.readFileSync(path.join(base,'状态栏正则.json'),'utf8'));
+const engine=fs.readFileSync(path.join(base,'宿主fixture/阶段与替换.js'),'utf8');
+const helper=fs.readFileSync(path.join(base,'宿主fixture/regexFromString.js'),'utf8');
+const ruleNames={hud:'ZYX_02_状态栏HUD渲染',guard:'ZYX_02B_状态栏异常记录保护',stream:'ZYX_03_流式传输防闪烁',history:'ZYX_04_历史楼层清理 (剔除历史状态栏节约Token)'};
+function host(scripts){const c=vm.createContext({extension_settings:{disabledExtensions:[]},getRegexScripts:()=>scripts,substitute_find_regex:{NONE:0,RAW:1,ESCAPED:2},substituteParams:x=>x,substituteParamsExtended:x=>x,sanitizeRegexMacro:x=>x,console:{debug(){},warn(){}}});new vm.Script(helper).runInContext(c);new vm.Script('const RegexProvider={instance:{get:regexFromString}};\n'+engine+'\nglobalThis.api={getRegexedString,runRegexScript,regexFromString};').runInContext(c);return c.api;}
+const api=host(rules),stream=rules.find(r=>r.scriptName===ruleNames.stream),history=rules.find(r=>r.scriptName===ruleNames.history);
+assert.ok(stream&&history,'当前导出必须含03/04');
+// 原卡旧配置的公开协议部分；不保存附件其余字段。
+const old=host(rules.map(r=>r.scriptName===ruleNames.stream?{...r,markdownOnly:false,promptOnly:false,findRegex:'<status_bar>(?!.*<\\/status_bar>)[\\s\\S]*$'}:r.scriptName===ruleNames.history?{...r,placement:[1],minDepth:null}:r));
+const raw='正文前缀。<status_bar>\n<time>合成时点甲</time>\n<location>合成地点甲</location>\n</status_bar>';
+const stage=(h,text,mode,depth=0,placement=2)=>h.getRegexedString(text,placement,{...(mode==='markdown'?{isMarkdown:true}:mode==='prompt'?{isPrompt:true}:{}),depth});
+const results=[];function check(name,fn){fn();results.push({name,pass:true});}
+check('真实helper裸模式没有g，不伪造全局替换',()=>assert.equal(api.regexFromString(rules[0].findRegex).global,false));
+check('旧03先在源阶段删完整多行记录，显示阶段已无HUD',()=>{const source=stage(old,raw,'source');assert.equal(source,'正文前缀。');assert.ok(!stage(old,source,'markdown').includes('role="region"'));});
+check('修补03不改源，真实显示替换支持具名捕获',()=>{assert.equal(stage(api,raw,'source'),raw);const shown=stage(api,raw,'markdown');assert.ok(shown.includes('role="region"'));assert.ok(shown.includes('合成时点甲'));assert.ok(!shown.includes('$<'));assert.ok(!shown.includes('<status_bar>'));});
+check('半截记录仅在显示阶段隐藏，持久源文本不丢失',()=>{const input='正文前缀。<status_bar>\n<time>未闭合';assert.equal(stage(api,input,'source'),input);assert.equal(stage(api,input,'markdown'),'正文前缀。');});
+check('完整多行异常块由02B提示，03不误删提示',()=>{const shown=stage(api,'正文前缀。<status_bar>\n<unknown>异常文本</unknown>\n</status_bar>','markdown');assert.ok(shown.includes('格式未齐'));assert.ok(!shown.includes('异常文本'));});
+check('完整块后接半截：第一块HUD保留，半截隐藏',()=>{const shown=stage(api,raw+'<status_bar>\n<time>半截尾部','markdown');assert.ok(shown.includes('role="region"'));assert.ok(shown.includes('合成时点甲'));assert.ok(!shown.includes('半截尾部'));});
+check('04保留AI最近depth0/1/2，仅清3以上，任何用户深度均不清',()=>{assert.equal(history.minDepth,3);for(const depth of [0,1,2])assert.equal(stage(api,raw,'prompt',depth),raw);for(const depth of [3,4])assert.equal(stage(api,raw,'prompt',depth),'正文前缀。');for(const depth of [0,1,2,3,4])assert.equal(stage(api,raw,'prompt',depth,1),raw);assert.equal(stage(api,raw,'source',3),raw);assert.ok(stage(api,raw,'markdown',3).includes('role="region"'));});
+check('旧04的用户placement不能清AI历史',()=>{assert.equal(stage(old,raw,'prompt',1,2),raw);assert.equal(stage(old,raw,'prompt',1,1),'正文前缀。');});
+check('多个完整块按真实非g行为处理，不串捕获或假报全部渲染',()=>{const second='<status_bar>\n<time>合成时点乙</time>\n</status_bar>';assert.equal(stage(api,raw+second,'source'),raw+second);const shown=stage(api,raw+second,'markdown');assert.equal((shown.match(/role="region"/g)||[]).length,1);assert.ok(shown.includes('合成时点甲'));assert.ok(shown.includes('格式未齐'));assert.ok(!shown.includes('合成时点乙'));});
+if(process.argv[2])check('成品03/04精确使用当前导出修补',()=>{const card=JSON.parse(fs.readFileSync(path.resolve(process.argv[2]),'utf8')),scripts=card.data.extensions.regex_scripts;for(const rule of [stream,history]){const found=scripts.find(r=>r.scriptName===rule.scriptName);assert.ok(found);for(const [key,value]of Object.entries(rule))if(key!=='id')assert.deepEqual(found[key],value);}});
+if(process.argv[2])check('状态补充仅在原常驻条目出现一次，原正文前缀与其他世界书保留',()=>{const card=JSON.parse(fs.readFileSync(path.resolve(process.argv[2]),'utf8')),entries=card.data.character_book.entries;const title='【状态感知】态势感知仪表盘输出格式契约',targets=entries.filter(e=>e.comment===title);assert.equal(targets.length,1);const text=targets[0].content,supplement=fs.readFileSync(path.join(base,'输出契约补充.txt'),'utf8').trim();assert.equal((text.match(/<zyx_status_output_supplement>/g)||[]).length,1);assert.equal((text.match(/<\/zyx_status_output_supplement>/g)||[]).length,1);assert.ok(text.endsWith(supplement));assert.equal(entries.filter(e=>e.content?.includes('<zyx_status_output_supplement>')).length,1);if(process.argv[3]){const original=JSON.parse(fs.readFileSync(path.resolve(process.argv[3]),'utf8')),before=original.data.character_book.entries,prior=before.find(e=>e.comment===title);assert.ok(prior);assert.equal(text.slice(0,text.indexOf('<zyx_status_output_supplement>')).trimEnd(),prior.content.trimEnd());assert.equal(entries.length,before.length);assert.deepEqual(entries,before.map(e=>e.comment===title?{...e,content:text}:e));}});
+console.log(JSON.stringify({result:'PASS',checks:results.length,results,limitations:['只模拟原样上游阶段与替换算法，宏输入为恒等测试值，不等于实机验收','原卡每轮契约为一个status_bar；裸模式无g，多个完整块仅第一块渲染，后块进入异常提示','旧普通reduce未分源文本/markdown/prompt，不能证明03/04宿主阶段安全']},null,2));

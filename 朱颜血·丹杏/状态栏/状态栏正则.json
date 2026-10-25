@@ -32,5 +32,39 @@
     "substituteRegex": 0,
     "minDepth": null,
     "maxDepth": null
+  },
+  {
+    "id": "zyx-hud-stream-v2",
+    "scriptName": "ZYX_03_流式传输防闪烁",
+    "findRegex": "<status_bar>(?:(?!</?status_bar>)[^])*$",
+    "replaceString": "",
+    "trimStrings": [],
+    "placement": [
+      2
+    ],
+    "disabled": false,
+    "markdownOnly": true,
+    "promptOnly": false,
+    "runOnEdit": true,
+    "substituteRegex": 0,
+    "minDepth": null,
+    "maxDepth": null
+  },
+  {
+    "id": "zyx-hud-history-v2",
+    "scriptName": "ZYX_04_历史楼层清理 (剔除历史状态栏节约Token)",
+    "findRegex": "<status_bar>(?:(?!</?status_bar>)[^])*?</status_bar>",
+    "replaceString": "",
+    "trimStrings": [],
+    "placement": [
+      2
+    ],
+    "disabled": false,
+    "markdownOnly": false,
+    "promptOnly": true,
+    "runOnEdit": true,
+    "substituteRegex": 0,
+    "minDepth": 3,
+    "maxDepth": null
   }
 ]

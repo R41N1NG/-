@@ -34,6 +34,12 @@ function patchCard(card){
  if(matches.length!==1)throw new Error('必须唯一匹配零楼入口，拒绝猜测');
  const i=matches[0];
  scripts[i]={...scripts[i],findRegex:'<zyx_gateway>[^]*?</zyx_gateway>',replaceString:'```html\n'+gatewayDocument()+'\n```',placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null};
+ const entries=result.data.character_book?.entries;
+ const targets=entries?.filter(e=>e.comment==='【状态感知】态势感知仪表盘输出格式契约')??[];
+ if(targets.length!==1)throw new Error('必须唯一匹配原状态输出契约');
+ const supplement=fs.readFileSync(path.join(__dirname,'../状态栏/输出契约补充.txt'),'utf8').trim();
+ const original=targets[0].content.replace(/<zyx_status_output_supplement>[^]*?<\/zyx_status_output_supplement>/g,'').trimEnd();
+ targets[0].content=original+'\n\n'+supplement;
  return result;
 }
 if(require.main===module){
