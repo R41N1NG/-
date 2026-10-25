@@ -95,38 +95,83 @@
 }
 @media(prefers-reduced-motion:reduce) { .zyx-hud * {scroll-behavior:auto;} }
 
-/* 字形与装饰轻量收束；不增加纸纹、颗粒或金属高光。 */
-.zyx-hud .zyx-hud-head strong {font-family:ui-serif,'Songti SC',SimSun,serif;font-size:15px;letter-spacing:.1em;font-weight:600;}
-.zyx-hud .zyx-hud-head strong>span {color:#b29f7b;}
-.zyx-hud .zyx-hud-chapter {color:#c49379;border-color:#98574466;background:#68372c1a;border-radius:2px;}
-.zyx-hud h3 {font-family:ui-serif,'Songti SC',SimSun,serif;font-size:16px;color:#eee7d5;}
-.zyx-hud .zyx-hud-trend {border-left-width:3px;}
-.zyx-hud .zyx-hud-stage {border-color:#b0a07c66;background:linear-gradient(135deg,#72614330,#3d49402b);}
-.zyx-hud .zyx-hud-avatar {box-shadow:inset 0 0 18px #0003;border-color:#94876766;}
+/* 丹杏题材替代：铜器/官牒/朱印/青瓷，保持分区色彩与材质层级。 */
+.zyx-hud {background:linear-gradient(135deg,#20272b 0%,#121b20 38%,#10171d 100%);border:1px solid #9c7951;border-radius:7px;box-shadow:0 16px 36px #0008,inset 0 1px #d1b38126,inset 0 0 0 4px #0c12163d;color:#e5dfd2;}
+.zyx-hud .zyx-hud-head {padding:2px 0 5px;}
+.zyx-hud .zyx-hud-head strong {display:flex;align-items:center;gap:7px;font-family:ui-serif,'Songti SC',SimSun,serif;font-size:16px;letter-spacing:.07em;font-weight:700;color:#f0dec1;}
+.zyx-hud .zyx-hud-head strong>span {color:#c3a26e;}
+.zyx-hud .zyx-hud-icon {display:inline-block;width:17px;height:17px;flex:0 0 17px;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none;vertical-align:middle;}
+.zyx-hud .zyx-hud-head .zyx-hud-icon-seal {width:25px;height:25px;flex-basis:25px;color:#e9b38a;background:#7d3029;border:1px solid #ba7050;border-radius:2px;padding:2px;box-shadow:inset 0 0 0 1px #d593632e;}
+.zyx-hud .zyx-hud-chapter {color:#edc3a3;border:1px solid #b46d50;background:linear-gradient(120deg,#6c302c,#382527);border-radius:2px;padding:3px 9px;box-shadow:inset 0 0 0 2px #15191c66;}
+.zyx-hud .zyx-hud-grid {border-bottom-color:#b28c514f;}
+.zyx-hud .zyx-hud-pill {align-items:center;padding:5px 9px;border-radius:4px;box-shadow:inset 0 1px #ffffff06;}
+.zyx-hud .zyx-hud-time {color:#f2d79d;border-color:#ad8345a6;background:linear-gradient(100deg,#60452366,#282722aa);}
+.zyx-hud .zyx-hud-place {color:#c1dae4;border-color:#567f92b3;background:linear-gradient(100deg,#28465399,#18272d);}
+.zyx-hud .zyx-hud-weather {color:#edc29d;border-color:#a46b4ab3;background:linear-gradient(100deg,#683f2b80,#2f2723);}
+.zyx-hud .zyx-hud-senses {color:#bfdfcf;border-color:#4e8873b3;background:linear-gradient(100deg,#284e4099,#152b28);}
+.zyx-hud .zyx-hud-tool>summary {border-radius:4px;color:#e7d3a8;border-color:#9e814f;background:linear-gradient(100deg,#57452a66,#242a28);}
+.zyx-hud .zyx-hud-growth .zyx-hud-icon {color:#d9b67a;}
+.zyx-hud .zyx-hud-elapsed {color:#bfd0db;border-color:#697e92;background:linear-gradient(100deg,#35445180,#1d2931);}
+.zyx-hud .zyx-hud-record>summary {color:#e4c799;border-color:#a5804e;background:linear-gradient(120deg,#64442d80,#30272a);}
+.zyx-hud .zyx-hud-trend {border-color:#935746;border-left:4px solid #bb5340;background:linear-gradient(110deg,#632f2d80,#34202799 55%,#211c22);box-shadow:inset 0 1px #d28e6921;border-radius:5px;}
+.zyx-hud .zyx-hud-trend-head>b {color:#ffe1cd;background:linear-gradient(120deg,#943d32,#633027);border:1px solid #c37659;border-radius:2px;letter-spacing:.1em;box-shadow:inset 0 0 0 1px #391a2266;}
+.zyx-hud .zyx-hud-trend-head>strong {color:#eed4bc;}
+.zyx-hud .zyx-hud-trend p {color:#e0d0c8;}
+.zyx-hud .zyx-hud-companion {background:linear-gradient(125deg,#263333b3,#151f25e6 55%,#151d24);border-color:#9d80556b;box-shadow:inset 0 1px #cdb38214,0 4px 18px #0005;border-radius:6px;}
+.zyx-hud .zyx-hud-avatar {position:relative;border:1px solid #ac8750;border-radius:3px;background:linear-gradient(150deg,#162027,#0d151c);box-shadow:inset 0 0 0 3px #9f7a4217,inset 0 0 30px #0005;}
+.zyx-hud .zyx-hud-avatar::before {content:'';position:absolute;inset:6px;border:1px solid #a9874b3d;pointer-events:none;}
+.zyx-hud .zyx-hud-avatar::after {content:'';position:absolute;inset:-1px;pointer-events:none;background:linear-gradient(#c8a46c,#c8a46c) left top/16px 2px no-repeat,linear-gradient(#c8a46c,#c8a46c) left top/2px 16px no-repeat,linear-gradient(#c8a46c,#c8a46c) right bottom/16px 2px no-repeat,linear-gradient(#c8a46c,#c8a46c) right bottom/2px 16px no-repeat;}
+.zyx-hud h3 {font-family:ui-serif,'Songti SC',SimSun,serif;font-size:17px;color:#f5e7d0;}
+.zyx-hud .zyx-hud-role-tag {background:#80583945;border-color:#b58a55;color:#f0d3a1;border-radius:2px;}
+.zyx-hud .zyx-hud-stage {align-items:center;border:1px solid #b39b66;background:linear-gradient(140deg,#6c563b88,#314439);color:#f5deb0;box-shadow:inset 0 1px #e7c58c21;border-radius:3px;}
+.zyx-hud .zyx-hud-stage .zyx-hud-icon {width:13px;height:13px;flex-basis:13px;color:#dfb374;}
+.zyx-hud .zyx-hud-aura {display:inline-flex;align-items:center;gap:4px;color:#bedad8;background:linear-gradient(100deg,#375f6080,#1c343e);border-color:#7ba9a499;border-radius:3px;}
+.zyx-hud .zyx-hud-aura .zyx-hud-icon {width:14px;height:14px;flex-basis:14px;color:#91c4be;}
+.zyx-hud .zyx-hud-reason {color:#cbb99a;}
+.zyx-hud .zyx-hud-reason b,.zyx-hud .zyx-hud-main b {color:#e1bd82;}
+.zyx-hud .zyx-hud-main {border-color:#b5955e61;border-radius:5px;background:linear-gradient(130deg,#34403f73,#1b292db3);box-shadow:inset 0 1px #dfd2b70c;}
+.zyx-hud .zyx-hud-mind {background:#1a2839b3;border-left-color:#7bafb2;color:#d1e0e6;border-radius:0 3px 3px 0;}
+.zyx-hud .zyx-hud-mind>b {color:#9cc9ca;}
+.zyx-hud .zyx-hud-demeanor {background:#3e342b59;border-left-color:#c19b62;color:#f0e1ca;border-radius:0 3px 3px 0;}
+.zyx-hud .zyx-hud-subfold {color:#b1baac;}
+.zyx-hud .zyx-hud-clue {border-color:#a38b50a6;border-left-color:#d2af63;background:linear-gradient(100deg,#61512c59,#252b22b3 55%,#192223);border-radius:5px;color:#f3e2b1;}
+.zyx-hud .zyx-hud-clue>.zyx-hud-icon {width:20px;height:20px;flex-basis:20px;align-self:center;color:#e1bd77;}
+.zyx-hud .zyx-hud-clue>b {color:#f4d99f;}
+.zyx-hud .zyx-hud-rumors {background:linear-gradient(100deg,#1a2a2d,#151e23);border-color:#65858273;border-radius:5px;}
+.zyx-hud .zyx-hud-rumors>section {border-bottom-color:#a68b554d;}
+.zyx-hud .zyx-hud-rumors h4 {color:#c6e1d9;background:linear-gradient(120deg,#3f756866,#25473e);border-color:#7bb09b99;border-radius:2px;}
+.zyx-hud .zyx-hud-rumors>section:last-child h4 {color:#edd4ae;background:linear-gradient(120deg,#72523b80,#4e392c);border-color:#ba936299;}
+.zyx-hud .zyx-hud-rumors p {color:#cbd4cc;}
+@media(max-width:650px) {
+ .zyx-hud .zyx-hud-head strong {font-size:13px;gap:5px;letter-spacing:.01em;}
+ .zyx-hud .zyx-hud-head .zyx-hud-icon-seal {width:20px;height:20px;flex-basis:20px;padding:1px;}
+ .zyx-hud .zyx-hud-chapter {font-size:9px;padding:2px 5px;}
+ .zyx-hud .zyx-hud-stage .zyx-hud-icon {width:11px;height:11px;flex-basis:11px;}
+}
 
 </style>
 <div class="zyx-hud" role="region" aria-label="朱颜血丹杏态势仪">
-  <header class="zyx-hud-head"><strong>❖ 朱颜血·丹杏 <span>· 态势仪</span></strong><span class="zyx-hud-chapter">【宣德 · 边陲风云】</span></header>
+  <header class="zyx-hud-head"><strong><svg class="zyx-hud-icon zyx-hud-icon-seal" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M7 7h10M9 7v10m6-10v10M7 12h10M7 17h4m2 0h4"/></svg>朱颜血·丹杏 <span>· 态势仪</span></strong><span class="zyx-hud-chapter">【宣德 · 边陲风云】</span></header>
   <div class="zyx-hud-grid">
-    <div class="zyx-hud-row"><div class="zyx-hud-pill zyx-hud-time"><span aria-hidden="true">时</span><span class="zyx-hud-value">宣德五年四月初一 · 酉时 17:30</span></div><div class="zyx-hud-pill zyx-hud-place"><span aria-hidden="true">地</span><span class="zyx-hud-value">江西赣州府 · 神仙岭杏花村客栈</span></div></div>
-    <div class="zyx-hud-row zyx-hud-env-row"><div class="zyx-hud-pill zyx-hud-weather"><span aria-hidden="true">候</span><span class="zyx-hud-value">暮春微雨 · 山雾迷蒙</span></div><div class="zyx-hud-pill zyx-hud-senses"><span aria-hidden="true">境</span><span class="zyx-hud-value">檐下滴水声急，风里带着杏花酒香。</span></div></div>
+    <div class="zyx-hud-row"><div class="zyx-hud-pill zyx-hud-time"><svg class="zyx-hud-icon zyx-hud-icon-time" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 8h10l2 10H5L7 8Z"/><path d="M10 8V5a2 2 0 0 1 4 0v3M4 18h16M10 21h4M8 12h8"/></svg><span class="zyx-hud-value">宣德五年四月初一 · 酉时 17:30</span></div><div class="zyx-hud-pill zyx-hud-place"><svg class="zyx-hud-icon zyx-hud-icon-place" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2V5Z"/><path d="M9 3v16M15 5v16m-4-9 2-4 2 4M5 14l2-3"/></svg><span class="zyx-hud-value">江西赣州府 · 神仙岭杏花村客栈</span></div></div>
+    <div class="zyx-hud-row zyx-hud-env-row"><div class="zyx-hud-pill zyx-hud-weather"><svg class="zyx-hud-icon zyx-hud-icon-weather" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 14a4 4 0 0 1 0-8 6 6 0 0 1 11-1 4.5 4.5 0 1 1 2 9H6Z"/><path d="m7 17-1 3m7-3-1 3m7-3-1 3"/></svg><span class="zyx-hud-value">暮春微雨 · 山雾迷蒙</span></div><div class="zyx-hud-pill zyx-hud-senses"><svg class="zyx-hud-icon zyx-hud-icon-senses" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6M12 3v3M7 8l5-2 5 2v10l-5 2-5-2V8ZM7 8h10M7 17h10M12 8v9M10 22h4"/></svg><span class="zyx-hud-value">檐下滴水声急，风里带着杏花酒香。</span></div></div>
     <div class="zyx-hud-tools">
-      <details class="zyx-hud-tool zyx-hud-growth"><summary><span class="zyx-hud-tool-icon">武</span><span>本轮所悟 · <span class="zyx-hud-value">无</span></span><span class="zyx-hud-drop" aria-hidden="true">⌄</span></summary><div class="zyx-hud-popover"><h4>武学札记</h4><dl><dt>所练所悟</dt><dd class="zyx-hud-value">无</dd><dt>领悟契机</dt><dd class="zyx-hud-value">无</dd><dt>成长分量</dt><dd><span class="zyx-hud-value">无</span><small>一为常悟，二为大悟；无则未记成长。</small></dd></dl></div></details>
-      <div class="zyx-hud-pill zyx-hud-elapsed"><span aria-hidden="true">时</span><span>历时 <span class="zyx-hud-value">半刻钟</span></span></div>
-      <details class="zyx-hud-tool zyx-hud-record"><summary>▤ 案簿</summary><div class="zyx-hud-popover"><h4>人物动向</h4><dl><dt>白雪莲</dt><dd class="zyx-hud-value">未明</dd><dt>薛霜灵</dt><dd class="zyx-hud-value">未明</dd><dt>伤亡勘验</dt><dd class="zyx-hud-value">无</dd></dl></div></details>
+      <details class="zyx-hud-tool zyx-hud-growth"><summary><svg class="zyx-hud-icon zyx-hud-icon-growth" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m18 3 3 3-11 11-3-3L18 3ZM5 12l7 7M3 21l5-5M3 17l4 4"/></svg><span>本轮所悟 · <span class="zyx-hud-value">无</span></span><span class="zyx-hud-drop" aria-hidden="true">⌄</span></summary><div class="zyx-hud-popover"><h4>武学札记</h4><dl><dt>所练所悟</dt><dd class="zyx-hud-value">无</dd><dt>领悟契机</dt><dd class="zyx-hud-value">无</dd><dt>成长分量</dt><dd><span class="zyx-hud-value">无</span><small>一为常悟，二为大悟；无则未记成长。</small></dd></dl></div></details>
+      <div class="zyx-hud-pill zyx-hud-elapsed"><svg class="zyx-hud-icon zyx-hud-icon-elapsed" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h12M6 21h12M8 3v4l8 10v4M16 3v4L8 17v4M9 6h6M9 18h6"/></svg><span>历时 <span class="zyx-hud-value">半刻钟</span></span></div>
+      <details class="zyx-hud-tool zyx-hud-record"><summary><svg class="zyx-hud-icon zyx-hud-icon-record" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4h13v16H6M6 4H3v3h3m0 10H3v3h3M6 4v16M10 8h6m-6 4h6m-6 4h4"/></svg>案簿</summary><div class="zyx-hud-popover"><h4>人物动向</h4><dl><dt>白雪莲</dt><dd class="zyx-hud-value">未明</dd><dt>薛霜灵</dt><dd class="zyx-hud-value">未明</dd><dt>伤亡勘验</dt><dd class="zyx-hud-value">无</dd></dl></div></details>
     </div>
   </div>
   <section class="zyx-hud-trend"><div class="zyx-hud-trend-head"><b>天下大势</b><strong>边陲暗流 · 本轮气象</strong></div><p class="zyx-hud-value">海捕公文沿官道逐站传下，春雨仍阻着深山驿路，县城内外的消息尚未汇到一处。</p></section>
   <section class="zyx-hud-companion">
     <div class="zyx-hud-avatar" aria-hidden="true"></div>
     <div class="zyx-hud-companion-body">
-      <div class="zyx-hud-person"><h3 class="zyx-hud-value">陆寒渊</h3><span class="zyx-hud-role-tag">当前镜头</span><span class="zyx-hud-stage">❖【<span class="zyx-hud-value">陌路</span>】</span><span class="zyx-hud-aura">◈ 心防气象 · <span class="zyx-hud-value">冰封十丈</span></span></div>
+      <div class="zyx-hud-person"><h3 class="zyx-hud-value">陆寒渊</h3><span class="zyx-hud-role-tag">当前镜头</span><span class="zyx-hud-stage"><svg class="zyx-hud-icon zyx-hud-icon-stage" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 3 3 6 6 3-6 3-3 6-3-6-6-3 6-3 3-6Z"/></svg>【<span class="zyx-hud-value">陌路</span>】</span><span class="zyx-hud-aura"><svg class="zyx-hud-icon zyx-hud-icon-aura" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 9c3-5 5 5 9 0s6 5 9 0M3 15c3-5 5 5 9 0s6 5 9 0"/></svg>心防气象 · <span class="zyx-hud-value">冰封十丈</span></span></div>
       <p class="zyx-hud-reason"><b>【心防因由】</b><span class="zyx-hud-value">你未探问来历，他也暂且收起试探。</span></p>
       <div class="zyx-hud-main"><p class="zyx-hud-mind"><b>【内心心声】</b><span class="zyx-hud-value">来路尚未摸清，且听此人如何应答。</span></p><p class="zyx-hud-demeanor"><b>【形貌姿态】</b><span class="zyx-hud-value">他将茶盏搁回桌边，右手仍隐在袖中。门外脚步经过时，他略偏过头，目光从半掩的窗缝扫向院中，随即又落回你面前。</span></p></div>
       <details class="zyx-hud-subfold"><summary>在场他人<span aria-hidden="true"> ↗</span></summary><div class="zyx-hud-extra"><article class="zyx-hud-extra-person"><h4></h4><div class="zyx-hud-extra-fields"><span class="zyx-hud-extra-stage"></span><span class="zyx-hud-extra-aura"></span><p><em>心声</em><span class="zyx-hud-value"></span></p><p><em>形貌</em><span class="zyx-hud-value"></span></p></div></article><article class="zyx-hud-extra-person"><h4></h4><div class="zyx-hud-extra-fields"><span class="zyx-hud-extra-stage"></span><span class="zyx-hud-extra-aura"></span><p><em>心声</em><span class="zyx-hud-value"></span></p><p><em>形貌</em><span class="zyx-hud-value"></span></p></div></article><p class="zyx-hud-extra-empty">未记在场他人。</p></div></details>
     </div>
   </section>
-  <section class="zyx-hud-clue"><span aria-hidden="true">察</span><b>【重要线索】</b><p class="zyx-hud-value">柜上压着一张被雨打湿的旧告示，落款与印文尚未辨清，店家也没有提起它的来处。</p></section>
+  <section class="zyx-hud-clue"><svg class="zyx-hud-icon zyx-hud-icon-clue" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h13v12H9a4 4 0 0 0-4 4V4ZM5 20h13v-4M8 8h7m-7 3h5"/><circle cx="17" cy="17" r="3"/><path d="m19 19 3 3"/></svg><b>【重要线索】</b><p class="zyx-hud-value">柜上压着一张被雨打湿的旧告示，落款与印文尚未辨清，店家也没有提起它的来处。</p></section>
   <div class="zyx-hud-rumors"><section><h4>【本地风闻】</h4><p class="zyx-hud-value">挑担的脚夫说北面山道积水未退，往长宁县的行人多在此歇脚，等明早再试路况。</p></section><section><h4>【远地风闻】</h4><p class="zyx-hud-value">南来的客商谈起府城近日查验路引趋严，至于缘由，各人说法不同，暂没有确讯。</p></section></div>
 </div>
 </html>
