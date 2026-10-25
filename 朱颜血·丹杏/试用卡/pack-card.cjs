@@ -30,8 +30,8 @@ function gatewayDocument(){
 }
 function patchCard(card){
  const result=patchHud(card),scripts=result.data.extensions.regex_scripts;
- result.data.name=result.data.name.replace(/ · 状态栏V[0-9]+$/,'')+' · 状态栏V4';
- result.data.character_version=(result.data.character_version??'').replace(/\+zyx-hud-v[0-9]+$/,'')+'+zyx-hud-v4';
+ result.data.name=result.data.name.replace(/ · 状态栏V[0-9]+$/,'')+' · 状态栏V5';
+ result.data.character_version=(result.data.character_version??'').replace(/\+zyx-hud-v[0-9]+$/,'')+'+zyx-hud-v5';
  const matches=scripts.map((r,i)=>r.scriptName===gatewayName?i:-1).filter(i=>i>=0);
  if(matches.length!==1)throw new Error('必须唯一匹配零楼入口，拒绝猜测');
  const i=matches[0];

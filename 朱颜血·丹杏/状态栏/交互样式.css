@@ -1,0 +1,27 @@
+.zyx-hud [hidden] {display:none!important;}
+.zyx-hud button {font:inherit;color:inherit;}
+.zyx-hud button:focus-visible {outline:2px solid #ceb88c;outline-offset:3px;}
+.zyx-hud button.zyx-hud-place {width:100%;font-size:11.5px;text-align:left;cursor:pointer;transition:border-color 150ms;}
+.zyx-hud button.zyx-hud-place:hover {border-color:#b9d5dc;}
+.zyx-hud .zyx-hud-place::after {content:'舆图 ↗';margin-left:auto;flex-shrink:0;color:#a7bec7;font-size:10px;}
+.zyx-hud .zyx-hud-skill-list {padding:0;margin:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px;}
+.zyx-hud .zyx-hud-skill-list li {padding:2px 7px;border:1px solid #b4986059;background:#5d4d3026;border-radius:2px;color:#e2d2af;}
+.zyx-hud .zyx-hud-skill-list .zyx-hud-skill-empty {border:0;background:none;padding:0;color:#a7b2b7;}
+.zyx-hud .zyx-hud-growth .zyx-hud-note {font-size:10px;color:#a4b1b5;margin:10px 0;}
+.zyx-hud .zyx-hud-learning {border-top:1px solid #8c7c554d;margin-top:10px;padding-top:7px;}
+.zyx-hud .zyx-hud-learning>summary {color:#c0ad8a;font-size:11px;margin-bottom:8px;}
+.zyx-hud button.zyx-hud-avatar {padding:0;text-align:center;cursor:zoom-in;overflow:hidden;background:linear-gradient(150deg,#26343c,#101920);}
+.zyx-hud .zyx-hud-avatar::after {content:none;}
+.zyx-hud .zyx-hud-avatar [data-portrait-image] {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;}
+.zyx-hud .zyx-hud-avatar.has-portrait::before {z-index:1;}
+.zyx-hud .zyx-hud-portrait-placeholder {position:absolute;inset:0;display:flex;height:auto;min-height:0;align-items:center;justify-content:center;white-space:pre-line;text-align:center;padding:8px;font:14px/1.9 ui-serif,SimSun,serif;letter-spacing:.08em;color:#85959c;}
+.zyx-hud .zyx-hud-portrait-dialog {box-sizing:border-box;position:fixed;inset:12px;margin:auto;width:min(760px,calc(100% - 24px));max-height:calc(100vh - 24px);padding:0;border:1px solid #889795;background:#14212a;color:#eadcc4;box-shadow:0 16px 55px #000b;overflow:auto;}
+.zyx-hud .zyx-hud-portrait-dialog::backdrop {background:#050b10b8;}
+.zyx-hud .zyx-hud-dialog-head {position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#202b31;padding:9px 14px;border-bottom:1px solid #9b815a;color:#e5d3b3;}
+.zyx-hud .zyx-hud-dialog-head button {width:40px;height:40px;border:1px solid #879694;background:#17242d;font-size:22px;cursor:pointer;}
+.zyx-hud .zyx-hud-portrait-stage {padding:12px;min-height:180px;text-align:center;}
+.zyx-hud .zyx-hud-portrait-stage img {display:block;max-width:100%;height:auto;max-height:calc(100vh - 112px);margin:auto;object-fit:contain;}
+.zyx-hud .zyx-hud-portrait-stage p {color:#a3b1b6;margin:50px 12px;}
+@media(max-width:650px) { .zyx-hud .zyx-hud-portrait-placeholder {min-height:0;font-size:10px;letter-spacing:.02em;padding:5px;} .zyx-hud .zyx-hud-place::after {font-size:9px;} }
+
+.zyx-hud [data-map-dialog] .zyx-map-head {position:sticky;top:0;z-index:2;background:#17222b;}

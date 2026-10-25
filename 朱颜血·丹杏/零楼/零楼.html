@@ -178,6 +178,7 @@
       <label class="zyx-field" data-origin-field><span>身份出处／门派</span><input data-input="origin" type="text" autocomplete="off"></label>
       <label class="zyx-field"><span>武功境界</span><select data-input="realm" aria-describedby="zyx-realm-note"><option>末流</option><option>凡骨</option><option>淬体</option><option selected>冲脉</option><option>通明</option><option>入微</option></select></label>
       <p class="zyx-realm-note" id="zyx-realm-note" role="status"></p>
+      <label class="zyx-field zyx-wide"><span>已掌握武学（可留空，用顿号分隔）</span><input data-input="skills" type="text" autocomplete="off" placeholder="仅登记已掌握的武功，不把本轮练习当作新掌握"></label>
       <label class="zyx-field zyx-wide"><span>开局场景与动机</span><textarea data-input="scene" rows="4" placeholder="从何处起步，为何来到此地？"></textarea></label>
     </div>
     <button type="button" class="zyx-button zyx-primary" data-action="confirm">确认档案 · 生成卷宗</button>
@@ -242,7 +243,7 @@
     selected = id;
     const role = roles[id];
     const values = drafts.get(id) || { name: '', age: DEFAULT_POLICY === 'uniform' ? '20' : role.age,
-      origin: role.origin, rank: '总旗（正七品）', realm: DEFAULT_POLICY === 'uniform' ? '冲脉' : role.realm, scene: role.scene };
+      origin: role.origin, rank: '总旗（正七品）', realm: DEFAULT_POLICY === 'uniform' ? '冲脉' : role.realm, scene: role.scene, skills: '' };
     for (const [key, value] of Object.entries(values)) fields[key].value = value;
     root.querySelector('[data-config-title]').textContent = role.title + ' · 细定身世';
     root.querySelector('[data-rank-field]').hidden = id !== 'jinyiwei';
@@ -279,11 +280,11 @@
     const record = {
       name: fields.name.value.trim() || playerName(), age: age + '岁', role: roles[selected].title,
       origin: selected === 'jinyiwei' ? '锦衣卫北镇抚司 · ' + fields.rank.value : fields.origin.value.trim(),
-      realm: fields.realm.value, scene: fields.scene.value.trim()
+      realm: fields.realm.value, scene: fields.scene.value.trim(), skills: fields.skills.value.trim().split(/[、，,；;\n]+/).map(v => v.trim()).filter(Boolean)
     };
     for (const node of root.querySelectorAll('[data-record]')) node.textContent = record[node.dataset.record] || '未填写';
     output = '[玩家开局设定已载入]\n' + JSON.stringify({ 姓名: record.name, 年龄: age, 身位: record.role,
-      身份出处: record.origin, 武功境界: record.realm, 开局场景与动机: record.scene }, null, 2)
+      身份出处: record.origin, 武功境界: record.realm, 掌握武学: record.skills, 开局场景与动机: record.scene }, null, 2)
       + '\n\n请以此为本次玩家开局设定，依现有世界观铺陈当前场景。只写相遇开端，不替玩家决定台词或行动，不把背景说明当作已发生的战果。未填写的出身、门派或场景先询问玩家，不自行补定。武功境界以这份设定为准，不自行升境。'
       + '\n本轮剧情结束后，必须按角色卡核心输出协议追加完整的' + '<' + 'status_bar>' + '状态数据块，并以' + '<' + '/status_bar>' + '闭合；不可用内心独白或分隔线替代。';
     root.querySelector('[data-output]').value = output;

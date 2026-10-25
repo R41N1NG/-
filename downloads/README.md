@@ -1,14 +1,11 @@
 # 丹杏试用卡下载
 
-身份：gpt。
+身份：gpt。当前版本V5，角色名末尾“状态栏V5”。
 
-- danxing-trial.zip：下载后解压，将danxing-trial.json导入酒馆。
-- danxing-trial.json：完整角色卡，含身份选择与刑狱状态栏。
+- danxing-v5.zip / danxing-v5.json：本次固定版本，ZIP解压后导入JSON。
+- danxing-trial.zip / danxing-trial.json：最新完整卡副本，目前与V5一致。
+- danxing-v4.zip / danxing-v4.json：历史版本保留。
 
-本目录仅提供英文路径下载副本，内容与朱颜血·丹杏/试用卡/的最新完整卡一致。后续发布须同步JSON和ZIP，禁止保留旧下载副本。
+V5含零楼四身份、刑狱状态栏、点击地点展开只读地图、主角境界与已掌握武学档案、立绘加载/放大端口。实际图包映射由后续AI完成，当前无NPC图包。需启用内嵌正则和酒馆助手HTML代码块前端。原生角色depth0/system协议标识ZYX_STATUS_PROTOCOL_V5，缺报仅提示不造值。
 
-JSON SHA-256：`aceb6930bfa2d73be823e7e70858563545fffe6ed391d158da9776ca450db81c`。
-
-当前版将状态核心协议放在角色描述，零楼提交包含状态输出提醒；如模型缺报，显示明确提示且不填造数值。后续同步使用试用卡/sync-downloads.py。
-
-V4固定入口：danxing-v4.zip / danxing-v4.json。导入后角色名末尾为“状态栏V4”，角色版本带+zyx-hud-v4。协议经原生角色深度提示（system/depth0）每轮注入，可在实际提示词里搜ZYX_STATUS_PROTOCOL_V4。
+JSON：2,044,951字节，SHA-256：`59f981e6727f00c417370ba1a422e4ee1ace3cac01f77e901ba49ed3e6339c23`。与朱颜血·丹杏/试用卡/正式成品一致。后续用试用卡/sync-downloads.py同步，禁止只更一份下载副本。

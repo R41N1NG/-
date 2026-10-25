@@ -1,11 +1,14 @@
 {
-  "bytes": 2267238,
-  "sha256": "aceb6930bfa2d73be823e7e70858563545fffe6ed391d158da9776ca450db81c",
+  "bytes": 2044951,
+  "sha256": "59f981e6727f00c417370ba1a422e4ee1ace3cac01f77e901ba49ed3e6339c23",
   "features": [
     "identity-menu",
     "prison-hud",
     "core-output-contract",
     "missing-report-notice",
-    "native-depth-prompt-v4"
+    "native-depth-prompt-v5",
+    "read-only-map",
+    "portrait-config-port",
+    "player-martial-ledger"
   ]
 }

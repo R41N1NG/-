@@ -1,0 +1,34 @@
+/* gpt下级：所有地图样式仅作用于HUD内的地图dialog。 */
+.zyx-hud [data-map-dialog] {box-sizing:border-box;width:min(900px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:90vh;max-height:90dvh;margin:auto;padding:0;overflow:auto;color:#e3dccb;background:#17222b;border:2px solid #7a8284;border-radius:2px;box-shadow:0 20px 70px #000b;font:13px/1.7 system-ui,sans-serif;overflow-wrap:anywhere;}
+.zyx-hud [data-map-dialog] * {box-sizing:border-box;}
+.zyx-hud [data-map-dialog]::backdrop {background:#030709c9;}
+.zyx-hud [data-map-dialog] [hidden] {display:none!important;}
+.zyx-hud [data-map-dialog] .zyx-map-shell {padding:16px;}
+.zyx-hud [data-map-dialog] .zyx-map-head {display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid #9e815b75;}
+.zyx-hud [data-map-dialog] h2 {margin:0;color:#e7cfaa;font:600 20px/1.5 ui-serif,SimSun,serif;}
+.zyx-hud [data-map-dialog] button {font:inherit;color:inherit;cursor:pointer;}
+.zyx-hud [data-map-dialog] button:focus-visible,.zyx-hud [data-map-dialog] [tabindex]:focus-visible {outline:2px solid #e4ba74;outline-offset:3px;}
+.zyx-hud [data-map-dialog] .zyx-map-close {min-height:44px;flex-shrink:0;padding:6px 12px;color:#efd3bf;background:#5b2d29;border:1px solid #ad7056;border-radius:2px;}
+.zyx-hud [data-map-dialog] .zyx-map-current {margin:12px 0;color:#bfc9c9;font-size:12px;white-space:pre-wrap;}
+.zyx-hud [data-map-dialog] .zyx-map-tabs {display:flex;gap:8px;padding-bottom:12px;}
+.zyx-hud [data-map-dialog] .zyx-map-tab {min-height:44px;flex:1;padding:7px 10px;border:1px solid #7e7b69;background:#1c2a32;border-radius:2px;}
+.zyx-hud [data-map-dialog] .zyx-map-tab[aria-selected=true] {color:#f0dcbb;border-color:#bd9361;background:#544332;box-shadow:inset 0 -3px #bf9259;}
+.zyx-hud [data-map-dialog] .zyx-map-board {position:relative;width:100%;min-width:0;height:620px;border:1px solid #7d755d;background:radial-gradient(ellipse at 50% 45%,#30414955,transparent 70%),linear-gradient(0deg,#c7ba8e06 1px,transparent 1px),#111c23;background-size:auto,100% 28px,auto;overflow:hidden;}
+.zyx-hud [data-map-dialog] .zyx-map-board>svg {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.zyx-hud [data-map-dialog] .zyx-map-road {fill:none;stroke:#c8b88f;stroke-width:2;vector-effect:non-scaling-stroke;stroke-linecap:round;}
+.zyx-hud [data-map-dialog] .zyx-map-road-minor {stroke-dasharray:7 5;}
+.zyx-hud [data-map-dialog] .zyx-map-place {position:absolute;left:var(--map-x);top:var(--map-y);transform:translate(-50%,-50%);width:29%;max-width:166px;min-width:0;min-height:48px;padding:7px 5px;white-space:normal;line-height:1.4;color:#e7dfcb;background:#1c2a31;border:1px solid #9d8e6d;border-radius:2px;box-shadow:0 3px 8px #0006;}
+.zyx-hud [data-map-dialog] .zyx-map-place:hover {background:#34434a;border-color:#d4bd8e;}
+.zyx-hud [data-map-dialog] .zyx-map-place[aria-current=location] {border:2px solid #d39572;color:#ffe4c7;background:#623c31;}
+.zyx-hud [data-map-dialog] .zyx-map-place[aria-pressed=true] {outline:2px solid #d6bd81;outline-offset:2px;}
+.zyx-hud [data-map-dialog] .zyx-map-place small {display:block;color:#f2c8a7;font-size:10px;margin:2px 0 0;}
+.zyx-hud [data-map-dialog] .zyx-map-info {min-height:105px;margin-top:12px;padding:13px;border:1px solid #807254;border-left:3px solid #b36b50;background:#101a21;}
+.zyx-hud [data-map-dialog] .zyx-map-info h3 {margin:0 0 6px;color:#e5c494;font-size:15px;line-height:1.5;}
+.zyx-hud [data-map-dialog] .zyx-map-info p {margin:0;color:#c9d0cb;font-size:12px;line-height:1.8;}
+.zyx-hud [data-map-dialog] .zyx-map-note {margin:10px 0 0;color:#a6b1b0;font-size:11px;}
+@media(max-width:420px) {
+ .zyx-hud [data-map-dialog] .zyx-map-shell {padding:10px;}
+ .zyx-hud [data-map-dialog] h2 {font-size:16px;}
+ .zyx-hud [data-map-dialog] .zyx-map-close {padding:6px 8px;font-size:12px;}
+ .zyx-hud [data-map-dialog] .zyx-map-place {font-size:11px;}
+}

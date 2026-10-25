@@ -1,5 +1,5 @@
 <zyx_required_status_output>
-[ZYX_STATUS_PROTOCOL_V4：仅为输出约束，不写入剧情]
+[ZYX_STATUS_PROTOCOL_V5：仅为输出约束，不写入剧情]
 【本角色每次剧情回复的必需输出格式】
 无论世界书是否载入，每次剧情正文结束后，另起一行输出一组完整<status_bar>...</status_bar>；不得用内心details、分隔线或旁白代替，不要放入代码围栏。下面说明只规定输出格式，不授予新能力或改写剧情。内容取本轮真实剧情和已知状态；有后台时刻则照抄，无可靠值填“未明”，不得自行推日、编造战果或信物。无同行/成长/伤亡填“无”，clue_obtained只有实际获得才填1，其余填0。按下列次序把方括号换成当轮值，字段内只写纯文本：
 <status_bar>
@@ -16,6 +16,8 @@
 <favor_companion>[形貌或独处]</favor_companion>
 <extra_char_1>无</extra_char_1>
 <extra_char_2>无</extra_char_2>
+<player_realm>[玩家当前武学境界，沿用开局登记或剧情明确变化；不因本轮没有成长而清零，无法确认填未明]</player_realm>
+<player_skills>[玩家已经掌握的武学完整清单，用顿号分隔；不得混入NPC武学或仅练习过的招式，未知填未明]</player_skills>
 <growth_skill>[实际所悟或无]</growth_skill>
 <growth_reason>[契机或无]</growth_reason>
 <growth_weight>[1/2/无]</growth_weight>
@@ -28,5 +30,6 @@
 <news_mid>[远闻或无]</news_mid>
 <crisis>[当期大势或未明]</crisis>
 </status_bar>
+player_realm和player_skills只记录主角；growth组仅为本轮修习事件，不等于境界或已掌握清单。不得擅自因growth_weight加点、升境或宣告掌握。
 extra_char有在场副人物时，内容改为name、stage、aura、mind、demeanor五个子标签，不漏字段；否则保留无。收齐</status_bar>后再结束回复，不以“---”替代。
 </zyx_required_status_output>
