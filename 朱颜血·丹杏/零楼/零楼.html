@@ -284,7 +284,8 @@
     for (const node of root.querySelectorAll('[data-record]')) node.textContent = record[node.dataset.record] || '未填写';
     output = '[玩家开局设定已载入]\n' + JSON.stringify({ 姓名: record.name, 年龄: age, 身位: record.role,
       身份出处: record.origin, 武功境界: record.realm, 开局场景与动机: record.scene }, null, 2)
-      + '\n\n请以此为本次玩家开局设定，依现有世界观铺陈当前场景。只写相遇开端，不替玩家决定台词或行动，不把背景说明当作已发生的战果。未填写的出身、门派或场景先询问玩家，不自行补定。武功境界以这份设定为准，不自行升境。';
+      + '\n\n请以此为本次玩家开局设定，依现有世界观铺陈当前场景。只写相遇开端，不替玩家决定台词或行动，不把背景说明当作已发生的战果。未填写的出身、门派或场景先询问玩家，不自行补定。武功境界以这份设定为准，不自行升境。'
+      + '\n本轮剧情结束后，必须按角色卡核心输出协议追加完整的' + '<' + 'status_bar>' + '状态数据块，并以' + '<' + '/status_bar>' + '闭合；不可用内心独白或分隔线替代。';
     root.querySelector('[data-output]').value = output;
     root.querySelector('[data-output-status]').textContent = '卷宗已生成，尚未发送。';
     show('record');

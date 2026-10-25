@@ -19,9 +19,10 @@ const template = fs.readFileSync(path.join(dir, '模板.html'), 'utf8');
 const replaceString = `<style>\n${css}\n</style>\n${template}`;
 const rule = {id:'zyx-hud-ink-v1',scriptName:'ZYX_02_状态栏HUD渲染',findRegex,replaceString,trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null};
 const guardRule={...rule,id:'zyx-hud-malformed-v1',scriptName:'ZYX_02B_状态栏异常记录保护',findRegex:'<status_bar>(?:(?!</?status_bar>)[^])*?</status_bar>',replaceString:'<div class="zyx-hud"><p class="zyx-hud-note">本轮状态记录格式未齐，暂不展开。剧情正文不受影响。</p></div>'};
+const missingRule={...rule,id:'zyx-hud-missing-v1',scriptName:'ZYX_02C_状态栏缺报提示',findRegex:'^(?![^]*(?:<status_bar>|<zyx_gateway>|zyx-zero-floor|zyx-hud))(?<body>[^]+)$',replaceString:'$<body>\n<style>.zyx-hud-missing{box-sizing:border-box;max-width:1120px;margin:12px auto;padding:12px 15px;background:linear-gradient(110deg,#2d3031,#151e25);border:1px solid #737c7f;border-left:4px solid #ae6548;color:#ddcfb6;font:13px/1.8 system-ui;text-align:left}.zyx-hud-missing strong{display:block;color:#f0c19d;font-size:13px}.zyx-hud-missing span{font-size:12px;color:#c2c8c7}</style><div class="zyx-hud zyx-hud-missing" role="region" aria-label="状态数据缺报"><strong>朱颜血·丹杏 · 刑狱志</strong><span>本轮未收到完整状态数据，暂不显示数值。</span></div>'};
 const streamRule={...rule,id:'zyx-hud-stream-v2',scriptName:'ZYX_03_流式传输防闪烁',findRegex:'<status_bar>(?:(?!</?status_bar>)[^])*$',replaceString:''};
 const historyRule={...rule,id:'zyx-hud-history-v2',scriptName:'ZYX_04_历史楼层清理 (剔除历史状态栏节约Token)',findRegex:'<status_bar>(?:(?!</?status_bar>)[^])*?</status_bar>',replaceString:'',markdownOnly:false,promptOnly:true,minDepth:3};
-fs.writeFileSync(path.join(dir,'状态栏正则.json'),JSON.stringify([rule,guardRule,streamRule,historyRule],null,2)+'\n');
+fs.writeFileSync(path.join(dir,'状态栏正则.json'),JSON.stringify([rule,guardRule,missingRule,streamRule,historyRule],null,2)+'\n');
 const snapshots = JSON.parse(fs.readFileSync(path.join(dir,'演示数据.json'),'utf8'));
 function escape(s) { return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function source(snapshot) {
@@ -40,4 +41,4 @@ if(require.main===module) {
   fs.writeFileSync(path.join(dir,'预览.html'),doc);
   console.log('已生成状态栏正则.json、预览.html');
 }
-module.exports={fields,rule,guardRule,streamRule,historyRule,source,render,renderRaw};
+module.exports={fields,rule,guardRule,missingRule,streamRule,historyRule,source,render,renderRaw};

@@ -34,6 +34,23 @@
     "maxDepth": null
   },
   {
+    "id": "zyx-hud-missing-v1",
+    "scriptName": "ZYX_02C_状态栏缺报提示",
+    "findRegex": "^(?![^]*(?:<status_bar>|<zyx_gateway>|zyx-zero-floor|zyx-hud))(?<body>[^]+)$",
+    "replaceString": "$<body>\n<style>.zyx-hud-missing{box-sizing:border-box;max-width:1120px;margin:12px auto;padding:12px 15px;background:linear-gradient(110deg,#2d3031,#151e25);border:1px solid #737c7f;border-left:4px solid #ae6548;color:#ddcfb6;font:13px/1.8 system-ui;text-align:left}.zyx-hud-missing strong{display:block;color:#f0c19d;font-size:13px}.zyx-hud-missing span{font-size:12px;color:#c2c8c7}</style><div class=\"zyx-hud zyx-hud-missing\" role=\"region\" aria-label=\"状态数据缺报\"><strong>朱颜血·丹杏 · 刑狱志</strong><span>本轮未收到完整状态数据，暂不显示数值。</span></div>",
+    "trimStrings": [],
+    "placement": [
+      2
+    ],
+    "disabled": false,
+    "markdownOnly": true,
+    "promptOnly": false,
+    "runOnEdit": true,
+    "substituteRegex": 0,
+    "minDepth": null,
+    "maxDepth": null
+  },
+  {
     "id": "zyx-hud-stream-v2",
     "scriptName": "ZYX_03_流式传输防闪烁",
     "findRegex": "<status_bar>(?:(?!</?status_bar>)[^])*$",

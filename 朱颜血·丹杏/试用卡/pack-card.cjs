@@ -30,16 +30,24 @@ function gatewayDocument(){
 }
 function patchCard(card){
  const result=patchHud(card),scripts=result.data.extensions.regex_scripts;
+ result.data.name=result.data.name.replace(/ · 状态栏V[0-9]+$/,'')+' · 状态栏V4';
+ result.data.character_version=(result.data.character_version??'').replace(/\+zyx-hud-v[0-9]+$/,'')+'+zyx-hud-v4';
  const matches=scripts.map((r,i)=>r.scriptName===gatewayName?i:-1).filter(i=>i>=0);
  if(matches.length!==1)throw new Error('必须唯一匹配零楼入口，拒绝猜测');
  const i=matches[0];
  scripts[i]={...scripts[i],findRegex:'<zyx_gateway>[^]*?</zyx_gateway>',replaceString:'```html\n'+gatewayDocument()+'\n```',placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null};
- const entries=result.data.character_book?.entries;
- const targets=entries?.filter(e=>e.comment==='【状态感知】态势感知仪表盘输出格式契约')??[];
- if(targets.length!==1)throw new Error('必须唯一匹配原状态输出契约');
- const supplement=fs.readFileSync(path.join(__dirname,'../状态栏/输出契约补充.txt'),'utf8').trim();
- const original=targets[0].content.replace(/<zyx_status_output_supplement>[^]*?<\/zyx_status_output_supplement>/g,'').trimEnd();
- targets[0].content=original+'\n\n'+supplement;
+ // 从旧打包器升级时移除本工具曾追加到超长世界书的冗余补充，保留原条目。
+ const entries=result.data.character_book?.entries??[];
+ for(const entry of entries)entry.content=entry.content.replace(/\n\n<zyx_status_output_supplement>[^]*?<\/zyx_status_output_supplement>\s*$/,'');
+ // 必需的短协议随角色描述发送，不再只依赖可被预算/导入状态影响的世界书。
+ const core=fs.readFileSync(path.join(__dirname,'../状态栏/核心输出协议.txt'),'utf8').trim();
+ const description=result.data.description.replace(/\n\n<zyx_required_status_output>[^]*?<\/zyx_required_status_output>\s*$/,'');
+ result.data.description=description+'\n\n'+core;
+ // 原生角色深度提示由SillyTavern每轮直接setExtensionPrompt，不依赖世界书预算或偏好开关。
+ const previousDepth=result.data.extensions.depth_prompt??{};
+ const basePrompt=(previousDepth.prompt??'').replace(/\n*<zyx_required_status_output>[^]*?<\/zyx_required_status_output>\s*$/,'');
+ result.data.extensions.depth_prompt={...previousDepth,prompt:(basePrompt?basePrompt+'\n\n':'')+core,depth:0,role:'system'};
+
  return result;
 }
 if(require.main===module){

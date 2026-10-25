@@ -1,0 +1,34 @@
+{
+  "identity": "gpt 下级独立验证",
+  "sourceModule": "SillyTavern public/script.js（主代理提供的上游文件）",
+  "sourceSHA256": "955c603d0bad84bac5a716f0818d85c2543e44d4c43878e0d63ef1e55ca91855",
+  "transformations": [
+    "仅移除ESM export关键字",
+    "非群聊else内部四行外加可调用函数壳，不改原四行"
+  ],
+  "snippets": {
+    "createLazyFields": {
+      "startLine": 3375,
+      "endLine": 3393,
+      "originalSHA256": "c77d0d207957948c400ed65771ec29addf0eb511a570abcb019818dd2a7a1468"
+    },
+    "getCharacterCardFieldsLazy": {
+      "startLine": 3402,
+      "endLine": 3468,
+      "originalSHA256": "99b8fc2020599b96fd3a0905bfa79c0bde152f217de134cae14432d1e96067f6"
+    },
+    "nonGroupDepthInjection": {
+      "startLine": 4482,
+      "endLine": 4485,
+      "originalSHA256": "c7d74a6ef411beb5853f7c9277e248faa6306fe095b3963bfd767fe215b20384"
+    }
+  },
+  "hostStubs": [
+    "baseChatReplace恒等（undefined为空串）",
+    "两个角色系统/越狱偏好false",
+    "selected_group=null",
+    "世界书未加载，未执行世界书调用",
+    "记录setExtensionPrompt调用而非实际发出模型请求",
+    "opaque inject_ids测试标识；system角色映射使用上游SYSTEM枚举"
+  ]
+}

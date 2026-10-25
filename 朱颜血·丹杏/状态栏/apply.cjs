@@ -1,7 +1,7 @@
 'use strict';
 // 用法：node apply.cjs 输入卡.json 输出卡.json；不修改输入，不触碰零楼与世界书。
 const fs=require('node:fs');const path=require('node:path');
-const {rule,guardRule,streamRule,historyRule}=require('./build.cjs');
+const {rule,guardRule,missingRule,streamRule,historyRule}=require('./build.cjs');
 function patch(card){
  const result=structuredClone(card),scripts=result?.data?.extensions?.regex_scripts;
  if(!Array.isArray(scripts))throw new Error('不是含正则配置的CCv3角色卡');
@@ -15,7 +15,7 @@ function patch(card){
  scripts.splice(hudIndex+1,0,{...guardRule});
  // 03必须只作用显示层，不能在持久化之前抹掉状态数据。
  // 04只处理AI历史提示词，保留depth=0—2的最近记录，不清理用户正文。
- const related=[streamRule,historyRule].map(config=>{
+ const related=[missingRule,streamRule,historyRule].map(config=>{
    const matches=scripts.filter(r=>r.scriptName===config.scriptName);
    if(matches.length>1)throw new Error('状态栏辅助规则重复，拒绝猜测');
    return {...matches[0],...config,id:matches[0]?.id??config.id};

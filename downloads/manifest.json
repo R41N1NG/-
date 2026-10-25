@@ -1,0 +1,11 @@
+{
+  "bytes": 2267238,
+  "sha256": "aceb6930bfa2d73be823e7e70858563545fffe6ed391d158da9776ca450db81c",
+  "features": [
+    "identity-menu",
+    "prison-hud",
+    "core-output-contract",
+    "missing-report-notice",
+    "native-depth-prompt-v4"
+  ]
+}
