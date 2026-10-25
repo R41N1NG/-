@@ -1,78 +1,78 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>丹杏 · 状态栏</title><style>body{margin:0;padding:30px 14px;background:#101618;color:#e8e1d0}.demo-note{max-width:1120px;margin:0 auto 18px;color:#aaa894;font:12px/1.8 system-ui}.demo-scene{max-width:1120px;margin:0 auto 20px;padding:22px;border-left:2px solid #675f48;color:#c4c2b5;font:15px/2 ui-serif,SimSun,serif} @media(max-width:560px){body{padding:14px 8px}}</style><p class="demo-note">状态栏样式演示 · 以下为虚构测试快照，不是当前存档。点击武学、案簿或在场他人可展开，再点同一入口收起。</p><div class="demo-scene">雨脚打湿了窗棂，客栈内灯火微晃。你收好行囊，尚未动身。</div><style>
-/* gpt：据用户截图及参考CSS适配黑金布局；只显示丹杏原卡字段。 */
+/* gpt：保留截图布局，改为丹杏宣德案牍配色：墨黑、旧纸灰、暗铜、朱砂。 */
 .zyx-hud,.zyx-hud * {box-sizing:border-box;}
-.zyx-hud {position:relative;width:100%;max-width:1120px;margin:4px auto;padding:11px 14px;color:#e2e8f0;background:linear-gradient(165deg,#0e1017fa,#090a0ffc);border:1px solid #d4af3747;border-radius:12px;box-shadow:0 16px 44px #0009,inset 0 0 1px 1px #d4af371a;font:12.5px/1.55 -apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;text-align:left;overflow-wrap:anywhere;}
-.zyx-hud .zyx-hud-value:empty::before {content:'未记';color:#94a3b8;}
+.zyx-hud {position:relative;width:100%;max-width:1120px;margin:4px auto;padding:11px 14px;color:#dddcd0;background:linear-gradient(165deg,#151b1cfa,#0d1415fc);border:1px solid #ad987147;border-radius:5px;box-shadow:0 16px 44px #0009,inset 0 0 1px 1px #ad98711a;font:12.5px/1.55 -apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;text-align:left;overflow-wrap:anywhere;}
+.zyx-hud .zyx-hud-value:empty::before {content:'未记';color:#94a394;}
 .zyx-hud .zyx-hud-head {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
-.zyx-hud .zyx-hud-head strong {font-size:14px;color:#fae8b2;letter-spacing:.6px;}
-.zyx-hud .zyx-hud-head strong>span {color:#d4af37;}
-.zyx-hud .zyx-hud-chapter {font-size:11px;color:#d4af37;background:#d4af3714;border:1px solid #d4af3747;border-radius:4px;padding:2px 7px;letter-spacing:.3px;}
-.zyx-hud .zyx-hud-grid {display:flex;flex-direction:column;gap:6px;border-bottom:1px solid #d4af3738;padding-bottom:10px;margin-bottom:10px;}
+.zyx-hud .zyx-hud-head strong {font-size:14px;color:#e5dac1;letter-spacing:.6px;}
+.zyx-hud .zyx-hud-head strong>span {color:#ad9871;}
+.zyx-hud .zyx-hud-chapter {font-size:11px;color:#ad9871;background:#ad987114;border:1px solid #ad987147;border-radius:4px;padding:2px 7px;letter-spacing:.3px;}
+.zyx-hud .zyx-hud-grid {display:flex;flex-direction:column;gap:6px;border-bottom:1px solid #ad987138;padding-bottom:10px;margin-bottom:10px;}
 .zyx-hud .zyx-hud-row {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;}
 .zyx-hud .zyx-hud-env-row {grid-template-columns:minmax(150px,.31fr) minmax(0,1fr);}
-.zyx-hud .zyx-hud-pill {display:flex;align-items:flex-start;gap:6px;min-width:0;padding:5px 9px;font-size:11.5px;line-height:1.4;border-radius:6px;border:1px solid #d4af3747;background:#121620bf;}
+.zyx-hud .zyx-hud-pill {display:flex;align-items:flex-start;gap:6px;min-width:0;padding:5px 9px;font-size:11.5px;line-height:1.4;border-radius:6px;border:1px solid #ad987147;background:#1a2220bf;}
 .zyx-hud .zyx-hud-pill>span:first-child {flex-shrink:0;}
-.zyx-hud .zyx-hud-time {color:#fef08a;border-color:#eab30852;background:#eab30814;}
-.zyx-hud .zyx-hud-place {color:#7dd3fc;border-color:#38bdf852;background:#38bdf80f;}
-.zyx-hud .zyx-hud-weather {color:#fed7aa;border-color:#f9731647;background:#f9731612;}
-.zyx-hud .zyx-hud-senses {color:#a7f3d0;border-color:#10b98147;background:#10b98110;}
+.zyx-hud .zyx-hud-time {color:#ddd0aa;border-color:#a7966d52;background:#a7966d14;}
+.zyx-hud .zyx-hud-place {color:#b8c8be;border-color:#8eaaa352;background:#8eaaa30f;}
+.zyx-hud .zyx-hud-weather {color:#c8b49a;border-color:#a77a5447;background:#a77a5412;}
+.zyx-hud .zyx-hud-senses {color:#b5c7b0;border-color:#86947a47;background:#86947a10;}
 .zyx-hud .zyx-hud-tools {display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:start;}
-.zyx-hud .zyx-hud-elapsed {color:#a5b4fc;border-color:#818cf852;background:#818cf810;min-height:30px;}
+.zyx-hud .zyx-hud-elapsed {color:#c3c5ae;border-color:#91a49752;background:#91a49710;min-height:30px;}
 .zyx-hud summary {cursor:pointer;list-style:none;}
 .zyx-hud summary::-webkit-details-marker {display:none;}
-.zyx-hud summary:focus-visible {outline:2px solid #eab308;outline-offset:3px;}
+.zyx-hud summary:focus-visible {outline:2px solid #a7966d;outline-offset:3px;}
 .zyx-hud .zyx-hud-tool {position:relative;min-width:0;}
-.zyx-hud .zyx-hud-tool>summary {display:flex;align-items:center;gap:7px;padding:5px 9px;min-height:30px;border:1px solid #d4af3766;border-radius:6px;color:#e8d9a0;background:#d4af3714;font-size:11.5px;}
-.zyx-hud .zyx-hud-tool>summary:hover {border-color:#d4af37;}
+.zyx-hud .zyx-hud-tool>summary {display:flex;align-items:center;gap:7px;padding:5px 9px;min-height:30px;border:1px solid #ad987166;border-radius:6px;color:#e8d9a0;background:#ad987114;font-size:11.5px;}
+.zyx-hud .zyx-hud-tool>summary:hover {border-color:#ad9871;}
 .zyx-hud .zyx-hud-drop {margin-left:auto;color:#a39261;}
-.zyx-hud .zyx-hud-tool-icon {font-weight:700;color:#d4af37;}
-.zyx-hud .zyx-hud-record>summary {color:#fde047;background:#7c2d121a;white-space:nowrap;}
-.zyx-hud .zyx-hud-popover {padding:12px;background:#121722;border:1px solid #d4af3752;border-top:0;border-radius:0 0 6px 6px;}
+.zyx-hud .zyx-hud-tool-icon {font-weight:700;color:#ad9871;}
+.zyx-hud .zyx-hud-record>summary {color:#d4c39b;background:#7044371a;white-space:nowrap;}
+.zyx-hud .zyx-hud-popover {padding:12px;background:#121722;border:1px solid #ad987152;border-top:0;border-radius:0 0 6px 6px;}
 .zyx-hud .zyx-hud-record .zyx-hud-popover {position:absolute;right:0;top:100%;width:270px;max-width:calc(100vw - 48px);z-index:2;box-shadow:0 10px 26px #000b;}
-.zyx-hud h4 {margin:0 0 8px;font-size:12px;color:#d4af37;}
+.zyx-hud h4 {margin:0 0 8px;font-size:12px;color:#ad9871;}
 .zyx-hud dl {display:grid;grid-template-columns:65px minmax(0,1fr);gap:7px 10px;margin:0;font-size:11px;}
 .zyx-hud dt {color:#c5af6b;}
 .zyx-hud dd {margin:0;color:#d0d6e0;}
-.zyx-hud small {display:block;font-size:10px;color:#94a3b8;margin-top:4px;}
-.zyx-hud .zyx-hud-trend {padding:9px 11px;border:1px solid #f43f5e47;border-left:4px solid #f43f5e;border-radius:9px;background:linear-gradient(100deg,#88133724,#4c05191a);margin-bottom:10px;}
+.zyx-hud small {display:block;font-size:10px;color:#94a394;margin-top:4px;}
+.zyx-hud .zyx-hud-trend {padding:9px 11px;border:1px solid #a9564547;border-left:4px solid #a95645;border-radius:4px;background:linear-gradient(100deg,#652d2724,#42221e1a);margin-bottom:10px;}
 .zyx-hud .zyx-hud-trend-head {display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:5px;}
-.zyx-hud .zyx-hud-trend-head>b {padding:2px 7px;border:1px solid #f43f5e66;border-radius:4px;font-size:10.5px;color:#fecdd3;background:#9f123933;}
+.zyx-hud .zyx-hud-trend-head>b {padding:2px 7px;border:1px solid #a9564566;border-radius:4px;font-size:10.5px;color:#ddb8a5;background:#763b3033;}
 .zyx-hud .zyx-hud-trend-head>strong {font-size:12px;color:#eee3e5;}
 .zyx-hud .zyx-hud-trend p {margin:0;font-size:11.5px;color:#d5cbd0;line-height:1.6;}
-.zyx-hud .zyx-hud-companion {display:flex;align-items:stretch;gap:13px;padding:10px 12px;background:linear-gradient(145deg,#161a24cc,#0d1017eb);border:1px solid #d4af373d;border-radius:10px;box-shadow:0 4px 20px #0007;margin-bottom:10px;}
-.zyx-hud .zyx-hud-avatar {width:18%;min-width:120px;max-width:188px;min-height:250px;background:#0d111a;border:1.8px solid #d4af3766;border-radius:8px;box-shadow:0 0 14px #0008;flex-shrink:0;}
+.zyx-hud .zyx-hud-companion {display:flex;align-items:stretch;gap:13px;padding:10px 12px;background:linear-gradient(145deg,#202726cc,#11191aeb);border:1px solid #ad98713d;border-radius:5px;box-shadow:0 4px 20px #0007;margin-bottom:10px;}
+.zyx-hud .zyx-hud-avatar {width:18%;min-width:120px;max-width:188px;min-height:250px;background:#141b1d;border:1.8px solid #ad987166;border-radius:4px;box-shadow:0 0 14px #0008;flex-shrink:0;}
 .zyx-hud .zyx-hud-companion-body {display:flex;flex-direction:column;gap:8px;min-width:0;flex:1;}
 .zyx-hud .zyx-hud-person {display:flex;align-items:center;flex-wrap:wrap;gap:6px;row-gap:5px;}
 .zyx-hud h3 {margin:0;font-size:15px;font-weight:700;color:#fff;letter-spacing:.5px;}
-.zyx-hud .zyx-hud-role-tag {font-size:10.5px;color:#fef08a;background:#d4af3726;border:1px solid #d4af3759;padding:1px 5px;border-radius:4px;}
-.zyx-hud .zyx-hud-stage {display:inline-flex;gap:3px;font-size:11.5px;font-weight:700;padding:3px 7px;border-radius:4px;letter-spacing:.4px;color:#fef08a;background:linear-gradient(135deg,#a1620759,#1e1b4b73);border:1px solid #eab3088c;box-shadow:0 0 10px #eab30824;}
-.zyx-hud .zyx-hud-aura {font-size:11px;color:#93c5fd;background:#0f172a99;border:1px solid #93c5fd40;padding:3px 7px;border-radius:4px;}
+.zyx-hud .zyx-hud-role-tag {font-size:10.5px;color:#ddd0aa;background:#ad987126;border:1px solid #ad987159;padding:1px 5px;border-radius:4px;}
+.zyx-hud .zyx-hud-stage {display:inline-flex;gap:3px;font-size:11.5px;font-weight:700;padding:3px 7px;border-radius:4px;letter-spacing:.4px;color:#ddd0aa;background:linear-gradient(135deg,#6e634559,#1e1b4b73);border:1px solid #a7966d8c;box-shadow:none;}
+.zyx-hud .zyx-hud-aura {font-size:11px;color:#a7bcad;background:#17231f99;border:1px solid #a7bcad40;padding:3px 7px;border-radius:4px;}
 .zyx-hud .zyx-hud-reason {margin:0;font-size:11.5px;color:#b8a888;line-height:1.5;}
-.zyx-hud .zyx-hud-reason b,.zyx-hud .zyx-hud-main b {color:#d4af37;font-weight:700;margin-right:5px;}
-.zyx-hud .zyx-hud-main {flex:1;display:flex;flex-direction:column;gap:8px;padding:10px 12px;background:linear-gradient(150deg,#1a1e2aa6,#0f121ad9);border:1px solid #d4af3729;border-radius:10px;}
-.zyx-hud .zyx-hud-mind {margin:0;padding:4px 8px;font-size:11.5px;line-height:1.55;background:#0f172a8c;border-left:2.5px solid #d4af37;border-radius:0 4px 4px 0;}
-.zyx-hud .zyx-hud-demeanor {margin:0;padding:6px 10px;font-size:13px;line-height:1.7;color:#e8e4d8;background:#0f172a59;border-left:3px solid #d4af37;border-radius:0 4px 4px 0;}
-.zyx-hud .zyx-hud-subfold {font-size:10px;color:#94a3b8;}
+.zyx-hud .zyx-hud-reason b,.zyx-hud .zyx-hud-main b {color:#ad9871;font-weight:700;margin-right:5px;}
+.zyx-hud .zyx-hud-main {flex:1;display:flex;flex-direction:column;gap:8px;padding:10px 12px;background:linear-gradient(150deg,#242c29a6,#161f1ed9);border:1px solid #ad987129;border-radius:5px;}
+.zyx-hud .zyx-hud-mind {margin:0;padding:4px 8px;font-size:11.5px;line-height:1.55;background:#17231f8c;border-left:2.5px solid #ad9871;border-radius:0 4px 4px 0;}
+.zyx-hud .zyx-hud-demeanor {margin:0;padding:6px 10px;font-size:13px;line-height:1.7;color:#e0dbca;background:#17231f59;border-left:3px solid #ad9871;border-radius:0 4px 4px 0;}
+.zyx-hud .zyx-hud-subfold {font-size:10px;color:#94a394;}
 .zyx-hud .zyx-hud-subfold>summary {padding:1px 0;}
-.zyx-hud .zyx-hud-extra {padding:10px;background:#0d111a;border:1px solid #d4af3733;border-radius:6px;margin-top:5px;}
+.zyx-hud .zyx-hud-extra {padding:10px;background:#141b1d;border:1px solid #ad987133;border-radius:6px;margin-top:5px;}
 .zyx-hud .zyx-hud-extra-person {margin-bottom:10px;}
 .zyx-hud .zyx-hud-extra-person:has(>h4:empty) {display:none;}
 .zyx-hud .zyx-hud-extra:has(.zyx-hud-extra-person>h4:not(:empty)) .zyx-hud-extra-empty {display:none;}
 .zyx-hud .zyx-hud-extra-empty {margin:0;}
-.zyx-hud .zyx-hud-extra-fields {font-size:11px;color:#cbd5e1;}
+.zyx-hud .zyx-hud-extra-fields {font-size:11px;color:#bfc5bc;}
 .zyx-hud .zyx-hud-extra-fields p {display:flex;gap:8px;margin:5px 0;}
-.zyx-hud .zyx-hud-extra-fields em {font-style:normal;color:#d4af37;flex:0 0 26px;}
+.zyx-hud .zyx-hud-extra-fields em {font-style:normal;color:#ad9871;flex:0 0 26px;}
 .zyx-hud .zyx-hud-extra-stage,.zyx-hud .zyx-hud-extra-aura {color:#bfdbfe;font-size:10px;margin-right:8px;}
-.zyx-hud .zyx-hud-clue {display:flex;align-items:baseline;gap:7px;padding:10px 11px;border:1px solid #d4af3752;border-left:4px solid #d4af37;border-radius:10px;background:#d4af3708;margin-bottom:9px;color:#f6e7b4;font-size:11.5px;}
-.zyx-hud .zyx-hud-clue>b {flex-shrink:0;color:#fff1be;}
+.zyx-hud .zyx-hud-clue {display:flex;align-items:baseline;gap:7px;padding:10px 11px;border:1px solid #ad987152;border-left:4px solid #ad9871;border-radius:5px;background:#ad987108;margin-bottom:9px;color:#f6e7b4;font-size:11.5px;}
+.zyx-hud .zyx-hud-clue>b {flex-shrink:0;color:#e6d9b9;}
 .zyx-hud .zyx-hud-clue p {margin:0;min-width:0;line-height:1.6;}
-.zyx-hud .zyx-hud-rumors {padding:9px 11px;border:1px solid #d4af373d;background:#0a0e16a6;border-radius:10px;}
-.zyx-hud .zyx-hud-rumors>section {display:flex;align-items:baseline;gap:8px;padding:1px 0 7px;margin-bottom:6px;border-bottom:1px dashed #d4af3726;}
+.zyx-hud .zyx-hud-rumors {padding:9px 11px;border:1px solid #ad98713d;background:#111a1aa6;border-radius:5px;}
+.zyx-hud .zyx-hud-rumors>section {display:flex;align-items:baseline;gap:8px;padding:1px 0 7px;margin-bottom:6px;border-bottom:1px dashed #ad987126;}
 .zyx-hud .zyx-hud-rumors>section:last-child {margin:0;padding-bottom:1px;border-bottom:0;}
-.zyx-hud .zyx-hud-rumors h4 {flex:0 0 76px;margin:0;padding:2px 0;font-size:11px;line-height:1.25;text-align:center;border-radius:4px;color:#7dd3fc;background:#0e749038;border:1px solid #38bdf861;}
-.zyx-hud .zyx-hud-rumors>section:last-child h4 {color:#fde047;background:#a1620738;border-color:#eab30861;}
-.zyx-hud .zyx-hud-rumors p {flex:1;min-width:0;margin:0;color:#cbd5e1;font-size:11.5px;line-height:1.55;}
-.zyx-hud .zyx-hud-note {font-size:11px;color:#94a3b8;}
+.zyx-hud .zyx-hud-rumors h4 {flex:0 0 76px;margin:0;padding:2px 0;font-size:11px;line-height:1.25;text-align:center;border-radius:4px;color:#b8c8be;background:#46645e38;border:1px solid #8eaaa361;}
+.zyx-hud .zyx-hud-rumors>section:last-child h4 {color:#d4c39b;background:#6e634538;border-color:#a7966d61;}
+.zyx-hud .zyx-hud-rumors p {flex:1;min-width:0;margin:0;color:#bfc5bc;font-size:11.5px;line-height:1.55;}
+.zyx-hud .zyx-hud-note {font-size:11px;color:#94a394;}
 @media(max-width:650px) {
  .zyx-hud {padding:10px;}
  .zyx-hud .zyx-hud-chapter {font-size:9px;padding:2px 4px;}
@@ -95,19 +95,28 @@
 }
 @media(prefers-reduced-motion:reduce) { .zyx-hud * {scroll-behavior:auto;} }
 
+/* 字形与装饰轻量收束；不增加纸纹、颗粒或金属高光。 */
+.zyx-hud .zyx-hud-head strong {font-family:ui-serif,'Songti SC',SimSun,serif;font-size:15px;letter-spacing:.1em;font-weight:600;}
+.zyx-hud .zyx-hud-head strong>span {color:#b29f7b;}
+.zyx-hud .zyx-hud-chapter {color:#c49379;border-color:#98574466;background:#68372c1a;border-radius:2px;}
+.zyx-hud h3 {font-family:ui-serif,'Songti SC',SimSun,serif;font-size:16px;color:#eee7d5;}
+.zyx-hud .zyx-hud-trend {border-left-width:3px;}
+.zyx-hud .zyx-hud-stage {border-color:#b0a07c66;background:linear-gradient(135deg,#72614330,#3d49402b);}
+.zyx-hud .zyx-hud-avatar {box-shadow:inset 0 0 18px #0003;border-color:#94876766;}
+
 </style>
 <div class="zyx-hud" role="region" aria-label="朱颜血丹杏态势仪">
   <header class="zyx-hud-head"><strong>❖ 朱颜血·丹杏 <span>· 态势仪</span></strong><span class="zyx-hud-chapter">【宣德 · 边陲风云】</span></header>
   <div class="zyx-hud-grid">
-    <div class="zyx-hud-row"><div class="zyx-hud-pill zyx-hud-time"><span aria-hidden="true">⌛</span><span class="zyx-hud-value">宣德五年四月初一 · 酉时 17:30</span></div><div class="zyx-hud-pill zyx-hud-place"><span aria-hidden="true">📍</span><span class="zyx-hud-value">江西赣州府 · 神仙岭杏花村客栈</span></div></div>
-    <div class="zyx-hud-row zyx-hud-env-row"><div class="zyx-hud-pill zyx-hud-weather"><span aria-hidden="true">🍂</span><span class="zyx-hud-value">暮春微雨 · 山雾迷蒙</span></div><div class="zyx-hud-pill zyx-hud-senses"><span aria-hidden="true">♧</span><span class="zyx-hud-value">檐下滴水声急，风里带着杏花酒香。</span></div></div>
+    <div class="zyx-hud-row"><div class="zyx-hud-pill zyx-hud-time"><span aria-hidden="true">时</span><span class="zyx-hud-value">宣德五年四月初一 · 酉时 17:30</span></div><div class="zyx-hud-pill zyx-hud-place"><span aria-hidden="true">地</span><span class="zyx-hud-value">江西赣州府 · 神仙岭杏花村客栈</span></div></div>
+    <div class="zyx-hud-row zyx-hud-env-row"><div class="zyx-hud-pill zyx-hud-weather"><span aria-hidden="true">候</span><span class="zyx-hud-value">暮春微雨 · 山雾迷蒙</span></div><div class="zyx-hud-pill zyx-hud-senses"><span aria-hidden="true">境</span><span class="zyx-hud-value">檐下滴水声急，风里带着杏花酒香。</span></div></div>
     <div class="zyx-hud-tools">
       <details class="zyx-hud-tool zyx-hud-growth"><summary><span class="zyx-hud-tool-icon">武</span><span>本轮所悟 · <span class="zyx-hud-value">无</span></span><span class="zyx-hud-drop" aria-hidden="true">⌄</span></summary><div class="zyx-hud-popover"><h4>武学札记</h4><dl><dt>所练所悟</dt><dd class="zyx-hud-value">无</dd><dt>领悟契机</dt><dd class="zyx-hud-value">无</dd><dt>成长分量</dt><dd><span class="zyx-hud-value">无</span><small>一为常悟，二为大悟；无则未记成长。</small></dd></dl></div></details>
-      <div class="zyx-hud-pill zyx-hud-elapsed"><span aria-hidden="true">⌛</span><span>历时 <span class="zyx-hud-value">半刻钟</span></span></div>
+      <div class="zyx-hud-pill zyx-hud-elapsed"><span aria-hidden="true">时</span><span>历时 <span class="zyx-hud-value">半刻钟</span></span></div>
       <details class="zyx-hud-tool zyx-hud-record"><summary>▤ 案簿</summary><div class="zyx-hud-popover"><h4>人物动向</h4><dl><dt>白雪莲</dt><dd class="zyx-hud-value">未明</dd><dt>薛霜灵</dt><dd class="zyx-hud-value">未明</dd><dt>伤亡勘验</dt><dd class="zyx-hud-value">无</dd></dl></div></details>
     </div>
   </div>
-  <section class="zyx-hud-trend"><div class="zyx-hud-trend-head"><b>♟ 天下大势</b><strong>边陲暗流 · 本轮气象</strong></div><p class="zyx-hud-value">海捕公文沿官道逐站传下，春雨仍阻着深山驿路，县城内外的消息尚未汇到一处。</p></section>
+  <section class="zyx-hud-trend"><div class="zyx-hud-trend-head"><b>天下大势</b><strong>边陲暗流 · 本轮气象</strong></div><p class="zyx-hud-value">海捕公文沿官道逐站传下，春雨仍阻着深山驿路，县城内外的消息尚未汇到一处。</p></section>
   <section class="zyx-hud-companion">
     <div class="zyx-hud-avatar" aria-hidden="true"></div>
     <div class="zyx-hud-companion-body">
@@ -117,7 +126,7 @@
       <details class="zyx-hud-subfold"><summary>在场他人<span aria-hidden="true"> ↗</span></summary><div class="zyx-hud-extra"><article class="zyx-hud-extra-person"><h4></h4><div class="zyx-hud-extra-fields"><span class="zyx-hud-extra-stage"></span><span class="zyx-hud-extra-aura"></span><p><em>心声</em><span class="zyx-hud-value"></span></p><p><em>形貌</em><span class="zyx-hud-value"></span></p></div></article><article class="zyx-hud-extra-person"><h4></h4><div class="zyx-hud-extra-fields"><span class="zyx-hud-extra-stage"></span><span class="zyx-hud-extra-aura"></span><p><em>心声</em><span class="zyx-hud-value"></span></p><p><em>形貌</em><span class="zyx-hud-value"></span></p></div></article><p class="zyx-hud-extra-empty">未记在场他人。</p></div></details>
     </div>
   </section>
-  <section class="zyx-hud-clue"><span aria-hidden="true">🔎</span><b>【重要线索】</b><p class="zyx-hud-value">柜上压着一张被雨打湿的旧告示，落款与印文尚未辨清，店家也没有提起它的来处。</p></section>
+  <section class="zyx-hud-clue"><span aria-hidden="true">察</span><b>【重要线索】</b><p class="zyx-hud-value">柜上压着一张被雨打湿的旧告示，落款与印文尚未辨清，店家也没有提起它的来处。</p></section>
   <div class="zyx-hud-rumors"><section><h4>【本地风闻】</h4><p class="zyx-hud-value">挑担的脚夫说北面山道积水未退，往长宁县的行人多在此歇脚，等明早再试路况。</p></section><section><h4>【远地风闻】</h4><p class="zyx-hud-value">南来的客商谈起府城近日查验路引趋严，至于缘由，各人说法不同，暂没有确讯。</p></section></div>
 </div>
 </html>
