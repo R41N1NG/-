@@ -34,7 +34,7 @@ function renderRaw(raw) { return raw.replace(new RegExp(findRegex,'g'),replaceSt
 function render(snapshot) { return renderRaw(source(snapshot)); }
 if(require.main===module) {
   // 预览外壳仅用于本地看图；不包含游戏控制或新增结算规则。
-  const doc=`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>丹杏 · 状态栏</title><style>body{margin:0;padding:30px 14px;background:#101618;color:#e8e1d0}.demo-note{max-width:760px;margin:0 auto 18px;color:#aaa894;font:12px/1.8 system-ui}.demo-scene{max-width:760px;margin:0 auto 20px;padding:22px;border-left:2px solid #675f48;color:#c4c2b5;font:15px/2 ui-serif,SimSun,serif} @media(max-width:560px){body{padding:14px 8px}}</style><p class="demo-note">状态栏样式演示 · 以下为虚构测试快照，不是当前存档。点击各行可展开，再点同一行即可收起。</p><div class="demo-scene">雨脚打湿了窗棂，客栈内灯火微晃。你收好行囊，尚未动身。</div>${render(snapshots.同行)}</html>`;
+  const doc=`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>丹杏 · 状态栏</title><style>body{margin:0;padding:30px 14px;background:#101618;color:#e8e1d0}.demo-note{max-width:1120px;margin:0 auto 18px;color:#aaa894;font:12px/1.8 system-ui}.demo-scene{max-width:1120px;margin:0 auto 20px;padding:22px;border-left:2px solid #675f48;color:#c4c2b5;font:15px/2 ui-serif,SimSun,serif} @media(max-width:560px){body{padding:14px 8px}}</style><p class="demo-note">状态栏样式演示 · 以下为虚构测试快照，不是当前存档。点击武学、案簿或在场他人可展开，再点同一入口收起。</p><div class="demo-scene">雨脚打湿了窗棂，客栈内灯火微晃。你收好行囊，尚未动身。</div>${render(snapshots.同行)}</html>`;
   fs.writeFileSync(path.join(dir,'预览.html'),doc);
   console.log('已生成状态栏正则.json、预览.html');
 }
