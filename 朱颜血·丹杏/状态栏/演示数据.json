@@ -1,0 +1,37 @@
+{
+  "同行": {
+    "time": "宣德五年四月初一 · 酉时 17:30",
+    "elapsed": "半刻钟",
+    "location": "江西赣州府 · 神仙岭杏花村客栈",
+    "weather": "暮春微雨 · 山雾迷蒙",
+    "environment": "檐下滴水声急，风里带着杏花酒香。",
+    "favor_char": "陆寒渊",
+    "favor_stage": "陌路",
+    "favor_aura": "冰封十丈",
+    "favor_reason": "你未探问来历，他也暂且收起试探。",
+    "favor_mind": "来路尚未摸清，且听此人如何应答。",
+    "favor_companion": "他将茶盏搁回桌边，右手仍隐在袖中。门外脚步经过时，他略偏过头，目光从半掩的窗缝扫向院中，随即又落回你面前。",
+    "extra_char_1": {"name":"无","stage":"无","aura":"无","mind":"无","demeanor":"无"},
+    "extra_char_2": "无",
+    "growth_skill": "无",
+    "growth_reason": "无",
+    "growth_weight": "无",
+    "roster_event": "无",
+    "bailian_state": "未明",
+    "shuangling_state": "未明",
+    "clue": "柜上压着一张被雨打湿的旧告示，落款与印文尚未辨清，店家也没有提起它的来处。",
+    "clue_obtained": "0",
+    "news_near": "挑担的脚夫说北面山道积水未退，往长宁县的行人多在此歇脚，等明早再试路况。",
+    "news_mid": "南来的客商谈起府城近日查验路引趋严，至于缘由，各人说法不同，暂没有确讯。",
+    "crisis": "海捕公文沿官道逐站传下，春雨仍阻着深山驿路，县城内外的消息尚未汇到一处。"
+  },
+  "独处": {
+    "time":"宣德五年四月初一 · 戌时 19:00",
+    "elapsed":"半个时辰",
+    "location":"杏花村客栈 · 客房",
+    "weather":"细雨未歇",
+    "environment":"灯花轻爆，雨声隔窗。",
+    "favor_char":"无","favor_stage":"无","favor_aura":"无","favor_reason":"无","favor_mind":"无","favor_companion":"独处静息 · 暂无他人",
+    "extra_char_1":"无","extra_char_2":"无","growth_skill":"无","growth_reason":"无","growth_weight":"无","roster_event":"无","bailian_state":"未明","shuangling_state":"未明","clue":"无","clue_obtained":"0","news_near":"无","news_mid":"无","crisis":"无"
+  }
+}

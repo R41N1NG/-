@@ -1,0 +1,32 @@
+<div class="zyx-hud" role="region" aria-label="丹杏行旅手记">
+  <header class="zyx-hud-head"><span>朱颜血 · 丹杏</span><b>行旅手记</b><span class="zyx-hud-seal">录</span></header>
+  <div class="zyx-hud-top">
+    <div class="zyx-hud-time"><span class="zyx-hud-label">时 令</span><span class="zyx-hud-value">$<time></span></div>
+    
+    <div class="zyx-hud-place"><span class="zyx-hud-label">行 至</span><span class="zyx-hud-value">$<location></span></div>
+    <div class="zyx-hud-weather"><span class="zyx-hud-label">天 候</span><span class="zyx-hud-value">$<weather></span></div>
+    <div class="zyx-hud-senses"><span class="zyx-hud-label">四 围</span><span class="zyx-hud-value">$<environment></span></div>
+  </div>
+  <div class="zyx-hud-round"><span>此番历时 <b class="zyx-hud-value">$<elapsed></b></span><span>本轮所习 <b class="zyx-hud-value">$<growth_skill></b></span></div>
+  <section class="zyx-hud-trend"><h4>天下气象</h4><p class="zyx-hud-value">$<crisis></p></section>
+  <div class="zyx-hud-ledger">
+    <details class="zyx-hud-fold zyx-hud-bond" open>
+      <summary><span class="zyx-hud-index">壹</span><span class="zyx-hud-title">羁绊心境</span><span class="zyx-hud-summary"><span class="zyx-hud-value">$<favor_char></span><i>·</i><span class="zyx-hud-value">$<favor_stage></span></span><span class="zyx-hud-chevron" aria-hidden="true">＋</span></summary>
+      <div class="zyx-hud-body">
+        <div class="zyx-hud-person"><h3 class="zyx-hud-value">$<favor_char></h3><span class="zyx-hud-aura zyx-hud-value">$<favor_aura></span></div>
+        <dl><dt>因由</dt><dd class="zyx-hud-value">$<favor_reason></dd><dt>心声</dt><dd class="zyx-hud-value">$<favor_mind></dd><dt>形貌</dt><dd class="zyx-hud-value">$<favor_companion></dd></dl>
+        <details class="zyx-hud-subfold"><summary>在场他人<span aria-hidden="true"> ↗</span></summary><div class="zyx-hud-extra"><article class="zyx-hud-extra-person"><h4>$<e1_name></h4><div class="zyx-hud-extra-fields"><span class="zyx-hud-extra-stage">$<e1_stage></span><span class="zyx-hud-extra-aura">$<e1_aura></span><p><em>心声</em><span class="zyx-hud-value">$<e1_mind></span></p><p><em>形貌</em><span class="zyx-hud-value">$<e1_demeanor></span></p></div></article><article class="zyx-hud-extra-person"><h4>$<e2_name></h4><div class="zyx-hud-extra-fields"><span class="zyx-hud-extra-stage">$<e2_stage></span><span class="zyx-hud-extra-aura">$<e2_aura></span><p><em>心声</em><span class="zyx-hud-value">$<e2_mind></span></p><p><em>形貌</em><span class="zyx-hud-value">$<e2_demeanor></span></p></div></article><p class="zyx-hud-extra-empty">未记在场他人。</p></div></details>
+      </div>
+    </details>
+    <details class="zyx-hud-fold">
+      <summary><span class="zyx-hud-index">贰</span><span class="zyx-hud-title">武学札记</span><span class="zyx-hud-summary zyx-hud-value">$<growth_skill></span><span class="zyx-hud-chevron" aria-hidden="true">＋</span></summary>
+      <div class="zyx-hud-body"><p class="zyx-hud-note">只记此番所练所悟，非现有境界或功力总量。</p><dl><dt>所习</dt><dd class="zyx-hud-value">$<growth_skill></dd><dt>契机</dt><dd class="zyx-hud-value">$<growth_reason></dd><dt>分量</dt><dd><span class="zyx-hud-value">$<growth_weight></span><small class="zyx-hud-key">一为常悟，二为大悟；无则未记成长。</small></dd></dl></div>
+    </details>
+    <section class="zyx-hud-clue"><h4>眼前线索</h4><p class="zyx-hud-value">$<clue></p></section>
+    <div class="zyx-hud-rumors"><section><h4>近处风闻</h4><p class="zyx-hud-value">$<news_near></p></section><section><h4>远地传闻</h4><p class="zyx-hud-value">$<news_mid></p></section></div>
+    <details class="zyx-hud-fold">
+      <summary><span class="zyx-hud-index">叁</span><span class="zyx-hud-title">人物动向</span><span class="zyx-hud-summary">处境 · 伤亡</span><span class="zyx-hud-chevron" aria-hidden="true">＋</span></summary>
+      <div class="zyx-hud-body"><dl><dt>白雪莲</dt><dd class="zyx-hud-value">$<bailian_state></dd><dt>薛霜灵</dt><dd class="zyx-hud-value">$<shuangling_state></dd><dt>伤亡勘验</dt><dd class="zyx-hud-value">$<roster_event></dd></dl><p class="zyx-hud-note">依本轮已报之事存记，不据风闻判生死。</p></div>
+    </details>
+  </div>
+</div>
