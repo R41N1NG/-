@@ -8,24 +8,16 @@
  const triggers=new Map();
  let disposed=false,mapInstance=null,portraitRequest=0,prisonRequest=0,currentPortrait='',prisonPortrait='',selectedPrisoner=null;
  const snapshot={realm:text('[data-reported-realm]'),skills:text('[data-reported-skills]'),growth:{skill:text('[data-growth-skill]'),reason:text('[data-growth-reason]'),weight:text('[data-growth-weight]')}};
- const statusSnapshot=()=>({time:text('[data-snapshot-time]'),elapsed:text('[data-reported-elapsed]'),location:text('[data-current-location]'),bailian_state:text('[data-reported-bailian]'),shuangling_state:text('[data-reported-shuangling]'),roster_event:text('[data-reported-roster]')});
- function windows(){const all=[window];try{if(window.parent!==window)all.push(window.parent)}catch{}try{if(window.top!==window&&!all.includes(window.top))all.push(window.top)}catch{}return all;}
- function host(){for(const w of windows()){try{const c=w.SillyTavern?.getContext?.();if(c&&Array.isArray(c.chat))return {window:w,context:c};}catch{}}return null;}
- function field(body,tag){const matches=[...String(body).matchAll(new RegExp('<'+tag+'>([^<]*)</'+tag+'>','g'))];return matches.length===1?ledger.decodeText(matches[0][1]):'';}
- function matches(body){const checks=[['time',text('[data-snapshot-time]')],['location',text('[data-current-location]')],['favor_char',text('[data-focal-name]')]].filter(([,value])=>value);return checks.length>0&&checks.every(([key,value])=>field(body,key)===value);}
- function boundHistory(){const h=host();if(!h)return null;let index=null;
-  try{const node=window.frameElement?.closest('.mes');const attr=node?.getAttribute('mesid')??node?.getAttribute('data-message-id');if(attr!==null&&attr!==undefined&&/^\d+$/.test(attr))index=Number(attr);}catch{}
-  if(index===null){for(const w of windows()){try{const fn=w.getCurrentMessageId??w.TavernHelper?.getCurrentMessageId;if(typeof fn==='function'){const id=fn.call(w);if(Number.isInteger(id)){index=id;break;}}}catch{}}}
-  if(index!==null){const m=h.context.chat[index];return m&&!m.is_user&&matches(m.mes??m.message??'')?{...h,index}:null;}
-  const candidates=h.context.chat.map((m,i)=>!m?.is_user&&matches(m?.mes??m?.message??'')?i:-1).filter(i=>i>=0);
-  return candidates.length===1?{...h,index:candidates[0]}:null;
- }
+ const statusSnapshot=()=>({time:text('[data-snapshot-time]'),elapsed:text('[data-reported-elapsed]'),location:text('[data-current-location]'),bailian_state:text('[data-reported-bailian]'),shuangling_state:text('[data-reported-shuangling]'),roster_event:text('[data-reported-roster]'),...Object.fromEntries(['danniang','yuniang','baiyulian','xieyunsu','junzhu','qingluo'].map(key=>[key+'_state',text('[data-reported-'+key+']')]))});
+ const windows=window.ZYXHostBridge.windows,host=window.ZYXHostBridge.host;
+ const bridge=window.ZYXHostBridge.create({snapshot:{time:text('[data-snapshot-time]'),location:text('[data-current-location]'),favor_char:text('[data-focal-name]')}});
+ const runtime=window.ZYXCore.create({bridge,snapshot:{martial:snapshot,status:statusSnapshot()},modules:{
+  martial:{derive:ctx=>ctx.source==='history'?ledger.fromChat(ctx.chat,{cutoff:ctx.cutoff}):ledger.fromSnapshot(ctx.snapshot.martial)},
+  status:{derive:ctx=>{const current=records.fromSnapshot(ctx.snapshot.status),value=ctx.source==='history'?records.fromChat(ctx.chat,{cutoff:ctx.cutoff}):current;if(!ctx.live){value.time=current.time;value.elapsed=current.elapsed;}return value;}}
+ }});
  let archive=ledger.fromSnapshot(snapshot),state=records.fromSnapshot(statusSnapshot()),binding=null;
- function refresh(){binding=boundHistory();archive=binding?ledger.fromChat(binding.context.chat,{cutoff:binding.index}):ledger.fromSnapshot(snapshot);
-  const current=records.fromSnapshot(statusSnapshot());
-  state=binding?records.fromChat(binding.context.chat,{cutoff:binding.index}):current;
-  // 本轮耗时不能沿用上一回合的耗时，当前快照优先；历史只补可追溯的人物明报。
-  state.time=current.time;state.elapsed=current.elapsed;
+ function refresh(){return runtime.refresh();}
+ function renderState(result){archive=result.view.martial;state=result.view.status;binding=result.scope.chatId&&!result.scope.stale?result.scope:null;
   get('[data-player-caption]').textContent=archive.playerName?archive.playerName+' · 武学档案':'主角武学档案';
   for(const node of root.querySelectorAll('[data-player-realm]'))node.textContent=archive.realm??'未登记';
   const list=get('[data-player-skills]');list.replaceChildren();
@@ -33,6 +25,7 @@
   if(!archive.skills.length){const item=document.createElement('li');item.textContent='尚未登记已掌握武学';item.className='zyx-hud-skill-empty';list.append(item);}
   get('[data-martial-source]').textContent=binding?'按本次开局与截至本楼的明确回报记录。':'仅显示本楼回报；开局档案暂未关联。';
   get('[data-elapsed-summary]').textContent=state.elapsed;
+  if(prisonDialog.open){if(selectedPrisoner&&!state.prisoners.some(item=>item.key===selectedPrisoner))prisonList();else if(!selectedPrisoner)prisonList();else{const current=state.prisoners.find(item=>item.key===selectedPrisoner);get('[data-prison-current-state]').textContent=current.state+(current.floor===null?'':'（最近明报 #'+current.floor+'）');}}
  }
  function close(dialog){dialog?.close();}
  function open(dialog,source){if(!dialog)return;triggers.set(dialog,source);if(!dialog.open)dialog.showModal();}
@@ -66,13 +59,14 @@
  get('[data-open-portrait]').addEventListener('click',event=>showImage((text('[data-focal-name]')||'人物')+' · 立绘',currentPortrait,event.currentTarget));
  get('[data-close-portrait]').addEventListener('click',()=>close(portraitDialog));
  function prisonList(){selectedPrisoner=null;prisonRequest++;prisonPortrait='';get('[data-prison-detail]').hidden=true;const list=get('[data-prison-list]');list.hidden=false;list.replaceChildren();
-  for(const prisoner of state.prisoners){const button=document.createElement('button');button.type='button';button.dataset.prisoner=prisoner.key;const name=document.createElement('strong'),status=document.createElement('span');name.textContent=prisoner.name;status.textContent=prisoner.state;button.append(name,status);button.addEventListener('click',()=>prisonDetail(prisoner.key));list.append(button);}
+  if(!state.prisoners.length){const empty=document.createElement('p');empty.className='zyx-hud-note';empty.textContent='当前没有明确在押的角色。';list.append(empty);}
+  for(const prisoner of state.prisoners){const button=document.createElement('button');button.type='button';button.dataset.prisoner=prisoner.key;const name=document.createElement('strong'),status=document.createElement('span');name.textContent=prisoner.name+(prisoner.aliases?.length?' · '+prisoner.aliases[0]:'');status.textContent=prisoner.state;button.append(name,status);button.addEventListener('click',()=>prisonDetail(prisoner.key));list.append(button);}
  }
  function prisonDetail(key){const prisoner=state.prisoners.find(item=>item.key===key);if(!prisoner)return;selectedPrisoner=key;
   get('[data-prison-list]').hidden=true;get('[data-prison-detail]').hidden=false;get('[data-prison-name]').textContent=prisoner.name;
   get('[data-prison-current-state]').textContent=prisoner.state+(prisoner.floor===null?'':'（最近明报 #'+prisoner.floor+'）');get('[data-prison-profile]').textContent=prisoner.profile;
   const img=get('[data-prison-portrait]'),placeholder=get('[data-prison-placeholder]');img.hidden=true;img.removeAttribute('src');prisonPortrait='';placeholder.hidden=false;placeholder.textContent=prisoner.name+'\n立绘图包尚未接入';
-  const revision=++prisonRequest;let urls=imageUrls(prisoner.portraitKey);if(!urls.length)urls=imageUrls(prisoner.name);let at=0;
+  const revision=++prisonRequest;const urls=imageUrls(prisoner.portraitKey);let at=0;
   function attempt(){if(disposed||revision!==prisonRequest||at>=urls.length)return;const url=urls[at++],candidate=new Image();candidate.onload=()=>{if(disposed||revision!==prisonRequest||selectedPrisoner!==key)return;prisonPortrait=url;img.src=url;img.alt=prisoner.name;img.hidden=false;placeholder.hidden=true;};candidate.onerror=()=>{if(revision===prisonRequest)placeholder.textContent=prisoner.name+'\n立绘未能载入';attempt();};candidate.src=url;}
   attempt();get('[data-prison-back]').focus({preventScroll:true});
  }
@@ -83,6 +77,8 @@
  get('[data-prison-zoom]').addEventListener('click',event=>{const prisoner=state.prisoners.find(item=>item.key===selectedPrisoner);if(prisoner)showImage(prisoner.name+' · 立绘',prisonPortrait,event.currentTarget);});
  function resize(){try{const frame=window.frameElement;if(!frame)return;const height=Math.ceil(root.getBoundingClientRect().height+8);if(height>0&&frame.style.height!==height+'px')frame.style.height=height+'px';}catch{}}
  const observer=typeof ResizeObserver==='function'?new ResizeObserver(resize):null;observer?.observe(root);
- window.addEventListener('resize',resize);window.addEventListener('load',resize,{once:true});window.addEventListener('pagehide',()=>{disposed=true;portraitRequest++;prisonRequest++;observer?.disconnect();mapInstance?.dispose?.();window.removeEventListener('resize',resize)},{once:true});
- refresh();loadPortrait();root.dataset.interactive='true';get('[data-runtime-notice]')?.remove();requestAnimationFrame(resize);
+ window.addEventListener('resize',resize);window.addEventListener('load',resize,{once:true});window.addEventListener('pagehide',()=>{disposed=true;portraitRequest++;prisonRequest++;observer?.disconnect();mapInstance?.dispose?.();runtime.dispose();window.removeEventListener('resize',resize)},{once:true});
+ runtime.subscribe(renderState);runtime.start();
+ window.ZYX=Object.freeze({runtime,Core:window.ZYXCore,PrisonTracker:window.ZYXPrisonTracker,MartialLedger:ledger,StatusRecords:records});
+ loadPortrait();root.dataset.interactive='true';get('[data-runtime-notice]')?.remove();requestAnimationFrame(resize);
 })();

@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const dir = __dirname;
-const fields = ['time','elapsed','location','weather','environment','favor_char','favor_stage','favor_aura','favor_reason','favor_mind','favor_companion','extra_char_1','extra_char_2','player_realm','player_skills','growth_skill','growth_reason','growth_weight','prison_control','roster_event','bailian_state','shuangling_state','clue','clue_obtained','news_near','news_mid','crisis'];
+const fields = ['time','elapsed','location','weather','environment','favor_char','favor_stage','favor_aura','favor_reason','favor_mind','favor_companion','extra_char_1','extra_char_2','player_realm','player_skills','growth_skill','growth_reason','growth_weight','prison_control','roster_event','bailian_state','shuangling_state','danniang_state','yuniang_state','baiyulian_state','xieyunsu_state','junzhu_state','qingluo_state','clue','clue_obtained','news_near','news_mid','crisis'];
 // 按原卡输出契约顺序读取；缺项可留白，未知HTML与跨栏内容不进入模板。
 const ws = String.fromCharCode(92) + 's*';
 const plain='[^<'+String.fromCharCode(96)+']*';
@@ -17,11 +17,11 @@ const parts = fields.map(key=> `(?:${/^extra_char_/.test(key)?extra(key.endsWith
 const findRegex = '<status_bar>'+ws+parts.join('')+'</status_bar>';
 const css=['样式.css','地图样式.css','交互样式.css','监牢样式.css'].map(file=>fs.readFileSync(path.join(dir,file),'utf8')).join('\n');
 const template=fs.readFileSync(path.join(dir,'模板.html'),'utf8');
-const config={portraits:JSON.parse(fs.readFileSync(path.join(dir,'立绘配置.json'),'utf8')),maps:JSON.parse(fs.readFileSync(path.join(dir,'地图配置.json'),'utf8'))};
+const config={portraits:JSON.parse(fs.readFileSync(path.join(dir,'立绘配置.json'),'utf8')),maps:JSON.parse(fs.readFileSync(path.join(dir,'地图配置.json'),'utf8')),roster:JSON.parse(fs.readFileSync(path.join(dir,'羁押名册.json'),'utf8'))};
 // 静态项目JS以data脚本嵌入，避免后续正则把JS里的状态标签/$1当成模型回报或替换符。
 const script=code=>'<script src="data:text/javascript;charset=utf-8;base64,'+Buffer.from(code,'utf8').toString('base64')+'"></script>';
 const configScript=script('window.ZYX_HUD_CONFIG='+JSON.stringify(config)+';');
-const scripts=['玩家武学回放.js','状态记录回放.js','本地图包.js','地图组件.js','交互控制器.js'].map(file=>script(fs.readFileSync(path.join(dir,file),'utf8'))).join('\n');
+const scripts=['玩家武学回放.js','羁押追踪.js','状态记录回放.js','本地图包.js','地图组件.js','宿主桥.js','后台中控.js','交互控制器.js'].map(file=>script(fs.readFileSync(path.join(dir,file),'utf8'))).join('\n');
 const hudDocument='<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;padding:0;background:transparent}body{display:flow-root}'+css+'</style></head><body>'+template+configScript+scripts+'</body></html>';
 const replaceString='```html\n'+hudDocument+'\n```';
 const rule = {id:'zyx-hud-ink-v1',scriptName:'ZYX_02_状态栏HUD渲染',findRegex,replaceString,trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null};
