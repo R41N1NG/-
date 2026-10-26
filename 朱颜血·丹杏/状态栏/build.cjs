@@ -17,7 +17,7 @@ const parts = fields.map(key=> `(?:${/^extra_char_/.test(key)?extra(key.endsWith
 const findRegex = '<status_bar>'+ws+parts.join('')+'</status_bar>';
 const css=['样式.css','地图样式.css','交互样式.css','监牢样式.css'].map(file=>fs.readFileSync(path.join(dir,file),'utf8')).join('\n');
 const template=fs.readFileSync(path.join(dir,'模板.html'),'utf8');
-const config={portraits:JSON.parse(fs.readFileSync(path.join(dir,'立绘配置.json'),'utf8'))};
+const config={portraits:JSON.parse(fs.readFileSync(path.join(dir,'立绘配置.json'),'utf8')),maps:JSON.parse(fs.readFileSync(path.join(dir,'地图配置.json'),'utf8'))};
 // 静态项目JS以data脚本嵌入，避免后续正则把JS里的状态标签/$1当成模型回报或替换符。
 const script=code=>'<script src="data:text/javascript;charset=utf-8;base64,'+Buffer.from(code,'utf8').toString('base64')+'"></script>';
 const configScript=script('window.ZYX_HUD_CONFIG='+JSON.stringify(config)+';');

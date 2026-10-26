@@ -15,6 +15,13 @@
   const content=blocks[0][1],get=tag=>{const hits=[...content.matchAll(new RegExp('<'+tag+'>([^<]*)</'+tag+'>','g'))];return hits.length===1?decode(hits[0][1]):'';};
   return {realm:realm(get('player_realm')),skills:skills(get('player_skills')),hasSkillRecord:!none(get('player_skills')),growth:{skill:get('growth_skill'),reason:get('growth_reason'),weight:get('growth_weight')}};
  }
+ function committedOpening(message){
+  const saved=message?.extra?.zyx_opening;
+  if(saved?.version!==1||!saved.record||!String(message.mes??message.message??'').includes('<details data-zyx-opening="committed">'))return null;
+  const expected=parseOpening('[玩家开局设定已载入]'+JSON.stringify(saved.record));
+  const actual=parseOpening(String(message.mes??message.message??''));
+  return expected&&actual&&JSON.stringify(expected)===JSON.stringify(actual)?actual:null;
+ }
  function skillKey(value){return String(value).replace(/[《》「」]/g,'').replace(/[·・（(\s]+(?:初学|小成|大成|巅峰|圆满)[)）]?$/,'').trim();}
  function mergeSkill(state,skill,source){const key=skillKey(skill),old=state.skills.findIndex(v=>skillKey(v)===key);if(old<0){state.skills.push(skill);state.skillSources[skill]=source;}else if(skill!==state.skills[old]&&/[·・（(\s]+(?:初学|小成|大成|巅峰|圆满)[)）]?$/.test(skill.replace(/[《》「」]/g,''))){delete state.skillSources[state.skills[old]];state.skills[old]=skill;state.skillSources[skill]=source;}}
  function initial(){return {realm:null,skills:[],identity:'',playerName:'',openingFloor:null,realmSource:null,skillSources:Object.create(null),growth:[],reportFloor:null};}
@@ -22,10 +29,10 @@
   if(report.growth&&!none(report.growth.skill))state.growth.push({...report.growth,floor});state.reportFloor=floor;
  }
  function fromChat(chat,{cutoff}={}){if(!Array.isArray(chat)||!Number.isInteger(cutoff)||cutoff<0||cutoff>=chat.length)throw new Error('武学回放必须给出当前楼层边界');let state=initial();
-  for(let i=0;i<=cutoff;i++){const message=chat[i];if(!message||message.is_system)continue;const body=String(message.mes??message.message??'');if(message.is_user){const opening=parseOpening(body);if(opening){state=initial();Object.assign(state,{realm:opening.realm,skills:[],identity:opening.identity,playerName:opening.name,openingFloor:i,realmSource:opening.realm?{type:'opening',floor:i}:null});for(const skill of opening.skills)mergeSkill(state,skill,{type:'opening',floor:i});}}else apply(state,readReport(body),i);}
+  for(let i=0;i<=cutoff;i++){const message=chat[i];if(!message||message.is_system)continue;const body=String(message.mes??message.message??'');const opening=message.is_user?parseOpening(body):i===0?committedOpening(message):null;if(opening){state=initial();Object.assign(state,{realm:opening.realm,skills:[],identity:opening.identity,playerName:opening.name,openingFloor:i,realmSource:opening.realm?{type:'opening',floor:i}:null});for(const skill of opening.skills)mergeSkill(state,skill,{type:'opening',floor:i});}else if(!message.is_user)apply(state,readReport(body),i);}
   state.growth=state.growth.slice(-30);return state;
  }
  function fromSnapshot(snapshot){const state=initial();apply(state,{realm:realm(snapshot.realm),skills:skills(snapshot.skills),growth:snapshot.growth},null);return state;}
- global.ZYXMartialLedger={realms,decodeText:decode,normalizeRealm:realm,parseSkills:skills,parseOpening,readReport,fromChat,fromSnapshot};
+ global.ZYXMartialLedger={realms,decodeText:decode,normalizeRealm:realm,parseSkills:skills,parseOpening,committedOpening,readReport,fromChat,fromSnapshot};
  if(typeof module==='object'&&module.exports)module.exports=global.ZYXMartialLedger;
 })(typeof window==='object'?window:globalThis);

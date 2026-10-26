@@ -1,18 +1,19 @@
 {
-  "bytes": 2109325,
-  "sha256": "242b0f33a81ce310d8df52609c689cf37b7bc06a4c25ef147d151d02dc7f0e4b",
-  "release": "hud-fix2",
-  "source": "朱颜血·丹杏/试用卡/功能修复2/【朱颜血·丹杏】CCv3-功能修复2.json",
+  "bytes": 2142702,
+  "sha256": "605aa145220627817f8788f6ff23cc6397674fc7fef8a257411b85b33bfc2fc1",
+  "release": "start-map-fix3",
+  "source": "朱颜血·丹杏/试用卡/开场地图修复3/【朱颜血·丹杏】CCv3-开场地图修复3.json",
   "worldbook_entries": 47,
   "features": [
     "identity-menu",
     "prison-hud",
     "core-output-contract",
     "native-depth-prompt-v5",
-    "read-only-map",
     "portrait-config-port",
     "player-martial-ledger",
     "prison-roster",
-    "turn-elapsed-log"
+    "turn-elapsed-log",
+    "image-map-port",
+    "identity-opening-selection"
   ]
 }

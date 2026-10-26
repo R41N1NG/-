@@ -1,0 +1,7 @@
+{
+  "baseUrl": "",
+  "images": [
+    { "id": "world", "label": "大地图", "file": "" },
+    { "id": "prison", "label": "黑狱图", "file": "" }
+  ]
+}
