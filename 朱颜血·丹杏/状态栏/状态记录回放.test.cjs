@@ -1,0 +1,18 @@
+'use strict';
+// gpt：仅用合成聊天验证只读时间/羁押回放。
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const api=require('./状态记录回放.js');
+const opening=()=>({is_user:true,mes:'[玩家开局设定已载入]\n'+JSON.stringify({'姓名':'合成主角','身位':'侠客','武功境界':'冲脉','掌握武学':[]})});
+const report=fields=>({is_user:false,mes:'合成正文。\n<status_bar>\n'+Object.entries(fields).map(([k,v])=>'<'+k+'>'+v+'</'+k+'>').join('\n')+'\n</status_bar>'});
+const read=chat=>api.fromChat(chat,{cutoff:chat.length-1});
+const prisoner=(s,key='bailian')=>s.prisoners.find(p=>p.key===key);
+test('只显示明确本轮耗时，不按轮次累加或推进日期',()=>{const s=read([opening(),report({time:'合成四月初一午时',elapsed:'半个时辰'}),report({time:'合成四月初一未时',elapsed:'一刻钟'})]);assert.equal(s.time,'合成四月初一未时');assert.equal(s.elapsed,'一刻钟');assert.deepEqual(s.history.map(r=>r.elapsed),['半个时辰','一刻钟']);});
+test('未知/无耗时为待回报，不从楼数或时辰补天数',()=>{for(const value of ['未明','未知','无','']){const s=read([opening(),report({elapsed:value})]);assert.equal(s.elapsed,'待回报');assert.equal(s.time,'未明');}assert.equal(read([opening(),report({elapsed:'三时辰'})]).elapsed,'三时辰');});
+test('脱困新明报覆盖羁押旧报，未知保留最近明确来源',()=>{const s=read([opening(),report({bailian_state:'合成牢房羁押',shuangling_state:'合成候审'}),report({bailian_state:'已脱困，合成野外',shuangling_state:'未明'}),report({bailian_state:'未知'})]);assert.equal(prisoner(s).state,'已脱困，合成野外');assert.equal(prisoner(s).floor,2);assert.equal(prisoner(s,'shuangling').floor,1);});
+test('必须给cutoff，历史回放不偷看未来脱困',()=>{const chat=[opening(),report({bailian_state:'羁押'}),report({bailian_state:'已脱困'})];assert.throws(()=>api.fromChat(chat),/当前楼/);for(const cutoff of [-1,3,0.5])assert.throws(()=>api.fromChat(chat,{cutoff}),/当前楼/);assert.equal(prisoner(api.fromChat(chat,{cutoff:1})).state,'羁押');});
+test('删除楼/替换当前候选mes后回放，不读取旧swipes',()=>{const chat=[opening(),report({bailian_state:'旧羁押'}),report({bailian_state:'已脱困'})];chat.pop();assert.equal(prisoner(read(chat)).state,'旧羁押');chat[1]={...report({bailian_state:'新候选羁押'}),swipe_id:1,swipes:[report({bailian_state:'旧候选脱困'}).mes]};assert.equal(prisoner(read(chat)).state,'新候选羁押');});
+test('用户伪报与system旁支不入回放',()=>{const s=read([opening(),report({bailian_state:'真实合成明报'}),{...report({bailian_state:'伪用户脱困'}),is_user:true},{...report({bailian_state:'旁支脱困'}),is_system:true}]);assert.equal(prisoner(s).state,'真实合成明报');});
+test('重新开局隔离旧时间/耗时/羁押来源',()=>{const s=read([opening(),report({time:'旧时刻',elapsed:'三日',bailian_state:'旧羁押'}),opening(),report({elapsed:'未明'})]);assert.equal(s.time,'未明');assert.equal(s.elapsed,'待回报');assert.equal(prisoner(s).floor,null);assert.equal(s.history.length,1);});
+test('重复状态/思考内心/非末尾报告拒绝，重复字段不造明确来源',()=>{const raw=report({bailian_state:'合成羁押'}).mes;for(const text of [raw+raw,'<think>'+raw+'</think>','<details>'+raw+'</details>',raw+'后续正文'])assert.equal(api.parseStatus(text),null);assert.equal(api.parseStatus('<status_bar><bailian_state>甲</bailian_state><bailian_state>乙</bailian_state></status_bar>').bailian_state,'');});
+test('恶意HTML不作为明报且不执行，输入对象不变',()=>{globalThis.__statusTestExecuted=0;const chat=[opening(),report({bailian_state:'此前明报'}),report({bailian_state:'<img src=x onerror="globalThis.__statusTestExecuted=1">'})],before=JSON.stringify(chat);assert.equal(prisoner(read(chat)).state,'此前明报');assert.equal(globalThis.__statusTestExecuted,0);assert.equal(JSON.stringify(chat),before);delete globalThis.__statusTestExecuted;});
+test('快照不造累计记录，prison_control本身不推断两人已羁押',()=>{const s=api.fromSnapshot({time:'已报时间',elapsed:'一刻钟',prison_control:'统管合成监牢'});assert.equal(s.source,'snapshot');assert.equal(s.elapsed,'一刻钟');assert.equal(s.history[0].floor,null);assert.ok(s.prisoners.every(p=>p.floor===null&&p.state==='未回报羁押状态'));});

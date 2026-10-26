@@ -32,6 +32,8 @@ manifest = {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(),
             'source': str(source.relative_to(base.parent.parent)) if source.is_relative_to(base.parent.parent) else source.name,
             'worldbook_entries': len(card['data'].get('character_book', {}).get('entries', [])),
             'features': ['identity-menu', 'prison-hud', 'core-output-contract', 'native-depth-prompt-v' + version, 'read-only-map', 'portrait-config-port', 'player-martial-ledger']}
+if release == 'hud-fix2':
+    manifest['features'] += ['prison-roster', 'turn-elapsed-log']
 # 固定版本文件方便区分旧下载；内容与latest一致。
 (out / ('danxing-' + release + '.json')).write_bytes(data)
 (out / ('danxing-' + release + '.zip')).write_bytes((out / 'danxing-trial.zip').read_bytes())

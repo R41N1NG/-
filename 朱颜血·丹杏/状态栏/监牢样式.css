@@ -1,0 +1,47 @@
+/* gpt下级：监牢人物与历时只提供界面；状态、名单和回放由控制器提供。 */
+.zyx-hud button[data-open-elapsed] {cursor:pointer;text-align:left;align-items:center;min-height:32px;}
+.zyx-hud button[data-open-elapsed]:hover {border-color:#b3b9bb;background:#29363d;}
+.zyx-hud .zyx-hud-prison-open {display:flex;align-items:center;justify-content:center;gap:6px;min-height:32px;padding:5px 10px;border:1px solid #99836a;color:#dfc4a1;background:linear-gradient(130deg,#4d3c30,#1b2830);border-radius:2px;cursor:pointer;}
+.zyx-hud .zyx-hud-prison-open:hover {border-color:#ccaa79;background:#493c31;}
+.zyx-hud .zyx-hud-panel-dialog {box-sizing:border-box;position:fixed;inset:12px;margin:auto;width:min(860px,calc(100% - 24px));max-width:calc(100% - 24px);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);padding:0;overflow:auto;border:2px solid #798184;border-radius:2px;background:#17222b;color:#e0dacb;box-shadow:0 18px 60px #000c;font:13px/1.7 system-ui,sans-serif;text-align:left;overflow-wrap:anywhere;}
+.zyx-hud .zyx-hud-panel-dialog::backdrop {background:#03080bc4;}
+.zyx-hud .zyx-hud-panel-dialog [hidden] {display:none!important;}
+.zyx-hud .zyx-hud-panel-head {position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid #9e8055;background:#25313a;box-shadow:inset 0 2px #c3a47729;}
+.zyx-hud .zyx-hud-panel-head h2 {margin:0;font:600 19px/1.5 ui-serif,SimSun,serif;letter-spacing:.06em;color:#ead7b9;}
+.zyx-hud .zyx-hud-panel-head button {width:44px;height:44px;flex-shrink:0;padding:0;border:1px solid #a0785c;border-radius:2px;background:#59352d;color:#efc9ad;font:24px/1 system-ui;cursor:pointer;}
+.zyx-hud .zyx-hud-panel-body {padding:16px;}
+.zyx-hud .zyx-hud-panel-body h3 {margin:0 0 12px;font:600 17px/1.6 ui-serif,SimSun,serif;color:#e9d0a6;}
+.zyx-hud .zyx-hud-panel-body h4 {margin:18px 0 7px;color:#bba47e;font-size:12px;}
+.zyx-hud .zyx-hud-panel-body dl {display:grid;grid-template-columns:minmax(64px,auto) minmax(0,1fr);gap:10px 12px;margin:0;}
+.zyx-hud .zyx-hud-panel-body dt {color:#b5a181;font-size:12px;}
+.zyx-hud .zyx-hud-panel-body dd {margin:0;color:#d4dedb;font-size:13px;white-space:pre-wrap;}
+.zyx-hud .zyx-hud-panel-note {margin:12px 0 20px;font-size:11px;color:#a5b2b7;}
+.zyx-hud .zyx-hud-elapsed-fields {padding:13px;border:1px solid #7c775c;border-left:3px solid #b99762;background:#111d25;}
+.zyx-hud .zyx-hud-elapsed-history {margin:0;padding-left:22px;}
+.zyx-hud .zyx-hud-elapsed-history li {margin:0 0 10px;padding:9px 11px;border-bottom:1px solid #89949738;color:#c4d0d0;white-space:pre-wrap;}
+.zyx-hud .zyx-hud-prison-list {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.zyx-hud .zyx-hud-prison-list>button {min-width:0;min-height:84px;display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:14px;border:1px solid #8f7a5b;border-left:3px solid #9f6049;border-radius:2px;color:#e5d3b4;background:linear-gradient(145deg,#29363c,#121e26);text-align:left;white-space:pre-line;cursor:pointer;}
+.zyx-hud .zyx-hud-prison-list>button:hover {border-color:#c2a26d;background:#34434a;}
+.zyx-hud .zyx-hud-prison-list>button strong {font:600 17px/1.5 ui-serif,SimSun,serif;color:#ecddc1;}
+.zyx-hud .zyx-hud-prison-list>button small {font-size:11px;color:#aebfc0;}
+.zyx-hud .zyx-hud-prison-back {min-height:44px;margin-bottom:13px;padding:6px 11px;border:1px solid #7d897e;border-radius:2px;background:#1e3037;color:#d7c5a6;cursor:pointer;}
+.zyx-hud .zyx-hud-prison-profile-layout {display:grid;grid-template-columns:minmax(100px,170px) minmax(0,1fr);align-items:start;gap:18px;}
+.zyx-hud .zyx-hud-prison-portrait {position:relative;display:block;width:100%;min-width:0;height:280px;padding:0;overflow:hidden;border:2px solid #8a8674;border-radius:1px;box-shadow:inset 0 0 0 4px #997b4530;background:linear-gradient(145deg,#263944,#101a22);color:#8fa4ad;cursor:zoom-in;}
+.zyx-hud .zyx-hud-prison-portrait img {position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center top;}
+.zyx-hud .zyx-hud-prison-portrait [data-prison-placeholder] {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;white-space:pre-line;font:13px/1.8 ui-serif,SimSun,serif;color:#9aaeb6;}
+.zyx-hud .zyx-hud-prison-portrait>small {position:absolute;inset:auto 0 0;display:block;padding:5px;background:#101a22e8;color:#c7b48d;font-size:10px;text-align:center;}
+.zyx-hud .zyx-hud-prison-profile-body {min-width:0;}
+.zyx-hud .zyx-hud-prison-profile-body dl {display:block;padding:11px 12px;border-left:3px solid #a3634c;background:#101c25;}
+.zyx-hud .zyx-hud-prison-profile-body dd {margin-top:5px;}
+.zyx-hud [data-prison-profile] {margin:0;color:#c1cecc;font-size:12px;line-height:1.9;white-space:pre-wrap;}
+@media(max-width:560px) {
+ .zyx-hud .zyx-hud-panel-head {padding:8px 10px;}
+ .zyx-hud .zyx-hud-panel-head h2 {font-size:17px;}
+ .zyx-hud .zyx-hud-panel-body {padding:12px;}
+ .zyx-hud .zyx-hud-prison-list {grid-template-columns:minmax(0,1fr);}
+ .zyx-hud .zyx-hud-prison-profile-layout {grid-template-columns:92px minmax(0,1fr);gap:10px;}
+ .zyx-hud .zyx-hud-prison-portrait {height:180px;}
+ .zyx-hud .zyx-hud-prison-portrait [data-prison-placeholder] {font-size:11px;padding:5px;}
+ .zyx-hud .zyx-hud-panel-body dl {grid-template-columns:64px minmax(0,1fr);gap:9px;}
+ .zyx-hud .zyx-hud-prison-profile-body dl {padding:9px;}
+}

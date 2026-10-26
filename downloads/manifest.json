@@ -1,8 +1,8 @@
 {
-  "bytes": 2113555,
-  "sha256": "b7a4939b752b8a34d5ea4585dd96c850ad7cfed9c96c7c7dd4f8dbf754caaff7",
-  "release": "zero-fix1",
-  "source": "朱颜血·丹杏/试用卡/零楼修复1/【朱颜血·丹杏】CCv3-零楼修复1.json",
+  "bytes": 2109325,
+  "sha256": "242b0f33a81ce310d8df52609c689cf37b7bc06a4c25ef147d151d02dc7f0e4b",
+  "release": "hud-fix2",
+  "source": "朱颜血·丹杏/试用卡/功能修复2/【朱颜血·丹杏】CCv3-功能修复2.json",
   "worldbook_entries": 47,
   "features": [
     "identity-menu",
@@ -11,6 +11,8 @@
     "native-depth-prompt-v5",
     "read-only-map",
     "portrait-config-port",
-    "player-martial-ledger"
+    "player-martial-ledger",
+    "prison-roster",
+    "turn-elapsed-log"
   ]
 }

@@ -1,11 +1,11 @@
 # 丹杏试用卡下载
 
-身份：gpt。当前发布：zero-fix1，基于2026-10-26用户上传版本。
+身份：gpt。当前发布：hud-fix2（功能修复2）。
 
-- danxing-zero-fix1.zip / danxing-zero-fix1.json：本次零楼修复，ZIP解压后导入JSON，选角色名末尾“零楼修复1”的卡并新建测试聊天。
-- danxing-trial.zip / danxing-trial.json：最新副本，与本次修复相同。
-- danxing-v5.zip/json、danxing-v4.zip/json：之前版本保留。
+- danxing-hud-fix2.zip/json：本次完整卡，ZIP解压后导入JSON，选名字末尾“功能修复2”的卡。
+- danxing-trial.zip/json：最新副本，与本次修复一致。
+- danxing-zero-fix1、danxing-v5、danxing-v4：历史固定版保留。
 
-本次只修复零楼前端封装、重复启动/点击路径和iframe高度；保留上传版47条世界书、4个候选开场及自定义HUD。仍需酒馆助手HTML代码块前端与角色内嵌正则。真实酒馆尚待试用，完整说明见朱颜血·丹杏/试用卡/零楼修复1/README.md。
+本次恢复状态栏HTML前端入口、移除案簿、接入监牢人物名单/子页/立绘占位、历时记录、境界与地图。图包实际映射尚未接入。保留47条世界书/4候选开场与零楼修复。需要酒馆助手HTML代码块前端及角色内嵌正则；真实酒馆待用户试用。
 
-JSON 2,113,555字节，SHA256 `b7a4939b752b8a34d5ea4585dd96c850ad7cfed9c96c7c7dd4f8dbf754caaff7`。当前正式源路径见manifest.json，不能再假定latest总与旧V5目录那张卡一致。
+JSON 2,109,325字节，SHA256 `242b0f33a81ce310d8df52609c689cf37b7bc06a4c25ef147d151d02dc7f0e4b`。正式源见manifest.json及朱颜血·丹杏/试用卡/功能修复2/README.md。维护时明确--source与--release，勿用旧版本覆盖最新副本。

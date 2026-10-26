@@ -5,8 +5,8 @@
     <div class="zyx-hud-row zyx-hud-env-row"><div class="zyx-hud-pill zyx-hud-weather"><svg class="zyx-hud-icon zyx-hud-icon-weather" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 14a4 4 0 0 1 0-8 6 6 0 0 1 11-1 4.5 4.5 0 1 1 2 9H6Z"/><path d="m7 17-1 3m7-3-1 3m7-3-1 3"/></svg><span class="zyx-hud-value">$<weather></span></div><div class="zyx-hud-pill zyx-hud-senses"><svg class="zyx-hud-icon zyx-hud-icon-senses" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 3h6M12 3v3M7 8l5-2 5 2v10l-5 2-5-2V8ZM7 8h10M7 17h10M12 8v9M10 22h4"/></svg><span class="zyx-hud-value">$<environment></span></div></div>
     <div class="zyx-hud-tools">
       <details class="zyx-hud-tool zyx-hud-growth"><summary><svg class="zyx-hud-icon zyx-hud-icon-growth" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m18 3 3 3-11 11-3-3L18 3ZM5 12l7 7M3 21l5-5M3 17l4 4"/></svg><span>境界 · <span class="zyx-hud-value" data-player-realm>未登记</span></span><span class="zyx-hud-drop" aria-hidden="true">⌄</span></summary><div class="zyx-hud-popover"><h4 data-player-caption>主角武学档案</h4><dl><dt>当前境界</dt><dd data-player-realm>未登记</dd><dt>掌握武学</dt><dd><ul class="zyx-hud-skill-list" data-player-skills></ul></dd></dl><p class="zyx-hud-note" data-martial-source></p><details class="zyx-hud-learning"><summary>本轮修习记录</summary><dl><dt>所练所悟</dt><dd class="zyx-hud-value">$<growth_skill></dd><dt>领悟契机</dt><dd class="zyx-hud-value">$<growth_reason></dd><dt>分量</dt><dd class="zyx-hud-value">$<growth_weight></dd></dl></details></div></details>
-      <div class="zyx-hud-pill zyx-hud-elapsed"><svg class="zyx-hud-icon zyx-hud-icon-elapsed" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h12M6 21h12M8 3v4l8 10v4M16 3v4L8 17v4M9 6h6M9 18h6"/></svg><span>历时 <span class="zyx-hud-value">$<elapsed></span></span></div>
-      <details class="zyx-hud-tool zyx-hud-record"><summary><svg class="zyx-hud-icon zyx-hud-icon-record" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4h13v16H6M6 4H3v3h3m0 10H3v3h3M6 4v16M10 8h6m-6 4h6m-6 4h4"/></svg>案簿</summary><div class="zyx-hud-popover"><h4>人物动向</h4><dl><dt>白雪莲</dt><dd class="zyx-hud-value">$<bailian_state></dd><dt>薛霜灵</dt><dd class="zyx-hud-value">$<shuangling_state></dd><dt>伤亡勘验</dt><dd class="zyx-hud-value">$<roster_event></dd></dl></div></details>
+      <button type="button" class="zyx-hud-pill zyx-hud-elapsed" data-open-elapsed aria-haspopup="dialog" aria-label="查看历时记录"><svg class="zyx-hud-icon zyx-hud-icon-elapsed" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h12M6 21h12M8 3v4l8 10v4M16 3v4L8 17v4M9 6h6M9 18h6"/></svg><span>历时 <span class="zyx-hud-value" data-elapsed-summary>$<elapsed></span></span></button>
+      <button type="button" class="zyx-hud-prison-open" data-open-prison aria-haspopup="dialog"><svg class="zyx-hud-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 10V7a6 6 0 0 1 12 0v3M4 10h16v11H4V10ZM8 13v5m4-5v5m4-5v5"/></svg><span>监牢</span></button>
     </div>
   </div>
   <section class="zyx-hud-trend"><div class="zyx-hud-trend-head"><b>天下大势</b><strong>边陲暗流 · 本轮气象</strong></div><p class="zyx-hud-value">$<crisis></p></section>
@@ -21,7 +21,25 @@
   </section>
   <section class="zyx-hud-clue"><svg class="zyx-hud-icon zyx-hud-icon-clue" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4h13v12H9a4 4 0 0 0-4 4V4ZM5 20h13v-4M8 8h7m-7 3h5"/><circle cx="17" cy="17" r="3"/><path d="m19 19 3 3"/></svg><b>【案情线索】</b><p class="zyx-hud-value">$<clue></p></section>
   <div class="zyx-hud-rumors"><section><h4>【本地风闻】</h4><p class="zyx-hud-value">$<news_near></p></section><section><h4>【远地风闻】</h4><p class="zyx-hud-value">$<news_mid></p></section></div>
-  <div class="zyx-hud-runtime-data" hidden><span data-reported-realm>$<player_realm></span><span data-reported-skills>$<player_skills></span><span data-snapshot-time>$<time></span><span data-current-location>$<location></span><span data-growth-skill>$<growth_skill></span><span data-growth-reason>$<growth_reason></span><span data-growth-weight>$<growth_weight></span></div>
+  <p class="zyx-hud-note" data-runtime-notice>交互功能未载入，请启用酒馆助手的 HTML 前端后重载此楼。</p>
+  <div class="zyx-hud-runtime-data" hidden><span data-reported-realm>$<player_realm></span><span data-reported-skills>$<player_skills></span><span data-snapshot-time>$<time></span><span data-current-location>$<location></span><span data-growth-skill>$<growth_skill></span><span data-growth-reason>$<growth_reason></span><span data-growth-weight>$<growth_weight></span><span data-reported-bailian>$<bailian_state></span><span data-reported-shuangling>$<shuangling_state></span><span data-reported-elapsed>$<elapsed></span><span data-reported-roster>$<roster_event></span></div>
+  <dialog class="zyx-hud-panel-dialog" data-elapsed-dialog aria-labelledby="zyx-elapsed-title">
+    <div class="zyx-hud-panel-head"><h2 id="zyx-elapsed-title">历时记录</h2><button type="button" data-close-elapsed aria-label="关闭历时记录">×</button></div>
+    <div class="zyx-hud-panel-body"><dl class="zyx-hud-elapsed-fields"><dt>本轮历时</dt><dd data-elapsed-current>未登记</dd><dt>当前时点</dt><dd data-elapsed-time>未登记</dd></dl><p class="zyx-hud-panel-note" data-elapsed-source></p><h3>已记录历时</h3><ol class="zyx-hud-elapsed-history" data-elapsed-history></ol></div>
+  </dialog>
+  <dialog class="zyx-hud-panel-dialog" data-prison-dialog aria-labelledby="zyx-prison-title">
+    <div class="zyx-hud-panel-head"><h2 id="zyx-prison-title">监牢人物</h2><button type="button" data-close-prison aria-label="关闭监牢人物">×</button></div>
+    <div class="zyx-hud-panel-body">
+      <div class="zyx-hud-prison-list" data-prison-list></div>
+      <section class="zyx-hud-prison-detail" data-prison-detail hidden>
+        <button type="button" class="zyx-hud-prison-back" data-prison-back>‹ 返回人物名单</button>
+        <div class="zyx-hud-prison-profile-layout">
+          <button type="button" class="zyx-hud-prison-portrait" data-prison-zoom aria-haspopup="dialog" aria-label="查看人物立绘大图"><img data-prison-portrait alt="" hidden><span data-prison-placeholder>暂未接入立绘</span><small>查看大图 ↗</small></button>
+          <div class="zyx-hud-prison-profile-body"><h3 data-prison-name>人物档案</h3><dl><dt>最新明确状态</dt><dd data-prison-current-state>尚无明确回报</dd></dl><h4>身份简要</h4><p data-prison-profile></p></div>
+        </div>
+      </section>
+    </div>
+  </dialog>
   <dialog data-map-dialog></dialog>
   <dialog class="zyx-hud-portrait-dialog" data-portrait-dialog><div class="zyx-hud-dialog-head"><strong data-portrait-title>人物立绘</strong><button type="button" data-close-portrait aria-label="关闭立绘">×</button></div><div class="zyx-hud-portrait-stage"><img data-portrait-large alt="" hidden><p data-portrait-message>当前人物尚未配置立绘。</p></div></dialog>
 </div>
