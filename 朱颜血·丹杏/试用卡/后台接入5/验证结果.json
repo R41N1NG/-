@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "cases": [
+    "实际正则分阶段HTML/CSS/JS",
+    "独立后台iframe无需打开监牢即可保存",
+    "收监/释放与监牢详情返回",
+    "耗时推进五幕大势",
+    "情报去重和原有数据保留",
+    "320/375监牢内部宽度",
+    "重渲染读取快照",
+    "只注入当前大势"
+  ],
+  "errors": [],
+  "node_tests": {
+    "passed": 56,
+    "failed": 0,
+    "scope": "后台、局部中控、状态回放、八人羁押与主角武学"
+  },
+  "preservation": {
+    "worldbook": 47,
+    "alternate_greetings": 4,
+    "first_mes_unchanged": true,
+    "non_hud_regex_unchanged": true
+  },
+  "environment": "本地浏览器模拟酒馆宿主，不是用户实际酒馆"
+}

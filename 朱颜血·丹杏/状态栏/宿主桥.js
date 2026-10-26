@@ -17,7 +17,8 @@
   function subscribe(callback){const h=host(),bus=h?.context.eventSource,types=h?.context.event_types;const off=[];
    if(bus&&typeof bus.on==='function'&&types){for(const key of ['MESSAGE_RECEIVED','MESSAGE_UPDATED','MESSAGE_EDITED','MESSAGE_DELETED','MESSAGE_SWIPED','CHAT_CHANGED','GENERATION_ENDED']){const event=types[key];if(!event)continue;bus.on(event,callback);off.push(()=>{if(typeof bus.removeListener==='function')bus.removeListener(event,callback);else bus.off?.(event,callback);});}}
    // 不同酒馆版本的事件表可能不全；轻量轮询只补读，不改消息。
-   const timer=off.length?null:global.setInterval(callback,1500);
+   for(const w of windows()){try{w.addEventListener('zyx-backend-state',callback);off.push(()=>w.removeEventListener('zyx-backend-state',callback));}catch{}}
+   const timer=bus&&types?null:global.setInterval(callback,1500);
    return ()=>{if(timer!==null)global.clearInterval(timer);for(const fn of off)fn();};
   }
   return {read,subscribe};

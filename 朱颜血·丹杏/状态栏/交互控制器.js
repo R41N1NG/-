@@ -13,7 +13,11 @@
  const bridge=window.ZYXHostBridge.create({snapshot:{time:text('[data-snapshot-time]'),location:text('[data-current-location]'),favor_char:text('[data-focal-name]')}});
  const runtime=window.ZYXCore.create({bridge,snapshot:{martial:snapshot,status:statusSnapshot()},modules:{
   martial:{derive:ctx=>ctx.source==='history'?ledger.fromChat(ctx.chat,{cutoff:ctx.cutoff}):ledger.fromSnapshot(ctx.snapshot.martial)},
-  status:{derive:ctx=>{const current=records.fromSnapshot(ctx.snapshot.status),value=ctx.source==='history'?records.fromChat(ctx.chat,{cutoff:ctx.cutoff}):current;if(!ctx.live){value.time=current.time;value.elapsed=current.elapsed;}return value;}}
+  status:{derive:ctx=>{const current=records.fromSnapshot(ctx.snapshot.status),value=ctx.source==='history'?records.fromChat(ctx.chat,{cutoff:ctx.cutoff}):current;if(!ctx.live){value.time=current.time;value.elapsed=current.elapsed;}
+   const backend=ctx.source==='history'?window.ZYXBackendProjection.read(ctx.chat,ctx.cutoff,ctx.chatId):null;
+   value.backend=backend;
+   if(backend){value.allPrisoners=backend.custody;value.prisoners=backend.custody.filter(item=>item.inCustody===true);value.time=backend.time.formatted;}
+   return value;}}
  }});
  let archive=ledger.fromSnapshot(snapshot),state=records.fromSnapshot(statusSnapshot()),binding=null;
  function refresh(){return runtime.refresh();}
@@ -25,6 +29,16 @@
   if(!archive.skills.length){const item=document.createElement('li');item.textContent='尚未登记已掌握武学';item.className='zyx-hud-skill-empty';list.append(item);}
   get('[data-martial-source]').textContent=binding?'按本次开局与截至本楼的明确回报记录。':'仅显示本楼回报；开局档案暂未关联。';
   get('[data-elapsed-summary]').textContent=state.elapsed;
+  const backend=state.backend,notice=get('[data-backend-notice]');
+  notice.textContent=backend?'后台已同步 · 八人羁押 / 时间 / 信物情报'+(backend.pending.length?' · 有待核事项':''):'后台未同步：当前显示模型回报，尚未确认结算。请启用角色卡后台脚本。';
+  if(backend){get('.zyx-hud-time .zyx-hud-value').textContent=backend.time.formatted;get('.zyx-hud-trend strong').textContent='第'+backend.time.act+'幕 · '+backend.time.phase;get('.zyx-hud-trend p').textContent=backend.trend?.summary||'当前大势已接入';}
+  get('[data-intel-summary]').textContent=backend?'信物情报 '+backend.intel.value+' 件 · 本幕 '+backend.intel.actCount+'/'+backend.intel.actTotal:'信物情报 · 待后台同步';
+  const intel=get('[data-intel-list]');intel.replaceChildren();
+  for(const label of backend?.intel.names||[]){const item=document.createElement('li');item.textContent=label;intel.append(item);}
+  const nodes=get('[data-node-list]');nodes.replaceChildren();
+  for(const node of backend?.nodes||[]){const item=document.createElement('li');item.textContent=node.scene+' · '+node.name+' · '+({available:'可查阅',locked:'条件未满足',unconfirmed:'条件待确认',expired:'已过期'}[node.status]||node.status)+' · '+node.reason;nodes.append(item);}
+  const pending=get('[data-backend-pending]');pending.replaceChildren();for(const issue of backend?.pending||[]){const item=document.createElement('li');item.textContent='#'+issue.floor+' · '+issue.message;pending.append(item);}
+
   if(prisonDialog.open){if(selectedPrisoner&&!state.prisoners.some(item=>item.key===selectedPrisoner))prisonList();else if(!selectedPrisoner)prisonList();else{const current=state.prisoners.find(item=>item.key===selectedPrisoner);get('[data-prison-current-state]').textContent=current.state+(current.floor===null?'':'（最近明报 #'+current.floor+'）');}}
  }
  function close(dialog){dialog?.close();}

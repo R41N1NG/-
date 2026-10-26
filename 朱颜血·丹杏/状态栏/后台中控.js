@@ -10,8 +10,8 @@
   function derive(context){const output={};for(const [name,module]of registry)output[name]=module.derive({...context,snapshot,get:key=>output[key]});return output;}
   function refresh(){if(disposed)return state;const current=bridge.read();const bound=!!pinned&&current?.chatId===pinned.chatId&&current.cutoff===pinned.cutoff;
    const stale=!!pinned&&!bound;
-   const view=derive({source:bound?'history':'snapshot',chat:bound?current.chat:null,cutoff:bound?pinned.cutoff:null});
-   const live=bound?derive({source:'history',chat:current.chat,cutoff:current.chat.length-1,live:true}):null;
+   const view=derive({chatId:bound?current.chatId:null,source:bound?'history':'snapshot',chat:bound?current.chat:null,cutoff:bound?pinned.cutoff:null});
+   const live=bound?derive({chatId:current.chatId,source:'history',chat:current.chat,cutoff:current.chat.length-1,live:true}):null;
    const next={scope:{chatId:pinned?.chatId??null,cutoff:pinned?.cutoff??null,stale},view,live};
    const signature=JSON.stringify(next);if(signature===last)return state;last=signature;state=freeze({...next,revision:++revision});
    for(const listener of [...listeners]){try{listener(state);}catch(error){global.console?.warn?.('[ZYX] 子界面刷新失败',error?.message??'');}}
