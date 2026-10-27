@@ -1,7 +1,7 @@
 (function(){"use strict";const modules=[function(require,module,exports){
 'use strict';
 const {start}=require(1);
-const runtime=start({config:require(8)});
+const runtime=start({config:require(9)});
 window.DanxingBackend=runtime;
 window.addEventListener('pagehide',()=>runtime.dispose(),{once:true});
 
@@ -9,6 +9,7 @@ window.addEventListener('pagehide',()=>runtime.dispose(),{once:true});
 function(require,module,exports){
 'use strict';
 
+const {route}=require(2);
 const PROMPT_ID = 'zyx_backend_truth';
 const UPDATE_EVENTS = ['GENERATION_ENDED', 'GENERATION_STOPPED', 'MESSAGE_RECEIVED', 'MESSAGE_UPDATED', 'MESSAGE_EDITED', 'MESSAGE_DELETED', 'MESSAGE_SWIPED', 'CHAT_CHANGED'];
 const PRE_EVENTS = ['GENERATION_AFTER_COMMANDS', 'GENERATION_STARTED'];
@@ -27,8 +28,8 @@ function hostFrames(root) {
 }
 
 function createHostRuntime(options = {}) {
-  const engine = options.engine || require(2);
-  const fingerprint = options.fingerprint || require(7).fingerprint;
+  const engine = options.engine || require(4);
+  const fingerprint = options.fingerprint || require(8).fingerprint;
   const config = options.config || {};
   const root = options.window || (typeof window !== 'undefined' ? window : globalThis);
   let stopped = false, started = false, queue = Promise.resolve(), pending = null;
@@ -86,8 +87,8 @@ function createHostRuntime(options = {}) {
     promptActive = false;
     promptSignature = null;
   }
-  function truth(value) {
-    return '【丹杏后台当前真值】\n' + JSON.stringify({ ready: value.ready, time: value.ready ? value.time : null, official: value.official, clues: value.intel, nodes:value.events, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' }, npcProfiles:Object.fromEntries(Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]).map(name=>[name,config.npcProfiles[name]])) });
+  function truth(value, routing) {
+    return '【丹杏后台当前真值】\n' + JSON.stringify({ ...routing, identityAuthority:'仅本聊天已提交开局有效；姓名/年岁/境界/已掌握武学/场景以playerOpening中玩家自定为准，身份模板的初始默认不得覆盖。NPC仅在nodes.entered中解锁后正式登场；青萝与影雀为同一人，战斗时favor_pose填战斗或拔剑，非战斗填常态。', ready: value.ready, time: value.ready ? value.time : null, official: value.official, clues: value.intel, nodes:value.events, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' }, npcProfiles:Object.fromEntries(Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]).map(name=>[name,config.npcProfiles[name]])) });
   }
   function announce(api, id) {
     for (const w of api.frames) {
@@ -136,7 +137,9 @@ function createHostRuntime(options = {}) {
       if (written.mes !== originalText || !same(written.extra && written.extra.zyx_backend, backend) || (written.swipes && !same(selected && (selected.zyx_backend || selected.extra && selected.extra.zyx_backend), backend))) throw new Error('setChatMessages 写后核验失败');
       diagnostics.messageWrites++;
     }
+    const routing=route(input,config,api.ctx);
     const variables = {
+      身份:routing.identity, zyx_identity:routing.identityId,
       zyx_time: value.ready ? value.time : null, zyx_clues: value.intel.names,
       zyx_intel: value.official?.val??0, zyx_intel_data:value.official??{}, zyx_clue_progress:value.intel, zyx_nodes: value.events??{}, zyx_places:value.nodes, zyx_custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})),
       zyx_backend_current: { schema: 1, chatId: id, state: value },
@@ -153,7 +156,7 @@ function createHostRuntime(options = {}) {
       if (!guard(id, expected)) return;
       varsSignature = signature; diagnostics.variableWrites++;
     }
-    const content = truth(value);
+    const content = truth(value,routing);
     if (forceInject || content !== promptSignature) {
       if (!guard(id, expected)) return;
       promptActive = true;
@@ -164,6 +167,7 @@ function createHostRuntime(options = {}) {
     if (!guard(id, expected)) return;
     state = clone(value);
     if (!isGenerating(api.ctx)) settled = clone(live);
+    diagnostics.identity=routing.identity;diagnostics.unlockedProfiles=Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]);
     diagnostics.syncs++;
     diagnostics.pending = clone(value.pending || result.pending || []);
     diagnostics.lastError = value.ready && !diagnostics.pending.length ? null : { stage: 'replay', message: value.ready ? '后台有待核事项' : '后台尚未就绪', pending: clone(diagnostics.pending) };
@@ -239,13 +243,70 @@ module.exports = { createHostRuntime, start };
 },
 function(require,module,exports){
 'use strict';
+// gpt：按当前聊天的已提交开局与节点路由资料，不修改所有聊天共用的世界书开关。
+const {committedOpening}=require(3);
+const ROLES=Object.freeze({'锦衣缇骑':'jinyiwei','黑狱恶差':'yuzu','江湖任侠':'xiake','身世自设':'custom'});
+function route(chat,config={},context={}){
+ const zero=chat?.[0],opening=zero&&!zero.is_user&&!zero.is_system?committedOpening(zero):null;
+ if(!opening||!Object.hasOwn(ROLES,opening.identity))return {identity:'',identityId:'',identityProfile:'',playerOpening:null};
+ const substitute=value=>String(value||'').replace(/\{\{user\}\}/gi,()=>String(context.name1||opening.name||'玩家')).replace(/\{\{char\}\}/gi,()=>String(context.name2||'朱颜血·丹杏'));
+ let profile=config.identityProfiles?.[opening.identity]||'';const start=profile.indexOf('<identity>');if(start>=0)profile=profile.slice(start);
+ const record=JSON.parse(JSON.stringify(zero.extra.zyx_opening.record));delete record['身份规则'];
+ return {identity:opening.identity,identityId:ROLES[opening.identity],identityProfile:substitute(profile),playerOpening:record};
+}
+module.exports={route};
+
+},
+function(require,module,exports){
+/* gpt：只读原生聊天中当前候选的明确记录；不写变量，不用growth推断掌握或升境。 */
+(function(global){
+ 'use strict';
+ const realms=['末流','凡骨','淬体','冲脉','通明','入微','绝顶','宗师','半步天人','天人'];
+ const none=value=>!value||/^(无|暂无|未明|未知|未记录|未登记|不详)$/.test(String(value).trim());
+ function decode(value){return String(value??'').replace(/&(amp|lt|gt|quot|apos|nbsp);|&#(x[0-9a-f]+|[0-9]+);/gi,(all,name,n)=>{if(name)return {amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:'\u00a0'}[name.toLowerCase()];const v=n[0].toLowerCase()==='x'?parseInt(n.slice(1),16):Number(n);return v>0&&v<=0x10ffff?String.fromCodePoint(v):all;}).trim();}
+ function realm(value){const text=decode(value);return realms.some(r=>text===r||text===r+'巅峰'||text===r+'·巅峰')?text:null;}
+ function skills(value){if(Array.isArray(value))return [...new Set(value.slice(0,64).filter(v=>typeof v==='string').flatMap(skills))];const text=decode(value);if(none(text))return [];if(text.startsWith('[')){try{const parsed=JSON.parse(text);return Array.isArray(parsed)?skills(parsed):[];}catch{return [];}}
+  return [...new Set(text.split(/[、,，;；\n]+/).map(v=>v.trim()).filter(v=>v&&!none(v)&&v.length<=80&&!/[<>\x00-\x1f]/.test(v)))].slice(0,64);
+ }
+ function parseOpening(text){const marker='[玩家开局设定已载入]',at=String(text).indexOf(marker);if(at<0)return null;const start=text.indexOf('{',at+marker.length);if(start<0)return null;let depth=0,quote=false,escape=false;
+  for(let i=start;i<text.length;i++){const c=text[i];if(quote){if(escape)escape=false;else if(c==='\\')escape=true;else if(c==='"')quote=false;continue;}if(c==='"')quote=true;else if(c==='{')depth++;else if(c==='}'&&--depth===0){try{const record=JSON.parse(text.slice(start,i+1));if(!record||typeof record!=='object'||Array.isArray(record))return null;return {name:String(record['姓名']??''),identity:String(record['身位']??''),realm:realm(record['武功境界']),skills:skills(record['掌握武学']??record['已掌握武学']),hasSkillRecord:!none(record['掌握武学']??record['已掌握武学'])};}catch{return null;}}}return null;
+ }
+ function readReport(text){const clean=String(text??'').replace(/<(think|analysis)>[^]*?<\/\1>/gi,'').replace(/<details\b[^>]*>[^]*?<\/details>/gi,'');const blocks=[...clean.matchAll(/<status_bar>((?:(?!<status_bar>)[^])*?)<\/status_bar>/g)];if(blocks.length!==1||!clean.slice(blocks[0].index+blocks[0][0].length).trim().match(/^(?:---)?$/))return null;
+  const content=blocks[0][1],get=tag=>{const hits=[...content.matchAll(new RegExp('<'+tag+'>([^<]*)</'+tag+'>','g'))];return hits.length===1?decode(hits[0][1]):'';};
+  return {realm:realm(get('player_realm')),skills:skills(get('player_skills')),hasSkillRecord:!none(get('player_skills')),growth:{skill:get('growth_skill'),reason:get('growth_reason'),weight:get('growth_weight')}};
+ }
+ function committedOpening(message){
+  const saved=message?.extra?.zyx_opening;
+  if(saved?.version!==1||!saved.record||!String(message.mes??message.message??'').includes('<details data-zyx-opening="committed">'))return null;
+  const expected=parseOpening('[玩家开局设定已载入]'+JSON.stringify(saved.record));
+  const actual=parseOpening(String(message.mes??message.message??''));
+  return expected&&actual&&JSON.stringify(expected)===JSON.stringify(actual)?actual:null;
+ }
+ function skillKey(value){return String(value).replace(/[《》「」]/g,'').replace(/[·・（(\s]+(?:初学|小成|大成|巅峰|圆满)[)）]?$/,'').trim();}
+ function mergeSkill(state,skill,source){const key=skillKey(skill),old=state.skills.findIndex(v=>skillKey(v)===key);if(old<0){state.skills.push(skill);state.skillSources[skill]=source;}else if(skill!==state.skills[old]&&/[·・（(\s]+(?:初学|小成|大成|巅峰|圆满)[)）]?$/.test(skill.replace(/[《》「」]/g,''))){delete state.skillSources[state.skills[old]];state.skills[old]=skill;state.skillSources[skill]=source;}}
+ function initial(){return {realm:null,skills:[],identity:'',playerName:'',openingFloor:null,realmSource:null,skillSources:Object.create(null),growth:[],reportFloor:null};}
+ function apply(state,report,floor){if(!report)return;if(report.realm){state.realm=report.realm;state.realmSource={type:'report',floor};}for(const skill of report.skills)mergeSkill(state,skill,{type:'report',floor});
+  if(report.growth&&!none(report.growth.skill))state.growth.push({...report.growth,floor});state.reportFloor=floor;
+ }
+ function fromChat(chat,{cutoff}={}){if(!Array.isArray(chat)||!Number.isInteger(cutoff)||cutoff<0||cutoff>=chat.length)throw new Error('武学回放必须给出当前楼层边界');let state=initial();
+  for(let i=0;i<=cutoff;i++){const message=chat[i];if(!message||message.is_system)continue;const body=String(message.mes??message.message??'');const opening=message.is_user?parseOpening(body):i===0?committedOpening(message):null;if(opening){state=initial();Object.assign(state,{realm:opening.realm,skills:[],identity:opening.identity,playerName:opening.name,openingFloor:i,realmSource:opening.realm?{type:'opening',floor:i}:null});for(const skill of opening.skills)mergeSkill(state,skill,{type:'opening',floor:i});}else if(!message.is_user)apply(state,readReport(body),i);}
+  state.growth=state.growth.slice(-30);return state;
+ }
+ function fromSnapshot(snapshot){const state=initial();apply(state,{realm:realm(snapshot.realm),skills:skills(snapshot.skills),growth:snapshot.growth},null);return state;}
+ global.ZYXMartialLedger={realms,decodeText:decode,normalizeRealm:realm,parseSkills:skills,parseOpening,committedOpening,readReport,fromChat,fromSnapshot};
+ if(typeof module==='object'&&module.exports)module.exports=global.ZYXMartialLedger;
+})(typeof window==='object'?window:globalThis);
+
+},
+function(require,module,exports){
+'use strict';
 /* gpt：权威结算纯引擎。活跃聊天按顺序回放，正文是输入，绝对时间与大势由脚本计算。 */
-const Clock=require(3);
-const Tracker=require(4);
-const Ledger=require(6);
-const {fingerprint}=require(7);
-const defaults=require(8);
-const Official=require(9);
+const Clock=require(5);
+const Tracker=require(6);
+const Ledger=require(3);
+const {fingerprint}=require(8);
+const defaults=require(9);
+const Official=require(10);
 const clone=value=>structuredClone(value);
 const unknown=value=>!value||/^(?:无|未明|未知|未记录|不详)$/.test(String(value).trim());
 function report(input){const text=String(input??'').replace(/<(think|analysis)>[^]*?<\/\1>/gi,'').replace(/<details\b[^>]*>[^]*?<\/details>/gi,'');const blocks=[...text.matchAll(/<status_bar>((?:(?!<status_bar>)[^])*?)<\/status_bar>/g)];if(blocks.length!==1||!/^(?:---)?$/.test(text.slice(blocks[0].index+blocks[0][0].length).trim()))return null;
@@ -354,7 +415,7 @@ function(require,module,exports){
 /* gpt：八人纯函数羁押回放。初始未知，只信人物专属字段，不从传闻/全局事件猜归属。 */
 (function(global){
  'use strict';
- const definitions=global.ZYX_HUD_CONFIG?.roster??(typeof require==='function'?require(5):[]);
+ const definitions=global.ZYX_HUD_CONFIG?.roster??(typeof require==='function'?require(7):[]);
  const unknown=v=>!v||/^(?:无|未明|未知|未记录|未登记|不详)$/.test(String(v).trim());
  const positive=new Set(['在押','关押中','已关押','已被关押','被关押','已收监','收监','已收押','收押','已入狱','入狱','被囚禁','被拘禁']);
  const negative=new Set(['未关押','未被关押','未在押','不在押','未入狱','未被捕','未曾被捕','自由','已释放','释放','获释','已获释','无罪释放','脱困','已脱困','逃脱','已逃脱','脱逃','已脱逃','越狱','已越狱','获救','已获救','救出','已救出','已离狱','已出狱','已死亡','已身亡']);
@@ -389,47 +450,6 @@ module.exports=[
  {"key":"qingluo","name":"青萝","tag":"qingluo_state","aliases":["影雀"],"portraitKey":"青萝-关押中","profile":"郡主近卫，又称影雀。原设境界：入微·真气贯通。"}
 ]
 ;
-},
-function(require,module,exports){
-/* gpt：只读原生聊天中当前候选的明确记录；不写变量，不用growth推断掌握或升境。 */
-(function(global){
- 'use strict';
- const realms=['末流','凡骨','淬体','冲脉','通明','入微','绝顶','宗师','半步天人','天人'];
- const none=value=>!value||/^(无|暂无|未明|未知|未记录|未登记|不详)$/.test(String(value).trim());
- function decode(value){return String(value??'').replace(/&(amp|lt|gt|quot|apos|nbsp);|&#(x[0-9a-f]+|[0-9]+);/gi,(all,name,n)=>{if(name)return {amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:'\u00a0'}[name.toLowerCase()];const v=n[0].toLowerCase()==='x'?parseInt(n.slice(1),16):Number(n);return v>0&&v<=0x10ffff?String.fromCodePoint(v):all;}).trim();}
- function realm(value){const text=decode(value);return realms.some(r=>text===r||text===r+'巅峰'||text===r+'·巅峰')?text:null;}
- function skills(value){if(Array.isArray(value))return [...new Set(value.slice(0,64).filter(v=>typeof v==='string').flatMap(skills))];const text=decode(value);if(none(text))return [];if(text.startsWith('[')){try{const parsed=JSON.parse(text);return Array.isArray(parsed)?skills(parsed):[];}catch{return [];}}
-  return [...new Set(text.split(/[、,，;；\n]+/).map(v=>v.trim()).filter(v=>v&&!none(v)&&v.length<=80&&!/[<>\x00-\x1f]/.test(v)))].slice(0,64);
- }
- function parseOpening(text){const marker='[玩家开局设定已载入]',at=String(text).indexOf(marker);if(at<0)return null;const start=text.indexOf('{',at+marker.length);if(start<0)return null;let depth=0,quote=false,escape=false;
-  for(let i=start;i<text.length;i++){const c=text[i];if(quote){if(escape)escape=false;else if(c==='\\')escape=true;else if(c==='"')quote=false;continue;}if(c==='"')quote=true;else if(c==='{')depth++;else if(c==='}'&&--depth===0){try{const record=JSON.parse(text.slice(start,i+1));if(!record||typeof record!=='object'||Array.isArray(record))return null;return {name:String(record['姓名']??''),identity:String(record['身位']??''),realm:realm(record['武功境界']),skills:skills(record['掌握武学']??record['已掌握武学']),hasSkillRecord:!none(record['掌握武学']??record['已掌握武学'])};}catch{return null;}}}return null;
- }
- function readReport(text){const clean=String(text??'').replace(/<(think|analysis)>[^]*?<\/\1>/gi,'').replace(/<details\b[^>]*>[^]*?<\/details>/gi,'');const blocks=[...clean.matchAll(/<status_bar>((?:(?!<status_bar>)[^])*?)<\/status_bar>/g)];if(blocks.length!==1||!clean.slice(blocks[0].index+blocks[0][0].length).trim().match(/^(?:---)?$/))return null;
-  const content=blocks[0][1],get=tag=>{const hits=[...content.matchAll(new RegExp('<'+tag+'>([^<]*)</'+tag+'>','g'))];return hits.length===1?decode(hits[0][1]):'';};
-  return {realm:realm(get('player_realm')),skills:skills(get('player_skills')),hasSkillRecord:!none(get('player_skills')),growth:{skill:get('growth_skill'),reason:get('growth_reason'),weight:get('growth_weight')}};
- }
- function committedOpening(message){
-  const saved=message?.extra?.zyx_opening;
-  if(saved?.version!==1||!saved.record||!String(message.mes??message.message??'').includes('<details data-zyx-opening="committed">'))return null;
-  const expected=parseOpening('[玩家开局设定已载入]'+JSON.stringify(saved.record));
-  const actual=parseOpening(String(message.mes??message.message??''));
-  return expected&&actual&&JSON.stringify(expected)===JSON.stringify(actual)?actual:null;
- }
- function skillKey(value){return String(value).replace(/[《》「」]/g,'').replace(/[·・（(\s]+(?:初学|小成|大成|巅峰|圆满)[)）]?$/,'').trim();}
- function mergeSkill(state,skill,source){const key=skillKey(skill),old=state.skills.findIndex(v=>skillKey(v)===key);if(old<0){state.skills.push(skill);state.skillSources[skill]=source;}else if(skill!==state.skills[old]&&/[·・（(\s]+(?:初学|小成|大成|巅峰|圆满)[)）]?$/.test(skill.replace(/[《》「」]/g,''))){delete state.skillSources[state.skills[old]];state.skills[old]=skill;state.skillSources[skill]=source;}}
- function initial(){return {realm:null,skills:[],identity:'',playerName:'',openingFloor:null,realmSource:null,skillSources:Object.create(null),growth:[],reportFloor:null};}
- function apply(state,report,floor){if(!report)return;if(report.realm){state.realm=report.realm;state.realmSource={type:'report',floor};}for(const skill of report.skills)mergeSkill(state,skill,{type:'report',floor});
-  if(report.growth&&!none(report.growth.skill))state.growth.push({...report.growth,floor});state.reportFloor=floor;
- }
- function fromChat(chat,{cutoff}={}){if(!Array.isArray(chat)||!Number.isInteger(cutoff)||cutoff<0||cutoff>=chat.length)throw new Error('武学回放必须给出当前楼层边界');let state=initial();
-  for(let i=0;i<=cutoff;i++){const message=chat[i];if(!message||message.is_system)continue;const body=String(message.mes??message.message??'');const opening=message.is_user?parseOpening(body):i===0?committedOpening(message):null;if(opening){state=initial();Object.assign(state,{realm:opening.realm,skills:[],identity:opening.identity,playerName:opening.name,openingFloor:i,realmSource:opening.realm?{type:'opening',floor:i}:null});for(const skill of opening.skills)mergeSkill(state,skill,{type:'opening',floor:i});}else if(!message.is_user)apply(state,readReport(body),i);}
-  state.growth=state.growth.slice(-30);return state;
- }
- function fromSnapshot(snapshot){const state=initial();apply(state,{realm:realm(snapshot.realm),skills:skills(snapshot.skills),growth:snapshot.growth},null);return state;}
- global.ZYXMartialLedger={realms,decodeText:decode,normalizeRealm:realm,parseSkills:skills,parseOpening,committedOpening,readReport,fromChat,fromSnapshot};
- if(typeof module==='object'&&module.exports)module.exports=global.ZYXMartialLedger;
-})(typeof window==='object'?window:globalThis);
-
 },
 function(require,module,exports){
 /* gpt：绑定原始正文和当前候选的短指纹；不把自身后台快照算入输入。 */
@@ -822,6 +842,12 @@ module.exports={
     "陆寒渊": "# 角色档案 · 陆寒渊\n\n```yaml\n角色档案:\n  基本信息: 陆寒渊（便衣化名：陆远 / 陆掌柜）, 男, 而立之年（二十八岁，筋骨沉凝、锋芒内敛之青年军官）, 锦衣亲军都尉府北镇抚司总旗（正七品）（武学境界：通明·真气贯通）\n  身份定位: 大明锦衣卫北镇抚司精锐总旗官; 奉密令潜入三省交界追查白莲教逆案与遗失密函之朝廷缇骑; 伪装成南下贩药之行商掌柜 | 锦衣卫北镇抚司（天子亲军·缇骑直属）\n  核心特质: 冷峻如铁的诏狱刑侦本能 与 誓不与阉党为伍的刚直军人风骨\n\n  武学:\n    - 武学境界: 通明（中三境第五阶；真气由十二正经贯通周身百骸，气机圆融沛然，内力可附刃劈断凡铁、真气护体可御钝击，在北镇抚司缇骑中属出类拔萃的百战悍将）\n    - 内功: 《玄冥炼气诀》（大成）：锦衣卫北司缇骑秘传心法。内息阴冷沉肃，行气专走奇经，擅长在湿寒阴暗环境下持久作战与耐受重创；发力时真气透骨生寒。\n    - 外功:\n        - 《断岳六合刀》（登峰造极）：北镇抚司实战杀戮刀诀。脱胎自辽东军伍破阵刀，大开大阖中藏阴狠短打；平时使用一柄藏于油布行囊内的特制精钢百炼狭刃短刀“截风”，出鞘无光、破空微鸣，专斩颈项、劈肋断腕。\n        - 《北司鹰爪错骨手》（大成）：锦衣卫诏狱独门擒拿刑讯绝技。十指如铁钩，擅扣脉门、错骨脱臼与卸下巴，专门用于生擒逆匪、阻断服毒咬舌。\n    - 步法与身手: 《追风蹑影步》（大成）：公门短距突进与暗巷腾挪身法。爆发沉猛，擅长在狭窄室内、回廊屋瓦间借力折向，三步之内即可跨越丈余距离锁死敌手退路。\n\n  身世成因与动机根源:\n    - 成因原点: 锦衣卫世袭军户出身，父辈曾随成祖北征；十三岁入锦衣卫力士营，在诏狱与外省缉盗中摸爬滚打十五载，凭借军功与断案直觉升任北司总旗。素来看不惯东厂权阉飞扬跋扈、祸乱朝纲，暗中立誓重振锦衣卫声威。\n    - 认知透镜: 视朝廷大统与王法纲纪为天地准绳；深知地方官场腐败与胥吏欺瞒成风，秉持“凡事皆看实证、口供不如物证”之冷峻刑侦思维，对地方官府乃至东厂番子皆抱持高度审视与戒备。\n    - 心智软肋: \n        1. 军人执拗：行事过于讲求法理铁证与职责闭环，不擅长官场迎合奉承与卑鄙钻营，在朝堂党争大潮中常成孤臣；\n        2. 护佑无辜之隐恻：虽身经百战、见惯诏狱惨状，但骨子里深埋着正派军人的底线，见弱小受屈或忠良蒙难，冷峻面容下仍存难以磨灭的道义良知。\n    - 专属情绪泄压口: 沉思或察觉杀机时，左手大拇指下意识摩挲狭刃刀柄上的牛皮缠绳；审问时目光微凝、语调骤降三分，令人不寒而栗。\n\n  性格调色盘:\n    - 底色性格: 沉稳冷峻，寡言少语，心细如发；观察力敏锐，任何细微的方言口音、靴底泥痕与眼神闪避皆难逃其双眼。\n    - 反向张力: 虽外表冷酷嗜杀、铁面无情，但行事讲求分寸与军人规矩，绝不滥杀无辜；在茶楼酒肆中能自如伪装成市侩圆滑的走南闯北药材商。\n    - 特有要素: 酷爱检验伤痕与器物尺寸；随身携有一套北司特制牛皮工具包，内装银针、夹剪、量尺与解毒散。\n    - 深度沦陷与防线消融: 独行天涯、防备戒心极深；若有人能在阴谋交织的修罗场中与其并肩死战、不谋私利捍卫公道，他方会撤去缇骑冰冷戒备，托付生死后背。\n\n  角色弧光判据:\n    - 原始裂缝: 虽效忠大明皇权，却眼见内廷阉党弄权、地方糜烂不堪，自身执掌的天子屠刀屡屡被卷入朝堂倾轧的政治肮脏之中。\n    - 破防判据: 当发现自己奉命追查的“白莲逆案”背后，实为官匪勾结、残害名门忠良的通天黑幕，而朝廷体制却选择同流合污时，其誓死捍卫的王法信仰面临沉重拷问。\n\n  欲望核心与博弈倾向:\n    - 欲望核心诉求: 主·抢在东厂之前截获白莲教逆书真凭实据，查明神仙岭惨案真相 + 辅·立下首功，搜集东厂厂卫跨省私设黑狱的罪证密奏御前\n    - 博弈本能与受挫迂回: 临事崇尚隐秘侦察、暗中布控、一击必杀；遇东厂或地方官府阻挠时，不硬碰冲突，利用假身份暗中调动眼线顺藤摸瓜。\n    - 情境主导倾向: 见异动先按兵不动观察其破绽；闻白莲教与黑狱动向则连夜潜行追踪。\n\n  心智原则与临界形变:\n    - 坚守原则: 不滥刑诛无辜，不与东厂阉党同流，诏狱腰牌与缇骑荣耀高于身家性命。\n    - 原则崩解临界: 亲历体制从根子上的崩塌与无可救药，为践行真正的正义而不得不背离官规、沦为叛逆者。\n\n  言语指纹:\n    - 自称: 在下陆远（商贾伪装时） / 锦衣卫北镇抚司总旗陆寒渊（亮明官身时） / 卑职。\n    - 特殊口癖: 盘查时冷冷道：“路引文书且留下，把鞋底泥土抬起来看看”；斥退宵小时寒声道：“锦衣亲军办案，闲杂人等退避三舍”；自嘲时：“这天下的官，十个里有九个该进诏狱”。\n    - 用语节奏: 语调低沉短促、字字如铁石落地；语速沉稳有力，不带任何多余废话。\n\n  心相:\n    - 内部朝廷各方:\n        - 北镇抚司堂官: 恪守军令、忠于职守，但因刚硬不阿偶受排挤；\n        - 东厂厂卫（封总管一系）: 视作祸国殃民的“阉狗”，暗中磨刀霍霍，时刻准备反戈一击；\n        - 地方官衙（长宁知县/主簿）: 视作鼠目寸光、贪渎昏庸的庸官污吏，对其行径抱以高度怀疑。\n    - 江湖涉案人物:\n        - 白雪莲（罗霄派女捕）: 起初怀疑其借名门公差身份掩护白莲信件，随着暗查深入，对其蒙冤受害产生同情与愤怒；\n        - 薛霜灵（白莲信使）: 视作缉捕定谳之朝廷钦犯，力图从其口中撬出红阳派真正兵力调动部署。\n\n  外貌细节:\n    - 容貌神采:\n        - 肤质面相：肤色呈长期风吹日晒的硬朗麦铜色，面骨如刀削斧凿般棱角分明；生得两道斜飞如刀的浓黑剑眉，长目微凹，一双瞳仁锐利幽黑如冬夜寒星；\n        - 特征记认：左侧眉梢上方有一道寸许长的淡白旧刀痕，微抿的薄唇下颌留着短短的青硬胡茬，平添一股历经死人堆滚打的刚毅杀伐之气。\n    - 发髻佩饰与衣饰着装:\n        - 便衣乔装：头戴一顶压低帽檐的黑色六合一统软胎瓦棱帽，将长发利落盘束帽内；身着一袭半旧的石青色直身细布棉长袍，外罩玄色薄呢风氅，领口微敞露出里面的深褐交领短衫；\n        - 腰佩暗藏：腰间系一条青布包银暗扣带，挂着一只放散碎银两与铜板的旧缎面钱袋；厚重长袍掩盖之下，内衬一件柔软贴身的天蚕丝织金锁子软甲；\n        - 官防信物：北镇抚司纯银螭龙令牌深藏于贴身内袋；行囊包裹内藏有一柄牛皮裹紧的百炼狭刃钢刀“截风”，刀柄缠着浸油黑麻绳。\n    - 身材与骨相体态:\n        - 骨相身段：身量高大挺拔，身长近七尺五寸（约合一米八二左右）。肩宽背厚、蜂腰猿臂，双臂肌肉结实紧绷，两手虎口与指腹布满常年握刀、拉弩形成的厚实老茧；\n        - 行止体态：站如悬崖劲松，行若潜行幽豹，下盘沉稳沉凝，落地无声；虽着商贾宽袍，但举手投足间自有一股军伍武官的慑人压迫感。\n\n  认知边界:\n    - 世人知晓: 悦来客栈新住进来的江浙生药客商“陆掌柜”，常在县衙周遭与南北城门茶肆盘桓打听药市与山路行市。\n    - 隐藏设定: 实为奉锦衣卫密令专程摸排白莲信件下落的总旗官；随身带有一匣北司密制剧毒“见血封喉”解药与诏狱蜡丸密信，入城即已盯上进城销赃的豺狼坡狱卒。\n```",
     "宁安郡主": "# 角色档案 · 朱仪瑄（宁安郡主）\n\n```yaml\n角色档案:\n  基本信息: 朱仪瑄（封号：宁安郡主 / 化名：宣姑娘）, 女, 桃李年华（及笄未久，十七岁，待字闺中）, 大明皇室宗亲 / 藩王府嫡出千金（武学境界：凡骨初阶）\n  身份定位: 大明亲王府嫡出爱女; 当朝天潢贵胄、金枝玉叶; 借进香之名携侍女微服出游之金闺贵女 | 大明宗室（皇朝天家）\n  核心特质: 矜贵任性的天家玉叶 与 稚嫩不谙人世的纯真少女心性\n\n  武学:\n    - 武学境界: 凡骨初阶（虽在王府曾延请名师习练防身之技，但实为宫苑修身的花拳绣腿；气血尚算顺畅，筋骨娇柔，毫无沙场与草莽拼杀实战经验，面对中下三境凶徒无力自保）\n    - 内功: 《吐纳养荣诀》（小成）：内廷传授宗室贵女的导引养生之术，内息微弱纤细，重在调理气血、滋润容颜、延年益寿，无临敌御侮攻防效用。\n    - 外功:\n        - 《折柳点翠剑》（初学）：江南名家为深闺千金编排的细剑套路。剑式轻灵好看、步法婀娜，出招如仕女踏春折柳，更重体态优美而非临敌杀伤；随身携有一柄镶嵌七彩宝石之短剑“惊鸿”。\n    - 步法与身手: 步态轻巧碎步，受宫廷礼仪规训熏陶，行止摇曳生姿；耐力极弱，登高行山数里便气喘吁吁、娇喘连连，下盘浮泛无力。\n\n  身世成因与动机根源:\n    - 成因原点: 生长于雕梁画栋、金玉堆砌的王府深闺，长年受侍女内监严密拱卫呵护，锦衣玉食、众星捧月；因厌倦繁文缛节与即将到来的政治指婚，趁春暖花开之际，软磨硬泡求得王妃首肯，借赴名山古刹进香祈福之机，私自换上便服、瞒过卫队暗哨微服私行。\n    - 认知透镜: 坚信“普天之下莫非王土，率土之滨莫非王臣”；深信皇家金牌与天子威权至高无上，认为无论走到何处，官府胥吏与天下草莽闻皇差皇亲之名必当倒头叩拜、唯命是从；对人间疾苦、官场腐败与三不管法外之地的蛮荒凶残缺乏认知。\n    - 心智软肋: \n        1. 骄纵任性：自恃身份尊贵，遇事好强争胜，受不得半点委屈怠慢，极易在市井中因颐指气使而引火烧身；\n        2. 依赖宗室光环：面对危险时第一反应为亮出藩王金牌喝退强梁，殊不知在亡命之徒眼中，皇家身份恰恰是杀人灭口的催命符；\n        3. 胆怯娇弱：未经任何风雨折磨，一旦失去侍从庇护并遭受粗暴威吓，心防便极易陷入惶恐无措。\n    - 专属情绪泄压口: 惊慌不安或羞恼时下意识咬着嫣红下唇，双手紧绞腰间绣金丝帕；娇嗔动怒时长眉微竖、跺脚轻斥“大胆奴才”。\n\n  性格调色盘:\n    - 底色性格: 娇俏高贵，烂漫任性，自矜自重；心性质朴但带有居高临下的优越感，言谈举止带着贵胄特有的威仪与骄横。\n    - 反向张力: 脱离繁琐深宫规矩后流露出对江湖传说的强烈好奇，见侠士比武会拍手雀跃；面对真正的底层苦难时又会动恻隐之意，随手赏赐金银。\n    - 特有要素: 分外讲究起居用度，嫌弃乡野浊气；饮食非细瓷精羹不下咽，随身必佩宫廷香囊与避秽珠。\n    - 深度沦陷与防线消融: 身为天潢贵胄，若深陷法外黑狱，尊严被市井恶吏层层撕碎，皇家天威化为乌有，骄傲的心灵面临塌陷般幻灭。\n\n  角色弧光判据:\n    - 原始裂缝: 误将家族权柄当作自身的庇护伞，沉溺于画本小说的快意恩仇，殊不知深山恶土早将朝廷律法视同废纸。\n    - 破防判据: 随身金牌与宗室信物不仅未能换来跪拜、反而引来凶徒贪婪与灭口杀机，亲历尊严被踩入泥泞却无处申冤的无助绝境。\n\n  欲望核心与博弈倾向:\n    - 欲望核心诉求: 主·畅游山川、见识江湖侠义以摆脱深闺樊笼 + 辅·保全身家清白与王府颜面，平安返回王城\n    - 博弈本能与受挫迂回: 遇事习惯以命令口吻斥责来人并亮出金牌施压；一旦受挫被缚则惊惶哭泣，继而试图许以重金封赏贿赂脱身。\n    - 情境主导倾向: 见客栈喧闹便蹙眉嫌弃；遇登徒子轻佻则厉声呵斥直呼“放肆”。\n\n  心智原则与临界形变:\n    - 坚守原则: 皇家宗室体统不可辱，金枝玉叶之躯不容凡夫贱民轻慢亵渎。\n    - 原则崩解临界: 遭遇黑狱残酷刑讯与药物摧残，眼见王法皇权尽皆失灵，为求生苟活而被迫向恶徒低头哀鸣。\n\n  言语指纹:\n    - 自称: 本郡主 / 本姑娘；落难时含泪自称“我 / 仪瑄”。\n    - 特殊口癖: 斥责时习惯喝道：“放肆！何方狂徒敢对本……敢对本姑娘无礼？”；嫌弃时轻啐：“一股子土腥膻气，快拿熏香来！”；惊惧时颤声道：“你、你们可知我是谁？若敢动我一根头发，父王定将你们千刀万剐！”\n    - 用语节奏: 语调清脆婉转如黄莺出谷，常态下带着拿腔作势的清贵语调，尾音微扬；惊怒恐惧时语速急促、带着颤抖哭腔。\n\n  心相:\n    - 皇室亲眷:\n        - 藩王父王与王妃母妃：视作无所不能的天地靠山，依恋至深，惹祸后最盼父王天兵降临；\n    - 身边至亲与侍从:\n        - 贴身侍女（青萝）：自幼朝夕相伴、同榻同食，名为主仆，实则情同胞姐同胞手足。朱仪瑄对其怀有极深的真实信赖与眷恋，视其为深闺中最知心信赖之人；平素任性骄矜时唯有青萝能温言劝慰，遇险时第一反应便是紧紧拉住青萝的手，甚至在危急时刻会流露出不顾千金之躯想要护着青萝的少女执拗；\n        - 王府护卫统领：虽嫌其行事死板拘束，但内心视其为安全屏障。\n    - 外部与江湖:\n        - 名门正派（罗霄派等）：视为大明忠臣顺民，心存好感与信赖，以为见名门必能得救；\n        - 地方胥吏与草莽恶汉：视为粗鄙肮脏的下等人，既鄙夷防备又深感厌恶。\n\n  外貌细节:\n    - 容貌神采:\n        - 肤质气色：常年深居王府绣楼、不见烈日风霜，通身肌肤白皙娇嫩若初生婴孩，细腻粉润、触若凝脂，吹弹可破；稍施外力紧握便会泛起显眼粉红淤痕。\n        - 眉目五官：一双远山柳叶眉纤细婉约，眉稍微蹙间尽显娇怯贵气；一双杏眼波光潋滟、水汪汪若秋水含波，眼睫浓密微翘；琼鼻娇俏秀挺，鼻翼小巧玲珑；檀口樱桃般娇小，唇珠红润如熟透浆果，色泽饱满诱人；两腮泛着天然红晕，面如皎月，天生一副金枝玉叶的绝美容颜。\n    - 发髻佩饰与衣饰着装:\n        - 青丝发髻：青丝如云秀发乌黑光亮，挽成灵巧精致的百花髻，发间斜插一支赤金掐丝点翠嵌珍珠步摇，流苏垂落耳际轻微晃动，两侧各簪一支金花细钿，贵气天成。\n        - 便服华彩：虽为避人耳目换上世家千金便装，但衣料用工依然难掩天家排场。身穿一件浅绯色百蝶穿花云锦窄袖对襟短襦，领口隐约露出一抹绣金线软缎月白抹胸与莹白如雪的精致锁骨；下着一袭淡烟柳黄撒花褶裙，裙幅宽大飘逸；腰束一条两指宽翠玉嵌金腰带，腰间垂挂内廷御制双鱼白玉佩与金丝掐花香囊。\n    - 身材与骨相体态:\n        - 骨相身段：身量纤小婀娜，骨架匀称纤巧。削肩细腰，锁骨若隐若现，天鹅般修长白净的玉颈挺秀优雅；虽无武林女子的矫健英气，却有着天潢贵胄独有的娇柔仪态。\n        - 胸腰臀曲线：少女体态初绽芳华。胸前抹胸被一对娇小紧致、挺拔如初生玉桃般的雪乳微微撑起，乳肉白腻柔嫩、富有惊人弹性，中央一道青涩浅沟令人心旌摇曳；纤腰盈盈堪堪一握，小腹平坦光洁如镜；跨骨小巧秀气，臀丘圆翘紧凑，宛如两枚白生生的蒸酥小馒，透着未经开采的青涩诱惑。\n        - 步态韵致：平日步履轻盈袅娜，碎步轻移如凌波微步、风移玉佩，尽显深宫大内调教出的端庄秀美；受惊奔逃时步态踉跄慌乱，娇躯轻颤，裙裾散乱，如风中零落娇花。\n        - 腿部与玉足：罗裙之下是一双修长匀称、白皙滑腻如嫩藕般的美腿，毫无半点茧皮伤痕；生就一双未经缠足的天生天然玉足，足型精致小巧如玉笋，足背丰润柔嫩、隐现浅青细络，足弓纤巧挺秀，十枚脚趾紧凑圆润如白玉珍珠，趾尖染着淡粉色凤仙花汁，足底柔嫩娇润，踩在平地亦如踏软锦。\n    - 私密感官特质（天潢贵胄·完璧处子）:\n        - 娇贵体质与体香：自幼以宫廷秘制百花药汤沐浴，通体散发一缕似蜜似糖的清甜蔷薇冷香；通身肌肤对疼痛与异物刺激耐受极低，触之温热细滑，稍受粗暴碰触便会引起周身战栗。\n        - 幽谷玉户：玉阜圆润小巧，茸毛细软稀疏若初生绒草；外唇娇小紧致、闭合无缝，如一柄未曾绽开的粉嫩花苞；内里花瓣宛若新剥桃肉般粉润娇嫩，花径狭深紧致，未受世俗男子半点侵扰，纯洁无暇；稍受湿热探试便本能收缩抽搐。\n        - 后庭菊蕾：深隐于圆翘小巧的粉白臀丘深处，如同一枚精巧紧闭的浅淡樱粉色花蕾，褶皱分外细嫩娇弱，括约肌紧绷幼嫩；耳垂、腋下软肉、后腰敏感带神经分外敏感，逢惊恐或异样侵触时，周身雪肤便会泛起大片诱人绯红。\n\n  认知边界:\n    - 世人知晓: 来自省城巨富之家的“宣姑娘”，随行携有贴身侍女青萝与数名护卫。\n    - 隐藏设定: 随身行囊夹层藏有内廷御赐“宁安郡主”蟠龙纯金令符与皇室宗牒；随行卫队在神仙岭险道遭遇泥石流与白莲教乱党冲突冲散，主仆二人狼狈流落神仙岭客栈避难。\n```",
     "青萝": "# 角色档案 · 青萝（死士代号：影雀）\n\n```yaml\n角色档案:\n  基本信息: 青萝（死士代号：影雀 / 孤儿出身，无姓无名）, 女, 双十年华（二十岁，略长郡主三岁）, 藩王府秘卫死士营「冥雀」甲上暗刃 / 宁安郡主贴身随行侍女（武学境界：入微·真气贯通）\n  身份定位: 藩王府绝密栽培之贴身死士兼郡主大丫鬟; 宁安郡主毫不知情的真正生死护卫; 伪装成随行端茶递水之温顺侍婢 | 大明宗室王府绝密暗卫\n  核心特质: 温婉恭顺的随侍长姐表象 与 杀伐决绝的入微境死士冷刃\n\n  武学:\n    - 武学境界: 入微（真气贯通十二正经，达中三境巅峰；举手投足气机圆融收放自如，真气护体可避凡兵，数十凡骨境武者难近其身，实力凌驾于通明与冲脉之上）\n    - 内功: 《寒蟾敛息诀》（大成）：王府秘卫至高隐匿心法。修成后可将一身浑厚真气尽皆深敛于丹田重穴，脉象与寻常柔弱民女无异；唯有全力爆发或同阶以上宗师近身探脉方能察觉。\n    - 外功:\n        - 《分水残影刺》（登峰造极）：专为贴身暗杀定制之上乘短兵杀技。出招迅疾如电，专刺人体咽喉、颈侧大脉与心窝死穴；袖中暗藏薄如蝉翼的精钢分水峨眉刺两枚，平时藏于小臂内侧，弹指间即可夺人性命。\n        - 《错骨拂穴手》（大成）：近身擒拿点穴绝技。双手看似柔若无骨，拂过敌手关节穴位刹那能生生震断筋腱、封死气血流动。\n    - 步法与身手: 《魅影穿林步》（大成）：专攻阴影潜行与短距爆发之鬼魅身法。踏雪无声，在狭窄房舍与山林暗处闪转腾挪如黑夜幽灵，爆发冲刺时三丈之内眨眼即至。\n\n  身世成因与动机根源:\n    - 成因原点: 襁褓孤儿，无姓无名，幼年被王府暗卫死士营收养，经历残酷的严苛筛选与杀戮训练；八岁时因悟性拔群、心智坚毅被选为“护主暗刃”，抹去死士档案，安排至朱仪瑄身边充作贴身侍女。十二年来日夜相伴，暗中为其挡下多次王府内宅暗算。\n    - 认知透镜: 虽自幼被灌输“自身不过是死士盾牌”之冷血教条，但十二载朝夕相处、同塌而眠，早已被郡主赤诚纯善的心性所感化融化；视郡主为尘世间唯一的亲人与明灯，其护持之情非仅出自死士戒律，更是源于甘愿为其粉身碎骨的真挚姊妹深情。\n    - 心智软肋: \n        1. 投鼠忌器：宁安郡主朱仪瑄是其唯一的软肋逆鳞。只要郡主受制于人或被刀刃架在颈上，青萝便会完全失去反抗主动，宁可任人宰割亦不敢轻举妄动；\n        2. 隐藏禁令：王爷严令死士身份绝不可暴露，否则将引来朝廷厂卫对藩王私蓄死士的谋反弹劾，因而非到万不得已的生死关头，她极力克制动武；\n        3. 情感羁绊：无法承受朱仪瑄遭受半点折磨侮辱，一旦郡主受难，其冷静如冰的杀手心境便会剧烈动摇。\n    - 专属情绪泄压口: 察觉杀机时右手垂落袖口微扣暗刺机簧，眼睫下垂掩盖寒芒；面对郡主撒娇或受委屈时，则目光温软，下意识伸手替郡主理顺鬓发。\n\n  性格调色盘:\n    - 底色性格: 表面低眉顺眼、谨小慎微、温存从容；内里冷酷果决、心思缜密、毫无妇人之仁。\n    - 反向张力: 对敌出手招招致命、狠辣凌厉；退回郡主身旁时又立刻化为轻声细语、替主子温茶抚慰的体贴长姐。\n    - 特有要素: 具有极高的毒理与机关辨识本能；凡郡主入口茶饭，必先以秘法银针暗中检验。\n    - 深度沦陷与防线消融: 自幼经受严苛耐痛与抗刑讯磨砺，寻常皮肉之苦难动其分毫；但若亲眼目睹郡主受辱受残，或因自身被擒而沦为要挟郡主的筹码，坚如磐石的心防便会陷入痛彻心扉的动摇。\n\n  角色弧光判据:\n    - 原始裂缝: 虽明知自身死士身份卑贱、随时当弃，却在长年温情中真正爱护着这位天真任性的妹妹，在“无情死士”与“真情长姐”之间背负沉重的情感撕扯。\n    - 破防判据: 当敌手看穿其死穴、以朱仪瑄的安危甚至贞洁逼其自断经脉、甘受折辱时，身为入微高手的骄傲与死士尊严在残酷现实面前被层层剥落。\n\n  欲望核心与博弈倾向:\n    - 欲望核心诉求: 主·不惜代价护送宁安郡主平安返回王府 + 辅·隐匿死士真相，保全王爷与郡主名声\n    - 博弈本能与受挫迂回: 遇敌第一反应是悄然布局、暴起暗杀清除威胁；一旦陷入重围或郡主落入敌手，则转为隐忍周旋，寻找反制突袭的一线契机。\n    - 情境主导倾向: 见郡主受欺侮立动杀机；闻官差搜查则收敛全部气息伪装成无害丫鬟。\n\n  心智原则与临界形变:\n    - 坚守原则: 死死守住死士禁令，宁死不伤郡主，郡主安危高于个人生死荣辱。\n    - 原则崩解临界: 郡主遭遇不可挽回之绝境，自身内力被暗算剥夺，被迫成为恶吏掌中玩物以求保住郡主残命。\n\n  言语指纹:\n    - 自称: 奴婢青萝 / 婢子；唯有暴起杀敌时自称“影雀”。\n    - 特殊口癖: 宽慰郡主时轻柔道：“郡主莫怕，青萝在呢”、“姑娘若是累了，奴婢替您揉揉”；对敌动杀心时冷冷吐字：“留你不得”。\n    - 用语节奏: 平素语调低微柔顺、语速平稳缓慢，带着江南女子的温软吴音；唯有临战下达决断时短促凌厉如破空寒箭。\n\n  心相:\n    - 守护对象:\n        - 朱仪瑄（宁安郡主）：此生唯一的羁绊与心灵归宿。表面称主仆，心中早视其为至亲骨肉，愿意为其抵挡世间一切污秽与刀剑；\n    - 外部势力:\n        - 罗霄派（名门）：虽敬其名声，但因防范宗门察觉自身内力底细，保持高度戒备与距离；\n        - 豺狼坡恶吏与草莽强徒：视作卑劣该杀的蝼蚁恶狼，时刻警惕其下流企图。\n\n  外貌细节:\n    - 容貌神采:\n        - 肤质气色：常年以内功调和气血，一身肌肤紧致雪白、温润细嫩，虽无郡主那般娇贵脆弱，却泛着健康莹润的光泽。\n        - 眉目五官：容颜清秀脱俗，生着一张端正小巧的瓜子脸；两道纤长柳叶眉自然舒展，平素眼帘低垂显得低眉恭谨，偶然抬眸时，一双长眸黑白分明、冷冽清澈如深潭寒水；鼻梁高挺秀雅，唇形薄而润泽，微抿时透出一股骨子里的刚强。\n    - 发髻佩饰与衣饰着装:\n        - 秀发发型：一头乌黑浓密的秀发在脑后用一根淡青色素雅缎带松松扎成垂落的低马尾，发尾如黑瀑垂落腰背上方，走动时在纤细背脊间轻柔摆动；额前与两鬓自然垂落着几缕轻薄微卷的碎发，修饰着小巧脸颊，既显出侍女特有的温顺清雅，又利落干练、毫无繁复钗钿拖累，方便随时拔刃暴起。\n        - 侍女朴装：身着一件月白色斜襟棉布短衫，外罩一袭水绿色收腰窄袖半臂比甲，衣角与袖口收紧，毫无拖泥带水之赘饰；下身系一条深青色粗布长裙，腰间紧束一条三指宽青布汗巾，掩藏腰间的暗器囊与软剑；脚下踩一双软底青布绣鞋，行走悄无声息。\n    - 身材与骨相体态:\n        - 骨相身段：身形纤细修长，骨架紧凑坚实。平肩细腰，脊背挺拔如松，全身毫无一丝松垮赘肉，透出长年习武特有的紧致韧性。\n        - 胸腰臀曲线：虽着粗布侍女窄袄，但内里身段曼妙诱人。胸前布料被一对饱满圆挺的酥胸微微顶起，虽不显张扬，但解下束胸后乳肉紧致坚挺如倒扣玉桃，弧度挺翘饱满；纤腰分外柔韧，小腹平坦收紧、带有一层细腻柔韧的核心肌理；跨部收窄，臀瓣圆润紧实微翘，迈步间下盘沉稳稳健。\n        - 腿部与玉足：裙幅之下是一双笔直紧致的长腿，大腿紧绷丰润，小腿修长有力，爆发腾挪力分外惊人；天生一双未曾缠足的天然玉足，足型窄长雅致，足弓饱满紧绷，十枚脚趾圆润整洁，脚底与脚趾内侧带有长期修习轻功形成的微薄软茧，踏地无尘。\n    - 私密感官特质（隐忍死士·完璧处子）:\n        - 触感与体香：常年习练寒蟾敛息功，周身透着一缕淡淡的苦木冷香；通身肌肤因死士训练而对疼痛耐受力颇强，但从未经历男女云雨，身躯纯净无垢。\n        - 幽谷玉户：玉阜平整紧凑，茸毛齐整细软；外唇紧密闭合如一线，花瓣娇嫩绯红，花径狭窄干涩、深紧至极，分外抗拒异物侵犯；触碰时本能紧绷收缩。\n        - 后庭菊蕾：藏于紧实白腻的狭窄臀缝深处，如一枚深粉色的紧闭小蕾，褶皱平滑紧实，括约肌韧劲惊人，平时收缩得严密无隙；后颈大椎穴、腰眼与尾椎骨为气血枢纽，若遭强行点扣或异样刺激，亦会引发浑身真气紊乱与肌肉轻颤。\n\n  认知边界:\n    - 世人知晓: 宁安郡主身边忠心耿耿、手脚勤快的普通贴身侍女“青萝”。\n    - 隐藏设定: 实为王府入微境死士“影雀”，身负护持郡主绝密使命；对此甚至连郡主本人都毫不知情。\n```"
+  },
+  "identityProfiles": {
+    "锦衣缇骑": "@@if (function(){try{return (variables.身份 === '锦衣缇骑' || variables.zyx_identity === 'jinyiwei')}catch(e){return false}})()\n<identity>\n# 身份 · 锦衣缇骑\n- 定位：大明锦衣卫北镇抚司秘密缇骑。\n- 是谁：{{user}} 奉北镇抚司密令化装便衣南下，以生药客商身份潜入赣闽粤边界，密查白莲教红阳派渗透与边陲官匪异动。\n- 初始境界：通明初阶。随身藏有北镇抚司铁牌、蜡丸密卷与狭刃短刀。\n</identity>",
+    "黑狱恶差": "@@if (function(){try{return (variables.身份 === '黑狱差役' || variables.身份 === '黑狱恶差' || variables.zyx_identity === 'yuzu')}catch(e){return false}})()\n<identity>\n# 身份 · 黑狱差役\n- 定位：豺狼坡废庙黑狱当值差役。\n- 是谁：{{user}} 为边陲军所牢卒编制，身着差役便服，手握黑狱各处钥匙与刑讯水火索。\n- 初始境界：淬体巅峰。\n</identity>",
+    "江湖任侠": "@@if (function(){try{return (variables.身份 === '江湖任侠' || variables.zyx_identity === 'xiake')}catch(e){return false}})()\n<identity>\n# 身份 · 江湖任侠\n- 定位：独行江湖的侠客 / 名门游历弟子。\n- 是谁：{{user}} 行经神仙岭避雨投宿，于杏花村客栈目睹主母丹娘悲啼，受托查探白雪莲下落。\n- 初始境界：通明初阶。腰悬随身佩剑。\n</identity>",
+    "身世自设": "@@if (function(){try{return (variables.身份 === '自设游侠' || variables.身份 === '身世自设' || variables.zyx_identity === 'custom')}catch(e){return false}})()\n<identity>\n# 身份 · 自设游侠\n- 定位：玩家完全自定义的独立角色。\n- 是谁：{{user}} 的姓名、门派、身手、装束兵刃与入局动机，依玩家 Persona 与首轮输入为准。\n- 初始境界：依自设。\n</identity>"
   }
 }
 ;
@@ -829,7 +855,7 @@ module.exports={
 function(require,module,exports){
 'use strict';
 // gpt：事件申请结算；不扫新闻或环境关键词，不把模型自报数字直接入账。
-const {fingerprint}=require(7);
+const {fingerprint}=require(8);
 const RULES=Object.freeze({report:20,testimony:20,public_fight:10,witness_escape:15,letter_exposed:20,intercept_messenger:-15,withhold_records:-10,fake_death:-10});
 const LEVELS=[0,20,40,65,85];
 const NAMES=['零级 · 幽谷盲区','一级 · 风闻生疑','二级 · 重典立案','三级 · 厂卫交锋','四级 · 天罗地网'];

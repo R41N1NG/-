@@ -41,6 +41,7 @@
     if (name === '雪莲' || name === '白捕快' || name === '白公差') name = '白雪莲';
     if (name === '霜灵' || name === '薛妖女') name = '薛霜灵';
     if (name === '玉莲') name = '白玉莲';
+    if (name === '影雀' || name === '侍卫青萝') name = '青萝';
     if (name === '云素' || name === '谢长老') name = '谢云素';
     return name;
   }
@@ -51,6 +52,7 @@
     if (!text) return '';
     const table = [
       [/^(常态|普通|平常|无|无特殊|无变化|—|-)$/, ''],
+      [/^(战斗|交战|迎敌|格斗|搏杀|作战|厮杀)$/, '战斗'],
       [/拔剑|出剑|持剑|剑拔|亮剑/, '拔剑'],
       [/哭泣|落泪|泪流|哭|泣/, '哭泣'],
       [/惊恐|惊惧|惊骇|骇然|惧色/, '惊恐'],
@@ -177,6 +179,9 @@
       }
       for (const dir of dirsFor(subdir, compact)) addUrl(dir + key + '.png');
     }
+
+    // 青萝/影雀共用身份；战斗图只在明确战斗或拔剑情境下优先。
+    if(role==='青萝'&&['战斗','拔剑'].includes(effectivePose)) addKey('影雀','角色立绘',true);
 
     // 1) 情境变体优先（compact 路径集，404 时快速落到常态）
     const rotateOn = config?.rotate !== false;

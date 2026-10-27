@@ -1,7 +1,7 @@
 {
-  "bytes": 2354512,
-  "sha256": "9f81e4421141405a48b039dcdc12c3cd6645ac2cd749617d5ce382ac90ef6154",
-  "release": "opening-draft-v1",
+  "bytes": 2332181,
+  "sha256": "db4ee72d6f2266835c8b5dfa493b9ecadbe0da502701c73e3912f0c7cec4563d",
+  "release": "character-routing-v1",
   "source": "朱颜血·丹杏/最新角色卡/danxing-presentation-v1.json",
   "worldbook_entries": 48,
   "features": [
@@ -42,7 +42,11 @@
     "clean-card-metadata",
     "collapsible-zero-prologue",
     "single-source-hud-regex",
-    "identity-draft-on-opening-switch"
+    "identity-draft-on-opening-switch",
+    "chat-scoped-identity-injection",
+    "node-only-npc-profiles",
+    "qingluo-yingque-combat-portrait",
+    "legacy-hud-read-only"
   ],
   "map_assets": [
     {

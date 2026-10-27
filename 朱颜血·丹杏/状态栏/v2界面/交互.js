@@ -20,7 +20,7 @@
   const normalize=window.ZYXPortraitLibrary?.normalizeRole||String,norm=normalize(name);
   return prisonRoster.find(actor=>[actor.name,...(actor.aliases||[])].some(alias=>normalize(alias)===norm))?.inCustody;
  }
- const portraitPoses=new Set(['常态','拔剑','哭泣','惊恐','愣住','事后','牢狱','关押']);
+ const portraitPoses=new Set(['常态','战斗','拔剑','哭泣','惊恐','愣住','事后','牢狱','关押']);
  function portraitPose(name){
   const pose=String(mainPose||'').trim(),custody=custodyFor(name);
   // pose只接纳协议枚举；未关押、传闻等自由文本不进入画像关键字匹配。
