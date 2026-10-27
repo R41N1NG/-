@@ -1,8 +1,8 @@
 {
-  "bytes": 2349608,
-  "sha256": "79e6fd0e8f9ea05fb5bb765cc8bef5a6552169a7008dafda887a87901c7d98ae",
-  "release": "render-fix1",
-  "source": "朱颜血·丹杏/试用卡/渲染修复10/【朱颜血·丹杏】CCv3.json",
+  "bytes": 2354204,
+  "sha256": "419c90a3b54a431f5454e6afa928cae6cfa900ec73afb37a985111eb03eb6195",
+  "release": "maps-v2",
+  "source": "朱颜血·丹杏/最新角色卡/danxing-presentation-v1.json",
   "worldbook_entries": 48,
   "features": [
     "identity-menu",
