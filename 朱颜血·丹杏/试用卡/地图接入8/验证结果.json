@@ -1,0 +1,39 @@
+{
+  "release": "maps-v1",
+  "backend": "backend-v4",
+  "automated_checks": {
+    "passed": 7,
+    "failed": 0,
+    "scope": "地图/协议/开局与历时/既有四项界面"
+  },
+  "maps_cases": [
+    "默认长宁周边",
+    "切罗霄山总图再返回",
+    "重开重置默认",
+    "键盘左右切换",
+    "320/375无横向溢出",
+    "本地缺图用明确仓库备用",
+    "两处均失败提示",
+    "旧图异步不覆盖新选择",
+    "地图不写聊天/变量"
+  ],
+  "preserved": [
+    "后台脚本",
+    "原生协议",
+    "48世界书",
+    "四开场",
+    "零楼及非HUD正则"
+  ],
+  "card_sha256": "a6cd6f195c6e6f7fbbe092d8c58a3e1176623ad6a9b62a189a59464e8c2d4f99",
+  "map_assets": [
+    {
+      "file": "图包/地图/danxing-border-map.png",
+      "sha256": "badcb54eb9f7699409b30f5f26d7c60d82f1dad6ca76c467af553ab6d9f7b4a5"
+    },
+    {
+      "file": "图包/地图/danxing-overview-map.png",
+      "sha256": "ba4c0c849301e734540ce1420ad9dc712e6712685afb5e9d6c37a395e3f52103"
+    }
+  ],
+  "environment": "实际PNG和成品正则的本地模拟酒馆宿主，非用户实机"
+}

@@ -69,10 +69,11 @@
       }
     },
     maps: {
-      baseUrl: '',
+      baseUrl: 'user/images/zyx_gallery/',
+      defaultMapId: 'region',
       images: [
-        { id: 'world', label: '大地图', file: '' },
-        { id: 'prison', label: '黑狱图', file: '' }
+        { id: 'region', label: '长宁周边小地图', file: '地图/danxing-border-map.png', fallbackUrl: 'https://raw.githubusercontent.com/R41N1NG/-/75488c097eddf827bb368472fb7f1aff2dd65af3/downloads/danxing-border-map.png' },
+        { id: 'world', label: '罗霄山大地图', file: '地图/danxing-overview-map.png', fallbackUrl: 'https://raw.githubusercontent.com/R41N1NG/-/75488c097eddf827bb368472fb7f1aff2dd65af3/downloads/danxing-overview-map.png' }
       ]
     }
   };

@@ -4,8 +4,8 @@
   const mounted = new WeakMap();
   let serial = 0;
   const placeholders = [
-    { id: 'world', label: '大地图', file: '' },
-    { id: 'prison', label: '黑狱图', file: '' },
+    { id: 'region', label: '长宁周边小地图', file: '' },
+    { id: 'world', label: '罗霄山大地图', file: '' },
   ];
   function hosts() {
     const list = [window];
@@ -30,10 +30,10 @@
         if (!id || seen.has(id)) continue;
         seen.add(id);
         images.push({ id, label: typeof item.label === 'string' && item.label.trim() ? item.label.trim().slice(0, 100) : id,
-          file: typeof item.file === 'string' ? item.file.trim() : '' });
+          file: typeof item.file === 'string' ? item.file.trim() : '', fallbackUrl: typeof item.fallbackUrl==='string'?item.fallbackUrl.trim():'' });
       }
     }
-    return { baseUrl: typeof config?.baseUrl === 'string' ? config.baseUrl : '', images: images.length ? images : placeholders };
+    return { defaultMapId:config?.defaultMapId||'region', baseUrl: typeof config?.baseUrl === 'string' ? config.baseUrl : '', images: images.length ? images : placeholders };
   }
   function origin() {
     for (const host of hosts().slice().reverse()) {
@@ -84,7 +84,7 @@
     const current = node('p', 'zyx-map-current', '当前地点：' + (location || '未提供地点'));
     const tabs = node('div', 'zyx-map-tabs');
     tabs.setAttribute('role', 'tablist');
-    tabs.setAttribute('aria-label', '地图图包');
+    tabs.setAttribute('aria-label', '地图层级');
     const viewer = node('section', 'zyx-map-viewer');
     viewer.id = id + '-viewer';
     viewer.setAttribute('role', 'tabpanel');
@@ -99,7 +99,7 @@
     status.setAttribute('role', 'status');
     status.setAttribute('aria-live', 'polite');
     viewer.append(image, empty);
-    shell.append(head, current, tabs, viewer, status, node('p', 'zyx-map-note', '仅查看地图图包，不改变当前位置或时间。'));
+    shell.append(head, current, tabs, viewer, status, node('p', 'zyx-map-note', '点击上方切换长宁周边与罗霄山总图。'));
     const controls = [];
     function select(index, focus = false) {
       const entry = config.images[index];
@@ -119,32 +119,22 @@
       empty.hidden = false;
       empty.textContent = '地图图包尚未接入';
       status.textContent = '';
-      if (!entry.file) return;
-      const files = Object.create(null);
-      files[entry.id] = entry.file;
-      let urls = [];
-      try { urls = window.ZYXPortraitLibrary?.resolve(entry.id, { baseUrl: config.baseUrl, files }, origin())?.urls ?? []; } catch {}
-      if (!urls.length) {
-        empty.textContent = '地图图包暂不可用，请检查配置。';
-        return;
+      if (!entry.file&&!entry.fallbackUrl) return;
+      // 地图只解析显式图片地址，不走人物立绘的别名/情境寻径。
+      function url(file,base){try{if(!file)return null;const host=new URL(origin());const directory=new URL(base||'/',host.origin+'/');if(!directory.pathname.endsWith('/'))directory.pathname+='/';const resolved=new URL(file,directory);return /^https?:$/.test(resolved.protocol)&&!resolved.username&&!resolved.password?resolved.href:null;}catch{return null;}}
+      const urls=[...new Set([url(entry.file,config.baseUrl),url(entry.fallbackUrl,'/')].filter(Boolean))];
+      if (!urls.length) {empty.textContent='地图图包暂不可用，请检查配置。';return;}
+      let position=0;
+      function attempt(){
+        if(disposed||revision!==token)return;
+        if(position>=urls.length){pending=null;empty.textContent='地图未能载入，请检查图包图片或网络连接。';return;}
+        const address=urls[position++];empty.textContent='正在载入地图…';
+        const candidate=new doc.defaultView.Image();pending=candidate;
+        candidate.onload=()=>{if(disposed||revision!==token)return;pending=null;image.src=address;image.hidden=false;empty.hidden=true;status.textContent=entry.label;};
+        candidate.onerror=()=>{if(disposed||revision!==token)return;candidate.onload=null;candidate.onerror=null;pending=null;attempt();};
+        candidate.src=address;
       }
-      empty.textContent = '正在载入地图…';
-      const candidate = new doc.defaultView.Image();
-      pending = candidate;
-      candidate.onload = () => {
-        if (disposed || revision !== token) return;
-        pending = null;
-        image.src = urls[0];
-        image.hidden = false;
-        empty.hidden = true;
-        status.textContent = entry.label;
-      };
-      candidate.onerror = () => {
-        if (disposed || revision !== token) return;
-        pending = null;
-        empty.textContent = '地图暂时无法载入，请检查图包文件。';
-      };
-      candidate.src = urls[0];
+      attempt();
     }
     config.images.forEach((entry, index) => {
       const control = button(entry.label, 'zyx-map-tab');
@@ -162,7 +152,8 @@
       tabs.append(control);
     });
     dialog.replaceChildren(shell);
-    select(0);
+    const defaultIndex=config.images.findIndex(item=>item.id===config.defaultMapId);
+    select(defaultIndex<0?0:defaultIndex);
     listen(closeButton, 'click', event => { event.preventDefault(); event.stopPropagation(); close(); });
     listen(dialog, 'cancel', event => { event.preventDefault(); close(); });
     listen(dialog, 'click', event => {

@@ -1,8 +1,8 @@
 {
-  "bytes": 2306527,
-  "sha256": "a0a61c3e578d2e32ebff947459cbf08a8ec671d263ead652e442722d72ed6a7c",
-  "release": "backend-v4",
-  "source": "朱颜血·丹杏/试用卡/七项修复7/【朱颜血·丹杏】CCv3-七项修复7.json",
+  "bytes": 2311102,
+  "sha256": "a6cd6f195c6e6f7fbbe092d8c58a3e1176623ad6a9b62a189a59464e8c2d4f99",
+  "release": "maps-v1",
+  "source": "朱颜血·丹杏/试用卡/地图接入8/【朱颜血·丹杏】CCv3-地图接入8.json",
   "worldbook_entries": 48,
   "features": [
     "identity-menu",
@@ -34,6 +34,20 @@
     "negative-custody-portrait",
     "prefix-safe-person-swap",
     "elapsed-history-dialog",
-    "custody-permission-revocation"
+    "custody-permission-revocation",
+    "two-level-image-map",
+    "default-changning-region",
+    "luoxiao-overview-switch",
+    "local-assets-remote-fallback"
+  ],
+  "map_assets": [
+    {
+      "file": "图包/地图/danxing-border-map.png",
+      "sha256": "badcb54eb9f7699409b30f5f26d7c60d82f1dad6ca76c467af553ab6d9f7b4a5"
+    },
+    {
+      "file": "图包/地图/danxing-overview-map.png",
+      "sha256": "ba4c0c849301e734540ce1420ad9dc712e6712685afb5e9d6c37a395e3f52103"
+    }
   ]
 }
