@@ -1,0 +1,9 @@
+independent backend {"intelType":"object","nodesArray":true,"time":"宣德五年四月初一 17:00"}
+after HUD writer {"intelType":"number","nodesArray":false,"time":"宣德五年四月初一 · 暮春初夏（酉时）18:00"}
+after backend sync again {"intelType":"number","nodesArray":false,"injectedIntel":{"known":[],"names":[],"value":0,"actCount":0,"actTotal":4}}
+half-ke after model future time {"day":110,"act":3}
+negative keyword intel 20
+12 shichen {"day":1,"clock":"18:00"}
+HUD accepts protocol fragment false
+HUD accepts protocol fragment true
+native depth missing new fields true true
