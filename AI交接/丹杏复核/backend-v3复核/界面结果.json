@@ -1,0 +1,35 @@
+{
+  "cardFile": "/workspace/-/downloads/danxing-backend-v3.json",
+  "sha256": "d0ffc30b2a575ffba5220977276a822e50f908042c7065afdfc7cabe21924d41",
+  "fixture": "实际成品显示阶段→成对HTML代码块→同源iframe；静态合成图/模拟backend快照；非酒馆实机",
+  "cases": [
+    {
+      "test": "否定羁押与常态画像",
+      "src": "user/images/zyx_gallery/角色立绘/白雪莲-牢狱4.png",
+      "errors": []
+    },
+    {
+      "test": "custom前缀副人物互换",
+      "main": {
+        "name": "裴丹杏",
+        "stage": "—",
+        "aura": "—"
+      },
+      "extra": {
+        "name": "白雪莲",
+        "stage": "副阶段",
+        "aura": "副气象"
+      },
+      "elapsedOpeners": 0,
+      "errors": []
+    },
+    {
+      "test": "已打开监牢后控制权失去",
+      "before": 2,
+      "dialogRemainsOpen": true,
+      "label": "监牢 (未控)",
+      "dossier": "白雪莲",
+      "errors": []
+    }
+  ]
+}

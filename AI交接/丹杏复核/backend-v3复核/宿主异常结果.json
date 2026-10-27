@@ -1,0 +1,51 @@
+{
+  "audit": "danxing-backend-v3 host runtime",
+  "createdAt": "2026-10-27T06:36:20.509Z",
+  "repositoryRoot": "/workspace/-",
+  "artifact": "/workspace/-/downloads/danxing-backend-v3.json",
+  "productionFilesModified": false,
+  "scope": "Current source host adapter and engine; opening input from shipped backend-v3 card; no live Tavern connection.",
+  "findings": [
+    {
+      "id": "missing_report_not_visible",
+      "reproduced": true,
+      "steps": [
+        "有效零楼后追加无状态块楼",
+        "调用 runtime.sync()",
+        "对照 engineState.pending、HUD投影及diagnostics"
+      ],
+      "observed": {
+        "enginePending": [
+          {
+            "floor": 1,
+            "code": "missing_report",
+            "message": "本楼没有唯一完整的状态回报，未自动改变时间或情报。"
+          }
+        ],
+        "hudPending": [],
+        "lastError": null,
+        "lastFloorHasBackend": false
+      }
+    },
+    {
+      "id": "stale_invalid_floor_blocks_later_valid_snapshots",
+      "reproduced": true,
+      "steps": [
+        "有效零楼和完整楼结算成功",
+        "将完整楼正文编辑成缺状态块并同步",
+        "追加新完整楼并同步",
+        "检查当前HUD投影"
+      ],
+      "observed": {
+        "afterInvalid": {
+          "oldBackendRetained": true,
+          "hud": null
+        },
+        "finalEngineReady": true,
+        "lastFloorHasFreshSnapshot": true,
+        "hudAtLaterValidFloor": null,
+        "lastError": null
+      }
+    }
+  ]
+}

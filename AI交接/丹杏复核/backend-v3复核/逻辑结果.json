@@ -1,0 +1,73 @@
+{
+  "scope": "合成回放；未连接实际酒馆",
+  "martial": {
+    "realm": null,
+    "skills": [],
+    "identity": "",
+    "playerName": "",
+    "openingFloor": null,
+    "realmSource": null,
+    "skillSources": {},
+    "growth": [],
+    "reportFloor": 0
+  },
+  "orderDependentIntel": [
+    5,
+    20
+  ],
+  "quotedReportIntel": 20,
+  "syntheticGrowth": [
+    {
+      "turns": 20,
+      "rawBytes": 6508,
+      "framesBytes": 251232,
+      "officialInjectionBytes": 3474,
+      "history": 20
+    },
+    {
+      "turns": 100,
+      "rawBytes": 32191,
+      "framesBytes": 1888411,
+      "officialInjectionBytes": 16907,
+      "history": 100
+    },
+    {
+      "turns": 200,
+      "rawBytes": 64591,
+      "framesBytes": 5466400,
+      "officialInjectionBytes": 34093,
+      "history": 200
+    }
+  ],
+  "promptDependencies": {
+    "constantSourceCharacters": 15521,
+    "embeddedBookTokenBudget": 2048,
+    "unlockedProfileConditionPresent": [
+      {
+        "id": 24,
+        "enabled": true,
+        "conditional": false
+      },
+      {
+        "id": 25,
+        "enabled": true,
+        "conditional": false
+      },
+      {
+        "id": 26,
+        "enabled": true,
+        "conditional": false
+      },
+      {
+        "id": 27,
+        "enabled": true,
+        "conditional": false
+      },
+      {
+        "id": 28,
+        "enabled": true,
+        "conditional": false
+      }
+    ]
+  }
+}
