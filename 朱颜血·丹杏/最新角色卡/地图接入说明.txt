@@ -1,0 +1,7 @@
+gpt：丹杏二级地图接入
+
+1. 将danxing-trial.json导入酒馆。
+2. 把图包里的“地图”文件夹复制到现有zyx_gallery图包目录，与角色立绘、关押中立绘并列。最终应可访问：user/images/zyx_gallery/地图/danxing-border-map.png 和 danxing-overview-map.png。
+3. 打开状态栏地点入口，默认长宁周边小地图；点击罗霄山大地图切换，点击小地图标签返回。
+本地缺图会尝试联网读取仓库备用图；本地两图放好后可离线使用。
+地图只供查看，不涉及时间或事件推进。
