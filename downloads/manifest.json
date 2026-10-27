@@ -1,8 +1,8 @@
 {
-  "bytes": 2311102,
-  "sha256": "a6cd6f195c6e6f7fbbe092d8c58a3e1176623ad6a9b62a189a59464e8c2d4f99",
-  "release": "maps-v1",
-  "source": "朱颜血·丹杏/试用卡/地图接入8/【朱颜血·丹杏】CCv3-地图接入8.json",
+  "bytes": 2349422,
+  "sha256": "69861ce6bab7d8ab0ef2e0743d1f22b02e65ddd6fb3aff6e51410549fffdbb5e",
+  "release": "presentation-v1",
+  "source": "朱颜血·丹杏/试用卡/卷前美化9/【朱颜血·丹杏】CCv3.json",
   "worldbook_entries": 48,
   "features": [
     "identity-menu",
@@ -38,7 +38,9 @@
     "two-level-image-map",
     "default-changning-region",
     "luoxiao-overview-switch",
-    "local-assets-remote-fallback"
+    "local-assets-remote-fallback",
+    "clean-card-metadata",
+    "collapsible-zero-prologue"
   ],
   "map_assets": [
     {

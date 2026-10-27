@@ -14,7 +14,7 @@ source = args.source.resolve() if args.source else base / '【朱颜血·丹杏�
 data = source.read_bytes()
 card = json.loads(data)
 assert card['spec'] == 'chara_card_v3'
-assert '<zyx_required_status_output>' in card['data']['description']
+assert '<zyx_required_status_output>' in card['data']['extensions']['depth_prompt']['prompt']
 assert len(card['data']['extensions']['regex_scripts']) == 6
 assert card['data']['extensions']['depth_prompt']['depth'] == 0
 assert card['data']['extensions']['depth_prompt']['role'] == 'system'
@@ -40,21 +40,23 @@ manifest = {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(),
             'source': str(source.relative_to(base.parent.parent)) if source.is_relative_to(base.parent.parent) else source.name,
             'worldbook_entries': len(card['data'].get('character_book', {}).get('entries', [])),
             'features': ['identity-menu', 'prison-hud', 'core-output-contract', 'native-depth-prompt-v' + version, 'read-only-map', 'portrait-config-port', 'player-martial-ledger']}
-if release in ('hud-fix2', 'start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1'):
+if release in ('hud-fix2', 'start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1'):
     manifest['features'] += ['prison-roster', 'turn-elapsed-log']
-if release in ('start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1'):
+if release in ('start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1'):
     manifest['features'].remove('read-only-map')
     manifest['features'] += ['image-map-port', 'identity-opening-selection']
-if release in ('control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1'):
+if release in ('control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1'):
     manifest['features'] += ['eight-character-custody', 'scoped-runtime-coordinator']
-if release in ('backend-v1', 'backend-v3', 'backend-v4', 'maps-v1'):
+if release in ('backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1'):
     manifest['features'] += ['independent-character-backend', 'authoritative-clock', 'confirmed-clue-progress', 'configurable-node-conditions', 'native-message-snapshots']
-if release in ('backend-v3', 'backend-v4', 'maps-v1'):
+if release in ('backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1'):
     manifest['features'] += ['single-writer', 'protocol-v8', 'evidence-events-intelligence', 'dynamic-custody-roster', 'current-request-npc-profiles', 'v2-art-preserved']
-if release in ('backend-v4', 'maps-v1'):
+if release in ('backend-v4', 'maps-v1', 'presentation-v1'):
     manifest['features'] += ['invalid-report-recovery', 'committed-opening-ledger', 'atomic-intel-batches', 'negative-custody-portrait', 'prefix-safe-person-swap', 'elapsed-history-dialog', 'custody-permission-revocation']
-if release == 'maps-v1':
+if release in ('maps-v1', 'presentation-v1'):
     manifest['features'] += ['two-level-image-map', 'default-changning-region', 'luoxiao-overview-switch', 'local-assets-remote-fallback']
+if release == 'presentation-v1':
+    manifest['features'] += ['clean-card-metadata', 'collapsible-zero-prologue']
 if args.map_assets:
     manifest['map_assets'] = [{'file': '图包/地图/' + filename, 'sha256': hashlib.sha256((out / filename).read_bytes()).hexdigest()} for filename in ('danxing-border-map.png', 'danxing-overview-map.png')]
 # 固定版本文件方便区分旧下载；内容与latest一致。

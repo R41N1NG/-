@@ -1,0 +1,16 @@
+
+/* gpt · 卷前新增故事与原剪影网关统一，默认折叠保留选身份首屏。 */
+#zyx-zero-floor .zyx-prologue{position:relative;margin:0 0 24px;padding:18px 20px;border:1px solid #9c94734d;border-left:3px solid #984b41;background:linear-gradient(120deg,#29312be8,#131c1be8);box-shadow:inset 0 1px #c4b28b16}
+#zyx-zero-floor .zyx-prologue-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;color:#c4b18c;font-size:11px;letter-spacing:.12em}
+#zyx-zero-floor .zyx-prologue-lead{margin:12px 0 14px;color:#e5dcc7;font:18px/1.9 ui-serif,'Songti SC',SimSun,serif;letter-spacing:.05em}
+#zyx-zero-floor .zyx-prologue-story{border-top:1px solid #a297732e}
+#zyx-zero-floor .zyx-prologue-story>summary{display:flex;align-items:center;justify-content:space-between;min-height:44px;list-style:none;cursor:pointer;color:#c7bea6;font-size:12px;letter-spacing:.1em}
+#zyx-zero-floor .zyx-prologue-story>summary::-webkit-details-marker{display:none}
+#zyx-zero-floor .zyx-prologue-story>summary:focus-visible{outline:2px solid #c5b58e;outline-offset:3px}
+#zyx-zero-floor .zyx-prologue-cue{font-size:18px;color:#b78b71;transition:transform .18s ease}
+#zyx-zero-floor .zyx-prologue-story[open] .zyx-prologue-cue{transform:rotate(45deg)}
+#zyx-zero-floor .zyx-prologue-copy{padding:8px 0 3px;color:#c9c9bb;font:14px/2.15 ui-serif,'Songti SC',SimSun,serif;overflow-wrap:anywhere}
+#zyx-zero-floor .zyx-prologue-copy p{margin:0 0 15px;text-indent:2em}
+#zyx-zero-floor .zyx-prologue-copy p:last-child{color:#ddc9ac;margin-bottom:8px}
+@media(max-width:560px){#zyx-zero-floor .zyx-prologue{padding:14px 13px;margin-bottom:20px}#zyx-zero-floor .zyx-prologue-lead{font-size:16px}#zyx-zero-floor .zyx-prologue-copy{font-size:13px;line-height:2}}
+@media(prefers-reduced-motion:reduce){#zyx-zero-floor .zyx-prologue-cue{transition:none}}
