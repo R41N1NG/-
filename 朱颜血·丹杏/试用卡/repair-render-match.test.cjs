@@ -1,0 +1,11 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const {repair}=require('./repair-render-match.cjs'),{fields}=require('../状态栏/v2界面/协议.cjs');
+const before=require('../../downloads/danxing-presentation-v1.json'),card=repair(before),hud=card.data.extensions.regex_scripts.find(s=>s.scriptName==='ZYX_02_状态栏HUD渲染');
+const c=vm.createContext({extension_settings:{disabledExtensions:[]},getRegexScripts:()=>card.data.extensions.regex_scripts,substitute_find_regex:{NONE:0,RAW:1,ESCAPED:2},substituteParams:x=>x,substituteParamsExtended:x=>x,sanitizeRegexMacro:x=>x,console:{debug(){},warn(){}}});
+new vm.Script(fs.readFileSync(path.join(__dirname,'../状态栏/宿主fixture/regexFromString.js'),'utf8')).runInContext(c);new vm.Script('const RegexProvider={instance:{get:regexFromString}};'+fs.readFileSync(path.join(__dirname,'../状态栏/宿主fixture/阶段与替换.js'),'utf8')+';globalThis.render=getRegexedString;').runInContext(c);
+const sample=fs.readFileSync(path.join(__dirname,'渲染修复10/玩家回报样本.txt'),'utf8');
+test('整卡只改HUD匹配规则；工具幂等且交付与源码一致',()=>{const old=structuredClone(before),actual=structuredClone(card);for(const x of [old,actual])delete x.data.extensions.regex_scripts.find(s=>s.scriptName===hud.scriptName).findRegex;assert.deepEqual(actual,old);assert.deepEqual(repair(card),card);assert.deepEqual(card,require('../../downloads/danxing-render-fix1.json'));});
+test('玩家真实回报及四段原生开场均经完整正则链渲染，非占位提示',()=>{for(const raw of [sample,...card.data.alternate_greetings]){const shown=c.render(raw,2,{isMarkdown:true,depth:0});assert.ok(shown.includes('data-zyx-hud'),'完整HUD必须出现');assert.ok(!shown.includes('状态记录格式未齐'));assert.ok(!shown.includes('<status_bar>'));assert.equal(c.render(raw,2,{}),raw,'不修改模型正文');assert.ok(!shown.match(/\$<[^>]+>/));}});
+test('完整V8含官府事件和四副人物不再触发格式保护',()=>{const raw='<status_bar>'+fields.map(k=>'<'+k+'>'+(['intel_events','clues_gained'].includes(k)?'[]':'无')+'</'+k+'>').join('\n')+'</status_bar>';assert.ok(c.render(raw,2,{isMarkdown:true,depth:0}).includes('data-zyx-hud'));});
+module.exports={sample,card,hud,render:raw=>c.render(raw,2,{isMarkdown:true,depth:0})};

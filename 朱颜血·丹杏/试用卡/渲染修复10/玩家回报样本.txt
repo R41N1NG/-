@@ -1,0 +1,35 @@
+<status_bar>
+<time>宣德五年四月初二 申时</time>
+<elapsed>初至</elapsed>
+<location>江西赣州府 · 豺狼坡废庙黑狱正殿</location>
+<weather>阴霾闭锁 · 湿冷寒风</weather>
+<environment>火把松烟刺鼻 · 炭火焦味 · 铁索暗响</environment>
+<favor_char>白雪莲</favor_char>
+<favor_stage>陌路</favor_stage>
+<favor_aura>冰封十丈</favor_aura>
+<favor_reason>自愿配合公门羁押勘验，虽对边陲恶吏之无礼横蛮心生鄙薄，仍恪守朝廷法度体统</favor_reason>
+<favor_mind>身正不怕影子斜，待知县勘验腰牌自有公断；尔等若敢逾矩妄为，我反掌便能震碎这枷锁</favor_mind>
+<favor_companion>身着素白劲装负锁而立，冰肌玉骨纤尘不染，凤眸冷视公案，视周遭浊臭目光若无物</favor_companion>
+<extra_char_1>
+  <name>薛霜灵</name>
+  <stage>陌路</stage>
+  <aura>冰封十丈</aura>
+  <mind>白莲大业未竟，落入鹰犬之手，死亦不吐一字</mind>
+  <demeanor>肋下刀伤凝血，受制于长凳，闭目静伏不发一语</demeanor>
+</extra_char_1>
+<extra_char_2>无</extra_char_2>
+<player_realm>淬体巅峰</player_realm>
+<player_skills>六路捕盗腰刀、公门锁扣快擒、翻山快步</player_skills>
+<growth_skill>无</growth_skill>
+<growth_reason>无</growth_reason>
+<growth_weight>无</growth_weight>
+<prison_control>掌控</prison_control>
+<roster_event>无</roster_event>
+<bailian_state>在押</bailian_state>
+<shuangling_state>在押</shuangling_state>
+<clue>公案上供着刑部青铜腰牌与白莲逆书；刘辨机正暗自研墨篡改审讯案卷</clue>
+<clue_obtained>0</clue_obtained>
+<news_near>长宁县城尚不知深山变故，白家老父正往县衙打探消息</news_near>
+<news_mid>东厂大员移驻赣州，境内海捕文书赏格日益高涨</news_mid>
+<crisis>私拘刑部女捕已成死罪，恶徒欲借白莲逆案罗织通匪大罪灭口</crisis>
+</status_bar>

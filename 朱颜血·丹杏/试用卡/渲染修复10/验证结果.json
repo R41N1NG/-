@@ -1,0 +1,9 @@
+{
+  "native_regex_chain": "PASS",
+  "real_user_report": "PASS",
+  "four_native_openings": "PASS",
+  "browser_hud_initialized": 5,
+  "location_and_prison_entries": "VISIBLE",
+  "browser_errors": [],
+  "scope": "仅本地Chromium和模拟宿主，未连接玩家真实酒馆"
+}

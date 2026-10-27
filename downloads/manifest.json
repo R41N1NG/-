@@ -1,8 +1,8 @@
 {
-  "bytes": 2349422,
-  "sha256": "69861ce6bab7d8ab0ef2e0743d1f22b02e65ddd6fb3aff6e51410549fffdbb5e",
-  "release": "presentation-v1",
-  "source": "朱颜血·丹杏/试用卡/卷前美化9/【朱颜血·丹杏】CCv3.json",
+  "bytes": 2349608,
+  "sha256": "79e6fd0e8f9ea05fb5bb765cc8bef5a6552169a7008dafda887a87901c7d98ae",
+  "release": "render-fix1",
+  "source": "朱颜血·丹杏/试用卡/渲染修复10/【朱颜血·丹杏】CCv3.json",
   "worldbook_entries": 48,
   "features": [
     "identity-menu",
@@ -40,7 +40,8 @@
     "luoxiao-overview-switch",
     "local-assets-remote-fallback",
     "clean-card-metadata",
-    "collapsible-zero-prologue"
+    "collapsible-zero-prologue",
+    "single-source-hud-regex"
   ],
   "map_assets": [
     {
