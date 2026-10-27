@@ -43,6 +43,10 @@
     const record=parseRecord(root.querySelector('[data-output]')?.value??'');if(!record)throw Error('开局卷宗未生成，请返回检查身份配置');
     message('正在切换到对应身份开场……');
     const current=check(conn,pin);patch=prepare(config,record,current.context,current.zero);
+    // 刷新零楼会销毁当前iframe；先复用既有填栏入口保存玩家设定。
+    // 原入口保留现有草稿、避免重复追加，只触发input事件而不发送。
+    original('fill');
+    check(conn,pin);
     await conn.api.setChatMessages([patch],{refresh:'affected'});
     if(!applied(conn,pin,patch))throw Error('未确认开场切换成功，请检查当前聊天，不自动重复提交');
     message('已进入对应身份开场。');

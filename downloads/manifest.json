@@ -1,7 +1,7 @@
 {
-  "bytes": 2354204,
-  "sha256": "419c90a3b54a431f5454e6afa928cae6cfa900ec73afb37a985111eb03eb6195",
-  "release": "maps-v2",
+  "bytes": 2354512,
+  "sha256": "9f81e4421141405a48b039dcdc12c3cd6645ac2cd749617d5ce382ac90ef6154",
+  "release": "opening-draft-v1",
   "source": "朱颜血·丹杏/最新角色卡/danxing-presentation-v1.json",
   "worldbook_entries": 48,
   "features": [
@@ -41,7 +41,8 @@
     "local-assets-remote-fallback",
     "clean-card-metadata",
     "collapsible-zero-prologue",
-    "single-source-hud-regex"
+    "single-source-hud-regex",
+    "identity-draft-on-opening-switch"
   ],
   "map_assets": [
     {
