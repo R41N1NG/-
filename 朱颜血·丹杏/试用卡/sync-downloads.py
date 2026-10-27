@@ -32,17 +32,19 @@ manifest = {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(),
             'source': str(source.relative_to(base.parent.parent)) if source.is_relative_to(base.parent.parent) else source.name,
             'worldbook_entries': len(card['data'].get('character_book', {}).get('entries', [])),
             'features': ['identity-menu', 'prison-hud', 'core-output-contract', 'native-depth-prompt-v' + version, 'read-only-map', 'portrait-config-port', 'player-martial-ledger']}
-if release in ('hud-fix2', 'start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3'):
+if release in ('hud-fix2', 'start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4'):
     manifest['features'] += ['prison-roster', 'turn-elapsed-log']
-if release in ('start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3'):
+if release in ('start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4'):
     manifest['features'].remove('read-only-map')
     manifest['features'] += ['image-map-port', 'identity-opening-selection']
-if release in ('control-fix4', 'backend-v1', 'backend-v3'):
+if release in ('control-fix4', 'backend-v1', 'backend-v3', 'backend-v4'):
     manifest['features'] += ['eight-character-custody', 'scoped-runtime-coordinator']
-if release in ('backend-v1', 'backend-v3'):
+if release in ('backend-v1', 'backend-v3', 'backend-v4'):
     manifest['features'] += ['independent-character-backend', 'authoritative-clock', 'confirmed-clue-progress', 'configurable-node-conditions', 'native-message-snapshots']
-if release == 'backend-v3':
+if release in ('backend-v3', 'backend-v4'):
     manifest['features'] += ['single-writer', 'protocol-v8', 'evidence-events-intelligence', 'dynamic-custody-roster', 'current-request-npc-profiles', 'v2-art-preserved']
+if release == 'backend-v4':
+    manifest['features'] += ['invalid-report-recovery', 'committed-opening-ledger', 'atomic-intel-batches', 'negative-custody-portrait', 'prefix-safe-person-swap', 'elapsed-history-dialog', 'custody-permission-revocation']
 # 固定版本文件方便区分旧下载；内容与latest一致。
 (out / ('danxing-' + release + '.json')).write_bytes(data)
 (out / ('danxing-' + release + '.zip')).write_bytes((out / 'danxing-trial.zip').read_bytes())

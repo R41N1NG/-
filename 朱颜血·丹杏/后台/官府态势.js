@@ -6,21 +6,32 @@ const LEVELS=[0,20,40,65,85];
 const NAMES=['零级 · 幽谷盲区','一级 · 风闻生疑','二级 · 重典立案','三级 · 厂卫交锋','四级 · 天罗地网'];
 const HINTS=['官家尚不知情，不凭空增加追捕力量。','县衙疑有逆党，便衣差役入山打探。','官府立案，官道设卡、贴榜查验路引。','厂卫介入，东厂接管城门、向深山追查。','全境合围，营兵封锁险隘、海捕文书行下。'];
 const TYPES={report:/(告发|告密|报案|递状|投书)/,testimony:/(东厂|番子).*(口供|供词|审讯)/,public_fight:/(当众|客栈|官道).*(械斗|厮杀|亮.*腰牌)/,witness_escape:/(报信|求援|活口.*逃)/,letter_exposed:/(密函|原件).*(流出|现世|被获|落入|搜出)/,intercept_messenger:/(截杀.*(信使|差役|信卒)|射落信鸽)/,withhold_records:/(扣押.*(案卷|密信|告密)|截留.*卷宗)/,fake_death:/伪造.*(死证|尸身|坠崖)|伪证.*结案/};
-function initial(){return {val:0,level:0,tierName:NAMES[0],hint:HINTS[0],history:[],seen:[],proofs:[]};}
+function initial(){return {val:0,level:0,tierName:NAMES[0],hint:HINTS[0],history:[],batches:[],seen:[],proofs:[]};}
 function settle(state,raw,parsed,floor,pending){
  let events=[];try{events=parsed.intel_events?JSON.parse(parsed.intel_events):[];if(!Array.isArray(events)||events.length>8)throw Error();}catch{pending('intel_format','intel_events必须为至多8条事件的JSON数组。');return;}
  const narrative=String(raw).replace(/<(think|analysis|details)\b[^>]*>[^]*?<\/\1>/gi,'').replace(/<status_bar>[^]*?<\/status_bar>/g,'');
- let net=0;
+ const candidates=[];
  for(const item of events){
   if(!item||typeof item.id!=='string'||!/^[-a-zA-Z0-9_]{1,80}$/.test(item.id)||!Object.hasOwn(RULES,item.type)||typeof item.evidence!=='string'||item.evidence.length<4||item.evidence.length>180){pending('intel_event','事件ID/类型/事实摘录无效，未入账。');continue;}
   const proof=item.evidence.trim();
   if(!narrative.includes(proof)||/(没有|并未|未曾|尚未|不曾|未能|若是|假如|假设|计划|准备|打算|可能|据说|传闻|并没有|没人|不(?:会|再|能|向|去|告|报|曾)|没(?:有|人|向|去|能|曾)|未(?:告|报|取|获|流|回|截|扣|伪)|明天|明日|稍后|将要|将会)/.test(proof)||!TYPES[item.type].test(proof)){pending('intel_evidence','官府事件缺少本楼明确已发生证据，未入账：'+item.id);continue;}
   const digest=fingerprint({mes:proof.replace(/\s/g,'')});
   if(state.seen.includes(item.id)||state.proofs.includes(digest))continue;
-  state.seen.push(item.id);state.proofs.push(digest);const wanted=RULES[item.type];const delta=Math.max(-20-net,Math.min(20-net,wanted));net+=delta;
-  state.history.push({floor,id:item.id,type:item.type,delta,evidence:proof});
+  candidates.push({id:item.id,type:item.type,evidence:proof,digest,requestedDelta:RULES[item.type]});
  }
- state.val=Math.max(0,Math.min(100,state.val+net));
+ // 同ID不同事实、同事实不同类型不可由数组的先后决定胜者。
+ const conflicts=new Set();
+ for(const item of candidates){if(candidates.some(other=>(other.id===item.id&&(other.type!==item.type||other.digest!==item.digest))||(other.digest===item.digest&&other.type!==item.type)))conflicts.add(item.id);}
+ const accepted=[],ids=new Set(),proofs=new Set();
+ for(const item of candidates.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0)){
+  if(conflicts.has(item.id)){pending('intel_conflict','本批事件ID或事实类型冲突，未入账：'+item.id);continue;}
+  if(ids.has(item.id)||proofs.has(item.digest))continue;
+  ids.add(item.id);proofs.add(item.digest);accepted.push(item);
+ }
+ const before=state.val,requestedNet=accepted.reduce((n,item)=>n+item.requestedDelta,0),limitedNet=Math.max(-20,Math.min(20,requestedNet));
+ state.val=Math.max(0,Math.min(100,before+limitedNet));
+ for(const {digest,...item}of accepted){state.seen.push(item.id);state.proofs.push(digest);state.history.push({floor,...item});}
+ if(accepted.length){state.batches ||= [];state.batches.push({floor,eventIds:accepted.map(item=>item.id),before,requestedNet,limitedNet,actualDelta:state.val-before,after:state.val});}
  if(Number(parsed.intel_delta)&&!events.length)pending('intel_unverified','只有自报intel_delta，没有事件证据，未直接改变官方知晓度。');
 }
 function derive(state){state.level=LEVELS.findLastIndex(n=>state.val>=n);state.tierName=NAMES[state.level];state.hint=HINTS[state.level];}

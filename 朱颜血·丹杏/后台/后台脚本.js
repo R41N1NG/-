@@ -35,7 +35,7 @@ function createHostRuntime(options = {}) {
   let currentId = null, state = null, settled = [], varsSignature = null, promptSignature = null;
   let promptActive = false, generating = false, timer = null;
   const removers = [];
-  const diagnostics = { active: false, chatId: null, lastError: null, syncs: 0, messageWrites: 0, variableWrites: 0, injections: 0 };
+  const diagnostics = { active: false, chatId: null, lastError: null, pending: [], syncs: 0, messageWrites: 0, variableWrites: 0, injections: 0 };
   const fail = (stage, error) => { diagnostics.lastError = { stage, message: String(error && error.message || error) }; };
   function discover() {
     const frames = hostFrames(root);
@@ -98,7 +98,7 @@ function createHostRuntime(options = {}) {
     let api = discover(), id = identity(api.ctx);
     if (currentId !== id) {
       state = null; settled = []; varsSignature = null; promptSignature = null; generating = false;
-      currentId = id; diagnostics.chatId = id; diagnostics.active = !!id;
+      currentId = id; diagnostics.chatId = id; diagnostics.active = !!id; diagnostics.pending = []; diagnostics.lastError = null;
       await clearPrompt(api);
       api = discover();
       if (identity(api.ctx) !== id) return;
@@ -165,7 +165,8 @@ function createHostRuntime(options = {}) {
     state = clone(value);
     if (!isGenerating(api.ctx)) settled = clone(live);
     diagnostics.syncs++;
-    diagnostics.lastError = value.ready ? null : { stage: 'replay', message: '后台尚未就绪', pending: value.pending || result.pending || [] };
+    diagnostics.pending = clone(value.pending || result.pending || []);
+    diagnostics.lastError = value.ready && !diagnostics.pending.length ? null : { stage: 'replay', message: value.ready ? '后台有待核事项' : '后台尚未就绪', pending: clone(diagnostics.pending) };
     announce(api, id);
   }
   function sync(settings = {}) {
@@ -249,7 +250,7 @@ const clone=value=>structuredClone(value);
 const unknown=value=>!value||/^(?:无|未明|未知|未记录|不详)$/.test(String(value).trim());
 function report(input){const text=String(input??'').replace(/<(think|analysis)>[^]*?<\/\1>/gi,'').replace(/<details\b[^>]*>[^]*?<\/details>/gi,'');const blocks=[...text.matchAll(/<status_bar>((?:(?!<status_bar>)[^])*?)<\/status_bar>/g)];if(blocks.length!==1||!/^(?:---)?$/.test(text.slice(blocks[0].index+blocks[0][0].length).trim()))return null;
  const result={};for(const key of ['time','elapsed','location','prison_control','clue_obtained','clues_gained','intel_delta','intel_events',...Tracker.tags]){const hits=[...blocks[0][1].matchAll(new RegExp('<'+key+'>([^<]*)</'+key+'>','g'))];if(hits.length>1)return null;result[key]=hits.length?Ledger.decodeText(hits[0][1]):'';}return result;}
-function initial(){return {schema:1,ready:false,time:null,custody:Tracker.evaluateRoster([]),intel:{known:[],names:[],value:0,actCount:0,actTotal:0},official:Official.initial(),events:{active:null,fired:{},entered:{},next:''},floor:0,trend:null,nodes:[],location:'未明',prisonControl:'未明',pending:[]};}
+function initial(){return {schema:1,ready:false,unsettled:true,time:null,custody:Tracker.evaluateRoster([]),intel:{known:[],names:[],value:0,actCount:0,actTotal:0},official:Official.initial(),events:{active:null,fired:{},entered:{},next:''},floor:0,trend:null,nodes:[],location:'未明',prisonControl:'未明',pending:[]};}
 function gateResult(gate,state){
  if(!gate)return {status:'available',reason:'原卡已列出的场所节点'};
  if(gate.unconfigured)return {status:'unconfirmed',reason:gate.description};
@@ -267,9 +268,11 @@ function derive(state,config){if(!state.time)return;const act=state.time.act;sta
 function addPending(state,floor,code,message){state.pending.push({floor,code,message});state.pending=state.pending.slice(-30);}
 function gained(value){if(unknown(value))return [];try{const list=JSON.parse(value);return Array.isArray(list)&&list.length<=32&&list.every(item=>typeof item==='string')?[...new Set(list.map(item=>item.trim()).filter(Boolean))]:null;}catch{return null;}}
 function replay(chat,config=defaults){if(!Array.isArray(chat))throw TypeError('需要当前聊天数组');const state=initial(),frames=[],custodyReports=[];
- for(let floor=0;floor<chat.length;floor++){const message=chat[floor];if(!message||message.is_system||message.is_user)continue;const parsed=report(message.mes??message.message);if(!parsed){if(floor>0)addPending(state,floor,'missing_report','本楼没有唯一完整的状态回报，未自动改变时间或情报。');continue;}
-  if(!state.ready){if(floor!==0){addPending(state,floor,'missing_anchor','零楼没有可靠开局时刻，未猜测日期。');continue;}const anchor=Clock.parseAnchor(parsed.time);if(!anchor){addPending(state,floor,'missing_anchor','开局时刻无法解析，未默认四月初一。');continue;}state.time=anchor;state.ready=true;}
-  const actAtStart=state.time.act;state.floor=floor;
+ // 异常楼也保存当前输入绑定的保持状态，不能留下上一候选的毒快照。
+ const record=(floor,message)=>frames.push({floor,sourceFingerprint:fingerprint(message),sourcePrefix:fingerprint({mes:JSON.stringify(chat.slice(0,floor+1).map(fingerprint))}),snapshot:clone(state)});
+ for(let floor=0;floor<chat.length;floor++){const message=chat[floor];if(!message||message.is_system||message.is_user)continue;state.unsettled=true;const parsed=report(message.mes??message.message);if(!parsed){addPending(state,floor,floor===0?'missing_anchor':'missing_report',floor===0?'零楼没有唯一完整的开局回报，无法确认开局时刻。':'本楼没有唯一完整的状态回报，未自动改变时间或情报。');record(floor,message);continue;}
+  if(!state.ready){if(floor!==0){addPending(state,floor,'missing_anchor','零楼没有可靠开局时刻，未猜测日期。');record(floor,message);continue;}const anchor=Clock.parseAnchor(parsed.time);if(!anchor){addPending(state,floor,'missing_anchor','开局时刻无法解析，未默认四月初一。');record(floor,message);continue;}state.time=anchor;state.ready=true;}
+  state.unsettled=false;const actAtStart=state.time.act;state.floor=floor;
   custodyReports.push({...parsed,floor});state.custody=Tracker.evaluateRoster(custodyReports);
   if(!unknown(parsed.location))state.location=parsed.location;
   if(['未涉','受限','掌控'].includes(parsed.prison_control))state.prisonControl=parsed.prison_control;
@@ -280,8 +283,8 @@ function replay(chat,config=defaults){if(!Array.isArray(chat))throw TypeError('�
    for(const value of items){const item=config.clues.find(entry=>entry.id===value||entry.name===value||entry.aliases?.includes(value));if(!item){addPending(state,floor,'unknown_clue','未收录的信物未自动入账：'+value);continue;}if(item.act>actAtStart){addPending(state,floor,'future_clue','尚未开放幕次的信物未自动入账：'+item.name);continue;}if(!state.intel.known.includes(item.id))state.intel.known.push(item.id);}
   }else if(items?.length)addPending(state,floor,'unconfirmed_clue','列出信物但没有明确获得标记，未入账。');
   if(floor>0){const minutes=Clock.parseElapsed(parsed.elapsed);if(minutes===null)addPending(state,floor,'unknown_elapsed','耗时未明确，时钟保持原值。');else{try{state.time=Clock.advance(state.time,minutes);}catch{addPending(state,floor,'invalid_elapsed','耗时超出安全范围，时钟保持原值。');}}}
-  if(floor>0){Official.settle(state.official,message.mes??message.message,parsed,floor,(code,text)=>addPending(state,floor,code,text));if(state.time.act>actAtStart){const delta=5*(state.time.act-actAtStart);state.official.val=Math.min(100,state.official.val+delta);state.official.history.push({floor,id:'act_'+state.time.act,delta,reason:'幕次变化'});}}
-  Official.derive(state.official);Official.nodes(state);derive(state,config);frames.push({floor,sourceFingerprint:fingerprint(message),sourcePrefix:fingerprint({mes:JSON.stringify(chat.slice(0,floor+1).map(fingerprint))}),snapshot:clone(state)});
+  if(floor>0){Official.settle(state.official,message.mes??message.message,parsed,floor,(code,text)=>addPending(state,floor,code,text));if(state.time.act>actAtStart){const requestedDelta=5*(state.time.act-actAtStart),before=state.official.val;state.official.val=Math.min(100,before+requestedDelta);state.official.history.push({floor,id:'act_'+state.time.act,requestedDelta,delta:state.official.val-before,reason:'幕次变化'});}}
+  Official.derive(state.official);Official.nodes(state);derive(state,config);record(floor,message);
  }
  return {state:clone(state),frames,pending:clone(state.pending)};
 }
@@ -832,21 +835,32 @@ const LEVELS=[0,20,40,65,85];
 const NAMES=['零级 · 幽谷盲区','一级 · 风闻生疑','二级 · 重典立案','三级 · 厂卫交锋','四级 · 天罗地网'];
 const HINTS=['官家尚不知情，不凭空增加追捕力量。','县衙疑有逆党，便衣差役入山打探。','官府立案，官道设卡、贴榜查验路引。','厂卫介入，东厂接管城门、向深山追查。','全境合围，营兵封锁险隘、海捕文书行下。'];
 const TYPES={report:/(告发|告密|报案|递状|投书)/,testimony:/(东厂|番子).*(口供|供词|审讯)/,public_fight:/(当众|客栈|官道).*(械斗|厮杀|亮.*腰牌)/,witness_escape:/(报信|求援|活口.*逃)/,letter_exposed:/(密函|原件).*(流出|现世|被获|落入|搜出)/,intercept_messenger:/(截杀.*(信使|差役|信卒)|射落信鸽)/,withhold_records:/(扣押.*(案卷|密信|告密)|截留.*卷宗)/,fake_death:/伪造.*(死证|尸身|坠崖)|伪证.*结案/};
-function initial(){return {val:0,level:0,tierName:NAMES[0],hint:HINTS[0],history:[],seen:[],proofs:[]};}
+function initial(){return {val:0,level:0,tierName:NAMES[0],hint:HINTS[0],history:[],batches:[],seen:[],proofs:[]};}
 function settle(state,raw,parsed,floor,pending){
  let events=[];try{events=parsed.intel_events?JSON.parse(parsed.intel_events):[];if(!Array.isArray(events)||events.length>8)throw Error();}catch{pending('intel_format','intel_events必须为至多8条事件的JSON数组。');return;}
  const narrative=String(raw).replace(/<(think|analysis|details)\b[^>]*>[^]*?<\/\1>/gi,'').replace(/<status_bar>[^]*?<\/status_bar>/g,'');
- let net=0;
+ const candidates=[];
  for(const item of events){
   if(!item||typeof item.id!=='string'||!/^[-a-zA-Z0-9_]{1,80}$/.test(item.id)||!Object.hasOwn(RULES,item.type)||typeof item.evidence!=='string'||item.evidence.length<4||item.evidence.length>180){pending('intel_event','事件ID/类型/事实摘录无效，未入账。');continue;}
   const proof=item.evidence.trim();
   if(!narrative.includes(proof)||/(没有|并未|未曾|尚未|不曾|未能|若是|假如|假设|计划|准备|打算|可能|据说|传闻|并没有|没人|不(?:会|再|能|向|去|告|报|曾)|没(?:有|人|向|去|能|曾)|未(?:告|报|取|获|流|回|截|扣|伪)|明天|明日|稍后|将要|将会)/.test(proof)||!TYPES[item.type].test(proof)){pending('intel_evidence','官府事件缺少本楼明确已发生证据，未入账：'+item.id);continue;}
   const digest=fingerprint({mes:proof.replace(/\s/g,'')});
   if(state.seen.includes(item.id)||state.proofs.includes(digest))continue;
-  state.seen.push(item.id);state.proofs.push(digest);const wanted=RULES[item.type];const delta=Math.max(-20-net,Math.min(20-net,wanted));net+=delta;
-  state.history.push({floor,id:item.id,type:item.type,delta,evidence:proof});
+  candidates.push({id:item.id,type:item.type,evidence:proof,digest,requestedDelta:RULES[item.type]});
  }
- state.val=Math.max(0,Math.min(100,state.val+net));
+ // 同ID不同事实、同事实不同类型不可由数组的先后决定胜者。
+ const conflicts=new Set();
+ for(const item of candidates){if(candidates.some(other=>(other.id===item.id&&(other.type!==item.type||other.digest!==item.digest))||(other.digest===item.digest&&other.type!==item.type)))conflicts.add(item.id);}
+ const accepted=[],ids=new Set(),proofs=new Set();
+ for(const item of candidates.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0)){
+  if(conflicts.has(item.id)){pending('intel_conflict','本批事件ID或事实类型冲突，未入账：'+item.id);continue;}
+  if(ids.has(item.id)||proofs.has(item.digest))continue;
+  ids.add(item.id);proofs.add(item.digest);accepted.push(item);
+ }
+ const before=state.val,requestedNet=accepted.reduce((n,item)=>n+item.requestedDelta,0),limitedNet=Math.max(-20,Math.min(20,requestedNet));
+ state.val=Math.max(0,Math.min(100,before+limitedNet));
+ for(const {digest,...item}of accepted){state.seen.push(item.id);state.proofs.push(digest);state.history.push({floor,...item});}
+ if(accepted.length){state.batches ||= [];state.batches.push({floor,eventIds:accepted.map(item=>item.id),before,requestedNet,limitedNet,actualDelta:state.val-before,after:state.val});}
  if(Number(parsed.intel_delta)&&!events.length)pending('intel_unverified','只有自报intel_delta，没有事件证据，未直接改变官方知晓度。');
 }
 function derive(state){state.level=LEVELS.findLastIndex(n=>state.val>=n);state.tierName=NAMES[state.level];state.hint=HINTS[state.level];}

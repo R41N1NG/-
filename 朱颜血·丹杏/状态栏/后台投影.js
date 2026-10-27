@@ -14,7 +14,8 @@
    if(saved.sourcePrefix!==prefix)return null;
    latest=saved.snapshot;
   }
-  return latest?.ready?structuredClone(latest):null;
+  // ready=false同样是经过输入校验的诊断，时间保持null，界面不得伪造开局。
+  return latest?structuredClone(latest):null;
  }
  const api={read};global.ZYXBackendProjection=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window==='object'?window:globalThis);

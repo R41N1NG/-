@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),vm=require('node:vm'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
-const base=path.resolve(__dirname,'..'),card=JSON.parse(fs.readFileSync(path.join(base,'试用卡/后台修复6/【朱颜血·丹杏】CCv3-后台修复6.json')));
+const base=path.resolve(__dirname,'..'),card=JSON.parse(fs.readFileSync(process.env.ZYX_DANXING_TEST_CARD||path.join(base,'试用卡/后台修复6/【朱颜血·丹杏】CCv3-后台修复6.json')));
 const {fields}=require('../状态栏/v2界面/协议.cjs'),demo=require('../状态栏/演示数据.json').同行;const build={source:values=>'<status_bar>'+fields.map(k=>'<'+k+'>'+((values[k]&&typeof values[k]==='object')?Object.entries(values[k]).map(([a,b])=>'<'+a+'>'+b+'</'+a+'>').join(''):values[k]??'')+'</'+k+'>').join('')+'</status_bar>'};
 const scripts=card.data.extensions.regex_scripts;
 const ctx=vm.createContext({extension_settings:{disabledExtensions:[]},getRegexScripts:()=>scripts,substitute_find_regex:{NONE:0,RAW:1,ESCAPED:2},substituteParams:x=>x,substituteParamsExtended:x=>x,sanitizeRegexMacro:x=>x,console:{debug(){},warn(){}}});

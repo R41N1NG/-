@@ -25,3 +25,13 @@ test('同一轮内多个事件净变化限幅，未来幕角色由统一时钟�
 });
 
 test('上传卡四个实际开场各自锚定，初始都只有两名在押者',()=>{const card=require('../试用卡/backend-v2-上传基线.json');for(const greeting of card.data.alternate_greetings){const state=replay([{mes:greeting}]).state;assert.equal(state.ready,true);assert.deepEqual(state.custody.filter(x=>x.inCustody).map(x=>x.key),['bailian','shuangling']);}});
+test('同一事件组的六种排列净结果一致，申请和实际变化分开审计',()=>{
+ const items=[{id:'r',type:'report',evidence:'差役已经回县衙报案。'},{id:'t',type:'testimony',evidence:'东厂番子已经取得口供。'},{id:'i',type:'intercept_messenger',evidence:'他已截杀传信信使。'}],body=items.map(x=>x.evidence).join('');
+ const permutations=items.flatMap(a=>items.filter(b=>b!==a).map(b=>[a,b,items.find(c=>c!==a&&c!==b)]));let expected;
+ for(const events of permutations){const state=Official.initial();Official.settle(state,body,{intel_events:JSON.stringify(events)},1,()=>assert.fail());assert.equal(state.val,20);assert.equal(state.batches[0].requestedNet,25);assert.equal(state.batches[0].limitedNet,20);assert.equal(state.batches[0].actualDelta,20);assert.ok(state.history.every(x=>x.requestedDelta!==undefined&&x.delta===undefined));if(expected)assert.deepEqual(state,expected);else expected=state;}
+});
+test('上下限、批内重复和冲突事件均可审计且与排列顺序无关',()=>{
+ const proof='差役已经回县衙报案。',ev={id:'r',type:'report',evidence:proof};let state=Official.initial();state.val=95;Official.settle(state,proof,{intel_events:JSON.stringify([ev,ev])},1,()=>assert.fail());assert.equal(state.val,100);assert.equal(state.history.length,1);assert.equal(state.batches[0].actualDelta,5);
+ state=Official.initial();const negative='他已截杀传信信使。';Official.settle(state,negative,event('i','intercept_messenger',negative),1,()=>assert.fail());assert.equal(state.val,0);assert.equal(state.batches[0].requestedNet,-15);assert.equal(state.batches[0].actualDelta,0);
+ const other={id:'r',type:'intercept_messenger',evidence:negative};for(const group of [[ev,other],[other,ev]]){state=Official.initial();const pending=[];Official.settle(state,proof+negative,{intel_events:JSON.stringify(group)},1,(...v)=>pending.push(v));assert.equal(state.val,0);assert.equal(state.seen.length,0);assert.ok(pending.some(x=>x[0]==='intel_conflict'));}
+});

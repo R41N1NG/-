@@ -8,8 +8,8 @@
 (function (global) {
   'use strict';
 
-  const ledger = global.ZYXMartialLedger || (typeof require === 'function' ? require('./zyx_martial_ledger.js') : null);
-  const tracker = global.ZYXPrisonTracker || (typeof require === 'function' ? require('./zyx_prison_tracker.js') : null);
+  const ledger = global.ZYXMartialLedger || (typeof require === 'function' ? require('../玩家武学回放.js') : null);
+  const tracker = global.ZYXPrisonTracker || (typeof require === 'function' ? require('../羁押追踪.js') : null);
   const known = value => !!value && !/^(未明|未知|未记录|未登记|不详)$/.test(value.trim());
 
   function parseStatus(input) {
@@ -46,7 +46,7 @@
       history: reports.slice(-30).map(({ floor, time, elapsed, location }) => ({
         floor,
         time: time || '未明',
-        elapsed: known(latest.elapsed) && latest.elapsed !== '无' ? latest.elapsed : '待回报',
+        elapsed: known(elapsed) && elapsed !== '无' ? elapsed : '待回报',
         location: location || '未明'
       }))
     };

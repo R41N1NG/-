@@ -26,7 +26,7 @@ function createHostRuntime(options = {}) {
   let currentId = null, state = null, settled = [], varsSignature = null, promptSignature = null;
   let promptActive = false, generating = false, timer = null;
   const removers = [];
-  const diagnostics = { active: false, chatId: null, lastError: null, syncs: 0, messageWrites: 0, variableWrites: 0, injections: 0 };
+  const diagnostics = { active: false, chatId: null, lastError: null, pending: [], syncs: 0, messageWrites: 0, variableWrites: 0, injections: 0 };
   const fail = (stage, error) => { diagnostics.lastError = { stage, message: String(error && error.message || error) }; };
   function discover() {
     const frames = hostFrames(root);
@@ -89,7 +89,7 @@ function createHostRuntime(options = {}) {
     let api = discover(), id = identity(api.ctx);
     if (currentId !== id) {
       state = null; settled = []; varsSignature = null; promptSignature = null; generating = false;
-      currentId = id; diagnostics.chatId = id; diagnostics.active = !!id;
+      currentId = id; diagnostics.chatId = id; diagnostics.active = !!id; diagnostics.pending = []; diagnostics.lastError = null;
       await clearPrompt(api);
       api = discover();
       if (identity(api.ctx) !== id) return;
@@ -156,7 +156,8 @@ function createHostRuntime(options = {}) {
     state = clone(value);
     if (!isGenerating(api.ctx)) settled = clone(live);
     diagnostics.syncs++;
-    diagnostics.lastError = value.ready ? null : { stage: 'replay', message: '后台尚未就绪', pending: value.pending || result.pending || [] };
+    diagnostics.pending = clone(value.pending || result.pending || []);
+    diagnostics.lastError = value.ready && !diagnostics.pending.length ? null : { stage: 'replay', message: value.ready ? '后台有待核事项' : '后台尚未就绪', pending: clone(diagnostics.pending) };
     announce(api, id);
   }
   function sync(settings = {}) {

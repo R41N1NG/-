@@ -43,3 +43,13 @@ test('配置化时间窗、情报门槛和持有信物同时生效，到期明�
  assert.equal(replay([first],config).state.nodes[0].status,'locked');assert.equal(replay([first,second],config).state.nodes[0].status,'available');
  assert.equal(replay([first,second,m({elapsed:'2日'})],config).state.nodes[0].status,'expired');
 });
+test('跨幕日志记录封顶后的实际增量并保留原申请值',()=>{
+ const event=(id,type,evidence)=>({mes:evidence+raw({elapsed:'0分钟',intel_events:JSON.stringify([{id,type,evidence}])}),extra:{}});
+ const chat=[m(),...['甲','乙','丙','丁'].map((name,i)=>event('report_'+i,'report','差役'+name+'已经回城报案。')),event('escape','witness_escape','活口已经逃出监牢报信。')];
+ assert.equal(replay(chat).state.official.val,95);
+ chat.push(m({elapsed:'229日'}));let state=replay(chat).state;
+ assert.equal(state.official.val,100);assert.deepEqual(state.official.history.find(x=>x.id==='act_5'),{floor:6,id:'act_5',requestedDelta:20,delta:5,reason:'幕次变化'});
+ // 到顶之后的下一次跨幕同样不能在日志虚增5点。
+ const full=[m(),...['甲','乙','丙','丁','戊'].map((name,i)=>event('full_'+i,'report','差役'+name+'已经回城报案。')),m({elapsed:'49日'})];
+ state=replay(full).state;assert.equal(state.official.val,100);assert.equal(state.official.history.find(x=>x.id==='act_2').delta,0);assert.equal(state.official.history.find(x=>x.id==='act_2').requestedDelta,5);
+});
