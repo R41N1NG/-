@@ -65,3 +65,5 @@ test('聊天变为非本卡会清理提示，前置事件返回可等待同步',
   const before=h.calls.prompts.length;await Promise.all(h.bus.listeners('generation_after_commands').map(fn=>fn()));assert.equal(h.calls.prompts.length,before+1);
   delete h.ctx.characters[0].data.extensions.zyx_backend;h.bus.emit('chat_changed');await h.runtime.sync();assert.equal(h.calls.prompts.at(-1)[0].content,'');assert.equal(h.runtime.getState(),null);await h.runtime.stop();
 });
+
+test('同名变量被外部覆盖后重新校正，不只凭内存签名跳过',async()=>{const h=setup();h.helper.getVariables=()=>h.vars;await h.runtime.sync();h.vars.zyx_intel={wrong:true};h.vars.zyx_nodes=[];await h.runtime.sync();assert.equal(typeof h.vars.zyx_intel,'number');assert.equal(Array.isArray(h.vars.zyx_nodes),false);assert.equal(h.vars.foreign,42);assert.equal(h.calls.variables.length,2);await h.runtime.stop();});

@@ -78,7 +78,7 @@ function createHostRuntime(options = {}) {
     promptSignature = null;
   }
   function truth(value) {
-    return '【丹杏后台当前真值】\n' + JSON.stringify({ ready: value.ready, time: value.ready ? value.time : null, intel: value.intel, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' } });
+    return '【丹杏后台当前真值】\n' + JSON.stringify({ ready: value.ready, time: value.ready ? value.time : null, official: value.official, clues: value.intel, nodes:value.events, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' }, npcProfiles:Object.fromEntries(Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]).map(name=>[name,config.npcProfiles[name]])) });
   }
   function announce(api, id) {
     for (const w of api.frames) {
@@ -129,11 +129,14 @@ function createHostRuntime(options = {}) {
     }
     const variables = {
       zyx_time: value.ready ? value.time : null, zyx_clues: value.intel.names,
-      zyx_intel: value.intel, zyx_nodes: value.nodes, zyx_custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})),
+      zyx_intel: value.official?.val??0, zyx_intel_data:value.official??{}, zyx_clue_progress:value.intel, zyx_nodes: value.events??{}, zyx_places:value.nodes, zyx_custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})),
       zyx_backend_current: { schema: 1, chatId: id, state: value },
     };
     const signature = JSON.stringify(variables);
-    if (varsSignature !== signature) {
+    let projectionMismatch=false;
+    const readVariables=api.pick('getVariables');
+    if(readVariables&&varsSignature===signature){if(!guard(id,expected))return;const stored=await readVariables({type:'chat'});if(!guard(id,expected))return;projectionMismatch=Object.entries(variables).some(([key,value])=>!same(stored?.[key],value));}
+    if (varsSignature !== signature || projectionMismatch || forceInject) {
       const assign = api.pick('insertOrAssignVariables');
       if (!assign) throw new Error('缺少 insertOrAssignVariables，聊天变量未投影');
       if (!guard(id, expected)) return;

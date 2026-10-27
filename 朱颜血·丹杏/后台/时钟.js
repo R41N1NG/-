@@ -24,7 +24,7 @@ function format(time){return time.era+chinese(time.year)+'年'+chinese(time.mont
 function make(dayIndex,hour,minute,second=0,precision=second?'second':'minute'){
  const absolute=3*30+dayIndex-1,year=5+Math.floor(absolute/360),month=Math.floor(absolute%360/30)+1,monthDay=absolute%30+1;
  const {act,term,phase}=actForDay(dayIndex);const state={era:'宣德',year,month,monthDay,hour,minute,second,precision,dayIndex,act,term,phase};
- return {...state,yearName:chinese(year)+'年',monthName:chinese(month)+'月',dayName:dayText(monthDay),shichen:'子丑寅卯辰巳午未申酉戌亥'[Math.floor(((hour+1)%24)/2)]+'时',dateText:'宣德'+chinese(year)+'年'+chinese(month)+'月'+dayText(monthDay),timeText:String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0')+(second?':'+String(second).padStart(2,'0'):''),formatted:format(state)};
+ return {...state,yearName:chinese(year)+'年',monthName:chinese(month)+'月',dayName:dayText(monthDay),shichen:'子丑寅卯辰巳午未申酉戌亥'[Math.floor(((hour+1)%24)/2)]+'时',dateText:'宣德'+chinese(year)+'年'+chinese(month)+'月'+dayText(monthDay),timeText:String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0')+(second?':'+String(second).padStart(2,'0'):''),formatted:format(state),stamp:format(state)};
 }
 function parseElapsed(value){
  if(typeof value!=='string')return null;

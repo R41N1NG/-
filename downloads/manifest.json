@@ -1,14 +1,14 @@
 {
-  "bytes": 2220528,
-  "sha256": "5ba9b7cf30f2bb5aef98b3f2510d97a4efbcfa809c2c13fdd4e30533106af1be",
-  "release": "backend-v1",
-  "source": "朱颜血·丹杏/试用卡/后台接入5/【朱颜血·丹杏】CCv3-后台接入5.json",
-  "worldbook_entries": 47,
+  "bytes": 2301823,
+  "sha256": "d0ffc30b2a575ffba5220977276a822e50f908042c7065afdfc7cabe21924d41",
+  "release": "backend-v3",
+  "source": "朱颜血·丹杏/试用卡/后台修复6/【朱颜血·丹杏】CCv3-后台修复6.json",
+  "worldbook_entries": 48,
   "features": [
     "identity-menu",
     "prison-hud",
     "core-output-contract",
-    "native-depth-prompt-v7",
+    "native-depth-prompt-v8",
     "portrait-config-port",
     "player-martial-ledger",
     "prison-roster",
@@ -21,6 +21,12 @@
     "authoritative-clock",
     "confirmed-clue-progress",
     "configurable-node-conditions",
-    "native-message-snapshots"
+    "native-message-snapshots",
+    "single-writer",
+    "protocol-v8",
+    "evidence-events-intelligence",
+    "dynamic-custody-roster",
+    "current-request-npc-profiles",
+    "v2-art-preserved"
   ]
 }

@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "cases": [
+    "实际正则分阶段HTML/CSS/JS",
+    "独立后台iframe无需打开监牢即可保存",
+    "收监/释放与监牢人犯切换关闭",
+    "耗时推进五幕大势",
+    "信物去重和原有数据保留",
+    "320/375监牢内部宽度",
+    "重渲染读取快照",
+    "只注入当前大势",
+    "初始2人后续3/8/0动态名单",
+    "HUD重渲染不覆盖官府数字/事件schema",
+    "NPC完整档案在生成前注入"
+  ],
+  "errors": [],
+  "node_tests": {
+    "pass": 65,
+    "fail": 0
+  },
+  "environment": "本地浏览器模拟酒馆宿主；未连接用户实际酒馆",
+  "card_sha256": "d0ffc30b2a575ffba5220977276a822e50f908042c7065afdfc7cabe21924d41",
+  "preservation": {
+    "worldbook_count": 48,
+    "changed_worldbook_ids": [
+      5,
+      48
+    ],
+    "gateway_unchanged": true,
+    "four_greetings_unchanged": true,
+    "portraits_and_image_map_config_preserved": true,
+    "single_native_backend": true,
+    "hud_has_no_variable_writer": true
+  }
+}
