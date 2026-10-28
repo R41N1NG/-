@@ -1,0 +1,347 @@
+[
+  {
+    "width": 1100,
+    "name": "四步连续案例与真实费用",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "样例不是默认低体力开局",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "首步不能继续向前",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实数据 check",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "原图2x、实际尺寸、全部框选边界 check",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "无横向溢出 check",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实数据 supply",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "原图2x、实际尺寸、全部框选边界 supply",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "无横向溢出 supply",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实数据 continue",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "原图2x、实际尺寸、全部框选边界 continue",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "无横向溢出 continue",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "补给只减少疲劳不保证成功",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "说明单项框选",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "原图可放大",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "键盘向前翻阅",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "耗尽与休息图按需加载",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "休息代价和推进时段明确",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "阅读不写存档也不建立游戏桥",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "完成关闭本页",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "全跳过刷新后不挂图或步骤",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "本页无运行错误",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "全跳过同时覆盖心跳课",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "四步连续案例与真实费用",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "样例不是默认低体力开局",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "首步不能继续向前",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实数据 check",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "原图2x、实际尺寸、全部框选边界 check",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "无横向溢出 check",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实数据 supply",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "原图2x、实际尺寸、全部框选边界 supply",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "无横向溢出 supply",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实数据 continue",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "原图2x、实际尺寸、全部框选边界 continue",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "无横向溢出 continue",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "补给只减少疲劳不保证成功",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "说明单项框选",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "原图可放大",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "键盘向前翻阅",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "耗尽与休息图按需加载",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "休息代价和推进时段明确",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "阅读不写存档也不建立游戏桥",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "完成关闭本页",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "全跳过刷新后不挂图或步骤",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "本页无运行错误",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "全跳过同时覆盖心跳课",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "四步连续案例与真实费用",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "样例不是默认低体力开局",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "首步不能继续向前",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实数据 check",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "原图2x、实际尺寸、全部框选边界 check",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "无横向溢出 check",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实数据 supply",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "原图2x、实际尺寸、全部框选边界 supply",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "无横向溢出 supply",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实数据 continue",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "原图2x、实际尺寸、全部框选边界 continue",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "无横向溢出 continue",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "补给只减少疲劳不保证成功",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "说明单项框选",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "原图可放大",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "键盘向前翻阅",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "耗尽与休息图按需加载",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "休息代价和推进时段明确",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "阅读不写存档也不建立游戏桥",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "完成关闭本页",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "全跳过刷新后不挂图或步骤",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "本页无运行错误",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "全跳过同时覆盖心跳课",
+    "ok": true
+  }
+]

@@ -15160,7 +15160,10 @@
           "test:day-tutorial": "node tools/check-day-tailing-course.cjs",
           "screenshots:heart-tutorial": "node tools/build/heart-lesson-shots.js",
           "preview:heart-tutorial": "node tools/build/heart-lesson-preview.js",
-          "test:heart-tutorial": "node tools/check-heart-lesson.cjs"
+          "test:heart-tutorial": "node tools/check-heart-lesson.cjs",
+          "screenshots:stamina-tutorial": "node tools/build/stamina-lesson-shots.js",
+          "preview:stamina-tutorial": "node tools/build/stamina-lesson-preview.js",
+          "test:stamina-tutorial": "node tools/check-stamina-lesson.cjs"
         },
         devDependencies: {
           "@types/node": "24.10.0",

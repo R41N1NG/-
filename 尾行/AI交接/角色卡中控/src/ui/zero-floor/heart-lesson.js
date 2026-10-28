@@ -57,7 +57,7 @@ function mountHeartLesson({ document, window, lifecycle, shots, facts }) {
     $("heartLessonDone").hidden = false;
     $("heartLessonDoneText").textContent = skip
       ? "已跳过所有教程，后续章节也会关闭。"
-      : "本页已读完。第三组下一页将讲体力与准备，目前尚未制作。";
+      : "本页已读完。可继续第三组第二页“体力与准备”。";
     if (!persisted)
       $("heartLessonDoneText").textContent +=
         " 本页内已生效，浏览器未能保存偏好。";

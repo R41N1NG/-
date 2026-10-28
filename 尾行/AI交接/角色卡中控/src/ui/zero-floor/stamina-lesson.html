@@ -1,0 +1,89 @@
+<main
+  id="wx-zero-floor"
+  class="day-course-shell heart-lesson-shell stamina-lesson-shell"
+>
+  <section id="staminaLesson" hidden aria-labelledby="staminaLessonTitle">
+    <header class="heart-lesson-top">
+      <span>全息潜行训练 · 第三组 / 第2页</span
+      ><button type="button" id="staminaLessonSkipAll">
+        一键跳过所有教程 ↗
+      </button>
+    </header>
+    <div class="heart-lesson-heading">
+      <span>体力与准备</span>
+      <h1 id="staminaLessonTitle">出发前留余力，跟随中有取舍</h1>
+      <p>
+        每一步跟随、每一次取证都要花体力。用一个连续案例，看看疲劳怎样增加难度，又怎样靠补给减轻。
+      </p>
+    </div>
+    <div class="heart-lesson-basics stamina-costs">
+      <article>
+        <h2>跟随</h2>
+        <strong id="staminaFollowCost"></strong>
+        <p>保持目视也会消耗体力。</p>
+      </article>
+      <article>
+        <h2>打量</h2>
+        <strong id="staminaScanCost"></strong>
+        <p>观察取证需要额外付费。</p>
+      </article>
+      <article>
+        <h2>拍照</h2>
+        <strong id="staminaPhotoCost"></strong>
+        <p>成功与失败都会消耗。</p>
+      </article>
+    </div>
+    <p class="heart-lesson-note">
+      以上是动作费用；每个内部回合还会按心跳峰值另收体力，同回合多动作只收一次心跳消耗。行动点与体力是两份资源，内部动作不会重复扣尾行入场行动点。
+    </p>
+    <nav id="staminaSteps" aria-label="连续案例步骤"></nav>
+    <section class="heart-state-copy" aria-live="polite">
+      <span id="staminaStepNumber"></span>
+      <h2 id="staminaStepTitle" tabindex="-1"></h2>
+      <p id="staminaStepCopy"></p>
+      <strong id="staminaStepReadings"></strong>
+      <p id="staminaStepResult"></p>
+    </section>
+    <p class="heart-lesson-note">
+      这是隔离训练样例，初始体力特意设为28，并预备两份便当；新建角色正常以满体力开局。点选步骤只查看记录，不执行你的游戏行动。
+    </p>
+    <div id="staminaStepPictures"></div>
+    <div class="stamina-step-nav">
+      <button id="staminaPrev" type="button">← 上一步</button
+      ><span id="staminaStepCount"></span
+      ><button id="staminaNext" type="button">下一步 →</button>
+    </div>
+    <details id="staminaRulesDetail" class="heart-lesson-advanced">
+      <summary>看懂疲劳档位，以及体力不足时怎么办</summary>
+      <div id="staminaBands" class="stamina-band-grid"></div>
+      <p>
+        按当前体力占上限的比例判断；25%和50%都属于气喘档。两档罚值互相替代，远端跟随的DC＋2另计；敏捷属性不会因此降低。打量、拍照不受跟随疲劳DC影响，但仍需支付费用。
+      </p>
+      <p>
+        0体力无法跟随，剩1～3点也不够支付一次跟随。一次选了多个动作，体力不够支付总费用时，会先提示你删减动作或补给，不扣资源、不推进时间，也不会白送一次判定。主动结束本次尾行可保留已获信息。
+      </p>
+      <div id="staminaEmptyPicture"></div>
+    </details>
+    <details id="staminaRestDetail" class="heart-lesson-advanced">
+      <summary>出发前准备：休息与补给有什么不同？</summary>
+      <p>
+        在日程行动中选“休息”，恢复体力并结束当前时段；不能把它当成尾行中的暂停按钮。食品须先购买并带在行囊中，才能使用。
+      </p>
+      <p id="staminaRestResult"></p>
+      <div id="staminaRestPicture"></div>
+      <p class="heart-lesson-note">
+        此图使用日程试用界面。全天日程的自动接入仍在独立预览中；请以实际界面已开放的入口为准。
+      </p>
+    </details>
+    <footer class="heart-lesson-footer">
+      <span>阅读、框选、放大图片都不消耗资源，不写游戏进度。</span
+      ><button type="button" id="staminaLessonComplete">
+        这一页我读懂了 ✓
+      </button>
+    </footer>
+  </section>
+  <section id="staminaLessonDone" hidden>
+    <h1>训练说明</h1>
+    <p id="staminaLessonDoneText" role="status"></p>
+  </section>
+</main>

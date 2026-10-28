@@ -1,0 +1,109 @@
+#wx-zero-floor .stamina-costs strong {
+  color: #ead59f;
+  font:
+    600 18px/1.7 ui-monospace,
+    monospace;
+}
+#staminaSteps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 25px 0 15px;
+}
+#staminaSteps [aria-pressed="true"] {
+  background: #3c3926;
+  border-color: #c4a96c;
+  color: #efd8a5;
+}
+#staminaStepNumber {
+  color: #c7b67e;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+#staminaStepTitle {
+  font-size: 21px;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+#staminaStepReadings {
+  color: #e1cf9b;
+  font:
+    600 18px/1.8 ui-monospace,
+    monospace;
+}
+#wx-zero-floor #staminaStepResult {
+  color: #8dd6bd;
+  border-top: 1px solid #45635b;
+  padding-top: 10px;
+}
+.stamina-step-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 22px 0;
+}
+#staminaStepCount {
+  color: #b6c9bb;
+  font-size: 13px;
+}
+#staminaLessonSkipAll {
+  background: #423823;
+  color: #f0d8a1;
+  border-color: #b59a5c;
+}
+#staminaLessonComplete {
+  color: #efd7a5;
+  border-color: #bca36a;
+}
+.stamina-band-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+.stamina-band-grid article {
+  background: #1b3334;
+  padding: 12px;
+  border-top: 1px solid #c3af77;
+  font-size: 12px;
+}
+.stamina-band-grid p {
+  margin-bottom: 0;
+  color: #a8c4b7;
+}
+#wx-zero-floor .stamina-shot-start .training-shot-frame,
+#wx-zero-floor .stamina-shot-supplied .training-shot-frame {
+  max-width: 300px;
+  margin-inline: auto;
+}
+#wx-zero-floor .stamina-shot-start .training-shot-pair,
+#wx-zero-floor .stamina-shot-supplied .training-shot-pair {
+  max-width: 600px;
+  margin-inline: auto;
+}
+#staminaLesson [hidden] {
+  display: none !important;
+}
+@media (max-width: 650px) {
+  #staminaSteps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #staminaSteps button {
+    font-size: 12px;
+  }
+  #staminaStepTitle {
+    font-size: 18px;
+  }
+  #staminaStepReadings {
+    font-size: 15px;
+  }
+  .stamina-band-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #staminaLessonSkipAll {
+    font-size: 11px;
+    max-width: 145px;
+    padding: 8px;
+  }
+}

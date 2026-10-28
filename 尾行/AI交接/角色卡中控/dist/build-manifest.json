@@ -3,7 +3,7 @@
   "version": "0.8.24",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "17d0f96dd70dba0e0748d86c5af5376649704eb73358b4ab23fa87585ea6abe5",
+  "sourceHash": "494a6689178621bca53f898e5ff76a1039a4b97de683fad749dac76dde7cde4d",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -23,7 +23,7 @@
     },
     {
       "file": "package.json",
-      "sha256": "c14d6d071b8fe79276aa9c8a607f5efffad853b6490600ec36ec2920a656f5e4"
+      "sha256": "f5562fc438ed90d30e4a63b177989920e9a7d81ff4594ef0acac48963dd55603"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -458,6 +458,10 @@
       "sha256": "a3420f969ff8923a553ce95872b397ebe6ff8cb12e5cc4a2314c744945e10d30"
     },
     {
+      "file": "src/ui/styles/stamina-lesson.css",
+      "sha256": "1bdde077ad508005d43e3ff37c1f4ea4f8c942e603604a85ff6fdc535ccc3121"
+    },
+    {
       "file": "src/ui/styles/statusbar.css",
       "sha256": "ea0ab2500d2b8975dc5635acc65389aaab47927d054ce2e893c166d7a35380c5"
     },
@@ -495,7 +499,7 @@
     },
     {
       "file": "src/ui/zero-floor/heart-lesson.js",
-      "sha256": "14a6d95f6ad0fda2b87205a8c92b527a0a8bd664c99f6da44ebbfd4697751db8"
+      "sha256": "60038b05e828fa09e77d4252a6a44373086ebb0b98586d6b5b0f64650172f6e1"
     },
     {
       "file": "src/ui/zero-floor/host.js",
@@ -508,6 +512,14 @@
     {
       "file": "src/ui/zero-floor/stages.js",
       "sha256": "591bb21bf891147c0ed1c56329a71571876b6d0df4ff20ad21e5bf8dae8ffd4b"
+    },
+    {
+      "file": "src/ui/zero-floor/stamina-lesson.html",
+      "sha256": "97d269517f2e54f5e75229d5de789afe3cce748ccdc5920a8f5a0d4fbf1c6788"
+    },
+    {
+      "file": "src/ui/zero-floor/stamina-lesson.js",
+      "sha256": "b029effb9bec2c5209874c63db452306a8a96c154e8e82fd826c315d5d68ea02"
     },
     {
       "file": "src/ui/zero-floor/training-brief.html",
@@ -595,7 +607,7 @@
     },
     {
       "file": "tools/build/heart-lesson-preview.js",
-      "sha256": "02ee61e05f9071720d0d042100a69ed5aa8b337c87b1289da99bcadd23eb0afd"
+      "sha256": "563f68be6d9a8e7dbd94e8cfc4c61539ba21fd06a1ae87e83f2a3cd487333c2f"
     },
     {
       "file": "tools/build/heart-lesson-sample.js",
@@ -612,6 +624,18 @@
     {
       "file": "tools/build/pi-preview.js",
       "sha256": "4b857ffe6010e0a89501d4398cde3f194880dfb3218f14448ba72c77a5c3e92b"
+    },
+    {
+      "file": "tools/build/stamina-lesson-preview.js",
+      "sha256": "813f3c05ae99418a8b33e6df0b4c67e4e6264634e8398ab586a76e7a70585d44"
+    },
+    {
+      "file": "tools/build/stamina-lesson-sample.js",
+      "sha256": "1131370c8b9baefe853bbcd1ae810a8073c0d6084dde93e482184f8bc0b523d2"
+    },
+    {
+      "file": "tools/build/stamina-lesson-shots.js",
+      "sha256": "7872216dec29af0432d86df5c2494ebff12f68a5ed4b576e0025da016df5c4a4"
     },
     {
       "file": "tools/build/training-overview.js",
@@ -652,16 +676,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 646998,
-      "sha256": "64ffe852b088639ea281c758eabf0952c63a61c9a3e7adaa3b1bf7396745c41d"
+      "bytes": 647242,
+      "sha256": "791f1036819f82261de42ac9521e9b36d0e3f55b168bc2b7c93a72feda05f639"
     },
     "wx-statusbar.user.js": {
-      "bytes": 14609276,
-      "sha256": "7e3c72b496c8c6da6579bb8c0bdfb84583e66b911f6b960d84e0a71dbbaab7f3"
+      "bytes": 14609520,
+      "sha256": "47aedcf95c5268dc8cfe54ee027c9edf555792279ba133a82de8331ae8f9f038"
     },
     "尾行.json": {
-      "bytes": 14746279,
-      "sha256": "6d34019c0570398a05ff82785bdc766c78a3ff549a851f7e35bb5647c75a0611"
+      "bytes": 14746538,
+      "sha256": "efc6760ffe8bef5af34876b690db4017539ed68c39b2914186d54bdfd7fdcd6e"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

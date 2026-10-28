@@ -328,3 +328,11 @@ known-routes.js独立管理实际连接证据、旧档迁移与命名。investig
 验证：478项完整测试、144项同步专项及最终体力／提示专项通过，类型检查通过；女大原预览96项、体力预览32项桌面／手机检查通过。真实TT待验收。状态图在previews/college-schedule/stamina-fatigue-*.png与stamina-empty-*.png。
 
 本轮补充验收：289项原界面检查、72项日程尾行课程检查、51项心跳课程检查均通过。最终成品与构建清单各源文件／输出哈希一致，最新成品目录仅一份，真实上一版按HEAD内容归档；中途构建草稿未进入历史成品。
+
+## 第三组第二页：体力与准备（2026-10-28）
+
+独立入口previews/stamina-tutorial/index.html，与心跳页互链；未自动接正式零楼，本次不改体力规则、存档、聊天事件或角色卡版本。四步源模块stamina-lesson.js/html/css，复用screenshot-pictures及tutorial-policy；全跳过覆盖后续课程，读取／完成不写游戏进度。15项体力／课程逻辑检查通过，含本页4项样例／只读／跳过专项；三宽度69项体力课检查、51项心跳课检查通过，TT真机待验收。
+
+案例由stamina-lesson-sample.js实际运行：28/115，首次跟随4＋段税1→23，便当＋20→43、数量2→1、内部回合不变，再跟随到37；疲劳DC＋3→＋1。实际两次总DC16与11并不全由疲劳造成，文案已明确；同回合无补给对照DC13、同骰18验证疲劳只降2。休息用真实女大适配器午后28→78、AP4→3、推进晚间，日程仍是独立预览范围。
+
+拍摄stamina-lesson-shots.js输出桌面／手机各8张2x无损PNG，正式UI实测DOM边框。图片限制原CSS尺寸、可单项框选和放大；休息图补正常日程视图会话标记，不展示“正在连接当前日程”的禁用态。哈希覆盖规则／正式UI／样例与拍摄代码；按需加载耗尽与休息说明。维护见docs/体力与准备教程.md；npm scripts新增screenshots:stamina-tutorial、preview:stamina-tutorial、test:stamina-tutorial。
