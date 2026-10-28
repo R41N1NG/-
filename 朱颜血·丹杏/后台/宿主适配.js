@@ -1,8 +1,9 @@
 'use strict';
 
 const {route}=require('./提示路由.js');
+const IdentityBook=require('./身份世界书.js');
 const PROMPT_ID = 'zyx_backend_truth';
-const UPDATE_EVENTS = ['GENERATION_ENDED', 'GENERATION_STOPPED', 'MESSAGE_RECEIVED', 'MESSAGE_UPDATED', 'MESSAGE_EDITED', 'MESSAGE_DELETED', 'MESSAGE_SWIPED', 'CHAT_CHANGED'];
+const UPDATE_EVENTS = ['GENERATION_ENDED', 'GENERATION_STOPPED', 'MESSAGE_RECEIVED', 'MESSAGE_UPDATED', 'MESSAGE_EDITED', 'MESSAGE_DELETED', 'MESSAGE_SWIPED', 'CHAT_CHANGED', 'CHARACTER_MESSAGE_RENDERED'];
 const PRE_EVENTS = ['GENERATION_AFTER_COMMANDS', 'GENERATION_STARTED'];
 const clone = value => JSON.parse(JSON.stringify(value));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -79,7 +80,7 @@ function createHostRuntime(options = {}) {
     promptSignature = null;
   }
   function truth(value, routing) {
-    return '【丹杏后台当前真值】\n' + JSON.stringify({ ...routing, identityAuthority:'仅本聊天已提交开局有效；姓名/年岁/境界/已掌握武学/场景以playerOpening中玩家自定为准，身份模板的初始默认不得覆盖。NPC仅在nodes.entered中解锁后正式登场；青萝与影雀为同一人，战斗时favor_pose填战斗或拔剑，非战斗填常态。', ready: value.ready, time: value.ready ? value.time : null, official: value.official, clues: value.intel, nodes:value.events, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' }, npcProfiles:Object.fromEntries(Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]).map(name=>[name,config.npcProfiles[name]])) });
+    return '【丹杏后台当前真值】\n' + JSON.stringify({ ...routing, identityAuthority:'仅本聊天已提交开局有效；姓名/年岁/境界/已掌握武学/场景以playerOpening中玩家自定为准，身份模板的初始默认不得覆盖。NPC仅在nodes.entered中解锁后正式登场；青萝与影雀为同一人，战斗时favor_pose填战斗或拔剑，非战斗填常态。', ready: value.ready, time: value.ready ? value.time : null, characters:Object.values(value.characters||{}), characterAuthority:'【角色当前情况】characters为已出场角色的最新事实记录；只更新本轮有明确变化的角色，未知字段保留原值，传闻与计划不可当作已发生。每次正文后在character_updates申报变化并逐字引用本楼事实句。', official: value.official, clues: value.intel, nodes:value.events, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' }, npcProfiles:Object.fromEntries(Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]).map(name=>[name,config.npcProfiles[name]])) });
   }
   function announce(api, id) {
     for (const w of api.frames) {
@@ -130,7 +131,7 @@ function createHostRuntime(options = {}) {
     }
     const routing=route(input,config,api.ctx);
     const variables = {
-      身份:routing.identity, zyx_identity:routing.identityId,
+      身份:routing.identity, zyx_identity:routing.identityId, zyx_characters:value.characters||{},
       zyx_time: value.ready ? value.time : null, zyx_clues: value.intel.names,
       zyx_intel: value.official?.val??0, zyx_intel_data:value.official??{}, zyx_clue_progress:value.intel, zyx_nodes: value.events??{}, zyx_places:value.nodes, zyx_custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})),
       zyx_backend_current: { schema: 1, chatId: id, state: value },
@@ -147,6 +148,8 @@ function createHostRuntime(options = {}) {
       if (!guard(id, expected)) return;
       varsSignature = signature; diagnostics.variableWrites++;
     }
+    try{diagnostics.identityWorldbook=await IdentityBook.synchronize(api,routing.identity,()=>guard(id,expected));}catch(error){diagnostics.identityWorldbook={ok:false,reason:String(error?.message||error)};}
+    if(!guard(id,expected))return;
     const content = truth(value,routing);
     if (forceInject || content !== promptSignature) {
       if (!guard(id, expected)) return;
@@ -162,6 +165,7 @@ function createHostRuntime(options = {}) {
     diagnostics.syncs++;
     diagnostics.pending = clone(value.pending || result.pending || []);
     diagnostics.lastError = value.ready && !diagnostics.pending.length ? null : { stage: 'replay', message: value.ready ? '后台有待核事项' : '后台尚未就绪', pending: clone(diagnostics.pending) };
+    if(!diagnostics.lastError&&config.identityWorldbookRequired&&diagnostics.identityWorldbook?.ok===false)diagnostics.lastError={stage:'identity_worldbook',message:diagnostics.identityWorldbook.reason};
     announce(api, id);
   }
   function sync(settings = {}) {
@@ -213,6 +217,7 @@ function createHostRuntime(options = {}) {
       timer = interval(() => { sync(); }, options.pollInterval || 1000);
       if (timer && typeof timer.unref === 'function') timer.unref();
     }
+    for(const w of api.frames){try{if(typeof w.addEventListener==='function'){const fn=()=>sync({forceInject:true});w.addEventListener('zyx-opening-committed',fn);removers.push(()=>w.removeEventListener('zyx-opening-committed',fn));}}catch{}}
     sync();
     return runtime;
   }

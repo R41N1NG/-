@@ -49,6 +49,7 @@
     check(conn,pin);
     await conn.api.setChatMessages([patch],{refresh:'affected'});
     if(!applied(conn,pin,patch))throw Error('未确认开场切换成功，请检查当前聊天，不自动重复提交');
+    for(const w of windows()){try{if(typeof w.CustomEvent==='function')w.dispatchEvent(new w.CustomEvent('zyx-opening-committed'));}catch{}}
     message('已进入对应身份开场。');
    }catch(error){
     let saved=false;try{saved=!!patch&&applied(conn,pin,patch);}catch{}

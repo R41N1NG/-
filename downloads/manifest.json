@@ -1,7 +1,7 @@
 {
-  "bytes": 2332267,
-  "sha256": "4aec62b08c795745cca8832a07b35598cbef43e0ddc7fcbb611e0c9873162755",
-  "release": "worldbook-v1",
+  "bytes": 2340424,
+  "sha256": "0b8ed01deffd3ad94046d0bc2b6e7507dbb0808888d0b8574f41972f93832e2c",
+  "release": "character-state-v1",
   "source": "朱颜血·丹杏/最新角色卡/danxing-presentation-v1.json",
   "worldbook_entries": 48,
   "features": [
@@ -48,7 +48,9 @@
     "qingluo-yingque-combat-portrait",
     "legacy-hud-read-only",
     "worldbook-alias-cleanup",
-    "xieyunsu-realm-sync"
+    "xieyunsu-realm-sync",
+    "native-identity-worldbook-switch",
+    "persistent-character-current-facts"
   ],
   "map_assets": [
     {

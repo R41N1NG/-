@@ -16,7 +16,8 @@ function fixture(chat){
   async setChatMessages(rows){for(const row of rows){const m=ctx.chat[row.message_id];m.mes=row.message;m.extra=row.extra;if(m.swipes){m.swipe_info??=[];m.swipe_info[m.swipe_id??0]=row.extra;}}},
   async getVariables(){return vars;},async insertOrAssignVariables(values){Object.assign(vars,values);},async injectPrompts(value){prompts.push(value);}
  }};host.parent=host;
- const create=()=>createHostRuntime({window:host,config});
+ // 本夹具不模拟世界书；原生开关由角色现状/整卡集成测试独立覆盖。
+ const create=()=>createHostRuntime({window:host,config:{...config,identityWorldbookRequired:false}});
  const runtime=create();
  return {runtime,create,ctx,vars,prompts,emit:async name=>{for(const fn of [...(listeners.get(name)||[])])await fn();}};
 }

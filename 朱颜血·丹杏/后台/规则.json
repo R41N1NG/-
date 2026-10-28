@@ -385,5 +385,135 @@
     "黑狱恶差": "@@if (function(){try{return (variables.身份 === '黑狱差役' || variables.身份 === '黑狱恶差' || variables.zyx_identity === 'yuzu')}catch(e){return false}})()\n<identity>\n# 身份 · 黑狱差役\n- 定位：豺狼坡废庙黑狱当值差役。\n- 是谁：{{user}} 为边陲军所牢卒编制，身着差役便服，手握黑狱各处钥匙与刑讯水火索。\n- 初始境界：淬体巅峰。\n</identity>",
     "江湖任侠": "@@if (function(){try{return (variables.身份 === '江湖任侠' || variables.zyx_identity === 'xiake')}catch(e){return false}})()\n<identity>\n# 身份 · 江湖任侠\n- 定位：独行江湖的侠客 / 名门游历弟子。\n- 是谁：{{user}} 行经神仙岭避雨投宿，于杏花村客栈目睹主母丹娘悲啼，受托查探白雪莲下落。\n- 初始境界：通明初阶。腰悬随身佩剑。\n</identity>",
     "身世自设": "@@if (function(){try{return (variables.身份 === '自设游侠' || variables.身份 === '身世自设' || variables.zyx_identity === 'custom')}catch(e){return false}})()\n<identity>\n# 身份 · 自设游侠\n- 定位：玩家完全自定义的独立角色。\n- 是谁：{{user}} 的姓名、门派、身手、装束兵刃与入局动机，依玩家 Persona 与首轮输入为准。\n- 初始境界：依自设。\n</identity>"
-  }
+  },
+  "characterRoster": [
+    {
+      "name": "白雪莲",
+      "aliases": [
+        "雪莲",
+        "白捕快",
+        "白公差"
+      ]
+    },
+    {
+      "name": "薛霜灵",
+      "aliases": [
+        "霜灵",
+        "薛姑娘"
+      ]
+    },
+    {
+      "name": "裴丹杏",
+      "aliases": [
+        "丹娘",
+        "白夫人",
+        "杏花村老板娘",
+        "杏花村客栈老板娘"
+      ]
+    },
+    {
+      "name": "白玉莲",
+      "aliases": [
+        "玉莲"
+      ]
+    },
+    {
+      "name": "裴青玉",
+      "aliases": [
+        "青玉",
+        "玉娘",
+        "潇潇",
+        "徐家遗孀"
+      ]
+    },
+    {
+      "name": "白孝儒",
+      "aliases": [
+        "白老童生"
+      ]
+    },
+    {
+      "name": "谢云素",
+      "aliases": [
+        "云素",
+        "谢长老",
+        "罗霄派三长老",
+        "罗霄派传功宿老"
+      ],
+      "node": "谢云素"
+    },
+    {
+      "name": "封德明",
+      "aliases": [
+        "封公公",
+        "封总管",
+        "东厂巡察使"
+      ],
+      "node": "封德明"
+    },
+    {
+      "name": "陆寒渊",
+      "aliases": [
+        "陆总旗",
+        "陆远",
+        "陆掌柜"
+      ],
+      "node": "陆寒渊"
+    },
+    {
+      "name": "朱仪瑄",
+      "aliases": [
+        "宁安郡主",
+        "宣姑娘",
+        "仪瑄"
+      ],
+      "node": "宁安郡主"
+    },
+    {
+      "name": "青萝",
+      "aliases": [
+        "影雀",
+        "侍卫青萝"
+      ],
+      "node": "青萝"
+    },
+    {
+      "name": "孙天羽",
+      "aliases": [
+        "天羽",
+        "孙差爷"
+      ]
+    },
+    {
+      "name": "卓天雄",
+      "aliases": [
+        "卓爷"
+      ]
+    },
+    {
+      "name": "阎罗望",
+      "aliases": [
+        "阎大人",
+        "阎狱正",
+        "阎牢头"
+      ]
+    },
+    {
+      "name": "鲍横",
+      "aliases": []
+    },
+    {
+      "name": "刘辨机",
+      "aliases": []
+    },
+    {
+      "name": "陈泰",
+      "aliases": []
+    },
+    {
+      "name": "胡严",
+      "aliases": []
+    }
+  ],
+  "identityWorldbookRequired": true
 }
