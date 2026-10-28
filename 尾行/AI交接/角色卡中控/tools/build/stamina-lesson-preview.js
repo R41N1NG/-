@@ -40,7 +40,7 @@ function buildStaminaLessonPreview() {
   const file = path.join(out, "index.html");
   fs.writeFileSync(
     file,
-    `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>尾行 · 第三组第2页 · 体力与准备</title><style>${css}</style><body><p class="course-preview-note"><a href="../heart-tutorial/index.html">← 上一页：心跳与甜区</a>　第三组第2页 · 独立图文预览。图解来自真实界面，示例不会写入你的游戏存档。</p>${body}<script>${code.replace(/<\/script/gi, "<\\/script")}</script></body></html>`,
+    `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>尾行 · 第三组第2页 · 体力与准备</title><style>${css}</style><body><p class="course-preview-note"><a href="../heart-tutorial/index.html">← 上一页：心跳与甜区</a>　<a href="../distance-tutorial/index.html">下一页：她的警觉与跟随距离 →</a>　第三组第2页 · 独立图文预览。图解来自真实界面，示例不会写入你的游戏存档。</p>${body}<script>${code.replace(/<\/script/gi, "<\\/script")}</script></body></html>`,
   );
   return { file };
 }

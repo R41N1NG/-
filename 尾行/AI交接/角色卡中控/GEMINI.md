@@ -336,3 +336,15 @@ known-routes.js独立管理实际连接证据、旧档迁移与命名。investig
 案例由stamina-lesson-sample.js实际运行：28/115，首次跟随4＋段税1→23，便当＋20→43、数量2→1、内部回合不变，再跟随到37；疲劳DC＋3→＋1。实际两次总DC16与11并不全由疲劳造成，文案已明确；同回合无补给对照DC13、同骰18验证疲劳只降2。休息用真实女大适配器午后28→78、AP4→3、推进晚间，日程仍是独立预览范围。
 
 拍摄stamina-lesson-shots.js输出桌面／手机各8张2x无损PNG，正式UI实测DOM边框。图片限制原CSS尺寸、可单项框选和放大；休息图补正常日程视图会话标记，不展示“正在连接当前日程”的禁用态。哈希覆盖规则／正式UI／样例与拍摄代码；按需加载耗尽与休息说明。维护见docs/体力与准备教程.md；npm scripts新增screenshots:stamina-tutorial、preview:stamina-tutorial、test:stamina-tutorial。
+
+## 第三组第三页：她的警觉与跟随距离（2026-10-28）
+
+独立入口previews/distance-tutorial/index.html；心跳→体力→警觉距离已有导航，未自动接正式零楼，本次不改玩法、聊天／存档协议或角色卡版本。distance-lesson.js/html/css分别处理距离四情形、反应三情形、结束说明；共用截图呈现与tutorial-policy，全跳过覆盖其它页。维护见docs/警觉与距离教程.md。
+
+真实distance-lesson-sample同属性同骰16：远端DC15，其余DC13；回合后心跳30／33／37／41，消耗体力5／5／6／6。说明是四个独立样例，心跳含段末回落，不把净零说成无刺激。敏捷5近距暴露减免1，敏捷8减免2，仅解释该部分暴露，不宣称心跳／脚步／记忆全消。实际提速改变距离、骤停回头后仍可能降回“不安”、开跑分别以独立初态触发；只传公开行为、事件名和可见档位，不将内部对抗与原始警觉传进课件。
+
+主动结束样例运行真实女大预览两次跟随，确认连接1段，结束仍1段、PI＋5、剩余2AP；原有collegeTailScreen实际拍摄，不能把结束误写成重新开局。拍摄代码distance-lesson-shots.js，通用DOM裁切帮助lesson-capture.js，desktop/mobile各13张2x原图。先拍行为提示，等8秒自然淡出后再拍面板，不手动删除提示或改截图；避免红条遮挡底部。课件不承诺未实现的公交赶车或任意拉远一档。
+
+验证：5项新课逻辑测试、13项三页相关逻辑测试通过；72项新课、69项体力页、51项心跳页三宽度浏览器检查通过，覆盖单项框选／原图放大／无溢出／全跳过跨页与主动结束信息保留。TT真机待验收。npm scripts新增screenshots:distance-tutorial、preview:distance-tutorial、test:distance-tutorial。
+
+本轮补充：13项模块与调查回归、类型检查通过；重拍后72项新课程检查再次通过，新增comparison-far／comparison-close桌面与手机局部对照图。构建清单与源文件／输出哈希一致，最新成品只留一张，真实前版按HEAD字节归档。

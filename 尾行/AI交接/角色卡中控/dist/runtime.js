@@ -15158,7 +15158,10 @@
           "test:heart-tutorial": "node tools/check-heart-lesson.cjs",
           "screenshots:stamina-tutorial": "node tools/build/stamina-lesson-shots.js",
           "preview:stamina-tutorial": "node tools/build/stamina-lesson-preview.js",
-          "test:stamina-tutorial": "node tools/check-stamina-lesson.cjs"
+          "test:stamina-tutorial": "node tools/check-stamina-lesson.cjs",
+          "screenshots:distance-tutorial": "node tools/build/distance-lesson-shots.js",
+          "preview:distance-tutorial": "node tools/build/distance-lesson-preview.js",
+          "test:distance-tutorial": "node tools/check-distance-lesson.cjs"
         },
         devDependencies: {
           "@types/node": "24.10.0",

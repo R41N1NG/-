@@ -3,7 +3,7 @@
   "version": "0.8.24",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "494a6689178621bca53f898e5ff76a1039a4b97de683fad749dac76dde7cde4d",
+  "sourceHash": "a3d5c6f5f6275e3881391926b8c9593bcfadb39f8ca212c472821824bf1909ce",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -23,7 +23,7 @@
     },
     {
       "file": "package.json",
-      "sha256": "f5562fc438ed90d30e4a63b177989920e9a7d81ff4594ef0acac48963dd55603"
+      "sha256": "4b38395ba7b78c6a3519cc70b048f99fa9215b9b85ef0b63b893db843dcb0d47"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -454,6 +454,10 @@
       "sha256": "be1fb5793ff2844bebaf76f9bdd93116a1cc5828811700f69a3796801463f3c5"
     },
     {
+      "file": "src/ui/styles/distance-lesson.css",
+      "sha256": "1532ff2b2d9576121f76a90336486a1b150f4a67a28573e7d1ef75a3e0ff3ecd"
+    },
+    {
       "file": "src/ui/styles/heart-lesson.css",
       "sha256": "a3420f969ff8923a553ce95872b397ebe6ff8cb12e5cc4a2314c744945e10d30"
     },
@@ -494,6 +498,14 @@
       "sha256": "d42e9808cedde8b3eb3d152e0d2b5241d941b23802244370fa8648428f12b757"
     },
     {
+      "file": "src/ui/zero-floor/distance-lesson.html",
+      "sha256": "169c367b9a002cc21c882b54d90f0d820d6caed0938d9c4cf2238f18f11c13c1"
+    },
+    {
+      "file": "src/ui/zero-floor/distance-lesson.js",
+      "sha256": "1b2b53bf29ef41099f2c7977625cc05700ce363f64787047b2df82125fcef5ca"
+    },
+    {
       "file": "src/ui/zero-floor/heart-lesson.html",
       "sha256": "fb71e4607fd24a5ce2006f2bf60a4b8fb27863908a7583c6caca35a17eabe599"
     },
@@ -519,7 +531,7 @@
     },
     {
       "file": "src/ui/zero-floor/stamina-lesson.js",
-      "sha256": "b029effb9bec2c5209874c63db452306a8a96c154e8e82fd826c315d5d68ea02"
+      "sha256": "90c8260a8021829943f498acf9a7a814269e9dbefed9a5c7463810706a382bc1"
     },
     {
       "file": "src/ui/zero-floor/training-brief.html",
@@ -606,6 +618,18 @@
       "sha256": "378cdba437bd17860c997d87b81283736274673f162eb056a5df9571c579f531"
     },
     {
+      "file": "tools/build/distance-lesson-preview.js",
+      "sha256": "33d372bf264e1a1c77350334d1e3cfef02d4d9fb2c6ac2ea057bbb683a692887"
+    },
+    {
+      "file": "tools/build/distance-lesson-sample.js",
+      "sha256": "07c3889b6288c2d6690d537c9204970ef28d7a8f6c2e4887211e4c4f4b209d0e"
+    },
+    {
+      "file": "tools/build/distance-lesson-shots.js",
+      "sha256": "0c9da517b92e03330d323b2f8e663e0bc0e21062f1b62526840a8b3bc92e9bd3"
+    },
+    {
       "file": "tools/build/heart-lesson-preview.js",
       "sha256": "563f68be6d9a8e7dbd94e8cfc4c61539ba21fd06a1ae87e83f2a3cd487333c2f"
     },
@@ -618,6 +642,10 @@
       "sha256": "d523b13e5477857ba3fa0b2f060ad3c4828bb374f89d24f2b499b96f76626ee6"
     },
     {
+      "file": "tools/build/lesson-capture.js",
+      "sha256": "cbb4f340323b42e4ea73eea897d13466e9dac182094ec894b7dca115eac6dbf3"
+    },
+    {
       "file": "tools/build/manifest.js",
       "sha256": "6b68894ef842c5a9c97c40324c384fccfaf9e439cb6fd9ecec3ad9ade1cf9896"
     },
@@ -627,7 +655,7 @@
     },
     {
       "file": "tools/build/stamina-lesson-preview.js",
-      "sha256": "813f3c05ae99418a8b33e6df0b4c67e4e6264634e8398ab586a76e7a70585d44"
+      "sha256": "95cf6a519db83847d4618a8db385933117a2d617faf1e31dc63d46b1ee9c55e2"
     },
     {
       "file": "tools/build/stamina-lesson-sample.js",
@@ -676,16 +704,16 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 647242,
-      "sha256": "791f1036819f82261de42ac9521e9b36d0e3f55b168bc2b7c93a72feda05f639"
+      "bytes": 647492,
+      "sha256": "c5a0ac6f235b34ff8110d5b273516960a477468c9e837fe5840fd31b1a1ef8c8"
     },
     "wx-statusbar.user.js": {
-      "bytes": 14609520,
-      "sha256": "47aedcf95c5268dc8cfe54ee027c9edf555792279ba133a82de8331ae8f9f038"
+      "bytes": 14609770,
+      "sha256": "1fee5af6b2e052a0cc127fc104f14d425030328ac09514ac1acc56762cdb70e2"
     },
     "尾行.json": {
-      "bytes": 14746538,
-      "sha256": "efc6760ffe8bef5af34876b690db4017539ed68c39b2914186d54bdfd7fdcd6e"
+      "bytes": 14746803,
+      "sha256": "d72b2eb90fb63c4cab7d95b65aa73a5334fbc15c9e0c05471e38fdfcbaecb492"
     },
     "尾行-世界书.json": {
       "bytes": 10130,

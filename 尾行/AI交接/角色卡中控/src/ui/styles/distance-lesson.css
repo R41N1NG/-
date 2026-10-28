@@ -1,0 +1,67 @@
+.distance-section-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 30px 0 10px;
+  line-height: 1.5;
+}
+.distance-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.distance-tabs button {
+  flex: 1 1 100px;
+}
+.distance-tabs [aria-pressed="true"] {
+  background: #3c3926;
+  border-color: #c4a96c;
+  color: #efd8a5;
+}
+#distanceReadings {
+  font:
+    600 18px/1.8 ui-monospace,
+    monospace;
+  color: #e3cb91;
+}
+#wx-zero-floor #distanceCost {
+  color: #9acdbb;
+  border-top: 1px solid #36564d;
+  padding-top: 10px;
+}
+#distanceLessonSkipAll {
+  background: #423823;
+  border-color: #b59a5c;
+  color: #f0d8a1;
+}
+#distanceLessonComplete {
+  border-color: #b59a5c;
+  color: #f0d8a1;
+}
+#wx-zero-floor .distance-panel .training-shot-pair {
+  max-width: 600px;
+  margin-inline: auto;
+}
+#wx-zero-floor .distance-panel .training-shot-frame {
+  max-width: 300px !important;
+}
+#distanceLesson [hidden] {
+  display: none !important;
+}
+@media (max-width: 650px) {
+  .distance-section-title {
+    font-size: 18px;
+  }
+  .distance-tabs button {
+    flex-basis: 40%;
+    font-size: 12px;
+  }
+  #distanceReadings {
+    font-size: 15px;
+  }
+  #distanceLessonSkipAll {
+    font-size: 11px;
+    max-width: 145px;
+    padding: 8px;
+  }
+}

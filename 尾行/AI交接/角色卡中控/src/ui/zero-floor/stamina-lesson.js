@@ -52,7 +52,7 @@ function mountStaminaLesson({ document, window, lifecycle, shots, facts }) {
     $("staminaLessonDone").hidden = false;
     $("staminaLessonDoneText").textContent = skip
       ? "已跳过所有教程，后续章节也会关闭。"
-      : "本页已读完。下一页将讲她的警觉与距离，目前尚未制作。";
+      : "本页已读完。可继续第三组第三页“她的警觉与跟随距离”。";
     if (!persisted)
       $("staminaLessonDoneText").textContent +=
         " 本页内已生效，浏览器未能保存偏好。";

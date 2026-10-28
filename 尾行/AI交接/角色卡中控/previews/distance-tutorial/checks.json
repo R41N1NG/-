@@ -1,0 +1,362 @@
+[
+  {
+    "width": 1100,
+    "name": "默认同街与两组独立选择",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实距离数据 far",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "2x原图与框选 far",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实距离数据 same",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "2x原图与框选 same",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实距离数据 close",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "2x原图与框选 close",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实距离数据 touch",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "2x原图与框选 touch",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "敏捷减免范围明确",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实反应 pace",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "手机无溢出 pace",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实反应 turn",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "手机无溢出 turn",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "真实反应 run",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "手机无溢出 run",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "单项框选",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "原图可放大",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "主动结束按需加载并保留路线",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "阅读不写存档",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "完成关闭本页",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "全跳过刷新不挂图",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "页面无错误",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "全跳过覆盖体力页",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "默认同街与两组独立选择",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实距离数据 far",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "2x原图与框选 far",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实距离数据 same",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "2x原图与框选 same",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实距离数据 close",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "2x原图与框选 close",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实距离数据 touch",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "2x原图与框选 touch",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "敏捷减免范围明确",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实反应 pace",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "手机无溢出 pace",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实反应 turn",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "手机无溢出 turn",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "真实反应 run",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "手机无溢出 run",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "单项框选",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "原图可放大",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "主动结束按需加载并保留路线",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "阅读不写存档",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "完成关闭本页",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "全跳过刷新不挂图",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "页面无错误",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "全跳过覆盖体力页",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "默认同街与两组独立选择",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实距离数据 far",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "2x原图与框选 far",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实距离数据 same",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "2x原图与框选 same",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实距离数据 close",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "2x原图与框选 close",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实距离数据 touch",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "2x原图与框选 touch",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "敏捷减免范围明确",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实反应 pace",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "手机无溢出 pace",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实反应 turn",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "手机无溢出 turn",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "真实反应 run",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "手机无溢出 run",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "单项框选",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "原图可放大",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "主动结束按需加载并保留路线",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "阅读不写存档",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "完成关闭本页",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "全跳过刷新不挂图",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "页面无错误",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "全跳过覆盖体力页",
+    "ok": true
+  }
+]
