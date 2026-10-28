@@ -13,6 +13,13 @@ function buildDistanceLessonPreview() {
     throw Error(
       "距离教程原图已过期，请运行 npm run screenshots:distance-tutorial",
     );
+  for (const id of ["far", "same", "close", "touch"]) {
+    for (const suffix of ["", "-mobile"]) {
+      const proof = m.shots[id + suffix]?.settlement;
+      if (!proof?.complete || proof.chips.length < 2 || !proof.ledger.length)
+        throw Error("距离教程存在未完成的判定截图：" + id + suffix);
+    }
+  }
   const css = [
       "training-brief.css",
       "day-tailing-course.css",

@@ -2,6 +2,7 @@
 const fs = require("node:fs"),
   path = require("node:path"),
   http = require("node:http");
+const { waitForSettlement, closeSettlement } = require("./settlement-capture");
 const { buildUI } = require("./ui"),
   { browserSession } = require("../browser-session.cjs");
 const {
@@ -73,16 +74,10 @@ async function buildDistanceLessonShots() {
         await b.evaluate(
           `WxStatusbar.settle(${JSON.stringify({ ...receipts[id], floor: -9200 - ["far", "same", "close", "touch"].indexOf(id) })});true`,
         );
-        for (let i = 0; i < 120; i++) {
-          if (
-            await b.evaluate(
-              "document.getElementById('settleHudStatus').textContent.includes('CHECK FINISHED')",
-            )
-          )
-            break;
-          await b.delay(100);
-        }
-        await b.delay(650);
+        const settlementProof = await waitForSettlement(
+          b,
+          receipts[id].actions[0],
+        );
         await capture(
           id,
           ["#wx-settle-dialog"],
@@ -103,9 +98,9 @@ async function buildDistanceLessonShots() {
             ],
           ],
         );
-        await b.evaluate(
-          "document.getElementById('wx-settle-dialog').close();true",
-        );
+        shots[id + (width === 390 ? "-mobile" : "")].settlement =
+          settlementProof;
+        await closeSettlement(b);
       }
       for (const id of ["pace", "turn", "run"]) {
         await render(id);

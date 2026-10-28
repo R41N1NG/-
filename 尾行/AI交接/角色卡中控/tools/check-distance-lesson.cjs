@@ -11,6 +11,9 @@ async function main() {
     out = path.dirname(file),
     b = await browserSession(),
     checks = [];
+  const source = JSON.parse(
+    fs.readFileSync(path.join(out, "source/shots.json"), "utf8"),
+  );
   const server = http.createServer((req, res) => {
     res.setHeader("Content-Type", "text/html;charset=utf-8");
     res.end(
@@ -106,6 +109,22 @@ async function main() {
         await check(
           "2x原图与框选 " + id,
           `(()=>{const h=[...document.querySelectorAll('#distanceCheckPicture .training-source-picture')].find(e=>e.getBoundingClientRect().width>0),f=h.querySelector('.training-shot-frame'),r=f.getBoundingClientRect(),i=f.querySelector('img'),m=f.querySelector('.training-shot-mark').getBoundingClientRect();return i.complete&&i.naturalWidth>=i.width*1.9&&r.width<=i.width+1&&m.left>=r.left-1&&m.top>=r.top-1&&m.right<=r.right+1&&m.bottom<=r.bottom+1})()`,
+        );
+        const proof =
+          source.shots[id + (width < 650 ? "-mobile" : "")].settlement;
+        await check(
+          "实际筹码与账目已完成 " + id,
+          JSON.stringify(
+            !!proof?.complete &&
+              proof.chips.some(
+                (s) => s.includes("敏捷属性") && s.includes("+5"),
+              ) &&
+              proof.chips.some(
+                (s) => s.includes("不起眼") && s.includes("+1"),
+              ) &&
+              proof.ledger.length > 0 &&
+              !proof.ledger.some((s) => s.includes("等待定格")),
+          ),
         );
         await shot(id);
         if (id === "far" || id === "close") {

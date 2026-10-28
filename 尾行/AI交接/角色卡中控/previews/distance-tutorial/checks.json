@@ -16,12 +16,22 @@
   },
   {
     "width": 1100,
+    "name": "实际筹码与账目已完成 far",
+    "ok": true
+  },
+  {
+    "width": 1100,
     "name": "真实距离数据 same",
     "ok": true
   },
   {
     "width": 1100,
     "name": "2x原图与框选 same",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "实际筹码与账目已完成 same",
     "ok": true
   },
   {
@@ -36,12 +46,22 @@
   },
   {
     "width": 1100,
+    "name": "实际筹码与账目已完成 close",
+    "ok": true
+  },
+  {
+    "width": 1100,
     "name": "真实距离数据 touch",
     "ok": true
   },
   {
     "width": 1100,
     "name": "2x原图与框选 touch",
+    "ok": true
+  },
+  {
+    "width": 1100,
+    "name": "实际筹码与账目已完成 touch",
     "ok": true
   },
   {
@@ -136,12 +156,22 @@
   },
   {
     "width": 390,
+    "name": "实际筹码与账目已完成 far",
+    "ok": true
+  },
+  {
+    "width": 390,
     "name": "真实距离数据 same",
     "ok": true
   },
   {
     "width": 390,
     "name": "2x原图与框选 same",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "实际筹码与账目已完成 same",
     "ok": true
   },
   {
@@ -156,12 +186,22 @@
   },
   {
     "width": 390,
+    "name": "实际筹码与账目已完成 close",
+    "ok": true
+  },
+  {
+    "width": 390,
     "name": "真实距离数据 touch",
     "ok": true
   },
   {
     "width": 390,
     "name": "2x原图与框选 touch",
+    "ok": true
+  },
+  {
+    "width": 390,
+    "name": "实际筹码与账目已完成 touch",
     "ok": true
   },
   {
@@ -256,12 +296,22 @@
   },
   {
     "width": 320,
+    "name": "实际筹码与账目已完成 far",
+    "ok": true
+  },
+  {
+    "width": 320,
     "name": "真实距离数据 same",
     "ok": true
   },
   {
     "width": 320,
     "name": "2x原图与框选 same",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "实际筹码与账目已完成 same",
     "ok": true
   },
   {
@@ -276,12 +326,22 @@
   },
   {
     "width": 320,
+    "name": "实际筹码与账目已完成 close",
+    "ok": true
+  },
+  {
+    "width": 320,
     "name": "真实距离数据 touch",
     "ok": true
   },
   {
     "width": 320,
     "name": "2x原图与框选 touch",
+    "ok": true
+  },
+  {
+    "width": 320,
+    "name": "实际筹码与账目已完成 touch",
     "ok": true
   },
   {

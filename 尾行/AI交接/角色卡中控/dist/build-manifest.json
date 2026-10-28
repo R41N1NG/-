@@ -3,7 +3,7 @@
   "version": "0.8.24",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "a3d5c6f5f6275e3881391926b8c9593bcfadb39f8ca212c472821824bf1909ce",
+  "sourceHash": "7ef5e20883d1f14b1edabab953cde68ea74b39ba2d891833db21a2901f61fccd",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -619,15 +619,15 @@
     },
     {
       "file": "tools/build/distance-lesson-preview.js",
-      "sha256": "33d372bf264e1a1c77350334d1e3cfef02d4d9fb2c6ac2ea057bbb683a692887"
+      "sha256": "5fbb76d2e1993c242693984129da5b9ea1fa55b6d302de04955e401a24e6c2cc"
     },
     {
       "file": "tools/build/distance-lesson-sample.js",
-      "sha256": "07c3889b6288c2d6690d537c9204970ef28d7a8f6c2e4887211e4c4f4b209d0e"
+      "sha256": "bc8494feca1371d38b3132c5096d4739559aee6aa07186c6dd68865daaeb91a5"
     },
     {
       "file": "tools/build/distance-lesson-shots.js",
-      "sha256": "0c9da517b92e03330d323b2f8e663e0bc0e21062f1b62526840a8b3bc92e9bd3"
+      "sha256": "91f1e6b73a2cea7d05604b2e23a0b184a2807a814a3d360d9b76277a2000a795"
     },
     {
       "file": "tools/build/heart-lesson-preview.js",
@@ -652,6 +652,10 @@
     {
       "file": "tools/build/pi-preview.js",
       "sha256": "4b857ffe6010e0a89501d4398cde3f194880dfb3218f14448ba72c77a5c3e92b"
+    },
+    {
+      "file": "tools/build/settlement-capture.js",
+      "sha256": "b96b8d7778abba6fef163def7c33e9352a056c6742b3d43de7191e87bb249301"
     },
     {
       "file": "tools/build/stamina-lesson-preview.js",

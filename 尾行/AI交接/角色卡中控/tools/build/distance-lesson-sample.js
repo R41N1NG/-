@@ -14,6 +14,7 @@ function distanceLessonHash(root) {
     "distance-lesson-sample.js",
     "distance-lesson-shots.js",
     "lesson-capture.js",
+    "settlement-capture.js",
     "college-preview-model.js",
     "college-preview-entry.js",
     "college-preview-tail-view.js",
