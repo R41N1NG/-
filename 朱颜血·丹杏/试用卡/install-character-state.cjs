@@ -3,6 +3,6 @@ const fs=require('node:fs'),{install:route}=require('./install-character-routing
 function install(input){const card=opening(route(input)),d=card.data;d.extensions.depth_prompt.prompt=core;
  const hud=d.extensions.regex_scripts.find(s=>s.scriptName==='ZYX_02_状态栏HUD渲染');hud.findRegex=findRegex;
  const entry=d.character_book.entries.find(e=>e.id===5);if(entry)entry.content=core;
- d.extensions.zyx_character_state={version:1,identityWorldbook:'native-primary-exclusive',characters:'current-facts-every-turn'};return card;}
+ d.extensions.zyx_character_state={version:2,identityWorldbook:'native-primary-exclusive',characters:'full-roster-known-facts-only'};return card;}
 module.exports={install};
 if(require.main===module){const[,,input,output]=process.argv;fs.writeFileSync(output,JSON.stringify(install(JSON.parse(fs.readFileSync(input,'utf8'))),null,2)+'\n');}

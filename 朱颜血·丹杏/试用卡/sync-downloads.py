@@ -40,33 +40,35 @@ manifest = {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(),
             'source': str(source.relative_to(base.parent.parent)) if source.is_relative_to(base.parent.parent) else source.name,
             'worldbook_entries': len(card['data'].get('character_book', {}).get('entries', [])),
             'features': ['identity-menu', 'prison-hud', 'core-output-contract', 'native-depth-prompt-v' + version, 'read-only-map', 'portrait-config-port', 'player-martial-ledger']}
-if release in ('hud-fix2', 'start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('hud-fix2', 'start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['prison-roster', 'turn-elapsed-log']
-if release in ('start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('start-map-fix3', 'control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'].remove('read-only-map')
     manifest['features'] += ['image-map-port', 'identity-opening-selection']
-if release in ('control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('control-fix4', 'backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['eight-character-custody', 'scoped-runtime-coordinator']
-if release in ('backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('backend-v1', 'backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['independent-character-backend', 'authoritative-clock', 'confirmed-clue-progress', 'configurable-node-conditions', 'native-message-snapshots']
-if release in ('backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('backend-v3', 'backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['single-writer', 'protocol-v8', 'evidence-events-intelligence', 'dynamic-custody-roster', 'current-request-npc-profiles', 'v2-art-preserved']
-if release in ('backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('backend-v4', 'maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['invalid-report-recovery', 'committed-opening-ledger', 'atomic-intel-batches', 'negative-custody-portrait', 'prefix-safe-person-swap', 'elapsed-history-dialog', 'custody-permission-revocation']
-if release in ('maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('maps-v1', 'presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['two-level-image-map', 'default-changning-region', 'luoxiao-overview-switch', 'local-assets-remote-fallback']
-if release in ('presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('presentation-v1', 'render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['clean-card-metadata', 'collapsible-zero-prologue']
-if release in ('render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('render-fix1', 'maps-v2', 'opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['single-source-hud-regex']
-if release in ('opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('opening-draft-v1', 'character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['identity-draft-on-opening-switch']
-if release in ('character-routing-v1', 'worldbook-v1', 'character-state-v1'):
+if release in ('character-routing-v1', 'worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['chat-scoped-identity-injection', 'node-only-npc-profiles', 'qingluo-yingque-combat-portrait', 'legacy-hud-read-only']
-if release in ('worldbook-v1', 'character-state-v1'):
+if release in ('worldbook-v1', 'character-state-v1', 'character-state-v2'):
     manifest['features'] += ['worldbook-alias-cleanup', 'xieyunsu-realm-sync']
-if release == 'character-state-v1':
+if release in ('character-state-v1', 'character-state-v2'):
     manifest['features'] += ['native-identity-worldbook-switch', 'persistent-character-current-facts']
+if release == 'character-state-v2':
+    manifest['features'] += ['full-character-roster', 'blank-unseen-rows', 'known-facts-only-injection']
 if args.map_assets:
     manifest['map_assets'] = [{'file': '图包/地图/' + filename, 'sha256': hashlib.sha256((out / filename).read_bytes()).hexdigest()} for filename in ('danxing-border-map.png', 'danxing-overview-map.png')]
 # 固定版本文件方便区分旧下载；内容与latest一致。

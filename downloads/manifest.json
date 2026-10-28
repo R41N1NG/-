@@ -1,7 +1,7 @@
 {
-  "bytes": 2340424,
-  "sha256": "0b8ed01deffd3ad94046d0bc2b6e7507dbb0808888d0b8574f41972f93832e2c",
-  "release": "character-state-v1",
+  "bytes": 2341816,
+  "sha256": "38158c03ad300bf00e1975db68a742978ff2f0faa8f5aa2c30fc6913a231f41a",
+  "release": "character-state-v2",
   "source": "朱颜血·丹杏/最新角色卡/danxing-presentation-v1.json",
   "worldbook_entries": 48,
   "features": [
@@ -50,7 +50,10 @@
     "worldbook-alias-cleanup",
     "xieyunsu-realm-sync",
     "native-identity-worldbook-switch",
-    "persistent-character-current-facts"
+    "persistent-character-current-facts",
+    "full-character-roster",
+    "blank-unseen-rows",
+    "known-facts-only-injection"
   ],
   "map_assets": [
     {

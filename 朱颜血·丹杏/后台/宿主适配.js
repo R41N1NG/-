@@ -2,6 +2,7 @@
 
 const {route}=require('./提示路由.js');
 const IdentityBook=require('./身份世界书.js');
+const Characters=require('./角色现状.js');
 const PROMPT_ID = 'zyx_backend_truth';
 const UPDATE_EVENTS = ['GENERATION_ENDED', 'GENERATION_STOPPED', 'MESSAGE_RECEIVED', 'MESSAGE_UPDATED', 'MESSAGE_EDITED', 'MESSAGE_DELETED', 'MESSAGE_SWIPED', 'CHAT_CHANGED', 'CHARACTER_MESSAGE_RENDERED'];
 const PRE_EVENTS = ['GENERATION_AFTER_COMMANDS', 'GENERATION_STARTED'];
@@ -80,7 +81,7 @@ function createHostRuntime(options = {}) {
     promptSignature = null;
   }
   function truth(value, routing) {
-    return '【丹杏后台当前真值】\n' + JSON.stringify({ ...routing, identityAuthority:'仅本聊天已提交开局有效；姓名/年岁/境界/已掌握武学/场景以playerOpening中玩家自定为准，身份模板的初始默认不得覆盖。NPC仅在nodes.entered中解锁后正式登场；青萝与影雀为同一人，战斗时favor_pose填战斗或拔剑，非战斗填常态。', ready: value.ready, time: value.ready ? value.time : null, characters:Object.values(value.characters||{}), characterAuthority:'【角色当前情况】characters为已出场角色的最新事实记录；只更新本轮有明确变化的角色，未知字段保留原值，传闻与计划不可当作已发生。每次正文后在character_updates申报变化并逐字引用本楼事实句。', official: value.official, clues: value.intel, nodes:value.events, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' }, npcProfiles:Object.fromEntries(Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]).map(name=>[name,config.npcProfiles[name]])) });
+    return '【丹杏后台当前真值】\n' + JSON.stringify({ ...routing, identityAuthority:'仅本聊天已提交开局有效；姓名/年岁/境界/已掌握武学/场景以playerOpening中玩家自定为准，身份模板的初始默认不得覆盖。NPC仅在nodes.entered中解锁后正式登场；青萝与影雀为同一人，战斗时favor_pose填战斗或拔剑，非战斗填常态。', ready: value.ready, time: value.ready ? value.time : null, characters:Characters.injectable(value.characters), characterAuthority:'【角色当前情况】后台完整名册的未出场行保持空白，不等于解锁；characters仅注入已建立的事实，已出场但情况不明者也不凭空补写；只更新本轮有明确变化的角色，未知字段保留原值，传闻与计划不可当作已发生。每次正文后在character_updates申报变化并逐字引用本楼事实句。', official: value.official, clues: value.intel, nodes:value.events, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' }, npcProfiles:Object.fromEntries(Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]).map(name=>[name,config.npcProfiles[name]])) });
   }
   function announce(api, id) {
     for (const w of api.frames) {

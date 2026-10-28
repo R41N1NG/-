@@ -1,7 +1,7 @@
 (function(){"use strict";const modules=[function(require,module,exports){
 'use strict';
 const {start}=require(1);
-const runtime=start({config:require(10)});
+const runtime=start({config:require(11)});
 window.DanxingBackend=runtime;
 window.addEventListener('pagehide',()=>runtime.dispose(),{once:true});
 
@@ -11,6 +11,7 @@ function(require,module,exports){
 
 const {route}=require(2);
 const IdentityBook=require(4);
+const Characters=require(5);
 const PROMPT_ID = 'zyx_backend_truth';
 const UPDATE_EVENTS = ['GENERATION_ENDED', 'GENERATION_STOPPED', 'MESSAGE_RECEIVED', 'MESSAGE_UPDATED', 'MESSAGE_EDITED', 'MESSAGE_DELETED', 'MESSAGE_SWIPED', 'CHAT_CHANGED', 'CHARACTER_MESSAGE_RENDERED'];
 const PRE_EVENTS = ['GENERATION_AFTER_COMMANDS', 'GENERATION_STARTED'];
@@ -29,8 +30,8 @@ function hostFrames(root) {
 }
 
 function createHostRuntime(options = {}) {
-  const engine = options.engine || require(5);
-  const fingerprint = options.fingerprint || require(9).fingerprint;
+  const engine = options.engine || require(6);
+  const fingerprint = options.fingerprint || require(10).fingerprint;
   const config = options.config || {};
   const root = options.window || (typeof window !== 'undefined' ? window : globalThis);
   let stopped = false, started = false, queue = Promise.resolve(), pending = null;
@@ -89,7 +90,7 @@ function createHostRuntime(options = {}) {
     promptSignature = null;
   }
   function truth(value, routing) {
-    return '【丹杏后台当前真值】\n' + JSON.stringify({ ...routing, identityAuthority:'仅本聊天已提交开局有效；姓名/年岁/境界/已掌握武学/场景以playerOpening中玩家自定为准，身份模板的初始默认不得覆盖。NPC仅在nodes.entered中解锁后正式登场；青萝与影雀为同一人，战斗时favor_pose填战斗或拔剑，非战斗填常态。', ready: value.ready, time: value.ready ? value.time : null, characters:Object.values(value.characters||{}), characterAuthority:'【角色当前情况】characters为已出场角色的最新事实记录；只更新本轮有明确变化的角色，未知字段保留原值，传闻与计划不可当作已发生。每次正文后在character_updates申报变化并逐字引用本楼事实句。', official: value.official, clues: value.intel, nodes:value.events, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' }, npcProfiles:Object.fromEntries(Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]).map(name=>[name,config.npcProfiles[name]])) });
+    return '【丹杏后台当前真值】\n' + JSON.stringify({ ...routing, identityAuthority:'仅本聊天已提交开局有效；姓名/年岁/境界/已掌握武学/场景以playerOpening中玩家自定为准，身份模板的初始默认不得覆盖。NPC仅在nodes.entered中解锁后正式登场；青萝与影雀为同一人，战斗时favor_pose填战斗或拔剑，非战斗填常态。', ready: value.ready, time: value.ready ? value.time : null, characters:Characters.injectable(value.characters), characterAuthority:'【角色当前情况】后台完整名册的未出场行保持空白，不等于解锁；characters仅注入已建立的事实，已出场但情况不明者也不凭空补写；只更新本轮有明确变化的角色，未知字段保留原值，传闻与计划不可当作已发生。每次正文后在character_updates申报变化并逐字引用本楼事实句。', official: value.official, clues: value.intel, nodes:value.events, custody: value.custody.map(({key,name,inCustody,state,floor})=>({key,name,inCustody,state,floor})), trend: { body: value.trend && value.trend.body || '' }, npcProfiles:Object.fromEntries(Object.keys(value.events?.entered||{}).filter(name=>config.npcProfiles?.[name]).map(name=>[name,config.npcProfiles[name]])) });
   }
   function announce(api, id) {
     for (const w of api.frames) {
@@ -334,19 +335,79 @@ module.exports={synchronize,LABELS};
 },
 function(require,module,exports){
 'use strict';
+// gpt：保存已出场角色的当前事实；摘要来自当前回报，证据须逐字位于本楼正文。
+const absent=v=>typeof v!=='string'||!v.trim()||/^(无|未知|未明|不详)$/.test(v.trim());
+function blank(actor){return {name:actor.name,aliases:[...(actor.aliases||[])],appeared:false,appearance:'未出场',summary:'',location:'',condition:'',observation:'',inCustody:null,custodyState:'',firstFloor:null,lastFloor:null,observedFloor:null,source:''};}
+function roster(config){return Object.fromEntries((config.characterRoster||[]).map(actor=>[actor.name,blank(actor)]));}
+function hasFacts(row){return !!row&&['summary','location','condition','observation'].some(key=>!absent(row[key]));}
+function mark(row,floor){row.appeared=true;row.firstFloor??=floor;row.lastFloor=floor;row.appearance=hasFacts(row)?'已有事实':'已出场待明';return row;}
+function injectable(rows){return Object.values(rows||{}).filter(row=>row.appeared&&hasFacts(row));}
+function seed(state,floor){
+ const presets={
+  '白雪莲':{summary:'主动接受调查，被关押在豺狼坡黑狱。',location:'豺狼坡黑狱',condition:'被关押，等待调查'},
+  '薛霜灵':{summary:'奋力反抗后被捕，被关入豺狼坡黑狱拷问。',location:'豺狼坡黑狱',condition:'被捕关押，遭受拷问'}
+ };
+ for(const [name,preset] of Object.entries(presets)){const row=state.characters[name];if(!row||row.appeared||hasFacts(row))continue;Object.assign(row,preset,{inCustody:true,custodyState:'在押',source:'开局固定事实'});mark(row,floor);}
+}
+function observePresent(state,raw,config,floor){
+ const block=String(raw).match(/<status_bar>([^]*?)<\/status_bar>/)?.[1]||'';
+ const main=block.match(/<favor_char>([^<]*)<\/favor_char>/)?.[1];
+ const names=[main,...[...block.matchAll(/<extra_char_[1-4]>([^]*?)<\/extra_char_[1-4]>/g)].map(m=>m[1].match(/<name>([^<]*)<\/name>/)?.[1])].filter(Boolean);
+ const body=String(raw).replace(/<(think|analysis|details)\b[^>]*>[^]*?<\/\1>/gi,'').replace(/<status_bar>[^]*?<\/status_bar>/g,'');
+ for(const name of names){const actor=(config.characterRoster||[]).find(a=>a.name===name.trim()||a.aliases?.includes(name.trim()));if(!actor||actor.node&&!state.events.entered[actor.node])continue;
+  const aliases=[actor.name,...(actor.aliases||[])];const sentence=body.split(/[。！？!?\n]/).map(s=>s.trim()).filter(s=>s&&aliases.some(a=>s.includes(a))&&!/(据说|听说|传闻|若是|假如|计划|打算|可能|将要|名字|名号|未到|未现身|不在场)/.test(s)).at(-1);
+  const row=state.characters[actor.name]||blank(actor);
+  if(sentence){row.observation=sentence.slice(0,400);row.observedFloor=floor;row.source||='在场人物回报';}mark(row,floor);state.characters[actor.name]=row;
+ }
+}
+function reconcileCustody(state,floor,config){
+ for(const held of state.custody||[]){
+  if(typeof held.inCustody!=='boolean'||held.floor!==floor)continue;
+  const actor=(config.characterRoster||[]).find(a=>a.name===held.name||a.aliases?.includes(held.name));
+  if(!actor||actor.node&&!state.events.entered[actor.node])continue;
+  const old=state.characters[actor.name];if(!old||!old.appeared)continue;
+  const changed=typeof old.inCustody==='boolean'&&old.inCustody!==held.inCustody;
+  if(changed){old.summary=actor.name+'：'+held.state;old.condition=held.state;old.lastFloor=floor;old.source='人物专属状态回报';if(!held.inCustody)old.location='未明';}
+  old.inCustody=held.inCustody;old.custodyState=held.state;old.appearance=hasFacts(old)?'已有事实':'已出场待明';
+ }
+}
+function apply(state,raw,parsed,config,floor,pending){
+ if(!parsed.character_updates?.trim())return;
+ let updates;try{updates=JSON.parse(parsed.character_updates);if(!Array.isArray(updates)||updates.length>32)throw Error();}catch{pending('characters_format','character_updates须是至多32项的角色现状更新JSON数组');return;}
+ const narrative=String(raw).replace(/<(think|analysis|details)\b[^>]*>[^]*?<\/\1>/gi,'').replace(/<status_bar>[^]*?<\/status_bar>/g,'');
+ const seen=new Set();
+ for(const u of updates){
+  const actor=(config.characterRoster||[]).find(a=>a.name===u?.name||a.aliases?.includes(u?.name));
+  if(!actor){pending('characters_name','角色现状中的姓名不在本卡名册，未写入');continue;}
+  if(!['summary','location','condition'].some(key=>!absent(u[key])))continue;
+  if(seen.has(actor.name)){pending('characters_duplicate','同一角色本楼重复申报，后项未覆盖：'+actor.name);continue;}seen.add(actor.name);
+  if(actor.node&&!state.events.entered[actor.node]){pending('characters_locked','角色尚未按节点正式登场，未写入：'+actor.name);continue;}
+  if(!['summary','location','condition'].some(key=>!absent(u[key])&&u[key].length<=(key==='summary'?500:200))||(!absent(u.summary)&&u.summary.length>500)||absent(u.evidence)||u.evidence.length>500||!narrative.includes(u.evidence)||!u.evidence.includes(actor.name)&&!actor.aliases?.some(a=>u.evidence.includes(a))||/(据说|传闻|若是|假如|假设|打算|计划|准备|可能|将要|将会)/.test(u.evidence)){
+   pending('characters_evidence','角色现状缺少本楼具名的已发生事实摘录，未更新：'+actor.name);continue;
+  }
+  const prior=state.characters[actor.name];const next={...(prior||blank(actor)),evidence:u.evidence,source:'本楼正文事实'};
+  for(const k of ['summary','location','condition'])if(!absent(u[k])&&u[k].length<=(k==='summary'?500:200))next[k]=u[k].trim();
+  state.characters[actor.name]=mark(next,floor);
+ }
+}
+module.exports={seed,apply,reconcileCustody,observePresent,roster,injectable,hasFacts};
+
+},
+function(require,module,exports){
+'use strict';
 /* gpt：权威结算纯引擎。活跃聊天按顺序回放，正文是输入，绝对时间与大势由脚本计算。 */
-const Clock=require(6);
-const Tracker=require(7);
+const Clock=require(7);
+const Tracker=require(8);
 const Ledger=require(3);
-const {fingerprint}=require(9);
-const defaults=require(10);
-const Official=require(11);
-const Characters=require(12);
+const {fingerprint}=require(10);
+const defaults=require(11);
+const Official=require(12);
+const Characters=require(5);
 const clone=value=>structuredClone(value);
 const unknown=value=>!value||/^(?:无|未明|未知|未记录|不详)$/.test(String(value).trim());
 function report(input){const text=String(input??'').replace(/<(think|analysis)>[^]*?<\/\1>/gi,'').replace(/<details\b[^>]*>[^]*?<\/details>/gi,'');const blocks=[...text.matchAll(/<status_bar>((?:(?!<status_bar>)[^])*?)<\/status_bar>/g)];if(blocks.length!==1||!/^(?:---)?$/.test(text.slice(blocks[0].index+blocks[0][0].length).trim()))return null;
  const result={};for(const key of ['time','elapsed','location','prison_control','clue_obtained','clues_gained','intel_delta','intel_events','character_updates',...Tracker.tags]){const hits=[...blocks[0][1].matchAll(new RegExp('<'+key+'>([^<]*)</'+key+'>','g'))];if(hits.length>1)return null;result[key]=hits.length?Ledger.decodeText(hits[0][1]):'';}return result;}
-function initial(){return {schema:1,ready:false,unsettled:true,time:null,custody:Tracker.evaluateRoster([]),characters:{},intel:{known:[],names:[],value:0,actCount:0,actTotal:0},official:Official.initial(),events:{active:null,fired:{},entered:{},next:''},floor:0,trend:null,nodes:[],location:'未明',prisonControl:'未明',pending:[]};}
+function initial(config){return {schema:1,ready:false,unsettled:true,time:null,custody:Tracker.evaluateRoster([]),characters:Characters.roster(config),intel:{known:[],names:[],value:0,actCount:0,actTotal:0},official:Official.initial(),events:{active:null,fired:{},entered:{},next:''},floor:0,trend:null,nodes:[],location:'未明',prisonControl:'未明',pending:[]};}
 function gateResult(gate,state){
  if(!gate)return {status:'available',reason:'原卡已列出的场所节点'};
  if(gate.unconfigured)return {status:'unconfirmed',reason:gate.description};
@@ -363,7 +424,7 @@ function derive(state,config){if(!state.time)return;const act=state.time.act;sta
  state.nodes=config.nodes.map(node=>({...clone(node),...gateResult(node.gate,state),current:state.location.includes(node.name)}));}
 function addPending(state,floor,code,message){state.pending.push({floor,code,message});state.pending=state.pending.slice(-30);}
 function gained(value){if(unknown(value))return [];try{const list=JSON.parse(value);return Array.isArray(list)&&list.length<=32&&list.every(item=>typeof item==='string')?[...new Set(list.map(item=>item.trim()).filter(Boolean))]:null;}catch{return null;}}
-function replay(chat,config=defaults){if(!Array.isArray(chat))throw TypeError('需要当前聊天数组');const state=initial(),frames=[],custodyReports=[];
+function replay(chat,config=defaults){if(!Array.isArray(chat))throw TypeError('需要当前聊天数组');const state=initial(config),frames=[],custodyReports=[];
  // 异常楼也保存当前输入绑定的保持状态，不能留下上一候选的毒快照。
  const record=(floor,message)=>frames.push({floor,sourceFingerprint:fingerprint(message),sourcePrefix:fingerprint({mes:JSON.stringify(chat.slice(0,floor+1).map(fingerprint))}),snapshot:clone(state)});
  for(let floor=0;floor<chat.length;floor++){const message=chat[floor];if(!message||message.is_system||message.is_user)continue;state.unsettled=true;const parsed=report(message.mes??message.message);if(!parsed){addPending(state,floor,floor===0?'missing_anchor':'missing_report',floor===0?'零楼没有唯一完整的开局回报，无法确认开局时刻。':'本楼没有唯一完整的状态回报，未自动改变时间或情报。');record(floor,message);continue;}
@@ -450,7 +511,7 @@ function(require,module,exports){
 /* gpt：八人纯函数羁押回放。初始未知，只信人物专属字段，不从传闻/全局事件猜归属。 */
 (function(global){
  'use strict';
- const definitions=global.ZYX_HUD_CONFIG?.roster??(typeof require==='function'?require(8):[]);
+ const definitions=global.ZYX_HUD_CONFIG?.roster??(typeof require==='function'?require(9):[]);
  const unknown=v=>!v||/^(?:无|未明|未知|未记录|未登记|不详)$/.test(String(v).trim());
  const positive=new Set(['在押','关押中','已关押','已被关押','被关押','已收监','收监','已收押','收押','已入狱','入狱','被囚禁','被拘禁']);
  const negative=new Set(['未关押','未被关押','未在押','不在押','未入狱','未被捕','未曾被捕','自由','已释放','释放','获释','已获释','无罪释放','脱困','已脱困','逃脱','已逃脱','脱逃','已脱逃','越狱','已越狱','获救','已获救','救出','已救出','已离狱','已出狱','已死亡','已身亡']);
@@ -1011,6 +1072,20 @@ module.exports={
     {
       "name": "胡严",
       "aliases": []
+    },
+    {
+      "name": "白英莲",
+      "aliases": []
+    },
+    {
+      "name": "薛玉英",
+      "aliases": [
+        "红阳真人"
+      ]
+    },
+    {
+      "name": "吴大彪",
+      "aliases": []
     }
   ],
   "identityWorldbookRequired": true
@@ -1020,7 +1095,7 @@ module.exports={
 function(require,module,exports){
 'use strict';
 // gpt：事件申请结算；不扫新闻或环境关键词，不把模型自报数字直接入账。
-const {fingerprint}=require(9);
+const {fingerprint}=require(10);
 const RULES=Object.freeze({report:20,testimony:20,public_fight:10,witness_escape:15,letter_exposed:20,intercept_messenger:-15,withhold_records:-10,fake_death:-10});
 const LEVELS=[0,20,40,65,85];
 const NAMES=['零级 · 幽谷盲区','一级 · 风闻生疑','二级 · 重典立案','三级 · 厂卫交锋','四级 · 天罗地网'];
@@ -1066,57 +1141,5 @@ function nodes(state){
  events.next=state.time.dayIndex<110?'谢云素节点需第110日起且白雪莲仍未脱困':state.time.dayIndex<230?'定谳节点需第230日起且官方知晓度≥90':'依当前知晓度与羁押事实判断';
 }
 module.exports={initial,settle,derive,nodes,RULES};
-
-},
-function(require,module,exports){
-'use strict';
-// gpt：保存已出场角色的当前事实；摘要来自当前回报，证据须逐字位于本楼正文。
-const absent=v=>typeof v!=='string'||!v.trim()||/^(无|未知|未明|不详)$/.test(v.trim());
-function seed(state,floor){if(Object.keys(state.characters).length)return;
- state.characters['白雪莲']={name:'白雪莲',summary:'主动接受调查，被关押在豺狼坡黑狱。',location:'豺狼坡黑狱',condition:'被关押，等待调查',inCustody:true,custodyState:'在押',firstFloor:floor,lastFloor:floor,source:'开局固定事实'};
- state.characters['薛霜灵']={name:'薛霜灵',summary:'奋力反抗后被捕，被关入豺狼坡黑狱拷问。',location:'豺狼坡黑狱',condition:'被捕关押，遭受拷问',inCustody:true,custodyState:'在押',firstFloor:floor,lastFloor:floor,source:'开局固定事实'};
-}
-function observePresent(state,raw,config,floor){
- const block=String(raw).match(/<status_bar>([^]*?)<\/status_bar>/)?.[1]||'';
- const main=block.match(/<favor_char>([^<]*)<\/favor_char>/)?.[1];
- const names=[main,...[...block.matchAll(/<extra_char_[1-4]>([^]*?)<\/extra_char_[1-4]>/g)].map(m=>m[1].match(/<name>([^<]*)<\/name>/)?.[1])].filter(Boolean);
- const body=String(raw).replace(/<(think|analysis|details)\b[^>]*>[^]*?<\/\1>/gi,'').replace(/<status_bar>[^]*?<\/status_bar>/g,'');
- for(const name of names){const actor=(config.characterRoster||[]).find(a=>a.name===name.trim()||a.aliases?.includes(name.trim()));if(!actor||actor.node&&!state.events.entered[actor.node])continue;
-  const aliases=[actor.name,...(actor.aliases||[])];const sentence=body.split(/[。！？!?\n]/).map(s=>s.trim()).filter(s=>s&&aliases.some(a=>s.includes(a))&&!/(据说|听说|传闻|若是|假如|计划|打算|可能|将要|名字|名号|未到|未现身|不在场)/.test(s)).at(-1);
-  if(!sentence)continue;
-  const row=state.characters[actor.name]||{name:actor.name,summary:'已在当前场景出场，具体处境待明确。',firstFloor:floor,lastFloor:floor,source:'在场人物回报'};
-  row.observation=sentence.slice(0,400);row.observedFloor=floor;state.characters[actor.name]=row;
- }
-}
-function reconcileCustody(state,floor,config){
- for(const held of state.custody||[]){
-  if(typeof held.inCustody!=='boolean'||held.floor!==floor)continue;
-  const actor=(config.characterRoster||[]).find(a=>a.name===held.name||a.aliases?.includes(held.name));
-  if(!actor||actor.node&&!state.events.entered[actor.node])continue;
-  const old=state.characters[actor.name];if(!old)continue;
-  const changed=typeof old.inCustody==='boolean'&&old.inCustody!==held.inCustody;
-  if(changed){old.summary=actor.name+'：'+held.state;old.condition=held.state;old.lastFloor=floor;old.source='人物专属状态回报';if(!held.inCustody)old.location='未明';}
-  old.inCustody=held.inCustody;old.custodyState=held.state;
- }
-}
-function apply(state,raw,parsed,config,floor,pending){
- if(!parsed.character_updates?.trim())return;
- let updates;try{updates=JSON.parse(parsed.character_updates);if(!Array.isArray(updates)||updates.length>32)throw Error();}catch{pending('characters_format','character_updates须是至多32项的角色现状更新JSON数组');return;}
- const narrative=String(raw).replace(/<(think|analysis|details)\b[^>]*>[^]*?<\/\1>/gi,'').replace(/<status_bar>[^]*?<\/status_bar>/g,'');
- const seen=new Set();
- for(const u of updates){
-  const actor=(config.characterRoster||[]).find(a=>a.name===u?.name||a.aliases?.includes(u?.name));
-  if(!actor){pending('characters_name','角色现状中的姓名不在本卡名册，未写入');continue;}
-  if(seen.has(actor.name)){pending('characters_duplicate','同一角色本楼重复申报，后项未覆盖：'+actor.name);continue;}seen.add(actor.name);
-  if(actor.node&&!state.events.entered[actor.node]){pending('characters_locked','角色尚未按节点正式登场，未写入：'+actor.name);continue;}
-  if(absent(u.summary)||u.summary.length>500||absent(u.evidence)||u.evidence.length>500||!narrative.includes(u.evidence)||!u.evidence.includes(actor.name)&&!actor.aliases?.some(a=>u.evidence.includes(a))||/(据说|传闻|若是|假如|假设|打算|计划|准备|可能|将要|将会)/.test(u.evidence)){
-   pending('characters_evidence','角色现状缺少本楼具名的已发生事实摘录，未更新：'+actor.name);continue;
-  }
-  const prior=state.characters[actor.name];const next={...(prior||{name:actor.name,firstFloor:floor}),summary:u.summary.trim(),lastFloor:floor,evidence:u.evidence,source:'本楼正文事实'};
-  for(const k of ['location','condition'])if(!absent(u[k])&&u[k].length<=200)next[k]=u[k].trim();
-  state.characters[actor.name]=next;
- }
-}
-module.exports={seed,apply,reconcileCustody,observePresent};
 
 }];const cache={};function load(id){if(cache[id])return cache[id].exports;const module=cache[id]={exports:{}};modules[id](load,module,module.exports);return module.exports;}load(0);})();
