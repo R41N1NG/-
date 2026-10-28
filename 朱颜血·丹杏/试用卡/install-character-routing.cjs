@@ -2,8 +2,9 @@
 const fs=require('node:fs'),path=require('node:path'),{bundle}=require('../后台/build.cjs'),cfg=require('../后台/规则.json');
 const read=file=>fs.readFileSync(path.join(__dirname,file),'utf8');
 function install(input){const card=structuredClone(input),d=card.data;const backend=d.extensions.tavern_helper.scripts.filter(s=>s.id==='danxing-backend-v1');if(backend.length!==1)throw Error('后台不唯一');
- for(const [id,name]of Object.entries({24:'谢云素',25:'封德明',26:'陆寒渊',27:'宁安郡主',28:'青萝'})){const e=d.character_book.entries.find(e=>String(e.id)===id);if(!e||e.content!==cfg.npcProfiles[name])throw Error('人物档案变更，须先同步配置：'+name);e.enabled=false;e.extensions={...e.extensions,zyx_node_managed:true};}
- backend[0].content=bundle();
+ const runtimeConfig=structuredClone(cfg);
+ for(const [id,name]of Object.entries({24:'谢云素',25:'封德明',26:'陆寒渊',27:'宁安郡主',28:'青萝'})){const e=d.character_book.entries.find(e=>String(e.id)===id);if(!e?.content)throw Error('缺少人物档案：'+name);runtimeConfig.npcProfiles[name]=e.content;e.enabled=false;e.extensions={...e.extensions,zyx_node_managed:true};}
+ backend[0].content=bundle(undefined,{[path.resolve(__dirname,'../后台/规则.json')]:JSON.stringify(runtimeConfig,null,2)});
  const hud=d.extensions.regex_scripts.find(s=>s.scriptName==='ZYX_02_状态栏HUD渲染');let portraits=0,oldWriters=0;
  hud.replaceString=hud.replaceString.replace(/(<script\b[^>]*src="data:text\/javascript;charset=utf-8;base64,)([A-Za-z0-9+/=]+)("[^>]*><\/script>)/g,(all,start,b64,end)=>{
   let code=Buffer.from(b64,'base64').toString();if(code.includes('const PortraitLibrary = ')){code=read('../状态栏/v2界面/立绘.js');portraits++;}

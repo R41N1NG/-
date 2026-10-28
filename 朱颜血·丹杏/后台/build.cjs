@@ -1,10 +1,10 @@
 'use strict';
 // gpt：静态CommonJS打包，无网络依赖与运行时eval。
 const fs=require('node:fs'),path=require('node:path');
-function bundle(entry=path.join(__dirname,'入口.js')){
+function bundle(entry=path.join(__dirname,'入口.js'),overrides={}){
  const modules=[],ids=new Map();
  function visit(file){file=path.resolve(file);if(ids.has(file))return ids.get(file);const id=modules.length;ids.set(file,id);modules.push('');
- let code=fs.readFileSync(file,'utf8');
+ let code=Object.hasOwn(overrides,file)?overrides[file]:fs.readFileSync(file,'utf8');
  if(file.endsWith('.json'))code='module.exports='+code+';';
  else code=code.replace(/require\((['"])([^'"]+)\1\)/g,(_,q,dep)=>{if(!dep.startsWith('.'))throw Error('只允许本地静态依赖');let target=path.resolve(path.dirname(file),dep);if(!path.extname(target))target+='.js';return 'require('+visit(target)+')';});
  modules[id]='function(require,module,exports){\n'+code+'\n}';return id;}
