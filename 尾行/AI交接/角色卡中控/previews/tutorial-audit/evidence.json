@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-29",
+  "production": {
+    "trainingFrame": {
+      "description": false,
+      "scenario": false,
+      "systemPrompt": false,
+      "tutorial": true
+    },
+    "defaultMode": "stealth",
+    "defaultSource": "legacy",
+    "compiledCourses": {
+      "attributeLessons": true,
+      "trainingBrief": true,
+      "dayTailing": false,
+      "heart": false,
+      "stamina": false,
+      "distance": false
+    },
+    "tailingWhenDaily": {
+      "id": "daily.tailing",
+      "name": "尾行",
+      "cost": 2,
+      "mode": "scene",
+      "kind": "tailing",
+      "handler": "tailing",
+      "effect": "进入连续尾行回合，整段结束后推进时段",
+      "enabled": false,
+      "reason": "当前没有可接入的出行机会"
+    },
+    "food": {
+      "ok": true,
+      "before": 85,
+      "after": 105,
+      "turns": 0
+    },
+    "mapMoveNeedsConfirm": true,
+    "movementTimeInProduction": false,
+    "movementProbe": {
+      "formalBefore": 1,
+      "previewBefore": 1,
+      "formalAfter": 1,
+      "previewAfter": 2,
+      "formalAPSpent": 0,
+      "previewAPSpent": 0
+    }
+  },
+  "uiIntegration": {
+    "rootsIfConcatenated": 5,
+    "normalCompletionCallbacks": {
+      "day-tailing-course": true,
+      "heart-lesson": false,
+      "stamina-lesson": false,
+      "distance-lesson": false
+    },
+    "previewStateRoundTrip": {
+      "previewHasExtension": true,
+      "formalKeepsExtension": false
+    }
+  },
+  "skip": {
+    "futureHidden": true,
+    "keys": [
+      "wx_tutorial_preferences_v1"
+    ]
+  },
+  "preview": {
+    "foodCommand": {
+      "accepted": false,
+      "message": "此预览只接日程和移动操作",
+      "code": null,
+      "unchanged": true
+    },
+    "foodButton": {
+      "notice": "无法确定具体聊天楼层。 操作未完成，请保留当前聊天并重新校验。 错误码：SYNC_FAILED重新校验进度复制诊断信息",
+      "stamina": 85
+    }
+  }
+}
