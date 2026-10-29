@@ -7,10 +7,21 @@ function buildCollegePreview() {
   const root = path.resolve(__dirname, "../.."),
     out = path.join(root, "previews/college-schedule");
   fs.mkdirSync(out, { recursive: true });
-  const { script, css, bodyHtml } = buildUI({
+  const {
+    script,
+    css,
+    bodyHtml: formalBody,
+  } = buildUI({
     preview: false,
     writePreview: false,
   });
+  const bodyHtml = formalBody.replace(
+    fs.readFileSync(
+      path.join(root, "src/ui/daily/college-session.html"),
+      "utf8",
+    ),
+    "",
+  );
   const entry = esbuild.buildSync({
     entryPoints: [path.join(__dirname, "college-preview-entry.js")],
     bundle: true,

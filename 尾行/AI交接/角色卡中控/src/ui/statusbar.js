@@ -44,6 +44,7 @@ const { createCityMapUI } = require("./map/city-map.js");
 const { createDailyActionsUI } = require("./daily/actions.js");
 const { createSnapshotRenderer } = require("./renderers/snapshot.js");
 const { createAudio } = require("./audio.js");
+const { createCollegeSessionUI } = require("./daily/college-session.js");
 const { createSettlement } = require("./settlement/controller.js");
 
 // 页面与酒馆共用一个入口；document/window 由宿主注入。
@@ -657,14 +658,25 @@ function mountStatusbar(document, window) {
 
   /* ---------- 渲染：snapshot → 面板（真机唯一入口） ---------- */
 
+  const collegeSessionUI = createCollegeSessionUI({
+    document,
+    window,
+    lifecycle,
+    root,
+    getGlue: () => window.WxGlue || globalThis.WxGlue,
+    getActions: () => window.WxStatusbar.consumeActiveActions(),
+  });
   function renderSnapshot(snap) {
+    collegeSessionUI.render(snap);
     dayPlanRenderer.render(snap);
     dailyActionsUI.render(snap);
     cityMapUI.render(snap);
     const capsuleBar = document.getElementById("wxCapsuleBar");
     const dailyIdle =
       snap.dayPlan?.source === "daily" &&
-      snap.dayPlan.activity?.kind !== "tailing";
+      (snap.dayPlan.activity?.kind !== "tailing" ||
+        snap.tailingSession?.recovery.pending ||
+        snap.tailingSession?.pendingOutcome);
     if (capsuleBar) capsuleBar.hidden = dailyIdle;
     const distanceBadge = document.getElementById("distStat");
     if (distanceBadge) distanceBadge.hidden = dailyIdle;
@@ -1618,6 +1630,7 @@ function mountStatusbar(document, window) {
     const persona = ZERO.targetPersona;
     const init = {
       identity: ZERO.identity,
+      ...(ZERO.targetId === "college" ? { collegeDaily: true } : {}),
       targetId: ZERO.targetId || "college",
       targetPersona: persona,
       player: { ...ZERO.points, staminaMax: 100 + (ZERO.points.str || 4) * 5 },
@@ -1935,6 +1948,12 @@ function mountStatusbar(document, window) {
   // 暴露胶囊动作给胶水与宿主：点选优先；没点选时用默认姿态「跟缀·保持当前距离」
   window.WxStatusbar = Object.assign(window.WxStatusbar || {}, {
     consumeActiveActions: function () {
+      if (
+        view.snapshot?.tailingSession &&
+        (!view.snapshot.tailingSession.active ||
+          view.snapshot.tailingSession.recovery.pending)
+      )
+        return [];
       if (currentCapsuleActions && currentCapsuleActions.length) {
         const act = currentCapsuleActions.slice();
         currentCapsuleActions = [];

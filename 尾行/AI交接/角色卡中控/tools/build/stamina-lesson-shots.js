@@ -2,6 +2,7 @@
 const fs = require("node:fs"),
   path = require("node:path");
 const { browserSession } = require("../browser-session.cjs");
+const { waitForSettlement, closeSettlement } = require("./settlement-capture");
 const { buildUI } = require("./ui");
 const {
   staminaLessonScenes,
@@ -121,16 +122,7 @@ async function buildStaminaLessonShots() {
         await b.evaluate(
           `WxStatusbar.settle(${JSON.stringify({ ...receipts[id], floor: id === "first" ? -9101 : -9102 })});true`,
         );
-        for (let i = 0; i < 120; i++) {
-          if (
-            await b.evaluate(
-              "document.getElementById('settleHudStatus').textContent.includes('CHECK FINISHED')",
-            )
-          )
-            break;
-          await b.delay(100);
-        }
-        await b.delay(700);
+        await waitForSettlement(b, receipts[id].actions[0]);
         await capture(
           id,
           ["#wx-settle-dialog"],
@@ -149,9 +141,7 @@ async function buildStaminaLessonShots() {
             ],
           ],
         );
-        await b.evaluate(
-          "document.getElementById('wx-settle-dialog').close();true",
-        );
+        await closeSettlement(b);
       }
       await render(scenes.bag);
       await b.evaluate(

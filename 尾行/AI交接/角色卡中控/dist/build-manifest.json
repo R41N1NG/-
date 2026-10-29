@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "version": "0.8.24",
+  "version": "0.8.25",
   "saveVersion": 2,
   "timelineSchema": 1,
-  "sourceHash": "7ef5e20883d1f14b1edabab953cde68ea74b39ba2d891833db21a2901f61fccd",
+  "sourceHash": "2b9ffc20dadc1cbc64d9a346180c7c67d001c3c948457740a822d2d04e296681",
   "sources": [
     {
       "file": "build-runtime.js",
@@ -19,11 +19,11 @@
     },
     {
       "file": "package-lock.json",
-      "sha256": "71b553a24ee62493526b6d94c9da81eb2a447c7144d99acacbbe63580ae32c3a"
+      "sha256": "721e958351fb8037d6e63f5e8e9935574fb31d80767c247c699560df856fded0"
     },
     {
       "file": "package.json",
-      "sha256": "4b38395ba7b78c6a3519cc70b048f99fa9215b9b85ef0b63b893db843dcb0d47"
+      "sha256": "16558e542b48b1f0b52ef37696f792b5dda8167ca6cb2ee49c1ab6053f6b3eae"
     },
     {
       "file": "src/config/city-cartography.json",
@@ -36,6 +36,10 @@
     {
       "file": "src/config/city-transit.json",
       "sha256": "3952f5a19851626321df38edf08148ede8b49e90a4a42217024956eba20dd452"
+    },
+    {
+      "file": "src/config/college-day.json",
+      "sha256": "806b6df71777cf65aa7824d8a2178a3153e916ca7863fb9466cc4300d25b788a"
     },
     {
       "file": "src/config/daily-actions.json",
@@ -82,6 +86,10 @@
       "sha256": "eb43f48590b961b12874afb19680c70c6c29deb2b6b7069d0ebca21a42d4e344"
     },
     {
+      "file": "src/contracts/college-session.js",
+      "sha256": "eaa3e2856e1c309c6a02800b859ef7e3db92cc55eda288e97438dd67c22e9891"
+    },
+    {
       "file": "src/contracts/day-plan.js",
       "sha256": "564f749eff97043f24f5c9fc7d3945067d1d969e02c3599ebf216f5ba307effb"
     },
@@ -115,7 +123,7 @@
     },
     {
       "file": "src/host/chat-sync/controller.js",
-      "sha256": "ac9f9bfc53b538b4ffe4fa58831934f450d1a81b77d5166e7a0a53a332d54f8d"
+      "sha256": "c03b7b43ddfdf1490c6970fd875214272f150b8bf1c50605ed23b46210115dc2"
     },
     {
       "file": "src/host/chat-sync/diagnostics.js",
@@ -190,6 +198,10 @@
       "sha256": "c24ecbefe2c63942d816bd3f2d20c0e9c833975ee8157f2df3abbc6e4c0f0e7e"
     },
     {
+      "file": "src/runtime/college-session.js",
+      "sha256": "9f318e031b5736529cbad9749901de38ed7129cce5147a1585cf447d1f1cd3c0"
+    },
+    {
       "file": "src/runtime/daily/registry.js",
       "sha256": "f0ded27c6d48b8b44ed02aed384d63d5fbadb34f1376916ccbc64d1de0d3bf7e"
     },
@@ -198,12 +210,20 @@
       "sha256": "a16958a9bc1154d382bff8c25684b1ef99208c93d0e232841957776476518394"
     },
     {
+      "file": "src/runtime/daily/time.js",
+      "sha256": "5777a6945bac9fb9d416a60cf05b52f732ed11d5184b57fa28628c13bfe0654e"
+    },
+    {
       "file": "src/runtime/dice.js",
       "sha256": "f64f6b94e80bc12fb86f76cef9180c83a398131ff883ffce9ae95c9390c7e8f8"
     },
     {
       "file": "src/runtime/economy/shop.js",
       "sha256": "bfbbf1b652636ab95b2bcb4fda203869073aa4414e5091c6173d603c0571ae35"
+    },
+    {
+      "file": "src/runtime/economy/work-check.js",
+      "sha256": "ca15f1ebee1324ac811394288784e12c6ea8cbe85bdeabd9fb70af61a67b48b4"
     },
     {
       "file": "src/runtime/economy/work.js",
@@ -215,7 +235,7 @@
     },
     {
       "file": "src/runtime/game.js",
-      "sha256": "b1bd5371014b71d55041fecee0b887b48b16d23b15f71ce3b86b5c8eceb74cd0"
+      "sha256": "4626714d7e9bf6114185577cacbb68321652f2872f01526c42d11c7981ba0e1e"
     },
     {
       "file": "src/runtime/game/actions.js",
@@ -295,7 +315,7 @@
     },
     {
       "file": "src/runtime/persistence/migrations.js",
-      "sha256": "5ca3cd2e236566a3dd79db944060387de5665f90936078883563ed634f03b6f0"
+      "sha256": "2ffc343daa9ab4b31b615f24ec0317618990f016ed81435ecd821c553e7bdf72"
     },
     {
       "file": "src/runtime/spatial/system.js",
@@ -323,11 +343,11 @@
     },
     {
       "file": "src/text_data/_card_core.txt",
-      "sha256": "6dc3fc600d80a8f68f33ad9bd4ab81305ffe3d78647605fd7a24e200ad1bb6ce"
+      "sha256": "7a07e6a49d08e1e57ac9eb281b22f992523efbdbd5f354711f9be299957da786"
     },
     {
       "file": "src/text_data/_card_first_mes_college.txt",
-      "sha256": "a4561143037567e8140d188e0549c13c9cacae1d4c116f54d4cbda7c074a974b"
+      "sha256": "b95b135cc6c151fcb41ef3feac0ee95afbeb16efa77ba435d48eb711f2b7b12e"
     },
     {
       "file": "src/text_data/_card_first_mes.txt",
@@ -359,7 +379,19 @@
     },
     {
       "file": "src/ui/daily/actions.js",
-      "sha256": "c68e408fb4bcc550aec72f779062cdc073cfa5db8e16c79de1458503a4ab722e"
+      "sha256": "356ef46b73004f363c3e2d7b141bfe166f95e4ac0c695328ab3f5bff46163309"
+    },
+    {
+      "file": "src/ui/daily/college-session.html",
+      "sha256": "3ea30192b8b3debb394fdcec1b6e40e9c198fc476d14867daa588caa32503ba9"
+    },
+    {
+      "file": "src/ui/daily/college-session.js",
+      "sha256": "a44670a4bda86262b28eeeceac1c312c801bfbbe9f32ff61ff89c501cd9eeec8"
+    },
+    {
+      "file": "src/ui/daily/college-tail-view.js",
+      "sha256": "0cadfa2975661923977fdb0f3d6052710536794f61b627e8e00a5e2223e29e4f"
     },
     {
       "file": "src/ui/daily/economy-inputs.js",
@@ -375,7 +407,7 @@
     },
     {
       "file": "src/ui/generated/training-shots.json",
-      "sha256": "58490cf7cd543d3b46b36a407fe1ba2c3f0368a195b537700341c1cd43ce5595"
+      "sha256": "159b602c9c9d414c8d83f30c228205e142f3bf3ae8c8876cfd6efa90bc7f32c6"
     },
     {
       "file": "src/ui/generated/wardrobe-images.json",
@@ -395,7 +427,7 @@
     },
     {
       "file": "src/ui/map/city-map.js",
-      "sha256": "7e5505438e95def7dcd9c5767193018834bf3423c074f65639dd74b865f182a5"
+      "sha256": "96cf4302076f4a3e817ba5110a3061bd8df31650e767cd8f5fd410f1df45852c"
     },
     {
       "file": "src/ui/map/transit.js",
@@ -439,7 +471,7 @@
     },
     {
       "file": "src/ui/statusbar.js",
-      "sha256": "ad3ba39db84ac5679a76221023041556ab127b3d6b6c3f33c4aecdf7bc4d15f1"
+      "sha256": "27d5d38ed30b3fab7738c844d99d202d781fe02d59139940909a8388c15e7a0b"
     },
     {
       "file": "src/ui/styles/attribute-lessons.css",
@@ -448,6 +480,10 @@
     {
       "file": "src/ui/styles/city-map.css",
       "sha256": "57616bd69ed88a3f776592aca85f095d578ba2196f5a9b3ecb0c9f9039784a4c"
+    },
+    {
+      "file": "src/ui/styles/college-session.css",
+      "sha256": "6be4f29e514c9ce720fb19869c657fb7205253b551771199a1712ba069120ca6"
     },
     {
       "file": "src/ui/styles/day-tailing-course.css",
@@ -475,11 +511,11 @@
     },
     {
       "file": "src/ui/sync-notice.js",
-      "sha256": "5be877aa775c0504673f84ba318a8db0638bd9885f32b80c919b992a2e583748"
+      "sha256": "573b48a64934860a6e850c992c0723d6764d41ddec6e352a30d0a74d9cb7d91e"
     },
     {
       "file": "src/ui/template.html",
-      "sha256": "52d6f8adcf62cb4ac32ca767d0b8b779f6d5d277a49e03e1eca60347dc15d081"
+      "sha256": "799289ec5813a405f8b1bf8bbbb149d0ba02a1189b98a31072df9da3207bc670"
     },
     {
       "file": "src/ui/zero-floor/attribute-lessons.html",
@@ -563,7 +599,7 @@
     },
     {
       "file": "tools/build/college-preview-entry.js",
-      "sha256": "8b0d99b9dea25acebb84b4c187b2dd07ccc7c0be4b3649dc79c760a4867b0657"
+      "sha256": "762ea00711d9fb89beddb9388c699e42b72b7d0a648aa03260b663014c96deb9"
     },
     {
       "file": "tools/build/college-preview-model.js",
@@ -591,7 +627,7 @@
     },
     {
       "file": "tools/build/college-preview.js",
-      "sha256": "656c80159ae25815b06da493185b6e814af5747cc7b4e4bd1918e7c7a6330f18"
+      "sha256": "aff9b92a48842719151b96a4d46cf2c894d5deb30fff8b69c8f301f4716dfaf3"
     },
     {
       "file": "tools/build/daily-preview-entry.js",
@@ -630,6 +666,14 @@
       "sha256": "91f1e6b73a2cea7d05604b2e23a0b184a2807a814a3d360d9b76277a2000a795"
     },
     {
+      "file": "tools/build/formal-college-entry.js",
+      "sha256": "8d65c956f91e6c7c4bf02f4f957df057cc28b18b464ac7e4f1367a888f05acdf"
+    },
+    {
+      "file": "tools/build/formal-college-preview.js",
+      "sha256": "e5ae803868ac39bbf0cabd921d621488fe162be99f298ee27b53d67f57e11533"
+    },
+    {
       "file": "tools/build/heart-lesson-preview.js",
       "sha256": "563f68be6d9a8e7dbd94e8cfc4c61539ba21fd06a1ae87e83f2a3cd487333c2f"
     },
@@ -663,11 +707,11 @@
     },
     {
       "file": "tools/build/stamina-lesson-sample.js",
-      "sha256": "1131370c8b9baefe853bbcd1ae810a8073c0d6084dde93e482184f8bc0b523d2"
+      "sha256": "cd77d39166030f2008948f0d8f453b269bf3fda9105af6ceced352e04c336d3e"
     },
     {
       "file": "tools/build/stamina-lesson-shots.js",
-      "sha256": "7872216dec29af0432d86df5c2494ebff12f68a5ed4b576e0025da016df5c4a4"
+      "sha256": "b84052d76bd43108e87a9509907b7fa3b66fe82ef868d112d37ee754fffb72fc"
     },
     {
       "file": "tools/build/training-overview.js",
@@ -699,7 +743,7 @@
     },
     {
       "file": "tools/build/ui.js",
-      "sha256": "2d7fd2a71d80ee2eb19674c9ad374779734608d6412b80cde0570f603d62d9c9"
+      "sha256": "ff5396f2bd52206c5b9c861fac81bee0f017f67813c948f0d8a692a4110f063a"
     },
     {
       "file": "tools/build/wardrobe-assets.py",
@@ -708,20 +752,20 @@
   ],
   "outputs": {
     "runtime.js": {
-      "bytes": 647492,
-      "sha256": "c5a0ac6f235b34ff8110d5b273516960a477468c9e837fe5840fd31b1a1ef8c8"
+      "bytes": 679809,
+      "sha256": "4b49b2448e197c215514cf7e30f1779cf52bb0eab4f73961efa881e97df67eb9"
     },
     "wx-statusbar.user.js": {
-      "bytes": 14609770,
-      "sha256": "1fee5af6b2e052a0cc127fc104f14d425030328ac09514ac1acc56762cdb70e2"
+      "bytes": 14665998,
+      "sha256": "42f3060aa70d8c8415a86926e96b5377bf053ad3ea907d742dfc5c7b24c8a2a4"
     },
     "尾行.json": {
-      "bytes": 14746803,
-      "sha256": "d72b2eb90fb63c4cab7d95b65aa73a5334fbc15c9e0c05471e38fdfcbaecb492"
+      "bytes": 14806735,
+      "sha256": "6b4c689fafe41e300390ff520235381adecf014bc8d0d7656ffa94b032a5bcab"
     },
     "尾行-世界书.json": {
-      "bytes": 10130,
-      "sha256": "433b85b93e80319a34a40b5041b8eb2381a9aed02905e977f4753cdff3968c3c"
+      "bytes": 10385,
+      "sha256": "b6b3fc84bb6151d660ff8d71eacedf6c6f6504acb0dcb09f026ce5dfdb8a0b63"
     }
   }
 }

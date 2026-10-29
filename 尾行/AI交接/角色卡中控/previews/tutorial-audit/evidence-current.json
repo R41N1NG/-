@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-29",
+  "production": {
+    "trainingFrame": {
+      "description": true,
+      "scenario": true,
+      "systemPrompt": true,
+      "tutorial": true
+    },
+    "defaultMode": "prepare",
+    "defaultSource": "daily",
+    "compiledCourses": {
+      "attributeLessons": true,
+      "trainingBrief": true,
+      "dayTailing": false,
+      "heart": false,
+      "stamina": false,
+      "distance": false
+    },
+    "tailingWhenDaily": {
+      "id": "daily.tailing",
+      "name": "跟随离开",
+      "cost": 2,
+      "mode": "scene",
+      "kind": "tailing",
+      "handler": "tailing",
+      "effect": "消耗2点进入返程；结束后推进时段",
+      "enabled": false,
+      "reason": "此时段没有可接入的出行机会"
+    },
+    "food": {
+      "ok": true,
+      "before": 85,
+      "after": 105,
+      "turns": 0
+    },
+    "mapMoveNeedsConfirm": false,
+    "movementTimeInProduction": true,
+    "movementProbe": {
+      "formalBefore": 0,
+      "previewBefore": 0,
+      "formalAfter": 1,
+      "previewAfter": 1,
+      "formalAPSpent": 0,
+      "previewAPSpent": 0
+    }
+  },
+  "uiIntegration": {
+    "rootsIfConcatenated": 5,
+    "normalCompletionCallbacks": {
+      "day-tailing-course": true,
+      "heart-lesson": false,
+      "stamina-lesson": false,
+      "distance-lesson": false
+    },
+    "previewStateRoundTrip": {
+      "previewHasExtension": true,
+      "formalKeepsExtension": false,
+      "formalSessionRoundTrip": true
+    }
+  },
+  "skip": {
+    "futureHidden": true,
+    "keys": [
+      "wx_tutorial_preferences_v1"
+    ]
+  },
+  "preview": {
+    "foodCommand": {
+      "accepted": true,
+      "unchanged": false
+    },
+    "foodButton": {
+      "notice": "",
+      "stamina": 115
+    }
+  }
+}

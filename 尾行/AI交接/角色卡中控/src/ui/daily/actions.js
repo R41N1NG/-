@@ -117,6 +117,13 @@ function createDailyActionsUI({
       )
         return;
       retry = null;
+      if (receipt.workCheck && !receipt.reused)
+        window.WxStatusbar?.settle({
+          ...receipt.workCheck,
+          actions: [receipt.workCheck],
+          account: receipt.workCheck.ledger.applied,
+          floor: "work:" + request.operationId,
+        });
       message(receipt.summary);
     } catch (error) {
       if (

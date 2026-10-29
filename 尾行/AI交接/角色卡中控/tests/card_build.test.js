@@ -17,7 +17,8 @@ test("尾行角色卡壳子构建流水线验证", async (t) => {
     assert.equal(d.name, "尾行");
     assert.ok(d.description && d.description.length > 50, "description 必须具备足够的设定密度");
     assert.ok(d.scenario && d.scenario.length > 20, "scenario 必须非空");
-    assert.ok(d.first_mes && (d.first_mes.includes("老高中") || d.first_mes.includes("文教区") || d.first_mes.includes("24小时便利店")), "first_mes 必须包含标准首夜开局文本");
+    assert.ok(d.first_mes && d.first_mes.includes("全息潜行训练") && d.first_mes.includes("状态栏") && !d.first_mes.includes("21:30"), "新开场应以训练准备及真实状态栏为准，不固定首夜时间");
+    assert.ok(d.system_prompt.includes("特工学员"), "正式模型上下文也必须包含训练背景");
     assert.ok(d.mes_example && d.mes_example.includes("<!-- [MODE:潜行] -->"), "mes_example 必须展示申报示范");
     assert.ok(d.post_history_instructions && d.post_history_instructions.includes("<!-- [FACT:"), "post_history_instructions 必须包含申报协议规范");
   });

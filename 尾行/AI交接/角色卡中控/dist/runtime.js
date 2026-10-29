@@ -1491,190 +1491,212 @@
     }
   });
 
-  // src/runtime/map.js
-  var require_map = __commonJS({
-    "src/runtime/map.js"(exports, module) {
-      var defaultPlacesData = require_places();
-      var MapRuntime = class {
-        constructor(data = defaultPlacesData) {
-          this.districts = data.districts || {};
-          this.places = data.places || {};
-        }
-        getPlace(placeId) {
-          return this.places[placeId] || null;
-        }
-        getDistrict(districtId) {
-          return this.districts[districtId] || null;
-        }
-        getExits(placeId) {
-          const place = this.getPlace(placeId);
-          return place ? place.exits || [] : [];
-        }
-        isStrikeAllowed(placeId) {
-          const place = this.getPlace(placeId);
-          if (!place) return false;
-          return !place.strike_sealed;
-        }
-        isTransitPort(placeId) {
-          const place = this.getPlace(placeId);
-          if (!place) return false;
-          return !!place.transit_port;
-        }
-        // 逃跑 AI 寻路：广度优先搜索 (BFS) 寻找最近的庇护所 (Sanctuary)
-        findNearestSanctuary(startPlaceId, maxDepth = 4) {
-          const start = this.getPlace(startPlaceId);
-          if (!start) return null;
-          if (start.sanctuary) return startPlaceId;
-          const queue = [{ id: startPlaceId, depth: 0, path: [startPlaceId] }];
-          const visited = /* @__PURE__ */ new Set([startPlaceId]);
-          while (queue.length > 0) {
-            const current = queue.shift();
-            if (current.depth >= maxDepth) continue;
-            const place = this.getPlace(current.id);
-            if (!place) continue;
-            for (const nextId of place.exits) {
-              if (!visited.has(nextId)) {
-                visited.add(nextId);
-                const nextPlace = this.getPlace(nextId);
-                if (nextPlace && nextPlace.sanctuary) {
-                  return {
-                    sanctuaryId: nextId,
-                    steps: current.depth + 1,
-                    nextStep: current.path[1] || nextId,
-                    fullPath: [...current.path, nextId]
-                  };
-                }
-                queue.push({
-                  id: nextId,
-                  depth: current.depth + 1,
-                  path: [...current.path, nextId]
-                });
-              }
-            }
-          }
-          return null;
-        }
-        // 计算天气与当前场所节点的动态耦合修正
-        getWeatherModifiers(weather = "clear", placeId) {
-          const place = this.getPlace(placeId);
-          if (!place) return { tags: [], mods: {} };
-          if (place.indoor) {
-            return {
-              tags: [],
-              mods: { indoorImmunity: true }
-            };
-          }
-          const result = { tags: [], mods: {} };
-          if (weather === "rain") {
-            result.tags.push("tag_rain");
-            result.mods.stealth = 1;
-            result.mods.sound = -2;
-            result.mods.faceCover = 2;
-            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c"];
-            if (slipperyPlaces.includes(placeId)) {
-              result.tags.push("tag_slippery");
-              result.mods.slipRisk = true;
-            }
-          } else if (weather === "storm") {
-            result.tags.push("tag_storm");
-            result.mods.stealth = 2;
-            result.mods.sound = -5;
-            result.mods.followSpeed = -2;
-            result.mods.surveillanceDiscount = 0.5;
-            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c", "private_road_d"];
-            if (slipperyPlaces.includes(placeId)) {
-              result.tags.push("tag_slippery");
-              result.mods.slipRisk = true;
-            }
-          }
-          return result;
-        }
-      };
-      var defaultMap = new MapRuntime();
+  // src/config/city-layout.json
+  var require_city_layout = __commonJS({
+    "src/config/city-layout.json"(exports, module) {
       module.exports = {
-        MapRuntime,
-        defaultMap,
-        getPlace: (id) => defaultMap.getPlace(id),
-        getDistrict: (id) => defaultMap.getDistrict(id),
-        getExits: (id) => defaultMap.getExits(id),
-        isStrikeAllowed: (id) => defaultMap.isStrikeAllowed(id),
-        isTransitPort: (id) => defaultMap.isTransitPort(id),
-        findNearestSanctuary: (id, maxDepth) => defaultMap.findNearestSanctuary(id, maxDepth),
-        getWeatherModifiers: (weather, placeId) => defaultMap.getWeatherModifiers(weather, placeId)
+        schema: 1,
+        width: 2100,
+        height: 2140,
+        frames: {
+          B: {
+            x: 80,
+            y: 760,
+            width: 760,
+            height: 560
+          },
+          D: {
+            x: 1410,
+            y: 80,
+            width: 600,
+            height: 420
+          },
+          C: {
+            x: 80,
+            y: 1430,
+            width: 800,
+            height: 560
+          },
+          A: {
+            x: 1060,
+            y: 950,
+            width: 960,
+            height: 800
+          }
+        },
+        coordinates: {
+          office_lobby_a: [122, 90],
+          parking_b2_a: [122, 225],
+          skybridge_a: [250, 145],
+          metro_hub_a: [350, 225],
+          bus_bay_a: [545, 90],
+          store_24h_a: [545, 350],
+          back_alley_a: [350, 350],
+          trash_station_a: [122, 390],
+          school_gate_b: [140, 100],
+          school_bus_terminal_b: [355, 190],
+          old_metro_b: [685, 265],
+          old_skybridge_b: [250, 150],
+          store_24h_b: [355, 285],
+          old_park_b: [180, 285],
+          old_alley_main_b: [350, 410],
+          dark_blind_alley_b: [465, 435],
+          unit_stairs_b: [685, 405],
+          rooftop_b: [685, 455],
+          dead_end_b: [90, 410],
+          love_hotel_b: [175, 500],
+          player_base_b: [75, 285],
+          club_backdoor_c: [115, 90],
+          food_street_c: [355, 90],
+          dock_bus_stop_c: [545, 90],
+          bridge_head_c: [765, 450],
+          store_24h_c: [355, 225],
+          river_walk_c: [430, 525],
+          river_steps_c: [535, 550],
+          village_main_c: [170, 350],
+          narrow_gap_c: [250, 375],
+          rental_iron_door_c: [355, 345],
+          village_roof_c: [355, 395],
+          black_market_c: [100, 395],
+          suburb_highway_d: [430, 390],
+          gas_station_d: [140, 360],
+          private_road_d: [320, 335],
+          pine_forest_d: [140, 205],
+          estate_gate_d: [320, 285],
+          villa_garden_d: [470, 225],
+          garage_side_door_d: [390, 110],
+          villa_porch_d: [540, 110],
+          central_mall_a: [755, 90],
+          bank_a: [690, 225],
+          business_cafe_a: [835, 225],
+          clinic_a: [690, 350],
+          business_hotel_a: [835, 350],
+          central_plaza_a: [755, 490],
+          pedestrian_street_a: [350, 500],
+          department_store_a: [122, 570],
+          cinema_a: [350, 570],
+          gym_a: [545, 570],
+          restaurant_a: [690, 630],
+          courier_a: [835, 630],
+          taxi_rank_a: [755, 730],
+          public_parking_a: [545, 720],
+          apartment_plaza_a: [350, 720],
+          coworking_a: [122, 720],
+          electronics_a: [690, 570],
+          station_square_a: [545, 225],
+          high_school_gate_b: [560, 100],
+          university_library_b: [75, 205],
+          university_canteen_b: [190, 205],
+          university_sports_b: [335, 90],
+          campus_bookshop_b: [560, 205],
+          campus_cafe_b: [560, 315],
+          student_street_b: [355, 500],
+          university_dorm_gate_b: [560, 500],
+          bar_street_c: [115, 225],
+          ktv_c: [695, 90],
+          hotel_c: [695, 225],
+          late_restaurant_c: [695, 350],
+          livehouse_c: [545, 350],
+          courier_c: [695, 490],
+          laundry_c: [355, 490]
+        },
+        privatePlaces: [
+          "unit_stairs_b",
+          "rooftop_b",
+          "rental_iron_door_c",
+          "village_roof_c",
+          "estate_gate_d",
+          "villa_garden_d",
+          "garage_side_door_d",
+          "villa_porch_d"
+        ],
+        home: "player_base_b",
+        blackMarket: "black_market_c"
       };
     }
   });
 
-  // src/runtime/known-routes.js
-  var require_known_routes = __commonJS({
-    "src/runtime/known-routes.js"(exports, module) {
+  // src/contracts/spatial.js
+  var require_spatial = __commonJS({
+    "src/contracts/spatial.js"(exports, module) {
       "use strict";
-      var map = require_map();
-      var keyOf = (g) => JSON.stringify([g.route?.id || "", g.route?.nodes || []]);
-      var invalid = (message) => Object.assign(Error(message), { code: "ROUTE_INVALID" });
-      function restoreRoutes(g) {
-        const p = g.investigation;
-        if (p.routes === void 0) p.routes = [];
-        if (!Array.isArray(p.routes) || p.routes.length > 128)
-          throw Object.assign(invalid("\u5B58\u6863\u8DEF\u7EBF\u7B14\u8BB0\u65E0\u6548\uFF1Ainvestigation.routes"), {
+      var { places } = require_places();
+      var layout = require_city_layout();
+      var clone = (x) => JSON.parse(JSON.stringify(x));
+      var validId = (id) => typeof id === "string" && Object.prototype.hasOwnProperty.call(places, id);
+      function createSpatial({ placeId = layout.home, assumed = false } = {}) {
+        return {
+          schema: 1,
+          playerPlaceId: placeId,
+          assumed,
+          tracking: "none",
+          lastSeen: null,
+          knownPlaces: []
+        };
+      }
+      function validateSpatial(value) {
+        const seen = value?.lastSeen;
+        if (!value || value.schema !== 1 || !validId(value.playerPlaceId) || typeof value.assumed !== "boolean" || !["none", "visual", "lost"].includes(value.tracking) || !Array.isArray(value.knownPlaces) || value.knownPlaces.some((id) => !validId(id)) || new Set(value.knownPlaces).size !== value.knownPlaces.length || seen !== null && (!seen || !validId(seen.placeId) || typeof seen.targetId !== "string" || !Number.isSafeInteger(seen.date) || seen.date < 1 || !Number.isInteger(seen.period) || seen.period < 0 || seen.period > 4 || !Number.isSafeInteger(seen.turn) || seen.turn < 0))
+          throw Object.assign(Error("\u5730\u56FE\u4F4D\u7F6E\u5B58\u6863\u65E0\u6548\uFF0C\u539F\u8FDB\u5EA6\u5DF2\u4FDD\u7559"), {
             code: "SAVE_INVALID"
           });
-        const ids = /* @__PURE__ */ new Set(), keys = /* @__PURE__ */ new Set();
-        for (const r of p.routes) {
-          if (!r || typeof r.id !== "string" || !/^route-\d+$/.test(r.id) || ids.has(r.id) || typeof r.key !== "string" || keys.has(r.key) || typeof r.name !== "string" || !validName(r.name) || !Array.isArray(r.edges) || !r.edges.length || r.edges.some(
-            (e) => !Array.isArray(e) || e.length !== 2 || e.some((x) => typeof x !== "string") || !p.edges.includes(JSON.stringify(e))
-          ))
-            throw Object.assign(invalid("\u5B58\u6863\u8DEF\u7EBF\u7B14\u8BB0\u65E0\u6548\uFF1Ainvestigation.routes"), {
-              code: "SAVE_INVALID"
-            });
-          ids.add(r.id);
-          keys.add(r.key);
-        }
-        for (let i = 1; i < (g.route?.nodes.length || 0); i++) {
-          const pair = [g.route.nodes[i - 1], g.route.nodes[i]];
-          if (p.edges.includes(JSON.stringify(pair))) rememberEdge(g, ...pair);
-        }
+        return clone(value);
       }
-      function validName(name) {
-        return name.trim() === name && [...name].length >= 1 && [...name].length <= 24 && !/[\u0000-\u001f\u007f]/.test(name);
+      module.exports = { createSpatial, validateSpatial };
+    }
+  });
+
+  // src/config/day-plan.json
+  var require_day_plan = __commonJS({
+    "src/config/day-plan.json"(exports, module) {
+      module.exports = {
+        budget: 4,
+        tailingCost: 2,
+        periods: [
+          { id: "morning", name: "\u65E9\u95F4", short: "\u65E9" },
+          { id: "midday", name: "\u5348\u95F4", short: "\u4E2D" },
+          { id: "afternoon", name: "\u5348\u540E", short: "\u5348" },
+          { id: "evening", name: "\u665A\u95F4", short: "\u665A" },
+          { id: "midnight", name: "\u5B50\u591C", short: "\u5B50" }
+        ]
+      };
+    }
+  });
+
+  // src/runtime/daily/time.js
+  var require_time = __commonJS({
+    "src/runtime/daily/time.js"(exports, module) {
+      "use strict";
+      var periods = require_day_plan().periods;
+      var RULES = Object.freeze({
+        perPeriod: 3,
+        sameDistrict: 1,
+        crossDistrict: 2
+      });
+      function timeUsed(value = 0) {
+        if (!Number.isInteger(value) || value < 0 || value >= RULES.perPeriod)
+          throw Object.assign(Error("\u65E5\u7A0B\u65F6\u95F4\u8BB0\u5F55\u65E0\u6548\uFF1AcollegeSession.timeUsed"), {
+            code: "SAVE_INVALID"
+          });
+        return value;
       }
-      function rememberEdge(g, from, to) {
-        const p = g.investigation;
-        if (!p.edges.includes(JSON.stringify([from, to]))) return;
-        p.routes || (p.routes = []);
-        let r = p.routes.find((r2) => r2.key === keyOf(g));
-        if (!r) {
-          if (p.routes.length >= 128) return;
-          const n = Math.max(0, ...p.routes.map((r2) => Number(r2.id.slice(6)))) + 1;
-          r = { id: `route-${n}`, key: keyOf(g), name: "\u5F52\u5BB6\u8DEF\u7EBF", edges: [] };
-          p.routes.push(r);
-        }
-        if (!r.edges.some((e) => e[0] === from && e[1] === to))
-          r.edges.push([from, to]);
+      function travelCost(from, to) {
+        return from.district === to.district ? RULES.sameDistrict : RULES.crossDistrict;
       }
-      function renameRoute(g, request) {
-        if (request?.targetId !== g.targetId)
-          throw invalid("\u76EE\u6807\u5DF2\u5207\u6362\uFF0C\u8BF7\u91CD\u65B0\u6253\u5F00\u5979\u7684\u6863\u6848");
-        const r = g.investigation.routes?.find((r2) => r2.id === request.id);
-        const name = typeof request?.name === "string" ? request.name.trim() : "";
-        if (!r) throw invalid("\u8FD9\u6761\u8DEF\u7EBF\u5C1A\u672A\u63A2\u660E\uFF0C\u8BF7\u91CD\u65B0\u6253\u5F00\u6863\u6848");
-        if (!validName(name))
-          throw invalid("\u8DEF\u7EBF\u540D\u79F0\u987B\u4E3A1\u201324\u4E2A\u5B57\uFF0C\u4E0D\u80FD\u5305\u542B\u6362\u884C\u6216\u63A7\u5236\u5B57\u7B26");
-        r.name = name;
-        return { id: r.id, name, targetId: g.targetId };
+      function arrival(plan, used, cost) {
+        timeUsed(used);
+        if (plan.ended || plan.activity) throw Error("\u5F53\u524D\u4E0D\u80FD\u666E\u901A\u79FB\u52A8");
+        const left = (periods.length - plan.period) * RULES.perPeriod - used;
+        if (cost > left) throw Error("\u672C\u6B21\u79FB\u52A8\u8D85\u8FC7\u672C\u65E5\u5269\u4F59\u65F6\u95F4\uFF0C\u8BF7\u5148\u7ED3\u675F\u5F53\u5929\u5B89\u6392");
+        const total = used + cost, crosses = total >= RULES.perPeriod;
+        const ended = crosses && plan.period === periods.length - 1;
+        return {
+          period: plan.period + (crosses && !ended ? 1 : 0),
+          used: ended ? 0 : total % RULES.perPeriod,
+          ended
+        };
       }
-      function knownRoutesView(g) {
-        return (g.investigation.routes || []).map((r) => ({
-          id: r.id,
-          name: r.name,
-          // 每段独立投影，断开的证据不能拼成连续路线；不透传内部key或未知节点。
-          segments: r.edges.map(([a, b]) => ({
-            from: map.getPlace(a)?.name || a,
-            to: map.getPlace(b)?.name || b
-          }))
-        }));
-      }
-      module.exports = { restoreRoutes, rememberEdge, renameRoute, knownRoutesView };
+      module.exports = { RULES, timeUsed, travelCost, arrival };
     }
   });
 
@@ -2389,6 +2411,1613 @@
           maxReductionFraction: 0.5
         }
       };
+    }
+  });
+
+  // src/config/economy.json
+  var require_economy = __commonJS({
+    "src/config/economy.json"(exports, module) {
+      module.exports = {
+        nativeMultiplier: 1.2,
+        nativeJobs: {
+          otaku: "remote",
+          guard: "guard_shift",
+          bartender: "bar_shift"
+        },
+        jobs: {
+          mover: {
+            name: "\u642C\u573A\u96F6\u5DE5",
+            attr: "str",
+            base: 280,
+            pass: 420,
+            great: 560,
+            stamina: 40
+          },
+          remote: {
+            name: "\u8FDC\u7A0B\u63A5\u5355",
+            attr: "int",
+            base: 220,
+            pass: 308,
+            great: 440,
+            stamina: 0
+          },
+          guard_shift: {
+            name: "\u4FDD\u5B89\u5F53\u73ED",
+            attr: "nrv",
+            base: 320,
+            fixed: true,
+            stamina: 0
+          },
+          bar_shift: {
+            name: "\u9152\u5427\u5F53\u73ED",
+            attr: "cha",
+            base: 300,
+            pass: 390,
+            stamina: 0,
+            pending: "\u665A\u73ED\u5360\u7528\u5C3E\u884C\u7A97\u53E3\u7684\u89C4\u5219\u5C1A\u672A\u63A5\u901A"
+          },
+          delivery: {
+            name: "\u9001\u5916\u5356",
+            attr: "agi",
+            base: 240,
+            pass: 336,
+            great: 480,
+            stamina: 0,
+            pending: "\u66DD\u5149\u6982\u7387\u5C1A\u672A\u786E\u5B9A\uFF0C\u6682\u4E0D\u5F00\u653E\u7ED3\u7B97"
+          }
+        },
+        commerce: {
+          maxCartLines: 20,
+          maxQuantity: 99,
+          maxOrders: 64,
+          deliveryDays: {
+            consumable: 0,
+            tool: 1,
+            tech: 1,
+            device: 1,
+            disguise: 1,
+            gear: 0
+          },
+          onlineItemIds: [
+            "bento",
+            "onigiri",
+            "energy_drink"
+          ],
+          blackMarketPlace: "black_market_c",
+          actionPointFoodIds: []
+        }
+      };
+    }
+  });
+
+  // src/runtime/economy/work.js
+  var require_work = __commonJS({
+    "src/runtime/economy/work.js"(exports, module) {
+      "use strict";
+      var RULES = require_rules();
+      var CONFIG = require_economy();
+      var error = (message) => Object.assign(Error(message), { code: "DAY_UNAVAILABLE" });
+      function workOptions(ctx) {
+        const identity = ctx.identity;
+        const rows = Object.entries(CONFIG.jobs).map(([id, d]) => ({ id, ...d }));
+        for (const [id, d] of Object.entries(RULES.identity.jobs)) {
+          const base = d.baseJob ? CONFIG.jobs[d.baseJob] : d;
+          rows.push({
+            id,
+            name: d.name,
+            attr: d.attr,
+            base: Math.round(base.base * (d.mult || 1)),
+            pass: Math.round(base.pass * (d.mult || 1)),
+            great: Math.round(base.great * (d.mult || 1)),
+            stamina: d.cost?.stamina ?? base.stamina ?? 0,
+            exclusive: d.exclusive,
+            nativeMultiplier: d.nativeMult || 1
+          });
+        }
+        return rows.map((row) => {
+          const native = CONFIG.nativeJobs[identity] === row.id;
+          const mult = row.nativeMultiplier || (native ? CONFIG.nativeMultiplier : 1);
+          let reason = row.pending || null;
+          if (row.exclusive && identity !== row.exclusive) reason = "\u4EC5\u5BF9\u5E94\u8EAB\u4EFD\u53EF\u63A5";
+          if (identity === "criminal" && row.id !== "black_labor")
+            reason = "\u5F53\u524D\u8EAB\u4EFD\u53EA\u80FD\u63A5\u9ED1\u5DE5";
+          if (ctx.economy.workedOn === ctx.ledger.date)
+            reason = "\u4ECA\u5929\u5DF2\u7ECF\u5B8C\u6210\u4E00\u73ED\u5DE5\u4F5C";
+          if (ctx.ledger.stamina < row.stamina) reason = "\u4F53\u529B\u4E0D\u8DB3\u4EE5\u627F\u62C5\u672C\u6B21\u5DE5\u4F5C";
+          if (identity === "guard" && row.id === "guard_shift") {
+            const night = Math.floor((ctx.ledger.date - 1) / 7) % 2 === 1;
+            if (night ? ctx.dayPlan.period < 3 : ctx.dayPlan.period > 2)
+              reason = night ? "\u672C\u5468\u662F\u591C\u73ED\uFF0C\u8BF7\u5728\u665A\u95F4\u6216\u5B50\u591C\u5F53\u73ED" : "\u672C\u5468\u662F\u663C\u73ED\uFF0C\u8BF7\u5728\u767D\u5929\u5F53\u73ED";
+          }
+          return {
+            id: row.id,
+            name: row.name,
+            income: Math.round(row.base * mult),
+            stamina: row.stamina,
+            fixed: !!row.fixed,
+            enabled: !reason,
+            reason,
+            note: row.fixed ? "\u56FA\u5B9A\u5DE5\u8D44\uFF0C\u65E0\u9700\u68C0\u5B9A" : `\u5F53\u524D\u6309\u5E95\u85AA\u7ED3\u7B97\uFF1B\u5DF2\u5B9A\u52A0\u85AA\u6863 ${Math.round(row.pass * mult)}${row.great ? " / " + Math.round(row.great * mult) : ""}\uFF0C\u68C0\u5B9A\u95E8\u69DB\u5F85\u5B9A`,
+            tiers: {
+              base: Math.round(row.base * mult),
+              pass: row.pass ? Math.round(row.pass * mult) : null,
+              great: row.great ? Math.round(row.great * mult) : null
+            }
+          };
+        });
+      }
+      var handler = {
+        available: (ctx) => workOptions(ctx).some((x) => x.enabled) ? null : ctx.economy.workedOn === ctx.ledger.date ? "\u4ECA\u5929\u5DF2\u7ECF\u5B8C\u6210\u4E00\u73ED\u5DE5\u4F5C" : "\u5F53\u524D\u65F6\u6BB5\u6CA1\u6709\u53EF\u63A5\u5DE5\u4F5C",
+        view: (ctx) => ({
+          type: "work",
+          jobs: workOptions(ctx),
+          note: "\u6BCF\u5929\u6700\u591A\u4E00\u73ED\uFF1B\u786E\u8BA4\u540E\u6D88\u8017 1 \u70B9\u5E76\u63A8\u8FDB\u4E00\u4E2A\u65F6\u6BB5\u3002"
+        }),
+        prepare(ctx, args) {
+          const job = workOptions(ctx).find((x) => x.id === args.jobId);
+          if (!job) throw error("\u8BF7\u9009\u62E9\u6709\u6548\u5DE5\u79CD");
+          if (!job.enabled) throw error(job.reason);
+          const economy = JSON.parse(JSON.stringify(ctx.economy));
+          economy.workedOn = ctx.ledger.date;
+          economy.lastWork = {
+            jobId: job.id,
+            name: job.name,
+            date: ctx.ledger.date,
+            income: job.income,
+            stamina: job.stamina
+          };
+          return {
+            summary: `${job.name}\u5B8C\u6210\uFF0C\u6536\u5165 ${job.income}\uFF0C\u4F53\u529B\u6D88\u8017 ${job.stamina}`,
+            ledger: { cash: job.income, stamina: -job.stamina },
+            economy
+          };
+        }
+      };
+      module.exports = { workOptions, handler };
+    }
+  });
+
+  // src/runtime/checks.js
+  var require_checks = __commonJS({
+    "src/runtime/checks.js"(exports, module) {
+      var R = require_rules();
+      function d20Check({ d20, attr, mods = [], dc, stealth = false }) {
+        const modSum = mods.reduce((s, m) => s + m.v, 0);
+        const total = d20 + attr + modSum;
+        const margin = total - dc;
+        let band;
+        if (d20 === 1) band = "nat1";
+        else if (d20 === 20) band = "nat20";
+        else if (margin >= 0) band = "success";
+        else if (stealth && margin >= -R.check.graceMargin) band = "grace";
+        else band = "fail";
+        return { total, margin, band };
+      }
+      function applyAdvDis(roll1, roll2, mode) {
+        if (mode === "adv") {
+          const d20 = roll1 === 20 || roll2 === 20 ? 20 : roll1 === 1 || roll2 === 1 ? 1 : Math.max(roll1, roll2);
+          return { d20, raw: [roll1, roll2] };
+        }
+        if (mode === "dis") return { d20: Math.min(roll1, roll2), raw: [roll1, roll2] };
+        return { d20: roll1, raw: [roll1] };
+      }
+      function pityBonus(consecFails) {
+        return consecFails >= 2 ? 3 : 0;
+      }
+      function heartCoeff(nrv) {
+        return R.heart.coeffBase - nrv * R.heart.coeffPerNrv;
+      }
+      function heartDelta({ stim, nrv }) {
+        return Math.round(stim * heartCoeff(nrv));
+      }
+      function heartBaseline() {
+        return R.heart.baseline;
+      }
+      function breathGain(nrv) {
+        return Math.max(R.heart.breathBase + (nrv - 5) * R.heart.breathPerNrv, R.heart.breathMin);
+      }
+      function segHeartDrop(current, nrv) {
+        const base = heartBaseline();
+        return Math.max(current - R.heart.segDrop, Math.min(current, base));
+      }
+      function breathFloor(current, gain) {
+        return Math.max(current - gain, Math.min(current, R.heart.floor));
+      }
+      function heartCap(v) {
+        return Math.min(v, R.heart.cap);
+      }
+      function staminaSegTax(heartPeak, sweetHigh = R.check.sweetHigh) {
+        if (heartPeak >= R.heart.crashLine) return -R.stamina.segTax.crash;
+        if (heartPeak > sweetHigh) return -R.stamina.segTax.deform;
+        if (heartPeak >= R.check.sweetLow) return -R.stamina.segTax.sweet;
+        return -R.stamina.segTax.calm;
+      }
+      function faceMemGain({ context = "stealth", band = null }) {
+        if (context === "social") return 2;
+        if (["locked", "conflict", "gaze"].includes(context)) return 2;
+        if (band === "grace") return 1;
+        if (band === "nat1") return 2;
+        return 0;
+      }
+      function faceAssociate({ d20, acuity, memCells = 0, cover = 0, bodyMod = 0 }) {
+        const coeff = Math.min(R.check.identifyMemMax ?? 1, memCells * (R.check.identifyMemCoeff ?? 0.05));
+        const total = Math.floor((d20 + acuity + bodyMod) * coeff);
+        const dc = 10 + Math.min(cover, R.check.coverCap);
+        return { total, dc, hit: total >= dc, coeff };
+      }
+      function heartLines(current, sweetHigh = R.check.sweetHigh) {
+        const sweet = current >= R.check.sweetLow && current <= sweetHigh;
+        const deform = current >= R.heart.deformLine ? -2 : 0;
+        return { sweet, deform, crash: current >= R.heart.crashLine };
+      }
+      function acuityCoeff(acuity) {
+        return R.alert.acuityBase + acuity * R.alert.acuityPer;
+      }
+      function alertDelta({ threat, dist, env, acuity, familiar = false }) {
+        const t = R.alert.threat[threat] ?? 0;
+        const d = R.alert.distFactor[dist] ?? 1;
+        let e = R.alert.envFactor[env] ?? 1;
+        if (familiar) e *= R.alert.familiarCoeff;
+        return Math.round(t * d * e * acuityCoeff(acuity));
+      }
+      function alertStage(alert) {
+        const b = R.alert.bands;
+        if (alert >= b.react) return 4;
+        if (alert >= b.confirmed) return 3;
+        if (alert >= b.suspicious) return 2;
+        if (alert >= b.uneasy) return 1;
+        return 0;
+      }
+      function nightStartAlert(slot, wariness) {
+        return Math.round((R.alert.nightBase[slot] ?? 0) + wariness / 5);
+      }
+      function warinessGain(peakAlert) {
+        return Math.round(Math.max(0, peakAlert - 50) / 4);
+      }
+      function conflictPower({ str, agi, dice, opp = 3, firstStrike = false, training = 0 }) {
+        const base = str * R.conflict.strWeight + agi * R.conflict.agiWeight;
+        const oppMod = R.conflict.oppMods[opp] ?? 0;
+        return base + dice + oppMod + (firstStrike ? R.conflict.firstStrike : 0) + training;
+      }
+      function conflictModsSelf({ heart, firstStrike = false }) {
+        return (heart > R.conflict.highHeartLine ? R.conflict.highHeartPenalty : 0) + (firstStrike ? R.conflict.firstStrike : 0);
+      }
+      function conflictModsHer({ alertStageNow, training = 0 }) {
+        return Math.max(0, alertStageNow) * R.conflict.alertStageBonus + training;
+      }
+      function conflictOutcome(diff) {
+        const b = R.conflict.bands;
+        if (diff >= b.pin) return "pin";
+        if (diff >= b.scuffle) return "scuffle";
+        if (diff >= b.grindLow) return "grind";
+        return "overpowered";
+      }
+      function freezeCheck({ d20, nrv, training = 0 }) {
+        let mod = 0;
+        if (nrv <= 3) mod = -3;
+        else if (nrv >= 6) mod = 3;
+        const total = d20 + nrv + mod + training;
+        const dc = R.conflict.freezeDC ?? 13;
+        return { total, dc, frozen: total < dc };
+      }
+      function hesitationRounds(proximity) {
+        if (proximity >= 70) return 2;
+        if (proximity >= 40) return 1;
+        return 0;
+      }
+      function chaseStep(diff) {
+        if (diff >= R.chase.dashDiff) return 2;
+        if (diff > 0) return 1;
+        if (diff === 0) return 0;
+        if (diff > -R.chase.dashDiff) return -1;
+        return -2;
+      }
+      function herStamina(str) {
+        return str * R.chase.herStaminaPerStr;
+      }
+      module.exports = {
+        d20Check,
+        applyAdvDis,
+        pityBonus,
+        heartCoeff,
+        heartDelta,
+        heartBaseline,
+        breathGain,
+        segHeartDrop,
+        breathFloor,
+        heartLines,
+        heartCap,
+        staminaSegTax,
+        faceMemGain,
+        faceAssociate,
+        identifyCheck: faceAssociate,
+        acuityCoeff,
+        alertDelta,
+        alertStage,
+        nightStartAlert,
+        warinessGain,
+        conflictPower,
+        conflictModsSelf,
+        conflictModsHer,
+        conflictOutcome,
+        freezeCheck,
+        hesitationRounds,
+        chaseStep,
+        herStamina
+      };
+    }
+  });
+
+  // src/shared/random.js
+  var require_random = __commonJS({
+    "src/shared/random.js"(exports, module) {
+      var MASK = 4294967295;
+      var req = typeof __require === "function" ? __require : null;
+      var nodeCrypto = req ? (() => {
+        try {
+          return req("crypto");
+        } catch (e) {
+          return null;
+        }
+      })() : null;
+      function newSessionSalt() {
+        if (nodeCrypto) return nodeCrypto.randomBytes(16).toString("hex");
+        const buf = new Uint8Array(16);
+        if (globalThis.crypto && globalThis.crypto.getRandomValues)
+          globalThis.crypto.getRandomValues(buf);
+        else for (let i = 0; i < 16; i++) buf[i] = Date.now() + i * 7919 & 255;
+        return Array.from(buf, (x) => x.toString(16).padStart(2, "0")).join("");
+      }
+      function rng(seed) {
+        let a = seed >>> 0;
+        return function next() {
+          a = a + 1831565813 & MASK;
+          let t = Math.imul(a ^ a >>> 15, 1 | a);
+          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+      }
+      function floorSeed(sessionSalt, floor) {
+        let h = 2166136261;
+        const s = String(sessionSalt) + ":" + String(floor);
+        for (let i = 0; i < s.length; i++) {
+          h ^= s.charCodeAt(i);
+          h = Math.imul(h, 16777619) & MASK;
+        }
+        return h >>> 0;
+      }
+      function actionSeed(sessionSalt, floor, seq, version = 2) {
+        let h = floorSeed(sessionSalt, floor);
+        if (version >= 2 && typeof seq === "string")
+          h = floorSeed(String(sessionSalt) + ":domain:" + seq, floor);
+        else h ^= seq * 2654435761 & MASK;
+        h = Math.imul(h ^ h >>> 16, 2246822507) & MASK;
+        return h >>> 0;
+      }
+      var d = (next, sides) => Math.floor(next() * sides) + 1;
+      function rollD20(seed, mode = "normal") {
+        const next = rng(seed);
+        const a = d(next, 20), b = d(next, 20);
+        if (mode === "adv") {
+          const d20 = a === 20 || b === 20 ? 20 : a === 1 || b === 1 ? 1 : Math.max(a, b);
+          return { d20, raw: [a, b] };
+        }
+        if (mode === "dis") return { d20: Math.min(a, b), raw: [a, b] };
+        return { d20: a, raw: [a] };
+      }
+      function roll2D10(seed) {
+        const next = rng(seed);
+        return {
+          dice: [d(next, 10), d(next, 10)],
+          sum: null,
+          get total() {
+            return this.dice[0] + this.dice[1];
+          }
+        };
+      }
+      function pickIndex(seed, count) {
+        if (!Number.isInteger(count) || count <= 0)
+          throw new RangeError("\u5019\u9009\u6570\u91CF\u5FC5\u987B\u4E3A\u6B63\u6574\u6570");
+        return Math.floor(rng(seed)() * count);
+      }
+      module.exports = {
+        pickIndex,
+        newSessionSalt,
+        rng,
+        floorSeed,
+        actionSeed,
+        rollD20,
+        roll2D10
+      };
+    }
+  });
+
+  // src/runtime/dice.js
+  var require_dice = __commonJS({
+    "src/runtime/dice.js"(exports, module) {
+      "use strict";
+      module.exports = require_random();
+    }
+  });
+
+  // src/runtime/economy/work-check.js
+  var require_work_check = __commonJS({
+    "src/runtime/economy/work-check.js"(exports, module) {
+      "use strict";
+      var base = require_work();
+      var CFG = require_economy();
+      var R = require_rules();
+      var C = require_checks();
+      var D = require_dice();
+      var WORK_DC = 15;
+      var names = {
+        str: "\u4F53\u683C",
+        agi: "\u654F\u6377",
+        int: "\u60C5\u62A5",
+        cha: "\u53E3\u624D",
+        nrv: "\u80C6\u91CF"
+      };
+      function createWorkHandler(seedContext) {
+        return {
+          available: base.handler.available,
+          view(ctx) {
+            const v = base.handler.view(ctx);
+            for (const job of v.jobs)
+              if (!job.fixed) {
+                const d = CFG.jobs[job.id] || R.identity.jobs[job.id];
+                job.note = `1d20 + ${names[d.attr]} vs DC${WORK_DC}\uFF1B\u5931\u8D25\u5E95\u85AA${job.tiers.base}\uFF0C\u6210\u529F${job.tiers.pass}\uFF0C\u5929\u713620 ${job.tiers.great || job.tiers.pass}`;
+              }
+            return v;
+          },
+          prepare(ctx, args) {
+            const effect = base.handler.prepare(ctx, args), job = base.workOptions(ctx).find((j) => j.id === args.jobId);
+            if (job.fixed) {
+              effect.summary = `${job.name}\u5B8C\u6210\uFF0C\u56FA\u5B9A\u5DE5\u8D44${job.income}\uFF0C\u65E0\u9700\u63B7\u9AB0`;
+              return effect;
+            }
+            const d = CFG.jobs[job.id] || R.identity.jobs[job.id], key = d.attr;
+            const source = seedContext(), adv = ctx.player[key] >= R.advantage.attrThreshold || key === "int" && ctx.ledger.pi >= R.advantage.piThreshold;
+            const roll = D.rollD20(
+              D.actionSeed(
+                source.salt,
+                ctx.ledger.date,
+                `preview-work:${ctx.dayPlan.period}:${job.id}`,
+                source.rngVersion
+              ),
+              adv ? "adv" : "normal"
+            );
+            const high = R.check.sweetHigh + (ctx.player.nrv >= R.advantage.attrThreshold ? R.advantage.sweetHighBonus : 0), sweet = C.heartLines(ctx.ledger.heart, high).sweet;
+            const mods = sweet ? [{ src: "\u751C\u533A\u4E13\u6CE8", v: R.check.sweetBonus }] : [];
+            const res = C.d20Check({
+              d20: roll.d20,
+              attr: ctx.player[key],
+              mods,
+              dc: WORK_DC
+            });
+            const income = res.band === "nat20" ? job.tiers.great || job.tiers.pass || job.tiers.base : res.band === "success" ? job.tiers.pass || job.tiers.base : job.tiers.base;
+            const check = {
+              workIncome: {
+                base: job.tiers.base,
+                bonus: income - job.tiers.base,
+                total: income
+              },
+              id: "daily.work",
+              name: job.name,
+              label: job.name,
+              d20: roll.d20,
+              raw: roll.raw,
+              total: res.total,
+              dc: WORK_DC,
+              band: res.band,
+              attr: { name: names[key], v: ctx.player[key] },
+              mods,
+              heartState: {
+                value: ctx.ledger.heart,
+                sweetLow: R.check.sweetLow,
+                sweetHigh: high,
+                sweet
+              },
+              ledger: { applied: { cash: income, stamina: -job.stamina } }
+            };
+            effect.ledger.cash = income;
+            effect.economy.lastWork = { ...effect.economy.lastWork, income, check };
+            effect.summary = `${job.name}\uFF1A1d20(${roll.d20})+${names[key]}${ctx.player[key]}${sweet ? "+\u751C\u533A1" : ""}=${res.total}\uFF0CDC${WORK_DC}\uFF0C${res.band === "nat20" ? "\u5927\u6210\u529F" : res.band === "success" ? "\u6210\u529F" : "\u5E95\u85AA"}\uFF1B\u6536\u5165${income}\uFF0C\u4F53\u529B\u6D88\u8017${job.stamina}`;
+            return effect;
+          }
+        };
+      }
+      module.exports = { createWorkHandler, WORK_DC };
+    }
+  });
+
+  // src/runtime/game/constants.js
+  var require_constants = __commonJS({
+    "src/runtime/game/constants.js"(exports, module) {
+      "use strict";
+      var DIST_KEY = { far: "far", same: "same", close: "close", touch: "touch" };
+      var DIST_CN = { far: "\u8FDC\u7AEF", same: "\u540C\u8857", close: "\u8EAB\u540E", touch: "\u8D34\u8EAB" };
+      var DIST_RANK = { far: 0, same: 1, close: 2, touch: 3 };
+      var DIST_DOWN = { touch: "close", close: "same", same: "far", far: "far" };
+      var CA_CN = {
+        front: "\u6B63\u9762",
+        side: "\u4FA7\u9762",
+        back: "\u80CC\u9762",
+        "three-quarter": "\u659C\u4FA7"
+      };
+      var WEATHER_BANDS = { clear: [1, 14], rain: [15, 18], storm: [19, 20] };
+      var WEATHER_ICON = { clear: "\u{1F319} \u6674\u591C", rain: "\u{1F327} \u5C0F\u96E8", storm: "\u26C8 \u66B4\u96E8" };
+      var HUNTER_MODES = ["stealth", "contact", "vehicle"];
+      var TAIL_PUMP_IDS = [
+        "follow",
+        "ride_along",
+        "transfer",
+        "follow_work",
+        "ride_follow",
+        "car_follow"
+      ];
+      var SHOE_ID_MAP = {
+        shoe_heel: "heel",
+        shoe_flats: "flats",
+        shoe_sneakers: "sneakers",
+        shoe_barefoot: "barefoot",
+        shoe_slippers: "slippers",
+        shoe_boots: "boots",
+        shoe_platform: "platform",
+        shoe_sandals: "sandals",
+        shoe_leather: "leather"
+      };
+      var SHOE_DIST_FACTOR = { far: 0.6, same: 1, close: 1.25, touch: 1.5 };
+      module.exports = {
+        DIST_KEY,
+        DIST_CN,
+        DIST_RANK,
+        DIST_DOWN,
+        CA_CN,
+        WEATHER_BANDS,
+        WEATHER_ICON,
+        HUNTER_MODES,
+        TAIL_PUMP_IDS,
+        SHOE_ID_MAP,
+        SHOE_DIST_FACTOR
+      };
+    }
+  });
+
+  // src/config/city-transit.json
+  var require_city_transit = __commonJS({
+    "src/config/city-transit.json"(exports, module) {
+      module.exports = {
+        schema: 1,
+        routes: [
+          {
+            id: "metro_1",
+            name: "\u5730\u94C1 1 \u53F7\u7EBF",
+            kind: "metro",
+            stops: ["old_metro_b", "metro_hub_a"],
+            path: ["old_metro_b", [900, 1025], [900, 1175], "metro_hub_a"],
+            label: [1080, 1150],
+            note: "\u8FDE\u63A5\u8001\u57CE\u6587\u6559\u533A\u4E0E\u4E2D\u57CE CBD\u3002"
+          },
+          {
+            id: "night_bus",
+            name: "\u591C\u5E02\u73AF\u7EBF\u516C\u4EA4",
+            kind: "bus",
+            stops: ["school_bus_terminal_b", "dock_bus_stop_c"],
+            path: [
+              "school_bus_terminal_b",
+              [435, 910],
+              [700, 910],
+              [700, 1365],
+              [330, 1365],
+              [330, 1575],
+              [625, 1575],
+              "dock_bus_stop_c"
+            ],
+            label: [445, 1392],
+            note: "\u8FDE\u63A5 B \u533A\u5B66\u533A\u603B\u7AD9\u4E0E C \u533A\u7801\u5934\u7AD9\u3002"
+          },
+          {
+            id: "river_express",
+            name: "\u8DE8\u6C5F\u5FEB\u7EBF\u516C\u4EA4",
+            kind: "bus",
+            stops: ["bus_bay_a", "bridge_head_c"],
+            path: [
+              "bus_bay_a",
+              [1605, 1095],
+              [1975, 1095],
+              [1975, 1880],
+              "bridge_head_c"
+            ],
+            label: [1460, 1850],
+            note: "\u8FDE\u63A5\u4E2D\u57CE\u516C\u4EA4\u6E2F\u6E7E\u4E0E\u4E34\u6C5F\u5927\u6865\u5934\u3002"
+          },
+          {
+            id: "north_road",
+            name: "\u5317\u73AF\u516C\u8DEF",
+            kind: "road",
+            stops: ["bus_bay_a", "suburb_highway_d"],
+            path: [
+              "bus_bay_a",
+              [1605, 1095],
+              [1975, 1095],
+              [1975, 630],
+              [1840, 630],
+              "suburb_highway_d"
+            ],
+            label: [1740, 655],
+            note: "D \u533A\u4EC5\u7ECF\u516C\u8DEF\u62B5\u8FBE\uFF0C\u5730\u56FE\u4E0D\u63D0\u4F9B\u76F4\u63A5\u8FDB\u90CA\u5916\u7684\u6377\u5F84\u3002"
+          }
+        ]
+      };
+    }
+  });
+
+  // src/runtime/spatial/system.js
+  var require_system = __commonJS({
+    "src/runtime/spatial/system.js"(exports, module) {
+      "use strict";
+      var { places, districts } = require_places();
+      var layout = require_city_layout();
+      var { routes } = require_city_transit();
+      var transitLinks = routes.flatMap(
+        (r) => r.stops.slice(1).map((to, i) => [r.stops[i], to])
+      );
+      var { TAIL_PUMP_IDS } = require_constants();
+      var clone = (x) => JSON.parse(JSON.stringify(x));
+      var activeScene = (g) => ["stealth", "contact", "vehicle"].includes(g.mode) && (g.dayPlan.source !== "daily" || g.dayPlan.activity?.kind === "tailing");
+      function routePlace(g) {
+        const id = g.route?.nodes?.[g.route.here];
+        return places[id] && g.route?.known?.[g.route.here] === 1 ? id : null;
+      }
+      function sceneVisible(g) {
+        return activeScene(g) && g.spatial.tracking === "visual" && g.spatial.lastSeen?.targetId === (g.targetId || "college") && g.spatial.lastSeen?.turn === (g.floor || 0) && g.spatial.lastSeen.placeId === routePlace(g) && g.spatial.playerPlaceId === g.spatial.lastSeen.placeId;
+      }
+      function observeScene(g, date, results) {
+        var _a;
+        if (!activeScene(g)) return;
+        const attempts = (results?.actions || []).filter(
+          (a) => TAIL_PUMP_IDS.includes(a.id) && !a.rejected && a.band
+        );
+        const attempt = attempts.at(-1);
+        const escaped = g.fleeing && g.route?.here >= g.route?.nodes.length - 1;
+        if (["fail", "nat1"].includes(attempt?.band) || escaped) {
+          g.spatial.tracking = "lost";
+          return;
+        }
+        if ((g.spatial.tracking === "lost" || g.spatial.assumed) && !attempt) return;
+        if (attempt && ["success", "grace", "nat20"].includes(attempt.band)) {
+          const here = g.route?.here;
+          if (places[g.route?.nodes?.[here]]) {
+            (_a = g.route).known || (_a.known = g.route.nodes.map(() => 0));
+            g.route.known[here] = 1;
+          }
+        }
+        const id = routePlace(g);
+        if (!id) return;
+        g.spatial.playerPlaceId = id;
+        g.spatial.assumed = false;
+        g.spatial.tracking = "visual";
+        g.spatial.lastSeen = {
+          targetId: g.targetId || "college",
+          placeId: id,
+          date,
+          period: g.dayPlan.period,
+          turn: g.floor || 0
+        };
+        if (!g.spatial.knownPlaces.includes(id)) g.spatial.knownPlaces.push(id);
+      }
+      function moveReason(ctx, id) {
+        const p = places[id];
+        if (!p) return "\u6CA1\u6709\u8FD9\u4E2A\u5730\u70B9";
+        if (layout.privatePlaces.includes(id))
+          return "\u8FD9\u91CC\u9700\u8981\u539F\u6709\u7684\u573A\u6240\u8FDB\u5165\u6761\u4EF6\uFF0C\u5730\u56FE\u4E0D\u80FD\u76F4\u63A5\u8FDB\u5165";
+        if (p.district === "D") return "\u5317\u90CA\u4EA4\u901A\u6761\u4EF6\u5C1A\u672A\u63A5\u901A";
+        if (id === ctx.spatial.playerPlaceId) return "\u4F60\u5DF2\u5728\u8FD9\u91CC";
+        const queue = [ctx.spatial.playerPlaceId], seen = new Set(queue);
+        while (queue.length) {
+          const here = queue.shift();
+          if (here === id) return null;
+          const exits = [
+            ...places[here]?.exits || [],
+            ...transitLinks.flatMap(
+              ([a, b]) => a === here ? [b] : b === here ? [a] : []
+            )
+          ];
+          for (const next of exits)
+            if (!seen.has(next) && places[next]?.district !== "D" && !layout.privatePlaces.includes(next)) {
+              seen.add(next);
+              queue.push(next);
+            }
+        }
+        return "\u5F53\u524D\u6CA1\u6709\u53EF\u901A\u884C\u8DEF\u7EBF";
+      }
+      function prepareMove(ctx, id) {
+        const reason = moveReason(ctx, id);
+        if (reason) throw Object.assign(Error(reason), { code: "DAY_UNAVAILABLE" });
+        const spatial = clone(ctx.spatial);
+        spatial.playerPlaceId = id;
+        spatial.assumed = false;
+        return { summary: `\u5DF2\u524D\u5F80${places[id].name}\uFF0C\u5E02\u5185\u79FB\u52A8\u4E0D\u6D88\u8017\u884C\u52A8\u70B9`, spatial };
+      }
+      function cityView(g, date) {
+        const spatial = g.spatial, live = sceneVisible(g) && spatial.lastSeen?.date === date;
+        const nodes = Object.entries(places).map(([id, p]) => {
+          const hidden = layout.privatePlaces.includes(id) && !spatial.knownPlaces.includes(id) && spatial.playerPlaceId !== id;
+          const [x, y] = layout.coordinates[id];
+          const frame = layout.frames[p.district];
+          return {
+            id,
+            district: p.district,
+            name: hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : p.mapName || p.name,
+            sector: hidden ? null : p.sector,
+            facility: hidden ? null : p.facility ? { ...p.facility } : null,
+            x: x + frame.x,
+            y: y + frame.y,
+            hidden,
+            service: id === layout.blackMarket ? "black_market" : id === layout.home ? "home" : null,
+            moveReason: g.dayPlan.source !== "daily" ? "\u539F\u5C3E\u884C\u6D41\u7A0B\u4E2D\u7531\u56DE\u5408\u51B3\u5B9A\u79FB\u52A8" : g.dayPlan.activity ? "\u8BF7\u5148\u7ED3\u675F\u5F53\u524D\u6D3B\u52A8" : g.dayPlan.ended ? "\u672C\u65E5\u5DF2\u7ED3\u675F" : moveReason({ spatial }, id)
+          };
+        });
+        const edges = [];
+        for (const [id, p] of Object.entries(places))
+          for (const to of p.exits) {
+            if (places[to].exits.includes(id) && id > to) continue;
+            edges.push({
+              from: id,
+              to,
+              transit: false,
+              oneWay: !places[to].exits.includes(id)
+            });
+          }
+        for (const [from, to] of transitLinks)
+          edges.push({ from, to, transit: true });
+        const last = spatial.lastSeen?.targetId === (g.targetId || "college") ? spatial.lastSeen : null;
+        return {
+          width: layout.width,
+          height: layout.height,
+          frames: Object.entries(layout.frames).map(([id, f]) => ({
+            id,
+            ...f,
+            name: districts[id].name,
+            setting: districts[id].setting
+          })),
+          nodes,
+          edges,
+          transit: clone(routes),
+          player: {
+            placeId: spatial.playerPlaceId,
+            name: places[spatial.playerPlaceId].mapName || places[spatial.playerPlaceId].name,
+            district: places[spatial.playerPlaceId].district,
+            assumed: spatial.assumed
+          },
+          target: last ? {
+            placeId: last.placeId,
+            name: places[last.placeId].mapName || places[last.placeId].name,
+            date: last.date,
+            period: last.period,
+            live,
+            status: live ? "\u76EE\u89C6\u4F4D\u7F6E" : "\u6700\u540E\u76EE\u51FB"
+          } : null,
+          note: "\u56FA\u5B9A\u8857\u533A\u5730\u56FE\u3002\u5730\u5757\u8868\u793A\u7A7A\u95F4\u5206\u5E03\uFF1B\u53EF\u901A\u884C\u8303\u56F4\u4EE5\u5730\u70B9\u5165\u53E3\u4E3A\u51C6\u3002"
+        };
+      }
+      module.exports = {
+        activeScene,
+        routePlace,
+        observeScene,
+        prepareMove,
+        cityView
+      };
+    }
+  });
+
+  // src/config/daily-actions.json
+  var require_daily_actions = __commonJS({
+    "src/config/daily-actions.json"(exports, module) {
+      module.exports = [
+        {
+          id: "daily.rest",
+          name: "\u4F11\u606F",
+          cost: 1,
+          mode: "instant",
+          kind: "routine",
+          handler: "rest",
+          effect: "\u6062\u590D 50 \u70B9\u4F53\u529B\uFF0C\u4E0D\u8D85\u8FC7\u4E0A\u9650",
+          recovery: 50
+        },
+        {
+          id: "daily.work",
+          name: "\u6253\u5DE5\uFF0F\u63A5\u5355",
+          cost: 1,
+          mode: "instant",
+          kind: "routine",
+          handler: "work",
+          inputRequired: true,
+          effect: "\u6309\u672C\u6B21\u5DE5\u79CD\u7ED3\u7B97\u62A5\u916C\u4E0E\u6D88\u8017"
+        },
+        {
+          id: "daily.shop",
+          name: "\u7EBF\u4E0A\u8865\u7ED9",
+          cost: 1,
+          mode: "instant",
+          kind: "routine",
+          handler: "shop",
+          inputRequired: true,
+          effect: "\u53EA\u552E\u98DF\u54C1\u8865\u7ED9\uFF0C\u4E00\u6279\u786E\u8BA4\u540E\u6263\u8D39"
+        },
+        {
+          id: "daily.black_market",
+          name: "\u9ED1\u5E02\u91C7\u8D2D",
+          cost: 1,
+          mode: "instant",
+          kind: "routine",
+          handler: "black_market",
+          inputRequired: true,
+          effect: "\u987B\u5230\u4E34\u6C5F\u9ED1\u5E02\uFF0C\u5668\u6750\u6309\u8BA2\u5355\u9694\u65E5\u5230\u8D27"
+        },
+        {
+          id: "daily.talk",
+          name: "\u72EC\u7ACB\u4EA4\u6D41",
+          cost: 1,
+          mode: "scene",
+          kind: "routine",
+          handler: "talk",
+          effect: "\u5C55\u5F00\u4E00\u6B21\u4EA4\u6D41\uFF0C\u6210\u679C\u7531\u5177\u4F53\u4E8B\u4EF6\u51B3\u5B9A"
+        },
+        {
+          id: "daily.tailing",
+          name: "\u5C3E\u884C",
+          cost: 2,
+          mode: "scene",
+          kind: "tailing",
+          handler: "tailing",
+          effect: "\u8FDB\u5165\u8FDE\u7EED\u5C3E\u884C\u56DE\u5408\uFF0C\u6574\u6BB5\u7ED3\u675F\u540E\u63A8\u8FDB\u65F6\u6BB5"
+        },
+        {
+          id: "daily.pass",
+          name: "\u5EA6\u8FC7\u672C\u65F6\u6BB5",
+          cost: 0,
+          mode: "instant",
+          kind: "routine",
+          handler: "pass",
+          effect: "\u65E0\u6536\u76CA\u548C\u6062\u590D\uFF0C\u76F4\u63A5\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5"
+        }
+      ];
+    }
+  });
+
+  // src/config/college-day.json
+  var require_college_day = __commonJS({
+    "src/config/college-day.json"(exports, module) {
+      module.exports = {
+        scenes: [
+          {
+            place: null,
+            title: "\u6821\u5185\u4E0A\u8BFE",
+            text: "\u6821\u95E8\u5916\u770B\u4E0D\u89C1\u8BFE\u5802\u5185\u7684\u60C5\u51B5\u3002"
+          },
+          {
+            place: "university_canteen_b",
+            title: "\u5348\u95F4\u7528\u9910",
+            text: "\u5979\u7AEF\u7740\u9910\u76D8\uFF0C\u5728\u98DF\u5802\u9760\u7A97\u7684\u4F4D\u7F6E\u5750\u4E0B\u3002"
+          },
+          {
+            place: "university_library_b",
+            title: "\u5348\u540E\u81EA\u4E60",
+            text: "\u5979\u5750\u5728\u9605\u89C8\u533A\uFF0C\u5C06\u7FFB\u5F00\u7684\u4E66\u9875\u538B\u5728\u7B14\u8BB0\u672C\u65C1\u3002"
+          },
+          {
+            place: "school_gate_b",
+            title: "\u79BB\u6821\u73B0\u573A",
+            text: "\u5979\u8D70\u51FA\u5927\u5B66\u6B63\u95E8\uFF0C\u628A\u624B\u673A\u6536\u8FDB\u53E3\u888B\uFF0C\u51C6\u5907\u6CBF\u8857\u79BB\u5F00\u3002\u4E0B\u4E00\u7AD9\u5C1A\u672A\u786E\u8BA4\u3002"
+          },
+          {
+            place: null,
+            title: "\u5B50\u591C\u5C45\u5BB6",
+            text: "\u5F53\u524D\u6CA1\u6709\u65B0\u7684\u76EE\u89C6\u8BB0\u5F55\u3002\u672A\u786E\u8BA4\u7684\u4F4F\u5904\u4E0D\u4F1A\u663E\u793A\u5728\u5730\u56FE\u4E0A\u3002"
+          }
+        ],
+        departure: {
+          id: "college-standard-return",
+          note: "\u6807\u51C6\u5DE5\u4F5C\u65E5\u8FD4\u7A0B",
+          here: 0,
+          known: [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          startTime: "21:30",
+          nodes: [
+            "school_gate_b",
+            "old_skybridge_b",
+            "store_24h_b",
+            "old_alley_main_b",
+            "dark_blind_alley_b",
+            "unit_stairs_b"
+          ],
+          times: [
+            "2130",
+            "2145",
+            "2200",
+            "2215",
+            "2230",
+            "2245"
+          ]
+        }
+      };
+    }
+  });
+
+  // src/contracts/college-session.js
+  var require_college_session = __commonJS({
+    "src/contracts/college-session.js"(exports, module) {
+      "use strict";
+      var bad = (message) => {
+        throw Object.assign(new Error("\u5973\u5927\u65E5\u7A0B\u5B58\u6863\u65E0\u6548\uFF1A" + message), {
+          code: "SAVE_INVALID"
+        });
+      };
+      function validateCollegeSession(value) {
+        if (!value || value.schema !== 1) bad("\u7248\u672C");
+        for (const k of ["serial", "sessionPiStart", "timeUsed"])
+          if (!Number.isInteger(value[k]) || value[k] < 0) bad(k);
+        if (value.timeUsed >= 3) bad("\u65F6\u95F4\u683C");
+        if (value.usedDate !== null && (!Number.isInteger(value.usedDate) || value.usedDate < 1))
+          bad("\u51FA\u884C\u65E5\u671F");
+        const r = value.recovery;
+        if (!r || ["used", "pending", "attempted"].some((k) => typeof r[k] !== "boolean"))
+          bad("\u8865\u6551");
+        if (r.pending && !r.used) bad("\u8865\u6551\u673A\u4F1A");
+        if (r.lastResult !== null && !["found", "lost"].includes(r.lastResult))
+          bad("\u8865\u6551\u7ED3\u679C");
+        if (r.operationId !== void 0 && (typeof r.operationId !== "string" || !r.receipt))
+          bad("\u8865\u6551\u56DE\u6267");
+        if (r.operationId !== void 0 && (typeof r.receipt !== "object" || !Array.isArray(r.receipt.actions) || !r.receipt.actions.length || !Number.isInteger(r.receipt.floor) || !r.receipt.package))
+          bad("\u8865\u6551\u56DE\u6267\u5185\u5BB9");
+        if (r.pending && (!r.lastSeen || typeof r.lastSeen.placeId !== "string"))
+          bad("\u8865\u6551\u76EE\u51FB\u8BB0\u5F55");
+        const o = value.outcome;
+        if (o !== null) {
+          if (!o || !["lost", "escaped", "completed", "stopped", "ended"].includes(o.kind) || typeof o.acknowledged !== "boolean" || typeof o.title !== "string")
+            bad("\u7ED3\u675F\u53CD\u9988");
+          for (const k of [
+            "pi",
+            "minimum",
+            "clueGain",
+            "clueCount",
+            "remaining",
+            "date",
+            "period"
+          ])
+            if (!Number.isInteger(o[k]) || o[k] < 0) bad("\u7ED3\u675F\u53CD\u9988 " + k);
+          if (o.remaining > 4 || o.period > 4) bad("\u7ED3\u675F\u65F6\u6BB5");
+        }
+        return value;
+      }
+      module.exports = { validateCollegeSession };
+    }
+  });
+
+  // src/runtime/college-session.js
+  var require_college_session2 = __commonJS({
+    "src/runtime/college-session.js"(exports, module) {
+      "use strict";
+      var { createSpatial } = require_spatial();
+      var TIME = require_time();
+      var { createWorkHandler } = require_work_check();
+      var { TAIL_PUMP_IDS } = require_constants();
+      var { prepareMove } = require_system();
+      var periods = require_day_plan().periods;
+      var clone = (value) => JSON.parse(JSON.stringify(value));
+      var places = require_places().places;
+      var definition = require_daily_actions().find(
+        (d) => d.id === "daily.tailing"
+      );
+      var { scenes, departure } = require_college_day();
+      var { validateCollegeSession } = require_college_session();
+      var condition = (message) => Object.assign(new Error(message), { code: "COLLEGE_CONDITION" });
+      function createCollegeSession(init) {
+        const saved = init.saved;
+        if (saved) validateCollegeSession(saved.collegeSession);
+        const options = {};
+        let usedDate = saved?.collegeSession?.usedDate ?? null;
+        let serial = saved?.collegeSession?.serial || 0;
+        let outcome = saved?.collegeSession?.outcome ? clone(saved.collegeSession.outcome) : null;
+        let sessionPiStart = saved?.collegeSession?.sessionPiStart ?? saved?.ledgerState?.pi ?? 0;
+        let pendingEnd = null;
+        let recovery = clone(
+          saved?.collegeSession?.recovery || {
+            used: false,
+            pending: false,
+            attempted: false,
+            lastResult: null,
+            lastSeen: null
+          }
+        );
+        let used = TIME.timeUsed(
+          saved?.collegeSession?.timeUsed ?? options.timeUsed ?? 0
+        );
+        let game;
+        const weekday = () => (game.ledger.get("date") - 1) % 7 + 1;
+        function available(ctx) {
+          if (weekday() > 4) return "\u5F53\u524D\u6CA1\u6709\u5DF2\u786E\u8BA4\u7684\u51FA\u884C\u673A\u4F1A";
+          if (ctx.dayPlan.period !== 3) return "\u6B64\u65F6\u6BB5\u6CA1\u6709\u53EF\u63A5\u5165\u7684\u51FA\u884C\u673A\u4F1A";
+          if (usedDate === ctx.ledger.date) return "\u672C\u6B21\u79BB\u6821\u673A\u4F1A\u5DF2\u7ECF\u4F7F\u7528";
+          if (ctx.spatial.playerPlaceId !== "school_gate_b" || ctx.spatial.tracking !== "visual")
+            return "\u987B\u5728\u5927\u5B66\u6B63\u95E8\u5B9E\u9645\u76EE\u89C6\u76EE\u6807";
+          return null;
+        }
+        const dailyActions = [
+          {
+            definition: require_daily_actions().find(
+              (d) => d.id === "daily.work"
+            ),
+            handler: createWorkHandler(() => ({
+              salt: game.save().sessionSalt,
+              rngVersion: game._g.rngVersion
+            }))
+          },
+          {
+            definition: {
+              ...definition,
+              name: "\u8DDF\u968F\u79BB\u5F00",
+              effect: "\u6D88\u80172\u70B9\u8FDB\u5165\u8FD4\u7A0B\uFF1B\u7ED3\u675F\u540E\u63A8\u8FDB\u65F6\u6BB5"
+            },
+            handler: {
+              available,
+              prepare: () => ({
+                summary: "\u5F00\u59CB\u8DDF\u968F\u79BB\u5F00\uFF0C\u884C\u52A8\u70B9\u5DF2\u62632\u70B9",
+                payload: { eventId: "college-departure" }
+              }),
+              finish: () => ({ summary: "\u8FD9\u6B21\u8DDF\u968F\u544A\u4E00\u6BB5\u843D\uFF0C\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5" }),
+              cancel: () => ({
+                summary: "\u4F60\u505C\u4E0B\u811A\u6B65\uFF0C\u7ED3\u675F\u4E86\u8FD9\u6B21\u8DDF\u968F\uFF1B\u5DF2\u7528\u76842\u70B9\u4E0D\u9000\u8FD8"
+              })
+            }
+          }
+        ];
+        const deferTailingFailure = ({ g, results }) => {
+          const attempts = results.actions.filter(
+            (a) => !a.rejected && TAIL_PUMP_IDS.includes(a.id)
+          );
+          if (g.dayPlan.activity?.kind !== "tailing" || recovery.used || attempts.at(-1)?.band !== "fail" || attempts.some((a) => a.band === "nat1") || g.alertEvent?.stage === 4)
+            return false;
+          recovery = {
+            used: true,
+            pending: true,
+            attempted: false,
+            lastResult: null,
+            lastSeen: clone(g.spatial.lastSeen)
+          };
+          return true;
+        };
+        function active() {
+          return game._g.dayPlan.activity?.kind === "tailing";
+        }
+        function observe() {
+          if (active()) return;
+          game._g.mode = "prepare";
+          game._g.env = game._g.dayPlan.period < 3 ? "day" : "night";
+          game._g.slot = game._g.dayPlan.period < 3 ? "prepare" : game._g.dayPlan.period === 3 ? "e21_23" : "e23_01";
+          const g = game._g, p = g.dayPlan, scene = scenes[p.period];
+          const visible = !p.ended && weekday() <= 4 && !!scene.place && scene.place === g.spatial.playerPlaceId && !(p.period === 3 && usedDate === game.ledger.get("date"));
+          if (visible) {
+            g.spatial.tracking = "visual";
+            g.spatial.assumed = false;
+            g.spatial.lastSeen = {
+              targetId: g.targetId,
+              placeId: scene.place,
+              date: game.ledger.get("date"),
+              period: p.period,
+              turn: g.floor || 0
+            };
+            if (!g.spatial.knownPlaces.includes(scene.place))
+              g.spatial.knownPlaces.push(scene.place);
+          } else g.spatial.tracking = "none";
+          return visible;
+        }
+        function save() {
+          return clone({
+            ...game.save(),
+            collegeSession: {
+              schema: 1,
+              usedDate,
+              serial,
+              timeUsed: used,
+              outcome,
+              sessionPiStart,
+              recovery
+            }
+          });
+        }
+        function quote(placeId) {
+          const g = game._g;
+          const cost = places[placeId] ? TIME.travelCost(places[g.spatial.playerPlaceId], places[placeId]) : 0;
+          let reason = null, to = null;
+          try {
+            if (outcome && !outcome.acknowledged)
+              throw condition("\u8BF7\u5148\u67E5\u770B\u5C3E\u884C\u7ED3\u679C\uFF0C\u8FD4\u56DE\u65E5\u7A0B\u540E\u518D\u79FB\u52A8");
+            if (g.dayPlan.ended || g.dayPlan.activity)
+              throw condition(
+                g.dayPlan.ended ? "\u672C\u65E5\u5DF2\u7ED3\u675F" : "\u5C3E\u884C\u4E2D\u8BF7\u4F7F\u7528\u8DDF\u968F\u52A8\u4F5C"
+              );
+            prepareMove({ spatial: g.spatial }, placeId);
+            to = TIME.arrival(g.dayPlan, used, cost);
+          } catch (e) {
+            reason = e.message;
+          }
+          return {
+            placeId,
+            cost,
+            reason,
+            arrival: to,
+            label: reason || `\u524D\u5F80${places[placeId].mapName || places[placeId].name} \xB7 ${cost}\u683C\u65F6\u95F4 \xB7 0\u70B9`
+          };
+        }
+        function snapshot() {
+          const s = game.snapshot();
+          s.dailyTime = {
+            used,
+            remaining: s.dayPlan.ended ? 0 : TIME.RULES.perPeriod - used,
+            perPeriod: TIME.RULES.perPeriod,
+            active: active()
+          };
+          s.dailyMoves = Object.fromEntries(
+            s.cityMap.nodes.map((n) => [n.id, quote(n.id)])
+          );
+          for (const n of s.cityMap.nodes)
+            if (!n.moveReason && s.dailyMoves[n.id].reason)
+              n.moveReason = s.dailyMoves[n.id].reason;
+          if (!active() && s.cityMap.target)
+            s.cityMap.target.live = !!(!game._g.dayPlan.ended && weekday() <= 4 && scenes[game._g.dayPlan.period].place === game._g.spatial.playerPlaceId && !(game._g.dayPlan.period === 3 && usedDate === game.ledger.get("date")));
+          if (s.cityMap.target)
+            s.cityMap.target.status = s.cityMap.target.live ? "\u76EE\u89C6\u4F4D\u7F6E" : "\u6700\u540E\u76EE\u51FB";
+          const route = game._g.route;
+          s.tailingSession = {
+            active: active(),
+            turn: game._g.floor || 0,
+            outcome: outcome ? clone(outcome) : null,
+            pendingOutcome: !!outcome && !outcome.acknowledged,
+            recovery: clone({
+              used: recovery.used,
+              pending: recovery.pending,
+              attempted: recovery.attempted,
+              lastResult: recovery.lastResult,
+              lastSeen: recovery.lastSeen
+            }),
+            confirmed: (route?.nodes || []).flatMap(
+              (id, i) => route.known?.[i] === 1 && i <= route.here ? [
+                {
+                  id,
+                  name: places[id]?.mapName || places[id]?.name || "\u5DF2\u786E\u8BA4\u5730\u70B9"
+                }
+              ] : []
+            ),
+            next: active() && route?.known?.[route.here + 1] === 1 ? places[route.nodes[route.here + 1]]?.mapName || places[route.nodes[route.here + 1]]?.name : null
+          };
+          s.dailyScene = active() ? {
+            title: "\u6B63\u5F0F\u5C3E\u884C\u4E2D",
+            text: "\u8DDF\u968F\u65F6\u7559\u610F\u8DDD\u79BB\u3001\u5FC3\u8DF3\u548C\u5979\u7684\u53CD\u5E94\u3002\u5185\u90E8\u884C\u52A8\u4E0D\u518D\u91CD\u590D\u6263\u5165\u573A\u884C\u52A8\u70B9\u3002",
+            active: true
+          } : s.cityMap.target?.live ? scenes[game._g.dayPlan.period] : {
+            title: "\u5C1A\u672A\u76EE\u89C6\u76EE\u6807",
+            text: game._g.dayPlan.period === 4 ? scenes[4].text : "\u5F53\u524D\u5730\u70B9\u672A\u89C1\u76EE\u6807\u3002\u5730\u56FE\u4E0A\u7684\u65E7\u76EE\u51FB\u70B9\u4E0D\u4EE3\u8868\u5979\u73B0\u5728\u4ECD\u5728\u90A3\u91CC\u3002",
+            active: false
+          };
+          return s;
+        }
+        function request(command, actionId, args = {}) {
+          return {
+            operationId: "college-session-" + ++serial,
+            command,
+            actionId,
+            args,
+            expected: {
+              date: game.ledger.get("date"),
+              period: game._g.dayPlan.period,
+              sequence: game._g.dayPlan.sequence || 0
+            },
+            ...game._g.dayPlan.activity ? { activityId: game._g.dayPlan.activity.id } : {}
+          };
+        }
+        function execute(req) {
+          if (game._g.dayPlan.receipts?.some((r) => r.operationId === req.operationId))
+            return game.executeDailyCommand(req);
+          if (outcome && !outcome.acknowledged)
+            throw condition("\u8BF7\u5148\u67E5\u770B\u5C3E\u884C\u7ED3\u679C\uFF0C\u8FD4\u56DE\u65E5\u7A0B\u540E\u518D\u7EE7\u7EED");
+          const wasActive = active(), priorReceipt = game._g.investigation.lastReceipt;
+          const lastSeenBefore = clone(game._g.spatial.lastSeen);
+          const before = {
+            period: game._g.dayPlan.period,
+            ended: game._g.dayPlan.ended,
+            date: game.ledger.get("date"),
+            used
+          };
+          const travel = req.command === "move" ? quote(req.args?.placeId) : null;
+          if (travel?.reason) throw condition(travel.reason);
+          let result = game.executeDailyCommand(req);
+          if (!result.reused && travel) {
+            const p = game._g.dayPlan;
+            p.period = travel.arrival.period;
+            p.ended = travel.arrival.ended;
+            used = travel.arrival.used;
+            game._g.env = p.period < 3 ? "day" : "night";
+            game._g.slot = p.period < 3 ? "prepare" : p.period === 3 ? "e21_23" : "e23_01";
+            result = {
+              ...result,
+              after: { ...result.after, period: p.period },
+              travel: {
+                cost: travel.cost,
+                before: { period: before.period, used: before.used },
+                after: { period: p.period, used, ended: p.ended }
+              },
+              summary: `\u5DF2\u5230\u8FBE${places[req.args.placeId].mapName || places[req.args.placeId].name}\uFF0C\u8017\u65F6${travel.cost}\u683C\u3001\u884C\u52A8\u70B9\u4E0D\u53D8\uFF1B${p.ended ? "\u672C\u65E5\u5DF2\u7ED3\u675F" : periods[p.period].name + "\u5269\u4F59" + (TIME.RULES.perPeriod - used) + "\u683C\u65F6\u95F4"}`
+            };
+            p.receipts = p.receipts.map(
+              (r) => r.operationId === req.operationId ? clone(result) : r
+            );
+            p.lastReceipt = clone(result);
+          } else if (!result.reused && (game._g.dayPlan.period !== before.period || game._g.dayPlan.ended !== before.ended || game.ledger.get("date") !== before.date))
+            used = 0;
+          if (!result.reused && req.command === "start" && req.actionId === "daily.tailing") {
+            outcome = null;
+            recovery = {
+              used: false,
+              pending: false,
+              attempted: false,
+              lastResult: null,
+              lastSeen: null
+            };
+            sessionPiStart = game.ledger.get("pi");
+            usedDate = game.ledger.get("date");
+            game._g.nightStartFloor = game._g.floor || 0;
+            game.setRoute(clone(departure));
+            game._g.mode = "stealth";
+            game._g.dist = "same";
+          }
+          if (wasActive && ["finish", "cancel"].includes(req.command)) {
+            const receipt = pendingEnd?.receipt || (game._g.investigation.lastReceipt !== priorReceipt ? game._g.investigation.lastReceipt : null);
+            const kind = pendingEnd?.kind || (req.command === "cancel" ? "stopped" : "ended");
+            const titles = {
+              lost: "\u5DF2\u7ECF\u627E\u4E0D\u5230\u5979\u4E86",
+              escaped: "\u5979\u5DF2\u7ECF\u79BB\u5F00\u89C6\u7EBF",
+              completed: "\u8FD9\u6BB5\u8DEF\uFF0C\u4F60\u8DDF\u5230\u4E86\u6700\u540E",
+              stopped: "\u4F60\u505C\u4E0B\u4E86\u8DDF\u968F\u7684\u811A\u6B65",
+              ended: "\u8FD9\u6B21\u8DDF\u968F\u544A\u4E00\u6BB5\u843D"
+            };
+            outcome = {
+              kind,
+              title: titles[kind],
+              lastSeen: lastSeenBefore,
+              pi: Math.max(0, game.ledger.get("pi") - sessionPiStart),
+              minimum: receipt?.minimum || 0,
+              clueGain: receipt?.clueGain || 0,
+              clueCount: receipt?.clues?.length || 0,
+              date: game.ledger.get("date"),
+              period: game._g.dayPlan.period,
+              remaining: 4 - game._g.dayPlan.spent,
+              acknowledged: false,
+              recoveryAttempted: recovery.attempted,
+              declinedRecovery: recovery.pending
+            };
+            recovery.pending = false;
+          }
+          if (!result.reused && req.command === "start" && req.actionId === "daily.work") {
+            const check = game._g.economy.lastWork?.check;
+            if (check) {
+              result = { ...result, workCheck: clone(check) };
+              game._g.dayPlan.receipts = game._g.dayPlan.receipts.map(
+                (r) => r.operationId === req.operationId ? clone(result) : r
+              );
+              game._g.dayPlan.lastReceipt = clone(result);
+            }
+          }
+          observe();
+          return result;
+        }
+        function follow(actions = [{ id: "follow", args: { dist: game.dist } }], text = "", opts = {}) {
+          if (!active()) throw condition("\u8BF7\u5148\u5728\u79BB\u6821\u73B0\u573A\u8FDB\u5165\u6B63\u5F0F\u5C3E\u884C");
+          if (recovery.pending) throw condition("\u5979\u6682\u65F6\u79BB\u5F00\u89C6\u7EBF\uFF0C\u8BF7\u5148\u9009\u62E9\u8FFD\u627E\u6216\u505C\u4E0B");
+          recovery.lastResult = null;
+          if (!Array.isArray(actions) || !actions.length)
+            throw condition("\u8BF7\u5148\u9009\u62E9\u52A8\u4F5C");
+          const result = game.settleInput(text, { ...opts, actions });
+          const lost = game._g.spatial.tracking === "lost";
+          const terminal = game._g.route.here >= game._g.route.nodes.length - 1;
+          if (!recovery.pending && (lost || terminal || result.investigation || game._g.alertEvent?.stage === 4)) {
+            const seen = game._g.spatial.lastSeen;
+            const confirmedEnd = terminal && game._g.spatial.tracking === "visual" && seen?.placeId === game._g.route.nodes.at(-1);
+            pendingEnd = {
+              kind: lost ? "lost" : game._g.alertEvent?.stage === 4 || game._g.fleeing ? "escaped" : confirmedEnd ? "completed" : "ended",
+              receipt: result.investigation
+            };
+            try {
+              execute(request("finish"));
+            } finally {
+              pendingEnd = null;
+            }
+            result.stats = snapshot();
+          }
+          return result;
+        }
+        function recover(request2) {
+          if (recovery.operationId === request2?.operationId && recovery.receipt)
+            return { ...clone(recovery.receipt), reused: true };
+          guard(request2, true);
+          if (!active() || !recovery.pending)
+            throw condition("\u5F53\u524D\u6CA1\u6709\u53EF\u7528\u7684\u8FFD\u627E\u673A\u4F1A");
+          if (game.ledger.get("stamina") < 4)
+            throw condition("\u4F53\u529B\u4E0D\u8DB3\uFF1A\u8FFD\u627E\u9700\u89814\u70B9\u4F53\u529B\uFF0C\u53EF\u5148\u8865\u7ED9\u6216\u505C\u4E0B");
+          recovery.pending = false;
+          recovery.attempted = true;
+          game._g.dist = "far";
+          const r = follow([
+            { id: "follow", name: "\u5BFB\u627E\u5979\u7684\u8EAB\u5F71", args: { dist: "far" } }
+          ]);
+          recovery.lastResult = game._g.spatial.tracking === "visual" ? "found" : "lost";
+          recovery.operationId = request2.operationId;
+          recovery.receipt = clone({ ...r, stats: void 0 });
+          r.stats = snapshot();
+          return r;
+        }
+        function move(placeId) {
+          return execute(request("move", void 0, { placeId }));
+        }
+        function guard(request2, requireActive = false) {
+          const current = game.snapshot().dayPlan.token;
+          if (!request2?.operationId || !request2.expected || request2.expected.date !== current.date || request2.expected.period !== current.period || request2.expected.sequence !== current.sequence || request2.expected.turn !== (game._g.floor || 0) || requireActive && request2.activityId !== game._g.dayPlan.activity?.id)
+            throw condition("\u8FDB\u5EA6\u5DF2\u53D8\u5316\uFF0C\u8BF7\u91CD\u65B0\u9009\u62E9\u5F53\u524D\u884C\u52A8");
+        }
+        return {
+          dailyActions,
+          deferTailingFailure,
+          attach(base) {
+            game = base;
+            if (!saved) {
+              game._g.mode = "prepare";
+              observe();
+            }
+            if (recovery.pending && !active() || outcome && !outcome.acknowledged && active())
+              throw Object.assign(new Error("\u5C3E\u884C\u72B6\u6001\u4E0E\u5F53\u524D\u6D3B\u52A8\u4E0D\u4E00\u81F4"), {
+                code: "SAVE_INVALID"
+              });
+            if (game._g.targetId !== "college" || game._g.dayPlan.source !== "daily")
+              throw Object.assign(new Error("\u5973\u5927\u4F1A\u8BDD\u4E0E\u5F53\u524D\u6D41\u7A0B\u4E0D\u4E00\u81F4"), {
+                code: "SAVE_INVALID"
+              });
+            const api = {
+              ...base,
+              save,
+              snapshot,
+              executeDailyCommand: execute,
+              settleInput(text, opts = {}) {
+                if (!opts.actions?.length)
+                  return {
+                    narrativeOnly: true,
+                    floor: game._g.floor || 0,
+                    actions: [],
+                    stats: snapshot(),
+                    package: {
+                      floor: game._g.floor || 0,
+                      actions: [],
+                      narrativeOnly: true
+                    }
+                  };
+                if (active() && opts.actions?.length)
+                  return follow(opts.actions, text, opts);
+                if (recovery.pending && opts.actions?.length)
+                  throw condition("\u8BF7\u5148\u9009\u62E9\u8FFD\u627E\u6216\u7ED3\u675F\u672C\u6B21\u8DDF\u968F");
+                return base.settleInput(text, opts);
+              },
+              recoverTailing: recover,
+              acknowledgeTailingOutcome(request2) {
+                guard(request2);
+                if (!outcome) throw condition("\u5F53\u524D\u6CA1\u6709\u5F85\u786E\u8BA4\u7684\u5C3E\u884C\u6536\u83B7");
+                if (outcome.acknowledged) return { reused: true };
+                outcome.acknowledged = true;
+                return { ok: true };
+              }
+            };
+            Object.defineProperties(api, {
+              mode: { get: () => base.mode },
+              dist: { get: () => base.dist },
+              targetState: { get: () => base.targetState }
+            });
+            return api;
+          }
+        };
+      }
+      module.exports = { createCollegeSession };
+    }
+  });
+
+  // src/runtime/map.js
+  var require_map = __commonJS({
+    "src/runtime/map.js"(exports, module) {
+      var defaultPlacesData = require_places();
+      var MapRuntime = class {
+        constructor(data = defaultPlacesData) {
+          this.districts = data.districts || {};
+          this.places = data.places || {};
+        }
+        getPlace(placeId) {
+          return this.places[placeId] || null;
+        }
+        getDistrict(districtId) {
+          return this.districts[districtId] || null;
+        }
+        getExits(placeId) {
+          const place = this.getPlace(placeId);
+          return place ? place.exits || [] : [];
+        }
+        isStrikeAllowed(placeId) {
+          const place = this.getPlace(placeId);
+          if (!place) return false;
+          return !place.strike_sealed;
+        }
+        isTransitPort(placeId) {
+          const place = this.getPlace(placeId);
+          if (!place) return false;
+          return !!place.transit_port;
+        }
+        // 逃跑 AI 寻路：广度优先搜索 (BFS) 寻找最近的庇护所 (Sanctuary)
+        findNearestSanctuary(startPlaceId, maxDepth = 4) {
+          const start = this.getPlace(startPlaceId);
+          if (!start) return null;
+          if (start.sanctuary) return startPlaceId;
+          const queue = [{ id: startPlaceId, depth: 0, path: [startPlaceId] }];
+          const visited = /* @__PURE__ */ new Set([startPlaceId]);
+          while (queue.length > 0) {
+            const current = queue.shift();
+            if (current.depth >= maxDepth) continue;
+            const place = this.getPlace(current.id);
+            if (!place) continue;
+            for (const nextId of place.exits) {
+              if (!visited.has(nextId)) {
+                visited.add(nextId);
+                const nextPlace = this.getPlace(nextId);
+                if (nextPlace && nextPlace.sanctuary) {
+                  return {
+                    sanctuaryId: nextId,
+                    steps: current.depth + 1,
+                    nextStep: current.path[1] || nextId,
+                    fullPath: [...current.path, nextId]
+                  };
+                }
+                queue.push({
+                  id: nextId,
+                  depth: current.depth + 1,
+                  path: [...current.path, nextId]
+                });
+              }
+            }
+          }
+          return null;
+        }
+        // 计算天气与当前场所节点的动态耦合修正
+        getWeatherModifiers(weather = "clear", placeId) {
+          const place = this.getPlace(placeId);
+          if (!place) return { tags: [], mods: {} };
+          if (place.indoor) {
+            return {
+              tags: [],
+              mods: { indoorImmunity: true }
+            };
+          }
+          const result = { tags: [], mods: {} };
+          if (weather === "rain") {
+            result.tags.push("tag_rain");
+            result.mods.stealth = 1;
+            result.mods.sound = -2;
+            result.mods.faceCover = 2;
+            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c"];
+            if (slipperyPlaces.includes(placeId)) {
+              result.tags.push("tag_slippery");
+              result.mods.slipRisk = true;
+            }
+          } else if (weather === "storm") {
+            result.tags.push("tag_storm");
+            result.mods.stealth = 2;
+            result.mods.sound = -5;
+            result.mods.followSpeed = -2;
+            result.mods.surveillanceDiscount = 0.5;
+            const slipperyPlaces = ["old_skybridge_b", "river_steps_c", "village_main_c", "narrow_gap_c", "private_road_d"];
+            if (slipperyPlaces.includes(placeId)) {
+              result.tags.push("tag_slippery");
+              result.mods.slipRisk = true;
+            }
+          }
+          return result;
+        }
+      };
+      var defaultMap = new MapRuntime();
+      module.exports = {
+        MapRuntime,
+        defaultMap,
+        getPlace: (id) => defaultMap.getPlace(id),
+        getDistrict: (id) => defaultMap.getDistrict(id),
+        getExits: (id) => defaultMap.getExits(id),
+        isStrikeAllowed: (id) => defaultMap.isStrikeAllowed(id),
+        isTransitPort: (id) => defaultMap.isTransitPort(id),
+        findNearestSanctuary: (id, maxDepth) => defaultMap.findNearestSanctuary(id, maxDepth),
+        getWeatherModifiers: (weather, placeId) => defaultMap.getWeatherModifiers(weather, placeId)
+      };
+    }
+  });
+
+  // src/runtime/known-routes.js
+  var require_known_routes = __commonJS({
+    "src/runtime/known-routes.js"(exports, module) {
+      "use strict";
+      var map = require_map();
+      var keyOf = (g) => JSON.stringify([g.route?.id || "", g.route?.nodes || []]);
+      var invalid = (message) => Object.assign(Error(message), { code: "ROUTE_INVALID" });
+      function restoreRoutes(g) {
+        const p = g.investigation;
+        if (p.routes === void 0) p.routes = [];
+        if (!Array.isArray(p.routes) || p.routes.length > 128)
+          throw Object.assign(invalid("\u5B58\u6863\u8DEF\u7EBF\u7B14\u8BB0\u65E0\u6548\uFF1Ainvestigation.routes"), {
+            code: "SAVE_INVALID"
+          });
+        const ids = /* @__PURE__ */ new Set(), keys = /* @__PURE__ */ new Set();
+        for (const r of p.routes) {
+          if (!r || typeof r.id !== "string" || !/^route-\d+$/.test(r.id) || ids.has(r.id) || typeof r.key !== "string" || keys.has(r.key) || typeof r.name !== "string" || !validName(r.name) || !Array.isArray(r.edges) || !r.edges.length || r.edges.some(
+            (e) => !Array.isArray(e) || e.length !== 2 || e.some((x) => typeof x !== "string") || !p.edges.includes(JSON.stringify(e))
+          ))
+            throw Object.assign(invalid("\u5B58\u6863\u8DEF\u7EBF\u7B14\u8BB0\u65E0\u6548\uFF1Ainvestigation.routes"), {
+              code: "SAVE_INVALID"
+            });
+          ids.add(r.id);
+          keys.add(r.key);
+        }
+        for (let i = 1; i < (g.route?.nodes.length || 0); i++) {
+          const pair = [g.route.nodes[i - 1], g.route.nodes[i]];
+          if (p.edges.includes(JSON.stringify(pair))) rememberEdge(g, ...pair);
+        }
+      }
+      function validName(name) {
+        return name.trim() === name && [...name].length >= 1 && [...name].length <= 24 && !/[\u0000-\u001f\u007f]/.test(name);
+      }
+      function rememberEdge(g, from, to) {
+        const p = g.investigation;
+        if (!p.edges.includes(JSON.stringify([from, to]))) return;
+        p.routes || (p.routes = []);
+        let r = p.routes.find((r2) => r2.key === keyOf(g));
+        if (!r) {
+          if (p.routes.length >= 128) return;
+          const n = Math.max(0, ...p.routes.map((r2) => Number(r2.id.slice(6)))) + 1;
+          r = { id: `route-${n}`, key: keyOf(g), name: "\u5F52\u5BB6\u8DEF\u7EBF", edges: [] };
+          p.routes.push(r);
+        }
+        if (!r.edges.some((e) => e[0] === from && e[1] === to))
+          r.edges.push([from, to]);
+      }
+      function renameRoute(g, request) {
+        if (request?.targetId !== g.targetId)
+          throw invalid("\u76EE\u6807\u5DF2\u5207\u6362\uFF0C\u8BF7\u91CD\u65B0\u6253\u5F00\u5979\u7684\u6863\u6848");
+        const r = g.investigation.routes?.find((r2) => r2.id === request.id);
+        const name = typeof request?.name === "string" ? request.name.trim() : "";
+        if (!r) throw invalid("\u8FD9\u6761\u8DEF\u7EBF\u5C1A\u672A\u63A2\u660E\uFF0C\u8BF7\u91CD\u65B0\u6253\u5F00\u6863\u6848");
+        if (!validName(name))
+          throw invalid("\u8DEF\u7EBF\u540D\u79F0\u987B\u4E3A1\u201324\u4E2A\u5B57\uFF0C\u4E0D\u80FD\u5305\u542B\u6362\u884C\u6216\u63A7\u5236\u5B57\u7B26");
+        r.name = name;
+        return { id: r.id, name, targetId: g.targetId };
+      }
+      function knownRoutesView(g) {
+        return (g.investigation.routes || []).map((r) => ({
+          id: r.id,
+          name: r.name,
+          // 每段独立投影，断开的证据不能拼成连续路线；不透传内部key或未知节点。
+          segments: r.edges.map(([a, b]) => ({
+            from: map.getPlace(a)?.name || a,
+            to: map.getPlace(b)?.name || b
+          }))
+        }));
+      }
+      module.exports = { restoreRoutes, rememberEdge, renameRoute, knownRoutesView };
     }
   });
 
@@ -4525,269 +6154,6 @@
         return out;
       }
       module.exports = { loadLexicon, normalize, parseArgs };
-    }
-  });
-
-  // src/shared/random.js
-  var require_random = __commonJS({
-    "src/shared/random.js"(exports, module) {
-      var MASK = 4294967295;
-      var req = typeof __require === "function" ? __require : null;
-      var nodeCrypto = req ? (() => {
-        try {
-          return req("crypto");
-        } catch (e) {
-          return null;
-        }
-      })() : null;
-      function newSessionSalt() {
-        if (nodeCrypto) return nodeCrypto.randomBytes(16).toString("hex");
-        const buf = new Uint8Array(16);
-        if (globalThis.crypto && globalThis.crypto.getRandomValues)
-          globalThis.crypto.getRandomValues(buf);
-        else for (let i = 0; i < 16; i++) buf[i] = Date.now() + i * 7919 & 255;
-        return Array.from(buf, (x) => x.toString(16).padStart(2, "0")).join("");
-      }
-      function rng(seed) {
-        let a = seed >>> 0;
-        return function next() {
-          a = a + 1831565813 & MASK;
-          let t = Math.imul(a ^ a >>> 15, 1 | a);
-          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-          return ((t ^ t >>> 14) >>> 0) / 4294967296;
-        };
-      }
-      function floorSeed(sessionSalt, floor) {
-        let h = 2166136261;
-        const s = String(sessionSalt) + ":" + String(floor);
-        for (let i = 0; i < s.length; i++) {
-          h ^= s.charCodeAt(i);
-          h = Math.imul(h, 16777619) & MASK;
-        }
-        return h >>> 0;
-      }
-      function actionSeed(sessionSalt, floor, seq, version = 2) {
-        let h = floorSeed(sessionSalt, floor);
-        if (version >= 2 && typeof seq === "string")
-          h = floorSeed(String(sessionSalt) + ":domain:" + seq, floor);
-        else h ^= seq * 2654435761 & MASK;
-        h = Math.imul(h ^ h >>> 16, 2246822507) & MASK;
-        return h >>> 0;
-      }
-      var d = (next, sides) => Math.floor(next() * sides) + 1;
-      function rollD20(seed, mode = "normal") {
-        const next = rng(seed);
-        const a = d(next, 20), b = d(next, 20);
-        if (mode === "adv") {
-          const d20 = a === 20 || b === 20 ? 20 : a === 1 || b === 1 ? 1 : Math.max(a, b);
-          return { d20, raw: [a, b] };
-        }
-        if (mode === "dis") return { d20: Math.min(a, b), raw: [a, b] };
-        return { d20: a, raw: [a] };
-      }
-      function roll2D10(seed) {
-        const next = rng(seed);
-        return {
-          dice: [d(next, 10), d(next, 10)],
-          sum: null,
-          get total() {
-            return this.dice[0] + this.dice[1];
-          }
-        };
-      }
-      function pickIndex(seed, count) {
-        if (!Number.isInteger(count) || count <= 0)
-          throw new RangeError("\u5019\u9009\u6570\u91CF\u5FC5\u987B\u4E3A\u6B63\u6574\u6570");
-        return Math.floor(rng(seed)() * count);
-      }
-      module.exports = {
-        pickIndex,
-        newSessionSalt,
-        rng,
-        floorSeed,
-        actionSeed,
-        rollD20,
-        roll2D10
-      };
-    }
-  });
-
-  // src/runtime/dice.js
-  var require_dice = __commonJS({
-    "src/runtime/dice.js"(exports, module) {
-      "use strict";
-      module.exports = require_random();
-    }
-  });
-
-  // src/runtime/checks.js
-  var require_checks = __commonJS({
-    "src/runtime/checks.js"(exports, module) {
-      var R = require_rules();
-      function d20Check({ d20, attr, mods = [], dc, stealth = false }) {
-        const modSum = mods.reduce((s, m) => s + m.v, 0);
-        const total = d20 + attr + modSum;
-        const margin = total - dc;
-        let band;
-        if (d20 === 1) band = "nat1";
-        else if (d20 === 20) band = "nat20";
-        else if (margin >= 0) band = "success";
-        else if (stealth && margin >= -R.check.graceMargin) band = "grace";
-        else band = "fail";
-        return { total, margin, band };
-      }
-      function applyAdvDis(roll1, roll2, mode) {
-        if (mode === "adv") {
-          const d20 = roll1 === 20 || roll2 === 20 ? 20 : roll1 === 1 || roll2 === 1 ? 1 : Math.max(roll1, roll2);
-          return { d20, raw: [roll1, roll2] };
-        }
-        if (mode === "dis") return { d20: Math.min(roll1, roll2), raw: [roll1, roll2] };
-        return { d20: roll1, raw: [roll1] };
-      }
-      function pityBonus(consecFails) {
-        return consecFails >= 2 ? 3 : 0;
-      }
-      function heartCoeff(nrv) {
-        return R.heart.coeffBase - nrv * R.heart.coeffPerNrv;
-      }
-      function heartDelta({ stim, nrv }) {
-        return Math.round(stim * heartCoeff(nrv));
-      }
-      function heartBaseline() {
-        return R.heart.baseline;
-      }
-      function breathGain(nrv) {
-        return Math.max(R.heart.breathBase + (nrv - 5) * R.heart.breathPerNrv, R.heart.breathMin);
-      }
-      function segHeartDrop(current, nrv) {
-        const base = heartBaseline();
-        return Math.max(current - R.heart.segDrop, Math.min(current, base));
-      }
-      function breathFloor(current, gain) {
-        return Math.max(current - gain, Math.min(current, R.heart.floor));
-      }
-      function heartCap(v) {
-        return Math.min(v, R.heart.cap);
-      }
-      function staminaSegTax(heartPeak, sweetHigh = R.check.sweetHigh) {
-        if (heartPeak >= R.heart.crashLine) return -R.stamina.segTax.crash;
-        if (heartPeak > sweetHigh) return -R.stamina.segTax.deform;
-        if (heartPeak >= R.check.sweetLow) return -R.stamina.segTax.sweet;
-        return -R.stamina.segTax.calm;
-      }
-      function faceMemGain({ context = "stealth", band = null }) {
-        if (context === "social") return 2;
-        if (["locked", "conflict", "gaze"].includes(context)) return 2;
-        if (band === "grace") return 1;
-        if (band === "nat1") return 2;
-        return 0;
-      }
-      function faceAssociate({ d20, acuity, memCells = 0, cover = 0, bodyMod = 0 }) {
-        const coeff = Math.min(R.check.identifyMemMax ?? 1, memCells * (R.check.identifyMemCoeff ?? 0.05));
-        const total = Math.floor((d20 + acuity + bodyMod) * coeff);
-        const dc = 10 + Math.min(cover, R.check.coverCap);
-        return { total, dc, hit: total >= dc, coeff };
-      }
-      function heartLines(current, sweetHigh = R.check.sweetHigh) {
-        const sweet = current >= R.check.sweetLow && current <= sweetHigh;
-        const deform = current >= R.heart.deformLine ? -2 : 0;
-        return { sweet, deform, crash: current >= R.heart.crashLine };
-      }
-      function acuityCoeff(acuity) {
-        return R.alert.acuityBase + acuity * R.alert.acuityPer;
-      }
-      function alertDelta({ threat, dist, env, acuity, familiar = false }) {
-        const t = R.alert.threat[threat] ?? 0;
-        const d = R.alert.distFactor[dist] ?? 1;
-        let e = R.alert.envFactor[env] ?? 1;
-        if (familiar) e *= R.alert.familiarCoeff;
-        return Math.round(t * d * e * acuityCoeff(acuity));
-      }
-      function alertStage(alert) {
-        const b = R.alert.bands;
-        if (alert >= b.react) return 4;
-        if (alert >= b.confirmed) return 3;
-        if (alert >= b.suspicious) return 2;
-        if (alert >= b.uneasy) return 1;
-        return 0;
-      }
-      function nightStartAlert(slot, wariness) {
-        return Math.round((R.alert.nightBase[slot] ?? 0) + wariness / 5);
-      }
-      function warinessGain(peakAlert) {
-        return Math.round(Math.max(0, peakAlert - 50) / 4);
-      }
-      function conflictPower({ str, agi, dice, opp = 3, firstStrike = false, training = 0 }) {
-        const base = str * R.conflict.strWeight + agi * R.conflict.agiWeight;
-        const oppMod = R.conflict.oppMods[opp] ?? 0;
-        return base + dice + oppMod + (firstStrike ? R.conflict.firstStrike : 0) + training;
-      }
-      function conflictModsSelf({ heart, firstStrike = false }) {
-        return (heart > R.conflict.highHeartLine ? R.conflict.highHeartPenalty : 0) + (firstStrike ? R.conflict.firstStrike : 0);
-      }
-      function conflictModsHer({ alertStageNow, training = 0 }) {
-        return Math.max(0, alertStageNow) * R.conflict.alertStageBonus + training;
-      }
-      function conflictOutcome(diff) {
-        const b = R.conflict.bands;
-        if (diff >= b.pin) return "pin";
-        if (diff >= b.scuffle) return "scuffle";
-        if (diff >= b.grindLow) return "grind";
-        return "overpowered";
-      }
-      function freezeCheck({ d20, nrv, training = 0 }) {
-        let mod = 0;
-        if (nrv <= 3) mod = -3;
-        else if (nrv >= 6) mod = 3;
-        const total = d20 + nrv + mod + training;
-        const dc = R.conflict.freezeDC ?? 13;
-        return { total, dc, frozen: total < dc };
-      }
-      function hesitationRounds(proximity) {
-        if (proximity >= 70) return 2;
-        if (proximity >= 40) return 1;
-        return 0;
-      }
-      function chaseStep(diff) {
-        if (diff >= R.chase.dashDiff) return 2;
-        if (diff > 0) return 1;
-        if (diff === 0) return 0;
-        if (diff > -R.chase.dashDiff) return -1;
-        return -2;
-      }
-      function herStamina(str) {
-        return str * R.chase.herStaminaPerStr;
-      }
-      module.exports = {
-        d20Check,
-        applyAdvDis,
-        pityBonus,
-        heartCoeff,
-        heartDelta,
-        heartBaseline,
-        breathGain,
-        segHeartDrop,
-        breathFloor,
-        heartLines,
-        heartCap,
-        staminaSegTax,
-        faceMemGain,
-        faceAssociate,
-        identifyCheck: faceAssociate,
-        acuityCoeff,
-        alertDelta,
-        alertStage,
-        nightStartAlert,
-        warinessGain,
-        conflictPower,
-        conflictModsSelf,
-        conflictModsHer,
-        conflictOutcome,
-        freezeCheck,
-        hesitationRounds,
-        chaseStep,
-        herStamina
-      };
     }
   });
 
@@ -8594,59 +9960,6 @@
     }
   });
 
-  // src/runtime/game/constants.js
-  var require_constants = __commonJS({
-    "src/runtime/game/constants.js"(exports, module) {
-      "use strict";
-      var DIST_KEY = { far: "far", same: "same", close: "close", touch: "touch" };
-      var DIST_CN = { far: "\u8FDC\u7AEF", same: "\u540C\u8857", close: "\u8EAB\u540E", touch: "\u8D34\u8EAB" };
-      var DIST_RANK = { far: 0, same: 1, close: 2, touch: 3 };
-      var DIST_DOWN = { touch: "close", close: "same", same: "far", far: "far" };
-      var CA_CN = {
-        front: "\u6B63\u9762",
-        side: "\u4FA7\u9762",
-        back: "\u80CC\u9762",
-        "three-quarter": "\u659C\u4FA7"
-      };
-      var WEATHER_BANDS = { clear: [1, 14], rain: [15, 18], storm: [19, 20] };
-      var WEATHER_ICON = { clear: "\u{1F319} \u6674\u591C", rain: "\u{1F327} \u5C0F\u96E8", storm: "\u26C8 \u66B4\u96E8" };
-      var HUNTER_MODES = ["stealth", "contact", "vehicle"];
-      var TAIL_PUMP_IDS = [
-        "follow",
-        "ride_along",
-        "transfer",
-        "follow_work",
-        "ride_follow",
-        "car_follow"
-      ];
-      var SHOE_ID_MAP = {
-        shoe_heel: "heel",
-        shoe_flats: "flats",
-        shoe_sneakers: "sneakers",
-        shoe_barefoot: "barefoot",
-        shoe_slippers: "slippers",
-        shoe_boots: "boots",
-        shoe_platform: "platform",
-        shoe_sandals: "sandals",
-        shoe_leather: "leather"
-      };
-      var SHOE_DIST_FACTOR = { far: 0.6, same: 1, close: 1.25, touch: 1.5 };
-      module.exports = {
-        DIST_KEY,
-        DIST_CN,
-        DIST_RANK,
-        DIST_DOWN,
-        CA_CN,
-        WEATHER_BANDS,
-        WEATHER_ICON,
-        HUNTER_MODES,
-        TAIL_PUMP_IDS,
-        SHOE_ID_MAP,
-        SHOE_DIST_FACTOR
-      };
-    }
-  });
-
   // src/runtime/investigation.js
   var require_investigation = __commonJS({
     "src/runtime/investigation.js"(exports, module) {
@@ -11013,435 +12326,6 @@
     }
   });
 
-  // src/config/city-layout.json
-  var require_city_layout = __commonJS({
-    "src/config/city-layout.json"(exports, module) {
-      module.exports = {
-        schema: 1,
-        width: 2100,
-        height: 2140,
-        frames: {
-          B: {
-            x: 80,
-            y: 760,
-            width: 760,
-            height: 560
-          },
-          D: {
-            x: 1410,
-            y: 80,
-            width: 600,
-            height: 420
-          },
-          C: {
-            x: 80,
-            y: 1430,
-            width: 800,
-            height: 560
-          },
-          A: {
-            x: 1060,
-            y: 950,
-            width: 960,
-            height: 800
-          }
-        },
-        coordinates: {
-          office_lobby_a: [122, 90],
-          parking_b2_a: [122, 225],
-          skybridge_a: [250, 145],
-          metro_hub_a: [350, 225],
-          bus_bay_a: [545, 90],
-          store_24h_a: [545, 350],
-          back_alley_a: [350, 350],
-          trash_station_a: [122, 390],
-          school_gate_b: [140, 100],
-          school_bus_terminal_b: [355, 190],
-          old_metro_b: [685, 265],
-          old_skybridge_b: [250, 150],
-          store_24h_b: [355, 285],
-          old_park_b: [180, 285],
-          old_alley_main_b: [350, 410],
-          dark_blind_alley_b: [465, 435],
-          unit_stairs_b: [685, 405],
-          rooftop_b: [685, 455],
-          dead_end_b: [90, 410],
-          love_hotel_b: [175, 500],
-          player_base_b: [75, 285],
-          club_backdoor_c: [115, 90],
-          food_street_c: [355, 90],
-          dock_bus_stop_c: [545, 90],
-          bridge_head_c: [765, 450],
-          store_24h_c: [355, 225],
-          river_walk_c: [430, 525],
-          river_steps_c: [535, 550],
-          village_main_c: [170, 350],
-          narrow_gap_c: [250, 375],
-          rental_iron_door_c: [355, 345],
-          village_roof_c: [355, 395],
-          black_market_c: [100, 395],
-          suburb_highway_d: [430, 390],
-          gas_station_d: [140, 360],
-          private_road_d: [320, 335],
-          pine_forest_d: [140, 205],
-          estate_gate_d: [320, 285],
-          villa_garden_d: [470, 225],
-          garage_side_door_d: [390, 110],
-          villa_porch_d: [540, 110],
-          central_mall_a: [755, 90],
-          bank_a: [690, 225],
-          business_cafe_a: [835, 225],
-          clinic_a: [690, 350],
-          business_hotel_a: [835, 350],
-          central_plaza_a: [755, 490],
-          pedestrian_street_a: [350, 500],
-          department_store_a: [122, 570],
-          cinema_a: [350, 570],
-          gym_a: [545, 570],
-          restaurant_a: [690, 630],
-          courier_a: [835, 630],
-          taxi_rank_a: [755, 730],
-          public_parking_a: [545, 720],
-          apartment_plaza_a: [350, 720],
-          coworking_a: [122, 720],
-          electronics_a: [690, 570],
-          station_square_a: [545, 225],
-          high_school_gate_b: [560, 100],
-          university_library_b: [75, 205],
-          university_canteen_b: [190, 205],
-          university_sports_b: [335, 90],
-          campus_bookshop_b: [560, 205],
-          campus_cafe_b: [560, 315],
-          student_street_b: [355, 500],
-          university_dorm_gate_b: [560, 500],
-          bar_street_c: [115, 225],
-          ktv_c: [695, 90],
-          hotel_c: [695, 225],
-          late_restaurant_c: [695, 350],
-          livehouse_c: [545, 350],
-          courier_c: [695, 490],
-          laundry_c: [355, 490]
-        },
-        privatePlaces: [
-          "unit_stairs_b",
-          "rooftop_b",
-          "rental_iron_door_c",
-          "village_roof_c",
-          "estate_gate_d",
-          "villa_garden_d",
-          "garage_side_door_d",
-          "villa_porch_d"
-        ],
-        home: "player_base_b",
-        blackMarket: "black_market_c"
-      };
-    }
-  });
-
-  // src/config/city-transit.json
-  var require_city_transit = __commonJS({
-    "src/config/city-transit.json"(exports, module) {
-      module.exports = {
-        schema: 1,
-        routes: [
-          {
-            id: "metro_1",
-            name: "\u5730\u94C1 1 \u53F7\u7EBF",
-            kind: "metro",
-            stops: ["old_metro_b", "metro_hub_a"],
-            path: ["old_metro_b", [900, 1025], [900, 1175], "metro_hub_a"],
-            label: [1080, 1150],
-            note: "\u8FDE\u63A5\u8001\u57CE\u6587\u6559\u533A\u4E0E\u4E2D\u57CE CBD\u3002"
-          },
-          {
-            id: "night_bus",
-            name: "\u591C\u5E02\u73AF\u7EBF\u516C\u4EA4",
-            kind: "bus",
-            stops: ["school_bus_terminal_b", "dock_bus_stop_c"],
-            path: [
-              "school_bus_terminal_b",
-              [435, 910],
-              [700, 910],
-              [700, 1365],
-              [330, 1365],
-              [330, 1575],
-              [625, 1575],
-              "dock_bus_stop_c"
-            ],
-            label: [445, 1392],
-            note: "\u8FDE\u63A5 B \u533A\u5B66\u533A\u603B\u7AD9\u4E0E C \u533A\u7801\u5934\u7AD9\u3002"
-          },
-          {
-            id: "river_express",
-            name: "\u8DE8\u6C5F\u5FEB\u7EBF\u516C\u4EA4",
-            kind: "bus",
-            stops: ["bus_bay_a", "bridge_head_c"],
-            path: [
-              "bus_bay_a",
-              [1605, 1095],
-              [1975, 1095],
-              [1975, 1880],
-              "bridge_head_c"
-            ],
-            label: [1460, 1850],
-            note: "\u8FDE\u63A5\u4E2D\u57CE\u516C\u4EA4\u6E2F\u6E7E\u4E0E\u4E34\u6C5F\u5927\u6865\u5934\u3002"
-          },
-          {
-            id: "north_road",
-            name: "\u5317\u73AF\u516C\u8DEF",
-            kind: "road",
-            stops: ["bus_bay_a", "suburb_highway_d"],
-            path: [
-              "bus_bay_a",
-              [1605, 1095],
-              [1975, 1095],
-              [1975, 630],
-              [1840, 630],
-              "suburb_highway_d"
-            ],
-            label: [1740, 655],
-            note: "D \u533A\u4EC5\u7ECF\u516C\u8DEF\u62B5\u8FBE\uFF0C\u5730\u56FE\u4E0D\u63D0\u4F9B\u76F4\u63A5\u8FDB\u90CA\u5916\u7684\u6377\u5F84\u3002"
-          }
-        ]
-      };
-    }
-  });
-
-  // src/runtime/spatial/system.js
-  var require_system = __commonJS({
-    "src/runtime/spatial/system.js"(exports, module) {
-      "use strict";
-      var { places, districts } = require_places();
-      var layout = require_city_layout();
-      var { routes } = require_city_transit();
-      var transitLinks = routes.flatMap(
-        (r) => r.stops.slice(1).map((to, i) => [r.stops[i], to])
-      );
-      var { TAIL_PUMP_IDS } = require_constants();
-      var clone = (x) => JSON.parse(JSON.stringify(x));
-      var activeScene = (g) => ["stealth", "contact", "vehicle"].includes(g.mode) && (g.dayPlan.source !== "daily" || g.dayPlan.activity?.kind === "tailing");
-      function routePlace(g) {
-        const id = g.route?.nodes?.[g.route.here];
-        return places[id] && g.route?.known?.[g.route.here] === 1 ? id : null;
-      }
-      function sceneVisible(g) {
-        return activeScene(g) && g.spatial.tracking === "visual" && g.spatial.lastSeen?.targetId === (g.targetId || "college") && g.spatial.lastSeen?.turn === (g.floor || 0) && g.spatial.lastSeen.placeId === routePlace(g) && g.spatial.playerPlaceId === g.spatial.lastSeen.placeId;
-      }
-      function observeScene(g, date, results) {
-        var _a;
-        if (!activeScene(g)) return;
-        const attempts = (results?.actions || []).filter(
-          (a) => TAIL_PUMP_IDS.includes(a.id) && !a.rejected && a.band
-        );
-        const attempt = attempts.at(-1);
-        const escaped = g.fleeing && g.route?.here >= g.route?.nodes.length - 1;
-        if (["fail", "nat1"].includes(attempt?.band) || escaped) {
-          g.spatial.tracking = "lost";
-          return;
-        }
-        if ((g.spatial.tracking === "lost" || g.spatial.assumed) && !attempt) return;
-        if (attempt && ["success", "grace", "nat20"].includes(attempt.band)) {
-          const here = g.route?.here;
-          if (places[g.route?.nodes?.[here]]) {
-            (_a = g.route).known || (_a.known = g.route.nodes.map(() => 0));
-            g.route.known[here] = 1;
-          }
-        }
-        const id = routePlace(g);
-        if (!id) return;
-        g.spatial.playerPlaceId = id;
-        g.spatial.assumed = false;
-        g.spatial.tracking = "visual";
-        g.spatial.lastSeen = {
-          targetId: g.targetId || "college",
-          placeId: id,
-          date,
-          period: g.dayPlan.period,
-          turn: g.floor || 0
-        };
-        if (!g.spatial.knownPlaces.includes(id)) g.spatial.knownPlaces.push(id);
-      }
-      function moveReason(ctx, id) {
-        const p = places[id];
-        if (!p) return "\u6CA1\u6709\u8FD9\u4E2A\u5730\u70B9";
-        if (layout.privatePlaces.includes(id))
-          return "\u8FD9\u91CC\u9700\u8981\u539F\u6709\u7684\u573A\u6240\u8FDB\u5165\u6761\u4EF6\uFF0C\u5730\u56FE\u4E0D\u80FD\u76F4\u63A5\u8FDB\u5165";
-        if (p.district === "D") return "\u5317\u90CA\u4EA4\u901A\u6761\u4EF6\u5C1A\u672A\u63A5\u901A";
-        if (id === ctx.spatial.playerPlaceId) return "\u4F60\u5DF2\u5728\u8FD9\u91CC";
-        const queue = [ctx.spatial.playerPlaceId], seen = new Set(queue);
-        while (queue.length) {
-          const here = queue.shift();
-          if (here === id) return null;
-          const exits = [
-            ...places[here]?.exits || [],
-            ...transitLinks.flatMap(
-              ([a, b]) => a === here ? [b] : b === here ? [a] : []
-            )
-          ];
-          for (const next of exits)
-            if (!seen.has(next) && places[next]?.district !== "D" && !layout.privatePlaces.includes(next)) {
-              seen.add(next);
-              queue.push(next);
-            }
-        }
-        return "\u5F53\u524D\u6CA1\u6709\u53EF\u901A\u884C\u8DEF\u7EBF";
-      }
-      function prepareMove(ctx, id) {
-        const reason = moveReason(ctx, id);
-        if (reason) throw Object.assign(Error(reason), { code: "DAY_UNAVAILABLE" });
-        const spatial = clone(ctx.spatial);
-        spatial.playerPlaceId = id;
-        spatial.assumed = false;
-        return { summary: `\u5DF2\u524D\u5F80${places[id].name}\uFF0C\u5E02\u5185\u79FB\u52A8\u4E0D\u6D88\u8017\u884C\u52A8\u70B9`, spatial };
-      }
-      function cityView(g, date) {
-        const spatial = g.spatial, live = sceneVisible(g) && spatial.lastSeen?.date === date;
-        const nodes = Object.entries(places).map(([id, p]) => {
-          const hidden = layout.privatePlaces.includes(id) && !spatial.knownPlaces.includes(id) && spatial.playerPlaceId !== id;
-          const [x, y] = layout.coordinates[id];
-          const frame = layout.frames[p.district];
-          return {
-            id,
-            district: p.district,
-            name: hidden ? "\u672A\u63A2\u660E\u533A\u57DF" : p.mapName || p.name,
-            sector: hidden ? null : p.sector,
-            facility: hidden ? null : p.facility ? { ...p.facility } : null,
-            x: x + frame.x,
-            y: y + frame.y,
-            hidden,
-            service: id === layout.blackMarket ? "black_market" : id === layout.home ? "home" : null,
-            moveReason: g.dayPlan.source !== "daily" ? "\u539F\u5C3E\u884C\u6D41\u7A0B\u4E2D\u7531\u56DE\u5408\u51B3\u5B9A\u79FB\u52A8" : g.dayPlan.activity ? "\u8BF7\u5148\u7ED3\u675F\u5F53\u524D\u6D3B\u52A8" : g.dayPlan.ended ? "\u672C\u65E5\u5DF2\u7ED3\u675F" : moveReason({ spatial }, id)
-          };
-        });
-        const edges = [];
-        for (const [id, p] of Object.entries(places))
-          for (const to of p.exits) {
-            if (places[to].exits.includes(id) && id > to) continue;
-            edges.push({
-              from: id,
-              to,
-              transit: false,
-              oneWay: !places[to].exits.includes(id)
-            });
-          }
-        for (const [from, to] of transitLinks)
-          edges.push({ from, to, transit: true });
-        const last = spatial.lastSeen?.targetId === (g.targetId || "college") ? spatial.lastSeen : null;
-        return {
-          width: layout.width,
-          height: layout.height,
-          frames: Object.entries(layout.frames).map(([id, f]) => ({
-            id,
-            ...f,
-            name: districts[id].name,
-            setting: districts[id].setting
-          })),
-          nodes,
-          edges,
-          transit: clone(routes),
-          player: {
-            placeId: spatial.playerPlaceId,
-            name: places[spatial.playerPlaceId].mapName || places[spatial.playerPlaceId].name,
-            district: places[spatial.playerPlaceId].district,
-            assumed: spatial.assumed
-          },
-          target: last ? {
-            placeId: last.placeId,
-            name: places[last.placeId].mapName || places[last.placeId].name,
-            date: last.date,
-            period: last.period,
-            live,
-            status: live ? "\u76EE\u89C6\u4F4D\u7F6E" : "\u6700\u540E\u76EE\u51FB"
-          } : null,
-          note: "\u56FA\u5B9A\u8857\u533A\u5730\u56FE\u3002\u5730\u5757\u8868\u793A\u7A7A\u95F4\u5206\u5E03\uFF1B\u53EF\u901A\u884C\u8303\u56F4\u4EE5\u5730\u70B9\u5165\u53E3\u4E3A\u51C6\u3002"
-        };
-      }
-      module.exports = {
-        activeScene,
-        routePlace,
-        observeScene,
-        prepareMove,
-        cityView
-      };
-    }
-  });
-
-  // src/config/economy.json
-  var require_economy = __commonJS({
-    "src/config/economy.json"(exports, module) {
-      module.exports = {
-        nativeMultiplier: 1.2,
-        nativeJobs: {
-          otaku: "remote",
-          guard: "guard_shift",
-          bartender: "bar_shift"
-        },
-        jobs: {
-          mover: {
-            name: "\u642C\u573A\u96F6\u5DE5",
-            attr: "str",
-            base: 280,
-            pass: 420,
-            great: 560,
-            stamina: 40
-          },
-          remote: {
-            name: "\u8FDC\u7A0B\u63A5\u5355",
-            attr: "int",
-            base: 220,
-            pass: 308,
-            great: 440,
-            stamina: 0
-          },
-          guard_shift: {
-            name: "\u4FDD\u5B89\u5F53\u73ED",
-            attr: "nrv",
-            base: 320,
-            fixed: true,
-            stamina: 0
-          },
-          bar_shift: {
-            name: "\u9152\u5427\u5F53\u73ED",
-            attr: "cha",
-            base: 300,
-            pass: 390,
-            stamina: 0,
-            pending: "\u665A\u73ED\u5360\u7528\u5C3E\u884C\u7A97\u53E3\u7684\u89C4\u5219\u5C1A\u672A\u63A5\u901A"
-          },
-          delivery: {
-            name: "\u9001\u5916\u5356",
-            attr: "agi",
-            base: 240,
-            pass: 336,
-            great: 480,
-            stamina: 0,
-            pending: "\u66DD\u5149\u6982\u7387\u5C1A\u672A\u786E\u5B9A\uFF0C\u6682\u4E0D\u5F00\u653E\u7ED3\u7B97"
-          }
-        },
-        commerce: {
-          maxCartLines: 20,
-          maxQuantity: 99,
-          maxOrders: 64,
-          deliveryDays: {
-            consumable: 0,
-            tool: 1,
-            tech: 1,
-            device: 1,
-            disguise: 1,
-            gear: 0
-          },
-          onlineItemIds: [
-            "bento",
-            "onigiri",
-            "energy_drink"
-          ],
-          blackMarketPlace: "black_market_c",
-          actionPointFoodIds: []
-        }
-      };
-    }
-  });
-
   // src/runtime/economy/shop.js
   var require_shop = __commonJS({
     "src/runtime/economy/shop.js"(exports, module) {
@@ -11580,23 +12464,6 @@
         blackMarketHandler,
         deliverDue,
         economyView
-      };
-    }
-  });
-
-  // src/config/day-plan.json
-  var require_day_plan = __commonJS({
-    "src/config/day-plan.json"(exports, module) {
-      module.exports = {
-        budget: 4,
-        tailingCost: 2,
-        periods: [
-          { id: "morning", name: "\u65E9\u95F4", short: "\u65E9" },
-          { id: "midday", name: "\u5348\u95F4", short: "\u4E2D" },
-          { id: "afternoon", name: "\u5348\u540E", short: "\u5348" },
-          { id: "evening", name: "\u665A\u95F4", short: "\u665A" },
-          { id: "midnight", name: "\u5B50\u591C", short: "\u5B50" }
-        ]
       };
     }
   });
@@ -11993,198 +12860,6 @@
     }
   });
 
-  // src/contracts/spatial.js
-  var require_spatial = __commonJS({
-    "src/contracts/spatial.js"(exports, module) {
-      "use strict";
-      var { places } = require_places();
-      var layout = require_city_layout();
-      var clone = (x) => JSON.parse(JSON.stringify(x));
-      var validId = (id) => typeof id === "string" && Object.prototype.hasOwnProperty.call(places, id);
-      function createSpatial({ placeId = layout.home, assumed = false } = {}) {
-        return {
-          schema: 1,
-          playerPlaceId: placeId,
-          assumed,
-          tracking: "none",
-          lastSeen: null,
-          knownPlaces: []
-        };
-      }
-      function validateSpatial(value) {
-        const seen = value?.lastSeen;
-        if (!value || value.schema !== 1 || !validId(value.playerPlaceId) || typeof value.assumed !== "boolean" || !["none", "visual", "lost"].includes(value.tracking) || !Array.isArray(value.knownPlaces) || value.knownPlaces.some((id) => !validId(id)) || new Set(value.knownPlaces).size !== value.knownPlaces.length || seen !== null && (!seen || !validId(seen.placeId) || typeof seen.targetId !== "string" || !Number.isSafeInteger(seen.date) || seen.date < 1 || !Number.isInteger(seen.period) || seen.period < 0 || seen.period > 4 || !Number.isSafeInteger(seen.turn) || seen.turn < 0))
-          throw Object.assign(Error("\u5730\u56FE\u4F4D\u7F6E\u5B58\u6863\u65E0\u6548\uFF0C\u539F\u8FDB\u5EA6\u5DF2\u4FDD\u7559"), {
-            code: "SAVE_INVALID"
-          });
-        return clone(value);
-      }
-      module.exports = { createSpatial, validateSpatial };
-    }
-  });
-
-  // src/config/daily-actions.json
-  var require_daily_actions = __commonJS({
-    "src/config/daily-actions.json"(exports, module) {
-      module.exports = [
-        {
-          id: "daily.rest",
-          name: "\u4F11\u606F",
-          cost: 1,
-          mode: "instant",
-          kind: "routine",
-          handler: "rest",
-          effect: "\u6062\u590D 50 \u70B9\u4F53\u529B\uFF0C\u4E0D\u8D85\u8FC7\u4E0A\u9650",
-          recovery: 50
-        },
-        {
-          id: "daily.work",
-          name: "\u6253\u5DE5\uFF0F\u63A5\u5355",
-          cost: 1,
-          mode: "instant",
-          kind: "routine",
-          handler: "work",
-          inputRequired: true,
-          effect: "\u6309\u672C\u6B21\u5DE5\u79CD\u7ED3\u7B97\u62A5\u916C\u4E0E\u6D88\u8017"
-        },
-        {
-          id: "daily.shop",
-          name: "\u7EBF\u4E0A\u8865\u7ED9",
-          cost: 1,
-          mode: "instant",
-          kind: "routine",
-          handler: "shop",
-          inputRequired: true,
-          effect: "\u53EA\u552E\u98DF\u54C1\u8865\u7ED9\uFF0C\u4E00\u6279\u786E\u8BA4\u540E\u6263\u8D39"
-        },
-        {
-          id: "daily.black_market",
-          name: "\u9ED1\u5E02\u91C7\u8D2D",
-          cost: 1,
-          mode: "instant",
-          kind: "routine",
-          handler: "black_market",
-          inputRequired: true,
-          effect: "\u987B\u5230\u4E34\u6C5F\u9ED1\u5E02\uFF0C\u5668\u6750\u6309\u8BA2\u5355\u9694\u65E5\u5230\u8D27"
-        },
-        {
-          id: "daily.talk",
-          name: "\u72EC\u7ACB\u4EA4\u6D41",
-          cost: 1,
-          mode: "scene",
-          kind: "routine",
-          handler: "talk",
-          effect: "\u5C55\u5F00\u4E00\u6B21\u4EA4\u6D41\uFF0C\u6210\u679C\u7531\u5177\u4F53\u4E8B\u4EF6\u51B3\u5B9A"
-        },
-        {
-          id: "daily.tailing",
-          name: "\u5C3E\u884C",
-          cost: 2,
-          mode: "scene",
-          kind: "tailing",
-          handler: "tailing",
-          effect: "\u8FDB\u5165\u8FDE\u7EED\u5C3E\u884C\u56DE\u5408\uFF0C\u6574\u6BB5\u7ED3\u675F\u540E\u63A8\u8FDB\u65F6\u6BB5"
-        },
-        {
-          id: "daily.pass",
-          name: "\u5EA6\u8FC7\u672C\u65F6\u6BB5",
-          cost: 0,
-          mode: "instant",
-          kind: "routine",
-          handler: "pass",
-          effect: "\u65E0\u6536\u76CA\u548C\u6062\u590D\uFF0C\u76F4\u63A5\u8FDB\u5165\u4E0B\u4E00\u65F6\u6BB5"
-        }
-      ];
-    }
-  });
-
-  // src/runtime/economy/work.js
-  var require_work = __commonJS({
-    "src/runtime/economy/work.js"(exports, module) {
-      "use strict";
-      var RULES = require_rules();
-      var CONFIG = require_economy();
-      var error = (message) => Object.assign(Error(message), { code: "DAY_UNAVAILABLE" });
-      function workOptions(ctx) {
-        const identity = ctx.identity;
-        const rows = Object.entries(CONFIG.jobs).map(([id, d]) => ({ id, ...d }));
-        for (const [id, d] of Object.entries(RULES.identity.jobs)) {
-          const base = d.baseJob ? CONFIG.jobs[d.baseJob] : d;
-          rows.push({
-            id,
-            name: d.name,
-            attr: d.attr,
-            base: Math.round(base.base * (d.mult || 1)),
-            pass: Math.round(base.pass * (d.mult || 1)),
-            great: Math.round(base.great * (d.mult || 1)),
-            stamina: d.cost?.stamina ?? base.stamina ?? 0,
-            exclusive: d.exclusive,
-            nativeMultiplier: d.nativeMult || 1
-          });
-        }
-        return rows.map((row) => {
-          const native = CONFIG.nativeJobs[identity] === row.id;
-          const mult = row.nativeMultiplier || (native ? CONFIG.nativeMultiplier : 1);
-          let reason = row.pending || null;
-          if (row.exclusive && identity !== row.exclusive) reason = "\u4EC5\u5BF9\u5E94\u8EAB\u4EFD\u53EF\u63A5";
-          if (identity === "criminal" && row.id !== "black_labor")
-            reason = "\u5F53\u524D\u8EAB\u4EFD\u53EA\u80FD\u63A5\u9ED1\u5DE5";
-          if (ctx.economy.workedOn === ctx.ledger.date)
-            reason = "\u4ECA\u5929\u5DF2\u7ECF\u5B8C\u6210\u4E00\u73ED\u5DE5\u4F5C";
-          if (ctx.ledger.stamina < row.stamina) reason = "\u4F53\u529B\u4E0D\u8DB3\u4EE5\u627F\u62C5\u672C\u6B21\u5DE5\u4F5C";
-          if (identity === "guard" && row.id === "guard_shift") {
-            const night = Math.floor((ctx.ledger.date - 1) / 7) % 2 === 1;
-            if (night ? ctx.dayPlan.period < 3 : ctx.dayPlan.period > 2)
-              reason = night ? "\u672C\u5468\u662F\u591C\u73ED\uFF0C\u8BF7\u5728\u665A\u95F4\u6216\u5B50\u591C\u5F53\u73ED" : "\u672C\u5468\u662F\u663C\u73ED\uFF0C\u8BF7\u5728\u767D\u5929\u5F53\u73ED";
-          }
-          return {
-            id: row.id,
-            name: row.name,
-            income: Math.round(row.base * mult),
-            stamina: row.stamina,
-            fixed: !!row.fixed,
-            enabled: !reason,
-            reason,
-            note: row.fixed ? "\u56FA\u5B9A\u5DE5\u8D44\uFF0C\u65E0\u9700\u68C0\u5B9A" : `\u5F53\u524D\u6309\u5E95\u85AA\u7ED3\u7B97\uFF1B\u5DF2\u5B9A\u52A0\u85AA\u6863 ${Math.round(row.pass * mult)}${row.great ? " / " + Math.round(row.great * mult) : ""}\uFF0C\u68C0\u5B9A\u95E8\u69DB\u5F85\u5B9A`,
-            tiers: {
-              base: Math.round(row.base * mult),
-              pass: row.pass ? Math.round(row.pass * mult) : null,
-              great: row.great ? Math.round(row.great * mult) : null
-            }
-          };
-        });
-      }
-      var handler = {
-        available: (ctx) => workOptions(ctx).some((x) => x.enabled) ? null : ctx.economy.workedOn === ctx.ledger.date ? "\u4ECA\u5929\u5DF2\u7ECF\u5B8C\u6210\u4E00\u73ED\u5DE5\u4F5C" : "\u5F53\u524D\u65F6\u6BB5\u6CA1\u6709\u53EF\u63A5\u5DE5\u4F5C",
-        view: (ctx) => ({
-          type: "work",
-          jobs: workOptions(ctx),
-          note: "\u6BCF\u5929\u6700\u591A\u4E00\u73ED\uFF1B\u786E\u8BA4\u540E\u6D88\u8017 1 \u70B9\u5E76\u63A8\u8FDB\u4E00\u4E2A\u65F6\u6BB5\u3002"
-        }),
-        prepare(ctx, args) {
-          const job = workOptions(ctx).find((x) => x.id === args.jobId);
-          if (!job) throw error("\u8BF7\u9009\u62E9\u6709\u6548\u5DE5\u79CD");
-          if (!job.enabled) throw error(job.reason);
-          const economy = JSON.parse(JSON.stringify(ctx.economy));
-          economy.workedOn = ctx.ledger.date;
-          economy.lastWork = {
-            jobId: job.id,
-            name: job.name,
-            date: ctx.ledger.date,
-            income: job.income,
-            stamina: job.stamina
-          };
-          return {
-            summary: `${job.name}\u5B8C\u6210\uFF0C\u6536\u5165 ${job.income}\uFF0C\u4F53\u529B\u6D88\u8017 ${job.stamina}`,
-            ledger: { cash: job.income, stamina: -job.stamina },
-            economy
-          };
-        }
-      };
-      module.exports = { workOptions, handler };
-    }
-  });
-
   // src/runtime/daily/registry.js
   var require_registry = __commonJS({
     "src/runtime/daily/registry.js"(exports, module) {
@@ -12557,6 +13232,10 @@
           throw Object.assign(new Error("\u5B58\u6863\u65F6\u95F4\u6216\u968F\u673A\u7248\u672C\u65E0\u6548"), {
             code: "SAVE_INVALID"
           });
+        if (copy.collegeSession !== void 0)
+          require_college_session().validateCollegeSession(
+            copy.collegeSession
+          );
         if (copy.dayPlan !== void 0) validateDayPlan(copy.dayPlan);
         copy.targetPersona = normalizePersona(copy.targetPersona);
         validatePersona(copy.targetPersona, copy.targetId || "college", {
@@ -12571,6 +13250,7 @@
   // src/runtime/game.js
   var require_game = __commonJS({
     "src/runtime/game.js"(exports, module) {
+      var { createCollegeSession } = require_college_session2();
       var { renameRoute } = require_known_routes();
       var { loadLexicon } = require_lexicon2();
       var D = require_dice();
@@ -12614,6 +13294,23 @@
           );
         }
         if (init.saved) init = { ...init, saved: migrateSave(init.saved) };
+        const college = !!init.saved?.collegeSession || !init.saved && init.collegeDaily === true;
+        if (college && !init.saved)
+          init = {
+            ...init,
+            mode: "prepare",
+            slot: "prepare",
+            dayPlan: {
+              schema: 1,
+              source: "daily",
+              period: 0,
+              spent: 0,
+              activity: null,
+              ended: false
+            },
+            spatial: createSpatial({ placeId: "player_base_b" })
+          };
+        const collegeSession = college ? createCollegeSession(init) : null;
         const rngVersion = init.saved?.rngVersion ?? 2;
         const lex = loadLexicon();
         let salt = init.sessionSalt || D.newSessionSalt();
@@ -12771,7 +13468,7 @@
           syncSpatial: (results) => observeScene(g, L.get("date"), results),
           investigation,
           syncHeartTags,
-          deferTailingFailure: (results) => services.deferTailingFailure?.({ g, results }) === true,
+          deferTailingFailure: (results) => collegeSession?.deferTailingFailure({ g, results }) === true || services.deferTailingFailure?.({ g, results }) === true,
           sweetHighNow,
           syncThresholdTags
         });
@@ -12885,7 +13582,10 @@
         const dailySystem = createDailySystem({
           g,
           L,
-          registry: createDailyRegistry(services.dailyActions || []),
+          registry: createDailyRegistry([
+            ...collegeSession?.dailyActions || [],
+            ...services.dailyActions || []
+          ]),
           nextDay: legacyNightFall,
           afterCommit: () => {
             if (g.dayPlan.source === "daily" && !g.dayPlan.activity)
@@ -12939,7 +13639,7 @@
           syncHeartTags();
           return r;
         }
-        return {
+        const api = {
           processFloor,
           settleInput,
           processReply,
@@ -12975,6 +13675,7 @@
           applyTargetState,
           _g: g
         };
+        return collegeSession ? collegeSession.attach(api) : api;
       }
       module.exports = { createGame };
     }
@@ -14199,7 +14900,12 @@
                 "WRITE_CONFLICT"
               ].includes(cause.code))
                 blocked = cause.code;
-              if (!["STALE_SESSION", "SYNC_DISPOSED", "STAMINA_INSUFFICIENT"].includes(cause.code) && session.epoch === token.epoch) {
+              if (![
+                "STALE_SESSION",
+                "SYNC_DISPOSED",
+                "STAMINA_INSUFFICIENT",
+                "COLLEGE_CONDITION"
+              ].includes(cause.code) && session.epoch === token.epoch) {
                 cause.report = syncReport(cause, {
                   gameTurn: state.game?._g?.floor,
                   sessionEpoch: token.epoch
@@ -14683,12 +15389,21 @@
               "useItem",
               "nightFall",
               "executeDailyCommand",
-              "renameKnownRoute"
+              "renameKnownRoute",
+              "recoverTailing",
+              "acknowledgeTailingOutcome"
             ];
             if (!allowed.includes(method))
               throw fail("COMMAND_INVALID", "\u4E0D\u652F\u6301\u7684\u6E38\u620F\u64CD\u4F5C");
             try {
-              if (method === "executeDailyCommand" || method === "renameKnownRoute") {
+              if (typeof state.game[method] !== "function")
+                throw fail("COLLEGE_CONDITION", "\u5F53\u524D\u6D41\u7A0B\u6CA1\u6709\u8FD9\u9879\u5C3E\u884C\u64CD\u4F5C");
+              if ([
+                "executeDailyCommand",
+                "renameKnownRoute",
+                "recoverTailing",
+                "acknowledgeTailingOutcome"
+              ].includes(method)) {
                 const guard = args[0]?.sync;
                 if (!guard || guard.scope !== T.fingerprint(token.scope ?? null) || guard.epoch !== token.epoch)
                   throw fail("DAY_STALE", "\u804A\u5929\u5DF2\u5207\u6362\uFF0C\u8BF7\u6309\u5F53\u524D\u65E5\u7A0B\u91CD\u65B0\u9009\u62E9");
@@ -14696,7 +15411,7 @@
                   throw fail("DAY_BUSY", "\u8BF7\u7B49\u5F85\u5F53\u524D\u56DE\u590D\u5B8C\u6210\u540E\u518D\u5B89\u6392\u6D3B\u52A8");
               }
               const result = state.game[method](...args);
-              if (method === "executeDailyCommand" && result.reused) return result;
+              if (result?.reused) return result;
               if (journal) {
                 const context = await session.check(token);
                 if (!Array.isArray(context.history))
@@ -15133,7 +15848,7 @@
     "package.json"(exports, module) {
       module.exports = {
         name: "weixing-engine",
-        version: "0.8.24",
+        version: "0.8.25",
         private: true,
         description: "\u5C3E\u884C \xB7 \u6570\u503C\u5F15\u64CE\u4E0E\u9152\u9986\u89D2\u8272\u5361\uFF08\u68C0\u5B9A/\u5FC3\u8DF3/\u8B66\u89C9/\u51B2\u7A81/\u8FFD\u9010/HUD\uFF09",
         scripts: {
@@ -15142,7 +15857,7 @@
           "build:runtime": "node build-runtime.js",
           "build:ui": "node tools/build/ui.js",
           "format:modules": 'prettier --write "src/runtime/game/**/*.js" "src/host/**/*.js" "src/ui/**/*.js" build*.js "tools/build/*.js" tools/test.cjs',
-          "test:sync": "node tools/test.cjs investigation.test.js chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js album.test.js resource-sweet.test.js route-notes.test.js",
+          "test:sync": "node tools/test.cjs investigation.test.js chat-sync.test.js timeline.test.js day-plan.test.js daily-actions.test.js economy.test.js spatial.test.js sync-notice.test.js m4.test.js inject.test.js target-default.test.js album.test.js resource-sweet.test.js route-notes.test.js college-session.test.js college-session-sync.test.js",
           typecheck: "tsc -p tsconfig.contracts.json",
           "test:browser": "node tools/check-browser.cjs",
           "preview:pi": "node tools/build/pi-preview.js",

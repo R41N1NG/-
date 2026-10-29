@@ -74,7 +74,12 @@ function createChatSync({
         )
           blocked = cause.code;
         if (
-          !["STALE_SESSION", "SYNC_DISPOSED", "STAMINA_INSUFFICIENT"].includes(cause.code) &&
+          ![
+            "STALE_SESSION",
+            "SYNC_DISPOSED",
+            "STAMINA_INSUFFICIENT",
+            "COLLEGE_CONDITION",
+          ].includes(cause.code) &&
           session.epoch === token.epoch
         ) {
           cause.report = syncReport(cause, {
@@ -633,11 +638,22 @@ function createChatSync({
           "nightFall",
           "executeDailyCommand",
           "renameKnownRoute",
+          "recoverTailing",
+          "acknowledgeTailingOutcome",
         ];
         if (!allowed.includes(method))
           throw fail("COMMAND_INVALID", "不支持的游戏操作");
         try {
-          if (method === "executeDailyCommand" || method === "renameKnownRoute") {
+          if (typeof state.game[method] !== "function")
+            throw fail("COLLEGE_CONDITION", "当前流程没有这项尾行操作");
+          if (
+            [
+              "executeDailyCommand",
+              "renameKnownRoute",
+              "recoverTailing",
+              "acknowledgeTailingOutcome",
+            ].includes(method)
+          ) {
             const guard = args[0]?.sync;
             if (
               !guard ||
@@ -653,7 +669,7 @@ function createChatSync({
               throw fail("DAY_BUSY", "请等待当前回复完成后再安排活动");
           }
           const result = state.game[method](...args);
-          if (method === "executeDailyCommand" && result.reused) return result;
+          if (result?.reused) return result;
           if (journal) {
             const context = await session.check(token);
             if (!Array.isArray(context.history))

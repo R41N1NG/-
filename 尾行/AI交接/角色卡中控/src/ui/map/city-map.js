@@ -23,6 +23,18 @@ function createCityMapUI({
     counter = 0,
     zoomed = false,
     showTransit = true;
+  let pointerStart = null,
+    dragged = false;
+  lifecycle.on(canvas, "pointerdown", (e) => {
+    pointerStart = { x: e.clientX, y: e.clientY };
+    dragged = false;
+  });
+  lifecycle.on(canvas, "pointerup", (e) => {
+    dragged =
+      !!pointerStart &&
+      Math.hypot(e.clientX - pointerStart.x, e.clientY - pointerStart.y) > 7;
+    pointerStart = null;
+  });
   const el = (tag, text) => {
     const e = document.createElement(tag);
     if (text !== undefined) e.textContent = text;
@@ -66,6 +78,12 @@ function createCityMapUI({
       view = map.player.district;
     if (!selected) selected = map.player.placeId;
     const target = map.target;
+    if (snap.dailyMoves) {
+      const note = root.querySelector(".wx-city-note");
+      if (note)
+        note.textContent =
+          "点击地点直接移动；同区1格、跨区2格，每时段3格，不扣行动点。分区切换、缩放和拖动只浏览；目标位置仅在实际目视时更新。";
+    }
     position.textContent = `你在：${map.player.name}${map.player.assumed ? "（待确认位置）" : ""} · ${target ? `${target.status}：${target.name}${target.live ? "" : `（第 ${target.date} 天）`}` : "目标位置：尚无目击记录"}`;
     tabs.replaceChildren();
     for (const item of [{ id: "all", name: "全城" }, ...map.frames]) {
@@ -123,6 +141,7 @@ function createCityMapUI({
     move.type = "button";
     move.dataset.mapMove = n.id;
     move.disabled = !!pending || !!n.moveReason || !snap.dayPlan.sync;
+    move.hidden = !!snap.dailyMoves;
     info.append(move);
     if (n.service === "black_market") {
       const action = snap.dayActions.find((a) => a.id === "daily.black_market"),
@@ -221,8 +240,27 @@ function createCityMapUI({
     }
     const node = event.target.closest?.("[data-place-id]");
     if (node) {
+      if (snapshot.dailyMoves && dragged) {
+        dragged = false;
+        return;
+      }
       selected = node.dataset.placeId;
       render(snapshot);
+      if (snapshot.dailyMoves && !pending && snapshot.dayPlan.sync) {
+        const q = snapshot.dailyMoves[selected];
+        if (q?.reason) {
+          notice.textContent = q.reason;
+          return;
+        }
+        move({
+          operationId:
+            window.crypto?.randomUUID?.() || `map-${Date.now()}-${++counter}`,
+          command: "move",
+          args: { placeId: selected },
+          expected: { ...snapshot.dayPlan.token },
+          sync: { ...snapshot.dayPlan.sync },
+        });
+      }
       return;
     }
     const market = event.target.closest?.("[data-map-market]");

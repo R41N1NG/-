@@ -1,0 +1,59 @@
+{
+  "scenes": [
+    {
+      "place": null,
+      "title": "校内上课",
+      "text": "校门外看不见课堂内的情况。"
+    },
+    {
+      "place": "university_canteen_b",
+      "title": "午间用餐",
+      "text": "她端着餐盘，在食堂靠窗的位置坐下。"
+    },
+    {
+      "place": "university_library_b",
+      "title": "午后自习",
+      "text": "她坐在阅览区，将翻开的书页压在笔记本旁。"
+    },
+    {
+      "place": "school_gate_b",
+      "title": "离校现场",
+      "text": "她走出大学正门，把手机收进口袋，准备沿街离开。下一站尚未确认。"
+    },
+    {
+      "place": null,
+      "title": "子夜居家",
+      "text": "当前没有新的目视记录。未确认的住处不会显示在地图上。"
+    }
+  ],
+  "departure": {
+    "id": "college-standard-return",
+    "note": "标准工作日返程",
+    "here": 0,
+    "known": [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "startTime": "21:30",
+    "nodes": [
+      "school_gate_b",
+      "old_skybridge_b",
+      "store_24h_b",
+      "old_alley_main_b",
+      "dark_blind_alley_b",
+      "unit_stairs_b"
+    ],
+    "times": [
+      "2130",
+      "2145",
+      "2200",
+      "2215",
+      "2230",
+      "2245"
+    ]
+  }
+}

@@ -17,6 +17,7 @@ function staminaLessonHash(root) {
   for (const n of [
     "stamina-lesson-sample.js",
     "stamina-lesson-shots.js",
+    "settlement-capture.js",
     "college-preview-model.js",
     "college-preview-work.js",
     "college-preview-time.js",

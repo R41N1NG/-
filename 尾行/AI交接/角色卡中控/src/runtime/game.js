@@ -3,6 +3,7 @@
  * 职责与修改入口见 docs/模块化维护指南.md。
  * 模块通过显式参数共享本实例状态，禁止导入宿主或 UI。
  */
+const { createCollegeSession } = require("./college-session.js");
 const { renameRoute } = require("./known-routes.js");
 const { loadLexicon } = require("./lexicon.js");
 const D = require("./dice.js");
@@ -50,6 +51,24 @@ function createGame(init = {}, services = {}) {
     );
   }
   if (init.saved) init = { ...init, saved: migrateSave(init.saved) };
+  const college =
+    !!init.saved?.collegeSession || (!init.saved && init.collegeDaily === true);
+  if (college && !init.saved)
+    init = {
+      ...init,
+      mode: "prepare",
+      slot: "prepare",
+      dayPlan: {
+        schema: 1,
+        source: "daily",
+        period: 0,
+        spent: 0,
+        activity: null,
+        ended: false,
+      },
+      spatial: createSpatial({ placeId: "player_base_b" }),
+    };
+  const collegeSession = college ? createCollegeSession(init) : null;
   const rngVersion = init.saved?.rngVersion ?? 2;
   const lex = loadLexicon();
   let salt = init.sessionSalt || D.newSessionSalt();
@@ -224,6 +243,7 @@ function createGame(init = {}, services = {}) {
     investigation,
     syncHeartTags,
     deferTailingFailure: (results) =>
+      collegeSession?.deferTailingFailure({ g, results }) === true ||
       services.deferTailingFailure?.({ g, results }) === true,
     sweetHighNow,
     syncThresholdTags,
@@ -357,7 +377,10 @@ function createGame(init = {}, services = {}) {
   const dailySystem = createDailySystem({
     g,
     L,
-    registry: createDailyRegistry(services.dailyActions || []),
+    registry: createDailyRegistry([
+      ...(collegeSession?.dailyActions || []),
+      ...(services.dailyActions || []),
+    ]),
     nextDay: legacyNightFall,
     afterCommit: () => {
       if (g.dayPlan.source === "daily" && !g.dayPlan.activity)
@@ -424,7 +447,7 @@ function createGame(init = {}, services = {}) {
     return r;
   }
 
-  return {
+  const api = {
     processFloor,
     settleInput,
     processReply,
@@ -460,6 +483,7 @@ function createGame(init = {}, services = {}) {
     applyTargetState,
     _g: g,
   };
+  return collegeSession ? collegeSession.attach(api) : api;
 }
 
 module.exports = { createGame };

@@ -19,9 +19,10 @@ async function main() {
   const out = path.join(root, "previews/tutorial-audit");
   fs.mkdirSync(out, { recursive: true });
   const ui = buildUI({ preview: false, writePreview: false }),
-    g = createGame(defaultInit()),
+    g = createGame({ ...defaultInit(), collegeDaily: true }),
     daily = createGame({
       ...defaultInit({ dailyMode: true }),
+      collegeDaily:true,
       mode: "prepare",
     });
   const courses = [
@@ -65,8 +66,8 @@ async function main() {
     date: "2026-10-29",
     production: {
       trainingFrame,
-      defaultMode: createGame(defaultInit()).snapshot().mode,
-      defaultSource: createGame(defaultInit()).snapshot().dayPlan.source,
+      defaultMode: createGame({ ...defaultInit(), collegeDaily: true }).snapshot().mode,
+      defaultSource: createGame({ ...defaultInit(), collegeDaily: true }).snapshot().dayPlan.source,
       compiledCourses: {
         attributeLessons: ui.script.includes("createAttributeLessons"),
         trainingBrief: ui.script.includes("createTrainingBrief"),
@@ -84,12 +85,8 @@ async function main() {
         after: after.player.stamina,
         turns: g.save().floor - floor,
       },
-      mapMoveNeedsConfirm: read("src/ui/map/city-map.js").includes(
-        "data-map-move",
-      ),
-      movementTimeInProduction: read("src/runtime/spatial/system.js").includes(
-        "timeUsed",
-      ),
+      mapMoveNeedsConfirm: !g.snapshot().dailyMoves,
+      movementTimeInProduction: !!g.snapshot().dailyTime,
     },
     uiIntegration: {
       rootsIfConcatenated: duplicateRoots,
@@ -105,6 +102,7 @@ async function main() {
   };
   const formalMove = createGame({
       ...defaultInit(),
+      collegeDaily: true,
       mode: "prepare",
       dayPlan: {
         schema: 1,
@@ -115,7 +113,7 @@ async function main() {
         ended: false,
       },
     }),
-    previewMove = createPreview(null, { period: 1 });
+    previewMove = createPreview(null, { period: 0 });
   const positions = [
     "university_canteen_b",
     "university_library_b",
@@ -146,11 +144,12 @@ async function main() {
   evidence.uiIntegration.previewStateRoundTrip = {
     previewHasExtension: Object.hasOwn(isolated, "previewCollege"),
     formalKeepsExtension: Object.hasOwn(roundTrip, "previewCollege"),
+    formalSessionRoundTrip: JSON.stringify(createGame({saved: formalMove.save()}).save()) === JSON.stringify(formalMove.save()),
   };
   const p = createPreview(null, { period: 3, seed: "college-preview-2" });
   p.move("school_gate_b");
   p.execute(p.request("start", "daily.tailing"));
-  p.game.addItem("bento", 1);
+  p.game.addItem("bento", 2);
   p.game.gmSet({ stamina: -30 });
   const saved = p.save();
   const file = buildCollegePreview().file,
@@ -191,7 +190,7 @@ async function main() {
     await new Promise((r) => server.close(r));
   }
   fs.writeFileSync(
-    path.join(out, "evidence.json"),
+    path.join(out, "evidence-current.json"),
     JSON.stringify(evidence, null, 2) + "\n",
   );
   console.log(JSON.stringify(evidence, null, 2));

@@ -57,6 +57,10 @@ function migrateSave(saved) {
     throw Object.assign(new Error("存档时间或随机版本无效"), {
       code: "SAVE_INVALID",
     });
+  if (copy.collegeSession !== undefined)
+    require("../../contracts/college-session").validateCollegeSession(
+      copy.collegeSession,
+    );
   if (copy.dayPlan !== undefined) validateDayPlan(copy.dayPlan);
   copy.targetPersona = normalizePersona(copy.targetPersona);
   validatePersona(copy.targetPersona, copy.targetId || "college", {

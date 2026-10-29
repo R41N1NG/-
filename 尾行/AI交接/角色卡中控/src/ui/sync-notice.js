@@ -13,12 +13,15 @@ function createSyncNotice({ document, lifecycle, getGlue }) {
   }
   function report(error) {
     const source = error?.report || error;
-    if (source?.code === "STAMINA_INSUFFICIENT") {
+    if (["STAMINA_INSUFFICIENT", "COLLEGE_CONDITION"].includes(source?.code)) {
       active = null;
       if (notice) {
         notice.hidden = false;
         notice.replaceChildren();
-        notice.textContent = "体力不足，本次动作未执行，也没有推进时间。请减少所选动作、使用补给，或结束本次尾行。";
+        notice.textContent =
+          source.code === "COLLEGE_CONDITION"
+            ? "当前不能执行这项行动。请查看尾行界面，先选择追找、确认收获或结束本次跟随。"
+            : "体力不足，本次动作未执行，也没有推进时间。请减少所选动作、使用补给，或结束本次尾行。";
       }
       return;
     }
