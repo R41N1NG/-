@@ -1,9 +1,9 @@
 // GENERATED: 修改 core/、app/ 后重新运行构建，不直接编辑合订本。
 /**
  * @module okh_utils
- * @updated 2026-11-09
+ * @updated 2026-11-11 00:08
  * @status implemented
- * @reason 通用校验、深拷贝、时段和模块注册
+ * @reason 通用校验、深拷贝、时段，以及待互动事件选项与取消策略校验
  */
 (function (root) {
   'use strict';
@@ -144,6 +144,53 @@
       unique(config[name], name);
     }
 
+    function validateEventOutcomes(event) {
+      check(
+        event.allowCancel === undefined || typeof event.allowCancel === 'boolean',
+        '事件 allowCancel 必须是布尔值'
+      );
+      check(
+        event.retryOnCancel === undefined || typeof event.retryOnCancel === 'boolean',
+        '事件 retryOnCancel 必须是布尔值'
+      );
+      check(
+        !event.retryOnCancel || event.allowCancel === true,
+        '启用 retryOnCancel 时必须同时声明 allowCancel: true'
+      );
+      check(
+        event.resolveWhen === undefined ||
+        typeof event.resolveWhen === 'function' ||
+        (event.resolveWhen && typeof event.resolveWhen === 'object'),
+        '事件 resolveWhen 条件格式非法'
+      );
+      if (event.outcomes === undefined) return;
+      check(
+        event.mode === 'interaction',
+        '只有待互动事件才允许配置 outcomes 选项表'
+      );
+      check(
+        event.outcomes && typeof event.outcomes === 'object' && !Array.isArray(event.outcomes),
+        '事件 outcomes 必须是对象'
+      );
+      const entries = Object.entries(event.outcomes);
+      check(entries.length > 0, '事件 outcomes 不能为空对象');
+      for (const [choiceId, spec] of entries) {
+        check(
+          id(choiceId) && spec && typeof spec === 'object' &&
+          typeof spec.text === 'string' && spec.text.trim(),
+          '事件选项必须配置合法 ID 和非空 text'
+        );
+        check(
+          spec.when === undefined || typeof spec.when === 'function' || typeof spec.when === 'object',
+          '事件选项 when 条件格式非法'
+        );
+        check(
+          spec.effects === undefined || (spec.effects && typeof spec.effects === 'object'),
+          '事件选项 effects 格式非法'
+        );
+      }
+    }
+
     for (const event of [
       ...(config.events || []),
       ...(config.nodes || [])
@@ -160,6 +207,10 @@
         ['npc', 'world'].includes(event.scope),
         '事件 scope 非法'
       );
+    }
+
+    for (const event of config.events || []) {
+      validateEventOutcomes(event);
     }
 
     for (const node of config.nodes || []) {
@@ -239,8 +290,10 @@
       );
 
       check(
-        npc.stage === undefined || minute(npc.stage),
-        '阶段非法'
+        npc.hasStage === false
+          ? npc.stage === undefined
+          : (npc.stage === undefined || minute(npc.stage)),
+        '阶段配置或状态非法'
       );
 
       if (npc.activity) {
@@ -560,14 +613,30 @@
       );
     }
 
-    function refresh(world, config, ctx) {
+    // Expiry is a clock operation, independent of event and release-rule checks.
+    // Run it before receipts at the same timestamp can start another activity.
+    function releaseExpiredOrdinary(world, config) {
       const released = [];
+
+      for (const npc of u.sortedNpcs(world)) {
+        if (!u.active(npc) || npc.activity?.kind !== 'ordinary') continue;
+        if (world.timeMin - npc.activity.startedAt >= config.policy.ordinaryGraceMin) {
+          finish(npc, world.timeMin, 'ordinary-timeout');
+          released.push(npc.id);
+        }
+      }
+
+      return released;
+    }
+
+    function refresh(world, config, ctx) {
+      const released = releaseExpiredOrdinary(world, config);
 
       for (const npc of u.sortedNpcs(world)) {
         if (!u.active(npc)) continue;
 
         const task = npc.activity;
-        if (!task) continue;
+        if (!task || task.kind === 'ordinary') continue;
 
         if (
           task.kind !== 'ordinary' &&
@@ -582,11 +651,6 @@
           );
         }
 
-        const expired =
-          task.kind === 'ordinary' &&
-          world.timeMin - task.startedAt >=
-            config.policy.ordinaryGraceMin;
-
         const conditionMet =
           task.kind !== 'ordinary' &&
           task.releaseRule !== undefined &&
@@ -595,13 +659,11 @@
             { ...ctx, world, npc }
           );
 
-        if (expired || conditionMet) {
+        if (conditionMet) {
           finish(
             npc,
             world.timeMin,
-            expired
-              ? 'ordinary-timeout'
-              : 'release-condition'
+            'release-condition'
           );
 
           released.push(npc.id);
@@ -653,6 +715,7 @@
       start,
       change,
       finish,
+      releaseExpiredOrdinary,
       refresh,
       nextDeadline,
       status
@@ -677,9 +740,9 @@
 ;
 /**
  * @module okh_effects
- * @updated 2026-11-09
+ * @updated 2026-11-10 23:25
  * @status implemented
- * @reason 集中结算位置、专属数值和标记
+ * @reason 集中结算位置、专属数值和标记，补充移动门禁校验
  */
 (function (root) {
   'use strict';
@@ -690,7 +753,8 @@
         'move',
         'add',
         'npcFlags',
-        'worldFlags'
+        'worldFlags',
+        'monitored'
       ]);
 
       Object.keys(data).forEach(name => {
@@ -702,17 +766,24 @@
 
       u.check(
         npc ||
-        (!data.add && !data.move && !data.npcFlags),
+        (!data.add && !data.move && !data.npcFlags && data.monitored === undefined),
         '世界效果不能隐式修改角色'
       );
 
       if (data.move !== undefined) {
         u.check(
           u.id(data.move) &&
-          !ctx.blockedIds.has(npc.id) &&
+          !ctx.blockedIds?.has(npc.id) &&
           !npc.activity,
           '不能后台移动互动中或被活动占用的角色'
         );
+
+        if (typeof config?.canMove === 'function') {
+          u.check(
+            config.canMove(world, data.move, npc),
+            '当前阶段禁止移动至该地点：' + data.move
+          );
+        }
 
         npc.location = data.move;
       }
@@ -750,6 +821,11 @@
         }
 
         npc.values[name] = value;
+      }
+
+      if (data.monitored !== undefined) {
+        u.check(typeof data.monitored === 'boolean', 'monitored 必须是布尔值');
+        npc.monitored = data.monitored;
       }
 
       if (npc) {
@@ -819,27 +895,30 @@
 ;
 /**
  * @module okh_events
- * @updated 2026-11-09
+ * @updated 2026-11-11 00:05
  * @status implemented
- * @reason 条件事件和演绎队列，不访问HUD或调用LLM
+ * @reason 条件事件、待互动选择与选项适用条件校验、原子结算及队列覆盖，不访问HUD或调用LLM
  */
 (function (root) {
   'use strict';
 
   function create({ utils: u, rules, effects }) {
     function emit(world, entry, npc) {
-      if (
-        world.bg.queue.some(item => item.id === entry.id)
-      ) {
-        return false;
-      }
+      const hasActive = world.bg.queue.some(item =>
+        item.id === entry.id &&
+        (entry.allowReemit
+          ? (item.status === 'pending' || item.status === 'delivered')
+          : true)
+      );
+
+      if (hasActive) return false;
 
       const fields = {
         name: npc?.name || npc?.id || '',
         location: npc?.location || ''
       };
 
-      world.bg.queue.push({
+      const record = {
         ...entry,
         at: world.timeMin,
         npcId: npc?.id ?? null,
@@ -848,80 +927,90 @@
           (_, name) => fields[name]
         ),
         status: 'pending'
-      });
+      };
+      delete record.allowReemit;
 
+      world.bg.queue.push(record);
       return true;
     }
 
+    // Definition keys stay stable for rule lookup. Queue IDs identify one
+    // occurrence, so an earlier generation cannot acknowledge a later retry.
+    function nextOccurrence(world, event, npc, key) {
+      const previous = world.bg.eventStates[key];
+      const priorCount = Number.isSafeInteger(previous?.occurrence)
+        ? previous.occurrence : (previous ? 1 : 0);
+      const queuedCount = world.bg.queue.filter(entry =>
+        entry.kind === 'event' && entry.mode === 'interaction' &&
+        entry.definitionId === event.id && entry.npcId === (npc?.id ?? null)
+      ).length;
+      const occurrence = Math.max(priorCount, queuedCount) + 1;
+      u.check(Number.isSafeInteger(occurrence) && occurrence > 0, '事件实例编号溢出');
+      return {
+        occurrence,
+        // Preserve first-occurrence IDs and legacy pending saves.
+        instanceId: occurrence === 1 ? key
+          : u.key('event-instance', event.id, npc?.id ?? null, occurrence)
+      };
+    }
+
     function evaluate(world, config, ctx) {
+      world.bg.eventStates ||= {};
+
       for (const event of config.events || []) {
         const targets = event.scope === 'world'
           ? [null]
           : u.sortedNpcs(world).filter(u.active);
 
         for (const npc of targets) {
-          if (
-            npc &&
-            event.targets &&
-            !event.targets.includes(npc.id)
-          ) {
-            continue;
-          }
+          if (npc && event.targets && !event.targets.includes(npc.id)) continue;
 
-          const key = u.key(
-            'event',
-            event.id,
-            npc?.id ?? null
-          );
-
+          const key = u.key('event', event.id, npc?.id ?? null);
           if (world.bg.fired[key]) continue;
 
-          if (
-            npc &&
-            event.idleOnly &&
-            (
-              npc.activity ||
-              ctx.blockedIds.has(npc.id)
-            )
-          ) {
+          if (npc && event.idleOnly && (npc.activity || ctx.blockedIds.has(npc.id))) {
             continue;
           }
 
-          if (
-            !rules.matches(
-              event.when,
-              { ...ctx, world, npc }
-            )
-          ) {
-            continue;
-          }
+          if (!rules.matches(event.when, { ...ctx, world, npc })) continue;
 
-          effects.apply(
-            world,
-            npc,
-            event.effects,
-            ctx,
-            config
-          );
-
+          effects.apply(world, npc, event.effects, ctx, config);
           world.bg.fired[key] = true;
 
-          emit(world, {
-            id: key,
-            definitionId: event.id,
-            kind: 'event',
-            mode: event.mode,
-            text: event.text
-          }, npc);
+          if (event.mode === 'interaction') {
+            const { occurrence, instanceId } = nextOccurrence(world, event, npc, key);
+            world.bg.eventStates[key] = {
+              status: 'pending',
+              definitionId: event.id,
+              npcId: npc?.id ?? null,
+              triggeredAt: world.timeMin,
+              occurrence,
+              instanceId
+            };
+            emit(world, {
+              id: instanceId,
+              eventKey: key,
+              occurrence,
+              definitionId: event.id,
+              kind: 'event',
+              mode: event.mode,
+              text: event.text
+            }, npc);
+          } else {
+            emit(world, {
+              id: key,
+              definitionId: event.id,
+              kind: 'event',
+              mode: event.mode,
+              text: event.text
+            }, npc);
+          }
         }
       }
     }
 
     function prepare(world, limit = 8) {
-      u.check(
-        Number.isSafeInteger(limit) && limit > 0,
-        '批次大小非法'
-      );
+      u.check(Number.isSafeInteger(limit) && limit > 0, '批次大小非法');
 
       const batch = world.bg.queue
         .filter(e => e.status === 'pending')
@@ -929,37 +1018,25 @@
 
       return {
         ids: batch.map(e => e.id),
-
         text: batch.map(e => {
           const instruction = e.mode === 'result'
             ? '【已定事实：保持结果并演绎】'
             : '【待互动：只展开局面，不替玩家决定；未决结果须另行结算】';
-
           return instruction + '\n' + e.text;
         }).join('\n\n')
       };
     }
 
     function acknowledge(world, ids, generationId) {
-      u.check(
-        u.id(generationId) && Array.isArray(ids),
-        '确认生成 ID 或事件批次非法'
-      );
-
+      u.check(u.id(generationId) && Array.isArray(ids), '确认生成 ID 或事件批次非法');
       const selected = new Set(ids);
 
       for (const id of selected) {
-        u.check(
-          world.bg.queue.some(e => e.id === id),
-          '待确认事件不存在'
-        );
+        u.check(world.bg.queue.some(e => e.id === id), '待确认事件不存在');
       }
 
       for (const event of world.bg.queue) {
-        if (
-          selected.has(event.id) &&
-          event.status === 'pending'
-        ) {
+        if (selected.has(event.id) && event.status === 'pending') {
           event.status = 'delivered';
           event.generationId = generationId;
         }
@@ -967,30 +1044,105 @@
     }
 
     function supersede(world, id) {
-      const entry = world.bg.queue
-        .find(e => e.id === id);
-
-      if (entry?.status === 'pending') {
-        entry.status = 'superseded';
+      for (const entry of world.bg.queue) {
+        if (entry.id === id && (entry.status === 'pending' || entry.status === 'delivered')) {
+          entry.status = 'superseded';
+        }
       }
     }
 
-    return {
-      evaluate,
-      emit,
-      prepare,
-      acknowledge,
-      supersede
-    };
+    function checkTargetMatch(event, draft, npcId) {
+      if (event.scope === 'world') {
+        u.check(npcId === null, '世界事件不能指定角色目标');
+        return null;
+      }
+      u.check(Boolean(npcId) && (!event.targets || event.targets.includes(npcId)), '事件目标角色不匹配');
+      const npc = draft.npcs[npcId];
+      u.check(Boolean(npc), '事件目标角色不存在');
+      return npc;
+    }
+
+    function applyOneResolution(draft, resolution, config, ctx) {
+      const event = (config.events || []).find(item => item.id === resolution.eventId);
+      u.check(event && event.mode === 'interaction', '待处理事件不存在或不是待互动事件');
+
+      const npcId = resolution.npcId ?? null;
+      const npc = checkTargetMatch(event, draft, npcId);
+      const key = u.key('event', event.id, npcId);
+      const record = draft.bg.eventStates[key];
+      u.check(record, '互动事件尚未触发');
+
+      const outcome = resolution.outcome;
+      u.check(u.id(outcome), '事件处理结果非法');
+
+      if ((record.status === 'resolved' || record.status === 'cancelled') && record.outcome === outcome) {
+        return;
+      }
+      u.check(record.status === 'pending', '事件已经处理，不能变更结果');
+      u.check(!npc || event.allowInactive || u.active(npc), '事件目标角色当前不可交互');
+
+      const matchCtx = { ...ctx, world: draft, npc };
+      const spec = event.outcomes && u.own(event.outcomes, outcome)
+        ? event.outcomes[outcome] : undefined;
+      const isCancel = outcome === 'cancel' && !spec;
+
+      if (isCancel) {
+        u.check(event.allowCancel === true, '该事件不允许取消，请选择有效选项');
+        u.check(!event.resolveWhen || rules.matches(event.resolveWhen, matchCtx), '当前条件不满足取消该事件');
+        record.status = 'cancelled';
+        record.outcome = 'cancel';
+        record.cancelledAt = draft.timeMin;
+        supersede(draft, record.instanceId || key);
+        if (event.retryOnCancel === true) delete draft.bg.fired[key];
+        return;
+      }
+
+      u.check(Boolean(spec), '未登记的事件选项：' + outcome);
+      u.check(!event.resolveWhen || rules.matches(event.resolveWhen, matchCtx), '当前条件不满足处理该事件');
+      u.check(!spec.when || rules.matches(spec.when, matchCtx), '当前条件不满足该事件选项：' + outcome);
+
+      if (spec.effects) effects.apply(draft, npc, spec.effects, matchCtx, config);
+
+      record.status = 'resolved';
+      record.outcome = outcome;
+      record.resolvedAt = draft.timeMin;
+      supersede(draft, record.instanceId || key);
+
+      if (spec.text) {
+        emit(draft, {
+          id: record.occurrence > 1
+            ? u.key('event-result', event.id, npcId, outcome, record.occurrence)
+            : u.key('event-result', event.id, npcId, outcome),
+          instanceId: record.instanceId || key,
+          kind: 'event',
+          definitionId: event.id,
+          mode: 'result',
+          text: spec.text,
+          allowReemit: true
+        }, npc);
+      }
+    }
+
+    function resolve(world, resolutions, config, ctx) {
+      if (!resolutions?.length) return;
+      const draft = u.clone(world);
+      draft.bg.eventStates ||= {};
+
+      for (const resolution of resolutions) {
+        applyOneResolution(draft, resolution, config, ctx);
+      }
+
+      // 全批通过校验后原子写回，保证任意单项失败时不残留部分修改
+      world.flags = draft.flags;
+      world.npcs = draft.npcs;
+      world.bg = draft.bg;
+    }
+
+    return { evaluate, resolve, emit, prepare, acknowledge, supersede };
   }
 
-  const registry =
-    root.OKHBackgroundModules ||= Object.create(null);
-
-  if (registry.events) {
-    throw Error('重复加载 okh_events');
-  }
-
+  const registry = root.OKHBackgroundModules ||= Object.create(null);
+  if (registry.events) throw Error('重复加载 okh_events');
   registry.events = create;
 
   if (typeof module !== 'undefined' && module.exports) {
@@ -998,13 +1150,12 @@
   }
 })(globalThis);
 
-
 ;
 /**
  * @module okh_nodes
- * @updated 2026-11-09
+ * @updated 2026-11-10 23:25
  * @status implemented
- * @reason 专属数值经节点推进阶段
+ * @reason 专属数值经节点推进阶段；跳过非阶段角色
  */
 (function (root) {
   'use strict';
@@ -1068,6 +1219,9 @@
 
       for (const npc of
         u.sortedNpcs(world).filter(u.active)) {
+        if (npc.hasStage === false || npc.stage === undefined) {
+          continue;
+        }
         npc.nodeStates ||= {};
 
         if (
@@ -1128,6 +1282,7 @@
 
         u.check(
           npc &&
+          npc.hasStage !== false &&
           node &&
           (npc.nodePlan || []).includes(node.id),
           '待处理节点或角色不存在'
@@ -1204,415 +1359,334 @@
 ;
 /**
  * @module okh_turn
- * @updated 2026-11-09
+ * @updated 2026-11-11 00:05
  * @status implemented
- * @reason 编排时间、活动、行动、节点和前台回执
+ * @reason 统一时间语义的回执时间线穿插引擎：待决应答默认start、新发生里程碑与叙事事实默认end（或at），推进前保留起点refresh防跨边界漏事件
  */
 (function (root) {
   'use strict';
 
-  function create({
-    utils: u,
-    rules,
-    activity,
-    effects,
-    events,
-    nodes
-  }) {
-    function refresh(
-      world,
-      config,
-      blockedIds,
-      report
-    ) {
-      const ctx = {
-        world,
-        phase: u.phaseAt(world.timeMin, config),
-        blockedIds
-      };
-
-      report.released.push(
-        ...activity.refresh(world, config, ctx)
-      );
-
+  function create({ utils: u, rules, activity, effects, events, nodes }) {
+    function refresh(world, config, blockedIds, report) {
+      const ctx = { world, phase: u.phaseAt(world.timeMin, config), blockedIds };
+      report.released.push(...activity.refresh(world, config, ctx));
       events.evaluate(world, config, ctx);
       nodes.evaluate(world, config, ctx);
-
-      report.released.push(
-        ...activity.refresh(world, config, ctx)
-      );
+      report.released.push(...activity.refresh(world, config, ctx));
     }
 
-    function schedule(
-      world,
-      config,
-      blockedIds,
-      report
-    ) {
+    function pickAction(snapshot, npc, phase, blockedIds, config) {
+      const ctx = { world: snapshot, npc, phase, blockedIds };
+      return (config.actions || [])
+        .filter(item =>
+          (npc.plan || []).includes(item.id) &&
+          rules.matches(item.when, ctx) &&
+          (!config.allowed || config.allowed(ctx, item)) &&
+          (!config.canMove || !item.effects?.move || config.canMove(snapshot, item.effects.move, npc))
+        )
+        .sort((a, b) => (b.priority || 0) - (a.priority || 0) || a.id.localeCompare(b.id))[0];
+    }
+
+    function schedule(world, config, blockedIds, report) {
       const phase = u.phaseAt(world.timeMin, config);
       const snapshot = u.clone(world);
       const decisions = [];
 
       for (const npc of u.sortedNpcs(snapshot)) {
-        if (
-          activity.status(npc, blockedIds) !== 'idle' ||
-          world.bg.settled[npc.id] === phase.start
-        ) {
+        if (activity.status(npc, blockedIds) !== 'idle' || world.bg.settled[npc.id] === phase.start) {
           continue;
         }
-
-        const ctx = {
-          world: snapshot,
-          npc,
-          phase,
-          blockedIds
-        };
-
-        const action = (config.actions || [])
-          .filter(item =>
-            (npc.plan || []).includes(item.id) &&
-            rules.matches(item.when, ctx) &&
-            (
-              !config.allowed ||
-              config.allowed(ctx, item)
-            )
-          )
-          .sort((a, b) =>
-            (b.priority || 0) - (a.priority || 0) ||
-            a.id.localeCompare(b.id)
-          )[0];
-
-        decisions.push({
-          id: npc.id,
-          action
-        });
+        decisions.push({ id: npc.id, action: pickAction(snapshot, npc, phase, blockedIds, config) });
       }
 
       for (const { id, action } of decisions) {
         world.bg.settled[id] = phase.start;
-
         if (!action) continue;
-
         const npc = world.npcs[id];
+        if (activity.status(npc, blockedIds) !== 'idle') continue;
+        const ctx = { world, npc, phase, blockedIds };
+        if (!rules.matches(action.when, ctx)) continue;
+        if (config.allowed && !config.allowed(ctx, action)) continue;
+        if (config.canMove && action.effects?.move && !config.canMove(world, action.effects.move, npc)) continue;
 
-        if (
-          activity.status(npc, blockedIds) !== 'idle'
-        ) {
-          continue;
-        }
-
-        const ctx = {
-          world,
-          npc,
-          phase,
-          blockedIds
-        };
-
-        if (
-          !rules.matches(action.when, ctx) ||
-          (
-            config.allowed &&
-            !config.allowed(ctx, action)
-          )
-        ) {
-          continue;
-        }
-
-        effects.apply(
-          world,
-          npc,
-          action.effects,
-          ctx,
-          config
-        );
-
+        effects.apply(world, npc, action.effects, ctx, config);
         if (action.occupation) {
           activity.start(npc, {
             ...action.occupation,
-            id: u.key(
-              'action',
-              action.id,
-              id,
-              world.timeMin
-            ),
+            id: u.key('action', action.id, id, world.timeMin),
             source: 'background'
           }, world.timeMin, config);
         }
-
-        npc.lastAction = {
-          id: action.id,
-          at: world.timeMin
-        };
-
+        npc.lastAction = { id: action.id, at: world.timeMin };
         if (action.narration) {
           u.check(typeof action.narration === 'string', '行动反馈必须是预设文本');
-          events.emit(world, { id: u.key('action', action.id, id, world.timeMin),
-            kind: 'action', definitionId: action.id, mode: 'result', text: action.narration }, npc);
+          events.emit(world, {
+            id: u.key('action', action.id, id, world.timeMin),
+            kind: 'action', definitionId: action.id, mode: 'result', text: action.narration
+          }, npc);
         }
-
-        report.actions.push({
-          npcId: id,
-          actionId: action.id,
-          at: world.timeMin
-        });
+        report.actions.push({ npcId: id, actionId: action.id, at: world.timeMin });
       }
     }
 
-    function applyFront(
-      world,
-      front,
-      config,
-      blockedIds
-    ) {
-      if (front.playerLocation !== undefined) {
-        u.check(
-          u.id(front.playerLocation),
-          '玩家位置非法'
-        );
+    function assertCanMove(world, to, npc, config) {
+      if (typeof config?.canMove === 'function') {
+        u.check(config.canMove(world, to, npc), '当前阶段禁止移动至该地点：' + to);
+      }
+    }
 
-        world.playerLocation = front.playerLocation;
+    function resolveAt(spec, fallback, fromMin, toMin) {
+      if (spec === undefined || spec === null || spec === '') return fallback;
+      if (spec === 'start') return fromMin;
+      if (spec === 'end') return toMin;
+      u.check(Number.isSafeInteger(spec) && spec >= fromMin && spec <= toMin, '回执时间点超出本轮推进区间');
+      return spec;
+    }
+
+    function getBucket(map, t) {
+      if (!map.has(t)) {
+        map.set(t, {
+          prologueSteps: [], moves: [], patches: [], meta: null,
+          bonds: [], room: null, resolveNodes: [], resolveEvents: [], activities: []
+        });
+      }
+      return map.get(t);
+    }
+
+    function collectTimeline(world, front, fromMin, toMin) {
+      const map = new Map();
+
+      for (const step of front.prologueSteps || []) {
+        const flag = typeof step === 'string' ? step : step?.flag;
+        const specAt = typeof step === 'string' ? undefined : step?.at;
+        const at = resolveAt(specAt, toMin, fromMin, toMin);
+        getBucket(map, at).prologueSteps.push(flag);
       }
 
-      for (const [id, patch] of
-        Object.entries(front.npcs || {})) {
-        u.check(
-          u.own(world.npcs, id),
-          '前台回执角色不存在'
-        );
+      for (const item of front.resolveNodes || []) {
+        getBucket(map, resolveAt(item.at, fromMin, fromMin, toMin)).resolveNodes.push(item);
+      }
 
-        u.check(
-          !u.own(patch, 'stage'),
-          '阶段只能由节点推进，不能由前台直接覆盖'
-        );
+      for (const item of front.resolveEvents || []) {
+        getBucket(map, resolveAt(item.at, fromMin, fromMin, toMin)).resolveEvents.push(item);
+      }
 
-        const npc = world.npcs[id];
+      const playerMoves = front.playerMoves || (front.playerLocation !== undefined
+        ? [{ to: front.playerLocation, at: front.playerLocationAt }] : []);
+      for (const m of playerMoves) {
+        u.check(u.id(m.to), '玩家位置非法');
+        getBucket(map, resolveAt(m.at, toMin, fromMin, toMin)).moves.push({ npcId: null, to: m.to });
+      }
 
-        if (patch.location !== undefined) {
-          u.check(
-            u.id(patch.location),
-            '角色位置非法'
-          );
-
-          npc.location = patch.location;
+      for (const [id, patch] of Object.entries(front.npcs || {})) {
+        u.check(u.own(world.npcs, id), '前台回执角色不存在');
+        u.check(!u.own(patch, 'stage'), '阶段只能由节点推进，不能由前台直接覆盖');
+        const moves = patch.moves || (patch.location !== undefined ? [{ to: patch.location, at: patch.locationAt }] : []);
+        for (const m of moves) {
+          u.check(u.id(m.to), '角色位置非法');
+          getBucket(map, resolveAt(m.at, toMin, fromMin, toMin)).moves.push({ npcId: id, to: m.to });
         }
-
-        effects.apply(world, npc, {
-          add: patch.add,
-          npcFlags: patch.flags
-        }, { blockedIds }, config);
-
-        const changes = patch.activities || (patch.activity ? [patch.activity] : []);
-        u.check(Array.isArray(changes), '活动变更必须是数组');
-        for (const change of changes) {
-          activity.change(
-            npc,
-            change,
-            world.timeMin,
-            config
-          );
+        if (patch.add || patch.flags) {
+          getBucket(map, resolveAt(patch.effectsAt, toMin, fromMin, toMin)).patches.push({
+            id, add: patch.add, npcFlags: patch.flags
+          });
+        }
+        const tasks = patch.activities || (patch.activity ? [patch.activity] : []);
+        u.check(Array.isArray(tasks), '活动变更必须是数组');
+        for (const task of tasks) {
+          getBucket(map, resolveAt(task.at, toMin, fromMin, toMin)).activities.push({ npcId: id, task });
         }
       }
 
-      world.flags = {
-        ...world.flags,
-        ...front.flags
-      };
-
-      if (front.focusNpcId !== undefined) {
-        u.check(u.own(world.npcs, front.focusNpcId), '聚焦角色不存在');
-        world.focusNpcId = front.focusNpcId;
+      for (const bond of front.bonds || []) {
+        getBucket(map, resolveAt(bond.at, toMin, fromMin, toMin)).bonds.push(bond);
       }
-      if (front.playerInjury !== undefined) {
-        u.check(u.minute(front.playerInjury.level) && typeof front.playerInjury.type === 'string', '受伤申报非法');
+
+      if (front.room) {
+        getBucket(map, resolveAt(front.room.at, toMin, fromMin, toMin)).room = front.room;
+      }
+
+      const hasMeta = front.flags || front.focusNpcId !== undefined || front.playerInjury !== undefined ||
+        front.clockState !== undefined || front.timeCheck !== undefined;
+      if (hasMeta) {
+        getBucket(map, resolveAt(front.metaAt, toMin, fromMin, toMin)).meta = {
+          flags: front.flags, focusNpcId: front.focusNpcId, playerInjury: front.playerInjury,
+          clockState: front.clockState, timeCheck: front.timeCheck
+        };
+      }
+
+      return map;
+    }
+
+    function applyMeta(world, meta) {
+      if (!meta) return;
+      if (meta.flags) world.flags = { ...world.flags, ...meta.flags };
+      if (meta.focusNpcId !== undefined) {
+        u.check(u.own(world.npcs, meta.focusNpcId), '聚焦角色不存在');
+        world.focusNpcId = meta.focusNpcId;
+      }
+      if (meta.playerInjury !== undefined) {
+        u.check(u.minute(meta.playerInjury.level) && typeof meta.playerInjury.type === 'string', '受伤申报非法');
         world.playerState ||= {};
-        world.playerState.injury = u.clone(front.playerInjury);
+        world.playerState.injury = u.clone(meta.playerInjury);
       }
-      if (front.clockState !== undefined) {
-        u.check(u.minute(front.clockState.count) && u.minute(front.clockState.creditedMin), '时间保底状态非法');
-        world.bg.clockState = u.clone(front.clockState);
+      if (meta.clockState !== undefined) {
+        u.check(u.minute(meta.clockState.count) && u.minute(meta.clockState.creditedMin), '时间保底状态非法');
+        world.bg.clockState = u.clone(meta.clockState);
       }
-      if (front.timeCheck !== undefined) world.bg.lastTimeCheck = u.clone(front.timeCheck);
+      if (meta.timeCheck !== undefined) world.bg.lastTimeCheck = u.clone(meta.timeCheck);
+    }
 
-      nodes.resolve(
-        world,
-        front.resolveNodes,
-        config,
-        {
-          world,
-          phase: u.phaseAt(world.timeMin, config),
-          blockedIds
+    function applyBucket(world, bucket, config, blockedIds) {
+      if (!bucket) return;
+      if (bucket.prologueSteps.length && typeof config.applyPrologueSteps === 'function') {
+        const changes = config.applyPrologueSteps(world, bucket.prologueSteps, { blockedIds, config }) || [];
+        for (const ch of changes) {
+          const targetNpc = ch.target && ch.target !== 'world' ? world.npcs[ch.target] : null;
+          if (ch.move !== undefined && targetNpc?.activity?.kind === 'ordinary') {
+            activity.finish(targetNpc, world.timeMin, 'prologue-milestone');
+          }
         }
-      );
+        effects.apply(world, null, changes, { blockedIds: new Set() }, config);
+      }
+
+      for (const m of bucket.moves) {
+        const npc = m.npcId ? world.npcs[m.npcId] : null;
+        assertCanMove(world, m.to, npc, config);
+        if (npc) npc.location = m.to;
+        else world.playerLocation = m.to;
+      }
+
+      for (const p of bucket.patches) {
+        effects.apply(world, world.npcs[p.id], { add: p.add, npcFlags: p.npcFlags }, { blockedIds }, config);
+      }
+      applyMeta(world, bucket.meta);
+
+      const ctx = { world, phase: u.phaseAt(world.timeMin, config), blockedIds };
+      if (bucket.bonds.length && typeof config.resolveBonds === 'function') {
+        const changes = config.resolveBonds(world, bucket.bonds, ctx);
+        effects.apply(world, null, changes || [], { blockedIds }, config);
+      }
+
+      const checkRoom = Boolean(bucket.room || world.flags?.playerRoomTarget);
+      if (checkRoom && typeof config.resolveRoom === 'function') {
+        const changes = config.resolveRoom(world, bucket.room || null, ctx);
+        effects.apply(world, null, changes || [], { blockedIds }, config);
+      }
+
+      if (bucket.resolveNodes.length) nodes.resolve(world, bucket.resolveNodes, config, ctx);
+      if (bucket.resolveEvents.length) events.resolve(world, bucket.resolveEvents, config, ctx);
+
+      for (const { npcId, task } of bucket.activities) {
+        const cleanTask = { ...task };
+        delete cleanTask.at;
+        activity.change(world.npcs[npcId], cleanTask, world.timeMin, config);
+      }
+    }
+
+    function initialBlockedIds(state, command, front) {
+      const initialIds = command.interactingIds ?? command.sceneIds ?? state.interactingIds ?? [];
+      const blockedIds = u.listIds(initialIds, state.npcs, '互动角色列表');
+      state.interactingIds = [...blockedIds];
+
+      for (const [id, patch] of Object.entries(front.npcs || {})) {
+        u.check(u.own(state.npcs, id), '前台回执角色不存在');
+        const npc = state.npcs[id];
+        const tasks = patch.activities || (patch.activity ? [patch.activity] : []);
+        for (const task of tasks) {
+          if (task?.op === 'start' && npc.activity?.id !== task.id &&
+              !u.own(npc.activityHistory || {}, task.id)) {
+            blockedIds.add(id);
+          }
+        }
+      }
+      return blockedIds;
     }
 
     function advance(world, command, config) {
       u.validateConfig(config);
       u.validateWorld(world);
-
-      u.check(
-        world.bg?.version === 2,
-        '请先初始化，旧版状态须显式迁移'
-      );
-
-      u.check(
-        u.id(command.id) && u.id(command.revision),
-        '需要稳定聊天消息 ID 和回复版本'
-      );
+      u.check(world.bg?.version === 2, '请先初始化，旧版状态须显式迁移');
+      u.check(u.id(command.id) && u.id(command.revision), '需要稳定聊天消息 ID 和回复版本');
 
       const signature = u.signature({
         revision: command.revision,
         toMin: command.toMin,
-        interactingIds:
-          command.interactingIds ??
-          command.sceneIds ??
-          [],
+        interactingIds: command.interactingIds ?? command.sceneIds ?? [],
         front: command.front ?? null
       });
 
-      const previous =
-        world.bg.receipts[command.id];
-
+      const previous = world.bg.receipts[command.id];
       if (previous !== undefined) {
-        u.check(
-          previous === signature,
-          'REPLAY_REQUIRED：先恢复该消息之前的检查点'
-        );
-
+        u.check(previous === signature, 'REPLAY_REQUIRED：先恢复该消息之前的检查点');
         return {
           state: u.clone(world),
           before: null,
-          report: {
-            duplicate: true,
-            released: [],
-            actions: []
-          },
+          report: { duplicate: true, released: [], actions: [] },
           duplicate: true
         };
       }
 
-      u.check(
-        u.minute(command.toMin) &&
-        command.toMin >= world.timeMin,
-        '时间倒退须恢复检查点，不能直接减时钟'
-      );
+      u.check(u.minute(command.toMin) && command.toMin >= world.timeMin, '时间倒退须恢复检查点，不能直接减时钟');
 
       const state = u.clone(world);
       const front = command.front || {};
+      const blockedIds = initialBlockedIds(state, command, front);
+      const fromMin = state.timeMin;
+      const timeline = collectTimeline(state, front, fromMin, command.toMin);
+      const report = { duplicate: false, released: [], actions: [] };
 
-      // sceneIds仅兼容旧接口。
-      // 它现在表示互动角色，不再由位置推导。
-      const initialIds =
-        command.interactingIds ??
-        command.sceneIds ??
-        state.interactingIds ??
-        [];
-
-      const blockedIds = u.listIds(
-        initialIds,
-        state.npcs,
-        '互动角色列表'
-      );
-
-      state.interactingIds = [...blockedIds];
-
-      // 新报告活动先做保护，防止回补时间时被抢占。
-      for (const [id, patch] of
-        Object.entries(front.npcs || {})) {
-        u.check(
-          u.own(state.npcs, id),
-          '前台回执角色不存在'
-        );
-
-        const npc = state.npcs[id];
-        for (const task of patch.activities || (patch.activity ? [patch.activity] : [])) {
-          if (task?.op === 'start' && npc.activity?.id !== task.id &&
-              !u.own(npc.activityHistory || {}, task.id)) blockedIds.add(id);
-        }
-      }
-
-      const report = {
-        duplicate: false,
-        released: [],
-        actions: []
-      };
-
+      report.released.push(...activity.releaseExpiredOrdinary(state, config));
+      if (timeline.has(fromMin)) applyBucket(state, timeline.get(fromMin), config, blockedIds);
       refresh(state, config, blockedIds, report);
 
-      let steps = 0;
+      const pendingTimes = [...timeline.keys()].filter(t => t > fromMin).sort((a, b) => a - b);
+      let nextIdx = 0, steps = 0;
 
       while (state.timeMin < command.toMin) {
-        u.check(
-          ++steps <= (config.maxSteps ?? 128),
-          '时间推进过多，本次未提交任何变化'
-        );
+        u.check(++steps <= (config.maxSteps ?? 128), '时间推进过多，本次未提交任何变化');
+        const boundary = u.phaseAt(state.timeMin, config).end;
+        const nextReceipt = pendingTimes[nextIdx] ?? Infinity;
+        const next = Math.min(command.toMin, boundary, activity.nextDeadline(state, config), nextReceipt);
 
-        const boundary =
-          u.phaseAt(state.timeMin, config).end;
-
-        const next = Math.min(
-          command.toMin,
-          boundary,
-          activity.nextDeadline(state, config)
-        );
-
-        const fromMin = state.timeMin;
+        const stepFrom = state.timeMin;
         if (config.timeEffects) {
-          const changes = config.timeEffects({ world: u.clone(state), fromMin, toMin: next });
+          const changes = config.timeEffects({ world: u.clone(state), fromMin: stepFrom, toMin: next });
           u.check(Array.isArray(changes), 'timeEffects 必须返回明确目标的效果数组');
           effects.apply(state, null, changes, { blockedIds }, config);
         }
         state.timeMin = next;
 
-        refresh(state, config, blockedIds, report);
+        report.released.push(...activity.releaseExpiredOrdinary(state, config));
+        if (next === nextReceipt) {
+          applyBucket(state, timeline.get(next), config, blockedIds);
+          nextIdx++;
+        }
 
+        refresh(state, config, blockedIds, report);
         if (next === boundary) {
           schedule(state, config, blockedIds, report);
           refresh(state, config, blockedIds, report);
         }
       }
 
-      applyFront(state, front, config, blockedIds);
-
       if (front.interactingIds !== undefined) {
-        state.interactingIds = [
-          ...u.listIds(
-            front.interactingIds,
-            state.npcs,
-            '更新后的互动角色列表'
-          )
-        ];
+        state.interactingIds = [...u.listIds(front.interactingIds, state.npcs, '更新后的互动角色列表')];
       }
 
-      refresh(
-        state,
-        config,
-        new Set(state.interactingIds),
-        report
-      );
-
+      refresh(state, config, new Set(state.interactingIds), report);
       state.bg.receipts[command.id] = signature;
       state.bg.revision++;
-
       u.validateWorld(state);
 
-      return {
-        state,
-        before: u.clone(world),
-        report,
-        duplicate: false
-      };
+      return { state, before: u.clone(world), report, duplicate: false };
     }
 
     return { advance };
   }
 
-  const registry =
-    root.OKHBackgroundModules ||= Object.create(null);
-
-  if (registry.turn) {
-    throw Error('重复加载 okh_turn');
-  }
-
+  const registry = root.OKHBackgroundModules ||= Object.create(null);
+  if (registry.turn) throw Error('重复加载 okh_turn');
   registry.turn = create;
 
   if (typeof module !== 'undefined' && module.exports) {
@@ -1620,13 +1694,12 @@
   }
 })(globalThis);
 
-
 ;
 /**
  * @module okh_api
- * @updated 2026-11-09
+ * @updated 2026-11-11 00:08
  * @status implemented
- * @reason 公共接口、初始化、监听视图和示例存档迁移
+ * @reason 公共接口、先归一化后校验的初始化/迁移顺序与非阶段角色适配
  */
 (function (root) {
   'use strict';
@@ -1696,10 +1769,12 @@
       (config.nodes || []).map(n => n.id)
     );
 
+    if (world.bg) world.bg.eventStates ||= {};
     for (const npc of Object.values(world.npcs)) {
       npc.values ||= {};
       npc.flags ||= {};
-      npc.stage ??= 0;
+      if (npc.hasStage === false) delete npc.stage;
+      else npc.stage ??= 0;
       npc.activity ??= null;
       npc.activityHistory ||= {};
       npc.nodeStates ||= {};
@@ -1747,7 +1822,7 @@
 
   function init(world, config) {
     u.validateConfig(config);
-    u.validateWorld(world);
+    u.check(world && world.npcs && typeof world.npcs === 'object', '世界状态缺少角色表');
 
     u.check(
       !world.bg,
@@ -1755,6 +1830,7 @@
     );
 
     const state = normalize(u.clone(world), config);
+    u.validateWorld(state);
 
     state.bg = {
       version: 2,
@@ -1762,6 +1838,7 @@
       receipts: {},
       settled: {},
       fired: {},
+      eventStates: {},
       queue: [],
       generations: {}
     };
@@ -1771,14 +1848,13 @@
 
   function migrate(world, config) {
     u.validateConfig(config);
-    u.validateWorld(world);
-
     u.check(
-      world.bg?.version === 1,
+      world && world.npcs && world.bg?.version === 1,
       '只支持本示例v1到v2，原项目须另写映射'
     );
 
     const state = normalize(u.clone(world), config);
+    u.validateWorld(state);
     const old = state.bg;
     const receipts = {};
 
@@ -1827,6 +1903,7 @@
       receipts,
       settled: {},
       fired,
+      eventStates: {},
       queue,
       generations: {}
     };
@@ -1895,9 +1972,9 @@
 ;
 /**
  * @module okh_adapter
- * @updated 2026-11-09
+ * @updated 2026-11-11 00:08
  * @status implemented
- * @reason 串行读写、保存请求批次和检查点恢复
+ * @reason 串行读写、保存请求批次与兼容检查点升级恢复
  */
 (function (root) {
   'use strict';
@@ -2068,15 +2145,18 @@
 
       restore(checkpoint) {
         return serial(async () => {
+          const state = typeof config.prepareCheckpoint === 'function'
+            ? config.prepareCheckpoint(u.clone(checkpoint))
+            : u.clone(checkpoint);
+
           u.check(
-            checkpoint?.bg?.version === 2,
+            state?.bg?.version === 2,
             '检查点必须是完整v2状态'
           );
 
-          u.validateWorld(checkpoint);
+          u.validateWorld(state);
 
           const before = await readWorld();
-          const state = u.clone(checkpoint);
 
           // 状态回退，但提交版本仍递增。
           state.bg.revision =
@@ -2113,488 +2193,1074 @@
 
 ;
 /**
- * @module okh_app_config
- * @updated 2026-11-09 06:40
- * @status  implemented; content-demo
- * @reason  基于 GPT 核心的配置。全部为示例数据，不是定稿
- * @deps    无（纯数据 + 少量纯函数）
- * @provides { buildConfig, buildInitialWorld, LINES, CHARACTER_IDS }
- *
- * ============================================================
- * ⚠️ 本文件中的角色、行动、事件、节点全部是占位示例
- *    目的是让 GPT 的核心能跑起来，不是项目定稿。
- * ============================================================
+ * @module okh_app_data
+ * @updated 2026-11-11 00:10
+ * @status  implemented
+ * @reason  纯配置数据定义：时间常数、场所清单、七人初始台账、行动库、节点与附适用条件交互事件
+ * @deps    无
+ * @provides { SCHEMA_VERSION, DAY, PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld }
  */
-
 (function (root) {
   'use strict'
 
-  // ============================================================
-  // 一、时段（GPT 要求：从 0 开始、递增、id 唯一）
-  // ============================================================
+  const SCHEMA_VERSION = 2
+
+  const DAY = (n, hour = 6, min = 0) => (n - 1) * 1440 + hour * 60 + min
 
   const PHASES = [
-    { id: 'deep_night', start: 0, label: '深夜' },      // 00:00 – 06:00
-    { id: 'morning',    start: 360, label: '上午' },    // 06:00 – 10:00
-    { id: 'afternoon',  start: 600, label: '午后' },    // 10:00 – 17:00
-    { id: 'night',      start: 1020, label: '夜晚' }    // 17:00 – 24:00
+    { id: 'deep_night', start: 0,    label: '深夜' },
+    { id: 'morning',    start: 360,  label: '上午' },
+    { id: 'afternoon',  start: 600,  label: '午后' },
+    { id: 'night',      start: 1020, label: '夜晚' }
   ]
 
-  // ============================================================
-  // 二、底线表（用 GPT 的 allowed 钩子实现）
-  //    holdsWhile 里用的是 GPT 的比较对象语法
-  // ============================================================
-
-  const LINES = {
-    no_physical_contact: {
-      type: 'no_physical_contact',
-      holdsWhile: { corruption: { lt: 30 } }
-    },
-    no_admit: {
-      type: 'no_admit',
-      holdsWhile: { corruption: { lt: 70 } }
-    },
-    never_abandon: {
-      type: 'never_abandon',
-      holdsWhile: {}          // 永不解除
-    },
-    resist: {
-      type: 'resist',
-      holdsWhile: { corruption: { lt: 75 } }
-    },
-    no_public_shame: {
-      type: 'no_public_shame',
-      holdsWhile: { corruption: { lt: 65 } }
-    }
+  const LOCATIONS = {
+    inn: '断剑与麦酒',
+    training_grounds: '露天练武场',
+    town: '镇上',
+    church: '圣辉大教堂',
+    manor: '领主山庄',
+    casino: '地下赌场',
+    wilds: '城外荒原',
+    wilds_camp: '黑兽人前哨据点'
   }
 
-  // ============================================================
-  // 三、行动库（GPT 格式）
-  //    priority 对应原来的 base
-  //    blockedBy 通过 allowed 钩子生效
-  // ============================================================
+  const TOWN_LOCATIONS = ['inn', 'training_grounds', 'town', 'church', 'manor', 'casino']
+
+  const STAGES = { 0: '如常', 1: '异兆', 2: '泥足', 3: '沦陷' }
+
+  const AFFECTION_TIERS = {
+    ordinary: '普通',
+    friendly: '友好',
+    intimate: '亲密',
+    love: '爱恋'
+  }
 
   const ACTIONS = [
-    // ── 生计 ──
     {
-      id: 'work_shift', priority: 28,
-      when: { phase: ['morning', 'afternoon'], metrics: { need: { gt: 50 } } },
-      effects: { add: { need: -12, fear: 2 } },
-      occupation: { kind: 'ordinary', label: '去做工' }
+      id: 'gulan_train',
+      priority: 25,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'gulan' &&
+        phase.id === 'afternoon' &&
+        !npc.flags?.gulan_captured_orc &&
+        npc.location !== 'training_grounds',
+      effects: { move: 'training_grounds' },
+      occupation: { kind: 'ordinary', label: '前往演武场练剑' }
     },
     {
-      id: 'work_extra', priority: 20,
-      when: { metrics: { need: { gt: 60 } } },
-      effects: { add: { need: -18, shame: 4, corruption: 2, exposure: 2 } },
-      occupation: { kind: 'ordinary', label: '接私活' }
+      id: 'isna_odd_job',
+      priority: 22,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        !npc.flags?.gold_desire_frozen &&
+        npc.stage < 2 &&
+        ['morning', 'afternoon'].includes(phase.id) &&
+        !npc.flags?.isna_worked_today,
+      effects: {
+        move: 'town',
+        add: { gold_desire: 1 },
+        npcFlags: { isna_worked_today: true }
+      },
+      occupation: { kind: 'ordinary', label: '去镇上接点零散杂活' }
     },
     {
-      id: 'trade', priority: 16,
-      when: { phase: ['morning', 'afternoon'] },
-      effects: { add: { need: -8 } },
-      occupation: { kind: 'ordinary', label: '做点买卖' }
+      id: 'return_inn',
+      priority: 30,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        ['night', 'deep_night'].includes(phase.id) &&
+        npc.homeLocation === 'inn' &&
+        npc.location !== 'inn' &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.gulan_captured_orc &&
+        !npc.flags?.captured_manor,
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '夜间返回旅店休整' }
     },
-
-    // ── 日常 ──
     {
-      id: 'pray', priority: 24,
+      id: 'return_church',
+      priority: 30,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        ['night', 'deep_night'].includes(phase.id) &&
+        npc.homeLocation === 'church' &&
+        npc.location !== 'church' &&
+        !npc.flags?.captured_manor,
+      effects: { move: 'church' },
+      occupation: { kind: 'ordinary', label: '夜间返回修道院' }
+    },
+    {
+      id: 'return_manor',
+      priority: 30,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        ['night', 'deep_night'].includes(phase.id) &&
+        npc.homeLocation === 'manor' &&
+        npc.location !== 'manor',
+      effects: { move: 'manor' },
+      occupation: { kind: 'ordinary', label: '夜间返回领主山庄' }
+    },
+    {
+      id: 'idle_rest',
+      priority: 5,
       when: {},
-      effects: { add: { shame: -6, duty: 3, fear: -3, sanity: 3 } },
-      occupation: { kind: 'ordinary', label: '去祈祷' }
-    },
-    {
-      id: 'rest', priority: 18,
-      when: {},
-      effects: { add: { fear: -4, sanity: 2 } },
-      occupation: { kind: 'ordinary', label: '歇着' }
-    },
-    {
-      id: 'care', priority: 22,
-      when: {},
-      effects: { add: { duty: 5, shame: -4, sanity: 4 } },
-      occupation: { kind: 'ordinary', label: '去照顾人' }
-    },
-    {
-      id: 'visit_bond', priority: 20,
-      when: {},
-      effects: { add: { loyalty: 6, need: -2 } },
-      occupation: { kind: 'ordinary', label: '去看望亲近的人' }
-    },
-    {
-      id: 'socialize', priority: 17,
-      when: {},
-      effects: { add: { shame: -5, curiosity: 3, exposure: 1 } },
-      occupation: { kind: 'ordinary', label: '和人应酬' }
-    },
-
-    // ── 越界边缘 ──
-    {
-      id: 'serve', priority: 22,
-      when: { metrics: { need: { gt: 55 } } },
-      effects: { add: { need: -20, shame: 10, fear: 5, corruption: 6, exposure: 3 } },
-      occupation: { kind: 'important', label: '去侍奉', releaseRule: 'serviceResolved' },
-      blockedBy: ['no_physical_contact']
-    },
-    {
-      id: 'gamble', priority: 18,
-      when: { metrics: { curiosity: { gt: 45 } } },
-      effects: { add: { curiosity: -5, lust: 4, fear: 5, corruption: 3, exposure: 3 } },
-      occupation: { kind: 'ordinary', label: '去赌一把' }
-    },
-    {
-      id: 'drink', priority: 16,
-      when: {},
-      effects: { add: { fear: -6, shame: -5, corruption: 1 } },
-      occupation: { kind: 'ordinary', label: '去喝一杯' }
-    },
-    {
-      id: 'indulge', priority: 14,
-      when: { metrics: { corruption: { gte: 30 } } },
-      effects: { add: { shame: 8, lust: 8, corruption: 8, exposure: 4 } },
-      occupation: { kind: 'important', label: '放纵一次', releaseRule: 'indulgenceResolved' },
-      blockedBy: ['no_physical_contact']
-    },
-
-    // ── 探索 / 危险 ──
-    {
-      id: 'explore', priority: 17,
-      when: { metrics: { curiosity: { gt: 50 } } },
-      effects: { add: { curiosity: -8, fear: 4, exposure: 1 } },
-      occupation: { kind: 'ordinary', label: '去看看' }
-    },
-    {
-      id: 'sneak', priority: 15,
-      when: { phase: ['night'] },
-      effects: { add: { fear: 6, curiosity: -4, corruption: 2, exposure: 3 } },
-      occupation: { kind: 'ordinary', label: '偷偷出去' }
-    },
-    {
-      id: 'resist', priority: 20,
-      when: { metrics: { pride: { gt: 60 } } },
-      effects: { add: { pride: 4, fear: 4, sanity: 2 } },
-      occupation: { kind: 'ordinary', label: '顶回去' }
-    },
-    {
-      id: 'submit', priority: 18,
-      when: {},
-      effects: { add: { shame: 5, fear: 3, corruption: 3 } },
-      occupation: { kind: 'ordinary', label: '忍下来' }
-    },
-
-    // ── 掩饰 ──
-    {
-      id: 'conceal', priority: 19,
-      when: { metrics: { corruption: { gte: 20 } } },
-      effects: { add: { fear: 3, shame: 4, exposure: -8 } },
-      occupation: { kind: 'ordinary', label: '把事瞒下来' }
-    },
-    {
-      id: 'confess', priority: 12,
-      when: { metrics: { loyalty: { gt: 65 } } },
-      effects: { add: { shame: -10, loyalty: 5, sanity: 5, exposure: -3 } },
-      occupation: { kind: 'ordinary', label: '说出来' }
-    },
-    {
-      id: 'show_off', priority: 15,
-      when: {},
-      effects: { add: { pride: 6 } },
-      occupation: { kind: 'ordinary', label: '显摆一下' }
+      effects: {},
+      occupation: { kind: 'ordinary', label: '歇息整备' }
     }
   ]
-
-  // ============================================================
-  // 四、阶段节点（GPT 的核心推进方式）
-  // ============================================================
 
   const NODES = [
     {
-      id: 'stage_1', mode: 'result', fromStage: 0, toStage: 1,
-      when: { metrics: { corruption: { gte: 30 } } },
-      text: '{name}最近有些不一样了，说不上来哪里不对。'
+      id: 'gulan_stage_1',
+      mode: 'result',
+      fromStage: 0,
+      toStage: 1,
+      when: { stage: 0, metrics: { blood_density: { gte: 20 } } },
+      text: '夜半调息时，{name}感到额角微烫、体内真血出现异样躁动；她以为只是连日奔波或此前激斗余波，神色沉凝地强自压下。'
     },
     {
-      id: 'stage_2', mode: 'result', fromStage: 1, toStage: 2,
-      when: { metrics: { corruption: { gte: 55 } } },
-      text: '{name}已经不太解释了，也不再遮掩。'
+      id: 'gulan_stage_2',
+      mode: 'result',
+      fromStage: 1,
+      toStage: 2,
+      when: ({ npc }) => {
+        if (npc.stage !== 1 || !npc.flags?.ed_hypnosis_play_done) return false
+        const aff = npc.values.affection ?? 0
+        const threshold = aff >= 90 ? 65 : aff >= 70 ? 50 : aff >= 40 ? 45 : 35
+        return (npc.values.blood_density ?? 0) >= threshold
+      },
+      text: '昨夜防线失守的余悸未消，{name}清晨起得比往常更早，将黑底高领长裙的衣襟扣得严严实实，刻意避开了众人投来的目光。'
     },
     {
-      id: 'stage_3', mode: 'result', fromStage: 2, toStage: 3,
-      when: { metrics: { corruption: { gte: 80 } } },
-      text: '{name}不再提以前的事，仿佛那些从没发生过。'
+      id: 'gulan_stage_3',
+      mode: 'result',
+      fromStage: 2,
+      toStage: 3,
+      when: { stage: 2, metrics: { blood_density: { gte: 80 } }, flags: { gulan_final_fall_done: true } },
+      text: '{name}不再抗拒体内奔涌的古龙真血，琥珀竖瞳沉冷而傲然，龙化形态已化作她自身的常态与本能。'
     }
   ]
 
-  // ============================================================
-  // 五、世界事件（GPT 格式）
-  //    时间换算：第 N 天 06:00 = (N-1)*1440 + 360
-  // ============================================================
-
-  const DAY = (n, hour = 6) => (n - 1) * 1440 + hour * 60
+  const gulanSoloTrainingGrounds = ({ world, npc, phase }) =>
+    Boolean(world.flags?.arrived_oakhaven) &&
+    world.timeMin >= DAY(15, 6) &&
+    phase.id === 'afternoon' &&
+    npc.location === 'training_grounds' &&
+    world.playerLocation !== 'training_grounds' &&
+    !npc.flags?.gulan_evt1_done &&
+    Object.values(world.npcs).every(
+      other => other.id === npc.id || other.alive === false || other.location !== 'training_grounds'
+    )
 
   const EVENTS = [
     {
-      id: 'lord_hiring', mode: 'result', scope: 'world',
-      when: { time: { gte: DAY(1, 6) }, phase: ['morning', 'afternoon'] },
-      text: '领主府放出消息，说要招几个手脚勤快的女仆，工钱给得比镇上高出一截。',
+      id: 'dragon_blood_awakening_resist_low',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['gulan'],
+      when: ctx => gulanSoloTrainingGrounds(ctx) && ctx.npc.stage < 2,
+      text: '镇上十余名地痞觊觎{name}独处练武场，借讨教暗燃未知催情异香。察觉药力难辨后，{name}为防交手生变果断激发龙鳞护体，挥重剑将围逼宵小依次格杀后径直离开。',
+      effects: {
+        add: { blood_density: 10 },
+        npcFlags: { gulan_evt1_done: true },
+        worldFlags: { bloody_arena: true }
+      }
+    },
+    {
+      id: 'dragon_blood_awakening_mud_guard',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['gulan'],
+      when: ctx =>
+        gulanSoloTrainingGrounds(ctx) &&
+        ctx.npc.stage === 2 &&
+        (ctx.npc.values.affection ?? 0) >= 90,
+      text: '异香瞬间引动了{name}体内蛰伏的情潮，四肢酸软浮起潮红；但念及对玩家的深情与道义底线，加之药效未明恐生意外，她仍强催龙血覆鳞，提重剑肃清来敌。',
+      effects: {
+        add: { blood_density: 10 },
+        npcFlags: { gulan_evt1_done: true },
+        worldFlags: { bloody_arena: true }
+      }
+    },
+    {
+      id: 'dragon_blood_awakening_mud_fall',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['gulan'],
+      when: ctx =>
+        gulanSoloTrainingGrounds(ctx) &&
+        ctx.npc.stage === 2 &&
+        (ctx.npc.values.affection ?? 0) < 90,
+      text: '早已被暗中撬开防线的躯体受强力异香催动，{name}双膝一软没能压住奔涌的躁热，演武场内终究守不住最后的防线。',
+      effects: {
+        npcFlags: { gulan_evt1_done: true, gulan_arena_fall: true }
+      }
+    },
+    {
+      id: 'dragon_blood_awakening_fallen',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['gulan'],
+      when: ctx => gulanSoloTrainingGrounds(ctx) && ctx.npc.stage >= 3,
+      text: '已全面接纳龙血本能的{name}不再顾忌世俗名节，放任热潮与血性在练武场席卷。',
+      effects: {
+        npcFlags: { gulan_evt1_done: true, gulan_arena_fall: true }
+      }
+    },
+    {
+      id: 'gulan_final_rescue_prompt',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['gulan'],
+      allowCancel: false,
+      resolveWhen: ({ npc }) => npc.stage === 2,
+      when: ({ npc }) =>
+        npc.stage === 2 &&
+        (npc.values.blood_density ?? 0) >= 80 &&
+        (npc.values.affection ?? 0) >= 90 &&
+        !npc.flags?.gulan_final_fall_done &&
+        !npc.flags?.gulan_rescued_final,
+      text: '夜色深沉，{name}房中传来沉重压抑的吐息与微弱鳞甲摩擦声；在最后一重理智即将溃散前，她仍面向你的方向漏出了一丝挣扎破绽。',
+      outcomes: {
+        rescue: {
+          when: ({ world, npc }) =>
+            npc.stage === 2 &&
+            world.playerLocation === 'inn' &&
+            npc.location === 'inn' &&
+            (npc.values.affection ?? 0) >= 90,
+          text: '你及时入室握住她发颤的手腕稳住气血，助她在最后关头压下了沸腾的始祖龙威。',
+          effects: {
+            add: { blood_density: -10 },
+            npcFlags: { gulan_rescued_final: true }
+          }
+        },
+        fail: {
+          text: '错过了最后的缓冲窗口，奔涌的真血最终吞没了她最后一丝游移。',
+          effects: {
+            npcFlags: { gulan_final_fall_done: true }
+          }
+        }
+      }
+    },
+    {
+      id: 'isna_tavern_rumor_alone',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['isna'],
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        world.timeMin >= DAY(8, 6) &&
+        npc.stage === 0 &&
+        npc.location === 'inn' &&
+        ['afternoon', 'night'].includes(phase.id) &&
+        (npc.values.gold_desire ?? 0) >= 30 &&
+        !npc.flags?.gold_desire_frozen &&
+        !npc.flags?.isna_evt1_done &&
+        !npc.flags?.isna_comforted_today &&
+        world.playerLocation !== 'inn',
+      text: '旅店酒馆里飘着烤肉与麦酒气味，邻桌雇佣兵高声议论着荒原悬赏与领主高薪。{name}摸了摸只剩碎肉干的口袋，猫尾甩得飞快，独自下定决心要找大活赚一笔。',
+      effects: {
+        add: { gold_desire: 15 },
+        npcFlags: { isna_evt1_done: true }
+      }
+    },
+    {
+      id: 'isna_tavern_rumor_soothed',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['isna'],
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        world.timeMin >= DAY(8, 6) &&
+        npc.stage === 0 &&
+        npc.location === 'inn' &&
+        ['afternoon', 'night'].includes(phase.id) &&
+        (npc.values.gold_desire ?? 0) >= 30 &&
+        !npc.flags?.gold_desire_frozen &&
+        !npc.flags?.isna_evt1_done &&
+        Boolean(npc.flags?.isna_comforted_today),
+      text: '邻桌照样在吹嘘荒原大赏与山庄阔绰酬金，但{name}咬着你先一步分给她的热食，原本烦躁拍打木凳的猫尾逐渐安静下来。',
+      effects: {
+        add: { gold_desire: 5, affection: 2 },
+        npcFlags: { isna_evt1_done: true }
+      }
+    },
+    {
+      id: 'isna_tavern_rumor_notice',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['isna'],
+      allowCancel: false,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        world.timeMin >= DAY(8, 6) &&
+        npc.stage === 0 &&
+        npc.location === 'inn' &&
+        ['afternoon', 'night'].includes(phase.id) &&
+        (npc.values.gold_desire ?? 0) >= 30 &&
+        !npc.flags?.gold_desire_frozen &&
+        !npc.flags?.isna_evt1_done &&
+        !npc.flags?.isna_comforted_today &&
+        world.playerLocation === 'inn',
+      text: '酒馆大堂里飘着烤肉香气，邻桌正在吹嘘荒原悬赏与领主府的三倍工钱。你注意到同在旅店的{name}正盯着空袋发呆、猫耳紧绷，似在盘算自己单干。',
+      effects: { npcFlags: { isna_evt1_done: true } },
+      outcomes: {
+        soothe: {
+          when: ({ world, npc }) => world.playerLocation === 'inn' && npc.location === 'inn',
+          text: '你主动坐过去分她一份肉食宽慰几句，她垂下猫耳小声嘀咕了两句，暂且压下了急躁念头。',
+          effects: { add: { gold_desire: 5, affection: 2 } }
+        },
+        ignore: {
+          text: '你忙着别的事没有出声干预，{name}灌完杯底残酒，眼底多了几分跃跃欲试。',
+          effects: { add: { gold_desire: 15 } }
+        }
+      }
+    },
+    {
+      id: 'isna_alley_lockpick_alone',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['isna'],
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.stage === 0 &&
+        npc.location === 'town' &&
+        ['night', 'deep_night'].includes(phase.id) &&
+        (npc.values.gold_desire ?? 0) >= 50 &&
+        !npc.flags?.gold_desire_frozen &&
+        !npc.flags?.isna_evt2_done &&
+        world.playerLocation !== 'town',
+      text: '入夜后{name}在商业巷暗接一桩高酬开锁私活；顺利拿钱撤离时险些撞上巡卫，她撒出靴底烟幕骨粉惊险甩脱，分毫未损反而让自信越发膨胀。',
+      effects: {
+        add: { gold_desire: 15 },
+        npcFlags: { isna_evt2_done: true, alley_confidence: true }
+      }
+    },
+    {
+      id: 'isna_alley_lockpick_spot',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['isna'],
+      allowCancel: false,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.stage === 0 &&
+        npc.location === 'town' &&
+        ['night', 'deep_night'].includes(phase.id) &&
+        (npc.values.gold_desire ?? 0) >= 50 &&
+        !npc.flags?.gold_desire_frozen &&
+        !npc.flags?.isna_evt2_done &&
+        world.playerLocation === 'town',
+      text: '商业巷拐角忽然炸开一团刺鼻骨粉烟幕，一道敏捷的猫耳身影翻过矮墙正欲抽身遁走，像刚干完私活的{name}。',
+      effects: { npcFlags: { isna_evt2_done: true } },
+      outcomes: {
+        intercept: {
+          when: ({ world, npc }) => world.playerLocation === 'town' && npc.location === 'town',
+          text: '你快步抢前堵住退路冷脸训了她一顿，{name}心虚夹紧尾巴乖乖认错，收敛了不少冒失念头。',
+          effects: { add: { gold_desire: 5, affection: 4 } }
+        },
+        miss: {
+          text: '烟幕散尽后巷内已空无一人，{name}顺利带着快钱脱身，越发笃信凭自己本事去哪都能来去自如。',
+          effects: { add: { gold_desire: 15 }, npcFlags: { alley_confidence: true } }
+        }
+      }
+    },
+    {
+      id: 'lord_hiring',
+      mode: 'result',
+      scope: 'world',
+      when: { worldFlags: { arrived_oakhaven: true }, phase: ['morning', 'afternoon'] },
+      text: '领主府放出消息，说山庄正以三倍高薪招几个手脚勤快的女仆与临时差役。',
       effects: { worldFlags: { lord_hiring: true } }
-    },
-    {
-      id: 'casino_open', mode: 'result', scope: 'world',
-      when: { time: { gte: DAY(2, 17) }, phase: ['night'] },
-      text: '镇子东头那家赌场重新开张了，门口站着两个黑塔一样的保镖。',
-      effects: { worldFlags: { casino_unlocked: true } }
-    },
-    {
-      id: 'debt_collector', mode: 'result', scope: 'npc',
-      targets: ['aurora'],
-      when: { time: { gte: DAY(3, 12) }, phase: ['afternoon', 'night'] },
-      text: '有人在旅店门口堵住了{name}，声音不大，但说得很清楚。',
-      effects: { add: { need: 15, fear: 12, shame: 8 } }
-    },
-    {
-      id: 'eileen_arrive', mode: 'result', scope: 'npc', idleOnly: true,
-      targets: ['eileen'],
-      when: { time: { gte: DAY(4, 6) }, phase: ['morning', 'afternoon'] },
-      text: '一队人马从东边官道进了镇，打头的是个穿白金制服的年轻女人。',
-      effects: { move: 'manor', worldFlags: { eileen_arrived: true } }
-    },
-    {
-      id: 'convent_shortage', mode: 'result', scope: 'npc',
-      targets: ['cecilia'],
-      when: { time: { gte: DAY(5, 6) }, phase: ['morning', 'afternoon'] },
-      text: '修道院的存粮见了底，孩子们一天只吃一顿。',
-      effects: { add: { need: 20, duty: 10 } }
-    },
-    {
-      id: 'first_crack', mode: 'result', scope: 'npc',
-      when: { metrics: { corruption: { gte: 30 } }, phase: ['night'] },
-      text: '镇上开始有人私下议论，说某个人的样子不太一样了。',
-      effects: { worldFlags: { rumor_started: true } }
-    },
-    {
-      id: 'lord_moves', mode: 'result', scope: 'world',
-      when: { time: { gte: DAY(6, 0) } },
-      text: '领主府的管事开始频繁地派人来镇上走动，说是办事，眼睛却在到处看。',
-      effects: { worldFlags: { lord_aggressive: true } }
     }
   ]
 
-  // ============================================================
-  // 六、角色（初始 world 用）
-  // ============================================================
-
-  const LOCATIONS = { town: '镇上', inn: '断剑与麦酒', church: '圣辉大教堂', manor: '领主山庄', casino: '地下赌场', wilds: '城外荒原' }
-  const STAGES = { 0: '正常', 1: '异常', 2: '沉沦', 3: '臣服' }
-  // 仅对列出的驱动力做按时间回归；债务、觉醒度、堕落度等进程指标不自动回归。
-  const DRIFT = { perHour: 0.10, needPerHour: 2, fields: ['pride', 'duty', 'lust', 'fear', 'shame', 'curiosity', 'loyalty', 'sanity'] }
-  const ALL_DRIVES = ['pride', 'duty', 'lust', 'fear', 'shame', 'need', 'curiosity', 'loyalty']
-
-  /**
-   * 造一个角色
-   * @param {object} cfg
-   * @returns {object}
-   */
   function makeNpc(cfg) {
-    const values = {}
-    for (const k of ALL_DRIVES) values[k] = cfg.drives?.[k] ?? 0
-    values.corruption = cfg.corruption ?? 0
-    values.sanity = cfg.sanity ?? 80
-    values.exposure = cfg.exposure ?? 0
-    Object.assign(values, cfg.values || {})
-
-    return {
+    const hasStage = cfg.hasStage !== false
+    const hasAffection = cfg.hasAffection !== false
+    const values = { ...(cfg.values || {}) }
+    const npc = {
       id: cfg.id,
       name: cfg.name,
-      monitored: true,
+      monitored: cfg.monitored !== false,
       alive: true,
+      hasStage,
+      hasAffection,
+      homeLocation: cfg.homeLocation || cfg.location,
       location: cfg.location,
       values,
-      stage: 0,
-      plan: cfg.plan.slice(),
-      nodePlan: ['stage_1', 'stage_2', 'stage_3'],
+      plan: (cfg.plan || []).slice(),
+      nodePlan: hasStage ? (cfg.nodePlan || []).slice() : [],
       activity: null,
       activityHistory: {},
       nodeStates: {},
       flags: {},
       lastAction: null,
-      // 桥接私用：基线，用于漂移
       _baseline: { ...values },
-      _metricBounds: { ...(cfg.metricBounds || {}) },
-      // 桥接私用：底线
-      _lines: (cfg.lines || []).slice()
+      _metricBounds: { ...(cfg.metricBounds || {}) }
     }
+    if (hasStage) npc.stage = cfg.stage ?? 0
+    return npc
   }
 
   const ROSTER = [
     makeNpc({
-      id: 'aurora', name: '奥萝拉', location: 'inn',
-      drives: { duty: 70, shame: 65, fear: 50, need: 75, loyalty: 60 },
-      plan: ['work_shift', 'work_extra', 'pray', 'care', 'visit_bond', 'serve', 'conceal', 'confess', 'rest'],
-      lines: ['no_physical_contact', 'no_admit', 'never_abandon']
+      id: 'gulan', name: '古兰', location: 'wilds', homeLocation: 'inn',
+      hasStage: true, hasAffection: true,
+      values: { blood_density: 0, affection: 70 },
+      metricBounds: { blood_density: [0, 100], affection: [0, 100] },
+      nodePlan: ['gulan_stage_1', 'gulan_stage_2', 'gulan_stage_3'],
+      plan: ['gulan_train', 'return_inn', 'idle_rest']
     }),
     makeNpc({
-      id: 'nise', name: '妮丝', location: 'inn',
-      drives: { pride: 80, curiosity: 75, lust: 40, fear: 30 },
-      plan: ['show_off', 'gamble', 'explore', 'sneak', 'socialize', 'drink', 'resist', 'rest', 'indulge'],
-      lines: ['no_admit', 'never_abandon']
+      id: 'isna', name: '伊丝娜', location: 'wilds', homeLocation: 'inn',
+      hasStage: true, hasAffection: true,
+      values: { gold_desire: 25, affection: 60 },
+      metricBounds: { gold_desire: [0, 100], affection: [0, 100] },
+      nodePlan: [],
+      plan: ['isna_odd_job', 'return_inn', 'idle_rest']
     }),
     makeNpc({
-      id: 'eileen', name: '艾琳', location: 'manor',
-      drives: { pride: 95, duty: 70, fear: 45, shame: 55 },
-      plan: ['resist', 'work_shift', 'pray', 'socialize', 'explore', 'conceal', 'submit', 'rest'],
-      lines: ['no_public_shame', 'resist']
+      id: 'nise', name: '妮丝', location: 'wilds', homeLocation: 'inn',
+      hasStage: true, hasAffection: true,
+      values: { curiosity: 0, gamble_debt: 0, affection: 70 },
+      metricBounds: { curiosity: [0, 100], gamble_debt: [0, 100], affection: [0, 100] },
+      nodePlan: [],
+      plan: ['return_inn', 'idle_rest']
     }),
     makeNpc({
-      id: 'cecilia', name: '塞西莉亚', location: 'church',
-      drives: { duty: 85, loyalty: 80, shame: 70, need: 60 },
-      plan: ['care', 'pray', 'work_shift', 'serve', 'conceal', 'confess', 'submit', 'rest'],
-      lines: ['never_abandon', 'no_public_shame']
+      id: 'aurora', name: '奥萝拉', location: 'wilds', homeLocation: 'inn',
+      hasStage: true, hasAffection: true,
+      values: { debt_pressure: 0, affection: 50 },
+      metricBounds: { debt_pressure: [0, 100], affection: [0, 100] },
+      nodePlan: [],
+      plan: ['return_inn', 'idle_rest']
     }),
     makeNpc({
-      id: 'gulan', name: '古兰', location: 'inn',
-      drives: { pride: 75, duty: 90, fear: 20, loyalty: 85 },
-      plan: ['work_shift', 'resist', 'care', 'rest', 'socialize', 'explore'],
-      lines: ['no_public_shame']
+      id: 'eileen', name: '艾琳', location: 'manor', homeLocation: 'manor',
+      hasStage: true, hasAffection: true,
+      values: { isolation: 0, affection: 20 },
+      metricBounds: { isolation: [0, 100], affection: [0, 100] },
+      nodePlan: [],
+      plan: ['return_manor', 'idle_rest']
+    }),
+    makeNpc({
+      id: 'cecilia', name: '塞西莉亚', location: 'church', homeLocation: 'church',
+      hasStage: true, hasAffection: true,
+      values: { orphanage_funds: 0, affection: 20 },
+      metricBounds: { orphanage_funds: [0, 100], affection: [0, 100] },
+      nodePlan: [],
+      plan: ['return_church', 'idle_rest']
+    }),
+    makeNpc({
+      id: 'ed', name: '爱德', monitored: false, location: 'wilds', homeLocation: 'inn',
+      hasStage: false, hasAffection: false,
+      values: { patience: 100 },
+      metricBounds: { patience: [0, 100] },
+      nodePlan: [],
+      plan: ['return_inn', 'idle_rest']
     })
   ]
 
-  // ============================================================
-  // 七、配置构造
-  // ============================================================
-
-  /**
-   * 判断某角色某条底线是否仍然有效
-   * @param {object} line
-   * @param {object} values
-   * @returns {boolean}
-   */
-  function lineHolds(line, values) {
-    for (const [k, cond] of Object.entries(line.holdsWhile || {})) {
-      const v = values[k] ?? 0
-      for (const [op, n] of Object.entries(cond)) {
-        const ok = op === 'gt' ? v > n
-                 : op === 'gte' ? v >= n
-                 : op === 'lt' ? v < n
-                 : op === 'lte' ? v <= n
-                 : op === 'eq' ? v === n
-                 : op === 'ne' ? v !== n
-                 : false
-        if (!ok) return false
-      }
-    }
-    return true
-  }
-
-  /**
-   * 取角色当前生效的底线类型
-   * @param {object} npc
-   * @returns {string[]}
-   */
-  function activeLineTypes(npc) {
-    return (npc._lines || [])
-      .map(id => LINES[id])
-      .filter(Boolean)
-      .filter(l => lineHolds(l, npc.values))
-      .map(l => l.type)
-  }
-
-  /**
-   * 生成 GPT 需要的 config
-   * @returns {object}
-   */
-  function buildConfig() {
-    const destinations = { work_shift: 'town', work_extra: 'town', trade: 'town', pray: 'church', care: 'church', visit_bond: 'inn', socialize: 'town', serve: 'manor', gamble: 'casino', drink: 'inn', indulge: 'manor', explore: 'wilds', sneak: 'town' }
-    const actions = ACTIONS.map(a => ({
-      id: a.id,
-      priority: a.priority,
-      when: a.when,
-      effects: { ...a.effects, ...(destinations[a.id] ? { move: destinations[a.id] } : {}),
-        ...(a.occupation?.releaseRule ? { npcFlags: { [a.occupation.releaseRule]: false } } : {}) },
-      occupation: a.occupation,
-      narration: a.narration || (a.occupation?.kind === 'important'
-        ? '{name}开始了一项重要活动：' + a.occupation.label + '。请演绎当前进展；实际结束时按活动契约申报 finish。'
-        : undefined),
-      _blockedBy: a.blockedBy || []
-    }))
-
-    return {
-      policy: { ordinaryGraceMin: 120 },
-      phases: PHASES,
-      maxSteps: 128,
-      actions,
-      events: EVENTS,
-      nodes: NODES,
-      metricBounds: Object.fromEntries(ROSTER.map(n => [n.id, { ...Object.fromEntries([...ALL_DRIVES, 'corruption', 'sanity', 'exposure'].map(k => [k, [0, 100]])), ...n._metricBounds }])),
-      releaseRules: {
-        manualRelease: () => false, // 只等待明确的 finish/cancel，不自动解除。
-        assignmentResolved: { flags: { assignmentResolved: true } },
-        serviceResolved: { flags: { serviceResolved: true } },
-        indulgenceResolved: { flags: { indulgenceResolved: true } }
-      },
-
-      /**
-       * GPT 留的钩子：筛选行动时调用
-       * 在这里实现底线判定
-       */
-      allowed(ctx, item) {
-        const npc = ctx.npc
-        if (!npc || !item._blockedBy?.length) return true
-        const types = activeLineTypes(npc)
-        return !item._blockedBy.some(t => types.includes(t))
-      }
-    }
-  }
-
-  /**
-   * 生成初始 world
-   * @returns {object}
-   */
   function buildInitialWorld() {
     const npcs = {}
     for (const n of ROSTER) {
       npcs[n.id] = JSON.parse(JSON.stringify(n))
       npcs[n.id]._baseline = { ...n.values }
     }
-
     return {
-      // 开场是暮色，初始化时间与之对齐：第 1 天 18:00（属于 night 时段）
+      schemaVersion: SCHEMA_VERSION,
       timeMin: 18 * 60,
-      playerLocation: 'inn',
+      playerLocation: 'wilds',
       interactingIds: [],
-      flags: {},
+      flags: {
+        ed_joined: false,
+        arrived_oakhaven: false,
+        playerRoomTarget: null
+      },
       npcs
     }
   }
 
+  root.OKH_APP_DATA = Object.freeze({
+    SCHEMA_VERSION, DAY, PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS,
+    ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld
+  })
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = root.OKH_APP_DATA
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this)
+
+;
+/**
+ * @module okh_app_rules
+ * @updated 2026-11-11 00:10
+ * @status  implemented
+ * @reason  纯业务判定规则：好感区间、前传移动门禁、前传里程碑、同房状态与好感/行为上限校验
+ * @deps    OKH_APP_DATA
+ * @provides { getAffectionTier, canMove, applyPrologueSteps, resolveRoom, resolveBonds }
+ */
+(function (root) {
+  'use strict'
+
+  const DATA = root.OKH_APP_DATA
+  if (!DATA) throw Error('rules 缺少 OKH_APP_DATA')
+
+  const TOWN_LOCATION_SET = new Set(DATA.TOWN_LOCATIONS)
+
+  function getAffectionTier(value) {
+    const score = Number.isFinite(value) ? value : 0
+    if (score >= 90) return 'love'
+    if (score >= 70) return 'intimate'
+    if (score >= 40) return 'friendly'
+    return 'ordinary'
+  }
+
+  function canMove(world, to) {
+    if (!Object.hasOwn(DATA.LOCATIONS, to)) return false
+    if (!world?.flags?.arrived_oakhaven && TOWN_LOCATION_SET.has(to)) return false
+    return true
+  }
+
+  function applyPrologueSteps(world, steps) {
+    const out = []
+    let arrivedNow = Boolean(world.flags?.arrived_oakhaven)
+    let edNow = Boolean(world.flags?.ed_joined)
+
+    for (const flag of steps || []) {
+      if (flag === 'ed_joined' && !edNow) {
+        edNow = true
+        out.push({ target: 'world', worldFlags: { ed_joined: true } })
+        if (world.npcs?.ed) {
+          out.push({ target: 'ed', monitored: true, move: world.playerLocation || 'wilds' })
+        }
+      } else if (flag === 'arrived_oakhaven' && !arrivedNow) {
+        arrivedNow = true
+        out.push({ target: 'world', worldFlags: { arrived_oakhaven: true } })
+        for (const id of ['gulan', 'isna', 'nise', 'aurora', 'ed']) {
+          const npc = world.npcs?.[id]
+          if (npc && (id !== 'ed' || edNow) && npc.location === 'wilds') {
+            out.push({ target: id, move: 'inn' })
+          }
+        }
+      }
+    }
+    return out
+  }
+
+  function resolveRoom(world, room, ctx) {
+    const gulan = world.npcs?.gulan
+    const current = world.flags?.playerRoomTarget
+    if (!room) {
+      if (current !== 'gulan') return []
+      const stillValid =
+        Boolean(world.flags?.arrived_oakhaven) &&
+        ['night', 'deep_night'].includes(ctx.phase?.id) &&
+        world.playerLocation === 'inn' &&
+        gulan?.location === 'inn' &&
+        (gulan.stage ?? 0) < 3 &&
+        ((gulan.stage ?? 0) < 2 || (gulan.values?.affection ?? 0) >= 90)
+      return stillValid ? [] : [{ target: 'world', worldFlags: { playerRoomTarget: null } }]
+    }
+    if (room.state === 'separate') {
+      return [{ target: 'world', worldFlags: { playerRoomTarget: null } }]
+    }
+    const ok =
+      room.npc === 'gulan' &&
+      room.state === 'together' &&
+      Boolean(world.flags?.arrived_oakhaven) &&
+      ['night', 'deep_night'].includes(ctx.phase?.id) &&
+      world.playerLocation === 'inn' &&
+      gulan?.location === 'inn' &&
+      (gulan.values?.affection ?? 0) >= 90 &&
+      (gulan.stage ?? 0) < 3
+
+    return [{ target: 'world', worldFlags: { playerRoomTarget: ok ? 'gulan' : null } }]
+  }
+
+  const BOND_HANDLERS = {
+    gulan: {
+      spar: ({ world, npc, phase }) =>
+        world.flags?.arrived_oakhaven && npc.location === 'training_grounds' &&
+        ['morning', 'afternoon'].includes(phase.id) && !npc.flags?.gulan_spar_today
+          ? { add: { affection: 2 }, npcFlags: { gulan_spar_today: true } } : null,
+      care: ({ npc, phase }) =>
+        ['inn', 'wilds'].includes(npc.location) && ['morning', 'night'].includes(phase.id) &&
+        !npc.flags?.gulan_care_today
+          ? { add: { affection: 1 }, npcFlags: { gulan_care_today: true } } : null,
+      gear: ({ npc }) =>
+        ['inn', 'training_grounds', 'wilds'].includes(npc.location) && !npc.flags?.gulan_gear_today
+          ? { add: { affection: 1 }, npcFlags: { gulan_gear_today: true } } : null,
+      guild_report: ({ world, npc }) =>
+        world.flags?.arrived_oakhaven && npc.flags?.player_guild_job_done
+          ? { add: { affection: 2 }, npcFlags: { player_guild_job_done: false } } : null,
+      wilds_assist: ({ npc }) =>
+        ['wilds', 'wilds_camp'].includes(npc.location)
+          ? { add: { affection: 3 }, exemptCap: true } : null,
+      calm: ({ world, npc }) =>
+        (npc.values.affection ?? 0) >= 70 && npc.stage >= 1 && npc.stage <= 2 &&
+        (world.timeMin - (npc.flags?.lastCalmMin ?? -9999)) >= 4320
+          ? { add: { affection: 2, blood_density: -2 }, npcFlags: { lastCalmMin: world.timeMin } } : null,
+      confide: ({ npc }) =>
+        !npc.flags?.gulan_confide_today
+          ? { add: { affection: 1 }, npcFlags: { gulan_confide_today: true } } : null,
+      offend: () => ({ add: { affection: -5 }, exemptCap: true })
+    },
+    isna: {
+      comfort: ({ world, npc }) =>
+        world.flags?.arrived_oakhaven && world.playerLocation === 'inn' && npc.location === 'inn' &&
+        !npc.flags?.gold_desire_frozen && (npc.values.affection ?? 0) >= 60 &&
+        (world.timeMin - (npc.flags?.lastComfortMin ?? -9999)) >= 2880
+          ? {
+              add: { gold_desire: -2, affection: 1 },
+              npcFlags: { isna_comforted_today: true, lastComfortMin: world.timeMin }
+            }
+          : null,
+      steady_work: ({ world, npc, phase }) =>
+        world.flags?.arrived_oakhaven && ['morning', 'afternoon'].includes(phase.id) &&
+        ['town', 'wilds'].includes(npc.location)
+          ? { add: { affection: 2 }, npcFlags: { isna_worked_today: true } }
+          : null
+    }
+  }
+
+  function resolveBonds(world, bonds, ctx) {
+    const out = []
+    const day = Math.floor(world.timeMin / 1440) + 1
+    const capCache = {}
+    const flagCache = {}
+
+    for (const item of bonds || []) {
+      const npc = world.npcs?.[item.npc]
+      const fn = BOND_HANDLERS[item.npc]?.[item.kind]
+      if (!npc || !fn || npc.location !== world.playerLocation) continue
+
+      const viewNpc = { ...npc, flags: { ...npc.flags, ...(flagCache[npc.id] || {}) } }
+      const res = fn({ world, npc: viewNpc, phase: ctx.phase })
+      if (!res) continue
+
+      const add = { ...(res.add || {}) }
+      const npcFlags = { ...(res.npcFlags || {}) }
+      if (npc.id === 'gulan') npcFlags.lastInteractDay = day
+
+      if (npc.hasAffection !== false && add.affection > 0 && !res.exemptCap) {
+        const curDay = capCache[npc.id]?.day ?? npc.flags?.dailyAffectionDay
+        const used = curDay === day ? (capCache[npc.id]?.gain ?? npc.flags?.dailyAffectionGain ?? 0) : 0
+        const allow = Math.max(0, 3 - used)
+        add.affection = Math.min(add.affection, allow)
+        capCache[npc.id] = { day, gain: used + add.affection }
+        npcFlags.dailyAffectionDay = day
+        npcFlags.dailyAffectionGain = used + add.affection
+      }
+
+      flagCache[npc.id] = { ...(flagCache[npc.id] || {}), ...npcFlags }
+      out.push({ target: npc.id, add, npcFlags })
+    }
+    return out
+  }
+
+  root.OKH_APP_RULES = Object.freeze({
+    getAffectionTier, canMove, applyPrologueSteps, resolveRoom, resolveBonds
+  })
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = root.OKH_APP_RULES
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this)
+
+;
+/**
+ * @module okh_app_time
+ * @updated 2026-11-11 00:10
+ * @status  implemented
+ * @reason  跨日午夜唯一键去重结算（先算第k夜再清日标、支持跳日顺延）与拂晓同房失效规则
+ * @deps    OKH_APP_DATA
+ * @provides { settleTimeEffects }
+ */
+(function (root) {
+  'use strict'
+
+  const DATA = root.OKH_APP_DATA
+  if (!DATA) throw Error('time 缺少 OKH_APP_DATA')
+
+  function makeNightSim(world) {
+    const gulan = world.npcs?.gulan, isna = world.npcs?.isna, ed = world.npcs?.ed
+    const others = {}
+    for (const npc of Object.values(world.npcs || {})) {
+      if (npc.id === 'gulan' || npc.id === 'isna') continue
+      others[npc.id] = {
+        alive: npc.alive !== false,
+        lastNight: Number.isFinite(npc.flags?.lastNightSettledDay) ? npc.flags.lastNightSettledDay : 0
+      }
+    }
+    return {
+      arrived: Boolean(world.flags?.arrived_oakhaven),
+      edJoined: Boolean(world.flags?.ed_joined),
+      edMonitored: Boolean(ed?.monitored),
+      edLoc: ed?.location || null,
+      gulanAlive: Boolean(gulan && gulan.alive !== false),
+      gulanHasAff: gulan?.hasAffection !== false,
+      gulanStage: gulan?.stage ?? 0,
+      gulanLoc: gulan?.location || null,
+      gulanLastNight: Number.isFinite(gulan?.flags?.lastNightSettledDay) ? gulan.flags.lastNightSettledDay : 0,
+      gulanLastInteract: Number.isFinite(gulan?.flags?.lastInteractDay) ? gulan.flags.lastInteractDay : 1,
+      isnaAlive: Boolean(isna && isna.alive !== false),
+      isnaFrozen: Boolean(isna?.flags?.gold_desire_frozen),
+      isnaWorked: Boolean(isna?.flags?.isna_worked_today),
+      isnaComforted: Boolean(isna?.flags?.isna_comforted_today),
+      isnaLastNight: Number.isFinite(isna?.flags?.lastNightSettledDay) ? isna.flags.lastNightSettledDay : 0,
+      others
+    }
+  }
+
+  function settleGulanNight(sim, k, changes) {
+    if (sim.gulanLastNight >= k) return
+    const add = {}
+    if (sim.edJoined && sim.arrived && sim.gulanAlive && sim.edMonitored && sim.gulanLoc === sim.edLoc) {
+      add.blood_density = sim.gulanStage >= 2 ? 3 : 1
+    }
+    if (sim.gulanAlive && sim.gulanHasAff && (k - sim.gulanLastInteract) >= 5) {
+      add.affection = -1
+    }
+    const change = {
+      target: 'gulan',
+      npcFlags: {
+        gulan_spar_today: false,
+        gulan_care_today: false,
+        gulan_gear_today: false,
+        gulan_confide_today: false,
+        dailyAffectionDay: k + 1,
+        dailyAffectionGain: 0,
+        lastNightSettledDay: k
+      }
+    }
+    if (Object.keys(add).length) change.add = add
+    changes.push(change)
+    sim.gulanLastNight = k
+  }
+
+  function settleIsnaNight(sim, k, changes) {
+    if (sim.isnaLastNight >= k) return
+    const change = {
+      target: 'isna',
+      npcFlags: {
+        isna_worked_today: false,
+        isna_comforted_today: false,
+        dailyAffectionDay: k + 1,
+        dailyAffectionGain: 0,
+        lastNightSettledDay: k
+      }
+    }
+    if (sim.arrived && sim.isnaAlive && !sim.isnaFrozen && !sim.isnaWorked && !sim.isnaComforted) {
+      change.add = { gold_desire: 1 }
+    }
+    changes.push(change)
+    sim.isnaWorked = false
+    sim.isnaComforted = false
+    sim.isnaLastNight = k
+  }
+
+  function settleOtherNights(sim, k, changes) {
+    for (const [id, st] of Object.entries(sim.others)) {
+      if (!st.alive || st.lastNight >= k) continue
+      changes.push({
+        target: id,
+        npcFlags: {
+          dailyAffectionDay: k + 1,
+          dailyAffectionGain: 0,
+          lastNightSettledDay: k
+        }
+      })
+      st.lastNight = k
+    }
+  }
+
+  function shouldClearRoomTarget(world, fromMin, toMin) {
+    const target = world.flags?.playerRoomTarget
+    if (!target) return false
+    const gulan = world.npcs?.gulan
+    if (target === 'gulan') {
+      const invalidNow =
+        world.playerLocation !== 'inn' ||
+        !gulan ||
+        gulan.location !== 'inn' ||
+        (gulan.stage ?? 0) >= 3 ||
+        ((gulan.stage ?? 0) === 2 && (gulan.values?.affection ?? 0) < 90)
+      if (invalidNow) return true
+    }
+    const dawnStart = Math.floor((fromMin - 360) / 1440) + 1
+    const dawnEnd = Math.floor((toMin - 360) / 1440)
+    return dawnStart <= dawnEnd
+  }
+
+  function settleTimeEffects({ world, fromMin, toMin }) {
+    if (!world || toMin < fromMin) return []
+    const changes = []
+    if (toMin > fromMin) {
+      const sim = makeNightSim(world)
+      const kStart = Math.floor(fromMin / 1440) + 1
+      const kEnd = Math.floor(toMin / 1440)
+      for (let k = kStart; k <= kEnd; k++) {
+        settleGulanNight(sim, k, changes)
+        settleIsnaNight(sim, k, changes)
+        settleOtherNights(sim, k, changes)
+      }
+    }
+    if (shouldClearRoomTarget(world, fromMin, toMin)) {
+      changes.push({ target: 'world', worldFlags: { playerRoomTarget: null } })
+    }
+    return changes
+  }
+
+  root.OKH_APP_TIME = Object.freeze({ settleTimeEffects })
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = root.OKH_APP_TIME
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this)
+
+;
+/**
+ * @module okh_app_migrate
+ * @updated 2026-11-11 00:10
+ * @status  implemented
+ * @reason  存档版本幂等迁移：剥离废止字段、转换节点与进行中活动/待决事件，确保验证顺序先清理再校验
+ * @deps    OKH_APP_DATA
+ * @provides { LEGACY_KEYS, migrateWorld }
+ */
+(function (root) {
+  'use strict'
+
+  const DATA = root.OKH_APP_DATA
+  if (!DATA) throw Error('migrate 缺少 OKH_APP_DATA')
+
+  const LEGACY_KEYS = [
+    'pride', 'duty', 'lust', 'fear', 'shame', 'need',
+    'curiosity', 'loyalty', 'corruption', 'sanity', 'exposure'
+  ]
+
+  function normalizeActivityOnMigrate(npc, timeMin, reportList) {
+    if (!npc.activity) {
+      npc.activity = null
+      return
+    }
+    if (npc.activity.startedAt > timeMin) npc.activity.startedAt = timeMin
+    const prevRule = npc.activity.releaseRule
+    if (prevRule !== undefined && prevRule !== 'manualRelease') {
+      if (npc.activity.kind === 'important' || npc.activity.kind === 'special') {
+        npc.activity.migratedFromReleaseRule = prevRule
+        npc.activity.releaseRule = 'manualRelease'
+        reportList.push({
+          npcId: npc.id,
+          activityId: npc.activity.id,
+          label: npc.activity.label || npc.activity.kind,
+          fromReleaseRule: prevRule,
+          toReleaseRule: 'manualRelease'
+        })
+      } else {
+        delete npc.activity.releaseRule
+      }
+    }
+  }
+
+  function migrateNpcFromRoster(existing, tpl, inferredArrived, timeMin, reportList) {
+    if (!existing) {
+      const fresh = JSON.parse(JSON.stringify(tpl))
+      if (inferredArrived) {
+        if (fresh.location === 'wilds' && tpl.homeLocation) fresh.location = tpl.homeLocation
+        if (tpl.id === 'ed') fresh.monitored = true
+      }
+      return fresh
+    }
+
+    const next = JSON.parse(JSON.stringify(existing))
+    next.hasStage = tpl.hasStage
+    next.hasAffection = tpl.hasAffection
+    next.homeLocation = tpl.homeLocation
+    next.plan = tpl.plan.slice()
+    next.nodePlan = tpl.hasStage ? tpl.nodePlan.slice() : []
+    next._metricBounds = { ...tpl._metricBounds }
+    next.flags ||= {}
+    next.nodeStates ||= {}
+    next.activityHistory ||= {}
+    if (!Object.hasOwn(DATA.LOCATIONS, next.location)) next.location = tpl.location
+
+    const cleanValues = {}
+    for (const [k, defVal] of Object.entries(tpl.values)) {
+      const oldVal = next.values?.[k]
+      cleanValues[k] = Number.isFinite(oldVal) ? oldVal : defVal
+    }
+    for (const k of LEGACY_KEYS) {
+      if (!Object.hasOwn(tpl.values, k)) delete cleanValues[k]
+    }
+    next.values = cleanValues
+    next._baseline = { ...cleanValues }
+
+    if (tpl.hasStage === false) {
+      delete next.stage
+    } else {
+      next.stage ??= 0
+      if (tpl.id === 'gulan') {
+        for (const idx of [1, 2, 3]) {
+          if (next.nodeStates['stage_' + idx] && !next.nodeStates['gulan_stage_' + idx]) {
+            next.nodeStates['gulan_stage_' + idx] = next.nodeStates['stage_' + idx]
+            delete next.nodeStates['stage_' + idx]
+          }
+        }
+      }
+    }
+
+    normalizeActivityOnMigrate(next, timeMin, reportList)
+    delete next._lines
+    return next
+  }
+
+  function migratePendingQueueToEventStates(world) {
+    world.bg.eventStates ||= {}
+    for (const entry of world.bg.queue || []) {
+      if (
+        entry &&
+        entry.kind === 'event' &&
+        entry.mode === 'interaction' &&
+        (entry.status === 'pending' || entry.status === 'delivered') &&
+        entry.id &&
+        !Object.hasOwn(world.bg.eventStates, entry.id)
+      ) {
+        world.bg.eventStates[entry.id] = {
+          status: 'pending',
+          definitionId: entry.definitionId,
+          npcId: entry.npcId ?? null,
+          triggeredAt: entry.at ?? world.timeMin
+        }
+      }
+    }
+  }
+
+  function migrateWorld(rawWorld) {
+    if (!rawWorld) return rawWorld
+    if ((rawWorld.schemaVersion ?? 1) >= DATA.SCHEMA_VERSION) return rawWorld
+
+    const world = JSON.parse(JSON.stringify(rawWorld))
+    const timeMin = Number.isSafeInteger(world.timeMin) ? world.timeMin : 0
+    const inferredArrived =
+      world.schemaVersion === undefined &&
+      (world.playerLocation === 'inn' || Object.values(world.npcs || {}).some(n => n.location === 'inn'))
+
+    world.flags ||= {}
+    if (world.flags.arrived_oakhaven === undefined) world.flags.arrived_oakhaven = inferredArrived
+    if (world.flags.ed_joined === undefined) world.flags.ed_joined = inferredArrived
+    if (world.flags.playerRoomTarget === undefined) world.flags.playerRoomTarget = null
+    if (!Object.hasOwn(DATA.LOCATIONS, world.playerLocation)) {
+      world.playerLocation = inferredArrived ? 'inn' : 'wilds'
+    }
+
+    world.bg ||= { version: 2, revision: 0, receipts: {}, settled: {}, fired: {}, queue: [], generations: {} }
+    migratePendingQueueToEventStates(world)
+
+    const manualReleaseActivities = []
+    const nextNpcs = {}
+    for (const tpl of DATA.ROSTER) {
+      nextNpcs[tpl.id] = migrateNpcFromRoster(world.npcs?.[tpl.id], tpl, inferredArrived, timeMin, manualReleaseActivities)
+    }
+    world.npcs = nextNpcs
+    world.bg.migrationReport = {
+      fromSchemaVersion: rawWorld.schemaVersion ?? 1,
+      toSchemaVersion: DATA.SCHEMA_VERSION,
+      manualReleaseActivities
+    }
+    world.interactingIds = (world.interactingIds || []).filter(id => Object.hasOwn(nextNpcs, id))
+    world.schemaVersion = DATA.SCHEMA_VERSION
+    return world
+  }
+
+  root.OKH_APP_MIGRATE = Object.freeze({ LEGACY_KEYS, migrateWorld })
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = root.OKH_APP_MIGRATE
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this)
+
+;
+/**
+ * @module okh_app_config
+ * @updated 2026-11-11 00:10
+ * @status  implemented
+ * @reason  薄运行时配置装配器：组合数据定义、业务规则、跨日结算与存档迁移并重导出兼容接口
+ * @deps    OKH_APP_DATA, OKH_APP_RULES, OKH_APP_TIME, OKH_APP_MIGRATE
+ * @provides { SCHEMA_VERSION, DAY, PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, getAffectionTier, canMove, ACTIONS, NODES, EVENTS, ROSTER, buildConfig, buildInitialWorld, migrateWorld, settleTimeEffects, applyPrologueSteps, resolveRoom, resolveBonds }
+ */
+(function (root) {
+  'use strict'
+
+  const DATA = root.OKH_APP_DATA
+  const RULES = root.OKH_APP_RULES
+  const TIME = root.OKH_APP_TIME
+  const MIG = root.OKH_APP_MIGRATE
+  if (!DATA || !RULES || !TIME || !MIG) throw Error('config 缺少子模块依赖')
+
+  function buildConfig() {
+    const metricBounds = Object.fromEntries(DATA.ROSTER.map(n => [n.id, { ...n._metricBounds }]))
+    return {
+      schemaVersion: DATA.SCHEMA_VERSION,
+      policy: { ordinaryGraceMin: 120 },
+      phases: DATA.PHASES,
+      maxSteps: 128,
+      actions: DATA.ACTIONS,
+      events: DATA.EVENTS,
+      nodes: DATA.NODES,
+      metricBounds,
+      releaseRules: { manualRelease: () => false },
+      canMove: RULES.canMove,
+      applyPrologueSteps: RULES.applyPrologueSteps,
+      resolveRoom: RULES.resolveRoom,
+      resolveBonds: RULES.resolveBonds,
+      timeEffects: TIME.settleTimeEffects,
+      prepareCheckpoint: MIG.migrateWorld,
+      allowed(ctx, item) {
+        if (!item?.effects?.move) return true
+        return RULES.canMove(ctx.world, item.effects.move, ctx.npc)
+      }
+    }
+  }
+
   root.OKH_APP_CONFIG = Object.freeze({
-    PHASES,
-    LOCATIONS,
-    STAGES,
-    DRIFT,
-    LINES,
-    ACTIONS,
-    NODES,
-    EVENTS,
-    ROSTER,
-    ALL_DRIVES,
+    SCHEMA_VERSION: DATA.SCHEMA_VERSION,
+    DAY: DATA.DAY,
+    PHASES: DATA.PHASES,
+    LOCATIONS: DATA.LOCATIONS,
+    TOWN_LOCATIONS: DATA.TOWN_LOCATIONS,
+    STAGES: DATA.STAGES,
+    AFFECTION_TIERS: DATA.AFFECTION_TIERS,
+    getAffectionTier: RULES.getAffectionTier,
+    canMove: RULES.canMove,
+    ACTIONS: DATA.ACTIONS,
+    NODES: DATA.NODES,
+    EVENTS: DATA.EVENTS,
+    ROSTER: DATA.ROSTER,
     buildConfig,
-    buildInitialWorld,
-    activeLineTypes,
-    lineHolds
+    buildInitialWorld: DATA.buildInitialWorld,
+    migrateWorld: MIG.migrateWorld,
+    settleTimeEffects: TIME.settleTimeEffects,
+    applyPrologueSteps: RULES.applyPrologueSteps,
+    resolveRoom: RULES.resolveRoom,
+    resolveBonds: RULES.resolveBonds
   })
 
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = root.OKH_APP_CONFIG
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)
-;
 
 ;
 /**
  * @module okh_app_world
- * @updated 2026-11-09
- * @status implemented
- * @reason 按聊天隔离的单一存档、显式持久化、原子状态及检查点提交
+ * @updated 2026-11-10 23:34
+ * @status  implemented
+ * @reason  按聊天隔离的单一存档、显式持久化、原子状态、检查点提交，以及 schemaVersion < CFG.SCHEMA_VERSION 增量迁移
  */
 (function (root) {
   'use strict';
@@ -2604,6 +3270,7 @@
   const KEY = 'okh_gpt.state.v1';
   let settings = {}, localLock = Promise.resolve();
   const memory = new Map();
+
   function configure(options = {}) { settings = { ...settings, ...options }; }
   function context() {
     if (settings.getContext) return settings.getContext();
@@ -2659,14 +3326,32 @@
     try { return typeof raw === 'string' ? JSON.parse(raw) : u.clone(raw); }
     catch (_) { throw Error(label + '损坏；拒绝覆盖，请先备份恢复'); }
   }
+
+  function migrateEnvelope(data) {
+    let migrated = false;
+    if ((data.world.schemaVersion ?? 1) < CFG.SCHEMA_VERSION) {
+      data.world = CFG.migrateWorld(data.world);
+      migrated = true;
+    }
+    for (const record of data.history || []) {
+      if (record?.before && (record.before.schemaVersion ?? 1) < CFG.SCHEMA_VERSION) {
+        record.before = CFG.migrateWorld(record.before);
+        migrated = true;
+      }
+    }
+    return migrated;
+  }
+
   function readEnvelope(s = session()) {
     const data = parse(rawGet(s, s.key), '存档');
     if (!data) return null;
     u.check(data.version === 1 && data.chatId === s.id && data.world?.bg?.version === 2 &&
       Array.isArray(data.history), '存档版本或聊天归属不匹配，需要显式迁移');
+    migrateEnvelope(data);
     u.validateWorld(data.world);
     return data;
   }
+
   async function lock(s, task) {
     const run = async () => {
       assertSession(s);
@@ -2701,6 +3386,23 @@
       return world;
     });
   }
+  async function migrateSchema(s = session()) {
+    return lock(s, async () => {
+      const raw = parse(rawGet(s, s.key), '存档');
+      if (!raw) return { migrated: false, schemaVersion: CFG.SCHEMA_VERSION, world: null };
+      u.check(raw.version === 1 && raw.chatId === s.id && raw.world?.bg?.version === 2 &&
+        Array.isArray(raw.history), '存档版本或聊天归属不匹配，需要显式迁移');
+      const changed = migrateEnvelope(raw);
+      u.validateWorld(raw.world);
+      if (changed) await writeEnvelope(s, raw);
+      return {
+        migrated: changed,
+        schemaVersion: CFG.SCHEMA_VERSION,
+        manualReleaseActivities: raw.world.bg?.migrationReport?.manualReleaseActivities || [],
+        world: raw.world
+      };
+    });
+  }
   async function commit(s, { expectedRevision, state, checkpoint, reason, receipt }) {
     return lock(s, async () => {
       const envelope = readEnvelope(s);
@@ -2720,8 +3422,9 @@
   async function importLegacy(s = session()) {
     return lock(s, async () => {
       u.check(!readEnvelope(s), '目标聊天已有新版存档，禁止覆盖导入');
-      const old = parse(rawGet(s, 'okh_gpt.world'), '旧版存档');
+      let old = parse(rawGet(s, 'okh_gpt.world'), '旧版存档');
       u.check(old?.bg?.version === 2, '没有可导入的旧版 v2 world');
+      if ((old.schemaVersion ?? 1) < CFG.SCHEMA_VERSION) old = CFG.migrateWorld(old);
       u.validateWorld(old);
       old.bg.generations ||= {};
       await writeEnvelope(s, { version: 1, chatId: s.id, world: old, history: [] });
@@ -2731,7 +3434,6 @@
   async function publishDerived(s, values, revision) {
     assertSession(s);
     u.check(loadWorld(s)?.bg.revision === revision, '派生信息已过期，拒绝发布');
-    // 仅为旧世界书兼容缓存；权威状态和队列始终在同一 envelope 中。
     for (const [key, value] of Object.entries(values)) {
       const ok = await s.driver.set(key, value);
       u.check(ok !== false, '派生缓存写入失败：' + key);
@@ -2744,40 +3446,32 @@
     get: key => rawGet(session(), key)
   });
   root.OKH_APP_WORLD = Object.freeze({ configure, context, chatId, session, assertSession,
-    loadWorld, ensureWorld, readEnvelope, commit, importLegacy, publishDerived, store,
+    loadWorld, ensureWorld, readEnvelope, migrateSchema, commit, importLegacy, publishDerived, store,
     resetWorld: () => ensureWorld(true), STORAGE_KEY: KEY });
 })(globalThis);
 
 ;
 /**
  * @module okh_app_adapter
- * @updated 2026-11-09
- * @status implemented
- * @reason 控制器接入、按时间的纯数值变化，以及脱离原始监听的提示快照
+ * @updated 2026-11-11 00:10
+ * @status  implemented
+ * @reason  纯控制器桥接、台账字符串与监听快照视图（时间结算规则已抽离至 okh_app_time.js）
+ * @deps    OKHBackgroundModules.utils, OKH_APP_CONFIG, OKH_APP_TIME, OKH_APP_WORLD, OKHBackgroundAdapter
+ * @provides { createController, runtimeConfig, settleTimeEffects, buildLedger, buildWatch }
  */
 (function (root) {
   'use strict';
+
   const u = root.OKHBackgroundModules?.utils;
-  const CFG = root.OKH_APP_CONFIG, W = root.OKH_APP_WORLD;
-  if (!u || !CFG || !W || !root.OKHBackgroundAdapter) throw Error('adapter 依赖缺失');
-  function driftEffects({ world, fromMin, toMin }) {
-    const hours = (toMin - fromMin) / 60, policy = CFG.DRIFT;
-    const retention = Math.pow(1 - policy.perHour, hours), changes = [];
-    for (const npc of Object.values(world.npcs).filter(u.active)) {
-      const add = {}, base = npc._baseline || {};
-      for (const name of policy.fields) {
-        if (!u.own(npc.values, name) || !Number.isFinite(base[name])) continue;
-        const value = base[name] + (npc.values[name] - base[name]) * retention;
-        add[name] = Math.max(0, Math.min(100, value)) - npc.values[name];
-      }
-      if (Number.isFinite(npc.values.need)) {
-        add.need = Math.max(0, Math.min(100, npc.values.need + policy.needPerHour * hours)) - npc.values.need;
-      }
-      if (Object.keys(add).length) changes.push({ target: npc.id, add });
-    }
-    return changes;
+  const CFG = root.OKH_APP_CONFIG;
+  const TIME = root.OKH_APP_TIME;
+  const W = root.OKH_APP_WORLD;
+  if (!u || !CFG || !TIME || !W || !root.OKHBackgroundAdapter) throw Error('adapter 依赖缺失');
+
+  function runtimeConfig() {
+    return CFG.buildConfig();
   }
-  function runtimeConfig() { return { ...CFG.buildConfig(), timeEffects: driftEffects }; }
+
   function createController(s = W.session()) {
     return root.OKHBackgroundAdapter.createController({
       config: runtimeConfig(),
@@ -2785,44 +3479,99 @@
       commit: data => W.commit(s, data)
     });
   }
+
   function buildLedger(world) {
-    const day = Math.floor(world.timeMin / 1440) + 1, local = world.timeMin % 1440;
+    const day = Math.floor(world.timeMin / 1440) + 1;
+    const local = world.timeMin % 1440;
     const phase = u.phaseAt(world.timeMin, CFG.buildConfig());
     const label = CFG.PHASES.find(p => p.id === phase.id)?.label || phase.id;
     const clock = String(Math.floor(local / 60)).padStart(2, '0') + ':' + String(local % 60).padStart(2, '0');
-    const here = Object.values(world.npcs).filter(n => n.alive !== false && n.location === world.playerLocation);
-    const lines = ['【第 ' + day + ' 天 · ' + label + ' · ' + clock + '】',
+    const here = Object.values(world.npcs).filter(n =>
+      n.monitored === true && n.alive !== false && n.location === world.playerLocation
+    );
+    const lines = [
+      '【第 ' + day + ' 天 · ' + label + ' · ' + clock + '】',
       '玩家位置：' + (CFG.LOCATIONS[world.playerLocation] || world.playerLocation),
       '同地点：' + (here.map(n => n.name).join('、') || '无'),
       '可用活动解除规则：' + Object.keys(CFG.buildConfig().releaseRules).join('、') +
-        '。无匹配业务条件时使用 manualRelease，等待明确 finish/cancel。'];
+        '。无匹配业务条件时使用 manualRelease，等待明确 finish/cancel。'
+    ];
+    if (!world.flags?.arrived_oakhaven) lines.push('行程状态：前传途中（尚未抵达奥克赫斯，镇内地点暂未开放）');
+    if (world.flags?.playerRoomTarget && world.npcs?.[world.flags.playerRoomTarget]) {
+      lines.push('夜间同房：' + world.npcs[world.flags.playerRoomTarget].name);
+    }
+    const manualActs = Object.values(world.npcs || {}).filter(n => n.activity?.migratedFromReleaseRule);
+    if (manualActs.length) {
+      lines.push('迁移改手动结束活动（请用 finish/cancel 释放）：' + manualActs.map(n =>
+        n.name + '(' + n.id + '):' + n.activity.label + '[原规则 ' + n.activity.migratedFromReleaseRule + ']'
+      ).join('；'));
+    }
+    // Give the model registered IDs and choices, instead of making it infer
+    // event_resolve attributes from narrative text. Also covers old saves.
+    for (const pending of Object.values(world.bg?.eventStates || {})) {
+      if (pending.status !== 'pending') continue;
+      const def = CFG.buildConfig().events.find(e => e.id === pending.definitionId);
+      if (!def || def.mode !== 'interaction') continue;
+      const choices = Object.keys(def.outcomes || {});
+      if (def.allowCancel && !choices.includes('cancel')) choices.push('cancel');
+      lines.push('待决事件：id=' + JSON.stringify(def.id) +
+        (pending.npcId ? ' npc=' + JSON.stringify(pending.npcId) : '') +
+        '；登记选项=' + choices.map(choice => JSON.stringify(choice)).join(' / ') +
+        '。仅在玩家已经作出对应选择或行动后使用 event_resolve 申报；条件由后台校验。');
+    }
     if (world.focusNpcId && world.npcs[world.focusNpcId]) lines.push('本轮聚焦：' + world.npcs[world.focusNpcId].name);
     if (world.playerState?.injury) lines.push('玩家伤情：' + world.playerState.injury.type);
-    // 事件由 prepareGeneration 的批次另行提供，避免 ledger 再次注入旧事件。
     return lines.join('\n');
   }
+
   function buildWatch(world) {
     const monitored = root.OKHBackground.watch(world);
-    return { timeMin: world.timeMin, day: Math.floor(world.timeMin / 1440) + 1,
-      list: Object.values(monitored.npcs).map(n => ({ id: n.id, name: n.name,
-        location: n.location, stage: CFG.STAGES[n.stage] ?? n.stage,
-        values: u.clone(n.values), availability: n.availability, activity: n.activity?.label || null,
-        sameLocation: n.location === world.playerLocation })) };
+    return {
+      timeMin: world.timeMin,
+      day: Math.floor(world.timeMin / 1440) + 1,
+      list: Object.values(monitored.npcs).map(n => ({
+        id: n.id,
+        name: n.name,
+        location: n.location,
+        hasStage: n.hasStage !== false,
+        stage: n.hasStage === false ? null : (CFG.STAGES[n.stage] ?? n.stage),
+        hasAffection: n.hasAffection !== false,
+        affectionTier: n.hasAffection === false
+          ? null
+          : CFG.AFFECTION_TIERS[CFG.getAffectionTier(n.values?.affection)],
+        values: u.clone(n.values),
+        availability: n.availability,
+        activity: n.activity?.label || null,
+        sameLocation: n.location === world.playerLocation
+      }))
+    };
   }
-  root.OKH_APP_ADAPTER = Object.freeze({ createController, runtimeConfig, driftEffects, buildLedger, buildWatch });
+
+  root.OKH_APP_ADAPTER = Object.freeze({
+    createController,
+    runtimeConfig,
+    settleTimeEffects: TIME.settleTimeEffects,
+    buildLedger,
+    buildWatch
+  });
 })(globalThis);
 
 ;
 /**
  * @module okh_app_parse
- * @updated 2026-11-09
- * @status implemented
- * @reason 只解析唯一闭合状态栏；保留活动实例和同轮多项活动顺序
+ * @updated 2026-11-11 00:10
+ * @status  implemented
+ * @reason  只解析唯一闭合状态栏；支持可选时间点 at="start|end|N日 HH:MM"，并在前传时间线上做移动门禁校验
+ * @deps    OKHBackgroundModules.utils
+ * @provides { statusBody, grabTags, parseAttrs, parseDayClock, parseActivity, parseInteract, parseMove, parseStatusBar, buildFront, compareEnd }
  */
 (function (root) {
   'use strict';
   const u = root.OKHBackgroundModules?.utils;
   if (!u) throw Error('parse 缺少 utils');
+
+  const PROLOGUE_FLAGS = new Set(['ed_joined', 'arrived_oakhaven']);
+
   function statusBody(text) {
     const outside = String(text || '').replace(/```[\s\S]*?```/g, '')
       .replace(/<content\b[^>]*>[\s\S]*?<\/content\s*>/gi, '');
@@ -2832,6 +3581,7 @@
     u.check(matches.length <= 1, '每轮只能有一个 status_bar');
     return matches[0]?.[1] ?? null;
   }
+
   function parseAttrs(raw) {
     const attrs = {};
     const remaining = raw.replace(/([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g, (_, name, a, b) => {
@@ -2842,15 +3592,45 @@
     u.check(!remaining.trim(), '标签属性必须使用引号');
     return attrs;
   }
+
   function rawTags(body) {
     const out = [], re = /<([a-z_][\w-]*)\b((?:"[^"]*"|'[^']*'|[^'"<>])*)\/\s*>/gi;
     let match;
-    while ((match = re.exec(body || '')) !== null) out.push({ name: match[1].toLowerCase(), attrs: parseAttrs(match[2]) });
+    while ((match = re.exec(body || '')) !== null) {
+      out.push({ name: match[1].toLowerCase(), attrs: parseAttrs(match[2]) });
+    }
     return out;
   }
+
   function grabTags(text, tagName) {
     return rawTags(statusBody(text)).filter(t => t.name === tagName).map(t => t.attrs);
   }
+
+  function parseDayClock(raw) {
+    if (typeof raw !== 'string') return null;
+    const match = /^(\d+)日\s*(\d{1,2}):(\d{2})$/.exec(raw.trim());
+    if (!match) return null;
+    const day = Number(match[1]), hour = Number(match[2]), min = Number(match[3]);
+    if (day < 1 || hour >= 24 || min >= 60) return null;
+    const value = (day - 1) * 1440 + hour * 60 + min;
+    return u.minute(value) ? value : null;
+  }
+
+  function parseAtAttr(rawAt, fromMin, toMin) {
+    if (rawAt === undefined) return undefined;
+    if (rawAt === 'start' || rawAt === 'end') return rawAt;
+    const value = parseDayClock(rawAt);
+    u.check(value !== null && value >= fromMin && value <= toMin, '标签时间 at 非法或超出本轮区间：' + rawAt);
+    return value;
+  }
+
+  function toMinute(spec, fallback, fromMin, toMin) {
+    if (spec === undefined) return fallback;
+    if (spec === 'start') return fromMin;
+    if (spec === 'end') return toMin;
+    return spec;
+  }
+
   function parseStatusBar(text) {
     const body = statusBody(text), diagnostics = [];
     const times = rawTags(body).filter(t => t.name === 'time');
@@ -2863,95 +3643,206 @@
       else diagnostics.push('elapsed 非法，按缺失时间处理；不截断小数');
     }
     if (time?.end) {
-      const match = /^(\d+)日\s*(\d{1,2}):(\d{2})$/.exec(time.end);
-      if (match && Number(match[1]) >= 1 && Number(match[2]) < 24 && Number(match[3]) < 60) {
-        const value = (Number(match[1]) - 1) * 1440 + Number(match[2]) * 60 + Number(match[3]);
-        if (u.minute(value)) endMin = value;
-      }
+      endMin = parseDayClock(time.end);
       if (endMin === null) diagnostics.push('end 格式非法，不能校验落幕时间');
     }
     return { elapsed, end: time?.end || null, endMin, diagnostics, hasStatus: body !== null };
   }
+
+  function inferEventNpcId(world, config, eventId, rawNpc) {
+    if (rawNpc) return rawNpc;
+    const def = (config.events || []).find(item => item.id === eventId);
+    if (def?.scope === 'world') return null;
+    if (def?.targets?.length === 1) return def.targets[0];
+    const pendingQ = (world.bg?.queue || []).find(q => q.definitionId === eventId && q.status === 'pending');
+    if (pendingQ) return pendingQ.npcId ?? null;
+    return null;
+  }
+
+  function collectPrologueSteps(tags, world, now) {
+    const steps = [];
+    const seen = new Set();
+    let arrivedAtMin = world.flags?.arrived_oakhaven ? -Infinity : Infinity;
+
+    for (const { name, attrs } of tags) {
+      if (name !== 'prologue_step') continue;
+      u.check(PROLOGUE_FLAGS.has(attrs.flag), '未知前传里程碑：' + attrs.flag);
+      const at = parseAtAttr(attrs.at, world.timeMin, now);
+      if (attrs.flag === 'arrived_oakhaven') {
+        arrivedAtMin = Math.min(arrivedAtMin, toMinute(at, now, world.timeMin, now));
+      }
+      if (!seen.has(attrs.flag)) {
+        seen.add(attrs.flag);
+        steps.push(at === undefined ? attrs.flag : { flag: attrs.flag, at });
+      }
+    }
+    return { steps, arrivedAtMin };
+  }
+
+  function parseActivityTag(a, ctx) {
+    const { world, known, patch, location, relocate, diagnostics, virtual, config, now, token } = ctx;
+    if (!known(a.npc)) return;
+    u.check(['start', 'finish', 'cancel'].includes(a.op), 'activity op 非法');
+    const at = parseAtAttr(a.at, world.timeMin, now);
+    if (!u.own(virtual, a.npc)) virtual[a.npc] = world.npcs[a.npc].activity;
+    const cur = virtual[a.npc];
+    let change;
+    if (a.op === 'start') {
+      const kind = a.kind || 'ordinary';
+      u.check(['ordinary', 'important', 'special'].includes(kind) && a.label?.trim(), '活动必须有合法 kind 和 label');
+      const same = cur && cur.kind === kind && cur.label.trim() === a.label.trim();
+      const id = a.id || (same ? cur.id : 'act:' + a.npc + ':' + token + ':' + ctx.index++);
+      u.check(u.id(id), '活动 ID 非法');
+      change = { op: 'start', id, kind, label: a.label.trim(), source: 'narrative' };
+      if (a.replace === 'true') change.replace = true;
+      if (a.rule) {
+        u.check(kind !== 'ordinary' && u.own(config.releaseRules || {}, a.rule), '活动解除规则未知或不适用');
+        change.releaseRule = a.rule;
+      } else if (same && cur.releaseRule) change.releaseRule = cur.releaseRule;
+      if (kind !== 'ordinary') u.check(change.releaseRule, 'important/special 必须申报 rule');
+      virtual[a.npc] = { ...change, startedAt: same ? cur.startedAt : toMinute(at, now, world.timeMin, now) };
+    } else {
+      if (!cur) { diagnostics.push('忽略无当前活动的 ' + a.op + '：' + a.npc); return; }
+      change = { op: a.op, id: a.id || cur.id };
+      virtual[a.npc] = null;
+    }
+    if (at !== undefined) change.at = at;
+    (patch(a.npc).activities ||= []).push(change);
+
+    if (a.to !== undefined) {
+      const to = location(a.to);
+      if (relocate(world.npcs[a.npc], to, a.npc, at)) {
+        const npcPatch = patch(a.npc);
+        if (npcPatch.location !== undefined || npcPatch.moves) {
+          if (!npcPatch.moves) {
+            npcPatch.moves = [{ to: npcPatch.location, ...(npcPatch.locationAt !== undefined ? { at: npcPatch.locationAt } : {}) }];
+            delete npcPatch.location;
+            delete npcPatch.locationAt;
+          }
+          npcPatch.moves.push({ to, ...(at !== undefined ? { at } : {}) });
+        } else {
+          npcPatch.location = to;
+          if (at !== undefined) npcPatch.locationAt = at;
+        }
+      }
+    }
+  }
+
   function buildFront(text, now, world, options = {}) {
-    const tags = rawTags(statusBody(text)), diagnostics = [], npcs = {}, virtual = {};
+    const tags = rawTags(statusBody(text)), diagnostics = [], npcs = {}, virtual = {}, playerMoves = [];
     const front = { interactingIds: [] }, interacting = new Set();
     const token = options.token || String(now), config = options.config || {};
-    function known(id) {
-      if (u.own(world.npcs, id)) return true;
-      diagnostics.push('忽略未知角色：' + id);
-      return false;
-    }
-    function patch(id) { return npcs[id] ||= {}; }
-    function location(value) {
+    const canMoveFn = typeof options.canMove === 'function' ? options.canMove : config.canMove;
+    const { steps: prologueSteps, arrivedAtMin } = collectPrologueSteps(tags, world, now);
+    if (prologueSteps.length) front.prologueSteps = prologueSteps;
+
+    const known = id => u.own(world.npcs, id) ? true : (diagnostics.push('忽略未知角色：' + id), false);
+    const patch = id => npcs[id] ||= {};
+    const location = value => {
       u.check(u.id(value) && (!options.locations || u.own(options.locations, value)), '未知地点：' + value);
       return value;
-    }
-    let index = 0, focusCount = 0, injuryCount = 0;
+    };
+    const relocate = (npc, to, label, atSpec) => {
+      if (!canMoveFn) return true;
+      const moveMin = toMinute(atSpec, now, world.timeMin, now);
+      const unlocked = arrivedAtMin <= moveMin;
+      const simWorld = unlocked && !world.flags?.arrived_oakhaven
+        ? { ...world, flags: { ...(world.flags || {}), arrived_oakhaven: true } }
+        : world;
+      if (canMoveFn(simWorld, to, npc)) return true;
+      diagnostics.push('前传未抵镇前阻止移动：' + to + (label ? '（' + label + '）' : ''));
+      return false;
+    };
+
+    const counts = { focus: 0, injury: 0, room: 0 };
+    const actCtx = { world, known, patch, location, relocate, diagnostics, virtual, config, now, token, index: 0 };
+
     for (const { name, attrs: a } of tags) {
       if (name === 'move') {
         const to = location(a.to);
-        if (a.npc) { if (known(a.npc)) patch(a.npc).location = to; }
-        else front.playerLocation = to;
+        const at = parseAtAttr(a.at, world.timeMin, now);
+        if (a.npc) {
+          if (known(a.npc) && relocate(world.npcs[a.npc], to, a.npc, at)) {
+            const p = patch(a.npc);
+            if (p.location !== undefined || p.moves) {
+              if (!p.moves) {
+                p.moves = [{ to: p.location, ...(p.locationAt !== undefined ? { at: p.locationAt } : {}) }];
+                delete p.location;
+                delete p.locationAt;
+              }
+              p.moves.push({ to, ...(at !== undefined ? { at } : {}) });
+            } else {
+              p.location = to;
+              if (at !== undefined) p.locationAt = at;
+            }
+          }
+        } else if (relocate(null, to, 'player', at)) {
+          playerMoves.push({ to, ...(at !== undefined ? { at } : {}) });
+        }
       } else if (name === 'interact') {
         if (known(a.npc)) interacting.add(a.npc);
       } else if (name === 'focus') {
-        u.check(++focusCount === 1, '本轮只能申报一个 focus');
+        u.check(++counts.focus === 1, '本轮只能申报一个 focus');
         if (known(a.npc)) front.focusNpcId = a.npc;
       } else if (name === 'injury') {
-        u.check(++injuryCount === 1 && /^\d+$/.test(a.level || '') &&
+        u.check(++counts.injury === 1 && /^\d+$/.test(a.level || '') &&
           u.minute(Number(a.level)) && typeof a.type === 'string' && a.type.trim(), 'injury 申报非法');
         front.playerInjury = { level: Number(a.level), type: a.type };
+      } else if (name === 'room') {
+        u.check(++counts.room === 1 && (a.state === 'together' || a.state === 'separate'), 'room 申报非法');
+        if (a.state === 'together') u.check(a.npc && u.own(world.npcs, a.npc), 'room together 需要已知 npc');
+        const at = parseAtAttr(a.at, world.timeMin, now);
+        front.room = { npc: a.npc || null, state: a.state, ...(at !== undefined ? { at } : {}) };
+      } else if (name === 'bond') {
+        u.check(a.delta === undefined && a.value === undefined && a.add === undefined, 'bond 只能申报事实，禁止携带数值字段');
+        u.check(u.id(a.kind) && typeof a.npc === 'string' && a.npc.trim(), 'bond 缺少合法 npc 或 kind');
+        const at = parseAtAttr(a.at, world.timeMin, now);
+        if (known(a.npc)) (front.bonds ||= []).push({ npc: a.npc, kind: a.kind, ...(at !== undefined ? { at } : {}) });
+      } else if (name === 'event_resolve') {
+        u.check(u.id(a.id) && u.id(a.outcome), 'event_resolve 缺少合法 id 或 outcome');
+        if (a.npc && !known(a.npc)) continue;
+        const at = parseAtAttr(a.at, world.timeMin, now);
+        const npcId = inferEventNpcId(world, config, a.id, a.npc);
+        (front.resolveEvents ||= []).push({ eventId: a.id, npcId, outcome: a.outcome, ...(at !== undefined ? { at } : {}) });
       } else if (name === 'activity') {
-        if (!known(a.npc)) continue;
-        u.check(['start', 'finish', 'cancel'].includes(a.op), 'activity op 非法');
-        if (!u.own(virtual, a.npc)) virtual[a.npc] = world.npcs[a.npc].activity;
-        const cur = virtual[a.npc];
-        let change;
-        if (a.op === 'start') {
-          const kind = a.kind || 'ordinary';
-          u.check(['ordinary', 'important', 'special'].includes(kind) && a.label?.trim(), '活动必须有合法 kind 和 label');
-          const same = cur && cur.kind === kind && cur.label.trim() === a.label.trim();
-          const id = a.id || (same ? cur.id : 'act:' + a.npc + ':' + token + ':' + index++);
-          u.check(u.id(id), '活动 ID 非法');
-          change = { op: 'start', id, kind, label: a.label.trim(), source: 'narrative' };
-          if (a.replace === 'true') change.replace = true;
-          if (a.rule) {
-            u.check(kind !== 'ordinary' && u.own(config.releaseRules || {}, a.rule), '活动解除规则未知或不适用');
-            change.releaseRule = a.rule;
-          } else if (same && cur.releaseRule) change.releaseRule = cur.releaseRule;
-          if (kind !== 'ordinary') u.check(change.releaseRule, 'important/special 必须申报 rule');
-          virtual[a.npc] = { ...change, startedAt: same ? cur.startedAt : now };
-        } else {
-          if (!cur) { diagnostics.push('忽略无当前活动的 ' + a.op + '：' + a.npc); continue; }
-          change = { op: a.op, id: a.id || cur.id };
-          virtual[a.npc] = null;
-        }
-        (patch(a.npc).activities ||= []).push(change);
-        if (a.to !== undefined) patch(a.npc).location = location(a.to);
+        parseActivityTag(a, actCtx);
       }
     }
+
+    if (playerMoves.length === 1) {
+      front.playerLocation = playerMoves[0].to;
+      if (playerMoves[0].at !== undefined) front.playerLocationAt = playerMoves[0].at;
+    } else if (playerMoves.length > 1) {
+      front.playerMoves = playerMoves;
+    }
+
     for (const [id, data] of Object.entries(npcs)) {
       if (data.activities?.some(a => a.op === 'start')) interacting.delete(id);
-      if (data.activities?.length === 1) {
-        data.activity = data.activities[0];
-        delete data.activities;
-      }
+      if (data.activities?.length === 1) { data.activity = data.activities[0]; delete data.activities; }
     }
     if (Object.keys(npcs).length) front.npcs = npcs;
     front.interactingIds = [...interacting];
     Object.defineProperty(front, 'diagnostics', { value: diagnostics, enumerable: false });
     return front;
   }
+
   function parseActivity(text, now, world, options) { return buildFront(text, now, world, options).npcs || {}; }
   function parseInteract(text) { return [...new Set(grabTags(text, 'interact').map(a => a.npc).filter(Boolean))]; }
   function parseMove(text) { return grabTags(text, 'move').find(a => !a.npc)?.to || null; }
   function compareEnd(parsed, expectedMin) {
-    return { expectedMin, reportedEnd: parsed.end, reportedMin: parsed.endMin,
+    return {
+      expectedMin,
+      reportedEnd: parsed.end,
+      reportedMin: parsed.endMin,
       ok: parsed.endMin === null ? null : parsed.endMin === expectedMin,
-      deviationMin: parsed.endMin === null ? null : parsed.endMin - expectedMin };
+      deviationMin: parsed.endMin === null ? null : parsed.endMin - expectedMin
+    };
   }
-  root.OKH_APP_PARSE = Object.freeze({ statusBody, grabTags, parseAttrs, parseActivity,
-    parseInteract, parseMove, parseStatusBar, buildFront, compareEnd });
+
+  root.OKH_APP_PARSE = Object.freeze({
+    statusBody, grabTags, parseAttrs, parseDayClock, parseActivity, parseInteract,
+    parseMove, parseStatusBar, buildFront, compareEnd
+  });
 })(globalThis);
 
 ;
@@ -3068,7 +3959,7 @@
     const parsed = P.parseStatusBar(text);
     const plan = clockPlan(world, parsed, minutes, opts.countMessage === true, opts.initial === true);
     const front = P.buildFront(text, plan.toMin, world,
-      { token: id, config: CFG.buildConfig(), locations: CFG.LOCATIONS });
+      { token: id, config: CFG.buildConfig(), locations: CFG.LOCATIONS, canMove: CFG.canMove });
     const diagnostics = [...parsed.diagnostics, ...front.diagnostics];
     if (opts.frontOverride) {
       if (!u.own(opts.frontOverride, 'interactingIds')) front.interactingIds = world.interactingIds || [];
@@ -3207,7 +4098,7 @@
 ;
 /**
  * @module okh_app_debug
- * @updated 2026-11-09 07:00
+ * @updated 2026-11-10 23:35
  * @status  implemented
  * @reason  调试工具：看状态、看监听、看队列、手动推演
  * @deps    ['okh_app_config', 'okh_app_world', 'okh_app_adapter', 'okh_app_hook']
@@ -3238,9 +4129,9 @@
     const STAGE = CFG.STAGES
     const rows = Object.values(world.npcs).map(n => ({
       姓名: n.name,
-      阶段: STAGE[n.stage] || n.stage,
-      堕落: Math.round(n.values.corruption ?? 0),
-      理智: Math.round(n.values.sanity ?? 0),
+      监测: n.monitored ? '●' : '○',
+      阶段: n.hasStage === false ? '—' : (STAGE[n.stage] ?? n.stage),
+      好感: n.hasAffection === false ? '—' : Math.round(n.values?.affection ?? 0),
       位置: n.location,
       当前活动: n.activity?.label || '—',
       同地点: n.location === world.playerLocation ? '●' : '○',
@@ -3321,6 +4212,7 @@
   function config() {
     const c = CFG.buildConfig()
     console.group('[APP] 配置')
+    console.log('Schema 版本：', c.schemaVersion)
     console.log('时段：', c.phases.map(p => `${p.id}@${p.start}`).join(' '))
     console.log('保护期：', c.policy.ordinaryGraceMin, '分钟')
     console.log('行动：', c.actions.length, '条')
@@ -3343,7 +4235,7 @@
 ;
 /**
  * @module okh_app_hud
- * @updated 2026-11-09 07:45
+ * @updated 2026-11-10 23:35
  * @status  implemented
  * @reason  把 world 渲染成界面：在场面板（玩家可见）+ 监听面板（隐藏）
  * @deps    ['okh_app_world', 'okh_app_adapter']
@@ -3409,7 +4301,7 @@
     const minute = String(local % 60).padStart(2, '0')
 
     const here = Object.values(world.npcs)
-      .filter(n => n.alive !== false && n.location === world.playerLocation)
+      .filter(n => n.monitored === true && n.alive !== false && n.location === world.playerLocation)
 
     const presentText = here.length
       ? here.map(n => {
@@ -3450,7 +4342,7 @@
 
     const lines = Object.values(world.npcs).filter(n => n.monitored === true).map(n => {
       const mark = n.location === world.playerLocation ? '●' : '○'
-      const stage = STAGE[n.stage] || n.stage
+      const stage = n.hasStage === false ? '—' : (STAGE[n.stage] ?? n.stage)
       const busy = n.activity ? `｜${n.activity.label}` : ''
       return `${mark} ${n.name}｜${locName(n.location)}｜${stage}｜${Object.entries(n.values).map(([k,v]) => k + ':' + Math.round(v * 100) / 100).join(' ')}${busy}`
     })
@@ -3554,7 +4446,7 @@
 ;
 /**
  * @module okh_app_entry
- * @updated 2026-11-09
+ * @updated 2026-11-10 23:35
  * @status implemented
  * @reason 生命周期和宿主配置统一入口，不隐藏初始化或保存失败
  */
@@ -3573,8 +4465,8 @@
     return info();
   }
   function info() {
-    return { coreVersion: GPT.version, mode: W.store.mode, chatId: W.chatId(),
-      revision: W.loadWorld()?.bg.revision ?? null };
+    return { coreVersion: GPT.version, schemaVersion: CFG.SCHEMA_VERSION, mode: W.store.mode,
+      chatId: W.chatId(), revision: W.loadWorld()?.bg.revision ?? null };
   }
   async function init(force = false) {
     const world = await W.ensureWorld(force);
@@ -3601,6 +4493,7 @@
   }
   root.OKH_APP = Object.freeze({ configure, init, start, stop, info, save,
     world: W.loadWorld, reset: () => W.resetWorld(), importLegacy: () => W.importLegacy(),
+    migrateSchema: () => W.migrateSchema(),
     step: H.step, applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,
     cancelGeneration: H.cancelGeneration, syncHistory: H.syncHistory, restore: H.restore,
     config: A.runtimeConfig, status: D.status, watch: D.watch, ledger: D.ledger, queue: D.queue,
