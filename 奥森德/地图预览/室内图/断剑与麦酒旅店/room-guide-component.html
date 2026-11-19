@@ -19,6 +19,11 @@
 #okh-inn-guide .ig-door .ig-num{display:none}
 #okh-inn-guide .ig-door[aria-pressed=true] span{background:#553b25;color:#ffedc8;border-color:#f3d193}
 #okh-inn-guide .ig-door:hover span{outline:1px solid #6b4a2b;outline-offset:2px}
+#okh-inn-guide .ig-door .ig-label{display:flex;align-items:center;justify-content:center;gap:5px}
+#okh-inn-guide .ig-class-icon{display:inline-block;width:var(--ig-icon-size,18px);height:var(--ig-icon-size,18px);flex-shrink:0;background-image:var(--ig-class-atlas,url('../../职业图标/class-icons.webp'));background-size:500% 166.666667%;background-position:var(--ig-icon-x,0%) 50%;vertical-align:middle}
+#okh-inn-guide .ig-player-icon{display:inline-grid;place-items:center;width:var(--ig-icon-size,18px);height:var(--ig-icon-size,18px);border:1px solid currentColor;border-radius:50%;font:normal 12px 'Noto Serif CJK SC','Songti SC',serif;flex-shrink:0;color:inherit;vertical-align:middle}
+#okh-inn-guide .ig-room-top .ig-sigil{border:0}
+#okh-inn-guide .ig-sigil .ig-class-icon,#okh-inn-guide .ig-sigil .ig-player-icon{--ig-icon-size:32px}
 #okh-inn-guide .ig-paper-note{position:absolute;left:5%;top:7%;max-width:36%;color:#735431;font-size:11px;line-height:1.9;pointer-events:none}
 #okh-inn-guide .ig-paper-note b{font:500 16px/1.8 'Songti SC','Noto Serif CJK SC',serif;letter-spacing:2px;color:#5c4027}
 #okh-inn-guide .ig-mobile-rooms{display:none}
@@ -44,12 +49,14 @@
  #okh-inn-guide .ig-heading{align-items:flex-start;gap:5px;flex-wrap:wrap}
  #okh-inn-guide h2{font-size:17px}#okh-inn-guide .ig-floors{gap:16px}
  #okh-inn-guide .ig-door{display:none}
- #okh-inn-guide .ig-static-marker{display:grid;place-items:center;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:21px;height:21px;border:1px solid #967044;border-radius:50%;font:10px 'Songti SC',serif;color:#50341e;background:#f3d9a9;pointer-events:none}
- #okh-inn-guide .ig-static-marker.is-selected{background:#553b25;color:#ffedc8}
+ #okh-inn-guide .ig-static-marker{display:grid;place-items:center;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;font:10px 'Songti SC',serif;color:#50341e;background:#f3d9a9;pointer-events:none}
+ #okh-inn-guide .ig-static-marker.is-selected{outline:1px solid #553b25;outline-offset:2px;background:#553b25}
+ #okh-inn-guide .ig-static-marker .ig-class-icon,#okh-inn-guide .ig-static-marker .ig-player-icon{--ig-icon-size:20px}
  #okh-inn-guide .ig-door .ig-label{display:none}#okh-inn-guide .ig-door .ig-num{display:grid;place-items:center;width:24px;height:24px;padding:0;border-radius:50%;font-size:11px}
  #okh-inn-guide .ig-paper-note{font-size:9px;max-width:38%;top:6%}#okh-inn-guide .ig-paper-note b{font-size:13px}
- #okh-inn-guide .ig-mobile-rooms{display:flex;flex-wrap:wrap;gap:0 13px;padding:4px 0}
- #okh-inn-guide .ig-mobile-rooms button{padding:5px 0;font-size:12px;min-width:44px}
+ #okh-inn-guide .ig-mobile-rooms{display:flex;flex-wrap:wrap;gap:0 10px;padding:4px 0}
+ #okh-inn-guide .ig-mobile-rooms button{display:inline-flex;align-items:center;gap:4px;padding:5px 0;font-size:12px;min-width:44px}
+ #okh-inn-guide .ig-mobile-rooms .ig-class-icon,#okh-inn-guide .ig-mobile-rooms .ig-player-icon{--ig-icon-size:16px}
  #okh-inn-guide .ig-mobile-rooms [aria-pressed=true]{color:var(--ig-gold);text-decoration:underline;text-underline-offset:6px}
  #okh-inn-guide .ig-actions{gap:0 17px}#okh-inn-guide .ig-presence{max-width:100px}
 }
@@ -64,7 +71,7 @@
  </div>
  <div class="ig-floor-view" data-view="upper" hidden>
   <figure class="ig-image-wrap"><img src="upper-scene.webp" width="1672" height="941" alt="旅店二层客房走廊，北侧五扇房门，东北楼梯下通一层。房门上的标记可点选。">
-   <div class="ig-paper-note"><b>二层客房</b><br>点选房门 · 查看入住同伴</div>
+   <div class="ig-paper-note"><b>二层客房</b><br><span class="ig-paper-instruction">选择住客 · 展开房间</span></div>
    <button type="button" class="ig-door" style="--x:19.5%;--y:81%" data-room="door1" aria-pressed="false"><span class="ig-label">客房 01</span><span class="ig-num" aria-hidden="true">01</span></button>
    <button type="button" class="ig-door" style="--x:31.5%;--y:73.4%" data-room="door2" aria-pressed="false"><span class="ig-label">客房 02</span><span class="ig-num" aria-hidden="true">02</span></button>
    <button type="button" class="ig-door" style="--x:43.1%;--y:65.8%" data-room="door3" aria-pressed="false"><span class="ig-label">客房 03</span><span class="ig-num" aria-hidden="true">03</span></button>
@@ -89,6 +96,13 @@
  const q=s=>root.querySelector(s),qa=s=>[...root.querySelectorAll(s)];
  const roomLabel=id=>'客房 '+String(roomIds.indexOf(id)+1).padStart(2,'0');
  const getRoom=id=>state.rooms.find(r=>r.id===id)||{id};
+ const classPositions={warrior:0,scout:25,mage:50,cleric:75,support:100};
+ function makeIcon(occupant){
+  if(occupant?.isPlayer){const icon=document.createElement('i');icon.className='ig-player-icon';icon.textContent='你';icon.setAttribute('aria-hidden','true');return icon;}
+  const job=occupant?.classId;
+  if(!Object.hasOwn(classPositions,job))return null;
+  const icon=document.createElement('i');icon.className='ig-class-icon';icon.dataset.class=job;icon.style.setProperty('--ig-icon-x',classPositions[job]+'%');icon.setAttribute('aria-hidden','true');return icon;
+ }
  function setFloor(floor){
   if(!['ground','upper'].includes(floor))return;
   qa('[data-view]').forEach(el=>el.hidden=el.dataset.view!==floor);
@@ -106,11 +120,17 @@
   if(!selected)return;
   const r=getRoom(selected),o=r.occupant;
   q('.ig-actions').replaceChildren();
-  q('.ig-room-content h3').textContent=o?o.name+'的房间':roomLabel(selected);
-  q('.ig-sigil').textContent=o?o.name.slice(0,1):'◇';
+  q('.ig-room-content h3').textContent=o?.isPlayer?'你的房间':o?o.name+'的房间':roomLabel(selected);
+  q('.ig-sigil').replaceChildren(makeIcon(o)||document.createTextNode(o?o.name.slice(0,1):'◇'));
   q('.ig-room-meta').textContent=roomLabel(selected)+(o&&o.role?' · '+o.role:'');
   const presence=q('.ig-presence');presence.dataset.presence=r.presence||'unknown';
   if(!o){presence.textContent='暂无入住信息';return;}
+  if(o.isPlayer){
+   presence.textContent='个人房间';
+   action('回房休息',`我回到断剑与麦酒旅店二层${roomLabel(selected)}，在自己的房间休息片刻。`);
+   action('整理行囊',`我回到断剑与麦酒旅店二层自己的房间，整理随身行囊。`);
+   return;
+  }
   if(r.presence==='inside'){
    presence.textContent='● 在房';
    action('敲门拜访',`我来到断剑与麦酒旅店二层的${roomLabel(selected)}，敲响${o.name}的房门，等候回应。`);
@@ -129,14 +149,17 @@
   selected=id;q('.ig-feedback').textContent='';q('.ig-draft').hidden=true;renderRoom();
  }
  function setState(next){
-  state={demo:next?.demo===true,rooms:Array.isArray(next?.rooms)?next.rooms.filter(r=>roomIds.includes(r.id)).map(r=>({id:r.id,occupant:r.occupant&&typeof r.occupant.name==='string'?{name:r.occupant.name,id:r.occupant.id,role:r.occupant.role||''}:null,presence:['inside','away','unknown'].includes(r.presence)?r.presence:'unknown',location:typeof r.location==='string'?r.location:''})):[]};
+  state={demo:next?.demo===true,rooms:Array.isArray(next?.rooms)?next.rooms.filter(r=>roomIds.includes(r.id)).map(r=>({id:r.id,occupant:r.occupant&&typeof r.occupant.name==='string'?{name:r.occupant.name,id:r.occupant.id,role:r.occupant.role||'',isPlayer:r.occupant.isPlayer===true,classId:Object.hasOwn(classPositions,r.occupant.classId)?r.occupant.classId:''}:null,presence:['inside','away','unknown'].includes(r.presence)?r.presence:'unknown',location:typeof r.location==='string'?r.location:''})):[]};
   q('.ig-mobile-rooms').replaceChildren();
   roomIds.forEach(id=>{
    const r=getRoom(id),name=r.occupant?.name||roomLabel(id),b=q('.ig-door[data-room='+id+']');
-   b.querySelector('.ig-label').textContent=name;b.setAttribute('aria-label','查看'+name+'的房间');
-   const item=document.createElement('button');item.type='button';item.dataset.room=id;item.textContent=String(roomIds.indexOf(id)+1).padStart(2,'0')+' '+name;item.setAttribute('aria-label','选择'+name+'的房间');item.addEventListener('click',()=>selectRoom(id));q('.ig-mobile-rooms').append(item);
+   const label=b.querySelector('.ig-label');label.replaceChildren();const icon=makeIcon(r.occupant);if(icon)label.append(icon);label.append(document.createTextNode(name));b.setAttribute('aria-label','查看'+name+'的房间');
+   const marker=q('[data-marker='+id+']');if(marker)marker.replaceChildren(makeIcon(r.occupant)||document.createTextNode(String(roomIds.indexOf(id)+1).padStart(2,'0')));
+   const item=document.createElement('button');item.type='button';item.dataset.room=id;const mobileIcon=makeIcon(r.occupant);if(mobileIcon)item.append(mobileIcon);item.append(document.createTextNode(name));item.setAttribute('aria-label','选择'+name+'的房间');item.addEventListener('click',()=>selectRoom(id));q('.ig-mobile-rooms').append(item);
   });
   q('.ig-data-note').textContent=state.demo?'入住与动向为演示':'入住信息'+(state.rooms.length?'已载入':'待载入');
+  const playerRoom=state.rooms.find(r=>r.occupant?.isPlayer);
+  q('.ig-paper-instruction').textContent=playerRoom?roomLabel(playerRoom.id).replace('客房 ','')+' 玩家住处 · 点门查看':'选择住客 · 展开房间';
   renderRoom();
  }
  function findInput(){
