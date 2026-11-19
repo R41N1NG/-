@@ -20,7 +20,8 @@
     town: ['__OKH_MAP_TOWN__', '地图预览/镇内图/town-art.webp'],
     ground: ['__OKH_MAP_GROUND__', '地图预览/室内图/断剑与麦酒旅店/ground-scene.webp'],
     upper: ['__OKH_MAP_UPPER__', '地图预览/室内图/断剑与麦酒旅店/upper-scene.webp'],
-    icons: ['__OKH_MAP_ICONS__', '地图预览/职业图标/class-icons.webp']
+    icons: ['__OKH_MAP_ICONS__', '地图预览/职业图标/class-icons.webp'],
+    ink: ['__OKH_MAP_INK_FONT__', '地图预览/字体/map-ink.woff']
   }
   const PLACES = {
     town: { name: '奥克赫斯镇', detail: '镇内街区、集市与公共建筑。' },
@@ -101,7 +102,9 @@
   }
   function point(id, label, x, y, action, extra, world) {
     const current = world.playerLocation === id ? ' aria-current="location"' : ''
-    return button(action, esc(label), `class="okh-m-point" style="--x:${x}%;--y:${y}%" ${extra}${current}`) + `<span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${esc(label)}</span>`
+    const kind = id === 'town' && label === '奥克赫斯镇' ? 'settlement' : id === 'wilds_camp' ? 'hostile' : 'landmark'
+    const ink = `<span class="okh-m-ink" data-ink-kind="${kind}">${esc(label)}</span>`
+    return button(action, ink, `class="okh-m-point" style="--x:${x}%;--y:${y}%" ${extra}${current}`) + `<span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${ink}</span>`
   }
   function placePanel(world, state) {
     const place = PLACES[state.place]
@@ -117,13 +120,13 @@
     const title = { region: '奥克赫斯 · 全域图', town: '奥克赫斯 · 镇内图', ground: '断剑与麦酒旅店', upper: '断剑与麦酒旅店' }[view]
     let overlay = '', options = '', detail = ''
     if (view === 'region') {
-      overlay = point('town', '奥克赫斯镇', 33.5, 51, 'map-view', 'data-okh-view="town"', world) +
-        point('manor', '领主庄园', 20, 24, 'map-place', 'data-okh-place="manor"', world) +
-        point('wilds_camp', '黑兽人前哨', 80, 66, 'map-place', 'data-okh-place="wilds_camp"', world)
+      overlay = point('town', '奥克赫斯镇', 33.5, 63, 'map-view', 'data-okh-view="town"', world) +
+        point('manor', '领主庄园', 20.5, 25, 'map-place', 'data-okh-place="manor"', world) +
+        point('wilds_camp', '黑兽人前哨', 80, 66.5, 'map-place', 'data-okh-place="wilds_camp"', world)
       options = button('map-view', '进入镇内图', 'data-okh-view="town"') + button('map-place', '领主庄园', 'data-okh-place="manor"') + button('map-place', '黑兽人前哨', 'data-okh-place="wilds_camp"') + button('map-place', '城外荒原', 'data-okh-place="wilds"')
       detail = placePanel(world, state)
     } else if (view === 'town') {
-      for (const [id, label, x, y] of [['church', '教堂', 40, 37], ['training_grounds', '练武场', 71, 36], ['town', '中央集市', 46, 54], ['inn', '断剑与麦酒', 31, 69], ['casino', '赌场入口', 65, 69]]) {
+      for (const [id, label, x, y] of [['church', '教堂', 40, 40], ['training_grounds', '练武场', 71, 40], ['town', '中央集市', 46, 56], ['inn', '断剑与麦酒', 31, 73], ['casino', '赌场入口', 65, 73]]) {
         overlay += point(id, label, x, y, id === 'inn' ? 'map-view' : 'map-place', id === 'inn' ? 'data-okh-view="ground"' : `data-okh-place="${id}"`, world)
       }
       options = button('map-view', '查看旅店', 'data-okh-view="ground"') + ['church', 'training_grounds', 'town', 'casino'].map(id => button('map-place', esc(PLACES[id].name), `data-okh-place="${id}"`)).join('')
@@ -181,6 +184,7 @@
   }
   function css() {
     return `
+@font-face{font-family:'OKHMapInk';src:url('${image('ink')}') format('woff');font-style:normal;font-weight:400;font-display:swap}
 .okh-map-guide{margin:18px 0 10px;color:var(--t-mn);--map-gold:var(--g-mn);font-size:12px}
 .okh-map-guide [hidden]{display:none!important}.okh-map-guide h3,.okh-map-guide p,.okh-map-guide figure{margin:0}
 .okh-map-guide button{font:inherit;min-height:44px;border:0;background:transparent;color:var(--g-dm);cursor:pointer;padding:7px 0}
@@ -191,17 +195,24 @@
 .okh-m-head{justify-content:space-between;margin:10px 0}.okh-map-guide h3{font:500 18px/1.6 'Songti SC','SimSun',serif;color:var(--g-mn)}
 .okh-m-image{position:relative;background:#dfc18e;border:1px solid #dfc89a35;border-radius:2px;overflow:hidden}
 .okh-m-image>img{width:100%;height:auto;display:block}.okh-m-image-error{display:none}.okh-m-image.image-unavailable{min-height:100px}.image-unavailable>.okh-m-image-error{display:block;padding:24px;color:#61472d}
-.okh-map-guide .okh-m-point,.okh-map-guide .okh-m-door{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);min-width:44px;color:#53371e;font:12px 'Songti SC','SimSun',serif;padding:3px 6px;background:#f1d8aee8;border:1px solid #957345;border-radius:2px}
-.okh-map-guide .okh-m-point[aria-current=location]{outline:2px solid #624a28;outline-offset:2px}
+.okh-map-guide .okh-m-point,.okh-map-guide .okh-m-door{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);min-width:44px;min-height:44px;color:#59391f;font:400 12px 'OKHMapInk','Noto Serif CJK SC','Songti SC',serif;padding:3px 6px;background:transparent;border:0;border-radius:0}
+.okh-m-ink{position:relative;isolation:isolate;display:inline-block;white-space:nowrap;font:400 clamp(11px,1.5vw,14px)/1.5 'OKHMapInk','Noto Serif CJK SC','Songti SC',serif;letter-spacing:1.2px;color:#57391f;text-shadow:.3px 0 #67462645}
+.okh-m-ink:before{content:'';position:absolute;inset:-5px -14px;z-index:-1;background:radial-gradient(ellipse,#ead0a36b 0%,#ead0a33d 48%,transparent 75%);pointer-events:none}
+.okh-m-ink[data-ink-kind=settlement]{font-size:clamp(14px,1.9vw,19px);letter-spacing:2px;color:#4b301b}
+.okh-m-ink[data-ink-kind=hostile]{color:#69412b}
+.okh-map-guide .okh-m-point[aria-current=location] .okh-m-ink,.okh-map-guide .okh-m-point:hover .okh-m-ink{text-decoration:underline;text-decoration-thickness:.7px;text-underline-offset:5px}
+.okh-map-guide .okh-m-point:focus-visible,.okh-map-guide .okh-m-door:focus-visible{outline:1px solid #654928;outline-offset:1px}
 .okh-map-guide .okh-m-door{display:flex;align-items:center;flex-direction:column;gap:1px;min-height:44px;white-space:nowrap}
-.okh-map-guide .okh-m-door[aria-pressed=true]{background:#553b25;color:#fff0cf;text-decoration:none;outline:1px solid #f4d6a0;outline-offset:2px}
+.okh-map-guide .okh-m-door>span{padding:1px 3px;background:radial-gradient(ellipse,#ead0a342,transparent 78%);font-size:12px;letter-spacing:.5px}
+.okh-map-guide .okh-m-door[aria-pressed=true]{background:transparent;color:#3f281a;text-decoration:none;outline:none}
+.okh-map-guide .okh-m-door[aria-pressed=true]>span{text-decoration:underline;text-decoration-thickness:.7px;text-underline-offset:4px}
 .okh-m-icon{display:inline-block;flex-shrink:0;vertical-align:middle;width:18px;height:18px;background-image:url('${image('icons')}');background-size:500% 166.666667%;background-position:var(--icon-x,0%) 50%;background-repeat:no-repeat}
-.okh-m-room-number{display:inline-block;min-width:18px;text-align:center;font-size:10px}.okh-m-paper{position:absolute;left:5%;top:7%;max-width:40%;font-size:10px;line-height:1.9;color:#6d4f2e;pointer-events:none}.okh-m-paper b{font:500 15px/1.9 'Songti SC',serif;letter-spacing:2px}
+.okh-m-room-number{display:inline-block;min-width:18px;text-align:center;font-size:10px}.okh-m-paper{position:absolute;left:5%;top:7%;max-width:40%;font-size:10px;line-height:1.9;color:#6d4f2e;pointer-events:none}.okh-m-paper b{font:400 15px/1.9 'OKHMapInk','Songti SC',serif;letter-spacing:2px}
 .okh-m-marker,.okh-m-place-label{display:none}.okh-m-options{padding:5px 0;border-bottom:1px solid #dfc89a25;color:var(--t-sb)}.okh-m-options.is-rooms{display:none}
 .okh-m-image.image-unavailable~.okh-m-options.is-rooms{display:flex}.image-unavailable>.okh-m-door,.image-unavailable>.okh-m-point,.image-unavailable>.okh-m-marker,.image-unavailable>.okh-m-place-label{display:none!important}
 .okh-m-detail{padding:13px 0 0;line-height:1.8}.okh-m-detail strong{color:var(--g-mn);font:500 17px/1.8 'Songti SC','SimSun',serif}.okh-m-detail p,.okh-m-hint{color:var(--t-sb);font-size:11px}.okh-m-room-head{display:flex;align-items:center;gap:12px}.okh-m-room-head>.okh-m-icon{width:32px;height:32px}.okh-m-status{margin-top:8px!important}
 .okh-map-guide .okh-m-actions button,.okh-m-detail>button{color:var(--g-mn)}.okh-m-feedback{min-height:18px;font-size:11px;color:var(--t-sb);margin-top:6px!important}.okh-m-hint{padding-top:12px}.okh-m-draft{width:100%;min-height:65px;padding:8px;background:#17110d;color:var(--g-mn);border:1px solid #65513a;font:inherit;user-select:text}
-@media(max-width:700px){.okh-map-guide .okh-m-door,.okh-map-guide .okh-m-point{display:none}.okh-m-place-label{display:block;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);font:10px serif;color:#53371e;white-space:nowrap;background:#f1d8aec9;padding:1px 3px;pointer-events:none}.okh-m-marker{display:grid;place-items:center;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:20px;height:20px;background:#efd4a3;border-radius:50%;color:#604423;pointer-events:none}.okh-m-marker .okh-m-icon{width:20px;height:20px}.okh-m-marker.is-selected{background:#553b25;outline:1px solid #553b25;outline-offset:2px}.okh-m-options.is-rooms{display:flex;gap:0 10px}.okh-m-options .okh-m-name{display:flex;align-items:center;gap:4px;min-width:44px}.okh-m-name .okh-m-icon{width:16px;height:16px}.okh-m-paper{font-size:9px}.okh-m-paper b{font-size:13px}.okh-m-nav{gap:0 15px}.okh-m-nav>span{font-size:9px}.okh-map-guide .okh-m-point{font-size:10px;padding:2px 4px}.okh-m-head{gap:0}.okh-map-guide h3{font-size:16px}}
+@media(max-width:700px){.okh-map-guide .okh-m-door,.okh-map-guide .okh-m-point{display:none}.okh-m-place-label{display:block;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none}.okh-m-marker{display:grid;place-items:center;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:20px;height:20px;background:#efd4a3;border-radius:50%;color:#604423;pointer-events:none}.okh-m-marker .okh-m-icon{width:20px;height:20px}.okh-m-marker.is-selected{background:transparent;outline:1px solid #74562f;outline-offset:2px}.okh-m-options.is-rooms{display:flex;gap:0 10px}.okh-m-options .okh-m-name{display:flex;align-items:center;gap:4px;min-width:44px}.okh-m-name .okh-m-icon{width:16px;height:16px}.okh-m-paper{font-size:9px}.okh-m-paper b{font-size:13px}.okh-m-nav{gap:0 15px}.okh-m-nav>span{font-size:9px}.okh-map-guide .okh-m-point{font-size:10px;padding:2px 4px}.okh-m-head{gap:0}.okh-map-guide h3{font-size:16px}}
 `
   }
   root.OKH_APP_MAP = Object.freeze({ build, handle, signature, css, roomState, rooms: ROOMS,

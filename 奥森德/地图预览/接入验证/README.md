@@ -1,5 +1,9 @@
 # 正式状态栏 · 地图接入验证
 
+[查看新版地名标注](map-labels-detail.jpg) · [镇内标注](town-labels-detail.jpg)
+
+地图文字已改为内嵌刻印风格宋体、棕墨色与柔和纸色衬底，去掉按钮方框；镇名移到城墙下方，房门姓名统一无框。点击范围与原交互保持。
+
 ![正式 HUD 中的六间客房](hud-rooms-desktop.jpg)
 
 [手机效果](hud-rooms-mobile.jpg) · [全域图](hud-regional.jpg) · [玩家房间](hud-player-room.jpg) · [行动填入](hud-action.jpg) · [下载可交互预览](hud-live-preview.html) · [正式自动启动脚本](../../dist/okh_complete_autostart.js?raw=1)

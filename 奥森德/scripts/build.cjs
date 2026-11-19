@@ -62,7 +62,8 @@ const MAP_ASSET_MAP = [
   ['__OKH_MAP_TOWN__', '镇内图/town-art.webp'],
   ['__OKH_MAP_GROUND__', '室内图/断剑与麦酒旅店/ground-scene.webp'],
   ['__OKH_MAP_UPPER__', '室内图/断剑与麦酒旅店/upper-scene.webp'],
-  ['__OKH_MAP_ICONS__', '职业图标/class-icons.webp']
+  ['__OKH_MAP_ICONS__', '职业图标/class-icons.webp'],
+  ['__OKH_MAP_INK_FONT__', '字体/map-ink.woff', 'font/woff']
 ]
 
 function inlineUiAssets(text) {
@@ -83,10 +84,10 @@ function inlineUiAssets(text) {
 
 function inlineMapAssets(text) {
   let result = text
-  for (const [token, relPath] of MAP_ASSET_MAP) {
+  for (const [token, relPath, mime = 'image/webp'] of MAP_ASSET_MAP) {
     const full = path.join(ROOT, '奥森德', '地图预览', relPath)
     if (!fs.existsSync(full)) throw new Error('缺少地图素材：' + full)
-    result = result.split(token).join('data:image/webp;base64,' + fs.readFileSync(full).toString('base64'))
+    result = result.split(token).join('data:' + mime + ';base64,' + fs.readFileSync(full).toString('base64'))
   }
   return result
 }
