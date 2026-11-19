@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>断剑与麦酒旅店 · 两层平面图</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;padding:20px;background:#080605;color:#e8dfd3;font:14px/1.65 "PingFang SC","Microsoft YaHei",sans-serif}
+    .journal{max-width:1360px;margin:auto;padding:24px;background:radial-gradient(ellipse at 50% 0,#251c12,#100c09 90%);border:1px solid #dfc89a40;border-radius:3px}
+    header{text-align:center;margin-bottom:16px}
+    .kicker{font:10px/1.6 Georgia,serif;letter-spacing:2.5px;color:#ac9876}
+    h1{font:500 25px/1.7 "Songti SC",SimSun,serif;letter-spacing:3px;color:#fff5e3;margin:6px 0 4px}
+    header p{font:12px/1.6 "Songti SC",SimSun,serif;letter-spacing:2px;color:#b3a594;margin:0}
+    .rule{display:flex;align-items:center;gap:14px;margin:15px 0 0;color:#dfc89a;font-size:9px}
+    .rule:before,.rule:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,#dfc89a70)}
+    .rule:after{transform:rotate(180deg)}
+    .controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+    .controls button{border:1px solid #dfc89a40;border-radius:2px;background:#dfc89a09;color:#b3a594;font:13px/1.5 "Songti SC",SimSun,serif;padding:6px 15px;cursor:pointer}
+    .controls button[aria-pressed="true"]{background:#dfc89a20;color:#fff5e3;border-color:#dfc89a85}
+    button:focus-visible{outline:2px solid #dfc89a;outline-offset:3px}
+    .floors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+    .floors.single{grid-template-columns:minmax(0,1fr);max-width:940px;margin:auto}
+    .floor{min-width:0}
+    h2{font:500 17px/1.7 "Songti SC",SimSun,serif;letter-spacing:1px;margin:0 0 9px;color:#dfc89a}
+    .floor-map{position:relative;aspect-ratio:984/600;overflow:hidden;background:#dfbd87;border-radius:2px;isolation:isolate}
+    .floor-art{position:absolute;width:104.0650407%;height:256%;left:-2.0325203%;max-width:none;top:-20%}
+    .upper .floor-art{height:266.0173913%;top:-143.6637681%}
+    .label{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);font:500 13px/1.5 "Songti SC",SimSun,serif;color:#4c2f18;text-align:center;white-space:nowrap;padding:1px 5px;background:linear-gradient(90deg,#f1d0a100,#f1d0a1bd 15%,#f1d0a1bd 85%,#f1d0a100)}
+    .label.sub{font-size:11px;color:#795637}
+    .label.num{font-size:12px}
+    .room-key{display:flex;gap:5px 14px;flex-wrap:wrap;color:#b3a594;font:11px/1.6 "Songti SC",SimSun,serif;margin:9px 0 0}
+    .stair{position:absolute;left:88%;top:43.5%;transform:translate(-50%,-50%);min-width:42px;min-height:32px;border:1px solid #88623fa1;border-radius:2px;background:#ead1a8eb;color:#5c351b;font:500 13px/1.4 Georgia,"Songti SC",serif;padding:4px 8px;cursor:pointer}
+    .stair:hover{background:#f5deb8}
+    footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:16px;border-top:1px solid #dfc89a26;padding-top:12px;color:#ad9876;font:11px/1.6 "Songti SC",SimSun,serif;letter-spacing:.5px}
+    [hidden]{display:none!important}
+    @media(max-width:700px){body{padding:8px}.journal{padding:17px 10px 13px}h1{font-size:20px;letter-spacing:1px}.kicker{font-size:9px;letter-spacing:1px}.floors{grid-template-columns:minmax(0,1fr);gap:20px}.label{font-size:11px;padding:0 3px}.label.sub{font-size:10px}.controls{gap:6px;margin-bottom:14px}.controls button{padding:7px 10px;font-size:12px}h2{font-size:16px}footer{font-size:10px;letter-spacing:0}.stair{font-size:12px;min-width:38px;min-height:30px;padding:3px 6px}}
+    @media(pointer:coarse){.controls button,.stair{min-height:44px}.stair{min-width:44px}}
+  </style>
+</head>
+<body>
+  <main class="journal" id="inn-viewer">
+    <header><span class="kicker">OAKHAVEN CHRONICLES · THE BROKEN SWORD & ALE</span><h1>断剑与麦酒旅店 · 两层平面图</h1><p>12 间客房 · 24 个床位 · 两层对应</p><div class="rule" aria-hidden="true">❖</div></header>
+    <nav class="controls" aria-label="楼层显示方式">
+      <button type="button" data-view="both" aria-controls="inn-ground inn-upper" aria-pressed="true">两层对照</button>
+      <button type="button" data-view="ground" aria-controls="inn-ground" aria-pressed="false">一层</button>
+      <button type="button" data-view="upper" aria-controls="inn-upper" aria-pressed="false">二层</button>
+    </nav>
+    <div class="floors" id="inn-floors">
+      <section class="floor ground" id="inn-ground" aria-labelledby="ground-title">
+        <h2 id="ground-title">一层 · 酒馆与后勤（约 40 席）</h2>
+        <div class="floor-map" aria-label="一层：十张桌的大厅约容纳四十人，南侧主入口，西侧后勤小院，北侧厨房、食材库和酒水吧台服务区，东南后勤储藏，东北楼梯 A 通往二层。">
+          <img class="floor-art" src="inn-art.webp" width="1024" height="1536" alt="扩容后的一层俯视平面：十张餐桌及长凳、厨房、食材库、吧台、后勤储藏、西侧院落、南侧主入口及东北折返楼梯。">
+          <span class="label" style="--x:27.5%;--y:24.7%">厨房</span>
+          <span class="label" style="--x:43.7%;--y:24.2%">食材库</span>
+          <span class="label" style="--x:62.5%;--y:26.7%">酒水储藏</span>
+          <span class="label" style="--x:64%;--y:44%">吧台</span>
+          <span class="label" style="--x:55.4%;--y:65%">酒馆大厅</span>
+          <span class="label" style="--x:9%;--y:65%">后勤小院</span>
+          <span class="label sub" style="--x:87.5%;--y:84.2%">后勤储藏</span>
+          <span class="label sub" style="--x:52.5%;--y:96%">主入口 · 镇内街道</span>
+          <button type="button" class="stair" data-floor-target="upper" aria-label="查看楼梯 A 对应的二层">A ↑</button>
+        </div>
+        <p class="room-key">十张桌 · 每桌约四席 · 厨房、食材与酒水分区</p>
+      </section>
+      <section class="floor upper" id="inn-upper" aria-labelledby="upper-title">
+        <h2 id="upper-title">二层 · 12 间客房（24 床位）</h2>
+        <div class="floor-map" aria-label="二层：南北各六间客房，四间单人、六间双床、两间四床，共二十四个床位。每间客房向中央走廊开门，东北楼梯 A 与一层对应。西侧虚线只表示下方院落。">
+          <img class="floor-art" src="inn-art.webp" width="1024" height="1536" alt="扩容后的二层俯视平面：十二间客房与二十四张单人床，中央走廊连通所有客房，东北折返楼梯旁设公用盥洗与布草空间。">
+          <span class="label num" style="--x:20.1%;--y:33.5%">01</span>
+          <span class="label num" style="--x:29%;--y:33.5%">02</span>
+          <span class="label num" style="--x:39.5%;--y:33.5%">03</span>
+          <span class="label num" style="--x:49.8%;--y:33.5%">04</span>
+          <span class="label num" style="--x:58.3%;--y:33.5%">05</span>
+          <span class="label num" style="--x:70%;--y:33.5%">06</span>
+          <span class="label" style="--x:49%;--y:50%">客房走廊</span>
+          <span class="label num" style="--x:20.1%;--y:63.3%">07</span>
+          <span class="label num" style="--x:29%;--y:63.3%">08</span>
+          <span class="label num" style="--x:39.5%;--y:63.3%">09</span>
+          <span class="label num" style="--x:49.8%;--y:63.3%">10</span>
+          <span class="label num" style="--x:58.3%;--y:63.3%">11</span>
+          <span class="label num" style="--x:77.6%;--y:63.3%">12</span>
+          <span class="label sub" style="--x:9%;--y:65.5%">下方为庭院</span>
+          <button type="button" class="stair" data-floor-target="ground" aria-label="查看楼梯 A 对应的一层">A ↓</button>
+        </div>
+        <div class="room-key"><span>单人：01、05、07、11</span><span>双床：02–04、08–10</span><span>四床：06、12</span></div>
+      </section>
+    </div>
+    <footer><span>第三层 · 旅店室内图　 A 为同一部楼梯</span><span>容量草案 · 12 间客房 / 24 床位</span></footer>
+  </main>
+  <script>
+  (()=>{
+    const root=document.getElementById('inn-viewer');
+    const media=window.matchMedia('(max-width:700px)');
+    const floors=root.querySelector('#inn-floors');
+    let userSelected=false;
+    function show(view){
+      if(!['both','ground','upper'].includes(view))return;
+      root.dataset.view=view;
+      floors.classList.toggle('single',view!=='both');
+      root.querySelector('#inn-ground').hidden=view==='upper';
+      root.querySelector('#inn-upper').hidden=view==='ground';
+      root.querySelectorAll('[data-view]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.view===view)));
+    }
+    root.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{userSelected=true;show(button.dataset.view);}));
+    root.querySelectorAll('[data-floor-target]').forEach(button=>button.addEventListener('click',()=>{userSelected=true;show(button.dataset.floorTarget);root.querySelector('[data-view="'+button.dataset.floorTarget+'"]').focus({preventScroll:true});}));
+    media.addEventListener('change',()=>{if(!userSelected)show(media.matches?'ground':'both');});
+    show(media.matches?'ground':'both');
+  })();
+  </script>
+</body>
+</html>
