@@ -14,12 +14,12 @@
 #okh-inn-guide .ig-floors [aria-pressed=true]:after{content:'';position:absolute;bottom:3px;left:0;right:0;height:1px;background:var(--ig-gold)}
 #okh-inn-guide .ig-image-wrap{position:relative;border:1px solid var(--ig-line);border-radius:2px;overflow:hidden;background:#dbb880}
 #okh-inn-guide .ig-image-wrap img{display:block;width:100%;height:auto;aspect-ratio:1672/941}
-#okh-inn-guide .ig-door{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);padding:3px;min-width:58px;min-height:44px;color:#50341e}
+#okh-inn-guide .ig-door{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);padding:3px;min-width:44px;min-height:44px;color:#50341e}
 #okh-inn-guide .ig-door span{display:block;background:rgba(243,217,169,.95);padding:3px 8px;border:1px solid #967044;box-shadow:0 1px 3px #68461c22;border-radius:2px;font-family:'Songti SC','Noto Serif CJK SC',serif;font-size:12px;white-space:nowrap}
 #okh-inn-guide .ig-door .ig-num{display:none}
 #okh-inn-guide .ig-door[aria-pressed=true] span{background:#553b25;color:#ffedc8;border-color:#f3d193}
 #okh-inn-guide .ig-door:hover span{outline:1px solid #6b4a2b;outline-offset:2px}
-#okh-inn-guide .ig-door .ig-label{display:flex;align-items:center;justify-content:center;gap:5px}
+#okh-inn-guide .ig-door .ig-label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 6px}
 #okh-inn-guide .ig-class-icon{display:inline-block;width:var(--ig-icon-size,18px);height:var(--ig-icon-size,18px);flex-shrink:0;background-image:var(--ig-class-atlas,url('../../职业图标/class-icons.webp'));background-size:500% 166.666667%;background-position:var(--ig-icon-x,0%) 50%;vertical-align:middle}
 #okh-inn-guide .ig-player-icon{display:inline-grid;place-items:center;width:var(--ig-icon-size,18px);height:var(--ig-icon-size,18px);border:1px solid currentColor;border-radius:50%;font:normal 12px 'Noto Serif CJK SC','Songti SC',serif;flex-shrink:0;color:inherit;vertical-align:middle}
 #okh-inn-guide .ig-room-top .ig-sigil{border:0}
@@ -45,7 +45,7 @@
 #okh-inn-guide .ig-zone-nav{display:flex;flex-wrap:wrap;gap:4px 20px;padding-top:5px;border-bottom:1px solid var(--ig-line)}
 #okh-inn-guide .ig-zone-nav button[aria-pressed=true]{color:var(--ig-gold);text-decoration:underline;text-underline-offset:8px}
 #okh-inn-guide .ig-zone-text{padding:10px 0;color:var(--ig-sub)}
-@media(max-width:560px){
+@media(max-width:700px){
  #okh-inn-guide .ig-heading{align-items:flex-start;gap:5px;flex-wrap:wrap}
  #okh-inn-guide h2{font-size:17px}#okh-inn-guide .ig-floors{gap:16px}
  #okh-inn-guide .ig-door{display:none}
@@ -70,13 +70,14 @@
   <p class="ig-zone-text" aria-live="polite">长桌之间留出通道，连通吧台、厨房与楼梯。</p>
  </div>
  <div class="ig-floor-view" data-view="upper" hidden>
-  <figure class="ig-image-wrap"><img src="upper-scene.webp" width="1672" height="941" alt="旅店二层客房走廊，北侧五扇房门，东北楼梯下通一层。房门上的标记可点选。">
+  <figure class="ig-image-wrap"><img src="upper-scene.webp" width="1672" height="941" alt="旅店二层同一侧走廊的一排六扇房门，分别通向伯里、古兰、伊丝娜、妮丝、奥萝拉和爱德的房间；东北楼梯下通一层。">
    <div class="ig-paper-note"><b>二层客房</b><br><span class="ig-paper-instruction">选择住客 · 展开房间</span></div>
-   <button type="button" class="ig-door" style="--x:19.5%;--y:81%" data-room="door1" aria-pressed="false"><span class="ig-label">客房 01</span><span class="ig-num" aria-hidden="true">01</span></button>
-   <button type="button" class="ig-door" style="--x:31.5%;--y:73.4%" data-room="door2" aria-pressed="false"><span class="ig-label">客房 02</span><span class="ig-num" aria-hidden="true">02</span></button>
-   <button type="button" class="ig-door" style="--x:43.1%;--y:65.8%" data-room="door3" aria-pressed="false"><span class="ig-label">客房 03</span><span class="ig-num" aria-hidden="true">03</span></button>
-   <button type="button" class="ig-door" style="--x:54%;--y:58.6%" data-room="door4" aria-pressed="false"><span class="ig-label">客房 04</span><span class="ig-num" aria-hidden="true">04</span></button>
-   <button type="button" class="ig-door" style="--x:64.6%;--y:51.4%" data-room="door5" aria-pressed="false"><span class="ig-label">客房 05</span><span class="ig-num" aria-hidden="true">05</span></button>
+   <button type="button" class="ig-door" style="--x:19.4%;--y:81%" data-room="door1" aria-pressed="false"><span class="ig-label">客房 01</span><span class="ig-num" aria-hidden="true">01</span></button>
+   <button type="button" class="ig-door" style="--x:29.8%;--y:74.8%" data-room="door2" aria-pressed="false"><span class="ig-label">客房 02</span><span class="ig-num" aria-hidden="true">02</span></button>
+   <button type="button" class="ig-door" style="--x:39.6%;--y:68.7%" data-room="door3" aria-pressed="false"><span class="ig-label">客房 03</span><span class="ig-num" aria-hidden="true">03</span></button>
+   <button type="button" class="ig-door" style="--x:48.8%;--y:62.8%" data-room="door4" aria-pressed="false"><span class="ig-label">客房 04</span><span class="ig-num" aria-hidden="true">04</span></button>
+   <button type="button" class="ig-door" style="--x:57.5%;--y:57.1%" data-room="door5" aria-pressed="false"><span class="ig-label">客房 05</span><span class="ig-num" aria-hidden="true">05</span></button>
+   <button type="button" class="ig-door" style="--x:65.7%;--y:51.7%" data-room="door6" aria-pressed="false"><span class="ig-label">客房 06</span><span class="ig-num" aria-hidden="true">06</span></button>
   </figure>
   <nav class="ig-mobile-rooms" aria-label="按姓名选择房间"></nav>
   <div class="ig-helper"><span>选房间 → 查看角色 → 选择行动</span><span class="ig-data-note">入住信息待载入</span></div>
@@ -91,15 +92,15 @@
 <script>
 (() => {
  const root=document.getElementById('okh-inn-guide');
- const roomIds=['door1','door2','door3','door4','door5'];
+ const roomIds=['door1','door2','door3','door4','door5','door6'];
  let state={demo:false,rooms:[]}, selected=null;
  const q=s=>root.querySelector(s),qa=s=>[...root.querySelectorAll(s)];
  const roomLabel=id=>'客房 '+String(roomIds.indexOf(id)+1).padStart(2,'0');
  const getRoom=id=>state.rooms.find(r=>r.id===id)||{id};
  const classPositions={warrior:0,scout:25,mage:50,cleric:75,support:100};
  function makeIcon(occupant){
-  if(occupant?.isPlayer){const icon=document.createElement('i');icon.className='ig-player-icon';icon.textContent='你';icon.setAttribute('aria-hidden','true');return icon;}
   const job=occupant?.classId;
+  if(!Object.hasOwn(classPositions,job)&&occupant?.isPlayer){const icon=document.createElement('i');icon.className='ig-player-icon';icon.textContent='你';icon.setAttribute('aria-hidden','true');return icon;}
   if(!Object.hasOwn(classPositions,job))return null;
   const icon=document.createElement('i');icon.className='ig-class-icon';icon.dataset.class=job;icon.style.setProperty('--ig-icon-x',classPositions[job]+'%');icon.setAttribute('aria-hidden','true');return icon;
  }

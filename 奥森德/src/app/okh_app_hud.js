@@ -75,7 +75,7 @@
 
   const CHAR_META = {
     gulan: {
-      sigil: '⚔', role: '半龙人领队',
+      sigil: '⚔', role: '半龙人剑士',
       bio: '伯里与妮丝的母亲，威严寡言，以武道身教磨砺后辈，从不代劳琐事。',
       actions: [
         { label: '请教剑术或对练', prompt: '向古兰请教剑术并约一场对练', tag: '对练请教' },

@@ -124,12 +124,10 @@ def upper():
     slab('east landing east',11.5,12,2.2,7)
     slab('east landing back',8,11.5,6.2,7)
     # Entrance to the stairwell stays at its southern end, aligned with the lower floor arrival.
-    door_wall('north guest partition',-12,7.5,2.2,[(-10,1.3),(-6,1.3),(-2,1.3),(2,1.3),(6,1.3)])
-    for x in [-12,-8,-4,0,4,7.5]:beam('guest partition post',(x,2.08,0),(x,2.08,3.25),.18)
-    # The near partition is sectioned low; no floating facade is introduced.
-    for a,b in [(-12,-7),(-5,-1),(1,7),(9,12)]:wall('south section partition',a,b,-2.2,0,.7)
-    for x in [-6,0,8]:
-        for xx in [x-.65,x+.65]:beam('sectioned door post',(xx,-2.2,0),(xx,-2.2,.8),.12)
+    door_wall('north guest partition',-12,7.5,2.2,[(-10.5,1.3),(-7.2,1.3),(-3.9,1.3),(-.6,1.3),(2.7,1.3),(6,1.3)])
+    for x in [-12,-8.85,-5.55,-2.25,1.05,4.35,7.5]:beam('guest partition post',(x,2.08,0),(x,2.08,3.25),.18)
+    # Continuous low cut wall: all six room doors are on the far wall only.
+    wall('south section partition',-12,12,-2.2,0,.45)
     box('east corridor wall',(12,.0,1.625),(.18,4.4,3.25),plaster)
     box('east landing wall',(12,4.6,1.625),(.18,4.8,3.25),plaster)
     beam('east head',(12,-2.2,3.25),(12,7,3.25),.18)
@@ -149,7 +147,7 @@ bpy.ops.object.camera_add(location=(-26,-35,29));cam=bpy.context.object;directio
 scene.render.use_freestyle=True
 line=scene.view_layers[0].freestyle_settings.linesets[0].linestyle;line.color=(.22,.13,.065);line.thickness=.8
 base_objs=set(scene.objects)
-for level,builder in [('ground',ground),('upper',upper)]:
+for level,builder in [('upper-six',upper)]:
     builder()
     scene.render.filepath=str(OUT/('axon-'+level+'.png'))
     bpy.ops.wm.save_as_mainfile(filepath=str(OUT/('axon-'+level+'.blend')))

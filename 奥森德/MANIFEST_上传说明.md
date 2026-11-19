@@ -1,38 +1,20 @@
-# 奥森德 源码上传说明
+# 奥森德 · 当前文件说明
 
-- 上传时间：2026-11-19（Asia/Shanghai）
-- 来源：本地工作区 `E:\角色卡制作\ntr妹妹\奥森德`
-- 参考快照：https://github.com/R41N1NG/-/tree/cf39dd49214001a11fd4f1e2ba3ce3af1e42f893/奥森德
-- 目标目录：仓库 `奥森德/`（与既有构建产物 `okh_complete.js`、`okh_complete_R4_card_autostart.js`、`奥克赫斯_R4配套.json`、`奥克赫斯_角色卡与脚本_R4.zip`、`README.md` 并存，未改动旧文件）
-
-## 目录结构
+原始源码上传于 2026-11-19，来源为用户本地工程。2026-11-20 按用户要求清理旧版本内容，当前维护：
 
 ```
 奥森德/
 ├── src/
-│   ├── app/     # 应用层：entry/adapter/hud/parse/rules/time/world/migrate/hook/debug/config/data
-│   └── core/    # 核心层：adapter/api/turn/events/effects/nodes/rules/activity/utils
-├── scripts/
-│   ├── autostart.js
-│   ├── build.cjs
-│   ├── review-regressions.cjs
-│   ├── test_card.cjs
-│   └── test_foundation.cjs
+│   ├── app/       # 12 个应用模块
+│   └── core/      # 9 个核心模块
+├── scripts/      # 5 个构建/测试脚本
+├── 地图预览/
+├── README.md
 └── MANIFEST_上传说明.md
 ```
 
-## 文件数
+已移除旧 R4 卡、旧合订运行脚本、旧 R4 配套包和过时的源码快照压缩包。修改以当前源码为准，不将历史构建产物作为新版运行文件。
 
-- src/app：12 个
-- src/core：9 个
-- scripts：5 个
-- 合计 26 个源码/脚本文件
+地图预览保留当前全域、镇内、六间客房导览与职业图标；废弃的平面图和早期错误布局预览已清理。
 
-## 构建
-
-```
-node scripts/build.cjs      # 由 src/ 生成 okh_complete.js
-node scripts/test_card.cjs  # 卡本体回归
-node scripts/test_foundation.cjs
-node scripts/review-regressions.cjs
-```
+构建入口为 `scripts/build.cjs`；需要脚本声明的完整工程路径、UI 素材及对应正式角色卡。当前仓库没有测试所引用的 32 条世界书正式卡。
