@@ -12,6 +12,17 @@
   const W = root.OKH_APP_WORLD
   const A = root.OKH_APP_ADAPTER
   const CFG = root.OKH_APP_CONFIG
+  const MAP = root.OKH_APP_MAP
+  // 酒馆助手脚本可能运行在同源 iframe；样式、挂载与输入统一使用聊天文档。
+  const document = (() => {
+    const own = root.document
+    if (own?.querySelector?.('#chat,[data-okh-hud]')) return own
+    try {
+      const host = root.parent !== root ? root.parent?.document : null
+      if (host?.querySelector?.('#chat')) return host
+    } catch (_) {}
+    return own
+  })()
   if (!W || !A || !CFG) {
     console.error('[APP] hud 加载失败：需要 world、adapter 与 config')
     return
@@ -34,6 +45,11 @@
   let activePresentId = null
   const openRosterIds = new Set()
   let lastWorldRef = null
+  let autoMount = root.OKH_HUD_AUTO_MOUNT !== false
+
+  function mapSessionKey() {
+    try { return W.chatId() } catch (_) { return 'default' }
+  }
 
   function resolveUiAsset(token, fallback) {
     return token.startsWith('data:') ? token : fallback
@@ -438,28 +454,7 @@
       `
     }
 
-    const mapSrc = joinAsset('maps/world_map.png')
-    const mapBlock = `
-      <div class="okh-art-hr"></div>
-      <div class="okh-map-sec">
-        <div class="okh-sub-head">
-          <span class="okh-sub-title">🗺 全域态势勘界地图</span>
-          <span class="okh-sub-hint">全域勘界图卷</span>
-        </div>
-        <div class="okh-map-slot" data-okh-act="zoom-map" data-okh-loc="${escapeHtml(locName(world.playerLocation))}" data-okh-src="${escapeHtml(mapSrc)}">
-          <span class="okh-mc okh-mc-tl"></span><span class="okh-mc okh-mc-tr"></span>
-          <span class="okh-mc okh-mc-bl"></span><span class="okh-mc okh-mc-br"></span>
-          <img class="okh-map-img" src="${escapeHtml(mapSrc)}" alt="奥克赫斯全域态势地图" onload="this.style.display='block';if(this.nextElementSibling)this.nextElementSibling.style.display='none';" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';">
-          <div class="okh-map-ph">
-            <div class="okh-map-compass">✦</div>
-            <div class="okh-map-ph-title">奥克赫斯疆域 · 态势勘界卷轴</div>
-            <div class="okh-map-ph-pos">当前定位：⚲ ${escapeHtml(locName(world.playerLocation))}</div>
-            <div class="okh-map-ph-note">［地图插槽预留 · 待载入 maps/world_map.png］</div>
-          </div>
-          <span class="okh-zoom-badge" aria-hidden="true">🔍</span>
-        </div>
-      </div>
-    `
+    const mapBlock = MAP ? MAP.build(world, mapSessionKey()) : '<div class="okh-empty-tip">地图模块未载入。</div>'
 
     // 在场可交互主要角色（主次联动）
     let selectedId = activePresentId
@@ -861,7 +856,8 @@
       document.head.appendChild(style)
     }
     // 总是覆写最新样式，避免热更新时旧节点拦截死锁
-    style.textContent = buildCss()
+    const css = buildCss() + (MAP ? MAP.css() : '')
+    if (style.textContent !== css) style.textContent = css
   }
 
   function ensureLightbox() {
@@ -921,16 +917,18 @@
     if (lb) lb.classList.remove('active')
   }
 
-  function fillTavernInput(text) {
-    if (typeof document === 'undefined' || !text) return
+  function fillTavernInput(text, { append = false } = {}) {
+    if (typeof document === 'undefined' || !text) return false
     const input = document.getElementById('send_textarea') ||
       document.querySelector('#send_form textarea') ||
       document.getElementById('tavern-input')
-    if (!input) return
-    input.value = text
+    if (!input) return false
+    const prior = append ? input.value.trimEnd() : ''
+    input.value = prior ? prior + '\n' + text : text
     input.dispatchEvent(new Event('input', { bubbles: true }))
     input.dispatchEvent(new Event('change', { bubbles: true }))
     if (typeof input.focus === 'function') input.focus()
+    return true
   }
 
   function bindGlobalEvents() {
@@ -947,6 +945,14 @@
       const el = event.target?.closest?.('[data-okh-act]')
       if (!el) return
       const act = el.getAttribute('data-okh-act')
+      if (MAP && act?.startsWith('map-')) {
+        const current = W.loadWorld()
+        if (!current) return
+        MAP.handle(el, current, mapSessionKey(), text => fillTavernInput(text, { append: true }))
+        lastWorldRef = current
+        rerenderCurrent()
+        return
+      }
       if (act === 'tab') {
         activeTab = el.getAttribute('data-okh-tab') || 'dispatch'
         rerenderCurrent()
@@ -1010,7 +1016,7 @@
     const qLen = Array.isArray(world.bg?.queue) ? world.bg.queue.length : 0
     const invSig = JSON.stringify(world.playerState?.inventory || [])
     return [
-      world.timeMin, world.playerLocation, world.focusNpcId || '',
+      mapSessionKey(), world.timeMin, world.playerLocation, world.focusNpcId || '',
       world.playerState?.gold ?? 40,
       world.flags?.inn_arrears ? 1 : 0,
       world.flags?.inn_free_pass_today ? 1 : 0,
@@ -1020,7 +1026,7 @@
       world.flags?.ed_permanently_joined ? 1 : 0,
       world.flags?.alice_rescued ? 1 : 0,
       world.npcs?.ed?.flags?.ed_teach_count ?? 0,
-      invSig, pendSig, qLen, npcSig
+      invSig, pendSig, qLen, npcSig, MAP ? MAP.signature(world) : ''
     ].join('#')
   }
 
@@ -1034,6 +1040,18 @@
   }
 
   let eventsBound = false
+
+  function ensureMessageHud() {
+    if (!autoMount || !document?.querySelectorAll) return
+    const texts = document.querySelectorAll('#chat .mes[is_user="false"] .mes_text')
+    const latest = texts[texts.length - 1]
+    if (!latest || latest.querySelector('[data-okh-hud]')) return
+    const container = document.createElement('div')
+    container.className = 'okh-hud'
+    container.setAttribute('data-okh-hud', '')
+    container.setAttribute('data-okh-mounted', '1')
+    latest.appendChild(container)
+  }
 
   /**
    * 渲染所有 HUD 容器（按状态指纹做脏检查，避免定时器覆盖玩家分页/折页交互）
@@ -1051,6 +1069,7 @@
     const world = W.loadWorld()
     if (!world) return false
     lastWorldRef = world
+    ensureMessageHud()
 
     const sig = buildRenderSignature(world)
     const huds = document.querySelectorAll('[data-okh-hud]')
@@ -1098,6 +1117,7 @@
   }
 
   root.OKH_APP_HUD = Object.freeze({
+    setAutoMount(value) { autoMount = value !== false; return render(true) },
     setWatchVisible(value) { watchVisible = value === true; return render(true) },
     setAssetBase(base) { assetBase = String(base ?? ''); return render(true) },
     LOCATION_NAMES,

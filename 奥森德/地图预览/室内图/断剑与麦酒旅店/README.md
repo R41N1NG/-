@@ -2,7 +2,7 @@
 
 ![六间房与角色交互](rooms-preview.jpg)
 
-[玩家房间](player-room-preview.jpg) · [手机效果](mobile-rooms-preview.jpg) · [六门底图](upper-scene.jpg) · [行动填入效果](interaction-preview.jpg) · [下载可点击预览](interactive-preview.html)
+[玩家房间](player-room-preview.jpg) · [手机效果](mobile-rooms-preview.jpg) · [六门底图](upper-scene.jpg) · [行动填入效果](interaction-preview.jpg) · [下载正式 HUD 预览](../../接入验证/hud-live-preview.html)
 
 ## 房间
 
@@ -17,7 +17,7 @@
 | 05 | 奥萝拉 | 见习牧师 |
 | 06 | 爱德 | 随行后勤 |
 
-古兰不是领队或冒险者小队成员；独立住客仍有住宿与访问入口。图面房号用于导览，不自动改写角色卡存档。实际是否在房和爱德是否已经加入，需服从游戏状态；预览中的动向为演示。
+古兰不是领队或冒险者小队成员；独立住客仍有住宿与访问入口。图面房号用于导览，不自动改写角色卡存档。实际是否在房和爱德是否已经加入，服从当前游戏状态；截图来自独立沙盒存档。
 
 ## 交互
 
@@ -27,16 +27,14 @@
 
 手机使用图下姓名入口；图上职业小图标对应房门，入口至少 44px。图标与姓名独立于底图，可更新入住信息。
 
-## 文件与接入
+## 正式状态栏接入
 
-- `interactive-preview.html`：图片内嵌的单文件演示，下载后用浏览器打开。
-- `room-guide-component.html`：嵌入片段；依赖同目录的 `ground-scene.webp`、`upper-scene.webp` 及 `../../职业图标/class-icons.webp`。
-- `rooms-preview.jpg`、`mobile-rooms-preview.jpg`、`player-room-preview.jpg`：当前截图。
+[使用正式 HUD 的可交互沙盒预览](../../接入验证/hud-live-preview.html) · [接入说明](../../接入验证) · [自动启动脚本](../../../dist/okh_complete_autostart.js?raw=1)
+
+地图现已进入正式渲染链路，读取当前聊天存档。人在旅店显示“房内待确认”，不沿用旧示例的在房判断。房门选择和行动意图不会直接改变游戏状态。
+
 - `ground-scene.jpg/webp`、`upper-scene.jpg/webp`：两层图稿。
-- `geometry-reference.py`：六门结构参考脚本，不是定稿建筑尺寸。
+- `rooms-preview.jpg`、`mobile-rooms-preview.jpg`、`player-room-preview.jpg`、`interaction-preview.jpg`：当前正式 HUD 的沙盒截图。
+- `geometry-reference.py`：六门结构参考。
 
-`okhInnGuide.setState({rooms:[...]})` 更新入住视图；每项含 `id`、`occupant:{id,name,role,classId,isPlayer}`、`presence` 和可选 `location`。房门键为 `door1`–`door6`，只表示图面锚点。职业键支持 warrior/scout/mage/cleric/support，玩家使用 isPlayer=true 区分个人房间。
-
-`presence` 为 inside、away 或 unknown。默认不分配住客、不推断在房；演示数据独立放在 inn-preview-fixture 中。`setFloor` 和 `selectRoom` 仅浏览。
-
-当前尚未接入正式卡后台。检查通过：六个房门、玩家与独立住客、楼层切换、动作填入及草稿保留、状态更新、缺输入框的复制回退和手机排版。底图为 AI 转绘。
+旧独立房间组件与演示 HTML 已被正式 HUD 接入替代。图面六房分配来自用户要求；实际是否登场、在店、活动或同住从存档读取。

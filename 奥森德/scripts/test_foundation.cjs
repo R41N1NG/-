@@ -10,7 +10,7 @@ const path = require('path');
 const vm = require('vm');
 const assert = require('assert');
 
-const BUNDLE_PATH = path.resolve(__dirname, '../../tavern_scripts/okh_complete.js');
+const BUNDLE_PATH = path.resolve(__dirname, '../dist/okh_complete.js');
 const bundleCode = fs.readFileSync(BUNDLE_PATH, 'utf8');
 
 function createSandbox(chatId = 'chat-test', sharedVars = null) {
