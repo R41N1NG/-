@@ -9,11 +9,19 @@ const {chromium}=require('playwright');
  await page.setContent(fs.readFileSync(path.join(out,'hud-live-preview.html'),'utf8'),{waitUntil:'load'});
  await page.evaluate(()=>window.previewReady);
  const before=await page.evaluate(()=>JSON.stringify(OKH_APP.world()));
+ await page.locator('.okh-m-journal').screenshot({path:path.join(out,'inn-ground.jpg'),type:'jpeg',quality:93});
  await page.getByRole('button',{name:'二层 · 客房',exact:true}).click();
+ // Hit the illustrated wooden doors, below their small lintel captions.
+ for(const [x,y,room] of [[16.7,73,'01'],[26.5,67,'02'],[36.3,61,'03'],[45.9,55,'04'],[55.4,49,'05'],[64.9,43,'06']]){
+  const box=await page.locator('.okh-m-image').boundingBox();
+  await page.locator('.okh-m-image').click({position:{x:box.width*x/100,y:box.height*y/100}});
+  assert((await page.locator('.okh-m-room-head').innerText()).includes('客房 '+room),'Door selected the wrong room '+room);
+ }
  await page.getByRole('button',{name:'查看妮丝的房间',exact:true}).click();
  assert((await page.locator('.okh-m-status').innerText()).includes('房内待确认'));
  assert.equal(await page.evaluate(()=>JSON.stringify(OKH_APP.world())),before,'Browsing changed the save');
  await page.locator('.okh-hud-canvas').screenshot({path:path.join(out,'hud-rooms-desktop.jpg'),type:'jpeg',quality:92});
+ await page.locator('.okh-m-journal').screenshot({path:path.join(out,'inn-upper.jpg'),type:'jpeg',quality:94});
  await page.locator('#send_textarea').fill('已有草稿');
  await page.getByRole('button',{name:'› 敲门拜访',exact:true}).click();
  assert((await page.locator('#send_textarea').inputValue()).startsWith('已有草稿\n'));
@@ -50,7 +58,10 @@ const {chromium}=require('playwright');
   assert.equal(boxes.length,6);
   for(const r of boxes){assert(r.w>=44,'Narrow room target '+width);assert(r.h>=44,'Short room target '+width)}
   for(let i=0;i<6;i++)for(let j=i+1;j<6;j++){const a=boxes[i],b=boxes[j];assert(!(Math.min(a.x+a.w,b.x+b.w)>Math.max(a.x,b.x)&&Math.min(a.y+a.h,b.y+b.h)>Math.max(a.y,b.y)),'Overlapping room targets '+width)}
-  if(width===390)await page.locator('.okh-hud-canvas').screenshot({path:path.join(out,'hud-rooms-mobile.jpg'),type:'jpeg',quality:92});
+  if(width===390){
+   await page.locator('.okh-hud-canvas').screenshot({path:path.join(out,'hud-rooms-mobile.jpg'),type:'jpeg',quality:92});
+   await page.locator('.okh-m-journal').screenshot({path:path.join(out,'inn-mobile.jpg'),type:'jpeg',quality:94});
+  }
  }
  // A privacy-state change without a clock change must repaint the existing HUD.
  await page.evaluate(async()=>{const w=OKH_APP.world();w.npcs.gulan.location='wilds_camp';w.npcs.gulan.flags.captured_orc=true;await OKH_APP.save(w,{debug:true});OKH_APP.renderHud()});
