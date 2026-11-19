@@ -5,15 +5,10 @@
     <div class="om-topline"><span>⚲ 当前所在：中央集市大道</span><button type="button" class="om-fold" aria-expanded="true" aria-controls="om-map-body">收起图卷 −</button></div>
     <div id="om-map-body">
       <div class="om-map">
-        <img class="om-art" src="map-art.webp" width="1536" height="1024" alt="羊皮纸上的手绘西幻城镇：河流石桥环绕西侧城墙，哥特教堂与领主庄园分立城北，集市、木构旅店和地下入口散布在街巷中，城东通往山岩荒野。">
-        <button class="om-place" type="button" data-place="church" style="--x:28%;--y:38%" aria-pressed="false"><span class="om-pin" aria-hidden="true">◆</span><span class="om-label">圣辉大教堂</span></button>
-        <button class="om-place" type="button" data-place="manor" style="--x:60%;--y:31%" aria-pressed="false"><span class="om-pin" aria-hidden="true">◆</span><span class="om-label">领主山庄</span></button>
-        <button class="om-place om-current" type="button" data-place="town" style="--x:46%;--y:54%" aria-pressed="true"><span class="om-pin" aria-hidden="true">◆</span><span class="om-label">中央集市大道 <small>你在此处</small></span></button>
-        <button class="om-place" type="button" data-place="inn" style="--x:26%;--y:75%" aria-pressed="false"><span class="om-pin" aria-hidden="true">◆</span><span class="om-label">断剑与麦酒</span></button>
-        <button class="om-place" type="button" data-place="casino" style="--x:61%;--y:75%" aria-pressed="false"><span class="om-pin" aria-hidden="true">◆</span><span class="om-label">地下赌场</span></button>
-        <button class="om-place" type="button" data-place="wilds" style="--x:85%;--y:44%" aria-pressed="false"><span class="om-pin" aria-hidden="true">◆</span><span class="om-label">城外荒原</span></button>
+        <img class="om-art" src="map-art.webp" width="1536" height="1024" alt="古旧羊皮纸上的西幻勘界图：现有城镇位于画面西侧，以细笔绘出教堂、庄园、市场和城墙。北侧山林、东侧荒原及南侧田野保留宽阔的未标注地带。">
+        <div class="om-markers" aria-label="地图地点"></div>
       </div>
-      <div class="om-mobile-picker"><label for="om-place-select">勘界地名</label><select id="om-place-select"><option value="town">中央集市大道 · 当前所在</option><option value="church">圣辉大教堂</option><option value="manor">领主山庄</option><option value="inn">断剑与麦酒</option><option value="casino">地下赌场</option><option value="wilds">城外荒原</option></select></div>
+      <div class="om-mobile-picker"><label for="om-place-select">勘界地名</label><select id="om-place-select"></select></div>
       <section class="om-detail" aria-label="选中地点详情" aria-live="polite"><div><div class="om-heading"><span aria-hidden="true">❖</span><h3 id="om-detail-name">中央集市大道</h3><span id="om-detail-state">当前所在</span></div><p id="om-detail-desc">银月珠宝铺近旁。摊棚与街巷环绕着广场，通往城中各处。</p></div><button id="om-prepare" type="button" disabled>已在此处</button></section>
       <footer class="om-footer"><span>公会抄录 · 城镇及近郊</span><span>点击地名，查看地点</span></footer>
     </div>
@@ -40,10 +35,10 @@
 #okh-map-study .om-map{position:relative;isolation:isolate;aspect-ratio:3/2;border-radius:2px;background:#785a35;box-shadow:0 5px 22px #0006}
 #okh-map-study .om-art{display:block;width:100%;height:auto;border-radius:2px}
 #okh-map-study .om-place{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-25%);display:flex;align-items:center;flex-direction:column;min-width:44px;min-height:44px;padding:0;background:none;border:0;color:#e9d0a0;z-index:1}
-#okh-map-study .om-pin{font:10px/1.5 Georgia,serif;color:#eed7a6;text-shadow:0 1px 2px #211108,0 0 2px #211108}
-#okh-map-study .om-label{padding:3px 11px 4px;background:linear-gradient(90deg,#23170bd9,#302112ed,#23170bd9);border-top:1px solid #e5c68d99;border-bottom:1px solid #e5c68d66;font:500 12px/1.6 "Songti SC",SimSun,serif;letter-spacing:1px;white-space:nowrap;box-shadow:0 2px 4px #0005}
-#okh-map-study .om-label small{display:block;font:10px/1.4 "Songti SC",SimSun,serif;letter-spacing:2px;color:#e7c78f}
-#okh-map-study .om-place:hover .om-label,#okh-map-study .om-place[aria-pressed="true"] .om-label{background:linear-gradient(90deg,#35220be8,#493018f2,#35220be8);color:#fff2d3;border-top-color:#f9deb1}
+#okh-map-study .om-pin{font:8px/1.5 Georgia,serif;color:#74502d}
+#okh-map-study .om-label{padding:2px 7px 3px;background:linear-gradient(90deg,#f5d5a600,#f5d5a6c7 18%,#f5d5a6c7 82%,#f5d5a600);color:#492b16;font:600 14px/1.6 "Songti SC",SimSun,serif;letter-spacing:1px;white-space:nowrap}
+#okh-map-study .om-label small{display:block;font:11px/1.5 "Songti SC",SimSun,serif;letter-spacing:2px;color:#82472d}
+#okh-map-study .om-place:hover .om-label,#okh-map-study .om-place[aria-pressed="true"] .om-label{color:#77371e;text-decoration:underline;text-decoration-color:#965f3b88;text-underline-offset:4px}
 #okh-map-study .om-detail{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px 0 13px;border-bottom:1px solid var(--om-line)}
 #okh-map-study .om-heading{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 #okh-map-study .om-heading>span:first-child{font-size:10px;color:var(--om-gold)}
@@ -66,14 +61,25 @@
 (() => {
   const root=document.getElementById('okh-map-study');
   const places={
-    town:{name:'中央集市大道',state:'当前所在',desc:'银月珠宝铺近旁。摊棚与街巷环绕着广场，通往城中各处。'},
-    church:{name:'圣辉大教堂',state:'城内 · 教堂',desc:'高耸的双塔立于城北，石砌长廊与庭院环绕教堂。'},
-    manor:{name:'领主山庄',state:'城内 · 山庄',desc:'高墙以内，庄园主楼俯瞰着修剪整齐的庭园。'},
-    inn:{name:'断剑与麦酒',state:'城内 · 旅店',desc:'河畔街区的木构旅店，门前的庭院可供旅人歇脚。'},
-    casino:{name:'地下赌场',state:'城内 · 地下入口',desc:'街区深处的一处隐蔽入口，通往地下赌场。'},
-    wilds:{name:'城外荒原',state:'城外',desc:'城门外的旧道蜿蜒进入岩地，枯木与荒草延伸至远山。'}
+    town:{name:'中央集市大道',x:34,y:58,state:'当前所在',desc:'银月珠宝铺近旁。摊棚与街巷环绕着广场，通往城中各处。'},
+    church:{name:'圣辉大教堂',x:22,y:46,state:'城内 · 教堂',desc:'高耸的双塔立于城北，石砌长廊与庭院环绕教堂。'},
+    manor:{name:'领主山庄',x:43,y:44,state:'城内 · 山庄',desc:'高墙以内，庄园主楼俯瞰着修剪整齐的庭园。'},
+    inn:{name:'断剑与麦酒',x:20,y:69,state:'城内 · 旅店',desc:'河畔街区的木构旅店，门前的庭院可供旅人歇脚。'},
+    casino:{name:'地下赌场',x:43,y:69,state:'城内 · 地下入口',desc:'街区深处的一处隐蔽入口，通往地下赌场。'},
+    wilds:{name:'城外荒原',x:79,y:57,state:'城外',desc:'城门外的旧道蜿蜒进入岩地，枯木与荒草延伸至远山。'}
   };
   const selector=root.querySelector('#om-place-select'),prepare=root.querySelector('#om-prepare'),body=root.querySelector('#om-map-body'),fold=root.querySelector('.om-fold');
+  // 地名、坐标和说明集中在 places 中；新增地点时在此添加记录。
+  const markers=root.querySelector('.om-markers');
+  for(const [id,place] of Object.entries(places)){
+    const button=document.createElement('button');button.type='button';button.className='om-place'+(id==='town'?' om-current':'');button.dataset.place=id;
+    button.style.setProperty('--x',place.x+'%');button.style.setProperty('--y',place.y+'%');button.setAttribute('aria-pressed','false');
+    const pin=document.createElement('span');pin.className='om-pin';pin.setAttribute('aria-hidden','true');pin.textContent='◆';
+    const label=document.createElement('span');label.className='om-label';label.textContent=place.name;
+    if(id==='town'){const current=document.createElement('small');current.textContent='你在此处';label.append(current);}
+    button.append(pin,label);markers.append(button);
+    const option=document.createElement('option');option.value=id;option.textContent=place.name+(id==='town'?' · 当前所在':'');selector.append(option);
+  }
   let selected='town';
   function select(id){
     if(!Object.hasOwn(places,id))return;
