@@ -133,6 +133,21 @@
     return true;
   }
   function loadWorld(s = session()) { return readEnvelope(s)?.world ?? null; }
+  function presentation(s = session()) {
+    const saved = readEnvelope(s)?.presentation?.portraits
+    const portraits = Object.fromEntries(Object.entries(saved || {}).filter(([id, image]) => u.id(id) && u.id(image)))
+    return { portraits }
+  }
+  async function setDefaultPortrait(npc, id, s = session()) {
+    return lock(s, async () => {
+      const envelope = readEnvelope(s)
+      u.check(envelope && root.OKH_APP_ALBUM.list(envelope.world).some(item => item.id === id && item.npc === npc), '只能选用该角色已经收集的图片')
+      const portraits = presentation(s).portraits
+      envelope.presentation = { ...(envelope.presentation || {}), portraits: { ...portraits, [npc]: id } }
+      await writeEnvelope(s, envelope)
+      return id
+    })
+  }
   async function ensureWorld(force = false, s = session()) {
     return lock(s, async () => {
       const existing = readEnvelope(s);
@@ -218,6 +233,6 @@
     get: key => rawGet(session(), key)
   });
   root.OKH_APP_WORLD = Object.freeze({ configure, context, chatId, session, assertSession,
-    loadWorld, ensureWorld, readEnvelope, migrateSchema, commit, importLegacy, publishDerived, store, historyLimit,
+    loadWorld, presentation, setDefaultPortrait, ensureWorld, readEnvelope, migrateSchema, commit, importLegacy, publishDerived, store, historyLimit,
     resetWorld: () => ensureWorld(true), STORAGE_KEY: KEY, DEFAULT_MAX_HISTORY });
 })(globalThis);

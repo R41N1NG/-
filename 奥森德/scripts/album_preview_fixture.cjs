@@ -9,6 +9,8 @@ function sampleCatalog(){return[
  {id:'demo_nise_portrait',npc:'nise',title:'妮丝 · 肖像',kind:'portrait',src:art('妮丝','portrait','#453b55','✧'),unlock:[{type:'introduced'}]},
  {id:'demo_nise_cg',npc:'nise',title:'旅途一页',kind:'cg',src:art('旅途一页','cg','#3a4a4a','◇'),unlock:[{type:'metric',key:'affection',min:70}]},
  {id:'demo_isna_portrait',npc:'isna',title:'伊丝娜 · 肖像',kind:'portrait',src:art('伊丝娜','portrait','#475039','✦'),unlock:[{type:'introduced'}]},
+ {id:'demo_gulan_cg',npc:'gulan',title:'共同的旅途',kind:'cg',src:art('共同的旅途','cg','#55452f','◇'),unlock:[{type:'metric',key:'affection',min:70}]},
+ {id:'demo_cecilia_portrait',npc:'cecilia',title:'塞西莉亚 · 肖像',kind:'portrait',src:art('塞西莉亚','portrait','#4d4652','†'),unlock:[{type:'introduced'}]},
  {id:'demo_locked_gulan',npc:'gulan',title:'未收集标题',kind:'cg',src:'https://example.invalid/locked-cg.webp',unlock:[{type:'metric',key:'affection',min:90}]},
  {id:'demo_ed_hidden',npc:'ed',title:'未登场标题',kind:'portrait',src:'https://example.invalid/hidden-ed.webp',unlock:[{type:'introduced'}]}
 ]}

@@ -6865,6 +6865,8 @@
   const DATA = root.OKH_APP_DATA
   if (!u || !DATA) throw Error('album 缺少 utils/data')
   const packed = "[]"
+  const initialCharacters = Object.freeze(['gulan', 'isna', 'nise', 'aurora'])
+  const femaleCharacters = new Set([...initialCharacters, 'eileen', 'cecilia'])
 
   function create(entries) {
     u.check(Array.isArray(entries), '回忆相册目录必须是数组')
@@ -6921,7 +6923,15 @@
     }
     function sync(world) {
       const rows = records(world), seen = new Set(rows.map(r => r.id))
-      const earned = catalog.filter(item => !seen.has(item.id) && world.npcs[item.npc]?.monitored === true && item.unlock.every(rule => matches(world, item, rule)))
+      const met = world.playerState?.albumMet || []
+      u.check(Array.isArray(met) && met.every(id => typeof id === 'string' && femaleCharacters.has(id)), '相册相识记录非法')
+      const introduced = [...femaleCharacters].filter(id => !initialCharacters.includes(id) && !met.includes(id) && world.npcs[id]?.monitored === true && (id === 'eileen' && world.flags?.eileen_arrived || world.flags?.arrived_oakhaven && world.npcs[id].location === world.playerLocation))
+      if (introduced.length) {
+        world.playerState ||= {}
+        world.playerState.albumMet = [...met, ...introduced]
+      }
+      const known = id => !femaleCharacters.has(id) || initialCharacters.includes(id) || (world.playerState?.albumMet || []).includes(id)
+      const earned = catalog.filter(item => !seen.has(item.id) && world.npcs[item.npc]?.monitored === true && known(item.npc) && item.unlock.every(rule => matches(world, item, rule)))
       if (earned.length) {
         world.playerState ||= {}
         world.playerState.memories = [...rows, ...earned.map(item => ({ id: item.id, collectedAt: world.timeMin }))]
@@ -6934,7 +6944,16 @@
         return item ? [{ ...item, collectedAt: row.collectedAt, name: world.npcs[item.npc]?.name || DATA.ROSTER.find(n => n.id === item.npc).name }] : []
       })
     }
-    return Object.freeze({ catalog: Object.freeze(catalog), sync, list })
+    function groups(world) {
+      const memories = list(world)
+      const later = [...new Set(memories.filter(item => item.kind === 'portrait' && femaleCharacters.has(item.npc) && !initialCharacters.includes(item.npc)).map(item => item.npc))]
+      return [...initialCharacters, ...later].map(id => ({ id, name: world.npcs[id]?.name || DATA.ROSTER.find(n => n.id === id).name, memories: memories.filter(item => item.npc === id) }))
+    }
+    function portrait(world, npc, choices = {}) {
+      const owned = list(world).filter(item => item.npc === npc)
+      return owned.find(item => item.id === choices[npc]) || owned.find(item => item.kind === 'portrait') || null
+    }
+    return Object.freeze({ catalog: Object.freeze(catalog), initialCharacters, sync, list, groups, portrait })
   }
   const entries = root.OKH_ALBUM_CATALOG ?? (packed.startsWith('__OKH_') ? [] : JSON.parse(packed))
   root.OKH_APP_ALBUM = Object.freeze({ ...create(entries), create })
@@ -7168,6 +7187,21 @@
     return true;
   }
   function loadWorld(s = session()) { return readEnvelope(s)?.world ?? null; }
+  function presentation(s = session()) {
+    const saved = readEnvelope(s)?.presentation?.portraits
+    const portraits = Object.fromEntries(Object.entries(saved || {}).filter(([id, image]) => u.id(id) && u.id(image)))
+    return { portraits }
+  }
+  async function setDefaultPortrait(npc, id, s = session()) {
+    return lock(s, async () => {
+      const envelope = readEnvelope(s)
+      u.check(envelope && root.OKH_APP_ALBUM.list(envelope.world).some(item => item.id === id && item.npc === npc), '只能选用该角色已经收集的图片')
+      const portraits = presentation(s).portraits
+      envelope.presentation = { ...(envelope.presentation || {}), portraits: { ...portraits, [npc]: id } }
+      await writeEnvelope(s, envelope)
+      return id
+    })
+  }
   async function ensureWorld(force = false, s = session()) {
     return lock(s, async () => {
       const existing = readEnvelope(s);
@@ -7253,7 +7287,7 @@
     get: key => rawGet(session(), key)
   });
   root.OKH_APP_WORLD = Object.freeze({ configure, context, chatId, session, assertSession,
-    loadWorld, ensureWorld, readEnvelope, migrateSchema, commit, importLegacy, publishDerived, store, historyLimit,
+    loadWorld, presentation, setDefaultPortrait, ensureWorld, readEnvelope, migrateSchema, commit, importLegacy, publishDerived, store, historyLimit,
     resetWorld: () => ensureWorld(true), STORAGE_KEY: KEY, DEFAULT_MAX_HISTORY });
 })(globalThis);
 
@@ -8429,6 +8463,9 @@
       session = key
       ui = { view: world.playerLocation === 'inn' ? 'ground' : world.flags?.arrived_oakhaven ? 'town' : 'region', room: null, place: null, feedback: '', draft: '' }
     }
+    if (!world.flags?.arrived_oakhaven && (ui.view !== 'region' || ['town', 'church', 'training_grounds', 'casino', 'inn'].includes(ui.place))) {
+      ui = { view: 'region', room: null, place: null, feedback: '', draft: '' }
+    }
     return ui
   }
   function isLocationHidden(npc) {
@@ -8500,6 +8537,7 @@
     const current = world.playerLocation === id ? ' aria-current="location"' : ''
     const kind = id === 'town' && label === '奥克赫斯镇' ? 'settlement' : id === 'wilds_camp' ? 'hostile' : 'landmark'
     const ink = `<span class="okh-m-ink" data-ink-kind="${kind}">${esc(label)}</span>`
+    if (!world.flags?.arrived_oakhaven && id === 'town') return `<span class="okh-m-point" style="--x:${x}%;--y:${y}%">${ink}</span><span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${ink}</span>`
     return button(action, ink, `class="okh-m-point" style="--x:${x}%;--y:${y}%" ${extra}${current}`) + `<span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${ink}</span>`
   }
   function placePanel(world, state) {
@@ -8519,7 +8557,7 @@
       overlay = point('town', '奥克赫斯镇', 33.5, 63, 'map-view', 'data-okh-view="town"', world) +
         point('manor', '领主庄园', 20.5, 25, 'map-place', 'data-okh-place="manor"', world) +
         point('wilds_camp', '黑兽人前哨', 80, 66.5, 'map-place', 'data-okh-place="wilds_camp"', world)
-      options = button('map-view', '进入镇内图', 'data-okh-view="town"') + button('map-place', '领主庄园', 'data-okh-place="manor"') + button('map-place', '黑兽人前哨', 'data-okh-place="wilds_camp"') + button('map-place', '城外荒原', 'data-okh-place="wilds"')
+      options = (world.flags?.arrived_oakhaven ? button('map-view', '进入镇内图', 'data-okh-view="town"') : '') + button('map-place', '领主庄园', 'data-okh-place="manor"') + button('map-place', '黑兽人前哨', 'data-okh-place="wilds_camp"') + button('map-place', '城外荒原', 'data-okh-place="wilds"')
       detail = placePanel(world, state)
     } else if (view === 'town') {
       for (const [id, label, x, y] of [['church', '教堂', 40, 36], ['training_grounds', '练武场', 71, 36], ['town', '中央集市', 46, 52], ['inn', '断剑与麦酒', 31, 69], ['casino', '赌场入口', 65, 69]]) {
@@ -8540,7 +8578,7 @@
       const chosen = roomViews.find(room => room.id === state.room)
       detail = chosen ? `<section class="okh-m-detail" aria-label="房间与角色"><div class="okh-m-room-head">${icon(chosen)}<div><strong>${chosen.npc === 'player' ? '你的房间' : esc(chosen.name) + (chosen.known ? '的房间' : '')}</strong><p>客房 ${chosen.number} · ${esc(chosen.role)}</p></div></div><p class="okh-m-status">${esc(chosen.status)}</p><nav class="okh-m-actions">${chosen.actions.map(a => button('map-intent', '› ' + esc(a.label), `data-okh-room="${chosen.id}" data-okh-intent="${a.key}"`)).join('')}</nav></section>` : '<p class="okh-m-hint">点选一扇房门，查看住客与可用行动。</p>'
     }
-    const nav = [['region', '全域'], ['town', '镇内'], ['ground', '旅店']].map(([id, label]) => button('map-view', label, `data-okh-view="${id}" aria-pressed="${state.view === id || (id === 'ground' && floor)}"`)).join('')
+    const nav = [['region', '全域'], ['town', '镇内'], ['ground', '旅店']].filter(([id]) => world.flags?.arrived_oakhaven || id === 'region').map(([id, label]) => button('map-view', label, `data-okh-view="${id}" aria-pressed="${state.view === id || (id === 'ground' && floor)}"`)).join('')
     const floors = floor ? `<nav class="okh-m-floors" aria-label="楼层">${[['ground', '一层 · 大厅'], ['upper', '二层 · 客房']].map(([id, label]) => button('map-view', label, `data-okh-view="${id}" aria-pressed="${view === id}"`)).join('')}</nav>` : ''
     return `<section class="okh-map-guide" aria-label="地图导览"><div class="okh-m-nav">${nav}<span>当前：${esc(CFG.LOCATIONS[world.playerLocation] || '未知地点')}</span></div><div class="okh-m-journal" data-map-view="${view}"><div class="okh-m-head"><h3>${title}</h3>${floors}</div><figure class="okh-m-image"><img src="${esc(image(view))}" alt="${view === 'upper' ? '同一侧一排六间客房与楼梯' : title}" onerror="this.hidden=true;this.parentElement.classList.add('image-unavailable')"><span class="okh-m-image-error">图稿暂未载入，仍可使用下方入口。</span>${overlay}</figure><nav class="okh-m-options${view === 'upper' ? ' is-rooms' : ''}" aria-label="${view === 'upper' ? '按姓名选择房间' : '地图入口'}">${options}</nav>${detail}<p class="okh-m-feedback" role="status">${esc(state.feedback)}</p>${state.draft ? `<textarea class="okh-m-draft" aria-label="可复制的行动草稿" readonly>${esc(state.draft)}</textarea>` : ''}</div></section>`
   }
@@ -8548,6 +8586,7 @@
     const action = el.getAttribute('data-okh-act')
     if (!action?.startsWith('map-')) return false
     const state = context(world, key)
+    if (!world.flags?.arrived_oakhaven && ((action === 'map-view' && el.getAttribute('data-okh-view') !== 'region') || ['map-room', 'map-intent'].includes(action) || (action === 'map-place' && ['town', 'church', 'training_grounds', 'casino', 'inn'].includes(el.getAttribute('data-okh-place'))))) return true
     state.feedback = ''; state.draft = ''
     if (action === 'map-view') {
       const view = el.getAttribute('data-okh-view')
@@ -8700,7 +8739,8 @@
   let activeTab = 'dispatch'
   let activePresentId = null
   const openRosterIds = new Set()
-  let albumCharacter = 'all'
+  let albumCharacter = 'gulan'
+  let portraitChoices = {}
   let albumLightbox = null
   let lightboxReturnFocus = null
   let autoMount = root.OKH_HUD_AUTO_MOUNT !== false
@@ -8934,8 +8974,8 @@
         map.set(ev.npcId, buildCharView(world, world.npcs[ev.npcId]))
       }
       if (ev.id === 'ed_investigate_truth') {
-        if (!map.has('alice')) map.set('alice', buildSceneNpcView('alice', '爱丽丝', '柜台算账 · 受胁隐忍'))
-        if (!map.has('sid')) map.set('sid', buildSceneNpcView('sid', '席德', '内堂掌账 · 戒备打量'))
+        if (!map.has('alice')) map.set('alice', buildSceneNpcView(world, 'alice', '爱丽丝', '柜台算账 · 受胁隐忍'))
+        if (!map.has('sid')) map.set('sid', buildSceneNpcView(world, 'sid', '席德', '内堂掌账 · 戒备打量'))
       }
     }
     return Array.from(map.values())
@@ -9002,11 +9042,11 @@
       affIsLove: affVal !== null && affVal >= 90,
       metrics,
       actions: isDeparted ? [] : actions,
-      portraitPath: joinAsset(`portraits/${npc.id}.png`)
+      portraitPath: ALBUM?.portrait(world, npc.id, portraitChoices)?.src || joinAsset(`portraits/${npc.id}.png`)
     }
   }
 
-  function buildSceneNpcView(id, name, stance) {
+  function buildSceneNpcView(world, id, name, stance) {
     const meta = CHAR_META[id] || { sigil: '◈', role: '在场人物', bio: '', actions: [] }
     return {
       id,
@@ -9019,7 +9059,7 @@
       affIsLove: false,
       metrics: [{ label: '当前态势', val: stance }],
       actions: meta.actions || [],
-      portraitPath: joinAsset(`portraits/${id}.png`)
+      portraitPath: ALBUM?.portrait(world, id, portraitChoices)?.src || joinAsset(`portraits/${id}.png`)
     }
   }
 
@@ -9061,16 +9101,15 @@
 
   function buildPortraitHtml(charView) {
     return `
-      <div class="okh-portrait-frame" data-okh-act="zoom-char" data-okh-id="${escapeHtml(charView.id)}" data-okh-name="${escapeHtml(charView.name)}" data-okh-role="${escapeHtml(charView.role)}" data-okh-sigil="${escapeHtml(charView.sigil)}" data-okh-src="${escapeHtml(charView.portraitPath)}">
+      <button type="button" class="okh-portrait-frame" aria-label="${escapeHtml(charView.name)}立绘" data-okh-act="zoom-char" data-okh-id="${escapeHtml(charView.id)}" data-okh-name="${escapeHtml(charView.name)}" data-okh-role="${escapeHtml(charView.role)}" data-okh-sigil="${escapeHtml(charView.sigil)}" data-okh-src="${escapeHtml(charView.portraitPath)}">
         <span class="okh-pt-c okh-pt-tl"></span><span class="okh-pt-c okh-pt-tr"></span>
         <span class="okh-pt-c okh-pt-bl"></span><span class="okh-pt-c okh-pt-br"></span>
         <img class="okh-portrait-img" src="${escapeHtml(charView.portraitPath)}" alt="${escapeHtml(charView.name)}" onload="this.style.display='block';if(this.nextElementSibling)this.nextElementSibling.style.display='none';" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';">
-        <div class="okh-portrait-ph">
+        <span class="okh-portrait-ph">
           <span class="okh-portrait-icon">${escapeHtml(charView.sigil)}</span>
           <span class="okh-portrait-tag">${escapeHtml(charView.name)}<br><small>肖像位</small></span>
-        </div>
-        <span class="okh-zoom-badge" aria-hidden="true">🔍</span>
-      </div>
+        </span>
+      </button>
     `
   }
 
@@ -9180,7 +9219,7 @@
   function buildRosterPage(world) {
     // 仅展示已开启监控的登场同伴，避免剧透未出场角色；严格仅展示信息，不含操作按钮
     const members = Object.values(world.npcs || {})
-      .filter(n => n.monitored === true && n.alive !== false)
+      .filter(n => n.monitored === true && n.alive !== false && n.id !== 'cecilia')
       .map(n => buildCharView(world, n))
 
     const rows = members.length ? members.map(m => {
@@ -9220,18 +9259,26 @@
     return `<div class="okh-page${activeTab === 'roster' ? ' active' : ''}" data-okh-page="roster">${rows}${buildAlbum(world)}</div>`
   }
 
+  function albumGroups(world) {
+    return ALBUM ? ALBUM.groups(world) : []
+  }
+
   function collectedMemories(world) {
-    return ALBUM ? ALBUM.list(world) : []
+    return albumGroups(world).flatMap(group => group.memories)
+  }
+
+  function selectedAlbum(world) {
+    const groups = albumGroups(world)
+    return groups.find(group => group.id === albumCharacter) || groups[0]
   }
 
   function buildAlbum(world) {
-    const memories = collectedMemories(world)
-    const owners = [...new Map(memories.map(item => [item.npc, item.name])).entries()]
-    const selected = owners.some(([id]) => id === albumCharacter) ? albumCharacter : 'all'
-    const visible = memories.filter(item => selected === 'all' || item.npc === selected)
-    const filters = memories.length ? `<nav class="okh-album-filters" aria-label="按角色浏览回忆">${[['all', '全部'], ...owners].map(([id, name]) => `<button type="button" data-okh-act="album-filter" data-okh-character="${escapeHtml(id)}" aria-pressed="${selected === id}">${escapeHtml(name)}<small>${id === 'all' ? memories.length : memories.filter(item => item.npc === id).length}</small></button>`).join('')}</nav>` : ''
-    const body = visible.length ? `<div class="okh-album-grid">${visible.map(item => `<button type="button" class="okh-memory" data-okh-act="album-open" data-okh-memory="${escapeHtml(item.id)}" aria-label="查看${escapeHtml(item.name)}的${escapeHtml(item.title)}"><span class="okh-memory-art"><img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="okh-memory-missing" hidden>画稿暂未载入</span><span class="okh-memory-kind">${item.kind === 'portrait' ? '立绘' : 'CG'}</span></span><span class="okh-memory-title">${escapeHtml(item.title)}</span><span class="okh-memory-owner">${escapeHtml(item.name)}<span>第 ${Math.floor(item.collectedAt / 1440) + 1} 天 · 收录</span></span></button>`).join('')}</div>` : '<div class="okh-album-empty"><span aria-hidden="true">◇</span><p>尚无收录的回忆</p><small>旅途中解锁的 CG 与立绘，会珍藏在这里。</small></div>'
-    return `<section class="okh-album" aria-label="回忆相册"><header class="okh-album-head"><h3><span aria-hidden="true">◇</span> 回忆相册</h3><span>已珍藏 ${memories.length} 幅</span></header>${filters}${body}</section>`
+    const groups = albumGroups(world), selected = selectedAlbum(world)
+    const memories = selected?.memories || []
+    const filters = `<nav class="okh-album-filters" aria-label="按角色浏览回忆">${groups.map(group => `<button type="button" data-okh-act="album-filter" data-okh-character="${escapeHtml(group.id)}" aria-pressed="${selected?.id === group.id}">${escapeHtml(group.name)}<small>${group.memories.length}</small></button>`).join('')}</nav>`
+    const current = selected ? ALBUM.portrait(world, selected.id, portraitChoices)?.id : null
+    const body = memories.length ? `<div class="okh-album-grid">${memories.map(item => `<button type="button" class="okh-memory" data-okh-act="album-open" data-okh-memory="${escapeHtml(item.id)}" aria-label="查看${escapeHtml(item.name)}的${escapeHtml(item.title)}"><span class="okh-memory-art"><img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="okh-memory-missing" hidden>画稿暂未载入</span><span class="okh-memory-kind">${item.kind === 'portrait' ? '立绘' : 'CG'}</span></span><span class="okh-memory-title">${escapeHtml(item.title)}</span><span class="okh-memory-owner"><span>${item.id === current ? '默认立绘' : item.name}</span><span>第 ${Math.floor(item.collectedAt / 1440) + 1} 天 · 收录</span></span></button>`).join('')}</div>` : `<div class="okh-album-empty"><span aria-hidden="true">◇</span><p>${escapeHtml(selected?.name || '')} · 尚无收录的回忆</p></div>`
+    return `<section class="okh-album" aria-label="回忆相册"><header class="okh-album-head"><h3><span aria-hidden="true">◇</span> 回忆相册</h3><span>已珍藏 ${collectedMemories(world).length} 幅</span></header>${filters}${body}</section>`
   }
 
   function buildSupplyPage(world) {
@@ -9326,6 +9373,7 @@
    */
   function buildHudHtml(world) {
     if (!world) return ''
+    try { portraitChoices = W.presentation().portraits } catch (_) { portraitChoices = {} }
     const clk = formatClock(world.timeMin)
     const gold = Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 40
     const arrearsTag = world.flags?.inn_arrears ? '（旅店欠账）' : ''
@@ -9445,7 +9493,7 @@
 .okh-sub-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
 .okh-sub-title{font-family:"Cinzel","Songti SC","SimSun",serif;font-size:12.5px;font-weight:600;color:var(--g-mn)}
 .okh-sub-hint{font-size:11px;color:var(--t-dm)}
-.okh-map-slot{position:relative;width:100%;height:152px;border-radius:4px;border:1px solid rgba(195,162,108,.35);background:#110d0a;background-image:radial-gradient(ellipse at 50% 50%,rgba(32,25,19,.6) 0%,rgba(12,9,6,.95) 100%),url('${ASSET_UI.darkBg}');background-size:cover;background-position:center;box-shadow:inset 0 0 20px rgba(0,0,0,.95);overflow:hidden;cursor:zoom-in;display:flex;align-items:center;justify-content:center;transition:border-color .2s}
+.okh-map-slot{position:relative;width:100%;height:152px;border-radius:4px;border:1px solid rgba(195,162,108,.35);background:#110d0a;background-image:radial-gradient(ellipse at 50% 50%,rgba(32,25,19,.6) 0%,rgba(12,9,6,.95) 100%),url('${ASSET_UI.darkBg}');background-size:cover;background-position:center;box-shadow:inset 0 0 20px rgba(0,0,0,.95);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s}
 .okh-map-slot:hover{border-color:rgba(223,200,154,.75)}
 .okh-map-img{width:100%;height:100%;object-fit:cover;display:none}
 .okh-map-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:10px}
@@ -9460,7 +9508,7 @@
 .okh-p-pill:hover{border-color:rgba(223,200,154,.55);color:var(--g-lt)}
 .okh-p-pill.active{border-color:var(--g-mn);background:rgba(223,200,154,.15);color:var(--g-lt);font-weight:600}
 .okh-primary-box{display:flex;gap:14px;padding:10px 12px;background:rgba(16,12,9,.45);border-left:2px solid rgba(223,200,154,.45)}
-.okh-portrait-frame{width:100px;height:136px;flex-shrink:0;position:relative;background:#0f0c09;border:1px solid rgba(195,162,108,.4);border-radius:3px;box-shadow:inset 0 0 14px rgba(0,0,0,.9);overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;cursor:zoom-in;transition:border-color .2s}
+.okh-portrait-frame{padding:0;color:inherit;font:inherit;width:100px;height:136px;flex-shrink:0;position:relative;background:#0f0c09;border:1px solid rgba(195,162,108,.4);border-radius:3px;box-shadow:inset 0 0 14px rgba(0,0,0,.9);overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:border-color .2s}
 .okh-portrait-frame:hover{border-color:rgba(223,200,154,.85)}
 .okh-portrait-img{width:100%;height:100%;object-fit:cover;object-position:top center;display:none}
 .okh-portrait-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--g-dm)}
@@ -9468,7 +9516,6 @@
 .okh-pt-c{position:absolute;width:6px;height:6px;border-color:rgba(223,200,154,.6);border-style:solid;pointer-events:none}
 .okh-pt-tl{top:2px;left:2px;border-width:1px 0 0 1px}.okh-pt-tr{top:2px;right:2px;border-width:1px 1px 0 0}
 .okh-pt-bl{bottom:2px;left:2px;border-width:0 0 1px 1px}.okh-pt-br{bottom:2px;right:2px;border-width:0 1px 1px 0}
-.okh-zoom-badge{position:absolute;bottom:4px;right:4px;width:18px;height:18px;background:rgba(14,11,8,.85);border:1px solid rgba(223,200,154,.45);border-radius:2px;font-size:11px;color:var(--g-mn);display:flex;align-items:center;justify-content:center;opacity:.75;pointer-events:none}
 .okh-char-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
 .okh-char-meta{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;margin-bottom:4px}
 .okh-char-name{font-family:"Cinzel","Songti SC","SimSun",serif;font-size:14.5px;font-weight:700;color:#fff6e5}
@@ -9518,7 +9565,7 @@
 .okh-album-filters button[aria-pressed=true]{color:var(--g-lt);box-shadow:inset 0 -1px var(--g-mn)}
 .okh-album-filters small{font-size:10px;margin-left:6px;color:var(--g-dm)}
 .okh-album-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 16px}
-.okh-memory{display:block;min-width:0;min-height:44px;text-align:left;padding:0;border:0;background:none;color:var(--t-mn);font:inherit;cursor:zoom-in}
+.okh-memory{display:block;min-width:0;min-height:44px;text-align:left;padding:0;border:0;background:none;color:var(--t-mn);font:inherit;cursor:pointer}
 .okh-memory-art{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#302419,#100c08);border:1px solid rgba(195,162,108,.32);box-shadow:0 3px 12px #0005}
 .okh-memory-art img{display:block;width:100%;height:100%;object-fit:contain}
 .okh-memory-kind{position:absolute;right:6px;bottom:5px;background:#100c08cc;color:#dfc89a;padding:1px 5px;font-size:9px;letter-spacing:1px}
@@ -9534,7 +9581,8 @@
 @container okh-album (max-width:240px){.okh-album-grid{grid-template-columns:minmax(0,1fr)}}
 .okh-lb-album-nav{display:flex;align-items:center;justify-content:center;gap:16px;font-size:11px;color:#b3a594}
 .okh-lb-album-nav[hidden]{display:none}.okh-lb-album-nav button{min-width:44px;min-height:44px;padding:5px 8px;border:0;background:none;color:#dfc89a;font:inherit;cursor:pointer}.okh-lb-album-nav button:disabled{opacity:.3;cursor:default}
-.okh-lb-overlay.is-album .okh-lb-img{max-height:54vh}.okh-lb-overlay.is-album .okh-lb-box{max-height:56vh}
+.okh-lb-preference{display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap}.okh-lb-preference[hidden]{display:none}.okh-lb-preference button{min-height:44px;padding:5px 12px;border:1px solid #c3a26c55;background:transparent;color:#dfc89a;font:inherit;font-size:12px;cursor:pointer}.okh-lb-preference button:disabled{color:#9c8a70;cursor:default}.okh-lb-preference [role=status]{font-size:11px;color:#c99988}
+.okh-lb-overlay.is-album .okh-lb-img{max-height:46vh}.okh-lb-overlay.is-album .okh-lb-box{max-height:48vh}
 @media(max-width:480px){.okh-lb-overlay.is-album .okh-lb-frame{padding:16px 12px 12px;gap:6px;max-width:94vw}.okh-lb-overlay.is-album .okh-lb-desc{font-size:11px}}
 .okh-chron-list{display:flex;flex-direction:column;gap:10px}
 .okh-chron-item{display:flex;gap:12px;align-items:flex-start}
@@ -9592,6 +9640,7 @@
         <div class="okh-lb-name" data-okh-lb-cap></div>
         <div class="okh-lb-desc" data-okh-lb-sub></div>
         <nav class="okh-lb-album-nav" aria-label="浏览回忆" hidden><button type="button" data-okh-act="album-prev" aria-label="上一幅回忆">‹ 上一幅</button><span data-okh-album-position></span><button type="button" data-okh-act="album-next" aria-label="下一幅回忆">下一幅 ›</button></nav>
+        <div class="okh-lb-preference" hidden><button type="button" data-okh-act="album-default">设为默认立绘</button><span data-okh-album-notice role="status"></span></div>
       </div>
     `
     document.body.appendChild(lb)
@@ -9613,6 +9662,7 @@
     if (!wasOpen) lightboxReturnFocus = document.activeElement
     if (!opts.memory) albumLightbox = null
     lb.querySelector('.okh-lb-album-nav').hidden = !opts.memory
+    lb.querySelector('.okh-lb-preference').hidden = !opts.memory
     lb.classList.toggle('is-album', Boolean(opts.memory))
     lb.setAttribute('aria-label', opts.title || '图片详情')
     lb.setAttribute('aria-hidden', 'false')
@@ -9633,9 +9683,7 @@
 
   function openMemory(id) {
     const world = W.loadWorld()
-    const all = world ? collectedMemories(world) : []
-    const filter = all.some(item => item.npc === albumCharacter) ? albumCharacter : 'all'
-    const memories = all.filter(item => filter === 'all' || item.npc === filter)
+    const memories = world ? selectedAlbum(world)?.memories || [] : []
     const index = memories.findIndex(item => item.id === id)
     if (index < 0) { closeLightbox(); return }
     const item = memories[index]
@@ -9645,6 +9693,11 @@
     lb.querySelector('[data-okh-album-position]').textContent = `${index + 1} / ${memories.length}`
     lb.querySelector('[data-okh-act=album-prev]').disabled = index === 0
     lb.querySelector('[data-okh-act=album-next]').disabled = index === memories.length - 1
+    const current = ALBUM.portrait(world, item.npc, W.presentation().portraits)?.id === item.id
+    const choose = lb.querySelector('[data-okh-act=album-default]')
+    choose.disabled = current
+    choose.textContent = current ? '当前默认立绘' : '设为默认立绘'
+    lb.querySelector('[data-okh-album-notice]').textContent = ''
   }
 
   function stepMemory(delta) {
@@ -9652,9 +9705,7 @@
     if (albumLightbox.session !== mapSessionKey()) { closeLightbox(); return }
     const world = W.loadWorld()
     if (!world) { closeLightbox(); return }
-    const all = collectedMemories(world)
-    const filter = all.some(item => item.npc === albumCharacter) ? albumCharacter : 'all'
-    const memories = all.filter(item => filter === 'all' || item.npc === filter)
+    const memories = selectedAlbum(world)?.memories || []
     const index = memories.findIndex(item => item.id === albumLightbox.id)
     if (index < 0) { closeLightbox(); return }
     const item = memories[index + delta]
@@ -9695,13 +9746,13 @@
     }
     ensureLightbox()
 
-    const onClick = event => {
+    const onClick = async event => {
       const overlay = event.target?.id === 'okh-hud-lightbox' ? event.target : null
       if (overlay) { closeLightbox(); return }
       const el = event.target?.closest?.('[data-okh-act]')
       if (!el) return
       const act = el.getAttribute('data-okh-act')
-      if (!['close-lb', 'album-prev', 'album-next'].includes(act)) {
+      if (!['close-lb', 'album-prev', 'album-next', 'album-default'].includes(act)) {
         const hud = el.closest('[data-okh-hud]')
         if (!hud) return
         // A chat switch may precede the next timer tick. Never apply old DOM actions to a new save.
@@ -9731,12 +9782,32 @@
           rerenderCurrent()
         }
       } else if (act === 'album-filter') {
-        albumCharacter = el.getAttribute('data-okh-character') || 'all'
+        albumCharacter = el.getAttribute('data-okh-character') || 'gulan'
         rerenderCurrent()
       } else if (act === 'album-open') {
         openMemory(el.getAttribute('data-okh-memory'))
       } else if (act === 'album-prev' || act === 'album-next') {
         stepMemory(act === 'album-prev' ? -1 : 1)
+      } else if (act === 'album-default') {
+        if (!albumLightbox || albumLightbox.session !== mapSessionKey()) { closeLightbox(); return }
+        const selection = { ...albumLightbox }
+        const world = W.loadWorld()
+        const item = world && collectedMemories(world).find(it => it.id === selection.id)
+        if (!item) { closeLightbox(); return }
+        el.disabled = true
+        try {
+          await W.setDefaultPortrait(item.npc, item.id)
+          if (albumLightbox?.session === selection.session && albumLightbox.id === selection.id) {
+            rerenderCurrent()
+            openMemory(selection.id)
+          }
+        } catch (_) {
+          if (albumLightbox?.session === selection.session && albumLightbox.id === selection.id) {
+            el.disabled = false
+            const notice = document.querySelector('[data-okh-album-notice]')
+            if (notice) notice.textContent = '未能保存，请重试。'
+          }
+        }
       } else if (act === 'fill') {
         fillTavernInput(el.getAttribute('data-okh-text') || '')
       } else if (act === 'zoom-char') {
@@ -9793,7 +9864,7 @@
 
   function buildRenderSignature(world) {
     // Include flags and event details as well as visible counters. Privacy can change without time advancing.
-    return JSON.stringify([mapSessionKey(), world])
+    return JSON.stringify([mapSessionKey(), world, W.presentation()])
   }
 
   function rerenderCurrent() {
@@ -9834,7 +9905,7 @@
       activeTab = 'dispatch'
       activePresentId = null
       openRosterIds.clear()
-      albumCharacter = 'all'
+      albumCharacter = 'gulan'
       closeLightbox()
     }
     const world = W.loadWorld()
@@ -9968,6 +10039,7 @@
     return W.commit(s, { expectedRevision: before.bg.revision, state, checkpoint: null, reason: 'debug-save' });
   }
   root.OKH_APP = Object.freeze({ configure, init, start, stop, info, save,
+    setDefaultPortrait: W.setDefaultPortrait,
     world: W.loadWorld, reset: () => W.resetWorld(), importLegacy: () => W.importLegacy(),
     migrateSchema: () => W.migrateSchema(),
     step: H.step, applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,

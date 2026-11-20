@@ -63,3 +63,10 @@ test('render signature updates for privacy and activity changes even without a c
  const {map,world}=fixture();const first=map.signature(world);world.npcs.gulan.flags.captured_orc=true;assert.notEqual(map.signature(world),first);
  const second=map.signature(world);world.npcs.gulan.flags.captured_orc=false;world.npcs.gulan.activity={kind:'important',label:'忙碌'};assert.notEqual(map.signature(world),second);
 });
+test('town and inn maps are unavailable before arrival, including direct stale actions and rollback from a previously open floor',()=>{
+ const {map,world}=fixture();map.handle(el({'data-okh-act':'map-view','data-okh-view':'upper'}),world,'arrival-gate',()=>true);assert.match(map.build(world,'arrival-gate'),/data-map-view="upper"/);
+ world.flags.arrived_oakhaven=false;world.playerLocation='wilds';const before=JSON.stringify(world);let writes=0;
+ for(const attrs of [{'data-okh-act':'map-view','data-okh-view':'town'},{'data-okh-act':'map-view','data-okh-view':'upper'},{'data-okh-act':'map-room','data-okh-room':'room1'},{'data-okh-act':'map-intent','data-okh-room':'room1','data-okh-intent':'rest'}])map.handle(el(attrs),world,'arrival-gate',()=>writes++);
+ const html=map.build(world,'arrival-gate');assert.match(html,/data-map-view="region"/);assert(!html.includes('data-okh-view="town"'));assert(!html.includes('data-okh-view="ground"'));assert(!html.includes('okh-m-door'));assert.equal(writes,0);assert.equal(JSON.stringify(world),before);
+ world.flags.arrived_oakhaven=true;assert(map.build(world,'arrival-gate').includes('data-okh-view="town"'));
+});

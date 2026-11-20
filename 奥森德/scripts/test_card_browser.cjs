@@ -10,13 +10,12 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   assert.equal(await page.locator('#chat .okh-map-guide').count(),1);assert(!(await page.locator('.narrative').innerText()).includes('<status_bar>'));
   assert(await page.evaluate(()=>previewContext.chat[0].mes.includes('<status_bar>')),'Display filtering changed raw messages');
   await page.locator('.okh-m-image img').evaluate(img=>img.decode());await page.locator('.okh-hud-canvas').screenshot({path:path.join(dir,'开场效果.jpg'),type:'jpeg',quality:91});
-  await page.getByRole('button',{name:'奥克赫斯镇',exact:true}).click();await page.locator('.okh-m-image img').evaluate(img=>img.decode());
-  await page.getByRole('button',{name:'断剑与麦酒',exact:true}).click();await page.getByRole('button',{name:'二层 · 客房',exact:true}).click();
-  assert.equal(await page.getByRole('button',{name:'查看爱德的房间',exact:true}).count(),0);assert(await page.getByRole('button',{name:'查看客房 06的房间',exact:true}).isVisible());
+  assert.equal(await page.getByRole('button',{name:'镇内',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'旅店',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'奥克赫斯镇',exact:true}).count(),0);
   assert.equal(JSON.stringify(await page.evaluate(()=>cardWorld())),JSON.stringify(initial),'Browsing before arrival modified the save');
   await page.getByRole('button',{name:'演示：抵镇入住',exact:true}).click();await page.waitForFunction(()=>cardWorld().flags.arrived_oakhaven);
   assert.equal(await page.locator('#chat .okh-map-guide').count(),1);assert.equal(await page.locator('#chat [data-okh-hud]').count(),2);
   const after=JSON.stringify(await page.evaluate(()=>cardWorld()));
+  await page.getByRole('button',{name:'镇内',exact:true}).click();await page.locator('.okh-m-image img').evaluate(img=>img.decode());await page.getByRole('button',{name:'断剑与麦酒',exact:true}).click();
   await page.getByRole('button',{name:'二层 · 客房',exact:true}).click();await page.locator('.okh-m-image img').evaluate(img=>img.decode());
   assert.equal(await page.locator('.okh-m-door').count(),6);await page.getByRole('button',{name:'查看古兰的房间',exact:true}).click();assert((await page.locator('.okh-m-room-head').innerText()).includes('独立住客'));
   await page.getByRole('button',{name:'查看伯里的房间',exact:true}).click();assert((await page.locator('.okh-m-room-head').innerText()).includes('你的房间'));

@@ -10,6 +10,8 @@
   const DATA = root.OKH_APP_DATA
   if (!u || !DATA) throw Error('album 缺少 utils/data')
   const packed = '__OKH_ALBUM_CATALOG__'
+  const initialCharacters = Object.freeze(['gulan', 'isna', 'nise', 'aurora'])
+  const femaleCharacters = new Set([...initialCharacters, 'eileen', 'cecilia'])
 
   function create(entries) {
     u.check(Array.isArray(entries), '回忆相册目录必须是数组')
@@ -66,7 +68,15 @@
     }
     function sync(world) {
       const rows = records(world), seen = new Set(rows.map(r => r.id))
-      const earned = catalog.filter(item => !seen.has(item.id) && world.npcs[item.npc]?.monitored === true && item.unlock.every(rule => matches(world, item, rule)))
+      const met = world.playerState?.albumMet || []
+      u.check(Array.isArray(met) && met.every(id => typeof id === 'string' && femaleCharacters.has(id)), '相册相识记录非法')
+      const introduced = [...femaleCharacters].filter(id => !initialCharacters.includes(id) && !met.includes(id) && world.npcs[id]?.monitored === true && (id === 'eileen' && world.flags?.eileen_arrived || world.flags?.arrived_oakhaven && world.npcs[id].location === world.playerLocation))
+      if (introduced.length) {
+        world.playerState ||= {}
+        world.playerState.albumMet = [...met, ...introduced]
+      }
+      const known = id => !femaleCharacters.has(id) || initialCharacters.includes(id) || (world.playerState?.albumMet || []).includes(id)
+      const earned = catalog.filter(item => !seen.has(item.id) && world.npcs[item.npc]?.monitored === true && known(item.npc) && item.unlock.every(rule => matches(world, item, rule)))
       if (earned.length) {
         world.playerState ||= {}
         world.playerState.memories = [...rows, ...earned.map(item => ({ id: item.id, collectedAt: world.timeMin }))]
@@ -79,7 +89,16 @@
         return item ? [{ ...item, collectedAt: row.collectedAt, name: world.npcs[item.npc]?.name || DATA.ROSTER.find(n => n.id === item.npc).name }] : []
       })
     }
-    return Object.freeze({ catalog: Object.freeze(catalog), sync, list })
+    function groups(world) {
+      const memories = list(world)
+      const later = [...new Set(memories.filter(item => item.kind === 'portrait' && femaleCharacters.has(item.npc) && !initialCharacters.includes(item.npc)).map(item => item.npc))]
+      return [...initialCharacters, ...later].map(id => ({ id, name: world.npcs[id]?.name || DATA.ROSTER.find(n => n.id === id).name, memories: memories.filter(item => item.npc === id) }))
+    }
+    function portrait(world, npc, choices = {}) {
+      const owned = list(world).filter(item => item.npc === npc)
+      return owned.find(item => item.id === choices[npc]) || owned.find(item => item.kind === 'portrait') || null
+    }
+    return Object.freeze({ catalog: Object.freeze(catalog), initialCharacters, sync, list, groups, portrait })
   }
   const entries = root.OKH_ALBUM_CATALOG ?? (packed.startsWith('__OKH_') ? [] : JSON.parse(packed))
   root.OKH_APP_ALBUM = Object.freeze({ ...create(entries), create })

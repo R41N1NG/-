@@ -18,18 +18,18 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
   if(!runtime.includes('data:'+mime+';base64,'+bytes.toString('base64')))throw Error('运行库未内嵌地图素材：'+rel);
   assets[key]={path:'地图预览/'+rel,sha256:sha(bytes)};
  }
- d.character_version='0.3.1-album';
+ d.character_version='0.3.2-album';
  d.character_book.name='奥克赫斯·地图整合版基础世界书';
  d.description=d.description.replace('镇内有领主山庄、圣辉大教堂、市井街区、旅店与地下赌场；城外是荒原与黑兽人前哨。','镇内有圣辉大教堂、市井街区、旅店与地下赌场；领主庄园位于镇外安全一侧的西北山上。农户分布在镇子周围，东南恶劣荒地是敌对的黑兽人前哨，与人类城镇没有相连道路。');
  d.description=d.description.replace('<focus> 与 <injury> 不使用 at。','<focus> 不使用 at。');
  d.description=d.description.replace(/【玩家伤情】[\s\S]*?(?=【后台与正文的边界】)/,'');
- d.description+='\n\n【地图、住宿与房间事实】\n地图由卡内脚本显示，包含全域、镇内、旅店一层与二层；浏览、切层、点门和拟定行动都不等于移动、拜访成功或时间推进。只有玩家发送行动，且正文确实发生对应事实后，才输出回执。不要在正文另造地图 HTML 或按钮。\n旅店二层同一侧一排六门：01 伯里（玩家）、02 古兰（母亲、独立住客）、03 伊丝娜、04 妮丝、05 奥萝拉、06 爱德。古兰不是领队，不属于冒险者小队。房号仅作界面导览，不新增后台地点 ID；未加入的爱德不提前入住。npc.location=inn 只证明人在旅店，不能证明在卧室；拜访先敲门，依据回应展开后续互动。\n<room npc="gulan" state="together" />\n仅当正文已经确认与古兰夜间同住时申报，须在抵镇后、双方均在旅店、夜晚或深夜，且满足后台好感和阶段条件。不能用此标签申报普通串门或和其他角色同房，也不能自行写固定房号状态。\n<room state="separate" />\n表示已经分开住宿。room 可用 at 指定本轮区间内发生时间；同住与分开都不是每轮重复申报的固定字段。\n\n【经济与补给事实】\n<economy op="work" tier="odd" />\nwork 的 tier 仅使用 odd、guild_normal、guild_high、church_paid、church_volunteer，表示实际完成对应短工、公会或教会差事，结算条件和冷却由后台核验。\n<economy op="repay" npc="aurora" tier="part" />\nrepay 仅用于 aurora 或 nise，tier 为 part 或 all；必须实际还款且已知该债务。\n<economy op="donate" npc="cecilia" tier="small" />\ndonate 的 tier 为 small 或 large，仅申报实际完成的捐助。\n<economy op="buy_supply" count="5" />\n表示在镇上或旅店实际购入补给；count 为 1～99 的整数，后台按背包剩余容量和实际入库量收费。经济标签可用 at 指定本轮时间，不接受 amount、gold、delta、value、add 等金额数值字段。只有事实发生时才申报，不因点击界面草稿而自动结算。\n';
+ d.description+='\n\n【地图、住宿与房间事实】\n地图由卡内脚本显示，包含全域、镇内、旅店一层与二层；浏览、切层、点门和拟定行动都不等于移动、拜访成功或时间推进。只有玩家发送行动，且正文确实发生对应事实后，才输出回执。未抵达镇子前不提供镇内和旅店地图，只有全域地形可供浏览。塞西莉亚是教堂人物，不属于初始队伍。不要在正文另造地图 HTML 或按钮。\n旅店二层同一侧一排六门：01 伯里（玩家）、02 古兰（母亲、独立住客）、03 伊丝娜、04 妮丝、05 奥萝拉、06 爱德。古兰不是领队，不属于冒险者小队。房号仅作界面导览，不新增后台地点 ID；未加入的爱德不提前入住。npc.location=inn 只证明人在旅店，不能证明在卧室；拜访先敲门，依据回应展开后续互动。\n<room npc="gulan" state="together" />\n仅当正文已经确认与古兰夜间同住时申报，须在抵镇后、双方均在旅店、夜晚或深夜，且满足后台好感和阶段条件。不能用此标签申报普通串门或和其他角色同房，也不能自行写固定房号状态。\n<room state="separate" />\n表示已经分开住宿。room 可用 at 指定本轮区间内发生时间；同住与分开都不是每轮重复申报的固定字段。\n\n【经济与补给事实】\n<economy op="work" tier="odd" />\nwork 的 tier 仅使用 odd、guild_normal、guild_high、church_paid、church_volunteer，表示实际完成对应短工、公会或教会差事，结算条件和冷却由后台核验。\n<economy op="repay" npc="aurora" tier="part" />\nrepay 仅用于 aurora 或 nise，tier 为 part 或 all；必须实际还款且已知该债务。\n<economy op="donate" npc="cecilia" tier="small" />\ndonate 的 tier 为 small 或 large，仅申报实际完成的捐助。\n<economy op="buy_supply" count="5" />\n表示在镇上或旅店实际购入补给；count 为 1～99 的整数，后台按背包剩余容量和实际入库量收费。经济标签可用 at 指定本轮时间，不接受 amount、gold、delta、value、add 等金额数值字段。只有事实发生时才申报，不因点击界面草稿而自动结算。\n';
  for(const e of d.character_book.entries){
   if(e.id===0)e.content=e.content.replace('城镇有旅店、教堂、街区、练武场、山庄和地下赌场；城外存在黑兽人前哨。','镇内有旅店、教堂、街区、练武场和地下赌场。领主庄园在镇外安全一侧的西北山上，农户环绕镇子；东南恶劣荒地存在敌对黑兽人前哨，与人类城镇不通道路。');
   if(e.id===10)e.content=e.content.replace('manor 是领主山庄','manor 是位于镇外西北山上的领主庄园');
  }
- d.description+='\n【回忆相册】\n相册由后台按已配置的数值、标记或事件条件自动收录，不因浏览界面而解锁。未配置的图片与条件不得自行编造；无需另写 CG HTML 或图片地址。\n';
- d.creator_notes='地图与相册整合版 0.3.1-album，核心 2.1.1，schemaVersion=3。\n基于用户原始 R4 卡，保留 11 条世界书与原开场，补入当前地图与经济、房间回执契约。\n已内嵌一份完整酒馆助手脚本及全域、镇内、旅店两层图稿、手札纸面和标注字体，无需另行下载地图或外置运行脚本。\n导入 JSON 后，在酒馆助手中启用本角色卡脚本；若曾独立安装完整后台，请停用旧的那份，只运行卡内这一份。需要已安装并启用酒馆助手，普通角色卡 JSON 导入器本身不执行 JavaScript。\n新聊天会在首条回复下挂载状态栏；既有聊天存档沿用原存储键，不强制重置。卡内显示正则仅隐藏回执和正文包装，不改写模型收到的原始消息。\n同伴名册下方增加回忆相册；当前图片目录留空，等待后续导入素材和指定解锁条件。\n本次打包不扩写未提供的专属剧情库。';
+ d.description+='\n【回忆相册】\n相册开局固定显示古兰、伊丝娜、妮丝、奥萝拉四人的独立分区；后续女性角色须在相识并取得立绘后新增分区。相册由后台按已配置的数值、标记或事件条件自动收录，不因浏览或设为默认立绘而解锁。未配置的图片与条件不得自行编造；无需另写 CG HTML 或图片地址。\n';
+ d.creator_notes='地图与相册整合版 0.3.2-album，核心 2.1.1，schemaVersion=3。\n基于用户原始 R4 卡，保留 11 条世界书与原开场，补入当前地图与经济、房间回执契约。\n已内嵌一份完整酒馆助手脚本及全域、镇内、旅店两层图稿、手札纸面和标注字体，无需另行下载地图或外置运行脚本。\n导入 JSON 后，在酒馆助手中启用本角色卡脚本；若曾独立安装完整后台，请停用旧的那份，只运行卡内这一份。需要已安装并启用酒馆助手，普通角色卡 JSON 导入器本身不执行 JavaScript。\n新聊天会在首条回复下挂载状态栏；既有聊天存档沿用原存储键，不强制重置。卡内显示正则仅隐藏回执和正文包装，不改写模型收到的原始消息。\n同伴名册下方增加回忆相册；当前图片目录留空，等待后续导入素材和指定解锁条件。\n本次打包不扩写未提供的专属剧情库。';
  d.tags=[...new Set([...(d.tags||[]),'地图整合','回忆相册'])];
  d.extensions||={};
  d.extensions.regex_scripts=[

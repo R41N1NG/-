@@ -46,6 +46,7 @@
     return W.commit(s, { expectedRevision: before.bg.revision, state, checkpoint: null, reason: 'debug-save' });
   }
   root.OKH_APP = Object.freeze({ configure, init, start, stop, info, save,
+    setDefaultPortrait: W.setDefaultPortrait,
     world: W.loadWorld, reset: () => W.resetWorld(), importLegacy: () => W.importLegacy(),
     migrateSchema: () => W.migrateSchema(),
     step: H.step, applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,
