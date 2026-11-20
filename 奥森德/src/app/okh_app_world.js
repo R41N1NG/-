@@ -1,8 +1,8 @@
 /**
  * @module okh_app_world
- * @updated 2026-11-18 15:24
+ * @updated 2026-11-20
  * @status  active
- * @reason  按聊天隔离的单一存档、显式持久化、检查点滑动窗口裁剪（防长对话存档体积线性膨胀）与增量迁移
+ * @reason 按聊天隔离、提交版本递增、替换回复与检查点裁剪在同次持久化提交
  */
 (function (root) {
   'use strict';
@@ -165,14 +165,23 @@
       };
     });
   }
-  async function commit(s, { expectedRevision, state, checkpoint, reason, receipt }) {
+  async function commit(s, { expectedRevision, state, checkpoint, reason, receipt, history: replayHistory }) {
     return lock(s, async () => {
       const envelope = readEnvelope(s);
       u.check(envelope && envelope.world.bg.revision === expectedRevision, '存档提交版本冲突');
       u.validateWorld(state);
-      if (reason === 'restore-checkpoint') {
-        envelope.history = envelope.history.filter(h => u.own(state.bg.receipts, h.id));
-      } else if (checkpoint) {
+      u.check(state.bg?.version === 2 && Number.isSafeInteger(state.bg.revision) && state.bg.revision > expectedRevision,
+        '存档提交版本必须递增');
+      if (reason === 'replay-history') {
+        u.check(Array.isArray(replayHistory) && replayHistory.every(h => u.id(h.id) && u.own(state.bg.receipts, h.id)),
+          '重放检查点与回执不匹配');
+        envelope.history = u.clone(replayHistory);
+      }
+      if (reason === 'restore-checkpoint' || reason === 'replace-reply') {
+        const receipts = reason === 'replace-reply' ? checkpoint.bg.receipts : state.bg.receipts;
+        envelope.history = envelope.history.filter(h => u.own(receipts, h.id));
+      }
+      if (checkpoint) {
         u.check(receipt && u.id(receipt.id), '保存检查点需要对应回复');
         envelope.history.push({ id: receipt.id, revision: receipt.revision,
           chatIndex: receipt.chatIndex ?? null, before: u.clone(checkpoint) });
@@ -209,6 +218,6 @@
     get: key => rawGet(session(), key)
   });
   root.OKH_APP_WORLD = Object.freeze({ configure, context, chatId, session, assertSession,
-    loadWorld, ensureWorld, readEnvelope, migrateSchema, commit, importLegacy, publishDerived, store,
+    loadWorld, ensureWorld, readEnvelope, migrateSchema, commit, importLegacy, publishDerived, store, historyLimit,
     resetWorld: () => ensureWorld(true), STORAGE_KEY: KEY, DEFAULT_MAX_HISTORY });
 })(globalThis);

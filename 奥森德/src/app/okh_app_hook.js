@@ -1,8 +1,8 @@
 /**
  * @module okh_app_hook
- * @updated 2026-11-11 21:56
+ * @updated 2026-11-20
  * @status active
- * @reason 修复流式回复结束时 GENERATION_ENDED 早于 MESSAGE_RECEIVED 触发导致的待发事件误回滚竞态
+ * @reason 调用时绑定聊天、生成失败清理、递增取消版本、回滚窗口校验与原子替换回复
  */
 (function (root) {
   'use strict';
@@ -15,6 +15,11 @@
   const controllers = new Map(), listeners = [];
   function configure(next = {}) { options = { ...options, ...next }; controllers.clear(); }
   function serial(fn) { const result = work.then(fn); work = result.catch(() => {}); return result; }
+  function serialSession(fn, requested) {
+    let s;
+    try { s = requested || W.session(); } catch (error) { return Promise.reject(error); }
+    return serial(() => { W.assertSession(s); return fn(s); });
+  }
   function controller(s) {
     W.assertSession(s);
     if (!controllers.has(s.id)) controllers.set(s.id, A.createController(s));
@@ -46,6 +51,7 @@
     if (options.inject) {
       const result = await options.inject(text, { chatId: s.id });
       u.check(result !== false, '提示词注入接口报告失败，事件未确认');
+      if (text) W.assertSession(s);
       return result;
     }
     const ctx = W.context();
@@ -57,6 +63,7 @@
     const result = await ctx.setExtensionPrompt('okh_pending_' + encodeURIComponent(s.id), text, position,
       options.promptDepth ?? 0, false, role);
     u.check(result !== false, '扩展提示词注入失败');
+    if (text) W.assertSession(s);
     return result;
   }
   async function publish(s) {
@@ -139,15 +146,18 @@
     const id = opts.msgId || 'manual:' + s.id + ':' + Date.now() + ':' + (++seq);
     const revision = opts.revision || fingerprint(JSON.stringify([opts.text || '', minutes ?? null, opts.frontOverride ?? null]));
     const recorded = world.bg.receipts[id];
+    let replacement = null;
     if (recorded !== undefined) {
       const old = JSON.parse(recorded);
       if (old.revision === revision) return { advanced: false, duplicate: true, reason: '重复提交' };
-      await restoreRecord(s, id);
-      world = W.loadWorld(s);
+      const record = W.readEnvelope(s).history.find(h => h.id === id);
+      u.check(record, '缺少该回复之前的检查点，不能安全重生成：' + id);
+      replacement = record.before;
+      world = replacement;
     }
     const { command, diagnostics, timeCheck } = buildTurnCommand(minutes, opts, world, id, revision);
     const generationId = opts.generationId ?? null;
-    const result = await controller(s).finishReply(command, generationId);
+    const result = await controller(s).finishReply(command, generationId, replacement);
     const published = await publish(s);
     last = { advanced: true, from: world.timeMin, to: result.state.timeMin, front: command.front,
       actions: result.report.actions, released: result.report.released,
@@ -156,24 +166,66 @@
     console.log('[APP] 已提交 ' + world.timeMin + ' → ' + result.state.timeMin);
     return last;
   }
-  async function reconcile(s, chat, replaceIndex) {
+  function historyChange(s, chat, replaceIndex) {
     const history = W.readEnvelope(s).history;
+    const oldest = history.find(record => Number.isSafeInteger(record.chatIndex));
+    if (oldest) {
+      const prefix = replyId(s, '');
+      const anchor = Object.entries(oldest.before.bg.receipts).map(([id, receipt]) => ({
+        index: id.startsWith(prefix) && /^\d+$/.test(id.slice(prefix.length)) ? Number(id.slice(prefix.length)) : -1,
+        receipt
+      })).filter(item => item.index >= 0 && item.index < oldest.chatIndex).sort((a, b) => b.index - a.index)[0];
+      if (anchor) {
+        u.check(assistant(chat[anchor.index]) && revisionFor(chat, anchor.index) === JSON.parse(anchor.receipt).revision,
+          '聊天修改超出保留的回滚窗口，缺少修改之前的检查点；本次未重放或改写存档');
+      }
+    }
     const changed = history.find(record => Number.isSafeInteger(record.chatIndex) &&
       (!assistant(chat[record.chatIndex]) || revisionFor(chat, record.chatIndex) !== record.revision ||
        record.chatIndex === replaceIndex));
+    return changed || null;
+  }
+  async function syncSavedHistory(s, chat) {
+    const changed = historyChange(s, chat);
     if (!changed) return null;
-    await controller(s).restore(changed.before);
-    await publish(s);
+    const target = newestIndex(chat);
+    if (changed.chatIndex === target && assistant(chat[target])) {
+      await runStep(undefined, { session: s, msgId: replyId(s, target), revision: revisionFor(chat, target),
+        text: chat[target].mes || '', chatIndex: target, countMessage: true, initial: target === 0, allowFallback: true });
+    } else {
+      await replay(s, chat, changed.chatIndex, target, changed.before);
+    }
     return changed.chatIndex;
   }
-  async function replay(s, chat, from, through) {
+  async function replay(s, chat, from, through, checkpoint) {
+    const envelope = W.readEnvelope(s), expectedRevision = envelope.world.bg.revision;
+    let state = u.clone(checkpoint);
+    state.bg.revision = expectedRevision;
+    for (const id of Object.keys(state.bg.generations)) if (state.bg.generations[id].status === 'prepared') delete state.bg.generations[id];
+    const history = envelope.history.filter(h => u.own(state.bg.receipts, h.id));
+    const diagnostics = [], actions = [], released = [];
+    let timeCheck = null, front = null;
     for (let i = from; i <= through; i++) {
       if (!assistant(chat[i])) continue;
-      await runStep(undefined, { session: s, msgId: replyId(s, i), revision: revisionFor(chat, i),
-        text: chat[i].mes || '', chatIndex: i, countMessage: true, initial: i === 0, allowFallback: true });
+      const id = replyId(s, i), revision = revisionFor(chat, i);
+      const built = buildTurnCommand(undefined, { text: chat[i].mes || '', chatIndex: i,
+        countMessage: true, initial: i === 0, allowFallback: true }, state, id, revision);
+      const result = GPT.advance(state, built.command, CFG.buildConfig());
+      history.push({ id, revision, chatIndex: i, before: state });
+      if (history.length > W.historyLimit()) history.splice(0, history.length - W.historyLimit());
+      state = result.state;
+      diagnostics.push(...built.diagnostics);actions.push(...result.report.actions);released.push(...result.report.released);timeCheck = built.timeCheck;front = built.command.front;
     }
+    if (state.bg.revision === expectedRevision) state.bg.revision++;
+    // Validate the entire replay before replacing any authoritative state or checkpoints.
+    await W.commit(s, { expectedRevision, state, checkpoint: null, reason: 'replay-history', history });
+    const published = await publish(s);
+    last = { advanced: true, from: checkpoint.timeMin, to: state.timeMin, front, actions, released,
+      pending: GPT.prepare(state, 8).ids.length, diagnostics, timeCheck, published };
+    diagnostics.forEach(message => console.warn('[APP] ' + message));
+    return last;
   }
-  function step(minutes, opts = {}) { return serial(() => runStep(minutes, opts)); }
+  function step(minutes, opts = {}) { return serialSession(s => runStep(minutes, { ...opts, session: s }), opts.session); }
   const REPLACE_TYPES = new Set(['regenerate', 'swipe', 'continue', 'append', 'appendFinal']);
   const SKIP_TYPES = new Set(['quiet', 'impersonate']);
   function matchesTarget(generation, s, chat, target) {
@@ -184,29 +236,21 @@
       target === newestIndex(chat) &&
       !chat.slice(generation.targetIndex, target).some(assistant);
   }
+  async function discardPreparations(s, selected = null) {
+    // Helper chat storage is bound to the visible chat. Clean abandoned records when that chat is revisited.
+    if (W.chatId() !== s.id) return false;
+    const now = W.loadWorld(s);
+    if (!now) return false;
+    const ids = (selected || Object.keys(now.bg.generations)).filter(id => now.bg.generations[id]?.status === 'prepared');
+    if (!ids.length) return false;
+    const next = u.clone(now);
+    ids.forEach(id => delete next.bg.generations[id]);
+    next.bg.revision = now.bg.revision + 1;
+    await W.commit(s, { expectedRevision: now.bg.revision, state: next, checkpoint: null, reason: 'cancel-generation' });
+    return true;
+  }
   async function rollbackPrepared(generation) {
-    if (!generation?.prepared) return;
-    const now = W.loadWorld(generation.session);
-    if (!now || now.bg?.generations?.[generation.id]?.status !== 'prepared') return;
-    if (now.bg.revision === generation.preparedRev && generation.snapshot) {
-      await W.commit(generation.session, {
-        expectedRevision: now.bg.revision,
-        state: generation.snapshot,
-        checkpoint: null,
-        reason: 'cancel-generation'
-      });
-    } else {
-      const next = u.clone(now);
-      delete next.bg.generations[generation.id];
-      next.bg.revision = now.bg.revision + 1;
-      await W.commit(generation.session, {
-        expectedRevision: now.bg.revision,
-        state: next,
-        checkpoint: null,
-        reason: 'cancel-generation-prune'
-      });
-    }
-    await publish(generation.session);
+    if (generation?.prepared && await discardPreparations(generation.session, [generation.id])) await publish(generation.session);
   }
   async function clearGeneration(generation) {
     if (!generation) return;
@@ -216,26 +260,24 @@
       await rollbackPrepared(generation);
     }
   }
-  async function preparePromptBatch(s, id) {
-    const beforeWorld = W.loadWorld(s);
+  async function preparePromptBatch(s, id, preparationWorld = null) {
+    const beforeWorld = preparationWorld || W.loadWorld(s);
     const preview = GPT.prepare(beforeWorld, 8);
-    if (!preview.ids.length) return { batch: { ...preview, text: '' }, prepared: false, preparedRev: null, snapshot: null };
-    const snapshot = u.clone(beforeWorld);
-    const batch = await controller(s).prepareGeneration(id, 8);
-    return { batch, prepared: true, preparedRev: W.loadWorld(s)?.bg.revision ?? null, snapshot };
+    if (!preview.ids.length) return { batch: { ...preview, text: '' }, prepared: false };
+    const batch = await controller(s).prepareGeneration(id, 8, preparationWorld);
+    return { batch, prepared: true };
   }
   function resolveTargetWindow(chat, replaceIndex) {
     if (replaceIndex !== undefined) return { targetIndex: replaceIndex, maxTargetIndex: replaceIndex, fixed: true };
     const lastIndex = newestIndex(chat);
-    if (lastIndex === chat.length - 1 && !chat[lastIndex]?.mes) {
+    if (lastIndex >= 0 && lastIndex === chat.length - 1 && !chat[lastIndex]?.mes) {
       return { targetIndex: lastIndex, maxTargetIndex: lastIndex, fixed: true };
     }
     return { targetIndex: chat.length, maxTargetIndex: chat.length + 1, fixed: false };
   }
   function beforeGeneration(opts = {}) {
     if (opts.dryRun || SKIP_TYPES.has(opts.type)) return Promise.resolve(null);
-    return serial(async () => {
-      const s = W.session();
+    return serialSession(async s => {
       await W.ensureWorld(false, s);
       if (activeGeneration) {
         const prev = activeGeneration;
@@ -243,43 +285,61 @@
         await clearGeneration(prev);
       }
       const chat = W.context()?.chat || [];
-      const from = await reconcile(s, chat, opts.replaceIndex);
-      if (from !== null && opts.replaceIndex === undefined) await replay(s, chat, from, newestIndex(chat));
+      let preparationWorld = null;
+      if (opts.replaceIndex !== undefined) {
+        const changed = historyChange(s, chat, opts.replaceIndex);
+        if (changed?.chatIndex === opts.replaceIndex) preparationWorld = changed.before;
+        else if (changed) {
+          await replay(s, chat, changed.chatIndex, opts.replaceIndex - 1, changed.before);
+        }
+      } else await syncSavedHistory(s, chat);
+      await discardPreparations(s);
       const id = opts.generationId || 'gen:' + s.id + ':' + Date.now() + ':' + (++seq);
-      const { batch, prepared, preparedRev, snapshot } = await preparePromptBatch(s, id);
-      const text = A.buildLedger(W.loadWorld(s)) + (batch.text ? '\n\n' + batch.text : '');
-      await inject(text, s);
-      activeGeneration = { id, session: s, ...resolveTargetWindow(chat, opts.replaceIndex), prepared, preparedRev, snapshot };
-      return { ...batch, generationId: id, text };
+      const { batch, prepared } = await preparePromptBatch(s, id, preparationWorld);
+      const generation = { id, session: s, ...resolveTargetWindow(chat, opts.replaceIndex), prepared };
+      activeGeneration = generation;
+      try {
+        const text = A.buildLedger(preparationWorld || W.loadWorld(s)) + (batch.text ? '\n\n' + batch.text : '');
+        await inject(text, s);
+        return { ...batch, generationId: id, text };
+      }
+      catch (error) {
+        activeGeneration = null;
+        try { await clearGeneration(generation); } catch (cleanupError) { console.warn('[APP] 清理失败的生成准备：', cleanupError.message); }
+        throw error;
+      }
     });
   }
   function onMessage(index) {
-    return serial(async () => {
-      const s = W.session(), chat = W.context()?.chat || [];
+    return serialSession(async s => {
+      const chat = W.context()?.chat || [];
       const target = Number.isSafeInteger(index) ? index : newestIndex(chat);
       if (!assistant(chat[target])) return { advanced: false, reason: '不是完整AI回复' };
       await W.ensureWorld(false, s);
-      const from = await reconcile(s, chat);
-      if (from !== null && from < target) await replay(s, chat, from, target - 1);
+      const changed = historyChange(s, chat);
       const generation = matchesTarget(activeGeneration, s, chat, target) ? activeGeneration : null;
+      if (changed && changed.chatIndex < target) {
+        const result = await replay(s, chat, changed.chatIndex, target, changed.before);
+        if (generation) { activeGeneration = null; await clearGeneration(generation); }
+        return result;
+      }
       const result = await runStep(undefined, { session: s, msgId: replyId(s, target),
         revision: revisionFor(chat, target), text: chat[target].mes || '', chatIndex: target,
         countMessage: true, initial: target === 0, allowFallback: true,
         generationId: generation?.prepared ? generation.id : undefined });
-      if (!result.duplicate && generation) {
+      if (generation) {
         activeGeneration = null;
-        try { await inject('', s); } catch (error) { console.warn('[APP] 清理提示词失败：', error.message); }
+        try { if (result.duplicate) await clearGeneration(generation); else await inject('', s); }
+        catch (error) { console.warn('[APP] 清理提示词失败：', error.message); }
       }
       return result;
     });
   }
   function syncHistory() {
-    return serial(async () => {
-      const s = W.session(), chat = W.context()?.chat || [];
+    return serialSession(async s => {
+      const chat = W.context()?.chat || [];
       await W.ensureWorld(false, s);
-      const from = await reconcile(s, chat);
-      if (from !== null) { await replay(s, chat, from, newestIndex(chat)); await publish(s); }
-      return from;
+      return syncSavedHistory(s, chat);
     });
   }
   function cancelGeneration() {
@@ -327,9 +387,9 @@
     for (const { event, handler, off } of listeners.splice(0)) off(event, handler);
     return true;
   }
-  function restore(id) { return serial(async () => { const s = W.session(); await restoreRecord(s, id); await publish(s); }); }
+  function restore(id) { return serialSession(async s => { await restoreRecord(s, id); await publish(s); }); }
   root.OKH_APP_HOOK = Object.freeze({ RHYTHM, configure, attach, detach, step, onMessage,
     beforeGeneration, cancelGeneration, syncHistory, restore, fingerprint, revisionFor,
-    applyFront: (front, opts = {}) => serial(() => runStep(opts.minutes ?? 0, { ...opts, frontOverride: front })),
+    applyFront: (front, opts = {}) => step(opts.minutes ?? 0, { ...opts, frontOverride: front }),
     parseElapsed: text => P.parseStatusBar(text).elapsed, lastReport: () => last, publish });
 })(globalThis);

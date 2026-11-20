@@ -1,5 +1,7 @@
 # 奥森德 · 状态栏地图接入版
 
+当前核心 **2.1.1** · [整套脚本自检与修复记录](整套脚本自检_2026-11-20.md)（90 项自动化用例通过）
+
 [旅店二层近景](地图预览/接入验证/inn-upper.jpg) · [一层](地图预览/接入验证/inn-ground.jpg) · [手机旅店](地图预览/接入验证/inn-mobile.jpg)\n\n[查看正式 HUD 效果](地图预览/接入验证/hud-rooms-desktop.jpg) · [手机效果](地图预览/接入验证/hud-rooms-mobile.jpg) · [下载可交互沙盒预览](地图预览/接入验证/hud-live-preview.html) · [下载自动启动运行脚本](dist/okh_complete_autostart.js?raw=1)
 
 ## 在酒馆中试用
@@ -34,14 +36,14 @@
 ```sh
 node scripts/build.cjs
 node scripts/test_foundation.cjs
-node --test scripts/review-regressions.cjs
+node --test scripts/review-regressions.cjs scripts/test_script_audit.cjs
 node --test scripts/test_map.cjs
 node scripts/build_hud_preview.cjs
 node --test scripts/test_hud_edges.cjs
 node scripts/test_hud_browser.cjs
 ```
 
-验证结果：基础回归 28/28、核心回归 16/16、地图回归 10/10、浏览器边界回归 7/7；浏览器验证覆盖地图切换、房门和输入、存档更新、原分页、隐私状态、自动挂载、旧消息简版、iframe，以及 320/390/640px 排版。浏览器检查需 Playwright 与 Chromium，可通过 `OKH_CHROMIUM` 指定浏览器路径。
+验证结果：基础回归 28/28、核心回归 16/16、整套脚本边界与契约 29/29、地图回归 10/10、浏览器边界回归 7/7；浏览器验证覆盖地图切换、房门和输入、存档更新、原分页、隐私状态、自动挂载、旧消息简版、iframe，以及 320/390/640px 排版。浏览器检查需 Playwright 与 Chromium，可通过 `OKH_CHROMIUM` 指定浏览器路径。
 
 依赖未上传正式卡的 test_card.cjs 未执行；本次没有修改角色卡。旧 R4 内容已经清理。正式 32 条世界书角色卡仍未随源码上传，本运行脚本不生成替代角色卡；真机效果需在用户酒馆中导入试用。
 

@@ -1,8 +1,8 @@
 /**
  * @module okh_events
- * @updated 2026-11-12 23:25
+ * @updated 2026-11-20
  * @status active
- * @reason 条件事件、待互动选择与选项适用条件校验、原子结算（含 playerState 与 repeatable/expireWhen 支持）及队列覆盖，不访问HUD或调用LLM
+ * @reason 条件事件与原子结算；角色不可交互时撤下待决选项，保留 allowInactive 显式例外
  */
 (function (root) {
   'use strict';
@@ -63,18 +63,18 @@
       world.bg.eventStates ||= {};
 
       for (const event of config.events || []) {
-        if (!event.expireWhen) continue;
         const targets = event.scope === 'world'
           ? [null]
-          : u.sortedNpcs(world).filter(u.active);
+          : u.sortedNpcs(world);
 
         for (const npc of targets) {
           if (npc && event.targets && !event.targets.includes(npc.id)) continue;
 
           const key = u.key('event', event.id, npc?.id ?? null);
           const existingState = world.bg.eventStates[key];
+          const unavailable = npc && !event.allowInactive && !u.active(npc);
           if (existingState?.status === 'pending' &&
-              rules.matches(event.expireWhen, { ...ctx, world, npc })) {
+              (unavailable || (event.expireWhen && rules.matches(event.expireWhen, { ...ctx, world, npc })))) {
             existingState.status = 'cancelled';
             existingState.outcome = 'expired';
             existingState.cancelledAt = world.timeMin;

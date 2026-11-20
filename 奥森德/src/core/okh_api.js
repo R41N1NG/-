@@ -1,8 +1,8 @@
 /**
  * @module okh_api
- * @updated 2026-11-11 00:08
+ * @updated 2026-11-20
  * @status active
- * @reason 公共接口、先归一化后校验的初始化/迁移顺序与非阶段角色适配
+ * @reason 核心 2.1.1，声明原子替换回复能力并保留统一初始化与迁移接口
  */
 (function (root) {
   'use strict';
@@ -256,8 +256,8 @@
   }
 
   root.OKHBackground = Object.freeze({
-    version: '2.1.0',
-    features: Object.freeze({ activitySequences: true, timeEffects: true, receiptCommit: true }),
+    version: '2.1.1',
+    features: Object.freeze({ activitySequences: true, timeEffects: true, receiptCommit: true, atomicReplyReplacement: true }),
     init,
     migrate,
     advance: turn.advance,
@@ -270,4 +270,3 @@
     module.exports = root.OKHBackground;
   }
 })(globalThis);
-

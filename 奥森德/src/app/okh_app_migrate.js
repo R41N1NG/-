@@ -1,8 +1,8 @@
 /**
  * @module okh_app_migrate
- * @updated 2026-11-18 21:08
+ * @updated 2026-11-20
  * @status  active
- * @reason  存档版本幂等迁移（升级至 schemaVersion=3）：补全 playerState.inventory、supply_shortage 及进行中剧情证物，并保护既有 custom:true 外部条目
+ * @reason schema=3 幂等迁移，按事件定义键恢复重复实例并保留未加入角色的隐藏状态
  * @deps    OKH_APP_DATA
  * @provides { LEGACY_KEYS, migrateWorld }
  */
@@ -44,10 +44,10 @@
   function migrateNpcFromRoster(existing, tpl, inferredArrived, timeMin, reportList, worldFlags) {
     if (!existing) {
       const fresh = JSON.parse(JSON.stringify(tpl))
-      if (inferredArrived) {
+      if (worldFlags?.arrived_oakhaven || inferredArrived) {
         if (fresh.location === 'wilds' && tpl.homeLocation) fresh.location = tpl.homeLocation
-        if (tpl.id === 'ed') fresh.monitored = true
       }
+      if (tpl.id === 'ed') fresh.monitored = Boolean(worldFlags?.ed_joined || worldFlags?.ed_permanently_joined || worldFlags?.ed_custody_active)
       return fresh
     }
 
@@ -114,20 +114,23 @@
 
   function migratePendingQueueToEventStates(world) {
     world.bg.eventStates ||= {}
-    for (const entry of world.bg.queue || []) {
+    for (const entry of [...(world.bg.queue || [])].reverse()) {
+      const key = entry && JSON.stringify(['event', entry.definitionId, entry.npcId ?? null])
       if (
         entry &&
         entry.kind === 'event' &&
         entry.mode === 'interaction' &&
         (entry.status === 'pending' || entry.status === 'delivered') &&
         entry.id &&
-        !Object.hasOwn(world.bg.eventStates, entry.id)
+        !Object.hasOwn(world.bg.eventStates, key)
       ) {
-        world.bg.eventStates[entry.id] = {
+        world.bg.eventStates[key] = {
           status: 'pending',
           definitionId: entry.definitionId,
           npcId: entry.npcId ?? null,
-          triggeredAt: entry.at ?? world.timeMin
+          triggeredAt: entry.at ?? world.timeMin,
+          instanceId: entry.id,
+          ...(Number.isSafeInteger(entry.occurrence) ? { occurrence: entry.occurrence } : {})
         }
       }
     }

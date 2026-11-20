@@ -1,8 +1,8 @@
 /**
  * @module okh_app_entry
- * @updated 2026-11-10 23:35
+ * @updated 2026-11-20
  * @status active
- * @reason 生命周期和宿主配置统一入口，不隐藏初始化或保存失败
+ * @reason 生命周期与宿主配置统一入口，校验原子替换能力，避免混用旧核心
  */
 (function (root) {
   'use strict';
@@ -10,7 +10,7 @@
   const CFG = root.OKH_APP_CONFIG, W = root.OKH_APP_WORLD, A = root.OKH_APP_ADAPTER;
   const H = root.OKH_APP_HOOK, D = root.OKH_APP_DEBUG, HUD = root.OKH_APP_HUD;
   if (!u || !CFG || !W || !A || !H || !D) throw Error('entry 依赖缺失');
-  u.check(GPT?.features?.receiptCommit && GPT.features.timeEffects && GPT.features.activitySequences,
+  u.check(GPT?.features?.receiptCommit && GPT.features.timeEffects && GPT.features.activitySequences && GPT.features.atomicReplyReplacement,
     '需要同时更新 gpt_core_all.js 到本修复版；不能混用旧核心');
   let started = false;
   function configure(options = {}) {

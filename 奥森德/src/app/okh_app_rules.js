@@ -1,8 +1,8 @@
 /**
  * @module okh_app_rules
- * @updated 2026-11-19 02:40
+ * @updated 2026-11-20
  * @status  active
- * @reason  纯业务判定规则：在 resolveEconomy 中移除古兰被俘标记依赖，古兰战力门禁以存活、未沦陷与在场为准
+ * @reason 互动仅结算存活且已登场角色；补给购买按剩余容量收费并保留原有互动与经济规则
  * @deps    OKH_APP_DATA
  * @provides { getAffectionTier, isFugitiveSyncedNpc, syncWorld, isMetricLocked, onStageChange, canMove, applyPrologueSteps, resolveRoom, resolveBonds, resolveEconomy }
  */
@@ -376,8 +376,9 @@
 
     for (const item of bonds || []) {
       const npc = world.npcs?.[item.npc]
-      const fn = BOND_HANDLERS[item.npc]?.[item.kind]
-      if (!npc || !fn || npc.location !== world.playerLocation) continue
+      const handlers = Object.hasOwn(BOND_HANDLERS, item.npc) ? BOND_HANDLERS[item.npc] : null
+      const fn = handlers && Object.hasOwn(handlers, item.kind) ? handlers[item.kind] : null
+      if (!npc || npc.monitored !== true || npc.alive === false || !fn || npc.location !== world.playerLocation) continue
 
       const viewNpc = { ...npc, flags: { ...npc.flags, ...(flagCache[npc.id] || {}) } }
       const res = fn({ world, npc: viewNpc, phase: ctx.phase, item: item.item, day })
@@ -444,6 +445,8 @@
     let oddJobDay = world.flags?.playerOddJobDay
     let guildDay = Number.isFinite(world.flags?.lastGuildCommissionDay) ? world.flags.lastGuildCommissionDay : -99
     let churchDay = Number.isFinite(world.flags?.lastChurchErrandDay) ? world.flags.lastChurchErrandDay : -99
+    let supplyCount = world.playerState?.inventory?.find(it => it.id === 'supply' && it.custom !== true)?.count ?? 0
+    const supplyCapacity = DATA.ITEM_CATALOG.supply.maxCount
 
     const gulan = world.npcs?.gulan, isna = world.npcs?.isna
     const aurora = world.npcs?.aurora, nise = world.npcs?.nise, cecilia = world.npcs?.cecilia
@@ -478,8 +481,8 @@
             out.push({ target: 'gulan', npcFlags: { player_guild_job_done: true } })
           }
         } else if (item.tier === 'guild_high' && ['town', 'wilds'].includes(world.playerLocation) && (day - guildDay) >= 3) {
-          const gulanReady = Boolean(gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 && world.playerLocation === 'wilds' && gulan.location === 'wilds')
-          const isnaReady = Boolean(isna && isna.alive !== false && (isna.stage ?? 0) < 3 && !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_captured_ed && !isna.flags?.isna_fallen_labyrinth && isna.location === world.playerLocation)
+          const gulanReady = Boolean(gulan && gulan.monitored === true && gulan.alive !== false && (gulan.stage ?? 0) < 3 && world.playerLocation === 'wilds' && gulan.location === 'wilds')
+          const isnaReady = Boolean(isna && isna.monitored === true && isna.alive !== false && (isna.stage ?? 0) < 3 && !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_captured_ed && !isna.flags?.isna_fallen_labyrinth && isna.location === world.playerLocation)
           if (!gulanReady && !isnaReady) continue
           guildDay = day
           pushIncome(140, { lastGuildCommissionDay: day })
@@ -561,11 +564,13 @@
         out.push({ target: 'world', goldDelta: -cost })
         out.push({ target: 'cecilia', add, npcFlags: { ceciliaAppealDays: 0 } })
       } else if (item.op === 'buy_supply' && ['inn', 'town'].includes(world.playerLocation)) {
-        const count = Number.isSafeInteger(item.count) && item.count >= 1 ? item.count : 0
+        const requested = Number.isSafeInteger(item.count) && item.count >= 1 && item.count <= 99 ? item.count : 0
+        const count = Math.min(requested, Math.max(0, supplyCapacity - supplyCount))
         const unitPrice = DATA.ITEM_CATALOG?.supply?.unitPrice ?? 1
         const cost = count * unitPrice
         if (count <= 0 || curGold < cost) continue
         curGold -= cost
+        supplyCount += count
         out.push({
           target: 'world',
           goldDelta: -cost,

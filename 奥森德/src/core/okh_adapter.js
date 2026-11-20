@@ -1,8 +1,8 @@
 /**
  * @module okh_adapter
- * @updated 2026-11-18 15:25
+ * @updated 2026-11-20
  * @status active
- * @reason 串行读写、保存请求批次、已完成 generation 记录窗口裁剪（防长对话状态膨胀）与兼容检查点升级恢复
+ * @reason 串行读写、原子替换回复、生成记录裁剪与兼容检查点恢复
  */
 (function (root) {
   'use strict';
@@ -72,7 +72,7 @@
     }
 
     return {
-      prepareGeneration(generationId, limit = 8) {
+      prepareGeneration(generationId, limit = 8, preparationWorld = null) {
         return serial(async () => {
           u.check(
             u.id(generationId),
@@ -95,7 +95,7 @@
               '本生成请求已经完成'
             );
 
-            const view = u.clone(before);
+            const view = u.clone(preparationWorld || before);
 
             view.bg.queue = view.bg.queue.filter(
               entry => previous.ids.includes(entry.id)
@@ -116,7 +116,7 @@
           }
 
           const state = u.clone(before);
-          const batch = api.prepare(state, limit);
+          const batch = api.prepare(preparationWorld || state, limit);
 
           state.bg.generations[generationId] = {
             ids: batch.ids,
@@ -136,12 +136,24 @@
         });
       },
 
-      finishReply(command, generationId = null) {
+      finishReply(command, generationId = null, replacement = null) {
         return serial(async () => {
           const before = await readWorld();
 
+          const base = replacement === null ? before : (typeof config.prepareCheckpoint === 'function'
+            ? config.prepareCheckpoint(u.clone(replacement)) : u.clone(replacement));
+          u.check(base?.bg?.version === 2, '替换回复需要完整 v2 检查点');
+          if (replacement !== null) {
+            base.bg.revision = before.bg.revision;
+            // A checkpoint can contain the original reply's then-prepared generation.
+            // Replacing that reply must not resurrect a request that already completed.
+            for (const [id, generation] of Object.entries(base.bg.generations)) {
+              if (generation.status === 'prepared' && before.bg.generations[id]?.status === 'completed') delete base.bg.generations[id];
+            }
+          }
+
           const result = api.advance(
-            before,
+            base,
             command,
             config
           );
@@ -157,6 +169,7 @@
               '回复没有对应的待完成生成请求'
             );
 
+            result.state.bg.generations[generationId] = u.clone(generation);
             result.state = api.ack(
               result.state,
               generation.ids,
@@ -179,8 +192,8 @@
           await save(
             before,
             result.state,
-            before,
-            'finish-reply',
+            base,
+            replacement === null ? 'finish-reply' : 'replace-reply',
             command
           );
 
@@ -232,6 +245,3 @@
     module.exports = root.OKHBackgroundAdapter;
   }
 })(globalThis);
-
-
-

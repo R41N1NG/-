@@ -260,7 +260,7 @@ test('GENERATION_STOPPED rolls back prepared generation and ignores quiet/impers
   listeners.get('GENERATION_STOPPED')();
   await sb.OKH_APP.syncHistory();
   assert.equal(injectLog.at(-1), '');
-  assert.equal(sb.OKH_APP.world().bg.revision, revBefore);
+  assert.ok(sb.OKH_APP.world().bg.revision > revBefore, 'cancel removes preparation but storage revisions must not go backwards');
   assert.deepEqual(sb.OKH_APP.world().bg.generations, {});
   assert.equal(sb.OKHBackground.prepare(sb.OKH_APP.world(), 8).ids.length, 1);
   await sb.OKH_APP.stop();
