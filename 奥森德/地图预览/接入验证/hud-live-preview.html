@@ -8525,11 +8525,13 @@
 .okh-m-floors{gap:0 18px;font-size:12px;white-space:nowrap}
 .okh-m-image{position:relative;overflow:visible;margin:0!important;container-type:inline-size}
 .okh-m-image>img{width:100%;height:auto;display:block;mix-blend-mode:multiply;mask-image:linear-gradient(to right,transparent,#000 3%,#000 97%,transparent),linear-gradient(to bottom,transparent,#000 3%,#000 97%,transparent);mask-composite:intersect}
+/* Keep regional and town drawings behind the ink without bleaching the indoor scenes. */
+.okh-m-journal[data-map-view=region] .okh-m-image>img,.okh-m-journal[data-map-view=town] .okh-m-image>img{filter:saturate(.78) brightness(1.04)}
 .okh-m-image-error{display:none}.okh-m-image.image-unavailable{min-height:100px}.image-unavailable>.okh-m-image-error{display:block;padding:24px;color:var(--map-faint)}
 .okh-map-guide .okh-m-point,.okh-map-guide .okh-m-door{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);min-width:44px;min-height:44px;padding:3px 6px;border:0;background:transparent;color:var(--map-ink);white-space:nowrap}
-.okh-m-ink{position:relative;isolation:isolate;display:inline-block;white-space:nowrap;font:400 clamp(11px,1.5vw,14px)/1.5 'OKHMapInk','Songti SC',serif;letter-spacing:1.2px;color:#57391f}
-.okh-m-ink:before{content:'';position:absolute;inset:-5px -14px;z-index:-1;background:radial-gradient(ellipse,#ead0a36b,transparent 75%);pointer-events:none}
-.okh-m-ink[data-ink-kind=settlement]{font-size:clamp(14px,1.9vw,19px);letter-spacing:2px;color:#4b301b}.okh-m-ink[data-ink-kind=hostile]{color:#69412b}
+.okh-m-ink{position:relative;isolation:isolate;display:inline-block;white-space:nowrap;font:400 clamp(11px,1.5vw,14px)/1.5 'OKHMapInk','Songti SC',serif;letter-spacing:1.2px;color:#232622;text-shadow:-1px 0 1px #f7e8c9,1px 0 1px #f7e8c9,0 -1px 1px #f7e8c9,0 1px 1px #f7e8c9,0 0 4px #f7e8c9}
+.okh-m-ink:before{content:'';position:absolute;inset:-3px -10px;z-index:-1;background:radial-gradient(ellipse,#f5e5c6a6,transparent 76%);pointer-events:none}
+.okh-m-ink[data-ink-kind=settlement]{font-size:clamp(14px,1.9vw,19px);letter-spacing:2px;color:#1e2420}.okh-m-ink[data-ink-kind=hostile]{color:#51292b}
 .okh-map-guide .okh-m-point[aria-current=location] .okh-m-ink,.okh-map-guide .okh-m-point:hover .okh-m-ink{text-decoration:underline;text-decoration-thickness:.7px;text-underline-offset:5px}
 .okh-map-guide .okh-m-door{display:flex;align-items:center;justify-content:center;gap:3px;transform:translate(-50%,-50%) rotate(-19.5deg);font-size:clamp(8px,1.4cqw,12px);letter-spacing:.5px;padding:0 2px}
 .okh-m-door:after{content:'';position:absolute;left:15%;right:15%;top:65%;height:8cqw;transform:skewX(-19.5deg);transform-origin:top;cursor:pointer}
