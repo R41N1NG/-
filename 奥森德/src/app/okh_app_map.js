@@ -138,7 +138,7 @@
       options = button('map-view', '进入镇内图', 'data-okh-view="town"') + button('map-place', '领主庄园', 'data-okh-place="manor"') + button('map-place', '黑兽人前哨', 'data-okh-place="wilds_camp"') + button('map-place', '城外荒原', 'data-okh-place="wilds"')
       detail = placePanel(world, state)
     } else if (view === 'town') {
-      for (const [id, label, x, y] of [['church', '教堂', 40, 40], ['training_grounds', '练武场', 71, 40], ['town', '中央集市', 46, 56], ['inn', '断剑与麦酒', 31, 73], ['casino', '赌场入口', 65, 73]]) {
+      for (const [id, label, x, y] of [['church', '教堂', 40, 36], ['training_grounds', '练武场', 71, 36], ['town', '中央集市', 46, 52], ['inn', '断剑与麦酒', 31, 69], ['casino', '赌场入口', 65, 69]]) {
         overlay += point(id, label, x, y, id === 'inn' ? 'map-view' : 'map-place', id === 'inn' ? 'data-okh-view="ground"' : `data-okh-place="${id}"`, world)
       }
       options = button('map-view', '查看旅店', 'data-okh-view="ground"') + ['church', 'training_grounds', 'town', 'casino'].map(id => button('map-place', esc(PLACES[id].name), `data-okh-place="${id}"`)).join('')
