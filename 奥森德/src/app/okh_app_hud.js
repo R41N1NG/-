@@ -13,6 +13,7 @@
   const A = root.OKH_APP_ADAPTER
   const CFG = root.OKH_APP_CONFIG
   const MAP = root.OKH_APP_MAP
+  const ALBUM = root.OKH_APP_ALBUM
   // 酒馆助手脚本可能运行在同源 iframe；样式、挂载与输入统一使用聊天文档。
   const document = (() => {
     const own = root.document
@@ -44,6 +45,9 @@
   let activeTab = 'dispatch'
   let activePresentId = null
   const openRosterIds = new Set()
+  let albumCharacter = 'all'
+  let albumLightbox = null
+  let lightboxReturnFocus = null
   let autoMount = root.OKH_HUD_AUTO_MOUNT !== false
   let renderedSession = null
   let lastRenderSignature = null
@@ -558,7 +562,21 @@
       `
     }).join('') : '<div class="okh-empty-tip">暂无已登记的同行名册。</div>'
 
-    return `<div class="okh-page${activeTab === 'roster' ? ' active' : ''}" data-okh-page="roster">${rows}</div>`
+    return `<div class="okh-page${activeTab === 'roster' ? ' active' : ''}" data-okh-page="roster">${rows}${buildAlbum(world)}</div>`
+  }
+
+  function collectedMemories(world) {
+    return ALBUM ? ALBUM.list(world) : []
+  }
+
+  function buildAlbum(world) {
+    const memories = collectedMemories(world)
+    const owners = [...new Map(memories.map(item => [item.npc, item.name])).entries()]
+    const selected = owners.some(([id]) => id === albumCharacter) ? albumCharacter : 'all'
+    const visible = memories.filter(item => selected === 'all' || item.npc === selected)
+    const filters = memories.length ? `<nav class="okh-album-filters" aria-label="按角色浏览回忆">${[['all', '全部'], ...owners].map(([id, name]) => `<button type="button" data-okh-act="album-filter" data-okh-character="${escapeHtml(id)}" aria-pressed="${selected === id}">${escapeHtml(name)}<small>${id === 'all' ? memories.length : memories.filter(item => item.npc === id).length}</small></button>`).join('')}</nav>` : ''
+    const body = visible.length ? `<div class="okh-album-grid">${visible.map(item => `<button type="button" class="okh-memory" data-okh-act="album-open" data-okh-memory="${escapeHtml(item.id)}" aria-label="查看${escapeHtml(item.name)}的${escapeHtml(item.title)}"><span class="okh-memory-art"><img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="okh-memory-missing" hidden>画稿暂未载入</span><span class="okh-memory-kind">${item.kind === 'portrait' ? '立绘' : 'CG'}</span></span><span class="okh-memory-title">${escapeHtml(item.title)}</span><span class="okh-memory-owner">${escapeHtml(item.name)}<span>第 ${Math.floor(item.collectedAt / 1440) + 1} 天 · 收录</span></span></button>`).join('')}</div>` : '<div class="okh-album-empty"><span aria-hidden="true">◇</span><p>尚无收录的回忆</p><small>旅途中解锁的 CG 与立绘，会珍藏在这里。</small></div>'
+    return `<section class="okh-album" aria-label="回忆相册"><header class="okh-album-head"><h3><span aria-hidden="true">◇</span> 回忆相册</h3><span>已珍藏 ${memories.length} 幅</span></header>${filters}${body}</section>`
   }
 
   function buildSupplyPage(world) {
@@ -834,6 +852,35 @@
 .okh-inv-qty{font-size:11.5px;font-weight:700;color:#f3db9e;font-variant-numeric:tabular-nums;white-space:nowrap}
 .okh-inv-desc{font-size:11px;color:var(--t-dm);line-height:1.45;margin-top:2px;padding-left:13px}
 .okh-inv-empty,.okh-empty-tip{font-size:12px;color:var(--t-dm);font-style:italic;padding:6px 0}
+.okh-album{container:okh-album / inline-size;margin-top:26px;padding-top:20px;border-top:1px solid rgba(195,162,108,.3)}
+.okh-album [hidden]{display:none!important}
+.okh-album-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.okh-album-head h3{margin:0;font:600 16px/1.8 'Noto Serif CJK SC','Songti SC',serif;color:var(--g-lt);letter-spacing:2px}
+.okh-album-head h3>span{font-size:12px;color:var(--g-dm);margin-right:5px}
+.okh-album-head>span{font-size:11px;color:var(--t-sb);white-space:nowrap}
+.okh-album-filters{display:flex;flex-wrap:wrap;gap:0 18px;margin:2px 0 14px;border-bottom:1px solid rgba(195,162,108,.14)}
+.okh-album-filters button{min-height:44px;padding:6px 1px;border:0;background:none;color:var(--t-sb);font:inherit;font-size:12px;cursor:pointer}
+.okh-album-filters button[aria-pressed=true]{color:var(--g-lt);box-shadow:inset 0 -1px var(--g-mn)}
+.okh-album-filters small{font-size:10px;margin-left:6px;color:var(--g-dm)}
+.okh-album-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 16px}
+.okh-memory{display:block;min-width:0;min-height:44px;text-align:left;padding:0;border:0;background:none;color:var(--t-mn);font:inherit;cursor:zoom-in}
+.okh-memory-art{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#302419,#100c08);border:1px solid rgba(195,162,108,.32);box-shadow:0 3px 12px #0005}
+.okh-memory-art img{display:block;width:100%;height:100%;object-fit:contain}
+.okh-memory-kind{position:absolute;right:6px;bottom:5px;background:#100c08cc;color:#dfc89a;padding:1px 5px;font-size:9px;letter-spacing:1px}
+.okh-memory-missing{color:var(--t-sb);font-size:11px;padding:12px}
+.okh-memory-title{display:block;margin-top:7px;font-size:13px;line-height:1.6;overflow-wrap:anywhere;color:var(--g-lt)}
+.okh-memory-owner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 6px;font-size:10px;color:var(--t-sb);line-height:1.8}
+.okh-memory-owner>span{color:var(--g-dm)}
+.okh-memory:hover .okh-memory-art{border-color:var(--g-lt)}
+.okh-album button:focus-visible{outline:1px solid var(--g-lt);outline-offset:4px}
+.okh-album-empty{padding:22px 12px 18px;text-align:center;color:var(--t-sb);background:radial-gradient(ellipse at center,rgba(195,162,108,.04),transparent 72%)}
+.okh-album-empty>span{font-size:24px;color:var(--g-dm)}.okh-album-empty p{font-size:13px;margin:6px 0}.okh-album-empty small{font-size:11px;line-height:1.8;color:var(--t-dm)}
+@container okh-album (max-width:460px){.okh-album-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px}.okh-album-head h3{font-size:15px}.okh-album-filters{gap:0 14px}}
+@container okh-album (max-width:240px){.okh-album-grid{grid-template-columns:minmax(0,1fr)}}
+.okh-lb-album-nav{display:flex;align-items:center;justify-content:center;gap:16px;font-size:11px;color:#b3a594}
+.okh-lb-album-nav[hidden]{display:none}.okh-lb-album-nav button{min-width:44px;min-height:44px;padding:5px 8px;border:0;background:none;color:#dfc89a;font:inherit;cursor:pointer}.okh-lb-album-nav button:disabled{opacity:.3;cursor:default}
+.okh-lb-overlay.is-album .okh-lb-img{max-height:54vh}.okh-lb-overlay.is-album .okh-lb-box{max-height:56vh}
+@media(max-width:480px){.okh-lb-overlay.is-album .okh-lb-frame{padding:16px 12px 12px;gap:6px;max-width:94vw}.okh-lb-overlay.is-album .okh-lb-desc{font-size:11px}}
 .okh-chron-list{display:flex;flex-direction:column;gap:10px}
 .okh-chron-item{display:flex;gap:12px;align-items:flex-start}
 .okh-chron-node{width:26px;height:26px;flex-shrink:0;border-radius:50%;border:1px solid rgba(223,200,154,.45);background:rgba(20,16,12,.8);color:var(--g-mn);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
@@ -873,9 +920,12 @@
     lb = document.createElement('div')
     lb.id = 'okh-hud-lightbox'
     lb.className = 'okh-lb-overlay'
+    lb.setAttribute('role', 'dialog')
+    lb.setAttribute('aria-modal', 'true')
+    lb.setAttribute('aria-hidden', 'true')
     lb.innerHTML = `
       <div class="okh-lb-frame">
-        <button type="button" class="okh-lb-close" data-okh-act="close-lb" title="关闭">✕</button>
+        <button type="button" class="okh-lb-close" data-okh-act="close-lb" title="关闭" aria-label="关闭">✕</button>
         <div class="okh-lb-box">
           <img class="okh-lb-img" alt="大图" onload="this.style.display='block';if(this.nextElementSibling)this.nextElementSibling.style.display='none';" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';">
           <div class="okh-lb-ph">
@@ -886,6 +936,7 @@
         </div>
         <div class="okh-lb-name" data-okh-lb-cap></div>
         <div class="okh-lb-desc" data-okh-lb-sub></div>
+        <nav class="okh-lb-album-nav" aria-label="浏览回忆" hidden><button type="button" data-okh-act="album-prev" aria-label="上一幅回忆">‹ 上一幅</button><span data-okh-album-position></span><button type="button" data-okh-act="album-next" aria-label="下一幅回忆">下一幅 ›</button></nav>
       </div>
     `
     document.body.appendChild(lb)
@@ -903,6 +954,13 @@
     const phDesc = ph?.querySelector('.okh-lb-desc')
     const cap = lb.querySelector('[data-okh-lb-cap]')
     const sub = lb.querySelector('[data-okh-lb-sub]')
+    const wasOpen = lb.classList.contains('active')
+    if (!wasOpen) lightboxReturnFocus = document.activeElement
+    if (!opts.memory) albumLightbox = null
+    lb.querySelector('.okh-lb-album-nav').hidden = !opts.memory
+    lb.classList.toggle('is-album', Boolean(opts.memory))
+    lb.setAttribute('aria-label', opts.title || '图片详情')
+    lb.setAttribute('aria-hidden', 'false')
     if (ph) ph.classList.toggle('is-map', Boolean(opts.isMap))
     if (icon) icon.textContent = opts.sigil || '◈'
     if (phName) phName.textContent = opts.title || ''
@@ -915,12 +973,47 @@
       img.src = opts.src || ''
     }
     lb.classList.add('active')
+    if (!wasOpen) lb.querySelector('.okh-lb-close')?.focus()
+  }
+
+  function openMemory(id) {
+    const world = W.loadWorld()
+    const all = world ? collectedMemories(world) : []
+    const filter = all.some(item => item.npc === albumCharacter) ? albumCharacter : 'all'
+    const memories = all.filter(item => filter === 'all' || item.npc === filter)
+    const index = memories.findIndex(item => item.id === id)
+    if (index < 0) { closeLightbox(); return }
+    const item = memories[index]
+    openLightbox({ memory: true, title: item.title, subtitle: `${item.name} · ${item.kind === 'portrait' ? '立绘' : 'CG'} · 第 ${Math.floor(item.collectedAt / 1440) + 1} 天收录`, pathHint: '画稿暂未载入', src: item.src })
+    albumLightbox = { id, session: mapSessionKey() }
+    const lb = document.getElementById('okh-hud-lightbox')
+    lb.querySelector('[data-okh-album-position]').textContent = `${index + 1} / ${memories.length}`
+    lb.querySelector('[data-okh-act=album-prev]').disabled = index === 0
+    lb.querySelector('[data-okh-act=album-next]').disabled = index === memories.length - 1
+  }
+
+  function stepMemory(delta) {
+    if (!albumLightbox) return
+    if (albumLightbox.session !== mapSessionKey()) { closeLightbox(); return }
+    const world = W.loadWorld()
+    if (!world) { closeLightbox(); return }
+    const all = collectedMemories(world)
+    const filter = all.some(item => item.npc === albumCharacter) ? albumCharacter : 'all'
+    const memories = all.filter(item => filter === 'all' || item.npc === filter)
+    const index = memories.findIndex(item => item.id === albumLightbox.id)
+    if (index < 0) { closeLightbox(); return }
+    const item = memories[index + delta]
+    if (item) openMemory(item.id)
   }
 
   function closeLightbox() {
     if (typeof document === 'undefined') return
     const lb = document.getElementById('okh-hud-lightbox')
-    if (lb) lb.classList.remove('active')
+    const wasOpen = lb?.classList.contains('active')
+    if (lb) { lb.classList.remove('active'); lb.setAttribute('aria-hidden', 'true') }
+    albumLightbox = null
+    if (wasOpen && lightboxReturnFocus?.isConnected) lightboxReturnFocus.focus()
+    lightboxReturnFocus = null
   }
 
   function fillTavernInput(text, { append = false } = {}) {
@@ -953,7 +1046,7 @@
       const el = event.target?.closest?.('[data-okh-act]')
       if (!el) return
       const act = el.getAttribute('data-okh-act')
-      if (act !== 'close-lb') {
+      if (!['close-lb', 'album-prev', 'album-next'].includes(act)) {
         const hud = el.closest('[data-okh-hud]')
         if (!hud) return
         // A chat switch may precede the next timer tick. Never apply old DOM actions to a new save.
@@ -982,6 +1075,13 @@
           else openRosterIds.add(id)
           rerenderCurrent()
         }
+      } else if (act === 'album-filter') {
+        albumCharacter = el.getAttribute('data-okh-character') || 'all'
+        rerenderCurrent()
+      } else if (act === 'album-open') {
+        openMemory(el.getAttribute('data-okh-memory'))
+      } else if (act === 'album-prev' || act === 'album-next') {
+        stepMemory(act === 'album-prev' ? -1 : 1)
       } else if (act === 'fill') {
         fillTavernInput(el.getAttribute('data-okh-text') || '')
       } else if (act === 'zoom-char') {
@@ -1009,6 +1109,18 @@
 
     const onKeyDown = event => {
       if (event.key === 'Escape') closeLightbox()
+      const lb = document.getElementById('okh-hud-lightbox')
+      if (!lb?.classList.contains('active')) return
+      if (albumLightbox && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        event.preventDefault()
+        stepMemory(event.key === 'ArrowLeft' ? -1 : 1)
+      }
+      if (event.key === 'Tab') {
+        const buttons = [...lb.querySelectorAll('button:not(:disabled)')].filter(el => !el.closest('[hidden]'))
+        const first = buttons[0], last = buttons[buttons.length - 1]
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
+      }
     }
 
     document.addEventListener('click', onClick)
@@ -1067,6 +1179,7 @@
       activeTab = 'dispatch'
       activePresentId = null
       openRosterIds.clear()
+      albumCharacter = 'all'
       closeLightbox()
     }
     const world = W.loadWorld()
@@ -1080,6 +1193,7 @@
       return false
     }
     ensureMessageHud()
+    if (albumLightbox && !collectedMemories(world).some(item => item.id === albumLightbox.id)) closeLightbox()
 
     const sig = buildRenderSignature(world)
     const changed = sig !== lastRenderSignature

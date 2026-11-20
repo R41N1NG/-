@@ -36,6 +36,7 @@ const APP = [
   'okh_app_rules',
   'okh_app_time',
   'okh_app_migrate',
+  'okh_app_album',
   'okh_app_config',
   'okh_app_world',
   'okh_app_adapter',
@@ -96,6 +97,7 @@ function read(dir, name) {
   const f = path.join(SRC, dir, name + '.js')
   if (!fs.existsSync(f)) throw new Error('缺少模块：' + f)
   const raw = fs.readFileSync(f, 'utf8')
+  if (name === 'okh_app_album') return raw.replace("'__OKH_ALBUM_CATALOG__'", () => JSON.stringify(JSON.stringify(require('./build_album.cjs').buildCatalog(path.join(ROOT, '奥森德')))))
   return name === 'okh_app_hud' ? inlineUiAssets(raw) : name === 'okh_app_map' ? inlineMapAssets(raw) : raw
 }
 

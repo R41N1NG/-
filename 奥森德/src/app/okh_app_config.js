@@ -13,7 +13,13 @@
   const RULES = root.OKH_APP_RULES
   const TIME = root.OKH_APP_TIME
   const MIG = root.OKH_APP_MIGRATE
-  if (!DATA || !RULES || !TIME || !MIG) throw Error('config 缺少子模块依赖')
+  const ALBUM = root.OKH_APP_ALBUM
+  if (!DATA || !RULES || !TIME || !MIG || !ALBUM) throw Error('config 缺少子模块依赖')
+
+  function syncWorld(world, ctx) {
+    RULES.syncWorld(world, ctx)
+    ALBUM.sync(world)
+  }
 
   function buildConfig() {
     const metricBounds = Object.fromEntries(DATA.ROSTER.map(n => [n.id, { ...n._metricBounds }]))
@@ -29,7 +35,7 @@
       metricBounds,
       releaseRules: { manualRelease: () => false },
       canMove: RULES.canMove,
-      syncWorld: RULES.syncWorld,
+      syncWorld,
       isMetricLocked: RULES.isMetricLocked,
       onStageChange: RULES.onStageChange,
       applyPrologueSteps: RULES.applyPrologueSteps,
@@ -60,7 +66,7 @@
     ITEM_CATALOG: DATA.ITEM_CATALOG,
     getAffectionTier: RULES.getAffectionTier,
     isFugitiveSyncedNpc: RULES.isFugitiveSyncedNpc,
-    syncWorld: RULES.syncWorld,
+    syncWorld,
     isMetricLocked: RULES.isMetricLocked,
     onStageChange: RULES.onStageChange,
     canMove: RULES.canMove,

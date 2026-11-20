@@ -18,7 +18,7 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
   if(!runtime.includes('data:'+mime+';base64,'+bytes.toString('base64')))throw Error('运行库未内嵌地图素材：'+rel);
   assets[key]={path:'地图预览/'+rel,sha256:sha(bytes)};
  }
- d.character_version='0.3.0-map';
+ d.character_version='0.3.1-album';
  d.character_book.name='奥克赫斯·地图整合版基础世界书';
  d.description=d.description.replace('镇内有领主山庄、圣辉大教堂、市井街区、旅店与地下赌场；城外是荒原与黑兽人前哨。','镇内有圣辉大教堂、市井街区、旅店与地下赌场；领主庄园位于镇外安全一侧的西北山上。农户分布在镇子周围，东南恶劣荒地是敌对的黑兽人前哨，与人类城镇没有相连道路。');
  d.description=d.description.replace('<focus> 与 <injury> 不使用 at。','<focus> 不使用 at。');
@@ -28,15 +28,16 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
   if(e.id===0)e.content=e.content.replace('城镇有旅店、教堂、街区、练武场、山庄和地下赌场；城外存在黑兽人前哨。','镇内有旅店、教堂、街区、练武场和地下赌场。领主庄园在镇外安全一侧的西北山上，农户环绕镇子；东南恶劣荒地存在敌对黑兽人前哨，与人类城镇不通道路。');
   if(e.id===10)e.content=e.content.replace('manor 是领主山庄','manor 是位于镇外西北山上的领主庄园');
  }
- d.creator_notes='地图整合版 0.3.0-map，核心 2.1.1，schemaVersion=3。\n基于用户原始 R4 卡，保留 11 条世界书与原开场，补入当前地图与经济、房间回执契约。\n已内嵌一份完整酒馆助手脚本及全域、镇内、旅店两层图稿、手札纸面和标注字体，无需另行下载地图或外置运行脚本。\n导入 JSON 后，在酒馆助手中启用本角色卡脚本；若曾独立安装完整后台，请停用旧的那份，只运行卡内这一份。需要已安装并启用酒馆助手，普通角色卡 JSON 导入器本身不执行 JavaScript。\n新聊天会在首条回复下挂载状态栏；既有聊天存档沿用原存储键，不强制重置。卡内显示正则仅隐藏回执和正文包装，不改写模型收到的原始消息。\n本次打包不扩写未提供的专属剧情库。';
- d.tags=[...new Set([...(d.tags||[]),'地图整合'])];
+ d.description+='\n【回忆相册】\n相册由后台按已配置的数值、标记或事件条件自动收录，不因浏览界面而解锁。未配置的图片与条件不得自行编造；无需另写 CG HTML 或图片地址。\n';
+ d.creator_notes='地图与相册整合版 0.3.1-album，核心 2.1.1，schemaVersion=3。\n基于用户原始 R4 卡，保留 11 条世界书与原开场，补入当前地图与经济、房间回执契约。\n已内嵌一份完整酒馆助手脚本及全域、镇内、旅店两层图稿、手札纸面和标注字体，无需另行下载地图或外置运行脚本。\n导入 JSON 后，在酒馆助手中启用本角色卡脚本；若曾独立安装完整后台，请停用旧的那份，只运行卡内这一份。需要已安装并启用酒馆助手，普通角色卡 JSON 导入器本身不执行 JavaScript。\n新聊天会在首条回复下挂载状态栏；既有聊天存档沿用原存储键，不强制重置。卡内显示正则仅隐藏回执和正文包装，不改写模型收到的原始消息。\n同伴名册下方增加回忆相册；当前图片目录留空，等待后续导入素材和指定解锁条件。\n本次打包不扩写未提供的专属剧情库。';
+ d.tags=[...new Set([...(d.tags||[]),'地图整合','回忆相册'])];
  d.extensions||={};
  d.extensions.regex_scripts=[
   {id:'okh-display-hide-status',scriptName:'奥克赫斯 · 隐藏后台回执与流式片段',findRegex:'/<status_bar\\b[^>]*>[\\s\\S]*?(?:<\\/status_bar\\s*>|$)/gi',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
   {id:'okh-display-content-wrapper',scriptName:'奥克赫斯 · 去除正文包装',findRegex:'/<\\/?content\\b[^>]*>/gi',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null}
  ];
  d.extensions.tavern_helper={scripts:[{type:'script',enabled:true,id:'okh-complete-autostart',name:'奥克赫斯 · 地图与状态栏完整后台 2.1.1',content:runtime,info:'唯一完整后台；读取当前聊天存档，自动挂载地图手札，沿用原有计时、事件与回滚。',button:{enabled:false,buttons:[]},data:{},export_with:{data:true,button:true}}],variables:{}};
- d.extensions.okh_build={format:1,core_version:'2.1.1',schema_version:3,source_card_sha256:sha(original),runtime_sha256:sha(runtime),map_views:['region','town','ground','upper'],room_order:['player','gulan','isna','nise','aurora','ed'],assets,licenses:{'map-ink.woff':fs.readFileSync(path.join(ROOT,'地图预览/字体/OFL.txt'),'utf8')}};
+ d.extensions.okh_build={album_catalog_sha256:sha(fs.readFileSync(path.join(ROOT,'回忆相册/目录.json'))),album_catalog_count:JSON.parse(fs.readFileSync(path.join(ROOT,'回忆相册/目录.json'),'utf8')).length,format:1,core_version:'2.1.1',schema_version:3,source_card_sha256:sha(original),runtime_sha256:sha(runtime),map_views:['region','town','ground','upper'],room_order:['player','gulan','isna','nise','aurora','ed'],assets,licenses:{'map-ink.woff':fs.readFileSync(path.join(ROOT,'地图预览/字体/OFL.txt'),'utf8')}};
  const out=path.join(ROOT,'最新角色卡/奥克赫斯.json');fs.mkdirSync(path.dirname(out),{recursive:true});
  const text=JSON.stringify(card,null,2)+'\n';fs.writeFileSync(out,text);
  if(fs.readFileSync(out,'utf8')!==text)throw Error('角色卡写入回读不一致');
