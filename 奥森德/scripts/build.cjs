@@ -136,4 +136,5 @@ if (fs.existsSync(AUTOSTART_FILE)) {
   const autoSha = crypto.createHash('sha256').update(autoOutput, 'utf8').digest('hex').toUpperCase()
   console.log('已生成：' + OUT_AUTO)
   console.log('自动启动版大小：' + Buffer.byteLength(autoOutput, 'utf8') + ' 字节 · SHA-256：' + autoSha)
+  require('./build_card.cjs').buildCard({ runtimePath: OUT_AUTO })
 }
