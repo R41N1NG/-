@@ -1,8 +1,8 @@
 /**
  * @module okh_app_hud
- * @updated 2026-11-19 15:20
+ * @updated 2026-11-20
  * @status  active
- * @reason  对齐主人指示：古兰营地被俘期间同伴名册与状态栏强制显示为［暂离］零剧透坐标，补充纸条递交、外围拦截与天火覆灭归队自述标题映射
+ * @reason  自检修复：聊天归属、共享事件清理、只读输入回退与公开位置刷新
  * @deps    ['OKH_APP_CONFIG', 'OKH_APP_WORLD', 'OKH_APP_ADAPTER']
  * @provides { setWatchVisible, setAssetBase, LOCATION_NAMES, phaseName, locName, buildHudHtml, buildWatchHtml, render, startHud, stopHud }
  */
@@ -44,11 +44,17 @@
   let activeTab = 'dispatch'
   let activePresentId = null
   const openRosterIds = new Set()
-  let lastWorldRef = null
   let autoMount = root.OKH_HUD_AUTO_MOUNT !== false
+  let renderedSession = null
+  let lastRenderSignature = null
+  let renderRevision = 0
 
   function mapSessionKey() {
     try { return W.chatId() } catch (_) { return 'default' }
+  }
+
+  function isLocationHidden(npc) {
+    return MAP ? MAP.isLocationHidden(npc) : Boolean(npc.flags?.gulan_departed || npc.flags?.captured_orc || npc.flags?.captured_manor)
   }
 
   function resolveUiAsset(token, fallback) {
@@ -259,7 +265,7 @@
     const map = new Map()
     const npcs = Object.values(world.npcs || {})
     for (const n of npcs) {
-      if (n.monitored === true && n.alive !== false && n.location === world.playerLocation) {
+      if (n.monitored === true && n.alive !== false && !isLocationHidden(n) && n.location === world.playerLocation) {
         map.set(n.id, buildCharView(world, n))
       }
     }
@@ -280,7 +286,7 @@
     const meta = CHAR_META[npc.id] || { sigil: '◈', role: '同行人物', bio: '当前与你同处一地。', actions: [] }
     const affVal = npc.hasAffection !== false ? Math.round(npc.values?.affection ?? 0) : null
     const affTier = affVal !== null ? (CFG.AFFECTION_TIERS[CFG.getAffectionTier(affVal)] || '普通') : null
-    const isDeparted = Boolean(npc.flags?.gulan_departed || npc.flags?.captured_orc)
+    const isDeparted = isLocationHidden(npc)
     const stance = isDeparted
       ? '暂离'
       : (npc.activity ? npc.activity.label : (npc.location === world.playerLocation ? '同地驻留' : locName(npc.location)))
@@ -336,7 +342,7 @@
       affLabel: affTier !== null ? `${affTier} ${affVal}` : '随行伙伴',
       affIsLove: affVal !== null && affVal >= 90,
       metrics,
-      actions,
+      actions: isDeparted ? [] : actions,
       portraitPath: joinAsset(`portraits/${npc.id}.png`)
     }
   }
@@ -922,11 +928,12 @@
     const input = document.getElementById('send_textarea') ||
       document.querySelector('#send_form textarea') ||
       document.getElementById('tavern-input')
-    if (!input) return false
-    const prior = append ? input.value.trimEnd() : ''
-    input.value = prior ? prior + '\n' + text : text
-    input.dispatchEvent(new Event('input', { bubbles: true }))
-    input.dispatchEvent(new Event('change', { bubbles: true }))
+    if (!input || input.disabled || input.readOnly || typeof input.value !== 'string') return false
+    const prior = append ? input.value : ''
+    input.value = prior ? prior + (prior.endsWith('\n') ? '' : '\n') + text : text
+    const InputEvent = input.ownerDocument.defaultView.Event
+    input.dispatchEvent(new InputEvent('input', { bubbles: true }))
+    input.dispatchEvent(new InputEvent('change', { bubbles: true }))
     if (typeof input.focus === 'function') input.focus()
     return true
   }
@@ -934,8 +941,9 @@
   function bindGlobalEvents() {
     if (typeof document === 'undefined') return
     // 热插拔：先清理旧版本事件与模态节点，再挂新闭包
-    if (typeof root.__OKH_HUD_CLEANUP__ === 'function') {
-      try { root.__OKH_HUD_CLEANUP__() } catch (_) {}
+    const previousCleanups = new Set([root.__OKH_HUD_CLEANUP__, document.__OKH_HUD_CLEANUP__])
+    for (const cleanup of previousCleanups) {
+      if (typeof cleanup === 'function') try { cleanup() } catch (_) {}
     }
     ensureLightbox()
 
@@ -945,11 +953,19 @@
       const el = event.target?.closest?.('[data-okh-act]')
       if (!el) return
       const act = el.getAttribute('data-okh-act')
+      if (act !== 'close-lb') {
+        const hud = el.closest('[data-okh-hud]')
+        if (!hud) return
+        // A chat switch may precede the next timer tick. Never apply old DOM actions to a new save.
+        if (hud.getAttribute('data-okh-session') !== mapSessionKey()) {
+          render(true)
+          return
+        }
+      }
       if (MAP && act?.startsWith('map-')) {
         const current = W.loadWorld()
         if (!current) return
         MAP.handle(el, current, mapSessionKey(), text => fillTavernInput(text, { append: true }))
-        lastWorldRef = current
         rerenderCurrent()
         return
       }
@@ -997,46 +1013,25 @@
 
     document.addEventListener('click', onClick)
     document.addEventListener('keydown', onKeyDown)
-    root.__OKH_HUD_CLEANUP__ = () => {
+    const cleanup = () => {
+      stopHud()
       document.removeEventListener('click', onClick)
       document.removeEventListener('keydown', onKeyDown)
       const oldLb = document.getElementById('okh-hud-lightbox')
       if (oldLb) oldLb.remove()
     }
+    root.__OKH_HUD_CLEANUP__ = cleanup
+    document.__OKH_HUD_CLEANUP__ = cleanup
   }
 
   function buildRenderSignature(world) {
-    const npcSig = Object.values(world.npcs || {})
-      .map(n => `${n.id}:${n.monitored ? 1 : 0}:${n.location}:${n.stage ?? ''}:${n.activity?.label || ''}:${JSON.stringify(n.values || {})}`)
-      .join('|')
-    const pendSig = Object.values(world.bg?.eventStates || {})
-      .filter(s => s?.status === 'pending')
-      .map(s => `${s.definitionId}:${s.npcId || ''}`)
-      .join(',')
-    const qLen = Array.isArray(world.bg?.queue) ? world.bg.queue.length : 0
-    const invSig = JSON.stringify(world.playerState?.inventory || [])
-    return [
-      mapSessionKey(), world.timeMin, world.playerLocation, world.focusNpcId || '',
-      world.playerState?.gold ?? 40,
-      world.flags?.inn_arrears ? 1 : 0,
-      world.flags?.inn_free_pass_today ? 1 : 0,
-      world.flags?.supply_shortage ? 1 : 0,
-      world.flags?.arrived_oakhaven ? 1 : 0,
-      world.flags?.ed_awake ? 1 : 0,
-      world.flags?.ed_permanently_joined ? 1 : 0,
-      world.flags?.alice_rescued ? 1 : 0,
-      world.npcs?.ed?.flags?.ed_teach_count ?? 0,
-      invSig, pendSig, qLen, npcSig, MAP ? MAP.signature(world) : ''
-    ].join('#')
+    // Include flags and event details as well as visible counters. Privacy can change without time advancing.
+    return JSON.stringify([mapSessionKey(), world])
   }
 
   function rerenderCurrent() {
-    if (!lastWorldRef || typeof document === 'undefined') return
-    const huds = document.querySelectorAll('[data-okh-hud]')
-    if (!huds.length) return
-    const latest = huds[huds.length - 1]
-    latest.innerHTML = buildHudHtml(lastWorldRef)
-    latest.setAttribute('data-okh-ready', '1')
+    // User navigation must read the current save too, rather than a snapshot from the last timer tick.
+    return render(true)
   }
 
   let eventsBound = false
@@ -1066,21 +1061,40 @@
       eventsBound = true
     }
 
+    const sessionKey = mapSessionKey()
+    if (renderedSession !== sessionKey) {
+      renderedSession = sessionKey
+      activeTab = 'dispatch'
+      activePresentId = null
+      openRosterIds.clear()
+      closeLightbox()
+    }
     const world = W.loadWorld()
-    if (!world) return false
-    lastWorldRef = world
+    if (!world) {
+      lastRenderSignature = null
+      for (const el of document.querySelectorAll('[data-okh-hud]')) {
+        el.replaceChildren()
+        for (const attr of ['data-okh-sig', 'data-okh-session', 'data-okh-ready']) el.removeAttribute(attr)
+      }
+      for (const el of document.querySelectorAll('[data-okh-watch]')) { el.hidden = true; el.textContent = '' }
+      return false
+    }
     ensureMessageHud()
 
     const sig = buildRenderSignature(world)
+    const changed = sig !== lastRenderSignature
+    if (changed) { lastRenderSignature = sig; renderRevision++ }
     const huds = document.querySelectorAll('[data-okh-hud]')
     let found = false
 
     for (let i = 0; i < huds.length; i++) {
       const el = huds[i]
+      el.setAttribute('data-okh-session', sessionKey)
       const isLatest = i === huds.length - 1
       const modeTag = isLatest ? 'full' : 'compact'
-      const targetSig = `${modeTag}:${sig}`
-      if (force || el.getAttribute('data-okh-sig') !== targetSig) {
+      // Keep full state fingerprints in this closure, not duplicated into every historical message.
+      const targetSig = `${modeTag}:${renderRevision}`
+      if (force || changed || el.getAttribute('data-okh-sig') !== targetSig) {
         el.innerHTML = isLatest ? buildHudHtml(world) : buildCompactHudHtml(world)
         el.setAttribute('data-okh-sig', targetSig)
         el.setAttribute('data-okh-ready', '1')

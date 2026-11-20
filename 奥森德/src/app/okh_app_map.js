@@ -47,6 +47,11 @@
     }
     return ui
   }
+  function isLocationHidden(npc) {
+    const flags = npc?.flags || {}
+    return Boolean(flags.gulan_departed || flags.captured_orc || flags.captured_manor || flags.isna_captured_ed ||
+      (flags.isna_camp_distress === 'rat' && !flags.isna_help_real))
+  }
   function roomState(world, room) {
     const base = { ...room, number: String(ROOMS.indexOf(room) + 1).padStart(2, '0'), known: true, location: null, status: '', actions: [] }
     const arrived = Boolean(world.flags?.arrived_oakhaven)
@@ -67,7 +72,7 @@
     }
     if (!arrived) return { ...base, status: '尚未抵镇，房内情况待确认' }
     // 和现有公开 HUD 一致：暂离时不能泄露后台遇险坐标。
-    if (npc.flags?.gulan_departed || npc.flags?.captured_orc || npc.flags?.captured_manor) {
+    if (isLocationHidden(npc)) {
       base.status = '暂离 · 去向未确认'
       if (here) base.actions = [{ key: 'note', label: '留下口信', text: `我在${room.name}的房门前留下一张约定稍后见面的字条。` }]
       return base
@@ -190,10 +195,27 @@
     return JSON.stringify(ROOMS.map(room => roomState(world, room)))
   }
   function css() {
+    const smallCss = `
+ .okh-m-journal{border-width:14px;border-image-width:14px;padding:7px 6px 10px}
+ .okh-map-guide .okh-m-door,.okh-map-guide .okh-m-point{display:none}
+ .okh-m-place-label{display:block;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none}
+ .okh-m-marker{display:flex;align-items:center;justify-content:center;gap:1px;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%) rotate(-19.5deg);white-space:nowrap;font-size:clamp(5px,1.65cqw,10px);pointer-events:none;letter-spacing:0;color:#59412b}
+ .okh-m-marker .okh-m-icon{width:clamp(6px,2cqw,12px);height:clamp(6px,2cqw,12px)}
+ .okh-m-marker.is-selected>span{text-decoration:underline;text-underline-offset:2px}
+ .okh-m-options.is-rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 5px;padding:6px 0}
+ .okh-m-options .okh-m-name{display:flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px}
+ .okh-m-name .okh-m-icon{width:13px;height:13px}
+ .okh-m-nav{gap:0 15px}.okh-m-nav>span{font-size:9px}
+ .okh-map-guide h3{font-size:17px;letter-spacing:1px}.okh-m-floors{font-size:11px;gap:0 14px}
+ .okh-m-detail{display:block;padding:10px 2px 0}.okh-m-detail strong{font-size:18px}.okh-m-detail p{font-size:10px}
+ .okh-m-room-head{gap:8px}.okh-m-room-head>.okh-m-icon{width:24px;height:32px}
+ .okh-m-status{margin-top:5px!important}.okh-m-actions{flex-direction:row;gap:0 14px;border:0;padding:2px 0 0 32px}
+ .okh-map-guide .okh-m-actions button{font-size:12px}
+`
     return `
 @font-face{font-family:'OKHMapInk';src:url('${image('ink')}') format('woff');font-style:normal;font-weight:400;font-display:swap}
 /* The texture is sliced as a page frame; scene and live notes remain independent. */
-.okh-map-guide{margin:18px 0 10px;font-size:12px;--map-ink:#59412b;--map-faint:#7d674b;color:var(--map-ink)}
+.okh-map-guide{container:okh-map / inline-size;margin:18px 0 10px;font-size:12px;--map-ink:#59412b;--map-faint:#7d674b;color:var(--map-ink)}
 .okh-map-guide *{box-sizing:border-box}.okh-map-guide [hidden]{display:none!important}
 .okh-map-guide h3,.okh-map-guide p,.okh-map-guide figure{margin:0}
 .okh-map-guide button{font:inherit;min-height:44px;border:0;background:transparent;color:inherit;cursor:pointer;padding:7px 0}
@@ -234,27 +256,12 @@
 .okh-m-feedback{font-size:10px;color:var(--map-faint);padding:0 4px;line-height:1.8}.okh-m-feedback:not(:empty){margin-top:7px!important}
 .okh-m-hint{padding:12px 4px 0;border-top:1px solid #82633d55}
 .okh-m-draft{width:100%;min-height:65px;padding:8px;background:#f2e4c8;color:var(--map-ink);border:1px solid #82633d55;font:inherit;user-select:text}
-@media(max-width:700px){
- .okh-m-journal{border-width:14px;border-image-width:14px;padding:7px 6px 10px}
- .okh-map-guide .okh-m-door,.okh-map-guide .okh-m-point{display:none}
- .okh-m-place-label{display:block;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none}
- .okh-m-marker{display:flex;align-items:center;justify-content:center;gap:1px;position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%) rotate(-19.5deg);white-space:nowrap;font-size:clamp(5px,1.65cqw,10px);pointer-events:none;letter-spacing:0;color:#59412b}
- .okh-m-marker .okh-m-icon{width:clamp(6px,2cqw,12px);height:clamp(6px,2cqw,12px)}
- .okh-m-marker.is-selected>span{text-decoration:underline;text-underline-offset:2px}
- .okh-m-options.is-rooms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 5px;padding:6px 0}
- .okh-m-options .okh-m-name{display:flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px}
- .okh-m-name .okh-m-icon{width:13px;height:13px}
- .okh-m-nav{gap:0 15px}.okh-m-nav>span{font-size:9px}
- .okh-map-guide h3{font-size:17px;letter-spacing:1px}.okh-m-floors{font-size:11px;gap:0 14px}
- .okh-m-detail{display:block;padding:10px 2px 0}.okh-m-detail strong{font-size:18px}.okh-m-detail p{font-size:10px}
- .okh-m-room-head{gap:8px}.okh-m-room-head>.okh-m-icon{width:24px;height:32px}
- .okh-m-status{margin-top:5px!important}.okh-m-actions{flex-direction:row;gap:0 14px;border:0;padding:2px 0 0 32px}
- .okh-map-guide .okh-m-actions button{font-size:12px}
-}
+@container okh-map (max-width:700px){${smallCss}}
+@supports not (container-type:inline-size){@media(max-width:700px){${smallCss}}}
 
 `
   }
-  root.OKH_APP_MAP = Object.freeze({ build, handle, signature, css, roomState, rooms: ROOMS,
+  root.OKH_APP_MAP = Object.freeze({ build, handle, signature, css, roomState, isLocationHidden, rooms: ROOMS,
     setAssetBase(base) { assetBase = String(base || '').replace(/\/?$/, '/'); if (assetBase === '/') assetBase = '' }
   })
 })(globalThis)

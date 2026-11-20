@@ -30,6 +30,18 @@ test('temporarily absent guests do not disclose hidden camp coordinates or a fin
  const {map,world}=fixture();const npc=world.npcs.gulan;npc.location='wilds_camp';npc.flags.captured_orc=true;
  const room=map.roomState(world,map.rooms[1]);assert.match(room.status,/暂离/);assert.equal(room.location,null);assert(!JSON.stringify(room).includes('wilds_camp'));assert(!room.actions.some(a=>a.key==='find'));
 });
+test('manor captivity and a private transfer hide coordinates just like camp captivity',()=>{
+ const {map,world}=fixture();
+ for(const [index,flag,location] of [[1,'captured_manor','manor'],[2,'isna_captured_ed','wilds_camp']]){
+  const npc=world.npcs[map.rooms[index].npc];npc.location=location;npc.flags[flag]=true;
+  const room=map.roomState(world,map.rooms[index]);assert.equal(room.location,null);assert.match(room.status,/暂离/);assert(!room.actions.some(a=>a.key==='find'));
+ }
+});
+test('the rat-message branch reveals the camp only after its signal actually reaches the player',()=>{
+ const {map,world}=fixture(),npc=world.npcs.isna;npc.location='wilds_camp';npc.flags.isna_camp_distress='rat';npc.flags.isna_help_real=false;
+ let room=map.roomState(world,map.rooms[2]);assert.equal(room.location,null);assert(!room.actions.some(a=>a.key==='find'));
+ npc.flags.isna_help_real=true;room=map.roomState(world,map.rooms[2]);assert.equal(room.location,'wilds_camp');assert(room.actions.some(a=>a.key==='find'));
+});
 test('night co-room state respects location and phase, and important work removes the knock action',()=>{
  const {map,world}=fixture();world.flags.playerRoomTarget='gulan';assert.match(map.roomState(world,map.rooms[1]).status,/同住/);
  world.timeMin=10*60;assert.match(map.roomState(world,map.rooms[1]).status,/待确认/);
