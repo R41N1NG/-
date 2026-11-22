@@ -1669,7 +1669,7 @@
       return map.get(t);
     }
 
-    function collectTimeline(world, front, fromMin, toMin) {
+    function collectTimeline(world, front, fromMin, toMin, config) {
       const map = new Map();
 
       for (const step of front.prologueSteps || []) {
@@ -1684,7 +1684,9 @@
       }
 
       for (const item of front.resolveEvents || []) {
-        getBucket(map, resolveAt(item.at, fromMin, fromMin, toMin)).resolveEvents.push(item);
+        const event = (config.events || []).find(event => event.id === item.eventId);
+        const defaultAt = event?.settleAtEnd ? toMin : fromMin;
+        getBucket(map, resolveAt(item.at, defaultAt, fromMin, toMin)).resolveEvents.push(item);
       }
 
       const playerMoves = front.playerMoves || (front.playerLocation !== undefined
@@ -1771,7 +1773,7 @@
       syncWorld(world, blockedIds, 'bucketMove', config);
     }
 
-    function applyBucket(world, bucket, config, blockedIds) {
+    function applyBucket(world, bucket, config, blockedIds, workWindow) {
       if (!bucket) return;
       if (bucket.prologueSteps.length && typeof config.applyPrologueSteps === 'function') {
         const changes = config.applyPrologueSteps(world, bucket.prologueSteps, { blockedIds, config }) || [];
@@ -1791,7 +1793,7 @@
       }
       applyMeta(world, bucket.meta);
 
-      const ctx = { world, phase: u.phaseAt(world.timeMin, config), blockedIds };
+      const ctx = { world, phase: u.phaseAt(world.timeMin, config), blockedIds, ...workWindow };
       if (bucket.bonds.length && typeof config.resolveBonds === 'function') {
         const changes = config.resolveBonds(world, bucket.bonds, ctx);
         effects.apply(world, null, changes || [], { blockedIds }, config);
@@ -1868,11 +1870,14 @@
       const front = command.front || {};
       const blockedIds = initialBlockedIds(state, command, front);
       const fromMin = state.timeMin;
-      const timeline = collectTimeline(state, front, fromMin, command.toMin);
+      const workUntilMin = front.workUntilMin ?? command.toMin;
+      u.check(u.minute(workUntilMin) && workUntilMin >= fromMin && workUntilMin <= command.toMin, '工时区间超出本轮时间');
+      const workWindow = { turnFromMin: fromMin, workUntilMin };
+      const timeline = collectTimeline(state, front, fromMin, command.toMin, config);
       const report = { duplicate: false, released: [], actions: [] };
 
       report.released.push(...activity.releaseExpiredOrdinary(state, config));
-      if (timeline.has(fromMin)) applyBucket(state, timeline.get(fromMin), config, blockedIds);
+      if (timeline.has(fromMin)) applyBucket(state, timeline.get(fromMin), config, blockedIds, workWindow);
       refresh(state, config, blockedIds, report);
 
       const pendingTimes = [...timeline.keys()].filter(t => t > fromMin).sort((a, b) => a - b);
@@ -1894,7 +1899,7 @@
 
         report.released.push(...activity.releaseExpiredOrdinary(state, config));
         if (next === nextReceipt) {
-          applyBucket(state, timeline.get(next), config, blockedIds);
+          applyBucket(state, timeline.get(next), config, blockedIds, workWindow);
           nextIdx++;
         }
 
@@ -2497,14 +2502,15 @@
   const PLAYER_KEY = '__player__';
   const MAX_BYTES = 20 * 1024 * 1024;
   const DONE = 'data-okh-ava-done';
-  const OVERLAY = 'data-okh-ava-zoom';
+  const CLEANUP = '__OKH_BUBBLE_CLEANUP__';
   let ME = '';
-  let observer = null;
+  let mountedDocuments = [];
+  const observers = [];
   let timer = null;
   let poll = null;
   let returnFocus = null;
   let pendingInput = null;
-  let alive = true;
+  let alive = false;
 
   // 预置主要人物头像（可留空使用首字，支持后续直接填入 Data URI 或图床链接）
   const DEFAULT_AVATARS = {
@@ -2583,7 +2589,7 @@
   }
 
   function injectGlobalStyles() {
-    const docs = getTargetDocuments();
+    const docs = mountedDocuments;
     const css = `
       .okh-dlg-row {
         display: flex !important;
@@ -2803,6 +2809,7 @@
   }
 
   function apply(scope) {
+    if (!alive) return;
     injectGlobalStyles();
     ME = playerName();
     const docs = scope ? [scope] : getTargetDocuments();
@@ -2913,7 +2920,7 @@
   }
 
   function closeZoom() {
-    const docs = getTargetDocuments();
+    const docs = mountedDocuments;
     for (const doc of docs) {
       const modal = doc?.getElementById('okh-bubble-modal');
       if (modal) modal.classList.remove('active');
@@ -2987,10 +2994,12 @@
       const reader = new FileReader();
       reader.onerror = () => fail('读取图片失败，请重试。');
       reader.onload = () => {
+        if (!alive || pendingInput !== input) return;
         const rawUrl = String(reader.result || '');
         const probe = new Image();
         probe.onerror = () => fail('图片解码失败，请换一张图片。');
         probe.onload = () => {
+          if (!alive || pendingInput !== input) return;
           try {
             const scale = Math.min(1, 768 / Math.max(probe.naturalWidth, probe.naturalHeight));
             const canvas = doc.createElement('canvas');
@@ -3038,13 +3047,20 @@
   }
 
   function boot() {
-    injectGlobalStyles();
+    const docs = getTargetDocuments().filter(doc => doc?.body);
+    if (alive || !docs.length) return;
+    const previous = new Set(docs.map(doc => doc[CLEANUP]));
+    for (const cleanup of previous) if (typeof cleanup === 'function') cleanup();
+    alive = true;
+    mountedDocuments = docs;
+    for (const doc of docs) {
+      doc[CLEANUP] = stop;
+      doc.getElementById('okh-bubble-modal')?.remove();
+    }
     apply();
     ensureModal();
 
-    const docs = getTargetDocuments();
     for (const doc of docs) {
-      if (!doc) continue;
       doc.addEventListener('click', onAvatarClick, true);
       doc.addEventListener('keydown', onAvatarClick, true);
       doc.addEventListener('keydown', onGlobalKeyDown, true);
@@ -3058,6 +3074,7 @@
           }, 40);
         });
         obs.observe(doc.body, { childList: true, subtree: true });
+        observers.push(obs);
       }
     }
 
@@ -3068,11 +3085,35 @@
     }
   }
 
+  function stop() {
+    if (!alive) return;
+    alive = false;
+    for (const observer of observers.splice(0)) observer.disconnect();
+    if (timer !== null) clearTimeout(timer);
+    if (poll !== null) clearInterval(poll);
+    timer = poll = null;
+    pendingInput?.remove();
+    pendingInput = null;
+    returnFocus = null;
+    for (const doc of mountedDocuments) {
+      doc.removeEventListener('click', onAvatarClick, true);
+      doc.removeEventListener('keydown', onAvatarClick, true);
+      doc.removeEventListener('keydown', onGlobalKeyDown, true);
+      if (doc[CLEANUP] !== stop) continue;
+      delete doc[CLEANUP];
+      doc.getElementById('okh-bubble-modal')?.remove();
+      doc.getElementById('okh-bubble-style')?.remove();
+      for (const avatar of doc.querySelectorAll(`[${DONE}]`)) avatar.removeAttribute(DONE);
+    }
+    mountedDocuments = [];
+  }
+
   // 立即在当前执行阶段启动，秒级接管开场白和现有 DOM
   boot();
 
   root.OKH_BUBBLE_SIDE = Object.freeze({
     boot,
+    stop,
     apply,
     refreshAvatars,
     openZoom,
@@ -3182,6 +3223,44 @@
       desc: '伊丝娜托付的成对魔纹吊坠，彼此相隔千里亦可感知危难。'
     })
   })
+
+  const WORK_TERMS = Object.freeze({
+    odd: Object.freeze({ minutes: 360, gold: 6 }),
+    guild_normal: Object.freeze({ minutes: 480, gold: 28 }),
+    guild_high: Object.freeze({ minutes: 1440, gold: 48 }),
+    church_paid: Object.freeze({ minutes: 180, gold: 3 }),
+    church_volunteer: Object.freeze({ minutes: 180, gold: 0 })
+  })
+
+  function workStart({ world, turnFromMin, workUntilMin }, minutes, paid = true) {
+    const end = world.timeMin
+    const start = end - minutes
+    if (!world.flags?.arrived_oakhaven || !Number.isSafeInteger(turnFromMin) || !Number.isSafeInteger(workUntilMin) || end > workUntilMin ||
+        start < Math.max(turnFromMin, world.flags.arrivedOakhavenAtMin ?? 0, world.flags.lastPlayerWorkEndMin ?? 0)) return null
+    if (paid && paidWorkSettledToday(world)) return null
+    return start
+  }
+
+  function paidWorkSettledToday(world) {
+    const day = dayAt(world), flags = world.flags || {}
+    return [flags.lastPaidWorkDay, flags.playerOddJobDay, flags.lastGuildCommissionDay, flags.lastEdInterceptDay].includes(day)
+  }
+
+  function workCooldownWait(world, key, start, days) {
+    const previous = world.flags?.[key + 'StartMin']
+    if (Number.isSafeInteger(previous)) return Math.max(0, previous + days * 1440 - start)
+    const legacyDay = world.flags?.[key + 'Day']
+    return Number.isSafeInteger(legacyDay) ? Math.max(0, (legacyDay + days - 1) * 1440 - start) : 0
+  }
+
+  function recentGuildStarts(world, start) {
+    const starts = world.flags?.guildCommissionStarts
+    return (Array.isArray(starts) ? starts : []).filter(t => Number.isSafeInteger(t) && t > start - 7 * 1440)
+  }
+
+  function completedWorkFlags(world, paid = true) {
+    return { lastPlayerWorkEndMin: world.timeMin, ...(paid ? { lastPaidWorkDay: dayAt(world) } : {}) }
+  }
 
   const ACTIONS = [
     {
@@ -5984,6 +6063,7 @@
   const ED_INTERCEPT_VARIANTS = [
     {
       id: 'ed_intercept_job_1',
+      minutes: 180,
       gold: 10,
       text: '爱德一路小跑着拽住你的衣袖，额角沁着细汗，压低声音急切汇报：“{{user}}哥哥，快！公会门口刚来了一名急着离镇的外地行商，他的加急货样和文书落在了城外临时车马棚，天黑前必须取回来。公会走账要压到明天还要抽成，雇主正跟伙计发愁呢！现在去私洽接下，当场现结 10 枚金币，要是等抄上大木板，转眼就会被那群闲汉抢光！”',
       directText: '你当机立断赶往城外临时车马棚，趁着暮色未至把遗落的货样箱与封蜡文书完好交回行商手中。行商松了一口气，爽快按约现结了 10 枚金币。',
@@ -5991,6 +6071,7 @@
     },
     {
       id: 'ed_intercept_job_2',
+      minutes: 120,
       gold: 9,
       text: '爱德从集市方向气喘吁吁地奔回来，手指着天边聚拢的灰云提醒道：“{{user}}哥哥，集市大商行的管事正急得团团转！天眼看要落雨，货场里还有一批怕潮的细呢布匹和干草，必须在两个钟头内转进地窖。公会排人手来不及，现在直接过去搭把手，干完当场现结 9 枚金币！”',
       directText: '你赶在雨点砸落前与商行伙计一道把怕潮布匹和草捆稳妥转入干爽地窖。管事查验无损后满意点头，当场点清 9 枚金币交付。',
@@ -5998,6 +6079,7 @@
     },
     {
       id: 'ed_intercept_job_3',
+      minutes: 240,
       gold: 12,
       text: '爱德紧跑几步拉住你的手腕，眼睛发亮地小声道：“{{user}}哥哥，镇郊农庄的庄园主刚在公会外拦人！他家一匹拉货的挽马受了惊，带着半车杂货窜进了近郊林缘。公会登记派单太慢，雇主说只要身手利落的战士立刻去循迹找回，当场现结 12 枚金币！”',
       directText: '你沿车辙与折枝一路追入近郊林缘，安抚住受惊的挽马并将货车稳妥牵回农庄。庄园主连声致谢，如数现结 12 枚金币。',
@@ -6005,6 +6087,7 @@
     },
     {
       id: 'ed_intercept_job_4',
+      minutes: 60,
       gold: 8,
       bonusSupply: 1,
       text: '爱德抱着胳膊快步凑过来，语速偏快地说道：“{{user}}哥哥，镇上药铺掌柜急着找脚程快的人！镇南有户病家等着刚煎配好的退热汤剂，药铺伙计全派出去了脱不开身。不用走公会抽水，现在送过去就能现结 8 枚金币，掌柜还说多捎一份草药补给！”',
@@ -6014,8 +6097,14 @@
   ]
 
   ED_INTERCEPT_VARIANTS.forEach((variant, idx) => {
+    const canComplete = ctx => {
+      const start = workStart(ctx, variant.minutes)
+      const pending = ctx.world.bg.eventStates[JSON.stringify(['event', variant.id, null])]
+      return start !== null && start >= (pending?.triggeredAt ?? 0) && !workCooldownWait(ctx.world, 'lastEdIntercept', start, 3)
+    }
     EVENTS.push({
       id: variant.id,
+      settleAtEnd: true,
       mode: 'interaction',
       repeatable: true,
       scope: 'world',
@@ -6029,7 +6118,7 @@
         world.npcs.ed.alive !== false &&
         !hasPendingEdDaily(world) &&
         // 3 = 爱德公会急件抢截冷却天数（每 3 自然日限触发 1 次）
-        (!Number.isFinite(world.flags?.lastEdInterceptDay) || (dayAt(world) - world.flags.lastEdInterceptDay) >= 3) &&
+        !workCooldownWait(world, 'lastEdIntercept', world.timeMin, 3) &&
         ((world.flags?.edInterceptSlot ?? 0) % 4) === idx,
       expireWhen: ({ world, phase }) =>
         !['inn', 'town'].includes(world.playerLocation) ||
@@ -6038,11 +6127,14 @@
       text: variant.text,
       outcomes: {
         accept_direct: {
+          when: canComplete,
           text: variant.directText,
           effects: ({ world }) => {
             const nextGold = (Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 0) + variant.gold
             const worldFlags = {
+              ...completedWorkFlags(world),
               lastEdInterceptDay: dayAt(world),
+              lastEdInterceptStartMin: world.timeMin - variant.minutes,
               edInterceptSlot: (idx + 1) % 4,
               ...(world.flags?.inn_arrears && nextGold >= 5 ? { inn_arrears: false } : {}),
               ...(variant.bonusSupply && world.flags?.supply_shortage ? { supply_shortage: false } : {})
@@ -6053,13 +6145,16 @@
           }
         },
         negotiate_teach: {
+          when: canComplete,
           text: variant.teachText,
           effects: ({ world }) => {
             const gain = variant.gold + 2
             const nextGold = (Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 0) + gain
             const teach = buildEdTeachPatch(world)
             const worldFlags = {
+              ...completedWorkFlags(world),
               lastEdInterceptDay: dayAt(world),
+              lastEdInterceptStartMin: world.timeMin - variant.minutes,
               edInterceptSlot: (idx + 1) % 4,
               ...teach.stealthFlag,
               ...(world.flags?.inn_arrears && nextGold >= 5 ? { inn_arrears: false } : {}),
@@ -6202,6 +6297,7 @@
     SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel,
     PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG,
     ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld,
+    WORK_TERMS, workStart, paidWorkSettledToday, workCooldownWait, recentGuildStarts, completedWorkFlags,
     DRAGON_TRUE_FORM_SPEC, buildDragonRevealText
   })
 
@@ -6307,7 +6403,7 @@
       } else if (flag === 'arrived_oakhaven' && !arrivedNow) {
         arrivedNow = true
         const day = Math.floor((world.timeMin ?? 0) / 1440) + 1
-        out.push({ target: 'world', worldFlags: { arrived_oakhaven: true, arrivedDay: day } })
+        out.push({ target: 'world', worldFlags: { arrived_oakhaven: true, arrivedDay: day, arrivedOakhavenAtMin: world.timeMin } })
         for (const id of ['gulan', 'isna', 'nise', 'aurora', 'ed']) {
           const npc = world.npcs?.[id]
           if (npc && (id !== 'ed' || edNow) && npc.location === 'wilds') {
@@ -6604,16 +6700,17 @@
         out.push({ target: 'world', goldDelta: -cost })
       }
 
-      if (item.npc === 'isna' && item.kind === 'steady_work' &&
-          !world.flags?.eileen_fugitive && !oddJobUsed) {
+      if (item.npc === 'isna' && item.kind === 'steady_work') {
+        if (world.flags?.eileen_fugitive || oddJobUsed || DATA.workStart({ ...ctx, world }, DATA.WORK_TERMS.odd.minutes) === null) continue
         oddJobUsed = true
-        curGold += 15
-        const worldFlags = { playerOddJobDay: day }
+        const wage = DATA.WORK_TERMS.odd.gold
+        curGold += wage
+        const worldFlags = { ...DATA.completedWorkFlags(world), playerOddJobDay: day }
         if (curGold >= 5 && innArrears) {
           innArrears = false
           worldFlags.inn_arrears = false
         }
-        out.push({ target: 'world', goldDelta: 15, worldFlags })
+        out.push({ target: 'world', goldDelta: wage, worldFlags })
       }
 
       const add = { ...(res.add || {}) }
@@ -6655,9 +6752,7 @@
     const day = Math.floor(world.timeMin / 1440) + 1
     let curGold = Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 0
     let innArrears = Boolean(world.flags?.inn_arrears)
-    let oddJobDay = world.flags?.playerOddJobDay
-    let guildDay = Number.isFinite(world.flags?.lastGuildCommissionDay) ? world.flags.lastGuildCommissionDay : -99
-    let churchDay = Number.isFinite(world.flags?.lastChurchErrandDay) ? world.flags.lastChurchErrandDay : -99
+    let workUsed = false
     let supplyCount = world.playerState?.inventory?.find(it => it.id === 'supply' && it.custom !== true)?.count ?? 0
     const supplyCapacity = DATA.ITEM_CATALOG.supply.maxCount
 
@@ -6684,33 +6779,38 @@
       const item = economies[i]
       if (!item) continue
       if (item.op === 'work' && !world.flags?.eileen_fugitive) {
-        if (item.tier === 'odd' && ['town', 'wilds'].includes(world.playerLocation) && oddJobDay !== day) {
-          oddJobDay = day
-          pushIncome(6, { playerOddJobDay: day })
-        } else if (item.tier === 'guild_normal' && ['town', 'wilds'].includes(world.playerLocation) && (day - guildDay) >= 3) {
-          guildDay = day
-          pushIncome(28, { lastGuildCommissionDay: day })
-          if (gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3) {
-            out.push({ target: 'gulan', npcFlags: { player_guild_job_done: true } })
+        if (workUsed || !Object.hasOwn(DATA.WORK_TERMS, item.tier)) continue
+        const { minutes, gold } = DATA.WORK_TERMS[item.tier]
+        const paid = gold > 0
+        const start = DATA.workStart({ ...ctx, world }, minutes, paid)
+        if (start === null) continue
+        const workFlags = DATA.completedWorkFlags(world, paid)
+        if (item.tier === 'odd' && ['town', 'wilds'].includes(world.playerLocation)) {
+          workUsed = true
+          pushIncome(gold, { ...workFlags, playerOddJobDay: day })
+        } else if (['guild_normal', 'guild_high'].includes(item.tier) && ['town', 'wilds'].includes(world.playerLocation)) {
+          const recent = DATA.recentGuildStarts(world, start)
+          if (recent.length >= 2 || DATA.workCooldownWait(world, 'lastGuildCommission', start, 3)) continue
+          if (item.tier === 'guild_high') {
+            const gulanReady = Boolean(gulan && gulan.monitored === true && gulan.alive !== false && (gulan.stage ?? 0) < 3 && world.playerLocation === 'wilds' && gulan.location === 'wilds')
+            const isnaReady = Boolean(isna && isna.monitored === true && isna.alive !== false && (isna.stage ?? 0) < 3 && !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_captured_ed && !isna.flags?.isna_fallen_labyrinth && isna.location === world.playerLocation)
+            if (!gulanReady && !isnaReady) continue
           }
-        } else if (item.tier === 'guild_high' && ['town', 'wilds'].includes(world.playerLocation) && (day - guildDay) >= 3) {
-          const gulanReady = Boolean(gulan && gulan.monitored === true && gulan.alive !== false && (gulan.stage ?? 0) < 3 && world.playerLocation === 'wilds' && gulan.location === 'wilds')
-          const isnaReady = Boolean(isna && isna.monitored === true && isna.alive !== false && (isna.stage ?? 0) < 3 && !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_captured_ed && !isna.flags?.isna_fallen_labyrinth && isna.location === world.playerLocation)
-          if (!gulanReady && !isnaReady) continue
-          guildDay = day
-          pushIncome(48, { lastGuildCommissionDay: day })
+          workUsed = true
+          pushIncome(gold, { ...workFlags, lastGuildCommissionDay: day, lastGuildCommissionStartMin: start, guildCommissionStarts: [...recent, start] })
           if (gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3) {
             out.push({ target: 'gulan', npcFlags: { player_guild_job_done: true } })
           }
         } else if ((item.tier === 'church_paid' || item.tier === 'church_volunteer') &&
             ['church', 'wilds'].includes(world.playerLocation) &&
-            cecilia && cecilia.alive !== false && (cecilia.stage ?? 0) < 3 && (day - churchDay) >= 2) {
-          churchDay = day
-          const volunteer = item.tier === 'church_volunteer'
+            cecilia && cecilia.alive !== false && (cecilia.stage ?? 0) < 3 && !DATA.workCooldownWait(world, 'lastChurchErrand', start, 2)) {
+          workUsed = true
+          const volunteer = !paid
+          const flags = { ...workFlags, lastChurchErrandDay: day, lastChurchErrandStartMin: start }
           if (volunteer) {
-            out.push({ target: 'world', worldFlags: { lastChurchErrandDay: day } })
+            out.push({ target: 'world', worldFlags: flags })
           } else {
-            pushIncome(3, { lastChurchErrandDay: day })
+            pushIncome(gold, flags)
           }
           const fundsGain = Math.min(volunteer ? 8 : 4, Math.max(0, 100 - cecFunds))
           cecFunds += fundsGain
@@ -7997,6 +8097,7 @@
 
   const u = root.OKHBackgroundModules?.utils;
   const CFG = root.OKH_APP_CONFIG;
+  const DATA = root.OKH_APP_DATA;
   const TIME = root.OKH_APP_TIME;
   const W = root.OKH_APP_WORLD;
   if (!u || !CFG || !TIME || !W || !root.OKHBackgroundAdapter) throw Error('adapter 依赖缺失');
@@ -8100,14 +8201,15 @@
       }
     }
     if (world.flags?.arrived_oakhaven && !world.flags?.eileen_fugitive) {
-      const lastGuild = world.flags?.lastGuildCommissionDay;
-      const guildWait = Number.isFinite(lastGuild) ? Math.max(0, 3 - (day - lastGuild)) : 0;
-      lines.push('公会委托：' + (guildWait > 0 ? '冷却中（还剩 ' + guildWait + ' 天）' : '可接单（guild_normal / guild_high）'));
+      const waitText = minutes => '冷却中（约 ' + Math.ceil(minutes / 60) + ' 小时）';
+      const guildWait = DATA.workCooldownWait(world, 'lastGuildCommission', world.timeMin, 3);
+      const guildStarts = DATA.recentGuildStarts(world, world.timeMin);
+      if (DATA.paidWorkSettledToday(world)) lines.push('工作报酬：今天已结算一项，其他报酬须另日结算。');
+      lines.push('公会委托：' + (guildStarts.length >= 2 ? '近七天的两单均已用完' : guildWait > 0 ? waitText(guildWait) : '可接单（guild_normal 8 小时 / guild_high 24 小时）'));
       const cec = world.npcs?.cecilia;
       if (cec && cec.alive !== false && (cec.stage ?? 0) < 3) {
-        const lastChurch = world.flags?.lastChurchErrandDay;
-        const churchWait = Number.isFinite(lastChurch) ? Math.max(0, 2 - (day - lastChurch)) : 0;
-        lines.push('修道院委托：' + (churchWait > 0 ? '冷却中（还剩 ' + churchWait + ' 天）' : '可接取（church_paid / church_volunteer）'));
+        const churchWait = DATA.workCooldownWait(world, 'lastChurchErrand', world.timeMin, 2);
+        lines.push('修道院委托：' + (churchWait > 0 ? waitText(churchWait) : '可接取（church_paid / church_volunteer，均需 3 小时）'));
       }
     }
     if (world.flags?.ed_final_good) {
@@ -8662,6 +8764,7 @@
     let elapsed = explicitMinutes ?? (RHYTHM.useAITime ? parsed.elapsed : null) ?? 0;
     u.check(u.minute(elapsed), '推进分钟必须为非负整数');
     if (initial) elapsed = 0;
+    const workUntilMin = world.timeMin + elapsed;
     if (countMessage && !initial) {
       count++; creditedMin += elapsed;
       if (count >= RHYTHM.everyMessages) {
@@ -8669,7 +8772,7 @@
         count = 0; creditedMin = 0;
       }
     }
-    return { toMin: world.timeMin + elapsed, clockState: { count, creditedMin } };
+    return { toMin: world.timeMin + elapsed, workUntilMin, clockState: { count, creditedMin } };
   }
   async function restoreRecord(s, id) {
     const envelope = W.readEnvelope(s), record = envelope.history.find(h => h.id === id);
@@ -8692,6 +8795,7 @@
       const timeCheck = P.compareEnd(parsed, plan.toMin);
       if (timeCheck.ok === false) diagnostics.push('end 与时间真值偏差 ' + timeCheck.deviationMin + ' 分钟；未覆盖真值');
       front.clockState = plan.clockState;
+      front.workUntilMin = plan.workUntilMin;
       front.timeCheck = timeCheck;
       const during = new Set([...(world.interactingIds || []), ...P.parseInteract(text).filter(n => u.own(world.npcs, n))]);
       return {
@@ -10739,12 +10843,14 @@
   }
   async function start() {
     const world = await init();
+    root.OKH_BUBBLE_SIDE?.boot();
     const hooked = H.attach();
     if (HUD) HUD.startHud(1000);
     started = true;
     return { world, hooked, hud: Boolean(HUD), storage: info() };
   }
   async function stop() {
+    root.OKH_BUBBLE_SIDE?.stop();
     H.detach(); if (HUD) HUD.stopHud();
     await H.cancelGeneration(); started = false;
   }

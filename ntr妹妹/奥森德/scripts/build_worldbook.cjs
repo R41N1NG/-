@@ -28,7 +28,7 @@ function extractWorldbookEntries() {
     if (!fs.existsSync(filePath)) {
       throw new Error(`世界书源文件不存在: ${filePath}`);
     }
-    const content = fs.readFileSync(filePath, 'utf8');
+    const content = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
     const regex = /<!-- ENTRY (\{[\s\S]*?\}) -->\s*```(?:text|xml)?\r?\n([\s\S]*?)\r?\n```/g;
     let match;
 

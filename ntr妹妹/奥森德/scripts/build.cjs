@@ -102,9 +102,8 @@ function read(dir, name) {
   return name === 'okh_app_hud' ? inlineUiAssets(raw) : name === 'okh_app_map' ? inlineMapAssets(raw) : raw
 }
 
-// 用第一个模块的换行风格统一
-const first = read('core', CORE[0])
-const EOL = first.includes('\r\n') ? '\r\n' : '\n'
+// Hashes and generated JSON are identical across Windows and Linux checkouts.
+const EOL = '\n'
 const SEP = EOL + ';' + EOL
 
 const coreText = CORE.map(n => read('core', n).replace(/\r?\n/g, EOL)).join(SEP)
@@ -140,4 +139,7 @@ if (fs.existsSync(AUTOSTART_FILE)) {
   console.log('已生成：' + OUT_AUTO)
   console.log('自动启动版大小：' + Buffer.byteLength(autoOutput, 'utf8') + ' 字节 · SHA-256：' + autoSha)
   require('./build_card.cjs').buildCard({ runtimePath: OUT_AUTO })
+  require('./build_card_preview.cjs')
+  require('./build_album_preview.cjs')
+  require('./build_hud_preview.cjs')
 }

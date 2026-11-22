@@ -86,6 +86,7 @@
     let elapsed = explicitMinutes ?? (RHYTHM.useAITime ? parsed.elapsed : null) ?? 0;
     u.check(u.minute(elapsed), '推进分钟必须为非负整数');
     if (initial) elapsed = 0;
+    const workUntilMin = world.timeMin + elapsed;
     if (countMessage && !initial) {
       count++; creditedMin += elapsed;
       if (count >= RHYTHM.everyMessages) {
@@ -93,7 +94,7 @@
         count = 0; creditedMin = 0;
       }
     }
-    return { toMin: world.timeMin + elapsed, clockState: { count, creditedMin } };
+    return { toMin: world.timeMin + elapsed, workUntilMin, clockState: { count, creditedMin } };
   }
   async function restoreRecord(s, id) {
     const envelope = W.readEnvelope(s), record = envelope.history.find(h => h.id === id);
@@ -116,6 +117,7 @@
       const timeCheck = P.compareEnd(parsed, plan.toMin);
       if (timeCheck.ok === false) diagnostics.push('end 与时间真值偏差 ' + timeCheck.deviationMin + ' 分钟；未覆盖真值');
       front.clockState = plan.clockState;
+      front.workUntilMin = plan.workUntilMin;
       front.timeCheck = timeCheck;
       const during = new Set([...(world.interactingIds || []), ...P.parseInteract(text).filter(n => u.own(world.npcs, n))]);
       return {

@@ -11,6 +11,7 @@
 
   const u = root.OKHBackgroundModules?.utils;
   const CFG = root.OKH_APP_CONFIG;
+  const DATA = root.OKH_APP_DATA;
   const TIME = root.OKH_APP_TIME;
   const W = root.OKH_APP_WORLD;
   if (!u || !CFG || !TIME || !W || !root.OKHBackgroundAdapter) throw Error('adapter 依赖缺失');
@@ -114,14 +115,15 @@
       }
     }
     if (world.flags?.arrived_oakhaven && !world.flags?.eileen_fugitive) {
-      const lastGuild = world.flags?.lastGuildCommissionDay;
-      const guildWait = Number.isFinite(lastGuild) ? Math.max(0, 3 - (day - lastGuild)) : 0;
-      lines.push('公会委托：' + (guildWait > 0 ? '冷却中（还剩 ' + guildWait + ' 天）' : '可接单（guild_normal / guild_high）'));
+      const waitText = minutes => '冷却中（约 ' + Math.ceil(minutes / 60) + ' 小时）';
+      const guildWait = DATA.workCooldownWait(world, 'lastGuildCommission', world.timeMin, 3);
+      const guildStarts = DATA.recentGuildStarts(world, world.timeMin);
+      if (DATA.paidWorkSettledToday(world)) lines.push('工作报酬：今天已结算一项，其他报酬须另日结算。');
+      lines.push('公会委托：' + (guildStarts.length >= 2 ? '近七天的两单均已用完' : guildWait > 0 ? waitText(guildWait) : '可接单（guild_normal 8 小时 / guild_high 24 小时）'));
       const cec = world.npcs?.cecilia;
       if (cec && cec.alive !== false && (cec.stage ?? 0) < 3) {
-        const lastChurch = world.flags?.lastChurchErrandDay;
-        const churchWait = Number.isFinite(lastChurch) ? Math.max(0, 2 - (day - lastChurch)) : 0;
-        lines.push('修道院委托：' + (churchWait > 0 ? '冷却中（还剩 ' + churchWait + ' 天）' : '可接取（church_paid / church_volunteer）'));
+        const churchWait = DATA.workCooldownWait(world, 'lastChurchErrand', world.timeMin, 2);
+        lines.push('修道院委托：' + (churchWait > 0 ? waitText(churchWait) : '可接取（church_paid / church_volunteer，均需 3 小时）'));
       }
     }
     if (world.flags?.ed_final_good) {

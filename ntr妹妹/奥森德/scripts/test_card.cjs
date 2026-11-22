@@ -17,6 +17,7 @@ function display(text){for(const rule of card.data.extensions.regex_scripts){con
 test('V2 card contains the thirty-four clean standard lore entries, characters and opening with confirmed geography corrections',()=>{
  assert.equal(card.spec,'chara_card_v2');assert.equal(card.spec_version,'2.0');assert.equal(card.data.name,original.data.name);
  const entries=card.data.character_book.entries;assert.equal(entries.length,34);assert.equal(new Set(entries.map(e=>e.id)).size,34);
+ assert.equal(fs.readFileSync(path.join(ROOT,'最新角色卡/奥克赫斯.json'),'utf8'),fs.readFileSync(path.join(ROOT,'../dist/奥克赫斯.json'),'utf8'));
  const banned=['极其','极度','彻底','臣服','献祭','近乎','近乎于','绝对','尽数','不可或缺','顺从','终极','神坛'];
  for(const e of entries){assert(e.content.length>50);for(const b of banned)assert(!e.content.includes(b),`Banned word ${b} in entry ${e.comment}`);}
  assert.equal(entries.filter(e=>e.constant).length,4);
@@ -26,12 +27,13 @@ test('V2 card contains the thirty-four clean standard lore entries, characters a
  assert(card.data.first_mes.includes('<time elapsed="0" end="1日18:00" />'));
  assert(card.data.extensions.regex_scripts.some(r=>r.id==='okh-dialogue-bubble'));
  assert(card.data.description.includes('<room'));assert(card.data.description.includes('<economy'));assert(!card.data.description.includes('<injury'));
- assert.equal(card.data.extensions.okh_build.source_card_sha256,sha(originalBytes));
+ assert.equal(card.data.extensions.okh_build.source_card_sha256,sha(originalBytes.toString('utf8').replace(/\r\n/g,'\n')));
 });
 test('the character extension contains exactly one enabled native Tavern Helper script identical to the current standalone build',()=>{
  const helper=card.data.extensions.tavern_helper;assert.deepEqual(helper.variables,{});assert.equal(helper.scripts.length,1);
  assert.equal(script.type,'script');assert.equal(script.enabled,true);assert.equal(script.id,'okh-complete-autostart');assert.equal(script.button.enabled,false);
  assert.equal(script.content,fs.readFileSync(path.join(ROOT,'dist/okh_complete_autostart.js'),'utf8'));
+ assert.equal(script.content,fs.readFileSync(path.join(ROOT,'../dist/okh_complete_autostart.js'),'utf8'));
  assert.equal(card.data.extensions.okh_build.runtime_sha256,sha(script.content));assert(!script.content.includes('__OKH_MAP_REGION__'));
  assert.equal(JSON.parse(JSON.stringify(card)).data.extensions.tavern_helper.scripts[0].content,script.content);
 });

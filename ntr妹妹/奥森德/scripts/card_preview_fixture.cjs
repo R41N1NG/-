@@ -12,8 +12,14 @@ const previewCard=JSON.parse(document.getElementById('card-payload').textContent
 const listeners=new Map(),variables=new Map(),prompts=new Map();
 window.previewContext={chatId:'card-import-preview',chat:[{is_user:false,is_system:false,mes:previewCard.data.first_mes}],event_types:{GENERATION_STARTED:'GENERATION_STARTED',MESSAGE_RECEIVED:'MESSAGE_RECEIVED',MESSAGE_EDITED:'MESSAGE_EDITED',MESSAGE_DELETED:'MESSAGE_DELETED',MESSAGE_SWIPED:'MESSAGE_SWIPED',GENERATION_STOPPED:'GENERATION_STOPPED',CHAT_CHANGED:'CHAT_CHANGED'},setExtensionPrompt:(id,text)=>{prompts.set(id,text);return true}};
 window.SillyTavern={getContext:()=>previewContext};
-function display(text){for(const r of previewCard.data.extensions.regex_scripts){const end=r.findRegex.lastIndexOf('/');text=text.replace(new RegExp(r.findRegex.slice(1,end),r.findRegex.slice(end+1)),r.replaceString)}return text}
-function renderMessage(index){const msg=previewContext.chat[index],el=document.createElement('section');el.className='mes';el.setAttribute('is_user',String(!!msg.is_user));el.setAttribute('mesid',String(index));const body=document.createElement('div');body.className='mes_text';const narrative=document.createElement('div');narrative.className='narrative';narrative.textContent=display(msg.mes).trim();body.append(narrative);el.append(body);document.getElementById('chat').append(el)}
+function display(text){
+ const rules=previewCard.data.extensions.regex_scripts.filter(r=>!r.disabled);
+ const apply=(value,rule)=>{const end=rule.findRegex.lastIndexOf('/');return value.replace(new RegExp(rule.findRegex.slice(1,end),rule.findRegex.slice(end+1)),rule.replaceString)};
+ const clean=rules.filter(r=>r.id!=='okh-dialogue-bubble').reduce(apply,text);
+ const escaped=clean.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[c]);
+ return rules.filter(r=>r.id==='okh-dialogue-bubble').reduce(apply,escaped);
+}
+function renderMessage(index){const msg=previewContext.chat[index],el=document.createElement('section');el.className='mes';el.setAttribute('is_user',String(!!msg.is_user));el.setAttribute('mesid',String(index));const body=document.createElement('div');body.className='mes_text';const narrative=document.createElement('div');narrative.className='narrative';narrative.innerHTML=display(msg.mes).trim();body.append(narrative);el.append(body);document.getElementById('chat').append(el)}
 renderMessage(0);
 window.cardWorld=()=>document.getElementById('card-helper').contentWindow.OKH_APP.world();
 window.cardListenerCounts=()=>Object.fromEntries([...listeners].map(([key,set])=>[key,set.size]));

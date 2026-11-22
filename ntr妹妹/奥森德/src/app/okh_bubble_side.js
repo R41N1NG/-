@@ -40,14 +40,15 @@
   const PLAYER_KEY = '__player__';
   const MAX_BYTES = 20 * 1024 * 1024;
   const DONE = 'data-okh-ava-done';
-  const OVERLAY = 'data-okh-ava-zoom';
+  const CLEANUP = '__OKH_BUBBLE_CLEANUP__';
   let ME = '';
-  let observer = null;
+  let mountedDocuments = [];
+  const observers = [];
   let timer = null;
   let poll = null;
   let returnFocus = null;
   let pendingInput = null;
-  let alive = true;
+  let alive = false;
 
   // 预置主要人物头像（可留空使用首字，支持后续直接填入 Data URI 或图床链接）
   const DEFAULT_AVATARS = {
@@ -126,7 +127,7 @@
   }
 
   function injectGlobalStyles() {
-    const docs = getTargetDocuments();
+    const docs = mountedDocuments;
     const css = `
       .okh-dlg-row {
         display: flex !important;
@@ -346,6 +347,7 @@
   }
 
   function apply(scope) {
+    if (!alive) return;
     injectGlobalStyles();
     ME = playerName();
     const docs = scope ? [scope] : getTargetDocuments();
@@ -456,7 +458,7 @@
   }
 
   function closeZoom() {
-    const docs = getTargetDocuments();
+    const docs = mountedDocuments;
     for (const doc of docs) {
       const modal = doc?.getElementById('okh-bubble-modal');
       if (modal) modal.classList.remove('active');
@@ -530,10 +532,12 @@
       const reader = new FileReader();
       reader.onerror = () => fail('读取图片失败，请重试。');
       reader.onload = () => {
+        if (!alive || pendingInput !== input) return;
         const rawUrl = String(reader.result || '');
         const probe = new Image();
         probe.onerror = () => fail('图片解码失败，请换一张图片。');
         probe.onload = () => {
+          if (!alive || pendingInput !== input) return;
           try {
             const scale = Math.min(1, 768 / Math.max(probe.naturalWidth, probe.naturalHeight));
             const canvas = doc.createElement('canvas');
@@ -581,13 +585,20 @@
   }
 
   function boot() {
-    injectGlobalStyles();
+    const docs = getTargetDocuments().filter(doc => doc?.body);
+    if (alive || !docs.length) return;
+    const previous = new Set(docs.map(doc => doc[CLEANUP]));
+    for (const cleanup of previous) if (typeof cleanup === 'function') cleanup();
+    alive = true;
+    mountedDocuments = docs;
+    for (const doc of docs) {
+      doc[CLEANUP] = stop;
+      doc.getElementById('okh-bubble-modal')?.remove();
+    }
     apply();
     ensureModal();
 
-    const docs = getTargetDocuments();
     for (const doc of docs) {
-      if (!doc) continue;
       doc.addEventListener('click', onAvatarClick, true);
       doc.addEventListener('keydown', onAvatarClick, true);
       doc.addEventListener('keydown', onGlobalKeyDown, true);
@@ -601,6 +612,7 @@
           }, 40);
         });
         obs.observe(doc.body, { childList: true, subtree: true });
+        observers.push(obs);
       }
     }
 
@@ -611,11 +623,35 @@
     }
   }
 
+  function stop() {
+    if (!alive) return;
+    alive = false;
+    for (const observer of observers.splice(0)) observer.disconnect();
+    if (timer !== null) clearTimeout(timer);
+    if (poll !== null) clearInterval(poll);
+    timer = poll = null;
+    pendingInput?.remove();
+    pendingInput = null;
+    returnFocus = null;
+    for (const doc of mountedDocuments) {
+      doc.removeEventListener('click', onAvatarClick, true);
+      doc.removeEventListener('keydown', onAvatarClick, true);
+      doc.removeEventListener('keydown', onGlobalKeyDown, true);
+      if (doc[CLEANUP] !== stop) continue;
+      delete doc[CLEANUP];
+      doc.getElementById('okh-bubble-modal')?.remove();
+      doc.getElementById('okh-bubble-style')?.remove();
+      for (const avatar of doc.querySelectorAll(`[${DONE}]`)) avatar.removeAttribute(DONE);
+    }
+    mountedDocuments = [];
+  }
+
   // 立即在当前执行阶段启动，秒级接管开场白和现有 DOM
   boot();
 
   root.OKH_BUBBLE_SIDE = Object.freeze({
     boot,
+    stop,
     apply,
     refreshAvatars,
     openZoom,

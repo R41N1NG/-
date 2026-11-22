@@ -29,12 +29,14 @@
   }
   async function start() {
     const world = await init();
+    root.OKH_BUBBLE_SIDE?.boot();
     const hooked = H.attach();
     if (HUD) HUD.startHud(1000);
     started = true;
     return { world, hooked, hud: Boolean(HUD), storage: info() };
   }
   async function stop() {
+    root.OKH_BUBBLE_SIDE?.stop();
     H.detach(); if (HUD) HUD.stopHud();
     await H.cancelGeneration(); started = false;
   }

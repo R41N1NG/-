@@ -283,11 +283,11 @@ async function runTests() {
     wSw.timeMin = DAY(4, 6);
 
     wSw = OKHBackground.advance(wSw, {
-      id: 'sw1', revision: 'r3', toMin: DAY(4, 15), interactingIds: [],
+      id: 'sw1', revision: 'r3', toMin: DAY(4, 15), interactingIds: ['isna'],
       front: {
         playerLocation: 'wilds', playerLocationAt: 'start',
         npcs: { isna: { location: 'wilds', locationAt: 'start' } },
-        bonds: [{ npc: 'isna', kind: 'steady_work', at: 'start' }]
+        bonds: [{ npc: 'isna', kind: 'steady_work', at: 'end' }]
       }
     }, cfg).state;
     assert.strictEqual(wSw.npcs.isna.values.gold_desire, 26);
@@ -896,12 +896,12 @@ async function runTests() {
     w0.playerLocation = 'town';
     w0.npcs.nise.location = 'town';
     w0.npcs.isna.location = 'town';
-    w0.timeMin = DAY(2, 9);
+    w0.timeMin = DAY(2, 8);
     const f3 = OKH_APP_PARSE.buildFront(
       '<status_bar><bond npc="nise" kind="escort" at="start" /><bond npc="nise" kind="guide" item="炼金风标" /><bond npc="isna" kind="steady_work" /><bond npc="isna" kind="steady_work" /></status_bar>',
-      DAY(2, 11), w0, { config: cfg, locations: OKH_APP_CONFIG.LOCATIONS }
+      DAY(2, 14), w0, { config: cfg, locations: OKH_APP_CONFIG.LOCATIONS }
     );
-    w0 = OKHBackground.advance(w0, { id: 'b3', revision: 'r3', toMin: DAY(2, 11), interactingIds: [], front: f3 }, cfg).state;
+    w0 = OKHBackground.advance(w0, { id: 'b3', revision: 'r3', toMin: DAY(2, 14), interactingIds: ['isna'], front: f3 }, cfg).state;
     assert.strictEqual(w0.npcs.isna.values.affection, 63, 'steady_work only counts once per day (+2) even after afternoon boundary');
     assert.strictEqual(w0.npcs.nise.flags.nise_escort_today, true);
     assert.strictEqual(w0.npcs.nise.flags.nise_browsed_today, false, 'escort prevents solo town browse on Day 2');
@@ -1702,62 +1702,64 @@ async function runTests() {
     assert(OKH_APP_HUD.buildHudHtml(w).includes('旅店欠账'), 'HUD displays inn arrears tag');
     assert(OKH_APP_ADAPTER.buildLedger(w).includes('持有金币：0 金'), 'Ledger displays current gold');
 
-    // (b) Consumable bond blocked while arrears/low gold; steady_work earns +15 and clears inn_arrears
+    // (b) Consumable bond blocked while arrears/low gold; steady_work earns +6 and clears inn_arrears
     const affBeforeArrears = w.npcs.aurora.values.affection;
     w = stepFront(w, 'e_gift_fail', DAY(11, 10), '<status_bar><bond npc="aurora" kind="gift"/></status_bar>');
     assert.strictEqual(w.npcs.aurora.values.affection, affBeforeArrears, 'Arrears at inn blocks consumable gift');
 
-    w = stepFront(w, 'e_steady', DAY(11, 11),
-      '<status_bar><move to="town"/><move npc="isna" to="town"/><bond npc="isna" kind="steady_work"/></status_bar>');
-    assert.strictEqual(w.playerState.gold, 15, 'steady_work grants +15 gold odd-job wage');
+    w = stepFront(w, 'e_steady', DAY(11, 16),
+      '<status_bar><move to="town" at="start"/><move npc="isna" to="town" at="start"/><interact npc="isna"/><bond npc="isna" kind="steady_work"/></status_bar>');
+    assert.strictEqual(w.playerState.gold, 6, 'steady_work grants the 6 gold odd-job wage');
     assert.strictEqual(w.flags.inn_arrears, false, 'Earning >=5 gold clears inn_arrears');
     assert.strictEqual(w.flags.playerOddJobDay, 11);
 
     // Same-day odd job blocked (quota shared with steady_work)
-    w = stepFront(w, 'e_odd_dup', DAY(11, 12), '<status_bar><economy op="work" tier="odd"/></status_bar>');
-    assert.strictEqual(w.playerState.gold, 15, 'Daily odd job quota is shared with isna steady_work');
+    w = stepFront(w, 'e_odd_dup', DAY(11, 22), '<status_bar><economy op="work" tier="odd"/></status_bar>');
+    assert.strictEqual(w.playerState.gold, 6, 'Daily odd job quota is shared with isna steady_work');
 
     // Now gift works (-2 gold) and rejects numeric cheat attributes in parser
-    assert.throws(() => sb.OKH_APP_PARSE.buildFront('<status_bar><economy op="work" tier="odd" gold="999"/></status_bar>', DAY(11, 12), w, { config: cfg }));
-    w = stepFront(w, 'e_gift_ok', DAY(11, 13), '<status_bar><move to="inn"/><move npc="aurora" to="inn"/><bond npc="aurora" kind="gift"/></status_bar>');
-    assert.strictEqual(w.playerState.gold, 13, 'aurora.gift deducts -2 gold cleanly');
+    assert.throws(() => sb.OKH_APP_PARSE.buildFront('<status_bar><economy op="work" tier="odd" gold="999"/></status_bar>', DAY(11, 22), w, { config: cfg }));
+    w = stepFront(w, 'e_gift_ok', DAY(11, 22, 30), '<status_bar><move to="inn"/><move npc="aurora" to="inn"/><bond npc="aurora" kind="gift"/></status_bar>');
+    assert.strictEqual(w.playerState.gold, 4, 'aurora.gift deducts -2 gold cleanly');
 
     // (c) guild_normal (+28, 3d cooldown, sets player_guild_job_done) & guild_high deterministic replay
-    w = stepFront(w, 'e_gn1', DAY(12, 10), '<status_bar><move to="town"/><economy op="work" tier="guild_normal"/></status_bar>');
-    // Day 11->12 midnight at inn deducted -5 lodging (13->8), then moved to town +28 = 36
-    assert.strictEqual(w.playerState.gold, 36, 'guild_normal grants +28 gold after lodging');
+    w = stepFront(w, 'e_gn1', DAY(12, 16), '<status_bar><move to="town" at="12日08:00"/><economy op="work" tier="guild_normal"/></status_bar>');
+    // Spend the remaining 4 at midnight, then earn 28 after eight hours of work.
+    assert.strictEqual(w.playerState.gold, 28, 'guild_normal grants +28 gold after lodging');
     assert.strictEqual(w.npcs.gulan.flags.player_guild_job_done, true, 'guild_normal sets player_guild_job_done');
     // Day 12->13 stayed in town (non-inn): lodging NOT double-charged, supply consumed instead; guild_normal blocked by cooldown
-    w = stepFront(w, 'e_gn_cd', DAY(13, 10), '<status_bar><economy op="work" tier="guild_normal"/></status_bar>');
-    assert.strictEqual(w.playerState.gold, 36, 'guild_normal on cooldown rejected; non-inn midnight does not charge lodging');
+    w = stepFront(w, 'e_gn_cd', DAY(13, 16), '<status_bar><economy op="work" tier="guild_normal"/></status_bar>');
+    assert.strictEqual(w.playerState.gold, 28, 'guild_normal on cooldown rejected; non-inn midnight does not charge lodging');
 
-    // High-risk commission: town without Isna blocked even if Gulan in wilds; Gulan in wilds unlocks +48 & deterministic roll
+    // Run both high-risk branches from the same state with a full 24-hour work window.
     w.flags.lastGuildCommissionDay = null;
+    w.flags.lastGuildCommissionStartMin = null;
+    w.flags.guildCommissionStarts = [];
     w.npcs.isna.location = 'inn';
     w.npcs.gulan.location = 'wilds';
-    const goldBeforeHighFail = w.playerState.gold;
-    w = stepFront(w, 'e_gh_fail', DAY(13, 11), '<status_bar><move to="town"/><economy op="work" tier="guild_high"/></status_bar>');
-    assert.strictEqual(w.playerState.gold, goldBeforeHighFail, 'guild_high at town without Isna rejected');
+    const goldBeforeHigh = w.playerState.gold;
+    const fail = stepFront(w, 'e_gh_fail', DAY(14, 16), '<status_bar><interact npc="isna"/><economy op="work" tier="guild_high"/></status_bar>');
+    assert.strictEqual(fail.playerState.gold, goldBeforeHigh, 'Full hours do not waive the high-risk companion requirement');
 
     w.npcs.gulan.flags.player_guild_job_done = false;
-    const wPreHigh = sb.OKHBackgroundModules.utils.clone(w);
-    const wHighA = stepFront(wPreHigh, 'e_gh_ok', DAY(13, 12), '<status_bar><move to="wilds"/><economy op="work" tier="guild_high"/></status_bar>');
-    const wHighB = stepFront(wPreHigh, 'e_gh_ok', DAY(13, 12), '<status_bar><move to="wilds"/><economy op="work" tier="guild_high"/></status_bar>');
-    assert.strictEqual(wHighA.playerState.gold, goldBeforeHighFail + 48, 'guild_high with Gulan at wilds pays +48');
+    const high = '<status_bar><move to="wilds" at="start"/><interact npc="gulan"/><economy op="work" tier="guild_high"/></status_bar>';
+    const wHighA = stepFront(w, 'e_gh_ok', DAY(14, 16), high);
+    const wHighB = stepFront(w, 'e_gh_ok', DAY(14, 16), high);
+    assert.strictEqual(wHighA.playerState.gold, goldBeforeHigh + 48, 'guild_high with Gulan in the wilds pays 48 gold');
     assert.strictEqual(wHighA.npcs.gulan.flags.player_guild_job_done, true);
+    assert.deepStrictEqual(wHighA, wHighB);
 
-    // (d) Repay Aurora debt (10 gold/pt) -> triggers aurora_debt_cleared_quit in same turn; plus bounties & migrate
-    w = wHighA;
+    // Use the original branch for the debt and bounty checks.
     w.playerState.gold = 350;
     w.npcs.aurora.values.debt_pressure = 20;
     w.npcs.aurora.values.affection = 85;
     w.npcs.aurora.flags.aurora_debt_disclosed = true;
     w.npcs.aurora.flags.manor_service_active = true;
     w.npcs.aurora.location = 'inn';
-    w = stepFront(w, 'e_rep_part', DAY(13, 14), '<status_bar><move to="inn"/><economy op="repay" npc="aurora" tier="part"/></status_bar>');
+    w = stepFront(w, 'e_rep_part', DAY(13, 16, 15), '<status_bar><move to="inn"/><economy op="repay" npc="aurora" tier="part"/></status_bar>');
     assert.strictEqual(w.playerState.gold, 250, 'part repay 10 pts costs 100 gold');
     assert.strictEqual(w.npcs.aurora.values.debt_pressure, 10);
-    w = stepFront(w, 'e_rep_all', DAY(13, 15), '<status_bar><economy op="repay" npc="aurora" tier="all"/></status_bar>');
+    w = stepFront(w, 'e_rep_all', DAY(13, 16, 30), '<status_bar><economy op="repay" npc="aurora" tier="all"/></status_bar>');
     assert.strictEqual(w.playerState.gold, 150, 'all repay clears remaining 10 pts (100 gold)');
     assert.strictEqual(w.npcs.aurora.values.debt_pressure, 0);
     assert.strictEqual(w.npcs.aurora.flags.aurora_debt_cleared, true);
@@ -1766,7 +1768,7 @@ async function runTests() {
 
     // Orc camp bounty (+300) + Lancaster purge (+1000) one-time payouts
     w.flags.orc_camp_destroyed = true;
-    w = stepFront(w, 'e_bounty', DAY(13, 16), '<status_bar><time elapsed="10" end="13日16:10"/></status_bar>');
+    w = stepFront(w, 'e_bounty', DAY(13, 16, 40), '<status_bar><time elapsed="10" end="13日16:10"/></status_bar>');
     assert.strictEqual(w.playerState.gold, 450);
     assert.strictEqual(w.flags.orc_camp_bounty_paid, true);
     w.flags.eileen_signal_fired = true;
@@ -1802,7 +1804,7 @@ async function runTests() {
     // (a) Errands (2d cooldown: paid vs volunteer), 7 bonds & donate affection cap at 70 + 3 sequential NSFW rewards
     let w = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
     assert.strictEqual(w.npcs.cecilia.values.orphanage_funds, 50);
-    w = stepFront(w, 'c_arr', DAY(2, 10), '<status_bar><prologue_step flag="arrived_oakhaven"/><move to="church"/></status_bar>');
+    w = stepFront(w, 'c_arr', DAY(2, 8), '<status_bar><prologue_step flag="arrived_oakhaven"/><move to="church"/></status_bar>');
     w.playerState.gold = 500;
     w = stepFront(w, 'c_paid', DAY(2, 11), '<status_bar><economy op="work" tier="church_paid"/></status_bar>');
     assert.strictEqual(w.playerState.gold, 503);
@@ -2186,8 +2188,8 @@ async function runTests() {
     assert.strictEqual(wAbd.npcs.gulan.location, 'wilds', 'Abducted Gulan does not execute return_inn at night');
   });
 
-  // 23. Ed wagon rescue, camp awakening, arrival custody (+250g), chores, funeral return & uncle betrayal permanent join
-  await test('23. Ed wagon rescue, camp awakening, arrival custody (+250g), chores, funeral return & uncle betrayal permanent join', async () => {
+  // 23. Ed wagon rescue, camp awakening, arrival custody (+10g), chores, funeral return & uncle betrayal permanent join
+  await test('23. Ed wagon rescue, camp awakening, arrival custody (+10g), chores, funeral return & uncle betrayal permanent join', async () => {
     const sb = createSandbox();
     const { OKHBackground, OKH_APP_CONFIG } = sb;
     const cfg = OKH_APP_CONFIG.buildConfig();
@@ -2221,7 +2223,7 @@ async function runTests() {
     assert.strictEqual(w.flags.arrived_oakhaven, false, 'Must NOT auto-teleport arrival by day count');
     assert.strictEqual(w.playerLocation, 'wilds');
 
-    // 玩家实际于第 6 天申报抵镇并入住旅店 -> 自动触发珠宝铺交接 (+250g) 与 3 天托付，所有后续节点按 arrivedDay=6 顺延
+    // 玩家实际于第 6 天申报抵镇并入住旅店 -> 自动触发珠宝铺交接 (+10g) 与 3 天托付，所有后续节点按 arrivedDay=6 顺延
     const goldBefore = w.playerState.gold;
     w = stepFront(w, 'ed_t3', DAY(6, 15, 0), '<status_bar><prologue_step flag="arrived_oakhaven"/><move to="inn"/><time elapsed="1346"/></status_bar>');
     assert.strictEqual(w.flags.arrived_oakhaven, true);
@@ -2395,8 +2397,8 @@ async function runTests() {
     const job1Key = JSON.stringify(['event', 'ed_intercept_job_1', null]);
     assert.strictEqual(w.bg.eventStates[job1Key]?.status, 'pending', 'Afternoon in town triggers ed_intercept_job_1');
     const goldBeforeJob = w.playerState.gold;
-    w = stepFront(w, 'ed_d_job1_res', DAY(12, 14, 0),
-      '<status_bar><time elapsed="60"/><event_resolve id="ed_intercept_job_1" outcome="negotiate_teach"/></status_bar>');
+    w = stepFront(w, 'ed_d_job1_res', DAY(12, 16, 0),
+      '<status_bar><time elapsed="180"/><event_resolve id="ed_intercept_job_1" outcome="negotiate_teach"/></status_bar>');
     assert.strictEqual(w.playerState.gold, goldBeforeJob + 12, 'negotiate_teach awards variant gold + 2');
     assert.strictEqual(w.npcs.ed.flags.ed_teach_count, 2, 'negotiate_teach increments ed_teach_count to 2');
     assert.strictEqual(w.flags.edInterceptSlot, 1);
@@ -2404,7 +2406,7 @@ async function runTests() {
     // 3) 跨第 12→13 午夜：应免扣宿费且核销 inn_free_pass_today；跨第 13→14 午夜：恢复正常扣 5 金
     const goldBeforeNight12 = w.playerState.gold;
     w = stepFront(w, 'ed_d_night12', DAY(13, 8, 0),
-      '<status_bar><move to="inn"/><time elapsed="1080"/></status_bar>');
+      '<status_bar><move to="inn" at="start"/><time elapsed="960"/></status_bar>');
     assert.strictEqual(w.playerState.gold, goldBeforeNight12, 'inn_free_pass_today waives 5g lodging on night 12');
     assert.strictEqual(w.flags.inn_free_pass_today, false, 'inn_free_pass_today consumed after 1 night');
 
@@ -2417,7 +2419,7 @@ async function runTests() {
       '<status_bar><time elapsed="1440"/></status_bar>');
     assert.strictEqual(w.playerState.gold, goldBeforeNight12 - 5, 'Next night resumes normal -5g lodging');
 
-    // 4) Day 15（满 3 日冷却）携爱德赴 town 触发槽位一变体 2 (ed_intercept_job_2, +35g)，并用 teach_skills 达第 3 次解锁 ed_stealth_ready
+    // 4) Day 15（满 3 日冷却）携爱德赴 town 触发槽位一变体 2 (ed_intercept_job_2, +9g)，并用 teach_skills 达第 3 次解锁 ed_stealth_ready
     w = stepFront(w, 'ed_d_day15', DAY(15, 11, 0),
       '<status_bar><move to="town"/><move npc="ed" to="town"/><time elapsed="1620"/><bond npc="ed" kind="teach_skills"/></status_bar>');
     assert.strictEqual(w.npcs.ed.flags.ed_teach_count, 3);
@@ -2425,11 +2427,12 @@ async function runTests() {
     assert.strictEqual(w.flags.ed_stealth_ready, true, '3rd teach unlocks ed_stealth_ready on world');
     assert(OKH_APP_HUD.buildHudHtml(w).includes('已掌握潜行放哨'), 'HUD reflects unlocked stealth milestone');
 
+    w = stepFront(w, 'ed_d_job2_trig', DAY(15, 13), '<status_bar><time elapsed="120"/></status_bar>');
     const job2Key = JSON.stringify(['event', 'ed_intercept_job_2', null]);
     assert.strictEqual(w.bg.eventStates[job2Key]?.status, 'pending', 'Day 15 rotates to variant 2 ed_intercept_job_2');
     const goldBeforeJob2 = w.playerState.gold;
-    w = stepFront(w, 'ed_d_job2_res', DAY(15, 12, 0),
-      '<status_bar><time elapsed="60"/><event_resolve id="ed_intercept_job_2" outcome="accept_direct"/></status_bar>');
+    w = stepFront(w, 'ed_d_job2_res', DAY(15, 15, 0),
+      '<status_bar><time elapsed="120"/><event_resolve id="ed_intercept_job_2" outcome="accept_direct"/></status_bar>');
     assert.strictEqual(w.playerState.gold, goldBeforeJob2 + 9, 'Variant 2 accept_direct awards +9g');
     assert.strictEqual(w.flags.edInterceptSlot, 2, 'Slot advances to 2 for next rotation');
   });
@@ -2516,7 +2519,7 @@ async function runTests() {
     w = stepFront(w, 'alice_end', DAY(18, 10, 10), '<status_bar><time elapsed="10"/></status_bar>');
     assert.strictEqual(countOf(w, 'alice_ledger'), 0, 'alice_rescue_resolve removes alice_ledger');
 
-    // Ed perk 3 grants +5 supply; intercept 4 grants +30g & +1 supply (Day 19 >= 16+3 cooldown cleared)
+    // Ed perk 3 grants +5 supply; intercept 4 grants +8g & +1 supply (Day 19 >= 16+3 cooldown cleared)
     w.flags.edPerkSlot = 2;
     w.flags.edInterceptSlot = 3;
     w.playerLocation = 'inn';
@@ -2533,7 +2536,7 @@ async function runTests() {
     const goldBeforeInt4 = w.playerState.gold;
     const supBeforeInt4 = countOf(w, 'supply');
     w = stepFront(w, 'int4_trig', DAY(19, 11, 10), '<status_bar><time elapsed="10"/></status_bar>');
-    w = stepFront(w, 'int4_res', DAY(19, 11, 20), '<status_bar><time elapsed="10"/><event_resolve id="ed_intercept_job_4" outcome="accept_direct"/></status_bar>');
+    w = stepFront(w, 'int4_res', DAY(19, 12, 10), '<status_bar><time elapsed="60"/><event_resolve id="ed_intercept_job_4" outcome="accept_direct"/></status_bar>');
     assert.strictEqual(w.playerState.gold, goldBeforeInt4 + 8, 'ed_intercept_job_4 awards +8g');
     assert.strictEqual(countOf(w, 'supply'), supBeforeInt4 + 1, 'ed_intercept_job_4 also awards +1 supply');
 
@@ -2546,8 +2549,8 @@ async function runTests() {
     w.npcs.aurora.flags.aurora_left_manor = false;
     w.npcs.aurora.values.affection = 85;
     w.npcs.aurora.location = 'town';
-    w = stepFront(w, 'manor_intel_trig', DAY(19, 12, 0), '<status_bar><time elapsed="40"/></status_bar>');
-    w = stepFront(w, 'manor_intel_res', DAY(19, 12, 10), '<status_bar><time elapsed="10"/><event_resolve id="aurora_pass_manor_intel" npc="aurora" outcome="receive_intel"/></status_bar>');
+    w = stepFront(w, 'manor_intel_trig', DAY(19, 12, 20), '<status_bar><time elapsed="10"/></status_bar>');
+    w = stepFront(w, 'manor_intel_res', DAY(19, 12, 30), '<status_bar><time elapsed="10"/><event_resolve id="aurora_pass_manor_intel" npc="aurora" outcome="receive_intel"/></status_bar>');
     assert.strictEqual(countOf(w, 'manor_intel_note'), 1, 'aurora_pass_manor_intel grants manor_intel_note');
     w.npcs.eileen.values.counterattack = 100;
     w = stepFront(w, 'tube_trig', DAY(19, 13, 0), '<status_bar><time elapsed="50"/></status_bar>');

@@ -94,7 +94,7 @@
       } else if (flag === 'arrived_oakhaven' && !arrivedNow) {
         arrivedNow = true
         const day = Math.floor((world.timeMin ?? 0) / 1440) + 1
-        out.push({ target: 'world', worldFlags: { arrived_oakhaven: true, arrivedDay: day } })
+        out.push({ target: 'world', worldFlags: { arrived_oakhaven: true, arrivedDay: day, arrivedOakhavenAtMin: world.timeMin } })
         for (const id of ['gulan', 'isna', 'nise', 'aurora', 'ed']) {
           const npc = world.npcs?.[id]
           if (npc && (id !== 'ed' || edNow) && npc.location === 'wilds') {
@@ -391,16 +391,17 @@
         out.push({ target: 'world', goldDelta: -cost })
       }
 
-      if (item.npc === 'isna' && item.kind === 'steady_work' &&
-          !world.flags?.eileen_fugitive && !oddJobUsed) {
+      if (item.npc === 'isna' && item.kind === 'steady_work') {
+        if (world.flags?.eileen_fugitive || oddJobUsed || DATA.workStart({ ...ctx, world }, DATA.WORK_TERMS.odd.minutes) === null) continue
         oddJobUsed = true
-        curGold += 15
-        const worldFlags = { playerOddJobDay: day }
+        const wage = DATA.WORK_TERMS.odd.gold
+        curGold += wage
+        const worldFlags = { ...DATA.completedWorkFlags(world), playerOddJobDay: day }
         if (curGold >= 5 && innArrears) {
           innArrears = false
           worldFlags.inn_arrears = false
         }
-        out.push({ target: 'world', goldDelta: 15, worldFlags })
+        out.push({ target: 'world', goldDelta: wage, worldFlags })
       }
 
       const add = { ...(res.add || {}) }
@@ -442,9 +443,7 @@
     const day = Math.floor(world.timeMin / 1440) + 1
     let curGold = Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 0
     let innArrears = Boolean(world.flags?.inn_arrears)
-    let oddJobDay = world.flags?.playerOddJobDay
-    let guildDay = Number.isFinite(world.flags?.lastGuildCommissionDay) ? world.flags.lastGuildCommissionDay : -99
-    let churchDay = Number.isFinite(world.flags?.lastChurchErrandDay) ? world.flags.lastChurchErrandDay : -99
+    let workUsed = false
     let supplyCount = world.playerState?.inventory?.find(it => it.id === 'supply' && it.custom !== true)?.count ?? 0
     const supplyCapacity = DATA.ITEM_CATALOG.supply.maxCount
 
@@ -471,33 +470,38 @@
       const item = economies[i]
       if (!item) continue
       if (item.op === 'work' && !world.flags?.eileen_fugitive) {
-        if (item.tier === 'odd' && ['town', 'wilds'].includes(world.playerLocation) && oddJobDay !== day) {
-          oddJobDay = day
-          pushIncome(6, { playerOddJobDay: day })
-        } else if (item.tier === 'guild_normal' && ['town', 'wilds'].includes(world.playerLocation) && (day - guildDay) >= 3) {
-          guildDay = day
-          pushIncome(28, { lastGuildCommissionDay: day })
-          if (gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3) {
-            out.push({ target: 'gulan', npcFlags: { player_guild_job_done: true } })
+        if (workUsed || !Object.hasOwn(DATA.WORK_TERMS, item.tier)) continue
+        const { minutes, gold } = DATA.WORK_TERMS[item.tier]
+        const paid = gold > 0
+        const start = DATA.workStart({ ...ctx, world }, minutes, paid)
+        if (start === null) continue
+        const workFlags = DATA.completedWorkFlags(world, paid)
+        if (item.tier === 'odd' && ['town', 'wilds'].includes(world.playerLocation)) {
+          workUsed = true
+          pushIncome(gold, { ...workFlags, playerOddJobDay: day })
+        } else if (['guild_normal', 'guild_high'].includes(item.tier) && ['town', 'wilds'].includes(world.playerLocation)) {
+          const recent = DATA.recentGuildStarts(world, start)
+          if (recent.length >= 2 || DATA.workCooldownWait(world, 'lastGuildCommission', start, 3)) continue
+          if (item.tier === 'guild_high') {
+            const gulanReady = Boolean(gulan && gulan.monitored === true && gulan.alive !== false && (gulan.stage ?? 0) < 3 && world.playerLocation === 'wilds' && gulan.location === 'wilds')
+            const isnaReady = Boolean(isna && isna.monitored === true && isna.alive !== false && (isna.stage ?? 0) < 3 && !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_captured_ed && !isna.flags?.isna_fallen_labyrinth && isna.location === world.playerLocation)
+            if (!gulanReady && !isnaReady) continue
           }
-        } else if (item.tier === 'guild_high' && ['town', 'wilds'].includes(world.playerLocation) && (day - guildDay) >= 3) {
-          const gulanReady = Boolean(gulan && gulan.monitored === true && gulan.alive !== false && (gulan.stage ?? 0) < 3 && world.playerLocation === 'wilds' && gulan.location === 'wilds')
-          const isnaReady = Boolean(isna && isna.monitored === true && isna.alive !== false && (isna.stage ?? 0) < 3 && !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_captured_ed && !isna.flags?.isna_fallen_labyrinth && isna.location === world.playerLocation)
-          if (!gulanReady && !isnaReady) continue
-          guildDay = day
-          pushIncome(48, { lastGuildCommissionDay: day })
+          workUsed = true
+          pushIncome(gold, { ...workFlags, lastGuildCommissionDay: day, lastGuildCommissionStartMin: start, guildCommissionStarts: [...recent, start] })
           if (gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3) {
             out.push({ target: 'gulan', npcFlags: { player_guild_job_done: true } })
           }
         } else if ((item.tier === 'church_paid' || item.tier === 'church_volunteer') &&
             ['church', 'wilds'].includes(world.playerLocation) &&
-            cecilia && cecilia.alive !== false && (cecilia.stage ?? 0) < 3 && (day - churchDay) >= 2) {
-          churchDay = day
-          const volunteer = item.tier === 'church_volunteer'
+            cecilia && cecilia.alive !== false && (cecilia.stage ?? 0) < 3 && !DATA.workCooldownWait(world, 'lastChurchErrand', start, 2)) {
+          workUsed = true
+          const volunteer = !paid
+          const flags = { ...workFlags, lastChurchErrandDay: day, lastChurchErrandStartMin: start }
           if (volunteer) {
-            out.push({ target: 'world', worldFlags: { lastChurchErrandDay: day } })
+            out.push({ target: 'world', worldFlags: flags })
           } else {
-            pushIncome(3, { lastChurchErrandDay: day })
+            pushIncome(gold, flags)
           }
           const fundsGain = Math.min(volunteer ? 8 : 4, Math.max(0, 100 - cecFunds))
           cecFunds += fundsGain

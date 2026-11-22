@@ -5,7 +5,28 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  try{
   const page=await browser.newPage({viewport:{width:1080,height:1000},deviceScaleFactor:1.5}),errors=[],requests=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));await page.route('**/*',r=>r.abort());
-  const dir=path.resolve(__dirname,'../最新角色卡');await page.setContent(fs.readFileSync(path.join(dir,'导入预览.html'),'utf8'));await page.evaluate(()=>previewReady);
+  const dir=path.resolve(__dirname,'../最新角色卡');
+  const trackListeners=()=>{
+   const active=new Set(),add=document.addEventListener,remove=document.removeEventListener;
+   const tracked=fn=>['onAvatarClick','onGlobalKeyDown'].includes(fn?.name);
+   const tokens=new Map();
+   function key(type,fn){if(!tokens.has(fn))tokens.set(fn,tokens.size);return `${type}:${tokens.get(fn)}`}
+   document.addEventListener=function(type,fn,...args){if(tracked(fn))active.add(key(type,fn));return add.call(this,type,fn,...args)};
+   document.removeEventListener=function(type,fn,...args){if(tracked(fn))active.delete(key(type,fn));return remove.call(this,type,fn,...args)};
+   window.bubbleListenerCount=()=>active.size;
+  };
+  const html=fs.readFileSync(path.join(dir,'导入预览.html'),'utf8');
+  await page.setContent(html.replace('<main id="chat">',`<script>(${trackListeners})()</script><main id="chat">`));await page.evaluate(()=>previewReady);
+  assert.equal(await page.locator('#chat [data-okh-dlg]').count(),5);
+  const previewVersion=await page.locator('#card-payload').evaluate(node=>JSON.parse(node.textContent).data.character_version);
+  assert.equal(previewVersion,JSON.parse(fs.readFileSync(path.join(dir,'奥克赫斯.json'),'utf8')).data.character_version);
+  const avatar=page.locator('#chat [data-okh-ava]').first(),modal=page.locator('#okh-bubble-modal');
+  async function checkAvatar(){
+   await avatar.click();assert(await modal.isVisible());
+   await modal.getByRole('button',{name:'关闭',exact:true}).click();assert(await modal.isHidden());
+   assert.equal(await page.evaluate(()=>bubbleListenerCount()),3);
+  }
+  await checkAvatar();
   const initial=await page.evaluate(()=>cardWorld());assert.equal(initial.timeMin,1080);assert.equal(initial.npcs.ed.monitored,false);assert.equal(initial.flags.arrived_oakhaven,false);
   assert.equal(await page.locator('#chat .okh-map-guide').count(),1);assert(!(await page.locator('.narrative').innerText()).includes('<status_bar>'));
   assert(await page.evaluate(()=>previewContext.chat[0].mes.includes('<status_bar>')),'Display filtering changed raw messages');
@@ -25,11 +46,13 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   assert.equal(JSON.stringify(await page.evaluate(()=>cardWorld())),after,'Preparing a room intent changed the save');
   for(const width of [640,390,320]){await page.setViewportSize({width,height:900});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);const boxes=await page.locator('.okh-m-name').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height}}));assert.equal(boxes.length,6);for(const r of boxes)assert(r.w>=44&&r.h>=44);if(width===390)await page.locator('.okh-m-journal').screenshot({path:path.join(dir,'手机效果.jpg'),type:'jpeg',quality:94})}
   await page.evaluate(()=>reloadCard());assert.equal(JSON.stringify(await page.evaluate(()=>cardWorld())),after,'Reloading a card reset progress');
+  await checkAvatar();
   const counts=await page.evaluate(()=>cardListenerCounts());for(const [name,count]of Object.entries(counts))assert.equal(count,1,'Duplicate listener '+name);
   await page.setViewportSize({width:1080,height:1000});await page.getByRole('button',{name:'二层 · 客房',exact:true}).click();await page.getByRole('button',{name:'查看妮丝的房间',exact:true}).click();
   await page.locator('#send_textarea').fill('');await page.getByRole('button',{name:'› 敲门拜访',exact:true}).click();assert.equal((await page.locator('#send_textarea').inputValue()).split('轻轻敲门').length-1,1);
   assert(!requests.some(url=>/regional-art|town-art|upper-scene|ground-scene|map-ink\.woff|journal-page/.test(url)),'Maps or font depended on a network download');
   assert.deepEqual(errors,[]);await page.evaluate(()=>document.getElementById('card-helper').contentWindow.OKH_APP.stop());
+  assert.equal(await modal.count(),0);assert.equal(await page.evaluate(()=>bubbleListenerCount()),0);
   console.log('PASS: embedded card payload; native helper startup; greeting; four map views; six rooms; guarded identity; draft input; read-only browsing; mobile; unload/reload; one listener owner; map/font offline');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

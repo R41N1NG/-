@@ -96,7 +96,7 @@ test('supply purchases only charge the quantity that fits, including multiple pu
  for(const starting of [995,999]){
   const w=app.world();w.flags.arrived_oakhaven=true;w.playerLocation='inn';w.playerState.inventory=[{id:'supply',count:starting}];
   const next=sb.OKHBackground.advance(w,{id:'supply-'+starting,revision:'r',toMin:w.timeMin,front:{economies:[{op:'buy_supply',count:10},{op:'buy_supply',count:10}]}},app.config()).state;
-  assert.equal(next.playerState.inventory.find(i=>i.id==='supply').count,999);assert.equal(next.playerState.gold,40-(999-starting));
+  assert.equal(next.playerState.inventory.find(i=>i.id==='supply').count,999);assert.equal(next.playerState.gold,w.playerState.gold-(999-starting));
  }
 });
 test('a successful replacement atomically discards later receipts and keeps a usable checkpoint',async()=>{

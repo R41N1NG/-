@@ -98,6 +98,44 @@
     })
   })
 
+  const WORK_TERMS = Object.freeze({
+    odd: Object.freeze({ minutes: 360, gold: 6 }),
+    guild_normal: Object.freeze({ minutes: 480, gold: 28 }),
+    guild_high: Object.freeze({ minutes: 1440, gold: 48 }),
+    church_paid: Object.freeze({ minutes: 180, gold: 3 }),
+    church_volunteer: Object.freeze({ minutes: 180, gold: 0 })
+  })
+
+  function workStart({ world, turnFromMin, workUntilMin }, minutes, paid = true) {
+    const end = world.timeMin
+    const start = end - minutes
+    if (!world.flags?.arrived_oakhaven || !Number.isSafeInteger(turnFromMin) || !Number.isSafeInteger(workUntilMin) || end > workUntilMin ||
+        start < Math.max(turnFromMin, world.flags.arrivedOakhavenAtMin ?? 0, world.flags.lastPlayerWorkEndMin ?? 0)) return null
+    if (paid && paidWorkSettledToday(world)) return null
+    return start
+  }
+
+  function paidWorkSettledToday(world) {
+    const day = dayAt(world), flags = world.flags || {}
+    return [flags.lastPaidWorkDay, flags.playerOddJobDay, flags.lastGuildCommissionDay, flags.lastEdInterceptDay].includes(day)
+  }
+
+  function workCooldownWait(world, key, start, days) {
+    const previous = world.flags?.[key + 'StartMin']
+    if (Number.isSafeInteger(previous)) return Math.max(0, previous + days * 1440 - start)
+    const legacyDay = world.flags?.[key + 'Day']
+    return Number.isSafeInteger(legacyDay) ? Math.max(0, (legacyDay + days - 1) * 1440 - start) : 0
+  }
+
+  function recentGuildStarts(world, start) {
+    const starts = world.flags?.guildCommissionStarts
+    return (Array.isArray(starts) ? starts : []).filter(t => Number.isSafeInteger(t) && t > start - 7 * 1440)
+  }
+
+  function completedWorkFlags(world, paid = true) {
+    return { lastPlayerWorkEndMin: world.timeMin, ...(paid ? { lastPaidWorkDay: dayAt(world) } : {}) }
+  }
+
   const ACTIONS = [
     {
       id: 'gulan_train',
@@ -2899,6 +2937,7 @@
   const ED_INTERCEPT_VARIANTS = [
     {
       id: 'ed_intercept_job_1',
+      minutes: 180,
       gold: 10,
       text: '爱德一路小跑着拽住你的衣袖，额角沁着细汗，压低声音急切汇报：“{{user}}哥哥，快！公会门口刚来了一名急着离镇的外地行商，他的加急货样和文书落在了城外临时车马棚，天黑前必须取回来。公会走账要压到明天还要抽成，雇主正跟伙计发愁呢！现在去私洽接下，当场现结 10 枚金币，要是等抄上大木板，转眼就会被那群闲汉抢光！”',
       directText: '你当机立断赶往城外临时车马棚，趁着暮色未至把遗落的货样箱与封蜡文书完好交回行商手中。行商松了一口气，爽快按约现结了 10 枚金币。',
@@ -2906,6 +2945,7 @@
     },
     {
       id: 'ed_intercept_job_2',
+      minutes: 120,
       gold: 9,
       text: '爱德从集市方向气喘吁吁地奔回来，手指着天边聚拢的灰云提醒道：“{{user}}哥哥，集市大商行的管事正急得团团转！天眼看要落雨，货场里还有一批怕潮的细呢布匹和干草，必须在两个钟头内转进地窖。公会排人手来不及，现在直接过去搭把手，干完当场现结 9 枚金币！”',
       directText: '你赶在雨点砸落前与商行伙计一道把怕潮布匹和草捆稳妥转入干爽地窖。管事查验无损后满意点头，当场点清 9 枚金币交付。',
@@ -2913,6 +2953,7 @@
     },
     {
       id: 'ed_intercept_job_3',
+      minutes: 240,
       gold: 12,
       text: '爱德紧跑几步拉住你的手腕，眼睛发亮地小声道：“{{user}}哥哥，镇郊农庄的庄园主刚在公会外拦人！他家一匹拉货的挽马受了惊，带着半车杂货窜进了近郊林缘。公会登记派单太慢，雇主说只要身手利落的战士立刻去循迹找回，当场现结 12 枚金币！”',
       directText: '你沿车辙与折枝一路追入近郊林缘，安抚住受惊的挽马并将货车稳妥牵回农庄。庄园主连声致谢，如数现结 12 枚金币。',
@@ -2920,6 +2961,7 @@
     },
     {
       id: 'ed_intercept_job_4',
+      minutes: 60,
       gold: 8,
       bonusSupply: 1,
       text: '爱德抱着胳膊快步凑过来，语速偏快地说道：“{{user}}哥哥，镇上药铺掌柜急着找脚程快的人！镇南有户病家等着刚煎配好的退热汤剂，药铺伙计全派出去了脱不开身。不用走公会抽水，现在送过去就能现结 8 枚金币，掌柜还说多捎一份草药补给！”',
@@ -2929,8 +2971,14 @@
   ]
 
   ED_INTERCEPT_VARIANTS.forEach((variant, idx) => {
+    const canComplete = ctx => {
+      const start = workStart(ctx, variant.minutes)
+      const pending = ctx.world.bg.eventStates[JSON.stringify(['event', variant.id, null])]
+      return start !== null && start >= (pending?.triggeredAt ?? 0) && !workCooldownWait(ctx.world, 'lastEdIntercept', start, 3)
+    }
     EVENTS.push({
       id: variant.id,
+      settleAtEnd: true,
       mode: 'interaction',
       repeatable: true,
       scope: 'world',
@@ -2944,7 +2992,7 @@
         world.npcs.ed.alive !== false &&
         !hasPendingEdDaily(world) &&
         // 3 = 爱德公会急件抢截冷却天数（每 3 自然日限触发 1 次）
-        (!Number.isFinite(world.flags?.lastEdInterceptDay) || (dayAt(world) - world.flags.lastEdInterceptDay) >= 3) &&
+        !workCooldownWait(world, 'lastEdIntercept', world.timeMin, 3) &&
         ((world.flags?.edInterceptSlot ?? 0) % 4) === idx,
       expireWhen: ({ world, phase }) =>
         !['inn', 'town'].includes(world.playerLocation) ||
@@ -2953,11 +3001,14 @@
       text: variant.text,
       outcomes: {
         accept_direct: {
+          when: canComplete,
           text: variant.directText,
           effects: ({ world }) => {
             const nextGold = (Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 0) + variant.gold
             const worldFlags = {
+              ...completedWorkFlags(world),
               lastEdInterceptDay: dayAt(world),
+              lastEdInterceptStartMin: world.timeMin - variant.minutes,
               edInterceptSlot: (idx + 1) % 4,
               ...(world.flags?.inn_arrears && nextGold >= 5 ? { inn_arrears: false } : {}),
               ...(variant.bonusSupply && world.flags?.supply_shortage ? { supply_shortage: false } : {})
@@ -2968,13 +3019,16 @@
           }
         },
         negotiate_teach: {
+          when: canComplete,
           text: variant.teachText,
           effects: ({ world }) => {
             const gain = variant.gold + 2
             const nextGold = (Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 0) + gain
             const teach = buildEdTeachPatch(world)
             const worldFlags = {
+              ...completedWorkFlags(world),
               lastEdInterceptDay: dayAt(world),
+              lastEdInterceptStartMin: world.timeMin - variant.minutes,
               edInterceptSlot: (idx + 1) % 4,
               ...teach.stealthFlag,
               ...(world.flags?.inn_arrears && nextGold >= 5 ? { inn_arrears: false } : {}),
@@ -3117,6 +3171,7 @@
     SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel,
     PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG,
     ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld,
+    WORK_TERMS, workStart, paidWorkSettledToday, workCooldownWait, recentGuildStarts, completedWorkFlags,
     DRAGON_TRUE_FORM_SPEC, buildDragonRevealText
   })
 

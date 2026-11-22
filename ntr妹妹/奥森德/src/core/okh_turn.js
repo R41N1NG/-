@@ -107,7 +107,7 @@
       return map.get(t);
     }
 
-    function collectTimeline(world, front, fromMin, toMin) {
+    function collectTimeline(world, front, fromMin, toMin, config) {
       const map = new Map();
 
       for (const step of front.prologueSteps || []) {
@@ -122,7 +122,9 @@
       }
 
       for (const item of front.resolveEvents || []) {
-        getBucket(map, resolveAt(item.at, fromMin, fromMin, toMin)).resolveEvents.push(item);
+        const event = (config.events || []).find(event => event.id === item.eventId);
+        const defaultAt = event?.settleAtEnd ? toMin : fromMin;
+        getBucket(map, resolveAt(item.at, defaultAt, fromMin, toMin)).resolveEvents.push(item);
       }
 
       const playerMoves = front.playerMoves || (front.playerLocation !== undefined
@@ -209,7 +211,7 @@
       syncWorld(world, blockedIds, 'bucketMove', config);
     }
 
-    function applyBucket(world, bucket, config, blockedIds) {
+    function applyBucket(world, bucket, config, blockedIds, workWindow) {
       if (!bucket) return;
       if (bucket.prologueSteps.length && typeof config.applyPrologueSteps === 'function') {
         const changes = config.applyPrologueSteps(world, bucket.prologueSteps, { blockedIds, config }) || [];
@@ -229,7 +231,7 @@
       }
       applyMeta(world, bucket.meta);
 
-      const ctx = { world, phase: u.phaseAt(world.timeMin, config), blockedIds };
+      const ctx = { world, phase: u.phaseAt(world.timeMin, config), blockedIds, ...workWindow };
       if (bucket.bonds.length && typeof config.resolveBonds === 'function') {
         const changes = config.resolveBonds(world, bucket.bonds, ctx);
         effects.apply(world, null, changes || [], { blockedIds }, config);
@@ -306,11 +308,14 @@
       const front = command.front || {};
       const blockedIds = initialBlockedIds(state, command, front);
       const fromMin = state.timeMin;
-      const timeline = collectTimeline(state, front, fromMin, command.toMin);
+      const workUntilMin = front.workUntilMin ?? command.toMin;
+      u.check(u.minute(workUntilMin) && workUntilMin >= fromMin && workUntilMin <= command.toMin, '工时区间超出本轮时间');
+      const workWindow = { turnFromMin: fromMin, workUntilMin };
+      const timeline = collectTimeline(state, front, fromMin, command.toMin, config);
       const report = { duplicate: false, released: [], actions: [] };
 
       report.released.push(...activity.releaseExpiredOrdinary(state, config));
-      if (timeline.has(fromMin)) applyBucket(state, timeline.get(fromMin), config, blockedIds);
+      if (timeline.has(fromMin)) applyBucket(state, timeline.get(fromMin), config, blockedIds, workWindow);
       refresh(state, config, blockedIds, report);
 
       const pendingTimes = [...timeline.keys()].filter(t => t > fromMin).sort((a, b) => a - b);
@@ -332,7 +337,7 @@
 
         report.released.push(...activity.releaseExpiredOrdinary(state, config));
         if (next === nextReceipt) {
-          applyBucket(state, timeline.get(next), config, blockedIds);
+          applyBucket(state, timeline.get(next), config, blockedIds, workWindow);
           nextIdx++;
         }
 

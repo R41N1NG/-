@@ -2,7 +2,7 @@
 
 [下载新版角色卡 JSON](最新角色卡/奥克赫斯.json?raw=1) · [导入说明](最新角色卡/README.md) · [回忆相册](回忆相册/README.md) · [旅店效果](最新角色卡/旅店效果.jpg) · [手机效果](最新角色卡/手机效果.jpg) · [镇内地图](最新角色卡/镇内图效果.jpg) · [下载整卡交互预览](最新角色卡/导入预览.html?raw=1)
 
-当前角色卡 **0.3.2-album** · 核心 **2.1.1**。地图、状态栏及完整后台现已打包进角色卡 JSON。
+当前角色卡 **0.3.4-fixes** · 核心 **2.1.1**。地图、状态栏及完整后台现已打包进角色卡 JSON。
 
 ## 在酒馆中使用
 
@@ -31,7 +31,7 @@
 - `回忆相册/目录.json`：图片和解锁条件目录，当前为空；本地图片构建时内嵌。
 - `src/app/okh_app_map.js`：地图、房间视图与行动意图。
 - `src/app/okh_app_hud.js`：正式状态栏、挂载、事件与输入接入。
-- `scripts/build.cjs`：构建运行脚本到 `dist/`，同时从原始卡生成 `最新角色卡/奥克赫斯.json`。
+- `scripts/build.cjs`：构建运行脚本到 `dist/`，同时生成 `最新角色卡/奥克赫斯.json`、项目 `dist/` 导入包及交互预览。发布的两个 JSON 内容一致。
 - `地图预览/接入验证/`：使用正式运行库与独立沙盒存档的可交互页面；其中的示例存档不会进入自动启动运行脚本。
 
 在 `奥森德/` 下运行：
@@ -44,7 +44,7 @@ node --test scripts/test_map.cjs
 node scripts/build_hud_preview.cjs
 node --test scripts/test_hud_edges.cjs
 node scripts/test_hud_browser.cjs
-node --test scripts/test_card.cjs
+node --test scripts/test_card.cjs scripts/test_work.cjs
 node scripts/build_card_preview.cjs
 node scripts/test_card_browser.cjs
 node --test scripts/test_album.cjs
@@ -63,3 +63,5 @@ node scripts/test_album_browser.cjs
 回忆相册另增加 7 项回归测试，当前累计 104 项用例通过；相册浏览器检查覆盖图片筛选、放大翻阅、键盘、窄屏、回滚及聊天隔离。图片位置已预留，具体资源和门槛后续再配置。详见 [相册接图说明](回忆相册/README.md)。
 
 0.3.2-album 修正：开局四个相册入口固定存在，后续女性人物需相识并取得立绘后新增；默认立绘单独保存在聊天的显示偏好中，不改变时间和剧情存档。人物图不再显示放大镜徽记。未抵镇时隐藏镇内、旅店地图，并拦截旧入口；塞西莉亚保留教堂剧情监控，不列入同伴名册。新增 4 项用例，累计 108 项通过。
+
+0.3.4-fixes 修复对白头像弹窗重载，补齐工时与每日领薪校验，并统一卡包、外置运行脚本与预览的输出。构建产物统一使用 LF，原始卡摘要也按 LF 文本计算。
