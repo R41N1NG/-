@@ -130,6 +130,7 @@
     const back = rawGet(s, s.key);
     u.check(typeof back === 'string' ? back === text : u.signature(back) === u.signature(envelope),
       '存档写入回读不一致，提交未获确认');
+    root.OKH_BUBBLE_SIDE?.invalidate?.();
     return true;
   }
   function loadWorld(s = session()) { return readEnvelope(s)?.world ?? null; }
@@ -138,6 +139,18 @@
     const portraits = Object.fromEntries(Object.entries(saved || {}).filter(([id, image]) => u.id(id) && u.id(image)))
     return { portraits }
   }
+  function collectDialogueForms(envelope) {
+    if (!envelope) return {};
+    const frames = { ...envelope.presentation?.dialogueForms };
+    const replies = envelope.history.filter(record => Number.isSafeInteger(record.chatIndex));
+    for (const [index, record] of replies.entries()) {
+      if (u.own(frames, record.id)) continue;
+      const after = replies[index + 1]?.before || envelope.world;
+      frames[record.id] = root.OKH_BUBBLE_SIDE?.formsFor?.(after) || {};
+    }
+    return frames;
+  }
+  function dialogueForms(s = session()) { return collectDialogueForms(readEnvelope(s)); }
   async function setDefaultPortrait(npc, id, s = session()) {
     return lock(s, async () => {
       const envelope = readEnvelope(s)
@@ -180,10 +193,11 @@
       };
     });
   }
-  async function commit(s, { expectedRevision, state, checkpoint, reason, receipt, history: replayHistory }) {
+  async function commit(s, { expectedRevision, state, checkpoint, reason, receipt, history: replayHistory, dialogueForms: replayForms }) {
     return lock(s, async () => {
       const envelope = readEnvelope(s);
       u.check(envelope && envelope.world.bg.revision === expectedRevision, '存档提交版本冲突');
+      const frames = collectDialogueForms(envelope);
       u.validateWorld(state);
       u.check(state.bg?.version === 2 && Number.isSafeInteger(state.bg.revision) && state.bg.revision > expectedRevision,
         '存档提交版本必须递增');
@@ -200,6 +214,15 @@
         u.check(receipt && u.id(receipt.id), '保存检查点需要对应回复');
         envelope.history.push({ id: receipt.id, revision: receipt.revision,
           chatIndex: receipt.chatIndex ?? null, before: u.clone(checkpoint) });
+      }
+      const reply = Number.isSafeInteger(receipt?.chatIndex);
+      if (Object.keys(frames).length || reply || replayForms) {
+        Object.assign(frames, replayForms);
+        if (reply) frames[receipt.id] = root.OKH_BUBBLE_SIDE?.formsFor?.(state) || {};
+        for (const id of Object.keys(frames)) {
+          if (!u.own(state.bg.receipts, id)) delete frames[id];
+        }
+        envelope.presentation = { ...envelope.presentation, dialogueForms: frames };
       }
       envelope.history = pruneHistory(envelope.history);
       envelope.world = state;
@@ -233,6 +256,6 @@
     get: key => rawGet(session(), key)
   });
   root.OKH_APP_WORLD = Object.freeze({ configure, context, chatId, session, assertSession,
-    loadWorld, presentation, setDefaultPortrait, ensureWorld, readEnvelope, migrateSchema, commit, importLegacy, publishDerived, store, historyLimit,
+    loadWorld, presentation, dialogueForms, setDefaultPortrait, ensureWorld, readEnvelope, migrateSchema, commit, importLegacy, publishDerived, store, historyLimit,
     resetWorld: () => ensureWorld(true), STORAGE_KEY: KEY, DEFAULT_MAX_HISTORY });
 })(globalThis);

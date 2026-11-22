@@ -52,8 +52,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   await page.locator('#send_textarea').fill('');await page.getByRole('button',{name:'› 敲门拜访',exact:true}).click();assert.equal((await page.locator('#send_textarea').inputValue()).split('轻轻敲门').length-1,1);
   await page.getByRole('button',{name:'演示：古兰表情',exact:true}).click();
   const expressionExample=page.locator('#expression-example');
-  const portraitSources=['neutral','reprimand','smile'].map(face=>'data:image/webp;base64,'+
-   fs.readFileSync(path.join(__dirname,'../对白头像/古兰',face+'.webp')).toString('base64'));
+  const images=require('./build_bubble.cjs').loadBubbleAvatars(path.dirname(dir)).images;
+  const portraitSources=['neutral','reprimand','smile'].map(face=>images.古兰.forms.normal[face]);
   await page.waitForFunction(()=>document.querySelectorAll('#expression-example [data-okh-ava-done]').length===3);
   assert.deepEqual(await expressionExample.locator('[data-okh-ava]').evaluateAll(nodes=>nodes.map(node=>node.style.backgroundImage)),portraitSources.map(src=>`url("${src}")`));
   assert(!(await expressionExample.innerText()).includes('[smile]'));
@@ -61,15 +61,36 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   assert.equal(await modal.locator('img').getAttribute('src'),portraitSources[2]);
   await modal.locator('img').evaluate(img=>img.decode());
   await modal.getByRole('button',{name:'关闭',exact:true}).click();
-  await page.evaluate(()=>appendCardReply('<content>\n古兰：[cry]“没有这张图。”\n古兰：[表情写错]“这句话也保留。”\n妮丝：[smile]“这是我的对白。”\n伯里：\n“我明白。”\n</content>'));
+  await page.evaluate(()=>appendCardReply('<content>\n古兰：[cry]“别说了。”\n古兰：[表情写错]“这句话也保留。”\n妮丝：[smile]“这是我的对白。”\n伯里：\n“我明白。”\n</content>'));
   const reply=page.locator('#chat .mes[is_user=false]').last();
   await page.waitForFunction(()=>[...document.querySelectorAll('#chat .mes[is_user=false]')].at(-1).querySelectorAll('[data-okh-ava-done]').length===4);
-  assert.deepEqual(await reply.locator('[data-okh-dlg-body]').allTextContents(),['没有这张图。','这句话也保留。','这是我的对白。','我明白。']);
-  assert.deepEqual(await reply.locator('[data-okh-ava]').evaluateAll(nodes=>nodes.map(node=>node.style.backgroundImage)),[`url("${portraitSources[0]}")`,`url("${portraitSources[0]}")`,'','']);
+  assert.deepEqual(await reply.locator('[data-okh-dlg-body]').allTextContents(),['别说了。','这句话也保留。','这是我的对白。','我明白。']);
+  assert.deepEqual(await reply.locator('[data-okh-ava]').evaluateAll(nodes=>nodes.map(node=>node.style.backgroundImage)),
+   [images.古兰.forms.normal.cry,portraitSources[0],images.妮丝.forms.normal.smile,''].map(src=>src?`url("${src}")`:''));
   assert.equal(await reply.locator('.side-right[data-okh-speaker="伯里"]').count(),1);
   await reply.locator('[data-okh-dlg]').first().evaluate(row=>row.setAttribute('data-okh-face','smile'));
   await page.waitForFunction(()=>[...document.querySelectorAll('#chat .mes[is_user=false]')].at(-1).querySelector('[data-okh-ava]').getAttribute('data-okh-ava-face')==='smile');
   assert.equal(await reply.locator('[data-okh-ava]').first().evaluate(node=>node.style.backgroundImage),`url("${portraitSources[2]}")`);
+  const beforeFall=await page.evaluate(async()=>{
+   await appendCardReply('伊丝娜：[smile]“路上小心。”');
+   return previewContext.chat.length-1;
+  });
+  const afterFall=await page.evaluate(async()=>{
+   const app=document.getElementById('card-helper').contentWindow.OKH_APP,world=app.world();
+   world.npcs.isna.flags.isna_fallen_orc=true;
+   await app.save(world,{debug:true});
+   await appendCardReply('伊丝娜：[smile]“你果然来了。”\n伊丝娜：[alert]“嘘。”');
+   return previewContext.chat.length-1;
+  });
+  async function checkForms(){
+   await page.locator(`[mesid="${afterFall}"] [data-okh-ava-form="fallen"]`).last().waitFor();
+   const backgrounds=index=>page.locator(`[mesid="${index}"] [data-okh-ava]`).evaluateAll(nodes=>nodes.map(node=>node.style.backgroundImage));
+   assert.deepEqual(await backgrounds(beforeFall),[`url("${images.伊丝娜.forms.normal.smile}")`]);
+   assert.deepEqual(await backgrounds(afterFall),[images.伊丝娜.forms.fallen.smile,images.伊丝娜.forms.fallen.neutral].map(src=>`url("${src}")`));
+  }
+  await checkForms();
+  await page.evaluate(()=>reloadCard());
+  await checkForms();
   assert(!requests.some(url=>/regional-art|town-art|upper-scene|ground-scene|map-ink\.woff|journal-page/.test(url)),'Maps or font depended on a network download');
   assert.deepEqual(errors,[]);await page.evaluate(()=>document.getElementById('card-helper').contentWindow.OKH_APP.stop());
   assert.equal(await modal.count(),0);assert.equal(await page.evaluate(()=>bubbleListenerCount()),0);

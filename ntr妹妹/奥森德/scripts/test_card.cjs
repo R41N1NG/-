@@ -50,6 +50,50 @@ test('display-only regexes hide complete, repeated and streaming receipts withou
   const raw='<content>正文。</content>\n'+tail,out=display(raw);assert(out.includes('正文。'));assert(!/<\/?(?:status_bar|content)\b/i.test(out));assert(!out.includes('data-okh-hud'));assert(raw.includes(tail));
  }
 });
+test('avatar forms follow settled character stages, route and confirmed duty',async()=>{
+ const {sb}=nativeSandbox();
+ try{
+  await sb.OKH_CARD_READY;
+  const {formsFor}=sb.OKH_BUBBLE_SIDE,world=sb.OKH_APP.world(),{aurora,isna,gulan,nise,eileen,cecilia}=world.npcs;
+  const forms=()=>JSON.parse(JSON.stringify(formsFor(world)));
+  isna.flags.captured_orc=true;isna.flags.isna_fallen_labyrinth=true;
+  gulan.flags.gulan_final_fall_done=true;gulan.stage=2;nise.stage=2;eileen.stage=2;cecilia.stage=3;
+  aurora.location='manor';aurora.flags.manor_service_active=true;
+  assert.deepEqual(forms(),{},'A hint, temporary captivity or mere arrival at the manor leaked a form');
+  aurora.flags.aurora_worked_manor_day=1;
+  assert.deepEqual(forms(),{aurora:'maid'});
+  aurora.location='inn';assert.deepEqual(forms(),{});
+  aurora.location='manor';world.timeMin=5*1440;aurora.flags.aurora_worked_manor_day=6;
+  assert.deepEqual(forms(),{},'Weekend off duty');
+  aurora.stage=3;isna.flags.isna_fallen_orc=true;gulan.stage=3;nise.stage=3;eileen.stage=3;
+  assert.deepEqual(forms(),{aurora:'fallen',isna:'fallen',gulan:'fallen',nise:'fallen',eileen:'fallen'});
+ }finally{await sb.OKH_APP.stop()}
+});
+test('dialogue forms survive the checkpoint window and prune with restored replies',async()=>{
+ const {sb,ctx}=nativeSandbox();
+ try{
+  await sb.OKH_CARD_READY;
+  const app=sb.OKH_APP,key=index=>'reply:'+ctx.chatId+':'+index;
+  const reply=async()=>{
+   ctx.chat.push({is_user:false,is_system:false,mes:'伊丝娜：[smile]“我知道了。”\n<status_bar><time elapsed="0"/></status_bar>'});
+   await app.onMessage(ctx.chat.length-1);
+  };
+  await reply();
+  const world=app.world();world.npcs.isna.flags.isna_fallen_orc=true;
+  await app.save(world,{debug:true});
+  for(let i=0;i<=app.W.historyLimit();i++)await reply();
+  const last=ctx.chat.length-1;
+  const before=app.W.dialogueForms();
+  assert.equal(Object.hasOwn(before,key(1)),true);
+  assert.equal(before[key(1)].isna,undefined);
+  assert.equal(before[key(2)].isna,'fallen');
+  assert.equal(app.W.readEnvelope().history.some(record=>record.id===key(2)),false);
+  await app.restore(key(last));
+  const restored=app.W.dialogueForms();
+  assert.equal(Object.hasOwn(restored,key(last)),false);
+  assert.equal(restored[key(2)].isna,'fallen');
+ }finally{await sb.OKH_APP.stop()}
+});
 test('the preserved opening and example parse against the bundled clock, locations and current receipt grammar',()=>{
  const sb=holder.exports.createSandbox(),cfg=sb.OKH_APP_CONFIG.buildConfig();
  for(const [id,text]of [['opening',card.data.first_mes],['example',card.data.mes_example.split('{{char}}: ')[1]]]){

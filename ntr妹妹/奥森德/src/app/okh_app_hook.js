@@ -205,6 +205,7 @@
     state.bg.revision = expectedRevision;
     for (const id of Object.keys(state.bg.generations)) if (state.bg.generations[id].status === 'prepared') delete state.bg.generations[id];
     const history = envelope.history.filter(h => u.own(state.bg.receipts, h.id));
+    const dialogueForms = {};
     const diagnostics = [], actions = [], released = [];
     let timeCheck = null, front = null;
     for (let i = from; i <= through; i++) {
@@ -213,6 +214,7 @@
       const built = buildTurnCommand(undefined, { text: chat[i].mes || '', chatIndex: i,
         countMessage: true, initial: i === 0, allowFallback: true }, state, id, revision);
       const result = GPT.advance(state, built.command, CFG.buildConfig());
+      dialogueForms[id] = root.OKH_BUBBLE_SIDE?.formsFor?.(result.state) || {};
       history.push({ id, revision, chatIndex: i, before: state });
       if (history.length > W.historyLimit()) history.splice(0, history.length - W.historyLimit());
       state = result.state;
@@ -220,7 +222,7 @@
     }
     if (state.bg.revision === expectedRevision) state.bg.revision++;
     // Validate the entire replay before replacing any authoritative state or checkpoints.
-    await W.commit(s, { expectedRevision, state, checkpoint: null, reason: 'replay-history', history });
+    await W.commit(s, { expectedRevision, state, checkpoint: null, reason: 'replay-history', history, dialogueForms });
     const published = await publish(s);
     last = { advanced: true, from: checkpoint.timeMin, to: state.timeMin, front, actions, released,
       pending: GPT.prepare(state, 8).ids.length, diagnostics, timeCheck, published };

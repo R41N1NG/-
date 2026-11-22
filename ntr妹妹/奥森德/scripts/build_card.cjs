@@ -58,7 +58,7 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
    scan_depth:worldbook.scan_depth,token_budget:2800,recursive_scanning:worldbook.recursive_scanning,
    extensions:worldbook.extensions,entries:extractWorldbookEntries()
   },
-  tags:fields.tags,creator:fields.creator,character_version:'0.3.5-expressions',extensions:{}
+  tags:fields.tags,creator:fields.creator,character_version:'0.3.6-portraits',extensions:{}
  };
  const card={spec:'chara_card_v2',spec_version:'2.0',data:d};
  const runtime=readText(runtimePath);
@@ -70,9 +70,11 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
   assets[key]={path:'地图预览/'+rel,sha256:sha(bytes)};
  }
  const { images: bubbleImages, promptLines: bubblePrompt } = loadBubbleAvatars(ROOT);
- for (const [speaker, faces] of Object.entries(bubbleImages)) {
-  for (const [face, src] of Object.entries(faces)) {
-   if (!runtime.includes(src)) throw Error('运行库未内嵌对白头像：'+speaker+'/'+face);
+ for (const [speaker, { forms }] of Object.entries(bubbleImages)) {
+  for (const [form, faces] of Object.entries(forms)) {
+   for (const [face, src] of Object.entries(faces)) {
+    if (!runtime.includes(src)) throw Error('运行库未内嵌对白头像：'+speaker+'/'+form+'/'+face);
+   }
   }
  }
  d.description=d.description.replace('镇内有领主山庄、圣辉大教堂、市井街区、旅店与地下赌场；城外是荒原与黑兽人前哨。','镇内有圣辉大教堂、市井街区、旅店与地下赌场；领主庄园位于镇外安全一侧的西北山上。农户分布在镇子周围，东南恶劣荒地是敌对的黑兽人前哨，与人类城镇没有相连道路。');
@@ -80,8 +82,8 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
  d.description=d.description.replace(/【玩家伤情】[\s\S]*?(?=【后台与正文的边界】)/,'');
  d.description+='\n\n【地图、住宿与房间事实】\n地图由卡内脚本显示，包含全域、镇内、旅店一层与二层；浏览、切层、点门和拟定行动都不等于移动、拜访成功或时间推进。只有玩家发送行动，且正文确实发生对应事实后，才输出回执。未抵达镇子前不提供镇内和旅店地图，只有全域地形可供浏览。塞西莉亚是教堂人物，不属于初始队伍。不要在正文另造地图 HTML 或按钮。\n旅店二层同一侧一排六门：01 伯里（玩家）、02 古兰（母亲、独立住客）、03 伊丝娜、04 妮丝、05 奥萝拉、06 爱德。古兰不是领队，不属于冒险者小队。房号仅作界面导览，不新增后台地点 ID；未加入的爱德不提前入住。npc.location=inn 只证明人在旅店，不能证明在卧室；拜访先敲门，依据回应展开后续互动。\n<room npc="gulan" state="together" />\n仅当正文已经确认与古兰夜间同住时申报，须在抵镇后、双方均在旅店、夜晚或深夜，且满足后台好感和阶段条件。不能用此标签申报普通串门或和其他角色同房，也不能自行写固定房号状态。\n<room state="separate" />\n表示已经分开住宿。room 可用 at 指定本轮区间内发生时间；同住与分开都不是每轮重复申报的固定字段。\n\n【经济与补给事实】\n<economy op="work" tier="odd" />\nwork 的 tier 使用 odd（6小时）、guild_normal（8小时）、guild_high（24小时）、church_paid（3小时）、church_volunteer（3小时）。如实申报本轮实际工时，默认在轮末结算，开局及保底时间不能抵工时。短差（含伊丝娜 steady_work）、公会、教会付费帮工和爱德急件合计每个游戏日最多结算一次。志愿服务也占用工时。同一段时间不能用于两份差事。爱德急件 1 至 4 各需 3、2、4、1 小时，仅在工作完成时申报对应 event_resolve。\n<economy op="repay" npc="aurora" tier="part" />\nrepay 仅用于 aurora 或 nise，tier 为 part 或 all；必须实际还款且已知该债务。\n<economy op="donate" npc="cecilia" tier="small" />\ndonate 的 tier 为 small 或 large，仅申报实际完成的捐助。\n<economy op="buy_supply" count="5" />\n表示在镇上或旅店实际购入补给；count 为 1～99 的整数，后台按背包剩余容量和实际入库量收费。经济标签可用 at 指定本轮时间，不接受 amount、gold、delta、value、add 等金额数值字段。只有事实发生时才申报，不因点击界面草稿而自动结算。\n';
  d.description+='\n【回忆相册】\n相册开局固定显示古兰、伊丝娜、妮丝、奥萝拉四人的独立分区；后续女性角色须在相识并取得立绘后新增分区。相册由后台按已配置的数值、标记或事件条件自动收录，不因浏览或设为默认立绘而解锁。未配置的图片与条件不得自行编造；无需另写 CG HTML 或图片地址。\n';
- d.description+='\n【对白气泡与发言格式】\n将说话人姓名与对白单独起行，写作 角色名：“对白内容”。已有表情图的角色可用 角色名：[表情ID]“对白内容”，每条对白只标一次，同一人前后神情不同可分两条。根据说话人当下表现出的神情、语气和动作选择表情；情绪不明或没有匹配图时沿用普通对白格式。标记只用于显示，保持叙事及回执要求，不替玩家写发言。\n'+bubblePrompt.join('\n')+'\n';
- d.creator_notes='地图、相册与对白表情整合版 0.3.5-expressions，核心 2.1.1，schemaVersion=3。\n基于用户原始 R4 卡，保留基础世界书条目与规范开场白，补入当前地图、经济、房间回执契约与对白气泡美化。\n已内嵌一份完整酒馆助手脚本及全域、镇内、旅店两层图稿、手札纸面和标注字体，无需另行下载地图或外置运行脚本。\n导入 JSON 后，在酒馆助手中启用本角色卡脚本；若曾独立安装完整后台，请停用旧的那份，只运行卡内这一份。需要已安装并启用酒馆助手，普通角色卡 JSON 导入器本身不执行 JavaScript。\n新聊天会在首条回复下挂载状态栏；既有聊天存档沿用原存储键，不强制重置。卡内显示正则隐藏回执和正文包装，并自动将 角色名：“对白” 渲染为左右分侧带头像气泡。带表情标记的对白会切换到相应立绘，已内嵌古兰的沉静、微笑和训诫。点击头像可看当前大图，也可以上传默认头像。\n同伴名册下方增加回忆相册；当前图片目录留空，等待后续导入素材和指定解锁条件。\n本次打包不扩写未提供的专属剧情库。';
+ d.description+='\n【对白气泡与发言格式】\n将说话人姓名与对白单独起行，写作 角色名：“对白内容”。已有表情图的角色可用 角色名：[表情ID]“对白内容”，每条对白只标一次，同一人前后神情不同可分两条。根据说话人当下表现出的神情、语气和动作选择表情；情绪不明或没有匹配图时沿用普通对白格式。标记只表示每句对白的神情，造型由已结算的剧情和工作状态决定。保持叙事及回执要求，不替玩家写发言。\n'+bubblePrompt.join('\n')+'\n';
+ d.creator_notes='地图、相册与对白表情整合版 0.3.6-portraits，核心 2.1.1，schemaVersion=3。\n基于用户原始 R4 卡，保留基础世界书条目与规范开场白，补入当前地图、经济、房间回执契约与对白气泡美化。\n已内嵌一份完整酒馆助手脚本及全域、镇内、旅店两层图稿、手札纸面和标注字体，无需另行下载地图或外置运行脚本。\n导入 JSON 后，在酒馆助手中启用本角色卡脚本；若曾独立安装完整后台，请停用旧的那份，只运行卡内这一份。需要已安装并启用酒馆助手，普通角色卡 JSON 导入器本身不执行 JavaScript。\n新聊天会在首条回复下挂载状态栏；既有聊天存档沿用原存储键，不强制重置。卡内显示正则隐藏回执和正文包装，并自动将 角色名：“对白” 渲染为左右分侧带头像气泡。带表情标记的对白会切换到相应立绘，已内嵌六位角色的 156 张气泡头像，按该条回复的已结算状态选择造型。点击头像可看当前大图，也可以上传默认头像。\n同伴名册下方增加回忆相册；当前图片目录留空，等待后续导入素材和指定解锁条件。\n本次打包不扩写未提供的专属剧情库。';
  d.tags=[...new Set([...(d.tags||[]),'地图整合','回忆相册','对白气泡'])];
  d.extensions.regex_scripts=[
   {id:'okh-display-hide-status',scriptName:'奥克赫斯 · 隐藏后台回执与流式片段',findRegex:'/<status_bar\\b[^>]*>[\\s\\S]*?(?:<\\/status_bar\\s*>|$)/gi',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},

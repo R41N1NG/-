@@ -381,7 +381,7 @@
       fromStage: 2,
       toStage: 3,
       when: { stage: 2, metrics: { blood_density: { gte: 80 } }, flags: { gulan_final_fall_done: true } },
-      text: '{name}不再抗拒体内奔涌的古龙真血，琥珀竖瞳沉冷而傲然，龙化形态已化作她自身的常态与本能。'
+      text: '{name}不再抗拒体内奔涌的古龙真血，赤色竖瞳沉冷而傲然，黑角尖端泛红，脸侧生出数片龙鳞。龙化形态已化作她自身的常态与本能。'
     },
     {
       id: 'aurora_stage_1',

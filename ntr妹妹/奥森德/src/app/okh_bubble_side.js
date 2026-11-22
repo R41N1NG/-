@@ -49,6 +49,9 @@
   let returnFocus = null;
   let pendingInput = null;
   let alive = false;
+  let portraitChat = null;
+  let portraitFrames = {};
+  let portraitStateDirty = true;
 
   // 预置主要人物头像（可留空使用首字，支持后续直接填入 Data URI 或图床链接）
   const DEFAULT_AVATARS = {
@@ -118,9 +121,52 @@
     return (host?.closest('[data-okh-dlg]')?.getAttribute('data-okh-face') || '').toLowerCase();
   }
 
-  function imageFor(who, face = '') {
-    const faces = Object.hasOwn(EXPRESSION_AVATARS, who) ? EXPRESSION_AVATARS[who] : {};
+  function formsFor(world) {
+    const forms = {};
+    const npcs = world?.npcs;
+    if (!npcs) return forms;
+    for (const id of ['gulan', 'nise', 'aurora', 'eileen']) {
+      if (npcs[id]?.stage >= 3) forms[id] = 'fallen';
+    }
+    if (npcs.isna?.flags?.isna_fallen_orc === true) forms.isna = 'fallen';
+    const aurora = npcs.aurora;
+    const flags = aurora?.flags;
+    const day = Math.floor(world.timeMin / 1440) + 1;
+    if (!forms.aurora && aurora?.location === 'manor' && flags?.manor_service_active &&
+        !flags.aurora_left_manor && !world.flags?.baron_purged && flags.aurora_worked_manor_day === day &&
+        root.OKH_APP_CONFIG?.isWeekendDay(day) === false) forms.aurora = 'maid';
+    return forms;
+  }
+
+  function loadPortraitFrames() {
+    const W = root.OKH_APP_WORLD;
+    if (!W) return;
+    try {
+      const id = W.chatId();
+      if (id === portraitChat && !portraitStateDirty) return;
+      portraitFrames = W.dialogueForms();
+      portraitChat = id;
+      portraitStateDirty = false;
+    } catch (_) {
+      portraitChat = null;
+      portraitFrames = {};
+      portraitStateDirty = true;
+    }
+  }
+
+  function outfitFor(host, who) {
+    const index = host?.closest('.mes[mesid]')?.getAttribute('mesid');
+    const npc = Object.hasOwn(EXPRESSION_AVATARS, who) && EXPRESSION_AVATARS[who].npc;
+    if (!npc || !portraitChat || !/^\d+$/.test(index ?? '')) return 'normal';
+    return portraitFrames['reply:' + portraitChat + ':' + index]?.[npc] || 'normal';
+  }
+
+  function imageFor(who, face = '', outfit = 'normal') {
+    const variants = Object.hasOwn(EXPRESSION_AVATARS, who) ? EXPRESSION_AVATARS[who].forms : {};
+    const form = Object.hasOwn(variants, outfit) ? outfit : 'normal';
+    const faces = variants[form] || {};
     if (face && face !== 'neutral' && Object.hasOwn(faces, face)) return faces[face];
+    if (form !== 'normal') return faces.neutral || '';
 
     const key = avatarKey(who);
     const custom = store(STORE_PREFIX + key);
@@ -313,8 +359,8 @@
     }
   }
 
-  function paint(host, who, face) {
-    const img = imageFor(who, face);
+  function paint(host, who, face, outfit) {
+    const img = imageFor(who, face, outfit);
     host.style.setProperty('background-image', img ? `url("${img}")` : '', 'important');
     host.textContent = img ? '' : (who.slice(0, 1) || '◈');
     host.style.setProperty('flex', '0 0 44px', 'important');
@@ -341,17 +387,20 @@
     host.title = `${who} · 点击查看 / 更换头像`;
     host.setAttribute('data-okh-ava-key', avatarKey(who));
     host.setAttribute('data-okh-ava-face', face);
+    host.setAttribute('data-okh-ava-form', outfit);
     host.setAttribute(DONE, '1');
   }
 
   function refreshAvatars() {
+    loadPortraitFrames();
     const docs = getTargetDocuments();
     for (const doc of docs) {
       if (!doc?.querySelectorAll) continue;
       const avas = doc.querySelectorAll('[data-okh-ava]');
       for (let i = 0; i < avas.length; i++) {
         const avatar = avas[i];
-        paint(avatar, avatar.getAttribute('data-okh-ava') || '', expressionFor(avatar));
+        const who = avatar.getAttribute('data-okh-ava') || '';
+        paint(avatar, who, expressionFor(avatar), outfitFor(avatar, who));
       }
     }
   }
@@ -360,6 +409,7 @@
     if (!alive) return;
     injectGlobalStyles();
     ME = playerName();
+    loadPortraitFrames();
     const docs = scope ? [scope] : getTargetDocuments();
     for (let di = 0; di < docs.length; di++) {
       const doc = docs[di];
@@ -389,9 +439,10 @@
         if (holder) {
           holder.style.setProperty('order', right ? '2' : '0', 'important');
           const face = expressionFor(holder);
+          const outfit = outfitFor(holder, who);
           if (!holder.hasAttribute(DONE) || holder.getAttribute('data-okh-ava-key') !== avatarKey(who) ||
-              holder.getAttribute('data-okh-ava-face') !== face) {
-            paint(holder, who, face);
+              holder.getAttribute('data-okh-ava-face') !== face || holder.getAttribute('data-okh-ava-form') !== outfit) {
+            paint(holder, who, face, outfit);
           }
         }
 
@@ -502,7 +553,7 @@
     const box = modal.querySelector('[data-okh-bmodal-box]');
     const status = modal.querySelector('[data-okh-bmodal-status]');
     if (title) title.textContent = `${label} · 气泡头像`;
-    if (status) status.textContent = '默认头像保存在当前浏览器，用于没有专用表情图的对白。';
+    if (status) status.textContent = '自定义默认头像保存在当前浏览器，用于常态下无专用表情的对白。';
     showZoomPortrait(box, src, label);
     modal.setAttribute('data-okh-bmodal-who', label);
     modal.classList.add('active');
@@ -572,7 +623,7 @@
             const key = STORE_PREFIX + avatarKey(who);
             if (saveStore(key, dataUrl)) {
               if (modal?.getAttribute('data-okh-bmodal-who') === who) {
-                showZoomPortrait(box, imageFor(who, expressionFor(returnFocus)), who);
+                showZoomPortrait(box, imageFor(who, expressionFor(returnFocus), outfitFor(returnFocus, who)), who);
                 if (status) status.textContent = `${who}的默认头像已保存。`;
               }
               refreshAvatars();
@@ -599,11 +650,25 @@
     if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     const who = ava.getAttribute('data-okh-ava') || '';
-    openZoom(imageFor(who, expressionFor(ava)), who, ava);
+    loadPortraitFrames();
+    openZoom(imageFor(who, expressionFor(ava), outfitFor(ava, who)), who, ava);
   }
 
   function onGlobalKeyDown(event) {
     if (event.key === 'Escape') closeZoom();
+  }
+
+  function scheduleApply() {
+    if (!alive || timer !== null) return;
+    timer = setTimeout(() => {
+      timer = null;
+      apply();
+    }, 40);
+  }
+
+  function invalidate() {
+    portraitStateDirty = true;
+    scheduleApply();
   }
 
   function boot() {
@@ -626,13 +691,7 @@
       doc.addEventListener('keydown', onGlobalKeyDown, true);
 
       if (typeof MutationObserver !== 'undefined' && doc.body) {
-        const obs = new MutationObserver(() => {
-          if (timer) return;
-          timer = setTimeout(() => {
-            timer = null;
-            apply();
-          }, 40);
-        });
+        const obs = new MutationObserver(scheduleApply);
         obs.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-okh-face'] });
         observers.push(obs);
       }
@@ -640,7 +699,9 @@
 
     if (!poll) {
       poll = setInterval(() => {
-        if (playerName() !== ME) apply();
+        const previous = portraitChat;
+        loadPortraitFrames();
+        if (playerName() !== ME || portraitChat !== previous) apply();
       }, 1500);
     }
   }
@@ -655,6 +716,9 @@
     pendingInput?.remove();
     pendingInput = null;
     returnFocus = null;
+    portraitChat = null;
+    portraitFrames = {};
+    portraitStateDirty = true;
     for (const doc of mountedDocuments) {
       doc.removeEventListener('click', onAvatarClick, true);
       doc.removeEventListener('keydown', onAvatarClick, true);
@@ -678,7 +742,9 @@
     refreshAvatars,
     openZoom,
     closeZoom,
-    imageFor
+    imageFor,
+    formsFor,
+    invalidate
   });
 
 })(typeof globalThis !== 'undefined' ? globalThis : this);
