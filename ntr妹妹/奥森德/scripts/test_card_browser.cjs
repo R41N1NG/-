@@ -28,7 +28,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   }
   await checkAvatar();
   const initial=await page.evaluate(()=>cardWorld());assert.equal(initial.timeMin,1080);assert.equal(initial.npcs.ed.monitored,false);assert.equal(initial.flags.arrived_oakhaven,false);
-  assert.equal(await page.locator('#chat .okh-map-guide').count(),1);assert(!(await page.locator('.narrative').innerText()).includes('<status_bar>'));
+  assert.equal(await page.locator('#chat .okh-map-guide').count(),1);assert(!(await page.locator('#chat .narrative').innerText()).includes('<status_bar>'));
   assert(await page.evaluate(()=>previewContext.chat[0].mes.includes('<status_bar>')),'Display filtering changed raw messages');
   await page.locator('.okh-m-image img').evaluate(img=>img.decode());await page.locator('.okh-hud-canvas').screenshot({path:path.join(dir,'开场效果.jpg'),type:'jpeg',quality:91});
   assert.equal(await page.getByRole('button',{name:'镇内',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'旅店',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'奥克赫斯镇',exact:true}).count(),0);
@@ -50,9 +50,29 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   const counts=await page.evaluate(()=>cardListenerCounts());for(const [name,count]of Object.entries(counts))assert.equal(count,1,'Duplicate listener '+name);
   await page.setViewportSize({width:1080,height:1000});await page.getByRole('button',{name:'二层 · 客房',exact:true}).click();await page.getByRole('button',{name:'查看妮丝的房间',exact:true}).click();
   await page.locator('#send_textarea').fill('');await page.getByRole('button',{name:'› 敲门拜访',exact:true}).click();assert.equal((await page.locator('#send_textarea').inputValue()).split('轻轻敲门').length-1,1);
+  await page.getByRole('button',{name:'演示：古兰表情',exact:true}).click();
+  const expressionExample=page.locator('#expression-example');
+  const portraitSources=['neutral','reprimand','smile'].map(face=>'data:image/webp;base64,'+
+   fs.readFileSync(path.join(__dirname,'../对白头像/古兰',face+'.webp')).toString('base64'));
+  await page.waitForFunction(()=>document.querySelectorAll('#expression-example [data-okh-ava-done]').length===3);
+  assert.deepEqual(await expressionExample.locator('[data-okh-ava]').evaluateAll(nodes=>nodes.map(node=>node.style.backgroundImage)),portraitSources.map(src=>`url("${src}")`));
+  assert(!(await expressionExample.innerText()).includes('[smile]'));
+  await expressionExample.locator('[data-okh-ava]').last().click();
+  assert.equal(await modal.locator('img').getAttribute('src'),portraitSources[2]);
+  await modal.locator('img').evaluate(img=>img.decode());
+  await modal.getByRole('button',{name:'关闭',exact:true}).click();
+  await page.evaluate(()=>appendCardReply('<content>\n古兰：[cry]“没有这张图。”\n古兰：[表情写错]“这句话也保留。”\n妮丝：[smile]“这是我的对白。”\n伯里：\n“我明白。”\n</content>'));
+  const reply=page.locator('#chat .mes[is_user=false]').last();
+  await page.waitForFunction(()=>[...document.querySelectorAll('#chat .mes[is_user=false]')].at(-1).querySelectorAll('[data-okh-ava-done]').length===4);
+  assert.deepEqual(await reply.locator('[data-okh-dlg-body]').allTextContents(),['没有这张图。','这句话也保留。','这是我的对白。','我明白。']);
+  assert.deepEqual(await reply.locator('[data-okh-ava]').evaluateAll(nodes=>nodes.map(node=>node.style.backgroundImage)),[`url("${portraitSources[0]}")`,`url("${portraitSources[0]}")`,'','']);
+  assert.equal(await reply.locator('.side-right[data-okh-speaker="伯里"]').count(),1);
+  await reply.locator('[data-okh-dlg]').first().evaluate(row=>row.setAttribute('data-okh-face','smile'));
+  await page.waitForFunction(()=>[...document.querySelectorAll('#chat .mes[is_user=false]')].at(-1).querySelector('[data-okh-ava]').getAttribute('data-okh-ava-face')==='smile');
+  assert.equal(await reply.locator('[data-okh-ava]').first().evaluate(node=>node.style.backgroundImage),`url("${portraitSources[2]}")`);
   assert(!requests.some(url=>/regional-art|town-art|upper-scene|ground-scene|map-ink\.woff|journal-page/.test(url)),'Maps or font depended on a network download');
   assert.deepEqual(errors,[]);await page.evaluate(()=>document.getElementById('card-helper').contentWindow.OKH_APP.stop());
   assert.equal(await modal.count(),0);assert.equal(await page.evaluate(()=>bubbleListenerCount()),0);
-  console.log('PASS: embedded card payload; native helper startup; greeting; four map views; six rooms; guarded identity; draft input; read-only browsing; mobile; unload/reload; one listener owner; map/font offline');
+  console.log('PASS: embedded card payload; native helper startup; greeting; four map views; six rooms; guarded identity; draft input; read-only browsing; mobile; unload/reload; one listener owner; offline maps, fonts and dialogue expressions');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

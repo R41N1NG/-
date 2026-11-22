@@ -61,6 +61,7 @@
     '艾琳': '',
     '爱德': ''
   };
+  const EXPRESSION_AVATARS = /* __OKH_BUBBLE_AVATARS__ */ {};
 
   function store(key) {
     try { return root.localStorage?.getItem(key); } catch (_) { return null; }
@@ -113,13 +114,20 @@
     return isPlayer(who) ? PLAYER_KEY : who;
   }
 
-  function imageFor(who) {
+  function expressionFor(host) {
+    return (host?.closest('[data-okh-dlg]')?.getAttribute('data-okh-face') || '').toLowerCase();
+  }
+
+  function imageFor(who, face = '') {
+    const faces = Object.hasOwn(EXPRESSION_AVATARS, who) ? EXPRESSION_AVATARS[who] : {};
+    if (face && face !== 'neutral' && Object.hasOwn(faces, face)) return faces[face];
+
     const key = avatarKey(who);
     const custom = store(STORE_PREFIX + key);
     if (custom && /^(data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+|https:\/\/[^\s"\\]+)$/i.test(custom)) {
       return custom;
     }
-    const def = DEFAULT_AVATARS[who];
+    const def = faces.neutral || DEFAULT_AVATARS[who];
     if (def && /^(data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+|https:\/\/[^\s"\\]+)$/i.test(def)) {
       return def;
     }
@@ -305,8 +313,8 @@
     }
   }
 
-  function paint(host, who) {
-    const img = imageFor(who);
+  function paint(host, who, face) {
+    const img = imageFor(who, face);
     host.style.setProperty('background-image', img ? `url("${img}")` : '', 'important');
     host.textContent = img ? '' : (who.slice(0, 1) || '◈');
     host.style.setProperty('flex', '0 0 44px', 'important');
@@ -332,6 +340,7 @@
     host.setAttribute('aria-label', `${who}的头像，点击查看或上传`);
     host.title = `${who} · 点击查看 / 更换头像`;
     host.setAttribute('data-okh-ava-key', avatarKey(who));
+    host.setAttribute('data-okh-ava-face', face);
     host.setAttribute(DONE, '1');
   }
 
@@ -341,7 +350,8 @@
       if (!doc?.querySelectorAll) continue;
       const avas = doc.querySelectorAll('[data-okh-ava]');
       for (let i = 0; i < avas.length; i++) {
-        paint(avas[i], avas[i].getAttribute('data-okh-ava') || '');
+        const avatar = avas[i];
+        paint(avatar, avatar.getAttribute('data-okh-ava') || '', expressionFor(avatar));
       }
     }
   }
@@ -378,8 +388,10 @@
 
         if (holder) {
           holder.style.setProperty('order', right ? '2' : '0', 'important');
-          if (!holder.hasAttribute(DONE) || holder.getAttribute('data-okh-ava-key') !== avatarKey(who)) {
-            paint(holder, who);
+          const face = expressionFor(holder);
+          if (!holder.hasAttribute(DONE) || holder.getAttribute('data-okh-ava-key') !== avatarKey(who) ||
+              holder.getAttribute('data-okh-ava-face') !== face) {
+            paint(holder, who, face);
           }
         }
 
@@ -436,9 +448,9 @@
     modal.innerHTML = `
       <div class="okh-ava-overlay-title" data-okh-bmodal-title>头像详情</div>
       <div class="okh-ava-overlay-box" data-okh-bmodal-box style="width:160px;height:200px;"></div>
-      <div class="okh-ava-overlay-tip" data-okh-bmodal-status>选择 PNG、JPEG 或 WebP 图片，自动等比压缩后保存在当前浏览器。</div>
+      <div class="okh-ava-overlay-tip" data-okh-bmodal-status></div>
       <div class="okh-ava-overlay-btns">
-        <button type="button" class="okh-ava-btn" data-okh-bmodal-act="upload">上传 / 更换头像</button>
+        <button type="button" class="okh-ava-btn" data-okh-bmodal-act="upload">更换默认头像</button>
         <button type="button" class="okh-ava-btn" data-okh-bmodal-act="close">关闭</button>
       </div>
     `;
@@ -467,6 +479,20 @@
     returnFocus = null;
   }
 
+  function showZoomPortrait(box, src, label) {
+    if (!box) return;
+    const portrait = box.ownerDocument.createElement(src ? 'img' : 'span');
+    if (src) {
+      portrait.src = src;
+      portrait.alt = label;
+      portrait.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:4px;';
+    } else {
+      portrait.textContent = label.slice(0, 1) || '◈';
+      portrait.style.cssText = 'font-size:54px;font-weight:bold;color:#e2c792;';
+    }
+    box.replaceChildren(portrait);
+  }
+
   function openZoom(src, label, host) {
     closeZoom();
     returnFocus = host || null;
@@ -476,14 +502,8 @@
     const box = modal.querySelector('[data-okh-bmodal-box]');
     const status = modal.querySelector('[data-okh-bmodal-status]');
     if (title) title.textContent = `${label} · 气泡头像`;
-    if (status) status.textContent = '选择 PNG、JPEG 或 WebP 图片，自动等比压缩后保存在当前浏览器。';
-    if (box) {
-      if (src) {
-        box.innerHTML = `<img src="${src}" alt="${label}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">`;
-      } else {
-        box.innerHTML = `<span style="font-size:54px;font-weight:bold;color:#e2c792;">${label.slice(0, 1) || '◈'}</span>`;
-      }
-    }
+    if (status) status.textContent = '默认头像保存在当前浏览器，用于没有专用表情图的对白。';
+    showZoomPortrait(box, src, label);
     modal.setAttribute('data-okh-bmodal-who', label);
     modal.classList.add('active');
     modal.querySelector('[data-okh-bmodal-act="upload"]')?.focus();
@@ -551,8 +571,10 @@
 
             const key = STORE_PREFIX + avatarKey(who);
             if (saveStore(key, dataUrl)) {
-              if (box) box.innerHTML = `<img src="${dataUrl}" alt="${who}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;">`;
-              if (status) status.textContent = isPlayer(who) ? '主角头像已保存，全场主角发言已同步更新！' : `${who} 的头像已成功保存并即刻生效！`;
+              if (modal?.getAttribute('data-okh-bmodal-who') === who) {
+                showZoomPortrait(box, imageFor(who, expressionFor(returnFocus)), who);
+                if (status) status.textContent = `${who}的默认头像已保存。`;
+              }
               refreshAvatars();
             } else {
               fail('保存失败：浏览器本地存储空间已满。');
@@ -577,7 +599,7 @@
     if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     const who = ava.getAttribute('data-okh-ava') || '';
-    openZoom(imageFor(who), who, ava);
+    openZoom(imageFor(who, expressionFor(ava)), who, ava);
   }
 
   function onGlobalKeyDown(event) {
@@ -611,7 +633,7 @@
             apply();
           }, 40);
         });
-        obs.observe(doc.body, { childList: true, subtree: true });
+        obs.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-okh-face'] });
         observers.push(obs);
       }
     }

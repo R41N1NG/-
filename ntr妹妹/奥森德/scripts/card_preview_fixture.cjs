@@ -4,7 +4,7 @@ function cardPreviewHtml(card){
  return `<!doctype html><html lang="zh-CN"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>奥克赫斯 · 整卡地图导入预览</title>
 <style>*{box-sizing:border-box}body{margin:0;padding:20px 12px 40px;background:#090705;color:#e8dfd3;font:13px/1.7 'Noto Sans CJK SC','Microsoft YaHei',sans-serif}.preview-info,#chat,#send_form{max-width:800px;margin:0 auto 16px}.preview-info{color:#ad9e87;font-size:12px}.preview-info button{min-height:44px;border:1px solid #685439;background:#21180e;color:#dfc89a;padding:8px 14px;font:inherit;cursor:pointer}#send_textarea{width:100%;min-height:90px;background:#110d09;color:#f6ead5;border:1px solid #685439;padding:12px;font:inherit}.narrative{white-space:pre-line;line-height:1.9;color:#d7c8b5}.mes{margin:18px 0}.mes[is_user=true]{color:#a19178}.okh-hud-canvas{box-shadow:none!important}@media(max-width:480px){body{padding:10px 8px 24px}.okh-hud-canvas{padding:13px 12px 20px!important}}</style>
 <div class="preview-info">整卡导入验证：直接读取新版 JSON 中的脚本和显示正则，模拟酒馆助手接口；沙盒存档与真实聊天隔离。<br>可先浏览地图，再用下方按钮演示抵镇入住。</div><main id="chat"></main>
-<div class="preview-info"><button id="demo-arrive" type="button" disabled>演示：抵镇入住</button> <button id="demo-reload" type="button" disabled>重载卡内脚本</button><p id="preview-status" role="status">正在启动卡内脚本…</p></div>
+<div class="preview-info"><button id="demo-arrive" type="button" disabled>演示：抵镇入住</button> <button id="demo-expressions" type="button" disabled aria-expanded="false" aria-controls="expression-example">演示：古兰表情</button> <button id="demo-reload" type="button" disabled>重载卡内脚本</button><p id="preview-status" role="status">正在启动卡内脚本…</p><div id="expression-example" class="narrative" hidden></div></div>
 <form id="send_form" onsubmit="return false"><label for="send_textarea">行动草稿（只填入，不自动发送）</label><textarea id="send_textarea"></textarea></form>
 <script id="card-payload" type="application/json">${json}</script>
 <script>
@@ -45,6 +45,17 @@ window.reloadCard=async()=>{document.getElementById('card-helper').remove();awai
 window.previewReady=launchCard().then(()=>{
  document.getElementById('preview-status').textContent='卡内脚本已启动 · 地图和状态栏可操作';
  document.getElementById('demo-arrive').disabled=false;document.getElementById('demo-reload').disabled=false;
+ const expressionButton=document.getElementById('demo-expressions'),expressionExample=document.getElementById('expression-example');
+ expressionButton.disabled=false;
+ expressionButton.onclick=()=>{
+  if(!expressionExample.hasChildNodes())expressionExample.innerHTML=display([
+   '古兰：“今晚在这里扎营。”',
+   '古兰：[reprimand]“我说过，过桥前先看脚下。”',
+   '古兰：[smile]“来，坐近一点。汤还热着。”'
+  ].join('\\n'));
+  expressionExample.hidden=!expressionExample.hidden;
+  expressionButton.setAttribute('aria-expanded',String(!expressionExample.hidden));
+ };
  document.getElementById('demo-arrive').onclick=async()=>{
   try{await appendCardReply('<content>演示回执：救下爱德后抵镇，并在旅店入住。</content><status_bar><time elapsed="30"/><prologue_step flag="ed_joined"/><prologue_step flag="arrived_oakhaven"/><move to="inn"/></status_bar>');document.getElementById('demo-arrive').disabled=true;document.getElementById('preview-status').textContent='已通过实际回执进入旅店，现可点选房间拟定行动。'}catch(e){document.getElementById('preview-status').textContent=e.message}
  };

@@ -1,0 +1,16 @@
+{
+  "古兰": {
+    "neutral": {
+      "file": "古兰/neutral.webp",
+      "cue": "沉静，日常说话"
+    },
+    "smile": {
+      "file": "古兰/smile.webp",
+      "cue": "眼神放软，露出克制的微笑"
+    },
+    "reprimand": {
+      "file": "古兰/reprimand.webp",
+      "cue": "已经开口训诫，指出失误"
+    }
+  }
+}
