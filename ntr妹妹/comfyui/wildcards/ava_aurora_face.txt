@@ -1,0 +1,9 @@
+# 奥萝拉 · 头像表情差分（每行一档，仅 D 段；金框眼镜每档必带）
+(dazed:1.2), (half-closed eyes:1.15), blank stare, (small frown:1.05), parted lips, (blue eyes:1.15), (gold-rimmed glasses:1.15)
+upturned eyes, (looking up:1.1), (teary eyes:1.15), worried, (small frown:1.15), (blush:1.1), apologetic expression, (gold-rimmed glasses:1.15)
+(eyebrows down:1.15), (worried:1.15), (small frown:1.1), (sweatdrop:1.1), (blush:1.05), troubled, (gold-rimmed glasses:1.15)
+(wide-eyed:1.1), (raised eyebrows:1.1), (sweatdrop:1.2), (open mouth:1.05), flustered, (blush:1.15), (gold-rimmed glasses:1.15)
+(relaxed eyes:1.1), (gentle smile:1.15), closed mouth, (light blush:1.05), (blue eyes:1.15), (gold-rimmed glasses:1.15)
+(heavy blush:1.2), (looking down:1.2), (biting lip:1.1), eyebrows down, (teary eyes:1.1), ashamed, (gold-rimmed glasses:1.15)
+(teary eyes:1.2), (looking down:1.15), (small frown:1.15), (biting lip:1.05), guilty, (blue eyes:1.15), (gold-rimmed glasses:1.15)
+(empty eyes:1.2), (half-closed eyes), (broken smile:1.05), (drooling:1.05), mind break, (gold-rimmed glasses:1.15)

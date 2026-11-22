@@ -1,0 +1,9 @@
+# 妮丝 · 头像表情差分（每行一档，仅 D 段，配 __nise_anchor__ 使用）
+(half-closed eyes:1.15), (tsurime:1.15), raised eyebrows, (evil smile:1.2), (showing teeth:1.1), fangs, single fang, smug, (red eyes:1.2)
+(wide eyes:1.05), upturned eyes, (innocent smile:1.1), closed mouth, (light blush:1.05), fangs, single fang
+(narrowed eyes:1.1), (tsurime), (furrowed brow:1.1), (pout:1.2), (blush:1.1), annoyed, fangs, single fang
+(half-closed eyes:1.1), (looking down on viewer:1.15), raised eyebrows, (smirk:1.2), (showing teeth:1.05), arrogant, fangs, single fang
+(wide-eyed:1.15), (raised eyebrows:1.15), (open mouth:1.1), (sweatdrop:1.15), flustered, fangs, single fang
+(forced smile:1.25), (awkward smile:1.15), (heavy blush:1.15), (sweatdrop:1.2), (looking away:1.1), (teary eyes:1.05), fangs, single fang
+(teary eyes:1.2), eyebrows down, (biting lip:1.2), (clenched teeth:1.05), (heavy blush:1.2), (looking down:1.15), fangs, single fang
+(empty eyes:1.25), (half-closed eyes), (broken smile:1.1), (drooling:1.05), blush, fangs, single fang, mind break

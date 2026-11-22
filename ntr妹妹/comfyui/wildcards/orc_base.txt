@@ -1,0 +1,2 @@
+# 兽人基础锚点（绿色皮肤固定 · 单行 = 每次展开一致）
+orc, monster, male focus, green skin, (green skin:1.3), muscular male, tall male, huge muscles, abs, pectorals, veins, tusks, fangs, sharp teeth, pointed ears, bald, red eyes

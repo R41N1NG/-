@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <!-- 金属高光渐变 -->
+    <linearGradient id="goldH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#faecc8"/>
+      <stop offset="25%" stop-color="#dfb971"/>
+      <stop offset="65%" stop-color="#9a7130"/>
+      <stop offset="100%" stop-color="#543c16"/>
+    </linearGradient>
+    <linearGradient id="goldV" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#faecc8"/>
+      <stop offset="25%" stop-color="#dfb971"/>
+      <stop offset="65%" stop-color="#9a7130"/>
+      <stop offset="100%" stop-color="#543c16"/>
+    </linearGradient>
+    <radialGradient id="cornerGold" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="20%" stop-color="#faecc8"/>
+      <stop offset="55%" stop-color="#c99e4f"/>
+      <stop offset="85%" stop-color="#734e1c"/>
+      <stop offset="100%" stop-color="#3d280d"/>
+    </radialGradient>
+    <radialGradient id="rivet" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#f5d687"/>
+      <stop offset="100%" stop-color="#4a310c"/>
+    </radialGradient>
+    <!-- 羊皮纸底心微滤镜 -->
+    <filter id="centerNoise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="n"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.55  0 0 0 0.06 0"/>
+    </filter>
+  </defs>
+
+  <!-- 中心羊皮底板 (28..68) -->
+  <rect x="0" y="0" width="96" height="96" fill="#1b1612"/>
+  <rect x="12" y="12" width="72" height="72" fill="#15110e" filter="url(#centerNoise)"/>
+
+  <!-- 4条边缘金属导轨 (宽度 8px，带阴阳凹凸高光) -->
+  <!-- 顶边 -->
+  <rect x="28" y="2" width="40" height="2" fill="#faecc8" opacity="0.9"/>
+  <rect x="28" y="4" width="40" height="4" fill="url(#goldH)"/>
+  <rect x="28" y="8" width="40" height="2" fill="#30200b"/>
+  <!-- 底边 -->
+  <rect x="28" y="86" width="40" height="2" fill="#30200b"/>
+  <rect x="28" y="88" width="40" height="4" fill="url(#goldH)"/>
+  <rect x="28" y="92" width="40" height="2" fill="#faecc8" opacity="0.9"/>
+  <!-- 左边 -->
+  <rect x="2" y="28" width="2" height="40" fill="#faecc8" opacity="0.9"/>
+  <rect x="4" y="28" width="4" height="40" fill="url(#goldV)"/>
+  <rect x="8" y="28" width="2" height="40" fill="#30200b"/>
+  <!-- 右边 -->
+  <rect x="86" y="28" width="2" height="40" fill="#30200b"/>
+  <rect x="88" y="28" width="4" height="40" fill="url(#goldV)"/>
+  <rect x="92" y="28" width="2" height="40" fill="#faecc8" opacity="0.9"/>
+
+  <!-- 4个中世纪哥特金属重装雕花角标 (各 28x28) -->
+  <!-- 左上角 (0..28, 0..28) -->
+  <g id="cornerAsset">
+    <path d="M2 2 L26 2 C20 4 15 8 13 14 C11 20 6 24 2 26 Z" fill="url(#cornerGold)" stroke="#2a1b0b" stroke-width="0.8"/>
+    <path d="M4 4 L22 4 C17 5.8 13.5 9 11.5 14 C9.5 19 6 22 4 23.5 Z" fill="#241a13"/>
+    <!-- 蔓草叶脉 -->
+    <path d="M5 5 C9 5 14 7 16 11 C17.5 14 16 17 13 17 C10 17 9 15 10 13 C10.8 11.5 12.5 11 13 11.5" stroke="#faecc8" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <!-- 铆钉 -->
+    <circle cx="6.5" cy="6.5" r="2.2" fill="url(#rivet)" stroke="#1a1106" stroke-width="0.6"/>
+    <circle cx="23" cy="5" r="1.4" fill="url(#rivet)"/>
+    <circle cx="5" cy="23" r="1.4" fill="url(#rivet)"/>
+  </g>
+
+  <!-- 右上角 (68..96, 0..28) -->
+  <use href="#cornerAsset" transform="translate(96, 0) scale(-1, 1)"/>
+  <!-- 左下角 (0..28, 68..96) -->
+  <use href="#cornerAsset" transform="translate(0, 96) scale(1, -1)"/>
+  <!-- 右下角 (68..96, 68..96) -->
+  <use href="#cornerAsset" transform="translate(96, 96) scale(-1, -1)"/>
+</svg>

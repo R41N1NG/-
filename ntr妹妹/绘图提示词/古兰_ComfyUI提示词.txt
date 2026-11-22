@@ -1,0 +1,361 @@
+==================================================
+古兰（GULUN）· ComfyUI / SDXL-Danbooru 英文 Tag 绘图提示词
+==================================================
+
+【一、通用质量底噪（正面）】
+masterpiece, best quality, amazing quality, very aesthetic, absurdres, highres, ultra-detailed, detailed face, detailed eyes, cinematic lighting, soft rim light, depth of field, film grain, (semi-realistic:0.55),
+
+--- Pony / Illustrious 系模型改用：
+score_9, score_8_up, score_7_up, score_6_up, source_anime, (rating_explicit:1.1),
+
+【二、角色外观锚点（每条必带 · 完整版，无省略）】
+1girl, solo, (mature female:1.2), milf, older woman, (half-dragon:1.15), dragon girl,
+(black horns:1.3), (horns on sides of head:1.15), (horns at temples:1.1), symmetric horns, two horns, curved horns, crescent horns, horns curving backward, smooth horns, glossy horns, obsidian horns, horn sheen, dragon horns, horns above ears, horns behind ears, horns pointing backward, hair around horns,
+pointed ears, slit pupils, amber eyes,
+long black hair, straight hair, hair past waist, blunt bangs,
+sharp eyebrows, narrow eyes, sharp gaze, (crow's feet:0.9), wrinkles around eyes, mature face, elegant facial features,
+stern expression, serious, cold demeanor, dignified,
+voluptuous, curvy figure, (wide hips:1.1), (thick thighs:1.1), huge breasts, large areolae, deep cleavage, pale skin, soft body,
+black dress, long dress, high collar, traditional clothes, gold trim, long sleeves, side slit,
+
+※ 服装为可替换槽位：上一行【black dress … side slit】为常服专用。
+  婚纱场景整段删除常服，换婚纱槽位，禁止叠穿：
+  white wedding dress, bridal gown, lace, long skirt, white veil, high collar wedding dress, (garter belt:1.0), white thighhighs, white gloves, bouquet,
+
+【三、通用负面】
+worst quality, low quality, normal quality, lowres, jpeg artifacts, blurry, out of focus,
+bad anatomy, bad hands, extra fingers, missing fingers, fused fingers, extra limbs, extra arms, extra legs, deformed, disfigured, malformed limbs, mutated, long neck, bad proportions,
+ugly, text, watermark, signature, username, logo, border, frame,
+censored, mosaic censoring, bar censor, pixelated,
+child, loli, shota, flat chest, petite, muscular female, bodybuilder, veins, cross-eyed, extra eyes, extra breasts,
+red thighhighs, red pantyhose, red stockings, colored pantyhose, gradient legs, zettai ryouiki,
+--- Pony 系追加负面：score_6, score_5, score_4, source_pony, source_furry, source_cartoon,
+
+==================================================
+【场景 A｜日常 · 练武场挥剑修行】
+==================================================
+[正面 · 追加]
+training ground, outdoor dojo, stone floor, wooden fence, dust in air, morning light, backlight,
+holding greatsword, two-handed sword, sword raised overhead, sword swing, dynamic pose, motion blur, flowing hair, wind, cloth fluttering,
+focused, serious, (sweat:0.8), sweat on skin, sweat on face,
+black dress with side slit, bare leg, thigh visible,
+full body, from side, low angle, cinematic composition,
+
+[参数] 832x1216 / steps 30 / cfg 6 / dpmpp_2m + karras
+
+==================================================
+【场景 B｜异常期 · 精神控制当众失态（不出现法杖本体）】
+==================================================
+[正面 · 追加]
+mind control, hypnotized, trance, possessed, (empty eyes:1.15), glowing eyes, glowing pupils, spiral eyes,
+magical aura, (purple glow:1.1), purple light on skin, floating particles, glowing runes on skin,
+body moving on its own, involuntary, (forced orgasm:1.05), trembling, knees together, standing, hands limp, slack jaw,
+flushed face, blush, half-closed eyes, parted lips, drooling, lewd expression, ashamed, resisting,
+(crowd:0.8), people watching, blurred background, public indecency,
+black dress, disheveled clothes, slipping off shoulder,
+upper body, from front, dutch angle, dramatic lighting,
+--- 负面追加（本场景专用）：staff, magic staff, holding staff, wand, scepter, magic circle,
+
+[参数] 832x1216 / steps 32 / cfg 5.5 / dpmpp_3m_sde + karras
+
+==================================================
+【场景 C｜沉沦期 · 练武场群体侵犯】
+==================================================
+[正面 · 追加]
+group sex, multiple boys, (muscular male:1.1), large male, size difference,
+spitroast, standing sex, from behind, doggystyle, grabbing waist, hands on hips,
+clothes torn, torn dress, breasts out, huge breasts, bouncing breasts, nipples, large areolae,
+sweat, heavy breathing, flushed, steam, sweat drops,
+ahegao, rolling eyes, tongue out, lewd expression, (rolling eyes:1.05),
+training ground, outdoor, blurry background,
+full body, from side, dynamic angle,
+
+[参数] 1216x832 / steps 30 / cfg 6 / dpmpp_2m + karras
+
+==================================================
+【场景 D｜臣服期 · 黑巨汉“几分钟调教”】
+==================================================
+[正面 · 追加]
+dark-skinned male, black male, (huge penis:1.2), size difference, penis in pussy,
+missionary, on back, spread legs, legs up, gripping sheets, arched back,
+(rolling eyes:1.15), ahegao, white eyes, tears, crying, weeping, drooling, tongue out,
+trembling, overstimulation, orgasm, wet, pussy juice,
+creampie, cum in pussy, cum overflow, after sex,
+luxury bedroom, casino room, dim lighting, candle light,
+full body, from above, pov,
+
+[参数] 832x1216 / steps 30 / cfg 6 / dpmpp_2m + karras / 建议 HiResFix 1.5x
+
+==================================================
+【场景 E｜终局 · 身穿婚纱的仪式（服装整段替换）】
+==================================================
+[正面 · 追加]（先删除常服槽位 black dress 那一段）
+wedding dress, bride, white wedding dress, bridal gown, lace, long skirt, white veil, bridal veil, (garter belt:1.05), white thighhighs, white gloves, bouquet,
+church, cathedral, altar, stained glass, candles, priest, (crowd:0.9), guests, public,
+standing sex, skirt lift, dress lifted, pulled aside, from behind,
+orgasm, ahegao, rolling eyes, flushed, ecstasy, blasphemous, sacred and profane,
+lactation, breast milk, milk, leaking milk,
+sweat, tears of pleasure,
+full body, wide shot, symmetrical composition, god rays,
+--- 负面追加（本场景专用）：black dress, long dress, side slit, traditional clothes, 
+
+[参数] 1216x832 / steps 32 / cfg 6 / dpmpp_3m_sde + karras
+
+==================================================
+【场景 F｜训教 · 把伯里摁在膝盖上打屁股】
+==================================================
+[正面 · 追加]
+spanking, over the knee, sitting, hand on buttocks, red buttocks, handprint on buttocks,
+looking back, scolding, displeased, frown, condescending, motherly,
+black dress, mature female dominant, pov, first-person view,
+indoor, dim light, wooden floor, traditional room,
+from above, close-up on buttocks,
+
+[参数] 832x1216 / steps 28 / cfg 6 / dpmpp_2m + karras
+
+==================================================
+【场景 G｜堕落瞬间 · 婚纱大肥屁股摇颤（特写）】
+==================================================
+[正面 · 追加]
+wedding dress, from behind, ass focus, (huge ass:1.2), thick ass, wide hips,
+ass shake, trembling, jiggle, motion lines,
+bent over, hands on knees, looking back, flushed face, half-closed eyes,
+white thighhighs, white stockings, garter belt, bridal lingerie,
+church interior, blurred background, warm light,
+close-up on buttocks, low angle,
+
+[参数] 1216x832 / steps 30 / cfg 6 / dpmpp_2m + karras
+
+==================================================
+【四、权重与工程贴士】
+==================================================
+1. 鱼尾纹/眼周细纹：`(crow's feet:0.85)` 或 `(wrinkles around eyes:0.7)`。SDXL 底模容易把它画成老妪，建议 0.7~0.9 之间；出图后若过重，用局部重绘（inpaint）把权重降到 0.5。
+2. 丰腴而非肥胖：`voluptuous, soft body, thick thighs` 必带，负面里务必保留 `muscular female, bodybuilder`，否则容易出健美体型。
+3. 巨乳尺度：`huge breasts` 已足够；要到“肥硕雪腻”，用 `(huge breasts:1.15), heavy breasts, sagging`（熟女下垂感），不要再加 `gigantic breasts`，会崩。
+4. 主母威严感：`stern expression, dignified, cold demeanor` 与 `blush, ahegao` 天然冲突。威严场景（A/F）用 CFG 6.5；堕落场景（B/C/D/E）把 `stern` 降到 0.8 或直接删掉，只留 `mature face, elegant facial features` 保脸型。
+5. 半龙人特征容易被模型忽略：`(half-dragon:1.15), (black horns:1.3), (horns on sides of head:1.15), (horns at temples:1.1), symmetric horns, two horns, curved horns, crescent horns, horns curving backward, smooth horns, glossy horns, obsidian horns, horn sheen, dragon horns, horns above ears, hair around horns, slit pupils` 三个放最前面；若仍丢失，改用 `dragon girl` + LoRA「dragon features」。
+6. ComfyUI 节点建议：KSampler → VAE Decode → 可选 FaceDetailer（脸+眼周）+ Hand Detailer；婚纱场景追加 `wedding dress` LoRA 权重 0.6。
+7. 分句用 BREAK 隔开「角色锚点 / 场景动作 / 画质」，可减少 tag 串味：
+   例：`1girl, solo, mature female, ... BREAK group sex, multiple boys, ... BREAK masterpiece, best quality, ...`
+8. 分辨率：竖构图 832x1216，横构图 1216x832；不要直接 1024x1024 出全身，构图会挤。群像场景先 1216x832 再 HiResFix 1.4x。
+
+==================================================
+【五、五个故事线场景 · 体位 × 体味 双轨设计】
+==================================================
+说明：SDXL 画不出“气味”，气味必须转成可见载体——汗、湿、蒸汽、烟雾、香灰、蜡油、皮肉反光、漫画式气味线。
+本组每一场都配了「体味可视化 tag」，直接粘贴即可。
+
+--------------------------------------------------
+场景 1｜正常期 · 主母寝室（与伯里，抱坐位）
+--------------------------------------------------
+[剧情] 深夜，她刚卸下重剑，剑柄的茧还压在掌心。伯里替她解衣带时手抖，她低声道"手稳些，废物儿子"。最后是她自己跨坐上去，腰沉得极慢，主母连情事都像在教剑理。
+[体味] 铁与剑油、旧木熏香、汗、龙人发情期特有的麝香。
+[正面 · 追加]
+lotus position, sitting on lap, facing each other, embracing, arms around neck,
+(mature female:1.2), black dress unbuttoned, half undressed, dress off shoulders, bare shoulders, huge breasts pressed,
+sweat, (glistening skin:1.1), (damp skin:1.0), steam from body, heavy breathing, blush,
+stern expression, gentle gaze, half-closed eyes, biting lip,
+traditional room, candle light, wooden floor, incense smoke, incense burner,
+from side, intimate lighting, soft focus, warm color,
+
+[参数] 832x1216 / steps 30 / cfg 6 / dpmpp_2m + karras
+
+--------------------------------------------------
+场景 2｜异常期 · 练武场回廊（法杖初控，当众失态 · 靠墙立位）
+--------------------------------------------------
+[剧情] 长老法杖的光落在她背上那一瞬，重剑脱手。她背抵着潮湿石墙，一条腿被人抬起，嘴里还在念"成何体统"，身体却先一步软下去。走廊尽头有人驻足。
+[体味] 石墙的霉与潮、法杖灼出的臭氧焦味、香灰、汗。
+[正面 · 追加]
+against wall, wall sex, standing, leg lift, hands on wall, body pressed to wall,
+mind control, hypnotized, (empty eyes:1.15), glowing eyes, glowing pupils, magical aura, (purple glow:1.1),
+involuntary, trembling, knees buckling, slack jaw, drooling, forced orgasm,
+disheveled clothes, torn dress, exposed breasts, dark dress,
+stone corridor, torch light, wet stone, dim light, (crowd:0.7), blurred figures, public indecency,
+from side, dutch angle, dramatic lighting,
+--- 本场景负面：staff, magic staff, holding staff, wand, scepter, magic circle,
+
+[参数] 832x1216 / steps 32 / cfg 5.5 / dpmpp_3m_sde + karras
+
+--------------------------------------------------
+场景 3｜沉沦期 · 练武场群体（后入 + 双插 · 全武场的气味）
+--------------------------------------------------
+[剧情] 以"切磋"为名围上来的壮汉们，把她的黑裙扯到腰上。沙土地扬起尘土，汗味、铁器味、男人们的体味混成一片，她的训斥声被撞碎成断续的气音。
+[体味] 汗酸、尘土、铁器、皮革护具、龙人麝香被逼出来后的甜腥。
+[正面 · 追加]
+gangbang, multiple boys, (muscular male:1.15), (large male:1.1), size difference,
+doggystyle, on all fours, from behind, arched back, head down, (gripping tail:0.9),
+double penetration, vaginal and anal, two males, sandwiched, penis in pussy,
+clothes torn, dress around waist, breasts out, huge breasts, bouncing breasts,
+sweat, (sweat drops:1.15), (glistening skin:1.1), steam, (dust:1.05), heavy breathing, red buttocks,
+ahegao, (rolling eyes:1.1), tongue out, drooling, tears, mind break,
+training ground, outdoor, sand, wooden fence, afternoon light,
+from behind, low angle, full body, motion blur,
+
+[参数] 1216x832 / steps 30 / cfg 6 / dpmpp_2m + karras
+
+--------------------------------------------------
+场景 4｜沉沦期 · 赌场 VIP（屈曲位 · 雪茄与铜臭）
+--------------------------------------------------
+[剧情] 黑巨汉把整袋金币倒在赌桌上，她才坐下。几分钟后她已被按在散落的纸牌上，膝弯压到胸口。房间里雪茄的焦油味、烈酒、皮革，还有金币被体温焐热的铜腥。
+[体味] 雪茄烟、朗姆酒、皮革沙发、金币铜腥、汗。
+[正面 · 追加]
+mating press, on back, on table, knees to chest, folded legs, legs pressed down, deep penetration, penis in pussy,
+dark-skinned male, black male, (huge penis:1.2), size difference,
+casino table, playing cards scattered, (gold coins:1.1), casino chips, cigar smoke, (smoke:1.0), dim red light, velvet,
+sweat, glistening skin, trembling, arched back, toes curling,
+(rolling eyes:1.15), ahegao, white eyes, tears, drooling, blush,
+creampie, cum overflow, after sex,
+from above, full body, high contrast lighting,
+
+[参数] 832x1216 / steps 30 / cfg 6 / dpmpp_2m + karras / HiResFix 1.5x
+
+--------------------------------------------------
+场景 5｜臣服期 · 婚礼仪式（抱起位 · 乳香与蜡油）
+--------------------------------------------------
+[剧情] 婚纱的裙摆被抱起来那一刻，她还在回答牧师"愿意"。教堂里全是乳香与蜡烛烧化的蜡油味，混着她自己漏出的奶腥。她一边被顶得说不出话，一边抬手去教训站在下面的伯里。
+[体味] 乳香、蜂蜡烛油、婚纱布料的新浆味、奶腥、汗。
+[正面 · 追加]（先用婚纱槽位替换常服）
+wedding dress, bride, white wedding dress, bridal gown, lace, long skirt, white veil, bridal veil, white gloves,
+standing carry, suspended, lifted, legs around waist, arms around neck, dress lifted, skirt lift, penis in pussy,
+church, cathedral, altar, stained glass, (incense smoke:1.1), candle wax, dripping wax, candles, (crowd:0.9), priest, public,
+orgasm, ahegao, rolling eyes, flushed, ecstasy, blasphemous, sacred and profane,
+lactation, breast milk, leaking milk, sweat, tears of pleasure,
+from below, full body, low angle, god rays, symmetrical composition,
+--- 本场景负面：black dress, long dress, side slit, traditional clothes,
+
+[参数] 1216x832 / steps 32 / cfg 6 / dpmpp_3m_sde + karras
+
+--------------------------------------------------
+【体味可视化对照表（模型只认可见物）】
+--------------------------------------------------
+汗味/体味 → sweat, sweat drops, glistening skin, damp skin, wet hair, steam from body
+熟女体香 → (scent lines:0.8), aroma, perfume, musk, flushed skin
+龙人麝香 → steam from body, dragon scales, heat haze, (glowing skin:0.6)
+铁与剑油 → sword, oil stains, metal, worn leather
+石墙潮湿 → wet stone, moss, dripping water, damp
+法杖焦味 → ozone, purple glow, burnt mark, magic sparkles
+尘土汗酸 → dust, dirt on skin, sand, sweat mixed with dirt
+雪茄与酒 → cigar smoke, smoke, wine glass, spilled liquor
+金币铜腥 → gold coins, treasure, shiny metal, coins on skin
+乳香与蜡油 → incense smoke, incense burner, dripping wax, candle wax, cathedral
+--------------------------------------------------
+
+==================================================
+【六、标准交付格式 · 完整可粘贴（人设锚点 + 场景 + 负面）】
+==================================================
+今后所有提示词一律按此三段式交付：① 人设锚点 ② 场景追加 ③ 负面。
+单人场景锚点保留 `solo`；多人场景把 `solo` 删掉，并把 `1girl` 换成 `1girl, multiple boys`。
+
+【古兰·人设锚点（通用，原样保留）】
+masterpiece, best quality, amazing quality, very aesthetic, absurdres, highres, ultra-detailed, detailed face, detailed eyes, cinematic lighting, soft rim light, depth of field, film grain, (semi-realistic:0.55),
+1girl, solo, (mature female:1.2), milf, older woman, (half-dragon:1.15), dragon girl, (black horns:1.3), (horns on sides of head:1.15), (horns at temples:1.1), symmetric horns, two horns, curved horns, crescent horns, horns curving backward, smooth horns, glossy horns, obsidian horns, horn sheen, dragon horns, horns above ears, hair around horns, pointed ears, slit pupils, amber eyes,
+long black hair, straight hair, hair past waist, blunt bangs, sharp eyebrows, narrow eyes, sharp gaze, (crow's feet:0.9), wrinkles around eyes, mature face, elegant facial features,
+stern expression, serious, cold demeanor, dignified, voluptuous, curvy figure, (wide hips:1.1), (thick thighs:1.1), huge breasts, large areolae, deep cleavage, pale skin, soft body,
+
+【古兰·负面（通用）】
+worst quality, low quality, normal quality, lowres, jpeg artifacts, blurry, out of focus,
+bad anatomy, bad hands, extra fingers, missing fingers, fused fingers, extra limbs, extra arms, extra legs, deformed, disfigured, malformed limbs, mutated, long neck, bad proportions,
+ugly, text, watermark, signature, username, logo, border, frame,
+censored, mosaic censoring, bar censor, pixelated,
+child, loli, shota, flat chest, petite, muscular female, bodybuilder, veins, cross-eyed, extra eyes, extra breasts,
+red thighhighs, red pantyhose, red stockings, colored pantyhose, gradient legs, zettai ryouiki,
+
+--------------------------------------------------
+【完整版 1｜寝室抱坐位】
+--------------------------------------------------
+masterpiece, best quality, amazing quality, absurdres, ultra-detailed, detailed face, cinematic lighting, film grain, (semi-realistic:0.55),
+1girl, solo, (mature female:1.2), milf, older woman, (half-dragon:1.15), dragon girl, (black horns:1.3), (horns on sides of head:1.15), (horns at temples:1.1), symmetric horns, two horns, curved horns, crescent horns, horns curving backward, smooth horns, glossy horns, obsidian horns, horn sheen, dragon horns, horns above ears, hair around horns, pointed ears, slit pupils, amber eyes, long black hair, straight hair, hair past waist, blunt bangs, sharp eyebrows, narrow eyes, (crow's feet:0.9), mature face, elegant facial features, voluptuous, (wide hips:1.1), (thick thighs:1.1), huge breasts, large areolae, pale skin, soft body,
+BREAK black dress unbuttoned, half undressed, dress off shoulders, bare shoulders,
+BREAK lotus position, sitting on lap, facing each other, embracing, arms around neck, huge breasts pressed,
+BREAK sweat, (glistening skin:1.1), steam from body, heavy breathing, blush, gentle gaze, half-closed eyes,
+BREAK traditional room, candle light, wooden floor, incense smoke, incense burner,
+BREAK from side, intimate lighting, soft focus, full body,
+
+【完整版 2｜回廊靠墙立位】
+--------------------------------------------------
+masterpiece, best quality, absurdres, ultra-detailed, detailed face, cinematic lighting, film grain,
+1girl, solo, (mature female:1.2), (half-dragon:1.15), dragon girl, (black horns:1.3), (horns on sides of head:1.15), (horns at temples:1.1), symmetric horns, two horns, curved horns, crescent horns, horns curving backward, smooth horns, glossy horns, obsidian horns, horn sheen, dragon horns, horns above ears, hair around horns, slit pupils, amber eyes, long black hair, hair past waist, (crow's feet:0.9), mature face, elegant facial features, voluptuous, (wide hips:1.1), (thick thighs:1.1), huge breasts, pale skin,
+BREAK black dress, disheveled clothes, torn dress, exposed breasts,
+BREAK against wall, wall sex, standing, leg lift, hands on wall, body pressed to wall,
+BREAK mind control, hypnotized, (empty eyes:1.15), glowing eyes, magical aura, (purple glow:1.1), involuntary, trembling, knees buckling, slack jaw, drooling, blush,
+BREAK stone corridor, torch light, wet stone, dim light, (crowd:0.7), blurred figures, public indecency,
+BREAK from side, dutch angle, dramatic lighting, full body,
+
+【完整版 3｜练武场群体】
+--------------------------------------------------
+masterpiece, best quality, absurdres, ultra-detailed, cinematic lighting, film grain,
+1girl, multiple boys, (mature female:1.2), (half-dragon:1.15), dragon girl, (black horns:1.3), (horns on sides of head:1.15), (horns at temples:1.1), symmetric horns, two horns, curved horns, crescent horns, horns curving backward, smooth horns, glossy horns, obsidian horns, horn sheen, dragon horns, horns above ears, hair around horns, slit pupils, amber eyes, long black hair, hair past waist, (crow's feet:0.9), mature face, voluptuous, (wide hips:1.1), (thick thighs:1.1), huge breasts, pale skin, sweat,
+BREAK clothes torn, dress around waist, breasts out, huge breasts, bouncing breasts,
+BREAK gangbang, (muscular male:1.15), (large male:1.1), size difference, doggystyle, on all fours, from behind, arched back, double penetration, two males, penis in pussy,
+BREAK sweat drops, (glistening skin:1.1), steam, (dust:1.05), red buttocks, (rolling eyes:1.1), ahegao, tongue out, drooling, tears,
+BREAK training ground, outdoor, sand, wooden fence, afternoon light,
+BREAK from behind, low angle, motion blur, full body,
+
+【完整版 4｜赌场 VIP 屈曲位】
+--------------------------------------------------
+masterpiece, best quality, absurdres, ultra-detailed, cinematic lighting, high contrast,
+1girl, 1boy, (mature female:1.2), (half-dragon:1.15), dragon girl, (black horns:1.3), (horns on sides of head:1.15), (horns at temples:1.1), symmetric horns, two horns, curved horns, crescent horns, horns curving backward, smooth horns, glossy horns, obsidian horns, horn sheen, dragon horns, horns above ears, hair around horns, slit pupils, amber eyes, long black hair, hair past waist, (crow's feet:0.9), mature face, voluptuous, (wide hips:1.1), huge breasts, pale skin, sweat, glistening skin,
+BREAK dark-skinned male, black male, (huge penis:1.2), size difference,
+BREAK mating press, on back, on table, knees to chest, folded legs, legs pressed down, deep penetration, penis in pussy, arched back, toes curling,
+BREAK casino table, playing cards scattered, (gold coins:1.1), casino chips, cigar smoke, dim red light, velvet,
+BREAK (rolling eyes:1.15), ahegao, white eyes, tears, drooling, blush, creampie, cum overflow,
+BREAK from above, full body, high contrast lighting,
+
+【完整版 5｜婚礼抱起位】
+--------------------------------------------------
+masterpiece, best quality, absurdres, ultra-detailed, cinematic lighting, god rays,
+1girl, (mature female:1.2), (half-dragon:1.15), dragon girl, (black horns:1.3), (horns on sides of head:1.15), (horns at temples:1.1), symmetric horns, two horns, curved horns, crescent horns, horns curving backward, smooth horns, glossy horns, obsidian horns, horn sheen, dragon horns, horns above ears, hair around horns, slit pupils, amber eyes, long black hair, hair past waist, (crow's feet:0.9), mature face, elegant facial features, voluptuous, (wide hips:1.1), huge breasts, pale skin,
+BREAK wedding dress, bride, white wedding dress, bridal gown, lace, long skirt, white veil, (garter belt:1.05), white gloves,
+BREAK standing carry, suspended, lifted, legs around waist, arms around neck, dress lifted, skirt lift, penis in pussy,
+BREAK orgasm, ahegao, rolling eyes, ecstasy, blasphemous, lactation, breast milk, leaking milk, sweat, tears of pleasure,
+BREAK church, cathedral, altar, stained glass, incense smoke, dripping wax, candles, (crowd:0.9), priest, public,
+BREAK from below, low angle, full body, symmetrical composition,
+
+
+
+==================================================
+【七、龙角固定规范（黑色 · 太阳穴起始）】
+==================================================
+【为什么角每次都不一样】
+1. 原文把角写成 dragon horns —— 这是个类别词，不是形状词。丹波里 dragon horns 涵盖羊角、鹿角、独角、龙鳞角、
+   白角、发光角，模型每次抽取的子概念都不同，形状自然每次都变。
+2. 没有写颜色。dragon horns 默认跟随整体配色，黑发+黑裙时角容易被画成白色或银灰色来"提亮轮廓"。
+3. 没有写位置。"角在哪"模型理解为可自由发挥的装饰，常跑到头顶、额头或向后脑长。
+4. 侧脸/背身构图下，角是自由点缀物，模型没有锚点可依。
+
+【固定用 tag（正面，紧跟在 half-dragon 后面，顺序不要动）】
+(black horns:1.3), (horns on sides of head:1.15), (horns at temples:1.1), symmetric horns, two horns,
+curved horns, smooth horns, glossy horns, obsidian horns, horn sheen, dragon horns, horns behind ears,
+
+【位置强化（成对使用，缺一个都会飘）】
+horns between hair strands, hair around horns, horns above ears, horns pointing backward, horns curving back,
+
+【形状锁定（选一种写死，绝对不要同时写两种）】
+A 弯月角：curved horns, crescent horns, horns curving backward
+B 短直角：straight horns, short horns, pointed horns
+C 螺旋角：spiral horns, twisted horns
+※ 三选一，混写会出分叉、断角、四只角。
+
+【负面（每次必带）】
+white horns, silver horns, gold horns, glowing horns, luminous horns, ram horns, antlers, deer antlers, single horn,
+broken horn, extra horns, uneven horns, horns on forehead, horns on top of head, demon horns,
+horn ornament, helmet, headpiece,
+
+【发色与角分离（黑角贴黑发会"消失"）】
+glossy horns, horn sheen, (rim light on horns:1.1), black horns, dark grey highlight
+—— 靠高光把黑角和黑发的边界划出来，不然远看像没长角。
+
+【工程级固定方案（按稳定性排序）】
+1. 【最稳】做角部 LoRA：裁 20~30 张满意的角，训练 800~1200 step，触发词 gulun horns，权重 0.8。
+2. 【次稳】IP-Adapter 参考图：找一张角的位置、形状、颜色都对的图，挂 IP-Adapter（plus / faceid 均可），权重 0.6~0.75，只锁头肩区域。
+3. 【构图锁】ControlNet Lineart：自己描一张正面/四分之三侧的头骨+角线稿，Lineart 权重 0.7，从头到尾只用这一张。
+4. 【低成本】固定 seed + 固定构图：先把种子抽到一张角正确的图，之后所有场景沿用同 seed、同 ront view / 	hree-quarter view，只改场景描述。
+5. 【兜底】出图后 Inpaint 修角：只框住角部区域，用固定短句 (black horns:1.4), horns at temples, glossy, symmetric 重绘，denoise 0.45~0.55。
+
+【视角建议（角最不容易崩的角度）】
+front view ＞ three-quarter view ＞ side view ＞ from behind
+侧脸时角只有一只入镜，模型会自己"补"第二只，导致三只角或断角——侧构图务必加 	wo horns, symmetric horns，或干脆用 ControlNet。
+
+【参数建议】
+cfg 5.5~6.0（cfg 越高角越容易被"加戏"成发光/金色）
+hires fix 阶段不要换 prompt，保持角描述原样，否则二次采样会把角重画成另一种形状。

@@ -1,0 +1,9 @@
+# 席德 · 头像表情差分（每行一档，仅 D 段；八字胡与玉扳指每档必带）
+(smile:1.15), (relaxed eyes:1.05), closed mouth, (half-closed eyes:1.05), amiable, (mustache:1.15), (jade ring:1.1)
+(half-closed eyes:1.15), raised eyebrows, (smirk:1.1), closed mouth, calculating, (mustache:1.15), (jade ring:1.1)
+(narrowed eyes:1.15), (furrowed brow:1.15), (lips pressed:1.1), frown, displeased, (mustache:1.15), (jade ring:1.1)
+(half-closed eyes:1.2), (eyebrows down:1.1), (smile:1.05), (lips pressed:1.05), (narrowed eyes:1.1), sinister, (mustache:1.15), (jade ring:1.1)
+(narrowed eyes:1.2), (furrowed brow:1.2), (clenched teeth:1.1), angry, glaring, (mustache:1.15), (jade ring:1.1)
+(wide-eyed:1.15), (raised eyebrows:1.15), (open mouth:1.1), (sweat:1.15), (trembling:1.1), panicking, (mustache:1.15), (jade ring:1.1)
+(half-closed eyes:1.15), raised eyebrows, (smirk:1.2), (showing teeth:1.05), smug, confident, (mustache:1.15), (jade ring:1.1)
+(expressionless:1.2), (narrowed eyes:1.1), (lips pressed:1.15), eyebrows down, cold expression, sinister, (mustache:1.15), (jade ring:1.1)

@@ -1,0 +1,9 @@
+# 古兰 · 头像表情差分（每行一档，仅 D 段；角与竖瞳每档必带）
+open eyes, (calm eyes:1.1), neutral eyebrows, closed mouth, (amber eyes:1.15), (black horns:1.2), slit pupils, expressionless
+(half-closed eyes:1.1), (expressionless:1.15), eyebrows down, lips pressed, (amber eyes:1.15), (black horns:1.2), slit pupils, cold expression, serious
+(narrowed eyes:1.2), glaring, (furrowed brow:1.2), (clenched teeth:1.15), frown, (amber eyes:1.2), (black horns:1.2), slit pupils, angry
+(half-closed eyes), (teary eyes:1.05), eyebrows down, (clenched teeth:1.1), (sweatdrop:1.1), pained, pale, (black horns:1.2), slit pupils
+(half-closed eyes:1.1), raised eyebrows, (smirk:1.15), closed mouth, (amber eyes:1.15), (black horns:1.2), slit pupils, smug
+(wide-eyed:1.15), (raised eyebrows:1.15), (open mouth:1.05), o mouth, (amber eyes:1.15), (black horns:1.2), slit pupils, surprised
+(half-closed eyes:1.15), eyebrows down, (parted lips), (tired eyes:1.15), exhausted, (black horns:1.2), slit pupils
+(glowing eyes:1.15), (amber eyes:1.2), slit pupils, (glowing pupils:1.1), (narrowed eyes), (clenched teeth:1.1), (red glow:1.1), angry

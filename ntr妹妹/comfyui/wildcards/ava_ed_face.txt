@@ -1,0 +1,9 @@
+# 爱德 · 头像表情差分（每行一档，仅 D 段；8 岁男童，粗麻旧衣每档必带）
+(wide eyes:1.1), (looking up:1.1), eyebrows down, closed mouth, timid, shy, (ragged clothes:1.1)
+(happy:1.1), (open mouth smile:1.1), (blush:1.1), (teary eyes:1.05), grateful, (ragged clothes:1.1)
+(teary eyes:1.25), (holding back tears:1.1), eyebrows down, (biting lip:1.05), (blush:1.05), (ragged clothes:1.1)
+(wide-eyed:1.15), (raised eyebrows:1.1), (open mouth:1.1), (sweatdrop:1.15), flustered, (ragged clothes:1.1)
+(narrowed eyes:1.05), eyebrows down, (lips pressed:1.15), serious, determined, (ragged clothes:1.1)
+(looking down:1.15), (half-closed eyes:1.05), eyebrows down, closed mouth, sad, (ragged clothes:1.1)
+(wide-eyed:1.2), (raised eyebrows:1.15), (open mouth:1.15), o mouth, surprised, (ragged clothes:1.1)
+(half-closed eyes:1.2), (closed mouth), sleepy, calm, (ragged clothes:1.1)

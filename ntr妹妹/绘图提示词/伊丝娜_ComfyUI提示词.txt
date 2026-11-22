@@ -1,0 +1,400 @@
+==================================================
+伊丝娜（ISNA）· ComfyUI / SDXL-Danbooru 英文 Tag 绘图提示词
+==================================================
+
+【一、通用质量底噪（正面）】
+masterpiece, best quality, amazing quality, very aesthetic, absurdres, highres, ultra-detailed, detailed face, detailed eyes, cinematic lighting, soft rim light, depth of field, film grain, (semi-realistic:0.55),
+
+--- Pony / Illustrious 系：
+score_9, score_8_up, score_7_up, score_6_up, source_anime, (rating_explicit:1.1),
+
+【二、角色外观锚点（每条必带）】
+1girl, solo, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), crimson hair, long hair, wavy hair, hair ornament,
+golden eyes, slit pupils, (cat smile:0.8), sharp canine tooth, cat mouth,
+※ 发色锁死：red hair 固定 1.25 权重；负面加 blonde hair, yellow hair, gold hair，防止旧习惯把发色带成金色。
+(blush:1.1), drunk blush, half-closed eyes, lazy expression, smirk,
+huge breasts, large areolae, pink nipples, cleavage, pale skin, soft body, (wide hips:1.1), (thick thighs:1.1), (huge ass:1.15),
+black shorts, denim shorts, short shorts, (red miniskirt:1.1), micro skirt, crop top, red top, midriff, navel,
+dagger, knife sheath, thigh strap, fingerless gloves, thief outfit, boots,
+
+※ 服装为可替换槽位：以上三行「black shorts … boots」为【常服】专用。
+  婚纱场景必须整段删除常服，换成婚纱槽位，绝不可叠穿混用。
+  婚纱槽位：white wedding dress, bridal gown, lace, long skirt, white veil, bridal veil, (garter belt:1.0), white thighhighs, white gloves, bouquet,
+
+【三、通用负面】
+worst quality, low quality, normal quality, lowres, jpeg artifacts, blurry, out of focus,
+bad anatomy, bad hands, extra fingers, missing fingers, fused fingers, extra limbs, extra arms, extra legs, deformed, disfigured, malformed limbs, mutated, bad proportions,
+ugly, text, watermark, signature, username, logo, border, frame,
+censored, mosaic censoring, bar censor, pixelated,
+child, loli, flat chest, petite, muscular female, bodybuilder, cross-eyed, extra eyes, extra ears, extra tail, two tails,
+red thighhighs, red pantyhose, red stockings, colored pantyhose, gradient legs, thighhighs, pantyhose, zettai ryouiki,
+blonde hair, yellow hair, gold hair,
+--- Pony 系追加负面：score_6, score_5, score_4, source_pony, source_furry, source_cartoon,
+
+==================================================
+【场景 A｜日常 · 慵懒馋猫讨食】
+==================================================
+[正面 · 追加]
+tavern, wooden table, indoor, warm lamp light, wine bottle, wine glass, drunk, tipsy,
+leaning forward, leaning on person, (leaning on shoulder:0.9), hand on own chest, reaching out, hand out, begging,
+lazy, sleepy, one eye closed, blush, open mouth, licking lips, tongue out, food on face,
+crop top, midriff, shorts, thigh gap,
+upper body, close-up, from front, shallow depth of field,
+
+[参数] 832x1216 / steps 30 / cfg 6 / dpmpp_2m + karras
+
+==================================================
+【场景 B｜勾引 × 反悔（核心张力）】
+==================================================
+[正面 · 追加]
+seductive, teasing, bedroom eyes, smirk, blush,
+hand on own breast, fingers on nipple, pulling down shorts, shorts partially pulled down, panties, white panties,
+leaning forward, bent over, arched back, thighs together,
+flustered, embarrassed, (shy:1.05), stiff, awkward smile, looking away,
+inn interior, dim light, bed, candle,
+upper body, from front, from below, soft focus,
+
+[参数] 832x1216 / steps 30 / cfg 6 / dpmpp_3m_sde + karras
+
+==================================================
+【场景 C｜异常期 · 兽人营地归来（说谎的猫耳）】
+==================================================
+[正面 · 追加]
+standing, doorway, inn room, night, moonlight,
+trembling, (trembling ears:1.2), drooping ears, cat ears twitching, twitching,
+awkward smile, forced smile, sweat on face, blush, avoiding eye contact,
+red miniskirt, torn clothes, (handprint on thigh:1.1), red handprint, bruised, messy hair,
+covering body, arm across chest,
+full body, from front, dutch angle, cold lighting,
+
+[参数] 832x1216 / steps 32 / cfg 5.8 / dpmpp_2m + karras
+
+==================================================
+【场景 D｜兽人营地 · 被俘成“专属宠物”】
+==================================================
+[正面 · 追加]
+orc, monster, (monster boy:1.05), muscular male, multiple boys, size difference,
+captive, bound wrists, rope, collar, leash, chain,
+doggy style, from behind, on all fours, kneeling, face down ass up,
+clothes torn, shorts ripped, breasts out, huge breasts, bouncing breasts, sweat, steam,
+ahegao, (rolling eyes:1.05), tongue out, drooling, tears,
+military camp, tent, campfire, night, outdoors,
+full body, from side, dynamic angle,
+
+[参数] 1216x832 / steps 30 / cfg 6 / dpmpp_2m + karras
+
+==================================================
+【场景 E｜爱德法杖控制 · 只表现精神控制，不出现法杖本体】
+==================================================
+[正面 · 追加]
+mind control, hypnotized, trance, possessed, (empty eyes:1.15), glowing eyes, glowing pupils, spiral eyes,
+magical aura, (purple glow:1.1), purple light on skin, floating particles, glowing runes on skin, magic sparkles,
+body moving on its own, involuntary, (forced orgasm:1.05), trembling, arched back, knees buckling, hands limp, slack jaw, drooling,
+half-lidded eyes, lewd expression, blush, dazed, mind broken,
+cat ears drooping, (cat tail limp:1.0),
+cat girl, crop top, shorts, disheveled, exposed breasts,
+full body, from front, dramatic lighting, vignette, lens flare,
+--- 负面追加（本场景专用）：staff, magic staff, holding staff, wand, scepter, magic circle, weapon in hand,
+
+[参数] 832x1216 / steps 32 / cfg 5.5 / dpmpp_3m_sde + karras
+
+==================================================
+【场景 F｜肥猪领主 · 金币买来的宠物（猫娘本体，无犬耳犬尾）】
+==================================================
+[正面 · 追加]
+fat man, ugly man, (obese male:1.15), rich clothes, noble, lord, jewelry, crown,
+gold coins, money, treasure, scattered coins, chest of coins,
+pet play, collar, leash, (cat collar:1.05), bell on collar, (tail plug:1.0),
+on all fours, crawling, head lowered, (cat pose:1.05), arching back, (cat tail raised:1.1), tail swaying,
+cat ears flattened, ears back, submissive,
+ahegao, tongue out, drooling, blush, humiliated, teary eyes,
+noble bedroom, luxury, marble, candles,
+full body, from behind, low angle,
+--- 负面追加（本场景专用）：dog ears, dog tail, dog girl, puppy ears, puppy tail, animal ears other than cat,
+
+[参数] 1216x832 / steps 30 / cfg 6 / dpmpp_2m + karras
+
+==================================================
+【场景 G｜赌场黑巨汉 · VIP 房间沦陷】
+==================================================
+[正面 · 追加]
+dark-skinned male, black male, (huge penis:1.2), size difference, penis in pussy,
+missionary, on back, spread legs, gripping sheets, arched back, toes curling,
+gold coins, money on bed, casino chips, vip room, dim red lighting, smoke,
+(rolling eyes:1.15), ahegao, white eyes, tears, drooling, tongue out,
+trembling, overstimulation, orgasm, wet, pussy juice, sweat,
+creampie, cum in pussy, cum overflow,
+full body, from above, pov,
+
+[参数] 832x1216 / steps 30 / cfg 6 / dpmpp_2m + karras / HiResFix 1.5x
+
+==================================================
+【场景 H｜结婚仪式 · 身穿婚纱（服装整段替换，不混常服）】
+==================================================
+[正面 · 追加]（删除常服槽位后再拼这一段）
+wedding dress, bride, white wedding dress, bridal gown, lace, long skirt, white veil, bridal veil, (garter belt:1.05), white thighhighs, white gloves, bouquet,
+church, cathedral, altar, priest, (crowd:0.9), guests, public,
+standing sex, skirt lift, dress lifted, from behind, pulled aside,
+orgasm, ahegao, rolling eyes, ecstasy, blissful, shameless,
+(cat smile:1.0), smirk, looking at viewer, mocking, contempt,
+(cat tail:1.1), tail swaying, (tail plug:1.0),
+lactation, sweat, tears of pleasure,
+full body, wide shot, symmetrical composition, god rays,
+--- 负面追加（本场景专用）：crop top, shorts, miniskirt, midriff, navel, thief outfit, dagger, 
+
+[参数] 1216x832 / steps 32 / cfg 6 / dpmpp_3m_sde + karras
+
+==================================================
+【场景 I｜训教 · 打屁股特写】
+==================================================
+[正面 · 追加]
+spanking, over the knee, ass focus, (red buttocks:1.15), handprint on buttocks,
+black shorts pulled down, shorts around one leg, panties pulled down,
+ass shake, jiggle, motion lines, trembling,
+looking back, teary eyes, blush, pout, crying,
+indoor, wooden floor, dim light,
+close-up on buttocks, from behind, low angle,
+
+[参数] 832x1216 / steps 28 / cfg 6 / dpmpp_2m + karras
+
+==================================================
+【四、权重与工程贴士】
+==================================================
+0. ★ 三条硬规则（主人钦定，优先于其他一切）：
+   (1) 精神控制场景只画「被控结果」——glowing eyes / spiral eyes / magical aura / involuntary，绝不出现法杖、法杖把手、魔法阵等法器本体，负面固定加 `staff, magic staff, holding staff, wand, scepter`。
+   (2) 宠物犬玩法只是姿态与项圈牵引，她永远是猫娘——猫耳猫尾必须保留，负面固定加 `dog ears, dog tail, dog girl, puppy ears`。
+   (3) 婚纱就是直接穿婚纱：常服槽位（black shorts / red miniskirt / crop top / dagger / thigh strap）整段删除，不得与 wedding dress 叠穿，负面加 `crop top, shorts, miniskirt, midriff, thief outfit, dagger`。
+1. 猫耳/猫尾最容易丢：`(cat ears:1.2), (cat tail:1.15)` 放在 tag 最前段；尾巴建议给一个明确姿态（`tail raised` / `tail swaying`），否则模型常省略。
+2. “毛茸茸”质感：加 `fluffy ears, fur, ear fluff`；SDXL 常画成塑料感，可配 furry 细节 LoRA 权重 0.4。
+3. 醉红晕：`drunk blush, tipsy` 组合最稳；单独 `blush` 会变成害羞。要“酒醉”就加 `drunk, wine bottle, half-closed eyes`。
+4. 保守 × 暴露的反差：场景 A/B 用 `crop top, midriff` 保留火辣；出现 `shy, looking away, awkward smile` 才是她的人设精髓，别全用 `seductive`。
+5. 巨乳与热裤：`huge breasts` + `black shorts, short shorts` + `(thick thighs:1.1)`；热裤勒肉感用 `tight shorts, thigh squish`，出现崩坏就删 `thigh squish`。
+6. 场景 C 的“说谎猫耳”：`(trembling ears:1.2), twitching` 是关键表情语言，配合 `forced smile, sweat on face` 效果最好。
+7. 场景 F 的肥猪领主：`fat man, ugly man` 权重别超 1.15，否则会把女主脸部污染成肥胖脸——建议两个人分开出图后合成，或用区域提示（regional prompt）。
+8. tag 分段防串味：`1girl, solo, cat girl, ... BREAK group sex, multiple boys, ... BREAK masterpiece, best quality, ...`
+9. 分辨率：单人 832x1216，横构图 1216x832；群像/全景先 1216x832 → HiResFix 1.4x。
+
+==================================================
+【五、性爱体位库（多体位 · 直接复制粘贴）】
+==================================================
+用法：角色锚点（去掉 solo） + 下面任意一条体位块 + 表情块 + 场景块 + 画质。
+体位块里已含视角与身体朝向，尽量不要再叠第二个视角 tag，否则构图会打架。
+
+--------------------------------------------------
+A. 正面位（男方在上 / 女方在下）
+--------------------------------------------------
+A1 传教士：
+missionary, on back, lying on bed, spread legs, legs up, arms around neck, eye contact, face-to-face, penis in pussy, from above, full body,
+
+A2 屈曲位（压腿）：
+mating press, on back, knees to chest, folded legs, legs pressed down, deep penetration, penis in pussy, arched back, from above, full body,
+
+A3 侧入正面：
+on side, one leg lifted, leg lift, facing each other, penis in pussy, lying on side, from side, full body,
+
+A4 床边垂腿：
+on back, on bed edge, legs hanging off bed, standing male, holding thighs, penis in pussy, from side, full body,
+
+A5 抱腿深入：
+on back, (legs up:0.9), holding own legs, ankles together, penetration, from front, low angle, full body,
+
+A6 蛙趴正面：
+on back, knees out, spread legs, soles of feet together, penetration, from above, full body,
+
+--------------------------------------------------
+B. 后入系（她最常用的败北构图）
+--------------------------------------------------
+B1 标准后入：
+doggystyle, on all fours, from behind, arched back, head down, penis in pussy, full body, from behind,
+
+B2 趴伏后入（prone bone）：
+prone bone, lying on stomach, face down, from behind, arms forward, ass up, penis in pussy, from above, full body,
+
+B3 面朝下翘臀：
+face down ass up, on all fours, head down, arched back, from behind, ass focus, penis in pussy, low angle, full body,
+
+B4 站立后入：
+standing doggystyle, standing, bent over, hands on wall, from behind, leg spread, penis in pussy, full body, from side,
+
+B5 扶桌后入：
+bent over table, hands on table, from behind, table, papers falling, penis in pussy, from behind, full body,
+
+B6 抓尾后入（猫娘专属）：
+doggystyle, from behind, (gripping tail:1.15), tail pulled, cat tail held, arched back, penis in pussy, from behind, close-up,
+
+B7 压头后入：
+doggystyle, from behind, (head pushed down:1.1), face in pillow, hand on head, penis in pussy, from above, full body,
+
+--------------------------------------------------
+C. 骑乘系（她主动/被摆布）
+--------------------------------------------------
+C1 正面骑乘：
+cowgirl position, girl on top, straddling, sitting on penis, hands on male chest, bouncing, breasts bouncing, from below, full body,
+
+C2 前倾骑乘：
+cowgirl position, leaning forward, hugged, breast in face, face-to-face, from side, full body,
+
+C3 反向骑乘：
+reverse cowgirl position, facing away, girl on top, sitting on penis, from behind, ass focus, full body,
+
+C4 反向蹲骑：
+reverse upright straddle, squatting, facing away, on lap, from behind, full body,
+
+C5 跪坐交合（莲花位）：
+lotus position, sitting on lap, facing each other, embracing, penis in pussy, from side, full body,
+
+C6 亚马逊位：
+amazon position, girl on top, legs up, holding partner's legs, from above, full body,
+
+--------------------------------------------------
+D. 侧卧 / 抱位
+--------------------------------------------------
+D1 侧卧后入：
+spooning, lying on side, from behind, leg lift, penis in pussy, from above, full body,
+
+D2 侧卧面对面：
+side-by-side, facing each other, one leg over, penetration, from above, full body,
+
+D3 抱坐位：
+sitting on lap, hugging, face-to-face, penis in pussy, blanket, from side, full body,
+
+D4 侧身抬腿：
+lying on side, leg lift, holding leg, penetration, from front, full body,
+
+--------------------------------------------------
+E. 立位 / 悬空 / 高难
+--------------------------------------------------
+E1 靠墙立位：
+against wall, wall sex, standing, leg lift, hands on wall, penis in pussy, from side, full body,
+
+E2 抱起位：
+standing carry, suspended, legs around waist, arms around neck, holding up, penis in pussy, from below, full body,
+
+E3 全尼尔森：
+full nelson, from behind, arms held, suspended, legs spread, penis in pussy, from front, full body,
+
+E4 打桩机：
+piledriver, upside down, legs over shoulders, on back, from above, full body,
+
+E5 手推车位：
+wheelbarrow, on hands, from behind, standing male, penis in pussy, from side, full body,
+
+E6 单腿抬高立位：
+standing, leg lift, one leg up, holding thigh, penetration, from front, full body,
+
+--------------------------------------------------
+F. 口 / 乳 / 足（前戏与羞辱段）
+--------------------------------------------------
+F1 口交：
+fellatio, blowjob, on knees, looking up, penis, hands on thighs, from above, upper body,
+
+F2 深喉：
+irrumatio, deepthroat, hands on head, tears, drooling, from front, close-up,
+
+F3 乳交：
+paizuri, breasts together, huge breasts, penis between breasts, cum on breasts, from above, upper body,
+
+F4 骑脸：
+face sitting, sitting on face, cunnilingus, thighs around head, from below, full body,
+
+F5 69：
+sixty-nine, mutual oral, lying, from side, full body,
+
+F6 足交 / 腿交：
+footjob, thigh sex, intercrural, between thighs, from side, close-up,
+
+F7 手交 + 颜射：
+handjob, cum on face, facial, tongue out, kneeling, from front, upper body,
+
+--------------------------------------------------
+G. 多人 / 双插（群体与仪式场景）
+--------------------------------------------------
+G1 双插：
+double penetration, vaginal and anal, two males, from behind and front, sandwiched, full body,
+
+G2 前后夹击：
+spitroast, one in mouth one from behind, kneeling, multiple boys, from side, full body,
+
+G3 轮奸队列：
+gangbang, multiple boys, queue, waiting, used, from above, wide shot,
+
+G4 包围：
+surrounded, multiple boys, hands on body, groping, from above, full body,
+
+G5 事后颜射：
+bukkake, cum on face, cum on hair, cum on breasts, kneeling, many males, from front, upper body,
+
+G6 三人抱压：
+threesome, two males one female, sandwiched, double penetration, from side, full body,
+
+--------------------------------------------------
+H. 事后 / 痕迹（收尾镜头）
+--------------------------------------------------
+creampie, cum in pussy, cum overflow, cum drip, after sex, afterglow, used, sweaty, messy hair, red buttocks, handprint on body, bite mark, (gaping:0.9),
+lying, exhausted, limp, half-closed eyes, blissful, drooling, trembling legs, toe curling,
+
+--------------------------------------------------
+I. 表情 / 反应块（与任意体位叠加）
+--------------------------------------------------
+屈服：ahegao, (rolling eyes:1.1), white eyes, tongue out, drooling, tears, blush, mind break, broken,
+羞耻：embarrassed, (shy:1.0), looking away, biting lip, covering face, crying,
+强势：smirk, (cat smile:1.0), looking at viewer, mocking, contempt, half-closed eyes,
+发情：lustful, flushed, panting, sweat, trembling, arched back, nail scratching, gripping sheets,
+
+--------------------------------------------------
+J. 镜头 / 视角块
+--------------------------------------------------
+from above, from below, from behind, from side, pov, dutch angle, close-up, upper body, lower body, full body, wide shot, foreshortening, depth of field, (ass focus:1.1), (breast focus:1.05), 
+
+--------------------------------------------------
+K. 组合公式（照抄即可）
+--------------------------------------------------
+公式：质量底噪 + 角色锚点（删 solo） + BREAK + 体位块 + 表情块 + 场景块 + BREAK + 镜头块
+
+例 1｜兽人营地 · 后入：
+masterpiece, best quality, ... , 1girl, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), long hair, golden eyes, huge breasts, wide hips, thick thighs, nude, BREAK doggystyle, on all fours, from behind, arched back, penis in pussy, orc, muscular male, multiple boys, tent, campfire, night, BREAK ahegao, rolling eyes, tongue out, drooling, sweat, BREAK full body, from behind, cinematic lighting,
+
+例 2｜赌场 VIP · 骑乘：
+... , reverse cowgirl position, facing away, girl on top, sitting on penis, dark-skinned male, huge penis, gold coins, vip room, dim red lighting, BREAK rolling eyes, ahegao, tears, BREAK ass focus, from behind, low angle,
+
+例 3｜婚礼 · 立位：
+... （婚纱槽位）, BREAK standing carry, suspended, legs around waist, penis in pussy, church, altar, crowd, BREAK orgasm, ahegao, rolling eyes, lactation, BREAK full body, from below, god rays,
+
+--------------------------------------------------
+L. 体位常见崩坏与对策
+--------------------------------------------------
+1. 多人体位（双插/群交）解剖必崩：改用 ControlNet OpenPose 摆骨架，或先单人出图再 inpaint 加人。
+2. 手脚数量错乱：负面固定 `extra limbs, extra arms, extra legs, bad hands`；人数超过 3 就分两批出。
+3. 骑乘位容易画成悬空：加 `sitting on penis, weight on thighs, thighs pressed` 稳定接触面。
+4. 立位抱持最容易断腿：加 `legs around waist, arms around neck` 明确四肢去向。
+5. 后入位脸容易消失：加 `looking back, face visible, head turned` 保住表情。
+6. `penis in pussy` 权重给 1.0 就够，给太高会糊成一团色块；要清晰交合特写用 `close-up, lower body, cum` 组合。
+7. 同一张图别塞两个体位 tag（如 cowgirl + doggystyle），模型会折中出畸形构图。
+
+
+==================================================
+【六、标准交付格式 · 完整可粘贴（人设锚点 + 场景 + 负面）】
+==================================================
+今后伊丝娜的提示词一律三段式：① 人设锚点 ② 场景追加 ③ 负面。
+单人保留 solo；多人改 `1girl, multiple boys` 并删掉 solo。
+
+【伊丝娜·人设锚点（通用，原样保留）】
+masterpiece, best quality, amazing quality, very aesthetic, absurdres, highres, ultra-detailed, detailed face, detailed eyes, cinematic lighting, soft rim light, depth of field, film grain, (semi-realistic:0.55),
+1girl, solo, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), crimson hair, long hair, wavy hair,
+golden eyes, slit pupils, (cat smile:0.8), sharp canine tooth, cat mouth, (blush:1.1), drunk blush, half-closed eyes, lazy expression,
+huge breasts, large areolae, pink nipples, cleavage, pale skin, soft body, (wide hips:1.1), (thick thighs:1.1), (huge ass:1.15),
+black shorts, denim shorts, (red miniskirt:1.1), crop top, red top, midriff, navel, dagger, thigh strap, thief outfit, boots,
+
+【伊丝娜·负面（通用）】
+worst quality, low quality, lowres, jpeg artifacts, blurry, bad anatomy, bad hands, extra fingers, missing fingers, fused fingers, extra limbs, extra arms, extra legs, deformed, disfigured, malformed limbs, mutated, bad proportions, ugly, text, watermark, signature, logo, censored, mosaic censoring, pixelated, child, loli, flat chest, petite, muscular female, cross-eyed, extra ears, extra tail, two tails, blonde hair, yellow hair, gold hair,
+
+--------------------------------------------------
+【完整版示例｜赌场 VIP 反向骑乘】
+--------------------------------------------------
+masterpiece, best quality, absurdres, ultra-detailed, cinematic lighting,
+1girl, solo, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), crimson hair, long hair, wavy hair, golden eyes, slit pupils, cat mouth, sharp canine tooth, blush, big breasts, large areolae, pink nipples, pale skin, (wide hips:1.1), (thick thighs:1.1), (huge ass:1.15),
+BREAK black shorts, crop top, red top, midriff,
+BREAK dark-skinned male, black male, (huge penis:1.2), size difference, reverse cowgirl position, facing away, girl on top, sitting on penis,
+BREAK gold coins, casino chips, vip room, dim red lighting, smoke,
+BREAK rolling eyes, ahegao, tears, drooling, sweat, trembling, (cat tail raised:1.1),
+BREAK ass focus, from behind, low angle, full body,

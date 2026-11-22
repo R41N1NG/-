@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="slotGoldH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dfb971"/>
+      <stop offset="50%" stop-color="#73501f"/>
+      <stop offset="100%" stop-color="#1f160a"/>
+    </linearGradient>
+    <linearGradient id="slotGoldV" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#dfb971"/>
+      <stop offset="50%" stop-color="#73501f"/>
+      <stop offset="100%" stop-color="#1f160a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 内凹手札底 (14..34) -->
+  <rect x="0" y="0" width="48" height="48" fill="#17120e"/>
+  <!-- 深度内阴影 -->
+  <rect x="4" y="4" width="40" height="40" fill="#0f0c09" rx="3"/>
+
+  <!-- 4边导轨金属槽 (微凹刻痕) -->
+  <!-- 顶 -->
+  <rect x="14" y="1" width="20" height="1.5" fill="#e8c98e" opacity="0.75"/>
+  <rect x="14" y="2.5" width="20" height="2" fill="url(#slotGoldH)"/>
+  <!-- 底 -->
+  <rect x="14" y="43.5" width="20" height="2" fill="url(#slotGoldH)"/>
+  <rect x="14" y="45.5" width="20" height="1.5" fill="#e8c98e" opacity="0.6"/>
+  <!-- 左 -->
+  <rect x="1" y="14" width="1.5" height="20" fill="#e8c98e" opacity="0.75"/>
+  <rect x="2.5" y="14" width="2" height="20" fill="url(#slotGoldV)"/>
+  <!-- 右 -->
+  <rect x="43.5" y="14" width="2" height="20" fill="url(#slotGoldV)"/>
+  <rect x="45.5" y="14" width="1.5" height="20" fill="#e8c98e" opacity="0.6"/>
+
+  <!-- 4角青铜铸角 (各 14x14) -->
+  <g id="slotCorner">
+    <path d="M1 1 L13 1 C9 2 6 5 5 9 C4 11 2 12 1 13 Z" fill="#916a2d"/>
+    <circle cx="3.8" cy="3.8" r="1.3" fill="#ffe2a1" stroke="#332109" stroke-width="0.5"/>
+  </g>
+  <use href="#slotCorner" transform="translate(48, 0) scale(-1, 1)"/>
+  <use href="#slotCorner" transform="translate(0, 48) scale(1, -1)"/>
+  <use href="#slotCorner" transform="translate(48, 48) scale(-1, -1)"/>
+</svg>

@@ -1,0 +1,211 @@
+/**
+ * @module okh_adapter
+ * @updated 2026-11-09
+ * @status implemented
+ * @reason 串行读写、保存请求批次和检查点恢复
+ */
+(function (root) {
+  'use strict';
+
+  const u = root.OKHBackgroundModules?.utils;
+  const api = root.OKHBackground;
+
+  if (!u || !api) {
+    throw Error(
+      'okh_adapter必须在okh_api后加载'
+    );
+  }
+
+  function createController({
+    readWorld,
+    commit,
+    config
+  }) {
+    u.check(
+      typeof readWorld === 'function' &&
+      typeof commit === 'function',
+      '需要提供现有状态读写适配器'
+    );
+
+    u.validateConfig(config);
+
+    let pending = Promise.resolve();
+
+    function serial(task) {
+      const result = pending.then(task);
+      pending = result.catch(() => {});
+      return result;
+    }
+
+    async function save(
+      before,
+      state,
+      checkpoint,
+      reason
+    ) {
+      const result = await commit({
+        expectedRevision: before.bg.revision,
+        state,
+        checkpoint,
+        reason
+      });
+
+      u.check(
+        result === true,
+        '保存冲突或失败，未确认提交成功'
+      );
+    }
+
+    return {
+      prepareGeneration(generationId, limit = 8) {
+        return serial(async () => {
+          u.check(
+            u.id(generationId),
+            '生成ID非法'
+          );
+
+          const before = await readWorld();
+
+          u.check(
+            before.bg?.version === 2,
+            '需要初始化后的v2状态'
+          );
+
+          const previous =
+            before.bg.generations[generationId];
+
+          if (previous) {
+            u.check(
+              previous.status === 'prepared',
+              '本生成请求已经完成'
+            );
+
+            const view = u.clone(before);
+
+            view.bg.queue = view.bg.queue.filter(
+              entry => previous.ids.includes(entry.id)
+            );
+
+            const batch = api.prepare(
+              view,
+              Math.max(previous.ids.length, 1)
+            );
+
+            u.check(
+              u.signature(batch.ids) ===
+                u.signature(previous.ids),
+              '已准备事件发生变化，请使用新生成ID'
+            );
+
+            return batch;
+          }
+
+          const state = u.clone(before);
+          const batch = api.prepare(state, limit);
+
+          state.bg.generations[generationId] = {
+            ids: batch.ids,
+            status: 'prepared'
+          };
+
+          state.bg.revision++;
+
+          await save(
+            before,
+            state,
+            null,
+            'prepare-generation'
+          );
+
+          return batch;
+        });
+      },
+
+      finishReply(command, generationId = null) {
+        return serial(async () => {
+          const before = await readWorld();
+
+          const result = api.advance(
+            before,
+            command,
+            config
+          );
+
+          if (result.duplicate) return result;
+
+          if (generationId !== null) {
+            const generation =
+              before.bg.generations[generationId];
+
+            u.check(
+              generation?.status === 'prepared',
+              '回复没有对应的待完成生成请求'
+            );
+
+            result.state = api.ack(
+              result.state,
+              generation.ids,
+              generationId
+            );
+
+            result.state.bg
+              .generations[generationId]
+              .status = 'completed';
+
+            result.state.bg
+              .generations[generationId]
+              .replyId = command.id;
+          }
+
+          await save(
+            before,
+            result.state,
+            before,
+            'finish-reply'
+          );
+
+          return result;
+        });
+      },
+
+      restore(checkpoint) {
+        return serial(async () => {
+          u.check(
+            checkpoint?.bg?.version === 2,
+            '检查点必须是完整v2状态'
+          );
+
+          u.validateWorld(checkpoint);
+
+          const before = await readWorld();
+          const state = u.clone(checkpoint);
+
+          // 状态回退，但提交版本仍递增。
+          state.bg.revision =
+            before.bg.revision + 1;
+
+          await save(
+            before,
+            state,
+            null,
+            'restore-checkpoint'
+          );
+
+          return state;
+        });
+      }
+    };
+  }
+
+  if (root.OKHBackgroundAdapter) {
+    throw Error('重复加载 okh_adapter');
+  }
+
+  root.OKHBackgroundAdapter = Object.freeze({
+    createController
+  });
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = root.OKHBackgroundAdapter;
+  }
+})(globalThis);

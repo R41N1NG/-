@@ -1,0 +1,9 @@
+# 伊丝娜 · 头像表情差分（每行一档，仅 D 段；猫耳与金瞳每档必带）
+(half-closed eyes:1.15), raised eyebrows, (smirk:1.2), (showing teeth:1.05), (golden eyes:1.2), (cat ears:1.1), smug
+(narrowed eyes:1.15), (furrowed brow:1.05), closed mouth, (golden eyes:1.2), (cat ears:1.15), serious, (ear twitch:1.05)
+(half-closed eyes), raised eyebrows, (pout:1.1), (showing teeth:1.05), (blush:1.1), (golden eyes:1.2), (cat ears:1.1), smug
+(half-closed eyes:1.2), (heavy blush:1.2), (parted lips), smile, (sweatdrop:1.05), drunk, (golden eyes:1.15), (cat ears:1.1)
+(wide-eyed:1.15), (raised eyebrows:1.1), (open mouth:1.05), (sweatdrop:1.2), flustered, (golden eyes:1.2), (cat ears:1.15)
+(wide-eyed), pupils shrink, eyebrows down, (clenched teeth:1.05), (sweatdrop:1.15), trembling, scared, (golden eyes:1.15), (cat ears:1.15)
+(teary eyes:1.2), eyebrows down, (biting lip:1.15), (clenched teeth:1.1), (holding back tears:1.1), blush, (golden eyes:1.15), (cat ears:1.1)
+(empty eyes:1.2), (half-closed eyes), (broken smile:1.1), (drooling:1.1), tears, mind break, (golden eyes:1.1), (cat ears:1.05)

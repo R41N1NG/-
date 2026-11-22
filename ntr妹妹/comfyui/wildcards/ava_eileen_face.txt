@@ -1,0 +1,9 @@
+# 艾琳 · 头像表情差分（每行一档，仅 D 段；冰蓝眼与蓝领结每档必带）
+(half-closed eyes:1.1), (looking down on viewer:1.15), raised eyebrows, (smirk:1.1), (ice blue eyes:1.2), (blue ascot:1.2), smug, confident
+(narrowed eyes:1.15), (furrowed brow:1.15), (lips pressed:1.1), frown, (ice blue eyes:1.2), (blue ascot:1.2), displeased
+(wide-eyed:1.15), (raised eyebrows:1.15), (open mouth:1.05), (sweatdrop:1.1), alarmed, (ice blue eyes:1.2), (blue ascot:1.2)
+(half-closed eyes), (serious:1.15), (lips pressed:1.15), eyebrows down, (sweatdrop:1.05), (ice blue eyes:1.15), (blue ascot:1.2)
+(teary eyes:1.2), (crying:1.1), eyebrows down, (grimace:1.1), (blush:1.05), (ice blue eyes:1.15), (blue ascot:1.15)
+(half-closed eyes:1.15), (looking down:1.15), (small frown:1.1), eyebrows down, resigned, (ice blue eyes:1.1), (blue ascot:1.15)
+(tired eyes:1.2), (relaxed eyes:1.05), (small smile:1.1), closed mouth, (ice blue eyes:1.15), (blue ascot:1.2)
+(relaxed eyes:1.15), (happy:1.1), (open mouth smile:1.1), (blush:1.1), (ice blue eyes:1.2), (blue ascot:1.2), joyful

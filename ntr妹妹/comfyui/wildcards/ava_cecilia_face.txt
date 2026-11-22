@@ -1,0 +1,9 @@
+# 塞西莉亚 · 头像表情差分（每行一档，仅 D 段；wimple 与胸前十字架每档必带）
+(gentle smile:1.15), (relaxed eyes:1.1), closed mouth, (emerald green eyes:1.2), kind expression, wimple, (pectoral cross:1.1)
+(closed eyes:1.15), serene, closed mouth, (emerald green eyes:1.05), praying, wimple, (pectoral cross:1.1)
+(troubled:1.15), (blush:1.1), (teary eyes:1.1), (biting lip:1.1), wincing, (emerald green eyes:1.15), wimple, (pectoral cross:1.1)
+(guilty:1.2), (ashamed:1.15), (crying:1.05), (averting eyes:1.15), (blush:1.1), (emerald green eyes:1.15), wimple, (pectoral cross:1.1)
+(crying:1.15), (tears:1.1), eyebrows down, (small frown:1.1), (emerald green eyes:1.15), wimple, (pectoral cross:1.1)
+(wide-eyed:1.15), (raised eyebrows:1.1), (open mouth:1.05), (sweatdrop:1.1), (trembling:1.1), (emerald green eyes:1.15), wimple, (pectoral cross:1.1)
+(empty eyes:1.2), (broken smile:1.15), (half-closed eyes), (drooling:1.1), (blush:1.1), mind break, wimple, (pectoral cross:1.1)
+(serious:1.15), (narrowed eyes:1.05), (lips pressed:1.15), eyebrows down, (emerald green eyes:1.2), resolute, wimple, (pectoral cross:1.1)

@@ -1,0 +1,9 @@
+# 爱丽丝 · 头像表情差分（每行一档，仅 D 段；银饰与墨绿立领每档必带）
+(professional smile:1.15), (relaxed eyes:1.05), closed mouth, (emerald green eyes:1.1), calm, (silver necklace:1.1)
+(worried:1.15), eyebrows down, (small smile:1.05), closed mouth, (tired eyes:1.1), (emerald green eyes:1.1), (silver necklace:1.1)
+(forced smile:1.2), (sweatdrop:1.05), eyebrows down, (teary eyes:1.05), (looking away:1.05), (emerald green eyes:1.1), (silver necklace:1.1)
+(teary eyes:1.2), (crying:1.05), (raised eyebrows:1.05), (open mouth:1.05), (trembling:1.1), distressed, (emerald green eyes:1.1), (silver necklace:1.1)
+upturned eyes, (looking up:1.1), (teary eyes:1.2), (small frown:1.15), (biting lip:1.1), pleading, (emerald green eyes:1.1), (silver necklace:1.1)
+(narrowed eyes:1.1), (serious:1.15), (lips pressed:1.1), eyebrows down, determined, (emerald green eyes:1.15), (silver necklace:1.1)
+(heavy blush:1.15), (looking down:1.15), (biting lip:1.1), (angry:1.1), (teary eyes:1.1), (emerald green eyes:1.1), (silver necklace:1.1)
+(tired eyes:1.2), (half-closed eyes:1.1), eyebrows down, (parted lips), exhausted, (emerald green eyes:1.05), (silver necklace:1.1)
