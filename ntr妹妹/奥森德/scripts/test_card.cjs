@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict'),test=require('node:test'),crypto=require('node:crypto');
 const ROOT=path.resolve(__dirname,'..'),card=JSON.parse(fs.readFileSync(path.join(ROOT,'最新角色卡/奥克赫斯.json'),'utf8'));
-const originalBytes=fs.readFileSync(path.join(ROOT,'原始上传/奥克赫斯_R4配套.json')),original=JSON.parse(originalBytes);
+const input=JSON.parse(fs.readFileSync(path.join(__dirname,'inputs/card-fields.json'),'utf8'));
 const script=card.data.extensions.tavern_helper.scripts[0],sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const header=fs.readFileSync(path.join(__dirname,'test_foundation.cjs'),'utf8').split('async function runTests()')[0],holder={exports:{}};
 new Function('require','__dirname','module',header+'\nmodule.exports={createSandbox};')(require,__dirname,holder);
@@ -15,19 +15,20 @@ function nativeSandbox(vars={},chatId='card-import'){
 }
 function display(text){for(const rule of card.data.extensions.regex_scripts){const [,pattern,flags]=rule.findRegex.match(/^\/([\s\S]*)\/([gimsuy]*)$/);text=text.replace(new RegExp(pattern,flags),rule.replaceString)}return text}
 test('V2 card contains the thirty-four clean standard lore entries, characters and opening with confirmed geography corrections',()=>{
- assert.equal(card.spec,'chara_card_v2');assert.equal(card.spec_version,'2.0');assert.equal(card.data.name,original.data.name);
+ assert.equal(card.spec,'chara_card_v2');assert.equal(card.spec_version,'2.0');assert.equal(card.data.name,input.fields.name);
  const entries=card.data.character_book.entries;assert.equal(entries.length,34);assert.equal(new Set(entries.map(e=>e.id)).size,34);
  assert.equal(fs.readFileSync(path.join(ROOT,'最新角色卡/奥克赫斯.json'),'utf8'),fs.readFileSync(path.join(ROOT,'../dist/奥克赫斯.json'),'utf8'));
  const banned=['极其','极度','彻底','臣服','献祭','近乎','近乎于','绝对','尽数','不可或缺','顺从','终极','神坛'];
  for(const e of entries){assert(e.content.length>50);for(const b of banned)assert(!e.content.includes(b),`Banned word ${b} in entry ${e.comment}`);}
  assert.equal(entries.filter(e=>e.constant).length,4);
  assert.equal(entries.filter(e=>!e.constant).length,30);
- for(const key of ['mes_example','personality','scenario','alternate_greetings'])assert.deepEqual(card.data[key],original.data[key]);
+ for(const key of ['mes_example','personality','scenario','alternate_greetings'])assert.deepEqual(card.data[key],input.fields[key]);
  assert(card.data.first_mes.includes('古兰：“今晚只能走到这里'));
  assert(card.data.first_mes.includes('<time elapsed="0" end="1日18:00" />'));
  assert(card.data.extensions.regex_scripts.some(r=>r.id==='okh-dialogue-bubble'));
  assert(card.data.description.includes('<room'));assert(card.data.description.includes('<economy'));assert(!card.data.description.includes('<injury'));
- assert.equal(card.data.extensions.okh_build.source_card_sha256,sha(originalBytes.toString('utf8').replace(/\r\n/g,'\n')));
+ assert.match(input.source_card_sha256,/^[a-f0-9]{64}$/);
+ assert.equal(card.data.extensions.okh_build.source_card_sha256,input.source_card_sha256);
 });
 test('the character extension contains exactly one enabled native Tavern Helper script identical to the current standalone build',()=>{
  const helper=card.data.extensions.tavern_helper;assert.deepEqual(helper.variables,{});assert.equal(helper.scripts.length,1);

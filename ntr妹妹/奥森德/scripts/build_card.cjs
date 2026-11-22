@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypt
 const { extractWorldbookEntries } = require('./build_worldbook.cjs');
 const { loadBubbleAvatars } = require('./build_bubble.cjs');
 const ROOT=path.resolve(__dirname,'..');
-const SOURCE=path.join(ROOT,'原始上传/奥克赫斯_R4配套.json');
+const SOURCE=path.join(__dirname,'inputs/card-fields.json');
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const readText=file=>fs.readFileSync(file,'utf8').replace(/\r\n/g,'\n');
 const ASSETS=[
@@ -46,7 +46,21 @@ const NEW_FIRST_MES = `<content>
 <focus npc="gulan" />
 </status_bar>`;
 function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')}={}){
- const original=readText(SOURCE),card=JSON.parse(original),d=card.data;
+ const {fields,worldbook,source_card_sha256}=JSON.parse(readText(SOURCE));
+ const d={
+  name:fields.name,description:fields.description,personality:fields.personality,scenario:fields.scenario,
+  first_mes:NEW_FIRST_MES,mes_example:fields.mes_example,creator_notes:'',
+  system_prompt:fields.system_prompt,post_history_instructions:fields.post_history_instructions,
+  alternate_greetings:fields.alternate_greetings,
+  character_book:{
+   name:'奥克赫斯·纯净标准世界书（34条）',
+   description:'奥克赫斯边境要塞世界书，包含5大基础法则、5大核心场景与12位核心角色双轨档案。恶龙真身心智全案由后台状态机按剧情进度动态推送。',
+   scan_depth:worldbook.scan_depth,token_budget:2800,recursive_scanning:worldbook.recursive_scanning,
+   extensions:worldbook.extensions,entries:extractWorldbookEntries()
+  },
+  tags:fields.tags,creator:fields.creator,character_version:'0.3.5-expressions',extensions:{}
+ };
+ const card={spec:'chara_card_v2',spec_version:'2.0',data:d};
  const runtime=readText(runtimePath);
  if(!runtime.includes('root.OKH_APP_MAP')||/__OKH_MAP_[A-Z_]+__/.test(runtime))throw Error('请先构建包含地图资源的完整自动启动脚本');
  const assets={};
@@ -61,12 +75,6 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
    if (!runtime.includes(src)) throw Error('运行库未内嵌对白头像：'+speaker+'/'+face);
   }
  }
- d.character_version='0.3.5-expressions';
- d.first_mes=NEW_FIRST_MES;
- d.character_book.name='奥克赫斯·纯净标准世界书（34条）';
- d.character_book.description='奥克赫斯边境要塞世界书，包含5大基础法则、5大核心场景与12位核心角色双轨档案。恶龙真身心智全案由后台状态机按剧情进度动态推送。';
- d.character_book.token_budget=2800;
- d.character_book.entries=extractWorldbookEntries();
  d.description=d.description.replace('镇内有领主山庄、圣辉大教堂、市井街区、旅店与地下赌场；城外是荒原与黑兽人前哨。','镇内有圣辉大教堂、市井街区、旅店与地下赌场；领主庄园位于镇外安全一侧的西北山上。农户分布在镇子周围，东南恶劣荒地是敌对的黑兽人前哨，与人类城镇没有相连道路。');
  d.description=d.description.replace('<focus> 与 <injury> 不使用 at。','<focus> 不使用 at。');
  d.description=d.description.replace(/【玩家伤情】[\s\S]*?(?=【后台与正文的边界】)/,'');
@@ -75,14 +83,13 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
  d.description+='\n【对白气泡与发言格式】\n将说话人姓名与对白单独起行，写作 角色名：“对白内容”。已有表情图的角色可用 角色名：[表情ID]“对白内容”，每条对白只标一次，同一人前后神情不同可分两条。根据说话人当下表现出的神情、语气和动作选择表情；情绪不明或没有匹配图时沿用普通对白格式。标记只用于显示，保持叙事及回执要求，不替玩家写发言。\n'+bubblePrompt.join('\n')+'\n';
  d.creator_notes='地图、相册与对白表情整合版 0.3.5-expressions，核心 2.1.1，schemaVersion=3。\n基于用户原始 R4 卡，保留基础世界书条目与规范开场白，补入当前地图、经济、房间回执契约与对白气泡美化。\n已内嵌一份完整酒馆助手脚本及全域、镇内、旅店两层图稿、手札纸面和标注字体，无需另行下载地图或外置运行脚本。\n导入 JSON 后，在酒馆助手中启用本角色卡脚本；若曾独立安装完整后台，请停用旧的那份，只运行卡内这一份。需要已安装并启用酒馆助手，普通角色卡 JSON 导入器本身不执行 JavaScript。\n新聊天会在首条回复下挂载状态栏；既有聊天存档沿用原存储键，不强制重置。卡内显示正则隐藏回执和正文包装，并自动将 角色名：“对白” 渲染为左右分侧带头像气泡。带表情标记的对白会切换到相应立绘，已内嵌古兰的沉静、微笑和训诫。点击头像可看当前大图，也可以上传默认头像。\n同伴名册下方增加回忆相册；当前图片目录留空，等待后续导入素材和指定解锁条件。\n本次打包不扩写未提供的专属剧情库。';
  d.tags=[...new Set([...(d.tags||[]),'地图整合','回忆相册','对白气泡'])];
- d.extensions||={};
  d.extensions.regex_scripts=[
   {id:'okh-display-hide-status',scriptName:'奥克赫斯 · 隐藏后台回执与流式片段',findRegex:'/<status_bar\\b[^>]*>[\\s\\S]*?(?:<\\/status_bar\\s*>|$)/gi',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
   {id:'okh-display-content-wrapper',scriptName:'奥克赫斯 · 去除正文包装',findRegex:'/<\\/?content\\b[^>]*>/gi',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
   {id:'okh-dialogue-bubble',scriptName:'奥克赫斯 · 对白气泡与发言美化',findRegex:'/(?:^|\\n)([\\u4e00-\\u9fa5A-Za-z0-9_]{1,10})[：:]\\s*(?:\\[(?:([A-Za-z0-9_-]{1,32})|[^\\]\\r\\n]{0,64})\\]\\s*)?[“「]((?:(?![\\r\\n]{2,}|[”」])[\\s\\S])+)[”」]/g',replaceString:'\n<div class="okh-dlg-row side-left" data-okh-dlg data-okh-speaker="$1" data-okh-face="$2" style="display:flex;align-items:flex-start;margin:16px 0;gap:12px;position:relative;box-sizing:border-box;"><div class="okh-avatar" data-okh-ava="$1" style="flex:0 0 44px;width:44px;height:56px;border-radius:4px;border:1px solid rgba(226,199,146,0.4);background:#181d25;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:rgba(226,199,146,0.9);font-size:18px;font-weight:bold;cursor:pointer;box-sizing:border-box;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div><div class="okh-dlg-col" style="display:flex;flex-direction:column;max-width:min(82%,640px);align-items:flex-start;box-sizing:border-box;"><div class="okh-speaker-name" data-okh-dlg-name style="font-size:12px;color:#9b8764;margin-bottom:4px;letter-spacing:0.5px;text-align:left;padding-left:2px;">$1</div><div class="okh-dlg-bubble" data-okh-dlg-body style="padding:10px 16px;font-size:14.5px;line-height:1.68;box-shadow:0 4px 16px rgba(0,0,0,0.35);word-break:break-word;background:linear-gradient(135deg,rgba(27,32,40,0.96),rgba(18,22,28,0.94));border-left:2px solid rgba(226,199,146,0.55);border-right:1px solid rgba(211,216,222,0.12);border-top:1px solid rgba(211,216,222,0.12);border-bottom:1px solid rgba(211,216,222,0.12);border-radius:2px 12px 12px 12px;color:#f0dfbe;text-align:left;box-sizing:border-box;">$3</div></div></div>',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null}
  ];
  d.extensions.tavern_helper={scripts:[{type:'script',enabled:true,id:'okh-complete-autostart',name:'奥克赫斯 · 地图与状态栏完整后台 2.1.1',content:runtime,info:'唯一完整后台；读取当前聊天存档，自动挂载地图手札，沿用原有计时、事件与回滚。',button:{enabled:false,buttons:[]},data:{},export_with:{data:true,button:true}}],variables:{}};
- d.extensions.okh_build={album_catalog_sha256:sha(readText(path.join(ROOT,'回忆相册/目录.json'))),album_catalog_count:JSON.parse(fs.readFileSync(path.join(ROOT,'回忆相册/目录.json'),'utf8')).length,format:1,core_version:'2.1.1',schema_version:3,source_card_sha256:sha(original),runtime_sha256:sha(runtime),map_views:['region','town','ground','upper'],room_order:['player','gulan','isna','nise','aurora','ed'],assets,licenses:{'map-ink.woff':readText(path.join(ROOT,'地图预览/字体/OFL.txt'))}};
+ d.extensions.okh_build={album_catalog_sha256:sha(readText(path.join(ROOT,'回忆相册/目录.json'))),album_catalog_count:JSON.parse(fs.readFileSync(path.join(ROOT,'回忆相册/目录.json'),'utf8')).length,format:1,core_version:'2.1.1',schema_version:3,source_card_sha256,runtime_sha256:sha(runtime),map_views:['region','town','ground','upper'],room_order:['player','gulan','isna','nise','aurora','ed'],assets,licenses:{'map-ink.woff':readText(path.join(ROOT,'地图预览/字体/OFL.txt'))}};
  const out=path.join(ROOT,'最新角色卡/奥克赫斯.json');fs.mkdirSync(path.dirname(out),{recursive:true});
  const text=JSON.stringify(card,null,2)+'\n';fs.writeFileSync(out,text);
  if(fs.readFileSync(out,'utf8')!==text)throw Error('角色卡写入回读不一致');
