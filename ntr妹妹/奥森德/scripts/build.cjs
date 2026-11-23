@@ -12,6 +12,7 @@ const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
 const { loadBubbleAvatars } = require('./build_bubble.cjs')
+const { extractPreinjectedPacks } = require('./build_worldbook.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..')          // 项目根
 const SRC = path.join(ROOT, '奥森德', 'src')
@@ -41,6 +42,7 @@ const APP = [
   'okh_app_album',
   'okh_app_config',
   'okh_app_world',
+  'okh_app_worldbook',
   'okh_app_adapter',
   'okh_app_parse',
   'okh_app_hook',
@@ -104,6 +106,9 @@ function read(dir, name) {
     return raw.replace('/* __OKH_BUBBLE_AVATARS__ */ {}', () => JSON.stringify(images))
   }
   if (name === 'okh_app_album') return raw.replace("'__OKH_ALBUM_CATALOG__'", () => JSON.stringify(JSON.stringify(require('./build_album.cjs').buildCatalog(path.join(ROOT, '奥森德')))))
+  if (name === 'okh_app_worldbook') {
+    return raw.replace('/* __OKH_PREINJECTED_WORLDBOOK__ */ []', () => JSON.stringify(extractPreinjectedPacks()))
+  }
   return name === 'okh_app_hud' ? inlineUiAssets(raw) : name === 'okh_app_map' ? inlineMapAssets(raw) : raw
 }
 
@@ -117,6 +122,7 @@ const output = HEADER + EOL + coreText + SEP + appText
 if (/__OKH_UI_[A-Z_]+__/.test(output)) throw new Error('存在未内联的 HUD 素材占位符')
 if (/__OKH_MAP_[A-Z_]+__/.test(output)) throw new Error('存在未内联的地图素材占位符')
 if (output.includes('__OKH_BUBBLE_AVATARS__')) throw new Error('存在未内联的对白头像占位符')
+if (output.includes('__OKH_PREINJECTED_WORLDBOOK__')) throw new Error('存在未内联的预注入世界书占位符')
 
 fs.mkdirSync(path.dirname(OUT), { recursive: true })
 fs.writeFileSync(OUT, output, 'utf8')

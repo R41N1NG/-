@@ -1,8 +1,8 @@
 /**
  * @module okh_events
- * @updated 2026-11-20
+ * @updated 2026-11-23 19:39
  * @status active
- * @reason 条件事件与原子结算；角色不可交互时撤下待决选项，保留 allowInactive 显式例外
+ * @reason 条件事件与原子结算；依赖角色转段的事件须读取本时间点结算后的阶段
  */
 (function (root) {
   'use strict';
@@ -85,10 +85,12 @@
       }
     }
 
-    function evaluate(world, config, ctx) {
-      expirePending(world, config, ctx);
+    /** Evaluate events for one side of the node transitions at this time point. */
+    function evaluate(world, config, ctx, afterNodes = false) {
+      if (!afterNodes) expirePending(world, config, ctx);
 
       for (const event of config.events || []) {
+        if ((event.afterNodes === true) !== afterNodes) continue;
         const targets = event.scope === 'world'
           ? [null]
           : u.sortedNpcs(world).filter(u.active);

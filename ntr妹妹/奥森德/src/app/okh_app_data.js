@@ -1,6 +1,6 @@
 /**
  * @module okh_app_data
- * @updated 2026-11-22 20:55
+ * @updated 2026-11-23 20:06
  * @status  active
  * @reason  恶龙真身心智全案扩充：构建高信息密度 DRAGON_TRUE_FORM_SPEC（含身世因果、权杖信物真相、真身外貌、声音气度、死穴原则）与 buildDragonRevealText 生成器，由剧情阶段与决算分支动态按需推送
  * @deps    无
@@ -687,6 +687,10 @@
       other => other.id === npc.id || other.alive === false || other.location !== 'training_grounds'
     )
 
+  const canResolveGulanRescue = ({ world, npc }) =>
+    !world.flags?.ed_showdown_done && npc.stage === 2 &&
+    !npc.flags?.gulan_final_fall_done && !npc.flags?.gulan_rescued_final
+
   const DRAGON_TRUE_FORM_SPEC = Object.freeze({
     // 1. 异象伏笔（供大势阶段二/三调用，零剧透）
     anomaly: '上位真龙气机律动、魔兽受源初威压惊惧外逃、同源龙血共鸣沸腾、荒山与峡谷受重压沉降。',
@@ -724,6 +728,14 @@
     }
     return resolutionText
   }
+
+  const canTriggerPassCollapse = world =>
+    Boolean(world.flags?.arrived_oakhaven && world.flags?.ed_joined) &&
+    !world.flags?.grand_tier_3 &&
+    !world.flags?.ed_showdown_done &&
+    (world.npcs?.ed?.values?.patience ?? 100) <= 25
+
+  const PASS_COLLAPSE = '峡谷崖壁骤然滑落，断岩横截奥克赫斯连接外界的官道。往来的车马和信使都得等路面清开才能通行。'
 
   const EVENTS = [
     {
@@ -818,16 +830,15 @@
       scope: 'npc',
       targets: ['gulan'],
       allowCancel: false,
-      resolveWhen: ({ npc }) => npc.stage === 2,
+      resolveWhen: canResolveGulanRescue,
+      expireWhen: ctx => !canResolveGulanRescue(ctx),
       when: ({ world, npc, phase }) =>
-        npc.stage === 2 &&
+        canResolveGulanRescue({ world, npc }) &&
         world.playerLocation === 'inn' &&
         npc.location === 'inn' &&
         ['night', 'deep_night'].includes(phase.id) &&
         (npc.values.blood_density ?? 0) >= 80 &&
-        (npc.values.affection ?? 0) >= 90 &&
-        !npc.flags?.gulan_final_fall_done &&
-        !npc.flags?.gulan_rescued_final,
+        (npc.values.affection ?? 0) >= 90,
       text: '夜色深沉，{name}房中传来沉重压抑的吐息与微弱鳞甲摩擦声；在最后一重理智即将溃散前，她仍面向你的方向漏出了一丝挣扎破绽。',
       outcomes: {
         rescue: {
@@ -1874,7 +1885,8 @@
           target: 'world',
           goldDelta: 1000,
           itemsRemove: [{ id: 'manor_intel_note', all: true }],
-          worldFlags: { baron_purged: true, eileen_fugitive: false, lancaster_purge_reward_paid: true, inn_arrears: false }
+          worldFlags: { baron_purged: true, curfew_active: false, eileen_fugitive: false,
+            lancaster_purge_reward_paid: true, inn_arrears: false }
         },
         { target: 'eileen', add: { affection: 20 }, npcFlags: { eileen_fugitive: false, eileen_disguised: false, eileen_purged_victory: true, eileenPostPurgeDays: 0 } }
       ],
@@ -2409,24 +2421,33 @@
       id: 'ed_grand_stage_3',
       mode: 'result',
       scope: 'world',
-      when: ({ world }) =>
-        Boolean(world.flags?.arrived_oakhaven) &&
-        Boolean(world.flags?.ed_joined) &&
-        !world.flags?.grand_tier_3 &&
-        !world.flags?.ed_showdown_done &&
-        (world.npcs?.ed?.values?.patience ?? 100) <= 25,
+      when: ({ world }) => canTriggerPassCollapse(world) && !world.flags?.baron_purged,
       effects: {
         worldFlags: { grand_tier_3: true, road_blocked: true, curfew_active: true }
       },
       text: buildDragonRevealText(
         'anomaly',
-        '奥克赫斯咽喉峡谷官道突发巨型塌方，成百上千吨山岩滑坡将进出外界唯一的陆路车马大动脉死死封死，常规商旅与求援信使断绝；面对外围异动与交通断绝，多疑怕死的雷蒙德领主下令全城实行严酷宵禁，夜间四门落锁、卫兵持械巡查，边陲小镇化作一口进出不得的封闭铁笼。'
+        PASS_COLLAPSE + '雷蒙德下令全镇宵禁，入夜后城门落锁，卫兵沿街巡查。'
+      )
+    },
+    {
+      id: 'ed_grand_stage_3_after_purge',
+      mode: 'result',
+      scope: 'world',
+      when: ({ world }) => canTriggerPassCollapse(world) && Boolean(world.flags?.baron_purged),
+      effects: {
+        worldFlags: { grand_tier_3: true, road_blocked: true, curfew_active: false }
+      },
+      text: buildDragonRevealText(
+        'anomaly',
+        PASS_COLLAPSE + '通往峡谷的路口暂时封闭，镇内沿用清算后的通行秩序。'
       )
     },
     {
       id: 'ed_showdown_good',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;
@@ -2435,7 +2456,9 @@
         const bd = gulan.values?.blood_density ?? 0;
         const aff = gulan.values?.affection ?? 0;
         const stage = gulan.stage ?? 0;
-        return bd >= 100 && aff >= 90 && stage < 3;
+        const patience = ed.values?.patience ?? 100;
+        // 正线中的艾德会潜伏到耐心耗尽，即使古兰的血脉已经封顶。
+        return bd >= 100 && aff >= 90 && stage < 3 && patience <= 0;
       },
       effects: [
         {
@@ -2456,13 +2479,14 @@
       ],
       text: buildDragonRevealText(
         'full',
-        '古兰体内真血浓度攀升至顶峰，上位古龙威压再无遮掩地冲天而起，沉睡千年的太古血脉完全觉醒。寄宿在男童皮囊中的恶龙艾德撕破伪装显化真身，庞大龙影笼罩小镇上空，逼迫其归附完成血脉繁育。然而狂暴的血脉沸腾并未冲垮古兰的神智——对伯里生死相托的深厚情义化作她最坚固的人性逆鳞。古兰横重剑立于伯里身前，周身墨黑龙鳞覆体，以同等纯度的超凡龙威正面抗衡生父。她将剑刃划破掌心立下血誓：若艾德强取，她宁可引爆心核玉石俱焚，让其布局数百年的返祖真血化为焦炭残渣。自负贪生的恶龙权衡利弊，深知同源超凡搏杀必有折损且残破母体毫无价值，冷哼一声震裂半座荒山作为惩戒与警告，振翅隐入层云退去。古兰保全自我意志，与伯里紧紧相拥，小队安然度过大劫。'
+        '古兰体内的真血已达顶峰。艾德耐心耗尽，撕破男童的伪装，显化真身，庞大龙影笼罩小镇上空，逼迫其归附完成血脉繁育。然而狂暴的血脉沸腾并未冲垮古兰的神智——对伯里生死相托的深厚情义化作她最坚固的人性逆鳞。古兰横重剑立于伯里身前，周身墨黑龙鳞覆体，以同等纯度的超凡龙威正面抗衡生父。她将剑刃划破掌心立下血誓：若艾德强取，她宁可引爆心核玉石俱焚，让其布局数百年的返祖真血化为焦炭残渣。自负贪生的恶龙权衡利弊，深知同源超凡搏杀必有折损且残破母体毫无价值，冷哼一声震裂半座荒山作为惩戒与警告，振翅隐入层云退去。古兰保全自我意志，与伯里紧紧相拥，小队安然度过大劫。'
       )
     },
     {
       id: 'ed_showdown_dark',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;
@@ -2505,6 +2529,7 @@
       id: 'ed_showdown_abduction_mature',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;
@@ -2548,6 +2573,7 @@
       id: 'ed_showdown_abduction_early',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;
@@ -2591,6 +2617,7 @@
       id: 'ed_showdown_dark_early',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;

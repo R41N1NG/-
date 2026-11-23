@@ -1,6 +1,6 @@
 /**
  * @module okh_app_hook
- * @updated 2026-11-20
+ * @updated 2026-11-23 19:57
  * @status active
  * @reason 调用时绑定聊天、生成失败清理、递增取消版本、回滚窗口校验与原子替换回复
  */
@@ -9,7 +9,8 @@
   const u = root.OKHBackgroundModules?.utils;
   const CFG = root.OKH_APP_CONFIG, W = root.OKH_APP_WORLD;
   const A = root.OKH_APP_ADAPTER, P = root.OKH_APP_PARSE, GPT = root.OKHBackground;
-  if (!u || !CFG || !W || !A || !P || !GPT) throw Error('hook 依赖缺失');
+  const WB = root.OKH_APP_WORLDBOOK;
+  if (!u || !CFG || !W || !A || !P || !GPT || !WB) throw Error('hook 依赖缺失');
   const RHYTHM = { everyMessages: 3, minutesPerTick: 60, useAITime: true };
   let options = {}, work = Promise.resolve(), activeGeneration = null, seq = 0, last = null;
   const controllers = new Map(), listeners = [];
@@ -68,6 +69,7 @@
   }
   async function publish(s) {
     const world = W.loadWorld(s), batch = GPT.prepare(world, 8);
+    await WB.sync(s, world).catch(error => console.warn('[APP] 存档已提交，聊天世界书待同步：', error.message));
     const values = {
       'okh_gpt.pendingText': batch.text,
       'okh_gpt.pendingIds': JSON.stringify(batch.ids),
@@ -123,7 +125,8 @@
       return {
         command: { id, revision, toMin: plan.toMin, interactingIds: [...during], front, chatIndex: opts.chatIndex ?? null },
         diagnostics,
-        timeCheck
+        timeCheck,
+        revealDeliveryId: parsed.revealDeliveryId
       };
     } catch (error) {
       if (!opts.allowFallback) throw error;
@@ -144,7 +147,8 @@
   async function runStep(minutes, opts = {}) {
     const s = opts.session || W.session();
     await W.ensureWorld(false, s);
-    let world = W.loadWorld(s);
+    const liveWorld = W.loadWorld(s);
+    let world = liveWorld;
     const id = opts.msgId || 'manual:' + s.id + ':' + Date.now() + ':' + (++seq);
     const revision = opts.revision || fingerprint(JSON.stringify([opts.text || '', minutes ?? null, opts.frontOverride ?? null]));
     const recorded = world.bg.receipts[id];
@@ -157,9 +161,19 @@
       replacement = record.before;
       world = replacement;
     }
-    const { command, diagnostics, timeCheck } = buildTurnCommand(minutes, opts, world, id, revision);
+    const { command, diagnostics, timeCheck, revealDeliveryId } = buildTurnCommand(minutes, opts, world, id, revision);
     const generationId = opts.generationId ?? null;
-    const result = await controller(s).finishReply(command, generationId, replacement);
+    const generation = generationId === null ? null : liveWorld.bg.generations[generationId];
+    const reveal = generation && WB.pendingReveal(world, generation.ids);
+    let deliveredIds = null;
+    if (reveal) {
+      if (Number.isSafeInteger(opts.chatIndex) && revealDeliveryId === reveal.definitionId) {
+        command.revealProof = { eventId: reveal.id, generationId, fingerprint: fingerprint(opts.text || '') };
+      } else {
+        deliveredIds = generation.ids.filter(eventId => eventId !== reveal.id);
+      }
+    }
+    const result = await controller(s).finishReply(command, generationId, replacement, deliveredIds);
     const published = await publish(s);
     last = { advanced: true, from: world.timeMin, to: result.state.timeMin, front: command.front,
       actions: result.report.actions, released: result.report.released,
@@ -191,7 +205,7 @@
     const changed = historyChange(s, chat);
     if (!changed) return null;
     const target = newestIndex(chat);
-    if (changed.chatIndex === target && assistant(chat[target])) {
+    if (changed.chatIndex === target && assistant(chat[target]) && !changed.revealProof) {
       await runStep(undefined, { session: s, msgId: replyId(s, target), revision: revisionFor(chat, target),
         text: chat[target].mes || '', chatIndex: target, countMessage: true, initial: target === 0, allowFallback: true });
     } else {
@@ -205,19 +219,30 @@
     state.bg.revision = expectedRevision;
     for (const id of Object.keys(state.bg.generations)) if (state.bg.generations[id].status === 'prepared') delete state.bg.generations[id];
     const history = envelope.history.filter(h => u.own(state.bg.receipts, h.id));
+    const revealProofs = new Map(envelope.history.filter(record => record.revealProof)
+      .map(({ id, revealProof }) => [id, revealProof]));
     const dialogueForms = {};
     const diagnostics = [], actions = [], released = [];
     let timeCheck = null, front = null;
     for (let i = from; i <= through; i++) {
       if (!assistant(chat[i])) continue;
       const id = replyId(s, i), revision = revisionFor(chat, i);
-      const built = buildTurnCommand(undefined, { text: chat[i].mes || '', chatIndex: i,
+      const text = chat[i].mes || '';
+      const built = buildTurnCommand(undefined, { text, chatIndex: i,
         countMessage: true, initial: i === 0, allowFallback: true }, state, id, revision);
       const result = GPT.advance(state, built.command, CFG.buildConfig());
-      dialogueForms[id] = root.OKH_BUBBLE_SIDE?.formsFor?.(result.state) || {};
-      history.push({ id, revision, chatIndex: i, before: state });
+      const record = { id, revision, chatIndex: i, before: state };
+      const proof = built.revealDeliveryId && revealProofs.get(id);
+      const reveal = proof && proof.fingerprint === fingerprint(text) && WB.pendingReveal(state, [proof.eventId]);
+      let next = result.state;
+      if (reveal && reveal.definitionId === built.revealDeliveryId) {
+        next = GPT.ack(next, [proof.eventId], proof.generationId);
+        record.revealProof = proof;
+      }
+      dialogueForms[id] = root.OKH_BUBBLE_SIDE?.formsFor?.(next) || {};
+      history.push(record);
       if (history.length > W.historyLimit()) history.splice(0, history.length - W.historyLimit());
-      state = result.state;
+      state = next;
       diagnostics.push(...built.diagnostics);actions.push(...result.report.actions);released.push(...result.report.released);timeCheck = built.timeCheck;front = built.command.front;
     }
     if (state.bg.revision === expectedRevision) state.bg.revision++;
@@ -298,12 +323,18 @@
         }
       } else await syncSavedHistory(s, chat);
       await discardPreparations(s);
+      const promptWorld = preparationWorld || W.loadWorld(s);
+      const fallbackEntries = await WB.sync(s, promptWorld);
       const id = opts.generationId || 'gen:' + s.id + ':' + Date.now() + ':' + (++seq);
       const { batch, prepared } = await preparePromptBatch(s, id, preparationWorld);
       const generation = { id, session: s, ...resolveTargetWindow(chat, opts.replaceIndex), prepared };
       activeGeneration = generation;
       try {
-        const text = A.buildLedger(preparationWorld || W.loadWorld(s)) + (batch.text ? '\n\n' + batch.text : '');
+        const reveal = WB.pendingReveal(promptWorld, batch.ids);
+        const confirmReveal = reveal ? '【揭晓回执】在 <content> 正文中明确写出爱德（或艾德）显露真身或他的古龙身份。' +
+          '正文已写出这次揭晓时，在本轮 <status_bar> 中附上 <reveal_delivered id="' + reveal.definitionId + '" />。' : '';
+        const text = [A.buildLedger(promptWorld), ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal]
+          .filter(Boolean).join('\n\n');
         await inject(text, s);
         return { ...batch, generationId: id, text };
       }
@@ -350,9 +381,18 @@
     return serial(async () => {
       const generation = activeGeneration;
       activeGeneration = null;
-      await clearGeneration(generation);
+      try { await clearGeneration(generation); }
+      finally {
+        if (generation && W.chatId() === generation.session.id) {
+          await WB.sync(generation.session, W.loadWorld(generation.session));
+        }
+      }
       // 不确认事件；下次生成仍可取出。
     });
+  }
+  /** Read-only with respect to the save. A chat may still be uninitialized on switch. */
+  function refreshWorldbook() {
+    return serialSession(s => WB.sync(s, W.loadWorld(s)));
   }
   function reportFailure(error) { console.error('[APP]', error); }
   function attach() {
@@ -382,8 +422,9 @@
     }
     // 流式结束会先触发 GENERATION_ENDED 再触发 MESSAGE_RECEIVED，不能在此取消生成；
     // 主动中止走 GENERATION_STOPPED，请求异常残留由下次 beforeGeneration 兜底清理。
-    for (const name of ['GENERATION_STOPPED', 'CHAT_CHANGED']) {
-      if (types[name] !== undefined) bind(types[name], () => cancelGeneration().catch(reportFailure));
+    if (types.GENERATION_STOPPED !== undefined) bind(types.GENERATION_STOPPED, () => cancelGeneration().catch(reportFailure));
+    if (types.CHAT_CHANGED !== undefined) {
+      bind(types.CHAT_CHANGED, () => cancelGeneration().then(refreshWorldbook).catch(reportFailure));
     }
     return true;
   }
@@ -393,7 +434,7 @@
   }
   function restore(id) { return serialSession(async s => { await restoreRecord(s, id); await publish(s); }); }
   root.OKH_APP_HOOK = Object.freeze({ RHYTHM, configure, attach, detach, step, onMessage,
-    beforeGeneration, cancelGeneration, syncHistory, restore, fingerprint, revisionFor,
+    beforeGeneration, cancelGeneration, syncHistory, refreshWorldbook, restore, fingerprint, revisionFor,
     applyFront: (front, opts = {}) => step(opts.minutes ?? 0, { ...opts, frontOverride: front }),
     parseElapsed: text => P.parseStatusBar(text).elapsed, lastReport: () => last, publish });
 })(globalThis);

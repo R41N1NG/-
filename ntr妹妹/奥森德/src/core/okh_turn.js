@@ -1,6 +1,6 @@
 /**
  * @module okh_turn
- * @updated 2026-11-13 01:25
+ * @updated 2026-11-23 19:39
  * @status active
  * @reason 统一时间语义的回执时间线穿插引擎；支持 front.economies 时间桶接入 config.resolveEconomy，移除冗余 playerInjury 处理
  */
@@ -23,6 +23,7 @@
       report.released.push(...activity.refresh(world, config, ctx));
       events.evaluate(world, config, ctx);
       nodes.evaluate(world, config, ctx);
+      events.evaluate(world, config, ctx, true);
       if (typeof events.expirePending === 'function') events.expirePending(world, config, ctx);
       report.released.push(...activity.refresh(world, config, ctx));
       syncWorld(world, blockedIds, 'refresh', config);

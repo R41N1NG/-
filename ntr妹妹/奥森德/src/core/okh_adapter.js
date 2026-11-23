@@ -1,6 +1,6 @@
 /**
  * @module okh_adapter
- * @updated 2026-11-20
+ * @updated 2026-11-23 19:57
  * @status active
  * @reason 串行读写、原子替换回复、生成记录裁剪与兼容检查点恢复
  */
@@ -136,7 +136,7 @@
         });
       },
 
-      finishReply(command, generationId = null, replacement = null) {
+    finishReply(command, generationId = null, replacement = null, deliveredIds = null) {
         return serial(async () => {
           const before = await readWorld();
 
@@ -168,11 +168,13 @@
               generation?.status === 'prepared',
               '回复没有对应的待完成生成请求'
             );
+            const selected = deliveredIds ?? generation.ids;
+            u.check(Array.isArray(selected) && selected.every(id => generation.ids.includes(id)), '交付回执超出本轮生成批次');
 
             result.state.bg.generations[generationId] = u.clone(generation);
             result.state = api.ack(
               result.state,
-              generation.ids,
+              selected,
               generationId
             );
 

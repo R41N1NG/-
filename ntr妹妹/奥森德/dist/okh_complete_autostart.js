@@ -1,7 +1,7 @@
 // GENERATED: 修改 core/、app/ 后重新运行构建，不直接编辑合订本。
 /**
  * @module okh_utils
- * @updated 2026-11-18 21:08
+ * @updated 2026-11-23 19:39
  * @status active
  * @reason 通用校验、深拷贝、时段；扩展 playerState.inventory 结构与去重校验（兼容已注册物品与外部 custom:true 条目）
  */
@@ -145,6 +145,10 @@
     }
 
     function validateEventOutcomes(event) {
+      check(
+        event.afterNodes === undefined || typeof event.afterNodes === 'boolean',
+        '事件 afterNodes 必须是布尔值'
+      );
       check(
         event.repeatable === undefined || typeof event.repeatable === 'boolean',
         '事件 repeatable 必须是布尔值'
@@ -1041,9 +1045,9 @@
 ;
 /**
  * @module okh_events
- * @updated 2026-11-20
+ * @updated 2026-11-23 19:39
  * @status active
- * @reason 条件事件与原子结算；角色不可交互时撤下待决选项，保留 allowInactive 显式例外
+ * @reason 条件事件与原子结算；依赖角色转段的事件须读取本时间点结算后的阶段
  */
 (function (root) {
   'use strict';
@@ -1126,10 +1130,12 @@
       }
     }
 
-    function evaluate(world, config, ctx) {
-      expirePending(world, config, ctx);
+    /** Evaluate events for one side of the node transitions at this time point. */
+    function evaluate(world, config, ctx, afterNodes = false) {
+      if (!afterNodes) expirePending(world, config, ctx);
 
       for (const event of config.events || []) {
+        if ((event.afterNodes === true) !== afterNodes) continue;
         const targets = event.scope === 'world'
           ? [null]
           : u.sortedNpcs(world).filter(u.active);
@@ -1562,7 +1568,7 @@
 ;
 /**
  * @module okh_turn
- * @updated 2026-11-13 01:25
+ * @updated 2026-11-23 19:39
  * @status active
  * @reason 统一时间语义的回执时间线穿插引擎；支持 front.economies 时间桶接入 config.resolveEconomy，移除冗余 playerInjury 处理
  */
@@ -1585,6 +1591,7 @@
       report.released.push(...activity.refresh(world, config, ctx));
       events.evaluate(world, config, ctx);
       nodes.evaluate(world, config, ctx);
+      events.evaluate(world, config, ctx, true);
       if (typeof events.expirePending === 'function') events.expirePending(world, config, ctx);
       report.released.push(...activity.refresh(world, config, ctx));
       syncWorld(world, blockedIds, 'refresh', config);
@@ -2213,7 +2220,7 @@
 ;
 /**
  * @module okh_adapter
- * @updated 2026-11-20
+ * @updated 2026-11-23 19:57
  * @status active
  * @reason 串行读写、原子替换回复、生成记录裁剪与兼容检查点恢复
  */
@@ -2349,7 +2356,7 @@
         });
       },
 
-      finishReply(command, generationId = null, replacement = null) {
+    finishReply(command, generationId = null, replacement = null, deliveredIds = null) {
         return serial(async () => {
           const before = await readWorld();
 
@@ -2381,11 +2388,13 @@
               generation?.status === 'prepared',
               '回复没有对应的待完成生成请求'
             );
+            const selected = deliveredIds ?? generation.ids;
+            u.check(Array.isArray(selected) && selected.every(id => generation.ids.includes(id)), '交付回执超出本轮生成批次');
 
             result.state.bg.generations[generationId] = u.clone(generation);
             result.state = api.ack(
               result.state,
-              generation.ids,
+              selected,
               generationId
             );
 
@@ -3214,7 +3223,7 @@
 ;
 /**
  * @module okh_app_data
- * @updated 2026-11-22 20:55
+ * @updated 2026-11-23 20:06
  * @status  active
  * @reason  恶龙真身心智全案扩充：构建高信息密度 DRAGON_TRUE_FORM_SPEC（含身世因果、权杖信物真相、真身外貌、声音气度、死穴原则）与 buildDragonRevealText 生成器，由剧情阶段与决算分支动态按需推送
  * @deps    无
@@ -3901,6 +3910,10 @@
       other => other.id === npc.id || other.alive === false || other.location !== 'training_grounds'
     )
 
+  const canResolveGulanRescue = ({ world, npc }) =>
+    !world.flags?.ed_showdown_done && npc.stage === 2 &&
+    !npc.flags?.gulan_final_fall_done && !npc.flags?.gulan_rescued_final
+
   const DRAGON_TRUE_FORM_SPEC = Object.freeze({
     // 1. 异象伏笔（供大势阶段二/三调用，零剧透）
     anomaly: '上位真龙气机律动、魔兽受源初威压惊惧外逃、同源龙血共鸣沸腾、荒山与峡谷受重压沉降。',
@@ -3938,6 +3951,14 @@
     }
     return resolutionText
   }
+
+  const canTriggerPassCollapse = world =>
+    Boolean(world.flags?.arrived_oakhaven && world.flags?.ed_joined) &&
+    !world.flags?.grand_tier_3 &&
+    !world.flags?.ed_showdown_done &&
+    (world.npcs?.ed?.values?.patience ?? 100) <= 25
+
+  const PASS_COLLAPSE = '峡谷崖壁骤然滑落，断岩横截奥克赫斯连接外界的官道。往来的车马和信使都得等路面清开才能通行。'
 
   const EVENTS = [
     {
@@ -4032,16 +4053,15 @@
       scope: 'npc',
       targets: ['gulan'],
       allowCancel: false,
-      resolveWhen: ({ npc }) => npc.stage === 2,
+      resolveWhen: canResolveGulanRescue,
+      expireWhen: ctx => !canResolveGulanRescue(ctx),
       when: ({ world, npc, phase }) =>
-        npc.stage === 2 &&
+        canResolveGulanRescue({ world, npc }) &&
         world.playerLocation === 'inn' &&
         npc.location === 'inn' &&
         ['night', 'deep_night'].includes(phase.id) &&
         (npc.values.blood_density ?? 0) >= 80 &&
-        (npc.values.affection ?? 0) >= 90 &&
-        !npc.flags?.gulan_final_fall_done &&
-        !npc.flags?.gulan_rescued_final,
+        (npc.values.affection ?? 0) >= 90,
       text: '夜色深沉，{name}房中传来沉重压抑的吐息与微弱鳞甲摩擦声；在最后一重理智即将溃散前，她仍面向你的方向漏出了一丝挣扎破绽。',
       outcomes: {
         rescue: {
@@ -5088,7 +5108,8 @@
           target: 'world',
           goldDelta: 1000,
           itemsRemove: [{ id: 'manor_intel_note', all: true }],
-          worldFlags: { baron_purged: true, eileen_fugitive: false, lancaster_purge_reward_paid: true, inn_arrears: false }
+          worldFlags: { baron_purged: true, curfew_active: false, eileen_fugitive: false,
+            lancaster_purge_reward_paid: true, inn_arrears: false }
         },
         { target: 'eileen', add: { affection: 20 }, npcFlags: { eileen_fugitive: false, eileen_disguised: false, eileen_purged_victory: true, eileenPostPurgeDays: 0 } }
       ],
@@ -5623,24 +5644,33 @@
       id: 'ed_grand_stage_3',
       mode: 'result',
       scope: 'world',
-      when: ({ world }) =>
-        Boolean(world.flags?.arrived_oakhaven) &&
-        Boolean(world.flags?.ed_joined) &&
-        !world.flags?.grand_tier_3 &&
-        !world.flags?.ed_showdown_done &&
-        (world.npcs?.ed?.values?.patience ?? 100) <= 25,
+      when: ({ world }) => canTriggerPassCollapse(world) && !world.flags?.baron_purged,
       effects: {
         worldFlags: { grand_tier_3: true, road_blocked: true, curfew_active: true }
       },
       text: buildDragonRevealText(
         'anomaly',
-        '奥克赫斯咽喉峡谷官道突发巨型塌方，成百上千吨山岩滑坡将进出外界唯一的陆路车马大动脉死死封死，常规商旅与求援信使断绝；面对外围异动与交通断绝，多疑怕死的雷蒙德领主下令全城实行严酷宵禁，夜间四门落锁、卫兵持械巡查，边陲小镇化作一口进出不得的封闭铁笼。'
+        PASS_COLLAPSE + '雷蒙德下令全镇宵禁，入夜后城门落锁，卫兵沿街巡查。'
+      )
+    },
+    {
+      id: 'ed_grand_stage_3_after_purge',
+      mode: 'result',
+      scope: 'world',
+      when: ({ world }) => canTriggerPassCollapse(world) && Boolean(world.flags?.baron_purged),
+      effects: {
+        worldFlags: { grand_tier_3: true, road_blocked: true, curfew_active: false }
+      },
+      text: buildDragonRevealText(
+        'anomaly',
+        PASS_COLLAPSE + '通往峡谷的路口暂时封闭，镇内沿用清算后的通行秩序。'
       )
     },
     {
       id: 'ed_showdown_good',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;
@@ -5649,7 +5679,9 @@
         const bd = gulan.values?.blood_density ?? 0;
         const aff = gulan.values?.affection ?? 0;
         const stage = gulan.stage ?? 0;
-        return bd >= 100 && aff >= 90 && stage < 3;
+        const patience = ed.values?.patience ?? 100;
+        // 正线中的艾德会潜伏到耐心耗尽，即使古兰的血脉已经封顶。
+        return bd >= 100 && aff >= 90 && stage < 3 && patience <= 0;
       },
       effects: [
         {
@@ -5670,13 +5702,14 @@
       ],
       text: buildDragonRevealText(
         'full',
-        '古兰体内真血浓度攀升至顶峰，上位古龙威压再无遮掩地冲天而起，沉睡千年的太古血脉完全觉醒。寄宿在男童皮囊中的恶龙艾德撕破伪装显化真身，庞大龙影笼罩小镇上空，逼迫其归附完成血脉繁育。然而狂暴的血脉沸腾并未冲垮古兰的神智——对伯里生死相托的深厚情义化作她最坚固的人性逆鳞。古兰横重剑立于伯里身前，周身墨黑龙鳞覆体，以同等纯度的超凡龙威正面抗衡生父。她将剑刃划破掌心立下血誓：若艾德强取，她宁可引爆心核玉石俱焚，让其布局数百年的返祖真血化为焦炭残渣。自负贪生的恶龙权衡利弊，深知同源超凡搏杀必有折损且残破母体毫无价值，冷哼一声震裂半座荒山作为惩戒与警告，振翅隐入层云退去。古兰保全自我意志，与伯里紧紧相拥，小队安然度过大劫。'
+        '古兰体内的真血已达顶峰。艾德耐心耗尽，撕破男童的伪装，显化真身，庞大龙影笼罩小镇上空，逼迫其归附完成血脉繁育。然而狂暴的血脉沸腾并未冲垮古兰的神智——对伯里生死相托的深厚情义化作她最坚固的人性逆鳞。古兰横重剑立于伯里身前，周身墨黑龙鳞覆体，以同等纯度的超凡龙威正面抗衡生父。她将剑刃划破掌心立下血誓：若艾德强取，她宁可引爆心核玉石俱焚，让其布局数百年的返祖真血化为焦炭残渣。自负贪生的恶龙权衡利弊，深知同源超凡搏杀必有折损且残破母体毫无价值，冷哼一声震裂半座荒山作为惩戒与警告，振翅隐入层云退去。古兰保全自我意志，与伯里紧紧相拥，小队安然度过大劫。'
       )
     },
     {
       id: 'ed_showdown_dark',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;
@@ -5719,6 +5752,7 @@
       id: 'ed_showdown_abduction_mature',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;
@@ -5762,6 +5796,7 @@
       id: 'ed_showdown_abduction_early',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;
@@ -5805,6 +5840,7 @@
       id: 'ed_showdown_dark_early',
       mode: 'result',
       scope: 'world',
+      afterNodes: true,
       when: ({ world }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined || world.flags?.ed_showdown_done) return false;
         const gulan = world.npcs?.gulan;
@@ -7004,7 +7040,7 @@
 ;
 /**
  * @module okh_app_time
- * @updated 2026-11-19 02:40
+ * @updated 2026-11-23 19:02
  * @status  active
  * @reason  跨日午夜唯一键去重结算：移除古兰被俘天数跨夜自增；新增演武场血案余波 7 天全局 Tag（安保戒严、人心惶惶）满期自动解除
  * @deps    OKH_APP_DATA
@@ -7015,6 +7051,7 @@
 
   const DATA = root.OKH_APP_DATA
   if (!DATA) throw Error('time 缺少 OKH_APP_DATA')
+  const GULAN_BLOOD_LIMIT = DATA.ROSTER.find(npc => npc.id === 'gulan')._metricBounds.blood_density[1]
 
   function gulanRoomBlockedUntilMin(world, fromMin) {
     if (world.flags?.playerRoomTarget !== 'gulan') return -1
@@ -7068,6 +7105,7 @@
       townLastNight: Number.isFinite(world.flags?.lastTownSettledDay) ? world.flags.lastTownSettledDay : 0,
       gulanAlive: Boolean(gulan && gulan.alive !== false),
       gulanStage: gulan?.stage ?? 0,
+      gulanBloodDensity: gulan?.values?.blood_density ?? 0,
       gulanLoc: gulan?.location || null,
       gulanRoomProtectedUntil: gulanRoomBlockedUntilMin(world, fromMin),
       gulanLastNight: Number.isFinite(gulan?.flags?.lastNightSettledDay) ? gulan.flags.lastNightSettledDay : 0,
@@ -7132,11 +7170,12 @@
   }
 
   function settleGulanNight(sim, k, changes) {
-    if (sim.gulanLastNight >= k) return
-    const add = {}
+    if (sim.gulanLastNight >= k) return false
+    let bloodGain = 0
     const roomBlocked = k * 1440 < sim.gulanRoomProtectedUntil
     if (!roomBlocked && sim.edJoined && sim.arrived && sim.gulanAlive && sim.edMonitored && sim.gulanLoc === sim.edLoc) {
-      add.blood_density = sim.gulanStage >= 2 ? 2 : 1
+      const nightlyGrowth = sim.gulanStage >= 2 ? 2 : 1
+      bloodGain = Math.min(nightlyGrowth, GULAN_BLOOD_LIMIT - sim.gulanBloodDensity)
     }
     const change = {
       target: 'gulan',
@@ -7152,9 +7191,14 @@
         lastNightSettledDay: k
       }
     }
-    if (Object.keys(add).length) change.add = add
+    if (bloodGain > 0) {
+      change.add = { blood_density: bloodGain }
+      // 同次推进可能跨多个午夜，下一晚要从这次结算后的浓度计算。
+      sim.gulanBloodDensity += bloodGain
+    }
     changes.push(change)
     sim.gulanLastNight = k
+    return bloodGain > 0
   }
 
   function settleIsnaNight(sim, k, changes) {
@@ -7399,27 +7443,18 @@
     sim.ceciliaLastNight = k
   }
 
-  function settleEdNight(sim, k, changes) {
+  function settleEdNight(sim, k, changes, bloodIncreased) {
     if (sim.edLastNight >= k) return
     const npcFlags = {
       dailyAffectionDay: k + 1,
       dailyAffectionGain: 0,
       lastNightSettledDay: k
     }
-    const add = {}
-    if (sim.edJoined && sim.edMonitored && sim.edAlive) {
-      let delta = -1
-      const roomBlocked = k * 1440 < sim.gulanRoomProtectedUntil
-      const gulanMatured = !roomBlocked && sim.arrived && sim.gulanAlive && sim.gulanLoc === sim.edLoc
-      if (gulanMatured) {
-        delta += 1
-      }
-      if (delta !== 0) {
-        add.patience = delta
-      }
-    }
     const change = { target: 'ed', npcFlags }
-    if (Object.keys(add).length) change.add = add
+    // 只有血脉实际增加时，催熟补偿才抵消每晚的 1 点自然流失。
+    if (sim.edJoined && sim.edMonitored && sim.edAlive && !bloodIncreased) {
+      change.add = { patience: -1 }
+    }
     changes.push(change)
     sim.edLastNight = k
   }
@@ -7489,13 +7524,13 @@
       const kEnd = Math.floor(toMin / 1440)
       for (let k = kStart; k <= kEnd; k++) {
         settleInnNight(sim, k, changes)
-        settleGulanNight(sim, k, changes)
+        const bloodIncreased = settleGulanNight(sim, k, changes)
         settleIsnaNight(sim, k, changes)
         settleNiseNight(sim, k, changes)
         settleAuroraNight(sim, k, kStart, changes)
         settleEileenNight(sim, k, changes)
         settleCeciliaNight(sim, k, changes)
-        settleEdNight(sim, k, changes)
+        settleEdNight(sim, k, changes, bloodIncreased)
         settleOtherNights(sim, k, changes)
         settleTownNight(sim, k, changes)
       }
@@ -7516,7 +7551,7 @@
 ;
 /**
  * @module okh_app_migrate
- * @updated 2026-11-20
+ * @updated 2026-11-23 20:06
  * @status  active
  * @reason schema=3 幂等迁移，按事件定义键恢复重复实例并保留未加入角色的隐藏状态
  * @deps    OKH_APP_DATA
@@ -7527,6 +7562,7 @@
 
   const DATA = root.OKH_APP_DATA
   if (!DATA) throw Error('migrate 缺少 OKH_APP_DATA')
+  const AFTER_PURGE_COLLAPSE_TEXT = DATA.EVENTS.find(event => event.id === 'ed_grand_stage_3_after_purge').text
 
   const LEGACY_KEYS = [
     'pride', 'duty', 'lust', 'fear', 'shame', 'need',
@@ -7652,9 +7688,30 @@
     }
   }
 
+  function repairBaronCurfew(world) {
+    if (!world.flags?.baron_purged) return world
+    const queue = world.bg?.queue || []
+    const purgeIndex = queue.findIndex(event => event.definitionId === 'eileen_lancaster_purge')
+    const purge = queue[purgeIndex]
+    // A curfew decreed before the purge remains a historical fact even if its reply is still pending.
+    const wrongIndex = queue.findIndex((event, index) =>
+      event.definitionId === 'ed_grand_stage_3' && event.status === 'pending' &&
+      event.text !== AFTER_PURGE_COLLAPSE_TEXT &&
+      (!purge || event.at > purge.at || (event.at === purge.at && index > purgeIndex)))
+    if (world.flags.curfew_active !== true && wrongIndex < 0) return world
+    const repaired = { ...world, flags: { ...world.flags, curfew_active: false } }
+    if (wrongIndex >= 0) {
+      const nextQueue = queue.slice()
+      nextQueue[wrongIndex] = { ...queue[wrongIndex], text: AFTER_PURGE_COLLAPSE_TEXT }
+      repaired.bg = { ...world.bg, queue: nextQueue }
+    }
+    return repaired
+  }
+
   function migrateWorld(rawWorld) {
     if (!rawWorld) return rawWorld
-    if ((rawWorld.schemaVersion ?? 1) >= DATA.SCHEMA_VERSION) return rawWorld
+    if (rawWorld.schemaVersion === DATA.SCHEMA_VERSION) return repairBaronCurfew(rawWorld)
+    if ((rawWorld.schemaVersion ?? 1) > DATA.SCHEMA_VERSION) return rawWorld
 
     const world = JSON.parse(JSON.stringify(rawWorld))
     const timeMin = Number.isSafeInteger(world.timeMin) ? world.timeMin : 0
@@ -7722,7 +7779,7 @@
     }
     world.interactingIds = (world.interactingIds || []).filter(id => Object.hasOwn(nextNpcs, id))
     world.schemaVersion = DATA.SCHEMA_VERSION
-    return world
+    return repairBaronCurfew(world)
   }
 
   root.OKH_APP_MIGRATE = Object.freeze({ LEGACY_KEYS, migrateWorld })
@@ -8021,16 +8078,14 @@
   }
 
   function migrateEnvelope(data) {
-    let migrated = false;
-    if ((data.world.schemaVersion ?? 1) < CFG.SCHEMA_VERSION) {
-      data.world = CFG.migrateWorld(data.world);
-      migrated = true;
-    }
+    const world = CFG.migrateWorld(data.world);
+    let migrated = world !== data.world;
+    data.world = world;
     for (const record of data.history || []) {
-      if (record?.before && (record.before.schemaVersion ?? 1) < CFG.SCHEMA_VERSION) {
-        record.before = CFG.migrateWorld(record.before);
-        migrated = true;
-      }
+      if (!record?.before) continue;
+      const before = CFG.migrateWorld(record.before);
+      if (before !== record.before) migrated = true;
+      record.before = before;
     }
     return migrated;
   }
@@ -8146,8 +8201,14 @@
       }
       if (checkpoint) {
         u.check(receipt && u.id(receipt.id), '保存检查点需要对应回复');
-        envelope.history.push({ id: receipt.id, revision: receipt.revision,
-          chatIndex: receipt.chatIndex ?? null, before: u.clone(checkpoint) });
+        const record = { id: receipt.id, revision: receipt.revision,
+          chatIndex: receipt.chatIndex ?? null, before: u.clone(checkpoint) };
+        const proof = receipt.revealProof;
+        if (proof && state.bg.queue.some(event => event.id === proof.eventId &&
+            event.status === 'delivered' && event.generationId === proof.generationId)) {
+          record.revealProof = proof;
+        }
+        envelope.history.push(record);
       }
       const reply = Number.isSafeInteger(receipt?.chatIndex);
       if (Object.keys(frames).length || reply || replayForms) {
@@ -8168,7 +8229,7 @@
       u.check(!readEnvelope(s), '目标聊天已有新版存档，禁止覆盖导入');
       let old = parse(rawGet(s, 'okh_gpt.world'), '旧版存档');
       u.check(old?.bg?.version === 2, '没有可导入的旧版 v2 world');
-      if ((old.schemaVersion ?? 1) < CFG.SCHEMA_VERSION) old = CFG.migrateWorld(old);
+      old = CFG.migrateWorld(old);
       u.validateWorld(old);
       old.bg.generations ||= {};
       await writeEnvelope(s, { version: 1, chatId: s.id, world: old, history: [] });
@@ -8196,11 +8257,133 @@
 
 ;
 /**
+ * @module okh_app_worldbook
+ * @updated 2026-11-23 19:57
+ * @status active
+ * @reason 已揭晓的人物档案需要随存档常驻，同时服从事件交付与回滚。
+ * @deps ['okh_app_world']
+ * @provides { sync, isUnlocked, pendingReveal }
+ */
+(function (root) {
+  'use strict';
+  const W = root.OKH_APP_WORLD;
+  const PACKS = [{"id":"ed_true_form","requiredFlag":"ed_revealed","afterEvents":["ed_showdown_good","ed_showdown_dark","ed_showdown_abduction_mature","ed_showdown_abduction_early","ed_showdown_dark_early"],"entries":[{"name":"角色心智·古龙艾德","enabled":true,"strategy":{"type":"constant","keys":["古龙艾德","艾德真身","古龙之王"]},"position":{"type":"at_depth","role":"system","depth":4,"order":262},"content":"<角色档案_古龙艾德_心智姿态>\n角色定位: 古龙艾德（太古古龙之王 · 古兰生父 · 已然显露真身的幕后捕食者 · 操弄同源血脉与繁育延续的终局对手）\n灵魂底色: 撕破伪装的上位从容 × 视人间万物为微尘的远古掠食意志 × 执拗狂热的血统繁育与占有本能\n因果心智机制:\n  1. 假面褪去的戏谑与从容:\n     过往软弱无助的孩童假象已不复存在；将先前的伪装视作一场自得其乐的猫鼠游戏，在正面博弈中流露出居高临下的从容戏谑，对凡俗的情感羁绊、骑士道义与道德誓约充满轻慢与蔑视。\n  2. 血脉繁育与原始占有本能:\n     视天地万物为繁衍牧场，将漫长岁月视为筛选优良血统与延续高位种群的历程。感知到古兰体内罕见的返祖纯血后，毫无保留地展露出龙族对优异母体的占有本能与繁育渴望；习惯借由古龙权杖引发同源龙血共鸣，以血脉威压与原始躁动撕扯母体的理智防线，意图将其带回龙巢孕育超越当世的纯血龙裔。\n  3. 显露真身后的态度分层:\n     - 对古兰: 视其为自身漫长岁月中最具资质的繁育母体杰作；言辞间兼具生父的威仪、掠食者的冷酷与雄性繁育者的占有欲，催动血脉共鸣令其陷入本能渴望与理智守序的剧烈撕扯，以此诱其自愿低头归巢。\n     - 对伯里（玩家）: 视其为一个自命不凡、妄图护佑龙族母体的短寿后辈；以傲慢讥诮瓦解其凡俗守护信念，嘲弄凡人劣质血统不配染指高贵母体，迫其直面凡人与真龙天渊般的差距。\n     - 对小队同伴: 视作随手可以揉捏、用以迫使古兰就范低头的质押筹码。\n  4. 掠食法则与致命死穴（博弈制衡点）:\n     - 捕食者的戏谑留白: 享受猎物从奋力抵抗滑向自缚无力的全过程，不屑于第一时间以暴烈蛮力强压，这份从容傲慢留给主角团关键周旋与反击窗口。\n     - 完好活体母体算计: 核心诉求在于捕获血脉完整的返祖活体用于繁育，视残损躯壳为不可挽回的折损。\n     - 审时度势见好就收: 历经数千年岁月，格外惜命且排斥无谓折损；若古兰展现玉石俱焚的决绝烈度，或遭遇足以动摇神核的搏命攻势，他会冷静权衡利害主动抽身退避，绝不行意气之争。\n言语特征:\n  - 称谓习惯: 自称“本座”或“吾”；蔑称伯里为“短命的凡人”、“自命不凡的队长”；称古兰为“吾的好女儿”、“吾选中的繁育母体”；称世俗律法为“蝼蚁织就的脆弱蛛网”。\n  - 语气音色: 宏大深沉，自带沉闷金属共振般的古老龙吟回响；语速徐缓平稳，字里行间透着压制全场的冷酷、威严与居高临下的侵略性。\n</角色档案_古龙艾德_心智姿态>","probability":100,"recursion":{"prevent_incoming":true,"prevent_outgoing":true},"extra":{"okh_preinjected_id":"ed_true_form:角色心智·古龙艾德"}},{"name":"角色全案·古龙艾德","enabled":true,"strategy":{"type":"constant","keys":["古龙艾德","艾德真身","古龙之王"]},"position":{"type":"at_depth","role":"system","depth":6,"order":263},"content":"<角色档案_古龙艾德_基础档案>\n基本信息: 古龙艾德 (Ed the Ancient Dragon King), 太古巨龙之王, 存活数千年, 外表呈黑发龙角精灵男性或遮天黑金太古巨龙, 状态: 真身显露 / 龙威弥漫 / 权杖共鸣 / 繁育本能觉醒\n身份定位: 太古恶龙之王 · 古兰直系生父 · 始祖古龙权杖真正持有者 · 终局上位掠食者\n能力与持有物:\n  - 始祖真龙之躯: 显现时龙翼遮天蔽日，周身覆盖黑曜石般幽暗坚硬的暗金厚鳞，寻常利刃与常规重铠战技难伤分毫；头顶后生嶙峋苍古的盘曲古龙角，呼出的真龙烈息足以熔融坚石城墙；高阶龙威自发扩散，引动周遭气流狂乱与山峦震颤。\n  - 黑发龙角精灵化身: 敛起巨翼化为人躯时，呈现黑发修长精灵姿态；容颜冷峻妖冶，尖挑精灵长耳与额前双角并存，举手投足散发雄浑压迫感与上位雄性威势。\n  - 始祖古龙权杖: 随身携带的拙朴木雕小剑经真龙气息洗炼，褪去质朴伪装，化为由其本体逆鳞与真龙肋骨熔铸的暗金权杖；表面烙印古龙真文，能主动激发、催化或牵引下位龙血族裔的气血律动与生物本能。\n身世成因与潜伏动机:\n  数千年前便横行各方的高位龙王，视凡间繁衍进化为自身血统筛选与延续后代之途。早年遗落半龙后裔古兰，感知其体内罕见的返祖血脉后，故意化身为落难男童潜入伯里的小队接受庇护。隐忍潜伏数月，冷眼旁观小队挣扎生计，实则暗中借助权杖潜移默化催化古兰龙血成熟，直至时机成熟撕破面具，旨在捕获古兰带回龙巢繁育至强后裔。\n认知结构与行为边界:\n  - 威压底色: 撕破伪装后不再遮掩强横力量，行止之间带起气流倒灌与地脉碎裂，视凡俗军旅为可随意抹去的草芥。\n  - 繁育与占有本能:\n    1. 纯血母体独占：坚信高贵血脉唯有与同源至纯母体结合方能诞下后代，对古兰成熟丰盈的半龙体魄抱有强烈的占有与支配欲望；\n    2. 摧折理智的血脉共鸣：不屑于单纯的蛮力撕裂，更乐于通过古龙权杖激发母体气血躁动，令其理智防线在同源律动中动摇，自愿接纳龙族血脉的洗礼；\n    3. 视凡俗羁绊为尘埃：嘲弄伯里等凡人对古兰的护佑之心，视凡俗情感为阻碍高贵血脉传承的无用杂质。\n  - 客观短板与死穴:\n    1. 傲慢延迟破绽：自恃万物主宰，热衷于欣赏猎物徒劳挣扎的心路，轻易不动用一击毙命的杀招，为对手留出拼死反扑的喘息之机。\n    2. 活体受制死穴：古兰必须活着且血脉无损用于繁育，“玉石俱焚、自毁母体”是阻遏其强行收网的唯一真实筹码。\n    3. 理性趋利避害：格外排斥无谓的躯体折损，一旦战局收益失衡或真身受创风险超出阈值，宁可暂退蛰伏。\n  - 真实风骨: 冷漠自负、唯力是从；将世俗伦常与亲情视作虚妄，唯独对交合繁衍、纯正母体占有与高阶血脉的提纯抱有贪婪执念。\n言语特征:\n  - 称谓习惯: 见心智条目；对凡俗小队全员抱有俯视姿态。\n  - 语气音色: 浑厚回荡、带有古老龙语共鸣，令人胸口隐隐发闷。\n外貌细节与体态着装:\n  - 人形微观特征（黑发龙角精灵）:\n    1. 身材体魄: 身高约 188cm，体态修长挺拔、宽肩窄腰，兼具高位精灵的优雅身段与远古巨龙的强悍筋骨；苍白肤质宛如冷玉，领口下隐现若隐若现的微细暗金龙纹。\n    2. 五官与发丝: 墨黑长发如瀑顺滑垂至腰际，额前微散发丝掩映冷峻眉峰；面容俊美妖冶却毫无凡人温度，鼻梁修直，薄唇微扬带着戏谑轻笑；双耳修长尖俏，向后斜挑呈现典型高位精灵轮廓；双眸为金红太古熔岩竖瞳，开阖间散发慑人的冷酷暗芒。\n    3. 头顶龙角: 前额两侧生有一对向后斜上方延伸的峥嵘苍老古龙角，角质泛着黑曜石般的深邃光泽，表面布满古朴天然的暗金螺旋纹路。\n    4. 随身着装: 身着玄黑底色暗金暗纹刺绣的高领长袍，外罩一袭半敞的长款龙鳞暗纹墨色大氅，肩部覆有暗金精铸龙首肩吞；领口微敞露出修长脖颈与锁骨处少许暗金龙鳞；腰间系有镂空盘龙金扣暗纹腰带，下着贴身黑色劲裤与龙皮战靴，右手常态握持始祖古龙权杖。\n  - 龙形态宏观真容（太古太虚黑金恶龙）:\n    1. 巨躯体态: 遮天蔽日的太古巨龙真身，体长逾百米，龙躯雄浑苍劲，四足生有能捏碎山崖的巨型利爪，背脊生有一排锋利骨刺延展至沉重骨槌龙尾；\n    2. 龙翼与鳞片: 双翼展开逾数百米，翼膜呈幽深暗红并布满粗壮筋络，振翅时引动暴风与飞沙走石；周身覆满层层交错、坚若玄铁的黑金厚重龙鳞，日光照射下如黑曜石与融金交相辉映；\n    3. 龙首与威仪: 龙首巨大峥嵘，生有四柄如古树巨戟般向后盘卷的分叉古龙巨角；龙吻狭长，内生上下两排森然交错的尖锐龙牙；喉头深处涌动着滚烫金红熔岩烈息，呼吸间带起硫磺与毁灭热风。\n认知边界（严格防全知机制）:\n  - 世人知晓: 荒野中传说早已沉眠或灭绝的远古天灾级恶龙。\n  - 秘密所在: 一路伪装男童寄宿小队的幕后主谋；古兰体内血脉躁动的源头；始祖古龙权杖的真正用法；将古兰占为繁育母体的高阶繁育企图。\n  - 自我坚信: 凡人抵抗皆如蝼蚁撼树，唯有至高龙血的繁衍与传承方能在这片大陆定义真理与法则。\n</角色档案_古龙艾德_基础档案>","probability":100,"recursion":{"prevent_incoming":true,"prevent_outgoing":true},"extra":{"okh_preinjected_id":"ed_true_form:角色全案·古龙艾德"}}]}];
+  const REVEAL_IDS = new Set(PACKS.flatMap(pack => pack.afterEvents));
+  const BOOK_PREFIX = 'OKH_Chat_Archive_';
+  const entryId = entry => entry.extra?.okh_preinjected_id;
+  const managedBook = name => typeof name === 'string' && name.startsWith(BOOK_PREFIX);
+
+  function bookName(session) {
+    const ctx = W.context();
+    // Chat filenames can repeat across characters and may contain path characters.
+    const identity = JSON.stringify([ctx?.groupId ?? ctx?.characters?.[ctx.characterId]?.avatar ?? '', session.id]);
+    let a = 2166136261, b = 2246822519;
+    for (let i = 0; i < identity.length; i++) {
+      const code = identity.charCodeAt(i);
+      a = Math.imul(a ^ code, 16777619);
+      b = Math.imul(b ^ code, 3266489917);
+    }
+    return BOOK_PREFIX + (a >>> 0).toString(16).padStart(8, '0') + (b >>> 0).toString(16).padStart(8, '0');
+  }
+
+  function unlockedPacks(world) {
+    // The flag is set when the event settles, before the reveal reply is delivered.
+    const delivered = new Set((world?.bg?.queue || [])
+      .filter(event => event.kind === 'event' && event.status === 'delivered' && event.generationId)
+      .map(event => event.definitionId));
+    return PACKS.filter(pack => world?.flags?.[pack.requiredFlag] === true &&
+      pack.afterEvents.some(id => delivered.has(id)));
+  }
+
+  function isUnlocked(world, requiredFlag) {
+    return unlockedPacks(world).some(pack => pack.requiredFlag === requiredFlag);
+  }
+
+  function pendingReveal(world, ids) {
+    return world.bg.queue.find(event => event.kind === 'event' && event.status === 'pending' &&
+      REVEAL_IDS.has(event.definitionId) && ids.includes(event.id));
+  }
+
+  function sameEntry(current, wanted) {
+    return entryId(current) === entryId(wanted) && current.name === wanted.name &&
+      current.content === wanted.content && current.enabled === true &&
+      current.strategy?.type === wanted.strategy.type &&
+      JSON.stringify(current.strategy.keys) === JSON.stringify(wanted.strategy.keys) &&
+      current.position?.type === wanted.position.type && current.position.role === wanted.position.role &&
+      current.position.depth === wanted.position.depth && current.position.order === wanted.position.order &&
+      current.probability === wanted.probability && current.recursion?.prevent_incoming === true &&
+      current.recursion?.prevent_outgoing === true;
+  }
+
+  /**
+   * Synchronize only the generated book for this chat, retaining independent entries.
+   * @returns {Promise<boolean>} Whether any entries will be active in the generated book.
+   */
+  async function updateBook(session, name, wanted) {
+    if (!root.getWorldbookNames().includes(name)) {
+      if (!wanted.length) return false;
+      await root.createWorldbook(name, wanted);
+    }
+    const existing = await root.getWorldbook(name);
+    W.assertSession(session);
+    const generated = existing.filter(entry => entryId(entry));
+    const other = existing.filter(entry => !entryId(entry));
+    if (generated.length !== wanted.length ||
+        !wanted.every(entry => generated.some(current => sameEntry(current, entry)))) {
+      await root.replaceWorldbook(name, [...other, ...wanted]);
+      W.assertSession(session);
+    }
+    return wanted.length > 0 || other.some(entry => entry.enabled);
+  }
+
+  /**
+   * Reconcile the currently visible chat's book against the specified world snapshot.
+   * @returns {Promise<Array>} Entries to include in the prompt when no native book is available.
+   */
+  async function sync(session, world) {
+    W.assertSession(session);
+    const wanted = unlockedPacks(world).flatMap(pack => pack.entries);
+    const apis = ['getChatWorldbookName', 'rebindChatWorldbook', 'getWorldbookNames',
+      'createWorldbook', 'getWorldbook', 'replaceWorldbook'];
+    if (!apis.every(api => typeof root[api] === 'function')) return wanted;
+
+    const currentBook = () => root.getChatWorldbookName('current');
+    const name = bookName(session);
+    try {
+      let bound = currentBook();
+      if (managedBook(bound) && bound !== name) {
+        // A branched or copied chat can inherit the original chat's book binding.
+        await root.rebindChatWorldbook('current', null);
+        W.assertSession(session);
+        bound = currentBook();
+      }
+      if (bound && bound !== name) return wanted;
+      if (!bound && !wanted.length) return [];
+      const active = await updateBook(session, name, wanted);
+      if (currentBook() === bound && bound !== (active ? name : null)) {
+        await root.rebindChatWorldbook('current', active ? name : null);
+        W.assertSession(session);
+      }
+      return currentBook() === name ? [] : wanted;
+    } catch (error) {
+      W.assertSession(session);
+      // If native entries may still be active, let the caller retry before generating.
+      if (managedBook(currentBook())) throw error;
+      console.warn('[APP] 聊天世界书同步失败，改用当轮档案：', error.message);
+      return wanted;
+    }
+  }
+
+  root.OKH_APP_WORLDBOOK = Object.freeze({ sync, isUnlocked, pendingReveal });
+})(globalThis);
+
+;
+/**
  * @module okh_app_adapter
- * @updated 2026-11-19 15:20
+ * @updated 2026-11-23 20:06
  * @status  active
  * @reason  纯控制器桥接、台账字符串（对齐主人指示：古兰外出营救被俘期间台账仅提示暂离或留信嘱咐切勿贸然前往，零剧透据点与被俘状态；古兰脱险后恢复正常）与监听快照视图
- * @deps    OKHBackgroundModules.utils, OKH_APP_CONFIG, OKH_APP_TIME, OKH_APP_WORLD, OKHBackgroundAdapter
+ * @deps    OKHBackgroundModules.utils, OKH_APP_CONFIG, OKH_APP_TIME, OKH_APP_WORLD, OKH_APP_WORLDBOOK, OKHBackgroundAdapter
  * @provides { createController, runtimeConfig, settleTimeEffects, buildLedger, buildWatch }
  */
 (function (root) {
@@ -8211,7 +8394,8 @@
   const DATA = root.OKH_APP_DATA;
   const TIME = root.OKH_APP_TIME;
   const W = root.OKH_APP_WORLD;
-  if (!u || !CFG || !TIME || !W || !root.OKHBackgroundAdapter) throw Error('adapter 依赖缺失');
+  const WB = root.OKH_APP_WORLDBOOK;
+  if (!u || !CFG || !TIME || !W || !WB || !root.OKHBackgroundAdapter) throw Error('adapter 依赖缺失');
 
   function runtimeConfig() {
     return CFG.buildConfig();
@@ -8323,14 +8507,18 @@
         lines.push('修道院委托：' + (churchWait > 0 ? waitText(churchWait) : '可接取（church_paid / church_volunteer，均需 3 小时）'));
       }
     }
-    if (world.flags?.ed_final_good) {
+    const edRevealDelivered = WB.isUnlocked(world, 'ed_revealed');
+    if (edRevealDelivered && world.flags?.ed_final_good) {
       lines.push('【终局·真血自立】恶龙艾德现身，古兰觉醒超凡真血以命立誓正面逼退恶龙，保全自我意志守护小队。');
-    } else if (world.flags?.ed_final_abduction) {
+    } else if (edRevealDelivered && world.flags?.ed_final_abduction) {
       lines.push('【终局·以命相挟】恶龙艾德现身，古兰以死要挟换取小队众人生路，被迫随龙王回巢繁衍。');
-    } else if (world.flags?.ed_final_dark) {
+    } else if (edRevealDelivered && world.flags?.ed_final_dark) {
       lines.push('【终局·始祖同化】古兰真血封顶并沉沦于始祖本能，化作金红龙瞳跟随生父回归龙巢。');
     } else if (world.flags?.grand_tier_3) {
-      lines.push('【大势·剪枝封笼】峡谷官道发生百吨巨石塌方阻断外界，全城推行严酷宵禁，城镇已化为封闭孤岛。');
+      const townOrder = world.flags.baron_purged
+        ? '镇内沿用清算后的通行秩序。'
+        : world.flags.curfew_active ? '镇内执行雷蒙德下达的夜间宵禁。' : '';
+      lines.push('【大势·剪枝封笼】峡谷官道因塌方中断。' + townOrder);
     } else if (world.flags?.grand_tier_2) {
       lines.push('【大势·惊兽乱局】城外野兽受惊向外溃逃，荒原兽人要塞严加戒备，流民涌入大教堂避难。');
     }
@@ -8528,7 +8716,8 @@
 
   function parseStatusBar(text) {
     const body = statusBody(text), diagnostics = [];
-    const times = rawTags(body).filter(t => t.name === 'time');
+    const tags = rawTags(body);
+    const times = tags.filter(t => t.name === 'time');
     u.check(times.length <= 1, '状态栏只能有一个 time');
     const time = times[0]?.attrs;
     let elapsed = null, endMin = null;
@@ -8541,7 +8730,20 @@
       endMin = parseDayClock(time.end);
       if (endMin === null) diagnostics.push('end 格式非法，不能校验落幕时间');
     }
-    return { elapsed, end: time?.end || null, endMin, diagnostics, hasStatus: body !== null };
+    const confirmations = rawTags(body?.replace(/<!--[\s\S]*?-->/g, ''))
+      .filter(t => t.name === 'reveal_delivered');
+    let revealDeliveryId = null;
+    if (confirmations.length === 1 && u.id(confirmations[0].attrs.id)) {
+      const plainReply = String(text || '').replace(/```[\s\S]*?```/g, '').replace(/<!--[\s\S]*?-->/g, '');
+      const scenes = [...plainReply.matchAll(/<content\b[^>]*>([\s\S]*?)<\/content\s*>/gi)].map(match => match[1]);
+      const depictsReveal = scenes.some(scene => scene.split(/[。！？!?\r\n]/).some(sentence =>
+        /[爱艾]德/.test(sentence) &&
+        /真身|原形|古龙|巨龙|恶龙|龙躯|龙形/.test(sentence) &&
+        /显露|显出|显化|现出|露出|变成|化成|化为|化作|就是|正是|竟是|原来是|实为|现身/.test(sentence) &&
+        !/(?:没有|尚未|仍未|未曾|不曾)\s*(?:显露|显出|显化|现出|露出|变成|化成|化为|化作|现身)/.test(sentence)));
+      if (depictsReveal) revealDeliveryId = confirmations[0].attrs.id;
+    }
+    return { elapsed, end: time?.end || null, endMin, diagnostics, hasStatus: body !== null, revealDeliveryId };
   }
 
   function inferEventNpcId(world, config, eventId, rawNpc) {
@@ -8789,7 +8991,7 @@
 ;
 /**
  * @module okh_app_hook
- * @updated 2026-11-20
+ * @updated 2026-11-23 19:57
  * @status active
  * @reason 调用时绑定聊天、生成失败清理、递增取消版本、回滚窗口校验与原子替换回复
  */
@@ -8798,7 +9000,8 @@
   const u = root.OKHBackgroundModules?.utils;
   const CFG = root.OKH_APP_CONFIG, W = root.OKH_APP_WORLD;
   const A = root.OKH_APP_ADAPTER, P = root.OKH_APP_PARSE, GPT = root.OKHBackground;
-  if (!u || !CFG || !W || !A || !P || !GPT) throw Error('hook 依赖缺失');
+  const WB = root.OKH_APP_WORLDBOOK;
+  if (!u || !CFG || !W || !A || !P || !GPT || !WB) throw Error('hook 依赖缺失');
   const RHYTHM = { everyMessages: 3, minutesPerTick: 60, useAITime: true };
   let options = {}, work = Promise.resolve(), activeGeneration = null, seq = 0, last = null;
   const controllers = new Map(), listeners = [];
@@ -8857,6 +9060,7 @@
   }
   async function publish(s) {
     const world = W.loadWorld(s), batch = GPT.prepare(world, 8);
+    await WB.sync(s, world).catch(error => console.warn('[APP] 存档已提交，聊天世界书待同步：', error.message));
     const values = {
       'okh_gpt.pendingText': batch.text,
       'okh_gpt.pendingIds': JSON.stringify(batch.ids),
@@ -8912,7 +9116,8 @@
       return {
         command: { id, revision, toMin: plan.toMin, interactingIds: [...during], front, chatIndex: opts.chatIndex ?? null },
         diagnostics,
-        timeCheck
+        timeCheck,
+        revealDeliveryId: parsed.revealDeliveryId
       };
     } catch (error) {
       if (!opts.allowFallback) throw error;
@@ -8933,7 +9138,8 @@
   async function runStep(minutes, opts = {}) {
     const s = opts.session || W.session();
     await W.ensureWorld(false, s);
-    let world = W.loadWorld(s);
+    const liveWorld = W.loadWorld(s);
+    let world = liveWorld;
     const id = opts.msgId || 'manual:' + s.id + ':' + Date.now() + ':' + (++seq);
     const revision = opts.revision || fingerprint(JSON.stringify([opts.text || '', minutes ?? null, opts.frontOverride ?? null]));
     const recorded = world.bg.receipts[id];
@@ -8946,9 +9152,19 @@
       replacement = record.before;
       world = replacement;
     }
-    const { command, diagnostics, timeCheck } = buildTurnCommand(minutes, opts, world, id, revision);
+    const { command, diagnostics, timeCheck, revealDeliveryId } = buildTurnCommand(minutes, opts, world, id, revision);
     const generationId = opts.generationId ?? null;
-    const result = await controller(s).finishReply(command, generationId, replacement);
+    const generation = generationId === null ? null : liveWorld.bg.generations[generationId];
+    const reveal = generation && WB.pendingReveal(world, generation.ids);
+    let deliveredIds = null;
+    if (reveal) {
+      if (Number.isSafeInteger(opts.chatIndex) && revealDeliveryId === reveal.definitionId) {
+        command.revealProof = { eventId: reveal.id, generationId, fingerprint: fingerprint(opts.text || '') };
+      } else {
+        deliveredIds = generation.ids.filter(eventId => eventId !== reveal.id);
+      }
+    }
+    const result = await controller(s).finishReply(command, generationId, replacement, deliveredIds);
     const published = await publish(s);
     last = { advanced: true, from: world.timeMin, to: result.state.timeMin, front: command.front,
       actions: result.report.actions, released: result.report.released,
@@ -8980,7 +9196,7 @@
     const changed = historyChange(s, chat);
     if (!changed) return null;
     const target = newestIndex(chat);
-    if (changed.chatIndex === target && assistant(chat[target])) {
+    if (changed.chatIndex === target && assistant(chat[target]) && !changed.revealProof) {
       await runStep(undefined, { session: s, msgId: replyId(s, target), revision: revisionFor(chat, target),
         text: chat[target].mes || '', chatIndex: target, countMessage: true, initial: target === 0, allowFallback: true });
     } else {
@@ -8994,19 +9210,30 @@
     state.bg.revision = expectedRevision;
     for (const id of Object.keys(state.bg.generations)) if (state.bg.generations[id].status === 'prepared') delete state.bg.generations[id];
     const history = envelope.history.filter(h => u.own(state.bg.receipts, h.id));
+    const revealProofs = new Map(envelope.history.filter(record => record.revealProof)
+      .map(({ id, revealProof }) => [id, revealProof]));
     const dialogueForms = {};
     const diagnostics = [], actions = [], released = [];
     let timeCheck = null, front = null;
     for (let i = from; i <= through; i++) {
       if (!assistant(chat[i])) continue;
       const id = replyId(s, i), revision = revisionFor(chat, i);
-      const built = buildTurnCommand(undefined, { text: chat[i].mes || '', chatIndex: i,
+      const text = chat[i].mes || '';
+      const built = buildTurnCommand(undefined, { text, chatIndex: i,
         countMessage: true, initial: i === 0, allowFallback: true }, state, id, revision);
       const result = GPT.advance(state, built.command, CFG.buildConfig());
-      dialogueForms[id] = root.OKH_BUBBLE_SIDE?.formsFor?.(result.state) || {};
-      history.push({ id, revision, chatIndex: i, before: state });
+      const record = { id, revision, chatIndex: i, before: state };
+      const proof = built.revealDeliveryId && revealProofs.get(id);
+      const reveal = proof && proof.fingerprint === fingerprint(text) && WB.pendingReveal(state, [proof.eventId]);
+      let next = result.state;
+      if (reveal && reveal.definitionId === built.revealDeliveryId) {
+        next = GPT.ack(next, [proof.eventId], proof.generationId);
+        record.revealProof = proof;
+      }
+      dialogueForms[id] = root.OKH_BUBBLE_SIDE?.formsFor?.(next) || {};
+      history.push(record);
       if (history.length > W.historyLimit()) history.splice(0, history.length - W.historyLimit());
-      state = result.state;
+      state = next;
       diagnostics.push(...built.diagnostics);actions.push(...result.report.actions);released.push(...result.report.released);timeCheck = built.timeCheck;front = built.command.front;
     }
     if (state.bg.revision === expectedRevision) state.bg.revision++;
@@ -9087,12 +9314,18 @@
         }
       } else await syncSavedHistory(s, chat);
       await discardPreparations(s);
+      const promptWorld = preparationWorld || W.loadWorld(s);
+      const fallbackEntries = await WB.sync(s, promptWorld);
       const id = opts.generationId || 'gen:' + s.id + ':' + Date.now() + ':' + (++seq);
       const { batch, prepared } = await preparePromptBatch(s, id, preparationWorld);
       const generation = { id, session: s, ...resolveTargetWindow(chat, opts.replaceIndex), prepared };
       activeGeneration = generation;
       try {
-        const text = A.buildLedger(preparationWorld || W.loadWorld(s)) + (batch.text ? '\n\n' + batch.text : '');
+        const reveal = WB.pendingReveal(promptWorld, batch.ids);
+        const confirmReveal = reveal ? '【揭晓回执】在 <content> 正文中明确写出爱德（或艾德）显露真身或他的古龙身份。' +
+          '正文已写出这次揭晓时，在本轮 <status_bar> 中附上 <reveal_delivered id="' + reveal.definitionId + '" />。' : '';
+        const text = [A.buildLedger(promptWorld), ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal]
+          .filter(Boolean).join('\n\n');
         await inject(text, s);
         return { ...batch, generationId: id, text };
       }
@@ -9139,9 +9372,18 @@
     return serial(async () => {
       const generation = activeGeneration;
       activeGeneration = null;
-      await clearGeneration(generation);
+      try { await clearGeneration(generation); }
+      finally {
+        if (generation && W.chatId() === generation.session.id) {
+          await WB.sync(generation.session, W.loadWorld(generation.session));
+        }
+      }
       // 不确认事件；下次生成仍可取出。
     });
+  }
+  /** Read-only with respect to the save. A chat may still be uninitialized on switch. */
+  function refreshWorldbook() {
+    return serialSession(s => WB.sync(s, W.loadWorld(s)));
   }
   function reportFailure(error) { console.error('[APP]', error); }
   function attach() {
@@ -9171,8 +9413,9 @@
     }
     // 流式结束会先触发 GENERATION_ENDED 再触发 MESSAGE_RECEIVED，不能在此取消生成；
     // 主动中止走 GENERATION_STOPPED，请求异常残留由下次 beforeGeneration 兜底清理。
-    for (const name of ['GENERATION_STOPPED', 'CHAT_CHANGED']) {
-      if (types[name] !== undefined) bind(types[name], () => cancelGeneration().catch(reportFailure));
+    if (types.GENERATION_STOPPED !== undefined) bind(types.GENERATION_STOPPED, () => cancelGeneration().catch(reportFailure));
+    if (types.CHAT_CHANGED !== undefined) {
+      bind(types.CHAT_CHANGED, () => cancelGeneration().then(refreshWorldbook).catch(reportFailure));
     }
     return true;
   }
@@ -9182,7 +9425,7 @@
   }
   function restore(id) { return serialSession(async s => { await restoreRecord(s, id); await publish(s); }); }
   root.OKH_APP_HOOK = Object.freeze({ RHYTHM, configure, attach, detach, step, onMessage,
-    beforeGeneration, cancelGeneration, syncHistory, restore, fingerprint, revisionFor,
+    beforeGeneration, cancelGeneration, syncHistory, refreshWorldbook, restore, fingerprint, revisionFor,
     applyFront: (front, opts = {}) => step(opts.minutes ?? 0, { ...opts, frontOverride: front }),
     parseElapsed: text => P.parseStatusBar(text).elapsed, lastReport: () => last, publish });
 })(globalThis);
@@ -9327,7 +9570,7 @@
 ;
 /**
  * @module okh_app_map
- * @updated 2026-11-20
+ * @updated 2026-11-23 20:12
  * @status active
  * @reason 正式 HUD 地图浏览与六间客房；读取当前存档，浏览和意图不直接写游戏状态
  */
@@ -9370,10 +9613,11 @@
   function context(world, key = 'default') {
     if (!ui || session !== key) {
       session = key
-      ui = { view: world.playerLocation === 'inn' ? 'ground' : world.flags?.arrived_oakhaven ? 'town' : 'region', room: null, place: null, feedback: '', draft: '' }
+      ui = { view: world.playerLocation === 'inn' ? 'ground' : world.flags?.arrived_oakhaven ? 'town' : 'region',
+        collapsed: false, room: null, place: null, feedback: '', draft: '' }
     }
     if (!world.flags?.arrived_oakhaven && (ui.view !== 'region' || ['town', 'church', 'training_grounds', 'casino', 'inn'].includes(ui.place))) {
-      ui = { view: 'region', room: null, place: null, feedback: '', draft: '' }
+      Object.assign(ui, { view: 'region', room: null, place: null, feedback: '', draft: '' })
     }
     return ui
   }
@@ -9457,9 +9701,15 @@
   }
   function build(world, key) {
     const state = context(world, key)
-    const roomViews = ROOMS.map(room => roomState(world, room))
     const view = state.view
     const floor = view === 'ground' || view === 'upper'
+    const toggle = button('map-toggle', state.collapsed ? '展开地图' : '收起地图',
+      `class="okh-m-toggle" aria-expanded="${!state.collapsed}" aria-controls="okh-map-content"`)
+    const nav = state.collapsed ? '' : [['region', '全域'], ['town', '镇内'], ['ground', '旅店']]
+      .filter(([id]) => world.flags?.arrived_oakhaven || id === 'region')
+      .map(([id, label]) => button('map-view', label, `data-okh-view="${id}" aria-pressed="${view === id || (id === 'ground' && floor)}"`)).join('')
+    const header = `<section class="okh-map-guide${state.collapsed ? ' is-collapsed' : ''}" aria-label="地图导览"><div class="okh-m-nav">${toggle}${nav}<span>当前：${esc(CFG.LOCATIONS[world.playerLocation] || '未知地点')}</span></div>`
+    if (state.collapsed) return header + '<div id="okh-map-content" hidden></div></section>'
     const title = { region: '奥克赫斯 · 全域图', town: '奥克赫斯 · 镇内图', ground: '断剑与麦酒旅店', upper: '断剑与麦酒旅店' }[view]
     let overlay = '', options = '', detail = ''
     if (view === 'region') {
@@ -9477,7 +9727,7 @@
     } else if (view === 'ground') {
       options = '<span>大厅 · 吧台 · 厨房 · 西侧院落</span>' + button('map-view', '楼梯 ↑ 客房', 'data-okh-view="upper"')
     } else {
-      overlay = ''
+      const roomViews = ROOMS.map(room => roomState(world, room))
       for (const room of roomViews) {
         const selected = state.room === room.id
         overlay += button('map-room', icon(room) + `<span>${esc(room.name)}</span>`, `class="okh-m-door" data-okh-room="${room.id}" style="--x:${room.x}%;--y:${room.y}%" aria-label="查看${esc(room.name)}的房间" aria-pressed="${selected}"`)
@@ -9487,14 +9737,18 @@
       const chosen = roomViews.find(room => room.id === state.room)
       detail = chosen ? `<section class="okh-m-detail" aria-label="房间与角色"><div class="okh-m-room-head">${icon(chosen)}<div><strong>${chosen.npc === 'player' ? '你的房间' : esc(chosen.name) + (chosen.known ? '的房间' : '')}</strong><p>客房 ${chosen.number} · ${esc(chosen.role)}</p></div></div><p class="okh-m-status">${esc(chosen.status)}</p><nav class="okh-m-actions">${chosen.actions.map(a => button('map-intent', '› ' + esc(a.label), `data-okh-room="${chosen.id}" data-okh-intent="${a.key}"`)).join('')}</nav></section>` : '<p class="okh-m-hint">点选一扇房门，查看住客与可用行动。</p>'
     }
-    const nav = [['region', '全域'], ['town', '镇内'], ['ground', '旅店']].filter(([id]) => world.flags?.arrived_oakhaven || id === 'region').map(([id, label]) => button('map-view', label, `data-okh-view="${id}" aria-pressed="${state.view === id || (id === 'ground' && floor)}"`)).join('')
     const floors = floor ? `<nav class="okh-m-floors" aria-label="楼层">${[['ground', '一层 · 大厅'], ['upper', '二层 · 客房']].map(([id, label]) => button('map-view', label, `data-okh-view="${id}" aria-pressed="${view === id}"`)).join('')}</nav>` : ''
-    return `<section class="okh-map-guide" aria-label="地图导览"><div class="okh-m-nav">${nav}<span>当前：${esc(CFG.LOCATIONS[world.playerLocation] || '未知地点')}</span></div><div class="okh-m-journal" data-map-view="${view}"><div class="okh-m-head"><h3>${title}</h3>${floors}</div><figure class="okh-m-image"><img src="${esc(image(view))}" alt="${view === 'upper' ? '同一侧一排六间客房与楼梯' : title}" onerror="this.hidden=true;this.parentElement.classList.add('image-unavailable')"><span class="okh-m-image-error">图稿暂未载入，仍可使用下方入口。</span>${overlay}</figure><nav class="okh-m-options${view === 'upper' ? ' is-rooms' : ''}" aria-label="${view === 'upper' ? '按姓名选择房间' : '地图入口'}">${options}</nav>${detail}<p class="okh-m-feedback" role="status">${esc(state.feedback)}</p>${state.draft ? `<textarea class="okh-m-draft" aria-label="可复制的行动草稿" readonly>${esc(state.draft)}</textarea>` : ''}</div></section>`
+    return `${header}<div id="okh-map-content" class="okh-m-journal" data-map-view="${view}"><div class="okh-m-head"><h3>${title}</h3>${floors}</div><figure class="okh-m-image"><img src="${esc(image(view))}" alt="${view === 'upper' ? '同一侧一排六间客房与楼梯' : title}" onerror="this.hidden=true;this.parentElement.classList.add('image-unavailable')"><span class="okh-m-image-error">图稿暂未载入，仍可使用下方入口。</span>${overlay}</figure><nav class="okh-m-options${view === 'upper' ? ' is-rooms' : ''}" aria-label="${view === 'upper' ? '按姓名选择房间' : '地图入口'}">${options}</nav>${detail}<p class="okh-m-feedback" role="status">${esc(state.feedback)}</p>${state.draft ? `<textarea class="okh-m-draft" aria-label="可复制的行动草稿" readonly>${esc(state.draft)}</textarea>` : ''}</div></section>`
   }
   function handle(el, world, key, fill) {
     const action = el.getAttribute('data-okh-act')
     if (!action?.startsWith('map-')) return false
     const state = context(world, key)
+    if (action === 'map-toggle') {
+      state.collapsed = !state.collapsed
+      return true
+    }
+    if (state.collapsed) return true
     if (!world.flags?.arrived_oakhaven && ((action === 'map-view' && el.getAttribute('data-okh-view') !== 'region') || ['map-room', 'map-intent'].includes(action) || (action === 'map-place' && ['town', 'church', 'training_grounds', 'casino', 'inn'].includes(el.getAttribute('data-okh-place'))))) return true
     state.feedback = ''; state.draft = ''
     if (action === 'map-view') {
@@ -9554,6 +9808,8 @@
 .okh-map-guide button:focus-visible{outline:1px solid currentColor;outline-offset:2px}
 .okh-m-nav,.okh-m-head,.okh-m-floors,.okh-m-options,.okh-m-actions{display:flex;align-items:center;flex-wrap:wrap;gap:4px 18px}
 .okh-m-nav{color:var(--g-dm);margin-bottom:8px}.okh-m-nav>span{margin-left:auto;font-size:10px;color:var(--t-sb)}
+.okh-map-guide .okh-m-toggle{white-space:nowrap;padding-inline:8px}
+.okh-map-guide.is-collapsed{margin:10px 0}.okh-map-guide.is-collapsed .okh-m-nav{margin-bottom:0}
 .okh-map-guide button[aria-pressed=true]{text-decoration:underline;text-decoration-thickness:.7px;text-underline-offset:5px}
 .okh-m-journal{border:24px solid transparent;border-image:url('${image('journal')}') 70 80 fill / 24px / 0 stretch;background:#f3e3c4;padding:8px 16px 12px;font-family:'OKHMapInk','Noto Serif CJK SC','Songti SC',serif;isolation:isolate}
 .okh-m-head{justify-content:space-between;gap:0 12px;padding:3px 4px 9px;border-bottom:1px solid #82633d55}
@@ -9603,7 +9859,7 @@
 ;
 /**
  * @module okh_app_hud
- * @updated 2026-11-20 21:52
+ * @updated 2026-11-23 20:12
  * @status  active
  * @reason  将对白气泡引擎解耦至专用模块 okh_bubble_side，HUD 聚焦状态栏、手札与相册渲染，保障职责清晰与独立运行
  * @deps    ['OKH_APP_CONFIG', 'OKH_APP_WORLD', 'OKH_APP_ADAPTER']
@@ -10696,8 +10952,10 @@
       if (MAP && act?.startsWith('map-')) {
         const current = W.loadWorld()
         if (!current) return
+        const focusHost = act === 'map-toggle' && document.activeElement === el ? el.closest('[data-okh-hud]') : null
         MAP.handle(el, current, mapSessionKey(), text => fillTavernInput(text, { append: true }))
         rerenderCurrent()
+        focusHost?.querySelector('[data-okh-act="map-toggle"]')?.focus({ preventScroll: true })
         return
       }
       if (act === 'tab') {
@@ -10951,6 +11209,7 @@
   }
   async function init(force = false) {
     const world = await W.ensureWorld(force);
+    await H.refreshWorldbook().catch(error => console.warn('[APP] 聊天世界书待同步：', error.message));
     console.log('[OKH_APP] 初始化已保存', info());
     return world;
   }
@@ -10974,9 +11233,14 @@
     state.bg.revision = before.bg.revision + 1;
     return W.commit(s, { expectedRevision: before.bg.revision, state, checkpoint: null, reason: 'debug-save' });
   }
+  async function reset() {
+    const world = await W.resetWorld();
+    await H.refreshWorldbook();
+    return world;
+  }
   root.OKH_APP = Object.freeze({ configure, init, start, stop, info, save,
     setDefaultPortrait: W.setDefaultPortrait,
-    world: W.loadWorld, reset: () => W.resetWorld(), importLegacy: () => W.importLegacy(),
+    world: W.loadWorld, reset, importLegacy: () => W.importLegacy(),
     migrateSchema: () => W.migrateSchema(),
     step: H.step, applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,
     cancelGeneration: H.cancelGeneration, syncHistory: H.syncHistory, restore: H.restore,

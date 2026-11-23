@@ -1,9 +1,9 @@
 /**
  * @module okh_app_adapter
- * @updated 2026-11-19 15:20
+ * @updated 2026-11-23 20:06
  * @status  active
  * @reason  纯控制器桥接、台账字符串（对齐主人指示：古兰外出营救被俘期间台账仅提示暂离或留信嘱咐切勿贸然前往，零剧透据点与被俘状态；古兰脱险后恢复正常）与监听快照视图
- * @deps    OKHBackgroundModules.utils, OKH_APP_CONFIG, OKH_APP_TIME, OKH_APP_WORLD, OKHBackgroundAdapter
+ * @deps    OKHBackgroundModules.utils, OKH_APP_CONFIG, OKH_APP_TIME, OKH_APP_WORLD, OKH_APP_WORLDBOOK, OKHBackgroundAdapter
  * @provides { createController, runtimeConfig, settleTimeEffects, buildLedger, buildWatch }
  */
 (function (root) {
@@ -14,7 +14,8 @@
   const DATA = root.OKH_APP_DATA;
   const TIME = root.OKH_APP_TIME;
   const W = root.OKH_APP_WORLD;
-  if (!u || !CFG || !TIME || !W || !root.OKHBackgroundAdapter) throw Error('adapter 依赖缺失');
+  const WB = root.OKH_APP_WORLDBOOK;
+  if (!u || !CFG || !TIME || !W || !WB || !root.OKHBackgroundAdapter) throw Error('adapter 依赖缺失');
 
   function runtimeConfig() {
     return CFG.buildConfig();
@@ -126,14 +127,18 @@
         lines.push('修道院委托：' + (churchWait > 0 ? waitText(churchWait) : '可接取（church_paid / church_volunteer，均需 3 小时）'));
       }
     }
-    if (world.flags?.ed_final_good) {
+    const edRevealDelivered = WB.isUnlocked(world, 'ed_revealed');
+    if (edRevealDelivered && world.flags?.ed_final_good) {
       lines.push('【终局·真血自立】恶龙艾德现身，古兰觉醒超凡真血以命立誓正面逼退恶龙，保全自我意志守护小队。');
-    } else if (world.flags?.ed_final_abduction) {
+    } else if (edRevealDelivered && world.flags?.ed_final_abduction) {
       lines.push('【终局·以命相挟】恶龙艾德现身，古兰以死要挟换取小队众人生路，被迫随龙王回巢繁衍。');
-    } else if (world.flags?.ed_final_dark) {
+    } else if (edRevealDelivered && world.flags?.ed_final_dark) {
       lines.push('【终局·始祖同化】古兰真血封顶并沉沦于始祖本能，化作金红龙瞳跟随生父回归龙巢。');
     } else if (world.flags?.grand_tier_3) {
-      lines.push('【大势·剪枝封笼】峡谷官道发生百吨巨石塌方阻断外界，全城推行严酷宵禁，城镇已化为封闭孤岛。');
+      const townOrder = world.flags.baron_purged
+        ? '镇内沿用清算后的通行秩序。'
+        : world.flags.curfew_active ? '镇内执行雷蒙德下达的夜间宵禁。' : '';
+      lines.push('【大势·剪枝封笼】峡谷官道因塌方中断。' + townOrder);
     } else if (world.flags?.grand_tier_2) {
       lines.push('【大势·惊兽乱局】城外野兽受惊向外溃逃，荒原兽人要塞严加戒备，流民涌入大教堂避难。');
     }

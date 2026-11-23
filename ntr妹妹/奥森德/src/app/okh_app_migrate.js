@@ -1,6 +1,6 @@
 /**
  * @module okh_app_migrate
- * @updated 2026-11-20
+ * @updated 2026-11-23 20:06
  * @status  active
  * @reason schema=3 幂等迁移，按事件定义键恢复重复实例并保留未加入角色的隐藏状态
  * @deps    OKH_APP_DATA
@@ -11,6 +11,7 @@
 
   const DATA = root.OKH_APP_DATA
   if (!DATA) throw Error('migrate 缺少 OKH_APP_DATA')
+  const AFTER_PURGE_COLLAPSE_TEXT = DATA.EVENTS.find(event => event.id === 'ed_grand_stage_3_after_purge').text
 
   const LEGACY_KEYS = [
     'pride', 'duty', 'lust', 'fear', 'shame', 'need',
@@ -136,9 +137,30 @@
     }
   }
 
+  function repairBaronCurfew(world) {
+    if (!world.flags?.baron_purged) return world
+    const queue = world.bg?.queue || []
+    const purgeIndex = queue.findIndex(event => event.definitionId === 'eileen_lancaster_purge')
+    const purge = queue[purgeIndex]
+    // A curfew decreed before the purge remains a historical fact even if its reply is still pending.
+    const wrongIndex = queue.findIndex((event, index) =>
+      event.definitionId === 'ed_grand_stage_3' && event.status === 'pending' &&
+      event.text !== AFTER_PURGE_COLLAPSE_TEXT &&
+      (!purge || event.at > purge.at || (event.at === purge.at && index > purgeIndex)))
+    if (world.flags.curfew_active !== true && wrongIndex < 0) return world
+    const repaired = { ...world, flags: { ...world.flags, curfew_active: false } }
+    if (wrongIndex >= 0) {
+      const nextQueue = queue.slice()
+      nextQueue[wrongIndex] = { ...queue[wrongIndex], text: AFTER_PURGE_COLLAPSE_TEXT }
+      repaired.bg = { ...world.bg, queue: nextQueue }
+    }
+    return repaired
+  }
+
   function migrateWorld(rawWorld) {
     if (!rawWorld) return rawWorld
-    if ((rawWorld.schemaVersion ?? 1) >= DATA.SCHEMA_VERSION) return rawWorld
+    if (rawWorld.schemaVersion === DATA.SCHEMA_VERSION) return repairBaronCurfew(rawWorld)
+    if ((rawWorld.schemaVersion ?? 1) > DATA.SCHEMA_VERSION) return rawWorld
 
     const world = JSON.parse(JSON.stringify(rawWorld))
     const timeMin = Number.isSafeInteger(world.timeMin) ? world.timeMin : 0
@@ -206,7 +228,7 @@
     }
     world.interactingIds = (world.interactingIds || []).filter(id => Object.hasOwn(nextNpcs, id))
     world.schemaVersion = DATA.SCHEMA_VERSION
-    return world
+    return repairBaronCurfew(world)
   }
 
   root.OKH_APP_MIGRATE = Object.freeze({ LEGACY_KEYS, migrateWorld })

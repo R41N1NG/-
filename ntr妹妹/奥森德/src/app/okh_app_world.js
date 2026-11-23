@@ -87,16 +87,14 @@
   }
 
   function migrateEnvelope(data) {
-    let migrated = false;
-    if ((data.world.schemaVersion ?? 1) < CFG.SCHEMA_VERSION) {
-      data.world = CFG.migrateWorld(data.world);
-      migrated = true;
-    }
+    const world = CFG.migrateWorld(data.world);
+    let migrated = world !== data.world;
+    data.world = world;
     for (const record of data.history || []) {
-      if (record?.before && (record.before.schemaVersion ?? 1) < CFG.SCHEMA_VERSION) {
-        record.before = CFG.migrateWorld(record.before);
-        migrated = true;
-      }
+      if (!record?.before) continue;
+      const before = CFG.migrateWorld(record.before);
+      if (before !== record.before) migrated = true;
+      record.before = before;
     }
     return migrated;
   }
@@ -212,8 +210,14 @@
       }
       if (checkpoint) {
         u.check(receipt && u.id(receipt.id), '保存检查点需要对应回复');
-        envelope.history.push({ id: receipt.id, revision: receipt.revision,
-          chatIndex: receipt.chatIndex ?? null, before: u.clone(checkpoint) });
+        const record = { id: receipt.id, revision: receipt.revision,
+          chatIndex: receipt.chatIndex ?? null, before: u.clone(checkpoint) };
+        const proof = receipt.revealProof;
+        if (proof && state.bg.queue.some(event => event.id === proof.eventId &&
+            event.status === 'delivered' && event.generationId === proof.generationId)) {
+          record.revealProof = proof;
+        }
+        envelope.history.push(record);
       }
       const reply = Number.isSafeInteger(receipt?.chatIndex);
       if (Object.keys(frames).length || reply || replayForms) {
@@ -234,7 +238,7 @@
       u.check(!readEnvelope(s), '目标聊天已有新版存档，禁止覆盖导入');
       let old = parse(rawGet(s, 'okh_gpt.world'), '旧版存档');
       u.check(old?.bg?.version === 2, '没有可导入的旧版 v2 world');
-      if ((old.schemaVersion ?? 1) < CFG.SCHEMA_VERSION) old = CFG.migrateWorld(old);
+      old = CFG.migrateWorld(old);
       u.validateWorld(old);
       old.bg.generations ||= {};
       await writeEnvelope(s, { version: 1, chatId: s.id, world: old, history: [] });

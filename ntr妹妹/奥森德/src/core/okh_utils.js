@@ -1,6 +1,6 @@
 /**
  * @module okh_utils
- * @updated 2026-11-18 21:08
+ * @updated 2026-11-23 19:39
  * @status active
  * @reason 通用校验、深拷贝、时段；扩展 playerState.inventory 结构与去重校验（兼容已注册物品与外部 custom:true 条目）
  */
@@ -144,6 +144,10 @@
     }
 
     function validateEventOutcomes(event) {
+      check(
+        event.afterNodes === undefined || typeof event.afterNodes === 'boolean',
+        '事件 afterNodes 必须是布尔值'
+      );
       check(
         event.repeatable === undefined || typeof event.repeatable === 'boolean',
         '事件 repeatable 必须是布尔值'

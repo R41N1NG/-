@@ -24,6 +24,7 @@
   }
   async function init(force = false) {
     const world = await W.ensureWorld(force);
+    await H.refreshWorldbook().catch(error => console.warn('[APP] 聊天世界书待同步：', error.message));
     console.log('[OKH_APP] 初始化已保存', info());
     return world;
   }
@@ -47,9 +48,14 @@
     state.bg.revision = before.bg.revision + 1;
     return W.commit(s, { expectedRevision: before.bg.revision, state, checkpoint: null, reason: 'debug-save' });
   }
+  async function reset() {
+    const world = await W.resetWorld();
+    await H.refreshWorldbook();
+    return world;
+  }
   root.OKH_APP = Object.freeze({ configure, init, start, stop, info, save,
     setDefaultPortrait: W.setDefaultPortrait,
-    world: W.loadWorld, reset: () => W.resetWorld(), importLegacy: () => W.importLegacy(),
+    world: W.loadWorld, reset, importLegacy: () => W.importLegacy(),
     migrateSchema: () => W.migrateSchema(),
     step: H.step, applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,
     cancelGeneration: H.cancelGeneration, syncHistory: H.syncHistory, restore: H.restore,

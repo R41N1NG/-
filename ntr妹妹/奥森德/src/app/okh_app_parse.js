@@ -74,7 +74,8 @@
 
   function parseStatusBar(text) {
     const body = statusBody(text), diagnostics = [];
-    const times = rawTags(body).filter(t => t.name === 'time');
+    const tags = rawTags(body);
+    const times = tags.filter(t => t.name === 'time');
     u.check(times.length <= 1, '状态栏只能有一个 time');
     const time = times[0]?.attrs;
     let elapsed = null, endMin = null;
@@ -87,7 +88,20 @@
       endMin = parseDayClock(time.end);
       if (endMin === null) diagnostics.push('end 格式非法，不能校验落幕时间');
     }
-    return { elapsed, end: time?.end || null, endMin, diagnostics, hasStatus: body !== null };
+    const confirmations = rawTags(body?.replace(/<!--[\s\S]*?-->/g, ''))
+      .filter(t => t.name === 'reveal_delivered');
+    let revealDeliveryId = null;
+    if (confirmations.length === 1 && u.id(confirmations[0].attrs.id)) {
+      const plainReply = String(text || '').replace(/```[\s\S]*?```/g, '').replace(/<!--[\s\S]*?-->/g, '');
+      const scenes = [...plainReply.matchAll(/<content\b[^>]*>([\s\S]*?)<\/content\s*>/gi)].map(match => match[1]);
+      const depictsReveal = scenes.some(scene => scene.split(/[。！？!?\r\n]/).some(sentence =>
+        /[爱艾]德/.test(sentence) &&
+        /真身|原形|古龙|巨龙|恶龙|龙躯|龙形/.test(sentence) &&
+        /显露|显出|显化|现出|露出|变成|化成|化为|化作|就是|正是|竟是|原来是|实为|现身/.test(sentence) &&
+        !/(?:没有|尚未|仍未|未曾|不曾)\s*(?:显露|显出|显化|现出|露出|变成|化成|化为|化作|现身)/.test(sentence)));
+      if (depictsReveal) revealDeliveryId = confirmations[0].attrs.id;
+    }
+    return { elapsed, end: time?.end || null, endMin, diagnostics, hasStatus: body !== null, revealDeliveryId };
   }
 
   function inferEventNpcId(world, config, eventId, rawNpc) {

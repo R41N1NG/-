@@ -25,17 +25,21 @@ const CORE_ALLOWED = {
 }
 
 const APP_ALLOWED = {
+  okh_bubble_side: ['OKH_APP_CONFIG', 'OKH_APP_WORLD'],
   okh_app_data: [],
+  okh_app_album: ['OKH_APP_DATA'],
   okh_app_rules: ['OKH_APP_DATA'],
   okh_app_time: ['OKH_APP_DATA'],
   okh_app_migrate: ['OKH_APP_DATA'],
-  okh_app_config: ['OKH_APP_DATA', 'OKH_APP_RULES', 'OKH_APP_TIME', 'OKH_APP_MIGRATE'],
-  okh_app_world: ['utils', 'OKH_APP_CONFIG', 'OKHBackground'],
-  okh_app_adapter: ['utils', 'OKH_APP_CONFIG', 'OKH_APP_TIME', 'OKH_APP_WORLD', 'OKHBackgroundAdapter', 'OKHBackground'],
+  okh_app_config: ['OKH_APP_DATA', 'OKH_APP_RULES', 'OKH_APP_TIME', 'OKH_APP_MIGRATE', 'OKH_APP_ALBUM'],
+  okh_app_world: ['utils', 'OKH_APP_CONFIG', 'OKH_APP_ALBUM', 'OKHBackground'],
+  okh_app_adapter: ['utils', 'OKH_APP_CONFIG', 'OKH_APP_DATA', 'OKH_APP_TIME', 'OKH_APP_WORLD', 'OKH_APP_WORLDBOOK', 'OKHBackgroundAdapter', 'OKHBackground'],
+  okh_app_worldbook: ['OKH_APP_WORLD'],
   okh_app_parse: ['utils'],
-  okh_app_hook: ['utils', 'OKH_APP_CONFIG', 'OKH_APP_WORLD', 'OKH_APP_ADAPTER', 'OKH_APP_PARSE', 'OKHBackground'],
+  okh_app_hook: ['utils', 'OKH_APP_CONFIG', 'OKH_APP_WORLD', 'OKH_APP_ADAPTER', 'OKH_APP_PARSE', 'OKH_APP_WORLDBOOK', 'OKHBackground'],
   okh_app_debug: ['OKH_APP_CONFIG', 'OKH_APP_WORLD', 'OKH_APP_ADAPTER', 'OKH_APP_HOOK', 'OKHBackground'],
-  okh_app_hud: ['OKH_APP_CONFIG', 'OKH_APP_WORLD', 'OKH_APP_ADAPTER'],
+  okh_app_map: ['OKH_APP_CONFIG'],
+  okh_app_hud: ['OKH_APP_CONFIG', 'OKH_APP_WORLD', 'OKH_APP_ADAPTER', 'OKH_APP_MAP', 'OKH_APP_ALBUM'],
   okh_app_entry: ['utils', 'OKHBackground', 'OKH_APP_CONFIG', 'OKH_APP_WORLD', 'OKH_APP_ADAPTER', 'OKH_APP_HOOK', 'OKH_APP_DEBUG', 'OKH_APP_HUD']
 }
 
@@ -50,15 +54,18 @@ const OWN_EXPORT = {
   okh_api: 'OKHBackground',
   okh_adapter: 'OKHBackgroundAdapter',
   okh_app_data: 'OKH_APP_DATA',
+  okh_app_album: 'OKH_APP_ALBUM',
   okh_app_rules: 'OKH_APP_RULES',
   okh_app_time: 'OKH_APP_TIME',
   okh_app_migrate: 'OKH_APP_MIGRATE',
   okh_app_config: 'OKH_APP_CONFIG',
   okh_app_world: 'OKH_APP_WORLD',
   okh_app_adapter: 'OKH_APP_ADAPTER',
+  okh_app_worldbook: 'OKH_APP_WORLDBOOK',
   okh_app_parse: 'OKH_APP_PARSE',
   okh_app_hook: 'OKH_APP_HOOK',
   okh_app_debug: 'OKH_APP_DEBUG',
+  okh_app_map: 'OKH_APP_MAP',
   okh_app_hud: 'OKH_APP_HUD',
   okh_app_entry: 'OKH_APP'
 }
@@ -132,4 +139,4 @@ if (errors.length) {
   for (const e of errors) console.error('ERROR:', e)
   process.exit(1)
 }
-console.log('PASS: 21 modules dependency, header & threshold check clean.')
+console.log('PASS: module dependencies, headers and thresholds are valid.')

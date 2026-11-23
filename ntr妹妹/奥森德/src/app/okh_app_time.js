@@ -1,6 +1,6 @@
 /**
  * @module okh_app_time
- * @updated 2026-11-19 02:40
+ * @updated 2026-11-23 19:02
  * @status  active
  * @reason  跨日午夜唯一键去重结算：移除古兰被俘天数跨夜自增；新增演武场血案余波 7 天全局 Tag（安保戒严、人心惶惶）满期自动解除
  * @deps    OKH_APP_DATA
@@ -11,6 +11,7 @@
 
   const DATA = root.OKH_APP_DATA
   if (!DATA) throw Error('time 缺少 OKH_APP_DATA')
+  const GULAN_BLOOD_LIMIT = DATA.ROSTER.find(npc => npc.id === 'gulan')._metricBounds.blood_density[1]
 
   function gulanRoomBlockedUntilMin(world, fromMin) {
     if (world.flags?.playerRoomTarget !== 'gulan') return -1
@@ -64,6 +65,7 @@
       townLastNight: Number.isFinite(world.flags?.lastTownSettledDay) ? world.flags.lastTownSettledDay : 0,
       gulanAlive: Boolean(gulan && gulan.alive !== false),
       gulanStage: gulan?.stage ?? 0,
+      gulanBloodDensity: gulan?.values?.blood_density ?? 0,
       gulanLoc: gulan?.location || null,
       gulanRoomProtectedUntil: gulanRoomBlockedUntilMin(world, fromMin),
       gulanLastNight: Number.isFinite(gulan?.flags?.lastNightSettledDay) ? gulan.flags.lastNightSettledDay : 0,
@@ -128,11 +130,12 @@
   }
 
   function settleGulanNight(sim, k, changes) {
-    if (sim.gulanLastNight >= k) return
-    const add = {}
+    if (sim.gulanLastNight >= k) return false
+    let bloodGain = 0
     const roomBlocked = k * 1440 < sim.gulanRoomProtectedUntil
     if (!roomBlocked && sim.edJoined && sim.arrived && sim.gulanAlive && sim.edMonitored && sim.gulanLoc === sim.edLoc) {
-      add.blood_density = sim.gulanStage >= 2 ? 2 : 1
+      const nightlyGrowth = sim.gulanStage >= 2 ? 2 : 1
+      bloodGain = Math.min(nightlyGrowth, GULAN_BLOOD_LIMIT - sim.gulanBloodDensity)
     }
     const change = {
       target: 'gulan',
@@ -148,9 +151,14 @@
         lastNightSettledDay: k
       }
     }
-    if (Object.keys(add).length) change.add = add
+    if (bloodGain > 0) {
+      change.add = { blood_density: bloodGain }
+      // 同次推进可能跨多个午夜，下一晚要从这次结算后的浓度计算。
+      sim.gulanBloodDensity += bloodGain
+    }
     changes.push(change)
     sim.gulanLastNight = k
+    return bloodGain > 0
   }
 
   function settleIsnaNight(sim, k, changes) {
@@ -395,27 +403,18 @@
     sim.ceciliaLastNight = k
   }
 
-  function settleEdNight(sim, k, changes) {
+  function settleEdNight(sim, k, changes, bloodIncreased) {
     if (sim.edLastNight >= k) return
     const npcFlags = {
       dailyAffectionDay: k + 1,
       dailyAffectionGain: 0,
       lastNightSettledDay: k
     }
-    const add = {}
-    if (sim.edJoined && sim.edMonitored && sim.edAlive) {
-      let delta = -1
-      const roomBlocked = k * 1440 < sim.gulanRoomProtectedUntil
-      const gulanMatured = !roomBlocked && sim.arrived && sim.gulanAlive && sim.gulanLoc === sim.edLoc
-      if (gulanMatured) {
-        delta += 1
-      }
-      if (delta !== 0) {
-        add.patience = delta
-      }
-    }
     const change = { target: 'ed', npcFlags }
-    if (Object.keys(add).length) change.add = add
+    // 只有血脉实际增加时，催熟补偿才抵消每晚的 1 点自然流失。
+    if (sim.edJoined && sim.edMonitored && sim.edAlive && !bloodIncreased) {
+      change.add = { patience: -1 }
+    }
     changes.push(change)
     sim.edLastNight = k
   }
@@ -485,13 +484,13 @@
       const kEnd = Math.floor(toMin / 1440)
       for (let k = kStart; k <= kEnd; k++) {
         settleInnNight(sim, k, changes)
-        settleGulanNight(sim, k, changes)
+        const bloodIncreased = settleGulanNight(sim, k, changes)
         settleIsnaNight(sim, k, changes)
         settleNiseNight(sim, k, changes)
         settleAuroraNight(sim, k, kStart, changes)
         settleEileenNight(sim, k, changes)
         settleCeciliaNight(sim, k, changes)
-        settleEdNight(sim, k, changes)
+        settleEdNight(sim, k, changes, bloodIncreased)
         settleOtherNights(sim, k, changes)
         settleTownNight(sim, k, changes)
       }

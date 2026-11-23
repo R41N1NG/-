@@ -59,6 +59,40 @@ test('map state resets between chats and missing input retains a copyable draft'
  map.handle(el({'data-okh-act':'map-intent','data-okh-room':'room1','data-okh-intent':'rest'}),world,'one',()=>false);
  assert.match(map.build(world,'one'),/可复制的行动草稿/);const other=map.build(world,'two');assert(!other.includes('可复制的行动草稿'));assert(!other.includes('okh-m-door'));
 });
+test('collapse preserves the current room and draft while blocking hidden map actions',()=>{
+ const {map,world}=fixture(),key='collapse';
+ const toggle=el({'data-okh-act':'map-toggle'});
+ const room=el({'data-okh-act':'map-room','data-okh-room':'room4'});
+ const knock=el({'data-okh-act':'map-intent','data-okh-room':'room4','data-okh-intent':'knock'});
+ const before=JSON.stringify(world);
+ map.handle(room,world,key,()=>false);
+ map.handle(knock,world,key,()=>false);
+ map.handle(toggle,world,key,()=>false);
+ const folded=map.build(world,key);
+ assert.match(folded,/aria-expanded="false"[^>]*>展开地图/);
+ assert.match(folded,/id="okh-map-content" hidden/);
+ assert.doesNotMatch(folded,/<img|data-map-view=|可复制的行动草稿/);
+ map.handle(knock,world,key,()=>assert.fail('a hidden action reached the composer'));
+ map.handle(toggle,world,key,()=>false);
+ const reopened=map.build(world,key);
+ assert.match(reopened,/aria-expanded="true"[^>]*>收起地图/);
+ assert.match(reopened,/data-map-view="upper"/);
+ assert.match(reopened,/<strong>妮丝的房间<\/strong>/);
+ assert.match(reopened,/可复制的行动草稿/);
+ assert.equal(JSON.stringify(world),before);
+});
+test('a collapsed map stays closed if rolling back to before arrival',()=>{
+ const {map,world}=fixture(),key='collapse-rollback';
+ const toggle=el({'data-okh-act':'map-toggle'});
+ map.handle(el({'data-okh-act':'map-view','data-okh-view':'upper'}),world,key,()=>false);
+ map.handle(toggle,world,key,()=>false);
+ world.flags.arrived_oakhaven=false;world.playerLocation='wilds';
+ assert.match(map.build(world,key),/展开地图/);
+ map.handle(toggle,world,key,()=>false);
+ const reopened=map.build(world,key);
+ assert.match(reopened,/data-map-view="region"/);
+ assert.doesNotMatch(reopened,/data-okh-view="town"|data-okh-view="ground"/);
+});
 test('render signature updates for privacy and activity changes even without a clock change',()=>{
  const {map,world}=fixture();const first=map.signature(world);world.npcs.gulan.flags.captured_orc=true;assert.notEqual(map.signature(world),first);
  const second=map.signature(world);world.npcs.gulan.flags.captured_orc=false;world.npcs.gulan.activity={kind:'important',label:'忙碌'};assert.notEqual(map.signature(world),second);

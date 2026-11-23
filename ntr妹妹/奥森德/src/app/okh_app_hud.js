@@ -1,6 +1,6 @@
 /**
  * @module okh_app_hud
- * @updated 2026-11-20 21:52
+ * @updated 2026-11-23 20:12
  * @status  active
  * @reason  将对白气泡引擎解耦至专用模块 okh_bubble_side，HUD 聚焦状态栏、手札与相册渲染，保障职责清晰与独立运行
  * @deps    ['OKH_APP_CONFIG', 'OKH_APP_WORLD', 'OKH_APP_ADAPTER']
@@ -1093,8 +1093,10 @@
       if (MAP && act?.startsWith('map-')) {
         const current = W.loadWorld()
         if (!current) return
+        const focusHost = act === 'map-toggle' && document.activeElement === el ? el.closest('[data-okh-hud]') : null
         MAP.handle(el, current, mapSessionKey(), text => fillTavernInput(text, { append: true }))
         rerenderCurrent()
+        focusHost?.querySelector('[data-okh-act="map-toggle"]')?.focus({ preventScroll: true })
         return
       }
       if (act === 'tab') {

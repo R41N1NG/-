@@ -41,6 +41,18 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   assert.equal(await page.locator('.okh-m-door').count(),6);await page.getByRole('button',{name:'查看古兰的房间',exact:true}).click();assert((await page.locator('.okh-m-room-head').innerText()).includes('独立住客'));
   await page.getByRole('button',{name:'查看伯里的房间',exact:true}).click();assert((await page.locator('.okh-m-room-head').innerText()).includes('你的房间'));
   await page.getByRole('button',{name:'查看妮丝的房间',exact:true}).click();assert((await page.locator('.okh-m-status').innerText()).includes('房内待确认'));
+  const collapseMap=page.getByRole('button',{name:'收起地图',exact:true});
+  const expandMap=page.getByRole('button',{name:'展开地图',exact:true});
+  await collapseMap.focus();await page.keyboard.press('Space');
+  assert.equal(await expandMap.getAttribute('aria-expanded'),'false');
+  assert(await expandMap.evaluate(button=>document.activeElement===button));
+  assert.equal(await page.locator('.okh-m-image').count(),0);
+  await page.evaluate(()=>document.getElementById('card-helper').contentWindow.OKH_APP.renderHud(true));
+  assert(await expandMap.isVisible());
+  await expandMap.click();
+  assert.equal(await collapseMap.getAttribute('aria-expanded'),'true');
+  assert.equal(await page.locator('#okh-map-content').getAttribute('data-map-view'),'upper');
+  assert.match(await page.locator('.okh-m-room-head').innerText(),/妮丝的房间/);
   await page.locator('.okh-m-journal').screenshot({path:path.join(dir,'旅店效果.jpg'),type:'jpeg',quality:94});
   await page.locator('#send_textarea').fill('已有草稿');await page.getByRole('button',{name:'› 敲门拜访',exact:true}).click();assert((await page.locator('#send_textarea').inputValue()).startsWith('已有草稿\n'));
   assert.equal(JSON.stringify(await page.evaluate(()=>cardWorld())),after,'Preparing a room intent changed the save');

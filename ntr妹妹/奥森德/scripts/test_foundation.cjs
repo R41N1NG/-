@@ -1,7 +1,7 @@
 /**
  * @file test_foundation.cjs
  * @updated 2026-11-11 00:12
- * @purpose Adversarial test suite against compiled tavern_scripts/okh_complete.js covering all 9 initial fixes + R2 5-point code review checks.
+ * @purpose Adversarial test suite against compiled 奥森德/dist/okh_complete.js covering all 9 initial fixes + R2 5-point code review checks.
  */
 'use strict';
 
@@ -2099,11 +2099,50 @@ async function runTests() {
     assert.strictEqual(w.flags.grand_tier_2, true, 'patience <= 75 triggers grand_tier_2');
 
     // 5) 当 patience <= 25 时触发大势三阶段（grand_tier_3，含 road_blocked 与 curfew_active）
+    const beforeCollapse = structuredClone(w);
     w.npcs.ed.values.patience = 25;
     w = stepFront(w, 'ed_tier3', DAY(3, 12), '<status_bar><time elapsed="60" end="3日12:00"/></status_bar>');
     assert.strictEqual(w.flags.grand_tier_3, true, 'patience <= 25 triggers grand_tier_3');
     assert.strictEqual(w.flags.road_blocked, true, 'grand_tier_3 sets road_blocked');
     assert.strictEqual(w.flags.curfew_active, true, 'grand_tier_3 sets curfew_active');
+    const originalCollapse = w.bg.queue.find(event => event.definitionId === 'ed_grand_stage_3');
+    assert.match(originalCollapse.text, /雷蒙德下令全镇宵禁/);
+
+    const afterPurge = structuredClone(beforeCollapse);
+    afterPurge.flags.baron_purged = true;
+    afterPurge.npcs.ed.values.patience = 25;
+    const postPurgeCollapse = stepFront(afterPurge, 'ed_purged_first', DAY(3, 12), '');
+    assert.strictEqual(postPurgeCollapse.flags.road_blocked, true);
+    assert.strictEqual(postPurgeCollapse.flags.curfew_active, false);
+    assert(!postPurgeCollapse.bg.queue.some(event => event.definitionId === 'ed_grand_stage_3'));
+    const newCollapse = postPurgeCollapse.bg.queue.find(event => event.definitionId === 'ed_grand_stage_3_after_purge');
+    assert.match(newCollapse.text, /官道/);
+    assert.doesNotMatch(newCollapse.text, /雷蒙德|宵禁/);
+
+    const signalReady = structuredClone(beforeCollapse);
+    signalReady.flags.eileen_signal_fired = true;
+    signalReady.npcs.eileen.flags.eileenSignalDays = 1;
+    signalReady.npcs.ed.values.patience = 25;
+    const sameTurn = stepFront(signalReady, 'ed_purge_and_collapse', signalReady.timeMin, '');
+    assert.strictEqual(sameTurn.flags.baron_purged, true);
+    assert.strictEqual(sameTurn.flags.road_blocked, true);
+    assert.strictEqual(sameTurn.flags.curfew_active, false);
+    const bothIds = ['eileen_lancaster_purge', 'ed_grand_stage_3_after_purge'];
+    const both = sameTurn.bg.queue.filter(event => bothIds.includes(event.definitionId));
+    assert.deepEqual(Array.from(both, event => event.definitionId), bothIds);
+    assert.strictEqual(both[0].at, both[1].at);
+
+    w.flags.eileen_signal_fired = true;
+    w.npcs.eileen.flags.eileenSignalDays = 1;
+    const purgeAfter = stepFront(w, 'ed_collapse_then_purge', DAY(3, 13), '');
+    assert.strictEqual(purgeAfter.flags.baron_purged, true);
+    assert.strictEqual(purgeAfter.flags.road_blocked, true);
+    assert.strictEqual(purgeAfter.flags.curfew_active, false);
+    assert.strictEqual(OKH_APP_CONFIG.migrateWorld(purgeAfter), purgeAfter);
+    assert.strictEqual(purgeAfter.bg.queue.find(event => event.id === originalCollapse.id).text, originalCollapse.text);
+    const ledger = sb.OKH_APP_ADAPTER.buildLedger(purgeAfter);
+    assert.match(ledger, /峡谷官道因塌方中断/);
+    assert.doesNotMatch(ledger, /雷蒙德下达的夜间宵禁/);
   });
 
   // 22. Ed & Gulan final showdown: good standing, dark assimilation & tragic abduction with life-threat bargain
@@ -2118,19 +2157,51 @@ async function runTests() {
       return OKHBackground.advance(state, { id, revision: 'rfin_' + id, toMin, interactingIds: front.interactingIds || [], front }, cfg).state;
     };
 
-    // 1) 好结局（ed_showdown_good）：血脉 100 且好感 >= 90，未沉沦
+    // 1) 正线的血脉可以先封顶，艾德要等耐心耗尽才现身。
     let wGood = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
     wGood = stepFront(wGood, 'g_arr', DAY(1, 19), '<status_bar><move to="inn"/><prologue_step flag="ed_joined"/><prologue_step flag="arrived_oakhaven"/></status_bar>');
-    wGood.npcs.gulan.values.blood_density = 100;
-    wGood.npcs.gulan.values.affection = 92;
-    wGood.npcs.gulan.stage = 1;
-    wGood = stepFront(wGood, 'g_fin', DAY(2, 9), '<status_bar><time elapsed="60" end="2日09:00"/></status_bar>');
+    wGood.npcs.gulan.values.blood_density = 99;
+    wGood.npcs.gulan.values.affection = 90;
+    wGood.npcs.gulan.stage = 2;
+    wGood.npcs.ed.values.patience = 1;
+    const changes = cfg.timeEffects({ world: wGood, fromMin: wGood.timeMin, toMin: DAY(3, 0) });
+    assert.deepEqual(Array.from(changes.filter(c => c.target === 'gulan' && c.add), c => c.add.blood_density), [1]);
+    assert.deepEqual(Array.from(changes.filter(c => c.target === 'ed' && c.add), c => c.add.patience), [-1]);
+    wGood = stepFront(wGood, 'g_wait', DAY(2, 8), '<status_bar><time elapsed="60" end="2日08:00"/></status_bar>');
+    assert.strictEqual(wGood.npcs.gulan.values.blood_density, 100);
+    assert.strictEqual(wGood.npcs.ed.values.patience, 1);
+    assert.strictEqual(wGood.npcs.ed.monitored, true);
+    assert(!wGood.flags.ed_revealed);
+    assert(!wGood.flags.ed_showdown_done);
+    assert(!wGood.bg.queue.some(event => event.definitionId?.startsWith('ed_showdown_')));
+    const [rescueKey, pendingRescue] = Object.entries(wGood.bg.eventStates)
+      .find(([, event]) => event.definitionId === 'gulan_final_rescue_prompt');
+    assert.strictEqual(pendingRescue.status, 'pending');
+    wGood = stepFront(wGood, 'g_fin', DAY(3, 8), '<status_bar><time elapsed="60" end="3日08:00"/></status_bar>');
+    assert.strictEqual(wGood.npcs.ed.values.patience, 0);
     assert.strictEqual(wGood.flags.ed_showdown_done, true);
     assert.strictEqual(wGood.flags.ed_final_good, true);
     assert.strictEqual(wGood.flags.ed_revealed, true);
     assert.strictEqual(wGood.npcs.ed.monitored, false, 'Ed revealed and removed from monitoring');
     assert.strictEqual(wGood.npcs.gulan.monitored, true, 'Gulan remains monitored with squad');
-    assert(OKH_APP_ADAPTER.buildLedger(wGood).includes('【终局·真血自立】'), 'Ledger displays good showdown summary');
+    assert(!OKH_APP_ADAPTER.buildLedger(wGood).includes('【终局·真血自立】'), 'Pending reveal is absent from the ledger');
+    const goodReveal = wGood.bg.queue.find(event => event.definitionId === 'ed_showdown_good');
+    const wGoodDelivered = OKHBackground.ack(wGood, [goodReveal.id], 'test-reveal-good');
+    assert(OKH_APP_ADAPTER.buildLedger(wGoodDelivered).includes('【终局·真血自立】'));
+    assert.strictEqual(wGood.bg.eventStates[rescueKey].outcome, 'expired');
+    assert.strictEqual(wGood.bg.queue.find(event => event.id === pendingRescue.instanceId).status, 'superseded');
+    assert.strictEqual(wGood.npcs.gulan.stage, 2);
+
+    // 旧存档可能留着已经过期的守夜选项，直接提交也须通过当前终局状态校验。
+    const legacyGood = structuredClone(wGood);
+    legacyGood.bg.eventStates[rescueKey] = structuredClone(pendingRescue);
+    legacyGood.bg.queue.find(event => event.id === pendingRescue.instanceId).status = 'pending';
+    assert.throws(() => stepFront(legacyGood, 'g_stale', legacyGood.timeMin,
+      '<status_bar><event_resolve npc="gulan" id="gulan_final_rescue_prompt" outcome="fail"/></status_bar>'
+    ), /当前条件不满足处理该事件/);
+    const resumedGood = stepFront(legacyGood, 'g_resume', legacyGood.timeMin, '');
+    assert.strictEqual(resumedGood.bg.eventStates[rescueKey].outcome, 'expired');
+    assert.strictEqual(resumedGood.npcs.gulan.stage, 2);
 
     // 2) 坏结局（ed_showdown_dark）：血脉 100 且已沉沦 (stage === 3)
     let wDark = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
@@ -2143,7 +2214,7 @@ async function runTests() {
     assert.strictEqual(wDark.npcs.ed.monitored, false);
     assert.strictEqual(wDark.npcs.gulan.monitored, false);
     assert.strictEqual(wDark.npcs.gulan.location, 'wilds');
-    assert(OKH_APP_ADAPTER.buildLedger(wDark).includes('【终局·始祖同化】'));
+    assert(!OKH_APP_ADAPTER.buildLedger(wDark).includes('【终局·始祖同化】'));
 
     // 3) 悲壮分支 A（ed_showdown_abduction）：耐心归零提前发难，古兰以死要挟换取小队生路
     let wAbd = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
@@ -2158,18 +2229,36 @@ async function runTests() {
     assert.strictEqual(wAbd.npcs.ed.monitored, false);
     assert.strictEqual(wAbd.npcs.gulan.monitored, false);
     assert.strictEqual(wAbd.npcs.gulan.location, 'wilds');
-    assert(OKH_APP_ADAPTER.buildLedger(wAbd).includes('【终局·以命相挟】'));
+    assert(!OKH_APP_ADAPTER.buildLedger(wAbd).includes('【终局·以命相挟】'));
 
-    // 4) 悲壮分支 B（盲区 B）：血脉达 100 但好感 < 90（70~89），古兰同样以死相逼换生路
+    // 4) 白天封顶时仍未沉沦，走成熟悲壮分支。
     let wBlindB = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
     wBlindB = stepFront(wBlindB, 'b_arr', DAY(1, 19), '<status_bar><move to="inn"/><prologue_step flag="ed_joined"/><prologue_step flag="arrived_oakhaven"/></status_bar>');
+    wBlindB = stepFront(wBlindB, 'b_day', DAY(2, 15), '');
     wBlindB.npcs.ed.values.patience = 50;
     wBlindB.npcs.gulan.values.blood_density = 100;
     wBlindB.npcs.gulan.values.affection = 80;
     wBlindB.npcs.gulan.stage = 2;
-    wBlindB = stepFront(wBlindB, 'b_fin', DAY(2, 9), '<status_bar><time elapsed="60" end="2日09:00"/></status_bar>');
+    wBlindB = stepFront(wBlindB, 'b_fin', DAY(2, 15), '');
     assert.strictEqual(wBlindB.flags.ed_showdown_done, true);
     assert.strictEqual(wBlindB.flags.ed_final_abduction, true);
+    assert.strictEqual(wBlindB.npcs.gulan.stage, 2);
+
+    // 同一个夜间结算点发生沉沦与封顶时，先进入阶段 3，再判定成熟暗线。
+    let wSameNight = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
+    wSameNight = stepFront(wSameNight, 'same_arr', DAY(1, 19),
+      '<status_bar><move to="inn"/><prologue_step flag="ed_joined"/><prologue_step flag="arrived_oakhaven"/></status_bar>');
+    Object.assign(wSameNight.npcs.gulan.values, { blood_density: 100, affection: 80 });
+    wSameNight.npcs.gulan.stage = 2;
+    wSameNight = stepFront(wSameNight, 'same_fin', DAY(1, 19), '');
+    assert.strictEqual(wSameNight.npcs.gulan.stage, 3);
+    assert.strictEqual(wSameNight.flags.ed_final_dark, true);
+    assert(!wSameNight.flags.ed_final_abduction);
+    const sameNightQueue = wSameNight.bg.queue.filter(event =>
+      ['gulan_final_fall_dark', 'gulan_stage_3', 'ed_showdown_dark'].includes(event.definitionId));
+    assert.deepEqual(Array.from(sameNightQueue, event => event.definitionId),
+      ['gulan_final_fall_dark', 'gulan_stage_3', 'ed_showdown_dark']);
+    assert(sameNightQueue.every(event => event.at === DAY(1, 19)));
 
     // 5) 提前发难已沉沦兜底（ed_showdown_dark_early）
     let wDarkEarly = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
