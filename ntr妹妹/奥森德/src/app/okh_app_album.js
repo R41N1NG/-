@@ -9,7 +9,7 @@
   const u = root.OKHBackgroundModules?.utils
   const DATA = root.OKH_APP_DATA
   if (!u || !DATA) throw Error('album 缺少 utils/data')
-  const packed = '__OKH_ALBUM_CATALOG__'
+  const packed = "[]"
   const initialCharacters = Object.freeze(['gulan', 'isna', 'nise', 'aurora'])
   const femaleCharacters = new Set([...initialCharacters, 'eileen', 'cecilia'])
 
@@ -81,7 +81,19 @@
         world.playerState ||= {}
         world.playerState.memories = [...rows, ...earned.map(item => ({ id: item.id, collectedAt: world.timeMin }))]
       }
+      syncEchoes(world)
       return earned.map(item => item.id)
+    }
+    function syncEchoes(world) {
+      if (!world?.playerState?.pendingEchoes) return []
+      const ready = []
+      for (const item of world.playerState.pendingEchoes) {
+        if (item.status === 'latent' && world.timeMin >= item.unlockAt) {
+          item.status = 'ready'
+          ready.push(item.id)
+        }
+      }
+      return ready
     }
     function list(world) {
       return records(world).flatMap(row => {
@@ -98,7 +110,7 @@
       const owned = list(world).filter(item => item.npc === npc)
       return owned.find(item => item.id === choices[npc]) || owned.find(item => item.kind === 'portrait') || null
     }
-    return Object.freeze({ catalog: Object.freeze(catalog), initialCharacters, sync, list, groups, portrait })
+    return Object.freeze({ catalog: Object.freeze(catalog), initialCharacters, sync, syncEchoes, list, groups, portrait })
   }
   const entries = root.OKH_ALBUM_CATALOG ?? (packed.startsWith('__OKH_') ? [] : JSON.parse(packed))
   root.OKH_APP_ALBUM = Object.freeze({ ...create(entries), create })

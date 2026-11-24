@@ -744,7 +744,11 @@
       scope: 'npc',
       targets: ['gulan'],
       when: ctx => gulanSoloTrainingGrounds(ctx) && ctx.npc.stage < 2,
-      text: '镇上十余名地痞觊觎{name}独处练武场，借讨教暗燃未知催情异香。察觉药力难辨后，{name}为防交手生变果断激发龙鳞护体，挥重剑将围逼宵小依次格杀后径直离开。',
+      text: [
+        '午后演武场内，十余名亡命地痞觊觎{name}独处，借着下风处暗燃高价购得的黑市猎龙异香。{name}身为 IV 阶宗师且兼具体魄，毒质难侵脏腑，仅在烈药冲刷下气血加速运转、面颊微现薄红。围逼宵小见状误以为药效得手，拔出短斧匕首叫嚣着扑上。',
+        '{name}瞬息辨出此香乃专门围猎亚龙魔兽的特制炼金药，断定歹人暗中必伏有针对龙裔的捕兽机关或死士后手，决不可陷入缠斗；加之体内沸腾的龙血急需宣泄，她果断催动真血覆鳞，阔刃重剑出鞘横斩。',
+        '宗师战气激荡如雷，精钢重剑坚固沉凝、劈坚折锐毫无卷刃，数息之间将来犯狂徒全部格杀于血泊之中。确认四下并无埋伏后，{name}退至武器架阴影处拭净剑刃血痕，反手击塌半边擂台木架以销毁战技痕迹，拢紧黑金长裙内衬的轻便软锁甲，沿偏僻暗巷从容隐匿撤离。'
+      ].join('\n'),
       effects: ({ world }) => ({
         add: { blood_density: 10 },
         npcFlags: { gulan_evt1_done: true },
@@ -765,7 +769,11 @@
         gulanSoloTrainingGrounds(ctx) &&
         ctx.npc.stage === 2 &&
         (ctx.npc.values.affection ?? 0) >= 90,
-      text: '异香瞬间引动了{name}体内蛰伏的情潮，四肢酸软浮起潮红；但念及对玩家的深情与道义底线，加之药效未明恐生意外，她仍强催龙血覆鳞，提重剑肃清来敌。',
+      text: [
+        '演武场下风处燃起的猎龙异香，瞬间勾动了{name}体内先前已被暗中破开的深层躁热，使得她呼吸微乱、双颊泛起潮红。围拢上来的地痞误以为得手，持械蜂拥而上。',
+        '然而念及对{{user}}的深厚羁绊与战士信念，加之察觉此药乃专门猎龙所用、警惕周遭伏有后手，{name}强行压下识海中翻涌的欲念，咬破舌尖提振神智，毅然强催龙血覆鳞。',
+        '精钢阔刃重剑带起破空厉啸，宗师剑锋狂暴荡涤，数招间将来犯宵小全部斩杀于擂台周围。平息体内激荡的气血后，{name}退入阴影拭净佩剑，振臂震碎擂台围栏以掩盖龙血痕迹，迅速收剑离场归队。'
+      ].join('\n'),
       effects: ({ world }) => ({
         add: { blood_density: 10 },
         npcFlags: { gulan_evt1_done: true },
@@ -786,7 +794,11 @@
         gulanSoloTrainingGrounds(ctx) &&
         ctx.npc.stage === 2 &&
         (ctx.npc.values.affection ?? 0) < 90,
-      text: '早已被暗中撬开防线的躯体受强力异香催动，{name}双膝一软没能压住奔涌的躁热，演武场内终究守不住最后的防线。',
+      text: [
+        '演武场内黑市猎龙异香弥漫开来，强烈的药理反应勾动了{name}此前早已失守的身躯。体内深处沉睡的龙裔繁育本能如同决堤狂潮逆冲心脉，与记忆中的荒唐梦魇轰然重叠。',
+        '{name}咬紧银牙试图聚力拔剑，但指节竟无法握紧沉重的精钢剑柄，阔刃重剑当啷跌落尘土。面前扑来的地痞们见状发出哄笑，黏腻贪婪的目光将她层层围拢。',
+        '背靠着摇摇欲坠的兵器架，战士的自制力在霸道药效与繁育本能的冲撞中步步溃散；面对围拢而上的污秽之手，残存的推拒终究化作了无力的战栗与低泣，在演武场死角防线瓦解。地痞散去后，{name}独自蜷缩在断裂木桩旁，在满地狼藉中强撑着拾起重剑，在黄昏阴影中仓皇踉跄离去。'
+      ].join('\n'),
       effects: {
         npcFlags: { gulan_evt1_done: true, gulan_arena_fall: true }
       }
@@ -797,7 +809,11 @@
       scope: 'npc',
       targets: ['gulan'],
       when: ctx => gulanSoloTrainingGrounds(ctx) && ctx.npc.stage >= 3,
-      text: '已全面接纳龙血本能的{name}不再顾忌世俗名节，放任热潮与血性在练武场席卷。',
+      text: [
+        '嗅到下风处燃起的猎龙熏香，已全面接纳太古巨龙本能的{name}金红竖瞳微凝，非但毫无惧色，唇角反而勾起一抹残忍而愉悦的弧度，轻伸舌尖舔舐红唇。',
+        '世俗的廉耻与礼法在她眼中早如微尘。面对自以为得手、怪叫着围上来的十余名狂徒，{name}并未拔剑，而是任由药力奔涌迎上前去，反客为主展开了蛮横的掠夺。',
+        '太古上位龙裔的强横体魄与奔涌情潮化作吞噬生机的狂暴漩涡，凡俗宵小在短暂时间内由狂妄沦为惊恐求饶。当场内重归死寂时，十余名狂徒已被反向抽干气力、如干草般昏死瘫软在地。{name}神情慵懒而餍足，甚至未曾多看地上的废人一眼，理好长裙傲然从容离去。'
+      ].join('\n'),
       effects: {
         npcFlags: { gulan_evt1_done: true, gulan_arena_fall: true }
       }
@@ -806,6 +822,8 @@
       id: 'gulan_ed_hypnosis_play',
       mode: 'result',
       scope: 'npc',
+      covert: true,
+      echoId: 'echo_gulan_ed_hypnosis',
       targets: ['gulan'],
       when: ({ world, npc, phase }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined) return false
@@ -820,9 +838,14 @@
         return (npc.values?.blood_density ?? 0) >= threshold
       },
       effects: {
-        npcFlags: { ed_hypnosis_play_done: true }
+        npcFlags: { ed_hypnosis_play_done: true },
+        tagsAdd: [{ id: 'abnormal_avoid', name: '异样回避', desc: '古兰略有异样，回避{{user}}' }]
       },
-      text: '夜色沉寂时，蛰伏于客房暗处的古龙威压再度悄然蔓延。{name}在睡梦与龙血躁热的夹缝中未能抵住潜意识引导，醒来后面对异样余悸只觉羞愤难言，却仍死守体面未向外界声张。'
+      text: [
+        '深夜客房内，{name}在深沉的睡眠中深陷一场荒诞狂乱的太古梦魇。',
+        '梦境是一片熔岩与焦土弥漫的荒原，庞大沉重的黑影遮蔽了天幕，带着令人窒息的蛮荒威压将她重重压在身下。狂暴而滚烫的气息拂过耳畔，胸腔内沉睡的龙血仿佛被烈火点燃，周身经络如同浸泡在沸水中般酥麻发软。在那沉重阴影的笼罩下，她引以为傲的宗师力量化为乌有，只能徒劳地仰着颈项，在虚幻而激烈的撞击与颠簸中战栗。那不是属于凡人的欢爱，而是古老龙裔之间最原始、最野蛮的繁育索求。暴烈的热潮一次又一次将她淹没，她试图拔剑、试图呼喊{{user}}的名字，然而喉咙里发出的却只有破碎压抑的呜咽与违背理智的喘息。梦境的最后，是一股滚烫得仿佛要将骨髓融化的充盈感自最深处炸裂开来，将她的神智冲刷至一片惨白的混沌……',
+        '晨曦破晓，{name}猛然从梦中惊醒，胸口剧烈起伏。宗师战气与半龙人体质让她毫无半点困倦虚弱，周身气血反而异常炽烈亢奋；唯独内腑最深处残留着一丝未散的反常滞胀与温热，以及贴身织物内无法忽视的湿冷黏腻。然而，这两处细微的异样全被体内奔涌如沸的滚烫真血与初醒时震荡混乱的神智所掩盖。她痛苦地以为纯系自身龙血返祖加深、在荒唐春梦中按捺不住兽性而导致的失态反噬，出于战士信念死守于心，面对{{user}}时目光飘忽，不敢坦然对视。'
+      ].join('\n')
     },
     {
       id: 'gulan_final_rescue_prompt',
@@ -839,7 +862,7 @@
         ['night', 'deep_night'].includes(phase.id) &&
         (npc.values.blood_density ?? 0) >= 80 &&
         (npc.values.affection ?? 0) >= 90,
-      text: '夜色深沉，{name}房中传来沉重压抑的吐息与微弱鳞甲摩擦声；在最后一重理智即将溃散前，她仍面向你的方向漏出了一丝挣扎破绽。',
+      text: '深夜的断剑与麦酒旅店万籁俱寂，{name}客房内却隐隐传出压抑沉闷的痛苦喘息与重物碰撞声。房门虚掩未落门闩，门缝间隐隐逸散出令人窒息的滚烫龙威热浪。只见{name}蜷缩在床榻边缘，被汗水浸透的长裙紧贴着剧烈起伏的身躯，头顶纯黑龙角尖端竟泛起异样的暗红，小臂与小腿的白皙皮肉下正艰难翻涌浮现着致密的漆黑龙鳞。返祖真血的狂暴兽性正如烈火般疯狂啃噬着她的理智，她死死按住阔刃重剑的剑柄，指节因用力而发白发颤，深邃的琥珀竖瞳在狂乱与清醒间痛苦挣扎，视线死死望向门外，向{{user}}漏出了生平唯一一次无助的求援破绽。',
       outcomes: {
         rescue: {
           when: ({ world, npc }) =>
@@ -847,14 +870,14 @@
             world.playerLocation === 'inn' &&
             npc.location === 'inn' &&
             (npc.values.affection ?? 0) >= 90,
-          text: '房内的龙威震荡与狂暴气血渐趋平息，{name}在理智边缘硬生生压制住了奔涌的始祖血脉。',
+          text: '{{user}}推门而入的瞬间，{name}濒临失控的琥珀竖瞳剧烈一颤。面对最在乎之人的声声呼唤与坚定守护，{name}心中那份誓死捍卫羁绊的战士傲骨轰然爆发！她狠狠一拳砸向木板，强行以无上心智压下了体内翻江倒海的始祖暴虐冲动。额角的暗红渐渐隐褪，小臂上狰狞的黑鳞缓缓缩回皮肉之下，滚烫沉重的龙威气浪渐趋平息。{name}脱力般倒在床榻边缘，粗重喘息着避开视线，虽浑身被冷汗浸透、虚弱不堪，终在深渊边缘守住了身为人的清白与理智。',
           effects: {
             add: { blood_density: -10 },
             npcFlags: { gulan_rescued_final: true }
           }
         },
         fail: {
-          text: '错过了最后的缓冲窗口，奔涌的真血最终吞没了她最后一丝游移。',
+          text: '门外久久未曾传来声响，最后一丝期盼在冰冷的死寂中寸寸湮灭。客房木门被无声推开并轻轻合上，黑暗中传来沉缓从容的脚步声——爱德自阴影中缓缓踱向床榻，周身肆意弥漫着令龙血战栗哀鸣的始祖龙威……',
           effects: {
             npcFlags: { gulan_final_fall_done: true }
           }
@@ -882,7 +905,11 @@
           (Boolean(npc.flags?.gulan_rescued_final) || world.playerLocation !== npc.location)
         );
       },
-      text: '夜色深沉，龙血余热压过了仅存的犹疑。在爱德的贴身诱引下，{name}不再抵抗胸口翻涌的古龙本能，任由真血与誓约一同改写归属。',
+      text: [
+        '深夜的客房内，返祖真血的暴走已将{name}逼至崩溃边缘，白皙皮肉被高热蒸得绯红，黑角尖端暗红如火。在{{user}}不在身侧、毫无外援的绝境中，虚掩的房门被悄然推开。',
+        '{name}在痛苦中艰难抬头，当看清踏入屋内的竟是平日谨小慎微、瘦弱年幼的学徒爱德时，深邃的琥珀竖瞳中写满了难以置信的惊愕与茫然：“爱德……？你为什么……”然而回应她的，却是自爱德身后虚空中骤然投落的遮天蔽日太古黑龙虚影！那股威压浩瀚蛮荒，令她体内的半龙真血发出战栗哀鸣般的剧烈共鸣。爱德面容沉静地踱步走近床榻，低沉古老的真龙龙吟在房内回荡，道明自身沉睡万载的太古黑龙生父身份，挑明自她血脉初破戒那一夜起，自己便已暗中潜入享用，此前无数夜里她以为的荒唐春梦，实则是夜夜借龙煞催熟其血脉。',
+        '言毕，爱德腰间那柄看似粗糙的木雕小剑应声解封为古龙权杖，幽光闪耀间全面引爆了{name}体内全部的始祖龙血。狂暴的繁育热潮如山洪决堤席卷身心，引以为傲的宗师自尊在上位古龙的威权压制下土崩瓦解。在庞大黑龙法相的笼罩下，古兰在野蛮奔涌的血脉本能中被迫迎合娇吟，被变换着不同体位反复灌注与深层占有，昔日坚毅的长辈防线荡然无存，身心深深烙上属于太古黑龙的永恒印记。'
+      ].join('\n'),
       effects: {
         npcFlags: { gulan_final_fall_done: true }
       }
@@ -3157,18 +3184,52 @@
     })
   ]
 
+  const DELAYED_ECHOES = [
+    {
+      id: 'echo_gulan_ed_hypnosis',
+      eventId: 'gulan_ed_hypnosis_play',
+      npc: 'gulan',
+      title: '深夜客房的太古梦魇',
+      delayDays: 2,
+      triggerCommand: '查看回忆：深夜客房的太古梦魇',
+      tag: {
+        id: 'abnormal_avoid',
+        name: '异样回避',
+        desc: '古兰略有异样，回避{{user}}'
+      },
+      cg: {
+        id: 'cg_gulan_hypnosis_1',
+        title: '深夜客房的太古梦魇',
+        src: 'data:image/webp;base64,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'
+      },
+      promptGuidance: [
+        '【回忆模式激活】当前正在演绎一段发生在两日前的滞后记忆残响。',
+        '请严格遵循西幻“隐奸”演绎精髓：',
+        '1. 文字克制深沉，重在展现古兰身为长辈宗师在梦魇与身体异样之间的深层撕扯与心理防线的松动；',
+        '2. 决不明写爱德的现身、实体或真实姓名；',
+        '3. 重点描摹那场熔岩焦土中遮天蔽日的太古黑龙虚影压迫，以及晨曦醒来后体内的反常温热滞胀、贴身衣物的湿冷痕迹与面对{{user}}时的自责回避。'
+      ].join('\n'),
+      storyText: [
+        '深夜客房内，{name}在深沉的睡眠中深陷一场荒诞狂乱的太古梦魇。',
+        '梦境是一片熔岩与焦土弥漫的荒原，庞大沉重的黑影遮蔽了天幕，带着令人窒息的蛮荒威压将她重重压在身下。狂暴而滚烫的气息拂过耳畔，胸腔内沉睡的龙血仿佛被烈火点燃，周身经络如同浸泡在沸水中般酥麻发软。在那沉重阴影的笼罩下，她引以为傲的宗师力量化为乌有，只能徒劳地仰着颈项，在虚幻而激烈的撞击与颠簸中战栗。那不是属于凡人的欢爱，而是古老龙裔之间最原始、最野蛮的繁育索求。暴烈的热潮一次又一次将她淹没，她试图拔剑、试图呼喊{{user}}的名字，然而喉咙里发出的却只有破碎压抑的呜咽与违背理智的喘息。梦境的最后，是一股滚烫得仿佛要将骨髓融化的充盈感自最深处炸裂开来，将她的神智冲刷至一片惨白的混沌……',
+        '晨曦破晓，{name}猛然从梦中惊醒，胸口剧烈起伏。宗师战气与半龙人体质让她毫无半点困倦虚弱，周身气血反而异常炽烈亢奋；唯独内腑最深处残留着一丝未散的反常滞胀与温热，以及贴身织物内无法忽视的湿冷黏腻。然而，这两处细微的异样全被体内奔涌如沸的滚烫真血与初醒时震荡混乱的神智所掩盖。她痛苦地以为纯系自身龙血返祖加深、在荒唐春梦中按捺不住兽性而导致的失态反噬，出于战士信念死守于心，面对{{user}}时目光飘忽，不敢坦然对视。'
+      ].join('\n')
+    }
+  ]
+
   function buildInitialWorld() {
     const npcs = {}
     for (const n of ROSTER) {
       npcs[n.id] = JSON.parse(JSON.stringify(n))
       npcs[n.id]._baseline = { ...n.values }
+      npcs[n.id].tags = []
     }
     return {
       schemaVersion: SCHEMA_VERSION,
       timeMin: 18 * 60,
       playerLocation: 'wilds',
       // 30 = 开局小队公用盘缠（按每日5金食宿，维持全队极限生存6天）
-      playerState: { gold: 30, inventory: [{ id: 'supply', count: 10 }] },
+      playerState: { gold: 30, inventory: [{ id: 'supply', count: 10 }], pendingEchoes: [] },
       interactingIds: [],
       flags: {
         ed_joined: false,
@@ -3197,7 +3258,7 @@
   root.OKH_APP_DATA = Object.freeze({
     SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel,
     PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG,
-    ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld,
+    ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld, DELAYED_ECHOES,
     WORK_TERMS, workStart, paidWorkSettledToday, workCooldownWait, recentGuildStarts, completedWorkFlags,
     DRAGON_TRUE_FORM_SPEC, buildDragonRevealText
   })

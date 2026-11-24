@@ -333,7 +333,36 @@
         const reveal = WB.pendingReveal(promptWorld, batch.ids);
         const confirmReveal = reveal ? '【揭晓回执】在 <content> 正文中明确写出爱德（或艾德）显露真身或他的古龙身份。' +
           '正文已写出这次揭晓时，在本轮 <status_bar> 中附上 <reveal_delivered id="' + reveal.definitionId + '" />。' : '';
-        const text = [A.buildLedger(promptWorld), ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal]
+
+        let echoInjection = '';
+        const lastUser = [...chat].reverse().find(m => m && m.is_user && typeof m.mes === 'string');
+        const userPrompt = lastUser?.mes?.trim() || '';
+        const delayedDefs = CFG.DELAYED_ECHOES || root.OKH_APP_DATA?.DELAYED_ECHOES || [];
+        const pendingList = promptWorld.playerState?.pendingEchoes || [];
+        const matchedEchoDef = delayedDefs.find(def => {
+          if (!userPrompt.includes(def.triggerCommand) && !userPrompt.includes(def.title)) return false;
+          return pendingList.some(pe => pe.id === def.id && (pe.status === 'ready' || pe.status === 'viewed'));
+        });
+
+        if (matchedEchoDef) {
+          const targetNpc = promptWorld.npcs?.[matchedEchoDef.npc];
+          const npcName = targetNpc?.name || matchedEchoDef.npc;
+          const story = (matchedEchoDef.storyText || '').replace(/\{name\}/g, npcName);
+          echoInjection = [
+            '========================================',
+            matchedEchoDef.promptGuidance,
+            '',
+            '【输出格式契约】',
+            '必须在正文适当位置完整输出准备好的CG插图Markdown代码（此图片在正文展现后将永久收录至水晶球回忆相册）：',
+            `![${matchedEchoDef.cg.title}](${matchedEchoDef.cg.src})`,
+            '',
+            '【具体故事内容基底（严格遵循此事实展开演绎）】',
+            story,
+            '========================================'
+          ].join('\n');
+        }
+
+        const text = [A.buildLedger(promptWorld), ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal, echoInjection]
           .filter(Boolean).join('\n\n');
         await inject(text, s);
         return { ...batch, generationId: id, text };
@@ -362,6 +391,31 @@
         revision: revisionFor(chat, target), text: chat[target].mes || '', chatIndex: target,
         countMessage: true, initial: target === 0, allowFallback: true,
         generationId: generation?.prepared ? generation.id : undefined });
+
+      const lastUser = [...chat].reverse().find(m => m && m.is_user && typeof m.mes === 'string');
+      const userPrompt = lastUser?.mes?.trim() || '';
+      const delayedDefs = CFG.DELAYED_ECHOES || root.OKH_APP_DATA?.DELAYED_ECHOES || [];
+      const matchedEchoDef = delayedDefs.find(def => userPrompt.includes(def.triggerCommand) || userPrompt.includes(def.title));
+      if (matchedEchoDef) {
+        const live = W.loadWorld(s);
+        if (live?.playerState?.pendingEchoes) {
+          const pe = live.playerState.pendingEchoes.find(e => e.id === matchedEchoDef.id);
+          if (pe && pe.status !== 'viewed') {
+            pe.status = 'viewed';
+            pe.viewedAt = live.timeMin;
+            live.playerState.memories ||= [];
+            if (!live.playerState.memories.some(m => m.id === matchedEchoDef.cg.id)) {
+              live.playerState.memories.push({ id: matchedEchoDef.cg.id, collectedAt: live.timeMin });
+            }
+            if (matchedEchoDef.tag && live.npcs?.[matchedEchoDef.npc]?.tags) {
+              live.npcs[matchedEchoDef.npc].tags = live.npcs[matchedEchoDef.npc].tags.filter(
+                t => (typeof t === 'string' ? t : t.id) !== matchedEchoDef.tag.id
+              );
+            }
+            await W.saveWorld(s, live);
+          }
+        }
+      }
       if (generation) {
         activeGeneration = null;
         try { if (result.duplicate) await clearGeneration(generation); else await inject('', s); }
