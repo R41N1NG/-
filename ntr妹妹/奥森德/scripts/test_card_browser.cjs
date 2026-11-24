@@ -33,6 +33,44 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   await page.locator('.okh-m-image img').evaluate(img=>img.decode());await page.locator('.okh-hud-canvas').screenshot({path:path.join(dir,'开场效果.jpg'),type:'jpeg',quality:91});
   assert.equal(await page.getByRole('button',{name:'镇内',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'旅店',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'奥克赫斯镇',exact:true}).count(),0);
   assert.equal(JSON.stringify(await page.evaluate(()=>cardWorld())),JSON.stringify(initial),'Browsing before arrival modified the save');
+  await page.getByRole('button',{name:/同伴名册/}).click();
+  for(const id of ['gulan','isna','nise','aurora']){
+   const row=page.locator(`[data-okh-member="${id}"]`);
+   await row.locator('[data-okh-act="toggle-roster"]').click();
+   const open=row.getByRole('button',{name:'查看完整档案'});
+   await open.click();
+   const dossier=page.locator('.okh-dossier-dialog');
+   assert.deepEqual((await dossier.locator('.okh-profile > .okh-facts > div > dt').allTextContents()).slice(0,4),['所在','近况','羁绊','专长']);
+   assert.doesNotMatch(await dossier.locator('.okh-profile').innerText(),/年龄|身高|在自己的房间/);
+   assert.notEqual(await dossier.locator('[data-dossier-fact="location"]').innerText(),'断剑与麦酒旅店');
+   assert.equal(await dossier.locator('[data-dossier-action]').count(),0);
+   if(id==='gulan')assert.equal(await dossier.locator('[data-blood-meter]').getAttribute('aria-valuenow'),String(initial.npcs.gulan.values.blood_density));
+   await dossier.getByRole('button',{name:'记录',exact:true}).click();
+   const chest=dossier.locator('[data-part-hit="chest"]');
+   const art=dossier.locator('[data-part-image]');
+   await chest.click();
+   const clothed=await art.getAttribute('src');
+   await dossier.getByRole('button',{name:'内衣',exact:true}).click();
+   await chest.click();
+   assert.notEqual(await art.getAttribute('src'),clothed);
+   await art.evaluate(img=>img.decode());
+   if(id==='aurora'){
+    await dossier.getByRole('button',{name:'着衣',exact:true}).click();
+    await dossier.getByRole('button',{name:'女仆',exact:true}).click();
+    await chest.click();
+    assert.notEqual(await art.getAttribute('src'),clothed);
+    await page.setViewportSize({width:320,height:760});
+    assert(await dossier.evaluate(el=>el.getBoundingClientRect().width<=innerWidth));
+    assert(await dossier.evaluate(el=>el.scrollWidth<=el.clientWidth));
+    await page.setViewportSize({width:1080,height:1000});
+   }
+   await dossier.getByRole('button',{name:/返回档案/}).click();
+   await dossier.getByRole('button',{name:/返回名册/}).click();
+   assert.equal(await dossier.count(),0);
+   assert(await open.evaluate(button=>document.activeElement===button));
+  }
+  assert.deepEqual(await page.evaluate(()=>cardWorld()),initial,'Browsing dossiers modified the save');
+  await page.getByRole('button',{name:/旅途手札/}).click();
   await page.getByRole('button',{name:'演示：抵镇入住',exact:true}).click();await page.waitForFunction(()=>cardWorld().flags.arrived_oakhaven);
   assert.equal(await page.locator('#chat .okh-map-guide').count(),1);assert.equal(await page.locator('#chat [data-okh-hud]').count(),2);
   const after=JSON.stringify(await page.evaluate(()=>cardWorld()));

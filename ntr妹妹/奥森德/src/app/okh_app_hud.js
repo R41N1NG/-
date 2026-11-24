@@ -14,6 +14,7 @@
   const CFG = root.OKH_APP_CONFIG
   const MAP = root.OKH_APP_MAP
   const ALBUM = root.OKH_APP_ALBUM
+  const DOSSIERS = /* __OKH_DOSSIER_PANELS__ */ {}
   // 酒馆助手脚本可能运行在同源 iframe；样式、挂载与输入统一使用聊天文档。
   const document = (() => {
     const own = root.document
@@ -45,6 +46,7 @@
   let activeTab = 'dispatch'
   let activePresentId = null
   const openRosterIds = new Set()
+  let dossier = null
   let albumCharacter = 'gulan'
   let portraitChoices = {}
   let albumLightbox = null
@@ -523,7 +525,7 @@
   }
 
   function buildRosterPage(world) {
-    // 仅展示已开启监控的登场同伴，避免剧透未出场角色；严格仅展示信息，不含操作按钮
+    // 仅展示已开启监控的登场同伴，避免剧透未出场角色。
     const members = Object.values(world.npcs || {})
       .filter(n => n.monitored === true && n.alive !== false && n.id !== 'cecilia')
       .map(n => buildCharView(world, n))
@@ -555,6 +557,7 @@
                 <div class="okh-exp-text">${escapeHtml(m.bio)}</div>
                 <div class="okh-exp-title">⚖ 当前状态</div>
                 <div class="okh-exp-metrics">${metricsHtml}</div>
+                ${DOSSIERS.panels?.[m.id] ? `<button type="button" class="okh-char-act-btn" data-okh-act="dossier-open" data-okh-id="${escapeHtml(m.id)}">查看完整档案</button>` : ''}
               </div>
             </div>
           </div>
@@ -563,6 +566,95 @@
     }).join('') : '<div class="okh-empty-tip">暂无已登记的同行名册。</div>'
 
     return `<div class="okh-page${activeTab === 'roster' ? ' active' : ''}" data-okh-page="roster">${rows}${buildAlbum(world)}</div>`
+  }
+
+  function dossierRoomActions(world, id) {
+    const room = MAP?.rooms.find(room => room.npc === id)
+    return room ? MAP.roomState(world, room).actions : []
+  }
+
+  function closeDossier(restoreFocus = false) {
+    if (!dossier) return
+    const { id, dialog, controller } = dossier
+    dossier = null
+    controller.abort()
+    dialog.close()
+    dialog.remove()
+    if (restoreFocus) document.querySelector(`[data-okh-act="dossier-open"][data-okh-id="${id}"]`)?.focus({ preventScroll: true })
+  }
+
+  function syncDossier(world) {
+    if (!dossier) return
+    const { id, shadow } = dossier
+    const npc = world?.npcs?.[id]
+    if (npc?.monitored !== true || npc.alive === false) { closeDossier(); return }
+    const view = buildCharView(world, npc)
+    const facts = { location: view.metrics.find(metric => metric.label === '当前位置')?.val, status: view.stance, bond: view.affLabel }
+    for (const [field, value] of Object.entries(facts)) {
+      const fieldValue = shadow.querySelector(`[data-dossier-fact="${field}"]`)
+      if (fieldValue.textContent !== value) fieldValue.textContent = value
+    }
+    const slider = shadow.getElementById('okh-form-demo-value')
+    if (slider) {
+      const value = Math.round(npc.values?.blood_density ?? 0)
+      if (slider.valueAsNumber !== value) {
+        slider.value = value
+        slider.dispatchEvent(new document.defaultView.Event('input'))
+      }
+    }
+    const actions = shadow.querySelector('.okh-actions')
+    const buttons = dossierRoomActions(world, id)
+    actions.hidden = buttons.length === 0
+    const markup = buttons.map(({ key, label }, index) =>
+      `<button type="button" class="okh-action${index === 0 ? ' okh-action-main' : ''}" data-dossier-action="${escapeHtml(key)}">${escapeHtml(label)}</button>`
+    ).join('')
+    if (markup !== dossier.actionsMarkup) {
+      actions.innerHTML = markup
+      dossier.actionsMarkup = markup
+    }
+  }
+
+  function openDossier(id) {
+    const template = DOSSIERS.panels?.[id]
+    const world = W.loadWorld()
+    const npc = world?.npcs?.[id]
+    if (!template || npc?.monitored !== true || npc.alive === false) return
+    closeDossier()
+    const dialog = document.createElement('dialog')
+    dialog.className = 'okh-dossier-dialog'
+    dialog.setAttribute('aria-label', npc.name + '的角色档案')
+    const host = document.createElement('div')
+    const shadow = host.attachShadow({ mode: 'open' })
+    shadow.innerHTML = DOSSIERS.style + template.markup
+    const panel = shadow.querySelector('[data-character-panel]')
+    panel.hidden = false
+    shadow.querySelectorAll('[data-dossier-demo], [data-default]').forEach(element => { element.hidden = true })
+    const win = document.defaultView
+    const controller = new win.AbortController()
+    const { signal } = controller
+    dossier = { id, dialog, shadow, controller }
+    template.mount({
+      getElementById: key => shadow.getElementById(key),
+      createElement: name => document.createElement(name)
+    }, {
+      addEventListener: (event, listener) => win.addEventListener(event, listener, { signal })
+    })
+    shadow.addEventListener('okh:roster', () => closeDossier(true))
+    shadow.addEventListener('click', event => {
+      const action = event.target.closest?.('[data-dossier-action]')
+      if (!action) return
+      if (dialog.dataset.session !== mapSessionKey()) { closeDossier(); return }
+      const current = W.loadWorld()
+      const text = current && dossierRoomActions(current, id).find(item => item.key === action.dataset.dossierAction)?.text
+      if (text) { closeDossier(); fillTavernInput(text, { append: true }) }
+    })
+    dialog.addEventListener('cancel', event => { event.preventDefault(); closeDossier(true) })
+    dialog.dataset.session = mapSessionKey()
+    dialog.append(host)
+    document.body.append(dialog)
+    syncDossier(world)
+    dialog.showModal()
+    panel.dispatchEvent(new win.Event('okh:open'))
   }
 
   function albumGroups(world) {
@@ -844,6 +936,9 @@
 .okh-mem-bond.is-love{color:#c76f82}.okh-mem-chev{transition:transform .2s;color:var(--g-dm)}
 .okh-member-card.open .okh-mem-chev{transform:rotate(90deg)}
 .okh-member-exp{display:none;padding:8px 8px 14px 12px}.okh-member-card.open .okh-member-exp{display:block}
+.okh-member-exp [data-okh-act="dossier-open"]{margin-top:8px;min-height:44px}
+.okh-dossier-dialog{box-sizing:border-box;width:min(960px,100% - 12px);max-width:none;max-height:calc(100dvh - 12px);padding:0;border:0;background:transparent;overscroll-behavior:contain}
+.okh-dossier-dialog::backdrop{background:#080605d9}
 .okh-exp-flex{display:flex;gap:14px}.okh-exp-info{flex:1;min-width:0}
 .okh-exp-title{font-size:11.5px;font-weight:700;color:var(--g-mn);margin:4px 0}
 .okh-exp-text{font-size:12px;color:var(--t-sb);line-height:1.6;margin-bottom:8px}
@@ -1112,6 +1207,8 @@
           else openRosterIds.add(id)
           rerenderCurrent()
         }
+      } else if (act === 'dossier-open') {
+        openDossier(el.getAttribute('data-okh-id'))
       } else if (act === 'album-filter') {
         albumCharacter = el.getAttribute('data-okh-character') || 'gulan'
         rerenderCurrent()
@@ -1184,6 +1281,7 @@
     document.addEventListener('keydown', onKeyDown)
     const cleanup = () => {
       stopHud()
+      closeDossier()
       document.removeEventListener('click', onClick)
       document.removeEventListener('keydown', onKeyDown)
       const oldLb = document.getElementById('okh-hud-lightbox')
@@ -1236,10 +1334,12 @@
       activeTab = 'dispatch'
       activePresentId = null
       openRosterIds.clear()
+      closeDossier()
       albumCharacter = 'gulan'
       closeLightbox()
     }
     const world = W.loadWorld()
+    syncDossier(world)
     if (!world) {
       lastRenderSignature = null
       for (const el of document.querySelectorAll('[data-okh-hud]')) {
