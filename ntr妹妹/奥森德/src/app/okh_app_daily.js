@@ -1,5 +1,7 @@
 /**
  * @module okh_app_daily
+ * @updated 2026-11-25 06:42
+ * @status active
  * @reason 每日好感额度与工作冷却的只读诊断
  */
 (function (root) {

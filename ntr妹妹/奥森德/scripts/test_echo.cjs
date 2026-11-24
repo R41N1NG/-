@@ -60,7 +60,7 @@ test('only a matching unlocked narrative image is collected, and edits and rollb
   assert(cg);
   const marker = `![${cg.title}](okh-echo:${cg.id})`;
   const receipt = '<status_bar><time elapsed="0"/></status_bar>';
-  const rendered = '<content>\n' + marker + '\n</content>' + receipt;
+  const rendered = '<content>\n![梦境余影](okh-echo:' + cg.id + ')\n</content>' + receipt;
   sb.OKH_APP_TAGS.apply(state, def.npc, [def.tagId]);
   state.playerState.pendingEchoes = [{
     id: def.id, eventId: def.eventId, npc: def.npc,
@@ -94,18 +94,19 @@ test('only a matching unlocked narrative image is collected, and edits and rollb
   chat.push(reply(receipt));
   await app.onMessage(3);
 
-  send();
+  send('  查看回忆 : ' + def.title + '  \n请稍微停顿一下。');
   const prompt = (await app.beforeGeneration()).text.split('【回忆模式】')[1];
   assert.match(prompt, /主要篇幅放在梦中/);
   assert.doesNotMatch(prompt, /爱德|异样回避|错开玩家的目光/);
   assert(prompt.includes(marker));
   chat.push(reply('<content>\n```markdown\n' + marker + '\n```\n</content>' + receipt));
-  await app.onMessage(5);
+  assert.equal((await app.onMessage(5)).echoNeedsRetry, true);
+  assert.equal((await app.onMessage(5)).echoNeedsRetry, undefined);
   assert.equal(collect().length, 0);
   assert.equal(app.world().playerState.pendingEchoes[0].status, 'ready');
 
   chat[5].mes = rendered;
-  await app.onMessage(5);
+  assert.equal((await app.onMessage(5)).echoNeedsRetry, undefined);
   assert.equal(collect()[0].id, cg.id);
   const [viewed] = app.echoes();
   assert.equal(viewed.cgId, cg.id);
@@ -169,4 +170,38 @@ test('tag section migrates legacy saves and checkpoints and exposes read-only de
   const before = sb._vars[key];
   assert.throws(() => sb.OKH_APP_TAGS.apply(world, 'gulan', ['unknown']), /未注册/);
   assert.equal(sb._vars[key], before);
+});
+
+test('bundled rendering and runtime accept the same standalone echo images', () => {
+  const sb = createSandbox();
+  const project = path.resolve(__dirname, '..');
+  const card = JSON.parse(fs.readFileSync(path.join(project, '最新角色卡/奥克赫斯.json'), 'utf8'));
+  const cgId = sb.OKH_APP.CFG.DELAYED_ECHOES[0].cgId;
+  const rule = card.data.extensions.regex_scripts.find(item => item.id === 'okh-display-echo-' + cgId);
+  const end = rule.findRegex.lastIndexOf('/');
+  const render = text => text.replace(
+    new RegExp(rule.findRegex.slice(1, end), rule.findRegex.slice(end + 1)), rule.replaceString
+  );
+  const preview = fs.readFileSync(path.join(project, '最新角色卡/导入预览.html'), 'utf8');
+  const previewSource = preview.slice(preview.indexOf('function display(text){'), preview.indexOf('function renderMessage(index)'));
+  const previewDisplay = new Function('previewCard', previewSource + '\nreturn display;')(card);
+  const marker = '![图注改写](okh-echo:' + cgId + ')';
+  const cases = [
+    [true, '<content>\r\n' + marker + '\r\n</content>'],
+    [true, '<content>' + marker + '</content>'],
+    [true, '~~~js\n// 示例\n~~~\n' + marker],
+    [false, '<content>\n````md\n```\n' + marker + '\n````\n</content>'],
+    [false, '<content>\n<!--\n' + marker + '\n-->\n</content>'],
+    [false, '<STATUS_BAR>\n' + marker + '\n</STATUS_BAR>'],
+    [false, '<content>有正文</content>\n' + marker],
+    [false, '附带文字 ' + marker],
+    [false, '    ' + marker],
+    [false, '![](okh-echo:wrong-id)'],
+    [false, 'okh-echo:' + cgId]
+  ];
+  for (const [expected, message] of cases) {
+    assert.equal(sb.OKH_APP_ECHOES.hasReplyMarker(message, cgId), expected, message);
+    assert.equal(render(message).includes('<img alt="残响插图"'), expected, message);
+    assert.equal(previewDisplay(message).includes('<img alt="残响插图"'), expected, message);
+  }
 });

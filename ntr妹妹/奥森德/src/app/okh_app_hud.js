@@ -1629,6 +1629,21 @@
     console.log('[APP] HUD 已停止')
   }
 
+  function noteEchoRetry(index, needed) {
+    const chat = document?.getElementById('chat')
+    const message = chat?.querySelector(`.mes[mesid="${index}"] .mes_text`)
+    const previous = message?.querySelector('[data-okh-echo-retry]')
+    if (!needed) { previous?.remove(); return }
+    if (previous) return
+    const text = '这次回放未带出插图，尚未收录。可再次发送查看回忆指令。'
+    if (!message) { document?.defaultView?.toastr?.info?.(text); return }
+    const note = document.createElement('p')
+    note.setAttribute('role', 'status')
+    note.setAttribute('data-okh-echo-retry', '')
+    note.textContent = text
+    message.appendChild(note)
+  }
+
   root.OKH_APP_HUD = Object.freeze({
     setAutoMount(value) { autoMount = value !== false; return render(true) },
     setWatchVisible(value) { watchVisible = value === true; return render(true) },
@@ -1638,6 +1653,7 @@
     locName,
     buildHudHtml,
     buildWatchHtml,
+    noteEchoRetry,
     render,
     startHud,
     stopHud

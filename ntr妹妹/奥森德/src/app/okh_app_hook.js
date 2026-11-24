@@ -55,11 +55,14 @@
     }
     return null;
   }
-  function deliveredEcho(chat, target, before) {
+  function echoReply(chat, target, before) {
     const userCommand = userCommandBefore(chat, target);
     const entry = ECHO.replayEntry(before, userCommand, ALBUM.findImage);
-    if (!entry) return null;
-    return ECHO.hasReplyMarker(chat[target]?.mes, entry.marker) ? userCommand : null;
+    if (!entry) return { command: null, retry: false };
+    if (ECHO.hasReplyMarker(chat[target]?.mes, entry.def.cgId)) {
+      return { command: entry.def.triggerCommand, retry: false };
+    }
+    return { command: null, retry: !ECHO.isViewed(before, entry.def.id) };
   }
   async function inject(text, s) {
     if (text) W.assertSession(s);
@@ -176,9 +179,8 @@
       world = replacement;
     }
     const { command, diagnostics, timeCheck, revealDeliveryId } = buildTurnCommand(minutes, opts, world, id, revision);
-    if (Number.isSafeInteger(opts.chatIndex)) {
-      command.echoReplay = deliveredEcho(W.context()?.chat || [], opts.chatIndex, world);
-    }
+    const echo = Number.isSafeInteger(opts.chatIndex) ? echoReply(W.context()?.chat || [], opts.chatIndex, world) : null;
+    if (echo) command.echoReplay = echo.command;
     const generationId = opts.generationId ?? null;
     const generation = generationId === null ? null : liveWorld.bg.generations[generationId];
     const reveal = generation && WB.pendingReveal(world, generation.ids);
@@ -195,6 +197,7 @@
     last = { advanced: true, from: world.timeMin, to: result.state.timeMin, front: command.front,
       actions: result.report.actions, released: result.report.released,
       pending: GPT.prepare(result.state, 8).ids.length, diagnostics, timeCheck, published };
+    if (echo?.retry) last.echoNeedsRetry = true;
     diagnostics.forEach(message => console.warn('[APP] ' + message));
     console.log('[APP] 已提交 ' + world.timeMin + ' → ' + result.state.timeMin);
     return last;
@@ -240,14 +243,16 @@
       .map(({ id, revealProof }) => [id, revealProof]));
     const dialogueForms = {};
     const diagnostics = [], actions = [], released = [];
-    let timeCheck = null, front = null;
+    let timeCheck = null, front = null, echoNeedsRetry = false;
     for (let i = from; i <= through; i++) {
       if (!assistant(chat[i])) continue;
       const id = replyId(s, i), revision = revisionFor(chat, i);
       const text = chat[i].mes || '';
       const built = buildTurnCommand(undefined, { text, chatIndex: i,
         countMessage: true, initial: i === 0, allowFallback: true }, state, id, revision);
-      built.command.echoReplay = deliveredEcho(chat, i, state);
+      const echo = echoReply(chat, i, state);
+      built.command.echoReplay = echo.command;
+      echoNeedsRetry = i === through && echo.retry;
       const result = GPT.advance(state, built.command, CFG.buildConfig());
       const record = { id, revision, chatIndex: i, before: state };
       const proof = built.revealDeliveryId && revealProofs.get(id);
@@ -270,6 +275,7 @@
     last = { advanced: true, from: checkpoint.timeMin, to: state.timeMin, front, actions, released,
       pending: GPT.prepare(state, 8).ids.length, diagnostics, timeCheck, published };
     diagnostics.forEach(message => console.warn('[APP] ' + message));
+    if (echoNeedsRetry) last.echoNeedsRetry = true;
     return last;
   }
   function step(minutes, opts = {}) { return serialSession(s => runStep(minutes, { ...opts, session: s }), opts.session); }
@@ -384,6 +390,7 @@
       if (changed && changed.chatIndex < target) {
         const result = await replay(s, chat, changed.chatIndex, target, changed.before);
         if (generation) { activeGeneration = null; await clearGeneration(generation); }
+        if (result.advanced) root.OKH_APP_HUD?.noteEchoRetry?.(target, result.echoNeedsRetry);
         return result;
       }
       const result = await runStep(undefined, { session: s, msgId: replyId(s, target),
@@ -396,6 +403,7 @@
         try { if (result.duplicate) await clearGeneration(generation); else await inject('', s); }
         catch (error) { console.warn('[APP] 清理提示词失败：', error.message); }
       }
+      if (result.advanced) root.OKH_APP_HUD?.noteEchoRetry?.(target, result.echoNeedsRetry);
       return result;
     });
   }

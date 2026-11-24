@@ -37,6 +37,7 @@ const CORE = [
 const APP = [
   'okh_bubble_side',
   'okh_app_tags',
+  'okh_app_echo_format',
   'okh_app_echoes',
   'okh_app_data',
   'okh_app_daily',

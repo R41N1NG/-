@@ -81,7 +81,7 @@
     ACTIONS: DATA.ACTIONS,
     NODES: DATA.NODES,
     EVENTS: DATA.EVENTS,
-    DELAYED_ECHOES: DATA.DELAYED_ECHOES,
+    DELAYED_ECHOES: ECHO.definitions,
     isEileenFugitive: DATA.isEileenFugitive,
     ROSTER: DATA.ROSTER,
     buildConfig,

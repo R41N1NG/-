@@ -1,5 +1,7 @@
 /**
  * @module okh_app_tags
+ * @updated 2026-11-25 06:42
+ * @status active
  * @reason 注册与管理角色的后台标签，状态归入世界存档的 tags 分区
  */
 (function (root) {

@@ -1,5 +1,7 @@
 /**
  * @module okh_app_flags
+ * @updated 2026-11-25 06:42
+ * @status active
  * @reason Flag 字段说明与只读存档检查
  */
 (function (root) {
@@ -15,6 +17,9 @@
     ed_joined: ['布尔', false, '爱德已经加入队伍', once],
     playerRoomTarget: ['角色 ID 或 null', null, '当前同房角色', '分房、同房条件失效或拂晓时清空'],
     curfew_active: ['布尔', undefined, '镇内宵禁', '清算或封路后的替代剧情分支可清除'],
+    eileen_arrived: ['布尔', false, '艾琳已抵达奥克赫斯', once],
+    eileen_departed: ['布尔', false, '艾琳启程离镇，护送或伏击分支由此结算', once],
+    player_barony_granted: ['布尔', false, '玩家已获封男爵，供爵位权益与后续分支读取', once],
     eileen_fugitive: ['布尔', false, '艾琳线进入逃亡阶段，影响队伍日程与行动', '兰开斯特清算时清除'],
     eileen_signal_fired: ['布尔', false, '艾琳已发出王室讯号', once],
     baron_purged: ['布尔', false, '男爵已被清算', once],

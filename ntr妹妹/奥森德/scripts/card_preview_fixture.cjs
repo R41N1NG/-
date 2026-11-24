@@ -15,10 +15,20 @@ window.SillyTavern={getContext:()=>previewContext};
 function display(text){
  const rules=previewCard.data.extensions.regex_scripts.filter(r=>!r.disabled);
  const apply=(value,rule)=>{const end=rule.findRegex.lastIndexOf('/');return value.replace(new RegExp(rule.findRegex.slice(1,end),rule.findRegex.slice(end+1)),rule.replaceString)};
- const afterEscape=rule=>rule.id==='okh-dialogue-bubble'||rule.id.startsWith('okh-display-echo-');
- const clean=rules.filter(r=>!afterEscape(r)).reduce(apply,text);
+ const echoRules=rules.filter(rule=>rule.id.startsWith('okh-display-echo-'));
+ const images=[];
+ const placeholder='\\x00OKH_ECHO_';
+ let clean=text.replaceAll('\\x00','');
+ for(const rule of echoRules){
+  const replacement=placeholder+images.length+'\\x00';
+  clean=apply(clean,{...rule,replaceString:replacement});
+  images.push(rule.replaceString);
+ }
+ const dialogue=rules.find(rule=>rule.id==='okh-dialogue-bubble');
+ clean=rules.filter(rule=>rule!==dialogue&&!echoRules.includes(rule)).reduce(apply,clean);
  const escaped=clean.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[c]);
- return rules.filter(afterEscape).reduce(apply,escaped);
+ const output=dialogue?apply(escaped,dialogue):escaped;
+ return output.replace(/\\x00OKH_ECHO_(\\d+)\\x00/g,(_,index)=>images[index]);
 }
 function renderMessage(index){const msg=previewContext.chat[index],el=document.createElement('section');el.className='mes';el.setAttribute('is_user',String(!!msg.is_user));el.setAttribute('mesid',String(index));const body=document.createElement('div');body.className='mes_text';const narrative=document.createElement('div');narrative.className='narrative';narrative.innerHTML=display(msg.mes).trim();body.append(narrative);el.append(body);document.getElementById('chat').append(el)}
 renderMessage(0);

@@ -1,10 +1,13 @@
 /**
  * @module okh_app_echoes
+ * @updated 2026-11-25 06:42
+ * @status active
  * @reason 残响定义、时钟显影与回放验收
  */
 (function (root) {
   'use strict'
 
+  const FORMAT = root.OKH_APP_ECHO_FORMAT
   const DELAYED_ECHOES = [
     {
       id: 'echo_gulan_ed_hypnosis',
@@ -66,20 +69,14 @@
   }
 
   function replayEntry(world, command, findImage) {
-    const def = DELAYED_ECHOES.find(item => item.triggerCommand === command)
+    const def = DELAYED_ECHOES.find(item => item.triggerCommand === FORMAT.commandLine(command))
     if (!def || !records(world).some(echo => echo.id === def.id && isVisible(world, echo))) return null
     const cg = findImage(def.cgId)
     return cg ? { def, marker: `![${cg.title}](okh-echo:${cg.id})` } : null
   }
 
-  function hasReplyMarker(reply, marker) {
-    const text = String(reply || '')
-      .replace(/^[ \t]*(?:```|~~~)[^\n]*\n[\s\S]*?(?:^[ \t]*(?:```|~~~)[^\n]*|$)/gm, '')
-      .replace(/<!--[\s\S]*?-->/g, '')
-      .replace(/<status_bar\b[^>]*>[\s\S]*?(?:<\/status_bar\s*>|$)/gi, '');
-    const blocks = [...text.matchAll(/<content\b[^>]*>([\s\S]*?)<\/content\s*>/gi)];
-    const body = blocks.length ? blocks.map(match => match[1]).join('\n') : text;
-    return body.split(/\r?\n/).some(line => line.replace(/^ {0,3}/, '').trimEnd() === marker);
+  function hasReplyMarker(reply, cgId) {
+    return FORMAT.imagePattern(cgId).test(reply || '')
   }
 
   function completeReplay(world, before, command, findImage) {

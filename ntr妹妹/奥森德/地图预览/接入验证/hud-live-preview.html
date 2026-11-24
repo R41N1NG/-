@@ -3260,6 +3260,8 @@
 ;
 /**
  * @module okh_app_tags
+ * @updated 2026-11-25 06:42
+ * @status active
  * @reason 注册与管理角色的后台标签，状态归入世界存档的 tags 分区
  */
 (function (root) {
@@ -3318,12 +3320,73 @@
 
 ;
 /**
+ * @module okh_app_echo_format
+ * @updated 2026-11-25 06:42
+ * @status active
+ * @reason 让正文 CG 的显示与回复验收共用匹配规则
+ */
+(function (root) {
+  'use strict'
+
+  const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
+  const contentTag = '[cC][oO][nN][tT][eE][nN][tT]'
+  const statusTag = '[sS][tT][aA][tT][uU][sS]_[bB][aA][rR]'
+  const contentOpen = '<' + contentTag + String.raw`\b[^>]*>`
+  const contentClose = String.raw`<\/` + contentTag + String.raw`\s*>`
+  const start = '(?:^|(?<=' + contentOpen + '))'
+  const end = String.raw`(?=\r?$|` + contentClose + ')'
+  const fenceMarks = ['\\x60', '~']
+  const fences = fenceMarks.map(mark => `^ {0,3}${mark}{3,}`)
+  const closedFences = fenceMarks.map((mark, index) => {
+    const ref = String.raw`\k<fence` + index + '>'
+    const close = '^ {0,3}' + ref + mark + String.raw`*[ \t]*\r?$`
+    // Lookbehind reads right to left. Capture the opener's length at the closer,
+    // and require the corresponding backreference to exhaust the opener run.
+    return '^ {0,3}' + ref + '(?!' + mark + String.raw`)[^\r\n]*\r?\n(?:(?!` + close +
+      String.raw`)[\s\S])*^ {0,3}(?<fence` + index + '>' + mark + '{3,})' + mark + String.raw`*[ \t]*\r?$`
+  })
+  const statusOpen = '<' + statusTag + String.raw`\b[^>]*>`
+  const openOpaque = ['<!--', '<' + statusTag + String.raw`\b`, ...fences].join('|')
+  const closedOpaque = [
+    String.raw`<!--[\s\S]*?-->`,
+    statusOpen + String.raw`[\s\S]*?<\/` + statusTag + String.raw`\s*>`,
+    ...closedFences
+  ].join('|')
+  // The prefix must be reachable from the start without crossing an open opaque block.
+  const outsideOpaque = String.raw`(?<=(?<![\s\S])(?:` + closedOpaque +
+    '|(?!(?:' + openOpaque + String.raw`))[\s\S])*)`
+  const insideContent = String.raw`(?:(?!<\/?` + contentTag + String.raw`\b)[\s\S])*`
+  const anyContent = '<' + contentTag + String.raw`\b`
+  const prose = '(?:(?<=' + contentOpen + insideContent + ')(?=' + insideContent + contentClose +
+    String.raw`)|(?<!(?<![\s\S])[\s\S]*` + anyContent + String.raw`[\s\S]*)(?![\s\S]*` + anyContent + '))'
+
+  function imagePattern(id) {
+    const line = String.raw` {0,3}!\[[^\]\r\n]*\]\(okh-echo:` + escapeRegExp(id) + String.raw`\)[ \t]*`
+    return new RegExp(start + '(?=' + line + end + ')' + outsideOpaque + prose + line + end, 'gm')
+  }
+
+  function commandLine(command) {
+    return typeof command === 'string'
+      ? command.trim().split(/\r?\n/, 1)[0].trim().replace(/^查看回忆\s*[:：]\s*/, '查看回忆：')
+      : ''
+  }
+
+  const api = Object.freeze({ imagePattern, commandLine })
+  root.OKH_APP_ECHO_FORMAT = api
+  if (typeof module !== 'undefined' && module.exports) module.exports = api
+})(globalThis)
+
+;
+/**
  * @module okh_app_echoes
+ * @updated 2026-11-25 06:42
+ * @status active
  * @reason 残响定义、时钟显影与回放验收
  */
 (function (root) {
   'use strict'
 
+  const FORMAT = root.OKH_APP_ECHO_FORMAT
   const DELAYED_ECHOES = [
     {
       id: 'echo_gulan_ed_hypnosis',
@@ -3385,20 +3448,14 @@
   }
 
   function replayEntry(world, command, findImage) {
-    const def = DELAYED_ECHOES.find(item => item.triggerCommand === command)
+    const def = DELAYED_ECHOES.find(item => item.triggerCommand === FORMAT.commandLine(command))
     if (!def || !records(world).some(echo => echo.id === def.id && isVisible(world, echo))) return null
     const cg = findImage(def.cgId)
     return cg ? { def, marker: `![${cg.title}](okh-echo:${cg.id})` } : null
   }
 
-  function hasReplyMarker(reply, marker) {
-    const text = String(reply || '')
-      .replace(/^[ \t]*(?:```|~~~)[^\n]*\n[\s\S]*?(?:^[ \t]*(?:```|~~~)[^\n]*|$)/gm, '')
-      .replace(/<!--[\s\S]*?-->/g, '')
-      .replace(/<status_bar\b[^>]*>[\s\S]*?(?:<\/status_bar\s*>|$)/gi, '');
-    const blocks = [...text.matchAll(/<content\b[^>]*>([\s\S]*?)<\/content\s*>/gi)];
-    const body = blocks.length ? blocks.map(match => match[1]).join('\n') : text;
-    return body.split(/\r?\n/).some(line => line.replace(/^ {0,3}/, '').trimEnd() === marker);
+  function hasReplyMarker(reply, cgId) {
+    return FORMAT.imagePattern(cgId).test(reply || '')
   }
 
   function completeReplay(world, before, command, findImage) {
@@ -4288,11 +4345,7 @@
         npcFlags: { ed_hypnosis_play_done: true },
         tagsAdd: ['abnormal_avoid']
       },
-      text: [
-        '深夜客房内，{name}在深沉的睡眠中深陷一场荒诞狂乱的太古梦魇。',
-        '梦境是一片熔岩与焦土弥漫的荒原，庞大沉重的黑影遮蔽了天幕，带着令人窒息的蛮荒威压将她重重压在身下。狂暴而滚烫的气息拂过耳畔，胸腔内沉睡的龙血仿佛被烈火点燃，周身经络如同浸泡在沸水中般酥麻发软。在那沉重阴影的笼罩下，她引以为傲的宗师力量化为乌有，只能徒劳地仰着颈项，在虚幻而激烈的撞击与颠簸中战栗。那不是属于凡人的欢爱，而是古老龙裔之间最原始、最野蛮的繁育索求。暴烈的热潮一次又一次将她淹没，她试图拔剑、试图呼喊{{user}}的名字，然而喉咙里发出的却只有破碎压抑的呜咽与违背理智的喘息。梦境的最后，是一股滚烫得仿佛要将骨髓融化的充盈感自最深处炸裂开来，将她的神智冲刷至一片惨白的混沌……',
-        '晨曦破晓，{name}猛然从梦中惊醒，胸口剧烈起伏。宗师战气与半龙人体质让她毫无半点困倦虚弱，周身气血反而异常炽烈亢奋；唯独内腑最深处残留着一丝未散的反常滞胀与温热，以及贴身织物内无法忽视的湿冷黏腻。然而，这两处细微的异样全被体内奔涌如沸的滚烫真血与初醒时震荡混乱的神智所掩盖。她痛苦地以为纯系自身龙血返祖加深、在荒唐春梦中按捺不住兽性而导致的失态反噬，出于战士信念死守于心，面对{{user}}时目光飘忽，不敢坦然对视。'
-      ].join('\n')
+      text: '古兰的夜间暗线已结算。'
     },
     {
       id: 'gulan_final_rescue_prompt',
@@ -6672,7 +6725,7 @@
   root.OKH_APP_DATA = Object.freeze({
     SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel,
     PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG,
-    ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld, DELAYED_ECHOES: root.OKH_APP_ECHOES.definitions,
+    ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld,
     isEileenFugitive, hasEileenSignal,
     WORK_LIMITS, WORK_TERMS, workStart, paidWorkSettledToday, workCooldownWait, recentGuildStarts, completedWorkFlags,
     DRAGON_TRUE_FORM_SPEC, buildDragonRevealText
@@ -6686,6 +6739,8 @@
 ;
 /**
  * @module okh_app_daily
+ * @updated 2026-11-25 06:42
+ * @status active
  * @reason 每日好感额度与工作冷却的只读诊断
  */
 (function (root) {
@@ -8291,7 +8346,7 @@
     ACTIONS: DATA.ACTIONS,
     NODES: DATA.NODES,
     EVENTS: DATA.EVENTS,
-    DELAYED_ECHOES: DATA.DELAYED_ECHOES,
+    DELAYED_ECHOES: ECHO.definitions,
     isEileenFugitive: DATA.isEileenFugitive,
     ROSTER: DATA.ROSTER,
     buildConfig,
@@ -9407,11 +9462,14 @@
     }
     return null;
   }
-  function deliveredEcho(chat, target, before) {
+  function echoReply(chat, target, before) {
     const userCommand = userCommandBefore(chat, target);
     const entry = ECHO.replayEntry(before, userCommand, ALBUM.findImage);
-    if (!entry) return null;
-    return ECHO.hasReplyMarker(chat[target]?.mes, entry.marker) ? userCommand : null;
+    if (!entry) return { command: null, retry: false };
+    if (ECHO.hasReplyMarker(chat[target]?.mes, entry.def.cgId)) {
+      return { command: entry.def.triggerCommand, retry: false };
+    }
+    return { command: null, retry: !ECHO.isViewed(before, entry.def.id) };
   }
   async function inject(text, s) {
     if (text) W.assertSession(s);
@@ -9528,9 +9586,8 @@
       world = replacement;
     }
     const { command, diagnostics, timeCheck, revealDeliveryId } = buildTurnCommand(minutes, opts, world, id, revision);
-    if (Number.isSafeInteger(opts.chatIndex)) {
-      command.echoReplay = deliveredEcho(W.context()?.chat || [], opts.chatIndex, world);
-    }
+    const echo = Number.isSafeInteger(opts.chatIndex) ? echoReply(W.context()?.chat || [], opts.chatIndex, world) : null;
+    if (echo) command.echoReplay = echo.command;
     const generationId = opts.generationId ?? null;
     const generation = generationId === null ? null : liveWorld.bg.generations[generationId];
     const reveal = generation && WB.pendingReveal(world, generation.ids);
@@ -9547,6 +9604,7 @@
     last = { advanced: true, from: world.timeMin, to: result.state.timeMin, front: command.front,
       actions: result.report.actions, released: result.report.released,
       pending: GPT.prepare(result.state, 8).ids.length, diagnostics, timeCheck, published };
+    if (echo?.retry) last.echoNeedsRetry = true;
     diagnostics.forEach(message => console.warn('[APP] ' + message));
     console.log('[APP] 已提交 ' + world.timeMin + ' → ' + result.state.timeMin);
     return last;
@@ -9592,14 +9650,16 @@
       .map(({ id, revealProof }) => [id, revealProof]));
     const dialogueForms = {};
     const diagnostics = [], actions = [], released = [];
-    let timeCheck = null, front = null;
+    let timeCheck = null, front = null, echoNeedsRetry = false;
     for (let i = from; i <= through; i++) {
       if (!assistant(chat[i])) continue;
       const id = replyId(s, i), revision = revisionFor(chat, i);
       const text = chat[i].mes || '';
       const built = buildTurnCommand(undefined, { text, chatIndex: i,
         countMessage: true, initial: i === 0, allowFallback: true }, state, id, revision);
-      built.command.echoReplay = deliveredEcho(chat, i, state);
+      const echo = echoReply(chat, i, state);
+      built.command.echoReplay = echo.command;
+      echoNeedsRetry = i === through && echo.retry;
       const result = GPT.advance(state, built.command, CFG.buildConfig());
       const record = { id, revision, chatIndex: i, before: state };
       const proof = built.revealDeliveryId && revealProofs.get(id);
@@ -9622,6 +9682,7 @@
     last = { advanced: true, from: checkpoint.timeMin, to: state.timeMin, front, actions, released,
       pending: GPT.prepare(state, 8).ids.length, diagnostics, timeCheck, published };
     diagnostics.forEach(message => console.warn('[APP] ' + message));
+    if (echoNeedsRetry) last.echoNeedsRetry = true;
     return last;
   }
   function step(minutes, opts = {}) { return serialSession(s => runStep(minutes, { ...opts, session: s }), opts.session); }
@@ -9736,6 +9797,7 @@
       if (changed && changed.chatIndex < target) {
         const result = await replay(s, chat, changed.chatIndex, target, changed.before);
         if (generation) { activeGeneration = null; await clearGeneration(generation); }
+        if (result.advanced) root.OKH_APP_HUD?.noteEchoRetry?.(target, result.echoNeedsRetry);
         return result;
       }
       const result = await runStep(undefined, { session: s, msgId: replyId(s, target),
@@ -9748,6 +9810,7 @@
         try { if (result.duplicate) await clearGeneration(generation); else await inject('', s); }
         catch (error) { console.warn('[APP] 清理提示词失败：', error.message); }
       }
+      if (result.advanced) root.OKH_APP_HUD?.noteEchoRetry?.(target, result.echoNeedsRetry);
       return result;
     });
   }
@@ -9823,6 +9886,8 @@
 ;
 /**
  * @module okh_app_flags
+ * @updated 2026-11-25 06:42
+ * @status active
  * @reason Flag 字段说明与只读存档检查
  */
 (function (root) {
@@ -9838,6 +9903,9 @@
     ed_joined: ['布尔', false, '爱德已经加入队伍', once],
     playerRoomTarget: ['角色 ID 或 null', null, '当前同房角色', '分房、同房条件失效或拂晓时清空'],
     curfew_active: ['布尔', undefined, '镇内宵禁', '清算或封路后的替代剧情分支可清除'],
+    eileen_arrived: ['布尔', false, '艾琳已抵达奥克赫斯', once],
+    eileen_departed: ['布尔', false, '艾琳启程离镇，护送或伏击分支由此结算', once],
+    player_barony_granted: ['布尔', false, '玩家已获封男爵，供爵位权益与后续分支读取', once],
     eileen_fugitive: ['布尔', false, '艾琳线进入逃亡阶段，影响队伍日程与行动', '兰开斯特清算时清除'],
     eileen_signal_fired: ['布尔', false, '艾琳已发出王室讯号', once],
     baron_purged: ['布尔', false, '男爵已被清算', once],
@@ -13587,6 +13655,21 @@
     console.log('[APP] HUD 已停止')
   }
 
+  function noteEchoRetry(index, needed) {
+    const chat = document?.getElementById('chat')
+    const message = chat?.querySelector(`.mes[mesid="${index}"] .mes_text`)
+    const previous = message?.querySelector('[data-okh-echo-retry]')
+    if (!needed) { previous?.remove(); return }
+    if (previous) return
+    const text = '这次回放未带出插图，尚未收录。可再次发送查看回忆指令。'
+    if (!message) { document?.defaultView?.toastr?.info?.(text); return }
+    const note = document.createElement('p')
+    note.setAttribute('role', 'status')
+    note.setAttribute('data-okh-echo-retry', '')
+    note.textContent = text
+    message.appendChild(note)
+  }
+
   root.OKH_APP_HUD = Object.freeze({
     setAutoMount(value) { autoMount = value !== false; return render(true) },
     setWatchVisible(value) { watchVisible = value === true; return render(true) },
@@ -13596,6 +13679,7 @@
     locName,
     buildHudHtml,
     buildWatchHtml,
+    noteEchoRetry,
     render,
     startHud,
     stopHud
