@@ -13,7 +13,7 @@ function buildCatalog(root){
   const {file,...rest}=entry;return{...rest,src:'data:'+mime+';base64,'+fs.readFileSync(full).toString('base64')};
  });
  const sandbox={OKH_ALBUM_CATALOG:catalog};vm.createContext(sandbox);
- for(const file of ['core/okh_utils.js','app/okh_app_data.js','app/okh_app_album.js'])vm.runInContext(fs.readFileSync(path.resolve(__dirname,'../src',file),'utf8'),sandbox,{filename:file});
+ for(const file of ['core/okh_utils.js','app/okh_app_tags.js','app/okh_app_echoes.js','app/okh_app_data.js','app/okh_app_album.js'])vm.runInContext(fs.readFileSync(path.resolve(__dirname,'../src',file),'utf8'),sandbox,{filename:file});
  return catalog;
 }
 module.exports={buildCatalog};

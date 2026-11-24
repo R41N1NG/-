@@ -14,10 +14,12 @@
   const TIME = root.OKH_APP_TIME
   const MIG = root.OKH_APP_MIGRATE
   const ALBUM = root.OKH_APP_ALBUM
-  if (!DATA || !RULES || !TIME || !MIG || !ALBUM) throw Error('config 缺少子模块依赖')
+  const ECHO = root.OKH_APP_ECHOES
+  if (!DATA || !RULES || !TIME || !MIG || !ALBUM || !ECHO) throw Error('config 缺少子模块依赖')
 
   function syncWorld(world, ctx) {
     RULES.syncWorld(world, ctx)
+    ECHO.sync(world)
     ALBUM.sync(world)
   }
 
@@ -31,12 +33,16 @@
       actions: DATA.ACTIONS,
       events: DATA.EVENTS,
       nodes: DATA.NODES,
-      delayedEchoes: DATA.DELAYED_ECHOES,
+      registerEcho: ECHO.register,
       itemCatalog: DATA.ITEM_CATALOG,
       metricBounds,
       releaseRules: { manualRelease: () => false },
       canMove: RULES.canMove,
       syncWorld,
+      completeReply(world, before, command) {
+        if (ECHO.completeReplay(world, before, command, ALBUM.findImage)) ALBUM.sync(world)
+      },
+      applyTags: root.OKH_APP_TAGS.apply,
       isMetricLocked: RULES.isMetricLocked,
       onStageChange: RULES.onStageChange,
       applyPrologueSteps: RULES.applyPrologueSteps,
@@ -76,6 +82,7 @@
     NODES: DATA.NODES,
     EVENTS: DATA.EVENTS,
     DELAYED_ECHOES: DATA.DELAYED_ECHOES,
+    isEileenFugitive: DATA.isEileenFugitive,
     ROSTER: DATA.ROSTER,
     buildConfig,
     buildInitialWorld: DATA.buildInitialWorld,

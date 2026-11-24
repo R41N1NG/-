@@ -10,6 +10,7 @@
   'use strict'
 
   const DATA = root.OKH_APP_DATA
+  const DAILY = root.OKH_APP_DAILY
   if (!DATA) throw Error('rules 缺少 OKH_APP_DATA')
 
   const TOWN_LOCATION_SET = new Set(DATA.TOWN_LOCATIONS)
@@ -22,9 +23,7 @@
     return 'ordinary'
   }
 
-  function isFugitiveActive(world) {
-    return Boolean(world?.flags?.eileen_fugitive && !world?.flags?.baron_purged)
-  }
+  const isFugitiveActive = DATA.isEileenFugitive
 
   function isFugitiveSyncedNpc(world, npc) {
     if (!isFugitiveActive(world) || !npc) return false
@@ -291,33 +290,33 @@
     },
     eileen: {
       care_watch: ({ world, npc }) =>
-        world.flags?.eileen_fugitive && !world.flags?.baron_purged && !npc.flags?.eileen_captured &&
+        DATA.isEileenFugitive(world) && !world.flags?.baron_purged && !npc.flags?.eileen_captured &&
         (npc.values.affection ?? 0) < 70 && !npc.flags?.eileen_care_today
           ? { add: { affection: 1 }, npcFlags: { eileen_care_today: true } } : null,
       encourage: ({ world, npc }) =>
-        world.flags?.eileen_fugitive && !world.flags?.baron_purged && !npc.flags?.eileen_captured &&
+        DATA.isEileenFugitive(world) && !world.flags?.baron_purged && !npc.flags?.eileen_captured &&
         !npc.flags?.eileen_encourage_today
           ? { add: { affection: 2 }, npcFlags: { eileen_encourage_today: true } } : null,
       scout_prep: ({ world, npc }) =>
-        world.flags?.eileen_fugitive && !world.flags?.baron_purged && !world.flags?.eileen_signal_fired &&
+        DATA.isEileenFugitive(world) && !world.flags?.baron_purged && !DATA.hasEileenSignal(world) &&
         !npc.flags?.eileen_captured && !npc.flags?.eileen_scout_today
           ? { add: { counterattack: 4 }, npcFlags: { eileen_scout_today: true } } : null,
       cover_hide: ({ world, npc }) => {
-        if (!world.flags?.eileen_fugitive || world.flags?.baron_purged || npc.flags?.eileen_captured) return null
+        if (!DATA.isEileenFugitive(world) || world.flags?.baron_purged || npc.flags?.eileen_captured) return null
         if (npc.flags?.eileen_cover_today) return null
         const add = { affection: 3 }
-        if (!world.flags?.eileen_signal_fired) add.counterattack = 6
+        if (!DATA.hasEileenSignal(world)) add.counterattack = 6
         return { add, exemptCap: true, npcFlags: { eileen_cover_today: true } }
       },
       rescue_shield: ({ world, npc }) => {
-        if (!world.flags?.eileen_fugitive || world.flags?.baron_purged || npc.flags?.eileen_captured) return null
+        if (!DATA.isEileenFugitive(world) || world.flags?.baron_purged || npc.flags?.eileen_captured) return null
         if (npc.flags?.eileen_rescue_today) return null
         const add = { affection: 5 }
-        if (!world.flags?.eileen_signal_fired) add.counterattack = 10
+        if (!DATA.hasEileenSignal(world)) add.counterattack = 10
         return { add, exemptCap: true, npcFlags: { eileen_rescue_today: true } }
       },
       offend: ({ world, npc }) =>
-        (world.flags?.eileen_fugitive || world.flags?.baron_purged) &&
+        (DATA.isEileenFugitive(world) || world.flags?.baron_purged) &&
         !npc.flags?.eileen_captured && !npc.flags?.eileen_returned_capital
           ? { add: { affection: -3 }, exemptCap: true } : null
     },
@@ -368,7 +367,6 @@
   function resolveBonds(world, bonds, ctx) {
     const out = []
     const day = Math.floor(world.timeMin / 1440) + 1
-    const capCache = {}
     const flagCache = {}
     let curGold = Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 0
     let innArrears = Boolean(world.flags?.inn_arrears)
@@ -392,7 +390,7 @@
       }
 
       if (item.npc === 'isna' && item.kind === 'steady_work') {
-        if (world.flags?.eileen_fugitive || oddJobUsed || DATA.workStart({ ...ctx, world }, DATA.WORK_TERMS.odd.minutes) === null) continue
+        if (DATA.isEileenFugitive(world) || oddJobUsed || DATA.workStart({ ...ctx, world }, DATA.WORK_TERMS.odd.minutes) === null) continue
         oddJobUsed = true
         const wage = DATA.WORK_TERMS.odd.gold
         curGold += wage
@@ -413,13 +411,9 @@
         delete add.affection
       } else {
         if (npc.hasAffection !== false && add.affection > 0 && !res.exemptCap) {
-          const curDay = capCache[npc.id]?.day ?? npc.flags?.dailyAffectionDay
-          const used = curDay === day ? (capCache[npc.id]?.gain ?? npc.flags?.dailyAffectionGain ?? 0) : 0
-          const allow = Math.max(0, 3 - used)
-          add.affection = Math.min(add.affection, allow)
-          capCache[npc.id] = { day, gain: used + add.affection }
-          npcFlags.dailyAffectionDay = day
-          npcFlags.dailyAffectionGain = used + add.affection
+          const used = DAILY.affectionUsed(viewNpc.flags, day)
+          add.affection = Math.min(add.affection, DAILY.affectionRemaining(used))
+          Object.assign(npcFlags, DAILY.affectionFlags(day, used + add.affection))
         }
         if (npc.hasAffection !== false && res.exemptAdd?.affection) {
           add.affection = (add.affection || 0) + res.exemptAdd.affection
@@ -454,7 +448,7 @@
     let cecFunds = cecilia?.values?.orphanage_funds ?? 0
     let cecAff = cecilia?.values?.affection ?? 0
     const cecLocked = isMetricLocked(world, cecilia, 'affection')
-    let cecDaily = cecilia?.flags?.dailyAffectionDay === day ? (cecilia.flags?.dailyAffectionGain ?? 0) : 0
+    let cecDaily = DAILY.affectionUsed(cecilia?.flags, day)
 
     const pushIncome = (delta, extraFlags) => {
       curGold += delta
@@ -469,7 +463,7 @@
     for (let i = 0; i < (economies || []).length; i++) {
       const item = economies[i]
       if (!item) continue
-      if (item.op === 'work' && !world.flags?.eileen_fugitive) {
+      if (item.op === 'work' && !DATA.isEileenFugitive(world)) {
         if (workUsed || !Object.hasOwn(DATA.WORK_TERMS, item.tier)) continue
         const { minutes, gold } = DATA.WORK_TERMS[item.tier]
         const paid = gold > 0
@@ -481,7 +475,7 @@
           pushIncome(gold, { ...workFlags, playerOddJobDay: day })
         } else if (['guild_normal', 'guild_high'].includes(item.tier) && ['town', 'wilds'].includes(world.playerLocation)) {
           const recent = DATA.recentGuildStarts(world, start)
-          if (recent.length >= 2 || DATA.workCooldownWait(world, 'lastGuildCommission', start, 3)) continue
+          if (recent.length >= DATA.WORK_LIMITS.guildStarts || DATA.workCooldownWait(world, 'lastGuildCommission', start, DATA.WORK_LIMITS.guildCooldownDays)) continue
           if (item.tier === 'guild_high') {
             const gulanReady = Boolean(gulan && gulan.monitored === true && gulan.alive !== false && (gulan.stage ?? 0) < 3 && world.playerLocation === 'wilds' && gulan.location === 'wilds')
             const isnaReady = Boolean(isna && isna.monitored === true && isna.alive !== false && (isna.stage ?? 0) < 3 && !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_captured_ed && !isna.flags?.isna_fallen_labyrinth && isna.location === world.playerLocation)
@@ -494,7 +488,7 @@
           }
         } else if ((item.tier === 'church_paid' || item.tier === 'church_volunteer') &&
             ['church', 'wilds'].includes(world.playerLocation) &&
-            cecilia && cecilia.alive !== false && (cecilia.stage ?? 0) < 3 && !DATA.workCooldownWait(world, 'lastChurchErrand', start, 2)) {
+            cecilia && cecilia.alive !== false && (cecilia.stage ?? 0) < 3 && !DATA.workCooldownWait(world, 'lastChurchErrand', start, DATA.WORK_LIMITS.churchCooldownDays)) {
           workUsed = true
           const volunteer = !paid
           const flags = { ...workFlags, lastChurchErrandDay: day, lastChurchErrandStartMin: start }
@@ -505,7 +499,7 @@
           }
           const fundsGain = Math.min(volunteer ? 8 : 4, Math.max(0, 100 - cecFunds))
           cecFunds += fundsGain
-          const capped = cecLocked ? 0 : Math.min(2, Math.max(0, 3 - cecDaily))
+          const capped = cecLocked ? 0 : Math.min(2, DAILY.affectionRemaining(cecDaily))
           cecDaily += capped
           const affGain = cecLocked ? 0 : (volunteer ? capped + 3 : capped)
           cecAff = Math.min(100, cecAff + affGain)
@@ -515,7 +509,7 @@
           out.push({
             target: 'cecilia',
             ...(Object.keys(add).length ? { add } : {}),
-            npcFlags: { dailyAffectionDay: day, dailyAffectionGain: cecDaily, ceciliaAppealDays: 0 }
+            npcFlags: { ...DAILY.affectionFlags(day, cecDaily), ceciliaAppealDays: 0 }
           })
         }
       } else if (item.op === 'repay') {

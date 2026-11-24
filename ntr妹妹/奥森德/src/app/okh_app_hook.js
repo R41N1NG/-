@@ -9,8 +9,8 @@
   const u = root.OKHBackgroundModules?.utils;
   const CFG = root.OKH_APP_CONFIG, W = root.OKH_APP_WORLD;
   const A = root.OKH_APP_ADAPTER, P = root.OKH_APP_PARSE, GPT = root.OKHBackground;
-  const WB = root.OKH_APP_WORLDBOOK;
-  if (!u || !CFG || !W || !A || !P || !GPT || !WB) throw Error('hook 依赖缺失');
+  const WB = root.OKH_APP_WORLDBOOK, ALBUM = root.OKH_APP_ALBUM, ECHO = root.OKH_APP_ECHOES;
+  if (!u || !CFG || !W || !A || !P || !GPT || !WB || !ALBUM || !ECHO) throw Error('hook 依赖缺失');
   const RHYTHM = { everyMessages: 3, minutesPerTick: 60, useAITime: true };
   let options = {}, work = Promise.resolve(), activeGeneration = null, seq = 0, last = null;
   const controllers = new Map(), listeners = [];
@@ -46,6 +46,20 @@
   function newestIndex(chat) {
     for (let i = chat.length - 1; i >= 0; i--) if (assistant(chat[i])) return i;
     return -1;
+  }
+  function userCommandBefore(chat, target) {
+    for (let index = target - 1; index >= 0; index--) {
+      const message = chat[index];
+      if (!message || message.is_system) continue;
+      return message.is_user && typeof message.mes === 'string' ? message.mes.trim() : null;
+    }
+    return null;
+  }
+  function deliveredEcho(chat, target, before) {
+    const userCommand = userCommandBefore(chat, target);
+    const entry = ECHO.replayEntry(before, userCommand, ALBUM.findImage);
+    if (!entry) return null;
+    return ECHO.hasReplyMarker(chat[target]?.mes, entry.marker) ? userCommand : null;
   }
   async function inject(text, s) {
     if (text) W.assertSession(s);
@@ -162,6 +176,9 @@
       world = replacement;
     }
     const { command, diagnostics, timeCheck, revealDeliveryId } = buildTurnCommand(minutes, opts, world, id, revision);
+    if (Number.isSafeInteger(opts.chatIndex)) {
+      command.echoReplay = deliveredEcho(W.context()?.chat || [], opts.chatIndex, world);
+    }
     const generationId = opts.generationId ?? null;
     const generation = generationId === null ? null : liveWorld.bg.generations[generationId];
     const reveal = generation && WB.pendingReveal(world, generation.ids);
@@ -230,6 +247,7 @@
       const text = chat[i].mes || '';
       const built = buildTurnCommand(undefined, { text, chatIndex: i,
         countMessage: true, initial: i === 0, allowFallback: true }, state, id, revision);
+      built.command.echoReplay = deliveredEcho(chat, i, state);
       const result = GPT.advance(state, built.command, CFG.buildConfig());
       const record = { id, revision, chatIndex: i, before: state };
       const proof = built.revealDeliveryId && revealProofs.get(id);
@@ -334,33 +352,14 @@
         const confirmReveal = reveal ? '【揭晓回执】在 <content> 正文中明确写出爱德（或艾德）显露真身或他的古龙身份。' +
           '正文已写出这次揭晓时，在本轮 <status_bar> 中附上 <reveal_delivered id="' + reveal.definitionId + '" />。' : '';
 
-        let echoInjection = '';
-        const lastUser = [...chat].reverse().find(m => m && m.is_user && typeof m.mes === 'string');
-        const userPrompt = lastUser?.mes?.trim() || '';
-        const delayedDefs = CFG.DELAYED_ECHOES || root.OKH_APP_DATA?.DELAYED_ECHOES || [];
-        const pendingList = promptWorld.playerState?.pendingEchoes || [];
-        const matchedEchoDef = delayedDefs.find(def => {
-          if (!userPrompt.includes(def.triggerCommand) && !userPrompt.includes(def.title)) return false;
-          return pendingList.some(pe => pe.id === def.id && (pe.status === 'ready' || pe.status === 'viewed'));
-        });
-
-        if (matchedEchoDef) {
-          const targetNpc = promptWorld.npcs?.[matchedEchoDef.npc];
-          const npcName = targetNpc?.name || matchedEchoDef.npc;
-          const story = (matchedEchoDef.storyText || '').replace(/\{name\}/g, npcName);
-          echoInjection = [
-            '========================================',
-            matchedEchoDef.promptGuidance,
-            '',
-            '【输出格式契约】',
-            '必须在正文适当位置完整输出准备好的CG插图Markdown代码（此图片在正文展现后将永久收录至水晶球回忆相册）：',
-            `![${matchedEchoDef.cg.title}](${matchedEchoDef.cg.src})`,
-            '',
-            '【具体故事内容基底（严格遵循此事实展开演绎）】',
-            story,
-            '========================================'
-          ].join('\n');
-        }
+        const echo = ECHO.replayEntry(promptWorld, userCommandBefore(chat, generation.targetIndex), ALBUM.findImage);
+        const echoInjection = echo ? [
+          echo.def.promptGuidance,
+          '在本轮 <content> 正文回放中另起一行，原样写出以下插图标记。不要放进代码块或状态栏。',
+          echo.marker,
+          '【故事内容基底】',
+          (echo.def.storyText || '').replace(/\{name\}/g, promptWorld.npcs?.[echo.def.npc]?.name || echo.def.npc)
+        ].join('\n') : '';
 
         const text = [A.buildLedger(promptWorld), ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal, echoInjection]
           .filter(Boolean).join('\n\n');
@@ -392,30 +391,6 @@
         countMessage: true, initial: target === 0, allowFallback: true,
         generationId: generation?.prepared ? generation.id : undefined });
 
-      const lastUser = [...chat].reverse().find(m => m && m.is_user && typeof m.mes === 'string');
-      const userPrompt = lastUser?.mes?.trim() || '';
-      const delayedDefs = CFG.DELAYED_ECHOES || root.OKH_APP_DATA?.DELAYED_ECHOES || [];
-      const matchedEchoDef = delayedDefs.find(def => userPrompt.includes(def.triggerCommand) || userPrompt.includes(def.title));
-      if (matchedEchoDef) {
-        const live = W.loadWorld(s);
-        if (live?.playerState?.pendingEchoes) {
-          const pe = live.playerState.pendingEchoes.find(e => e.id === matchedEchoDef.id);
-          if (pe && pe.status !== 'viewed') {
-            pe.status = 'viewed';
-            pe.viewedAt = live.timeMin;
-            live.playerState.memories ||= [];
-            if (!live.playerState.memories.some(m => m.id === matchedEchoDef.cg.id)) {
-              live.playerState.memories.push({ id: matchedEchoDef.cg.id, collectedAt: live.timeMin });
-            }
-            if (matchedEchoDef.tag && live.npcs?.[matchedEchoDef.npc]?.tags) {
-              live.npcs[matchedEchoDef.npc].tags = live.npcs[matchedEchoDef.npc].tags.filter(
-                t => (typeof t === 'string' ? t : t.id) !== matchedEchoDef.tag.id
-              );
-            }
-            await W.saveWorld(s, live);
-          }
-        }
-      }
       if (generation) {
         activeGeneration = null;
         try { if (result.duplicate) await clearGeneration(generation); else await inject('', s); }

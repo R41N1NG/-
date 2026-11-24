@@ -8,8 +8,9 @@
   'use strict'
   const u = root.OKHBackgroundModules?.utils
   const DATA = root.OKH_APP_DATA
-  if (!u || !DATA) throw Error('album 缺少 utils/data')
-  const packed = "[]"
+  const ECHO = root.OKH_APP_ECHOES
+  if (!u || !DATA || !ECHO) throw Error('album 缺少 utils/data/echoes')
+  const packed = '__OKH_ALBUM_CATALOG__'
   const initialCharacters = Object.freeze(['gulan', 'isna', 'nise', 'aurora'])
   const femaleCharacters = new Set([...initialCharacters, 'eileen', 'cecilia'])
 
@@ -25,12 +26,16 @@
       u.check(typeof item.src === 'string' && /^(?:https:\/\/[^\s]+|data:image\/(?:png|jpeg|webp|gif|avif|svg\+xml);base64,[A-Za-z0-9+/=]+)$/.test(item.src), '相册图片需要内嵌图片或 HTTPS 地址')
       u.check(Array.isArray(item.unlock) && item.unlock.length > 0, '回忆图片必须明确指定解锁条件')
       const unlock = item.unlock.map(rule => {
-        u.check(rule && ['introduced', 'metric', 'worldFlag', 'npcFlag', 'event'].includes(rule.type), '相册解锁条件类型未知')
+        u.check(rule && ['introduced', 'metric', 'worldFlag', 'npcFlag', 'event', 'echo'].includes(rule.type), '相册解锁条件类型未知')
         if (rule.type === 'metric') {
           const owner = DATA.ROSTER.find(n => n.id === item.npc)
           u.check(Object.hasOwn(owner.values, rule.key) && Number.isFinite(rule.min) && (rule.max === undefined || Number.isFinite(rule.max) && rule.max >= rule.min), '相册数值门槛非法')
         }
         if (rule.type === 'worldFlag' || rule.type === 'npcFlag') u.check(u.id(rule.key), '相册标记名称非法')
+        if (rule.type === 'echo') {
+          const echo = ECHO.definition(rule.id)
+          u.check(echo?.cgId === item.id && echo.npc === item.npc, '相册引用了未知残响或不匹配的图片')
+        }
         if (rule.type === 'event') {
           const event = DATA.EVENTS.find(e => e.id === rule.id)
           u.check(event && (!event.targets?.length || event.targets.includes(item.npc)), '相册引用了未知事件或目标')
@@ -60,6 +65,7 @@
       }
       if (rule.type === 'worldFlag') return Object.hasOwn(world.flags || {}, rule.key) && world.flags[rule.key] === true
       if (rule.type === 'npcFlag') return Object.hasOwn(world.npcs[item.npc]?.flags || {}, rule.key) && world.npcs[item.npc].flags[rule.key] === true
+      if (rule.type === 'echo') return ECHO.isViewed(world, rule.id)
       const event = DATA.EVENTS.find(e => e.id === rule.id)
       const npcId = event.scope === 'world' ? null : item.npc
       const record = world.bg?.eventStates?.[JSON.stringify(['event', rule.id, npcId])]
@@ -76,24 +82,14 @@
         world.playerState.albumMet = [...met, ...introduced]
       }
       const known = id => !femaleCharacters.has(id) || initialCharacters.includes(id) || (world.playerState?.albumMet || []).includes(id)
-      const earned = catalog.filter(item => !seen.has(item.id) && world.npcs[item.npc]?.monitored === true && known(item.npc) && item.unlock.every(rule => matches(world, item, rule)))
+      const earned = catalog.filter(item => !seen.has(item.id) && known(item.npc) &&
+        (world.npcs[item.npc]?.monitored === true || item.unlock.some(rule => rule.type === 'echo')) &&
+        item.unlock.every(rule => matches(world, item, rule)))
       if (earned.length) {
         world.playerState ||= {}
         world.playerState.memories = [...rows, ...earned.map(item => ({ id: item.id, collectedAt: world.timeMin }))]
       }
-      syncEchoes(world)
       return earned.map(item => item.id)
-    }
-    function syncEchoes(world) {
-      if (!world?.playerState?.pendingEchoes) return []
-      const ready = []
-      for (const item of world.playerState.pendingEchoes) {
-        if (item.status === 'latent' && world.timeMin >= item.unlockAt) {
-          item.status = 'ready'
-          ready.push(item.id)
-        }
-      }
-      return ready
     }
     function list(world) {
       return records(world).flatMap(row => {
@@ -110,7 +106,7 @@
       const owned = list(world).filter(item => item.npc === npc)
       return owned.find(item => item.id === choices[npc]) || owned.find(item => item.kind === 'portrait') || null
     }
-    return Object.freeze({ catalog: Object.freeze(catalog), initialCharacters, sync, syncEchoes, list, groups, portrait })
+    return Object.freeze({ catalog: Object.freeze(catalog), initialCharacters, sync, findImage: id => byId.get(id), list, groups, portrait })
   }
   const entries = root.OKH_ALBUM_CATALOG ?? (packed.startsWith('__OKH_') ? [] : JSON.parse(packed))
   root.OKH_APP_ALBUM = Object.freeze({ ...create(entries), create })

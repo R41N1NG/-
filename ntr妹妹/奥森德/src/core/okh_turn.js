@@ -358,6 +358,7 @@
       }
 
       refresh(state, config, new Set(state.interactingIds), report);
+      config.completeReply?.(state, world, command);
       state.bg.receipts[command.id] = signature;
       state.bg.revision++;
       u.validateWorld(state);

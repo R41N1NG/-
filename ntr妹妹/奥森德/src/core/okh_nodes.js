@@ -49,6 +49,8 @@
         events.supersede(world, queueId(node, npc));
       }
 
+      if (node.covert === true) return;
+
       events.emit(world, {
         id: fromPending
           ? u.key('node-result', node.id, npc.id)

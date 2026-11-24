@@ -124,8 +124,44 @@
     return c
   }
 
+  function daily() {
+    const world = W.loadWorld()
+    if (!world) return null
+    const result = root.OKH_APP_DAILY.inspect(world)
+    console.table(result.affection)
+    console.table([result.work])
+    return result
+  }
+
+  function echoes(npcId) {
+    const world = W.loadWorld()
+    if (!world) return []
+    const rows = root.OKH_APP_ECHOES.inspect(world, npcId)
+    console.table(rows)
+    return rows
+  }
+
+  function flags(scope) {
+    const world = W.loadWorld()
+    if (!world) return []
+    const rows = root.OKH_APP_FLAGS.inspect(world, scope)
+    console.table(rows)
+    return rows
+  }
+
+  function tags(npcId) {
+    const world = W.loadWorld()
+    if (!world) return []
+    const owners = npcId === undefined ? Object.keys(world.tags || {}) : [npcId]
+    const rows = owners.flatMap(id => root.OKH_APP_TAGS.list(world, id).map(tag => ({
+      npc: id, character: world.npcs[id].name, ...tag
+    })))
+    console.table(rows)
+    return rows
+  }
+
   root.OKH_APP_DEBUG = Object.freeze({
-    status, watch, ledger, queue, step, reset, config
+    status, watch, ledger, queue, step, reset, config, tags, flags, echoes, daily
   })
 
   if (typeof module !== 'undefined' && module.exports) {

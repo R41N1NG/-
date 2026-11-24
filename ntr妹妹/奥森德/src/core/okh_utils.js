@@ -299,6 +299,13 @@
           (Number.isSafeInteger(world.playerState.gold) && world.playerState.gold >= 0))),
       '玩家状态或金币数值非法'
     );
+    if (world.tags !== undefined) {
+      check(world.tags && typeof world.tags === 'object' && !Array.isArray(world.tags), '标签分区格式非法');
+      for (const [npcId, tags] of Object.entries(world.tags)) {
+        check(own(world.npcs, npcId) && Array.isArray(tags) && tags.every(id) &&
+          new Set(tags).size === tags.length, '角色标签格式非法或 ID 重复');
+      }
+    }
     if (world.playerState?.inventory !== undefined) {
       check(Array.isArray(world.playerState.inventory), '玩家物品栏必须是数组');
       const seenItemIds = new Set();

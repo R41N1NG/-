@@ -59,7 +59,7 @@
     migrateSchema: () => W.migrateSchema(),
     step: H.step, applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,
     cancelGeneration: H.cancelGeneration, syncHistory: H.syncHistory, restore: H.restore,
-    config: A.runtimeConfig, status: D.status, watch: D.watch, ledger: D.ledger, queue: D.queue,
+    config: A.runtimeConfig, status: D.status, watch: D.watch, ledger: D.ledger, queue: D.queue, tags: D.tags, flags: D.flags, echoes: D.echoes, daily: D.daily,
     renderHud: HUD ? HUD.render : () => false,
     showWatch: value => HUD?.setWatchVisible(value), CFG, W, A, H, D, HUD });
   console.log('[OKH_APP] 修复版已加载；请 await OKH_APP.init()，自动运行用 await OKH_APP.start()');

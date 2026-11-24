@@ -10,6 +10,7 @@
   'use strict'
 
   const DATA = root.OKH_APP_DATA
+  const DAILY = root.OKH_APP_DAILY
   if (!DATA) throw Error('time 缺少 OKH_APP_DATA')
   const GULAN_BLOOD_LIMIT = DATA.ROSTER.find(npc => npc.id === 'gulan')._metricBounds.blood_density[1]
 
@@ -114,9 +115,9 @@
       eileenMonitored: Boolean(eileen && eileen.alive !== false && eileen.monitored === true),
       eileenArrived: Boolean(world.flags?.eileen_arrived),
       eileenDeparted: Boolean(world.flags?.eileen_departed),
-      eileenFugitive: Boolean(world.flags?.eileen_fugitive || eileen?.flags?.eileen_fugitive),
+      eileenFugitive: DATA.isEileenFugitive(world),
       eileenCaptured: Boolean(eileen?.flags?.eileen_captured),
-      eileenSignalFired: Boolean(world.flags?.eileen_signal_fired || eileen?.flags?.eileen_signal_fired),
+      eileenSignalFired: DATA.hasEileenSignal(world),
       baronPurged: Boolean(world.flags?.baron_purged),
       eileenBetrothed: Boolean(eileen?.flags?.eileen_betrothed || world.flags?.player_barony_granted),
       eileenReturnedCapital: Boolean(eileen?.flags?.eileen_returned_capital),
@@ -146,8 +147,7 @@
         gulan_confide_today: false,
         gulan_watch_today: false,
         gulan_duty_today: false,
-        dailyAffectionDay: k + 1,
-        dailyAffectionGain: 0,
+        ...DAILY.affectionFlags(k + 1),
         lastNightSettledDay: k
       }
     }
@@ -172,8 +172,7 @@
         isna_share_food_today: false,
         isna_scout_today: false,
         isna_gift_today: false,
-        dailyAffectionDay: k + 1,
-        dailyAffectionGain: 0,
+        ...DAILY.affectionFlags(k + 1),
         lastNightSettledDay: k
       }
     }
@@ -215,8 +214,7 @@
       nise_treat_today: false,
       nise_escort_today: false,
       nise_casino_busy_today: false,
-      dailyAffectionDay: k + 1,
-      dailyAffectionGain: 0,
+      ...DAILY.affectionFlags(k + 1),
       lastNightSettledDay: k
     }
     if (sim.arrived && sim.niseAlive && sim.niseStage < 3 && !fugitivePaused && !sim.niseDebtFrozen &&
@@ -242,8 +240,7 @@
       aurora_reassure_today: false,
       aurora_church_today: false,
       aurora_gift_today: false,
-      dailyAffectionDay: k + 1,
-      dailyAffectionGain: 0,
+      ...DAILY.affectionFlags(k + 1),
       lastNightSettledDay: k
     }
     const workedToday = sim.auroraWorkedDay === k || sim.auroraLoc === 'manor' || k > kStart
@@ -264,8 +261,7 @@
       eileen_scout_today: false,
       eileen_cover_today: false,
       eileen_rescue_today: false,
-      dailyAffectionDay: k + 1,
-      dailyAffectionGain: 0,
+      ...DAILY.affectionFlags(k + 1),
       lastNightSettledDay: k
     }
     const change = { target: 'eileen', npcFlags }
@@ -373,8 +369,7 @@
       cecilia_night_today: false,
       cecilia_gift_today: false,
       cecilia_shield_today: false,
-      dailyAffectionDay: k + 1,
-      dailyAffectionGain: 0,
+      ...DAILY.affectionFlags(k + 1),
       lastNightSettledDay: k
     }
     const add = {}
@@ -406,8 +401,7 @@
   function settleEdNight(sim, k, changes, bloodIncreased) {
     if (sim.edLastNight >= k) return
     const npcFlags = {
-      dailyAffectionDay: k + 1,
-      dailyAffectionGain: 0,
+      ...DAILY.affectionFlags(k + 1),
       lastNightSettledDay: k
     }
     const change = { target: 'ed', npcFlags }
@@ -425,8 +419,7 @@
       changes.push({
         target: id,
         npcFlags: {
-          dailyAffectionDay: k + 1,
-          dailyAffectionGain: 0,
+          ...DAILY.affectionFlags(k + 1),
           lastNightSettledDay: k
         }
       })

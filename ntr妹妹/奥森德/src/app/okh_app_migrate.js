@@ -62,7 +62,7 @@
     next.flags ||= {}
     next.nodeStates ||= {}
     next.activityHistory ||= {}
-    if (tpl.id === 'eileen' && !worldFlags?.eileen_arrived && !next.flags.eileen_fugitive && !next.flags.eileen_captured) {
+    if (tpl.id === 'eileen' && !worldFlags?.eileen_arrived && !worldFlags.eileen_fugitive && !next.flags.eileen_captured) {
       next.monitored = false
     }
     if (!Object.hasOwn(DATA.LOCATIONS, next.location)) next.location = tpl.location
@@ -159,8 +159,9 @@
 
   function migrateWorld(rawWorld) {
     if (!rawWorld) return rawWorld
-    if (rawWorld.schemaVersion === DATA.SCHEMA_VERSION) return repairBaronCurfew(rawWorld)
     if ((rawWorld.schemaVersion ?? 1) > DATA.SCHEMA_VERSION) return rawWorld
+    rawWorld = root.OKH_APP_TAGS.migrate(rawWorld)
+    if (rawWorld.schemaVersion === DATA.SCHEMA_VERSION) return repairBaronCurfew(rawWorld)
 
     const world = JSON.parse(JSON.stringify(rawWorld))
     const timeMin = Number.isSafeInteger(world.timeMin) ? world.timeMin : 0
@@ -175,9 +176,11 @@
     }
     if (world.flags.ed_joined === undefined) world.flags.ed_joined = inferredArrived
     if (world.flags.playerRoomTarget === undefined) world.flags.playerRoomTarget = null
+    world.flags.eileen_fugitive ??= DATA.isEileenFugitive(world)
+    world.flags.eileen_signal_fired ??= DATA.hasEileenSignal(world)
     for (const flagKey of [
       'inn_arrears', 'supply_shortage', 'orc_camp_bounty_paid', 'lancaster_purge_reward_paid',
-      'eileen_arrived', 'eileen_departed', 'eileen_fugitive', 'eileen_signal_fired', 'baron_purged', 'player_barony_granted'
+      'eileen_arrived', 'eileen_departed', 'baron_purged', 'player_barony_granted'
     ]) {
       if (world.flags[flagKey] === undefined) world.flags[flagKey] = false
     }
@@ -202,7 +205,7 @@
     if (world.flags.alice_evidence_secured && !world.flags.alice_rescued) {
       ensureQuestItem('alice_ledger')
     }
-    if (world.npcs?.aurora?.flags?.aurora_eileen_intel_given && !world.flags.eileen_signal_fired && !world.flags.baron_purged) {
+    if (world.npcs?.aurora?.flags?.aurora_eileen_intel_given && !DATA.hasEileenSignal(world) && !world.flags.baron_purged) {
       ensureQuestItem('manor_intel_note')
     }
     if (world.flags.player_barony_granted) {
@@ -221,6 +224,7 @@
       nextNpcs[tpl.id] = migrateNpcFromRoster(world.npcs?.[tpl.id], tpl, inferredArrived, timeMin, manualReleaseActivities, world.flags)
     }
     world.npcs = nextNpcs
+    world.tags = Object.fromEntries(Object.entries(world.tags).filter(([id]) => Object.hasOwn(nextNpcs, id)))
     world.bg.migrationReport = {
       fromSchemaVersion: rawWorld.schemaVersion ?? 1,
       toSchemaVersion: DATA.SCHEMA_VERSION,

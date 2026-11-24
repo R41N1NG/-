@@ -138,23 +138,7 @@
               npcId: npc?.id ?? null,
               resolvedAt: world.timeMin
             };
-            const echoDef = (config?.delayedEchoes || []).find(e => e.eventId === event.id || e.id === event.echoId);
-            if (echoDef) {
-              world.playerState ||= {};
-              world.playerState.pendingEchoes ||= [];
-              const delayMin = (echoDef.delayDays ?? 2) * 1440;
-              const existing = world.playerState.pendingEchoes.find(e => e.id === echoDef.id);
-              if (!existing) {
-                world.playerState.pendingEchoes.push({
-                  id: echoDef.id,
-                  eventId: event.id,
-                  npc: npc?.id || echoDef.npc,
-                  occurredAt: world.timeMin,
-                  unlockAt: world.timeMin + delayMin,
-                  status: 'latent'
-                });
-              }
-            }
+            config.registerEcho?.(world, event, npc);
             continue;
           }
 

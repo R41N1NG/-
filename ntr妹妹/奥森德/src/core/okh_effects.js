@@ -180,24 +180,9 @@
         npc.values[name] = value;
       }
 
-      if (data.tagsAdd !== undefined) {
-        u.check(npc && Array.isArray(data.tagsAdd), 'tagsAdd 须用于角色目标且为数组');
-        npc.tags ||= [];
-        for (const t of data.tagsAdd) {
-          const tagId = typeof t === 'string' ? t : t?.id;
-          u.check(tagId, 'tagsAdd 条目非法');
-          if (!npc.tags.some(existing => (typeof existing === 'string' ? existing : existing.id) === tagId)) {
-            npc.tags.push(t);
-          }
-        }
-      }
-
-      if (data.tagsRemove !== undefined) {
-        u.check(npc && Array.isArray(data.tagsRemove), 'tagsRemove 须用于角色目标且为数组');
-        if (Array.isArray(npc.tags)) {
-          const toRemove = new Set(data.tagsRemove.map(t => typeof t === 'string' ? t : t?.id));
-          npc.tags = npc.tags.filter(existing => !toRemove.has(typeof existing === 'string' ? existing : existing.id));
-        }
+      if (data.tagsAdd !== undefined || data.tagsRemove !== undefined) {
+        u.check(npc && typeof config?.applyTags === 'function', '角色标签缺少管理模块');
+        config.applyTags(world, npc.id, data.tagsAdd, data.tagsRemove);
       }
 
       if (data.monitored !== undefined) {

@@ -36,7 +36,10 @@ const CORE = [
 
 const APP = [
   'okh_bubble_side',
+  'okh_app_tags',
+  'okh_app_echoes',
   'okh_app_data',
+  'okh_app_daily',
   'okh_app_rules',
   'okh_app_time',
   'okh_app_migrate',
@@ -47,6 +50,7 @@ const APP = [
   'okh_app_adapter',
   'okh_app_parse',
   'okh_app_hook',
+  'okh_app_flags',
   'okh_app_debug',
   'okh_app_map',
   'okh_app_hud',

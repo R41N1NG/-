@@ -2,6 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const { extractWorldbookEntries } = require('./build_worldbook.cjs');
 const { loadBubbleAvatars } = require('./build_bubble.cjs');
+const { buildCatalog } = require('./build_album.cjs');
 const ROOT=path.resolve(__dirname,'..');
 const SOURCE=path.join(__dirname,'inputs/card-fields.json');
 const VERSION='0.3.20-records';
@@ -88,9 +89,17 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
  d.creator_notes=d.creator_notes.replace('0.3.13-map',VERSION).replace('同伴名册下方增加回忆相册；','留影记录位于状态栏一级导航；')+'\n在「同伴名册」点击立绘卡打开角色详情，再点水晶球进入留影记录，点击居中的水晶球查看该角色的照片。详情内嵌部位图、服装切换与图册，所在、近况和羁绊读取当前聊天。';
  d.description+='\n【同伴档案回执】\n仅在正文已经发生，且玩家在场并直接参与时记录古兰、伊丝娜、妮丝或奥萝拉的档案事实。\n<milestone npc="isna" kind="promise" note="约好次日清晨一同去公会。" />\nkind 使用 promise（约定）、entrustment（托付）或 shared_experience（关键共同经历），note 是不超过 100 字的单行事实摘要。普通聊天不记，已有 event_resolve 的同一事件不要再记一遍。\n<encounter npc="isna" />\n仅在本轮明确发生一场亲密经历时输出一次；可选 parts 为逗号分隔的 head,chest,hips,legs,hands，仅填正文明确记载的部位。position 填明确记载的体位（最多 24 字）；penetrative、internal 分别报告明确的插入、内射事实，值只可填 yes 或 no；仅在 internal=yes 且正文给出了精确毫升数时使用 volume_ml。无法确定的属性省略；不得猜测或补写数字、次数、过往经历。两类标签均可使用 at，省略时按轮末结算。\n';
  d.tags=[...new Set([...(d.tags||[]),'地图整合','回忆相册','对白气泡','同伴档案'])];
+ const echoImages=buildCatalog(ROOT).filter(item=>item.unlock.some(rule=>rule.type==='echo'));
  d.extensions.regex_scripts=[
   {id:'okh-display-hide-status',scriptName:'奥克赫斯 · 隐藏后台回执与流式片段',findRegex:'/<status_bar\\b[^>]*>[\\s\\S]*?(?:<\\/status_bar\\s*>|$)/gi',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
   {id:'okh-display-content-wrapper',scriptName:'奥克赫斯 · 去除正文包装',findRegex:'/<\\/?content\\b[^>]*>/gi',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},
+  ...echoImages.map(({id,title,src})=>{
+   const marker='!['+title+'](okh-echo:'+id+')';
+   return {id:'okh-display-echo-'+id,scriptName:'奥克赫斯 · 残响插图',
+    findRegex:'/^ {0,3}'+marker.replace(/[.*+?^${}()|[\]\\/]/g,'\\$&')+'[ \\t]*$/gm',
+    replaceString:'<img alt="残响插图" src="'+src+'">',trimStrings:[],placement:[2],disabled:false,
+    markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null};
+  }),
   {id:'okh-dialogue-bubble',scriptName:'奥克赫斯 · 对白气泡与发言美化',findRegex:'/(?:^|\\n)([\\u4e00-\\u9fa5A-Za-z0-9_]{1,10})[：:]\\s*(?:\\[(?:([A-Za-z0-9_-]{1,32})|[^\\]\\r\\n]{0,64})\\]\\s*)?[“「]((?:(?![\\r\\n]{2,}|[”」])[\\s\\S])+)[”」]/g',replaceString:'\n<div class="okh-dlg-row side-left" data-okh-dlg data-okh-speaker="$1" data-okh-face="$2" style="display:flex;align-items:flex-start;margin:16px 0;gap:12px;position:relative;box-sizing:border-box;"><div class="okh-avatar" data-okh-ava="$1" style="flex:0 0 44px;width:44px;height:56px;border-radius:4px;border:1px solid rgba(226,199,146,0.4);background:#181d25;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:rgba(226,199,146,0.9);font-size:18px;font-weight:bold;cursor:pointer;box-sizing:border-box;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div><div class="okh-dlg-col" style="display:flex;flex-direction:column;max-width:min(82%,640px);align-items:flex-start;box-sizing:border-box;"><div class="okh-speaker-name" data-okh-dlg-name style="font-size:12px;color:#9b8764;margin-bottom:4px;letter-spacing:0.5px;text-align:left;padding-left:2px;">$1</div><div class="okh-dlg-bubble" data-okh-dlg-body style="padding:10px 16px;font-size:14.5px;line-height:1.68;box-shadow:0 4px 16px rgba(0,0,0,0.35);word-break:break-word;background:linear-gradient(135deg,rgba(27,32,40,0.96),rgba(18,22,28,0.94));border-left:2px solid rgba(226,199,146,0.55);border-right:1px solid rgba(211,216,222,0.12);border-top:1px solid rgba(211,216,222,0.12);border-bottom:1px solid rgba(211,216,222,0.12);border-radius:2px 12px 12px 12px;color:#f0dfbe;text-align:left;box-sizing:border-box;">$3</div></div></div>',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null}
  ];
  d.extensions.tavern_helper={scripts:[{type:'script',enabled:true,id:'okh-complete-autostart',name:'奥克赫斯 · 地图与状态栏完整后台 2.1.1',content:runtime,info:'唯一完整后台；读取当前聊天存档，自动挂载地图手札，沿用原有计时、事件与回滚。',button:{enabled:false,buttons:[]},data:{},export_with:{data:true,button:true}}],variables:{}};

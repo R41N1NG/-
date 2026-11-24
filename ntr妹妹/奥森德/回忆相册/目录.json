@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "id": "cg_gulan_hypnosis_1",
+    "npc": "gulan",
+    "kind": "cg",
+    "title": "深夜客房的太古梦魇",
+    "file": "资源/echo-gulan-nightmare.webp",
+    "unlock": [
+      {
+        "type": "echo",
+        "id": "echo_gulan_ed_hypnosis"
+      }
+    ]
+  }
+]

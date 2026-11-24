@@ -20,8 +20,17 @@
   const isWeekendDay = day => weekdayOf(day) >= 6
   const weekdayLabel = day => WEEKDAYS[weekdayOf(day) - 1]
   const arrivedDayOf = world => (Number.isFinite(world?.flags?.arrivedDay) ? world.flags.arrivedDay : 1)
+  function eileenFlag(world, key) {
+    const flags = world?.flags || {}
+    return Object.hasOwn(flags, key)
+      ? flags[key] === true
+      : world?.npcs?.eileen?.flags?.[key] === true
+  }
+  const isEileenFugitive = world => !world?.flags?.baron_purged && eileenFlag(world, 'eileen_fugitive')
+  const hasEileenSignal = world => eileenFlag(world, 'eileen_signal_fired')
+
   const isFugitiveSquadActive = (world, npc) =>
-    Boolean(world?.flags?.eileen_fugitive && !world?.flags?.baron_purged) &&
+    isEileenFugitive(world) &&
     npc && npc.alive !== false && npc.monitored !== false && (npc.stage ?? 0) < 3 &&
     ((npc.id === 'isna' && Boolean(npc.flags?.eileen_isna_helped) && !npc.flags?.captured_orc && !npc.flags?.isna_fallen_orc && !npc.flags?.isna_captured_ed && !npc.flags?.isna_fallen_labyrinth) ||
      (npc.id === 'nise' && Boolean(npc.flags?.eileen_nise_helped) && !npc.flags?.nise_fled_casino) ||
@@ -98,6 +107,8 @@
     })
   })
 
+  const WORK_LIMITS = Object.freeze({ guildStarts: 2, guildWindowDays: 7, guildCooldownDays: 3, churchCooldownDays: 2 })
+
   const WORK_TERMS = Object.freeze({
     odd: Object.freeze({ minutes: 360, gold: 6 }),
     guild_normal: Object.freeze({ minutes: 480, gold: 28 }),
@@ -129,7 +140,7 @@
 
   function recentGuildStarts(world, start) {
     const starts = world.flags?.guildCommissionStarts
-    return (Array.isArray(starts) ? starts : []).filter(t => Number.isSafeInteger(t) && t > start - 7 * 1440)
+    return (Array.isArray(starts) ? starts : []).filter(t => Number.isSafeInteger(t) && t > start - WORK_LIMITS.guildWindowDays * 1440)
   }
 
   function completedWorkFlags(world, paid = true) {
@@ -337,8 +348,7 @@
         Boolean(world.flags?.arrived_oakhaven) &&
         ['night', 'deep_night'].includes(phase.id) &&
         npc.homeLocation === 'manor' &&
-        !world.flags?.eileen_fugitive &&
-        !npc.flags?.eileen_fugitive &&
+        !isEileenFugitive(world) &&
         !npc.flags?.eileen_returned_capital &&
         npc.location !== 'manor',
       effects: { move: 'manor' },
@@ -365,6 +375,7 @@
     {
       id: 'gulan_stage_2',
       mode: 'result',
+      covert: true,
       fromStage: 1,
       toStage: 2,
       when: ({ npc }) => {
@@ -458,7 +469,7 @@
       fromStage: 0,
       toStage: 1,
       when: ({ world, npc }) =>
-        Boolean(npc.flags?.eileen_captured && !world.flags?.eileen_fugitive && !world.flags?.baron_purged) &&
+        Boolean(npc.flags?.eileen_captured && !isEileenFugitive(world) && !world.flags?.baron_purged) &&
         !npc.flags?.eileen_evt1_done &&
         npc.stage === 0 &&
         (npc.flags?.eileenCaptiveDays ?? 0) >= 1,
@@ -472,7 +483,7 @@
       toStage: 2,
       requires: ['eileen_stage_1'],
       when: ({ world, npc }) =>
-        Boolean(npc.flags?.eileen_captured && !world.flags?.eileen_fugitive && !world.flags?.baron_purged) &&
+        Boolean(npc.flags?.eileen_captured && !isEileenFugitive(world) && !world.flags?.baron_purged) &&
         Boolean(npc.flags?.eileen_evt1_done) &&
         !npc.flags?.eileen_evt2_done &&
         npc.stage === 1 &&
@@ -487,7 +498,7 @@
       toStage: 3,
       requires: ['eileen_stage_2'],
       when: ({ world, npc }) =>
-        Boolean(npc.flags?.eileen_captured && !world.flags?.eileen_fugitive && !world.flags?.baron_purged) &&
+        Boolean(npc.flags?.eileen_captured && !isEileenFugitive(world) && !world.flags?.baron_purged) &&
         Boolean(npc.flags?.eileen_evt2_done) &&
         !npc.flags?.eileen_evt3_done &&
         npc.stage === 2 &&
@@ -839,7 +850,7 @@
       },
       effects: {
         npcFlags: { ed_hypnosis_play_done: true },
-        tagsAdd: [{ id: 'abnormal_avoid', name: '异样回避', desc: '古兰略有异样，回避{{user}}' }]
+        tagsAdd: ['abnormal_avoid']
       },
       text: [
         '深夜客房内，{name}在深沉的睡眠中深陷一场荒诞狂乱的太古梦魇。',
@@ -1240,7 +1251,7 @@
           Boolean(npc.flags?.isna_camp_distress || npc.flags?.captured_orc) &&
           !npc.flags?.isna_fallen_orc &&
           !npc.flags?.isna_captured_ed &&
-          Boolean(world.flags?.eileen_fugitive && !world.flags?.baron_purged) &&
+          Boolean(isEileenFugitive(world) && !world.flags?.baron_purged) &&
           world.playerLocation !== 'inn' &&
           Boolean(gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 && gulan.location === 'inn')
       },
@@ -1274,7 +1285,7 @@
           Boolean(npc.flags?.isna_camp_distress || npc.flags?.captured_orc) &&
           !npc.flags?.isna_fallen_orc &&
           !npc.flags?.isna_captured_ed &&
-          !(Boolean(world.flags?.eileen_fugitive && !world.flags?.baron_purged) && world.playerLocation !== 'inn' && gulan?.location === 'inn') &&
+          !(Boolean(isEileenFugitive(world) && !world.flags?.baron_purged) && world.playerLocation !== 'inn' && gulan?.location === 'inn') &&
           Boolean(gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3)
       },
       expireWhen: ({ world, npc }) =>
@@ -1532,7 +1543,7 @@
       scope: 'npc',
       targets: ['aurora'],
       when: ({ world, npc, phase }) =>
-        Boolean(world.flags?.eileen_fugitive && !world.flags?.baron_purged) &&
+        Boolean(isEileenFugitive(world) && !world.flags?.baron_purged) &&
         Boolean(npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor) &&
         npc.stage < 3 &&
         !npc.flags?.aurora_grey_rat_shield &&
@@ -1754,7 +1765,7 @@
       scope: 'npc',
       targets: ['eileen'],
       when: ({ world, npc }) =>
-        Boolean(world.flags?.eileen_fugitive && npc.flags?.eileen_fugitive && !world.flags?.baron_purged) &&
+        Boolean(isEileenFugitive(world) && !world.flags?.baron_purged) &&
         !npc.flags?.eileen_fugitive_moved,
       effects: { npcFlags: { eileen_fugitive_moved: true, eileen_disguised: true } },
       text: '甩脱领主私兵第一轮合围追截后，{name}随即取兜帽披风默认乔装遮面、收敛王徽与细剑，自此无论宿野入镇都与你全程同步进退。'
@@ -1765,7 +1776,7 @@
       scope: 'npc',
       targets: ['isna'],
       when: ({ world, npc }) =>
-        Boolean(world.flags?.eileen_fugitive && !world.flags?.eileen_ambush_closed && !world.flags?.baron_purged) &&
+        Boolean(isEileenFugitive(world) && !world.flags?.eileen_ambush_closed && !world.flags?.baron_purged) &&
         !npc.flags?.gold_desire_frozen &&
         !npc.flags?.captured_orc &&
         !npc.flags?.isna_fallen_orc &&
@@ -1788,7 +1799,7 @@
       scope: 'npc',
       targets: ['nise'],
       when: ({ world, npc }) =>
-        Boolean(world.flags?.eileen_fugitive && !world.flags?.eileen_ambush_closed && !world.flags?.baron_purged) &&
+        Boolean(isEileenFugitive(world) && !world.flags?.eileen_ambush_closed && !world.flags?.baron_purged) &&
         npc.stage < 3 &&
         !npc.flags?.nise_fled_casino &&
         npc.activity?.releaseRule !== 'manualRelease' &&
@@ -1806,7 +1817,7 @@
       scope: 'npc',
       targets: ['nise'],
       when: ({ world, npc }) =>
-        Boolean(world.flags?.eileen_fugitive && !world.flags?.eileen_ambush_closed && !world.flags?.baron_purged) &&
+        Boolean(isEileenFugitive(world) && !world.flags?.eileen_ambush_closed && !world.flags?.baron_purged) &&
         npc.stage < 3 &&
         !npc.flags?.nise_fled_casino &&
         (npc.values.affection ?? 0) < 80 &&
@@ -1825,7 +1836,7 @@
       scope: 'npc',
       targets: ['isna'],
       when: ({ world, npc }) =>
-        Boolean(world.flags?.eileen_fugitive && !world.flags?.baron_purged) &&
+        Boolean(isEileenFugitive(world) && !world.flags?.baron_purged) &&
         Boolean(npc.flags?.eileen_isna_helped) &&
         !npc.flags?.eileen_isna_moved,
       effects: { npcFlags: { eileen_isna_moved: true } },
@@ -1837,7 +1848,7 @@
       scope: 'npc',
       targets: ['nise'],
       when: ({ world, npc }) =>
-        Boolean(world.flags?.eileen_fugitive && !world.flags?.baron_purged) &&
+        Boolean(isEileenFugitive(world) && !world.flags?.baron_purged) &&
         Boolean(npc.flags?.eileen_nise_helped) &&
         !npc.flags?.eileen_nise_moved,
       effects: { npcFlags: { eileen_nise_moved: true } },
@@ -1847,7 +1858,7 @@
       id: 'eileen_ambush_window_close',
       mode: 'result',
       scope: 'world',
-      when: ({ world }) => Boolean(world.flags?.eileen_fugitive && !world.flags?.eileen_ambush_closed),
+      when: ({ world }) => Boolean(isEileenFugitive(world) && !world.flags?.eileen_ambush_closed),
       effects: { worldFlags: { eileen_ambush_closed: true } },
       text: '雷蒙德领主得知艾琳在半路突围失踪，随即将四门封锁并派出大队私兵入野搜捕；古兰确认伯里尚无性命之虞按规矩留守镇上不掺和纷争。'
     },
@@ -1859,7 +1870,7 @@
       allowCancel: true,
       retryOnCancel: true,
       when: ({ world, npc }) =>
-        Boolean(world.flags?.eileen_fugitive && !world.flags?.baron_purged) &&
+        Boolean(isEileenFugitive(world) && !world.flags?.baron_purged) &&
         Boolean(npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor) &&
         npc.stage < 3 &&
         (npc.values.affection ?? 0) >= 80 &&
@@ -1886,7 +1897,7 @@
       allowCancel: true,
       retryOnCancel: true,
       when: ({ world, npc }) =>
-        Boolean(world.flags?.eileen_fugitive && !world.flags?.eileen_signal_fired && !world.flags?.baron_purged) &&
+        Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
         (npc.values.counterattack ?? 0) >= 100,
       text: '历经荒野蓄势与各方情报汇总（反攻值已满 100），{name}眼神沉静而果断地看向领主山庄方向——潜回山庄夺回那支被掉包的真正王室魔能讯号管，时机已成熟。',
       outcomes: {
@@ -1905,7 +1916,7 @@
       mode: 'result',
       scope: 'world',
       when: ({ world }) =>
-        Boolean(world.flags?.eileen_signal_fired && !world.flags?.baron_purged) &&
+        Boolean(hasEileenSignal(world) && !world.flags?.baron_purged) &&
         (world.npcs?.eileen?.flags?.eileenSignalDays ?? 0) >= 1,
       effects: [
         {
@@ -2305,7 +2316,7 @@
       retryOnCancel: true,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
-        !world.flags?.eileen_fugitive &&
+        !isEileenFugitive(world) &&
         npc.stage < 3 &&
         !npc.flags?.affection_locked &&
         !npc.flags?.cecilia_reward1_done &&
@@ -2323,7 +2334,7 @@
         !npc.flags?.affection_locked &&
         ((npc.values.orphanage_funds ?? 0) > 0 || Boolean(world.flags?.baron_purged)),
       expireWhen: ({ world, npc, phase }) =>
-        Boolean(world.flags?.eileen_fugitive) ||
+        Boolean(isEileenFugitive(world)) ||
         npc.stage >= 3 ||
         Boolean(npc.flags?.affection_locked) ||
         world.playerLocation !== 'church' ||
@@ -2348,7 +2359,7 @@
       retryOnCancel: true,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
-        !world.flags?.eileen_fugitive &&
+        !isEileenFugitive(world) &&
         npc.stage < 3 &&
         !npc.flags?.affection_locked &&
         Boolean(npc.flags?.cecilia_reward1_done) &&
@@ -2367,7 +2378,7 @@
         !npc.flags?.affection_locked &&
         ((npc.values.orphanage_funds ?? 0) > 0 || Boolean(world.flags?.baron_purged)),
       expireWhen: ({ world, npc, phase }) =>
-        Boolean(world.flags?.eileen_fugitive) ||
+        Boolean(isEileenFugitive(world)) ||
         npc.stage >= 3 ||
         Boolean(npc.flags?.affection_locked) ||
         world.playerLocation !== 'church' ||
@@ -2392,7 +2403,7 @@
       retryOnCancel: true,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
-        !world.flags?.eileen_fugitive &&
+        !isEileenFugitive(world) &&
         npc.stage < 3 &&
         !npc.flags?.affection_locked &&
         Boolean(npc.flags?.cecilia_reward2_done) &&
@@ -2411,7 +2422,7 @@
         !npc.flags?.affection_locked &&
         ((npc.values.orphanage_funds ?? 0) > 0 || Boolean(world.flags?.baron_purged)),
       expireWhen: ({ world, npc, phase }) =>
-        Boolean(world.flags?.eileen_fugitive) ||
+        Boolean(isEileenFugitive(world)) ||
         npc.stage >= 3 ||
         Boolean(npc.flags?.affection_locked) ||
         world.playerLocation !== 'church' ||
@@ -2926,7 +2937,7 @@
       allowCancel: true,
       retryOnCancel: true,
       when: ({ world, phase }) =>
-        Boolean(world.flags?.ed_permanently_joined && world.flags?.arrived_oakhaven && !world.flags?.eileen_fugitive) &&
+        Boolean(world.flags?.ed_permanently_joined && world.flags?.arrived_oakhaven && !isEileenFugitive(world)) &&
         world.playerLocation === 'inn' &&
         phase?.id === 'morning' &&
         world.npcs?.ed?.monitored === true &&
@@ -2938,7 +2949,7 @@
       expireWhen: ({ world, phase }) =>
         world.playerLocation !== 'inn' ||
         phase?.id !== 'morning' ||
-        Boolean(world.flags?.eileen_fugitive),
+        Boolean(isEileenFugitive(world)),
       text: variant.text,
       outcomes: {
         accept_perk: {
@@ -3039,7 +3050,7 @@
       allowCancel: true,
       retryOnCancel: true,
       when: ({ world, phase }) =>
-        Boolean(world.flags?.ed_permanently_joined && world.flags?.arrived_oakhaven && !world.flags?.eileen_fugitive) &&
+        Boolean(world.flags?.ed_permanently_joined && world.flags?.arrived_oakhaven && !isEileenFugitive(world)) &&
         ['inn', 'town'].includes(world.playerLocation) &&
         ['morning', 'afternoon'].includes(phase?.id) &&
         world.npcs?.ed?.monitored === true &&
@@ -3051,7 +3062,7 @@
       expireWhen: ({ world, phase }) =>
         !['inn', 'town'].includes(world.playerLocation) ||
         !['morning', 'afternoon'].includes(phase?.id) ||
-        Boolean(world.flags?.eileen_fugitive),
+        Boolean(isEileenFugitive(world)),
       text: variant.text,
       outcomes: {
         accept_direct: {
@@ -3184,45 +3195,11 @@
     })
   ]
 
-  const DELAYED_ECHOES = [
-    {
-      id: 'echo_gulan_ed_hypnosis',
-      eventId: 'gulan_ed_hypnosis_play',
-      npc: 'gulan',
-      title: '深夜客房的太古梦魇',
-      delayDays: 2,
-      triggerCommand: '查看回忆：深夜客房的太古梦魇',
-      tag: {
-        id: 'abnormal_avoid',
-        name: '异样回避',
-        desc: '古兰略有异样，回避{{user}}'
-      },
-      cg: {
-        id: 'cg_gulan_hypnosis_1',
-        title: '深夜客房的太古梦魇',
-        src: 'data:image/webp;base64,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'
-      },
-      promptGuidance: [
-        '【回忆模式激活】当前正在演绎一段发生在两日前的滞后记忆残响。',
-        '请严格遵循西幻“隐奸”演绎精髓：',
-        '1. 文字克制深沉，重在展现古兰身为长辈宗师在梦魇与身体异样之间的深层撕扯与心理防线的松动；',
-        '2. 决不明写爱德的现身、实体或真实姓名；',
-        '3. 重点描摹那场熔岩焦土中遮天蔽日的太古黑龙虚影压迫，以及晨曦醒来后体内的反常温热滞胀、贴身衣物的湿冷痕迹与面对{{user}}时的自责回避。'
-      ].join('\n'),
-      storyText: [
-        '深夜客房内，{name}在深沉的睡眠中深陷一场荒诞狂乱的太古梦魇。',
-        '梦境是一片熔岩与焦土弥漫的荒原，庞大沉重的黑影遮蔽了天幕，带着令人窒息的蛮荒威压将她重重压在身下。狂暴而滚烫的气息拂过耳畔，胸腔内沉睡的龙血仿佛被烈火点燃，周身经络如同浸泡在沸水中般酥麻发软。在那沉重阴影的笼罩下，她引以为傲的宗师力量化为乌有，只能徒劳地仰着颈项，在虚幻而激烈的撞击与颠簸中战栗。那不是属于凡人的欢爱，而是古老龙裔之间最原始、最野蛮的繁育索求。暴烈的热潮一次又一次将她淹没，她试图拔剑、试图呼喊{{user}}的名字，然而喉咙里发出的却只有破碎压抑的呜咽与违背理智的喘息。梦境的最后，是一股滚烫得仿佛要将骨髓融化的充盈感自最深处炸裂开来，将她的神智冲刷至一片惨白的混沌……',
-        '晨曦破晓，{name}猛然从梦中惊醒，胸口剧烈起伏。宗师战气与半龙人体质让她毫无半点困倦虚弱，周身气血反而异常炽烈亢奋；唯独内腑最深处残留着一丝未散的反常滞胀与温热，以及贴身织物内无法忽视的湿冷黏腻。然而，这两处细微的异样全被体内奔涌如沸的滚烫真血与初醒时震荡混乱的神智所掩盖。她痛苦地以为纯系自身龙血返祖加深、在荒唐春梦中按捺不住兽性而导致的失态反噬，出于战士信念死守于心，面对{{user}}时目光飘忽，不敢坦然对视。'
-      ].join('\n')
-    }
-  ]
-
   function buildInitialWorld() {
     const npcs = {}
     for (const n of ROSTER) {
       npcs[n.id] = JSON.parse(JSON.stringify(n))
       npcs[n.id]._baseline = { ...n.values }
-      npcs[n.id].tags = []
     }
     return {
       schemaVersion: SCHEMA_VERSION,
@@ -3231,6 +3208,7 @@
       // 30 = 开局小队公用盘缠（按每日5金食宿，维持全队极限生存6天）
       playerState: { gold: 30, inventory: [{ id: 'supply', count: 10 }], pendingEchoes: [] },
       interactingIds: [],
+      tags: {},
       flags: {
         ed_joined: false,
         arrived_oakhaven: false,
@@ -3258,8 +3236,9 @@
   root.OKH_APP_DATA = Object.freeze({
     SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel,
     PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG,
-    ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld, DELAYED_ECHOES,
-    WORK_TERMS, workStart, paidWorkSettledToday, workCooldownWait, recentGuildStarts, completedWorkFlags,
+    ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld, DELAYED_ECHOES: root.OKH_APP_ECHOES.definitions,
+    isEileenFugitive, hasEileenSignal,
+    WORK_LIMITS, WORK_TERMS, workStart, paidWorkSettledToday, workCooldownWait, recentGuildStarts, completedWorkFlags,
     DRAGON_TRUE_FORM_SPEC, buildDragonRevealText
   })
 

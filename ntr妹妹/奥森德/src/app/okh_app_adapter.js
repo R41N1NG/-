@@ -115,7 +115,7 @@
         lines.push('爱丽丝线索摘要：' + sisterNote);
       }
     }
-    if (world.flags?.arrived_oakhaven && !world.flags?.eileen_fugitive) {
+    if (world.flags?.arrived_oakhaven && !DATA.isEileenFugitive(world)) {
       const waitText = minutes => '冷却中（约 ' + Math.ceil(minutes / 60) + ' 小时）';
       const guildWait = DATA.workCooldownWait(world, 'lastGuildCommission', world.timeMin, 3);
       const guildStarts = DATA.recentGuildStarts(world, world.timeMin);
@@ -148,9 +148,9 @@
     } else if (world.flags?.baron_purged) {
       lines.push('局势状态：雷蒙德男爵已遭狮鹫骑士团清算伏诛' +
         (world.flags?.player_barony_granted ? '（已定婚约并受封奥克赫斯领地爵位）' : '') + '。');
-    } else if (world.flags?.eileen_signal_fired) {
+    } else if (DATA.hasEileenSignal(world)) {
       lines.push('艾琳动向：已激发原装王室魔能讯号管传讯，兰开斯特家族狮鹫骑士团将于明日空降奥克赫斯。');
-    } else if (world.flags?.eileen_fugitive) {
+    } else if (DATA.isEileenFugitive(world)) {
       const disguise = eileen?.flags?.eileen_disguised === false
         ? '未披乔装（高危暴露状态）'
         : '默认兜帽斗篷乔装遮面、收敛王徽与细剑';
@@ -174,7 +174,7 @@
             : '当前工作日驻守领主山庄（周六、周日返回旅店）'
         ];
         if (aurora.flags?.aurora_lord_punished) auroraBits.push('已遭男爵迁怒责罚（山庄事态提前3个工作日）');
-        if (world.flags?.eileen_fugitive && !world.flags?.baron_purged &&
+        if (DATA.isEileenFugitive(world) && !world.flags?.baron_purged &&
             (aurora.values?.affection ?? 0) >= 80 && !aurora.flags?.aurora_eileen_intel_given) {
           auroraBits.push('暗藏山庄换防与暗锁情报待私下交接（与她同地碰头可推进反攻）');
         }
