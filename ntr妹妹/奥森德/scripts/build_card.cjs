@@ -4,7 +4,7 @@ const { extractWorldbookEntries } = require('./build_worldbook.cjs');
 const { loadBubbleAvatars } = require('./build_bubble.cjs');
 const ROOT=path.resolve(__dirname,'..');
 const SOURCE=path.join(__dirname,'inputs/card-fields.json');
-const VERSION='0.3.14-dossiers';
+const VERSION='0.3.15-dossiers';
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const readText=file=>fs.readFileSync(file,'utf8').replace(/\r\n/g,'\n');
 const ASSETS=[
@@ -85,7 +85,7 @@ function buildCard({runtimePath=path.join(ROOT,'dist/okh_complete_autostart.js')
  d.description+='\n【回忆相册】\n相册开局固定显示古兰、伊丝娜、妮丝、奥萝拉四人的独立分区；后续女性角色须在相识并取得立绘后新增分区。相册由后台按已配置的数值、标记或事件条件自动收录，不因浏览或设为默认立绘而解锁。未配置的图片与条件不得自行编造；无需另写 CG HTML 或图片地址。\n';
  d.description+='\n【对白气泡与发言格式】\n将说话人姓名与对白单独起行，写作 角色名：“对白内容”。已有表情图的角色可用 角色名：[表情ID]“对白内容”，每条对白只标一次，同一人前后神情不同可分两条。根据说话人当下表现出的神情、语气和动作选择表情；情绪不明或没有匹配图时沿用普通对白格式。标记只表示每句对白的神情，造型由已结算的剧情和工作状态决定。保持叙事及回执要求，不替玩家写发言。\n'+bubblePrompt.join('\n')+'\n';
  d.creator_notes='地图、相册与对白表情整合版 0.3.13-map，核心 2.1.1，schemaVersion=3。\n基于用户原始 R4 卡，保留基础世界书条目与规范开场白，补入当前地图、经济、房间回执契约与对白气泡美化。\n已内嵌一份完整酒馆助手脚本及全域、镇内、旅店两层图稿、手札纸面和标注字体，无需另行下载地图或外置运行脚本。\n导入 JSON 后，在酒馆助手中启用本角色卡脚本；若曾独立安装完整后台，请停用旧的那份，只运行卡内这一份。需要已安装并启用酒馆助手，普通角色卡 JSON 导入器本身不执行 JavaScript。\n新聊天会在首条回复下挂载状态栏；既有聊天存档沿用原存储键，不强制重置。卡内显示正则隐藏回执和正文包装，并自动将 角色名：“对白” 渲染为左右分侧带头像气泡。带表情标记的对白会切换到相应立绘，已内嵌六位角色的 156 张气泡头像，按该条回复的已结算状态选择造型。点击头像可看当前大图，也可以上传默认头像。\n同伴名册下方增加回忆相册；当前图片目录留空，等待后续导入素材和指定解锁条件。\n剧情揭晓后，专属角色档案会在当前聊天中生效。';
- d.creator_notes=d.creator_notes.replace('0.3.13-map',VERSION)+'\n在同伴名册展开古兰、伊丝娜、妮丝或奥萝拉，点击「查看完整档案」。档案内嵌部位图、服装切换与图册，所在、近况和羁绊读取当前聊天。';
+ d.creator_notes=d.creator_notes.replace('0.3.13-map',VERSION)+'\n从状态栏「角色档案」标签点选古兰、伊丝娜、妮丝或奥萝拉，也可以点击同伴名册每行的「档案」。档案内嵌部位图、服装切换与图册，所在、近况和羁绊读取当前聊天。';
  d.tags=[...new Set([...(d.tags||[]),'地图整合','回忆相册','对白气泡','同伴档案'])];
  d.extensions.regex_scripts=[
   {id:'okh-display-hide-status',scriptName:'奥克赫斯 · 隐藏后台回执与流式片段',findRegex:'/<status_bar\\b[^>]*>[\\s\\S]*?(?:<\\/status_bar\\s*>|$)/gi',replaceString:'',trimStrings:[],placement:[2],disabled:false,markdownOnly:true,promptOnly:false,runOnEdit:true,substituteRegex:0,minDepth:null,maxDepth:null},

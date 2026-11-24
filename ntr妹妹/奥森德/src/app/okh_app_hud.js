@@ -537,7 +537,7 @@
       ).join('')
       return `
         <div class="okh-member-card${isOpen ? ' open' : ''}" data-okh-member="${escapeHtml(m.id)}">
-          <button type="button" class="okh-member-sum" data-okh-act="toggle-roster" data-okh-id="${escapeHtml(m.id)}">
+          <button type="button" class="okh-member-sum" data-okh-act="toggle-roster" data-okh-id="${escapeHtml(m.id)}" aria-expanded="${isOpen}">
             <span class="okh-mem-left">
               <span class="okh-mem-sigil">${escapeHtml(m.sigil)}</span>
               <span class="okh-mem-name">${escapeHtml(m.name)}</span>
@@ -549,15 +549,15 @@
               <span class="okh-mem-chev">›</span>
             </span>
           </button>
+          ${DOSSIERS.panels?.[m.id] ? `<button type="button" class="okh-dossier-shortcut" data-okh-act="dossier-open" data-okh-id="${escapeHtml(m.id)}" aria-label="查看${escapeHtml(m.name)}的档案">档案</button>` : ''}
           <div class="okh-member-exp">
             <div class="okh-exp-flex">
               ${buildPortraitHtml(m)}
               <div class="okh-exp-info">
-                <div class="okh-exp-title">📜 人物档案</div>
+                <div class="okh-exp-title">📜 人物简介</div>
                 <div class="okh-exp-text">${escapeHtml(m.bio)}</div>
                 <div class="okh-exp-title">⚖ 当前状态</div>
                 <div class="okh-exp-metrics">${metricsHtml}</div>
-                ${DOSSIERS.panels?.[m.id] ? `<button type="button" class="okh-char-act-btn" data-okh-act="dossier-open" data-okh-id="${escapeHtml(m.id)}">查看完整档案</button>` : ''}
               </div>
             </div>
           </div>
@@ -566,6 +566,21 @@
     }).join('') : '<div class="okh-empty-tip">暂无已登记的同行名册。</div>'
 
     return `<div class="okh-page${activeTab === 'roster' ? ' active' : ''}" data-okh-page="roster">${rows}${buildAlbum(world)}</div>`
+  }
+
+  function buildDossierPage(world) {
+    const cards = Object.entries(DOSSIERS.panels).map(([id, template]) => {
+      const npc = world.npcs?.[id]
+      if (npc?.monitored !== true || npc.alive === false) return ''
+      const { name, role } = buildCharView(world, npc)
+      return `<button type="button" class="okh-dossier-card" data-okh-act="dossier-open" data-okh-id="${id}" aria-label="查看${escapeHtml(name)}的档案">
+        <img src="${template.portrait}" alt="" decoding="async">
+        <span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(role)}</small></span>
+      </button>`
+    }).join('')
+    return `<div class="okh-page active" data-okh-page="dossiers">
+      ${cards ? `<div class="okh-dossier-grid">${cards}</div>` : '<div class="okh-empty-tip">暂无已登记的角色档案。</div>'}
+    </div>`
   }
 
   function dossierRoomActions(world, id) {
@@ -580,7 +595,7 @@
     controller.abort()
     dialog.close()
     dialog.remove()
-    if (restoreFocus) document.querySelector(`[data-okh-act="dossier-open"][data-okh-id="${id}"]`)?.focus({ preventScroll: true })
+    if (restoreFocus) document.querySelector(`.okh-page.active [data-okh-act="dossier-open"][data-okh-id="${id}"]`)?.focus({ preventScroll: true })
   }
 
   function syncDossier(world) {
@@ -805,6 +820,7 @@
           <div class="okh-tabs-list">
             <button type="button" class="okh-tab-btn${activeTab === 'dispatch' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="dispatch">📖 旅途手札</button>
             <button type="button" class="okh-tab-btn${activeTab === 'roster' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="roster">👥 同伴名册</button>
+            ${DOSSIERS.panels ? `<button type="button" class="okh-tab-btn okh-dossier-tab${activeTab === 'dossiers' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="dossiers">📜 角色档案</button>` : ''}
             <button type="button" class="okh-tab-btn${activeTab === 'supply' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="supply">🎒 随身行囊</button>
             <button type="button" class="okh-tab-btn${activeTab === 'chronicle' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="chronicle">📅 战役历程</button>
           </div>
@@ -812,6 +828,7 @@
         </div>
         ${buildDispatchPage(world, pendingList, presentList)}
         ${buildRosterPage(world)}
+        ${activeTab === 'dossiers' && DOSSIERS.panels ? buildDossierPage(world) : ''}
         ${buildSupplyPage(world)}
         ${buildChroniclePage(world)}
       </div>
@@ -873,6 +890,8 @@
 .okh-tabs-list{display:flex;gap:14px;flex-wrap:wrap}
 .okh-tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;padding:4px 2px;color:var(--t-dm);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .2s}
 .okh-tab-btn:hover{color:var(--g-mn)}.okh-tab-btn.active{color:var(--g-lt);border-bottom-color:var(--g-mn)}
+.okh-dossier-tab{color:#f0d7a5;background:#b88a3922;border:1px solid #c3a26c80;border-radius:4px;padding:5px 10px;min-height:34px}
+.okh-dossier-tab:hover,.okh-dossier-tab.active{color:#fff0cc;background:#b88a3944;border-color:#c3a26c}
 .okh-presence-tag{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--g-dm)}
 .okh-presence-dot{width:6px;height:6px;border-radius:50%;background:#689975;box-shadow:0 0 6px #689975}
 .okh-page{display:none}.okh-page.active{display:block}
@@ -926,17 +945,25 @@
 .okh-char-act-btn{width:100%;text-align:left;background:transparent;border:none;border-left:2px solid rgba(195,162,108,.28);padding:5px 10px;color:var(--g-lt);font:inherit;font-size:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
 .okh-char-act-btn:hover{background:rgba(195,162,108,.1);border-left-color:var(--g-lt);padding-left:14px}
 .okh-char-act-tag{font-size:10.5px;color:var(--g-dm)}
-.okh-member-card{border-bottom:1px solid rgba(195,162,108,.14)}
+.okh-member-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px;border-bottom:1px solid rgba(195,162,108,.14)}
 .okh-member-sum{width:100%;background:transparent;border:none;padding:9px 4px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:inherit;font:inherit;cursor:pointer;text-align:left}
 .okh-member-sum:hover{background:rgba(195,162,108,.06)}
-.okh-mem-left{display:flex;align-items:center;gap:8px;min-width:150px}
+.okh-mem-left{display:flex;align-items:center;gap:8px;min-width:0;flex:0 1 150px}
 .okh-mem-sigil{color:var(--g-mn)}.okh-mem-name{font-weight:700;color:var(--g-lt)}.okh-mem-job{font-size:11px;color:var(--g-dm)}
 .okh-mem-mid{flex:1;font-size:12px;color:var(--t-sb);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.okh-mem-right{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g-mn)}
+.okh-mem-right{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g-mn);white-space:nowrap}
 .okh-mem-bond.is-love{color:#c76f82}.okh-mem-chev{transition:transform .2s;color:var(--g-dm)}
 .okh-member-card.open .okh-mem-chev{transform:rotate(90deg)}
-.okh-member-exp{display:none;padding:8px 8px 14px 12px}.okh-member-card.open .okh-member-exp{display:block}
-.okh-member-exp [data-okh-act="dossier-open"]{margin-top:8px;min-height:44px}
+.okh-member-exp{grid-column:1 / -1;display:none;padding:8px 8px 14px 12px}.okh-member-card.open .okh-member-exp{display:block}
+.okh-dossier-shortcut{min-height:44px;min-width:52px;padding:0 8px;border:0;background:transparent;color:#f0d7a5;font:inherit;cursor:pointer}
+.okh-dossier-shortcut:hover,.okh-dossier-shortcut:focus-visible{background:#b88a3922}
+.okh-dossier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,116px),1fr));gap:clamp(8px,2vw,16px);padding:4px 0}
+.okh-dossier-card{min-width:0;overflow:hidden;display:grid;gap:0;padding:0;text-align:left;border:1px solid #c3a26c66;border-radius:6px;background:#21180f;color:#f0d7a5;font:inherit;cursor:pointer}
+.okh-dossier-card:hover,.okh-dossier-card:focus-visible{outline:2px solid #d9b678;outline-offset:2px}
+.okh-dossier-card img{width:100%;aspect-ratio:4/5;display:block;object-fit:cover}
+.okh-dossier-card > span{display:grid;padding:8px 10px 10px}
+.okh-dossier-card strong{font-size:15px}.okh-dossier-card small{color:var(--t-sb);font-size:11px}
+@media(max-width:480px){.okh-mem-left{gap:5px}.okh-mem-job{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.okh-mem-name{white-space:nowrap}.okh-mem-mid{display:none}}
 .okh-dossier-dialog{box-sizing:border-box;width:min(960px,100% - 12px);max-width:none;max-height:calc(100dvh - 12px);padding:0;border:0;background:transparent;overscroll-behavior:contain}
 .okh-dossier-dialog::backdrop{background:#080605d9}
 .okh-exp-flex{display:flex;gap:14px}.okh-exp-info{flex:1;min-width:0}

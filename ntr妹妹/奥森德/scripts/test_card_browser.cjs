@@ -34,10 +34,21 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   assert.equal(await page.getByRole('button',{name:'镇内',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'旅店',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'奥克赫斯镇',exact:true}).count(),0);
   assert.equal(JSON.stringify(await page.evaluate(()=>cardWorld())),JSON.stringify(initial),'Browsing before arrival modified the save');
   await page.getByRole('button',{name:/同伴名册/}).click();
+  const rosterShortcut=page.locator('[data-okh-member="gulan"] [data-okh-act="dossier-open"]');
+  assert(await rosterShortcut.isVisible());
+  await rosterShortcut.click();
+  await page.locator('.okh-dossier-dialog').getByRole('button',{name:'关闭档案　×',exact:true}).click();
+  assert(await rosterShortcut.evaluate(button=>document.activeElement===button));
+  assert.equal(await page.locator('[data-okh-member="gulan"] [data-okh-act="toggle-roster"]').getAttribute('aria-expanded'),'false');
+  await page.getByRole('button',{name:/角色档案/}).click();
+  const dossierGrid=page.locator('.okh-dossier-grid');
+  assert.equal(await dossierGrid.locator('button').count(),4);
+  await dossierGrid.locator('img').first().evaluate(img=>img.decode());
+  await page.setViewportSize({width:320,height:760});
+  assert(await dossierGrid.evaluate(grid=>grid.scrollWidth<=grid.clientWidth));
+  await page.setViewportSize({width:1080,height:1000});
   for(const id of ['gulan','isna','nise','aurora']){
-   const row=page.locator(`[data-okh-member="${id}"]`);
-   await row.locator('[data-okh-act="toggle-roster"]').click();
-   const open=row.getByRole('button',{name:'查看完整档案'});
+   const open=dossierGrid.locator(`[data-okh-id="${id}"]`);
    await open.click();
    const dossier=page.locator('.okh-dossier-dialog');
    assert.deepEqual((await dossier.locator('.okh-profile > .okh-facts > div > dt').allTextContents()).slice(0,4),['所在','近况','羁绊','专长']);
@@ -65,7 +76,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     await page.setViewportSize({width:1080,height:1000});
    }
    await dossier.getByRole('button',{name:/返回档案/}).click();
-   await dossier.getByRole('button',{name:/返回名册/}).click();
+   await dossier.getByRole('button',{name:'关闭档案　×',exact:true}).click();
    assert.equal(await dossier.count(),0);
    assert(await open.evaluate(button=>document.activeElement===button));
   }
