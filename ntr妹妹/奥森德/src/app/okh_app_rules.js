@@ -586,6 +586,20 @@
     return out
   }
 
+  function recordDossier(world, receipts) {
+    const seen = new Set()
+    for (const { at, ...receipt } of receipts) {
+      const npc = world.npcs[receipt.npc]
+      if (npc?.monitored !== true || npc.alive === false || npc.location !== world.playerLocation) continue
+      const key = JSON.stringify(receipt)
+      if (seen.has(key)) continue
+      seen.add(key)
+      world.playerState ||= {}
+      const records = world.playerState.dossierRecords ||= []
+      records.push({ ...receipt, at: world.timeMin, location: world.playerLocation })
+    }
+  }
+
   root.OKH_APP_RULES = Object.freeze({
     getAffectionTier,
     isFugitiveSyncedNpc,
@@ -596,7 +610,8 @@
     applyPrologueSteps,
     resolveRoom,
     resolveBonds,
-    resolveEconomy
+    resolveEconomy,
+    recordDossier
   })
 
   if (typeof module !== 'undefined' && module.exports) {

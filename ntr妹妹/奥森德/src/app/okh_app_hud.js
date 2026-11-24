@@ -239,9 +239,97 @@
     cancel: { title: '暂缓决定，容后再议', hint: '暂且搁置' }
   }
 
+  // Public journal copy is separate from the event queue's model-facing text.
+  const JOURNEY_OUTCOMES = {
+    gulan_final_rescue_prompt: {
+      rescue: ['陪古兰调息，平复了她翻涌的龙血。', 'inn'],
+      fail: ['没能及时平复古兰翻涌的龙血。']
+    },
+    isna_tavern_rumor_notice: {
+      soothe: ['在旅店宽慰伊丝娜，她暂时放下了独自涉险的念头。', 'inn'],
+      ignore: ['听到酒馆里的悬赏传闻，这次没有出声劝阻。']
+    },
+    isna_alley_lockpick_spot: {
+      intercept: ['在镇上的暗巷拦住伊丝娜，谈清了这桩私活的风险。', 'town'],
+      miss: ['烟幕散后，伊丝娜已经离开暗巷。']
+    },
+    isna_pendant_exchange: {
+      accept_pendant: ['接过伊丝娜递来的一半吊坠，收作信物。'],
+      decline_pendant: ['婉拒了伊丝娜送出的吊坠，她将信物收了回去。']
+    },
+    aurora_pass_manor_intel: {
+      receive_intel: ['从奥萝拉手中接过她记下的山庄换防情报。']
+    }
+  }
+
+  const JOURNEY_DISCLOSURES = {
+    gulan_rescue_note_delivered: { target: 'gulan', title: '古兰的口信', summary: '爱德转交了古兰留下的纸条。', location: 'inn' },
+    nise_debt_confess: { title: '妮丝坦白赌债', summary: '妮丝亲口说出了在赌场欠债的事。' },
+    aurora_debt_disclose: { title: '奥萝拉谈起家族旧债', summary: '奥萝拉亲口说出了家族欠债的实情。' }
+  }
+
+  const MILESTONE_TITLES = {
+    promise: '共同约定',
+    entrustment: '受托之事',
+    shared_experience: '共同经历'
+  }
+
   // ============================================================
   // 二、数据抽取（只读 world，绝不改写状态）
   // ============================================================
+
+  function dossierJourney(world, npcId) {
+    const entries = []
+    for (const record of Object.values(world.bg?.eventStates || {})) {
+      if (record.npcId !== npcId || record.status !== 'resolved' || !Number.isSafeInteger(record.resolvedAt)) continue
+      if (!Object.hasOwn(JOURNEY_OUTCOMES, record.definitionId)) continue
+      const outcomes = JOURNEY_OUTCOMES[record.definitionId]
+      if (!Object.hasOwn(outcomes, record.outcome)) continue
+      const [summary, location] = outcomes[record.outcome]
+      entries.push({ at: record.resolvedAt, title: EVENT_TITLES[record.definitionId], summary, location })
+    }
+    for (const record of world.bg?.queue || []) {
+      if (record.kind !== 'event' || record.mode !== 'result' || record.status !== 'delivered' || !Number.isSafeInteger(record.at)) continue
+      if (!Object.hasOwn(JOURNEY_DISCLOSURES, record.definitionId)) continue
+      const { target, title, summary, location } = JOURNEY_DISCLOSURES[record.definitionId]
+      if ((target || record.npcId) !== npcId) continue
+      entries.push({ at: record.at, title, summary, location })
+    }
+    for (const record of world.playerState?.dossierRecords || []) {
+      if (record.npc === npcId && record.type === 'milestone' && Object.hasOwn(MILESTONE_TITLES, record.kind)) {
+        entries.push({ at: record.at, title: MILESTONE_TITLES[record.kind], summary: record.note, location: record.location })
+      }
+    }
+    return entries.sort((a, b) => b.at - a.at)
+  }
+
+  function dossierEncounterStats(world, npcId) {
+    const records = (world.playerState?.dossierRecords || []).filter(r => r.npc === npcId && r.type === 'encounter')
+    const byPart = {}
+    let last = null
+    let recent = 0
+    let internalCount = 0
+    let knownInternal = 0
+    let totalVolumeMl = 0
+    let knownVolume = 0
+    for (const record of records) {
+      if (!last || record.at >= last.at) last = record
+      if (record.at > world.timeMin - 7 * 1440) recent++
+      for (const part of record.parts) byPart[part] = (byPart[part] || 0) + 1
+      if (record.internal !== undefined) knownInternal++
+      if (record.internal === true) internalCount++
+      if (record.volumeMl !== undefined) { knownVolume++; totalVolumeMl += record.volumeMl }
+    }
+    const amount = (value, unit, complete) => `${complete ? '' : '至少 '}${value} ${unit}`
+    return {
+      encountersByPart: byPart,
+      virginity: records.some(r => r.penetrative === true) ? '否' : '未记录',
+      recent: records.length ? `${recent} 次` : '未记录',
+      position: last?.position || '未记录',
+      internal: knownInternal ? amount(internalCount, '次', knownInternal === records.length) : '未记录',
+      volume: knownVolume ? amount(Number(totalVolumeMl.toFixed(3)), 'mL', knownInternal === records.length && knownVolume === internalCount) : '未记录'
+    }
+  }
 
   function getPendingInteractions(world) {
     const events = CFG.EVENTS || []
@@ -530,12 +618,25 @@
       .filter(n => n.monitored === true && n.alive !== false && n.id !== 'cecilia')
       .map(n => buildCharView(world, n))
 
-    const rows = members.length ? members.map(m => {
+    const cards = []
+    const rows = []
+    for (const m of members) {
+      const template = DOSSIERS.panels?.[m.id]
+      if (template) {
+        const portrait = ALBUM?.portrait(world, m.id, portraitChoices)?.src || template.portrait
+        cards.push(`<button type="button" class="okh-dossier-card" data-okh-member="${escapeHtml(m.id)}" data-okh-act="dossier-open" data-okh-id="${escapeHtml(m.id)}" aria-label="查看${escapeHtml(m.name)}的详情">
+          <img src="${escapeHtml(portrait)}" alt="" decoding="async">
+          <span class="okh-roster-profile"><strong>${escapeHtml(m.name)}</strong><small>${escapeHtml(m.role)}</small>
+            <span class="okh-roster-status"><span>${escapeHtml(m.stance)}</span><b class="okh-mem-bond${m.affIsLove ? ' is-love' : ''}">${escapeHtml(m.affLabel)}</b></span>
+          </span>
+        </button>`)
+        continue
+      }
       const isOpen = openRosterIds.has(m.id)
       const metricsHtml = m.metrics.map(it =>
         `<div class="okh-exp-metric"><span>${escapeHtml(it.label)}：</span><b>${escapeHtml(it.val)}</b></div>`
       ).join('')
-      return `
+      rows.push(`
         <div class="okh-member-card${isOpen ? ' open' : ''}" data-okh-member="${escapeHtml(m.id)}">
           <button type="button" class="okh-member-sum" data-okh-act="toggle-roster" data-okh-id="${escapeHtml(m.id)}" aria-expanded="${isOpen}">
             <span class="okh-mem-left">
@@ -549,7 +650,6 @@
               <span class="okh-mem-chev">›</span>
             </span>
           </button>
-          ${DOSSIERS.panels?.[m.id] ? `<button type="button" class="okh-dossier-shortcut" data-okh-act="dossier-open" data-okh-id="${escapeHtml(m.id)}" aria-label="查看${escapeHtml(m.name)}的档案">档案</button>` : ''}
           <div class="okh-member-exp">
             <div class="okh-exp-flex">
               ${buildPortraitHtml(m)}
@@ -562,24 +662,12 @@
             </div>
           </div>
         </div>
-      `
-    }).join('') : '<div class="okh-empty-tip">暂无已登记的同行名册。</div>'
+      `)
+    }
 
-    return `<div class="okh-page${activeTab === 'roster' ? ' active' : ''}" data-okh-page="roster">${rows}${buildAlbum(world)}</div>`
-  }
-
-  function buildDossierPage(world) {
-    const cards = Object.entries(DOSSIERS.panels).map(([id, template]) => {
-      const npc = world.npcs?.[id]
-      if (npc?.monitored !== true || npc.alive === false) return ''
-      const { name, role } = buildCharView(world, npc)
-      return `<button type="button" class="okh-dossier-card" data-okh-act="dossier-open" data-okh-id="${id}" aria-label="查看${escapeHtml(name)}的档案">
-        <img src="${template.portrait}" alt="" decoding="async">
-        <span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(role)}</small></span>
-      </button>`
-    }).join('')
-    return `<div class="okh-page active" data-okh-page="dossiers">
-      ${cards ? `<div class="okh-dossier-grid">${cards}</div>` : '<div class="okh-empty-tip">暂无已登记的角色档案。</div>'}
+    return `<div class="okh-page${activeTab === 'roster' ? ' active' : ''}" data-okh-page="roster">
+      ${cards.length ? `<div class="okh-dossier-grid">${cards.join('')}</div>` : ''}
+      ${members.length ? rows.join('') : '<div class="okh-empty-tip">暂无已登记的同行名册。</div>'}
     </div>`
   }
 
@@ -608,6 +696,41 @@
     for (const [field, value] of Object.entries(facts)) {
       const fieldValue = shadow.querySelector(`[data-dossier-fact="${field}"]`)
       if (fieldValue.textContent !== value) fieldValue.textContent = value
+    }
+    const extraFacts = view.metrics.filter(metric => !['关系情谊', '当前位置'].includes(metric.label))
+    const form = id === 'aurora' ? root.OKH_BUBBLE_SIDE?.formsFor(world).aurora : null
+    const costume = id === 'aurora' && !isLocationHidden(npc) && form !== 'fallen'
+      ? (form === 'maid' ? 'maid' : 'priest')
+      : null
+    if (costume) extraFacts.push({ label: '当前服装', val: costume === 'maid' ? '女仆装' : '圣职者装' })
+    if (costume !== dossier.costume) {
+      if (costume) shadow.querySelector(`[data-costume="${costume}"]`)?.click()
+      dossier.costume = costume
+    }
+    const extraMarkup = extraFacts.map(({ label, val }) =>
+      `<div data-dossier-extra><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(val)}</dd></div>`
+    ).join('')
+    if (extraMarkup !== dossier.extraMarkup) {
+      const list = shadow.querySelector('.okh-profile > .okh-facts')
+      list.querySelectorAll('[data-dossier-extra]').forEach(row => row.remove())
+      list.insertAdjacentHTML('beforeend', extraMarkup)
+      dossier.extraMarkup = extraMarkup
+    }
+    const journey = dossierJourney(world, id).map(({ at, title, summary, location }) => {
+      const { day, clock } = formatClock(at)
+      const when = `第 ${day} 天 · ${clock}${location ? ' · ' + locName(location) : ''}`
+      return `<p class="okh-memory"><time>${escapeHtml(when)}</time><strong>${escapeHtml(title)}</strong><br>${escapeHtml(summary)}</p>`
+    }).join('') || '<p class="okh-memory">暂无同行经历。</p>'
+    if (journey !== dossier.journeyMarkup) {
+      shadow.querySelector('[data-dossier-journey]').innerHTML = journey
+      dossier.journeyMarkup = journey
+    }
+    const stats = dossierEncounterStats(world, id)
+    const signature = JSON.stringify(stats)
+    if (signature !== dossier.encounterSignature) {
+      const panel = shadow.querySelector('[data-character-panel]')
+      panel.dispatchEvent(new document.defaultView.CustomEvent('okh:encounters', { detail: stats }))
+      dossier.encounterSignature = signature
     }
     const slider = shadow.getElementById('okh-form-demo-value')
     if (slider) {
@@ -640,9 +763,13 @@
     dialog.setAttribute('aria-label', npc.name + '的角色档案')
     const host = document.createElement('div')
     const shadow = host.attachShadow({ mode: 'open' })
-    shadow.innerHTML = DOSSIERS.style + template.markup
+    shadow.innerHTML = DOSSIERS.style + template.markup + `<style>
+      [data-module="orb"] { position: relative; }
+      [data-module="orb"]::after { content: attr(aria-label); position: absolute; right: 6px; bottom: 5px; padding: 2px 6px; color: #f0d7a5; background: #100c08de; border-radius: 3px; font-size: 12px; }
+    </style>`
     const panel = shadow.querySelector('[data-character-panel]')
     panel.hidden = false
+    panel.querySelector('[data-module="orb"]').setAttribute('aria-label', '留影记录')
     shadow.querySelectorAll('[data-dossier-demo], [data-default]').forEach(element => { element.hidden = true })
     const win = document.defaultView
     const controller = new win.AbortController()
@@ -653,8 +780,19 @@
       createElement: name => document.createElement(name)
     }, {
       addEventListener: (event, listener) => win.addEventListener(event, listener, { signal })
-    })
+    }, ALBUM?.portrait(world, id, portraitChoices)?.src)
     shadow.addEventListener('okh:roster', () => closeDossier(true))
+    shadow.addEventListener('click', event => {
+      if (!event.target.closest?.('[data-module="orb"]')) return
+      // Intercept the standalone preview's placeholder before it can open.
+      event.stopPropagation()
+      if (dialog.dataset.session !== mapSessionKey()) { closeDossier(); return }
+      closeDossier()
+      albumCharacter = id
+      activeTab = 'album'
+      rerenderCurrent()
+      document.querySelector('[data-okh-act="album-enter"]')?.focus()
+    }, { capture: true })
     shadow.addEventListener('click', event => {
       const action = event.target.closest?.('[data-dossier-action]')
       if (!action) return
@@ -685,13 +823,27 @@
     return groups.find(group => group.id === albumCharacter) || groups[0]
   }
 
+  function buildAlbumCrystal(className) {
+    return DOSSIERS.crystal
+      ? `<img class="${className}" src="${DOSSIERS.crystal}" alt="">`
+      : `<span class="${className}" aria-hidden="true">🔮</span>`
+  }
+
   function buildAlbum(world) {
     const groups = albumGroups(world), selected = selectedAlbum(world)
     const memories = selected?.memories || []
-    const filters = `<nav class="okh-album-filters" aria-label="按角色浏览回忆">${groups.map(group => `<button type="button" data-okh-act="album-filter" data-okh-character="${escapeHtml(group.id)}" aria-pressed="${selected?.id === group.id}">${escapeHtml(group.name)}<small>${group.memories.length}</small></button>`).join('')}</nav>`
+    const filters = `<nav class="okh-album-filters" aria-label="按角色浏览留影">${groups.map(group => `<button type="button" data-okh-act="album-filter" data-okh-character="${escapeHtml(group.id)}" aria-pressed="${selected?.id === group.id}">${escapeHtml(group.name)}<small>${group.memories.length}</small></button>`).join('')}</nav>`
     const current = selected ? ALBUM.portrait(world, selected.id, portraitChoices)?.id : null
     const body = memories.length ? `<div class="okh-album-grid">${memories.map(item => `<button type="button" class="okh-memory" data-okh-act="album-open" data-okh-memory="${escapeHtml(item.id)}" aria-label="查看${escapeHtml(item.name)}的${escapeHtml(item.title)}"><span class="okh-memory-art"><img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="okh-memory-missing" hidden>画稿暂未载入</span><span class="okh-memory-kind">${item.kind === 'portrait' ? '立绘' : 'CG'}</span></span><span class="okh-memory-title">${escapeHtml(item.title)}</span><span class="okh-memory-owner"><span>${item.id === current ? '默认立绘' : item.name}</span><span>第 ${Math.floor(item.collectedAt / 1440) + 1} 天 · 收录</span></span></button>`).join('')}</div>` : `<div class="okh-album-empty"><span aria-hidden="true">◇</span><p>${escapeHtml(selected?.name || '')} · 尚无收录的回忆</p></div>`
-    return `<section class="okh-album" aria-label="回忆相册"><header class="okh-album-head"><h3><span aria-hidden="true">◇</span> 回忆相册</h3><span>已珍藏 ${collectedMemories(world).length} 幅</span></header>${filters}${body}</section>`
+    return `<section class="okh-page${activeTab === 'album' ? ' active' : ''}" data-okh-page="album" aria-label="留影记录">
+      <div class="okh-album-portal">
+        <button type="button" class="okh-album-crystal" data-okh-act="album-enter" aria-label="查看回忆照片" title="查看回忆照片">${buildAlbumCrystal('okh-album-crystal-art')}</button>
+      </div>
+    </section>
+    <section class="okh-page${activeTab === 'album-gallery' ? ' active' : ''} okh-album" data-okh-page="album-gallery" aria-label="回忆照片">
+      <header class="okh-album-head"><button type="button" class="okh-album-return" data-okh-act="album-return">‹ 返回水晶球</button><span>已珍藏 ${collectedMemories(world).length} 幅</span></header>
+      ${filters}${body}
+    </section>`
   }
 
   function buildSupplyPage(world) {
@@ -820,7 +972,7 @@
           <div class="okh-tabs-list">
             <button type="button" class="okh-tab-btn${activeTab === 'dispatch' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="dispatch">📖 旅途手札</button>
             <button type="button" class="okh-tab-btn${activeTab === 'roster' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="roster">👥 同伴名册</button>
-            ${DOSSIERS.panels ? `<button type="button" class="okh-tab-btn okh-dossier-tab${activeTab === 'dossiers' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="dossiers">📜 角色档案</button>` : ''}
+            <button type="button" class="okh-tab-btn okh-album-tab${activeTab === 'album' || activeTab === 'album-gallery' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="album">${buildAlbumCrystal('okh-album-tab-icon')}留影记录</button>
             <button type="button" class="okh-tab-btn${activeTab === 'supply' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="supply">🎒 随身行囊</button>
             <button type="button" class="okh-tab-btn${activeTab === 'chronicle' ? ' active' : ''}" data-okh-act="tab" data-okh-tab="chronicle">📅 战役历程</button>
           </div>
@@ -828,7 +980,7 @@
         </div>
         ${buildDispatchPage(world, pendingList, presentList)}
         ${buildRosterPage(world)}
-        ${activeTab === 'dossiers' && DOSSIERS.panels ? buildDossierPage(world) : ''}
+        ${buildAlbum(world)}
         ${buildSupplyPage(world)}
         ${buildChroniclePage(world)}
       </div>
@@ -890,8 +1042,6 @@
 .okh-tabs-list{display:flex;gap:14px;flex-wrap:wrap}
 .okh-tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;padding:4px 2px;color:var(--t-dm);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .2s}
 .okh-tab-btn:hover{color:var(--g-mn)}.okh-tab-btn.active{color:var(--g-lt);border-bottom-color:var(--g-mn)}
-.okh-dossier-tab{color:#f0d7a5;background:#b88a3922;border:1px solid #c3a26c80;border-radius:4px;padding:5px 10px;min-height:34px}
-.okh-dossier-tab:hover,.okh-dossier-tab.active{color:#fff0cc;background:#b88a3944;border-color:#c3a26c}
 .okh-presence-tag{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--g-dm)}
 .okh-presence-dot{width:6px;height:6px;border-radius:50%;background:#689975;box-shadow:0 0 6px #689975}
 .okh-page{display:none}.okh-page.active{display:block}
@@ -945,7 +1095,7 @@
 .okh-char-act-btn{width:100%;text-align:left;background:transparent;border:none;border-left:2px solid rgba(195,162,108,.28);padding:5px 10px;color:var(--g-lt);font:inherit;font-size:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
 .okh-char-act-btn:hover{background:rgba(195,162,108,.1);border-left-color:var(--g-lt);padding-left:14px}
 .okh-char-act-tag{font-size:10.5px;color:var(--g-dm)}
-.okh-member-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px;border-bottom:1px solid rgba(195,162,108,.14)}
+.okh-member-card{border-bottom:1px solid rgba(195,162,108,.14)}
 .okh-member-sum{width:100%;background:transparent;border:none;padding:9px 4px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:inherit;font:inherit;cursor:pointer;text-align:left}
 .okh-member-sum:hover{background:rgba(195,162,108,.06)}
 .okh-mem-left{display:flex;align-items:center;gap:8px;min-width:0;flex:0 1 150px}
@@ -954,14 +1104,15 @@
 .okh-mem-right{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g-mn);white-space:nowrap}
 .okh-mem-bond.is-love{color:#c76f82}.okh-mem-chev{transition:transform .2s;color:var(--g-dm)}
 .okh-member-card.open .okh-mem-chev{transform:rotate(90deg)}
-.okh-member-exp{grid-column:1 / -1;display:none;padding:8px 8px 14px 12px}.okh-member-card.open .okh-member-exp{display:block}
-.okh-dossier-shortcut{min-height:44px;min-width:52px;padding:0 8px;border:0;background:transparent;color:#f0d7a5;font:inherit;cursor:pointer}
-.okh-dossier-shortcut:hover,.okh-dossier-shortcut:focus-visible{background:#b88a3922}
-.okh-dossier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,116px),1fr));gap:clamp(8px,2vw,16px);padding:4px 0}
+.okh-member-exp{display:none;padding:8px 8px 14px 12px}.okh-member-card.open .okh-member-exp{display:block}
+.okh-dossier-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,138px),1fr));gap:clamp(8px,2vw,16px);padding:4px 0}
 .okh-dossier-card{min-width:0;overflow:hidden;display:grid;gap:0;padding:0;text-align:left;border:1px solid #c3a26c66;border-radius:6px;background:#21180f;color:#f0d7a5;font:inherit;cursor:pointer}
 .okh-dossier-card:hover,.okh-dossier-card:focus-visible{outline:2px solid #d9b678;outline-offset:2px}
 .okh-dossier-card img{width:100%;aspect-ratio:4/5;display:block;object-fit:cover}
-.okh-dossier-card > span{display:grid;padding:8px 10px 10px}
+.okh-roster-profile{display:grid;padding:8px 10px 10px}
+.okh-roster-status{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 6px;border-top:1px solid #c3a26c38;margin-top:8px;padding-top:6px;color:var(--t-sb);font-size:11px}
+.okh-roster-status b{color:var(--g-lt);white-space:nowrap}
+@media(max-width:560px){.okh-dossier-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .okh-dossier-card strong{font-size:15px}.okh-dossier-card small{color:var(--t-sb);font-size:11px}
 @media(max-width:480px){.okh-mem-left{gap:5px}.okh-mem-job{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.okh-mem-name{white-space:nowrap}.okh-mem-mid{display:none}}
 .okh-dossier-dialog{box-sizing:border-box;width:min(960px,100% - 12px);max-width:none;max-height:calc(100dvh - 12px);padding:0;border:0;background:transparent;overscroll-behavior:contain}
@@ -982,11 +1133,17 @@
 .okh-inv-qty{font-size:11.5px;font-weight:700;color:#f3db9e;font-variant-numeric:tabular-nums;white-space:nowrap}
 .okh-inv-desc{font-size:11px;color:var(--t-dm);line-height:1.45;margin-top:2px;padding-left:13px}
 .okh-inv-empty,.okh-empty-tip{font-size:12px;color:var(--t-dm);font-style:italic;padding:6px 0}
-.okh-album{container:okh-album / inline-size;margin-top:26px;padding-top:20px;border-top:1px solid rgba(195,162,108,.3)}
+.okh-album{container:okh-album / inline-size;padding:4px 0}
+.okh-album-tab{display:inline-flex;gap:4px;align-items:center}
+.okh-album-tab-icon{display:block;width:20px;height:20px;object-fit:cover;border-radius:50%;flex:none}
+.okh-album-portal{display:grid;place-items:center;min-height:clamp(235px,36vw,330px);background:radial-gradient(ellipse at center,#316b9d25,transparent 64%)}
+.okh-album-crystal{display:grid;place-items:center;width:min(80%,264px);aspect-ratio:1;border:0;padding:0;border-radius:50%;color:#bcecff;background:transparent;cursor:pointer}
+.okh-album-crystal-art{display:block;width:100%;height:100%;object-fit:cover;mask-image:radial-gradient(ellipse at center,#000 43%,transparent 72%);font-size:96px;transition:filter .18s ease}
+.okh-album-crystal:hover .okh-album-crystal-art,.okh-album-crystal:focus-visible .okh-album-crystal-art{filter:brightness(1.18)}
+.okh-album-crystal:focus-visible{outline:1px solid #a9cce1;outline-offset:2px}
+.okh-album-return{min-height:44px;padding:4px 0;border:0;background:none;color:var(--g-lt);font:inherit;cursor:pointer}
 .okh-album [hidden]{display:none!important}
 .okh-album-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
-.okh-album-head h3{margin:0;font:600 16px/1.8 'Noto Serif CJK SC','Songti SC',serif;color:var(--g-lt);letter-spacing:2px}
-.okh-album-head h3>span{font-size:12px;color:var(--g-dm);margin-right:5px}
 .okh-album-head>span{font-size:11px;color:var(--t-sb);white-space:nowrap}
 .okh-album-filters{display:flex;flex-wrap:wrap;gap:0 18px;margin:2px 0 14px;border-bottom:1px solid rgba(195,162,108,.14)}
 .okh-album-filters button{min-height:44px;padding:6px 1px;border:0;background:none;color:var(--t-sb);font:inherit;font-size:12px;cursor:pointer}
@@ -1005,7 +1162,7 @@
 .okh-album button:focus-visible{outline:1px solid var(--g-lt);outline-offset:4px}
 .okh-album-empty{padding:22px 12px 18px;text-align:center;color:var(--t-sb);background:radial-gradient(ellipse at center,rgba(195,162,108,.04),transparent 72%)}
 .okh-album-empty>span{font-size:24px;color:var(--g-dm)}.okh-album-empty p{font-size:13px;margin:6px 0}.okh-album-empty small{font-size:11px;line-height:1.8;color:var(--t-dm)}
-@container okh-album (max-width:460px){.okh-album-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px}.okh-album-head h3{font-size:15px}.okh-album-filters{gap:0 14px}}
+@container okh-album (max-width:460px){.okh-album-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px}.okh-album-filters{gap:0 14px}}
 @container okh-album (max-width:240px){.okh-album-grid{grid-template-columns:minmax(0,1fr)}}
 .okh-lb-album-nav{display:flex;align-items:center;justify-content:center;gap:16px;font-size:11px;color:#b3a594}
 .okh-lb-album-nav[hidden]{display:none}.okh-lb-album-nav button{min-width:44px;min-height:44px;padding:5px 8px;border:0;background:none;color:#dfc89a;font:inherit;cursor:pointer}.okh-lb-album-nav button:disabled{opacity:.3;cursor:default}
@@ -1236,6 +1393,12 @@
         }
       } else if (act === 'dossier-open') {
         openDossier(el.getAttribute('data-okh-id'))
+      } else if (act === 'album-enter' || act === 'album-return') {
+        const entering = act === 'album-enter'
+        activeTab = entering ? 'album-gallery' : 'album'
+        rerenderCurrent()
+        const target = entering ? '[data-okh-page="album-gallery"] [aria-pressed="true"]' : '[data-okh-act="album-enter"]'
+        document.querySelector(target)?.focus()
       } else if (act === 'album-filter') {
         albumCharacter = el.getAttribute('data-okh-character') || 'gulan'
         rerenderCurrent()

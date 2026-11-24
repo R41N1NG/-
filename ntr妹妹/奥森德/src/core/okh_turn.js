@@ -102,7 +102,7 @@
       if (!map.has(t)) {
         map.set(t, {
           prologueSteps: [], moves: [], patches: [], meta: null,
-          bonds: [], economies: [], room: null, resolveNodes: [], resolveEvents: [], activities: []
+          bonds: [], economies: [], room: null, resolveNodes: [], resolveEvents: [], activities: [], dossierRecords: []
         });
       }
       return map.get(t);
@@ -161,6 +161,9 @@
 
       for (const eco of front.economies || []) {
         getBucket(map, resolveAt(eco.at, toMin, fromMin, toMin)).economies.push(eco);
+      }
+      for (const record of front.dossierRecords || []) {
+        getBucket(map, resolveAt(record.at, toMin, fromMin, toMin)).dossierRecords.push(record);
       }
 
       if (front.room) {
@@ -251,6 +254,7 @@
 
       if (bucket.resolveNodes.length) nodes.resolve(world, bucket.resolveNodes, config, ctx);
       if (bucket.resolveEvents.length) events.resolve(world, bucket.resolveEvents, config, ctx);
+      if (bucket.dossierRecords.length) config.recordDossier?.(world, bucket.dossierRecords);
 
       for (const { npcId, task } of bucket.activities) {
         const cleanTask = { ...task };

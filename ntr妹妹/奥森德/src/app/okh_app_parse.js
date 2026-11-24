@@ -12,6 +12,44 @@
   if (!u) throw Error('parse 缺少 utils');
 
   const PROLOGUE_FLAGS = new Set(['ed_joined', 'arrived_oakhaven']);
+  const DOSSIER_NPCS = new Set(['gulan', 'isna', 'nise', 'aurora']);
+  const MILESTONE_KINDS = new Set(['promise', 'entrustment', 'shared_experience']);
+  const DOSSIER_PARTS = ['head', 'chest', 'hips', 'legs', 'hands'];
+
+  function dossierText(value, limit, field) {
+    const text = value?.trim();
+    u.check(text && text.length <= limit && !/[<>\u0000-\u001f\u007f]/u.test(text), field + '须为简短的单行文字');
+    return text;
+  }
+
+  function dossierBoolean(value) {
+    if (value === undefined) return undefined;
+    u.check(value === 'yes' || value === 'no', '档案事实的布尔值须为 yes 或 no');
+    return value === 'yes';
+  }
+
+  function parseDossierRecord(type, attrs, fromMin, toMin) {
+    const fields = type === 'milestone' ? ['kind', 'note'] : ['parts', 'position', 'penetrative', 'internal', 'volume_ml'];
+    u.check(Object.keys(attrs).every(key => ['npc', 'at', ...fields].includes(key)), '档案回执包含未知属性');
+    u.check(DOSSIER_NPCS.has(attrs.npc), '该角色没有档案记录入口');
+    const at = parseAtAttr(attrs.at, fromMin, toMin);
+    const target = { type, npc: attrs.npc, ...(at === undefined ? {} : { at }) };
+    if (type === 'milestone') {
+      u.check(MILESTONE_KINDS.has(attrs.kind), '未知同行经历类别');
+      return { ...target, kind: attrs.kind, note: dossierText(attrs.note, 100, '同行经历') };
+    }
+    const requested = attrs.parts?.split(',').map(part => part.trim()) ?? [];
+    u.check(requested.every(part => DOSSIER_PARTS.includes(part)), '未知档案部位');
+    const parts = DOSSIER_PARTS.filter(part => requested.includes(part));
+    const penetrative = dossierBoolean(attrs.penetrative);
+    const internal = dossierBoolean(attrs.internal);
+    const position = attrs.position === undefined ? undefined : dossierText(attrs.position, 24, '体位');
+    const volumeMl = attrs.volume_ml === undefined ? undefined : Number(attrs.volume_ml);
+    if (volumeMl !== undefined) u.check(internal === true && /^\d{1,6}(?:\.\d{1,3})?$/.test(attrs.volume_ml), '只在明确发生且具体容量已知时记录容量');
+    return { ...target, parts, ...(position === undefined ? {} : { position }),
+      ...(penetrative === undefined ? {} : { penetrative }), ...(internal === undefined ? {} : { internal }),
+      ...(volumeMl === undefined ? {} : { volumeMl }) };
+  }
 
   function statusBody(text) {
     const outside = String(text || '').replace(/```[\s\S]*?```/g, '')
@@ -307,6 +345,8 @@
         });
       } else if (name === 'activity') {
         parseActivityTag(a, actCtx);
+      } else if (name === 'milestone' || name === 'encounter') {
+        if (known(a.npc)) (front.dossierRecords ||= []).push(parseDossierRecord(name, a, world.timeMin, now));
       }
     }
 

@@ -6,10 +6,10 @@ const img='data:image/png;base64,aGVsbG8=';
 const item=(id='memory',extra={})=>({id,npc:'gulan',kind:'cg',title:'测试回忆',src:img,unlock:[{type:'metric',key:'affection',min:72}],...extra});
 function sandbox(entries=[],sharedVars=null){return holder.exports.createSandbox('chat-test',sharedVars,entries)}
 function plain(v){return JSON.parse(JSON.stringify(v))}
-test('empty production catalog leaves legacy saves unchanged and places an empty album after the roster',async()=>{
+test('empty production catalog leaves legacy saves unchanged and provides a separate album page',async()=>{
  const sb=sandbox();await sb.OKH_APP.init();const world=sb.OKH_APP.world(),before=JSON.stringify(world);
  assert.equal(sb.OKH_APP_ALBUM.catalog.length,0);assert.deepEqual(plain(sb.OKH_APP_ALBUM.sync(world)),[]);assert.equal(JSON.stringify(world),before);
- const html=sb.OKH_APP.HUD.buildHudHtml(world);assert(html.indexOf('aria-label="回忆相册"')>html.indexOf('data-okh-member="gulan"'));assert(html.includes('已珍藏 0 幅'));assert(!html.includes('class="okh-memory"'));
+ const html=sb.OKH_APP.HUD.buildHudHtml(world);assert(html.includes('data-okh-tab="album"'));assert(html.includes('data-okh-page="album" aria-label="留影记录"'));assert(html.includes('已珍藏 0 幅'));assert(!html.includes('class="okh-memory"'));
  assert.equal(JSON.stringify(sb.OKH_APP.world()),before);
 });
 test('metric boundaries and combined flags collect once; later affection loss, death or departure does not erase earned pictures',()=>{

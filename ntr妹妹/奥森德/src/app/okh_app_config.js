@@ -42,6 +42,7 @@
       resolveRoom: RULES.resolveRoom,
       resolveBonds: RULES.resolveBonds,
       resolveEconomy: RULES.resolveEconomy,
+      recordDossier: RULES.recordDossier,
       timeEffects: TIME.settleTimeEffects,
       prepareCheckpoint: MIG.migrateWorld,
       allowed(ctx, item) {

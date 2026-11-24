@@ -34,15 +34,10 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   assert.equal(await page.getByRole('button',{name:'镇内',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'旅店',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'奥克赫斯镇',exact:true}).count(),0);
   assert.equal(JSON.stringify(await page.evaluate(()=>cardWorld())),JSON.stringify(initial),'Browsing before arrival modified the save');
   await page.getByRole('button',{name:/同伴名册/}).click();
-  const rosterShortcut=page.locator('[data-okh-member="gulan"] [data-okh-act="dossier-open"]');
-  assert(await rosterShortcut.isVisible());
-  await rosterShortcut.click();
-  await page.locator('.okh-dossier-dialog').getByRole('button',{name:'关闭档案　×',exact:true}).click();
-  assert(await rosterShortcut.evaluate(button=>document.activeElement===button));
-  assert.equal(await page.locator('[data-okh-member="gulan"] [data-okh-act="toggle-roster"]').getAttribute('aria-expanded'),'false');
-  await page.getByRole('button',{name:/角色档案/}).click();
+  assert.equal(await page.getByRole('button',{name:/角色档案/}).count(),0);
   const dossierGrid=page.locator('.okh-dossier-grid');
   assert.equal(await dossierGrid.locator('button').count(),4);
+  assert.equal(await dossierGrid.locator('.okh-roster-status').count(),4);
   await dossierGrid.locator('img').first().evaluate(img=>img.decode());
   await page.setViewportSize({width:320,height:760});
   assert(await dossierGrid.evaluate(grid=>grid.scrollWidth<=grid.clientWidth));
@@ -76,7 +71,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
     await page.setViewportSize({width:1080,height:1000});
    }
    await dossier.getByRole('button',{name:/返回档案/}).click();
-   await dossier.getByRole('button',{name:'关闭档案　×',exact:true}).click();
+   await dossier.getByRole('button',{name:'返回名册　×',exact:true}).click();
    assert.equal(await dossier.count(),0);
    assert(await open.evaluate(button=>document.activeElement===button));
   }
@@ -152,6 +147,104 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
   await checkForms();
   await page.evaluate(()=>reloadCard());
   await checkForms();
+  await page.goto('about:blank');
+  await page.setContent(html.replace('<main id="chat">',`<script>(${trackListeners})()</script><main id="chat">`));
+  await page.evaluate(()=>previewReady);
+  await page.evaluate(async()=>{
+   const app=document.getElementById('card-helper').contentWindow.OKH_APP, world=app.world();
+   world.flags.arrived_oakhaven=true;
+   world.flags.arrivedDay=8;
+   world.playerLocation='inn';
+   world.timeMin=7*1440+13*60;
+   world.interactingIds=['isna'];
+   world.npcs.isna.location=world.npcs.aurora.location='inn';
+   world.npcs.isna.values.gold_desire=32;
+   world.npcs.aurora.values.affection=85;
+   await app.save(world,{debug:true});
+   await app.step(0,{text:'<status_bar><interact npc="isna"/></status_bar>'});
+   const queue=app.world().bg.queue;
+   for(const id of ['aurora_debt_disclose','isna_tavern_rumor_notice']){
+    if(!queue.some(event=>event.definitionId===id&&event.status==='pending'))throw Error('Expected pending '+id);
+   }
+  });
+  await page.getByRole('button',{name:/同伴名册/}).click();
+  const journey=page.locator('[data-dossier-journey]');
+  async function openJourney(id){
+   await page.locator(`.okh-dossier-card[data-okh-id="${id}"]`).click();
+   await page.getByText('同行经历',{exact:true}).click();
+  }
+  await openJourney('aurora');
+  assert.equal(await journey.innerText(),'暂无同行经历。');
+  await page.getByRole('button',{name:/返回名册/}).click();
+  await openJourney('isna');
+  assert.equal(await journey.innerText(),'暂无同行经历。');
+  const journeyReply=await page.evaluate(async()=>{
+   const app=document.getElementById('card-helper').contentWindow.OKH_APP;
+   await app.beforeGeneration();
+   await appendCardReply('<content>伯里在旅店宽慰了伊丝娜，约好明早去公会。奥萝拉也向他谈起了家族旧债。</content><status_bar><time elapsed="10"/><event_resolve npc="isna" id="isna_tavern_rumor_notice" outcome="soothe" at="end"/><milestone npc="isna" kind="promise" note="约好明早去公会。"/></status_bar>');
+   return previewContext.chat.length-1;
+  });
+  assert.match(await journey.innerText(),/第 8 天 · 13:10 · 断剑与麦酒/);
+  assert.match(await journey.innerText(),/暂时放下了独自涉险的念头/);
+  assert.match(await journey.innerText(),/约好明早去公会/);
+  assert.doesNotMatch(await journey.innerText(),/家族旧债/);
+  await page.getByRole('button',{name:/返回名册/}).click();
+  await openJourney('aurora');
+  assert.match(await journey.innerText(),/奥萝拉谈起家族旧债/);
+  await page.getByRole('button',{name:/返回名册/}).click();
+  await openJourney('isna');
+  await page.evaluate(async index=>{
+   const app=document.getElementById('card-helper').contentWindow.OKH_APP;
+   previewContext.chat[index].mes='<content>伯里和伊丝娜各自用餐。</content><status_bar><time elapsed="10"/></status_bar>';
+   await app.syncHistory();
+   app.renderHud(true);
+  },journeyReply);
+  assert.equal(await journey.innerText(),'暂无同行经历。');
+  await page.getByRole('button',{name:/返回名册/}).click();
+  await openJourney('aurora');
+  assert.equal(await journey.innerText(),'暂无同行经历。');
+  await page.evaluate(async()=>{
+   const app=document.getElementById('card-helper').contentWindow.OKH_APP;
+   const world=app.world();
+   world.npcs.aurora.location='manor';
+   world.npcs.aurora.flags.manor_service_active=true;
+   world.npcs.aurora.flags.aurora_worked_manor_day=8;
+   await app.save(world,{debug:true});
+   app.renderHud(true);
+  });
+  const auroraDossier=page.locator('.okh-dossier-dialog');
+  assert.match(await auroraDossier.locator('.okh-profile').innerText(),/当前服装\s*女仆装/);
+  await auroraDossier.getByRole('button',{name:'记录',exact:true}).click();
+  assert.equal(await auroraDossier.locator('[data-costume="maid"]').getAttribute('aria-pressed'),'true');
+  await auroraDossier.getByRole('button',{name:/返回档案/}).click();
+  await auroraDossier.getByRole('button',{name:/返回名册/}).click();
+  await openJourney('isna');
+  const encounterReply=await page.evaluate(async()=>{
+   await appendCardReply('<content>此处为统计回执测试场景。</content><status_bar><time elapsed="0"/><encounter npc="isna" parts="hands,hips"/><encounter npc="isna" parts="hips,hands"/><encounter npc="aurora" parts="hands"/></status_bar>');
+   if(cardWorld().playerState.dossierRecords.some(record=>record.npc==='aurora'))throw Error('Off-scene record was saved');
+   return previewContext.chat.length-1;
+  });
+  const isnaDossier=page.locator('.okh-dossier-dialog');
+  await isnaDossier.getByRole('button',{name:'记录',exact:true}).click();
+  assert.equal(await isnaDossier.locator('[data-dossier-stat="recent"]').innerText(),'1 次');
+  assert.equal(await isnaDossier.locator('[data-dossier-stat="volume"]').innerText(),'未记录');
+  await isnaDossier.locator('[data-part-hit="hips"]').click();
+  assert.match(await isnaDossier.locator('[data-part-facts]').innerText(),/性行为次数\s*1 次/);
+  await page.evaluate(()=>appendCardReply('<content>第二个统计回执测试场景。</content><status_bar><time elapsed="0"/><encounter npc="isna" parts="hips" position="测试值" penetrative="yes" internal="yes" volume_ml="1.25"/></status_bar>'));
+  assert.match(await isnaDossier.locator('[data-part-facts]').innerText(),/性行为次数\s*2 次/);
+  await isnaDossier.getByRole('button',{name:/返回档案/}).click();
+  await isnaDossier.getByRole('button',{name:'记录',exact:true}).click();
+  assert.equal(await isnaDossier.locator('[data-dossier-stat="position"]').innerText(),'测试值');
+  assert.equal(await isnaDossier.locator('[data-dossier-stat="virginity"]').innerText(),'否');
+  assert.equal(await isnaDossier.locator('[data-dossier-stat="internal"]').innerText(),'至少 1 次');
+  assert.equal(await isnaDossier.locator('[data-dossier-stat="volume"]').innerText(),'至少 1.25 mL');
+  await isnaDossier.locator('[data-part-hit="hips"]').click();
+  await page.evaluate(async index=>{
+   const app=document.getElementById('card-helper').contentWindow.OKH_APP;
+   await app.restore('reply:'+previewContext.chatId+':'+index);
+   app.renderHud(true);
+  },encounterReply);
+  assert.match(await isnaDossier.locator('[data-part-facts]').innerText(),/性行为次数\s*未记录/);
   assert(!requests.some(url=>/regional-art|town-art|upper-scene|ground-scene|map-ink\.woff|journal-page/.test(url)),'Maps or font depended on a network download');
   assert.deepEqual(errors,[]);await page.evaluate(()=>document.getElementById('card-helper').contentWindow.OKH_APP.stop());
   assert.equal(await modal.count(),0);assert.equal(await page.evaluate(()=>bubbleListenerCount()),0);
