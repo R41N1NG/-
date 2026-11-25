@@ -190,7 +190,7 @@
       for (const [choiceId, spec] of entries) {
         check(
           id(choiceId) && spec && typeof spec === 'object' &&
-          typeof spec.text === 'string' && spec.text.trim(),
+          (typeof spec.text === 'function' || (typeof spec.text === 'string' && spec.text.trim())),
           '事件选项必须配置合法 ID 和非空 text'
         );
         check(
@@ -210,8 +210,7 @@
     ]) {
       check(
         ['result', 'interaction'].includes(event.mode) &&
-        typeof event.text === 'string' &&
-        event.text.trim(),
+        (typeof event.text === 'function' || (typeof event.text === 'string' && event.text.trim())),
         '事件或节点必须配置模式和文本'
       );
 

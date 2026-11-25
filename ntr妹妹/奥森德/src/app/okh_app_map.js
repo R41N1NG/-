@@ -54,6 +54,7 @@
   function isLocationHidden(npc) {
     const flags = npc?.flags || {}
     return Boolean(flags.gulan_departed || flags.captured_orc || flags.captured_manor || flags.isna_captured_ed ||
+      flags.isnaMudOutTonight || flags.isna_mud_hopeless_fled ||
       (flags.isna_camp_distress === 'rat' && !flags.isna_help_real))
   }
   function roomState(world, room) {

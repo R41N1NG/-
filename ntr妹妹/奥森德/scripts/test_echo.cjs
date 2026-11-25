@@ -205,3 +205,120 @@ test('bundled rendering and runtime accept the same standalone echo images', () 
     assert.equal(previewDisplay(message).includes('<img alt="残响插图"'), expected, message);
   }
 });
+
+test('gulan_final_fall_dark settles covertly with dragon_mark_linger tag and unlocks only at finale (bd=100, stage=3)', async () => {
+  const sb = createSandbox();
+  const app = sb.OKH_APP;
+  const { CFG, HUD, W } = app;
+  const config = CFG.buildConfig();
+  const seed = CFG.buildInitialWorld();
+  seed.timeMin = 1380;
+  seed.playerLocation = 'wilds';
+  Object.assign(seed.flags, { arrived_oakhaven: true, ed_joined: true });
+  Object.assign(seed.npcs.gulan, { stage: 2, location: 'inn' });
+  Object.assign(seed.npcs.gulan.values, { affection: 80, blood_density: 85 });
+  Object.assign(seed.npcs.ed, { monitored: true, location: 'inn' });
+  let world = sb.OKHBackground.init(seed, config);
+  world = sb.OKHBackground.advance(world, { id: 'fall', revision: 'fall', toMin: 1380 }, config).state;
+  assert.equal(world.npcs.gulan.stage, 3);
+  assert.equal(world.npcs.gulan.flags.gulan_final_fall_done, true);
+  assert(!world.bg.queue.some(entry => ['gulan_stage_3', 'gulan_final_fall_dark'].includes(entry.definitionId)));
+  const tag = sb.OKH_APP_TAGS.list(world, 'gulan').find(item => item.id === 'dragon_mark_linger');
+  assert(tag);
+  assert.equal(tag.name, '龙血臣属');
+  const echo = world.playerState.pendingEchoes.find(item => item.id === 'echo_gulan_final_fall');
+  assert(echo);
+  assert.equal(echo.status, 'latent');
+  assert.equal(echo.unlockAt, null);
+
+  world = sb.OKHBackground.advance(world, { id: 'wait-2-days', revision: 'wait-2-days', toMin: 1380 + 2880 }, config).state;
+  const def = CFG.DELAYED_ECHOES.find(item => item.id === 'echo_gulan_final_fall');
+  assert.equal(world.playerState.pendingEchoes.find(item => item.id === 'echo_gulan_final_fall').status, 'latent');
+  assert(!HUD.buildHudHtml(world).includes(def.title));
+
+  world.npcs.gulan.values.blood_density = 100;
+  world = sb.OKHBackground.advance(world, { id: 'unlock-final', revision: 'unlock-final', toMin: 1380 + 2900 }, config).state;
+  assert.equal(world.playerState.pendingEchoes.find(item => item.id === 'echo_gulan_final_fall').status, 'ready');
+  assert(HUD.buildHudHtml(world).includes(def.title));
+
+  await app.init();
+  const session = W.session();
+  const saved = W.loadWorld(session);
+  const expectedRevision = saved.bg.revision++;
+  world.bg.revision = saved.bg.revision;
+  await W.commit(session, { state: world, expectedRevision });
+
+  const chat = sb._ctxObj.chat;
+  chat.push({ is_user: true, mes: def.triggerCommand });
+  const gen = await app.beforeGeneration();
+  assert(gen.text.includes('【撰写约束】正文中严禁出现任何种族称谓或特殊族群字眼'));
+  assert(!gen.text.includes('侏儒'));
+  assert(!gen.text.includes('okh-echo:'));
+
+  chat.push({ is_user: false, mes: '<content>回放完成。</content><status_bar><time elapsed="0"/></status_bar>' });
+  const report = await app.onMessage(1);
+  assert.notEqual(report.echoNeedsRetry, true);
+  assert.equal(app.world().playerState.pendingEchoes.find(item => item.id === 'echo_gulan_final_fall').status, 'viewed');
+  assert.equal(sb.OKH_APP_TAGS.list(app.world(), 'gulan').length, 0);
+});
+
+test('arena mud_fall and fallen settle covertly with tags and unlock after 2 days', async () => {
+  const sb = createSandbox();
+  const { CFG, HUD } = sb.OKH_APP;
+  const config = CFG.buildConfig();
+  for (const [stage, aff, echoId, tagId] of [
+    [2, 70, 'echo_gulan_arena_fall', 'arena_shame_linger'],
+    [3, 50, 'echo_gulan_arena_fallen', 'arena_sated_laziness']
+  ]) {
+    const seed = CFG.buildInitialWorld();
+    seed.timeMin = CFG.DAY(16, 13);
+    seed.playerLocation = 'inn';
+    Object.assign(seed.flags, { arrived_oakhaven: true, arrivedDay: 1 });
+    Object.assign(seed.npcs.gulan, { stage, location: 'training_grounds' });
+    seed.npcs.gulan.values.affection = aff;
+    let world = sb.OKHBackground.init(seed, config);
+    world = sb.OKHBackground.advance(world, { id: 'arena-' + stage, revision: 'arena-' + stage, toMin: seed.timeMin }, config).state;
+    assert.equal(world.npcs.gulan.flags.gulan_arena_fall, true);
+    assert(!world.bg.queue.some(entry => entry.definitionId?.startsWith('dragon_blood_awakening_')));
+    assert.equal(sb.OKH_APP_TAGS.list(world, 'gulan')[0]?.id, tagId);
+    const echo = world.playerState.pendingEchoes.find(item => item.id === echoId);
+    assert(echo);
+    assert.equal(echo.status, 'latent');
+    world = sb.OKHBackground.advance(world, { id: 'unlock-' + stage, revision: 'unlock-' + stage, toMin: echo.unlockAt }, config).state;
+    assert.equal(world.playerState.pendingEchoes.find(item => item.id === echoId).status, 'ready');
+    const def = CFG.DELAYED_ECHOES.find(item => item.id === echoId);
+    assert(HUD.buildHudHtml(world).includes(def.title));
+  }
+});
+
+test('mud stage nightly raid updates mud_nightly_trace tag and dossierRecords, cleared when protected', () => {
+  const sb = createSandbox();
+  const { CFG } = sb.OKH_APP;
+  const config = CFG.buildConfig();
+  const seed = CFG.buildInitialWorld();
+  seed.timeMin = CFG.DAY(5, 22);
+  seed.playerLocation = 'inn';
+  seed.flags.arrived_oakhaven = true;
+  seed.flags.ed_joined = true;
+  seed.flags.lastInnSettledDay = 4;
+  Object.assign(seed.npcs.gulan, { stage: 2, location: 'inn', flags: { ed_hypnosis_play_done: true, lastNightSettledDay: 4 } });
+  Object.assign(seed.npcs.gulan.values, { affection: 92, blood_density: 50 });
+  Object.assign(seed.npcs.ed, { monitored: true, location: 'inn', flags: { lastNightSettledDay: 4 } });
+  let world = sb.OKHBackground.init(seed, config);
+
+  // Night 6 unprotected: bloodGain > 0 -> tag mud_nightly_trace + 1 dossier encounter
+  world = sb.OKHBackground.advance(world, { id: 'n6', revision: 'n6', toMin: CFG.DAY(6, 8), interactingIds: [], front: {} }, config).state;
+  assert(sb.OKH_APP_TAGS.list(world, 'gulan').some(t => t.id === 'mud_nightly_trace'));
+  const gulanEncounters = (world.playerState.dossierRecords || []).filter(r => r.npc === 'gulan' && r.type === 'encounter');
+  assert.equal(gulanEncounters.length, 1);
+  assert.equal(gulanEncounters[0].penetrative, true);
+  assert.equal(gulanEncounters[0].internal, true);
+  assert(gulanEncounters[0].volumeMl >= 8);
+
+  // Night 7 protected by co-room: bloodGain === 0 -> mud_nightly_trace removed, no new encounter
+  world.timeMin = CFG.DAY(6, 22);
+  world.flags.playerRoomTarget = 'gulan';
+  world = sb.OKHBackground.advance(world, { id: 'n7', revision: 'n7', toMin: CFG.DAY(7, 8), interactingIds: [], front: {} }, config).state;
+  assert(!sb.OKH_APP_TAGS.list(world, 'gulan').some(t => t.id === 'mud_nightly_trace'));
+  assert.equal((world.playerState.dossierRecords || []).filter(r => r.npc === 'gulan' && r.type === 'encounter').length, 1);
+});

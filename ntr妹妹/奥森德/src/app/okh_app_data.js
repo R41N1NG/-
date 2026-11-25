@@ -389,6 +389,7 @@
     {
       id: 'gulan_stage_3',
       mode: 'result',
+      covert: true,
       fromStage: 2,
       toStage: 3,
       when: { stage: 2, metrics: { blood_density: { gte: 80 } }, flags: { gulan_final_fall_done: true } },
@@ -640,10 +641,24 @@
       mode: 'result',
       fromStage: 0,
       toStage: 1,
+      echoId: 'echo_isna_camp_torture',
       when: ({ npc }) =>
         npc.stage === 0 &&
         Boolean(npc.flags?.captured_orc),
-      text: '被黑兽人营地守军押入地牢当日，{name}在严酷拷问与强压下终究失守了防线，猫耳无力垂落，心神蒙上难以抹去的阴翳。'
+      effects: ({ world }) => ({
+        tagsAdd: ['orc_blood_seal'],
+        dossierAdd: [{
+          npc: 'isna',
+          at: world.timeMin,
+          type: 'encounter',
+          parts: ['vagina'],
+          penetrative: true,
+          internal: true,
+          position: '被按在石台后入',
+          volumeMl: 45
+        }]
+      }),
+      text: '被黑兽人营地守军押入地牢当日，{name}便在拷问与粗暴轮番侵犯下丢失了处女之身并进入异兆期；天明前千夫长克罗格在她小腹隐蔽处刻下黑兽人血契印记，必须每三日接受兽人精液灌注方能压制，否则便会剧痛发作并显露魔纹。'
     },
     {
       id: 'isna_stage_2',
@@ -655,7 +670,25 @@
         npc.stage === 1 &&
         Boolean(npc.flags?.captured_orc) &&
         (npc.flags?.orcCaptiveDays ?? 0) >= 1,
-      text: '被俘次日仍未等到外援，地牢中的连番羞辱与折磨进一步碾碎了{name}的强撑与傲气，她开始在绝望与麻木间泥足深陷。'
+      effects: {
+        move: 'inn',
+        forceMove: true,
+        tagsAdd: ['orc_spy_conflict'],
+        npcFlags: {
+          captured_orc: false,
+          gold_desire_frozen: true,
+          isnaMudDays: 0,
+          isnaMudSpyCount: 0,
+          isnaMudOutTonight: false,
+          isnaMudProbeCount: 0,
+          isnaMudFirstProbeDay: null,
+          isnaMudTruthKnown: false,
+          isnaMudTruthDay: null,
+          isnaMudSealCleared: false,
+          isna_mud_hopeless_fled: false
+        }
+      },
+      text: '克罗格故意放走已被调教并种下血契的{name}返回断剑与麦酒旅店，并以“外人强行碰触血契便会爆裂伤身、何况失身之躯只会遭同伴嫌弃”死死封住她的口；{name}对外伪装成趁营地换防侥幸脱身并顺势接下“夜间踩点盯梢兽人”的差事，实则每三日潜回营地汇报情报并接受灌注。'
     },
     {
       id: 'isna_stage_3',
@@ -663,16 +696,45 @@
       fromStage: 2,
       toStage: 3,
       requires: ['isna_stage_2'],
+      echoId: 'echo_isna_fallen_pet',
       when: ({ npc }) =>
         npc.stage === 2 &&
-        Boolean(npc.flags?.captured_orc) &&
-        (npc.flags?.orcCaptiveDays ?? 0) >= 2,
-      effects: {
-        npcFlags: { isna_fallen_orc: true }
-      },
-      text: '关押至第三日仍无音讯，孤立无援的{name}心防崩塌，放弃了等待救援的念想，转而与营地黑兽人合流沦陷。'
+        !npc.flags?.isnaMudSealCleared &&
+        (npc.flags?.isnaMudDays ?? 0) >= 10,
+      effects: ({ world }) => ({
+        move: 'wilds_camp',
+        forceMove: true,
+        tagsAdd: ['orc_fallen_pet'],
+        tagsRemove: ['orc_spy_conflict'],
+        npcFlags: {
+          isna_fallen_orc: true,
+          isnaMudOutTonight: false,
+          isnaFallenDay: dayAt(world)
+        },
+        dossierAdd: [{
+          npc: 'isna',
+          at: world.timeMin,
+          type: 'encounter',
+          parts: ['vagina'],
+          penetrative: true,
+          internal: true,
+          position: '跨坐千夫长腰间深顶',
+          volumeMl: 80
+        }]
+      }),
+      text: '泥足深陷满十日后，{name}心理防线全面瓦解，转入沉沦期并潜回黑兽人前哨据点，心甘情愿成为克罗格的宠物与内鬼，主动泄露城镇布防与古兰动向，借由连日“踩点”积累的信任着手发出假求救引古兰入套。'
     }
   ]
+
+  const canPurgeIsnaSealCecilia = world => {
+    const cecilia = world.npcs?.cecilia
+    return Boolean(cecilia && cecilia.alive !== false && (cecilia.stage ?? 0) < 3 && !cecilia.flags?.captured_manor)
+  }
+
+  const canPurgeIsnaSealGulan = world => {
+    const gulan = world.npcs?.gulan
+    return Boolean(gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 && !gulan.flags?.captured_orc && !gulan.flags?.gulan_departed)
+  }
 
   const auroraManorInsider = world => {
     const a = world.npcs?.aurora
@@ -700,7 +762,7 @@
 
   const canResolveGulanRescue = ({ world, npc }) =>
     !world.flags?.ed_showdown_done && npc.stage === 2 &&
-    !npc.flags?.gulan_final_fall_done && !npc.flags?.gulan_rescued_final
+    !npc.flags?.gulan_final_fall_done && (npc.flags?.gulan_rescue_count ?? 0) < 3
 
   const DRAGON_TRUE_FORM_SPEC = Object.freeze({
     // 1. 异象伏笔（供大势阶段二/三调用，零剧透）
@@ -756,7 +818,7 @@
       targets: ['gulan'],
       when: ctx => gulanSoloTrainingGrounds(ctx) && ctx.npc.stage < 2,
       text: [
-        '午后演武场内，十余名亡命地痞觊觎{name}独处，借着下风处暗燃高价购得的黑市猎龙异香。{name}身为 IV 阶宗师且兼具体魄，毒质难侵脏腑，仅在烈药冲刷下气血加速运转、面颊微现薄红。围逼宵小见状误以为药效得手，拔出短斧匕首叫嚣着扑上。',
+        '午后演武场内，十余名亡命地痞觊觎{name}独处，借着下风处暗燃高价购得的黑市猎龙异香。{name}身为 V 阶宗师且兼具体魄，毒质难侵脏腑，仅在烈药冲刷下气血加速运转、面颊微现薄红。围逼宵小见状误以为药效得手，拔出短斧匕首叫嚣着扑上。',
         '{name}瞬息辨出此香乃专门围猎亚龙魔兽的特制炼金药，断定歹人暗中必伏有针对龙裔的捕兽机关或死士后手，决不可陷入缠斗；加之体内沸腾的龙血急需宣泄，她果断催动真血覆鳞，阔刃重剑出鞘横斩。',
         '宗师战气激荡如雷，精钢重剑坚固沉凝、劈坚折锐毫无卷刃，数息之间将来犯狂徒全部格杀于血泊之中。确认四下并无埋伏后，{name}退至武器架阴影处拭净剑刃血痕，反手击塌半边擂台木架以销毁战技痕迹，拢紧黑金长裙内衬的轻便软锁甲，沿偏僻暗巷从容隐匿撤离。'
       ].join('\n'),
@@ -800,33 +862,40 @@
       id: 'dragon_blood_awakening_mud_fall',
       mode: 'result',
       scope: 'npc',
+      covert: true,
+      echoId: 'echo_gulan_arena_fall',
       targets: ['gulan'],
       when: ctx =>
         gulanSoloTrainingGrounds(ctx) &&
         ctx.npc.stage === 2 &&
         (ctx.npc.values.affection ?? 0) < 90,
-      text: [
-        '演武场内黑市猎龙异香弥漫开来，强烈的药理反应勾动了{name}此前早已失守的身躯。体内深处沉睡的龙裔繁育本能如同决堤狂潮逆冲心脉，与记忆中的荒唐梦魇轰然重叠。',
-        '{name}咬紧银牙试图聚力拔剑，但指节竟无法握紧沉重的精钢剑柄，阔刃重剑当啷跌落尘土。面前扑来的地痞们见状发出哄笑，黏腻贪婪的目光将她层层围拢。',
-        '背靠着摇摇欲坠的兵器架，战士的自制力在霸道药效与繁育本能的冲撞中步步溃散；面对围拢而上的污秽之手，残存的推拒终究化作了无力的战栗与低泣，在演武场死角防线瓦解。地痞散去后，{name}独自蜷缩在断裂木桩旁，在满地狼藉中强撑着拾起重剑，在黄昏阴影中仓皇踉跄离去。'
-      ].join('\n'),
+      text: '古兰演武场失守暗线已结算。',
       effects: {
-        npcFlags: { gulan_evt1_done: true, gulan_arena_fall: true }
+        npcFlags: { gulan_evt1_done: true, gulan_arena_fall: true },
+        tagsAdd: ['arena_shame_linger'],
+        dossierAdd: [
+          { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '兵器架按压', volumeMl: 10 },
+          { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '后入式', volumeMl: 11 },
+          { type: 'encounter', parts: ['hips', 'legs'], penetrative: true, internal: true, position: '抬腿深压', volumeMl: 12 }
+        ]
       }
     },
     {
       id: 'dragon_blood_awakening_fallen',
       mode: 'result',
       scope: 'npc',
+      covert: true,
+      echoId: 'echo_gulan_arena_fallen',
       targets: ['gulan'],
       when: ctx => gulanSoloTrainingGrounds(ctx) && ctx.npc.stage >= 3,
-      text: [
-        '嗅到下风处燃起的猎龙熏香，已全面接纳太古巨龙本能的{name}金红竖瞳微凝，非但毫无惧色，唇角反而勾起一抹残忍而愉悦的弧度，轻伸舌尖舔舐红唇。',
-        '世俗的廉耻与礼法在她眼中早如微尘。面对自以为得手、怪叫着围上来的十余名狂徒，{name}并未拔剑，而是任由药力奔涌迎上前去，反客为主展开了蛮横的掠夺。',
-        '太古上位龙裔的强横体魄与奔涌情潮化作吞噬生机的狂暴漩涡，凡俗宵小在短暂时间内由狂妄沦为惊恐求饶。当场内重归死寂时，十余名狂徒已被反向抽干气力、如干草般昏死瘫软在地。{name}神情慵懒而餍足，甚至未曾多看地上的废人一眼，理好长裙傲然从容离去。'
-      ].join('\n'),
+      text: '古兰演武场沉沦反掠夺暗线已结算。',
       effects: {
-        npcFlags: { gulan_evt1_done: true, gulan_arena_fall: true }
+        npcFlags: { gulan_evt1_done: true, gulan_arena_fall: true },
+        tagsAdd: ['arena_sated_laziness'],
+        dossierAdd: [
+          { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '骑乘位', volumeMl: 15 },
+          { type: 'encounter', parts: ['hips', 'legs'], penetrative: true, internal: true, position: '坐压榨取', volumeMl: 14 }
+        ]
       }
     },
     {
@@ -845,12 +914,18 @@
         if (npc.location !== ed.location) return false
         if (world.flags?.playerRoomTarget === 'gulan') return false
         const aff = npc.values?.affection ?? 0
+        if (aff >= 90 && Number.isFinite(world.flags?.lastGulanRoomMin) && world.timeMin - world.flags.lastGulanRoomMin < 2880) {
+          return false
+        }
         const threshold = aff >= 90 ? 65 : aff >= 70 ? 50 : aff >= 40 ? 45 : 35
         return (npc.values?.blood_density ?? 0) >= threshold
       },
       effects: {
         npcFlags: { ed_hypnosis_play_done: true },
-        tagsAdd: ['abnormal_avoid']
+        tagsAdd: ['abnormal_avoid'],
+        dossierAdd: [
+          { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '传教士式', volumeMl: 12 }
+        ]
       },
       text: '古兰的夜间暗线已结算。'
     },
@@ -858,35 +933,74 @@
       id: 'gulan_final_rescue_prompt',
       mode: 'interaction',
       scope: 'npc',
+      repeatable: true,
       targets: ['gulan'],
       allowCancel: false,
       resolveWhen: canResolveGulanRescue,
       expireWhen: ctx => !canResolveGulanRescue(ctx),
-      when: ({ world, npc, phase }) =>
-        canResolveGulanRescue({ world, npc }) &&
-        world.playerLocation === 'inn' &&
-        npc.location === 'inn' &&
-        ['night', 'deep_night'].includes(phase.id) &&
-        (npc.values.blood_density ?? 0) >= 80 &&
-        (npc.values.affection ?? 0) >= 90,
-      text: '深夜的断剑与麦酒旅店万籁俱寂，{name}客房内却隐隐传出压抑沉闷的痛苦喘息与重物碰撞声。房门虚掩未落门闩，门缝间隐隐逸散出令人窒息的滚烫龙威热浪。只见{name}蜷缩在床榻边缘，被汗水浸透的长裙紧贴着剧烈起伏的身躯，头顶纯黑龙角尖端竟泛起异样的暗红，小臂与小腿的白皙皮肉下正艰难翻涌浮现着致密的漆黑龙鳞。返祖真血的狂暴兽性正如烈火般疯狂啃噬着她的理智，她死死按住阔刃重剑的剑柄，指节因用力而发白发颤，深邃的琥珀竖瞳在狂乱与清醒间痛苦挣扎，视线死死望向门外，向{{user}}漏出了生平唯一一次无助的求援破绽。',
+      when: ({ world, npc, phase }) => {
+        if (!canResolveGulanRescue({ world, npc })) return false;
+        if (world.playerLocation !== 'inn' || npc.location !== 'inn') return false;
+        if (!['night', 'deep_night'].includes(phase.id)) return false;
+        if ((npc.values.affection ?? 0) < 90) return false;
+        const threshold = 80 + 10 * (npc.flags?.gulan_rescue_count ?? 0);
+        return (npc.values.blood_density ?? 0) >= threshold;
+      },
+      text: ({ npc }) => {
+        const count = npc.flags?.gulan_rescue_count ?? 0;
+        if (count === 0) {
+          return '深夜的断剑与麦酒旅店万籁俱寂，{name}房内却传来重剑坠地的沉闷撞击与压抑的吐息。房门虚掩未落门闩，热浪从门缝间渗出。只见{name}单膝支地按住桌面，黑底长裙的领口已被热汗浸透，太阳穴两侧乌黑龙角的根部泛起暗红异热。她仍强撑着身为长辈与前卫战士的体面，嘴上只说是白日挥剑过量，可紧抓桌角微微发颤的指尖却出卖了体内翻腾的真血，目光躲闪却又隐隐期盼着门外的动静。';
+        }
+        if (count === 1) {
+          return [
+            '夜深时分，{name}房门缝隙间透出灼人的气流，屋内隐约传来压抑的低泣与被褥撕扯声。推门只见她蜷缩在床榻边缘，十指深陷入枕褥，冷汗浸透额前碎发，琥珀色竖瞳涣散迷离。太古龙血的梦魇低语正冲刷着她的理智，看到{{user}}靠近时，她下意识抬手想要将人推开，指尖刚触及衣袖却猛地反手死死攥住了衣襟，将人拉向自己。',
+            '【演绎指导（不直接照搬进正文）】本轮核心演绎她在血脉激荡下的欲拒还迎：理智上因长辈身份与害怕伤及同伴而推拒，身体本能却渴望着{{user}}的贴近与安抚。'
+          ].join('\n');
+        }
+        return '深夜客房内热浪滚滚，{name}体内始祖真血的繁殖欲望已然沸腾到顶点，单靠旁人言语安抚再难压制。她双颊泛着深浓酡红，乌黑龙角尖端暗红流转，呼吸急促而滚烫。面对{{user}}的到来，这位向来自立持重的武者不再遮掩眼神中的渴望，主动伸手拉近彼此的距离，吐息灼热地贴近耳畔——此刻她索求的不只是心灵上的慰藉与依赖，更有来自血脉深处对交合与身体的直接渴求。';
+      },
       outcomes: {
         rescue: {
           when: ({ world, npc }) =>
             npc.stage === 2 &&
             world.playerLocation === 'inn' &&
             npc.location === 'inn' &&
-            (npc.values.affection ?? 0) >= 90,
-          text: '{{user}}推门而入的瞬间，{name}濒临失控的琥珀竖瞳剧烈一颤。面对最在乎之人的声声呼唤与坚定守护，{name}心中那份誓死捍卫羁绊的战士傲骨轰然爆发！她狠狠一拳砸向木板，强行以无上心智压下了体内翻江倒海的始祖暴虐冲动。额角的暗红渐渐隐褪，小臂上狰狞的黑鳞缓缓缩回皮肉之下，滚烫沉重的龙威气浪渐趋平息。{name}脱力般倒在床榻边缘，粗重喘息着避开视线，虽浑身被冷汗浸透、虚弱不堪，终在深渊边缘守住了身为人的清白与理智。',
-          effects: {
-            add: { blood_density: -10 },
-            npcFlags: { gulan_rescued_final: true }
+            (npc.values.affection ?? 0) >= 90 &&
+            (npc.flags?.gulan_rescue_count ?? 0) < 3,
+          text: ({ npc }) => {
+            const count = npc.flags?.gulan_rescue_count ?? 0;
+            if (count === 0) {
+              return '在{{user}}的及时介入与安抚下，{name}发烫僵硬的身躯逐渐松弛下来。她偏过头避开视线，耳根悄然泛红，低声道了句无碍，总算将这波躁动的龙血强行压回体内，守住了防线。';
+            }
+            if (count === 1) {
+              return '在{{user}}的贴身守护与温和回应下，{name}原本紧绷抗拒的力道一点点散去。她不再推拒这份靠近，额头抵住身前温暖的胸膛，在安稳的呼吸声中攥着衣襟沉沉睡去。';
+            }
+            return '在彼此交融的体温与深厚羁绊的回应下，{name}以坚毅意志为舟、以真挚情意为锚，终于将狂暴的始祖真血驯服为由自身掌控的纯净力量。热浪平息后，她依偎在侧轻喘，琥珀竖瞳澄明如初，真正迈入了与龙血共存的武圣之境。';
+          },
+          effects: ({ npc }) => {
+            const count = npc.flags?.gulan_rescue_count ?? 0;
+            if (count < 2) {
+              return {
+                add: { blood_density: -10, affection: 3 },
+                npcFlags: { gulan_rescue_count: count + 1, gulan_rescued_final: true }
+              };
+            }
+            return {
+              add: { affection: 3 },
+              npcFlags: { gulan_rescue_count: 3, gulan_rescued_final: true, gulan_pure_bond_done: true }
+            };
           }
         },
         fail: {
-          text: '门外久久未曾传来声响，最后一丝期盼在冰冷的死寂中寸寸湮灭。客房木门被无声推开并轻轻合上，黑暗中传来沉缓从容的脚步声——爱德自阴影中缓缓踱向床榻，周身肆意弥漫着令龙血战栗哀鸣的始祖龙威……',
+          echoId: 'echo_gulan_final_fall',
+          text: '门外久久未有回应，虚掩的木门在夜风中轻轻合拢，屋内压抑的喘息逐渐沉入死寂。次日清晨，{name}如常起身整装，神色沉稳自持，依旧以长辈与师长的口吻叮嘱日常起居，唯独眼神深处多了一丝若有若无的冰冷。',
           effects: {
-            npcFlags: { gulan_final_fall_done: true }
+            npcFlags: { gulan_final_fall_done: true },
+            tagsAdd: ['dragon_mark_linger'],
+            dossierAdd: [
+              { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '侧卧交缠', volumeMl: 14 },
+              { type: 'encounter', parts: ['hips', 'legs'], penetrative: true, internal: true, position: '后入式', volumeMl: 18 }
+            ]
           }
         }
       }
@@ -895,6 +1009,8 @@
       id: 'gulan_final_fall_dark',
       mode: 'result',
       scope: 'npc',
+      covert: true,
+      echoId: 'echo_gulan_final_fall',
       targets: ['gulan'],
       when: ({ world, npc, phase }) => {
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined) return false;
@@ -904,21 +1020,22 @@
         if (!['night', 'deep_night'].includes(phase.id)) return false;
         if (npc.location !== ed.location) return false;
         if (world.flags?.playerRoomTarget === 'gulan') return false;
+        const rescueCount = npc.flags?.gulan_rescue_count ?? 0;
+        if (rescueCount >= 3) return false;
         const aff = npc.values?.affection ?? 0;
         const bd = npc.values?.blood_density ?? 0;
         if (aff < 90) return bd >= 80;
-        return (
-          bd >= 90 &&
-          (Boolean(npc.flags?.gulan_rescued_final) || world.playerLocation !== npc.location)
-        );
+        const threshold = 80 + 10 * rescueCount;
+        return bd >= threshold && world.playerLocation !== npc.location;
       },
-      text: [
-        '深夜的客房内，返祖真血的暴走已将{name}逼至崩溃边缘，白皙皮肉被高热蒸得绯红，黑角尖端暗红如火。在{{user}}不在身侧、毫无外援的绝境中，虚掩的房门被悄然推开。',
-        '{name}在痛苦中艰难抬头，当看清踏入屋内的竟是平日谨小慎微、瘦弱年幼的学徒爱德时，深邃的琥珀竖瞳中写满了难以置信的惊愕与茫然：“爱德……？你为什么……”然而回应她的，却是自爱德身后虚空中骤然投落的遮天蔽日太古黑龙虚影！那股威压浩瀚蛮荒，令她体内的半龙真血发出战栗哀鸣般的剧烈共鸣。爱德面容沉静地踱步走近床榻，低沉古老的真龙龙吟在房内回荡，道明自身沉睡万载的太古黑龙生父身份，挑明自她血脉初破戒那一夜起，自己便已暗中潜入享用，此前无数夜里她以为的荒唐春梦，实则是夜夜借龙煞催熟其血脉。',
-        '言毕，爱德腰间那柄看似粗糙的木雕小剑应声解封为古龙权杖，幽光闪耀间全面引爆了{name}体内全部的始祖龙血。狂暴的繁育热潮如山洪决堤席卷身心，引以为傲的宗师自尊在上位古龙的威权压制下土崩瓦解。在庞大黑龙法相的笼罩下，古兰在野蛮奔涌的血脉本能中被迫迎合娇吟，被变换着不同体位反复灌注与深层占有，昔日坚毅的长辈防线荡然无存，身心深深烙上属于太古黑龙的永恒印记。'
-      ].join('\n'),
+      text: '古兰的终局暗线已结算。',
       effects: {
-        npcFlags: { gulan_final_fall_done: true }
+        npcFlags: { gulan_final_fall_done: true },
+        tagsAdd: ['dragon_mark_linger'],
+        dossierAdd: [
+          { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '侧卧交缠', volumeMl: 14 },
+          { type: 'encounter', parts: ['hips', 'legs'], penetrative: true, internal: true, position: '后入式', volumeMl: 18 }
+        ]
       }
     },
     {
@@ -1204,7 +1321,8 @@
         npcFlags: {
           captured_orc: true,
           orcCaptiveDays: 0,
-          isna_camp_distress: null
+          isna_camp_distress: null,
+          isna_help_real: false
         }
       },
       text: '迟迟未能等来援军，藏身处最终被黑兽人搜捕队撬开，{name}力竭被擒并押入前哨地牢深处。'
@@ -1311,6 +1429,229 @@
           text: '你随古兰星夜奔袭城外黑兽人前哨据点。面对千夫长克罗格与精锐守军合围，古兰果断开启龙血化速战速决（古兰血脉浓度 +10），成功撕开防线将{name}护送回断剑与麦酒旅店（伊丝娜金钱渴望 -30，好感度 +8）。'
         }
       }
+    },
+    {
+      id: 'isna_mud_camp_report',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['isna'],
+      covert: true,
+      repeatable: true,
+      echoId: 'echo_isna_mud_spy',
+      when: ({ npc, phase }) => {
+        if (npc.stage !== 2 || npc.flags?.captured_orc || npc.flags?.isna_fallen_orc || npc.flags?.isnaMudSealCleared) return false
+        const mudDays = npc.flags?.isnaMudDays ?? 0
+        const count = npc.flags?.isnaMudSpyCount ?? 0
+        const dueCycles = Math.min(3, Math.floor(mudDays / 3))
+        if (dueCycles <= count) return false
+        const exactCycleDay = mudDays === (count + 1) * 3
+        return !exactCycleDay || ['night', 'deep_night'].includes(phase.id)
+      },
+      effects: ({ world, npc }) => {
+        const count = (npc.flags?.isnaMudSpyCount ?? 0) + 1
+        const positions = ['悬空架腿后入', '兽皮榻跪趴轮换后入', '按压双膝深顶灌注']
+        const volumes = [55, 65, 75]
+        return {
+          npcFlags: { isnaMudSpyCount: count },
+          dossierAdd: [{
+            npc: 'isna',
+            at: world.timeMin,
+            type: 'encounter',
+            parts: ['vagina'],
+            penetrative: true,
+            internal: true,
+            position: positions[(count - 1) % positions.length],
+            volumeMl: volumes[(count - 1) % volumes.length]
+          }]
+        }
+      },
+      text: '每隔三日夜幕降临时，{name}便强忍着小腹血契魔纹的灼痛借故离开旅店，潜回黑兽人营地向千夫长克罗格汇报城镇布防与队伍动向；虽然尚念旧情而心怀愧疚挣扎，身体却不得不在营帐中以更粗暴的轮换体位承接大量兽人精液灌注，借此压制魔纹直至次日清晨悄然返回。'
+    },
+    {
+      id: 'isna_mud_probe',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['isna'],
+      title: '探查·伊丝娜的异常',
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc }) =>
+        npc.stage === 2 &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudSealCleared &&
+        !npc.flags?.isna_mud_hopeless_fled &&
+        !npc.flags?.isnaMudOutTonight &&
+        !npc.flags?.isnaMudTruthKnown &&
+        (npc.flags?.isnaMudProbeCount ?? 0) === 0 &&
+        (npc.flags?.isnaMudSpyCount ?? 0) >= 1 &&
+        world.playerLocation === 'inn' &&
+        npc.location === 'inn' &&
+        (world.interactingIds || []).includes('isna'),
+      expireWhen: ({ world, npc }) =>
+        npc.stage !== 2 ||
+        world.playerLocation !== 'inn' ||
+        npc.location !== 'inn' ||
+        Boolean(npc.flags?.isnaMudOutTonight || npc.flags?.isna_fallen_orc || npc.flags?.isnaMudSealCleared || npc.flags?.isna_mud_hopeless_fled || npc.flags?.isnaMudTruthKnown) ||
+        (npc.flags?.isnaMudProbeCount ?? 0) > 0,
+      text: '经历再次归巢受辱回到旅店后，你来到二层伊丝娜的房间拜访，却敏锐地察觉她神色格外紧绷、指尖冰凉发抖，衣襟下似有隐忍的战栗。',
+      outcomes: {
+        probe_confess: {
+          when: ({ npc }) => (npc.values?.affection ?? 0) >= 75,
+          effects: ({ npc }) => ({
+            npcFlags: {
+              isnaMudProbeCount: 1,
+              isnaMudTruthKnown: true,
+              isnaMudTruthDay: npc.flags?.isnaMudDays ?? 0
+            }
+          }),
+          text: '刚刚经历过再次归巢受辱、又撞见你关切追问的{name}终于绷不住了；她抱着必死的决心扑进你怀里痛哭着吐露了全部真相，请求原谅自己当初自大导致失足、被种下血契又遭恐吓封口的窘境，同时颤声央求你不要嫌弃已被兽人玷污的她。'
+        },
+        probe_evade: {
+          when: ({ npc }) => (npc.values?.affection ?? 0) < 75,
+          effects: ({ npc }) => ({
+            npcFlags: {
+              isnaMudProbeCount: 1,
+              isnaMudFirstProbeDay: npc.flags?.isnaMudDays ?? 0
+            }
+          }),
+          text: '{name}耳尖一颤，神色慌乱地攥紧衣领遮遮掩掩地推辞，一口咬定只是连日奔波受了风寒，未敢吐露半句真相便糊弄着将你半推半就地赶出了房间。'
+        }
+      }
+    },
+    {
+      id: 'isna_mud_probe_second',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['isna'],
+      title: '深夜探查·伊丝娜的异常',
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        npc.stage === 2 &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudSealCleared &&
+        !npc.flags?.isna_mud_hopeless_fled &&
+        !npc.flags?.isnaMudOutTonight &&
+        !npc.flags?.isnaMudTruthKnown &&
+        (npc.flags?.isnaMudProbeCount ?? 0) === 1 &&
+        Math.floor((npc.flags?.isnaMudDays ?? 0) / 3) > Math.floor((npc.flags?.isnaMudFirstProbeDay ?? 0) / 3) &&
+        ['night', 'deep_night'].includes(phase.id) &&
+        world.playerLocation === 'inn' &&
+        npc.location === 'inn' &&
+        (world.interactingIds || []).includes('isna'),
+      expireWhen: ({ world, npc }) =>
+        npc.stage !== 2 ||
+        world.playerLocation !== 'inn' ||
+        npc.location !== 'inn' ||
+        Boolean(npc.flags?.isnaMudOutTonight || npc.flags?.isna_fallen_orc || npc.flags?.isnaMudSealCleared || npc.flags?.isna_mud_hopeless_fled || npc.flags?.isnaMudTruthKnown),
+      text: '深夜再次造访伊丝娜房门外时，门缝里透出断续压抑的娇喘与布料摩挲声，空气中飘散着半兽人发情时特有的躁热气息。',
+      outcomes: {
+        probe_break_in: {
+          when: ({ world, npc }) => world.playerLocation === 'inn' && npc.location === 'inn',
+          effects: ({ npc }) => ({
+            npcFlags: {
+              isnaMudProbeCount: 2,
+              isnaMudTruthKnown: true,
+              isnaMudTruthDay: npc.flags?.isnaMudDays ?? 0
+            }
+          }),
+          text: '你直接推门而入，正撞见床榻上小腹隐蔽处显现暗红印记的{name}——经过前番调教的身体本就属于半兽人血统，夜晚情潮难耐下正蜷缩在被褥间颤抖自慰渴求灌注。面对已然显现的印记她百口莫辩，只得哭着说出被迫潜回营地接受灌注的真相，央求你不要嫌弃已被兽人玷污的她。'
+        }
+      }
+    },
+    {
+      id: 'isna_mud_purge_choice',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['isna'],
+      title: '拔除·伊丝娜的兽人血契',
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        npc.stage === 2 &&
+        Boolean(npc.flags?.isnaMudTruthKnown) &&
+        !npc.flags?.isnaMudSealCleared &&
+        !npc.flags?.isna_mud_hopeless_fled &&
+        !npc.flags?.isna_fallen_orc &&
+        (npc.flags?.isnaMudDays ?? 0) > (npc.flags?.isnaMudTruthDay ?? 999) &&
+        ['morning', 'afternoon'].includes(phase.id) &&
+        (canPurgeIsnaSealCecilia(world) || canPurgeIsnaSealGulan(world)),
+      expireWhen: ({ world, npc }) =>
+        npc.stage !== 2 ||
+        Boolean(npc.flags?.isnaMudSealCleared || npc.flags?.isna_mud_hopeless_fled || npc.flags?.isna_fallen_orc) ||
+        (!canPurgeIsnaSealCecilia(world) && !canPurgeIsnaSealGulan(world)),
+      text: '熬到次日白天，{name}惴惴不安地候在旅店等待你的决断。小腹上的血契印记虽暂时蛰伏，若再拖延到下一个三日期限便会再度爆发，必须尽快请可靠同伴出手拔除。',
+      outcomes: {
+        purge_cecilia: {
+          when: ({ world }) => canPurgeIsnaSealCecilia(world),
+          effects: [
+            { target: 'cecilia', add: { affection: 2, orphanage_funds: -15 } },
+            {
+              target: 'isna',
+              stage: 0,
+              move: 'inn',
+              forceMove: true,
+              add: { gold_desire: -30, affection: 6 },
+              tagsAdd: ['isna_orc_phobia'],
+              tagsRemove: ['orc_blood_seal', 'orc_spy_conflict'],
+              npcFlags: {
+                isnaMudSealCleared: true,
+                isnaMudOutTonight: false,
+                gold_desire_frozen: false
+              }
+            }
+          ],
+          text: '你带着{name}前往教堂请塞西莉亚出手。塞西莉亚虽接下了请求，但执行驱除仪式需要耗费不少珍稀净礼材料，进一步加剧了教堂孤儿院资金的耗尽（孤儿院资金 -15）；圣洁神术持续洗涤掉她小腹隐蔽处的血契印记，{name}虚脱地伏在你肩头终于重回正线，却也对兽人留下了难以抹去的恐惧阴影。'
+        },
+        purge_gulan: {
+          when: ({ world }) => canPurgeIsnaSealGulan(world),
+          effects: [
+            { target: 'gulan', add: { blood_density: 5, affection: 2 } },
+            {
+              target: 'isna',
+              stage: 0,
+              move: 'inn',
+              forceMove: true,
+              add: { gold_desire: -30, affection: 6 },
+              tagsAdd: ['isna_orc_phobia'],
+              tagsRemove: ['orc_blood_seal', 'orc_spy_conflict'],
+              npcFlags: {
+                isnaMudSealCleared: true,
+                isnaMudOutTonight: false,
+                gold_desire_frozen: false
+              }
+            }
+          ],
+          text: '你请出古兰替{name}压制印记。古兰不得不激活体内龙血以炽烈龙息贴合她小腹印记强行灼烧拔除，这番催动也导致古兰自身的血脉浓度小幅上升（古兰血脉浓度 +5）；痛苦退去后{name}终于脱离泥足重返正线，只是此后一闻兽人踪迹便会本能战栗回避。'
+        }
+      }
+    },
+    {
+      id: 'isna_mud_hopeless_flee',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['isna'],
+      when: ({ world, npc, phase }) =>
+        npc.stage === 2 &&
+        Boolean(npc.flags?.isnaMudTruthKnown) &&
+        !npc.flags?.isnaMudSealCleared &&
+        !npc.flags?.isna_mud_hopeless_fled &&
+        !npc.flags?.isna_fallen_orc &&
+        (npc.flags?.isnaMudDays ?? 0) > (npc.flags?.isnaMudTruthDay ?? 999) &&
+        ['morning', 'afternoon'].includes(phase.id) &&
+        !canPurgeIsnaSealCecilia(world) &&
+        !canPurgeIsnaSealGulan(world),
+      effects: {
+        move: 'wilds',
+        forceMove: true,
+        npcFlags: {
+          isna_mud_hopeless_fled: true,
+          isnaMudOutTonight: false
+        }
+      },
+      text: '次日白天，得知塞西莉亚与古兰均已自身难保无法出手拔除血契后，失去最后希望的{name}绝望地独自逃离了旅店，在绝望与体内的催情反噬中等待泥足期满。'
     },
     {
       id: 'wilds_rescue_trap_low',

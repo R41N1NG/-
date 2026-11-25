@@ -1,6 +1,6 @@
 /**
  * @module okh_app_flags
- * @updated 2026-11-25 06:42
+ * @updated 2026-11-25 10:42
  * @status active
  * @reason Flag 字段说明与只读存档检查
  */
@@ -16,6 +16,7 @@
     arrivedDay: ['游戏日或 null', null, '抵镇日，供剧情和日程计算', once],
     ed_joined: ['布尔', false, '爱德已经加入队伍', once],
     playerRoomTarget: ['角色 ID 或 null', null, '当前同房角色', '分房、同房条件失效或拂晓时清空'],
+    lastGulanRoomMin: ['分钟或 undefined', undefined, '上次与古兰同房保护的时间戳，高好感提供 2880 分钟余韵缓冲', '同房或拂晓自然分房时刷新'],
     curfew_active: ['布尔', undefined, '镇内宵禁', '清算或封路后的替代剧情分支可清除'],
     eileen_arrived: ['布尔', false, '艾琳已抵达奥克赫斯', once],
     eileen_departed: ['布尔', false, '艾琳启程离镇，护送或伏击分支由此结算', once],
@@ -39,7 +40,23 @@
 
   const npcFields = {
     gulan: {
-      ed_hypnosis_play_done: ['布尔', undefined, '首次水晶球暗线已经触发，用于防止重复触发', once]
+      ed_hypnosis_play_done: ['布尔', undefined, '首次水晶球暗线已经触发，用于防止重复触发', once],
+      gulan_rescue_count: ['整数', 0, '古兰三段式守护成功次数（0/1/2/3）', once],
+      gulan_pure_bond_done: ['布尔', undefined, '已完成第三次身心缔约守护，永久关闭暗线收割', once],
+      gulan_final_fall_done: ['布尔', undefined, '古兰终局暗线收割已触发', once]
+    },
+    isna: {
+      orcCaptiveDays: ['整数', 0, '伊丝娜被黑兽人营地关押累计天数', '获救或转入泥足期时清零'],
+      isnaMudDays: ['整数', 0, '伊丝娜泥足期反向间谍累计天数（0-10）', '拔除印记或转入沉沦期后停止增长'],
+      isnaMudSpyCount: ['整数', 0, '泥足期第 3/6/9 天潜回营地汇报受赏次数', once],
+      isnaMudOutTonight: ['布尔', false, '泥足期第 3/6/9 天夜间外出潜回营地标记，不在旅店房内', '次日拂晓后重置为 false'],
+      isnaMudProbeCount: ['整数', 0, '泥足期玩家在旅店探查伊丝娜异常的次数（0/1/2）', '拔除印记后保留或随线结束'],
+      isnaMudFirstProbeDay: ['整数或 null', null, '低好感首次探查时所处的泥足期天数，用于限制二次探查须跨越下一潜回周期', once],
+      isnaMudTruthKnown: ['布尔', false, '玩家已知晓伊丝娜身上的兽人血契真相', once],
+      isnaMudTruthDay: ['整数或 null', null, '真相揭露时的泥足期天数，用于次日白天触发同伴拔除印记交互', once],
+      isnaMudSealCleared: ['布尔', false, '伊丝娜体内兽人血契印记已被同伴拔除，保住正线', once],
+      isna_mud_hopeless_fled: ['布尔', false, '塞西莉亚与古兰均无法相助，伊丝娜绝望逃离旅店等待转入沉沦期', once],
+      isnaFallenDay: ['整数或 null', null, '伊丝娜转入阶段 3 沉沦期时的游戏日', once]
     },
     nise: {
       nise_first_debt_done: ['布尔', undefined, '首笔赌场借据已经签下', once],

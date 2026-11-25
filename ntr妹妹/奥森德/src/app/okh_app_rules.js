@@ -75,6 +75,7 @@
     if (!Object.hasOwn(DATA.LOCATIONS, to)) return false
     if (!world?.flags?.arrived_oakhaven && TOWN_LOCATION_SET.has(to)) return false
     if (npc && isFugitiveSyncedNpc(world, npc) && to !== world.playerLocation) return false
+    if (npc?.id === 'isna' && to === 'wilds_camp' && world?.tags?.isna?.includes('isna_orc_phobia')) return false
     return true
   }
 
@@ -117,7 +118,9 @@
         gulan?.location === 'inn' &&
         (gulan.stage ?? 0) < 3 &&
         ((gulan.stage ?? 0) < 2 || (gulan.values?.affection ?? 0) >= 90)
-      return stillValid ? [] : [{ target: 'world', worldFlags: { playerRoomTarget: null } }]
+      return stillValid
+        ? [{ target: 'world', worldFlags: { lastGulanRoomMin: world.timeMin } }]
+        : [{ target: 'world', worldFlags: { playerRoomTarget: null } }]
     }
     if (room.state === 'separate') {
       return [{ target: 'world', worldFlags: { playerRoomTarget: null } }]
@@ -132,7 +135,12 @@
       (gulan.values?.affection ?? 0) >= 90 &&
       (gulan.stage ?? 0) < 3
 
-    return [{ target: 'world', worldFlags: { playerRoomTarget: ok ? 'gulan' : null } }]
+    return [{
+      target: 'world',
+      worldFlags: ok
+        ? { playerRoomTarget: 'gulan', lastGulanRoomMin: world.timeMin }
+        : { playerRoomTarget: null }
+    }]
   }
 
   function appendNovelty(flags, rawItem) {
@@ -171,8 +179,9 @@
       guild_report: ({ world, npc }) =>
         world.flags?.arrived_oakhaven && npc.flags?.player_guild_job_done
           ? { add: { affection: 2 }, npcFlags: { player_guild_job_done: false } } : null,
-      wilds_assist: ({ npc }) =>
-        ['wilds', 'wilds_camp'].includes(npc.location)
+      wilds_assist: ({ world, npc }) =>
+        ['wilds', 'wilds_camp'].includes(npc.location) &&
+        !(npc.location === 'wilds_camp' && world?.tags?.isna?.includes('isna_orc_phobia'))
           ? { add: { affection: 3 }, exemptCap: true } : null,
       calm: ({ world, npc }) =>
         (npc.values.affection ?? 0) >= 70 && npc.stage >= 1 && npc.stage <= 2 &&
@@ -216,8 +225,9 @@
       gift: ({ world, npc }) =>
         world.flags?.arrived_oakhaven && ['inn', 'town'].includes(npc.location) && !npc.flags?.isna_gift_today
           ? { goldCost: 2, add: { affection: 2 }, npcFlags: { isna_gift_today: true } } : null,
-      wilds_assist: ({ npc }) =>
-        ['wilds', 'wilds_camp'].includes(npc.location)
+      wilds_assist: ({ world, npc }) =>
+        ['wilds', 'wilds_camp'].includes(npc.location) &&
+        !(npc.location === 'wilds_camp' && world?.tags?.isna?.includes('isna_orc_phobia'))
           ? { add: { affection: 3 }, exemptCap: true } : null,
       offend: () => ({ add: { affection: -5 }, exemptCap: true })
     },
@@ -239,8 +249,9 @@
         world.flags?.arrived_oakhaven && ['morning', 'afternoon'].includes(phase.id) &&
         ['town', 'wilds', 'wilds_camp'].includes(npc.location) && !npc.flags?.nise_escort_today
           ? { add: { affection: 2 }, npcFlags: { nise_escort_today: true } } : null,
-      wilds_assist: ({ npc }) =>
-        ['wilds', 'wilds_camp'].includes(npc.location)
+      wilds_assist: ({ world, npc }) =>
+        ['wilds', 'wilds_camp'].includes(npc.location) &&
+        !(npc.location === 'wilds_camp' && world?.tags?.isna?.includes('isna_orc_phobia'))
           ? { add: { affection: 3 }, exemptCap: true } : null,
       guide: ({ world, npc, item }) => {
         if ((world.timeMin - (npc.flags?.lastGuideMin ?? -9999)) < 2880) return null
@@ -283,8 +294,9 @@
       gift: ({ world, npc }) =>
         world.flags?.arrived_oakhaven && ['inn', 'town', 'church'].includes(npc.location) && !npc.flags?.aurora_gift_today
           ? { goldCost: 2, add: { affection: 2 }, npcFlags: { aurora_gift_today: true } } : null,
-      wilds_assist: ({ npc }) =>
-        ['wilds', 'wilds_camp'].includes(npc.location)
+      wilds_assist: ({ world, npc }) =>
+        ['wilds', 'wilds_camp'].includes(npc.location) &&
+        !(npc.location === 'wilds_camp' && world?.tags?.isna?.includes('isna_orc_phobia'))
           ? { add: { affection: 3 }, exemptCap: true } : null,
       offend: () => ({ add: { affection: -5 }, exemptCap: true })
     },

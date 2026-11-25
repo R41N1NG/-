@@ -13,6 +13,7 @@
   const DAILY = root.OKH_APP_DAILY
   if (!DATA) throw Error('time 缺少 OKH_APP_DATA')
   const GULAN_BLOOD_LIMIT = DATA.ROSTER.find(npc => npc.id === 'gulan')._metricBounds.blood_density[1]
+  const GULAN_NIGHT_POSITIONS = ['传教士式', '后入式', '侧卧交缠', '骑乘位', '抱膝深压']
 
   function gulanRoomBlockedUntilMin(world, fromMin) {
     if (world.flags?.playerRoomTarget !== 'gulan') return -1
@@ -70,6 +71,7 @@
       gulanLoc: gulan?.location || null,
       gulanRoomProtectedUntil: gulanRoomBlockedUntilMin(world, fromMin),
       gulanLastNight: Number.isFinite(gulan?.flags?.lastNightSettledDay) ? gulan.flags.lastNightSettledDay : 0,
+      isnaStage: isna?.stage ?? 0,
       isnaAlive: Boolean(isna && isna.alive !== false),
       isnaFrozen: Boolean(isna?.flags?.gold_desire_frozen),
       isnaWorked: Boolean(isna?.flags?.isna_worked_today),
@@ -79,6 +81,8 @@
       isnaCapturedOrc: Boolean(isna?.flags?.captured_orc),
       isnaFallenOrc: Boolean(isna?.flags?.isna_fallen_orc),
       isnaCaptiveDays: Number.isFinite(isna?.flags?.orcCaptiveDays) ? isna.flags.orcCaptiveDays : 0,
+      isnaMudDays: Number.isFinite(isna?.flags?.isnaMudDays) ? isna.flags.isnaMudDays : 0,
+      isnaMudSealCleared: Boolean(isna?.flags?.isnaMudSealCleared),
       isnaLastNight: Number.isFinite(isna?.flags?.lastNightSettledDay) ? isna.flags.lastNightSettledDay : 0,
       niseAlive: Boolean(nise && nise.alive !== false && nise.monitored !== false && !nise.flags?.nise_fled_casino),
       niseStage: nise?.stage ?? 0,
@@ -156,6 +160,25 @@
       // 同次推进可能跨多个午夜，下一晚要从这次结算后的浓度计算。
       sim.gulanBloodDensity += bloodGain
     }
+    if (sim.gulanStage === 2) {
+      if (bloodGain > 0) {
+        change.tagsAdd = ['mud_nightly_trace']
+        change.dossierAdd = [{
+          type: 'encounter',
+          at: k * 1440,
+          location: sim.gulanLoc,
+          parts: ['chest', 'hips'],
+          penetrative: true,
+          internal: true,
+          position: GULAN_NIGHT_POSITIONS[k % GULAN_NIGHT_POSITIONS.length],
+          volumeMl: 8 + (k % 7)
+        }]
+      } else {
+        change.tagsRemove = ['mud_nightly_trace']
+      }
+    } else if (sim.gulanStage >= 3) {
+      change.tagsRemove = ['mud_nightly_trace']
+    }
     changes.push(change)
     sim.gulanLastNight = k
     return bloodGain > 0
@@ -186,6 +209,10 @@
     } else if (sim.isnaAlive && sim.isnaCapturedOrc && !sim.isnaFallenOrc) {
       sim.isnaCaptiveDays += 1
       change.npcFlags.orcCaptiveDays = sim.isnaCaptiveDays
+    } else if (sim.isnaAlive && sim.isnaStage === 2 && !sim.isnaCapturedOrc && !sim.isnaFallenOrc && !sim.isnaMudSealCleared) {
+      sim.isnaMudDays += 1
+      change.npcFlags.isnaMudDays = sim.isnaMudDays
+      change.npcFlags.isnaMudOutTonight = [3, 6, 9].includes(sim.isnaMudDays)
     }
     changes.push(change)
     sim.isnaWorked = false
@@ -489,7 +516,9 @@
       }
     }
     if (shouldClearRoomTarget(world, fromMin, toMin)) {
-      changes.push({ target: 'world', worldFlags: { playerRoomTarget: null } })
+      const clearFlags = { playerRoomTarget: null }
+      if (world.flags?.playerRoomTarget === 'gulan') clearFlags.lastGulanRoomMin = toMin
+      changes.push({ target: 'world', worldFlags: clearFlags })
     }
     return changes
   }

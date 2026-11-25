@@ -59,7 +59,7 @@
     const userCommand = userCommandBefore(chat, target);
     const entry = ECHO.replayEntry(before, userCommand, ALBUM.findImage);
     if (!entry) return { command: null, retry: false };
-    if (ECHO.hasReplyMarker(chat[target]?.mes, entry.def.cgId)) {
+    if (!entry.marker || ECHO.hasReplyMarker(chat[target]?.mes, entry.def.cgId)) {
       return { command: entry.def.triggerCommand, retry: false };
     }
     return { command: null, retry: !ECHO.isViewed(before, entry.def.id) };
@@ -361,8 +361,10 @@
         const echo = ECHO.replayEntry(promptWorld, userCommandBefore(chat, generation.targetIndex), ALBUM.findImage);
         const echoInjection = echo ? [
           echo.def.promptGuidance,
-          '在本轮 <content> 正文回放中另起一行，原样写出以下插图标记。不要放进代码块或状态栏。',
-          echo.marker,
+          ...(echo.marker ? [
+            '在本轮 <content> 正文回放中另起一行，原样写出以下插图标记。不要放进代码块或状态栏。',
+            echo.marker
+          ] : []),
           '【故事内容基底】',
           (echo.def.storyText || '').replace(/\{name\}/g, promptWorld.npcs?.[echo.def.npc]?.name || echo.def.npc)
         ].join('\n') : '';

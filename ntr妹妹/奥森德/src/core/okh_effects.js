@@ -21,8 +21,10 @@
         'worldFlags',
         'monitored',
         'alive',
+        'stage',
         'tagsAdd',
-        'tagsRemove'
+        'tagsRemove',
+        'dossierAdd'
       ]);
 
       Object.keys(data).forEach(name => {
@@ -185,6 +187,25 @@
         config.applyTags(world, npc.id, data.tagsAdd, data.tagsRemove);
       }
 
+      if (data.dossierAdd !== undefined) {
+        u.check(Array.isArray(data.dossierAdd), 'dossierAdd 必须是数组');
+        world.playerState ||= {};
+        const records = world.playerState.dossierRecords ||= [];
+        for (const rec of data.dossierAdd) {
+          u.check(rec && typeof rec === 'object', 'dossierAdd 条目必须为对象');
+          const targetNpc = rec.npc || npc?.id;
+          u.check(u.id(targetNpc), 'dossierAdd 必须关联合法角色 ID');
+          records.push({
+            ...rec,
+            npc: targetNpc,
+            type: rec.type || 'encounter',
+            parts: Array.isArray(rec.parts) ? [...rec.parts] : [],
+            at: rec.at ?? world.timeMin,
+            location: rec.location || npc?.location || world.playerLocation
+          });
+        }
+      }
+
       if (data.monitored !== undefined) {
         u.check(typeof data.monitored === 'boolean', 'monitored 必须是布尔值');
         npc.monitored = data.monitored;
@@ -196,6 +217,11 @@
         if (data.alive === false) {
           npc.monitored = false;
         }
+      }
+
+      if (data.stage !== undefined) {
+        u.check(npc && Number.isInteger(data.stage) && data.stage >= 0 && data.stage <= 3, 'stage 必须是 0~3 的整数');
+        npc.stage = data.stage;
       }
 
       if (npc) {

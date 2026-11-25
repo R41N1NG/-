@@ -237,6 +237,11 @@
     negotiate_teach: { title: '教爱德甄别雇主信用并协商补贴', hint: '加赏+教学' },
     accept_perk: { title: '收下掌柜折让优惠，肯定爱德的持家付出', hint: '免租/折抵' },
     trade_teach: { title: '将折让换作干粮贴补，并教爱德爱惜力气', hint: '贴补+教学' },
+    probe_confess: { title: '走近轻声追问伊丝娜今日的反常与伤痕', hint: '探查异常' },
+    probe_evade: { title: '追问伊丝娜近来行踪与神色异样', hint: '探查异常' },
+    probe_break_in: { title: '深夜推门察看房内异响与魔纹异动', hint: '深夜推门' },
+    purge_cecilia: { title: '带伊丝娜前往教堂，请塞西莉亚以神术拔除血契印记', hint: '神术拔除' },
+    purge_gulan: { title: '请古兰在旅店以龙血灼烧压制并斩断血契印记', hint: '龙血拔除' },
     cancel: { title: '暂缓决定，容后再议', hint: '暂且搁置' }
   }
 

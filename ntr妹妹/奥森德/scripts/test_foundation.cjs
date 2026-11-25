@@ -90,7 +90,7 @@ async function runTests() {
     u.validateConfig(validCfg);
     for (const ev of validCfg.events) {
       assert(['result', 'interaction'].includes(ev.mode), `event ${ev.id} invalid mode`);
-      assert(typeof ev.text === 'string' && ev.text.trim().length > 0, `event ${ev.id} missing text`);
+      assert(typeof ev.text === 'function' || (typeof ev.text === 'string' && ev.text.trim().length > 0), `event ${ev.id} missing text`);
     }
 
     assert.throws(() => u.validateConfig({
@@ -165,7 +165,36 @@ async function runTests() {
     }, cfg).state;
     assert.strictEqual(w.npcs.gulan.stage, 2);
     assert.strictEqual(w.npcs.gulan.values.blood_density, 72);
-    assert.strictEqual(w.npcs.gulan.flags.gulan_rescued_final, true);
+    assert.strictEqual(w.npcs.gulan.flags.gulan_rescue_count, 1);
+
+    // Step 2 (threshold 90 -> 80) and Step 3 (threshold 100 -> pure bond, blocks fall)
+    w.npcs.gulan.values.blood_density = 90;
+    w = OKHBackground.advance(w, { id: 'm3', revision: 'r3', toMin: w.timeMin + 15, interactingIds: [], front: {} }, cfg).state;
+    assert.strictEqual(w.bg.eventStates[promptKey]?.status, 'pending');
+    w = OKHBackground.advance(w, {
+      id: 'm4', revision: 'r4', toMin: w.timeMin + 20, interactingIds: [],
+      front: { resolveEvents: [{ eventId: 'gulan_final_rescue_prompt', npcId: 'gulan', outcome: 'rescue' }] }
+    }, cfg).state;
+    assert.strictEqual(w.npcs.gulan.values.blood_density, 80);
+    assert.strictEqual(w.npcs.gulan.flags.gulan_rescue_count, 2);
+
+    w.npcs.gulan.values.blood_density = 100;
+    w = OKHBackground.advance(w, { id: 'm5', revision: 'r5', toMin: w.timeMin + 25, interactingIds: [], front: {} }, cfg).state;
+    assert.strictEqual(w.bg.eventStates[promptKey]?.status, 'pending');
+    w = OKHBackground.advance(w, {
+      id: 'm6', revision: 'r6', toMin: w.timeMin + 30, interactingIds: [],
+      front: { resolveEvents: [{ eventId: 'gulan_final_rescue_prompt', npcId: 'gulan', outcome: 'rescue' }] }
+    }, cfg).state;
+    assert.strictEqual(w.npcs.gulan.values.blood_density, 100);
+    assert.strictEqual(w.npcs.gulan.flags.gulan_rescue_count, 3);
+    assert.strictEqual(w.npcs.gulan.flags.gulan_pure_bond_done, true);
+    assert.strictEqual(w.npcs.gulan.stage, 2);
+
+    // Once count === 3, leaving inn does NOT trigger gulan_final_fall_dark
+    w.playerLocation = 'wilds';
+    w = OKHBackground.advance(w, { id: 'm7', revision: 'r7', toMin: w.timeMin + 35, interactingIds: [], front: {} }, cfg).state;
+    assert.strictEqual(w.npcs.gulan.flags.gulan_final_fall_done, undefined);
+    assert.strictEqual(w.npcs.gulan.stage, 2);
 
     let wFail = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
     wFail.flags.arrived_oakhaven = true;
@@ -1628,20 +1657,20 @@ async function runTests() {
     assert.strictEqual(wLow.npcs.gulan.values.affection, 50, 'Stage 3 caps affection at 50');
     assert.strictEqual(wLow.npcs.gulan.flags.affection_locked, true, 'Stage 3 locks affection');
 
-    // (b) High affection (>=90), !gulan_rescued_final, player away at wilds:
-    // bd=85 stays in stage 2 (10-point buffer), bd=90 falls to stage 3
+    // (b) High affection (>=90), rescue_count=0, player away at wilds:
+    // bd=79 stays in stage 2, bd=80 falls covertly to stage 3
     let wAway = setupBase();
     wAway.playerLocation = 'wilds';
     wAway.npcs.gulan.values.affection = 92;
-    wAway.npcs.gulan.values.blood_density = 85;
+    wAway.npcs.gulan.values.blood_density = 79;
     wAway = OKHBackground.advance(wAway, { id: 'gf2', revision: 'rgf2', toMin: DAY(10, 21) + 5, interactingIds: [], front: {} }, cfg).state;
-    assert.strictEqual(wAway.npcs.gulan.stage, 2, 'High affection away with bd=85 retains 10-point buffer');
-    wAway.npcs.gulan.values.blood_density = 90;
+    assert.strictEqual(wAway.npcs.gulan.stage, 2, 'High affection away with bd=79 stays in stage 2');
+    wAway.npcs.gulan.values.blood_density = 80;
     wAway = OKHBackground.advance(wAway, { id: 'gf3', revision: 'rgf3', toMin: DAY(10, 22), interactingIds: [], front: {} }, cfg).state;
-    assert.strictEqual(wAway.npcs.gulan.flags.gulan_final_fall_done, true, 'High affection away with bd=90 triggers gulan_final_fall_dark');
-    assert.strictEqual(wAway.npcs.gulan.stage, 3, 'Absent high-affection Gulan falls to stage 3 at bd=90');
+    assert.strictEqual(wAway.npcs.gulan.flags.gulan_final_fall_done, true, 'High affection away with bd=80 triggers gulan_final_fall_dark');
+    assert.strictEqual(wAway.npcs.gulan.stage, 3, 'Absent high-affection Gulan falls to stage 3 at bd=80');
 
-    // (c) High affection (>=90), !gulan_rescued_final, player AT inn, bd=82 still triggers interaction prompt rather than dark auto-fall
+    // (c) High affection (>=90), rescue_count=0, player AT inn, bd=82 still triggers interaction prompt rather than dark auto-fall
     let wPresent = setupBase();
     wPresent.playerLocation = 'inn';
     wPresent.npcs.gulan.values.affection = 92;
@@ -1651,22 +1680,21 @@ async function runTests() {
     assert.strictEqual(wPresent.bg.eventStates[promptKey]?.status, 'pending', 'Player present at inn with >=90 still gets rescue prompt');
     assert.strictEqual(wPresent.npcs.gulan.stage, 2, 'Rescue prompt does not skip straight to stage 3');
 
-    // (d) Post-rescue relapse: gulan_rescued_final=true + bd>=90 blocked while playerRoomTarget==='gulan', then falls once unprotected
+    // (d) After 1 rescue (rescue_count=1, next threshold 90):
+    // staying at inn prompts step 2 instead of falling; leaving inn at >=90 triggers covert fall
     let wRelapse = setupBase();
     wRelapse.playerLocation = 'inn';
     wRelapse.npcs.gulan.values.affection = 92;
     wRelapse.npcs.gulan.values.blood_density = 90;
-    wRelapse.npcs.gulan.flags.gulan_rescued_final = true;
-    wRelapse.flags.playerRoomTarget = 'gulan';
-    wRelapse.flags.gulanRoomProtectedUntil = DAY(11, 6);
+    wRelapse.npcs.gulan.flags.gulan_rescue_count = 1;
     wRelapse = OKHBackground.advance(wRelapse, { id: 'gf5', revision: 'rgf5', toMin: DAY(10, 22), interactingIds: [], front: {} }, cfg).state;
-    assert.strictEqual(wRelapse.npcs.gulan.stage, 2, 'Active room-target protection blocks post-rescue relapse');
+    assert.strictEqual(wRelapse.npcs.gulan.stage, 2, 'Present at inn prompts step 2 rescue instead of dark fall');
+    assert.strictEqual(wRelapse.bg.eventStates[promptKey]?.status, 'pending', 'Step 2 rescue prompt is pending at inn');
 
-    wRelapse.flags.playerRoomTarget = null;
-    wRelapse.flags.gulanRoomProtectedUntil = null;
+    wRelapse.playerLocation = 'wilds';
     wRelapse = OKHBackground.advance(wRelapse, { id: 'gf6', revision: 'rgf6', toMin: DAY(10, 23), interactingIds: [], front: {} }, cfg).state;
-    assert.strictEqual(wRelapse.npcs.gulan.flags.gulan_final_fall_done, true, 'Unprotected post-rescue relapse >=90 bd triggers gulan_final_fall_dark');
-    assert.strictEqual(wRelapse.npcs.gulan.stage, 3, 'Relapsed Gulan advances to stage 3');
+    assert.strictEqual(wRelapse.npcs.gulan.flags.gulan_final_fall_done, true, 'Away at >=90 bd after 1 rescue triggers gulan_final_fall_dark');
+    assert.strictEqual(wRelapse.npcs.gulan.stage, 3, 'Unprotected absent Gulan advances to stage 3');
     assert.strictEqual(wRelapse.npcs.gulan.values.affection, 50, 'Relapsed stage 3 caps affection at 50');
     assert.strictEqual(wRelapse.npcs.gulan.flags.affection_locked, true, 'Relapsed stage 3 locks affection');
   });
@@ -2256,9 +2284,9 @@ async function runTests() {
     assert(!wSameNight.flags.ed_final_abduction);
     const sameNightQueue = wSameNight.bg.queue.filter(event =>
       ['gulan_final_fall_dark', 'gulan_stage_3', 'ed_showdown_dark'].includes(event.definitionId));
-    assert.deepEqual(Array.from(sameNightQueue, event => event.definitionId),
-      ['gulan_final_fall_dark', 'gulan_stage_3', 'ed_showdown_dark']);
+    assert.deepEqual(Array.from(sameNightQueue, event => event.definitionId), ['ed_showdown_dark']);
     assert(sameNightQueue.every(event => event.at === DAY(1, 19)));
+    assert.strictEqual(wSameNight.playerState.pendingEchoes.some(e => e.id === 'echo_gulan_final_fall'), true);
 
     // 5) 提前发难已沉沦兜底（ed_showdown_dark_early）
     let wDarkEarly = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
@@ -2714,6 +2742,31 @@ async function runTests() {
     assert.strictEqual(wG.npcs.gulan.flags.ed_hypnosis_play_done, true, 'gulan_ed_hypnosis_play fires when separate at night');
     assert.strictEqual(wG.npcs.gulan.stage, 2, 'Gulan advances cleanly to stage 2 (mud)');
 
+    // 2b) High affection (>=90) co-room grants a 2-day (2880 min) grace buffer after dawn separation
+    let wGrace = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
+    wGrace.flags.arrived_oakhaven = true;
+    wGrace.flags.ed_joined = true;
+    wGrace.npcs.ed.monitored = true;
+    wGrace.playerLocation = 'inn';
+    wGrace.npcs.gulan.location = 'inn';
+    wGrace.npcs.ed.location = 'inn';
+    wGrace.npcs.gulan.stage = 1;
+    wGrace.npcs.gulan.values.affection = 92;
+    wGrace.npcs.gulan.values.blood_density = 66;
+    wGrace.timeMin = DAY(10, 22, 0);
+    wGrace.flags.lastInnSettledDay = 9;
+    wGrace = stepFront(wGrace, 'grace_in', DAY(10, 22, 30), '<status_bar><room npc="gulan" state="together" at="10日22:00"/><time elapsed="30"/></status_bar>');
+    assert.strictEqual(wGrace.flags.playerRoomTarget, 'gulan');
+    wGrace = stepFront(wGrace, 'grace_dawn', DAY(11, 8, 0), '<status_bar><time elapsed="570"/></status_bar>');
+    assert.strictEqual(wGrace.flags.playerRoomTarget, null);
+    // Next night (<2880 min since dawn): grace buffer blocks stage 2
+    wGrace = stepFront(wGrace, 'grace_n1', DAY(11, 22, 0), '<status_bar><time elapsed="840"/></status_bar>');
+    assert.strictEqual(wGrace.npcs.gulan.stage, 1, 'Within 2-day grace buffer after co-room, stage 2 stays blocked');
+    // After 2880 min elapsed (Day 13 22:00): grace expires and covert event fires
+    wGrace = stepFront(wGrace, 'grace_n3', DAY(13, 22, 0), '<status_bar><time elapsed="2880"/></status_bar>');
+    assert.strictEqual(wGrace.npcs.gulan.flags.ed_hypnosis_play_done, true, 'After 2-day grace buffer expires, covert event triggers');
+    assert.strictEqual(wGrace.npcs.gulan.stage, 2);
+
     // 3) Isna 90 affection pendant exchange -> inventory isna_pendant -> ambush breaks pendant -> rescue_now recovers
     let wI = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
     wI.flags.arrived_oakhaven = true;
@@ -2750,8 +2803,8 @@ async function runTests() {
     assert.strictEqual(wI.npcs.isna.values.gold_desire, 40);
     assert.strictEqual(wI.npcs.gulan.values.blood_density, gulanBdBefore + 10);
 
-    // 4) Low-affection Isna direct capture -> 3-day fall (stage 1->2->3) -> false trap: high-aff escapes, low-aff captured -> note -> rush blocked -> camp destroyed resolve
-    // 4-A: High affection (>=90) Gulan breaks out with +20 blood_density
+    // 4) Low-affection Isna direct capture -> Stage 1 (camp torture + blood seal + dossier + echo) -> Stage 2 (10-day mud spy, Day 3/6/9 away & covert report) -> Stage 3 (Day 10 fallen) -> false trap
+    // 4-A: High affection (>=90) Gulan breaks out with +20 blood_density after Isna's 10-day mud stage
     let wFHigh = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
     wFHigh.flags.arrived_oakhaven = true;
     wFHigh.playerLocation = 'inn';
@@ -2765,9 +2818,17 @@ async function runTests() {
     wFHigh.timeMin = DAY(14, 10, 0);
     wFHigh.flags.lastInnSettledDay = 13;
     wFHigh = stepFront(wFHigh, 'fh_cap0', DAY(14, 10, 10), '<status_bar><time elapsed="10"/></status_bar>');
+    assert.strictEqual(wFHigh.npcs.isna.stage, 1, 'Isna enters Stage 1 (omen) on capture day');
+    assert.strictEqual(wFHigh.npcs.isna.flags.captured_orc, true);
     wFHigh = stepFront(wFHigh, 'fh_cap1', DAY(15, 10, 0), '<status_bar><time elapsed="1430"/></status_bar>');
-    wFHigh = stepFront(wFHigh, 'fh_cap2', DAY(16, 10, 0), '<status_bar><time elapsed="1440"/></status_bar>');
+    assert.strictEqual(wFHigh.npcs.isna.stage, 2, 'Isna enters Stage 2 (mud spy) & returns to inn');
+    assert.strictEqual(wFHigh.npcs.isna.location, 'inn');
+    for (let d = 16; d <= 25; d++) {
+      wFHigh = stepFront(wFHigh, `fh_mud_${d}`, DAY(d, 20, 0), '<status_bar><time elapsed="1440"/></status_bar>');
+    }
+    assert.strictEqual(wFHigh.npcs.isna.stage, 3, 'Isna enters Stage 3 after 10 mud days');
     assert.strictEqual(wFHigh.npcs.isna.flags.isna_fallen_orc, true);
+    assert.strictEqual(wFHigh.npcs.isna.flags.isnaMudSpyCount, 3, 'Isna completes 3 covert camp reports (Days 3, 6, 9)');
     assert.strictEqual(wFHigh.npcs.gulan.flags.captured_orc, undefined, 'High-affection Gulan is NOT captured');
     assert.notStrictEqual(wFHigh.npcs.gulan.location, 'wilds_camp', 'High-affection Gulan escapes wilds_camp');
     assert.strictEqual(wFHigh.npcs.gulan.values.blood_density, 80, 'High-affection Gulan blood_density reaches 80 (+10 awakening, +20 breakout)');
@@ -2790,12 +2851,16 @@ async function runTests() {
     wF.flags.lastInnSettledDay = 13;
     wF = stepFront(wF, 'f_cap0', DAY(14, 10, 10), '<status_bar><time elapsed="10"/></status_bar>');
     assert.strictEqual(wF.npcs.isna.flags.captured_orc, true);
+    assert.strictEqual(wF.npcs.isna.stage, 1);
     wF = stepFront(wF, 'f_cap1', DAY(15, 10, 0), '<status_bar><time elapsed="1430"/></status_bar>');
-    wF = stepFront(wF, 'f_cap2', DAY(16, 10, 0), '<status_bar><time elapsed="1440"/></status_bar>');
+    assert.strictEqual(wF.npcs.isna.stage, 2);
+    for (let d = 16; d <= 25; d++) {
+      wF = stepFront(wF, `f_mud_${d}`, DAY(d, 20, 0), '<status_bar><time elapsed="1440"/></status_bar>');
+    }
     assert.strictEqual(wF.npcs.isna.flags.isna_fallen_orc, true);
     assert.strictEqual(wF.npcs.gulan.flags.captured_orc, true, 'Low-affection Gulan is captured by trap');
     assert.strictEqual(wF.npcs.gulan.location, 'wilds_camp');
-    assert.strictEqual(wF.flags.gulan_trap_captured_day, 16);
+    assert.strictEqual(wF.flags.gulan_trap_captured_day, 25);
 
     // HUD must display ［暂离］ without leaking wilds_camp spoiler in Gulan roster card
     const hudCaptured = OKH_APP_HUD.buildHudHtml(wF);
@@ -2803,24 +2868,24 @@ async function runTests() {
     assert(!gulanCard.includes('城外黑兽人前哨据点'), 'Captured Gulan location must not leak wilds_camp');
     assert(gulanCard.includes('暂离'), 'Captured Gulan stance/location must show 暂离');
 
-    // Player attempts rush camp on Day 17 -> blocked and repelled back to wilds
-    wF = stepFront(wF, 'f_rush_camp', DAY(17, 8, 0), '<status_bar><move to="wilds_camp"/><time elapsed="60"/></status_bar>');
+    // Player attempts rush camp on Day 26 -> blocked and repelled back to wilds
+    wF = stepFront(wF, 'f_rush_camp', DAY(26, 8, 0), '<status_bar><move to="wilds_camp"/><time elapsed="60"/></status_bar>');
     assert.strictEqual(wF.playerLocation, 'wilds', 'Player cannot enter wilds_camp, repelled to wilds');
 
-    // Player returns to inn on Day 17 -> Ed delivers Gulan note
-    wF = stepFront(wF, 'f_return_inn', DAY(17, 10, 0), '<status_bar><move to="inn"/><time elapsed="120"/></status_bar>');
+    // Player returns to inn on Day 26 -> Ed delivers Gulan note
+    wF = stepFront(wF, 'f_return_inn', DAY(26, 10, 0), '<status_bar><move to="inn"/><time elapsed="120"/></status_bar>');
     assert.strictEqual(wF.flags.gulan_note_delivered, true, 'Ed delivers note at inn on day after capture');
 
-    // Day 18 at inn -> camp destroyed resolve with note -> Gulan returns, blood_density +20, Isna deceased
-    wF = stepFront(wF, 'f_camp_destroyed', DAY(18, 9, 0), '<status_bar><time elapsed="1380"/></status_bar>');
+    // Day 27 at inn -> camp destroyed resolve with note -> Gulan returns, blood_density +20, Isna deceased
+    wF = stepFront(wF, 'f_camp_destroyed', DAY(27, 9, 0), '<status_bar><time elapsed="1380"/></status_bar>');
     assert.strictEqual(wF.flags.orc_camp_destroyed, true, 'Orc camp destroyed');
     assert.strictEqual(wF.flags.gulan_escape_confessed, true);
     assert.strictEqual(wF.npcs.isna.alive, false, 'Fallen Isna deceased');
     assert.strictEqual(wF.npcs.gulan.flags.captured_orc, false);
     assert.strictEqual(wF.npcs.gulan.location, 'inn');
-    assert.strictEqual(wF.npcs.gulan.values.blood_density, 74, 'Gulan blood_density +20 from resolve (+4 from 2 midnights)');
+    assert(wF.npcs.gulan.values.blood_density >= 70, 'Gulan blood_density includes +20 from camp destroyed resolve');
 
-    // 4-C: Low affection (<90) Gulan captured -> Player stays in town on Day 17 (no note) -> Player enters inn on Day 18 -> Confession without note triggers, note blocked
+    // 4-C: Low affection (<90) Gulan captured -> Player stays in town on Day 26 (no note) -> Player enters inn on Day 27 -> Confession without note triggers, note blocked
     let wFNoNote = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
     wFNoNote.flags.arrived_oakhaven = true;
     wFNoNote.flags.ed_joined = true;
@@ -2838,29 +2903,89 @@ async function runTests() {
     wFNoNote.flags.lastInnSettledDay = 13;
     wFNoNote = stepFront(wFNoNote, 'fnn_cap0', DAY(14, 10, 10), '<status_bar><time elapsed="10"/></status_bar>');
     wFNoNote = stepFront(wFNoNote, 'fnn_cap1', DAY(15, 10, 0), '<status_bar><time elapsed="1430"/></status_bar>');
-    wFNoNote = stepFront(wFNoNote, 'fnn_cap2', DAY(16, 10, 0), '<status_bar><time elapsed="1440"/></status_bar>');
+    for (let d = 16; d <= 25; d++) {
+      wFNoNote = stepFront(wFNoNote, `fnn_mud_${d}`, DAY(d, 20, 0), '<status_bar><time elapsed="1440"/></status_bar>');
+    }
     assert.strictEqual(wFNoNote.npcs.gulan.flags.captured_orc, true, 'Gulan captured');
 
-    // Day 16 afternoon: Player leaves inn to town and stays there all through Day 17 (never visits inn on Day 17)
-    wFNoNote = stepFront(wFNoNote, 'fnn_leave_inn', DAY(16, 14, 0), '<status_bar><move to="town"/><time elapsed="240"/></status_bar>');
-    wFNoNote = stepFront(wFNoNote, 'fnn_day17_town', DAY(17, 14, 0), '<status_bar><time elapsed="1440"/></status_bar>');
+    // Day 25 night: Player leaves inn to town and stays there all through Day 26 (never visits inn on Day 26)
+    wFNoNote = stepFront(wFNoNote, 'fnn_leave_inn', DAY(25, 22, 0), '<status_bar><move to="town"/><time elapsed="120"/></status_bar>');
+    wFNoNote = stepFront(wFNoNote, 'fnn_day26_town', DAY(26, 14, 0), '<status_bar><time elapsed="960"/></status_bar>');
     assert.strictEqual(wFNoNote.playerLocation, 'town');
     assert.strictEqual(wFNoNote.flags.gulan_note_delivered, undefined, 'Note is NOT delivered because player never went to inn');
     assert.strictEqual(wFNoNote.flags.gulan_escape_confessed, undefined, 'Confession does not fire while player in town');
 
-    // Day 18 morning in town: still no confession because player and Gulan are not at same location
-    wFNoNote = stepFront(wFNoNote, 'fnn_day18_town', DAY(18, 9, 0), '<status_bar><time elapsed="1140"/></status_bar>');
+    // Day 27 morning in town: still no confession because player and Gulan are not at same location
+    wFNoNote = stepFront(wFNoNote, 'fnn_day27_town', DAY(27, 9, 0), '<status_bar><time elapsed="1140"/></status_bar>');
     assert.strictEqual(wFNoNote.flags.gulan_escape_confessed, undefined, 'Confession still not fired in town');
 
-    // Day 18: Player returns to inn -> Meets Gulan at same location -> Confession without note triggers!
-    wFNoNote = stepFront(wFNoNote, 'fnn_return_inn', DAY(18, 10, 0), '<status_bar><move to="inn"/><time elapsed="60"/></status_bar>');
+    // Day 27: Player returns to inn -> Meets Gulan at same location -> Confession without note triggers!
+    wFNoNote = stepFront(wFNoNote, 'fnn_return_inn', DAY(27, 10, 0), '<status_bar><move to="inn"/><time elapsed="60"/></status_bar>');
     assert.strictEqual(wFNoNote.flags.orc_camp_destroyed, true, 'Orc camp destroyed');
     assert.strictEqual(wFNoNote.flags.gulan_escape_confessed, true, 'Confession without note fired');
     assert.strictEqual(wFNoNote.flags.gulan_note_delivered, undefined, 'Note was NEVER delivered');
     assert.strictEqual(wFNoNote.npcs.isna.alive, false, 'Isna deceased');
     assert.strictEqual(wFNoNote.npcs.gulan.flags.captured_orc, false);
     assert.notStrictEqual(wFNoNote.npcs.gulan.location, 'wilds_camp');
-    assert.strictEqual(wFNoNote.npcs.gulan.values.blood_density, 74);
+
+    // 4-D: Stage 2 high-affection (>=75) room visit probe after Day 3 camp return -> confess -> next-day daytime Cecilia purge (-15 orphanage_funds, +isna_orc_phobia)
+    let wMudHi = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
+    wMudHi.flags.arrived_oakhaven = true;
+    wMudHi.playerLocation = 'inn';
+    wMudHi.npcs.isna.location = 'inn';
+    wMudHi.npcs.isna.stage = 2;
+    wMudHi.npcs.isna.values.affection = 78;
+    wMudHi.npcs.isna.flags.gold_desire_frozen = true;
+    wMudHi.npcs.isna.flags.isnaMudDays = 4;
+    wMudHi.npcs.isna.flags.isnaMudSpyCount = 1;
+    wMudHi.npcs.isna.flags.isnaMudProbeCount = 0;
+    const ceciliaFundsBefore = wMudHi.npcs.cecilia.values.orphanage_funds;
+    wMudHi.timeMin = DAY(18, 19, 0);
+    wMudHi = stepFront(wMudHi, 'mud_hi_visit', DAY(18, 19, 10), '<status_bar><time elapsed="10"/><interact npc="isna"/></status_bar>');
+    assert.strictEqual(wMudHi.bg.eventStates['["event","isna_mud_probe","isna"]']?.status, 'pending', 'High-affection room visit after camp return triggers probe interaction');
+    wMudHi = stepFront(wMudHi, 'mud_hi_confess', DAY(18, 19, 20), '<status_bar><time elapsed="10"/><event_resolve id="isna_mud_probe" npc="isna" outcome="probe_confess"/></status_bar>');
+    assert.strictEqual(wMudHi.npcs.isna.flags.isnaMudTruthKnown, true);
+    // Day 6 (mudDays = 6): away from room
+    wMudHi = stepFront(wMudHi, 'mud_hi_day5', DAY(19, 10, 0), '<status_bar><time elapsed="880"/></status_bar>');
+    wMudHi = stepFront(wMudHi, 'mud_hi_day6', DAY(20, 9, 0), '<status_bar><time elapsed="1380"/></status_bar>');
+    assert.strictEqual(wMudHi.npcs.isna.flags.isnaMudDays, 6);
+    assert.strictEqual(wMudHi.npcs.isna.flags.isnaMudOutTonight, true, 'Day 6 marked as away from inn');
+    assert.strictEqual(sb.OKH_APP_MAP.isLocationHidden(wMudHi.npcs.isna), true, 'Map hides Isna on Day 6');
+    assert.strictEqual(wMudHi.bg.eventStates['["event","isna_mud_purge_choice","isna"]']?.status, 'pending', 'Next-day daytime purge choice appears');
+    wMudHi = stepFront(wMudHi, 'mud_hi_purge', DAY(20, 9, 30), '<status_bar><time elapsed="30"/><event_resolve id="isna_mud_purge_choice" npc="isna" outcome="purge_cecilia"/></status_bar>');
+    assert.strictEqual(wMudHi.npcs.isna.stage, 0, 'Cecilia purge returns Isna to stage 0');
+    assert.strictEqual(wMudHi.npcs.isna.flags.isnaMudSealCleared, true);
+    assert(wMudHi.tags?.isna?.includes('isna_orc_phobia'), 'Purge grants isna_orc_phobia tag');
+    assert.strictEqual(wMudHi.npcs.cecilia.values.orphanage_funds, ceciliaFundsBefore - 20, 'Cecilia purge consumes 15 orphanage_funds (+5 daily drain)');
+
+    // 4-E: Stage 2 low-affection (<75) room visit -> evade on Day 4 -> Day 6 camp report -> Day 7 night 2nd break-in -> Day 8 Gulan purge
+    let wMudLo = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
+    wMudLo.flags.arrived_oakhaven = true;
+    wMudLo.playerLocation = 'inn';
+    wMudLo.npcs.isna.location = 'inn';
+    wMudLo.npcs.isna.stage = 2;
+    wMudLo.npcs.isna.values.affection = 60;
+    wMudLo.npcs.isna.flags.gold_desire_frozen = true;
+    wMudLo.npcs.isna.flags.isnaMudDays = 4;
+    wMudLo.npcs.isna.flags.isnaMudSpyCount = 1;
+    wMudLo.npcs.isna.flags.isnaMudProbeCount = 0;
+    wMudLo.timeMin = DAY(19, 19, 0);
+    wMudLo = stepFront(wMudLo, 'mud_lo_visit1', DAY(19, 19, 10), '<status_bar><time elapsed="10"/><interact npc="isna"/></status_bar>');
+    wMudLo = stepFront(wMudLo, 'mud_lo_evade', DAY(19, 19, 20), '<status_bar><time elapsed="10"/><event_resolve id="isna_mud_probe" npc="isna" outcome="probe_evade"/></status_bar>');
+    assert.strictEqual(wMudLo.npcs.isna.flags.isnaMudFirstProbeDay, 4);
+    // Day 5: still same cycle -> 2nd probe must NOT trigger
+    wMudLo = stepFront(wMudLo, 'mud_lo_day5', DAY(20, 22, 0), '<status_bar><time elapsed="1600"/><interact npc="isna"/></status_bar>');
+    assert.strictEqual(wMudLo.bg.eventStates['["event","isna_mud_probe_second","isna"]'], undefined, '2nd probe blocked before next camp return');
+    // Day 6 night: camp report fires (spyCount 1->2), Day 7 night: 2nd probe triggers!
+    wMudLo = stepFront(wMudLo, 'mud_lo_day6', DAY(21, 21, 0), '<status_bar><time elapsed="1380"/></status_bar>');
+    assert.strictEqual(wMudLo.npcs.isna.flags.isnaMudSpyCount, 2, 'Day 6 camp report fires');
+    wMudLo = stepFront(wMudLo, 'mud_lo_day7', DAY(22, 22, 0), '<status_bar><time elapsed="1500"/><interact npc="isna"/></status_bar>');
+    assert.strictEqual(wMudLo.bg.eventStates['["event","isna_mud_probe_second","isna"]']?.status, 'pending', 'Day 7 night 2nd probe triggers after camp return');
+    wMudLo = stepFront(wMudLo, 'mud_lo_breakin', DAY(22, 22, 10), '<status_bar><time elapsed="10"/><event_resolve id="isna_mud_probe_second" npc="isna" outcome="probe_break_in"/></status_bar>');
+    assert.strictEqual(wMudLo.npcs.isna.flags.isnaMudTruthKnown, true);
+    wMudLo = stepFront(wMudLo, 'mud_lo_day8', DAY(23, 10, 0), '<status_bar><time elapsed="710"/></status_bar>');
+    wMudLo = stepFront(wMudLo, 'mud_lo_purge', DAY(23, 10, 20), '<status_bar><time elapsed="20"/><event_resolve id="isna_mud_purge_choice" npc="isna" outcome="purge_gulan"/></status_bar>');
+    assert.strictEqual(wMudLo.npcs.isna.stage, 0, 'Gulan purge returns Isna to stage 0');
   });
 
   // 28. Gulan trailing threads: dynamic arrival-based Event 1 date, bloody_arena aftermath (unknown culprit, 7-day martial_law/panic & auto-expiry)

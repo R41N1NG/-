@@ -23,11 +23,12 @@
         location: npc?.location || ''
       };
 
+      const rawText = typeof entry.text === 'function' ? entry.text({ world, npc }) : entry.text;
       const record = {
         ...entry,
         at: world.timeMin,
         npcId: npc?.id ?? null,
-        text: entry.text.replace(
+        text: rawText.replace(
           /\{(name|location)\}/g,
           (_, name) => fields[name]
         ),
@@ -267,6 +268,7 @@
       u.check(!spec.when || rules.matches(spec.when, matchCtx), '当前条件不满足该事件选项：' + outcome);
 
       if (spec.effects) effects.apply(draft, npc, spec.effects, matchCtx, config);
+      if (spec.echoId) config.registerEcho?.(draft, { id: event.id, echoId: spec.echoId }, npc);
 
       record.status = 'resolved';
       record.outcome = outcome;
@@ -304,6 +306,7 @@
       world.flags = draft.flags;
       world.npcs = draft.npcs;
       world.bg = draft.bg;
+      if (draft.tags !== undefined) world.tags = draft.tags;
     }
 
     return { evaluate, expirePending, resolve, emit, prepare, acknowledge, supersede };
