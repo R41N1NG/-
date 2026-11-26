@@ -268,7 +268,8 @@
       u.check(!spec.when || rules.matches(spec.when, matchCtx), '当前条件不满足该事件选项：' + outcome);
 
       if (spec.effects) effects.apply(draft, npc, spec.effects, matchCtx, config);
-      if (spec.echoId) config.registerEcho?.(draft, { id: event.id, echoId: spec.echoId }, npc);
+      const echoId = typeof spec.echoId === 'function' ? spec.echoId({ world: draft, npc }) : spec.echoId;
+      if (echoId) config.registerEcho?.(draft, { id: event.id, echoId }, npc);
 
       record.status = 'resolved';
       record.outcome = outcome;

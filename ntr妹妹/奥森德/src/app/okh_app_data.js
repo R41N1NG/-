@@ -1,8 +1,8 @@
 /**
  * @module okh_app_data
- * @updated 2026-11-27 03:26
+ * @updated 2026-11-27 04:22
  * @status  active
- * @reason  补齐四女主常态多选与特殊排表、奥萝拉山庄暗线三阶段 covert/echoId/tags/dossierAdd 闭环
+ * @reason  打通古兰一阶保处三段阶梯守护与一阶初夜失守残响分支，补齐纯爱免疫守卫
  * @deps    无
  * @provides { SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel, PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG, ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld, DRAGON_TRUE_FORM_SPEC, buildDragonRevealText }
  */
@@ -710,7 +710,10 @@
       covert: true,
       fromStage: 2,
       toStage: 3,
-      when: { stage: 2, metrics: { blood_density: { gte: 80 } }, flags: { gulan_final_fall_done: true } },
+      when: ({ npc }) =>
+        (npc.stage === 1 || npc.stage === 2) &&
+        (npc.values.blood_density ?? 0) >= 80 &&
+        Boolean(npc.flags?.gulan_final_fall_done),
       text: '{name}不再抗拒体内奔涌的古龙真血，赤色竖瞳沉冷而傲然，黑角尖端泛红，脸侧生出数片龙鳞。龙化形态已化作她自身的常态与本能。'
     },
     {
@@ -1108,7 +1111,7 @@
     )
 
   const canResolveGulanRescue = ({ world, npc }) =>
-    !world.flags?.ed_showdown_done && npc.stage === 2 &&
+    !world.flags?.ed_showdown_done && (npc.stage === 1 || npc.stage === 2) &&
     !npc.flags?.gulan_final_fall_done && (npc.flags?.gulan_rescue_count ?? 0) < 3
 
   const DRAGON_TRUE_FORM_SPEC = Object.freeze({
@@ -1256,7 +1259,7 @@
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined) return false
         const ed = world.npcs?.ed
         if (!ed || ed.monitored !== true || ed.alive === false) return false
-        if (npc.stage !== 1 || npc.flags?.ed_hypnosis_play_done) return false
+        if (npc.stage !== 1 || npc.flags?.ed_hypnosis_play_done || npc.flags?.gulan_pure_bond_done || world.flags?.ed_showdown_done) return false
         if (!['night', 'deep_night'].includes(phase.id)) return false
         if (npc.location !== ed.location) return false
         if (world.flags?.playerRoomTarget === 'gulan') return false
@@ -1309,7 +1312,7 @@
       outcomes: {
         rescue: {
           when: ({ world, npc }) =>
-            npc.stage === 2 &&
+            (npc.stage === 1 || npc.stage === 2) &&
             world.playerLocation === 'inn' &&
             npc.location === 'inn' &&
             (npc.values.affection ?? 0) >= 90 &&
@@ -1324,22 +1327,32 @@
             }
             return '在彼此交融的体温与深厚羁绊的回应下，{name}以坚毅意志为舟、以真挚情意为锚，终于将狂暴的始祖真血驯服为由自身掌控的纯净力量。热浪平息后，她依偎在侧轻喘，琥珀竖瞳澄明如初，真正迈入了与龙血共存的武圣之境。';
           },
-          effects: ({ npc }) => {
+          effects: ({ world, npc }) => {
             const count = npc.flags?.gulan_rescue_count ?? 0;
             if (count < 2) {
-              return {
-                add: { blood_density: -10, affection: 3 },
-                npcFlags: { gulan_rescue_count: count + 1, gulan_rescued_final: true }
-              };
+              return [
+                { target: 'world', worldFlags: { lastGulanRoomMin: world.timeMin } },
+                {
+                  target: 'gulan',
+                  add: { blood_density: -10, affection: 3 },
+                  npcFlags: { gulan_rescue_count: count + 1, gulan_rescued_final: true }
+                }
+              ];
             }
-            return {
-              add: { affection: 3 },
-              npcFlags: { gulan_rescue_count: 3, gulan_rescued_final: true, gulan_pure_bond_done: true }
-            };
+            return [
+              { target: 'world', worldFlags: { lastGulanRoomMin: world.timeMin } },
+              {
+                target: 'gulan',
+                add: { affection: 3 },
+                npcFlags: { gulan_rescue_count: 3, gulan_rescued_final: true, gulan_pure_bond_done: true }
+              }
+            ];
           }
         },
         fail: {
-          echoId: 'echo_gulan_final_fall',
+          echoId: ({ npc }) => (npc.stage === 1 && !npc.flags?.ed_hypnosis_play_done)
+            ? 'echo_gulan_final_fall_virgin'
+            : 'echo_gulan_final_fall',
           text: '门外久久未有回应，虚掩的木门在夜风中轻轻合拢，屋内压抑的喘息逐渐沉入死寂。次日清晨，{name}如常起身整装，神色沉稳自持，依旧以长辈与师长的口吻叮嘱日常起居，唯独眼神深处多了一丝若有若无的冰冷。',
           effects: {
             npcFlags: { gulan_final_fall_done: true },
@@ -1363,7 +1376,7 @@
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined) return false;
         const ed = world.npcs?.ed;
         if (!ed || ed.monitored !== true || ed.alive === false) return false;
-        if (npc.stage !== 2 || npc.flags?.gulan_final_fall_done) return false;
+        if (npc.stage !== 2 || npc.flags?.gulan_final_fall_done || npc.flags?.gulan_pure_bond_done || world.flags?.ed_showdown_done) return false;
         if (!['night', 'deep_night'].includes(phase.id)) return false;
         if (npc.location !== ed.location) return false;
         if (world.flags?.playerRoomTarget === 'gulan') return false;
@@ -1381,6 +1394,39 @@
         tagsAdd: ['dragon_mark_linger'],
         dossierAdd: [
           { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '侧卧交缠', volumeMl: 14 },
+          { type: 'encounter', parts: ['hips', 'legs'], penetrative: true, internal: true, position: '后入式', volumeMl: 18 }
+        ]
+      }
+    },
+    {
+      id: 'gulan_final_fall_virgin_dark',
+      mode: 'result',
+      scope: 'npc',
+      covert: true,
+      echoId: 'echo_gulan_final_fall_virgin',
+      targets: ['gulan'],
+      when: ({ world, npc, phase }) => {
+        if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined) return false;
+        const ed = world.npcs?.ed;
+        if (!ed || ed.monitored !== true || ed.alive === false) return false;
+        if (npc.stage !== 1 || npc.flags?.ed_hypnosis_play_done || npc.flags?.gulan_final_fall_done || npc.flags?.gulan_pure_bond_done || world.flags?.ed_showdown_done) return false;
+        if (!['night', 'deep_night'].includes(phase.id)) return false;
+        if (npc.location !== ed.location) return false;
+        if (world.flags?.playerRoomTarget === 'gulan') return false;
+        const rescueCount = npc.flags?.gulan_rescue_count ?? 0;
+        if (rescueCount >= 3) return false;
+        const aff = npc.values?.affection ?? 0;
+        const bd = npc.values?.blood_density ?? 0;
+        if (aff < 90) return bd >= 80;
+        const threshold = 80 + 10 * rescueCount;
+        return bd >= threshold && world.playerLocation !== npc.location;
+      },
+      text: '古兰一阶初夜失守终局暗线已结算。',
+      effects: {
+        npcFlags: { gulan_final_fall_done: true },
+        tagsAdd: ['dragon_mark_linger'],
+        dossierAdd: [
+          { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '压制破处', volumeMl: 14 },
           { type: 'encounter', parts: ['hips', 'legs'], penetrative: true, internal: true, position: '后入式', volumeMl: 18 }
         ]
       }

@@ -1,8 +1,8 @@
 /**
  * @module okh_app_adapter
- * @updated 2026-11-23 20:06
+ * @updated 2026-11-27 04:22
  * @status  active
- * @reason  纯控制器桥接、台账字符串（对齐主人指示：古兰外出营救被俘期间台账仅提示暂离或留信嘱咐切勿贸然前往，零剧透据点与被俘状态；古兰脱险后恢复正常）与监听快照视图
+ * @reason  纯控制器桥接、台账字符串与监听快照视图；补充古兰一阶高好感血脉达到65门槛时的同房守护体感提示
  * @deps    OKHBackgroundModules.utils, OKH_APP_CONFIG, OKH_APP_TIME, OKH_APP_WORLD, OKH_APP_WORLDBOOK, OKHBackgroundAdapter
  * @provides { createController, runtimeConfig, settleTimeEffects, buildLedger, buildWatch }
  */
@@ -241,6 +241,9 @@
         } else {
           lines.push('古兰动向：外出暂离，行踪未明。');
         }
+      } else if (gulan.stage === 1 && !gulan.flags?.ed_hypnosis_play_done && !gulan.flags?.gulan_pure_bond_done &&
+          (gulan.values?.affection ?? 0) >= 90 && (gulan.values?.blood_density ?? 0) >= 65) {
+        lines.push('古兰体征异样：近夜调息时头两侧龙角根部隐隐发烫，似在强压躁动（夜宿同房照看可助其稳住心神，谨防真血反噬）。');
       }
     }
     return lines.join('\n');
