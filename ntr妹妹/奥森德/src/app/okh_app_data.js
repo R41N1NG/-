@@ -1,8 +1,8 @@
 /**
  * @module okh_app_data
- * @updated 2026-11-23 20:06
+ * @updated 2026-11-26 22:28
  * @status  active
- * @reason  恶龙真身心智全案扩充：构建高信息密度 DRAGON_TRUE_FORM_SPEC（含身世因果、权杖信物真相、真身外貌、声音气度、死穴原则）与 buildDragonRevealText 生成器，由剧情阶段与决算分支动态按需推送
+ * @reason  补齐妮丝暗线残响echoId、阶段二三失身dossierAdd、夜间返店守卫、盗取借条营救事件与绝赌复赌守卫
  * @deps    无
  * @provides { SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel, PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG, ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld, DRAGON_TRUE_FORM_SPEC, buildDragonRevealText }
  */
@@ -377,7 +377,7 @@
         if (npc.flags?.captured_orc || npc.flags?.isna_camp_distress || npc.flags?.isna_captured_ed || npc.flags?.captured_manor) return false
         if (npc.id === 'ed' && npc.flags?.ed_home_visiting) return false
         if (npc.id === 'gulan' && (npc.flags?.gulan_departed || npc.monitored === false)) return false
-        if (npc.id === 'nise' && (npc.stage >= 3 || (npc.flags?.nise_casino_busy_today && npc.stage === 2 && phase.id === 'night'))) {
+        if (npc.id === 'nise' && (npc.stage >= 3 || (npc.stage === 2 && !npc.flags?.casino_debt_frozen && !npc.flags?.nise_fled_casino))) {
           return false
         }
         if (npc.id === 'aurora' && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor) {
@@ -596,6 +596,8 @@
       mode: 'result',
       fromStage: 0,
       toStage: 1,
+      covert: true,
+      echoId: 'echo_nise_casino_dealer',
       when: ({ world, npc, phase, blockedIds }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         !isFugitiveSquadActive(world, npc) &&
@@ -617,6 +619,8 @@
       mode: 'result',
       fromStage: 1,
       toStage: 2,
+      covert: true,
+      echoId: 'echo_nise_casino_secretary',
       requires: ['nise_stage_1'],
       when: ({ world, npc, phase, blockedIds }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
@@ -631,15 +635,20 @@
         (npc.values.gamble_debt ?? 0) >= 60,
       effects: {
         move: 'casino',
-        npcFlags: { nise_secretary_done: true, nise_casino_busy_today: true }
+        npcFlags: { nise_secretary_done: true, nise_casino_busy_today: true },
+        dossierAdd: [
+          { npc: 'nise', type: 'encounter', parts: ['vagina'], penetrative: true, internal: true, position: '长桌俯卧式', volumeMl: 12 }
+        ]
       },
-      text: '越滚越高的赌债将{name}逼入更深的筹码泥潭；黑巨汉以暂缓强收与不向家里告发为挟，把她唤入赌场二三层内室充当贴身私人秘书，整天脱队失联接受愈发露骨的抵债挟制。'
+      text: '越滚越高的赌债将{name}逼入更深的筹码泥潭；黑巨汉以暂缓强收与不向家里告发为挟，把她唤入赌场二三层内室充当贴身私人秘书，在账房长桌前强行破处占有并整夜扣押，被迫以身抵债。'
     },
     {
       id: 'nise_stage_3',
       mode: 'result',
       fromStage: 2,
       toStage: 3,
+      covert: true,
+      echoId: 'echo_nise_casino_contract',
       requires: ['nise_stage_2'],
       when: ({ world, npc, blockedIds }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
@@ -652,7 +661,10 @@
         (npc.values.gamble_debt ?? 0) >= 90,
       effects: {
         move: 'casino',
-        npcFlags: { nise_contract_done: true, casino_debt_frozen: true, nise_casino_busy_today: false }
+        npcFlags: { nise_contract_done: true, casino_debt_frozen: true, nise_casino_busy_today: false },
+        dossierAdd: [
+          { npc: 'nise', type: 'encounter', parts: ['vagina'], penetrative: true, internal: true, position: '石台跪坐后入', volumeMl: 15 }
+        ]
       },
       text: '债务逼近尽头之际，走投无路的{name}在畏惧责罚与麻木屈服中于卖身契上按下了指印，从此不再回到断剑与麦酒旅店，长留地下赌场沦为黑老大掌控的专属抵债玩物。'
     },
@@ -2569,6 +2581,7 @@
         npc.stage < 3 &&
         !npc.flags?.casino_debt_frozen &&
         !npc.flags?.nise_fled_casino &&
+        !npc.flags?.nise_gamble_immune &&
         Boolean(npc.flags?.tasted_casino && npc.flags?.debt_repaid_once) &&
         (npc.values.gamble_debt ?? 0) === 0 &&
         (npc.values.affection ?? 0) < 90 &&
@@ -2597,6 +2610,48 @@
           (world.playerLocation === 'casino' && npc.location === 'casino')),
       effects: { npcFlags: { nise_debt_known: true } },
       text: '瞒不住的赌债实情已摆到明面上——{name}红着眼眶咬唇低头不敢看古兰的方向，只敢死死拽住你的袖口低声招认了金碧赌场的高利借条。'
+    },
+    {
+      id: 'nise_casino_heist',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['nise'],
+      when: ({ world, npc, phase }) => {
+        if (!world.flags?.arrived_oakhaven || npc.id !== 'nise') return false;
+        if (npc.stage !== 1 || !npc.flags?.nise_dealer_done) return false;
+        if ((npc.values.gamble_debt ?? 0) < 30 || npc.flags?.nise_heist_done) return false;
+        if (!['night', 'deep_night'].includes(phase.id)) return false;
+        if (world.playerLocation !== 'casino') return false;
+        const isnaAvailable = Boolean(world.npcs?.isna && world.npcs.isna.alive !== false &&
+          !world.npcs.isna.flags?.captured_orc && !world.npcs.isna.flags?.isna_camp_distress);
+        const bestStealth = Math.max(
+          root.OKH_APP_SKILLS ? root.OKH_APP_SKILLS.checkAbility(world, '潜行') : 0,
+          isnaAvailable ? 3 : 0
+        );
+        const bestLockpick = Math.max(
+          root.OKH_APP_SKILLS ? root.OKH_APP_SKILLS.checkAbility(world, '开锁') : 0,
+          (isnaAvailable && (world.playerState?.tier ?? 2) >= 3) ? 3 : 0
+        );
+        return bestStealth >= 2 && bestLockpick >= 3;
+      },
+      effects: ({ world }) => [
+        {
+          target: 'nise',
+          set: { gamble_debt: 0 },
+          npcFlags: {
+            nise_heist_done: true,
+            nise_gamble_immune: true,
+            casino_debt_frozen: true,
+            nise_casino_busy_today: false
+          },
+          tagsAdd: ['nise_gamble_immune']
+        },
+        {
+          target: 'player',
+          tagsAdd: ['tag_balak_grudge']
+        }
+      ],
+      text: '借着深宵夜色掩护，你避开赌场巡哨潜入二楼账房（潜行检定通过）；在昏暗烛影下，拆解开黑铁暗锁保险箱，将按有妮丝手印的高利借条取出焚毁（开锁检定通过）。惊魂初定的妮丝见证据化为灰烬，瘫软在你怀中泪流满面，自此绝了翻本赌念（赌债归零，获得【完全绝赌】；巴拉克发现借据失窃，对小队暗生记恨）。'
     },
     {
       id: 'cecilia_midgame_crisis',

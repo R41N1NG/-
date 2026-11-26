@@ -1,8 +1,8 @@
 /**
  * @module okh_app_rules
- * @updated 2026-11-22 07:58
+ * @updated 2026-11-26 22:31
  * @status  active
- * @reason 对齐硬核周常收支模型：短差6金、常规28金、高危48金、修道院帮工3金，日常捐款下调为5/15金
+ * @reason 规范还清赌债逻辑：当妮丝好感度达标(>=90)还清全款时固化戒赌免疫，挂载 nise_gamble_immune 防止后续复赌
  * @deps    OKH_APP_DATA
  * @provides { getAffectionTier, isFugitiveSyncedNpc, syncWorld, isMetricLocked, onStageChange, canMove, applyPrologueSteps, resolveRoom, resolveBonds, resolveEconomy }
  */
@@ -554,11 +554,21 @@
           out.push({ target: 'world', goldDelta: -cost })
           const npcFlags = {}
           if (world.playerLocation === 'casino') npcFlags.nise_debt_known = true
+          let tagsAdd
           if (niseDebt <= 0) {
             npcFlags.debt_repaid_once = true
             npcFlags.casinoGapDays = 0
+            if ((nise.values?.affection ?? 0) >= 90) {
+              npcFlags.nise_gamble_immune = true
+              tagsAdd = ['nise_gamble_immune']
+            }
           }
-          out.push({ target: 'nise', add: { gamble_debt: -pts }, ...(Object.keys(npcFlags).length ? { npcFlags } : {}) })
+          out.push({
+            target: 'nise',
+            add: { gamble_debt: -pts },
+            ...(Object.keys(npcFlags).length ? { npcFlags } : {}),
+            ...(tagsAdd ? { tagsAdd } : {})
+          })
         }
       } else if (item.op === 'donate' && item.npc === 'cecilia' &&
           world.playerLocation === 'church' && cecilia && cecilia.location === 'church' &&

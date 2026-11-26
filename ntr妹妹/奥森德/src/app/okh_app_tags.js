@@ -1,8 +1,8 @@
 /**
  * @module okh_app_tags
- * @updated 2026-11-26 14:30
+ * @updated 2026-11-26 22:25
  * @status active
- * @reason 注册与管理角色及主角后台标签（含负面Tag与三阶睡眠），状态归入世界存档 tags 分区
+ * @reason 注册与管理角色及主角后台标签（含负面Tag、三阶睡眠、妮丝暗线残响与营救Tag），状态归入世界存档 tags 分区
  */
 (function (root) {
   'use strict'
@@ -62,6 +62,36 @@
       name: '兽人恐惧',
       desc: '曾在黑兽人营地失足受辱、被种下血契后由玩家设法救回；面对玩家心怀愧疚与依恋，同时也患上了兽人恐惧症。效果：①会拒绝一切与兽人有关的行动（不再前往兽人营地或参与相关斥候委托）；②面对兽人时会处于恐惧状态，失去战斗力。',
       visibility: 'private'
+    }),
+    tag_nise_dealer_shame: Object.freeze({
+      id: 'tag_nise_dealer_shame',
+      name: '荷官耻辱',
+      desc: '独处时频繁拉扯衣领、确认常服领口是否遮严；偶尔下意识避开玩家与古兰的目光，神情紧绷。',
+      visibility: 'private'
+    }),
+    tag_nise_secretary_fall: Object.freeze({
+      id: 'tag_nise_secretary_fall',
+      name: '账房失身',
+      desc: '步态微显滞涩，深居简出；整日捧着书本或账册挡在胸前，眼神在恍惚与自弃间游移。',
+      visibility: 'private'
+    }),
+    tag_nise_casino_chattel: Object.freeze({
+      id: 'tag_nise_casino_chattel',
+      name: '赌场私产',
+      desc: '身心归附赌场，佩戴刻有金碧赌场暗印的项圈，眼神空洞麻木，甘愿充当内室抵债私产与招徕赌客的筹码。',
+      visibility: 'private'
+    }),
+    tag_balak_grudge: Object.freeze({
+      id: 'tag_balak_grudge',
+      name: '巴拉克的记恨',
+      desc: '金碧赌场黑老大巴拉克对小队潜入账房盗走借条怀恨在心，暗中物色报复与索讨机会。',
+      visibility: 'public'
+    }),
+    tag_lord_manhunt: Object.freeze({
+      id: 'tag_lord_manhunt',
+      name: '全镇兵力围剿',
+      desc: '暴力冲击领主暗中背书的金碧赌场，引来全镇卫兵与领主私兵的合围追捕，商业停摆且全队进入流亡状态。',
+      visibility: 'public'
     }),
     // 7 项通用负面 Tag（公会冒险与遗迹探险）
     debuff_light_wound: Object.freeze({
@@ -273,6 +303,7 @@
     trait_street_smart: Object.freeze({ id: 'trait_street_smart', name: '市井老手', category: 'trait', desc: '伊丝娜专属；识破虚高报价与假货，探听多获暗线线索。' }),
     trait_arcane_prodigy: Object.freeze({ id: 'trait_arcane_prodigy', name: '算力推演', category: 'trait', statBonus: { int: 1 }, desc: '妮丝专属；智力 +1，精于复合术式解算。' }),
     trait_stubborn_pride: Object.freeze({ id: 'trait_stubborn_pride', name: '好胜隐瞒', category: 'trait', desc: '妮丝动态；独自受挫或受要挟时不向队友求助。' }),
+    nise_gamble_immune: Object.freeze({ id: 'nise_gamble_immune', name: '完全绝赌', category: 'trait', desc: '妮丝专属；在经历借据危机的生死惊悸或深厚羁绊的清偿挽救后幡然醒悟，永久免疫赌场复赌诱惑。' }),
     trait_gentle_steward: Object.freeze({ id: 'trait_gentle_steward', name: '细心照料', category: 'trait', statBonus: { fai: 1 }, desc: '奥萝拉专属；信仰 +1，照看伤员细致入微。' }),
     trait_timid_yield: Object.freeze({ id: 'trait_timid_yield', name: '畏权退让', category: 'trait', desc: '奥萝拉动态；面对权贵威压易退让妥协。' }),
     trait_street_rumor: Object.freeze({ id: 'trait_street_rumor', name: '市井耳目', category: 'trait', desc: '爱德专属；街市打听风声、抢截未登板急件。' }),

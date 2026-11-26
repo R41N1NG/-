@@ -1,8 +1,8 @@
 /**
  * @module okh_app_time
- * @updated 2026-11-23 19:02
+ * @updated 2026-11-26 22:27
  * @status  active
- * @reason  跨日午夜唯一键去重结算：移除古兰被俘天数跨夜自增；新增演武场血案余波 7 天全局 Tag（安保戒严、人心惶惶）满期自动解除
+ * @reason  跨日午夜唯一键去重结算：修复妮丝阶段一与阶段二跨日赌场值守标志 nise_casino_busy_today 维护逻辑，避免排班死锁
  * @deps    OKH_APP_DATA
  * @provides { settleTimeEffects }
  */
@@ -232,6 +232,7 @@
       add.gamble_debt = interest
       sim.niseDebt = Math.min(100, sim.niseDebt + interest)
     }
+    const isCasinoShift = (sim.niseStage === 1 || sim.niseStage === 2) && !sim.niseDebtFrozen && !sim.niseFledCasino
     const npcFlags = {
       nise_browsed_today: false,
       nise_tease_today: false,
@@ -239,7 +240,7 @@
       nise_night_today: false,
       nise_treat_today: false,
       nise_escort_today: false,
-      nise_casino_busy_today: false,
+      nise_casino_busy_today: isCasinoShift,
       ...DAILY.affectionFlags(k + 1),
       lastNightSettledDay: k
     }
