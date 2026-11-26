@@ -3282,9 +3282,9 @@
 ;
 /**
  * @module okh_app_tags
- * @updated 2026-11-25 10:42
+ * @updated 2026-11-26 14:30
  * @status active
- * @reason 注册与管理角色的后台标签，状态归入世界存档的 tags 分区
+ * @reason 注册与管理角色及主角后台标签（含负面Tag与三阶睡眠），状态归入世界存档 tags 分区
  */
 (function (root) {
   'use strict'
@@ -3344,13 +3344,235 @@
       name: '兽人恐惧',
       desc: '曾在黑兽人营地失足受辱、被种下血契后由玩家设法救回；面对玩家心怀愧疚与依恋，同时也患上了兽人恐惧症。效果：①会拒绝一切与兽人有关的行动（不再前往兽人营地或参与相关斥候委托）；②面对兽人时会处于恐惧状态，失去战斗力。',
       visibility: 'private'
-    })
+    }),
+    // 7 项通用负面 Tag（公会冒险与遗迹探险）
+    debuff_light_wound: Object.freeze({
+      id: 'debuff_light_wound',
+      name: '轻伤',
+      desc: '力 -1, 敏 -1；轻微外伤撕裂，再次受创将恶化为重伤。',
+      visibility: 'public'
+    }),
+    debuff_heavy_wound: Object.freeze({
+      id: 'debuff_heavy_wound',
+      name: '重伤',
+      desc: '全四维 -2、有效战斗阶位 -1 阶；骨裂脏腑震荡，无法担任障碍硬解领头人，须救治或连续休养。',
+      visibility: 'public'
+    }),
+    debuff_bleeding: Object.freeze({
+      id: 'debuff_bleeding',
+      name: '流血',
+      desc: '力 -1；创口持续失血，若连续两时段未止血将恶化伤势。',
+      visibility: 'public'
+    }),
+    debuff_poisoned: Object.freeze({
+      id: 'debuff_poisoned',
+      name: '中毒',
+      desc: '力 -1, 敏 -1, 智 -1；毒素随血液蔓延，无法自愈，每持续 24 小时进一步损伤生机。',
+      visibility: 'public'
+    }),
+    debuff_paralyzed: Object.freeze({
+      id: 'debuff_paralyzed',
+      name: '麻痹',
+      desc: '敏 -2；神经与肌肉麻痹痉挛，禁止担任潜行、拆锁、远程射击或前排格挡，无法施展手势施法。',
+      visibility: 'public'
+    }),
+    debuff_exhausted: Object.freeze({
+      id: 'debuff_exhausted',
+      name: '疲惫',
+      desc: '力 -1, 敏 -1；体力透支、步履沉重动作迟滞，需休息休整清除。',
+      visibility: 'public'
+    }),
+    debuff_starving: Object.freeze({
+      id: 'debuff_starving',
+      name: '断粮缺药',
+      desc: '全四维 -1；补给断绝，禁止深入未知区域，超 24 小时附加轻伤。',
+      visibility: 'public'
+    }),
+    // 3 阶睡眠状态（日常作息与战术控制）
+    status_sleep_light: Object.freeze({
+      id: 'status_sleep_light',
+      name: '轻眠',
+      desc: '浅度小憩轮休，保持基本警觉，轻微响动即惊醒，初动受限。',
+      visibility: 'public'
+    }),
+    status_sleep_deep: Object.freeze({
+      id: 'status_sleep_deep',
+      name: '深眠',
+      desc: '夜间沉入熟睡，常规推门靠近不会惊醒，大声摇晃方可唤醒。',
+      visibility: 'public'
+    }),
+    status_sleep_comatose: Object.freeze({
+      id: 'status_sleep_comatose',
+      name: '沉眠',
+      desc: '药剂或催眠术致深度昏睡，感知与反抗力归零，常规摇晃呼喊无效。',
+      visibility: 'public'
+    }),
+    // 15 项种族 Tag（四维基准）
+    race_human: Object.freeze({ id: 'race_human', name: '人类', category: 'race', stats: { str: 1, agi: 1, int: 1, fai: 1 }, desc: '无特殊天赋或生理异征。' }),
+    race_catfolk: Object.freeze({ id: 'race_catfolk', name: '猫族半兽人', category: 'race', stats: { str: 1, agi: 3, int: 1, fai: 1 }, desc: '骨骼轻巧柔韧，反应与爆发敏捷出众；暗处夜视与远距听音辨位。' }),
+    race_dragonkin: Object.freeze({ id: 'race_dragonkin', name: '半龙人', category: 'race', stats: { str: 4, agi: 2, int: 2, fai: 1 }, desc: '筋骨密度、力量与耐力远胜凡俗；受显性上位龙血同源压迫牵引。' }),
+    race_orc_kin: Object.freeze({ id: 'race_orc_kin', name: '黑兽人/兽人混血', category: 'race', stats: { str: 3, agi: 1, int: 1, fai: 1 }, desc: '体格魁梧，肌力与抗冲击出众，擅长正面冲撞与锁死擒拿。' }),
+    race_goblinoid: Object.freeze({ id: 'race_goblinoid', name: '哥布林/狗头人', category: 'race', stats: { str: 1, agi: 2, int: 1, fai: 0 }, desc: '矮小狡黠，擅长伏击陷阱与狭窄钻行；单兵正面体魄薄弱。' }),
+    race_beast: Object.freeze({ id: 'race_beast', name: '野兽/魔兽', category: 'race', stats: { str: 2, agi: 2, int: 0, fai: 0 }, desc: '非智慧生物；具备敏锐嗅觉与扑咬本能，缺乏机关阵型应对力。' }),
+    race_slime: Object.freeze({ id: 'race_slime', name: '史莱姆/软体魔物', category: 'race', stats: { str: 1, agi: 1, int: 0, fai: 0 }, desc: '非智慧生物；无固定骨骼，体表腐蚀与钝击缓冲；畏惧烈焰冰霜。' }),
+    race_undead: Object.freeze({ id: 'race_undead', name: '亡灵系', category: 'race', stats: { str: 2, agi: 1, int: 0, fai: 0 }, desc: '非智慧生物；无痛觉无呼吸，免疫常规剧毒失血；受神术克制。' }),
+    race_construct: Object.freeze({ id: 'race_construct', name: '构装体/石像魔像', category: 'race', stats: { str: 4, agi: 1, int: 0, fai: 0 }, desc: '非智慧生物；坚硬无血肉要害，免疫流血剧毒；畏惧重击破甲解离。' }),
+    race_troll: Object.freeze({ id: 'race_troll', name: '巨魔', category: 'race', stats: { str: 6, agi: 1, int: 0, fai: 0 }, desc: '非智慧生物；体魄高大蛮力惊人，伤势再生旺盛；弱在火焰灼烧。' }),
+    race_drake: Object.freeze({ id: 'race_drake', name: '亚龙', category: 'race', stats: { str: 6, agi: 3, int: 1, fai: 0 }, desc: '坚韧鳞甲与强横体魄，感官敏锐；缺乏真龙级上位威压。' }),
+    race_dragon: Object.freeze({ id: 'race_dragon', name: '巨龙', category: 'race', stats: { str: 15, agi: 6, int: 8, fai: 0 }, desc: 'IV 阶宗师真龙；龙鳞体魄、龙息吐息与传承智识达宗师尺度。' }),
+    race_ancient_dragon: Object.freeze({ id: 'race_ancient_dragon', name: '上古龙', category: 'race', stats: { str: 40, agi: 15, int: 20, fai: 0 }, desc: 'V 阶超凡古龙；护体龙鳞与法则感知跨入超凡，非人数可撼。' }),
+    race_primordial_dragon: Object.freeze({ id: 'race_primordial_dragon', name: '太古龙', category: 'race', stats: { str: 120, agi: 40, int: 50, fai: 0 }, desc: 'VI 阶神话源初真龙；存在本身带有上位法则与血脉威压。' }),
+    race_demon: Object.freeze({ id: 'race_demon', name: '恶魔', category: 'race', stats: { str: 6, agi: 4, int: 4, fai: 0 }, desc: '深渊存在，体魄与魔力带侵蚀性，擅混乱攻伐与精神蛊惑。' }),
+
+    // 17 个职业基础 Tag 及 1~5 阶进阶 Tag
+    class_shield_guard: Object.freeze({ id: 'class_shield_guard', name: '盾卫', category: 'class', tier: 2, stat: '力', desc: '手持重盾稳固正面阵线，护卫同伴施法。' }),
+    class_shield_guard1: Object.freeze({ id: 'class_shield_guard1', name: '盾卫(I阶)', category: 'class', tier: 1, stat: '力', desc: '见习盾卫，本能遮挡。' }),
+    class_shield_guard2: Object.freeze({ id: 'class_shield_guard2', name: '盾卫(II阶)', category: 'class', tier: 2, stat: '力', desc: '正规盾卫，正面抗压护卫后排。' }),
+    class_shield_guard3: Object.freeze({ id: 'class_shield_guard3', name: '盾卫(III阶)', category: 'class', tier: 3, stat: '力', desc: '精锐盾卫，稳固盾墙护多人。' }),
+    class_shield_guard4: Object.freeze({ id: 'class_shield_guard4', name: '盾卫(IV阶)', category: 'class', tier: 4, stat: '力', desc: '宗师盾卫，盾碎铁甲扼要道。' }),
+    class_shield_guard5: Object.freeze({ id: 'class_shield_guard5', name: '盾卫(V阶)', category: 'class', tier: 5, stat: '力', desc: '超凡盾卫，气血凝盾抗攻城。' }),
+
+    class_heavy_vanguard: Object.freeze({ id: 'class_heavy_vanguard', name: '重剑士', category: 'class', tier: 2, stat: '力', desc: '挥舞双手重剑，破甲压制正面强敌。' }),
+    class_heavy_vanguard1: Object.freeze({ id: 'class_heavy_vanguard1', name: '重剑士(I阶)', category: 'class', tier: 1, stat: '力', desc: '见习重剑士，勉强挥动重剑。' }),
+    class_heavy_vanguard2: Object.freeze({ id: 'class_heavy_vanguard2', name: '重剑士(II阶)', category: 'class', tier: 2, stat: '力', desc: '正规重剑士，沉稳压制同阶。' }),
+    class_heavy_vanguard3: Object.freeze({ id: 'class_heavy_vanguard3', name: '重剑士(III阶)', category: 'class', tier: 3, stat: '力', desc: '精锐重剑士，破常规铁甲木盾。' }),
+    class_heavy_vanguard4: Object.freeze({ id: 'class_heavy_vanguard4', name: '重剑士(IV阶)', category: 'class', tier: 4, stat: '力', desc: '宗师重剑士，剑风裂石撕开阵线。' }),
+    class_heavy_vanguard5: Object.freeze({ id: 'class_heavy_vanguard5', name: '重剑士(V阶)', category: 'class', tier: 5, stat: '力', desc: '超凡重剑士，破城重击与气血护体。' }),
+
+    class_duelist: Object.freeze({ id: 'class_duelist', name: '轻剑士', category: 'class', tier: 2, stat: '敏', desc: '手持单手细剑，步法游斗专刺破绽。' }),
+    class_duelist1: Object.freeze({ id: 'class_duelist1', name: '轻剑士(I阶)', category: 'class', tier: 1, stat: '敏', desc: '见习轻剑士，基础刺击。' }),
+    class_duelist2: Object.freeze({ id: 'class_duelist2', name: '轻剑士(II阶)', category: 'class', tier: 2, stat: '敏', desc: '正规轻剑士，步法稳健刺要害。' }),
+    class_duelist3: Object.freeze({ id: 'class_duelist3', name: '轻剑士(III阶)', category: 'class', tier: 3, stat: '敏', desc: '精锐轻剑士，借力卸力游斗强敌。' }),
+    class_duelist4: Object.freeze({ id: 'class_duelist4', name: '轻剑士(IV阶)', category: 'class', tier: 4, stat: '敏', desc: '宗师轻剑士，一息数刺穿重甲缝。' }),
+    class_duelist5: Object.freeze({ id: 'class_duelist5', name: '轻剑士(V阶)', category: 'class', tier: 5, stat: '敏', desc: '超凡轻剑士，细剑截断高阶术式。' }),
+
+    class_berserker: Object.freeze({ id: 'class_berserker', name: '狂战士', category: 'class', tier: 2, stat: '力', desc: '搏命换伤，挂伤后战意攀升。' }),
+    class_berserker1: Object.freeze({ id: 'class_berserker1', name: '狂战士(I阶)', category: 'class', tier: 1, stat: '力', desc: '见习狂战士，蛮力乱挥。' }),
+    class_berserker2: Object.freeze({ id: 'class_berserker2', name: '狂战士(II阶)', category: 'class', tier: 2, stat: '力', desc: '正规狂战士，血气硬吃擦伤。' }),
+    class_berserker3: Object.freeze({ id: 'class_berserker3', name: '狂战士(III阶)', category: 'class', tier: 3, stat: '力', desc: '精锐狂战士，受创中连续破防。' }),
+    class_berserker4: Object.freeze({ id: 'class_berserker4', name: '狂战士(IV阶)', category: 'class', tier: 4, stat: '力', desc: '宗师狂战士，濒危力量攀升震慑阵线。' }),
+    class_berserker5: Object.freeze({ id: 'class_berserker5', name: '狂战士(V阶)', category: 'class', tier: 5, stat: '力', desc: '超凡狂战士，不死不休超凡血气。' }),
+
+    class_devotion_paladin: Object.freeze({ id: 'class_devotion_paladin', name: '圣骑士', category: 'class', tier: 2, stat: '力', desc: '重甲圣光结合，代同伴承伤并克制死灵。' }),
+    class_devotion_paladin1: Object.freeze({ id: 'class_devotion_paladin1', name: '圣骑士(I阶)', category: 'class', tier: 1, stat: '力', desc: '见习圣骑士，轻甲安神。' }),
+    class_devotion_paladin2: Object.freeze({ id: 'class_devotion_paladin2', name: '圣骑士(II阶)', category: 'class', tier: 2, stat: '力', desc: '正规圣骑士，重甲圣光代承伤害。' }),
+    class_devotion_paladin3: Object.freeze({ id: 'class_devotion_paladin3', name: '圣骑士(III阶)', category: 'class', tier: 3, stat: '力', desc: '精锐圣骑士，圣光抗诅咒护小队。' }),
+    class_devotion_paladin4: Object.freeze({ id: 'class_devotion_paladin4', name: '圣骑士(IV阶)', category: 'class', tier: 4, stat: '力', desc: '宗师圣骑士，展开守护结界。' }),
+    class_devotion_paladin5: Object.freeze({ id: 'class_devotion_paladin5', name: '圣骑士(V阶)', category: 'class', tier: 5, stat: '力', desc: '超凡圣骑士，化身移动圣垒。' }),
+
+    class_scout_stealth: Object.freeze({ id: 'class_scout_stealth', name: '斥候', category: 'class', tier: 2, stat: '敏', desc: '野外辨向与隐蔽跟踪，探路清障。' }),
+    class_scout_stealth1: Object.freeze({ id: 'class_scout_stealth1', name: '斥候(I阶)', category: 'class', tier: 1, stat: '敏', desc: '见习斥候，野外辨向。' }),
+    class_scout_stealth2: Object.freeze({ id: 'class_scout_stealth2', name: '斥候(II阶)', category: 'class', tier: 2, stat: '敏', desc: '正规斥候，潜行跟踪脱身。' }),
+    class_scout_stealth3: Object.freeze({ id: 'class_scout_stealth3', name: '斥候(III阶)', category: 'class', tier: 3, stat: '敏', desc: '精锐斥候，高速突袭反制警戒。' }),
+    class_scout_stealth4: Object.freeze({ id: 'class_scout_stealth4', name: '斥候(IV阶)', category: 'class', tier: 4, stat: '敏', desc: '宗师斥候，严密防线自由穿行。' }),
+    class_scout_stealth5: Object.freeze({ id: 'class_scout_stealth5', name: '斥候(V阶)', category: 'class', tier: 5, stat: '敏', desc: '超凡斥候，避开常规魔导侦测。' }),
+
+    class_sniper_archer: Object.freeze({ id: 'class_sniper_archer', name: '弓箭手', category: 'class', tier: 2, stat: '敏', desc: '远程精准点射掩护，压制施法者。' }),
+    class_sniper_archer1: Object.freeze({ id: 'class_sniper_archer1', name: '弓箭手(I阶)', category: 'class', tier: 1, stat: '敏', desc: '见习弓箭手，近中距固定靶。' }),
+    class_sniper_archer2: Object.freeze({ id: 'class_sniper_archer2', name: '弓箭手(II阶)', category: 'class', tier: 2, stat: '敏', desc: '正规弓箭手，百步精准点射掩护。' }),
+    class_sniper_archer3: Object.freeze({ id: 'class_sniper_archer3', name: '弓箭手(III阶)', category: 'class', tier: 3, stat: '敏', desc: '精锐弓箭手，重弓穿甲压制吟唱。' }),
+    class_sniper_archer4: Object.freeze({ id: 'class_sniper_archer4', name: '弓箭手(IV阶)', category: 'class', tier: 4, stat: '敏', desc: '宗师弓箭手，超远距破风狙杀。' }),
+    class_sniper_archer5: Object.freeze({ id: 'class_sniper_archer5', name: '弓箭手(V阶)', category: 'class', tier: 5, stat: '敏', desc: '超凡弓箭手，百丈贯甲截断法阵。' }),
+
+    class_trap_breaker: Object.freeze({ id: 'class_trap_breaker', name: '盗贼', category: 'class', tier: 2, stat: '敏', desc: '精通开锁拆陷与暗道机括。' }),
+    class_trap_breaker1: Object.freeze({ id: 'class_trap_breaker1', name: '盗贼(I阶)', category: 'class', tier: 1, stat: '敏', desc: '见习盗贼，辨明绊索粗锁。' }),
+    class_trap_breaker2: Object.freeze({ id: 'class_trap_breaker2', name: '盗贼(II阶)', category: 'class', tier: 2, stat: '敏', desc: '正规盗贼，撬锁拆除基础陷阱。' }),
+    class_trap_breaker3: Object.freeze({ id: 'class_trap_breaker3', name: '盗贼(III阶)', category: 'class', tier: 3, stat: '敏', desc: '精锐盗贼，破双层暗锁毒气机关。' }),
+    class_trap_breaker4: Object.freeze({ id: 'class_trap_breaker4', name: '盗贼(IV阶)', category: 'class', tier: 4, stat: '敏', desc: '宗师盗贼，无声拆解密库死局。' }),
+    class_trap_breaker5: Object.freeze({ id: 'class_trap_breaker5', name: '盗贼(V阶)', category: 'class', tier: 5, stat: '敏', desc: '超凡盗贼，破古代禁锁。' }),
+
+    class_assassin: Object.freeze({ id: 'class_assassin', name: '刺客', category: 'class', tier: 2, stat: '敏', desc: '阴影潜行，兵刃涂毒直刺要害。' }),
+    class_assassin1: Object.freeze({ id: 'class_assassin1', name: '刺客(I阶)', category: 'class', tier: 1, stat: '敏', desc: '见习刺客，背后偷袭。' }),
+    class_assassin2: Object.freeze({ id: 'class_assassin2', name: '刺客(II阶)', category: 'class', tier: 2, stat: '敏', desc: '正规刺客，涂毒阴影一击。' }),
+    class_assassin3: Object.freeze({ id: 'class_assassin3', name: '刺客(III阶)', category: 'class', tier: 3, stat: '敏', desc: '精锐刺客，混战切入断后排。' }),
+    class_assassin4: Object.freeze({ id: 'class_assassin4', name: '刺客(IV阶)', category: 'class', tier: 4, stat: '敏', desc: '宗师刺客，护卫眼前绝杀远遁。' }),
+    class_assassin5: Object.freeze({ id: 'class_assassin5', name: '刺客(V阶)', category: 'class', tier: 5, stat: '敏', desc: '超凡刺客，难以捕捉之影。' }),
+
+    class_arcane_blast: Object.freeze({ id: 'class_arcane_blast', name: '元素法师', category: 'class', tier: 2, stat: '智', desc: '吟唱元素法术，大范围轰击与穿甲。' }),
+    class_arcane_blast1: Object.freeze({ id: 'class_arcane_blast1', name: '元素法师(I阶)', category: 'class', tier: 1, stat: '智', desc: '见习法师，生活戏法与微弱火星。' }),
+    class_arcane_blast2: Object.freeze({ id: 'class_arcane_blast2', name: '元素法师(II阶)', category: 'class', tier: 2, stat: '智', desc: '正规法师，成型元素火球与冰盾。' }),
+    class_arcane_blast3: Object.freeze({ id: 'class_arcane_blast3', name: '元素法师(III阶)', category: 'class', tier: 3, stat: '智', desc: '精锐法师，中阶范围与连发穿甲。' }),
+    class_arcane_blast4: Object.freeze({ id: 'class_arcane_blast4', name: '元素法师(IV阶)', category: 'class', tier: 4, stat: '智', desc: '宗师法师，大型术式压制军阵。' }),
+    class_arcane_blast5: Object.freeze({ id: 'class_arcane_blast5', name: '元素法师(V阶)', category: 'class', tier: 5, stat: '智', desc: '超凡法师，改写局部气候与地貌。' }),
+
+    class_rune_decode: Object.freeze({ id: 'class_rune_decode', name: '符文师', category: 'class', tier: 2, stat: '智', desc: '辨识魔纹卷轴，拆解古代奥术封印。' }),
+    class_rune_decode1: Object.freeze({ id: 'class_rune_decode1', name: '符文师(I阶)', category: 'class', tier: 1, stat: '智', desc: '见习符文师，辨基础铭文。' }),
+    class_rune_decode2: Object.freeze({ id: 'class_rune_decode2', name: '符文师(II阶)', category: 'class', tier: 2, stat: '智', desc: '正规符文师，释读古卷与法术陷阱。' }),
+    class_rune_decode3: Object.freeze({ id: 'class_rune_decode3', name: '符文师(III阶)', category: 'class', tier: 3, stat: '智', desc: '精锐符文师，解离复合奥术封印。' }),
+    class_rune_decode4: Object.freeze({ id: 'class_rune_decode4', name: '符文师(IV阶)', category: 'class', tier: 4, stat: '智', desc: '宗师符文师，干涉大型魔网阵眼。' }),
+    class_rune_decode5: Object.freeze({ id: 'class_rune_decode5', name: '符文师(V阶)', category: 'class', tier: 5, stat: '智', desc: '超凡符文师，重构逆转古阵。' }),
+
+    class_arcane_ward: Object.freeze({ id: 'class_arcane_ward', name: '结界师', category: 'class', tier: 2, stat: '智', desc: '展开力场屏障，抵挡远程与范围轰击。' }),
+    class_arcane_ward1: Object.freeze({ id: 'class_arcane_ward1', name: '结界师(I阶)', category: 'class', tier: 1, stat: '智', desc: '见习结界师，微弱光膜。' }),
+    class_arcane_ward2: Object.freeze({ id: 'class_arcane_ward2', name: '结界师(II阶)', category: 'class', tier: 2, stat: '智', desc: '正规结界师，力场盾挡箭与单体术。' }),
+    class_arcane_ward3: Object.freeze({ id: 'class_arcane_ward3', name: '结界师(III阶)', category: 'class', tier: 3, stat: '智', desc: '精锐结界师，小队半圆防护屏障。' }),
+    class_arcane_ward4: Object.freeze({ id: 'class_arcane_ward4', name: '结界师(IV阶)', category: 'class', tier: 4, stat: '智', desc: '宗师结界师，宗师结界与反魔力场。' }),
+    class_arcane_ward5: Object.freeze({ id: 'class_arcane_ward5', name: '结界师(V阶)', category: 'class', tier: 5, stat: '智', desc: '超凡结界师，抗衡天灾奥术壁垒。' }),
+
+    class_necromancer: Object.freeze({ id: 'class_necromancer', name: '死灵法师', category: 'class', tier: 2, stat: '智', desc: '驱使死灵骨骸，降下衰弱诅咒。' }),
+    class_necromancer1: Object.freeze({ id: 'class_necromancer1', name: '死灵法师(I阶)', category: 'class', tier: 1, stat: '智', desc: '见习死灵法师，驱使低阶骷髅。' }),
+    class_necromancer2: Object.freeze({ id: 'class_necromancer2', name: '死灵法师(II阶)', category: 'class', tier: 2, stat: '智', desc: '正规死灵法师，唤起食尸鬼与诅咒。' }),
+    class_necromancer3: Object.freeze({ id: 'class_necromancer3', name: '死灵法师(III阶)', category: 'class', tier: 3, stat: '智', desc: '精锐死灵法师，统御死灵骑士。' }),
+    class_necromancer4: Object.freeze({ id: 'class_necromancer4', name: '死灵法师(IV阶)', category: 'class', tier: 4, stat: '智', desc: '宗师死灵法师，巫妖级亡灵军团。' }),
+    class_necromancer5: Object.freeze({ id: 'class_necromancer5', name: '死灵法师(V阶)', category: 'class', tier: 5, stat: '智', desc: '超凡死灵法师，大巫妖禁忌术式。' }),
+
+    class_holy_heal: Object.freeze({ id: 'class_holy_heal', name: '治疗牧师', category: 'class', tier: 2, stat: '信', desc: '引动神圣神术，闭合伤口抚平濒危。' }),
+    class_holy_heal1: Object.freeze({ id: 'class_holy_heal1', name: '治疗牧师(I阶)', category: 'class', tier: 1, stat: '信', desc: '见习牧师，安神祷言与草药止血。' }),
+    class_holy_heal2: Object.freeze({ id: 'class_holy_heal2', name: '治疗牧师(II阶)', category: 'class', tier: 2, stat: '信', desc: '正规牧师，实效闭合中轻度创伤。' }),
+    class_holy_heal3: Object.freeze({ id: 'class_holy_heal3', name: '治疗牧师(III阶)', category: 'class', tier: 3, stat: '信', desc: '精锐牧师，群体疗愈与重伤急救。' }),
+    class_holy_heal4: Object.freeze({ id: 'class_holy_heal4', name: '治疗牧师(IV阶)', category: 'class', tier: 4, stat: '信', desc: '宗师牧师，瞬间抚平濒危重创。' }),
+    class_holy_heal5: Object.freeze({ id: 'class_holy_heal5', name: '治疗牧师(V阶)', category: 'class', tier: 5, stat: '信', desc: '超凡牧师，覆盖战场群体复苏。' }),
+
+    class_purify_ward: Object.freeze({ id: 'class_purify_ward', name: '驱魔牧师', category: 'class', tier: 2, stat: '信', desc: '驱散瘴气毒雾与古代诅咒，灼伤邪祟。' }),
+    class_purify_ward1: Object.freeze({ id: 'class_purify_ward1', name: '驱魔牧师(I阶)', category: 'class', tier: 1, stat: '信', desc: '见习驱魔牧师，微弱感知污秽。' }),
+    class_purify_ward2: Object.freeze({ id: 'class_purify_ward2', name: '驱魔牧师(II阶)', category: 'class', tier: 2, stat: '信', desc: '正规驱魔牧师，驱散轻度腐毒动摇。' }),
+    class_purify_ward3: Object.freeze({ id: 'class_purify_ward3', name: '驱魔牧师(III阶)', category: 'class', tier: 3, stat: '信', desc: '精锐驱魔牧师，强效净化古诅咒烈毒。' }),
+    class_purify_ward4: Object.freeze({ id: 'class_purify_ward4', name: '驱魔牧师(IV阶)', category: 'class', tier: 4, stat: '信', desc: '宗师驱魔牧师，大范围净化遗迹区域。' }),
+    class_purify_ward5: Object.freeze({ id: 'class_purify_ward5', name: '驱魔牧师(V阶)', category: 'class', tier: 5, stat: '信', desc: '超凡驱魔牧师，抹除深渊侵蚀灾雾。' }),
+
+    class_elixir_alchemist: Object.freeze({ id: 'class_elixir_alchemist', name: '药剂师', category: 'class', tier: 2, stat: '智', desc: '配制急救药膏与通用解毒剂。' }),
+    class_elixir_alchemist1: Object.freeze({ id: 'class_elixir_alchemist1', name: '药剂师(I阶)', category: 'class', tier: 1, stat: '智', desc: '见习药剂师，金疮草膏。' }),
+    class_elixir_alchemist2: Object.freeze({ id: 'class_elixir_alchemist2', name: '药剂师(II阶)', category: 'class', tier: 2, stat: '智', desc: '正规药剂师，快速止血通用解毒。' }),
+    class_elixir_alchemist3: Object.freeze({ id: 'class_elixir_alchemist3', name: '药剂师(III阶)', category: 'class', tier: 3, stat: '智', desc: '精锐药剂师，再生秘药与烈性涂毒。' }),
+    class_elixir_alchemist4: Object.freeze({ id: 'class_elixir_alchemist4', name: '药剂师(IV阶)', category: 'class', tier: 4, stat: '智', desc: '宗师药剂师，激发秘药与奇毒解药。' }),
+    class_elixir_alchemist5: Object.freeze({ id: 'class_elixir_alchemist5', name: '药剂师(V阶)', category: 'class', tier: 5, stat: '智', desc: '超凡药剂师，触及生命炼成奥秘。' }),
+
+    class_bombardier: Object.freeze({ id: 'class_bombardier', name: '炼金术士', category: 'class', tier: 2, stat: '智', desc: '投掷酸液瓶与火药炸罐破障。' }),
+    class_bombardier1: Object.freeze({ id: 'class_bombardier1', name: '炼金术士(I阶)', category: 'class', tier: 1, stat: '智', desc: '见习炼金术士，黑火药罐。' }),
+    class_bombardier2: Object.freeze({ id: 'class_bombardier2', name: '炼金术士(II阶)', category: 'class', tier: 2, stat: '智', desc: '正规炼金术士，酸液瓶与燃烧瓶清软体。' }),
+    class_bombardier3: Object.freeze({ id: 'class_bombardier3', name: '炼金术士(III阶)', category: 'class', tier: 3, stat: '智', desc: '精锐炼金术士，炸药炸穿石门掩体。' }),
+    class_bombardier4: Object.freeze({ id: 'class_bombardier4', name: '炼金术士(IV阶)', category: 'class', tier: 4, stat: '智', desc: '宗师炼金术士，定向爆药毁构装体。' }),
+    class_bombardier5: Object.freeze({ id: 'class_bombardier5', name: '炼金术士(V阶)', category: 'class', tier: 5, stat: '智', desc: '超凡炼金术士，浓缩炸药平整堡垒。' }),
+
+    // 特质 Tag
+    trait_strong: Object.freeze({ id: 'trait_strong', name: '强壮', category: 'trait', statBonus: { str: 1 }, desc: '筋骨健硕，力量 +1。' }),
+    trait_agile: Object.freeze({ id: 'trait_agile', name: '敏捷', category: 'trait', statBonus: { agi: 1 }, desc: '身手敏捷，敏捷 +1。' }),
+    trait_clever: Object.freeze({ id: 'trait_clever', name: '聪明', category: 'trait', statBonus: { int: 1 }, desc: '心思敏锐，智力 +1。' }),
+    trait_steadfast: Object.freeze({ id: 'trait_steadfast', name: '坚定', category: 'trait', statBonus: { fai: 1 }, desc: '意志沉稳，信仰 +1。' }),
+
+    trait_dragon_awakening: Object.freeze({ id: 'trait_dragon_awakening', name: '血脉激发·龙化', category: 'trait', desc: '古兰专属；状态标识，激发时跃升超凡表现。' }),
+    trait_blood_resonance_weak: Object.freeze({ id: 'trait_blood_resonance_weak', name: '同源血脉受迫', category: 'trait', desc: '古兰专属；面对上位显性龙血或龙器时受牵引压迫，出剑不稳。' }),
+    trait_street_smart: Object.freeze({ id: 'trait_street_smart', name: '市井老手', category: 'trait', desc: '伊丝娜专属；识破虚高报价与假货，探听多获暗线线索。' }),
+    trait_arcane_prodigy: Object.freeze({ id: 'trait_arcane_prodigy', name: '算力推演', category: 'trait', statBonus: { int: 1 }, desc: '妮丝专属；智力 +1，精于复合术式解算。' }),
+    trait_stubborn_pride: Object.freeze({ id: 'trait_stubborn_pride', name: '好胜隐瞒', category: 'trait', desc: '妮丝动态；独自受挫或受要挟时不向队友求助。' }),
+    trait_gentle_steward: Object.freeze({ id: 'trait_gentle_steward', name: '细心照料', category: 'trait', statBonus: { fai: 1 }, desc: '奥萝拉专属；信仰 +1，照看伤员细致入微。' }),
+    trait_timid_yield: Object.freeze({ id: 'trait_timid_yield', name: '畏权退让', category: 'trait', desc: '奥萝拉动态；面对权贵威压易退让妥协。' }),
+    trait_street_rumor: Object.freeze({ id: 'trait_street_rumor', name: '市井耳目', category: 'trait', desc: '爱德专属；街市打听风声、抢截未登板急件。' }),
+    trait_royal_warrant: Object.freeze({ id: 'trait_royal_warrant', name: '王室特使凭证', category: 'trait', desc: '艾琳动态；关卡免检、查阅防务账目。' }),
+    trait_sanctuary_aura: Object.freeze({ id: 'trait_sanctuary_aura', name: '纯白庇佑', category: 'trait', desc: '塞西莉亚专属；安抚惊恐、驱散污秽与拔除血契。' }),
+
+    // 5 项公会阶位 Tag
+    guild_novice: Object.freeze({ id: 'guild_novice', name: '见习小队', category: 'guild', meritReq: 0, desc: '刚在公会登记的新人小队，接取城镇日常短差与外围清障。' }),
+    guild_bronze: Object.freeze({ id: 'guild_bronze', name: '青铜小队', category: 'guild', meritReq: 20, desc: '累计 20 功绩；具备野外自保力，接取荒原中度讨伐与近郊护卫。' }),
+    guild_silver: Object.freeze({ id: 'guild_silver', name: '白银小队', category: 'guild', meritReq: 60, desc: '累计 60 功绩；边境中坚主力，接取精锐敌群猎杀与浅层遗迹勘探。' }),
+    guild_gold: Object.freeze({ id: 'guild_gold', name: '黄金小队', category: 'guild', meritReq: 120, desc: '累计 120 功绩；高阶劲旅，接取大型地宫中层勘测与高危魔兽讨伐。' }),
+    guild_mithril: Object.freeze({ id: 'guild_mithril', name: '秘银小队', category: 'guild', meritReq: 200, desc: '累计 200 功绩；顶尖标杆，开放深层遗迹与龙脉禁区探索特许。' })
   })
 
   const idOf = tag => typeof tag === 'string' ? tag : tag?.id
 
   function apply(world, npcId, added = [], removed = []) {
-    u.check(u.own(world.npcs, npcId), '标签须用于已登记角色')
+    u.check(npcId === 'player' || u.own(world.npcs, npcId), '标签须用于已登记角色或主角')
     u.check(Array.isArray(added) && Array.isArray(removed), '标签增删须为数组')
     const addIds = added.map(idOf)
     const removeIds = removed.map(idOf)
@@ -3387,6 +3609,814 @@
 
   root.OKH_APP_TAGS = Object.freeze({ catalog, apply, migrate, list })
 })(globalThis)
+
+;
+/**
+ * @module      okh_app_skills
+ * @updated     2026-11-26 14:30
+ * @status      active
+ * @reason      技能系统解耦实现，提供 58 项全量技能白名单、已学与 6 格装配栏管理及能力比对
+ * @deps        ['utils']
+ * @provides    { catalog, CLASSES, ABILITIES, equip, unequip, learn, getLearned, getEquipped, migrate, checkAbility }
+ */
+(function (root) {
+  'use strict'
+
+  const u = root.OKHBackgroundModules.utils
+
+  // 17 个职业 Tag 通俗正名表
+  const CLASSES = Object.freeze({
+    class_shield_guard: Object.freeze({ id: 'class_shield_guard', name: '盾卫', branch: 'warrior', stat: '力' }),
+    class_heavy_vanguard: Object.freeze({ id: 'class_heavy_vanguard', name: '重剑士', branch: 'warrior', stat: '力' }),
+    class_duelist: Object.freeze({ id: 'class_duelist', name: '轻剑士', branch: 'warrior', stat: '敏' }),
+    class_berserker: Object.freeze({ id: 'class_berserker', name: '狂战士', branch: 'warrior', stat: '力' }),
+    class_devotion_paladin: Object.freeze({ id: 'class_devotion_paladin', name: '圣骑士', branch: 'paladin', stat: '力' }),
+    class_scout_stealth: Object.freeze({ id: 'class_scout_stealth', name: '斥候', branch: 'ranger', stat: '敏' }),
+    class_sniper_archer: Object.freeze({ id: 'class_sniper_archer', name: '弓箭手', branch: 'ranger', stat: '敏' }),
+    class_trap_breaker: Object.freeze({ id: 'class_trap_breaker', name: '盗贼', branch: 'rogue', stat: '敏' }),
+    class_assassin: Object.freeze({ id: 'class_assassin', name: '刺客', branch: 'rogue', stat: '敏' }),
+    class_arcane_blast: Object.freeze({ id: 'class_arcane_blast', name: '元素法师', branch: 'mage', stat: '智' }),
+    class_rune_decode: Object.freeze({ id: 'class_rune_decode', name: '符文师', branch: 'mage', stat: '智' }),
+    class_arcane_ward: Object.freeze({ id: 'class_arcane_ward', name: '结界师', branch: 'mage', stat: '智' }),
+    class_necromancer: Object.freeze({ id: 'class_necromancer', name: '死灵法师', branch: 'mage', stat: '智' }),
+    class_holy_heal: Object.freeze({ id: 'class_holy_heal', name: '治疗牧师', branch: 'priest', stat: '信' }),
+    class_purify_ward: Object.freeze({ id: 'class_purify_ward', name: '驱魔牧师', branch: 'priest', stat: '信' }),
+    class_elixir_alchemist: Object.freeze({ id: 'class_elixir_alchemist', name: '药剂师', branch: 'alchemy', stat: '智' }),
+    class_bombardier: Object.freeze({ id: 'class_bombardier', name: '炼金术士', branch: 'alchemy', stat: '智' })
+  })
+
+  // 7 大基础能力项
+  const ABILITIES = Object.freeze(['开锁', '拆陷', '辨识', '潜行', '侦查', '治疗', '破障'])
+
+  // 58 项全量注册技能词表
+  const catalog = Object.freeze({
+    // 4.1 通用冒险技 (7个，全职业可学，基础阶位 1)
+    skill_basic_lockpick: Object.freeze({ id: 'skill_basic_lockpick', name: '撬锁', tier: 1, ability: '开锁', abilityValue: 1, desc: '使用基础工具开启 I 阶常规门锁与箱笼。' }),
+    skill_basic_disarm: Object.freeze({ id: 'skill_basic_disarm', name: '拆陷阱', tier: 1, ability: '拆陷', abilityValue: 1, desc: '拆除 I 阶常规绊索与基础暗箭机关。' }),
+    skill_basic_identify: Object.freeze({ id: 'skill_basic_identify', name: '认魔纹', tier: 1, ability: '辨识', abilityValue: 1, desc: '辨识基础魔法铭文与 I 阶封印。' }),
+    skill_basic_stealth: Object.freeze({ id: 'skill_basic_stealth', name: '潜行', tier: 1, ability: '潜行', abilityValue: 1, desc: '放轻脚步隐蔽接近，躲避常规视线。' }),
+    skill_basic_scout: Object.freeze({ id: 'skill_basic_scout', name: '侦查', tier: 1, ability: '侦查', abilityValue: 1, desc: '察觉浅层暗门、伏击征兆与足迹。' }),
+    skill_first_aid: Object.freeze({ id: 'skill_first_aid', name: '包扎', tier: 1, ability: '治疗', abilityValue: 1, desc: '战场止血、轻伤处理与基础清创。' }),
+    skill_basic_breach: Object.freeze({ id: 'skill_basic_breach', name: '撞门', tier: 1, ability: '破障', abilityValue: 1, desc: '强行撞开常规木门或撬动 I 阶卡死石闸。' }),
+
+    // 4.2 战士系 (14个)
+    skill_warrior_breach: Object.freeze({ id: 'skill_warrior_breach', name: '破门', tier: 2, branch: 'warrior', ability: '破障', abilityDynamic: true, desc: '撞门、砸锁、劈开木栅石门等障碍物。' }),
+    skill_warrior_guard: Object.freeze({ id: 'skill_warrior_guard', name: '护卫', tier: 2, branch: 'warrior', tag: '前排护卫稳固', desc: '站住前排保住后排法师和牧师不被贴身打断。' }),
+    skill_shield_wall: Object.freeze({ id: 'skill_shield_wall', name: '举盾死守', tier: 2, reqClass: 'class_shield_guard', tag: '前排护卫稳固', desc: '正面架盾硬顶箭矢与冲锋，给队友撑开掩体。' }),
+    skill_shield_bash: Object.freeze({ id: 'skill_shield_bash', name: '盾击', tier: 2, reqClass: 'class_shield_guard', desc: '近身用盾面撞开贴脸的敌人，打断对方缠斗或施法。' }),
+    skill_shield_intervene: Object.freeze({ id: 'skill_shield_intervene', name: '替身挡刀', tier: 3, reqClass: 'class_shield_guard', desc: '队友险些吃重击时跨步抢上去用盾硬接。' }),
+    skill_heavy_cleave: Object.freeze({ id: 'skill_heavy_cleave', name: '重劈', tier: 2, reqClass: 'class_heavy_vanguard', ability: '破障', abilityDynamic: true, desc: '专劈重甲、木盾和石像外壳。' }),
+    skill_heavy_sweep: Object.freeze({ id: 'skill_heavy_sweep', name: '横扫', tier: 2, reqClass: 'class_heavy_vanguard', desc: '双手抡剑大范围横挥，逼退围上来的多个敌人。' }),
+    skill_heavy_press: Object.freeze({ id: 'skill_heavy_press', name: '力压', tier: 3, reqClass: 'class_heavy_vanguard', desc: '靠兵器分量死压对手兵刃，正面角力占优。' }),
+    skill_duelist_parry: Object.freeze({ id: 'skill_duelist_parry', name: '卸力拨剑', tier: 2, reqClass: 'class_duelist', desc: '侧身用剑脊带偏对方力道并顺势反刺。' }),
+    skill_duelist_pierce: Object.freeze({ id: 'skill_duelist_pierce', name: '刺破绽', tier: 2, reqClass: 'class_duelist', desc: '专挑重甲关节缝隙或施法者咽喉突刺。' }),
+    skill_duelist_flurry: Object.freeze({ id: 'skill_duelist_flurry', name: '连刺', tier: 3, reqClass: 'class_duelist', desc: '短时间连续出剑封锁退路，抢占先手节奏。' }),
+    skill_berserk_rage: Object.freeze({ id: 'skill_berserk_rage', name: '狂化', tier: 2, reqClass: 'class_berserker', desc: '在均势或差一阶劣势险战中强行搏命破局。' }),
+    skill_berserk_reckless: Object.freeze({ id: 'skill_berserk_reckless', name: '搏命换伤', tier: 2, reqClass: 'class_berserker', desc: '放弃防守硬吃轻伤抢攻，在正面死局撕开缺口。' }),
+    skill_berserk_frenzy: Object.freeze({ id: 'skill_berserk_frenzy', name: '血战到底', tier: 3, reqClass: 'class_berserker', desc: '挂伤后战意不降反升，围攻中强行挥砍突围。' }),
+
+    // 4.3 圣骑系 (3个)
+    skill_paladin_aegis: Object.freeze({ id: 'skill_paladin_aegis', name: '圣光护佑', tier: 2, reqClass: 'class_devotion_paladin', tag: '前排护卫稳固', desc: '重甲举盾守住前排，面对死灵时稳住心神。' }),
+    skill_paladin_lay_hands: Object.freeze({ id: 'skill_paladin_lay_hands', name: '圣手疗伤', tier: 2, reqClass: 'class_devotion_paladin', ability: '治疗', abilityDynamic: true, desc: '战后贴近伤口止血闭合。' }),
+    skill_paladin_smite: Object.freeze({ id: 'skill_paladin_smite', name: '破邪斩', tier: 3, reqClass: 'class_devotion_paladin', desc: '圣光灌注兵刃，对死灵与邪祟格外凌厉。' }),
+
+    // 4.4 游侠系 (6个)
+    skill_ranger_track: Object.freeze({ id: 'skill_ranger_track', name: '追踪探路', tier: 2, branch: 'ranger', ability: '侦查', abilityDynamic: true, desc: '察觉暗门、脚印与伏击征兆。' }),
+    skill_ranger_evade: Object.freeze({ id: 'skill_ranger_evade', name: '林地周旋', tier: 2, branch: 'ranger', desc: '善用地形与掩体拉开距离，避免被正面缠死。' }),
+    skill_scout_stealth: Object.freeze({ id: 'skill_scout_stealth', name: '潜行', tier: 2, reqClass: 'class_scout_stealth', ability: '潜行', abilityDynamic: true, desc: '无声贴近阴影或绕过守卫。' }),
+    skill_scout_ambush: Object.freeze({ id: 'skill_scout_ambush', name: '摸哨偷袭', tier: 2, reqClass: 'class_scout_stealth', desc: '暗处暴起先手解决孤立哨兵或扰乱敌后排。' }),
+    skill_archer_snipe: Object.freeze({ id: 'skill_archer_snipe', name: '点射', tier: 2, reqClass: 'class_sniper_archer', desc: '远程瞄准高威胁目标，压制敌方吟唱。' }),
+    skill_archer_volley: Object.freeze({ id: 'skill_archer_volley', name: '连射', tier: 3, reqClass: 'class_sniper_archer', desc: '快速连续放箭封锁通道，迟滞敌群冲锋。' }),
+
+    // 4.5 盗贼系 (6个)
+    skill_rogue_powder: Object.freeze({ id: 'skill_rogue_powder', name: '撒粉迷眼', tier: 2, branch: 'rogue', desc: '遇险抛洒粉尘制造错身脱困空档。' }),
+    skill_rogue_search: Object.freeze({ id: 'skill_rogue_search', name: '摸暗格', tier: 2, branch: 'rogue', ability: '侦查', abilityDynamic: true, desc: '在墙砖与箱柜里摸索暗格与机关机括。' }),
+    skill_thief_lock: Object.freeze({ id: 'skill_thief_lock', name: '开锁', tier: 2, reqClass: 'class_trap_breaker', ability: '开锁', abilityDynamic: true, desc: '专精各类门锁、保险箱与密室暗锁。' }),
+    skill_thief_disarm: Object.freeze({ id: 'skill_thief_disarm', name: '拆陷阱', tier: 2, reqClass: 'class_trap_breaker', ability: '拆陷', abilityDynamic: true, desc: '拆除绊索、毒针、落石等复合机关。' }),
+    skill_assassin_backstab: Object.freeze({ id: 'skill_assassin_backstab', name: '背刺', tier: 2, reqClass: 'class_assassin', ability: '潜行', abilityDynamic: true, desc: '绕到盲区以短刃直刺要害。' }),
+    skill_assassin_venom: Object.freeze({ id: 'skill_assassin_venom', name: '涂毒', tier: 2, reqClass: 'class_assassin', desc: '兵刃涂抹麻痹或出血毒膏削弱对手。' }),
+
+    // 4.6 法师系 (10个)
+    skill_mage_identify: Object.freeze({ id: 'skill_mage_identify', name: '魔纹辨识', tier: 2, branch: 'mage', ability: '辨识', abilityDynamic: true, desc: '识破与解离魔法阵、封印与古物铭文。' }),
+    skill_mage_missile: Object.freeze({ id: 'skill_mage_missile', name: '奥术飞弹', tier: 2, branch: 'mage', desc: '成型单体法术打击，安全距离稳定输出。' }),
+    skill_elem_fireball: Object.freeze({ id: 'skill_elem_fireball', name: '火球术', tier: 2, reqClass: 'class_arcane_blast', desc: '释放爆裂火球，大范围焚烧敌群与软体魔物。' }),
+    skill_elem_frostnova: Object.freeze({ id: 'skill_elem_frostnova', name: '冰霜新星', tier: 3, reqClass: 'class_arcane_blast', desc: '瞬发寒气冻结地面与敌群，拉开安全距离。' }),
+    skill_rune_dispel: Object.freeze({ id: 'skill_rune_dispel', name: '解离法阵', tier: 2, reqClass: 'class_rune_decode', ability: '辨识', abilityDynamic: true, desc: '专门拆解遗迹复合魔法封印与阵眼。' }),
+    skill_rune_ray: Object.freeze({ id: 'skill_rune_ray', name: '破魔射线', tier: 3, reqClass: 'class_rune_decode', desc: '击碎敌方魔导护盾或干扰敌方施法者。' }),
+    skill_ward_shield: Object.freeze({ id: 'skill_ward_shield', name: '力场盾', tier: 2, reqClass: 'class_arcane_ward', desc: '展开贴身魔力护盾，挡下箭矢与单体法术。' }),
+    skill_ward_barrier: Object.freeze({ id: 'skill_ward_barrier', name: '守护结界', tier: 3, reqClass: 'class_arcane_ward', desc: '张开半圆防护屏障，抵挡远程齐射与范围法术。' }),
+    skill_necro_skeleton: Object.freeze({ id: 'skill_necro_skeleton', name: '唤起骷髅', tier: 2, reqClass: 'class_necromancer', desc: '驱使低阶骷髅充当前排炮灰争取施法空间。' }),
+    skill_necro_curse: Object.freeze({ id: 'skill_necro_curse', name: '衰弱诅咒', tier: 3, reqClass: 'class_necromancer', desc: '对强敌降下诅咒，令其气力衰退动作迟缓。' }),
+
+    // 4.7 牧师系 (6个)
+    skill_priest_calm: Object.freeze({ id: 'skill_priest_calm', name: '安神祷言', tier: 2, branch: 'priest', desc: '安抚惊恐情绪，稳定心智抵抗精神侵蚀。' }),
+    skill_priest_light: Object.freeze({ id: 'skill_priest_light', name: '圣光术', tier: 2, branch: 'priest', desc: '引动神术照明或震退贴近的低阶死灵。' }),
+    skill_heal_holy: Object.freeze({ id: 'skill_heal_holy', name: '神圣治疗', tier: 2, reqClass: 'class_holy_heal', ability: '治疗', abilityDynamic: true, desc: '闭合创伤、抢救濒死重伤。' }),
+    skill_heal_group: Object.freeze({ id: 'skill_heal_group', name: '群体庇佑', tier: 3, reqClass: 'class_holy_heal', desc: '范围圣光同时照料多名伤员维持续航。' }),
+    skill_purify_cleanse: Object.freeze({ id: 'skill_purify_cleanse', name: '驱散净化', tier: 2, reqClass: 'class_purify_ward', ability: '治疗', abilityDynamic: true, desc: '驱除瘴气、剧毒与古代诅咒。' }),
+    skill_purify_word: Object.freeze({ id: 'skill_purify_word', name: '破邪圣言', tier: 3, reqClass: 'class_purify_ward', desc: '高声吟诵神圣真言克制与灼伤死灵及邪祟。' }),
+
+    // 4.8 炼金系 (6个)
+    skill_alch_brew: Object.freeze({ id: 'skill_alch_brew', name: '调配药剂', tier: 2, branch: 'alchemy', ability: '治疗', abilityDynamic: true, desc: '现场调配止血膏与通用解毒剂。' }),
+    skill_alch_acid: Object.freeze({ id: 'skill_alch_acid', name: '投掷酸液瓶', tier: 2, branch: 'alchemy', desc: '甩出腐蚀酸液瓶克制软体魔物与铁锁链。' }),
+    skill_elixir_firstaid: Object.freeze({ id: 'skill_elixir_firstaid', name: '救急秘药', tier: 2, reqClass: 'class_elixir_alchemist', desc: '浓缩药剂快速止血解毒稳住伤势。' }),
+    skill_elixir_poison: Object.freeze({ id: 'skill_elixir_poison', name: '淬毒涂抹', tier: 3, reqClass: 'class_elixir_alchemist', desc: '调配毒药涂抹兵刃箭矢增强压制。' }),
+    skill_bomb_keg: Object.freeze({ id: 'skill_bomb_keg', name: '火药炸罐', tier: 2, reqClass: 'class_bombardier', ability: '破障', abilityDynamic: true, desc: '用火药罐炸穿石门、木栅与掩体。' }),
+    skill_bomb_molotov: Object.freeze({ id: 'skill_bomb_molotov', name: '燃烧瓶', tier: 2, reqClass: 'class_bombardier', desc: '投掷炼金火油封锁通道并灼烧强敌。' })
+  })
+
+  const MAX_EQUIPPED = 6
+
+  function learn(world, skillId) {
+    u.check(u.own(catalog, skillId), '学习技能 ID 未在词表注册：' + skillId)
+    const ps = world.playerState ||= {}
+    const learned = new Set(Array.isArray(ps.learnedSkills) ? ps.learnedSkills : [])
+    learned.add(skillId)
+    ps.learnedSkills = [...learned]
+    return true
+  }
+
+  function equip(world, skillId, slotIndex = -1) {
+    u.check(u.own(catalog, skillId), '装配技能 ID 未在词表注册：' + skillId)
+    const ps = world.playerState ||= {}
+    const learned = Array.isArray(ps.learnedSkills) ? ps.learnedSkills : []
+    u.check(learned.includes(skillId), '未学会该技能，无法装配：' + skillId)
+
+    const skill = catalog[skillId]
+    const pTier = Number.isInteger(ps.tier) ? ps.tier : 2
+    u.check(pTier >= skill.tier, `阶位不足（当前 ${pTier} 阶，技能需求 ${skill.tier} 阶）`)
+
+    if (skill.reqClass) {
+      u.check(ps.currentClass === skill.reqClass, `主职不匹配（需 ${skill.reqClass}）`)
+    }
+
+    const equipped = [...(Array.isArray(ps.equippedSkills) ? ps.equippedSkills : [])]
+    if (equipped.includes(skillId)) return true // 已装配直接幂等
+
+    if (slotIndex >= 0 && slotIndex < equipped.length) {
+      equipped[slotIndex] = skillId
+    } else {
+      u.check(equipped.length < MAX_EQUIPPED, `装配栏已满（上限 ${MAX_EQUIPPED} 格）`)
+      equipped.push(skillId)
+    }
+
+    ps.equippedSkills = equipped
+    return true
+  }
+
+  function unequip(world, skillId) {
+    const ps = world.playerState ||= {}
+    const equipped = Array.isArray(ps.equippedSkills) ? ps.equippedSkills : []
+    ps.equippedSkills = equipped.filter(id => id !== skillId)
+    return true
+  }
+
+  function getLearned(world) {
+    const list = world?.playerState?.learnedSkills || []
+    return list.map(id => catalog[id]).filter(Boolean)
+  }
+
+  function getEquipped(world) {
+    const list = world?.playerState?.equippedSkills || []
+    return list.map(id => catalog[id]).filter(Boolean)
+  }
+
+  function checkAbility(world, abilityName, playerTier = 2) {
+    const equipped = getEquipped(world)
+    let maxVal = 0
+    for (const sk of equipped) {
+      if (sk.ability === abilityName) {
+        const val = sk.abilityDynamic ? playerTier : (sk.abilityValue || 1)
+        if (val > maxVal) maxVal = val
+      }
+    }
+    return maxVal
+  }
+
+  function migrate(world) {
+    if (!world) return world
+    const ps = world.playerState ||= {}
+    if (!Array.isArray(ps.learnedSkills)) ps.learnedSkills = []
+    if (!Array.isArray(ps.equippedSkills)) ps.equippedSkills = []
+    if (ps.equippedSkills.length > MAX_EQUIPPED) {
+      ps.equippedSkills = ps.equippedSkills.slice(0, MAX_EQUIPPED)
+    }
+    return world
+  }
+
+  root.OKH_APP_SKILLS = Object.freeze({
+    catalog,
+    CLASSES,
+    ABILITIES,
+    MAX_EQUIPPED,
+    learn,
+    equip,
+    unequip,
+    getLearned,
+    getEquipped,
+    checkAbility,
+    migrate
+  })
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = root.OKH_APP_SKILLS
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this)
+
+;
+/**
+ * @module      okh_app_ruins
+ * @updated     2026-11-26 14:30
+ * @status      active
+ * @reason      遗迹探险引擎解耦实现，提供六大生态、全量组件白名单、流水线组装与探险推进事务
+ * @deps        ['utils']
+ * @provides    { catalog, assemble, enter, advance, retreat, migrate, getStatus }
+ */
+(function (root) {
+  'use strict'
+
+  const u = root.OKHBackgroundModules.utils
+
+  // 1. 六大生态多维感官环境氛围与战术禁忌
+  const biomes = Object.freeze({
+    biome_narrow_mine: Object.freeze({
+      id: 'biome_narrow_mine',
+      name: '狭窄矿坑与竖井岩洞',
+      minTier: 2,
+      atmosphere: Object.freeze({
+        architecture: '粗粝矮伏的凿石坑道、朽烂的原木支撑架、锈蚀轨道与渗水升降竖井',
+        air: '潮湿泥土气混杂微弱硫磺味与铁锈腥气，空气滞重闷热',
+        visibility: '视距仅数米，火把光芒被黑沉岩壁吸收，悬浮细微石粉',
+        sound: '断续滴水空响、风穿狭窄岩缝的低啸、碎石滚落声',
+        taboo: '严禁用大范围烈焰法术（易引爆积聚瓦斯）；不可大力敲击支撑木柱'
+      })
+    }),
+    biome_toxic_mire: Object.freeze({
+      id: 'biome_toxic_mire',
+      name: '毒沼菌窟与腐殖坑道',
+      minTier: 2,
+      atmosphere: Object.freeze({
+        architecture: '坍塌砖石地宫浸泡在黑绿死水中，大片发光菌毯与寄生藤蔓封堵通路',
+        air: '浓烈刺鼻的腐败酸臭、发酵沼气与微甜致幻菌孢粉末',
+        visibility: '菌孢散发青幽磷光，水面泛油彩光晕，雾气弥漫',
+        sound: '淤泥气泡破裂的咕嘟声、水下不明生物摆尾游动的划水声',
+        taboo: '全员必须扎紧裤腿与领口；禁止直接饮用渗水；涉水必探深浅'
+      })
+    }),
+    biome_trap_vault: Object.freeze({
+      id: 'biome_trap_vault',
+      name: '机关暗殿与古代地宫',
+      minTier: 2,
+      atmosphere: Object.freeze({
+        architecture: '紧密的玄武岩磨光条石、倾斜暗道、重力翻板与雕刻斑驳的古代警语',
+        air: '干燥阴凉，夹杂陈旧石粉与机油硬化后的焦苦味',
+        visibility: '视线开阔但死角密布，反光石砖反射惨白光斑，长廊深处漆黑',
+        sound: '墙内齿轮微弱咬合卡顿声、铅块滑轨重压摩擦声、皮靴清脆踏步声',
+        taboo: '禁止盲目踩踏中轴条石；拆卸卡榫前必须探明配重线，不可蛮力拉拽'
+      })
+    }),
+    biome_living_lair: Object.freeze({
+      id: 'biome_living_lair',
+      name: '魔兽盘踞坑与活体巢穴',
+      minTier: 2,
+      atmosphere: Object.freeze({
+        architecture: '带有深邃抓痕的天然石灰岩溶洞、撕碎的毛皮残渣、啃光骨髓的累累兽骨',
+        air: '扑面而来的野兽骚腥味、干涸发黑的血腥气与残渣馊臭',
+        visibility: '洞口逆光投射，深处阴暗潮湿，岩石转角后常有天然落差天坑',
+        sound: '沉重的粗喘声、喉咙深处的护食低吼声、细碎啃咬骨头声',
+        taboo: '必须处于下风口潜行接近；严禁在母兽视线内直视其双眼或幼崽'
+      })
+    }),
+    biome_arcane_grid: Object.freeze({
+      id: 'biome_arcane_grid',
+      name: '秘术网格与浮空构装',
+      minTier: 3, // 三阶及以上专属
+      atmosphere: Object.freeze({
+        architecture: '蓝白魔导晶石基座、断裂的秘银浮石回廊、嗡鸣运转的半透明力场屏障',
+        air: '强烈的臭氧焦味，空气干燥微麻，毛发容易因静电竖起',
+        visibility: '悬浮魔力微粒形成冷色散光，闪烁电弧强光，阴影被冲淡',
+        sound: '持续低沉的魔力震荡共鸣音，如无休止的风箱振动；屏障微颤蜂鸣',
+        taboo: '禁止在导能水槽周围施放大范围电弧；金属重甲者注意防引弧'
+      })
+    }),
+    biome_undead_crypt: Object.freeze({
+      id: 'biome_undead_crypt',
+      name: '沉沦灵堂与亡灵墓穴',
+      minTier: 3, // 三阶及以上专属
+      atmosphere: Object.freeze({
+        architecture: '潮湿的花岗岩壁龛、堆叠的石棺、散落的风化骸骨与被砸毁的石碑',
+        air: '刺骨的死寂阴冷、发霉的棺木亚麻布与陈年骨粉气味',
+        visibility: '幽暗寒冷，火光会被阴冷死气压制得泛绿萎缩，冷雾贴地缓缓流动',
+        sound: '骸骨受惊碰撞的声响、指甲刮擦石棺内壁声、虚无的叹息声',
+        taboo: '全员佩戴圣水或银饰驱寒；严禁在骨灰瓮旁剧烈跑动扬起骨尘'
+      })
+    })
+  })
+
+  // 2. 入口组件库 (15个)
+  const entrances = Object.freeze({
+    ent_mine_01: Object.freeze({ id: 'ent_mine_01', name: '荒废矿道塌方口', biome: 'mine', minHours: 8 }),
+    ent_mine_02: Object.freeze({ id: 'ent_mine_02', name: '垂直绞盘通风竖井', biome: 'mine', minHours: 8 }),
+    ent_mine_03: Object.freeze({ id: 'ent_mine_03', name: '地表裂谷隐秘斜坡', biome: 'mine', minHours: 8 }),
+    ent_mire_01: Object.freeze({ id: 'ent_mire_01', name: '腐木栈桥残段', biome: 'mire', minHours: 10 }),
+    ent_mire_02: Object.freeze({ id: 'ent_mire_02', name: '菌丝覆盖的排水涵洞', biome: 'mire', minHours: 10 }),
+    ent_mire_03: Object.freeze({ id: 'ent_mire_03', name: '沉没地宫换气石孔', biome: 'mire', minHours: 8 }),
+    ent_vault_01: Object.freeze({ id: 'ent_vault_01', name: '生锈的双重断龙石闸', biome: 'vault', minHours: 10 }),
+    ent_vault_02: Object.freeze({ id: 'ent_vault_02', name: '古代守卫回廊外门', biome: 'vault', minHours: 8 }),
+    ent_vault_03: Object.freeze({ id: 'ent_vault_03', name: '裂隙塌陷暗殿石拱', biome: 'vault', minHours: 8 }),
+    ent_lair_01: Object.freeze({ id: 'ent_lair_01', name: '巨兽利爪开凿的豁口', biome: 'lair', minHours: 8 }),
+    ent_lair_02: Object.freeze({ id: 'ent_lair_02', name: '乱石林天然溶洞缝隙', biome: 'lair', minHours: 8 }),
+    ent_lair_03: Object.freeze({ id: 'ent_lair_03', name: '荆棘杂木遮蔽的天坑', biome: 'lair', minHours: 10 }),
+    ent_arcane_01: Object.freeze({ id: 'ent_arcane_01', name: '悬浮秘银回廊残桥', biome: 'arcane', minHours: 12 }),
+    ent_arcane_02: Object.freeze({ id: 'ent_arcane_02', name: '紊乱魔导符文屏障门', biome: 'arcane', minHours: 10 }),
+    ent_crypt_01: Object.freeze({ id: 'ent_crypt_01', name: '青砖盗洞入口', biome: 'crypt', minHours: 8 })
+  })
+
+  // 3. 机关险阻组件库 (15个)
+  const obstacles = Object.freeze({
+    obs_mine_gas: Object.freeze({ id: 'obs_mine_gas', name: '瓦斯积聚区', biome: 'mine', tier: 2, reqAbility: '辨识', reqDc: 2, altAbility: '破障', altDc: 2, minHours: 8 }),
+    obs_mine_rockfall: Object.freeze({ id: 'obs_mine_rockfall', name: '朽木摇晃塌方带', biome: 'mine', tier: 2, reqAbility: '拆陷', reqDc: 2, altAbility: '破障', altDc: 2, minHours: 10 }),
+    obs_mire_parasite: Object.freeze({ id: 'obs_mire_parasite', name: '剧毒水蛭腐殖池', biome: 'mire', tier: 2, reqAbility: '辨识', reqDc: 2, altAbility: '治疗', altDc: 2, minHours: 10 }),
+    obs_mire_spores: Object.freeze({ id: 'obs_mire_spores', name: '迷幻紫菌孢子帘', biome: 'mire', tier: 2, reqAbility: '侦查', reqDc: 2, altAbility: '辨识', altDc: 2, minHours: 10 }),
+    obs_vault_darts: Object.freeze({ id: 'obs_vault_darts', name: '连环梅花重力毒针板', biome: 'vault', tier: 2, reqAbility: '拆陷', reqDc: 2, altAbility: '开锁', altDc: 2, minHours: 8 }),
+    obs_vault_blade: Object.freeze({ id: 'obs_vault_blade', name: '摆斧滚石连动走廊', biome: 'vault', tier: 2, reqAbility: '侦查', reqDc: 2, altAbility: '潜行', altDc: 2, minHours: 10 }),
+    obs_vault_gate: Object.freeze({ id: 'obs_vault_gate', name: '三阶闭锁合金暗门', biome: 'vault', tier: 3, reqAbility: '开锁', reqDc: 3, altAbility: '破障', altDc: 3, minHours: 12 }),
+    obs_lair_webs: Object.freeze({ id: 'obs_lair_webs', name: '黏稠地穴毒蛛网阵', biome: 'lair', tier: 2, reqAbility: '破障', reqDc: 2, altAbility: '辨识', altDc: 2, minHours: 8 }),
+    obs_lair_scent: Object.freeze({ id: 'obs_lair_scent', name: '敏感暗影豹气味警戒圈', biome: 'lair', tier: 2, reqAbility: '潜行', reqDc: 2, altAbility: '侦查', altDc: 2, minHours: 8 }),
+    obs_arcane_turret: Object.freeze({ id: 'obs_arcane_turret', name: '充能自动魔导哨戒机', biome: 'arcane', tier: 3, reqAbility: '拆陷', reqDc: 3, altAbility: '辨识', altDc: 3, minHours: 12 }),
+    obs_arcane_rift: Object.freeze({ id: 'obs_arcane_rift', name: '空间重叠相位紊乱区', biome: 'arcane', tier: 3, reqAbility: '辨识', reqDc: 3, altAbility: '潜行', altDc: 3, minHours: 12 }),
+    obs_crypt_coffin: Object.freeze({ id: 'obs_crypt_coffin', name: '尸毒陷阱殉葬石棺道', biome: 'crypt', tier: 3, reqAbility: '拆陷', reqDc: 3, altAbility: '治疗', altDc: 3, minHours: 10 }),
+    obs_crypt_cold: Object.freeze({ id: 'obs_crypt_cold', name: '严霜侵蚀死寂回廊', biome: 'crypt', tier: 3, reqAbility: '治疗', reqDc: 3, altAbility: '辨识', altDc: 3, minHours: 10 }),
+    obs_universal_quake: Object.freeze({ id: 'obs_universal_quake', name: '地震开裂地底熔岩缝', biome: 'universal', tier: 2, reqAbility: '破障', reqDc: 2, altAbility: '侦查', altDc: 2, minHours: 8 }),
+    obs_universal_puzzle: Object.freeze({ id: 'obs_universal_puzzle', name: '古代文明几何密码盘', biome: 'universal', tier: 2, reqAbility: '辨识', reqDc: 2, altAbility: '开锁', altDc: 2, minHours: 8 })
+  })
+
+  // 4. 策略岔路组件库 (30个纯路由)
+  const branches = Object.freeze({
+    br_mine_01: Object.freeze({ id: 'br_mine_01', name: '运输窄轨与通风竖井', biome: 'mine', minHours: 8 }),
+    br_mine_02: Object.freeze({ id: 'br_mine_02', name: '渗水积坑与敲凿采掘面', biome: 'mine', minHours: 8 }),
+    br_mine_03: Object.freeze({ id: 'br_mine_03', name: '塌方拱顶与沉重防火门', biome: 'mine', minHours: 8 }),
+    br_mine_04: Object.freeze({ id: 'br_mine_04', name: '废弃工具间与岩隙回廊', biome: 'mine', minHours: 8 }),
+    br_mine_05: Object.freeze({ id: 'br_mine_05', name: '熔岩缝暗道与坚实主道', biome: 'mine', minHours: 8 }),
+    br_mire_01: Object.freeze({ id: 'br_mire_01', name: '浅滩泥泞道与发光菌林', biome: 'mire', minHours: 8 }),
+    br_mire_02: Object.freeze({ id: 'br_mire_02', name: '半沉砖石拱廊与芦苇死水沼', biome: 'mire', minHours: 8 }),
+    br_mire_03: Object.freeze({ id: 'br_mire_03', name: '巨木浮桥与悬挂藤蔓梯', biome: 'mire', minHours: 8 }),
+    br_mire_04: Object.freeze({ id: 'br_mire_04', name: '排污总渠与墓园偏道', biome: 'mire', minHours: 8 }),
+    br_mire_05: Object.freeze({ id: 'br_mire_05', name: '孢子浓雾区与湿滑钟乳壁', biome: 'mire', minHours: 8 }),
+    br_vault_01: Object.freeze({ id: 'br_vault_01', name: '壁画长廊与维修窄道', biome: 'vault', minHours: 8 }),
+    br_vault_02: Object.freeze({ id: 'br_vault_02', name: '浑天仪厅与军械库偏厅', biome: 'vault', minHours: 8 }),
+    br_vault_03: Object.freeze({ id: 'br_vault_03', name: '力场走廊与排水铅管管道', biome: 'vault', minHours: 8 }),
+    br_vault_04: Object.freeze({ id: 'br_vault_04', name: '齿轮核心室与值班换防间', biome: 'vault', minHours: 8 }),
+    br_vault_05: Object.freeze({ id: 'br_vault_05', name: '试炼中庭与侧翼藏书密室', biome: 'vault', minHours: 8 }),
+    br_lair_01: Object.freeze({ id: 'br_lair_01', name: '兽骨主巢洞与狭窄岩隙', biome: 'lair', minHours: 8 }),
+    br_lair_02: Object.freeze({ id: 'br_lair_02', name: '暗河河滩与峭壁攀爬架', biome: 'lair', minHours: 8 }),
+    br_lair_03: Object.freeze({ id: 'br_lair_03', name: '哺育偏坑与巡逻兽道', biome: 'lair', minHours: 8 }),
+    br_lair_04: Object.freeze({ id: 'br_lair_04', name: '弃物深坑与上风口裂隙', biome: 'lair', minHours: 8 }),
+    br_lair_05: Object.freeze({ id: 'br_lair_05', name: '石林迷宫与巨型穴腔', biome: 'lair', minHours: 8 }),
+    br_arcane_01: Object.freeze({ id: 'br_arcane_01', name: '浮空石阶直道与检修导槽', biome: 'arcane', minHours: 10 }),
+    br_arcane_02: Object.freeze({ id: 'br_arcane_02', name: '魔力反应室与试作构装库', biome: 'arcane', minHours: 10 }),
+    br_arcane_03: Object.freeze({ id: 'br_arcane_03', name: '镜像回廊与符文充能廊', biome: 'arcane', minHours: 10 }),
+    br_arcane_04: Object.freeze({ id: 'br_arcane_04', name: '相位环带与外壁残阶', biome: 'arcane', minHours: 10 }),
+    br_arcane_05: Object.freeze({ id: 'br_arcane_05', name: '研究卷轴室与防卫前厅', biome: 'arcane', minHours: 10 }),
+    br_crypt_01: Object.freeze({ id: 'br_crypt_01', name: '殉葬主回廊与侍从墓室', biome: 'crypt', minHours: 8 }),
+    br_crypt_02: Object.freeze({ id: 'br_crypt_02', name: '骨灰瓮陈列堂与守墓石室', biome: 'crypt', minHours: 8 }),
+    br_crypt_03: Object.freeze({ id: 'br_crypt_03', name: '墓道干尸走廊与积水暗沟', biome: 'crypt', minHours: 8 }),
+    br_crypt_04: Object.freeze({ id: 'br_crypt_04', name: '石棺阵列回廊与盗洞偏门', biome: 'crypt', minHours: 8 }),
+    br_crypt_05: Object.freeze({ id: 'br_crypt_05', name: '哀悼圣堂大门与祭坛暗道', biome: 'crypt', minHours: 8 })
+  })
+
+  // 5. 战斗遭遇库 (100个单一交锋实体，严格声明 enemyTier 与 tactics)
+  const combats = Object.freeze({
+    // 一阶守卫 (30个)
+    mob_t1_mine_spider: Object.freeze({ id: 'mob_t1_mine_spider', name: '洞穴灰盲蛛群', enemyTier: 1, biome: 'mine', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mine_rat: Object.freeze({ id: 'mob_t1_mine_rat', name: '剧毒食腐幼鼠群', enemyTier: 1, biome: 'mine', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mine_scorpion: Object.freeze({ id: 'mob_t1_mine_scorpion', name: '潜岩石蝎', enemyTier: 1, biome: 'mine', damageType: 'pierce', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t1_mine_snake: Object.freeze({ id: 'mob_t1_mine_snake', name: '地底洞穴盲蛇', enemyTier: 1, biome: 'mine', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mine_puppet: Object.freeze({ id: 'mob_t1_mine_puppet', name: '生锈矿工傀儡', enemyTier: 1, biome: 'mine', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t1_mine_mole: Object.freeze({ id: 'mob_t1_mine_mole', name: '狂暴地鼠', enemyTier: 1, biome: 'mine', damageType: 'slash', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mine_hare: Object.freeze({ id: 'mob_t1_mine_hare', name: '腐皮穴兔', enemyTier: 1, biome: 'mine', damageType: 'blunt', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mine_goblin: Object.freeze({ id: 'mob_t1_mine_goblin', name: '弱小地精斥候', enemyTier: 1, biome: 'mine', damageType: 'pierce', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t1_mire_slime: Object.freeze({ id: 'mob_t1_mire_slime', name: '腐泥软泥怪', enemyTier: 1, biome: 'mire', damageType: 'acid', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mire_leech: Object.freeze({ id: 'mob_t1_mire_leech', name: '吸血巨水蛭', enemyTier: 1, biome: 'mire', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mire_frog: Object.freeze({ id: 'mob_t1_mire_frog', name: '沼泽毒角蛙', enemyTier: 1, biome: 'mire', damageType: 'poison', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mire_fungus: Object.freeze({ id: 'mob_t1_mire_fungus', name: '腐菌寄生体', enemyTier: 1, biome: 'mire', damageType: 'poison', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mire_gnat: Object.freeze({ id: 'mob_t1_mire_gnat', name: '腐水黑蚊群', enemyTier: 1, biome: 'mire', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mire_turtle: Object.freeze({ id: 'mob_t1_mire_turtle', name: '烂木硬甲龟', enemyTier: 1, biome: 'mire', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t1_mire_fish: Object.freeze({ id: 'mob_t1_mire_fish', name: '浅滩盲鱼怪', enemyTier: 1, biome: 'mire', damageType: 'slash', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_mire_vulture: Object.freeze({ id: 'mob_t1_mire_vulture', name: '食腐秃鹫', enemyTier: 1, biome: 'mire', damageType: 'slash', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_vault_hound: Object.freeze({ id: 'mob_t1_vault_hound', name: '发条机械犬', enemyTier: 1, biome: 'vault', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_vault_dummy: Object.freeze({ id: 'mob_t1_vault_dummy', name: '飞刀守卫假人', enemyTier: 1, biome: 'vault', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_vault_skeleton: Object.freeze({ id: 'mob_t1_vault_skeleton', name: '轻装巡逻骷髅兵', enemyTier: 1, biome: 'vault', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t1_vault_mummy: Object.freeze({ id: 'mob_t1_vault_mummy', name: '游荡干尸', enemyTier: 1, biome: 'vault', damageType: 'blunt', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_vault_orb: Object.freeze({ id: 'mob_t1_vault_orb', name: '锈蚀警卫球', enemyTier: 1, biome: 'vault', damageType: 'blunt', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_vault_gargoyle: Object.freeze({ id: 'mob_t1_vault_gargoyle', name: '破损石像鬼残躯', enemyTier: 1, biome: 'vault', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t1_lair_boar: Object.freeze({ id: 'mob_t1_lair_boar', name: '凶齿野猪', enemyTier: 1, biome: 'lair', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t1_lair_wolf: Object.freeze({ id: 'mob_t1_lair_wolf', name: '饥饿荒原郊狼', enemyTier: 1, biome: 'lair', damageType: 'slash', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_lair_cat: Object.freeze({ id: 'mob_t1_lair_cat', name: '裂爪山猫', enemyTier: 1, biome: 'lair', damageType: 'slash', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t1_lair_sparrow: Object.freeze({ id: 'mob_t1_lair_sparrow', name: '铁喙巨雀', enemyTier: 1, biome: 'lair', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_lair_wasp: Object.freeze({ id: 'mob_t1_lair_wasp', name: '长尾毒蜂群', enemyTier: 1, biome: 'lair', damageType: 'poison', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_lair_python: Object.freeze({ id: 'mob_t1_lair_python', name: '林地斑纹蟒', enemyTier: 1, biome: 'lair', damageType: 'blunt', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t1_lair_badger: Object.freeze({ id: 'mob_t1_lair_badger', name: '掘穴恶獾', enemyTier: 1, biome: 'lair', damageType: 'slash', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t1_lair_hyena: Object.freeze({ id: 'mob_t1_lair_hyena', name: '野地鬣狗', enemyTier: 1, biome: 'lair', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+
+    // 二阶正规守卫 (40个)
+    mob_t2_mine_golem: Object.freeze({ id: 'mob_t2_mine_golem', name: '重型破岩傀儡', enemyTier: 2, biome: 'mine', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_mine_spider: Object.freeze({ id: 'mob_t2_mine_spider', name: '洞穴黑甲巨蛛', enemyTier: 2, biome: 'mine', damageType: 'pierce', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t2_mine_boar: Object.freeze({ id: 'mob_t2_mine_boar', name: '钢鬃巨角野猪', enemyTier: 2, biome: 'mine', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_mine_lizard: Object.freeze({ id: 'mob_t2_mine_lizard', name: '暗影潜行岩蜥', enemyTier: 2, biome: 'mine', damageType: 'slash', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t2_mine_bomber: Object.freeze({ id: 'mob_t2_mine_bomber', name: '地精掷弹狂徒', enemyTier: 2, biome: 'mine', damageType: 'fire', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_mine_worm: Object.freeze({ id: 'mob_t2_mine_worm', name: '食矿巨蚯蚓', enemyTier: 2, biome: 'mine', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_mine_scorpion: Object.freeze({ id: 'mob_t2_mine_scorpion', name: '地脉结晶魔蝎', enemyTier: 2, biome: 'mine', damageType: 'pierce', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_mine_troll: Object.freeze({ id: 'mob_t2_mine_troll', name: '穴居巨魔先锋', enemyTier: 2, biome: 'mine', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_mine_bat: Object.freeze({ id: 'mob_t2_mine_bat', name: '变异双头巨蝠', enemyTier: 2, biome: 'mine', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_mine_ghost: Object.freeze({ id: 'mob_t2_mine_ghost', name: '黑铁工兵游魂', enemyTier: 2, biome: 'mine', damageType: 'frost', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_mire_snake: Object.freeze({ id: 'mob_t2_mire_snake', name: '剧毒斑纹水蟒', enemyTier: 2, biome: 'mire', damageType: 'poison', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t2_mire_croc: Object.freeze({ id: 'mob_t2_mire_croc', name: '腐水潜伏巨鳄', enemyTier: 2, biome: 'mire', damageType: 'slash', tactics: { reqFrontline: true, ambush: true } }),
+    mob_t2_mire_ooze: Object.freeze({ id: 'mob_t2_mire_ooze', name: '酸液大型软泥怪', enemyTier: 2, biome: 'mire', damageType: 'acid', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_mire_walker: Object.freeze({ id: 'mob_t2_mire_walker', name: '沼泽泥怪行者', enemyTier: 2, biome: 'mire', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_mire_hound: Object.freeze({ id: 'mob_t2_mire_hound', name: '腐毒寄生狂犬', enemyTier: 2, biome: 'mire', damageType: 'poison', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_mire_crab: Object.freeze({ id: 'mob_t2_mire_crab', name: '水栖硬壳黑蟹', enemyTier: 2, biome: 'mire', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_mire_mother: Object.freeze({ id: 'mob_t2_mire_mother', name: '喷毒水蛭母体', enemyTier: 2, biome: 'mire', damageType: 'poison', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_mire_siren: Object.freeze({ id: 'mob_t2_mire_siren', name: '迷幻水妖幽魂', enemyTier: 2, biome: 'mire', damageType: 'frost', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_mire_treant: Object.freeze({ id: 'mob_t2_mire_treant', name: '腐化林地树精', enemyTier: 2, biome: 'mire', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_mire_fishman: Object.freeze({ id: 'mob_t2_mire_fishman', name: '黑鳞剧毒鱼人', enemyTier: 2, biome: 'mire', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_vault_swordsman: Object.freeze({ id: 'mob_t2_vault_swordsman', name: '双手剑持刀傀儡', enemyTier: 2, biome: 'vault', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_vault_crossbow: Object.freeze({ id: 'mob_t2_vault_crossbow', name: '连弩机关射手', enemyTier: 2, biome: 'vault', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_vault_shieldman: Object.freeze({ id: 'mob_t2_vault_shieldman', name: '重盾装甲发条兵', enemyTier: 2, biome: 'vault', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_vault_statue: Object.freeze({ id: 'mob_t2_vault_statue', name: '雕像魔像守护者', enemyTier: 2, biome: 'vault', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_vault_inspector: Object.freeze({ id: 'mob_t2_vault_inspector', name: '警备督察傀儡', enemyTier: 2, biome: 'vault', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_vault_flyblade: Object.freeze({ id: 'mob_t2_vault_flyblade', name: '飞刃浮游巡逻机', enemyTier: 2, biome: 'vault', damageType: 'slash', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_vault_crusher: Object.freeze({ id: 'mob_t2_vault_crusher', name: '石板压杀巨傀儡', enemyTier: 2, biome: 'vault', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_vault_executioner: Object.freeze({ id: 'mob_t2_vault_executioner', name: '持斧行刑魔像', enemyTier: 2, biome: 'vault', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_vault_cannon: Object.freeze({ id: 'mob_t2_vault_cannon', name: '符文巡逻自走炮', enemyTier: 2, biome: 'vault', damageType: 'fire', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_vault_knight: Object.freeze({ id: 'mob_t2_vault_knight', name: '重铠铁卫英灵', enemyTier: 2, biome: 'vault', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_lair_panther: Object.freeze({ id: 'mob_t2_lair_panther', name: '成年暗影黑豹', enemyTier: 2, biome: 'lair', damageType: 'slash', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t2_lair_bear: Object.freeze({ id: 'mob_t2_lair_bear', name: '双头狂暴鬃熊', enemyTier: 2, biome: 'lair', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_lair_tiger: Object.freeze({ id: 'mob_t2_lair_tiger', name: '裂骨剑齿虎', enemyTier: 2, biome: 'lair', damageType: 'slash', tactics: { reqFrontline: true, ambush: true } }),
+    mob_t2_lair_thunderwolf: Object.freeze({ id: 'mob_t2_lair_thunderwolf', name: '迅捷雷狼', enemyTier: 2, biome: 'lair', damageType: 'lightning', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_lair_whitetiger: Object.freeze({ id: 'mob_t2_lair_whitetiger', name: '白额凶煞猛虎', enemyTier: 2, biome: 'lair', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_lair_wyvern_pup: Object.freeze({ id: 'mob_t2_lair_wyvern_pup', name: '剧毒飞龙幼兽', enemyTier: 2, biome: 'lair', damageType: 'poison', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_lair_pangolin: Object.freeze({ id: 'mob_t2_lair_pangolin', name: '铁鳞穿山甲巨兽', enemyTier: 2, biome: 'lair', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t2_lair_clawbird: Object.freeze({ id: 'mob_t2_lair_clawbird', name: '恐鸟重爪兽', enemyTier: 2, biome: 'lair', damageType: 'pierce', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_lair_dove: Object.freeze({ id: 'mob_t2_lair_dove', name: '丛林剧毒斑鸠', enemyTier: 2, biome: 'lair', damageType: 'poison', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t2_lair_rockbear: Object.freeze({ id: 'mob_t2_lair_rockbear', name: '荒野巨岩巨熊', enemyTier: 2, biome: 'lair', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+
+    // 三阶精锐守卫 (30个)
+    mob_t3_arc_cruiser: Object.freeze({ id: 'mob_t3_arc_cruiser', name: '超载自律巡航机', enemyTier: 3, biome: 'arcane', damageType: 'lightning', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_arc_force: Object.freeze({ id: 'mob_t3_arc_force', name: '秘银力场构造体', enemyTier: 3, biome: 'arcane', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_arc_colossus: Object.freeze({ id: 'mob_t3_arc_colossus', name: '共鸣魔能巨像', enemyTier: 3, biome: 'arcane', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_arc_cutter: Object.freeze({ id: 'mob_t3_arc_cutter', name: '高频电弧切割傀儡', enemyTier: 3, biome: 'arcane', damageType: 'lightning', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t3_arc_poly: Object.freeze({ id: 'mob_t3_arc_poly', name: '元素聚合体', enemyTier: 3, biome: 'arcane', damageType: 'frost', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t3_arc_core_guard: Object.freeze({ id: 'mob_t3_arc_core_guard', name: '浮空核心哨戒长', enemyTier: 3, biome: 'arcane', damageType: 'lightning', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_arc_guard: Object.freeze({ id: 'mob_t3_arc_guard', name: '符文重装禁卫', enemyTier: 3, biome: 'arcane', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_arc_battery: Object.freeze({ id: 'mob_t3_arc_battery', name: '聚能晶石炮垒', enemyTier: 3, biome: 'arcane', damageType: 'fire', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t3_arc_phase: Object.freeze({ id: 'mob_t3_arc_phase', name: '空间相位潜伏机', enemyTier: 3, biome: 'arcane', damageType: 'pierce', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t3_arc_beast: Object.freeze({ id: 'mob_t3_arc_beast', name: '虚空震荡构造兽', enemyTier: 3, biome: 'arcane', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_crypt_knight: Object.freeze({ id: 'mob_t3_crypt_knight', name: '黑铠重装骸骨骑士', enemyTier: 3, biome: 'crypt', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_crypt_lich: Object.freeze({ id: 'mob_t3_crypt_lich', name: '死灵巫妖学徒', enemyTier: 3, biome: 'crypt', damageType: 'frost', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t3_crypt_banshee: Object.freeze({ id: 'mob_t3_crypt_banshee', name: '幽魂女妖哀嚎者', enemyTier: 3, biome: 'crypt', damageType: 'frost', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t3_crypt_abom: Object.freeze({ id: 'mob_t3_crypt_abom', name: '尸毒憎恶缝合怪', enemyTier: 3, biome: 'crypt', damageType: 'poison', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_crypt_guard: Object.freeze({ id: 'mob_t3_crypt_guard', name: '殉葬禁卫军长', enemyTier: 3, biome: 'crypt', damageType: 'pierce', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_crypt_hound: Object.freeze({ id: 'mob_t3_crypt_hound', name: '白骨三头巨犬', enemyTier: 3, biome: 'crypt', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_crypt_vampire: Object.freeze({ id: 'mob_t3_crypt_vampire', name: '吸血鬼血仆执事', enemyTier: 3, biome: 'crypt', damageType: 'pierce', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t3_crypt_ghoul: Object.freeze({ id: 'mob_t3_crypt_ghoul', name: '墓园食尸鬼首领', enemyTier: 3, biome: 'crypt', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_crypt_shade: Object.freeze({ id: 'mob_t3_crypt_shade', name: '阴影噬魂者', enemyTier: 3, biome: 'crypt', damageType: 'frost', tactics: { reqFrontline: false, ambush: true } }),
+    mob_t3_crypt_paladin: Object.freeze({ id: 'mob_t3_crypt_paladin', name: '受缚死灵圣武士', enemyTier: 3, biome: 'crypt', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_boss_spider: Object.freeze({ id: 'mob_t3_boss_spider', name: '深渊剧毒母蛛后', enemyTier: 3, biome: 'mine', damageType: 'poison', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_boss_troll: Object.freeze({ id: 'mob_t3_boss_troll', name: '独眼巨魔战将', enemyTier: 3, biome: 'mine', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_boss_hydra: Object.freeze({ id: 'mob_t3_boss_hydra', name: '远古九头蛇残种', enemyTier: 3, biome: 'mire', damageType: 'poison', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_boss_lizard: Object.freeze({ id: 'mob_t3_boss_lizard', name: '地脉熔岩巨蜥', enemyTier: 3, biome: 'mine', damageType: 'fire', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_boss_mammoth: Object.freeze({ id: 'mob_t3_boss_mammoth', name: '狂暴剑齿巨象', enemyTier: 3, biome: 'lair', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_boss_wyvern: Object.freeze({ id: 'mob_t3_boss_wyvern', name: '双翼飞龙成年种', enemyTier: 3, biome: 'lair', damageType: 'fire', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_boss_overseer: Object.freeze({ id: 'mob_t3_boss_overseer', name: '防御核心督军', enemyTier: 3, biome: 'vault', damageType: 'slash', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_boss_lord: Object.freeze({ id: 'mob_t3_boss_lord', name: '黑铁重装领主', enemyTier: 3, biome: 'vault', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } }),
+    mob_t3_boss_frostlord: Object.freeze({ id: 'mob_t3_boss_frostlord', name: '霜冻幽灵领主', enemyTier: 3, biome: 'crypt', damageType: 'frost', tactics: { reqFrontline: false, ambush: false } }),
+    mob_t3_boss_bearking: Object.freeze({ id: 'mob_t3_boss_bearking', name: '暴怒魔熊王', enemyTier: 3, biome: 'lair', damageType: 'blunt', tactics: { reqFrontline: true, ambush: false } })
+  })
+
+  // 6. 核心密室与奖池配置 (30个，5:3:1 阶位分布)
+  const sanctums = Object.freeze({
+    // 二阶正规密室 (17个，产出 skill_scroll_t2)
+    sanc_t2_01: Object.freeze({ id: 'sanc_t2_01', name: '守灵偏厅·封印石棺', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_02: Object.freeze({ id: 'sanc_t2_02', name: '采矿督工精铁暗柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
+    sanc_t2_03: Object.freeze({ id: 'sanc_t2_03', name: '古代药剂配制偏厅', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
+    sanc_t2_04: Object.freeze({ id: 'sanc_t2_04', name: '地底走私商暗格', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
+    sanc_t2_05: Object.freeze({ id: 'sanc_t2_05', name: '坍塌祭坛石台暗龛', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_06: Object.freeze({ id: 'sanc_t2_06', name: '守备队长军资铁箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
+    sanc_t2_07: Object.freeze({ id: 'sanc_t2_07', name: '熔岩缝结晶储藏柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
+    sanc_t2_08: Object.freeze({ id: 'sanc_t2_08', name: '沼泽沉船防腐货箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
+    sanc_t2_09: Object.freeze({ id: 'sanc_t2_09', name: '古地宫齿轮密藏阁', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
+    sanc_t2_10: Object.freeze({ id: 'sanc_t2_10', name: '魔兽遗骸头骨暗槽', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_11: Object.freeze({ id: 'sanc_t2_11', name: '前哨信使殉职石台', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
+    sanc_t2_12: Object.freeze({ id: 'sanc_t2_12', name: '古骑士佩剑陈列石桌', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
+    sanc_t2_13: Object.freeze({ id: 'sanc_t2_13', name: '深水涵洞密封铅盒', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 45, minHours: 12 }),
+    sanc_t2_14: Object.freeze({ id: 'sanc_t2_14', name: '迷宫暗门秘银小柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
+    sanc_t2_15: Object.freeze({ id: 'sanc_t2_15', name: '风化祭祀供奉石盆', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_16: Object.freeze({ id: 'sanc_t2_16', name: '工兵爆破储藏暗室', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 50, minHours: 12 }),
+    sanc_t2_17: Object.freeze({ id: 'sanc_t2_17', name: '流亡学者遗留书箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
+
+    // 三阶精锐宝库 (10个，产出 skill_scroll_t3)
+    sanc_t3_01: Object.freeze({ id: 'sanc_t3_01', name: '魔导动力核心舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 100, minHours: 14 }),
+    sanc_t3_02: Object.freeze({ id: 'sanc_t3_02', name: '沉沦灵堂大祭坛', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
+    sanc_t3_03: Object.freeze({ id: 'sanc_t3_03', name: '龙裔侍从石棺殿', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
+    sanc_t3_04: Object.freeze({ id: 'sanc_t3_04', name: '禁忌圣水贮藏池', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 90, minHours: 14 }),
+    sanc_t3_05: Object.freeze({ id: 'sanc_t3_05', name: '晶石共鸣控制台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 75, goldMax: 115, minHours: 14 }),
+    sanc_t3_06: Object.freeze({ id: 'sanc_t3_06', name: '深层领主藏宝暗厅', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
+    sanc_t3_07: Object.freeze({ id: 'sanc_t3_07', name: '受诅主教白银灵柩', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
+    sanc_t3_08: Object.freeze({ id: 'sanc_t3_08', name: '远古龙骨封印基座', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 85, goldMax: 125, minHours: 14 }),
+    sanc_t3_09: Object.freeze({ id: 'sanc_t3_09', name: '相位重叠秘宝舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 90, goldMax: 130, minHours: 14 }),
+    sanc_t3_10: Object.freeze({ id: 'sanc_t3_10', name: '古代试炼宗师石台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
+
+    // 四阶宗师秘殿 (3个，产出 skill_scroll_t4)
+    sanc_t4_01: Object.freeze({ id: 'sanc_t4_01', name: '龙语泰坦熔炉王座', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 250, goldMax: 350, minHours: 16 }),
+    sanc_t4_02: Object.freeze({ id: 'sanc_t4_02', name: '陨落龙骑士地下灵宫', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 280, goldMax: 380, minHours: 16 }),
+    sanc_t4_03: Object.freeze({ id: 'sanc_t4_03', name: '古代皇家星穹秘宝库', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 300, goldMax: 400, minHours: 16 })
+  })
+
+  // 7. 三大固定核心遗迹完整拓扑定义
+  const coreRuins = Object.freeze({
+    // 第一座：II 阶正规 · 龙喉石殿
+    core_ruin_dragon_chasm: Object.freeze({
+      id: 'core_ruin_dragon_chasm',
+      name: '龙喉裂谷·先遣石殿',
+      tier: 2,
+      partyLimit: 3,
+      escort: 'gulan',
+      minDurationHours: 48,
+      merit: 20,
+      gold: 60,
+      scrollId: 'skill_scroll_t2',
+      resonance: Object.freeze({ target: 'gulan', bloodDelta: 5 }),
+      blocks: Object.freeze([
+        Object.freeze({ type: 'entrance', id: 'ent_chasm_descent', name: '龙喉断崖垂降点', minHours: 8 }),
+        Object.freeze({ type: 'obstacle', id: 'obs_chasm_acid_gate', name: '龙涎酸蚀生铁闸', minHours: 10, reqAbility: '开锁', reqDc: 2 }),
+        Object.freeze({ type: 'combat', id: 'mob_chasm_flame_lizards', name: '前庭熔火岩蜥群', minHours: 10, enemyTier: 2, tactics: { reqFrontline: true } }),
+        Object.freeze({ type: 'branch', id: 'br_chasm_junction', name: '前庭分流岔道', minHours: 8 }),
+        Object.freeze({ type: 'sanctum', id: 'sanc_chasm_knight_tomb', name: '先遣团长英灵石棺殿', minHours: 12, tier: 2 })
+      ])
+    }),
+    // 第二座：III 阶精锐 · 寒霜地宫
+    core_ruin_frost_crypt: Object.freeze({
+      id: 'core_ruin_frost_crypt',
+      name: '寒霜墓道·殉道圣武士地宫',
+      tier: 3,
+      partyLimit: 4,
+      escort: null,
+      minDurationHours: 54,
+      merit: 35,
+      gold: 130,
+      scrollId: 'skill_scroll_t3',
+      blocks: Object.freeze([
+        Object.freeze({ type: 'entrance', id: 'ent_crypt_descent_stair', name: '积霜断裂石阶', minHours: 10 }),
+        Object.freeze({ type: 'obstacle', id: 'obs_crypt_frost_tomb_corridor', name: '阴寒死气石棺廊', minHours: 12, reqAbility: '拆陷', reqDc: 3 }),
+        Object.freeze({ type: 'combat', id: 'mob_crypt_black_oath_guards', name: '受诅圣殿重装骸骨阵列', minHours: 10, enemyTier: 3, tactics: { reqFrontline: true } }),
+        Object.freeze({ type: 'branch', id: 'br_crypt_path_divergence', name: '灵堂分流甬道', minHours: 8 }),
+        Object.freeze({ type: 'sanctum', id: 'sanc_crypt_grand_paladin', name: '殉道大主教圣骸主殿', minHours: 14, tier: 3 })
+      ])
+    }),
+    // 第三座：IV 阶宗师 · 倒悬魔导塔
+    core_ruin_arcane_tower: Object.freeze({
+      id: 'core_ruin_arcane_tower',
+      name: '倒悬魔导塔·星穹构装中枢',
+      tier: 4,
+      partyLimit: 4,
+      escort: null,
+      minDurationHours: 60,
+      merit: 35,
+      gold: 300,
+      scrollId: 'skill_scroll_t4',
+      blocks: Object.freeze([
+        Object.freeze({ type: 'entrance', id: 'ent_tower_inversion_bridge', name: '倒悬重力梯与悬空浮石廊', minHours: 10 }),
+        Object.freeze({ type: 'obstacle', id: 'obs_tower_arc_grid_corridor', name: '超载谐振电弧网格廊', minHours: 12, reqAbility: '拆陷', reqDc: 4 }),
+        Object.freeze({ type: 'combat', id: 'mob_tower_sentinel_golem', name: '超导自律巡航禁卫巨像', minHours: 12, enemyTier: 4, tactics: { reqFrontline: true } }),
+        Object.freeze({ type: 'branch', id: 'br_tower_axis_divergence', name: '中枢导能竖井分流口', minHours: 10 }),
+        Object.freeze({ type: 'sanctum', id: 'sanc_tower_archmage_sanctum', name: '星穹静滞中枢·大魔导御座', minHours: 16, tier: 4 })
+      ])
+    })
+  })
+
+  // 8. 辅助过滤函数
+  function getAvailableBiomes(tier) {
+    const list = ['biome_narrow_mine', 'biome_toxic_mire', 'biome_trap_vault', 'biome_living_lair']
+    if (tier >= 3) {
+      list.push('biome_arcane_grid', 'biome_undead_crypt')
+    }
+    return list
+  }
+
+  function pickRandom(arr, rng) {
+    if (!arr || !arr.length) return null
+    const idx = rng ? Math.floor(rng() * arr.length) : Math.floor(Math.random() * arr.length)
+    return arr[Math.min(idx, arr.length - 1)]
+  }
+
+  // 9. 组装流水线 (assemble)
+  function assemble(opts = {}) {
+    if (opts.coreId && coreRuins[opts.coreId]) {
+      const core = coreRuins[opts.coreId]
+      return {
+        instanceId: `ruin_core_${opts.coreId}_${Date.now()}`,
+        id: core.id,
+        name: core.name,
+        tier: core.tier,
+        partyLimit: core.partyLimit,
+        partyMembers: Array.isArray(opts.partyMembers) ? opts.partyMembers : [],
+        escort: core.escort,
+        minDurationHours: core.minDurationHours,
+        merit: core.merit,
+        gold: core.gold,
+        scrollId: core.scrollId,
+        resonance: core.resonance,
+        atmosphere: core.name,
+        currentBlockIndex: 0,
+        cleared: false,
+        blocks: core.blocks.map((b, i) => ({ ...b, index: i }))
+      }
+    }
+
+    const tier = Number.isInteger(opts.tier) ? opts.tier : 2
+    const rng = typeof opts.rng === 'function' ? opts.rng : null
+
+    // 1. 生态准入过滤
+    const availBiomes = getAvailableBiomes(tier)
+    const biomeId = (opts.biome && availBiomes.includes(opts.biome)) ? opts.biome : pickRandom(availBiomes, rng)
+    const biomeData = biomes[biomeId]
+    const shortBiome = biomeId.replace('biome_', '').replace('_mine', '').replace('_mire', '').replace('_vault', '').replace('_lair', '').replace('_grid', '').replace('_crypt', '')
+
+    // 2. 队伍准入上限 (随机遗迹上限 2 ~ 4 人)
+    const partyLimit = Number.isInteger(opts.partyLimit)
+      ? opts.partyLimit
+      : (rng ? Math.floor(rng() * 3) + 2 : Math.floor(Math.random() * 3) + 2)
+
+    // 3. 区块数量与时长下限
+    const blockCount = tier === 2 ? 4 : (rng ? Math.floor(rng() * 2) + 5 : 5)
+    const minDurationHours = blockCount === 4 ? 36 : (blockCount === 5 ? 48 : 64)
+
+    // 4. 定点插槽装配
+    // Slot 1: Entrance
+    const entList = Object.values(entrances).filter(e => e.biome === shortBiome || e.biome === 'universal')
+    const ent = pickRandom(entList, rng) || entrances.ent_mine_01
+
+    // Slot 2: Obstacle
+    const obsList = Object.values(obstacles).filter(o => o.tier <= tier && (o.biome === shortBiome || o.biome === 'universal'))
+    const obs = pickRandom(obsList, rng) || obstacles.obs_mine_gas
+
+    // Slot 3: Combat
+    const mobList = Object.values(combats).filter(m => m.enemyTier === tier)
+    const mob = pickRandom(mobList, rng) || combats.mob_t2_mine_golem
+
+    // Slot 4: Branch
+    const brList = Object.values(branches).filter(b => b.biome === shortBiome)
+    const br = pickRandom(brList, rng) || branches.br_mine_01
+
+    // Slot N: Sanctum
+    const sancList = Object.values(sanctums).filter(s => s.tier === tier)
+    const sanc = pickRandom(sancList, rng) || sanctums.sanc_t2_01
+
+    const assembledBlocks = [
+      { index: 0, type: 'entrance', id: ent.id, name: ent.name, minHours: ent.minHours },
+      { index: 1, type: 'obstacle', id: obs.id, name: obs.name, minHours: obs.minHours, reqAbility: obs.reqAbility, reqDc: obs.reqDc },
+      { index: 2, type: 'combat', id: mob.id, name: mob.name, minHours: 10, enemyTier: mob.enemyTier, tactics: mob.tactics }
+    ]
+
+    if (blockCount >= 5) {
+      assembledBlocks.push({ index: 3, type: 'branch', id: br.id, name: br.name, minHours: br.minHours })
+    }
+    if (blockCount >= 6) {
+      const extraObs = pickRandom(obsList.filter(o => o.id !== obs.id), rng) || obstacles.obs_universal_puzzle
+      assembledBlocks.push({ index: 4, type: 'obstacle', id: extraObs.id, name: extraObs.name, minHours: extraObs.minHours, reqAbility: extraObs.reqAbility, reqDc: extraObs.reqDc })
+    }
+
+    assembledBlocks.push({ index: assembledBlocks.length, type: 'sanctum', id: sanc.id, name: sanc.name, minHours: sanc.minHours, tier: sanc.tier, scrollId: sanc.scrollId })
+
+    return {
+      instanceId: `ruin_${Date.now()}_${tier}`,
+      tier,
+      biome: biomeId,
+      partyLimit,
+      partyMembers: Array.isArray(opts.partyMembers) ? opts.partyMembers : [],
+      atmosphere: biomeData.atmosphere,
+      minDurationHours,
+      currentBlockIndex: 0,
+      cleared: false,
+      blocks: assembledBlocks
+    }
+  }
+
+  // 10. 事务性探险接口
+  function enter(world, ruinInstance, partyMembers = []) {
+    u.check(ruinInstance && Array.isArray(ruinInstance.blocks), '无效遗迹实例')
+    const rs = world.ruinState ||= { current: null, clearedCores: [] }
+    u.check(!rs.current, '已处于探险中，不可重复进入')
+
+    const pLimit = ruinInstance.partyLimit || 4
+    const validMembers = Array.isArray(partyMembers) ? partyMembers.slice(0, pLimit) : []
+    ruinInstance.partyMembers = validMembers
+    ruinInstance.currentBlockIndex = 0
+    ruinInstance.elapsedHours = 0
+    ruinInstance.startMin = world.timeMin || 0
+    rs.current = ruinInstance
+    return true
+  }
+
+  function advance(world, choice = {}) {
+    const rs = world?.ruinState
+    u.check(rs && rs.current, '当前未处于遗迹探险中')
+    const cur = rs.current
+    const blocks = cur.blocks || []
+    const idx = cur.currentBlockIndex || 0
+    u.check(idx < blocks.length, '遗迹已推进至终点')
+
+    const block = blocks[idx]
+    const hours = block.minHours || 8
+    cur.elapsedHours = (cur.elapsedHours || 0) + hours
+
+    // 动态口粮扣除（跨 24 小时或跨午夜）
+    const actualPartySize = 1 + (cur.partyMembers ? cur.partyMembers.length : 0) + (cur.escort ? 1 : 0)
+    const prevDays = Math.floor(((cur.elapsedHours - hours)) / 24)
+    const nextDays = Math.floor(cur.elapsedHours / 24)
+    if (nextDays > prevDays) {
+      const daysPassed = nextDays - prevDays
+      const supplyCost = daysPassed * actualPartySize
+      const inv = world.playerState?.inventory
+      if (Array.isArray(inv)) {
+        const item = inv.find(i => i.id === 'supply')
+        if (item) {
+          item.count = Math.max(0, item.count - supplyCost)
+        }
+      }
+    }
+
+    cur.currentBlockIndex = idx + 1
+    if (cur.currentBlockIndex >= blocks.length) {
+      cur.cleared = true
+      if (cur.id && coreRuins[cur.id]) {
+        rs.clearedCores ||= []
+        if (!rs.clearedCores.includes(cur.id)) rs.clearedCores.push(cur.id)
+      }
+    }
+    return { cleared: cur.cleared, nextBlockIndex: cur.currentBlockIndex }
+  }
+
+  function retreat(world) {
+    const rs = world?.ruinState
+    if (rs && rs.current) {
+      rs.current = null
+      return true
+    }
+    return false
+  }
+
+  function getStatus(world) {
+    const rs = world?.ruinState
+    if (!rs || !rs.current) return { inRuin: false }
+    const cur = rs.current
+    const block = cur.blocks?.[cur.currentBlockIndex] || null
+    return {
+      inRuin: true,
+      instanceId: cur.instanceId,
+      name: cur.name,
+      tier: cur.tier,
+      biome: cur.biome,
+      atmosphere: cur.atmosphere,
+      currentBlock: block,
+      currentBlockIndex: cur.currentBlockIndex,
+      totalBlocks: cur.blocks ? cur.blocks.length : 0,
+      elapsedHours: cur.elapsedHours || 0,
+      cleared: cur.cleared || false
+    }
+  }
+
+  function migrate(world) {
+    if (!world) return world
+    const rs = world.ruinState ||= {}
+    if (!u.own(rs, 'current')) rs.current = null
+    if (!Array.isArray(rs.clearedCores)) rs.clearedCores = []
+    return world
+  }
+
+  root.OKH_APP_RUINS = Object.freeze({
+    catalog: Object.freeze({
+      biomes,
+      entrances,
+      obstacles,
+      branches,
+      combats,
+      sanctums,
+      coreRuins
+    }),
+    assemble,
+    enter,
+    advance,
+    retreat,
+    getStatus,
+    migrate
+  })
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = root.OKH_APP_RUINS
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this)
 
 ;
 /**
@@ -3760,6 +4790,90 @@
       // 1 = 单价 1 金/份：5 人满编露宿一晚消耗 5 份 = 5 金，与旅店宿费持平
       unitPrice: 1,
       desc: '一份常规一人份一天量的补给品，由干粮和药品构成。'
+    }),
+    antidote: Object.freeze({
+      id: 'antidote',
+      name: '解毒剂',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 3,
+      desc: '边境药铺特配的浓缩草药解毒汤剂，解除中毒（debuff_poisoned）。'
+    }),
+    healing_salve: Object.freeze({
+      id: 'healing_salve',
+      name: '止血金疮膏',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 2,
+      desc: '三七草与兽脂熬制的浓稠药膏，闭合创口，解除流血（debuff_bleeding）。'
+    }),
+    paralysis_cure: Object.freeze({
+      id: 'paralysis_cure',
+      name: '舒筋醒络药水',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 4,
+      desc: '辛辣刺鼻的微发光黄色药剂，解除麻痹（debuff_paralyzed），恢复行动力。'
+    }),
+    purify_vial: Object.freeze({
+      id: 'purify_vial',
+      name: '圣水小瓶',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 5,
+      desc: '晨曦修道院祭坛采收祝圣的微光圣水，驱散阴寒死气，解除疲惫（debuff_exhausted）。'
+    }),
+    smelling_salts: Object.freeze({
+      id: 'smelling_salts',
+      name: '强效嗅盐瓶',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 3,
+      desc: '小瓷瓶里的挥发矿物盐，强刺激性气体，强行唤醒轻眠与深眠，提供沉眠唤醒判定。'
+    }),
+    sleeping_draught: Object.freeze({
+      id: 'sleeping_draught',
+      name: '浓缩催眠药水',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 6,
+      desc: '无色无味沉眠药水，令未察觉的目标陷入沉眠（status_sleep_comatose）。'
+    }),
+    skill_scroll_t2: Object.freeze({
+      id: 'skill_scroll_t2',
+      name: '二阶正规技能残卷',
+      category: 'quest',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 30,
+      skillTier: 2,
+      desc: '记载二阶正规战技或法术的羊皮纸残卷，研读后掌握一项未学二阶技能。'
+    }),
+    skill_scroll_t3: Object.freeze({
+      id: 'skill_scroll_t3',
+      name: '三阶精锐技能残卷',
+      category: 'quest',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 60,
+      skillTier: 3,
+      desc: '记载三阶精锐战技或法术的典籍残页，研读后掌握一项未学三阶技能。'
+    }),
+    skill_scroll_t4: Object.freeze({
+      id: 'skill_scroll_t4',
+      name: '四阶宗师技能残卷',
+      category: 'quest',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 150,
+      skillTier: 4,
+      desc: '古代宗师秘传法诀或战技真本，研读后掌握一项未学四阶宗师技能。'
     }),
     alice_ledger: Object.freeze({
       id: 'alice_ledger',
@@ -8671,6 +9785,14 @@
       world.playerState.gold = world.flags.player_barony_granted ? 1000 : 30
     }
     delete world.playerState.injury
+    world.playerState.tier = Number.isInteger(world.playerState.tier) ? world.playerState.tier : 2
+    world.playerState.currentClass = world.playerState.currentClass || 'class_shield_guard'
+    world.playerState.realmProgress = Number.isInteger(world.playerState.realmProgress) ? world.playerState.realmProgress : 0
+    world.playerState.realmCap = Number.isInteger(world.playerState.realmCap) ? world.playerState.realmCap : 30
+    world.playerState.realmCooldownDays = Number.isInteger(world.playerState.realmCooldownDays) ? world.playerState.realmCooldownDays : 0
+    world.playerState.guild_merit = Number.isInteger(world.playerState.guild_merit) ? world.playerState.guild_merit : 0
+    if (root.OKH_APP_SKILLS?.migrate) root.OKH_APP_SKILLS.migrate(world)
+    if (root.OKH_APP_RUINS?.migrate) root.OKH_APP_RUINS.migrate(world)
     if (!Array.isArray(world.playerState.inventory)) {
       // 老存档未建背包时，前传荒原途中补开局 10 份补给，已抵镇存档置空数组避免凭空生出补给
       world.playerState.inventory = world.flags.arrived_oakhaven ? [] : [{ id: 'supply', count: 10 }]
@@ -8702,7 +9824,7 @@
       nextNpcs[tpl.id] = migrateNpcFromRoster(world.npcs?.[tpl.id], tpl, inferredArrived, timeMin, manualReleaseActivities, world.flags)
     }
     world.npcs = nextNpcs
-    world.tags = Object.fromEntries(Object.entries(world.tags).filter(([id]) => Object.hasOwn(nextNpcs, id)))
+    world.tags = Object.fromEntries(Object.entries(world.tags || {}).filter(([id]) => id === 'player' || id === 'world' || Object.hasOwn(nextNpcs, id)))
     world.bg.migrationReport = {
       fromSchemaVersion: rawWorld.schemaVersion ?? 1,
       toSchemaVersion: DATA.SCHEMA_VERSION,

@@ -1,0 +1,4 @@
+# 伊丝娜 · 常规立绘（正面定妆 / 3/4 侧身 / 半身近景 · 每行一张，配 __isna_anchor__）
+standing, hands on hips, feet apart, (contrapposto:1.05), smirk, half-closed eyes, (sharp canine tooth:1.1), smug, looking at viewer, indoor, tavern, inn, wooden floor, wooden barrels, wooden beams, lantern, warm light, full body, from front, slightly from below, depth of field
+standing, (from side:1.1), (turning head:1.05), looking back at viewer, hand on hip, (tail up:1.1), (hair blowing:1.05), smirk, half-closed eyes, smug, one eye closed, indoor, tavern, inn, wooden floor, barrel, hanging lantern, warm light, rim light, full body, from side, depth of field
+smirk, half-closed eyes, smug, (looking at viewer:1.1), (fang:1.05), (sharp canine tooth:1.1), indoor, tavern, inn, wooden wall, lantern, warm light, bokeh, upper body, from front, close-up, depth of field

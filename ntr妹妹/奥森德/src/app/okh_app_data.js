@@ -77,6 +77,90 @@
       unitPrice: 1,
       desc: '一份常规一人份一天量的补给品，由干粮和药品构成。'
     }),
+    antidote: Object.freeze({
+      id: 'antidote',
+      name: '解毒剂',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 3,
+      desc: '边境药铺特配的浓缩草药解毒汤剂，解除中毒（debuff_poisoned）。'
+    }),
+    healing_salve: Object.freeze({
+      id: 'healing_salve',
+      name: '止血金疮膏',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 2,
+      desc: '三七草与兽脂熬制的浓稠药膏，闭合创口，解除流血（debuff_bleeding）。'
+    }),
+    paralysis_cure: Object.freeze({
+      id: 'paralysis_cure',
+      name: '舒筋醒络药水',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 4,
+      desc: '辛辣刺鼻的微发光黄色药剂，解除麻痹（debuff_paralyzed），恢复行动力。'
+    }),
+    purify_vial: Object.freeze({
+      id: 'purify_vial',
+      name: '圣水小瓶',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 5,
+      desc: '晨曦修道院祭坛采收祝圣的微光圣水，驱散阴寒死气，解除疲惫（debuff_exhausted）。'
+    }),
+    smelling_salts: Object.freeze({
+      id: 'smelling_salts',
+      name: '强效嗅盐瓶',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 3,
+      desc: '小瓷瓶里的挥发矿物盐，强刺激性气体，强行唤醒轻眠与深眠，提供沉眠唤醒判定。'
+    }),
+    sleeping_draught: Object.freeze({
+      id: 'sleeping_draught',
+      name: '浓缩催眠药水',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 6,
+      desc: '无色无味沉眠药水，令未察觉的目标陷入沉眠（status_sleep_comatose）。'
+    }),
+    skill_scroll_t2: Object.freeze({
+      id: 'skill_scroll_t2',
+      name: '二阶正规技能残卷',
+      category: 'quest',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 30,
+      skillTier: 2,
+      desc: '记载二阶正规战技或法术的羊皮纸残卷，研读后掌握一项未学二阶技能。'
+    }),
+    skill_scroll_t3: Object.freeze({
+      id: 'skill_scroll_t3',
+      name: '三阶精锐技能残卷',
+      category: 'quest',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 60,
+      skillTier: 3,
+      desc: '记载三阶精锐战技或法术的典籍残页，研读后掌握一项未学三阶技能。'
+    }),
+    skill_scroll_t4: Object.freeze({
+      id: 'skill_scroll_t4',
+      name: '四阶宗师技能残卷',
+      category: 'quest',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 150,
+      skillTier: 4,
+      desc: '古代宗师秘传法诀或战技真本，研读后掌握一项未学四阶宗师技能。'
+    }),
     alice_ledger: Object.freeze({
       id: 'alice_ledger',
       name: '银月珠宝铺真账与私账证物',
