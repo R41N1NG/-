@@ -1,8 +1,8 @@
 /**
  * @module okh_app_data
- * @updated 2026-11-26 22:28
+ * @updated 2026-11-27 03:13
  * @status  active
- * @reason  补齐妮丝暗线残响echoId、阶段二三失身dossierAdd、夜间返店守卫、盗取借条营救事件与绝赌复赌守卫
+ * @reason  补齐四女主常态上午/下午/夜晚多选加权行动表（古兰含10%外出寻龙）、奥萝拉周末修道院祈祷与伊丝娜泥足期夜潜营地显式行动
  * @deps    无
  * @provides { SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel, PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG, ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld, DRAGON_TRUE_FORM_SPEC, buildDragonRevealText }
  */
@@ -233,26 +233,112 @@
 
   const ACTIONS = [
     {
-      id: 'gulan_train',
-      priority: 25,
+      id: 'gulan_inn_maintenance',
+      priority: 21,
+      weight: 45,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         npc.id === 'gulan' &&
         npc.monitored !== false &&
         !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
+        phase.id === 'morning',
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店保养阔刃重剑与甲胄' }
+    },
+    {
+      id: 'gulan_hall_meditate',
+      priority: 21,
+      weight: 35,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'gulan' &&
+        npc.monitored !== false &&
+        !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
+        phase.id === 'morning',
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店大厅闭目静坐冥想' }
+    },
+    {
+      id: 'gulan_town_patrol',
+      priority: 21,
+      weight: 20,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'gulan' &&
+        npc.monitored !== false &&
+        !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
+        !isWeekendDay(dayAt(world)) &&
+        phase.id === 'morning',
+      effects: { move: 'town' },
+      occupation: { kind: 'ordinary', label: '在镇上巡逻并留意周边动静' }
+    },
+    {
+      id: 'gulan_train',
+      priority: 25,
+      weight: 90,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'gulan' &&
+        npc.monitored !== false &&
+        !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
         phase.id === 'afternoon' &&
         npc.location !== 'training_grounds',
       effects: { move: 'training_grounds' },
       occupation: { kind: 'ordinary', label: '前往演武场练剑' }
     },
     {
+      id: 'gulan_dragon_search',
+      priority: 25,
+      weight: 10,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'gulan' &&
+        npc.monitored !== false &&
+        !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
+        phase.id === 'afternoon',
+      effects: { move: 'wilds' },
+      occupation: { kind: 'ordinary', label: '外出游历探寻龙族遗迹与传闻' }
+    },
+    {
+      id: 'isna_mud_camp_night',
+      priority: 40,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        npc.stage === 2 &&
+        Boolean(npc.flags?.isnaMudOutTonight) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudSealCleared &&
+        !npc.flags?.isna_mud_hopeless_fled &&
+        ['night', 'deep_night'].includes(phase.id) &&
+        npc.location !== 'wilds_camp',
+      effects: { move: 'wilds_camp' },
+      occupation: { kind: 'ordinary', label: '夜潜赶往荒原黑兽人前哨压制血契' }
+    },
+    {
       id: 'isna_odd_job',
-      priority: 22,
+      priority: 23,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         npc.id === 'isna' &&
         !isFugitiveSquadActive(world, npc) &&
         !npc.flags?.gold_desire_frozen &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
         npc.stage < 2 &&
         ['morning', 'afternoon'].includes(phase.id) &&
         !npc.flags?.isna_worked_today,
@@ -264,8 +350,80 @@
       occupation: { kind: 'ordinary', label: '去镇上接点零散杂活' }
     },
     {
+      id: 'isna_inn_nap',
+      priority: 22,
+      weight: 50,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        !isFugitiveSquadActive(world, npc) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
+        npc.stage < 3 &&
+        phase.id === 'morning',
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店向阳窗台打盹歇息' }
+    },
+    {
+      id: 'isna_knife_sharpen',
+      priority: 22,
+      weight: 50,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        !isFugitiveSquadActive(world, npc) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
+        npc.stage < 3 &&
+        phase.id === 'morning',
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店门廊擦拭双匕与清点飞刀' }
+    },
+    {
+      id: 'isna_town_rumors',
+      priority: 22,
+      weight: 60,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        !isFugitiveSquadActive(world, npc) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
+        npc.stage < 2 &&
+        phase.id === 'afternoon',
+      effects: { move: 'town' },
+      occupation: { kind: 'ordinary', label: '在镇上穿街走巷打听流言与商队动向' }
+    },
+    {
+      id: 'isna_buy_jerky',
+      priority: 22,
+      weight: 40,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        !isFugitiveSquadActive(world, npc) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
+        npc.stage < 2 &&
+        phase.id === 'afternoon',
+      effects: { move: 'town' },
+      occupation: { kind: 'ordinary', label: '在镇上市集买肉干打牙祭' }
+    },
+    {
       id: 'nise_town_browse',
-      priority: 21,
+      priority: 22,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         npc.id === 'nise' &&
@@ -281,6 +439,67 @@
         npcFlags: { nise_browsed_today: true }
       },
       occupation: { kind: 'ordinary', label: '在镇上四处闲逛搜罗新奇物件' }
+    },
+    {
+      id: 'nise_inn_sleep_in',
+      priority: 21,
+      weight: 40,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'nise' &&
+        !isFugitiveSquadActive(world, npc) &&
+        npc.stage < 3 &&
+        phase.id === 'morning' &&
+        !npc.flags?.nise_escort_today &&
+        !npc.flags?.nise_casino_busy_today,
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店房间赖床补觉' }
+    },
+    {
+      id: 'nise_read_scrolls',
+      priority: 21,
+      weight: 35,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'nise' &&
+        !isFugitiveSquadActive(world, npc) &&
+        npc.stage < 3 &&
+        phase.id === 'afternoon' &&
+        npc.location === 'inn' &&
+        !npc.flags?.nise_escort_today &&
+        !npc.flags?.nise_casino_busy_today,
+      effects: {},
+      occupation: { kind: 'ordinary', label: '在旅店房间研读卷轴与法术笔记' }
+    },
+    {
+      id: 'nise_hall_tea',
+      priority: 21,
+      weight: 25,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'nise' &&
+        !isFugitiveSquadActive(world, npc) &&
+        npc.stage < 3 &&
+        phase.id === 'afternoon' &&
+        npc.location === 'inn' &&
+        !npc.flags?.nise_escort_today &&
+        !npc.flags?.nise_casino_busy_today,
+      effects: {},
+      occupation: { kind: 'ordinary', label: '在旅店大厅点红茶与茶点歇息' }
+    },
+    {
+      id: 'nise_hall_bard',
+      priority: 21,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'nise' &&
+        !isFugitiveSquadActive(world, npc) &&
+        npc.stage < 2 &&
+        phase.id === 'night' &&
+        npc.location === 'inn' &&
+        !npc.flags?.nise_casino_busy_today,
+      effects: {},
+      occupation: { kind: 'ordinary', label: '在旅店大厅听吟游诗人弹唱' }
     },
     {
       id: 'nise_secretary_shift',
@@ -323,6 +542,20 @@
         npc.location !== 'casino',
       effects: { move: 'casino' },
       occupation: { kind: 'ordinary', label: '签下卖身契长留地下赌场抵债' }
+    },
+    {
+      id: 'aurora_weekend_church',
+      priority: 27,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'aurora' &&
+        npc.stage < 3 &&
+        !npc.flags?.captured_manor &&
+        weekdayOf(dayAt(world)) === 7 &&
+        phase.id === 'afternoon' &&
+        npc.location !== 'church',
+      effects: { move: 'church' },
+      occupation: { kind: 'ordinary', label: '周日午后前往圣辉大教堂祈祷照料孤儿' }
     },
     {
       id: 'aurora_weekend_return',
@@ -377,6 +610,7 @@
         if (npc.flags?.captured_orc || npc.flags?.isna_camp_distress || npc.flags?.isna_captured_ed || npc.flags?.captured_manor) return false
         if (npc.id === 'ed' && npc.flags?.ed_home_visiting) return false
         if (npc.id === 'gulan' && (npc.flags?.gulan_departed || npc.monitored === false)) return false
+        if (npc.id === 'isna' && npc.flags?.isnaMudOutTonight) return false
         if (npc.id === 'nise' && (npc.stage >= 3 || (npc.stage === 2 && !npc.flags?.casino_debt_frozen && !npc.flags?.nise_fled_casino))) {
           return false
         }
@@ -3618,7 +3852,7 @@
       values: { blood_density: 0, affection: 70 },
       metricBounds: { blood_density: [0, 100], affection: [0, 100] },
       nodePlan: ['gulan_stage_1', 'gulan_stage_2', 'gulan_stage_3'],
-      plan: ['gulan_train', 'return_inn', 'idle_rest']
+      plan: ['gulan_inn_maintenance', 'gulan_hall_meditate', 'gulan_town_patrol', 'gulan_train', 'gulan_dragon_search', 'return_inn', 'idle_rest']
     }),
     makeNpc({
       id: 'isna', name: '伊丝娜', location: 'wilds', homeLocation: 'inn',
@@ -3626,7 +3860,7 @@
       values: { gold_desire: 25, affection: 60 },
       metricBounds: { gold_desire: [0, 100], affection: [0, 100] },
       nodePlan: ['isna_stage_1', 'isna_stage_2', 'isna_stage_3'],
-      plan: ['isna_odd_job', 'return_inn', 'idle_rest']
+      plan: ['isna_mud_camp_night', 'isna_odd_job', 'isna_inn_nap', 'isna_knife_sharpen', 'isna_town_rumors', 'isna_buy_jerky', 'return_inn', 'idle_rest']
     }),
     makeNpc({
       id: 'nise', name: '妮丝', location: 'wilds', homeLocation: 'inn',
@@ -3634,7 +3868,7 @@
       values: { curiosity: 40, gamble_debt: 0, affection: 70 },
       metricBounds: { curiosity: [0, 100], gamble_debt: [0, 100], affection: [0, 100] },
       nodePlan: ['nise_stage_1', 'nise_stage_2', 'nise_stage_3'],
-      plan: ['nise_contract_stay', 'nise_secretary_shift', 'nise_dealer_shift', 'nise_town_browse', 'return_inn', 'idle_rest']
+      plan: ['nise_contract_stay', 'nise_secretary_shift', 'nise_dealer_shift', 'nise_town_browse', 'nise_inn_sleep_in', 'nise_read_scrolls', 'nise_hall_tea', 'nise_hall_bard', 'return_inn', 'idle_rest']
     }),
     makeNpc({
       id: 'aurora', name: '奥萝拉', location: 'wilds', homeLocation: 'inn',
@@ -3642,7 +3876,7 @@
       values: { debt_pressure: 100, affection: 50 },
       metricBounds: { debt_pressure: [0, 100], affection: [0, 100] },
       nodePlan: ['aurora_stage_1', 'aurora_stage_2', 'aurora_stage_3'],
-      plan: ['aurora_post_purge_return', 'aurora_manor_work', 'aurora_weekend_return', 'return_inn', 'idle_rest']
+      plan: ['aurora_post_purge_return', 'aurora_manor_work', 'aurora_weekend_return', 'aurora_weekend_church', 'return_inn', 'idle_rest']
     }),
     makeNpc({
       id: 'eileen', name: '艾琳', monitored: false, location: 'manor', homeLocation: 'manor',

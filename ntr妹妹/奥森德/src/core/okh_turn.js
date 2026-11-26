@@ -1,8 +1,8 @@
 /**
  * @module okh_turn
- * @updated 2026-11-23 19:39
+ * @updated 2026-11-27 03:13
  * @status active
- * @reason 统一时间语义的回执时间线穿插引擎；支持 front.economies 时间桶接入 config.resolveEconomy，移除冗余 playerInjury 处理
+ * @reason 统一时间语义的回执时间线穿插引擎；pickAction 支持同优先级候选项按 weight 确定性加权随机选取，满足多选常态排表
  */
 (function (root) {
   'use strict';
@@ -29,16 +29,45 @@
       syncWorld(world, blockedIds, 'refresh', config);
     }
 
+    function hashPickSeed(seed) {
+      let h = 2166136261;
+      for (let i = 0; i < seed.length; i++) {
+        h ^= seed.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0) / 4294967296;
+    }
+
     function pickAction(snapshot, npc, phase, blockedIds, config) {
       const ctx = { world: snapshot, npc, phase, blockedIds };
-      return (config.actions || [])
+      const candidates = (config.actions || [])
         .filter(item =>
           (npc.plan || []).includes(item.id) &&
           rules.matches(item.when, ctx) &&
           (!config.allowed || config.allowed(ctx, item)) &&
           (!config.canMove || !item.effects?.move || config.canMove(snapshot, item.effects.move, npc))
-        )
-        .sort((a, b) => (b.priority || 0) - (a.priority || 0) || a.id.localeCompare(b.id))[0];
+        );
+      if (candidates.length === 0) return undefined;
+      let maxPriority = -Infinity;
+      for (const item of candidates) {
+        const p = item.priority || 0;
+        if (p > maxPriority) maxPriority = p;
+      }
+      const top = candidates
+        .filter(item => (item.priority || 0) === maxPriority)
+        .sort((a, b) => a.id.localeCompare(b.id));
+      if (top.length === 1) return top[0];
+      let totalWeight = 0;
+      for (const item of top) {
+        totalWeight += item.weight > 0 ? item.weight : 1;
+      }
+      const roll = hashPickSeed(phase.start + ':' + npc.id) * totalWeight;
+      let acc = 0;
+      for (const item of top) {
+        acc += item.weight > 0 ? item.weight : 1;
+        if (roll < acc) return item;
+      }
+      return top[top.length - 1];
     }
 
     function schedule(world, config, blockedIds, report) {

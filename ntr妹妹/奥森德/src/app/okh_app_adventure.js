@@ -1,8 +1,8 @@
 /**
  * @module okh_app_adventure
- * @updated 2026-11-26
+ * @updated 2026-11-27 03:13
  * @status active
- * @reason 在聊天回合事务内裁决探险、功绩、境界与技能，并复用物品和时间结算
+ * @reason 在聊天回合事务内裁决探险、功绩、境界与技能，并补齐奥萝拉山庄服役期间仅限周末旅店归队时可受邀组队的硬守卫
  * @deps OKHBackgroundModules.utils, OKH_APP_DATA, OKH_APP_RUINS, OKH_APP_SKILLS, OKH_APP_TAGS
  */
 (function (root) {
@@ -104,8 +104,12 @@
 
   function isAvailable(world, id) {
     const npc = world.npcs[id]
-    return npc?.monitored === true && npc.alive !== false && (npc.stage ?? 0) < 3 &&
-      ['inn', 'town', 'wilds'].includes(npc.location) &&
+    if (!npc || npc.monitored !== true || npc.alive === false || (npc.stage ?? 0) >= 3) return false
+    if (id === 'aurora' && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) {
+      const day = Math.floor((world?.timeMin ?? 0) / 1440) + 1
+      if (!DATA.isWeekendDay(day) || npc.location !== 'inn') return false
+    }
+    return ['inn', 'town', 'wilds'].includes(npc.location) &&
       !npc.flags?.captured_orc && !npc.flags?.captured_manor && !npc.flags?.gulan_departed &&
       !npc.flags?.isna_captured_ed && !npc.flags?.isnaMudOutTonight && !npc.flags?.nise_fled_casino &&
       !(npc.activity && npc.activity.kind !== 'ordinary')
