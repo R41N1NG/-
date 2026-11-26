@@ -30,6 +30,7 @@
     }
 
     function hashPickSeed(seed) {
+      // FNV-1a 32位哈希常量（offset basis=2166136261, prime=16777619），归一化至 [0, 1)
       let h = 2166136261;
       for (let i = 0; i < seed.length; i++) {
         h ^= seed.charCodeAt(i);

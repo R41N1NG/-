@@ -424,6 +424,7 @@
     {
       id: 'nise_town_browse',
       priority: 22,
+      weight: 60,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         npc.id === 'nise' &&
@@ -442,7 +443,7 @@
     },
     {
       id: 'nise_inn_sleep_in',
-      priority: 21,
+      priority: 22,
       weight: 40,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
@@ -464,9 +465,8 @@
         npc.id === 'nise' &&
         !isFugitiveSquadActive(world, npc) &&
         npc.stage < 3 &&
-        phase.id === 'afternoon' &&
+        phase.id === 'night' &&
         npc.location === 'inn' &&
-        !npc.flags?.nise_escort_today &&
         !npc.flags?.nise_casino_busy_today,
       effects: {},
       occupation: { kind: 'ordinary', label: '在旅店房间研读卷轴与法术笔记' }
@@ -480,9 +480,8 @@
         npc.id === 'nise' &&
         !isFugitiveSquadActive(world, npc) &&
         npc.stage < 3 &&
-        phase.id === 'afternoon' &&
+        phase.id === 'night' &&
         npc.location === 'inn' &&
-        !npc.flags?.nise_escort_today &&
         !npc.flags?.nise_casino_busy_today,
       effects: {},
       occupation: { kind: 'ordinary', label: '在旅店大厅点红茶与茶点歇息' }
@@ -490,6 +489,7 @@
     {
       id: 'nise_hall_bard',
       priority: 21,
+      weight: 40,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         npc.id === 'nise' &&
