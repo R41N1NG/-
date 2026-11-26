@@ -1,8 +1,8 @@
 /**
  * @module okh_app_tags
- * @updated 2026-11-26 22:25
+ * @updated 2026-11-27 03:26
  * @status active
- * @reason 注册与管理角色及主角后台标签（含负面Tag、三阶睡眠、妮丝暗线残响与营救Tag），状态归入世界存档 tags 分区
+ * @reason 注册与管理角色及主角后台标签（补齐奥萝拉山庄暗线三阶段私密标签），状态归入世界存档 tags 分区
  */
 (function (root) {
   'use strict'
@@ -92,6 +92,24 @@
       name: '全镇兵力围剿',
       desc: '暴力冲击领主暗中背书的金碧赌场，引来全镇卫兵与领主私兵的合围追捕，商业停摆且全队进入流亡状态。',
       visibility: 'public'
+    }),
+    tag_aurora_manor_hush: Object.freeze({
+      id: 'tag_aurora_manor_hush',
+      name: '私室封口',
+      desc: '返店后常下意识低头拢紧白色围裙与高领衬衫，谈及山庄差事时指尖微颤、回避视线，只反复念叨这是正经活。',
+      visibility: 'private'
+    }),
+    tag_aurora_night_service: Object.freeze({
+      id: 'tag_aurora_night_service',
+      name: '山庄夜侍',
+      desc: '工作日入夜便留在领主山庄私室侍寝；周末换回素净长裙归队时步态略显拘谨，镜片后的目光含着愧疚与疲惫。',
+      visibility: 'private'
+    }),
+    tag_aurora_baron_mistress: Object.freeze({
+      id: 'tag_aurora_baron_mistress',
+      name: '男爵情妇',
+      desc: '已签下清空家族旧债的情妇契约，长留领主山庄深处侍奉雷蒙德男爵，周末不再返店归队。',
+      visibility: 'private'
     }),
     // 7 项通用负面 Tag（公会冒险与遗迹探险）
     debuff_light_wound: Object.freeze({

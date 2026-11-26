@@ -1,8 +1,8 @@
 /**
  * @module okh_app_data
- * @updated 2026-11-27 03:13
+ * @updated 2026-11-27 03:26
  * @status  active
- * @reason  补齐四女主常态上午/下午/夜晚多选加权行动表（古兰含10%外出寻龙）、奥萝拉周末修道院祈祷与伊丝娜泥足期夜潜营地显式行动
+ * @reason  补齐四女主常态多选与特殊排表、奥萝拉山庄暗线三阶段 covert/echoId/tags/dossierAdd 闭环
  * @deps    无
  * @provides { SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel, PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG, ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld, DRAGON_TRUE_FORM_SPEC, buildDragonRevealText }
  */
@@ -718,6 +718,8 @@
       mode: 'result',
       fromStage: 0,
       toStage: 1,
+      covert: true,
+      echoId: 'echo_aurora_manor_hush',
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) &&
         !npc.flags?.aurora_evt1_done &&
@@ -729,7 +731,8 @@
         (npc.flags?.manorWorkDays ?? 0) >= 3,
       effects: {
         add: { debt_pressure: -10 },
-        npcFlags: { aurora_evt1_done: true }
+        npcFlags: { aurora_evt1_done: true },
+        tagsAdd: ['tag_aurora_manor_hush']
       },
       text: '{name}在领主山庄工作满三日后收拾二楼私室时，雷蒙德领主顺手递过一袋额外封口金币并借机贴身占便宜。她指尖攥紧围裙却不敢得罪大领主，红着眼眶咬牙忍下，收下这笔抵掉一成旧债的钱款，此后在山庄干活时也不再敢强硬推阻触碰。'
     },
@@ -738,6 +741,8 @@
       mode: 'result',
       fromStage: 1,
       toStage: 2,
+      covert: true,
+      echoId: 'echo_aurora_night_service',
       requires: ['aurora_stage_1'],
       when: ({ world, npc, phase }) => {
         if (!world.flags?.arrived_oakhaven || !npc.flags?.manor_service_active || npc.flags?.aurora_left_manor || world.flags?.baron_purged) return false
@@ -751,7 +756,12 @@
       },
       effects: {
         add: { debt_pressure: -30 },
-        npcFlags: { aurora_evt2_done: true }
+        npcFlags: { aurora_evt2_done: true },
+        tagsAdd: ['tag_aurora_night_service'],
+        tagsRemove: ['tag_aurora_manor_hush'],
+        dossierAdd: [
+          { npc: 'aurora', type: 'encounter', parts: ['vagina'], penetrative: true, internal: true, position: '书房长椅抬裙后入', volumeMl: 12 }
+        ]
       },
       text: '在领主山庄高额加码服务费的步步相逼下，{name}最终没能推辞能一次消去三成债务的私室夜侍条件。厚实橡木门隔绝了外间动静，事后她强忍屈辱收下重金，从此每逢工作日入夜便默认留在山庄侍寝，只在周末换回素净长裙勉强返店归队。'
     },
@@ -760,6 +770,8 @@
       mode: 'result',
       fromStage: 2,
       toStage: 3,
+      covert: true,
+      echoId: 'echo_aurora_baron_mistress',
       requires: ['aurora_stage_2'],
       when: ({ world, npc, phase }) => {
         const reqDays = 21 - (npc.flags?.aurora_lord_punished ? 3 : 0)
@@ -778,7 +790,12 @@
       },
       effects: {
         add: { debt_pressure: -100 },
-        npcFlags: { aurora_evt3_done: true }
+        npcFlags: { aurora_evt3_done: true },
+        tagsAdd: ['tag_aurora_baron_mistress'],
+        tagsRemove: ['tag_aurora_night_service'],
+        dossierAdd: [
+          { npc: 'aurora', type: 'encounter', parts: ['vagina'], penetrative: true, internal: true, position: '丝绒扶手椅正面坐跨', volumeMl: 15 }
+        ]
       },
       text: '面对领主一次清空全部剩余家庭旧债的情妇契约，{name}轻叹着合上手中账册签下名字；旧债随之归零，她正式长留在领主山庄成为男爵情妇，从此周末亦不再返回旅店。'
     },
