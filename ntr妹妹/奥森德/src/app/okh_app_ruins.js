@@ -271,40 +271,40 @@
   // 6. 核心密室与奖池配置 (30个，5:3:1 阶位分布)
   const sanctums = Object.freeze({
     // 二阶正规密室 (17个，产出 skill_scroll_t2)
-    sanc_t2_01: Object.freeze({ id: 'sanc_t2_01', name: '守灵偏厅·封印石棺', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
-    sanc_t2_02: Object.freeze({ id: 'sanc_t2_02', name: '采矿督工精铁暗柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
-    sanc_t2_03: Object.freeze({ id: 'sanc_t2_03', name: '古代药剂配制偏厅', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
-    sanc_t2_04: Object.freeze({ id: 'sanc_t2_04', name: '地底走私商暗格', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
-    sanc_t2_05: Object.freeze({ id: 'sanc_t2_05', name: '坍塌祭坛石台暗龛', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
-    sanc_t2_06: Object.freeze({ id: 'sanc_t2_06', name: '守备队长军资铁箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
-    sanc_t2_07: Object.freeze({ id: 'sanc_t2_07', name: '熔岩缝结晶储藏柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
-    sanc_t2_08: Object.freeze({ id: 'sanc_t2_08', name: '沼泽沉船防腐货箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
-    sanc_t2_09: Object.freeze({ id: 'sanc_t2_09', name: '古地宫齿轮密藏阁', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
-    sanc_t2_10: Object.freeze({ id: 'sanc_t2_10', name: '魔兽遗骸头骨暗槽', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
-    sanc_t2_11: Object.freeze({ id: 'sanc_t2_11', name: '前哨信使殉职石台', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
-    sanc_t2_12: Object.freeze({ id: 'sanc_t2_12', name: '古骑士佩剑陈列石桌', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
-    sanc_t2_13: Object.freeze({ id: 'sanc_t2_13', name: '深水涵洞密封铅盒', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 45, minHours: 12 }),
-    sanc_t2_14: Object.freeze({ id: 'sanc_t2_14', name: '迷宫暗门秘银小柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
-    sanc_t2_15: Object.freeze({ id: 'sanc_t2_15', name: '风化祭祀供奉石盆', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
-    sanc_t2_16: Object.freeze({ id: 'sanc_t2_16', name: '工兵爆破储藏暗室', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 50, minHours: 12 }),
-    sanc_t2_17: Object.freeze({ id: 'sanc_t2_17', name: '流亡学者遗留书箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
+    sanc_t2_01: Object.freeze({ id: 'sanc_t2_01', biome: 'crypt', name: '守灵偏厅·封印石棺', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_02: Object.freeze({ id: 'sanc_t2_02', biome: 'mine', name: '采矿督工精铁暗柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
+    sanc_t2_03: Object.freeze({ id: 'sanc_t2_03', biome: 'universal', name: '古代药剂配制偏厅', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
+    sanc_t2_04: Object.freeze({ id: 'sanc_t2_04', biome: 'universal', name: '地底走私商暗格', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
+    sanc_t2_05: Object.freeze({ id: 'sanc_t2_05', biome: 'universal', name: '坍塌祭坛石台暗龛', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_06: Object.freeze({ id: 'sanc_t2_06', biome: 'vault', name: '守备队长军资铁箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
+    sanc_t2_07: Object.freeze({ id: 'sanc_t2_07', biome: 'mine', name: '熔岩缝结晶储藏柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
+    sanc_t2_08: Object.freeze({ id: 'sanc_t2_08', biome: 'mire', name: '沼泽沉船防腐货箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
+    sanc_t2_09: Object.freeze({ id: 'sanc_t2_09', biome: 'vault', name: '古地宫齿轮密藏阁', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
+    sanc_t2_10: Object.freeze({ id: 'sanc_t2_10', biome: 'lair', name: '魔兽遗骸头骨暗槽', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_11: Object.freeze({ id: 'sanc_t2_11', biome: 'universal', name: '前哨信使殉职石台', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
+    sanc_t2_12: Object.freeze({ id: 'sanc_t2_12', biome: 'vault', name: '古骑士佩剑陈列石桌', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
+    sanc_t2_13: Object.freeze({ id: 'sanc_t2_13', biome: 'mire', name: '深水涵洞密封铅盒', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 45, minHours: 12 }),
+    sanc_t2_14: Object.freeze({ id: 'sanc_t2_14', biome: 'vault', name: '迷宫暗门秘银小柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
+    sanc_t2_15: Object.freeze({ id: 'sanc_t2_15', biome: 'universal', name: '风化祭祀供奉石盆', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_16: Object.freeze({ id: 'sanc_t2_16', biome: 'mine', name: '工兵爆破储藏暗室', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 50, minHours: 12 }),
+    sanc_t2_17: Object.freeze({ id: 'sanc_t2_17', biome: 'universal', name: '流亡学者遗留书箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
 
     // 三阶精锐宝库 (10个，产出 skill_scroll_t3)
-    sanc_t3_01: Object.freeze({ id: 'sanc_t3_01', name: '魔导动力核心舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 100, minHours: 14 }),
-    sanc_t3_02: Object.freeze({ id: 'sanc_t3_02', name: '沉沦灵堂大祭坛', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
-    sanc_t3_03: Object.freeze({ id: 'sanc_t3_03', name: '龙裔侍从石棺殿', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
-    sanc_t3_04: Object.freeze({ id: 'sanc_t3_04', name: '禁忌圣水贮藏池', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 90, minHours: 14 }),
-    sanc_t3_05: Object.freeze({ id: 'sanc_t3_05', name: '晶石共鸣控制台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 75, goldMax: 115, minHours: 14 }),
-    sanc_t3_06: Object.freeze({ id: 'sanc_t3_06', name: '深层领主藏宝暗厅', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
-    sanc_t3_07: Object.freeze({ id: 'sanc_t3_07', name: '受诅主教白银灵柩', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
-    sanc_t3_08: Object.freeze({ id: 'sanc_t3_08', name: '远古龙骨封印基座', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 85, goldMax: 125, minHours: 14 }),
-    sanc_t3_09: Object.freeze({ id: 'sanc_t3_09', name: '相位重叠秘宝舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 90, goldMax: 130, minHours: 14 }),
-    sanc_t3_10: Object.freeze({ id: 'sanc_t3_10', name: '古代试炼宗师石台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
+    sanc_t3_01: Object.freeze({ id: 'sanc_t3_01', biome: 'arcane', name: '魔导动力核心舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 100, minHours: 14 }),
+    sanc_t3_02: Object.freeze({ id: 'sanc_t3_02', biome: 'crypt', name: '沉沦灵堂大祭坛', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
+    sanc_t3_03: Object.freeze({ id: 'sanc_t3_03', biome: 'crypt', name: '龙裔侍从石棺殿', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
+    sanc_t3_04: Object.freeze({ id: 'sanc_t3_04', biome: 'universal', name: '禁忌圣水贮藏池', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 90, minHours: 14 }),
+    sanc_t3_05: Object.freeze({ id: 'sanc_t3_05', biome: 'arcane', name: '晶石共鸣控制台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 75, goldMax: 115, minHours: 14 }),
+    sanc_t3_06: Object.freeze({ id: 'sanc_t3_06', biome: 'universal', name: '深层领主藏宝暗厅', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
+    sanc_t3_07: Object.freeze({ id: 'sanc_t3_07', biome: 'crypt', name: '受诅主教白银灵柩', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
+    sanc_t3_08: Object.freeze({ id: 'sanc_t3_08', biome: 'universal', name: '远古龙骨封印基座', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 85, goldMax: 125, minHours: 14 }),
+    sanc_t3_09: Object.freeze({ id: 'sanc_t3_09', biome: 'arcane', name: '相位重叠秘宝舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 90, goldMax: 130, minHours: 14 }),
+    sanc_t3_10: Object.freeze({ id: 'sanc_t3_10', biome: 'universal', name: '古代试炼宗师石台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
 
     // 四阶宗师秘殿 (3个，产出 skill_scroll_t4)
-    sanc_t4_01: Object.freeze({ id: 'sanc_t4_01', name: '龙语泰坦熔炉王座', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 250, goldMax: 350, minHours: 16 }),
-    sanc_t4_02: Object.freeze({ id: 'sanc_t4_02', name: '陨落龙骑士地下灵宫', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 280, goldMax: 380, minHours: 16 }),
-    sanc_t4_03: Object.freeze({ id: 'sanc_t4_03', name: '古代皇家星穹秘宝库', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 300, goldMax: 400, minHours: 16 })
+    sanc_t4_01: Object.freeze({ id: 'sanc_t4_01', biome: 'mine', name: '龙语泰坦熔炉王座', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 250, goldMax: 350, minHours: 16 }),
+    sanc_t4_02: Object.freeze({ id: 'sanc_t4_02', biome: 'crypt', name: '陨落龙骑士地下灵宫', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 280, goldMax: 380, minHours: 16 }),
+    sanc_t4_03: Object.freeze({ id: 'sanc_t4_03', biome: 'universal', name: '古代皇家星穹秘宝库', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 300, goldMax: 400, minHours: 16 })
   })
 
   // 7. 三大固定核心遗迹完整拓扑定义
@@ -369,176 +369,82 @@
     })
   })
 
-  // 8. 辅助过滤函数
-  function getAvailableBiomes(tier) {
-    const list = ['biome_narrow_mine', 'biome_toxic_mire', 'biome_trap_vault', 'biome_living_lair']
-    if (tier >= 3) {
-      list.push('biome_arcane_grid', 'biome_undead_crypt')
-    }
-    return list
+  const biomeKeys = {
+    biome_narrow_mine: 'mine', biome_toxic_mire: 'mire', biome_trap_vault: 'vault',
+    biome_living_lair: 'lair', biome_arcane_grid: 'arcane', biome_undead_crypt: 'crypt'
   }
 
-  function pickRandom(arr, rng) {
-    if (!arr || !arr.length) return null
-    const idx = rng ? Math.floor(rng() * arr.length) : Math.floor(Math.random() * arr.length)
-    return arr[Math.min(idx, arr.length - 1)]
-  }
+  const pick = (list, rng) => list[Math.floor(rng() * list.length)]
 
-  // 9. 组装流水线 (assemble)
-  function assemble(opts = {}) {
-    if (opts.coreId && coreRuins[opts.coreId]) {
-      const core = coreRuins[opts.coreId]
-      return {
-        instanceId: `ruin_core_${opts.coreId}_${Date.now()}`,
-        id: core.id,
-        name: core.name,
-        tier: core.tier,
-        partyLimit: core.partyLimit,
-        partyMembers: Array.isArray(opts.partyMembers) ? opts.partyMembers : [],
-        escort: core.escort,
-        minDurationHours: core.minDurationHours,
-        merit: core.merit,
-        gold: core.gold,
-        scrollId: core.scrollId,
-        resonance: core.resonance,
-        atmosphere: core.name,
-        currentBlockIndex: 0,
-        cleared: false,
-        blocks: core.blocks.map((b, i) => ({ ...b, index: i }))
-      }
+  function assemble({ coreId, tier = 2, biome, partyLimit, rng = Math.random, key = 'preview' } = {}) {
+    if (coreId) {
+      u.check(u.own(coreRuins, coreId), '未知核心遗迹')
+      const core = coreRuins[coreId]
+      return { ...core, instanceId: key, atmosphere: core.name, blocks: core.blocks.map(block => ({ ...block })) }
     }
-
-    const tier = Number.isInteger(opts.tier) ? opts.tier : 2
-    const rng = typeof opts.rng === 'function' ? opts.rng : null
-
-    // 1. 生态准入过滤
-    const availBiomes = getAvailableBiomes(tier)
-    const biomeId = (opts.biome && availBiomes.includes(opts.biome)) ? opts.biome : pickRandom(availBiomes, rng)
-    const biomeData = biomes[biomeId]
-    const shortBiome = biomeId.replace('biome_', '').replace('_mine', '').replace('_mire', '').replace('_vault', '').replace('_lair', '').replace('_grid', '').replace('_crypt', '')
-
-    // 2. 队伍准入上限 (随机遗迹上限 2 ~ 4 人)
-    const partyLimit = Number.isInteger(opts.partyLimit)
-      ? opts.partyLimit
-      : (rng ? Math.floor(rng() * 3) + 2 : Math.floor(Math.random() * 3) + 2)
-
-    // 3. 区块数量与时长下限
-    const blockCount = tier === 2 ? 4 : (rng ? Math.floor(rng() * 2) + 5 : 5)
-    const minDurationHours = blockCount === 4 ? 36 : (blockCount === 5 ? 48 : 64)
-
-    // 4. 定点插槽装配
-    // Slot 1: Entrance
-    const entList = Object.values(entrances).filter(e => e.biome === shortBiome || e.biome === 'universal')
-    const ent = pickRandom(entList, rng) || entrances.ent_mine_01
-
-    // Slot 2: Obstacle
-    const obsList = Object.values(obstacles).filter(o => o.tier <= tier && (o.biome === shortBiome || o.biome === 'universal'))
-    const obs = pickRandom(obsList, rng) || obstacles.obs_mine_gas
-
-    // Slot 3: Combat
-    const mobList = Object.values(combats).filter(m => m.enemyTier === tier)
-    const mob = pickRandom(mobList, rng) || combats.mob_t2_mine_golem
-
-    // Slot 4: Branch
-    const brList = Object.values(branches).filter(b => b.biome === shortBiome)
-    const br = pickRandom(brList, rng) || branches.br_mine_01
-
-    // Slot N: Sanctum
-    const sancList = Object.values(sanctums).filter(s => s.tier === tier)
-    const sanc = pickRandom(sancList, rng) || sanctums.sanc_t2_01
-
-    const assembledBlocks = [
-      { index: 0, type: 'entrance', id: ent.id, name: ent.name, minHours: ent.minHours },
-      { index: 1, type: 'obstacle', id: obs.id, name: obs.name, minHours: obs.minHours, reqAbility: obs.reqAbility, reqDc: obs.reqDc },
-      { index: 2, type: 'combat', id: mob.id, name: mob.name, minHours: 10, enemyTier: mob.enemyTier, tactics: mob.tactics }
+    u.check([2, 3, 4].includes(tier), '遗迹阶位须为 II 至 IV')
+    const available = Object.values(biomes).filter(item => item.minTier <= tier)
+    const habitat = available.find(item => item.id === biome) || pick(available, rng)
+    const habitatKey = biomeKeys[habitat.id]
+    const matches = item => item.biome === habitatKey || item.biome === 'universal'
+    partyLimit ??= 2 + Math.floor(rng() * 3)
+    u.check([2, 3, 4].includes(partyLimit), '遗迹人数须为 2 至 4')
+    const blockCount = (tier === 2 ? 4 : 5) + Math.floor(rng() * 2)
+    const minDurationHours = { 4: 36, 5: 48, 6: 64 }[blockCount]
+    const entrance = pick(Object.values(entrances).filter(matches), rng)
+    const hazards = Object.values(obstacles).filter(item => item.tier <= tier && matches(item))
+    const obstacle = pick(hazards, rng)
+    const guard = pick(Object.values(combats).filter(item => item.enemyTier === Math.min(tier, 3) && matches(item)), rng)
+    const branch = pick(Object.values(branches).filter(matches), rng)
+    const sanctum = pick(Object.values(sanctums).filter(item => item.tier === tier && matches(item)), rng)
+    const blocks = [
+      { ...entrance, type: 'entrance' },
+      { ...obstacle, type: 'obstacle' },
+      { ...guard, type: 'combat', minHours: 10, enemyTier: tier, name: tier === 4 ? guard.name + '·宗师级' : guard.name }
     ]
-
-    if (blockCount >= 5) {
-      assembledBlocks.push({ index: 3, type: 'branch', id: br.id, name: br.name, minHours: br.minHours })
-    }
-    if (blockCount >= 6) {
-      const extraObs = pickRandom(obsList.filter(o => o.id !== obs.id), rng) || obstacles.obs_universal_puzzle
-      assembledBlocks.push({ index: 4, type: 'obstacle', id: extraObs.id, name: extraObs.name, minHours: extraObs.minHours, reqAbility: extraObs.reqAbility, reqDc: extraObs.reqDc })
-    }
-
-    assembledBlocks.push({ index: assembledBlocks.length, type: 'sanctum', id: sanc.id, name: sanc.name, minHours: sanc.minHours, tier: sanc.tier, scrollId: sanc.scrollId })
-
+    if (blockCount >= 5) blocks.push({ ...branch, type: 'branch' })
+    if (blockCount >= 6) blocks.push({ ...pick(hazards.filter(item => item.id !== obstacle.id), rng), type: 'obstacle' })
+    const hours = blocks.reduce((sum, block) => sum + block.minHours, 0)
+    blocks.push({ ...sanctum, type: 'sanctum', minHours: Math.max(sanctum.minHours, minDurationHours - hours) })
     return {
-      instanceId: `ruin_${Date.now()}_${tier}`,
-      tier,
-      biome: biomeId,
-      partyLimit,
-      partyMembers: Array.isArray(opts.partyMembers) ? opts.partyMembers : [],
-      atmosphere: biomeData.atmosphere,
-      minDurationHours,
-      currentBlockIndex: 0,
-      cleared: false,
-      blocks: assembledBlocks
+      instanceId: key, name: habitat.name, tier, biome: habitat.id, partyLimit,
+      atmosphere: habitat.atmosphere, minDurationHours, blocks,
+      merit: tier === 2 ? 15 : 10,
+      gold: sanctum.goldMin + Math.floor(rng() * (sanctum.goldMax - sanctum.goldMin + 1)),
+      scrollId: sanctum.scrollId
     }
   }
 
-  // 10. 事务性探险接口
-  function enter(world, ruinInstance, partyMembers = []) {
-    u.check(ruinInstance && Array.isArray(ruinInstance.blocks), '无效遗迹实例')
+  function enter(world, instance, partyMembers = []) {
     const rs = world.ruinState ||= { current: null, clearedCores: [] }
-    u.check(!rs.current, '已处于探险中，不可重复进入')
-
-    const pLimit = ruinInstance.partyLimit || 4
-    const validMembers = Array.isArray(partyMembers) ? partyMembers.slice(0, pLimit) : []
-    ruinInstance.partyMembers = validMembers
-    ruinInstance.currentBlockIndex = 0
-    ruinInstance.elapsedHours = 0
-    ruinInstance.startMin = world.timeMin || 0
-    rs.current = ruinInstance
-    return true
+    u.check(!rs.current, '已在遗迹中')
+    u.check(instance.blocks?.length && !rs.clearedCores.includes(instance.id), '遗迹无效或已首通')
+    u.check(partyMembers.length < instance.partyLimit && new Set(partyMembers).size === partyMembers.length, '随行名单重复或超过名额')
+    u.check(partyMembers.every(id => id !== instance.escort), '古兰作为领路人随行，无需占用名额')
+    rs.current = { ...instance, partyMembers: [...partyMembers], currentBlockIndex: 0, elapsedHours: 0 }
   }
 
-  function advance(world, choice = {}) {
-    const rs = world?.ruinState
-    u.check(rs && rs.current, '当前未处于遗迹探险中')
-    const cur = rs.current
-    const blocks = cur.blocks || []
-    const idx = cur.currentBlockIndex || 0
-    u.check(idx < blocks.length, '遗迹已推进至终点')
+  function advance(world, verdict) {
+    const cur = world.ruinState?.current
+    u.check(cur && !cur.cleared, '当前没有可推进的遗迹')
+    u.check(verdict && Number.isSafeInteger(verdict.hours) && verdict.hours > 0 &&
+      typeof verdict.passed === 'boolean', '须由后台判定房间结果')
+    cur.elapsedHours += verdict.hours
+    if (verdict.passed) cur.currentBlockIndex++
+    cur.cleared = cur.currentBlockIndex === cur.blocks.length
+    return cur.cleared
+  }
 
-    const block = blocks[idx]
-    const hours = block.minHours || 8
-    cur.elapsedHours = (cur.elapsedHours || 0) + hours
-
-    // 动态口粮扣除（跨 24 小时或跨午夜）
-    const actualPartySize = 1 + (cur.partyMembers ? cur.partyMembers.length : 0) + (cur.escort ? 1 : 0)
-    const prevDays = Math.floor(((cur.elapsedHours - hours)) / 24)
-    const nextDays = Math.floor(cur.elapsedHours / 24)
-    if (nextDays > prevDays) {
-      const daysPassed = nextDays - prevDays
-      const supplyCost = daysPassed * actualPartySize
-      const inv = world.playerState?.inventory
-      if (Array.isArray(inv)) {
-        const item = inv.find(i => i.id === 'supply')
-        if (item) {
-          item.count = Math.max(0, item.count - supplyCost)
-        }
-      }
-    }
-
-    cur.currentBlockIndex = idx + 1
-    if (cur.currentBlockIndex >= blocks.length) {
-      cur.cleared = true
-      if (cur.id && coreRuins[cur.id]) {
-        rs.clearedCores ||= []
-        if (!rs.clearedCores.includes(cur.id)) rs.clearedCores.push(cur.id)
-      }
-    }
-    return { cleared: cur.cleared, nextBlockIndex: cur.currentBlockIndex }
+  function finish(world) {
+    const cur = world.ruinState?.current
+    u.check(cur?.cleared, '未完成遗迹')
+    if (cur.id) world.ruinState.clearedCores.push(cur.id)
+    world.ruinState.current = null
   }
 
   function retreat(world) {
-    const rs = world?.ruinState
-    if (rs && rs.current) {
-      rs.current = null
-      return true
-    }
-    return false
+    u.check(world.ruinState?.current, '当前不在遗迹中')
+    world.ruinState.current = null
   }
 
   function getStatus(world) {
@@ -583,6 +489,7 @@
     enter,
     advance,
     retreat,
+    finish,
     getStatus,
     migrate
   })

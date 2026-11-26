@@ -1526,20 +1526,19 @@
         if (npc.stage !== 2 || npc.flags?.captured_orc || npc.flags?.isna_fallen_orc || npc.flags?.isnaMudSealCleared) return false
         const mudDays = npc.flags?.isnaMudDays ?? 0
         const count = npc.flags?.isnaMudSpyCount ?? 0
-        const dueCycles = Math.min(3, Math.floor(mudDays / 3))
-        if (dueCycles <= count) return false
-        const exactCycleDay = mudDays === (count + 1) * 3
-        return !exactCycleDay || ['night', 'deep_night'].includes(phase.id)
+        return npc.flags?.isnaMudOutTonight && phase.id === 'night' &&
+          [3, 6, 9].includes(mudDays) && Math.floor(mudDays / 3) > count
       },
       effects: ({ world, npc }) => {
         const count = (npc.flags?.isnaMudSpyCount ?? 0) + 1
         const positions = ['悬空架腿后入', '兽皮榻跪趴轮换后入', '按压双膝深顶灌注']
         const volumes = [55, 65, 75]
         return {
-          npcFlags: { isnaMudSpyCount: count },
+          npcFlags: { isnaMudSpyCount: count, isnaMudLastReportDay: npc.flags.isnaMudDays },
           dossierAdd: [{
             npc: 'isna',
             at: world.timeMin,
+            location: 'wilds_camp',
             type: 'encounter',
             parts: ['vagina'],
             penetrative: true,
@@ -1620,7 +1619,7 @@
         !npc.flags?.isnaMudOutTonight &&
         !npc.flags?.isnaMudTruthKnown &&
         (npc.flags?.isnaMudProbeCount ?? 0) === 1 &&
-        Math.floor((npc.flags?.isnaMudDays ?? 0) / 3) > Math.floor((npc.flags?.isnaMudFirstProbeDay ?? 0) / 3) &&
+        (npc.flags?.isnaMudLastReportDay ?? (npc.flags?.isnaMudSpyCount ?? 0) * 3) > (npc.flags?.isnaMudFirstProbeDay ?? 0) &&
         ['night', 'deep_night'].includes(phase.id) &&
         world.playerLocation === 'inn' &&
         npc.location === 'inn' &&

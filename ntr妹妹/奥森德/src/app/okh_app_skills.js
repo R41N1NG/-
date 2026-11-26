@@ -124,6 +124,7 @@
   }
 
   function equip(world, skillId, slotIndex = -1) {
+    u.check(isSafeLoadoutLocation(world), '请在旅店或营地调整技能')
     u.check(u.own(catalog, skillId), '装配技能 ID 未在词表注册：' + skillId)
     const ps = world.playerState ||= {}
     const learned = Array.isArray(ps.learnedSkills) ? ps.learnedSkills : []
@@ -133,6 +134,7 @@
     const pTier = Number.isInteger(ps.tier) ? ps.tier : 2
     u.check(pTier >= skill.tier, `阶位不足（当前 ${pTier} 阶，技能需求 ${skill.tier} 阶）`)
 
+    u.check(!skill.branch || CLASSES[ps.currentClass]?.branch === skill.branch, '该系别技能与主职不匹配')
     if (skill.reqClass) {
       u.check(ps.currentClass === skill.reqClass, `主职不匹配（需 ${skill.reqClass}）`)
     }
@@ -140,6 +142,7 @@
     const equipped = [...(Array.isArray(ps.equippedSkills) ? ps.equippedSkills : [])]
     if (equipped.includes(skillId)) return true // 已装配直接幂等
 
+    u.check(Number.isInteger(slotIndex) && slotIndex >= -1 && slotIndex <= equipped.length && slotIndex < MAX_EQUIPPED, '请依次使用空栏位')
     if (slotIndex >= 0 && slotIndex < equipped.length) {
       equipped[slotIndex] = skillId
     } else {
@@ -151,7 +154,13 @@
     return true
   }
 
+  function isSafeLoadoutLocation(world) {
+    return !world.ruinState?.current && (world.playerLocation === 'inn' ||
+      (world.playerLocation === 'wilds' && world.playerState?.campRestUntilMin > world.timeMin))
+  }
+
   function unequip(world, skillId) {
+    u.check(isSafeLoadoutLocation(world), '请在旅店或营地调整技能')
     const ps = world.playerState ||= {}
     const equipped = Array.isArray(ps.equippedSkills) ? ps.equippedSkills : []
     ps.equippedSkills = equipped.filter(id => id !== skillId)
@@ -168,7 +177,7 @@
     return list.map(id => catalog[id]).filter(Boolean)
   }
 
-  function checkAbility(world, abilityName, playerTier = 2) {
+  function checkAbility(world, abilityName, playerTier = world.playerState?.tier ?? 2) {
     const equipped = getEquipped(world)
     let maxVal = 0
     for (const sk of equipped) {
@@ -202,6 +211,7 @@
     getLearned,
     getEquipped,
     checkAbility,
+    isSafeLoadoutLocation,
     migrate
   })
 

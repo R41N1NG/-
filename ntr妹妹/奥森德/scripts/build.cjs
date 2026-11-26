@@ -42,6 +42,7 @@ const APP = [
   'okh_app_echo_format',
   'okh_app_echoes',
   'okh_app_data',
+  'okh_app_adventure',
   'okh_app_daily',
   'okh_app_rules',
   'okh_app_time',
@@ -162,6 +163,8 @@ if (fs.existsSync(AUTOSTART_FILE)) {
   const autoSha = crypto.createHash('sha256').update(autoOutput, 'utf8').digest('hex').toUpperCase()
   console.log('已生成：' + OUT_AUTO)
   console.log('自动启动版大小：' + Buffer.byteLength(autoOutput, 'utf8') + ' 字节 · SHA-256：' + autoSha)
+  fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true })
+  fs.writeFileSync(path.join(ROOT, 'dist', 'okh_complete.js'), output, 'utf8')
   require('./build_card.cjs').buildCard({ runtimePath: OUT_AUTO })
   require('./build_card_preview.cjs')
   require('./build_album_preview.cjs')

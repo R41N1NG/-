@@ -57,9 +57,11 @@ test('guild limits use real hours and the two most recent starts within seven da
   assert.equal(advance(world, DAY(4, 13, 59), work('guild_normal')).playerState.gold, 30);
   const first = advance(world, DAY(4, 14), work('guild_normal'));
   assert.equal(first.playerState.gold, 58);
+  assert.equal(first.playerState.guild_merit, 10);
   assert.equal(advance(first, DAY(7, 13, 59), work('guild_normal')).playerState.gold, 58);
   const second = advance(first, DAY(7, 14), work('guild_normal'));
   assert.equal(second.playerState.gold, 86);
+  assert(second.tags.player.includes('guild_bronze'));
   assert.equal(advance(second, DAY(10, 14), work('guild_normal')).playerState.gold, 86);
   assert.equal(advance(second, DAY(11, 14), work('guild_normal')).playerState.gold, 114);
 });
@@ -67,6 +69,8 @@ test('guild limits use real hours and the two most recent starts within seven da
 test('high-risk work requires 24 hours and a qualified companion', () => {
   const { world, advance, DAY } = fixture('wilds');
   assert.equal(advance(world, DAY(5, 5, 59), work('guild_high')).playerState.gold, 30);
+  assert.equal(advance(world, DAY(5, 6), work('guild_high')).playerState.gold, 30);
+  world.playerState.guild_merit = 20;
   const done = advance(world, DAY(5, 6), work('guild_high'));
   assert.equal(done.playerState.gold, 78);
   assert.equal(done.timeMin - world.timeMin, 1440);

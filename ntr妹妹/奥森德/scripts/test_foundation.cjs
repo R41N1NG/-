@@ -1759,7 +1759,8 @@ async function runTests() {
     w = stepFront(w, 'e_gn_cd', DAY(13, 16), '<status_bar><economy op="work" tier="guild_normal"/></status_bar>');
     assert.strictEqual(w.playerState.gold, 28, 'guild_normal on cooldown rejected; non-inn midnight does not charge lodging');
 
-    // Run both high-risk branches from the same state with a full 24-hour work window.
+    // Run both high-risk branches after the Bronze promotion, with a full 24-hour work window.
+    w.playerState.guild_merit = 20;
     w.flags.lastGuildCommissionDay = null;
     w.flags.lastGuildCommissionStartMin = null;
     w.flags.guildCommissionStarts = [];
@@ -2945,12 +2946,12 @@ async function runTests() {
     assert.strictEqual(wMudHi.bg.eventStates['["event","isna_mud_probe","isna"]']?.status, 'pending', 'High-affection room visit after camp return triggers probe interaction');
     wMudHi = stepFront(wMudHi, 'mud_hi_confess', DAY(18, 19, 20), '<status_bar><time elapsed="10"/><event_resolve id="isna_mud_probe" npc="isna" outcome="probe_confess"/></status_bar>');
     assert.strictEqual(wMudHi.npcs.isna.flags.isnaMudTruthKnown, true);
-    // Day 6 (mudDays = 6): away from room
+    // Day 6 daylight: the scheduled visit begins only in the evening.
     wMudHi = stepFront(wMudHi, 'mud_hi_day5', DAY(19, 10, 0), '<status_bar><time elapsed="880"/></status_bar>');
     wMudHi = stepFront(wMudHi, 'mud_hi_day6', DAY(20, 9, 0), '<status_bar><time elapsed="1380"/></status_bar>');
     assert.strictEqual(wMudHi.npcs.isna.flags.isnaMudDays, 6);
-    assert.strictEqual(wMudHi.npcs.isna.flags.isnaMudOutTonight, true, 'Day 6 marked as away from inn');
-    assert.strictEqual(sb.OKH_APP_MAP.isLocationHidden(wMudHi.npcs.isna), true, 'Map hides Isna on Day 6');
+    assert.strictEqual(Boolean(wMudHi.npcs.isna.flags.isnaMudOutTonight), false, 'Day 6 morning remains in town');
+    assert.strictEqual(sb.OKH_APP_MAP.isLocationHidden(wMudHi.npcs.isna), false, 'Map does not hide Isna in daylight');
     assert.strictEqual(wMudHi.bg.eventStates['["event","isna_mud_purge_choice","isna"]']?.status, 'pending', 'Next-day daytime purge choice appears');
     wMudHi = stepFront(wMudHi, 'mud_hi_purge', DAY(20, 9, 30), '<status_bar><time elapsed="30"/><event_resolve id="isna_mud_purge_choice" npc="isna" outcome="purge_cecilia"/></status_bar>');
     assert.strictEqual(wMudHi.npcs.isna.stage, 0, 'Cecilia purge returns Isna to stage 0');
@@ -2979,6 +2980,10 @@ async function runTests() {
     // Day 6 night: camp report fires (spyCount 1->2), Day 7 night: 2nd probe triggers!
     wMudLo = stepFront(wMudLo, 'mud_lo_day6', DAY(21, 21, 0), '<status_bar><time elapsed="1380"/></status_bar>');
     assert.strictEqual(wMudLo.npcs.isna.flags.isnaMudSpyCount, 2, 'Day 6 camp report fires');
+    assert(sb.OKH_APP_MAP.isLocationHidden(wMudLo.npcs.isna), 'Nighttime visit is hidden on the map');
+    assert(wMudLo.playerState.dossierRecords.some(record => record.npc === 'isna' && record.location === 'wilds_camp' && record.at === DAY(21, 17)));
+    wMudLo = stepFront(wMudLo, 'mud_lo_day7_dawn', DAY(22, 6, 0), '<status_bar><time elapsed="540"/></status_bar>');
+    assert(!sb.OKH_APP_MAP.isLocationHidden(wMudLo.npcs.isna), 'Map visibility returns at dawn');
     wMudLo = stepFront(wMudLo, 'mud_lo_day7', DAY(22, 22, 0), '<status_bar><time elapsed="1500"/><interact npc="isna"/></status_bar>');
     assert.strictEqual(wMudLo.bg.eventStates['["event","isna_mud_probe_second","isna"]']?.status, 'pending', 'Day 7 night 2nd probe triggers after camp return');
     wMudLo = stepFront(wMudLo, 'mud_lo_breakin', DAY(22, 22, 10), '<status_bar><time elapsed="10"/><event_resolve id="isna_mud_probe_second" npc="isna" outcome="probe_break_in"/></status_bar>');

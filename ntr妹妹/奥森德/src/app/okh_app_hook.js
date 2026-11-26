@@ -123,6 +123,14 @@
   }
   function buildTurnCommand(minutes, opts, world, id, revision) {
     const text = opts.text || '';
+    const playerAction = opts.playerAction ?? (Number.isSafeInteger(opts.chatIndex)
+      ? userCommandBefore(W.context()?.chat || [], opts.chatIndex) : null);
+    if (playerAction?.startsWith('【冒险】')) {
+      return {
+        command: { id, revision, toMin: world.timeMin, front: {}, playerAction, chatIndex: opts.chatIndex ?? null },
+        diagnostics: [], timeCheck: null
+      };
+    }
     try {
       const parsed = P.parseStatusBar(text);
       const plan = clockPlan(world, parsed, minutes, opts.countMessage === true, opts.initial === true);
@@ -167,7 +175,7 @@
     const liveWorld = W.loadWorld(s);
     let world = liveWorld;
     const id = opts.msgId || 'manual:' + s.id + ':' + Date.now() + ':' + (++seq);
-    const revision = opts.revision || fingerprint(JSON.stringify([opts.text || '', minutes ?? null, opts.frontOverride ?? null]));
+    const revision = opts.revision || fingerprint(JSON.stringify([opts.text || '', minutes ?? null, opts.frontOverride ?? null, opts.playerAction ?? null]));
     const recorded = world.bg.receipts[id];
     let replacement = null;
     if (recorded !== undefined) {
@@ -197,6 +205,7 @@
     last = { advanced: true, from: world.timeMin, to: result.state.timeMin, front: command.front,
       actions: result.report.actions, released: result.report.released,
       pending: GPT.prepare(result.state, 8).ids.length, diagnostics, timeCheck, published };
+    if (result.report.adventure) last.adventure = result.report.adventure;
     if (echo?.retry) last.echoNeedsRetry = true;
     diagnostics.forEach(message => console.warn('[APP] ' + message));
     console.log('[APP] 已提交 ' + world.timeMin + ' → ' + result.state.timeMin);
@@ -243,7 +252,7 @@
       .map(({ id, revealProof }) => [id, revealProof]));
     const dialogueForms = {};
     const diagnostics = [], actions = [], released = [];
-    let timeCheck = null, front = null, echoNeedsRetry = false;
+    let timeCheck = null, front = null, echoNeedsRetry = false, adventure = null;
     for (let i = from; i <= through; i++) {
       if (!assistant(chat[i])) continue;
       const id = replyId(s, i), revision = revisionFor(chat, i);
@@ -254,6 +263,7 @@
       built.command.echoReplay = echo.command;
       echoNeedsRetry = i === through && echo.retry;
       const result = GPT.advance(state, built.command, CFG.buildConfig());
+      adventure = result.report.adventure ?? null;
       const record = { id, revision, chatIndex: i, before: state };
       const proof = built.revealDeliveryId && revealProofs.get(id);
       const reveal = proof && proof.fingerprint === fingerprint(text) && WB.pendingReveal(state, [proof.eventId]);
@@ -275,6 +285,7 @@
     last = { advanced: true, from: checkpoint.timeMin, to: state.timeMin, front, actions, released,
       pending: GPT.prepare(state, 8).ids.length, diagnostics, timeCheck, published };
     diagnostics.forEach(message => console.warn('[APP] ' + message));
+    if (adventure) last.adventure = adventure;
     if (echoNeedsRetry) last.echoNeedsRetry = true;
     return last;
   }
@@ -369,7 +380,10 @@
           (echo.def.storyText || '').replace(/\{name\}/g, promptWorld.npcs?.[echo.def.npc]?.name || echo.def.npc)
         ].join('\n') : '';
 
-        const text = [A.buildLedger(promptWorld), ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal, echoInjection]
+        const order = userCommandBefore(chat, generation.targetIndex);
+        const adventure = root.OKH_APP_ADVENTURE.apply(u.clone(promptWorld), order, replyId(s, generation.targetIndex));
+        const resultPrompt = adventure ? '【本轮冒险裁决】' + adventure.message + '。按后台结果简洁演绎，不另行申报探险、奖品或时间。' : '';
+        const text = [A.buildLedger(promptWorld), resultPrompt, ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal, echoInjection]
           .filter(Boolean).join('\n\n');
         await inject(text, s);
         return { ...batch, generationId: id, text };

@@ -76,53 +76,39 @@ test('okh_app_ruins: core ruins definition', () => {
   assert.equal(coreInst.blocks.length, 5)
 })
 
-test('okh_app_ruins: enter, advance with dynamic supply deduction, retreat', () => {
-  const world = {
-    timeMin: 0,
-    ruinState: { current: null, clearedCores: [] },
-    playerState: {
-      inventory: [{ id: 'supply', count: 20 }]
-    }
-  }
-
-  const ruin = ruins.assemble({ coreId: 'core_ruin_dragon_chasm' })
-  // 3 人同行：主角 1 + 队友 2 = 3 人
-  const party = ['nise', 'aurora']
-  ruins.enter(world, ruin, party)
-
-  const status1 = ruins.getStatus(world)
-  assert.equal(status1.inRuin, true)
-  assert.equal(status1.currentBlockIndex, 0)
-  assert.equal(status1.totalBlocks, 5)
-
-  // Advance block 0 (minHours: 8) -> elapsed = 8h (<24h, no supply deduction)
-  ruins.advance(world)
-  assert.equal(world.ruinState.current.currentBlockIndex, 1)
-  assert.equal(world.playerState.inventory[0].count, 20)
-
-  // Advance block 1 (minHours: 10) -> elapsed = 18h (<24h)
-  ruins.advance(world)
-  assert.equal(world.ruinState.current.currentBlockIndex, 2)
-  assert.equal(world.playerState.inventory[0].count, 20)
-
-  // Advance block 2 (minHours: 10) -> elapsed = 28h (crosses 24h, 1 day * (1+2+1 escort gulan) = 4 supplies deducted, or 3 if no escort. Wait: ruin.escort is 'gulan' so actualPartySize = 1 + 2 + 1 = 4!)
-  ruins.advance(world)
-  assert.equal(world.ruinState.current.currentBlockIndex, 3)
-  assert.equal(world.playerState.inventory[0].count, 16) // 20 - 4 = 16
-
-  // Advance block 3 (branch, minHours: 8) -> elapsed = 36h
-  ruins.advance(world)
-  assert.equal(world.ruinState.current.currentBlockIndex, 4)
-
-  // Advance block 4 (sanctum, minHours: 12) -> elapsed = 48h (crosses 48h, another 4 deducted: 16 - 4 = 12), reaches end, marks cleared
-  const res = ruins.advance(world)
-  assert.equal(res.cleared, true)
-  assert.equal(world.playerState.inventory[0].count, 12)
-  assert(world.ruinState.clearedCores.includes('core_ruin_dragon_chasm'))
-
-  // Retreat
+test('room progression requires a verdict and a cleared core cannot be entered again', () => {
+  const world = {}
+  const assemble = () => ruins.assemble({ coreId: 'core_ruin_dragon_chasm' })
+  assert.throws(() => ruins.enter(world, assemble(), ['nise', 'aurora', 'isna']), /超过名额/)
+  ruins.enter(world, assemble(), ['nise', 'aurora'])
+  assert.throws(() => ruins.advance(world), /后台判定/)
+  assert.equal(ruins.advance(world, { hours: 8, passed: false }), false)
+  assert.equal(ruins.getStatus(world).currentBlockIndex, 0)
   ruins.retreat(world)
+  ruins.enter(world, assemble())
+  for (const block of assemble().blocks) ruins.advance(world, { hours: block.minHours, passed: true })
+  ruins.finish(world)
   assert.equal(ruins.getStatus(world).inRuin, false)
+  assert.throws(() => ruins.enter(world, assemble()), /已首通/)
+})
+
+test('random rooms match their habitat, guardian tier, and enforced minimum duration', () => {
+  const keys = ['mine', 'mire', 'vault', 'lair', 'arcane', 'crypt']
+  const habitats = Object.values(ruins.catalog.biomes)
+  for (const tier of [2, 3, 4]) {
+    habitats.forEach((habitat, i) => {
+      if (habitat.minTier > tier) return
+      for (const random of [0, 0.49, 0.99]) {
+        const raid = ruins.assemble({ tier, biome: habitat.id, rng: () => random })
+        const { blocks } = raid
+        assert.equal(raid.biome, habitat.id)
+        assert(blocks.reduce((sum, block) => sum + block.minHours, 0) >= raid.minDurationHours)
+        assert.equal(new Set(blocks.map(block => block.id)).size, blocks.length)
+        assert.equal(blocks.find(block => block.type === 'combat').enemyTier, tier)
+        for (const block of blocks) assert([keys[i], 'universal'].includes(block.biome))
+      }
+    })
+  }
 })
 
 test('okh_app_ruins: migration', () => {

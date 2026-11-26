@@ -37,6 +37,7 @@ test('okh_app_skills: learn skills', () => {
 
 test('okh_app_skills: equip requirements, slot limits and unequip', () => {
   const world = {
+    playerLocation: 'inn',
     playerState: {
       tier: 2,
       currentClass: 'class_shield_guard',
@@ -83,6 +84,7 @@ test('okh_app_skills: equip requirements, slot limits and unequip', () => {
 
 test('okh_app_skills: checkAbility computation', () => {
   const world = {
+    playerLocation: 'inn',
     playerState: {
       tier: 3,
       currentClass: 'class_shield_guard',
@@ -97,7 +99,9 @@ test('okh_app_skills: checkAbility computation', () => {
   // dynamic ability: learn and equip a dynamic breach skill
   skills.learn(world, 'skill_warrior_breach')
   skills.equip(world, 'skill_warrior_breach')
-  assert.equal(skills.checkAbility(world, '破障', 3), 3)
+  assert.equal(skills.checkAbility(world, '破障'), 3)
+  world.ruinState = { current: {} }
+  assert.throws(() => skills.unequip(world, 'skill_warrior_breach'), /旅店或营地/)
 
   // unequipped ability returns 0
   assert.equal(skills.checkAbility(world, '侦查', 3), 0)

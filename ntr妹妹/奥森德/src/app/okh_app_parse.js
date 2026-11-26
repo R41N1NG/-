@@ -309,6 +309,9 @@
         const at = parseAtAttr(a.at, world.timeMin, now);
         const npcId = inferEventNpcId(world, config, a.id, a.npc);
         (front.resolveEvents ||= []).push({ eventId: a.id, npcId, outcome: a.outcome, ...(at !== undefined ? { at } : {}) });
+      } else if (name === 'combat_temper') {
+        u.check(front.combatTemper === undefined && Object.keys(a).length === 1 && /^[1-4]$/.test(a.enemy_tier), '战斗回执仅接受一个敌方阶位')
+        front.combatTemper = Number(a.enemy_tier)
       } else if (name === 'economy') {
         u.check(
           a.amount === undefined && a.delta === undefined && a.value === undefined && a.add === undefined && a.gold === undefined,

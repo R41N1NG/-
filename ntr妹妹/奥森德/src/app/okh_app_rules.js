@@ -73,6 +73,7 @@
 
   function canMove(world, to, npc) {
     if (!Object.hasOwn(DATA.LOCATIONS, to)) return false
+    if (!npc && world.ruinState?.current && to !== world.playerLocation) return false
     if (!world?.flags?.arrived_oakhaven && TOWN_LOCATION_SET.has(to)) return false
     if (npc && isFugitiveSyncedNpc(world, npc) && to !== world.playerLocation) return false
     if (npc?.id === 'isna' && to === 'wilds_camp' && world?.tags?.isna?.includes('isna_orc_phobia')) return false
@@ -445,7 +446,7 @@
 
   function resolveEconomy(world, economies, ctx) {
     const out = []
-    if (!world?.flags?.arrived_oakhaven) return out
+    if (!world?.flags?.arrived_oakhaven || world.ruinState?.current) return out
     const day = Math.floor(world.timeMin / 1440) + 1
     let curGold = Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 0
     let innArrears = Boolean(world.flags?.inn_arrears)
@@ -489,11 +490,13 @@
           const recent = DATA.recentGuildStarts(world, start)
           if (recent.length >= DATA.WORK_LIMITS.guildStarts || DATA.workCooldownWait(world, 'lastGuildCommission', start, DATA.WORK_LIMITS.guildCooldownDays)) continue
           if (item.tier === 'guild_high') {
+            if (root.OKH_APP_ADVENTURE.guildRank(world) < 1) continue
             const gulanReady = Boolean(gulan && gulan.monitored === true && gulan.alive !== false && (gulan.stage ?? 0) < 3 && world.playerLocation === 'wilds' && gulan.location === 'wilds')
             const isnaReady = Boolean(isna && isna.monitored === true && isna.alive !== false && (isna.stage ?? 0) < 3 && !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_captured_ed && !isna.flags?.isna_fallen_labyrinth && isna.location === world.playerLocation)
             if (!gulanReady && !isnaReady) continue
           }
           workUsed = true
+          root.OKH_APP_ADVENTURE.gain(world, { merit: item.tier === 'guild_high' ? 20 : 10, enemyTier: item.tier === 'guild_high' ? 3 : 2, source: 'commission' })
           pushIncome(gold, { ...workFlags, lastGuildCommissionDay: day, lastGuildCommissionStartMin: start, guildCommissionStarts: [...recent, start] })
           if (gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3) {
             out.push({ target: 'gulan', npcFlags: { player_guild_job_done: true } })

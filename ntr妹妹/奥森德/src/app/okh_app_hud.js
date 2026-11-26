@@ -515,6 +515,54 @@
     `
   }
 
+  function buildAdventure(world) {
+    const rules = root.OKH_APP_ADVENTURE
+    const skills = root.OKH_APP_SKILLS
+    const ps = world.playerState
+    const raid = world.ruinState?.current
+    const rank = rules.guildRank(world)
+    if (!ps || rank < 0) return ''
+    const catalog = root.OKH_APP_RUINS.catalog
+    const button = (label, command) => `<button type="button" class="okh-char-act-btn" data-okh-act="adventure-fill" data-okh-command="${escapeHtml(command)}">${escapeHtml(label)}</button>`
+    const select = (options, name, label) => options.length ? `<label>${label} <select data-okh-adventure-field="${name}">${options.map(([id, title]) =>
+      `<option value="${escapeHtml(id)}">${escapeHtml(title)}</option>`).join('')}</select></label>` : ''
+    const option = ({ id, name }) => [id, name]
+    const rankBar = world.flags?.arrived_oakhaven ? `<p>${escapeHtml(rules.guilds[rank].name)} · 功绩 ${ps.guild_merit}${
+      rules.guilds[rank + 1] ? ` / ${rules.guilds[rank + 1].meritReq}` : ''}</p>` : ''
+    const profession = skills.CLASSES[ps.currentClass]
+    const professionBar = `<p>${escapeHtml(profession?.name || '职业待定')} · ${ps.tier} 阶${ps.realmCap ? ` · 实战积淀 ${ps.realmProgress} / ${ps.realmCap}` : ''}</p>`
+    if (raid) {
+      const block = raid.blocks[raid.currentBlockIndex]
+      const actions = rules.roomOptions(world, raid).map(action => button(action, '行动 ' + action)).join('')
+      return `<section class="okh-present-sec" aria-label="遗迹探险">
+        <div class="okh-sub-title">${escapeHtml(raid.name)}</div>
+        <p>${escapeHtml(block?.name || '')} · ${raid.currentBlockIndex + 1} / ${raid.blocks.length} · 已行进 ${raid.elapsedHours} 小时</p>
+        <div class="okh-char-acts">${actions}</div><p data-okh-adventure-feedback role="status">${escapeHtml(ps.lastAdventure || '')}</p>
+      </section>`
+    }
+    const eligible = Object.values(catalog.coreRuins).filter(ruin => ruin.tier <= rank && !world.ruinState?.clearedCores?.includes(ruin.id))
+    const trials = [2, 3, 4].filter(tier => tier <= rank).map(tier => [String(tier), tier + ' 阶外围探险'])
+    const sites = [...eligible.map(option), ...trials]
+    const available = Object.values(world.npcs).filter(npc => rules.isAvailable(world, npc.id))
+    const members = available.map(npc => `<label><input type="checkbox" data-okh-adventure-member value="${escapeHtml(npc.id)}"> ${escapeHtml(npc.name)}</label>`).join(' ')
+    const entry = world.flags?.arrived_oakhaven && world.playerLocation === 'wilds' && sites.length
+      ? `<div>${select(sites, 'site', '遗迹')} <button type="button" class="okh-char-act-btn" data-okh-act="adventure-enter">进入</button>
+          <div>同行 ${members || '无可用同伴'}。名额含主角，龙喉裂谷的古兰自动随行。</div></div>` : ''
+    const choice = !ps.classChosen && ps.tier === 2 && !ps.realmProgress
+      ? `<div>${select(Object.values(skills.CLASSES).map(option), 'profession', '起始主职')} <button type="button" class="okh-char-act-btn" data-okh-act="adventure-class">确定主职</button></div>` : ''
+    const equipped = skills.getEquipped(world)
+    const scrolls = (ps.inventory || []).filter(item => !item.custom && CFG.ITEM_CATALOG[item.id]?.skillTier)
+    const reads = `<div class="okh-char-acts">${scrolls.map(item =>
+      button('研读' + CFG.ITEM_CATALOG[item.id].name, '研读 ' + item.id)).join('')}</div>`
+    const loadout = skills.isSafeLoadoutLocation(world) ? `
+      <div class="okh-char-acts">${equipped.map(item => button('卸下' + item.name, '卸下 ' + item.id)).join('')}</div>
+      <div>${select(skills.getLearned(world).filter(item => !equipped.includes(item)).map(option), 'skill', '待装技能')}
+      ${skills.getLearned(world).some(item => !equipped.includes(item)) ? '<button type="button" class="okh-char-act-btn" data-okh-act="adventure-equip">装配</button>' : ''}</div>` : ''
+    if (!rankBar && !choice && !loadout) return ''
+    return `<section class="okh-present-sec" aria-label="公会与技能"><div class="okh-sub-title">公会与技能</div>
+      ${rankBar}${professionBar}${choice}${entry}${loadout}${reads}<p data-okh-adventure-feedback role="status">${escapeHtml(ps.lastAdventure || '')}</p></section>`
+  }
+
   function buildDispatchPage(world, pendingList, presentList) {
     let eventBlock = ''
     if (pendingList.length) {
@@ -605,6 +653,7 @@
     return `
       <div class="okh-page${activeTab === 'dispatch' ? ' active' : ''}" data-okh-page="dispatch">
         ${eventBlock}
+        ${buildAdventure(world)}
         ${mapBlock}
         <div class="okh-art-hr"></div>
         <div class="okh-present-sec">
@@ -1368,12 +1417,13 @@
     lightboxReturnFocus = null
   }
 
-  function fillTavernInput(text, { append = false } = {}) {
+  function fillTavernInput(text, { append = false, preserveDraft = false } = {}) {
     if (typeof document === 'undefined' || !text) return false
     const input = document.getElementById('send_textarea') ||
       document.querySelector('#send_form textarea') ||
       document.getElementById('tavern-input')
     if (!input || input.disabled || input.readOnly || typeof input.value !== 'string') return false
+    if (preserveDraft && input.value.trim() && input.value.trim() !== text) return false
     const prior = append ? input.value : ''
     input.value = prior ? prior + (prior.endsWith('\n') ? '' : '\n') + text : text
     const InputEvent = input.ownerDocument.defaultView.Event
@@ -1467,6 +1517,20 @@
         }
       } else if (act === 'fill') {
         fillTavernInput(el.getAttribute('data-okh-text') || '')
+      } else if (act?.startsWith('adventure-')) {
+        const section = el.closest('section')
+        const field = name => section?.querySelector('[data-okh-adventure-field="' + name + '"]')?.value
+        let command = el.dataset.okhCommand
+        if (act === 'adventure-enter') {
+          const members = Array.from(section.querySelectorAll('[data-okh-adventure-member]:checked'), input => input.value)
+          command = ['进入', field('site'), ...members].join(' ')
+        } else if (act === 'adventure-class') command = '选职 ' + field('profession')
+        else if (act === 'adventure-equip') command = '装配 ' + field('skill')
+        const feedback = section?.querySelector('[data-okh-adventure-feedback]')
+        if (feedback && command) {
+          const text = '【冒险】' + command
+          feedback.textContent = fillTavernInput(text, { preserveDraft: true }) ? '指令已填入，发送后执行。' : text
+        }
       } else if (act === 'echo-fill') {
         fillTavernInput(el.getAttribute('data-okh-cmd') || '')
       } else if (act === 'zoom-char') {

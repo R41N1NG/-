@@ -74,6 +74,24 @@
       ? '（旅店宿费欠账中：攒够 5 金自动结清；欠账期间暂不可在旅店执行实物赠礼/请酒）'
       : (world.flags?.inn_free_pass_today ? '（今晚旅店宿费已由爱德帮工抵免，免扣 5 金）' : '');
     lines.push('持有金币：' + gold + ' 金' + goldNote);
+    const adventure = root.OKH_APP_ADVENTURE;
+    const ps = world.playerState;
+    const rank = adventure.guilds[adventure.guildRank(world)];
+    if (ps && rank) {
+      lines.push('小队资质：' + rank.name + '，功绩 ' + ps.guild_merit);
+      const profession = root.OKH_APP_SKILLS.CLASSES[ps.currentClass];
+      lines.push('主职业：' + (profession?.name ?? '待定') + '，' + ps.tier + ' 阶' +
+        (ps.realmCap ? '，实战积淀 ' + ps.realmProgress + '/' + ps.realmCap : ''));
+      const skills = root.OKH_APP_SKILLS.getEquipped(world);
+      if (skills.length) lines.push('当前可用技能：' + skills.map(skill => skill.name + '（' + skill.desc + '）').join('、'));
+    }
+    const raid = world.ruinState?.current;
+    if (raid) {
+      lines.push('正在探索：' + raid.name + '。只有玩家提交【冒险】行动才会推进此处。');
+      if (raid.atmosphere && typeof raid.atmosphere === 'object') lines.push('周围环境：' + Object.values(raid.atmosphere).join('；'));
+      const room = raid.blocks[raid.currentBlockIndex];
+      if (room) lines.push('眼前区域：' + room.name + '。可选行动：' + adventure.roomOptions(world, raid).join('、'));
+    }
     const catalog = CFG.ITEM_CATALOG || {};
     const inv = Array.isArray(world.playerState?.inventory) ? world.playerState.inventory : [];
     const supplyEntry = inv.find(it => it && it.id === 'supply' && it.custom !== true);
@@ -115,12 +133,15 @@
         lines.push('爱丽丝线索摘要：' + sisterNote);
       }
     }
-    if (world.flags?.arrived_oakhaven && !DATA.isEileenFugitive(world)) {
+    if (!raid && world.flags?.arrived_oakhaven && ['wilds', 'wilds_camp'].includes(world.playerLocation)) {
+      lines.push('玩家在野外实战获胜后，可在 <status_bar> 申报一次 <combat_temper enemy_tier="1到4的单个数字"/>。后台核验位置和时间。');
+    }
+    if (!raid && world.flags?.arrived_oakhaven && !DATA.isEileenFugitive(world)) {
       const waitText = minutes => '冷却中（约 ' + Math.ceil(minutes / 60) + ' 小时）';
       const guildWait = DATA.workCooldownWait(world, 'lastGuildCommission', world.timeMin, 3);
       const guildStarts = DATA.recentGuildStarts(world, world.timeMin);
       if (DATA.paidWorkSettledToday(world)) lines.push('工作报酬：今天已结算一项，其他报酬须另日结算。');
-      lines.push('公会委托：' + (guildStarts.length >= 2 ? '近七天的两单均已用完' : guildWait > 0 ? waitText(guildWait) : '可接单（guild_normal 8 小时 / guild_high 24 小时）'));
+      lines.push('公会委托：' + (guildStarts.length >= 2 ? '近七天的两单均已用完' : guildWait > 0 ? waitText(guildWait) : rank?.meritReq >= 20 ? '可接单（guild_normal 8 小时 / guild_high 24 小时）' : '可接见习委托（guild_normal 8 小时）'));
       const cec = world.npcs?.cecilia;
       if (cec && cec.alive !== false && (cec.stage ?? 0) < 3) {
         const churchWait = DATA.workCooldownWait(world, 'lastChurchErrand', world.timeMin, 2);

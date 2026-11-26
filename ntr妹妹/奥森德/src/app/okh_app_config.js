@@ -40,8 +40,11 @@
       canMove: RULES.canMove,
       syncWorld,
       completeReply(world, before, command) {
+        if (!command.playerAction) root.OKH_APP_ADVENTURE.settleFieldCombat(world, before, command.front?.combatTemper)
         if (ECHO.completeReplay(world, before, command, ALBUM.findImage)) ALBUM.sync(world)
       },
+      applyPlayerAction: root.OKH_APP_ADVENTURE.apply,
+      afterTimeStep: root.OKH_APP_ADVENTURE.tick,
       applyTags: root.OKH_APP_TAGS.apply,
       isMetricLocked: RULES.isMetricLocked,
       onStageChange: RULES.onStageChange,
@@ -85,7 +88,7 @@
     isEileenFugitive: DATA.isEileenFugitive,
     ROSTER: DATA.ROSTER,
     buildConfig,
-    buildInitialWorld: DATA.buildInitialWorld,
+    buildInitialWorld: () => root.OKH_APP_ADVENTURE.initialize(DATA.buildInitialWorld()),
     migrateWorld: MIG.migrateWorld,
     settleTimeEffects: TIME.settleTimeEffects,
     applyPrologueSteps: RULES.applyPrologueSteps,

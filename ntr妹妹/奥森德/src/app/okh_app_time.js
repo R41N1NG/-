@@ -212,7 +212,6 @@
     } else if (sim.isnaAlive && sim.isnaStage === 2 && !sim.isnaCapturedOrc && !sim.isnaFallenOrc && !sim.isnaMudSealCleared) {
       sim.isnaMudDays += 1
       change.npcFlags.isnaMudDays = sim.isnaMudDays
-      change.npcFlags.isnaMudOutTonight = [3, 6, 9].includes(sim.isnaMudDays)
     }
     changes.push(change)
     sim.isnaWorked = false
@@ -503,7 +502,9 @@
       const kStart = Math.floor(fromMin / 1440) + 1
       const kEnd = Math.floor(toMin / 1440)
       for (let k = kStart; k <= kEnd; k++) {
-        settleInnNight(sim, k, changes)
+        if (world.ruinState?.current) {
+          changes.push({ target: 'world', worldFlags: { lastInnSettledDay: k, inn_free_pass_today: false } })
+        } else settleInnNight(sim, k, changes)
         const bloodIncreased = settleGulanNight(sim, k, changes)
         settleIsnaNight(sim, k, changes)
         settleNiseNight(sim, k, changes)
@@ -513,6 +514,17 @@
         settleEdNight(sim, k, changes, bloodIncreased)
         settleOtherNights(sim, k, changes)
         settleTownNight(sim, k, changes)
+      }
+    }
+    const isna = world.npcs?.isna
+    if (toMin > fromMin && isna?.stage === 2 && !isna.flags?.isnaMudSealCleared && !isna.flags?.isna_mud_hopeless_fled) {
+      const day = Math.floor(toMin / 1440)
+      const clock = toMin % 1440
+      const mudDay = (isna.flags?.isnaMudDays ?? 0) + day - Math.floor(fromMin / 1440)
+      const away = !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc &&
+        ((clock >= 1020 && [3, 6, 9].includes(mudDay)) || (clock < 360 && [3, 6, 9].includes(mudDay - 1)))
+      if (away !== Boolean(isna.flags?.isnaMudOutTonight)) {
+        changes.push({ target: 'isna', npcFlags: { isnaMudOutTonight: away } })
       }
     }
     if (shouldClearRoomTarget(world, fromMin, toMin)) {

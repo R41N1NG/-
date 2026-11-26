@@ -308,7 +308,7 @@
     if (world.tags !== undefined) {
       check(world.tags && typeof world.tags === 'object' && !Array.isArray(world.tags), '标签分区格式非法');
       for (const [npcId, tags] of Object.entries(world.tags)) {
-        check(own(world.npcs, npcId) && Array.isArray(tags) && tags.every(id) &&
+        check((npcId === 'player' || npcId === 'world' || own(world.npcs, npcId)) && Array.isArray(tags) && tags.every(id) &&
           new Set(tags).size === tags.length, '角色标签格式非法或 ID 重复');
       }
     }
@@ -1921,7 +1921,8 @@
         revision: command.revision,
         toMin: command.toMin,
         interactingIds: command.interactingIds ?? command.sceneIds ?? [],
-        front: command.front ?? null
+        front: command.front ?? null,
+        ...(command.playerAction ? { playerAction: command.playerAction } : {})
       });
 
       const previous = world.bg.receipts[command.id];
@@ -1938,14 +1939,22 @@
       u.check(u.minute(command.toMin) && command.toMin >= world.timeMin, '时间倒退须恢复检查点，不能直接减时钟');
 
       const state = u.clone(world);
-      const front = command.front || {};
+      const adventure = config.applyPlayerAction?.(state, command.playerAction, command.id);
+      const adventureClock = adventure || state.ruinState?.current;
+      const front = adventureClock ? {} : command.front || {};
+      const toMin = adventureClock ? state.timeMin + (adventure?.minutes ?? 0) : command.toMin;
       const blockedIds = initialBlockedIds(state, command, front);
+      const expedition = state.ruinState?.current;
+      for (const id of [...(expedition?.partyMembers ?? []), expedition?.escort]) {
+        if (id && u.own(state.npcs, id)) blockedIds.add(id);
+      }
+      if (adventure?.effects) effects.apply(state, null, adventure.effects, { blockedIds }, config);
       const fromMin = state.timeMin;
-      const workUntilMin = front.workUntilMin ?? command.toMin;
-      u.check(u.minute(workUntilMin) && workUntilMin >= fromMin && workUntilMin <= command.toMin, '工时区间超出本轮时间');
+      const workUntilMin = front.workUntilMin ?? toMin;
+      u.check(u.minute(workUntilMin) && workUntilMin >= fromMin && workUntilMin <= toMin, '工时区间超出本轮时间');
       const workWindow = { turnFromMin: fromMin, workUntilMin };
-      const timeline = collectTimeline(state, front, fromMin, command.toMin, config);
-      const report = { duplicate: false, released: [], actions: [] };
+      const timeline = collectTimeline(state, front, fromMin, toMin, config);
+      const report = { duplicate: false, released: [], actions: [], ...(adventure ? { adventure: adventure.message } : {}) };
 
       report.released.push(...activity.releaseExpiredOrdinary(state, config));
       if (timeline.has(fromMin)) applyBucket(state, timeline.get(fromMin), config, blockedIds, workWindow);
@@ -1954,11 +1963,11 @@
       const pendingTimes = [...timeline.keys()].filter(t => t > fromMin).sort((a, b) => a - b);
       let nextIdx = 0, steps = 0;
 
-      while (state.timeMin < command.toMin) {
+      while (state.timeMin < toMin) {
         u.check(++steps <= (config.maxSteps ?? 128), '时间推进过多，本次未提交任何变化');
         const boundary = u.phaseAt(state.timeMin, config).end;
         const nextReceipt = pendingTimes[nextIdx] ?? Infinity;
-        const next = Math.min(command.toMin, boundary, activity.nextDeadline(state, config), nextReceipt);
+        const next = Math.min(toMin, boundary, activity.nextDeadline(state, config), nextReceipt);
 
         const stepFrom = state.timeMin;
         if (config.timeEffects) {
@@ -1967,6 +1976,7 @@
           effects.apply(state, null, changes, { blockedIds }, config);
         }
         state.timeMin = next;
+        config.afterTimeStep?.(state, stepFrom);
 
         report.released.push(...activity.releaseExpiredOrdinary(state, config));
         if (next === nextReceipt) {
@@ -1986,6 +1996,8 @@
       }
 
       refresh(state, config, new Set(state.interactingIds), report);
+      const completion = adventure?.complete?.(state);
+      if (completion) effects.apply(state, null, completion, { blockedIds }, config);
       config.completeReply?.(state, world, command);
       state.bg.receipts[command.id] = signature;
       state.bg.revision++;
@@ -3743,6 +3755,7 @@
   }
 
   function equip(world, skillId, slotIndex = -1) {
+    u.check(isSafeLoadoutLocation(world), '请在旅店或营地调整技能')
     u.check(u.own(catalog, skillId), '装配技能 ID 未在词表注册：' + skillId)
     const ps = world.playerState ||= {}
     const learned = Array.isArray(ps.learnedSkills) ? ps.learnedSkills : []
@@ -3752,6 +3765,7 @@
     const pTier = Number.isInteger(ps.tier) ? ps.tier : 2
     u.check(pTier >= skill.tier, `阶位不足（当前 ${pTier} 阶，技能需求 ${skill.tier} 阶）`)
 
+    u.check(!skill.branch || CLASSES[ps.currentClass]?.branch === skill.branch, '该系别技能与主职不匹配')
     if (skill.reqClass) {
       u.check(ps.currentClass === skill.reqClass, `主职不匹配（需 ${skill.reqClass}）`)
     }
@@ -3759,6 +3773,7 @@
     const equipped = [...(Array.isArray(ps.equippedSkills) ? ps.equippedSkills : [])]
     if (equipped.includes(skillId)) return true // 已装配直接幂等
 
+    u.check(Number.isInteger(slotIndex) && slotIndex >= -1 && slotIndex <= equipped.length && slotIndex < MAX_EQUIPPED, '请依次使用空栏位')
     if (slotIndex >= 0 && slotIndex < equipped.length) {
       equipped[slotIndex] = skillId
     } else {
@@ -3770,7 +3785,13 @@
     return true
   }
 
+  function isSafeLoadoutLocation(world) {
+    return !world.ruinState?.current && (world.playerLocation === 'inn' ||
+      (world.playerLocation === 'wilds' && world.playerState?.campRestUntilMin > world.timeMin))
+  }
+
   function unequip(world, skillId) {
+    u.check(isSafeLoadoutLocation(world), '请在旅店或营地调整技能')
     const ps = world.playerState ||= {}
     const equipped = Array.isArray(ps.equippedSkills) ? ps.equippedSkills : []
     ps.equippedSkills = equipped.filter(id => id !== skillId)
@@ -3787,7 +3808,7 @@
     return list.map(id => catalog[id]).filter(Boolean)
   }
 
-  function checkAbility(world, abilityName, playerTier = 2) {
+  function checkAbility(world, abilityName, playerTier = world.playerState?.tier ?? 2) {
     const equipped = getEquipped(world)
     let maxVal = 0
     for (const sk of equipped) {
@@ -3821,6 +3842,7 @@
     getLearned,
     getEquipped,
     checkAbility,
+    isSafeLoadoutLocation,
     migrate
   })
 
@@ -4103,40 +4125,40 @@
   // 6. 核心密室与奖池配置 (30个，5:3:1 阶位分布)
   const sanctums = Object.freeze({
     // 二阶正规密室 (17个，产出 skill_scroll_t2)
-    sanc_t2_01: Object.freeze({ id: 'sanc_t2_01', name: '守灵偏厅·封印石棺', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
-    sanc_t2_02: Object.freeze({ id: 'sanc_t2_02', name: '采矿督工精铁暗柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
-    sanc_t2_03: Object.freeze({ id: 'sanc_t2_03', name: '古代药剂配制偏厅', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
-    sanc_t2_04: Object.freeze({ id: 'sanc_t2_04', name: '地底走私商暗格', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
-    sanc_t2_05: Object.freeze({ id: 'sanc_t2_05', name: '坍塌祭坛石台暗龛', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
-    sanc_t2_06: Object.freeze({ id: 'sanc_t2_06', name: '守备队长军资铁箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
-    sanc_t2_07: Object.freeze({ id: 'sanc_t2_07', name: '熔岩缝结晶储藏柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
-    sanc_t2_08: Object.freeze({ id: 'sanc_t2_08', name: '沼泽沉船防腐货箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
-    sanc_t2_09: Object.freeze({ id: 'sanc_t2_09', name: '古地宫齿轮密藏阁', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
-    sanc_t2_10: Object.freeze({ id: 'sanc_t2_10', name: '魔兽遗骸头骨暗槽', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
-    sanc_t2_11: Object.freeze({ id: 'sanc_t2_11', name: '前哨信使殉职石台', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
-    sanc_t2_12: Object.freeze({ id: 'sanc_t2_12', name: '古骑士佩剑陈列石桌', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
-    sanc_t2_13: Object.freeze({ id: 'sanc_t2_13', name: '深水涵洞密封铅盒', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 45, minHours: 12 }),
-    sanc_t2_14: Object.freeze({ id: 'sanc_t2_14', name: '迷宫暗门秘银小柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
-    sanc_t2_15: Object.freeze({ id: 'sanc_t2_15', name: '风化祭祀供奉石盆', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
-    sanc_t2_16: Object.freeze({ id: 'sanc_t2_16', name: '工兵爆破储藏暗室', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 50, minHours: 12 }),
-    sanc_t2_17: Object.freeze({ id: 'sanc_t2_17', name: '流亡学者遗留书箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
+    sanc_t2_01: Object.freeze({ id: 'sanc_t2_01', biome: 'crypt', name: '守灵偏厅·封印石棺', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_02: Object.freeze({ id: 'sanc_t2_02', biome: 'mine', name: '采矿督工精铁暗柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
+    sanc_t2_03: Object.freeze({ id: 'sanc_t2_03', biome: 'universal', name: '古代药剂配制偏厅', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
+    sanc_t2_04: Object.freeze({ id: 'sanc_t2_04', biome: 'universal', name: '地底走私商暗格', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
+    sanc_t2_05: Object.freeze({ id: 'sanc_t2_05', biome: 'universal', name: '坍塌祭坛石台暗龛', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_06: Object.freeze({ id: 'sanc_t2_06', biome: 'vault', name: '守备队长军资铁箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
+    sanc_t2_07: Object.freeze({ id: 'sanc_t2_07', biome: 'mine', name: '熔岩缝结晶储藏柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
+    sanc_t2_08: Object.freeze({ id: 'sanc_t2_08', biome: 'mire', name: '沼泽沉船防腐货箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 50, minHours: 12 }),
+    sanc_t2_09: Object.freeze({ id: 'sanc_t2_09', biome: 'vault', name: '古地宫齿轮密藏阁', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
+    sanc_t2_10: Object.freeze({ id: 'sanc_t2_10', biome: 'lair', name: '魔兽遗骸头骨暗槽', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_11: Object.freeze({ id: 'sanc_t2_11', biome: 'universal', name: '前哨信使殉职石台', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 45, minHours: 12 }),
+    sanc_t2_12: Object.freeze({ id: 'sanc_t2_12', biome: 'vault', name: '古骑士佩剑陈列石桌', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 50, minHours: 12 }),
+    sanc_t2_13: Object.freeze({ id: 'sanc_t2_13', biome: 'mire', name: '深水涵洞密封铅盒', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 45, minHours: 12 }),
+    sanc_t2_14: Object.freeze({ id: 'sanc_t2_14', biome: 'vault', name: '迷宫暗门秘银小柜', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 35, goldMax: 55, minHours: 12 }),
+    sanc_t2_15: Object.freeze({ id: 'sanc_t2_15', biome: 'universal', name: '风化祭祀供奉石盆', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 20, goldMax: 40, minHours: 12 }),
+    sanc_t2_16: Object.freeze({ id: 'sanc_t2_16', biome: 'mine', name: '工兵爆破储藏暗室', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 25, goldMax: 50, minHours: 12 }),
+    sanc_t2_17: Object.freeze({ id: 'sanc_t2_17', biome: 'universal', name: '流亡学者遗留书箱', tier: 2, scrollId: 'skill_scroll_t2', goldMin: 30, goldMax: 55, minHours: 12 }),
 
     // 三阶精锐宝库 (10个，产出 skill_scroll_t3)
-    sanc_t3_01: Object.freeze({ id: 'sanc_t3_01', name: '魔导动力核心舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 100, minHours: 14 }),
-    sanc_t3_02: Object.freeze({ id: 'sanc_t3_02', name: '沉沦灵堂大祭坛', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
-    sanc_t3_03: Object.freeze({ id: 'sanc_t3_03', name: '龙裔侍从石棺殿', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
-    sanc_t3_04: Object.freeze({ id: 'sanc_t3_04', name: '禁忌圣水贮藏池', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 90, minHours: 14 }),
-    sanc_t3_05: Object.freeze({ id: 'sanc_t3_05', name: '晶石共鸣控制台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 75, goldMax: 115, minHours: 14 }),
-    sanc_t3_06: Object.freeze({ id: 'sanc_t3_06', name: '深层领主藏宝暗厅', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
-    sanc_t3_07: Object.freeze({ id: 'sanc_t3_07', name: '受诅主教白银灵柩', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
-    sanc_t3_08: Object.freeze({ id: 'sanc_t3_08', name: '远古龙骨封印基座', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 85, goldMax: 125, minHours: 14 }),
-    sanc_t3_09: Object.freeze({ id: 'sanc_t3_09', name: '相位重叠秘宝舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 90, goldMax: 130, minHours: 14 }),
-    sanc_t3_10: Object.freeze({ id: 'sanc_t3_10', name: '古代试炼宗师石台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
+    sanc_t3_01: Object.freeze({ id: 'sanc_t3_01', biome: 'arcane', name: '魔导动力核心舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 100, minHours: 14 }),
+    sanc_t3_02: Object.freeze({ id: 'sanc_t3_02', biome: 'crypt', name: '沉沦灵堂大祭坛', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
+    sanc_t3_03: Object.freeze({ id: 'sanc_t3_03', biome: 'crypt', name: '龙裔侍从石棺殿', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
+    sanc_t3_04: Object.freeze({ id: 'sanc_t3_04', biome: 'universal', name: '禁忌圣水贮藏池', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 60, goldMax: 90, minHours: 14 }),
+    sanc_t3_05: Object.freeze({ id: 'sanc_t3_05', biome: 'arcane', name: '晶石共鸣控制台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 75, goldMax: 115, minHours: 14 }),
+    sanc_t3_06: Object.freeze({ id: 'sanc_t3_06', biome: 'universal', name: '深层领主藏宝暗厅', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
+    sanc_t3_07: Object.freeze({ id: 'sanc_t3_07', biome: 'crypt', name: '受诅主教白银灵柩', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 70, goldMax: 110, minHours: 14 }),
+    sanc_t3_08: Object.freeze({ id: 'sanc_t3_08', biome: 'universal', name: '远古龙骨封印基座', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 85, goldMax: 125, minHours: 14 }),
+    sanc_t3_09: Object.freeze({ id: 'sanc_t3_09', biome: 'arcane', name: '相位重叠秘宝舱', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 90, goldMax: 130, minHours: 14 }),
+    sanc_t3_10: Object.freeze({ id: 'sanc_t3_10', biome: 'universal', name: '古代试炼宗师石台', tier: 3, scrollId: 'skill_scroll_t3', goldMin: 80, goldMax: 120, minHours: 14 }),
 
     // 四阶宗师秘殿 (3个，产出 skill_scroll_t4)
-    sanc_t4_01: Object.freeze({ id: 'sanc_t4_01', name: '龙语泰坦熔炉王座', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 250, goldMax: 350, minHours: 16 }),
-    sanc_t4_02: Object.freeze({ id: 'sanc_t4_02', name: '陨落龙骑士地下灵宫', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 280, goldMax: 380, minHours: 16 }),
-    sanc_t4_03: Object.freeze({ id: 'sanc_t4_03', name: '古代皇家星穹秘宝库', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 300, goldMax: 400, minHours: 16 })
+    sanc_t4_01: Object.freeze({ id: 'sanc_t4_01', biome: 'mine', name: '龙语泰坦熔炉王座', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 250, goldMax: 350, minHours: 16 }),
+    sanc_t4_02: Object.freeze({ id: 'sanc_t4_02', biome: 'crypt', name: '陨落龙骑士地下灵宫', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 280, goldMax: 380, minHours: 16 }),
+    sanc_t4_03: Object.freeze({ id: 'sanc_t4_03', biome: 'universal', name: '古代皇家星穹秘宝库', tier: 4, scrollId: 'skill_scroll_t4', goldMin: 300, goldMax: 400, minHours: 16 })
   })
 
   // 7. 三大固定核心遗迹完整拓扑定义
@@ -4201,176 +4223,82 @@
     })
   })
 
-  // 8. 辅助过滤函数
-  function getAvailableBiomes(tier) {
-    const list = ['biome_narrow_mine', 'biome_toxic_mire', 'biome_trap_vault', 'biome_living_lair']
-    if (tier >= 3) {
-      list.push('biome_arcane_grid', 'biome_undead_crypt')
-    }
-    return list
+  const biomeKeys = {
+    biome_narrow_mine: 'mine', biome_toxic_mire: 'mire', biome_trap_vault: 'vault',
+    biome_living_lair: 'lair', biome_arcane_grid: 'arcane', biome_undead_crypt: 'crypt'
   }
 
-  function pickRandom(arr, rng) {
-    if (!arr || !arr.length) return null
-    const idx = rng ? Math.floor(rng() * arr.length) : Math.floor(Math.random() * arr.length)
-    return arr[Math.min(idx, arr.length - 1)]
-  }
+  const pick = (list, rng) => list[Math.floor(rng() * list.length)]
 
-  // 9. 组装流水线 (assemble)
-  function assemble(opts = {}) {
-    if (opts.coreId && coreRuins[opts.coreId]) {
-      const core = coreRuins[opts.coreId]
-      return {
-        instanceId: `ruin_core_${opts.coreId}_${Date.now()}`,
-        id: core.id,
-        name: core.name,
-        tier: core.tier,
-        partyLimit: core.partyLimit,
-        partyMembers: Array.isArray(opts.partyMembers) ? opts.partyMembers : [],
-        escort: core.escort,
-        minDurationHours: core.minDurationHours,
-        merit: core.merit,
-        gold: core.gold,
-        scrollId: core.scrollId,
-        resonance: core.resonance,
-        atmosphere: core.name,
-        currentBlockIndex: 0,
-        cleared: false,
-        blocks: core.blocks.map((b, i) => ({ ...b, index: i }))
-      }
+  function assemble({ coreId, tier = 2, biome, partyLimit, rng = Math.random, key = 'preview' } = {}) {
+    if (coreId) {
+      u.check(u.own(coreRuins, coreId), '未知核心遗迹')
+      const core = coreRuins[coreId]
+      return { ...core, instanceId: key, atmosphere: core.name, blocks: core.blocks.map(block => ({ ...block })) }
     }
-
-    const tier = Number.isInteger(opts.tier) ? opts.tier : 2
-    const rng = typeof opts.rng === 'function' ? opts.rng : null
-
-    // 1. 生态准入过滤
-    const availBiomes = getAvailableBiomes(tier)
-    const biomeId = (opts.biome && availBiomes.includes(opts.biome)) ? opts.biome : pickRandom(availBiomes, rng)
-    const biomeData = biomes[biomeId]
-    const shortBiome = biomeId.replace('biome_', '').replace('_mine', '').replace('_mire', '').replace('_vault', '').replace('_lair', '').replace('_grid', '').replace('_crypt', '')
-
-    // 2. 队伍准入上限 (随机遗迹上限 2 ~ 4 人)
-    const partyLimit = Number.isInteger(opts.partyLimit)
-      ? opts.partyLimit
-      : (rng ? Math.floor(rng() * 3) + 2 : Math.floor(Math.random() * 3) + 2)
-
-    // 3. 区块数量与时长下限
-    const blockCount = tier === 2 ? 4 : (rng ? Math.floor(rng() * 2) + 5 : 5)
-    const minDurationHours = blockCount === 4 ? 36 : (blockCount === 5 ? 48 : 64)
-
-    // 4. 定点插槽装配
-    // Slot 1: Entrance
-    const entList = Object.values(entrances).filter(e => e.biome === shortBiome || e.biome === 'universal')
-    const ent = pickRandom(entList, rng) || entrances.ent_mine_01
-
-    // Slot 2: Obstacle
-    const obsList = Object.values(obstacles).filter(o => o.tier <= tier && (o.biome === shortBiome || o.biome === 'universal'))
-    const obs = pickRandom(obsList, rng) || obstacles.obs_mine_gas
-
-    // Slot 3: Combat
-    const mobList = Object.values(combats).filter(m => m.enemyTier === tier)
-    const mob = pickRandom(mobList, rng) || combats.mob_t2_mine_golem
-
-    // Slot 4: Branch
-    const brList = Object.values(branches).filter(b => b.biome === shortBiome)
-    const br = pickRandom(brList, rng) || branches.br_mine_01
-
-    // Slot N: Sanctum
-    const sancList = Object.values(sanctums).filter(s => s.tier === tier)
-    const sanc = pickRandom(sancList, rng) || sanctums.sanc_t2_01
-
-    const assembledBlocks = [
-      { index: 0, type: 'entrance', id: ent.id, name: ent.name, minHours: ent.minHours },
-      { index: 1, type: 'obstacle', id: obs.id, name: obs.name, minHours: obs.minHours, reqAbility: obs.reqAbility, reqDc: obs.reqDc },
-      { index: 2, type: 'combat', id: mob.id, name: mob.name, minHours: 10, enemyTier: mob.enemyTier, tactics: mob.tactics }
+    u.check([2, 3, 4].includes(tier), '遗迹阶位须为 II 至 IV')
+    const available = Object.values(biomes).filter(item => item.minTier <= tier)
+    const habitat = available.find(item => item.id === biome) || pick(available, rng)
+    const habitatKey = biomeKeys[habitat.id]
+    const matches = item => item.biome === habitatKey || item.biome === 'universal'
+    partyLimit ??= 2 + Math.floor(rng() * 3)
+    u.check([2, 3, 4].includes(partyLimit), '遗迹人数须为 2 至 4')
+    const blockCount = (tier === 2 ? 4 : 5) + Math.floor(rng() * 2)
+    const minDurationHours = { 4: 36, 5: 48, 6: 64 }[blockCount]
+    const entrance = pick(Object.values(entrances).filter(matches), rng)
+    const hazards = Object.values(obstacles).filter(item => item.tier <= tier && matches(item))
+    const obstacle = pick(hazards, rng)
+    const guard = pick(Object.values(combats).filter(item => item.enemyTier === Math.min(tier, 3) && matches(item)), rng)
+    const branch = pick(Object.values(branches).filter(matches), rng)
+    const sanctum = pick(Object.values(sanctums).filter(item => item.tier === tier && matches(item)), rng)
+    const blocks = [
+      { ...entrance, type: 'entrance' },
+      { ...obstacle, type: 'obstacle' },
+      { ...guard, type: 'combat', minHours: 10, enemyTier: tier, name: tier === 4 ? guard.name + '·宗师级' : guard.name }
     ]
-
-    if (blockCount >= 5) {
-      assembledBlocks.push({ index: 3, type: 'branch', id: br.id, name: br.name, minHours: br.minHours })
-    }
-    if (blockCount >= 6) {
-      const extraObs = pickRandom(obsList.filter(o => o.id !== obs.id), rng) || obstacles.obs_universal_puzzle
-      assembledBlocks.push({ index: 4, type: 'obstacle', id: extraObs.id, name: extraObs.name, minHours: extraObs.minHours, reqAbility: extraObs.reqAbility, reqDc: extraObs.reqDc })
-    }
-
-    assembledBlocks.push({ index: assembledBlocks.length, type: 'sanctum', id: sanc.id, name: sanc.name, minHours: sanc.minHours, tier: sanc.tier, scrollId: sanc.scrollId })
-
+    if (blockCount >= 5) blocks.push({ ...branch, type: 'branch' })
+    if (blockCount >= 6) blocks.push({ ...pick(hazards.filter(item => item.id !== obstacle.id), rng), type: 'obstacle' })
+    const hours = blocks.reduce((sum, block) => sum + block.minHours, 0)
+    blocks.push({ ...sanctum, type: 'sanctum', minHours: Math.max(sanctum.minHours, minDurationHours - hours) })
     return {
-      instanceId: `ruin_${Date.now()}_${tier}`,
-      tier,
-      biome: biomeId,
-      partyLimit,
-      partyMembers: Array.isArray(opts.partyMembers) ? opts.partyMembers : [],
-      atmosphere: biomeData.atmosphere,
-      minDurationHours,
-      currentBlockIndex: 0,
-      cleared: false,
-      blocks: assembledBlocks
+      instanceId: key, name: habitat.name, tier, biome: habitat.id, partyLimit,
+      atmosphere: habitat.atmosphere, minDurationHours, blocks,
+      merit: tier === 2 ? 15 : 10,
+      gold: sanctum.goldMin + Math.floor(rng() * (sanctum.goldMax - sanctum.goldMin + 1)),
+      scrollId: sanctum.scrollId
     }
   }
 
-  // 10. 事务性探险接口
-  function enter(world, ruinInstance, partyMembers = []) {
-    u.check(ruinInstance && Array.isArray(ruinInstance.blocks), '无效遗迹实例')
+  function enter(world, instance, partyMembers = []) {
     const rs = world.ruinState ||= { current: null, clearedCores: [] }
-    u.check(!rs.current, '已处于探险中，不可重复进入')
-
-    const pLimit = ruinInstance.partyLimit || 4
-    const validMembers = Array.isArray(partyMembers) ? partyMembers.slice(0, pLimit) : []
-    ruinInstance.partyMembers = validMembers
-    ruinInstance.currentBlockIndex = 0
-    ruinInstance.elapsedHours = 0
-    ruinInstance.startMin = world.timeMin || 0
-    rs.current = ruinInstance
-    return true
+    u.check(!rs.current, '已在遗迹中')
+    u.check(instance.blocks?.length && !rs.clearedCores.includes(instance.id), '遗迹无效或已首通')
+    u.check(partyMembers.length < instance.partyLimit && new Set(partyMembers).size === partyMembers.length, '随行名单重复或超过名额')
+    u.check(partyMembers.every(id => id !== instance.escort), '古兰作为领路人随行，无需占用名额')
+    rs.current = { ...instance, partyMembers: [...partyMembers], currentBlockIndex: 0, elapsedHours: 0 }
   }
 
-  function advance(world, choice = {}) {
-    const rs = world?.ruinState
-    u.check(rs && rs.current, '当前未处于遗迹探险中')
-    const cur = rs.current
-    const blocks = cur.blocks || []
-    const idx = cur.currentBlockIndex || 0
-    u.check(idx < blocks.length, '遗迹已推进至终点')
+  function advance(world, verdict) {
+    const cur = world.ruinState?.current
+    u.check(cur && !cur.cleared, '当前没有可推进的遗迹')
+    u.check(verdict && Number.isSafeInteger(verdict.hours) && verdict.hours > 0 &&
+      typeof verdict.passed === 'boolean', '须由后台判定房间结果')
+    cur.elapsedHours += verdict.hours
+    if (verdict.passed) cur.currentBlockIndex++
+    cur.cleared = cur.currentBlockIndex === cur.blocks.length
+    return cur.cleared
+  }
 
-    const block = blocks[idx]
-    const hours = block.minHours || 8
-    cur.elapsedHours = (cur.elapsedHours || 0) + hours
-
-    // 动态口粮扣除（跨 24 小时或跨午夜）
-    const actualPartySize = 1 + (cur.partyMembers ? cur.partyMembers.length : 0) + (cur.escort ? 1 : 0)
-    const prevDays = Math.floor(((cur.elapsedHours - hours)) / 24)
-    const nextDays = Math.floor(cur.elapsedHours / 24)
-    if (nextDays > prevDays) {
-      const daysPassed = nextDays - prevDays
-      const supplyCost = daysPassed * actualPartySize
-      const inv = world.playerState?.inventory
-      if (Array.isArray(inv)) {
-        const item = inv.find(i => i.id === 'supply')
-        if (item) {
-          item.count = Math.max(0, item.count - supplyCost)
-        }
-      }
-    }
-
-    cur.currentBlockIndex = idx + 1
-    if (cur.currentBlockIndex >= blocks.length) {
-      cur.cleared = true
-      if (cur.id && coreRuins[cur.id]) {
-        rs.clearedCores ||= []
-        if (!rs.clearedCores.includes(cur.id)) rs.clearedCores.push(cur.id)
-      }
-    }
-    return { cleared: cur.cleared, nextBlockIndex: cur.currentBlockIndex }
+  function finish(world) {
+    const cur = world.ruinState?.current
+    u.check(cur?.cleared, '未完成遗迹')
+    if (cur.id) world.ruinState.clearedCores.push(cur.id)
+    world.ruinState.current = null
   }
 
   function retreat(world) {
-    const rs = world?.ruinState
-    if (rs && rs.current) {
-      rs.current = null
-      return true
-    }
-    return false
+    u.check(world.ruinState?.current, '当前不在遗迹中')
+    world.ruinState.current = null
   }
 
   function getStatus(world) {
@@ -4415,6 +4343,7 @@
     enter,
     advance,
     retreat,
+    finish,
     getStatus,
     migrate
   })
@@ -6246,20 +6175,19 @@
         if (npc.stage !== 2 || npc.flags?.captured_orc || npc.flags?.isna_fallen_orc || npc.flags?.isnaMudSealCleared) return false
         const mudDays = npc.flags?.isnaMudDays ?? 0
         const count = npc.flags?.isnaMudSpyCount ?? 0
-        const dueCycles = Math.min(3, Math.floor(mudDays / 3))
-        if (dueCycles <= count) return false
-        const exactCycleDay = mudDays === (count + 1) * 3
-        return !exactCycleDay || ['night', 'deep_night'].includes(phase.id)
+        return npc.flags?.isnaMudOutTonight && phase.id === 'night' &&
+          [3, 6, 9].includes(mudDays) && Math.floor(mudDays / 3) > count
       },
       effects: ({ world, npc }) => {
         const count = (npc.flags?.isnaMudSpyCount ?? 0) + 1
         const positions = ['悬空架腿后入', '兽皮榻跪趴轮换后入', '按压双膝深顶灌注']
         const volumes = [55, 65, 75]
         return {
-          npcFlags: { isnaMudSpyCount: count },
+          npcFlags: { isnaMudSpyCount: count, isnaMudLastReportDay: npc.flags.isnaMudDays },
           dossierAdd: [{
             npc: 'isna',
             at: world.timeMin,
+            location: 'wilds_camp',
             type: 'encounter',
             parts: ['vagina'],
             penetrative: true,
@@ -6340,7 +6268,7 @@
         !npc.flags?.isnaMudOutTonight &&
         !npc.flags?.isnaMudTruthKnown &&
         (npc.flags?.isnaMudProbeCount ?? 0) === 1 &&
-        Math.floor((npc.flags?.isnaMudDays ?? 0) / 3) > Math.floor((npc.flags?.isnaMudFirstProbeDay ?? 0) / 3) &&
+        (npc.flags?.isnaMudLastReportDay ?? (npc.flags?.isnaMudSpyCount ?? 0) * 3) > (npc.flags?.isnaMudFirstProbeDay ?? 0) &&
         ['night', 'deep_night'].includes(phase.id) &&
         world.playerLocation === 'inn' &&
         npc.location === 'inn' &&
@@ -8390,6 +8318,475 @@
 
 ;
 /**
+ * @module okh_app_adventure
+ * @updated 2026-11-26
+ * @status active
+ * @reason 在聊天回合事务内裁决探险、功绩、境界与技能，并复用物品和时间结算
+ * @deps OKHBackgroundModules.utils, OKH_APP_DATA, OKH_APP_RUINS, OKH_APP_SKILLS, OKH_APP_TAGS
+ */
+(function (root) {
+  'use strict'
+  const u = root.OKHBackgroundModules.utils
+  const DATA = root.OKH_APP_DATA
+  const RUINS = root.OKH_APP_RUINS
+  const SKILLS = root.OKH_APP_SKILLS
+  const TAGS = root.OKH_APP_TAGS
+  const guilds = Object.values(TAGS.catalog).filter(tag => tag.category === 'guild')
+  const companionClasses = {
+    gulan: 'class_heavy_vanguard4', isna: 'class_scout_stealth3',
+    nise: 'class_arcane_blast2', aurora: 'class_holy_heal2',
+    cecilia: 'class_holy_heal3', eileen: 'class_shield_guard3'
+  }
+  const scoutAbilities = { 侦查: 1, 潜行: 1 }
+  const classAbilities = {
+    class_scout_stealth: scoutAbilities,
+    class_trap_breaker: { 开锁: 1, 拆陷: 1 },
+    class_assassin: { 潜行: 1 },
+    class_rune_decode: { 辨识: 1, 拆陷: 1 },
+    class_holy_heal: { 治疗: 1 },
+    class_purify_ward: { 治疗: 1 },
+    class_heavy_vanguard: { 破障: 1 },
+    class_bombardier: { 破障: 1 },
+    class_arcane_blast: { 破障: 1 },
+    class_elixir_alchemist: { 治疗: 1 }
+  }
+  const sleepTags = ['status_sleep_light', 'status_sleep_deep', 'status_sleep_comatose']
+  const medicine = {
+    antidote: ['debuff_poisoned'], healing_salve: ['debuff_bleeding'],
+    paralysis_cure: ['debuff_paralyzed'], purify_vial: ['debuff_exhausted'],
+    smelling_salts: sleepTags.slice(0, 2)
+  }
+
+  const tagsOf = (world, id) => world.tags?.[id] || []
+  const supply = world => countOf(world, 'supply')
+  const countOf = (world, id) => world.playerState.inventory?.find(item => item?.custom !== true && item?.id === id)?.count || 0
+  const guildRank = world => guilds.findLastIndex(tag => (world.playerState?.guild_merit ?? 0) >= tag.meritReq)
+  const safe = SKILLS.isSafeLoadoutLocation
+  const crew = raid => ['player', ...raid.partyMembers, ...(raid.escort ? [raid.escort] : [])]
+
+  function syncRanks(world) {
+    const ps = world.playerState
+    const guild = guilds[guildRank(world)]
+    const classTag = ps.currentClass + ps.tier
+    const active = [guild.id, classTag]
+    const old = TAGS.list(world, 'player').filter(tag => ['class', 'guild'].includes(tag.category) && !active.includes(tag.id))
+    TAGS.apply(world, 'player', active, old.map(tag => tag.id))
+  }
+
+  function gain(world, { merit = 0, enemyTier, source }) {
+    const ps = world.playerState
+    ps.guild_merit += merit
+    if (Number.isInteger(enemyTier) && ps.tier < 4) {
+      const points = ps.tier === 3
+        ? (enemyTier >= 4 ? 4 : enemyTier === 3 ? 2 : 0)
+        : enemyTier >= 3 || source === 'core' ? 3 : (source === 'field' ? 1 : 2)
+      ps.realmProgress = Math.min(ps.realmCap, ps.realmProgress + points)
+      if (ps.realmProgress >= ps.realmCap && world.timeMin >= (ps.realmCooldownUntilMin ?? 0)) {
+        ps.tier++
+        ps.realmProgress = 0
+        ps.realmCap = ps.tier === 3 ? 60 : 0
+        ps.realmCooldownUntilMin = world.timeMin + (ps.tier === 3 ? 5 : 0) * 1440
+        ps.lastRealmAdvanceMin = world.timeMin
+      }
+    }
+    syncRanks(world)
+  }
+
+  function initialize(world) {
+    const ps = world.playerState ||= {}
+    ps.tier = [2, 3, 4].includes(ps.tier) ? ps.tier : 2
+    ps.currentClass = u.own(SKILLS.CLASSES, ps.currentClass) ? ps.currentClass : 'class_shield_guard'
+    ps.guild_merit = Number.isSafeInteger(ps.guild_merit) && ps.guild_merit >= 0 ? ps.guild_merit : 0
+    ps.realmProgress = Number.isSafeInteger(ps.realmProgress) && ps.realmProgress >= 0 ? ps.realmProgress : 0
+    ps.realmCap = { 2: 30, 3: 60, 4: 0 }[ps.tier]
+    SKILLS.migrate(world)
+    RUINS.migrate(world)
+    syncRanks(world)
+    ps.adventureVersion = 1
+    return world
+  }
+
+  function chooseClass(world, id) {
+    const ps = world.playerState
+    u.check(u.own(SKILLS.CLASSES, id), '未知主职业')
+    u.check(!ps.classChosen && ps.tier === 2 && !ps.realmProgress && !world.ruinState?.current, '主职业已定或已开始实战修行')
+    const cls = SKILLS.CLASSES[id]
+    const skills = Object.values(SKILLS.catalog)
+    const starter = skills.find(skill => skill.branch === cls.branch) || SKILLS.catalog.skill_first_aid
+    const specialty = skills.find(skill => skill.reqClass === id && skill.tier <= 2)
+    ps.currentClass = id
+    ps.classChosen = true
+    ps.equippedSkills = [starter.id, (specialty || SKILLS.catalog.skill_basic_breach).id]
+    for (const skillId of ps.equippedSkills) SKILLS.learn(world, skillId)
+    syncRanks(world)
+  }
+
+  function isAvailable(world, id) {
+    const npc = world.npcs[id]
+    return npc?.monitored === true && npc.alive !== false && (npc.stage ?? 0) < 3 &&
+      ['inn', 'town', 'wilds'].includes(npc.location) &&
+      !npc.flags?.captured_orc && !npc.flags?.captured_manor && !npc.flags?.gulan_departed &&
+      !npc.flags?.isna_captured_ed && !npc.flags?.isnaMudOutTonight && !npc.flags?.nise_fled_casino &&
+      !(npc.activity && npc.activity.kind !== 'ordinary')
+  }
+
+  function members(world, raid) {
+    return ['player', ...raid.partyMembers.filter(id => isAvailable(world, id))].filter(id =>
+      !tagsOf(world, id).some(tag => sleepTags.includes(tag)))
+  }
+
+  function effectiveTier(world, id) {
+    const tags = tagsOf(world, id)
+    const professions = TAGS.list(world, id).filter(tag => tag.category === 'class')
+    const fallback = TAGS.catalog[companionClasses[id]]?.tier ?? 1
+    const tier = id === 'player' ? world.playerState.tier : Math.max(fallback, ...professions.map(tag => tag.tier))
+    return Math.max(1, tier - Number(tags.includes('debuff_heavy_wound')))
+  }
+
+  function ability(world, id, name) {
+    const tags = tagsOf(world, id)
+    if (tags.includes('debuff_heavy_wound') || tags.includes('debuff_paralyzed')) return 0
+    if (id === 'player') return SKILLS.checkAbility(world, name)
+    const professions = TAGS.list(world, id).filter(tag => tag.category === 'class')
+    const fallback = TAGS.catalog[companionClasses[id]]
+    if (fallback && professions.length === 0) professions.push(fallback)
+    return Math.max(0, ...professions.map(tag =>
+      classAbilities[tag.id.replace(/[1-5]$/, '')]?.[name] ? tag.tier : 0))
+  }
+
+  function roomOptions(world, raid) {
+    const block = raid.blocks[raid.currentBlockIndex]
+    if (!block) return []
+    if (raid.shortage || tagsOf(world, 'player').some(tag => sleepTags.includes(tag))) return ['撤退']
+    const ids = members(world, raid)
+    const best = name => Math.max(0, ...ids.map(id => ability(world, id, name)))
+    if (block.type === 'entrance') return ['前进', '撤退']
+    if (block.type === 'obstacle') return [
+      ...(best(block.reqAbility) >= block.reqDc || (block.altAbility && best(block.altAbility) >= (block.altDc ?? block.reqDc)) ? ['巧解'] : ['硬闯']),
+      '绕行', '撤退'
+    ]
+    if (block.type === 'branch') return ['险路', '绕行', '撤退']
+    if (block.type === 'sanctum') return ['开启', '撤退']
+    const top = Math.max(0, ...ids.map(id => effectiveTier(world, id)))
+    const front = ids.some(id => !tagsOf(world, id).includes('debuff_paralyzed') &&
+      (id === 'player' ? SKILLS.getEquipped(world).some(skill => skill.tag === '前排护卫稳固') ||
+        SKILLS.CLASSES[world.playerState.currentClass]?.branch === 'paladin'
+        : TAGS.list(world, id).some(tag => /^class_(shield_guard|heavy_vanguard|devotion_paladin)/.test(tag.id)) ||
+          /^class_(shield_guard|heavy_vanguard|devotion_paladin)/.test(companionClasses[id] || '')))
+    return [
+      ...(top > block.enemyTier || (top === block.enemyTier && (!block.tactics?.reqFrontline || front)) ? ['交锋'] : []),
+      ...(top >= block.enemyTier - 1 ? ['周旋'] : []),
+      ...(best('潜行') >= block.enemyTier ? ['潜行'] : []),
+      '撤退'
+    ]
+  }
+
+  function randomFor(key) {
+    let state = 2166136261
+    for (const char of key) state = Math.imul(state ^ char.charCodeAt(0), 16777619)
+    return () => {
+      state = (state + 0x6D2B79F5) | 0
+      let value = Math.imul(state ^ state >>> 15, state | 1)
+      value ^= value + Math.imul(value ^ value >>> 7, value | 61)
+      return ((value ^ value >>> 14) >>> 0) / 4294967296
+    }
+  }
+
+  function open(world, site, ids, key) {
+    u.check(world.flags?.arrived_oakhaven && world.playerLocation === 'wilds' && !DATA.isEileenFugitive(world), '请在抵镇后从城外荒原进入遗迹')
+    const tier = Number(site)
+    const opts = [2, 3, 4].includes(tier) ? { tier } : { coreId: site }
+    const raid = RUINS.assemble({ ...opts, key, rng: randomFor(key) })
+    u.check(guildRank(world) >= raid.tier, '当前公会阶位不足')
+    u.check(!tagsOf(world, 'player').some(tag => tag === 'debuff_starving' || sleepTags.includes(tag)), '请先休整再进入遗迹')
+    u.check(ids.every(id => isAvailable(world, id)), '随行者当前无法出发')
+    if (!isAvailable(world, raid.escort)) raid.escort = null
+    u.check(supply(world) >= 1 + ids.length + Number(Boolean(raid.escort)), '补给不足一日用量')
+    if (!raid.id) {
+      const recent = DATA.recentGuildStarts(world, world.timeMin)
+      u.check(recent.length < DATA.WORK_LIMITS.guildStarts && !DATA.workCooldownWait(world, 'lastGuildCommission', world.timeMin, DATA.WORK_LIMITS.guildCooldownDays), '公会委托额度未恢复')
+      const start = world.timeMin
+      Object.assign(world.flags, {
+        lastGuildCommissionDay: Math.floor(start / 1440) + 1, lastGuildCommissionStartMin: start,
+        guildCommissionStarts: [...recent, start]
+      })
+    }
+    RUINS.enter(world, raid, ids)
+    for (const id of crew(world.ruinState.current).slice(1)) world.npcs[id].location = 'wilds'
+    return { message: '已进入' + raid.name }
+  }
+
+  function wound(world, id) {
+    const tags = tagsOf(world, id)
+    if (tags.includes('debuff_heavy_wound')) return
+    const light = tags.includes('debuff_light_wound')
+    TAGS.apply(world, id, [light ? 'debuff_heavy_wound' : 'debuff_light_wound'], light ? ['debuff_light_wound'] : [])
+  }
+
+  function hardPassChance(gap) {
+    return gap <= 0 ? 1 : Math.max(0.15, 0.75 - 0.25 * (gap - 1))
+  }
+
+  function payRations(world, raid, days) {
+    const party = crew(raid).filter(id => id === 'player' || isAvailable(world, id))
+    const stock = supply(world)
+    const required = party.length * days
+    if (stock < required) {
+      raid.shortage = true
+      for (const id of party) TAGS.apply(world, id, ['debuff_starving'])
+    }
+    const spent = Math.min(stock, required)
+    return spent ? [{ target: 'world', itemsRemove: [{ id: 'supply', count: spent }] }] : []
+  }
+
+  function explore(world, choice, key) {
+    const raid = world.ruinState?.current
+    u.check(raid, '当前不在遗迹中')
+    if (choice === '撤退') {
+      RUINS.retreat(world)
+      return { message: '已撤出遗迹' }
+    }
+    const block = raid.blocks[raid.currentBlockIndex]
+    const options = roomOptions(world, raid)
+    if (choice === '自动') {
+      // 自动只处理没有分岔、剧情密室或均势战的安全节点。
+      const safeFight = block?.type === 'combat' && Math.max(0, ...members(world, raid).map(id => effectiveTier(world, id))) > block.enemyTier
+      choice = options.includes('前进') ? '前进' : options.includes('巧解') ? '巧解' : safeFight && options.includes('交锋') ? '交锋' : null
+    }
+    u.check(choice && options.includes(choice), '当前可用行动：' + options.join('、'))
+    const rng = randomFor(key)
+    const penalty = choice === '绕行' ? 4 : ['硬闯', '周旋'].includes(choice) ? 2 : 0
+    const hours = block.minHours + penalty
+    const days = Math.floor((world.timeMin + hours * 60) / 1440) - Math.floor(world.timeMin / 1440)
+    const effects = payRations(world, raid, days)
+    let passed = !raid.shortage
+    if (passed && choice === '硬闯') {
+      const best = name => Math.max(0, ...members(world, raid).map(id => ability(world, id, name)))
+      const gap = Math.min(block.reqDc - best(block.reqAbility), block.altAbility ? (block.altDc ?? block.reqDc) - best(block.altAbility) : Infinity)
+      passed = rng() < hardPassChance(gap)
+      wound(world, 'player')
+    } else if (passed && choice === '周旋') {
+      wound(world, 'player')
+    } else if (passed && choice === '险路') {
+      const scout = Math.max(0, ...members(world, raid).map(id => ability(world, id, '侦查')))
+      if (scout >= raid.tier) effects.push({ target: 'world', itemsAdd: ['supply'] })
+      else wound(world, 'player')
+    }
+    const cleared = RUINS.advance(world, { hours, passed })
+    const victory = passed && choice === '交锋' && block.type === 'combat'
+    return {
+      minutes: hours * 60, effects,
+      message: raid.shortage ? '补给耗尽，队伍只能撤退' : passed ? block.name + '：' + choice + '成功' : block.name + '：硬闯未通过',
+      complete(state) {
+        if (victory && !raid.temperedBlocks?.includes(block.id)) {
+          (raid.temperedBlocks ||= []).push(block.id)
+          gain(state, { enemyTier: block.enemyTier, source: 'ruin' })
+        }
+        if (cleared) {
+          gain(state, { merit: raid.merit, enemyTier: raid.id ? raid.tier : undefined, source: 'core' })
+          RUINS.finish(state)
+          const rewards = [{ target: 'world', goldDelta: raid.gold, itemsAdd: raid.scrollId ? [raid.scrollId] : [] }]
+          if (raid.resonance && raid.escort && isAvailable(state, raid.escort)) {
+            rewards.push({ target: raid.resonance.target, add: { blood_density: raid.resonance.bloodDelta } })
+          }
+          return rewards
+        }
+      }
+    }
+  }
+
+  function use(world, item, target, key) {
+    u.check(target === 'player' || world.npcs[target]?.location === world.playerLocation && world.npcs[target].alive !== false, '只能对自己或同地点的存活角色用药')
+    u.check(u.own(medicine, item) || ['sleeping_draught', 'supply'].includes(item), '未知药剂')
+    u.check(countOf(world, item) >= 1, '背包里没有该药剂')
+    if (item === 'sleeping_draught') {
+      TAGS.apply(world, target, ['status_sleep_comatose'], sleepTags.slice(0, 2))
+      ;(world.playerState.sleepUntil ||= {})[target] = world.timeMin + 480
+    } else if (item === 'smelling_salts' && tagsOf(world, target).includes('status_sleep_comatose')) {
+      const woke = randomFor(key)() < hardPassChance(3 - ability(world, 'player', '治疗'))
+      if (woke) {
+        TAGS.apply(world, target, [], ['status_sleep_comatose'])
+        if (world.playerState.sleepUntil) delete world.playerState.sleepUntil[target]
+      }
+      return { effects: [{ target: 'world', itemsRemove: [item] }], message: woke ? '沉眠已解除' : '使用嗅盐后仍未苏醒' }
+    } else {
+      const removed = (item === 'supply' ? medicine.healing_salve : medicine[item])
+        .filter(tag => tagsOf(world, target).includes(tag))
+      u.check(removed.length > 0, '该药剂无法解除目标当前的状态')
+      TAGS.apply(world, target, [], removed)
+      const timers = world.playerState.conditionTimers?.[target]
+      if (timers && item === 'antidote') delete timers.poisonSince
+      if (timers && ['healing_salve', 'supply'].includes(item)) delete timers.bleedingPhases
+    }
+    return { effects: [{ target: 'world', itemsRemove: [item] }], message: '已使用' + DATA.ITEM_CATALOG[item].name }
+  }
+
+  function learnScroll(world, item, key) {
+    const info = u.own(DATA.ITEM_CATALOG, item) ? DATA.ITEM_CATALOG[item] : null
+    u.check(info?.skillTier && countOf(world, item) >= 1, '背包里没有该阶位的技能残卷')
+    const learned = world.playerState.learnedSkills
+    const pool = Object.values(SKILLS.catalog).filter(skill => skill.tier === info.skillTier && !learned.includes(skill.id))
+    const effect = { target: 'world', itemsRemove: [item] }
+    if (pool.length === 0) {
+      const merit = 5
+      gain(world, { merit })
+      effect.goldDelta = info.unitPrice
+      return { effects: [effect], message: '该阶位没有新的可学技能，残卷兑换为 ' + info.unitPrice + ' 金和 ' + merit + ' 功绩' }
+    }
+    const skill = pool[Math.floor(randomFor(key)() * pool.length)]
+    SKILLS.learn(world, skill.id)
+    return { effects: [effect], message: '已习得' + skill.name }
+  }
+
+  function order(world, input, key) {
+    const words = input.slice('【冒险】'.length).trim().split(/\s+/)
+    const [verb, item, extra] = words
+    const limit = verb === '进入' ? 5 : ['装配', '用药'].includes(verb) ? 3 : verb === '休整' ? 1 : 2
+    u.check(words.length <= limit && (verb === '休整' || item), '冒险指令参数不符')
+    if (verb === '选职') { chooseClass(world, item); return { message: '已确定主职业' } }
+    if (verb === '进入') return open(world, item, words.slice(2), key)
+    if (verb === '行动') return explore(world, item, key)
+    if (verb === '研读') return learnScroll(world, item, key)
+    if (verb === '装配' || verb === '卸下') {
+      if (verb === '装配') {
+        u.check(extra === undefined || /^[1-6]$/.test(extra), '栏位须为 1 至 6')
+        SKILLS.equip(world, item, extra === undefined ? -1 : Number(extra) - 1)
+      } else SKILLS.unequip(world, item)
+      return { message: '技能栏已调整，下轮生效' }
+    }
+    if (verb === '用药') return use(world, item, extra || 'player', key)
+    if (verb === '疗伤') {
+      u.check(!world.ruinState?.current && world.playerState.gold >= 10, '请回镇并准备 10 金药费')
+      const target = item
+      u.check(target === 'player' || u.own(world.npcs, target) &&
+        world.npcs[target].alive !== false && world.npcs[target].location === world.playerLocation, '伤者须在场')
+      const healing = Object.values(world.npcs).some(npc => npc.alive !== false && npc.monitored === true &&
+        (npc.stage ?? 0) < 3 && npc.location === world.playerLocation && ability(world, npc.id, '治疗') >= 3 &&
+        !tagsOf(world, npc.id).some(tag => sleepTags.includes(tag)))
+      u.check(healing && tagsOf(world, target).includes('debuff_heavy_wound'), '须在有高阶治疗者的地方处理重伤')
+      TAGS.apply(world, target, [], ['debuff_heavy_wound'])
+      if (world.playerState.conditionTimers?.[target]) delete world.playerState.conditionTimers[target].recoveryNights
+      return { effects: [{ target: 'world', goldDelta: -10 }], message: '已支付 10 金处理重伤' }
+    }
+    if (verb === '买药') {
+      u.check(['inn', 'town'].includes(world.playerLocation) && (u.own(medicine, item) || item === 'sleeping_draught'), '请在镇上购买已登记药剂')
+      const data = DATA.ITEM_CATALOG[item]
+      u.check(countOf(world, item) < data.maxCount && world.playerState.gold >= data.unitPrice, '金币不足或药剂已满')
+      return { effects: [{ target: 'world', goldDelta: -data.unitPrice, itemsAdd: [item] }], message: '已购买' + data.name }
+    }
+    if (verb === '休整') {
+      u.check(!world.ruinState?.current && ['inn', 'wilds'].includes(world.playerLocation) && supply(world) > 0, '请撤到旅店或荒原营地后使用补给休整')
+      const party = ['player', ...Object.values(world.npcs)
+        .filter(npc => npc.location === world.playerLocation && npc.alive !== false && npc.monitored === true &&
+          tagsOf(world, npc.id).includes('debuff_starving')).map(npc => npc.id)]
+      u.check(supply(world) >= party.length, '须为休整中的每位断粮同伴准备一份补给')
+      return {
+        minutes: 240, effects: [{ target: 'world', itemsRemove: [{ id: 'supply', count: party.length }] }],
+        message: '已用补给休整',
+        complete(state) {
+          if (state.playerLocation === 'wilds') state.playerState.campRestUntilMin = state.timeMin + 240
+          for (const id of party) {
+            TAGS.apply(state, id, [], ['debuff_starving', 'debuff_exhausted'])
+            if (state.playerState.conditionTimers?.[id]) delete state.playerState.conditionTimers[id].hungerSince
+          }
+        }
+      }
+    }
+    throw Error('未知冒险指令')
+  }
+
+  function apply(world, input, key) {
+    if (typeof input !== 'string' || !input.startsWith('【冒险】')) return null
+    // 玩家输入不合法时恢复草稿，仍保存该楼的可重放反馈。
+    const draft = u.clone(world)
+    try {
+      const result = order(draft, input, key)
+      draft.playerState.lastAdventure = result.message
+      Object.assign(world, draft)
+      return result
+    } catch (error) {
+      if (error.constructor !== Error) throw error
+      world.playerState.lastAdventure = error.message
+      return { message: error.message }
+    }
+  }
+
+  function settleFieldCombat(world, before, receipt) {
+    if (!receipt || before.ruinState?.current || world.ruinState?.current ||
+        !['wilds', 'wilds_camp'].includes(world.playerLocation) || world.playerLocation !== before.playerLocation ||
+        world.timeMin <= before.timeMin || !world.flags.arrived_oakhaven) return
+    const day = Math.floor(world.timeMin / 1440)
+    if (world.playerState.lastFieldTemperDay === day) return
+    world.playerState.lastFieldTemperDay = day
+    gain(world, { enemyTier: receipt, source: 'field' })
+  }
+
+  function phaseNumber(minute) {
+    return Math.floor(minute / 1440) * DATA.PHASES.length +
+      DATA.PHASES.findLastIndex(phase => phase.start <= minute % 1440)
+  }
+
+  function tick(world, beforeMin) {
+    const ps = world.playerState
+    const passedPhase = phaseNumber(world.timeMin) > phaseNumber(beforeMin)
+    const passedDawn = Math.floor((world.timeMin - 360) / 1440) > Math.floor((beforeMin - 360) / 1440)
+    for (const [id, tags] of Object.entries(world.tags || {})) {
+      if (id !== 'player' && !u.own(world.npcs, id)) continue
+      const timers = ps.conditionTimers?.[id] || {}
+      const removed = []
+      const location = id === 'player' ? world.playerLocation : world.npcs[id].location
+      const resting = location === 'inn' && !world.ruinState?.current
+      if (passedPhase) {
+        removed.push('status_sleep_light', 'debuff_paralyzed')
+        if (tags.includes('debuff_bleeding')) {
+          timers.bleedingPhases = (timers.bleedingPhases ?? 0) + 1
+          if (timers.bleedingPhases >= 2) {
+            wound(world, id)
+            removed.push('debuff_bleeding')
+            delete timers.bleedingPhases
+          }
+        }
+      }
+      if (!resting || !tags.includes('debuff_heavy_wound')) delete timers.recoveryNights
+      if (passedDawn) {
+        removed.push('status_sleep_deep')
+        if (resting) {
+          removed.push('debuff_light_wound')
+          if (tags.includes('debuff_heavy_wound')) {
+            timers.recoveryNights = (timers.recoveryNights ?? 0) + 1
+            if (timers.recoveryNights >= 3) {
+              removed.push('debuff_heavy_wound')
+              delete timers.recoveryNights
+            }
+          }
+        }
+      }
+      for (const [tag, key] of [['debuff_poisoned', 'poisonSince'], ['debuff_starving', 'hungerSince']]) {
+        if (!tags.includes(tag)) {
+          delete timers[key]
+          continue
+        }
+        timers[key] ??= beforeMin
+        if (world.timeMin - timers[key] >= 1440) {
+          wound(world, id)
+          timers[key] += 1440
+        }
+      }
+      if (world.timeMin >= (ps.sleepUntil?.[id] ?? Infinity)) {
+        removed.push('status_sleep_comatose')
+        delete ps.sleepUntil[id]
+      }
+      if (removed.some(tag => tags.includes(tag))) TAGS.apply(world, id, [], removed)
+      if (Object.keys(timers).length) (ps.conditionTimers ||= {})[id] = timers
+      else if (ps.conditionTimers) delete ps.conditionTimers[id]
+    }
+  }
+
+  root.OKH_APP_ADVENTURE = Object.freeze({ guilds, guildRank, initialize, gain, isAvailable, roomOptions, apply, tick, settleFieldCombat })
+})(globalThis)
+
+;
+/**
  * @module okh_app_daily
  * @updated 2026-11-25 06:42
  * @status active
@@ -8510,6 +8907,7 @@
 
   function canMove(world, to, npc) {
     if (!Object.hasOwn(DATA.LOCATIONS, to)) return false
+    if (!npc && world.ruinState?.current && to !== world.playerLocation) return false
     if (!world?.flags?.arrived_oakhaven && TOWN_LOCATION_SET.has(to)) return false
     if (npc && isFugitiveSyncedNpc(world, npc) && to !== world.playerLocation) return false
     if (npc?.id === 'isna' && to === 'wilds_camp' && world?.tags?.isna?.includes('isna_orc_phobia')) return false
@@ -8882,7 +9280,7 @@
 
   function resolveEconomy(world, economies, ctx) {
     const out = []
-    if (!world?.flags?.arrived_oakhaven) return out
+    if (!world?.flags?.arrived_oakhaven || world.ruinState?.current) return out
     const day = Math.floor(world.timeMin / 1440) + 1
     let curGold = Number.isSafeInteger(world.playerState?.gold) ? world.playerState.gold : 0
     let innArrears = Boolean(world.flags?.inn_arrears)
@@ -8926,11 +9324,13 @@
           const recent = DATA.recentGuildStarts(world, start)
           if (recent.length >= DATA.WORK_LIMITS.guildStarts || DATA.workCooldownWait(world, 'lastGuildCommission', start, DATA.WORK_LIMITS.guildCooldownDays)) continue
           if (item.tier === 'guild_high') {
+            if (root.OKH_APP_ADVENTURE.guildRank(world) < 1) continue
             const gulanReady = Boolean(gulan && gulan.monitored === true && gulan.alive !== false && (gulan.stage ?? 0) < 3 && world.playerLocation === 'wilds' && gulan.location === 'wilds')
             const isnaReady = Boolean(isna && isna.monitored === true && isna.alive !== false && (isna.stage ?? 0) < 3 && !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_captured_ed && !isna.flags?.isna_fallen_labyrinth && isna.location === world.playerLocation)
             if (!gulanReady && !isnaReady) continue
           }
           workUsed = true
+          root.OKH_APP_ADVENTURE.gain(world, { merit: item.tier === 'guild_high' ? 20 : 10, enemyTier: item.tier === 'guild_high' ? 3 : 2, source: 'commission' })
           pushIncome(gold, { ...workFlags, lastGuildCommissionDay: day, lastGuildCommissionStartMin: start, guildCommissionStarts: [...recent, start] })
           if (gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3) {
             out.push({ target: 'gulan', npcFlags: { player_guild_job_done: true } })
@@ -9277,7 +9677,6 @@
     } else if (sim.isnaAlive && sim.isnaStage === 2 && !sim.isnaCapturedOrc && !sim.isnaFallenOrc && !sim.isnaMudSealCleared) {
       sim.isnaMudDays += 1
       change.npcFlags.isnaMudDays = sim.isnaMudDays
-      change.npcFlags.isnaMudOutTonight = [3, 6, 9].includes(sim.isnaMudDays)
     }
     changes.push(change)
     sim.isnaWorked = false
@@ -9568,7 +9967,9 @@
       const kStart = Math.floor(fromMin / 1440) + 1
       const kEnd = Math.floor(toMin / 1440)
       for (let k = kStart; k <= kEnd; k++) {
-        settleInnNight(sim, k, changes)
+        if (world.ruinState?.current) {
+          changes.push({ target: 'world', worldFlags: { lastInnSettledDay: k, inn_free_pass_today: false } })
+        } else settleInnNight(sim, k, changes)
         const bloodIncreased = settleGulanNight(sim, k, changes)
         settleIsnaNight(sim, k, changes)
         settleNiseNight(sim, k, changes)
@@ -9578,6 +9979,17 @@
         settleEdNight(sim, k, changes, bloodIncreased)
         settleOtherNights(sim, k, changes)
         settleTownNight(sim, k, changes)
+      }
+    }
+    const isna = world.npcs?.isna
+    if (toMin > fromMin && isna?.stage === 2 && !isna.flags?.isnaMudSealCleared && !isna.flags?.isna_mud_hopeless_fled) {
+      const day = Math.floor(toMin / 1440)
+      const clock = toMin % 1440
+      const mudDay = (isna.flags?.isnaMudDays ?? 0) + day - Math.floor(fromMin / 1440)
+      const away = !isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc &&
+        ((clock >= 1020 && [3, 6, 9].includes(mudDay)) || (clock < 360 && [3, 6, 9].includes(mudDay - 1)))
+      if (away !== Boolean(isna.flags?.isnaMudOutTonight)) {
+        changes.push({ target: 'isna', npcFlags: { isnaMudOutTonight: away } })
       }
     }
     if (shouldClearRoomTarget(world, fromMin, toMin)) {
@@ -9759,7 +10171,11 @@
     if (!rawWorld) return rawWorld
     if ((rawWorld.schemaVersion ?? 1) > DATA.SCHEMA_VERSION) return rawWorld
     rawWorld = root.OKH_APP_TAGS.migrate(rawWorld)
-    if (rawWorld.schemaVersion === DATA.SCHEMA_VERSION) return repairBaronCurfew(rawWorld)
+    if (rawWorld.schemaVersion === DATA.SCHEMA_VERSION) {
+      const repaired = repairBaronCurfew(rawWorld)
+      if (repaired.playerState?.adventureVersion === 1) return repaired
+      return root.OKH_APP_ADVENTURE.initialize(JSON.parse(JSON.stringify(repaired)))
+    }
 
     const world = JSON.parse(JSON.stringify(rawWorld))
     const timeMin = Number.isSafeInteger(world.timeMin) ? world.timeMin : 0
@@ -9791,14 +10207,7 @@
       world.playerState.gold = world.flags.player_barony_granted ? 1000 : 30
     }
     delete world.playerState.injury
-    world.playerState.tier = Number.isInteger(world.playerState.tier) ? world.playerState.tier : 2
-    world.playerState.currentClass = world.playerState.currentClass || 'class_shield_guard'
-    world.playerState.realmProgress = Number.isInteger(world.playerState.realmProgress) ? world.playerState.realmProgress : 0
-    world.playerState.realmCap = Number.isInteger(world.playerState.realmCap) ? world.playerState.realmCap : 30
-    world.playerState.realmCooldownDays = Number.isInteger(world.playerState.realmCooldownDays) ? world.playerState.realmCooldownDays : 0
-    world.playerState.guild_merit = Number.isInteger(world.playerState.guild_merit) ? world.playerState.guild_merit : 0
-    if (root.OKH_APP_SKILLS?.migrate) root.OKH_APP_SKILLS.migrate(world)
-    if (root.OKH_APP_RUINS?.migrate) root.OKH_APP_RUINS.migrate(world)
+    root.OKH_APP_ADVENTURE.initialize(world)
     if (!Array.isArray(world.playerState.inventory)) {
       // 老存档未建背包时，前传荒原途中补开局 10 份补给，已抵镇存档置空数组避免凭空生出补给
       world.playerState.inventory = world.flags.arrived_oakhaven ? [] : [{ id: 'supply', count: 10 }]
@@ -10006,8 +10415,11 @@
       canMove: RULES.canMove,
       syncWorld,
       completeReply(world, before, command) {
+        if (!command.playerAction) root.OKH_APP_ADVENTURE.settleFieldCombat(world, before, command.front?.combatTemper)
         if (ECHO.completeReplay(world, before, command, ALBUM.findImage)) ALBUM.sync(world)
       },
+      applyPlayerAction: root.OKH_APP_ADVENTURE.apply,
+      afterTimeStep: root.OKH_APP_ADVENTURE.tick,
       applyTags: root.OKH_APP_TAGS.apply,
       isMetricLocked: RULES.isMetricLocked,
       onStageChange: RULES.onStageChange,
@@ -10051,7 +10463,7 @@
     isEileenFugitive: DATA.isEileenFugitive,
     ROSTER: DATA.ROSTER,
     buildConfig,
-    buildInitialWorld: DATA.buildInitialWorld,
+    buildInitialWorld: () => root.OKH_APP_ADVENTURE.initialize(DATA.buildInitialWorld()),
     migrateWorld: MIG.migrateWorld,
     settleTimeEffects: TIME.settleTimeEffects,
     applyPrologueSteps: RULES.applyPrologueSteps,
@@ -10531,6 +10943,24 @@
       ? '（旅店宿费欠账中：攒够 5 金自动结清；欠账期间暂不可在旅店执行实物赠礼/请酒）'
       : (world.flags?.inn_free_pass_today ? '（今晚旅店宿费已由爱德帮工抵免，免扣 5 金）' : '');
     lines.push('持有金币：' + gold + ' 金' + goldNote);
+    const adventure = root.OKH_APP_ADVENTURE;
+    const ps = world.playerState;
+    const rank = adventure.guilds[adventure.guildRank(world)];
+    if (ps && rank) {
+      lines.push('小队资质：' + rank.name + '，功绩 ' + ps.guild_merit);
+      const profession = root.OKH_APP_SKILLS.CLASSES[ps.currentClass];
+      lines.push('主职业：' + (profession?.name ?? '待定') + '，' + ps.tier + ' 阶' +
+        (ps.realmCap ? '，实战积淀 ' + ps.realmProgress + '/' + ps.realmCap : ''));
+      const skills = root.OKH_APP_SKILLS.getEquipped(world);
+      if (skills.length) lines.push('当前可用技能：' + skills.map(skill => skill.name + '（' + skill.desc + '）').join('、'));
+    }
+    const raid = world.ruinState?.current;
+    if (raid) {
+      lines.push('正在探索：' + raid.name + '。只有玩家提交【冒险】行动才会推进此处。');
+      if (raid.atmosphere && typeof raid.atmosphere === 'object') lines.push('周围环境：' + Object.values(raid.atmosphere).join('；'));
+      const room = raid.blocks[raid.currentBlockIndex];
+      if (room) lines.push('眼前区域：' + room.name + '。可选行动：' + adventure.roomOptions(world, raid).join('、'));
+    }
     const catalog = CFG.ITEM_CATALOG || {};
     const inv = Array.isArray(world.playerState?.inventory) ? world.playerState.inventory : [];
     const supplyEntry = inv.find(it => it && it.id === 'supply' && it.custom !== true);
@@ -10572,12 +11002,15 @@
         lines.push('爱丽丝线索摘要：' + sisterNote);
       }
     }
-    if (world.flags?.arrived_oakhaven && !DATA.isEileenFugitive(world)) {
+    if (!raid && world.flags?.arrived_oakhaven && ['wilds', 'wilds_camp'].includes(world.playerLocation)) {
+      lines.push('玩家在野外实战获胜后，可在 <status_bar> 申报一次 <combat_temper enemy_tier="1到4的单个数字"/>。后台核验位置和时间。');
+    }
+    if (!raid && world.flags?.arrived_oakhaven && !DATA.isEileenFugitive(world)) {
       const waitText = minutes => '冷却中（约 ' + Math.ceil(minutes / 60) + ' 小时）';
       const guildWait = DATA.workCooldownWait(world, 'lastGuildCommission', world.timeMin, 3);
       const guildStarts = DATA.recentGuildStarts(world, world.timeMin);
       if (DATA.paidWorkSettledToday(world)) lines.push('工作报酬：今天已结算一项，其他报酬须另日结算。');
-      lines.push('公会委托：' + (guildStarts.length >= 2 ? '近七天的两单均已用完' : guildWait > 0 ? waitText(guildWait) : '可接单（guild_normal 8 小时 / guild_high 24 小时）'));
+      lines.push('公会委托：' + (guildStarts.length >= 2 ? '近七天的两单均已用完' : guildWait > 0 ? waitText(guildWait) : rank?.meritReq >= 20 ? '可接单（guild_normal 8 小时 / guild_high 24 小时）' : '可接见习委托（guild_normal 8 小时）'));
       const cec = world.npcs?.cecilia;
       if (cec && cec.alive !== false && (cec.stage ?? 0) < 3) {
         const churchWait = DATA.workCooldownWait(world, 'lastChurchErrand', world.timeMin, 2);
@@ -11028,6 +11461,9 @@
         const at = parseAtAttr(a.at, world.timeMin, now);
         const npcId = inferEventNpcId(world, config, a.id, a.npc);
         (front.resolveEvents ||= []).push({ eventId: a.id, npcId, outcome: a.outcome, ...(at !== undefined ? { at } : {}) });
+      } else if (name === 'combat_temper') {
+        u.check(front.combatTemper === undefined && Object.keys(a).length === 1 && /^[1-4]$/.test(a.enemy_tier), '战斗回执仅接受一个敌方阶位')
+        front.combatTemper = Number(a.enemy_tier)
       } else if (name === 'economy') {
         u.check(
           a.amount === undefined && a.delta === undefined && a.value === undefined && a.add === undefined && a.gold === undefined,
@@ -11231,6 +11667,14 @@
   }
   function buildTurnCommand(minutes, opts, world, id, revision) {
     const text = opts.text || '';
+    const playerAction = opts.playerAction ?? (Number.isSafeInteger(opts.chatIndex)
+      ? userCommandBefore(W.context()?.chat || [], opts.chatIndex) : null);
+    if (playerAction?.startsWith('【冒险】')) {
+      return {
+        command: { id, revision, toMin: world.timeMin, front: {}, playerAction, chatIndex: opts.chatIndex ?? null },
+        diagnostics: [], timeCheck: null
+      };
+    }
     try {
       const parsed = P.parseStatusBar(text);
       const plan = clockPlan(world, parsed, minutes, opts.countMessage === true, opts.initial === true);
@@ -11275,7 +11719,7 @@
     const liveWorld = W.loadWorld(s);
     let world = liveWorld;
     const id = opts.msgId || 'manual:' + s.id + ':' + Date.now() + ':' + (++seq);
-    const revision = opts.revision || fingerprint(JSON.stringify([opts.text || '', minutes ?? null, opts.frontOverride ?? null]));
+    const revision = opts.revision || fingerprint(JSON.stringify([opts.text || '', minutes ?? null, opts.frontOverride ?? null, opts.playerAction ?? null]));
     const recorded = world.bg.receipts[id];
     let replacement = null;
     if (recorded !== undefined) {
@@ -11305,6 +11749,7 @@
     last = { advanced: true, from: world.timeMin, to: result.state.timeMin, front: command.front,
       actions: result.report.actions, released: result.report.released,
       pending: GPT.prepare(result.state, 8).ids.length, diagnostics, timeCheck, published };
+    if (result.report.adventure) last.adventure = result.report.adventure;
     if (echo?.retry) last.echoNeedsRetry = true;
     diagnostics.forEach(message => console.warn('[APP] ' + message));
     console.log('[APP] 已提交 ' + world.timeMin + ' → ' + result.state.timeMin);
@@ -11351,7 +11796,7 @@
       .map(({ id, revealProof }) => [id, revealProof]));
     const dialogueForms = {};
     const diagnostics = [], actions = [], released = [];
-    let timeCheck = null, front = null, echoNeedsRetry = false;
+    let timeCheck = null, front = null, echoNeedsRetry = false, adventure = null;
     for (let i = from; i <= through; i++) {
       if (!assistant(chat[i])) continue;
       const id = replyId(s, i), revision = revisionFor(chat, i);
@@ -11362,6 +11807,7 @@
       built.command.echoReplay = echo.command;
       echoNeedsRetry = i === through && echo.retry;
       const result = GPT.advance(state, built.command, CFG.buildConfig());
+      adventure = result.report.adventure ?? null;
       const record = { id, revision, chatIndex: i, before: state };
       const proof = built.revealDeliveryId && revealProofs.get(id);
       const reveal = proof && proof.fingerprint === fingerprint(text) && WB.pendingReveal(state, [proof.eventId]);
@@ -11383,6 +11829,7 @@
     last = { advanced: true, from: checkpoint.timeMin, to: state.timeMin, front, actions, released,
       pending: GPT.prepare(state, 8).ids.length, diagnostics, timeCheck, published };
     diagnostics.forEach(message => console.warn('[APP] ' + message));
+    if (adventure) last.adventure = adventure;
     if (echoNeedsRetry) last.echoNeedsRetry = true;
     return last;
   }
@@ -11477,7 +11924,10 @@
           (echo.def.storyText || '').replace(/\{name\}/g, promptWorld.npcs?.[echo.def.npc]?.name || echo.def.npc)
         ].join('\n') : '';
 
-        const text = [A.buildLedger(promptWorld), ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal, echoInjection]
+        const order = userCommandBefore(chat, generation.targetIndex);
+        const adventure = root.OKH_APP_ADVENTURE.apply(u.clone(promptWorld), order, replyId(s, generation.targetIndex));
+        const resultPrompt = adventure ? '【本轮冒险裁决】' + adventure.message + '。按后台结果简洁演绎，不另行申报探险、奖品或时间。' : '';
+        const text = [A.buildLedger(promptWorld), resultPrompt, ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal, echoInjection]
           .filter(Boolean).join('\n\n');
         await inject(text, s);
         return { ...batch, generationId: id, text };
@@ -14262,6 +14712,54 @@
     `
   }
 
+  function buildAdventure(world) {
+    const rules = root.OKH_APP_ADVENTURE
+    const skills = root.OKH_APP_SKILLS
+    const ps = world.playerState
+    const raid = world.ruinState?.current
+    const rank = rules.guildRank(world)
+    if (!ps || rank < 0) return ''
+    const catalog = root.OKH_APP_RUINS.catalog
+    const button = (label, command) => `<button type="button" class="okh-char-act-btn" data-okh-act="adventure-fill" data-okh-command="${escapeHtml(command)}">${escapeHtml(label)}</button>`
+    const select = (options, name, label) => options.length ? `<label>${label} <select data-okh-adventure-field="${name}">${options.map(([id, title]) =>
+      `<option value="${escapeHtml(id)}">${escapeHtml(title)}</option>`).join('')}</select></label>` : ''
+    const option = ({ id, name }) => [id, name]
+    const rankBar = world.flags?.arrived_oakhaven ? `<p>${escapeHtml(rules.guilds[rank].name)} · 功绩 ${ps.guild_merit}${
+      rules.guilds[rank + 1] ? ` / ${rules.guilds[rank + 1].meritReq}` : ''}</p>` : ''
+    const profession = skills.CLASSES[ps.currentClass]
+    const professionBar = `<p>${escapeHtml(profession?.name || '职业待定')} · ${ps.tier} 阶${ps.realmCap ? ` · 实战积淀 ${ps.realmProgress} / ${ps.realmCap}` : ''}</p>`
+    if (raid) {
+      const block = raid.blocks[raid.currentBlockIndex]
+      const actions = rules.roomOptions(world, raid).map(action => button(action, '行动 ' + action)).join('')
+      return `<section class="okh-present-sec" aria-label="遗迹探险">
+        <div class="okh-sub-title">${escapeHtml(raid.name)}</div>
+        <p>${escapeHtml(block?.name || '')} · ${raid.currentBlockIndex + 1} / ${raid.blocks.length} · 已行进 ${raid.elapsedHours} 小时</p>
+        <div class="okh-char-acts">${actions}</div><p data-okh-adventure-feedback role="status">${escapeHtml(ps.lastAdventure || '')}</p>
+      </section>`
+    }
+    const eligible = Object.values(catalog.coreRuins).filter(ruin => ruin.tier <= rank && !world.ruinState?.clearedCores?.includes(ruin.id))
+    const trials = [2, 3, 4].filter(tier => tier <= rank).map(tier => [String(tier), tier + ' 阶外围探险'])
+    const sites = [...eligible.map(option), ...trials]
+    const available = Object.values(world.npcs).filter(npc => rules.isAvailable(world, npc.id))
+    const members = available.map(npc => `<label><input type="checkbox" data-okh-adventure-member value="${escapeHtml(npc.id)}"> ${escapeHtml(npc.name)}</label>`).join(' ')
+    const entry = world.flags?.arrived_oakhaven && world.playerLocation === 'wilds' && sites.length
+      ? `<div>${select(sites, 'site', '遗迹')} <button type="button" class="okh-char-act-btn" data-okh-act="adventure-enter">进入</button>
+          <div>同行 ${members || '无可用同伴'}。名额含主角，龙喉裂谷的古兰自动随行。</div></div>` : ''
+    const choice = !ps.classChosen && ps.tier === 2 && !ps.realmProgress
+      ? `<div>${select(Object.values(skills.CLASSES).map(option), 'profession', '起始主职')} <button type="button" class="okh-char-act-btn" data-okh-act="adventure-class">确定主职</button></div>` : ''
+    const equipped = skills.getEquipped(world)
+    const scrolls = (ps.inventory || []).filter(item => !item.custom && CFG.ITEM_CATALOG[item.id]?.skillTier)
+    const reads = `<div class="okh-char-acts">${scrolls.map(item =>
+      button('研读' + CFG.ITEM_CATALOG[item.id].name, '研读 ' + item.id)).join('')}</div>`
+    const loadout = skills.isSafeLoadoutLocation(world) ? `
+      <div class="okh-char-acts">${equipped.map(item => button('卸下' + item.name, '卸下 ' + item.id)).join('')}</div>
+      <div>${select(skills.getLearned(world).filter(item => !equipped.includes(item)).map(option), 'skill', '待装技能')}
+      ${skills.getLearned(world).some(item => !equipped.includes(item)) ? '<button type="button" class="okh-char-act-btn" data-okh-act="adventure-equip">装配</button>' : ''}</div>` : ''
+    if (!rankBar && !choice && !loadout) return ''
+    return `<section class="okh-present-sec" aria-label="公会与技能"><div class="okh-sub-title">公会与技能</div>
+      ${rankBar}${professionBar}${choice}${entry}${loadout}${reads}<p data-okh-adventure-feedback role="status">${escapeHtml(ps.lastAdventure || '')}</p></section>`
+  }
+
   function buildDispatchPage(world, pendingList, presentList) {
     let eventBlock = ''
     if (pendingList.length) {
@@ -14352,6 +14850,7 @@
     return `
       <div class="okh-page${activeTab === 'dispatch' ? ' active' : ''}" data-okh-page="dispatch">
         ${eventBlock}
+        ${buildAdventure(world)}
         ${mapBlock}
         <div class="okh-art-hr"></div>
         <div class="okh-present-sec">
@@ -15115,12 +15614,13 @@
     lightboxReturnFocus = null
   }
 
-  function fillTavernInput(text, { append = false } = {}) {
+  function fillTavernInput(text, { append = false, preserveDraft = false } = {}) {
     if (typeof document === 'undefined' || !text) return false
     const input = document.getElementById('send_textarea') ||
       document.querySelector('#send_form textarea') ||
       document.getElementById('tavern-input')
     if (!input || input.disabled || input.readOnly || typeof input.value !== 'string') return false
+    if (preserveDraft && input.value.trim() && input.value.trim() !== text) return false
     const prior = append ? input.value : ''
     input.value = prior ? prior + (prior.endsWith('\n') ? '' : '\n') + text : text
     const InputEvent = input.ownerDocument.defaultView.Event
@@ -15214,6 +15714,20 @@
         }
       } else if (act === 'fill') {
         fillTavernInput(el.getAttribute('data-okh-text') || '')
+      } else if (act?.startsWith('adventure-')) {
+        const section = el.closest('section')
+        const field = name => section?.querySelector('[data-okh-adventure-field="' + name + '"]')?.value
+        let command = el.dataset.okhCommand
+        if (act === 'adventure-enter') {
+          const members = Array.from(section.querySelectorAll('[data-okh-adventure-member]:checked'), input => input.value)
+          command = ['进入', field('site'), ...members].join(' ')
+        } else if (act === 'adventure-class') command = '选职 ' + field('profession')
+        else if (act === 'adventure-equip') command = '装配 ' + field('skill')
+        const feedback = section?.querySelector('[data-okh-adventure-feedback]')
+        if (feedback && command) {
+          const text = '【冒险】' + command
+          feedback.textContent = fillTavernInput(text, { preserveDraft: true }) ? '指令已填入，发送后执行。' : text
+        }
       } else if (act === 'echo-fill') {
         fillTavernInput(el.getAttribute('data-okh-cmd') || '')
       } else if (act === 'zoom-char') {
@@ -15477,7 +15991,7 @@
     setDefaultPortrait: W.setDefaultPortrait,
     world: W.loadWorld, reset, importLegacy: () => W.importLegacy(),
     migrateSchema: () => W.migrateSchema(),
-    step: H.step, applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,
+    step: H.step, adventure: (order, opts = {}) => H.step(0, { ...opts, playerAction: '【冒险】' + order }), applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,
     cancelGeneration: H.cancelGeneration, syncHistory: H.syncHistory, restore: H.restore,
     config: A.runtimeConfig, status: D.status, watch: D.watch, ledger: D.ledger, queue: D.queue, tags: D.tags, flags: D.flags, echoes: D.echoes, daily: D.daily,
     renderHud: HUD ? HUD.render : () => false,

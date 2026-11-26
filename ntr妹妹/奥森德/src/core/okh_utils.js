@@ -301,7 +301,7 @@
     if (world.tags !== undefined) {
       check(world.tags && typeof world.tags === 'object' && !Array.isArray(world.tags), '标签分区格式非法');
       for (const [npcId, tags] of Object.entries(world.tags)) {
-        check(own(world.npcs, npcId) && Array.isArray(tags) && tags.every(id) &&
+        check((npcId === 'player' || npcId === 'world' || own(world.npcs, npcId)) && Array.isArray(tags) && tags.every(id) &&
           new Set(tags).size === tags.length, '角色标签格式非法或 ID 重复');
       }
     }

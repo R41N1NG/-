@@ -293,7 +293,8 @@
         revision: command.revision,
         toMin: command.toMin,
         interactingIds: command.interactingIds ?? command.sceneIds ?? [],
-        front: command.front ?? null
+        front: command.front ?? null,
+        ...(command.playerAction ? { playerAction: command.playerAction } : {})
       });
 
       const previous = world.bg.receipts[command.id];
@@ -310,14 +311,22 @@
       u.check(u.minute(command.toMin) && command.toMin >= world.timeMin, '时间倒退须恢复检查点，不能直接减时钟');
 
       const state = u.clone(world);
-      const front = command.front || {};
+      const adventure = config.applyPlayerAction?.(state, command.playerAction, command.id);
+      const adventureClock = adventure || state.ruinState?.current;
+      const front = adventureClock ? {} : command.front || {};
+      const toMin = adventureClock ? state.timeMin + (adventure?.minutes ?? 0) : command.toMin;
       const blockedIds = initialBlockedIds(state, command, front);
+      const expedition = state.ruinState?.current;
+      for (const id of [...(expedition?.partyMembers ?? []), expedition?.escort]) {
+        if (id && u.own(state.npcs, id)) blockedIds.add(id);
+      }
+      if (adventure?.effects) effects.apply(state, null, adventure.effects, { blockedIds }, config);
       const fromMin = state.timeMin;
-      const workUntilMin = front.workUntilMin ?? command.toMin;
-      u.check(u.minute(workUntilMin) && workUntilMin >= fromMin && workUntilMin <= command.toMin, '工时区间超出本轮时间');
+      const workUntilMin = front.workUntilMin ?? toMin;
+      u.check(u.minute(workUntilMin) && workUntilMin >= fromMin && workUntilMin <= toMin, '工时区间超出本轮时间');
       const workWindow = { turnFromMin: fromMin, workUntilMin };
-      const timeline = collectTimeline(state, front, fromMin, command.toMin, config);
-      const report = { duplicate: false, released: [], actions: [] };
+      const timeline = collectTimeline(state, front, fromMin, toMin, config);
+      const report = { duplicate: false, released: [], actions: [], ...(adventure ? { adventure: adventure.message } : {}) };
 
       report.released.push(...activity.releaseExpiredOrdinary(state, config));
       if (timeline.has(fromMin)) applyBucket(state, timeline.get(fromMin), config, blockedIds, workWindow);
@@ -326,11 +335,11 @@
       const pendingTimes = [...timeline.keys()].filter(t => t > fromMin).sort((a, b) => a - b);
       let nextIdx = 0, steps = 0;
 
-      while (state.timeMin < command.toMin) {
+      while (state.timeMin < toMin) {
         u.check(++steps <= (config.maxSteps ?? 128), '时间推进过多，本次未提交任何变化');
         const boundary = u.phaseAt(state.timeMin, config).end;
         const nextReceipt = pendingTimes[nextIdx] ?? Infinity;
-        const next = Math.min(command.toMin, boundary, activity.nextDeadline(state, config), nextReceipt);
+        const next = Math.min(toMin, boundary, activity.nextDeadline(state, config), nextReceipt);
 
         const stepFrom = state.timeMin;
         if (config.timeEffects) {
@@ -339,6 +348,7 @@
           effects.apply(state, null, changes, { blockedIds }, config);
         }
         state.timeMin = next;
+        config.afterTimeStep?.(state, stepFrom);
 
         report.released.push(...activity.releaseExpiredOrdinary(state, config));
         if (next === nextReceipt) {
@@ -358,6 +368,8 @@
       }
 
       refresh(state, config, new Set(state.interactingIds), report);
+      const completion = adventure?.complete?.(state);
+      if (completion) effects.apply(state, null, completion, { blockedIds }, config);
       config.completeReply?.(state, world, command);
       state.bg.receipts[command.id] = signature;
       state.bg.revision++;

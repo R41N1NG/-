@@ -57,7 +57,7 @@
     setDefaultPortrait: W.setDefaultPortrait,
     world: W.loadWorld, reset, importLegacy: () => W.importLegacy(),
     migrateSchema: () => W.migrateSchema(),
-    step: H.step, applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,
+    step: H.step, adventure: (order, opts = {}) => H.step(0, { ...opts, playerAction: '【冒险】' + order }), applyFront: H.applyFront, beforeGeneration: H.beforeGeneration, onMessage: H.onMessage,
     cancelGeneration: H.cancelGeneration, syncHistory: H.syncHistory, restore: H.restore,
     config: A.runtimeConfig, status: D.status, watch: D.watch, ledger: D.ledger, queue: D.queue, tags: D.tags, flags: D.flags, echoes: D.echoes, daily: D.daily,
     renderHud: HUD ? HUD.render : () => false,

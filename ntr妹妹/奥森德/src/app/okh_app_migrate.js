@@ -161,7 +161,11 @@
     if (!rawWorld) return rawWorld
     if ((rawWorld.schemaVersion ?? 1) > DATA.SCHEMA_VERSION) return rawWorld
     rawWorld = root.OKH_APP_TAGS.migrate(rawWorld)
-    if (rawWorld.schemaVersion === DATA.SCHEMA_VERSION) return repairBaronCurfew(rawWorld)
+    if (rawWorld.schemaVersion === DATA.SCHEMA_VERSION) {
+      const repaired = repairBaronCurfew(rawWorld)
+      if (repaired.playerState?.adventureVersion === 1) return repaired
+      return root.OKH_APP_ADVENTURE.initialize(JSON.parse(JSON.stringify(repaired)))
+    }
 
     const world = JSON.parse(JSON.stringify(rawWorld))
     const timeMin = Number.isSafeInteger(world.timeMin) ? world.timeMin : 0
@@ -193,14 +197,7 @@
       world.playerState.gold = world.flags.player_barony_granted ? 1000 : 30
     }
     delete world.playerState.injury
-    world.playerState.tier = Number.isInteger(world.playerState.tier) ? world.playerState.tier : 2
-    world.playerState.currentClass = world.playerState.currentClass || 'class_shield_guard'
-    world.playerState.realmProgress = Number.isInteger(world.playerState.realmProgress) ? world.playerState.realmProgress : 0
-    world.playerState.realmCap = Number.isInteger(world.playerState.realmCap) ? world.playerState.realmCap : 30
-    world.playerState.realmCooldownDays = Number.isInteger(world.playerState.realmCooldownDays) ? world.playerState.realmCooldownDays : 0
-    world.playerState.guild_merit = Number.isInteger(world.playerState.guild_merit) ? world.playerState.guild_merit : 0
-    if (root.OKH_APP_SKILLS?.migrate) root.OKH_APP_SKILLS.migrate(world)
-    if (root.OKH_APP_RUINS?.migrate) root.OKH_APP_RUINS.migrate(world)
+    root.OKH_APP_ADVENTURE.initialize(world)
     if (!Array.isArray(world.playerState.inventory)) {
       // 老存档未建背包时，前传荒原途中补开局 10 份补给，已抵镇存档置空数组避免凭空生出补给
       world.playerState.inventory = world.flags.arrived_oakhaven ? [] : [{ id: 'supply', count: 10 }]
