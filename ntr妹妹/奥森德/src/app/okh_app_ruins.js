@@ -333,6 +333,7 @@
     core_ruin_frost_crypt: Object.freeze({
       id: 'core_ruin_frost_crypt',
       name: '寒霜墓道·殉道圣武士地宫',
+      biome: 'biome_undead_crypt',
       tier: 3,
       partyLimit: 4,
       escort: null,
@@ -374,6 +375,22 @@
     biome_living_lair: 'lair', biome_arcane_grid: 'arcane', biome_undead_crypt: 'crypt'
   }
 
+  function getBiome(id) {
+    return Object.values(biomes).find(biome => biome.id === id || biomeKeys[biome.id] === id)
+  }
+
+  function clearedSince(world, biome, acceptedAt, acceptedDay) {
+    const state = world.ruinState
+    const id = getBiome(biome)?.id
+    if (!state || !id) return false
+    const clearedAt = state.clearedAtByBiome?.[id]
+    if (Number.isSafeInteger(acceptedAt)) return Number.isSafeInteger(clearedAt) && clearedAt > acceptedAt
+    if (!Number.isSafeInteger(acceptedDay) || acceptedDay < 1) return false
+    // Older saves may only have a clear day. A same-day record cannot prove the clear followed acceptance.
+    if (Number.isSafeInteger(clearedAt) && clearedAt >= acceptedDay * 1440) return true
+    return getBiome(state.lastClearedBiome)?.id === id && state.lastClearedDay > acceptedDay
+  }
+
   const pick = (list, rng) => list[Math.floor(rng() * list.length)]
 
   function assemble({ coreId, tier = 2, biome, partyLimit, rng = Math.random, key = 'preview' } = {}) {
@@ -384,7 +401,8 @@
     }
     u.check([2, 3, 4].includes(tier), '遗迹阶位须为 II 至 IV')
     const available = Object.values(biomes).filter(item => item.minTier <= tier)
-    const habitat = available.find(item => item.id === biome) || pick(available, rng)
+    const preferred = getBiome(biome)
+    const habitat = available.find(item => item === preferred) || pick(available, rng)
     const habitatKey = biomeKeys[habitat.id]
     const matches = item => item.biome === habitatKey || item.biome === 'universal'
     partyLimit ??= 2 + Math.floor(rng() * 3)
@@ -436,12 +454,21 @@
   }
 
   function finish(world) {
-    const cur = world.ruinState?.current
+    const state = world.ruinState
+    const cur = state?.current
     u.check(cur?.cleared, '未完成遗迹')
-    if (cur.id) world.ruinState.clearedCores.push(cur.id)
-    world.ruinState.lastClearedBiome = cur.biome || null
-    world.ruinState.lastClearedDay = Math.floor((world.timeMin || 0) / 1440) + 1
-    world.ruinState.current = null
+    if (cur.id) state.clearedCores.push(cur.id)
+    const clearedAt = state.clearedAtByBiome ||= {}
+    const prior = getBiome(state.lastClearedBiome)
+    if (prior && Number.isSafeInteger(state.lastClearedDay) && state.lastClearedDay > 0) {
+      clearedAt[prior.id] ??= (state.lastClearedDay - 1) * 1440
+    }
+    const now = world.timeMin ?? 0
+    const biome = getBiome(cur.biome ?? coreRuins[cur.id]?.biome)
+    if (biome) clearedAt[biome.id] = now
+    state.lastClearedBiome = biome?.id ?? null
+    state.lastClearedDay = Math.floor(now / 1440) + 1
+    state.current = null
   }
 
   function retreat(world) {
@@ -488,6 +515,8 @@
       coreRuins
     }),
     assemble,
+    getBiome,
+    clearedSince,
     enter,
     advance,
     retreat,

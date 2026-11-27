@@ -146,11 +146,10 @@
       if (cec && cec.alive !== false) {
         const churchWait = DATA.workCooldownWait(world, 'lastChurchErrand', world.timeMin, 2);
         lines.push('修道院委托：' + (churchWait > 0 ? waitText(churchWait) : '可接取（church_paid / church_volunteer，均需 3 小时）'));
-        const weeklyBiome = cec.flags?.ceciliaWeeklyBiome;
-        if (weeklyBiome) {
-          const clearedMatch = world.ruinState?.lastClearedBiome === weeklyBiome &&
-            (world.ruinState?.lastClearedDay ?? 0) >= (cec.flags?.ceciliaWeeklyAcceptDay ?? 999);
-          lines.push('教堂周常遗迹：目标生态 ' + weeklyBiome + (clearedMatch ? '（已通关，可回教堂交付领取特产奖励）' : '（进行中，须通关对应生态遗迹）'));
+        const weekly = DATA.getChurchWeeklyRuin(world);
+        if (weekly) {
+          lines.push('教堂周常遗迹：' + weekly.biome.name +
+            (weekly.ready ? '（已通关，可回教堂交付领取特产奖励）' : '（可在城外从冒险面板前往）'));
         }
       }
     }
@@ -183,7 +182,7 @@
         : '默认兜帽斗篷乔装遮面、收敛王徽与细剑';
       lines.push('艾琳动向：通缉流亡反攻期，以城外荒野（wilds）为藏身营地并与你同步进退（当前' + disguise + '；反攻值：' + (eileen?.values?.counterattack ?? 0) + '/100；白昼可乔装入城接头，但入夜城内宵禁且反攻未满 100 禁止踏入山庄；满 100 后须亲赴领主山庄（manor）潜入夺回讯号管）。');
     } else if (world.flags?.eileen_arrived && !world.flags?.eileen_departed) {
-      if ((eileen?.flags?.eileenInspectDays ?? 0) >= 6) {
+      if (DATA.eileenEscortOpen(world, eileen)) {
         lines.push('艾琳动向：巡查将毕，城内冒险者公会告示板已挂出密封护送委托（悬挂 3 日，期间前往城内街区可接取）。');
       } else {
         lines.push('艾琳动向：在领主山庄巡查核账（期间高傲不与见习冒险者接触）。');

@@ -543,6 +543,10 @@
     const eligible = Object.values(catalog.coreRuins).filter(ruin => ruin.tier <= rank && !world.ruinState?.clearedCores?.includes(ruin.id))
     const trials = [2, 3, 4].filter(tier => tier <= rank).map(tier => [String(tier), tier + ' 阶外围探险'])
     const sites = [...eligible.map(option), ...trials]
+    const weekly = root.OKH_APP_DATA.getChurchWeeklyRuin(world)
+    if (weekly && !weekly.ready && weekly.biome.minTier <= rank) {
+      sites.unshift(['church_weekly', '教堂周常 · ' + weekly.biome.name])
+    }
     const available = Object.values(world.npcs).filter(npc => rules.isAvailable(world, npc.id))
     const members = available.map(npc => `<label><input type="checkbox" data-okh-adventure-member value="${escapeHtml(npc.id)}"> ${escapeHtml(npc.name)}</label>`).join(' ')
     const entry = world.flags?.arrived_oakhaven && world.playerLocation === 'wilds' && sites.length

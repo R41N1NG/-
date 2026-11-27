@@ -157,12 +157,50 @@
     return repaired
   }
 
+  function repairStoryEvents(world) {
+    const bg = world.bg
+    const npcs = world.npcs
+    const eileen = npcs?.eileen
+    const escort = bg?.eventStates?.[JSON.stringify(['event', 'eileen_escort_offer', 'eileen'])]
+    // The old offer set "departed" when posted, freezing the inspection clock until answered.
+    if (escort?.status === 'pending' && world.flags?.eileen_departed && eileen &&
+        !eileen.flags?.eileen_captured && !world.flags.baron_purged &&
+        !DATA.isEileenFugitive(world) && !DATA.hasEileenSignal(world)) {
+      const nights = Number.isSafeInteger(escort.triggeredAt)
+        ? Math.max(0, Math.floor(world.timeMin / 1440) - Math.floor(escort.triggeredAt / 1440))
+        : 0
+      world = {
+        ...world,
+        flags: { ...world.flags, eileen_departed: false },
+        npcs: { ...npcs, eileen: {
+          ...eileen,
+          flags: { ...eileen.flags, eileenInspectDays: Math.max(6, eileen.flags?.eileenInspectDays ?? 0) + nights }
+        } }
+      }
+    }
+
+    // Keep settlement history but release the once-only lock left by the old definitions.
+    const keys = [
+      ['eileen_manor_recon', 'eileen'],
+      ['eileen_manor_trespass_alarm', null],
+      ['eileen_curfew_evict', null],
+      ['cecilia_quest_1_mire', 'cecilia'],
+      ['cecilia_quest_2_vault', 'cecilia'],
+      ['cecilia_quest_3_crypt', 'cecilia']
+    ].map(([event, npcId]) => JSON.stringify(['event', event, npcId]))
+      .filter(key => bg?.fired?.[key] && bg.eventStates?.[key]?.status !== 'pending')
+    if (!keys.length) return world
+    const fired = { ...bg.fired }
+    for (const key of keys) delete fired[key]
+    return { ...world, bg: { ...bg, fired } }
+  }
+
   function migrateWorld(rawWorld) {
     if (!rawWorld) return rawWorld
     if ((rawWorld.schemaVersion ?? 1) > DATA.SCHEMA_VERSION) return rawWorld
     rawWorld = root.OKH_APP_TAGS.migrate(rawWorld)
     if (rawWorld.schemaVersion === DATA.SCHEMA_VERSION) {
-      const repaired = repairBaronCurfew(rawWorld)
+      const repaired = repairStoryEvents(repairBaronCurfew(rawWorld))
       if (repaired.playerState?.adventureVersion === 1) return repaired
       return root.OKH_APP_ADVENTURE.initialize(JSON.parse(JSON.stringify(repaired)))
     }
@@ -237,7 +275,7 @@
     }
     world.interactingIds = (world.interactingIds || []).filter(id => Object.hasOwn(nextNpcs, id))
     world.schemaVersion = DATA.SCHEMA_VERSION
-    return repairBaronCurfew(world)
+    return repairStoryEvents(repairBaronCurfew(world))
   }
 
   root.OKH_APP_MIGRATE = Object.freeze({ LEGACY_KEYS, migrateWorld })

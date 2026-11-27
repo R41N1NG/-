@@ -29,6 +29,34 @@
   const isEileenFugitive = world => !world?.flags?.baron_purged && eileenFlag(world, 'eileen_fugitive')
   const hasEileenSignal = world => eileenFlag(world, 'eileen_signal_fired')
 
+  const eileenEscortOpen = (world, npc = world.npcs?.eileen) =>
+    Boolean(world.flags?.eileen_arrived && !world.flags?.eileen_departed && !world.flags?.baron_purged) &&
+    (npc?.flags?.eileenInspectDays ?? 0) >= 6 && (npc?.flags?.eileenInspectDays ?? 0) < 9
+  const isDaytime = phase => ['morning', 'afternoon'].includes(phase.id)
+  const canPrepareCounterattack = world => isEileenFugitive(world) && !hasEileenSignal(world)
+  const availableGulan = world => {
+    const gulan = world.npcs?.gulan
+    return Boolean(gulan?.monitored && gulan.alive !== false && (gulan.stage ?? 0) < 3 &&
+      !gulan.flags?.gulan_departed && !gulan.flags?.captured_orc && !gulan.flags?.captured_manor)
+  }
+
+  const weeklyRuins = ['mire', 'vault', 'lair', 'crypt']
+  const nextWeeklyBiome = npc => weeklyRuins[(npc.flags?.ceciliaWeeklyCount ?? 0) % weeklyRuins.length]
+  const churchAudience = (world, npc) => Boolean(npc?.monitored && npc.alive !== false &&
+    world.playerLocation === 'church' && npc.location === 'church')
+  const canTakeWeeklyRuin = ({ world, npc, phase }) =>
+    Boolean(world.flags?.arrived_oakhaven) && !isEileenFugitive(world) &&
+    !npc.flags?.ceciliaWeeklyBiome && dayAt(world) - (npc.flags?.ceciliaWeeklyLastDoneDay ?? -99) >= 7 &&
+    churchAudience(world, npc) && isDaytime(phase)
+
+  function getChurchWeeklyRuin(world) {
+    const flags = world.npcs?.cecilia?.flags
+    const ruins = root.OKH_APP_RUINS
+    const biome = ruins?.getBiome(flags?.ceciliaWeeklyBiome)
+    if (!biome) return null
+    return { biome, ready: ruins.clearedSince(world, biome.id, flags.ceciliaWeeklyAcceptMin, flags.ceciliaWeeklyAcceptDay) }
+  }
+
   function isAloneWithAurora(world, npc) {
     if (!npc || npc.id !== 'aurora' || world.playerLocation !== npc.location) return false
     const present = Object.values(world.npcs || {}).filter(
@@ -2631,12 +2659,11 @@
       scope: 'npc',
       targets: ['eileen'],
       allowCancel: false,
-      when: ({ world, npc, phase }) =>
-        Boolean(world.flags?.eileen_arrived && !world.flags?.eileen_departed && !world.flags?.baron_purged) &&
-        ['morning', 'afternoon'].includes(phase.id) &&
-        (npc.flags?.eileenInspectDays ?? 0) >= 6 &&
+      when: ({ world, npc, phase }) => eileenEscortOpen(world, npc) && isDaytime(phase) &&
         (auroraManorInsider(world) || world.playerLocation === 'town'),
-      effects: { worldFlags: { eileen_departed: true } },
+      resolveWhen: ({ world, npc, phase }) =>
+        eileenEscortOpen(world, npc) && isDaytime(phase) && world.playerLocation === 'town',
+      expireWhen: ({ world, npc }) => !eileenEscortOpen(world, npc),
       text: ({ world }) => auroraManorInsider(world)
         ? '王都特使{name}完成奥克赫斯城巡查并向王都发出返程报信函件。离开前她嘱咐侍女奥萝拉去城内冒险者公会挂出一份报酬优渥的密封护送任务，念着与你的交情，奥萝拉优先赶来私下把这份委托悄悄递到你手边。'
         : '王都特使{name}完成奥克赫斯城巡查并向王都发出返程报信函件。离开前她派人前往城内冒险者公会分会，在告示板上挂出了一份报酬优渥的密封护送任务，正逢你在城内街区经过。',
@@ -2779,6 +2806,7 @@
     {
       id: 'eileen_manor_trespass_alarm',
       mode: 'result',
+      repeatable: true,
       scope: 'world',
       when: ({ world }) =>
         Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
@@ -2793,11 +2821,12 @@
     {
       id: 'eileen_curfew_evict',
       mode: 'result',
+      repeatable: true,
       scope: 'world',
       when: ({ world, phase }) =>
         Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
         ['town', 'inn'].includes(world.playerLocation) &&
-        phase.id === 'night',
+        ['night', 'deep_night'].includes(phase.id),
       effects: [
         { target: 'world', playerMove: 'wilds' },
         { target: 'eileen', add: { counterattack: -5 } }
@@ -2821,7 +2850,7 @@
       outcomes: {
         counter_ambush: {
           when: ({ world }) => world.playerLocation === 'wilds',
-          effects: { target: 'eileen', add: { counterattack: 15, affection: 6 }, npcFlags: { eileen_wilds_hunt_done: true } },
+          effects: { add: { counterattack: 15, affection: 6 }, npcFlags: { eileen_wilds_hunt_done: true } },
           text: '你与{name}没有盲目逃窜，反而借乱石林线抢先卡住视野死角，干脆利落地剪除掉队的搜捕领队并从其怀中搜出伯爵府近期巡防口令与换防签条（艾琳反攻值 +15，好感 +6）。从口供与签条中得知：山庄内庭有伯爵重金聘请的宗师供奉坐镇，城门白昼混在商旅人流中可乔装接头，入夜则全城严查。'
         },
         evade_stealth: {
@@ -2847,23 +2876,19 @@
       allowCancel: true,
       retryOnCancel: true,
       when: ({ world, npc, phase }) => {
-        const gulan = world.npcs?.gulan
-        const gulanOk = Boolean(
-          gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 &&
-          !gulan.flags?.gulan_departed && !gulan.flags?.captured_orc && !gulan.flags?.captured_manor
-        )
-        return Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        return canPrepareCounterattack(world) &&
           Boolean(npc.flags?.eileen_wilds_hunt_done) &&
           (npc.values.counterattack ?? 0) >= 30 &&
           !npc.flags?.eileen_gulan_contacted &&
-          gulanOk &&
+          availableGulan(world) &&
           world.playerLocation === 'town' &&
           ['morning', 'afternoon'].includes(phase.id)
       },
       text: '白昼混在商旅人流中乔装潜入城内练武场一隅，外貌二十余岁的冷艳黑角重剑宗师古兰收剑立于场边，琥珀色竖瞳平静扫过你们。{name}收敛了皇室巡查官的傲气，以平辈礼节郑重说明山庄内有伯爵重金聘请的宗师供奉镇守，凭小队自身难以正面破局，恳请古兰届时只在山庄外围出手制造动静牵制对方、绝不拖她正面卷入王室纷争。',
       outcomes: {
         pledge_divert: {
-          when: ({ world }) => world.playerLocation === 'town',
+          when: ({ world, npc, phase }) => canPrepareCounterattack(world) && availableGulan(world) &&
+            !npc.flags?.eileen_gulan_contacted && isDaytime(phase) && world.playerLocation === 'town',
           effects: [
             { target: 'eileen', add: { counterattack: 20, affection: 5 }, npcFlags: { eileen_gulan_contacted: true } },
             { target: 'gulan', npcFlags: { gulan_divert_promised: true } }
@@ -2880,24 +2905,20 @@
       allowCancel: true,
       retryOnCancel: true,
       when: ({ world, npc, phase }) => {
-        const gulan = world.npcs?.gulan
-        const gulanUnavailable = !(
-          gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 &&
-          !gulan.flags?.gulan_departed && !gulan.flags?.captured_orc && !gulan.flags?.captured_manor
-        )
-        return Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        return canPrepareCounterattack(world) &&
           Boolean(npc.flags?.eileen_wilds_hunt_done) &&
           (npc.values.counterattack ?? 0) >= 30 &&
           !npc.flags?.eileen_gulan_contacted &&
-          gulanUnavailable &&
+          !availableGulan(world) &&
           world.playerLocation === 'wilds' &&
           ['morning', 'afternoon', 'evening'].includes(phase.id)
       },
       text: '眼下已无法指望古兰在城内协助牵制，面对山庄内宗师供奉坐镇的硬钉子，{name}与你摊开草图商议，只能自行在城外筹备一套引火与假信号声东击西的方案。',
       outcomes: {
         decoy_prep: {
-          when: ({ world }) => world.playerLocation === 'wilds',
-          effects: { target: 'eileen', add: { counterattack: 12, affection: 3 }, npcFlags: { eileen_gulan_contacted: true } },
+          when: ({ world, npc }) => canPrepareCounterattack(world) && !availableGulan(world) &&
+            !npc.flags?.eileen_gulan_contacted && world.playerLocation === 'wilds',
+          effects: { add: { counterattack: 12, affection: 3 }, npcFlags: { eileen_gulan_contacted: true } },
           text: '二人反复校准风向与几处外围引火点，勉强拼出一套声东击西吸引宗师注意的替补方案（艾琳反攻值 +12，好感 +3）。'
         }
       }
@@ -2905,6 +2926,7 @@
     {
       id: 'eileen_manor_recon',
       mode: 'interaction',
+      repeatable: true,
       scope: 'npc',
       targets: ['eileen'],
       allowCancel: true,
@@ -2916,6 +2938,12 @@
         !npc.flags?.eileen_recon_today &&
         (npc.flags?.eileenReconCount ?? 0) < 3 &&
         world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id),
+      expireWhen: ({ world, npc }) => !canPrepareCounterattack(world) ||
+        (npc.flags?.eileenReconCount ?? 0) >= 3 || (npc.values.counterattack ?? 0) >= 100,
+      resolveWhen: ({ world, npc, phase }) => canPrepareCounterattack(world) &&
+        !npc.flags?.eileen_recon_today && (npc.flags?.eileenReconCount ?? 0) < 3 &&
+        (npc.values.counterattack ?? 0) < 100 && world.playerLocation === 'wilds' &&
         ['morning', 'afternoon', 'evening'].includes(phase.id),
       text: ({ npc }) => {
         const count = npc.flags?.eileenReconCount ?? 0
@@ -2929,7 +2957,6 @@
       },
       outcomes: {
         infiltrate_edge: {
-          when: ({ world }) => world.playerLocation === 'wilds',
           effects: ({ npc }) => [
             {
               target: 'eileen',
@@ -2940,7 +2967,6 @@
           text: '你们趁山林雾气贴近山庄外围暗哨交接处，稳稳截听到最新换防口令与换岗时间差（艾琳反攻值 +15，好感 +3）。'
         },
         distant_observe: {
-          when: ({ world }) => world.playerLocation === 'wilds',
           effects: ({ npc }) => [
             {
               target: 'eileen',
@@ -2995,14 +3021,14 @@
       text: '历经荒野蓄势与各方情报汇总（反攻值已满 100），{name}眼神沉静而果断地看向伯爵山庄方向——如今已摸清府内换防与重金宗师供奉的巡值破绽，趁夜色或换防间隙亲抵山庄潜入夺回那支被掉包的真正王室魔能讯号管，时机已成熟。',
       outcomes: {
         strike: {
-          when: ({ world }) => world.playerLocation === 'manor',
+          when: ({ world, npc }) => canPrepareCounterattack(world) && world.playerLocation === 'manor' &&
+            (npc.values.counterattack ?? 0) >= 100,
           effects: [
             { target: 'world', worldFlags: { eileen_signal_fired: true }, itemsRemove: [{ id: 'manor_intel_note', all: true }] },
             { target: 'eileen', npcFlags: { eileen_signal_fired: true, eileenSignalDays: 0 } }
           ],
           text: ({ world }) => {
-            const gulan = world.npcs?.gulan
-            const gulanDivert = gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 && !gulan.flags?.gulan_departed
+            const gulanDivert = availableGulan(world) && world.npcs.gulan.flags?.gulan_divert_promised === true
             return (gulanDivert
               ? '众人按推演好的破绽分头行动：请出古兰隐匿身份在山庄外围出手制造动静调虎离山，成功引开伯爵重金聘请的宗师供奉；其余人趁隙摸入山庄防线深处破开暗格，'
               : '众人按推演好的破绽声东击西引开伯爵重金聘请的宗师供奉与精锐守卫，趁隙摸入山庄防线深处破开暗格，') +
@@ -3464,6 +3490,7 @@
     {
       id: 'cecilia_quest_1_mire',
       mode: 'interaction',
+      repeatable: true,
       scope: 'npc',
       targets: ['cecilia'],
       allowCancel: true,
@@ -3473,10 +3500,13 @@
         npc.flags?.cecilia_quest_stage === 1 &&
         world.playerLocation === 'wilds' &&
         ['morning', 'afternoon', 'evening'].includes(phase.id),
+      expireWhen: ({ world, npc }) => Boolean(world.flags?.baron_purged) || npc.flags?.cecilia_quest_stage !== 1,
+      resolveWhen: ({ world, npc, phase }) =>
+        !world.flags?.baron_purged && npc.flags?.cecilia_quest_stage === 1 &&
+        world.playerLocation === 'wilds' && ['morning', 'afternoon', 'evening'].includes(phase.id),
       text: '你按约定抵达城外毒沼菌窟外围，潮湿腐殖沼气中散落着修道院急需的发光菌茸与净水药草，只是浅滩暗影里潜伏着毒角蛙与腐水寄生体。',
       outcomes: {
         complete_quest: {
-          when: ({ world }) => world.playerLocation === 'wilds',
           effects: ({ npc }) => [
             {
               target: 'cecilia',
@@ -3491,6 +3521,7 @@
     {
       id: 'cecilia_quest_2_vault',
       mode: 'interaction',
+      repeatable: true,
       scope: 'npc',
       targets: ['cecilia'],
       allowCancel: true,
@@ -3500,10 +3531,13 @@
         npc.flags?.cecilia_quest_stage === 2 &&
         world.playerLocation === 'wilds' &&
         ['morning', 'afternoon', 'evening'].includes(phase.id),
+      expireWhen: ({ world, npc }) => Boolean(world.flags?.baron_purged) || npc.flags?.cecilia_quest_stage !== 2,
+      resolveWhen: ({ world, npc, phase }) =>
+        !world.flags?.baron_purged && npc.flags?.cecilia_quest_stage === 2 &&
+        world.playerLocation === 'wilds' && ['morning', 'afternoon', 'evening'].includes(phase.id),
       text: '按老修女长遗留账册的指引，你找到城外荒原那座布满机关与兽骨残痕的古代石室入口；只要破开重力暗锁取回旧教区封存的救济匣，修道院就能再撑许久。',
       outcomes: {
         complete_quest: {
-          when: ({ world }) => world.playerLocation === 'wilds',
           effects: ({ npc }) => [
             {
               target: 'cecilia',
@@ -3518,6 +3552,7 @@
     {
       id: 'cecilia_quest_3_crypt',
       mode: 'interaction',
+      repeatable: true,
       scope: 'npc',
       targets: ['cecilia'],
       allowCancel: true,
@@ -3527,10 +3562,13 @@
         npc.flags?.cecilia_quest_stage === 3 &&
         world.playerLocation === 'wilds' &&
         ['morning', 'afternoon', 'evening'].includes(phase.id),
+      expireWhen: ({ world, npc }) => Boolean(world.flags?.baron_purged) || npc.flags?.cecilia_quest_stage !== 3,
+      resolveWhen: ({ world, npc, phase }) =>
+        !world.flags?.baron_purged && npc.flags?.cecilia_quest_stage === 3 &&
+        world.playerLocation === 'wilds' && ['morning', 'afternoon', 'evening'].includes(phase.id),
       text: '东境商道旁那座沉沦灵堂外围寒雾缭绕，几具游荡骸骨封住了邻郡教会救济车队的必经山口；唯有先拔除这股外溢亡灵，车队才敢进城。',
       outcomes: {
         complete_quest: {
-          when: ({ world }) => world.playerLocation === 'wilds',
           effects: ({ npc }) => [
             {
               target: 'cecilia',
@@ -3550,22 +3588,10 @@
       targets: ['cecilia'],
       allowCancel: true,
       retryOnCancel: true,
-      when: ({ world, npc, phase }) => {
-        const day = dayAt(world)
-        const lastWeekDay = npc.flags?.ceciliaWeeklyLastDoneDay ?? -99
-        return Boolean(world.flags?.arrived_oakhaven) &&
-          npc.alive !== false &&
-          !isEileenFugitive(world) &&
-          !npc.flags?.ceciliaWeeklyBiome &&
-          (day - lastWeekDay) >= 7 &&
-          world.playerLocation === 'church' &&
-          npc.location === 'church' &&
-          ['morning', 'afternoon'].includes(phase.id)
-      },
+      when: canTakeWeeklyRuin,
+      resolveWhen: canTakeWeeklyRuin,
       text: ({ npc }) => {
-        const count = npc.flags?.ceciliaWeeklyCount ?? 0
-        const pool = ['mire', 'vault', 'lair', 'crypt']
-        const target = pool[count % pool.length]
+        const target = nextWeeklyBiome(npc)
         const descMap = {
           mire: '毒沼菌窟（mire）：修道院急需毒沼阴蛇胆与荧光菌茸配制退热解毒药膏',
           vault: '机关暗殿（vault）：寻回古代地宫石室遗落的旧教区白银圣器与祈祷手抄本',
@@ -3576,16 +3602,9 @@
       },
       outcomes: {
         accept_weekly: {
-          when: ({ world }) => world.playerLocation === 'church',
-          effects: ({ world, npc }) => {
-            const count = npc.flags?.ceciliaWeeklyCount ?? 0
-            const pool = ['mire', 'vault', 'lair', 'crypt']
-            const target = pool[count % pool.length]
-            return {
-              target: 'cecilia',
-              npcFlags: { ceciliaWeeklyBiome: target, ceciliaWeeklyAcceptDay: dayAt(world) }
-            }
-          },
+          effects: ({ world, npc }) => ({
+            npcFlags: { ceciliaWeeklyBiome: nextWeeklyBiome(npc), ceciliaWeeklyAcceptMin: world.timeMin }
+          }),
           text: '你接下了本周圣辉大教堂遗迹委托；{name}取出一枚小巧木牌交给你作凭证，嘱咐你在城外通关一座对应生态的遗迹后再回来交付。'
         }
       }
@@ -3597,22 +3616,17 @@
       scope: 'npc',
       targets: ['cecilia'],
       allowCancel: false,
-      when: ({ world, npc }) => {
-        const biome = npc.flags?.ceciliaWeeklyBiome
-        if (!biome || npc.alive === false) return false
-        const clearedMatch = world.ruinState?.lastClearedBiome === biome &&
-          (world.ruinState?.lastClearedDay ?? 0) >= (npc.flags?.ceciliaWeeklyAcceptDay ?? 999)
-        return Boolean(clearedMatch) && world.playerLocation === 'church' && npc.location === 'church'
-      },
+      when: ({ world, npc }) => churchAudience(world, npc) && getChurchWeeklyRuin(world)?.ready === true,
+      resolveWhen: ({ world, npc }) => churchAudience(world, npc) && getChurchWeeklyRuin(world)?.ready === true,
       text: '你带着刚从对应遗迹采获的奇物回到圣辉大教堂，{name}快步迎上前来查验，脸上浮起由衷的欣慰。',
       outcomes: {
         turnin: {
           effects: ({ world, npc }) => {
             const count = (npc.flags?.ceciliaWeeklyCount ?? 0) + 1
-            const biome = npc.flags?.ceciliaWeeklyBiome
+            const biome = getChurchWeeklyRuin(world).biome.id
             const itemsAdd = [
               { id: 'church_blessed_salve', count: 1 },
-              { id: biome === 'crypt' || biome === 'vault' ? 'church_holy_water' : 'church_purify_incense', count: 1 },
+              { id: ['biome_undead_crypt', 'biome_trap_vault'].includes(biome) ? 'church_holy_water' : 'church_purify_incense', count: 1 },
               { id: 'church_blessed_ration', count: 1 }
             ]
             const inv = Array.isArray(world.playerState?.inventory) ? world.playerState.inventory : []
@@ -3630,6 +3644,7 @@
                 npcFlags: {
                   ceciliaWeeklyBiome: null,
                   ceciliaWeeklyAcceptDay: 0,
+                  ceciliaWeeklyAcceptMin: null,
                   ceciliaWeeklyLastDoneDay: dayAt(world),
                   ceciliaWeeklyCount: count,
                   ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1
@@ -4619,7 +4634,7 @@
     SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel,
     PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG,
     ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld,
-    isEileenFugitive, hasEileenSignal,
+    isEileenFugitive, hasEileenSignal, eileenEscortOpen, churchAudience, getChurchWeeklyRuin,
     WORK_LIMITS, WORK_TERMS, workStart, paidWorkSettledToday, workCooldownWait, recentGuildStarts, completedWorkFlags,
     DRAGON_TRUE_FORM_SPEC, buildDragonRevealText
   })

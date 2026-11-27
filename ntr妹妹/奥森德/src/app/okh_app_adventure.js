@@ -187,14 +187,19 @@
   function open(world, site, ids, key) {
     u.check(world.flags?.arrived_oakhaven && world.playerLocation === 'wilds' && !DATA.isEileenFugitive(world), '请在抵镇后从城外荒原进入遗迹')
     const tier = Number(site)
-    const opts = [2, 3, 4].includes(tier) ? { tier } : { coreId: site }
+    const churchCommission = site === 'church_weekly'
+    const weekly = churchCommission ? DATA.getChurchWeeklyRuin(world) : null
+    if (churchCommission) u.check(weekly && !weekly.ready, '须先接取待完成的教堂周常委托')
+    const opts = weekly ? { tier: weekly.biome.minTier, biome: weekly.biome.id }
+      : [2, 3, 4].includes(tier) ? { tier } : { coreId: site }
     const raid = RUINS.assemble({ ...opts, key, rng: randomFor(key) })
+    if (churchCommission) Object.assign(raid, { merit: 0, gold: 0, scrollId: null })
     u.check(guildRank(world) >= raid.tier, '当前公会阶位不足')
     u.check(!tagsOf(world, 'player').some(tag => tag === 'debuff_starving' || sleepTags.includes(tag)), '请先休整再进入遗迹')
     u.check(ids.every(id => isAvailable(world, id)), '随行者当前无法出发')
     if (!isAvailable(world, raid.escort)) raid.escort = null
     u.check(supply(world) >= 1 + ids.length + Number(Boolean(raid.escort)), '补给不足一日用量')
-    if (!raid.id) {
+    if (!raid.id && !churchCommission) {
       const recent = DATA.recentGuildStarts(world, world.timeMin)
       u.check(recent.length < DATA.WORK_LIMITS.guildStarts && !DATA.workCooldownWait(world, 'lastGuildCommission', world.timeMin, DATA.WORK_LIMITS.guildCooldownDays), '公会委托额度未恢复')
       const start = world.timeMin
@@ -252,7 +257,7 @@
     const days = Math.floor((world.timeMin + hours * 60) / 1440) - Math.floor(world.timeMin / 1440)
     const effects = payRations(world, raid, days)
     let passed = !raid.shortage
-    const isCrypt = raid.biome === 'crypt' || block.biome === 'crypt'
+    const isCrypt = RUINS.getBiome(raid.biome)?.id === 'biome_undead_crypt' || block.biome === 'crypt'
     const useHolyWater = passed && isCrypt && ['硬闯', '周旋'].includes(choice) && countOf(world, 'church_holy_water') >= 1
     if (useHolyWater) effects.push({ target: 'world', itemsRemove: ['church_holy_water'] })
     if (passed && choice === '硬闯') {
@@ -353,7 +358,7 @@
     }
     if (verb === '用药') return use(world, item, extra || 'player', key)
     if (verb === '疗伤') {
-      u.check(!world.ruinState?.current && world.playerLocation === 'church' && world.npcs?.cecilia?.alive !== false, '须前往圣辉大教堂请塞西莉亚处理伤势')
+      u.check(!world.ruinState?.current && DATA.churchAudience(world, world.npcs?.cecilia), '须在圣辉大教堂与塞西莉亚会面后处理伤势')
       const target = item
       u.check(target === 'player' || u.own(world.npcs, target) &&
         world.npcs[target].alive !== false && world.npcs[target].location === world.playerLocation, '伤者须在场')

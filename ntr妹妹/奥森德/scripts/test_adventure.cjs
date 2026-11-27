@@ -188,7 +188,12 @@ test('a heavy wound can recover through treatment or three nights at the inn', (
   sandbox.OKH_APP_TAGS.apply(world, 'player', [tag])
   world.npcs.cecilia.location = 'inn'
   world.npcs.cecilia.monitored = true
-  const healed = play(world, '疗伤 player').state
+  assert(play(world, '疗伤 player').state.tags.player.includes(tag))
+  const church = JSON.parse(JSON.stringify(world))
+  church.playerLocation = 'church'
+  assert(play(church, '疗伤 player').state.tags.player.includes(tag))
+  church.npcs.cecilia.location = 'church'
+  const healed = play(church, '疗伤 player').state
   assert(!healed.tags.player.includes(tag))
   assert.equal(healed.playerState.gold, world.playerState.gold - 10)
   function wait(days) {
