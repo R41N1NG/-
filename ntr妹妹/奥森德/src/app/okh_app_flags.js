@@ -23,7 +23,7 @@
     player_barony_granted: ['布尔', false, '玩家已获封男爵，供爵位权益与后续分支读取', once],
     eileen_fugitive: ['布尔', false, '艾琳线进入逃亡阶段，影响队伍日程与行动', '兰开斯特清算时清除'],
     eileen_signal_fired: ['布尔', false, '艾琳已发出王室讯号', once],
-    baron_purged: ['布尔', false, '男爵已被清算', once],
+    baron_purged: ['布尔', false, '雷蒙德伯爵已被清算', once],
     lastInnSettledDay: ['游戏日', 0, '上一笔住宿结算的日期，用于防止重复结算', '住宿结算后更新'],
     inn_arrears: ['布尔', false, '旅店住宿欠费', '补缴或相关规则清偿时清除'],
     inn_free_pass_today: ['布尔', undefined, '本晚住宿免金', '本晚住宿结算时消耗'],
@@ -64,7 +64,10 @@
     },
     aurora: {
       manor_service_active: ['布尔', undefined, '奥萝拉仍在山庄任职，供行动调度使用', '离开山庄或清算相关分支结束任职时清除'],
-      aurora_manor_confessed: ['布尔', undefined, '奥萝拉已向玩家坦白山庄经历', once]
+      aurora_manor_confessed: ['布尔', undefined, '奥萝拉已向玩家坦白山庄经历', once],
+      aurora_resign_talked: ['布尔', undefined, '已完成周末独处「辞职」谈心事件', once],
+      aurora_resign_failed: ['布尔', undefined, '山庄陪同辞职遭伯爵强扣失败，需等待艾琳线救局', once],
+      aurora_shared_debt_vow_done: ['布尔', undefined, '归队后共同面对债务与未来占位回执已触发', once]
     },
     ed: {
       ed_teach_count: ['整数', undefined, '爱德累计传授次数，缺失时按 0 读取', '每次有效传授累加，无每日清零'],

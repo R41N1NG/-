@@ -102,6 +102,7 @@
       ceciliaFunds: cecilia?.values?.orphanage_funds ?? 0,
       ceciliaAff: cecilia?.values?.affection ?? 0,
       ceciliaMidgameCrisis: Boolean(cecilia?.flags?.cecilia_midgame_crisis),
+      ceciliaQuestStage: cecilia?.flags?.cecilia_quest_stage ?? 0,
       ceciliaAppealDays: Number.isFinite(cecilia?.flags?.ceciliaAppealDays) ? cecilia.flags.ceciliaAppealDays : 0,
       ceciliaGoStage1: Boolean(cecilia?.flags?.cecilia_manor_go_stage1),
       ceciliaGoStage2: Boolean(cecilia?.flags?.cecilia_manor_go_stage2),
@@ -126,6 +127,7 @@
       eileenBetrothed: Boolean(eileen?.flags?.eileen_betrothed || world.flags?.player_barony_granted),
       eileenReturnedCapital: Boolean(eileen?.flags?.eileen_returned_capital),
       eileenInspectDays: Number.isFinite(eileen?.flags?.eileenInspectDays) ? eileen.flags.eileenInspectDays : 0,
+      eileenFugitiveDays: Number.isFinite(eileen?.flags?.eileenFugitiveDays) ? eileen.flags.eileenFugitiveDays : 0,
       eileenCaptiveDays: Number.isFinite(eileen?.flags?.eileenCaptiveDays) ? eileen.flags.eileenCaptiveDays : 0,
       eileenSignalDays: Number.isFinite(eileen?.flags?.eileenSignalDays) ? eileen.flags.eileenSignalDays : 0,
       eileenPostPurgeDays: Number.isFinite(eileen?.flags?.eileenPostPurgeDays) ? eileen.flags.eileenPostPurgeDays : 0,
@@ -285,9 +287,7 @@
     const npcFlags = {
       eileen_care_today: false,
       eileen_encourage_today: false,
-      eileen_scout_today: false,
-      eileen_cover_today: false,
-      eileen_rescue_today: false,
+      eileen_recon_today: false,
       ...DAILY.affectionFlags(k + 1),
       lastNightSettledDay: k
     }
@@ -297,7 +297,9 @@
         sim.eileenSignalDays += 1
         npcFlags.eileenSignalDays = sim.eileenSignalDays
       } else if (sim.eileenFugitive) {
-        change.add = { counterattack: 4 }
+        sim.eileenFugitiveDays += 1
+        npcFlags.eileenFugitiveDays = sim.eileenFugitiveDays
+        change.add = { counterattack: 2 }
       } else if (sim.eileenCaptured) {
         sim.eileenCaptiveDays += 1
         npcFlags.eileenCaptiveDays = sim.eileenCaptiveDays
@@ -321,7 +323,7 @@
     // 互斥分支 1：在旅店过夜走宿费结算，不消耗野外补给
     if (sim.playerLoc === 'inn') {
       sim.supplyShortage = false
-      if (sim.arrived && !sim.eileenFugitive && !sim.baronyGranted) {
+      if (sim.arrived && !sim.baronyGranted) {
         if (sim.innFreePassToday) {
           // 爱德当日帮工抵扣仅免除当晚一次宿费，核销后次日恢复正常计费
           sim.innFreePassToday = false
@@ -402,7 +404,7 @@
     const add = {}
     if (sim.arrived && sim.ceciliaAlive && !sim.baronPurged && sim.ceciliaStage < 3) {
       if (sim.ceciliaFunds > 0) {
-        const drain = sim.ceciliaMidgameCrisis ? 6 : 3
+        const drain = sim.ceciliaMidgameCrisis ? 5 : 3
         const drop = Math.min(sim.ceciliaFunds, drain)
         sim.ceciliaFunds -= drop
         add.orphanage_funds = -drop
@@ -410,7 +412,7 @@
           sim.ceciliaAppealDays = 0
           npcFlags.ceciliaAppealDays = 0
         }
-      } else {
+      } else if (!sim.ceciliaQuestStage) {
         const reqAff = sim.ceciliaStage === 0 ? 70 : sim.ceciliaStage === 1 ? 80 : 90
         const goFlag = sim.ceciliaStage === 0 ? sim.ceciliaGoStage1 : sim.ceciliaStage === 1 ? sim.ceciliaGoStage2 : sim.ceciliaGoStage3
         if (sim.ceciliaAff >= reqAff && !goFlag) {

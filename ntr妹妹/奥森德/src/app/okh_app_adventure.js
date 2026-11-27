@@ -35,7 +35,10 @@
   const medicine = {
     antidote: ['debuff_poisoned'], healing_salve: ['debuff_bleeding'],
     paralysis_cure: ['debuff_paralyzed'], purify_vial: ['debuff_exhausted'],
-    smelling_salts: sleepTags.slice(0, 2)
+    smelling_salts: sleepTags.slice(0, 2),
+    church_blessed_salve: ['debuff_heavy_wound', 'debuff_light_wound', 'debuff_bleeding'],
+    church_purify_incense: ['debuff_poisoned', 'debuff_paralyzed'],
+    church_blessed_ration: ['debuff_starving', 'debuff_exhausted']
   }
 
   const tagsOf = (world, id) => world.tags?.[id] || []
@@ -131,7 +134,11 @@
   function ability(world, id, name) {
     const tags = tagsOf(world, id)
     if (tags.includes('debuff_heavy_wound') || tags.includes('debuff_paralyzed')) return 0
-    if (id === 'player') return SKILLS.checkAbility(world, name)
+    if (id === 'player') {
+      const base = SKILLS.checkAbility(world, name)
+      const rosary = countOf(world, 'church_silver_rosary') >= 1 && ['治疗', '辨识'].includes(name) ? 1 : 0
+      return base + rosary
+    }
     const professions = TAGS.list(world, id).filter(tag => tag.category === 'class')
     const fallback = TAGS.catalog[companionClasses[id]]
     if (fallback && professions.length === 0) professions.push(fallback)
@@ -245,13 +252,16 @@
     const days = Math.floor((world.timeMin + hours * 60) / 1440) - Math.floor(world.timeMin / 1440)
     const effects = payRations(world, raid, days)
     let passed = !raid.shortage
+    const isCrypt = raid.biome === 'crypt' || block.biome === 'crypt'
+    const useHolyWater = passed && isCrypt && ['硬闯', '周旋'].includes(choice) && countOf(world, 'church_holy_water') >= 1
+    if (useHolyWater) effects.push({ target: 'world', itemsRemove: ['church_holy_water'] })
     if (passed && choice === '硬闯') {
       const best = name => Math.max(0, ...members(world, raid).map(id => ability(world, id, name)))
-      const gap = Math.min(block.reqDc - best(block.reqAbility), block.altAbility ? (block.altDc ?? block.reqDc) - best(block.altAbility) : Infinity)
+      const gap = Math.min(block.reqDc - best(block.reqAbility), block.altAbility ? (block.altDc ?? block.reqDc) - best(block.altAbility) : Infinity) - (useHolyWater ? 2 : 0)
       passed = rng() < hardPassChance(gap)
       wound(world, 'player')
     } else if (passed && choice === '周旋') {
-      wound(world, 'player')
+      if (!useHolyWater) wound(world, 'player')
     } else if (passed && choice === '险路') {
       const scout = Math.max(0, ...members(world, raid).map(id => ability(world, id, '侦查')))
       if (scout >= raid.tier) effects.push({ target: 'world', itemsAdd: ['supply'] })
@@ -300,8 +310,10 @@
       u.check(removed.length > 0, '该药剂无法解除目标当前的状态')
       TAGS.apply(world, target, [], removed)
       const timers = world.playerState.conditionTimers?.[target]
-      if (timers && item === 'antidote') delete timers.poisonSince
-      if (timers && ['healing_salve', 'supply'].includes(item)) delete timers.bleedingPhases
+      if (timers && ['antidote', 'church_purify_incense'].includes(item)) delete timers.poisonSince
+      if (timers && ['healing_salve', 'supply', 'church_blessed_salve'].includes(item)) delete timers.bleedingPhases
+      if (timers && item === 'church_blessed_salve') delete timers.recoveryNights
+      if (timers && item === 'church_blessed_ration') delete timers.hungerSince
     }
     return { effects: [{ target: 'world', itemsRemove: [item] }], message: '已使用' + DATA.ITEM_CATALOG[item].name }
   }
@@ -341,17 +353,20 @@
     }
     if (verb === '用药') return use(world, item, extra || 'player', key)
     if (verb === '疗伤') {
-      u.check(!world.ruinState?.current && world.playerState.gold >= 10, '请回镇并准备 10 金药费')
+      u.check(!world.ruinState?.current && world.playerLocation === 'church' && world.npcs?.cecilia?.alive !== false, '须前往圣辉大教堂请塞西莉亚处理伤势')
       const target = item
       u.check(target === 'player' || u.own(world.npcs, target) &&
         world.npcs[target].alive !== false && world.npcs[target].location === world.playerLocation, '伤者须在场')
-      const healing = Object.values(world.npcs).some(npc => npc.alive !== false && npc.monitored === true &&
-        (npc.stage ?? 0) < 3 && npc.location === world.playerLocation && ability(world, npc.id, '治疗') >= 3 &&
-        !tagsOf(world, npc.id).some(tag => sleepTags.includes(tag)))
-      u.check(healing && tagsOf(world, target).includes('debuff_heavy_wound'), '须在有高阶治疗者的地方处理重伤')
-      TAGS.apply(world, target, [], ['debuff_heavy_wound'])
-      if (world.playerState.conditionTimers?.[target]) delete world.playerState.conditionTimers[target].recoveryNights
-      return { effects: [{ target: 'world', goldDelta: -10 }], message: '已支付 10 金处理重伤' }
+      const tags = tagsOf(world, target)
+      if (tags.includes('debuff_heavy_wound')) {
+        u.check(world.playerState.gold >= 10, '教堂处理重伤须准备 10 金药费')
+        TAGS.apply(world, target, [], ['debuff_heavy_wound', 'debuff_light_wound'])
+        if (world.playerState.conditionTimers?.[target]) delete world.playerState.conditionTimers[target].recoveryNights
+        return { effects: [{ target: 'world', goldDelta: -10 }], message: '已在教堂支付 10 金处理重伤' }
+      }
+      u.check(tags.includes('debuff_light_wound'), '目标当前没有需要教堂处理的轻伤或重伤')
+      TAGS.apply(world, target, [], ['debuff_light_wound'])
+      return { message: '已在教堂免费包扎轻伤' }
     }
     if (verb === '买药') {
       u.check(['inn', 'town'].includes(world.playerLocation) && (u.own(medicine, item) || item === 'sleeping_draught'), '请在镇上购买已登记药剂')

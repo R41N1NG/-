@@ -143,9 +143,15 @@
       if (DATA.paidWorkSettledToday(world)) lines.push('工作报酬：今天已结算一项，其他报酬须另日结算。');
       lines.push('公会委托：' + (guildStarts.length >= 2 ? '近七天的两单均已用完' : guildWait > 0 ? waitText(guildWait) : rank?.meritReq >= 20 ? '可接单（guild_normal 8 小时 / guild_high 24 小时）' : '可接见习委托（guild_normal 8 小时）'));
       const cec = world.npcs?.cecilia;
-      if (cec && cec.alive !== false && (cec.stage ?? 0) < 3) {
+      if (cec && cec.alive !== false) {
         const churchWait = DATA.workCooldownWait(world, 'lastChurchErrand', world.timeMin, 2);
         lines.push('修道院委托：' + (churchWait > 0 ? waitText(churchWait) : '可接取（church_paid / church_volunteer，均需 3 小时）'));
+        const weeklyBiome = cec.flags?.ceciliaWeeklyBiome;
+        if (weeklyBiome) {
+          const clearedMatch = world.ruinState?.lastClearedBiome === weeklyBiome &&
+            (world.ruinState?.lastClearedDay ?? 0) >= (cec.flags?.ceciliaWeeklyAcceptDay ?? 999);
+          lines.push('教堂周常遗迹：目标生态 ' + weeklyBiome + (clearedMatch ? '（已通关，可回教堂交付领取特产奖励）' : '（进行中，须通关对应生态遗迹）'));
+        }
       }
     }
     const edRevealDelivered = WB.isUnlocked(world, 'ed_revealed');
@@ -167,17 +173,21 @@
     if (eileen?.flags?.eileen_returned_capital) {
       lines.push('艾琳动向：已随兰开斯特狮鹫骑士团启程返回王都（离队）。');
     } else if (world.flags?.baron_purged) {
-      lines.push('局势状态：雷蒙德男爵已遭狮鹫骑士团清算伏诛' +
-        (world.flags?.player_barony_granted ? '（已定婚约并受封奥克赫斯领地爵位）' : '') + '。');
+      lines.push('局势状态：雷蒙德伯爵已遭狮鹫骑士团清算伏诛' +
+        (world.flags?.player_barony_granted ? '（已定婚约并受封附庸男爵领地爵位）' : '') + '。');
     } else if (DATA.hasEileenSignal(world)) {
       lines.push('艾琳动向：已激发原装王室魔能讯号管传讯，兰开斯特家族狮鹫骑士团将于明日空降奥克赫斯。');
     } else if (DATA.isEileenFugitive(world)) {
       const disguise = eileen?.flags?.eileen_disguised === false
         ? '未披乔装（高危暴露状态）'
         : '默认兜帽斗篷乔装遮面、收敛王徽与细剑';
-      lines.push('艾琳动向：通缉流亡反攻期，全程与你位置同步同行（当前' + disguise + '；反攻值：' + (eileen?.values?.counterattack ?? 0) + '/100，满 100 解锁潜回领主馆夺管事件；入镇与赴旅店时维持低调伪装，切忌在山庄公开露面）。');
+      lines.push('艾琳动向：通缉流亡反攻期，以城外荒野（wilds）为藏身营地并与你同步进退（当前' + disguise + '；反攻值：' + (eileen?.values?.counterattack ?? 0) + '/100；白昼可乔装入城接头，但入夜城内宵禁且反攻未满 100 禁止踏入山庄；满 100 后须亲赴领主山庄（manor）潜入夺回讯号管）。');
     } else if (world.flags?.eileen_arrived && !world.flags?.eileen_departed) {
-      lines.push('艾琳动向：在领主山庄巡查核账（期间高傲不与见习冒险者接触）。');
+      if ((eileen?.flags?.eileenInspectDays ?? 0) >= 6) {
+        lines.push('艾琳动向：巡查将毕，城内冒险者公会告示板已挂出密封护送委托（悬挂 3 日，期间前往城内街区可接取）。');
+      } else {
+        lines.push('艾琳动向：在领主山庄巡查核账（期间高傲不与见习冒险者接触）。');
+      }
     }
     const aurora = world.npcs?.aurora;
     if (aurora && aurora.alive !== false && aurora.monitored !== false) {
@@ -185,16 +195,24 @@
         lines.push('奥萝拉已知旧债：' + aurora.values.debt_pressure + ' 点（折合 ' + (aurora.values.debt_pressure * 10) + ' 金）');
       }
       if (aurora.flags?.aurora_purged_with_baron) {
-        lines.push('奥萝拉动向：男爵倒台清算时作为其山庄情妇一并被骑士团带走处置（离队）。');
+        lines.push('奥萝拉动向：伯爵倒台清算时作为其山庄情妇一并被骑士团带走处置（离队）。');
       } else if (aurora.stage >= 3 && aurora.flags?.manor_service_active) {
-        lines.push('奥萝拉动向：已长留领主山庄成为男爵情妇，周末不再返店。');
+        lines.push('奥萝拉动向：已长留领主山庄成为伯爵情妇，周末不再返店。');
       } else if (aurora.flags?.manor_service_active && !aurora.flags?.aurora_left_manor) {
         const auroraBits = [
           CFG.isWeekendDay(day)
-            ? '当前周末休假在镇内归队（可于旅店/教堂碰面）'
+            ? '当前周末休假在城内归队（可于旅店/教堂碰面）'
             : '当前工作日驻守领主山庄（周六、周日返回旅店）'
         ];
-        if (aurora.flags?.aurora_lord_punished) auroraBits.push('已遭男爵迁怒责罚（山庄事态提前3个工作日）');
+        if (aurora.flags?.aurora_lord_punished) auroraBits.push('已遭伯爵迁怒责罚（山庄事态提前3个工作日）');
+        if (aurora.stage < 2 && (aurora.values?.affection ?? 0) >= 90 &&
+            !(world.tags?.aurora || []).includes('tag_aurora_resign_determined') && !aurora.flags?.aurora_resign_talked) {
+          auroraBits.push('奥萝拉有些心绪不宁，和她独处谈谈心吧');
+        } else if (aurora.flags?.aurora_resign_failed) {
+          auroraBits.push('山庄辞职遭伯爵强扣（等待艾琳线推翻伯爵解救）');
+        } else if ((world.tags?.aurora || []).includes('tag_aurora_resign_determined')) {
+          auroraBits.push('已决意辞职但受困于 500 金违约金（工作日可赴山庄陪同交涉辞职）');
+        }
         if (DATA.isEileenFugitive(world) && !world.flags?.baron_purged &&
             (aurora.values?.affection ?? 0) >= 80 && !aurora.flags?.aurora_eileen_intel_given) {
           auroraBits.push('暗藏山庄换防与暗锁情报待私下交接（与她同地碰头可推进反攻）');
@@ -221,7 +239,7 @@
     }
     const nise = world.npcs?.nise;
     if (nise && (nise.stage ?? 0) < 3 && !nise.flags?.casino_debt_frozen && !nise.flags?.nise_fled_casino &&
-        (nise.flags?.nise_debt_known || (nise.stage ?? 0) >= 1) && (nise.values?.gamble_debt ?? 0) > 0) {
+        nise.flags?.nise_debt_known && (nise.values?.gamble_debt ?? 0) > 0) {
       lines.push('妮丝已查明赌债：' + nise.values.gamble_debt + ' 点（折合 ' + (nise.values.gamble_debt * 10) + ' 金）');
     }
     const isna = world.npcs?.isna;
@@ -231,6 +249,14 @@
         lines.push('伊丝娜动向：已收到她在黑兽人前哨据点（wilds_camp）遇险的求救信号，须尽快携古兰营救。');
       } else if (isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_help_real) {
         lines.push('伊丝娜动向：独自外出后暂未归队，下落未明。');
+      } else if (isna.stage === 2 && !isna.flags?.isnaMudSealCleared && !isna.flags?.isna_fallen_orc) {
+        if (isna.flags?.isna_mud_hopeless_fled) {
+          lines.push('伊丝娜动向：得知无人能拔除体内兽人血契后，已独自离开旅店逃往荒原。');
+        } else if (isna.flags?.isnaMudTruthKnown) {
+          lines.push('伊丝娜动向：已坦白小腹兽人血契真相，须于次日白天尽快请塞西莉亚或古兰出手拔除。');
+        } else if ((isna.flags?.isnaMudSpyCount ?? 0) >= 1) {
+          lines.push('伊丝娜动向：自兽人营地归队后每隔数日便夜间外出盯梢，归来时神色紧绷（在旅店与其互动可试探异常）。');
+        }
       }
     }
     const gulan = world.npcs?.gulan;

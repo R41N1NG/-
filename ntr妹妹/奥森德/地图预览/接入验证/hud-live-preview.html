@@ -1357,7 +1357,8 @@
       u.check(!spec.when || rules.matches(spec.when, matchCtx), '当前条件不满足该事件选项：' + outcome);
 
       if (spec.effects) effects.apply(draft, npc, spec.effects, matchCtx, config);
-      if (spec.echoId) config.registerEcho?.(draft, { id: event.id, echoId: spec.echoId }, npc);
+      const echoId = typeof spec.echoId === 'function' ? spec.echoId({ world: draft, npc }) : spec.echoId;
+      if (echoId) config.registerEcho?.(draft, { id: event.id, echoId }, npc);
 
       record.status = 'resolved';
       record.outcome = outcome;
@@ -1628,9 +1629,9 @@
 ;
 /**
  * @module okh_turn
- * @updated 2026-11-23 19:39
+ * @updated 2026-11-27 03:13
  * @status active
- * @reason 统一时间语义的回执时间线穿插引擎；支持 front.economies 时间桶接入 config.resolveEconomy，移除冗余 playerInjury 处理
+ * @reason 统一时间语义的回执时间线穿插引擎；pickAction 支持同优先级候选项按 weight 确定性加权随机选取，满足多选常态排表
  */
 (function (root) {
   'use strict';
@@ -1657,16 +1658,46 @@
       syncWorld(world, blockedIds, 'refresh', config);
     }
 
+    function hashPickSeed(seed) {
+      // FNV-1a 32位哈希常量（offset basis=2166136261, prime=16777619），归一化至 [0, 1)
+      let h = 2166136261;
+      for (let i = 0; i < seed.length; i++) {
+        h ^= seed.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0) / 4294967296;
+    }
+
     function pickAction(snapshot, npc, phase, blockedIds, config) {
       const ctx = { world: snapshot, npc, phase, blockedIds };
-      return (config.actions || [])
+      const candidates = (config.actions || [])
         .filter(item =>
           (npc.plan || []).includes(item.id) &&
           rules.matches(item.when, ctx) &&
           (!config.allowed || config.allowed(ctx, item)) &&
           (!config.canMove || !item.effects?.move || config.canMove(snapshot, item.effects.move, npc))
-        )
-        .sort((a, b) => (b.priority || 0) - (a.priority || 0) || a.id.localeCompare(b.id))[0];
+        );
+      if (candidates.length === 0) return undefined;
+      let maxPriority = -Infinity;
+      for (const item of candidates) {
+        const p = item.priority || 0;
+        if (p > maxPriority) maxPriority = p;
+      }
+      const top = candidates
+        .filter(item => (item.priority || 0) === maxPriority)
+        .sort((a, b) => a.id.localeCompare(b.id));
+      if (top.length === 1) return top[0];
+      let totalWeight = 0;
+      for (const item of top) {
+        totalWeight += item.weight > 0 ? item.weight : 1;
+      }
+      const roll = hashPickSeed(phase.start + ':' + npc.id) * totalWeight;
+      let acc = 0;
+      for (const item of top) {
+        acc += item.weight > 0 ? item.weight : 1;
+        if (roll < acc) return item;
+      }
+      return top[top.length - 1];
     }
 
     function schedule(world, config, blockedIds, report) {
@@ -3300,9 +3331,9 @@
 ;
 /**
  * @module okh_app_tags
- * @updated 2026-11-26 14:30
+ * @updated 2026-11-27 03:26
  * @status active
- * @reason 注册与管理角色及主角后台标签（含负面Tag与三阶睡眠），状态归入世界存档 tags 分区
+ * @reason 注册与管理角色及主角后台标签（补齐奥萝拉山庄暗线三阶段私密标签），状态归入世界存档 tags 分区
  */
 (function (root) {
   'use strict'
@@ -3361,6 +3392,66 @@
       id: 'isna_orc_phobia',
       name: '兽人恐惧',
       desc: '曾在黑兽人营地失足受辱、被种下血契后由玩家设法救回；面对玩家心怀愧疚与依恋，同时也患上了兽人恐惧症。效果：①会拒绝一切与兽人有关的行动（不再前往兽人营地或参与相关斥候委托）；②面对兽人时会处于恐惧状态，失去战斗力。',
+      visibility: 'private'
+    }),
+    tag_nise_dealer_shame: Object.freeze({
+      id: 'tag_nise_dealer_shame',
+      name: '荷官耻辱',
+      desc: '独处时频繁拉扯衣领、确认常服领口是否遮严；偶尔下意识避开玩家与古兰的目光，神情紧绷。',
+      visibility: 'private'
+    }),
+    tag_nise_secretary_fall: Object.freeze({
+      id: 'tag_nise_secretary_fall',
+      name: '账房失身',
+      desc: '步态微显滞涩，深居简出；整日捧着书本或账册挡在胸前，眼神在恍惚与自弃间游移。',
+      visibility: 'private'
+    }),
+    tag_nise_casino_chattel: Object.freeze({
+      id: 'tag_nise_casino_chattel',
+      name: '赌场私产',
+      desc: '身心归附赌场，佩戴刻有金碧赌场暗印的项圈，眼神空洞麻木，甘愿充当内室抵债私产与招徕赌客的筹码。',
+      visibility: 'private'
+    }),
+    tag_balak_grudge: Object.freeze({
+      id: 'tag_balak_grudge',
+      name: '巴拉克的记恨',
+      desc: '金碧赌场黑老大巴拉克对小队潜入账房盗走借条怀恨在心，暗中物色报复与索讨机会。',
+      visibility: 'public'
+    }),
+    tag_lord_manhunt: Object.freeze({
+      id: 'tag_lord_manhunt',
+      name: '全镇兵力围剿',
+      desc: '暴力冲击领主暗中背书的金碧赌场，引来全镇卫兵与领主私兵的合围追捕，商业停摆且全队进入流亡状态。',
+      visibility: 'public'
+    }),
+    tag_aurora_manor_hush: Object.freeze({
+      id: 'tag_aurora_manor_hush',
+      name: '涨薪试探',
+      desc: '返店后常下意识低头拢紧白色围裙与黑色女仆长裙，谈及山庄差事时指尖微颤、回避视线，只反复念叨领主答应考虑涨工资。',
+      visibility: 'private'
+    }),
+    tag_aurora_resign_determined: Object.freeze({
+      id: 'tag_aurora_resign_determined',
+      name: '决意辞职',
+      desc: '已在独处时哭诉山庄遭遇并决意辞职，却被工作满六个月、提前离职需赔付五百金币违约金的契约锁住，暂时不得不回山庄苦撑拒绝对潜规则，等待转机。',
+      visibility: 'public'
+    }),
+    tag_lord_grudge: Object.freeze({
+      id: 'tag_lord_grudge',
+      name: '领主的记恨',
+      desc: '雷蒙德伯爵迫于宗师强者威慑勉强放行奥萝拉离职，对此暗自记恨。',
+      visibility: 'public'
+    }),
+    tag_aurora_night_service: Object.freeze({
+      id: 'tag_aurora_night_service',
+      name: '山庄夜侍',
+      desc: '工作日入夜便留在领主山庄私室侍寝；周末换回素净长裙归队时步态略显拘谨，镜片后的目光含着愧疚与疲惫。',
+      visibility: 'private'
+    }),
+    tag_aurora_baron_mistress: Object.freeze({
+      id: 'tag_aurora_baron_mistress',
+      name: '伯爵情妇',
+      desc: '已签下清空家族旧债的情妇契约，长留领主山庄深处侍奉雷蒙德伯爵，周末不再返店归队。',
       visibility: 'private'
     }),
     // 7 项通用负面 Tag（公会冒险与遗迹探险）
@@ -3573,6 +3664,7 @@
     trait_street_smart: Object.freeze({ id: 'trait_street_smart', name: '市井老手', category: 'trait', desc: '伊丝娜专属；识破虚高报价与假货，探听多获暗线线索。' }),
     trait_arcane_prodigy: Object.freeze({ id: 'trait_arcane_prodigy', name: '算力推演', category: 'trait', statBonus: { int: 1 }, desc: '妮丝专属；智力 +1，精于复合术式解算。' }),
     trait_stubborn_pride: Object.freeze({ id: 'trait_stubborn_pride', name: '好胜隐瞒', category: 'trait', desc: '妮丝动态；独自受挫或受要挟时不向队友求助。' }),
+    nise_gamble_immune: Object.freeze({ id: 'nise_gamble_immune', name: '完全绝赌', category: 'trait', desc: '妮丝专属；在经历借据危机的生死惊悸或深厚羁绊的清偿挽救后幡然醒悟，永久免疫赌场复赌诱惑。' }),
     trait_gentle_steward: Object.freeze({ id: 'trait_gentle_steward', name: '细心照料', category: 'trait', statBonus: { fai: 1 }, desc: '奥萝拉专属；信仰 +1，照看伤员细致入微。' }),
     trait_timid_yield: Object.freeze({ id: 'trait_timid_yield', name: '畏权退让', category: 'trait', desc: '奥萝拉动态；面对权贵威压易退让妥协。' }),
     trait_street_rumor: Object.freeze({ id: 'trait_street_rumor', name: '市井耳目', category: 'trait', desc: '爱德专属；街市打听风声、抢截未登板急件。' }),
@@ -4293,6 +4385,8 @@
     const cur = world.ruinState?.current
     u.check(cur?.cleared, '未完成遗迹')
     if (cur.id) world.ruinState.clearedCores.push(cur.id)
+    world.ruinState.lastClearedBiome = cur.biome || null
+    world.ruinState.lastClearedDay = Math.floor((world.timeMin || 0) / 1440) + 1
     world.ruinState.current = null
   }
 
@@ -4414,9 +4508,9 @@
 ;
 /**
  * @module okh_app_echoes
- * @updated 2026-11-25 10:42
+ * @updated 2026-11-27 03:26
  * @status active
- * @reason 残响定义、时钟显影与回放验收
+ * @reason 残响定义、时钟显影与回放验收，补齐奥萝拉山庄暗线三部曲残响
  */
 (function (root) {
   'use strict'
@@ -4461,6 +4555,26 @@
         '深夜的客房内，返祖真血的暴走已将{name}逼至失控边缘。白皙皮肤被高热蒸得泛红，太阳穴两侧黑角尖端灼烫发亮，小臂皮肉下隐约浮现细密的黑色龙鳞。她单膝抵着床沿、指节死死扣住精钢重剑的剑柄，指缝渗出血丝，目光却仍望向静寂无声的门外。',
         '门扉在此时被轻轻推开。{name}强撑着抬眸，看清踏入房内的竟是爱德时，琥珀色竖瞳中掠过一瞬错愕。然而下一息，浩瀚蛮荒的上位龙威瞬间充斥窄小的客房，{name}体内奔涌的半龙真血如遇君王般战栗低伏。他缓步逼近床榻，以低沉威严的声线道出自身沉睡万载的生父身份，并毫不掩饰地挑明真相：往日那些让她羞耻难安的荒唐春梦，全都是他在无数个夜晚潜入房中对她身体的予取予求与血脉催熟——这具身躯，从最初破戒那一夜起便早已属于他。',
         '话音未落，腰间那柄看似粗糙的木雕小剑应声解封为古龙权杖，幽光落处，积蓄已久的始祖龙血如决堤洪流般轰然翻涌。长年恪守的矜持与自尊在上位血脉的压制下土崩瓦解；爱德俯身压上床榻，毫不怜惜地将她按在身下，换着不同的体位尽情品尝与反复灌注。强烈的快感浪潮叠着血脉本能席卷全身，{name}最初的挣扎渐渐化作无力的迎合与婉转娇吟，在滚烫的龙息与一次次深层占有中逐渐沦陷。长夜尽头，她已再无半点抗拒之心，已然接纳了自己身心均归属于生父兼主人的事实，血脉深处也被稳稳打上了属于太古黑龙的印记。'
+      ].join('\n')
+    },
+    {
+      id: 'echo_gulan_final_fall_virgin',
+      eventId: 'gulan_final_fall_virgin_dark',
+      npc: 'gulan',
+      title: '初夜失守的黑龙烙印',
+      unlockWhen: world => (world.npcs?.gulan?.values?.blood_density ?? 0) >= 100 && world.npcs?.gulan?.stage === 3,
+      triggerCommand: '查看回忆：初夜失守的黑龙烙印',
+      tagId: 'dragon_mark_linger',
+      cgId: null,
+      promptGuidance: [
+        '【回忆模式】以此前一直守住清白、未曾陷入梦魇失身的古兰视角，回放那一夜血脉失控、爱德现身破处收割并打上印记的经过。',
+        '遵循故事底稿直接推进：先写她在孤立无援中强撑对抗真血暴走，再写爱德入室褪去伪装、显露与人类孩童爱德平时身高相仿却呈成年男性轮廓的矮小身躯并道破生父身份，最后直写权杖引动真血后，她紧守至今的处女之身在血脉威压与撕裂痛楚中被首次强行破处贯穿，在强烈快感与压制中逐渐失守娇吟、被打上太古黑龙印记。',
+        '【撰写约束】正文中严禁出现任何种族称谓或特殊族群字眼，仅客观描写其如同人类孩童爱德一样身高身躯、却带着成年男性沉稳轮廓的矮小身形。'
+      ].join('\n'),
+      storyText: [
+        '深夜的客房内，返祖真血的暴走已将{name}逼至失控边缘。白皙皮肤被高热蒸得泛红，太阳穴两侧黑角尖端灼烫发亮，小臂皮肉下隐约浮现细密的黑色龙鳞。一直紧守防线至今的她单膝抵着床沿、指节死死扣住精钢重剑的剑柄，指缝渗出血丝，目光却仍望向静寂无声的门外。',
+        '门扉在此时被轻轻推开。{name}强撑着抬眸，看清踏入房内的竟是爱德时，琥珀色竖瞳中掠过一瞬错愕。然而下一息，浩瀚蛮荒的上位龙威瞬间充斥窄小的客房，{name}体内奔涌的半龙真血如遇君王般战栗低伏。他缓步逼近床榻，以低沉威严的声线道出自身沉睡万载的生父身份——这具一直守身如玉、未曾被外人碰触分毫的半龙女武者之躯，今日终究要归属她的造主与血脉源头。',
+        '话音未落，腰间那柄看似粗糙的木雕小剑应声解封为古龙权杖，幽光落处，积蓄已久的始祖龙血如决堤洪流般轰然翻涌。长年恪守的矜持与自尊在上位血脉的压制下土崩瓦解；爱德俯身压上床榻，扯开紧扣的高领衣襟，将她紧守至今的处女之身第一次强行撕裂贯穿至底。剧烈的初夜破身痛楚伴着源初龙息的沸腾冲刷着神智，{name}最初的挣扎与低泣在反复深层灌注中渐渐化作无力的迎合与婉转娇吟。长夜尽头，她已再无半分抗拒之心，接纳了身心归属于生父的现实，血脉深处也被稳稳打上了太古黑龙的印记。'
       ].join('\n')
     },
     {
@@ -4558,6 +4672,115 @@
         '第十个夜晚过去，曾经徘徊在愧疚与旧情之间的防线终于无声崩断。回到黑兽人主帐内的{name}不再有半分挣扎与羞怯，主动解开衣带跨坐在千夫长克罗格腰间，讨好地摇晃着猫耳迎合每一次深入顶弄，贪婪地承接滚烫浓稠的精液灌入花心。',
         '事后她慵懒地蜷缩在克罗格怀中，一边任由对方揉弄自己尚在微颤的身躯，一边条理清晰地将奥克赫斯的城防漏洞、商队路线乃至古兰平时孤身驰援的脾性与弱点悉数挑明，甚至主动提笔拟定了一封绕开{{user}}、只单向指向古兰的假求救信，准备亲手把昔日并肩的半龙人剑士诱入营地的反龙陷阱。'
       ].join('\n')
+    },
+    {
+      id: 'echo_nise_casino_dealer',
+      eventId: 'nise_stage_1',
+      npc: 'nise',
+      title: '金碧赌场的荷官暗影',
+      delayDays: 1,
+      triggerCommand: '查看回忆：金碧赌场的荷官暗影',
+      tagId: 'tag_nise_dealer_shame',
+      cgId: null,
+      promptGuidance: [
+        '【回忆模式】以妮丝的视角回放那一天的荷官初次站台经历。',
+        '主要篇幅放在暗处赌场的压迫与受辱。描写她换上露背束腰短裙荷官服，在喧嚣的赌客与保镖环伺下发牌，身体因羞耻而战栗，守住底线未曾破身。',
+        '结尾简短写夜间换回常服潜回旅店，隐瞒众人。'
+      ].join('\n'),
+      storyText: [
+        '白昼的金碧赌场下层大厅内，浑浊的烟草与麦酒气息在闷热空气中翻滚。{name}站在发牌台后，原本宽大合体的法师长袍被强行换成了露背束腰马甲与黑色超短百褶裙，纤细雪白的双肩与大片后背毫无遮拦地暴露在嘈杂视线中。',
+        '赌桌对面几个目光混浊的赌客肆意吹着口哨，视线黏腻地在她紧绷的胸口与裙下雪白的长腿上来回逡巡；身后两名体格魁梧的黑巨汉保镖借着“巡查账目与纠正洗牌手势”的名义逼近，粗糙黝黑的大手毫不掩饰地覆上少女后背与腰侧肆意揉捏揩油。以{name}娇小的个头，头顶不过刚刚及到巨汉们的腰际，庞大的体魄悬殊与被当场告发长辈古兰的恐惧，逼得她只能死死咬住下唇、含着屈辱的泪水任由摆布，双手发颤地码齐骨牌。尽管处女之身在这一阶段勉强守住，但当入夜换回常服仓皇溜出赌场时，少女单薄的双腿仍在发软，面对旅店灯火不敢直视家人的目光。'
+      ].join('\n')
+    },
+    {
+      id: 'echo_nise_casino_secretary',
+      eventId: 'nise_stage_2',
+      npc: 'nise',
+      title: '账房长桌的屈辱抵债',
+      delayDays: 1,
+      triggerCommand: '查看回忆：账房长桌的屈辱抵债',
+      tagId: 'tag_nise_secretary_fall',
+      cgId: null,
+      promptGuidance: [
+        '【回忆模式】以泥足期妮丝的视角回放那一日进入二楼账房内室充当私人秘书、被巴拉克强行破处占有的经过。',
+        '突出体格悬殊的压迫感与巨额债务的现实重压：写出厚重借据拍在桌上的绝望，红木账桌前被单臂压制掀裙破处的过程，以及在痛苦哭咽中被整夜扣押索取的细节。'
+      ].join('\n'),
+      storyText: [
+        '二楼帷幔重锁的红木账房内，厚厚一叠滚着高额利息的借据被重重拍在桌案上，数额已攀升至数百乃至上千金币的绝境。黑巨汉老板巴拉克庞大的身躯堵死了房门，带着戏谑的狞笑挑明真相：今日若不拿出真金白银平账，便立刻带齐官府缉捕文书堵死断剑与麦酒旅店的大门。',
+        '退至墙角的{name}在恐惧与愧疚中浑身发抖，双手微弱的抗拒在兽人体魄面前如同稚童。巴拉克粗暴地将她单臂提起按在冰冷的红木大账桌上，掀开百褶短裙撕扯开贴身衬布；伴随着剧烈的撕裂剧痛与少女绝望破碎的尖叫，未经人事的处女之身被滚烫粗硕的肉棒野蛮贯穿至底。厚重的账册散落满地，巴拉克抓紧少女纤细的腰肢在长桌前肆意冲撞挞伐，将滚烫浑浊的精液一次次深深灌入她未曾承欢的花心。长夜漫漫，妮丝被整夜关在账房内室反复索取蹂躏，神智在痛楚与自弃的泪水中渐趋麻木，失身沦为抵债的私人秘书。'
+      ].join('\n')
+    },
+    {
+      id: 'echo_nise_casino_contract',
+      eventId: 'nise_stage_3',
+      npc: 'nise',
+      title: '金箔契约与血指印',
+      delayDays: 1,
+      triggerCommand: '查看回忆：金箔契约与血指印',
+      tagId: 'tag_nise_casino_chattel',
+      cgId: null,
+      promptGuidance: [
+        '【回忆模式】以沉沦期妮丝的视角回放欠债数千金币后心理防线瓦解、签署卖身契沦为赌场私产的过程。',
+        '直白描写在金库密室内割破手指按下血指印、佩戴赌场特制皮革项圈、接纳作为抵债私产永留地下赌场的全过程。'
+      ].join('\n'),
+      storyText: [
+        '地下金库最深处的密室内，摇曳的烛火照亮了摊开在石台上的金箔卖身契约。几千金币的高利贷天文数字早已压垮了一切生机与翻盘幻想，孤立无援的{name}双膝跪伏在厚重地毯上，眼眸里往日的灵动与骄傲已被麻木的屈从所取代。',
+        '巴拉克抓起她冰凉发颤的右手，以短刀尖刃刺破食指指尖，用力按在契约末尾的受让抵押条款上，留下一道猩红刺目的血指印。随后，一具内侧刻有金碧赌场专属暗印与锁扣的特制皮革项圈被咔哒扣合在少女白皙脆弱的颈项间。契约底定，少女的身心与名籍自此完全沦为地下赌场的私有资产，从此不再回到断剑与麦酒旅店，甘愿作为长留内室的抵债玩物与招徕豪赌客人的绝色筹码。'
+      ].join('\n')
+    },
+    {
+      id: 'echo_aurora_manor_hush',
+      eventId: 'aurora_stage_1',
+      npc: 'aurora',
+      title: '书房里的“涨薪”试探',
+      delayDays: 1,
+      triggerCommand: '查看回忆：书房里的“涨薪”试探',
+      tagId: 'tag_aurora_manor_hush',
+      cgId: null,
+      promptGuidance: [
+        '【回忆模式】以奥萝拉的视角回放工作满三日后在山庄书房被雷蒙德领主借口“考虑涨工资”大肆占便宜的经过。',
+        '保留她穿戴严整的黑白长裙女仆装、高领白衬衫与金丝圆框眼镜，写出领主隔裙抚摸美臀、随后撩起长裙揉捏黑丝美臀甚至将一根手指伸入臀缝的细节，突出她羞红着脸却不敢反抗、唯唯诺诺点头称谢的怯懦，此时尚未破身。'
+      ].join('\n'),
+      storyText: [
+        '山庄二楼静谧的橡木书房内，{name}正低头收拾着长桌上的文书。整洁的白色荷叶边围裙与严密系紧的高领白衬衫将她高挑丰腴的身段裹得严严实实，鼻梁上的金丝圆框眼镜后是一双温和而略带拘谨的深蓝眼眸。',
+        '厚重的门扉悄然阖上，雷蒙德领主缓步踱到她身后，大手直接隔着女仆长裙大肆抚摸起裙下浑圆挺翘的美臀，一边欣赏着她强忍不敢反抗的瑟缩表情，嘴上却慢条斯理地开口：“奥萝拉小姐，你最近的表现很好，我正在考虑给你涨工资……”说到这里，他放肆的大手直接撩起黑色女仆长裙，隔着薄透黑丝连裤袜揉捏起紧绷弹润的美臀，甚至将一根手指沿着布料缝隙深深探入了她的臀缝。{name}羞红了整张脸，呼吸发颤却不敢得罪大领主，只能低着头唯唯诺诺地点头称谢，勉强守住底线任由那番逾矩亵玩落幕。'
+      ].join('\n')
+    },
+    {
+      id: 'echo_aurora_night_service',
+      eventId: 'aurora_stage_2',
+      npc: 'aurora',
+      title: '厚重橡木门后的夜侍',
+      delayDays: 1,
+      triggerCommand: '查看回忆：厚重橡木门后的夜侍',
+      tagId: 'tag_aurora_night_service',
+      cgId: null,
+      promptGuidance: [
+        '【回忆模式】以泥足期奥萝拉的视角回放领主开出足以抵偿三成家族旧债的高额封口重金、逼迫她留宿侍寝并强行破处的经过。',
+        '保持上身黑白长裙女仆装与高领白衬衫穿戴完整，只写长裙与白色围裙被掀至腰际、黑丝连裤袜被撕开破处并留宿侍寝的过程，突出她为还债而妥协落泪的心态。'
+      ].join('\n'),
+      storyText: [
+        '夜幕沉入奥克赫斯山庄，厚实的橡木门将二楼私室与外间走廊隔成两个世界。摆在长桌上的那笔足以一次消去三成家族旧债的重金，成了压垮{name}最后推辞的砝码。',
+        '她上身仍穿着严整的白色娃娃领衬衫、蓬松长袖与白色围裙，唯有及踝的黑色女仆长裙被雷蒙德粗暴地掀翻至腰际，裹住修长双腿的黑丝连裤袜在腿根处被强行撕开裂口。仰躺在冰冷的书房长椅上，金丝圆框眼镜微微歪斜，镜片后的深蓝眼眸蓄满水光。未经人事的青涩身躯在成年男性的强硬贯穿下发出压抑的呜咽，{name}颤抖着双手抓紧袖口，在阵阵撕裂般的痛楚与温热灌注中默默落泪，心里仍反复安慰自己只要再忍一忍便能替大家减轻重担。长夜之后，每逢工作日入夜她便默认留在山庄侍寝，直到周末才换回素净长裙勉强返店归队。'
+      ].join('\n')
+    },
+    {
+      id: 'echo_aurora_baron_mistress',
+      eventId: 'aurora_stage_3',
+      npc: 'aurora',
+      title: '清空千金的契约签名',
+      delayDays: 1,
+      triggerCommand: '查看回忆：清空千金的契约签名',
+      tagId: 'tag_aurora_baron_mistress',
+      cgId: null,
+      promptGuidance: [
+        '【回忆模式】以沉沦期奥萝拉的视角回放她接下领主开出的足以还清剩余全部家族旧债的巨额封口重金、签署情妇契约长留山庄不再归队的经过。',
+        '保留整洁女仆装束与金丝眼镜的细节，写出她合上账册签下名字、在丝绒扶手椅上接纳情妇身份与占有，周末亦不再返回旅店的结局。'
+      ].join('\n'),
+      storyText: [
+        '书房壁炉的火光静静跳动，桌案上摊着一份附带巨额封口金票的情妇契约——那笔钱足以替她还清剩余全部家族旧债。经历了漫长工作日的盘剥与夜侍，{name}望着账册上即将归零的欠款数字，轻叹一声，用微凉发颤的手指合上随身携带的记账小皮册，拿起羽毛笔在契约末页工整地签下自己的名字。',
+        '丝绒扶手椅上，她依然穿着整洁的黑白长裙女仆装与白围裙，只将长裙下摆撩起叠在腰间，摘下微微滑落的金丝圆框眼镜，听任地跨坐在雷蒙德领主怀中承受深沉的占有与灌注。眼角的泪痕已然干涸，取而代之的是认命般的温婉迎合。契约成立，{name}拿着那笔封口重金托人结清外债，正式长留在领主山庄深处，从此周末亦不再返回断剑与麦酒旅店。'
+      ].join('\n')
     }
   ]
 
@@ -4649,9 +4872,9 @@
 ;
 /**
  * @module okh_app_data
- * @updated 2026-11-23 20:06
+ * @updated 2026-11-27 04:22
  * @status  active
- * @reason  恶龙真身心智全案扩充：构建高信息密度 DRAGON_TRUE_FORM_SPEC（含身世因果、权杖信物真相、真身外貌、声音气度、死穴原则）与 buildDragonRevealText 生成器，由剧情阶段与决算分支动态按需推送
+ * @reason  打通古兰一阶保处三段阶梯守护与一阶初夜失守残响分支，补齐纯爱免疫守卫
  * @deps    无
  * @provides { SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel, PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG, ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld, DRAGON_TRUE_FORM_SPEC, buildDragonRevealText }
  */
@@ -4678,6 +4901,35 @@
   const isEileenFugitive = world => !world?.flags?.baron_purged && eileenFlag(world, 'eileen_fugitive')
   const hasEileenSignal = world => eileenFlag(world, 'eileen_signal_fired')
 
+  function isAloneWithAurora(world, npc) {
+    if (!npc || npc.id !== 'aurora' || world.playerLocation !== npc.location) return false
+    const present = Object.values(world.npcs || {}).filter(
+      n => n.monitored === true && n.alive !== false && n.location === world.playerLocation
+    )
+    return present.length === 1 && present[0].id === 'aurora'
+  }
+
+  function presentMasterExists(world) {
+    const adv = root.OKH_APP_ADVENTURE
+    if (adv?.effectiveTier) {
+      if (adv.effectiveTier(world, 'player') >= 4) return true
+      return Object.values(world.npcs || {}).some(
+        n => n.monitored === true && n.alive !== false && n.location === world.playerLocation &&
+          n.id !== 'aurora' && adv.effectiveTier(world, n.id) >= 4
+      )
+    }
+    if ((world.playerState?.tier ?? 2) >= 4) return true
+    const tags = root.OKH_APP_TAGS?.catalog || {}
+    return Object.values(world.npcs || {}).some(n => {
+      if (n.monitored !== true || n.alive === false || n.location !== world.playerLocation || n.id === 'aurora') return false
+      const nTags = world.tags?.[n.id] || []
+      const maxTagTier = Math.max(0, ...nTags.map(id => tags[id]?.tier ?? 0))
+      const base = n.id === 'gulan' ? 5 : maxTagTier
+      const heavy = nTags.includes('debuff_heavy_wound') ? 1 : 0
+      return Math.max(1, base - heavy) >= 4
+    })
+  }
+
   const isFugitiveSquadActive = (world, npc) =>
     isEileenFugitive(world) &&
     npc && npc.alive !== false && npc.monitored !== false && (npc.stage ?? 0) < 3 &&
@@ -4695,7 +4947,7 @@
   const LOCATIONS = {
     inn: '断剑与麦酒',
     training_grounds: '露天练武场',
-    town: '镇上',
+    town: '城内街区',
     church: '圣辉大教堂',
     manor: '领主山庄',
     casino: '地下赌场',
@@ -4826,10 +5078,10 @@
     }),
     barony_patent: Object.freeze({
       id: 'barony_patent',
-      name: '奥克赫斯男爵领封赏契书',
+      name: '奥克赫斯附庸伯爵封赏契书',
       category: 'quest',
       stackable: false,
-      desc: '兰开斯特家族颁予的奥克赫斯镇及原男爵辖地封赏爵位契书。'
+      desc: '兰开斯特家族颁予的原雷蒙德伯爵辖下一处附庸男爵领封赏爵位契书。'
     }),
     isna_pendant: Object.freeze({
       id: 'isna_pendant',
@@ -4837,6 +5089,50 @@
       category: 'quest',
       stackable: false,
       desc: '伊丝娜托付的成对魔纹吊坠，彼此相隔千里亦可感知危难。'
+    }),
+    church_blessed_salve: Object.freeze({
+      id: 'church_blessed_salve',
+      name: '晨曦祝圣伤药膏',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 20,
+      desc: '修女长亲手熬制并祝圣的稀缺疗伤药膏，使用后可直接在野外或遗迹内消除重伤（debuff_heavy_wound）、轻伤与流血。'
+    }),
+    church_holy_water: Object.freeze({
+      id: 'church_holy_water',
+      name: '细颈圣水银瓶',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 15,
+      desc: '圣辉大教堂祝圣的圣水银瓶；探索沉沦灵堂（crypt）或应对亡灵障碍时自动消耗 1 瓶，提供一次 2 阶神圣安抚判定加值。'
+    }),
+    church_purify_incense: Object.freeze({
+      id: 'church_purify_incense',
+      name: '晨曦净心熏香',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 12,
+      desc: '修道院以干草药与乳香配制的净心熏丸，使用后一并解除中毒（debuff_poisoned）与麻痹（debuff_paralyzed）。'
+    }),
+    church_blessed_ration: Object.freeze({
+      id: 'church_blessed_ration',
+      name: '祝圣麦饼干粮',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 8,
+      desc: '塞西莉亚亲手烘烤并祝圣的便携麦饼，使用后直接解除饥饿（debuff_starving）与疲惫（debuff_exhausted）。'
+    }),
+    church_silver_rosary: Object.freeze({
+      id: 'church_silver_rosary',
+      name: '纯银祈祷念珠',
+      category: 'quest',
+      stackable: false,
+      maxCount: 1,
+      desc: '塞西莉亚亲自祝圣赠予的纯银念珠信物，随身携带时在遗迹「治疗」与「辨识」判定中常驻提供 +1 庇佑加值。'
     })
   })
 
@@ -4882,26 +5178,112 @@
 
   const ACTIONS = [
     {
-      id: 'gulan_train',
-      priority: 25,
+      id: 'gulan_inn_maintenance',
+      priority: 21,
+      weight: 45,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         npc.id === 'gulan' &&
         npc.monitored !== false &&
         !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
+        phase.id === 'morning',
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店保养阔刃重剑与甲胄' }
+    },
+    {
+      id: 'gulan_hall_meditate',
+      priority: 21,
+      weight: 35,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'gulan' &&
+        npc.monitored !== false &&
+        !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
+        phase.id === 'morning',
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店大厅闭目静坐冥想' }
+    },
+    {
+      id: 'gulan_town_patrol',
+      priority: 21,
+      weight: 20,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'gulan' &&
+        npc.monitored !== false &&
+        !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
+        !isWeekendDay(dayAt(world)) &&
+        phase.id === 'morning',
+      effects: { move: 'town' },
+      occupation: { kind: 'ordinary', label: '在镇上巡逻并留意周边动静' }
+    },
+    {
+      id: 'gulan_train',
+      priority: 25,
+      weight: 90,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'gulan' &&
+        npc.monitored !== false &&
+        !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
         phase.id === 'afternoon' &&
         npc.location !== 'training_grounds',
       effects: { move: 'training_grounds' },
       occupation: { kind: 'ordinary', label: '前往演武场练剑' }
     },
     {
+      id: 'gulan_dragon_search',
+      priority: 25,
+      weight: 10,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'gulan' &&
+        npc.monitored !== false &&
+        !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
+        phase.id === 'afternoon',
+      effects: { move: 'wilds' },
+      occupation: { kind: 'ordinary', label: '外出游历探寻龙族遗迹与传闻' }
+    },
+    {
+      id: 'isna_mud_camp_night',
+      priority: 40,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        npc.stage === 2 &&
+        Boolean(npc.flags?.isnaMudOutTonight) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudSealCleared &&
+        !npc.flags?.isna_mud_hopeless_fled &&
+        ['night', 'deep_night'].includes(phase.id) &&
+        npc.location !== 'wilds_camp',
+      effects: { move: 'wilds_camp' },
+      occupation: { kind: 'ordinary', label: '夜潜赶往荒原黑兽人前哨压制血契' }
+    },
+    {
       id: 'isna_odd_job',
-      priority: 22,
+      priority: 23,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         npc.id === 'isna' &&
         !isFugitiveSquadActive(world, npc) &&
         !npc.flags?.gold_desire_frozen &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
         npc.stage < 2 &&
         ['morning', 'afternoon'].includes(phase.id) &&
         !npc.flags?.isna_worked_today,
@@ -4913,8 +5295,81 @@
       occupation: { kind: 'ordinary', label: '去镇上接点零散杂活' }
     },
     {
+      id: 'isna_inn_nap',
+      priority: 22,
+      weight: 50,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        !isFugitiveSquadActive(world, npc) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
+        npc.stage < 3 &&
+        phase.id === 'morning',
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店向阳窗台打盹歇息' }
+    },
+    {
+      id: 'isna_knife_sharpen',
+      priority: 22,
+      weight: 50,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        !isFugitiveSquadActive(world, npc) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
+        npc.stage < 3 &&
+        phase.id === 'morning',
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店门廊擦拭双匕与清点飞刀' }
+    },
+    {
+      id: 'isna_town_rumors',
+      priority: 22,
+      weight: 60,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        !isFugitiveSquadActive(world, npc) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
+        npc.stage < 2 &&
+        phase.id === 'afternoon',
+      effects: { move: 'town' },
+      occupation: { kind: 'ordinary', label: '在镇上穿街走巷打听流言与商队动向' }
+    },
+    {
+      id: 'isna_buy_jerky',
+      priority: 22,
+      weight: 40,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'isna' &&
+        !isFugitiveSquadActive(world, npc) &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.isna_camp_distress &&
+        !npc.flags?.isna_captured_ed &&
+        !npc.flags?.isna_fallen_orc &&
+        !npc.flags?.isnaMudOutTonight &&
+        npc.stage < 2 &&
+        phase.id === 'afternoon',
+      effects: { move: 'town' },
+      occupation: { kind: 'ordinary', label: '在镇上市集买肉干打牙祭' }
+    },
+    {
       id: 'nise_town_browse',
-      priority: 21,
+      priority: 22,
+      weight: 60,
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         npc.id === 'nise' &&
@@ -4930,6 +5385,66 @@
         npcFlags: { nise_browsed_today: true }
       },
       occupation: { kind: 'ordinary', label: '在镇上四处闲逛搜罗新奇物件' }
+    },
+    {
+      id: 'nise_inn_sleep_in',
+      priority: 22,
+      weight: 40,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'nise' &&
+        !isFugitiveSquadActive(world, npc) &&
+        npc.stage < 3 &&
+        phase.id === 'morning' &&
+        !npc.flags?.nise_escort_today &&
+        !npc.flags?.nise_casino_busy_today,
+      effects: { move: 'inn' },
+      occupation: { kind: 'ordinary', label: '在旅店房间赖床补觉' }
+    },
+    {
+      id: 'nise_read_scrolls',
+      priority: 21,
+      weight: 35,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'nise' &&
+        !isFugitiveSquadActive(world, npc) &&
+        npc.stage < 3 &&
+        phase.id === 'night' &&
+        npc.location === 'inn' &&
+        !npc.flags?.nise_casino_busy_today,
+      effects: {},
+      occupation: { kind: 'ordinary', label: '在旅店房间研读卷轴与法术笔记' }
+    },
+    {
+      id: 'nise_hall_tea',
+      priority: 21,
+      weight: 25,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'nise' &&
+        !isFugitiveSquadActive(world, npc) &&
+        npc.stage < 3 &&
+        phase.id === 'night' &&
+        npc.location === 'inn' &&
+        !npc.flags?.nise_casino_busy_today,
+      effects: {},
+      occupation: { kind: 'ordinary', label: '在旅店大厅点红茶与茶点歇息' }
+    },
+    {
+      id: 'nise_hall_bard',
+      priority: 21,
+      weight: 40,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'nise' &&
+        !isFugitiveSquadActive(world, npc) &&
+        npc.stage < 2 &&
+        phase.id === 'night' &&
+        npc.location === 'inn' &&
+        !npc.flags?.nise_casino_busy_today,
+      effects: {},
+      occupation: { kind: 'ordinary', label: '在旅店大厅听吟游诗人弹唱' }
     },
     {
       id: 'nise_secretary_shift',
@@ -4972,6 +5487,20 @@
         npc.location !== 'casino',
       effects: { move: 'casino' },
       occupation: { kind: 'ordinary', label: '签下卖身契长留地下赌场抵债' }
+    },
+    {
+      id: 'aurora_weekend_church',
+      priority: 27,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven) &&
+        npc.id === 'aurora' &&
+        npc.stage < 3 &&
+        !npc.flags?.captured_manor &&
+        weekdayOf(dayAt(world)) === 7 &&
+        phase.id === 'afternoon' &&
+        npc.location !== 'church',
+      effects: { move: 'church' },
+      occupation: { kind: 'ordinary', label: '周日午后前往圣辉大教堂祈祷照料孤儿' }
     },
     {
       id: 'aurora_weekend_return',
@@ -5026,7 +5555,8 @@
         if (npc.flags?.captured_orc || npc.flags?.isna_camp_distress || npc.flags?.isna_captured_ed || npc.flags?.captured_manor) return false
         if (npc.id === 'ed' && npc.flags?.ed_home_visiting) return false
         if (npc.id === 'gulan' && (npc.flags?.gulan_departed || npc.monitored === false)) return false
-        if (npc.id === 'nise' && (npc.stage >= 3 || (npc.flags?.nise_casino_busy_today && npc.stage === 2 && phase.id === 'night'))) {
+        if (npc.id === 'isna' && npc.flags?.isnaMudOutTonight) return false
+        if (npc.id === 'nise' && (npc.stage >= 3 || (npc.stage === 2 && !npc.flags?.casino_debt_frozen && !npc.flags?.nise_fled_casino))) {
           return false
         }
         if (npc.id === 'aurora' && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor) {
@@ -5125,7 +5655,10 @@
       covert: true,
       fromStage: 2,
       toStage: 3,
-      when: { stage: 2, metrics: { blood_density: { gte: 80 } }, flags: { gulan_final_fall_done: true } },
+      when: ({ npc }) =>
+        (npc.stage === 1 || npc.stage === 2) &&
+        (npc.values.blood_density ?? 0) >= 80 &&
+        Boolean(npc.flags?.gulan_final_fall_done),
       text: '{name}不再抗拒体内奔涌的古龙真血，赤色竖瞳沉冷而傲然，黑角尖端泛红，脸侧生出数片龙鳞。龙化形态已化作她自身的常态与本能。'
     },
     {
@@ -5133,6 +5666,8 @@
       mode: 'result',
       fromStage: 0,
       toStage: 1,
+      covert: true,
+      echoId: 'echo_aurora_manor_hush',
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.arrived_oakhaven && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) &&
         !npc.flags?.aurora_evt1_done &&
@@ -5144,15 +5679,18 @@
         (npc.flags?.manorWorkDays ?? 0) >= 3,
       effects: {
         add: { debt_pressure: -10 },
-        npcFlags: { aurora_evt1_done: true }
+        npcFlags: { aurora_evt1_done: true },
+        tagsAdd: ['tag_aurora_manor_hush']
       },
-      text: '{name}在领主山庄工作满三日后收拾二楼私室时，雷蒙德领主顺手递过一袋额外封口金币并借机贴身占便宜。她指尖攥紧围裙却不敢得罪大领主，红着眼眶咬牙忍下，收下这笔抵掉一成旧债的钱款，此后在山庄干活时也不再敢强硬推阻触碰。'
+      text: '领主将{name}叫到书房，一边大肆隔着长裙抚摸裙下美臀，一边欣赏起她忍耐不敢反抗的瑟缩表情，嘴上却开口说：“奥萝拉小姐，你最近的表现很好，我正在考虑给你涨工资……”说到这里，他放肆的大手直接撩起女仆长裙，直接开始揉捏黑丝美臀，甚至将一根手指伸入了她的臀缝。{name}羞红了脸，却只能唯唯诺诺地点头称谢。'
     },
     {
       id: 'aurora_stage_2',
       mode: 'result',
       fromStage: 1,
       toStage: 2,
+      covert: true,
+      echoId: 'echo_aurora_night_service',
       requires: ['aurora_stage_1'],
       when: ({ world, npc, phase }) => {
         if (!world.flags?.arrived_oakhaven || !npc.flags?.manor_service_active || npc.flags?.aurora_left_manor || world.flags?.baron_purged) return false
@@ -5160,21 +5698,30 @@
         if (isWeekendDay(dayAt(world)) || !['morning', 'afternoon'].includes(phase.id)) return false
         if ((npc.values.debt_pressure ?? 0) <= 0) return false
         if ((npc.values.affection ?? 0) >= 90 && !npc.flags?.aurora_evt2_delayed) return false
-        const baseDays = npc.flags?.aurora_evt2_delayed ? 14 : 7
+        const hasResignTag = (world.tags?.aurora || []).includes('tag_aurora_resign_determined')
+        // 高好感宽限与决意辞职拒绝对潜规则各自延后 7 个工作日，可叠加至 21 天
+        const baseDays = 7 + (npc.flags?.aurora_evt2_delayed ? 7 : 0) + (hasResignTag ? 7 : 0)
         const reqDays = baseDays - (npc.flags?.aurora_lord_punished ? 3 : 0)
         return Boolean(npc.flags?.aurora_evt1_done) && (npc.flags?.manorWorkDays ?? 0) >= reqDays
       },
       effects: {
         add: { debt_pressure: -30 },
-        npcFlags: { aurora_evt2_done: true }
+        npcFlags: { aurora_evt2_done: true },
+        tagsAdd: ['tag_aurora_night_service'],
+        tagsRemove: ['tag_aurora_manor_hush'],
+        dossierAdd: [
+          { npc: 'aurora', type: 'encounter', parts: ['vagina'], penetrative: true, internal: true, position: '书房长椅抬裙后入', volumeMl: 12 }
+        ]
       },
-      text: '在领主山庄高额加码服务费的步步相逼下，{name}最终没能推辞能一次消去三成债务的私室夜侍条件。厚实橡木门隔绝了外间动静，事后她强忍屈辱收下重金，从此每逢工作日入夜便默认留在山庄侍寝，只在周末换回素净长裙勉强返店归队。'
+      text: '在领主山庄高额加码封口费的步步相逼下，{name}最终没能推辞那笔足以还清三成旧债的私室夜侍重金。厚实橡木门隔绝了外间动静，事后她强忍屈辱收下钱袋，从此每逢工作日入夜便默认留在山庄侍寝，只在周末换回素净长裙勉强返店归队。'
     },
     {
       id: 'aurora_stage_3',
       mode: 'result',
       fromStage: 2,
       toStage: 3,
+      covert: true,
+      echoId: 'echo_aurora_baron_mistress',
       requires: ['aurora_stage_2'],
       when: ({ world, npc, phase }) => {
         const reqDays = 21 - (npc.flags?.aurora_lord_punished ? 3 : 0)
@@ -5193,9 +5740,14 @@
       },
       effects: {
         add: { debt_pressure: -100 },
-        npcFlags: { aurora_evt3_done: true }
+        npcFlags: { aurora_evt3_done: true },
+        tagsAdd: ['tag_aurora_baron_mistress'],
+        tagsRemove: ['tag_aurora_night_service'],
+        dossierAdd: [
+          { npc: 'aurora', type: 'encounter', parts: ['vagina'], penetrative: true, internal: true, position: '丝绒扶手椅正面坐跨', volumeMl: 15 }
+        ]
       },
-      text: '面对领主一次清空全部剩余家庭旧债的情妇契约，{name}轻叹着合上手中账册签下名字；旧债随之归零，她正式长留在领主山庄成为男爵情妇，从此周末亦不再返回旅店。'
+      text: '面对领主开出足以还清全部剩余家庭旧债的巨额封口重金与情妇契约，{name}轻叹着合上手中账册签下名字；她拿着这笔钱结清了外债，正式长留在领主山庄成为伯爵情妇，从此周末亦不再返回旅店。'
     },
     {
       id: 'eileen_stage_1',
@@ -5223,7 +5775,7 @@
         npc.stage === 1 &&
         (npc.flags?.eileenCaptiveDays ?? 0) >= 7,
       effects: { npcFlags: { eileen_evt2_done: true } },
-      text: '幽禁满七日后，男爵将假冒她笔迹的“沿途安好缓归”回执摆到案前；失去王都与外界全部援救希望的{name}在私室与日夜调教的磨折下防线渐崩，开始被迫配合山庄规训。'
+      text: '幽禁满七日后，伯爵将假冒她笔迹的“沿途安好缓归”回执摆到案前；失去王都与外界全部援救希望的{name}在私室与日夜调教的磨折下防线渐崩，开始被迫配合山庄规训。'
     },
     {
       id: 'eileen_stage_3',
@@ -5245,6 +5797,8 @@
       mode: 'result',
       fromStage: 0,
       toStage: 1,
+      covert: true,
+      echoId: 'echo_nise_casino_dealer',
       when: ({ world, npc, phase, blockedIds }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
         !isFugitiveSquadActive(world, npc) &&
@@ -5266,6 +5820,8 @@
       mode: 'result',
       fromStage: 1,
       toStage: 2,
+      covert: true,
+      echoId: 'echo_nise_casino_secretary',
       requires: ['nise_stage_1'],
       when: ({ world, npc, phase, blockedIds }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
@@ -5280,15 +5836,20 @@
         (npc.values.gamble_debt ?? 0) >= 60,
       effects: {
         move: 'casino',
-        npcFlags: { nise_secretary_done: true, nise_casino_busy_today: true }
+        npcFlags: { nise_secretary_done: true, nise_casino_busy_today: true },
+        dossierAdd: [
+          { npc: 'nise', type: 'encounter', parts: ['vagina'], penetrative: true, internal: true, position: '长桌俯卧式', volumeMl: 12 }
+        ]
       },
-      text: '越滚越高的赌债将{name}逼入更深的筹码泥潭；黑巨汉以暂缓强收与不向家里告发为挟，把她唤入赌场二三层内室充当贴身私人秘书，整天脱队失联接受愈发露骨的抵债挟制。'
+      text: '越滚越高的赌债将{name}逼入更深的筹码泥潭；黑巨汉以暂缓强收与不向家里告发为挟，把她唤入赌场二三层内室充当贴身私人秘书，在账房长桌前强行破处占有并整夜扣押，被迫以身抵债。'
     },
     {
       id: 'nise_stage_3',
       mode: 'result',
       fromStage: 2,
       toStage: 3,
+      covert: true,
+      echoId: 'echo_nise_casino_contract',
       requires: ['nise_stage_2'],
       when: ({ world, npc, blockedIds }) =>
         Boolean(world.flags?.arrived_oakhaven) &&
@@ -5301,7 +5862,10 @@
         (npc.values.gamble_debt ?? 0) >= 90,
       effects: {
         move: 'casino',
-        npcFlags: { nise_contract_done: true, casino_debt_frozen: true, nise_casino_busy_today: false }
+        npcFlags: { nise_contract_done: true, casino_debt_frozen: true, nise_casino_busy_today: false },
+        dossierAdd: [
+          { npc: 'nise', type: 'encounter', parts: ['vagina'], penetrative: true, internal: true, position: '石台跪坐后入', volumeMl: 15 }
+        ]
       },
       text: '债务逼近尽头之际，走投无路的{name}在畏惧责罚与麻木屈服中于卖身契上按下了指印，从此不再回到断剑与麦酒旅店，长留地下赌场沦为黑老大掌控的专属抵债玩物。'
     },
@@ -5315,6 +5879,7 @@
         !world.flags?.baron_purged &&
         npc.stage === 0 &&
         !npc.flags?.cecilia_evt1_done &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         ((npc.values.affection ?? 0) < 70 ||
           Boolean(npc.flags?.cecilia_manor_go_stage1) ||
@@ -5323,7 +5888,7 @@
         add: { orphanage_funds: 30 },
         npcFlags: { cecilia_evt1_done: true, cecilia_manor_go_stage1: false, ceciliaAppealDays: 0 }
       },
-      text: '孤儿院账面断绝之际，{name}为给孩子们换回口粮与药材，只得独自前往领主山庄恳求雷蒙德男爵拨款。男爵在书房趁机逼迫她忍受猥亵检身与含辱口舌讨好后才肯签下拨款单，{name}攥着新领回的三十份善款重返教堂，神情却多了一层难掩的晦暗（孤儿院资金 +30）。'
+      text: '孤儿院账面断绝之际，{name}为给孩子们换回口粮与药材，只得独自前往领主山庄恳求雷蒙德伯爵拨款。伯爵在书房趁机逼迫她忍受猥亵检身与含辱口舌讨好后才肯签下拨款单，{name}攥着新领回的三十份善款重返教堂，神情却多了一层难掩的晦暗（孤儿院资金 +30）。'
     },
     {
       id: 'cecilia_stage_2',
@@ -5337,6 +5902,7 @@
         npc.stage === 1 &&
         Boolean(npc.flags?.cecilia_evt1_done) &&
         !npc.flags?.cecilia_evt2_done &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         ((npc.values.affection ?? 0) < 80 ||
           Boolean(npc.flags?.cecilia_manor_go_stage2) ||
@@ -5359,6 +5925,7 @@
         npc.stage === 2 &&
         Boolean(npc.flags?.cecilia_evt2_done) &&
         !npc.flags?.cecilia_evt3_done &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         ((npc.values.affection ?? 0) < 90 ||
           Boolean(npc.flags?.cecilia_manor_go_stage3) ||
@@ -5367,7 +5934,7 @@
         add: { orphanage_funds: 60 },
         npcFlags: { cecilia_evt3_done: true, cecilia_manor_go_stage3: false, ceciliaAppealDays: 0 }
       },
-      text: '善款三度耗尽后，{name}再度来到领主山庄却已无力再守最后防线。男爵以长期稳定包揽孤儿院六十份配额为交换，将这位曾经端庄自持的修女长正式收作暗中随叫随到的圣职情妇（孤儿院资金 +60）。'
+      text: '善款三度耗尽后，{name}再度来到领主山庄却已无力再守最后防线。伯爵以长期稳定包揽孤儿院六十份配额为交换，将这位曾经端庄自持的修女长正式收作暗中随叫随到的圣职情妇（孤儿院资金 +60）。'
     },
     {
       id: 'isna_stage_1',
@@ -5433,7 +6000,8 @@
       when: ({ npc }) =>
         npc.stage === 2 &&
         !npc.flags?.isnaMudSealCleared &&
-        (npc.flags?.isnaMudDays ?? 0) >= 10,
+        // 已坦白血契真相时留出第 10 天白天拔除窗口，拖过第 10 天仍未拔除才在第 11 天沉沦
+        (npc.flags?.isnaMudDays ?? 0) >= (npc.flags?.isnaMudTruthKnown ? 11 : 10),
       effects: ({ world }) => ({
         move: 'wilds_camp',
         forceMove: true,
@@ -5494,7 +6062,7 @@
     )
 
   const canResolveGulanRescue = ({ world, npc }) =>
-    !world.flags?.ed_showdown_done && npc.stage === 2 &&
+    !world.flags?.ed_showdown_done && (npc.stage === 1 || npc.stage === 2) &&
     !npc.flags?.gulan_final_fall_done && (npc.flags?.gulan_rescue_count ?? 0) < 3
 
   const DRAGON_TRUE_FORM_SPEC = Object.freeze({
@@ -5642,7 +6210,7 @@
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined) return false
         const ed = world.npcs?.ed
         if (!ed || ed.monitored !== true || ed.alive === false) return false
-        if (npc.stage !== 1 || npc.flags?.ed_hypnosis_play_done) return false
+        if (npc.stage !== 1 || npc.flags?.ed_hypnosis_play_done || npc.flags?.gulan_pure_bond_done || world.flags?.ed_showdown_done) return false
         if (!['night', 'deep_night'].includes(phase.id)) return false
         if (npc.location !== ed.location) return false
         if (world.flags?.playerRoomTarget === 'gulan') return false
@@ -5695,7 +6263,7 @@
       outcomes: {
         rescue: {
           when: ({ world, npc }) =>
-            npc.stage === 2 &&
+            (npc.stage === 1 || npc.stage === 2) &&
             world.playerLocation === 'inn' &&
             npc.location === 'inn' &&
             (npc.values.affection ?? 0) >= 90 &&
@@ -5710,22 +6278,32 @@
             }
             return '在彼此交融的体温与深厚羁绊的回应下，{name}以坚毅意志为舟、以真挚情意为锚，终于将狂暴的始祖真血驯服为由自身掌控的纯净力量。热浪平息后，她依偎在侧轻喘，琥珀竖瞳澄明如初，真正迈入了与龙血共存的武圣之境。';
           },
-          effects: ({ npc }) => {
+          effects: ({ world, npc }) => {
             const count = npc.flags?.gulan_rescue_count ?? 0;
             if (count < 2) {
-              return {
-                add: { blood_density: -10, affection: 3 },
-                npcFlags: { gulan_rescue_count: count + 1, gulan_rescued_final: true }
-              };
+              return [
+                { target: 'world', worldFlags: { lastGulanRoomMin: world.timeMin } },
+                {
+                  target: 'gulan',
+                  add: { blood_density: -10, affection: 3 },
+                  npcFlags: { gulan_rescue_count: count + 1, gulan_rescued_final: true }
+                }
+              ];
             }
-            return {
-              add: { affection: 3 },
-              npcFlags: { gulan_rescue_count: 3, gulan_rescued_final: true, gulan_pure_bond_done: true }
-            };
+            return [
+              { target: 'world', worldFlags: { lastGulanRoomMin: world.timeMin } },
+              {
+                target: 'gulan',
+                add: { affection: 3 },
+                npcFlags: { gulan_rescue_count: 3, gulan_rescued_final: true, gulan_pure_bond_done: true }
+              }
+            ];
           }
         },
         fail: {
-          echoId: 'echo_gulan_final_fall',
+          echoId: ({ npc }) => (npc.stage === 1 && !npc.flags?.ed_hypnosis_play_done)
+            ? 'echo_gulan_final_fall_virgin'
+            : 'echo_gulan_final_fall',
           text: '门外久久未有回应，虚掩的木门在夜风中轻轻合拢，屋内压抑的喘息逐渐沉入死寂。次日清晨，{name}如常起身整装，神色沉稳自持，依旧以长辈与师长的口吻叮嘱日常起居，唯独眼神深处多了一丝若有若无的冰冷。',
           effects: {
             npcFlags: { gulan_final_fall_done: true },
@@ -5749,7 +6327,7 @@
         if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined) return false;
         const ed = world.npcs?.ed;
         if (!ed || ed.monitored !== true || ed.alive === false) return false;
-        if (npc.stage !== 2 || npc.flags?.gulan_final_fall_done) return false;
+        if (npc.stage !== 2 || npc.flags?.gulan_final_fall_done || npc.flags?.gulan_pure_bond_done || world.flags?.ed_showdown_done) return false;
         if (!['night', 'deep_night'].includes(phase.id)) return false;
         if (npc.location !== ed.location) return false;
         if (world.flags?.playerRoomTarget === 'gulan') return false;
@@ -5767,6 +6345,39 @@
         tagsAdd: ['dragon_mark_linger'],
         dossierAdd: [
           { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '侧卧交缠', volumeMl: 14 },
+          { type: 'encounter', parts: ['hips', 'legs'], penetrative: true, internal: true, position: '后入式', volumeMl: 18 }
+        ]
+      }
+    },
+    {
+      id: 'gulan_final_fall_virgin_dark',
+      mode: 'result',
+      scope: 'npc',
+      covert: true,
+      echoId: 'echo_gulan_final_fall_virgin',
+      targets: ['gulan'],
+      when: ({ world, npc, phase }) => {
+        if (!world.flags?.arrived_oakhaven || !world.flags?.ed_joined) return false;
+        const ed = world.npcs?.ed;
+        if (!ed || ed.monitored !== true || ed.alive === false) return false;
+        if (npc.stage !== 1 || npc.flags?.ed_hypnosis_play_done || npc.flags?.gulan_final_fall_done || npc.flags?.gulan_pure_bond_done || world.flags?.ed_showdown_done) return false;
+        if (!['night', 'deep_night'].includes(phase.id)) return false;
+        if (npc.location !== ed.location) return false;
+        if (world.flags?.playerRoomTarget === 'gulan') return false;
+        const rescueCount = npc.flags?.gulan_rescue_count ?? 0;
+        if (rescueCount >= 3) return false;
+        const aff = npc.values?.affection ?? 0;
+        const bd = npc.values?.blood_density ?? 0;
+        if (aff < 90) return bd >= 80;
+        const threshold = 80 + 10 * rescueCount;
+        return bd >= threshold && world.playerLocation !== npc.location;
+      },
+      text: '古兰一阶初夜失守终局暗线已结算。',
+      effects: {
+        npcFlags: { gulan_final_fall_done: true },
+        tagsAdd: ['dragon_mark_linger'],
+        dossierAdd: [
+          { type: 'encounter', parts: ['chest', 'hips'], penetrative: true, internal: true, position: '压制破处', volumeMl: 14 },
           { type: 'encounter', parts: ['hips', 'legs'], penetrative: true, internal: true, position: '后入式', volumeMl: 18 }
         ]
       }
@@ -6621,7 +7232,7 @@
         !isWeekendDay(dayAt(world)) &&
         ['morning', 'afternoon'].includes(phase.id),
       effects: { npcFlags: { aurora_lord_punished: true } },
-      text: '领主府追查起巡查使艾琳在冒险者掩护下逃走一事，雷蒙德男爵迁怒到当初跑去公会发布任务的{name}头上并严加苛责施压（因未获灰鼠及时传信，事件二、三所需工作日各提前三天）。'
+      text: '领主府追查起巡查使艾琳在冒险者掩护下逃走一事，雷蒙德伯爵迁怒到当初跑去公会发布任务的{name}头上并严加苛责施压（因未获灰鼠及时传信，事件二、三所需工作日各提前三天）。'
     },
     {
       id: 'aurora_manor_evt2_delay',
@@ -6648,7 +7259,7 @@
       effects: {
         npcFlags: { aurora_evt2_delayed: true }
       },
-      text: '雷蒙德男爵捧着足够再抵三成旧债的重金提出夜宿特侍要求；念及与你确立的恋人情分，{name}眼眶微红却咬紧牙关推辞了当晚留宿，领主暗忖她仍欠巨债，姑且宽限七个工作日再作答复。'
+      text: '雷蒙德伯爵捧着足够再抵三成旧债的重金提出夜宿特侍要求；念及与你确立的恋人情分，{name}眼眶微红却咬紧牙关推辞了当晚留宿，领主暗忖她仍欠巨债，姑且宽限七个工作日再作答复。'
     },
     {
       id: 'aurora_manor_evt3_refuse',
@@ -6675,7 +7286,7 @@
         move: 'inn',
         npcFlags: { manor_service_active: false, aurora_left_manor: true, aurora_evt3_done: true }
       },
-      text: '雷蒙德领主摊出替她直接清空全部剩余旧债的长期情妇契约。{name}望着面前金币，想起始终在等待她的你，终于轻声却坚定地摇了头——宁可留着余债慢慢偿还，也决不留在宅邸充当情妇，当天便交回钥匙辞工赶回旅店归队。'
+      text: '雷蒙德领主摊出附带巨额封口金币、足够她一次还清全部剩余旧债的长期情妇契约。{name}望着面前金币，想起始终在等待她的你，终于轻声却坚定地摇了头——宁可留着余债慢慢偿还，也决不留在宅邸充当情妇，当天便交回钥匙辞工赶回旅店归队。'
     },
     {
       id: 'aurora_debt_cleared_quit',
@@ -6742,15 +7353,119 @@
         Boolean(world.flags?.arrived_oakhaven && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) &&
         isWeekendDay(dayAt(world)) &&
         !npc.flags?.aurora_manor_confessed &&
-        npc.stage >= 1 &&
-        npc.stage < 3 &&
+        npc.stage === 2 &&
         (npc.values.affection ?? 0) >= 90 &&
         ['inn', 'church'].includes(world.playerLocation) &&
         world.playerLocation === npc.location,
       effects: {
         npcFlags: { aurora_manor_confessed: true }
       },
-      text: '周末归队独处无外人时，{name}终于再也撑不住平时的微笑面具，低声抽泣着把领主府二楼的真相告诉了你——之前抵掉旧债的钱并不是正经工钱，而是男爵给的封口费与留宿私密要求，她攥紧你的衣袖请求帮助。'
+      text: '周末归队独处无外人时，{name}终于再也撑不住平时的微笑面具，低声抽泣着把领主府二楼的真相告诉了你——之前抵掉旧债的钱并不是正经工钱，而是伯爵给的封口费与留宿私密要求，她攥紧你的衣袖请求帮助。'
+    },
+    {
+      id: 'aurora_resign_talk',
+      priority: 7,
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['aurora'],
+      title: '辞职',
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc }) =>
+        Boolean(world.flags?.arrived_oakhaven && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) &&
+        npc.stage < 2 &&
+        (npc.values.affection ?? 0) >= 90 &&
+        !npc.flags?.aurora_resign_talked &&
+        isWeekendDay(dayAt(world)) &&
+        isAloneWithAurora(world, npc),
+      expireWhen: ({ world, npc }) =>
+        !npc.flags?.manor_service_active ||
+        Boolean(npc.flags?.aurora_left_manor || world.flags?.baron_purged || npc.flags?.aurora_resign_talked) ||
+        npc.stage >= 2 ||
+        !isWeekendDay(dayAt(world)) ||
+        !isAloneWithAurora(world, npc),
+      text: '{{user}}独自找到{name}时，她低着头攥紧裙角终于哭诉起山庄近况——这些天领主变本加厉地对她进行没有破处的性骚扰，粗糙的大手不止一次直接触及她的美臀、奶子与大腿；她浑身微颤，害怕哪一天领主会将她的贞洁也夺走，随即红着脸扭扭捏捏地躲开{{user}}的视线说：“那、那是要留给我喜欢的人的。”说完后她沉默了一会儿，“我想申请辞职，你会支持我吗？可契约里早就下了陷阱，必须工作满六个月，提前离职需要支付 500 金币的违约金……在这片领地上他就是法律，契约也是我亲笔签字的，我怕那个老肥猪可能不会那么轻易答应……”',
+      outcomes: {
+        support_resign: {
+          when: ({ world, npc }) => world.playerLocation === npc.location,
+          effects: {
+            tagsAdd: ['tag_aurora_resign_determined'],
+            npcFlags: { aurora_resign_talked: true }
+          },
+          text: '{{user}}握住{name}发凉的指尖明确表示支持她辞职。听见承诺的{name}眼眶微热地用力点头，下定决心不再任由领主一步步得寸进尺（获得标签【决意辞职】）；虽被六个月与五百金币的苛刻违约金暂时锁住、不得不先强忍回去上班，她已打定主意拒绝一切留宿要求，盼着你陪同前往山庄与伯爵交涉，或等待彻底脱身的转机。'
+        }
+      }
+    },
+    {
+      id: 'aurora_manor_resign_negotiate',
+      priority: 7,
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['aurora'],
+      title: '陪同山庄辞职交涉',
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) &&
+        npc.stage < 2 &&
+        (world.tags?.aurora || []).includes('tag_aurora_resign_determined') &&
+        !npc.flags?.aurora_resign_failed &&
+        !isWeekendDay(dayAt(world)) &&
+        ['morning', 'afternoon'].includes(phase.id) &&
+        world.playerLocation === 'manor' &&
+        npc.location === 'manor',
+      expireWhen: ({ world, npc, phase }) =>
+        !npc.flags?.manor_service_active ||
+        Boolean(npc.flags?.aurora_left_manor || world.flags?.baron_purged || npc.flags?.aurora_resign_failed) ||
+        npc.stage >= 2 ||
+        isWeekendDay(dayAt(world)) ||
+        !['morning', 'afternoon'].includes(phase.id) ||
+        world.playerLocation !== 'manor' ||
+        npc.location !== 'manor',
+      text: '你陪同{name}来到领主山庄前厅递交辞呈。雷蒙德领主眯起眼打量着身旁的来人，指节敲击着那份签有五百金币违约金的劳务契约，神色正随着陪同阵仗悄然变换。',
+      outcomes: {
+        negotiate_master: {
+          when: ({ world }) => presentMasterExists(world) && (world.playerState?.gold ?? 0) >= 200,
+          effects: [
+            { target: 'world', goldDelta: -200 },
+            {
+              target: 'aurora',
+              move: 'inn',
+              forceMove: true,
+              tagsAdd: ['tag_lord_grudge'],
+              tagsRemove: ['tag_aurora_resign_determined'],
+              npcFlags: { manor_service_active: false, aurora_left_manor: true }
+            }
+          ],
+          text: '雷蒙德领主瞥见陪同前来的宗师阶强者气度沉凝，心知犯不上为了一个女仆与宗师撕破脸；他立刻换上一副客客气气、和颜悦色的笑脸当场批准了{name}的辞职，还顺带“慷慨”减免了大半违约金，只象征性收下两百金币便放人离去（持有金币 -200，获得标签【领主的记恨】，{name}脱身返回旅店归队）。'
+        },
+        negotiate_blocked: {
+          when: ({ world }) => !presentMasterExists(world),
+          effects: [
+            { target: 'world', playerMove: 'town' },
+            { target: 'aurora', npcFlags: { aurora_resign_failed: true } }
+          ],
+          text: '见陪同前来的队伍中并无宗师阶强者镇场，雷蒙德领主当即撕下笑脸，趾高气昂地驳回辞呈，随口编造“{name}手头尚有重要账务与内务未曾交割完毕、暂时不得离职”的子虚乌有理由，旋即挥手召来全员三阶精锐的私兵卫队将你强行轰出庄园，把{name}硬生生扣留在山庄继续当差。'
+        }
+      }
+    },
+    {
+      // TODO: 占位事件，后续可能修改或扩展细节
+      id: 'aurora_shared_debt_vow',
+      priority: 3,
+      mode: 'result',
+      scope: 'npc',
+      targets: ['aurora'],
+      when: ({ world, npc }) =>
+        Boolean(world.flags?.arrived_oakhaven && npc.flags?.aurora_left_manor && !npc.flags?.aurora_purged_with_baron) &&
+        !npc.flags?.aurora_shared_debt_vow_done &&
+        (npc.values.affection ?? 0) >= 90 &&
+        ['inn', 'church'].includes(world.playerLocation) &&
+        world.playerLocation === npc.location,
+      effects: {
+        npcFlags: { aurora_shared_debt_vow_done: true }
+      },
+      text: '【占位提醒】脱离领主山庄归队后，{{user}}与{name}并肩坐在一起核对剩余的家庭旧债账册；纵使前路仍有千金债务重压，{{user}}仍决意与{name}共同面对接下来的债务与未来。'
     },
     {
       id: 'eileen_arrive',
@@ -6766,7 +7481,7 @@
         { target: 'world', worldFlags: { eileen_arrived: true } },
         { target: 'eileen', monitored: true, move: 'manor', npcFlags: { eileenInspectDays: 0 } }
       ],
-      text: '镇门号角吹响，一队王都仪仗车马沿官道上山入驻领主山庄——王国特派三等巡查使艾琳·冯·兰开斯特奉命前来审计边疆账务；高傲的名门千金眼下只按公文程序接受雷蒙德男爵宴待，不与镇上见习冒险者往来。'
+      text: '镇门号角吹响，一队王都仪仗车马沿官道上山入驻领主山庄——王国特派三等巡查使艾琳·冯·兰开斯特奉命前来审计边疆账务；高傲的名门千金眼下只按公文程序接受雷蒙德伯爵宴待，不与镇上见习冒险者往来。'
     },
     {
       id: 'aurora_eileen_arrive_tip',
@@ -6780,7 +7495,7 @@
         world.playerLocation === 'inn' &&
         npc.location === 'inn',
       effects: { npcFlags: { aurora_told_eileen_arrival: true } },
-      text: '趁夜里回旅店歇脚时，{name}轻声向你提起山庄近况：近日刚来了一位王都派下来的女巡查使，是个衣着华贵、神情高傲的千金大小姐，正由男爵亲自安排在客套房款待。'
+      text: '趁夜里回旅店歇脚时，{name}轻声向你提起山庄近况：近日刚来了一位王都派下来的女巡查使，是个衣着华贵、神情高傲的千金大小姐，正由伯爵亲自安排在客套房款待。'
     },
     {
       id: 'eileen_escort_offer',
@@ -6792,23 +7507,25 @@
         Boolean(world.flags?.eileen_arrived && !world.flags?.eileen_departed && !world.flags?.baron_purged) &&
         ['morning', 'afternoon'].includes(phase.id) &&
         (npc.flags?.eileenInspectDays ?? 0) >= 6 &&
-        auroraManorInsider(world),
+        (auroraManorInsider(world) || world.playerLocation === 'town'),
       effects: { worldFlags: { eileen_departed: true } },
-      text: '王都特使{name}完成奥克赫斯巡查并向王都发出返程报信函件。离开前她嘱咐侍女奥萝拉去镇上冒险者公会挂出一份报酬优渥的密封护送任务，念着与你的交情，奥萝拉优先赶来私下把这份委托悄悄递到你手边。',
+      text: ({ world }) => auroraManorInsider(world)
+        ? '王都特使{name}完成奥克赫斯城巡查并向王都发出返程报信函件。离开前她嘱咐侍女奥萝拉去城内冒险者公会挂出一份报酬优渥的密封护送任务，念着与你的交情，奥萝拉优先赶来私下把这份委托悄悄递到你手边。'
+        : '王都特使{name}完成奥克赫斯城巡查并向王都发出返程报信函件。离开前她派人前往城内冒险者公会分会，在告示板上挂出了一份报酬优渥的密封护送任务，正逢你在城内街区经过。',
       outcomes: {
         accept: {
           effects: [
             { target: 'world', playerMove: 'wilds', worldFlags: { eileen_departed: true, eileen_fugitive: true } },
             { target: 'eileen', add: { affection: 30 }, npcFlags: { eileen_fugitive: true, eileen_disguised: true } }
           ],
-          text: '出城半途突遭掩盖身份的领主私兵合围截杀！古兰因不干涉公会常规护送未曾同行，同行雇佣卫士死战断后；队伍趁乱杀出重围遁入荒原，{name}急忙掏出暗袋里的王室魔能讯号管求救，却愕然发现管体早被男爵偷换为不能激发的赝品。'
+          text: '出城半途突遭掩盖身份的领主私兵合围截杀！古兰因不干涉公会常规护送未曾同行，同行雇佣卫士死战断后；队伍趁乱杀出重围遁入荒原，{name}急忙掏出暗袋里的王室魔能讯号管求救，却愕然发现管体早被伯爵偷换为不能激发的赝品。'
         },
         decline: {
           effects: [
             { target: 'world', worldFlags: { eileen_departed: true } },
             { target: 'eileen', npcFlags: { eileen_captured: true, eileenCaptiveDays: 0 } }
           ],
-          text: '护送委托未获接下。{name}随少量随从自行出镇半程后遭掩盖身份的领主私兵突袭围捕，捏碎暗袋中早被掉包的伪造讯号管求助无门，连人被暗中押回山庄密室秘囚；因事先已发回都信函，外界竟无一人察觉异常。'
+          text: '护送委托未获接下。{name}随少量随从自行出城半程后遭掩盖身份的领主私兵突袭围捕，捏碎暗袋中早被掉包的伪造讯号管求助无门，连人被暗中押回山庄密室秘囚；因事先已发回都信函，外界竟无一人察觉异常。'
         }
       }
     },
@@ -6820,13 +7537,13 @@
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.eileen_arrived && !world.flags?.eileen_departed && !world.flags?.baron_purged) &&
         ['morning', 'afternoon'].includes(phase.id) &&
-        (npc.flags?.eileenInspectDays ?? 0) >= 6 &&
-        !auroraManorInsider(world),
+        // 城内公会护送委托悬挂 3 个完整昼日（第 6、7、8 天），第 9 天仍未接单才独自起程被伏击
+        (npc.flags?.eileenInspectDays ?? 0) >= 9,
       effects: [
         { target: 'world', worldFlags: { eileen_departed: true } },
         { target: 'eileen', npcFlags: { eileen_captured: true, eileenCaptiveDays: 0 } }
       ],
-      text: '{name}结束镇内巡查并向王都寄出“已完检启程回都”公文后独自起程，却在出镇半道遭到掩盖徽记的领主私兵伏击！她在混乱中欲催动王室魔能讯号管，竟发现已被暗中掉包，最终寡不敌众遭擒回领主山庄秘室幽禁。'
+      text: '{name}结束城内巡查并向王都寄出“已完检启程回都”公文后，因未能等来合适护送小队而独自起程，却在出城半道遭到掩盖徽记的领主私兵伏击！她在混乱中欲催动王室魔能讯号管，竟发现已被暗中掉包，最终寡不敌众遭擒回伯爵山庄秘室幽禁。'
     },
     {
       id: 'eileen_escape_move_wilds',
@@ -6875,10 +7592,10 @@
         (npc.values.affection ?? 0) >= 80 &&
         !world.npcs?.eileen?.flags?.eileen_nise_counted,
       effects: [
-        { target: 'eileen', add: { counterattack: 5 }, npcFlags: { eileen_nise_counted: true } },
+        { target: 'eileen', add: { counterattack: 10 }, npcFlags: { eileen_nise_counted: true } },
         { target: 'nise', npcFlags: { eileen_nise_helped: true, nise_casino_busy_today: false } }
       ],
-      text: '念及与哥哥同甘共苦的羁绊，高好感的{name}果断搁下镇上杂务直接入队同行；她沿途动用法术感应测算出山庄暗哨与魔能封印节点（艾琳反攻值 +5），为后续潜回反攻攒足先手情报。'
+      text: '念及与哥哥同甘共苦的羁绊，高好感的{name}果断搁下镇上杂务直接入队同行；她沿途动用法术感应测算出山庄暗哨与魔能封印节点（艾琳反攻值 +10），为后续潜回反攻攒足先手情报。'
     },
     {
       id: 'eileen_ambush_nise_aid',
@@ -6894,10 +7611,10 @@
         !npc.flags?.nise_casino_busy_today &&
         !world.npcs?.eileen?.flags?.eileen_nise_counted,
       effects: [
-        { target: 'eileen', add: { counterattack: 5 }, npcFlags: { eileen_nise_counted: true } },
+        { target: 'eileen', add: { counterattack: 10 }, npcFlags: { eileen_nise_counted: true } },
         { target: 'nise', npcFlags: { eileen_nise_helped: true } }
       ],
-      text: '同在护送小队中的{name}沿途动用法术感应测算出山庄暗哨与魔能封印节点（艾琳反攻值 +5），为后续潜回反攻攒足先手情报。'
+      text: '同在护送小队中的{name}沿途动用法术感应测算出山庄暗哨与魔能封印节点（艾琳反攻值 +10），为后续潜回反攻攒足先手情报。'
     },
     {
       id: 'eileen_ambush_isna_move_wilds',
@@ -6932,6 +7649,182 @@
       text: '雷蒙德领主得知艾琳在半路突围失踪，随即将四门封锁并派出大队私兵入野搜捕；古兰确认伯里尚无性命之虞按规矩留守镇上不掺和纷争。'
     },
     {
+      id: 'eileen_manor_trespass_alarm',
+      mode: 'result',
+      scope: 'world',
+      when: ({ world }) =>
+        Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        world.playerLocation === 'manor' &&
+        (world.npcs?.eileen?.values?.counterattack ?? 0) < 100,
+      effects: [
+        { target: 'world', playerMove: 'wilds' },
+        { target: 'eileen', add: { counterattack: -5 } }
+      ],
+      text: '反攻筹备尚未周全便携着通缉中的艾琳贸然踏入伯爵山庄，立刻惊动了府外巡值的精锐私兵与宗师供奉眼线；二人只得趁夜色未合围前仓皇撤回城外荒原（艾琳反攻值 -5）。'
+    },
+    {
+      id: 'eileen_curfew_evict',
+      mode: 'result',
+      scope: 'world',
+      when: ({ world, phase }) =>
+        Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        ['town', 'inn'].includes(world.playerLocation) &&
+        phase.id === 'night',
+      effects: [
+        { target: 'world', playerMove: 'wilds' },
+        { target: 'eileen', add: { counterattack: -5 } }
+      ],
+      text: '入夜后奥克赫斯城四门落锁、全城实行宵禁盘查；虽有兜帽遮面，城防暗哨仍沿街旅店与巷道逐户搜检，你们不敢久留只能摸黑翻出城外退回荒野营地（艾琳反攻值 -5）。'
+    },
+    {
+      id: 'eileen_wilds_hunt',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['eileen'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id) &&
+        (npc.flags?.eileenFugitiveDays ?? 0) >= 2 &&
+        !npc.flags?.eileen_wilds_hunt_done,
+      text: '下风向忽然传来急促犬吠与甲叶摩擦声——雷蒙德伯爵派出的山林私兵与猎犬正顺着荒野林缘包抄过来。{name}迅速拉紧兜帽遮面，指节按住藏在披风下的细剑剑柄，原本打算由她向反方向佯动引开追兵，却因左肩旧伤渗血动作一滞，只能压低声音向你确认如何应对眼前合围。',
+      outcomes: {
+        counter_ambush: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: { target: 'eileen', add: { counterattack: 15, affection: 6 }, npcFlags: { eileen_wilds_hunt_done: true } },
+          text: '你与{name}没有盲目逃窜，反而借乱石林线抢先卡住视野死角，干脆利落地剪除掉队的搜捕领队并从其怀中搜出伯爵府近期巡防口令与换防签条（艾琳反攻值 +15，好感 +6）。从口供与签条中得知：山庄内庭有伯爵重金聘请的宗师供奉坐镇，城门白昼混在商旅人流中可乔装接头，入夜则全城严查。'
+        },
+        evade_stealth: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ world }) => {
+            const inv = Array.isArray(world.playerState?.inventory) ? world.playerState.inventory : []
+            const hasSupply = inv.some(it => it && it.id === 'supply' && it.custom !== true && (it.count ?? 0) > 0)
+            const list = [
+              { target: 'eileen', add: { counterattack: 8, affection: 3 }, npcFlags: { eileen_wilds_hunt_done: true } }
+            ]
+            if (hasSupply) list.unshift({ target: 'world', itemsRemove: [{ id: 'supply', count: 1 }] })
+            return list
+          },
+          text: '为免惊动大队合围，你们借沟壑地形与丢弃的诱饵掩盖气味悄然蛰伏避过搜山队（若有补给则消耗 1 份补给，艾琳反攻值 +8，好感 +3）。从远处巡逻队交谈声中仍摸清了要害：山庄有宗师供奉坐镇，白昼商旅混杂尚可乔装进城接头，入夜则全城严查。'
+        }
+      }
+    },
+    {
+      id: 'eileen_seek_gulan',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['eileen'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) => {
+        const gulan = world.npcs?.gulan
+        const gulanOk = Boolean(
+          gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 &&
+          !gulan.flags?.gulan_departed && !gulan.flags?.captured_orc && !gulan.flags?.captured_manor
+        )
+        return Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+          Boolean(npc.flags?.eileen_wilds_hunt_done) &&
+          (npc.values.counterattack ?? 0) >= 30 &&
+          !npc.flags?.eileen_gulan_contacted &&
+          gulanOk &&
+          world.playerLocation === 'town' &&
+          ['morning', 'afternoon'].includes(phase.id)
+      },
+      text: '白昼混在商旅人流中乔装潜入城内练武场一隅，外貌二十余岁的冷艳黑角重剑宗师古兰收剑立于场边，琥珀色竖瞳平静扫过你们。{name}收敛了皇室巡查官的傲气，以平辈礼节郑重说明山庄内有伯爵重金聘请的宗师供奉镇守，凭小队自身难以正面破局，恳请古兰届时只在山庄外围出手制造动静牵制对方、绝不拖她正面卷入王室纷争。',
+      outcomes: {
+        pledge_divert: {
+          when: ({ world }) => world.playerLocation === 'town',
+          effects: [
+            { target: 'eileen', add: { counterattack: 20, affection: 5 }, npcFlags: { eileen_gulan_contacted: true } },
+            { target: 'gulan', npcFlags: { gulan_divert_promised: true } }
+          ],
+          text: '古兰确认过伯里已自行摸清退路、并非逃避担当，按生死危局护持后辈的底线简短颔首应下：“届时山庄外围的动静，我来引开；里面的事，伯里自己拿主意。”（艾琳反攻值 +20，好感 +5）。'
+        }
+      }
+    },
+    {
+      id: 'eileen_decoy_prep',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['eileen'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) => {
+        const gulan = world.npcs?.gulan
+        const gulanUnavailable = !(
+          gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 &&
+          !gulan.flags?.gulan_departed && !gulan.flags?.captured_orc && !gulan.flags?.captured_manor
+        )
+        return Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+          Boolean(npc.flags?.eileen_wilds_hunt_done) &&
+          (npc.values.counterattack ?? 0) >= 30 &&
+          !npc.flags?.eileen_gulan_contacted &&
+          gulanUnavailable &&
+          world.playerLocation === 'wilds' &&
+          ['morning', 'afternoon', 'evening'].includes(phase.id)
+      },
+      text: '眼下已无法指望古兰在城内协助牵制，面对山庄内宗师供奉坐镇的硬钉子，{name}与你摊开草图商议，只能自行在城外筹备一套引火与假信号声东击西的方案。',
+      outcomes: {
+        decoy_prep: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: { target: 'eileen', add: { counterattack: 12, affection: 3 }, npcFlags: { eileen_gulan_contacted: true } },
+          text: '二人反复校准风向与几处外围引火点，勉强拼出一套声东击西吸引宗师注意的替补方案（艾琳反攻值 +12，好感 +3）。'
+        }
+      }
+    },
+    {
+      id: 'eileen_manor_recon',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['eileen'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        Boolean(npc.flags?.eileen_wilds_hunt_done) &&
+        (npc.values.counterattack ?? 0) < 100 &&
+        !npc.flags?.eileen_recon_today &&
+        (npc.flags?.eileenReconCount ?? 0) < 3 &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id),
+      text: ({ npc }) => {
+        const count = npc.flags?.eileenReconCount ?? 0
+        if (count === 0) {
+          return '避入城外高地，{name}展开一张简略炭笔草图，远眺奥克赫斯城北山庄高墙，示意先对照记忆标出巡逻私兵的换班间隙与外墙视野盲区。'
+        }
+        if (count === 1) {
+          return '借助昨夜整理的线索，{name}随你摸到山庄侧翼林线，重点观察雷蒙德重金聘请的宗师供奉与精锐卫队的巡值交接规律。'
+        }
+        return '换防草图已近成形，{name}指向山庄主楼偏侧暗窗——只差最后一次核对内室暗格方位与潜入退路，这盘反攻棋局便算真正落子前夕。'
+      },
+      outcomes: {
+        infiltrate_edge: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'eileen',
+              add: { counterattack: 15, affection: 3 },
+              npcFlags: { eileen_recon_today: true, eileenReconCount: (npc.flags?.eileenReconCount ?? 0) + 1 }
+            }
+          ],
+          text: '你们趁山林雾气贴近山庄外围暗哨交接处，稳稳截听到最新换防口令与换岗时间差（艾琳反攻值 +15，好感 +3）。'
+        },
+        distant_observe: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'eileen',
+              add: { counterattack: 10, affection: 2 },
+              npcFlags: { eileen_recon_today: true, eileenReconCount: (npc.flags?.eileenReconCount ?? 0) + 1 }
+            }
+          ],
+          text: '为求稳妥没有靠近外围哨卡，只在荒野高地长时间计时记录巡逻班次与灯火变化（艾琳反攻值 +10，好感 +2）。'
+        }
+      }
+    },
+    {
       id: 'aurora_pass_manor_intel',
       mode: 'interaction',
       scope: 'npc',
@@ -6949,12 +7842,14 @@
       outcomes: {
         receive_intel: {
           when: ({ world, npc }) => world.playerLocation === npc.location,
-          effects: [
+          effects: ({ npc }) => [
             { target: 'world', itemsAdd: [{ id: 'manor_intel_note', count: 1 }] },
-            { target: 'eileen', add: { counterattack: 20 } },
+            { target: 'eileen', add: { counterattack: npc.flags?.aurora_resign_failed ? 30 : 20 } },
             { target: 'aurora', npcFlags: { aurora_eileen_intel_given: true } }
           ],
-          text: '{name}低声交出自己端茶收拾时悄悄记下的山庄私室换防间隙与领主暗锁密码，艾琳一方的反攻筹备迈出一大步（艾琳反攻值 +20）。'
+          text: ({ npc }) => npc.flags?.aurora_resign_failed
+            ? '先前辞职遭伯爵当面强扣的经历已令{name}对领主再无半点幻想，她不仅冒着风险交出山庄私室换防间隙与领主暗锁密码，还将苛刻劳务契约副本与私账破绽一并托付于你以配合艾琳反攻（艾琳反攻值 +30）。'
+            : '{name}低声交出自己端茶收拾时悄悄记下的山庄私室换防间隙与领主暗锁密码，艾琳一方的反攻筹备迈出一大步（艾琳反攻值 +20）。'
         }
       }
     },
@@ -6967,16 +7862,24 @@
       retryOnCancel: true,
       when: ({ world, npc }) =>
         Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        world.playerLocation === 'manor' &&
         (npc.values.counterattack ?? 0) >= 100,
-      text: '历经荒野蓄势与各方情报汇总（反攻值已满 100），{name}眼神沉静而果断地看向领主山庄方向——潜回山庄夺回那支被掉包的真正王室魔能讯号管，时机已成熟。',
+      text: '历经荒野蓄势与各方情报汇总（反攻值已满 100），{name}眼神沉静而果断地看向伯爵山庄方向——如今已摸清府内换防与重金宗师供奉的巡值破绽，趁夜色或换防间隙亲抵山庄潜入夺回那支被掉包的真正王室魔能讯号管，时机已成熟。',
       outcomes: {
         strike: {
-          when: ({ world }) => ['wilds', 'manor', 'inn', 'town'].includes(world.playerLocation),
+          when: ({ world }) => world.playerLocation === 'manor',
           effects: [
             { target: 'world', worldFlags: { eileen_signal_fired: true }, itemsRemove: [{ id: 'manor_intel_note', all: true }] },
             { target: 'eileen', npcFlags: { eileen_signal_fired: true, eileenSignalDays: 0 } }
           ],
-          text: '众人趁夜摸入领主山庄防线深处破开暗格，{name}亲手夺回原装王室魔能讯号管当空拉响传讯焰火！兰开斯特家族东境狮鹫骑士团瞬间收到召唤，一日后即将降临奥克赫斯！'
+          text: ({ world }) => {
+            const gulan = world.npcs?.gulan
+            const gulanDivert = gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 && !gulan.flags?.gulan_departed
+            return (gulanDivert
+              ? '众人按推演好的破绽分头行动：请出古兰隐匿身份在山庄外围出手制造动静调虎离山，成功引开伯爵重金聘请的宗师供奉；其余人趁隙摸入山庄防线深处破开暗格，'
+              : '众人按推演好的破绽声东击西引开伯爵重金聘请的宗师供奉与精锐守卫，趁隙摸入山庄防线深处破开暗格，') +
+              '{name}亲手夺回原装王室魔能讯号管当空拉响传讯焰火！兰开斯特家族东境狮鹫骑士团瞬间收到召唤，一日后即将降临奥克赫斯城！'
+          }
         }
       }
     },
@@ -6997,7 +7900,7 @@
         },
         { target: 'eileen', add: { affection: 20 }, npcFlags: { eileen_fugitive: false, eileen_disguised: false, eileen_purged_victory: true, eileenPostPurgeDays: 0 } }
       ],
-      text: '发出传讯次日，翼展蔽空的兰开斯特家族狮鹫骑士团（全员三阶精锐，正副团长为四阶宗师）威严降临奥克赫斯上空！雷蒙德男爵私兵伏诛，男爵本人遭当场清算处决；兰开斯特家族颁发重金赏赐，艾琳感激之余神情也随之柔和下来（好感度 +20）。'
+      text: '发出传讯次日，翼展蔽空的兰开斯特家族狮鹫骑士团（全员三阶精锐，正副团长为四阶宗师）威严降临奥克赫斯城上空！雷蒙德伯爵私兵伏诛、供奉客卿各自退散，伯爵本人遭当场清算处决；兰开斯特家族颁发重金赏赐，艾琳感激之余神情也随之柔和下来（好感度 +20）。'
     },
     {
       id: 'eileen_purge_aurora_fallen',
@@ -7012,7 +7915,7 @@
         monitored: false,
         npcFlags: { manor_service_active: false, aurora_purged_with_baron: true }
       },
-      text: '清算行动中，早已沦为领主山庄永久情妇的{name}未能脱身，与雷蒙德男爵一并被兰开斯特家族骑士团带走清算处置。'
+      text: '清算行动中，早已沦为领主山庄永久情妇的{name}未能脱身，与雷蒙德伯爵一并被兰开斯特家族骑士团带走清算处置。'
     },
     {
       id: 'eileen_purge_aurora_freed',
@@ -7028,7 +7931,7 @@
         move: 'inn',
         npcFlags: { manor_service_active: false, aurora_left_manor: true }
       },
-      text: '随着雷蒙德男爵伏诛倒台，压在山庄与{name}头顶的勒索契约一同作废；她得以脱身返回旅店归队（既往阶段留存不变，剩余家族外债仍需另行设法清偿）。'
+      text: '随着雷蒙德伯爵伏诛倒台，压在山庄与{name}头顶的勒索契约一同作废；她得以脱身返回旅店归队（既往阶段留存不变，剩余家族外债仍需另行设法清偿）。'
     },
     {
       id: 'eileen_purge_nise_fallen',
@@ -7073,7 +7976,7 @@
         { target: 'world', worldFlags: { player_barony_granted: true }, itemsAdd: [{ id: 'barony_patent', count: 1 }] },
         { target: 'eileen', npcFlags: { eileen_betrothed: true } }
       ],
-      text: '在狮鹫骑士团团长与兰开斯特家族见证下，与你患难生情、爱恋笃定的{name}亲自申请与你缔结婚约；家族大喜之下正式将奥克赫斯镇及原雷蒙德男爵辖下领地封赏于你，册封贵族爵位。'
+      text: '在狮鹫骑士团团长与兰开斯特家族见证下，与你患难生情、爱恋笃定的{name}亲自申请与你缔结婚约；家族大喜之下正式将原雷蒙德伯爵辖下一处附庸领地封赏于你，册封男爵爵位。'
     },
     {
       id: 'eileen_depart_with_knights',
@@ -7086,7 +7989,7 @@
         !npc.flags?.eileen_betrothed &&
         !npc.flags?.eileen_returned_capital &&
         (npc.values.affection ?? 0) < 90 &&
-        (npc.flags?.eileenPostPurgeDays ?? 0) >= 1,
+        (npc.flags?.eileenPostPurgeDays ?? 0) >= 3,
       effects: {
         monitored: false,
         npcFlags: { eileen_returned_capital: true }
@@ -7104,22 +8007,7 @@
         !npc.flags?.eileen_inspection_covered &&
         (npc.flags?.eileenCaptiveDays ?? 0) >= 90,
       effects: { npcFlags: { eileen_inspection_covered: true } },
-      text: '自失联囚禁满三个月（九十日）整，兰开斯特家族派遣狮鹫骑士团飞抵奥克赫斯追查特使下落；然而早已在密室被男爵完全调教驯服的{name}却穿戴齐整、神态端庄地走出山庄，替雷蒙德从容掩护圆场，令骑士团确认无误后无事发生返航离去。'
-    },
-    {
-      id: 'orc_camp_bounty_reward',
-      mode: 'result',
-      scope: 'world',
-      when: ({ world }) =>
-        Boolean(world.flags?.orc_camp_destroyed) &&
-        !world.flags?.orc_camp_bounty_paid &&
-        !world.npcs?.isna?.flags?.isna_fallen_orc &&
-        (world.npcs?.gulan?.stage ?? 0) < 3,
-      effects: {
-        goldDelta: 300,
-        worldFlags: { orc_camp_bounty_paid: true, inn_arrears: false }
-      },
-      text: '覆灭黑兽人前哨据点后，你们清点营地遗留财货并向公会交割据点清剿凭证，结清了足额三百枚金币的重赏与战利品（持有金币 +300）。'
+      text: '自失联囚禁满三个月（九十日）整，兰开斯特家族派遣狮鹫骑士团飞抵奥克赫斯追查特使下落；然而早已在密室被伯爵完全调教驯服的{name}却穿戴齐整、神态端庄地走出山庄，替雷蒙德从容掩护圆场，令骑士团确认无误后无事发生返航离去。'
     },
     {
       id: 'nise_casino_hint_high',
@@ -7218,6 +8106,7 @@
         npc.stage < 3 &&
         !npc.flags?.casino_debt_frozen &&
         !npc.flags?.nise_fled_casino &&
+        !npc.flags?.nise_gamble_immune &&
         Boolean(npc.flags?.tasted_casino && npc.flags?.debt_repaid_once) &&
         (npc.values.gamble_debt ?? 0) === 0 &&
         (npc.values.affection ?? 0) < 90 &&
@@ -7248,6 +8137,48 @@
       text: '瞒不住的赌债实情已摆到明面上——{name}红着眼眶咬唇低头不敢看古兰的方向，只敢死死拽住你的袖口低声招认了金碧赌场的高利借条。'
     },
     {
+      id: 'nise_casino_heist',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['nise'],
+      when: ({ world, npc, phase }) => {
+        if (!world.flags?.arrived_oakhaven || npc.id !== 'nise') return false;
+        if (npc.stage !== 1 || !npc.flags?.nise_dealer_done) return false;
+        if ((npc.values.gamble_debt ?? 0) < 30 || npc.flags?.nise_heist_done) return false;
+        if (!['night', 'deep_night'].includes(phase.id)) return false;
+        if (world.playerLocation !== 'casino') return false;
+        const isnaAvailable = Boolean(world.npcs?.isna && world.npcs.isna.alive !== false &&
+          !world.npcs.isna.flags?.captured_orc && !world.npcs.isna.flags?.isna_camp_distress);
+        const bestStealth = Math.max(
+          root.OKH_APP_SKILLS ? root.OKH_APP_SKILLS.checkAbility(world, '潜行') : 0,
+          isnaAvailable ? 3 : 0
+        );
+        const bestLockpick = Math.max(
+          root.OKH_APP_SKILLS ? root.OKH_APP_SKILLS.checkAbility(world, '开锁') : 0,
+          (isnaAvailable && (world.playerState?.tier ?? 2) >= 3) ? 3 : 0
+        );
+        return bestStealth >= 2 && bestLockpick >= 3;
+      },
+      effects: ({ world }) => [
+        {
+          target: 'nise',
+          set: { gamble_debt: 0 },
+          npcFlags: {
+            nise_heist_done: true,
+            nise_gamble_immune: true,
+            casino_debt_frozen: true,
+            nise_casino_busy_today: false
+          },
+          tagsAdd: ['nise_gamble_immune']
+        },
+        {
+          target: 'player',
+          tagsAdd: ['tag_balak_grudge']
+        }
+      ],
+      text: '借着深宵夜色掩护，你避开赌场巡哨潜入二楼账房（潜行检定通过）；在昏暗烛影下，拆解开黑铁暗锁保险箱，将按有妮丝手印的高利借条取出焚毁（开锁检定通过）。惊魂初定的妮丝见证据化为灰烬，瘫软在你怀中泪流满面，自此绝了翻本赌念（赌债归零，获得【完全绝赌】；巴拉克发现借据失窃，对小队暗生记恨）。'
+    },
+    {
       id: 'cecilia_midgame_crisis',
       mode: 'result',
       scope: 'npc',
@@ -7257,12 +8188,12 @@
         !world.flags?.baron_purged &&
         npc.stage < 3 &&
         !npc.flags?.cecilia_midgame_crisis &&
-        dayAt(world) >= arrivedDayOf(world) + 10,
+        dayAt(world) >= arrivedDayOf(world) + 14,
       effects: {
-        add: { orphanage_funds: -30 },
+        add: { orphanage_funds: -10 },
         npcFlags: { cecilia_midgame_crisis: true }
       },
-      text: '抵镇进入中期后，远方上级教区拨给边陲晨曦修道院的常年补助突然中断，加之连日孩童药材与寒季修缮开支激增，教堂账房库存猛然大减，每日维持孤儿院的净损耗也翻倍增加。'
+      text: '抵镇满两周后，上级教区拨给晨曦修道院的常年补助骤然中断，加之寒季孩童药材与炭火开支攀升，教堂账房库存告急、每日净损耗随之上升（孤儿院资金 -10，日耗增至 5）。'
     },
     {
       id: 'cecilia_manor_appeal_1',
@@ -7276,6 +8207,7 @@
         !world.flags?.baron_purged &&
         npc.stage === 0 &&
         !npc.flags?.cecilia_manor_go_stage1 &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         (npc.values.affection ?? 0) >= 70,
       resolveWhen: ({ world, npc }) =>
@@ -7285,19 +8217,27 @@
         npc.stage !== 0 ||
         (npc.values.orphanage_funds ?? 0) > 0 ||
         (npc.values.affection ?? 0) < 70,
-      text: '孤儿院账面见底且临近断粮，{name}因信赖与你亲密的情分，思虑再三后主动找你商量解决办法——她坦言孩子们已等不得，实在不行也只能自己硬着头皮去找领主申请拨款了。',
+      text: '孤儿院账面见底且孩童药柜空虚，{name}思虑再三后找到你商议——若再无办法筹措药材或善款，她只能独自前往领主山庄恳求伯爵拨款。',
       outcomes: {
+        take_quest: {
+          effects: { npcFlags: { cecilia_quest_stage: 1, ceciliaAppealDays: 0, cecilia_manor_go_stage1: false } },
+          text: '你接下了筹措重担，决定亲赴城外毒沼菌窟外围采掘稀缺疗伤菌茸；{name}眼中泛起感激微光，叮嘱你务必小心瘴气（已接取救济任务，请前往 wilds 完成）。'
+        },
         help: {
-          when: ({ world }) => (world.playerState?.gold ?? 0) >= 50,
-          effects: [
-            { target: 'world', goldDelta: -50 },
-            { target: 'cecilia', add: { orphanage_funds: 15, donated_gold: 50, affection: 4 }, npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage1: false } }
+          when: ({ world }) => (world.playerState?.gold ?? 0) >= 30,
+          effects: ({ npc }) => [
+            { target: 'world', goldDelta: -30 },
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 30, donated_gold: 30, affection: 4 },
+              npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage1: false, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
           ],
-          text: '五十枚急用金币稳稳填补了孤儿院口粮与药费的燃眉之急；{name}眼底泛起浅浅水光，双手合十低眉致谢（孤儿院资金 +15，好感度 +4）。'
+          text: '三十枚金币稳稳填补了孤儿院口粮与药费的燃眉之急；{name}眼底泛起浅浅水光，双手合十低眉致谢（孤儿院资金 +30，好感度 +4）。'
         },
         let_go: {
           effects: { npcFlags: { cecilia_manor_go_stage1: true } },
-          text: '孤儿院沉重的亏空未获解决，{name}只得轻叹一口气垂眸颔首，起身整理修女服独自赶往领主山庄恳求男爵拨款。'
+          text: '孤儿院沉重的亏空未获解决，{name}只得轻叹一口气垂眸颔首，起身整理修女服独自赶往领主山庄恳求伯爵拨款。'
         }
       }
     },
@@ -7313,6 +8253,7 @@
         !world.flags?.baron_purged &&
         npc.stage === 1 &&
         !npc.flags?.cecilia_manor_go_stage2 &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         (npc.values.affection ?? 0) >= 80,
       resolveWhen: ({ world, npc }) =>
@@ -7322,19 +8263,27 @@
         npc.stage !== 1 ||
         (npc.values.orphanage_funds ?? 0) > 0 ||
         (npc.values.affection ?? 0) < 80,
-      text: '上次领回的善款再度耗尽，{name}指尖绞着修女袍袖口再度来找你商议；她神情透着难堪与挣扎，低声表示实在凑不出钱也只能再去求雷蒙德男爵拨款。',
+      text: '上次筹措的用度再度耗尽，{name}指尖绞着修女袍袖口再度来找你商议；她翻出一本旧教区账册，提及城外古代机关旧殿遗迹石室里曾封存过一批老修道院白银圣器与救济匣，只是普通人根本进不去。',
       outcomes: {
+        take_quest: {
+          effects: { npcFlags: { cecilia_quest_stage: 2, ceciliaAppealDays: 0, cecilia_manor_go_stage2: false } },
+          text: '你接过旧教区石室草图，决定前往城外机关旧殿废墟取回封存救济匣（已接取救济任务，请前往 wilds 完成）。'
+        },
         help: {
-          when: ({ world }) => (world.playerState?.gold ?? 0) >= 100,
-          effects: [
-            { target: 'world', goldDelta: -100 },
-            { target: 'cecilia', add: { orphanage_funds: 25, donated_gold: 100, affection: 4 }, npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage2: false } }
+          when: ({ world }) => (world.playerState?.gold ?? 0) >= 50,
+          effects: ({ npc }) => [
+            { target: 'world', goldDelta: -50 },
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 40, donated_gold: 50, affection: 4 },
+              npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage2: false, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
           ],
-          text: '一百枚金币的大额亏空得以填补，孤儿院暂且免遭断炊，也免去了她再次独自前往领主山庄的风险（孤儿院资金 +25，好感度 +4）。'
+          text: '五十枚金币填补了修道院大额亏空，免去了她再次独自前往领主山庄的风险（孤儿院资金 +40，好感度 +4）。'
         },
         let_go: {
           effects: { npcFlags: { cecilia_manor_go_stage2: true } },
-          text: '百金窟窿无从筹措，{name}沉默地垂下眼睫，向同伴浅浅欠身后踏出教堂走向领主山庄。'
+          text: '窟窿一时无从筹措，{name}沉默地垂下眼睫，向同伴浅浅欠身后踏出教堂走向领主山庄。'
         }
       }
     },
@@ -7350,6 +8299,7 @@
         !world.flags?.baron_purged &&
         npc.stage === 2 &&
         !npc.flags?.cecilia_manor_go_stage3 &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         (npc.values.affection ?? 0) >= 90,
       resolveWhen: ({ world, npc }) =>
@@ -7359,21 +8309,256 @@
         npc.stage !== 2 ||
         (npc.values.orphanage_funds ?? 0) > 0 ||
         (npc.values.affection ?? 0) < 90,
-      text: '孤儿院账房第三度空底，心系你的{name}眼含微颤找到你商量最后一线对策——她低语若此次实在筹不到大笔资金维持冬春之交用度，为了孩子们恐怕再无法推拒男爵的长期契约条件。',
+      text: '孤儿院账房第三度空底，心系你的{name}眼含微颤找到你商议最后一线对策——邻郡教区原本拨了一支冬春救济粮车，却因城外沉沦灵堂近来亡灵异动而滞留东境商道关卡。',
       outcomes: {
+        take_quest: {
+          effects: { npcFlags: { cecilia_quest_stage: 3, ceciliaAppealDays: 0, cecilia_manor_go_stage3: false } },
+          text: '你接过邻郡教区信物，准备出城清理沉沦灵堂外围游荡亡灵、护通救济车队入城（已接取救济任务，请前往 wilds 完成）。'
+        },
         help: {
-          when: ({ world }) => (world.playerState?.gold ?? 0) >= 150,
-          effects: [
-            { target: 'world', goldDelta: -150 },
-            { target: 'cecilia', add: { orphanage_funds: 35, donated_gold: 150, affection: 4 }, npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage3: false } }
+          when: ({ world }) => (world.playerState?.gold ?? 0) >= 80,
+          effects: ({ npc }) => [
+            { target: 'world', goldDelta: -80 },
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 50, donated_gold: 80, affection: 4 },
+              npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage3: false, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
           ],
-          text: '一百五十枚沉甸重金足额补齐了冬春之交的粮药用度；重压骤释之下，{name}再难自持地俯首低泣，向眼前的支柱吐露积压已久的感激（孤儿院资金 +35，好感度 +4）。'
+          text: '八十枚金币足额补齐了冬春之交的粮药用度；重压骤释之下，{name}再难自持地俯首低泣，向眼前的支柱吐露积压已久的感激（孤儿院资金 +50，好感度 +4）。'
         },
         let_go: {
           effects: { npcFlags: { cecilia_manor_go_stage3: true } },
-          text: '百五重金终未凑齐，{name}在原地伫立良久，含泪轻轻福身行礼后推门赶往了领主山庄。'
+          text: '重金终未凑齐，{name}在原地伫立良久，含泪轻轻福身行礼后推门赶往了领主山庄。'
         }
       }
+    },
+    {
+      id: 'cecilia_quest_1_mire',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven && !world.flags?.baron_purged) &&
+        npc.flags?.cecilia_quest_stage === 1 &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id),
+      text: '你按约定抵达城外毒沼菌窟外围，潮湿腐殖沼气中散落着修道院急需的发光菌茸与净水药草，只是浅滩暗影里潜伏着毒角蛙与腐水寄生体。',
+      outcomes: {
+        complete_quest: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 35, affection: 4 },
+              npcFlags: { cecilia_quest_stage: 0, ceciliaAppealDays: 0, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
+          ],
+          text: '你避开毒孢浓雾采足稀缺菌茸带回晨曦修道院，不仅解了孩童断药之急，余药变现后也稳住了账房用度（孤儿院资金 +35，好感度 +4）。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_quest_2_vault',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven && !world.flags?.baron_purged) &&
+        npc.flags?.cecilia_quest_stage === 2 &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id),
+      text: '按老修女长遗留账册的指引，你找到城外荒原那座布满机关与兽骨残痕的古代石室入口；只要破开重力暗锁取回旧教区封存的救济匣，修道院就能再撑许久。',
+      outcomes: {
+        complete_quest: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 45, affection: 4 },
+              npcFlags: { cecilia_quest_stage: 0, ceciliaAppealDays: 0, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
+          ],
+          text: '你稳妥拆解暗殿卡榫、取回尘封完好的白银圣器与救济钱匣交到塞西莉亚手中；她凝望这批跨越数十年送达的雪中炭火，眼眶微红（孤儿院资金 +45，好感度 +4）。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_quest_3_crypt',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven && !world.flags?.baron_purged) &&
+        npc.flags?.cecilia_quest_stage === 3 &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id),
+      text: '东境商道旁那座沉沦灵堂外围寒雾缭绕，几具游荡骸骨封住了邻郡教会救济车队的必经山口；唯有先拔除这股外溢亡灵，车队才敢进城。',
+      outcomes: {
+        complete_quest: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 55, affection: 4 },
+              npcFlags: { cecilia_quest_stage: 0, ceciliaAppealDays: 0, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
+          ],
+          text: '你清理了灵堂外围游荡亡灵并护送邻郡救济粮车绕开领主私兵盘剥直接驶入修道院后门，冬春之交的生计大关终于守住（孤儿院资金 +55，好感度 +4）。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_weekly_ruin_offer',
+      mode: 'interaction',
+      repeatable: true,
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) => {
+        const day = dayAt(world)
+        const lastWeekDay = npc.flags?.ceciliaWeeklyLastDoneDay ?? -99
+        return Boolean(world.flags?.arrived_oakhaven) &&
+          npc.alive !== false &&
+          !isEileenFugitive(world) &&
+          !npc.flags?.ceciliaWeeklyBiome &&
+          (day - lastWeekDay) >= 7 &&
+          world.playerLocation === 'church' &&
+          npc.location === 'church' &&
+          ['morning', 'afternoon'].includes(phase.id)
+      },
+      text: ({ npc }) => {
+        const count = npc.flags?.ceciliaWeeklyCount ?? 0
+        const pool = ['mire', 'vault', 'lair', 'crypt']
+        const target = pool[count % pool.length]
+        const descMap = {
+          mire: '毒沼菌窟（mire）：修道院急需毒沼阴蛇胆与荧光菌茸配制退热解毒药膏',
+          vault: '机关暗殿（vault）：寻回古代地宫石室遗落的旧教区白银圣器与祈祷手抄本',
+          lair: '魔兽巢穴（lair）：猎取巢穴魔兽髓脂与洁净角骨作寒季熬药灯油补给',
+          crypt: '沉沦灵堂（crypt）：安抚灵堂游荡亡灵并取回受祝福的教会圣匣'
+        }
+        return `{name}整理完本周药房与祈祷名录，温和询问你这周是否有空承接一趟教会遗迹委托（${descMap[target]}；仅赠教堂特产与好感，不给金币与功绩）。`
+      },
+      outcomes: {
+        accept_weekly: {
+          when: ({ world }) => world.playerLocation === 'church',
+          effects: ({ world, npc }) => {
+            const count = npc.flags?.ceciliaWeeklyCount ?? 0
+            const pool = ['mire', 'vault', 'lair', 'crypt']
+            const target = pool[count % pool.length]
+            return {
+              target: 'cecilia',
+              npcFlags: { ceciliaWeeklyBiome: target, ceciliaWeeklyAcceptDay: dayAt(world) }
+            }
+          },
+          text: '你接下了本周圣辉大教堂遗迹委托；{name}取出一枚小巧木牌交给你作凭证，嘱咐你在城外通关一座对应生态的遗迹后再回来交付。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_weekly_ruin_turnin',
+      mode: 'interaction',
+      repeatable: true,
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: false,
+      when: ({ world, npc }) => {
+        const biome = npc.flags?.ceciliaWeeklyBiome
+        if (!biome || npc.alive === false) return false
+        const clearedMatch = world.ruinState?.lastClearedBiome === biome &&
+          (world.ruinState?.lastClearedDay ?? 0) >= (npc.flags?.ceciliaWeeklyAcceptDay ?? 999)
+        return Boolean(clearedMatch) && world.playerLocation === 'church' && npc.location === 'church'
+      },
+      text: '你带着刚从对应遗迹采获的奇物回到圣辉大教堂，{name}快步迎上前来查验，脸上浮起由衷的欣慰。',
+      outcomes: {
+        turnin: {
+          effects: ({ world, npc }) => {
+            const count = (npc.flags?.ceciliaWeeklyCount ?? 0) + 1
+            const biome = npc.flags?.ceciliaWeeklyBiome
+            const itemsAdd = [
+              { id: 'church_blessed_salve', count: 1 },
+              { id: biome === 'crypt' || biome === 'vault' ? 'church_holy_water' : 'church_purify_incense', count: 1 },
+              { id: 'church_blessed_ration', count: 1 }
+            ]
+            const inv = Array.isArray(world.playerState?.inventory) ? world.playerState.inventory : []
+            const hasRosary = inv.some(it => it && it.id === 'church_silver_rosary' && it.custom !== true && (it.count ?? 0) > 0)
+            if (!hasRosary && count >= 2) {
+              itemsAdd.push({ id: 'church_silver_rosary', count: 1 })
+            }
+            const add = { orphanage_funds: 20 }
+            if ((npc.stage ?? 0) < 3 && !npc.flags?.affection_locked) add.affection = 8
+            return [
+              { target: 'world', itemsAdd },
+              {
+                target: 'cecilia',
+                add,
+                npcFlags: {
+                  ceciliaWeeklyBiome: null,
+                  ceciliaWeeklyAcceptDay: 0,
+                  ceciliaWeeklyLastDoneDay: dayAt(world),
+                  ceciliaWeeklyCount: count,
+                  ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1
+                }
+              }
+            ]
+          },
+          text: '{name}郑重收下遗迹采获物并添入孤儿院账房，随后亲手将修道院熬制祝圣的伤药膏、圣水/熏香与祝圣麦饼装袋交给你（孤儿院资金 +20，未封锁好感时 +8，获赠教堂特有物品）。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_aurora_mentor_talk',
+      mode: 'result',
+      scope: 'world',
+      when: ({ world }) => {
+        const cec = world.npcs?.cecilia
+        const aur = world.npcs?.aurora
+        return Boolean(world.flags?.arrived_oakhaven && !world.flags?.baron_purged) &&
+          !world.flags?.cecilia_aurora_talk_done &&
+          isWeekendDay(dayAt(world)) &&
+          world.playerLocation === 'church' &&
+          cec && cec.alive !== false && (cec.stage ?? 0) < 3 && cec.location === 'church' &&
+          aur && aur.alive !== false && (aur.stage ?? 0) < 3 && aur.location === 'church' &&
+          Boolean(aur.flags?.manor_service_active)
+      },
+      effects: [
+        { target: 'world', worldFlags: { cecilia_aurora_talk_done: true } },
+        { target: 'cecilia', add: { affection: 3, orphanage_funds: 5 } },
+        { target: 'aurora', add: { affection: 3 } }
+      ],
+      text: '周末白昼在圣辉大教堂做礼拜时，外地随队而来的奥萝拉在帮修道院整理药柜期间与塞西莉亚相谈投缘。塞西莉亚察觉这名同为晨曦信徒的姑娘在领主山庄当差后眉间藏忧，温和叮嘱她“伯爵府的善款与契约向来苛刻，万勿因钱财受人拿捏”，并托付你多加照看；奥萝拉强作镇定点头应下，临走前悄悄往募捐箱添了一小袋工钱（塞西莉亚与奥萝拉好感各 +3，孤儿院资金 +5）。'
+    },
+    {
+      id: 'cecilia_post_purge_relief',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['cecilia'],
+      when: ({ world, npc }) =>
+        Boolean(world.flags?.baron_purged) &&
+        npc.alive !== false &&
+        !npc.flags?.cecilia_purge_settled,
+      effects: ({ npc }) => {
+        if ((npc.stage ?? 0) >= 3) {
+          return {
+            npcFlags: { cecilia_purge_settled: true, affection_locked: true }
+          }
+        }
+        const needTopUp = Math.max(0, 80 - (npc.values?.orphanage_funds ?? 0))
+        return {
+          add: { orphanage_funds: needTopUp, affection: 5 },
+          npcFlags: { cecilia_purge_settled: true, cecilia_quest_stage: 0, ceciliaAppealDays: 0 }
+        }
+      },
+      text: ({ npc }) => (npc.stage ?? 0) >= 3
+        ? '雷蒙德伯爵伏诛、领主山庄遭查封后，强压在修道院头上的勒索契约随之消散；只是过往在山庄的屈辱已成难以抹去的圣职污点，{name}垂下眼睫继续留在修道院带着孤儿赎罪，日常与周常委托仍照常维系。'
+        : '雷蒙德伯爵倒台后，艾琳协同狮鹫骑士团清点私库，将原先遭伯爵长期卡扣截留的教会拨款与冬春粮药如数发还晨曦修道院；孤儿院的资金危机自此解除，{name}长舒一口气向你致谢（资金补足安全线，好感 +5，教堂周常遗迹委托依然照常开放）。'
     },
     {
       id: 'cecilia_reward_1_oral',
@@ -7394,7 +8579,7 @@
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
         (npc.values.affection ?? 0) >= 70 &&
-        (npc.values.donated_gold ?? 0) >= 50,
+        ((npc.flags?.ceciliaAidCount ?? 0) >= 1 || (npc.values.donated_gold ?? 0) >= 30),
       resolveWhen: ({ world, npc, phase }) =>
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
@@ -7410,11 +8595,11 @@
         npc.location !== 'church' ||
         !['night', 'deep_night'].includes(phase.id) ||
         ((npc.values.orphanage_funds ?? 0) <= 0 && !world.flags?.baron_purged),
-      text: '夜祷后空的圣辉大教堂廊厅只剩你与{name}二人；感恩你多次捐助善款且心生深情依恋的她双颊微热，趁四下寂静贴近你身前，羞涩提出愿以特别方式报答你的扶持（「修女的回馈」第一阶段）。',
+      text: '夜祷散尽的圣辉大教堂偏殿只余微弱烛火，接连并肩扛过风波后，向来严守戒律的{name}在圣坛前独自跪坐良久。她低声自责明明发过贞洁愿却满脑子都是你的安危，终于红着眼眶、攥紧修女袍衣角朝你近前一步——在圣职清规与压抑已久的依恋之间颤抖着停住，将接下来的选择留给你。',
       outcomes: {
         accept: {
           effects: { add: { affection: 3 }, npcFlags: { cecilia_reward1_done: true } },
-          text: '烛火微摇的偏殿祈祷室中，向来端庄禁欲的{name}红着脸在你身前跪伏下来，解开头巾垂下一缕金发，生涩却十分虔敬地用温软唇舌为你细致侍奉直到终了。'
+          text: '烛影摇曳的偏殿祈祷室中，{name}微颤着解开头巾垂落金发，带着几分自责与虔诚在你身前俯低身子，生涩而温软地用唇舌替你疏解直到夜深。'
         }
       }
     },
@@ -7438,7 +8623,7 @@
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
         (npc.values.affection ?? 0) >= 80 &&
-        (npc.values.donated_gold ?? 0) >= 150,
+        ((npc.flags?.ceciliaAidCount ?? 0) >= 2 || (npc.values.donated_gold ?? 0) >= 80),
       resolveWhen: ({ world, npc, phase }) =>
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
@@ -7454,11 +8639,11 @@
         npc.location !== 'church' ||
         !['night', 'deep_night'].includes(phase.id) ||
         ((npc.values.orphanage_funds ?? 0) <= 0 && !world.flags?.baron_purged),
-      text: '孤儿院受你重金护持渐趋安稳的某个深夜，{name}特意在弥撒散尽后留灯等你来到教堂内室；她呼吸轻颤地提起长袍下摆一角，暗示愿为你献上更进一步的私密亲近（「修女的回馈」第二阶段）。',
+      text: '深夜弥撒结束后的修道院内室，{name}特意留了一盏菜油灯等你。她依然穿着齐整的修女长袍守着最后一道矜持，呼吸却因你的靠近而明显乱了节拍，耳尖泛红地轻扯下摆一角，静静等待你的回应。',
       outcomes: {
         accept: {
           effects: { add: { affection: 3 }, npcFlags: { cecilia_reward2_done: true } },
-          text: '掩上木门的修道院内室里，{name}脸颊绯红却未避开目光，将端庄白丝长腿并拢夹紧，隔着温润细腻的白丝腿肉轻缓磨蹭、配合手心与低喘替你悉心承欢。'
+          text: '掩上木门的安静内室里，{name}脸颊绯红却不再避开目光，将端庄白丝长腿并拢夹紧，隔着细腻微温的织物轻缓磨蹭、配合掌心替你承接这份克制而炽热的依恋。'
         }
       }
     },
@@ -7482,7 +8667,7 @@
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
         (npc.values.affection ?? 0) >= 90 &&
-        (npc.values.donated_gold ?? 0) >= 300,
+        ((npc.flags?.ceciliaAidCount ?? 0) >= 3 || (npc.values.donated_gold ?? 0) >= 150),
       resolveWhen: ({ world, npc, phase }) =>
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
@@ -7498,11 +8683,11 @@
         npc.location !== 'church' ||
         !['night', 'deep_night'].includes(phase.id) ||
         ((npc.values.orphanage_funds ?? 0) <= 0 && !world.flags?.baron_purged),
-      text: '历经多次慷慨解囊与漫长守望，{name}对你的爱恋已再无余留；深夜孤室烛光下她摘去高领禁欲饰件与头巾，轻声询问今晚能否把一切真正托付给你（「修女的回馈」最终回）。',
+      text: '漫长守望与共同扛过风波之后，{name}不再把自己当成孤儿院的赎罪符号；深夜灯下她亲手摘去高领圣饰与头巾，绿瞳清澈而笃定地望进你眼底，等待你伸手接住她作为女人的全部真心。',
       outcomes: {
         accept: {
           effects: { add: { affection: 3 }, npcFlags: { cecilia_reward3_done: true } },
-          text: '微凉圣洁的教堂寝室夜色之中，{name}褪下厚重长袍与长袜主动倾身相迎，在交融缠绵间再不克制轻颤呜咽，将身为圣女长久以来的整颗身心悉心交予了你。'
+          text: '微凉静谧的教堂寝室夜色里，{name}褪下厚重修女袍与长袜主动倾身相迎，在交融缠绵间不再克制轻颤呜咽，将身为修女长压抑已久的真心与身心温柔交予了你。'
         }
       }
     },
@@ -8212,7 +9397,7 @@
       values: { blood_density: 0, affection: 70 },
       metricBounds: { blood_density: [0, 100], affection: [0, 100] },
       nodePlan: ['gulan_stage_1', 'gulan_stage_2', 'gulan_stage_3'],
-      plan: ['gulan_train', 'return_inn', 'idle_rest']
+      plan: ['gulan_inn_maintenance', 'gulan_hall_meditate', 'gulan_town_patrol', 'gulan_train', 'gulan_dragon_search', 'return_inn', 'idle_rest']
     }),
     makeNpc({
       id: 'isna', name: '伊丝娜', location: 'wilds', homeLocation: 'inn',
@@ -8220,7 +9405,7 @@
       values: { gold_desire: 25, affection: 60 },
       metricBounds: { gold_desire: [0, 100], affection: [0, 100] },
       nodePlan: ['isna_stage_1', 'isna_stage_2', 'isna_stage_3'],
-      plan: ['isna_odd_job', 'return_inn', 'idle_rest']
+      plan: ['isna_mud_camp_night', 'isna_odd_job', 'isna_inn_nap', 'isna_knife_sharpen', 'isna_town_rumors', 'isna_buy_jerky', 'return_inn', 'idle_rest']
     }),
     makeNpc({
       id: 'nise', name: '妮丝', location: 'wilds', homeLocation: 'inn',
@@ -8228,7 +9413,7 @@
       values: { curiosity: 40, gamble_debt: 0, affection: 70 },
       metricBounds: { curiosity: [0, 100], gamble_debt: [0, 100], affection: [0, 100] },
       nodePlan: ['nise_stage_1', 'nise_stage_2', 'nise_stage_3'],
-      plan: ['nise_contract_stay', 'nise_secretary_shift', 'nise_dealer_shift', 'nise_town_browse', 'return_inn', 'idle_rest']
+      plan: ['nise_contract_stay', 'nise_secretary_shift', 'nise_dealer_shift', 'nise_town_browse', 'nise_inn_sleep_in', 'nise_read_scrolls', 'nise_hall_tea', 'nise_hall_bard', 'return_inn', 'idle_rest']
     }),
     makeNpc({
       id: 'aurora', name: '奥萝拉', location: 'wilds', homeLocation: 'inn',
@@ -8236,7 +9421,7 @@
       values: { debt_pressure: 100, affection: 50 },
       metricBounds: { debt_pressure: [0, 100], affection: [0, 100] },
       nodePlan: ['aurora_stage_1', 'aurora_stage_2', 'aurora_stage_3'],
-      plan: ['aurora_post_purge_return', 'aurora_manor_work', 'aurora_weekend_return', 'return_inn', 'idle_rest']
+      plan: ['aurora_post_purge_return', 'aurora_manor_work', 'aurora_weekend_return', 'aurora_weekend_church', 'return_inn', 'idle_rest']
     }),
     makeNpc({
       id: 'eileen', name: '艾琳', monitored: false, location: 'manor', homeLocation: 'manor',
@@ -8319,9 +9504,9 @@
 ;
 /**
  * @module okh_app_adventure
- * @updated 2026-11-26
+ * @updated 2026-11-27 03:13
  * @status active
- * @reason 在聊天回合事务内裁决探险、功绩、境界与技能，并复用物品和时间结算
+ * @reason 在聊天回合事务内裁决探险、功绩、境界与技能，并补齐奥萝拉山庄服役期间仅限周末旅店归队时可受邀组队的硬守卫
  * @deps OKHBackgroundModules.utils, OKH_APP_DATA, OKH_APP_RUINS, OKH_APP_SKILLS, OKH_APP_TAGS
  */
 (function (root) {
@@ -8354,7 +9539,10 @@
   const medicine = {
     antidote: ['debuff_poisoned'], healing_salve: ['debuff_bleeding'],
     paralysis_cure: ['debuff_paralyzed'], purify_vial: ['debuff_exhausted'],
-    smelling_salts: sleepTags.slice(0, 2)
+    smelling_salts: sleepTags.slice(0, 2),
+    church_blessed_salve: ['debuff_heavy_wound', 'debuff_light_wound', 'debuff_bleeding'],
+    church_purify_incense: ['debuff_poisoned', 'debuff_paralyzed'],
+    church_blessed_ration: ['debuff_starving', 'debuff_exhausted']
   }
 
   const tagsOf = (world, id) => world.tags?.[id] || []
@@ -8423,8 +9611,12 @@
 
   function isAvailable(world, id) {
     const npc = world.npcs[id]
-    return npc?.monitored === true && npc.alive !== false && (npc.stage ?? 0) < 3 &&
-      ['inn', 'town', 'wilds'].includes(npc.location) &&
+    if (!npc || npc.monitored !== true || npc.alive === false || (npc.stage ?? 0) >= 3) return false
+    if (id === 'aurora' && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) {
+      const day = Math.floor((world?.timeMin ?? 0) / 1440) + 1
+      if (!DATA.isWeekendDay(day) || npc.location !== 'inn') return false
+    }
+    return ['inn', 'town', 'wilds'].includes(npc.location) &&
       !npc.flags?.captured_orc && !npc.flags?.captured_manor && !npc.flags?.gulan_departed &&
       !npc.flags?.isna_captured_ed && !npc.flags?.isnaMudOutTonight && !npc.flags?.nise_fled_casino &&
       !(npc.activity && npc.activity.kind !== 'ordinary')
@@ -8446,7 +9638,11 @@
   function ability(world, id, name) {
     const tags = tagsOf(world, id)
     if (tags.includes('debuff_heavy_wound') || tags.includes('debuff_paralyzed')) return 0
-    if (id === 'player') return SKILLS.checkAbility(world, name)
+    if (id === 'player') {
+      const base = SKILLS.checkAbility(world, name)
+      const rosary = countOf(world, 'church_silver_rosary') >= 1 && ['治疗', '辨识'].includes(name) ? 1 : 0
+      return base + rosary
+    }
     const professions = TAGS.list(world, id).filter(tag => tag.category === 'class')
     const fallback = TAGS.catalog[companionClasses[id]]
     if (fallback && professions.length === 0) professions.push(fallback)
@@ -8560,13 +9756,16 @@
     const days = Math.floor((world.timeMin + hours * 60) / 1440) - Math.floor(world.timeMin / 1440)
     const effects = payRations(world, raid, days)
     let passed = !raid.shortage
+    const isCrypt = raid.biome === 'crypt' || block.biome === 'crypt'
+    const useHolyWater = passed && isCrypt && ['硬闯', '周旋'].includes(choice) && countOf(world, 'church_holy_water') >= 1
+    if (useHolyWater) effects.push({ target: 'world', itemsRemove: ['church_holy_water'] })
     if (passed && choice === '硬闯') {
       const best = name => Math.max(0, ...members(world, raid).map(id => ability(world, id, name)))
-      const gap = Math.min(block.reqDc - best(block.reqAbility), block.altAbility ? (block.altDc ?? block.reqDc) - best(block.altAbility) : Infinity)
+      const gap = Math.min(block.reqDc - best(block.reqAbility), block.altAbility ? (block.altDc ?? block.reqDc) - best(block.altAbility) : Infinity) - (useHolyWater ? 2 : 0)
       passed = rng() < hardPassChance(gap)
       wound(world, 'player')
     } else if (passed && choice === '周旋') {
-      wound(world, 'player')
+      if (!useHolyWater) wound(world, 'player')
     } else if (passed && choice === '险路') {
       const scout = Math.max(0, ...members(world, raid).map(id => ability(world, id, '侦查')))
       if (scout >= raid.tier) effects.push({ target: 'world', itemsAdd: ['supply'] })
@@ -8615,8 +9814,10 @@
       u.check(removed.length > 0, '该药剂无法解除目标当前的状态')
       TAGS.apply(world, target, [], removed)
       const timers = world.playerState.conditionTimers?.[target]
-      if (timers && item === 'antidote') delete timers.poisonSince
-      if (timers && ['healing_salve', 'supply'].includes(item)) delete timers.bleedingPhases
+      if (timers && ['antidote', 'church_purify_incense'].includes(item)) delete timers.poisonSince
+      if (timers && ['healing_salve', 'supply', 'church_blessed_salve'].includes(item)) delete timers.bleedingPhases
+      if (timers && item === 'church_blessed_salve') delete timers.recoveryNights
+      if (timers && item === 'church_blessed_ration') delete timers.hungerSince
     }
     return { effects: [{ target: 'world', itemsRemove: [item] }], message: '已使用' + DATA.ITEM_CATALOG[item].name }
   }
@@ -8656,17 +9857,20 @@
     }
     if (verb === '用药') return use(world, item, extra || 'player', key)
     if (verb === '疗伤') {
-      u.check(!world.ruinState?.current && world.playerState.gold >= 10, '请回镇并准备 10 金药费')
+      u.check(!world.ruinState?.current && world.playerLocation === 'church' && world.npcs?.cecilia?.alive !== false, '须前往圣辉大教堂请塞西莉亚处理伤势')
       const target = item
       u.check(target === 'player' || u.own(world.npcs, target) &&
         world.npcs[target].alive !== false && world.npcs[target].location === world.playerLocation, '伤者须在场')
-      const healing = Object.values(world.npcs).some(npc => npc.alive !== false && npc.monitored === true &&
-        (npc.stage ?? 0) < 3 && npc.location === world.playerLocation && ability(world, npc.id, '治疗') >= 3 &&
-        !tagsOf(world, npc.id).some(tag => sleepTags.includes(tag)))
-      u.check(healing && tagsOf(world, target).includes('debuff_heavy_wound'), '须在有高阶治疗者的地方处理重伤')
-      TAGS.apply(world, target, [], ['debuff_heavy_wound'])
-      if (world.playerState.conditionTimers?.[target]) delete world.playerState.conditionTimers[target].recoveryNights
-      return { effects: [{ target: 'world', goldDelta: -10 }], message: '已支付 10 金处理重伤' }
+      const tags = tagsOf(world, target)
+      if (tags.includes('debuff_heavy_wound')) {
+        u.check(world.playerState.gold >= 10, '教堂处理重伤须准备 10 金药费')
+        TAGS.apply(world, target, [], ['debuff_heavy_wound', 'debuff_light_wound'])
+        if (world.playerState.conditionTimers?.[target]) delete world.playerState.conditionTimers[target].recoveryNights
+        return { effects: [{ target: 'world', goldDelta: -10 }], message: '已在教堂支付 10 金处理重伤' }
+      }
+      u.check(tags.includes('debuff_light_wound'), '目标当前没有需要教堂处理的轻伤或重伤')
+      TAGS.apply(world, target, [], ['debuff_light_wound'])
+      return { message: '已在教堂免费包扎轻伤' }
     }
     if (verb === '买药') {
       u.check(['inn', 'town'].includes(world.playerLocation) && (u.own(medicine, item) || item === 'sleeping_draught'), '请在镇上购买已登记药剂')
@@ -8834,9 +10038,9 @@
 ;
 /**
  * @module okh_app_rules
- * @updated 2026-11-22 07:58
+ * @updated 2026-11-26 22:31
  * @status  active
- * @reason 对齐硬核周常收支模型：短差6金、常规28金、高危48金、修道院帮工3金，日常捐款下调为5/15金
+ * @reason 规范还清赌债逻辑：当妮丝好感度达标(>=90)还清全款时固化戒赌免疫，挂载 nise_gamble_immune 防止后续复赌
  * @deps    OKH_APP_DATA
  * @provides { getAffectionTier, isFugitiveSyncedNpc, syncWorld, isMetricLocked, onStageChange, canMove, applyPrologueSteps, resolveRoom, resolveBonds, resolveEconomy }
  */
@@ -9137,31 +10341,15 @@
     },
     eileen: {
       care_watch: ({ world, npc }) =>
-        DATA.isEileenFugitive(world) && !world.flags?.baron_purged && !npc.flags?.eileen_captured &&
+        (DATA.isEileenFugitive(world) || (world.flags?.baron_purged && !npc.flags?.eileen_returned_capital)) &&
+        !npc.flags?.eileen_captured &&
         (npc.values.affection ?? 0) < 70 && !npc.flags?.eileen_care_today
           ? { add: { affection: 1 }, npcFlags: { eileen_care_today: true } } : null,
       encourage: ({ world, npc }) =>
-        DATA.isEileenFugitive(world) && !world.flags?.baron_purged && !npc.flags?.eileen_captured &&
+        (DATA.isEileenFugitive(world) || (world.flags?.baron_purged && !npc.flags?.eileen_returned_capital)) &&
+        !npc.flags?.eileen_captured &&
         !npc.flags?.eileen_encourage_today
           ? { add: { affection: 2 }, npcFlags: { eileen_encourage_today: true } } : null,
-      scout_prep: ({ world, npc }) =>
-        DATA.isEileenFugitive(world) && !world.flags?.baron_purged && !DATA.hasEileenSignal(world) &&
-        !npc.flags?.eileen_captured && !npc.flags?.eileen_scout_today
-          ? { add: { counterattack: 4 }, npcFlags: { eileen_scout_today: true } } : null,
-      cover_hide: ({ world, npc }) => {
-        if (!DATA.isEileenFugitive(world) || world.flags?.baron_purged || npc.flags?.eileen_captured) return null
-        if (npc.flags?.eileen_cover_today) return null
-        const add = { affection: 3 }
-        if (!DATA.hasEileenSignal(world)) add.counterattack = 6
-        return { add, exemptCap: true, npcFlags: { eileen_cover_today: true } }
-      },
-      rescue_shield: ({ world, npc }) => {
-        if (!DATA.isEileenFugitive(world) || world.flags?.baron_purged || npc.flags?.eileen_captured) return null
-        if (npc.flags?.eileen_rescue_today) return null
-        const add = { affection: 5 }
-        if (!DATA.hasEileenSignal(world)) add.counterattack = 10
-        return { add, exemptCap: true, npcFlags: { eileen_rescue_today: true } }
-      },
       offend: ({ world, npc }) =>
         (DATA.isEileenFugitive(world) || world.flags?.baron_purged) &&
         !npc.flags?.eileen_captured && !npc.flags?.eileen_returned_capital
@@ -9337,7 +10525,7 @@
           }
         } else if ((item.tier === 'church_paid' || item.tier === 'church_volunteer') &&
             ['church', 'wilds'].includes(world.playerLocation) &&
-            cecilia && cecilia.alive !== false && (cecilia.stage ?? 0) < 3 && !DATA.workCooldownWait(world, 'lastChurchErrand', start, DATA.WORK_LIMITS.churchCooldownDays)) {
+            cecilia && cecilia.alive !== false && !DATA.workCooldownWait(world, 'lastChurchErrand', start, DATA.WORK_LIMITS.churchCooldownDays)) {
           workUsed = true
           const volunteer = !paid
           const flags = { ...workFlags, lastChurchErrandDay: day, lastChurchErrandStartMin: start }
@@ -9388,11 +10576,21 @@
           out.push({ target: 'world', goldDelta: -cost })
           const npcFlags = {}
           if (world.playerLocation === 'casino') npcFlags.nise_debt_known = true
+          let tagsAdd
           if (niseDebt <= 0) {
             npcFlags.debt_repaid_once = true
             npcFlags.casinoGapDays = 0
+            if ((nise.values?.affection ?? 0) >= 90) {
+              npcFlags.nise_gamble_immune = true
+              tagsAdd = ['nise_gamble_immune']
+            }
           }
-          out.push({ target: 'nise', add: { gamble_debt: -pts }, ...(Object.keys(npcFlags).length ? { npcFlags } : {}) })
+          out.push({
+            target: 'nise',
+            add: { gamble_debt: -pts },
+            ...(Object.keys(npcFlags).length ? { npcFlags } : {}),
+            ...(tagsAdd ? { tagsAdd } : {})
+          })
         }
       } else if (item.op === 'donate' && item.npc === 'cecilia' &&
           world.playerLocation === 'church' && cecilia && cecilia.location === 'church' &&
@@ -9465,9 +10663,9 @@
 ;
 /**
  * @module okh_app_time
- * @updated 2026-11-23 19:02
+ * @updated 2026-11-26 22:27
  * @status  active
- * @reason  跨日午夜唯一键去重结算：移除古兰被俘天数跨夜自增；新增演武场血案余波 7 天全局 Tag（安保戒严、人心惶惶）满期自动解除
+ * @reason  跨日午夜唯一键去重结算：修复妮丝阶段一与阶段二跨日赌场值守标志 nise_casino_busy_today 维护逻辑，避免排班死锁
  * @deps    OKH_APP_DATA
  * @provides { settleTimeEffects }
  */
@@ -9567,6 +10765,7 @@
       ceciliaFunds: cecilia?.values?.orphanage_funds ?? 0,
       ceciliaAff: cecilia?.values?.affection ?? 0,
       ceciliaMidgameCrisis: Boolean(cecilia?.flags?.cecilia_midgame_crisis),
+      ceciliaQuestStage: cecilia?.flags?.cecilia_quest_stage ?? 0,
       ceciliaAppealDays: Number.isFinite(cecilia?.flags?.ceciliaAppealDays) ? cecilia.flags.ceciliaAppealDays : 0,
       ceciliaGoStage1: Boolean(cecilia?.flags?.cecilia_manor_go_stage1),
       ceciliaGoStage2: Boolean(cecilia?.flags?.cecilia_manor_go_stage2),
@@ -9591,6 +10790,7 @@
       eileenBetrothed: Boolean(eileen?.flags?.eileen_betrothed || world.flags?.player_barony_granted),
       eileenReturnedCapital: Boolean(eileen?.flags?.eileen_returned_capital),
       eileenInspectDays: Number.isFinite(eileen?.flags?.eileenInspectDays) ? eileen.flags.eileenInspectDays : 0,
+      eileenFugitiveDays: Number.isFinite(eileen?.flags?.eileenFugitiveDays) ? eileen.flags.eileenFugitiveDays : 0,
       eileenCaptiveDays: Number.isFinite(eileen?.flags?.eileenCaptiveDays) ? eileen.flags.eileenCaptiveDays : 0,
       eileenSignalDays: Number.isFinite(eileen?.flags?.eileenSignalDays) ? eileen.flags.eileenSignalDays : 0,
       eileenPostPurgeDays: Number.isFinite(eileen?.flags?.eileenPostPurgeDays) ? eileen.flags.eileenPostPurgeDays : 0,
@@ -9697,6 +10897,7 @@
       add.gamble_debt = interest
       sim.niseDebt = Math.min(100, sim.niseDebt + interest)
     }
+    const isCasinoShift = (sim.niseStage === 1 || sim.niseStage === 2) && !sim.niseDebtFrozen && !sim.niseFledCasino
     const npcFlags = {
       nise_browsed_today: false,
       nise_tease_today: false,
@@ -9704,7 +10905,7 @@
       nise_night_today: false,
       nise_treat_today: false,
       nise_escort_today: false,
-      nise_casino_busy_today: false,
+      nise_casino_busy_today: isCasinoShift,
       ...DAILY.affectionFlags(k + 1),
       lastNightSettledDay: k
     }
@@ -9749,9 +10950,7 @@
     const npcFlags = {
       eileen_care_today: false,
       eileen_encourage_today: false,
-      eileen_scout_today: false,
-      eileen_cover_today: false,
-      eileen_rescue_today: false,
+      eileen_recon_today: false,
       ...DAILY.affectionFlags(k + 1),
       lastNightSettledDay: k
     }
@@ -9761,7 +10960,9 @@
         sim.eileenSignalDays += 1
         npcFlags.eileenSignalDays = sim.eileenSignalDays
       } else if (sim.eileenFugitive) {
-        change.add = { counterattack: 4 }
+        sim.eileenFugitiveDays += 1
+        npcFlags.eileenFugitiveDays = sim.eileenFugitiveDays
+        change.add = { counterattack: 2 }
       } else if (sim.eileenCaptured) {
         sim.eileenCaptiveDays += 1
         npcFlags.eileenCaptiveDays = sim.eileenCaptiveDays
@@ -9785,7 +10986,7 @@
     // 互斥分支 1：在旅店过夜走宿费结算，不消耗野外补给
     if (sim.playerLoc === 'inn') {
       sim.supplyShortage = false
-      if (sim.arrived && !sim.eileenFugitive && !sim.baronyGranted) {
+      if (sim.arrived && !sim.baronyGranted) {
         if (sim.innFreePassToday) {
           // 爱德当日帮工抵扣仅免除当晚一次宿费，核销后次日恢复正常计费
           sim.innFreePassToday = false
@@ -9866,7 +11067,7 @@
     const add = {}
     if (sim.arrived && sim.ceciliaAlive && !sim.baronPurged && sim.ceciliaStage < 3) {
       if (sim.ceciliaFunds > 0) {
-        const drain = sim.ceciliaMidgameCrisis ? 6 : 3
+        const drain = sim.ceciliaMidgameCrisis ? 5 : 3
         const drop = Math.min(sim.ceciliaFunds, drain)
         sim.ceciliaFunds -= drop
         add.orphanage_funds = -drop
@@ -9874,7 +11075,7 @@
           sim.ceciliaAppealDays = 0
           npcFlags.ceciliaAppealDays = 0
         }
-      } else {
+      } else if (!sim.ceciliaQuestStage) {
         const reqAff = sim.ceciliaStage === 0 ? 70 : sim.ceciliaStage === 1 ? 80 : 90
         const goFlag = sim.ceciliaStage === 0 ? sim.ceciliaGoStage1 : sim.ceciliaStage === 1 ? sim.ceciliaGoStage2 : sim.ceciliaGoStage3
         if (sim.ceciliaAff >= reqAff && !goFlag) {
@@ -10869,9 +12070,9 @@
 ;
 /**
  * @module okh_app_adapter
- * @updated 2026-11-23 20:06
+ * @updated 2026-11-27 04:22
  * @status  active
- * @reason  纯控制器桥接、台账字符串（对齐主人指示：古兰外出营救被俘期间台账仅提示暂离或留信嘱咐切勿贸然前往，零剧透据点与被俘状态；古兰脱险后恢复正常）与监听快照视图
+ * @reason  纯控制器桥接、台账字符串与监听快照视图；补充古兰一阶高好感血脉达到65门槛时的同房守护体感提示
  * @deps    OKHBackgroundModules.utils, OKH_APP_CONFIG, OKH_APP_TIME, OKH_APP_WORLD, OKH_APP_WORLDBOOK, OKHBackgroundAdapter
  * @provides { createController, runtimeConfig, settleTimeEffects, buildLedger, buildWatch }
  */
@@ -11012,9 +12213,15 @@
       if (DATA.paidWorkSettledToday(world)) lines.push('工作报酬：今天已结算一项，其他报酬须另日结算。');
       lines.push('公会委托：' + (guildStarts.length >= 2 ? '近七天的两单均已用完' : guildWait > 0 ? waitText(guildWait) : rank?.meritReq >= 20 ? '可接单（guild_normal 8 小时 / guild_high 24 小时）' : '可接见习委托（guild_normal 8 小时）'));
       const cec = world.npcs?.cecilia;
-      if (cec && cec.alive !== false && (cec.stage ?? 0) < 3) {
+      if (cec && cec.alive !== false) {
         const churchWait = DATA.workCooldownWait(world, 'lastChurchErrand', world.timeMin, 2);
         lines.push('修道院委托：' + (churchWait > 0 ? waitText(churchWait) : '可接取（church_paid / church_volunteer，均需 3 小时）'));
+        const weeklyBiome = cec.flags?.ceciliaWeeklyBiome;
+        if (weeklyBiome) {
+          const clearedMatch = world.ruinState?.lastClearedBiome === weeklyBiome &&
+            (world.ruinState?.lastClearedDay ?? 0) >= (cec.flags?.ceciliaWeeklyAcceptDay ?? 999);
+          lines.push('教堂周常遗迹：目标生态 ' + weeklyBiome + (clearedMatch ? '（已通关，可回教堂交付领取特产奖励）' : '（进行中，须通关对应生态遗迹）'));
+        }
       }
     }
     const edRevealDelivered = WB.isUnlocked(world, 'ed_revealed');
@@ -11036,17 +12243,21 @@
     if (eileen?.flags?.eileen_returned_capital) {
       lines.push('艾琳动向：已随兰开斯特狮鹫骑士团启程返回王都（离队）。');
     } else if (world.flags?.baron_purged) {
-      lines.push('局势状态：雷蒙德男爵已遭狮鹫骑士团清算伏诛' +
-        (world.flags?.player_barony_granted ? '（已定婚约并受封奥克赫斯领地爵位）' : '') + '。');
+      lines.push('局势状态：雷蒙德伯爵已遭狮鹫骑士团清算伏诛' +
+        (world.flags?.player_barony_granted ? '（已定婚约并受封附庸男爵领地爵位）' : '') + '。');
     } else if (DATA.hasEileenSignal(world)) {
       lines.push('艾琳动向：已激发原装王室魔能讯号管传讯，兰开斯特家族狮鹫骑士团将于明日空降奥克赫斯。');
     } else if (DATA.isEileenFugitive(world)) {
       const disguise = eileen?.flags?.eileen_disguised === false
         ? '未披乔装（高危暴露状态）'
         : '默认兜帽斗篷乔装遮面、收敛王徽与细剑';
-      lines.push('艾琳动向：通缉流亡反攻期，全程与你位置同步同行（当前' + disguise + '；反攻值：' + (eileen?.values?.counterattack ?? 0) + '/100，满 100 解锁潜回领主馆夺管事件；入镇与赴旅店时维持低调伪装，切忌在山庄公开露面）。');
+      lines.push('艾琳动向：通缉流亡反攻期，以城外荒野（wilds）为藏身营地并与你同步进退（当前' + disguise + '；反攻值：' + (eileen?.values?.counterattack ?? 0) + '/100；白昼可乔装入城接头，但入夜城内宵禁且反攻未满 100 禁止踏入山庄；满 100 后须亲赴领主山庄（manor）潜入夺回讯号管）。');
     } else if (world.flags?.eileen_arrived && !world.flags?.eileen_departed) {
-      lines.push('艾琳动向：在领主山庄巡查核账（期间高傲不与见习冒险者接触）。');
+      if ((eileen?.flags?.eileenInspectDays ?? 0) >= 6) {
+        lines.push('艾琳动向：巡查将毕，城内冒险者公会告示板已挂出密封护送委托（悬挂 3 日，期间前往城内街区可接取）。');
+      } else {
+        lines.push('艾琳动向：在领主山庄巡查核账（期间高傲不与见习冒险者接触）。');
+      }
     }
     const aurora = world.npcs?.aurora;
     if (aurora && aurora.alive !== false && aurora.monitored !== false) {
@@ -11054,16 +12265,24 @@
         lines.push('奥萝拉已知旧债：' + aurora.values.debt_pressure + ' 点（折合 ' + (aurora.values.debt_pressure * 10) + ' 金）');
       }
       if (aurora.flags?.aurora_purged_with_baron) {
-        lines.push('奥萝拉动向：男爵倒台清算时作为其山庄情妇一并被骑士团带走处置（离队）。');
+        lines.push('奥萝拉动向：伯爵倒台清算时作为其山庄情妇一并被骑士团带走处置（离队）。');
       } else if (aurora.stage >= 3 && aurora.flags?.manor_service_active) {
-        lines.push('奥萝拉动向：已长留领主山庄成为男爵情妇，周末不再返店。');
+        lines.push('奥萝拉动向：已长留领主山庄成为伯爵情妇，周末不再返店。');
       } else if (aurora.flags?.manor_service_active && !aurora.flags?.aurora_left_manor) {
         const auroraBits = [
           CFG.isWeekendDay(day)
-            ? '当前周末休假在镇内归队（可于旅店/教堂碰面）'
+            ? '当前周末休假在城内归队（可于旅店/教堂碰面）'
             : '当前工作日驻守领主山庄（周六、周日返回旅店）'
         ];
-        if (aurora.flags?.aurora_lord_punished) auroraBits.push('已遭男爵迁怒责罚（山庄事态提前3个工作日）');
+        if (aurora.flags?.aurora_lord_punished) auroraBits.push('已遭伯爵迁怒责罚（山庄事态提前3个工作日）');
+        if (aurora.stage < 2 && (aurora.values?.affection ?? 0) >= 90 &&
+            !(world.tags?.aurora || []).includes('tag_aurora_resign_determined') && !aurora.flags?.aurora_resign_talked) {
+          auroraBits.push('奥萝拉有些心绪不宁，和她独处谈谈心吧');
+        } else if (aurora.flags?.aurora_resign_failed) {
+          auroraBits.push('山庄辞职遭伯爵强扣（等待艾琳线推翻伯爵解救）');
+        } else if ((world.tags?.aurora || []).includes('tag_aurora_resign_determined')) {
+          auroraBits.push('已决意辞职但受困于 500 金违约金（工作日可赴山庄陪同交涉辞职）');
+        }
         if (DATA.isEileenFugitive(world) && !world.flags?.baron_purged &&
             (aurora.values?.affection ?? 0) >= 80 && !aurora.flags?.aurora_eileen_intel_given) {
           auroraBits.push('暗藏山庄换防与暗锁情报待私下交接（与她同地碰头可推进反攻）');
@@ -11090,7 +12309,7 @@
     }
     const nise = world.npcs?.nise;
     if (nise && (nise.stage ?? 0) < 3 && !nise.flags?.casino_debt_frozen && !nise.flags?.nise_fled_casino &&
-        (nise.flags?.nise_debt_known || (nise.stage ?? 0) >= 1) && (nise.values?.gamble_debt ?? 0) > 0) {
+        nise.flags?.nise_debt_known && (nise.values?.gamble_debt ?? 0) > 0) {
       lines.push('妮丝已查明赌债：' + nise.values.gamble_debt + ' 点（折合 ' + (nise.values.gamble_debt * 10) + ' 金）');
     }
     const isna = world.npcs?.isna;
@@ -11100,6 +12319,14 @@
         lines.push('伊丝娜动向：已收到她在黑兽人前哨据点（wilds_camp）遇险的求救信号，须尽快携古兰营救。');
       } else if (isna.flags?.captured_orc && !isna.flags?.isna_fallen_orc && !isna.flags?.isna_help_real) {
         lines.push('伊丝娜动向：独自外出后暂未归队，下落未明。');
+      } else if (isna.stage === 2 && !isna.flags?.isnaMudSealCleared && !isna.flags?.isna_fallen_orc) {
+        if (isna.flags?.isna_mud_hopeless_fled) {
+          lines.push('伊丝娜动向：得知无人能拔除体内兽人血契后，已独自离开旅店逃往荒原。');
+        } else if (isna.flags?.isnaMudTruthKnown) {
+          lines.push('伊丝娜动向：已坦白小腹兽人血契真相，须于次日白天尽快请塞西莉亚或古兰出手拔除。');
+        } else if ((isna.flags?.isnaMudSpyCount ?? 0) >= 1) {
+          lines.push('伊丝娜动向：自兽人营地归队后每隔数日便夜间外出盯梢，归来时神色紧绷（在旅店与其互动可试探异常）。');
+        }
       }
     }
     const gulan = world.npcs?.gulan;
@@ -11110,6 +12337,9 @@
         } else {
           lines.push('古兰动向：外出暂离，行踪未明。');
         }
+      } else if (gulan.stage === 1 && !gulan.flags?.ed_hypnosis_play_done && !gulan.flags?.gulan_pure_bond_done &&
+          (gulan.values?.affection ?? 0) >= 90 && (gulan.values?.blood_density ?? 0) >= 65) {
+        lines.push('古兰体征异样：近夜调息时头两侧龙角根部隐隐发烫，似在强压躁动（夜宿同房照看可助其稳住心神，谨防真血反噬）。');
       }
     }
     return lines.join('\n');
@@ -12062,7 +13292,7 @@
     player_barony_granted: ['布尔', false, '玩家已获封男爵，供爵位权益与后续分支读取', once],
     eileen_fugitive: ['布尔', false, '艾琳线进入逃亡阶段，影响队伍日程与行动', '兰开斯特清算时清除'],
     eileen_signal_fired: ['布尔', false, '艾琳已发出王室讯号', once],
-    baron_purged: ['布尔', false, '男爵已被清算', once],
+    baron_purged: ['布尔', false, '雷蒙德伯爵已被清算', once],
     lastInnSettledDay: ['游戏日', 0, '上一笔住宿结算的日期，用于防止重复结算', '住宿结算后更新'],
     inn_arrears: ['布尔', false, '旅店住宿欠费', '补缴或相关规则清偿时清除'],
     inn_free_pass_today: ['布尔', undefined, '本晚住宿免金', '本晚住宿结算时消耗'],
@@ -12103,7 +13333,10 @@
     },
     aurora: {
       manor_service_active: ['布尔', undefined, '奥萝拉仍在山庄任职，供行动调度使用', '离开山庄或清算相关分支结束任职时清除'],
-      aurora_manor_confessed: ['布尔', undefined, '奥萝拉已向玩家坦白山庄经历', once]
+      aurora_manor_confessed: ['布尔', undefined, '奥萝拉已向玩家坦白山庄经历', once],
+      aurora_resign_talked: ['布尔', undefined, '已完成周末独处「辞职」谈心事件', once],
+      aurora_resign_failed: ['布尔', undefined, '山庄陪同辞职遭伯爵强扣失败，需等待艾琳线救局', once],
+      aurora_shared_debt_vow_done: ['布尔', undefined, '归队后共同面对债务与未来占位回执已触发', once]
     },
     ed: {
       ed_teach_count: ['整数', undefined, '爱德累计传授次数，缺失时按 0 读取', '每次有效传授累加，无每日清零'],
@@ -12346,7 +13579,7 @@
     ink: ['data:font/woff;base64,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', '地图预览/字体/map-ink.woff']
   }
   const PLACES = {
-    town: { name: '奥克赫斯镇', detail: '镇内街区、集市与公共建筑。' },
+    town: { name: '奥克赫斯城', detail: '城内街区、集市、公会与公共建筑。' },
     inn: { name: '断剑与麦酒旅店', detail: '一层大厅与二层六间客房。' },
     manor: { name: '领主庄园', detail: '镇外西北山上的庄园。' },
     wilds_camp: { name: '黑兽人前哨', detail: '敌对驻地，位于东南荒地。' },
@@ -12441,7 +13674,7 @@
   }
   function point(id, label, x, y, action, extra, world) {
     const current = world.playerLocation === id ? ' aria-current="location"' : ''
-    const kind = id === 'town' && label === '奥克赫斯镇' ? 'settlement' : id === 'wilds_camp' ? 'hostile' : 'landmark'
+    const kind = id === 'town' && label === '奥克赫斯城' ? 'settlement' : id === 'wilds_camp' ? 'hostile' : 'landmark'
     const ink = `<span class="okh-m-ink" data-ink-kind="${kind}">${esc(label)}</span>`
     if (!world.flags?.arrived_oakhaven && id === 'town') return `<span class="okh-m-point" style="--x:${x}%;--y:${y}%">${ink}</span><span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${ink}</span>`
     return button(action, ink, `class="okh-m-point" style="--x:${x}%;--y:${y}%" ${extra}${current}`) + `<span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${ink}</span>`
@@ -12466,7 +13699,7 @@
     const title = { region: '奥克赫斯 · 全域图', town: '奥克赫斯 · 镇内图', ground: '断剑与麦酒旅店', upper: '断剑与麦酒旅店' }[view]
     let overlay = '', options = '', detail = ''
     if (view === 'region') {
-      overlay = point('town', '奥克赫斯镇', 33.5, 63, 'map-view', 'data-okh-view="town"', world) +
+      overlay = point('town', '奥克赫斯城', 33.5, 63, 'map-view', 'data-okh-view="town"', world) +
         point('manor', '领主庄园', 20.5, 25, 'map-place', 'data-okh-place="manor"', world) +
         point('wilds_camp', '黑兽人前哨', 80, 66.5, 'map-place', 'data-okh-place="wilds_camp"', world)
       options = (world.flags?.arrived_oakhaven ? button('map-view', '进入镇内图', 'data-okh-view="town"') : '') + button('map-place', '领主庄园', 'data-okh-place="manor"') + button('map-place', '黑兽人前哨', 'data-okh-place="wilds_camp"') + button('map-place', '城外荒原', 'data-okh-place="wilds"')

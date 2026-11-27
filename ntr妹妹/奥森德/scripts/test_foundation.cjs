@@ -1025,7 +1025,7 @@ async function runTests() {
     w = stepFront(w, 'a6d', DAY(14, 8), '<status_bar><move to="church"/><move npc="aurora" to="church"/><bond npc="aurora" kind="church_visit"/></status_bar>');
     w = stepFront(w, 'a6e', DAY(14, 9), '<status_bar><move to="inn"/><move npc="aurora" to="inn"/><bond npc="aurora" kind="help_chores"/></status_bar>');
     assert.strictEqual(w.npcs.aurora.values.affection, 92);
-    assert.strictEqual(w.npcs.aurora.flags.aurora_manor_confessed, true, 'affection >= 90 at inn with stage >= 1 triggers manor confess');
+    assert.strictEqual(w.npcs.aurora.flags.aurora_manor_confessed, undefined, 'stage 1 weekend must not leak stage 2 manor confess');
 
     // Mon Day 15: back at manor with manorWorkDays=7 & affection >= 90 -> Event 2 delayed 7 workdays (stage stays 1, debt stays 90)
     w = OKHBackground.advance(w, { id: 'a7', revision: 'ra7', toMin: DAY(15, 9), interactingIds: [], front: {} }, cfg).state;
@@ -1175,9 +1175,11 @@ async function runTests() {
     assert.strictEqual(w.npcs.eileen.values.affection, 73, 'Past >=70: care_watch (+1) stops, emotion encourage (+2) stays active');
     assert.strictEqual(w.npcs.eileen.values.counterattack, 100);
 
-    // Resolve reclaim tube -> 1 day later Griffin Knights purge Baron (+20 -> 93 >= 90 -> marriage + barony; keeps Aurora/Nise stage!)
+    // Resolve reclaim tube -> requires moving to manor first, then 1 day later Griffin Knights purge Baron (+20 -> 93 >= 90 -> marriage + barony; keeps Aurora/Nise stage!)
     const reclaimKey = u.key('event', 'eileen_reclaim_tube', 'eileen');
-    assert.strictEqual(w.bg.eventStates[reclaimKey]?.status, 'pending');
+    assert.notStrictEqual(w.bg.eventStates[reclaimKey]?.status, 'pending', 'Reclaim tube does not fire in wilds');
+    w = stepFront(w, 'ea_to_manor', DAY(35, 17), '<status_bar><move to="manor"/></status_bar>');
+    assert.strictEqual(w.bg.eventStates[reclaimKey]?.status, 'pending', 'Reclaim tube becomes pending upon infiltrating manor');
     w = stepFront(w, 'ea_strike', DAY(35, 18), '<status_bar><event_resolve id="eileen_reclaim_tube" npc="eileen" outcome="strike"/></status_bar>');
     assert.strictEqual(w.flags.eileen_signal_fired, true);
 
@@ -1228,8 +1230,9 @@ async function runTests() {
     assert.strictEqual(wB.npcs.aurora.flags.manorWorkDays, 18);
     assert.strictEqual(wB.npcs.aurora.stage, 3, 'Punishment accelerates Aurora Event 3 by 3 workdays (21 -> 18)');
 
-    // Complete counterattack & purge with < 90 Eileen affection (50 < 90) -> stage 3 Aurora purged with Baron; stage 3 Nise flees; 1 day post-purge Eileen departs with Griffin Knights!
+    // Complete counterattack & purge with < 90 Eileen affection (50 < 90) -> stage 3 Aurora purged with Baron; stage 3 Nise flees; 3 days post-purge Eileen departs with Griffin Knights!
     wB.npcs.eileen.values.counterattack = 100;
+    wB.playerLocation = 'manor';
     wB = OKHBackground.advance(wB, { id: 'eb_rec', revision: 'reb3', toMin: DAY(23, 10), interactingIds: [], front: {} }, cfg).state;
     wB = stepFront(wB, 'eb_str', DAY(23, 11), '<status_bar><event_resolve id="eileen_reclaim_tube" npc="eileen" outcome="strike"/></status_bar>');
     wB = OKHBackground.advance(wB, { id: 'eb_end', revision: 'reb4', toMin: DAY(24, 12), interactingIds: [], front: {} }, cfg).state;
@@ -1240,8 +1243,11 @@ async function runTests() {
     assert.strictEqual(wB.npcs.aurora.monitored, false);
     assert.strictEqual(wB.npcs.nise.flags.nise_fled_casino, true, 'Stage 3 Nise flees when casino umbrella collapses');
     assert.strictEqual(wB.npcs.nise.monitored, false);
-    wB = OKHBackground.advance(wB, { id: 'eb_leave', revision: 'reb5', toMin: DAY(25, 12), interactingIds: [], front: {} }, cfg).state;
-    assert.strictEqual(wB.npcs.eileen.flags.eileen_returned_capital, true, 'Eileen <90 affection departs to capital with Griffin Knights');
+    wB = stepFront(wB, 'eb_stay_d1', DAY(25, 12), '<status_bar><bond npc="eileen" kind="encourage"/></status_bar>');
+    assert.notStrictEqual(wB.npcs.eileen.flags.eileen_returned_capital, true, 'Eileen stays 3 days post-purge before departing');
+    assert.strictEqual(wB.npcs.eileen.values.affection, 52, 'Eileen encourage bond remains open during 3-day post-purge window');
+    wB = OKHBackground.advance(wB, { id: 'eb_leave', revision: 'reb5', toMin: DAY(27, 12), interactingIds: [], front: {} }, cfg).state;
+    assert.strictEqual(wB.npcs.eileen.flags.eileen_returned_capital, true, 'Eileen <90 affection departs to capital with Griffin Knights after 3 days');
     assert.strictEqual(wB.npcs.eileen.monitored, false);
 
     // Case D: Ordering guard — late-arrived Aurora at manorWorkDays=4 & affection=90 suffering Baron punishment must trigger evt2 delay instead of bypassing to stage 2!
@@ -1267,16 +1273,20 @@ async function runTests() {
     wC = OKHBackground.advance(wC, { id: 'ec_d15', revision: 'rec1', toMin: DAY(15, 9), interactingIds: [], front: {} }, cfg).state;
     assert.strictEqual(wC.npcs.eileen.monitored, true);
     wC = OKHBackground.advance(wC, { id: 'ec_d21', revision: 'rec2', toMin: DAY(21, 9), interactingIds: [], front: {} }, cfg).state;
-    assert.strictEqual(wC.npcs.eileen.flags.eileen_captured, true, 'Without Aurora >=80 insider, Eileen departs alone and is captured');
+    assert.strictEqual(wC.npcs.eileen.flags.eileen_captured, undefined, 'Day 6 guild-offer window opens and stays open');
+    wC = OKHBackground.advance(wC, { id: 'ec_d23', revision: 'rec2a', toMin: DAY(23, 9), interactingIds: [], front: {} }, cfg).state;
+    assert.strictEqual(wC.npcs.eileen.flags.eileen_captured, undefined, 'Day 8 (3rd day of guild offer) still stays open before solo departure');
+    wC = OKHBackground.advance(wC, { id: 'ec_d24', revision: 'rec2b', toMin: DAY(24, 9), interactingIds: [], front: {} }, cfg).state;
+    assert.strictEqual(wC.npcs.eileen.flags.eileen_captured, true, 'Missing 3-day guild offer leads to solo departure and capture on day 9');
 
-    wC = OKHBackground.advance(wC, { id: 'ec_c1', revision: 'rec3', toMin: DAY(22, 9), interactingIds: [], front: {} }, cfg).state;
+    wC = OKHBackground.advance(wC, { id: 'ec_c1', revision: 'rec3', toMin: DAY(25, 9), interactingIds: [], front: {} }, cfg).state;
     assert.strictEqual(wC.npcs.eileen.stage, 1, 'Captive Day 1 -> stage 1');
-    wC = OKHBackground.advance(wC, { id: 'ec_c7', revision: 'rec4', toMin: DAY(28, 9), interactingIds: [], front: {} }, cfg).state;
+    wC = OKHBackground.advance(wC, { id: 'ec_c7', revision: 'rec4', toMin: DAY(31, 9), interactingIds: [], front: {} }, cfg).state;
     assert.strictEqual(wC.npcs.eileen.stage, 2, 'Captive Day 7 -> stage 2');
-    wC = OKHBackground.advance(wC, { id: 'ec_c21', revision: 'rec5', toMin: DAY(42, 9), interactingIds: [], front: {} }, cfg).state;
+    wC = OKHBackground.advance(wC, { id: 'ec_c21', revision: 'rec5', toMin: DAY(45, 9), interactingIds: [], front: {} }, cfg).state;
     assert.strictEqual(wC.npcs.eileen.stage, 3, 'Captive Day 21 -> stage 3');
 
-    for (const nextDay of [57, 72, 87, 102, 111]) {
+    for (const nextDay of [60, 75, 90, 105, 114]) {
       wC = OKHBackground.advance(wC, { id: 'ec_d' + nextDay, revision: 'rec_' + nextDay, toMin: DAY(nextDay, 9), interactingIds: [], front: {} }, cfg).state;
     }
     assert.strictEqual(wC.npcs.eileen.flags.eileenCaptiveDays, 90);
@@ -1501,19 +1511,20 @@ async function runTests() {
 
     // Ledger on weekday during fugitive arc surfaces manor schedule, lord punishment & pending intel
     const wkdayLedger = OKH_APP_ADAPTER.buildLedger(wCf);
-    assert(wkdayLedger.includes('当前工作日驻守领主山庄') && wkdayLedger.includes('已遭男爵迁怒责罚') && wkdayLedger.includes('暗藏山庄换防与暗锁情报'),
+    assert(wkdayLedger.includes('当前工作日驻守领主山庄') && wkdayLedger.includes('已遭伯爵迁怒责罚') && wkdayLedger.includes('暗藏山庄换防与暗锁情报'),
       'Weekday ledger surfaces Aurora manor duty, lord punishment & pending manor intel');
 
-    // Weekend at church triggers disclose + confess, and weekend ledger reflects weekend reunion
+    // Weekend at church triggers disclose + confess (stage 2), and weekend ledger reflects weekend reunion
     wCf.timeMin = DAY(6, 8);
     wCf.playerLocation = 'church';
     wCf.npcs.aurora.location = 'church';
+    wCf.npcs.aurora.stage = 2;
     wCf.npcs.aurora.flags.lastNightSettledDay = 5;
     const wkendLedger = OKH_APP_ADAPTER.buildLedger(wCf);
-    assert(wkendLedger.includes('当前周末休假在镇内归队'), 'Weekend ledger surfaces Aurora town reunion window');
+    assert(wkendLedger.includes('当前周末休假在城内归队'), 'Weekend ledger surfaces Aurora town reunion window');
     wCf = OKHBackground.advance(wCf, { id: 'ac2', revision: 'rac2', toMin: DAY(6, 10), interactingIds: ['aurora'], front: {} }, cfg).state;
     assert.strictEqual(wCf.npcs.aurora.flags.aurora_debt_disclosed, true, 'aurora_debt_disclose works at church too');
-    assert.strictEqual(wCf.npcs.aurora.flags.aurora_manor_confessed, true, 'aurora_manor_confess works at church on weekend');
+    assert.strictEqual(wCf.npcs.aurora.flags.aurora_manor_confessed, true, 'aurora_manor_confess works at church on weekend in stage 2');
 
     // Post-purge / left-manor blocks late aurora_manor_confess on weekend
     let wPost = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
@@ -1795,11 +1806,7 @@ async function runTests() {
     assert.strictEqual(w.npcs.aurora.flags.manor_service_active, false, 'Clearing debt quits manor service immediately');
     assert.strictEqual(w.npcs.aurora.flags.aurora_left_manor, true);
 
-    // Orc camp bounty (+300) + Lancaster purge (+1000) one-time payouts
-    w.flags.orc_camp_destroyed = true;
-    w = stepFront(w, 'e_bounty', DAY(13, 16, 40), '<status_bar><time elapsed="10" end="13日16:10"/></status_bar>');
-    assert.strictEqual(w.playerState.gold, 450);
-    assert.strictEqual(w.flags.orc_camp_bounty_paid, true);
+    // Lancaster purge (+1000) one-time payout (orc_camp_bounty_reward removed as deprecated)
     w.flags.eileen_signal_fired = true;
     w.npcs.eileen.monitored = true;
     w.npcs.eileen.flags.eileen_signal_fired = true;
@@ -1807,7 +1814,7 @@ async function runTests() {
     w = stepFront(w, 'e_purge', DAY(13, 17), '<status_bar><time elapsed="10" end="13日17:10"/></status_bar>');
     assert.strictEqual(w.flags.baron_purged, true);
     assert.strictEqual(w.flags.lancaster_purge_reward_paid, true);
-    assert.strictEqual(w.playerState.gold, 1450);
+    assert.strictEqual(w.playerState.gold, 1150);
 
     // Legacy v1 save migration backfills gold & Cecilia initial funds
     const legacyV1 = { timeMin: DAY(2, 8), playerLocation: 'inn', npcs: { aurora: { id: 'aurora', location: 'inn', values: { debt_pressure: 0, affection: 50 }, flags: {} }, cecilia: { id: 'cecilia', location: 'church', values: { orphanage_funds: 0, affection: 20 }, flags: {} } } };
@@ -2671,6 +2678,7 @@ async function runTests() {
     w = stepFront(w, 'manor_intel_res', DAY(19, 12, 30), '<status_bar><time elapsed="10"/><event_resolve id="aurora_pass_manor_intel" npc="aurora" outcome="receive_intel"/></status_bar>');
     assert.strictEqual(countOf(w, 'manor_intel_note'), 1, 'aurora_pass_manor_intel grants manor_intel_note');
     w.npcs.eileen.values.counterattack = 100;
+    w.playerLocation = 'manor';
     w = stepFront(w, 'tube_trig', DAY(19, 13, 0), '<status_bar><time elapsed="50"/></status_bar>');
     w = stepFront(w, 'tube_res', DAY(19, 13, 10), '<status_bar><time elapsed="10"/><event_resolve id="eileen_reclaim_tube" npc="eileen" outcome="strike"/></status_bar>');
     assert.strictEqual(countOf(w, 'manor_intel_note'), 0, 'eileen_reclaim_tube removes manor_intel_note');
@@ -3046,6 +3054,99 @@ async function runTests() {
     const ledger24 = OKH_APP_ADAPTER.buildLedger(w);
     assert(ledger24.includes('戒严解除，市井议论逐渐平息'), 'Ledger shows aftermath cleared');
     assert(!OKH_APP_HUD.buildHudHtml(w).includes('［安保戒严 · 人心惶惶］'), 'HUD removes badge');
+  });
+
+  // 29. Aurora resignation talk, manor negotiation (master vs blocked), Eileen +30 boost & Nise ledger secrecy
+  await test('29. Aurora resignation talk, manor negotiation branches, Eileen +30 & Nise ledger secrecy', () => {
+    const sb = createSandbox();
+    const { OKHBackground, OKH_APP_CONFIG, OKH_APP_ADAPTER } = sb;
+    const { DAY } = OKH_APP_CONFIG;
+    const cfg = OKH_APP_CONFIG.buildConfig();
+    let w = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);
+    w.flags.arrived_oakhaven = true;
+    w.playerState.gold = 300;
+    // Nise stage 1 without nise_debt_known must NOT expose debt in ledger
+    w.npcs.nise.stage = 1;
+    w.npcs.nise.values.gamble_debt = 40;
+    assert(!OKH_APP_ADAPTER.buildLedger(w).includes('妮丝已查明赌债'), 'Nise debt hidden until nise_debt_known');
+    w.npcs.nise.flags.nise_debt_known = true;
+    assert(OKH_APP_ADAPTER.buildLedger(w).includes('妮丝已查明赌债：40 点'), 'Nise debt visible once nise_debt_known is true');
+
+    // Aurora alone on weekend at inn with affection >= 90 triggers aurora_resign_talk
+    w.flags.lord_hiring = true;
+    w.playerLocation = 'inn';
+    w.npcs.aurora.location = 'inn';
+    w.npcs.gulan.location = 'training_grounds';
+    w.npcs.gulan.flags.gulan_trained_today = true;
+    w.npcs.isna.location = 'town';
+    w.npcs.isna.flags.isna_worked_today = true;
+    w.npcs.nise.location = 'town';
+    w.npcs.cecilia.location = 'church';
+    w.npcs.aurora.stage = 1;
+    w.npcs.aurora.values.affection = 92;
+    w.npcs.aurora.flags = { aurora_job_taken: true, manor_service_active: true, aurora_evt1_done: true, lastNightSettledDay: 5 };
+    w.npcs.aurora.nodeStates = { aurora_stage_1: { status: 'completed' } };
+    w.timeMin = DAY(6, 14); // Sat afternoon
+    assert(OKH_APP_ADAPTER.buildLedger(w).includes('奥萝拉有些心绪不宁，和她独处谈谈心吧'), 'Ledger prompts private talk before resign');
+
+    w = OKHBackground.advance(w, { id: 'res0', revision: 'rres0', toMin: w.timeMin + 5, interactingIds: ['aurora'], front: {} }, cfg).state;
+    const prepTalk = OKHBackground.prepare(w, 8);
+    assert(prepTalk.ids.some(id => id.includes('aurora_resign_talk')), 'aurora_resign_talk prepares when alone with Aurora on weekend');
+    w = OKHBackground.advance(w, {
+      id: 'res1', revision: 'rres1', toMin: w.timeMin + 10, interactingIds: ['aurora'],
+      front: { resolveEvents: [{ eventId: 'aurora_resign_talk', npcId: 'aurora', outcome: 'support_resign' }] }
+    }, cfg).state;
+    assert(w.tags?.aurora?.includes('tag_aurora_resign_determined'), 'Supporting resign adds tag_aurora_resign_determined');
+    assert.strictEqual(w.npcs.aurora.flags.aurora_resign_talked, true);
+
+    // Branch A: With Master (Gulan) present at manor -> -200 gold, quit manor, tag_lord_grudge
+    let wA = JSON.parse(JSON.stringify(w));
+    wA.timeMin = DAY(8, 10); // Mon morning
+    wA.playerLocation = 'manor';
+    wA.npcs.aurora.location = 'manor';
+    wA.npcs.gulan.location = 'manor';
+    wA = OKHBackground.advance(wA, { id: 'negA0', revision: 'rnegA0', toMin: wA.timeMin + 5, interactingIds: [], front: {} }, cfg).state;
+    assert(OKHBackground.prepare(wA, 8).ids.some(id => id.includes('aurora_manor_resign_negotiate')), 'Negotiation triggers at manor with resign tag');
+    wA = OKHBackground.advance(wA, {
+      id: 'negA1', revision: 'rnegA1', toMin: wA.timeMin + 10, interactingIds: [],
+      front: { resolveEvents: [{ eventId: 'aurora_manor_resign_negotiate', npcId: 'aurora', outcome: 'negotiate_master' }] }
+    }, cfg).state;
+    assert.strictEqual(wA.playerState.gold, 100, 'Branch A deducts 200 gold (300 -> 100)');
+    assert(wA.tags?.aurora?.includes('tag_lord_grudge'), 'Branch A grants tag_lord_grudge');
+    assert.strictEqual(wA.npcs.aurora.flags.aurora_left_manor, true, 'Branch A frees Aurora from manor');
+    assert.strictEqual(wA.npcs.aurora.flags.manor_service_active, false);
+
+    // Branch B: Without Master at manor -> blocked, ejected to town, aurora_resign_failed, Eileen intel +30
+    let wB = JSON.parse(JSON.stringify(w));
+    wB.timeMin = DAY(8, 10);
+    wB.playerLocation = 'manor';
+    wB.npcs.aurora.location = 'manor';
+    wB.npcs.gulan.location = 'inn';
+    wB = OKHBackground.advance(wB, { id: 'negB0', revision: 'rnegB0', toMin: wB.timeMin + 5, interactingIds: [], front: {} }, cfg).state;
+    assert(OKHBackground.prepare(wB, 8).ids.some(id => id.includes('aurora_manor_resign_negotiate')));
+    wB = OKHBackground.advance(wB, {
+      id: 'negB1', revision: 'rnegB1', toMin: wB.timeMin + 10, interactingIds: [],
+      front: { resolveEvents: [{ eventId: 'aurora_manor_resign_negotiate', npcId: 'aurora', outcome: 'negotiate_blocked' }] }
+    }, cfg).state;
+    assert.strictEqual(wB.playerLocation, 'town', 'Branch B ejects player from manor to town');
+    assert.strictEqual(wB.npcs.aurora.flags.aurora_resign_failed, true, 'Branch B sets aurora_resign_failed');
+    assert.strictEqual(wB.npcs.aurora.flags.manor_service_active, true, 'Branch B keeps Aurora at manor');
+
+    wB.flags.eileen_fugitive = true;
+    wB.flags.eileen_ambush_closed = true;
+    wB.npcs.aurora.flags.aurora_debt_disclosed = true;
+    wB.npcs.eileen.monitored = true;
+    wB.npcs.eileen.values.counterattack = 10;
+    wB.timeMin = DAY(13, 10);
+    wB.playerLocation = 'inn';
+    wB.npcs.aurora.location = 'inn';
+    wB = OKHBackground.advance(wB, { id: 'intelB0', revision: 'rintelB0', toMin: wB.timeMin + 15, interactingIds: [], front: {} }, cfg).state;
+    assert(OKHBackground.prepare(wB, 8).ids.some(id => id.includes('aurora_pass_manor_intel')));
+    wB = OKHBackground.advance(wB, {
+      id: 'intelB1', revision: 'rintelB1', toMin: wB.timeMin + 20, interactingIds: [],
+      front: { resolveEvents: [{ eventId: 'aurora_pass_manor_intel', npcId: 'aurora', outcome: 'receive_intel' }] }
+    }, cfg).state;
+    assert.strictEqual(wB.npcs.eileen.values.counterattack, 40, 'Failed resign boosts Eileen counterattack by +30 (10 -> 40)');
   });
 
   const failed = results.filter(r => !r.ok);

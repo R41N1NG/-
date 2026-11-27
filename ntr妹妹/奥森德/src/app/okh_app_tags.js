@@ -95,9 +95,21 @@
     }),
     tag_aurora_manor_hush: Object.freeze({
       id: 'tag_aurora_manor_hush',
-      name: '私室封口',
-      desc: '返店后常下意识低头拢紧白色围裙与高领衬衫，谈及山庄差事时指尖微颤、回避视线，只反复念叨这是正经活。',
+      name: '涨薪试探',
+      desc: '返店后常下意识低头拢紧白色围裙与黑色女仆长裙，谈及山庄差事时指尖微颤、回避视线，只反复念叨领主答应考虑涨工资。',
       visibility: 'private'
+    }),
+    tag_aurora_resign_determined: Object.freeze({
+      id: 'tag_aurora_resign_determined',
+      name: '决意辞职',
+      desc: '已在独处时哭诉山庄遭遇并决意辞职，却被工作满六个月、提前离职需赔付五百金币违约金的契约锁住，暂时不得不回山庄苦撑拒绝对潜规则，等待转机。',
+      visibility: 'public'
+    }),
+    tag_lord_grudge: Object.freeze({
+      id: 'tag_lord_grudge',
+      name: '领主的记恨',
+      desc: '雷蒙德伯爵迫于宗师强者威慑勉强放行奥萝拉离职，对此暗自记恨。',
+      visibility: 'public'
     }),
     tag_aurora_night_service: Object.freeze({
       id: 'tag_aurora_night_service',
@@ -107,8 +119,8 @@
     }),
     tag_aurora_baron_mistress: Object.freeze({
       id: 'tag_aurora_baron_mistress',
-      name: '男爵情妇',
-      desc: '已签下清空家族旧债的情妇契约，长留领主山庄深处侍奉雷蒙德男爵，周末不再返店归队。',
+      name: '伯爵情妇',
+      desc: '已签下清空家族旧债的情妇契约，长留领主山庄深处侍奉雷蒙德伯爵，周末不再返店归队。',
       visibility: 'private'
     }),
     // 7 项通用负面 Tag（公会冒险与遗迹探险）

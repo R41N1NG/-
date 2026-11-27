@@ -29,6 +29,35 @@
   const isEileenFugitive = world => !world?.flags?.baron_purged && eileenFlag(world, 'eileen_fugitive')
   const hasEileenSignal = world => eileenFlag(world, 'eileen_signal_fired')
 
+  function isAloneWithAurora(world, npc) {
+    if (!npc || npc.id !== 'aurora' || world.playerLocation !== npc.location) return false
+    const present = Object.values(world.npcs || {}).filter(
+      n => n.monitored === true && n.alive !== false && n.location === world.playerLocation
+    )
+    return present.length === 1 && present[0].id === 'aurora'
+  }
+
+  function presentMasterExists(world) {
+    const adv = root.OKH_APP_ADVENTURE
+    if (adv?.effectiveTier) {
+      if (adv.effectiveTier(world, 'player') >= 4) return true
+      return Object.values(world.npcs || {}).some(
+        n => n.monitored === true && n.alive !== false && n.location === world.playerLocation &&
+          n.id !== 'aurora' && adv.effectiveTier(world, n.id) >= 4
+      )
+    }
+    if ((world.playerState?.tier ?? 2) >= 4) return true
+    const tags = root.OKH_APP_TAGS?.catalog || {}
+    return Object.values(world.npcs || {}).some(n => {
+      if (n.monitored !== true || n.alive === false || n.location !== world.playerLocation || n.id === 'aurora') return false
+      const nTags = world.tags?.[n.id] || []
+      const maxTagTier = Math.max(0, ...nTags.map(id => tags[id]?.tier ?? 0))
+      const base = n.id === 'gulan' ? 5 : maxTagTier
+      const heavy = nTags.includes('debuff_heavy_wound') ? 1 : 0
+      return Math.max(1, base - heavy) >= 4
+    })
+  }
+
   const isFugitiveSquadActive = (world, npc) =>
     isEileenFugitive(world) &&
     npc && npc.alive !== false && npc.monitored !== false && (npc.stage ?? 0) < 3 &&
@@ -46,7 +75,7 @@
   const LOCATIONS = {
     inn: '断剑与麦酒',
     training_grounds: '露天练武场',
-    town: '镇上',
+    town: '城内街区',
     church: '圣辉大教堂',
     manor: '领主山庄',
     casino: '地下赌场',
@@ -177,10 +206,10 @@
     }),
     barony_patent: Object.freeze({
       id: 'barony_patent',
-      name: '奥克赫斯男爵领封赏契书',
+      name: '奥克赫斯附庸伯爵封赏契书',
       category: 'quest',
       stackable: false,
-      desc: '兰开斯特家族颁予的奥克赫斯镇及原男爵辖地封赏爵位契书。'
+      desc: '兰开斯特家族颁予的原雷蒙德伯爵辖下一处附庸男爵领封赏爵位契书。'
     }),
     isna_pendant: Object.freeze({
       id: 'isna_pendant',
@@ -188,6 +217,50 @@
       category: 'quest',
       stackable: false,
       desc: '伊丝娜托付的成对魔纹吊坠，彼此相隔千里亦可感知危难。'
+    }),
+    church_blessed_salve: Object.freeze({
+      id: 'church_blessed_salve',
+      name: '晨曦祝圣伤药膏',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 20,
+      desc: '修女长亲手熬制并祝圣的稀缺疗伤药膏，使用后可直接在野外或遗迹内消除重伤（debuff_heavy_wound）、轻伤与流血。'
+    }),
+    church_holy_water: Object.freeze({
+      id: 'church_holy_water',
+      name: '细颈圣水银瓶',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 15,
+      desc: '圣辉大教堂祝圣的圣水银瓶；探索沉沦灵堂（crypt）或应对亡灵障碍时自动消耗 1 瓶，提供一次 2 阶神圣安抚判定加值。'
+    }),
+    church_purify_incense: Object.freeze({
+      id: 'church_purify_incense',
+      name: '晨曦净心熏香',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 12,
+      desc: '修道院以干草药与乳香配制的净心熏丸，使用后一并解除中毒（debuff_poisoned）与麻痹（debuff_paralyzed）。'
+    }),
+    church_blessed_ration: Object.freeze({
+      id: 'church_blessed_ration',
+      name: '祝圣麦饼干粮',
+      category: 'supply',
+      stackable: true,
+      maxCount: 99,
+      unitPrice: 8,
+      desc: '塞西莉亚亲手烘烤并祝圣的便携麦饼，使用后直接解除饥饿（debuff_starving）与疲惫（debuff_exhausted）。'
+    }),
+    church_silver_rosary: Object.freeze({
+      id: 'church_silver_rosary',
+      name: '纯银祈祷念珠',
+      category: 'quest',
+      stackable: false,
+      maxCount: 1,
+      desc: '塞西莉亚亲自祝圣赠予的纯银念珠信物，随身携带时在遗迹「治疗」与「辨识」判定中常驻提供 +1 庇佑加值。'
     })
   })
 
@@ -737,7 +810,7 @@
         npcFlags: { aurora_evt1_done: true },
         tagsAdd: ['tag_aurora_manor_hush']
       },
-      text: '{name}在领主山庄工作满三日后收拾二楼私室时，雷蒙德领主顺手递过一袋额外封口金币并借机贴身占便宜。她指尖攥紧围裙却不敢得罪大领主，红着眼眶咬牙忍下，收下这笔抵掉一成旧债的钱款，此后在山庄干活时也不再敢强硬推阻触碰。'
+      text: '领主将{name}叫到书房，一边大肆隔着长裙抚摸裙下美臀，一边欣赏起她忍耐不敢反抗的瑟缩表情，嘴上却开口说：“奥萝拉小姐，你最近的表现很好，我正在考虑给你涨工资……”说到这里，他放肆的大手直接撩起女仆长裙，直接开始揉捏黑丝美臀，甚至将一根手指伸入了她的臀缝。{name}羞红了脸，却只能唯唯诺诺地点头称谢。'
     },
     {
       id: 'aurora_stage_2',
@@ -753,7 +826,9 @@
         if (isWeekendDay(dayAt(world)) || !['morning', 'afternoon'].includes(phase.id)) return false
         if ((npc.values.debt_pressure ?? 0) <= 0) return false
         if ((npc.values.affection ?? 0) >= 90 && !npc.flags?.aurora_evt2_delayed) return false
-        const baseDays = npc.flags?.aurora_evt2_delayed ? 14 : 7
+        const hasResignTag = (world.tags?.aurora || []).includes('tag_aurora_resign_determined')
+        // 高好感宽限与决意辞职拒绝对潜规则各自延后 7 个工作日，可叠加至 21 天
+        const baseDays = 7 + (npc.flags?.aurora_evt2_delayed ? 7 : 0) + (hasResignTag ? 7 : 0)
         const reqDays = baseDays - (npc.flags?.aurora_lord_punished ? 3 : 0)
         return Boolean(npc.flags?.aurora_evt1_done) && (npc.flags?.manorWorkDays ?? 0) >= reqDays
       },
@@ -800,7 +875,7 @@
           { npc: 'aurora', type: 'encounter', parts: ['vagina'], penetrative: true, internal: true, position: '丝绒扶手椅正面坐跨', volumeMl: 15 }
         ]
       },
-      text: '面对领主开出足以还清全部剩余家庭旧债的巨额封口重金与情妇契约，{name}轻叹着合上手中账册签下名字；她拿着这笔钱结清了外债，正式长留在领主山庄成为男爵情妇，从此周末亦不再返回旅店。'
+      text: '面对领主开出足以还清全部剩余家庭旧债的巨额封口重金与情妇契约，{name}轻叹着合上手中账册签下名字；她拿着这笔钱结清了外债，正式长留在领主山庄成为伯爵情妇，从此周末亦不再返回旅店。'
     },
     {
       id: 'eileen_stage_1',
@@ -828,7 +903,7 @@
         npc.stage === 1 &&
         (npc.flags?.eileenCaptiveDays ?? 0) >= 7,
       effects: { npcFlags: { eileen_evt2_done: true } },
-      text: '幽禁满七日后，男爵将假冒她笔迹的“沿途安好缓归”回执摆到案前；失去王都与外界全部援救希望的{name}在私室与日夜调教的磨折下防线渐崩，开始被迫配合山庄规训。'
+      text: '幽禁满七日后，伯爵将假冒她笔迹的“沿途安好缓归”回执摆到案前；失去王都与外界全部援救希望的{name}在私室与日夜调教的磨折下防线渐崩，开始被迫配合山庄规训。'
     },
     {
       id: 'eileen_stage_3',
@@ -932,6 +1007,7 @@
         !world.flags?.baron_purged &&
         npc.stage === 0 &&
         !npc.flags?.cecilia_evt1_done &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         ((npc.values.affection ?? 0) < 70 ||
           Boolean(npc.flags?.cecilia_manor_go_stage1) ||
@@ -940,7 +1016,7 @@
         add: { orphanage_funds: 30 },
         npcFlags: { cecilia_evt1_done: true, cecilia_manor_go_stage1: false, ceciliaAppealDays: 0 }
       },
-      text: '孤儿院账面断绝之际，{name}为给孩子们换回口粮与药材，只得独自前往领主山庄恳求雷蒙德男爵拨款。男爵在书房趁机逼迫她忍受猥亵检身与含辱口舌讨好后才肯签下拨款单，{name}攥着新领回的三十份善款重返教堂，神情却多了一层难掩的晦暗（孤儿院资金 +30）。'
+      text: '孤儿院账面断绝之际，{name}为给孩子们换回口粮与药材，只得独自前往领主山庄恳求雷蒙德伯爵拨款。伯爵在书房趁机逼迫她忍受猥亵检身与含辱口舌讨好后才肯签下拨款单，{name}攥着新领回的三十份善款重返教堂，神情却多了一层难掩的晦暗（孤儿院资金 +30）。'
     },
     {
       id: 'cecilia_stage_2',
@@ -954,6 +1030,7 @@
         npc.stage === 1 &&
         Boolean(npc.flags?.cecilia_evt1_done) &&
         !npc.flags?.cecilia_evt2_done &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         ((npc.values.affection ?? 0) < 80 ||
           Boolean(npc.flags?.cecilia_manor_go_stage2) ||
@@ -976,6 +1053,7 @@
         npc.stage === 2 &&
         Boolean(npc.flags?.cecilia_evt2_done) &&
         !npc.flags?.cecilia_evt3_done &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         ((npc.values.affection ?? 0) < 90 ||
           Boolean(npc.flags?.cecilia_manor_go_stage3) ||
@@ -984,7 +1062,7 @@
         add: { orphanage_funds: 60 },
         npcFlags: { cecilia_evt3_done: true, cecilia_manor_go_stage3: false, ceciliaAppealDays: 0 }
       },
-      text: '善款三度耗尽后，{name}再度来到领主山庄却已无力再守最后防线。男爵以长期稳定包揽孤儿院六十份配额为交换，将这位曾经端庄自持的修女长正式收作暗中随叫随到的圣职情妇（孤儿院资金 +60）。'
+      text: '善款三度耗尽后，{name}再度来到领主山庄却已无力再守最后防线。伯爵以长期稳定包揽孤儿院六十份配额为交换，将这位曾经端庄自持的修女长正式收作暗中随叫随到的圣职情妇（孤儿院资金 +60）。'
     },
     {
       id: 'isna_stage_1',
@@ -1050,7 +1128,8 @@
       when: ({ npc }) =>
         npc.stage === 2 &&
         !npc.flags?.isnaMudSealCleared &&
-        (npc.flags?.isnaMudDays ?? 0) >= 10,
+        // 已坦白血契真相时留出第 10 天白天拔除窗口，拖过第 10 天仍未拔除才在第 11 天沉沦
+        (npc.flags?.isnaMudDays ?? 0) >= (npc.flags?.isnaMudTruthKnown ? 11 : 10),
       effects: ({ world }) => ({
         move: 'wilds_camp',
         forceMove: true,
@@ -2281,7 +2360,7 @@
         !isWeekendDay(dayAt(world)) &&
         ['morning', 'afternoon'].includes(phase.id),
       effects: { npcFlags: { aurora_lord_punished: true } },
-      text: '领主府追查起巡查使艾琳在冒险者掩护下逃走一事，雷蒙德男爵迁怒到当初跑去公会发布任务的{name}头上并严加苛责施压（因未获灰鼠及时传信，事件二、三所需工作日各提前三天）。'
+      text: '领主府追查起巡查使艾琳在冒险者掩护下逃走一事，雷蒙德伯爵迁怒到当初跑去公会发布任务的{name}头上并严加苛责施压（因未获灰鼠及时传信，事件二、三所需工作日各提前三天）。'
     },
     {
       id: 'aurora_manor_evt2_delay',
@@ -2308,7 +2387,7 @@
       effects: {
         npcFlags: { aurora_evt2_delayed: true }
       },
-      text: '雷蒙德男爵捧着足够再抵三成旧债的重金提出夜宿特侍要求；念及与你确立的恋人情分，{name}眼眶微红却咬紧牙关推辞了当晚留宿，领主暗忖她仍欠巨债，姑且宽限七个工作日再作答复。'
+      text: '雷蒙德伯爵捧着足够再抵三成旧债的重金提出夜宿特侍要求；念及与你确立的恋人情分，{name}眼眶微红却咬紧牙关推辞了当晚留宿，领主暗忖她仍欠巨债，姑且宽限七个工作日再作答复。'
     },
     {
       id: 'aurora_manor_evt3_refuse',
@@ -2402,15 +2481,119 @@
         Boolean(world.flags?.arrived_oakhaven && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) &&
         isWeekendDay(dayAt(world)) &&
         !npc.flags?.aurora_manor_confessed &&
-        npc.stage >= 1 &&
-        npc.stage < 3 &&
+        npc.stage === 2 &&
         (npc.values.affection ?? 0) >= 90 &&
         ['inn', 'church'].includes(world.playerLocation) &&
         world.playerLocation === npc.location,
       effects: {
         npcFlags: { aurora_manor_confessed: true }
       },
-      text: '周末归队独处无外人时，{name}终于再也撑不住平时的微笑面具，低声抽泣着把领主府二楼的真相告诉了你——之前抵掉旧债的钱并不是正经工钱，而是男爵给的封口费与留宿私密要求，她攥紧你的衣袖请求帮助。'
+      text: '周末归队独处无外人时，{name}终于再也撑不住平时的微笑面具，低声抽泣着把领主府二楼的真相告诉了你——之前抵掉旧债的钱并不是正经工钱，而是伯爵给的封口费与留宿私密要求，她攥紧你的衣袖请求帮助。'
+    },
+    {
+      id: 'aurora_resign_talk',
+      priority: 7,
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['aurora'],
+      title: '辞职',
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc }) =>
+        Boolean(world.flags?.arrived_oakhaven && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) &&
+        npc.stage < 2 &&
+        (npc.values.affection ?? 0) >= 90 &&
+        !npc.flags?.aurora_resign_talked &&
+        isWeekendDay(dayAt(world)) &&
+        isAloneWithAurora(world, npc),
+      expireWhen: ({ world, npc }) =>
+        !npc.flags?.manor_service_active ||
+        Boolean(npc.flags?.aurora_left_manor || world.flags?.baron_purged || npc.flags?.aurora_resign_talked) ||
+        npc.stage >= 2 ||
+        !isWeekendDay(dayAt(world)) ||
+        !isAloneWithAurora(world, npc),
+      text: '{{user}}独自找到{name}时，她低着头攥紧裙角终于哭诉起山庄近况——这些天领主变本加厉地对她进行没有破处的性骚扰，粗糙的大手不止一次直接触及她的美臀、奶子与大腿；她浑身微颤，害怕哪一天领主会将她的贞洁也夺走，随即红着脸扭扭捏捏地躲开{{user}}的视线说：“那、那是要留给我喜欢的人的。”说完后她沉默了一会儿，“我想申请辞职，你会支持我吗？可契约里早就下了陷阱，必须工作满六个月，提前离职需要支付 500 金币的违约金……在这片领地上他就是法律，契约也是我亲笔签字的，我怕那个老肥猪可能不会那么轻易答应……”',
+      outcomes: {
+        support_resign: {
+          when: ({ world, npc }) => world.playerLocation === npc.location,
+          effects: {
+            tagsAdd: ['tag_aurora_resign_determined'],
+            npcFlags: { aurora_resign_talked: true }
+          },
+          text: '{{user}}握住{name}发凉的指尖明确表示支持她辞职。听见承诺的{name}眼眶微热地用力点头，下定决心不再任由领主一步步得寸进尺（获得标签【决意辞职】）；虽被六个月与五百金币的苛刻违约金暂时锁住、不得不先强忍回去上班，她已打定主意拒绝一切留宿要求，盼着你陪同前往山庄与伯爵交涉，或等待彻底脱身的转机。'
+        }
+      }
+    },
+    {
+      id: 'aurora_manor_resign_negotiate',
+      priority: 7,
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['aurora'],
+      title: '陪同山庄辞职交涉',
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven && npc.flags?.manor_service_active && !npc.flags?.aurora_left_manor && !world.flags?.baron_purged) &&
+        npc.stage < 2 &&
+        (world.tags?.aurora || []).includes('tag_aurora_resign_determined') &&
+        !npc.flags?.aurora_resign_failed &&
+        !isWeekendDay(dayAt(world)) &&
+        ['morning', 'afternoon'].includes(phase.id) &&
+        world.playerLocation === 'manor' &&
+        npc.location === 'manor',
+      expireWhen: ({ world, npc, phase }) =>
+        !npc.flags?.manor_service_active ||
+        Boolean(npc.flags?.aurora_left_manor || world.flags?.baron_purged || npc.flags?.aurora_resign_failed) ||
+        npc.stage >= 2 ||
+        isWeekendDay(dayAt(world)) ||
+        !['morning', 'afternoon'].includes(phase.id) ||
+        world.playerLocation !== 'manor' ||
+        npc.location !== 'manor',
+      text: '你陪同{name}来到领主山庄前厅递交辞呈。雷蒙德领主眯起眼打量着身旁的来人，指节敲击着那份签有五百金币违约金的劳务契约，神色正随着陪同阵仗悄然变换。',
+      outcomes: {
+        negotiate_master: {
+          when: ({ world }) => presentMasterExists(world) && (world.playerState?.gold ?? 0) >= 200,
+          effects: [
+            { target: 'world', goldDelta: -200 },
+            {
+              target: 'aurora',
+              move: 'inn',
+              forceMove: true,
+              tagsAdd: ['tag_lord_grudge'],
+              tagsRemove: ['tag_aurora_resign_determined'],
+              npcFlags: { manor_service_active: false, aurora_left_manor: true }
+            }
+          ],
+          text: '雷蒙德领主瞥见陪同前来的宗师阶强者气度沉凝，心知犯不上为了一个女仆与宗师撕破脸；他立刻换上一副客客气气、和颜悦色的笑脸当场批准了{name}的辞职，还顺带“慷慨”减免了大半违约金，只象征性收下两百金币便放人离去（持有金币 -200，获得标签【领主的记恨】，{name}脱身返回旅店归队）。'
+        },
+        negotiate_blocked: {
+          when: ({ world }) => !presentMasterExists(world),
+          effects: [
+            { target: 'world', playerMove: 'town' },
+            { target: 'aurora', npcFlags: { aurora_resign_failed: true } }
+          ],
+          text: '见陪同前来的队伍中并无宗师阶强者镇场，雷蒙德领主当即撕下笑脸，趾高气昂地驳回辞呈，随口编造“{name}手头尚有重要账务与内务未曾交割完毕、暂时不得离职”的子虚乌有理由，旋即挥手召来全员三阶精锐的私兵卫队将你强行轰出庄园，把{name}硬生生扣留在山庄继续当差。'
+        }
+      }
+    },
+    {
+      // TODO: 占位事件，后续可能修改或扩展细节
+      id: 'aurora_shared_debt_vow',
+      priority: 3,
+      mode: 'result',
+      scope: 'npc',
+      targets: ['aurora'],
+      when: ({ world, npc }) =>
+        Boolean(world.flags?.arrived_oakhaven && npc.flags?.aurora_left_manor && !npc.flags?.aurora_purged_with_baron) &&
+        !npc.flags?.aurora_shared_debt_vow_done &&
+        (npc.values.affection ?? 0) >= 90 &&
+        ['inn', 'church'].includes(world.playerLocation) &&
+        world.playerLocation === npc.location,
+      effects: {
+        npcFlags: { aurora_shared_debt_vow_done: true }
+      },
+      text: '【占位提醒】脱离领主山庄归队后，{{user}}与{name}并肩坐在一起核对剩余的家庭旧债账册；纵使前路仍有千金债务重压，{{user}}仍决意与{name}共同面对接下来的债务与未来。'
     },
     {
       id: 'eileen_arrive',
@@ -2426,7 +2609,7 @@
         { target: 'world', worldFlags: { eileen_arrived: true } },
         { target: 'eileen', monitored: true, move: 'manor', npcFlags: { eileenInspectDays: 0 } }
       ],
-      text: '镇门号角吹响，一队王都仪仗车马沿官道上山入驻领主山庄——王国特派三等巡查使艾琳·冯·兰开斯特奉命前来审计边疆账务；高傲的名门千金眼下只按公文程序接受雷蒙德男爵宴待，不与镇上见习冒险者往来。'
+      text: '镇门号角吹响，一队王都仪仗车马沿官道上山入驻领主山庄——王国特派三等巡查使艾琳·冯·兰开斯特奉命前来审计边疆账务；高傲的名门千金眼下只按公文程序接受雷蒙德伯爵宴待，不与镇上见习冒险者往来。'
     },
     {
       id: 'aurora_eileen_arrive_tip',
@@ -2440,7 +2623,7 @@
         world.playerLocation === 'inn' &&
         npc.location === 'inn',
       effects: { npcFlags: { aurora_told_eileen_arrival: true } },
-      text: '趁夜里回旅店歇脚时，{name}轻声向你提起山庄近况：近日刚来了一位王都派下来的女巡查使，是个衣着华贵、神情高傲的千金大小姐，正由男爵亲自安排在客套房款待。'
+      text: '趁夜里回旅店歇脚时，{name}轻声向你提起山庄近况：近日刚来了一位王都派下来的女巡查使，是个衣着华贵、神情高傲的千金大小姐，正由伯爵亲自安排在客套房款待。'
     },
     {
       id: 'eileen_escort_offer',
@@ -2452,23 +2635,25 @@
         Boolean(world.flags?.eileen_arrived && !world.flags?.eileen_departed && !world.flags?.baron_purged) &&
         ['morning', 'afternoon'].includes(phase.id) &&
         (npc.flags?.eileenInspectDays ?? 0) >= 6 &&
-        auroraManorInsider(world),
+        (auroraManorInsider(world) || world.playerLocation === 'town'),
       effects: { worldFlags: { eileen_departed: true } },
-      text: '王都特使{name}完成奥克赫斯巡查并向王都发出返程报信函件。离开前她嘱咐侍女奥萝拉去镇上冒险者公会挂出一份报酬优渥的密封护送任务，念着与你的交情，奥萝拉优先赶来私下把这份委托悄悄递到你手边。',
+      text: ({ world }) => auroraManorInsider(world)
+        ? '王都特使{name}完成奥克赫斯城巡查并向王都发出返程报信函件。离开前她嘱咐侍女奥萝拉去城内冒险者公会挂出一份报酬优渥的密封护送任务，念着与你的交情，奥萝拉优先赶来私下把这份委托悄悄递到你手边。'
+        : '王都特使{name}完成奥克赫斯城巡查并向王都发出返程报信函件。离开前她派人前往城内冒险者公会分会，在告示板上挂出了一份报酬优渥的密封护送任务，正逢你在城内街区经过。',
       outcomes: {
         accept: {
           effects: [
             { target: 'world', playerMove: 'wilds', worldFlags: { eileen_departed: true, eileen_fugitive: true } },
             { target: 'eileen', add: { affection: 30 }, npcFlags: { eileen_fugitive: true, eileen_disguised: true } }
           ],
-          text: '出城半途突遭掩盖身份的领主私兵合围截杀！古兰因不干涉公会常规护送未曾同行，同行雇佣卫士死战断后；队伍趁乱杀出重围遁入荒原，{name}急忙掏出暗袋里的王室魔能讯号管求救，却愕然发现管体早被男爵偷换为不能激发的赝品。'
+          text: '出城半途突遭掩盖身份的领主私兵合围截杀！古兰因不干涉公会常规护送未曾同行，同行雇佣卫士死战断后；队伍趁乱杀出重围遁入荒原，{name}急忙掏出暗袋里的王室魔能讯号管求救，却愕然发现管体早被伯爵偷换为不能激发的赝品。'
         },
         decline: {
           effects: [
             { target: 'world', worldFlags: { eileen_departed: true } },
             { target: 'eileen', npcFlags: { eileen_captured: true, eileenCaptiveDays: 0 } }
           ],
-          text: '护送委托未获接下。{name}随少量随从自行出镇半程后遭掩盖身份的领主私兵突袭围捕，捏碎暗袋中早被掉包的伪造讯号管求助无门，连人被暗中押回山庄密室秘囚；因事先已发回都信函，外界竟无一人察觉异常。'
+          text: '护送委托未获接下。{name}随少量随从自行出城半程后遭掩盖身份的领主私兵突袭围捕，捏碎暗袋中早被掉包的伪造讯号管求助无门，连人被暗中押回山庄密室秘囚；因事先已发回都信函，外界竟无一人察觉异常。'
         }
       }
     },
@@ -2480,13 +2665,13 @@
       when: ({ world, npc, phase }) =>
         Boolean(world.flags?.eileen_arrived && !world.flags?.eileen_departed && !world.flags?.baron_purged) &&
         ['morning', 'afternoon'].includes(phase.id) &&
-        (npc.flags?.eileenInspectDays ?? 0) >= 6 &&
-        !auroraManorInsider(world),
+        // 城内公会护送委托悬挂 3 个完整昼日（第 6、7、8 天），第 9 天仍未接单才独自起程被伏击
+        (npc.flags?.eileenInspectDays ?? 0) >= 9,
       effects: [
         { target: 'world', worldFlags: { eileen_departed: true } },
         { target: 'eileen', npcFlags: { eileen_captured: true, eileenCaptiveDays: 0 } }
       ],
-      text: '{name}结束镇内巡查并向王都寄出“已完检启程回都”公文后独自起程，却在出镇半道遭到掩盖徽记的领主私兵伏击！她在混乱中欲催动王室魔能讯号管，竟发现已被暗中掉包，最终寡不敌众遭擒回领主山庄秘室幽禁。'
+      text: '{name}结束城内巡查并向王都寄出“已完检启程回都”公文后，因未能等来合适护送小队而独自起程，却在出城半道遭到掩盖徽记的领主私兵伏击！她在混乱中欲催动王室魔能讯号管，竟发现已被暗中掉包，最终寡不敌众遭擒回伯爵山庄秘室幽禁。'
     },
     {
       id: 'eileen_escape_move_wilds',
@@ -2535,10 +2720,10 @@
         (npc.values.affection ?? 0) >= 80 &&
         !world.npcs?.eileen?.flags?.eileen_nise_counted,
       effects: [
-        { target: 'eileen', add: { counterattack: 5 }, npcFlags: { eileen_nise_counted: true } },
+        { target: 'eileen', add: { counterattack: 10 }, npcFlags: { eileen_nise_counted: true } },
         { target: 'nise', npcFlags: { eileen_nise_helped: true, nise_casino_busy_today: false } }
       ],
-      text: '念及与哥哥同甘共苦的羁绊，高好感的{name}果断搁下镇上杂务直接入队同行；她沿途动用法术感应测算出山庄暗哨与魔能封印节点（艾琳反攻值 +5），为后续潜回反攻攒足先手情报。'
+      text: '念及与哥哥同甘共苦的羁绊，高好感的{name}果断搁下镇上杂务直接入队同行；她沿途动用法术感应测算出山庄暗哨与魔能封印节点（艾琳反攻值 +10），为后续潜回反攻攒足先手情报。'
     },
     {
       id: 'eileen_ambush_nise_aid',
@@ -2554,10 +2739,10 @@
         !npc.flags?.nise_casino_busy_today &&
         !world.npcs?.eileen?.flags?.eileen_nise_counted,
       effects: [
-        { target: 'eileen', add: { counterattack: 5 }, npcFlags: { eileen_nise_counted: true } },
+        { target: 'eileen', add: { counterattack: 10 }, npcFlags: { eileen_nise_counted: true } },
         { target: 'nise', npcFlags: { eileen_nise_helped: true } }
       ],
-      text: '同在护送小队中的{name}沿途动用法术感应测算出山庄暗哨与魔能封印节点（艾琳反攻值 +5），为后续潜回反攻攒足先手情报。'
+      text: '同在护送小队中的{name}沿途动用法术感应测算出山庄暗哨与魔能封印节点（艾琳反攻值 +10），为后续潜回反攻攒足先手情报。'
     },
     {
       id: 'eileen_ambush_isna_move_wilds',
@@ -2592,6 +2777,182 @@
       text: '雷蒙德领主得知艾琳在半路突围失踪，随即将四门封锁并派出大队私兵入野搜捕；古兰确认伯里尚无性命之虞按规矩留守镇上不掺和纷争。'
     },
     {
+      id: 'eileen_manor_trespass_alarm',
+      mode: 'result',
+      scope: 'world',
+      when: ({ world }) =>
+        Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        world.playerLocation === 'manor' &&
+        (world.npcs?.eileen?.values?.counterattack ?? 0) < 100,
+      effects: [
+        { target: 'world', playerMove: 'wilds' },
+        { target: 'eileen', add: { counterattack: -5 } }
+      ],
+      text: '反攻筹备尚未周全便携着通缉中的艾琳贸然踏入伯爵山庄，立刻惊动了府外巡值的精锐私兵与宗师供奉眼线；二人只得趁夜色未合围前仓皇撤回城外荒原（艾琳反攻值 -5）。'
+    },
+    {
+      id: 'eileen_curfew_evict',
+      mode: 'result',
+      scope: 'world',
+      when: ({ world, phase }) =>
+        Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        ['town', 'inn'].includes(world.playerLocation) &&
+        phase.id === 'night',
+      effects: [
+        { target: 'world', playerMove: 'wilds' },
+        { target: 'eileen', add: { counterattack: -5 } }
+      ],
+      text: '入夜后奥克赫斯城四门落锁、全城实行宵禁盘查；虽有兜帽遮面，城防暗哨仍沿街旅店与巷道逐户搜检，你们不敢久留只能摸黑翻出城外退回荒野营地（艾琳反攻值 -5）。'
+    },
+    {
+      id: 'eileen_wilds_hunt',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['eileen'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id) &&
+        (npc.flags?.eileenFugitiveDays ?? 0) >= 2 &&
+        !npc.flags?.eileen_wilds_hunt_done,
+      text: '下风向忽然传来急促犬吠与甲叶摩擦声——雷蒙德伯爵派出的山林私兵与猎犬正顺着荒野林缘包抄过来。{name}迅速拉紧兜帽遮面，指节按住藏在披风下的细剑剑柄，原本打算由她向反方向佯动引开追兵，却因左肩旧伤渗血动作一滞，只能压低声音向你确认如何应对眼前合围。',
+      outcomes: {
+        counter_ambush: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: { target: 'eileen', add: { counterattack: 15, affection: 6 }, npcFlags: { eileen_wilds_hunt_done: true } },
+          text: '你与{name}没有盲目逃窜，反而借乱石林线抢先卡住视野死角，干脆利落地剪除掉队的搜捕领队并从其怀中搜出伯爵府近期巡防口令与换防签条（艾琳反攻值 +15，好感 +6）。从口供与签条中得知：山庄内庭有伯爵重金聘请的宗师供奉坐镇，城门白昼混在商旅人流中可乔装接头，入夜则全城严查。'
+        },
+        evade_stealth: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ world }) => {
+            const inv = Array.isArray(world.playerState?.inventory) ? world.playerState.inventory : []
+            const hasSupply = inv.some(it => it && it.id === 'supply' && it.custom !== true && (it.count ?? 0) > 0)
+            const list = [
+              { target: 'eileen', add: { counterattack: 8, affection: 3 }, npcFlags: { eileen_wilds_hunt_done: true } }
+            ]
+            if (hasSupply) list.unshift({ target: 'world', itemsRemove: [{ id: 'supply', count: 1 }] })
+            return list
+          },
+          text: '为免惊动大队合围，你们借沟壑地形与丢弃的诱饵掩盖气味悄然蛰伏避过搜山队（若有补给则消耗 1 份补给，艾琳反攻值 +8，好感 +3）。从远处巡逻队交谈声中仍摸清了要害：山庄有宗师供奉坐镇，白昼商旅混杂尚可乔装进城接头，入夜则全城严查。'
+        }
+      }
+    },
+    {
+      id: 'eileen_seek_gulan',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['eileen'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) => {
+        const gulan = world.npcs?.gulan
+        const gulanOk = Boolean(
+          gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 &&
+          !gulan.flags?.gulan_departed && !gulan.flags?.captured_orc && !gulan.flags?.captured_manor
+        )
+        return Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+          Boolean(npc.flags?.eileen_wilds_hunt_done) &&
+          (npc.values.counterattack ?? 0) >= 30 &&
+          !npc.flags?.eileen_gulan_contacted &&
+          gulanOk &&
+          world.playerLocation === 'town' &&
+          ['morning', 'afternoon'].includes(phase.id)
+      },
+      text: '白昼混在商旅人流中乔装潜入城内练武场一隅，外貌二十余岁的冷艳黑角重剑宗师古兰收剑立于场边，琥珀色竖瞳平静扫过你们。{name}收敛了皇室巡查官的傲气，以平辈礼节郑重说明山庄内有伯爵重金聘请的宗师供奉镇守，凭小队自身难以正面破局，恳请古兰届时只在山庄外围出手制造动静牵制对方、绝不拖她正面卷入王室纷争。',
+      outcomes: {
+        pledge_divert: {
+          when: ({ world }) => world.playerLocation === 'town',
+          effects: [
+            { target: 'eileen', add: { counterattack: 20, affection: 5 }, npcFlags: { eileen_gulan_contacted: true } },
+            { target: 'gulan', npcFlags: { gulan_divert_promised: true } }
+          ],
+          text: '古兰确认过伯里已自行摸清退路、并非逃避担当，按生死危局护持后辈的底线简短颔首应下：“届时山庄外围的动静，我来引开；里面的事，伯里自己拿主意。”（艾琳反攻值 +20，好感 +5）。'
+        }
+      }
+    },
+    {
+      id: 'eileen_decoy_prep',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['eileen'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) => {
+        const gulan = world.npcs?.gulan
+        const gulanUnavailable = !(
+          gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 &&
+          !gulan.flags?.gulan_departed && !gulan.flags?.captured_orc && !gulan.flags?.captured_manor
+        )
+        return Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+          Boolean(npc.flags?.eileen_wilds_hunt_done) &&
+          (npc.values.counterattack ?? 0) >= 30 &&
+          !npc.flags?.eileen_gulan_contacted &&
+          gulanUnavailable &&
+          world.playerLocation === 'wilds' &&
+          ['morning', 'afternoon', 'evening'].includes(phase.id)
+      },
+      text: '眼下已无法指望古兰在城内协助牵制，面对山庄内宗师供奉坐镇的硬钉子，{name}与你摊开草图商议，只能自行在城外筹备一套引火与假信号声东击西的方案。',
+      outcomes: {
+        decoy_prep: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: { target: 'eileen', add: { counterattack: 12, affection: 3 }, npcFlags: { eileen_gulan_contacted: true } },
+          text: '二人反复校准风向与几处外围引火点，勉强拼出一套声东击西吸引宗师注意的替补方案（艾琳反攻值 +12，好感 +3）。'
+        }
+      }
+    },
+    {
+      id: 'eileen_manor_recon',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['eileen'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        Boolean(npc.flags?.eileen_wilds_hunt_done) &&
+        (npc.values.counterattack ?? 0) < 100 &&
+        !npc.flags?.eileen_recon_today &&
+        (npc.flags?.eileenReconCount ?? 0) < 3 &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id),
+      text: ({ npc }) => {
+        const count = npc.flags?.eileenReconCount ?? 0
+        if (count === 0) {
+          return '避入城外高地，{name}展开一张简略炭笔草图，远眺奥克赫斯城北山庄高墙，示意先对照记忆标出巡逻私兵的换班间隙与外墙视野盲区。'
+        }
+        if (count === 1) {
+          return '借助昨夜整理的线索，{name}随你摸到山庄侧翼林线，重点观察雷蒙德重金聘请的宗师供奉与精锐卫队的巡值交接规律。'
+        }
+        return '换防草图已近成形，{name}指向山庄主楼偏侧暗窗——只差最后一次核对内室暗格方位与潜入退路，这盘反攻棋局便算真正落子前夕。'
+      },
+      outcomes: {
+        infiltrate_edge: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'eileen',
+              add: { counterattack: 15, affection: 3 },
+              npcFlags: { eileen_recon_today: true, eileenReconCount: (npc.flags?.eileenReconCount ?? 0) + 1 }
+            }
+          ],
+          text: '你们趁山林雾气贴近山庄外围暗哨交接处，稳稳截听到最新换防口令与换岗时间差（艾琳反攻值 +15，好感 +3）。'
+        },
+        distant_observe: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'eileen',
+              add: { counterattack: 10, affection: 2 },
+              npcFlags: { eileen_recon_today: true, eileenReconCount: (npc.flags?.eileenReconCount ?? 0) + 1 }
+            }
+          ],
+          text: '为求稳妥没有靠近外围哨卡，只在荒野高地长时间计时记录巡逻班次与灯火变化（艾琳反攻值 +10，好感 +2）。'
+        }
+      }
+    },
+    {
       id: 'aurora_pass_manor_intel',
       mode: 'interaction',
       scope: 'npc',
@@ -2609,12 +2970,14 @@
       outcomes: {
         receive_intel: {
           when: ({ world, npc }) => world.playerLocation === npc.location,
-          effects: [
+          effects: ({ npc }) => [
             { target: 'world', itemsAdd: [{ id: 'manor_intel_note', count: 1 }] },
-            { target: 'eileen', add: { counterattack: 20 } },
+            { target: 'eileen', add: { counterattack: npc.flags?.aurora_resign_failed ? 30 : 20 } },
             { target: 'aurora', npcFlags: { aurora_eileen_intel_given: true } }
           ],
-          text: '{name}低声交出自己端茶收拾时悄悄记下的山庄私室换防间隙与领主暗锁密码，艾琳一方的反攻筹备迈出一大步（艾琳反攻值 +20）。'
+          text: ({ npc }) => npc.flags?.aurora_resign_failed
+            ? '先前辞职遭伯爵当面强扣的经历已令{name}对领主再无半点幻想，她不仅冒着风险交出山庄私室换防间隙与领主暗锁密码，还将苛刻劳务契约副本与私账破绽一并托付于你以配合艾琳反攻（艾琳反攻值 +30）。'
+            : '{name}低声交出自己端茶收拾时悄悄记下的山庄私室换防间隙与领主暗锁密码，艾琳一方的反攻筹备迈出一大步（艾琳反攻值 +20）。'
         }
       }
     },
@@ -2627,16 +2990,24 @@
       retryOnCancel: true,
       when: ({ world, npc }) =>
         Boolean(isEileenFugitive(world) && !hasEileenSignal(world) && !world.flags?.baron_purged) &&
+        world.playerLocation === 'manor' &&
         (npc.values.counterattack ?? 0) >= 100,
-      text: '历经荒野蓄势与各方情报汇总（反攻值已满 100），{name}眼神沉静而果断地看向领主山庄方向——潜回山庄夺回那支被掉包的真正王室魔能讯号管，时机已成熟。',
+      text: '历经荒野蓄势与各方情报汇总（反攻值已满 100），{name}眼神沉静而果断地看向伯爵山庄方向——如今已摸清府内换防与重金宗师供奉的巡值破绽，趁夜色或换防间隙亲抵山庄潜入夺回那支被掉包的真正王室魔能讯号管，时机已成熟。',
       outcomes: {
         strike: {
-          when: ({ world }) => ['wilds', 'manor', 'inn', 'town'].includes(world.playerLocation),
+          when: ({ world }) => world.playerLocation === 'manor',
           effects: [
             { target: 'world', worldFlags: { eileen_signal_fired: true }, itemsRemove: [{ id: 'manor_intel_note', all: true }] },
             { target: 'eileen', npcFlags: { eileen_signal_fired: true, eileenSignalDays: 0 } }
           ],
-          text: '众人趁夜摸入领主山庄防线深处破开暗格，{name}亲手夺回原装王室魔能讯号管当空拉响传讯焰火！兰开斯特家族东境狮鹫骑士团瞬间收到召唤，一日后即将降临奥克赫斯！'
+          text: ({ world }) => {
+            const gulan = world.npcs?.gulan
+            const gulanDivert = gulan && gulan.alive !== false && (gulan.stage ?? 0) < 3 && !gulan.flags?.gulan_departed
+            return (gulanDivert
+              ? '众人按推演好的破绽分头行动：请出古兰隐匿身份在山庄外围出手制造动静调虎离山，成功引开伯爵重金聘请的宗师供奉；其余人趁隙摸入山庄防线深处破开暗格，'
+              : '众人按推演好的破绽声东击西引开伯爵重金聘请的宗师供奉与精锐守卫，趁隙摸入山庄防线深处破开暗格，') +
+              '{name}亲手夺回原装王室魔能讯号管当空拉响传讯焰火！兰开斯特家族东境狮鹫骑士团瞬间收到召唤，一日后即将降临奥克赫斯城！'
+          }
         }
       }
     },
@@ -2657,7 +3028,7 @@
         },
         { target: 'eileen', add: { affection: 20 }, npcFlags: { eileen_fugitive: false, eileen_disguised: false, eileen_purged_victory: true, eileenPostPurgeDays: 0 } }
       ],
-      text: '发出传讯次日，翼展蔽空的兰开斯特家族狮鹫骑士团（全员三阶精锐，正副团长为四阶宗师）威严降临奥克赫斯上空！雷蒙德男爵私兵伏诛，男爵本人遭当场清算处决；兰开斯特家族颁发重金赏赐，艾琳感激之余神情也随之柔和下来（好感度 +20）。'
+      text: '发出传讯次日，翼展蔽空的兰开斯特家族狮鹫骑士团（全员三阶精锐，正副团长为四阶宗师）威严降临奥克赫斯城上空！雷蒙德伯爵私兵伏诛、供奉客卿各自退散，伯爵本人遭当场清算处决；兰开斯特家族颁发重金赏赐，艾琳感激之余神情也随之柔和下来（好感度 +20）。'
     },
     {
       id: 'eileen_purge_aurora_fallen',
@@ -2672,7 +3043,7 @@
         monitored: false,
         npcFlags: { manor_service_active: false, aurora_purged_with_baron: true }
       },
-      text: '清算行动中，早已沦为领主山庄永久情妇的{name}未能脱身，与雷蒙德男爵一并被兰开斯特家族骑士团带走清算处置。'
+      text: '清算行动中，早已沦为领主山庄永久情妇的{name}未能脱身，与雷蒙德伯爵一并被兰开斯特家族骑士团带走清算处置。'
     },
     {
       id: 'eileen_purge_aurora_freed',
@@ -2688,7 +3059,7 @@
         move: 'inn',
         npcFlags: { manor_service_active: false, aurora_left_manor: true }
       },
-      text: '随着雷蒙德男爵伏诛倒台，压在山庄与{name}头顶的勒索契约一同作废；她得以脱身返回旅店归队（既往阶段留存不变，剩余家族外债仍需另行设法清偿）。'
+      text: '随着雷蒙德伯爵伏诛倒台，压在山庄与{name}头顶的勒索契约一同作废；她得以脱身返回旅店归队（既往阶段留存不变，剩余家族外债仍需另行设法清偿）。'
     },
     {
       id: 'eileen_purge_nise_fallen',
@@ -2733,7 +3104,7 @@
         { target: 'world', worldFlags: { player_barony_granted: true }, itemsAdd: [{ id: 'barony_patent', count: 1 }] },
         { target: 'eileen', npcFlags: { eileen_betrothed: true } }
       ],
-      text: '在狮鹫骑士团团长与兰开斯特家族见证下，与你患难生情、爱恋笃定的{name}亲自申请与你缔结婚约；家族大喜之下正式将奥克赫斯镇及原雷蒙德男爵辖下领地封赏于你，册封贵族爵位。'
+      text: '在狮鹫骑士团团长与兰开斯特家族见证下，与你患难生情、爱恋笃定的{name}亲自申请与你缔结婚约；家族大喜之下正式将原雷蒙德伯爵辖下一处附庸领地封赏于你，册封男爵爵位。'
     },
     {
       id: 'eileen_depart_with_knights',
@@ -2746,7 +3117,7 @@
         !npc.flags?.eileen_betrothed &&
         !npc.flags?.eileen_returned_capital &&
         (npc.values.affection ?? 0) < 90 &&
-        (npc.flags?.eileenPostPurgeDays ?? 0) >= 1,
+        (npc.flags?.eileenPostPurgeDays ?? 0) >= 3,
       effects: {
         monitored: false,
         npcFlags: { eileen_returned_capital: true }
@@ -2764,22 +3135,7 @@
         !npc.flags?.eileen_inspection_covered &&
         (npc.flags?.eileenCaptiveDays ?? 0) >= 90,
       effects: { npcFlags: { eileen_inspection_covered: true } },
-      text: '自失联囚禁满三个月（九十日）整，兰开斯特家族派遣狮鹫骑士团飞抵奥克赫斯追查特使下落；然而早已在密室被男爵完全调教驯服的{name}却穿戴齐整、神态端庄地走出山庄，替雷蒙德从容掩护圆场，令骑士团确认无误后无事发生返航离去。'
-    },
-    {
-      id: 'orc_camp_bounty_reward',
-      mode: 'result',
-      scope: 'world',
-      when: ({ world }) =>
-        Boolean(world.flags?.orc_camp_destroyed) &&
-        !world.flags?.orc_camp_bounty_paid &&
-        !world.npcs?.isna?.flags?.isna_fallen_orc &&
-        (world.npcs?.gulan?.stage ?? 0) < 3,
-      effects: {
-        goldDelta: 300,
-        worldFlags: { orc_camp_bounty_paid: true, inn_arrears: false }
-      },
-      text: '覆灭黑兽人前哨据点后，你们清点营地遗留财货并向公会交割据点清剿凭证，结清了足额三百枚金币的重赏与战利品（持有金币 +300）。'
+      text: '自失联囚禁满三个月（九十日）整，兰开斯特家族派遣狮鹫骑士团飞抵奥克赫斯追查特使下落；然而早已在密室被伯爵完全调教驯服的{name}却穿戴齐整、神态端庄地走出山庄，替雷蒙德从容掩护圆场，令骑士团确认无误后无事发生返航离去。'
     },
     {
       id: 'nise_casino_hint_high',
@@ -2960,12 +3316,12 @@
         !world.flags?.baron_purged &&
         npc.stage < 3 &&
         !npc.flags?.cecilia_midgame_crisis &&
-        dayAt(world) >= arrivedDayOf(world) + 10,
+        dayAt(world) >= arrivedDayOf(world) + 14,
       effects: {
-        add: { orphanage_funds: -30 },
+        add: { orphanage_funds: -10 },
         npcFlags: { cecilia_midgame_crisis: true }
       },
-      text: '抵镇进入中期后，远方上级教区拨给边陲晨曦修道院的常年补助突然中断，加之连日孩童药材与寒季修缮开支激增，教堂账房库存猛然大减，每日维持孤儿院的净损耗也翻倍增加。'
+      text: '抵镇满两周后，上级教区拨给晨曦修道院的常年补助骤然中断，加之寒季孩童药材与炭火开支攀升，教堂账房库存告急、每日净损耗随之上升（孤儿院资金 -10，日耗增至 5）。'
     },
     {
       id: 'cecilia_manor_appeal_1',
@@ -2979,6 +3335,7 @@
         !world.flags?.baron_purged &&
         npc.stage === 0 &&
         !npc.flags?.cecilia_manor_go_stage1 &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         (npc.values.affection ?? 0) >= 70,
       resolveWhen: ({ world, npc }) =>
@@ -2988,19 +3345,27 @@
         npc.stage !== 0 ||
         (npc.values.orphanage_funds ?? 0) > 0 ||
         (npc.values.affection ?? 0) < 70,
-      text: '孤儿院账面见底且临近断粮，{name}因信赖与你亲密的情分，思虑再三后主动找你商量解决办法——她坦言孩子们已等不得，实在不行也只能自己硬着头皮去找领主申请拨款了。',
+      text: '孤儿院账面见底且孩童药柜空虚，{name}思虑再三后找到你商议——若再无办法筹措药材或善款，她只能独自前往领主山庄恳求伯爵拨款。',
       outcomes: {
+        take_quest: {
+          effects: { npcFlags: { cecilia_quest_stage: 1, ceciliaAppealDays: 0, cecilia_manor_go_stage1: false } },
+          text: '你接下了筹措重担，决定亲赴城外毒沼菌窟外围采掘稀缺疗伤菌茸；{name}眼中泛起感激微光，叮嘱你务必小心瘴气（已接取救济任务，请前往 wilds 完成）。'
+        },
         help: {
-          when: ({ world }) => (world.playerState?.gold ?? 0) >= 50,
-          effects: [
-            { target: 'world', goldDelta: -50 },
-            { target: 'cecilia', add: { orphanage_funds: 15, donated_gold: 50, affection: 4 }, npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage1: false } }
+          when: ({ world }) => (world.playerState?.gold ?? 0) >= 30,
+          effects: ({ npc }) => [
+            { target: 'world', goldDelta: -30 },
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 30, donated_gold: 30, affection: 4 },
+              npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage1: false, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
           ],
-          text: '五十枚急用金币稳稳填补了孤儿院口粮与药费的燃眉之急；{name}眼底泛起浅浅水光，双手合十低眉致谢（孤儿院资金 +15，好感度 +4）。'
+          text: '三十枚金币稳稳填补了孤儿院口粮与药费的燃眉之急；{name}眼底泛起浅浅水光，双手合十低眉致谢（孤儿院资金 +30，好感度 +4）。'
         },
         let_go: {
           effects: { npcFlags: { cecilia_manor_go_stage1: true } },
-          text: '孤儿院沉重的亏空未获解决，{name}只得轻叹一口气垂眸颔首，起身整理修女服独自赶往领主山庄恳求男爵拨款。'
+          text: '孤儿院沉重的亏空未获解决，{name}只得轻叹一口气垂眸颔首，起身整理修女服独自赶往领主山庄恳求伯爵拨款。'
         }
       }
     },
@@ -3016,6 +3381,7 @@
         !world.flags?.baron_purged &&
         npc.stage === 1 &&
         !npc.flags?.cecilia_manor_go_stage2 &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         (npc.values.affection ?? 0) >= 80,
       resolveWhen: ({ world, npc }) =>
@@ -3025,19 +3391,27 @@
         npc.stage !== 1 ||
         (npc.values.orphanage_funds ?? 0) > 0 ||
         (npc.values.affection ?? 0) < 80,
-      text: '上次领回的善款再度耗尽，{name}指尖绞着修女袍袖口再度来找你商议；她神情透着难堪与挣扎，低声表示实在凑不出钱也只能再去求雷蒙德男爵拨款。',
+      text: '上次筹措的用度再度耗尽，{name}指尖绞着修女袍袖口再度来找你商议；她翻出一本旧教区账册，提及城外古代机关旧殿遗迹石室里曾封存过一批老修道院白银圣器与救济匣，只是普通人根本进不去。',
       outcomes: {
+        take_quest: {
+          effects: { npcFlags: { cecilia_quest_stage: 2, ceciliaAppealDays: 0, cecilia_manor_go_stage2: false } },
+          text: '你接过旧教区石室草图，决定前往城外机关旧殿废墟取回封存救济匣（已接取救济任务，请前往 wilds 完成）。'
+        },
         help: {
-          when: ({ world }) => (world.playerState?.gold ?? 0) >= 100,
-          effects: [
-            { target: 'world', goldDelta: -100 },
-            { target: 'cecilia', add: { orphanage_funds: 25, donated_gold: 100, affection: 4 }, npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage2: false } }
+          when: ({ world }) => (world.playerState?.gold ?? 0) >= 50,
+          effects: ({ npc }) => [
+            { target: 'world', goldDelta: -50 },
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 40, donated_gold: 50, affection: 4 },
+              npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage2: false, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
           ],
-          text: '一百枚金币的大额亏空得以填补，孤儿院暂且免遭断炊，也免去了她再次独自前往领主山庄的风险（孤儿院资金 +25，好感度 +4）。'
+          text: '五十枚金币填补了修道院大额亏空，免去了她再次独自前往领主山庄的风险（孤儿院资金 +40，好感度 +4）。'
         },
         let_go: {
           effects: { npcFlags: { cecilia_manor_go_stage2: true } },
-          text: '百金窟窿无从筹措，{name}沉默地垂下眼睫，向同伴浅浅欠身后踏出教堂走向领主山庄。'
+          text: '窟窿一时无从筹措，{name}沉默地垂下眼睫，向同伴浅浅欠身后踏出教堂走向领主山庄。'
         }
       }
     },
@@ -3053,6 +3427,7 @@
         !world.flags?.baron_purged &&
         npc.stage === 2 &&
         !npc.flags?.cecilia_manor_go_stage3 &&
+        !npc.flags?.cecilia_quest_stage &&
         (npc.values.orphanage_funds ?? 0) <= 0 &&
         (npc.values.affection ?? 0) >= 90,
       resolveWhen: ({ world, npc }) =>
@@ -3062,21 +3437,256 @@
         npc.stage !== 2 ||
         (npc.values.orphanage_funds ?? 0) > 0 ||
         (npc.values.affection ?? 0) < 90,
-      text: '孤儿院账房第三度空底，心系你的{name}眼含微颤找到你商量最后一线对策——她低语若此次实在筹不到大笔资金维持冬春之交用度，为了孩子们恐怕再无法推拒男爵的长期契约条件。',
+      text: '孤儿院账房第三度空底，心系你的{name}眼含微颤找到你商议最后一线对策——邻郡教区原本拨了一支冬春救济粮车，却因城外沉沦灵堂近来亡灵异动而滞留东境商道关卡。',
       outcomes: {
+        take_quest: {
+          effects: { npcFlags: { cecilia_quest_stage: 3, ceciliaAppealDays: 0, cecilia_manor_go_stage3: false } },
+          text: '你接过邻郡教区信物，准备出城清理沉沦灵堂外围游荡亡灵、护通救济车队入城（已接取救济任务，请前往 wilds 完成）。'
+        },
         help: {
-          when: ({ world }) => (world.playerState?.gold ?? 0) >= 150,
-          effects: [
-            { target: 'world', goldDelta: -150 },
-            { target: 'cecilia', add: { orphanage_funds: 35, donated_gold: 150, affection: 4 }, npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage3: false } }
+          when: ({ world }) => (world.playerState?.gold ?? 0) >= 80,
+          effects: ({ npc }) => [
+            { target: 'world', goldDelta: -80 },
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 50, donated_gold: 80, affection: 4 },
+              npcFlags: { ceciliaAppealDays: 0, cecilia_manor_go_stage3: false, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
           ],
-          text: '一百五十枚沉甸重金足额补齐了冬春之交的粮药用度；重压骤释之下，{name}再难自持地俯首低泣，向眼前的支柱吐露积压已久的感激（孤儿院资金 +35，好感度 +4）。'
+          text: '八十枚金币足额补齐了冬春之交的粮药用度；重压骤释之下，{name}再难自持地俯首低泣，向眼前的支柱吐露积压已久的感激（孤儿院资金 +50，好感度 +4）。'
         },
         let_go: {
           effects: { npcFlags: { cecilia_manor_go_stage3: true } },
-          text: '百五重金终未凑齐，{name}在原地伫立良久，含泪轻轻福身行礼后推门赶往了领主山庄。'
+          text: '重金终未凑齐，{name}在原地伫立良久，含泪轻轻福身行礼后推门赶往了领主山庄。'
         }
       }
+    },
+    {
+      id: 'cecilia_quest_1_mire',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven && !world.flags?.baron_purged) &&
+        npc.flags?.cecilia_quest_stage === 1 &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id),
+      text: '你按约定抵达城外毒沼菌窟外围，潮湿腐殖沼气中散落着修道院急需的发光菌茸与净水药草，只是浅滩暗影里潜伏着毒角蛙与腐水寄生体。',
+      outcomes: {
+        complete_quest: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 35, affection: 4 },
+              npcFlags: { cecilia_quest_stage: 0, ceciliaAppealDays: 0, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
+          ],
+          text: '你避开毒孢浓雾采足稀缺菌茸带回晨曦修道院，不仅解了孩童断药之急，余药变现后也稳住了账房用度（孤儿院资金 +35，好感度 +4）。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_quest_2_vault',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven && !world.flags?.baron_purged) &&
+        npc.flags?.cecilia_quest_stage === 2 &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id),
+      text: '按老修女长遗留账册的指引，你找到城外荒原那座布满机关与兽骨残痕的古代石室入口；只要破开重力暗锁取回旧教区封存的救济匣，修道院就能再撑许久。',
+      outcomes: {
+        complete_quest: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 45, affection: 4 },
+              npcFlags: { cecilia_quest_stage: 0, ceciliaAppealDays: 0, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
+          ],
+          text: '你稳妥拆解暗殿卡榫、取回尘封完好的白银圣器与救济钱匣交到塞西莉亚手中；她凝望这批跨越数十年送达的雪中炭火，眼眶微红（孤儿院资金 +45，好感度 +4）。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_quest_3_crypt',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) =>
+        Boolean(world.flags?.arrived_oakhaven && !world.flags?.baron_purged) &&
+        npc.flags?.cecilia_quest_stage === 3 &&
+        world.playerLocation === 'wilds' &&
+        ['morning', 'afternoon', 'evening'].includes(phase.id),
+      text: '东境商道旁那座沉沦灵堂外围寒雾缭绕，几具游荡骸骨封住了邻郡教会救济车队的必经山口；唯有先拔除这股外溢亡灵，车队才敢进城。',
+      outcomes: {
+        complete_quest: {
+          when: ({ world }) => world.playerLocation === 'wilds',
+          effects: ({ npc }) => [
+            {
+              target: 'cecilia',
+              add: { orphanage_funds: 55, affection: 4 },
+              npcFlags: { cecilia_quest_stage: 0, ceciliaAppealDays: 0, ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1 }
+            }
+          ],
+          text: '你清理了灵堂外围游荡亡灵并护送邻郡救济粮车绕开领主私兵盘剥直接驶入修道院后门，冬春之交的生计大关终于守住（孤儿院资金 +55，好感度 +4）。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_weekly_ruin_offer',
+      mode: 'interaction',
+      repeatable: true,
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc, phase }) => {
+        const day = dayAt(world)
+        const lastWeekDay = npc.flags?.ceciliaWeeklyLastDoneDay ?? -99
+        return Boolean(world.flags?.arrived_oakhaven) &&
+          npc.alive !== false &&
+          !isEileenFugitive(world) &&
+          !npc.flags?.ceciliaWeeklyBiome &&
+          (day - lastWeekDay) >= 7 &&
+          world.playerLocation === 'church' &&
+          npc.location === 'church' &&
+          ['morning', 'afternoon'].includes(phase.id)
+      },
+      text: ({ npc }) => {
+        const count = npc.flags?.ceciliaWeeklyCount ?? 0
+        const pool = ['mire', 'vault', 'lair', 'crypt']
+        const target = pool[count % pool.length]
+        const descMap = {
+          mire: '毒沼菌窟（mire）：修道院急需毒沼阴蛇胆与荧光菌茸配制退热解毒药膏',
+          vault: '机关暗殿（vault）：寻回古代地宫石室遗落的旧教区白银圣器与祈祷手抄本',
+          lair: '魔兽巢穴（lair）：猎取巢穴魔兽髓脂与洁净角骨作寒季熬药灯油补给',
+          crypt: '沉沦灵堂（crypt）：安抚灵堂游荡亡灵并取回受祝福的教会圣匣'
+        }
+        return `{name}整理完本周药房与祈祷名录，温和询问你这周是否有空承接一趟教会遗迹委托（${descMap[target]}；仅赠教堂特产与好感，不给金币与功绩）。`
+      },
+      outcomes: {
+        accept_weekly: {
+          when: ({ world }) => world.playerLocation === 'church',
+          effects: ({ world, npc }) => {
+            const count = npc.flags?.ceciliaWeeklyCount ?? 0
+            const pool = ['mire', 'vault', 'lair', 'crypt']
+            const target = pool[count % pool.length]
+            return {
+              target: 'cecilia',
+              npcFlags: { ceciliaWeeklyBiome: target, ceciliaWeeklyAcceptDay: dayAt(world) }
+            }
+          },
+          text: '你接下了本周圣辉大教堂遗迹委托；{name}取出一枚小巧木牌交给你作凭证，嘱咐你在城外通关一座对应生态的遗迹后再回来交付。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_weekly_ruin_turnin',
+      mode: 'interaction',
+      repeatable: true,
+      scope: 'npc',
+      targets: ['cecilia'],
+      allowCancel: false,
+      when: ({ world, npc }) => {
+        const biome = npc.flags?.ceciliaWeeklyBiome
+        if (!biome || npc.alive === false) return false
+        const clearedMatch = world.ruinState?.lastClearedBiome === biome &&
+          (world.ruinState?.lastClearedDay ?? 0) >= (npc.flags?.ceciliaWeeklyAcceptDay ?? 999)
+        return Boolean(clearedMatch) && world.playerLocation === 'church' && npc.location === 'church'
+      },
+      text: '你带着刚从对应遗迹采获的奇物回到圣辉大教堂，{name}快步迎上前来查验，脸上浮起由衷的欣慰。',
+      outcomes: {
+        turnin: {
+          effects: ({ world, npc }) => {
+            const count = (npc.flags?.ceciliaWeeklyCount ?? 0) + 1
+            const biome = npc.flags?.ceciliaWeeklyBiome
+            const itemsAdd = [
+              { id: 'church_blessed_salve', count: 1 },
+              { id: biome === 'crypt' || biome === 'vault' ? 'church_holy_water' : 'church_purify_incense', count: 1 },
+              { id: 'church_blessed_ration', count: 1 }
+            ]
+            const inv = Array.isArray(world.playerState?.inventory) ? world.playerState.inventory : []
+            const hasRosary = inv.some(it => it && it.id === 'church_silver_rosary' && it.custom !== true && (it.count ?? 0) > 0)
+            if (!hasRosary && count >= 2) {
+              itemsAdd.push({ id: 'church_silver_rosary', count: 1 })
+            }
+            const add = { orphanage_funds: 20 }
+            if ((npc.stage ?? 0) < 3 && !npc.flags?.affection_locked) add.affection = 8
+            return [
+              { target: 'world', itemsAdd },
+              {
+                target: 'cecilia',
+                add,
+                npcFlags: {
+                  ceciliaWeeklyBiome: null,
+                  ceciliaWeeklyAcceptDay: 0,
+                  ceciliaWeeklyLastDoneDay: dayAt(world),
+                  ceciliaWeeklyCount: count,
+                  ceciliaAidCount: (npc.flags?.ceciliaAidCount ?? 0) + 1
+                }
+              }
+            ]
+          },
+          text: '{name}郑重收下遗迹采获物并添入孤儿院账房，随后亲手将修道院熬制祝圣的伤药膏、圣水/熏香与祝圣麦饼装袋交给你（孤儿院资金 +20，未封锁好感时 +8，获赠教堂特有物品）。'
+        }
+      }
+    },
+    {
+      id: 'cecilia_aurora_mentor_talk',
+      mode: 'result',
+      scope: 'world',
+      when: ({ world }) => {
+        const cec = world.npcs?.cecilia
+        const aur = world.npcs?.aurora
+        return Boolean(world.flags?.arrived_oakhaven && !world.flags?.baron_purged) &&
+          !world.flags?.cecilia_aurora_talk_done &&
+          isWeekendDay(dayAt(world)) &&
+          world.playerLocation === 'church' &&
+          cec && cec.alive !== false && (cec.stage ?? 0) < 3 && cec.location === 'church' &&
+          aur && aur.alive !== false && (aur.stage ?? 0) < 3 && aur.location === 'church' &&
+          Boolean(aur.flags?.manor_service_active)
+      },
+      effects: [
+        { target: 'world', worldFlags: { cecilia_aurora_talk_done: true } },
+        { target: 'cecilia', add: { affection: 3, orphanage_funds: 5 } },
+        { target: 'aurora', add: { affection: 3 } }
+      ],
+      text: '周末白昼在圣辉大教堂做礼拜时，外地随队而来的奥萝拉在帮修道院整理药柜期间与塞西莉亚相谈投缘。塞西莉亚察觉这名同为晨曦信徒的姑娘在领主山庄当差后眉间藏忧，温和叮嘱她“伯爵府的善款与契约向来苛刻，万勿因钱财受人拿捏”，并托付你多加照看；奥萝拉强作镇定点头应下，临走前悄悄往募捐箱添了一小袋工钱（塞西莉亚与奥萝拉好感各 +3，孤儿院资金 +5）。'
+    },
+    {
+      id: 'cecilia_post_purge_relief',
+      mode: 'result',
+      scope: 'npc',
+      targets: ['cecilia'],
+      when: ({ world, npc }) =>
+        Boolean(world.flags?.baron_purged) &&
+        npc.alive !== false &&
+        !npc.flags?.cecilia_purge_settled,
+      effects: ({ npc }) => {
+        if ((npc.stage ?? 0) >= 3) {
+          return {
+            npcFlags: { cecilia_purge_settled: true, affection_locked: true }
+          }
+        }
+        const needTopUp = Math.max(0, 80 - (npc.values?.orphanage_funds ?? 0))
+        return {
+          add: { orphanage_funds: needTopUp, affection: 5 },
+          npcFlags: { cecilia_purge_settled: true, cecilia_quest_stage: 0, ceciliaAppealDays: 0 }
+        }
+      },
+      text: ({ npc }) => (npc.stage ?? 0) >= 3
+        ? '雷蒙德伯爵伏诛、领主山庄遭查封后，强压在修道院头上的勒索契约随之消散；只是过往在山庄的屈辱已成难以抹去的圣职污点，{name}垂下眼睫继续留在修道院带着孤儿赎罪，日常与周常委托仍照常维系。'
+        : '雷蒙德伯爵倒台后，艾琳协同狮鹫骑士团清点私库，将原先遭伯爵长期卡扣截留的教会拨款与冬春粮药如数发还晨曦修道院；孤儿院的资金危机自此解除，{name}长舒一口气向你致谢（资金补足安全线，好感 +5，教堂周常遗迹委托依然照常开放）。'
     },
     {
       id: 'cecilia_reward_1_oral',
@@ -3097,7 +3707,7 @@
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
         (npc.values.affection ?? 0) >= 70 &&
-        (npc.values.donated_gold ?? 0) >= 50,
+        ((npc.flags?.ceciliaAidCount ?? 0) >= 1 || (npc.values.donated_gold ?? 0) >= 30),
       resolveWhen: ({ world, npc, phase }) =>
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
@@ -3113,11 +3723,11 @@
         npc.location !== 'church' ||
         !['night', 'deep_night'].includes(phase.id) ||
         ((npc.values.orphanage_funds ?? 0) <= 0 && !world.flags?.baron_purged),
-      text: '夜祷后空的圣辉大教堂廊厅只剩你与{name}二人；感恩你多次捐助善款且心生深情依恋的她双颊微热，趁四下寂静贴近你身前，羞涩提出愿以特别方式报答你的扶持（「修女的回馈」第一阶段）。',
+      text: '夜祷散尽的圣辉大教堂偏殿只余微弱烛火，接连并肩扛过风波后，向来严守戒律的{name}在圣坛前独自跪坐良久。她低声自责明明发过贞洁愿却满脑子都是你的安危，终于红着眼眶、攥紧修女袍衣角朝你近前一步——在圣职清规与压抑已久的依恋之间颤抖着停住，将接下来的选择留给你。',
       outcomes: {
         accept: {
           effects: { add: { affection: 3 }, npcFlags: { cecilia_reward1_done: true } },
-          text: '烛火微摇的偏殿祈祷室中，向来端庄禁欲的{name}红着脸在你身前跪伏下来，解开头巾垂下一缕金发，生涩却十分虔敬地用温软唇舌为你细致侍奉直到终了。'
+          text: '烛影摇曳的偏殿祈祷室中，{name}微颤着解开头巾垂落金发，带着几分自责与虔诚在你身前俯低身子，生涩而温软地用唇舌替你疏解直到夜深。'
         }
       }
     },
@@ -3141,7 +3751,7 @@
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
         (npc.values.affection ?? 0) >= 80 &&
-        (npc.values.donated_gold ?? 0) >= 150,
+        ((npc.flags?.ceciliaAidCount ?? 0) >= 2 || (npc.values.donated_gold ?? 0) >= 80),
       resolveWhen: ({ world, npc, phase }) =>
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
@@ -3157,11 +3767,11 @@
         npc.location !== 'church' ||
         !['night', 'deep_night'].includes(phase.id) ||
         ((npc.values.orphanage_funds ?? 0) <= 0 && !world.flags?.baron_purged),
-      text: '孤儿院受你重金护持渐趋安稳的某个深夜，{name}特意在弥撒散尽后留灯等你来到教堂内室；她呼吸轻颤地提起长袍下摆一角，暗示愿为你献上更进一步的私密亲近（「修女的回馈」第二阶段）。',
+      text: '深夜弥撒结束后的修道院内室，{name}特意留了一盏菜油灯等你。她依然穿着齐整的修女长袍守着最后一道矜持，呼吸却因你的靠近而明显乱了节拍，耳尖泛红地轻扯下摆一角，静静等待你的回应。',
       outcomes: {
         accept: {
           effects: { add: { affection: 3 }, npcFlags: { cecilia_reward2_done: true } },
-          text: '掩上木门的修道院内室里，{name}脸颊绯红却未避开目光，将端庄白丝长腿并拢夹紧，隔着温润细腻的白丝腿肉轻缓磨蹭、配合手心与低喘替你悉心承欢。'
+          text: '掩上木门的安静内室里，{name}脸颊绯红却不再避开目光，将端庄白丝长腿并拢夹紧，隔着细腻微温的织物轻缓磨蹭、配合掌心替你承接这份克制而炽热的依恋。'
         }
       }
     },
@@ -3185,7 +3795,7 @@
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
         (npc.values.affection ?? 0) >= 90 &&
-        (npc.values.donated_gold ?? 0) >= 300,
+        ((npc.flags?.ceciliaAidCount ?? 0) >= 3 || (npc.values.donated_gold ?? 0) >= 150),
       resolveWhen: ({ world, npc, phase }) =>
         world.playerLocation === 'church' &&
         npc.location === 'church' &&
@@ -3201,11 +3811,11 @@
         npc.location !== 'church' ||
         !['night', 'deep_night'].includes(phase.id) ||
         ((npc.values.orphanage_funds ?? 0) <= 0 && !world.flags?.baron_purged),
-      text: '历经多次慷慨解囊与漫长守望，{name}对你的爱恋已再无余留；深夜孤室烛光下她摘去高领禁欲饰件与头巾，轻声询问今晚能否把一切真正托付给你（「修女的回馈」最终回）。',
+      text: '漫长守望与共同扛过风波之后，{name}不再把自己当成孤儿院的赎罪符号；深夜灯下她亲手摘去高领圣饰与头巾，绿瞳清澈而笃定地望进你眼底，等待你伸手接住她作为女人的全部真心。',
       outcomes: {
         accept: {
           effects: { add: { affection: 3 }, npcFlags: { cecilia_reward3_done: true } },
-          text: '微凉圣洁的教堂寝室夜色之中，{name}褪下厚重长袍与长袜主动倾身相迎，在交融缠绵间再不克制轻颤呜咽，将身为圣女长久以来的整颗身心悉心交予了你。'
+          text: '微凉静谧的教堂寝室夜色里，{name}褪下厚重修女袍与长袜主动倾身相迎，在交融缠绵间不再克制轻颤呜咽，将身为修女长压抑已久的真心与身心温柔交予了你。'
         }
       }
     },

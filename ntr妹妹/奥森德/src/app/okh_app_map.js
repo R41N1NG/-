@@ -24,7 +24,7 @@
     ink: ['__OKH_MAP_INK_FONT__', '地图预览/字体/map-ink.woff']
   }
   const PLACES = {
-    town: { name: '奥克赫斯镇', detail: '镇内街区、集市与公共建筑。' },
+    town: { name: '奥克赫斯城', detail: '城内街区、集市、公会与公共建筑。' },
     inn: { name: '断剑与麦酒旅店', detail: '一层大厅与二层六间客房。' },
     manor: { name: '领主庄园', detail: '镇外西北山上的庄园。' },
     wilds_camp: { name: '黑兽人前哨', detail: '敌对驻地，位于东南荒地。' },
@@ -119,7 +119,7 @@
   }
   function point(id, label, x, y, action, extra, world) {
     const current = world.playerLocation === id ? ' aria-current="location"' : ''
-    const kind = id === 'town' && label === '奥克赫斯镇' ? 'settlement' : id === 'wilds_camp' ? 'hostile' : 'landmark'
+    const kind = id === 'town' && label === '奥克赫斯城' ? 'settlement' : id === 'wilds_camp' ? 'hostile' : 'landmark'
     const ink = `<span class="okh-m-ink" data-ink-kind="${kind}">${esc(label)}</span>`
     if (!world.flags?.arrived_oakhaven && id === 'town') return `<span class="okh-m-point" style="--x:${x}%;--y:${y}%">${ink}</span><span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${ink}</span>`
     return button(action, ink, `class="okh-m-point" style="--x:${x}%;--y:${y}%" ${extra}${current}`) + `<span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${ink}</span>`
@@ -144,7 +144,7 @@
     const title = { region: '奥克赫斯 · 全域图', town: '奥克赫斯 · 镇内图', ground: '断剑与麦酒旅店', upper: '断剑与麦酒旅店' }[view]
     let overlay = '', options = '', detail = ''
     if (view === 'region') {
-      overlay = point('town', '奥克赫斯镇', 33.5, 63, 'map-view', 'data-okh-view="town"', world) +
+      overlay = point('town', '奥克赫斯城', 33.5, 63, 'map-view', 'data-okh-view="town"', world) +
         point('manor', '领主庄园', 20.5, 25, 'map-place', 'data-okh-place="manor"', world) +
         point('wilds_camp', '黑兽人前哨', 80, 66.5, 'map-place', 'data-okh-place="wilds_camp"', world)
       options = (world.flags?.arrived_oakhaven ? button('map-view', '进入镇内图', 'data-okh-view="town"') : '') + button('map-place', '领主庄园', 'data-okh-place="manor"') + button('map-place', '黑兽人前哨', 'data-okh-place="wilds_camp"') + button('map-place', '城外荒原', 'data-okh-place="wilds"')

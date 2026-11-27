@@ -439,6 +439,8 @@
     const cur = world.ruinState?.current
     u.check(cur?.cleared, '未完成遗迹')
     if (cur.id) world.ruinState.clearedCores.push(cur.id)
+    world.ruinState.lastClearedBiome = cur.biome || null
+    world.ruinState.lastClearedDay = Math.floor((world.timeMin || 0) / 1440) + 1
     world.ruinState.current = null
   }
 

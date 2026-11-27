@@ -303,31 +303,15 @@
     },
     eileen: {
       care_watch: ({ world, npc }) =>
-        DATA.isEileenFugitive(world) && !world.flags?.baron_purged && !npc.flags?.eileen_captured &&
+        (DATA.isEileenFugitive(world) || (world.flags?.baron_purged && !npc.flags?.eileen_returned_capital)) &&
+        !npc.flags?.eileen_captured &&
         (npc.values.affection ?? 0) < 70 && !npc.flags?.eileen_care_today
           ? { add: { affection: 1 }, npcFlags: { eileen_care_today: true } } : null,
       encourage: ({ world, npc }) =>
-        DATA.isEileenFugitive(world) && !world.flags?.baron_purged && !npc.flags?.eileen_captured &&
+        (DATA.isEileenFugitive(world) || (world.flags?.baron_purged && !npc.flags?.eileen_returned_capital)) &&
+        !npc.flags?.eileen_captured &&
         !npc.flags?.eileen_encourage_today
           ? { add: { affection: 2 }, npcFlags: { eileen_encourage_today: true } } : null,
-      scout_prep: ({ world, npc }) =>
-        DATA.isEileenFugitive(world) && !world.flags?.baron_purged && !DATA.hasEileenSignal(world) &&
-        !npc.flags?.eileen_captured && !npc.flags?.eileen_scout_today
-          ? { add: { counterattack: 4 }, npcFlags: { eileen_scout_today: true } } : null,
-      cover_hide: ({ world, npc }) => {
-        if (!DATA.isEileenFugitive(world) || world.flags?.baron_purged || npc.flags?.eileen_captured) return null
-        if (npc.flags?.eileen_cover_today) return null
-        const add = { affection: 3 }
-        if (!DATA.hasEileenSignal(world)) add.counterattack = 6
-        return { add, exemptCap: true, npcFlags: { eileen_cover_today: true } }
-      },
-      rescue_shield: ({ world, npc }) => {
-        if (!DATA.isEileenFugitive(world) || world.flags?.baron_purged || npc.flags?.eileen_captured) return null
-        if (npc.flags?.eileen_rescue_today) return null
-        const add = { affection: 5 }
-        if (!DATA.hasEileenSignal(world)) add.counterattack = 10
-        return { add, exemptCap: true, npcFlags: { eileen_rescue_today: true } }
-      },
       offend: ({ world, npc }) =>
         (DATA.isEileenFugitive(world) || world.flags?.baron_purged) &&
         !npc.flags?.eileen_captured && !npc.flags?.eileen_returned_capital
@@ -503,7 +487,7 @@
           }
         } else if ((item.tier === 'church_paid' || item.tier === 'church_volunteer') &&
             ['church', 'wilds'].includes(world.playerLocation) &&
-            cecilia && cecilia.alive !== false && (cecilia.stage ?? 0) < 3 && !DATA.workCooldownWait(world, 'lastChurchErrand', start, DATA.WORK_LIMITS.churchCooldownDays)) {
+            cecilia && cecilia.alive !== false && !DATA.workCooldownWait(world, 'lastChurchErrand', start, DATA.WORK_LIMITS.churchCooldownDays)) {
           workUsed = true
           const volunteer = !paid
           const flags = { ...workFlags, lastChurchErrandDay: day, lastChurchErrandStartMin: start }
