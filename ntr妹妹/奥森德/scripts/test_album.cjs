@@ -9,7 +9,10 @@ function plain(v){return JSON.parse(JSON.stringify(v))}
 test('empty production catalog leaves legacy saves unchanged and provides a separate album page',async()=>{
  const sb=sandbox();await sb.OKH_APP.init();const world=sb.OKH_APP.world(),before=JSON.stringify(world);
  assert.equal(sb.OKH_APP_ALBUM.catalog.length,0);assert.deepEqual(plain(sb.OKH_APP_ALBUM.sync(world)),[]);assert.equal(JSON.stringify(world),before);
+ const lockedHtml=sb.OKH_APP.HUD.buildHudHtml(world);assert(!lockedHtml.includes('data-okh-tab="album"'));assert(!lockedHtml.includes('class="okh-visions"'));
+ world.flags.crystal_orb_unlocked=true;
  const html=sb.OKH_APP.HUD.buildHudHtml(world);assert(html.includes('data-okh-tab="album"'));assert(html.includes('data-okh-page="album" aria-label="留影记录"'));assert(html.includes('已珍藏 0 幅'));assert(!html.includes('class="okh-memory"'));
+ delete world.flags.crystal_orb_unlocked;world.flags.crystal_orb_unlocked=false;
  assert.equal(JSON.stringify(sb.OKH_APP.world()),before);
 });
 test('metric boundaries and combined flags collect once; later affection loss, death or departure does not erase earned pictures',()=>{
@@ -71,4 +74,23 @@ test('a selected image removed by reply rollback falls back to an owned portrait
  sb._ctxObj.chat.push({is_user:true,mes:'交谈'},{is_user:false,mes:'<status_bar><time elapsed="0"/><bond npc="gulan" kind="confide"/></status_bar>'});await sb.OKH_APP.onMessage(2);await sb.OKH_APP.setDefaultPortrait('gulan','alternate');
  sb._ctxObj.chat[2].mes='<status_bar><time elapsed="0"/></status_bar>';await sb.OKH_APP.onMessage(2);assert.equal(sb.OKH_APP_ALBUM.portrait(sb.OKH_APP.world(),'gulan',sb.OKH_APP.W.presentation().portraits).id,'base');
  const before=JSON.stringify(sb.OKH_APP.W.presentation());sb.replaceVariables=()=>false;await assert.rejects(sb.OKH_APP.setDefaultPortrait('gulan','base'));assert.equal(JSON.stringify(sb.OKH_APP.W.presentation()),before);
+});
+test('mystery_orb_merchant triggers on first town visit, forces player alone, auto-resolves within 2 turns and unlocks orb system',async()=>{
+ const sb=sandbox();sb._ctxObj.chat=[{is_user:false,mes:'<status_bar><time elapsed="0"/></status_bar>'}];await sb.OKH_APP.init();await sb.OKH_APP.onMessage(0);
+ sb._ctxObj.chat.push({is_user:true,mes:'进镇逛逛'},{is_user:false,mes:'<status_bar><time elapsed="10"/><prologue_step flag="arrived_oakhaven"/><move to="town"/></status_bar>'});
+ await sb.OKH_APP.onMessage(2);
+ let w=sb.OKH_APP.world();const goldBefore=w.playerState.gold;
+ const orbKey=JSON.stringify(['event','mystery_orb_merchant',null]);
+ assert.equal(w.bg.eventStates[orbKey]?.status,'pending');
+ assert(sb.OKH_APP_ADAPTER.buildLedger(w).includes('同地点：无（当前强制落单，神秘人正在搭话）'));
+ assert(!sb.OKH_APP.HUD.buildHudHtml(w).includes('data-okh-tab="album"'));
+ sb._ctxObj.chat.push({is_user:true,mes:'这是什么？'},{is_user:false,mes:'<status_bar><time elapsed="5"/></status_bar>'});
+ await sb.OKH_APP.onMessage(4);w=sb.OKH_APP.world();
+ assert.equal(w.bg.eventStates[orbKey]?.status,'pending');assert.equal(w.flags.orb_merchant_turns,1);
+ sb._ctxObj.chat.push({is_user:true,mes:'真的有用吗？'},{is_user:false,mes:'<status_bar><time elapsed="5"/></status_bar>'});
+ await sb.OKH_APP.onMessage(6);w=sb.OKH_APP.world();
+ assert.equal(w.bg.eventStates[orbKey]?.status,'resolved');
+ assert.equal(w.flags.crystal_orb_unlocked,true);
+ assert.equal(w.playerState.gold,goldBefore-1);
+ assert(sb.OKH_APP.HUD.buildHudHtml(w).includes('data-okh-tab="album"'));
 });

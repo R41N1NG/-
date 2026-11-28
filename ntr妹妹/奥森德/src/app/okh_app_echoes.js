@@ -305,6 +305,7 @@
   }
 
   function visible(world) {
+    if (!world.flags?.crystal_orb_unlocked) return []
     return records(world).flatMap(echo => {
       const def = definition(echo.id)
       return def && isVisible(world, echo)
@@ -318,6 +319,7 @@
   }
 
   function replayEntry(world, command, findImage) {
+    if (!world.flags?.crystal_orb_unlocked) return null
     const def = DELAYED_ECHOES.find(item => item.triggerCommand === FORMAT.commandLine(command))
     if (!def || !records(world).some(echo => echo.id === def.id && isVisible(world, echo))) return null
     if (!def.cgId) return { def, marker: null }

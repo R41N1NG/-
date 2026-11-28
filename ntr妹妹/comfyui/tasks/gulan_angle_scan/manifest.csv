@@ -1,0 +1,7 @@
+﻿job,label,seed,size,steps,cfg,hires,seconds,files,error
+gulan_virgin_36,gulan_virgin_36_s99107,1873499107,832x1216,30,6.5,0.0,63.6,comfyui\tasks\gulan_angle_scan\gulan_virgin_36_s99107_00001_.png,
+gulan_virgin_36,gulan_virgin_36_s88220,1131388220,832x1216,30,6.5,0.0,12.0,comfyui\tasks\gulan_angle_scan\gulan_virgin_36_s88220_00001_.png,
+gulan_virgin_36,gulan_virgin_36_s44550,168944550,832x1216,30,6.5,0.0,11.2,comfyui\tasks\gulan_angle_scan\gulan_virgin_36_s44550_00001_.png,
+gulan_virgin_36,gulan_virgin_36_s83463,1318383463,832x1216,30,6.5,0.0,12.4,comfyui\tasks\gulan_angle_scan\gulan_virgin_36_s83463_00001_.png,
+gulan_virgin_36,gulan_virgin_36_s3623,1147503623,832x1216,30,6.5,0.0,13.6,comfyui\tasks\gulan_angle_scan\gulan_virgin_36_s3623_00001_.png,
+gulan_virgin_36,gulan_virgin_36_s10402,383210402,832x1216,30,6.5,0.0,12.1,comfyui\tasks\gulan_angle_scan\gulan_virgin_36_s10402_00001_.png,

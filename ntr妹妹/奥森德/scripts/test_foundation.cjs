@@ -2803,10 +2803,12 @@ async function runTests() {
     assert(OKH_APP_ADAPTER.buildLedger(wI).includes('wilds_camp'), 'Ledger alerts Isna distress');
 
     // HUD multi-pending rendering check: add a 2nd pending interaction & verify BOTH show up in HUD
+    wI.flags.crystal_orb_unlocked = true;
     wI.bg.eventStates['["event","ed_investigate_truth",null]'] = { status: 'pending', definitionId: 'ed_investigate_truth', npcId: null, triggeredAt: wI.timeMin };
     const multiHud = OKH_APP_HUD.buildHudHtml(wI);
     assert(multiHud.includes('1 / 2') && multiHud.includes('2 / 2'), 'HUD renders all pending interactions instead of hiding 2nd');
     delete wI.bg.eventStates['["event","ed_investigate_truth",null]'];
+    wI.flags.crystal_orb_unlocked = false;
 
     // Rescue Isna via rescue_now -> Gulan blood_density +10, Isna back at inn with gold_desire -30 & unfrozen
     const gulanBdBefore = wI.npcs.gulan.values.blood_density;

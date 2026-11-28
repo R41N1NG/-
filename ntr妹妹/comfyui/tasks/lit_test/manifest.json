@@ -1,0 +1,66 @@
+[
+  {
+    "job": "gulan_virgin_lit",
+    "label": "gulan_virgin_lit_s53321",
+    "seed": 1114153321,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 21.1,
+    "files": [
+      "comfyui\\tasks\\lit_test\\gulan_virgin_lit_s53321_00001_.png"
+    ],
+    "prompt_id": "e322144e-e134-4580-a589-c86536587874"
+  },
+  {
+    "job": "gulan_virgin_lit",
+    "label": "gulan_virgin_lit_s79462",
+    "seed": 2036679462,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 13.6,
+    "files": [
+      "comfyui\\tasks\\lit_test\\gulan_virgin_lit_s79462_00001_.png"
+    ],
+    "prompt_id": "c8c1408d-9697-48da-9a46-a7a69912b73d"
+  },
+  {
+    "job": "gulan_virgin_lit",
+    "label": "gulan_virgin_lit_s66794",
+    "seed": 1736266794,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 13.6,
+    "files": [
+      "comfyui\\tasks\\lit_test\\gulan_virgin_lit_s66794_00001_.png"
+    ],
+    "prompt_id": "d9cf8f77-c2ca-48b1-b865-d361de0a819f"
+  },
+  {
+    "job": "gulan_virgin_lit",
+    "label": "gulan_virgin_lit_s8904",
+    "seed": 737908904,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 13.6,
+    "files": [
+      "comfyui\\tasks\\lit_test\\gulan_virgin_lit_s8904_00001_.png"
+    ],
+    "prompt_id": "436c3f0c-f800-4bba-8e60-686b26042bdd"
+  }
+]

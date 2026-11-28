@@ -1,0 +1,19 @@
+{
+  "_说明": "古兰残响场景3 · 光照修正版：去掉全图剪影词，补暖烛光与整体亮度；男方走成年男性取景避让；角沿用 horns with red tips 借形 + red tips 压色。",
+  "jobs": [
+    {
+      "name": "gulan_virgin_lit",
+      "prefix": "okh/echo",
+      "width": 832,
+      "height": 1216,
+      "steps": 30,
+      "cfg": 6.5,
+      "sampler": "euler_ancestral",
+      "scheduler": "normal",
+      "clip_skip": -2,
+      "hires": 0.0,
+      "positive": "masterpiece, best quality, very aesthetic, absurdres, newest, explicit, 1girl, 1boy, adult, mature female, tall female, voluptuous, (black hair:1.2), long hair, very long hair, (messy hair:1.2), blunt bangs, amber eyes, slit pupils, glowing eyes, pale skin, flushed body, sweat on skin, (horns with red tips:1.1), (horns:1.3), (black horns:1.35), (sharp horns:1.3), long horns, pointed horns, dragon scales, (black scales on arms:1.15), black dress, (high collar:1.2), collar grabbed, clothes pulled open, (torn clothes:1.2), tattered dress, (breasts covered:1.15), bare thighs, (thigh boots:1.2), black boots, 1boy, adult male, muscular male, (male face out of frame:1.3), head cropped, only his arm and shoulder visible, (height difference:1.4), size difference, on bed, inn bedroom, wooden wall, candle, (warm candlelight:1.3), (lit face:1.2), visible skin, rim light, chiaroscuro, (bright enough:1.2), lying on back, spread legs, missionary, sex, first time, virgin, blood, (blood on sheets:1.15), painful, tears, crying, biting lip, clenched teeth, trembling, nail marks, sweat, blush, arched back, harsh shadow, medium shot, from side, depth of field",
+      "negative": "(low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2), bad hands, extra digit, fewer digits, extra arms, extra fingers, fused fingers, missing fingers, deformed, disfigured, mutated, bad proportions, inaccurate eyes, asymmetric eyes, text, error, signature, watermark, username, logo, border, frame, blurry, lowres, jpeg artifacts, multiple views, comic, 2koma, speech bubble, censored, mosaic censoring, bar censor, pixelated, ugly, bad composition, (underexposed:1.6), (too dark:1.6), (black image:1.6), (low key lighting:1.5), pitch black, black background, silhouette, completely in shadow, night, loli, shota, child, toddler, aged down, small body, short stature, (forehead horn:2.0), (horns on forehead:2.0), (horn on forehead:1.9), (center horn:1.7), (third eye:1.6), (unicorn horn:1.6), nose horn, (single horn:1.5), (extra horns:1.7), (four horns:1.7), (multiple horns:1.6), (horns on back of head:1.6), back horns, curved horns, swept back horns, ram horns, spiral horns, antlers, crown, tiara, headpiece, (red tips:1.6), blonde hair, red hair, silver hair, white hair, blue hair, blue eyes, red eyes, human ears, missing horns, katana, thin blade, longsword, dragon tail, tail, full body scales, dragon girl, scaly skin, armor set, full armor, helmet, cute, kawaii, chibi, smiling, happy, gentle expression, soft expression, plain background, white background, nude, topless, exposed breasts, breasts out, nipples, bare chest, naked, visible male face, handsome male, willing, relaxed, experienced, ahegao"
+    }
+  ]
+}

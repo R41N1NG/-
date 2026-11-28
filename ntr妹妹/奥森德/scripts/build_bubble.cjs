@@ -41,7 +41,25 @@ function loadBubbleAvatars(root) {
       }));
       choices.add(special + '（' + cue + '）');
     }
-    images[speaker] = { npc, forms: variants };
+    const chibiFaces = assets[speaker]?.chibi?.normal;
+    let chibi = undefined;
+    if (chibiFaces) {
+      const normalSpecial = forms.normal?.special;
+      const ids = [...Object.keys(COMMON), ...(normalSpecial ? [normalSpecial] : [])];
+      if (Object.keys(chibiFaces).length !== ids.length) throw new Error('Q版对白头像不齐全：' + speaker);
+      chibi = {
+        normal: Object.fromEntries(ids.map(id => {
+          const encoded = chibiFaces[id];
+          const bytes = typeof encoded === 'string' && /^[A-Za-z0-9+/]+={0,2}$/.test(encoded)
+            ? Buffer.from(encoded, 'base64') : Buffer.alloc(0);
+          if (bytes.toString('ascii', 0, 4) !== 'RIFF' || bytes.toString('ascii', 8, 12) !== 'WEBP') {
+            throw new Error('Q版对白头像须为有效 WebP：' + speaker + '/' + id);
+          }
+          return [id, 'data:image/webp;base64,' + encoded];
+        }))
+      };
+    }
+    images[speaker] = chibi ? { npc, forms: variants, chibi } : { npc, forms: variants };
     promptLines.push(speaker + '专属表情：' + [...choices].join('、') + '。');
   }
   return { images, promptLines };

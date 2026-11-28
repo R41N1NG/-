@@ -38,10 +38,11 @@
     const here = Object.values(world.npcs).filter(n =>
       n.monitored === true && n.alive !== false && n.location === world.playerLocation
     );
+    const orbMerchantPending = world.bg?.eventStates?.[JSON.stringify(['event', 'mystery_orb_merchant', null])]?.status === 'pending';
     const lines = [
       '【第 ' + day + ' 天 · ' + CFG.weekdayLabel(day) + ' · ' + label + ' · ' + clock + '】',
       '玩家位置：' + (CFG.LOCATIONS[world.playerLocation] || world.playerLocation),
-      '同地点：' + (here.map(n => n.name).join('、') || '无'),
+      '同地点：' + (orbMerchantPending ? '无（当前强制落单，神秘人正在搭话）' : (here.map(n => n.name).join('、') || '无')),
       '可用活动解除规则：' + Object.keys(CFG.buildConfig().releaseRules).join('、') +
         '。无匹配业务条件时使用 manualRelease，等待明确 finish/cancel。'
     ];
@@ -63,7 +64,16 @@
       if (!def || def.mode !== 'interaction') continue;
       const choices = Object.keys(def.outcomes || {});
       if (def.allowCancel && !choices.includes('cancel')) choices.push('cancel');
-      lines.push('异象浮想：id=' + JSON.stringify(def.id) +
+      if (def.id === 'mystery_orb_merchant') {
+        const turns = world.flags?.orb_merchant_turns ?? 0;
+        const turnHint = turns >= 1
+          ? '本轮为第 2 轮也是最后一轮问答：无论玩家接受或拒绝，神秘人都必须强行把水晶球塞进玩家手中（若持有 1 金则顺手收走）并凭空消失，同时输出 <event_resolve id="mystery_orb_merchant" outcome="accept" />。'
+          : '当前为第 1 轮问答：若玩家提问则先回“这是个好问题。”并用谨慎回避定论的腔调作答；若玩家直接收下或拒绝且本轮已结束交涉，也可直接输出 event_resolve（最多 2 轮问答）。';
+        lines.push('强制事件：id="mystery_orb_merchant"；登记选项="accept" / "refuse"。' + turnHint);
+        continue;
+      }
+      const pendingLabel = world.flags?.crystal_orb_unlocked ? '异象浮想' : '待决互动';
+      lines.push(pendingLabel + '：id=' + JSON.stringify(def.id) +
         (pending.npcId ? ' npc=' + JSON.stringify(pending.npcId) : '') +
         '；登记选项=' + choices.map(choice => JSON.stringify(choice)).join(' / ') +
         '。仅在玩家已经作出对应选择或行动后使用 event_resolve 申报；条件由后台校验。');

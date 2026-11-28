@@ -1,0 +1,5 @@
+﻿job,label,seed,size,steps,cfg,hires,seconds,files,error
+gulan_virgin_lit,gulan_virgin_lit_s53321,1114153321,832x1216,30,6.5,0.0,21.1,comfyui\tasks\lit_test\gulan_virgin_lit_s53321_00001_.png,
+gulan_virgin_lit,gulan_virgin_lit_s79462,2036679462,832x1216,30,6.5,0.0,13.6,comfyui\tasks\lit_test\gulan_virgin_lit_s79462_00001_.png,
+gulan_virgin_lit,gulan_virgin_lit_s66794,1736266794,832x1216,30,6.5,0.0,13.6,comfyui\tasks\lit_test\gulan_virgin_lit_s66794_00001_.png,
+gulan_virgin_lit,gulan_virgin_lit_s8904,737908904,832x1216,30,6.5,0.0,13.6,comfyui\tasks\lit_test\gulan_virgin_lit_s8904_00001_.png,

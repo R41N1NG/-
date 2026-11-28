@@ -1,0 +1,19 @@
+{
+  "_说明": "古兰残响场景 · 用 okh_batch.py 批量扫种子挑角。negative 里已把额头角/多角/卷角压死，positive 里只留真实可识别的角词。",
+  "jobs": [
+    {
+      "name": "gulan_virgin_36",
+      "prefix": "okh/echo",
+      "width": 832,
+      "height": 1216,
+      "steps": 30,
+      "cfg": 6.5,
+      "sampler": "euler_ancestral",
+      "scheduler": "normal",
+      "clip_skip": -2,
+      "hires": 0.0,
+      "positive": "masterpiece, best quality, very aesthetic, absurdres, newest, explicit, 1girl, 1boy, adult, mature female, tall female, voluptuous, (black hair:1.2), long hair, very long hair, (messy hair:1.2), blunt bangs, amber eyes, slit pupils, glowing eyes, pale skin, red skin, flushed body, (horns with red tips:1.1), (horns:1.3), (black horns:1.35), (sharp horns:1.3), (long horns:1.2), (pointed horns:1.2), dragon scales, (black scales on arms:1.2), black dress, (high collar:1.2), collar grabbed, clothes pulled open, (torn clothes:1.2), tattered dress, ripped dress, (breasts covered:1.15), bare thighs, (thigh boots:1.25), black boots, 1boy, child, (brown hair:1.3), messy hair, short hair, (short stature:1.4), (child body:1.35), (small frame:1.3), thin, slim, slender, narrow shoulders, (silhouette:1.3), fully shadowed, shadowed figure, backlit, (faceless:1.2), no facial features, dark figure, unlit face, (height difference:1.4), (size difference:1.3), on bed, inn bedroom, wooden wall, candle, night, dim lighting, lying on back, spread legs, missionary, first time, virgin, blood, (blood on sheets:1.15), blood on thighs, painful, tears, crying, teary eyes, biting lip, clenched teeth, trembling, nail marks, sweat, blush, arched back, breeding, creampie, cum overflow, harsh shadow, rim light, full body, from side, low angle, depth of field",
+      "negative": "(low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2), bad hands, extra digit, fewer digits, extra arms, extra fingers, fused fingers, missing fingers, deformed, disfigured, mutated, bad proportions, inaccurate eyes, asymmetric eyes, text, error, signature, watermark, username, logo, border, frame, blurry, lowres, jpeg artifacts, multiple views, comic, 2koma, speech bubble, censored, mosaic censoring, bar censor, pixelated, child, loli, shota, toddler, aged down, ugly, bad composition, (forehead horn:2.0), (horns on forehead:2.0), (horn on forehead:1.9), (middle of forehead:1.7), (center horn:1.7), (third eye:1.6), (unicorn horn:1.6), nose horn, (horn near eye:1.5), (single horn:1.5), (extra horns:1.7), (four horns:1.7), (multiple horns:1.6), (horns on back of head:1.6), (horns behind head:1.5), back horns, curved horns, swept back horns, curled horns, ram horns, spiral horns, goat horns, bull horns, antlers, crown, tiara, headpiece, forehead ornament, (red tips:1.6), (red glow on horn tips:1.5), glowing horn tips, blonde hair, red hair, silver hair, white hair, blue hair, blue eyes, red eyes, human ears, missing horns, katana, thin blade, longsword, rapier, dragon tail, tail, full body scales, dragon girl, monster girl, scaly skin, armor set, full armor, helmet, heavy armor, cute, kawaii, chibi, smiling, happy, gentle expression, soft expression, soft lighting, pastel color, bloom, dreamy, romantic, plain background, white background, nude, topless, exposed breasts, breasts out, nipples, bare chest, naked, (detailed male face:1.3), handsome male, visible face, (muscular male:1.3), (adult male:1.25), tall male, huge muscles, broad shoulders, adult, mature male, willing, relaxed, experienced, ahegao"
+    }
+  ]
+}

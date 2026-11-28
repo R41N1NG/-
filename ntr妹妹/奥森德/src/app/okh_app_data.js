@@ -4628,6 +4628,33 @@
     })
   })
 
+  EVENTS.push({
+    id: 'mystery_orb_merchant',
+    mode: 'interaction',
+    scope: 'world',
+    when: ({ world }) =>
+      Boolean(world.flags?.arrived_oakhaven) &&
+      !world.flags?.crystal_orb_unlocked &&
+      !world.flags?.orb_merchant_done &&
+      world.playerLocation === 'town',
+    text:
+      '【强制落单事件：神秘人】此时伯里独自一人在奥克赫斯镇上闲逛（本事件强制玩家落单，周围没有其他在场角色，同伴均暂不在身旁、不得插话）。' +
+      '一名神秘人迎面走来，看到伯里时笑着说他身上有熟悉又讨厌的气息，随后向他兜售一枚仅售 1 金币的水晶球。' +
+      '她声称这枚水晶球能预示未来和揭示过去，但其中的内容只有伯里自己能看见，并特意推销道：“它能让你看见很多你想看见的东西。等你回去，可以试着对着你的同伴试试。”' +
+      '【说话特点】玩家第一次提问时，她会先说：“这是个好问题。”其余所有回答都必须保持礼貌但全程打太极、永不下定论的腔调（习惯用“你说得不完全不对，但这并不能直接说明……”“更准确地说，这不足以证明……”“它不代表一定可行，也不能简单视为已经确认”“换言之，现在不能断言、不能保证、不能仅凭这一点就当作定论”“我不是说不能做，而是不能只看表面，还需要更多证据，才能更全面地说明这到底是不是那么一回事”）。' +
+      '【强制成交】1 金币等于白送；就算玩家拒绝或表示不想要，她也会强行把水晶球塞进伯里手中（若有 1 金币则顺手收走，没有也照样强塞），最终在最多 2 楼的问答后凭空消失。',
+    outcomes: {
+      accept: {
+        text: '伯里收下了那枚神秘的水晶球，神秘人随即笑着凭空消失在街角。',
+        effects: { goldDelta: -1, worldFlags: { crystal_orb_unlocked: true, orb_merchant_done: true } }
+      },
+      refuse: {
+        text: '即便伯里嘴上推辞，神秘人依然强行把水晶球塞进了他的手里，随后凭空消失得无影无踪。',
+        effects: { goldDelta: -1, worldFlags: { crystal_orb_unlocked: true, orb_merchant_done: true } }
+      }
+    }
+  })
+
   function makeNpc(cfg) {
     const hasStage = cfg.hasStage !== false
     const hasAffection = cfg.hasAffection !== false
@@ -4732,6 +4759,9 @@
       flags: {
         ed_joined: false,
         arrived_oakhaven: false,
+        crystal_orb_unlocked: false,
+        orb_merchant_done: false,
+        orb_merchant_turns: 0,
         arrivedDay: null,
         playerRoomTarget: null,
         inn_arrears: false,

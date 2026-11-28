@@ -1,0 +1,71 @@
+==================================================
+伊丝娜（ISNA）· 新版斥候装 · 完整出图提示词
+基准图：奥森德/角色档案预览/着衣立绘/isna-clothed.png（2026-11-28 定稿）
+适用：Animagine XL 系 / SDXL-Danbooru 系（ComfyUI 直接粘贴）
+==================================================
+
+【一、通用质量底噪（正面 · 每条必带）】
+masterpiece, best quality, amazing quality, very aesthetic, absurdres, highres, ultra-detailed, detailed face, detailed eyes, cinematic lighting, soft rim light, depth of field, film grain,
+
+【二、人设锚点 · 必带（猫族三件套 + 发色权重不得下调）】
+1girl, solo, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), crimson hair, long hair, wavy hair, messy hair, hair over shoulder, golden eyes, slit pupils, sharp canine tooth, cat mouth, adult, tall female, pale skin, large breasts, (cleavage:1.15), narrow waist, wide hips, thick thighs, (white crop top:1.2), (lace-up top:1.15), lacing, tan trim, (midriff:1.15), navel, (brown long coat:1.25), open coat, long sleeves, (white fur collar:1.25), fur trim, coat pocket, brown leather shorts, (short shorts:1.2), white trim, (double belt:1.15), brown belt, gold buckle, leather pouch, thigh strap, (dagger on thigh:1.25), knife sheath, two daggers, brown boots, (ankle boots:1.15), buckled boots,
+※ 常服四件不可拆：奶白系带露脐胸衣 / 敞怀深棕毛领长风衣 / 深棕皮短裤（米白滚边+双排皮带）/ 右腿双匕皮鞘 + 深棕带扣短靴。
+※ 发色锁 1.25；`cat girl` 会把发色往金橙飘，负面必须压 blonde / orange / yellow。
+
+【三、完整负面（通用 + 伊丝娜专用加料）】
+worst quality, low quality, lowres, bad anatomy, bad hands, extra fingers, fused fingers, missing fingers, deformed, disfigured, malformed limbs, mutated, extra arms, extra legs, bad proportions, inaccurate eyes, asymmetric eyes, blurry, jpeg artifacts, text, watermark, signature, username, logo, border, frame, censored, mosaic censoring, blonde hair, yellow hair, gold hair, orange hair, silver hair, black hair, blue hair, blue eyes, red eyes, green eyes, human ears, no cat ears, missing tail, red shirt, red top, red clothes, red crop top, black shorts, black top, black crop top, green top, green clothes, dark green, armour, armor, breastplate, chainmail, hood, hood down, hoodie, thigh boots, over-knee boots, knee boots, high heels, long skirt, miniskirt, dress, modern clothes, t-shirt, jeans, grey skin, brown skin, blue skin, green skin, male focus, muscular male, orc, plain background, white background, soft lighting, pastel color, chibi, loli, aged down, nsfw
+
+--------------------------------------------------
+【四、三条即用配方】
+--------------------------------------------------
+
+■ 配方 A · 常服定妆全身（档案图基准，最稳的一张）
+[正面]
+masterpiece, best quality, amazing quality, very aesthetic, absurdres, highres, ultra-detailed, detailed face, detailed eyes, cinematic lighting, soft rim light, depth of field, film grain,
+1girl, solo, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), crimson hair, long hair, wavy hair, messy hair, hair over shoulder, golden eyes, slit pupils, sharp canine tooth, cat mouth, adult, tall female, pale skin, large breasts, (cleavage:1.15), narrow waist, wide hips, thick thighs, (white crop top:1.2), (lace-up top:1.15), lacing, tan trim, (midriff:1.15), navel, (brown long coat:1.25), open coat, long sleeves, (white fur collar:1.25), fur trim, coat pocket, brown leather shorts, (short shorts:1.2), white trim, (double belt:1.15), brown belt, gold buckle, leather pouch, thigh strap, (dagger on thigh:1.25), knife sheath, two daggers, brown boots, (ankle boots:1.15), buckled boots,
+standing, contrapposto, hands at sides, (tail up:1.1), tail swaying, smirk, half-closed eyes, smug, sharp canine tooth, (fang:1.05), looking at viewer,
+indoor, tavern, inn, wooden floor, wooden barrels, wooden beams, hanging lantern, warm light, rim light,
+full body, from front, slightly from below, depth of field
+[负面] 见【三】全文
+[参数] 832×1216 / steps 28 / CFG 6.5 / sampler euler_ancestral / CLIP skip -2 / HiResFix 1.4×
+
+■ 配方 B · 半身近景（表情表演：慵懒坏笑或微醺）
+[正面]
+masterpiece, best quality, very aesthetic, absurdres, ultra-detailed, detailed face, detailed eyes, cinematic lighting, soft rim light, depth of field,
+1girl, solo, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), crimson hair, long hair, wavy hair, messy hair, golden eyes, slit pupils, sharp canine tooth, cat mouth, pale skin, large breasts, (white crop top:1.2), (lace-up top:1.15), tan trim, (white fur collar:1.25), (brown long coat:1.2), open coat, long sleeves,
+(half-closed eyes:1.15), raised eyebrows, (smirk:1.2), (showing teeth:1.05), smug, (drunk blush:1.1), (ear twitch:1.05),
+indoor, tavern, wooden wall, lantern, warm light, bokeh, upper body, from front, close-up, depth of field
+[负面] 见【三】全文
+[参数] 832×1216 / steps 30 / CFG 6 / dpmpp_2m + karras
+
+■ 配方 C · 夜色探哨（尾巴与耳朵给姿态，别让模型省掉）
+[正面]
+masterpiece, best quality, very aesthetic, absurdres, ultra-detailed, detailed face, detailed eyes, cinematic lighting, rim light, film grain,
+1girl, solo, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), crimson hair, long hair, wavy hair, messy hair, hair over shoulder, golden eyes, slit pupils, (vertical pupils:1.1), sharp canine tooth, cat mouth, pale skin, (white crop top:1.2), (lace-up top:1.15), tan trim, (midriff:1.15), navel, (brown long coat:1.25), open coat, (white fur collar:1.25), brown leather shorts, (short shorts:1.2), double belt, thigh strap, (dagger on thigh:1.25), two daggers, brown boots, buckled boots,
+crouching, one knee down, (hand on ground:1.05), looking back at viewer, alert, (ears up:1.1), (tail raised:1.15),
+night, wilds, dry grass, rock outcrop, moonlight, harsh shadow, cool rim light, backlight, wide shot, full body, from side, depth of field
+[负面] 见【三】全文
+[参数] 896×1152 / steps 26 / CFG 6 / euler_ancestral / CLIP skip -2
+
+--------------------------------------------------
+【五、服装破损五档（叙事进度条 · 按场景拼进正面）
+--------------------------------------------------
+① 完整（日常 / 押解）：本文件【二】段原样，一字不改。
+② 松动：+ open coat, coat slipping off shoulder, one strap down, disheveled, clothes askew
+③ 半褪：+ coat fallen off, coat around waist, (breasts out:1.15), torn shirt, shorts unbuttoned
+④ 撕破：+ torn clothes, clothes ripped, torn shorts, shorts partially pulled down, exposed breasts
+⑤ 只剩残件：+ clothes in tatters, (completely nude:1.1), nude, only boots left, thigh sheath still strapped on
+※ 皮鞘与短靴是她的辨识残件，哪怕到 ⑤ 也建议留一件；长风衣在 ②③ 档当剥落进度条用，比直接写 torn clothes 更有层次。
+
+--------------------------------------------------
+【六、排错速查】
+--------------------------------------------------
+| 症状 | 原因 | 修法 |
+|---|---|---|
+| 认不出是伊丝娜 | 发色或猫族三件套被削 | `(red hair:1.25)`、`(cat ears:1.2)`、`(cat tail:1.15)` 权重不得低于本文件 |
+| 衣服变回红上衣/黑热裤 | 旧版设定残留 | 负面保留 `red crop top, black shorts, black top, green top, dark green` |
+| 毛领消失 | 权重太轻 / 被 open coat 冲淡 | `(white fur collar:1.25)` 提到锚点前段，负面加 `no fur collar, hood` |
+| 长风衣变短夹克 | 缺 `long coat` | 写 `(brown long coat:1.25), coat below knee` |
+| 靴子变长靴/高跟 | 未压 | 正面 `(ankle boots:1.15), buckled boots` + 负面 `thigh boots, knee boots, high heels` |
+| 尾巴被省略 | 只写 `cat tail` | 补姿态词：`tail up / tail swaying / tail raised / tail bristling` |
+| 金瞳变琥珀或绿 | 瞳色没复述 | 每档都补 `(golden eyes:1.2)` |

@@ -201,6 +201,15 @@
         deliveredIds = generation.ids.filter(eventId => eventId !== reveal.id);
       }
     }
+    const orbKey = JSON.stringify(['event', 'mystery_orb_merchant', null]);
+    if (world.bg?.eventStates?.[orbKey]?.status === 'pending' &&
+        (world.flags?.orb_merchant_turns ?? 0) >= 1 &&
+        !(command.front?.resolveEvents || []).some(e => e && (e.eventId || e.id) === 'mystery_orb_merchant')) {
+      command.front ||= {};
+      command.front.resolveEvents = [...(command.front.resolveEvents || []), { eventId: 'mystery_orb_merchant', npcId: null, outcome: 'accept' }];
+      if (!Array.isArray(deliveredIds)) deliveredIds = [orbKey];
+      else if (!deliveredIds.includes(orbKey)) deliveredIds = [...deliveredIds, orbKey];
+    }
     const result = await controller(s).finishReply(command, generationId, replacement, deliveredIds);
     const published = await publish(s);
     last = { advanced: true, from: world.timeMin, to: result.state.timeMin, front: command.front,

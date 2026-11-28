@@ -535,6 +535,10 @@
       if (world.flags?.playerRoomTarget === 'gulan') clearFlags.lastGulanRoomMin = toMin
       changes.push({ target: 'world', worldFlags: clearFlags })
     }
+    const orbState = world.bg?.eventStates?.[JSON.stringify(['event', 'mystery_orb_merchant', null])]
+    if (orbState?.status === 'pending' && (world.flags?.orb_merchant_turns ?? 0) < 1) {
+      changes.push({ target: 'world', worldFlags: { orb_merchant_turns: 1 } })
+    }
     return changes
   }
 

@@ -17,7 +17,7 @@ test('covert transition registers a private tag until the exact unlock minute', 
   const seed = CFG.buildInitialWorld();
   seed.timeMin = 1380;
   seed.playerLocation = 'inn';
-  Object.assign(seed.flags, { arrived_oakhaven: true, ed_joined: true });
+  Object.assign(seed.flags, { arrived_oakhaven: true, ed_joined: true, crystal_orb_unlocked: true });
   Object.assign(seed.npcs.gulan, { stage: 1, location: 'inn' });
   Object.assign(seed.npcs.gulan.values, { affection: 45, blood_density: 47 });
   Object.assign(seed.npcs.ed, { monitored: true, location: 'inn' });
@@ -62,6 +62,7 @@ test('only a matching unlocked narrative image is collected, and edits and rollb
   const receipt = '<status_bar><time elapsed="0"/></status_bar>';
   const rendered = '<content>\n![梦境余影](okh-echo:' + cg.id + ')\n</content>' + receipt;
   sb.OKH_APP_TAGS.apply(state, def.npc, [def.tagId]);
+  state.flags.crystal_orb_unlocked = true;
   state.playerState.pendingEchoes = [{
     id: def.id, eventId: def.eventId, npc: def.npc,
     occurredAt: 0, unlockAt: state.timeMin + 1, status: 'latent'
@@ -214,7 +215,7 @@ test('gulan_final_fall_dark settles covertly with dragon_mark_linger tag and unl
   const seed = CFG.buildInitialWorld();
   seed.timeMin = 1380;
   seed.playerLocation = 'wilds';
-  Object.assign(seed.flags, { arrived_oakhaven: true, ed_joined: true });
+  Object.assign(seed.flags, { arrived_oakhaven: true, ed_joined: true, crystal_orb_unlocked: true });
   Object.assign(seed.npcs.gulan, { stage: 2, location: 'inn' });
   Object.assign(seed.npcs.gulan.values, { affection: 80, blood_density: 85 });
   Object.assign(seed.npcs.ed, { monitored: true, location: 'inn' });
@@ -273,7 +274,7 @@ test('arena mud_fall and fallen settle covertly with tags and unlock after 2 day
     const seed = CFG.buildInitialWorld();
     seed.timeMin = CFG.DAY(16, 13);
     seed.playerLocation = 'inn';
-    Object.assign(seed.flags, { arrived_oakhaven: true, arrivedDay: 1 });
+    Object.assign(seed.flags, { arrived_oakhaven: true, arrivedDay: 1, crystal_orb_unlocked: true });
     Object.assign(seed.npcs.gulan, { stage, location: 'training_grounds' });
     seed.npcs.gulan.values.affection = aff;
     let world = sb.OKHBackground.init(seed, config);

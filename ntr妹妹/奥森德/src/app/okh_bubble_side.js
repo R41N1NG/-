@@ -37,6 +37,7 @@
   }
 
   const STORE_PREFIX = 'okh_ava_';
+  const STYLE_KEY = 'okh_bubble_portrait_style';
   const PLAYER_KEY = '__player__';
   const MAX_BYTES = 20 * 1024 * 1024;
   const DONE = 'data-okh-ava-done';
@@ -62,7 +63,8 @@
     '伯里': '',
     '塞西莉亚': '',
     '艾琳': '',
-    '爱德': ''
+    '爱德': '',
+    '神秘人': ''
   };
   const EXPRESSION_AVATARS = /* __OKH_BUBBLE_AVATARS__ */ {};
 
@@ -77,6 +79,8 @@
       return true;
     } catch (_) { return false; }
   }
+
+  let portraitStyle = store(STYLE_KEY) === 'chibi' ? 'chibi' : 'original';
 
   function fromState(d) {
     const st = d?.stat_data;
@@ -162,8 +166,11 @@
   }
 
   function imageFor(who, face = '', outfit = 'normal') {
-    const variants = Object.hasOwn(EXPRESSION_AVATARS, who) ? EXPRESSION_AVATARS[who].forms : {};
+    const avatar = Object.hasOwn(EXPRESSION_AVATARS, who) ? EXPRESSION_AVATARS[who] : null;
+    const variants = avatar?.forms || {};
     const form = Object.hasOwn(variants, outfit) ? outfit : 'normal';
+    const chibi = avatar?.chibi?.[form];
+    if (portraitStyle === 'chibi' && chibi) return Object.hasOwn(chibi, face) ? chibi[face] : chibi.neutral;
     const faces = variants[form] || {};
     if (face && face !== 'neutral' && Object.hasOwn(faces, face)) return faces[face];
     if (form !== 'normal') return faces.neutral || '';
@@ -327,7 +334,9 @@
       }
       .okh-ava-overlay-btns {
         display: flex !important;
-        gap: 12px !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 8px !important;
         margin-top: 6px !important;
       }
       .okh-ava-btn {
@@ -341,7 +350,8 @@
         font-size: 14px !important;
         transition: all 0.15s ease !important;
       }
-      .okh-ava-btn:hover {
+      .okh-ava-btn:hover,
+      .okh-ava-btn[aria-pressed="true"] {
         background: #332d22 !important;
         border-color: #e2c792 !important;
         color: #fff !important;
@@ -500,6 +510,10 @@
       <div class="okh-ava-overlay-title" data-okh-bmodal-title>头像详情</div>
       <div class="okh-ava-overlay-box" data-okh-bmodal-box style="width:160px;height:200px;"></div>
       <div class="okh-ava-overlay-tip" data-okh-bmodal-status></div>
+      <div class="okh-ava-overlay-btns" role="group" aria-label="队友头像组">
+        <button type="button" class="okh-ava-btn" data-okh-bmodal-act="chibi" aria-pressed="false">Q版头像</button>
+        <button type="button" class="okh-ava-btn" data-okh-bmodal-act="original" aria-pressed="false">原版头像</button>
+      </div>
       <div class="okh-ava-overlay-btns">
         <button type="button" class="okh-ava-btn" data-okh-bmodal-act="upload">更换默认头像</button>
         <button type="button" class="okh-ava-btn" data-okh-bmodal-act="close">关闭</button>
@@ -511,6 +525,14 @@
       if (event.target === modal) closeZoom();
       const act = event.target?.getAttribute('data-okh-bmodal-act');
       if (act === 'close') closeZoom();
+      if (act === 'chibi' || act === 'original') {
+        portraitStyle = act;
+        saveStore(STYLE_KEY, act);
+        const who = modal.getAttribute('data-okh-bmodal-who') || '';
+        const src = imageFor(who, expressionFor(returnFocus), outfitFor(returnFocus, who));
+        updateZoomPortrait(modal, src, who);
+        refreshAvatars();
+      }
       if (act === 'upload') {
         const who = modal.getAttribute('data-okh-bmodal-who') || '';
         if (who) pickFile(who);
@@ -544,17 +566,25 @@
     box.replaceChildren(portrait);
   }
 
+  function updateZoomPortrait(modal, src, label) {
+    const status = modal.querySelector('[data-okh-bmodal-status]');
+    if (status) status.textContent = portraitStyle === 'chibi'
+      ? '六位队友的常态 Q 版随对白表情切换。'
+      : '原版按对白表情和造型显示。自定义默认头像保存在当前浏览器，用于常态对白。';
+    for (const style of ['chibi', 'original']) {
+      modal.querySelector(`[data-okh-bmodal-act="${style}"]`)?.setAttribute('aria-pressed', String(portraitStyle === style));
+    }
+    showZoomPortrait(modal.querySelector('[data-okh-bmodal-box]'), src, label);
+  }
+
   function openZoom(src, label, host) {
     closeZoom();
     returnFocus = host || null;
     const modal = ensureModal();
     if (!modal) return;
     const title = modal.querySelector('[data-okh-bmodal-title]');
-    const box = modal.querySelector('[data-okh-bmodal-box]');
-    const status = modal.querySelector('[data-okh-bmodal-status]');
     if (title) title.textContent = `${label} · 气泡头像`;
-    if (status) status.textContent = '自定义默认头像保存在当前浏览器，用于常态下无专用表情的对白。';
-    showZoomPortrait(box, src, label);
+    updateZoomPortrait(modal, src, label);
     modal.setAttribute('data-okh-bmodal-who', label);
     modal.classList.add('active');
     modal.querySelector('[data-okh-bmodal-act="upload"]')?.focus();
@@ -624,7 +654,9 @@
             if (saveStore(key, dataUrl)) {
               if (modal?.getAttribute('data-okh-bmodal-who') === who) {
                 showZoomPortrait(box, imageFor(who, expressionFor(returnFocus), outfitFor(returnFocus, who)), who);
-                if (status) status.textContent = `${who}的默认头像已保存。`;
+                if (status) status.textContent = portraitStyle === 'chibi' && EXPRESSION_AVATARS[who]?.chibi
+                  ? `${who}的默认头像已保存，切换到原版头像可查看。`
+                  : `${who}的默认头像已保存。`;
               }
               refreshAvatars();
             } else {
@@ -748,3 +780,4 @@
   });
 
 })(typeof globalThis !== 'undefined' ? globalThis : this);
+

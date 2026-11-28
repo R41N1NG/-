@@ -1,0 +1,98 @@
+[
+  {
+    "job": "gulan_virgin_36",
+    "label": "gulan_virgin_36_s99107",
+    "seed": 1873499107,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 63.6,
+    "files": [
+      "comfyui\\tasks\\gulan_angle_scan\\gulan_virgin_36_s99107_00001_.png"
+    ],
+    "prompt_id": "d307e604-90e6-43f2-bfc6-a532fcc888fc"
+  },
+  {
+    "job": "gulan_virgin_36",
+    "label": "gulan_virgin_36_s88220",
+    "seed": 1131388220,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 12.0,
+    "files": [
+      "comfyui\\tasks\\gulan_angle_scan\\gulan_virgin_36_s88220_00001_.png"
+    ],
+    "prompt_id": "dae0c4f7-4044-4df4-9cf1-e968041893d0"
+  },
+  {
+    "job": "gulan_virgin_36",
+    "label": "gulan_virgin_36_s44550",
+    "seed": 168944550,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 11.2,
+    "files": [
+      "comfyui\\tasks\\gulan_angle_scan\\gulan_virgin_36_s44550_00001_.png"
+    ],
+    "prompt_id": "89340334-544e-46f4-882f-9bddcfa8348f"
+  },
+  {
+    "job": "gulan_virgin_36",
+    "label": "gulan_virgin_36_s83463",
+    "seed": 1318383463,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 12.4,
+    "files": [
+      "comfyui\\tasks\\gulan_angle_scan\\gulan_virgin_36_s83463_00001_.png"
+    ],
+    "prompt_id": "8724bd3f-b947-43de-8893-2dafbe8bd6db"
+  },
+  {
+    "job": "gulan_virgin_36",
+    "label": "gulan_virgin_36_s3623",
+    "seed": 1147503623,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 13.6,
+    "files": [
+      "comfyui\\tasks\\gulan_angle_scan\\gulan_virgin_36_s3623_00001_.png"
+    ],
+    "prompt_id": "4b0458f8-5c68-417b-8bc4-41ccb13caa64"
+  },
+  {
+    "job": "gulan_virgin_36",
+    "label": "gulan_virgin_36_s10402",
+    "seed": 383210402,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 12.1,
+    "files": [
+      "comfyui\\tasks\\gulan_angle_scan\\gulan_virgin_36_s10402_00001_.png"
+    ],
+    "prompt_id": "a3de76ee-671d-492e-b2b6-d9dffae813b4"
+  }
+]

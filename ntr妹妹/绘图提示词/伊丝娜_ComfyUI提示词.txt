@@ -14,10 +14,10 @@ golden eyes, slit pupils, (cat smile:0.8), sharp canine tooth, cat mouth,
 ※ 发色锁死：red hair 固定 1.25 权重；负面加 blonde hair, yellow hair, gold hair，防止旧习惯把发色带成金色。
 (blush:1.1), drunk blush, half-closed eyes, lazy expression, smirk,
 huge breasts, large areolae, pink nipples, cleavage, pale skin, soft body, (wide hips:1.1), (thick thighs:1.1), (huge ass:1.15),
-black shorts, denim shorts, short shorts, (red miniskirt:1.1), micro skirt, crop top, red top, midriff, navel,
+white crop top, (lace-up top:1.15), tan trim, midriff, navel, (brown long coat:1.2), long sleeves, (white fur collar:1.25), open coat, brown leather shorts, (short shorts:1.2), white trim, double belt, gold buckle, leather pouch,
 dagger, knife sheath, thigh strap, fingerless gloves, thief outfit, boots,
 
-※ 服装为可替换槽位：以上三行「black shorts … boots」为【常服】专用。
+※ 服装为可替换槽位：以上三行「white crop top … buckled boots」为【常服】专用（2026-11-28 按新版斥候装全身稿换版：奶白系带露脐胸衣 + 深棕毛领长风衣 + 深棕皮短裤 + 右腿双匕 + 带扣短靴）。
   婚纱场景必须整段删除常服，换成婚纱槽位，绝不可叠穿混用。
   婚纱槽位：white wedding dress, bridal gown, lace, long skirt, white veil, bridal veil, (garter belt:1.0), white thighhighs, white gloves, bouquet,
 
@@ -38,7 +38,7 @@ blonde hair, yellow hair, gold hair,
 tavern, wooden table, indoor, warm lamp light, wine bottle, wine glass, drunk, tipsy,
 leaning forward, leaning on person, (leaning on shoulder:0.9), hand on own chest, reaching out, hand out, begging,
 lazy, sleepy, one eye closed, blush, open mouth, licking lips, tongue out, food on face,
-crop top, midriff, shorts, thigh gap,
+white crop top, midriff, brown leather shorts, thigh gap,
 upper body, close-up, from front, shallow depth of field,
 
 [参数] 832x1216 / steps 30 / cfg 6 / dpmpp_2m + karras
@@ -63,7 +63,7 @@ upper body, from front, from below, soft focus,
 standing, doorway, inn room, night, moonlight,
 trembling, (trembling ears:1.2), drooping ears, cat ears twitching, twitching,
 awkward smile, forced smile, sweat on face, blush, avoiding eye contact,
-red miniskirt, torn clothes, (handprint on thigh:1.1), red handprint, bruised, messy hair,
+brown leather shorts, torn clothes, coat gone, (handprint on thigh:1.1), red handprint, bruised, messy hair,
 covering body, arm across chest,
 full body, from front, dutch angle, cold lighting,
 
@@ -149,7 +149,7 @@ full body, wide shot, symmetrical composition, god rays,
 ==================================================
 [正面 · 追加]
 spanking, over the knee, ass focus, (red buttocks:1.15), handprint on buttocks,
-black shorts pulled down, shorts around one leg, panties pulled down,
+brown leather shorts pulled down, shorts around one leg, panties pulled down,
 ass shake, jiggle, motion lines, trembling,
 looking back, teary eyes, blush, pout, crying,
 indoor, wooden floor, dim light,
@@ -163,12 +163,12 @@ close-up on buttocks, from behind, low angle,
 0. ★ 三条硬规则（主人钦定，优先于其他一切）：
    (1) 精神控制场景只画「被控结果」——glowing eyes / spiral eyes / magical aura / involuntary，绝不出现法杖、法杖把手、魔法阵等法器本体，负面固定加 `staff, magic staff, holding staff, wand, scepter`。
    (2) 宠物犬玩法只是姿态与项圈牵引，她永远是猫娘——猫耳猫尾必须保留，负面固定加 `dog ears, dog tail, dog girl, puppy ears`。
-   (3) 婚纱就是直接穿婚纱：常服槽位（black shorts / red miniskirt / crop top / dagger / thigh strap）整段删除，不得与 wedding dress 叠穿，负面加 `crop top, shorts, miniskirt, midriff, thief outfit, dagger`。
+   (3) 婚纱就是直接穿婚纱：常服槽位（white crop top / brown long coat / brown leather shorts / dagger / thigh strap）整段删除，不得与 wedding dress 叠穿，负面加 `crop top, shorts, miniskirt, midriff, thief outfit, dagger`。
 1. 猫耳/猫尾最容易丢：`(cat ears:1.2), (cat tail:1.15)` 放在 tag 最前段；尾巴建议给一个明确姿态（`tail raised` / `tail swaying`），否则模型常省略。
 2. “毛茸茸”质感：加 `fluffy ears, fur, ear fluff`；SDXL 常画成塑料感，可配 furry 细节 LoRA 权重 0.4。
 3. 醉红晕：`drunk blush, tipsy` 组合最稳；单独 `blush` 会变成害羞。要“酒醉”就加 `drunk, wine bottle, half-closed eyes`。
 4. 保守 × 暴露的反差：场景 A/B 用 `crop top, midriff` 保留火辣；出现 `shy, looking away, awkward smile` 才是她的人设精髓，别全用 `seductive`。
-5. 巨乳与热裤：`huge breasts` + `black shorts, short shorts` + `(thick thighs:1.1)`；热裤勒肉感用 `tight shorts, thigh squish`，出现崩坏就删 `thigh squish`。
+5. 巨乳与热裤：`huge breasts` + `brown leather shorts, short shorts` + `(thick thighs:1.1)`；热裤勒肉感用 `tight shorts, thigh squish`，出现崩坏就删 `thigh squish`。
 6. 场景 C 的“说谎猫耳”：`(trembling ears:1.2), twitching` 是关键表情语言，配合 `forced smile, sweat on face` 效果最好。
 7. 场景 F 的肥猪领主：`fat man, ugly man` 权重别超 1.15，否则会把女主脸部污染成肥胖脸——建议两个人分开出图后合成，或用区域提示（regional prompt）。
 8. tag 分段防串味：`1girl, solo, cat girl, ... BREAK group sex, multiple boys, ... BREAK masterpiece, best quality, ...`
@@ -383,7 +383,7 @@ masterpiece, best quality, amazing quality, very aesthetic, absurdres, highres, 
 1girl, solo, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), crimson hair, long hair, wavy hair,
 golden eyes, slit pupils, (cat smile:0.8), sharp canine tooth, cat mouth, (blush:1.1), drunk blush, half-closed eyes, lazy expression,
 huge breasts, large areolae, pink nipples, cleavage, pale skin, soft body, (wide hips:1.1), (thick thighs:1.1), (huge ass:1.15),
-black shorts, denim shorts, (red miniskirt:1.1), crop top, red top, midriff, navel, dagger, thigh strap, thief outfit, boots,
+white crop top, (lace-up top:1.15), tan trim, midriff, navel, (brown long coat:1.2), long sleeves, (white fur collar:1.25), brown leather shorts, (short shorts:1.2), double belt, leather pouch, dagger, thigh strap, two daggers, thief outfit, brown boots, buckled boots,
 
 【伊丝娜·负面（通用）】
 worst quality, low quality, lowres, jpeg artifacts, blurry, bad anatomy, bad hands, extra fingers, missing fingers, fused fingers, extra limbs, extra arms, extra legs, deformed, disfigured, malformed limbs, mutated, bad proportions, ugly, text, watermark, signature, logo, censored, mosaic censoring, pixelated, child, loli, flat chest, petite, muscular female, cross-eyed, extra ears, extra tail, two tails, blonde hair, yellow hair, gold hair,
@@ -393,7 +393,7 @@ worst quality, low quality, lowres, jpeg artifacts, blurry, bad anatomy, bad han
 --------------------------------------------------
 masterpiece, best quality, absurdres, ultra-detailed, cinematic lighting,
 1girl, solo, (cat girl:1.2), (cat ears:1.2), (cat tail:1.15), (red hair:1.25), crimson hair, long hair, wavy hair, golden eyes, slit pupils, cat mouth, sharp canine tooth, blush, big breasts, large areolae, pink nipples, pale skin, (wide hips:1.1), (thick thighs:1.1), (huge ass:1.15),
-BREAK black shorts, crop top, red top, midriff,
+BREAK brown leather shorts, white crop top, midriff,
 BREAK dark-skinned male, black male, (huge penis:1.2), size difference, reverse cowgirl position, facing away, girl on top, sitting on penis,
 BREAK gold coins, casino chips, vip room, dim red lighting, smoke,
 BREAK rolling eyes, ahegao, tears, drooling, sweat, trembling, (cat tail raised:1.1),

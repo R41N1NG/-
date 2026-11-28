@@ -1,0 +1,18 @@
+[
+  {
+    "job": "gulan_virgin_36",
+    "label": "gulan_virgin_36_s58715",
+    "seed": 1561358715,
+    "ckpt": "waiIllustriousSDXL_v170.safetensors",
+    "width": 832,
+    "height": 1216,
+    "steps": 30,
+    "cfg": 6.5,
+    "hires": 0.0,
+    "seconds": 63.1,
+    "files": [
+      "comfyui\\tasks\\smoke\\gulan_virgin_36_s58715_00001_.png"
+    ],
+    "prompt_id": "bc5e5da7-c278-4009-82a2-1455ce1ea4d6"
+  }
+]

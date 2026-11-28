@@ -48,12 +48,12 @@ adult, mature female, tall female,
 
 | 档 | 用于 | tag |
 |---|---|---|
-| **① 完整** | S1 押解 | `shoulder cutout, red crop top, midriff, navel, black shorts, short shorts, thigh strap, fingerless gloves, boots, leather sheath` |
+| **① 完整** | S1 押解 | `white crop top, (lace-up top:1.15), tan trim, midriff, navel, (brown long coat:1.2), white fur collar, long sleeves, brown leather shorts, short shorts, double belt, leather pouch, thigh strap, leather sheath, brown boots, buckled boots` |
 | **② 松动** | S2 扣颈圈 | 同上 + `disheveled, clothes askew, one shoulder strap down` |
 | **③ 撕破** | S3–S5 | `torn clothes, torn shirt, clothes ripped, (breasts out:1.15), exposed breasts, torn shorts, shorts partially pulled down` |
 | **④ 只剩碎片** | S6–S7 | `clothes in tatters, (completely nude:1.1), nude, only boots left, torn fabric on wrist` |
 
-> 她的常服是「露肩露脐红短上衣 + 深色贴身短裤 + 大腿皮鞘 + 软底皮靴」。**皮鞘和靴子即使到 ④ 档也不必全脱**——留一件残件，画面比全裸更有"被剥光到一半"的感觉。
+> 她的常服是「奶白系带露脐胸衣 + 深棕毛领长风衣 + 深棕皮短裤 + 右腿双匕首皮鞘 + 深棕带扣短靴」。**皮鞘与短靴即使到 ④ 档也不必全脱**——留一件残件，画面比全裸更有"被剥光到一半"的感觉。长风衣在 ②③ 档正好当剥落进度条用：`open coat` → `coat slipping off one shoulder` → `coat fallen off, coat around waist`，比直接写 `torn clothes` 更有层次。
 
 ### 0.3 兽人锚点（引用手册，删改勿动）
 
@@ -125,7 +125,7 @@ harsh shadow, dim lighting, torch light, rim light, chiaroscuro, backlight,
 (red hair:1.25), crimson hair, long hair, wavy hair, messy hair,
 golden eyes, slit pupils, sharp canine tooth,
 pale skin, blush, sweat, dirt on face,
-shoulder cutout, red crop top, midriff, black shorts, short shorts, thigh strap, fingerless gloves, boots,
+white crop top, (lace-up top:1.15), tan trim, midriff, navel, (brown long coat:1.2), white fur collar, brown leather shorts, short shorts, double belt, thigh strap, leather sheath, brown boots,
 bound wrists, arms behind back, rope,
 walking, pushed, stumbling, (stumbling forward:1.1), leaning forward,
 defiant, glare, gritted teeth, (ears down:1.2), (tail bristling:1.15), hissing,
@@ -161,7 +161,7 @@ grey skin, brown skin, blue skin,
 golden eyes, slit pupils, (vertical pupils:1.15), sharp canine tooth,
 pale skin, (pale skin:1.1), (trembling:1.15), sweat,
 (wide-eyed:1.1), (pupils shrink:1.1), staring, blank stare,
-disheveled, one shoulder strap down, shoulder cutout, red crop top, black shorts,
+disheveled, coat slipping off shoulder, one strap down, white crop top pulled askew, brown leather shorts,
 (iron collar:1.3), metal collar, padlock, chain, (chain:1.2),
 kneeling, sitting on ground, head tilted back, looking up,
 orc, monster, male focus, green skin, (green skin:1.3), muscular male, huge muscles, tusks,
@@ -737,8 +737,8 @@ defiant, glare, angry,
 | 皮肤 | `pale skin` 干净 | **肤色不变**，加 `dirty, sweat, bruises, bite marks` |
 | 小腹 | `midriff, navel` 无纹 | **`(womb tattoo:1.18)`** |
 | 大腿 | `bare thighs` 干净 | **`thigh tattoo`** |
-| 肩 | `bare shoulders` 干净 | **`shoulder tattoo`** |
-| 服装 | 红短上衣 + 深色短裤 + 皮鞘 + 皮靴 | 兽皮 / 皮革挽具 / 骨饰 / 毛边靴 |
+| 肩 | 长风衣长袖覆盖，不裸露 | **`shoulder tattoo`** |
+| 服装 | 奶白系带胸衣 + 棕毛领长风衣 + 深棕皮短裤 + 皮鞘 + 短靴 | 兽皮 / 皮革挽具 / 骨饰 / 毛边靴 |
 | 颈圈 | **无** | **`(iron collar:1.3)` + 断链** |
 | 姿态 | 慵懒、倚靠、放松 | 叉腰站立（A）/ 伸手乞求（B）/ 被压制（场景版） |
 
