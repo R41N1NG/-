@@ -57,12 +57,16 @@
     return { biome, ready: ruins.clearedSince(world, biome.id, flags.ceciliaWeeklyAcceptMin, flags.ceciliaWeeklyAcceptDay) }
   }
 
-  function isAloneWithAurora(world, npc) {
-    if (!npc || npc.id !== 'aurora' || world.playerLocation !== npc.location) return false
+  function isAloneWith(world, npc, id = npc?.id) {
+    if (!npc || npc.id !== id || world.playerLocation !== npc.location) return false
     const present = Object.values(world.npcs || {}).filter(
       n => n.monitored === true && n.alive !== false && n.location === world.playerLocation
     )
-    return present.length === 1 && present[0].id === 'aurora'
+    return present.length === 1 && present[0].id === id
+  }
+
+  function isAloneWithAurora(world, npc) {
+    return isAloneWith(world, npc, 'aurora')
   }
 
   function presentMasterExists(world) {
@@ -289,6 +293,30 @@
       stackable: false,
       maxCount: 1,
       desc: '塞西莉亚亲自祝圣赠予的纯银念珠信物，随身携带时在遗迹「治疗」与「辨识」判定中常驻提供 +1 庇佑加值。'
+    }),
+    gulan_reverse_scale: Object.freeze({
+      id: 'gulan_reverse_scale',
+      name: '古兰的逆鳞',
+      category: 'quest',
+      stackable: false,
+      maxCount: 1,
+      desc: '古兰亲手褪下赠予的护身逆鳞，温润坚硬；每次遗迹探险中免疫首次即将承受的重伤。'
+    }),
+    nise_arcane_notes: Object.freeze({
+      id: 'nise_arcane_notes',
+      name: '妮丝的法术笔记',
+      category: 'quest',
+      stackable: false,
+      maxCount: 1,
+      desc: '妮丝熬夜整理并写满批注的专属法术手札，将技能装配上限从 6 格提升至 7 格。'
+    }),
+    aurora_blessed_ring: Object.freeze({
+      id: 'aurora_blessed_ring',
+      name: '祝福的祈福银戒',
+      category: 'quest',
+      stackable: false,
+      maxCount: 1,
+      desc: '奥萝拉精心祈福祝祷后赠予的银质指环；休整与过夜（含荒原）时可一并安抚解除轻伤。'
     })
   })
 
@@ -1679,25 +1707,120 @@
       targets: ['isna'],
       allowCancel: true,
       retryOnCancel: true,
-      when: ({ world, npc, phase }) =>
-        npc.stage === 0 &&
+      when: ({ world, npc }) =>
+        npc.stage < 3 &&
+        npc.alive !== false &&
+        npc.monitored === true &&
         !npc.flags?.captured_orc &&
         !npc.flags?.token_exchanged &&
         (npc.values.affection ?? 0) >= 90 &&
-        ['night', 'deep_night'].includes(phase.id) &&
-        world.playerLocation === npc.location,
-      text: '夜深人静，微醺的{name}倚在身侧闲聊起幼年颠沛的旧事，平日总带着几分促狭笑意的猫耳罕见地放软下来。她从领口摘下一对镌刻微弱魔纹的旧吊坠，指尖微微发紧，将其中半枚推向你掌心前，目光藏着克制的试探与托付，静候你的回应。',
+        isAloneWith(world, npc, 'isna'),
+      text: '四下无人时，{name}倚在身侧闲聊起幼年颠沛的旧事，平日总带着几分促狭笑意的猫耳罕见地放软下来。她从领口摘下一对镌刻微弱魔纹的旧吊坠，指尖微微发紧，将其中半枚推向你掌心前，目光藏着克制的试探与托付，静候你的回应。',
       outcomes: {
         accept_pendant: {
           when: ({ world, npc }) => world.playerLocation === npc.location,
           effects: [
             { target: 'world', itemsAdd: [{ id: 'isna_pendant', count: 1 }] },
+            { target: 'player', tagsAdd: ['bond_isna_90'] },
             { target: 'isna', npcFlags: { token_exchanged: true } }
           ],
-          text: '你接过那枚尚带体温的半对吊坠妥善收好，{name}别过脸轻哼了一声，微微发烫的耳尖却藏不住心底的安定。'
+          text: '你接过那枚尚带体温的半对吊坠妥善收好，{name}别过脸轻哼了一声，微微发烫的耳尖却藏不住心底的安定（获得【猫儿的牵挂】）。'
         },
         decline_pendant: {
           text: '你郑重婉拒了这份贵重的贴身旧物，{name}指尖微顿，随后笑着把吊坠重新挂回颈间，没有再勉强。'
+        }
+      }
+    },
+    {
+      id: 'gulan_scale_bond',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['gulan'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc }) =>
+        npc.stage < 3 &&
+        npc.alive !== false &&
+        npc.monitored === true &&
+        !npc.flags?.gulan_departed &&
+        !npc.flags?.captured_orc &&
+        !npc.flags?.captured_manor &&
+        !npc.flags?.gulan_scale_given &&
+        (npc.values.affection ?? 0) >= 90 &&
+        isAloneWith(world, npc, 'gulan'),
+      text: '难得只有你们两人独处，{name}停下手中拭剑的动作，沉默片刻后解开高领扣环，指尖微一用力褪下一片温润如墨玉的颈侧逆鳞递到你面前。这位一向寡言的宗师长辈垂眸看着你，眼神里满是难言的关切与托付。',
+      outcomes: {
+        accept: {
+          when: ({ world, npc }) => world.playerLocation === npc.location,
+          effects: [
+            { target: 'world', itemsAdd: [{ id: 'gulan_reverse_scale', count: 1 }] },
+            { target: 'player', tagsAdd: ['bond_gulan_90'] },
+            { target: 'gulan', npcFlags: { gulan_scale_given: true } }
+          ],
+          text: '你郑重接过那片尚带体温的逆鳞贴身收好，{name}轻轻按了按你的肩头，低声叮嘱了句“莫要逞强”（获得【古兰的护佑】）。'
+        },
+        decline: {
+          text: '你劝慰她留着护身，{name}微微颔首，将逆鳞暂且收起。'
+        }
+      }
+    },
+    {
+      id: 'nise_arcane_bond',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['nise'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc }) =>
+        npc.stage < 3 &&
+        npc.alive !== false &&
+        npc.monitored === true &&
+        !npc.flags?.nise_notes_given &&
+        (npc.values.affection ?? 0) >= 90 &&
+        isAloneWith(world, npc, 'nise'),
+      text: '趁着旁人不在，{name}抱着一本边角写满朱笔批注的厚实法术手札凑过来，把本子往你怀里一塞，嘴上却还别扭地扬着下巴：“拿去啦，笨蛋哥哥，连技能都记不全，看在我的面子上再多给你塞一个法术位！”',
+      outcomes: {
+        accept: {
+          when: ({ world, npc }) => world.playerLocation === npc.location,
+          effects: [
+            { target: 'world', itemsAdd: [{ id: 'nise_arcane_notes', count: 1 }] },
+            { target: 'player', tagsAdd: ['bond_nise_90'] },
+            { target: 'nise', npcFlags: { nise_notes_given: true } }
+          ],
+          text: '你翻开笔记看着里面细致到每一步魔力回路的口诀，忍不住笑着揉了揉她的发顶，{name}脸颊微红却仰起脸傲娇道：“天才法师妮丝大人罩着你~”（获得【天才法师的笔记】）。'
+        },
+        decline: {
+          text: '你笑着表示眼下还用不上这么深奥的批注，{name}鼓着腮帮把本子抱了回去。'
+        }
+      }
+    },
+    {
+      id: 'aurora_ring_bond',
+      mode: 'interaction',
+      scope: 'npc',
+      targets: ['aurora'],
+      allowCancel: true,
+      retryOnCancel: true,
+      when: ({ world, npc }) =>
+        npc.stage < 3 &&
+        npc.alive !== false &&
+        npc.monitored === true &&
+        !npc.flags?.aurora_ring_given &&
+        (npc.values.affection ?? 0) >= 90 &&
+        isAloneWith(world, npc, 'aurora'),
+      text: '只剩你们两人的安静间隙里，{name}双颊微红地摊开掌心，里面静静躺着一枚刻着细微晨曦纹路、经过她反复祈福祝祷的银质指环。她轻声抬头望向你，语气温柔而坚定。',
+      outcomes: {
+        accept: {
+          when: ({ world, npc }) => world.playerLocation === npc.location,
+          effects: [
+            { target: 'world', itemsAdd: [{ id: 'aurora_blessed_ring', count: 1 }] },
+            { target: 'player', tagsAdd: ['bond_aurora_90'] },
+            { target: 'aurora', npcFlags: { aurora_ring_given: true } }
+          ],
+          text: '你小心接过指环戴在指间，{name}双手交叠在胸前，轻声为你祈祷：“愿你永安。”（获得【晨曦永安之誓】）。'
+        },
+        decline: {
+          text: '你温言请她先收好这枚贵重的祈福银戒，{name}轻声应下，眼神依旧柔和。'
         }
       }
     },
@@ -4634,7 +4757,7 @@
     SCHEMA_VERSION, DAY, WEEKDAYS, weekdayOf, isWeekendDay, weekdayLabel,
     PHASES, LOCATIONS, TOWN_LOCATIONS, STAGES, AFFECTION_TIERS, ITEM_CATALOG,
     ACTIONS, NODES, EVENTS, ROSTER, buildInitialWorld,
-    isEileenFugitive, hasEileenSignal, eileenEscortOpen, churchAudience, getChurchWeeklyRuin,
+    isEileenFugitive, hasEileenSignal, eileenEscortOpen, churchAudience, canTakeWeeklyRuin, getChurchWeeklyRuin,
     WORK_LIMITS, WORK_TERMS, workStart, paidWorkSettledToday, workCooldownWait, recentGuildStarts, completedWorkFlags,
     DRAGON_TRUE_FORM_SPEC, buildDragonRevealText
   })
@@ -4643,3 +4766,4 @@
     module.exports = root.OKH_APP_DATA
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)
+

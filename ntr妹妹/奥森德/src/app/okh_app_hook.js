@@ -146,6 +146,7 @@
       front.clockState = plan.clockState;
       front.workUntilMin = plan.workUntilMin;
       front.timeCheck = timeCheck;
+      front.clearLocalDigest = true;
       const during = new Set([...(world.interactingIds || []), ...P.parseInteract(text).filter(n => u.own(world.npcs, n))]);
       return {
         command: { id, revision, toMin: plan.toMin, interactingIds: [...during], front, chatIndex: opts.chatIndex ?? null },
@@ -161,7 +162,7 @@
       };
       const plan = clockPlan(world, parsed, minutes, opts.countMessage === true, opts.initial === true);
       const timeCheck = P.compareEnd(parsed, plan.toMin);
-      const front = { interactingIds: [], clockState: plan.clockState, timeCheck };
+      const front = { interactingIds: [], clockState: plan.clockState, timeCheck, clearLocalDigest: true };
       return {
         command: { id, revision, toMin: plan.toMin, interactingIds: [...(world.interactingIds || [])], front, chatIndex: opts.chatIndex ?? null },
         diagnostics: parsed.diagnostics,
@@ -383,7 +384,12 @@
         const order = userCommandBefore(chat, generation.targetIndex);
         const adventure = root.OKH_APP_ADVENTURE.apply(u.clone(promptWorld), order, replyId(s, generation.targetIndex));
         const resultPrompt = adventure ? '【本轮冒险裁决】' + adventure.message + '。按后台结果简洁演绎，不另行申报探险、奖品或时间。' : '';
-        const text = [A.buildLedger(promptWorld), resultPrompt, ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal, echoInjection]
+        const digest = promptWorld.bg?.localDigest;
+        const digestPrompt = Array.isArray(digest) && digest.length
+          ? '【近期已完成的整备与行动】\n' + digest.map(item => '- ' + item).join('\n') +
+            '\n以上为玩家发话前已由后台结算的既成事实，仅需在当前场景与人物状态上自然承接（一两句带过时间或余韵即可），不得逐条复述流水账，不得补写主角未说出的台词，也不得重复扣费或重复推进时间。'
+          : '';
+        const text = [A.buildLedger(promptWorld), digestPrompt, resultPrompt, ...fallbackEntries.map(entry => entry.content), batch.text, confirmReveal, echoInjection]
           .filter(Boolean).join('\n\n');
         await inject(text, s);
         return { ...batch, generationId: id, text };
@@ -485,9 +491,33 @@
     for (const { event, handler, off } of listeners.splice(0)) off(event, handler);
     return true;
   }
+  function applyLocal(fn, opts = {}) {
+    u.check(typeof fn === 'function', 'applyLocal 需要执行函数');
+    return serialSession(async s => {
+      u.check(!activeGeneration, '正在生成回复中，请稍后再试');
+      await W.ensureWorld(false, s);
+      const before = W.loadWorld(s);
+      const draft = u.clone(before);
+      const res = await fn(draft, s);
+      if (res?.noChange) return { ok: true, changed: false, message: res.message || '', report: res.report || null, state: before };
+      if (opts.recordDigest !== false && res?.digest) {
+        const items = Array.isArray(res.digest) ? res.digest : [res.digest];
+        const list = (draft.bg.localDigest ||= []);
+        for (const item of items) {
+          if (typeof item === 'string' && item.trim()) list.push(item.trim());
+        }
+        if (list.length > 12) list.splice(0, list.length - 12);
+      }
+      draft.bg.revision = before.bg.revision + 1;
+      await W.commit(s, { expectedRevision: before.bg.revision, state: draft, checkpoint: null, reason: 'local-action' });
+      await publish(s);
+      root.OKH_APP_HUD?.render?.(true);
+      return { ok: true, changed: true, message: res?.message || '', report: res?.report || null, state: draft };
+    });
+  }
   function restore(id) { return serialSession(async s => { await restoreRecord(s, id); await publish(s); }); }
   root.OKH_APP_HOOK = Object.freeze({ RHYTHM, configure, attach, detach, step, onMessage,
-    beforeGeneration, cancelGeneration, syncHistory, refreshWorldbook, restore, fingerprint, revisionFor,
+    beforeGeneration, cancelGeneration, syncHistory, refreshWorldbook, restore, applyLocal, fingerprint, revisionFor,
     applyFront: (front, opts = {}) => step(opts.minutes ?? 0, { ...opts, frontOverride: front }),
     parseElapsed: text => P.parseStatusBar(text).elapsed, lastReport: () => last, publish });
 })(globalThis);

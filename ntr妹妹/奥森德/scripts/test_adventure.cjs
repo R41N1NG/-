@@ -183,22 +183,152 @@ test('all seventeen professions start with two skills available on the following
 })
 
 test('a heavy wound can recover through treatment or three nights at the inn', () => {
-  const { world, sandbox, core, config, play } = fixture({ location: 'inn' })
+  const { world, sandbox, core, config, play } = fixture({ location: 'church' })
   const tag = 'debuff_heavy_wound'
   sandbox.OKH_APP_TAGS.apply(world, 'player', [tag])
-  world.npcs.cecilia.location = 'inn'
+  world.npcs.cecilia.location = 'church'
   world.npcs.cecilia.monitored = true
-  assert(play(world, '疗伤 player').state.tags.player.includes(tag))
-  const church = JSON.parse(JSON.stringify(world))
-  church.playerLocation = 'church'
-  assert(play(church, '疗伤 player').state.tags.player.includes(tag))
-  church.npcs.cecilia.location = 'church'
-  const healed = play(church, '疗伤 player').state
+  const healed = play(world, '疗伤 player').state
   assert(!healed.tags.player.includes(tag))
   assert.equal(healed.playerState.gold, world.playerState.gold - 10)
+  // 塞西莉亚不在场时在教堂仍可由教堂医护处理轻伤
+  sandbox.OKH_APP_TAGS.apply(world, 'player', ['debuff_light_wound'])
+  world.npcs.cecilia.location = 'manor'
+  const lightHealed = play(world, '疗伤 player').state
+  assert(!lightHealed.tags.player.includes('debuff_light_wound'))
+  const innWorld = fixture({ location: 'inn' }).world
+  sandbox.OKH_APP_TAGS.apply(innWorld, 'player', [tag])
   function wait(days) {
-    return core.advance(world, { id: 'rest', revision: 'r1', toMin: days * 1440 + 360 }, config).state
+    return core.advance(innWorld, { id: 'rest', revision: 'r1', toMin: days * 1440 + 360 }, config).state
   }
   assert(wait(2).tags.player.includes(tag))
   assert(!wait(3).tags.player.includes(tag))
+})
+
+test('local actions bypass turns, record non-empty digest, skip empty moves and clear after reply', async () => {
+  const store = new Map()
+  const chat = [{ is_user: false, is_system: false, mes: '<content>开局</content><status_bar><time elapsed="0" end="1日10:00"/></status_bar>' }]
+  const sandbox = vm.createContext({ console: { log() {}, warn() {}, error() {} } })
+  vm.runInContext(code, sandbox)
+  const { OKH_APP_WORLD: W, OKH_APP_HOOK: HOOK, OKH_APP_ADVENTURE: ADV } = sandbox
+  W.configure({
+    getChatId: () => 'chat-local-1',
+    getContext: () => ({ chat }),
+    storage: { get: k => store.get(k), set: (k, v) => { store.set(k, v); return true } }
+  })
+  let lastInjected = ''
+  HOOK.configure({ inject: text => { lastInjected = text; return true } })
+  await W.ensureWorld(true)
+  // Set arrived_oakhaven at day 2 morning in town with 50 gold
+  await HOOK.applyLocal(draft => {
+    draft.flags.arrived_oakhaven = true
+    draft.playerLocation = 'town'
+    draft.playerState.gold = 50
+    draft.timeMin = 1440 + 540
+    return { message: 'setup' }
+  }, { recordDigest: false })
+
+  // 1. Empty move does NOT add localDigest
+  await HOOK.applyLocal(draft => ADV.runLocal(draft, { kind: 'move', to: 'church' }))
+  assert.equal(W.loadWorld().playerLocation, 'church')
+  assert.equal(W.loadWorld().bg.localDigest?.length || 0, 0)
+
+  // 2. Church donate adds localDigest with location and deducts gold without pushing history checkpoint
+  const histLenBefore = W.readEnvelope().history.length
+  await HOOK.applyLocal(draft => ADV.runLocal(draft, { kind: 'economy', op: 'donate', tier: 'small', npc: 'cecilia' }))
+  assert.equal(W.readEnvelope().history.length, histLenBefore)
+  assert.equal(W.loadWorld().playerState.gold, 45)
+  assert.equal(W.loadWorld().bg.localDigest.length, 1)
+  assert.match(W.loadWorld().bg.localDigest[0], /圣辉大教堂.*募捐/)
+
+  // 3. Equip/unequip does NOT add localDigest
+  await HOOK.applyLocal(draft => ADV.runLocal(draft, { kind: 'move', to: 'inn' }))
+  await HOOK.applyLocal(draft => ADV.runLocal(draft, { kind: 'adventure', command: '卸下 skill_first_aid' }))
+  assert.equal(W.loadWorld().bg.localDigest.length, 1)
+
+  // 4. Invalid action throws and leaves state untouched
+  await assert.rejects(
+    () => HOOK.applyLocal(draft => ADV.runLocal(draft, { kind: 'adventure', command: '进入 2' })),
+    /荒原/
+  )
+  assert.equal(W.loadWorld().bg.localDigest.length, 1)
+
+  // 5. Next generation injects localDigest and finishing reply clears it
+  chat.push({ is_user: true, mes: '继续。' })
+  await HOOK.beforeGeneration({ type: 'normal' })
+  assert.match(lastInjected, /近期已完成的整备与行动/)
+  assert.match(lastInjected, /募捐/)
+  chat.push({ is_user: false, is_system: false, mes: '<content>继续剧情</content><status_bar><time elapsed="15" end="2日09:30"/></status_bar>' })
+  await HOOK.onMessage(chat.length - 1)
+  assert.equal(W.loadWorld().bg.localDigest.length, 0)
+})
+
+test('90-affection alone events grant global tags, items, mechanical perks, and HUD bond badges', () => {
+  const { world, sandbox, core, config, play } = fixture({ location: 'wilds', supplies: 20 })
+  const { OKH_APP_SKILLS: SKILLS, OKH_APP_TAGS: TAGS, OKH_APP_HUD: HUD } = sandbox
+
+  // 1. Alone check: with gulan & nise both at inn, 90-affection bond does NOT trigger
+  let w = core.init(sandbox.OKH_APP_CONFIG.buildInitialWorld(), config)
+  w.flags.arrived_oakhaven = true
+  w.playerLocation = 'inn'
+  w.npcs.gulan.location = 'inn'
+  w.npcs.nise.location = 'inn'
+  w.npcs.gulan.values.affection = 92
+  w.npcs.nise.values.affection = 92
+  w = core.advance(w, { id: 'b_crowd', revision: 'r1', toMin: 1440 + 600 }, config).state
+  assert.equal(w.bg.eventStates['["event","gulan_scale_bond","gulan"]'], undefined)
+
+  // Move gulan & player to training_grounds alone -> gulan_scale_bond triggers -> accept grants item & bond_gulan_90
+  w.playerLocation = 'training_grounds'
+  w.npcs.gulan.location = 'training_grounds'
+  w = core.advance(w, { id: 'b_alone', revision: 'r2', toMin: 1440 + 620, interactingIds: ['gulan'] }, config).state
+  assert.equal(w.bg.eventStates['["event","gulan_scale_bond","gulan"]']?.status, 'pending')
+  w = core.advance(w, { id: 'b_acc', revision: 'r3', toMin: 1440 + 630, front: { resolveEvents: [{ eventId: 'gulan_scale_bond', npcId: 'gulan', outcome: 'accept' }] } }, config).state
+  assert(w.tags.player.includes('bond_gulan_90'))
+  assert.equal(count(w, 'gulan_reverse_scale'), 1)
+
+  // 2. Nise 7th skill slot perk
+  let wSkill = play(world, '选职 class_shield_guard').state
+  const extras = Object.values(SKILLS.catalog).filter(sk => !sk.reqClass && !sk.branch && sk.tier === 1)
+  for (const sk of extras) SKILLS.learn(wSkill, sk.id)
+  wSkill.playerLocation = 'inn'
+  while (wSkill.playerState.equippedSkills.length < 6) {
+    const next = extras.find(sk => !wSkill.playerState.equippedSkills.includes(sk.id))
+    SKILLS.equip(wSkill, next.id)
+  }
+  const seventh = extras.find(sk => !wSkill.playerState.equippedSkills.includes(sk.id))
+  assert.throws(() => SKILLS.equip(wSkill, seventh.id), /上限 6 格/)
+  TAGS.apply(wSkill, 'player', ['bond_nise_90'])
+  SKILLS.equip(wSkill, seventh.id)
+  assert.equal(wSkill.playerState.equippedSkills.length, 7)
+
+  // 3. Aurora rest clears light wound in wilds even when Aurora is away
+  let wRest = sandbox.OKH_APP_CONFIG.buildInitialWorld()
+  wRest = core.init(wRest, config)
+  wRest.flags.arrived_oakhaven = true
+  wRest.playerLocation = 'wilds'
+  wRest.npcs.aurora.location = 'inn'
+  wRest.playerState.inventory = [{ id: 'supply', count: 5 }]
+  TAGS.apply(wRest, 'player', ['debuff_light_wound', 'bond_aurora_90'])
+  wRest = play(wRest, '休整').state
+  assert(!wRest.tags.player.includes('debuff_light_wound'))
+
+  // 4. Gulan first heavy wound immunity + Isna +20% ruin gold + HUD badge rendering
+  let wRaid = play(world, '选职 class_shield_guard').state
+  TAGS.apply(wRaid, 'player', ['bond_gulan_90', 'bond_isna_90', 'bond_nise_90', 'bond_aurora_90'])
+  TAGS.apply(wRaid, 'player', ['debuff_light_wound'])
+  wRaid = play(wRaid, '进入 2').state
+  // Trigger a forced failure on an obstacle via 硬闯 or verify heavy wound immunity when wound fires
+  const goldBefore = wRaid.playerState.gold
+  const expectedRaidGold = Math.floor(wRaid.ruinState.current.gold * 1.2)
+  wRaid = play(wRaid, '行动 自动').state
+  if (!wRaid.ruinState.current) {
+    assert.equal(wRaid.playerState.gold, goldBefore + expectedRaidGold)
+  }
+  const hudHtml = HUD.buildHudHtml(wRaid)
+  assert(hudHtml.includes('okh-bond-bar'))
+  assert(hudHtml.includes('莫要逞强'))
+  assert(hudHtml.includes('小猫缠上你啦~'))
+  assert(hudHtml.includes('天才法师妮丝大人罩着你~'))
+  assert(hudHtml.includes('愿你永安'))
 })

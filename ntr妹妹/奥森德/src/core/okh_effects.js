@@ -15,6 +15,7 @@
         'playerMove',
         'goldDelta',
         'itemsAdd',
+        'storyItemsAdd',
         'itemsRemove',
         'add',
         'npcFlags',
@@ -69,6 +70,24 @@
             if (!existing) inv.push({ id: itemId, count: Math.min(maxCount, delta) });
             else existing.count = Math.min(maxCount, existing.count + delta);
           }
+        }
+      }
+
+      if (data.storyItemsAdd !== undefined) {
+        u.check(!npc && Array.isArray(data.storyItemsAdd), '剧情物品仅用于玩家背包');
+        world.playerState ||= {};
+        const inv = world.playerState.inventory ||= [];
+        const catalog = config?.itemCatalog || {};
+        for (const item of data.storyItemsAdd) {
+          const { name, evidence, count } = item;
+          u.check(typeof name === 'string' && /^[\p{L}\p{N} ·—-]{1,32}$/u.test(name) &&
+            typeof evidence === 'string' && evidence.length <= 120 && evidence.includes(name) &&
+            Number.isSafeInteger(count) && count >= 1 && count <= 99, '剧情物品条目非法');
+          const id = 'story_' + [...name].map(character => character.codePointAt(0).toString(16)).join('_');
+          if (u.own(catalog, id) || u.own(catalog, name) || Object.values(catalog).some(meta => meta.name === name)) continue;
+          const previous = inv.find(entry => entry?.id === id);
+          if (previous?.custom && previous.source === 'story') previous.count = Math.min(999, previous.count + count);
+          else if (!previous) inv.push({ id, name, count, custom: true, source: 'story', category: 'supply', desc: evidence });
         }
       }
 
@@ -254,9 +273,20 @@
 
           u.check(
             target === 'world' ||
+            target === 'player' ||
             u.own(world.npcs, target),
             '效果目标不存在'
           );
+
+          if (target === 'player') {
+            u.check(
+              Object.keys(data).every(k => k === 'tagsAdd' || k === 'tagsRemove'),
+              'player 目标仅支持 tagsAdd / tagsRemove'
+            );
+            u.check(typeof config?.applyTags === 'function', '角色标签缺少管理模块');
+            config.applyTags(world, 'player', data.tagsAdd, data.tagsRemove);
+            continue;
+          }
 
           one(
             world,
@@ -289,3 +319,4 @@
     module.exports = create;
   }
 })(globalThis);
+

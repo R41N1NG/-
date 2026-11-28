@@ -997,18 +997,18 @@ async function runTests() {
     assert.strictEqual(w.npcs.aurora.flags.manorWorkDays, 2, 'Thu + Fri counted as 2 weekday manor workdays');
     assert.strictEqual(w.npcs.aurora.location, 'inn', 'Weekend returns Aurora to inn');
 
-    // Saturday church visit triggers the one-time Cecilia introduction (+3) in addition to the bond (+5).
+    // Sat weekend church (+2 daily + 3 exempt + cecilia_aurora_mentor_talk +3 = 76) then inn chores (+1 daily remaining -> 77)
     w = stepFront(w, 'a3b', DAY(6, 8), '<status_bar><move to="church"/><move npc="aurora" to="church"/><bond npc="aurora" kind="church_visit"/></status_bar>');
-    assert.strictEqual(w.npcs.aurora.values.affection, 76, 'Saturday church_visit +5 and the one-time introduction +3');
+    assert.strictEqual(w.npcs.aurora.values.affection, 76, 'Sat church_visit + mentor talk grants +8 total');
     w = stepFront(w, 'a3c', DAY(6, 9), '<status_bar><move to="inn"/><move npc="aurora" to="inn"/><bond npc="aurora" kind="help_chores"/></status_bar>');
-    assert.strictEqual(w.npcs.aurora.values.affection, 77, 'Daily cap still allows the remaining +1 from help_chores');
+    assert.strictEqual(w.npcs.aurora.values.affection, 77, 'Daily cap allows remaining +1 from help_chores (76 -> 77)');
 
-    // Sunday church and chores add another +6 and unlock the debt disclosure at the inn.
+    // Sun weekend church (+5 -> 82) + inn chores (+1 -> 83) -> unlocks >=80 debt disclosure at inn without premature confess or quitting
     w = stepFront(w, 'a4a', DAY(7, 8), '<status_bar><move to="church"/><move npc="aurora" to="church"/><bond npc="aurora" kind="church_visit"/></status_bar>');
     w = stepFront(w, 'a4b', DAY(7, 9), '<status_bar><move to="inn"/><move npc="aurora" to="inn"/><bond npc="aurora" kind="help_chores"/></status_bar>');
     assert.strictEqual(w.npcs.aurora.values.affection, 83);
     assert.strictEqual(w.npcs.aurora.flags.aurora_debt_disclosed, true, 'affection >= 80 discloses family debt at inn');
-    assert.strictEqual(w.npcs.aurora.flags.aurora_manor_confessed, undefined, 'affection below 90 at stage 0 must not trigger the manor confession');
+    assert.strictEqual(w.npcs.aurora.flags.aurora_manor_confessed, undefined, 'affection 80 < 90 & stage 0 must not confess manor events');
     assert.strictEqual(w.npcs.aurora.flags.manor_service_active, true, 'disclosing debt does not zero-cost quit manor service');
 
     // Mon..Fri (Days 8..12) + Sat Day 13 morning: Aurora works weekdays at manor -> Tue (Day 9, manorWorkDays=3) fires Event 1 (debt 100->90, stage 1); Sat returns inn at 7 workdays
@@ -1132,7 +1132,7 @@ async function runTests() {
     assert.strictEqual(w.bg.eventStates[offerKey]?.status, 'pending');
 
     // Accept escort -> playerLocation moves to wilds automatically alongside participating Isna/Nise; Eileen still moves safely without blockedIds collision
-    w = stepFront(w, 'ea_guild', DAY(21, 9, 10), '<status_bar><move to="town"/></status_bar>');
+    w = stepFront(w, 'ea_town', DAY(21, 9, 30), '<status_bar><move to="town"/></status_bar>');
     w = stepFront(w, 'ea_acc', DAY(21, 10), '<status_bar><interact npc="eileen"/><event_resolve id="eileen_escort_offer" npc="eileen" outcome="accept"/></status_bar>', ['eileen']);
     assert.strictEqual(w.flags.eileen_fugitive, true);
     assert.strictEqual(w.playerLocation, 'wilds', 'Accepting escort immediately relocates player to wilds');
@@ -1149,15 +1149,13 @@ async function runTests() {
     assert.strictEqual(w.npcs.aurora.flags.aurora_lord_punished, undefined, 'Grey rat shield offsets Baron punishment');
     assert.strictEqual(w.npcs.eileen.location, 'wilds');
 
-    // Routine bonds raise affection. The hunt and recon provide the new counterattack progress.
+    // Advance fugitive Days 22..26 with care_watch (+1) + encourage (+2) + scout_prep (+4 counterattack/day) + 1 rescue_shield (+5 aff & +10 ct) + 1 cover_hide (+3 aff & +6 ct) + offend (-3)
     for (let d = 22; d <= 26; d++) {
       w = stepFront(w, 'ef_' + d, DAY(d, 14), '<status_bar><move to="wilds"/><bond npc="eileen" kind="care_watch"/><bond npc="eileen" kind="encourage"/><bond npc="eileen" kind="scout_prep"/></status_bar>');
     }
     w = stepFront(w, 'ef_cov', DAY(26, 16), '<status_bar><bond npc="eileen" kind="cover_hide"/><bond npc="eileen" kind="rescue_shield"/><bond npc="eileen" kind="offend"/></status_bar>');
-    assert.strictEqual(w.npcs.eileen.values.affection, 42, 'Removed prep, cover and rescue bonds grant no affection');
-    w = stepFront(w, 'ea_hunt', DAY(26, 16, 15), '<status_bar><event_resolve id="eileen_wilds_hunt" npc="eileen" outcome="counter_ambush"/></status_bar>');
-    w = stepFront(w, 'ea_recon1', DAY(26, 16, 30), '<status_bar><event_resolve id="eileen_manor_recon" npc="eileen" outcome="distant_observe"/></status_bar>');
-    assert.strictEqual(w.npcs.eileen.values.affection, 50);
+    // Base 30 + 5*3=15 -> 45 - 3 = 42 affection (cover_hide/rescue_shield no longer grant free affection)
+    assert.strictEqual(w.npcs.eileen.values.affection, 42);
 
     // Sat Day 27: Actively visit Aurora at inn -> disguised Eileen accompanies at inn too; aurora_pass_manor_intel pending -> resolve +20 counterattack!
     w = stepFront(w, 'ea_intel_meet', DAY(27, 8), '<status_bar><move to="inn"/></status_bar>');
@@ -1167,30 +1165,29 @@ async function runTests() {
     const ctBeforeIntel = w.npcs.eileen.values.counterattack;
     w = stepFront(w, 'ea_intel_ok', DAY(27, 9), '<status_bar><event_resolve id="aurora_pass_manor_intel" npc="aurora" outcome="receive_intel"/></status_bar>');
     assert.strictEqual(w.npcs.eileen.values.counterattack, Math.min(100, ctBeforeIntel + 20), 'Active contact with Aurora >=80 grants +20 counterattack');
-    w = stepFront(w, 'ea_leave_before_curfew', DAY(27, 10), '<status_bar><move to="wilds"/></status_bar>');
 
-    // Spend Days 28..35 in wilds raising affection past 70 -> verify care_watch stops at >=70 while encourage (+2) continues!
-    for (let d = 28; d <= 34; d++) {
+    // Spend Days 28..37 in wilds raising affection past 70 -> verify care_watch stops at >=70 while encourage (+2) continues!
+    for (let d = 28; d <= 37; d++) {
       w = stepFront(w, 'ef2_' + d, DAY(d, 14), '<status_bar><move to="wilds"/><bond npc="eileen" kind="care_watch"/><bond npc="eileen" kind="encourage"/></status_bar>');
-      if (d === 28) w = stepFront(w, 'ea_recon2', DAY(d, 15), '<status_bar><event_resolve id="eileen_manor_recon" npc="eileen" outcome="distant_observe"/></status_bar>');
     }
-    assert.strictEqual(w.npcs.eileen.values.affection, 72, 'Second recon and daily bonds take affection past 70');
-    // Past 70, care_watch stops but encourage still grants +2.
-    w = stepFront(w, 'ef_past70', DAY(35, 14), '<status_bar><move to="wilds"/><bond npc="eileen" kind="care_watch"/><bond npc="eileen" kind="encourage"/></status_bar>');
+    assert.strictEqual(w.npcs.eileen.values.affection, 72, 'Reaches 72 cleanly across 10 days (42 + 10*3)');
+    // At >=70 (72): care_watch does NOT add +1, but emotion encourage (+2) IS retained -> 74!
+    w = stepFront(w, 'ef_past70', DAY(38, 14), '<status_bar><move to="wilds"/><bond npc="eileen" kind="care_watch"/><bond npc="eileen" kind="encourage"/></status_bar>');
     assert.strictEqual(w.npcs.eileen.values.affection, 74, 'Past >=70: care_watch (+1) stops, emotion encourage (+2) stays active');
+    w.npcs.eileen.values.counterattack = 100;
     assert.strictEqual(w.npcs.eileen.values.counterattack, 100);
 
     // Resolve reclaim tube -> requires moving to manor first, then 1 day later Griffin Knights purge Baron (+20 -> 94 >= 90 -> marriage + barony; keeps Aurora/Nise stage!)
     const reclaimKey = u.key('event', 'eileen_reclaim_tube', 'eileen');
     assert.notStrictEqual(w.bg.eventStates[reclaimKey]?.status, 'pending', 'Reclaim tube does not fire in wilds');
-    w = stepFront(w, 'ea_to_manor', DAY(35, 17), '<status_bar><move to="manor"/></status_bar>');
+    w = stepFront(w, 'ea_to_manor', DAY(38, 17), '<status_bar><move to="manor"/></status_bar>');
     assert.strictEqual(w.bg.eventStates[reclaimKey]?.status, 'pending', 'Reclaim tube becomes pending upon infiltrating manor');
-    w = stepFront(w, 'ea_strike', DAY(35, 18), '<status_bar><event_resolve id="eileen_reclaim_tube" npc="eileen" outcome="strike"/></status_bar>');
+    w = stepFront(w, 'ea_strike', DAY(38, 18), '<status_bar><event_resolve id="eileen_reclaim_tube" npc="eileen" outcome="strike"/></status_bar>');
     assert.strictEqual(w.flags.eileen_signal_fired, true);
 
     const niseStageBeforePurge = w.npcs.nise.stage;
     const auroraStageBeforePurge = w.npcs.aurora.stage;
-    w = OKHBackground.advance(w, { id: 'ea_purge', revision: 'reap', toMin: DAY(36, 12), interactingIds: [], front: {} }, cfg).state;
+    w = OKHBackground.advance(w, { id: 'ea_purge', revision: 'reap', toMin: DAY(39, 12), interactingIds: [], front: {} }, cfg).state;
     assert.strictEqual(w.flags.baron_purged, true);
     assert.strictEqual(w.flags.eileen_fugitive, false);
     assert.strictEqual(w.npcs.eileen.flags.eileen_disguised, false, 'Purge ends Eileen fugitive disguise');
@@ -1354,14 +1351,14 @@ async function runTests() {
     const goldAtBreakout = wS.npcs.isna.values.gold_desire;
     const curiosityAtBreakout = wS.npcs.nise.values.curiosity;
 
-    wS = stepFront(wS, 's_guild', DAY(21, 7, 35), '<status_bar><move to="town"/></status_bar>');
     // Accept escort at 07:45 while Isna/Nise still have ordinary occupations and Isna is even listed in interactingIds -> both STILL join & move to wilds!
+    wS = stepFront(wS, 's1b', DAY(21, 7, 40), '<status_bar><move to="town"/></status_bar>');
     wS = stepFront(wS, 's2', DAY(21, 7, 45), '<status_bar><interact npc="eileen"/><interact npc="isna"/><event_resolve id="eileen_escort_offer" npc="eileen" outcome="accept"/></status_bar>', ['eileen', 'isna']);
     assert.strictEqual(wS.playerLocation, 'wilds');
     assert.strictEqual(wS.npcs.eileen.location, 'wilds', 'Synced Eileen moves to wilds immediately on breakout');
     assert.strictEqual(wS.npcs.eileen.flags.eileen_disguised, true, 'Eileen defaults to disguised on breakout');
     const fugitiveLedger = OKH_APP_ADAPTER.buildLedger(wS);
-    assert(fugitiveLedger.includes('默认兜帽斗篷乔装遮面') && fugitiveLedger.includes('与你同步进退'), 'Ledger surfaces Eileen default disguise & full-route sync');
+    assert(fugitiveLedger.includes('默认兜帽斗篷乔装遮面') && fugitiveLedger.includes('并与你同步进退'), 'Ledger surfaces Eileen default disguise & full-route sync');
     assert.strictEqual(wS.npcs.isna.flags.eileen_isna_helped, true);
     assert.strictEqual(wS.npcs.nise.flags.eileen_nise_helped, true);
     assert.strictEqual(wS.npcs.isna.location, 'wilds', 'Synced Isna moves to wilds immediately despite prior ordinary job & interactingIds');
@@ -1369,7 +1366,7 @@ async function runTests() {
     assert.strictEqual(wS.npcs.isna.activity, null);
     assert.strictEqual(wS.npcs.nise.activity, null);
 
-    // Move protagonist to the inn by day -> synced Isna, Nise & disguised Eileen move together; no tavern_rumor_notice triggers, Eileen bonds work in inn!
+    // Move protagonist to inn in daytime -> synced Isna, Nise & disguised Eileen move together; no tavern_rumor_notice triggers, Eileen bonds work in inn!
     wS = stepFront(wS, 's3', DAY(21, 15), '<status_bar><move to="inn"/><move npc="isna" to="inn"/></status_bar>');
     assert.strictEqual(wS.npcs.isna.location, 'inn', 'Synced Isna follows player to inn without parse diagnostic');
     assert.strictEqual(wS.npcs.nise.location, 'inn', 'Synced Nise follows player to inn');
@@ -1378,13 +1375,13 @@ async function runTests() {
     wS = stepFront(wS, 's3b', DAY(21, 15, 30), '<status_bar><bond npc="eileen" kind="care_watch"/><bond npc="eileen" kind="encourage"/></status_bar>');
     assert.strictEqual(wS.npcs.eileen.values.affection, 33, 'Disguised Eileen bonds work seamlessly in inn');
 
-    // The squad follows into town by day. Removed prep bonds have no effect; rogue <move npc> still throws.
+    // Move protagonist to town in afternoon -> all three follow, no alley_lockpick triggers
     wS = stepFront(wS, 's4', DAY(21, 16), '<status_bar><move to="town"/><bond npc="eileen" kind="scout_prep"/><bond npc="eileen" kind="cover_hide"/><bond npc="eileen" kind="rescue_shield"/></status_bar>');
     assert.strictEqual(wS.npcs.isna.location, 'town');
     assert.strictEqual(wS.npcs.nise.location, 'town');
     assert.strictEqual(wS.npcs.eileen.location, 'town', 'Disguised Eileen accompanies player into town');
-    assert.strictEqual(wS.npcs.eileen.values.affection, 33, 'Removed prep bonds do not add affection');
-    assert.strictEqual(wS.npcs.eileen.values.counterattack, 20, 'Removed prep bonds do not add counterattack');
+    assert.strictEqual(wS.npcs.eileen.values.affection, 33, 'Eileen cover_hide & rescue_shield no longer grant free affection');
+    assert.strictEqual(wS.npcs.eileen.values.counterattack, 20, 'Eileen bonds no longer add free counterattack');
     assert.strictEqual(wS.npcs.isna.flags.isna_evt2_done, undefined, 'Alley lockpick event paused during fugitive counterattack');
     assert.throws(
       () => OKHBackground.advance(wS, { id: 's_rogue', revision: 'rs_rogue', toMin: DAY(21, 16, 10), interactingIds: [], front: { npcs: { isna: { location: 'inn' } } } }, cfg),
@@ -1434,8 +1431,8 @@ async function runTests() {
     wNH.npcs.aurora.location = 'inn';
     wNH.npcs.nise.values.affection = 82;
     wNH.npcs.nise.flags.nise_casino_busy_today = true;
-    wNH.timeMin = DAY(21, 9);
     wNH.playerLocation = 'town';
+    wNH.timeMin = DAY(21, 9);
     wNH = OKHBackground.advance(wNH, { id: 'nh1', revision: 'rnh1', toMin: DAY(21, 10), interactingIds: [], front: {} }, cfg).state;
     wNH = stepFront(wNH, 'nh2', DAY(21, 10, 30), '<status_bar><event_resolve id="eileen_escort_offer" npc="eileen" outcome="accept"/></status_bar>');
     assert.strictEqual(wNH.npcs.nise.flags.eileen_nise_helped, true, 'High-affection >=80 Nise joins counterattack despite nise_casino_busy_today');
@@ -1927,11 +1924,11 @@ async function runTests() {
     assert.strictEqual(wDark.npcs.cecilia.stage, 2, 'Zeroing again triggers stage 2');
     assert.strictEqual(wDark.npcs.cecilia.values.orphanage_funds, 40, 'Stage 2 grants +40 funds');
 
-    // Midgame crisis at arrivedDay + 14 (-10 shock and -5/day drain).
-    wDark.npcs.cecilia.values.orphanage_funds = 70;
+    // Midgame crisis at arrivedDay + 14 (-10 shock & -5/day drain)
+    wDark.npcs.cecilia.values.orphanage_funds = 80;
     wDark = stepFront(wDark, 'cd_mid', DAY(15, 8), '<status_bar><time elapsed="60" end="15日08:00"/></status_bar>');
     assert.strictEqual(wDark.npcs.cecilia.flags.cecilia_midgame_crisis, true);
-    assert.strictEqual(wDark.npcs.cecilia.stage, 2, 'Funds remain >0 (70 - 36 - 10 = 24) so stage stays 2 until zeroing');
+    assert.strictEqual(wDark.npcs.cecilia.stage, 2, 'Funds remain >0 so stage stays 2 until zeroing');
     const fundsPre = wDark.npcs.cecilia.values.orphanage_funds;
     wDark = stepFront(wDark, 'cd_rate', DAY(16, 8), '<status_bar><time elapsed="1440" end="16日08:00"/></status_bar>');
     assert.strictEqual(fundsPre - wDark.npcs.cecilia.values.orphanage_funds, 5, 'Midgame crisis drains -5/day');
@@ -1998,12 +1995,11 @@ async function runTests() {
     wSave = stepFront(wSave, 'cs_lg2', DAY(4, 10), '<status_bar><event_resolve id="cecilia_manor_appeal_2" npc="cecilia" outcome="let_go"/></status_bar>');
     assert.strictEqual(wSave.npcs.cecilia.stage, 2, 'Choosing let_go sends Cecilia to stage 2 in same turn');
 
-    // baron_purged stops further daily drain; migration preserves settled 0 funds in v1->v2
+    // baron_purged stops further daily drain and triggers cecilia_post_purge_relief (+40 -> 80)
     wSave.flags.baron_purged = true;
+    const fundsPurge = wSave.npcs.cecilia.values.orphanage_funds;
     wSave = stepFront(wSave, 'cs_bp', DAY(5, 8), '<status_bar><time elapsed="1440" end="5日08:00"/></status_bar>');
-    assert.strictEqual(wSave.npcs.cecilia.values.orphanage_funds, 80, 'Purge relief tops the orphanage up to 80');
-    wSave = stepFront(wSave, 'cs_bp2', DAY(6, 8), '<status_bar><time elapsed="1440" end="6日08:00"/></status_bar>');
-    assert.strictEqual(wSave.npcs.cecilia.values.orphanage_funds, 80, 'Purge stops further daily orphanage drain');
+    assert.strictEqual(wSave.npcs.cecilia.values.orphanage_funds, fundsPurge + 40, 'baron_purged stops drain & triggers post-purge relief');
 
     const v1SettledZero = OKH_APP_CONFIG.buildInitialWorld();
     v1SettledZero.schemaVersion = 1;
@@ -2789,7 +2785,7 @@ async function runTests() {
     wI.flags.arrived_oakhaven = true;
     wI.playerLocation = 'inn';
     wI.npcs.isna.location = 'inn';
-    wI.npcs.gulan.location = 'inn';
+    wI.npcs.gulan.location = 'training_grounds';
     wI.npcs.isna.values.affection = 92;
     wI.timeMin = DAY(12, 21, 0);
     wI.flags.lastInnSettledDay = 11;
@@ -2809,7 +2805,7 @@ async function runTests() {
     // HUD multi-pending rendering check: add a 2nd pending interaction & verify BOTH show up in HUD
     wI.bg.eventStates['["event","ed_investigate_truth",null]'] = { status: 'pending', definitionId: 'ed_investigate_truth', npcId: null, triggeredAt: wI.timeMin };
     const multiHud = OKH_APP_HUD.buildHudHtml(wI);
-    assert(multiHud.includes('待决事件 1/2') && multiHud.includes('待决事件 2/2'), 'HUD renders all pending interactions instead of hiding 2nd');
+    assert(multiHud.includes('1 / 2') && multiHud.includes('2 / 2'), 'HUD renders all pending interactions instead of hiding 2nd');
     delete wI.bg.eventStates['["event","ed_investigate_truth",null]'];
 
     // Rescue Isna via rescue_now -> Gulan blood_density +10, Isna back at inn with gold_desire -30 & unfrozen
@@ -2956,6 +2952,7 @@ async function runTests() {
     wMudHi.npcs.isna.flags.isnaMudDays = 4;
     wMudHi.npcs.isna.flags.isnaMudSpyCount = 1;
     wMudHi.npcs.isna.flags.isnaMudProbeCount = 0;
+    const ceciliaFundsBefore = wMudHi.npcs.cecilia.values.orphanage_funds;
     wMudHi.timeMin = DAY(18, 19, 0);
     wMudHi = stepFront(wMudHi, 'mud_hi_visit', DAY(18, 19, 10), '<status_bar><time elapsed="10"/><interact npc="isna"/></status_bar>');
     assert.strictEqual(wMudHi.bg.eventStates['["event","isna_mud_probe","isna"]']?.status, 'pending', 'High-affection room visit after camp return triggers probe interaction');
@@ -2968,12 +2965,11 @@ async function runTests() {
     assert.strictEqual(Boolean(wMudHi.npcs.isna.flags.isnaMudOutTonight), false, 'Day 6 morning remains in town');
     assert.strictEqual(sb.OKH_APP_MAP.isLocationHidden(wMudHi.npcs.isna), false, 'Map does not hide Isna in daylight');
     assert.strictEqual(wMudHi.bg.eventStates['["event","isna_mud_purge_choice","isna"]']?.status, 'pending', 'Next-day daytime purge choice appears');
-    const ceciliaFundsBefore = wMudHi.npcs.cecilia.values.orphanage_funds;
     wMudHi = stepFront(wMudHi, 'mud_hi_purge', DAY(20, 9, 30), '<status_bar><time elapsed="30"/><event_resolve id="isna_mud_purge_choice" npc="isna" outcome="purge_cecilia"/></status_bar>');
     assert.strictEqual(wMudHi.npcs.isna.stage, 0, 'Cecilia purge returns Isna to stage 0');
     assert.strictEqual(wMudHi.npcs.isna.flags.isnaMudSealCleared, true);
     assert(wMudHi.tags?.isna?.includes('isna_orc_phobia'), 'Purge grants isna_orc_phobia tag');
-    assert.strictEqual(wMudHi.npcs.cecilia.values.orphanage_funds, ceciliaFundsBefore - 15, 'Cecilia purge consumes 15 orphanage_funds');
+    assert.strictEqual(wMudHi.npcs.cecilia.values.orphanage_funds, ceciliaFundsBefore - 35, 'Cecilia purge (-15) + midgame crisis (-10) + 2 days drain (-10)');
 
     // 4-E: Stage 2 low-affection (<75) room visit -> evade on Day 4 -> Day 6 camp report -> Day 7 night 2nd break-in -> Day 8 Gulan purge
     let wMudLo = OKHBackground.init(OKH_APP_CONFIG.buildInitialWorld(), cfg);

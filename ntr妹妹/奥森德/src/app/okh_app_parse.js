@@ -221,8 +221,37 @@
     }
   }
 
+  function readStoryItem(attrs, narrative) {
+    const name = attrs.name?.trim()
+    const evidence = attrs.evidence?.trim()
+    const rawCount = attrs.count ?? '1'
+    if (!name || !/^[\p{L}\p{N} ·—-]{1,32}$/u.test(name) ||
+        !evidence || evidence.length > 120 || !narrative.includes(evidence) ||
+        !/^[1-9][0-9]?$/.test(rawCount)) return null
+    const catalog = root.OKH_APP_DATA.ITEM_CATALOG;
+    if (Object.hasOwn(catalog, name) || Object.values(catalog).some(item => item.name === name)) return null
+    // Match a completed player acquisition in the quoted clause, without inference from the tag alone.
+    const acquisition = /(?:你|玩家|伯里|我)[^，。！？；、\n]{0,16}?(?:获得(?:了)?|拿到(?:了)?|接过(?:了)?|收下(?:了)?|捡到(?:了)?|拾起(?:了)?|收入(?:了)?背包|放进(?:了)?行囊)([^，。！？；、\n]{0,60})/
+    const match = acquisition.exec(evidence)
+    const itemAt = match?.[1].indexOf(name) ?? -1
+    if (itemAt < 0 || /未|没|试图|打算|想要|假如|如果|准备|也许|可能|可以|并非|误以为/.test(match[0].slice(0, match[0].length - match[1].length + itemAt))) return null
+    const beforeName = match[1].slice(0, itemAt)
+    const numeral = beforeName.match(/([0-9]+|[一二两三四五六七八九十]{1,3})\s*[件份枚把袋瓶块张条个本卷]\s*$/)?.[1]
+    const digit = value => '一二三四五六七八九'.indexOf(value) + 1;
+    const statedCount = !numeral ? 1 : /^\d/.test(numeral) ? Number(numeral) : numeral === '两' ? 2 :
+      numeral.includes('十') ? (digit(numeral.split('十')[0]) || 1) * 10 + digit(numeral.split('十')[1]) : digit(numeral);
+    if (statedCount !== Number(rawCount)) return null;
+    return { op: 'story_item', name, evidence, count: Number(rawCount) }
+  }
+
   function buildFront(text, now, world, options = {}) {
-    const tags = rawTags(statusBody(text)), diagnostics = [], npcs = {}, virtual = {}, playerMoves = [];
+    const body = statusBody(text);
+    const tags = rawTags(body), diagnostics = [], npcs = {}, virtual = {}, playerMoves = [];
+    const storyItems = new Set();
+    const plain = String(text ?? '').replace(/```[\s\S]*?```/g, '');
+    const blocks = [...plain.matchAll(/<content\b[^>]*>([\s\S]*?)<\/content\s*>/gi)];
+    const narrative = blocks.length ? blocks.map(match => match[1]).join('\n') :
+      plain.replace(/<status_bar\b[^>]*>[\s\S]*?<\/status_bar\s*>/gi, '');
     const front = { interactingIds: [] }, interacting = new Set();
     const token = options.token || String(now), config = options.config || {};
     const canMoveFn = typeof options.canMove === 'function' ? options.canMove : config.canMove;
@@ -312,6 +341,12 @@
       } else if (name === 'combat_temper') {
         u.check(front.combatTemper === undefined && Object.keys(a).length === 1 && /^[1-4]$/.test(a.enemy_tier), '战斗回执仅接受一个敌方阶位')
         front.combatTemper = Number(a.enemy_tier)
+      } else if (name === 'story_item') {
+        const item = readStoryItem(a, narrative);
+        if (item && storyItems.size < 8 && !storyItems.has(item.name)) {
+          storyItems.add(item.name);
+          (front.economies ||= []).push(item);
+        } else diagnostics.push('忽略未被正文确认或重复的剧情物品。');
       } else if (name === 'economy') {
         u.check(
           a.amount === undefined && a.delta === undefined && a.value === undefined && a.add === undefined && a.gold === undefined,
@@ -388,3 +423,4 @@
     parseMove, parseStatusBar, buildFront, compareEnd
   });
 })(globalThis);
+

@@ -123,6 +123,8 @@
     return true
   }
 
+  const maxEquipped = world => (world?.tags?.player || []).includes('bond_nise_90') ? MAX_EQUIPPED + 1 : MAX_EQUIPPED
+
   function equip(world, skillId, slotIndex = -1) {
     u.check(isSafeLoadoutLocation(world), '请在旅店或营地调整技能')
     u.check(u.own(catalog, skillId), '装配技能 ID 未在词表注册：' + skillId)
@@ -142,11 +144,12 @@
     const equipped = [...(Array.isArray(ps.equippedSkills) ? ps.equippedSkills : [])]
     if (equipped.includes(skillId)) return true // 已装配直接幂等
 
-    u.check(Number.isInteger(slotIndex) && slotIndex >= -1 && slotIndex <= equipped.length && slotIndex < MAX_EQUIPPED, '请依次使用空栏位')
+    const cap = maxEquipped(world)
+    u.check(Number.isInteger(slotIndex) && slotIndex >= -1 && slotIndex <= equipped.length && slotIndex < cap, '请依次使用空栏位')
     if (slotIndex >= 0 && slotIndex < equipped.length) {
       equipped[slotIndex] = skillId
     } else {
-      u.check(equipped.length < MAX_EQUIPPED, `装配栏已满（上限 ${MAX_EQUIPPED} 格）`)
+      u.check(equipped.length < cap, `装配栏已满（上限 ${cap} 格）`)
       equipped.push(skillId)
     }
 
@@ -194,8 +197,9 @@
     const ps = world.playerState ||= {}
     if (!Array.isArray(ps.learnedSkills)) ps.learnedSkills = []
     if (!Array.isArray(ps.equippedSkills)) ps.equippedSkills = []
-    if (ps.equippedSkills.length > MAX_EQUIPPED) {
-      ps.equippedSkills = ps.equippedSkills.slice(0, MAX_EQUIPPED)
+    const cap = maxEquipped(world)
+    if (ps.equippedSkills.length > cap) {
+      ps.equippedSkills = ps.equippedSkills.slice(0, cap)
     }
     return world
   }
@@ -205,6 +209,7 @@
     CLASSES,
     ABILITIES,
     MAX_EQUIPPED,
+    maxEquipped,
     learn,
     equip,
     unequip,

@@ -42,6 +42,7 @@
       completeReply(world, before, command) {
         if (!command.playerAction) root.OKH_APP_ADVENTURE.settleFieldCombat(world, before, command.front?.combatTemper)
         if (ECHO.completeReplay(world, before, command, ALBUM.findImage)) ALBUM.sync(world)
+        if (command.front?.clearLocalDigest && world.bg?.localDigest?.length) world.bg.localDigest = []
       },
       applyPlayerAction: root.OKH_APP_ADVENTURE.apply,
       afterTimeStep: root.OKH_APP_ADVENTURE.tick,

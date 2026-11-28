@@ -41,6 +41,8 @@
     church_blessed_ration: ['debuff_starving', 'debuff_exhausted']
   }
 
+  const shopMedicines = Object.freeze([...Object.keys(medicine), 'sleeping_draught'])
+
   const tagsOf = (world, id) => world.tags?.[id] || []
   const supply = world => countOf(world, 'supply')
   const countOf = (world, id) => world.playerState.inventory?.find(item => item?.custom !== true && item?.id === id)?.count || 0
@@ -217,6 +219,10 @@
     const tags = tagsOf(world, id)
     if (tags.includes('debuff_heavy_wound')) return
     const light = tags.includes('debuff_light_wound')
+    if (light && id === 'player' && tags.includes('bond_gulan_90') && world.ruinState?.current && !world.ruinState.current.gulanShieldUsed) {
+      world.ruinState.current.gulanShieldUsed = true
+      return
+    }
     TAGS.apply(world, id, [light ? 'debuff_heavy_wound' : 'debuff_light_wound'], light ? ['debuff_light_wound'] : [])
   }
 
@@ -285,7 +291,8 @@
         if (cleared) {
           gain(state, { merit: raid.merit, enemyTier: raid.id ? raid.tier : undefined, source: 'core' })
           RUINS.finish(state)
-          const rewards = [{ target: 'world', goldDelta: raid.gold, itemsAdd: raid.scrollId ? [raid.scrollId] : [] }]
+          const bonusGold = tagsOf(state, 'player').includes('bond_isna_90') ? Math.floor(raid.gold * 1.2) : raid.gold
+          const rewards = [{ target: 'world', goldDelta: bonusGold, itemsAdd: raid.scrollId ? [raid.scrollId] : [] }]
           if (raid.resonance && raid.escort && isAvailable(state, raid.escort)) {
             rewards.push({ target: raid.resonance.target, add: { blood_density: raid.resonance.bloodDelta } })
           }
@@ -358,7 +365,9 @@
     }
     if (verb === '用药') return use(world, item, extra || 'player', key)
     if (verb === '疗伤') {
-      u.check(!world.ruinState?.current && DATA.churchAudience(world, world.npcs?.cecilia), '须在圣辉大教堂与塞西莉亚会面后处理伤势')
+      u.check(!world.ruinState?.current && world.playerLocation === 'church', '须在圣辉大教堂处理伤势')
+      const hasCecilia = DATA.churchAudience(world, world.npcs?.cecilia)
+      const healer = hasCecilia ? '请塞西莉亚' : '由教堂医护'
       const target = item
       u.check(target === 'player' || u.own(world.npcs, target) &&
         world.npcs[target].alive !== false && world.npcs[target].location === world.playerLocation, '伤者须在场')
@@ -367,14 +376,14 @@
         u.check(world.playerState.gold >= 10, '教堂处理重伤须准备 10 金药费')
         TAGS.apply(world, target, [], ['debuff_heavy_wound', 'debuff_light_wound'])
         if (world.playerState.conditionTimers?.[target]) delete world.playerState.conditionTimers[target].recoveryNights
-        return { effects: [{ target: 'world', goldDelta: -10 }], message: '已在教堂支付 10 金处理重伤' }
+        return { effects: [{ target: 'world', goldDelta: -10 }], message: `已在教堂${healer}支付 10 金处理重伤` }
       }
       u.check(tags.includes('debuff_light_wound'), '目标当前没有需要教堂处理的轻伤或重伤')
       TAGS.apply(world, target, [], ['debuff_light_wound'])
-      return { message: '已在教堂免费包扎轻伤' }
+      return { message: `已在教堂${healer}免费包扎轻伤` }
     }
     if (verb === '买药') {
-      u.check(['inn', 'town'].includes(world.playerLocation) && (u.own(medicine, item) || item === 'sleeping_draught'), '请在镇上购买已登记药剂')
+      u.check(['inn', 'town'].includes(world.playerLocation) && shopMedicines.includes(item), '请在镇上购买已登记药剂')
       const data = DATA.ITEM_CATALOG[item]
       u.check(countOf(world, item) < data.maxCount && world.playerState.gold >= data.unitPrice, '金币不足或药剂已满')
       return { effects: [{ target: 'world', goldDelta: -data.unitPrice, itemsAdd: [item] }], message: '已购买' + data.name }
@@ -390,8 +399,12 @@
         message: '已用补给休整',
         complete(state) {
           if (state.playerLocation === 'wilds') state.playerState.campRestUntilMin = state.timeMin + 240
+          const hasAuroraRest = tagsOf(state, 'player').includes('bond_aurora_90')
           for (const id of party) {
-            TAGS.apply(state, id, [], ['debuff_starving', 'debuff_exhausted'])
+            const clearTags = id === 'player' && hasAuroraRest
+              ? ['debuff_starving', 'debuff_exhausted', 'debuff_light_wound']
+              : ['debuff_starving', 'debuff_exhausted']
+            TAGS.apply(state, id, [], clearTags)
             if (state.playerState.conditionTimers?.[id]) delete state.playerState.conditionTimers[id].hungerSince
           }
         }
@@ -455,6 +468,9 @@
       if (!resting || !tags.includes('debuff_heavy_wound')) delete timers.recoveryNights
       if (passedDawn) {
         removed.push('status_sleep_deep')
+        if (id === 'player' && tags.includes('bond_aurora_90') && !world.ruinState?.current) {
+          removed.push('debuff_light_wound')
+        }
         if (resting) {
           removed.push('debuff_light_wound')
           if (tags.includes('debuff_heavy_wound')) {
@@ -487,5 +503,115 @@
     }
   }
 
-  root.OKH_APP_ADVENTURE = Object.freeze({ guilds, guildRank, initialize, gain, isAvailable, roomOptions, apply, tick, settleFieldCombat })
+  function nextPhaseStart(timeMin) {
+    const dayStart = Math.floor(timeMin / 1440) * 1440
+    const local = timeMin % 1440
+    const next = DATA.PHASES.find(phase => phase.start > local)
+    return next ? dayStart + next.start : dayStart + 1440 + DATA.PHASES[0].start
+  }
+
+  function runAdvance(world, command) {
+    const cfg = root.OKH_APP_CONFIG.buildConfig()
+    const prevPending = new Set(Object.entries(world.bg?.eventStates || {})
+      .filter(([, ev]) => ev?.status === 'pending').map(([k]) => k))
+    const result = root.OKHBackground.advance(world, command, cfg)
+    delete result.state.bg.receipts[command.id]
+    const releasedInteractions = Object.entries(result.state.bg?.eventStates || {})
+      .filter(([k, ev]) => ev?.status === 'pending' && !prevPending.has(k) &&
+        cfg.events.find(def => def.id === ev.definitionId)?.mode === 'interaction')
+      .map(([, ev]) => ev.definitionId)
+    if (releasedInteractions.length) {
+      result.report = { ...(result.report || {}), releasedInteractions }
+    }
+    Object.assign(world, result.state)
+    return result
+  }
+
+  function runLocal(world, spec, key = 'local:' + Date.now()) {
+    u.check(spec && typeof spec === 'object', '无效的本地操作参数')
+    const locLabel = root.OKH_APP_CONFIG?.LOCATIONS?.[world.playerLocation] || world.playerLocation
+    if (spec.kind === 'adventure') {
+      const cmd = String(spec.command || '').trim()
+      u.check(cmd && !cmd.startsWith('选职'), '起始主职请在 0 楼开局确定')
+      const verb = cmd.split(/\s+/)[0]
+      order(u.clone(world), '【冒险】' + cmd, key)
+      if (cmd === '行动 自动' || spec.autoSkip) {
+        const steps = []
+        let lastReport = null
+        for (let i = 0; i < 12 && world.ruinState?.current; i++) {
+          const raid = world.ruinState.current
+          const block = raid.blocks[raid.currentBlockIndex]
+          if (!block || ['branch', 'sanctum'].includes(block.type)) break
+          const opts = roomOptions(world, raid)
+          const safeFight = block.type === 'combat' && Math.max(0, ...members(world, raid).map(id => effectiveTier(world, id))) > block.enemyTier
+          const choice = opts.includes('前进') ? '前进' : opts.includes('巧解') ? '巧解' : safeFight && opts.includes('交锋') ? '交锋' : null
+          if (!choice) break
+          const stepId = key + ':s' + i
+          const res = runAdvance(world, { id: stepId, revision: 'local', toMin: world.timeMin, playerAction: '【冒险】行动 ' + choice })
+          lastReport = res.report
+          steps.push(world.playerState.lastAdventure || (block.name + '：' + choice))
+          if (world.ruinState?.current?.shortage) break
+        }
+        u.check(steps.length > 0, '当前节点需要手动决策，请使用下方行动按钮或发楼演绎')
+        const summary = steps.join('；')
+        const nextRaid = world.ruinState?.current
+        const nextBlock = nextRaid?.blocks?.[nextRaid.currentBlockIndex]
+        const stopHint = !nextRaid ? '遗迹已通关或已撤离'
+          : nextRaid.shortage ? '补给耗尽被迫撤退'
+            : nextBlock?.type === 'branch' ? `已在【${nextBlock.name}】停下（遇到分岔路口）`
+              : nextBlock?.type === 'sanctum' ? `已在【${nextBlock.name}】停下（进入圣所密室）`
+                : nextBlock ? `已在【${nextBlock.name}】停下（需要手动决策）` : ''
+        const fullMsg = stopHint ? `${summary}。${stopHint}，可直接发消息延续演绎或选择当前行动` : summary
+        return { message: fullMsg, report: lastReport, digest: '在遗迹中推进：' + summary }
+      }
+      const res = runAdvance(world, { id: key, revision: 'local', toMin: world.timeMin, playerAction: '【冒险】' + cmd })
+      const msg = world.playerState.lastAdventure || '操作已完成'
+      const skipDigest = ['装配', '卸下'].includes(verb)
+      return {
+        message: msg,
+        report: res.report,
+        digest: skipDigest ? null : (verb === '进入' || verb === '行动' ? msg : `在${locLabel}${msg}`)
+      }
+    }
+    if (spec.kind === 'economy') {
+      const { op, tier, count, npc } = spec
+      const minutes = op === 'work' ? (DATA.WORK_TERMS[tier]?.minutes ?? 0) : 0
+      const econ = { op, ...(tier ? { tier } : {}), ...(count !== undefined ? { count } : {}), ...(npc ? { npc } : {}) }
+      const res = runAdvance(world, {
+        id: key, revision: 'local', toMin: world.timeMin + minutes, interactingIds: [],
+        front: { economies: [econ] }
+      })
+      const descMap = {
+        buy_supply: `在${locLabel}购入 ${count || 1} 份补给`,
+        donate: `在${locLabel}向塞西莉亚进行${tier === 'large' ? '大额' : '小额'}募捐`,
+        work: `在${locLabel}完成了${DATA.WORK_TERMS[tier]?.label || tier}（耗时 ${minutes / 60} 小时）`
+      }
+      const message = descMap[op] || '操作已完成'
+      return { message, report: res.report, digest: message }
+    }
+    if (spec.kind === 'move') {
+      u.check(u.own(root.OKH_APP_CONFIG?.LOCATIONS || {}, spec.to), '未知地点')
+      if (world.playerLocation === spec.to) return { noChange: true, message: '已在当前地点' }
+      const res = runAdvance(world, {
+        id: key, revision: 'local', toMin: world.timeMin + 15, interactingIds: [],
+        front: { playerLocation: spec.to }
+      })
+      const targetName = root.OKH_APP_CONFIG.LOCATIONS[spec.to] || spec.to
+      return { message: '已前往' + targetName, report: res.report, digest: null }
+    }
+    if (spec.kind === 'inn_rest') {
+      u.check(!world.ruinState?.current && world.playerLocation === 'inn', '须在断剑与麦酒旅店才可回房休息')
+      const hasPending = Object.values(world.bg?.eventStates || {}).some(ev => ev.status === 'pending')
+      u.check(!hasPending, '当前有待回应的异象浮想，请先在手札处理')
+      const res = runAdvance(world, {
+        id: key, revision: 'local', toMin: nextPhaseStart(world.timeMin), interactingIds: [], front: {}
+      })
+      const message = '在断剑与麦酒旅店回房休息至下一时段'
+      return { message, report: res.report, digest: message }
+    }
+    throw Error('未知的本地操作类型')
+  }
+
+  root.OKH_APP_ADVENTURE = Object.freeze({ guilds, guildRank, shopMedicines, usableMedicines: shopMedicines, initialize, gain, isAvailable, roomOptions, apply, runLocal, tick, settleFieldCombat })
 })(globalThis)
+

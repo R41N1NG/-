@@ -121,7 +121,7 @@ test('all registered plans, event targets and static effects refer to existing a
  for(const npc of roster)for(const id of [...npc.plan,...npc.nodePlan]){if(!owners.has(id))owners.set(id,[]);owners.get(id).push(npc.id)}
  function check(effect,actors){
   if(!effect||typeof effect==='function')return;
-  if(Array.isArray(effect)){for(const {target,...data}of effect){assert(target==='world'||roster.some(n=>n.id===target));check(data,target==='world'?[]:[target])}return}
+  if(Array.isArray(effect)){for(const {target,...data}of effect){assert(target==='world'||target==='player'||roster.some(n=>n.id===target));check(data,target==='world'?[]:[target])}return}
   for(const [key,value]of Object.entries(effect.add||{}))for(const actor of actors){assert(Object.hasOwn(roster.find(n=>n.id===actor).values,key));assert(Number.isFinite(value))}
   for(const key of ['move','playerMove'])if(effect[key])assert(Object.hasOwn(sb.OKH_APP_CONFIG.LOCATIONS,effect[key]));
   for(const spec of [...effect.itemsAdd||[],...effect.itemsRemove||[]])assert(Object.hasOwn(cfg.itemCatalog,typeof spec==='string'?spec:spec.id));

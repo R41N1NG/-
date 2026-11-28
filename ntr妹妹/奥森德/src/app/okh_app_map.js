@@ -24,16 +24,37 @@
     ink: ['__OKH_MAP_INK_FONT__', '地图预览/字体/map-ink.woff']
   }
   const PLACES = {
-    town: { name: '奥克赫斯城', detail: '城内街区、集市、公会与公共建筑。' },
+    town: { name: '奥克赫斯城', detail: '下层商业街横贯东西，中央集市与冒险者公会临街。' },
     inn: { name: '断剑与麦酒旅店', detail: '一层大厅与二层六间客房。' },
-    manor: { name: '领主庄园', detail: '镇外西北山上的庄园。' },
+    manor: { name: '伯爵庄园', travelName: '领主庄园', detail: '城外西北高崖上的石堡庄园，由雷蒙德伯爵私兵守卫。' },
     wilds_camp: { name: '黑兽人前哨', detail: '敌对驻地，位于东南荒地。' },
-    wilds: { name: '城外荒原', detail: '城外河谷、峡口与险道。' },
-    church: { name: '圣辉大教堂', detail: '教堂与相关教会区域。' },
-    training_grounds: { name: '露天练武场', detail: '镇内东北侧的训练院落。' },
+    wilds: { name: '城外荒原', detail: '城外古道、河谷和六类遗迹的外围。' },
+    church: { name: '圣辉大教堂', detail: '位于上层台地，后方以石砌回廊通往晨曦修道院。' },
+    training_grounds: { name: '露天练武场', detail: '城内东北侧的训练院落。' },
     casino: { name: '地下赌场', detail: '此图只展示地面入口。' }
   }
+  const REGION_ECOLOGIES = [
+    ['旧矿坑', 42, 19, '北侧断层岩山的旧矿道与渗水竖井'],
+    ['毒沼菌窟', 14, 57, '西侧低谷的阴湿泥沼与发光菌林'],
+    ['喀斯特兽穴', 71, 32.5, '石灰岩丘陵的溶洞、天坑与魔兽巢穴'],
+    ['机关地宫', 69, 61.5, '东境古道旁的玄武岩旧城塞遗迹'],
+    ['亡灵墓穴', 89.5, 63, '东境旧战场的墓冢与古祭坛'],
+    ['地脉裂隙', 92, 14, '远离城墙，深处有魔导晶石与浮空残廊']
+  ]
+  const CITY_LABELS = [
+    ['晨曦修道院', 53, 30.5],
+    ['冒险者公会', 62.5, 56],
+    ['银月珠宝铺', 78, 54],
+    ['西门', 7, 61],
+    ['西南门', 29, 89],
+    ['东门', 93, 56]
+  ]
   const VIEWS = ['region', 'town', 'ground', 'upper']
+  const MAP_ALT = {
+    region: '奥克赫斯城与四郊。西北高崖为伯爵庄园，西南峡口通向城门，东南黑兽人前哨与人类商道隔断。',
+    town: '奥克赫斯城依坡而建。上层为大教堂和修道院，下层为贯穿东西的商业街。',
+    upper: '同一侧一排六间客房与楼梯'
+  }
   let session = null, ui = null, assetBase = ''
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
   function image(key) {
@@ -62,7 +83,7 @@
     const arrived = Boolean(world.flags?.arrived_oakhaven)
     const here = arrived && world.playerLocation === 'inn'
     if (room.npc === 'player') {
-      base.status = here ? '你的住处 · 已在旅店' : arrived ? '你的住处 · 当前在外' : '你的住处 · 尚未抵镇'
+      base.status = here ? '你的住处 · 已在旅店' : arrived ? '你的住处 · 当前在外' : '你的住处 · 尚未抵城'
       if (here) base.actions = [
         { key: 'rest', label: '回房休息', text: '我回到断剑与麦酒旅店二层自己的房间，休息片刻。' },
         { key: 'bag', label: '整理行囊', text: '我回到旅店自己的房间，整理随身行囊。' }
@@ -75,7 +96,7 @@
     if (!npc || npc.monitored !== true || npc.alive === false || !edKnown) {
       return { ...base, known: false, name: '客房 ' + base.number, role: '入住信息未登记', status: '暂无已登记住客', job: null }
     }
-    if (!arrived) return { ...base, status: '尚未抵镇，房内情况待确认' }
+    if (!arrived) return { ...base, status: '尚未抵城，房内情况待确认' }
     // 和现有公开 HUD 一致：暂离时不能泄露后台遇险坐标。
     if (isLocationHidden(npc)) {
       base.status = '暂离 · 去向未确认'
@@ -124,11 +145,15 @@
     if (!world.flags?.arrived_oakhaven && id === 'town') return `<span class="okh-m-point" style="--x:${x}%;--y:${y}%">${ink}</span><span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${ink}</span>`
     return button(action, ink, `class="okh-m-point" style="--x:${x}%;--y:${y}%" ${extra}${current}`) + `<span class="okh-m-place-label" style="--x:${x}%;--y:${y}%" aria-hidden="true">${ink}</span>`
   }
+  function mapLabels(labels) {
+    return labels.map(([label, x, y]) =>
+      `<span class="okh-m-terrain" style="--x:${x}%;--y:${y}%"><span class="okh-m-ink">${esc(label)}</span></span>`).join('')
+  }
   function placePanel(world, state) {
     const place = PLACES[state.place]
     if (!place) return ''
     const canGo = Boolean(world.flags?.arrived_oakhaven) || ['wilds', 'wilds_camp'].includes(state.place)
-    return `<div class="okh-m-detail"><strong>${esc(place.name)}</strong><p>${esc(place.detail)}</p>${canGo ? button('map-travel', '› 前往此处', `data-okh-place="${state.place}"`) : '<p>抵镇后可前往。</p>'}</div>`
+    return `<div class="okh-m-detail"><strong>${esc(place.name)}</strong><p>${esc(place.detail)}</p>${canGo ? button('map-travel', '› 前往此处', `data-okh-place="${state.place}"`) : '<p>抵城后可前往。</p>'}</div>`
   }
   function build(world, key) {
     const state = context(world, key)
@@ -136,21 +161,25 @@
     const floor = view === 'ground' || view === 'upper'
     const toggle = button('map-toggle', state.collapsed ? '展开地图' : '收起地图',
       `class="okh-m-toggle" aria-expanded="${!state.collapsed}" aria-controls="okh-map-content"`)
-    const nav = state.collapsed ? '' : [['region', '全域'], ['town', '镇内'], ['ground', '旅店']]
+    const nav = state.collapsed ? '' : [['region', '全域'], ['town', '城内'], ['ground', '旅店']]
       .filter(([id]) => world.flags?.arrived_oakhaven || id === 'region')
       .map(([id, label]) => button('map-view', label, `data-okh-view="${id}" aria-pressed="${view === id || (id === 'ground' && floor)}"`)).join('')
     const header = `<section class="okh-map-guide${state.collapsed ? ' is-collapsed' : ''}" aria-label="地图导览"><div class="okh-m-nav">${toggle}${nav}<span>当前：${esc(CFG.LOCATIONS[world.playerLocation] || '未知地点')}</span></div>`
     if (state.collapsed) return header + '<div id="okh-map-content" hidden></div></section>'
-    const title = { region: '奥克赫斯 · 全域图', town: '奥克赫斯 · 镇内图', ground: '断剑与麦酒旅店', upper: '断剑与麦酒旅店' }[view]
-    let overlay = '', options = '', detail = ''
+    const title = { region: '奥克赫斯 · 全域图', town: '奥克赫斯 · 城内图', ground: '断剑与麦酒旅店', upper: '断剑与麦酒旅店' }[view]
+    let overlay = '', options = '', detail = '', legend = ''
     if (view === 'region') {
-      overlay = point('town', '奥克赫斯城', 33.5, 63, 'map-view', 'data-okh-view="town"', world) +
-        point('manor', '领主庄园', 20.5, 25, 'map-place', 'data-okh-place="manor"', world) +
-        point('wilds_camp', '黑兽人前哨', 80, 66.5, 'map-place', 'data-okh-place="wilds_camp"', world)
-      options = (world.flags?.arrived_oakhaven ? button('map-view', '进入镇内图', 'data-okh-view="town"') : '') + button('map-place', '领主庄园', 'data-okh-place="manor"') + button('map-place', '黑兽人前哨', 'data-okh-place="wilds_camp"') + button('map-place', '城外荒原', 'data-okh-place="wilds"')
+      overlay = mapLabels(REGION_ECOLOGIES) +
+        point('town', PLACES.town.name, 41, 61.5, 'map-view', 'data-okh-view="town"', world) +
+        point('manor', PLACES.manor.name, 15, 23, 'map-place', 'data-okh-place="manor"', world) +
+        point('wilds_camp', PLACES.wilds_camp.name, 86.5, 80.5, 'map-place', 'data-okh-place="wilds_camp"', world)
+      options = (world.flags?.arrived_oakhaven ? button('map-view', '进入城内图', 'data-okh-view="town"') : '') + button('map-place', esc(PLACES.manor.name), 'data-okh-place="manor"') + button('map-place', esc(PLACES.wilds_camp.name), 'data-okh-place="wilds_camp"') + button('map-place', esc(PLACES.wilds.name), 'data-okh-place="wilds"')
       detail = placePanel(world, state)
+      legend = '<details class="okh-m-region-key"><summary>四郊遗迹生态</summary><dl>' +
+        REGION_ECOLOGIES.map(([label, , , description]) => `<dt>${esc(label)}</dt><dd>${esc(description)}</dd>`).join('') + '</dl></details>'
     } else if (view === 'town') {
-      for (const [id, label, x, y] of [['church', '教堂', 40, 36], ['training_grounds', '练武场', 71, 36], ['town', '中央集市', 46, 52], ['inn', '断剑与麦酒', 31, 69], ['casino', '赌场入口', 65, 69]]) {
+      overlay = mapLabels(CITY_LABELS)
+      for (const [id, label, x, y] of [['church', '大教堂', 35.5, 33], ['training_grounds', '练武场', 76.7, 34], ['town', '中央集市', 44, 61], ['inn', '断剑与麦酒', 35, 74], ['casino', '赌场入口', 72.5, 67.5]]) {
         overlay += point(id, label, x, y, id === 'inn' ? 'map-view' : 'map-place', id === 'inn' ? 'data-okh-view="ground"' : `data-okh-place="${id}"`, world)
       }
       options = button('map-view', '查看旅店', 'data-okh-view="ground"') + ['church', 'training_grounds', 'town', 'casino'].map(id => button('map-place', esc(PLACES[id].name), `data-okh-place="${id}"`)).join('')
@@ -169,9 +198,9 @@
       detail = chosen ? `<section class="okh-m-detail" aria-label="房间与角色"><div class="okh-m-room-head">${icon(chosen)}<div><strong>${chosen.npc === 'player' ? '你的房间' : esc(chosen.name) + (chosen.known ? '的房间' : '')}</strong><p>客房 ${chosen.number} · ${esc(chosen.role)}</p></div></div><p class="okh-m-status">${esc(chosen.status)}</p><nav class="okh-m-actions">${chosen.actions.map(a => button('map-intent', '› ' + esc(a.label), `data-okh-room="${chosen.id}" data-okh-intent="${a.key}"`)).join('')}</nav></section>` : '<p class="okh-m-hint">点选一扇房门，查看住客与可用行动。</p>'
     }
     const floors = floor ? `<nav class="okh-m-floors" aria-label="楼层">${[['ground', '一层 · 大厅'], ['upper', '二层 · 客房']].map(([id, label]) => button('map-view', label, `data-okh-view="${id}" aria-pressed="${view === id}"`)).join('')}</nav>` : ''
-    return `${header}<div id="okh-map-content" class="okh-m-journal" data-map-view="${view}"><div class="okh-m-head"><h3>${title}</h3>${floors}</div><figure class="okh-m-image"><img src="${esc(image(view))}" alt="${view === 'upper' ? '同一侧一排六间客房与楼梯' : title}" onerror="this.hidden=true;this.parentElement.classList.add('image-unavailable')"><span class="okh-m-image-error">图稿暂未载入，仍可使用下方入口。</span>${overlay}</figure><nav class="okh-m-options${view === 'upper' ? ' is-rooms' : ''}" aria-label="${view === 'upper' ? '按姓名选择房间' : '地图入口'}">${options}</nav>${detail}<p class="okh-m-feedback" role="status">${esc(state.feedback)}</p>${state.draft ? `<textarea class="okh-m-draft" aria-label="可复制的行动草稿" readonly>${esc(state.draft)}</textarea>` : ''}</div></section>`
+    return `${header}<div id="okh-map-content" class="okh-m-journal" data-map-view="${view}"><div class="okh-m-head"><h3>${title}</h3>${floors}</div><figure class="okh-m-image"><img src="${esc(image(view))}" alt="${esc(MAP_ALT[view] || title)}" onerror="this.hidden=true;this.parentElement.classList.add('image-unavailable')"><span class="okh-m-image-error">图稿暂未载入，仍可使用下方入口。</span>${overlay}</figure><nav class="okh-m-options${view === 'upper' ? ' is-rooms' : ''}" aria-label="${view === 'upper' ? '按姓名选择房间' : '地图入口'}">${options}</nav>${detail}${legend}<p class="okh-m-feedback" role="status">${esc(state.feedback)}</p>${state.draft ? `<textarea class="okh-m-draft" aria-label="可复制的行动草稿" readonly>${esc(state.draft)}</textarea>` : ''}</div></section>`
   }
-  function handle(el, world, key, fill) {
+  function handle(el, world, key, fill, onLocal) {
     const action = el.getAttribute('data-okh-act')
     if (!action?.startsWith('map-')) return false
     const state = context(world, key)
@@ -194,11 +223,27 @@
     } else {
       let text = ''
       if (action === 'map-intent') {
-        const room = ROOMS.find(r => r.id === el.getAttribute('data-okh-room'))
-        text = room ? roomState(world, room).actions.find(a => a.key === el.getAttribute('data-okh-intent'))?.text || '' : ''
+        const roomId = el.getAttribute('data-okh-room')
+        const intentKey = el.getAttribute('data-okh-intent')
+        if (onLocal && roomId === 'room1' && intentKey === 'bag') {
+          onLocal({ kind: 'switch_tab', tab: 'supply' }, state)
+          return true
+        }
+        if (onLocal && roomId === 'room1' && intentKey === 'rest') {
+          onLocal({ kind: 'inn_rest' }, state)
+          return true
+        }
+        const room = ROOMS.find(r => r.id === roomId)
+        text = room ? roomState(world, room).actions.find(a => a.key === intentKey)?.text || '' : ''
       } else if (action === 'map-travel') {
         const id = el.getAttribute('data-okh-place')
-        if (Object.hasOwn(PLACES, id) && (world.flags?.arrived_oakhaven || ['wilds', 'wilds_camp'].includes(id))) text = `我前往${PLACES[id].name}。`
+        if (Object.hasOwn(PLACES, id) && (world.flags?.arrived_oakhaven || ['wilds', 'wilds_camp'].includes(id))) {
+          if (onLocal) {
+            onLocal({ kind: 'move', to: id }, state)
+            return true
+          }
+          text = `我前往${PLACES[id].travelName || PLACES[id].name}。`
+        }
       }
       if (text) {
         const written = fill(text)
@@ -254,6 +299,12 @@
 .okh-map-guide .okh-m-point,.okh-map-guide .okh-m-door{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);min-width:44px;min-height:44px;padding:3px 6px;border:0;background:transparent;color:var(--map-ink);white-space:nowrap}
 .okh-m-ink{position:relative;isolation:isolate;display:inline-block;white-space:nowrap;font:400 clamp(11px,1.5vw,14px)/1.5 'OKHMapInk','Songti SC',serif;letter-spacing:1.2px;color:#232622;text-shadow:-1px 0 1px #f7e8c9,1px 0 1px #f7e8c9,0 -1px 1px #f7e8c9,0 1px 1px #f7e8c9,0 0 4px #f7e8c9}
 .okh-m-ink:before{content:'';position:absolute;inset:-3px -10px;z-index:-1;background:radial-gradient(ellipse,#f5e5c6a6,transparent 76%);pointer-events:none}
+.okh-m-terrain{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);pointer-events:none}
+.okh-m-terrain .okh-m-ink{font-size:clamp(7px,2.65cqw,12px);letter-spacing:0;color:#4b3927}
+.okh-m-region-key{padding:8px 4px 0;border-top:1px solid #82633d35;color:var(--map-ink);font-size:11px}
+.okh-m-region-key summary{cursor:pointer;min-height:30px;padding:5px 0}
+.okh-m-region-key dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:5px 0}
+.okh-m-region-key dd{margin:0;color:var(--map-faint)}
 .okh-m-ink[data-ink-kind=settlement]{font-size:clamp(14px,1.9vw,19px);letter-spacing:2px;color:#1e2420}.okh-m-ink[data-ink-kind=hostile]{color:#51292b}
 .okh-map-guide .okh-m-point[aria-current=location] .okh-m-ink,.okh-map-guide .okh-m-point:hover .okh-m-ink{text-decoration:underline;text-decoration-thickness:.7px;text-underline-offset:5px}
 .okh-map-guide .okh-m-door{display:flex;align-items:center;justify-content:center;gap:3px;transform:translate(-50%,-50%) rotate(-19.5deg);font-size:clamp(8px,1.4cqw,12px);letter-spacing:.5px;padding:0 2px}
@@ -266,7 +317,7 @@
 .okh-m-options{padding:4px 4px;border-top:1px solid #82633d35;color:var(--map-faint);font-size:11px}
 .okh-m-options.is-rooms{display:none}
 .okh-m-image.image-unavailable~.okh-m-options.is-rooms{display:flex}
-.image-unavailable>.okh-m-door,.image-unavailable>.okh-m-point,.image-unavailable>.okh-m-marker,.image-unavailable>.okh-m-place-label{display:none!important}
+.image-unavailable>.okh-m-door,.image-unavailable>.okh-m-point,.image-unavailable>.okh-m-marker,.image-unavailable>.okh-m-place-label,.image-unavailable>.okh-m-terrain{display:none!important}
 .okh-m-detail{padding:13px 4px 0;line-height:1.8;border-top:1px solid #82633d55;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 20px}
 .okh-m-detail strong{color:#4e351e;font:400 20px/1.8 'OKHMapInk','Songti SC',serif;letter-spacing:1px}
 .okh-m-detail p,.okh-m-hint{color:var(--map-faint);font-size:11px}
@@ -286,3 +337,4 @@
     setAssetBase(base) { assetBase = String(base || '').replace(/\/?$/, '/'); if (assetBase === '/') assetBase = '' }
   })
 })(globalThis)
+

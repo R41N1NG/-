@@ -63,7 +63,7 @@
       if (!def || def.mode !== 'interaction') continue;
       const choices = Object.keys(def.outcomes || {});
       if (def.allowCancel && !choices.includes('cancel')) choices.push('cancel');
-      lines.push('待决事件：id=' + JSON.stringify(def.id) +
+      lines.push('异象浮想：id=' + JSON.stringify(def.id) +
         (pending.npcId ? ' npc=' + JSON.stringify(pending.npcId) : '') +
         '；登记选项=' + choices.map(choice => JSON.stringify(choice)).join(' / ') +
         '。仅在玩家已经作出对应选择或行动后使用 event_resolve 申报；条件由后台校验。');
@@ -106,6 +106,7 @@
       : '';
     lines.push('随身行囊：补给 ×' + supplyCount + shortageNote +
       (otherItems.length ? '｜其余物件：' + otherItems.join('、') : ''));
+    lines.push('正文已经明确写出玩家取得某个未注册物品时，可在状态栏内追加 <story_item name="物品原名" count="1" evidence="正文中写出玩家取得物品的原句"/>。引用必须逐字来自本楼正文，count 填阿拉伯数字，须和原句的数量一致。计划、看见、尚未交付及已注册物品均不申报。剧情物品只登记，不附带数值、技能或使用效果。');
     const ed = world.npcs?.ed;
     if (ed && ed.monitored === true && ed.alive !== false) {
       const teachCount = ed.flags?.ed_teach_count ?? 0;
@@ -307,3 +308,4 @@
 })(globalThis);
 
 ;
+

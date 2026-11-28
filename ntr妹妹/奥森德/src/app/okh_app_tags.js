@@ -340,6 +340,12 @@
     trait_royal_warrant: Object.freeze({ id: 'trait_royal_warrant', name: '王室特使凭证', category: 'trait', desc: '艾琳动态；关卡免检、查阅防务账目。' }),
     trait_sanctuary_aura: Object.freeze({ id: 'trait_sanctuary_aura', name: '纯白庇佑', category: 'trait', desc: '塞西莉亚专属；安抚惊恐、驱散污秽与拔除血契。' }),
 
+    // 四女主 90 好感全局羁绊 Tag
+    bond_gulan_90: Object.freeze({ id: 'bond_gulan_90', name: '古兰的护佑', category: 'trait', desc: '古兰信物羁绊；每次遗迹探险免疫首次即将承受的重伤。' }),
+    bond_isna_90: Object.freeze({ id: 'bond_isna_90', name: '猫儿的牵挂', category: 'trait', desc: '伊丝娜信物羁绊；每次遗迹通关额外获得 +20% 金币。' }),
+    bond_nise_90: Object.freeze({ id: 'bond_nise_90', name: '天才法师的笔记', category: 'trait', desc: '妮丝信物羁绊；技能装配上限由 6 格提升至 7 格。' }),
+    bond_aurora_90: Object.freeze({ id: 'bond_aurora_90', name: '晨曦永安之誓', category: 'trait', desc: '奥萝拉信物羁绊；休整与过夜（含荒原）时一并解除轻伤。' }),
+
     // 5 项公会阶位 Tag
     guild_novice: Object.freeze({ id: 'guild_novice', name: '见习小队', category: 'guild', meritReq: 0, desc: '刚在公会登记的新人小队，接取城镇日常短差与外围清障。' }),
     guild_bronze: Object.freeze({ id: 'guild_bronze', name: '青铜小队', category: 'guild', meritReq: 20, desc: '累计 20 功绩；具备野外自保力，接取荒原中度讨伐与近郊护卫。' }),

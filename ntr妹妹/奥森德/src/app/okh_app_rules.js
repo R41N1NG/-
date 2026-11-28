@@ -460,7 +460,9 @@
     for (let i = 0; i < (economies || []).length; i++) {
       const item = economies[i]
       if (!item) continue
-      if (item.op === 'work' && !DATA.isEileenFugitive(world)) {
+      if (item.op === 'story_item') {
+        out.push({ target: 'world', storyItemsAdd: [item] })
+      } else if (item.op === 'work' && !DATA.isEileenFugitive(world)) {
         if (workUsed || !Object.hasOwn(DATA.WORK_TERMS, item.tier)) continue
         const { minutes, gold } = DATA.WORK_TERMS[item.tier]
         const paid = gold > 0
@@ -621,3 +623,4 @@
     module.exports = root.OKH_APP_RULES
   }
 })(typeof globalThis !== 'undefined' ? globalThis : this)
+
